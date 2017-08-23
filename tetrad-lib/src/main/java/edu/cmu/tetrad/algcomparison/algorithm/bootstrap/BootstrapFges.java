@@ -32,8 +32,8 @@ import java.util.List;
         name = "BootstrapFGES",
         algType = AlgType.bootstrapping,
         oracleType = OracleType.Score,
-        description = "Short blurb goes here"  ,
-                assumptions = {}
+        description = "Short blurb goes here",
+        assumptions = {}
 )
 public class BootstrapFges implements Algorithm, TakesInitialGraph,
         HasKnowledge {

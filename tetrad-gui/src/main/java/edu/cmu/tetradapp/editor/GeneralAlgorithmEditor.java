@@ -21,22 +21,10 @@
 package edu.cmu.tetradapp.editor;
 
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
-import edu.cmu.tetrad.algcomparison.algorithm.bootstrap.BootstrapFges;
-import edu.cmu.tetrad.algcomparison.algorithm.bootstrap.BootstrapGfci;
-import edu.cmu.tetrad.algcomparison.algorithm.bootstrap.BootstrapRfci;
-import edu.cmu.tetrad.algcomparison.algorithm.cluster.Bpc;
-import edu.cmu.tetrad.algcomparison.algorithm.cluster.Fofc;
-import edu.cmu.tetrad.algcomparison.algorithm.cluster.Ftfc;
-import edu.cmu.tetrad.algcomparison.algorithm.mixed.Mgm;
-import edu.cmu.tetrad.algcomparison.algorithm.multi.*;
-import edu.cmu.tetrad.algcomparison.algorithm.oracle.pag.*;
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern.*;
-import edu.cmu.tetrad.algcomparison.algorithm.other.Glasso;
-import edu.cmu.tetrad.algcomparison.algorithm.pairwise.*;
 import edu.cmu.tetrad.algcomparison.graph.SingleGraph;
 import edu.cmu.tetrad.algcomparison.independence.*;
 import edu.cmu.tetrad.algcomparison.score.*;
-import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.algcomparison.utils.TakesIndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.utils.TakesInitialGraph;
 import edu.cmu.tetrad.algcomparison.utils.UsesScoreWrapper;
@@ -84,6 +72,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Enumeration;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
@@ -111,7 +100,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
     private static final long serialVersionUID = -5719467682865706447L;
 
     private final GeneralAlgorithmRunner runner;
-    private final JComboBox<String> algTypesDropdown = new JComboBox<>();
+    private final Box algoTypesBox;
     private final JComboBox<TestType> testDropdown = new JComboBox<>();
     private final JComboBox<ScoreType> scoreDropdown = new JComboBox<>();
     private final GraphSelectionEditor graphEditor;
@@ -288,16 +277,90 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
             scoreDropdown.addItem(item);
         }
 
-        // Get a list of algo types
+        // Filter based on algo types dropdown
+        algoTypesBox = Box.createVerticalBox();
+
+        // Algo types label box
+        Box algTypesBoxLabelBox = Box.createHorizontalBox();
+        algTypesBoxLabelBox.add(new JLabel("List Algorithms that: "));
+        algTypesBoxLabelBox.setAlignmentX(LEFT_ALIGNMENT);
+
+        // Add label to containing box
+        algoTypesBox.add(algTypesBoxLabelBox);
+
+        // We need to group the radio buttons, otherwise all can be selected
+        ButtonGroup algoTypesBtnGrp = new ButtonGroup();
+
+        // Show each algo type as a radio button
         for (AlgType item : AlgType.values()) {
-            algTypesDropdown.addItem(item.toString().replace("_", " "));
+            String algoType = item.toString().replace("_", " ");
+
+            // Option
+            Box algoTypeOptionBox = Box.createHorizontalBox();
+            algoTypeOptionBox.setAlignmentX(LEFT_ALIGNMENT);
+
+            JRadioButton algoTypeRadioBtn = new JRadioButton(algoType);
+
+            // Add to button group
+            algoTypesBtnGrp.add(algoTypeRadioBtn);
+
+            // Default to select "ALL"
+            if ("ALL".equals(algoType)) {
+                algoTypeRadioBtn.setSelected(true);
+            }
+
+            // Add padding and option
+            algoTypeOptionBox.add(Box.createRigidArea(new Dimension(10, 20)));
+            algoTypeOptionBox.add(algoTypeRadioBtn);
+
+            // Add each option to containing box
+            algoTypesBox.add(algoTypeOptionBox);
+
+            // Event listener on each radio button
+            algoTypeRadioBtn.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent actionEvent) {
+                    // First clear the list model
+                    suggestedAlgosListModel.removeAllElements();
+
+                    JRadioButton button = (JRadioButton) actionEvent.getSource();
+
+                    if (button.isSelected()) {
+                        // Get the selected algo type
+                        AlgType selectedType = AlgType.valueOf(button.getText().replace(" ", "_"));
+                        System.out.println("Selected algo Type ===> " + selectedType);
+                        // Create a new list model based on selections
+                        for (Map.Entry<String, AlgorithmDescriptionClass> algoDescEntry : descriptions.entrySet()) {
+                            AlgorithmDescriptionClass algoDesc = algoDescEntry.getValue();
+                            if (algoDesc.getAlgType() == selectedType || selectedType == AlgType.ALL) {
+                                suggestedAlgosListModel.addElement(algoDesc.getAlgName());
+                            }
+                        }
+
+                        // Reset default algo selection
+                        suggestedAlgosList.setSelectedIndex(0);
+                        selectedAlgoName = suggestedAlgosList.getSelectedValue().toString();
+
+                        // Reset description
+                        algoDescriptionTextArea.setText("Description of " + selectedAlgoName + ": " + descriptions.get(selectedAlgoName).getDescription());
+
+                        // Finally, set the selected algo and update the test and score dropdown menus
+                        setAlgorithm();
+                    }
+                }
+            });
         }
 
-        // Set the first option "All" as default selection
-        algTypesDropdown.setSelectedIndex(0);
+        // Get the selected algo type
+        AlgType selectedType = null;
+        for (Enumeration<AbstractButton> buttons = algoTypesBtnGrp.getElements(); buttons.hasMoreElements();) {
+            AbstractButton button = buttons.nextElement();
 
-        // Convert the selected item into String object and get the corresponding enum type
-        AlgType selectedType = AlgType.valueOf(((String) algTypesDropdown.getSelectedItem()).replace(" ", "_"));
+            if (button.isSelected()) {
+                selectedType = AlgType.valueOf(button.getText().replace(" ", "_"));
+                break;
+            }
+        }
 
         suggestedAlgosListModel = new DefaultListModel();
 
@@ -342,36 +405,6 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
                     // Finally, set the selected algo and update the test and score dropdown menus
                     setAlgorithm();
                 }
-            }
-        });
-
-        // Event listener of algo types dorpdown menu
-        algTypesDropdown.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                // First clear the list model
-                suggestedAlgosListModel.removeAllElements();
-
-                // Convert the selected item into String object and get the corresponding enum type
-                AlgType selectedType = AlgType.valueOf(((String) algTypesDropdown.getSelectedItem()).replace(" ", "_"));
-                System.out.println("Selected algo Type ===> " + selectedType);
-                // Create a new list model based on selections
-                for (Map.Entry<String, AlgorithmDescriptionClass> algoDescEntry : descriptions.entrySet()) {
-                    AlgorithmDescriptionClass algoDesc = algoDescEntry.getValue();
-                    if (algoDesc.getAlgType() == selectedType || selectedType == AlgType.ALL) {
-                        suggestedAlgosListModel.addElement(algoDesc.getAlgName());
-                    }
-                }
-
-                // Reset default algo selection
-                suggestedAlgosList.setSelectedIndex(0);
-                selectedAlgoName = suggestedAlgosList.getSelectedValue().toString();
-
-                // Reset description
-                algoDescriptionTextArea.setText("Description of " + selectedAlgoName + ": " + descriptions.get(selectedAlgoName).getDescription());
-
-                // Finally, set the selected algo and update the test and score dropdown menus
-                setAlgorithm();
             }
         });
 
@@ -783,7 +816,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
     }
 
     public Algorithm getAlgorithmFromInterface() {
-        String name = suggestedAlgosList.getSelectedValue().toString() ;
+        String name = suggestedAlgosList.getSelectedValue().toString();
 
         if (name == null) {
             throw new NullPointerException();
@@ -808,7 +841,6 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
 //        if (algorithm instanceof HasKnowledge) {
 //            ((HasKnowledge) algorithm).setKnowledge();
 //        }
-
         if (algorithm instanceof TakesIndependenceWrapper) {
             ((TakesIndependenceWrapper) algorithm).setIndependenceWrapper(independenceWrapper);
         }
@@ -819,201 +851,107 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
             }
         }
 
-
-
         AlgName enumName = AlgName.valueOf(name);
 
-
-
         // ToDO: commenting this section out but need to test each algorithm for correct setters depending on interfaces and annotations
-
         /**
-        switch (enumName) {
-
-
-            case FGES:
-                algorithm = new Fges(scoreWrapper);
-
-//                if (runner.getSourceGraph() != null && !runner.getDataModelList().isEmpty()) {
-//                    algorithm = new Fges(scoreWrapper, new SingleGraphAlg(runner.getSourceGraph()));
-//                } else {
-//                algorithm = new Fges(scoreWrapper);
-//                }
-                break;
-//            case FgesMeasurement:
-//                if (runner.getSourceGraph() != null && !runner.getDataModelList().isEmpty()) {
-//                    algorithm = new FgesMeasurement(scoreWrapper, new SingleGraphAlg(runner.getSourceGraph()));
-//                } else {
-//                    algorithm = new FgesMeasurement(scoreWrapper);
-//                }
-//                break;
-            case PC:
-                if (runner.getSourceGraph() != null && !runner.getDataModelList().isEmpty()) {
-                    algorithm = new PcAll(independenceWrapper, new SingleGraphAlg(runner.getSourceGraph()));
-                } else {
-                    algorithm = new PcAll(independenceWrapper);
-                }
-                break;
-
-//            case CPC:
-//                if (runner.getSourceGraph() != null && !runner.getDataModelList().isEmpty()) {
-//                    algorithm = new Cpc(independenceWrapper, new SingleGraphAlg(runner.getSourceGraph()));
-//                } else {
-//                    algorithm = new Cpc(independenceWrapper);
-//                }
-//                break;
-//            case CPCStable:
-//                algorithm = new CpcStable(independenceWrapper);
-//                break;
-//            case PCStable:
-//                if (runner.getSourceGraph() != null && !runner.getDataModelList().isEmpty()) {
-//                    algorithm = new PcStable(independenceWrapper, new SingleGraphAlg(runner.getSourceGraph()));
-//                } else {
-//                    algorithm = new PcStable(independenceWrapper);
-//                }
-//                break;
-            case GFCI:
-                algorithm = new Gfci(independenceWrapper, scoreWrapper);
-                break;
-            case FCI:
-                algorithm = new Fci(independenceWrapper);
-//                if (runner.getSourceGraph() != null && !runner.getDataModelList().isEmpty()) {
-//                    algorithm = new Fci(independenceWrapper, new SingleGraphAlg(runner.getSourceGraph()));
-//                } else {
-//                    algorithm = new Fci(independenceWrapper);
-//                }
-                break;
-            case RFCI:
-                algorithm = new Rfci(independenceWrapper);
-                break;
-//            case CFCI:
-//                algorithm = new Cfci(independenceWrapper);
-//                break;
-            case TsFCI:
-                algorithm = new TsFci(independenceWrapper);
-//                if (runner.getSourceGraph() != null && !runner.getDataModelList().isEmpty()) {
-//                    algorithm = new TsFci(independenceWrapper, new SingleGraphAlg(runner.getSourceGraph()));
-//                } else {
-//                    algorithm = new TsFci(independenceWrapper);
-//                }
-                break;
-            case TsGFCI:
-                algorithm = new TsGfci(independenceWrapper, scoreWrapper);
-                break;
-            case TsImages:
-                algorithm = new TsImages(scoreWrapper);
-                break;
-//            case CCD:
-//                algorithm = new Ccd(independenceWrapper);
-//                break;
-//            case CCD_MAX:
-//                algorithm = new CcdMax(independenceWrapper);
-//                break;
-            case FANG:
-                algorithm = new FangConcatenated();
-                break;
-            case EFANG:
-                algorithm = new FaskConcatenated();
-                break;
-            case FAS:
-                algorithm = new FAS(independenceWrapper);
-                break;
-            case FgesMb:
-                algorithm = new FgesMb(scoreWrapper);
-//                if (runner.getSourceGraph() != null && !runner.getDataModelList().isEmpty()) {
-//                    algorithm = new FgesMb(scoreWrapper, new SingleGraphAlg(runner.getSourceGraph()));
-//                } else {
-//                    algorithm = new FgesMb(scoreWrapper);
-//                }
-                break;
-            case MBFS:
-                algorithm = new MBFS(independenceWrapper);
-                break;
-            case PcStableMax:
-                algorithm = new PcStableMax(independenceWrapper, false);
-                break;
-//            case JCPC:
-//                algorithm = new Jcpc(independenceWrapper, scoreWrapper);
-//                break;
-//            case LiNGAM:
-//                algorithm = new Lingam();
-//                break;
-            case MGM:
-                algorithm = new Mgm();
-                break;
-            case IMaGES_Discrete:
-                algorithm = new ImagesBDeu();
-                break;
-            case IMaGES_Continuous:
-                algorithm = new ImagesSemBic();
-                break;
-//            case IMaGES_CCD:
-//                algorithm = new ImagesCcd();
-//                break;
-            case GLASSO:
-                algorithm = new Glasso();
-                break;
-            case Bpc:
-                algorithm = new Bpc();
-                break;
-            case Fofc:
-                algorithm = new Fofc();
-                break;
-            case Ftfc:
-                algorithm = new Ftfc();
-                break;
-
-            // LOFS algorithms.
-            case EB:
-                algorithm = new EB(new SingleGraphAlg(runner.getSourceGraph()));
-                break;
-            case R1:
-                algorithm = new R1(new SingleGraphAlg(runner.getSourceGraph()));
-                break;
-            case R2:
-                algorithm = new R2(new SingleGraphAlg(runner.getSourceGraph()));
-                break;
-            case R3:
-                algorithm = new R3(new SingleGraphAlg(runner.getSourceGraph()));
-                ((R3) algorithm).setKnowledge(runner.getKnowledge());
-                break;
-            case R4:
-                algorithm = new R4(new SingleGraphAlg(runner.getSourceGraph()));
-                break;
-            case RSkew:
-                algorithm = new RSkew(new SingleGraphAlg(runner.getSourceGraph()));
-                break;
-            case RSkewE:
-                algorithm = new RSkewE(new SingleGraphAlg(runner.getSourceGraph()));
-                break;
-            case Skew:
-                algorithm = new Skew(new SingleGraphAlg(runner.getSourceGraph()));
-                break;
-            case SkewE:
-                algorithm = new SkewE(new SingleGraphAlg(runner.getSourceGraph()));
-                break;
-//            case Tahn:
-//                algorithm = new Tanh(new SingleGraphAlg(runner.getSourceGraph()));
-//                break;
-
-            // Bootstrapping
-            case BootstrapFGES:
-                algorithm = new BootstrapFges(scoreWrapper);
-                break;
-            case BootstrapGFCI:
-                algorithm = new BootstrapGfci(independenceWrapper, scoreWrapper);
-                break;
-            case BootstrapRFCI:
-                algorithm = new BootstrapRfci(independenceWrapper);
-                break;
-
-            default:
-                throw new IllegalArgumentException("Please configure that algorithm: " + name);
-
-        }
-         **/
-
-
+         * switch (enumName) {
+         *
+         *
+         * case FGES: algorithm = new Fges(scoreWrapper);
+         *
+         * // if (runner.getSourceGraph() != null &&
+         * !runner.getDataModelList().isEmpty()) { // algorithm = new
+         * Fges(scoreWrapper, new SingleGraphAlg(runner.getSourceGraph())); // }
+         * else { // algorithm = new Fges(scoreWrapper); // } break; // case
+         * FgesMeasurement: // if (runner.getSourceGraph() != null &&
+         * !runner.getDataModelList().isEmpty()) { // algorithm = new
+         * FgesMeasurement(scoreWrapper, new
+         * SingleGraphAlg(runner.getSourceGraph())); // } else { // algorithm =
+         * new FgesMeasurement(scoreWrapper); // } // break; case PC: if
+         * (runner.getSourceGraph() != null &&
+         * !runner.getDataModelList().isEmpty()) { algorithm = new
+         * PcAll(independenceWrapper, new
+         * SingleGraphAlg(runner.getSourceGraph())); } else { algorithm = new
+         * PcAll(independenceWrapper); } break;
+         *
+         * // case CPC: // if (runner.getSourceGraph() != null &&
+         * !runner.getDataModelList().isEmpty()) { // algorithm = new
+         * Cpc(independenceWrapper, new
+         * SingleGraphAlg(runner.getSourceGraph())); // } else { // algorithm =
+         * new Cpc(independenceWrapper); // } // break; // case CPCStable: //
+         * algorithm = new CpcStable(independenceWrapper); // break; // case
+         * PCStable: // if (runner.getSourceGraph() != null &&
+         * !runner.getDataModelList().isEmpty()) { // algorithm = new
+         * PcStable(independenceWrapper, new
+         * SingleGraphAlg(runner.getSourceGraph())); // } else { // algorithm =
+         * new PcStable(independenceWrapper); // } // break; case GFCI:
+         * algorithm = new Gfci(independenceWrapper, scoreWrapper); break; case
+         * FCI: algorithm = new Fci(independenceWrapper); // if
+         * (runner.getSourceGraph() != null &&
+         * !runner.getDataModelList().isEmpty()) { // algorithm = new
+         * Fci(independenceWrapper, new
+         * SingleGraphAlg(runner.getSourceGraph())); // } else { // algorithm =
+         * new Fci(independenceWrapper); // } break; case RFCI: algorithm = new
+         * Rfci(independenceWrapper); break; // case CFCI: // algorithm = new
+         * Cfci(independenceWrapper); // break; case TsFCI: algorithm = new
+         * TsFci(independenceWrapper); // if (runner.getSourceGraph() != null &&
+         * !runner.getDataModelList().isEmpty()) { // algorithm = new
+         * TsFci(independenceWrapper, new
+         * SingleGraphAlg(runner.getSourceGraph())); // } else { // algorithm =
+         * new TsFci(independenceWrapper); // } break; case TsGFCI: algorithm =
+         * new TsGfci(independenceWrapper, scoreWrapper); break; case TsImages:
+         * algorithm = new TsImages(scoreWrapper); break; // case CCD: //
+         * algorithm = new Ccd(independenceWrapper); // break; // case CCD_MAX:
+         * // algorithm = new CcdMax(independenceWrapper); // break; case FANG:
+         * algorithm = new FangConcatenated(); break; case EFANG: algorithm =
+         * new FaskConcatenated(); break; case FAS: algorithm = new
+         * FAS(independenceWrapper); break; case FgesMb: algorithm = new
+         * FgesMb(scoreWrapper); // if (runner.getSourceGraph() != null &&
+         * !runner.getDataModelList().isEmpty()) { // algorithm = new
+         * FgesMb(scoreWrapper, new SingleGraphAlg(runner.getSourceGraph())); //
+         * } else { // algorithm = new FgesMb(scoreWrapper); // } break; case
+         * MBFS: algorithm = new MBFS(independenceWrapper); break; case
+         * PcStableMax: algorithm = new PcStableMax(independenceWrapper, false);
+         * break; // case JCPC: // algorithm = new Jcpc(independenceWrapper,
+         * scoreWrapper); // break; // case LiNGAM: // algorithm = new Lingam();
+         * // break; case MGM: algorithm = new Mgm(); break; case
+         * IMaGES_Discrete: algorithm = new ImagesBDeu(); break; case
+         * IMaGES_Continuous: algorithm = new ImagesSemBic(); break; // case
+         * IMaGES_CCD: // algorithm = new ImagesCcd(); // break; case GLASSO:
+         * algorithm = new Glasso(); break; case Bpc: algorithm = new Bpc();
+         * break; case Fofc: algorithm = new Fofc(); break; case Ftfc: algorithm
+         * = new Ftfc(); break;
+         *
+         * // LOFS algorithms. case EB: algorithm = new EB(new
+         * SingleGraphAlg(runner.getSourceGraph())); break; case R1: algorithm =
+         * new R1(new SingleGraphAlg(runner.getSourceGraph())); break; case R2:
+         * algorithm = new R2(new SingleGraphAlg(runner.getSourceGraph()));
+         * break; case R3: algorithm = new R3(new
+         * SingleGraphAlg(runner.getSourceGraph())); ((R3)
+         * algorithm).setKnowledge(runner.getKnowledge()); break; case R4:
+         * algorithm = new R4(new SingleGraphAlg(runner.getSourceGraph()));
+         * break; case RSkew: algorithm = new RSkew(new
+         * SingleGraphAlg(runner.getSourceGraph())); break; case RSkewE:
+         * algorithm = new RSkewE(new SingleGraphAlg(runner.getSourceGraph()));
+         * break; case Skew: algorithm = new Skew(new
+         * SingleGraphAlg(runner.getSourceGraph())); break; case SkewE:
+         * algorithm = new SkewE(new SingleGraphAlg(runner.getSourceGraph()));
+         * break; // case Tahn: // algorithm = new Tanh(new
+         * SingleGraphAlg(runner.getSourceGraph())); // break;
+         *
+         * // Bootstrapping case BootstrapFGES: algorithm = new
+         * BootstrapFges(scoreWrapper); break; case BootstrapGFCI: algorithm =
+         * new BootstrapGfci(independenceWrapper, scoreWrapper); break; case
+         * BootstrapRFCI: algorithm = new BootstrapRfci(independenceWrapper);
+         * break;
+         *
+         * default: throw new IllegalArgumentException("Please configure that
+         * algorithm: " + name);
+         *
+         * }
+         *
+         */
         return algorithm;
     }
 
@@ -1179,27 +1117,6 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         Box rightContainer = Box.createVerticalBox();
         rightContainer.setPreferredSize(new Dimension(360, 600));
 
-        // Filter based on algo types dropdown
-        Box algoTypesBox = Box.createVerticalBox();
-
-        // Algo types label box
-        Box algTypesBoxLabelBox = Box.createHorizontalBox();
-        algTypesBoxLabelBox.add(new JLabel("List Algorithms that: "));
-        algTypesBoxLabelBox.setAlignmentX(LEFT_ALIGNMENT);
-
-        // Option
-        Box algoTypesOptionBox = Box.createHorizontalBox();
-        algoTypesOptionBox.setAlignmentX(LEFT_ALIGNMENT);
-
-        // Add padding and option
-        algoTypesOptionBox.add(Box.createRigidArea(new Dimension(20, 20)));
-        algTypesDropdown.setPreferredSize(new Dimension(200, 30));
-        algoTypesOptionBox.add(algTypesDropdown);
-
-        // Add to containing box
-        algoTypesBox.add(algTypesBoxLabelBox);
-        algoTypesBox.add(algoTypesOptionBox);
-
         // Are the relationships between your variables linear?
         Box varLinearRelationshipsBox = Box.createVerticalBox();
 
@@ -1215,7 +1132,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         JRadioButton varLinearRelationshipsYes = new JRadioButton("Yes");
 
         // Add padding and option
-        varLinearRelationshipsOption1Box.add(Box.createRigidArea(new Dimension(20, 20)));
+        varLinearRelationshipsOption1Box.add(Box.createRigidArea(new Dimension(10, 20)));
         varLinearRelationshipsOption1Box.add(varLinearRelationshipsYes);
 
         // Option 2
@@ -1225,7 +1142,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         JRadioButton varLinearRelationshipsNo = new JRadioButton("No");
 
         // Add padding and option
-        varLinearRelationshipsOption2Box.add(Box.createRigidArea(new Dimension(20, 20)));
+        varLinearRelationshipsOption2Box.add(Box.createRigidArea(new Dimension(10, 20)));
         varLinearRelationshipsOption2Box.add(varLinearRelationshipsNo);
 
         // Option 3
@@ -1235,7 +1152,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         JRadioButton varLinearRelationshipsUnknown = new JRadioButton("Let's find out");
 
         // Add padding and option
-        varLinearRelationshipsOption3Box.add(Box.createRigidArea(new Dimension(20, 20)));
+        varLinearRelationshipsOption3Box.add(Box.createRigidArea(new Dimension(10, 20)));
         varLinearRelationshipsOption3Box.add(varLinearRelationshipsUnknown);
 
         // We need to group the radio buttons, otherwise all can be selected
@@ -1266,7 +1183,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         JRadioButton gaussianVariablesYes = new JRadioButton("Yes");
 
         // Add padding and option
-        gaussianVariablesOption1Box.add(Box.createRigidArea(new Dimension(20, 20)));
+        gaussianVariablesOption1Box.add(Box.createRigidArea(new Dimension(10, 20)));
         gaussianVariablesOption1Box.add(gaussianVariablesYes);
 
         // Option 2
@@ -1276,7 +1193,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         JRadioButton gaussianVariablesNo = new JRadioButton("No");
 
         // Add padding and option
-        gaussianVariablesOption2Box.add(Box.createRigidArea(new Dimension(20, 20)));
+        gaussianVariablesOption2Box.add(Box.createRigidArea(new Dimension(10, 20)));
         gaussianVariablesOption2Box.add(gaussianVariablesNo);
 
         // Option 3
@@ -1286,7 +1203,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         JRadioButton gaussianVariablesUnknown = new JRadioButton("Let's find out");
 
         // Add padding and option
-        gaussianVariablesOption3Box.add(Box.createRigidArea(new Dimension(20, 20)));
+        gaussianVariablesOption3Box.add(Box.createRigidArea(new Dimension(10, 20)));
         gaussianVariablesOption3Box.add(gaussianVariablesUnknown);
 
         // We need to group the radio buttons, otherwise all can be selected
@@ -1317,7 +1234,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         JRadioButton priorKnowledgeYes = new JRadioButton("Yes");
 
         // Add padding and option
-        priorKnowledgeOption1Box.add(Box.createRigidArea(new Dimension(20, 20)));
+        priorKnowledgeOption1Box.add(Box.createRigidArea(new Dimension(10, 20)));
         priorKnowledgeOption1Box.add(priorKnowledgeYes);
 
         // Option 2
@@ -1327,7 +1244,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         JRadioButton priorKnowledgeNo = new JRadioButton("No");
 
         // Add padding and option
-        priorKnowledgeOption2Box.add(Box.createRigidArea(new Dimension(20, 20)));
+        priorKnowledgeOption2Box.add(Box.createRigidArea(new Dimension(10, 20)));
         priorKnowledgeOption2Box.add(priorKnowledgeNo);
 
         // We need to group the radio buttons, otherwise all can be selected
@@ -1339,64 +1256,6 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         priorKnowledgeBox.add(priorKnowledgeLabelBox);
         priorKnowledgeBox.add(priorKnowledgeOption1Box);
         priorKnowledgeBox.add(priorKnowledgeOption2Box);
-
-        // Output Goals, use checkboxes to allow multiple goals
-        // Can't use buttonGroup on checkboxes since it's multiple-exclusion
-        Box outputGoalsBox = Box.createVerticalBox();
-
-        // Add label into this label box to size
-        Box outputGoalsLabelBox = Box.createHorizontalBox();
-        outputGoalsLabelBox.add(new JLabel("Output Goals: "));
-        outputGoalsLabelBox.setAlignmentX(LEFT_ALIGNMENT);
-
-        // Option 1
-        Box outputGoalsOption1Box = Box.createHorizontalBox();
-        outputGoalsOption1Box.setAlignmentX(LEFT_ALIGNMENT);
-
-        JCheckBox outputGoalsPairwiseOrientation = new JCheckBox("Pairwise orientation");
-
-        // Add padding and option
-        outputGoalsOption1Box.add(Box.createRigidArea(new Dimension(20, 20)));
-        outputGoalsOption1Box.add(outputGoalsPairwiseOrientation);
-
-        // Option 2
-        Box outputGoalsOption2Box = Box.createHorizontalBox();
-        outputGoalsOption2Box.setAlignmentX(LEFT_ALIGNMENT);
-
-        JCheckBox outputGoalsMarkovBlanket = new JCheckBox("Markov blanket");
-
-        // Add padding and option
-        outputGoalsOption2Box.add(Box.createRigidArea(new Dimension(20, 20)));
-        outputGoalsOption2Box.add(outputGoalsMarkovBlanket);
-
-        // Option 3
-        Box outputGoalsOption3Box = Box.createHorizontalBox();
-        outputGoalsOption3Box.setAlignmentX(LEFT_ALIGNMENT);
-
-        JCheckBox outputGoalsUndirectedGraph = new JCheckBox("Undirected graph");
-
-        // Add padding and option
-        outputGoalsOption3Box.add(Box.createRigidArea(new Dimension(20, 20)));
-        outputGoalsOption3Box.add(outputGoalsUndirectedGraph);
-
-        // Option 4
-        Box outputGoalsOption4Box = Box.createHorizontalBox();
-        outputGoalsOption4Box.setAlignmentX(LEFT_ALIGNMENT);
-
-        JCheckBox outputGoalsCausalGraph = new JCheckBox("Causal graph");
-
-        // Add padding and option
-        outputGoalsOption4Box.add(Box.createRigidArea(new Dimension(20, 20)));
-        outputGoalsOption4Box.add(outputGoalsCausalGraph);
-
-        // Add to containg box
-        outputGoalsBox.add(outputGoalsLabelBox);
-        outputGoalsBox.add(outputGoalsOption1Box);
-        outputGoalsBox.add(outputGoalsOption2Box);
-        outputGoalsBox.add(outputGoalsOption3Box);
-        outputGoalsBox.add(outputGoalsOption4Box);
-        // We need this glue, otherwise the components are centered instead of left aligned - Zhou
-        outputGoalsBox.add(Box.createHorizontalGlue());
 
         // Include unmeasured confounders?
         Box includeUnmeasuredConfoundersBox = Box.createVerticalBox();
@@ -1413,7 +1272,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         JRadioButton includeUnmeasuredConfoundersYes = new JRadioButton("Yes");
 
         // Add padding and option
-        includeUnmeasuredConfoundersOption1Box.add(Box.createRigidArea(new Dimension(20, 20)));
+        includeUnmeasuredConfoundersOption1Box.add(Box.createRigidArea(new Dimension(10, 20)));
         includeUnmeasuredConfoundersOption1Box.add(includeUnmeasuredConfoundersYes);
 
         // Option 2
@@ -1423,7 +1282,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         JRadioButton includeUnmeasuredConfoundersNo = new JRadioButton("No");
 
         // Add padding and option
-        includeUnmeasuredConfoundersOption2Box.add(Box.createRigidArea(new Dimension(20, 20)));
+        includeUnmeasuredConfoundersOption2Box.add(Box.createRigidArea(new Dimension(10, 20)));
         includeUnmeasuredConfoundersOption2Box.add(includeUnmeasuredConfoundersNo);
 
         // Option 3
@@ -1433,7 +1292,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         JRadioButton includeUnmeasuredConfoundersUnknown = new JRadioButton("Let's find out");
 
         // Add padding and option
-        includeUnmeasuredConfoundersOption3Box.add(Box.createRigidArea(new Dimension(20, 20)));
+        includeUnmeasuredConfoundersOption3Box.add(Box.createRigidArea(new Dimension(10, 20)));
         includeUnmeasuredConfoundersOption3Box.add(includeUnmeasuredConfoundersUnknown);
 
         // We need to group the radio buttons, otherwise all can be selected
@@ -1461,23 +1320,6 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
                 gaussianVariablesBtnGrp.clearSelection();
                 priorKnowledgeBtnGrp.clearSelection();
                 includeUnmeasuredConfoundersBtnGrp.clearSelection();
-
-                // Have to take care of the outputGoals since we can't use buttonGroup on it
-                if (outputGoalsPairwiseOrientation.isSelected()) {
-                    outputGoalsPairwiseOrientation.setSelected(false);
-                }
-
-                if (outputGoalsMarkovBlanket.isSelected()) {
-                    outputGoalsMarkovBlanket.setSelected(false);
-                }
-
-                if (outputGoalsUndirectedGraph.isSelected()) {
-                    outputGoalsUndirectedGraph.setSelected(false);
-                }
-
-                if (outputGoalsCausalGraph.isSelected()) {
-                    outputGoalsCausalGraph.setSelected(false);
-                }
             }
         });
 
@@ -1508,17 +1350,15 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
 
         // Items to put in data description box
         algoFiltersBox.add(algoTypesBox);
-        algoFiltersBox.add(Box.createVerticalStrut(10));
+        algoFiltersBox.add(Box.createVerticalStrut(5));
         algoFiltersBox.add(varLinearRelationshipsBox);
-        algoFiltersBox.add(Box.createVerticalStrut(10));
+        algoFiltersBox.add(Box.createVerticalStrut(5));
         algoFiltersBox.add(gaussianVariablesBox);
-        algoFiltersBox.add(Box.createVerticalStrut(10));
+        algoFiltersBox.add(Box.createVerticalStrut(5));
         algoFiltersBox.add(priorKnowledgeBox);
-        algoFiltersBox.add(Box.createVerticalStrut(10));
-        algoFiltersBox.add(outputGoalsBox);
-        algoFiltersBox.add(Box.createVerticalStrut(10));
+        algoFiltersBox.add(Box.createVerticalStrut(5));
         algoFiltersBox.add(includeUnmeasuredConfoundersBox);
-        algoFiltersBox.add(Box.createVerticalStrut(10));
+        algoFiltersBox.add(Box.createVerticalStrut(5));
         algoFiltersBox.add(clearFilterSelectionsBtn);
 
         // Add to leftContainer
