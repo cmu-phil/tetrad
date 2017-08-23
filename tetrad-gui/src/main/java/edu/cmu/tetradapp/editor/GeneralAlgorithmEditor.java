@@ -101,6 +101,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
 
     private final GeneralAlgorithmRunner runner;
     private final Box algoTypesBox;
+    private final ButtonGroup algoTypesBtnGrp;
     private final JComboBox<TestType> testDropdown = new JComboBox<>();
     private final JComboBox<ScoreType> scoreDropdown = new JComboBox<>();
     private final GraphSelectionEditor graphEditor;
@@ -289,7 +290,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         algoTypesBox.add(algTypesBoxLabelBox);
 
         // We need to group the radio buttons, otherwise all can be selected
-        ButtonGroup algoTypesBtnGrp = new ButtonGroup();
+        algoTypesBtnGrp = new ButtonGroup();
 
         // Show each algo type as a radio button
         for (AlgType item : AlgType.values()) {
@@ -851,10 +852,10 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
             }
         }
 
-        AlgName enumName = AlgName.valueOf(name);
-
         // ToDO: commenting this section out but need to test each algorithm for correct setters depending on interfaces and annotations
         /**
+         * AlgName enumName = AlgName.valueOf(name);
+         *
          * switch (enumName) {
          *
          *
@@ -1030,9 +1031,6 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
     }
 
     private void setAlgorithm() {
-        // Comment out this to test new UI - Zhou
-        //AlgName name = (AlgName) algNamesDropdown.getSelectedItem();
-
         // Get the equivalent enum type of selectedAlgoName string
         AlgName name = AlgName.valueOf(selectedAlgoName);
 
@@ -1308,14 +1306,15 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         includeUnmeasuredConfoundersBox.add(includeUnmeasuredConfoundersOption3Box);
         includeUnmeasuredConfoundersBox.add(Box.createHorizontalGlue());
 
-        // Clear filter selections
-        JButton clearFilterSelectionsBtn = new JButton("Clear filter selections");
+        // Reset filter selections
+        JButton resetFilterSelectionsBtn = new JButton("Reset filter selections");
 
         // Event listener of clearFilterSelectionsBtn
-        clearFilterSelectionsBtn.addActionListener(new ActionListener() {
+        resetFilterSelectionsBtn.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
-                // Reset/clear all selections - the radio bottons and checkboxes
+                // Reset/clear all selections - the radio bottons
+                algoTypesBtnGrp.clearSelection();
                 varLinearRelationshipsBtnGrp.clearSelection();
                 gaussianVariablesBtnGrp.clearSelection();
                 priorKnowledgeBtnGrp.clearSelection();
@@ -1359,7 +1358,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         algoFiltersBox.add(Box.createVerticalStrut(5));
         algoFiltersBox.add(includeUnmeasuredConfoundersBox);
         algoFiltersBox.add(Box.createVerticalStrut(5));
-        algoFiltersBox.add(clearFilterSelectionsBtn);
+        algoFiltersBox.add(resetFilterSelectionsBtn);
 
         // Add to leftContainer
         leftContainer.add(algoFiltersBox);
