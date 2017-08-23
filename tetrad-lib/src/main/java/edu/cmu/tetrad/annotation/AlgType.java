@@ -11,6 +11,5 @@ public enum AlgType {
     search_for_Markov_blankets,
     produce_undirected_graphs,
     orient_pairwise,
-    search_for_structure_over_latents,
-    bootstrapping
+    search_for_structure_over_latents
 }

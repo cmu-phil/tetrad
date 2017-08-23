@@ -3,9 +3,6 @@ package edu.cmu.tetrad.algcomparison.algorithm.bootstrap;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
-import edu.cmu.tetrad.annotation.AlgType;
-import edu.cmu.tetrad.annotation.AlgorithmDescription;
-import edu.cmu.tetrad.annotation.OracleType;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
@@ -26,13 +23,6 @@ import java.util.List;
  * @author Chirayu (Kong) Wongchokprasitti, PhD
  *
  */
-@AlgorithmDescription(
-        name = "BootstrapRFCI",
-        algType = AlgType.bootstrapping,
-        oracleType = OracleType.Test,
-        description = "Short blurb goes here",
-                assumptions = {}
-)
 public class BootstrapRfci implements Algorithm, HasKnowledge {
 
     static final long serialVersionUID = 23L;
