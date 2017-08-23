@@ -33,6 +33,9 @@ public class RSkewE implements Algorithm, TakesInitialGraph {
     static final long serialVersionUID = 23L;
     private Algorithm initialGraph = null;
 
+    public RSkewE() {
+    }
+
     public RSkewE(Algorithm initialGraph) {
         this.initialGraph = initialGraph;
     }

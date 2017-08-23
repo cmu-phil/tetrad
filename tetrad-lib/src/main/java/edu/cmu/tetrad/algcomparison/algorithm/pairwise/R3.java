@@ -31,6 +31,9 @@ public class R3 implements Algorithm, TakesInitialGraph {
     private Algorithm initialGraph = null;
     private IKnowledge knowledge;
 
+    public R3() {
+    }
+
     public R3(Algorithm initialGraph) {
         this.initialGraph = initialGraph;
     }

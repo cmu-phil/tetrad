@@ -1,16 +1,15 @@
 package edu.cmu.tetrad.algcomparison.algorithm.pairwise;
 
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
-import edu.cmu.tetrad.data.DataModel;
-import edu.cmu.tetrad.data.DataUtils;
-import edu.cmu.tetrad.graph.EdgeListGraph;
-import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.algcomparison.utils.TakesInitialGraph;
+import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
+import edu.cmu.tetrad.data.DataUtils;
+import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.Lofs2;
-
+import edu.cmu.tetrad.util.Parameters;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -19,11 +18,6 @@ import java.util.List;
  *
  * @author jdramsey
  */
-/*@AlgorithmDescription(
-        name = "Tanh",
-        algType = AlgType.orient_pairwise,
-        oracleType = OracleType.None
-)*/
 public class Tanh implements Algorithm, TakesInitialGraph {
 
     static final long serialVersionUID = 23L;

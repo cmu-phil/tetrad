@@ -26,12 +26,15 @@ import java.util.List;
         algType = AlgType.orient_pairwise,
         oracleType = OracleType.None,
         description = "Short blurb goes here",
-                assumptions = {}
+        assumptions = {}
 )
 public class RSkew implements Algorithm, TakesInitialGraph {
 
     static final long serialVersionUID = 23L;
     private Algorithm initialGraph = null;
+
+    public RSkew() {
+    }
 
     public RSkew(Algorithm initialGraph) {
         this.initialGraph = initialGraph;

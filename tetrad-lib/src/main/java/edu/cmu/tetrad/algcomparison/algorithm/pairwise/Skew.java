@@ -26,12 +26,15 @@ import java.util.List;
         algType = AlgType.orient_pairwise,
         oracleType = OracleType.None,
         description = "Short blurb goes here",
-                assumptions = {}
+        assumptions = {}
 )
 public class Skew implements Algorithm, TakesInitialGraph {
 
     static final long serialVersionUID = 23L;
     private Algorithm initialGraph = null;
+
+    public Skew() {
+    }
 
     public Skew(Algorithm initialGraph) {
         this.initialGraph = initialGraph;

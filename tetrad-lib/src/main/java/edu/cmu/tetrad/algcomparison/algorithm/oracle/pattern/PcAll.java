@@ -40,12 +40,12 @@ public class PcAll implements Algorithm, TakesInitialGraph, HasKnowledge, TakesI
     public PcAll() {
     }
 
-    public PcAll(IndependenceWrapper type) {
-        this.test = type;
+    public PcAll(IndependenceWrapper test) {
+        this.test = test;
     }
 
-    public PcAll(IndependenceWrapper type, Algorithm initialGraph) {
-        this.test = type;
+    public PcAll(IndependenceWrapper test, Algorithm initialGraph) {
+        this.test = test;
         this.initialGraph = initialGraph;
     }
 
@@ -167,7 +167,7 @@ public class PcAll implements Algorithm, TakesInitialGraph, HasKnowledge, TakesI
 
     @Override
     public void setInitialGraph(Algorithm initialGraph) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        this.initialGraph = initialGraph;
     }
 
     @Override

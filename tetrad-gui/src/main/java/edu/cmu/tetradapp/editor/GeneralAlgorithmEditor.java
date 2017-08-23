@@ -847,9 +847,12 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         }
 
         if (algorithm instanceof TakesInitialGraph) {
-            if (runner.getSourceGraph() != null && !runner.getDataModelList().isEmpty()) {
-                ((TakesInitialGraph) algorithm).setInitialGraph(new SingleGraphAlg(runner.getSourceGraph()));
-            }
+//            if (runner.getSourceGraph() != null && !runner.getDataModelList().isEmpty()) {
+//                ((TakesInitialGraph) algorithm).setInitialGraph(new SingleGraphAlg(runner.getSourceGraph()));
+//            }
+
+            // Need to disable the if statement above, otherwise get errors - Zhou
+            ((TakesInitialGraph) algorithm).setInitialGraph(new SingleGraphAlg(runner.getSourceGraph()));
         }
 
         return algorithm;
