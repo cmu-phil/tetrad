@@ -37,7 +37,7 @@ import static java.lang.Math.*;
  *
  * @author Joseph Ramsey
  */
-public final class Fang implements GraphSearch {
+public final class Fang3 implements GraphSearch {
 
     // Elapsed time of the search, in milliseconds.
     private long elapsed = 0;
@@ -68,7 +68,7 @@ public final class Fang implements GraphSearch {
     /**
      * @param dataSet These datasets must all have the same variables, in the same order.
      */
-    public Fang(DataSet dataSet) {
+    public Fang3(DataSet dataSet) {
         this.dataSet = dataSet;
     }
 
@@ -121,8 +121,21 @@ public final class Fang implements GraphSearch {
                 double[] c1 = cov(x, y, 1, 0);
                 double[] c2 = cov(x, y, 0, 1);
 
+                double e = c1[5];
+                double f = c2[5];
+
+                double vxx = c1[8];
+                double vxy = c2[8];
+                double vyy = c2[9];
+                double vyx = c1[9];
+
+                double a = abs(e / vxx);
+                double b = abs(f / vxy);
+                double c = abs(f / vyy);
+                double d = abs(e / vyx);
+
                 if (G0.isAdjacentTo(X, Y) || abs(c1[1]) - abs(c2[1]) > .3) {
-                    double c[] = cov(x, y, 0, 0);
+                    double _c[] = cov(x, y, 0, 0);
                     double c3[] = cov(x, y, -1, 0);
                     double c4[] = cov(x, y, 0, -1);
 
@@ -130,7 +143,7 @@ public final class Fang implements GraphSearch {
                         graph.addDirectedEdge(X, Y);
                     } else if (knowledgeOrients(Y, X)) {
                         graph.addDirectedEdge(Y, X);
-                    } else if (equals(c, c1) && equals(c, c2)) {
+                    } else if (equals(_c, c1) && equals(_c, c2)) {
                         Edge edge1 = Edges.directedEdge(X, Y);
                         Edge edge2 = Edges.directedEdge(Y, X);
 
@@ -139,8 +152,8 @@ public final class Fang implements GraphSearch {
 
                         graph.addEdge(edge1);
                         graph.addEdge(edge2);
-                    } else if (!(sameSign(c, c1) && sameSign(c, c3)
-                            || (sameSign(c, c2) && sameSign(c, c4)))) {
+                    } else if (!(sameSign(_c, c1) && sameSign(_c, c3)
+                            || (sameSign(_c, c2) && sameSign(_c, c4)))) {
                         Edge edge1 = Edges.directedEdge(X, Y);
                         Edge edge2 = Edges.directedEdge(Y, X);
 
@@ -149,13 +162,10 @@ public final class Fang implements GraphSearch {
 
                         graph.addEdge(edge1);
                         graph.addEdge(edge2);
-                    } else if (abs(c1[0]) > abs(c2[0])) {
+                    } else if (a - b > c - d) {
                         graph.addDirectedEdge(X, Y);
-                    } else if (abs(c1[0]) < abs(c2[0])) {
-                        graph.addDirectedEdge(Y, X);
                     } else {
-                        graph.addUndirectedEdge(X, Y);
-
+                        graph.addDirectedEdge(Y, X);
                     }
                 }
             }
@@ -251,7 +261,7 @@ public final class Fang implements GraphSearch {
         double sx = sqrt(exx - ex * ex);
         double sy = sqrt(eyy - ey * ey);
 
-        return new double[]{sxy, sxy / (sx * sy), sx * sx, sy * sy, (double) n};
+        return new double[]{sxy, sxy / (sx * sy), sx * sx, sy * sy, (double) n, exy, exx, eyy, ex, ey};
     }
 
     /**

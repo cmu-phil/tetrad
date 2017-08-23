@@ -8,7 +8,6 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.util.Parameters;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 /**
@@ -19,26 +18,26 @@ import java.util.List;
  *
  * @author jdramsey
  */
-public class Fang implements Algorithm, HasKnowledge {
+public class Fang3 implements Algorithm, HasKnowledge {
     static final long serialVersionUID = 23L;
     private boolean empirical = false;
     private IKnowledge knowledge = new Knowledge2();
 
-    public Fang() {
+    public Fang3() {
         this.empirical = false;
     }
 
-    public Fang(boolean empirical) {
+    public Fang3(boolean empirical) {
         this.empirical = empirical;
     }
 
-    private Graph getGraph(edu.cmu.tetrad.search.Fang search) {
+    private Graph getGraph(edu.cmu.tetrad.search.Fang3 search) {
         return search.search();
     }
 
     @Override
     public Graph search(DataModel dataSet, Parameters parameters) {
-        edu.cmu.tetrad.search.Fang search = new edu.cmu.tetrad.search.Fang((DataSet) dataSet);
+        edu.cmu.tetrad.search.Fang3 search = new edu.cmu.tetrad.search.Fang3((DataSet) dataSet);
         search.setDepth(parameters.getInt("depth"));
         search.setPenaltyDiscount(parameters.getDouble("penaltyDiscount"));
         search.setAlpha(parameters.getDouble("twoCycleAlpha"));

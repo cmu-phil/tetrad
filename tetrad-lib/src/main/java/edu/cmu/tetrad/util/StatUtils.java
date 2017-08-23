@@ -2004,6 +2004,87 @@ public final class StatUtils {
         for (double xx : x) sum += xx;
         return sum;
     }
+
+    public static double[] cov(double[] x, double[] y, double[] condition, double threshold, double direction) {
+        double exy = 0.0;
+        double exx = 0.0;
+        double eyy = 0.0;
+
+        double ex = 0.0;
+        double ey = 0.0;
+
+        int n = 0;
+
+        for (int k = 0; k < x.length; k++) {
+            if (direction > threshold) {
+                if (condition[k] > threshold) {
+                    exy += x[k] * y[k];
+                    exx += x[k] * x[k];
+                    eyy += y[k] * y[k];
+                    ex += x[k];
+                    ey += y[k];
+                    n++;
+                }
+            } else if (direction < threshold) {
+                if (condition[k] > threshold) {
+                    exy += x[k] * y[k];
+                    exx += x[k] * x[k];
+                    eyy += y[k] * y[k];
+                    ex += x[k];
+                    ey += y[k];
+                    n++;
+                }
+            }
+        }
+
+        exx /= n;
+        eyy /= n;
+        exy /= n;
+        ex /= n;
+        ey /= n;
+
+        double sxy = exy - ex * ey;
+        double sx = exx - ex * ex;
+        double sy = eyy - ey * ey;
+
+        return new double[]{sxy, sxy / sqrt(sx * sy), sx, sy, (double) n};
+    }
+
+    public static double[] E(double[] x, double[] y, double[] condition, double threshold, double direction) {
+        double exy = 0.0;
+        double exx = 0.0;
+        double eyy = 0.0;
+
+        int n = 0;
+
+        for (int k = 0; k < x.length; k++) {
+            if (direction > threshold) {
+                if (condition[k] > threshold) {
+                    exy += x[k] * y[k];
+                    exx += x[k] * x[k];
+                    eyy += y[k] * y[k];
+                    n++;
+                }
+            } else if (direction < threshold) {
+                if (condition[k] > threshold) {
+                    exy += x[k] * y[k];
+                    exx += x[k] * x[k];
+                    eyy += y[k] * y[k];
+                    n++;
+                }
+            }
+        }
+
+        exx /= n;
+        eyy /= n;
+        exy /= n;
+
+        double sxy = exy;
+        double sx = exx;
+        double sy = eyy;
+
+        return new double[]{sxy, sxy / sqrt(sx * sy), sx, sy, (double) n};
+    }
 }
 
 

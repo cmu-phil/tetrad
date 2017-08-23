@@ -23,7 +23,7 @@ package edu.cmu.tetrad.test;
 
 import edu.cmu.tetrad.algcomparison.Comparison;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithms;
-import edu.cmu.tetrad.algcomparison.algorithm.multi.Fang;
+import edu.cmu.tetrad.algcomparison.algorithm.multi.Fang1;
 import edu.cmu.tetrad.algcomparison.algorithm.multi.FasLofs;
 import edu.cmu.tetrad.algcomparison.simulation.LoadContinuousDataAndSingleGraph;
 import edu.cmu.tetrad.algcomparison.simulation.Simulations;
@@ -36,7 +36,6 @@ import edu.cmu.tetrad.regression.RegressionResult;
 import edu.cmu.tetrad.search.Lofs2;
 import edu.cmu.tetrad.sem.*;
 import edu.cmu.tetrad.util.Parameters;
-import edu.cmu.tetrad.util.StatUtils;
 import org.apache.commons.math3.distribution.BetaDistribution;
 import org.apache.commons.math3.distribution.TDistribution;
 import org.junit.Test;
@@ -126,7 +125,7 @@ public class TestFang {
                 "/Users/jdramsey/Downloads/Cycles_Data_fMRI-selected/Diamond"));
 
         Algorithms algorithms = new Algorithms();
-        algorithms.add(new Fang());
+        algorithms.add(new Fang1());
 //        algorithms.add(new CcdMax(new SemBicTest()));
 
         Comparison comparison = new Comparison();
@@ -206,7 +205,7 @@ public class TestFang {
 
         Algorithms algorithms = new Algorithms();
 //        algorithms.add(new ImagesSemBic());
-        algorithms.add(new Fang());
+        algorithms.add(new Fang1());
 
         Comparison comparison = new Comparison();
 
@@ -286,7 +285,7 @@ public class TestFang {
         simulations.add(new LoadContinuousDataSmithSim(path + "28"));
 
         Algorithms algorithms = new Algorithms();
-        algorithms.add(new Fang());
+        algorithms.add(new Fang1());
         algorithms.add(new FasLofs(Lofs2.Rule.RSkew));
 
         Comparison comparison = new Comparison();

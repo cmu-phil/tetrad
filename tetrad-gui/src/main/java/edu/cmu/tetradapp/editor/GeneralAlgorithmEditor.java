@@ -207,8 +207,9 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
 //        descriptions.add(new AlgorithmDescription(AlgName.IMaGES_CCD, AlgType.forbid_latent_common_causes, OracleType.None));
 //        descriptions.add(new AlgorithmDescription(AlgName.CCD, AlgType.forbid_latent_common_causes, OracleType.Test));
 //        descriptions.add(new AlgorithmDescription(AlgName.CCD_MAX, AlgType.forbid_latent_common_causes, OracleType.Test));
-        descriptions.add(new AlgorithmDescription(AlgName.FANG, AlgType.forbid_latent_common_causes, OracleType.None));
-        descriptions.add(new AlgorithmDescription(AlgName.EFANG   , AlgType.forbid_latent_common_causes, OracleType.None));
+        descriptions.add(new AlgorithmDescription(AlgName.FANG1, AlgType.forbid_latent_common_causes, OracleType.None));
+        descriptions.add(new AlgorithmDescription(AlgName.FANG2   , AlgType.forbid_latent_common_causes, OracleType.None));
+        descriptions.add(new AlgorithmDescription(AlgName.FANG3   , AlgType.forbid_latent_common_causes, OracleType.None));
 
         descriptions.add(new AlgorithmDescription(AlgName.FCI, AlgType.allow_latent_common_causes, OracleType.Test));
         descriptions.add(new AlgorithmDescription(AlgName.RFCI, AlgType.allow_latent_common_causes, OracleType.Test));
@@ -1004,11 +1005,14 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
             case CCD_MAX:
                 algorithm = new CcdMax(independenceWrapper);
                 break;
-            case FANG:
-                algorithm = new FangConcatenated();
+            case FANG1:
+                algorithm = new Fang1();
                 break;
-            case EFANG:
-                algorithm = new FaskConcatenated();
+            case FANG2:
+                algorithm = new Fang2();
+                break;
+            case FANG3:
+                algorithm = new Fang3();
                 break;
             case FAS:
                 algorithm = new FAS(independenceWrapper);
@@ -1450,7 +1454,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         IMaGES_Discrete, IMaGES_Continuous, IMaGES_CCD,
         Bpc, Fofc, Ftfc,
         GLASSO,
-        EB, R1, R2, R3, R4, RSkew, RSkewE, Skew, SkewE, FANG, EFANG, Tahn,
+        EB, R1, R2, R3, R4, RSkew, RSkewE, Skew, SkewE, FANG1, FANG2, FANG3, Tahn,
         BootstrapFGES, BootstrapGFCI, BootstrapRFCI
     }
 

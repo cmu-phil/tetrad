@@ -31,6 +31,7 @@ import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.search.Fang1;
 import edu.cmu.tetrad.search.Fask;
 import edu.cmu.tetrad.sem.GeneralizedSemIm;
 import edu.cmu.tetrad.sem.GeneralizedSemPm;
@@ -128,7 +129,7 @@ public class TestSimulatedFmri {
 
 //        algorithms.add(new Fges(new edu.cmu.tetrad.algcomparison.score.SemBicScore(), true));
 //        algorithms.add(new PcStableMax(new SemBicTest(), true));
-//        algorithms.add(new Fang());
+//        algorithms.add(new Fang1());
 //        algorithms.add(new FasLofs(Lofs2.Rule.R1));
 //        algorithms.add(new FasLofs(Lofs2.Rule.R2));
 //        algorithms.add(new FasLofs(Lofs2.Rule.R3));
@@ -211,7 +212,7 @@ public class TestSimulatedFmri {
 
 //        algorithms.add(new Fges(new SemBicScore()));
 //        algorithms.add(new PcStableMax(new SemBicTest(), true));
-//        algorithms.add(new Fang());
+//        algorithms.add(new Fang1());
 //        algorithms.add(new FasLofs(Lofs2.Rule.R1));
 //        algorithms.add(new FasLofs(Lofs2.Rule.R2));
 //        algorithms.add(new FasLofs(Lofs2.Rule.R3));
@@ -371,7 +372,7 @@ public class TestSimulatedFmri {
         GeneralizedSemIm im = new GeneralizedSemIm(pm);
         DataSet data = im.simulateData(1000, false);
 
-        edu.cmu.tetrad.search.Fang fang = new edu.cmu.tetrad.search.Fang(data);
+        Fang1 fang = new Fang1(data);
         fang.setPenaltyDiscount(1);
         fang.setAlpha(0.5);
         Graph out = fang.search();

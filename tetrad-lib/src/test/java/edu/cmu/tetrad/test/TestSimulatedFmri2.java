@@ -131,7 +131,7 @@ public class TestSimulatedFmri2 {
 
 //        algorithms.add(new Fges(new edu.cmu.tetrad.algcomparison.score.SemBicScore(), true));
 //        algorithms.add(new PcStableMax(new SemBicTest(), true));
-//        algorithms.add(new Fang());
+//        algorithms.add(new Fang1());
 //        algorithms.add(new Fask());
 //        algorithms.add(new Fask2());
 //        algorithms.add(new FasLofs(Lofs2.Rule.R1));
