@@ -4,6 +4,8 @@ import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
+import edu.cmu.tetrad.algcomparison.utils.TakesIndependenceWrapper;
+import edu.cmu.tetrad.algcomparison.utils.UsesScoreWrapper;
 import edu.cmu.tetrad.annotation.AlgType;
 import edu.cmu.tetrad.annotation.AlgorithmDescription;
 import edu.cmu.tetrad.annotation.OracleType;
@@ -24,10 +26,10 @@ import java.util.List;
         name = "GFCI",
         algType = AlgType.allow_latent_common_causes,
         oracleType = OracleType.Both,
-        description = "Short blurb goes here" ,
-                assumptions = {}
+        description = "Short blurb goes here",
+        assumptions = {}
 )
-public class Gfci implements Algorithm, HasKnowledge {
+public class Gfci implements Algorithm, HasKnowledge, UsesScoreWrapper, TakesIndependenceWrapper {
 
     static final long serialVersionUID = 23L;
     private IndependenceWrapper test;
@@ -97,6 +99,16 @@ public class Gfci implements Algorithm, HasKnowledge {
     @Override
     public void setKnowledge(IKnowledge knowledge) {
         this.knowledge = knowledge;
+    }
+
+    @Override
+    public void setScoreWrapper(ScoreWrapper score) {
+        this.score = score;
+    }
+
+    @Override
+    public void setIndependenceWrapper(IndependenceWrapper test) {
+        this.test = test;
     }
 
 }

@@ -4,6 +4,7 @@ import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.algcomparison.utils.TakesInitialGraph;
+import edu.cmu.tetrad.algcomparison.utils.UsesScoreWrapper;
 import edu.cmu.tetrad.annotation.AlgType;
 import edu.cmu.tetrad.annotation.AlgorithmDescription;
 import edu.cmu.tetrad.annotation.OracleType;
@@ -29,13 +30,16 @@ import java.util.List;
         description = "Short blurb goes here",
         assumptions = {}
 )
-public class FgesMb implements Algorithm, TakesInitialGraph, HasKnowledge {
+public class FgesMb implements Algorithm, TakesInitialGraph, HasKnowledge, UsesScoreWrapper {
 
     static final long serialVersionUID = 23L;
     private ScoreWrapper score;
     private Algorithm initialGraph = null;
     private IKnowledge knowledge = new Knowledge2();
     private String targetName;
+
+    public FgesMb() {
+    }
 
     public FgesMb(ScoreWrapper score) {
         this.score = score;
@@ -109,5 +113,10 @@ public class FgesMb implements Algorithm, TakesInitialGraph, HasKnowledge {
     @Override
     public void setInitialGraph(Algorithm initialGraph) {
         this.initialGraph = initialGraph;
+    }
+
+    @Override
+    public void setScoreWrapper(ScoreWrapper score) {
+        this.score = score;
     }
 }

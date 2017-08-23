@@ -4,6 +4,7 @@ import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.MultiDataSetAlgorithm;
 import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
+import edu.cmu.tetrad.algcomparison.utils.UsesScoreWrapper;
 import edu.cmu.tetrad.annotation.AlgType;
 import edu.cmu.tetrad.annotation.AlgorithmDescription;
 import edu.cmu.tetrad.annotation.OracleType;
@@ -25,10 +26,10 @@ import java.util.List;
         name = "TsImages",
         algType = AlgType.allow_latent_common_causes,
         oracleType = OracleType.Test,
-        description = "Short blurb goes here"  ,
-                assumptions = {}
+        description = "Short blurb goes here",
+        assumptions = {}
 )
-public class TsImages implements Algorithm, HasKnowledge, MultiDataSetAlgorithm {
+public class TsImages implements Algorithm, HasKnowledge, MultiDataSetAlgorithm, UsesScoreWrapper {
 
     static final long serialVersionUID = 23L;
     private ScoreWrapper score;
@@ -39,10 +40,9 @@ public class TsImages implements Algorithm, HasKnowledge, MultiDataSetAlgorithm 
     }
 
     public TsImages(ScoreWrapper score) {
-        // Have to comment this out otherwise will see the popup message of this exception - Zhou
-//        if (!(score instanceof SemBicScore || score instanceof BDeuScore)) {
-//            throw new IllegalArgumentException("Only SEM BIC score or BDeu score can be used with this, sorry.");
-//        }
+        if (!(score instanceof SemBicScore || score instanceof BDeuScore)) {
+            throw new IllegalArgumentException("Only SEM BIC score or BDeu score can be used with this, sorry.");
+        }
 
         this.score = score;
     }
@@ -119,5 +119,10 @@ public class TsImages implements Algorithm, HasKnowledge, MultiDataSetAlgorithm 
         IKnowledge knowledge = dataModels.get(0).getKnowledge();
         search.setKnowledge(knowledge);
         return search.search();
+    }
+
+    @Override
+    public void setScoreWrapper(ScoreWrapper score) {
+        this.score = score;
     }
 }

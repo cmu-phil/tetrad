@@ -3,7 +3,11 @@ package edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
+import edu.cmu.tetrad.algcomparison.utils.TakesIndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.utils.TakesInitialGraph;
+import edu.cmu.tetrad.annotation.AlgType;
+import edu.cmu.tetrad.annotation.AlgorithmDescription;
+import edu.cmu.tetrad.annotation.OracleType;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.data.IKnowledge;
@@ -19,12 +23,22 @@ import java.util.List;
  *
  * @author jdramsey
  */
-public class PcAll implements Algorithm, TakesInitialGraph, HasKnowledge {
+@AlgorithmDescription(
+        name = "PC",
+        algType = AlgType.forbid_latent_common_causes,
+        oracleType = OracleType.Test,
+        description = "Short blurb goes here",
+        assumptions = {}
+)
+public class PcAll implements Algorithm, TakesInitialGraph, HasKnowledge, TakesIndependenceWrapper {
 
     static final long serialVersionUID = 23L;
     private IndependenceWrapper test;
     private Algorithm initialGraph = null;
     private IKnowledge knowledge = new Knowledge2();
+
+    public PcAll() {
+    }
 
     public PcAll(IndependenceWrapper type) {
         this.test = type;
@@ -154,5 +168,10 @@ public class PcAll implements Algorithm, TakesInitialGraph, HasKnowledge {
     @Override
     public void setInitialGraph(Algorithm initialGraph) {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public void setIndependenceWrapper(IndependenceWrapper test) {
+        this.test = test;
     }
 }

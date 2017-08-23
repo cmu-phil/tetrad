@@ -3,6 +3,7 @@ package edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
+import edu.cmu.tetrad.algcomparison.utils.TakesIndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.utils.TakesInitialGraph;
 import edu.cmu.tetrad.annotation.AlgType;
 import edu.cmu.tetrad.annotation.AlgorithmDescription;
@@ -28,9 +29,9 @@ import java.util.List;
         algType = AlgType.forbid_latent_common_causes,
         oracleType = OracleType.Test,
         description = "Short blurb goes here",
-                assumptions = {}
+        assumptions = {}
 )
-public class PcStableMax implements Algorithm, TakesInitialGraph, HasKnowledge {
+public class PcStableMax implements Algorithm, TakesInitialGraph, HasKnowledge, TakesIndependenceWrapper {
 
     static final long serialVersionUID = 23L;
     private boolean compareToTrue = false;
@@ -114,5 +115,10 @@ public class PcStableMax implements Algorithm, TakesInitialGraph, HasKnowledge {
     @Override
     public void setInitialGraph(Algorithm initialGraph) {
         this.initialGraph = initialGraph;
+    }
+
+    @Override
+    public void setIndependenceWrapper(IndependenceWrapper test) {
+        this.test = test;
     }
 }

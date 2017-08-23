@@ -3,6 +3,7 @@ package edu.cmu.tetrad.algcomparison.algorithm.oracle.pag;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
+import edu.cmu.tetrad.algcomparison.utils.TakesIndependenceWrapper;
 import edu.cmu.tetrad.annotation.AlgType;
 import edu.cmu.tetrad.annotation.AlgorithmDescription;
 import edu.cmu.tetrad.annotation.OracleType;
@@ -25,10 +26,10 @@ import java.util.List;
         name = "RFCI",
         algType = AlgType.allow_latent_common_causes,
         oracleType = OracleType.Test,
-        description = "Short blurb goes here" ,
-                assumptions = {}
+        description = "Short blurb goes here",
+        assumptions = {}
 )
-public class Rfci implements Algorithm, HasKnowledge {
+public class Rfci implements Algorithm, HasKnowledge, TakesIndependenceWrapper {
 
     static final long serialVersionUID = 23L;
     private IndependenceWrapper test;
@@ -82,5 +83,10 @@ public class Rfci implements Algorithm, HasKnowledge {
     @Override
     public void setKnowledge(IKnowledge knowledge) {
         this.knowledge = knowledge;
+    }
+
+    @Override
+    public void setIndependenceWrapper(IndependenceWrapper test) {
+        this.test = test;
     }
 }
