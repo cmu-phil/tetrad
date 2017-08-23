@@ -831,6 +831,14 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         return algorithm;
     }
 
+    /**
+     * Initialize algorithm
+     *
+     * @param name
+     * @param independenceWrapper
+     * @param scoreWrapper
+     * @return
+     */
     private Algorithm getAlgorithm(String name, IndependenceWrapper independenceWrapper, ScoreWrapper scoreWrapper) {
 
         Algorithm algorithm = AlgorithmDescriptionFactory.getInstance().getAlgorithmByName(name);
@@ -847,12 +855,20 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         }
 
         if (algorithm instanceof TakesInitialGraph) {
-//            if (runner.getSourceGraph() != null && !runner.getDataModelList().isEmpty()) {
-//                ((TakesInitialGraph) algorithm).setInitialGraph(new SingleGraphAlg(runner.getSourceGraph()));
-//            }
+            Algorithm initialGraph = null;
 
-            // Need to disable the if statement above, otherwise get errors - Zhou
-            ((TakesInitialGraph) algorithm).setInitialGraph(new SingleGraphAlg(runner.getSourceGraph()));
+            // Those pairwise algos (EB, R1, R2,..) require source graph to initialize - Zhou
+            if (runner.getSourceGraph() != null && !runner.getDataModelList().isEmpty()) {
+                initialGraph = new SingleGraphAlg(runner.getSourceGraph());
+            }
+
+            // Capture the error message and show in a dialog - Zhou
+            try {
+                ((TakesInitialGraph) algorithm).setInitialGraph(initialGraph);
+            } catch (Exception e) {
+                JOptionPane.showMessageDialog(desktop, e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+            }
+
         }
 
         return algorithm;
