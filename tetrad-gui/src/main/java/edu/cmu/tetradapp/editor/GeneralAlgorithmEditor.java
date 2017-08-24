@@ -1613,10 +1613,6 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         return parameters;
     }
 
-    private AlgType getAlgType() {
-        return AlgType.valueOf(parameters.getString("algType", "ALL").replace(" ", "_"));
-    }
-
     private void setAlgType(String algType) {
         parameters.set("algType", algType.replace(" ", "_"));
     }
