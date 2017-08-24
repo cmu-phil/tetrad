@@ -1,13 +1,19 @@
 package edu.cmu.tetrad.algcomparison.algorithm.oracle.pag;
 
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
+import edu.cmu.tetrad.algcomparison.independence.ChiSquare;
+import edu.cmu.tetrad.algcomparison.independence.ConditionalGaussianLRT;
+import edu.cmu.tetrad.algcomparison.independence.FisherZ;
 import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.data.DataModel;
+import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.IKnowledge;
 import edu.cmu.tetrad.data.Knowledge2;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.util.Parameters;
+import edu.pitt.dbmi.algo.bootstrap.BootstrapEdgeEnsemble;
+import edu.pitt.dbmi.algo.bootstrap.GeneralBootstrapTest;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.DagToPag;
@@ -30,12 +36,46 @@ public class Rfci implements Algorithm, HasKnowledge {
 
     @Override
     public Graph search(DataModel dataSet, Parameters parameters) {
-        edu.cmu.tetrad.search.Rfci search = new edu.cmu.tetrad.search.Rfci(test.getTest(dataSet, parameters));
-        search.setKnowledge(knowledge);
-        search.setDepth(parameters.getInt("depth"));
-        search.setMaxPathLength(parameters.getInt("maxPathLength"));
-        search.setCompleteRuleSetUsed(parameters.getBoolean("completeRuleSetUsed"));
-        return search.search();
+    	if(!parameters.getBoolean("bootstrapping")){
+            edu.cmu.tetrad.search.Rfci search = new edu.cmu.tetrad.search.Rfci(test.getTest(dataSet, parameters));
+            search.setKnowledge(knowledge);
+            search.setDepth(parameters.getInt("depth"));
+            search.setMaxPathLength(parameters.getInt("maxPathLength"));
+            search.setCompleteRuleSetUsed(parameters.getBoolean("completeRuleSetUsed"));
+            return search.search();
+    	}else{
+        	IndependenceWrapper test = null;
+        	if(dataSet.isContinuous()){
+        		test = new FisherZ();
+        	}else if(dataSet.isDiscrete()){
+        		test = new ChiSquare();
+        	}else{
+        		test = new ConditionalGaussianLRT();
+        	}
+        	Rfci algorithm = new Rfci(test);
+        	algorithm.setKnowledge(knowledge);
+        	DataSet data = (DataSet) dataSet;
+//          if (initialGraph != null) {
+//      		algorithm.setInitialGraph(initialGraph);
+//  		}
+    		GeneralBootstrapTest search = new GeneralBootstrapTest(data, algorithm, parameters.getInt("bootstrapSampleSize"));
+    		
+    		BootstrapEdgeEnsemble edgeEnsemble = BootstrapEdgeEnsemble.Highest;
+    		switch (parameters.getInt("bootstrapEnsemble", 1)) {
+    		case 0:
+    			edgeEnsemble = BootstrapEdgeEnsemble.Preserved;
+    			break;
+    		case 1:
+    			edgeEnsemble = BootstrapEdgeEnsemble.Highest;
+    			break;
+    		case 2:
+    			edgeEnsemble = BootstrapEdgeEnsemble.Majority;
+    		}
+    		search.setEdgeEnsemble(edgeEnsemble);
+    		search.setParameters(parameters);    		
+    		search.setVerbose(parameters.getBoolean("verbose"));
+    		return search.search();
+    	}
     }
 
     @Override
@@ -58,6 +98,11 @@ public class Rfci implements Algorithm, HasKnowledge {
         parameters.add("depth");
         parameters.add("maxPathLength");
         parameters.add("completeRuleSetUsed");
+        // Bootstrapping
+        parameters.add("bootstrapping");
+        parameters.add("bootstrapSampleSize");
+        parameters.add("bootstrapEnsemble");
+        parameters.add("verbose");
         return parameters;
     }
 

@@ -2,7 +2,6 @@ package edu.pitt.dbmi.algo.bootstrap;
 
 import java.io.PrintStream;
 import java.util.ArrayList;
-//import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -18,21 +17,22 @@ import edu.cmu.tetrad.graph.Graph;
 //MP: These libraries are required for multi-threading
 import edu.cmu.tetrad.util.ForkJoinPoolInstance;
 import edu.cmu.tetrad.util.Parameters;
-//import edu.pitt.dbmi.algo.bootstrap.task.BootstrapDatasetAction;
 import edu.pitt.dbmi.algo.bootstrap.task.BootstrapSearchAction;
-import edu.pitt.dbmi.algo.bootstrap.task.BootstrapSearchRunnable;
+import edu.pitt.dbmi.algo.bootstrap.task.GeneralBootstrapSearchAction;
+import edu.pitt.dbmi.algo.bootstrap.task.GeneralBootstrapSearchRunnable;
 
 /**
  * Chirayu Kong Wongchokprasitti, PhD
  * 
  */
-public class GenericBootstrapSearch {
+public class GeneralBootstrapSearch {
 
 	private Algorithm algorithm;
 	private int numBootstrap = 1;
 	private boolean runParallel = false;
 	private boolean verbose = false;
 	private List<Graph> PAGs = new ArrayList<>();
+	//private ForkJoinPool pool = null;
 	private final ExecutorService pool;
 	private DataSet data = null;
 
@@ -43,8 +43,6 @@ public class GenericBootstrapSearch {
 
 	private PrintStream out = System.out;
 
-	//private final List<DataSet> bootstrapDatasets = Collections.synchronizedList(new ArrayList<DataSet>());
-
 	private Parameters parameters;
 
 	/**
@@ -52,8 +50,9 @@ public class GenericBootstrapSearch {
 	 */
 	private Graph initialGraph = null;
 
-	public GenericBootstrapSearch(DataSet data) {
+	public GeneralBootstrapSearch(DataSet data) {
 		this.data = data;
+		//pool = ForkJoinPoolInstance.getInstance().getPool();
 		pool = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
 	}
 
@@ -146,9 +145,10 @@ public class GenericBootstrapSearch {
 	}
 
 	public List<Graph> search() {
-
+		
 		PAGs.clear();
-
+		parameters.set("bootstrapping", false);
+		
 		long start, stop;
 		if (!this.runParallel) {
 			// Running in the sequential form
@@ -159,13 +159,15 @@ public class GenericBootstrapSearch {
 				start = System.currentTimeMillis();
 
 	            DataSet dataSet = DataUtils.getBootstrapSample(data, data.getNumRows()); 
-				BootstrapSearchRunnable task = new BootstrapSearchRunnable(dataSet, algorithm, parameters, this, verbose);
+				GeneralBootstrapSearchRunnable task = new GeneralBootstrapSearchRunnable(dataSet, algorithm, parameters, this, verbose);
+				//GeneralBootstrapSearchAction task = new GeneralBootstrapSearchAction(i1, 1, algorithm, parameters, this, verbose);
 				if(initialGraph != null){
 					task.setInitialGraph(initialGraph);
 				}
 				task.setKnowledge(knowledge);
 				task.run();
-
+				//task.compute();
+				
 				stop = System.currentTimeMillis();
 				if (verbose) {
 					out.println("processing time of bootstrap : " + (stop - start) / 1000.0 + " sec");
@@ -177,9 +179,13 @@ public class GenericBootstrapSearch {
 				out.println("Running Bootstraps in Parallel Mode, numBoostrap = " + numBootstrap);
 			}
 
+			//GeneralBootstrapSearchAction task = new GeneralBootstrapSearchAction(0, numBootstrap, algorithm, parameters, this, verbose);
+			//task.setKnowledge(knowledge);
+			//pool.invoke(task);
+			
 			for (int i1 = 0; i1 < this.numBootstrap; i1++) {
 				DataSet dataSet = DataUtils.getBootstrapSample(data, data.getNumRows()); 
-				BootstrapSearchRunnable task = new BootstrapSearchRunnable(dataSet, algorithm, parameters, this, verbose);
+				GeneralBootstrapSearchRunnable task = new GeneralBootstrapSearchRunnable(dataSet, algorithm, parameters, this, verbose);
 				if(initialGraph != null){
 					task.setInitialGraph(initialGraph);
 				}
@@ -189,16 +195,20 @@ public class GenericBootstrapSearch {
 			
 			pool.shutdown();
 			
-			if(!pool.isTerminated()){
+			while(!pool.isTerminated()){
 				try {
 					Thread.sleep(1000);
+					//out.println("Waiting...");
 				} catch (InterruptedException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
 			}
-			
+			//out.println("Is terminated: " + pool.isTerminated());
 		}
+		
+		parameters.set("bootstrapping", true);
+		
 		return PAGs;
 	}
 

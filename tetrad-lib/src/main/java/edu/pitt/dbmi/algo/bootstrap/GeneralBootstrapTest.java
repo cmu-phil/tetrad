@@ -21,11 +21,11 @@ import java.util.Map;
  * Updated: Chirayu Kong Wongchokprasitti, PhD on 4/5/2017
  * 
  */
-public class GenericBootstrapTest {
+public class GeneralBootstrapTest {
 
 	private PrintStream out = System.out;
 
-	private final GenericBootstrapSearch bootstrapSearch;
+	private final GeneralBootstrapSearch bootstrapSearch;
 
 	private Parameters parameters;
 
@@ -150,14 +150,14 @@ public class GenericBootstrapTest {
 		RandomUtil.getInstance().setSeed(seed);
 	}
 
-	public GenericBootstrapTest(DataSet data, Algorithm algorithm) {
+	public GeneralBootstrapTest(DataSet data, Algorithm algorithm) {
 		this.algorithm = algorithm;
-		bootstrapSearch = new GenericBootstrapSearch(data);
+		bootstrapSearch = new GeneralBootstrapSearch(data);
 	}
 
-	public GenericBootstrapTest(DataSet data, Algorithm algorithm, int numBootstrapSamples) {
+	public GeneralBootstrapTest(DataSet data, Algorithm algorithm, int numBootstrapSamples) {
 		this.algorithm = algorithm;
-		bootstrapSearch = new GenericBootstrapSearch(data);
+		bootstrapSearch = new GeneralBootstrapSearch(data);
 		bootstrapSearch.setNumOfBootstrap(numBootstrapSamples);
 	}
 
@@ -215,6 +215,7 @@ public class GenericBootstrapTest {
 
 	private Graph generateBootstrapGraph() {
 		Graph pag = null;
+		System.out.println("PAGs: " + PAGs.size());
 		for (Graph g : PAGs) {
 			if (g != null) {
 				pag = g;

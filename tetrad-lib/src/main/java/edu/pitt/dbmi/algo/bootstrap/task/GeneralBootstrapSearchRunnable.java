@@ -8,7 +8,7 @@ import edu.cmu.tetrad.data.IKnowledge;
 import edu.cmu.tetrad.data.Knowledge2;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.util.Parameters;
-import edu.pitt.dbmi.algo.bootstrap.GenericBootstrapSearch;
+import edu.pitt.dbmi.algo.bootstrap.GeneralBootstrapSearch;
 
 /**
  * 
@@ -17,7 +17,7 @@ import edu.pitt.dbmi.algo.bootstrap.GenericBootstrapSearch;
  * @author Chirayu (Kong) Wongchokprasitti, PhD
  * 
  */
-public class BootstrapSearchRunnable implements Runnable {
+public class GeneralBootstrapSearchRunnable implements Runnable {
 
 	private DataSet dataSet;
 
@@ -25,7 +25,7 @@ public class BootstrapSearchRunnable implements Runnable {
 	
 	private Parameters parameters;
 
-	private final GenericBootstrapSearch bootstrapAlgorithmSearch;
+	private final GeneralBootstrapSearch bootstrapAlgorithmSearch;
 
 	private boolean verbose;
 
@@ -41,8 +41,8 @@ public class BootstrapSearchRunnable implements Runnable {
 
 	private PrintStream out = System.out;
 
-	public BootstrapSearchRunnable(DataSet dataSet, Algorithm algorithm, Parameters parameters,
-			GenericBootstrapSearch bootstrapAlgorithmSearch, boolean verbose){
+	public GeneralBootstrapSearchRunnable(DataSet dataSet, Algorithm algorithm, Parameters parameters,
+			GeneralBootstrapSearch bootstrapAlgorithmSearch, boolean verbose){
 		this.dataSet = dataSet;
 		this.algorithm = algorithm;
 		this.parameters = parameters;
@@ -50,10 +50,6 @@ public class BootstrapSearchRunnable implements Runnable {
 		this.verbose = verbose;
 	}
 	
-	public Graph learnGraph() {
-		return algorithm.search(dataSet, parameters);
-	}
-
 	/**
 	 * @return the background knowledge.
 	 */
@@ -100,13 +96,14 @@ public class BootstrapSearchRunnable implements Runnable {
 
 	@Override
 	public void run() {
+		//System.out.println("#dataSet rows: " + dataSet.getNumRows());
+		
 		long start, stop;
 		start = System.currentTimeMillis();
 		if (verbose) {
 			out.println("thread started ... ");
 		}
 
-		//algorithm.setKnowledge(knowledge);
 		Graph graph = algorithm.search(dataSet, parameters);
 
 		stop = System.currentTimeMillis();

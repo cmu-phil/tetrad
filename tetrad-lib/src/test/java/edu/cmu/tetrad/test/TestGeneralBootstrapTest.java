@@ -47,7 +47,7 @@ import edu.cmu.tetrad.sem.LargeScaleSimulation;
 import edu.cmu.tetrad.util.Parameters;
 import edu.pitt.dbmi.algo.bootstrap.BootstrapEdgeEnsemble;
 import edu.pitt.dbmi.algo.bootstrap.BootstrapTest;
-import edu.pitt.dbmi.algo.bootstrap.GenericBootstrapTest;
+import edu.pitt.dbmi.algo.bootstrap.GeneralBootstrapTest;
 
 /**
  * 
@@ -56,7 +56,7 @@ import edu.pitt.dbmi.algo.bootstrap.GenericBootstrapTest;
  * @author Chirayu Kong Wongchokprasitti, PhD (chw20@pitt.edu)
  *
  */
-public class TestGenericBootstrapTest {
+public class TestGeneralBootstrapTest {
 
 	/**
 	 * @param args
@@ -108,7 +108,7 @@ public class TestGenericBootstrapTest {
 		ScoreWrapper score = new SemBicScore();
 		Algorithm algorithm = new Fges(score);
 
-		GenericBootstrapTest bootstrapTest = new GenericBootstrapTest(data, algorithm, numBootstrapSamples);
+		GeneralBootstrapTest bootstrapTest = new GeneralBootstrapTest(data, algorithm, numBootstrapSamples);
 		bootstrapTest.setVerbose(verbose);
 		bootstrapTest.setParameters(parameters);
 		bootstrapTest.setEdgeEnsemble(BootstrapEdgeEnsemble.Highest);
@@ -138,7 +138,7 @@ public class TestGenericBootstrapTest {
 		int numLatentConfounders = 0;
 		int numCases = 50;
 		int numBootstrapSamples = 5;
-		boolean verbose = false;
+		boolean verbose = true;
 		long seed = 123;
 
 		Graph dag = makeDiscreteDAG(numVars, numLatentConfounders, edgesPerNode);
@@ -162,7 +162,7 @@ public class TestGenericBootstrapTest {
 		ScoreWrapper score = new BdeuScore();
 		Algorithm algorithm = new Fges(score);
 		
-		GenericBootstrapTest bootstrapTest = new GenericBootstrapTest(data, algorithm, numBootstrapSamples);
+		GeneralBootstrapTest bootstrapTest = new GeneralBootstrapTest(data, algorithm, numBootstrapSamples);
 		bootstrapTest.setVerbose(verbose);
 		bootstrapTest.setParameters(parameters);
 		bootstrapTest.setEdgeEnsemble(BootstrapEdgeEnsemble.Highest);
@@ -192,7 +192,7 @@ public class TestGenericBootstrapTest {
 		int numLatentConfounders = 2;
 		int numCases = 50;
 		int numBootstrapSamples = 5;
-		boolean verbose = false;
+		boolean verbose = true;
 
 		Graph dag = makeContinuousDAG(numVars, numLatentConfounders, edgesPerNode);
 
@@ -223,7 +223,7 @@ public class TestGenericBootstrapTest {
 		IndependenceWrapper test =  new FisherZ();
 		Algorithm algorithm = new Gfci(test, score);
 		
-		GenericBootstrapTest bootstrapTest = new GenericBootstrapTest(data, algorithm, numBootstrapSamples);
+		GeneralBootstrapTest bootstrapTest = new GeneralBootstrapTest(data, algorithm, numBootstrapSamples);
 		bootstrapTest.setVerbose(verbose);
 		bootstrapTest.setParameters(parameters);
 		bootstrapTest.setEdgeEnsemble(BootstrapEdgeEnsemble.Highest);
@@ -253,7 +253,7 @@ public class TestGenericBootstrapTest {
 		int numLatentConfounders = 4;
 		int numCases = 50;
 		int numBootstrapSamples = 5;
-		boolean verbose = false;
+		boolean verbose = true;
 		long seed = 123;
 
 		Graph dag = makeDiscreteDAG(numVars, numLatentConfounders, edgesPerNode);
@@ -281,7 +281,7 @@ public class TestGenericBootstrapTest {
 		IndependenceWrapper test =  new ChiSquare();
 		Algorithm algorithm = new Gfci(test, score);
 		
-		GenericBootstrapTest bootstrapTest = new GenericBootstrapTest(data, algorithm, numBootstrapSamples);
+		GeneralBootstrapTest bootstrapTest = new GeneralBootstrapTest(data, algorithm, numBootstrapSamples);
 		bootstrapTest.setVerbose(verbose);
 		bootstrapTest.setParameters(parameters);
 		bootstrapTest.setEdgeEnsemble(BootstrapEdgeEnsemble.Highest);
@@ -311,7 +311,7 @@ public class TestGenericBootstrapTest {
 		int numLatentConfounders = 2;
 		int numCases = 50;
 		int numBootstrapSamples = 5;
-		boolean verbose = false;
+		boolean verbose = true;
 
 		Graph dag = makeContinuousDAG(numVars, numLatentConfounders, edgesPerNode);
 
@@ -339,12 +339,13 @@ public class TestGenericBootstrapTest {
 		parameters.set("verbose", verbose);
 		
 		IndependenceWrapper test =  new FisherZ();
-		Algorithm algorithm = new Fci(test);
+		Fci algorithm = new Fci(test);
 		
-		GenericBootstrapTest bootstrapTest = new GenericBootstrapTest(data, algorithm, numBootstrapSamples);
+		GeneralBootstrapTest bootstrapTest = new GeneralBootstrapTest(data, algorithm, numBootstrapSamples);
 		bootstrapTest.setVerbose(verbose);
 		bootstrapTest.setParameters(parameters);
-		bootstrapTest.setEdgeEnsemble(BootstrapEdgeEnsemble.Highest);
+		bootstrapTest.setEdgeEnsemble(BootstrapEdgeEnsemble.Preserved);
+		//bootstrapTest.setParallelMode(false);
 		Graph resultGraph = bootstrapTest.search();
 		System.out.println("Estimated PAG_of_the_true_DAG Graph:");
 		System.out.println(resultGraph.toString());
@@ -371,7 +372,7 @@ public class TestGenericBootstrapTest {
 		int numLatentConfounders = 4;
 		int numCases = 50;
 		int numBootstrapSamples = 5;
-		boolean verbose = false;
+		boolean verbose = true;
 		long seed = 123;
 
 		Graph dag = makeDiscreteDAG(numVars, numLatentConfounders, edgesPerNode);
@@ -398,7 +399,7 @@ public class TestGenericBootstrapTest {
 		IndependenceWrapper test =  new ChiSquare();
 		Algorithm algorithm = new Fci(test);
 		
-		GenericBootstrapTest bootstrapTest = new GenericBootstrapTest(data, algorithm, numBootstrapSamples);
+		GeneralBootstrapTest bootstrapTest = new GeneralBootstrapTest(data, algorithm, numBootstrapSamples);
 		bootstrapTest.setVerbose(verbose);
 		bootstrapTest.setParameters(parameters);
 		bootstrapTest.setEdgeEnsemble(BootstrapEdgeEnsemble.Highest);

@@ -1,10 +1,17 @@
 package edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern;
 
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
+import edu.cmu.tetrad.algcomparison.independence.ChiSquare;
+import edu.cmu.tetrad.algcomparison.independence.ConditionalGaussianLRT;
+import edu.cmu.tetrad.algcomparison.independence.FisherZ;
+import edu.cmu.tetrad.algcomparison.score.BdeuScore;
+import edu.cmu.tetrad.algcomparison.score.ConditionalGaussianBicScore;
 import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
+import edu.cmu.tetrad.algcomparison.score.SemBicScore;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.algcomparison.utils.TakesInitialGraph;
 import edu.cmu.tetrad.data.DataModel;
+import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.data.IKnowledge;
 import edu.cmu.tetrad.data.Knowledge2;
@@ -12,6 +19,9 @@ import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.SearchGraphUtils;
 import edu.cmu.tetrad.util.Parameters;
+import edu.pitt.dbmi.algo.bootstrap.BootstrapEdgeEnsemble;
+import edu.pitt.dbmi.algo.bootstrap.GeneralBootstrapTest;
+
 import java.io.PrintStream;
 import java.util.List;
 
@@ -50,24 +60,59 @@ public class Fges implements Algorithm, TakesInitialGraph, HasKnowledge {
         	initialGraph = algorithm.search(dataSet, parameters);
         }
 
-        edu.cmu.tetrad.search.Fges search
-                = new edu.cmu.tetrad.search.Fges(score.getScore(dataSet, parameters));
-        search.setFaithfulnessAssumed(parameters.getBoolean("faithfulnessAssumed"));
-        search.setKnowledge(knowledge);
-        search.setVerbose(parameters.getBoolean("verbose"));
-        search.setMaxDegree(parameters.getInt("maxDegree"));
-        search.setSymmetricFirstStep(parameters.getBoolean("symmetricFirstStep"));
-
-        Object obj = parameters.get("printStream");
-        if (obj instanceof PrintStream) {
-            search.setOut((PrintStream) obj);
+        if(!parameters.getBoolean("bootstrapping")){
+            edu.cmu.tetrad.search.Fges search
+		            = new edu.cmu.tetrad.search.Fges(score.getScore(dataSet, parameters));
+		    search.setFaithfulnessAssumed(parameters.getBoolean("faithfulnessAssumed"));
+		    search.setKnowledge(knowledge);
+		    search.setVerbose(parameters.getBoolean("verbose"));
+		    search.setMaxDegree(parameters.getInt("maxDegree"));
+		    search.setSymmetricFirstStep(parameters.getBoolean("symmetricFirstStep"));
+		
+		    Object obj = parameters.get("printStream");
+		    if (obj instanceof PrintStream) {
+		        search.setOut((PrintStream) obj);
+		    }
+		
+		    if (initialGraph != null) {
+		        search.setInitialGraph(initialGraph);
+		    }
+		
+		    return search.search();
+        }else{
+        	ScoreWrapper score = null;
+        	DataSet data = (DataSet) dataSet;
+        	if(dataSet.isContinuous()){
+        		score = new SemBicScore();
+        	}else if(dataSet.isDiscrete()){
+        		score = new BdeuScore();
+        	}else{
+        		score = new ConditionalGaussianBicScore();
+        	}
+        	Fges algorithm = new Fges(score);
+    		algorithm.setKnowledge(knowledge);
+//          if (initialGraph != null) {
+//      		algorithm.setInitialGraph(initialGraph);
+//  		}
+    		GeneralBootstrapTest search = new GeneralBootstrapTest(data, algorithm, parameters.getInt("bootstrapSampleSize"));
+    		
+    		BootstrapEdgeEnsemble edgeEnsemble = BootstrapEdgeEnsemble.Highest;
+    		switch (parameters.getInt("bootstrapEnsemble", 1)) {
+    		case 0:
+    			edgeEnsemble = BootstrapEdgeEnsemble.Preserved;
+    			break;
+    		case 1:
+    			edgeEnsemble = BootstrapEdgeEnsemble.Highest;
+    			break;
+    		case 2:
+    			edgeEnsemble = BootstrapEdgeEnsemble.Majority;
+    		}
+    		search.setEdgeEnsemble(edgeEnsemble);
+    		search.setParameters(parameters);    		
+    		search.setVerbose(parameters.getBoolean("verbose"));
+    		return search.search();
         }
-
-        if (initialGraph != null) {
-            search.setInitialGraph(initialGraph);
-        }
-
-        return search.search();
+        
     }
 
     @Override
@@ -96,6 +141,10 @@ public class Fges implements Algorithm, TakesInitialGraph, HasKnowledge {
         parameters.add("symmetricFirstStep");
         parameters.add("maxDegree");
         parameters.add("verbose");
+        // Bootstrapping
+        parameters.add("bootstrapping");
+        parameters.add("bootstrapSampleSize");
+        parameters.add("bootstrapEnsemble");
         return parameters;
     }
 

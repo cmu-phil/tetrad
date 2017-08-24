@@ -1,15 +1,22 @@
 package edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern;
 
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
+import edu.cmu.tetrad.algcomparison.algorithm.oracle.pag.Fci;
+import edu.cmu.tetrad.algcomparison.independence.ChiSquare;
+import edu.cmu.tetrad.algcomparison.independence.ConditionalGaussianLRT;
+import edu.cmu.tetrad.algcomparison.independence.FisherZ;
 import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.data.DataModel;
+import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.IKnowledge;
 import edu.cmu.tetrad.data.Knowledge2;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.search.*;
 import edu.cmu.tetrad.search.PcAll;
 import edu.cmu.tetrad.util.Parameters;
+import edu.pitt.dbmi.algo.bootstrap.BootstrapEdgeEnsemble;
+import edu.pitt.dbmi.algo.bootstrap.GeneralBootstrapTest;
 import edu.cmu.tetrad.algcomparison.utils.TakesInitialGraph;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.graph.Graph;
@@ -42,14 +49,50 @@ public class Pc implements Algorithm, TakesInitialGraph, HasKnowledge {
         if (algorithm != null) {
         	initialGraph = algorithm.search(dataSet, parameters);
         }
-        edu.cmu.tetrad.search.PcAll search = new edu.cmu.tetrad.search.PcAll(test.getTest(dataSet, parameters), initialGraph);
-        search.setDepth(parameters.getInt("depth"));
-        search.setKnowledge(knowledge);
-        search.setFasRule(PcAll.FasRule.FAS);
-        search.setColliderDiscovery(PcAll.ColliderDiscovery.FAS_SEPSETS);
-        search.setConflictRule(PcAll.ConflictRule.PRIORITY);
-        search.setVerbose(parameters.getBoolean("verbose"));
-        return search.search();
+        if(!parameters.getBoolean("bootstrapping")){
+            edu.cmu.tetrad.search.PcAll search = new edu.cmu.tetrad.search.PcAll(test.getTest(dataSet, parameters), initialGraph);
+            search.setDepth(parameters.getInt("depth"));
+            search.setKnowledge(knowledge);
+            search.setFasRule(PcAll.FasRule.FAS);
+            search.setColliderDiscovery(PcAll.ColliderDiscovery.FAS_SEPSETS);
+            search.setConflictRule(PcAll.ConflictRule.PRIORITY);
+            search.setVerbose(parameters.getBoolean("verbose"));
+            return search.search();
+        }else{
+        	IndependenceWrapper test = null;
+        	if(dataSet.isContinuous()){
+        		test = new FisherZ();
+        	}else if(dataSet.isDiscrete()){
+        		test = new ChiSquare();
+        	}else{
+        		test = new ConditionalGaussianLRT();
+        	}
+    		Pc algorithm = new Pc(test);
+    		algorithm.setKnowledge(knowledge);
+//          if (initialGraph != null) {
+//      		algorithm.setInitialGraph(initialGraph);
+//  		}
+
+    		DataSet data = (DataSet) dataSet;
+    		
+    		GeneralBootstrapTest search = new GeneralBootstrapTest(data, algorithm, parameters.getInt("bootstrapSampleSize"));
+    		
+    		BootstrapEdgeEnsemble edgeEnsemble = BootstrapEdgeEnsemble.Highest;
+    		switch (parameters.getInt("bootstrapEnsemble", 1)) {
+    		case 0:
+    			edgeEnsemble = BootstrapEdgeEnsemble.Preserved;
+    			break;
+    		case 1:
+    			edgeEnsemble = BootstrapEdgeEnsemble.Highest;
+    			break;
+    		case 2:
+    			edgeEnsemble = BootstrapEdgeEnsemble.Majority;
+    		}
+    		search.setEdgeEnsemble(edgeEnsemble);
+    		search.setParameters(parameters);    		
+    		search.setVerbose(parameters.getBoolean("verbose"));
+    		return search.search();
+        }
     }
 
     @Override
@@ -74,6 +117,10 @@ public class Pc implements Algorithm, TakesInitialGraph, HasKnowledge {
         List<String> parameters = test.getParameters();
         parameters.add("depth");
         parameters.add("verbose");
+        // Bootstrapping
+        parameters.add("bootstrapping");
+        parameters.add("bootstrapSampleSize");
+        parameters.add("bootstrapEnsemble");
         return parameters;
     }
 
