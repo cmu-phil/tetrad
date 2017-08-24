@@ -81,7 +81,6 @@ import javax.swing.*;
 import javax.swing.border.CompoundBorder;
 import javax.swing.border.EmptyBorder;
 import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
 import org.apache.commons.lang3.StringUtils;
 
 /**
@@ -327,18 +326,15 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
             algoTypesBox.add(algoTypeOptionBox);
 
             // Event listener on each radio button
-            algoTypeRadioBtn.addActionListener(new ActionListener() {
-                @Override
-                public void actionPerformed(ActionEvent actionEvent) {
-                    JRadioButton button = (JRadioButton) actionEvent.getSource();
+            algoTypeRadioBtn.addActionListener((ActionEvent actionEvent) -> {
+                JRadioButton button = (JRadioButton) actionEvent.getSource();
 
-                    if (button.isSelected()) {
-                        // Update the selected algo type
-                        selectedAlgoType = AlgType.valueOf(button.getText().replace(" ", "_"));
+                if (button.isSelected()) {
+                    // Update the selected algo type
+                    selectedAlgoType = AlgType.valueOf(button.getText().replace(" ", "_"));
 
-                        // Update the list
-                        updateSuggestedAlgosList();
-                    }
+                    // Update the list
+                    updateSuggestedAlgosList();
                 }
             });
         }
@@ -355,29 +351,26 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         setDefaultSelectedAlgo();
 
         // Event listener
-        suggestedAlgosList.addListSelectionListener(new ListSelectionListener() {
-            @Override
-            public void valueChanged(ListSelectionEvent e) {
-                // More about why use getValueIsAdjusting()
-                // http://docs.oracle.com/javase/8/docs/api/javax/swing/ListSelectionModel.html#getValueIsAdjusting--
-                if (!e.getValueIsAdjusting()) {
-                    // After selecting a different algo type, even though we set the selection index,
-                    // but it won't be captured here - Zhou
-                    // Seems this only captures mouse selection
-                    if (suggestedAlgosList.getSelectedValue() == null) {
-                        return;
-                    }
-
-                    selectedAlgoName = suggestedAlgosList.getSelectedValue().toString();
-
-                    System.out.println("Selected algo ..." + selectedAlgoName);
-
-                    // Reset description
-                    setAlgoDescriptionContent();
-
-                    // Finally, update the test and score dropdown menus
-                    setAlgorithm();
+        suggestedAlgosList.addListSelectionListener((ListSelectionEvent e) -> {
+            // More about why use getValueIsAdjusting()
+            // http://docs.oracle.com/javase/8/docs/api/javax/swing/ListSelectionModel.html#getValueIsAdjusting--
+            if (!e.getValueIsAdjusting()) {
+                // After selecting a different algo type, even though we set the selection index,
+                // but it won't be captured here - Zhou
+                // Seems this only captures mouse selection
+                if (suggestedAlgosList.getSelectedValue() == null) {
+                    return;
                 }
+
+                selectedAlgoName = suggestedAlgosList.getSelectedValue().toString();
+
+                System.out.println("Selected algo ..." + selectedAlgoName);
+
+                // Reset description
+                setAlgoDescriptionContent();
+
+                // Finally, update the test and score dropdown menus
+                setAlgorithm();
             }
         });
 
@@ -392,18 +385,12 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         testDropdown.setEnabled(parameters.getBoolean("testEnabled", true));
         scoreDropdown.setEnabled(parameters.getBoolean("scoreEnabled", false));
 
-        testDropdown.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                setAlgorithm();
-            }
+        testDropdown.addActionListener((ActionEvent e) -> {
+            setAlgorithm();
         });
 
-        scoreDropdown.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                setAlgorithm();
-            }
+        scoreDropdown.addActionListener((ActionEvent e) -> {
+            setAlgorithm();
         });
 
         // Embed the algo chooser panel into EditorWindow
@@ -1156,18 +1143,15 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         JRadioButton priorKnowledgeYes = new JRadioButton("Yes");
 
         // Event listener
-        priorKnowledgeYes.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent actionEvent) {
-                JRadioButton button = (JRadioButton) actionEvent.getSource();
+        priorKnowledgeYes.addActionListener((ActionEvent actionEvent) -> {
+            JRadioButton button = (JRadioButton) actionEvent.getSource();
 
-                if (button.isSelected()) {
-                    // Set the flag
-                    takesKnowledgeFile = true;
+            if (button.isSelected()) {
+                // Set the flag
+                takesKnowledgeFile = true;
 
-                    // Update the list
-                    updateSuggestedAlgosList();
-                }
+                // Update the list
+                updateSuggestedAlgosList();
             }
         });
 
@@ -1182,18 +1166,15 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         JRadioButton priorKnowledgeNo = new JRadioButton("No");
 
         // Event listener
-        priorKnowledgeNo.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent actionEvent) {
-                JRadioButton button = (JRadioButton) actionEvent.getSource();
+        priorKnowledgeNo.addActionListener((ActionEvent actionEvent) -> {
+            JRadioButton button = (JRadioButton) actionEvent.getSource();
 
-                if (button.isSelected()) {
-                    // Set the flag
-                    takesKnowledgeFile = false;
+            if (button.isSelected()) {
+                // Set the flag
+                takesKnowledgeFile = false;
 
-                    // Update the list model
-                    updateSuggestedAlgosList();
-                }
+                // Update the list model
+                updateSuggestedAlgosList();
             }
         });
 
@@ -1264,11 +1245,8 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         JButton resetFilterSelectionsBtn = new JButton("Reset filter selections");
 
         // Event listener of clearFilterSelectionsBtn
-        resetFilterSelectionsBtn.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent actionEvent) {
-                resetAlgoFilters();
-            }
+        resetFilterSelectionsBtn.addActionListener((ActionEvent actionEvent) -> {
+            resetAlgoFilters();
         });
 
         // Test and score, Joe's old implementation
@@ -1429,97 +1407,87 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         step2BackBtn = new JButton("< Set Parameters");
 
         // Step 2 button listener
-        step2Btn.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                // Show parameters
-                parametersContainer.setVisible(true);
+        step2Btn.addActionListener((ActionEvent e) -> {
+            // Show parameters
+            parametersContainer.setVisible(true);
 
-                // Hide algo step 1
-                algoChooserContainer.setVisible(false);
+            // Hide algo step 1
+            algoChooserContainer.setVisible(false);
 
-                // SHow back to step 1 button and search button
-                step1BackBtn.setVisible(true);
-                step3Btn.setVisible(true);
+            // SHow back to step 1 button and search button
+            step1BackBtn.setVisible(true);
+            step3Btn.setVisible(true);
 
-                // Hide step 2 button
-                step2Btn.setVisible(false);
-            }
+            // Hide step 2 button
+            step2Btn.setVisible(false);
         });
 
         // Step 2 button listener
-        step2BackBtn.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                // Show parameters
-                parametersContainer.setVisible(true);
+        step2BackBtn.addActionListener((ActionEvent e) -> {
+            // Show parameters
+            parametersContainer.setVisible(true);
 
-                // Hide algo step 1
-                algoChooserContainer.setVisible(false);
+            // Hide algo step 1
+            algoChooserContainer.setVisible(false);
 
-                // Hide step 3 graph
-                graphContainer.setVisible(false);
+            // Hide step 3 graph
+            graphContainer.setVisible(false);
 
-                // SHow back to step 1 button and search button
-                step1BackBtn.setVisible(true);
-                step3Btn.setVisible(true);
+            // SHow back to step 1 button and search button
+            step1BackBtn.setVisible(true);
+            step3Btn.setVisible(true);
 
-                // Hide step 2 button
-                step2Btn.setVisible(false);
+            // Hide step 2 button
+            step2Btn.setVisible(false);
 
-                // Hide back button
-                step2BackBtn.setVisible(false);
-            }
+            // Hide back button
+            step2BackBtn.setVisible(false);
         });
 
         // Step 3 button
         step3Btn = new JButton("Run Search & Generate Graph >");
 
-        step3Btn.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
+        step3Btn.addActionListener((ActionEvent e) -> {
+            // Load all data files and hide the loading indicator once done
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    doSearch(runner);
 
-                // Load all data files and hide the loading indicator once done
-                new Thread(new Runnable() {
-                    @Override
-                    public void run() {
-                        doSearch(runner);
+                    // Schedule a Runnable which will be executed on the Event Dispatching Thread
+                    // SwingUtilities.invokeLater means that this call will return immediately
+                    // as the event is placed in Event Dispatcher Queue,
+                    // and run() method will run asynchronously
+                    SwingUtilities.invokeLater(new Runnable() {
+                        @Override
+                        public void run() {
+                            // Hide the loading indicator
+                            hideLoadingIndicator();
 
-                        // Schedule a Runnable which will be executed on the Event Dispatching Thread
-                        // SwingUtilities.invokeLater means that this call will return immediately
-                        // as the event is placed in Event Dispatcher Queue,
-                        // and run() method will run asynchronously
-                        SwingUtilities.invokeLater(new Runnable() {
-                            @Override
-                            public void run() {
-                                // Hide the loading indicator
-                                hideLoadingIndicator();
+                            // Hide algo chooser
+                            algoChooserContainer.setVisible(false);
 
-                                // Hide algo chooser
-                                algoChooserContainer.setVisible(false);
+                            // Hide parameters
+                            parametersContainer.setVisible(false);
 
-                                // Hide parameters
-                                parametersContainer.setVisible(false);
+                            // Show graphContainer
+                            graphContainer.setVisible(true);
 
-                                // Show graphContainer
-                                graphContainer.setVisible(true);
+                            // Show back to step 2 button
+                            step2BackBtn.setVisible(true);
 
-                                // Show back to step 2 button
-                                step2BackBtn.setVisible(true);
+                            // Hide step 1 back button
+                            step1BackBtn.setVisible(false);
 
-                                // Hide step 1 back button
-                                step1BackBtn.setVisible(false);
+                            // Hide step 3 button
+                            step3Btn.setVisible(false);
+                        }
+                    });
+                }
+            }).start();
 
-                                // Hide step 3 button
-                                step3Btn.setVisible(false);
-                            }
-                        });
-                    }
-                }).start();
-
-                // Create the loading indicator dialog and show
-                showLoadingIndicator("Runing...");
-            }
+            // Create the loading indicator dialog and show
+            showLoadingIndicator("Runing...");
         });
 
         // Add to rightContainer
