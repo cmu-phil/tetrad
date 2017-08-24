@@ -52,7 +52,7 @@ public class Fang1 implements Algorithm, HasKnowledge {
 
     @Override
     public String getDescription() {
-        return "FANG (Fast Adjacency search followed by Non-Gaussian orientation)";
+        return "FANG1";
     }
 
     @Override

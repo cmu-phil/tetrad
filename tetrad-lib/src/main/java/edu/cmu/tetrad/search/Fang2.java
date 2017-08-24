@@ -59,13 +59,6 @@ public final class Fang2 implements GraphSearch {
     // Knowledge the the search will obey, of forbidden and required edges.
     private IKnowledge knowledge = new Knowledge2();
 
-    // Cutoff for x.
-    private double x0 = 0.0;
-
-    // Cutoff for y.
-    private double y0 = 0.0;
-
-
     /**
      * @param dataSet These datasets must all have the same variables, in the same order.
      */
@@ -119,14 +112,29 @@ public final class Fang2 implements GraphSearch {
                 final double[] x = colData[i];
                 final double[] y = colData[j];
 
+                double[] c1 = StatUtils.cov(x, y, x, 0, +1);
+                double[] c2 = StatUtils.cov(x, y, y, 0, +1);
                 double[] e1 = StatUtils.E(x, y, x, 0, +1);
                 double[] e2 = StatUtils.E(x, y, y, 0, +1);
 
-                double[] c1 = StatUtils.E(x, y, x, 0, +1);
-                double[] c2 = StatUtils.E(x, y, y, 0, +1);
+                double e = e1[0];
+                double f = e2[0];
+
+                double vxx = e1[2];
+                double vxy = e1[3];
+                double vyy = e2[3];
+                double vyx = e2[2];
+
+                double a = abs(e / vxx);
+                double b = abs(f / vxy);
+                double c = abs(f / vyy);
+                double d = abs(e / vyx);
+
+                double R = abs(e1[1]) - abs(e2[1]);
+//                double R = abs((e - vxx)) - abs(f - vxy) - (abs(f - vyy) - abs(e - vyx));
 
                 if (G0.isAdjacentTo(X, Y) || abs(c1[1]) - abs(c2[1]) > .3) {
-                    double c[] =  StatUtils.cov(x, y, x, 0, +1);
+                    double _c[] =  StatUtils.cov(x, y, x, 0, +1);
                     double c3[] =  StatUtils.cov(x, y, x, 0, -1);
                     double c4[] =  StatUtils.cov(x, y, y, 0, -1);
 
@@ -134,7 +142,7 @@ public final class Fang2 implements GraphSearch {
                         graph.addDirectedEdge(X, Y);
                     } else if (knowledgeOrients(Y, X)) {
                         graph.addDirectedEdge(Y, X);
-                    } else if (equals(c, c1) && equals(c, c2)) {
+                    } else if (equals(_c, c1) && equals(_c, c2)) {
                         Edge edge1 = Edges.directedEdge(X, Y);
                         Edge edge2 = Edges.directedEdge(Y, X);
 
@@ -143,8 +151,8 @@ public final class Fang2 implements GraphSearch {
 
                         graph.addEdge(edge1);
                         graph.addEdge(edge2);
-                    } else if (!(sameSign(c, c1) && sameSign(c, c3)
-                            || (sameSign(c, c2) && sameSign(c, c4)))) {
+                    } else if (!(sameSign(_c, c1) && sameSign(_c, c3)
+                            || (sameSign(_c, c2) && sameSign(_c, c4)))) {
                         Edge edge1 = Edges.directedEdge(X, Y);
                         Edge edge2 = Edges.directedEdge(Y, X);
 
@@ -153,13 +161,10 @@ public final class Fang2 implements GraphSearch {
 
                         graph.addEdge(edge1);
                         graph.addEdge(edge2);
-                    } else if (abs(e1[1]) > abs(e2[1])) {
+                    } else if (R > 0) {
                         graph.addDirectedEdge(X, Y);
-                    } else if (abs(e1[1]) < abs(e2[1])) {
-                        graph.addDirectedEdge(Y, X);
                     } else {
-                        graph.addUndirectedEdge(X, Y);
-
+                        graph.addDirectedEdge(Y, X);
                     }
                 }
             }
@@ -233,34 +238,6 @@ public final class Fang2 implements GraphSearch {
      */
     public void setAlpha(double alpha) {
         this.alpha = alpha;
-    }
-
-    /**
-     * @return X cutoff.
-     */
-    public double getX0() {
-        return x0;
-    }
-
-    /**
-     * @param x0 X cutoff.
-     */
-    public void setX0(double x0) {
-        this.x0 = x0;
-    }
-
-    /**
-     * @return Y cutoff.
-     */
-    public double getY0() {
-        return y0;
-    }
-
-    /**
-     * @param y0 Y cutoff.
-     */
-    public void setY0(double y0) {
-        this.y0 = y0;
     }
 
     /**

@@ -18,31 +18,28 @@ import java.util.List;
  *
  * @author jdramsey
  */
-public class Fang3 implements Algorithm, HasKnowledge {
+public class Fask1 implements Algorithm, HasKnowledge {
     static final long serialVersionUID = 23L;
     private boolean empirical = false;
     private IKnowledge knowledge = new Knowledge2();
 
-    public Fang3() {
+    public Fask1() {
         this.empirical = false;
     }
 
-    public Fang3(boolean empirical) {
+    public Fask1(boolean empirical) {
         this.empirical = empirical;
-    }
-
-    private Graph getGraph(edu.cmu.tetrad.search.Fang3 search) {
-        return search.search();
     }
 
     @Override
     public Graph search(DataModel dataSet, Parameters parameters) {
-        edu.cmu.tetrad.search.Fang3 search = new edu.cmu.tetrad.search.Fang3((DataSet) dataSet);
+        edu.cmu.tetrad.search.Fask1 search = new edu.cmu.tetrad.search.Fask1((DataSet) dataSet);
         search.setDepth(parameters.getInt("depth"));
         search.setPenaltyDiscount(parameters.getDouble("penaltyDiscount"));
         search.setAlpha(parameters.getDouble("twoCycleAlpha"));
         search.setKnowledge(knowledge);
-        return getGraph(search);
+        search.setThresholdForReversing(parameters.getDouble("thresholdForReversing"));
+        return search.search();
     }
 
     @Override
@@ -52,7 +49,7 @@ public class Fang3 implements Algorithm, HasKnowledge {
 
     @Override
     public String getDescription() {
-        return "FANG (Fast Adjacency search followed by Non-Gaussian orientation)";
+        return "FASK1";
     }
 
     @Override

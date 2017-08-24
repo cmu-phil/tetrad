@@ -30,12 +30,11 @@ import org.apache.commons.math3.distribution.TDistribution;
 import java.awt.*;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
-import java.util.ArrayList;
 import java.util.List;
 
-import static edu.cmu.tetrad.util.StatUtils.*;
+import static edu.cmu.tetrad.util.StatUtils.correlation;
+import static edu.cmu.tetrad.util.StatUtils.skewness;
 import static java.lang.Math.*;
-import static java.lang.Math.max;
 
 /**
  * Fast adjacency search followed by robust skew orientation. Checks are done for adding
@@ -44,7 +43,7 @@ import static java.lang.Math.max;
  *
  * @author Joseph Ramsey
  */
-public final class Fask2 implements GraphSearch {
+public final class Fask3 implements GraphSearch {
 
     // Elapsed time of the search, in milliseconds.
     private long elapsed = 0;
@@ -80,7 +79,7 @@ public final class Fask2 implements GraphSearch {
     /**
      * @param dataSet These datasets must all have the same variables, in the same order.
      */
-    public Fask2(DataSet dataSet) {
+    public Fask3(DataSet dataSet) {
         this.dataSet = dataSet;
     }
 
@@ -258,7 +257,7 @@ public final class Fask2 implements GraphSearch {
     }
 
     private double g(double x) {
-        return log(cosh(max(0, x)));
+        return x * x;
     }
 
     /**

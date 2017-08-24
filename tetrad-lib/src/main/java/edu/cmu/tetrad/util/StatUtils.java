@@ -2047,7 +2047,7 @@ public final class StatUtils {
         double sx = exx - ex * ex;
         double sy = eyy - ey * ey;
 
-        return new double[]{sxy, sxy / sqrt(sx * sy), sx, sy, (double) n};
+        return new double[]{sxy, sxy / sqrt(sx * sy), sx, sy, (double) n, ex, ey};
     }
 
     public static double[] E(double[] x, double[] y, double[] condition, double threshold, double direction) {

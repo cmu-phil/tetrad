@@ -49,7 +49,7 @@ public class Fask2 implements Algorithm, HasKnowledge {
 
     @Override
     public String getDescription() {
-        return "FASK";
+        return "FASK2";
     }
 
     @Override

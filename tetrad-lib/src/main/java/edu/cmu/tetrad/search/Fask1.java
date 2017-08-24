@@ -24,6 +24,7 @@ package edu.cmu.tetrad.search;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.regression.RegressionDataset;
+import edu.cmu.tetrad.util.StatUtils;
 import org.apache.commons.math3.distribution.TDistribution;
 
 import java.awt.*;
@@ -43,7 +44,7 @@ import static java.lang.Math.max;
  *
  * @author Joseph Ramsey
  */
-public final class Fask implements GraphSearch {
+public final class Fask1 implements GraphSearch {
 
     // Elapsed time of the search, in milliseconds.
     private long elapsed = 0;
@@ -79,7 +80,7 @@ public final class Fask implements GraphSearch {
     /**
      * @param dataSet These datasets must all have the same variables, in the same order.
      */
-    public Fask(DataSet dataSet) {
+    public Fask1(DataSet dataSet) {
         this.dataSet = dataSet;
     }
 
@@ -139,46 +140,28 @@ public final class Fask implements GraphSearch {
             double[] x = colData[i];
             double[] y = colData[j];
 
-            List<Double> sList = new ArrayList<>();
-
             double sum1 = 0.0;
             double sum2 = 0.0;
 
             for (int k = 0; k < x.length; k++) {
-                double f1 = y[k] * h(x[k]);
-                double f2 = x[k] * h(y[k]);
+                double f1 = y[k] * g(x[k]);
+                double f2 = x[k] * g(y[k]);
 
                 sum1 += f1;
                 sum2 += f2;
-
-//                if (f1 - f2 != 0) {
-                sList.add(f1 - f2);
-//                }
             }
 
             double[] x1 = colData2[i];
             double[] y1 = colData2[j];
 
-            double[] c = cov(x1, y1, 0, 0);
-            double[] c1 = cov(x1, y1, 1, 0);
-            double[] c2 = cov(x1, y1, 0, 1);
-            double c3[] = cov(x1, y1, -1, 0);
-            double c4[] = cov(x1, y1, 0, -1);
-
-            double[] _s = new double[sList.size()];
-            double sum = 0.0;
-
-            for (int k = 0; k < _s.length; k++) {
-                _s[k] = sList.get(k);
-                sum += _s[k];
-            }
+            double[] c = StatUtils.cov(x, y, x, Double.NEGATIVE_INFINITY, +1);
+            double[] c1 = StatUtils.cov(x, y, x, 0, +1);
+            double[] c2 = StatUtils.cov(x, y, y, 0, +1);
+            double[] c3 = StatUtils.cov(x, y, x, 0, -1);
+            double[] c4 = StatUtils.cov(x, y, y, 0, -1);
 
             int n = x.length;
-            int nn = _s.length;
-            double e = sum / nn;
 
-            double t = e / (sd(_s) / sqrt(nn));
-            double p = (1.0 - new TDistribution(nn - 1).cumulativeProbability(abs(t)));
             double rho = correlation(x, y);
             double R = rho * (sum1 / n - sum2 / n);
 
@@ -276,10 +259,6 @@ public final class Fask implements GraphSearch {
 
     private double g(double x) {
         return log(cosh(max(0, x)));
-    }
-
-    private double h(double x) {
-        return max(0, x);
     }
 
     /**
