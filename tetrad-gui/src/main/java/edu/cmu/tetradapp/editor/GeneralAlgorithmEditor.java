@@ -101,7 +101,6 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
 
     private final GeneralAlgorithmRunner runner;
     private final Box algoTypesBox;
-    private final ButtonGroup algoTypesBtnGrp;
     private final JComboBox<TestType> testDropdown = new JComboBox<>();
     private final JComboBox<ScoreType> scoreDropdown = new JComboBox<>();
     private final GraphSelectionEditor graphEditor;
@@ -142,6 +141,12 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
     private DefaultListModel suggestedAlgosListModel;
 
     private Boolean takesKnowledgeFile = null;
+
+    private ButtonGroup algoTypesBtnGrp = new ButtonGroup();
+    private ButtonGroup varLinearRelationshipsBtnGrp = new ButtonGroup();
+    private ButtonGroup gaussianVariablesBtnGrp = new ButtonGroup();
+    private ButtonGroup priorKnowledgeBtnGrp = new ButtonGroup();
+    private ButtonGroup includeUnmeasuredConfoundersBtnGrp = new ButtonGroup();
 
     //=========================CONSTRUCTORS============================//
     /**
@@ -294,9 +299,6 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
 
         // Add label to containing box
         algoTypesBox.add(algTypesBoxLabelBox);
-
-        // We need to group the radio buttons, otherwise all can be selected
-        algoTypesBtnGrp = new ButtonGroup();
 
         // Show each algo type as a radio button
         for (AlgType item : AlgType.values()) {
@@ -1266,7 +1268,6 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         priorKnowledgeOption2Box.add(priorKnowledgeNo);
 
         // We need to group the radio buttons, otherwise all can be selected
-        ButtonGroup priorKnowledgeBtnGrp = new ButtonGroup();
         priorKnowledgeBtnGrp.add(priorKnowledgeYes);
         priorKnowledgeBtnGrp.add(priorKnowledgeNo);
 
@@ -1333,32 +1334,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         resetFilterSelectionsBtn.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
-                // Reset algoTypesBtnGrp to select "ALL"
-                for (Enumeration<AbstractButton> buttons = algoTypesBtnGrp.getElements(); buttons.hasMoreElements();) {
-                    AbstractButton button = buttons.nextElement();
-
-                    if ("ALL".equals(button.getText())) {
-                        button.setSelected(true);
-                        break;
-                    }
-                }
-
-                // Also need to reset the knowledge file flag
-                takesKnowledgeFile = null;
-
-                // Clear all selections - the radio bottons
-                varLinearRelationshipsBtnGrp.clearSelection();
-                gaussianVariablesBtnGrp.clearSelection();
-                priorKnowledgeBtnGrp.clearSelection();
-                includeUnmeasuredConfoundersBtnGrp.clearSelection();
-
-                // Clear the list model
-                suggestedAlgosListModel.removeAllElements();
-                // Finally show the default list of algos
-                for (Map.Entry<String, AlgorithmDescriptionClass> algoDescEntry : descriptions.entrySet()) {
-                    AlgorithmDescriptionClass algoDesc = algoDescEntry.getValue();
-                    suggestedAlgosListModel.addElement(algoDesc.getAlgName());
-                }
+                resetAlgoFilters();
             }
         });
 
@@ -1674,6 +1650,35 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
 //                JOptionPane.PLAIN_MESSAGE, null, new Object[]{}, null);
 
         return p;
+    }
+
+    private void resetAlgoFilters() {
+        // Reset algoTypesBtnGrp to select "ALL"
+        for (Enumeration<AbstractButton> buttons = algoTypesBtnGrp.getElements(); buttons.hasMoreElements();) {
+            AbstractButton button = buttons.nextElement();
+
+            if ("ALL".equals(button.getText())) {
+                button.setSelected(true);
+                break;
+            }
+        }
+
+        // Also need to reset the knowledge file flag
+        takesKnowledgeFile = null;
+
+        // Clear all selections - the radio bottons
+        varLinearRelationshipsBtnGrp.clearSelection();
+        gaussianVariablesBtnGrp.clearSelection();
+        priorKnowledgeBtnGrp.clearSelection();
+        includeUnmeasuredConfoundersBtnGrp.clearSelection();
+
+        // Clear the list model
+        suggestedAlgosListModel.removeAllElements();
+        // Finally show the default list of algos
+        for (Map.Entry<String, AlgorithmDescriptionClass> algoDescEntry : descriptions.entrySet()) {
+            AlgorithmDescriptionClass algoDesc = algoDescEntry.getValue();
+            suggestedAlgosListModel.addElement(algoDesc.getAlgName());
+        }
     }
 
     /**
