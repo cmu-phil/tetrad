@@ -191,6 +191,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
 
         // Use annotations to populate description list
         // TreeMap<String, AlgorithmDescriptionClass>
+        // TODO: fiter the algos to only show the ones can handle the uploaded dataset - Zhou
         descriptions = AlgorithmDescriptionFactory.getInstance().getAlgorithmDescriptions();
 
         algorithmsCanHaveKnowledge = AlgorithmDescriptionFactory.getInstance().getAlgorithmsCanHaveKnowledge();
@@ -199,49 +200,27 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
 
         graphEditor = new GraphSelectionEditor(new GraphSelectionWrapper(runner.getGraphs(), new Parameters()));
 
-//        if (runner.getDataModelList() == null) {
-//            throw new NullPointerException("No data has been provided.");
-//        }
-        // Create the test dropdown menu based on dataset
+        // Create the test/score dropdown menu based on dataset
         List<TestType> tests;
+        List<ScoreType> scores;
 
+        // We can also use this way to filter the algos based on the data types they can handle - Zhou
         DataModelList dataModelList = runner.getDataModelList();
 
         if ((dataModelList.isEmpty() && runner.getSourceGraph() != null)) {
             tests = dsepTests;
-        } else if (!(dataModelList.isEmpty())) {
-            DataModel dataSet = dataModelList.get(0);
-
-            if (dataSet.isContinuous()) {
-                tests = continuousTests;
-            } else if (dataSet.isDiscrete()) {
-                tests = discreteTests;
-            } else if (dataSet.isMixed()) {
-                tests = mixedTests;
-            } else {
-                throw new IllegalArgumentException();
-            }
-        } else {
-            throw new IllegalArgumentException("You need either some data sets or a graph as input.");
-        }
-
-        for (TestType item : tests) {
-            testDropdown.addItem(item);
-        }
-
-        // Create the score dropdown menu based on dataset
-        List<ScoreType> scores;
-
-        if (dataModelList.isEmpty() && runner.getGraphs() != null) {
             scores = dsepScores;
         } else if (!(dataModelList.isEmpty())) {
             DataModel dataSet = dataModelList.get(0);
 
             if (dataSet.isContinuous()) {
+                tests = continuousTests;
                 scores = continuousScores;
             } else if (dataSet.isDiscrete()) {
+                tests = discreteTests;
                 scores = discreteScores;
             } else if (dataSet.isMixed()) {
+                tests = mixedTests;
                 scores = mixedScores;
             } else {
                 throw new IllegalArgumentException();
@@ -250,6 +229,12 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
             throw new IllegalArgumentException("You need either some data sets or a graph as input.");
         }
 
+        // Add to the test dropdown menu
+        for (TestType item : tests) {
+            testDropdown.addItem(item);
+        }
+
+        // Add to the score dropdown menu
         for (ScoreType item : scores) {
             scoreDropdown.addItem(item);
         }
