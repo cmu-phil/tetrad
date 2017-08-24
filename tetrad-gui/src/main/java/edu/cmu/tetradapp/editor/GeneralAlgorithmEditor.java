@@ -1230,8 +1230,17 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         resetFilterSelectionsBtn.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
-                // Reset/clear all selections - the radio bottons
-                algoTypesBtnGrp.clearSelection();
+                // Reset algoTypesBtnGrp to select "ALL"
+                for (Enumeration<AbstractButton> buttons = algoTypesBtnGrp.getElements(); buttons.hasMoreElements();) {
+                    AbstractButton button = buttons.nextElement();
+
+                    if ("ALL".equals(button.getText())) {
+                        button.setSelected(true);
+                        break;
+                    }
+                }
+
+                // Clear all selections - the radio bottons
                 varLinearRelationshipsBtnGrp.clearSelection();
                 gaussianVariablesBtnGrp.clearSelection();
                 priorKnowledgeBtnGrp.clearSelection();
