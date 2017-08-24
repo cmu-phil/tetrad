@@ -134,7 +134,7 @@ public final class Fang1 implements GraphSearch {
 //                double R = abs((e - vxx)) - abs(f - vxy) - (abs(f - vyy) - abs(e - vyx));
 
                 if (G0.isAdjacentTo(X, Y) || abs(c1[1]) - abs(c2[1]) > .3) {
-                    double _c[] =  StatUtils.cov(x, y, x, 0, +1);
+                    double _c[] =  StatUtils.cov(x, y, x, Double.NEGATIVE_INFINITY, +1);
                     double c3[] =  StatUtils.cov(x, y, x, 0, -1);
                     double c4[] =  StatUtils.cov(x, y, y, 0, -1);
 
@@ -142,7 +142,8 @@ public final class Fang1 implements GraphSearch {
                         graph.addDirectedEdge(X, Y);
                     } else if (knowledgeOrients(Y, X)) {
                         graph.addDirectedEdge(Y, X);
-                    } else if (equals(_c, c1) && equals(_c, c2)) {
+                    }
+                    else if (equals(_c, c1) && equals(_c, c2)) {
                         Edge edge1 = Edges.directedEdge(X, Y);
                         Edge edge2 = Edges.directedEdge(Y, X);
 
@@ -161,7 +162,8 @@ public final class Fang1 implements GraphSearch {
 
                         graph.addEdge(edge1);
                         graph.addEdge(edge2);
-                    } else if (R > 0) {
+                    }
+                    else if (R > 0) {
                         graph.addDirectedEdge(X, Y);
                     } else {
                         graph.addDirectedEdge(Y, X);

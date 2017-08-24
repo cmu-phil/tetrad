@@ -43,7 +43,7 @@ import static java.lang.Math.*;
  *
  * @author Joseph Ramsey
  */
-public final class Fask3 implements GraphSearch {
+public final class Fask4 implements GraphSearch {
 
     // Elapsed time of the search, in milliseconds.
     private long elapsed = 0;
@@ -79,7 +79,7 @@ public final class Fask3 implements GraphSearch {
     /**
      * @param dataSet These datasets must all have the same variables, in the same order.
      */
-    public Fask3(DataSet dataSet) {
+    public Fask4(DataSet dataSet) {
         this.dataSet = dataSet;
     }
 
@@ -221,7 +221,6 @@ public final class Fask3 implements GraphSearch {
         for (Node x : graph.getNodes()) {
             double skewnessX = skewness(dataSet.getDoubleData().getColumn(dataSet.getColumn(x)).toArray());
             System.out.println("Node " + x + " skewness(x) = " + skewnessX);
-//            System.out.println();
 
             for (int i = 0; i < cutoffs.length; i++) {
                 if (skewnessX < cutoffs[i] * sigma) {
@@ -236,13 +235,15 @@ public final class Fask3 implements GraphSearch {
 
         double avgSkew = sumSkew / (double) total;
 
+        NumberFormat nf = new DecimalFormat("0.000");
+
         System.out.println("Avg skew " + avgSkew);
         System.out.println("Skew standard deviation = " + sd);
         System.out.println("N = " + dataSet.getNumRows());
     }
 
     private double g(double x) {
-        return x * x;
+        return Math.atan(x);
     }
 
     /**

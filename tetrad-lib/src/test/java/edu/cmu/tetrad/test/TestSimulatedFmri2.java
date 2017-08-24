@@ -143,8 +143,8 @@ public class TestSimulatedFmri2 {
 //
 //        algorithms.add(new FgesConcatenated(new edu.cmu.tetrad.algcomparison.score.SemBicScore(), true));
 //        algorithms.add(new PcStableMaxConcatenated(new SemBicTest(), true));
-        algorithms.add(new FangConcatenated());
-        algorithms.add(new FaskConcatenated());
+        algorithms.add(new Fang1Concatenated());
+        algorithms.add(new Fask1Concatenated());
         algorithms.add(new Fask2Concatenated());
 //        algorithms.add(new FasLofsConcatenated(Lofs2.Rule.R1));
 //        algorithms.add(new FasLofsConcatenated(Lofs2.Rule.R2));
@@ -238,8 +238,8 @@ public class TestSimulatedFmri2 {
 
             Algorithms algorithms = new Algorithms();
 
-            algorithms.add(new FangConcatenated());
-            algorithms.add(new FaskConcatenated());
+            algorithms.add(new Fang1Concatenated());
+            algorithms.add(new Fask1Concatenated());
             algorithms.add(new Fask2Concatenated());
 
             Comparison comparison = new Comparison();

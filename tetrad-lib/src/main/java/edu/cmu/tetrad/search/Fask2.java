@@ -222,7 +222,6 @@ public final class Fask2 implements GraphSearch {
         for (Node x : graph.getNodes()) {
             double skewnessX = skewness(dataSet.getDoubleData().getColumn(dataSet.getColumn(x)).toArray());
             System.out.println("Node " + x + " skewness(x) = " + skewnessX);
-//            System.out.println();
 
             for (int i = 0; i < cutoffs.length; i++) {
                 if (skewnessX < cutoffs[i] * sigma) {
@@ -237,24 +236,9 @@ public final class Fask2 implements GraphSearch {
 
         double avgSkew = sumSkew / (double) total;
 
-        NumberFormat nf = new DecimalFormat("0.000");
-
-//        for (int i = 0; i < cutoffs.length; i++) {
-//            double number = counts[i] / (double) total;
-//
-//            System.out.printf("\nBelow %5.1f (= %6.3f) Percent = %5.3f, 1 - Percent = %5.3f", cutoffs[i],
-//                    cutoffs[i] * sigma, number, 1.0 - number);
-//
-////            System.out.println("Below " + nf.format(cutoffs[i]) + " * sigma % = " + nf.format(number)
-////                    + "   1 - % = " + nf.format(1.0 -  number));
-//        }
-
-//        System.out.println();
-//        System.out.println();
         System.out.println("Avg skew " + avgSkew);
         System.out.println("Skew standard deviation = " + sd);
         System.out.println("N = " + dataSet.getNumRows());
-//        System.out.println("Sigma = " + nf.format(sigma));
     }
 
     private double g(double x) {
@@ -348,76 +332,6 @@ public final class Fask2 implements GraphSearch {
      */
     public void setThresholdForReversing(double thresholdForReversing) {
         this.thresholdForReversing = thresholdForReversing;
-    }
-
-    private double[] cov(double[] x, double[] y, int xInc, int yInc) {
-        double exy = 0.0;
-        double exx = 0.0;
-        double eyy = 0.0;
-
-        double ex = 0.0;
-        double ey = 0.0;
-
-        int n = 0;
-
-        for (int k = 0; k < x.length; k++) {
-            if (xInc == 0 && yInc == 0) {
-                exy += x[k] * y[k];
-                exx += x[k] * x[k];
-                eyy += y[k] * y[k];
-                ex += x[k];
-                ey += y[k];
-                n++;
-            } else if (xInc == 1 && yInc == 0) {
-                if (x[k] > 0) {
-                    exy += x[k] * y[k];
-                    exx += x[k] * x[k];
-                    eyy += y[k] * y[k];
-                    ex += x[k];
-                    ey += y[k];
-                    n++;
-                }
-            } else if (xInc == 0 && yInc == 1) {
-                if (y[k] > 0) {
-                    exy += x[k] * y[k];
-                    exx += x[k] * x[k];
-                    eyy += y[k] * y[k];
-                    ex += x[k];
-                    ey += y[k];
-                    n++;
-                }
-            } else if (xInc == -1 && yInc == 0) {
-                if (x[k] < 0) {
-                    exy += x[k] * y[k];
-                    exx += x[k] * x[k];
-                    eyy += y[k] * y[k];
-                    ex += x[k];
-                    ey += y[k];
-                    n++;
-                }
-            } else if (xInc == 0 && yInc == -1) {
-                if (y[k] < 0) {
-                    exy += x[k] * y[k];
-                    exx += x[k] * x[k];
-                    eyy += y[k] * y[k];
-                    ex += x[k];
-                    ey += y[k];
-                    n++;
-                }
-            }
-        }
-
-        exx /= n;
-        eyy /= n;
-        exy /= n;
-        ex /= n;
-        ey /= n;
-
-        double sxy = exy - ex * ey;
-        double sx = sqrt(exx - ex * ex);
-        double sy = sqrt(eyy - ey * ey);
-
-        return new double[]{sxy, sxy / (sx * sy), sx * sx, sy * sy, (double) n};
     }
 
     private boolean equals(double[] c1, double[] c2) {

@@ -134,7 +134,7 @@ public final class Fang2 implements GraphSearch {
 //                double R = abs((e - vxx)) - abs(f - vxy) - (abs(f - vyy) - abs(e - vyx));
 
                 if (G0.isAdjacentTo(X, Y) || abs(c1[1]) - abs(c2[1]) > .3) {
-                    double _c[] =  StatUtils.cov(x, y, x, 0, +1);
+                    double _c[] =  StatUtils.cov(x, y, x, Double.NEGATIVE_INFINITY, +1);
                     double c3[] =  StatUtils.cov(x, y, x, 0, -1);
                     double c4[] =  StatUtils.cov(x, y, y, 0, -1);
 

@@ -56,7 +56,7 @@ public class TestSimulatedFmri {
         parameters.set("thresholdForReversing", -5);
 
         parameters.set("numRuns", 10);
-        parameters.set("randomSelectionSize", 10);
+        parameters.set("randomSelectionSize", 1, 5, 10);
 
         parameters.set("Structure", "Placeholder");
 
@@ -127,29 +127,11 @@ public class TestSimulatedFmri {
 
         Algorithms algorithms = new Algorithms();
 
-//        algorithms.add(new Fges(new edu.cmu.tetrad.algcomparison.score.SemBicScore(), true));
-//        algorithms.add(new PcStableMax(new SemBicTest(), true));
-//        algorithms.add(new Fang1());
-//        algorithms.add(new FasLofs(Lofs2.Rule.R1));
-//        algorithms.add(new FasLofs(Lofs2.Rule.R2));
-//        algorithms.add(new FasLofs(Lofs2.Rule.R3));
-//        algorithms.add(new FasLofs(Lofs2.Rule.Patel));
-//        algorithms.add(new FasLofs(Lofs2.Rule.Skew));
-
-//        algorithms.add(new FgesConcatenated(new edu.cmu.tetrad.algcomparison.score.SemBicScore(), true));
-//        algorithms.add(new PcStableMaxConcatenated(new SemBicTest(), true));
-
-        algorithms.add(new FangConcatenated(false));
-        algorithms.add(new FaskConcatenated(false));
-        algorithms.add(new Fask2Concatenated(false));
-
-//        algorithms.add(new FasRSkewConcatenated(true));
-
-
-        //        algorithms.add(new FasLofsConcatenated(Lofs2.Rule.R1));
-//        algorithms.add(new FasLofsConcatenated(Lofs2.Rule.R2));
-//        algorithms.add(new FasLofsConcatenated(Lofs2.Rule.R3));
-//        algorithms.add(new FasLofsConcatenated(Lofs2.Rule.Skew));
+        algorithms.add(new edu.cmu.tetrad.algcomparison.algorithm.multi.Fang1Concatenated(false));
+        algorithms.add(new edu.cmu.tetrad.algcomparison.algorithm.multi.Fang2Concatenated(false));
+        algorithms.add(new edu.cmu.tetrad.algcomparison.algorithm.multi.Fask1Concatenated(false));
+        algorithms.add(new edu.cmu.tetrad.algcomparison.algorithm.multi.Fask2Concatenated(false));
+        algorithms.add(new edu.cmu.tetrad.algcomparison.algorithm.multi.Fask3Concatenated(false));
 
         Comparison comparison = new Comparison();
 
@@ -222,7 +204,7 @@ public class TestSimulatedFmri {
 //
 //        algorithms.add(new FgesConcatenated(new edu.cmu.tetrad.algcomparison.score.SemBicScore(), true));
 //        algorithms.add(new PcStableMaxConcatenated(new SemBicTest(), true));
-        algorithms.add(new FangConcatenated());
+        algorithms.add(new Fang1Concatenated());
 //        algorithms.add(new FasLofsConcatenated(Lofs2.Rule.R1));
 //        algorithms.add(new FasLofsConcatenated(Lofs2.Rule.R2));
 //        algorithms.add(new FasLofsConcatenated(Lofs2.Rule.R3));

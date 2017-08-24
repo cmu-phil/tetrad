@@ -20,16 +20,16 @@ import java.util.List;
  *
  * @author jdramsey
  */
-public class FaskConcatenated implements MultiDataSetAlgorithm, HasKnowledge {
+public class Fask1Concatenated implements MultiDataSetAlgorithm, HasKnowledge {
     static final long serialVersionUID = 23L;
     private boolean empirical = false;
     private IKnowledge knowledge = new Knowledge2();
 
-    public FaskConcatenated() {
+    public Fask1Concatenated() {
         this.empirical = false;
     }
 
-    public FaskConcatenated(boolean empirical) {
+    public Fask1Concatenated(boolean empirical) {
         this.empirical = empirical;
     }
 
@@ -64,8 +64,7 @@ public class FaskConcatenated implements MultiDataSetAlgorithm, HasKnowledge {
 
     @Override
     public String getDescription() {
-        return "FASK Concatenated "
-                + (empirical ? " (Empirical)" : "");
+        return "FASK1 Concatenated";
     }
 
     @Override
