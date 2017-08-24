@@ -1,10 +1,13 @@
 package edu.cmu.tetradapp.editor.factory;
 
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
+import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.annotation.AlgorithmDescription;
 import edu.cmu.tetradapp.editor.AlgorithmDescriptionClass;
 import java.lang.annotation.Annotation;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
@@ -20,6 +23,8 @@ public class AlgorithmDescriptionFactory {
     private Map<String, Class> algorithmMap = new LinkedHashMap<>();
 
     private TreeMap<String, AlgorithmDescriptionClass> algorithmDescriptions = new TreeMap<>();
+
+    private List<String> algorithmsCanHaveKnowledge = new ArrayList();
 
     public static AlgorithmDescriptionFactory getInstance() {
         return ourInstance;
@@ -49,6 +54,11 @@ public class AlgorithmDescriptionFactory {
                 algorithmDescriptions.put(myAnnotation.name(), algorithmDescription);
 
                 algorithmMap.put(myAnnotation.name(), clazz);
+
+                // In additionl, we want to know if this class implements the HadKnowledge interface - Zhou
+                if (HasKnowledge.class.isAssignableFrom(clazz)) {
+                    algorithmsCanHaveKnowledge.add(myAnnotation.name());
+                }
             }
         }
     }
@@ -61,6 +71,15 @@ public class AlgorithmDescriptionFactory {
      */
     public TreeMap<String, AlgorithmDescriptionClass> getAlgorithmDescriptions() {
         return algorithmDescriptions;
+    }
+
+    /**
+     * Get the list of algorithms that implement the HasKnowledge interface
+     *
+     * @return
+     */
+    public List<String> getAlgorithmsCanHaveKnowledge() {
+        return algorithmsCanHaveKnowledge;
     }
 
     public Algorithm getAlgorithmByName(String name) {

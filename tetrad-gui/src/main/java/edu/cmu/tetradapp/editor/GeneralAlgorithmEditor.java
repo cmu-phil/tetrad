@@ -115,6 +115,8 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
 
     private final TreeMap<String, AlgorithmDescriptionClass> descriptions;
 
+    private List<String> algorithmsCanHaveKnowledge;
+
     private JList suggestedAlgosList;
 
     private String selectedAlgoName;
@@ -138,6 +140,8 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
     private JButton step3Btn;
 
     private DefaultListModel suggestedAlgosListModel;
+
+    private Boolean takesKnowledgeFile = null;
 
     //=========================CONSTRUCTORS============================//
     /**
@@ -202,6 +206,8 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         // Use annotations to populate description list
         // TreeMap<String, AlgorithmDescriptionClass>
         descriptions = AlgorithmDescriptionFactory.getInstance().getAlgorithmDescriptions();
+
+        algorithmsCanHaveKnowledge = AlgorithmDescriptionFactory.getInstance().getAlgorithmsCanHaveKnowledge();
 
         this.parameters = runner.getParameters();
 
@@ -332,8 +338,18 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
                         System.out.println("Selected algo Type ===> " + selectedType);
                         // Create a new list model based on selections
                         for (Map.Entry<String, AlgorithmDescriptionClass> algoDescEntry : descriptions.entrySet()) {
+                            // Also check the there's selection of knowledge file
                             AlgorithmDescriptionClass algoDesc = algoDescEntry.getValue();
-                            if (algoDesc.getAlgType() == selectedType || selectedType == AlgType.ALL) {
+
+                            if (takesKnowledgeFile != null) {
+                                if (takesKnowledgeFile) {
+                                    if ((algoDesc.getAlgType() == selectedType || selectedType == AlgType.ALL) && algorithmsCanHaveKnowledge.contains(algoDesc.getAlgName())) {
+                                        suggestedAlgosListModel.addElement(algoDesc.getAlgName());
+                                    }
+                                } else if ((algoDesc.getAlgType() == selectedType || selectedType == AlgType.ALL) && !algorithmsCanHaveKnowledge.contains(algoDesc.getAlgName())) {
+                                    suggestedAlgosListModel.addElement(algoDesc.getAlgName());
+                                }
+                            } else if (algoDesc.getAlgType() == selectedType || selectedType == AlgType.ALL) {
                                 suggestedAlgosListModel.addElement(algoDesc.getAlgName());
                             }
                         }
@@ -352,25 +368,12 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
             });
         }
 
-        // Get the selected algo type
-        AlgType selectedType = null;
-        for (Enumeration<AbstractButton> buttons = algoTypesBtnGrp.getElements(); buttons.hasMoreElements();) {
-            AbstractButton button = buttons.nextElement();
-
-            if (button.isSelected()) {
-                selectedType = AlgType.valueOf(button.getText().replace(" ", "_"));
-                break;
-            }
-        }
-
         suggestedAlgosListModel = new DefaultListModel();
 
-        // Add algo to list model
+        // Add default algos to list model
         for (Map.Entry<String, AlgorithmDescriptionClass> algoDescEntry : descriptions.entrySet()) {
             AlgorithmDescriptionClass algoDesc = algoDescEntry.getValue();
-            if (algoDesc.getAlgType() == selectedType || selectedType == AlgType.ALL) {
-                suggestedAlgosListModel.addElement(algoDesc.getAlgName());
-            }
+            suggestedAlgosListModel.addElement(algoDesc.getAlgName());
         }
 
         suggestedAlgosList = new JList(suggestedAlgosListModel);
@@ -1139,7 +1142,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
 
         // Add label into this label box to size
         Box priorKnowledgeLabelBox = Box.createHorizontalBox();
-        priorKnowledgeLabelBox.add(new JLabel("Prior knowledge file: "));
+        priorKnowledgeLabelBox.add(new JLabel("Takes prior knowledge file: "));
         priorKnowledgeLabelBox.setAlignmentX(LEFT_ALIGNMENT);
 
         // Option 1
@@ -1147,6 +1150,56 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         priorKnowledgeOption1Box.setAlignmentX(LEFT_ALIGNMENT);
 
         JRadioButton priorKnowledgeYes = new JRadioButton("Yes");
+
+        // Event listener
+        priorKnowledgeYes.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent actionEvent) {
+                // Set the flag
+                takesKnowledgeFile = true;
+
+                // Clear the list model
+                suggestedAlgosListModel.removeAllElements();
+
+                JRadioButton button = (JRadioButton) actionEvent.getSource();
+
+                if (button.isSelected()) {
+                    // Get the selected algo type
+                    AlgType selectedType = null;
+                    for (Enumeration<AbstractButton> buttons = algoTypesBtnGrp.getElements(); buttons.hasMoreElements();) {
+                        AbstractButton algoTypeBtn = buttons.nextElement();
+
+                        if (algoTypeBtn.isSelected()) {
+                            selectedType = AlgType.valueOf(algoTypeBtn.getText().replace(" ", "_"));
+                            break;
+                        }
+                    }
+
+                    System.out.println("Selected algo Type ===> " + selectedType);
+                    System.out.println("Selected Knowledge ===> Yes");
+
+                    // Create a new list model based on selections
+                    for (Map.Entry<String, AlgorithmDescriptionClass> algoDescEntry : descriptions.entrySet()) {
+                        AlgorithmDescriptionClass algoDesc = algoDescEntry.getValue();
+
+                        // Need to also check if the algorithm implements the HasKnowledge
+                        if ((algoDesc.getAlgType() == selectedType || selectedType == AlgType.ALL) && algorithmsCanHaveKnowledge.contains(algoDesc.getAlgName())) {
+                            suggestedAlgosListModel.addElement(algoDesc.getAlgName());
+                        }
+                    }
+
+                    // Reset default algo selection
+                    suggestedAlgosList.setSelectedIndex(0);
+                    selectedAlgoName = suggestedAlgosList.getSelectedValue().toString();
+
+                    // Reset description
+                    algoDescriptionTextArea.setText("Description of " + selectedAlgoName + ": " + descriptions.get(selectedAlgoName).getDescription());
+
+                    // Finally, set the selected algo and update the test and score dropdown menus
+                    setAlgorithm();
+                }
+            }
+        });
 
         // Add padding and option
         priorKnowledgeOption1Box.add(Box.createRigidArea(new Dimension(10, 20)));
@@ -1157,6 +1210,56 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         priorKnowledgeOption2Box.setAlignmentX(LEFT_ALIGNMENT);
 
         JRadioButton priorKnowledgeNo = new JRadioButton("No");
+
+        // Event listener
+        priorKnowledgeNo.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent actionEvent) {
+                // Set the flag
+                takesKnowledgeFile = false;
+
+                // Clear the list model
+                suggestedAlgosListModel.removeAllElements();
+
+                JRadioButton button = (JRadioButton) actionEvent.getSource();
+
+                if (button.isSelected()) {
+                    // Get the selected algo type
+                    AlgType selectedType = null;
+                    for (Enumeration<AbstractButton> buttons = algoTypesBtnGrp.getElements(); buttons.hasMoreElements();) {
+                        AbstractButton algoTypeBtn = buttons.nextElement();
+
+                        if (algoTypeBtn.isSelected()) {
+                            selectedType = AlgType.valueOf(algoTypeBtn.getText().replace(" ", "_"));
+                            break;
+                        }
+                    }
+
+                    System.out.println("Selected algo Type ===> " + selectedType);
+                    System.out.println("Selected Knowledge ===> No");
+
+                    // Create a new list model based on selections
+                    for (Map.Entry<String, AlgorithmDescriptionClass> algoDescEntry : descriptions.entrySet()) {
+                        AlgorithmDescriptionClass algoDesc = algoDescEntry.getValue();
+
+                        // Need to also check if the algorithm doesn't implement the HasKnowledge interface
+                        if ((algoDesc.getAlgType() == selectedType || selectedType == AlgType.ALL) && !algorithmsCanHaveKnowledge.contains(algoDesc.getAlgName())) {
+                            suggestedAlgosListModel.addElement(algoDesc.getAlgName());
+                        }
+                    }
+
+                    // Reset default algo selection
+                    suggestedAlgosList.setSelectedIndex(0);
+                    selectedAlgoName = suggestedAlgosList.getSelectedValue().toString();
+
+                    // Reset description
+                    algoDescriptionTextArea.setText("Description of " + selectedAlgoName + ": " + descriptions.get(selectedAlgoName).getDescription());
+
+                    // Finally, set the selected algo and update the test and score dropdown menus
+                    setAlgorithm();
+                }
+            }
+        });
 
         // Add padding and option
         priorKnowledgeOption2Box.add(Box.createRigidArea(new Dimension(10, 20)));
@@ -1240,11 +1343,22 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
                     }
                 }
 
+                // Also need to reset the knowledge file flag
+                takesKnowledgeFile = null;
+
                 // Clear all selections - the radio bottons
                 varLinearRelationshipsBtnGrp.clearSelection();
                 gaussianVariablesBtnGrp.clearSelection();
                 priorKnowledgeBtnGrp.clearSelection();
                 includeUnmeasuredConfoundersBtnGrp.clearSelection();
+
+                // Clear the list model
+                suggestedAlgosListModel.removeAllElements();
+                // Finally show the default list of algos
+                for (Map.Entry<String, AlgorithmDescriptionClass> algoDescEntry : descriptions.entrySet()) {
+                    AlgorithmDescriptionClass algoDesc = algoDescEntry.getValue();
+                    suggestedAlgosListModel.addElement(algoDesc.getAlgName());
+                }
             }
         });
 
