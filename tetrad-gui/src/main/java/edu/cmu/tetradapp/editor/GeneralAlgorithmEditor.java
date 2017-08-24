@@ -120,7 +120,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
 
     private String selectedAlgoName;
 
-    private JTextArea algoDescriptionTextArea;
+    private JTextArea algoDescriptionTextArea = new JTextArea();
 
     private ParameterPanel parametersPanel;
 
@@ -138,7 +138,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
 
     private JButton step3Btn;
 
-    private DefaultListModel suggestedAlgosListModel;
+    private DefaultListModel suggestedAlgosListModel = new DefaultListModel();
 
     private Boolean takesKnowledgeFile = null;
 
@@ -160,9 +160,6 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         this.runner = runner;
 
         this.loadingIndicatorDialog = new JDialog();
-
-        // Initialize variables
-        algoDescriptionTextArea = new JTextArea();
 
         String helpHS = "/resources/javahelp/TetradHelp.hs";
 
@@ -346,8 +343,6 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
             });
         }
 
-        suggestedAlgosListModel = new DefaultListModel();
-
         // Add default algos to list model
         setDefaultAlgosListModel();
 
@@ -357,8 +352,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         suggestedAlgosList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 
         // Default to select the first algo name in list
-        suggestedAlgosList.setSelectedIndex(0);
-        selectedAlgoName = suggestedAlgosList.getSelectedValue().toString();
+        setDefaultSelectedAlgo();
 
         // Event listener
         suggestedAlgosList.addListSelectionListener(new ListSelectionListener() {
@@ -379,9 +373,9 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
                     System.out.println("Selected algo ..." + selectedAlgoName);
 
                     // Reset description
-                    algoDescriptionTextArea.setText("Description of " + selectedAlgoName + ": " + descriptions.get(selectedAlgoName).getDescription());
+                    setAlgoDescriptionContent();
 
-                    // Finally, set the selected algo and update the test and score dropdown menus
+                    // Finally, update the test and score dropdown menus
                     setAlgorithm();
                 }
             }
@@ -422,8 +416,6 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         // Clear the list model
         suggestedAlgosListModel.removeAllElements();
 
-        System.out.println("Selected algo Type ===> " + selectedAlgoType);
-
         // Create a new list model based on selections
         for (Map.Entry<String, AlgorithmDescriptionClass> algoDescEntry : descriptions.entrySet()) {
             // Also check the there's selection of knowledge file
@@ -443,14 +435,22 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         }
 
         // Reset default selected algorithm
-        suggestedAlgosList.setSelectedIndex(0);
-        selectedAlgoName = suggestedAlgosList.getSelectedValue().toString();
+        setDefaultSelectedAlgo();
 
         // Reset description
-        algoDescriptionTextArea.setText("Description of " + selectedAlgoName + ": " + descriptions.get(selectedAlgoName).getDescription());
+        setAlgoDescriptionContent();
 
-        // Finally, set the selected algo and update the test and score dropdown menus
+        // Finally, update the test and score dropdown menus
         setAlgorithm();
+    }
+
+    private void setDefaultSelectedAlgo() {
+        suggestedAlgosList.setSelectedIndex(0);
+        selectedAlgoName = suggestedAlgosList.getSelectedValue().toString();
+    }
+
+    private void setAlgoDescriptionContent() {
+        algoDescriptionTextArea.setText("Description of " + selectedAlgoName + ": " + descriptions.get(selectedAlgoName).getDescription());
     }
 
     private void doSearch(final GeneralAlgorithmRunner runner) {
@@ -829,16 +829,14 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
     }
 
     public Algorithm getAlgorithmFromInterface() {
-        String name = suggestedAlgosList.getSelectedValue().toString();
-
-        if (name == null) {
+        if (selectedAlgoName == null) {
             throw new NullPointerException();
         }
 
         IndependenceWrapper independenceWrapper = getIndependenceWrapper();
         ScoreWrapper scoreWrapper = getScoreWrapper();
 
-        Algorithm algorithm = getAlgorithm(name, independenceWrapper, scoreWrapper);
+        Algorithm algorithm = getAlgorithm(selectedAlgoName, independenceWrapper, scoreWrapper);
 
         return algorithm;
     }
@@ -968,10 +966,8 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
             return;
         }
 
+        // Get annotated algo description
         AlgorithmDescriptionClass description = descriptions.get(name.toString());
-
-        TestType test = (TestType) testDropdown.getSelectedItem();
-        ScoreType score = (ScoreType) scoreDropdown.getSelectedItem();
 
         // Set the algo on each selection change
         Algorithm algorithm = getAlgorithmFromInterface();
@@ -1001,9 +997,9 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         parameters.set("scoreEnabled", scoreDropdown.isEnabled());
 
         setAlgName(name);
-        setTestType(test);
-        setScoreType(score);
         setAlgType(selectedAlgoName.replace(" ", "_"));
+        setTestType((TestType) testDropdown.getSelectedItem());
+        setScoreType((ScoreType) scoreDropdown.getSelectedItem());
 
         // Also need to update the corresponding parameters
         parametersPanel = new ParameterPanel(runner.getAlgorithm().getParameters(), getParameters());
@@ -1327,7 +1323,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         suggestedAlgosBox.setBorder(new CompoundBorder(BorderFactory.createTitledBorder(suggestedAlgosBoxBorderTitle), new EmptyBorder(5, 5, 5, 5)));
 
         // Set default description as the first algorithm
-        algoDescriptionTextArea.setText("Description of " + selectedAlgoName + ": " + descriptions.get(selectedAlgoName).getDescription());
+        setAlgoDescriptionContent();
 
         // Set default algo in runner
         Algorithm algorithm = getAlgorithmFromInterface();
@@ -1613,14 +1609,15 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         priorKnowledgeBtnGrp.clearSelection();
         includeUnmeasuredConfoundersBtnGrp.clearSelection();
 
-        // Clear the list model
-        suggestedAlgosListModel.removeAllElements();
-
         // Finally show the default list of algos
         setDefaultAlgosListModel();
     }
 
     private void setDefaultAlgosListModel() {
+        // Clear the list model
+        suggestedAlgosListModel.removeAllElements();
+
+        // Create a new list model
         for (Map.Entry<String, AlgorithmDescriptionClass> algoDescEntry : descriptions.entrySet()) {
             AlgorithmDescriptionClass algoDesc = algoDescEntry.getValue();
             suggestedAlgosListModel.addElement(algoDesc.getAlgName());
