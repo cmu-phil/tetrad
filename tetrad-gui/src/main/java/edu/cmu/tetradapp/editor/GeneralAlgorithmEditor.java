@@ -88,6 +88,7 @@ import org.apache.commons.lang3.StringUtils;
  *
  * @author Joseph Ramsey
  * @author Chirayu Kong Wongchokprasitti, PhD (chw20@pitt.edu)
+ * @author Zhou Yuan (zhy19@pitt.edu)
  */
 public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
 
@@ -151,6 +152,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
             throw new IllegalArgumentException();
         }
 
+        // Group the tests based on data type
         List<TestType> discreteTests = new ArrayList<>();
         discreteTests.add(TestType.ChiSquare);
         discreteTests.add(TestType.GSquare);
@@ -170,6 +172,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         List<TestType> dsepTests = new ArrayList<>();
         dsepTests.add(TestType.D_SEPARATION);
 
+        // Group the scores based on data type
         List<ScoreType> discreteScores = new ArrayList<>();
         discreteScores.add(ScoreType.BDeu);
         discreteScores.add(ScoreType.Discrete_BIC);
@@ -199,6 +202,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
 //        if (runner.getDataModelList() == null) {
 //            throw new NullPointerException("No data has been provided.");
 //        }
+        // Create the test dropdown menu based on dataset
         List<TestType> tests;
 
         DataModelList dataModelList = runner.getDataModelList();
@@ -225,25 +229,8 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
             testDropdown.addItem(item);
         }
 
+        // Create the score dropdown menu based on dataset
         List<ScoreType> scores;
-
-        if ((dataModelList.isEmpty() && runner.getSourceGraph() != null)) {
-            tests = dsepTests;
-        } else if (!dataModelList.isEmpty()) {
-            DataModel dataSet = dataModelList.get(0);
-
-            if (dataSet.isContinuous()) {
-                tests = continuousTests;
-            } else if (dataSet.isDiscrete()) {
-                tests = discreteTests;
-            } else if (dataSet.isMixed()) {
-                tests = mixedTests;
-            } else {
-                throw new IllegalArgumentException();
-            }
-        } else {
-            throw new IllegalArgumentException("You need either some data sets or a graph as input.");
-        }
 
         if (dataModelList.isEmpty() && runner.getGraphs() != null) {
             scores = dsepScores;
