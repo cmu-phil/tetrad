@@ -85,7 +85,7 @@ public class EB implements Algorithm, TakesInitialGraph {
     public void setInitialGraph(Algorithm initialGraph) {
         if (initialGraph == null) {
             throw new IllegalArgumentException("This algorithm needs both data and a graph source as inputs; it \n"
-                    + "will orient the edges in the input graph using the data");
+                    + "will orient the edges in the input graph using the data.");
         }
 
         this.initialGraph = initialGraph;

@@ -453,12 +453,11 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         }
 
         if (hpcAccount == null) {
+            graphEditor.saveLayout();
 
             runner.execute();
 
             // Show graph
-            graphEditor.saveLayout();
-            runner.execute();
             graphEditor.replace(runner.getGraphs());
             graphEditor.validate();
             firePropertyChange("modelChanged", null, null);
@@ -862,13 +861,13 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
                 initialGraph = new SingleGraphAlg(runner.getSourceGraph());
             }
 
-            // Capture the error message and show in a dialog - Zhou
+            // Capture the exception message and show in a message dialog - Zhou
             try {
+                // When the initialGraph is null, the setter will throw an exception - Zhou
                 ((TakesInitialGraph) algorithm).setInitialGraph(initialGraph);
             } catch (Exception e) {
-                JOptionPane.showMessageDialog(desktop, e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(desktop, e.getMessage(), "Please Note", JOptionPane.INFORMATION_MESSAGE);
             }
-
         }
 
         return algorithm;
