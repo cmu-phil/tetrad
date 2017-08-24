@@ -92,62 +92,42 @@ import org.apache.commons.lang3.StringUtils;
 public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
 
     // Note: When adding an algorithm, make sure you do all of the following:
-    // 1. Add a new type to private enum AlgName.
-    // 2. Add a desription for it to final List<AlgorithmDescription> descriptions.
-    // 3. In private Algorithm getAlgorithm, add a new case to the switch statement returning
-    // an instance of the algorithm.
+    // 1. Add a enum AlgName in edu.cmu.tetrad.annotation.AlgName
+    // 2. Add a enum AlgType in edu.cmu.tetrad.annotation.AlgType if adding a new type
+    // 3. Inside algorithm calss, add the annotation block to describe the algorithm
     private static final long serialVersionUID = -5719467682865706447L;
 
     private final GeneralAlgorithmRunner runner;
     private final Box algoTypesBox;
+    private Box parametersBox;
+    private Box graphContainer;
     private final JComboBox<TestType> testDropdown = new JComboBox<>();
     private final JComboBox<ScoreType> scoreDropdown = new JComboBox<>();
     private final GraphSelectionEditor graphEditor;
     private final Parameters parameters;
     private final HelpSet helpSet;
-
     private final TetradDesktop desktop;
     private HpcJobInfo hpcJobInfo;
-
     private String jsonResult;
-
     private final TreeMap<String, AlgorithmDescriptionClass> descriptions;
-
     private List<String> algorithmsCanHaveKnowledge;
-
-    private JList suggestedAlgosList;
-
-    private String selectedAlgoName;
-
-    private JTextArea algoDescriptionTextArea = new JTextArea();
-
-    private ParameterPanel parametersPanel;
-
-    private Box parametersBox;
-
-    private JDialog loadingIndicatorDialog;
-
-    private Box graphContainer;
-
-    private JButton step1BackBtn;
-
-    private JButton step2Btn;
-
-    private JButton step2BackBtn;
-
-    private JButton step3Btn;
-
     private DefaultListModel suggestedAlgosListModel = new DefaultListModel();
-
+    private JList suggestedAlgosList;
     private Boolean takesKnowledgeFile = null;
-
     private ButtonGroup algoTypesBtnGrp = new ButtonGroup();
     private ButtonGroup varLinearRelationshipsBtnGrp = new ButtonGroup();
     private ButtonGroup gaussianVariablesBtnGrp = new ButtonGroup();
     private ButtonGroup priorKnowledgeBtnGrp = new ButtonGroup();
     private ButtonGroup includeUnmeasuredConfoundersBtnGrp = new ButtonGroup();
-
     private AlgType selectedAlgoType;
+    private String selectedAlgoName;
+    private JTextArea algoDescriptionTextArea = new JTextArea();
+    private ParameterPanel parametersPanel;
+    private JDialog loadingIndicatorDialog;
+    private JButton step1BackBtn;
+    private JButton step2Btn;
+    private JButton step2BackBtn;
+    private JButton step3Btn;
 
     //=========================CONSTRUCTORS============================//
     /**

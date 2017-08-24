@@ -15,7 +15,5 @@ public enum AlgName {
     // orient_pairwise
     EB, R1, R2, R3, R4, RSkew, RSkewE, Skew, SkewE,
     // search_for_structure_over_latents
-    Bpc, Fofc, Ftfc,
-    // bootstrapping
-    BootstrapFGES, BootstrapGFCI, BootstrapRFCI
+    Bpc, Fofc, Ftfc
 }
