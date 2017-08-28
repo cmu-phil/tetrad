@@ -9,6 +9,8 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.FindTwoFactorClusters;
 import edu.cmu.tetrad.search.SearchGraphUtils;
 import edu.cmu.tetrad.util.Parameters;
+import edu.pitt.dbmi.algo.bootstrap.BootstrapEdgeEnsemble;
+import edu.pitt.dbmi.algo.bootstrap.GeneralBootstrapTest;
 import edu.pitt.dbmi.data.Dataset;
 
 import java.util.ArrayList;
@@ -27,32 +29,61 @@ public class Ftfc implements Algorithm, TakesInitialGraph, HasKnowledge, Cluster
 
     @Override
     public Graph search(DataModel dataSet, Parameters parameters) {
-        ICovarianceMatrix cov = null;
+    	if(!parameters.getBoolean("bootstrapping")){
+            ICovarianceMatrix cov = null;
 
-        if (dataSet instanceof Dataset) {
-            cov = DataUtils.getCovMatrix(dataSet);
-        } else if (dataSet instanceof  ICovarianceMatrix){
-            cov = (ICovarianceMatrix) dataSet;
-        } else {
-            throw new IllegalArgumentException("Expected a dataset or a covariance matrix.");
-        }
+            if (dataSet instanceof Dataset) {
+                cov = DataUtils.getCovMatrix(dataSet);
+            } else if (dataSet instanceof  ICovarianceMatrix){
+                cov = (ICovarianceMatrix) dataSet;
+            } else {
+                throw new IllegalArgumentException("Expected a dataset or a covariance matrix.");
+            }
 
-        double alpha = parameters.getDouble("alpha");
+            double alpha = parameters.getDouble("alpha");
 
-        boolean gap = parameters.getBoolean("useGap", true);
-        FindTwoFactorClusters.Algorithm algorithm;
+            boolean gap = parameters.getBoolean("useGap", true);
+            FindTwoFactorClusters.Algorithm algorithm;
 
-        if (gap) {
-            algorithm = FindTwoFactorClusters.Algorithm.GAP;
-        } else {
-            algorithm = FindTwoFactorClusters.Algorithm.SAG;
-        }
+            if (gap) {
+                algorithm = FindTwoFactorClusters.Algorithm.GAP;
+            } else {
+                algorithm = FindTwoFactorClusters.Algorithm.SAG;
+            }
 
-        FindTwoFactorClusters search
-                = new FindTwoFactorClusters(cov, algorithm, alpha);
-        search.setVerbose(parameters.getBoolean("verbose"));
+            FindTwoFactorClusters search
+                    = new FindTwoFactorClusters(cov, algorithm, alpha);
+            search.setVerbose(parameters.getBoolean("verbose"));
 
-        return search.search();
+            return search.search();
+    	}else{
+    		Ftfc algorithm = new Ftfc();
+    		
+        	algorithm.setKnowledge(knowledge);
+//          if (initialGraph != null) {
+//      		algorithm.setInitialGraph(initialGraph);
+//  		}
+
+    		DataSet data = (DataSet) dataSet;
+    		
+    		GeneralBootstrapTest search = new GeneralBootstrapTest(data, algorithm, parameters.getInt("bootstrapSampleSize"));
+    		
+    		BootstrapEdgeEnsemble edgeEnsemble = BootstrapEdgeEnsemble.Highest;
+    		switch (parameters.getInt("bootstrapEnsemble", 1)) {
+    		case 0:
+    			edgeEnsemble = BootstrapEdgeEnsemble.Preserved;
+    			break;
+    		case 1:
+    			edgeEnsemble = BootstrapEdgeEnsemble.Highest;
+    			break;
+    		case 2:
+    			edgeEnsemble = BootstrapEdgeEnsemble.Majority;
+    		}
+    		search.setEdgeEnsemble(edgeEnsemble);
+    		search.setParameters(parameters);    		
+    		search.setVerbose(parameters.getBoolean("verbose"));
+    		return search.search();
+    	}
     }
 
     @Override
@@ -77,6 +108,10 @@ public class Ftfc implements Algorithm, TakesInitialGraph, HasKnowledge, Cluster
         parameters.add("useWishart");
         parameters.add("useGap");
         parameters.add("verbose");
+        // Bootstrapping
+        parameters.add("bootstrapping");
+        parameters.add("bootstrapSampleSize");
+        parameters.add("bootstrapEnsemble");
         return parameters;
     }
 

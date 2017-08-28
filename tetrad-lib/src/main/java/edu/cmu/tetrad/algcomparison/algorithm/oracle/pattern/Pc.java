@@ -46,10 +46,10 @@ public class Pc implements Algorithm, TakesInitialGraph, HasKnowledge {
 
     @Override
     public Graph search(DataModel dataSet, Parameters parameters) {
-        if (algorithm != null) {
-        	initialGraph = algorithm.search(dataSet, parameters);
-        }
         if(!parameters.getBoolean("bootstrapping")){
+            if (algorithm != null) {
+            	initialGraph = algorithm.search(dataSet, parameters);
+            }
             edu.cmu.tetrad.search.PcAll search = new edu.cmu.tetrad.search.PcAll(test.getTest(dataSet, parameters), initialGraph);
             search.setDepth(parameters.getInt("depth"));
             search.setKnowledge(knowledge);
@@ -59,14 +59,6 @@ public class Pc implements Algorithm, TakesInitialGraph, HasKnowledge {
             search.setVerbose(parameters.getBoolean("verbose"));
             return search.search();
         }else{
-        	IndependenceWrapper test = null;
-        	if(dataSet.isContinuous()){
-        		test = new FisherZ();
-        	}else if(dataSet.isDiscrete()){
-        		test = new ChiSquare();
-        	}else{
-        		test = new ConditionalGaussianLRT();
-        	}
     		Pc algorithm = new Pc(test);
     		algorithm.setKnowledge(knowledge);
 //          if (initialGraph != null) {
@@ -121,6 +113,7 @@ public class Pc implements Algorithm, TakesInitialGraph, HasKnowledge {
         parameters.add("bootstrapping");
         parameters.add("bootstrapSampleSize");
         parameters.add("bootstrapEnsemble");
+        parameters.add("verbose");
         return parameters;
     }
 

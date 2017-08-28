@@ -4,6 +4,7 @@ import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.data.DataModel;
+import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.IKnowledge;
 import edu.cmu.tetrad.data.Knowledge2;
 import edu.cmu.tetrad.graph.EdgeListGraph;
@@ -11,6 +12,8 @@ import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.util.Parameters;
+import edu.pitt.dbmi.algo.bootstrap.BootstrapEdgeEnsemble;
+import edu.pitt.dbmi.algo.bootstrap.GeneralBootstrapTest;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.graph.Graph;
 
@@ -33,18 +36,43 @@ public class MBFS implements Algorithm, HasKnowledge {
 
     @Override
     public Graph search(DataModel dataSet, Parameters parameters) {
-        IndependenceTest test = this.test.getTest(dataSet, parameters);
-        edu.cmu.tetrad.search.Mbfs search = new edu.cmu.tetrad.search.Mbfs(
-                test,
-                parameters.getInt("depth")
-        );
+    	if (!parameters.getBoolean("bootstrapping")) {
+            IndependenceTest test = this.test.getTest(dataSet, parameters);
+            edu.cmu.tetrad.search.Mbfs search = new edu.cmu.tetrad.search.Mbfs(
+                    test,
+                    parameters.getInt("depth")
+            );
 
-        search.setDepth(parameters.getInt("depth"));
-        search.setKnowledge(knowledge);
+            search.setDepth(parameters.getInt("depth"));
+            search.setKnowledge(knowledge);
 
-        this.targetName = parameters.getString("targetName");
-        Node target = test.getVariable(targetName);
-        return search.search(target);
+            this.targetName = parameters.getString("targetName");
+            Node target = test.getVariable(targetName);
+            return search.search(target);
+    	}else{
+    		MBFS algorithm = new MBFS(test);
+    		
+    		algorithm.setKnowledge(knowledge);
+			DataSet data = (DataSet) dataSet;
+			GeneralBootstrapTest search = new GeneralBootstrapTest(data, algorithm,
+					parameters.getInt("bootstrapSampleSize"));
+
+			BootstrapEdgeEnsemble edgeEnsemble = BootstrapEdgeEnsemble.Highest;
+			switch (parameters.getInt("bootstrapEnsemble", 1)) {
+			case 0:
+				edgeEnsemble = BootstrapEdgeEnsemble.Preserved;
+				break;
+			case 1:
+				edgeEnsemble = BootstrapEdgeEnsemble.Highest;
+				break;
+			case 2:
+				edgeEnsemble = BootstrapEdgeEnsemble.Majority;
+			}
+			search.setEdgeEnsemble(edgeEnsemble);
+			search.setParameters(parameters);
+			search.setVerbose(parameters.getBoolean("verbose"));
+			return search.search();
+    	}
     }
 
     @Override
@@ -68,6 +96,11 @@ public class MBFS implements Algorithm, HasKnowledge {
         List<String> parameters = test.getParameters();
         parameters.add("depth");
         parameters.add("targetName");
+        // Bootstrapping
+        parameters.add("bootstrapping");
+        parameters.add("bootstrapSampleSize");
+        parameters.add("bootstrapEnsemble");
+        parameters.add("verbose");
         return parameters;
     }
 

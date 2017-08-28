@@ -4,6 +4,8 @@ import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.*;
+import edu.pitt.dbmi.algo.bootstrap.BootstrapEdgeEnsemble;
+import edu.pitt.dbmi.algo.bootstrap.GeneralBootstrapTest;
 
 import java.text.NumberFormat;
 import java.util.ArrayList;
@@ -17,82 +19,106 @@ public class FactorAnalysis implements Algorithm {
     static final long serialVersionUID = 23L;
 
     public Graph search(DataModel ds, Parameters parameters) {
+    	if (!parameters.getBoolean("bootstrapping")) {
 
-        DataSet selectedModel = (DataSet) ds;
+            DataSet selectedModel = (DataSet) ds;
 
-        if (selectedModel == null) {
-            throw new NullPointerException("Data not specified.");
-        }
-
-        edu.cmu.tetrad.search.FactorAnalysis analysis = new edu.cmu.tetrad.search.FactorAnalysis(selectedModel);
-        analysis.setThreshold(parameters.getDouble("convergenceThreshold"));
-        analysis.setNumFactors(parameters.getInt("numFactors"));
-
-        double threshold = parameters.getDouble("fa_threshold");
-
-        TetradMatrix unrotatedSolution = analysis.successiveResidual();
-        TetradMatrix rotatedSolution = analysis.successiveFactorVarimax(unrotatedSolution);
-
-        SemGraph graph = new SemGraph();
-
-        Vector<Node> observedVariables = new Vector<>();
-
-        for (Node a : selectedModel.getVariables()) {
-            graph.addNode(a);
-            observedVariables.add(a);
-        }
-
-        Vector<Node> factors = new Vector<>();
-
-        if (parameters.getBoolean("useVarimax")) {
-            for (int i = 0; i < rotatedSolution.columns(); i++) {
-                ContinuousVariable factor = new ContinuousVariable("Factor" + (i + 1));
-                factor.setNodeType(NodeType.LATENT);
-                graph.addNode(factor);
-                factors.add(factor);
+            if (selectedModel == null) {
+                throw new NullPointerException("Data not specified.");
             }
 
-            for (int i = 0; i < rotatedSolution.rows(); i++) {
-                for (int j = 0; j < rotatedSolution.columns(); j++) {
-                    if (Math.abs(rotatedSolution.get(i, j)) > threshold) {
-                        graph.addDirectedEdge(factors.get(j), observedVariables.get(i));
+            edu.cmu.tetrad.search.FactorAnalysis analysis = new edu.cmu.tetrad.search.FactorAnalysis(selectedModel);
+            analysis.setThreshold(parameters.getDouble("convergenceThreshold"));
+            analysis.setNumFactors(parameters.getInt("numFactors"));
+
+            double threshold = parameters.getDouble("fa_threshold");
+
+            TetradMatrix unrotatedSolution = analysis.successiveResidual();
+            TetradMatrix rotatedSolution = analysis.successiveFactorVarimax(unrotatedSolution);
+
+            SemGraph graph = new SemGraph();
+
+            Vector<Node> observedVariables = new Vector<>();
+
+            for (Node a : selectedModel.getVariables()) {
+                graph.addNode(a);
+                observedVariables.add(a);
+            }
+
+            Vector<Node> factors = new Vector<>();
+
+            if (parameters.getBoolean("useVarimax")) {
+                for (int i = 0; i < rotatedSolution.columns(); i++) {
+                    ContinuousVariable factor = new ContinuousVariable("Factor" + (i + 1));
+                    factor.setNodeType(NodeType.LATENT);
+                    graph.addNode(factor);
+                    factors.add(factor);
+                }
+
+                for (int i = 0; i < rotatedSolution.rows(); i++) {
+                    for (int j = 0; j < rotatedSolution.columns(); j++) {
+                        if (Math.abs(rotatedSolution.get(i, j)) > threshold) {
+                            graph.addDirectedEdge(factors.get(j), observedVariables.get(i));
+                        }
+                    }
+                }
+            } else {
+                for (int i = 0; i < unrotatedSolution.columns(); i++) {
+                    ContinuousVariable factor = new ContinuousVariable("Factor" + (i + 1));
+                    factor.setNodeType(NodeType.LATENT);
+                    graph.addNode(factor);
+                    factors.add(factor);
+                }
+
+                for (int i = 0; i < unrotatedSolution.rows(); i++) {
+                    for (int j = 0; j < unrotatedSolution.columns(); j++) {
+                        if (Math.abs(unrotatedSolution.get(i, j)) > threshold) {
+                            graph.addDirectedEdge(factors.get(j), observedVariables.get(i));
+                        }
                     }
                 }
             }
-        } else {
-            for (int i = 0; i < unrotatedSolution.columns(); i++) {
-                ContinuousVariable factor = new ContinuousVariable("Factor" + (i + 1));
-                factor.setNodeType(NodeType.LATENT);
-                graph.addNode(factor);
-                factors.add(factor);
-            }
 
-            for (int i = 0; i < unrotatedSolution.rows(); i++) {
-                for (int j = 0; j < unrotatedSolution.columns(); j++) {
-                    if (Math.abs(unrotatedSolution.get(i, j)) > threshold) {
-                        graph.addDirectedEdge(factors.get(j), observedVariables.get(i));
-                    }
+            if (parameters.getBoolean("verbose")) {
+                NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
+
+                String output = "Unrotated Factor Loading Matrix:\n";
+
+                output += tableString(unrotatedSolution, nf, Double.POSITIVE_INFINITY);
+
+                if (unrotatedSolution.columns() != 1) {
+                    output += "\n\nRotated Matrix (using sequential varimax):\n";
+                    output += tableString(rotatedSolution, nf, threshold);
                 }
-            }
-        }
 
-        if (parameters.getBoolean("verbose")) {
-            NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
-
-            String output = "Unrotated Factor Loading Matrix:\n";
-
-            output += tableString(unrotatedSolution, nf, Double.POSITIVE_INFINITY);
-
-            if (unrotatedSolution.columns() != 1) {
-                output += "\n\nRotated Matrix (using sequential varimax):\n";
-                output += tableString(rotatedSolution, nf, threshold);
+                System.out.println(output);
+                TetradLogger.getInstance().forceLogMessage(output);
             }
 
-            System.out.println(output);
-            TetradLogger.getInstance().forceLogMessage(output);
-        }
+            return graph;
+    	}else{
+    		FactorAnalysis algorithm = new FactorAnalysis();
+    		
+			DataSet data = (DataSet) ds;
+			GeneralBootstrapTest search = new GeneralBootstrapTest(data, algorithm,
+					parameters.getInt("bootstrapSampleSize"));
 
-        return graph;
+			BootstrapEdgeEnsemble edgeEnsemble = BootstrapEdgeEnsemble.Highest;
+			switch (parameters.getInt("bootstrapEnsemble", 1)) {
+			case 0:
+				edgeEnsemble = BootstrapEdgeEnsemble.Preserved;
+				break;
+			case 1:
+				edgeEnsemble = BootstrapEdgeEnsemble.Highest;
+				break;
+			case 2:
+				edgeEnsemble = BootstrapEdgeEnsemble.Majority;
+			}
+			search.setEdgeEnsemble(edgeEnsemble);
+			search.setParameters(parameters);
+			search.setVerbose(parameters.getBoolean("verbose"));
+			return search.search();
+    	}
     }
 
     private String tableString(TetradMatrix matrix, NumberFormat nf, double threshold) {
@@ -138,6 +164,10 @@ public class FactorAnalysis implements Algorithm {
         params.add("useVarimax");
         params.add("convergenceThreshold");
         params.add("verbose");
+        // Bootstrapping
+        params.add("bootstrapping");
+        params.add("bootstrapSampleSize");
+        params.add("bootstrapEnsemble");
         return params;
     }
 }

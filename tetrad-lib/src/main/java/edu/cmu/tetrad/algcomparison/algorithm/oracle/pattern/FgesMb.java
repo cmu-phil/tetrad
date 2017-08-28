@@ -11,6 +11,8 @@ import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.Score;
 import edu.cmu.tetrad.util.Parameters;
+import edu.pitt.dbmi.algo.bootstrap.BootstrapEdgeEnsemble;
+import edu.pitt.dbmi.algo.bootstrap.GeneralBootstrapTest;
 
 import java.util.Collections;
 import java.util.List;
@@ -39,27 +41,55 @@ public class FgesMb implements Algorithm, TakesInitialGraph, HasKnowledge {
 
     @Override
     public Graph search(DataModel dataSet, Parameters parameters) {
-        if (algorithm != null) {
-        	initialGraph = algorithm.search(dataSet, parameters);
-        }
+    	if (!parameters.getBoolean("bootstrapping")) {
+            if (algorithm != null) {
+            	initialGraph = algorithm.search(dataSet, parameters);
+            }
 
-//        Score score = this.score.getScore(DataUtils.getContinuousDataSet(dataSet), parameters);
-//
-//        Score score =
+//            Score score = this.score.getScore(DataUtils.getContinuousDataSet(dataSet), parameters);
+    //
+//            Score score =
 
-        Score score = this.score.getScore(dataSet, parameters);
-        edu.cmu.tetrad.search.FgesMb search = new edu.cmu.tetrad.search.FgesMb(score);
-        search.setFaithfulnessAssumed(parameters.getBoolean("faithfulnessAssumed"));
-        search.setKnowledge(knowledge);
+            Score score = this.score.getScore(dataSet, parameters);
+            edu.cmu.tetrad.search.FgesMb search = new edu.cmu.tetrad.search.FgesMb(score);
+            search.setFaithfulnessAssumed(parameters.getBoolean("faithfulnessAssumed"));
+            search.setKnowledge(knowledge);
 
-        if (initialGraph != null) {
-            search.setInitialGraph(initialGraph);
-        }
+            if (initialGraph != null) {
+                search.setInitialGraph(initialGraph);
+            }
 
-        this.targetName = parameters.getString("targetName");
-        Node target = this.score.getVariable(targetName);
+            this.targetName = parameters.getString("targetName");
+            Node target = this.score.getVariable(targetName);
 
-        return search.search(Collections.singletonList(target));
+            return search.search(Collections.singletonList(target));
+    	}else{
+    		FgesMb fgesMb = new FgesMb(score, algorithm);
+    		
+    		fgesMb.setKnowledge(knowledge);
+			if (initialGraph != null) {
+				fgesMb.setInitialGraph(initialGraph);
+			}
+			DataSet data = (DataSet) dataSet;
+			GeneralBootstrapTest search = new GeneralBootstrapTest(data, fgesMb,
+					parameters.getInt("bootstrapSampleSize"));
+
+			BootstrapEdgeEnsemble edgeEnsemble = BootstrapEdgeEnsemble.Highest;
+			switch (parameters.getInt("bootstrapEnsemble", 1)) {
+			case 0:
+				edgeEnsemble = BootstrapEdgeEnsemble.Preserved;
+				break;
+			case 1:
+				edgeEnsemble = BootstrapEdgeEnsemble.Highest;
+				break;
+			case 2:
+				edgeEnsemble = BootstrapEdgeEnsemble.Majority;
+			}
+			search.setEdgeEnsemble(edgeEnsemble);
+			search.setParameters(parameters);
+			search.setVerbose(parameters.getBoolean("verbose"));
+			return search.search();
+    	}
     }
 
     @Override
@@ -83,6 +113,11 @@ public class FgesMb implements Algorithm, TakesInitialGraph, HasKnowledge {
         List<String> parameters = score.getParameters();
         parameters.add("targetName");
         parameters.add("faithfulnessAssumed");
+		// Bootstrapping
+        parameters.add("bootstrapping");
+        parameters.add("bootstrapSampleSize");
+        parameters.add("bootstrapEnsemble");
+        parameters.add("verbose");
         return parameters;
     }
 

@@ -10,6 +10,8 @@ import edu.cmu.tetrad.search.FindOneFactorClusters;
 import edu.cmu.tetrad.search.SearchGraphUtils;
 import edu.cmu.tetrad.search.TestType;
 import edu.cmu.tetrad.util.Parameters;
+import edu.pitt.dbmi.algo.bootstrap.BootstrapEdgeEnsemble;
+import edu.pitt.dbmi.algo.bootstrap.GeneralBootstrapTest;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -28,32 +30,61 @@ public class Fofc implements Algorithm, TakesInitialGraph, HasKnowledge, Cluster
 
     @Override
     public Graph search(DataModel dataSet, Parameters parameters) {
-        ICovarianceMatrix cov = DataUtils.getCovMatrix(dataSet);
-        double alpha = parameters.getDouble("alpha");
+    	if(!parameters.getBoolean("bootstrapping")){
+            ICovarianceMatrix cov = DataUtils.getCovMatrix(dataSet);
+            double alpha = parameters.getDouble("alpha");
 
-        boolean wishart = parameters.getBoolean("useWishart", true);
-        TestType testType;
+            boolean wishart = parameters.getBoolean("useWishart", true);
+            TestType testType;
 
-        if (wishart) {
-            testType = TestType.TETRAD_WISHART;
-        } else {
-            testType = TestType.TETRAD_DELTA;
-        }
+            if (wishart) {
+                testType = TestType.TETRAD_WISHART;
+            } else {
+                testType = TestType.TETRAD_DELTA;
+            }
 
-        boolean gap = parameters.getBoolean("useGap", true);
-        FindOneFactorClusters.Algorithm algorithm;
+            boolean gap = parameters.getBoolean("useGap", true);
+            FindOneFactorClusters.Algorithm algorithm;
 
-        if (gap) {
-            algorithm = FindOneFactorClusters.Algorithm.GAP;
-        } else {
-            algorithm = FindOneFactorClusters.Algorithm.SAG;
-        }
+            if (gap) {
+                algorithm = FindOneFactorClusters.Algorithm.GAP;
+            } else {
+                algorithm = FindOneFactorClusters.Algorithm.SAG;
+            }
 
-        edu.cmu.tetrad.search.FindOneFactorClusters search
-                = new edu.cmu.tetrad.search.FindOneFactorClusters(cov, testType, algorithm, alpha);
-        search.setVerbose(parameters.getBoolean("verbose"));
+            edu.cmu.tetrad.search.FindOneFactorClusters search
+                    = new edu.cmu.tetrad.search.FindOneFactorClusters(cov, testType, algorithm, alpha);
+            search.setVerbose(parameters.getBoolean("verbose"));
 
-        return search.search();
+            return search.search();
+    	}else{
+    		Fofc algorithm = new Fofc();
+    		
+        	algorithm.setKnowledge(knowledge);
+//          if (initialGraph != null) {
+//      		algorithm.setInitialGraph(initialGraph);
+//  		}
+
+    		DataSet data = (DataSet) dataSet;
+    		
+    		GeneralBootstrapTest search = new GeneralBootstrapTest(data, algorithm, parameters.getInt("bootstrapSampleSize"));
+    		
+    		BootstrapEdgeEnsemble edgeEnsemble = BootstrapEdgeEnsemble.Highest;
+    		switch (parameters.getInt("bootstrapEnsemble", 1)) {
+    		case 0:
+    			edgeEnsemble = BootstrapEdgeEnsemble.Preserved;
+    			break;
+    		case 1:
+    			edgeEnsemble = BootstrapEdgeEnsemble.Highest;
+    			break;
+    		case 2:
+    			edgeEnsemble = BootstrapEdgeEnsemble.Majority;
+    		}
+    		search.setEdgeEnsemble(edgeEnsemble);
+    		search.setParameters(parameters);    		
+    		search.setVerbose(parameters.getBoolean("verbose"));
+    		return search.search();
+    	}
     }
 
     @Override
@@ -78,6 +109,10 @@ public class Fofc implements Algorithm, TakesInitialGraph, HasKnowledge, Cluster
         parameters.add("useWishart");
         parameters.add("useGap");
         parameters.add("verbose");
+        // Bootstrapping
+        parameters.add("bootstrapping");
+        parameters.add("bootstrapSampleSize");
+        parameters.add("bootstrapEnsemble");
         return parameters;
     }
 

@@ -5,6 +5,8 @@ import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataUtils;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.util.Parameters;
+import edu.pitt.dbmi.algo.bootstrap.BootstrapEdgeEnsemble;
+import edu.pitt.dbmi.algo.bootstrap.GeneralBootstrapTest;
 import edu.cmu.tetrad.algcomparison.utils.TakesInitialGraph;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
@@ -30,22 +32,49 @@ public class RSkewE implements Algorithm, TakesInitialGraph {
 
     @Override
     public Graph search(DataModel dataSet, Parameters parameters) {
-        Graph initial = algorithm.search(dataSet, parameters);
+    	if (!parameters.getBoolean("bootstrapping")) {
+            Graph initial = algorithm.search(dataSet, parameters);
 
-        if (initial != null) {
-            initial = algorithm.search(dataSet, parameters);
-        } else {
-            throw new IllegalArgumentException("This algorithm needs both data and a graph source as inputs; it \n" +
-                    "will orient the edges in the input graph using the data");
-        }
+            if (initial != null) {
+                initial = algorithm.search(dataSet, parameters);
+            } else {
+                throw new IllegalArgumentException("This algorithm needs both data and a graph source as inputs; it \n" +
+                        "will orient the edges in the input graph using the data");
+            }
 
-        List<DataSet> dataSets = new ArrayList<>();
-        dataSets.add(DataUtils.getContinuousDataSet(dataSet));
+            List<DataSet> dataSets = new ArrayList<>();
+            dataSets.add(DataUtils.getContinuousDataSet(dataSet));
 
-        Lofs2 lofs = new Lofs2(initial, dataSets);
-        lofs.setRule(Lofs2.Rule.RSkewE);
+            Lofs2 lofs = new Lofs2(initial, dataSets);
+            lofs.setRule(Lofs2.Rule.RSkewE);
 
-        return lofs.orient();
+            return lofs.orient();
+    	}else{
+    		RSkewE rSkewE = new RSkewE(algorithm);
+    		if (initialGraph != null) {
+    			rSkewE.setInitialGraph(initialGraph);
+			}
+    		
+    		DataSet data = (DataSet) dataSet;
+			GeneralBootstrapTest search = new GeneralBootstrapTest(data, rSkewE,
+					parameters.getInt("bootstrapSampleSize"));
+
+			BootstrapEdgeEnsemble edgeEnsemble = BootstrapEdgeEnsemble.Highest;
+			switch (parameters.getInt("bootstrapEnsemble", 1)) {
+			case 0:
+				edgeEnsemble = BootstrapEdgeEnsemble.Preserved;
+				break;
+			case 1:
+				edgeEnsemble = BootstrapEdgeEnsemble.Highest;
+				break;
+			case 2:
+				edgeEnsemble = BootstrapEdgeEnsemble.Majority;
+			}
+			search.setEdgeEnsemble(edgeEnsemble);
+			search.setParameters(parameters);
+			search.setVerbose(parameters.getBoolean("verbose"));
+			return search.search();
+    	}
     }
 
     @Override
@@ -66,6 +95,12 @@ public class RSkewE implements Algorithm, TakesInitialGraph {
 
     @Override
     public List<String> getParameters() {
+    	List<String> parameters = algorithm.getParameters();
+    	// Bootstrapping
+    	parameters.add("bootstrapping");
+    	parameters.add("bootstrapSampleSize");
+    	parameters.add("bootstrapEnsemble");
+    	parameters.add("verbose");
         return algorithm.getParameters();
     }
 

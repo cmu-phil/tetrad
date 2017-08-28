@@ -5,6 +5,7 @@ import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.algcomparison.utils.TakesInitialGraph;
 import edu.cmu.tetrad.data.DataModel;
+import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.data.IKnowledge;
 import edu.cmu.tetrad.data.Knowledge2;
@@ -13,6 +14,8 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.*;
 import edu.cmu.tetrad.search.PcAll;
 import edu.cmu.tetrad.util.Parameters;
+import edu.pitt.dbmi.algo.bootstrap.BootstrapEdgeEnsemble;
+import edu.pitt.dbmi.algo.bootstrap.GeneralBootstrapTest;
 
 import java.util.List;
 
@@ -36,20 +39,49 @@ public class PcStableMax implements Algorithm, TakesInitialGraph, HasKnowledge {
 
     @Override
     public Graph search(DataModel dataSet, Parameters parameters) {
-        if (algorithm != null) {
-        	initialGraph = algorithm.search(dataSet, parameters);
-        }
+    	if (!parameters.getBoolean("bootstrapping")) {
+    		
+            if (algorithm != null) {
+            	initialGraph = algorithm.search(dataSet, parameters);
+            }
 
-        edu.cmu.tetrad.search.PcAll search = new edu.cmu.tetrad.search.PcAll(test.getTest(dataSet, parameters), initialGraph);
-        search.setDepth(parameters.getInt("depth"));
-        search.setKnowledge(knowledge);
-        search.setFasRule(edu.cmu.tetrad.search.PcAll.FasRule.FAS_STABLE);
-        search.setColliderDiscovery(PcAll.ColliderDiscovery.MAX_P);
-        search.setConflictRule(edu.cmu.tetrad.search.PcAll.ConflictRule.PRIORITY);
-        search.setVerbose(parameters.getBoolean("verbose"));
-        search.setUseHeuristic(parameters.getBoolean("useMaxPOrientationHeuristic"));
-        search.setMaxPathLength(parameters.getInt("maxPOrientationMaxPathLength"));
-        return search.search();
+            edu.cmu.tetrad.search.PcAll search = new edu.cmu.tetrad.search.PcAll(test.getTest(dataSet, parameters), initialGraph);
+            search.setDepth(parameters.getInt("depth"));
+            search.setKnowledge(knowledge);
+            search.setFasRule(edu.cmu.tetrad.search.PcAll.FasRule.FAS_STABLE);
+            search.setColliderDiscovery(PcAll.ColliderDiscovery.MAX_P);
+            search.setConflictRule(edu.cmu.tetrad.search.PcAll.ConflictRule.PRIORITY);
+            search.setVerbose(parameters.getBoolean("verbose"));
+            search.setUseHeuristic(parameters.getBoolean("useMaxPOrientationHeuristic"));
+            search.setMaxPathLength(parameters.getInt("maxPOrientationMaxPathLength"));
+            return search.search();
+    	}else{
+    		PcStableMax pcStableMax = new PcStableMax(test, compareToTrue);
+    		
+    		pcStableMax.setKnowledge(knowledge);
+			if (initialGraph != null) {
+				pcStableMax.setInitialGraph(initialGraph);
+			}
+			DataSet data = (DataSet) dataSet;
+			GeneralBootstrapTest search = new GeneralBootstrapTest(data, pcStableMax,
+					parameters.getInt("bootstrapSampleSize"));
+
+			BootstrapEdgeEnsemble edgeEnsemble = BootstrapEdgeEnsemble.Highest;
+			switch (parameters.getInt("bootstrapEnsemble", 1)) {
+			case 0:
+				edgeEnsemble = BootstrapEdgeEnsemble.Preserved;
+				break;
+			case 1:
+				edgeEnsemble = BootstrapEdgeEnsemble.Highest;
+				break;
+			case 2:
+				edgeEnsemble = BootstrapEdgeEnsemble.Majority;
+			}
+			search.setEdgeEnsemble(edgeEnsemble);
+			search.setParameters(parameters);
+			search.setVerbose(parameters.getBoolean("verbose"));
+			return search.search();
+    	}
     }
 
     @Override
@@ -80,6 +112,10 @@ public class PcStableMax implements Algorithm, TakesInitialGraph, HasKnowledge {
         parameters.add("useMaxPOrientationHeuristic");
         parameters.add("maxPOrientationMaxPathLength");
         parameters.add("verbose");
+        // Bootstrapping
+        parameters.add("bootstrapping");
+        parameters.add("bootstrapSampleSize");
+        parameters.add("bootstrapEnsemble");
         return parameters;
     }
 

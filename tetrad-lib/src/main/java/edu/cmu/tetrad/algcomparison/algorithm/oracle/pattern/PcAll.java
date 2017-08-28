@@ -44,13 +44,13 @@ public class PcAll implements Algorithm, TakesInitialGraph, HasKnowledge {
 
     @Override
     public Graph search(DataModel dataSet, Parameters parameters) {
-        Graph initial = null;
-
-        if (algorithm != null) {
-            initial = algorithm.search(dataSet, parameters);
-        }
-
         if(!parameters.getBoolean("bootstrapping")){
+            Graph initial = null;
+
+            if (algorithm != null) {
+                initial = algorithm.search(dataSet, parameters);
+            }
+
         	edu.cmu.tetrad.search.PcAll.FasRule fasRule;
 
             switch (parameters.getInt("fasRule")) {
@@ -110,16 +110,9 @@ public class PcAll implements Algorithm, TakesInitialGraph, HasKnowledge {
 
             return search.search();
         }else{
-        	IndependenceWrapper test = null;
-        	if(dataSet.isContinuous()){
-        		test = new FisherZ();
-        	}else if(dataSet.isDiscrete()){
-        		test = new ChiSquare();
-        	}else{
-        		test = new ConditionalGaussianLRT();
-        	}
         	PcAll algorithm = new PcAll(test);
-    		algorithm.setKnowledge(knowledge);
+    		
+        	algorithm.setKnowledge(knowledge);
 //          if (initialGraph != null) {
 //      		algorithm.setInitialGraph(initialGraph);
 //  		}

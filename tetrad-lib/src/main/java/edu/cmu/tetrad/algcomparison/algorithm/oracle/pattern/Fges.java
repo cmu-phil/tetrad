@@ -1,13 +1,7 @@
 package edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern;
 
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
-import edu.cmu.tetrad.algcomparison.independence.ChiSquare;
-import edu.cmu.tetrad.algcomparison.independence.ConditionalGaussianLRT;
-import edu.cmu.tetrad.algcomparison.independence.FisherZ;
-import edu.cmu.tetrad.algcomparison.score.BdeuScore;
-import edu.cmu.tetrad.algcomparison.score.ConditionalGaussianBicScore;
 import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
-import edu.cmu.tetrad.algcomparison.score.SemBicScore;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.algcomparison.utils.TakesInitialGraph;
 import edu.cmu.tetrad.data.DataModel;
@@ -56,11 +50,11 @@ public class Fges implements Algorithm, TakesInitialGraph, HasKnowledge {
 
     @Override
     public Graph search(DataModel dataSet, Parameters parameters) {
-        if (algorithm != null) {
-        	initialGraph = algorithm.search(dataSet, parameters);
-        }
-
         if(!parameters.getBoolean("bootstrapping")){
+            if (algorithm != null) {
+            	initialGraph = algorithm.search(dataSet, parameters);
+            }
+
             edu.cmu.tetrad.search.Fges search
 		            = new edu.cmu.tetrad.search.Fges(score.getScore(dataSet, parameters));
 		    search.setFaithfulnessAssumed(parameters.getBoolean("faithfulnessAssumed"));
@@ -80,21 +74,11 @@ public class Fges implements Algorithm, TakesInitialGraph, HasKnowledge {
 		
 		    return search.search();
         }else{
-        	ScoreWrapper score = null;
+        	Fges fges = new Fges(score, algorithm);
+        	
+        	fges.setKnowledge(knowledge);
         	DataSet data = (DataSet) dataSet;
-        	if(dataSet.isContinuous()){
-        		score = new SemBicScore();
-        	}else if(dataSet.isDiscrete()){
-        		score = new BdeuScore();
-        	}else{
-        		score = new ConditionalGaussianBicScore();
-        	}
-        	Fges algorithm = new Fges(score);
-    		algorithm.setKnowledge(knowledge);
-//          if (initialGraph != null) {
-//      		algorithm.setInitialGraph(initialGraph);
-//  		}
-    		GeneralBootstrapTest search = new GeneralBootstrapTest(data, algorithm, parameters.getInt("bootstrapSampleSize"));
+    		GeneralBootstrapTest search = new GeneralBootstrapTest(data, fges, parameters.getInt("bootstrapSampleSize"));
     		
     		BootstrapEdgeEnsemble edgeEnsemble = BootstrapEdgeEnsemble.Highest;
     		switch (parameters.getInt("bootstrapEnsemble", 1)) {

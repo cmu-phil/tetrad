@@ -9,6 +9,8 @@ import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.*;
 import edu.cmu.tetrad.util.Parameters;
+import edu.pitt.dbmi.algo.bootstrap.BootstrapEdgeEnsemble;
+import edu.pitt.dbmi.algo.bootstrap.GeneralBootstrapTest;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -35,13 +37,36 @@ public class TsImages implements Algorithm, HasKnowledge, MultiDataSetAlgorithm 
 
     @Override
     public Graph search(DataModel dataModel, Parameters parameters) {
-        DataSet dataSet = (DataSet) dataModel;
-        TsGFci search;
-        Score score1 = score.getScore(dataSet, parameters);
-        IndependenceTest test = new IndTestScore(score1);
-        search = new TsGFci(test, score1);
-        search.setKnowledge(dataSet.getKnowledge());
-        return search.search();
+    	if(!parameters.getBoolean("bootstrapping")){
+            DataSet dataSet = (DataSet) dataModel;
+            TsGFci search;
+            Score score1 = score.getScore(dataSet, parameters);
+            IndependenceTest test = new IndTestScore(score1);
+            search = new TsGFci(test, score1);
+            search.setKnowledge(dataSet.getKnowledge());
+            return search.search();
+    	}else{
+    		TsImages algorithm = new TsImages(score);
+    		
+    		DataSet data = (DataSet) dataModel;
+    		GeneralBootstrapTest search = new GeneralBootstrapTest(data, algorithm, parameters.getInt("bootstrapSampleSize"));
+    		
+    		BootstrapEdgeEnsemble edgeEnsemble = BootstrapEdgeEnsemble.Highest;
+    		switch (parameters.getInt("bootstrapEnsemble", 1)) {
+    		case 0:
+    			edgeEnsemble = BootstrapEdgeEnsemble.Preserved;
+    			break;
+    		case 1:
+    			edgeEnsemble = BootstrapEdgeEnsemble.Highest;
+    			break;
+    		case 2:
+    			edgeEnsemble = BootstrapEdgeEnsemble.Majority;
+    		}
+    		search.setEdgeEnsemble(edgeEnsemble);
+    		search.setParameters(parameters);    		
+    		search.setVerbose(parameters.getBoolean("verbose"));
+    		return search.search();
+    	}
     }
 
     @Override
@@ -62,6 +87,12 @@ public class TsImages implements Algorithm, HasKnowledge, MultiDataSetAlgorithm 
 
     @Override
     public List<String> getParameters() {
+    	List<String> parameters = score.getParameters();
+    	// Bootstrapping
+        parameters.add("bootstrapping");
+        parameters.add("bootstrapSampleSize");
+        parameters.add("bootstrapEnsemble");
+        parameters.add("verbose");
         return score.getParameters();
     }
 

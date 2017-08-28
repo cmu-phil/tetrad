@@ -10,6 +10,8 @@ import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.SearchGraphUtils;
 import edu.cmu.tetrad.util.Parameters;
+import edu.pitt.dbmi.algo.bootstrap.BootstrapEdgeEnsemble;
+import edu.pitt.dbmi.algo.bootstrap.GeneralBootstrapTest;
 
 import java.util.List;
 
@@ -38,14 +40,42 @@ public class Jcpc implements Algorithm, TakesInitialGraph, HasKnowledge {
 
     @Override
     public Graph search(DataModel dataSet, Parameters parameters) {
+    	if (!parameters.getBoolean("bootstrapping")) {
+            DataSet continuousDataSet = DataUtils.getContinuousDataSet(dataSet);
+            edu.cmu.tetrad.search.Jcpc search = new edu.cmu.tetrad.search.Jcpc(
+                    test.getTest(continuousDataSet, parameters),
+                    score.getScore(continuousDataSet, parameters));
+            search.setKnowledge(knowledge);
 
-        DataSet continuousDataSet = DataUtils.getContinuousDataSet(dataSet);
-        edu.cmu.tetrad.search.Jcpc search = new edu.cmu.tetrad.search.Jcpc(
-                test.getTest(continuousDataSet, parameters),
-                score.getScore(continuousDataSet, parameters));
-        search.setKnowledge(knowledge);
+            return search.search();
+    	}else{
+    		Jcpc jcpc = new Jcpc(test, score);
+    		
+    		jcpc.setKnowledge(knowledge);
+			if (initialGraph != null) {
+				jcpc.setInitialGraph(initialGraph);
+			}
+			DataSet data = (DataSet) dataSet;
+			GeneralBootstrapTest search = new GeneralBootstrapTest(data, jcpc,
+					parameters.getInt("bootstrapSampleSize"));
 
-        return search.search();
+			BootstrapEdgeEnsemble edgeEnsemble = BootstrapEdgeEnsemble.Highest;
+			switch (parameters.getInt("bootstrapEnsemble", 1)) {
+			case 0:
+				edgeEnsemble = BootstrapEdgeEnsemble.Preserved;
+				break;
+			case 1:
+				edgeEnsemble = BootstrapEdgeEnsemble.Highest;
+				break;
+			case 2:
+				edgeEnsemble = BootstrapEdgeEnsemble.Majority;
+			}
+			search.setEdgeEnsemble(edgeEnsemble);
+			search.setParameters(parameters);
+			search.setVerbose(parameters.getBoolean("verbose"));
+			return search.search();
+    	}
+
     }
 
     @Override
@@ -68,6 +98,11 @@ public class Jcpc implements Algorithm, TakesInitialGraph, HasKnowledge {
     public List<String> getParameters() {
         List<String> parameters = test.getParameters();
         parameters.add("depth");
+        // Bootstrapping
+        parameters.add("bootstrapping");
+        parameters.add("bootstrapSampleSize");
+        parameters.add("bootstrapEnsemble");
+        parameters.add("verbose");
         return parameters;
     }
 

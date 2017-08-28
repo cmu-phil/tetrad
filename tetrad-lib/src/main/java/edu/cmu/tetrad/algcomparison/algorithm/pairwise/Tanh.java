@@ -5,6 +5,8 @@ import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataUtils;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.util.Parameters;
+import edu.pitt.dbmi.algo.bootstrap.BootstrapEdgeEnsemble;
+import edu.pitt.dbmi.algo.bootstrap.GeneralBootstrapTest;
 import edu.cmu.tetrad.algcomparison.utils.TakesInitialGraph;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
@@ -30,22 +32,49 @@ public class Tanh implements Algorithm, TakesInitialGraph {
 
     @Override
     public Graph search(DataModel dataSet, Parameters parameters) {
-    	initialGraph = algorithm.search(dataSet, parameters);
-
-        if (initialGraph != null) {
+    	if (!parameters.getBoolean("bootstrapping")) {
         	initialGraph = algorithm.search(dataSet, parameters);
-        } else {
-            throw new IllegalArgumentException("This algorithm needs both data and a graph source as inputs; it \n" +
-                    "will orient the edges in the input graph using the data");
-        }
 
-        List<DataSet> dataSets = new ArrayList<>();
-        dataSets.add(DataUtils.getContinuousDataSet(dataSet));
+            if (initialGraph != null) {
+            	initialGraph = algorithm.search(dataSet, parameters);
+            } else {
+                throw new IllegalArgumentException("This algorithm needs both data and a graph source as inputs; it \n" +
+                        "will orient the edges in the input graph using the data");
+            }
 
-        Lofs2 lofs = new Lofs2(initialGraph, dataSets);
-        lofs.setRule(Lofs2.Rule.Tanh);
+            List<DataSet> dataSets = new ArrayList<>();
+            dataSets.add(DataUtils.getContinuousDataSet(dataSet));
 
-        return lofs.orient();
+            Lofs2 lofs = new Lofs2(initialGraph, dataSets);
+            lofs.setRule(Lofs2.Rule.Tanh);
+
+            return lofs.orient();
+    	}else{
+    		Tanh tanh = new Tanh(algorithm);
+    		if (initialGraph != null) {
+    			tanh.setInitialGraph(initialGraph);
+			}
+    		
+    		DataSet data = (DataSet) dataSet;
+			GeneralBootstrapTest search = new GeneralBootstrapTest(data, tanh,
+					parameters.getInt("bootstrapSampleSize"));
+
+			BootstrapEdgeEnsemble edgeEnsemble = BootstrapEdgeEnsemble.Highest;
+			switch (parameters.getInt("bootstrapEnsemble", 1)) {
+			case 0:
+				edgeEnsemble = BootstrapEdgeEnsemble.Preserved;
+				break;
+			case 1:
+				edgeEnsemble = BootstrapEdgeEnsemble.Highest;
+				break;
+			case 2:
+				edgeEnsemble = BootstrapEdgeEnsemble.Majority;
+			}
+			search.setEdgeEnsemble(edgeEnsemble);
+			search.setParameters(parameters);
+			search.setVerbose(parameters.getBoolean("verbose"));
+			return search.search();
+    	}
     }
 
     @Override
@@ -66,6 +95,12 @@ public class Tanh implements Algorithm, TakesInitialGraph {
 
     @Override
     public List<String> getParameters() {
+    	List<String> parameters = algorithm.getParameters();
+    	// Bootstrapping
+    	parameters.add("bootstrapping");
+    	parameters.add("bootstrapSampleSize");
+    	parameters.add("bootstrapEnsemble");
+    	parameters.add("verbose");
         return algorithm.getParameters();
     }
 

@@ -9,6 +9,8 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.SearchGraphUtils;
 import edu.cmu.tetrad.search.SemBicScoreDeterministic;
 import edu.cmu.tetrad.util.Parameters;
+import edu.pitt.dbmi.algo.bootstrap.BootstrapEdgeEnsemble;
+import edu.pitt.dbmi.algo.bootstrap.GeneralBootstrapTest;
 
 import java.io.PrintStream;
 import java.util.ArrayList;
@@ -21,102 +23,134 @@ import java.util.List;
  */
 public class FgesD implements Algorithm, TakesInitialGraph, HasKnowledge {
 
-    static final long serialVersionUID = 23L;
-    private boolean compareToTrue = false;
-    private Algorithm algorithm = null;
-    private Graph initialGraph = null;
-    private IKnowledge knowledge = new Knowledge2();
+	static final long serialVersionUID = 23L;
+	private boolean compareToTrue = false;
+	private Algorithm algorithm = null;
+	private Graph initialGraph = null;
+	private IKnowledge knowledge = new Knowledge2();
 
-    public FgesD() {
-        this.compareToTrue = false;
-    }
+	public FgesD() {
+		this.compareToTrue = false;
+	}
 
-    @Override
-    public Graph search(DataModel dataSet, Parameters parameters) {
-        if (algorithm != null) {
-        	initialGraph = algorithm.search(dataSet, parameters);
-        }
+	@Override
+	public Graph search(DataModel dataSet, Parameters parameters) {
+		if (!parameters.getBoolean("bootstrapping")) {
+			if (algorithm != null) {
+				initialGraph = algorithm.search(dataSet, parameters);
+			}
 
-        edu.cmu.tetrad.search.FgesD search;
+			edu.cmu.tetrad.search.FgesD search;
 
-        if (dataSet instanceof ICovarianceMatrix) {
-            SemBicScoreDeterministic score = new SemBicScoreDeterministic((ICovarianceMatrix) dataSet);
-            score.setPenaltyDiscount(parameters.getDouble("penaltyDiscount"));
-            score.setDeterminismThreshold(parameters.getDouble("determinismThreshold"));
-            search = new edu.cmu.tetrad.search.FgesD(score);
+			if (dataSet instanceof ICovarianceMatrix) {
+				SemBicScoreDeterministic score = new SemBicScoreDeterministic((ICovarianceMatrix) dataSet);
+				score.setPenaltyDiscount(parameters.getDouble("penaltyDiscount"));
+				score.setDeterminismThreshold(parameters.getDouble("determinismThreshold"));
+				search = new edu.cmu.tetrad.search.FgesD(score);
 
-        } else if (dataSet instanceof DataSet) {
-            SemBicScoreDeterministic score = new SemBicScoreDeterministic(new CovarianceMatrix((DataSet) dataSet));
-            score.setPenaltyDiscount(parameters.getDouble("penaltyDiscount"));
-            score.setDeterminismThreshold(parameters.getDouble("determinismThreshold"));
-            search = new edu.cmu.tetrad.search.FgesD(score);
+			} else if (dataSet instanceof DataSet) {
+				SemBicScoreDeterministic score = new SemBicScoreDeterministic(new CovarianceMatrix((DataSet) dataSet));
+				score.setPenaltyDiscount(parameters.getDouble("penaltyDiscount"));
+				score.setDeterminismThreshold(parameters.getDouble("determinismThreshold"));
+				search = new edu.cmu.tetrad.search.FgesD(score);
 
-        } else {
-            throw new IllegalArgumentException("Expecting a dataset or a covariance matrix.");
-        }
+			} else {
+				throw new IllegalArgumentException("Expecting a dataset or a covariance matrix.");
+			}
 
-        search.setFaithfulnessAssumed(parameters.getBoolean("faithfulnessAssumed"));
-        search.setKnowledge(knowledge);
-        search.setVerbose(parameters.getBoolean("verbose"));
-        search.setMaxDegree(parameters.getInt("maxDegree"));
-//        search.setSymmetricFirstStep(parameters.getBoolean("symmetricFirstStep"));
+			search.setFaithfulnessAssumed(parameters.getBoolean("faithfulnessAssumed"));
+			search.setKnowledge(knowledge);
+			search.setVerbose(parameters.getBoolean("verbose"));
+			search.setMaxDegree(parameters.getInt("maxDegree"));
+			// search.setSymmetricFirstStep(parameters.getBoolean("symmetricFirstStep"));
 
-        Object obj = parameters.get("printStedu.cmream");
-        if (obj instanceof PrintStream) {
-            search.setOut((PrintStream) obj);
-        }
+			Object obj = parameters.get("printStedu.cmream");
+			if (obj instanceof PrintStream) {
+				search.setOut((PrintStream) obj);
+			}
 
-        if (initialGraph != null) {
-            search.setInitialGraph(initialGraph);
-        }
+			if (initialGraph != null) {
+				search.setInitialGraph(initialGraph);
+			}
 
-        return search.search();
-    }
+			return search.search();
+		} else {
+			FgesD algorithm = new FgesD();
 
-    @Override
-    public Graph getComparisonGraph(Graph graph) {
-        if (false) {
-            return new EdgeListGraph(graph);
-        } else {
-            return SearchGraphUtils.patternForDag(new EdgeListGraph(graph));
-        }
-    }
+			algorithm.setKnowledge(knowledge);
+			if (initialGraph != null) {
+				algorithm.setInitialGraph(initialGraph);
+			}
+			DataSet data = (DataSet) dataSet;
+			GeneralBootstrapTest search = new GeneralBootstrapTest(data, algorithm,
+					parameters.getInt("bootstrapSampleSize"));
 
-    @Override
-    public String getDescription() {
-        return "FGESD (Fast Greedy Equivalence Search Deterministic)";
-    }
+			BootstrapEdgeEnsemble edgeEnsemble = BootstrapEdgeEnsemble.Highest;
+			switch (parameters.getInt("bootstrapEnsemble", 1)) {
+			case 0:
+				edgeEnsemble = BootstrapEdgeEnsemble.Preserved;
+				break;
+			case 1:
+				edgeEnsemble = BootstrapEdgeEnsemble.Highest;
+				break;
+			case 2:
+				edgeEnsemble = BootstrapEdgeEnsemble.Majority;
+			}
+			search.setEdgeEnsemble(edgeEnsemble);
+			search.setParameters(parameters);
+			search.setVerbose(parameters.getBoolean("verbose"));
+			return search.search();
+		}
+	}
 
-    @Override
-    public DataType getDataType() {
-        return DataType.Continuous;
-    }
+	@Override
+	public Graph getComparisonGraph(Graph graph) {
+		if (false) {
+			return new EdgeListGraph(graph);
+		} else {
+			return SearchGraphUtils.patternForDag(new EdgeListGraph(graph));
+		}
+	}
 
-    @Override
-    public List<String> getParameters() {
-        List<String> parameters = new ArrayList<>();
-        parameters.add("penaltyDiscount");
-        parameters.add("symmetricFirstStep");
-        parameters.add("faithfulnessAssumed");
-        parameters.add("maxDegree");
-        parameters.add("determinismThreshold");
-        parameters.add("verbose");
-        return parameters;
-    }
+	@Override
+	public String getDescription() {
+		return "FGESD (Fast Greedy Equivalence Search Deterministic)";
+	}
 
-    @Override
-    public IKnowledge getKnowledge() {
-        return knowledge;
-    }
+	@Override
+	public DataType getDataType() {
+		return DataType.Continuous;
+	}
 
-    @Override
-    public void setKnowledge(IKnowledge knowledge) {
-        this.knowledge = knowledge;
-    }
+	@Override
+	public List<String> getParameters() {
+		List<String> parameters = new ArrayList<>();
+		parameters.add("penaltyDiscount");
+		parameters.add("symmetricFirstStep");
+		parameters.add("faithfulnessAssumed");
+		parameters.add("maxDegree");
+		parameters.add("determinismThreshold");
+		parameters.add("verbose");
+		// Bootstrapping
+        parameters.add("bootstrapping");
+        parameters.add("bootstrapSampleSize");
+        parameters.add("bootstrapEnsemble");
+		return parameters;
+	}
 
-    public void setCompareToTrue(boolean compareToTrue) {
-        this.compareToTrue = compareToTrue;
-    }
+	@Override
+	public IKnowledge getKnowledge() {
+		return knowledge;
+	}
+
+	@Override
+	public void setKnowledge(IKnowledge knowledge) {
+		this.knowledge = knowledge;
+	}
+
+	public void setCompareToTrue(boolean compareToTrue) {
+		this.compareToTrue = compareToTrue;
+	}
 
 	@Override
 	public Graph getInitialGraph() {

@@ -8,8 +8,9 @@ import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.search.SearchGraphUtils;
 import edu.pitt.csb.mgm.MGM;
+import edu.pitt.dbmi.algo.bootstrap.BootstrapEdgeEnsemble;
+import edu.pitt.dbmi.algo.bootstrap.GeneralBootstrapTest;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -20,20 +21,44 @@ import java.util.List;
 public class Mgm implements Algorithm {
     static final long serialVersionUID = 23L;
     public Graph search(DataModel ds, Parameters parameters) {
-        DataSet _ds = DataUtils.getMixedDataSet(ds);
-        double mgmParam1 = parameters.getDouble("mgmParam1");
-        double mgmParam2 = parameters.getDouble("mgmParam2");
-        double mgmParam3 = parameters.getDouble("mgmParam3");
+    	if(!parameters.getBoolean("bootstrapping")){
+            DataSet _ds = DataUtils.getMixedDataSet(ds);
+            double mgmParam1 = parameters.getDouble("mgmParam1");
+            double mgmParam2 = parameters.getDouble("mgmParam2");
+            double mgmParam3 = parameters.getDouble("mgmParam3");
 
-        double[] lambda = {
-                mgmParam1,
-                mgmParam2,
-                mgmParam3
-        };
+            double[] lambda = {
+                    mgmParam1,
+                    mgmParam2,
+                    mgmParam3
+            };
 
-        MGM m = new MGM(_ds, lambda);
+            MGM m = new MGM(_ds, lambda);
 
-        return m.search();
+            return m.search();
+    	}else{
+    		Mgm algorithm = new Mgm();
+    		
+    		DataSet data = (DataSet) ds;
+    		
+    		GeneralBootstrapTest search = new GeneralBootstrapTest(data, algorithm, parameters.getInt("bootstrapSampleSize"));
+    		
+    		BootstrapEdgeEnsemble edgeEnsemble = BootstrapEdgeEnsemble.Highest;
+    		switch (parameters.getInt("bootstrapEnsemble", 1)) {
+    		case 0:
+    			edgeEnsemble = BootstrapEdgeEnsemble.Preserved;
+    			break;
+    		case 1:
+    			edgeEnsemble = BootstrapEdgeEnsemble.Highest;
+    			break;
+    		case 2:
+    			edgeEnsemble = BootstrapEdgeEnsemble.Majority;
+    		}
+    		search.setEdgeEnsemble(edgeEnsemble);
+    		search.setParameters(parameters);    		
+    		search.setVerbose(parameters.getBoolean("verbose"));
+    		return search.search();
+    	}
     }
 
     // Need to marry the parents on this.
@@ -52,10 +77,15 @@ public class Mgm implements Algorithm {
 
     @Override
     public List<String> getParameters() {
-        List<String> params = new ArrayList<>();
-        params.add("mgmParam1");
-        params.add("mgmParam2");
-        params.add("mgmParam3");
-        return params;
+        List<String> parameters = new ArrayList<>();
+        parameters.add("mgmParam1");
+        parameters.add("mgmParam2");
+        parameters.add("mgmParam3");
+        // Bootstrapping
+        parameters.add("bootstrapping");
+        parameters.add("bootstrapSampleSize");
+        parameters.add("bootstrapEnsemble");
+        parameters.add("verbose");
+        return parameters;
     }
 }

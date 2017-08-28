@@ -58,27 +58,13 @@ public class Gfci implements Algorithm, HasKnowledge {
 
             return search.search();
     	}else{
-    		IndependenceWrapper test = null;
-    		ScoreWrapper score = null;
-        	DataSet data = (DataSet) dataSet;
-        	
-        	if(dataSet.isContinuous()){
-        		test = new FisherZ();
-        		score = new SemBicScore();
-        	}else if(dataSet.isDiscrete()){
-        		test = new ChiSquare();
-        		score = new BdeuScore();
-        	}else{
-        		test = new ConditionalGaussianLRT();
-        		score = new ConditionalGaussianBicScore();
-        	}
-        	
         	Gfci algorithm = new Gfci(test, score);
     		
     		algorithm.setKnowledge(knowledge);
 //          if (initialGraph != null) {
 //      		algorithm.setInitialGraph(initialGraph);
 //  		}
+        	DataSet data = (DataSet) dataSet;
     		GeneralBootstrapTest search = new GeneralBootstrapTest(data, algorithm, parameters.getInt("bootstrapSampleSize"));
     		
     		BootstrapEdgeEnsemble edgeEnsemble = BootstrapEdgeEnsemble.Highest;

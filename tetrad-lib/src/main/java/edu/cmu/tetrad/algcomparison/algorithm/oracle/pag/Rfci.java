@@ -1,9 +1,6 @@
 package edu.cmu.tetrad.algcomparison.algorithm.oracle.pag;
 
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
-import edu.cmu.tetrad.algcomparison.independence.ChiSquare;
-import edu.cmu.tetrad.algcomparison.independence.ConditionalGaussianLRT;
-import edu.cmu.tetrad.algcomparison.independence.FisherZ;
 import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.data.DataModel;
@@ -44,20 +41,12 @@ public class Rfci implements Algorithm, HasKnowledge {
             search.setCompleteRuleSetUsed(parameters.getBoolean("completeRuleSetUsed"));
             return search.search();
     	}else{
-        	IndependenceWrapper test = null;
-        	if(dataSet.isContinuous()){
-        		test = new FisherZ();
-        	}else if(dataSet.isDiscrete()){
-        		test = new ChiSquare();
-        	}else{
-        		test = new ConditionalGaussianLRT();
-        	}
         	Rfci algorithm = new Rfci(test);
         	algorithm.setKnowledge(knowledge);
-        	DataSet data = (DataSet) dataSet;
 //          if (initialGraph != null) {
 //      		algorithm.setInitialGraph(initialGraph);
 //  		}
+        	DataSet data = (DataSet) dataSet;
     		GeneralBootstrapTest search = new GeneralBootstrapTest(data, algorithm, parameters.getInt("bootstrapSampleSize"));
     		
     		BootstrapEdgeEnsemble edgeEnsemble = BootstrapEdgeEnsemble.Highest;

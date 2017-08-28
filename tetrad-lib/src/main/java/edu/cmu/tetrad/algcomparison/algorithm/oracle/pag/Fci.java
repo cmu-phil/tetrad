@@ -34,22 +34,22 @@ public class Fci implements Algorithm, TakesInitialGraph, HasKnowledge {
     private Graph initialGraph = null;
     private IKnowledge knowledge = new Knowledge2();
 
-    public Fci(IndependenceWrapper type) {
-        this.test = type;
+    public Fci(IndependenceWrapper test) {
+        this.test = test;
     }
 
-    public Fci(IndependenceWrapper type, Algorithm algorithm) {
-        this.test = type;
+    public Fci(IndependenceWrapper test, Algorithm algorithm) {
+        this.test = test;
         this.algorithm = algorithm;
     }
 
     @Override
     public Graph search(DataModel dataSet, Parameters parameters) {
-        if (algorithm != null) {
-        	initialGraph = algorithm.search(dataSet, parameters);
-        }
-
         if(!parameters.getBoolean("bootstrapping")){
+            if (algorithm != null) {
+            	initialGraph = algorithm.search(dataSet, parameters);
+            }
+
             edu.cmu.tetrad.search.Fci search = new edu.cmu.tetrad.search.Fci(test.getTest(dataSet, parameters));
             search.setDepth(parameters.getInt("depth"));
             search.setKnowledge(knowledge);
@@ -62,14 +62,6 @@ public class Fci implements Algorithm, TakesInitialGraph, HasKnowledge {
 
             return search.search();
         }else{
-        	IndependenceWrapper test = null;
-        	if(dataSet.isContinuous()){
-        		test = new FisherZ();
-        	}else if(dataSet.isDiscrete()){
-        		test = new ChiSquare();
-        	}else{
-        		test = new ConditionalGaussianLRT();
-        	}
     		Fci algorithm = new Fci(test);
     		algorithm.setKnowledge(knowledge);
 //          if (initialGraph != null) {

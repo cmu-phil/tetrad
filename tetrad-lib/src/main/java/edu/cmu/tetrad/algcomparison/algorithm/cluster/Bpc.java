@@ -10,6 +10,8 @@ import edu.cmu.tetrad.search.BuildPureClusters;
 import edu.cmu.tetrad.search.SearchGraphUtils;
 import edu.cmu.tetrad.search.TestType;
 import edu.cmu.tetrad.util.Parameters;
+import edu.pitt.dbmi.algo.bootstrap.BootstrapEdgeEnsemble;
+import edu.pitt.dbmi.algo.bootstrap.GeneralBootstrapTest;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -29,24 +31,53 @@ public class Bpc implements Algorithm, TakesInitialGraph, HasKnowledge, ClusterA
 
     @Override
     public Graph search(DataModel dataSet, Parameters parameters) {
-        ICovarianceMatrix cov = DataUtils.getCovMatrix(dataSet);
-        double alpha = parameters.getDouble("alpha");
+    	if(!parameters.getBoolean("bootstrapping")){
+            ICovarianceMatrix cov = DataUtils.getCovMatrix(dataSet);
+            double alpha = parameters.getDouble("alpha");
 
-        boolean wishart = parameters.getBoolean("useWishart", true);
-        TestType testType;
+            boolean wishart = parameters.getBoolean("useWishart", true);
+            TestType testType;
 
-        if (wishart) {
-            testType = TestType.TETRAD_WISHART;
-        } else {
-            testType = TestType.TETRAD_DELTA;
-        }
+            if (wishart) {
+                testType = TestType.TETRAD_WISHART;
+            } else {
+                testType = TestType.TETRAD_DELTA;
+            }
 
-        TestType purifyType = TestType.TETRAD_BASED;
+            TestType purifyType = TestType.TETRAD_BASED;
 
-        BuildPureClusters bpc = new BuildPureClusters(cov, alpha, testType, purifyType);
-        bpc.setVerbose(parameters.getBoolean("verbose"));
+            BuildPureClusters bpc = new BuildPureClusters(cov, alpha, testType, purifyType);
+            bpc.setVerbose(parameters.getBoolean("verbose"));
 
-        return bpc.search();
+            return bpc.search();
+    	}else{
+    		Bpc algorithm = new Bpc();
+    		
+        	algorithm.setKnowledge(knowledge);
+//          if (initialGraph != null) {
+//      		algorithm.setInitialGraph(initialGraph);
+//  		}
+
+    		DataSet data = (DataSet) dataSet;
+    		
+    		GeneralBootstrapTest search = new GeneralBootstrapTest(data, algorithm, parameters.getInt("bootstrapSampleSize"));
+    		
+    		BootstrapEdgeEnsemble edgeEnsemble = BootstrapEdgeEnsemble.Highest;
+    		switch (parameters.getInt("bootstrapEnsemble", 1)) {
+    		case 0:
+    			edgeEnsemble = BootstrapEdgeEnsemble.Preserved;
+    			break;
+    		case 1:
+    			edgeEnsemble = BootstrapEdgeEnsemble.Highest;
+    			break;
+    		case 2:
+    			edgeEnsemble = BootstrapEdgeEnsemble.Majority;
+    		}
+    		search.setEdgeEnsemble(edgeEnsemble);
+    		search.setParameters(parameters);    		
+    		search.setVerbose(parameters.getBoolean("verbose"));
+    		return search.search();
+    	}
     }
 
     @Override
@@ -70,6 +101,10 @@ public class Bpc implements Algorithm, TakesInitialGraph, HasKnowledge, ClusterA
         parameters.add("alpha");
         parameters.add("useWishart");
         parameters.add("verbose");
+        // Bootstrapping
+        parameters.add("bootstrapping");
+        parameters.add("bootstrapSampleSize");
+        parameters.add("bootstrapEnsemble");
         return parameters;
     }
 
