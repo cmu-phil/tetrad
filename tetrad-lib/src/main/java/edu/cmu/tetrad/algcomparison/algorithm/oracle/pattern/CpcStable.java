@@ -3,12 +3,14 @@ package edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
+import edu.cmu.tetrad.algcomparison.utils.TakesIndependenceWrapper;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.IKnowledge;
 import edu.cmu.tetrad.data.Knowledge2;
 import edu.cmu.tetrad.graph.EdgeListGraph;
-import edu.cmu.tetrad.search.*;
+
+import edu.cmu.tetrad.search.SearchGraphUtils;
 import edu.cmu.tetrad.search.PcAll;
 import edu.cmu.tetrad.util.Parameters;
 import edu.pitt.dbmi.algo.bootstrap.BootstrapEdgeEnsemble;
@@ -23,27 +25,31 @@ import java.util.List;
  *
  * @author jdramsey
  */
-public class CpcStable implements Algorithm, HasKnowledge {
+public class CpcStable implements Algorithm, HasKnowledge, TakesIndependenceWrapper {
+
     static final long serialVersionUID = 23L;
     private IndependenceWrapper test;
-    private Algorithm initialGraph = null;
+    private Algorithm algorithm = null;
     private IKnowledge knowledge = new Knowledge2();
 
-    public CpcStable(IndependenceWrapper type) {
-        this.test = type;
+    public CpcStable() {
     }
 
-    public CpcStable(IndependenceWrapper type, Algorithm initialGraph) {
-        this.test = type;
-        this.initialGraph = initialGraph;
+    public CpcStable(IndependenceWrapper test) {
+        this.test = test;
+    }
+
+    public CpcStable(IndependenceWrapper test, Algorithm algorithm) {
+        this.test = test;
+        this.algorithm = algorithm;
     }
 
     @Override
     public Graph search(DataModel dataSet, Parameters parameters) {
     	if(!parameters.getBoolean("bootstrapping")){
             Graph init =  null;
-            if (initialGraph != null) {
-                init = initialGraph.search(dataSet, parameters);
+            if (algorithm != null) {
+                init = algorithm.search(dataSet, parameters);
             }
             edu.cmu.tetrad.search.PcAll search = new edu.cmu.tetrad.search.PcAll(test.getTest(dataSet, parameters), init);
             search.setDepth(parameters.getInt("depth"));
@@ -54,12 +60,8 @@ public class CpcStable implements Algorithm, HasKnowledge {
             search.setVerbose(parameters.getBoolean("verbose"));
             return search.search();
     	}else{
-    		CpcStable algorithm = new CpcStable(test);
-    		
-        	algorithm.setKnowledge(knowledge);
-//          if (initialGraph != null) {
-//      		algorithm.setInitialGraph(initialGraph);
-//  		}
+    		CpcStable cpcStable = new CpcStable(test, algorithm);
+    		cpcStable.setKnowledge(knowledge);
 
     		DataSet data = (DataSet) dataSet;
     		
@@ -118,5 +120,10 @@ public class CpcStable implements Algorithm, HasKnowledge {
     @Override
     public void setKnowledge(IKnowledge knowledge) {
         this.knowledge = knowledge;
+    }
+
+    @Override
+    public void setIndependenceWrapper(IndependenceWrapper independenceWrapper) {
+        this.test = independenceWrapper;
     }
 }

@@ -1,12 +1,13 @@
 package edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern;
 
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
-import edu.cmu.tetrad.algcomparison.independence.ChiSquare;
-import edu.cmu.tetrad.algcomparison.independence.ConditionalGaussianLRT;
-import edu.cmu.tetrad.algcomparison.independence.FisherZ;
 import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
+import edu.cmu.tetrad.algcomparison.utils.TakesIndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.utils.TakesInitialGraph;
+import edu.cmu.tetrad.annotation.AlgType;
+import edu.cmu.tetrad.annotation.AlgorithmDescription;
+import edu.cmu.tetrad.annotation.OracleType;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
@@ -26,29 +27,39 @@ import java.util.List;
  *
  * @author jdramsey
  */
-public class PcAll implements Algorithm, TakesInitialGraph, HasKnowledge {
+@AlgorithmDescription(
+        name = "PC",
+        algType = AlgType.forbid_latent_common_causes,
+        oracleType = OracleType.Test,
+        description = "Short blurb goes here",
+        assumptions = {}
+)
+public class PcAll implements Algorithm, TakesInitialGraph, HasKnowledge, TakesIndependenceWrapper {
+
     static final long serialVersionUID = 23L;
     private IndependenceWrapper test;
     private Algorithm algorithm = null;
     private Graph initialGraph = null;
     private IKnowledge knowledge = new Knowledge2();
 
-    public PcAll(IndependenceWrapper type) {
-        this.test = type;
+    public PcAll() {
     }
 
-    public PcAll(IndependenceWrapper type, Algorithm algorithm) {
-        this.test = type;
+    public PcAll(IndependenceWrapper test) {
+        this.test = test;
+    }
+
+    public PcAll(IndependenceWrapper test, Algorithm algorithm) {
+        this.test = test;
         this.algorithm = algorithm;
     }
 
     @Override
     public Graph search(DataModel dataSet, Parameters parameters) {
         if(!parameters.getBoolean("bootstrapping")){
-            Graph initial = null;
 
             if (algorithm != null) {
-                initial = algorithm.search(dataSet, parameters);
+            	initialGraph = algorithm.search(dataSet, parameters);
             }
 
         	edu.cmu.tetrad.search.PcAll.FasRule fasRule;
@@ -110,16 +121,16 @@ public class PcAll implements Algorithm, TakesInitialGraph, HasKnowledge {
 
             return search.search();
         }else{
-        	PcAll algorithm = new PcAll(test);
+        	PcAll pcAll = new PcAll(test, algorithm);
     		
-        	algorithm.setKnowledge(knowledge);
-//          if (initialGraph != null) {
-//      		algorithm.setInitialGraph(initialGraph);
-//  		}
+        	pcAll.setKnowledge(knowledge);
+        	if (initialGraph != null) {
+        		pcAll.setInitialGraph(initialGraph);
+  			}
 
     		DataSet data = (DataSet) dataSet;
     		
-    		GeneralBootstrapTest search = new GeneralBootstrapTest(data, algorithm, parameters.getInt("bootstrapSampleSize"));
+    		GeneralBootstrapTest search = new GeneralBootstrapTest(data, pcAll, parameters.getInt("bootstrapSampleSize"));
     		
     		BootstrapEdgeEnsemble edgeEnsemble = BootstrapEdgeEnsemble.Highest;
     		switch (parameters.getInt("bootstrapEnsemble", 1)) {
@@ -163,8 +174,6 @@ public class PcAll implements Algorithm, TakesInitialGraph, HasKnowledge {
 //        public enum FasRule {FAS, FAS_STABLE, FAS_STABLE_CONCURRENT}
 //        public enum ColliderDiscovery {FAS_SEPSETS, CONSERVATIVE, MAX_P}
 //        public enum ConflictRule {PRIORITY, BIDIRECTED, OVERWRITE}
-
-
         parameters.add("fasRule");
         parameters.add("colliderDiscoveryRule");
         parameters.add("conflictRule");
@@ -198,4 +207,15 @@ public class PcAll implements Algorithm, TakesInitialGraph, HasKnowledge {
 	public void setInitialGraph(Graph initialGraph) {
 		this.initialGraph = initialGraph;
 	}
+
+    @Override
+    public void setInitialGraph(Algorithm algorithm) {
+        this.algorithm = algorithm;
+    }
+
+    @Override
+    public void setIndependenceWrapper(IndependenceWrapper test) {
+        this.test = test;
+    }
+
 }

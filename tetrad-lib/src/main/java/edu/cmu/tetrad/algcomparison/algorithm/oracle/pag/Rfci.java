@@ -3,6 +3,10 @@ package edu.cmu.tetrad.algcomparison.algorithm.oracle.pag;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
+import edu.cmu.tetrad.algcomparison.utils.TakesIndependenceWrapper;
+import edu.cmu.tetrad.annotation.AlgType;
+import edu.cmu.tetrad.annotation.AlgorithmDescription;
+import edu.cmu.tetrad.annotation.OracleType;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.IKnowledge;
@@ -14,7 +18,6 @@ import edu.pitt.dbmi.algo.bootstrap.GeneralBootstrapTest;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.DagToPag;
-
 import java.util.List;
 
 /**
@@ -22,10 +25,21 @@ import java.util.List;
  *
  * @author jdramsey
  */
-public class Rfci implements Algorithm, HasKnowledge {
+@AlgorithmDescription(
+        name = "RFCI",
+        algType = AlgType.allow_latent_common_causes,
+        oracleType = OracleType.Test,
+        description = "Short blurb goes here",
+        assumptions = {}
+)
+public class Rfci implements Algorithm, HasKnowledge, TakesIndependenceWrapper {
+
     static final long serialVersionUID = 23L;
     private IndependenceWrapper test;
     private IKnowledge knowledge = new Knowledge2();
+
+    public Rfci() {
+    }
 
     public Rfci(IndependenceWrapper test) {
         this.test = test;
@@ -103,5 +117,10 @@ public class Rfci implements Algorithm, HasKnowledge {
     @Override
     public void setKnowledge(IKnowledge knowledge) {
         this.knowledge = knowledge;
+    }
+
+    @Override
+    public void setIndependenceWrapper(IndependenceWrapper test) {
+        this.test = test;
     }
 }

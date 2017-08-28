@@ -14,7 +14,6 @@ import edu.pitt.dbmi.algo.bootstrap.GeneralBootstrapTest;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.DagToPag;
-
 import java.util.List;
 
 /**
@@ -23,6 +22,7 @@ import java.util.List;
  * @author jdramsey
  */
 public class Cfci implements Algorithm, HasKnowledge {
+
     static final long serialVersionUID = 23L;
     private IndependenceWrapper test;
     private IKnowledge knowledge = new Knowledge2();

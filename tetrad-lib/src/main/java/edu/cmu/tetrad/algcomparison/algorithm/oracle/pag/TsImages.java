@@ -4,6 +4,10 @@ import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.MultiDataSetAlgorithm;
 import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
+import edu.cmu.tetrad.algcomparison.utils.UsesScoreWrapper;
+import edu.cmu.tetrad.annotation.AlgType;
+import edu.cmu.tetrad.annotation.AlgorithmDescription;
+import edu.cmu.tetrad.annotation.OracleType;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
@@ -21,11 +25,22 @@ import java.util.List;
  * @author jdramsey
  * @author Daniel Malinsky
  */
-public class TsImages implements Algorithm, HasKnowledge, MultiDataSetAlgorithm {
+@AlgorithmDescription(
+        name = "TsImages",
+        algType = AlgType.allow_latent_common_causes,
+        oracleType = OracleType.Test,
+        description = "Short blurb goes here",
+        assumptions = {}
+)
+public class TsImages implements Algorithm, HasKnowledge, MultiDataSetAlgorithm, UsesScoreWrapper {
+
     static final long serialVersionUID = 23L;
     private ScoreWrapper score;
     private Algorithm initialGraph = null;
     private IKnowledge knowledge = null;
+
+    public TsImages() {
+    }
 
     public TsImages(ScoreWrapper score) {
         if (!(score instanceof SemBicScore || score instanceof BDeuScore)) {
@@ -75,9 +90,9 @@ public class TsImages implements Algorithm, HasKnowledge, MultiDataSetAlgorithm 
     }
 
     public String getDescription() {
-        return "tsFCI (Time Series Fast Causal Inference) using " + score.getDescription() +
-                (initialGraph != null ? " with initial graph from " +
-                        initialGraph.getDescription() : "");
+        return "tsFCI (Time Series Fast Causal Inference) using " + score.getDescription()
+                + (initialGraph != null ? " with initial graph from "
+                        + initialGraph.getDescription() : "");
     }
 
     @Override
@@ -136,5 +151,10 @@ public class TsImages implements Algorithm, HasKnowledge, MultiDataSetAlgorithm 
         IKnowledge knowledge = dataModels.get(0).getKnowledge();
         search.setKnowledge(knowledge);
         return search.search();
+    }
+
+    @Override
+    public void setScoreWrapper(ScoreWrapper score) {
+        this.score = score;
     }
 }

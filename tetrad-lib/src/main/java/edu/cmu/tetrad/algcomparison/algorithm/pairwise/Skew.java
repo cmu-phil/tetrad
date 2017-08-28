@@ -8,11 +8,13 @@ import edu.cmu.tetrad.util.Parameters;
 import edu.pitt.dbmi.algo.bootstrap.BootstrapEdgeEnsemble;
 import edu.pitt.dbmi.algo.bootstrap.GeneralBootstrapTest;
 import edu.cmu.tetrad.algcomparison.utils.TakesInitialGraph;
+import edu.cmu.tetrad.annotation.AlgType;
+import edu.cmu.tetrad.annotation.AlgorithmDescription;
+import edu.cmu.tetrad.annotation.OracleType;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.Lofs2;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -21,10 +23,21 @@ import java.util.List;
  *
  * @author jdramsey
  */
+@AlgorithmDescription(
+        name = "Skew",
+        algType = AlgType.orient_pairwise,
+        oracleType = OracleType.None,
+        description = "Short blurb goes here",
+        assumptions = {}
+)
 public class Skew implements Algorithm, TakesInitialGraph {
+
     static final long serialVersionUID = 23L;
     private Algorithm algorithm = null;
     private Graph initialGraph = null;
+
+    public Skew() {
+    }
 
     public Skew(Algorithm algorithm) {
         this.algorithm = algorithm;
@@ -113,4 +126,15 @@ public class Skew implements Algorithm, TakesInitialGraph {
 	public void setInitialGraph(Graph initialGraph) {
 		this.initialGraph = initialGraph;
 	}
+
+    @Override
+    public void setInitialGraph(Algorithm algorithm) {
+        if (algorithm == null) {
+            throw new IllegalArgumentException("This algorithm needs both data and a graph source as inputs; it \n"
+                    + "will orient the edges in the input graph using the data.");
+        }
+
+        this.algorithm = algorithm;
+    }
+
 }

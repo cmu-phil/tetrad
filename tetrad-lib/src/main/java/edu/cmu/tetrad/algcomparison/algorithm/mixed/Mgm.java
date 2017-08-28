@@ -1,13 +1,16 @@
 package edu.cmu.tetrad.algcomparison.algorithm.mixed;
 
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
+import edu.cmu.tetrad.annotation.AlgType;
+import edu.cmu.tetrad.annotation.AlgorithmDescription;
+import edu.cmu.tetrad.annotation.OracleType;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
+import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.data.DataUtils;
+import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.util.Parameters;
-import edu.cmu.tetrad.data.DataType;
-import edu.cmu.tetrad.graph.Graph;
 import edu.pitt.csb.mgm.MGM;
 import edu.pitt.dbmi.algo.bootstrap.BootstrapEdgeEnsemble;
 import edu.pitt.dbmi.algo.bootstrap.GeneralBootstrapTest;
@@ -18,11 +21,25 @@ import java.util.List;
 /**
  * @author jdramsey
  */
+@AlgorithmDescription(
+        name = "MGM",
+        algType = AlgType.produce_undirected_graphs,
+        oracleType = OracleType.None,
+        description = "Short blurb goes here",
+                assumptions = {}
+)
 public class Mgm implements Algorithm {
+
     static final long serialVersionUID = 23L;
+
+    public Mgm() {
+    }
+
+    @Override
     public Graph search(DataModel ds, Parameters parameters) {
     	if(!parameters.getBoolean("bootstrapping")){
             DataSet _ds = DataUtils.getMixedDataSet(ds);
+
             double mgmParam1 = parameters.getDouble("mgmParam1");
             double mgmParam2 = parameters.getDouble("mgmParam2");
             double mgmParam3 = parameters.getDouble("mgmParam3");
@@ -62,10 +79,12 @@ public class Mgm implements Algorithm {
     }
 
     // Need to marry the parents on this.
+    @Override
     public Graph getComparisonGraph(Graph graph) {
         return GraphUtils.undirectedGraph(graph);
     }
 
+    @Override
     public String getDescription() {
         return "Returns the output of the MGM (Mixed Graphical Model) algorithm (a Markov random field)";
     }

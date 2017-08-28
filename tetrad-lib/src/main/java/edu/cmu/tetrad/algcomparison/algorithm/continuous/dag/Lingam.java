@@ -10,7 +10,6 @@ import edu.pitt.dbmi.algo.bootstrap.BootstrapEdgeEnsemble;
 import edu.pitt.dbmi.algo.bootstrap.GeneralBootstrapTest;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.graph.Graph;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -19,7 +18,13 @@ import java.util.List;
  *
  * @author jdramsey
  */
+/*@AlgorithmDescription(
+        name = "LiNGAM",
+        algType = AlgType.DAG,
+        oracleType = OracleType.None
+)*/
 public class Lingam implements Algorithm {
+
     static final long serialVersionUID = 23L;
 
     public Graph search(DataModel dataSet, Parameters parameters) {

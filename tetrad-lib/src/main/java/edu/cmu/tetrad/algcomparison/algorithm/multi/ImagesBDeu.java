@@ -4,26 +4,36 @@ import edu.cmu.tetrad.algcomparison.algorithm.MultiDataSetAlgorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern.Fges;
 import edu.cmu.tetrad.algcomparison.score.BdeuScore;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
+import edu.cmu.tetrad.annotation.AlgType;
+import edu.cmu.tetrad.annotation.AlgorithmDescription;
+import edu.cmu.tetrad.annotation.OracleType;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.EdgeListGraph;
-import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.BdeuScoreImages;
 import edu.cmu.tetrad.search.SearchGraphUtils;
-
-import java.util.ArrayList;
+import edu.cmu.tetrad.util.Parameters;
 import java.util.Collections;
 import java.util.List;
 
 /**
- * Wraps the IMaGES algorithm for continuous variables.
+ * Wraps the IMaGES algorithm for discrete variables.
  * </p>
  * Requires that the parameter 'randomSelectionSize' be set to indicate how many
- * datasets should be taken at a time (randomly). This cannot given multiple values.
+ * datasets should be taken at a time (randomly). This cannot given multiple
+ * values.
  *
  * @author jdramsey
  */
+@AlgorithmDescription(
+        name = "IMaGES_Discrete",
+        algType = AlgType.forbid_latent_common_causes,
+        oracleType = OracleType.None,
+        description = "Short blurb goes here",
+                assumptions = {}
+)
 public class ImagesBDeu implements MultiDataSetAlgorithm, HasKnowledge {
+
     static final long serialVersionUID = 23L;
     private IKnowledge knowledge = new Knowledge2();
 

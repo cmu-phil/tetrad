@@ -2,7 +2,9 @@ package edu.cmu.tetrad.algcomparison.algorithm.cluster;
 
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
-import edu.cmu.tetrad.algcomparison.utils.TakesInitialGraph;
+import edu.cmu.tetrad.annotation.AlgType;
+import edu.cmu.tetrad.annotation.AlgorithmDescription;
+import edu.cmu.tetrad.annotation.OracleType;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
@@ -21,11 +23,21 @@ import java.util.List;
  *
  * @author jdramsey
  */
-public class Ftfc implements Algorithm, TakesInitialGraph, HasKnowledge, ClusterAlgorithm {
+@AlgorithmDescription(
+        name = "Ftfc",
+        algType = AlgType.search_for_structure_over_latents,
+        oracleType = OracleType.None,
+        description = "Short blurb goes here" ,
+                assumptions = {}
+)
+
+public class Ftfc implements Algorithm, HasKnowledge, ClusterAlgorithm {
+
     static final long serialVersionUID = 23L;
     private IKnowledge knowledge = new Knowledge2();
 
-    public Ftfc() {}
+    public Ftfc() {
+    }
 
     @Override
     public Graph search(DataModel dataSet, Parameters parameters) {
@@ -125,21 +137,4 @@ public class Ftfc implements Algorithm, TakesInitialGraph, HasKnowledge, Cluster
         this.knowledge = knowledge;
     }
 
-	/* (non-Javadoc)
-	 * @see edu.cmu.tetrad.algcomparison.utils.TakesInitialGraph#getInitialGraph()
-	 */
-	@Override
-	public Graph getInitialGraph() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	/* (non-Javadoc)
-	 * @see edu.cmu.tetrad.algcomparison.utils.TakesInitialGraph#setInitialGraph(edu.cmu.tetrad.graph.Graph)
-	 */
-	@Override
-	public void setInitialGraph(Graph initialGraph) {
-		// TODO Auto-generated method stub
-		
-	}
 }

@@ -4,6 +4,10 @@ import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.algcomparison.utils.TakesInitialGraph;
+import edu.cmu.tetrad.algcomparison.utils.UsesScoreWrapper;
+import edu.cmu.tetrad.annotation.AlgType;
+import edu.cmu.tetrad.annotation.AlgorithmDescription;
+import edu.cmu.tetrad.annotation.OracleType;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
@@ -24,7 +28,14 @@ import java.util.List;
  *
  * @author jdramsey
  */
-public class Fges implements Algorithm, TakesInitialGraph, HasKnowledge {
+@AlgorithmDescription(
+        name = "FGES",
+        algType = AlgType.forbid_latent_common_causes,
+        oracleType = OracleType.Score,
+        description = "Short blurb goes here",
+        assumptions = {}
+)
+public class Fges implements Algorithm, TakesInitialGraph, HasKnowledge, UsesScoreWrapper {
 
     static final long serialVersionUID = 23L;
     private boolean compareToTrue = false;
@@ -32,6 +43,10 @@ public class Fges implements Algorithm, TakesInitialGraph, HasKnowledge {
     private Algorithm algorithm = null;
     private Graph initialGraph = null;
     private IKnowledge knowledge = new Knowledge2();
+
+    public Fges() {
+
+    }
 
     public Fges(ScoreWrapper score) {
         this.score = score;
@@ -155,4 +170,16 @@ public class Fges implements Algorithm, TakesInitialGraph, HasKnowledge {
 	public void setInitialGraph(Graph initialGraph) {
 		this.initialGraph = initialGraph;
 	}
+
+    @Override
+    public void setInitialGraph(Algorithm algorithm) {
+        this.algorithm = algorithm;
+
+    }
+
+    @Override
+    public void setScoreWrapper(ScoreWrapper score) {
+        this.score = score;
+    }
+
 }

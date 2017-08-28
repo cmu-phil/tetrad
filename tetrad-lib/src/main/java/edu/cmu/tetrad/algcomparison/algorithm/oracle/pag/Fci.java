@@ -1,12 +1,9 @@
 package edu.cmu.tetrad.algcomparison.algorithm.oracle.pag;
 
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
-import edu.cmu.tetrad.algcomparison.independence.ChiSquare;
-import edu.cmu.tetrad.algcomparison.independence.ConditionalGaussianLRT;
-import edu.cmu.tetrad.algcomparison.independence.FisherZ;
 import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
-import edu.cmu.tetrad.data.BoxDataSet;
+import edu.cmu.tetrad.algcomparison.utils.TakesIndependenceWrapper;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.IKnowledge;
@@ -16,10 +13,12 @@ import edu.cmu.tetrad.util.Parameters;
 import edu.pitt.dbmi.algo.bootstrap.BootstrapEdgeEnsemble;
 import edu.pitt.dbmi.algo.bootstrap.GeneralBootstrapTest;
 import edu.cmu.tetrad.algcomparison.utils.TakesInitialGraph;
+import edu.cmu.tetrad.annotation.AlgType;
+import edu.cmu.tetrad.annotation.AlgorithmDescription;
+import edu.cmu.tetrad.annotation.OracleType;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.DagToPag;
-
 import java.util.List;
 
 /**
@@ -27,12 +26,23 @@ import java.util.List;
  *
  * @author jdramsey
  */
-public class Fci implements Algorithm, TakesInitialGraph, HasKnowledge {
+@AlgorithmDescription(
+        name = "FCI",
+        algType = AlgType.allow_latent_common_causes,
+        oracleType = OracleType.Test,
+        description = "Short blurb goes here",
+        assumptions = {}
+)
+public class Fci implements Algorithm, TakesInitialGraph, HasKnowledge, TakesIndependenceWrapper {
+
     static final long serialVersionUID = 23L;
     private IndependenceWrapper test;
     private Algorithm algorithm = null;
     private Graph initialGraph = null;
     private IKnowledge knowledge = new Knowledge2();
+
+    public Fci() {
+    }
 
     public Fci(IndependenceWrapper test) {
         this.test = test;
@@ -139,4 +149,15 @@ public class Fci implements Algorithm, TakesInitialGraph, HasKnowledge {
 	public void setInitialGraph(Graph initialGraph) {
 		this.initialGraph = initialGraph;
 	}
+
+    @Override
+    public void setInitialGraph(Algorithm algorithm) {
+        this.algorithm = algorithm;
+    }
+
+    @Override
+    public void setIndependenceWrapper(IndependenceWrapper test) {
+        this.test = test;
+    }
+
 }

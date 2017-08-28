@@ -7,6 +7,7 @@ import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.SearchGraphUtils;
+
 import edu.cmu.tetrad.search.SemBicScoreDeterministic;
 import edu.cmu.tetrad.util.Parameters;
 import edu.pitt.dbmi.algo.bootstrap.BootstrapEdgeEnsemble;
@@ -161,4 +162,10 @@ public class FgesD implements Algorithm, TakesInitialGraph, HasKnowledge {
 	public void setInitialGraph(Graph initialGraph) {
 		this.initialGraph = initialGraph;
 	}
+
+	@Override
+	public void setInitialGraph(Algorithm algorithm) {
+		this.algorithm = algorithm;
+	}
+
 }

@@ -21,6 +21,7 @@ import java.util.List;
  * @author jdramsey
  */
 public class Jcpc implements Algorithm, TakesInitialGraph, HasKnowledge {
+
     static final long serialVersionUID = 23L;
     private IndependenceWrapper test;
     private ScoreWrapper score;
@@ -125,4 +126,10 @@ public class Jcpc implements Algorithm, TakesInitialGraph, HasKnowledge {
 	public void setInitialGraph(Graph initialGraph) {
 		this.initialGraph = initialGraph;
 	}
+
+    @Override
+    public void setInitialGraph(Algorithm algorithm) {
+        this.algorithm = algorithm;
+    }
+
 }

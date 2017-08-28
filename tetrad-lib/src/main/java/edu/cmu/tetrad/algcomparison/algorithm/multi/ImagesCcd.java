@@ -7,7 +7,6 @@ import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.*;
 import edu.cmu.tetrad.util.Parameters;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -16,11 +15,18 @@ import java.util.List;
  * Wraps the IMaGES algorithm for continuous variables.
  * </p>
  * Requires that the parameter 'randomSelectionSize' be set to indicate how many
- * datasets should be taken at a time (randomly). This cannot given multiple values.
+ * datasets should be taken at a time (randomly). This cannot given multiple
+ * values.
  *
  * @author jdramsey
  */
+/*@AlgorithmDescription(
+        name = "IMaGES_CCD",
+        algType = AlgType.forbid_latent_common_causes,
+        oracleType = OracleType.Test
+)*/
 public class ImagesCcd implements MultiDataSetAlgorithm, HasKnowledge {
+
     static final long serialVersionUID = 23L;
     private IKnowledge knowledge = new Knowledge2();
 

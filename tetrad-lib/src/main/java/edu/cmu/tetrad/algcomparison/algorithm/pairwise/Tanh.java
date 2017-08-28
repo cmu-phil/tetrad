@@ -12,7 +12,6 @@ import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.Lofs2;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -22,6 +21,7 @@ import java.util.List;
  * @author jdramsey
  */
 public class Tanh implements Algorithm, TakesInitialGraph {
+
     static final long serialVersionUID = 23L;
     private Algorithm algorithm = null;
     private Graph initialGraph = null;
@@ -113,4 +113,10 @@ public class Tanh implements Algorithm, TakesInitialGraph {
 	public void setInitialGraph(Graph initialGraph) {
 		this.initialGraph = initialGraph;
 	}
+
+	@Override
+    public void setInitialGraph(Algorithm algorithm) {
+        this.algorithm = algorithm;
+    }
+
 }

@@ -9,12 +9,15 @@ import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.util.Parameters;
 import edu.pitt.dbmi.algo.bootstrap.BootstrapEdgeEnsemble;
 import edu.pitt.dbmi.algo.bootstrap.GeneralBootstrapTest;
+import edu.cmu.tetrad.algcomparison.utils.TakesIndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.utils.TakesInitialGraph;
+import edu.cmu.tetrad.annotation.AlgType;
+import edu.cmu.tetrad.annotation.AlgorithmDescription;
+import edu.cmu.tetrad.annotation.OracleType;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.data.IKnowledge;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.TsDagToPag;
-
 import java.util.List;
 
 /**
@@ -23,15 +26,26 @@ import java.util.List;
  * @author jdramsey
  * @author dmalinsky
  */
-public class TsFci implements Algorithm, TakesInitialGraph, HasKnowledge {
+@AlgorithmDescription(
+        name = "TsFCI",
+        algType = AlgType.allow_latent_common_causes,
+        oracleType = OracleType.Test,
+        description = "Short blurb goes here",
+        assumptions = {}
+)
+public class TsFci implements Algorithm, TakesInitialGraph, HasKnowledge, TakesIndependenceWrapper {
+
     static final long serialVersionUID = 23L;
     private IndependenceWrapper test;
     private Algorithm algorithm = null;
     private Graph initialGraph = null;
     private IKnowledge knowledge = null;
 
-    public TsFci(IndependenceWrapper type) {
-        this.test = type;
+    public TsFci() {
+    }
+
+    public TsFci(IndependenceWrapper test) {
+        this.test = test;
     }
 
     public TsFci(IndependenceWrapper type, Algorithm algorithm) {
@@ -71,7 +85,9 @@ public class TsFci implements Algorithm, TakesInitialGraph, HasKnowledge {
     }
 
     @Override
-    public Graph getComparisonGraph(Graph graph) { return new TsDagToPag(new EdgeListGraph(graph)).convert(); }
+    public Graph getComparisonGraph(Graph graph) {
+        return new TsDagToPag(new EdgeListGraph(graph)).convert();
+    }
 
     public String getDescription() {
         return "tsFCI (Time Series Fast Causal Inference) using " + test.getDescription() +
@@ -114,4 +130,15 @@ public class TsFci implements Algorithm, TakesInitialGraph, HasKnowledge {
 	public void setInitialGraph(Graph initialGraph) {
 		this.initialGraph = initialGraph;
 	}
+
+    @Override
+    public void setInitialGraph(Algorithm algorithm) {
+        this.algorithm = algorithm;
+    }
+
+    @Override
+    public void setIndependenceWrapper(IndependenceWrapper test) {
+        this.test = test;
+    }
+
 }

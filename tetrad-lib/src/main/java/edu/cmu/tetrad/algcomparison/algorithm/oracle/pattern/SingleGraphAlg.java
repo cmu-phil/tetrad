@@ -2,7 +2,6 @@ package edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern;
 
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
-import edu.cmu.tetrad.algcomparison.utils.TakesInitialGraph;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.data.IKnowledge;
@@ -19,10 +18,10 @@ import java.util.List;
  *
  * @author jdramsey
  */
-public class SingleGraphAlg implements Algorithm, TakesInitialGraph, HasKnowledge {
+public class SingleGraphAlg implements Algorithm, HasKnowledge {
+
     static final long serialVersionUID = 23L;
     private Graph graph;
-    private Graph initialGraph = null;
 
     public SingleGraphAlg(Graph graph) {
         this.graph = graph;
@@ -55,20 +54,11 @@ public class SingleGraphAlg implements Algorithm, TakesInitialGraph, HasKnowledg
 
     @Override
     public IKnowledge getKnowledge() {
-         return new Knowledge2();
+        return new Knowledge2();
     }
 
     @Override
     public void setKnowledge(IKnowledge knowledge) {
     }
 
-	@Override
-	public Graph getInitialGraph() {
-		return initialGraph;
-	}
-
-	@Override
-	public void setInitialGraph(Graph initialGraph) {
-		this.initialGraph = initialGraph;
-	}
 }

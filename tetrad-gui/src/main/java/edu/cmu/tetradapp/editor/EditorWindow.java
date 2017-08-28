@@ -18,19 +18,17 @@
 // along with this program; if not, write to the Free Software               //
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA //
 ///////////////////////////////////////////////////////////////////////////////
-
 package edu.cmu.tetradapp.editor;
 
 import edu.cmu.tetrad.session.ModificationRegistery;
 import edu.cmu.tetradapp.util.EditorWindowIndirectRef;
 import edu.cmu.tetradapp.util.FinalizingEditor;
-
-import javax.swing.*;
-import javax.swing.event.InternalFrameAdapter;
-import javax.swing.event.InternalFrameEvent;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import javax.swing.*;
+import javax.swing.event.InternalFrameAdapter;
+import javax.swing.event.InternalFrameEvent;
 
 /**
  * Launches a dialog to display an editor component.
@@ -66,7 +64,7 @@ public class EditorWindow extends JInternalFrame
      * Pops a new editor window up from a dialog.
      */
     public EditorWindow(JPanel editor, String title, String buttonName,
-                        boolean cancellable, Component centeringComp) {
+            boolean cancellable, Component centeringComp) {
         super(title, true, true, true, false);
 
         if (editor == null) {
@@ -76,7 +74,6 @@ public class EditorWindow extends JInternalFrame
 //        if (buttonName == null) {
 //            throw new NullPointerException("Button name must not be null.");
 //        }
-
         this.buttonName = buttonName;
         doSetup(editor, cancellable);
 
@@ -114,7 +111,7 @@ public class EditorWindow extends JInternalFrame
         JButton cancelButton = new JButton("Cancel");
 
         if (okButton != null) {
-            okButton.setPreferredSize(new Dimension(70, 50));
+            okButton.setPreferredSize(new Dimension(100, 50));
             okButton.addActionListener(new OkListener());
         }
 
@@ -184,10 +181,13 @@ public class EditorWindow extends JInternalFrame
     }
 
     private class OkListener implements ActionListener {
+
         public void actionPerformed(ActionEvent e) {
             if (editor instanceof FinalizingEditor) {
                 boolean ok = ((FinalizingEditor) editor).finalizeEditor();
-                if (ok) closeDialog();
+                if (ok) {
+                    closeDialog();
+                }
             } else {
                 closeDialog();
             }
@@ -195,6 +195,7 @@ public class EditorWindow extends JInternalFrame
     }
 
     private class CancelListener implements ActionListener {
+
         public void actionPerformed(ActionEvent e) {
             canceled = true;
             closeDialog();
@@ -210,8 +211,3 @@ public class EditorWindow extends JInternalFrame
         }
     }
 }
-
-
-
-
-

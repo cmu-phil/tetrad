@@ -3,19 +3,20 @@ package edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
+import edu.cmu.tetrad.algcomparison.utils.TakesIndependenceWrapper;
+import edu.cmu.tetrad.algcomparison.utils.TakesInitialGraph;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
+import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.data.IKnowledge;
 import edu.cmu.tetrad.data.Knowledge2;
 import edu.cmu.tetrad.graph.EdgeListGraph;
-import edu.cmu.tetrad.search.*;
+import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.PcAll;
+import edu.cmu.tetrad.search.SearchGraphUtils;
 import edu.cmu.tetrad.util.Parameters;
 import edu.pitt.dbmi.algo.bootstrap.BootstrapEdgeEnsemble;
 import edu.pitt.dbmi.algo.bootstrap.GeneralBootstrapTest;
-import edu.cmu.tetrad.algcomparison.utils.TakesInitialGraph;
-import edu.cmu.tetrad.data.DataType;
-import edu.cmu.tetrad.graph.Graph;
 
 import java.util.List;
 
@@ -24,12 +25,16 @@ import java.util.List;
  *
  * @author jdramsey
  */
-public class Cpc implements Algorithm, TakesInitialGraph, HasKnowledge {
+public class Cpc implements Algorithm, TakesInitialGraph, HasKnowledge, TakesIndependenceWrapper {
+
     static final long serialVersionUID = 23L;
     private IndependenceWrapper test;
     private Algorithm algorithm = null;
     private Graph initialGraph = null;
     private IKnowledge knowledge = new Knowledge2();
+
+    public Cpc() {
+    }
 
     public Cpc(IndependenceWrapper type) {
         this.test = type;
@@ -123,13 +128,22 @@ public class Cpc implements Algorithm, TakesInitialGraph, HasKnowledge {
 
 	@Override
 	public Graph getInitialGraph() {
-		// TODO Auto-generated method stub
 		return initialGraph;
 	}
 
 	@Override
 	public void setInitialGraph(Graph initialGraph) {
-		// TODO Auto-generated method stub
 		this.initialGraph = initialGraph;
 	}
+
+    @Override
+    public void setInitialGraph(Algorithm algorithm) {
+        this.algorithm = algorithm;
+    }
+
+    @Override
+    public void setIndependenceWrapper(IndependenceWrapper independenceWrapper) {
+        this.test = independenceWrapper;
+    }
+
 }

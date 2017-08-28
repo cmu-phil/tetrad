@@ -3,21 +3,10 @@ package edu.cmu.tetrad.algcomparison.algorithm;
 import edu.cmu.tetrad.algcomparison.utils.TakesInitialGraph;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Edge;
-import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.util.Parameters;
-import edu.pitt.dbmi.data.Dataset;
 import org.apache.commons.math3.analysis.MultivariateFunction;
-import org.apache.commons.math3.optim.InitialGuess;
-import org.apache.commons.math3.optim.MaxEval;
-import org.apache.commons.math3.optim.PointValuePair;
-import org.apache.commons.math3.optim.nonlinear.scalar.GoalType;
-import org.apache.commons.math3.optim.nonlinear.scalar.MultivariateOptimizer;
-import org.apache.commons.math3.optim.nonlinear.scalar.ObjectiveFunction;
-import org.apache.commons.math3.optim.nonlinear.scalar.noderiv.PowellOptimizer;
-
-import javax.xml.crypto.Data;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -29,6 +18,7 @@ import java.util.Set;
  * @author jdramsey
  */
 public class FirstInflection implements Algorithm, TakesInitialGraph {
+
     static final long serialVersionUID = 23L;
     private final double low;
     private final double high;
@@ -39,7 +29,9 @@ public class FirstInflection implements Algorithm, TakesInitialGraph {
     private IKnowledge knowledge = new Knowledge2();
 
     public FirstInflection(Algorithm algorithm, String parameter, double low, double high, double increment) {
-        if (low >= high) throw new IllegalArgumentException("Must have low < high");
+        if (low >= high) {
+            throw new IllegalArgumentException("Must have low < high");
+        }
         this.algorithm = algorithm;
         this.low = low;
         this.high = high;
@@ -207,6 +199,11 @@ public class FirstInflection implements Algorithm, TakesInitialGraph {
 //        return algorithm.search(dataSet, _parameters);
     }
 
+    @Override
+    public void setInitialGraph(Algorithm initialGraph) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
     static class FittingFunction implements MultivariateFunction {
 
         private final Algorithm algorithm;
@@ -222,7 +219,7 @@ public class FirstInflection implements Algorithm, TakesInitialGraph {
          * Constructs a new CoefFittingFunction for the given Sem.
          */
         public FittingFunction(Parameters params, Algorithm algorithm,
-                               double low, double high, String paramName, DataSet dataSet) {
+                double low, double high, String paramName, DataSet dataSet) {
             this.params = params;
             this.algorithm = algorithm;
             this.low = low;
@@ -232,17 +229,18 @@ public class FirstInflection implements Algorithm, TakesInitialGraph {
             int numVars = Math.min(20, ((DataSet) dataSet).getNumColumns());
 
             int[] cols = new int[numVars];
-            for (int i = 0; i < numVars; i++) cols[i] = i;
+            for (int i = 0; i < numVars; i++) {
+                cols[i] = i;
+            }
 
             _dataSet = dataSet.subsetColumns(cols);
         }
 
         /**
          * Computes the maximum likelihood function value for the given
-         * parameter values as given by the optimizer. These values are mapped to
-         * parameter values.
+         * parameter values as given by the optimizer. These values are mapped
+         * to parameter values.
          */
-
 //        public double value0(double[] parameters) {
 //            double p = parameters[0];
 //            if (p < low) return 10000;
@@ -275,7 +273,6 @@ public class FirstInflection implements Algorithm, TakesInitialGraph {
 //            _previous = out;
 //            return diff;
 //        }
-
         private Map<Double, Graph> archive = new HashMap<>();
 
         @Override
@@ -286,12 +283,22 @@ public class FirstInflection implements Algorithm, TakesInitialGraph {
             p1 = Math.round(p1 * 10.0) / 10.0;
             p2 = Math.round(p2 * 10.0) / 10.0;
 
-            if (p1 < low) return 10000;
-            if (p1 > high) return 10000;
-            if (p2 < low) return 10000;
-            if (p2 > high) return 10000;
+            if (p1 < low) {
+                return 10000;
+            }
+            if (p1 > high) {
+                return 10000;
+            }
+            if (p2 < low) {
+                return 10000;
+            }
+            if (p2 > high) {
+                return 10000;
+            }
 //            if (p1 == p2) return 10000;
-            if (Math.abs(p1 - p2) < 0.1) return 100000;
+            if (Math.abs(p1 - p2) < 0.1) {
+                return 100000;
+            }
 
             double _p1 = getValue(p1, params);
             double _p2 = getValue(p2, params);

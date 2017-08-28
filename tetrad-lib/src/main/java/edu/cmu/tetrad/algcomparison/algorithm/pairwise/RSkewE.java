@@ -8,11 +8,13 @@ import edu.cmu.tetrad.util.Parameters;
 import edu.pitt.dbmi.algo.bootstrap.BootstrapEdgeEnsemble;
 import edu.pitt.dbmi.algo.bootstrap.GeneralBootstrapTest;
 import edu.cmu.tetrad.algcomparison.utils.TakesInitialGraph;
+import edu.cmu.tetrad.annotation.AlgType;
+import edu.cmu.tetrad.annotation.AlgorithmDescription;
+import edu.cmu.tetrad.annotation.OracleType;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.Lofs2;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -21,22 +23,34 @@ import java.util.List;
  *
  * @author jdramsey
  */
+@AlgorithmDescription(
+        name = "RSkewE",
+        algType = AlgType.orient_pairwise,
+        oracleType = OracleType.None,
+        description = "Short blurb goes here",
+        assumptions = {}
+)
 public class RSkewE implements Algorithm, TakesInitialGraph {
+
     static final long serialVersionUID = 23L;
     private Algorithm algorithm = null;
     private Graph initialGraph = null;
 
+    public RSkewE() {
+    
+    }
+
     public RSkewE(Algorithm algorithm) {
-        this.algorithm = algorithm;
+    	this.algorithm = algorithm;
     }
 
     @Override
     public Graph search(DataModel dataSet, Parameters parameters) {
     	if (!parameters.getBoolean("bootstrapping")) {
-            Graph initial = algorithm.search(dataSet, parameters);
+    		initialGraph = algorithm.search(dataSet, parameters);
 
-            if (initial != null) {
-                initial = algorithm.search(dataSet, parameters);
+            if (initialGraph != null) {
+            	initialGraph = algorithm.search(dataSet, parameters);
             } else {
                 throw new IllegalArgumentException("This algorithm needs both data and a graph source as inputs; it \n" +
                         "will orient the edges in the input graph using the data");
@@ -45,7 +59,7 @@ public class RSkewE implements Algorithm, TakesInitialGraph {
             List<DataSet> dataSets = new ArrayList<>();
             dataSets.add(DataUtils.getContinuousDataSet(dataSet));
 
-            Lofs2 lofs = new Lofs2(initial, dataSets);
+            Lofs2 lofs = new Lofs2(initialGraph, dataSets);
             lofs.setRule(Lofs2.Rule.RSkewE);
 
             return lofs.orient();
@@ -113,4 +127,15 @@ public class RSkewE implements Algorithm, TakesInitialGraph {
 	public void setInitialGraph(Graph initialGraph) {
 		this.initialGraph = initialGraph;
 	}
+
+    @Override
+    public void setInitialGraph(Algorithm algorithm) {
+        if (algorithm == null) {
+            throw new IllegalArgumentException("This algorithm needs both data and a graph source as inputs; it \n"
+                    + "will orient the edges in the input graph using the data.");
+        }
+
+        this.algorithm = algorithm;
+    }
+
 }

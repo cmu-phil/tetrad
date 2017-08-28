@@ -6,20 +6,20 @@ import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.util.Parameters;
-
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 /**
  * Wraps the IMaGES algorithm for continuous variables.
  * </p>
  * Requires that the parameter 'randomSelectionSize' be set to indicate how many
- * datasets should be taken at a time (randomly). This cannot given multiple values.
+ * datasets should be taken at a time (randomly). This cannot given multiple
+ * values.
  *
  * @author jdramsey
  */
 public class Fang implements Algorithm, HasKnowledge {
+
     static final long serialVersionUID = 23L;
     private boolean empirical = false;
     private IKnowledge knowledge = new Knowledge2();

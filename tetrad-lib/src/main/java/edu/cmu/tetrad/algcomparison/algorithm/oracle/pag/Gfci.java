@@ -10,11 +10,15 @@ import edu.cmu.tetrad.algcomparison.score.ConditionalGaussianBicScore;
 import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
 import edu.cmu.tetrad.algcomparison.score.SemBicScore;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
+import edu.cmu.tetrad.algcomparison.utils.TakesIndependenceWrapper;
+import edu.cmu.tetrad.algcomparison.utils.UsesScoreWrapper;
+import edu.cmu.tetrad.annotation.AlgType;
+import edu.cmu.tetrad.annotation.AlgorithmDescription;
+import edu.cmu.tetrad.annotation.OracleType;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.DagToPag;
 import edu.cmu.tetrad.search.GFci;
-import edu.cmu.tetrad.search.GFciMax;
 import edu.cmu.tetrad.util.Parameters;
 import edu.pitt.dbmi.algo.bootstrap.BootstrapEdgeEnsemble;
 import edu.pitt.dbmi.algo.bootstrap.GeneralBootstrapTest;
@@ -27,12 +31,22 @@ import java.util.List;
  *
  * @author jdramsey
  */
-public class Gfci implements Algorithm, HasKnowledge {
+@AlgorithmDescription(
+        name = "GFCI",
+        algType = AlgType.allow_latent_common_causes,
+        oracleType = OracleType.Both,
+        description = "Short blurb goes here",
+        assumptions = {}
+)
+public class Gfci implements Algorithm, HasKnowledge, UsesScoreWrapper, TakesIndependenceWrapper {
 
     static final long serialVersionUID = 23L;
     private IndependenceWrapper test;
     private ScoreWrapper score;
     private IKnowledge knowledge = new Knowledge2();
+
+    public Gfci() {
+    }
 
     public Gfci(IndependenceWrapper test, ScoreWrapper score) {
         this.test = test;
@@ -92,8 +106,8 @@ public class Gfci implements Algorithm, HasKnowledge {
 
     @Override
     public String getDescription() {
-        return "GFCI (Greedy Fast Causal Inference) using " + test.getDescription() +
-                " and " + score.getDescription();
+        return "GFCI (Greedy Fast Causal Inference) using " + test.getDescription()
+                + " and " + score.getDescription();
     }
 
     @Override
@@ -126,6 +140,16 @@ public class Gfci implements Algorithm, HasKnowledge {
     @Override
     public void setKnowledge(IKnowledge knowledge) {
         this.knowledge = knowledge;
+    }
+
+    @Override
+    public void setScoreWrapper(ScoreWrapper score) {
+        this.score = score;
+    }
+
+    @Override
+    public void setIndependenceWrapper(IndependenceWrapper test) {
+        this.test = test;
     }
 
 }

@@ -4,7 +4,12 @@ import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
+import edu.cmu.tetrad.algcomparison.utils.TakesIndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.utils.TakesInitialGraph;
+import edu.cmu.tetrad.algcomparison.utils.UsesScoreWrapper;
+import edu.cmu.tetrad.annotation.AlgType;
+import edu.cmu.tetrad.annotation.AlgorithmDescription;
+import edu.cmu.tetrad.annotation.OracleType;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
@@ -24,13 +29,24 @@ import java.util.List;
  * @author jdramsey
  * @author Daniel Malinsky
  */
-public class TsGfci implements Algorithm, TakesInitialGraph, HasKnowledge {
+@AlgorithmDescription(
+        name = "TsGFCI",
+        algType = AlgType.allow_latent_common_causes,
+        oracleType = OracleType.Both,
+        description = "Short blurb goes here",
+        assumptions = {}
+)
+public class TsGfci implements Algorithm, TakesInitialGraph, HasKnowledge, TakesIndependenceWrapper, UsesScoreWrapper {
+
     static final long serialVersionUID = 23L;
     private IndependenceWrapper test;
     private ScoreWrapper score;
     private Algorithm algorithm = null;
     private Graph initialGraph = null;
     private IKnowledge knowledge = null;
+
+    public TsGfci() {
+    }
 
     public TsGfci(IndependenceWrapper type, ScoreWrapper score) {
         this.test = type;
@@ -69,7 +85,9 @@ public class TsGfci implements Algorithm, TakesInitialGraph, HasKnowledge {
     }
 
     @Override
-    public Graph getComparisonGraph(Graph graph) { return new TsDagToPag(new EdgeListGraph(graph)).convert(); }
+    public Graph getComparisonGraph(Graph graph) {
+        return new TsDagToPag(new EdgeListGraph(graph)).convert();
+    }
 
     public String getDescription() {
         return "tsGFCI (Time Series GFCI) using " + test.getDescription() + " and " + score.getDescription() +
@@ -116,4 +134,20 @@ public class TsGfci implements Algorithm, TakesInitialGraph, HasKnowledge {
 	public void setInitialGraph(Graph initialGraph) {
 		this.initialGraph = initialGraph;
 	}
+
+    @Override
+    public void setInitialGraph(Algorithm algorithm) {
+        this.algorithm = algorithm;
+    }
+
+    @Override
+    public void setIndependenceWrapper(IndependenceWrapper test) {
+        this.test = test;
+    }
+
+    @Override
+    public void setScoreWrapper(ScoreWrapper score) {
+        this.score = score;
+    }
+
 }

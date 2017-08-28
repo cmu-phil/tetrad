@@ -3,7 +3,6 @@ package edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
 import edu.cmu.tetrad.algcomparison.score.SemBicScoreDeterministic;
-import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.algcomparison.utils.TakesInitialGraph;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.EdgeListGraph;
@@ -250,7 +249,6 @@ public class GesMe implements Algorithm, TakesInitialGraph/*, HasKnowledge*/ {
 //    public void setKnowledge(IKnowledge knowledge) {
 //        this.knowledge = knowledge;
 //    }
-
     public void setCompareToTrue(boolean compareToTrue) {
         this.compareToTrue = compareToTrue;
     }
@@ -286,4 +284,10 @@ public class GesMe implements Algorithm, TakesInitialGraph/*, HasKnowledge*/ {
 	public void setInitialGraph(Graph initialGraph) {
 		this.initialGraph = initialGraph;
 	}
+
+    @Override
+    public void setInitialGraph(Algorithm algorithm) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
 }
