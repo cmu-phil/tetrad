@@ -41,7 +41,7 @@ public class AlgorithmDescriptions {
 
     private static final AlgorithmDescriptions INSTANCE = new AlgorithmDescriptions();
 
-    private final Map<String, AlgorithmDescriptionClass> algoDescClasses = new TreeMap<>();
+    private final Map<String, AlgorithmDescriptionClass> algoDescClasses = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
 
     private AlgorithmDescriptions() {
         Reflections reflections = new Reflections("edu.cmu.tetrad.algcomparison");
