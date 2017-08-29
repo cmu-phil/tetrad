@@ -799,7 +799,26 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
      * @return
      */
     private Algorithm getAlgorithm(String name, IndependenceWrapper independenceWrapper, ScoreWrapper scoreWrapper) {
-        Algorithm algorithm = AlgorithmDescriptionFactory.getInstance().getAlgorithmByName(name);
+        AlgorithmDescriptions algoDescs = AlgorithmDescriptions.getInstance();
+        AlgorithmDescriptionClass algoDescClass = algoDescs.get(name);
+        if (algoDescClass == null) {
+            return null;
+        }
+
+        Class clazz = algoDescClass.getClazz();
+        Object obj = null;
+        try {
+            obj = clazz.newInstance();
+        } catch (IllegalAccessException | InstantiationException exception) {
+            // todo : use logger
+            exception.printStackTrace(System.err);
+        }
+
+        if (obj == null || !(obj instanceof Algorithm)) {
+            return null;
+        }
+
+        Algorithm algorithm = (Algorithm) obj;
 
         if (algorithm instanceof UsesScoreWrapper) {
             ((UsesScoreWrapper) algorithm).setScoreWrapper(scoreWrapper);
