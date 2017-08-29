@@ -43,7 +43,7 @@ public class Fang2Concatenated implements MultiDataSetAlgorithm, HasKnowledge {
         }
 
         DataSet dataSet = DataUtils.concatenate(centered);
-        Fang1 search = new Fang1(dataSet);
+        edu.cmu.tetrad.search.Fang2 search = new edu.cmu.tetrad.search.Fang2(dataSet);
         search.setDepth(parameters.getInt("depth"));
         search.setPenaltyDiscount(parameters.getDouble("penaltyDiscount"));
         search.setAlpha(parameters.getDouble("twoCycleAlpha"));

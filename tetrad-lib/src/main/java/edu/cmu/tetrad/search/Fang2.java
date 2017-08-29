@@ -24,6 +24,7 @@ package edu.cmu.tetrad.search;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.StatUtils;
+import org.apache.commons.math3.distribution.NormalDistribution;
 import org.apache.commons.math3.distribution.TDistribution;
 
 import java.awt.*;
@@ -83,7 +84,6 @@ public final class Fang2 implements GraphSearch {
 
         DataSet dataSet = DataUtils.center(this.dataSet);
 
-
         SemBicScore score = new SemBicScore(new CovarianceMatrixOnTheFly(dataSet));
         score.setPenaltyDiscount(penaltyDiscount);
         IndependenceTest test = new IndTestScore(score, dataSet);
@@ -124,27 +124,23 @@ public final class Fang2 implements GraphSearch {
                 final double[] x = colData[i];
                 final double[] y = colData[j];
 
-                double[] e1 = StatUtils.E(x, y, x, 0, -1);
-                double[] e2 = StatUtils.E(x, y, y, 0, -1);
+                double[] e =  StatUtils.E(x, y, x, Double.NEGATIVE_INFINITY, +1);
+                double[] e1 = StatUtils.E(x, y, x, 0, +1);
+                double[] e2 = StatUtils.E(x, y, y, 0, +1);
 
-                double exyx = e1[0];
-                double exyy = e2[0];
-
-                double vxx = e1[2];
-                double vyx = e1[3];
-                double vxy = e2[2];
-                double vyy = e2[3];
-
-                if (G0.isAdjacentTo(X, Y) || equals(e1, e2)) {
-                    double e[] = StatUtils.E(x, y, x, Double.NEGATIVE_INFINITY, +1);
-                    double e3[] = StatUtils.E(x, y, x, 0, -1);
-                    double e4[] = StatUtils.E(x, y, y, 0, -1);
+                if (G0.isAdjacentTo(X, Y) /*|| !equals(e1, e2)*/) {
+                    double[] _c =  StatUtils.cov(x, y, x, Double.NEGATIVE_INFINITY, +1);
+                    double[] c1 = StatUtils.cov(x, y, x, 0, +1);
+                    double[] c2 = StatUtils.cov(x, y, y, 0, +1);
+                    double[] c3 =  StatUtils.cov(x, y, x, 0, -1);
+                    double[] c4 =  StatUtils.cov(x, y, y, 0, -1);
 
                     if (knowledgeOrients(X, Y)) {
                         graph.addDirectedEdge(X, Y);
                     } else if (knowledgeOrients(Y, X)) {
                         graph.addDirectedEdge(Y, X);
-                    } else if (!(equals(e, e1) || equals(e, e2))) {
+                    }
+                    else if ((equals(_c, c1, alpha) && equals(_c, c2, alpha)) || (!equals(_c, c1, 0.2) && !equals(_c, c2, 0.2))) {
                         Edge edge1 = Edges.directedEdge(X, Y);
                         Edge edge2 = Edges.directedEdge(Y, X);
 
@@ -153,7 +149,19 @@ public final class Fang2 implements GraphSearch {
 
                         graph.addEdge(edge1);
                         graph.addEdge(edge2);
-                    } else if (abs(exyx / sqrt(vxx * vyx)) > abs(exyy / sqrt(vxy * vyy))) {
+                    }
+                    else if (!(sameSign(_c, c1) && sameSign(_c, c3)
+                            || (sameSign(_c, c2) && sameSign(_c, c4)))) {
+                        Edge edge1 = Edges.directedEdge(X, Y);
+                        Edge edge2 = Edges.directedEdge(Y, X);
+
+                        edge1.setLineColor(Color.RED);
+                        edge2.setLineColor(Color.RED);
+
+                        graph.addEdge(edge1);
+                        graph.addEdge(edge2);
+                    }
+                    else if (abs(e1[1]) > abs(e2[1])) {
                         graph.addDirectedEdge(X, Y);
                     } else {
                         graph.addDirectedEdge(Y, X);
@@ -171,20 +179,18 @@ public final class Fang2 implements GraphSearch {
         return graph;
     }
 
-
-    private boolean equals(double[] c1, double[] c2) {
-        double b1 = c1[1];
-        double b2 = c2[1];
-        double diff1 = b1 - b2;
-        double exv = c1[5];
-        double eyv = c2[5];
-        final double z = diff1 / sqrt(exv * exv + eyv * eyv);
-        return z < alpha;
+    private boolean equals(double[] c1, double[] c2, double alpha) {
+        double z = getZ(c1[1]);
+        double z1 = getZ(c2[1]);
+        double diff1 = z - z1;
+        final double t1 = diff1 / (sqrt(1.0 / c1[4] + 1.0 / c2[4]));
+        double p1 = 1.0 - new TDistribution(2 * (c1[4] + c2[4]) - 2).cumulativeProbability(abs(t1) / 2.0);
+        return p1 <= alpha;
     }
 
-//    private boolean sameSign(double[] c1, double[] c2) {
-//        return signum(c1[1]) == signum(c2[1]);
-//    }
+    private boolean sameSign(double[] c1, double[] c2) {
+        return signum(c1[1]) == signum(c2[1]);
+    }
 
     /**
      * @return The depth of search for the Fast Adjacency Search (FAS).

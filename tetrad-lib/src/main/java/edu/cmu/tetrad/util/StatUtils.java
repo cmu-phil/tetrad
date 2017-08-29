@@ -2084,8 +2084,6 @@ public final class StatUtils {
         exx /= n;
         eyy /= n;
         exy /= n;
-        exm /= n;
-        eym /= n;
 
         double exye = 0.0;
         double exxe = 0.0;
@@ -2106,6 +2104,10 @@ public final class StatUtils {
                 }
             }
         }
+
+        exye /= n;
+        exxe /= n;
+        eyye /= n;
 
         double exyv = sqrt(exye / sqrt(exxe * eyye)) / sqrt(n - 1);
 
