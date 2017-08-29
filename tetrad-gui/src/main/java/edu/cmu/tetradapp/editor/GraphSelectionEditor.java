@@ -590,7 +590,9 @@ public class GraphSelectionEditor extends JPanel implements GraphEditable, Tripl
                 }
             }
         }
-
+        if(graphs == null){
+        	graphs = new ArrayList<>();
+        }
         wrapper.setGraphs(graphs);
         resetWorkbenchScrolls(wrapper);
         resetGraphs(wrapper);

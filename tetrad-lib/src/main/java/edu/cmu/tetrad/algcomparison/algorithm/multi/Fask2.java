@@ -6,6 +6,8 @@ import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.util.Parameters;
+import edu.pitt.dbmi.algo.bootstrap.BootstrapEdgeEnsemble;
+import edu.pitt.dbmi.algo.bootstrap.GeneralBootstrapTest;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -33,13 +35,37 @@ public class Fask2 implements Algorithm, HasKnowledge {
 
     @Override
     public Graph search(DataModel dataSet, Parameters parameters) {
-        edu.cmu.tetrad.search.Fask2 search = new edu.cmu.tetrad.search.Fask2((DataSet) dataSet);
-        search.setDepth(parameters.getInt("depth"));
-        search.setPenaltyDiscount(parameters.getDouble("penaltyDiscount"));
-        search.setAlpha(parameters.getDouble("twoCycleAlpha"));
-        search.setKnowledge(knowledge);
-        search.setThresholdForReversing(parameters.getDouble("thresholdForReversing"));
-        return search.search();
+    	if(!parameters.getBoolean("bootstrapping")){
+            edu.cmu.tetrad.search.Fask2 search = new edu.cmu.tetrad.search.Fask2((DataSet) dataSet);
+            search.setDepth(parameters.getInt("depth"));
+            search.setPenaltyDiscount(parameters.getDouble("penaltyDiscount"));
+            search.setAlpha(parameters.getDouble("twoCycleAlpha"));
+            search.setKnowledge(knowledge);
+            search.setThresholdForReversing(parameters.getDouble("thresholdForReversing"));
+            return search.search();
+    	}else{
+    		Fask2 fask2 = new Fask2(empirical);
+    		fask2.setKnowledge(knowledge);
+    		
+    		DataSet data = (DataSet) dataSet;
+    		GeneralBootstrapTest search = new GeneralBootstrapTest(data, fask2, parameters.getInt("bootstrapSampleSize"));
+    		
+    		BootstrapEdgeEnsemble edgeEnsemble = BootstrapEdgeEnsemble.Highest;
+    		switch (parameters.getInt("bootstrapEnsemble", 1)) {
+    		case 0:
+    			edgeEnsemble = BootstrapEdgeEnsemble.Preserved;
+    			break;
+    		case 1:
+    			edgeEnsemble = BootstrapEdgeEnsemble.Highest;
+    			break;
+    		case 2:
+    			edgeEnsemble = BootstrapEdgeEnsemble.Majority;
+    		}
+    		search.setEdgeEnsemble(edgeEnsemble);
+    		search.setParameters(parameters);    		
+    		search.setVerbose(parameters.getBoolean("verbose"));
+    		return search.search();
+    	}
     }
 
     @Override
@@ -63,6 +89,11 @@ public class Fask2 implements Algorithm, HasKnowledge {
         parameters.add("depth");
         parameters.add("penaltyDiscount");
         parameters.add("twoCycleAlpha");
+        // Bootstrapping
+        parameters.add("bootstrapping");
+        parameters.add("bootstrapSampleSize");
+        parameters.add("bootstrapEnsemble");
+        parameters.add("verbose");
 
         return parameters;
     }

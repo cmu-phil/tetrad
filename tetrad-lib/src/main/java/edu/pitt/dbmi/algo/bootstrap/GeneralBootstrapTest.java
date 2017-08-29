@@ -216,12 +216,16 @@ public class GeneralBootstrapTest {
 	private Graph generateBootstrapGraph() {
 		Graph pag = null;
 		System.out.println("PAGs: " + PAGs.size());
+		if(PAGs == null || PAGs.size() == 0)return new EdgeListGraph();
+		
 		for (Graph g : PAGs) {
 			if (g != null) {
 				pag = g;
 				break;
 			}
 		}
+		if(pag==null)return new EdgeListGraph();
+		
 		Graph complete = new EdgeListGraph(pag.getNodes());
 		complete.fullyConnect(Endpoint.TAIL);
 
