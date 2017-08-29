@@ -31,8 +31,8 @@ import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.search.Fang1;
-import edu.cmu.tetrad.search.Fask1;
+import edu.cmu.tetrad.search.OldFask1;
+import edu.cmu.tetrad.search.OldFask2;
 import edu.cmu.tetrad.sem.GeneralizedSemIm;
 import edu.cmu.tetrad.sem.GeneralizedSemPm;
 import edu.cmu.tetrad.util.Parameters;
@@ -52,7 +52,7 @@ public class TestSimulatedFmri {
 
         parameters.set("penaltyDiscount", 4);
         parameters.set("depth", -1);
-        parameters.set("twoCycleAlpha", 1e-5);
+        parameters.set("twoCycleAlpha", 1e-8);
 //        parameters.set("thresholdForReversing", -5);
 
         parameters.set("numRuns", 10);
@@ -173,11 +173,11 @@ public class TestSimulatedFmri {
 
         Algorithms algorithms = new Algorithms();
 
-//        algorithms.add(new edu.cmu.tetrad.algcomparison.algorithm.multi.Fang1Concatenated(false));
-        algorithms.add(new edu.cmu.tetrad.algcomparison.algorithm.multi.Fang2Concatenated(false));
-//        algorithms.add(new edu.cmu.tetrad.algcomparison.algorithm.multi.Fask1Concatenated(false));
-//        algorithms.add(new edu.cmu.tetrad.algcomparison.algorithm.multi.Fask2Concatenated(false));
-//        algorithms.add(new edu.cmu.tetrad.algcomparison.algorithm.multi.Fask3Concatenated(false));
+        algorithms.add(new FaskConcatenated(false));
+//        algorithms.add(new OldFask1Concatenated(false));
+//        algorithms.add(new OldFask2Concatenated(false));
+//        algorithms.add(new OldFask3Concatenated(false));
+//        algorithms.add(new OldFask4Concatenated(false));
 //
         Comparison comparison = new Comparison();
 
@@ -240,7 +240,7 @@ public class TestSimulatedFmri {
 
 //        algorithms.add(new Fges(new SemBicScore()));
 //        algorithms.add(new PcStableMax(new SemBicTest(), true));
-//        algorithms.add(new Fang1());
+//        algorithms.add(new OldFask1());
 //        algorithms.add(new FasLofs(Lofs2.Rule.R1));
 //        algorithms.add(new FasLofs(Lofs2.Rule.R2));
 //        algorithms.add(new FasLofs(Lofs2.Rule.R3));
@@ -250,7 +250,7 @@ public class TestSimulatedFmri {
 //
 //        algorithms.add(new FgesConcatenated(new edu.cmu.tetrad.algcomparison.score.SemBicScore(), true));
 //        algorithms.add(new PcStableMaxConcatenated(new SemBicTest(), true));
-        algorithms.add(new Fang1Concatenated());
+        algorithms.add(new OldFask1Concatenated());
 //        algorithms.add(new FasLofsConcatenated(Lofs2.Rule.R1));
 //        algorithms.add(new FasLofsConcatenated(Lofs2.Rule.R2));
 //        algorithms.add(new FasLofsConcatenated(Lofs2.Rule.R3));
@@ -312,7 +312,7 @@ public class TestSimulatedFmri {
                 GeneralizedSemIm im = new GeneralizedSemIm(pm);
                 DataSet data = im.simulateData(N, false);
 
-                Fask1 fang = new Fask1(data);
+                OldFask2 fang = new OldFask2(data);
                 fang.setPenaltyDiscount(penaltyDiscount);
                 fang.setAlpha(alpha);
                 fang.setThresholdForReversing(-.3);
@@ -353,7 +353,7 @@ public class TestSimulatedFmri {
                 GeneralizedSemIm im = new GeneralizedSemIm(pm);
                 DataSet data = im.simulateData(N, false);
 
-                Fask1 fang = new Fask1(data);
+                OldFask2 fang = new OldFask2(data);
                 fang.setPenaltyDiscount(penaltyDiscount);
                 fang.setAlpha(alpha);
                 fang.setThresholdForReversing(0.0);
@@ -400,7 +400,7 @@ public class TestSimulatedFmri {
         GeneralizedSemIm im = new GeneralizedSemIm(pm);
         DataSet data = im.simulateData(1000, false);
 
-        Fang1 fang = new Fang1(data);
+        OldFask1 fang = new OldFask1(data);
         fang.setPenaltyDiscount(1);
         fang.setAlpha(0.5);
         Graph out = fang.search();

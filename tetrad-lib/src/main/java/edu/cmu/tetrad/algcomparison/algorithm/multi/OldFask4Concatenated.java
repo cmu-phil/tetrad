@@ -5,7 +5,7 @@ import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.search.Fang1;
+import edu.cmu.tetrad.search.OldFask4;
 import edu.cmu.tetrad.util.Parameters;
 
 import java.util.ArrayList;
@@ -20,16 +20,16 @@ import java.util.List;
  *
  * @author jdramsey
  */
-public class Fang2Concatenated implements MultiDataSetAlgorithm, HasKnowledge {
+public class OldFask4Concatenated implements MultiDataSetAlgorithm, HasKnowledge {
     static final long serialVersionUID = 23L;
     private boolean empirical = false;
     private IKnowledge knowledge = new Knowledge2();
 
-    public Fang2Concatenated() {
+    public OldFask4Concatenated() {
         this.empirical = false;
     }
 
-    public Fang2Concatenated(boolean empirical) {
+    public OldFask4Concatenated(boolean empirical) {
         this.empirical = empirical;
     }
 
@@ -43,11 +43,12 @@ public class Fang2Concatenated implements MultiDataSetAlgorithm, HasKnowledge {
         }
 
         DataSet dataSet = DataUtils.concatenate(centered);
-        edu.cmu.tetrad.search.Fang2 search = new edu.cmu.tetrad.search.Fang2(dataSet);
+        OldFask4 search = new OldFask4(dataSet);
         search.setDepth(parameters.getInt("depth"));
         search.setPenaltyDiscount(parameters.getDouble("penaltyDiscount"));
         search.setAlpha(parameters.getDouble("twoCycleAlpha"));
         search.setKnowledge(knowledge);
+        search.setThresholdForReversing(parameters.getDouble("thresholdForReversing"));
         return search.search();
     }
 
@@ -63,7 +64,7 @@ public class Fang2Concatenated implements MultiDataSetAlgorithm, HasKnowledge {
 
     @Override
     public String getDescription() {
-        return "FANG2 Concatenated";
+        return "Old FASK4 Concatenated";
     }
 
     @Override

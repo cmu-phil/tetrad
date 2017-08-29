@@ -18,26 +18,26 @@ import java.util.List;
  *
  * @author jdramsey
  */
-public class Fang2 implements Algorithm, HasKnowledge {
+public class Fask implements Algorithm, HasKnowledge {
     static final long serialVersionUID = 23L;
     private boolean empirical = false;
     private IKnowledge knowledge = new Knowledge2();
 
-    public Fang2() {
+    public Fask() {
         this.empirical = false;
     }
 
-    public Fang2(boolean empirical) {
+    public Fask(boolean empirical) {
         this.empirical = empirical;
     }
 
-    private Graph getGraph(edu.cmu.tetrad.search.Fang2 search) {
+    private Graph getGraph(edu.cmu.tetrad.search.Fask search) {
         return search.search();
     }
 
     @Override
     public Graph search(DataModel dataSet, Parameters parameters) {
-        edu.cmu.tetrad.search.Fang2 search = new edu.cmu.tetrad.search.Fang2((DataSet) dataSet);
+        edu.cmu.tetrad.search.Fask search = new edu.cmu.tetrad.search.Fask((DataSet) dataSet);
         search.setDepth(parameters.getInt("depth"));
         search.setPenaltyDiscount(parameters.getDouble("penaltyDiscount"));
         search.setAlpha(parameters.getDouble("twoCycleAlpha"));
@@ -52,7 +52,7 @@ public class Fang2 implements Algorithm, HasKnowledge {
 
     @Override
     public String getDescription() {
-        return "FANG2";
+        return "FASK";
     }
 
     @Override

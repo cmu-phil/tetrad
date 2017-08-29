@@ -5,7 +5,7 @@ import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.search.Fang1;
+import edu.cmu.tetrad.search.OldFask1;
 import edu.cmu.tetrad.util.Parameters;
 
 import java.util.ArrayList;
@@ -20,16 +20,16 @@ import java.util.List;
  *
  * @author jdramsey
  */
-public class Fang1Concatenated implements MultiDataSetAlgorithm, HasKnowledge {
+public class OldFask1Concatenated implements MultiDataSetAlgorithm, HasKnowledge {
     static final long serialVersionUID = 23L;
     private boolean empirical = false;
     private IKnowledge knowledge = new Knowledge2();
 
-    public Fang1Concatenated() {
+    public OldFask1Concatenated() {
         this.empirical = false;
     }
 
-    public Fang1Concatenated(boolean empirical) {
+    public OldFask1Concatenated(boolean empirical) {
         this.empirical = empirical;
     }
 
@@ -43,7 +43,7 @@ public class Fang1Concatenated implements MultiDataSetAlgorithm, HasKnowledge {
         }
 
         DataSet dataSet = DataUtils.concatenate(centered);
-        Fang1 search = new Fang1(dataSet);
+        OldFask1 search = new OldFask1(dataSet);
         search.setDepth(parameters.getInt("depth"));
         search.setPenaltyDiscount(parameters.getDouble("penaltyDiscount"));
         search.setAlpha(parameters.getDouble("twoCycleAlpha"));
@@ -63,7 +63,7 @@ public class Fang1Concatenated implements MultiDataSetAlgorithm, HasKnowledge {
 
     @Override
     public String getDescription() {
-        return "FANG1 Concatenated";
+        return "Old FASK1 Concatenated";
     }
 
     @Override

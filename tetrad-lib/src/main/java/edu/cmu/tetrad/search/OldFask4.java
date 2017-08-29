@@ -43,7 +43,7 @@ import static java.lang.Math.*;
  *
  * @author Joseph Ramsey
  */
-public final class Fask3 implements GraphSearch {
+public final class OldFask4 implements GraphSearch {
 
     // Elapsed time of the search, in milliseconds.
     private long elapsed = 0;
@@ -79,7 +79,7 @@ public final class Fask3 implements GraphSearch {
     /**
      * @param dataSet These datasets must all have the same variables, in the same order.
      */
-    public Fask3(DataSet dataSet) {
+    public OldFask4(DataSet dataSet) {
         this.dataSet = dataSet;
     }
 

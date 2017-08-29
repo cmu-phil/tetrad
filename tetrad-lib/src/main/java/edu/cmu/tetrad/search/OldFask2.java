@@ -44,7 +44,7 @@ import static java.lang.Math.max;
  *
  * @author Joseph Ramsey
  */
-public final class Fask2 implements GraphSearch {
+public final class OldFask2 implements GraphSearch {
 
     // Elapsed time of the search, in milliseconds.
     private long elapsed = 0;
@@ -80,7 +80,7 @@ public final class Fask2 implements GraphSearch {
     /**
      * @param dataSet These datasets must all have the same variables, in the same order.
      */
-    public Fask2(DataSet dataSet) {
+    public OldFask2(DataSet dataSet) {
         this.dataSet = dataSet;
     }
 
@@ -169,7 +169,8 @@ public final class Fask2 implements GraphSearch {
                 graph.addDirectedEdge(X, Y);
             } else if (knowledgeOrients(Y, X)) {
                 graph.addDirectedEdge(Y, X);
-            } else if (equals(c, c1) && equals(c, c2)) {
+            }
+            else if (equals(c, c1) && equals(c, c2)) {
                 Edge edge1 = Edges.directedEdge(X, Y);
                 Edge edge2 = Edges.directedEdge(Y, X);
 
@@ -188,7 +189,8 @@ public final class Fask2 implements GraphSearch {
 
                 graph.addEdge(edge1);
                 graph.addEdge(edge2);
-            } else if (R > 0) {
+            }
+            else if (R > 0) {
                 graph.addDirectedEdge(X, Y);
             } else if (R < 0) {
                 graph.addDirectedEdge(Y, X);
@@ -333,6 +335,7 @@ public final class Fask2 implements GraphSearch {
     public void setThresholdForReversing(double thresholdForReversing) {
         this.thresholdForReversing = thresholdForReversing;
     }
+
 
     private boolean equals(double[] c1, double[] c2) {
         double z = getZ(c1[1]);

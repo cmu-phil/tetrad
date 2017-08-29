@@ -212,7 +212,6 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         descriptions.add(new AlgorithmDescription(AlgName.FASK1   , AlgType.forbid_latent_common_causes, OracleType.None));
         descriptions.add(new AlgorithmDescription(AlgName.FASK2   , AlgType.forbid_latent_common_causes, OracleType.None));
         descriptions.add(new AlgorithmDescription(AlgName.FASK3   , AlgType.forbid_latent_common_causes, OracleType.None));
-        descriptions.add(new AlgorithmDescription(AlgName.FASK4   , AlgType.forbid_latent_common_causes, OracleType.None));
 
         descriptions.add(new AlgorithmDescription(AlgName.FCI, AlgType.allow_latent_common_causes, OracleType.Test));
         descriptions.add(new AlgorithmDescription(AlgName.RFCI, AlgType.allow_latent_common_causes, OracleType.Test));
@@ -1009,22 +1008,19 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
                 algorithm = new CcdMax(independenceWrapper);
                 break;
             case FANG1:
-                algorithm = new Fang1();
+                algorithm = new OldFask1();
                 break;
             case FANG2:
-                algorithm = new Fang2();
+                algorithm = new Fask();
                 break;
             case FASK1:
-                algorithm = new Fask1();
+                algorithm = new OldFask2();
                 break;
             case FASK2:
-                algorithm = new Fask2();
+                algorithm = new OldFask3();
                 break;
             case FASK3:
-                algorithm = new Fask3();
-                break;
-            case FASK4:
-                algorithm = new Fask4();
+                algorithm = new OldFask4();
                 break;
             case FAS:
                 algorithm = new FAS(independenceWrapper);
@@ -1466,7 +1462,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         IMaGES_Discrete, IMaGES_Continuous, IMaGES_CCD,
         Bpc, Fofc, Ftfc,
         GLASSO,
-        EB, R1, R2, R3, R4, RSkew, RSkewE, Skew, SkewE, FANG1, FANG2, FASK1, FASK2, FASK3, FASK4, Tahn,
+        EB, R1, R2, R3, R4, RSkew, RSkewE, Skew, SkewE, FANG1, FANG2, FASK1, FASK2, FASK3, Tahn,
         BootstrapFGES, BootstrapGFCI, BootstrapRFCI
     }
 

@@ -23,17 +23,12 @@ package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.regression.RegressionDataset;
 import edu.cmu.tetrad.util.StatUtils;
 import org.apache.commons.math3.distribution.TDistribution;
 
 import java.awt.*;
-import java.text.DecimalFormat;
-import java.text.NumberFormat;
 import java.util.List;
 
-import static edu.cmu.tetrad.util.StatUtils.correlation;
-import static edu.cmu.tetrad.util.StatUtils.skewness;
 import static java.lang.Math.*;
 
 /**
@@ -43,7 +38,7 @@ import static java.lang.Math.*;
  *
  * @author Joseph Ramsey
  */
-public final class Fask4 implements GraphSearch {
+public final class OldFask1 implements GraphSearch {
 
     // Elapsed time of the search, in milliseconds.
     private long elapsed = 0;
@@ -59,27 +54,15 @@ public final class Fask4 implements GraphSearch {
     private double penaltyDiscount = 1;
 
     // Alpha for orienting 2-cycles. Usually needs to be low.
-    private double alpha = .3;
+    private double alpha = 1e-6;
 
     // Knowledge the the search will obey, of forbidden and required edges.
     private IKnowledge knowledge = new Knowledge2();
 
-    // Cutoff for y.
-    private double y0 = 0.0;
-
-    // Whether variables should be multiplied by the signs of the skewnesses.
-    private boolean empirical = true;
-
-    // Whether RSkew should be used.
-    private boolean rskew = false;
-
-    // Variables with skewness less than this value will be reversed in sign.
-    private double thresholdForReversing = 0.0;
-
     /**
      * @param dataSet These datasets must all have the same variables, in the same order.
      */
-    public Fask4(DataSet dataSet) {
+    public OldFask1(DataSet dataSet) {
         this.dataSet = dataSet;
     }
 
@@ -99,15 +82,14 @@ public final class Fask4 implements GraphSearch {
 
         DataSet dataSet = DataUtils.standardizeData(this.dataSet);
 
-        RegressionDataset regression = new RegressionDataset(dataSet);
-
         SemBicScore score = new SemBicScore(new CovarianceMatrixOnTheFly(dataSet));
         score.setPenaltyDiscount(penaltyDiscount);
         IndependenceTest test = new IndTestScore(score, dataSet);
         List<Node> variables = dataSet.getVariables();
 
         double[][] colData = dataSet.getDoubleData().transpose().toArray();
-        double[][] colData2 = dataSet.getDoubleData().transpose().toArray();
+
+        System.out.println("FAS");
 
         FasStable fas = new FasStable(test);
         fas.setDepth(getDepth());
@@ -117,86 +99,78 @@ public final class Fask4 implements GraphSearch {
 
         SearchGraphUtils.pcOrientbk(knowledge, G0, G0.getNodes());
 
+        System.out.println("Orientation");
+
         Graph graph = new EdgeListGraph(variables);
 
-        for (int i = 0; i < colData.length; i++) {
-            double skewness = skewness(colData[i]);
+        for (int i = 0; i < variables.size(); i++) {
+            for (int j = i + 1; j < variables.size(); j++) {
+                Node X = variables.get(i);
+                Node Y = variables.get(j);
 
-            if (skewness < getThresholdForReversing()) {
-                for (int k = 0; k < colData[i].length; k++) {
-                    colData[i][k] *= signum(skewness);
+                // Standardized.
+                final double[] x = colData[i];
+                final double[] y = colData[j];
+
+                double[] c1 = StatUtils.cov(x, y, x, 0, +1);
+                double[] c2 = StatUtils.cov(x, y, y, 0, +1);
+                double[] e1 = StatUtils.E(x, y, x, 0, +1);
+                double[] e2 = StatUtils.E(x, y, y, 0, +1);
+
+                double e = e1[0];
+                double f = e2[0];
+
+                double vxx = c1[2];
+                double vxy = c1[3];
+                double vyy = c2[3];
+                double vyx = c2[2];
+
+                double a = abs(e / vxx);
+                double b = abs(f / vxy);
+                double c = abs(f / vyy);
+                double d = abs(e / vyx);
+
+                double R = abs(c1[1]) - abs(c2[1]);
+//                double R = abs((e - vxx)) - abs(f - vxy) - (abs(f - vyy) - abs(e - vyx));
+
+                if (G0.isAdjacentTo(X, Y) || abs(c1[1]) - abs(c2[1]) > .3) {
+                    double _c[] =  StatUtils.cov(x, y, x, Double.NEGATIVE_INFINITY, +1);
+                    double c3[] =  StatUtils.cov(x, y, x, 0, -1);
+                    double c4[] =  StatUtils.cov(x, y, y, 0, -1);
+
+                    if (knowledgeOrients(X, Y)) {
+                        graph.addDirectedEdge(X, Y);
+                    } else if (knowledgeOrients(Y, X)) {
+                        graph.addDirectedEdge(Y, X);
+                    }
+                    else if (equals(_c, c1) && equals(_c, c2)) {
+                        Edge edge1 = Edges.directedEdge(X, Y);
+                        Edge edge2 = Edges.directedEdge(Y, X);
+
+                        edge1.setLineColor(Color.GREEN);
+                        edge2.setLineColor(Color.GREEN);
+
+                        graph.addEdge(edge1);
+                        graph.addEdge(edge2);
+                    } else if (!(sameSign(_c, c1) && sameSign(_c, c3)
+                            || (sameSign(_c, c2) && sameSign(_c, c4)))) {
+                        Edge edge1 = Edges.directedEdge(X, Y);
+                        Edge edge2 = Edges.directedEdge(Y, X);
+
+                        edge1.setLineColor(Color.RED);
+                        edge2.setLineColor(Color.RED);
+
+                        graph.addEdge(edge1);
+                        graph.addEdge(edge2);
+                    }
+                    else if (R > 0) {
+                        graph.addDirectedEdge(X, Y);
+                    } else {
+                        graph.addDirectedEdge(Y, X);
+                    }
                 }
             }
         }
-
-        for (Edge edge : G0.getEdges()) {
-            Node X = edge.getNode1();
-            Node Y = edge.getNode2();
-
-            int i = variables.indexOf(X);
-            int j = variables.indexOf(Y);
-
-            double[] x = colData[i];
-            double[] y = colData[j];
-
-            double sum1 = 0.0;
-            double sum2 = 0.0;
-
-            for (int k = 0; k < x.length; k++) {
-                double f1 = y[k] * g(x[k]);
-                double f2 = x[k] * g(y[k]);
-
-                sum1 += f1;
-                sum2 += f2;
-            }
-
-            double[] x1 = colData2[i];
-            double[] y1 = colData2[j];
-
-            double[] c = StatUtils.cov(x, y, x, Double.NEGATIVE_INFINITY, +1);
-            double[] c1 = StatUtils.cov(x, y, x, 0, +1);
-            double[] c2 = StatUtils.cov(x, y, y, 0, +1);
-            double[] c3 = StatUtils.cov(x, y, x, 0, -1);
-            double[] c4 = StatUtils.cov(x, y, y, 0, -1);
-
-            int n = x.length;
-
-            double rho = correlation(x, y);
-            double R = rho * (sum1 / n - sum2 / n);
-
-            if (knowledgeOrients(X, Y)) {
-                graph.addDirectedEdge(X, Y);
-            } else if (knowledgeOrients(Y, X)) {
-                graph.addDirectedEdge(Y, X);
-            } else if (equals(c, c1) && equals(c, c2)) {
-                Edge edge1 = Edges.directedEdge(X, Y);
-                Edge edge2 = Edges.directedEdge(Y, X);
-
-                edge1.setLineColor(Color.GREEN);
-                edge2.setLineColor(Color.GREEN);
-
-                graph.addEdge(edge1);
-                graph.addEdge(edge2);
-            } else if (!(sameSign(c, c1) && sameSign(c, c3)
-                    || (sameSign(c, c2) && sameSign(c, c4)))) {
-                Edge edge1 = Edges.directedEdge(X, Y);
-                Edge edge2 = Edges.directedEdge(Y, X);
-
-                edge1.setLineColor(Color.RED);
-                edge2.setLineColor(Color.RED);
-
-                graph.addEdge(edge1);
-                graph.addEdge(edge2);
-            } else if (R > 0) {
-                graph.addDirectedEdge(X, Y);
-            } else if (R < 0) {
-                graph.addDirectedEdge(Y, X);
-            } else {
-                graph.addUndirectedEdge(X, Y);
-            }
-        }
-
-        printHistogram(dataSet, regression, graph);
 
         System.out.println();
         System.out.println("Done");
@@ -207,44 +181,18 @@ public final class Fask4 implements GraphSearch {
         return graph;
     }
 
-    private void printHistogram(DataSet dataSet, RegressionDataset regression, Graph graph) {
-        double sigma = Math.pow(6.0 / dataSet.getNumRows(), 0.5);
 
-        double[] cutoffs = new double[]{-10, -3, -2, -1.5, -1, -0.5, 0,
-                .5, 1, 1.5, 2, 3, 10};
-        int[] counts = new int[cutoffs.length];
-        int total = 0;
-
-        double sumSkew = 0.0;
-        double sd = sqrt(6.0 / dataSet.getNumRows());
-
-        for (Node x : graph.getNodes()) {
-            double skewnessX = skewness(dataSet.getDoubleData().getColumn(dataSet.getColumn(x)).toArray());
-            System.out.println("Node " + x + " skewness(x) = " + skewnessX);
-
-            for (int i = 0; i < cutoffs.length; i++) {
-                if (skewnessX < cutoffs[i] * sigma) {
-                    counts[i]++;
-                }
-            }
-
-            total++;
-            sumSkew += skewnessX;
-        }
-
-
-        double avgSkew = sumSkew / (double) total;
-
-        NumberFormat nf = new DecimalFormat("0.000");
-
-        System.out.println("Avg skew " + avgSkew);
-        System.out.println("Skew standard deviation = " + sd);
-        System.out.println("N = " + dataSet.getNumRows());
+    private boolean equals(double[] c1, double[] c2) {
+        double z = getZ(c1[1]);
+        double z1 = getZ(c2[1]);
+        double diff1 = z - z1;
+        final double t1 = diff1 / (sqrt(1.0 / c1[4] + 1.0 / c2[4]));
+        double p1 = 1.0 - new TDistribution(2 * (c1[4] + c2[4]) - 2).cumulativeProbability(abs(t1) / 2.0);
+        return p1 <= alpha;
     }
 
-    private double g(double z) {
-//        return tanh(z);
-        return 0.5 * log((1 + z) / (1 - z));
+    private boolean sameSign(double[] c1, double[] c2) {
+        return signum(c1[1]) == signum(c2[1]);
     }
 
     /**
@@ -312,41 +260,6 @@ public final class Fask4 implements GraphSearch {
 
     private boolean knowledgeOrients(Node left, Node right) {
         return knowledge.isForbidden(right.getName(), left.getName()) || knowledge.isRequired(left.getName(), right.getName());
-    }
-
-    public boolean isRskew() {
-        return rskew;
-    }
-
-    public void setRskew(boolean rskew) {
-        this.rskew = rskew;
-    }
-
-    /**
-     * @return Variables with skewness less than this value will be reversed in sign.
-     */
-    public double getThresholdForReversing() {
-        return thresholdForReversing;
-    }
-
-    /**
-     * @param thresholdForReversing Variables with skewness less than this value will be reversed in sign.
-     */
-    public void setThresholdForReversing(double thresholdForReversing) {
-        this.thresholdForReversing = thresholdForReversing;
-    }
-
-    private boolean equals(double[] c1, double[] c2) {
-        double z = getZ(c1[1]);
-        double z1 = getZ(c2[1]);
-        double diff1 = z - z1;
-        final double t1 = diff1 / (sqrt(1.0 / c1[4] + 1.0 / c2[4]));
-        double p1 = 1.0 - new TDistribution(2 * (c1[4] + c2[4]) - 2).cumulativeProbability(abs(t1) / 2.0);
-        return p1 <= alpha;
-    }
-
-    private boolean sameSign(double[] c1, double[] c2) {
-        return signum(c1[1]) == signum(c2[1]);
     }
 
     private double getZ(double r) {

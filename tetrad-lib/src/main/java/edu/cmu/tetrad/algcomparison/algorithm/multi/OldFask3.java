@@ -18,22 +18,22 @@ import java.util.List;
  *
  * @author jdramsey
  */
-public class Fask1 implements Algorithm, HasKnowledge {
+public class OldFask3 implements Algorithm, HasKnowledge {
     static final long serialVersionUID = 23L;
     private boolean empirical = false;
     private IKnowledge knowledge = new Knowledge2();
 
-    public Fask1() {
+    public OldFask3() {
         this.empirical = false;
     }
 
-    public Fask1(boolean empirical) {
+    public OldFask3(boolean empirical) {
         this.empirical = empirical;
     }
 
     @Override
     public Graph search(DataModel dataSet, Parameters parameters) {
-        edu.cmu.tetrad.search.Fask1 search = new edu.cmu.tetrad.search.Fask1((DataSet) dataSet);
+        edu.cmu.tetrad.search.OldFask3 search = new edu.cmu.tetrad.search.OldFask3((DataSet) dataSet);
         search.setDepth(parameters.getInt("depth"));
         search.setPenaltyDiscount(parameters.getDouble("penaltyDiscount"));
         search.setAlpha(parameters.getDouble("twoCycleAlpha"));
@@ -49,7 +49,7 @@ public class Fask1 implements Algorithm, HasKnowledge {
 
     @Override
     public String getDescription() {
-        return "FASK1";
+        return "Old FASK3";
     }
 
     @Override
