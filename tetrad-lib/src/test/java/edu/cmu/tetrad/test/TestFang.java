@@ -391,6 +391,7 @@ public class TestFang {
                 double vyy = var(y, 1, y, cutoff)[0];
                 double vzy = var(z, 1, y, cutoff)[0];
 
+
                 double ratiozy_x = vzx / vyx;
                 double ratiozy_y = vzy / vyy;
 
@@ -499,6 +500,8 @@ public class TestFang {
         double exy = 0.0;
         double exx = 0.0;
         double eyy = 0.0;
+        double exxx = 0.0;
+        double eyyy = 0.0;
 
         double ex = 0.0;
         double ey = 0.0;
@@ -512,6 +515,8 @@ public class TestFang {
                 eyy += y[k] * y[k];
                 ex += x[k];
                 ey += y[k];
+                exxx += x[k] * x[k] * x[k];
+                eyyy += y[k] * y[k] * y[k];
                 n++;
             } else if (xInc == 1) {
                 if (var[k] > cutoff) {
@@ -520,6 +525,8 @@ public class TestFang {
                     eyy += y[k] * y[k];
                     ex += x[k];
                     ey += y[k];
+                    exxx += x[k] * x[k] * x[k];
+                    eyyy += y[k] * y[k] * y[k];
                     n++;
                 }
             } else if (xInc == -1) {
@@ -529,6 +536,8 @@ public class TestFang {
                     exx += y[k] * y[k];
                     ex += x[k];
                     ey += y[k];
+                    exxx += x[k] * x[k] * x[k];
+                    eyyy += y[k] * y[k] * y[k];
                     n++;
                 }
             }
@@ -539,12 +548,14 @@ public class TestFang {
         exy /= n;
         ex /= n;
         ey /= n;
+        exxx /= n;
+        eyyy /= n;
 
         double sxy = exy - ex * ey;
         double sx = sqrt(exx - ex * ex);
         double sy = sqrt(eyy - ey * ey);
 
-        return new double[]{sxy / (sx * sy), (double) n, ex * ey};
+        return new double[]{sxy / (sx * sy), (double) n, ex * ey, ex, ey, exx, eyy, exxx, eyyy};
     }
 
     private double[] var(double[] x, int condition, double[] var, double cutoff) {
@@ -809,6 +820,8 @@ public class TestFang {
 
             DataSet dataSet;
 
+            double a = .5;
+
             try {
                 GeneralizedSemPm pm = new GeneralizedSemPm(G0);
 
@@ -826,7 +839,7 @@ public class TestFang {
                 reverse = false;
 //                reverse = true;
 
-                pm.setParameterExpression("a", "0.3");
+                pm.setParameterExpression("a", Double.toString(a));
                 pm.setNodeExpression(eX, "Beta(2, 5)");
                 pm.setNodeExpression(eY, "Beta(2, 5)");
 
@@ -858,18 +871,27 @@ public class TestFang {
                 y = reverse(y, x);
             }
 
-            printSkewness("x residual", x);
-            printSkewness("y residual", y, x);
+//            printSkewness("x residual", x);
+//            printSkewness("y residual", y, x);
 
 
             double cutoff = 0.0;
 
-            double cxyx = cov(x, y, 1, x, cutoff)[0];
-            double cxyy = cov(x, y, 1, y, cutoff)[0];
+            double[] cxyx = cov(x, y, 1, x, cutoff);
+            double[] cxyy = cov(x, y, 1, y, cutoff);
 
-            boolean b1 = abs(cxyx) > abs(cxyy);
+            double exy = cxyy[3];
+            double exxy = cxyy[5];
+            double exxxy = cxyy[7];
 
-            System.out.println("    abs(cxyx) > abs(cxyy) = " + b1 + " cxyx = " + cxyx + " cxyy = " + cxyy);
+            System.out.println("a " + a + " exxxy / exxy = " + exxxy / exxy + " exy = " + exy);
+
+//            System.out.println("a " + a + " ex = " + ex + " ey = " + ey);
+
+
+            boolean b1 = abs(cxyx[0]) > abs(cxyy[0]);
+
+//            System.out.println("    abs(cxyx) > abs(cxyy) = " + b1 + " cxyx = " + cxyx + " cxyy = " + cxyy);
 
             count += b1 ? 1 : 0;
         }

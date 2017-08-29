@@ -2054,6 +2054,8 @@ public final class StatUtils {
         double exy = 0.0;
         double exx = 0.0;
         double eyy = 0.0;
+        double exm = 0.0;
+        double eym = 0.0;
 
         int n = 0;
 
@@ -2063,6 +2065,8 @@ public final class StatUtils {
                     exy += x[k] * y[k];
                     exx += x[k] * x[k];
                     eyy += y[k] * y[k];
+                    exm += x[k];
+                    eym += y[k];
                     n++;
                 }
             } else if (direction < threshold) {
@@ -2070,6 +2074,8 @@ public final class StatUtils {
                     exy += x[k] * y[k];
                     exx += x[k] * x[k];
                     eyy += y[k] * y[k];
+                    exm += x[k];
+                    eym += y[k];
                     n++;
                 }
             }
@@ -2078,12 +2084,36 @@ public final class StatUtils {
         exx /= n;
         eyy /= n;
         exy /= n;
+        exm /= n;
+        eym /= n;
+
+        double exye = 0.0;
+        double exxe = 0.0;
+        double eyye = 0.0;
+
+        for (int k = 0; k < x.length; k++) {
+            if (direction > threshold) {
+                if (condition[k] > threshold) {
+                    exye += (x[k] * y[k] - exy) * (x[k] * y[k] - exy);
+                    exxe += (x[k] * x[k] - exx) * (x[k] * x[k] - exx);
+                    eyye += (y[k] * y[k] - eyy) * (y[k] * y[k] - eyy);
+                }
+            } else if (direction < threshold) {
+                if (condition[k] > threshold) {
+                    exye += (x[k] * y[k] - exy) * (x[k] * y[k] - exy);
+                    exxe += (x[k] * x[k] - exx) * (x[k] * x[k] - exx);
+                    eyye += (y[k] * y[k] - eyy) * (y[k] * y[k] - eyy);
+                }
+            }
+        }
+
+        double exyv = sqrt(exye / sqrt(exxe * eyye)) / sqrt(n - 1);
 
         double sxy = exy;
         double sx = exx;
         double sy = eyy;
 
-        return new double[]{sxy, sxy / sqrt(sx * sy), sx, sy, (double) n};
+        return new double[]{sxy, sxy / sqrt(sx * sy), sx, sy, (double) n, exyv};
     }
 }
 

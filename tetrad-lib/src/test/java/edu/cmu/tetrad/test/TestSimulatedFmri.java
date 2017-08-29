@@ -52,7 +52,7 @@ public class TestSimulatedFmri {
 
         parameters.set("penaltyDiscount", 4);
         parameters.set("depth", -1);
-        parameters.set("twoCycleAlpha", 1e-9);
+        parameters.set("twoCycleAlpha", 1e-6);
         parameters.set("thresholdForReversing", -5);
 
         parameters.set("numRuns", 10);
@@ -125,13 +125,60 @@ public class TestSimulatedFmri {
         simulations.add(new LoadContinuousDataAndSingleGraph(
                 dir + "Markov_Complex_1", subdir));
 
+        //        String dir = "/Users/user/Downloads/CyclesTestingData/";
+//        String subdir = "data_fslfilter";
+
+//
+//        simulations.add(new LoadContinuousDataAndSingleGraph(
+//                dir + "Network1_amp", subdir));
+//        simulations.add(new LoadContinuousDataAndSingleGraph(
+//                dir + "Network2_amp", subdir));
+//        simulations.add(new LoadContinuousDataAndSingleGraph(
+//                dir + "Network3_amp", subdir));
+//        simulations.add(new LoadContinuousDataAndSingleGraph(
+//                dir + "Network4_amp", subdir));
+//        simulations.add(new LoadContinuousDataAndSingleGraph(
+//                dir + "Network5_amp", subdir));
+//        simulations.add(new LoadContinuousDataAndSingleGraph(
+//                dir + "Network5_cont", subdir));
+//        simulations.add(new LoadContinuousDataAndSingleGraph(
+//                dir + "Network5_cont_p3n7", subdir));
+//        simulations.add(new LoadContinuousDataAndSingleGraph(
+//                dir + "Network5_cont_p7n3", subdir));
+//        simulations.add(new LoadContinuousDataAndSingleGraph(
+//                dir + "Network6_amp", subdir));
+//        simulations.add(new LoadContinuousDataAndSingleGraph(
+//                dir + "Network6_cont", subdir));
+//        simulations.add(new LoadContinuousDataAndSingleGraph(
+//                dir + "Network7_amp", subdir));
+//        simulations.add(new LoadContinuousDataAndSingleGraph(
+//                dir + "Network7_cont", subdir));
+//        simulations.add(new LoadContinuousDataAndSingleGraph(
+//                dir + "Network8_amp_amp", subdir));
+//        simulations.add(new LoadContinuousDataAndSingleGraph(
+//                dir + "Network8_amp_cont", subdir));
+//        simulations.add(new LoadContinuousDataAndSingleGraph(
+//                dir + "Network8_cont_amp", subdir));
+//        simulations.add(new LoadContinuousDataAndSingleGraph(
+//                dir + "Network9_amp_amp", subdir));
+//        simulations.add(new LoadContinuousDataAndSingleGraph(
+//                dir + "Network9_amp_cont", subdir));
+//        simulations.add(new LoadContinuousDataAndSingleGraph(
+//                dir + "Network9_cont_amp", subdir));
+//        simulations.add(new LoadContinuousDataAndSingleGraph(
+//                dir + "Diamond", subdir));
+//        simulations.add(new LoadContinuousDataAndSingleGraph(
+//                dir + "Markov_Complex_1", subdir));
+
+
         Algorithms algorithms = new Algorithms();
 
-        algorithms.add(new edu.cmu.tetrad.algcomparison.algorithm.multi.Fang1Concatenated(false));
+//        algorithms.add(new edu.cmu.tetrad.algcomparison.algorithm.multi.Fang1Concatenated(false));
         algorithms.add(new edu.cmu.tetrad.algcomparison.algorithm.multi.Fang2Concatenated(false));
-        algorithms.add(new edu.cmu.tetrad.algcomparison.algorithm.multi.Fask1Concatenated(false));
-        algorithms.add(new edu.cmu.tetrad.algcomparison.algorithm.multi.Fask2Concatenated(false));
-        algorithms.add(new edu.cmu.tetrad.algcomparison.algorithm.multi.Fask3Concatenated(false));
+//        algorithms.add(new edu.cmu.tetrad.algcomparison.algorithm.multi.Fask1Concatenated(false));
+//        algorithms.add(new edu.cmu.tetrad.algcomparison.algorithm.multi.Fask2Concatenated(false));
+//        algorithms.add(new edu.cmu.tetrad.algcomparison.algorithm.multi.Fask3Concatenated(false));
+//        algorithms.add(new edu.cmu.tetrad.algcomparison.algorithm.multi.Fask4(false));
 
         Comparison comparison = new Comparison();
 

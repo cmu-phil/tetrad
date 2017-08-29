@@ -242,8 +242,9 @@ public final class Fask4 implements GraphSearch {
         System.out.println("N = " + dataSet.getNumRows());
     }
 
-    private double g(double x) {
-        return Math.atan(x);
+    private double g(double z) {
+//        return tanh(z);
+        return 0.5 * log((1 + z) / (1 - z));
     }
 
     /**
