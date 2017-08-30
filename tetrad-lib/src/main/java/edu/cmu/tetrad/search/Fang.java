@@ -38,7 +38,7 @@ import static java.lang.Math.*;
  *
  * @author Joseph Ramsey
  */
-public final class OldFask1 implements GraphSearch {
+public final class Fang implements GraphSearch {
 
     // Elapsed time of the search, in milliseconds.
     private long elapsed = 0;
@@ -62,7 +62,7 @@ public final class OldFask1 implements GraphSearch {
     /**
      * @param dataSet These datasets must all have the same variables, in the same order.
      */
-    public OldFask1(DataSet dataSet) {
+    public Fang(DataSet dataSet) {
         this.dataSet = dataSet;
     }
 
@@ -114,24 +114,8 @@ public final class OldFask1 implements GraphSearch {
 
                 double[] c1 = StatUtils.cov(x, y, x, 0, +1);
                 double[] c2 = StatUtils.cov(x, y, y, 0, +1);
-                double[] e1 = StatUtils.E(x, y, x, 0, +1);
-                double[] e2 = StatUtils.E(x, y, y, 0, +1);
-
-                double e = e1[0];
-                double f = e2[0];
-
-                double vxx = c1[2];
-                double vxy = c1[3];
-                double vyy = c2[3];
-                double vyx = c2[2];
-
-                double a = abs(e / vxx);
-                double b = abs(f / vxy);
-                double c = abs(f / vyy);
-                double d = abs(e / vyx);
 
                 double R = abs(c1[1]) - abs(c2[1]);
-//                double R = abs((e - vxx)) - abs(f - vxy) - (abs(f - vyy) - abs(e - vyx));
 
                 if (G0.isAdjacentTo(X, Y) || abs(c1[1]) - abs(c2[1]) > .3) {
                     double _c[] =  StatUtils.cov(x, y, x, Double.NEGATIVE_INFINITY, +1);
@@ -180,7 +164,6 @@ public final class OldFask1 implements GraphSearch {
 
         return graph;
     }
-
 
     private boolean equals(double[] c1, double[] c2) {
         double z = getZ(c1[1]);

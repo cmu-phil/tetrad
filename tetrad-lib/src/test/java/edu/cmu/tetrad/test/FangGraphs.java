@@ -1,6 +1,6 @@
 package edu.cmu.tetrad.test;
 
-import edu.cmu.tetrad.algcomparison.algorithm.multi.OldFask1;
+import edu.cmu.tetrad.algcomparison.algorithm.multi.Fang;
 import edu.cmu.tetrad.data.DataReader;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DelimiterType;
@@ -113,7 +113,7 @@ public class FangGraphs {
                         DataSet dataSet = reader.parseTabular(new File(path, name));
                         filenames.add(name);
                         datasets.add(dataSet);
-                        OldFask1 fang = new OldFask1();
+                        Fang fang = new Fang();
                         Graph search = fang.search(dataSet, parameters);
                         graphs.add(search);
                     } else if (name.contains("typical")) {
@@ -121,7 +121,7 @@ public class FangGraphs {
                         DataSet dataSet = reader.parseTabular(new File(path, name));
                         filenames.add(name);
                         datasets.add(dataSet);
-                        OldFask1 fang = new OldFask1();
+                        Fang fang = new Fang();
                         Graph search = fang.search(dataSet, parameters);
                         graphs.add(search);
                     }

@@ -625,7 +625,7 @@ public final class TetradCmd {
             TetradLogger.getInstance().log("info", "Testing it.");
         }
 
-        OldFask1 pc = new OldFask1(data);
+        Fang pc = new Fang(data);
         pc.setAlpha(significance);
         pc.setPenaltyDiscount(penaltyDiscount);
         pc.setDepth(depth);

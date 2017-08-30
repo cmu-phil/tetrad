@@ -31,7 +31,7 @@ import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.search.OldFask1;
+import edu.cmu.tetrad.search.Fang;
 import edu.cmu.tetrad.search.OldFask2;
 import edu.cmu.tetrad.sem.GeneralizedSemIm;
 import edu.cmu.tetrad.sem.GeneralizedSemPm;
@@ -174,7 +174,7 @@ public class TestSimulatedFmri {
         Algorithms algorithms = new Algorithms();
 
         algorithms.add(new FaskConcatenated(false));
-//        algorithms.add(new OldFask1Concatenated(false));
+        algorithms.add(new FangConcatenated(false));
 //        algorithms.add(new OldFask2Concatenated(false));
 //        algorithms.add(new OldFask3Concatenated(false));
 //        algorithms.add(new OldFask4Concatenated(false));
@@ -240,7 +240,7 @@ public class TestSimulatedFmri {
 
 //        algorithms.add(new Fges(new SemBicScore()));
 //        algorithms.add(new PcStableMax(new SemBicTest(), true));
-//        algorithms.add(new OldFask1());
+//        algorithms.add(new Fang());
 //        algorithms.add(new FasLofs(Lofs2.Rule.R1));
 //        algorithms.add(new FasLofs(Lofs2.Rule.R2));
 //        algorithms.add(new FasLofs(Lofs2.Rule.R3));
@@ -250,7 +250,7 @@ public class TestSimulatedFmri {
 //
 //        algorithms.add(new FgesConcatenated(new edu.cmu.tetrad.algcomparison.score.SemBicScore(), true));
 //        algorithms.add(new PcStableMaxConcatenated(new SemBicTest(), true));
-        algorithms.add(new OldFask1Concatenated());
+        algorithms.add(new FangConcatenated());
 //        algorithms.add(new FasLofsConcatenated(Lofs2.Rule.R1));
 //        algorithms.add(new FasLofsConcatenated(Lofs2.Rule.R2));
 //        algorithms.add(new FasLofsConcatenated(Lofs2.Rule.R3));
@@ -400,7 +400,7 @@ public class TestSimulatedFmri {
         GeneralizedSemIm im = new GeneralizedSemIm(pm);
         DataSet data = im.simulateData(1000, false);
 
-        OldFask1 fang = new OldFask1(data);
+        Fang fang = new Fang(data);
         fang.setPenaltyDiscount(1);
         fang.setAlpha(0.5);
         Graph out = fang.search();

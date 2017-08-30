@@ -23,7 +23,7 @@ package edu.cmu.tetrad.test;
 
 import edu.cmu.tetrad.algcomparison.Comparison;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithms;
-import edu.cmu.tetrad.algcomparison.algorithm.multi.OldFask1;
+import edu.cmu.tetrad.algcomparison.algorithm.multi.Fang;
 import edu.cmu.tetrad.algcomparison.algorithm.multi.FasLofs;
 import edu.cmu.tetrad.algcomparison.simulation.LoadContinuousDataAndSingleGraph;
 import edu.cmu.tetrad.algcomparison.simulation.Simulations;
@@ -125,7 +125,7 @@ public class TestFang {
                 "/Users/jdramsey/Downloads/Cycles_Data_fMRI-selected/Diamond"));
 
         Algorithms algorithms = new Algorithms();
-        algorithms.add(new OldFask1());
+        algorithms.add(new Fang());
 //        algorithms.add(new CcdMax(new SemBicTest()));
 
         Comparison comparison = new Comparison();
@@ -205,7 +205,7 @@ public class TestFang {
 
         Algorithms algorithms = new Algorithms();
 //        algorithms.add(new ImagesSemBic());
-        algorithms.add(new OldFask1());
+        algorithms.add(new Fang());
 
         Comparison comparison = new Comparison();
 
@@ -285,7 +285,7 @@ public class TestFang {
         simulations.add(new LoadContinuousDataSmithSim(path + "28"));
 
         Algorithms algorithms = new Algorithms();
-        algorithms.add(new OldFask1());
+        algorithms.add(new Fang());
         algorithms.add(new FasLofs(Lofs2.Rule.RSkew));
 
         Comparison comparison = new Comparison();
