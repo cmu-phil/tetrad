@@ -60,19 +60,19 @@ class ParameterPanel extends JPanel {
         if (parametersToEdit.size() > 0) {
             // Add each param row to box
             for (String parameter : parametersToEdit) {
-                Object defaultValue = ParamDescriptions.instance().get(parameter).getDefaultValue();
+                Object defaultValue = ParamDescriptions.getInstance().get(parameter).getDefaultValue();
 
                 System.out.println(parameter + " " + defaultValue);
 
                 JComponent parameterSelection;
 
                 if (defaultValue instanceof Double) {
-                    double lowerBoundDouble = ParamDescriptions.instance().get(parameter).getLowerBoundDouble();
-                    double upperBoundDouble = ParamDescriptions.instance().get(parameter).getUpperBoundDouble();
+                    double lowerBoundDouble = ParamDescriptions.getInstance().get(parameter).getLowerBoundDouble();
+                    double upperBoundDouble = ParamDescriptions.getInstance().get(parameter).getUpperBoundDouble();
                     parameterSelection = getDoubleField(parameter, parameters, (Double) defaultValue, lowerBoundDouble, upperBoundDouble);
                 } else if (defaultValue instanceof Integer) {
-                    int lowerBoundInt = ParamDescriptions.instance().get(parameter).getLowerBoundInt();
-                    int upperBoundInt = ParamDescriptions.instance().get(parameter).getUpperBoundInt();
+                    int lowerBoundInt = ParamDescriptions.getInstance().get(parameter).getLowerBoundInt();
+                    int upperBoundInt = ParamDescriptions.getInstance().get(parameter).getUpperBoundInt();
                     parameterSelection = getIntTextField(parameter, parameters, (Integer) defaultValue, lowerBoundInt, upperBoundInt);
                 } else if (defaultValue instanceof Boolean) {
                     // Joe's old implementation with dropdown yes or no
@@ -88,7 +88,7 @@ class ParameterPanel extends JPanel {
                 // Each parameter row contains parameter label and selection/input field
                 Box paramRow = Box.createHorizontalBox();
 
-                JLabel paramLabel = new JLabel(ParamDescriptions.instance().get(parameter).getDescription());
+                JLabel paramLabel = new JLabel(ParamDescriptions.getInstance().get(parameter).getDescription());
                 paramRow.add(paramLabel);
                 paramRow.add(Box.createHorizontalGlue());
                 paramRow.add(parameterSelection);

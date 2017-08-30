@@ -26,7 +26,13 @@ import java.util.List;
  *
  * @author jdramsey
  */
-@AlgorithmDescription(name = "EFANG", algType = AlgType.forbid_latent_common_causes, oracleType = OracleType.None, description = "Short blurb goes here", assumptions = {})
+@AlgorithmDescription(
+		name = "EFANG", 
+		algType = AlgType.forbid_latent_common_causes, 
+		oracleType = OracleType.None, 
+		description = "Short blurb goes here", 
+		assumptions = {}
+)
 public class FaskConcatenated implements MultiDataSetAlgorithm, HasKnowledge {
 
 	static final long serialVersionUID = 23L;
@@ -159,4 +165,5 @@ public class FaskConcatenated implements MultiDataSetAlgorithm, HasKnowledge {
 	public void setKnowledge(IKnowledge knowledge) {
 		this.knowledge = knowledge;
 	}
+
 }

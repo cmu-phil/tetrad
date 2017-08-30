@@ -73,7 +73,9 @@ public class FirstInflection implements Algorithm, TakesInitialGraph {
                         + " # edges = " + numEdges
                         + " # additional = " + diff);
 
-                if (diff >= _prevDiff) break;
+                if (diff >= _prevDiff) {
+                    break;
+                }
                 _previous = intialGraph;
                 _value = _parameters.getDouble(parameter);
                 _prevDiff = diff;
@@ -99,7 +101,9 @@ public class FirstInflection implements Algorithm, TakesInitialGraph {
                             + " # edges = " + numEdges
                             + " # additional = " + diff);
 
-                    if (diff >= _prevDiff) break;
+                    if (diff >= _prevDiff) {
+                        break;
+                    }
                     _previous = intialGraph;
                     _value = _parameters.getDouble(parameter);
                     _prevDiff = diff;
@@ -131,7 +135,9 @@ public class FirstInflection implements Algorithm, TakesInitialGraph {
                         + " # edges = " + numEdges
                         + " # additional = " + diff);
 
-                if (diff >= _prevDiff) break;
+                if (diff >= _prevDiff) {
+                    break;
+                }
                 _previous = intialGraph;
                 _value = _parameters.getDouble(parameter);
                 _prevDiff = diff;
@@ -157,7 +163,9 @@ public class FirstInflection implements Algorithm, TakesInitialGraph {
                             + " # edges = " + numEdges
                             + " # additional = " + diff);
 
-                    if (diff >= _prevDiff) break;
+                    if (diff >= _prevDiff) {
+                        break;
+                    }
                     _previous = intialGraph;
                     _value = _parameters.getDouble(parameter);
                     _prevDiff = diff;

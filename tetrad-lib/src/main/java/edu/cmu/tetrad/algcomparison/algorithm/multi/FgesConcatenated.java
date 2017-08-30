@@ -111,7 +111,6 @@ public class FgesConcatenated implements MultiDataSetAlgorithm, HasKnowledge {
 			search.setParameters(parameters);
 			search.setVerbose(parameters.getBoolean("verbose"));
 			return search.search();
-
 		}
 	}
 

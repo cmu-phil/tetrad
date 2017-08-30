@@ -21,6 +21,8 @@
 package edu.cmu.tetradapp.editor;
 
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
+import edu.cmu.tetrad.algcomparison.algorithm.description.AlgorithmDescriptionClass;
+import edu.cmu.tetrad.algcomparison.algorithm.description.AlgorithmDescriptions;
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern.*;
 import edu.cmu.tetrad.algcomparison.graph.SingleGraph;
 import edu.cmu.tetrad.algcomparison.independence.*;
@@ -30,6 +32,7 @@ import edu.cmu.tetrad.algcomparison.utils.TakesInitialGraph;
 import edu.cmu.tetrad.algcomparison.utils.UsesScoreWrapper;
 import edu.cmu.tetrad.annotation.AlgName;
 import edu.cmu.tetrad.annotation.AlgType;
+import edu.cmu.tetrad.annotation.AlgorithmDescription;
 import edu.cmu.tetrad.annotation.OracleType;
 import edu.cmu.tetrad.annotation.ScoreType;
 import edu.cmu.tetrad.annotation.TestType;
@@ -48,7 +51,6 @@ import edu.cmu.tetradapp.app.hpc.action.HpcJobActivityAction;
 import edu.cmu.tetradapp.app.hpc.manager.HpcAccountManager;
 import edu.cmu.tetradapp.app.hpc.manager.HpcJobManager;
 import edu.cmu.tetradapp.app.hpc.util.HpcAccountUtils;
-import edu.cmu.tetradapp.editor.factory.AlgorithmDescriptionFactory;
 import edu.cmu.tetradapp.model.GeneralAlgorithmRunner;
 import edu.cmu.tetradapp.model.GraphSelectionWrapper;
 import edu.cmu.tetradapp.util.DesktopController;
@@ -74,8 +76,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.List;
-import java.util.Map;
-import java.util.TreeMap;
 import javax.help.HelpSet;
 import javax.swing.*;
 import javax.swing.border.CompoundBorder;
@@ -110,7 +110,10 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
     private final TetradDesktop desktop;
     private HpcJobInfo hpcJobInfo;
     private String jsonResult;
-    private final TreeMap<String, AlgorithmDescriptionClass> descriptions;
+    //private final TreeMap<String, AlgorithmDescriptionClass> descriptions;
+
+    private List<String> algorithmNames;
+
     private List<String> algorithmsCanHaveKnowledge;
     private DefaultListModel suggestedAlgosListModel = new DefaultListModel();
     private JList suggestedAlgosList;
@@ -192,9 +195,11 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         // Use annotations to populate description list
         // TreeMap<String, AlgorithmDescriptionClass>
         // TODO: fiter the algos to only show the ones can handle the uploaded dataset - Zhou
-        descriptions = AlgorithmDescriptionFactory.getInstance().getAlgorithmDescriptions();
+        //descriptions = AlgorithmDescriptionFactory.getInstance().getAlgorithmDescriptions();
+        //algorithmsCanHaveKnowledge = AlgorithmDescriptionFactory.getInstance().getAlgorithmsCanHaveKnowledge();
+        algorithmNames = AlgorithmDescriptions.getInstance().getNames();
 
-        algorithmsCanHaveKnowledge = AlgorithmDescriptionFactory.getInstance().getAlgorithmsCanHaveKnowledge();
+        algorithmsCanHaveKnowledge = AlgorithmDescriptions.getInstance().getAcceptKnowledgeAlgorithms();
 
         this.parameters = runner.getParameters();
 
@@ -356,20 +361,22 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         suggestedAlgosListModel.removeAllElements();
 
         // Create a new list model based on selections
-        for (Map.Entry<String, AlgorithmDescriptionClass> algoDescEntry : descriptions.entrySet()) {
+        for (String algoName : algorithmNames) {
             // Also check the there's selection of knowledge file
-            AlgorithmDescriptionClass algoDesc = algoDescEntry.getValue();
+            AlgorithmDescriptionClass algoDescClass = AlgorithmDescriptions.getInstance().get(algoName);
+
+            AlgorithmDescription algoDesc = algoDescClass.getAlgorithmDescription();
 
             if (takesKnowledgeFile != null) {
                 if (takesKnowledgeFile) {
-                    if ((algoDesc.getAlgType() == selectedAlgoType || selectedAlgoType == AlgType.ALL) && algorithmsCanHaveKnowledge.contains(algoDesc.getAlgName())) {
-                        suggestedAlgosListModel.addElement(algoDesc.getAlgName());
+                    if ((algoDesc.algType() == selectedAlgoType || selectedAlgoType == AlgType.ALL) && algorithmsCanHaveKnowledge.contains(algoDesc.name())) {
+                        suggestedAlgosListModel.addElement(algoDesc.name());
                     }
-                } else if ((algoDesc.getAlgType() == selectedAlgoType || selectedAlgoType == AlgType.ALL) && !algorithmsCanHaveKnowledge.contains(algoDesc.getAlgName())) {
-                    suggestedAlgosListModel.addElement(algoDesc.getAlgName());
+                } else if ((algoDesc.algType() == selectedAlgoType || selectedAlgoType == AlgType.ALL) && !algorithmsCanHaveKnowledge.contains(algoDesc.name())) {
+                    suggestedAlgosListModel.addElement(algoDesc.name());
                 }
-            } else if (algoDesc.getAlgType() == selectedAlgoType || selectedAlgoType == AlgType.ALL) {
-                suggestedAlgosListModel.addElement(algoDesc.getAlgName());
+            } else if (algoDesc.algType() == selectedAlgoType || selectedAlgoType == AlgType.ALL) {
+                suggestedAlgosListModel.addElement(algoDesc.name());
             }
         }
 
@@ -389,7 +396,10 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
     }
 
     private void setAlgoDescriptionContent() {
-        algoDescriptionTextArea.setText("Description of " + selectedAlgoName + ": " + descriptions.get(selectedAlgoName).getDescription());
+        AlgorithmDescriptionClass algoDescClass = AlgorithmDescriptions.getInstance().get(selectedAlgoName);
+        AlgorithmDescription algoDesc = algoDescClass.getAlgorithmDescription();
+
+        algoDescriptionTextArea.setText("Description of " + selectedAlgoName + ": " + algoDesc.description());
     }
 
     private void doSearch(final GeneralAlgorithmRunner runner) {
@@ -789,8 +799,26 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
      * @return
      */
     private Algorithm getAlgorithm(String name, IndependenceWrapper independenceWrapper, ScoreWrapper scoreWrapper) {
+        AlgorithmDescriptions algoDescs = AlgorithmDescriptions.getInstance();
+        AlgorithmDescriptionClass algoDescClass = algoDescs.get(name);
+        if (algoDescClass == null) {
+            return null;
+        }
 
-        Algorithm algorithm = AlgorithmDescriptionFactory.getInstance().getAlgorithmByName(name);
+        Class clazz = algoDescClass.getClazz();
+        Object obj = null;
+        try {
+            obj = clazz.newInstance();
+        } catch (IllegalAccessException | InstantiationException exception) {
+            // todo : use logger
+            exception.printStackTrace(System.err);
+        }
+
+        if (obj == null || !(obj instanceof Algorithm)) {
+            return null;
+        }
+
+        Algorithm algorithm = (Algorithm) obj;
 
         if (algorithm instanceof UsesScoreWrapper) {
             ((UsesScoreWrapper) algorithm).setScoreWrapper(scoreWrapper);
@@ -906,7 +934,8 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         }
 
         // Get annotated algo description
-        AlgorithmDescriptionClass description = descriptions.get(name.toString());
+        AlgorithmDescriptionClass algoDescClass = AlgorithmDescriptions.getInstance().get(selectedAlgoName);
+        AlgorithmDescription algoDesc = algoDescClass.getAlgorithmDescription();
 
         // Set the algo on each selection change
         Algorithm algorithm = getAlgorithmFromInterface();
@@ -916,7 +945,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
 
         runner.setAlgorithm(algorithm);
 
-        OracleType oracle = description.getOracleType();
+        OracleType oracle = algoDesc.oracleType();
 
         if (oracle == OracleType.None) {
             testDropdown.setEnabled(false);
@@ -1538,9 +1567,8 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         suggestedAlgosListModel.removeAllElements();
 
         // Create a new list model
-        for (Map.Entry<String, AlgorithmDescriptionClass> algoDescEntry : descriptions.entrySet()) {
-            AlgorithmDescriptionClass algoDesc = algoDescEntry.getValue();
-            suggestedAlgosListModel.addElement(algoDesc.getAlgName());
+        for (String algoName : algorithmNames) {
+            suggestedAlgosListModel.addElement(algoName);
         }
     }
 

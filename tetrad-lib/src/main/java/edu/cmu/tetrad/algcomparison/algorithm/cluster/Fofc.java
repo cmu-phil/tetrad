@@ -36,6 +36,7 @@ public class Fofc implements Algorithm, TakesInitialGraph, HasKnowledge, Cluster
 
     static final long serialVersionUID = 23L;
     private Graph initialGraph = null;
+    private Algorithm algorithm = null;
     private IKnowledge knowledge = new Knowledge2();
 
     public Fofc() {
@@ -151,7 +152,7 @@ public class Fofc implements Algorithm, TakesInitialGraph, HasKnowledge, Cluster
 
     @Override
     public void setInitialGraph(Algorithm algorithm) {
-    	
+    	this.algorithm = algorithm;
     }
 
 }

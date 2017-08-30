@@ -91,9 +91,11 @@ public class GesMe implements Algorithm, TakesInitialGraph/*, HasKnowledge*/ {
 
             System.out.println(covFa);
 
-            final double[] vars = covarianceMatrix.getMatrix().diag().toArray();
-            List<Integer> indices = new ArrayList<>();
-            for (int i = 0; i < vars.length; i++) indices.add(i);
+	        final double[] vars = covarianceMatrix.getMatrix().diag().toArray();
+	        List<Integer> indices = new ArrayList<>();
+	        for (int i = 0; i < vars.length; i++) {
+	            indices.add(i);
+	        }
 
             Collections.sort(indices, new Comparator<Integer>() {
                 @Override
