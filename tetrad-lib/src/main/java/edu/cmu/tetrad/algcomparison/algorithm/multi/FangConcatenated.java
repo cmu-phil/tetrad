@@ -9,6 +9,9 @@ import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.util.Parameters;
+import edu.pitt.dbmi.algo.bootstrap.BootstrapEdgeEnsemble;
+import edu.pitt.dbmi.algo.bootstrap.GeneralBootstrapTest;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -22,85 +25,136 @@ import java.util.List;
  *
  * @author jdramsey
  */
-@AlgorithmDescription(
-        name = "FANG",
-        algType = AlgType.forbid_latent_common_causes,
-        oracleType = OracleType.None,
-        description = "Short blurb goes here",
-        assumptions = {}
-)
+@AlgorithmDescription(name = "FANG", algType = AlgType.forbid_latent_common_causes, oracleType = OracleType.None, description = "Short blurb goes here", assumptions = {})
 public class FangConcatenated implements MultiDataSetAlgorithm, HasKnowledge {
 
-    static final long serialVersionUID = 23L;
-    private boolean empirical = false;
-    private IKnowledge knowledge = new Knowledge2();
+	static final long serialVersionUID = 23L;
+	private boolean empirical = false;
+	private IKnowledge knowledge = new Knowledge2();
 
-    public FangConcatenated() {
-        this.empirical = false;
-    }
+	public FangConcatenated() {
+		this.empirical = false;
+	}
 
-    public FangConcatenated(boolean empirical) {
-        this.empirical = empirical;
-    }
+	public FangConcatenated(boolean empirical) {
+		this.empirical = empirical;
+	}
 
-    @Override
-    public Graph search(List<DataModel> dataSets, Parameters parameters) {
+	@Override
+	public Graph search(List<DataModel> dataSets, Parameters parameters) {
+		if (!parameters.getBoolean("bootstrapping")) {
+			List<DataSet> centered = new ArrayList<>();
 
-        List<DataSet> centered = new ArrayList<>();
+			for (DataModel dataSet : dataSets) {
+				centered.add(DataUtils.center((DataSet) dataSet));
+			}
 
-        for (DataModel dataSet : dataSets) {
-            centered.add(DataUtils.center((DataSet) dataSet));
-        }
+			DataSet dataSet = DataUtils.concatenate(centered);
+			edu.cmu.tetrad.search.Fang search = new edu.cmu.tetrad.search.Fang(dataSet);
+			search.setDepth(parameters.getInt("depth"));
+			search.setPenaltyDiscount(parameters.getDouble("penaltyDiscount"));
+			search.setAlpha(parameters.getDouble("twoCycleAlpha"));
+			search.setKnowledge(knowledge);
+			return search.search();
+		} else {
+			FangConcatenated algorithm = new FangConcatenated(empirical);
+			algorithm.setKnowledge(knowledge);
 
-        DataSet dataSet = DataUtils.concatenate(centered);
-        edu.cmu.tetrad.search.Fang search = new edu.cmu.tetrad.search.Fang(dataSet);
-        search.setDepth(parameters.getInt("depth"));
-        search.setPenaltyDiscount(parameters.getDouble("penaltyDiscount"));
-        search.setAlpha(parameters.getDouble("twoCycleAlpha"));
-        search.setKnowledge(knowledge);
-        return search.search();
-    }
+			List<DataSet> datasets = new ArrayList<>();
 
-    @Override
-    public Graph search(DataModel dataSet, Parameters parameters) {
-        return search(Collections.singletonList((DataModel) DataUtils.getContinuousDataSet(dataSet)), parameters);
-    }
+			for (DataModel dataModel : dataSets) {
+				datasets.add((DataSet) dataModel);
+			}
+			GeneralBootstrapTest search = new GeneralBootstrapTest(datasets, algorithm,
+					parameters.getInt("bootstrapSampleSize"));
 
-    @Override
-    public Graph getComparisonGraph(Graph graph) {
-        return new EdgeListGraph(graph);
-    }
+			BootstrapEdgeEnsemble edgeEnsemble = BootstrapEdgeEnsemble.Highest;
+			switch (parameters.getInt("bootstrapEnsemble", 1)) {
+			case 0:
+				edgeEnsemble = BootstrapEdgeEnsemble.Preserved;
+				break;
+			case 1:
+				edgeEnsemble = BootstrapEdgeEnsemble.Highest;
+				break;
+			case 2:
+				edgeEnsemble = BootstrapEdgeEnsemble.Majority;
+			}
+			search.setEdgeEnsemble(edgeEnsemble);
+			search.setParameters(parameters);
+			search.setVerbose(parameters.getBoolean("verbose"));
+			return search.search();
+		}
+	}
 
-    @Override
-    public String getDescription() {
-        return "FANG Concatenated "
-                + (empirical ? " (Empirical)" : "");
-    }
+	@Override
+	public Graph search(DataModel dataSet, Parameters parameters) {
+		if (!parameters.getBoolean("bootstrapping")) {
+			return search(Collections.singletonList((DataModel) DataUtils.getContinuousDataSet(dataSet)), parameters);
+		} else {
+			FangConcatenated algorithm = new FangConcatenated(empirical);
+			algorithm.setKnowledge(knowledge);
 
-    @Override
-    public DataType getDataType() {
-        return DataType.Continuous;
-    }
+			List<DataSet> dataSets = Collections.singletonList(DataUtils.getContinuousDataSet(dataSet));
+			GeneralBootstrapTest search = new GeneralBootstrapTest(dataSets, algorithm,
+					parameters.getInt("bootstrapSampleSize"));
 
-    @Override
-    public List<String> getParameters() {
-        List<String> parameters = new ArrayList<>();
-        parameters.add("depth");
-        parameters.add("penaltyDiscount");
-        parameters.add("twoCycleAlpha");
-        parameters.add("numRuns");
-        parameters.add("randomSelectionSize");
+			BootstrapEdgeEnsemble edgeEnsemble = BootstrapEdgeEnsemble.Highest;
+			switch (parameters.getInt("bootstrapEnsemble", 1)) {
+			case 0:
+				edgeEnsemble = BootstrapEdgeEnsemble.Preserved;
+				break;
+			case 1:
+				edgeEnsemble = BootstrapEdgeEnsemble.Highest;
+				break;
+			case 2:
+				edgeEnsemble = BootstrapEdgeEnsemble.Majority;
+			}
+			search.setEdgeEnsemble(edgeEnsemble);
+			search.setParameters(parameters);
+			search.setVerbose(parameters.getBoolean("verbose"));
+			return search.search();
+		}
+	}
 
-        return parameters;
-    }
+	@Override
+	public Graph getComparisonGraph(Graph graph) {
+		return new EdgeListGraph(graph);
+	}
 
-    @Override
-    public IKnowledge getKnowledge() {
-        return knowledge;
-    }
+	@Override
+	public String getDescription() {
+		return "FANG Concatenated " + (empirical ? " (Empirical)" : "");
+	}
 
-    @Override
-    public void setKnowledge(IKnowledge knowledge) {
-        this.knowledge = knowledge;
-    }
+	@Override
+	public DataType getDataType() {
+		return DataType.Continuous;
+	}
+
+	@Override
+	public List<String> getParameters() {
+		List<String> parameters = new ArrayList<>();
+		parameters.add("depth");
+		parameters.add("penaltyDiscount");
+		parameters.add("twoCycleAlpha");
+		parameters.add("numRuns");
+		parameters.add("randomSelectionSize");
+		// Bootstrapping
+		parameters.add("bootstrapping");
+		parameters.add("bootstrapSampleSize");
+		parameters.add("bootstrapEnsemble");
+		parameters.add("verbose");
+
+		return parameters;
+	}
+
+	@Override
+	public IKnowledge getKnowledge() {
+		return knowledge;
+	}
+
+	@Override
+	public void setKnowledge(IKnowledge knowledge) {
+		this.knowledge = knowledge;
+	}
 }

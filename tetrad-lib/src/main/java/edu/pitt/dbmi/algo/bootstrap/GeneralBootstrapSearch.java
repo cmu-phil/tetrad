@@ -8,6 +8,8 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ForkJoinPool;
 
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
+import edu.cmu.tetrad.algcomparison.algorithm.MultiDataSetAlgorithm;
+import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataUtils;
 import edu.cmu.tetrad.data.IKnowledge;
@@ -27,15 +29,26 @@ import edu.pitt.dbmi.algo.bootstrap.task.GeneralBootstrapSearchRunnable;
  */
 public class GeneralBootstrapSearch {
 
-	private Algorithm algorithm;
+	private Algorithm algorithm = null;
+	
+	private MultiDataSetAlgorithm multiDataSetAlgorithm = null;
+	
 	private int numBootstrap = 1;
+	
 	private boolean runParallel = false;
+	
 	private boolean verbose = false;
+	
 	private List<Graph> PAGs = new ArrayList<>();
+	
 	//private ForkJoinPool pool = null;
+	
 	private final ExecutorService pool;
+	
 	private DataSet data = null;
-
+	
+	private List<DataSet> dataSets = null;
+	
 	/**
 	 * Specification of forbidden and required edges.
 	 */
@@ -56,6 +69,12 @@ public class GeneralBootstrapSearch {
 		pool = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
 	}
 
+	public GeneralBootstrapSearch(List<DataSet> dataSets) {
+		this.dataSets = dataSets;
+		//pool = ForkJoinPoolInstance.getInstance().getPool();
+		pool = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
+	}
+
 	public void addPAG(Graph pag) {
 		PAGs.add(pag);
 	}
@@ -70,6 +89,12 @@ public class GeneralBootstrapSearch {
 
 	public void setAlgorithm(Algorithm algorithm) {
 		this.algorithm = algorithm;
+		this.multiDataSetAlgorithm = null;
+	}
+
+	public void setMultiDataSetAlgorithm(MultiDataSetAlgorithm multiDataSetAlgorithm) {
+		this.multiDataSetAlgorithm = multiDataSetAlgorithm;
+		this.algorithm = null;
 	}
 
 	public void setVerbose(boolean verbose) {
@@ -84,28 +109,20 @@ public class GeneralBootstrapSearch {
 		this.numBootstrap = numBootstrap;
 	}
 
-	public Parameters getParameters() {
-		return parameters;
-	}
-
 	public void setParameters(Parameters parameters) {
 		this.parameters = parameters;
-	}
-
-	public DataSet getData() {
-		return data;
 	}
 
 	public void setData(DataSet data) {
 		this.data = data;
 	}
 
-	/**
-	 * @return the background knowledge.
-	 */
+	public DataSet getData() {
+		return data;
+	}
 
-	public IKnowledge getKnowledge() {
-		return knowledge;
+	public void setDatasets(List<DataSet> dataSets) {
+		this.dataSets = dataSets;
 	}
 
 	/**
@@ -118,10 +135,6 @@ public class GeneralBootstrapSearch {
 		if (knowledge == null)
 			throw new NullPointerException();
 		this.knowledge = knowledge;
-	}
-
-	public Graph getInitialGraph() {
-		return initialGraph;
 	}
 
 	public void setInitialGraph(Graph initialGraph) {
@@ -158,9 +171,22 @@ public class GeneralBootstrapSearch {
 			for (int i1 = 0; i1 < this.numBootstrap; i1++) {
 				start = System.currentTimeMillis();
 
-	            DataSet dataSet = DataUtils.getBootstrapSample(data, data.getNumRows()); 
-				GeneralBootstrapSearchRunnable task = new GeneralBootstrapSearchRunnable(dataSet, algorithm, parameters, this, verbose);
-				//GeneralBootstrapSearchAction task = new GeneralBootstrapSearchAction(i1, 1, algorithm, parameters, this, verbose);
+				GeneralBootstrapSearchRunnable task = null;
+				
+				if(data != null){
+					DataSet dataSet = DataUtils.getBootstrapSample(data, data.getNumRows()); 
+					task = new GeneralBootstrapSearchRunnable(dataSet, algorithm, parameters, this, verbose);
+					//GeneralBootstrapSearchAction task = new GeneralBootstrapSearchAction(i1, 1, algorithm, parameters, this, verbose);
+				}else{
+					List<DataModel> dataModels = new ArrayList<>();
+					for(DataSet data : dataSets){
+						DataSet dataSet = DataUtils.getBootstrapSample(data, data.getNumRows());
+						dataModels.add(dataSet);
+					}
+					
+					task = new GeneralBootstrapSearchRunnable(dataModels, multiDataSetAlgorithm, parameters, this, verbose);
+				}
+	            
 				if(initialGraph != null){
 					task.setInitialGraph(initialGraph);
 				}
@@ -184,10 +210,20 @@ public class GeneralBootstrapSearch {
 			//pool.invoke(task);
 			
 			for (int i1 = 0; i1 < this.numBootstrap; i1++) {
-				DataSet dataSet = DataUtils.getBootstrapSample(data, data.getNumRows()); 
-				GeneralBootstrapSearchRunnable task = new GeneralBootstrapSearchRunnable(dataSet, algorithm, parameters, this, verbose);
-				if(initialGraph != null){
-					task.setInitialGraph(initialGraph);
+				
+				GeneralBootstrapSearchRunnable task = null;
+				
+				if(data != null){
+					DataSet dataSet = DataUtils.getBootstrapSample(data, data.getNumRows()); 
+					task = new GeneralBootstrapSearchRunnable(dataSet, algorithm, parameters, this, verbose);
+				}else{
+					List<DataModel> dataModels = new ArrayList<>();
+					for(DataSet data : dataSets){
+						DataSet dataSet = DataUtils.getBootstrapSample(data, data.getNumRows());
+						dataModels.add(dataSet);
+					}
+					
+					task = new GeneralBootstrapSearchRunnable(dataModels, multiDataSetAlgorithm, parameters, this, verbose);
 				}
 				task.setKnowledge(knowledge);
 				pool.submit(task);

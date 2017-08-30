@@ -1,8 +1,11 @@
 package edu.pitt.dbmi.algo.bootstrap.task;
 
 import java.io.PrintStream;
+import java.util.List;
 
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
+import edu.cmu.tetrad.algcomparison.algorithm.MultiDataSetAlgorithm;
+import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.IKnowledge;
 import edu.cmu.tetrad.data.Knowledge2;
@@ -19,9 +22,13 @@ import edu.pitt.dbmi.algo.bootstrap.GeneralBootstrapSearch;
  */
 public class GeneralBootstrapSearchRunnable implements Runnable {
 
-	private DataSet dataSet;
+	private DataSet dataSet = null;
 
-	private Algorithm algorithm;
+	private List<DataModel> dataSets = null;
+
+	private Algorithm algorithm = null;
+	
+	private MultiDataSetAlgorithm multiDataSetAlgorithm = null;
 	
 	private Parameters parameters;
 
@@ -45,6 +52,15 @@ public class GeneralBootstrapSearchRunnable implements Runnable {
 			GeneralBootstrapSearch bootstrapAlgorithmSearch, boolean verbose){
 		this.dataSet = dataSet;
 		this.algorithm = algorithm;
+		this.parameters = parameters;
+		this.bootstrapAlgorithmSearch = bootstrapAlgorithmSearch;
+		this.verbose = verbose;
+	}
+	
+	public GeneralBootstrapSearchRunnable(List<DataModel> dataSets, MultiDataSetAlgorithm multiDataSetAlgorithm, Parameters parameters,
+			GeneralBootstrapSearch bootstrapAlgorithmSearch, boolean verbose){
+		this.dataSets = dataSets;
+		this.multiDataSetAlgorithm = multiDataSetAlgorithm;
 		this.parameters = parameters;
 		this.bootstrapAlgorithmSearch = bootstrapAlgorithmSearch;
 		this.verbose = verbose;
@@ -104,7 +120,12 @@ public class GeneralBootstrapSearchRunnable implements Runnable {
 			out.println("thread started ... ");
 		}
 
-		Graph graph = algorithm.search(dataSet, parameters);
+		Graph graph = null;
+		if(dataSet != null){
+			graph = algorithm.search(dataSet, parameters);
+		}else{
+			graph = multiDataSetAlgorithm.search(dataSets, parameters);
+		}
 
 		stop = System.currentTimeMillis();
 		if (verbose) {

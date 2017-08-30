@@ -1,6 +1,7 @@
 package edu.pitt.dbmi.algo.bootstrap;
 
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
+import edu.cmu.tetrad.algcomparison.algorithm.MultiDataSetAlgorithm;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.IKnowledge;
 import edu.cmu.tetrad.data.Knowledge2;
@@ -31,7 +32,9 @@ public class GeneralBootstrapTest {
 
 	private boolean runParallel = true;
 
-	private Algorithm algorithm;
+	private Algorithm algorithm = null;
+	
+	private MultiDataSetAlgorithm multiDataSetAlgorithm = null;
 	
 	private long seed = -1;
 
@@ -78,24 +81,12 @@ public class GeneralBootstrapTest {
 		return out;
 	}
 
-	public Parameters getParameters() {
-		return parameters;
-	}
-
 	public void setParameters(Parameters parameters) {
 		this.parameters = parameters;
 	}
 
 	public void setNumBootstrapSamples(int numBootstrapSamples) {
 		this.bootstrapSearch.setNumOfBootstrap(numBootstrapSamples);
-	}
-
-	/**
-	 * @return the background knowledge.
-	 */
-
-	public IKnowledge getKnowledge() {
-		return knowledge;
 	}
 
 	/**
@@ -127,22 +118,10 @@ public class GeneralBootstrapTest {
 	}
 
 	/**
-	 * @return the initial graph for the search. The search is initialized to
-	 *         this graph and proceeds from there.
-	 */
-	public Graph getInitialGraph() {
-		return initialGraph;
-	}
-
-	/**
 	 * Sets the initial graph.
 	 */
 	public void setInitialGraph(Graph initialGraph) {
 		this.initialGraph = initialGraph;
-	}
-
-	public long getSeed() {
-		return seed;
 	}
 
 	public void setSeed(long seed) {
@@ -161,12 +140,27 @@ public class GeneralBootstrapTest {
 		bootstrapSearch.setNumOfBootstrap(numBootstrapSamples);
 	}
 
+	public GeneralBootstrapTest(List<DataSet> dataSets, MultiDataSetAlgorithm multiDataSetAlgorithm) {
+		this.multiDataSetAlgorithm = multiDataSetAlgorithm;
+		bootstrapSearch = new GeneralBootstrapSearch(dataSets);
+	}
+
+	public GeneralBootstrapTest(List<DataSet> dataSets, MultiDataSetAlgorithm multiDataSetAlgorithm, int numBootstrapSamples) {
+		this.multiDataSetAlgorithm = multiDataSetAlgorithm;
+		bootstrapSearch = new GeneralBootstrapSearch(dataSets);
+		bootstrapSearch.setNumOfBootstrap(numBootstrapSamples);
+	}
+
 	public Graph search() {
 		long start, stop;
 
 		start = System.currentTimeMillis();
 
-		bootstrapSearch.setAlgorithm(algorithm);
+		if(algorithm != null){
+			bootstrapSearch.setAlgorithm(algorithm);
+		}else{
+			bootstrapSearch.setMultiDataSetAlgorithm(multiDataSetAlgorithm);
+		}
 		bootstrapSearch.setRunningMode(runParallel);
 		bootstrapSearch.setVerbose(verbose);
 		bootstrapSearch.setParameters(parameters);
