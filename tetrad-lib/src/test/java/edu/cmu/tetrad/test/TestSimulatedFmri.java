@@ -50,10 +50,18 @@ public class TestSimulatedFmri {
     public void TestCycles_Data_fMRI_FANG() {
         Parameters parameters = new Parameters();
 
+        task(parameters, false, false);
+        task(parameters, false, true);
+        task(parameters, true, false);
+        task(parameters, true, true);
+    }
+
+    private void task(Parameters parameters, boolean training, boolean standardized) {
         parameters.set("penaltyDiscount", 4);
         parameters.set("depth", -1);
         parameters.set("twoCycleAlpha", 1e-8);
-//        parameters.set("thresholdForReversing", -5);
+
+        parameters.set("conditionalStandardized", standardized);
 
         parameters.set("numRuns", 10);
         parameters.set("randomSelectionSize", 1, 5, 10);
@@ -81,100 +89,104 @@ public class TestSimulatedFmri {
 
         Simulations simulations = new Simulations();
 
-        String dir = "/Users/user/Downloads/Cycles_Data_fMRI/";
-        String subdir = "data_noise";
+        if (training) {
+            String dir = "/Users/user/Downloads/Cycles_Data_fMRI/";
+            String subdir = "data_noise";
 
-        simulations.add(new LoadContinuousDataAndSingleGraph(
-                dir + "Network1_amp", subdir));
-        simulations.add(new LoadContinuousDataAndSingleGraph(
-                dir + "Network2_amp", subdir));
-        simulations.add(new LoadContinuousDataAndSingleGraph(
-                dir + "Network3_amp", subdir));
-        simulations.add(new LoadContinuousDataAndSingleGraph(
-                dir + "Network4_amp", subdir));
-        simulations.add(new LoadContinuousDataAndSingleGraph(
-                dir + "Network5_amp", subdir));
-        simulations.add(new LoadContinuousDataAndSingleGraph(
-                dir + "Network5_contr", subdir));
-        simulations.add(new LoadContinuousDataAndSingleGraph(
-                dir + "Network5_contr_p2n6", subdir));
-        simulations.add(new LoadContinuousDataAndSingleGraph(
-                dir + "Network5_contr_p6n2", subdir));
-        simulations.add(new LoadContinuousDataAndSingleGraph(
-                dir + "Network6_amp", subdir));
-        simulations.add(new LoadContinuousDataAndSingleGraph(
-                dir + "Network6_contr", subdir));
-        simulations.add(new LoadContinuousDataAndSingleGraph(
-                dir + "Network7_amp", subdir));
-        simulations.add(new LoadContinuousDataAndSingleGraph(
-                dir + "Network7_contr", subdir));
-        simulations.add(new LoadContinuousDataAndSingleGraph(
-                dir + "Network8_amp_amp", subdir));
-        simulations.add(new LoadContinuousDataAndSingleGraph(
-                dir + "Network8_amp_contr", subdir));
-        simulations.add(new LoadContinuousDataAndSingleGraph(
-                dir + "Network8_contr_amp", subdir));
-        simulations.add(new LoadContinuousDataAndSingleGraph(
-                dir + "Network9_amp_amp", subdir));
-        simulations.add(new LoadContinuousDataAndSingleGraph(
-                dir + "Network9_amp_contr", subdir));
-        simulations.add(new LoadContinuousDataAndSingleGraph(
-                dir + "Network9_contr_amp", subdir));
-        simulations.add(new LoadContinuousDataAndSingleGraph(
-                dir + "Diamond", subdir));
-//        simulations.add(new LoadContinuousDataAndSingleGraph(
-//                dir + "Markov_Complex_1", subdir));
+            simulations.add(new LoadContinuousDataAndSingleGraph(
+                    dir + "Network1_amp", subdir));
+            simulations.add(new LoadContinuousDataAndSingleGraph(
+                    dir + "Network2_amp", subdir));
+            simulations.add(new LoadContinuousDataAndSingleGraph(
+                    dir + "Network3_amp", subdir));
+            simulations.add(new LoadContinuousDataAndSingleGraph(
+                    dir + "Network4_amp", subdir));
+            simulations.add(new LoadContinuousDataAndSingleGraph(
+                    dir + "Network5_amp", subdir));
+            simulations.add(new LoadContinuousDataAndSingleGraph(
+                    dir + "Network5_contr", subdir));
+            simulations.add(new LoadContinuousDataAndSingleGraph(
+                    dir + "Network5_contr_p2n6", subdir));
+            simulations.add(new LoadContinuousDataAndSingleGraph(
+                    dir + "Network5_contr_p6n2", subdir));
+            simulations.add(new LoadContinuousDataAndSingleGraph(
+                    dir + "Network6_amp", subdir));
+            simulations.add(new LoadContinuousDataAndSingleGraph(
+                    dir + "Network6_contr", subdir));
+            simulations.add(new LoadContinuousDataAndSingleGraph(
+                    dir + "Network7_amp", subdir));
+            simulations.add(new LoadContinuousDataAndSingleGraph(
+                    dir + "Network7_contr", subdir));
+            simulations.add(new LoadContinuousDataAndSingleGraph(
+                    dir + "Network8_amp_amp", subdir));
+            simulations.add(new LoadContinuousDataAndSingleGraph(
+                    dir + "Network8_amp_contr", subdir));
+            simulations.add(new LoadContinuousDataAndSingleGraph(
+                    dir + "Network8_contr_amp", subdir));
+            simulations.add(new LoadContinuousDataAndSingleGraph(
+                    dir + "Network9_amp_amp", subdir));
+            simulations.add(new LoadContinuousDataAndSingleGraph(
+                    dir + "Network9_amp_contr", subdir));
+            simulations.add(new LoadContinuousDataAndSingleGraph(
+                    dir + "Network9_contr_amp", subdir));
+            simulations.add(new LoadContinuousDataAndSingleGraph(
+                    dir + "Diamond", subdir));
+            simulations.add(new LoadContinuousDataAndSingleGraph(
+                    dir + "Markov_Complex_1", subdir));
+        } else {
 
-        //        String dir = "/Users/user/Downloads/CyclesTestingData/";
-//        String subdir = "data_fslfilter";
+            String dir = "/Users/user/Downloads/CyclesTestingData/";
+            String subdir = "data_fslfilter";
 
-//
-//        simulations.add(new LoadContinuousDataAndSingleGraph(
-//                dir + "Network1_amp", subdir));
-//        simulations.add(new LoadContinuousDataAndSingleGraph(
-//                dir + "Network2_amp", subdir));
-//        simulations.add(new LoadContinuousDataAndSingleGraph(
-//                dir + "Network3_amp", subdir));
-//        simulations.add(new LoadContinuousDataAndSingleGraph(
-//                dir + "Network4_amp", subdir));
-//        simulations.add(new LoadContinuousDataAndSingleGraph(
-//                dir + "Network5_amp", subdir));
-//        simulations.add(new LoadContinuousDataAndSingleGraph(
-//                dir + "Network5_cont", subdir));
-//        simulations.add(new LoadContinuousDataAndSingleGraph(
-//                dir + "Network5_cont_p3n7", subdir));
-//        simulations.add(new LoadContinuousDataAndSingleGraph(
-//                dir + "Network5_cont_p7n3", subdir));
-//        simulations.add(new LoadContinuousDataAndSingleGraph(
-//                dir + "Network6_amp", subdir));
-//        simulations.add(new LoadContinuousDataAndSingleGraph(
-//                dir + "Network6_cont", subdir));
-//        simulations.add(new LoadContinuousDataAndSingleGraph(
-//                dir + "Network7_amp", subdir));
-//        simulations.add(new LoadContinuousDataAndSingleGraph(
-//                dir + "Network7_cont", subdir));
-//        simulations.add(new LoadContinuousDataAndSingleGraph(
-//                dir + "Network8_amp_amp", subdir));
-//        simulations.add(new LoadContinuousDataAndSingleGraph(
-//                dir + "Network8_amp_cont", subdir));
-//        simulations.add(new LoadContinuousDataAndSingleGraph(
-//                dir + "Network8_cont_amp", subdir));
-//        simulations.add(new LoadContinuousDataAndSingleGraph(
-//                dir + "Network9_amp_amp", subdir));
-//        simulations.add(new LoadContinuousDataAndSingleGraph(
-//                dir + "Network9_amp_cont", subdir));
-//        simulations.add(new LoadContinuousDataAndSingleGraph(
-//                dir + "Network9_cont_amp", subdir));
-//        simulations.add(new LoadContinuousDataAndSingleGraph(
-//                dir + "Diamond", subdir));
-//        simulations.add(new LoadContinuousDataAndSingleGraph(
-//                dir + "Markov_Complex_1", subdir));
 
+
+
+            simulations.add(new LoadContinuousDataAndSingleGraph(
+                    dir + "Network1_amp", subdir));
+            simulations.add(new LoadContinuousDataAndSingleGraph(
+                    dir + "Network2_amp", subdir));
+            simulations.add(new LoadContinuousDataAndSingleGraph(
+                    dir + "Network3_amp", subdir));
+            simulations.add(new LoadContinuousDataAndSingleGraph(
+                    dir + "Network4_amp", subdir));
+            simulations.add(new LoadContinuousDataAndSingleGraph(
+                    dir + "Network5_amp", subdir));
+            simulations.add(new LoadContinuousDataAndSingleGraph(
+                    dir + "Network5_cont", subdir));
+            simulations.add(new LoadContinuousDataAndSingleGraph(
+                    dir + "Network5_cont_p3n7", subdir));
+            simulations.add(new LoadContinuousDataAndSingleGraph(
+                    dir + "Network5_cont_p7n3", subdir));
+            simulations.add(new LoadContinuousDataAndSingleGraph(
+                    dir + "Network6_amp", subdir));
+            simulations.add(new LoadContinuousDataAndSingleGraph(
+                    dir + "Network6_cont", subdir));
+            simulations.add(new LoadContinuousDataAndSingleGraph(
+                    dir + "Network7_amp", subdir));
+            simulations.add(new LoadContinuousDataAndSingleGraph(
+                    dir + "Network7_cont", subdir));
+            simulations.add(new LoadContinuousDataAndSingleGraph(
+                    dir + "Network8_amp_amp", subdir));
+            simulations.add(new LoadContinuousDataAndSingleGraph(
+                    dir + "Network8_amp_cont", subdir));
+            simulations.add(new LoadContinuousDataAndSingleGraph(
+                    dir + "Network8_cont_amp", subdir));
+            simulations.add(new LoadContinuousDataAndSingleGraph(
+                    dir + "Network9_amp_amp", subdir));
+            simulations.add(new LoadContinuousDataAndSingleGraph(
+                    dir + "Network9_amp_cont", subdir));
+            simulations.add(new LoadContinuousDataAndSingleGraph(
+                    dir + "Network9_cont_amp", subdir));
+            simulations.add(new LoadContinuousDataAndSingleGraph(
+                    dir + "Diamond", subdir));
+            simulations.add(new LoadContinuousDataAndSingleGraph(
+                    dir + "Markov_Complex_1", subdir));
+        }
 
         Algorithms algorithms = new Algorithms();
 
         algorithms.add(new FaskConcatenated(false));
-        algorithms.add(new FangConcatenated(false));
+//        algorithms.add(new FangConcatenated(false));
 //        algorithms.add(new OldFask2Concatenated(false));
 //        algorithms.add(new OldFask3Concatenated(false));
 //        algorithms.add(new OldFask4Concatenated(false));
@@ -189,7 +201,19 @@ public class TestSimulatedFmri {
         comparison.setSaveGraphs(false);
         comparison.setTabDelimitedTables(false);
 
-        comparison.compareFromSimulations("comparison", simulations, algorithms, statistics, parameters);
+        String directory;
+
+        if (training) {
+            directory = "comparison_training";
+        } else {
+            directory = "comparison_testing";
+        }
+
+        if (standardized) {
+            directory += "_standardized";
+        }
+
+        comparison.compareFromSimulations(directory, simulations, algorithms, statistics, parameters);
     }
 
     //    @Test

@@ -240,6 +240,9 @@ public class ParamDescriptions {
                 "Percentage of subsamples each feature in the output must agree on",
                 0.5, 0.0, 1.0));
 
+        put("conditionalStandardized", new ParamDescription(
+                "Yes if the conditional distributions should be standardized",
+                false));
     }
 
     public static ParamDescriptions instance() {

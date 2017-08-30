@@ -24,13 +24,11 @@ package edu.cmu.tetrad.search;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.StatUtils;
-import org.apache.commons.math3.distribution.NormalDistribution;
 import org.apache.commons.math3.distribution.TDistribution;
 
 import java.awt.*;
 import java.util.List;
 
-import static edu.cmu.tetrad.util.StatUtils.skewness;
 import static java.lang.Math.*;
 
 /**
@@ -61,6 +59,9 @@ public final class Fask implements GraphSearch {
     // Knowledge the the search will obey, of forbidden and required edges.
     private IKnowledge knowledge = new Knowledge2();
 
+    // True if the conditional distributions should be standardized.
+    private boolean conditionalStandardized = false;
+
     /**
      * @param dataSet These datasets must all have the same variables, in the same order.
      */
@@ -82,7 +83,7 @@ public final class Fask implements GraphSearch {
     public Graph search() {
         long start = System.currentTimeMillis();
 
-        DataSet dataSet = DataUtils.center(this.dataSet);
+        DataSet dataSet = DataUtils.standardizeData(this.dataSet);
 
         SemBicScore score = new SemBicScore(new CovarianceMatrixOnTheFly(dataSet));
         score.setPenaltyDiscount(penaltyDiscount);
@@ -99,16 +100,6 @@ public final class Fask implements GraphSearch {
         fas.setKnowledge(knowledge);
         Graph G0 = fas.search();
 
-        for (int i = 0; i < colData.length; i++) {
-            double skewness = skewness(colData[i]);
-
-            if (skewness < 0) {
-                for (int k = 0; k < colData[i].length; k++) {
-                    colData[i][k] *= signum(skewness);
-                }
-            }
-        }
-
         SearchGraphUtils.pcOrientbk(knowledge, G0, G0.getNodes());
 
         System.out.println("Orientation");
@@ -124,21 +115,32 @@ public final class Fask implements GraphSearch {
                 final double[] x = colData[i];
                 final double[] y = colData[j];
 
-                double[] e1 = StatUtils.E(x, y, x, 0, +1);
-                double[] e2 = StatUtils.E(x, y, y, 0, +1);
+                double[] e1, e2;
+
+                if (conditionalStandardized) {
+                    e1 = StatUtils.cov(x, y, x, 0, +1);
+                    e2 = StatUtils.cov(x, y, y, 0, +1);
+                } else {
+                    e1 = StatUtils.E(x, y, x, 0, +1);
+                    e2 = StatUtils.E(x, y, y, 0, +1);
+                }
+
                 double[] c1 = StatUtils.cov(x, y, x, 0, +1);
                 double[] c2 = StatUtils.cov(x, y, y, 0, +1);
 
-                if (G0.isAdjacentTo(X, Y) || abs(c1[1] - c2[1]) > 0.3) {
-                    double[] _c = StatUtils.cov(x, y, x, Double.NEGATIVE_INFINITY, +1);
-                    double[] c3 = StatUtils.cov(x, y, x, 0, -1);
-                    double[] c4 = StatUtils.cov(x, y, y, 0, -1);
+                double R = abs(e1[1]) - abs(e2[1]);
+
+                if (G0.isAdjacentTo(X, Y) || abs(c1[1]) - abs(c2[1]) > .3) {
+                    double _c[] =  StatUtils.cov(x, y, x, Double.NEGATIVE_INFINITY, +1);
+                    double c3[] =  StatUtils.cov(x, y, x, 0, -1);
+                    double c4[] =  StatUtils.cov(x, y, y, 0, -1);
 
                     if (knowledgeOrients(X, Y)) {
                         graph.addDirectedEdge(X, Y);
                     } else if (knowledgeOrients(Y, X)) {
                         graph.addDirectedEdge(Y, X);
-                    } else if (equals(_c, c1) && equals(_c, c2)) {
+                    }
+                    else if (equals(_c, c1) && equals(_c, c2)) {
                         Edge edge1 = Edges.directedEdge(X, Y);
                         Edge edge2 = Edges.directedEdge(Y, X);
 
@@ -157,7 +159,8 @@ public final class Fask implements GraphSearch {
 
                         graph.addEdge(edge1);
                         graph.addEdge(edge2);
-                    } else if (abs(e1[1]) > abs(e2[1])) {
+                    }
+                    else if (R > 0) {
                         graph.addDirectedEdge(X, Y);
                     } else {
                         graph.addDirectedEdge(Y, X);
@@ -259,6 +262,13 @@ public final class Fask implements GraphSearch {
         return 0.5 * (log(1.0 + r) - log(1.0 - r));
     }
 
+    public boolean isConditionalStandardized() {
+        return conditionalStandardized;
+    }
+
+    public void setConditionalStandardized(boolean conditionalStandardized) {
+        this.conditionalStandardized = conditionalStandardized;
+    }
 }
 
 
