@@ -24,6 +24,7 @@ package edu.cmu.tetrad.search;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.StatUtils;
+import org.apache.commons.math3.distribution.NormalDistribution;
 import org.apache.commons.math3.distribution.TDistribution;
 
 import java.awt.*;
@@ -128,7 +129,7 @@ public final class Fask implements GraphSearch {
                 double[] c1 = StatUtils.cov(x, y, x, 0, +1);
                 double[] c2 = StatUtils.cov(x, y, y, 0, +1);
 
-                if (G0.isAdjacentTo(X, Y) || abs(c1[1] - c2[1]) > 0.3) {
+                if (G0.isAdjacentTo(X, Y) /*|| abs(c1[1] - c2[1]) > 0.3*/) {
                     double[] _c = StatUtils.cov(x, y, x, Double.NEGATIVE_INFINITY, +1);
                     double[] c3 = StatUtils.cov(x, y, x, 0, -1);
                     double[] c4 = StatUtils.cov(x, y, y, 0, -1);
@@ -137,7 +138,8 @@ public final class Fask implements GraphSearch {
                         graph.addDirectedEdge(X, Y);
                     } else if (knowledgeOrients(Y, X)) {
                         graph.addDirectedEdge(Y, X);
-                    } else if ((equals(_c, c1, alpha) && equals(_c, c2, alpha))
+                    }
+                    else if ((equals(_c, c1, alpha) && equals(_c, c2, alpha))
                             || (!equals(_c, c1, 0.3) && !equals(_c, c2, 0.3))) {
                         Edge edge1 = Edges.directedEdge(X, Y);
                         Edge edge2 = Edges.directedEdge(Y, X);
@@ -157,7 +159,8 @@ public final class Fask implements GraphSearch {
 
                         graph.addEdge(edge1);
                         graph.addEdge(edge2);
-                    } else if (abs(e1[1]) > abs(e2[1])) {
+                    }
+                    else if (abs(e1[1]) > abs(e2[1])) {
                         graph.addDirectedEdge(X, Y);
                     } else {
                         graph.addDirectedEdge(Y, X);
@@ -176,11 +179,17 @@ public final class Fask implements GraphSearch {
     }
 
     private boolean equals(double[] c1, double[] c2, double alpha) {
-        double z = getZ(c1[1]);
-        double z1 = getZ(c2[1]);
-        double diff1 = z - z1;
-        final double t1 = diff1 / (sqrt(1.0 / c1[4] + 1.0 / c2[4]));
-        double p1 = 1.0 - new TDistribution(2 * (c1[4] + c2[4]) - 2).cumulativeProbability(abs(t1) / 2.0);
+        double z1 = getZ(c1[1]);
+        double z2 = getZ(c2[1]);
+        double n1 = c1[4];
+        double n2 = c2[4];
+        double diff1 = z1 - z2;
+//        final double t1 = diff1 / sqrt((n1 + 3) * (n2 + 3));
+//        final double t1 = diff1 / (sqrt(1.0 / c1[4] + 1.0 / c2[4]));
+        final double t1 = diff1 / (sqrt(1.0 / (n1 + 1) + 1.0 / (n2 + 3)));
+//        final double t1 = diff1 / (sqrt(1.0 / (n1 + 3 + n2 + 3)));
+        double p1 = 2.0 * (1.0 - new TDistribution(2 * (c1[4] + c2[4]) - 2).cumulativeProbability(abs(t1)));
+//        double p1 = 2.0 * (1.0 - new NormalDistribution(0, 1).cumulativeProbability(abs(t1)));
         return p1 <= alpha;
     }
 
