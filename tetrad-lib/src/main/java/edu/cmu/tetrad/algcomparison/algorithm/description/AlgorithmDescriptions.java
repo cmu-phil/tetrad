@@ -19,6 +19,9 @@
 package edu.cmu.tetrad.algcomparison.algorithm.description;
 
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
+import edu.cmu.tetrad.algcomparison.utils.TakesIndependenceWrapper;
+import edu.cmu.tetrad.algcomparison.utils.TakesInitialGraph;
+import edu.cmu.tetrad.algcomparison.utils.UsesScoreWrapper;
 import edu.cmu.tetrad.annotation.AlgorithmDescription;
 import java.util.Collections;
 import java.util.List;
@@ -51,7 +54,10 @@ public class AlgorithmDescriptions {
 
             String key = algoDesc.name();
             boolean acceptKnowledge = HasKnowledge.class.isAssignableFrom(clazz);
-            algoDescClasses.put(key, new AlgorithmDescriptionClass(clazz, algoDesc, acceptKnowledge));
+            boolean acceptInitalGraph = TakesInitialGraph.class.isAssignableFrom(clazz);
+            boolean requireIndependceTest = TakesIndependenceWrapper.class.isAssignableFrom(clazz);
+            boolean requireScore = UsesScoreWrapper.class.isAssignableFrom(clazz);
+            algoDescClasses.put(key, new AlgorithmDescriptionClass(clazz, algoDesc, acceptKnowledge, acceptInitalGraph, requireIndependceTest, requireScore));
         });
     }
 

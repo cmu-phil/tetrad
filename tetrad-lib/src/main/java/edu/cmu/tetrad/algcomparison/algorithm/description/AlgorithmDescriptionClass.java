@@ -32,11 +32,17 @@ public class AlgorithmDescriptionClass {
     private final Class clazz;
     private final AlgorithmDescription algorithmDescription;
     private final boolean acceptKnowledge;
+    private final boolean acceptInitalGraph;
+    private final boolean requireIndependceTest;
+    private final boolean requireScore;
 
-    public AlgorithmDescriptionClass(Class clazz, AlgorithmDescription algorithmDescription, boolean acceptKnowledge) {
+    public AlgorithmDescriptionClass(Class clazz, AlgorithmDescription algorithmDescription, boolean acceptKnowledge, boolean acceptInitalGraph, boolean requireIndependceTest, boolean requireScore) {
         this.clazz = clazz;
         this.algorithmDescription = algorithmDescription;
         this.acceptKnowledge = acceptKnowledge;
+        this.acceptInitalGraph = acceptInitalGraph;
+        this.requireIndependceTest = requireIndependceTest;
+        this.requireScore = requireScore;
     }
 
     public Class getClazz() {
@@ -49,6 +55,18 @@ public class AlgorithmDescriptionClass {
 
     public boolean isAcceptKnowledge() {
         return acceptKnowledge;
+    }
+
+    public boolean isAcceptInitalGraph() {
+        return acceptInitalGraph;
+    }
+
+    public boolean isRequireIndependceTest() {
+        return requireIndependceTest;
+    }
+
+    public boolean isRequireScore() {
+        return requireScore;
     }
 
 }
