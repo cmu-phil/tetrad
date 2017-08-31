@@ -19,7 +19,6 @@ import edu.cmu.tetrad.graph.Graph;
 //MP: These libraries are required for multi-threading
 import edu.cmu.tetrad.util.ForkJoinPoolInstance;
 import edu.cmu.tetrad.util.Parameters;
-import edu.pitt.dbmi.algo.bootstrap.task.BootstrapSearchAction;
 import edu.pitt.dbmi.algo.bootstrap.task.GeneralBootstrapSearchAction;
 import edu.pitt.dbmi.algo.bootstrap.task.GeneralBootstrapSearchRunnable;
 

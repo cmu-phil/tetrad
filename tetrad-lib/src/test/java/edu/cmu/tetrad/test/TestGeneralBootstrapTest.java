@@ -46,7 +46,6 @@ import edu.cmu.tetrad.search.DagToPag;
 import edu.cmu.tetrad.sem.LargeScaleSimulation;
 import edu.cmu.tetrad.util.Parameters;
 import edu.pitt.dbmi.algo.bootstrap.BootstrapEdgeEnsemble;
-import edu.pitt.dbmi.algo.bootstrap.BootstrapTest;
 import edu.pitt.dbmi.algo.bootstrap.GeneralBootstrapTest;
 
 /**
@@ -117,12 +116,12 @@ public class TestGeneralBootstrapTest {
 		System.out.println(resultGraph.toString());
 
 		// Adjacency Confusion Matrix
-		int[][] adjAr = BootstrapTest.getAdjConfusionMatrix(dag, resultGraph);
+		int[][] adjAr = GeneralBootstrapTest.getAdjConfusionMatrix(dag, resultGraph);
 
 		printAdjConfusionMatrix(adjAr);
 
 		// Edge Type Confusion Matrix
-		int[][] edgeAr = BootstrapTest.getEdgeTypeConfusionMatrix(dag, resultGraph);
+		int[][] edgeAr = GeneralBootstrapTest.getEdgeTypeConfusionMatrix(dag, resultGraph);
 
 		printEdgeTypeConfusionMatrix(edgeAr);
 	}
@@ -171,12 +170,12 @@ public class TestGeneralBootstrapTest {
 		System.out.println(resultGraph.toString());
 
 		// Adjacency Confusion Matrix
-		int[][] adjAr = BootstrapTest.getAdjConfusionMatrix(dag, resultGraph);
+		int[][] adjAr = GeneralBootstrapTest.getAdjConfusionMatrix(dag, resultGraph);
 
 		printAdjConfusionMatrix(adjAr);
 
 		// Edge Type Confusion Matrix
-		int[][] edgeAr = BootstrapTest.getEdgeTypeConfusionMatrix(dag, resultGraph);
+		int[][] edgeAr = GeneralBootstrapTest.getEdgeTypeConfusionMatrix(dag, resultGraph);
 
 		printEdgeTypeConfusionMatrix(edgeAr);
 	}
@@ -232,12 +231,12 @@ public class TestGeneralBootstrapTest {
 		System.out.println(resultGraph.toString());
 
 		// Adjacency Confusion Matrix
-		int[][] adjAr = BootstrapTest.getAdjConfusionMatrix(truePag, resultGraph);
+		int[][] adjAr = GeneralBootstrapTest.getAdjConfusionMatrix(truePag, resultGraph);
 
 		printAdjConfusionMatrix(adjAr);
 
 		// Edge Type Confusion Matrix
-		int[][] edgeAr = BootstrapTest.getEdgeTypeConfusionMatrix(truePag, resultGraph);
+		int[][] edgeAr = GeneralBootstrapTest.getEdgeTypeConfusionMatrix(truePag, resultGraph);
 
 		printEdgeTypeConfusionMatrix(edgeAr);
 	}
@@ -290,12 +289,12 @@ public class TestGeneralBootstrapTest {
 		System.out.println(resultGraph.toString());
 
 		// Adjacency Confusion Matrix
-		int[][] adjAr = BootstrapTest.getAdjConfusionMatrix(truePag, resultGraph);
+		int[][] adjAr = GeneralBootstrapTest.getAdjConfusionMatrix(truePag, resultGraph);
 
 		printAdjConfusionMatrix(adjAr);
 
 		// Edge Type Confusion Matrix
-		int[][] edgeAr = BootstrapTest.getEdgeTypeConfusionMatrix(truePag, resultGraph);
+		int[][] edgeAr = GeneralBootstrapTest.getEdgeTypeConfusionMatrix(truePag, resultGraph);
 
 		printEdgeTypeConfusionMatrix(edgeAr);
 	}
@@ -351,12 +350,12 @@ public class TestGeneralBootstrapTest {
 		System.out.println(resultGraph.toString());
 
 		// Adjacency Confusion Matrix
-		int[][] adjAr = BootstrapTest.getAdjConfusionMatrix(truePag, resultGraph);
+		int[][] adjAr = GeneralBootstrapTest.getAdjConfusionMatrix(truePag, resultGraph);
 
 		printAdjConfusionMatrix(adjAr);
 
 		// Edge Type Confusion Matrix
-		int[][] edgeAr = BootstrapTest.getEdgeTypeConfusionMatrix(truePag, resultGraph);
+		int[][] edgeAr = GeneralBootstrapTest.getEdgeTypeConfusionMatrix(truePag, resultGraph);
 
 		printEdgeTypeConfusionMatrix(edgeAr);
 	}
@@ -408,12 +407,12 @@ public class TestGeneralBootstrapTest {
 		System.out.println(resultGraph.toString());
 
 		// Adjacency Confusion Matrix
-		int[][] adjAr = BootstrapTest.getAdjConfusionMatrix(truePag, resultGraph);
+		int[][] adjAr = GeneralBootstrapTest.getAdjConfusionMatrix(truePag, resultGraph);
 
 		printAdjConfusionMatrix(adjAr);
 
 		// Edge Type Confusion Matrix
-		int[][] edgeAr = BootstrapTest.getEdgeTypeConfusionMatrix(truePag, resultGraph);
+		int[][] edgeAr = GeneralBootstrapTest.getEdgeTypeConfusionMatrix(truePag, resultGraph);
 
 		printEdgeTypeConfusionMatrix(edgeAr);
 	}
