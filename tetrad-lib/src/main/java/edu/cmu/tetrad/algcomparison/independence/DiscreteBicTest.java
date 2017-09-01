@@ -1,11 +1,11 @@
 package edu.cmu.tetrad.algcomparison.independence;
 
+import edu.cmu.tetrad.annotation.IndTestDescription;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.data.DataUtils;
 import edu.cmu.tetrad.search.*;
 import edu.cmu.tetrad.util.Parameters;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -14,7 +14,9 @@ import java.util.List;
  *
  * @author jdramsey
  */
+@IndTestDescription(name = "discrete-bic", description = "Discrete BIC test", dataType = DataType.Discrete)
 public class DiscreteBicTest implements IndependenceWrapper {
+
     static final long serialVersionUID = 23L;
 
     @Override

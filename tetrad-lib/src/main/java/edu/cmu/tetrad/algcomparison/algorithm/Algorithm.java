@@ -1,13 +1,11 @@
 package edu.cmu.tetrad.algcomparison.algorithm;
 
-import edu.cmu.tetrad.data.DataModel;
-import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.algcomparison.utils.HasParameters;
-import edu.cmu.tetrad.data.DataSet;
+import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradSerializable;
-
 import java.util.List;
 
 /**
@@ -20,7 +18,7 @@ public interface Algorithm extends HasParameters, TetradSerializable {
     /**
      * Runs the search.
      *
-     * @param dataSet    The data set to run to the search on.
+     * @param dataSet The data set to run to the search on.
      * @param parameters The paramters of the search.
      * @return The result graph.
      */
@@ -43,7 +41,8 @@ public interface Algorithm extends HasParameters, TetradSerializable {
     String getDescription();
 
     /**
-     * Returns the data type that the search requires, whether continuous, discrete, or mixed.
+     * Returns the data type that the search requires, whether continuous,
+     * discrete, or mixed.
      *
      * @return This type.
      */
@@ -54,5 +53,7 @@ public interface Algorithm extends HasParameters, TetradSerializable {
      *
      * @return A list of String names of parameters.
      */
+    @Override
     List<String> getParameters();
+
 }

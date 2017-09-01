@@ -1,10 +1,10 @@
 package edu.cmu.tetrad.algcomparison.independence;
 
+import edu.cmu.tetrad.annotation.IndTestDescription;
 import edu.cmu.tetrad.data.*;
-import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.search.IndTestFisherZ;
 import edu.cmu.tetrad.search.IndependenceTest;
-
+import edu.cmu.tetrad.util.Parameters;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -13,7 +13,9 @@ import java.util.List;
  *
  * @author jdramsey
  */
+@IndTestDescription(name = "fisher-z", description = "Fisher Z Test", dataType = DataType.Continuous)
 public class FisherZ implements IndependenceWrapper {
+
     static final long serialVersionUID = 23L;
     private double alpha = 0.001;
 
@@ -47,4 +49,5 @@ public class FisherZ implements IndependenceWrapper {
         params.add("alpha");
         return params;
     }
+
 }

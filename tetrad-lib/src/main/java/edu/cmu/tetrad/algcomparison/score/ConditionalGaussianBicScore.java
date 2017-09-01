@@ -1,5 +1,6 @@
 package edu.cmu.tetrad.algcomparison.score;
 
+import edu.cmu.tetrad.annotation.ScoreDescription;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.data.DataUtils;
@@ -16,6 +17,7 @@ import java.util.List;
  *
  * @author jdramsey
  */
+@ScoreDescription(name = "conditional-gaussian-bic", description = "Conditional Gaussian BIC Score", dataType = DataType.Mixed)
 public class ConditionalGaussianBicScore implements ScoreWrapper, Experimental {
 
     static final long serialVersionUID = 23L;
