@@ -45,7 +45,7 @@ public class IndTestDescriptions {
     private final Map<String, IndTestDescriptionClass> descClasses = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
 
     private IndTestDescriptions() {
-        Reflections reflections = new Reflections("edu.cmu.tetrad.algcomparison.score");
+        Reflections reflections = new Reflections("edu.cmu.tetrad.algcomparison.independence");
         Set<Class<?>> classes = reflections.getTypesAnnotatedWith(IndTestDescription.class);
         classes.forEach(clazz -> {
             IndTestDescription scoreDesc = clazz.getAnnotation(IndTestDescription.class);
