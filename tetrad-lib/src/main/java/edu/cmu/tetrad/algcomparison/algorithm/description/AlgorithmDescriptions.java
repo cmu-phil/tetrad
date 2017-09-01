@@ -44,7 +44,7 @@ public class AlgorithmDescriptions {
 
     private static final AlgorithmDescriptions INSTANCE = new AlgorithmDescriptions();
 
-    private final Map<String, AlgorithmDescriptionClass> algoDescClasses = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+    private final Map<String, AlgorithmDescriptionClass> descClasses = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
 
     private AlgorithmDescriptions() {
         Reflections reflections = new Reflections("edu.cmu.tetrad.algcomparison");
@@ -57,12 +57,12 @@ public class AlgorithmDescriptions {
             boolean acceptInitalGraph = TakesInitialGraph.class.isAssignableFrom(clazz);
             boolean requireIndependceTest = TakesIndependenceWrapper.class.isAssignableFrom(clazz);
             boolean requireScore = UsesScoreWrapper.class.isAssignableFrom(clazz);
-            algoDescClasses.put(key, new AlgorithmDescriptionClass(clazz, algoDesc, acceptKnowledge, acceptInitalGraph, requireIndependceTest, requireScore));
+            descClasses.put(key, new AlgorithmDescriptionClass(clazz, algoDesc, acceptKnowledge, acceptInitalGraph, requireIndependceTest, requireScore));
         });
     }
 
     public AlgorithmDescriptionClass get(String name) {
-        return algoDescClasses.get(name);
+        return descClasses.get(name);
     }
 
     /**
@@ -71,7 +71,7 @@ public class AlgorithmDescriptions {
      * @return unmodifiable list of algorithm names
      */
     public List<String> getNames() {
-        List<String> list = algoDescClasses.keySet().stream()
+        List<String> list = descClasses.keySet().stream()
                 .collect(Collectors.toList());
 
         return Collections.unmodifiableList(list);
@@ -83,7 +83,7 @@ public class AlgorithmDescriptions {
      * @return unmodifiable list of algorithm names
      */
     public List<String> getAcceptKnowledgeAlgorithms() {
-        List<String> list = algoDescClasses.entrySet().stream() // get stream of entries
+        List<String> list = descClasses.entrySet().stream() // get stream of entries
                 .filter(e -> e.getValue().isAcceptKnowledge()) // get entry that only accepts knowledge
                 .map(e -> e.getValue().getAlgorithmDescription().name()) // extract the name of that entry
                 .collect(Collectors.toList()); // collect all the names
