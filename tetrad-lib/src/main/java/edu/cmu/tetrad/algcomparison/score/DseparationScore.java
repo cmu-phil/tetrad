@@ -1,12 +1,12 @@
 package edu.cmu.tetrad.algcomparison.score;
 
 import edu.cmu.tetrad.algcomparison.graph.RandomGraph;
+import edu.cmu.tetrad.annotation.ScoreDescription;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.*;
 import edu.cmu.tetrad.util.Parameters;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -15,7 +15,9 @@ import java.util.List;
  *
  * @author jdramsey
  */
+@ScoreDescription(name = "d-separation", description = "D-separation Score", dataType = DataType.Graph)
 public class DseparationScore implements ScoreWrapper {
+
     static final long serialVersionUID = 23L;
     private final RandomGraph randomGraph;
     private DataModel dataSet;

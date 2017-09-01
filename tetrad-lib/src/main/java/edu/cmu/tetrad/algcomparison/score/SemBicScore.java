@@ -1,13 +1,12 @@
 package edu.cmu.tetrad.algcomparison.score;
 
+import edu.cmu.tetrad.annotation.ScoreDescription;
 import edu.cmu.tetrad.data.DataModel;
+import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.data.DataUtils;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.util.Parameters;
-import edu.cmu.tetrad.data.CovarianceMatrixOnTheFly;
-import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.search.Score;
-
+import edu.cmu.tetrad.util.Parameters;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -16,7 +15,9 @@ import java.util.List;
  *
  * @author jdramsey
  */
+@ScoreDescription(name = "sem-bic", description = "Sem BIC Score", dataType = DataType.Continuous)
 public class SemBicScore implements ScoreWrapper {
+
     static final long serialVersionUID = 23L;
     private DataModel dataSet;
     private double penaltyDiscount = 2.0;
