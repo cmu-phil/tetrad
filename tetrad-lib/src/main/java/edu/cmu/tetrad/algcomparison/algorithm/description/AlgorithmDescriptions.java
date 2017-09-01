@@ -18,6 +18,7 @@
  */
 package edu.cmu.tetrad.algcomparison.algorithm.description;
 
+import edu.cmu.tetrad.algcomparison.algorithm.MultiDataSetAlgorithm;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.algcomparison.utils.TakesIndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.utils.TakesInitialGraph;
@@ -53,11 +54,12 @@ public class AlgorithmDescriptions {
             AlgorithmDescription algoDesc = clazz.getAnnotation(AlgorithmDescription.class);
 
             String key = algoDesc.name();
+            boolean acceptMultipleDataset = MultiDataSetAlgorithm.class.isAssignableFrom(clazz);;
             boolean acceptKnowledge = HasKnowledge.class.isAssignableFrom(clazz);
             boolean acceptInitalGraph = TakesInitialGraph.class.isAssignableFrom(clazz);
             boolean requireIndependceTest = TakesIndependenceWrapper.class.isAssignableFrom(clazz);
             boolean requireScore = UsesScoreWrapper.class.isAssignableFrom(clazz);
-            descClasses.put(key, new AlgorithmDescriptionClass(clazz, algoDesc, acceptKnowledge, acceptInitalGraph, requireIndependceTest, requireScore));
+            descClasses.put(key, new AlgorithmDescriptionClass(clazz, algoDesc, acceptMultipleDataset, acceptKnowledge, acceptInitalGraph, requireIndependceTest, requireScore));
         });
     }
 
@@ -85,6 +87,20 @@ public class AlgorithmDescriptions {
     public List<String> getAcceptKnowledgeAlgorithms() {
         List<String> list = descClasses.entrySet().stream() // get stream of entries
                 .filter(e -> e.getValue().isAcceptKnowledge()) // get entry that only accepts knowledge
+                .map(e -> e.getValue().getAlgorithmDescription().name()) // extract the name of that entry
+                .collect(Collectors.toList()); // collect all the names
+
+        return Collections.unmodifiableList(list);
+    }
+
+    /**
+     * List the names of the algorithm that can accept multiple dataset.
+     *
+     * @return unmodifiable list of algorithm names
+     */
+    public List<String> getAcceptMultipleDatasetAlgorithms() {
+        List<String> list = descClasses.entrySet().stream() // get stream of entries
+                .filter(e -> e.getValue().isAcceptMultipleDataset()) // get entry that only accepts knowledge
                 .map(e -> e.getValue().getAlgorithmDescription().name()) // extract the name of that entry
                 .collect(Collectors.toList()); // collect all the names
 

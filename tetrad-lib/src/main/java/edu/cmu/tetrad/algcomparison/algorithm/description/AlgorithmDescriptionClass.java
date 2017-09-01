@@ -31,14 +31,16 @@ public class AlgorithmDescriptionClass {
 
     private final Class clazz;
     private final AlgorithmDescription algorithmDescription;
+    private final boolean acceptMultipleDataset;
     private final boolean acceptKnowledge;
     private final boolean acceptInitalGraph;
     private final boolean requireIndependceTest;
     private final boolean requireScore;
 
-    public AlgorithmDescriptionClass(Class clazz, AlgorithmDescription algorithmDescription, boolean acceptKnowledge, boolean acceptInitalGraph, boolean requireIndependceTest, boolean requireScore) {
+    public AlgorithmDescriptionClass(Class clazz, AlgorithmDescription algorithmDescription, boolean acceptMultipleDataset, boolean acceptKnowledge, boolean acceptInitalGraph, boolean requireIndependceTest, boolean requireScore) {
         this.clazz = clazz;
         this.algorithmDescription = algorithmDescription;
+        this.acceptMultipleDataset = acceptMultipleDataset;
         this.acceptKnowledge = acceptKnowledge;
         this.acceptInitalGraph = acceptInitalGraph;
         this.requireIndependceTest = requireIndependceTest;
@@ -51,6 +53,10 @@ public class AlgorithmDescriptionClass {
 
     public AlgorithmDescription getAlgorithmDescription() {
         return algorithmDescription;
+    }
+
+    public boolean isAcceptMultipleDataset() {
+        return acceptMultipleDataset;
     }
 
     public boolean isAcceptKnowledge() {
