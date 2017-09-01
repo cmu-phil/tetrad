@@ -10,6 +10,8 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.PcStableMax;
 import edu.cmu.tetrad.search.SearchGraphUtils;
 import edu.cmu.tetrad.util.Parameters;
+import edu.pitt.dbmi.algo.bootstrap.BootstrapEdgeEnsemble;
+import edu.pitt.dbmi.algo.bootstrap.GeneralBootstrapTest;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -39,25 +41,79 @@ public class PcStableMaxConcatenated implements MultiDataSetAlgorithm, HasKnowle
 
     @Override
     public Graph search(List<DataModel> dataModels, Parameters parameters) {
-        List<DataSet> dataSets = new ArrayList<>();
+    	if (!parameters.getBoolean("bootstrapping")) {
+            List<DataSet> dataSets = new ArrayList<>();
 
-        for (DataModel dataModel : dataModels) {
-            dataSets.add((DataSet) dataModel);
-        }
+            for (DataModel dataModel : dataModels) {
+                dataSets.add((DataSet) dataModel);
+            }
 
-        DataSet dataSet = DataUtils.concatenate(dataSets);
-        PcStableMax search = new PcStableMax(
-                test.getTest(dataSet, parameters));
-        search.setUseHeuristic(parameters.getBoolean("useMaxPOrientationHeuristic"));
-        search.setMaxPathLength(parameters.getInt("maxPOrientationMaxPathLength"));
-        search.setKnowledge(knowledge);
-        search.setDepth(parameters.getInt("depth"));
-        return search.search();
+            DataSet dataSet = DataUtils.concatenate(dataSets);
+            PcStableMax search = new PcStableMax(
+                    test.getTest(dataSet, parameters));
+            search.setUseHeuristic(parameters.getBoolean("useMaxPOrientationHeuristic"));
+            search.setMaxPathLength(parameters.getInt("maxPOrientationMaxPathLength"));
+            search.setKnowledge(knowledge);
+            search.setDepth(parameters.getInt("depth"));
+            return search.search();
+    	}else{
+    		PcStableMaxConcatenated pcStableMaxConcatenated = new PcStableMaxConcatenated(test, compareToTrue);
+    		pcStableMaxConcatenated.setKnowledge(knowledge);
+    		
+    		List<DataSet> datasets = new ArrayList<>();
+
+			for (DataModel dataModel : dataModels) {
+				datasets.add((DataSet) dataModel);
+			}
+			GeneralBootstrapTest search = new GeneralBootstrapTest(datasets, pcStableMaxConcatenated,
+					parameters.getInt("bootstrapSampleSize"));
+
+			BootstrapEdgeEnsemble edgeEnsemble = BootstrapEdgeEnsemble.Highest;
+			switch (parameters.getInt("bootstrapEnsemble", 1)) {
+			case 0:
+				edgeEnsemble = BootstrapEdgeEnsemble.Preserved;
+				break;
+			case 1:
+				edgeEnsemble = BootstrapEdgeEnsemble.Highest;
+				break;
+			case 2:
+				edgeEnsemble = BootstrapEdgeEnsemble.Majority;
+			}
+			search.setEdgeEnsemble(edgeEnsemble);
+			search.setParameters(parameters);
+			search.setVerbose(parameters.getBoolean("verbose"));
+			return search.search();
+    	}
     }
 
     @Override
     public Graph search(DataModel dataSet, Parameters parameters) {
-        return search(Collections.singletonList((DataModel) DataUtils.getContinuousDataSet(dataSet)), parameters);
+    	if (!parameters.getBoolean("bootstrapping")) {
+            return search(Collections.singletonList((DataModel) DataUtils.getContinuousDataSet(dataSet)), parameters);
+    	}else{
+    		PcStableMaxConcatenated pcStableMaxConcatenated = new PcStableMaxConcatenated(test, compareToTrue);
+    		pcStableMaxConcatenated.setKnowledge(knowledge);
+    		
+    		List<DataSet> dataSets = Collections.singletonList(DataUtils.getContinuousDataSet(dataSet));
+			GeneralBootstrapTest search = new GeneralBootstrapTest(dataSets, pcStableMaxConcatenated,
+					parameters.getInt("bootstrapSampleSize"));
+
+			BootstrapEdgeEnsemble edgeEnsemble = BootstrapEdgeEnsemble.Highest;
+			switch (parameters.getInt("bootstrapEnsemble", 1)) {
+			case 0:
+				edgeEnsemble = BootstrapEdgeEnsemble.Preserved;
+				break;
+			case 1:
+				edgeEnsemble = BootstrapEdgeEnsemble.Highest;
+				break;
+			case 2:
+				edgeEnsemble = BootstrapEdgeEnsemble.Majority;
+			}
+			search.setEdgeEnsemble(edgeEnsemble);
+			search.setParameters(parameters);
+			search.setVerbose(parameters.getBoolean("verbose"));
+			return search.search();
+    	}
     }
 
     @Override
@@ -90,7 +146,12 @@ public class PcStableMaxConcatenated implements MultiDataSetAlgorithm, HasKnowle
 
         parameters.add("numRuns");
         parameters.add("randomSelectionSize");
-
+        // Bootstrapping
+  		parameters.add("bootstrapping");
+  		parameters.add("bootstrapSampleSize");
+  		parameters.add("bootstrapEnsemble");
+  		parameters.add("verbose");
+  		
         return parameters;
     }
 

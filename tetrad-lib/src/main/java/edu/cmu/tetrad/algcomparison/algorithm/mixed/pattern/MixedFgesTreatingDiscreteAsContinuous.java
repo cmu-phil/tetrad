@@ -10,6 +10,8 @@ import edu.cmu.tetrad.search.Fges;
 import edu.cmu.tetrad.search.SearchGraphUtils;
 import edu.cmu.tetrad.search.SemBicScore;
 import edu.cmu.tetrad.util.Parameters;
+import edu.pitt.dbmi.algo.bootstrap.BootstrapEdgeEnsemble;
+import edu.pitt.dbmi.algo.bootstrap.GeneralBootstrapTest;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -20,13 +22,36 @@ import java.util.List;
 public class MixedFgesTreatingDiscreteAsContinuous implements Algorithm {
     static final long serialVersionUID = 23L;
     public Graph search(DataModel Dk, Parameters parameters) {
-        DataSet mixedDataSet = DataUtils.getMixedDataSet(Dk);
-        mixedDataSet = DataUtils.convertNumericalDiscreteToContinuous(mixedDataSet);
-        SemBicScore score = new SemBicScore(new CovarianceMatrixOnTheFly(mixedDataSet));
-        score.setPenaltyDiscount(parameters.getDouble("penaltyDiscount"));
-        Fges fges = new Fges(score);
-        Graph p = fges.search();
-        return convertBack(mixedDataSet, p);
+    	if(!parameters.getBoolean("bootstrapping")){
+            DataSet mixedDataSet = DataUtils.getMixedDataSet(Dk);
+            mixedDataSet = DataUtils.convertNumericalDiscreteToContinuous(mixedDataSet);
+            SemBicScore score = new SemBicScore(new CovarianceMatrixOnTheFly(mixedDataSet));
+            score.setPenaltyDiscount(parameters.getDouble("penaltyDiscount"));
+            Fges fges = new Fges(score);
+            Graph p = fges.search();
+            return convertBack(mixedDataSet, p);
+    	}else{
+    		MixedFgesTreatingDiscreteAsContinuous algorithm = new MixedFgesTreatingDiscreteAsContinuous();
+    		
+    		DataSet data = (DataSet) Dk;
+    		GeneralBootstrapTest search = new GeneralBootstrapTest(data, algorithm, parameters.getInt("bootstrapSampleSize"));
+    		
+    		BootstrapEdgeEnsemble edgeEnsemble = BootstrapEdgeEnsemble.Highest;
+    		switch (parameters.getInt("bootstrapEnsemble", 1)) {
+    		case 0:
+    			edgeEnsemble = BootstrapEdgeEnsemble.Preserved;
+    			break;
+    		case 1:
+    			edgeEnsemble = BootstrapEdgeEnsemble.Highest;
+    			break;
+    		case 2:
+    			edgeEnsemble = BootstrapEdgeEnsemble.Majority;
+    		}
+    		search.setEdgeEnsemble(edgeEnsemble);
+    		search.setParameters(parameters);    		
+    		search.setVerbose(parameters.getBoolean("verbose"));
+    		return search.search();
+    	}
     }
 
     private Graph convertBack(DataSet Dk, Graph p) {
@@ -70,6 +95,11 @@ public class MixedFgesTreatingDiscreteAsContinuous implements Algorithm {
     public List<String> getParameters() {
         List<String> parameters = new ArrayList<>();
         parameters.add("penaltyDiscount");
+        // Bootstrapping
+        parameters.add("bootstrapping");
+        parameters.add("bootstrapSampleSize");
+        parameters.add("bootstrapEnsemble");
+        parameters.add("verbose");
         return parameters;
     }
 }

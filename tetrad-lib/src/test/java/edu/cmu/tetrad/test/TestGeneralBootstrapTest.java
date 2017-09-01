@@ -1,3 +1,21 @@
+/*
+ * Copyright (C) 2015 University of Pittsburgh.
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
+ * MA 02110-1301  USA
+ */
 package edu.cmu.tetrad.test;
 
 import java.util.ArrayList;
@@ -5,6 +23,16 @@ import java.util.List;
 
 import org.junit.Test;
 
+import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
+import edu.cmu.tetrad.algcomparison.algorithm.oracle.pag.Fci;
+import edu.cmu.tetrad.algcomparison.algorithm.oracle.pag.Gfci;
+import edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern.Fges;
+import edu.cmu.tetrad.algcomparison.independence.ChiSquare;
+import edu.cmu.tetrad.algcomparison.independence.FisherZ;
+import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
+import edu.cmu.tetrad.algcomparison.score.BdeuScore;
+import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
+import edu.cmu.tetrad.algcomparison.score.SemBicScore;
 import edu.cmu.tetrad.bayes.BayesIm;
 import edu.cmu.tetrad.bayes.BayesPm;
 import edu.cmu.tetrad.bayes.MlBayesIm;
@@ -14,281 +42,31 @@ import edu.cmu.tetrad.data.DiscreteVariable;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.search.BDeuScore;
 import edu.cmu.tetrad.search.DagToPag;
-import edu.cmu.tetrad.search.GFci;
-import edu.cmu.tetrad.search.IndTestChiSquare;
-import edu.cmu.tetrad.search.IndependenceTest;
-import edu.cmu.tetrad.search.Score;
 import edu.cmu.tetrad.sem.LargeScaleSimulation;
 import edu.cmu.tetrad.util.Parameters;
-import edu.pitt.dbmi.algo.bootstrap.BootstrapAlgName;
 import edu.pitt.dbmi.algo.bootstrap.BootstrapEdgeEnsemble;
-import edu.pitt.dbmi.algo.bootstrap.BootstrapTest;
+import edu.pitt.dbmi.algo.bootstrap.GeneralBootstrapTest;
 
 /**
  * 
- * Apr 17, 2017 11:13:21 AM
+ * Aug 17, 2017 2:28:48 PM
  * 
- * @author Chirayu (Kong) Wongchokprasitti, PhD
- * 
+ * @author Chirayu Kong Wongchokprasitti, PhD (chw20@pitt.edu)
+ *
  */
-public class TestBootstrapTest {
+public class TestGeneralBootstrapTest {
 
+	/**
+	 * @param args
+	 */
 	public static void main(String[] args) {
-		// testFGESc();
-		// testFGESd();
-		// testGFCIc();
-		// testGFCId();
-		// testRFCIc();
-		// testRFCId();
-	}
-
-	@Test
-	public void testRFCIc() {
-		int penaltyDiscount = 2;
-		boolean faithfulnessAssumed = false;
-		int maxDegree = -1;
-
-		int numVars = 20;
-		int edgesPerNode = 2;
-		int numLatentConfounders = 2;
-		int numCases = 50;
-		int numBootstrapSamples = 5;
-		boolean verbose = false;
-
-		Graph dag = makeContinuousDAG(numVars, numLatentConfounders, edgesPerNode);
-
-		DagToPag dagToPag = new DagToPag(dag);
-		Graph truePag = dagToPag.convert();
-
-		System.out.println("Truth PAG_of_the_true_DAG Graph:");
-		System.out.println(truePag.toString());
-
-		int[] causalOrdering = new int[numVars];
-
-		for (int i = 0; i < numVars; i++) {
-			causalOrdering[i] = i;
-		}
-
-		LargeScaleSimulation simulator = new LargeScaleSimulation(dag, dag.getNodes(), causalOrdering);
-
-		DataSet data = simulator.simulateDataFisher(numCases);
-
-		Parameters parameters = new Parameters();
-		parameters.set("penaltyDiscount", penaltyDiscount);
-		parameters.set("faithfulnessAssumed", faithfulnessAssumed);
-		parameters.set("maxDegree", maxDegree);
-		parameters.set("numPatternsToStore", 0);
-		parameters.set("verbose", verbose);
-
-		BootstrapTest bootstrapTest = new BootstrapTest(data, BootstrapAlgName.RFCI, numBootstrapSamples);
-		bootstrapTest.setVerbose(verbose);
-		bootstrapTest.setParameters(parameters);
-		bootstrapTest.setEdgeEnsemble(BootstrapEdgeEnsemble.Highest);
-		Graph resultGraph = bootstrapTest.search();
-		System.out.println("Estimated PAG_of_the_true_DAG Graph:");
-		System.out.println(resultGraph.toString());
-
-		// Adjacency Confusion Matrix
-		int[][] adjAr = BootstrapTest.getAdjConfusionMatrix(truePag, resultGraph);
-
-		printAdjConfusionMatrix(adjAr);
-
-		// Edge Type Confusion Matrix
-		int[][] edgeAr = BootstrapTest.getEdgeTypeConfusionMatrix(truePag, resultGraph);
-
-		printEdgeTypeConfusionMatrix(edgeAr);
-
-	}
-
-	@Test
-	public void testRFCId() {
-		double structurePrior = 1, samplePrior = 1;
-		boolean faithfulnessAssumed = false;
-		int maxDegree = -1;
-
-		int numVars = 20;
-		int edgesPerNode = 2;
-		int numLatentConfounders = 2;
-		int numCases = 50;
-		int numBootstrapSamples = 5;
-		boolean verbose = false;
-		long seed = 123;
-
-		Graph dag = makeDiscreteDAG(numVars, numLatentConfounders, edgesPerNode);
-
-		DagToPag dagToPag = new DagToPag(dag);
-		Graph truePag = dagToPag.convert();
-
-		System.out.println("Truth PAG_of_the_true_DAG Graph:");
-		System.out.println(truePag.toString());
-
-		BayesPm pm = new BayesPm(dag, 2, 3);
-		BayesIm im = new MlBayesIm(pm, MlBayesIm.RANDOM);
-
-		DataSet data = im.simulateData(numCases, seed, false);
-
-		Parameters parameters = new Parameters();
-		parameters.set("structurePrior", structurePrior);
-		parameters.set("samplePrior", samplePrior);
-		parameters.set("faithfulnessAssumed", faithfulnessAssumed);
-		parameters.set("maxDegree", maxDegree);
-		parameters.set("numPatternsToStore", 0);
-		parameters.set("verbose", verbose);
-
-		BootstrapTest bootstrapTest = new BootstrapTest(data, BootstrapAlgName.RFCI, numBootstrapSamples);
-		bootstrapTest.setVerbose(verbose);
-		bootstrapTest.setParameters(parameters);
-		bootstrapTest.setEdgeEnsemble(BootstrapEdgeEnsemble.Highest);
-		Graph resultGraph = bootstrapTest.search();
-		System.out.println("Estimated PAG_of_the_true_DAG Graph:");
-		System.out.println(resultGraph.toString());
-
-		// Adjacency Confusion Matrix
-		int[][] adjAr = BootstrapTest.getAdjConfusionMatrix(truePag, resultGraph);
-
-		printAdjConfusionMatrix(adjAr);
-
-		// Edge Type Confusion Matrix
-		int[][] edgeAr = BootstrapTest.getEdgeTypeConfusionMatrix(truePag, resultGraph);
-
-		printEdgeTypeConfusionMatrix(edgeAr);
-	}
-
-	@Test
-	public void testGFCIc() {
-		int penaltyDiscount = 2;
-		boolean faithfulnessAssumed = false;
-		int maxDegree = -1;
-
-		int numVars = 20;
-		int edgesPerNode = 2;
-		int numLatentConfounders = 2;
-		int numCases = 50;
-		int numBootstrapSamples = 5;
-		boolean verbose = false;
-
-		Graph dag = makeContinuousDAG(numVars, numLatentConfounders, edgesPerNode);
-
-		DagToPag dagToPag = new DagToPag(dag);
-		Graph truePag = dagToPag.convert();
-
-		System.out.println("Truth PAG_of_the_true_DAG Graph:");
-		System.out.println(truePag.toString());
-
-		int[] causalOrdering = new int[numVars];
-
-		for (int i = 0; i < numVars; i++) {
-			causalOrdering[i] = i;
-		}
-
-		LargeScaleSimulation simulator = new LargeScaleSimulation(dag, dag.getNodes(), causalOrdering);
-
-		DataSet data = simulator.simulateDataFisher(numCases);
-
-		Parameters parameters = new Parameters();
-		parameters.set("penaltyDiscount", penaltyDiscount);
-		parameters.set("faithfulnessAssumed", faithfulnessAssumed);
-		parameters.set("maxDegree", maxDegree);
-		parameters.set("numPatternsToStore", 0);
-		parameters.set("verbose", verbose);
-
-		BootstrapTest bootstrapTest = new BootstrapTest(data, BootstrapAlgName.GFCI, numBootstrapSamples);
-		bootstrapTest.setVerbose(verbose);
-		bootstrapTest.setParameters(parameters);
-		bootstrapTest.setEdgeEnsemble(BootstrapEdgeEnsemble.Highest);
-		Graph resultGraph = bootstrapTest.search();
-		System.out.println("Estimated PAG_of_the_true_DAG Graph:");
-		System.out.println(resultGraph.toString());
-
-		// Adjacency Confusion Matrix
-		int[][] adjAr = BootstrapTest.getAdjConfusionMatrix(truePag, resultGraph);
-
-		printAdjConfusionMatrix(adjAr);
-
-		// Edge Type Confusion Matrix
-		int[][] edgeAr = BootstrapTest.getEdgeTypeConfusionMatrix(truePag, resultGraph);
-
-		printEdgeTypeConfusionMatrix(edgeAr);
-
-	}
-
-	@Test
-	public void testGFCId() {
-		double structurePrior = 1, samplePrior = 1;
-		boolean faithfulnessAssumed = false;
-		int maxDegree = -1;
-
-		int numVars = 20;
-		int edgesPerNode = 2;
-		int numLatentConfounders = 4;
-		int numCases = 50;
-		int numBootstrapSamples = 5;
-		boolean verbose = false;
-		long seed = 123;
-
-		Graph dag = makeDiscreteDAG(numVars, numLatentConfounders, edgesPerNode);
-
-		DagToPag dagToPag = new DagToPag(dag);
-		Graph truePag = dagToPag.convert();
-
-		System.out.println("Truth PAG_of_the_true_DAG Graph:");
-		System.out.println(truePag.toString());
-
-		BayesPm pm = new BayesPm(dag, 2, 3);
-		BayesIm im = new MlBayesIm(pm, MlBayesIm.RANDOM);
-
-		DataSet data = im.simulateData(numCases, seed, false);
-
-		Parameters parameters = new Parameters();
-		parameters.set("structurePrior", structurePrior);
-		parameters.set("samplePrior", samplePrior);
-		parameters.set("faithfulnessAssumed", faithfulnessAssumed);
-		parameters.set("maxDegree", maxDegree);
-		parameters.set("numPatternsToStore", 0);
-		parameters.set("verbose", verbose);
-
-		BootstrapTest bootstrapTest = new BootstrapTest(data, BootstrapAlgName.GFCI, numBootstrapSamples);
-		bootstrapTest.setVerbose(verbose);
-		bootstrapTest.setParameters(parameters);
-		bootstrapTest.setEdgeEnsemble(BootstrapEdgeEnsemble.Highest);
-		Graph resultGraph = bootstrapTest.search();
-		System.out.println("Estimated Bootstrapped PAG_of_the_true_DAG Graph:");
-		System.out.println(resultGraph.toString());
-
-		// Adjacency Confusion Matrix
-		int[][] adjAr = BootstrapTest.getAdjConfusionMatrix(truePag, resultGraph);
-
-		printAdjConfusionMatrix(adjAr);
-
-		// Edge Type Confusion Matrix
-		int[][] edgeAr = BootstrapTest.getEdgeTypeConfusionMatrix(truePag, resultGraph);
-
-		printEdgeTypeConfusionMatrix(edgeAr);
-
-		BDeuScore bDeuScore = new BDeuScore(data);
-		bDeuScore.setSamplePrior(samplePrior);
-		bDeuScore.setStructurePrior(structurePrior);
-		Score score = bDeuScore;
-
-		IndependenceTest test = new IndTestChiSquare(data, parameters.getDouble("alpha", 0.5));
-
-		GFci gfci = new GFci(test, score);
-		resultGraph = gfci.search();
-		System.out.println("Estimated PAG_of_the_true_DAG Graph:");
-		System.out.println(resultGraph.toString());
-
-		// Adjacency Confusion Matrix
-		adjAr = BootstrapTest.getAdjConfusionMatrix(truePag, resultGraph);
-
-		printAdjConfusionMatrix(adjAr);
-
-		// Edge Type Confusion Matrix
-		edgeAr = BootstrapTest.getEdgeTypeConfusionMatrix(truePag, resultGraph);
-
-		printEdgeTypeConfusionMatrix(edgeAr);
-
+		//testFGESc();
+		//testFGESd();
+		//testGFCIc();
+		//testGFCId();
+		//testFCIc();
+		//testFCId();
 	}
 
 	@Test
@@ -326,7 +104,10 @@ public class TestBootstrapTest {
 		parameters.set("numPatternsToStore", 0);
 		parameters.set("verbose", verbose);
 
-		BootstrapTest bootstrapTest = new BootstrapTest(data, BootstrapAlgName.FGES, numBootstrapSamples);
+		ScoreWrapper score = new SemBicScore();
+		Algorithm algorithm = new Fges(score);
+
+		GeneralBootstrapTest bootstrapTest = new GeneralBootstrapTest(data, algorithm, numBootstrapSamples);
 		bootstrapTest.setVerbose(verbose);
 		bootstrapTest.setParameters(parameters);
 		bootstrapTest.setEdgeEnsemble(BootstrapEdgeEnsemble.Highest);
@@ -335,18 +116,18 @@ public class TestBootstrapTest {
 		System.out.println(resultGraph.toString());
 
 		// Adjacency Confusion Matrix
-		int[][] adjAr = BootstrapTest.getAdjConfusionMatrix(dag, resultGraph);
+		int[][] adjAr = GeneralBootstrapTest.getAdjConfusionMatrix(dag, resultGraph);
 
 		printAdjConfusionMatrix(adjAr);
 
 		// Edge Type Confusion Matrix
-		int[][] edgeAr = BootstrapTest.getEdgeTypeConfusionMatrix(dag, resultGraph);
+		int[][] edgeAr = GeneralBootstrapTest.getEdgeTypeConfusionMatrix(dag, resultGraph);
 
 		printEdgeTypeConfusionMatrix(edgeAr);
 	}
 
 	@Test
-	public void testFGESd() {
+	public void testFGESd(){
 		double structurePrior = 1, samplePrior = 1;
 		boolean faithfulnessAssumed = false;
 		int maxDegree = -1;
@@ -356,7 +137,7 @@ public class TestBootstrapTest {
 		int numLatentConfounders = 0;
 		int numCases = 50;
 		int numBootstrapSamples = 5;
-		boolean verbose = false;
+		boolean verbose = true;
 		long seed = 123;
 
 		Graph dag = makeDiscreteDAG(numVars, numLatentConfounders, edgesPerNode);
@@ -376,8 +157,11 @@ public class TestBootstrapTest {
 		parameters.set("maxDegree", maxDegree);
 		parameters.set("numPatternsToStore", 0);
 		parameters.set("verbose", verbose);
-
-		BootstrapTest bootstrapTest = new BootstrapTest(data, BootstrapAlgName.FGES, numBootstrapSamples);
+		
+		ScoreWrapper score = new BdeuScore();
+		Algorithm algorithm = new Fges(score);
+		
+		GeneralBootstrapTest bootstrapTest = new GeneralBootstrapTest(data, algorithm, numBootstrapSamples);
 		bootstrapTest.setVerbose(verbose);
 		bootstrapTest.setParameters(parameters);
 		bootstrapTest.setEdgeEnsemble(BootstrapEdgeEnsemble.Highest);
@@ -386,16 +170,253 @@ public class TestBootstrapTest {
 		System.out.println(resultGraph.toString());
 
 		// Adjacency Confusion Matrix
-		int[][] adjAr = BootstrapTest.getAdjConfusionMatrix(dag, resultGraph);
+		int[][] adjAr = GeneralBootstrapTest.getAdjConfusionMatrix(dag, resultGraph);
 
 		printAdjConfusionMatrix(adjAr);
 
 		// Edge Type Confusion Matrix
-		int[][] edgeAr = BootstrapTest.getEdgeTypeConfusionMatrix(dag, resultGraph);
+		int[][] edgeAr = GeneralBootstrapTest.getEdgeTypeConfusionMatrix(dag, resultGraph);
 
 		printEdgeTypeConfusionMatrix(edgeAr);
 	}
+	
+	@Test
+	public void testGFCIc(){
+		int penaltyDiscount = 2;
+		boolean faithfulnessAssumed = false;
+		int maxDegree = -1;
 
+		int numVars = 20;
+		int edgesPerNode = 2;
+		int numLatentConfounders = 2;
+		int numCases = 50;
+		int numBootstrapSamples = 5;
+		boolean verbose = true;
+
+		Graph dag = makeContinuousDAG(numVars, numLatentConfounders, edgesPerNode);
+
+		DagToPag dagToPag = new DagToPag(dag);
+		Graph truePag = dagToPag.convert();
+
+		System.out.println("Truth PAG_of_the_true_DAG Graph:");
+		System.out.println(truePag.toString());
+
+		int[] causalOrdering = new int[numVars];
+
+		for (int i = 0; i < numVars; i++) {
+			causalOrdering[i] = i;
+		}
+
+		LargeScaleSimulation simulator = new LargeScaleSimulation(dag, dag.getNodes(), causalOrdering);
+
+		DataSet data = simulator.simulateDataFisher(numCases);
+
+		Parameters parameters = new Parameters();
+		parameters.set("penaltyDiscount", penaltyDiscount);
+		parameters.set("faithfulnessAssumed", faithfulnessAssumed);
+		parameters.set("maxDegree", maxDegree);
+		parameters.set("numPatternsToStore", 0);
+		parameters.set("verbose", verbose);
+		
+		ScoreWrapper score = new SemBicScore();
+		IndependenceWrapper test =  new FisherZ();
+		Algorithm algorithm = new Gfci(test, score);
+		
+		GeneralBootstrapTest bootstrapTest = new GeneralBootstrapTest(data, algorithm, numBootstrapSamples);
+		bootstrapTest.setVerbose(verbose);
+		bootstrapTest.setParameters(parameters);
+		bootstrapTest.setEdgeEnsemble(BootstrapEdgeEnsemble.Highest);
+		Graph resultGraph = bootstrapTest.search();
+		System.out.println("Estimated PAG_of_the_true_DAG Graph:");
+		System.out.println(resultGraph.toString());
+
+		// Adjacency Confusion Matrix
+		int[][] adjAr = GeneralBootstrapTest.getAdjConfusionMatrix(truePag, resultGraph);
+
+		printAdjConfusionMatrix(adjAr);
+
+		// Edge Type Confusion Matrix
+		int[][] edgeAr = GeneralBootstrapTest.getEdgeTypeConfusionMatrix(truePag, resultGraph);
+
+		printEdgeTypeConfusionMatrix(edgeAr);
+	}
+	
+	@Test
+	public void testGFCId(){
+		double structurePrior = 1, samplePrior = 1;
+		boolean faithfulnessAssumed = false;
+		int maxDegree = -1;
+
+		int numVars = 20;
+		int edgesPerNode = 2;
+		int numLatentConfounders = 4;
+		int numCases = 50;
+		int numBootstrapSamples = 5;
+		boolean verbose = true;
+		long seed = 123;
+
+		Graph dag = makeDiscreteDAG(numVars, numLatentConfounders, edgesPerNode);
+
+		DagToPag dagToPag = new DagToPag(dag);
+		Graph truePag = dagToPag.convert();
+
+		System.out.println("Truth PAG_of_the_true_DAG Graph:");
+		System.out.println(truePag.toString());
+
+		BayesPm pm = new BayesPm(dag, 2, 3);
+		BayesIm im = new MlBayesIm(pm, MlBayesIm.RANDOM);
+
+		DataSet data = im.simulateData(numCases, seed, false);
+
+		Parameters parameters = new Parameters();
+		parameters.set("structurePrior", structurePrior);
+		parameters.set("samplePrior", samplePrior);
+		parameters.set("faithfulnessAssumed", faithfulnessAssumed);
+		parameters.set("maxDegree", maxDegree);
+		parameters.set("numPatternsToStore", 0);
+		parameters.set("verbose", verbose);
+
+		ScoreWrapper score = new BdeuScore();
+		IndependenceWrapper test =  new ChiSquare();
+		Algorithm algorithm = new Gfci(test, score);
+		
+		GeneralBootstrapTest bootstrapTest = new GeneralBootstrapTest(data, algorithm, numBootstrapSamples);
+		bootstrapTest.setVerbose(verbose);
+		bootstrapTest.setParameters(parameters);
+		bootstrapTest.setEdgeEnsemble(BootstrapEdgeEnsemble.Highest);
+		Graph resultGraph = bootstrapTest.search();
+		System.out.println("Estimated Bootstrapped PAG_of_the_true_DAG Graph:");
+		System.out.println(resultGraph.toString());
+
+		// Adjacency Confusion Matrix
+		int[][] adjAr = GeneralBootstrapTest.getAdjConfusionMatrix(truePag, resultGraph);
+
+		printAdjConfusionMatrix(adjAr);
+
+		// Edge Type Confusion Matrix
+		int[][] edgeAr = GeneralBootstrapTest.getEdgeTypeConfusionMatrix(truePag, resultGraph);
+
+		printEdgeTypeConfusionMatrix(edgeAr);
+	}
+	
+	@Test
+	public void testFCIc(){
+		int penaltyDiscount = 2;
+		boolean faithfulnessAssumed = false;
+		int maxDegree = -1;
+
+		int numVars = 20;
+		int edgesPerNode = 2;
+		int numLatentConfounders = 2;
+		int numCases = 50;
+		int numBootstrapSamples = 5;
+		boolean verbose = true;
+
+		Graph dag = makeContinuousDAG(numVars, numLatentConfounders, edgesPerNode);
+
+		DagToPag dagToPag = new DagToPag(dag);
+		Graph truePag = dagToPag.convert();
+
+		System.out.println("Truth PAG_of_the_true_DAG Graph:");
+		System.out.println(truePag.toString());
+
+		int[] causalOrdering = new int[numVars];
+
+		for (int i = 0; i < numVars; i++) {
+			causalOrdering[i] = i;
+		}
+
+		LargeScaleSimulation simulator = new LargeScaleSimulation(dag, dag.getNodes(), causalOrdering);
+
+		DataSet data = simulator.simulateDataFisher(numCases);
+
+		Parameters parameters = new Parameters();
+		parameters.set("penaltyDiscount", penaltyDiscount);
+		parameters.set("faithfulnessAssumed", faithfulnessAssumed);
+		parameters.set("maxDegree", maxDegree);
+		parameters.set("numPatternsToStore", 0);
+		parameters.set("verbose", verbose);
+		
+		IndependenceWrapper test =  new FisherZ();
+		Fci algorithm = new Fci(test);
+		
+		GeneralBootstrapTest bootstrapTest = new GeneralBootstrapTest(data, algorithm, numBootstrapSamples);
+		bootstrapTest.setVerbose(verbose);
+		bootstrapTest.setParameters(parameters);
+		bootstrapTest.setEdgeEnsemble(BootstrapEdgeEnsemble.Preserved);
+		//bootstrapTest.setParallelMode(false);
+		Graph resultGraph = bootstrapTest.search();
+		System.out.println("Estimated PAG_of_the_true_DAG Graph:");
+		System.out.println(resultGraph.toString());
+
+		// Adjacency Confusion Matrix
+		int[][] adjAr = GeneralBootstrapTest.getAdjConfusionMatrix(truePag, resultGraph);
+
+		printAdjConfusionMatrix(adjAr);
+
+		// Edge Type Confusion Matrix
+		int[][] edgeAr = GeneralBootstrapTest.getEdgeTypeConfusionMatrix(truePag, resultGraph);
+
+		printEdgeTypeConfusionMatrix(edgeAr);
+	}
+	
+	@Test
+	public void testFCId(){
+		double structurePrior = 1, samplePrior = 1;
+		boolean faithfulnessAssumed = false;
+		int maxDegree = -1;
+
+		int numVars = 20;
+		int edgesPerNode = 2;
+		int numLatentConfounders = 4;
+		int numCases = 50;
+		int numBootstrapSamples = 5;
+		boolean verbose = true;
+		long seed = 123;
+
+		Graph dag = makeDiscreteDAG(numVars, numLatentConfounders, edgesPerNode);
+
+		DagToPag dagToPag = new DagToPag(dag);
+		Graph truePag = dagToPag.convert();
+
+		System.out.println("Truth PAG_of_the_true_DAG Graph:");
+		System.out.println(truePag.toString());
+
+		BayesPm pm = new BayesPm(dag, 2, 3);
+		BayesIm im = new MlBayesIm(pm, MlBayesIm.RANDOM);
+
+		DataSet data = im.simulateData(numCases, seed, false);
+
+		Parameters parameters = new Parameters();
+		parameters.set("structurePrior", structurePrior);
+		parameters.set("samplePrior", samplePrior);
+		parameters.set("faithfulnessAssumed", faithfulnessAssumed);
+		parameters.set("maxDegree", maxDegree);
+		parameters.set("numPatternsToStore", 0);
+		parameters.set("verbose", verbose);
+
+		IndependenceWrapper test =  new ChiSquare();
+		Algorithm algorithm = new Fci(test);
+		
+		GeneralBootstrapTest bootstrapTest = new GeneralBootstrapTest(data, algorithm, numBootstrapSamples);
+		bootstrapTest.setVerbose(verbose);
+		bootstrapTest.setParameters(parameters);
+		bootstrapTest.setEdgeEnsemble(BootstrapEdgeEnsemble.Highest);
+		Graph resultGraph = bootstrapTest.search();
+		System.out.println("Estimated Bootstrapped PAG_of_the_true_DAG Graph:");
+		System.out.println(resultGraph.toString());
+
+		// Adjacency Confusion Matrix
+		int[][] adjAr = GeneralBootstrapTest.getAdjConfusionMatrix(truePag, resultGraph);
+
+		printAdjConfusionMatrix(adjAr);
+
+		// Edge Type Confusion Matrix
+		int[][] edgeAr = GeneralBootstrapTest.getEdgeTypeConfusionMatrix(truePag, resultGraph);
+
+		printEdgeTypeConfusionMatrix(edgeAr);
+	}
+	
 	private static int sum2DArray(int[][] ar, int iStart, int iEnd, int jStart, int jEnd) {
 		int sum = 0;
 		if (iStart == iEnd) {

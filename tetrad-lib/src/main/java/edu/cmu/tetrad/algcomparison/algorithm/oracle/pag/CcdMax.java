@@ -8,6 +8,9 @@ import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.util.Parameters;
+import edu.pitt.dbmi.algo.bootstrap.BootstrapEdgeEnsemble;
+import edu.pitt.dbmi.algo.bootstrap.GeneralBootstrapTest;
+
 import java.util.List;
 
 /**
@@ -32,17 +35,40 @@ public class CcdMax implements Algorithm, HasKnowledge {
 
     @Override
     public Graph search(DataModel dataSet, Parameters parameters) {
-        IndependenceTest test = this.test.getTest(dataSet, parameters);
-        edu.cmu.tetrad.search.CcdMax search = new edu.cmu.tetrad.search.CcdMax(test);
-        search.setDoColliderOrientations(parameters.getBoolean("doColliderOrientation"));
-        search.setUseHeuristic(parameters.getBoolean("useMaxPOrientationHeuristic"));
-        search.setMaxPathLength(parameters.getInt("maxPOrientationMaxPathLength"));
-        search.setKnowledge(knowledge);
-        search.setDepth(parameters.getInt("depth"));
-        search.setApplyOrientAwayFromCollider(parameters.getBoolean("applyR1"));
-        search.setUseOrientTowardDConnections(parameters.getBoolean("orientTowardDConnections"));
-        search.setDepth(parameters.getInt("depth"));
-        return search.search();
+    	if(!parameters.getBoolean("bootstrapping")){
+            IndependenceTest test = this.test.getTest(dataSet, parameters);
+            edu.cmu.tetrad.search.CcdMax search = new edu.cmu.tetrad.search.CcdMax(test);
+            search.setDoColliderOrientations(parameters.getBoolean("doColliderOrientation"));
+            search.setUseHeuristic(parameters.getBoolean("useMaxPOrientationHeuristic"));
+            search.setMaxPathLength(parameters.getInt("maxPOrientationMaxPathLength"));
+            search.setKnowledge(knowledge);
+            search.setDepth(parameters.getInt("depth"));
+            search.setApplyOrientAwayFromCollider(parameters.getBoolean("applyR1"));
+            search.setUseOrientTowardDConnections(parameters.getBoolean("orientTowardDConnections"));
+            search.setDepth(parameters.getInt("depth"));
+            return search.search();
+    	}else{
+    		CcdMax algorithm = new CcdMax(test);
+    		
+    		DataSet data = (DataSet) dataSet;
+    		GeneralBootstrapTest search = new GeneralBootstrapTest(data, algorithm, parameters.getInt("bootstrapSampleSize"));
+    		
+    		BootstrapEdgeEnsemble edgeEnsemble = BootstrapEdgeEnsemble.Highest;
+    		switch (parameters.getInt("bootstrapEnsemble", 1)) {
+    		case 0:
+    			edgeEnsemble = BootstrapEdgeEnsemble.Preserved;
+    			break;
+    		case 1:
+    			edgeEnsemble = BootstrapEdgeEnsemble.Highest;
+    			break;
+    		case 2:
+    			edgeEnsemble = BootstrapEdgeEnsemble.Majority;
+    		}
+    		search.setEdgeEnsemble(edgeEnsemble);
+    		search.setParameters(parameters);    		
+    		search.setVerbose(parameters.getBoolean("verbose"));
+    		return search.search();
+    	}
     }
 
     @Override
@@ -70,6 +96,11 @@ public class CcdMax implements Algorithm, HasKnowledge {
         parameters.add("maxPOrientationMaxPathLength");
         parameters.add("applyR1");
         parameters.add("orientTowardDConnections");
+        // Bootstrapping
+        parameters.add("bootstrapping");
+        parameters.add("bootstrapSampleSize");
+        parameters.add("bootstrapEnsemble");
+        parameters.add("verbose");
         return parameters;
     }
 

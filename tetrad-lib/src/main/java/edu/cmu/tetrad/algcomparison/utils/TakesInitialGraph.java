@@ -1,6 +1,7 @@
 package edu.cmu.tetrad.algcomparison.utils;
 
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
+import edu.cmu.tetrad.graph.Graph;
 
 /**
  * Tags an algorithm that can take an initial graph as input.
@@ -8,7 +9,11 @@ import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
  * @author jdramsey
  */
 public interface TakesInitialGraph {
-
-    void setInitialGraph(Algorithm initialGraph);
+	
+	public Graph getInitialGraph();
+	
+	public void setInitialGraph(Graph initialGraph);
+	
+    void setInitialGraph(Algorithm algorithm);
 
 }

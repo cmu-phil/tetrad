@@ -235,8 +235,19 @@ public class StARS2 implements Algorithm, TakesInitialGraph {
         return parameters;
     }
 
-    @Override
-    public void setInitialGraph(Algorithm initialGraph) {
+	@Override
+	public Graph getInitialGraph() {
+		return null;
+	}
+
+	@Override
+	public void setInitialGraph(Graph initialGraph) {
+		
+	}
+
+	@Override
+    public void setInitialGraph(Algorithm algorithm) {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
+
 }

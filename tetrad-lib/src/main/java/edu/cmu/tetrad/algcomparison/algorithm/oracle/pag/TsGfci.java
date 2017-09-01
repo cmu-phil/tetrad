@@ -11,12 +11,16 @@ import edu.cmu.tetrad.annotation.AlgType;
 import edu.cmu.tetrad.annotation.AlgorithmDescription;
 import edu.cmu.tetrad.annotation.OracleType;
 import edu.cmu.tetrad.data.DataModel;
+import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.data.IKnowledge;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.TsDagToPag;
 import edu.cmu.tetrad.util.Parameters;
+import edu.pitt.dbmi.algo.bootstrap.BootstrapEdgeEnsemble;
+import edu.pitt.dbmi.algo.bootstrap.GeneralBootstrapTest;
+
 import java.util.List;
 
 /**
@@ -37,7 +41,8 @@ public class TsGfci implements Algorithm, TakesInitialGraph, HasKnowledge, Takes
     static final long serialVersionUID = 23L;
     private IndependenceWrapper test;
     private ScoreWrapper score;
-    private Algorithm initialGraph = null;
+    private Algorithm algorithm = null;
+    private Graph initialGraph = null;
     private IKnowledge knowledge = null;
 
     public TsGfci() {
@@ -50,10 +55,33 @@ public class TsGfci implements Algorithm, TakesInitialGraph, HasKnowledge, Takes
 
     @Override
     public Graph search(DataModel dataSet, Parameters parameters) {
-        edu.cmu.tetrad.search.TsGFci search = new edu.cmu.tetrad.search.TsGFci(test.getTest(dataSet, parameters),
-                score.getScore(dataSet, parameters));
-        search.setKnowledge(dataSet.getKnowledge());
-        return search.search();
+    	if(!parameters.getBoolean("bootstrapping")){
+            edu.cmu.tetrad.search.TsGFci search = new edu.cmu.tetrad.search.TsGFci(test.getTest(dataSet, parameters),
+                    score.getScore(dataSet, parameters));
+            search.setKnowledge(dataSet.getKnowledge());
+            return search.search();
+    	}else{
+    		TsGfci algorithm = new TsGfci(test, score);
+    		
+    		DataSet data = (DataSet) dataSet;
+    		GeneralBootstrapTest search = new GeneralBootstrapTest(data, algorithm, parameters.getInt("bootstrapSampleSize"));
+    		
+    		BootstrapEdgeEnsemble edgeEnsemble = BootstrapEdgeEnsemble.Highest;
+    		switch (parameters.getInt("bootstrapEnsemble", 1)) {
+    		case 0:
+    			edgeEnsemble = BootstrapEdgeEnsemble.Preserved;
+    			break;
+    		case 1:
+    			edgeEnsemble = BootstrapEdgeEnsemble.Highest;
+    			break;
+    		case 2:
+    			edgeEnsemble = BootstrapEdgeEnsemble.Majority;
+    		}
+    		search.setEdgeEnsemble(edgeEnsemble);
+    		search.setParameters(parameters);    		
+    		search.setVerbose(parameters.getBoolean("verbose"));
+    		return search.search();
+    	}
     }
 
     @Override
@@ -62,9 +90,9 @@ public class TsGfci implements Algorithm, TakesInitialGraph, HasKnowledge, Takes
     }
 
     public String getDescription() {
-        return "tsGFCI (Time Series GFCI) using " + test.getDescription() + " and " + score.getDescription()
-                + (initialGraph != null ? " with initial graph from "
-                        + initialGraph.getDescription() : "");
+        return "tsGFCI (Time Series GFCI) using " + test.getDescription() + " and " + score.getDescription() +
+                (algorithm != null ? " with initial graph from " +
+                		algorithm.getDescription() : "");
     }
 
     @Override
@@ -79,6 +107,11 @@ public class TsGfci implements Algorithm, TakesInitialGraph, HasKnowledge, Takes
         parameters.add("faithfulnessAssumed");
         parameters.add("maxIndegree");
         parameters.add("printStream");
+        // Bootstrapping
+        parameters.add("bootstrapping");
+        parameters.add("bootstrapSampleSize");
+        parameters.add("bootstrapEnsemble");
+        parameters.add("verbose");
         return parameters;
     }
 
@@ -92,9 +125,19 @@ public class TsGfci implements Algorithm, TakesInitialGraph, HasKnowledge, Takes
         this.knowledge = knowledge;
     }
 
+	@Override
+	public Graph getInitialGraph() {
+		return initialGraph;
+	}
+
+	@Override
+	public void setInitialGraph(Graph initialGraph) {
+		this.initialGraph = initialGraph;
+	}
+
     @Override
-    public void setInitialGraph(Algorithm initialGraph) {
-        this.initialGraph = initialGraph;
+    public void setInitialGraph(Algorithm algorithm) {
+        this.algorithm = algorithm;
     }
 
     @Override
@@ -106,4 +149,5 @@ public class TsGfci implements Algorithm, TakesInitialGraph, HasKnowledge, Takes
     public void setScoreWrapper(ScoreWrapper score) {
         this.score = score;
     }
+
 }

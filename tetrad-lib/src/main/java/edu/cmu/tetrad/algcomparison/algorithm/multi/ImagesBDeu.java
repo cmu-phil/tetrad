@@ -13,6 +13,10 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.BdeuScoreImages;
 import edu.cmu.tetrad.search.SearchGraphUtils;
 import edu.cmu.tetrad.util.Parameters;
+import edu.pitt.dbmi.algo.bootstrap.BootstrapEdgeEnsemble;
+import edu.pitt.dbmi.algo.bootstrap.GeneralBootstrapTest;
+
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -42,25 +46,73 @@ public class ImagesBDeu implements MultiDataSetAlgorithm, HasKnowledge {
 
     @Override
     public Graph search(List<DataModel> dataSets, Parameters parameters) {
-//        List<DataModel> dataModels = new ArrayList<>();
-//
-//        for (DataSet dataSet : dataSets) {
-//            dataModels.add(dataSet);
-//        }
+    	if (!parameters.getBoolean("bootstrapping")) {
+            BdeuScoreImages score = new BdeuScoreImages(dataSets);
+            score.setSamplePrior(parameters.getDouble("samplePrior"));
+            score.setStructurePrior(parameters.getDouble("structurePrior"));
+            edu.cmu.tetrad.search.Fges search = new edu.cmu.tetrad.search.Fges(score);
+            search.setFaithfulnessAssumed(true);
+            search.setKnowledge(knowledge);
 
-        BdeuScoreImages score = new BdeuScoreImages(dataSets);
-        score.setSamplePrior(parameters.getDouble("samplePrior"));
-        score.setStructurePrior(parameters.getDouble("structurePrior"));
-        edu.cmu.tetrad.search.Fges search = new edu.cmu.tetrad.search.Fges(score);
-        search.setFaithfulnessAssumed(true);
-        search.setKnowledge(knowledge);
+            return search.search();
+    	}else{
+    		ImagesBDeu imagesBDeu = new ImagesBDeu();
+    		imagesBDeu.setKnowledge(knowledge);
 
-        return search.search();
+			List<DataSet> datasets = new ArrayList<>();
+
+			for (DataModel dataModel : dataSets) {
+				datasets.add((DataSet) dataModel);
+			}
+			GeneralBootstrapTest search = new GeneralBootstrapTest(datasets, imagesBDeu,
+					parameters.getInt("bootstrapSampleSize"));
+
+			BootstrapEdgeEnsemble edgeEnsemble = BootstrapEdgeEnsemble.Highest;
+			switch (parameters.getInt("bootstrapEnsemble", 1)) {
+			case 0:
+				edgeEnsemble = BootstrapEdgeEnsemble.Preserved;
+				break;
+			case 1:
+				edgeEnsemble = BootstrapEdgeEnsemble.Highest;
+				break;
+			case 2:
+				edgeEnsemble = BootstrapEdgeEnsemble.Majority;
+			}
+			search.setEdgeEnsemble(edgeEnsemble);
+			search.setParameters(parameters);
+			search.setVerbose(parameters.getBoolean("verbose"));
+			return search.search();
+    	}
     }
 
     @Override
     public Graph search(DataModel dataSet, Parameters parameters) {
-        return search(Collections.singletonList((DataModel) DataUtils.getDiscreteDataSet(dataSet)), parameters);
+    	if (!parameters.getBoolean("bootstrapping")) {
+            return search(Collections.singletonList((DataModel) DataUtils.getDiscreteDataSet(dataSet)), parameters);
+    	}else{
+    		ImagesBDeu imagesBDeu = new ImagesBDeu();
+    		imagesBDeu.setKnowledge(knowledge);
+
+			List<DataSet> dataSets = Collections.singletonList(DataUtils.getContinuousDataSet(dataSet));
+			GeneralBootstrapTest search = new GeneralBootstrapTest(dataSets, imagesBDeu,
+					parameters.getInt("bootstrapSampleSize"));
+
+			BootstrapEdgeEnsemble edgeEnsemble = BootstrapEdgeEnsemble.Highest;
+			switch (parameters.getInt("bootstrapEnsemble", 1)) {
+			case 0:
+				edgeEnsemble = BootstrapEdgeEnsemble.Preserved;
+				break;
+			case 1:
+				edgeEnsemble = BootstrapEdgeEnsemble.Highest;
+				break;
+			case 2:
+				edgeEnsemble = BootstrapEdgeEnsemble.Majority;
+			}
+			search.setEdgeEnsemble(edgeEnsemble);
+			search.setParameters(parameters);
+			search.setVerbose(parameters.getBoolean("verbose"));
+			return search.search();
+    	}
     }
 
     @Override
@@ -83,6 +135,12 @@ public class ImagesBDeu implements MultiDataSetAlgorithm, HasKnowledge {
         List<String> parameters = new Fges(new BdeuScore(), false).getParameters();
         parameters.add("numRuns");
         parameters.add("randomSelectionSize");
+        // Bootstrapping
+ 		parameters.add("bootstrapping");
+ 		parameters.add("bootstrapSampleSize");
+ 		parameters.add("bootstrapEnsemble");
+ 		parameters.add("verbose");
+     		
         return parameters;
     }
 

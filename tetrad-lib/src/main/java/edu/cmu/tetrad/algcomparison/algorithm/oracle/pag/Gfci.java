@@ -14,6 +14,9 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.DagToPag;
 import edu.cmu.tetrad.search.GFci;
 import edu.cmu.tetrad.util.Parameters;
+import edu.pitt.dbmi.algo.bootstrap.BootstrapEdgeEnsemble;
+import edu.pitt.dbmi.algo.bootstrap.GeneralBootstrapTest;
+
 import java.io.PrintStream;
 import java.util.List;
 
@@ -46,21 +49,48 @@ public class Gfci implements Algorithm, HasKnowledge, UsesScoreWrapper, TakesInd
 
     @Override
     public Graph search(DataModel dataSet, Parameters parameters) {
-        GFci search = new GFci(test.getTest(dataSet, parameters), score.getScore(dataSet, parameters));
-        search.setMaxDegree(parameters.getInt("maxDegree"));
-        search.setKnowledge(knowledge);
-        search.setVerbose(parameters.getBoolean("verbose"));
-        search.setFaithfulnessAssumed(parameters.getBoolean("faithfulnessAssumed"));
-        search.setMaxPathLength(parameters.getInt("maxPathLength"));
-        search.setCompleteRuleSetUsed(parameters.getBoolean("completeRuleSetUsed"));
+    	if(!parameters.getBoolean("bootstrapping")){
+            GFci search = new GFci(test.getTest(dataSet, parameters), score.getScore(dataSet, parameters));
+            search.setMaxDegree(parameters.getInt("maxDegree"));
+            search.setKnowledge(knowledge);
+            search.setVerbose(parameters.getBoolean("verbose"));
+            search.setFaithfulnessAssumed(parameters.getBoolean("faithfulnessAssumed"));
+            search.setMaxPathLength(parameters.getInt("maxPathLength"));
+            search.setCompleteRuleSetUsed(parameters.getBoolean("completeRuleSetUsed"));
 
-        Object obj = parameters.get("printStream");
+            Object obj = parameters.get("printStream");
 
-        if (obj instanceof PrintStream) {
-            search.setOut((PrintStream) obj);
-        }
+            if (obj instanceof PrintStream) {
+                search.setOut((PrintStream) obj);
+            }
 
-        return search.search();
+            return search.search();
+    	}else{
+        	Gfci algorithm = new Gfci(test, score);
+    		
+    		algorithm.setKnowledge(knowledge);
+//          if (initialGraph != null) {
+//      		algorithm.setInitialGraph(initialGraph);
+//  		}
+        	DataSet data = (DataSet) dataSet;
+    		GeneralBootstrapTest search = new GeneralBootstrapTest(data, algorithm, parameters.getInt("bootstrapSampleSize"));
+    		
+    		BootstrapEdgeEnsemble edgeEnsemble = BootstrapEdgeEnsemble.Highest;
+    		switch (parameters.getInt("bootstrapEnsemble", 1)) {
+    		case 0:
+    			edgeEnsemble = BootstrapEdgeEnsemble.Preserved;
+    			break;
+    		case 1:
+    			edgeEnsemble = BootstrapEdgeEnsemble.Highest;
+    			break;
+    		case 2:
+    			edgeEnsemble = BootstrapEdgeEnsemble.Majority;
+    		}
+    		search.setEdgeEnsemble(edgeEnsemble);
+    		search.setParameters(parameters);    		
+    		search.setVerbose(parameters.getBoolean("verbose"));
+    		return search.search();
+    	}
     }
 
     @Override
@@ -88,6 +118,11 @@ public class Gfci implements Algorithm, HasKnowledge, UsesScoreWrapper, TakesInd
 //        parameters.add("printStream");
         parameters.add("maxPathLength");
         parameters.add("completeRuleSetUsed");
+        // Bootstrapping
+        parameters.add("bootstrapping");
+        parameters.add("bootstrapSampleSize");
+        parameters.add("bootstrapEnsemble");
+        parameters.add("verbose");
         return parameters;
     }
 

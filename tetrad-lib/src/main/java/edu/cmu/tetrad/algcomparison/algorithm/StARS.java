@@ -25,6 +25,7 @@ public class StARS implements Algorithm, TakesInitialGraph {
     private final double high;
     private final String parameter;
     private Algorithm algorithm;
+    private Graph initialGraph = null;
     private DataSet _dataSet;
 
     public StARS(Algorithm algorithm, String parameter, double low, double high) {
@@ -262,8 +263,21 @@ public class StARS implements Algorithm, TakesInitialGraph {
         return parameters;
     }
 
-    @Override
-    public void setInitialGraph(Algorithm initialGraph) {
+	@Override
+	public Graph getInitialGraph() {
+		// TODO Auto-generated method stub
+		return initialGraph;
+	}
+
+	@Override
+	public void setInitialGraph(Graph initialGraph) {
+		// TODO Auto-generated method stub
+		this.initialGraph = initialGraph;
+	}
+
+	@Override
+    public void setInitialGraph(Algorithm algorithm) {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
+
 }
