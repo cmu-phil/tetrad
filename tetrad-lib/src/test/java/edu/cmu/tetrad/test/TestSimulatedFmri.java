@@ -48,20 +48,14 @@ import java.text.ParseException;
 public class TestSimulatedFmri {
 
     public void TestCycles_Data_fMRI_FANG() {
-        Parameters parameters = new Parameters();
-
-        task(parameters, false, false);
-        task(parameters, false, true);
-        task(parameters, true, false);
-        task(parameters, true, true);
+        task(true);
     }
 
-    private void task(Parameters parameters, boolean training, boolean standardized) {
+    private void task(boolean training) {
+        Parameters parameters = new Parameters();
         parameters.set("penaltyDiscount", 4);
         parameters.set("depth", -1);
-        parameters.set("twoCycleAlpha", 1e-8);
-
-        parameters.set("conditionalStandardized", standardized);
+        parameters.set("twoCycleAlpha", .001);
 
         parameters.set("numRuns", 10);
         parameters.set("randomSelectionSize", 1, 5, 10);
@@ -91,7 +85,7 @@ public class TestSimulatedFmri {
 
         if (training) {
             String dir = "/Users/user/Downloads/Cycles_Data_fMRI/";
-            String subdir = "data_noise";
+            String subdir = "data_fslfilter";
 
             simulations.add(new LoadContinuousDataAndSingleGraph(
                     dir + "Network1_amp", subdir));
@@ -131,15 +125,12 @@ public class TestSimulatedFmri {
                     dir + "Network9_contr_amp", subdir));
             simulations.add(new LoadContinuousDataAndSingleGraph(
                     dir + "Diamond", subdir));
-            simulations.add(new LoadContinuousDataAndSingleGraph(
-                    dir + "Markov_Complex_1", subdir));
+//            simulations.add(new LoadContinuousDataAndSingleGraph(
+//                    dir + "Markov_Complex_1", subdir));
         } else {
 
             String dir = "/Users/user/Downloads/CyclesTestingData/";
             String subdir = "data_fslfilter";
-
-
-
 
             simulations.add(new LoadContinuousDataAndSingleGraph(
                     dir + "Network1_amp", subdir));
@@ -179,17 +170,13 @@ public class TestSimulatedFmri {
                     dir + "Network9_cont_amp", subdir));
             simulations.add(new LoadContinuousDataAndSingleGraph(
                     dir + "Diamond", subdir));
-            simulations.add(new LoadContinuousDataAndSingleGraph(
-                    dir + "Markov_Complex_1", subdir));
+//            simulations.add(new LoadContinuousDataAndSingleGraph(
+//                    dir + "Markov_Complex_1", subdir));
         }
 
         Algorithms algorithms = new Algorithms();
 
         algorithms.add(new FaskConcatenated(false));
-//        algorithms.add(new FangConcatenated(false));
-//        algorithms.add(new OldFask2Concatenated(false));
-//        algorithms.add(new OldFask3Concatenated(false));
-//        algorithms.add(new OldFask4Concatenated(false));
 //
         Comparison comparison = new Comparison();
 
@@ -200,6 +187,7 @@ public class TestSimulatedFmri {
         comparison.setParallelized(false);
         comparison.setSaveGraphs(false);
         comparison.setTabDelimitedTables(false);
+        comparison.setSaveGraphs(true);
 
         String directory;
 
@@ -207,10 +195,6 @@ public class TestSimulatedFmri {
             directory = "comparison_training";
         } else {
             directory = "comparison_testing";
-        }
-
-        if (standardized) {
-            directory += "_standardized";
         }
 
         comparison.compareFromSimulations(directory, simulations, algorithms, statistics, parameters);

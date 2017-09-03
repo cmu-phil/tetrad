@@ -23,11 +23,17 @@ package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.*;
+import edu.cmu.tetrad.util.DepthChoiceGenerator;
 import edu.cmu.tetrad.util.StatUtils;
-import org.apache.commons.math3.distribution.TDistribution;
+import edu.cmu.tetrad.util.TetradMatrix;
+import org.apache.commons.math3.distribution.NormalDistribution;
+import org.apache.commons.math3.linear.SingularMatrixException;
 
 import java.awt.*;
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import static java.lang.Math.*;
 
@@ -59,9 +65,6 @@ public final class Fask implements GraphSearch {
     // Knowledge the the search will obey, of forbidden and required edges.
     private IKnowledge knowledge = new Knowledge2();
 
-    // True if the conditional distributions should be standardized.
-    private boolean conditionalStandardized = false;
-
     /**
      * @param dataSet These datasets must all have the same variables, in the same order.
      */
@@ -83,7 +86,7 @@ public final class Fask implements GraphSearch {
     public Graph search() {
         long start = System.currentTimeMillis();
 
-        DataSet dataSet = DataUtils.standardizeData(this.dataSet);
+        DataSet dataSet = DataUtils.center(this.dataSet);
 
         SemBicScore score = new SemBicScore(new CovarianceMatrixOnTheFly(dataSet));
         score.setPenaltyDiscount(penaltyDiscount);
@@ -115,32 +118,15 @@ public final class Fask implements GraphSearch {
                 final double[] x = colData[i];
                 final double[] y = colData[j];
 
-                double[] e1, e2;
+                double c1 = StatUtils.cov(x, y, x, 0, +1)[1];
+                double c2 = StatUtils.cov(x, y, y, 0, +1)[1];
 
-                if (conditionalStandardized) {
-                    e1 = StatUtils.cov(x, y, x, 0, +1);
-                    e2 = StatUtils.cov(x, y, y, 0, +1);
-                } else {
-                    e1 = StatUtils.E(x, y, x, 0, +1);
-                    e2 = StatUtils.E(x, y, y, 0, +1);
-                }
-
-                double[] c1 = StatUtils.cov(x, y, x, 0, +1);
-                double[] c2 = StatUtils.cov(x, y, y, 0, +1);
-
-                double R = abs(e1[1]) - abs(e2[1]);
-
-                if (G0.isAdjacentTo(X, Y) || abs(c1[1]) - abs(c2[1]) > .3) {
-                    double _c[] =  StatUtils.cov(x, y, x, Double.NEGATIVE_INFINITY, +1);
-                    double c3[] =  StatUtils.cov(x, y, x, 0, -1);
-                    double c4[] =  StatUtils.cov(x, y, y, 0, -1);
-
+                if (G0.isAdjacentTo(X, Y) || Math.abs(c1 - c2) > .3) {
                     if (knowledgeOrients(X, Y)) {
                         graph.addDirectedEdge(X, Y);
                     } else if (knowledgeOrients(Y, X)) {
                         graph.addDirectedEdge(Y, X);
-                    }
-                    else if (equals(_c, c1) && equals(_c, c2)) {
+                    } else if (bidirected(x, y, G0, X, Y)) {
                         Edge edge1 = Edges.directedEdge(X, Y);
                         Edge edge2 = Edges.directedEdge(Y, X);
 
@@ -149,18 +135,7 @@ public final class Fask implements GraphSearch {
 
                         graph.addEdge(edge1);
                         graph.addEdge(edge2);
-                    } else if (!(sameSign(_c, c1) && sameSign(_c, c3)
-                            || (sameSign(_c, c2) && sameSign(_c, c4)))) {
-                        Edge edge1 = Edges.directedEdge(X, Y);
-                        Edge edge2 = Edges.directedEdge(Y, X);
-
-                        edge1.setLineColor(Color.RED);
-                        edge2.setLineColor(Color.RED);
-
-                        graph.addEdge(edge1);
-                        graph.addEdge(edge2);
-                    }
-                    else if (R > 0) {
+                    } else if (leftright(x, y)) {
                         graph.addDirectedEdge(X, Y);
                     } else {
                         graph.addDirectedEdge(Y, X);
@@ -178,17 +153,77 @@ public final class Fask implements GraphSearch {
         return graph;
     }
 
-    private boolean equals(double[] c1, double[] c2) {
-        double z = getZ(c1[1]);
-        double z1 = getZ(c2[1]);
-        double diff1 = z - z1;
-        final double t1 = diff1 / (sqrt(1.0 / c1[4] + 1.0 / c2[4]));
-        double p1 = 1.0 - new TDistribution(2 * (c1[4] + c2[4]) - 2).cumulativeProbability(abs(t1) / 2.0);
-        return p1 <= alpha;
+    private boolean bidirected(double[] x, double[] y, Graph G0, Node X, Node Y) {
+        double[][] data = dataSet.getDoubleData().transpose().toArray();
+
+        Set<Node> adjSet = new HashSet<Node>(G0.getAdjacentNodes(X));
+        adjSet.addAll(G0.getAdjacentNodes(Y));
+        List<Node> adj = new ArrayList<>(adjSet);
+        adj.remove(X);
+        adj.remove(Y);
+
+        DepthChoiceGenerator gen = new DepthChoiceGenerator(adj.size(), Math.min(depth, adj.size()));
+        int[] choice;
+
+        while ((choice = gen.next()) != null) {
+            List<Node> _adj = GraphUtils.asList(choice, adj);
+            double[][] _Z = new double[_adj.size()][];
+
+            for (int f = 0; f < _adj.size(); f++) {
+                Node _z = _adj.get(f);
+                int column = dataSet.getColumn(_z);
+                _Z[f] = data[column];
+            }
+
+            double pc = partialCorrelation(x, y, _Z, x, Double.NEGATIVE_INFINITY, +1);
+            double pc1 = partialCorrelation(x, y, _Z, x, 0, +1);
+            double pc2 = partialCorrelation(x, y, _Z, y, 0, +1);
+
+            int nc = StatUtils.getRows(x, x, Double.NEGATIVE_INFINITY, +1).size();
+            int nc1 = StatUtils.getRows(x, x, 0, +1).size();
+            int nc2 = StatUtils.getRows(y, y, 0, +1).size();
+
+            double z = 0.5 * (log(1.0 + pc) - log(1.0 - pc));
+            double z1 = 0.5 * (log(1.0 + pc1) - log(1.0 - pc1));
+            double z2 = 0.5 * (log(1.0 + pc2) - log(1.0 - pc2));
+
+            double zv1 = (z - z1) / sqrt((1.0 / ((double) nc - 3) + 1.0 / ((double) nc1 - 3)));
+            double zv2 = (z - z2) / sqrt((1.0 / ((double) nc - 3) + 1.0 / ((double) nc2 - 3)));
+
+            double p1 = 2 * (1.0 - new NormalDistribution(0, 1).cumulativeProbability(abs(zv1)));
+            double p2 = 2 * (1.0 - new NormalDistribution(0, 1).cumulativeProbability(abs(zv2)));
+
+            boolean rejected1 = p1 < alpha;
+            boolean rejected2 = p2 < alpha;
+
+            boolean possibleTwoCycle = false;
+
+            if (zv1 < 0 && zv2 > 0 && rejected1) {
+                possibleTwoCycle = true;
+            } else if (zv1 > 0 && zv2 < 0 && rejected2) {
+                possibleTwoCycle = true;
+            } else if (rejected1 && rejected2) {
+                possibleTwoCycle = true;
+            }
+
+            if (!possibleTwoCycle) {
+                return false;
+            }
+        }
+
+        return true;
     }
 
-    private boolean sameSign(double[] c1, double[] c2) {
-        return signum(c1[1]) == signum(c2[1]);
+    private boolean leftright(double[] x, double[] y) {
+        double[] e1 = StatUtils.E(x, y, x, 0, +1);
+        double[] e2 = StatUtils.E(x, y, y, 0, +1);
+        return abs(e1[1]) > abs(e2[1]);
+    }
+
+    private double partialCorrelation(double[] x, double[] y, double[][] z, double[] condition, double threshold, double direction) throws SingularMatrixException {
+        double[][] c = StatUtils.covMatrix(x, y, z, condition, threshold, direction);
+        TetradMatrix m = new TetradMatrix(c).transpose();
+        return StatUtils.partialCorrelation(m);
     }
 
     /**
@@ -258,17 +293,6 @@ public final class Fask implements GraphSearch {
         return knowledge.isForbidden(right.getName(), left.getName()) || knowledge.isRequired(left.getName(), right.getName());
     }
 
-    private double getZ(double r) {
-        return 0.5 * (log(1.0 + r) - log(1.0 - r));
-    }
-
-    public boolean isConditionalStandardized() {
-        return conditionalStandardized;
-    }
-
-    public void setConditionalStandardized(boolean conditionalStandardized) {
-        this.conditionalStandardized = conditionalStandardized;
-    }
 }
 
 

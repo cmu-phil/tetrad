@@ -23,6 +23,9 @@ package edu.cmu.tetrad.util;
 
 import cern.colt.list.DoubleArrayList;
 import cern.jet.stat.Descriptive;
+import edu.cmu.tetrad.data.BoxDataSet;
+import edu.cmu.tetrad.data.CovarianceMatrix;
+import edu.cmu.tetrad.data.DoubleDataBox;
 import org.apache.commons.math3.distribution.ChiSquaredDistribution;
 import org.apache.commons.math3.distribution.NormalDistribution;
 import org.apache.commons.math3.linear.SingularMatrixException;
@@ -2050,6 +2053,57 @@ public final class StatUtils {
         return new double[]{sxy, sxy / sqrt(sx * sy), sx, sy, (double) n, ex, ey};
     }
 
+    public static double[][] covMatrix(double[] x, double[] y, double[][] z, double[] condition, double threshold, double direction) {
+        List<Integer> rows = getRows(x, condition, threshold, direction);
+
+        double[][] allData = new double[z.length + 2][];
+
+        allData[0] = x;
+        allData[1] = y;
+
+        for (int i = 0; i < z.length; i++) allData[i + 2] = z[i];
+
+        double[][] subdata = new double[allData.length][rows.size()];
+
+        for (int c = 0; c < allData.length; c++) {
+            for (int i = 0; i < rows.size(); i++) {
+                try {
+                    subdata[c][i] = allData[c][rows.get(i)];
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+
+        double[][] cov = new double[z.length + 2][z.length + 2];
+
+        for (int i = 0; i < z.length + 2; i++) {
+            for (int j = 0; j < z.length + 2; j++) {
+                double c = StatUtils.covariance(subdata[i], subdata[j]);
+                cov[i][j] = c;
+            }
+        }
+
+        return cov;
+    }
+
+    public static List<Integer> getRows(double[] x, double[] condition, double threshold, double direction) {
+        List<Integer> rows = new ArrayList<>();
+
+        for (int k = 0; k < x.length; k++) {
+            if (direction > threshold) {
+                if (condition[k] > threshold) {
+                    rows.add(k);
+                }
+            } else if (direction < threshold) {
+                if (condition[k] > threshold) {
+                    rows.add(k);
+                }
+            }
+        }
+        return rows;
+    }
+
     public static double[] E(double[] x, double[] y, double[] condition, double threshold, double direction) {
         double exy = 0.0;
         double exx = 0.0;
@@ -2111,11 +2165,7 @@ public final class StatUtils {
 
         double exyv = sqrt(exye / sqrt(exxe * eyye)) / sqrt(n - 1);
 
-        double sxy = exy;
-        double sx = exx;
-        double sy = eyy;
-
-        return new double[]{sxy, sxy / sqrt(sx * sy), sx, sy, (double) n, exyv};
+        return new double[]{exy, exy / sqrt(exx * eyy), exx, eyy, (double) n, exyv};
     }
 }
 

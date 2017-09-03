@@ -42,7 +42,6 @@ public class Fask implements Algorithm, HasKnowledge {
         search.setPenaltyDiscount(parameters.getDouble("penaltyDiscount"));
         search.setAlpha(parameters.getDouble("twoCycleAlpha"));
         search.setKnowledge(knowledge);
-        search.setConditionalStandardized(parameters.getBoolean("conditionalStandardized"));
         return getGraph(search);
     }
 
@@ -67,7 +66,6 @@ public class Fask implements Algorithm, HasKnowledge {
         parameters.add("depth");
         parameters.add("penaltyDiscount");
         parameters.add("twoCycleAlpha");
-        parameters.add("conditionalStandardized");
 
         return parameters;
     }

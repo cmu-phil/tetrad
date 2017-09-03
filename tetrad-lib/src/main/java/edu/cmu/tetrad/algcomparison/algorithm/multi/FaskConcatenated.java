@@ -47,7 +47,6 @@ public class FaskConcatenated implements MultiDataSetAlgorithm, HasKnowledge {
         search.setDepth(parameters.getInt("depth"));
         search.setPenaltyDiscount(parameters.getDouble("penaltyDiscount"));
         search.setAlpha(parameters.getDouble("twoCycleAlpha"));
-        search.setConditionalStandardized(parameters.getBoolean("conditionalStandardized"));
         search.setKnowledge(knowledge);
         return search.search();
     }

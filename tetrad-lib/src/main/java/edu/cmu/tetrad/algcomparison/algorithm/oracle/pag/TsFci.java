@@ -4,6 +4,7 @@ import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.data.DataModel;
+import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.algcomparison.utils.TakesInitialGraph;
@@ -39,7 +40,10 @@ public class TsFci implements Algorithm, TakesInitialGraph, HasKnowledge {
     public Graph search(DataModel dataSet, Parameters parameters) {
         edu.cmu.tetrad.search.TsFci search = new edu.cmu.tetrad.search.TsFci(test.getTest(dataSet, parameters));
         search.setDepth(parameters.getInt("depth"));
-        search.setKnowledge(dataSet.getKnowledge());
+
+        IKnowledge _knowledge = getKnowledge() != null ? getKnowledge() : dataSet.getKnowledge();
+
+        search.setKnowledge(_knowledge);
         return search.search();
     }
 
