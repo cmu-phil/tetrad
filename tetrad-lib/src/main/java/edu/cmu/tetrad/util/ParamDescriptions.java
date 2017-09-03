@@ -239,7 +239,6 @@ public class ParamDescriptions {
         put("percentStability", new ParamDescription(
                 "Percentage of subsamples each feature in the output must agree on",
                 0.5, 0.0, 1.0));
-
     }
 
     public static ParamDescriptions instance() {

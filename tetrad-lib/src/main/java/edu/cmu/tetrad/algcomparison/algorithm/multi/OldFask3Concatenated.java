@@ -5,7 +5,7 @@ import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.search.Fask;
+import edu.cmu.tetrad.search.OldFask3;
 import edu.cmu.tetrad.util.Parameters;
 
 import java.util.ArrayList;
@@ -20,16 +20,16 @@ import java.util.List;
  *
  * @author jdramsey
  */
-public class FaskConcatenated implements MultiDataSetAlgorithm, HasKnowledge {
+public class OldFask3Concatenated implements MultiDataSetAlgorithm, HasKnowledge {
     static final long serialVersionUID = 23L;
     private boolean empirical = false;
     private IKnowledge knowledge = new Knowledge2();
 
-    public FaskConcatenated() {
+    public OldFask3Concatenated() {
         this.empirical = false;
     }
 
-    public FaskConcatenated(boolean empirical) {
+    public OldFask3Concatenated(boolean empirical) {
         this.empirical = empirical;
     }
 
@@ -43,11 +43,12 @@ public class FaskConcatenated implements MultiDataSetAlgorithm, HasKnowledge {
         }
 
         DataSet dataSet = DataUtils.concatenate(centered);
-        Fask search = new Fask(dataSet);
+        OldFask3 search = new OldFask3(dataSet);
         search.setDepth(parameters.getInt("depth"));
         search.setPenaltyDiscount(parameters.getDouble("penaltyDiscount"));
         search.setAlpha(parameters.getDouble("twoCycleAlpha"));
         search.setKnowledge(knowledge);
+        search.setThresholdForReversing(parameters.getDouble("thresholdForReversing"));
         return search.search();
     }
 
@@ -63,7 +64,7 @@ public class FaskConcatenated implements MultiDataSetAlgorithm, HasKnowledge {
 
     @Override
     public String getDescription() {
-        return "FASK Concatenated";
+        return "Old FASK3 Concatenated";
     }
 
     @Override
@@ -79,7 +80,6 @@ public class FaskConcatenated implements MultiDataSetAlgorithm, HasKnowledge {
         parameters.add("twoCycleAlpha");
         parameters.add("numRuns");
         parameters.add("randomSelectionSize");
-        parameters.add("conditionalDistributionsStandardized");
 
         return parameters;
     }

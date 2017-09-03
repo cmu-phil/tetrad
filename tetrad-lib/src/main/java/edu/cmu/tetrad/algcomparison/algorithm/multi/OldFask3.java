@@ -1,15 +1,13 @@
 package edu.cmu.tetrad.algcomparison.algorithm.multi;
 
-import edu.cmu.tetrad.algcomparison.algorithm.MultiDataSetAlgorithm;
+import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.search.Fask;
 import edu.cmu.tetrad.util.Parameters;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 /**
@@ -20,30 +18,22 @@ import java.util.List;
  *
  * @author jdramsey
  */
-public class Fask2Concatenated implements MultiDataSetAlgorithm, HasKnowledge {
+public class OldFask3 implements Algorithm, HasKnowledge {
     static final long serialVersionUID = 23L;
     private boolean empirical = false;
     private IKnowledge knowledge = new Knowledge2();
 
-    public Fask2Concatenated() {
+    public OldFask3() {
         this.empirical = false;
     }
 
-    public Fask2Concatenated(boolean empirical) {
+    public OldFask3(boolean empirical) {
         this.empirical = empirical;
     }
 
     @Override
-    public Graph search(List<DataModel> dataSets, Parameters parameters) {
-
-        List<DataSet> centered = new ArrayList<>();
-
-        for (DataModel dataSet : dataSets) {
-            centered.add(DataUtils.center((DataSet) dataSet));
-        }
-
-        DataSet dataSet = DataUtils.concatenate(centered);
-        edu.cmu.tetrad.search.Fask2 search = new edu.cmu.tetrad.search.Fask2(dataSet);
+    public Graph search(DataModel dataSet, Parameters parameters) {
+        edu.cmu.tetrad.search.OldFask3 search = new edu.cmu.tetrad.search.OldFask3((DataSet) dataSet);
         search.setDepth(parameters.getInt("depth"));
         search.setPenaltyDiscount(parameters.getDouble("penaltyDiscount"));
         search.setAlpha(parameters.getDouble("twoCycleAlpha"));
@@ -53,19 +43,13 @@ public class Fask2Concatenated implements MultiDataSetAlgorithm, HasKnowledge {
     }
 
     @Override
-    public Graph search(DataModel dataSet, Parameters parameters) {
-        return search(Collections.singletonList((DataModel) DataUtils.getContinuousDataSet(dataSet)), parameters);
-    }
-
-    @Override
     public Graph getComparisonGraph(Graph graph) {
         return new EdgeListGraph(graph);
     }
 
     @Override
     public String getDescription() {
-        return "FASK2 Concatenated "
-                + (empirical ? " (Empirical)" : "");
+        return "Old FASK3";
     }
 
     @Override
@@ -79,8 +63,6 @@ public class Fask2Concatenated implements MultiDataSetAlgorithm, HasKnowledge {
         parameters.add("depth");
         parameters.add("penaltyDiscount");
         parameters.add("twoCycleAlpha");
-        parameters.add("numRuns");
-        parameters.add("randomSelectionSize");
 
         return parameters;
     }

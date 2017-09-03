@@ -207,8 +207,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
 //        descriptions.add(new AlgorithmDescription(AlgName.IMaGES_CCD, AlgType.forbid_latent_common_causes, OracleType.None));
 //        descriptions.add(new AlgorithmDescription(AlgName.CCD, AlgType.forbid_latent_common_causes, OracleType.Test));
 //        descriptions.add(new AlgorithmDescription(AlgName.CCD_MAX, AlgType.forbid_latent_common_causes, OracleType.Test));
-        descriptions.add(new AlgorithmDescription(AlgName.FANG, AlgType.forbid_latent_common_causes, OracleType.None));
-        descriptions.add(new AlgorithmDescription(AlgName.EFANG   , AlgType.forbid_latent_common_causes, OracleType.None));
+        descriptions.add(new AlgorithmDescription(AlgName.FASK, AlgType.forbid_latent_common_causes, OracleType.None));
 
         descriptions.add(new AlgorithmDescription(AlgName.FCI, AlgType.allow_latent_common_causes, OracleType.Test));
         descriptions.add(new AlgorithmDescription(AlgName.RFCI, AlgType.allow_latent_common_causes, OracleType.Test));
@@ -1004,11 +1003,8 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
             case CCD_MAX:
                 algorithm = new CcdMax(independenceWrapper);
                 break;
-            case FANG:
-                algorithm = new FangConcatenated();
-                break;
-            case EFANG:
-                algorithm = new FaskConcatenated();
+            case FASK:
+                algorithm = new Fask();
                 break;
             case FAS:
                 algorithm = new FAS(independenceWrapper);
@@ -1450,7 +1446,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         IMaGES_Discrete, IMaGES_Continuous, IMaGES_CCD,
         Bpc, Fofc, Ftfc,
         GLASSO,
-        EB, R1, R2, R3, R4, RSkew, RSkewE, Skew, SkewE, FANG, EFANG, Tahn,
+        EB, R1, R2, R3, R4, RSkew, RSkewE, Skew, SkewE, FASK, Tahn,
         BootstrapFGES, BootstrapGFCI, BootstrapRFCI
     }
 

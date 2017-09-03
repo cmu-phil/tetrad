@@ -24,17 +24,17 @@ package edu.cmu.tetrad.search;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.regression.RegressionDataset;
+import edu.cmu.tetrad.util.StatUtils;
 import org.apache.commons.math3.distribution.TDistribution;
 
 import java.awt.*;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
-import java.util.ArrayList;
 import java.util.List;
 
-import static edu.cmu.tetrad.util.StatUtils.*;
+import static edu.cmu.tetrad.util.StatUtils.correlation;
+import static edu.cmu.tetrad.util.StatUtils.skewness;
 import static java.lang.Math.*;
-import static java.lang.Math.max;
 
 /**
  * Fast adjacency search followed by robust skew orientation. Checks are done for adding
@@ -43,7 +43,7 @@ import static java.lang.Math.max;
  *
  * @author Joseph Ramsey
  */
-public final class Fask2 implements GraphSearch {
+public final class OldFask4 implements GraphSearch {
 
     // Elapsed time of the search, in milliseconds.
     private long elapsed = 0;
@@ -79,7 +79,7 @@ public final class Fask2 implements GraphSearch {
     /**
      * @param dataSet These datasets must all have the same variables, in the same order.
      */
-    public Fask2(DataSet dataSet) {
+    public OldFask4(DataSet dataSet) {
         this.dataSet = dataSet;
     }
 
@@ -139,52 +139,30 @@ public final class Fask2 implements GraphSearch {
             double[] x = colData[i];
             double[] y = colData[j];
 
-            List<Double> sList = new ArrayList<>();
-
             double sum1 = 0.0;
             double sum2 = 0.0;
 
             for (int k = 0; k < x.length; k++) {
-                double f1 = y[k] * h(x[k]);
-                double f2 = x[k] * h(y[k]);
-
-                f1 = x[k] * x[k] * x[k] * y[k];
-                f2 = x[k] * y[k] * y[k] * y[k];
+                double f1 = y[k] * g(x[k]);
+                double f2 = x[k] * g(y[k]);
 
                 sum1 += f1;
                 sum2 += f2;
-
-//                if (f1 - f2 != 0) {
-                sList.add(f1 - f2);
-//                }
             }
 
             double[] x1 = colData2[i];
             double[] y1 = colData2[j];
 
-            double[] c = cov(x1, y1, 0, 0);
-            double[] c1 = cov(x1, y1, 1, 0);
-            double[] c2 = cov(x1, y1, 0, 1);
-            double c3[] = cov(x1, y1, -1, 0);
-            double c4[] = cov(x1, y1, 0, -1);
-
-            double[] _s = new double[sList.size()];
-            double sum = 0.0;
-
-            for (int k = 0; k < _s.length; k++) {
-                _s[k] = sList.get(k);
-                sum += _s[k];
-            }
+            double[] c = StatUtils.cov(x, y, x, Double.NEGATIVE_INFINITY, +1);
+            double[] c1 = StatUtils.cov(x, y, x, 0, +1);
+            double[] c2 = StatUtils.cov(x, y, y, 0, +1);
+            double[] c3 = StatUtils.cov(x, y, x, 0, -1);
+            double[] c4 = StatUtils.cov(x, y, y, 0, -1);
 
             int n = x.length;
-            int nn = _s.length;
-            double e = sum / nn;
 
-            double t = e / (sd(_s) / sqrt(nn));
-            double p = (1.0 - new TDistribution(nn - 1).cumulativeProbability(abs(t)));
             double rho = correlation(x, y);
             double R = rho * (sum1 / n - sum2 / n);
-            R = rho * (sum1 - sum2);
 
             if (knowledgeOrients(X, Y)) {
                 graph.addDirectedEdge(X, Y);
@@ -258,32 +236,13 @@ public final class Fask2 implements GraphSearch {
 
         double avgSkew = sumSkew / (double) total;
 
-        NumberFormat nf = new DecimalFormat("0.000");
-
-//        for (int i = 0; i < cutoffs.length; i++) {
-//            double number = counts[i] / (double) total;
-//
-//            System.out.printf("\nBelow %5.1f (= %6.3f) Percent = %5.3f, 1 - Percent = %5.3f", cutoffs[i],
-//                    cutoffs[i] * sigma, number, 1.0 - number);
-//
-////            System.out.println("Below " + nf.format(cutoffs[i]) + " * sigma % = " + nf.format(number)
-////                    + "   1 - % = " + nf.format(1.0 -  number));
-//        }
-
-//        System.out.println();
-//        System.out.println();
         System.out.println("Avg skew " + avgSkew);
         System.out.println("Skew standard deviation = " + sd);
         System.out.println("N = " + dataSet.getNumRows());
-//        System.out.println("Sigma = " + nf.format(sigma));
     }
 
     private double g(double x) {
-        return log(cosh(max(0, x)));
-    }
-
-    private double h(double x) {
-        return max(0, x);
+        return x * x;
     }
 
     /**
@@ -373,76 +332,6 @@ public final class Fask2 implements GraphSearch {
      */
     public void setThresholdForReversing(double thresholdForReversing) {
         this.thresholdForReversing = thresholdForReversing;
-    }
-
-    private double[] cov(double[] x, double[] y, int xInc, int yInc) {
-        double exy = 0.0;
-        double exx = 0.0;
-        double eyy = 0.0;
-
-        double ex = 0.0;
-        double ey = 0.0;
-
-        int n = 0;
-
-        for (int k = 0; k < x.length; k++) {
-            if (xInc == 0 && yInc == 0) {
-                exy += x[k] * y[k];
-                exx += x[k] * x[k];
-                eyy += y[k] * y[k];
-                ex += x[k];
-                ey += y[k];
-                n++;
-            } else if (xInc == 1 && yInc == 0) {
-                if (x[k] > 0) {
-                    exy += x[k] * y[k];
-                    exx += x[k] * x[k];
-                    eyy += y[k] * y[k];
-                    ex += x[k];
-                    ey += y[k];
-                    n++;
-                }
-            } else if (xInc == 0 && yInc == 1) {
-                if (y[k] > 0) {
-                    exy += x[k] * y[k];
-                    exx += x[k] * x[k];
-                    eyy += y[k] * y[k];
-                    ex += x[k];
-                    ey += y[k];
-                    n++;
-                }
-            } else if (xInc == -1 && yInc == 0) {
-                if (x[k] < 0) {
-                    exy += x[k] * y[k];
-                    exx += x[k] * x[k];
-                    eyy += y[k] * y[k];
-                    ex += x[k];
-                    ey += y[k];
-                    n++;
-                }
-            } else if (xInc == 0 && yInc == -1) {
-                if (y[k] < 0) {
-                    exy += x[k] * y[k];
-                    exx += x[k] * x[k];
-                    eyy += y[k] * y[k];
-                    ex += x[k];
-                    ey += y[k];
-                    n++;
-                }
-            }
-        }
-
-        exx /= n;
-        eyy /= n;
-        exy /= n;
-        ex /= n;
-        ey /= n;
-
-        double sxy = exy - ex * ey;
-        double sx = sqrt(exx - ex * ex);
-        double sy = sqrt(eyy - ey * ey);
-
-        return new double[]{sxy, sxy / (sx * sy), sx * sx, sy * sy, (double) n};
     }
 
     private boolean equals(double[] c1, double[] c2) {

@@ -86,54 +86,54 @@ public class TestSimulatedFmri2 {
 //        String subdir = "data_fslfilter_concat";
         String subdir = "data_fslfilter";
 
-//        simulations.add(new LoadContinuousDataAndSingleGraph(
-//                dir + "Network1_amp", subdir));
+        simulations.add(new LoadContinuousDataAndSingleGraph(
+                dir + "Network1_amp", subdir));
         simulations.add(new LoadContinuousDataAndSingleGraph(
                 dir + "Network2_amp", subdir));
-//        simulations.add(new LoadContinuousDataAndSingleGraph(
-//                dir + "Network3_amp", subdir));
-//        simulations.add(new LoadContinuousDataAndSingleGraph(
-//                dir + "Network4_amp", subdir));
-//        simulations.add(new LoadContinuousDataAndSingleGraph(
-//                dir + "Network5_amp", subdir));
-//        simulations.add(new LoadContinuousDataAndSingleGraph(
-//                dir + "Network5_cont", subdir));
-//        simulations.add(new LoadContinuousDataAndSingleGraph(
-//                dir + "Network5_cont_p3n7", subdir));
-//        simulations.add(new LoadContinuousDataAndSingleGraph(
-//                dir + "Network5_cont_p7n3", subdir));
-//        simulations.add(new LoadContinuousDataAndSingleGraph(
-//                dir + "Network6_amp", subdir));
-//        simulations.add(new LoadContinuousDataAndSingleGraph(
-//                dir + "Network6_cont", subdir));
-//        simulations.add(new LoadContinuousDataAndSingleGraph(
-//                dir + "Network7_amp", subdir));
-//        simulations.add(new LoadContinuousDataAndSingleGraph(
-//                dir + "Network7_cont", subdir));
-//        simulations.add(new LoadContinuousDataAndSingleGraph(
-//                dir + "Network8_amp_amp", subdir));
-//        simulations.add(new LoadContinuousDataAndSingleGraph(
-//                dir + "Network8_amp_cont", subdir));
-//        simulations.add(new LoadContinuousDataAndSingleGraph(
-//                dir + "Network8_cont_amp", subdir));
-//        simulations.add(new LoadContinuousDataAndSingleGraph(
-//                dir + "Network9_amp_amp", subdir));
-//        simulations.add(new LoadContinuousDataAndSingleGraph(
-//                dir + "Network9_amp_cont", subdir));
-//        simulations.add(new LoadContinuousDataAndSingleGraph(
-//                dir + "Network9_cont_amp", subdir));
-//        simulations.add(new LoadContinuousDataAndSingleGraph(
-//                dir + "Diamond", subdir));
-//        simulations.add(new LoadContinuousDataAndSingleGraph(
-//                dir + "Markov_Complex_1", subdir));
+        simulations.add(new LoadContinuousDataAndSingleGraph(
+                dir + "Network3_amp", subdir));
+        simulations.add(new LoadContinuousDataAndSingleGraph(
+                dir + "Network4_amp", subdir));
+        simulations.add(new LoadContinuousDataAndSingleGraph(
+                dir + "Network5_amp", subdir));
+        simulations.add(new LoadContinuousDataAndSingleGraph(
+                dir + "Network5_cont", subdir));
+        simulations.add(new LoadContinuousDataAndSingleGraph(
+                dir + "Network5_cont_p3n7", subdir));
+        simulations.add(new LoadContinuousDataAndSingleGraph(
+                dir + "Network5_cont_p7n3", subdir));
+        simulations.add(new LoadContinuousDataAndSingleGraph(
+                dir + "Network6_amp", subdir));
+        simulations.add(new LoadContinuousDataAndSingleGraph(
+                dir + "Network6_cont", subdir));
+        simulations.add(new LoadContinuousDataAndSingleGraph(
+                dir + "Network7_amp", subdir));
+        simulations.add(new LoadContinuousDataAndSingleGraph(
+                dir + "Network7_cont", subdir));
+        simulations.add(new LoadContinuousDataAndSingleGraph(
+                dir + "Network8_amp_amp", subdir));
+        simulations.add(new LoadContinuousDataAndSingleGraph(
+                dir + "Network8_amp_cont", subdir));
+        simulations.add(new LoadContinuousDataAndSingleGraph(
+                dir + "Network8_cont_amp", subdir));
+        simulations.add(new LoadContinuousDataAndSingleGraph(
+                dir + "Network9_amp_amp", subdir));
+        simulations.add(new LoadContinuousDataAndSingleGraph(
+                dir + "Network9_amp_cont", subdir));
+        simulations.add(new LoadContinuousDataAndSingleGraph(
+                dir + "Network9_cont_amp", subdir));
+        simulations.add(new LoadContinuousDataAndSingleGraph(
+                dir + "Diamond", subdir));
+        simulations.add(new LoadContinuousDataAndSingleGraph(
+                dir + "Markov_Complex_1", subdir));
 
         Algorithms algorithms = new Algorithms();
 
 //        algorithms.add(new Fges(new edu.cmu.tetrad.algcomparison.score.SemBicScore(), true));
 //        algorithms.add(new PcStableMax(new SemBicTest(), true));
 //        algorithms.add(new Fang());
-//        algorithms.add(new Fask());
-//        algorithms.add(new Fask2());
+//        algorithms.add(new OldFask2());
+//        algorithms.add(new OldFask3());
 //        algorithms.add(new FasLofs(Lofs2.Rule.R1));
 //        algorithms.add(new FasLofs(Lofs2.Rule.R2));
 //        algorithms.add(new FasLofs(Lofs2.Rule.R3));
@@ -144,8 +144,8 @@ public class TestSimulatedFmri2 {
 //        algorithms.add(new FgesConcatenated(new edu.cmu.tetrad.algcomparison.score.SemBicScore(), true));
 //        algorithms.add(new PcStableMaxConcatenated(new SemBicTest(), true));
         algorithms.add(new FangConcatenated());
-        algorithms.add(new FaskConcatenated());
-        algorithms.add(new Fask2Concatenated());
+        algorithms.add(new OldFask2Concatenated());
+        algorithms.add(new OldFask3Concatenated());
 //        algorithms.add(new FasLofsConcatenated(Lofs2.Rule.R1));
 //        algorithms.add(new FasLofsConcatenated(Lofs2.Rule.R2));
 //        algorithms.add(new FasLofsConcatenated(Lofs2.Rule.R3));
@@ -239,8 +239,8 @@ public class TestSimulatedFmri2 {
             Algorithms algorithms = new Algorithms();
 
             algorithms.add(new FangConcatenated());
-            algorithms.add(new FaskConcatenated());
-            algorithms.add(new Fask2Concatenated());
+            algorithms.add(new OldFask2Concatenated());
+            algorithms.add(new OldFask3Concatenated());
 
             Comparison comparison = new Comparison();
 
