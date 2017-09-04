@@ -46,14 +46,10 @@ import java.util.List;
  *
  * @author jdramsey
  */
-public class ExternalAlgorithmPcalgPc implements ExternalAlgorithm {
+public class ExternalAlgorithmPcalgPc extends ExternalAlgorithm {
     static final long serialVersionUID = 23L;
     private final String extDir;
     private String shortDescription = null;
-    private String path;
-    private List<String> usedParameters = new ArrayList<>();
-    private Simulation simulation;
-    private int simIndex = -1;
 
     public ExternalAlgorithmPcalgPc(String extDir) {
         this.extDir = extDir;
@@ -65,7 +61,6 @@ public class ExternalAlgorithmPcalgPc implements ExternalAlgorithm {
         this.shortDescription = shortDecription;
     }
 
-    @Override
     /**
      * Reads in the relevant graph from the file (see above) and returns it.
      */
@@ -102,13 +97,11 @@ public class ExternalAlgorithmPcalgPc implements ExternalAlgorithm {
         }
     }
 
-    @Override
     /**
      * Returns the pattern of the supplied DAG.
      */
     public Graph getComparisonGraph(Graph graph) {
         return new EdgeListGraph(graph);
-//        return SearchGraphUtils.patternForDag(new EdgeListGraph(graph));
     }
 
     public String getDescription() {
@@ -120,34 +113,8 @@ public class ExternalAlgorithmPcalgPc implements ExternalAlgorithm {
     }
 
     @Override
-    public List<String> getParameters() {
-        return usedParameters;
-    }
-
-    public int getNumDataModels() {
-        return simulation.getNumDataModels();
-    }
-
-    @Override
     public DataType getDataType() {
         return DataType.Continuous;
-    }
-
-    public void setSimulation(Simulation simulation) {
-        this.simulation = simulation;
-    }
-
-    public void setPath(String path) {
-        this.path = path;
-    }
-
-    public void setSimIndex(int simIndex) {
-        this.simIndex = simIndex;
-    }
-
-    @Override
-    public Simulation getSimulation() {
-        return simulation;
     }
 
     @Override
@@ -167,8 +134,6 @@ public class ExternalAlgorithmPcalgPc implements ExternalAlgorithm {
 
         File file = new File(path, "/elapsed/" + extDir + "/" + (simIndex + 1) + "/graph." + index + ".txt");
 
-//        System.out.println(file.getAbsolutePath());
-
         try {
             BufferedReader r = new BufferedReader(new FileReader(file));
             String l = r.readLine(); // Skip the first line.
@@ -177,7 +142,6 @@ public class ExternalAlgorithmPcalgPc implements ExternalAlgorithm {
             return -99;
         }
     }
-
 }
 
 

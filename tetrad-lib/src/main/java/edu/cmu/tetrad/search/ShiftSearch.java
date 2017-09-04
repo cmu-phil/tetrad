@@ -88,10 +88,9 @@ public class ShiftSearch {
 
                 int _z = z;
 
-                for (int i = 0; i < choice.length; i++) {
-                    if (choice[i] == iIndex) {
-                        continue;
-                    }
+                for (int i = 0; i < choice.length; i++) {                    if (choice[i] == iIndex) {
+                    continue;
+                }
 
                     shifts[choice[i]] = (_z % (getMaxShift()) + 1);
 
@@ -100,6 +99,7 @@ public class ShiftSearch {
                     }
 
                     _z /= getMaxShift();
+
                 }
 
                 List<DataModel> _shiftedDataSets = getShiftedDataSets(shifts, maxNumRows);

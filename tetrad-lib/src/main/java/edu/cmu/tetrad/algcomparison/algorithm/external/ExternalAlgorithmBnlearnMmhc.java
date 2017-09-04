@@ -44,14 +44,10 @@ import java.util.List;
  *
  * @author jdramsey
  */
-public class ExternalAlgorithmBnlearnMmhc implements ExternalAlgorithm {
+public class ExternalAlgorithmBnlearnMmhc extends ExternalAlgorithm {
     static final long serialVersionUID = 23L;
     private final String extDir;
     private String shortDescription = null;
-    private String path;
-    private List<String> usedParameters = new ArrayList<>();
-    private Simulation simulation;
-    private int simIndex = -1;
 
     public ExternalAlgorithmBnlearnMmhc(String extDir) {
         this.extDir = extDir;
@@ -63,7 +59,6 @@ public class ExternalAlgorithmBnlearnMmhc implements ExternalAlgorithm {
         this.shortDescription = shortDecription;
     }
 
-    @Override
     /**
      * Reads in the relevant graph from the file (see above) and returns it.
      */
@@ -126,7 +121,6 @@ public class ExternalAlgorithmBnlearnMmhc implements ExternalAlgorithm {
         }
     }
 
-    @Override
     /**
      * Returns the pattern of the supplied DAG.
      */
@@ -144,34 +138,8 @@ public class ExternalAlgorithmBnlearnMmhc implements ExternalAlgorithm {
     }
 
     @Override
-    public List<String> getParameters() {
-        return usedParameters;
-    }
-
-    public int getNumDataModels() {
-        return simulation.getNumDataModels();
-    }
-
-    @Override
     public DataType getDataType() {
         return DataType.Continuous;
-    }
-
-    public void setSimulation(Simulation simulation) {
-        this.simulation = simulation;
-    }
-
-    public void setPath(String path) {
-        this.path = path;
-    }
-
-    public void setSimIndex(int simIndex) {
-        this.simIndex = simIndex;
-    }
-
-    @Override
-    public Simulation getSimulation() {
-        return simulation;
     }
 
     @Override
