@@ -21,7 +21,6 @@
 
 package edu.cmu.tetrad.sem;
 
-import cern.jet.random.StudentT;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.*;
@@ -32,6 +31,7 @@ import org.apache.commons.collections4.map.HashedMap;
 import org.apache.commons.math3.distribution.BetaDistribution;
 import org.apache.commons.math3.distribution.NormalDistribution;
 import org.apache.commons.math3.distribution.TDistribution;
+import org.apache.commons.math3.distribution.UniformRealDistribution;
 import org.apache.commons.math3.random.Well1024a;
 
 import java.io.PrintStream;
@@ -285,9 +285,12 @@ public final class LargeScaleSimulation {
 
         // Do the simulation.
         for (int row = 0; row < shocks.length; row++) {
+            for (int j = 0; j < t1.length; j++) {
+                t2[j] = shocks[row][j];
+            }
+
             for (int i = 0; i < intervalBetweenShocks; i++) {
                 for (int j = 0; j < t1.length; j++) {
-                    t2[j] = shocks[row][j];
                     for (int k = 0; k < parents[j].length; k++) {
                         t2[j] += t1[parents[j][k]] * coefs[j][k];
                     }
@@ -345,14 +348,11 @@ public final class LargeScaleSimulation {
         int s = 0;
         int shockIndex = 0;
         int recordingIndex = 0;
-        double[] shock = getUncorrelatedNonGausianShocks(1)[0];
-//        double[] shock = getUncorrelatedGaussianShocks(1)[0];
-//
+        double[] shock = getUncorrelatedShocks(1)[0];
 
         while (s < sampleSize) {
             if ((++shockIndex) % intervalBetweenShocks == 0) {
-                shock = getUncorrelatedNonGausianShocks(1)[0];
-//                shock = getUncorrelatedGaussianShocks(1)[0];
+                shock = getUncorrelatedShocks(1)[0];
             }
 
             if ((++recordingIndex) % intervalBetweenRecordings == 0) {
@@ -365,8 +365,12 @@ public final class LargeScaleSimulation {
 
             for (int j = 0; j < t1.length; j++) {
                 t2[j] = shock[j];
+            }
+
+            for (int j = 0; j < t1.length; j++) {
+                t2[j] = shock[j];
                 for (int k = 0; k < parents[j].length; k++) {
-                    t2[j]  = (-.8 * t2[j] + t1[parents[j][k]] * coefs[j][k]);
+                    t2[j]  = t2[j] + t1[parents[j][k]] * coefs[j][k];
                 }
             }
 
@@ -760,10 +764,11 @@ public final class LargeScaleSimulation {
         return shocks;
     }
 
-    public double[][] getUncorrelatedNonGausianShocks(int sampleSize) {
-//        TDistribution normal = new TDistribution(new Well1024a(++seed), 6);
-//       BetaDistribution normal = new BetaDistribution(new Well1024a(++seed), 1, 2);
-        NormalDistribution normal = new NormalDistribution(new Well1024a(++seed), 0, 1);
+    public double[][] getUncorrelatedShocks(int sampleSize) {
+//        TDistribution dist = new TDistribution(new Well1024a(++seed), 6);
+        BetaDistribution dist = new BetaDistribution(new Well1024a(++seed), 2, 5);
+//        NormalDistribution dist = new NormalDistribution(new Well1024a(++seed), 0, 1);
+//        UniformRealDistribution dist = new UniformRealDistribution(0, 1);
 
         int numVars = variableNodes.size();
         setupModel(numVars);
@@ -772,7 +777,8 @@ public final class LargeScaleSimulation {
 
         for (int i = 0; i < sampleSize; i++) {
             for (int j = 0; j < numVars; j++) {
-                shocks[i][j] = normal.sample() * sqrt(errorVars[j]);
+                shocks[i][j] = dist.sample();// * sqrt(errorVars[j]);
+//                shocks[i][j] = Math.pow(dist.sample(), 2);// * sqrt(errorVars[j]);
             }
         }
 
