@@ -35,37 +35,36 @@ import java.util.List;
 )
 public class FaskConcatenated implements MultiDataSetAlgorithm, HasKnowledge {
 
-	static final long serialVersionUID = 23L;
-	private boolean empirical = false;
-	private IKnowledge knowledge = new Knowledge2();
+    static final long serialVersionUID = 23L;
+    private boolean empirical = false;
+    private IKnowledge knowledge = new Knowledge2();
 
-	public FaskConcatenated() {
-		this.empirical = false;
-	}
+    public FaskConcatenated() {
+        this.empirical = false;
+    }
 
-	public FaskConcatenated(boolean empirical) {
-		this.empirical = empirical;
-	}
+    public FaskConcatenated(boolean empirical) {
+        this.empirical = empirical;
+    }
 
-	@Override
-	public Graph search(List<DataModel> dataSets, Parameters parameters) {
-		if (!parameters.getBoolean("bootstrapping")) {
-			List<DataSet> centered = new ArrayList<>();
+    @Override
+    public Graph search(List<DataModel> dataSets, Parameters parameters) {
+    	if (!parameters.getBoolean("bootstrapping")) {
+            List<DataSet> centered = new ArrayList<>();
 
-			for (DataModel dataSet : dataSets) {
-				centered.add(DataUtils.center((DataSet) dataSet));
-			}
+            for (DataModel dataSet : dataSets) {
+                centered.add(DataUtils.center((DataSet) dataSet));
+            }
 
-			DataSet dataSet = DataUtils.concatenate(centered);
-			edu.cmu.tetrad.search.Fask search = new Fask(dataSet);
-			search.setDepth(parameters.getInt("depth"));
-			search.setPenaltyDiscount(parameters.getDouble("penaltyDiscount"));
-			search.setAlpha(parameters.getDouble("twoCycleAlpha"));
-			search.setKnowledge(knowledge);
-			search.setThresholdForReversing(parameters.getDouble("thresholdForReversing"));
-			return search.search();
-		} else {
-			FaskConcatenated algorithm = new FaskConcatenated(empirical);
+            DataSet dataSet = DataUtils.concatenate(centered);
+            Fask search = new Fask(dataSet);
+            search.setDepth(parameters.getInt("depth"));
+            search.setPenaltyDiscount(parameters.getDouble("penaltyDiscount"));
+            search.setAlpha(parameters.getDouble("twoCycleAlpha"));
+            search.setKnowledge(knowledge);
+            return search.search();
+    	}else{
+    		FaskConcatenated algorithm = new FaskConcatenated(empirical);
 			algorithm.setKnowledge(knowledge);
 
 			List<DataSet> datasets = new ArrayList<>();
@@ -91,15 +90,15 @@ public class FaskConcatenated implements MultiDataSetAlgorithm, HasKnowledge {
 			search.setParameters(parameters);
 			search.setVerbose(parameters.getBoolean("verbose"));
 			return search.search();
-		}
-	}
+    	}
+    }
 
-	@Override
-	public Graph search(DataModel dataSet, Parameters parameters) {
-		if (!parameters.getBoolean("bootstrapping")) {
-			return search(Collections.singletonList((DataModel) DataUtils.getContinuousDataSet(dataSet)), parameters);
-		}else{
-			FaskConcatenated algorithm = new FaskConcatenated(empirical);
+    @Override
+    public Graph search(DataModel dataSet, Parameters parameters) {
+    	if (!parameters.getBoolean("bootstrapping")) {
+            return search(Collections.singletonList((DataModel) DataUtils.getContinuousDataSet(dataSet)), parameters);
+    	}else{
+    		FaskConcatenated algorithm = new FaskConcatenated(empirical);
 			algorithm.setKnowledge(knowledge);
 			
 			List<DataSet> dataSets = Collections.singletonList(DataUtils.getContinuousDataSet(dataSet));
@@ -121,49 +120,50 @@ public class FaskConcatenated implements MultiDataSetAlgorithm, HasKnowledge {
 			search.setParameters(parameters);
 			search.setVerbose(parameters.getBoolean("verbose"));
 			return search.search();
-		}
-	}
+    	}
+    }
 
-	@Override
-	public Graph getComparisonGraph(Graph graph) {
-		return new EdgeListGraph(graph);
-	}
+    @Override
+    public Graph getComparisonGraph(Graph graph) {
+        return new EdgeListGraph(graph);
+    }
 
-	@Override
-	public String getDescription() {
-		return "FASK Concatenated " + (empirical ? " (Empirical)" : "");
-	}
+    @Override
+    public String getDescription() {
+        return "FASK Concatenated";
+    }
 
-	@Override
-	public DataType getDataType() {
-		return DataType.Continuous;
-	}
+    @Override
+    public DataType getDataType() {
+        return DataType.Continuous;
+    }
 
-	@Override
-	public List<String> getParameters() {
-		List<String> parameters = new ArrayList<>();
-		parameters.add("depth");
-		parameters.add("penaltyDiscount");
-		parameters.add("twoCycleAlpha");
-		parameters.add("numRuns");
-		parameters.add("randomSelectionSize");
-		// Bootstrapping
-		parameters.add("bootstrapping");
-		parameters.add("bootstrapSampleSize");
-		parameters.add("bootstrapEnsemble");
-		parameters.add("verbose");
-		
-		return parameters;
-	}
+    @Override
+    public List<String> getParameters() {
+        List<String> parameters = new ArrayList<>();
+        parameters.add("depth");
+        parameters.add("penaltyDiscount");
+        parameters.add("twoCycleAlpha");
+        parameters.add("numRuns");
+        parameters.add("randomSelectionSize");
+        parameters.add("conditionalDistributionsStandardized");
+        // Bootstrapping
+ 		parameters.add("bootstrapping");
+ 		parameters.add("bootstrapSampleSize");
+ 		parameters.add("bootstrapEnsemble");
+ 		parameters.add("verbose");
+     		
+        return parameters;
+    }
 
-	@Override
-	public IKnowledge getKnowledge() {
-		return knowledge;
-	}
+    @Override
+    public IKnowledge getKnowledge() {
+        return knowledge;
+    }
 
-	@Override
-	public void setKnowledge(IKnowledge knowledge) {
-		this.knowledge = knowledge;
-	}
+    @Override
+    public void setKnowledge(IKnowledge knowledge) {
+        this.knowledge = knowledge;
+    }
 
 }

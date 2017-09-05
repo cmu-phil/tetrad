@@ -20,23 +20,23 @@ import java.util.List;
  *
  * @author jdramsey
  */
-public class Fask2 implements Algorithm, HasKnowledge {
+public class OldFask4 implements Algorithm, HasKnowledge {
     static final long serialVersionUID = 23L;
     private boolean empirical = false;
     private IKnowledge knowledge = new Knowledge2();
 
-    public Fask2() {
+    public OldFask4() {
         this.empirical = false;
     }
 
-    public Fask2(boolean empirical) {
+    public OldFask4(boolean empirical) {
         this.empirical = empirical;
     }
 
     @Override
     public Graph search(DataModel dataSet, Parameters parameters) {
     	if(!parameters.getBoolean("bootstrapping")){
-            edu.cmu.tetrad.search.Fask2 search = new edu.cmu.tetrad.search.Fask2((DataSet) dataSet);
+    		edu.cmu.tetrad.search.OldFask4 search = new edu.cmu.tetrad.search.OldFask4((DataSet) dataSet);
             search.setDepth(parameters.getInt("depth"));
             search.setPenaltyDiscount(parameters.getDouble("penaltyDiscount"));
             search.setAlpha(parameters.getDouble("twoCycleAlpha"));
@@ -44,11 +44,11 @@ public class Fask2 implements Algorithm, HasKnowledge {
             search.setThresholdForReversing(parameters.getDouble("thresholdForReversing"));
             return search.search();
     	}else{
-    		Fask2 fask2 = new Fask2(empirical);
-    		fask2.setKnowledge(knowledge);
+    		OldFask4 algorithm = new OldFask4(empirical);
+    		algorithm.setKnowledge(knowledge);
     		
     		DataSet data = (DataSet) dataSet;
-    		GeneralBootstrapTest search = new GeneralBootstrapTest(data, fask2, parameters.getInt("bootstrapSampleSize"));
+    		GeneralBootstrapTest search = new GeneralBootstrapTest(data, algorithm, parameters.getInt("bootstrapSampleSize"));
     		
     		BootstrapEdgeEnsemble edgeEnsemble = BootstrapEdgeEnsemble.Highest;
     		switch (parameters.getInt("bootstrapEnsemble", 1)) {
@@ -75,7 +75,7 @@ public class Fask2 implements Algorithm, HasKnowledge {
 
     @Override
     public String getDescription() {
-        return "FASK";
+        return "Old FASK4";
     }
 
     @Override

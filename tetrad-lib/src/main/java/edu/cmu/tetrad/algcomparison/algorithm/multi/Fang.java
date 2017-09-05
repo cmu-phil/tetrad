@@ -81,7 +81,7 @@ public class Fang implements Algorithm, HasKnowledge {
 
     @Override
     public String getDescription() {
-        return "FANG (Fast Adjacency search followed by Non-Gaussian orientation)";
+        return "Old FASK1";
     }
 
     @Override

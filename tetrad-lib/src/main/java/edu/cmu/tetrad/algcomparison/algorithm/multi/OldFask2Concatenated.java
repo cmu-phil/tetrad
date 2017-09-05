@@ -2,13 +2,10 @@ package edu.cmu.tetrad.algcomparison.algorithm.multi;
 
 import edu.cmu.tetrad.algcomparison.algorithm.MultiDataSetAlgorithm;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
-import edu.cmu.tetrad.annotation.AlgType;
-import edu.cmu.tetrad.annotation.AlgorithmDescription;
-import edu.cmu.tetrad.annotation.OracleType;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.search.Fang;
+import edu.cmu.tetrad.search.OldFask2;
 import edu.cmu.tetrad.util.Parameters;
 import edu.pitt.dbmi.algo.bootstrap.BootstrapEdgeEnsemble;
 import edu.pitt.dbmi.algo.bootstrap.GeneralBootstrapTest;
@@ -26,24 +23,16 @@ import java.util.List;
  *
  * @author jdramsey
  */
-@AlgorithmDescription(
-        name = "FANG",
-        algType = AlgType.forbid_latent_common_causes,
-        oracleType = OracleType.None,
-        description = "Short blurb goes here",
-        assumptions = {}
-)
-public class FangConcatenated implements MultiDataSetAlgorithm, HasKnowledge {
-
+public class OldFask2Concatenated implements MultiDataSetAlgorithm, HasKnowledge {
     static final long serialVersionUID = 23L;
     private boolean empirical = false;
     private IKnowledge knowledge = new Knowledge2();
 
-    public FangConcatenated() {
+    public OldFask2Concatenated() {
         this.empirical = false;
     }
 
-    public FangConcatenated(boolean empirical) {
+    public OldFask2Concatenated(boolean empirical) {
         this.empirical = empirical;
     }
 
@@ -57,14 +46,15 @@ public class FangConcatenated implements MultiDataSetAlgorithm, HasKnowledge {
             }
 
             DataSet dataSet = DataUtils.concatenate(centered);
-            Fang search = new Fang(dataSet);
+            OldFask2 search = new OldFask2(dataSet);
             search.setDepth(parameters.getInt("depth"));
             search.setPenaltyDiscount(parameters.getDouble("penaltyDiscount"));
             search.setAlpha(parameters.getDouble("twoCycleAlpha"));
             search.setKnowledge(knowledge);
+            search.setThresholdForReversing(parameters.getDouble("thresholdForReversing"));
             return search.search();
     	}else{
-    		FangConcatenated algorithm = new FangConcatenated(empirical);
+    		OldFask2Concatenated algorithm = new OldFask2Concatenated(empirical);
 			algorithm.setKnowledge(knowledge);
 
 			List<DataSet> datasets = new ArrayList<>();
@@ -98,7 +88,7 @@ public class FangConcatenated implements MultiDataSetAlgorithm, HasKnowledge {
     	if (!parameters.getBoolean("bootstrapping")) {
             return search(Collections.singletonList((DataModel) DataUtils.getContinuousDataSet(dataSet)), parameters);
     	}else{
-    		FangConcatenated algorithm = new FangConcatenated(empirical);
+    		OldFask2Concatenated algorithm = new OldFask2Concatenated(empirical);
 			algorithm.setKnowledge(knowledge);
 
 			List<DataSet> dataSets = Collections.singletonList(DataUtils.getContinuousDataSet(dataSet));
@@ -130,7 +120,7 @@ public class FangConcatenated implements MultiDataSetAlgorithm, HasKnowledge {
 
     @Override
     public String getDescription() {
-        return "FANG Concatenated";
+        return "Old FASK2 Concatenated";
     }
 
     @Override
@@ -151,7 +141,7 @@ public class FangConcatenated implements MultiDataSetAlgorithm, HasKnowledge {
  		parameters.add("bootstrapSampleSize");
  		parameters.add("bootstrapEnsemble");
  		parameters.add("verbose");
-     		
+        
         return parameters;
     }
 
