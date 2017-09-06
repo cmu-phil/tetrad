@@ -299,7 +299,7 @@ public class TestGeneralBootstrapTest {
 		printEdgeTypeConfusionMatrix(edgeAr);
 	}
 	
-	@Test
+	//@Test
 	public void testFCIc(){
 		int penaltyDiscount = 2;
 		boolean faithfulnessAssumed = false;
