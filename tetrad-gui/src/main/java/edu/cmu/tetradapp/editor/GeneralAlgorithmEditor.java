@@ -32,17 +32,17 @@ import edu.cmu.tetrad.algcomparison.utils.TakesInitialGraph;
 import edu.cmu.tetrad.algcomparison.utils.UsesScoreWrapper;
 import edu.cmu.tetrad.annotation.AlgName;
 import edu.cmu.tetrad.annotation.AlgType;
-import edu.cmu.tetrad.annotation.AlgorithmDescription;
-import edu.cmu.tetrad.annotation.OracleType;
+import edu.cmu.tetrad.annotation.AlgorithmAnnotations;
+import edu.cmu.tetrad.annotation.IndependenceTestAnnotations;
+import edu.cmu.tetrad.annotation.ScoreAnnotations;
 import edu.cmu.tetrad.annotation.ScoreType;
-import edu.cmu.tetrad.annotation.TestType;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataModelList;
 import edu.cmu.tetrad.data.DataSet;
+import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.data.Knowledge2;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.util.JOptionUtils;
 import edu.cmu.tetrad.util.JsonUtils;
 import edu.cmu.tetrad.util.Parameters;
@@ -102,8 +102,8 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
     private final Box algoTypesBox;
     private Box parametersBox;
     private Box graphContainer;
-    private final JComboBox<TestType> testDropdown = new JComboBox<>();
-    private final JComboBox<ScoreType> scoreDropdown = new JComboBox<>();
+    private final JComboBox<String> testDropdown = new JComboBox<>();
+    private final JComboBox<String> scoreDropdown = new JComboBox<>();
     private final GraphSelectionEditor graphEditor;
     private final Parameters parameters;
     private final HelpSet helpSet;
@@ -155,59 +155,31 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
             throw new IllegalArgumentException();
         }
 
-        // Group the tests based on data type
-        List<TestType> discreteTests = new ArrayList<>();
-        discreteTests.add(TestType.ChiSquare);
-        discreteTests.add(TestType.GSquare);
-        discreteTests.add(TestType.Discrete_BIC_Test);
-        discreteTests.add(TestType.Conditional_Gaussian_LRT);
-
-        List<TestType> continuousTests = new ArrayList<>();
-        continuousTests.add(TestType.Fisher_Z);
-        continuousTests.add(TestType.Correlation_T);
-        continuousTests.add(TestType.SEM_BIC);
-        continuousTests.add(TestType.Conditional_Correlation);
-        continuousTests.add(TestType.Conditional_Gaussian_LRT);
-
-        List<TestType> mixedTests = new ArrayList<>();
-        mixedTests.add(TestType.Conditional_Gaussian_LRT);
-
-        List<TestType> dsepTests = new ArrayList<>();
-        dsepTests.add(TestType.D_SEPARATION);
-
-        // Group the scores based on data type
-        List<ScoreType> discreteScores = new ArrayList<>();
-        discreteScores.add(ScoreType.BDeu);
-        discreteScores.add(ScoreType.Discrete_BIC);
-        discreteScores.add(ScoreType.Conditional_Gaussian_BIC);
-
-        List<ScoreType> continuousScores = new ArrayList<>();
-        continuousScores.add(ScoreType.SEM_BIC);
-        continuousScores.add(ScoreType.Fisher_Z_Score);
-        continuousScores.add(ScoreType.Conditional_Gaussian_BIC);
-
-        List<ScoreType> mixedScores = new ArrayList<>();
-        mixedScores.add(ScoreType.Conditional_Gaussian_BIC);
-
-        List<ScoreType> dsepScores = new ArrayList<>();
-        dsepScores.add(ScoreType.D_SEPARATION);
-
         // Use annotations to populate description list
-        // TreeMap<String, AlgorithmDescriptionClass>
         // TODO: fiter the algos to only show the ones can handle the uploaded dataset - Zhou
-        //descriptions = AlgorithmDescriptionFactory.getInstance().getAlgorithmDescriptions();
-        //algorithmsCanHaveKnowledge = AlgorithmDescriptionFactory.getInstance().getAlgorithmsCanHaveKnowledge();
-        algorithmNames = AlgorithmDescriptions.getInstance().getNames();
+        algorithmNames = AlgorithmAnnotations.getInstance().getNames();
 
-        algorithmsCanHaveKnowledge = AlgorithmDescriptions.getInstance().getAcceptKnowledgeAlgorithms();
+        algorithmsCanHaveKnowledge = AlgorithmAnnotations.getInstance().getAcceptKnowledge();
 
         this.parameters = runner.getParameters();
 
         graphEditor = new GraphSelectionEditor(new GraphSelectionWrapper(runner.getGraphs(), new Parameters()));
 
         // Create the test/score dropdown menu based on dataset
-        List<TestType> tests;
-        List<ScoreType> scores;
+        List<String> tests;
+        List<String> scores;
+
+        // Use annotations to get the tests based on data type
+        List<String> discreteTests = IndependenceTestAnnotations.getInstance().getNamesAssociatedWith(DataType.Discrete);
+        List<String> continuousTests = IndependenceTestAnnotations.getInstance().getNamesAssociatedWith(DataType.Continuous);
+        List<String> mixedTests = IndependenceTestAnnotations.getInstance().getNamesAssociatedWith(DataType.Mixed);
+        List<String> dsepTests = IndependenceTestAnnotations.getInstance().getNamesAssociatedWith(DataType.Graph);
+
+        // Use annotations to get the scores based on data type
+        List<String> discreteScores = ScoreAnnotations.getInstance().getNamesAssociatedWith(DataType.Discrete);
+        List<String> continuousScores = ScoreAnnotations.getInstance().getNamesAssociatedWith(DataType.Continuous);
+        List<String> mixedScores = ScoreAnnotations.getInstance().getNamesAssociatedWith(DataType.Mixed);
+        List<String> dsepScores = ScoreAnnotations.getInstance().getNamesAssociatedWith(DataType.Graph);
 
         // We can also use this way to filter the algos based on the data types they can handle - Zhou
         DataModelList dataModelList = runner.getDataModelList();
@@ -235,14 +207,33 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         }
 
         // Add to the test dropdown menu
-        for (TestType item : tests) {
-            testDropdown.addItem(item);
-        }
+        tests.stream().forEach((test) -> {
+            testDropdown.addItem(test);
+        });
 
         // Add to the score dropdown menu
-        for (ScoreType item : scores) {
-            scoreDropdown.addItem(item);
+        scores.stream().forEach((score) -> {
+            scoreDropdown.addItem(score);
+        });
+
+        if (tests.contains(getTestType())) {
+            testDropdown.setSelectedItem(getTestType());
         }
+
+        if (scores.contains(getScoreType())) {
+            scoreDropdown.setSelectedItem(getScoreType());
+        }
+
+        testDropdown.setEnabled(parameters.getBoolean("testEnabled", true));
+        scoreDropdown.setEnabled(parameters.getBoolean("scoreEnabled", false));
+
+        testDropdown.addActionListener((ActionEvent e) -> {
+            setAlgorithm();
+        });
+
+        scoreDropdown.addActionListener((ActionEvent e) -> {
+            setAlgorithm();
+        });
 
         // Filter based on algo types dropdown
         algoTypesBox = Box.createVerticalBox();
@@ -331,25 +322,6 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
             }
         });
 
-        if (tests.contains(getTestType())) {
-            testDropdown.setSelectedItem(getTestType());
-        }
-
-        if (scores.contains(getScoreType())) {
-            scoreDropdown.setSelectedItem(getScoreType());
-        }
-
-        testDropdown.setEnabled(parameters.getBoolean("testEnabled", true));
-        scoreDropdown.setEnabled(parameters.getBoolean("scoreEnabled", false));
-
-        testDropdown.addActionListener((ActionEvent e) -> {
-            setAlgorithm();
-        });
-
-        scoreDropdown.addActionListener((ActionEvent e) -> {
-            setAlgorithm();
-        });
-
         // Embed the algo chooser panel into EditorWindow
         add(createAlgoChooserPanel(), BorderLayout.CENTER);
 
@@ -362,21 +334,22 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
 
         // Create a new list model based on selections
         for (String algoName : algorithmNames) {
+            AlgorithmAnnotations algoAnno = AlgorithmAnnotations.getInstance();
+            // Use package path here since we have exisiting Algorithm package
+            // We can use this annotation to get all its attributes
+            edu.cmu.tetrad.annotation.Algorithm annotation = algoAnno.getAnnotation(algoName);
+
             // Also check the there's selection of knowledge file
-            AlgorithmDescriptionClass algoDescClass = AlgorithmDescriptions.getInstance().get(algoName);
-
-            AlgorithmDescription algoDesc = algoDescClass.getAlgorithmDescription();
-
             if (takesKnowledgeFile != null) {
                 if (takesKnowledgeFile) {
-                    if ((algoDesc.algType() == selectedAlgoType || selectedAlgoType == AlgType.ALL) && algorithmsCanHaveKnowledge.contains(algoDesc.name())) {
-                        suggestedAlgosListModel.addElement(algoDesc.name());
+                    if ((annotation.algoType() == selectedAlgoType || selectedAlgoType == AlgType.ALL) && algorithmsCanHaveKnowledge.contains(annotation.name())) {
+                        suggestedAlgosListModel.addElement(annotation.name());
                     }
-                } else if ((algoDesc.algType() == selectedAlgoType || selectedAlgoType == AlgType.ALL) && !algorithmsCanHaveKnowledge.contains(algoDesc.name())) {
-                    suggestedAlgosListModel.addElement(algoDesc.name());
+                } else if ((annotation.algoType() == selectedAlgoType || selectedAlgoType == AlgType.ALL) && !algorithmsCanHaveKnowledge.contains(annotation.name())) {
+                    suggestedAlgosListModel.addElement(annotation.name());
                 }
-            } else if (algoDesc.algType() == selectedAlgoType || selectedAlgoType == AlgType.ALL) {
-                suggestedAlgosListModel.addElement(algoDesc.name());
+            } else if (annotation.algoType() == selectedAlgoType || selectedAlgoType == AlgType.ALL) {
+                suggestedAlgosListModel.addElement(annotation.name());
             }
         }
 
@@ -396,10 +369,11 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
     }
 
     private void setAlgoDescriptionContent() {
-        AlgorithmDescriptionClass algoDescClass = AlgorithmDescriptions.getInstance().get(selectedAlgoName);
-        AlgorithmDescription algoDesc = algoDescClass.getAlgorithmDescription();
+        AlgorithmAnnotations algoAnno = AlgorithmAnnotations.getInstance();
+        // We can use this annotation to get all its attributes
+        edu.cmu.tetrad.annotation.Algorithm annotation = algoAnno.getAnnotation(selectedAlgoName);
 
-        algoDescriptionTextArea.setText("Description of " + selectedAlgoName + ": " + algoDesc.description());
+        algoDescriptionTextArea.setText("Description of " + selectedAlgoName + ": " + annotation.description());
     }
 
     private void doSearch(final GeneralAlgorithmRunner runner) {
@@ -880,8 +854,11 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         return scoreWrapper;
     }
 
+    // To-do
     private IndependenceWrapper getIndependenceWrapper() {
-        TestType test = (TestType) testDropdown.getSelectedItem();
+        String test = (String) testDropdown.getSelectedItem();
+        IndependenceTestAnnotations indTestAnno = IndependenceTestAnnotations.getInstance();
+        Class indTestClass = indTestAnno.getAnnotatedClass(test);
 
         IndependenceWrapper independenceWrapper;
 
@@ -933,9 +910,13 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
             return;
         }
 
-        // Get annotated algo description
-        AlgorithmDescriptionClass algoDescClass = AlgorithmDescriptions.getInstance().get(selectedAlgoName);
-        AlgorithmDescription algoDesc = algoDescClass.getAlgorithmDescription();
+        // Get annotated algo
+        AlgorithmAnnotations algoAnno = AlgorithmAnnotations.getInstance();
+        Class algoClass = algoAnno.getAnnotatedClass(selectedAlgoName);
+
+        // Determine if enable/disable test and score dropdowns
+        testDropdown.setEnabled(algoAnno.requireIndependenceTest(algoClass));
+        scoreDropdown.setEnabled(algoAnno.requireScore(algoClass));
 
         // Set the algo on each selection change
         Algorithm algorithm = getAlgorithmFromInterface();
@@ -945,29 +926,13 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
 
         runner.setAlgorithm(algorithm);
 
-        OracleType oracle = algoDesc.oracleType();
-
-        if (oracle == OracleType.None) {
-            testDropdown.setEnabled(false);
-            scoreDropdown.setEnabled(false);
-        } else if (oracle == OracleType.Score) {
-            testDropdown.setEnabled(false);
-            scoreDropdown.setEnabled(true);
-        } else if (oracle == OracleType.Test) {
-            testDropdown.setEnabled(true);
-            scoreDropdown.setEnabled(false);
-        } else if (oracle == OracleType.Both) {
-            testDropdown.setEnabled(true);
-            scoreDropdown.setEnabled(true);
-        }
-
         parameters.set("testEnabled", testDropdown.isEnabled());
         parameters.set("scoreEnabled", scoreDropdown.isEnabled());
 
         setAlgName(name);
         setAlgType(selectedAlgoName.replace(" ", "_"));
-        setTestType((TestType) testDropdown.getSelectedItem());
-        setScoreType((ScoreType) scoreDropdown.getSelectedItem());
+        setTestType((String) testDropdown.getSelectedItem());
+        setScoreType((String) scoreDropdown.getSelectedItem());
 
         // Also need to update the corresponding parameters
         parametersPanel = new ParameterPanel(runner.getAlgorithm().getParameters(), getParameters());
@@ -1631,21 +1596,20 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         parameters.set("algName", algName.toString());
     }
 
-    private TestType getTestType() {
-        return TestType.valueOf(parameters.getString("testType", "ChiSquare"));
+    private String getTestType() {
+        return parameters.getString("testType", "ChiSquare");
     }
 
-    private void setTestType(TestType testType) {
-        parameters.set("testType", testType.toString());
+    private void setTestType(String testType) {
+        parameters.set("testType", testType);
     }
 
-    private ScoreType getScoreType() {
-        String string = parameters.getString("scoreType", "BDeu");
-        return ScoreType.valueOf(string);
+    private String getScoreType() {
+        return parameters.getString("scoreType", "BDeu");
     }
 
-    private void setScoreType(ScoreType scoreType) {
-        parameters.set("scoreType", scoreType.toString());
+    private void setScoreType(String scoreType) {
+        parameters.set("scoreType", scoreType);
     }
 
     @Override
