@@ -41,4 +41,8 @@ public @interface Algorithm {
 
     String command();
 
+    AlgType algoType();
+
+    Assumptions[] assumptions() default {};
+
 }

@@ -31,7 +31,7 @@ import java.util.List;
         description = "Short blurb goes here",
         assumptions = {}
 )
-@edu.cmu.tetrad.annotation.Algorithm(name = "GFCI", command = "gfci")
+@edu.cmu.tetrad.annotation.Algorithm(name = "GFCI", command = "gfci", algoType = AlgType.allow_latent_common_causes)
 public class Gfci implements Algorithm, HasKnowledge, UsesScoreWrapper, TakesIndependenceWrapper {
 
     static final long serialVersionUID = 23L;
