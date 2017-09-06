@@ -20,6 +20,8 @@ package edu.cmu.tetrad.annotation;
 
 import edu.cmu.tetrad.algcomparison.algorithm.MultiDataSetAlgorithm;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
+import edu.cmu.tetrad.algcomparison.utils.TakesIndependenceWrapper;
+import edu.cmu.tetrad.algcomparison.utils.UsesScoreWrapper;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -50,7 +52,7 @@ public class AlgorithmAnnotations extends AbstractAnnotations<Algorithm> {
 
     public List<String> getAcceptKnowledge() {
         List<String> list = annoClassByName.entrySet().stream()
-                .filter(e -> HasKnowledge.class.isAssignableFrom(e.getValue().getClazz()))
+                .filter(e -> acceptKnowledge(e.getValue().getClazz()))
                 .map(e -> ((Algorithm) e.getValue().getAnnotation()).name())
                 .collect(Collectors.toList());
 
@@ -59,11 +61,27 @@ public class AlgorithmAnnotations extends AbstractAnnotations<Algorithm> {
 
     public List<String> getAcceptMultiDataset() {
         List<String> list = annoClassByName.entrySet().stream()
-                .filter(e -> MultiDataSetAlgorithm.class.isAssignableFrom(e.getValue().getClazz()))
+                .filter(e -> acceptMultipleDataset(e.getValue().getClazz()))
                 .map(e -> ((Algorithm) e.getValue().getAnnotation()).name())
                 .collect(Collectors.toList());
 
         return Collections.unmodifiableList(list);
+    }
+
+    public boolean acceptMultipleDataset(Class clazz) {
+        return MultiDataSetAlgorithm.class.isAssignableFrom(clazz);
+    }
+
+    public boolean acceptKnowledge(Class clazz) {
+        return HasKnowledge.class.isAssignableFrom(clazz);
+    }
+
+    public boolean requireIndependenceTest(Class clazz) {
+        return TakesIndependenceWrapper.class.isAssignableFrom(clazz);
+    }
+
+    public boolean requireScore(Class clazz) {
+        return UsesScoreWrapper.class.isAssignableFrom(clazz);
     }
 
 }
