@@ -18,7 +18,11 @@
  */
 package edu.cmu.tetrad.annotation;
 
+import edu.cmu.tetrad.data.DataType;
+import java.util.Collections;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  *
@@ -42,6 +46,51 @@ public class ScoreAnnotations extends AbstractAnnotations<Score> {
 
     public static ScoreAnnotations getInstance() {
         return INSTANCE;
+    }
+
+    /**
+     * Get a list of annotation attribute names for a particular data type.
+     *
+     * @param dataType
+     * @return annotation attribute names.
+     */
+    public List<String> getNames(DataType dataType) {
+        List<String> list = annoClassByName.entrySet().stream()
+                .filter(e -> ((IndependenceTest) e.getValue().getAnnotation()).dataType().equals(dataType))
+                .map(e -> ((IndependenceTest) e.getValue().getAnnotation()).name())
+                .collect(Collectors.toList());
+
+        return Collections.unmodifiableList(list);
+    }
+
+    /**
+     * Get a list of annotation attribute names for a class associated with data
+     * type.
+     *
+     * @param dataType
+     * @return annotation attribute names.
+     */
+    public List<String> getNamesAssociatedWith(DataType dataType) {
+        List<String> list = new LinkedList<>();
+
+        switch (dataType) {
+            case Discrete:
+                getNames(DataType.Discrete).stream().collect(Collectors.toCollection(() -> list));
+                getNames(DataType.Mixed).stream().collect(Collectors.toCollection(() -> list));
+                break;
+            case Continuous:
+                getNames(DataType.Continuous).stream().collect(Collectors.toCollection(() -> list));
+                getNames(DataType.Mixed).stream().collect(Collectors.toCollection(() -> list));
+                break;
+            case Mixed:
+                getNames(DataType.Mixed).stream().collect(Collectors.toCollection(() -> list));
+                break;
+            case Graph:
+                getNames(DataType.Graph).stream().collect(Collectors.toCollection(() -> list));
+                break;
+        }
+
+        return Collections.unmodifiableList(list);
     }
 
 }
