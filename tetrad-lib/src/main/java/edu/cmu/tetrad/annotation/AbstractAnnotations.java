@@ -65,12 +65,24 @@ public class AbstractAnnotations<T extends Annotation> {
         return Collections.unmodifiableList(list);
     }
 
-    public T getAnnotations(String name) {
+    /**
+     * Get the annotation by its attribute name.
+     *
+     * @param name annotation attribute name
+     * @return annotation
+     */
+    public T getAnnotation(String name) {
         AnnotatedClass ac = annoClassByName.get(name);
 
         return (ac == null) ? null : (T) ac.getAnnotation();
     }
 
+    /**
+     * Get the class with annotation containing attribute name.
+     *
+     * @param name annotation attribute name
+     * @return class
+     */
     public Class getAnnotatedClass(String name) {
         AnnotatedClass ac = annoClassByName.get(name);
 
