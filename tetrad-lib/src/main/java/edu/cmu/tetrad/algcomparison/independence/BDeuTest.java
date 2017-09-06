@@ -5,7 +5,6 @@ import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.data.DataUtils;
 import edu.cmu.tetrad.search.*;
 import edu.cmu.tetrad.util.Parameters;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -14,7 +13,9 @@ import java.util.List;
  *
  * @author jdramsey
  */
+@edu.cmu.tetrad.annotation.IndependenceTest(name = "BDeu Test", command = "bdeu", dataType = DataType.Discrete)
 public class BDeuTest implements IndependenceWrapper {
+
     static final long serialVersionUID = 23L;
 
     @Override
