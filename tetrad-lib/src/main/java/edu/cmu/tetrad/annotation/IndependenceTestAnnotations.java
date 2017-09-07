@@ -56,8 +56,8 @@ public class IndependenceTestAnnotations extends AbstractAnnotations<Independenc
      */
     public List<String> getNames(DataType dataType) {
         List<String> list = annoClassByName.entrySet().stream()
-                .filter(e -> ((IndependenceTest) e.getValue().getAnnotation()).dataType().equals(dataType))
-                .map(e -> ((IndependenceTest) e.getValue().getAnnotation()).name())
+                .filter(e -> e.getValue().getAnnotation().dataType().equals(dataType))
+                .map(e -> e.getValue().getAnnotation().name())
                 .collect(Collectors.toList());
 
         return Collections.unmodifiableList(list);

@@ -53,7 +53,7 @@ public class AlgorithmAnnotations extends AbstractAnnotations<Algorithm> {
     public List<String> getAcceptKnowledge() {
         List<String> list = annoClassByName.entrySet().stream()
                 .filter(e -> acceptKnowledge(e.getValue().getClazz()))
-                .map(e -> ((Algorithm) e.getValue().getAnnotation()).name())
+                .map(e -> e.getValue().getAnnotation().name())
                 .collect(Collectors.toList());
 
         return Collections.unmodifiableList(list);
@@ -62,7 +62,7 @@ public class AlgorithmAnnotations extends AbstractAnnotations<Algorithm> {
     public List<String> getAcceptMultiDataset() {
         List<String> list = annoClassByName.entrySet().stream()
                 .filter(e -> acceptMultipleDataset(e.getValue().getClazz()))
-                .map(e -> ((Algorithm) e.getValue().getAnnotation()).name())
+                .map(e -> e.getValue().getAnnotation().name())
                 .collect(Collectors.toList());
 
         return Collections.unmodifiableList(list);

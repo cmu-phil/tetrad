@@ -34,7 +34,7 @@ import java.util.stream.Collectors;
  */
 public class AbstractAnnotations<T extends Annotation> {
 
-    protected final Map<String, AnnotatedClass> annoClassByName = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+    protected final Map<String, AnnotatedClass<T>> annoClassByName = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
     protected final Map<String, String> nameByCommand = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
 
     public String getName(String command) {
@@ -72,9 +72,9 @@ public class AbstractAnnotations<T extends Annotation> {
      * @return annotation
      */
     public T getAnnotation(String name) {
-        AnnotatedClass ac = annoClassByName.get(name);
+        AnnotatedClass<T> ac = annoClassByName.get(name);
 
-        return (ac == null) ? null : (T) ac.getAnnotation();
+        return (ac == null) ? null : ac.getAnnotation();
     }
 
     /**
@@ -84,7 +84,7 @@ public class AbstractAnnotations<T extends Annotation> {
      * @return class
      */
     public Class getAnnotatedClass(String name) {
-        AnnotatedClass ac = annoClassByName.get(name);
+        AnnotatedClass<T> ac = annoClassByName.get(name);
 
         return (ac == null) ? null : ac.getClazz();
     }
