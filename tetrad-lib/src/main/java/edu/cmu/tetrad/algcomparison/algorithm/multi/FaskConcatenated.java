@@ -33,8 +33,8 @@ import java.util.List;
         assumptions = {}
 )
 @edu.cmu.tetrad.annotation.Algorithm(
-        name = "EFANG",
-        command = "EFANG",
+        name = "FASK Concatenated",
+        command = "fask-concatenated",
         algoType = AlgType.forbid_latent_common_causes,
         description = "Short blurb goes here"
 )
