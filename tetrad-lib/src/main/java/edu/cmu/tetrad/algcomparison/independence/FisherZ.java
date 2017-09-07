@@ -12,7 +12,11 @@ import java.util.List;
  *
  * @author jdramsey
  */
-@edu.cmu.tetrad.annotation.IndependenceTest(name = "Fisher Z Test", command = "fisher-z", dataType = DataType.Continuous)
+@edu.cmu.tetrad.annotation.IndependenceTest(
+        name = "Fisher Z Test",
+        command = "fisher-z",
+        dataType = DataType.Continuous
+)
 public class FisherZ implements IndependenceWrapper {
 
     static final long serialVersionUID = 23L;

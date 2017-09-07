@@ -65,14 +65,12 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
-import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.List;
-import javax.help.HelpSet;
 import javax.swing.*;
 import javax.swing.border.CompoundBorder;
 import javax.swing.border.EmptyBorder;
@@ -101,17 +99,16 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
     private final JComboBox<String> scoreDropdown = new JComboBox<>();
     private final GraphSelectionEditor graphEditor;
     private final Parameters parameters;
-    private final HelpSet helpSet;
     private final TetradDesktop desktop;
     private HpcJobInfo hpcJobInfo;
     private String jsonResult;
     //private final TreeMap<String, AlgorithmDescriptionClass> descriptions;
 
-    private List<String> algorithmNames;
+    private final List<String> algorithmNames;
 
-    private List<String> algorithmsCanHaveKnowledge;
+    private final List<String> algorithmsCanHaveKnowledge;
     private DefaultListModel suggestedAlgosListModel = new DefaultListModel();
-    private JList suggestedAlgosList;
+    private final JList suggestedAlgosList;
     private Boolean takesKnowledgeFile = null;
     private ButtonGroup algoTypesBtnGrp = new ButtonGroup();
     private ButtonGroup varLinearRelationshipsBtnGrp = new ButtonGroup();
@@ -139,24 +136,16 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
 
         this.loadingIndicatorDialog = new JDialog();
 
-        String helpHS = "/resources/javahelp/TetradHelp.hs";
-
-        try {
-            URL url = this.getClass().getResource(helpHS);
-            this.helpSet = new HelpSet(null, url);
-        } catch (Exception ee) {
-            System.out.println("HelpSet " + ee.getMessage());
-            System.out.println("HelpSet " + helpHS + " not found");
-            throw new IllegalArgumentException();
-        }
-
         // Use annotations to populate description list
         // TODO: fiter the algos to only show the ones can handle the uploaded dataset - Zhou
         algorithmNames = AlgorithmAnnotations.getInstance().getNames();
 
         algorithmsCanHaveKnowledge = AlgorithmAnnotations.getInstance().getAcceptKnowledge();
 
-        // Suggest algo list
+        // Create default algos list model
+        setDefaultAlgosListModel();
+
+        // Suggested algo list
         suggestedAlgosList = new JList(suggestedAlgosListModel);
 
         this.parameters = runner.getParameters();
@@ -165,6 +154,17 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
 
         // Embed the algo chooser panel into EditorWindow
         add(createAlgoChooserPanel(), BorderLayout.CENTER);
+
+        // Default to select the first algo name in list
+        // This also enables/disables the corresponding test and score options
+        setDefaultSelectedAlgo();
+
+        // Set default description based on selected algo
+        setAlgoDescriptionContent();
+
+        // Set default algo in runner
+        Algorithm algorithm = getAlgorithmFromInterface();
+        runner.setAlgorithm(algorithm);
 
         this.desktop = (TetradDesktop) DesktopController.getInstance();
     }
@@ -599,6 +599,8 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
 
     /**
      * Initialize algorithm
+     *
+     * @return Algorithm
      */
     public Algorithm getAlgorithmFromInterface() {
         if (selectedAlgoName == null) {
@@ -762,8 +764,6 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         Box container = Box.createVerticalBox();
         // Must set the size of container
         container.setPreferredSize(new Dimension(940, 640));
-
-        helpSet.setHomeID("tetrad_overview");
 
         // Algo selection container, step 1
         // contains 3 columns, leftContainer, middleContainer, and rightContainer
@@ -1062,9 +1062,6 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
             resetAlgoFilters();
         });
 
-        // Default algos list model
-        setDefaultAlgosListModel();
-
         // Only allow single selection
         suggestedAlgosList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 
@@ -1092,9 +1089,82 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
             }
         });
 
-        // Default to select the first algo name in list
-        // This also enables/disables the corresponding test and score options
-        setDefaultSelectedAlgo();
+        // Describe your data and result using these filters
+        Box algoFiltersBox = Box.createVerticalBox();
+        algoFiltersBox.setMinimumSize(new Dimension(290, 590));
+        algoFiltersBox.setMaximumSize(new Dimension(290, 590));
+        algoFiltersBox.setAlignmentX(LEFT_ALIGNMENT);
+
+        // Use a titled border with 5 px inside padding - Zhou
+        String algoFiltersBoxBorderTitle = "Algorithm filters";
+        algoFiltersBox.setBorder(new CompoundBorder(BorderFactory.createTitledBorder(algoFiltersBoxBorderTitle), new EmptyBorder(5, 5, 5, 5)));
+
+        // Items to put in data description box
+        algoFiltersBox.add(algoTypesBox);
+        algoFiltersBox.add(Box.createVerticalStrut(5));
+        algoFiltersBox.add(varLinearRelationshipsBox);
+        algoFiltersBox.add(Box.createVerticalStrut(5));
+        algoFiltersBox.add(gaussianVariablesBox);
+        algoFiltersBox.add(Box.createVerticalStrut(5));
+        algoFiltersBox.add(priorKnowledgeBox);
+        algoFiltersBox.add(Box.createVerticalStrut(5));
+        algoFiltersBox.add(includeUnmeasuredConfoundersBox);
+        algoFiltersBox.add(Box.createVerticalStrut(5));
+        algoFiltersBox.add(resetFilterSelectionsBtn);
+
+        // Add to leftContainer
+        leftContainer.add(algoFiltersBox);
+
+        // Components in middleContainer
+        // Show a list of filtered algorithms
+        Box suggestedAlgosBox = Box.createVerticalBox();
+        suggestedAlgosBox.setMinimumSize(new Dimension(260, 590));
+        suggestedAlgosBox.setMaximumSize(new Dimension(260, 590));
+
+        // Use a titled border with 5 px inside padding - Zhou
+        String suggestedAlgosBoxBorderTitle = "Choose algorithm";
+        suggestedAlgosBox.setBorder(new CompoundBorder(BorderFactory.createTitledBorder(suggestedAlgosBoxBorderTitle), new EmptyBorder(5, 5, 5, 5)));
+
+        // Put the list in a scrollable area
+        JScrollPane suggestedAlgosListScrollPane = new JScrollPane(suggestedAlgosList);
+        suggestedAlgosListScrollPane.setMinimumSize(new Dimension(260, 590));
+        suggestedAlgosListScrollPane.setMaximumSize(new Dimension(260, 590));
+
+        suggestedAlgosBox.add(suggestedAlgosListScrollPane);
+
+        middleContainer.add(suggestedAlgosBox);
+
+        // Components in rightContainer
+        // Algo description
+        Box algoDescriptionBox = Box.createVerticalBox();
+        algoDescriptionBox.setMinimumSize(new Dimension(350, 445));
+        algoDescriptionBox.setMaximumSize(new Dimension(350, 445));
+
+        // Use a titled border with 5 px inside padding - Zhou
+        String algoDescriptionBoxBorderTitle = "Algorithm description";
+        algoDescriptionBox.setBorder(new CompoundBorder(BorderFactory.createTitledBorder(algoDescriptionBoxBorderTitle), new EmptyBorder(5, 5, 5, 5)));
+
+        // Set line arap
+        algoDescriptionTextArea.setWrapStyleWord(true);
+        algoDescriptionTextArea.setLineWrap(true);
+
+        // Read only
+        algoDescriptionTextArea.setEditable(false);
+
+        JScrollPane algoDescriptionScrollPane = new JScrollPane(algoDescriptionTextArea);
+        algoDescriptionScrollPane.setMinimumSize(new Dimension(350, 445));
+        algoDescriptionScrollPane.setMaximumSize(new Dimension(350, 445));
+
+        algoDescriptionBox.add(algoDescriptionScrollPane);
+
+        // Choose corresponding test and score based on algorithm
+        Box testAndScoreBox = Box.createVerticalBox();
+        testAndScoreBox.setMinimumSize(new Dimension(350, 130));
+        testAndScoreBox.setMaximumSize(new Dimension(350, 130));
+
+        // Use a titled border with 5 px inside padding - Zhou
+        String testAndScoreBoxBorderTitle = "Choose Independence Test and Score";
+        testAndScoreBox.setBorder(new CompoundBorder(BorderFactory.createTitledBorder(testAndScoreBoxBorderTitle), new EmptyBorder(5, 5, 5, 5)));
 
         // Create the test/score dropdown menu based on dataset
         List<String> tests;
@@ -1161,105 +1231,39 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
             setScoreType((String) scoreDropdown.getSelectedItem());
         });
 
-        // Test and score containers
+        // Test container
         Box testBox = Box.createHorizontalBox();
-        JLabel label1 = new JLabel("Test if needed:");
-        testBox.add(label1);
-        testDropdown.setMaximumSize(testDropdown.getPreferredSize());
-        testBox.add(testDropdown);
-        testBox.add(Box.createHorizontalGlue());
 
+        Box testLabelBox = Box.createHorizontalBox();
+        testLabelBox.setPreferredSize(new Dimension(55, 15));
+        JLabel testLabel = new JLabel("Test:");
+        testLabelBox.add(testLabel);
+
+        Box testSelectionBox = Box.createHorizontalBox();
+        testDropdown.setPreferredSize(new Dimension(260, 15));
+        testSelectionBox.add(testDropdown);
+
+        testBox.add(testLabelBox);
+        testBox.add(testSelectionBox);
+        //testBox.add(Box.createHorizontalGlue());
+
+        // Score container
         Box scoreBox = Box.createHorizontalBox();
-        JLabel label2 = new JLabel("Score if needed:");
-        scoreBox.add(label2);
-        scoreDropdown.setMaximumSize(scoreDropdown.getPreferredSize());
-        scoreBox.add(scoreDropdown);
-        scoreBox.add(Box.createHorizontalGlue());
 
-        // Describe your data and result using these filters
-        Box algoFiltersBox = Box.createVerticalBox();
-        algoFiltersBox.setMinimumSize(new Dimension(290, 590));
-        algoFiltersBox.setMaximumSize(new Dimension(290, 590));
-        algoFiltersBox.setAlignmentX(LEFT_ALIGNMENT);
+        Box scoreLabelBox = Box.createHorizontalBox();
+        scoreLabelBox.setPreferredSize(new Dimension(55, 15));
+        JLabel scoreLabel = new JLabel("Score:");
+        scoreLabelBox.add(scoreLabel);
 
-        // Use a titled border with 5 px inside padding - Zhou
-        String algoFiltersBoxBorderTitle = "Algorithm filters";
-        algoFiltersBox.setBorder(new CompoundBorder(BorderFactory.createTitledBorder(algoFiltersBoxBorderTitle), new EmptyBorder(5, 5, 5, 5)));
+        Box scoreSelectionBox = Box.createHorizontalBox();
+        scoreDropdown.setPreferredSize(new Dimension(260, 15));
+        scoreSelectionBox.add(scoreDropdown);
 
-        // Items to put in data description box
-        algoFiltersBox.add(algoTypesBox);
-        algoFiltersBox.add(Box.createVerticalStrut(5));
-        algoFiltersBox.add(varLinearRelationshipsBox);
-        algoFiltersBox.add(Box.createVerticalStrut(5));
-        algoFiltersBox.add(gaussianVariablesBox);
-        algoFiltersBox.add(Box.createVerticalStrut(5));
-        algoFiltersBox.add(priorKnowledgeBox);
-        algoFiltersBox.add(Box.createVerticalStrut(5));
-        algoFiltersBox.add(includeUnmeasuredConfoundersBox);
-        algoFiltersBox.add(Box.createVerticalStrut(5));
-        algoFiltersBox.add(resetFilterSelectionsBtn);
+        scoreBox.add(scoreLabelBox);
+        scoreBox.add(scoreSelectionBox);
+        // scoreBox.add(Box.createHorizontalGlue());
 
-        // Add to leftContainer
-        leftContainer.add(algoFiltersBox);
-
-        // Components in middleContainer
-        // Show a list of filtered algorithms
-        Box suggestedAlgosBox = Box.createVerticalBox();
-        suggestedAlgosBox.setMinimumSize(new Dimension(260, 590));
-        suggestedAlgosBox.setMaximumSize(new Dimension(260, 590));
-
-        // Use a titled border with 5 px inside padding - Zhou
-        String suggestedAlgosBoxBorderTitle = "Choose algorithm";
-        suggestedAlgosBox.setBorder(new CompoundBorder(BorderFactory.createTitledBorder(suggestedAlgosBoxBorderTitle), new EmptyBorder(5, 5, 5, 5)));
-
-        // Set default description as the first algorithm
-        setAlgoDescriptionContent();
-
-        // Set default algo in runner
-        Algorithm algorithm = getAlgorithmFromInterface();
-        runner.setAlgorithm(algorithm);
-
-        // Put the list in a scrollable area
-        JScrollPane suggestedAlgosListScrollPane = new JScrollPane(suggestedAlgosList);
-        suggestedAlgosListScrollPane.setMinimumSize(new Dimension(260, 590));
-        suggestedAlgosListScrollPane.setMaximumSize(new Dimension(260, 590));
-
-        suggestedAlgosBox.add(suggestedAlgosListScrollPane);
-
-        middleContainer.add(suggestedAlgosBox);
-
-        // Components in rightContainer
-        // Algo description
-        Box algoDescriptionBox = Box.createVerticalBox();
-        algoDescriptionBox.setMinimumSize(new Dimension(350, 445));
-        algoDescriptionBox.setMaximumSize(new Dimension(350, 445));
-
-        // Use a titled border with 5 px inside padding - Zhou
-        String algoDescriptionBoxBorderTitle = "Algorithm description";
-        algoDescriptionBox.setBorder(new CompoundBorder(BorderFactory.createTitledBorder(algoDescriptionBoxBorderTitle), new EmptyBorder(5, 5, 5, 5)));
-
-        // Set line arap
-        algoDescriptionTextArea.setWrapStyleWord(true);
-        algoDescriptionTextArea.setLineWrap(true);
-
-        // Read only
-        algoDescriptionTextArea.setEditable(false);
-
-        JScrollPane algoDescriptionScrollPane = new JScrollPane(algoDescriptionTextArea);
-        algoDescriptionScrollPane.setMinimumSize(new Dimension(350, 445));
-        algoDescriptionScrollPane.setMaximumSize(new Dimension(350, 445));
-
-        algoDescriptionBox.add(algoDescriptionScrollPane);
-
-        // Choose corresponding test and score based on algorithm
-        Box testAndScoreBox = Box.createVerticalBox();
-        testAndScoreBox.setMinimumSize(new Dimension(350, 130));
-        testAndScoreBox.setMaximumSize(new Dimension(350, 130));
-
-        // Use a titled border with 5 px inside padding - Zhou
-        String testAndScoreBoxBorderTitle = "Choose Test and Score";
-        testAndScoreBox.setBorder(new CompoundBorder(BorderFactory.createTitledBorder(testAndScoreBoxBorderTitle), new EmptyBorder(5, 5, 5, 5)));
-
+        // Add to testAndScoreBox
         testAndScoreBox.add(testBox);
         // Add some gap between test and score
         testAndScoreBox.add(Box.createVerticalStrut(10));

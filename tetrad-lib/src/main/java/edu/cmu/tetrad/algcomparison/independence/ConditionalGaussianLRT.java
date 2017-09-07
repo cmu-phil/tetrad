@@ -15,7 +15,11 @@ import java.util.List;
  *
  * @author jdramsey
  */
-@edu.cmu.tetrad.annotation.IndependenceTest(name = "Conditional Gaussian Likelihood Ratio Test", command = "cond-gauss-lrt", dataType = DataType.Mixed)
+@edu.cmu.tetrad.annotation.IndependenceTest(
+        name = "Conditional Gaussian Likelihood Ratio Test",
+        command = "cond-gauss-lrt",
+        dataType = DataType.Mixed
+)
 public class ConditionalGaussianLRT implements IndependenceWrapper, Experimental {
 
     static final long serialVersionUID = 23L;

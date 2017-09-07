@@ -1,12 +1,11 @@
 package edu.cmu.tetrad.algcomparison.independence;
 
 import edu.cmu.tetrad.data.DataModel;
-import edu.cmu.tetrad.data.DataUtils;
-import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.data.DataType;
+import edu.cmu.tetrad.data.DataUtils;
 import edu.cmu.tetrad.search.IndTestGSquare;
 import edu.cmu.tetrad.search.IndependenceTest;
-
+import edu.cmu.tetrad.util.Parameters;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -15,7 +14,13 @@ import java.util.List;
  *
  * @author jdramsey
  */
+@edu.cmu.tetrad.annotation.IndependenceTest(
+        name = "G Square test",
+        command = "g-square",
+        dataType = DataType.Discrete
+)
 public class GSquare implements IndependenceWrapper {
+
     static final long serialVersionUID = 23L;
 
     @Override

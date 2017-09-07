@@ -14,7 +14,11 @@ import java.util.List;
  *
  * @author jdramsey
  */
-@edu.cmu.tetrad.annotation.IndependenceTest(name = "Chi Square Test", command = "chi-square", dataType = DataType.Discrete)
+@edu.cmu.tetrad.annotation.IndependenceTest(
+        name = "Chi Square Test",
+        command = "chi-square",
+        dataType = DataType.Discrete
+)
 public class ChiSquare implements IndependenceWrapper {
 
     static final long serialVersionUID = 23L;

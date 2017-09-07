@@ -14,7 +14,11 @@ import java.util.List;
  *
  * @author jdramsey
  */
-@edu.cmu.tetrad.annotation.Score(name = "BDeu Score", command = "bdeu", dataType = DataType.Discrete)
+@edu.cmu.tetrad.annotation.Score(
+        name = "BDeu Score",
+        command = "bdeu",
+        dataType = DataType.Discrete
+)
 public class BdeuScore implements ScoreWrapper {
 
     static final long serialVersionUID = 23L;

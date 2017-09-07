@@ -13,7 +13,6 @@ import java.util.List;
  *
  * @author jdramsey
  */
-@edu.cmu.tetrad.annotation.IndependenceTest(name = "BDeu Test", command = "bdeu", dataType = DataType.Discrete)
 public class BDeuTest implements IndependenceWrapper {
 
     static final long serialVersionUID = 23L;

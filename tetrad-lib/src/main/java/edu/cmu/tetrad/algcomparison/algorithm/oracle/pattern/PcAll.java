@@ -34,7 +34,7 @@ import java.util.List;
         assumptions = {}
 )
 @edu.cmu.tetrad.annotation.Algorithm(
-        name = "PC All",
+        name = "PC_All",
         command = "pc-all",
         algoType = AlgType.forbid_latent_common_causes,
         description = "Short blurb goes here"
