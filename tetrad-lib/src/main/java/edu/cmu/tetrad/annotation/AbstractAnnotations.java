@@ -78,12 +78,12 @@ public class AbstractAnnotations<T extends Annotation> {
     }
 
     /**
-     * Get the class with annotation containing attribute name.
+     * Get the annotated class.
      *
      * @param name annotation attribute name
      * @return class
      */
-    public Class getAnnotatedClass(String name) {
+    public Class<T> getAnnotatedClass(String name) {
         AnnotatedClass<T> ac = annoClassByName.get(name);
 
         return (ac == null) ? null : ac.getClazz();

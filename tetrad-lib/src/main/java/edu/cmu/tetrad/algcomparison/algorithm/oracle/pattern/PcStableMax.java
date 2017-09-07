@@ -20,7 +20,6 @@ import edu.cmu.tetrad.search.PcAll;
 import edu.cmu.tetrad.util.Parameters;
 import edu.pitt.dbmi.algo.bootstrap.BootstrapEdgeEnsemble;
 import edu.pitt.dbmi.algo.bootstrap.GeneralBootstrapTest;
-
 import java.util.List;
 
 /**
@@ -34,6 +33,12 @@ import java.util.List;
         oracleType = OracleType.Test,
         description = "Short blurb goes here",
         assumptions = {}
+)
+@edu.cmu.tetrad.annotation.Algorithm(
+        name = "PcStableMax",
+        command = "PcStableMax",
+        algoType = AlgType.forbid_latent_common_causes,
+        description = "Short blurb goes here"
 )
 public class PcStableMax implements Algorithm, TakesInitialGraph, HasKnowledge, TakesIndependenceWrapper {
 
@@ -54,10 +59,10 @@ public class PcStableMax implements Algorithm, TakesInitialGraph, HasKnowledge, 
 
     @Override
     public Graph search(DataModel dataSet, Parameters parameters) {
-    	if (!parameters.getBoolean("bootstrapping")) {
-    		
+        if (!parameters.getBoolean("bootstrapping")) {
+
             if (algorithm != null) {
-            	initialGraph = algorithm.search(dataSet, parameters);
+                initialGraph = algorithm.search(dataSet, parameters);
             }
 
             edu.cmu.tetrad.search.PcAll search = new edu.cmu.tetrad.search.PcAll(test.getTest(dataSet, parameters), initialGraph);
@@ -70,33 +75,33 @@ public class PcStableMax implements Algorithm, TakesInitialGraph, HasKnowledge, 
             search.setUseHeuristic(parameters.getBoolean("useMaxPOrientationHeuristic"));
             search.setMaxPathLength(parameters.getInt("maxPOrientationMaxPathLength"));
             return search.search();
-    	}else{
-    		PcStableMax pcStableMax = new PcStableMax(test, compareToTrue);
-    		
-    		pcStableMax.setKnowledge(knowledge);
-			if (initialGraph != null) {
-				pcStableMax.setInitialGraph(initialGraph);
-			}
-			DataSet data = (DataSet) dataSet;
-			GeneralBootstrapTest search = new GeneralBootstrapTest(data, pcStableMax,
-					parameters.getInt("bootstrapSampleSize"));
+        } else {
+            PcStableMax pcStableMax = new PcStableMax(test, compareToTrue);
 
-			BootstrapEdgeEnsemble edgeEnsemble = BootstrapEdgeEnsemble.Highest;
-			switch (parameters.getInt("bootstrapEnsemble", 1)) {
-			case 0:
-				edgeEnsemble = BootstrapEdgeEnsemble.Preserved;
-				break;
-			case 1:
-				edgeEnsemble = BootstrapEdgeEnsemble.Highest;
-				break;
-			case 2:
-				edgeEnsemble = BootstrapEdgeEnsemble.Majority;
-			}
-			search.setEdgeEnsemble(edgeEnsemble);
-			search.setParameters(parameters);
-			search.setVerbose(parameters.getBoolean("verbose"));
-			return search.search();
-    	}
+            pcStableMax.setKnowledge(knowledge);
+            if (initialGraph != null) {
+                pcStableMax.setInitialGraph(initialGraph);
+            }
+            DataSet data = (DataSet) dataSet;
+            GeneralBootstrapTest search = new GeneralBootstrapTest(data, pcStableMax,
+                    parameters.getInt("bootstrapSampleSize"));
+
+            BootstrapEdgeEnsemble edgeEnsemble = BootstrapEdgeEnsemble.Highest;
+            switch (parameters.getInt("bootstrapEnsemble", 1)) {
+                case 0:
+                    edgeEnsemble = BootstrapEdgeEnsemble.Preserved;
+                    break;
+                case 1:
+                    edgeEnsemble = BootstrapEdgeEnsemble.Highest;
+                    break;
+                case 2:
+                    edgeEnsemble = BootstrapEdgeEnsemble.Majority;
+            }
+            search.setEdgeEnsemble(edgeEnsemble);
+            search.setParameters(parameters);
+            search.setVerbose(parameters.getBoolean("verbose"));
+            return search.search();
+        }
     }
 
     @Override
@@ -111,8 +116,8 @@ public class PcStableMax implements Algorithm, TakesInitialGraph, HasKnowledge, 
     @Override
     public String getDescription() {
         return "PC-Stable-Max (\"Peter and Clark\"), Priority Rule, using " + test.getDescription()
-                + (algorithm != null ? " with initial graph from " +
-                algorithm.getDescription() : "");
+                + (algorithm != null ? " with initial graph from "
+                        + algorithm.getDescription() : "");
     }
 
     @Override
@@ -148,15 +153,15 @@ public class PcStableMax implements Algorithm, TakesInitialGraph, HasKnowledge, 
         return compareToTrue;
     }
 
-	@Override
-	public Graph getInitialGraph() {
-		return initialGraph;
-	}
+    @Override
+    public Graph getInitialGraph() {
+        return initialGraph;
+    }
 
-	@Override
-	public void setInitialGraph(Graph initialGraph) {
-		this.initialGraph = initialGraph;
-	}
+    @Override
+    public void setInitialGraph(Graph initialGraph) {
+        this.initialGraph = initialGraph;
+    }
 
     @Override
     public void setInitialGraph(Algorithm algorithm) {

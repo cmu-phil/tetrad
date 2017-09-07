@@ -21,21 +21,16 @@
 package edu.cmu.tetradapp.editor;
 
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
-import edu.cmu.tetrad.algcomparison.algorithm.description.AlgorithmDescriptionClass;
-import edu.cmu.tetrad.algcomparison.algorithm.description.AlgorithmDescriptions;
+import edu.cmu.tetrad.algcomparison.algorithm.AlgorithmFactory;
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern.*;
-import edu.cmu.tetrad.algcomparison.graph.SingleGraph;
 import edu.cmu.tetrad.algcomparison.independence.*;
 import edu.cmu.tetrad.algcomparison.score.*;
-import edu.cmu.tetrad.algcomparison.utils.TakesIndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.utils.TakesInitialGraph;
-import edu.cmu.tetrad.algcomparison.utils.UsesScoreWrapper;
 import edu.cmu.tetrad.annotation.AlgName;
 import edu.cmu.tetrad.annotation.AlgType;
 import edu.cmu.tetrad.annotation.AlgorithmAnnotations;
 import edu.cmu.tetrad.annotation.IndependenceTestAnnotations;
 import edu.cmu.tetrad.annotation.ScoreAnnotations;
-import edu.cmu.tetrad.annotation.ScoreType;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataModelList;
 import edu.cmu.tetrad.data.DataSet;
@@ -43,6 +38,7 @@ import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.data.Knowledge2;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.util.JOptionUtils;
 import edu.cmu.tetrad.util.JsonUtils;
 import edu.cmu.tetrad.util.Parameters;
@@ -99,7 +95,6 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
     private static final long serialVersionUID = -5719467682865706447L;
 
     private final GeneralAlgorithmRunner runner;
-    private final Box algoTypesBox;
     private Box parametersBox;
     private Box graphContainer;
     private final JComboBox<String> testDropdown = new JComboBox<>();
@@ -161,166 +156,12 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
 
         algorithmsCanHaveKnowledge = AlgorithmAnnotations.getInstance().getAcceptKnowledge();
 
+        // Suggest algo list
+        suggestedAlgosList = new JList(suggestedAlgosListModel);
+
         this.parameters = runner.getParameters();
 
         graphEditor = new GraphSelectionEditor(new GraphSelectionWrapper(runner.getGraphs(), new Parameters()));
-
-        // Create the test/score dropdown menu based on dataset
-        List<String> tests;
-        List<String> scores;
-
-        // Use annotations to get the tests based on data type
-        List<String> discreteTests = IndependenceTestAnnotations.getInstance().getNamesAssociatedWith(DataType.Discrete);
-        List<String> continuousTests = IndependenceTestAnnotations.getInstance().getNamesAssociatedWith(DataType.Continuous);
-        List<String> mixedTests = IndependenceTestAnnotations.getInstance().getNamesAssociatedWith(DataType.Mixed);
-        List<String> dsepTests = IndependenceTestAnnotations.getInstance().getNamesAssociatedWith(DataType.Graph);
-
-        // Use annotations to get the scores based on data type
-        List<String> discreteScores = ScoreAnnotations.getInstance().getNamesAssociatedWith(DataType.Discrete);
-        List<String> continuousScores = ScoreAnnotations.getInstance().getNamesAssociatedWith(DataType.Continuous);
-        List<String> mixedScores = ScoreAnnotations.getInstance().getNamesAssociatedWith(DataType.Mixed);
-        List<String> dsepScores = ScoreAnnotations.getInstance().getNamesAssociatedWith(DataType.Graph);
-
-        // We can also use this way to filter the algos based on the data types they can handle - Zhou
-        DataModelList dataModelList = runner.getDataModelList();
-
-        if ((dataModelList.isEmpty() && runner.getSourceGraph() != null)) {
-            tests = dsepTests;
-            scores = dsepScores;
-        } else if (!(dataModelList.isEmpty())) {
-            DataModel dataSet = dataModelList.get(0);
-
-            if (dataSet.isContinuous()) {
-                tests = continuousTests;
-                scores = continuousScores;
-            } else if (dataSet.isDiscrete()) {
-                tests = discreteTests;
-                scores = discreteScores;
-            } else if (dataSet.isMixed()) {
-                tests = mixedTests;
-                scores = mixedScores;
-            } else {
-                throw new IllegalArgumentException();
-            }
-        } else {
-            throw new IllegalArgumentException("You need either some data sets or a graph as input.");
-        }
-
-        // Add to the test dropdown menu
-        tests.stream().forEach((test) -> {
-            testDropdown.addItem(test);
-        });
-
-        // Add to the score dropdown menu
-        scores.stream().forEach((score) -> {
-            scoreDropdown.addItem(score);
-        });
-
-        if (tests.contains(getTestType())) {
-            testDropdown.setSelectedItem(getTestType());
-        }
-
-        if (scores.contains(getScoreType())) {
-            scoreDropdown.setSelectedItem(getScoreType());
-        }
-
-        testDropdown.setEnabled(parameters.getBoolean("testEnabled", true));
-        scoreDropdown.setEnabled(parameters.getBoolean("scoreEnabled", false));
-
-        testDropdown.addActionListener((ActionEvent e) -> {
-            setAlgorithm();
-        });
-
-        scoreDropdown.addActionListener((ActionEvent e) -> {
-            setAlgorithm();
-        });
-
-        // Filter based on algo types dropdown
-        algoTypesBox = Box.createVerticalBox();
-
-        // Algo types label box
-        Box algTypesBoxLabelBox = Box.createHorizontalBox();
-        algTypesBoxLabelBox.add(new JLabel("List Algorithms that: "));
-        algTypesBoxLabelBox.setAlignmentX(LEFT_ALIGNMENT);
-
-        // Add label to containing box
-        algoTypesBox.add(algTypesBoxLabelBox);
-
-        // Show each algo type as a radio button
-        for (AlgType item : AlgType.values()) {
-            String algoType = item.toString().replace("_", " ");
-
-            // Option
-            Box algoTypeOptionBox = Box.createHorizontalBox();
-            algoTypeOptionBox.setAlignmentX(LEFT_ALIGNMENT);
-
-            JRadioButton algoTypeRadioBtn = new JRadioButton(algoType);
-
-            // Add to button group
-            algoTypesBtnGrp.add(algoTypeRadioBtn);
-
-            // Default to select "ALL"
-            if ("ALL".equals(algoType)) {
-                algoTypeRadioBtn.setSelected(true);
-                // Set the default selected selectedAlgoType
-                selectedAlgoType = AlgType.ALL;
-            }
-
-            // Add padding and option
-            algoTypeOptionBox.add(Box.createRigidArea(new Dimension(10, 20)));
-            algoTypeOptionBox.add(algoTypeRadioBtn);
-
-            // Add each option to containing box
-            algoTypesBox.add(algoTypeOptionBox);
-
-            // Event listener on each radio button
-            algoTypeRadioBtn.addActionListener((ActionEvent actionEvent) -> {
-                JRadioButton button = (JRadioButton) actionEvent.getSource();
-
-                if (button.isSelected()) {
-                    // Update the selected algo type
-                    selectedAlgoType = AlgType.valueOf(button.getText().replace(" ", "_"));
-
-                    // Update the list
-                    updateSuggestedAlgosList();
-                }
-            });
-        }
-
-        // Add default algos to list model
-        setDefaultAlgosListModel();
-
-        suggestedAlgosList = new JList(suggestedAlgosListModel);
-
-        // Only allow single selection
-        suggestedAlgosList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-
-        // Default to select the first algo name in list
-        setDefaultSelectedAlgo();
-
-        // Event listener
-        suggestedAlgosList.addListSelectionListener((ListSelectionEvent e) -> {
-            // More about why use getValueIsAdjusting()
-            // http://docs.oracle.com/javase/8/docs/api/javax/swing/ListSelectionModel.html#getValueIsAdjusting--
-            if (!e.getValueIsAdjusting()) {
-                // After selecting a different algo type, even though we set the selection index,
-                // but it won't be captured here - Zhou
-                // Seems this only captures mouse selection
-                if (suggestedAlgosList.getSelectedValue() == null) {
-                    return;
-                }
-
-                selectedAlgoName = suggestedAlgosList.getSelectedValue().toString();
-
-                System.out.println("Selected algo ..." + selectedAlgoName);
-
-                // Reset description
-                setAlgoDescriptionContent();
-
-                // Finally, update the test and score dropdown menus
-                setAlgorithm();
-            }
-        });
 
         // Embed the algo chooser panel into EditorWindow
         add(createAlgoChooserPanel(), BorderLayout.CENTER);
@@ -359,13 +200,18 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         // Reset description
         setAlgoDescriptionContent();
 
-        // Finally, update the test and score dropdown menus
+        // Set the selected algo and update the test and score dropdown menus
         setAlgorithm();
     }
 
     private void setDefaultSelectedAlgo() {
         suggestedAlgosList.setSelectedIndex(0);
         selectedAlgoName = suggestedAlgosList.getSelectedValue().toString();
+
+        System.out.println("Selected algo ..." + selectedAlgoName);
+
+        // Set the selected algo and update the test and score dropdown menus
+        setAlgorithm();
     }
 
     private void setAlgoDescriptionContent() {
@@ -751,6 +597,9 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         throw new IllegalArgumentException(errorResult);
     }
 
+    /**
+     * Initialize algorithm
+     */
     public Algorithm getAlgorithmFromInterface() {
         if (selectedAlgoName == null) {
             throw new NullPointerException();
@@ -759,56 +608,24 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         IndependenceWrapper independenceWrapper = getIndependenceWrapper();
         ScoreWrapper scoreWrapper = getScoreWrapper();
 
-        Algorithm algorithm = getAlgorithm(selectedAlgoName, independenceWrapper, scoreWrapper);
+        Class algoClass = AlgorithmAnnotations.getInstance().getAnnotatedClass(selectedAlgoName);
 
-        return algorithm;
-    }
-
-    /**
-     * Initialize algorithm
-     *
-     * @param name
-     * @param independenceWrapper
-     * @param scoreWrapper
-     * @return
-     */
-    private Algorithm getAlgorithm(String name, IndependenceWrapper independenceWrapper, ScoreWrapper scoreWrapper) {
-        AlgorithmDescriptions algoDescs = AlgorithmDescriptions.getInstance();
-        AlgorithmDescriptionClass algoDescClass = algoDescs.get(name);
-        if (algoDescClass == null) {
-            return null;
-        }
-
-        Class clazz = algoDescClass.getClazz();
-        Object obj = null;
+//        Algorithm algorithm = getAlgorithm(selectedAlgoName, independenceWrapper, scoreWrapper);
+        Algorithm algorithm = null;
         try {
-            obj = clazz.newInstance();
+            algorithm = AlgorithmFactory.create(algoClass, independenceWrapper, scoreWrapper);
         } catch (IllegalAccessException | InstantiationException exception) {
             // todo : use logger
             exception.printStackTrace(System.err);
         }
 
-        if (obj == null || !(obj instanceof Algorithm)) {
-            return null;
-        }
-
-        Algorithm algorithm = (Algorithm) obj;
-
-        if (algorithm instanceof UsesScoreWrapper) {
-            ((UsesScoreWrapper) algorithm).setScoreWrapper(scoreWrapper);
-        }
-
 //        if (algorithm instanceof HasKnowledge) {
 //            ((HasKnowledge) algorithm).setKnowledge();
 //        }
-        if (algorithm instanceof TakesIndependenceWrapper) {
-            ((TakesIndependenceWrapper) algorithm).setIndependenceWrapper(independenceWrapper);
-        }
-
-        if (algorithm instanceof TakesInitialGraph) {
+        // Those pairwise algos (EB, R1, R2,..) require source graph to initialize - Zhou
+        if (algorithm != null && algorithm instanceof TakesInitialGraph) {
             Algorithm initialGraph = null;
 
-            // Those pairwise algos (EB, R1, R2,..) require source graph to initialize - Zhou
             if (runner.getSourceGraph() != null && !runner.getDataModelList().isEmpty()) {
                 initialGraph = new SingleGraphAlg(runner.getSourceGraph());
             }
@@ -826,83 +643,52 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
     }
 
     private ScoreWrapper getScoreWrapper() {
-        ScoreType score = (ScoreType) scoreDropdown.getSelectedItem();
-        ScoreWrapper scoreWrapper;
+        String score = (String) scoreDropdown.getSelectedItem();
+        ScoreAnnotations scoreAnno = ScoreAnnotations.getInstance();
+        Class scoreClass = scoreAnno.getAnnotatedClass(score);
 
-        switch (score) {
-            case BDeu:
-                scoreWrapper = new BdeuScore();
-                break;
-            case Conditional_Gaussian_BIC:
-                scoreWrapper = new ConditionalGaussianBicScore();
-                break;
-            case Discrete_BIC:
-                scoreWrapper = new DiscreteBicScore();
-                break;
-            case SEM_BIC:
-                scoreWrapper = new SemBicScore();
-                break;
-            case Fisher_Z_Score:
-                scoreWrapper = new FisherZScore();
-                break;
-            case D_SEPARATION:
-                scoreWrapper = new DseparationScore(new SingleGraph(runner.getSourceGraph()));
-                break;
-            default:
-                throw new IllegalArgumentException("Please configure that score: " + score);
+        ScoreWrapper scoreWrapper = null;
+        try {
+            scoreWrapper = (ScoreWrapper) scoreClass.newInstance();
+        } catch (IllegalAccessException | InstantiationException exception) {
+            // log this error
+            throw new IllegalArgumentException("Please configure that score: " + score);
         }
+
+        if (scoreWrapper == null) {
+            return null;
+        }
+
         return scoreWrapper;
     }
 
-    // To-do
     private IndependenceWrapper getIndependenceWrapper() {
         String test = (String) testDropdown.getSelectedItem();
         IndependenceTestAnnotations indTestAnno = IndependenceTestAnnotations.getInstance();
         Class indTestClass = indTestAnno.getAnnotatedClass(test);
 
-        IndependenceWrapper independenceWrapper;
-
-        switch (test) {
-            case ChiSquare:
-                independenceWrapper = new ChiSquare();
-                break;
-            case Conditional_Correlation:
-                independenceWrapper = new ConditionalCorrelation();
-                break;
-            case Conditional_Gaussian_LRT:
-                independenceWrapper = new ConditionalGaussianLRT();
-                break;
-            case Fisher_Z:
-                independenceWrapper = new FisherZ();
-                break;
-            case Correlation_T:
-                independenceWrapper = new CorrelationT();
-                break;
-            case GSquare:
-                independenceWrapper = new GSquare();
-                break;
-            case SEM_BIC:
-                independenceWrapper = new SemBicTest();
-                break;
-            case D_SEPARATION:
-                independenceWrapper = new DSeparationTest(new SingleGraph(runner.getSourceGraph()));
-                break;
-            default:
-                throw new IllegalArgumentException("Please configure that test: " + test);
+        IndependenceWrapper independenceWrapper = null;
+        try {
+            independenceWrapper = (IndependenceWrapper) indTestClass.newInstance();
+        } catch (IllegalAccessException | InstantiationException exception) {
+            // log this error
         }
 
-        List<IndependenceTest> tests = new ArrayList<>();
-
-        for (DataModel dataModel : runner.getDataModelList()) {
-            IndependenceTest _test = independenceWrapper.getTest(dataModel, parameters);
-            tests.add(_test);
+        if (independenceWrapper != null) {
+            // do independence test for each dataset
+            List<IndependenceTest> tests = new ArrayList<>();
+            for (DataModel dataModel : runner.getDataModelList()) {
+                IndependenceTest _test = independenceWrapper.getTest(dataModel, parameters);
+                tests.add(_test);
+            }
+            runner.setIndependenceTests(tests);
         }
 
-        runner.setIndependenceTests(tests);
         return independenceWrapper;
     }
 
-    private void setAlgorithm() {
+    // Determine if enable/disable test dropdowns
+    private void setTestDropdown() {
         // Get the equivalent enum type of selectedAlgoName string
         AlgName name = AlgName.valueOf(selectedAlgoName);
 
@@ -916,7 +702,36 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
 
         // Determine if enable/disable test and score dropdowns
         testDropdown.setEnabled(algoAnno.requireIndependenceTest(algoClass));
+    }
+
+    // Determine if enable/disable score dropdowns
+    private void setScoreDropdown() {
+        // Get the equivalent enum type of selectedAlgoName string
+        AlgName name = AlgName.valueOf(selectedAlgoName);
+
+        if (name == null) {
+            return;
+        }
+
+        // Get annotated algo
+        AlgorithmAnnotations algoAnno = AlgorithmAnnotations.getInstance();
+        Class algoClass = algoAnno.getAnnotatedClass(selectedAlgoName);
+
+        // Determine if enable/disable test and score dropdowns
         scoreDropdown.setEnabled(algoAnno.requireScore(algoClass));
+    }
+
+    private void setAlgorithm() {
+        // Get the equivalent enum type of selectedAlgoName string
+        AlgName name = AlgName.valueOf(selectedAlgoName);
+
+        if (name == null) {
+            return;
+        }
+
+        // Determine if enable/disable test and score dropdowns
+        setTestDropdown();
+        setScoreDropdown();
 
         // Set the algo on each selection change
         Algorithm algorithm = getAlgorithmFromInterface();
@@ -930,7 +745,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         parameters.set("scoreEnabled", scoreDropdown.isEnabled());
 
         setAlgName(name);
-        setAlgType(selectedAlgoName.replace(" ", "_"));
+        setAlgType(selectedAlgoType.toString());
         setTestType((String) testDropdown.getSelectedItem());
         setScoreType((String) scoreDropdown.getSelectedItem());
 
@@ -973,6 +788,58 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         // Contains algo list, algo description, test, score, and parameters
         Box rightContainer = Box.createVerticalBox();
         rightContainer.setPreferredSize(new Dimension(360, 600));
+
+        // Filter based on algo types dropdown
+        Box algoTypesBox = Box.createVerticalBox();
+
+        // Algo types label box
+        Box algTypesBoxLabelBox = Box.createHorizontalBox();
+        algTypesBoxLabelBox.add(new JLabel("List Algorithms that: "));
+        algTypesBoxLabelBox.setAlignmentX(LEFT_ALIGNMENT);
+
+        // Add label to containing box
+        algoTypesBox.add(algTypesBoxLabelBox);
+
+        // Show each algo type as a radio button
+        for (AlgType item : AlgType.values()) {
+            String algoType = item.toString().replace("_", " ");
+
+            // Option
+            Box algoTypeOptionBox = Box.createHorizontalBox();
+            algoTypeOptionBox.setAlignmentX(LEFT_ALIGNMENT);
+
+            JRadioButton algoTypeRadioBtn = new JRadioButton(algoType);
+
+            // Add to button group
+            algoTypesBtnGrp.add(algoTypeRadioBtn);
+
+            // Default to select "ALL"
+            if ("ALL".equals(algoType)) {
+                algoTypeRadioBtn.setSelected(true);
+                // Set the default selected selectedAlgoType
+                selectedAlgoType = AlgType.ALL;
+            }
+
+            // Add padding and option
+            algoTypeOptionBox.add(Box.createRigidArea(new Dimension(10, 20)));
+            algoTypeOptionBox.add(algoTypeRadioBtn);
+
+            // Add each option to containing box
+            algoTypesBox.add(algoTypeOptionBox);
+
+            // Event listener on each radio button
+            algoTypeRadioBtn.addActionListener((ActionEvent actionEvent) -> {
+                JRadioButton button = (JRadioButton) actionEvent.getSource();
+
+                if (button.isSelected()) {
+                    // Update the selected algo type
+                    selectedAlgoType = AlgType.valueOf(button.getText().replace(" ", "_"));
+
+                    // Update the list
+                    updateSuggestedAlgosList();
+                }
+            });
+        }
 
         // Are the relationships between your variables linear?
         Box varLinearRelationshipsBox = Box.createVerticalBox();
@@ -1195,7 +1062,106 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
             resetAlgoFilters();
         });
 
-        // Test and score, Joe's old implementation
+        // Default algos list model
+        setDefaultAlgosListModel();
+
+        // Only allow single selection
+        suggestedAlgosList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+
+        // Event listener
+        suggestedAlgosList.addListSelectionListener((ListSelectionEvent e) -> {
+            // More about why use getValueIsAdjusting()
+            // http://docs.oracle.com/javase/8/docs/api/javax/swing/ListSelectionModel.html#getValueIsAdjusting--
+            if (!e.getValueIsAdjusting()) {
+                // After selecting a different algo type, even though we set the selection index,
+                // but it won't be captured here - Zhou
+                // Seems this only captures mouse selection
+                if (suggestedAlgosList.getSelectedValue() == null) {
+                    return;
+                }
+
+                selectedAlgoName = suggestedAlgosList.getSelectedValue().toString();
+
+                System.out.println("Selected algo ..." + selectedAlgoName);
+
+                // Reset description
+                setAlgoDescriptionContent();
+
+                // Finally, update the test and score dropdown menus
+                setAlgorithm();
+            }
+        });
+
+        // Default to select the first algo name in list
+        // This also enables/disables the corresponding test and score options
+        setDefaultSelectedAlgo();
+
+        // Create the test/score dropdown menu based on dataset
+        List<String> tests;
+        List<String> scores;
+
+        // Use annotations to get the tests based on data type
+        List<String> discreteTests = IndependenceTestAnnotations.getInstance().getNamesAssociatedWith(DataType.Discrete);
+        List<String> continuousTests = IndependenceTestAnnotations.getInstance().getNamesAssociatedWith(DataType.Continuous);
+        List<String> mixedTests = IndependenceTestAnnotations.getInstance().getNamesAssociatedWith(DataType.Mixed);
+        List<String> dsepTests = IndependenceTestAnnotations.getInstance().getNamesAssociatedWith(DataType.Graph);
+
+        // Use annotations to get the scores based on data type
+        List<String> discreteScores = ScoreAnnotations.getInstance().getNamesAssociatedWith(DataType.Discrete);
+        List<String> continuousScores = ScoreAnnotations.getInstance().getNamesAssociatedWith(DataType.Continuous);
+        List<String> mixedScores = ScoreAnnotations.getInstance().getNamesAssociatedWith(DataType.Mixed);
+        List<String> dsepScores = ScoreAnnotations.getInstance().getNamesAssociatedWith(DataType.Graph);
+
+        // We can also use this way to filter the algos based on the data types they can handle - Zhou
+        DataModelList dataModelList = runner.getDataModelList();
+
+        if ((dataModelList.isEmpty() && runner.getSourceGraph() != null)) {
+            tests = dsepTests;
+            scores = dsepScores;
+        } else if (!(dataModelList.isEmpty())) {
+            DataModel dataSet = dataModelList.get(0);
+
+            if (dataSet.isContinuous()) {
+                tests = continuousTests;
+                scores = continuousScores;
+            } else if (dataSet.isDiscrete()) {
+                tests = discreteTests;
+                scores = discreteScores;
+            } else if (dataSet.isMixed()) {
+                tests = mixedTests;
+                scores = mixedScores;
+            } else {
+                throw new IllegalArgumentException();
+            }
+        } else {
+            throw new IllegalArgumentException("You need either some data sets or a graph as input.");
+        }
+
+        // Add to the test dropdown menu
+        tests.stream().forEach((test) -> {
+            testDropdown.addItem(test);
+        });
+
+        // Add to the score dropdown menu
+        scores.stream().forEach((score) -> {
+            scoreDropdown.addItem(score);
+        });
+
+        // Event listener of test seleciton
+        testDropdown.addActionListener((ActionEvent e) -> {
+            // Don't use setAlgorithm() because we don't need to determine if
+            // enable/disable the test and score dropdown menus again - Zhou
+            setTestType((String) testDropdown.getSelectedItem());
+        });
+
+        // Event listener of score seleciton
+        scoreDropdown.addActionListener((ActionEvent e) -> {
+            // Don't use setAlgorithm() because we don't need to determine if
+            // enable/disable the test and score dropdown menus again - Zhou
+            setScoreType((String) scoreDropdown.getSelectedItem());
+        });
+
+        // Test and score containers
         Box testBox = Box.createHorizontalBox();
         JLabel label1 = new JLabel("Test if needed:");
         testBox.add(label1);

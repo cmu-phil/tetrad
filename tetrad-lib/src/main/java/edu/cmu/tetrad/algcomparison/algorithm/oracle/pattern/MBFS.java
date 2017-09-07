@@ -20,7 +20,6 @@ import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.util.Parameters;
 import edu.pitt.dbmi.algo.bootstrap.BootstrapEdgeEnsemble;
 import edu.pitt.dbmi.algo.bootstrap.GeneralBootstrapTest;
-
 import java.util.List;
 
 /**
@@ -34,6 +33,12 @@ import java.util.List;
         oracleType = OracleType.Score,
         description = "Short blurb goes here",
         assumptions = {}
+)
+@edu.cmu.tetrad.annotation.Algorithm(
+        name = "MBFS",
+        command = "mbfs",
+        algoType = AlgType.search_for_Markov_blankets,
+        description = "Short blurb goes here"
 )
 public class MBFS implements Algorithm, HasKnowledge, TakesIndependenceWrapper {
 
@@ -51,7 +56,7 @@ public class MBFS implements Algorithm, HasKnowledge, TakesIndependenceWrapper {
 
     @Override
     public Graph search(DataModel dataSet, Parameters parameters) {
-    	if (!parameters.getBoolean("bootstrapping")) {
+        if (!parameters.getBoolean("bootstrapping")) {
             IndependenceTest test = this.test.getTest(dataSet, parameters);
             edu.cmu.tetrad.search.Mbfs search = new edu.cmu.tetrad.search.Mbfs(
                     test,
@@ -64,30 +69,30 @@ public class MBFS implements Algorithm, HasKnowledge, TakesIndependenceWrapper {
             this.targetName = parameters.getString("targetName");
             Node target = test.getVariable(targetName);
             return search.search(target);
-    	}else{
-    		MBFS algorithm = new MBFS(test);
-    		
-    		algorithm.setKnowledge(knowledge);
-			DataSet data = (DataSet) dataSet;
-			GeneralBootstrapTest search = new GeneralBootstrapTest(data, algorithm,
-					parameters.getInt("bootstrapSampleSize"));
+        } else {
+            MBFS algorithm = new MBFS(test);
 
-			BootstrapEdgeEnsemble edgeEnsemble = BootstrapEdgeEnsemble.Highest;
-			switch (parameters.getInt("bootstrapEnsemble", 1)) {
-			case 0:
-				edgeEnsemble = BootstrapEdgeEnsemble.Preserved;
-				break;
-			case 1:
-				edgeEnsemble = BootstrapEdgeEnsemble.Highest;
-				break;
-			case 2:
-				edgeEnsemble = BootstrapEdgeEnsemble.Majority;
-			}
-			search.setEdgeEnsemble(edgeEnsemble);
-			search.setParameters(parameters);
-			search.setVerbose(parameters.getBoolean("verbose"));
-			return search.search();
-    	}
+            algorithm.setKnowledge(knowledge);
+            DataSet data = (DataSet) dataSet;
+            GeneralBootstrapTest search = new GeneralBootstrapTest(data, algorithm,
+                    parameters.getInt("bootstrapSampleSize"));
+
+            BootstrapEdgeEnsemble edgeEnsemble = BootstrapEdgeEnsemble.Highest;
+            switch (parameters.getInt("bootstrapEnsemble", 1)) {
+                case 0:
+                    edgeEnsemble = BootstrapEdgeEnsemble.Preserved;
+                    break;
+                case 1:
+                    edgeEnsemble = BootstrapEdgeEnsemble.Highest;
+                    break;
+                case 2:
+                    edgeEnsemble = BootstrapEdgeEnsemble.Majority;
+            }
+            search.setEdgeEnsemble(edgeEnsemble);
+            search.setParameters(parameters);
+            search.setVerbose(parameters.getBoolean("verbose"));
+            return search.search();
+        }
     }
 
     @Override

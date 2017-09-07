@@ -34,7 +34,12 @@ import java.util.List;
         description = "Short blurb goes here",
         assumptions = {}
 )
-@edu.cmu.tetrad.annotation.Algorithm(name = "FGES", command = "fges", algoType = AlgType.forbid_latent_common_causes)
+@edu.cmu.tetrad.annotation.Algorithm(
+        name = "FGES",
+        command = "fges",
+        algoType = AlgType.forbid_latent_common_causes,
+        description = "Short blurb goes here"
+)
 public class Fges implements Algorithm, TakesInitialGraph, HasKnowledge, UsesScoreWrapper {
 
     static final long serialVersionUID = 23L;

@@ -17,7 +17,6 @@ import edu.cmu.tetrad.search.Score;
 import edu.cmu.tetrad.util.Parameters;
 import edu.pitt.dbmi.algo.bootstrap.BootstrapEdgeEnsemble;
 import edu.pitt.dbmi.algo.bootstrap.GeneralBootstrapTest;
-
 import java.util.Collections;
 import java.util.List;
 
@@ -32,6 +31,12 @@ import java.util.List;
         oracleType = OracleType.Score,
         description = "Short blurb goes here",
         assumptions = {}
+)
+@edu.cmu.tetrad.annotation.Algorithm(
+        name = "FgesMb",
+        command = "fges-mb",
+        algoType = AlgType.search_for_Markov_blankets,
+        description = "Short blurb goes here"
 )
 public class FgesMb implements Algorithm, TakesInitialGraph, HasKnowledge, UsesScoreWrapper {
 
@@ -56,9 +61,9 @@ public class FgesMb implements Algorithm, TakesInitialGraph, HasKnowledge, UsesS
 
     @Override
     public Graph search(DataModel dataSet, Parameters parameters) {
-    	if (!parameters.getBoolean("bootstrapping")) {
+        if (!parameters.getBoolean("bootstrapping")) {
             if (algorithm != null) {
-            	initialGraph = algorithm.search(dataSet, parameters);
+                initialGraph = algorithm.search(dataSet, parameters);
             }
 
             Score score = this.score.getScore(dataSet, parameters);
@@ -74,33 +79,33 @@ public class FgesMb implements Algorithm, TakesInitialGraph, HasKnowledge, UsesS
             Node target = this.score.getVariable(targetName);
 
             return search.search(Collections.singletonList(target));
-    	}else{
-    		FgesMb fgesMb = new FgesMb(score, algorithm);
-    		
-    		fgesMb.setKnowledge(knowledge);
-			if (initialGraph != null) {
-				fgesMb.setInitialGraph(initialGraph);
-			}
-			DataSet data = (DataSet) dataSet;
-			GeneralBootstrapTest search = new GeneralBootstrapTest(data, fgesMb,
-					parameters.getInt("bootstrapSampleSize"));
+        } else {
+            FgesMb fgesMb = new FgesMb(score, algorithm);
 
-			BootstrapEdgeEnsemble edgeEnsemble = BootstrapEdgeEnsemble.Highest;
-			switch (parameters.getInt("bootstrapEnsemble", 1)) {
-			case 0:
-				edgeEnsemble = BootstrapEdgeEnsemble.Preserved;
-				break;
-			case 1:
-				edgeEnsemble = BootstrapEdgeEnsemble.Highest;
-				break;
-			case 2:
-				edgeEnsemble = BootstrapEdgeEnsemble.Majority;
-			}
-			search.setEdgeEnsemble(edgeEnsemble);
-			search.setParameters(parameters);
-			search.setVerbose(parameters.getBoolean("verbose"));
-			return search.search();
-    	}
+            fgesMb.setKnowledge(knowledge);
+            if (initialGraph != null) {
+                fgesMb.setInitialGraph(initialGraph);
+            }
+            DataSet data = (DataSet) dataSet;
+            GeneralBootstrapTest search = new GeneralBootstrapTest(data, fgesMb,
+                    parameters.getInt("bootstrapSampleSize"));
+
+            BootstrapEdgeEnsemble edgeEnsemble = BootstrapEdgeEnsemble.Highest;
+            switch (parameters.getInt("bootstrapEnsemble", 1)) {
+                case 0:
+                    edgeEnsemble = BootstrapEdgeEnsemble.Preserved;
+                    break;
+                case 1:
+                    edgeEnsemble = BootstrapEdgeEnsemble.Highest;
+                    break;
+                case 2:
+                    edgeEnsemble = BootstrapEdgeEnsemble.Majority;
+            }
+            search.setEdgeEnsemble(edgeEnsemble);
+            search.setParameters(parameters);
+            search.setVerbose(parameters.getBoolean("verbose"));
+            return search.search();
+        }
     }
 
     @Override
@@ -124,7 +129,7 @@ public class FgesMb implements Algorithm, TakesInitialGraph, HasKnowledge, UsesS
         List<String> parameters = score.getParameters();
         parameters.add("targetName");
         parameters.add("faithfulnessAssumed");
-		// Bootstrapping
+        // Bootstrapping
         parameters.add("bootstrapping");
         parameters.add("bootstrapSampleSize");
         parameters.add("bootstrapEnsemble");
@@ -142,15 +147,15 @@ public class FgesMb implements Algorithm, TakesInitialGraph, HasKnowledge, UsesS
         this.knowledge = knowledge;
     }
 
-	@Override
-	public Graph getInitialGraph() {
-		return initialGraph;
-	}
+    @Override
+    public Graph getInitialGraph() {
+        return initialGraph;
+    }
 
-	@Override
-	public void setInitialGraph(Graph initialGraph) {
-		this.initialGraph = initialGraph;
-	}
+    @Override
+    public void setInitialGraph(Graph initialGraph) {
+        this.initialGraph = initialGraph;
+    }
 
     @Override
     public void setInitialGraph(Algorithm algorithm) {

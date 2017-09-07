@@ -12,7 +12,6 @@ import edu.cmu.tetrad.search.Fask;
 import edu.cmu.tetrad.util.Parameters;
 import edu.pitt.dbmi.algo.bootstrap.BootstrapEdgeEnsemble;
 import edu.pitt.dbmi.algo.bootstrap.GeneralBootstrapTest;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -27,11 +26,17 @@ import java.util.List;
  * @author jdramsey
  */
 @AlgorithmDescription(
-		name = "EFANG", 
-		algType = AlgType.forbid_latent_common_causes, 
-		oracleType = OracleType.None, 
-		description = "Short blurb goes here", 
-		assumptions = {}
+        name = "EFANG",
+        algType = AlgType.forbid_latent_common_causes,
+        oracleType = OracleType.None,
+        description = "Short blurb goes here",
+        assumptions = {}
+)
+@edu.cmu.tetrad.annotation.Algorithm(
+        name = "EFANG",
+        command = "EFANG",
+        algoType = AlgType.forbid_latent_common_causes,
+        description = "Short blurb goes here"
 )
 public class FaskConcatenated implements MultiDataSetAlgorithm, HasKnowledge {
 
@@ -49,7 +54,7 @@ public class FaskConcatenated implements MultiDataSetAlgorithm, HasKnowledge {
 
     @Override
     public Graph search(List<DataModel> dataSets, Parameters parameters) {
-    	if (!parameters.getBoolean("bootstrapping")) {
+        if (!parameters.getBoolean("bootstrapping")) {
             List<DataSet> centered = new ArrayList<>();
 
             for (DataModel dataSet : dataSets) {
@@ -63,64 +68,64 @@ public class FaskConcatenated implements MultiDataSetAlgorithm, HasKnowledge {
             search.setAlpha(parameters.getDouble("twoCycleAlpha"));
             search.setKnowledge(knowledge);
             return search.search();
-    	}else{
-			FaskConcatenated algorithm = new FaskConcatenated(empirical);
-			algorithm.setKnowledge(knowledge);
+        } else {
+            FaskConcatenated algorithm = new FaskConcatenated(empirical);
+            algorithm.setKnowledge(knowledge);
 
-			List<DataSet> datasets = new ArrayList<>();
+            List<DataSet> datasets = new ArrayList<>();
 
-			for (DataModel dataModel : dataSets) {
-				datasets.add((DataSet) dataModel);
-			}
-			GeneralBootstrapTest search = new GeneralBootstrapTest(datasets, algorithm,
-					parameters.getInt("bootstrapSampleSize"));
+            for (DataModel dataModel : dataSets) {
+                datasets.add((DataSet) dataModel);
+            }
+            GeneralBootstrapTest search = new GeneralBootstrapTest(datasets, algorithm,
+                    parameters.getInt("bootstrapSampleSize"));
 
-			BootstrapEdgeEnsemble edgeEnsemble = BootstrapEdgeEnsemble.Highest;
-			switch (parameters.getInt("bootstrapEnsemble", 1)) {
-			case 0:
-				edgeEnsemble = BootstrapEdgeEnsemble.Preserved;
-				break;
-			case 1:
-				edgeEnsemble = BootstrapEdgeEnsemble.Highest;
-				break;
-			case 2:
-				edgeEnsemble = BootstrapEdgeEnsemble.Majority;
-			}
-			search.setEdgeEnsemble(edgeEnsemble);
-			search.setParameters(parameters);
-			search.setVerbose(parameters.getBoolean("verbose"));
-			return search.search();
-    	}
+            BootstrapEdgeEnsemble edgeEnsemble = BootstrapEdgeEnsemble.Highest;
+            switch (parameters.getInt("bootstrapEnsemble", 1)) {
+                case 0:
+                    edgeEnsemble = BootstrapEdgeEnsemble.Preserved;
+                    break;
+                case 1:
+                    edgeEnsemble = BootstrapEdgeEnsemble.Highest;
+                    break;
+                case 2:
+                    edgeEnsemble = BootstrapEdgeEnsemble.Majority;
+            }
+            search.setEdgeEnsemble(edgeEnsemble);
+            search.setParameters(parameters);
+            search.setVerbose(parameters.getBoolean("verbose"));
+            return search.search();
+        }
     }
 
     @Override
     public Graph search(DataModel dataSet, Parameters parameters) {
-    	if (!parameters.getBoolean("bootstrapping")) {
+        if (!parameters.getBoolean("bootstrapping")) {
             return search(Collections.singletonList((DataModel) DataUtils.getContinuousDataSet(dataSet)), parameters);
-    	}else{
-    		FaskConcatenated algorithm = new FaskConcatenated(empirical);
-			algorithm.setKnowledge(knowledge);
-			
-			List<DataSet> dataSets = Collections.singletonList(DataUtils.getContinuousDataSet(dataSet));
-			GeneralBootstrapTest search = new GeneralBootstrapTest(dataSets, algorithm,
-					parameters.getInt("bootstrapSampleSize"));
+        } else {
+            FaskConcatenated algorithm = new FaskConcatenated(empirical);
+            algorithm.setKnowledge(knowledge);
 
-			BootstrapEdgeEnsemble edgeEnsemble = BootstrapEdgeEnsemble.Highest;
-			switch (parameters.getInt("bootstrapEnsemble", 1)) {
-			case 0:
-				edgeEnsemble = BootstrapEdgeEnsemble.Preserved;
-				break;
-			case 1:
-				edgeEnsemble = BootstrapEdgeEnsemble.Highest;
-				break;
-			case 2:
-				edgeEnsemble = BootstrapEdgeEnsemble.Majority;
-			}
-			search.setEdgeEnsemble(edgeEnsemble);
-			search.setParameters(parameters);
-			search.setVerbose(parameters.getBoolean("verbose"));
-			return search.search();
-    	}
+            List<DataSet> dataSets = Collections.singletonList(DataUtils.getContinuousDataSet(dataSet));
+            GeneralBootstrapTest search = new GeneralBootstrapTest(dataSets, algorithm,
+                    parameters.getInt("bootstrapSampleSize"));
+
+            BootstrapEdgeEnsemble edgeEnsemble = BootstrapEdgeEnsemble.Highest;
+            switch (parameters.getInt("bootstrapEnsemble", 1)) {
+                case 0:
+                    edgeEnsemble = BootstrapEdgeEnsemble.Preserved;
+                    break;
+                case 1:
+                    edgeEnsemble = BootstrapEdgeEnsemble.Highest;
+                    break;
+                case 2:
+                    edgeEnsemble = BootstrapEdgeEnsemble.Majority;
+            }
+            search.setEdgeEnsemble(edgeEnsemble);
+            search.setParameters(parameters);
+            search.setVerbose(parameters.getBoolean("verbose"));
+            return search.search();
+        }
     }
 
     @Override
@@ -152,7 +157,7 @@ public class FaskConcatenated implements MultiDataSetAlgorithm, HasKnowledge {
         parameters.add("bootstrapSampleSize");
         parameters.add("bootstrapEnsemble");
         parameters.add("verbose");
-        
+
         return parameters;
     }
 
