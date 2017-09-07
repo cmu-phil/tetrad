@@ -6,7 +6,6 @@ import edu.cmu.tetrad.data.DataUtils;
 import edu.cmu.tetrad.search.IndTestCorrelationT;
 import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.util.Parameters;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -15,7 +14,13 @@ import java.util.List;
  *
  * @author jdramsey
  */
+@edu.cmu.tetrad.annotation.IndependenceTest(
+        name = "Fisher Z test",
+        command = "correlation-t",
+        dataType = DataType.Continuous
+)
 public class CorrelationT implements IndependenceWrapper {
+
     static final long serialVersionUID = 23L;
 
     @Override

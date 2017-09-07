@@ -15,7 +15,6 @@ import edu.cmu.tetrad.search.*;
 import edu.cmu.tetrad.util.Parameters;
 import edu.pitt.dbmi.algo.bootstrap.BootstrapEdgeEnsemble;
 import edu.pitt.dbmi.algo.bootstrap.GeneralBootstrapTest;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -31,6 +30,12 @@ import java.util.List;
         oracleType = OracleType.Test,
         description = "Short blurb goes here",
         assumptions = {}
+)
+@edu.cmu.tetrad.annotation.Algorithm(
+        name = "TsImages",
+        command = "TsImages",
+        algoType = AlgType.allow_latent_common_causes,
+        description = "Short blurb goes here"
 )
 public class TsImages implements Algorithm, HasKnowledge, MultiDataSetAlgorithm, UsesScoreWrapper {
 
@@ -52,7 +57,7 @@ public class TsImages implements Algorithm, HasKnowledge, MultiDataSetAlgorithm,
 
     @Override
     public Graph search(DataModel dataModel, Parameters parameters) {
-    	if(!parameters.getBoolean("bootstrapping")){
+        if (!parameters.getBoolean("bootstrapping")) {
             DataSet dataSet = (DataSet) dataModel;
             TsGFci search;
             Score score1 = score.getScore(dataSet, parameters);
@@ -60,28 +65,28 @@ public class TsImages implements Algorithm, HasKnowledge, MultiDataSetAlgorithm,
             search = new TsGFci(test, score1);
             search.setKnowledge(dataSet.getKnowledge());
             return search.search();
-    	}else{
-    		TsImages algorithm = new TsImages(score);
-    		
-    		DataSet data = (DataSet) dataModel;
-    		GeneralBootstrapTest search = new GeneralBootstrapTest(data, algorithm, parameters.getInt("bootstrapSampleSize"));
-    		
-    		BootstrapEdgeEnsemble edgeEnsemble = BootstrapEdgeEnsemble.Highest;
-    		switch (parameters.getInt("bootstrapEnsemble", 1)) {
-    		case 0:
-    			edgeEnsemble = BootstrapEdgeEnsemble.Preserved;
-    			break;
-    		case 1:
-    			edgeEnsemble = BootstrapEdgeEnsemble.Highest;
-    			break;
-    		case 2:
-    			edgeEnsemble = BootstrapEdgeEnsemble.Majority;
-    		}
-    		search.setEdgeEnsemble(edgeEnsemble);
-    		search.setParameters(parameters);    		
-    		search.setVerbose(parameters.getBoolean("verbose"));
-    		return search.search();
-    	}
+        } else {
+            TsImages algorithm = new TsImages(score);
+
+            DataSet data = (DataSet) dataModel;
+            GeneralBootstrapTest search = new GeneralBootstrapTest(data, algorithm, parameters.getInt("bootstrapSampleSize"));
+
+            BootstrapEdgeEnsemble edgeEnsemble = BootstrapEdgeEnsemble.Highest;
+            switch (parameters.getInt("bootstrapEnsemble", 1)) {
+                case 0:
+                    edgeEnsemble = BootstrapEdgeEnsemble.Preserved;
+                    break;
+                case 1:
+                    edgeEnsemble = BootstrapEdgeEnsemble.Highest;
+                    break;
+                case 2:
+                    edgeEnsemble = BootstrapEdgeEnsemble.Majority;
+            }
+            search.setEdgeEnsemble(edgeEnsemble);
+            search.setParameters(parameters);
+            search.setVerbose(parameters.getBoolean("verbose"));
+            return search.search();
+        }
     }
 
     @Override
@@ -102,8 +107,8 @@ public class TsImages implements Algorithm, HasKnowledge, MultiDataSetAlgorithm,
 
     @Override
     public List<String> getParameters() {
-    	List<String> parameters = score.getParameters();
-    	// Bootstrapping
+        List<String> parameters = score.getParameters();
+        // Bootstrapping
         parameters.add("bootstrapping");
         parameters.add("bootstrapSampleSize");
         parameters.add("bootstrapEnsemble");

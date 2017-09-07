@@ -6,7 +6,6 @@ import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.search.IndTestDSep;
 import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.util.Parameters;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -15,7 +14,13 @@ import java.util.List;
  *
  * @author jdramsey
  */
+@edu.cmu.tetrad.annotation.IndependenceTest(
+        name = "D-Separation test",
+        command = "d-sep",
+        dataType = DataType.Graph
+)
 public class DSeparationTest implements IndependenceWrapper {
+
     static final long serialVersionUID = 23L;
     private final RandomGraph randomGraph;
 

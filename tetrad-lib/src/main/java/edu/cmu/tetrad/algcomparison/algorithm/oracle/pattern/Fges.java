@@ -19,7 +19,6 @@ import edu.cmu.tetrad.search.SearchGraphUtils;
 import edu.cmu.tetrad.util.Parameters;
 import edu.pitt.dbmi.algo.bootstrap.BootstrapEdgeEnsemble;
 import edu.pitt.dbmi.algo.bootstrap.GeneralBootstrapTest;
-
 import java.io.PrintStream;
 import java.util.List;
 
@@ -34,6 +33,12 @@ import java.util.List;
         oracleType = OracleType.Score,
         description = "Short blurb goes here",
         assumptions = {}
+)
+@edu.cmu.tetrad.annotation.Algorithm(
+        name = "FGES",
+        command = "fges",
+        algoType = AlgType.forbid_latent_common_causes,
+        description = "Short blurb goes here"
 )
 public class Fges implements Algorithm, TakesInitialGraph, HasKnowledge, UsesScoreWrapper {
 
@@ -65,53 +70,53 @@ public class Fges implements Algorithm, TakesInitialGraph, HasKnowledge, UsesSco
 
     @Override
     public Graph search(DataModel dataSet, Parameters parameters) {
-        if(!parameters.getBoolean("bootstrapping")){
+        if (!parameters.getBoolean("bootstrapping")) {
             if (algorithm != null) {
-            	initialGraph = algorithm.search(dataSet, parameters);
+                initialGraph = algorithm.search(dataSet, parameters);
             }
 
             edu.cmu.tetrad.search.Fges search
-		            = new edu.cmu.tetrad.search.Fges(score.getScore(dataSet, parameters));
-		    search.setFaithfulnessAssumed(parameters.getBoolean("faithfulnessAssumed"));
-		    search.setKnowledge(knowledge);
-		    search.setVerbose(parameters.getBoolean("verbose"));
-		    search.setMaxDegree(parameters.getInt("maxDegree"));
-		    search.setSymmetricFirstStep(parameters.getBoolean("symmetricFirstStep"));
-		
-		    Object obj = parameters.get("printStream");
-		    if (obj instanceof PrintStream) {
-		        search.setOut((PrintStream) obj);
-		    }
-		
-		    if (initialGraph != null) {
-		        search.setInitialGraph(initialGraph);
-		    }
-		
-		    return search.search();
-        }else{
-        	Fges fges = new Fges(score, algorithm);
-        	
-        	fges.setKnowledge(knowledge);
-        	DataSet data = (DataSet) dataSet;
-    		GeneralBootstrapTest search = new GeneralBootstrapTest(data, fges, parameters.getInt("bootstrapSampleSize"));
-    		
-    		BootstrapEdgeEnsemble edgeEnsemble = BootstrapEdgeEnsemble.Highest;
-    		switch (parameters.getInt("bootstrapEnsemble", 1)) {
-    		case 0:
-    			edgeEnsemble = BootstrapEdgeEnsemble.Preserved;
-    			break;
-    		case 1:
-    			edgeEnsemble = BootstrapEdgeEnsemble.Highest;
-    			break;
-    		case 2:
-    			edgeEnsemble = BootstrapEdgeEnsemble.Majority;
-    		}
-    		search.setEdgeEnsemble(edgeEnsemble);
-    		search.setParameters(parameters);    		
-    		search.setVerbose(parameters.getBoolean("verbose"));
-    		return search.search();
+                    = new edu.cmu.tetrad.search.Fges(score.getScore(dataSet, parameters));
+            search.setFaithfulnessAssumed(parameters.getBoolean("faithfulnessAssumed"));
+            search.setKnowledge(knowledge);
+            search.setVerbose(parameters.getBoolean("verbose"));
+            search.setMaxDegree(parameters.getInt("maxDegree"));
+            search.setSymmetricFirstStep(parameters.getBoolean("symmetricFirstStep"));
+
+            Object obj = parameters.get("printStream");
+            if (obj instanceof PrintStream) {
+                search.setOut((PrintStream) obj);
+            }
+
+            if (initialGraph != null) {
+                search.setInitialGraph(initialGraph);
+            }
+
+            return search.search();
+        } else {
+            Fges fges = new Fges(score, algorithm);
+
+            fges.setKnowledge(knowledge);
+            DataSet data = (DataSet) dataSet;
+            GeneralBootstrapTest search = new GeneralBootstrapTest(data, fges, parameters.getInt("bootstrapSampleSize"));
+
+            BootstrapEdgeEnsemble edgeEnsemble = BootstrapEdgeEnsemble.Highest;
+            switch (parameters.getInt("bootstrapEnsemble", 1)) {
+                case 0:
+                    edgeEnsemble = BootstrapEdgeEnsemble.Preserved;
+                    break;
+                case 1:
+                    edgeEnsemble = BootstrapEdgeEnsemble.Highest;
+                    break;
+                case 2:
+                    edgeEnsemble = BootstrapEdgeEnsemble.Majority;
+            }
+            search.setEdgeEnsemble(edgeEnsemble);
+            search.setParameters(parameters);
+            search.setVerbose(parameters.getBoolean("verbose"));
+            return search.search();
         }
-        
+
     }
 
     @Override
@@ -161,15 +166,15 @@ public class Fges implements Algorithm, TakesInitialGraph, HasKnowledge, UsesSco
         this.compareToTrue = compareToTrue;
     }
 
-	@Override
-	public Graph getInitialGraph() {
-		return initialGraph;
-	}
+    @Override
+    public Graph getInitialGraph() {
+        return initialGraph;
+    }
 
-	@Override
-	public void setInitialGraph(Graph initialGraph) {
-		this.initialGraph = initialGraph;
-	}
+    @Override
+    public void setInitialGraph(Graph initialGraph) {
+        this.initialGraph = initialGraph;
+    }
 
     @Override
     public void setInitialGraph(Algorithm algorithm) {

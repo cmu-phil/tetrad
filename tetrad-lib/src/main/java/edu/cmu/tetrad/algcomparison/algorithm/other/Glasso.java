@@ -15,7 +15,6 @@ import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradMatrix;
 import edu.pitt.dbmi.algo.bootstrap.BootstrapEdgeEnsemble;
 import edu.pitt.dbmi.algo.bootstrap.GeneralBootstrapTest;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -27,15 +26,20 @@ import java.util.List;
         algType = AlgType.produce_undirected_graphs,
         oracleType = OracleType.Test,
         description = "Short blurb goes here",
-                assumptions = {}
+        assumptions = {}
 )
-
+@edu.cmu.tetrad.annotation.Algorithm(
+        name = "GLASSO",
+        command = "GLASSO",
+        algoType = AlgType.produce_undirected_graphs,
+        description = "Short blurb goes here"
+)
 public class Glasso implements Algorithm {
 
     static final long serialVersionUID = 23L;
 
     public Graph search(DataModel ds, Parameters parameters) {
-    	if (!parameters.getBoolean("bootstrapping")) {
+        if (!parameters.getBoolean("bootstrapping")) {
             DoubleMatrix2D cov = new DenseDoubleMatrix2D(DataUtils.getContinuousDataSet(ds)
                     .getCovarianceMatrix().toArray());
 
@@ -63,29 +67,29 @@ public class Glasso implements Algorithm {
             }
 
             return resultGraph;
-    	}else{
-    		Glasso algorithm = new Glasso();
-    		
-    		DataSet data = (DataSet) ds;
-			GeneralBootstrapTest search = new GeneralBootstrapTest(data, algorithm,
-					parameters.getInt("bootstrapSampleSize"));
+        } else {
+            Glasso algorithm = new Glasso();
 
-			BootstrapEdgeEnsemble edgeEnsemble = BootstrapEdgeEnsemble.Highest;
-			switch (parameters.getInt("bootstrapEnsemble", 1)) {
-			case 0:
-				edgeEnsemble = BootstrapEdgeEnsemble.Preserved;
-				break;
-			case 1:
-				edgeEnsemble = BootstrapEdgeEnsemble.Highest;
-				break;
-			case 2:
-				edgeEnsemble = BootstrapEdgeEnsemble.Majority;
-			}
-			search.setEdgeEnsemble(edgeEnsemble);
-			search.setParameters(parameters);
-			search.setVerbose(parameters.getBoolean("verbose"));
-			return search.search();
-    	}
+            DataSet data = (DataSet) ds;
+            GeneralBootstrapTest search = new GeneralBootstrapTest(data, algorithm,
+                    parameters.getInt("bootstrapSampleSize"));
+
+            BootstrapEdgeEnsemble edgeEnsemble = BootstrapEdgeEnsemble.Highest;
+            switch (parameters.getInt("bootstrapEnsemble", 1)) {
+                case 0:
+                    edgeEnsemble = BootstrapEdgeEnsemble.Preserved;
+                    break;
+                case 1:
+                    edgeEnsemble = BootstrapEdgeEnsemble.Highest;
+                    break;
+                case 2:
+                    edgeEnsemble = BootstrapEdgeEnsemble.Majority;
+            }
+            search.setEdgeEnsemble(edgeEnsemble);
+            search.setParameters(parameters);
+            search.setVerbose(parameters.getBoolean("verbose"));
+            return search.search();
+        }
     }
 
     public Graph getComparisonGraph(Graph graph) {

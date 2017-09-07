@@ -19,7 +19,6 @@ import edu.cmu.tetrad.search.SearchGraphUtils;
 import edu.cmu.tetrad.util.Parameters;
 import edu.pitt.dbmi.algo.bootstrap.BootstrapEdgeEnsemble;
 import edu.pitt.dbmi.algo.bootstrap.GeneralBootstrapTest;
-
 import java.util.List;
 
 /**
@@ -33,6 +32,12 @@ import java.util.List;
         oracleType = OracleType.Test,
         description = "Short blurb goes here",
         assumptions = {}
+)
+@edu.cmu.tetrad.annotation.Algorithm(
+        name = "PC_All",
+        command = "pc-all",
+        algoType = AlgType.forbid_latent_common_causes,
+        description = "Short blurb goes here"
 )
 public class PcAll implements Algorithm, TakesInitialGraph, HasKnowledge, TakesIndependenceWrapper {
 
@@ -56,13 +61,13 @@ public class PcAll implements Algorithm, TakesInitialGraph, HasKnowledge, TakesI
 
     @Override
     public Graph search(DataModel dataSet, Parameters parameters) {
-        if(!parameters.getBoolean("bootstrapping")){
+        if (!parameters.getBoolean("bootstrapping")) {
 
             if (algorithm != null) {
-            	initialGraph = algorithm.search(dataSet, parameters);
+                initialGraph = algorithm.search(dataSet, parameters);
             }
 
-        	edu.cmu.tetrad.search.PcAll.FasRule fasRule;
+            edu.cmu.tetrad.search.PcAll.FasRule fasRule;
 
             switch (parameters.getInt("fasRule")) {
                 case 1:
@@ -75,7 +80,7 @@ public class PcAll implements Algorithm, TakesInitialGraph, HasKnowledge, TakesI
                     fasRule = edu.cmu.tetrad.search.PcAll.FasRule.FAS_STABLE_CONCURRENT;
                     break;
                 default:
-                        throw new IllegalArgumentException("Not a choice.");
+                    throw new IllegalArgumentException("Not a choice.");
             }
 
             edu.cmu.tetrad.search.PcAll.ColliderDiscovery colliderDiscovery;
@@ -120,35 +125,35 @@ public class PcAll implements Algorithm, TakesInitialGraph, HasKnowledge, TakesI
             search.setMaxPathLength(parameters.getInt("maxPOrientationMaxPathLength"));
 
             return search.search();
-        }else{
-        	PcAll pcAll = new PcAll(test, algorithm);
-    		
-        	pcAll.setKnowledge(knowledge);
-        	if (initialGraph != null) {
-        		pcAll.setInitialGraph(initialGraph);
-  			}
+        } else {
+            PcAll pcAll = new PcAll(test, algorithm);
 
-    		DataSet data = (DataSet) dataSet;
-    		
-    		GeneralBootstrapTest search = new GeneralBootstrapTest(data, pcAll, parameters.getInt("bootstrapSampleSize"));
-    		
-    		BootstrapEdgeEnsemble edgeEnsemble = BootstrapEdgeEnsemble.Highest;
-    		switch (parameters.getInt("bootstrapEnsemble", 1)) {
-    		case 0:
-    			edgeEnsemble = BootstrapEdgeEnsemble.Preserved;
-    			break;
-    		case 1:
-    			edgeEnsemble = BootstrapEdgeEnsemble.Highest;
-    			break;
-    		case 2:
-    			edgeEnsemble = BootstrapEdgeEnsemble.Majority;
-    		}
-    		search.setEdgeEnsemble(edgeEnsemble);
-    		search.setParameters(parameters);    		
-    		search.setVerbose(parameters.getBoolean("verbose"));
-    		return search.search();
+            pcAll.setKnowledge(knowledge);
+            if (initialGraph != null) {
+                pcAll.setInitialGraph(initialGraph);
+            }
+
+            DataSet data = (DataSet) dataSet;
+
+            GeneralBootstrapTest search = new GeneralBootstrapTest(data, pcAll, parameters.getInt("bootstrapSampleSize"));
+
+            BootstrapEdgeEnsemble edgeEnsemble = BootstrapEdgeEnsemble.Highest;
+            switch (parameters.getInt("bootstrapEnsemble", 1)) {
+                case 0:
+                    edgeEnsemble = BootstrapEdgeEnsemble.Preserved;
+                    break;
+                case 1:
+                    edgeEnsemble = BootstrapEdgeEnsemble.Highest;
+                    break;
+                case 2:
+                    edgeEnsemble = BootstrapEdgeEnsemble.Majority;
+            }
+            search.setEdgeEnsemble(edgeEnsemble);
+            search.setParameters(parameters);
+            search.setVerbose(parameters.getBoolean("verbose"));
+            return search.search();
         }
-        
+
     }
 
     @Override
@@ -158,8 +163,8 @@ public class PcAll implements Algorithm, TakesInitialGraph, HasKnowledge, TakesI
 
     @Override
     public String getDescription() {
-        return "CPC (Conservative \"Peter and Clark\") using " + test.getDescription() + (algorithm != null ? " with initial graph from " +
-        		algorithm.getDescription() : "");
+        return "CPC (Conservative \"Peter and Clark\") using " + test.getDescription() + (algorithm != null ? " with initial graph from "
+                + algorithm.getDescription() : "");
     }
 
     @Override
@@ -198,15 +203,15 @@ public class PcAll implements Algorithm, TakesInitialGraph, HasKnowledge, TakesI
         this.knowledge = knowledge;
     }
 
-	@Override
-	public Graph getInitialGraph() {
-		return initialGraph;
-	}
+    @Override
+    public Graph getInitialGraph() {
+        return initialGraph;
+    }
 
-	@Override
-	public void setInitialGraph(Graph initialGraph) {
-		this.initialGraph = initialGraph;
-	}
+    @Override
+    public void setInitialGraph(Graph initialGraph) {
+        this.initialGraph = initialGraph;
+    }
 
     @Override
     public void setInitialGraph(Algorithm algorithm) {

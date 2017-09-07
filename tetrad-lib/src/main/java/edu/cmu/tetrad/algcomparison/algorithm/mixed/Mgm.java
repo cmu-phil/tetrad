@@ -14,7 +14,6 @@ import edu.cmu.tetrad.util.Parameters;
 import edu.pitt.csb.mgm.MGM;
 import edu.pitt.dbmi.algo.bootstrap.BootstrapEdgeEnsemble;
 import edu.pitt.dbmi.algo.bootstrap.GeneralBootstrapTest;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -26,7 +25,13 @@ import java.util.List;
         algType = AlgType.produce_undirected_graphs,
         oracleType = OracleType.None,
         description = "Short blurb goes here",
-                assumptions = {}
+        assumptions = {}
+)
+@edu.cmu.tetrad.annotation.Algorithm(
+        name = "MGM",
+        command = "MGM",
+        algoType = AlgType.produce_undirected_graphs,
+        description = "Short blurb goes here"
 )
 public class Mgm implements Algorithm {
 
@@ -37,7 +42,7 @@ public class Mgm implements Algorithm {
 
     @Override
     public Graph search(DataModel ds, Parameters parameters) {
-    	if(!parameters.getBoolean("bootstrapping")){
+        if (!parameters.getBoolean("bootstrapping")) {
             DataSet _ds = DataUtils.getMixedDataSet(ds);
 
             double mgmParam1 = parameters.getDouble("mgmParam1");
@@ -45,37 +50,37 @@ public class Mgm implements Algorithm {
             double mgmParam3 = parameters.getDouble("mgmParam3");
 
             double[] lambda = {
-                    mgmParam1,
-                    mgmParam2,
-                    mgmParam3
+                mgmParam1,
+                mgmParam2,
+                mgmParam3
             };
 
             MGM m = new MGM(_ds, lambda);
 
             return m.search();
-    	}else{
-    		Mgm algorithm = new Mgm();
-    		
-    		DataSet data = (DataSet) ds;
-    		
-    		GeneralBootstrapTest search = new GeneralBootstrapTest(data, algorithm, parameters.getInt("bootstrapSampleSize"));
-    		
-    		BootstrapEdgeEnsemble edgeEnsemble = BootstrapEdgeEnsemble.Highest;
-    		switch (parameters.getInt("bootstrapEnsemble", 1)) {
-    		case 0:
-    			edgeEnsemble = BootstrapEdgeEnsemble.Preserved;
-    			break;
-    		case 1:
-    			edgeEnsemble = BootstrapEdgeEnsemble.Highest;
-    			break;
-    		case 2:
-    			edgeEnsemble = BootstrapEdgeEnsemble.Majority;
-    		}
-    		search.setEdgeEnsemble(edgeEnsemble);
-    		search.setParameters(parameters);    		
-    		search.setVerbose(parameters.getBoolean("verbose"));
-    		return search.search();
-    	}
+        } else {
+            Mgm algorithm = new Mgm();
+
+            DataSet data = (DataSet) ds;
+
+            GeneralBootstrapTest search = new GeneralBootstrapTest(data, algorithm, parameters.getInt("bootstrapSampleSize"));
+
+            BootstrapEdgeEnsemble edgeEnsemble = BootstrapEdgeEnsemble.Highest;
+            switch (parameters.getInt("bootstrapEnsemble", 1)) {
+                case 0:
+                    edgeEnsemble = BootstrapEdgeEnsemble.Preserved;
+                    break;
+                case 1:
+                    edgeEnsemble = BootstrapEdgeEnsemble.Highest;
+                    break;
+                case 2:
+                    edgeEnsemble = BootstrapEdgeEnsemble.Majority;
+            }
+            search.setEdgeEnsemble(edgeEnsemble);
+            search.setParameters(parameters);
+            search.setVerbose(parameters.getBoolean("verbose"));
+            return search.search();
+        }
     }
 
     // Need to marry the parents on this.
