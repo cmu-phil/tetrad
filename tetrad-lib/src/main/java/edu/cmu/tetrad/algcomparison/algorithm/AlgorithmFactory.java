@@ -44,7 +44,7 @@ public class AlgorithmFactory {
         }
 
         AlgorithmAnnotations algoAnno = AlgorithmAnnotations.getInstance();
-        boolean testRequired = algoAnno.requireScore(algoClass);
+        boolean testRequired = algoAnno.requireIndependenceTest(algoClass);
         if (testRequired && test == null) {
             throw new IllegalArgumentException("Test of independence is required.");
         }
