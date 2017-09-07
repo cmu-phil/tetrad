@@ -65,18 +65,7 @@ public class ExternalAlgorithmPcalgGes extends ExternalAlgorithm {
      * Reads in the relevant graph from the file (see above) and returns it.
      */
     public Graph search(DataModel dataSet, Parameters parameters) {
-        int index = -1;
-
-        for (int i = 0; i < getNumDataModels(); i++) {
-            if (dataSet == simulation.getDataModel(i)) {
-                index = i + 1;
-                break;
-            }
-        }
-
-        if (index == -1) {
-            throw new IllegalArgumentException("Not a dataset for this simulation.");
-        }
+        int index = getIndex(dataSet);
 
         File nodes = new File(path, "/results/" + extDir + "/" + (simIndex + 1) + "/nodes." + index + ".txt");
         System.out.println(nodes.getAbsolutePath());
@@ -152,18 +141,7 @@ public class ExternalAlgorithmPcalgGes extends ExternalAlgorithm {
 
     @Override
     public long getElapsedTime(DataModel dataSet, Parameters parameters) {
-        int index = -1;
-
-        for (int i = 0; i < getNumDataModels(); i++) {
-            if (dataSet == simulation.getDataModel(i)) {
-                index = i + 1;
-                break;
-            }
-        }
-
-        if (index == -1) {
-            throw new IllegalArgumentException("Not a dataset for this simulation.");
-        }
+        int index = getIndex(dataSet);
 
         File file = new File(path, "/elapsed/" + extDir + "/" + (simIndex + 1) + "/graph." + index + ".txt");
 

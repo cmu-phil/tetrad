@@ -66,19 +66,7 @@ public class ExternalAlgorithmTetrad extends ExternalAlgorithm  {
      * Reads in the relevant graph from the file and returns it.
      */
     public Graph search(DataModel dataSet, Parameters parameters) {
-        int index = -1;
-
-        for (int i = 0; i < getNumDataModels(); i++) {
-            if (dataSet == simulation.getDataModel(i)) {
-                index = i + 1;
-                break;
-            }
-        }
-
-        if (index == -1) {
-            throw new IllegalArgumentException("Not a dataset for this simulation.");
-        }
-
+        int index = getIndex(dataSet);
         File file = new File(path, "/results/" + extDir + "/" + (simIndex + 1) + "/graph." + index + ".txt");
         System.out.println(file.getAbsolutePath());
         Graph graph = GraphUtils.loadGraphTxt(file);
@@ -104,19 +92,9 @@ public class ExternalAlgorithmTetrad extends ExternalAlgorithm  {
     public DataType getDataType() {
         return DataType.Continuous;
     }
+
     public long getElapsedTime(DataModel dataSet, Parameters parameters) {
-        int index = -1;
-
-        for (int i = 0; i < getNumDataModels(); i++) {
-            if (dataSet == simulation.getDataModel(i)) {
-                index = i + 1;
-                break;
-            }
-        }
-
-        if (index == -1) {
-            throw new IllegalArgumentException("Not a dataset for this simulation.");
-        }
+        int index = getIndex(dataSet);
 
         File file = new File(path, "/elapsed/" + extDir + "/" + (simIndex +  1) + "/graph." + index + ".txt");
 

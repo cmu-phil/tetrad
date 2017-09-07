@@ -37,5 +37,20 @@ public abstract class ExternalAlgorithm implements Algorithm {
     public int getNumDataModels() {
         return simulation.getNumDataModels();
     }
+    public int getIndex(DataModel dataSet) {
+        int index = -1;
+
+        for (int i = 0; i < getNumDataModels(); i++) {
+            if (dataSet == simulation.getDataModel(i)) {
+                index = i + 1;
+                break;
+            }
+        }
+
+        if (index == -1) {
+            throw new IllegalArgumentException("Not a dataset for this simulation.");
+        }
+        return index;
+    }
 
 }

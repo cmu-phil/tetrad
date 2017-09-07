@@ -86,7 +86,7 @@ public final class Fask implements GraphSearch {
     public Graph search() {
         long start = System.currentTimeMillis();
 
-        DataSet dataSet = DataUtils.center(this.dataSet);
+        DataSet dataSet = DataUtils.standardizeData(this.dataSet);
 
         SemBicScore score = new SemBicScore(new CovarianceMatrixOnTheFly(dataSet));
         score.setPenaltyDiscount(penaltyDiscount);
