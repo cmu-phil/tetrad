@@ -26,7 +26,6 @@ import edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern.*;
 import edu.cmu.tetrad.algcomparison.independence.*;
 import edu.cmu.tetrad.algcomparison.score.*;
 import edu.cmu.tetrad.algcomparison.utils.TakesInitialGraph;
-import edu.cmu.tetrad.annotation.AlgName;
 import edu.cmu.tetrad.annotation.AlgType;
 import edu.cmu.tetrad.annotation.AlgorithmAnnotations;
 import edu.cmu.tetrad.annotation.IndependenceTestAnnotations;
@@ -86,10 +85,6 @@ import org.apache.commons.lang3.StringUtils;
  */
 public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
 
-    // Note: When adding an algorithm, make sure you do all of the following:
-    // 1. Add a enum AlgName in edu.cmu.tetrad.annotation.AlgName
-    // 2. Add a enum AlgType in edu.cmu.tetrad.annotation.AlgType if adding a new type
-    // 3. Inside algorithm calss, add the annotation block to describe the algorithm
     private static final long serialVersionUID = -5719467682865706447L;
 
     private final GeneralAlgorithmRunner runner;
@@ -225,11 +220,10 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
     private void doSearch(final GeneralAlgorithmRunner runner) {
         HpcAccount hpcAccount = null;
 
-        AlgName name = AlgName.valueOf(selectedAlgoName);
-        switch (name) {
-            case FGES:
-            case GFCI:
-                hpcAccount = showRemoteComputingOptions(name);
+        switch (selectedAlgoName) {
+            case "FGES":
+            case "GFCI":
+                hpcAccount = showRemoteComputingOptions(selectedAlgoName);
                 break;
             default:
         }
@@ -255,7 +249,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         }
     }
 
-    private HpcAccount showRemoteComputingOptions(AlgName name) {
+    private HpcAccount showRemoteComputingOptions(String name) {
         List<HpcAccount> hpcAccounts = desktop.getHpcAccountManager().getHpcAccounts();
 
         if (hpcAccounts == null || hpcAccounts.size() == 0) {
@@ -422,17 +416,14 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
             Algorithm algorithm = runner.getAlgorithm();
             System.out.println("Algorithm: " + algorithm.getDescription());
 
-            // Get the equivalent enum type of selectedAlgoName string
-            AlgName name = AlgName.valueOf(selectedAlgoName);
-
-            switch (name) {
-                case FGES:
+            switch (selectedAlgoName) {
+                case "FGES":
                     algorithmName = AbstractAlgorithmRequest.FGES;
                     if (dataModel.isDiscrete()) {
                         algorithmName = AbstractAlgorithmRequest.FGES_DISCRETE;
                     }
                     break;
-                case GFCI:
+                case "GFCI":
                     algorithmName = AbstractAlgorithmRequest.GFCI;
                     if (dataModel.isDiscrete()) {
                         algorithmName = AbstractAlgorithmRequest.GFCI_DISCRETE;
@@ -691,13 +682,6 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
 
     // Determine if enable/disable test dropdowns
     private void setTestDropdown() {
-        // Get the equivalent enum type of selectedAlgoName string
-        AlgName name = AlgName.valueOf(selectedAlgoName);
-
-        if (name == null) {
-            return;
-        }
-
         // Get annotated algo
         AlgorithmAnnotations algoAnno = AlgorithmAnnotations.getInstance();
         Class algoClass = algoAnno.getAnnotatedClass(selectedAlgoName);
@@ -708,13 +692,6 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
 
     // Determine if enable/disable score dropdowns
     private void setScoreDropdown() {
-        // Get the equivalent enum type of selectedAlgoName string
-        AlgName name = AlgName.valueOf(selectedAlgoName);
-
-        if (name == null) {
-            return;
-        }
-
         // Get annotated algo
         AlgorithmAnnotations algoAnno = AlgorithmAnnotations.getInstance();
         Class algoClass = algoAnno.getAnnotatedClass(selectedAlgoName);
@@ -724,13 +701,6 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
     }
 
     private void setAlgorithm() {
-        // Get the equivalent enum type of selectedAlgoName string
-        AlgName name = AlgName.valueOf(selectedAlgoName);
-
-        if (name == null) {
-            return;
-        }
-
         // Determine if enable/disable test and score dropdowns
         setTestDropdown();
         setScoreDropdown();
@@ -746,8 +716,9 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         parameters.set("testEnabled", testDropdown.isEnabled());
         parameters.set("scoreEnabled", scoreDropdown.isEnabled());
 
-        setAlgName(name);
-        setAlgType(selectedAlgoType.toString());
+        parameters.set("algName", selectedAlgoName);
+        parameters.set("algType", selectedAlgoType.toString().replace(" ", "_"));
+
         setTestType((String) testDropdown.getSelectedItem());
         setScoreType((String) scoreDropdown.getSelectedItem());
 
@@ -1558,24 +1529,8 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         return parameters;
     }
 
-    private void setAlgType(String algType) {
-        parameters.set("algType", algType.replace(" ", "_"));
-    }
-
-    private void setAlgName(AlgName algName) {
-        parameters.set("algName", algName.toString());
-    }
-
-    private String getTestType() {
-        return parameters.getString("testType", "ChiSquare");
-    }
-
     private void setTestType(String testType) {
         parameters.set("testType", testType);
-    }
-
-    private String getScoreType() {
-        return parameters.getString("scoreType", "BDeu");
     }
 
     private void setScoreType(String scoreType) {
