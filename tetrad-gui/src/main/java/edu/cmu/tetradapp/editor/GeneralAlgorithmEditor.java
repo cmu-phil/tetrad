@@ -133,10 +133,16 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         // Access to the uploaded dataset
         DataModelList dataModelList = runner.getDataModelList();
 
-        // NOTE: the dataModelList.isEmpty() check is not working - Zhou
+        // NOTE: the dataModelList.isEmpty() returns false even if there's no dataset - Zhou
         // Notify the users that we need input dataset or source graph
         // if the data model has no dataset
         try {
+            // Debugging
+            System.out.println("===========================================================");
+            System.out.println(dataModelList.isEmpty());
+            System.out.println(dataModelList.size());
+            System.out.println(dataModelList.getModelList());
+
             if ((dataModelList.isEmpty() && runner.getSourceGraph() == null)) {
                 throw new Exception("You need either some datasets or a graph as input.");
             }

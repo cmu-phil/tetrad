@@ -18,7 +18,6 @@
 // along with this program; if not, write to the Free Software               //
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA //
 ///////////////////////////////////////////////////////////////////////////////
-
 package edu.cmu.tetradapp.model;
 
 import edu.cmu.tetrad.data.*;
@@ -32,7 +31,6 @@ import edu.cmu.tetrad.session.SessionModel;
 import edu.cmu.tetrad.session.SimulationParamsSource;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
-
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.util.*;
@@ -45,6 +43,7 @@ import java.util.*;
  */
 public class DataWrapper implements SessionModel, KnowledgeEditable, KnowledgeBoxInput,
         DoNotAddOldModel, SimulationParamsSource, MultipleDataSource {
+
     static final long serialVersionUID = 23L;
 
     /**
@@ -84,7 +83,6 @@ public class DataWrapper implements SessionModel, KnowledgeEditable, KnowledgeBo
     private Map<String, String> allParamSettings;
 
     //==============================CONSTRUCTORS===========================//
-
     protected DataWrapper() {
         setDataModel(new ColtDataSet(0, new LinkedList<Node>()));
         this.parameters = new Parameters();
@@ -112,16 +110,14 @@ public class DataWrapper implements SessionModel, KnowledgeEditable, KnowledgeBo
             }
         }
 
-
         this.dataModelList = wrapper.getDataModelList();
         this.parameters = parameters;
     }
 
-
     /**
      * Copy constructor.
      */
-    public DataWrapper(DataWrapper wrapper,Parameters parameters) {
+    public DataWrapper(DataWrapper wrapper, Parameters parameters) {
         this.name = wrapper.name;
         DataModelList dataModelList = new DataModelList();
         int selected = -1;
@@ -155,7 +151,6 @@ public class DataWrapper implements SessionModel, KnowledgeEditable, KnowledgeBo
 
         LogDataUtils.logDataModelList("Standalone data set.", getDataModelList());
     }
-
 
     /**
      * Constructs a data wrapper using a new DataSet as data model.
@@ -226,8 +221,10 @@ public class DataWrapper implements SessionModel, KnowledgeEditable, KnowledgeBo
             for (int j = 0; j < regressorNames.length; j++) {
                 Node variable = data.getVariable(regressorNames[j]);
 
-                if (variable == null) throw new NullPointerException("Variable " + variable + " doesn't " +
-                        "exist in the input data.");
+                if (variable == null) {
+                    throw new NullPointerException("Variable " + variable + " doesn't "
+                            + "exist in the input data.");
+                }
 
                 if (!(variable instanceof ContinuousVariable)) {
                     throw new IllegalArgumentException("Expecting a continuous variable: " + variable);
@@ -239,7 +236,6 @@ public class DataWrapper implements SessionModel, KnowledgeEditable, KnowledgeBo
             double yHat = result.getPredictedValue(x);
             data2.setDouble(i, data2.getColumn(data2.getVariable(predictedVariable)), yHat);
         }
-
 
         DataModelList dataModelList = new DataModelList();
         dataModelList.add(data2);
@@ -290,11 +286,10 @@ public class DataWrapper implements SessionModel, KnowledgeEditable, KnowledgeBo
         return name;
     }
 
-
     /**
      * Generates a simple exemplar of this class to test serialization.
      * <p>
-     * //     * @see edu.cmu.TestSerialization
+     * // * @see edu.cmu.TestSerialization
      *
      * @see TetradSerializableUtils
      */
@@ -303,7 +298,6 @@ public class DataWrapper implements SessionModel, KnowledgeEditable, KnowledgeBo
     }
 
     //==============================PUBLIC METHODS========================//
-
     /**
      * Stores a reference to the data model being wrapped.
      *
@@ -322,7 +316,9 @@ public class DataWrapper implements SessionModel, KnowledgeEditable, KnowledgeBo
     }
 
     public void setDataModelList(DataModelList dataModelList) {
-        if (dataModelList == null) throw new NullPointerException("Data model list not provided.");
+        if (dataModelList == null) {
+            throw new NullPointerException("Data model list not provided.");
+        }
         this.dataModelList = dataModelList;
     }
 
@@ -404,7 +400,6 @@ public class DataWrapper implements SessionModel, KnowledgeEditable, KnowledgeBo
     }
 
     //=============================== Private Methods ==========================//
-
     private static DataModel copyData(DataSet data) {
         ColtDataSet newData = new ColtDataSet(data.getNumRows(), data.getVariables());
         for (int col = 0; col < data.getNumColumns(); col++) {
@@ -418,7 +413,6 @@ public class DataWrapper implements SessionModel, KnowledgeEditable, KnowledgeBo
         }
         return newData;
     }
-
 
     /**
      * Adds semantic checks to the default deserialization method. This method
@@ -458,7 +452,6 @@ public class DataWrapper implements SessionModel, KnowledgeEditable, KnowledgeBo
     public void setParameters(Parameters parameters) {
         this.parameters = parameters;
     }
-
 
     public List<String> getVariableNames() {
         List<String> variableNames = new ArrayList<>();
@@ -507,8 +500,3 @@ public class DataWrapper implements SessionModel, KnowledgeEditable, KnowledgeBo
         return allParamSettings;
     }
 }
-
-
-
-
-

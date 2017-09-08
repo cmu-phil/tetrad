@@ -18,25 +18,27 @@
 // along with this program; if not, write to the Free Software               //
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA //
 ///////////////////////////////////////////////////////////////////////////////
-
 package edu.cmu.tetrad.data;
 
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.TetradSerializable;
 
 /**
- * <p>Interface implemented by classes, instantiations of which can serve as
- * data models in Tetrad. Data models may be named if desired; if provided,
- * these names will be used for display purposes.</p> <p>This interface is
- * relatively free of methods, mainly because classes that can serve as data
- * models in Tetrad are diverse, including continuous and discrete data sets,
- * covariance and correlation matrices, graphs, and lists of other data models.
- * So this is primarily a taqging interface.</p>
+ * <p>
+ * Interface implemented by classes, instantiations of which can serve as data
+ * models in Tetrad. Data models may be named if desired; if provided, these
+ * names will be used for display purposes.</p>
+ * <p>
+ * This interface is relatively free of methods, mainly because classes that can
+ * serve as data models in Tetrad are diverse, including continuous and discrete
+ * data sets, covariance and correlation matrices, graphs, and lists of other
+ * data models. So this is primarily a taqging interface.</p>
  *
  * @author Joseph Ramsey jdramsey@andrew.cmu.edu
  */
 public interface DataModel
         extends KnowledgeTransferable, VariableSource, TetradSerializable {
+
     long serialVersionUID = 23L;
 
     /**
@@ -64,7 +66,3 @@ public interface DataModel
 
     DataModel copy();
 }
-
-
-
-
