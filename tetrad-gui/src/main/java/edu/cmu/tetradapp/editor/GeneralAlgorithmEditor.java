@@ -133,6 +133,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         // Access to the uploaded dataset
         DataModelList dataModelList = runner.getDataModelList();
 
+        // NOTE: the dataModelList.isEmpty() check is not working - Zhou
         // Notify the users that we need input dataset or source graph
         // if the data model has no dataset
         try {
@@ -156,40 +157,9 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         // Later use this to filter algos based on the knowledge siwtch
         algorithmsAcceptKnowledge = AlgorithmAnnotations.getInstance().getAcceptKnowledge();
 
-        // Create the test/score dropdown menu based on dataset
-        // Use annotations to get the tests based on data type
-        List<String> discreteTests = IndependenceTestAnnotations.getInstance().getNamesAssociatedWith(DataType.Discrete);
-        List<String> continuousTests = IndependenceTestAnnotations.getInstance().getNamesAssociatedWith(DataType.Continuous);
-        List<String> mixedTests = IndependenceTestAnnotations.getInstance().getNamesAssociatedWith(DataType.Mixed);
-        List<String> dsepTests = IndependenceTestAnnotations.getInstance().getNamesAssociatedWith(DataType.Graph);
-
-        // Use annotations to get the scores based on data type
-        List<String> discreteScores = ScoreAnnotations.getInstance().getNamesAssociatedWith(DataType.Discrete);
-        List<String> continuousScores = ScoreAnnotations.getInstance().getNamesAssociatedWith(DataType.Continuous);
-        List<String> mixedScores = ScoreAnnotations.getInstance().getNamesAssociatedWith(DataType.Mixed);
-        List<String> dsepScores = ScoreAnnotations.getInstance().getNamesAssociatedWith(DataType.Graph);
-
-        // Determine the test/score dropdown menu options based on dataset
-        if (dataModelList.isEmpty()) {
-            tests = dsepTests;
-            scores = dsepScores;
-        } else {
-            // Check type based on the first dataset
-            DataModel dataSet = dataModelList.get(0);
-
-            if (dataSet.isContinuous()) {
-                tests = continuousTests;
-                scores = continuousScores;
-            } else if (dataSet.isDiscrete()) {
-                tests = discreteTests;
-                scores = discreteScores;
-            } else if (dataSet.isMixed()) {
-                tests = mixedTests;
-                scores = mixedScores;
-            } else {
-                throw new IllegalArgumentException();
-            }
-        }
+        // Use annotations to get the tests and scores based on different data types
+        // Need to do this before calling createAlgoChooserPanel() - Zhou
+        determineTestAndScore(dataModelList);
 
         // Create default algos list model
         setDefaultAlgosListModel();
@@ -216,569 +186,33 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         runner.setAlgorithm(algorithm);
     }
 
-    private void updateSuggestedAlgosList() {
-        // Clear the list model
-        suggestedAlgosListModel.removeAllElements();
-
-        // Create a new list model based on selections
-        for (String algoName : algorithmNames) {
-            AlgorithmAnnotations algoAnno = AlgorithmAnnotations.getInstance();
-            // Use package path here since we have exisiting Algorithm package
-            // We can use this annotation to get all its attributes
-            edu.cmu.tetrad.annotation.Algorithm annotation = algoAnno.getAnnotation(algoName);
-
-            // Also check the there's selection of knowledge file
-            if (takesKnowledgeFile != null) {
-                if (takesKnowledgeFile) {
-                    if ((annotation.algoType() == selectedAlgoType || selectedAlgoType == AlgType.ALL) && algorithmsAcceptKnowledge.contains(annotation.name())) {
-                        suggestedAlgosListModel.addElement(annotation.name());
-                    }
-                } else if ((annotation.algoType() == selectedAlgoType || selectedAlgoType == AlgType.ALL) && !algorithmsAcceptKnowledge.contains(annotation.name())) {
-                    suggestedAlgosListModel.addElement(annotation.name());
-                }
-            } else if (annotation.algoType() == selectedAlgoType || selectedAlgoType == AlgType.ALL) {
-                suggestedAlgosListModel.addElement(annotation.name());
-            }
-        }
-
-        // Reset default selected algorithm
-        setDefaultSelectedAlgo();
-
-        // Reset description
-        setAlgoDescriptionContent();
-
-        // Set the selected algo and update the test and score dropdown menus
-        setAlgorithm();
-    }
-
-    private void setDefaultSelectedAlgo() {
-        suggestedAlgosList.setSelectedIndex(0);
-        selectedAlgoName = suggestedAlgosList.getSelectedValue().toString();
-
-        System.out.println("Selected algo ..." + selectedAlgoName);
-
-        // Set the selected algo and update the test and score dropdown menus
-        setAlgorithm();
-    }
-
-    private void setAlgoDescriptionContent() {
-        AlgorithmAnnotations algoAnno = AlgorithmAnnotations.getInstance();
-        // We can use this annotation to get all its attributes
-        edu.cmu.tetrad.annotation.Algorithm annotation = algoAnno.getAnnotation(selectedAlgoName);
-
-        algoDescriptionTextArea.setText("Description of " + selectedAlgoName + ": " + annotation.description());
-    }
-
-    private void doSearch(final GeneralAlgorithmRunner runner) {
-        HpcAccount hpcAccount = null;
-
-        switch (selectedAlgoName) {
-            case "FGES":
-            case "GFCI":
-                hpcAccount = showRemoteComputingOptions(selectedAlgoName);
-                break;
-            default:
-        }
-
-        if (hpcAccount == null) {
-            graphEditor.saveLayout();
-
-            runner.execute();
-
-            // Show graph
-            graphEditor.replace(runner.getGraphs());
-            graphEditor.validate();
-            firePropertyChange("modelChanged", null, null);
-
-            // Update the graphContainer
-            graphContainer.add(graphEditor);
-        } else {
-            try {
-                doRemoteCompute(runner, hpcAccount);
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
-    }
-
-    private HpcAccount showRemoteComputingOptions(String name) {
-        List<HpcAccount> hpcAccounts = desktop.getHpcAccountManager().getHpcAccounts();
-
-        if (hpcAccounts == null || hpcAccounts.size() == 0) {
-            return null;
-        }
-
-        String no_answer = "No, thanks";
-        String yes_answer = "Please run it on ";
-
-        Object[] options = new String[hpcAccounts.size() + 1];
-        options[0] = no_answer;
-        for (int i = 0; i < hpcAccounts.size(); i++) {
-            String connName = hpcAccounts.get(i).getConnectionName();
-            options[i + 1] = yes_answer + connName;
-        }
-
-        int n = JOptionPane.showOptionDialog(this, "Would you like to execute a " + name + " search in the cloud?",
-                "A Silly Question", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE, null, options, options[0]);
-        if (n == 0) {
-            return null;
-        }
-        return hpcAccounts.get(n - 1);
-    }
-
-    private void doRemoteCompute(final GeneralAlgorithmRunner runner, final HpcAccount hpcAccount) throws Exception {
-
-        // **********************
-        // Show progress panel *
-        // **********************
-        Frame ancestor = (Frame) JOptionUtils.centeringComp().getTopLevelAncestor();
-        final JDialog progressDialog = new JDialog(ancestor, "HPC Job Submission's Progress...", false);
-
-        Dimension progressDim = new Dimension(500, 150);
-
-        JTextArea progressTextArea = new JTextArea();
-        progressTextArea.setPreferredSize(progressDim);
-        progressTextArea.setEditable(false);
-
-        JScrollPane progressScroller = new JScrollPane(progressTextArea);
-        progressScroller.setAlignmentX(LEFT_ALIGNMENT);
-
-        progressDialog.setLayout(new BorderLayout());
-        progressDialog.getContentPane().add(progressScroller, BorderLayout.CENTER);
-        progressDialog.pack();
-        Dimension screenDim = Toolkit.getDefaultToolkit().getScreenSize();
-        progressDialog.setLocation((screenDim.width - progressDim.width) / 2,
-                (screenDim.height - progressDim.height) / 2);
-        progressDialog.setVisible(true);
-
-        int totalProcesses = 4;
-        String newline = "\n";
-        String tab = "\t";
-        int progressTextLength = 0;
-
-        DataModel dataModel = runner.getDataModel();
-
-        // 1. Generate temp file
-        Path file = null;
-        Path prior = null;
-        try {
-            // ****************************
-            // Data Preparation Progress *
-            // ****************************
-            String dataMessage = String.format("1/%1$d Data Preparation", totalProcesses);
-            progressTextArea.append(dataMessage);
-            progressTextArea.append(tab);
-
-            progressTextLength = progressTextArea.getText().length();
-
-            progressTextArea.append("Preparing...");
-            progressTextArea.updateUI();
-
-            file = Files.createTempFile("Tetrad-data-", ".txt");
-            // System.out.println(file.toAbsolutePath().toString());
-            List<String> tempLine = new ArrayList<>();
-
-            // Header
-            List<Node> variables = dataModel.getVariables();
-            if ((variables == null || variables.isEmpty()) && runner.getSourceGraph() != null) {
-                variables = runner.getSourceGraph().getNodes();
-            }
-
-            String vars = StringUtils.join(variables.toArray(), tab);
-            tempLine.add(vars);
-
-            // Data
-            DataSet dataSet = (DataSet) dataModel;
-            for (int i = 0; i < dataSet.getNumRows(); i++) {
-                String line = null;
-                for (int j = 0; j < dataSet.getNumColumns(); j++) {
-                    String cell = null;
-                    if (dataSet.isContinuous()) {
-                        cell = String.valueOf(dataSet.getDouble(i, j));
-                    } else {
-                        cell = String.valueOf(dataSet.getInt(i, j));
-                    }
-                    if (line == null) {
-                        line = cell;
-                    } else {
-                        line = line + "\t" + cell;
-                    }
-                }
-                tempLine.add(line);
-            }
-
-            // for (String line : tempLine) {
-            // System.out.println(line);
-            // }
-            Files.write(file, tempLine);
-
-            // Get file's MD5 hash and use it as its identifier
-            String datasetMd5 = MessageDigestHash.computeMD5Hash(file);
-
-            progressTextArea.replaceRange("Done", progressTextLength, progressTextArea.getText().length());
-            progressTextArea.append(newline);
-            progressTextArea.updateUI();
-
-            // ***************************************
-            // Prior Knowledge Preparation Progress *
-            // ***************************************
-            String priorMessage = String.format("2/%1$d Prior Knowledge Preparation", totalProcesses);
-            progressTextArea.append(priorMessage);
-            progressTextArea.append(tab);
-
-            progressTextLength = progressTextArea.getText().length();
-
-            progressTextArea.append("Preparing...");
-            progressTextArea.updateUI();
-
-            // 2. Generate temp prior knowledge file
-            Knowledge2 knowledge = (Knowledge2) dataModel.getKnowledge();
-            if (knowledge != null && !knowledge.isEmpty()) {
-                prior = Files.createTempFile(file.getFileName().toString(), ".prior");
-                knowledge.saveKnowledge(Files.newBufferedWriter(prior));
-
-                progressTextArea.replaceRange("Done", progressTextLength, progressTextArea.getText().length());
-                progressTextArea.append(newline);
-                progressTextArea.updateUI();
-            } else {
-                progressTextArea.replaceRange("Skipped", progressTextLength, progressTextArea.getText().length());
-                progressTextArea.append(newline);
-                progressTextArea.updateUI();
-            }
-            // Get knowledge file's MD5 hash and use it as its identifier
-            String priorKnowledgeMd5 = null;
-            if (prior != null) {
-                priorKnowledgeMd5 = MessageDigestHash.computeMD5Hash(prior);
-            }
-
-            // *******************************************
-            // Algorithm Parameter Preparation Progress *
-            // *******************************************
-            String algorMessage = String.format("3/%1$d Algorithm Preparation", totalProcesses);
-            progressTextArea.append(algorMessage);
-            progressTextArea.append(tab);
-
-            progressTextLength = progressTextArea.getText().length();
-
-            progressTextArea.append("Preparing...");
-            progressTextArea.updateUI();
-
-            // 3.1 Algorithm name
-            String algorithmName = AbstractAlgorithmRequest.FGES;
-            Algorithm algorithm = runner.getAlgorithm();
-            System.out.println("Algorithm: " + algorithm.getDescription());
-
-            switch (selectedAlgoName) {
-                case "FGES":
-                    algorithmName = AbstractAlgorithmRequest.FGES;
-                    if (dataModel.isDiscrete()) {
-                        algorithmName = AbstractAlgorithmRequest.FGES_DISCRETE;
-                    }
-                    break;
-                case "GFCI":
-                    algorithmName = AbstractAlgorithmRequest.GFCI;
-                    if (dataModel.isDiscrete()) {
-                        algorithmName = AbstractAlgorithmRequest.GFCI_DISCRETE;
-                    }
-                    break;
-                default:
-                    return;
-            }
-
-            // 3.2 Parameters
-            AlgorithmParamRequest algorithmParamRequest = new AlgorithmParamRequest();
-
-            // Dataset and Prior paths
-            String datasetPath = file.toAbsolutePath().toString();
-            System.out.println(datasetPath);
-            algorithmParamRequest.setDatasetPath(datasetPath);
-            algorithmParamRequest.setDatasetMd5(datasetMd5);
-            if (prior != null) {
-                String priorKnowledgePath = prior.toAbsolutePath().toString();
-                System.out.println(priorKnowledgePath);
-                algorithmParamRequest.setPriorKnowledgePath(priorKnowledgePath);
-                algorithmParamRequest.setPriorKnowledgeMd5(priorKnowledgeMd5);
-            }
-
-            // VariableType
-            if (dataModel.isContinuous()) {
-                algorithmParamRequest.setVariableType("continuous");
-            } else {
-                algorithmParamRequest.setVariableType("discrete");
-            }
-
-            // FileDelimiter
-            String fileDelimiter = "tab"; // Pre-determined
-            algorithmParamRequest.setFileDelimiter(fileDelimiter);
-
-            // Default Data Validation Parameters
-            DataValidation dataValidation = new DataValidation();
-            dataValidation.setUniqueVarName(true);
-            if (dataModel.isContinuous()) {
-                dataValidation.setNonZeroVariance(true);
-            } else {
-                dataValidation.setCategoryLimit(true);
-            }
-            algorithmParamRequest.setDataValidation(dataValidation);
-
-            List<AlgorithmParameter> AlgorithmParameters = new ArrayList<>();
-
-            Parameters parameters = runner.getParameters();
-            List<String> parameterNames = runner.getAlgorithm().getParameters();
-            for (String parameter : parameterNames) {
-                String value = parameters.get(parameter).toString();
-                System.out.println("parameter: " + parameter + "\tvalue: " + value);
-                if (value != null) {
-                    AlgorithmParameter algorParam = new AlgorithmParameter();
-                    algorParam.setParameter(parameter);
-                    algorParam.setValue(value);
-                    AlgorithmParameters.add(algorParam);
-                }
-            }
-
-            algorithmParamRequest.setAlgorithmParameters(AlgorithmParameters);
-
-            String maxHeapSize = null;
-            do {
-                maxHeapSize = JOptionPane.showInputDialog(progressDialog, "Enter Your Request Java Max Heap Size (GB):",
-                        "5");
-            } while (maxHeapSize != null && !StringUtils.isNumeric(maxHeapSize));
-
-            if (maxHeapSize != null) {
-                JvmOption jvmOption = new JvmOption();
-                jvmOption.setParameter("maxHeapSize");
-                jvmOption.setValue(maxHeapSize);
-                List<JvmOption> jvmOptions = new ArrayList<>();
-                jvmOptions.add(jvmOption);
-                algorithmParamRequest.setJvmOptions(jvmOptions);
-            }
-
-            // Hpc parameters
-            final HpcAccountManager hpcAccountManager = desktop.getHpcAccountManager();
-            JsonWebToken jsonWebToken = HpcAccountUtils.getJsonWebToken(hpcAccountManager, hpcAccount);
-            if (jsonWebToken.getWallTime() != null) {
-                // User allowed to customize the job's wall time
-                String[] wallTime = jsonWebToken.getWallTime();
-                Object userwallTime = JOptionPane.showInputDialog(progressDialog, "Wall Time:",
-                        "Choose Your Wall Time (in Hour)", JOptionPane.QUESTION_MESSAGE, null, wallTime, wallTime[0]);
-
-                if (wallTime != null && userwallTime != null) {
-                    HpcParameter hpcParameter = new HpcParameter();
-                    hpcParameter.setKey("walltime");
-                    hpcParameter.setValue(userwallTime.toString());
-                    System.out.println("walltime: " + userwallTime.toString());
-                    algorithmParamRequest.setHpcParameters(Collections.singletonList(hpcParameter));
-                }
-            }
-
-            progressTextArea.replaceRange("Done", progressTextLength, progressTextArea.getText().length());
-            progressTextArea.append(newline);
-            progressTextArea.updateUI();
-
-            // ********************************
-            // Adding HPC Job Queue Progress *
-            // ********************************
-            String dbMessage = String.format("4/%1$d HPC Job Queue Submission", totalProcesses);
-            progressTextArea.append(dbMessage);
-            progressTextArea.append(tab);
-
-            progressTextLength = progressTextArea.getText().length();
-
-            progressTextArea.append("Preparing...");
-            progressTextArea.updateUI();
-
-            HpcJobManager hpcJobManager = desktop.getHpcJobManager();
-
-            // 4.1 Save HpcJobInfo
-            hpcJobInfo = new HpcJobInfo();
-            hpcJobInfo.setAlgorithmName(algorithmName);
-            hpcJobInfo.setAlgorithmParamRequest(algorithmParamRequest);
-            hpcJobInfo.setStatus(-1);
-            hpcJobInfo.setHpcAccount(hpcAccount);
-            hpcJobManager.submitNewHpcJobToQueue(hpcJobInfo, this);
-
-            progressTextArea.replaceRange("Done", progressTextLength, progressTextArea.getText().length());
-            progressTextArea.append(newline);
-            progressTextArea.updateUI();
-
-            this.jsonResult = null;
-
-            JOptionPane.showMessageDialog(ancestor, "The " + hpcJobInfo.getAlgorithmName() + " job on the "
-                    + hpcJobInfo.getHpcAccount().getConnectionName() + " node is in the queue successfully!");
-
-        } catch (IOException e1) {
-            e1.printStackTrace();
-        } finally {
-            progressDialog.setVisible(false);
-            progressDialog.dispose();
-        }
-
-        (new HpcJobActivityAction("")).actionPerformed(null);
-
-    }
-
-    public void setAlgorithmResult(String jsonResult) {
-        this.jsonResult = jsonResult;
-
-        final Graph graph = JsonUtils.parseJSONObjectToTetradGraph(jsonResult);
-        final List<Graph> graphs = new ArrayList<>();
-        graphs.add(graph);
-        int size = runner.getGraphs().size();
-        for (int index = 0; index < size; index++) {
-            runner.getGraphs().remove(index);
-        }
-        runner.getGraphs().add(graph);
-        graphEditor.replace(graphs);
-        graphEditor.validate();
-        System.out.println("Remote graph result assigned to runner!");
-        firePropertyChange("modelChanged", null, null);
-
-    }
-
-    public void setAlgorithmErrorResult(String errorResult) {
-        JOptionPane.showMessageDialog(desktop, jsonResult);
-        throw new IllegalArgumentException(errorResult);
-    }
-
-    /**
-     * Initialize algorithm
-     *
-     * @return Algorithm
-     */
-    public Algorithm getAlgorithmFromInterface() {
-        if (selectedAlgoName == null) {
-            throw new NullPointerException();
-        }
-
-        IndependenceWrapper independenceWrapper = getIndependenceWrapper();
-        ScoreWrapper scoreWrapper = getScoreWrapper();
-
-        Class algoClass = AlgorithmAnnotations.getInstance().getAnnotatedClass(selectedAlgoName);
-
-//        Algorithm algorithm = getAlgorithm(selectedAlgoName, independenceWrapper, scoreWrapper);
-        Algorithm algorithm = null;
-        try {
-            algorithm = AlgorithmFactory.create(algoClass, independenceWrapper, scoreWrapper);
-        } catch (IllegalAccessException | InstantiationException exception) {
-            // todo : use logger
-            exception.printStackTrace(System.err);
-        }
-
-//        if (algorithm instanceof HasKnowledge) {
-//            ((HasKnowledge) algorithm).setKnowledge();
-//        }
-        // Those pairwise algos (EB, R1, R2,..) require source graph to initialize - Zhou
-        if (algorithm != null && algorithm instanceof TakesInitialGraph) {
-            Algorithm initialGraph = null;
-
-            if (runner.getSourceGraph() != null && !runner.getDataModelList().isEmpty()) {
-                initialGraph = new SingleGraphAlg(runner.getSourceGraph());
-            }
-
-            // Capture the exception message and show in a message dialog - Zhou
-            try {
-                // When the initialGraph is null, the setter will throw an exception - Zhou
-                ((TakesInitialGraph) algorithm).setInitialGraph(initialGraph);
-            } catch (Exception e) {
-                JOptionPane.showMessageDialog(desktop, e.getMessage(), "Please Note", JOptionPane.INFORMATION_MESSAGE);
-            }
-        }
-
-        return algorithm;
-    }
-
-    private ScoreWrapper getScoreWrapper() {
-        String score = (String) scoreDropdown.getSelectedItem();
-        ScoreAnnotations scoreAnno = ScoreAnnotations.getInstance();
-        Class scoreClass = scoreAnno.getAnnotatedClass(score);
-
-        ScoreWrapper scoreWrapper = null;
-        try {
-            scoreWrapper = (ScoreWrapper) scoreClass.newInstance();
-        } catch (IllegalAccessException | InstantiationException exception) {
-            // log this error
-            throw new IllegalArgumentException("Please configure that score: " + score);
-        }
-
-        if (scoreWrapper == null) {
-            return null;
-        }
-
-        return scoreWrapper;
-    }
-
-    private IndependenceWrapper getIndependenceWrapper() {
-        String test = (String) testDropdown.getSelectedItem();
+    private void determineTestAndScore(DataModelList dataModelList) {
+        // Use annotations to get the tests based on data type
         IndependenceTestAnnotations indTestAnno = IndependenceTestAnnotations.getInstance();
-        Class indTestClass = indTestAnno.getAnnotatedClass(test);
+        // Use annotations to get the scores based on data type
+        ScoreAnnotations scoreAnno = ScoreAnnotations.getInstance();
 
-        IndependenceWrapper independenceWrapper = null;
-        try {
-            independenceWrapper = (IndependenceWrapper) indTestClass.newInstance();
-        } catch (IllegalAccessException | InstantiationException exception) {
-            // log this error
-        }
+        // Determine the test/score dropdown menu options based on dataset
+        if (dataModelList.isEmpty()) {
+            tests = indTestAnno.getNamesAssociatedWith(DataType.Graph);
+            scores = scoreAnno.getNamesAssociatedWith(DataType.Graph);
+        } else {
+            // Check type based on the first dataset
+            DataModel dataSet = dataModelList.get(0);
 
-        if (independenceWrapper != null) {
-            // do independence test for each dataset
-            List<IndependenceTest> tests = new ArrayList<>();
-            for (DataModel dataModel : runner.getDataModelList()) {
-                IndependenceTest _test = independenceWrapper.getTest(dataModel, parameters);
-                tests.add(_test);
+            if (dataSet.isContinuous()) {
+                tests = indTestAnno.getNamesAssociatedWith(DataType.Continuous);
+                scores = scoreAnno.getNamesAssociatedWith(DataType.Continuous);
+            } else if (dataSet.isDiscrete()) {
+                tests = indTestAnno.getNamesAssociatedWith(DataType.Discrete);
+                scores = scoreAnno.getNamesAssociatedWith(DataType.Discrete);
+            } else if (dataSet.isMixed()) {
+                tests = indTestAnno.getNamesAssociatedWith(DataType.Mixed);
+                scores = scoreAnno.getNamesAssociatedWith(DataType.Mixed);
+            } else {
+                throw new IllegalArgumentException();
             }
-            runner.setIndependenceTests(tests);
         }
-
-        return independenceWrapper;
-    }
-
-    // Determine if enable/disable test dropdowns
-    private void setTestDropdown() {
-        // Get annotated algo
-        AlgorithmAnnotations algoAnno = AlgorithmAnnotations.getInstance();
-        Class algoClass = algoAnno.getAnnotatedClass(selectedAlgoName);
-
-        // Determine if enable/disable test and score dropdowns
-        testDropdown.setEnabled(algoAnno.requireIndependenceTest(algoClass));
-    }
-
-    // Determine if enable/disable score dropdowns
-    private void setScoreDropdown() {
-        // Get annotated algo
-        AlgorithmAnnotations algoAnno = AlgorithmAnnotations.getInstance();
-        Class algoClass = algoAnno.getAnnotatedClass(selectedAlgoName);
-
-        // Determine if enable/disable test and score dropdowns
-        scoreDropdown.setEnabled(algoAnno.requireScore(algoClass));
-    }
-
-    private void setAlgorithm() {
-        // Determine if enable/disable test and score dropdowns
-        setTestDropdown();
-        setScoreDropdown();
-
-        // Set the algo on each selection change
-        Algorithm algorithm = getAlgorithmFromInterface();
-
-        System.out.println("algo parameters ..............");
-        System.out.println(algorithm.getParameters());
-
-        runner.setAlgorithm(algorithm);
-
-        parameters.set("testEnabled", testDropdown.isEnabled());
-        parameters.set("scoreEnabled", scoreDropdown.isEnabled());
-
-        parameters.set("algName", selectedAlgoName);
-        parameters.set("algType", selectedAlgoType.toString().replace(" ", "_"));
-
-        setTestType((String) testDropdown.getSelectedItem());
-        setScoreType((String) scoreDropdown.getSelectedItem());
-
-        // Also need to update the corresponding parameters
-        parametersPanel = new ParameterPanel(runner.getAlgorithm().getParameters(), getParameters());
-        // Remove all and add new
-        parametersBox.removeAll();
-        parametersBox.add(parametersPanel);
     }
 
     private JPanel createAlgoChooserPanel() {
@@ -1452,6 +886,582 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         return p;
     }
 
+    private void setDefaultAlgosListModel() {
+        // Clear the list model
+        suggestedAlgosListModel.removeAllElements();
+
+        // Create a new list model
+        for (String algoName : algorithmNames) {
+            suggestedAlgosListModel.addElement(algoName);
+        }
+    }
+
+    private void setAlgoDescriptionContent() {
+        AlgorithmAnnotations algoAnno = AlgorithmAnnotations.getInstance();
+        // We can use this annotation to get all its attributes
+        edu.cmu.tetrad.annotation.Algorithm annotation = algoAnno.getAnnotation(selectedAlgoName);
+
+        algoDescriptionTextArea.setText("Description of " + selectedAlgoName + ": " + annotation.description());
+    }
+
+    private void updateSuggestedAlgosList() {
+        // Clear the list model
+        suggestedAlgosListModel.removeAllElements();
+
+        // Create a new list model based on selections
+        for (String algoName : algorithmNames) {
+            AlgorithmAnnotations algoAnno = AlgorithmAnnotations.getInstance();
+            // Use package path here since we have exisiting Algorithm package
+            // We can use this annotation to get all its attributes
+            edu.cmu.tetrad.annotation.Algorithm annotation = algoAnno.getAnnotation(algoName);
+
+            // Also check the there's selection of knowledge file
+            if (takesKnowledgeFile != null) {
+                if (takesKnowledgeFile) {
+                    if ((annotation.algoType() == selectedAlgoType || selectedAlgoType == AlgType.ALL) && algorithmsAcceptKnowledge.contains(annotation.name())) {
+                        suggestedAlgosListModel.addElement(annotation.name());
+                    }
+                } else if ((annotation.algoType() == selectedAlgoType || selectedAlgoType == AlgType.ALL) && !algorithmsAcceptKnowledge.contains(annotation.name())) {
+                    suggestedAlgosListModel.addElement(annotation.name());
+                }
+            } else if (annotation.algoType() == selectedAlgoType || selectedAlgoType == AlgType.ALL) {
+                suggestedAlgosListModel.addElement(annotation.name());
+            }
+        }
+
+        // Reset default selected algorithm
+        setDefaultSelectedAlgo();
+
+        // Reset description
+        setAlgoDescriptionContent();
+
+        // Set the selected algo and update the test and score dropdown menus
+        setAlgorithm();
+    }
+
+    private void setDefaultSelectedAlgo() {
+        suggestedAlgosList.setSelectedIndex(0);
+        selectedAlgoName = suggestedAlgosList.getSelectedValue().toString();
+
+        System.out.println("Selected algo ..." + selectedAlgoName);
+
+        // Set the selected algo and update the test and score dropdown menus
+        setAlgorithm();
+    }
+
+    private void doSearch(final GeneralAlgorithmRunner runner) {
+        HpcAccount hpcAccount = null;
+
+        switch (selectedAlgoName) {
+            case "FGES":
+            case "GFCI":
+                hpcAccount = showRemoteComputingOptions(selectedAlgoName);
+                break;
+            default:
+        }
+
+        if (hpcAccount == null) {
+            graphEditor.saveLayout();
+
+            runner.execute();
+
+            // Show graph
+            graphEditor.replace(runner.getGraphs());
+            graphEditor.validate();
+            firePropertyChange("modelChanged", null, null);
+
+            // Update the graphContainer
+            graphContainer.add(graphEditor);
+        } else {
+            try {
+                doRemoteCompute(runner, hpcAccount);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    private HpcAccount showRemoteComputingOptions(String name) {
+        List<HpcAccount> hpcAccounts = desktop.getHpcAccountManager().getHpcAccounts();
+
+        if (hpcAccounts == null || hpcAccounts.size() == 0) {
+            return null;
+        }
+
+        String no_answer = "No, thanks";
+        String yes_answer = "Please run it on ";
+
+        Object[] options = new String[hpcAccounts.size() + 1];
+        options[0] = no_answer;
+        for (int i = 0; i < hpcAccounts.size(); i++) {
+            String connName = hpcAccounts.get(i).getConnectionName();
+            options[i + 1] = yes_answer + connName;
+        }
+
+        int n = JOptionPane.showOptionDialog(this, "Would you like to execute a " + name + " search in the cloud?",
+                "A Silly Question", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE, null, options, options[0]);
+        if (n == 0) {
+            return null;
+        }
+        return hpcAccounts.get(n - 1);
+    }
+
+    private void doRemoteCompute(final GeneralAlgorithmRunner runner, final HpcAccount hpcAccount) throws Exception {
+
+        // **********************
+        // Show progress panel *
+        // **********************
+        Frame ancestor = (Frame) JOptionUtils.centeringComp().getTopLevelAncestor();
+        final JDialog progressDialog = new JDialog(ancestor, "HPC Job Submission's Progress...", false);
+
+        Dimension progressDim = new Dimension(500, 150);
+
+        JTextArea progressTextArea = new JTextArea();
+        progressTextArea.setPreferredSize(progressDim);
+        progressTextArea.setEditable(false);
+
+        JScrollPane progressScroller = new JScrollPane(progressTextArea);
+        progressScroller.setAlignmentX(LEFT_ALIGNMENT);
+
+        progressDialog.setLayout(new BorderLayout());
+        progressDialog.getContentPane().add(progressScroller, BorderLayout.CENTER);
+        progressDialog.pack();
+        Dimension screenDim = Toolkit.getDefaultToolkit().getScreenSize();
+        progressDialog.setLocation((screenDim.width - progressDim.width) / 2,
+                (screenDim.height - progressDim.height) / 2);
+        progressDialog.setVisible(true);
+
+        int totalProcesses = 4;
+        String newline = "\n";
+        String tab = "\t";
+        int progressTextLength = 0;
+
+        DataModel dataModel = runner.getDataModel();
+
+        // 1. Generate temp file
+        Path file = null;
+        Path prior = null;
+        try {
+            // ****************************
+            // Data Preparation Progress *
+            // ****************************
+            String dataMessage = String.format("1/%1$d Data Preparation", totalProcesses);
+            progressTextArea.append(dataMessage);
+            progressTextArea.append(tab);
+
+            progressTextLength = progressTextArea.getText().length();
+
+            progressTextArea.append("Preparing...");
+            progressTextArea.updateUI();
+
+            file = Files.createTempFile("Tetrad-data-", ".txt");
+            // System.out.println(file.toAbsolutePath().toString());
+            List<String> tempLine = new ArrayList<>();
+
+            // Header
+            List<Node> variables = dataModel.getVariables();
+            if ((variables == null || variables.isEmpty()) && runner.getSourceGraph() != null) {
+                variables = runner.getSourceGraph().getNodes();
+            }
+
+            String vars = StringUtils.join(variables.toArray(), tab);
+            tempLine.add(vars);
+
+            // Data
+            DataSet dataSet = (DataSet) dataModel;
+            for (int i = 0; i < dataSet.getNumRows(); i++) {
+                String line = null;
+                for (int j = 0; j < dataSet.getNumColumns(); j++) {
+                    String cell = null;
+                    if (dataSet.isContinuous()) {
+                        cell = String.valueOf(dataSet.getDouble(i, j));
+                    } else {
+                        cell = String.valueOf(dataSet.getInt(i, j));
+                    }
+                    if (line == null) {
+                        line = cell;
+                    } else {
+                        line = line + "\t" + cell;
+                    }
+                }
+                tempLine.add(line);
+            }
+
+            // for (String line : tempLine) {
+            // System.out.println(line);
+            // }
+            Files.write(file, tempLine);
+
+            // Get file's MD5 hash and use it as its identifier
+            String datasetMd5 = MessageDigestHash.computeMD5Hash(file);
+
+            progressTextArea.replaceRange("Done", progressTextLength, progressTextArea.getText().length());
+            progressTextArea.append(newline);
+            progressTextArea.updateUI();
+
+            // ***************************************
+            // Prior Knowledge Preparation Progress *
+            // ***************************************
+            String priorMessage = String.format("2/%1$d Prior Knowledge Preparation", totalProcesses);
+            progressTextArea.append(priorMessage);
+            progressTextArea.append(tab);
+
+            progressTextLength = progressTextArea.getText().length();
+
+            progressTextArea.append("Preparing...");
+            progressTextArea.updateUI();
+
+            // 2. Generate temp prior knowledge file
+            Knowledge2 knowledge = (Knowledge2) dataModel.getKnowledge();
+            if (knowledge != null && !knowledge.isEmpty()) {
+                prior = Files.createTempFile(file.getFileName().toString(), ".prior");
+                knowledge.saveKnowledge(Files.newBufferedWriter(prior));
+
+                progressTextArea.replaceRange("Done", progressTextLength, progressTextArea.getText().length());
+                progressTextArea.append(newline);
+                progressTextArea.updateUI();
+            } else {
+                progressTextArea.replaceRange("Skipped", progressTextLength, progressTextArea.getText().length());
+                progressTextArea.append(newline);
+                progressTextArea.updateUI();
+            }
+            // Get knowledge file's MD5 hash and use it as its identifier
+            String priorKnowledgeMd5 = null;
+            if (prior != null) {
+                priorKnowledgeMd5 = MessageDigestHash.computeMD5Hash(prior);
+            }
+
+            // *******************************************
+            // Algorithm Parameter Preparation Progress *
+            // *******************************************
+            String algorMessage = String.format("3/%1$d Algorithm Preparation", totalProcesses);
+            progressTextArea.append(algorMessage);
+            progressTextArea.append(tab);
+
+            progressTextLength = progressTextArea.getText().length();
+
+            progressTextArea.append("Preparing...");
+            progressTextArea.updateUI();
+
+            // 3.1 Algorithm name
+            String algorithmName = AbstractAlgorithmRequest.FGES;
+            Algorithm algorithm = runner.getAlgorithm();
+            System.out.println("Algorithm: " + algorithm.getDescription());
+
+            switch (selectedAlgoName) {
+                case "FGES":
+                    algorithmName = AbstractAlgorithmRequest.FGES;
+                    if (dataModel.isDiscrete()) {
+                        algorithmName = AbstractAlgorithmRequest.FGES_DISCRETE;
+                    }
+                    break;
+                case "GFCI":
+                    algorithmName = AbstractAlgorithmRequest.GFCI;
+                    if (dataModel.isDiscrete()) {
+                        algorithmName = AbstractAlgorithmRequest.GFCI_DISCRETE;
+                    }
+                    break;
+                default:
+                    return;
+            }
+
+            // 3.2 Parameters
+            AlgorithmParamRequest algorithmParamRequest = new AlgorithmParamRequest();
+
+            // Dataset and Prior paths
+            String datasetPath = file.toAbsolutePath().toString();
+            System.out.println(datasetPath);
+            algorithmParamRequest.setDatasetPath(datasetPath);
+            algorithmParamRequest.setDatasetMd5(datasetMd5);
+            if (prior != null) {
+                String priorKnowledgePath = prior.toAbsolutePath().toString();
+                System.out.println(priorKnowledgePath);
+                algorithmParamRequest.setPriorKnowledgePath(priorKnowledgePath);
+                algorithmParamRequest.setPriorKnowledgeMd5(priorKnowledgeMd5);
+            }
+
+            // VariableType
+            if (dataModel.isContinuous()) {
+                algorithmParamRequest.setVariableType("continuous");
+            } else {
+                algorithmParamRequest.setVariableType("discrete");
+            }
+
+            // FileDelimiter
+            String fileDelimiter = "tab"; // Pre-determined
+            algorithmParamRequest.setFileDelimiter(fileDelimiter);
+
+            // Default Data Validation Parameters
+            DataValidation dataValidation = new DataValidation();
+            dataValidation.setUniqueVarName(true);
+            if (dataModel.isContinuous()) {
+                dataValidation.setNonZeroVariance(true);
+            } else {
+                dataValidation.setCategoryLimit(true);
+            }
+            algorithmParamRequest.setDataValidation(dataValidation);
+
+            List<AlgorithmParameter> AlgorithmParameters = new ArrayList<>();
+
+            Parameters parameters = runner.getParameters();
+            List<String> parameterNames = runner.getAlgorithm().getParameters();
+            for (String parameter : parameterNames) {
+                String value = parameters.get(parameter).toString();
+                System.out.println("parameter: " + parameter + "\tvalue: " + value);
+                if (value != null) {
+                    AlgorithmParameter algorParam = new AlgorithmParameter();
+                    algorParam.setParameter(parameter);
+                    algorParam.setValue(value);
+                    AlgorithmParameters.add(algorParam);
+                }
+            }
+
+            algorithmParamRequest.setAlgorithmParameters(AlgorithmParameters);
+
+            String maxHeapSize = null;
+            do {
+                maxHeapSize = JOptionPane.showInputDialog(progressDialog, "Enter Your Request Java Max Heap Size (GB):",
+                        "5");
+            } while (maxHeapSize != null && !StringUtils.isNumeric(maxHeapSize));
+
+            if (maxHeapSize != null) {
+                JvmOption jvmOption = new JvmOption();
+                jvmOption.setParameter("maxHeapSize");
+                jvmOption.setValue(maxHeapSize);
+                List<JvmOption> jvmOptions = new ArrayList<>();
+                jvmOptions.add(jvmOption);
+                algorithmParamRequest.setJvmOptions(jvmOptions);
+            }
+
+            // Hpc parameters
+            final HpcAccountManager hpcAccountManager = desktop.getHpcAccountManager();
+            JsonWebToken jsonWebToken = HpcAccountUtils.getJsonWebToken(hpcAccountManager, hpcAccount);
+            if (jsonWebToken.getWallTime() != null) {
+                // User allowed to customize the job's wall time
+                String[] wallTime = jsonWebToken.getWallTime();
+                Object userwallTime = JOptionPane.showInputDialog(progressDialog, "Wall Time:",
+                        "Choose Your Wall Time (in Hour)", JOptionPane.QUESTION_MESSAGE, null, wallTime, wallTime[0]);
+
+                if (wallTime != null && userwallTime != null) {
+                    HpcParameter hpcParameter = new HpcParameter();
+                    hpcParameter.setKey("walltime");
+                    hpcParameter.setValue(userwallTime.toString());
+                    System.out.println("walltime: " + userwallTime.toString());
+                    algorithmParamRequest.setHpcParameters(Collections.singletonList(hpcParameter));
+                }
+            }
+
+            progressTextArea.replaceRange("Done", progressTextLength, progressTextArea.getText().length());
+            progressTextArea.append(newline);
+            progressTextArea.updateUI();
+
+            // ********************************
+            // Adding HPC Job Queue Progress *
+            // ********************************
+            String dbMessage = String.format("4/%1$d HPC Job Queue Submission", totalProcesses);
+            progressTextArea.append(dbMessage);
+            progressTextArea.append(tab);
+
+            progressTextLength = progressTextArea.getText().length();
+
+            progressTextArea.append("Preparing...");
+            progressTextArea.updateUI();
+
+            HpcJobManager hpcJobManager = desktop.getHpcJobManager();
+
+            // 4.1 Save HpcJobInfo
+            hpcJobInfo = new HpcJobInfo();
+            hpcJobInfo.setAlgorithmName(algorithmName);
+            hpcJobInfo.setAlgorithmParamRequest(algorithmParamRequest);
+            hpcJobInfo.setStatus(-1);
+            hpcJobInfo.setHpcAccount(hpcAccount);
+            hpcJobManager.submitNewHpcJobToQueue(hpcJobInfo, this);
+
+            progressTextArea.replaceRange("Done", progressTextLength, progressTextArea.getText().length());
+            progressTextArea.append(newline);
+            progressTextArea.updateUI();
+
+            this.jsonResult = null;
+
+            JOptionPane.showMessageDialog(ancestor, "The " + hpcJobInfo.getAlgorithmName() + " job on the "
+                    + hpcJobInfo.getHpcAccount().getConnectionName() + " node is in the queue successfully!");
+
+        } catch (IOException e1) {
+            e1.printStackTrace();
+        } finally {
+            progressDialog.setVisible(false);
+            progressDialog.dispose();
+        }
+
+        (new HpcJobActivityAction("")).actionPerformed(null);
+
+    }
+
+    public void setAlgorithmResult(String jsonResult) {
+        this.jsonResult = jsonResult;
+
+        final Graph graph = JsonUtils.parseJSONObjectToTetradGraph(jsonResult);
+        final List<Graph> graphs = new ArrayList<>();
+        graphs.add(graph);
+        int size = runner.getGraphs().size();
+        for (int index = 0; index < size; index++) {
+            runner.getGraphs().remove(index);
+        }
+        runner.getGraphs().add(graph);
+        graphEditor.replace(graphs);
+        graphEditor.validate();
+        System.out.println("Remote graph result assigned to runner!");
+        firePropertyChange("modelChanged", null, null);
+
+    }
+
+    public void setAlgorithmErrorResult(String errorResult) {
+        JOptionPane.showMessageDialog(desktop, jsonResult);
+        throw new IllegalArgumentException(errorResult);
+    }
+
+    /**
+     * Initialize algorithm
+     *
+     * @return Algorithm
+     */
+    public Algorithm getAlgorithmFromInterface() {
+        if (selectedAlgoName == null) {
+            throw new NullPointerException();
+        }
+
+        IndependenceWrapper independenceWrapper = getIndependenceWrapper();
+        ScoreWrapper scoreWrapper = getScoreWrapper();
+
+        Class algoClass = AlgorithmAnnotations.getInstance().getAnnotatedClass(selectedAlgoName);
+
+//        Algorithm algorithm = getAlgorithm(selectedAlgoName, independenceWrapper, scoreWrapper);
+        Algorithm algorithm = null;
+        try {
+            algorithm = AlgorithmFactory.create(algoClass, independenceWrapper, scoreWrapper);
+        } catch (IllegalAccessException | InstantiationException exception) {
+            // todo : use logger
+            exception.printStackTrace(System.err);
+        }
+
+//        if (algorithm instanceof HasKnowledge) {
+//            ((HasKnowledge) algorithm).setKnowledge();
+//        }
+        // Those pairwise algos (EB, R1, R2,..) require source graph to initialize - Zhou
+        if (algorithm != null && algorithm instanceof TakesInitialGraph) {
+            Algorithm initialGraph = null;
+
+            if (runner.getSourceGraph() != null && !runner.getDataModelList().isEmpty()) {
+                initialGraph = new SingleGraphAlg(runner.getSourceGraph());
+            }
+
+            // Capture the exception message and show in a message dialog - Zhou
+            try {
+                // When the initialGraph is null, the setter will throw an exception - Zhou
+                ((TakesInitialGraph) algorithm).setInitialGraph(initialGraph);
+            } catch (Exception e) {
+                JOptionPane.showMessageDialog(desktop, e.getMessage(), "Please Note", JOptionPane.INFORMATION_MESSAGE);
+            }
+        }
+
+        return algorithm;
+    }
+
+    private ScoreWrapper getScoreWrapper() {
+        String score = (String) scoreDropdown.getSelectedItem();
+        ScoreAnnotations scoreAnno = ScoreAnnotations.getInstance();
+        Class scoreClass = scoreAnno.getAnnotatedClass(score);
+
+        ScoreWrapper scoreWrapper = null;
+        try {
+            scoreWrapper = (ScoreWrapper) scoreClass.newInstance();
+        } catch (IllegalAccessException | InstantiationException exception) {
+            // log this error
+            throw new IllegalArgumentException("Please configure that score: " + score);
+        }
+
+        if (scoreWrapper == null) {
+            return null;
+        }
+
+        return scoreWrapper;
+    }
+
+    private IndependenceWrapper getIndependenceWrapper() {
+        String test = (String) testDropdown.getSelectedItem();
+        IndependenceTestAnnotations indTestAnno = IndependenceTestAnnotations.getInstance();
+        Class indTestClass = indTestAnno.getAnnotatedClass(test);
+
+        IndependenceWrapper independenceWrapper = null;
+        try {
+            independenceWrapper = (IndependenceWrapper) indTestClass.newInstance();
+        } catch (IllegalAccessException | InstantiationException exception) {
+            // log this error
+        }
+
+        if (independenceWrapper != null) {
+            // do independence test for each dataset
+            List<IndependenceTest> tests = new ArrayList<>();
+            for (DataModel dataModel : runner.getDataModelList()) {
+                IndependenceTest _test = independenceWrapper.getTest(dataModel, parameters);
+                tests.add(_test);
+            }
+            runner.setIndependenceTests(tests);
+        }
+
+        return independenceWrapper;
+    }
+
+    // Determine if enable/disable test dropdowns
+    private void setTestDropdown() {
+        // Get annotated algo
+        AlgorithmAnnotations algoAnno = AlgorithmAnnotations.getInstance();
+        Class algoClass = algoAnno.getAnnotatedClass(selectedAlgoName);
+
+        // Determine if enable/disable test and score dropdowns
+        testDropdown.setEnabled(algoAnno.requireIndependenceTest(algoClass));
+    }
+
+    // Determine if enable/disable score dropdowns
+    private void setScoreDropdown() {
+        // Get annotated algo
+        AlgorithmAnnotations algoAnno = AlgorithmAnnotations.getInstance();
+        Class algoClass = algoAnno.getAnnotatedClass(selectedAlgoName);
+
+        // Determine if enable/disable test and score dropdowns
+        scoreDropdown.setEnabled(algoAnno.requireScore(algoClass));
+    }
+
+    private void setAlgorithm() {
+        // Determine if enable/disable test and score dropdowns
+        setTestDropdown();
+        setScoreDropdown();
+
+        // Set the algo on each selection change
+        Algorithm algorithm = getAlgorithmFromInterface();
+
+        System.out.println("algo parameters ..............");
+        System.out.println(algorithm.getParameters());
+
+        runner.setAlgorithm(algorithm);
+
+        // Set runner parameters for target algo
+        parameters.set("testEnabled", testDropdown.isEnabled());
+        parameters.set("scoreEnabled", scoreDropdown.isEnabled());
+
+        parameters.set("algName", selectedAlgoName);
+        parameters.set("algType", selectedAlgoType.toString().replace(" ", "_"));
+
+        setTestType((String) testDropdown.getSelectedItem());
+        setScoreType((String) scoreDropdown.getSelectedItem());
+
+        // Also need to update the corresponding parameters
+        parametersPanel = new ParameterPanel(runner.getAlgorithm().getParameters(), getParameters());
+        // Remove all and add new
+        parametersBox.removeAll();
+        parametersBox.add(parametersPanel);
+    }
+
     private void resetAlgoFilters() {
         // Reset algoTypesBtnGrp to select "ALL"
         for (Enumeration<AbstractButton> buttons = algoTypesBtnGrp.getElements(); buttons.hasMoreElements();) {
@@ -1478,16 +1488,6 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
 
         // Finally show the default list of algos
         setDefaultAlgosListModel();
-    }
-
-    private void setDefaultAlgosListModel() {
-        // Clear the list model
-        suggestedAlgosListModel.removeAllElements();
-
-        // Create a new list model
-        for (String algoName : algorithmNames) {
-            suggestedAlgosListModel.addElement(algoName);
-        }
     }
 
     /**
