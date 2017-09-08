@@ -113,7 +113,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
     private String selectedAlgoName;
     private final JTextArea algoDescriptionTextArea = new JTextArea();
     private ParameterPanel parametersPanel;
-    private JDialog loadingIndicatorDialog;
+    private JDialog loadingIndicatorDialog = new JDialog();
     private JButton step1BackBtn;
     private JButton step2Btn;
     private JButton step2BackBtn;
@@ -128,14 +128,19 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
     public GeneralAlgorithmEditor(final GeneralAlgorithmRunner runner) {
         this.runner = runner;
 
-        this.loadingIndicatorDialog = new JDialog();
+        this.desktop = (TetradDesktop) DesktopController.getInstance();
 
         // Access to the uploaded dataset
         DataModelList dataModelList = runner.getDataModelList();
 
-        // Make sure we have input dataset or source graph
-        if ((dataModelList.isEmpty() && runner.getSourceGraph() == null)) {
-            throw new IllegalArgumentException("You need either some datasets or a graph as input.");
+        // Notify the users that we need input dataset or source graph
+        // if the data model has no dataset
+        try {
+            if ((dataModelList.isEmpty() && runner.getSourceGraph() == null)) {
+                throw new Exception("You need either some datasets or a graph as input.");
+            }
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(desktop, e.getMessage(), "Please Note", JOptionPane.INFORMATION_MESSAGE);
         }
 
         // Use annotations to populate algo list
@@ -209,8 +214,6 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         // Set default algo in runner
         Algorithm algorithm = getAlgorithmFromInterface();
         runner.setAlgorithm(algorithm);
-
-        this.desktop = (TetradDesktop) DesktopController.getInstance();
     }
 
     private void updateSuggestedAlgosList() {
