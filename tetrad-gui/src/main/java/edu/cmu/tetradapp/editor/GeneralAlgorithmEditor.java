@@ -97,22 +97,21 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
     private final TetradDesktop desktop;
     private HpcJobInfo hpcJobInfo;
     private String jsonResult;
-    //private final TreeMap<String, AlgorithmDescriptionClass> descriptions;
-
     private final List<String> algorithmNames;
-
-    private final List<String> algorithmsCanHaveKnowledge;
-    private DefaultListModel suggestedAlgosListModel = new DefaultListModel();
+    private final List<String> algorithmsAcceptKnowledge;
+    private List<String> tests;
+    private List<String> scores;
+    private final DefaultListModel suggestedAlgosListModel = new DefaultListModel();
     private final JList suggestedAlgosList;
     private Boolean takesKnowledgeFile = null;
-    private ButtonGroup algoTypesBtnGrp = new ButtonGroup();
-    private ButtonGroup varLinearRelationshipsBtnGrp = new ButtonGroup();
-    private ButtonGroup gaussianVariablesBtnGrp = new ButtonGroup();
-    private ButtonGroup priorKnowledgeBtnGrp = new ButtonGroup();
-    private ButtonGroup includeUnmeasuredConfoundersBtnGrp = new ButtonGroup();
+    private final ButtonGroup algoTypesBtnGrp = new ButtonGroup();
+    private final ButtonGroup varLinearRelationshipsBtnGrp = new ButtonGroup();
+    private final ButtonGroup gaussianVariablesBtnGrp = new ButtonGroup();
+    private final ButtonGroup priorKnowledgeBtnGrp = new ButtonGroup();
+    private final ButtonGroup includeUnmeasuredConfoundersBtnGrp = new ButtonGroup();
     private AlgType selectedAlgoType;
     private String selectedAlgoName;
-    private JTextArea algoDescriptionTextArea = new JTextArea();
+    private final JTextArea algoDescriptionTextArea = new JTextArea();
     private ParameterPanel parametersPanel;
     private JDialog loadingIndicatorDialog;
     private JButton step1BackBtn;
@@ -131,11 +130,61 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
 
         this.loadingIndicatorDialog = new JDialog();
 
-        // Use annotations to populate description list
-        // TODO: fiter the algos to only show the ones can handle the uploaded dataset - Zhou
-        algorithmNames = AlgorithmAnnotations.getInstance().getNames();
+        // Access to the uploaded dataset
+        DataModelList dataModelList = runner.getDataModelList();
 
-        algorithmsCanHaveKnowledge = AlgorithmAnnotations.getInstance().getAcceptKnowledge();
+        // Make sure we have input dataset or source graph
+        if ((dataModelList.isEmpty() && runner.getSourceGraph() == null)) {
+            throw new IllegalArgumentException("You need either some datasets or a graph as input.");
+        }
+
+        // Use annotations to populate algo list
+        // Only show algorithms that support multi dataset if there are multi datasets uploaded
+        // Otherwise show all algorithms that take at least one dataset
+        if (dataModelList.size() > 1) {
+            algorithmNames = AlgorithmAnnotations.getInstance().getAcceptMultiDataset();
+        } else {
+            algorithmNames = AlgorithmAnnotations.getInstance().getNames();
+        }
+
+        // Algos that accept knowledge file
+        // Later use this to filter algos based on the knowledge siwtch
+        algorithmsAcceptKnowledge = AlgorithmAnnotations.getInstance().getAcceptKnowledge();
+
+        // Create the test/score dropdown menu based on dataset
+        // Use annotations to get the tests based on data type
+        List<String> discreteTests = IndependenceTestAnnotations.getInstance().getNamesAssociatedWith(DataType.Discrete);
+        List<String> continuousTests = IndependenceTestAnnotations.getInstance().getNamesAssociatedWith(DataType.Continuous);
+        List<String> mixedTests = IndependenceTestAnnotations.getInstance().getNamesAssociatedWith(DataType.Mixed);
+        List<String> dsepTests = IndependenceTestAnnotations.getInstance().getNamesAssociatedWith(DataType.Graph);
+
+        // Use annotations to get the scores based on data type
+        List<String> discreteScores = ScoreAnnotations.getInstance().getNamesAssociatedWith(DataType.Discrete);
+        List<String> continuousScores = ScoreAnnotations.getInstance().getNamesAssociatedWith(DataType.Continuous);
+        List<String> mixedScores = ScoreAnnotations.getInstance().getNamesAssociatedWith(DataType.Mixed);
+        List<String> dsepScores = ScoreAnnotations.getInstance().getNamesAssociatedWith(DataType.Graph);
+
+        // Determine the test/score dropdown menu options based on dataset
+        if (dataModelList.isEmpty()) {
+            tests = dsepTests;
+            scores = dsepScores;
+        } else {
+            // Check type based on the first dataset
+            DataModel dataSet = dataModelList.get(0);
+
+            if (dataSet.isContinuous()) {
+                tests = continuousTests;
+                scores = continuousScores;
+            } else if (dataSet.isDiscrete()) {
+                tests = discreteTests;
+                scores = discreteScores;
+            } else if (dataSet.isMixed()) {
+                tests = mixedTests;
+                scores = mixedScores;
+            } else {
+                throw new IllegalArgumentException();
+            }
+        }
 
         // Create default algos list model
         setDefaultAlgosListModel();
@@ -178,10 +227,10 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
             // Also check the there's selection of knowledge file
             if (takesKnowledgeFile != null) {
                 if (takesKnowledgeFile) {
-                    if ((annotation.algoType() == selectedAlgoType || selectedAlgoType == AlgType.ALL) && algorithmsCanHaveKnowledge.contains(annotation.name())) {
+                    if ((annotation.algoType() == selectedAlgoType || selectedAlgoType == AlgType.ALL) && algorithmsAcceptKnowledge.contains(annotation.name())) {
                         suggestedAlgosListModel.addElement(annotation.name());
                     }
-                } else if ((annotation.algoType() == selectedAlgoType || selectedAlgoType == AlgType.ALL) && !algorithmsCanHaveKnowledge.contains(annotation.name())) {
+                } else if ((annotation.algoType() == selectedAlgoType || selectedAlgoType == AlgType.ALL) && !algorithmsAcceptKnowledge.contains(annotation.name())) {
                     suggestedAlgosListModel.addElement(annotation.name());
                 }
             } else if (annotation.algoType() == selectedAlgoType || selectedAlgoType == AlgType.ALL) {
@@ -1137,53 +1186,13 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         String testAndScoreBoxBorderTitle = "Choose Independence Test and Score";
         testAndScoreBox.setBorder(new CompoundBorder(BorderFactory.createTitledBorder(testAndScoreBoxBorderTitle), new EmptyBorder(5, 5, 5, 5)));
 
-        // Create the test/score dropdown menu based on dataset
-        List<String> tests;
-        List<String> scores;
-
-        // Use annotations to get the tests based on data type
-        List<String> discreteTests = IndependenceTestAnnotations.getInstance().getNamesAssociatedWith(DataType.Discrete);
-        List<String> continuousTests = IndependenceTestAnnotations.getInstance().getNamesAssociatedWith(DataType.Continuous);
-        List<String> mixedTests = IndependenceTestAnnotations.getInstance().getNamesAssociatedWith(DataType.Mixed);
-        List<String> dsepTests = IndependenceTestAnnotations.getInstance().getNamesAssociatedWith(DataType.Graph);
-
-        // Use annotations to get the scores based on data type
-        List<String> discreteScores = ScoreAnnotations.getInstance().getNamesAssociatedWith(DataType.Discrete);
-        List<String> continuousScores = ScoreAnnotations.getInstance().getNamesAssociatedWith(DataType.Continuous);
-        List<String> mixedScores = ScoreAnnotations.getInstance().getNamesAssociatedWith(DataType.Mixed);
-        List<String> dsepScores = ScoreAnnotations.getInstance().getNamesAssociatedWith(DataType.Graph);
-
-        // We can also use this way to filter the algos based on the data types they can handle - Zhou
-        DataModelList dataModelList = runner.getDataModelList();
-
-        if ((dataModelList.isEmpty() && runner.getSourceGraph() != null)) {
-            tests = dsepTests;
-            scores = dsepScores;
-        } else if (!(dataModelList.isEmpty())) {
-            DataModel dataSet = dataModelList.get(0);
-
-            if (dataSet.isContinuous()) {
-                tests = continuousTests;
-                scores = continuousScores;
-            } else if (dataSet.isDiscrete()) {
-                tests = discreteTests;
-                scores = discreteScores;
-            } else if (dataSet.isMixed()) {
-                tests = mixedTests;
-                scores = mixedScores;
-            } else {
-                throw new IllegalArgumentException();
-            }
-        } else {
-            throw new IllegalArgumentException("You need either some data sets or a graph as input.");
-        }
-
-        // Add to the test dropdown menu
+        // Now to create the test and score dropdown menus
+        // Add items to the test dropdown menu
         tests.stream().forEach((test) -> {
             testDropdown.addItem(test);
         });
 
-        // Add to the score dropdown menu
+        // Add items to the score dropdown menu
         scores.stream().forEach((score) -> {
             scoreDropdown.addItem(score);
         });

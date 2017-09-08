@@ -35,8 +35,8 @@ import java.util.List;
         assumptions = {}
 )
 @edu.cmu.tetrad.annotation.Algorithm(
-        name = "IMaGES_Continuous",
-        command = "IMaGES_Continuous",
+        name = "IMaGES Continuous",
+        command = "imgs_cont",
         algoType = AlgType.forbid_latent_common_causes,
         description = "Short blurb goes here"
 )

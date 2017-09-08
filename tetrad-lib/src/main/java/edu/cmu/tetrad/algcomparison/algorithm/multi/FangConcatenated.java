@@ -33,8 +33,8 @@ import java.util.List;
         assumptions = {}
 )
 @edu.cmu.tetrad.annotation.Algorithm(
-        name = "FANG",
-        command = "FANG",
+        name = "FANG Concatenated",
+        command = "fang-concatenated",
         algoType = AlgType.forbid_latent_common_causes,
         description = "Short blurb goes here"
 )
