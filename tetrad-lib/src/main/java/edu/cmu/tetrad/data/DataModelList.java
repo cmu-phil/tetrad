@@ -163,6 +163,21 @@ public final class DataModelList extends AbstractList<DataModel>
         return modelList.isEmpty();
     }
 
+    /**
+     * Use this to check if the dataModelList only contains the default empty
+     * dataset that is being used to populat the empty spreadsheet - Added by
+     * Kevin
+     *
+     * @return
+     */
+    public boolean containsEmptyData() {
+        if (modelList.isEmpty()) {
+            return true;
+        } else {
+            return modelList.get(0).getVariableNames().isEmpty();
+        }
+    }
+
     public List<DataModel> getModelList() {
         return modelList;
     }
