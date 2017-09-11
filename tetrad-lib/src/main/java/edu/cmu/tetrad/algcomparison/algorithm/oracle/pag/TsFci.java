@@ -6,8 +6,6 @@ import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.algcomparison.utils.TakesIndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.utils.TakesInitialGraph;
 import edu.cmu.tetrad.annotation.AlgType;
-import edu.cmu.tetrad.annotation.AlgorithmDescription;
-import edu.cmu.tetrad.annotation.OracleType;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
@@ -26,18 +24,12 @@ import java.util.List;
  * @author jdramsey
  * @author dmalinsky
  */
-@AlgorithmDescription(
-        name = "TsFCI",
-        algType = AlgType.allow_latent_common_causes,
-        oracleType = OracleType.Test,
-        description = "Short blurb goes here",
-        assumptions = {}
-)
 @edu.cmu.tetrad.annotation.Algorithm(
         name = "TsFCI",
-        command = "TsFCI",
+        command = "ts-fci",
         algoType = AlgType.allow_latent_common_causes,
-        description = "Short blurb goes here"
+        description = "Short blurb goes here",
+        assumptions = {}
 )
 public class TsFci implements Algorithm, TakesInitialGraph, HasKnowledge, TakesIndependenceWrapper {
 

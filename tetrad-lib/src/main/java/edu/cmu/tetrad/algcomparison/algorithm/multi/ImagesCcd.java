@@ -9,7 +9,6 @@ import edu.cmu.tetrad.search.*;
 import edu.cmu.tetrad.util.Parameters;
 import edu.pitt.dbmi.algo.bootstrap.BootstrapEdgeEnsemble;
 import edu.pitt.dbmi.algo.bootstrap.GeneralBootstrapTest;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -23,11 +22,6 @@ import java.util.List;
  *
  * @author jdramsey
  */
-/*@AlgorithmDescription(
-        name = "IMaGES_CCD",
-        algType = AlgType.forbid_latent_common_causes,
-        oracleType = OracleType.Test
-)*/
 public class ImagesCcd implements MultiDataSetAlgorithm, HasKnowledge {
 
     static final long serialVersionUID = 23L;
@@ -38,7 +32,7 @@ public class ImagesCcd implements MultiDataSetAlgorithm, HasKnowledge {
 
     @Override
     public Graph search(List<DataModel> dataModels, Parameters parameters) {
-    	if (!parameters.getBoolean("bootstrapping")) {
+        if (!parameters.getBoolean("bootstrapping")) {
             List<DataSet> dataSets = new ArrayList<>();
 
             for (DataModel dataModel : dataModels) {
@@ -60,64 +54,64 @@ public class ImagesCcd implements MultiDataSetAlgorithm, HasKnowledge {
             search.setKnowledge(knowledge);
             search.setDepth(parameters.getInt("depth"));
             return search.search();
-    	}else{
-    		ImagesCcd imagesCcd = new ImagesCcd();
-    		imagesCcd.setKnowledge(knowledge);
-    		
-    		List<DataSet> datasets = new ArrayList<>();
+        } else {
+            ImagesCcd imagesCcd = new ImagesCcd();
+            imagesCcd.setKnowledge(knowledge);
 
-			for (DataModel dataModel : dataModels) {
-				datasets.add((DataSet) dataModel);
-			}
-			GeneralBootstrapTest search = new GeneralBootstrapTest(datasets, imagesCcd,
-					parameters.getInt("bootstrapSampleSize"));
+            List<DataSet> datasets = new ArrayList<>();
 
-			BootstrapEdgeEnsemble edgeEnsemble = BootstrapEdgeEnsemble.Highest;
-			switch (parameters.getInt("bootstrapEnsemble", 1)) {
-			case 0:
-				edgeEnsemble = BootstrapEdgeEnsemble.Preserved;
-				break;
-			case 1:
-				edgeEnsemble = BootstrapEdgeEnsemble.Highest;
-				break;
-			case 2:
-				edgeEnsemble = BootstrapEdgeEnsemble.Majority;
-			}
-			search.setEdgeEnsemble(edgeEnsemble);
-			search.setParameters(parameters);
-			search.setVerbose(parameters.getBoolean("verbose"));
-			return search.search();
-    	}
+            for (DataModel dataModel : dataModels) {
+                datasets.add((DataSet) dataModel);
+            }
+            GeneralBootstrapTest search = new GeneralBootstrapTest(datasets, imagesCcd,
+                    parameters.getInt("bootstrapSampleSize"));
+
+            BootstrapEdgeEnsemble edgeEnsemble = BootstrapEdgeEnsemble.Highest;
+            switch (parameters.getInt("bootstrapEnsemble", 1)) {
+                case 0:
+                    edgeEnsemble = BootstrapEdgeEnsemble.Preserved;
+                    break;
+                case 1:
+                    edgeEnsemble = BootstrapEdgeEnsemble.Highest;
+                    break;
+                case 2:
+                    edgeEnsemble = BootstrapEdgeEnsemble.Majority;
+            }
+            search.setEdgeEnsemble(edgeEnsemble);
+            search.setParameters(parameters);
+            search.setVerbose(parameters.getBoolean("verbose"));
+            return search.search();
+        }
     }
 
     @Override
     public Graph search(DataModel dataSet, Parameters parameters) {
-    	if (!parameters.getBoolean("bootstrapping")) {
+        if (!parameters.getBoolean("bootstrapping")) {
             return search(Collections.singletonList((DataModel) DataUtils.getContinuousDataSet(dataSet)), parameters);
-    	}else{
-    		ImagesCcd imagesCcd = new ImagesCcd();
-    		imagesCcd.setKnowledge(knowledge);
-    		
-    		List<DataSet> dataSets = Collections.singletonList(DataUtils.getContinuousDataSet(dataSet));
-			GeneralBootstrapTest search = new GeneralBootstrapTest(dataSets, imagesCcd,
-					parameters.getInt("bootstrapSampleSize"));
+        } else {
+            ImagesCcd imagesCcd = new ImagesCcd();
+            imagesCcd.setKnowledge(knowledge);
 
-			BootstrapEdgeEnsemble edgeEnsemble = BootstrapEdgeEnsemble.Highest;
-			switch (parameters.getInt("bootstrapEnsemble", 1)) {
-			case 0:
-				edgeEnsemble = BootstrapEdgeEnsemble.Preserved;
-				break;
-			case 1:
-				edgeEnsemble = BootstrapEdgeEnsemble.Highest;
-				break;
-			case 2:
-				edgeEnsemble = BootstrapEdgeEnsemble.Majority;
-			}
-			search.setEdgeEnsemble(edgeEnsemble);
-			search.setParameters(parameters);
-			search.setVerbose(parameters.getBoolean("verbose"));
-			return search.search();
-    	}
+            List<DataSet> dataSets = Collections.singletonList(DataUtils.getContinuousDataSet(dataSet));
+            GeneralBootstrapTest search = new GeneralBootstrapTest(dataSets, imagesCcd,
+                    parameters.getInt("bootstrapSampleSize"));
+
+            BootstrapEdgeEnsemble edgeEnsemble = BootstrapEdgeEnsemble.Highest;
+            switch (parameters.getInt("bootstrapEnsemble", 1)) {
+                case 0:
+                    edgeEnsemble = BootstrapEdgeEnsemble.Preserved;
+                    break;
+                case 1:
+                    edgeEnsemble = BootstrapEdgeEnsemble.Highest;
+                    break;
+                case 2:
+                    edgeEnsemble = BootstrapEdgeEnsemble.Majority;
+            }
+            search.setEdgeEnsemble(edgeEnsemble);
+            search.setParameters(parameters);
+            search.setVerbose(parameters.getBoolean("verbose"));
+            return search.search();
+        }
     }
 
     @Override
@@ -150,10 +144,10 @@ public class ImagesCcd implements MultiDataSetAlgorithm, HasKnowledge {
         parameters.add("assumeIID");
         parameters.add("collapseTiers");
         // Bootstrapping
-  		parameters.add("bootstrapping");
-  		parameters.add("bootstrapSampleSize");
-  		parameters.add("bootstrapEnsemble");
-  		parameters.add("verbose");
+        parameters.add("bootstrapping");
+        parameters.add("bootstrapSampleSize");
+        parameters.add("bootstrapEnsemble");
+        parameters.add("verbose");
 
         return parameters;
     }

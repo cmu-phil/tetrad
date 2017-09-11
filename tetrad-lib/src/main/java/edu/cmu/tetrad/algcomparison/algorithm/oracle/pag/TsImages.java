@@ -6,8 +6,6 @@ import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.algcomparison.utils.UsesScoreWrapper;
 import edu.cmu.tetrad.annotation.AlgType;
-import edu.cmu.tetrad.annotation.AlgorithmDescription;
-import edu.cmu.tetrad.annotation.OracleType;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
@@ -24,18 +22,12 @@ import java.util.List;
  * @author jdramsey
  * @author Daniel Malinsky
  */
-@AlgorithmDescription(
-        name = "TsImages",
-        algType = AlgType.allow_latent_common_causes,
-        oracleType = OracleType.Test,
-        description = "Short blurb goes here",
-        assumptions = {}
-)
 @edu.cmu.tetrad.annotation.Algorithm(
         name = "TsImages",
-        command = "TsImages",
+        command = "ts-imgs",
         algoType = AlgType.allow_latent_common_causes,
-        description = "Short blurb goes here"
+        description = "Short blurb goes here",
+        assumptions = {}
 )
 public class TsImages implements Algorithm, HasKnowledge, MultiDataSetAlgorithm, UsesScoreWrapper {
 

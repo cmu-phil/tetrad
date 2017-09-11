@@ -4,8 +4,6 @@ import cern.colt.matrix.DoubleMatrix2D;
 import cern.colt.matrix.impl.DenseDoubleMatrix2D;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.annotation.AlgType;
-import edu.cmu.tetrad.annotation.AlgorithmDescription;
-import edu.cmu.tetrad.annotation.OracleType;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
@@ -21,18 +19,12 @@ import java.util.List;
 /**
  * @author jdramsey
  */
-@AlgorithmDescription(
-        name = "GLASSO",
-        algType = AlgType.produce_undirected_graphs,
-        oracleType = OracleType.Test,
-        description = "Short blurb goes here",
-        assumptions = {}
-)
 @edu.cmu.tetrad.annotation.Algorithm(
         name = "GLASSO",
-        command = "GLASSO",
+        command = "glasso",
         algoType = AlgType.produce_undirected_graphs,
-        description = "Short blurb goes here"
+        description = "Short blurb goes here",
+        assumptions = {}
 )
 public class Glasso implements Algorithm {
 

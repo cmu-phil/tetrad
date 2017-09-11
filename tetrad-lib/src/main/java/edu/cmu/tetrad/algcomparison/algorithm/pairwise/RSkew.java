@@ -3,8 +3,6 @@ package edu.cmu.tetrad.algcomparison.algorithm.pairwise;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.utils.TakesInitialGraph;
 import edu.cmu.tetrad.annotation.AlgType;
-import edu.cmu.tetrad.annotation.AlgorithmDescription;
-import edu.cmu.tetrad.annotation.OracleType;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
@@ -23,18 +21,12 @@ import java.util.List;
  *
  * @author jdramsey
  */
-@AlgorithmDescription(
-        name = "RSkew",
-        algType = AlgType.orient_pairwise,
-        oracleType = OracleType.None,
-        description = "Short blurb goes here",
-        assumptions = {}
-)
 @edu.cmu.tetrad.annotation.Algorithm(
         name = "RSkew",
-        command = "RSkew",
+        command = "r-skew",
         algoType = AlgType.orient_pairwise,
-        description = "Short blurb goes here"
+        description = "Short blurb goes here",
+        assumptions = {}
 )
 public class RSkew implements Algorithm, TakesInitialGraph {
 

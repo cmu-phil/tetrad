@@ -4,21 +4,19 @@ import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.algcomparison.utils.TakesIndependenceWrapper;
+import edu.cmu.tetrad.algcomparison.utils.TakesInitialGraph;
+import edu.cmu.tetrad.annotation.AlgType;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
+import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.data.IKnowledge;
 import edu.cmu.tetrad.data.Knowledge2;
 import edu.cmu.tetrad.graph.EdgeListGraph;
+import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.search.DagToPag;
 import edu.cmu.tetrad.util.Parameters;
 import edu.pitt.dbmi.algo.bootstrap.BootstrapEdgeEnsemble;
 import edu.pitt.dbmi.algo.bootstrap.GeneralBootstrapTest;
-import edu.cmu.tetrad.algcomparison.utils.TakesInitialGraph;
-import edu.cmu.tetrad.annotation.AlgType;
-import edu.cmu.tetrad.annotation.AlgorithmDescription;
-import edu.cmu.tetrad.annotation.OracleType;
-import edu.cmu.tetrad.data.DataType;
-import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.search.DagToPag;
 import java.util.List;
 
 /**
@@ -26,10 +24,10 @@ import java.util.List;
  *
  * @author jdramsey
  */
-@AlgorithmDescription(
+@edu.cmu.tetrad.annotation.Algorithm(
         name = "FCI",
-        algType = AlgType.allow_latent_common_causes,
-        oracleType = OracleType.Test,
+        command = "fci",
+        algoType = AlgType.allow_latent_common_causes,
         description = "Short blurb goes here",
         assumptions = {}
 )
@@ -55,9 +53,9 @@ public class Fci implements Algorithm, TakesInitialGraph, HasKnowledge, TakesInd
 
     @Override
     public Graph search(DataModel dataSet, Parameters parameters) {
-        if(!parameters.getBoolean("bootstrapping")){
+        if (!parameters.getBoolean("bootstrapping")) {
             if (algorithm != null) {
-            	initialGraph = algorithm.search(dataSet, parameters);
+                initialGraph = algorithm.search(dataSet, parameters);
             }
 
             edu.cmu.tetrad.search.Fci search = new edu.cmu.tetrad.search.Fci(test.getTest(dataSet, parameters));
@@ -69,34 +67,33 @@ public class Fci implements Algorithm, TakesInitialGraph, HasKnowledge, TakesInd
 //            if (initialGraph != null) {
 //                search.setInitialGraph(initialGraph);
 //            }
-
             return search.search();
-        }else{
-    		Fci algorithm = new Fci(test);
-    		algorithm.setKnowledge(knowledge);
+        } else {
+            Fci algorithm = new Fci(test);
+            algorithm.setKnowledge(knowledge);
 //          if (initialGraph != null) {
 //      		algorithm.setInitialGraph(initialGraph);
 //  		}
 
-    		DataSet data = (DataSet) dataSet;
-    		
-    		GeneralBootstrapTest search = new GeneralBootstrapTest(data, algorithm, parameters.getInt("bootstrapSampleSize"));
-    		
-    		BootstrapEdgeEnsemble edgeEnsemble = BootstrapEdgeEnsemble.Highest;
-    		switch (parameters.getInt("bootstrapEnsemble", 1)) {
-    		case 0:
-    			edgeEnsemble = BootstrapEdgeEnsemble.Preserved;
-    			break;
-    		case 1:
-    			edgeEnsemble = BootstrapEdgeEnsemble.Highest;
-    			break;
-    		case 2:
-    			edgeEnsemble = BootstrapEdgeEnsemble.Majority;
-    		}
-    		search.setEdgeEnsemble(edgeEnsemble);
-    		search.setParameters(parameters);    		
-    		search.setVerbose(parameters.getBoolean("verbose"));
-    		return search.search();
+            DataSet data = (DataSet) dataSet;
+
+            GeneralBootstrapTest search = new GeneralBootstrapTest(data, algorithm, parameters.getInt("bootstrapSampleSize"));
+
+            BootstrapEdgeEnsemble edgeEnsemble = BootstrapEdgeEnsemble.Highest;
+            switch (parameters.getInt("bootstrapEnsemble", 1)) {
+                case 0:
+                    edgeEnsemble = BootstrapEdgeEnsemble.Preserved;
+                    break;
+                case 1:
+                    edgeEnsemble = BootstrapEdgeEnsemble.Highest;
+                    break;
+                case 2:
+                    edgeEnsemble = BootstrapEdgeEnsemble.Majority;
+            }
+            search.setEdgeEnsemble(edgeEnsemble);
+            search.setParameters(parameters);
+            search.setVerbose(parameters.getBoolean("verbose"));
+            return search.search();
         }
     }
 
@@ -106,9 +103,9 @@ public class Fci implements Algorithm, TakesInitialGraph, HasKnowledge, TakesInd
     }
 
     public String getDescription() {
-        return "FCI (Fast Causal Inference) using " + test.getDescription() +
-                (algorithm != null ? " with initial graph from " +
-                        algorithm.getDescription() : "");
+        return "FCI (Fast Causal Inference) using " + test.getDescription()
+                + (algorithm != null ? " with initial graph from "
+                        + algorithm.getDescription() : "");
     }
 
     @Override
@@ -140,15 +137,15 @@ public class Fci implements Algorithm, TakesInitialGraph, HasKnowledge, TakesInd
         this.knowledge = knowledge;
     }
 
-	@Override
-	public Graph getInitialGraph() {
-		return initialGraph;
-	}
+    @Override
+    public Graph getInitialGraph() {
+        return initialGraph;
+    }
 
-	@Override
-	public void setInitialGraph(Graph initialGraph) {
-		this.initialGraph = initialGraph;
-	}
+    @Override
+    public void setInitialGraph(Graph initialGraph) {
+        this.initialGraph = initialGraph;
+    }
 
     @Override
     public void setInitialGraph(Algorithm algorithm) {

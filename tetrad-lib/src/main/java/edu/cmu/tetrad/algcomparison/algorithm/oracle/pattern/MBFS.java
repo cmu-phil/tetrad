@@ -5,8 +5,6 @@ import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.algcomparison.utils.TakesIndependenceWrapper;
 import edu.cmu.tetrad.annotation.AlgType;
-import edu.cmu.tetrad.annotation.AlgorithmDescription;
-import edu.cmu.tetrad.annotation.OracleType;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
@@ -27,18 +25,12 @@ import java.util.List;
  *
  * @author jdramsey
  */
-@AlgorithmDescription(
-        name = "MBFS",
-        algType = AlgType.search_for_Markov_blankets,
-        oracleType = OracleType.Score,
-        description = "Short blurb goes here",
-        assumptions = {}
-)
 @edu.cmu.tetrad.annotation.Algorithm(
         name = "MBFS",
         command = "mbfs",
         algoType = AlgType.search_for_Markov_blankets,
-        description = "Short blurb goes here"
+        description = "Short blurb goes here",
+        assumptions = {}
 )
 public class MBFS implements Algorithm, HasKnowledge, TakesIndependenceWrapper {
 

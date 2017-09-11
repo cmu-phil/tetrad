@@ -5,8 +5,6 @@ import edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern.Fges;
 import edu.cmu.tetrad.algcomparison.score.BdeuScore;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.annotation.AlgType;
-import edu.cmu.tetrad.annotation.AlgorithmDescription;
-import edu.cmu.tetrad.annotation.OracleType;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
@@ -28,18 +26,12 @@ import java.util.List;
  *
  * @author jdramsey
  */
-@AlgorithmDescription(
-        name = "IMaGES_Discrete",
-        algType = AlgType.forbid_latent_common_causes,
-        oracleType = OracleType.None,
-        description = "Short blurb goes here",
-        assumptions = {}
-)
 @edu.cmu.tetrad.annotation.Algorithm(
         name = "IMaGES Discrete",
         command = "imgs_disc",
         algoType = AlgType.forbid_latent_common_causes,
-        description = "Short blurb goes here"
+        description = "Short blurb goes here",
+        assumptions = {}
 )
 public class ImagesBDeu implements MultiDataSetAlgorithm, HasKnowledge {
 

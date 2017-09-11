@@ -3,8 +3,6 @@ package edu.cmu.tetrad.algcomparison.algorithm.multi;
 import edu.cmu.tetrad.algcomparison.algorithm.MultiDataSetAlgorithm;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.annotation.AlgType;
-import edu.cmu.tetrad.annotation.AlgorithmDescription;
-import edu.cmu.tetrad.annotation.OracleType;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
@@ -25,18 +23,12 @@ import java.util.List;
  *
  * @author jdramsey
  */
-@AlgorithmDescription(
-        name = "EFANG",
-        algType = AlgType.forbid_latent_common_causes,
-        oracleType = OracleType.None,
-        description = "Short blurb goes here",
-        assumptions = {}
-)
 @edu.cmu.tetrad.annotation.Algorithm(
         name = "FASK Concatenated",
         command = "fask-concatenated",
         algoType = AlgType.forbid_latent_common_causes,
-        description = "Short blurb goes here"
+        description = "Short blurb goes here",
+        assumptions = {}
 )
 public class FaskConcatenated implements MultiDataSetAlgorithm, HasKnowledge {
 
