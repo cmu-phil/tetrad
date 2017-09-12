@@ -48,6 +48,15 @@ public class IndependenceTestAnnotations extends AbstractAnnotations<Independenc
         return INSTANCE;
     }
 
+    public List<AnnotatedClass<IndependenceTest>> getAnnotatedClasses(DataType dataType) {
+        List<AnnotatedClass<IndependenceTest>> list = annoClassByName.entrySet().stream()
+                .filter(e -> e.getValue().getAnnotation().dataType().equals(dataType))
+                .map(e -> e.getValue())
+                .collect(Collectors.toList());
+
+        return Collections.unmodifiableList(list);
+    }
+
     /**
      * Get a list of annotation attribute names for a particular data type.
      *
@@ -87,6 +96,37 @@ public class IndependenceTestAnnotations extends AbstractAnnotations<Independenc
                 break;
             case Graph:
                 getNames(DataType.Graph).stream().collect(Collectors.toCollection(() -> list));
+                break;
+        }
+
+        return Collections.unmodifiableList(list);
+    }
+
+    public List<String> getCommands(DataType dataType) {
+        List<String> list = getAnnotatedClasses(dataType).stream()
+                .map(e -> e.getAnnotation().command())
+                .collect(Collectors.toList());
+
+        return Collections.unmodifiableList(list);
+    }
+
+    public List<String> getCommandsAssociatedWith(DataType dataType) {
+        List<String> list = new LinkedList<>();
+
+        switch (dataType) {
+            case Discrete:
+                getCommands(DataType.Discrete).stream().collect(Collectors.toCollection(() -> list));
+                getCommands(DataType.Mixed).stream().collect(Collectors.toCollection(() -> list));
+                break;
+            case Continuous:
+                getCommands(DataType.Continuous).stream().collect(Collectors.toCollection(() -> list));
+                getCommands(DataType.Mixed).stream().collect(Collectors.toCollection(() -> list));
+                break;
+            case Mixed:
+                getCommands(DataType.Mixed).stream().collect(Collectors.toCollection(() -> list));
+                break;
+            case Graph:
+                getCommands(DataType.Graph).stream().collect(Collectors.toCollection(() -> list));
                 break;
         }
 

@@ -32,7 +32,7 @@ import java.util.stream.Collectors;
  * @author Kevin V. Bui (kvb2@pitt.edu)
  * @param <T> annotation
  */
-public class AbstractAnnotations<T extends Annotation> {
+public abstract class AbstractAnnotations<T extends Annotation> {
 
     protected final Map<String, AnnotatedClass<T>> annoClassByName = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
     protected final Map<String, String> nameByCommand = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
