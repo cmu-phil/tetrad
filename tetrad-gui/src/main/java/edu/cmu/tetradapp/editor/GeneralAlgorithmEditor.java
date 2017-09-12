@@ -299,112 +299,110 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
             });
         }
 
-        // Are the relationships between your variables linear?
-        Box varLinearRelationshipsBox = Box.createVerticalBox();
-
-        // Add label into this label box
-        Box varLinearRelationshipsLabelBox = Box.createHorizontalBox();
-        varLinearRelationshipsLabelBox.add(new JLabel("Linear variables: "));
-        varLinearRelationshipsLabelBox.setAlignmentX(LEFT_ALIGNMENT);
-
-        // Option 1
-        Box varLinearRelationshipsOption1Box = Box.createHorizontalBox();
-        varLinearRelationshipsOption1Box.setAlignmentX(LEFT_ALIGNMENT);
-
-        JRadioButton varLinearRelationshipsYes = new JRadioButton("Yes");
-
-        // Add padding and option
-        varLinearRelationshipsOption1Box.add(Box.createRigidArea(new Dimension(10, 20)));
-        varLinearRelationshipsOption1Box.add(varLinearRelationshipsYes);
-
-        // Option 2
-        Box varLinearRelationshipsOption2Box = Box.createHorizontalBox();
-        varLinearRelationshipsOption2Box.setAlignmentX(LEFT_ALIGNMENT);
-
-        JRadioButton varLinearRelationshipsNo = new JRadioButton("No");
-
-        // Add padding and option
-        varLinearRelationshipsOption2Box.add(Box.createRigidArea(new Dimension(10, 20)));
-        varLinearRelationshipsOption2Box.add(varLinearRelationshipsNo);
-
-        // Option 3
-        Box varLinearRelationshipsOption3Box = Box.createHorizontalBox();
-        varLinearRelationshipsOption3Box.setAlignmentX(LEFT_ALIGNMENT);
-
-        JRadioButton varLinearRelationshipsUnknown = new JRadioButton("Let's find out");
-
-        // Add padding and option
-        varLinearRelationshipsOption3Box.add(Box.createRigidArea(new Dimension(10, 20)));
-        varLinearRelationshipsOption3Box.add(varLinearRelationshipsUnknown);
-
-        // We need to group the radio buttons, otherwise all can be selected
-        varLinearRelationshipsBtnGrp.add(varLinearRelationshipsYes);
-        varLinearRelationshipsBtnGrp.add(varLinearRelationshipsNo);
-        varLinearRelationshipsBtnGrp.add(varLinearRelationshipsUnknown);
-
-        // Add to containing box
-        varLinearRelationshipsBox.add(varLinearRelationshipsLabelBox);
-        varLinearRelationshipsBox.add(varLinearRelationshipsOption1Box);
-        varLinearRelationshipsBox.add(varLinearRelationshipsOption2Box);
-        varLinearRelationshipsBox.add(varLinearRelationshipsOption3Box);
-        varLinearRelationshipsBox.add(Box.createHorizontalGlue());
-
-        // Are your variables Gaussian?
-        Box gaussianVariablesBox = Box.createVerticalBox();
-
-        // Add label into this label box to size
-        Box gaussianVariablesLabelBox = Box.createHorizontalBox();
-        gaussianVariablesLabelBox.add(new JLabel("Gaussian variables: "));
-        gaussianVariablesLabelBox.setAlignmentX(LEFT_ALIGNMENT);
-
-        // Option 1
-        Box gaussianVariablesOption1Box = Box.createHorizontalBox();
-        gaussianVariablesOption1Box.setAlignmentX(LEFT_ALIGNMENT);
-
-        JRadioButton gaussianVariablesYes = new JRadioButton("Yes");
-
-        // Add padding and option
-        gaussianVariablesOption1Box.add(Box.createRigidArea(new Dimension(10, 20)));
-        gaussianVariablesOption1Box.add(gaussianVariablesYes);
-
-        // Option 2
-        Box gaussianVariablesOption2Box = Box.createHorizontalBox();
-        gaussianVariablesOption2Box.setAlignmentX(LEFT_ALIGNMENT);
-
-        JRadioButton gaussianVariablesNo = new JRadioButton("No");
-
-        // Add padding and option
-        gaussianVariablesOption2Box.add(Box.createRigidArea(new Dimension(10, 20)));
-        gaussianVariablesOption2Box.add(gaussianVariablesNo);
-
-        // Option 3
-        Box gaussianVariablesOption3Box = Box.createHorizontalBox();
-        gaussianVariablesOption3Box.setAlignmentX(LEFT_ALIGNMENT);
-
-        JRadioButton gaussianVariablesUnknown = new JRadioButton("Let's find out");
-
-        // Add padding and option
-        gaussianVariablesOption3Box.add(Box.createRigidArea(new Dimension(10, 20)));
-        gaussianVariablesOption3Box.add(gaussianVariablesUnknown);
-
-        // We need to group the radio buttons, otherwise all can be selected
-        gaussianVariablesBtnGrp.add(gaussianVariablesYes);
-        gaussianVariablesBtnGrp.add(gaussianVariablesNo);
-        gaussianVariablesBtnGrp.add(gaussianVariablesUnknown);
-
-        // Add to containing box
-        gaussianVariablesBox.add(gaussianVariablesLabelBox);
-        gaussianVariablesBox.add(gaussianVariablesOption1Box);
-        gaussianVariablesBox.add(gaussianVariablesOption2Box);
-        gaussianVariablesBox.add(gaussianVariablesOption3Box);
-        gaussianVariablesBox.add(Box.createHorizontalGlue());
-
+//        // Are the relationships between your variables linear?
+//        Box varLinearRelationshipsBox = Box.createVerticalBox();
+//
+//        // Add label into this label box
+//        Box varLinearRelationshipsLabelBox = Box.createHorizontalBox();
+//        varLinearRelationshipsLabelBox.add(new JLabel("Linear variables: "));
+//        varLinearRelationshipsLabelBox.setAlignmentX(LEFT_ALIGNMENT);
+//
+//        // Option 1
+//        Box varLinearRelationshipsOption1Box = Box.createHorizontalBox();
+//        varLinearRelationshipsOption1Box.setAlignmentX(LEFT_ALIGNMENT);
+//
+//        JRadioButton varLinearRelationshipsYes = new JRadioButton("Yes");
+//
+//        // Add padding and option
+//        varLinearRelationshipsOption1Box.add(Box.createRigidArea(new Dimension(10, 20)));
+//        varLinearRelationshipsOption1Box.add(varLinearRelationshipsYes);
+//
+//        // Option 2
+//        Box varLinearRelationshipsOption2Box = Box.createHorizontalBox();
+//        varLinearRelationshipsOption2Box.setAlignmentX(LEFT_ALIGNMENT);
+//
+//        JRadioButton varLinearRelationshipsNo = new JRadioButton("No");
+//
+//        // Add padding and option
+//        varLinearRelationshipsOption2Box.add(Box.createRigidArea(new Dimension(10, 20)));
+//        varLinearRelationshipsOption2Box.add(varLinearRelationshipsNo);
+//
+//        // Option 3
+//        Box varLinearRelationshipsOption3Box = Box.createHorizontalBox();
+//        varLinearRelationshipsOption3Box.setAlignmentX(LEFT_ALIGNMENT);
+//
+//        JRadioButton varLinearRelationshipsUnknown = new JRadioButton("Let's find out");
+//
+//        // Add padding and option
+//        varLinearRelationshipsOption3Box.add(Box.createRigidArea(new Dimension(10, 20)));
+//        varLinearRelationshipsOption3Box.add(varLinearRelationshipsUnknown);
+//
+//        // We need to group the radio buttons, otherwise all can be selected
+//        varLinearRelationshipsBtnGrp.add(varLinearRelationshipsYes);
+//        varLinearRelationshipsBtnGrp.add(varLinearRelationshipsNo);
+//        varLinearRelationshipsBtnGrp.add(varLinearRelationshipsUnknown);
+//
+//        // Add to containing box
+//        varLinearRelationshipsBox.add(varLinearRelationshipsLabelBox);
+//        varLinearRelationshipsBox.add(varLinearRelationshipsOption1Box);
+//        varLinearRelationshipsBox.add(varLinearRelationshipsOption2Box);
+//        varLinearRelationshipsBox.add(varLinearRelationshipsOption3Box);
+//        varLinearRelationshipsBox.add(Box.createHorizontalGlue());
+//        // Are your variables Gaussian?
+//        Box gaussianVariablesBox = Box.createVerticalBox();
+//
+//        // Add label into this label box to size
+//        Box gaussianVariablesLabelBox = Box.createHorizontalBox();
+//        gaussianVariablesLabelBox.add(new JLabel("Gaussian variables: "));
+//        gaussianVariablesLabelBox.setAlignmentX(LEFT_ALIGNMENT);
+//
+//        // Option 1
+//        Box gaussianVariablesOption1Box = Box.createHorizontalBox();
+//        gaussianVariablesOption1Box.setAlignmentX(LEFT_ALIGNMENT);
+//
+//        JRadioButton gaussianVariablesYes = new JRadioButton("Yes");
+//
+//        // Add padding and option
+//        gaussianVariablesOption1Box.add(Box.createRigidArea(new Dimension(10, 20)));
+//        gaussianVariablesOption1Box.add(gaussianVariablesYes);
+//
+//        // Option 2
+//        Box gaussianVariablesOption2Box = Box.createHorizontalBox();
+//        gaussianVariablesOption2Box.setAlignmentX(LEFT_ALIGNMENT);
+//
+//        JRadioButton gaussianVariablesNo = new JRadioButton("No");
+//
+//        // Add padding and option
+//        gaussianVariablesOption2Box.add(Box.createRigidArea(new Dimension(10, 20)));
+//        gaussianVariablesOption2Box.add(gaussianVariablesNo);
+//
+//        // Option 3
+//        Box gaussianVariablesOption3Box = Box.createHorizontalBox();
+//        gaussianVariablesOption3Box.setAlignmentX(LEFT_ALIGNMENT);
+//
+//        JRadioButton gaussianVariablesUnknown = new JRadioButton("Let's find out");
+//
+//        // Add padding and option
+//        gaussianVariablesOption3Box.add(Box.createRigidArea(new Dimension(10, 20)));
+//        gaussianVariablesOption3Box.add(gaussianVariablesUnknown);
+//
+//        // We need to group the radio buttons, otherwise all can be selected
+//        gaussianVariablesBtnGrp.add(gaussianVariablesYes);
+//        gaussianVariablesBtnGrp.add(gaussianVariablesNo);
+//        gaussianVariablesBtnGrp.add(gaussianVariablesUnknown);
+//
+//        // Add to containing box
+//        gaussianVariablesBox.add(gaussianVariablesLabelBox);
+//        gaussianVariablesBox.add(gaussianVariablesOption1Box);
+//        gaussianVariablesBox.add(gaussianVariablesOption2Box);
+//        gaussianVariablesBox.add(gaussianVariablesOption3Box);
+//        gaussianVariablesBox.add(Box.createHorizontalGlue());
         // Is there a prior knowledge file?
         Box priorKnowledgeBox = Box.createVerticalBox();
 
         // Add label into this label box to size
         Box priorKnowledgeLabelBox = Box.createHorizontalBox();
-        priorKnowledgeLabelBox.add(new JLabel("Takes prior knowledge file: "));
+        priorKnowledgeLabelBox.add(new JLabel("Accept prior knowledge file: "));
         priorKnowledgeLabelBox.setAlignmentX(LEFT_ALIGNMENT);
 
         // Option 1
@@ -461,56 +459,56 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         priorKnowledgeBox.add(priorKnowledgeLabelBox);
         priorKnowledgeBox.add(priorKnowledgeOption1Box);
         priorKnowledgeBox.add(priorKnowledgeOption2Box);
-
-        // Include unmeasured confounders?
-        Box includeUnmeasuredConfoundersBox = Box.createVerticalBox();
-
-        // Add label into this label box to size
-        Box includeUnmeasuredConfoundersLabelBox = Box.createHorizontalBox();
-        includeUnmeasuredConfoundersLabelBox.add(new JLabel("Unmeasured confounders: "));
-        includeUnmeasuredConfoundersLabelBox.setAlignmentX(LEFT_ALIGNMENT);
-
-        // Option 1
-        Box includeUnmeasuredConfoundersOption1Box = Box.createHorizontalBox();
-        includeUnmeasuredConfoundersOption1Box.setAlignmentX(LEFT_ALIGNMENT);
-
-        JRadioButton includeUnmeasuredConfoundersYes = new JRadioButton("Yes");
-
-        // Add padding and option
-        includeUnmeasuredConfoundersOption1Box.add(Box.createRigidArea(new Dimension(10, 20)));
-        includeUnmeasuredConfoundersOption1Box.add(includeUnmeasuredConfoundersYes);
-
-        // Option 2
-        Box includeUnmeasuredConfoundersOption2Box = Box.createHorizontalBox();
-        includeUnmeasuredConfoundersOption2Box.setAlignmentX(LEFT_ALIGNMENT);
-
-        JRadioButton includeUnmeasuredConfoundersNo = new JRadioButton("No");
-
-        // Add padding and option
-        includeUnmeasuredConfoundersOption2Box.add(Box.createRigidArea(new Dimension(10, 20)));
-        includeUnmeasuredConfoundersOption2Box.add(includeUnmeasuredConfoundersNo);
-
-        // Option 3
-        Box includeUnmeasuredConfoundersOption3Box = Box.createHorizontalBox();
-        includeUnmeasuredConfoundersOption3Box.setAlignmentX(LEFT_ALIGNMENT);
-
-        JRadioButton includeUnmeasuredConfoundersUnknown = new JRadioButton("Let's find out");
-
-        // Add padding and option
-        includeUnmeasuredConfoundersOption3Box.add(Box.createRigidArea(new Dimension(10, 20)));
-        includeUnmeasuredConfoundersOption3Box.add(includeUnmeasuredConfoundersUnknown);
-
-        // We need to group the radio buttons, otherwise all can be selected
-        includeUnmeasuredConfoundersBtnGrp.add(includeUnmeasuredConfoundersYes);
-        includeUnmeasuredConfoundersBtnGrp.add(includeUnmeasuredConfoundersNo);
-        includeUnmeasuredConfoundersBtnGrp.add(includeUnmeasuredConfoundersUnknown);
-
-        // Add to containing box
-        includeUnmeasuredConfoundersBox.add(includeUnmeasuredConfoundersLabelBox);
-        includeUnmeasuredConfoundersBox.add(includeUnmeasuredConfoundersOption1Box);
-        includeUnmeasuredConfoundersBox.add(includeUnmeasuredConfoundersOption2Box);
-        includeUnmeasuredConfoundersBox.add(includeUnmeasuredConfoundersOption3Box);
-        includeUnmeasuredConfoundersBox.add(Box.createHorizontalGlue());
+//
+//        // Include unmeasured confounders?
+//        Box includeUnmeasuredConfoundersBox = Box.createVerticalBox();
+//
+//        // Add label into this label box to size
+//        Box includeUnmeasuredConfoundersLabelBox = Box.createHorizontalBox();
+//        includeUnmeasuredConfoundersLabelBox.add(new JLabel("Unmeasured confounders: "));
+//        includeUnmeasuredConfoundersLabelBox.setAlignmentX(LEFT_ALIGNMENT);
+//
+//        // Option 1
+//        Box includeUnmeasuredConfoundersOption1Box = Box.createHorizontalBox();
+//        includeUnmeasuredConfoundersOption1Box.setAlignmentX(LEFT_ALIGNMENT);
+//
+//        JRadioButton includeUnmeasuredConfoundersYes = new JRadioButton("Yes");
+//
+//        // Add padding and option
+//        includeUnmeasuredConfoundersOption1Box.add(Box.createRigidArea(new Dimension(10, 20)));
+//        includeUnmeasuredConfoundersOption1Box.add(includeUnmeasuredConfoundersYes);
+//
+//        // Option 2
+//        Box includeUnmeasuredConfoundersOption2Box = Box.createHorizontalBox();
+//        includeUnmeasuredConfoundersOption2Box.setAlignmentX(LEFT_ALIGNMENT);
+//
+//        JRadioButton includeUnmeasuredConfoundersNo = new JRadioButton("No");
+//
+//        // Add padding and option
+//        includeUnmeasuredConfoundersOption2Box.add(Box.createRigidArea(new Dimension(10, 20)));
+//        includeUnmeasuredConfoundersOption2Box.add(includeUnmeasuredConfoundersNo);
+//
+//        // Option 3
+//        Box includeUnmeasuredConfoundersOption3Box = Box.createHorizontalBox();
+//        includeUnmeasuredConfoundersOption3Box.setAlignmentX(LEFT_ALIGNMENT);
+//
+//        JRadioButton includeUnmeasuredConfoundersUnknown = new JRadioButton("Let's find out");
+//
+//        // Add padding and option
+//        includeUnmeasuredConfoundersOption3Box.add(Box.createRigidArea(new Dimension(10, 20)));
+//        includeUnmeasuredConfoundersOption3Box.add(includeUnmeasuredConfoundersUnknown);
+//
+//        // We need to group the radio buttons, otherwise all can be selected
+//        includeUnmeasuredConfoundersBtnGrp.add(includeUnmeasuredConfoundersYes);
+//        includeUnmeasuredConfoundersBtnGrp.add(includeUnmeasuredConfoundersNo);
+//        includeUnmeasuredConfoundersBtnGrp.add(includeUnmeasuredConfoundersUnknown);
+//
+//        // Add to containing box
+//        includeUnmeasuredConfoundersBox.add(includeUnmeasuredConfoundersLabelBox);
+//        includeUnmeasuredConfoundersBox.add(includeUnmeasuredConfoundersOption1Box);
+//        includeUnmeasuredConfoundersBox.add(includeUnmeasuredConfoundersOption2Box);
+//        includeUnmeasuredConfoundersBox.add(includeUnmeasuredConfoundersOption3Box);
+//        includeUnmeasuredConfoundersBox.add(Box.createHorizontalGlue());
 
         // Reset filter selections
         JButton resetFilterSelectionsBtn = new JButton("Reset filter selections");
@@ -560,13 +558,13 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         // Items to put in data description box
         algoFiltersBox.add(algoTypesBox);
         algoFiltersBox.add(Box.createVerticalStrut(5));
-        algoFiltersBox.add(varLinearRelationshipsBox);
+        //algoFiltersBox.add(varLinearRelationshipsBox);
         algoFiltersBox.add(Box.createVerticalStrut(5));
-        algoFiltersBox.add(gaussianVariablesBox);
+        //algoFiltersBox.add(gaussianVariablesBox);
+        algoFiltersBox.add(Box.createVerticalStrut(5));
+        //algoFiltersBox.add(includeUnmeasuredConfoundersBox);
         algoFiltersBox.add(Box.createVerticalStrut(5));
         algoFiltersBox.add(priorKnowledgeBox);
-        algoFiltersBox.add(Box.createVerticalStrut(5));
-        algoFiltersBox.add(includeUnmeasuredConfoundersBox);
         algoFiltersBox.add(Box.createVerticalStrut(5));
         algoFiltersBox.add(resetFilterSelectionsBtn);
 
@@ -595,8 +593,8 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         // Components in rightContainer
         // Algo description
         Box algoDescriptionBox = Box.createVerticalBox();
-        algoDescriptionBox.setMinimumSize(new Dimension(350, 445));
-        algoDescriptionBox.setMaximumSize(new Dimension(350, 445));
+        algoDescriptionBox.setMinimumSize(new Dimension(350, 355));
+        algoDescriptionBox.setMaximumSize(new Dimension(350, 355));
 
         // Use a titled border with 5 px inside padding - Zhou
         String algoDescriptionBoxBorderTitle = "Algorithm description";
@@ -610,19 +608,39 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         algoDescriptionTextArea.setEditable(false);
 
         JScrollPane algoDescriptionScrollPane = new JScrollPane(algoDescriptionTextArea);
-        algoDescriptionScrollPane.setMinimumSize(new Dimension(350, 445));
-        algoDescriptionScrollPane.setMaximumSize(new Dimension(350, 445));
+        algoDescriptionScrollPane.setMinimumSize(new Dimension(350, 355));
+        algoDescriptionScrollPane.setMaximumSize(new Dimension(350, 355));
 
         algoDescriptionBox.add(algoDescriptionScrollPane);
 
         // Choose corresponding test and score based on algorithm
         Box testAndScoreBox = Box.createVerticalBox();
-        testAndScoreBox.setMinimumSize(new Dimension(350, 130));
-        testAndScoreBox.setMaximumSize(new Dimension(350, 130));
+        testAndScoreBox.setMinimumSize(new Dimension(350, 220));
+        testAndScoreBox.setMaximumSize(new Dimension(350, 220));
 
         // Use a titled border with 5 px inside padding - Zhou
         String testAndScoreBoxBorderTitle = "Choose Independence Test and Score";
         testAndScoreBox.setBorder(new CompoundBorder(BorderFactory.createTitledBorder(testAndScoreBoxBorderTitle), new EmptyBorder(5, 5, 5, 5)));
+
+        // Assumptions
+        Box assumptionsLabelBox = Box.createHorizontalBox();
+        assumptionsLabelBox.add(new JLabel("Variables in my dataset: "));
+        assumptionsLabelBox.setAlignmentX(LEFT_ALIGNMENT);
+
+        Box linearVariablesBox = Box.createHorizontalBox();
+        JCheckBox linearVariables = new JCheckBox("are linear");
+        linearVariablesBox.add(linearVariables);
+        linearVariablesBox.setAlignmentX(LEFT_ALIGNMENT);
+
+        Box gaussianVariablesBox = Box.createHorizontalBox();
+        JCheckBox gaussianVariables = new JCheckBox("are Gaussian");
+        gaussianVariablesBox.add(gaussianVariables);
+        gaussianVariablesBox.setAlignmentX(LEFT_ALIGNMENT);
+
+        Box unmeasuredConfoundersBox = Box.createHorizontalBox();
+        JCheckBox unmeasuredConfounders = new JCheckBox("include unmeasured confounders");
+        unmeasuredConfoundersBox.add(unmeasuredConfounders);
+        unmeasuredConfoundersBox.setAlignmentX(LEFT_ALIGNMENT);
 
         // Now to create the test and score dropdown menus
         // Add items to the test dropdown menu
@@ -682,6 +700,11 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         // scoreBox.add(Box.createHorizontalGlue());
 
         // Add to testAndScoreBox
+        testAndScoreBox.add(assumptionsLabelBox);
+        testAndScoreBox.add(linearVariablesBox);
+        testAndScoreBox.add(gaussianVariablesBox);
+        testAndScoreBox.add(unmeasuredConfoundersBox);
+        testAndScoreBox.add(Box.createVerticalStrut(10));
         testAndScoreBox.add(testBox);
         // Add some gap between test and score
         testAndScoreBox.add(Box.createVerticalStrut(10));
