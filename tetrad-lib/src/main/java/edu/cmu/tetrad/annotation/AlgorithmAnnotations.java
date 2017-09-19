@@ -38,9 +38,9 @@ public class AlgorithmAnnotations extends AbstractAnnotations<Algorithm> {
 
     private AlgorithmAnnotations() {
         String packageName = "edu.cmu.tetrad.algcomparison.algorithm";
-        List<AnnotatedClass> list = AnnotatedClassUtils.getAnnotatedClasses(packageName, Algorithm.class);
+        List<AnnotatedClass<Algorithm>> list = AnnotatedClassUtils.getAnnotatedClasses(packageName, Algorithm.class);
         list.stream().forEach(e -> {
-            Algorithm annotation = (Algorithm) e.getAnnotation();
+            Algorithm annotation = e.getAnnotation();
             annoClassByName.put(annotation.name(), e);
             nameByCommand.put(annotation.command(), annotation.name());
         });

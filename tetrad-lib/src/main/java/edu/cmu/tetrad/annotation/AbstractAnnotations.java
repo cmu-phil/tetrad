@@ -38,6 +38,10 @@ public abstract class AbstractAnnotations<T extends Annotation> {
     protected final Map<String, String> nameByCommand = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
 
     public String getName(String command) {
+        if (command == null) {
+            return null;
+        }
+
         return nameByCommand.get(command);
     }
 
@@ -72,6 +76,10 @@ public abstract class AbstractAnnotations<T extends Annotation> {
      * @return annotation
      */
     public T getAnnotation(String name) {
+        if (name == null) {
+            return null;
+        }
+
         AnnotatedClass<T> ac = annoClassByName.get(name);
 
         return (ac == null) ? null : ac.getAnnotation();
@@ -84,9 +92,21 @@ public abstract class AbstractAnnotations<T extends Annotation> {
      * @return class
      */
     public Class<T> getAnnotatedClass(String name) {
+        if (name == null) {
+            return null;
+        }
+
         AnnotatedClass<T> ac = annoClassByName.get(name);
 
         return (ac == null) ? null : ac.getClazz();
+    }
+
+    public List<AnnotatedClass<T>> getAnnotatedClasses() {
+        List<AnnotatedClass<T>> list = annoClassByName.entrySet().stream()
+                .map(e -> e.getValue())
+                .collect(Collectors.toList());
+
+        return Collections.unmodifiableList(list);
     }
 
 }

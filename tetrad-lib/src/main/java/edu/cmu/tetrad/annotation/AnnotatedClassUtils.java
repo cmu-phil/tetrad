@@ -19,6 +19,8 @@
 package edu.cmu.tetrad.annotation;
 
 import java.lang.annotation.Annotation;
+import java.util.Collections;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -35,13 +37,25 @@ public class AnnotatedClassUtils {
     private AnnotatedClassUtils() {
     }
 
-    public static List<AnnotatedClass> getAnnotatedClasses(String packageName, Class<? extends Annotation> type) {
+    public static <T extends Annotation> List<AnnotatedClass<T>> getAnnotatedClasses(String packageName, Class<T> type) {
         Reflections reflections = new Reflections(packageName);
         Set<Class<?>> classes = reflections.getTypesAnnotatedWith(type);
 
         return classes.stream()
-                .map(e -> new AnnotatedClass(e, e.getAnnotation(type)))
+                .map(e -> new AnnotatedClass<>(e, e.getAnnotation(type)))
                 .collect(Collectors.toList());
+    }
+
+    public static <T extends Annotation> List<AnnotatedClass<T>> filterByAnnotation(Class<? extends Annotation> annotation, List<AnnotatedClass<T>> annotatedClasses) {
+        List<AnnotatedClass<T>> list = new LinkedList<>();
+
+        if (annotatedClasses != null && !annotatedClasses.isEmpty()) {
+            annotatedClasses.stream()
+                    .filter(e -> e.getClazz().isAnnotationPresent(annotation))
+                    .collect(Collectors.toCollection(() -> list));
+        }
+
+        return Collections.unmodifiableList(list);
     }
 
 }
