@@ -62,7 +62,6 @@ import edu.pitt.dbmi.tetrad.db.entity.HpcParameter;
 import edu.pitt.dbmi.tetrad.db.entity.JvmOption;
 import java.awt.*;
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -187,6 +186,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         runner.setAlgorithm(algorithm);
     }
 
+    // Add covariace?
     private void determineTestAndScore(DataModelList dataModelList) {
         // Use annotations to get the tests based on data type
         IndependenceTestAnnotations indTestAnno = IndependenceTestAnnotations.getInstance();
@@ -299,104 +299,6 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
             });
         }
 
-//        // Are the relationships between your variables linear?
-//        Box varLinearRelationshipsBox = Box.createVerticalBox();
-//
-//        // Add label into this label box
-//        Box varLinearRelationshipsLabelBox = Box.createHorizontalBox();
-//        varLinearRelationshipsLabelBox.add(new JLabel("Linear variables: "));
-//        varLinearRelationshipsLabelBox.setAlignmentX(LEFT_ALIGNMENT);
-//
-//        // Option 1
-//        Box varLinearRelationshipsOption1Box = Box.createHorizontalBox();
-//        varLinearRelationshipsOption1Box.setAlignmentX(LEFT_ALIGNMENT);
-//
-//        JRadioButton varLinearRelationshipsYes = new JRadioButton("Yes");
-//
-//        // Add padding and option
-//        varLinearRelationshipsOption1Box.add(Box.createRigidArea(new Dimension(10, 20)));
-//        varLinearRelationshipsOption1Box.add(varLinearRelationshipsYes);
-//
-//        // Option 2
-//        Box varLinearRelationshipsOption2Box = Box.createHorizontalBox();
-//        varLinearRelationshipsOption2Box.setAlignmentX(LEFT_ALIGNMENT);
-//
-//        JRadioButton varLinearRelationshipsNo = new JRadioButton("No");
-//
-//        // Add padding and option
-//        varLinearRelationshipsOption2Box.add(Box.createRigidArea(new Dimension(10, 20)));
-//        varLinearRelationshipsOption2Box.add(varLinearRelationshipsNo);
-//
-//        // Option 3
-//        Box varLinearRelationshipsOption3Box = Box.createHorizontalBox();
-//        varLinearRelationshipsOption3Box.setAlignmentX(LEFT_ALIGNMENT);
-//
-//        JRadioButton varLinearRelationshipsUnknown = new JRadioButton("Let's find out");
-//
-//        // Add padding and option
-//        varLinearRelationshipsOption3Box.add(Box.createRigidArea(new Dimension(10, 20)));
-//        varLinearRelationshipsOption3Box.add(varLinearRelationshipsUnknown);
-//
-//        // We need to group the radio buttons, otherwise all can be selected
-//        varLinearRelationshipsBtnGrp.add(varLinearRelationshipsYes);
-//        varLinearRelationshipsBtnGrp.add(varLinearRelationshipsNo);
-//        varLinearRelationshipsBtnGrp.add(varLinearRelationshipsUnknown);
-//
-//        // Add to containing box
-//        varLinearRelationshipsBox.add(varLinearRelationshipsLabelBox);
-//        varLinearRelationshipsBox.add(varLinearRelationshipsOption1Box);
-//        varLinearRelationshipsBox.add(varLinearRelationshipsOption2Box);
-//        varLinearRelationshipsBox.add(varLinearRelationshipsOption3Box);
-//        varLinearRelationshipsBox.add(Box.createHorizontalGlue());
-//        // Are your variables Gaussian?
-//        Box gaussianVariablesBox = Box.createVerticalBox();
-//
-//        // Add label into this label box to size
-//        Box gaussianVariablesLabelBox = Box.createHorizontalBox();
-//        gaussianVariablesLabelBox.add(new JLabel("Gaussian variables: "));
-//        gaussianVariablesLabelBox.setAlignmentX(LEFT_ALIGNMENT);
-//
-//        // Option 1
-//        Box gaussianVariablesOption1Box = Box.createHorizontalBox();
-//        gaussianVariablesOption1Box.setAlignmentX(LEFT_ALIGNMENT);
-//
-//        JRadioButton gaussianVariablesYes = new JRadioButton("Yes");
-//
-//        // Add padding and option
-//        gaussianVariablesOption1Box.add(Box.createRigidArea(new Dimension(10, 20)));
-//        gaussianVariablesOption1Box.add(gaussianVariablesYes);
-//
-//        // Option 2
-//        Box gaussianVariablesOption2Box = Box.createHorizontalBox();
-//        gaussianVariablesOption2Box.setAlignmentX(LEFT_ALIGNMENT);
-//
-//        JRadioButton gaussianVariablesNo = new JRadioButton("No");
-//
-//        // Add padding and option
-//        gaussianVariablesOption2Box.add(Box.createRigidArea(new Dimension(10, 20)));
-//        gaussianVariablesOption2Box.add(gaussianVariablesNo);
-//
-//        // Option 3
-//        Box gaussianVariablesOption3Box = Box.createHorizontalBox();
-//        gaussianVariablesOption3Box.setAlignmentX(LEFT_ALIGNMENT);
-//
-//        JRadioButton gaussianVariablesUnknown = new JRadioButton("Let's find out");
-//
-//        // Add padding and option
-//        gaussianVariablesOption3Box.add(Box.createRigidArea(new Dimension(10, 20)));
-//        gaussianVariablesOption3Box.add(gaussianVariablesUnknown);
-//
-//        // We need to group the radio buttons, otherwise all can be selected
-//        gaussianVariablesBtnGrp.add(gaussianVariablesYes);
-//        gaussianVariablesBtnGrp.add(gaussianVariablesNo);
-//        gaussianVariablesBtnGrp.add(gaussianVariablesUnknown);
-//
-//        // Add to containing box
-//        gaussianVariablesBox.add(gaussianVariablesLabelBox);
-//        gaussianVariablesBox.add(gaussianVariablesOption1Box);
-//        gaussianVariablesBox.add(gaussianVariablesOption2Box);
-//        gaussianVariablesBox.add(gaussianVariablesOption3Box);
-//        gaussianVariablesBox.add(Box.createHorizontalGlue());
         // Is there a prior knowledge file?
         Box priorKnowledgeBox = Box.createVerticalBox();
 
@@ -459,56 +361,6 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         priorKnowledgeBox.add(priorKnowledgeLabelBox);
         priorKnowledgeBox.add(priorKnowledgeOption1Box);
         priorKnowledgeBox.add(priorKnowledgeOption2Box);
-//
-//        // Include unmeasured confounders?
-//        Box includeUnmeasuredConfoundersBox = Box.createVerticalBox();
-//
-//        // Add label into this label box to size
-//        Box includeUnmeasuredConfoundersLabelBox = Box.createHorizontalBox();
-//        includeUnmeasuredConfoundersLabelBox.add(new JLabel("Unmeasured confounders: "));
-//        includeUnmeasuredConfoundersLabelBox.setAlignmentX(LEFT_ALIGNMENT);
-//
-//        // Option 1
-//        Box includeUnmeasuredConfoundersOption1Box = Box.createHorizontalBox();
-//        includeUnmeasuredConfoundersOption1Box.setAlignmentX(LEFT_ALIGNMENT);
-//
-//        JRadioButton includeUnmeasuredConfoundersYes = new JRadioButton("Yes");
-//
-//        // Add padding and option
-//        includeUnmeasuredConfoundersOption1Box.add(Box.createRigidArea(new Dimension(10, 20)));
-//        includeUnmeasuredConfoundersOption1Box.add(includeUnmeasuredConfoundersYes);
-//
-//        // Option 2
-//        Box includeUnmeasuredConfoundersOption2Box = Box.createHorizontalBox();
-//        includeUnmeasuredConfoundersOption2Box.setAlignmentX(LEFT_ALIGNMENT);
-//
-//        JRadioButton includeUnmeasuredConfoundersNo = new JRadioButton("No");
-//
-//        // Add padding and option
-//        includeUnmeasuredConfoundersOption2Box.add(Box.createRigidArea(new Dimension(10, 20)));
-//        includeUnmeasuredConfoundersOption2Box.add(includeUnmeasuredConfoundersNo);
-//
-//        // Option 3
-//        Box includeUnmeasuredConfoundersOption3Box = Box.createHorizontalBox();
-//        includeUnmeasuredConfoundersOption3Box.setAlignmentX(LEFT_ALIGNMENT);
-//
-//        JRadioButton includeUnmeasuredConfoundersUnknown = new JRadioButton("Let's find out");
-//
-//        // Add padding and option
-//        includeUnmeasuredConfoundersOption3Box.add(Box.createRigidArea(new Dimension(10, 20)));
-//        includeUnmeasuredConfoundersOption3Box.add(includeUnmeasuredConfoundersUnknown);
-//
-//        // We need to group the radio buttons, otherwise all can be selected
-//        includeUnmeasuredConfoundersBtnGrp.add(includeUnmeasuredConfoundersYes);
-//        includeUnmeasuredConfoundersBtnGrp.add(includeUnmeasuredConfoundersNo);
-//        includeUnmeasuredConfoundersBtnGrp.add(includeUnmeasuredConfoundersUnknown);
-//
-//        // Add to containing box
-//        includeUnmeasuredConfoundersBox.add(includeUnmeasuredConfoundersLabelBox);
-//        includeUnmeasuredConfoundersBox.add(includeUnmeasuredConfoundersOption1Box);
-//        includeUnmeasuredConfoundersBox.add(includeUnmeasuredConfoundersOption2Box);
-//        includeUnmeasuredConfoundersBox.add(includeUnmeasuredConfoundersOption3Box);
-//        includeUnmeasuredConfoundersBox.add(Box.createHorizontalGlue());
 
         // Reset filter selections
         JButton resetFilterSelectionsBtn = new JButton("Reset filter selections");
@@ -558,11 +410,8 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         // Items to put in data description box
         algoFiltersBox.add(algoTypesBox);
         algoFiltersBox.add(Box.createVerticalStrut(5));
-        //algoFiltersBox.add(varLinearRelationshipsBox);
         algoFiltersBox.add(Box.createVerticalStrut(5));
-        //algoFiltersBox.add(gaussianVariablesBox);
         algoFiltersBox.add(Box.createVerticalStrut(5));
-        //algoFiltersBox.add(includeUnmeasuredConfoundersBox);
         algoFiltersBox.add(Box.createVerticalStrut(5));
         algoFiltersBox.add(priorKnowledgeBox);
         algoFiltersBox.add(Box.createVerticalStrut(5));
@@ -632,23 +481,41 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
 
         Box linearRelationshipBox = Box.createHorizontalBox();
         linearRelationshipBox.add(Box.createRigidArea(new Dimension(10, 20)));
-        JCheckBox linearVariables = new JCheckBox("Variables with linear relationship");
+        JCheckBox linearVariablesCheckbox = new JCheckBox("Variables with linear relationship");
+
+        // Register event listener on checkbox
+        linearVariablesCheckbox.addActionListener((ActionEvent actionEvent) -> {
+            // Update the tests and scores list to show items that have @linear annotation
+        });
+
         //linearVariablesBox.setAlignmentX(LEFT_ALIGNMENT);
-        linearRelationshipBox.add(linearVariables);
+        linearRelationshipBox.add(linearVariablesCheckbox);
         linearRelationshipBox.add(Box.createHorizontalGlue());
 
         Box gaussianVariablesBox = Box.createHorizontalBox();
         gaussianVariablesBox.add(Box.createRigidArea(new Dimension(10, 20)));
-        JCheckBox gaussianVariables = new JCheckBox("Gaussian variables");
+        JCheckBox gaussianVariablesCheckbox = new JCheckBox("Gaussian variables");
+
+        // Register event listener on checkbox
+        gaussianVariablesCheckbox.addActionListener((ActionEvent actionEvent) -> {
+            // Update the tests and scores list to show items that have @gaussian annotation
+        });
+
         //gaussianVariablesBox.setAlignmentX(LEFT_ALIGNMENT);
-        gaussianVariablesBox.add(gaussianVariables);
+        gaussianVariablesBox.add(gaussianVariablesCheckbox);
         gaussianVariablesBox.add(Box.createHorizontalGlue());
 
         Box unmeasuredConfoundersBox = Box.createHorizontalBox();
         unmeasuredConfoundersBox.add(Box.createRigidArea(new Dimension(10, 20)));
-        JCheckBox unmeasuredConfounders = new JCheckBox("Unmeasured confounders");
+        JCheckBox unmeasuredConfoundersCheckbox = new JCheckBox("Unmeasured confounders");
+
+        // Register event listener on checkbox
+        unmeasuredConfoundersCheckbox.addActionListener((ActionEvent actionEvent) -> {
+            // Update the tests and scores list to show items that have @unmeasuredConfounders annotation
+        });
+
         //unmeasuredConfoundersBox.setAlignmentX(LEFT_ALIGNMENT);
-        unmeasuredConfoundersBox.add(unmeasuredConfounders);
+        unmeasuredConfoundersBox.add(unmeasuredConfoundersCheckbox);
         unmeasuredConfoundersBox.add(Box.createHorizontalGlue());
 
         // Now to create the test and score dropdown menus
@@ -744,24 +611,21 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         step1BackBtn = new JButton("< Choose Algorithm");
 
         // Step 1 button listener
-        step1BackBtn.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                // Hide parameters
-                parametersContainer.setVisible(false);
+        step1BackBtn.addActionListener((ActionEvent e) -> {
+            // Hide parameters
+            parametersContainer.setVisible(false);
 
-                // Show algo step 1
-                algoChooserContainer.setVisible(true);
+            // Show algo step 1
+            algoChooserContainer.setVisible(true);
 
-                // Show step 2 button
-                step2Btn.setVisible(true);
+            // Show step 2 button
+            step2Btn.setVisible(true);
 
-                // Hide step 3 button
-                step3Btn.setVisible(false);
+            // Hide step 3 button
+            step3Btn.setVisible(false);
 
-                // Hide back button
-                step1BackBtn.setVisible(false);
-            }
+            // Hide back button
+            step1BackBtn.setVisible(false);
         });
 
         // Hide step 2
@@ -1460,10 +1324,20 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         scoreDropdown.setEnabled(algoAnno.requireScore(algoClass));
     }
 
+    // Enable/disable the checkboxes of assumptions
+    // based on if there are annotated tests/scores with assumption annotations
+    private void setAssumptions() {
+        IndependenceTestAnnotations indTestAnno = IndependenceTestAnnotations.getInstance();
+        ScoreAnnotations scoreAnno = ScoreAnnotations.getInstance();
+    }
+
     private void setAlgorithm() {
         // Determine if enable/disable test and score dropdowns
         setTestDropdown();
         setScoreDropdown();
+
+        // Determine if enable/disable the checkboxes of assumptions
+        setAssumptions();
 
         // Set the algo on each selection change
         Algorithm algorithm = getAlgorithmFromInterface();
