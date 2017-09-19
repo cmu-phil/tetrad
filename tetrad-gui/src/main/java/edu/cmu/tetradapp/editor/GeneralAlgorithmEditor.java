@@ -625,28 +625,28 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         // Assumptions label box
         Box assumptionsLabelBox = Box.createHorizontalBox();
         assumptionsLabelBox.setPreferredSize(new Dimension(350, 20));
-        JLabel assumptionsLabel = new JLabel("Variables in my dataset: ");
+        JLabel assumptionsLabel = new JLabel("Dataset Properties: ");
         //assumptionsLabelBox.setAlignmentX(LEFT_ALIGNMENT);
         assumptionsLabelBox.add(assumptionsLabel);
         assumptionsLabelBox.add(Box.createHorizontalGlue());
 
-        Box linearVariablesBox = Box.createHorizontalBox();
-        linearVariablesBox.add(Box.createRigidArea(new Dimension(10, 20)));
-        JCheckBox linearVariables = new JCheckBox("are linear");
+        Box linearRelationshipBox = Box.createHorizontalBox();
+        linearRelationshipBox.add(Box.createRigidArea(new Dimension(10, 20)));
+        JCheckBox linearVariables = new JCheckBox("Variables with linear relationship");
         //linearVariablesBox.setAlignmentX(LEFT_ALIGNMENT);
-        linearVariablesBox.add(linearVariables);
-        linearVariablesBox.add(Box.createHorizontalGlue());
+        linearRelationshipBox.add(linearVariables);
+        linearRelationshipBox.add(Box.createHorizontalGlue());
 
         Box gaussianVariablesBox = Box.createHorizontalBox();
         gaussianVariablesBox.add(Box.createRigidArea(new Dimension(10, 20)));
-        JCheckBox gaussianVariables = new JCheckBox("are Gaussian");
+        JCheckBox gaussianVariables = new JCheckBox("Gaussian variables");
         //gaussianVariablesBox.setAlignmentX(LEFT_ALIGNMENT);
         gaussianVariablesBox.add(gaussianVariables);
         gaussianVariablesBox.add(Box.createHorizontalGlue());
 
         Box unmeasuredConfoundersBox = Box.createHorizontalBox();
         unmeasuredConfoundersBox.add(Box.createRigidArea(new Dimension(10, 20)));
-        JCheckBox unmeasuredConfounders = new JCheckBox("include unmeasured confounders");
+        JCheckBox unmeasuredConfounders = new JCheckBox("Unmeasured confounders");
         //unmeasuredConfoundersBox.setAlignmentX(LEFT_ALIGNMENT);
         unmeasuredConfoundersBox.add(unmeasuredConfounders);
         unmeasuredConfoundersBox.add(Box.createHorizontalGlue());
@@ -708,7 +708,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
 
         // Add to testAndScoreBox
         testAndScoreBox.add(assumptionsLabelBox);
-        testAndScoreBox.add(linearVariablesBox);
+        testAndScoreBox.add(linearRelationshipBox);
         testAndScoreBox.add(gaussianVariablesBox);
         testAndScoreBox.add(unmeasuredConfoundersBox);
         // Add some gap
