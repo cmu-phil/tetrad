@@ -36,9 +36,9 @@ public class ScoreAnnotations extends AbstractAnnotations<Score> {
 
     private ScoreAnnotations() {
         String packageName = "edu.cmu.tetrad.algcomparison.score";
-        List<AnnotatedClass> list = AnnotatedClassUtils.getAnnotatedClasses(packageName, Score.class);
+        List<AnnotatedClass<Score>> list = AnnotatedClassUtils.getAnnotatedClasses(packageName, Score.class);
         list.stream().forEach(e -> {
-            Score annotation = (Score) e.getAnnotation();
+            Score annotation = e.getAnnotation();
             annoClassByName.put(annotation.name(), e);
             nameByCommand.put(annotation.command(), annotation.name());
         });

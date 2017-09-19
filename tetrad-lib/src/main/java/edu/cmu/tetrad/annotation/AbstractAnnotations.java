@@ -101,4 +101,12 @@ public abstract class AbstractAnnotations<T extends Annotation> {
         return (ac == null) ? null : ac.getClazz();
     }
 
+    public List<AnnotatedClass<T>> getAnnotatedClasses() {
+        List<AnnotatedClass<T>> list = annoClassByName.entrySet().stream()
+                .map(e -> e.getValue())
+                .collect(Collectors.toList());
+
+        return Collections.unmodifiableList(list);
+    }
+
 }

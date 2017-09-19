@@ -35,12 +35,12 @@ public class AnnotatedClassUtils {
     private AnnotatedClassUtils() {
     }
 
-    public static List<AnnotatedClass> getAnnotatedClasses(String packageName, Class<? extends Annotation> type) {
+    public static <T extends Annotation> List<AnnotatedClass<T>> getAnnotatedClasses(String packageName, Class<T> type) {
         Reflections reflections = new Reflections(packageName);
         Set<Class<?>> classes = reflections.getTypesAnnotatedWith(type);
 
         return classes.stream()
-                .map(e -> new AnnotatedClass(e, e.getAnnotation(type)))
+                .map(e -> new AnnotatedClass<>(e, e.getAnnotation(type)))
                 .collect(Collectors.toList());
     }
 

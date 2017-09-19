@@ -36,9 +36,9 @@ public class IndependenceTestAnnotations extends AbstractAnnotations<Independenc
 
     private IndependenceTestAnnotations() {
         String packageName = "edu.cmu.tetrad.algcomparison.independence";
-        List<AnnotatedClass> list = AnnotatedClassUtils.getAnnotatedClasses(packageName, IndependenceTest.class);
+        List<AnnotatedClass<IndependenceTest>> list = AnnotatedClassUtils.getAnnotatedClasses(packageName, IndependenceTest.class);
         list.stream().forEach(e -> {
-            IndependenceTest annotation = (IndependenceTest) e.getAnnotation();
+            IndependenceTest annotation = e.getAnnotation();
             annoClassByName.put(annotation.name(), e);
             nameByCommand.put(annotation.command(), annotation.name());
         });
