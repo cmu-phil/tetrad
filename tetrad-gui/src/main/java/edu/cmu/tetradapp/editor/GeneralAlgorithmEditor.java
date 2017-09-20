@@ -27,11 +27,12 @@ import edu.cmu.tetrad.algcomparison.independence.*;
 import edu.cmu.tetrad.algcomparison.score.*;
 import edu.cmu.tetrad.algcomparison.utils.TakesInitialGraph;
 import edu.cmu.tetrad.annotation.AlgType;
-import edu.cmu.tetrad.annotation.AlgorithmAnnotations;
 import edu.cmu.tetrad.annotation.AnnotatedClassWrapper;
-import edu.cmu.tetrad.annotation.ScoreAnnotations;
-import edu.cmu.tetrad.annotation.TestOfIndependenceAnnotations;
+import edu.cmu.tetrad.annotation.Score;
+import edu.cmu.tetrad.annotation.TestOfIndependence;
 import edu.cmu.tetrad.annotation.TetradAlgorithmAnnotations;
+import edu.cmu.tetrad.annotation.TetradScoreAnnotations;
+import edu.cmu.tetrad.annotation.TetradTestOfIndependenceAnnotations;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataModelList;
 import edu.cmu.tetrad.data.DataSet;
@@ -91,8 +92,8 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
     private final GeneralAlgorithmRunner runner;
     private Box parametersBox;
     private Box graphContainer;
-    private final JComboBox<String> testDropdown = new JComboBox<>();
-    private final JComboBox<String> scoreDropdown = new JComboBox<>();
+    private final JComboBox<AnnotatedClassWrapper<TestOfIndependence>> testDropdown = new JComboBox<>();
+    private final JComboBox<AnnotatedClassWrapper<Score>> scoreDropdown = new JComboBox<>();
     private final GraphSelectionEditor graphEditor;
     private final Parameters parameters;
     private final TetradDesktop desktop;
@@ -100,8 +101,8 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
     private String jsonResult;
     private final List<AnnotatedClassWrapper<edu.cmu.tetrad.annotation.Algorithm>> algoWrappers;
     private final List<AnnotatedClassWrapper<edu.cmu.tetrad.annotation.Algorithm>> algorithmsAcceptKnowledge;
-    private List<String> tests;
-    private List<String> scores;
+    private List<AnnotatedClassWrapper<TestOfIndependence>> tests;
+    private List<AnnotatedClassWrapper<Score>> scores;
     private final DefaultListModel<AnnotatedClassWrapper<edu.cmu.tetrad.annotation.Algorithm>> suggestedAlgosListModel = new DefaultListModel<>();
     private final JList<AnnotatedClassWrapper<edu.cmu.tetrad.annotation.Algorithm>> suggestedAlgosList;
     private Boolean takesKnowledgeFile = null;
@@ -191,27 +192,27 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
     // Add covariace?
     private void determineTestAndScore(DataModelList dataModelList) {
         // Use annotations to get the tests based on data type
-        TestOfIndependenceAnnotations indTestAnno = TestOfIndependenceAnnotations.getInstance();
+        TetradTestOfIndependenceAnnotations indTestAnno = TetradTestOfIndependenceAnnotations.getInstance();
         // Use annotations to get the scores based on data type
-        ScoreAnnotations scoreAnno = ScoreAnnotations.getInstance();
+        TetradScoreAnnotations scoreAnno = TetradScoreAnnotations.getInstance();
 
         // Determine the test/score dropdown menu options based on dataset
         if (dataModelList.isEmpty()) {
-            tests = indTestAnno.getNamesAssociatedWith(DataType.Graph);
-            scores = scoreAnno.getNamesAssociatedWith(DataType.Graph);
+            tests = indTestAnno.getNameAttributes(DataType.Graph);
+            scores = scoreAnno.getNameAttributes(DataType.Graph);
         } else {
             // Check type based on the first dataset
             DataModel dataSet = dataModelList.get(0);
 
             if (dataSet.isContinuous()) {
-                tests = indTestAnno.getNamesAssociatedWith(DataType.Continuous);
-                scores = scoreAnno.getNamesAssociatedWith(DataType.Continuous);
+                tests = indTestAnno.getNameAttributes(DataType.Continuous);
+                scores = scoreAnno.getNameAttributes(DataType.Continuous);
             } else if (dataSet.isDiscrete()) {
-                tests = indTestAnno.getNamesAssociatedWith(DataType.Discrete);
-                scores = scoreAnno.getNamesAssociatedWith(DataType.Discrete);
+                tests = indTestAnno.getNameAttributes(DataType.Discrete);
+                scores = scoreAnno.getNameAttributes(DataType.Discrete);
             } else if (dataSet.isMixed()) {
-                tests = indTestAnno.getNamesAssociatedWith(DataType.Mixed);
-                scores = scoreAnno.getNamesAssociatedWith(DataType.Mixed);
+                tests = indTestAnno.getNameAttributes(DataType.Mixed);
+                scores = scoreAnno.getNameAttributes(DataType.Mixed);
             } else {
                 throw new IllegalArgumentException();
             }
@@ -535,14 +536,14 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         testDropdown.addActionListener((ActionEvent e) -> {
             // Don't use setAlgorithm() because we don't need to determine if
             // enable/disable the test and score dropdown menus again - Zhou
-            setTestType((String) testDropdown.getSelectedItem());
+            setTestType(((AnnotatedClassWrapper<TestOfIndependence>) testDropdown.getSelectedItem()).getName());
         });
 
         // Event listener of score seleciton
         scoreDropdown.addActionListener((ActionEvent e) -> {
             // Don't use setAlgorithm() because we don't need to determine if
             // enable/disable the test and score dropdown menus again - Zhou
-            setScoreType((String) scoreDropdown.getSelectedItem());
+            setScoreType(((AnnotatedClassWrapper<Score>) scoreDropdown.getSelectedItem()).getName());
         });
 
         // Test container
@@ -1256,9 +1257,8 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
     }
 
     private ScoreWrapper getScoreWrapper() {
-        String score = (String) scoreDropdown.getSelectedItem();
-        ScoreAnnotations scoreAnno = ScoreAnnotations.getInstance();
-        Class scoreClass = scoreAnno.getAnnotatedClass(score);
+        AnnotatedClassWrapper<Score> score = (AnnotatedClassWrapper<Score>) scoreDropdown.getSelectedItem();
+        Class scoreClass = score.getAnnotatedClass().getClazz();
 
         ScoreWrapper scoreWrapper = null;
         try {
@@ -1276,9 +1276,8 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
     }
 
     private IndependenceWrapper getIndependenceWrapper() {
-        String test = (String) testDropdown.getSelectedItem();
-        TestOfIndependenceAnnotations indTestAnno = TestOfIndependenceAnnotations.getInstance();
-        Class indTestClass = indTestAnno.getAnnotatedClass(test);
+        AnnotatedClassWrapper<TestOfIndependence> test = (AnnotatedClassWrapper<TestOfIndependence>) testDropdown.getSelectedItem();
+        Class indTestClass = test.getAnnotatedClass().getClazz();
 
         IndependenceWrapper independenceWrapper = null;
         try {
@@ -1303,7 +1302,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
     // Determine if enable/disable test dropdowns
     private void setTestDropdown() {
         // Get annotated algo
-        AlgorithmAnnotations algoAnno = AlgorithmAnnotations.getInstance();
+        TetradAlgorithmAnnotations algoAnno = TetradAlgorithmAnnotations.getInstance();
         Class algoClass = selectedAgloWrapper.getAnnotatedClass().getClazz();
 
         // Determine if enable/disable test and score dropdowns
@@ -1313,7 +1312,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
     // Determine if enable/disable score dropdowns
     private void setScoreDropdown() {
         // Get annotated algo
-        AlgorithmAnnotations algoAnno = AlgorithmAnnotations.getInstance();
+        TetradAlgorithmAnnotations algoAnno = TetradAlgorithmAnnotations.getInstance();
         Class algoClass = selectedAgloWrapper.getAnnotatedClass().getClazz();
 
         // Determine if enable/disable test and score dropdowns
@@ -1323,8 +1322,8 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
     // Enable/disable the checkboxes of assumptions
     // based on if there are annotated tests/scores with assumption annotations
     private void setAssumptions() {
-        TestOfIndependenceAnnotations indTestAnno = TestOfIndependenceAnnotations.getInstance();
-        ScoreAnnotations scoreAnno = ScoreAnnotations.getInstance();
+        TetradTestOfIndependenceAnnotations indTestAnno = TetradTestOfIndependenceAnnotations.getInstance();
+        TetradScoreAnnotations scoreAnno = TetradScoreAnnotations.getInstance();
     }
 
     private void setAlgorithm() {
@@ -1350,8 +1349,8 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         parameters.set("algName", selectedAgloWrapper.getName());
         parameters.set("algType", selectedAlgoType.toString().replace(" ", "_"));
 
-        setTestType((String) testDropdown.getSelectedItem());
-        setScoreType((String) scoreDropdown.getSelectedItem());
+        setTestType(((AnnotatedClassWrapper<TestOfIndependence>) testDropdown.getSelectedItem()).getName());
+        setScoreType(((AnnotatedClassWrapper<Score>) scoreDropdown.getSelectedItem()).getName());
 
         // Also need to update the corresponding parameters
         parametersPanel = new ParameterPanel(runner.getAlgorithm().getParameters(), getParameters());
