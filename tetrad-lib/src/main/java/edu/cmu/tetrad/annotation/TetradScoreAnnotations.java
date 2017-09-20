@@ -40,7 +40,7 @@ public class TetradScoreAnnotations extends AbstractTetradAnnotations<Score> {
     protected final Map<DataType, List<AnnotatedClassWrapper<Score>>> dataTypeNameWrappers = new EnumMap<>(DataType.class);
 
     private TetradScoreAnnotations() {
-        super("edu.cmu.tetrad.algcomparison.algorithm", Score.class);
+        super("edu.cmu.tetrad.algcomparison.score", Score.class);
 
         annotatedClasses.stream()
                 .map(e -> new AnnotatedClassWrapper<>(e.getAnnotation().name(), e))
