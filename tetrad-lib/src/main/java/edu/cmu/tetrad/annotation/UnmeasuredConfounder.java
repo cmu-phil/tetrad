@@ -18,7 +18,6 @@
  */
 package edu.cmu.tetrad.annotation;
 
-import edu.cmu.tetrad.data.DataType;
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -27,21 +26,13 @@ import java.lang.annotation.Target;
 
 /**
  *
- * Sep 1, 2017 10:51:13 AM
+ * Sep 19, 2017 1:56:20 PM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
  */
 @Target({ElementType.TYPE})
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
-public @interface Score {
-
-    String name();
-
-    String command();
-
-    String description() default "";
-
-    DataType dataType();
+public @interface UnmeasuredConfounder {
 
 }
