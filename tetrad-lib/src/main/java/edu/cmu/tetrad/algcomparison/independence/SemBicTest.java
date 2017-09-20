@@ -10,7 +10,7 @@ import java.util.*;
  *
  * @author jdramsey
  */
-@edu.cmu.tetrad.annotation.IndependenceTest(
+@edu.cmu.tetrad.annotation.TestOfIndependence(
         name = "SEM BIC test",
         command = "sem-bic",
         dataType = DataType.Continuous

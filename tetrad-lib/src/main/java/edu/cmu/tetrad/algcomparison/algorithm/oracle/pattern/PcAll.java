@@ -28,8 +28,7 @@ import java.util.List;
         name = "PC All",
         command = "pc-all",
         algoType = AlgType.forbid_latent_common_causes,
-        description = "Short blurb goes here",
-        assumptions = {}
+        description = "Short blurb goes here"
 )
 public class PcAll implements Algorithm, TakesInitialGraph, HasKnowledge, TakesIndependenceWrapper {
 

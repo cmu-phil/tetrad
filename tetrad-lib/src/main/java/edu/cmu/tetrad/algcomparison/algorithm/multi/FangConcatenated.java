@@ -27,8 +27,7 @@ import java.util.List;
         name = "FANG Concatenated",
         command = "fang-concatenated",
         algoType = AlgType.forbid_latent_common_causes,
-        description = "Short blurb goes here",
-        assumptions = {}
+        description = "Short blurb goes here"
 )
 public class FangConcatenated implements MultiDataSetAlgorithm, HasKnowledge {
 

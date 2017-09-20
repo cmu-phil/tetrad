@@ -29,8 +29,7 @@ import java.util.List;
         name = "MBFS",
         command = "mbfs",
         algoType = AlgType.search_for_Markov_blankets,
-        description = "Short blurb goes here",
-        assumptions = {}
+        description = "Short blurb goes here"
 )
 public class MBFS implements Algorithm, HasKnowledge, TakesIndependenceWrapper {
 

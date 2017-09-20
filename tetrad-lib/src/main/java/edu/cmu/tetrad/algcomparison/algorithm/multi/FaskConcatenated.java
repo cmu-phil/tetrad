@@ -27,8 +27,7 @@ import java.util.List;
         name = "FASK Concatenated",
         command = "fask-concatenated",
         algoType = AlgType.forbid_latent_common_causes,
-        description = "Short blurb goes here",
-        assumptions = {}
+        description = "Short blurb goes here"
 )
 public class FaskConcatenated implements MultiDataSetAlgorithm, HasKnowledge {
 

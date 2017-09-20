@@ -14,7 +14,7 @@ import java.util.List;
  *
  * @author jdramsey
  */
-@edu.cmu.tetrad.annotation.IndependenceTest(
+@edu.cmu.tetrad.annotation.TestOfIndependence(
         name = "G Square test",
         command = "g-square",
         dataType = DataType.Discrete

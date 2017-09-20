@@ -25,8 +25,7 @@ import java.util.List;
         name = "Skew",
         command = "skew",
         algoType = AlgType.orient_pairwise,
-        description = "Short blurb goes here",
-        assumptions = {}
+        description = "Short blurb goes here"
 )
 public class Skew implements Algorithm, TakesInitialGraph {
 

@@ -14,7 +14,7 @@ import java.util.List;
  *
  * @author jdramsey
  */
-@edu.cmu.tetrad.annotation.IndependenceTest(
+@edu.cmu.tetrad.annotation.TestOfIndependence(
         name = "Fisher Z test",
         command = "correlation-t",
         dataType = DataType.Continuous

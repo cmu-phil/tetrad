@@ -25,8 +25,7 @@ import java.util.List;
         name = "Bpc",
         command = "bpc",
         algoType = AlgType.search_for_structure_over_latents,
-        description = "Short blurb goes here",
-        assumptions = {}
+        description = "Short blurb goes here"
 )
 public class Bpc implements Algorithm, TakesInitialGraph, HasKnowledge, ClusterAlgorithm {
 

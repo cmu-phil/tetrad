@@ -27,8 +27,7 @@ import java.util.List;
         name = "FAS",
         command = "fas",
         algoType = AlgType.produce_undirected_graphs,
-        description = "Short blurb goes here",
-        assumptions = {}
+        description = "Short blurb goes here"
 )
 public class FAS implements Algorithm, HasKnowledge, TakesIndependenceWrapper {
 

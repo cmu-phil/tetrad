@@ -14,7 +14,7 @@ import java.util.List;
  *
  * @author jdramsey
  */
-@edu.cmu.tetrad.annotation.IndependenceTest(
+@edu.cmu.tetrad.annotation.TestOfIndependence(
         name = "D-Separation test",
         command = "d-sep",
         dataType = DataType.Graph

@@ -30,8 +30,7 @@ import java.util.List;
         name = "IMaGES Discrete",
         command = "imgs_disc",
         algoType = AlgType.forbid_latent_common_causes,
-        description = "Short blurb goes here",
-        assumptions = {}
+        description = "Short blurb goes here"
 )
 public class ImagesBDeu implements MultiDataSetAlgorithm, HasKnowledge {
 

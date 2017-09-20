@@ -27,8 +27,7 @@ import java.util.List;
         name = "FgesMb",
         command = "fges-mb",
         algoType = AlgType.search_for_Markov_blankets,
-        description = "Short blurb goes here",
-        assumptions = {}
+        description = "Short blurb goes here"
 )
 public class FgesMb implements Algorithm, TakesInitialGraph, HasKnowledge, UsesScoreWrapper {
 
