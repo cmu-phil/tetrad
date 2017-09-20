@@ -34,13 +34,13 @@ import java.lang.annotation.Target;
 @Target({ElementType.TYPE})
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
-public @interface IndependenceTest {
+public @interface TestOfIndependence {
 
     String name();
 
-    String description() default "";
-
     String command();
+
+    String description() default "";
 
     DataType dataType();
 

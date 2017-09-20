@@ -2,6 +2,7 @@ package edu.cmu.tetrad.algcomparison.independence;
 
 import edu.cmu.tetrad.annotation.Gaussian;
 import edu.cmu.tetrad.annotation.Linear;
+import edu.cmu.tetrad.annotation.TestOfIndependence;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.search.IndTestFisherZ;
 import edu.cmu.tetrad.search.IndependenceTest;
@@ -14,7 +15,7 @@ import java.util.List;
  *
  * @author jdramsey
  */
-@edu.cmu.tetrad.annotation.TestOfIndependence(
+@TestOfIndependence(
         name = "Fisher Z Test",
         command = "fisher-z",
         dataType = DataType.Continuous

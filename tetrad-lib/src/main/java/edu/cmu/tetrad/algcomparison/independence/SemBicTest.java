@@ -1,5 +1,6 @@
 package edu.cmu.tetrad.algcomparison.independence;
 
+import edu.cmu.tetrad.annotation.TestOfIndependence;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.search.*;
 import edu.cmu.tetrad.util.Parameters;
@@ -10,7 +11,7 @@ import java.util.*;
  *
  * @author jdramsey
  */
-@edu.cmu.tetrad.annotation.TestOfIndependence(
+@TestOfIndependence(
         name = "SEM BIC test",
         command = "sem-bic",
         dataType = DataType.Continuous
