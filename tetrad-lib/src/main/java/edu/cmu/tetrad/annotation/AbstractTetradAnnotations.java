@@ -19,7 +19,7 @@
 package edu.cmu.tetrad.annotation;
 
 import java.lang.annotation.Annotation;
-import java.util.LinkedList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -27,34 +27,25 @@ import org.reflections.Reflections;
 
 /**
  *
- * Sep 6, 2017 11:11:38 AM
+ * Sep 20, 2017 10:59:43 AM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
+ * @param <T> annotation type
  */
-public class AnnotatedClassUtils {
+public abstract class AbstractTetradAnnotations<T extends Annotation> {
 
-    private AnnotatedClassUtils() {
-    }
+    protected final List<AnnotatedClass<T>> annotatedClasses;
 
-    public static <T extends Annotation> List<AnnotatedClass<T>> getAnnotatedClasses(String packageName, Class<T> type) {
+    public AbstractTetradAnnotations(String packageName, Class<T> type) {
         Reflections reflections = new Reflections(packageName);
         Set<Class<?>> classes = reflections.getTypesAnnotatedWith(type);
-
-        return classes.stream()
+        this.annotatedClasses = classes.stream()
                 .map(e -> new AnnotatedClass<>(e, e.getAnnotation(type)))
                 .collect(Collectors.toList());
     }
 
-    public static <T extends Annotation> List<AnnotatedClassWrapper<T>> filterByAnnotations(Class<? extends Annotation> annotation, List<AnnotatedClassWrapper<T>> annotatedClassWrappers) {
-        List<AnnotatedClassWrapper<T>> list = new LinkedList<>();
-
-        if (annotatedClassWrappers != null && !annotatedClassWrappers.isEmpty()) {
-            annotatedClassWrappers.stream()
-                    .filter(e -> e.annotatedClass.getClazz().isAnnotationPresent(annotation))
-                    .collect(Collectors.toCollection(() -> list));
-        }
-
-        return list;
+    public List<AnnotatedClass<T>> getAnnotatedClasses() {
+        return Collections.unmodifiableList(annotatedClasses);
     }
 
 }
