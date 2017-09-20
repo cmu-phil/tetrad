@@ -28,8 +28,10 @@ import edu.cmu.tetrad.algcomparison.score.*;
 import edu.cmu.tetrad.algcomparison.utils.TakesInitialGraph;
 import edu.cmu.tetrad.annotation.AlgType;
 import edu.cmu.tetrad.annotation.AlgorithmAnnotations;
-import edu.cmu.tetrad.annotation.IndependenceTestAnnotations;
+import edu.cmu.tetrad.annotation.AnnotatedClassWrapper;
 import edu.cmu.tetrad.annotation.ScoreAnnotations;
+import edu.cmu.tetrad.annotation.TestOfIndependenceAnnotations;
+import edu.cmu.tetrad.annotation.TetradAlgorithmAnnotations;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataModelList;
 import edu.cmu.tetrad.data.DataSet;
@@ -96,12 +98,12 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
     private final TetradDesktop desktop;
     private HpcJobInfo hpcJobInfo;
     private String jsonResult;
-    private final List<String> algorithmNames;
-    private final List<String> algorithmsAcceptKnowledge;
+    private final List<AnnotatedClassWrapper<edu.cmu.tetrad.annotation.Algorithm>> algoWrappers;
+    private final List<AnnotatedClassWrapper<edu.cmu.tetrad.annotation.Algorithm>> algorithmsAcceptKnowledge;
     private List<String> tests;
     private List<String> scores;
-    private final DefaultListModel suggestedAlgosListModel = new DefaultListModel();
-    private final JList suggestedAlgosList;
+    private final DefaultListModel<AnnotatedClassWrapper<edu.cmu.tetrad.annotation.Algorithm>> suggestedAlgosListModel = new DefaultListModel<>();
+    private final JList<AnnotatedClassWrapper<edu.cmu.tetrad.annotation.Algorithm>> suggestedAlgosList;
     private Boolean takesKnowledgeFile = null;
     private final ButtonGroup algoTypesBtnGrp = new ButtonGroup();
     private final ButtonGroup varLinearRelationshipsBtnGrp = new ButtonGroup();
@@ -109,7 +111,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
     private final ButtonGroup priorKnowledgeBtnGrp = new ButtonGroup();
     private final ButtonGroup includeUnmeasuredConfoundersBtnGrp = new ButtonGroup();
     private AlgType selectedAlgoType;
-    private String selectedAlgoName;
+    private AnnotatedClassWrapper<edu.cmu.tetrad.annotation.Algorithm> selectedAgloWrapper;
     private final JTextArea algoDescriptionTextArea = new JTextArea();
     private ParameterPanel parametersPanel;
     private JDialog loadingIndicatorDialog = new JDialog();
@@ -148,14 +150,14 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         // Only show algorithms that support multi dataset if there are multi datasets uploaded
         // Otherwise show all algorithms that take at least one dataset
         if (dataModelList.size() > 1) {
-            algorithmNames = AlgorithmAnnotations.getInstance().getAcceptMultiDataset();
+            algoWrappers = TetradAlgorithmAnnotations.getInstance().getAcceptMultipleDatasetNameWrappers();
         } else {
-            algorithmNames = AlgorithmAnnotations.getInstance().getNames();
+            algoWrappers = TetradAlgorithmAnnotations.getInstance().getNameWrappers();
         }
 
         // Algos that accept knowledge file
         // Later use this to filter algos based on the knowledge siwtch
-        algorithmsAcceptKnowledge = AlgorithmAnnotations.getInstance().getAcceptKnowledge();
+        algorithmsAcceptKnowledge = TetradAlgorithmAnnotations.getInstance().getAcceptKnowledgeNameWrappers();
 
         // Use annotations to get the tests and scores based on different data types
         // Need to do this before calling createAlgoChooserPanel() - Zhou
@@ -165,7 +167,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         setDefaultAlgosListModel();
 
         // Suggested algo list
-        suggestedAlgosList = new JList(suggestedAlgosListModel);
+        suggestedAlgosList = new JList<>(suggestedAlgosListModel);
 
         this.parameters = runner.getParameters();
 
@@ -189,7 +191,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
     // Add covariace?
     private void determineTestAndScore(DataModelList dataModelList) {
         // Use annotations to get the tests based on data type
-        IndependenceTestAnnotations indTestAnno = IndependenceTestAnnotations.getInstance();
+        TestOfIndependenceAnnotations indTestAnno = TestOfIndependenceAnnotations.getInstance();
         // Use annotations to get the scores based on data type
         ScoreAnnotations scoreAnno = ScoreAnnotations.getInstance();
 
@@ -385,9 +387,9 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
                     return;
                 }
 
-                selectedAlgoName = suggestedAlgosList.getSelectedValue().toString();
+                selectedAgloWrapper = suggestedAlgosList.getSelectedValue();
 
-                System.out.println("Selected algo ..." + selectedAlgoName);
+                System.out.println("Selected algo ..." + selectedAgloWrapper.getName());
 
                 // Reset description
                 setAlgoDescriptionContent();
@@ -782,18 +784,17 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         // Clear the list model
         suggestedAlgosListModel.removeAllElements();
 
-        // Create a new list model
-        for (String algoName : algorithmNames) {
-            suggestedAlgosListModel.addElement(algoName);
-        }
+        algoWrappers.forEach(e -> {
+            suggestedAlgosListModel.addElement(e);
+        });
     }
 
     private void setAlgoDescriptionContent() {
-        AlgorithmAnnotations algoAnno = AlgorithmAnnotations.getInstance();
+        TetradAlgorithmAnnotations algoAnno = TetradAlgorithmAnnotations.getInstance();
         // We can use this annotation to get all its attributes
-        edu.cmu.tetrad.annotation.Algorithm annotation = algoAnno.getAnnotation(selectedAlgoName);
 
-        algoDescriptionTextArea.setText("Description of " + selectedAlgoName + ": " + annotation.description());
+        edu.cmu.tetrad.annotation.Algorithm agloAnno = selectedAgloWrapper.getAnnotatedClass().getAnnotation();
+        algoDescriptionTextArea.setText("Description of " + agloAnno.name() + ": " + agloAnno.description());
     }
 
     private void updateSuggestedAlgosList() {
@@ -801,25 +802,20 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         suggestedAlgosListModel.removeAllElements();
 
         // Create a new list model based on selections
-        for (String algoName : algorithmNames) {
-            AlgorithmAnnotations algoAnno = AlgorithmAnnotations.getInstance();
-            // Use package path here since we have exisiting Algorithm package
-            // We can use this annotation to get all its attributes
-            edu.cmu.tetrad.annotation.Algorithm annotation = algoAnno.getAnnotation(algoName);
-
-            // Also check the there's selection of knowledge file
+        algoWrappers.forEach(algoWrapper -> {
+            edu.cmu.tetrad.annotation.Algorithm annotation = algoWrapper.getAnnotatedClass().getAnnotation();
             if (takesKnowledgeFile != null) {
                 if (takesKnowledgeFile) {
-                    if ((annotation.algoType() == selectedAlgoType || selectedAlgoType == AlgType.ALL) && algorithmsAcceptKnowledge.contains(annotation.name())) {
-                        suggestedAlgosListModel.addElement(annotation.name());
+                    if ((annotation.algoType() == selectedAlgoType || selectedAlgoType == AlgType.ALL) && algorithmsAcceptKnowledge.contains(algoWrapper)) {
+                        suggestedAlgosListModel.addElement(algoWrapper);
                     }
-                } else if ((annotation.algoType() == selectedAlgoType || selectedAlgoType == AlgType.ALL) && !algorithmsAcceptKnowledge.contains(annotation.name())) {
-                    suggestedAlgosListModel.addElement(annotation.name());
+                } else if ((annotation.algoType() == selectedAlgoType || selectedAlgoType == AlgType.ALL) && !algorithmsAcceptKnowledge.contains(algoWrapper)) {
+                    suggestedAlgosListModel.addElement(algoWrapper);
                 }
             } else if (annotation.algoType() == selectedAlgoType || selectedAlgoType == AlgType.ALL) {
-                suggestedAlgosListModel.addElement(annotation.name());
+                suggestedAlgosListModel.addElement(algoWrapper);
             }
-        }
+        });
 
         // Reset default selected algorithm
         setDefaultSelectedAlgo();
@@ -833,9 +829,9 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
 
     private void setDefaultSelectedAlgo() {
         suggestedAlgosList.setSelectedIndex(0);
-        selectedAlgoName = suggestedAlgosList.getSelectedValue().toString();
+        selectedAgloWrapper = suggestedAlgosList.getSelectedValue();
 
-        System.out.println("Selected algo ..." + selectedAlgoName);
+        System.out.println("Selected algo ..." + selectedAgloWrapper.getName());
 
         // Set the selected algo and update the test and score dropdown menus
         setAlgorithm();
@@ -844,10 +840,10 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
     private void doSearch(final GeneralAlgorithmRunner runner) {
         HpcAccount hpcAccount = null;
 
-        switch (selectedAlgoName) {
+        switch (selectedAgloWrapper.getName()) {
             case "FGES":
             case "GFCI":
-                hpcAccount = showRemoteComputingOptions(selectedAlgoName);
+                hpcAccount = showRemoteComputingOptions(selectedAgloWrapper.getName());
                 break;
             default:
         }
@@ -1040,7 +1036,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
             Algorithm algorithm = runner.getAlgorithm();
             System.out.println("Algorithm: " + algorithm.getDescription());
 
-            switch (selectedAlgoName) {
+            switch (selectedAgloWrapper.getName()) {
                 case "FGES":
                     algorithmName = AbstractAlgorithmRequest.FGES;
                     if (dataModel.isDiscrete()) {
@@ -1218,14 +1214,14 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
      * @return Algorithm
      */
     public Algorithm getAlgorithmFromInterface() {
-        if (selectedAlgoName == null) {
+        if (selectedAgloWrapper == null) {
             throw new NullPointerException();
         }
 
         IndependenceWrapper independenceWrapper = getIndependenceWrapper();
         ScoreWrapper scoreWrapper = getScoreWrapper();
 
-        Class algoClass = AlgorithmAnnotations.getInstance().getAnnotatedClass(selectedAlgoName);
+        Class algoClass = selectedAgloWrapper.getAnnotatedClass().getClazz();
 
 //        Algorithm algorithm = getAlgorithm(selectedAlgoName, independenceWrapper, scoreWrapper);
         Algorithm algorithm = null;
@@ -1281,7 +1277,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
 
     private IndependenceWrapper getIndependenceWrapper() {
         String test = (String) testDropdown.getSelectedItem();
-        IndependenceTestAnnotations indTestAnno = IndependenceTestAnnotations.getInstance();
+        TestOfIndependenceAnnotations indTestAnno = TestOfIndependenceAnnotations.getInstance();
         Class indTestClass = indTestAnno.getAnnotatedClass(test);
 
         IndependenceWrapper independenceWrapper = null;
@@ -1308,7 +1304,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
     private void setTestDropdown() {
         // Get annotated algo
         AlgorithmAnnotations algoAnno = AlgorithmAnnotations.getInstance();
-        Class algoClass = algoAnno.getAnnotatedClass(selectedAlgoName);
+        Class algoClass = selectedAgloWrapper.getAnnotatedClass().getClazz();
 
         // Determine if enable/disable test and score dropdowns
         testDropdown.setEnabled(algoAnno.requireIndependenceTest(algoClass));
@@ -1318,7 +1314,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
     private void setScoreDropdown() {
         // Get annotated algo
         AlgorithmAnnotations algoAnno = AlgorithmAnnotations.getInstance();
-        Class algoClass = algoAnno.getAnnotatedClass(selectedAlgoName);
+        Class algoClass = selectedAgloWrapper.getAnnotatedClass().getClazz();
 
         // Determine if enable/disable test and score dropdowns
         scoreDropdown.setEnabled(algoAnno.requireScore(algoClass));
@@ -1327,7 +1323,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
     // Enable/disable the checkboxes of assumptions
     // based on if there are annotated tests/scores with assumption annotations
     private void setAssumptions() {
-        IndependenceTestAnnotations indTestAnno = IndependenceTestAnnotations.getInstance();
+        TestOfIndependenceAnnotations indTestAnno = TestOfIndependenceAnnotations.getInstance();
         ScoreAnnotations scoreAnno = ScoreAnnotations.getInstance();
     }
 
@@ -1351,7 +1347,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         parameters.set("testEnabled", testDropdown.isEnabled());
         parameters.set("scoreEnabled", scoreDropdown.isEnabled());
 
-        parameters.set("algName", selectedAlgoName);
+        parameters.set("algName", selectedAgloWrapper.getName());
         parameters.set("algType", selectedAlgoType.toString().replace(" ", "_"));
 
         setTestType((String) testDropdown.getSelectedItem());
