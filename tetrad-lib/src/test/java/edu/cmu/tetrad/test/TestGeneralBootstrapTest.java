@@ -297,11 +297,11 @@ public class TestGeneralBootstrapTest {
         printEdgeTypeConfusionMatrix(edgeAr);
     }
 
-    //@Test
+    @Test
     public void testFCIc() {
         int penaltyDiscount = 2;
-        boolean faithfulnessAssumed = false;
-        int maxDegree = -1;
+        int depth = 3;
+        int maxPathLength = -1;
 
         int numVars = 20;
         int edgesPerNode = 2;
@@ -330,8 +330,8 @@ public class TestGeneralBootstrapTest {
 
         Parameters parameters = new Parameters();
         parameters.set("penaltyDiscount", penaltyDiscount);
-        parameters.set("faithfulnessAssumed", faithfulnessAssumed);
-        parameters.set("maxDegree", maxDegree);
+        parameters.set("depth", depth);
+        parameters.set("maxPathLength", maxPathLength);
         parameters.set("numPatternsToStore", 0);
         parameters.set("verbose", verbose);
 
@@ -361,8 +361,8 @@ public class TestGeneralBootstrapTest {
     @Test
     public void testFCId() {
         double structurePrior = 1, samplePrior = 1;
-        boolean faithfulnessAssumed = false;
-        int maxDegree = -1;
+        int depth = -1;
+        int maxPathLength = -1;
 
         int numVars = 20;
         int edgesPerNode = 2;
@@ -388,8 +388,8 @@ public class TestGeneralBootstrapTest {
         Parameters parameters = new Parameters();
         parameters.set("structurePrior", structurePrior);
         parameters.set("samplePrior", samplePrior);
-        parameters.set("faithfulnessAssumed", faithfulnessAssumed);
-        parameters.set("maxDegree", maxDegree);
+        parameters.set("depth", depth);
+        parameters.set("maxPathLength", maxPathLength);
         parameters.set("numPatternsToStore", 0);
         parameters.set("verbose", verbose);
 
