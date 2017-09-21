@@ -23,7 +23,7 @@ import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
 import edu.cmu.tetrad.algcomparison.utils.TakesIndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.utils.TakesInitialGraph;
 import edu.cmu.tetrad.algcomparison.utils.UsesScoreWrapper;
-import edu.cmu.tetrad.annotation.AlgorithmAnnotations;
+import edu.cmu.tetrad.annotation.TetradAlgorithmAnnotations;
 import edu.cmu.tetrad.graph.Graph;
 
 /**
@@ -43,7 +43,7 @@ public class AlgorithmFactory {
             throw new IllegalArgumentException("Algorithm class cannot be null.");
         }
 
-        AlgorithmAnnotations algoAnno = AlgorithmAnnotations.getInstance();
+        TetradAlgorithmAnnotations algoAnno = TetradAlgorithmAnnotations.getInstance();
         boolean testRequired = algoAnno.requireIndependenceTest(algoClass);
         if (testRequired && test == null) {
             throw new IllegalArgumentException("Test of independence is required.");

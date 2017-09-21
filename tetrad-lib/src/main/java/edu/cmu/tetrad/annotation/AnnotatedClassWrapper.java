@@ -27,7 +27,7 @@ import java.lang.annotation.Annotation;
  * @author Kevin V. Bui (kvb2@pitt.edu)
  * @param <T> annotation
  */
-public class AnnotatedClassWrapper<T extends Annotation> {
+public class AnnotatedClassWrapper<T extends Annotation> implements Comparable<AnnotatedClassWrapper> {
 
     protected final String name;
 
@@ -36,6 +36,11 @@ public class AnnotatedClassWrapper<T extends Annotation> {
     public AnnotatedClassWrapper(String name, AnnotatedClass<T> annotatedClass) {
         this.name = name;
         this.annotatedClass = annotatedClass;
+    }
+
+    @Override
+    public int compareTo(AnnotatedClassWrapper other) {
+        return this.name.compareTo(other.name);
     }
 
     @Override
