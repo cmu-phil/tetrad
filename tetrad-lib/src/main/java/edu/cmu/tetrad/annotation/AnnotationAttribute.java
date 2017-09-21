@@ -18,30 +18,34 @@
  */
 package edu.cmu.tetrad.annotation;
 
-import edu.cmu.tetrad.data.DataType;
-import java.lang.annotation.Documented;
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
-
 /**
  *
- * Sep 1, 2017 10:51:13 AM
+ * Sep 20, 2017 11:52:10 AM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
  */
-@Target({ElementType.TYPE})
-@Retention(RetentionPolicy.RUNTIME)
-@Documented
-public @interface Score {
+public class AnnotationAttribute {
 
-    String name();
+    protected final String attribute;
 
-    String command();
+    protected final Class clazz;
 
-    String description() default "";
+    public AnnotationAttribute(String attribute, Class clazz) {
+        this.attribute = attribute;
+        this.clazz = clazz;
+    }
 
-    DataType dataType();
+    @Override
+    public String toString() {
+        return attribute;
+    }
+
+    public String getAttribute() {
+        return attribute;
+    }
+
+    public Class getClazz() {
+        return clazz;
+    }
 
 }

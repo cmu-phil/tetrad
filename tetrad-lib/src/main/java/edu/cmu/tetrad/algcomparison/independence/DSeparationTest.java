@@ -1,6 +1,7 @@
 package edu.cmu.tetrad.algcomparison.independence;
 
 import edu.cmu.tetrad.algcomparison.graph.RandomGraph;
+import edu.cmu.tetrad.annotation.TestOfIndependence;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.search.IndTestDSep;
@@ -14,7 +15,7 @@ import java.util.List;
  *
  * @author jdramsey
  */
-@edu.cmu.tetrad.annotation.IndependenceTest(
+@TestOfIndependence(
         name = "D-Separation test",
         command = "d-sep",
         dataType = DataType.Graph

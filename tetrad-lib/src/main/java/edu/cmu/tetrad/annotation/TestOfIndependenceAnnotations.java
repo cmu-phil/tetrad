@@ -30,26 +30,26 @@ import java.util.stream.Collectors;
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
  */
-public class IndependenceTestAnnotations extends AbstractAnnotations<IndependenceTest> {
+public class TestOfIndependenceAnnotations extends AbstractAnnotations<TestOfIndependence> {
 
-    private static final IndependenceTestAnnotations INSTANCE = new IndependenceTestAnnotations();
+    private static final TestOfIndependenceAnnotations INSTANCE = new TestOfIndependenceAnnotations();
 
-    private IndependenceTestAnnotations() {
+    private TestOfIndependenceAnnotations() {
         String packageName = "edu.cmu.tetrad.algcomparison.independence";
-        List<AnnotatedClass<IndependenceTest>> list = AnnotatedClassUtils.getAnnotatedClasses(packageName, IndependenceTest.class);
+        List<AnnotatedClass<TestOfIndependence>> list = AnnotatedClassUtils.getAnnotatedClasses(packageName, TestOfIndependence.class);
         list.stream().forEach(e -> {
-            IndependenceTest annotation = e.getAnnotation();
+            TestOfIndependence annotation = e.getAnnotation();
             annoClassByName.put(annotation.name(), e);
             nameByCommand.put(annotation.command(), annotation.name());
         });
     }
 
-    public static IndependenceTestAnnotations getInstance() {
+    public static TestOfIndependenceAnnotations getInstance() {
         return INSTANCE;
     }
 
-    public List<AnnotatedClass<IndependenceTest>> getAnnotatedClasses(DataType dataType) {
-        List<AnnotatedClass<IndependenceTest>> list = annoClassByName.entrySet().stream()
+    public List<AnnotatedClass<TestOfIndependence>> getAnnotatedClasses(DataType dataType) {
+        List<AnnotatedClass<TestOfIndependence>> list = annoClassByName.entrySet().stream()
                 .filter(e -> e.getValue().getAnnotation().dataType().equals(dataType))
                 .map(e -> e.getValue())
                 .collect(Collectors.toList());

@@ -18,30 +18,37 @@
  */
 package edu.cmu.tetrad.annotation;
 
-import edu.cmu.tetrad.data.DataType;
-import java.lang.annotation.Documented;
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import java.lang.annotation.Annotation;
 
 /**
  *
- * Aug 31, 2017 4:42:08 PM
+ * Sep 20, 2017 2:28:50 PM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
+ * @param <T> annotation
  */
-@Target({ElementType.TYPE})
-@Retention(RetentionPolicy.RUNTIME)
-@Documented
-public @interface IndependenceTest {
+public class AnnotatedClassWrapper<T extends Annotation> {
 
-    String name();
+    protected final String name;
 
-    String description() default "";
+    protected final AnnotatedClass<T> annotatedClass;
 
-    String command();
+    public AnnotatedClassWrapper(String name, AnnotatedClass<T> annotatedClass) {
+        this.name = name;
+        this.annotatedClass = annotatedClass;
+    }
 
-    DataType dataType();
+    @Override
+    public String toString() {
+        return name;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public AnnotatedClass<T> getAnnotatedClass() {
+        return annotatedClass;
+    }
 
 }

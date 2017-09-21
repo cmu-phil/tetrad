@@ -27,14 +27,14 @@ import java.lang.annotation.Target;
 
 /**
  *
- * Sep 1, 2017 10:51:13 AM
+ * Aug 31, 2017 4:42:08 PM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
  */
 @Target({ElementType.TYPE})
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
-public @interface Score {
+public @interface TestOfIndependence {
 
     String name();
 

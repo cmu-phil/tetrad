@@ -23,8 +23,7 @@ import java.util.List;
         name = "GLASSO",
         command = "glasso",
         algoType = AlgType.produce_undirected_graphs,
-        description = "Short blurb goes here",
-        assumptions = {}
+        description = "Short blurb goes here"
 )
 public class Glasso implements Algorithm {
 

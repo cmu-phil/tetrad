@@ -26,8 +26,7 @@ import java.util.List;
         name = "GFCI",
         command = "gfci",
         algoType = AlgType.allow_latent_common_causes,
-        description = "Short blurb goes here",
-        assumptions = {}
+        description = "Short blurb goes here"
 )
 public class Gfci implements Algorithm, HasKnowledge, UsesScoreWrapper, TakesIndependenceWrapper {
 

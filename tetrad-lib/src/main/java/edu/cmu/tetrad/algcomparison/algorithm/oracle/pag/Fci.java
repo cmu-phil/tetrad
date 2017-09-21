@@ -28,8 +28,7 @@ import java.util.List;
         name = "FCI",
         command = "fci",
         algoType = AlgType.allow_latent_common_causes,
-        description = "Short blurb goes here",
-        assumptions = {}
+        description = "Short blurb goes here"
 )
 public class Fci implements Algorithm, TakesInitialGraph, HasKnowledge, TakesIndependenceWrapper {
 

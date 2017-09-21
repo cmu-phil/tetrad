@@ -37,12 +37,10 @@ public @interface Algorithm {
 
     String name();
 
-    String description() default "";
-
     String command();
 
-    AlgType algoType();
+    String description() default "";
 
-    Assumptions[] assumptions() default {};
+    AlgType algoType();
 
 }

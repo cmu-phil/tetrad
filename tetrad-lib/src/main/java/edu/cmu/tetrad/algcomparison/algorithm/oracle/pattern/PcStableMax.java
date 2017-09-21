@@ -29,8 +29,7 @@ import java.util.List;
         name = "PcStableMax",
         command = "pc-stable-max",
         algoType = AlgType.forbid_latent_common_causes,
-        description = "Short blurb goes here",
-        assumptions = {}
+        description = "Short blurb goes here"
 )
 public class PcStableMax implements Algorithm, TakesInitialGraph, HasKnowledge, TakesIndependenceWrapper {
 

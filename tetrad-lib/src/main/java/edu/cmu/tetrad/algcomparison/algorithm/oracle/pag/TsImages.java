@@ -26,8 +26,7 @@ import java.util.List;
         name = "TsImages",
         command = "ts-imgs",
         algoType = AlgType.allow_latent_common_causes,
-        description = "Short blurb goes here",
-        assumptions = {}
+        description = "Short blurb goes here"
 )
 public class TsImages implements Algorithm, HasKnowledge, MultiDataSetAlgorithm, UsesScoreWrapper {
 

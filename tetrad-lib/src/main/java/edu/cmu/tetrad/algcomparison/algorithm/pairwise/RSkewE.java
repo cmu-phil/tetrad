@@ -25,8 +25,7 @@ import java.util.List;
         name = "RSkewE",
         command = "r-skew-e",
         algoType = AlgType.orient_pairwise,
-        description = "Short blurb goes here",
-        assumptions = {}
+        description = "Short blurb goes here"
 )
 public class RSkewE implements Algorithm, TakesInitialGraph {
 

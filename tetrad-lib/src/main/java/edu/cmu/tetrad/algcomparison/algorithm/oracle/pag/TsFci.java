@@ -28,8 +28,7 @@ import java.util.List;
         name = "TsFCI",
         command = "ts-fci",
         algoType = AlgType.allow_latent_common_causes,
-        description = "Short blurb goes here",
-        assumptions = {}
+        description = "Short blurb goes here"
 )
 public class TsFci implements Algorithm, TakesInitialGraph, HasKnowledge, TakesIndependenceWrapper {
 

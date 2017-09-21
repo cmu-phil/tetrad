@@ -27,8 +27,7 @@ import java.util.List;
         name = "RFCI",
         command = "rfci",
         algoType = AlgType.allow_latent_common_causes,
-        description = "Short blurb goes here",
-        assumptions = {}
+        description = "Short blurb goes here"
 )
 public class Rfci implements Algorithm, HasKnowledge, TakesIndependenceWrapper {
 
