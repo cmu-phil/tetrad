@@ -27,7 +27,9 @@ import edu.cmu.tetrad.algcomparison.independence.*;
 import edu.cmu.tetrad.algcomparison.score.*;
 import edu.cmu.tetrad.algcomparison.utils.TakesInitialGraph;
 import edu.cmu.tetrad.annotation.AlgType;
+import edu.cmu.tetrad.annotation.AnnotatedClassUtils;
 import edu.cmu.tetrad.annotation.AnnotatedClassWrapper;
+import edu.cmu.tetrad.annotation.Linear;
 import edu.cmu.tetrad.annotation.Score;
 import edu.cmu.tetrad.annotation.TestOfIndependence;
 import edu.cmu.tetrad.annotation.TetradAlgorithmAnnotations;
@@ -217,6 +219,32 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
                 throw new IllegalArgumentException();
             }
         }
+    }
+
+    // Use this inside the assumptions checkboxes event listener to update the tests and scores
+    // based on the selections of those checkboxes
+    private void updateTestAndScoreOptions() {
+        // Update the tests list to show items that have @linear annotation
+        TetradTestOfIndependenceAnnotations indTestAnnos = TetradTestOfIndependenceAnnotations.getInstance();
+        List<AnnotatedClassWrapper<TestOfIndependence>> allIndTests = indTestAnnos.getNameWrappers();
+        List<AnnotatedClassWrapper<TestOfIndependence>> filteredIndTests = AnnotatedClassUtils.filterByAnnotations(Linear.class, allIndTests);
+        System.out.println("========filteredIndTests==========");
+        filteredIndTests.forEach(e -> {
+            System.out.println(e.getName());
+        });
+        System.out.println("==================================");
+
+        // Update the scores list to show items that have @linear annotation
+        TetradScoreAnnotations scoreAnnos = TetradScoreAnnotations.getInstance();
+        List<AnnotatedClassWrapper<Score>> allScores = scoreAnnos.getNameWrappers();
+        List<AnnotatedClassWrapper<Score>> filteredScores = AnnotatedClassUtils.filterByAnnotations(Linear.class, allScores);
+        System.out.println("========filteredScores==========");
+        filteredScores.forEach(e -> {
+            System.out.println(e.getName());
+        });
+        System.out.println("==================================");
+
+        // Recreate the test and score dropdowns
     }
 
     private JPanel createAlgoChooserPanel() {
@@ -488,7 +516,6 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
 
         // Register event listener on checkbox
         linearVariablesCheckbox.addActionListener((ActionEvent actionEvent) -> {
-            // Update the tests and scores list to show items that have @linear annotation
         });
 
         //linearVariablesBox.setAlignmentX(LEFT_ALIGNMENT);
