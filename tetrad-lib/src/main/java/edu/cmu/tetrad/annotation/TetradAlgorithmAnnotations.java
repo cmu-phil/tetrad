@@ -46,6 +46,7 @@ public class TetradAlgorithmAnnotations extends AbstractTetradAnnotations<Algori
 
         annotatedClasses.stream()
                 .map(e -> new AnnotatedClassWrapper<>(e.getAnnotation().name(), e))
+                .sorted()
                 .collect(Collectors.toCollection(() -> nameWrappers));
         nameWrappers.stream()
                 .filter(e -> acceptKnowledge(e.annotatedClass.getClazz()))
