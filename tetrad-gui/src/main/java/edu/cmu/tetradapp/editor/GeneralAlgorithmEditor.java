@@ -29,12 +29,14 @@ import edu.cmu.tetrad.algcomparison.utils.TakesInitialGraph;
 import edu.cmu.tetrad.annotation.AlgType;
 import edu.cmu.tetrad.annotation.AnnotatedClassUtils;
 import edu.cmu.tetrad.annotation.AnnotatedClassWrapper;
+import edu.cmu.tetrad.annotation.Gaussian;
 import edu.cmu.tetrad.annotation.Linear;
 import edu.cmu.tetrad.annotation.Score;
 import edu.cmu.tetrad.annotation.TestOfIndependence;
 import edu.cmu.tetrad.annotation.TetradAlgorithmAnnotations;
 import edu.cmu.tetrad.annotation.TetradScoreAnnotations;
 import edu.cmu.tetrad.annotation.TetradTestOfIndependenceAnnotations;
+import edu.cmu.tetrad.annotation.UnmeasuredConfounder;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataModelList;
 import edu.cmu.tetrad.data.DataSet;
@@ -94,8 +96,10 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
     private final GeneralAlgorithmRunner runner;
     private Box parametersBox;
     private Box graphContainer;
-    private final JComboBox<AnnotatedClassWrapper<TestOfIndependence>> testDropdown = new JComboBox<>();
-    private final JComboBox<AnnotatedClassWrapper<Score>> scoreDropdown = new JComboBox<>();
+    private JComboBox<AnnotatedClassWrapper<TestOfIndependence>> testDropdown;
+    private JComboBox<AnnotatedClassWrapper<Score>> scoreDropdown;
+    private DefaultComboBoxModel<AnnotatedClassWrapper<TestOfIndependence>> testDropdownModel = new DefaultComboBoxModel<>();
+    private DefaultComboBoxModel<AnnotatedClassWrapper<Score>> scoreDropdownModel = new DefaultComboBoxModel<>();
     private final GraphSelectionEditor graphEditor;
     private final Parameters parameters;
     private final TetradDesktop desktop;
@@ -105,14 +109,13 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
     private final List<AnnotatedClassWrapper<edu.cmu.tetrad.annotation.Algorithm>> algorithmsAcceptKnowledge;
     private List<AnnotatedClassWrapper<TestOfIndependence>> tests;
     private List<AnnotatedClassWrapper<Score>> scores;
+    private List<AnnotatedClassWrapper<TestOfIndependence>> filteredIndTests;
+    private List<AnnotatedClassWrapper<Score>> filteredScores;
     private final DefaultListModel<AnnotatedClassWrapper<edu.cmu.tetrad.annotation.Algorithm>> suggestedAlgosListModel = new DefaultListModel<>();
     private final JList<AnnotatedClassWrapper<edu.cmu.tetrad.annotation.Algorithm>> suggestedAlgosList;
     private Boolean takesKnowledgeFile = null;
     private final ButtonGroup algoTypesBtnGrp = new ButtonGroup();
-    private final ButtonGroup varLinearRelationshipsBtnGrp = new ButtonGroup();
-    private final ButtonGroup gaussianVariablesBtnGrp = new ButtonGroup();
     private final ButtonGroup priorKnowledgeBtnGrp = new ButtonGroup();
-    private final ButtonGroup includeUnmeasuredConfoundersBtnGrp = new ButtonGroup();
     private AlgType selectedAlgoType;
     private AnnotatedClassWrapper<edu.cmu.tetrad.annotation.Algorithm> selectedAgloWrapper;
     private final JTextArea algoDescriptionTextArea = new JTextArea();
@@ -122,6 +125,16 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
     private JButton step2Btn;
     private JButton step2BackBtn;
     private JButton step3Btn;
+
+    // Assumption checkboxes
+    private JCheckBox linearVariablesCheckbox;
+    private JCheckBox gaussianVariablesCheckbox;
+    private JCheckBox unmeasuredConfoundersCheckbox;
+
+    // Assumption flags
+    private boolean linearRelationshipAssumption = false;
+    private boolean gaussianVariablesAssumption = false;
+    private boolean unmeasuredConfoundersAssumption = false;
 
     //=========================CONSTRUCTORS============================//
     /**
@@ -165,6 +178,9 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         // Use annotations to get the tests and scores based on different data types
         // Need to do this before calling createAlgoChooserPanel() - Zhou
         determineTestAndScore(dataModelList);
+
+        // Create default models of test and score dropdowns
+        setTestAndScoreDropdownModels(tests, scores);
 
         // Create default algos list model
         setDefaultAlgosListModel();
@@ -224,27 +240,42 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
     // Use this inside the assumptions checkboxes event listener to update the tests and scores
     // based on the selections of those checkboxes
     private void updateTestAndScoreOptions() {
-        // Update the tests list to show items that have @linear annotation
-        TetradTestOfIndependenceAnnotations indTestAnnos = TetradTestOfIndependenceAnnotations.getInstance();
-        List<AnnotatedClassWrapper<TestOfIndependence>> allIndTests = indTestAnnos.getNameWrappers();
-        List<AnnotatedClassWrapper<TestOfIndependence>> filteredIndTests = AnnotatedClassUtils.filterByAnnotations(Linear.class, allIndTests);
-        System.out.println("========filteredIndTests==========");
-        filteredIndTests.forEach(e -> {
-            System.out.println(e.getName());
-        });
-        System.out.println("==================================");
+        // Update the tests and scores list to show items that have @linear/Gaussian/UnmeasuredConfounder annotations
+        filteredIndTests = tests;
+        filteredScores = scores;
 
-        // Update the scores list to show items that have @linear annotation
-        TetradScoreAnnotations scoreAnnos = TetradScoreAnnotations.getInstance();
-        List<AnnotatedClassWrapper<Score>> allScores = scoreAnnos.getNameWrappers();
-        List<AnnotatedClassWrapper<Score>> filteredScores = AnnotatedClassUtils.filterByAnnotations(Linear.class, allScores);
-        System.out.println("========filteredScores==========");
-        filteredScores.forEach(e -> {
-            System.out.println(e.getName());
-        });
-        System.out.println("==================================");
+        if (linearRelationshipAssumption) {
+            filteredIndTests = AnnotatedClassUtils.filterByAnnotations(Linear.class, tests);
+            filteredScores = AnnotatedClassUtils.filterByAnnotations(Linear.class, scores);
+        }
+
+        if (gaussianVariablesAssumption) {
+            filteredIndTests = AnnotatedClassUtils.filterByAnnotations(Gaussian.class, tests);
+            filteredScores = AnnotatedClassUtils.filterByAnnotations(Gaussian.class, scores);
+        }
+
+        if (unmeasuredConfoundersAssumption) {
+            filteredIndTests = AnnotatedClassUtils.filterByAnnotations(UnmeasuredConfounder.class, tests);
+            filteredScores = AnnotatedClassUtils.filterByAnnotations(UnmeasuredConfounder.class, scores);
+        }
 
         // Recreate the test and score dropdowns
+        setTestAndScoreDropdownModels(filteredIndTests, filteredScores);
+    }
+
+    private void setTestAndScoreDropdownModels(List<AnnotatedClassWrapper<TestOfIndependence>> tests, List<AnnotatedClassWrapper<Score>> scores) {
+        // First remove all elements from combox model before recreation
+        testDropdownModel.removeAllElements();
+        scoreDropdownModel.removeAllElements();
+
+        // Recreate the dropdown menus
+        tests.forEach((test) -> {
+            testDropdownModel.addElement(test);
+        });
+
+        scores.forEach((score) -> {
+            scoreDropdownModel.addElement(score);
+        });
     }
 
     private JPanel createAlgoChooserPanel() {
@@ -505,17 +536,21 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         // Assumptions label box
         Box assumptionsLabelBox = Box.createHorizontalBox();
         assumptionsLabelBox.setPreferredSize(new Dimension(350, 20));
-        JLabel assumptionsLabel = new JLabel("Dataset Properties: ");
+        JLabel assumptionsLabel = new JLabel("Filter by dataset properties: ");
         //assumptionsLabelBox.setAlignmentX(LEFT_ALIGNMENT);
         assumptionsLabelBox.add(assumptionsLabel);
         assumptionsLabelBox.add(Box.createHorizontalGlue());
 
         Box linearRelationshipBox = Box.createHorizontalBox();
         linearRelationshipBox.add(Box.createRigidArea(new Dimension(10, 20)));
-        JCheckBox linearVariablesCheckbox = new JCheckBox("Variables with linear relationship");
+        linearVariablesCheckbox = new JCheckBox("Variables with linear relationship");
 
         // Register event listener on checkbox
         linearVariablesCheckbox.addActionListener((ActionEvent actionEvent) -> {
+            // Set the flag
+            linearRelationshipAssumption = linearVariablesCheckbox.isSelected();
+            // Recreate the dropdown
+            updateTestAndScoreOptions();
         });
 
         //linearVariablesBox.setAlignmentX(LEFT_ALIGNMENT);
@@ -524,11 +559,14 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
 
         Box gaussianVariablesBox = Box.createHorizontalBox();
         gaussianVariablesBox.add(Box.createRigidArea(new Dimension(10, 20)));
-        JCheckBox gaussianVariablesCheckbox = new JCheckBox("Gaussian variables");
+        gaussianVariablesCheckbox = new JCheckBox("Gaussian variables");
 
         // Register event listener on checkbox
         gaussianVariablesCheckbox.addActionListener((ActionEvent actionEvent) -> {
-            // Update the tests and scores list to show items that have @gaussian annotation
+            // Set the flag
+            gaussianVariablesAssumption = gaussianVariablesCheckbox.isSelected();
+            // Recreate the dropdown
+            updateTestAndScoreOptions();
         });
 
         //gaussianVariablesBox.setAlignmentX(LEFT_ALIGNMENT);
@@ -537,41 +575,19 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
 
         Box unmeasuredConfoundersBox = Box.createHorizontalBox();
         unmeasuredConfoundersBox.add(Box.createRigidArea(new Dimension(10, 20)));
-        JCheckBox unmeasuredConfoundersCheckbox = new JCheckBox("Unmeasured confounders");
+        unmeasuredConfoundersCheckbox = new JCheckBox("Unmeasured confounders");
 
         // Register event listener on checkbox
         unmeasuredConfoundersCheckbox.addActionListener((ActionEvent actionEvent) -> {
-            // Update the tests and scores list to show items that have @unmeasuredConfounders annotation
+            // Set the flag
+            unmeasuredConfoundersAssumption = unmeasuredConfoundersCheckbox.isSelected();
+            // Recreate the dropdown
+            updateTestAndScoreOptions();
         });
 
         //unmeasuredConfoundersBox.setAlignmentX(LEFT_ALIGNMENT);
         unmeasuredConfoundersBox.add(unmeasuredConfoundersCheckbox);
         unmeasuredConfoundersBox.add(Box.createHorizontalGlue());
-
-        // Now to create the test and score dropdown menus
-        // Add items to the test dropdown menu
-        tests.stream().forEach((test) -> {
-            testDropdown.addItem(test);
-        });
-
-        // Add items to the score dropdown menu
-        scores.stream().forEach((score) -> {
-            scoreDropdown.addItem(score);
-        });
-
-        // Event listener of test seleciton
-        testDropdown.addActionListener((ActionEvent e) -> {
-            // Don't use setAlgorithm() because we don't need to determine if
-            // enable/disable the test and score dropdown menus again - Zhou
-            setTestType(((AnnotatedClassWrapper<TestOfIndependence>) testDropdown.getSelectedItem()).getName());
-        });
-
-        // Event listener of score seleciton
-        scoreDropdown.addActionListener((ActionEvent e) -> {
-            // Don't use setAlgorithm() because we don't need to determine if
-            // enable/disable the test and score dropdown menus again - Zhou
-            setScoreType(((AnnotatedClassWrapper<Score>) scoreDropdown.getSelectedItem()).getName());
-        });
 
         // Test container
         Box testBox = Box.createHorizontalBox();
@@ -582,7 +598,21 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         testLabelBox.add(testLabel);
 
         Box testSelectionBox = Box.createHorizontalBox();
+
+        // Initialize test dropdown menu
+        testDropdown = new JComboBox<>(testDropdownModel);
+
         testDropdown.setPreferredSize(new Dimension(260, 15));
+
+        // Event listener of test seleciton
+        testDropdown.addActionListener((ActionEvent e) -> {
+            // Don't use setAlgorithm() because we don't need to determine if
+            // enable/disable the test and score dropdown menus again - Zhou
+            if (testDropdown.getSelectedItem() != null) {
+                setTestType(((AnnotatedClassWrapper<TestOfIndependence>) testDropdown.getSelectedItem()).getName());
+            }
+        });
+
         testSelectionBox.add(testDropdown);
 
         testBox.add(testLabelBox);
@@ -597,7 +627,20 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         scoreLabelBox.add(scoreLabel);
 
         Box scoreSelectionBox = Box.createHorizontalBox();
+
+        // Initialize score dropdown menu
+        scoreDropdown = new JComboBox<>(scoreDropdownModel);
         scoreDropdown.setPreferredSize(new Dimension(260, 15));
+
+        // Event listener of score seleciton
+        scoreDropdown.addActionListener((ActionEvent e) -> {
+            // Don't use setAlgorithm() because we don't need to determine if
+            // enable/disable the test and score dropdown menus again - Zhou
+            if (scoreDropdown.getSelectedItem() != null) {
+                setScoreType(((AnnotatedClassWrapper<Score>) scoreDropdown.getSelectedItem()).getName());
+            }
+        });
+
         scoreSelectionBox.add(scoreDropdown);
 
         scoreBox.add(scoreLabelBox);
@@ -1349,8 +1392,12 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
     // Enable/disable the checkboxes of assumptions
     // based on if there are annotated tests/scores with assumption annotations
     private void setAssumptions() {
-        TetradTestOfIndependenceAnnotations indTestAnno = TetradTestOfIndependenceAnnotations.getInstance();
-        TetradScoreAnnotations scoreAnno = TetradScoreAnnotations.getInstance();
+        // Disable assumptions checkboxes when both test and score dropdowns are disabled
+        boolean disabled = !testDropdown.isEnabled() && !scoreDropdown.isEnabled();
+
+        linearVariablesCheckbox.setEnabled(!disabled);
+        gaussianVariablesCheckbox.setEnabled(!disabled);
+        unmeasuredConfoundersCheckbox.setEnabled(!disabled);
     }
 
     private void setAlgorithm() {
@@ -1405,10 +1452,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         takesKnowledgeFile = null;
 
         // Clear all selections - the radio bottons
-        varLinearRelationshipsBtnGrp.clearSelection();
-        gaussianVariablesBtnGrp.clearSelection();
         priorKnowledgeBtnGrp.clearSelection();
-        includeUnmeasuredConfoundersBtnGrp.clearSelection();
 
         // Finally show the default list of algos
         setDefaultAlgosListModel();

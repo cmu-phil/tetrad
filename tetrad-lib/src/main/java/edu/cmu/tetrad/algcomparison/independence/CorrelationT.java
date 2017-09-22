@@ -16,7 +16,7 @@ import java.util.List;
  * @author jdramsey
  */
 @TestOfIndependence(
-        name = "Fisher Z test",
+        name = "Correlation T Test",
         command = "correlation-t",
         dataType = DataType.Continuous
 )
@@ -32,7 +32,7 @@ public class CorrelationT implements IndependenceWrapper {
 
     @Override
     public String getDescription() {
-        return "Fisher Z test";
+        return "Correlation T Test";
     }
 
     @Override

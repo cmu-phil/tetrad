@@ -16,7 +16,7 @@ import java.util.List;
  * @author jdramsey
  */
 @TestOfIndependence(
-        name = "Conditional correlation test",
+        name = "Conditional Correlation Test",
         command = "cond-correlation",
         dataType = DataType.Continuous
 )
@@ -32,7 +32,7 @@ public class ConditionalCorrelation implements IndependenceWrapper {
 
     @Override
     public String getDescription() {
-        return "Conditional correlation test";
+        return "Conditional Correlation Test";
     }
 
     @Override

@@ -12,7 +12,7 @@ import java.util.*;
  * @author jdramsey
  */
 @TestOfIndependence(
-        name = "SEM BIC test",
+        name = "SEM BIC Test",
         command = "sem-bic",
         dataType = DataType.Continuous
 )
@@ -38,7 +38,7 @@ public class SemBicTest implements IndependenceWrapper {
 
     @Override
     public String getDescription() {
-        return "SEM BIC test";
+        return "SEM BIC Test";
     }
 
     @Override

@@ -16,7 +16,7 @@ import java.util.List;
  * @author jdramsey
  */
 @TestOfIndependence(
-        name = "G Square test",
+        name = "G Square Test",
         command = "g-square",
         dataType = DataType.Discrete
 )
@@ -31,7 +31,7 @@ public class GSquare implements IndependenceWrapper {
 
     @Override
     public String getDescription() {
-        return "G Square test";
+        return "G Square Test";
     }
 
     @Override

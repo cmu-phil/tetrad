@@ -16,7 +16,7 @@ import java.util.List;
  * @author jdramsey
  */
 @TestOfIndependence(
-        name = "D-Separation test",
+        name = "D-Separation Test",
         command = "d-sep",
         dataType = DataType.Graph
 )
@@ -40,7 +40,7 @@ public class DSeparationTest implements IndependenceWrapper {
 
     @Override
     public String getDescription() {
-        return "D-Separation test";
+        return "D-Separation Test";
     }
 
     @Override

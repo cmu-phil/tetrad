@@ -27,7 +27,7 @@ public class BDeuTest implements IndependenceWrapper {
 
     @Override
     public String getDescription() {
-        return "BDeu test";
+        return "BDeu Test";
     }
 
     @Override
