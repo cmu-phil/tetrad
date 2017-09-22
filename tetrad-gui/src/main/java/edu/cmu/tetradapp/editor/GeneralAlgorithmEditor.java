@@ -309,6 +309,16 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         Box rightContainer = Box.createVerticalBox();
         rightContainer.setPreferredSize(new Dimension(360, 580));
 
+        // Describe your data and result using these filters
+        Box algoFiltersBox = Box.createVerticalBox();
+        algoFiltersBox.setMinimumSize(new Dimension(290, 570));
+        algoFiltersBox.setMaximumSize(new Dimension(290, 570));
+        algoFiltersBox.setAlignmentX(LEFT_ALIGNMENT);
+
+        // Use a titled border with 5 px inside padding - Zhou
+        String algoFiltersBoxBorderTitle = "Algorithm filters";
+        algoFiltersBox.setBorder(new CompoundBorder(BorderFactory.createTitledBorder(algoFiltersBoxBorderTitle), new EmptyBorder(5, 5, 5, 5)));
+
         // Filter based on algo types dropdown
         Box algoTypesBox = Box.createVerticalBox();
 
@@ -432,6 +442,30 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
             resetAlgoFilters();
         });
 
+        // Items to put in data description box
+        algoFiltersBox.add(algoTypesBox);
+        algoFiltersBox.add(Box.createVerticalStrut(5));
+        algoFiltersBox.add(Box.createVerticalStrut(5));
+        algoFiltersBox.add(Box.createVerticalStrut(5));
+        algoFiltersBox.add(Box.createVerticalStrut(5));
+        algoFiltersBox.add(priorKnowledgeBox);
+        algoFiltersBox.add(Box.createVerticalStrut(5));
+        algoFiltersBox.add(resetFilterSelectionsBtn);
+
+        // Add to leftContainer
+        leftContainer.add(algoFiltersBox);
+
+        // Components in middleContainer
+        // Show a list of filtered algorithms
+        Box suggestedAlgosBox = Box.createVerticalBox();
+        suggestedAlgosBox.setMinimumSize(new Dimension(260, 570));
+        suggestedAlgosBox.setMaximumSize(new Dimension(260, 570));
+
+        // Use a titled border with 5 px inside padding - Zhou
+        String suggestedAlgosBoxBorderTitle = "Choose algorithm";
+        suggestedAlgosBox.setBorder(new CompoundBorder(BorderFactory.createTitledBorder(suggestedAlgosBoxBorderTitle), new EmptyBorder(5, 5, 5, 5)));
+
+        // suggestedAlgosList
         // Only allow single selection
         suggestedAlgosList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 
@@ -458,39 +492,6 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
                 setAlgorithm();
             }
         });
-
-        // Describe your data and result using these filters
-        Box algoFiltersBox = Box.createVerticalBox();
-        algoFiltersBox.setMinimumSize(new Dimension(290, 570));
-        algoFiltersBox.setMaximumSize(new Dimension(290, 570));
-        algoFiltersBox.setAlignmentX(LEFT_ALIGNMENT);
-
-        // Use a titled border with 5 px inside padding - Zhou
-        String algoFiltersBoxBorderTitle = "Algorithm filters";
-        algoFiltersBox.setBorder(new CompoundBorder(BorderFactory.createTitledBorder(algoFiltersBoxBorderTitle), new EmptyBorder(5, 5, 5, 5)));
-
-        // Items to put in data description box
-        algoFiltersBox.add(algoTypesBox);
-        algoFiltersBox.add(Box.createVerticalStrut(5));
-        algoFiltersBox.add(Box.createVerticalStrut(5));
-        algoFiltersBox.add(Box.createVerticalStrut(5));
-        algoFiltersBox.add(Box.createVerticalStrut(5));
-        algoFiltersBox.add(priorKnowledgeBox);
-        algoFiltersBox.add(Box.createVerticalStrut(5));
-        algoFiltersBox.add(resetFilterSelectionsBtn);
-
-        // Add to leftContainer
-        leftContainer.add(algoFiltersBox);
-
-        // Components in middleContainer
-        // Show a list of filtered algorithms
-        Box suggestedAlgosBox = Box.createVerticalBox();
-        suggestedAlgosBox.setMinimumSize(new Dimension(260, 570));
-        suggestedAlgosBox.setMaximumSize(new Dimension(260, 570));
-
-        // Use a titled border with 5 px inside padding - Zhou
-        String suggestedAlgosBoxBorderTitle = "Choose algorithm";
-        suggestedAlgosBox.setBorder(new CompoundBorder(BorderFactory.createTitledBorder(suggestedAlgosBoxBorderTitle), new EmptyBorder(5, 5, 5, 5)));
 
         // Put the list in a scrollable area
         JScrollPane suggestedAlgosListScrollPane = new JScrollPane(suggestedAlgosList);
@@ -866,6 +867,31 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
 
         edu.cmu.tetrad.annotation.Algorithm agloAnno = selectedAgloWrapper.getAnnotatedClass().getAnnotation();
         algoDescriptionTextArea.setText("Description of " + agloAnno.name() + ": " + agloAnno.description());
+    }
+
+    private void resetAlgoFilters() {
+        // Reset algoTypesBtnGrp to select "ALL"
+        for (Enumeration<AbstractButton> buttons = algoTypesBtnGrp.getElements(); buttons.hasMoreElements();) {
+            AbstractButton button = buttons.nextElement();
+
+            if ("ALL".equals(button.getText())) {
+                button.setSelected(true);
+
+                // Also reset the selectedAlgoType
+                selectedAlgoType = AlgType.ALL;
+
+                break;
+            }
+        }
+
+        // Also need to reset the knowledge file flag
+        takesKnowledgeFile = null;
+
+        // Clear all selections - the radio bottons
+        priorKnowledgeBtnGrp.clearSelection();
+
+        // Finally show the default list of algos
+        setDefaultAlgosListModel();
     }
 
     private void updateSuggestedAlgosList() {
@@ -1431,31 +1457,6 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         // Remove all and add new
         parametersBox.removeAll();
         parametersBox.add(parametersPanel);
-    }
-
-    private void resetAlgoFilters() {
-        // Reset algoTypesBtnGrp to select "ALL"
-        for (Enumeration<AbstractButton> buttons = algoTypesBtnGrp.getElements(); buttons.hasMoreElements();) {
-            AbstractButton button = buttons.nextElement();
-
-            if ("ALL".equals(button.getText())) {
-                button.setSelected(true);
-
-                // Also reset the selectedAlgoType
-                selectedAlgoType = AlgType.ALL;
-
-                break;
-            }
-        }
-
-        // Also need to reset the knowledge file flag
-        takesKnowledgeFile = null;
-
-        // Clear all selections - the radio bottons
-        priorKnowledgeBtnGrp.clearSelection();
-
-        // Finally show the default list of algos
-        setDefaultAlgosListModel();
     }
 
     /**
