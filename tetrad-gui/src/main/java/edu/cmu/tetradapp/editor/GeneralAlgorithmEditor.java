@@ -74,7 +74,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Enumeration;
 import java.util.List;
 import javax.swing.*;
 import javax.swing.border.CompoundBorder;
@@ -113,10 +112,10 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
     private List<AnnotatedClassWrapper<Score>> filteredScores;
     private final DefaultListModel<AnnotatedClassWrapper<edu.cmu.tetrad.annotation.Algorithm>> suggestedAlgosListModel = new DefaultListModel<>();
     private final JList<AnnotatedClassWrapper<edu.cmu.tetrad.annotation.Algorithm>> suggestedAlgosList;
-    private Boolean takesKnowledgeFile = null;
+    private Boolean acceptKnowledgeFile = null;
     private final ButtonGroup algoTypesBtnGrp = new ButtonGroup();
     private final ButtonGroup priorKnowledgeBtnGrp = new ButtonGroup();
-    private AlgType selectedAlgoType;
+    private AlgType selectedAlgoType = null;
     private AnnotatedClassWrapper<edu.cmu.tetrad.annotation.Algorithm> selectedAgloWrapper;
     private final JTextArea algoDescriptionTextArea = new JTextArea();
     private ParameterPanel parametersPanel;
@@ -125,6 +124,9 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
     private JButton step2Btn;
     private JButton step2BackBtn;
     private JButton step3Btn;
+
+    private JRadioButton algoTypeAllRadioBtn;
+    private JRadioButton priorKnowledgeAllRadioBtn;
 
     // Assumption checkboxes
     private JCheckBox linearVariablesCheckbox;
@@ -196,15 +198,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         add(createAlgoChooserPanel(), BorderLayout.CENTER);
 
         // Default to select the first algo name in list
-        // This also enables/disables the corresponding test and score options
-        setDefaultSelectedAlgo();
-
-        // Set default description based on selected algo
-        setAlgoDescriptionContent();
-
-        // Set default algo in runner
-        Algorithm algorithm = getAlgorithmFromInterface();
-        runner.setAlgorithm(algorithm);
+        setSelection();
     }
 
     // Add covariace?
@@ -324,11 +318,40 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
 
         // Algo types label box
         Box algTypesBoxLabelBox = Box.createHorizontalBox();
-        algTypesBoxLabelBox.add(new JLabel("List Algorithms that: "));
+        algTypesBoxLabelBox.add(new JLabel("Filter by type: "));
         algTypesBoxLabelBox.setAlignmentX(LEFT_ALIGNMENT);
 
         // Add label to containing box
         algoTypesBox.add(algTypesBoxLabelBox);
+
+        // All option
+        Box algoTypeOptionAllBox = Box.createHorizontalBox();
+        algoTypeOptionAllBox.setAlignmentX(LEFT_ALIGNMENT);
+
+        algoTypeAllRadioBtn = new JRadioButton("All");
+
+        // Add to button group
+        algoTypesBtnGrp.add(algoTypeAllRadioBtn);
+
+        // Add padding and option
+        algoTypeOptionAllBox.add(Box.createRigidArea(new Dimension(10, 20)));
+        algoTypeOptionAllBox.add(algoTypeAllRadioBtn);
+
+        // Add all option to containing box
+        algoTypesBox.add(algoTypeOptionAllBox);
+
+        // Event listener on each radio button
+        algoTypeAllRadioBtn.addActionListener((ActionEvent actionEvent) -> {
+            JRadioButton button = (JRadioButton) actionEvent.getSource();
+
+            if (button.isSelected()) {
+                // Update the selected algo type to null
+                selectedAlgoType = null;
+
+                // Update the list
+                updateSuggestedAlgosList();
+            }
+        });
 
         // Show each algo type as a radio button
         for (AlgType item : AlgType.values()) {
@@ -342,13 +365,6 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
 
             // Add to button group
             algoTypesBtnGrp.add(algoTypeRadioBtn);
-
-            // Default to select "ALL"
-            if ("ALL".equals(algoType)) {
-                algoTypeRadioBtn.setSelected(true);
-                // Set the default selected selectedAlgoType
-                selectedAlgoType = AlgType.ALL;
-            }
 
             // Add padding and option
             algoTypeOptionBox.add(Box.createRigidArea(new Dimension(10, 20)));
@@ -371,27 +387,53 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
             });
         }
 
+        // Set All as the default selection
+        algoTypeAllRadioBtn.setSelected(true);
+
         // Is there a prior knowledge file?
         Box priorKnowledgeBox = Box.createVerticalBox();
 
         // Add label into this label box to size
         Box priorKnowledgeLabelBox = Box.createHorizontalBox();
-        priorKnowledgeLabelBox.add(new JLabel("Accept prior knowledge file: "));
+        priorKnowledgeLabelBox.add(new JLabel("Filter by prior knowledge acceptance: "));
         priorKnowledgeLabelBox.setAlignmentX(LEFT_ALIGNMENT);
+
+        // Option all
+        Box priorKnowledgeOptionAllBox = Box.createHorizontalBox();
+        priorKnowledgeOptionAllBox.setAlignmentX(LEFT_ALIGNMENT);
+
+        priorKnowledgeAllRadioBtn = new JRadioButton("All");
+
+        // Event listener
+        priorKnowledgeAllRadioBtn.addActionListener((ActionEvent actionEvent) -> {
+            JRadioButton button = (JRadioButton) actionEvent.getSource();
+
+            if (button.isSelected()) {
+                // Set the flag
+                acceptKnowledgeFile = null;
+
+                // Update the list
+                updateSuggestedAlgosList();
+            }
+        });
+
+        // Add padding and option
+        priorKnowledgeOptionAllBox.add(Box.createRigidArea(new Dimension(10, 20)));
+        priorKnowledgeOptionAllBox.add(priorKnowledgeAllRadioBtn);
 
         // Option 1
         Box priorKnowledgeOption1Box = Box.createHorizontalBox();
         priorKnowledgeOption1Box.setAlignmentX(LEFT_ALIGNMENT);
 
-        JRadioButton priorKnowledgeYes = new JRadioButton("Yes");
+        JRadioButton priorKnowledgeYesRadioBtn = new JRadioButton("accept prior knowledge file");
 
         // Event listener
-        priorKnowledgeYes.addActionListener((ActionEvent actionEvent) -> {
+        priorKnowledgeYesRadioBtn.addActionListener((ActionEvent actionEvent) -> {
             JRadioButton button = (JRadioButton) actionEvent.getSource();
 
             if (button.isSelected()) {
                 // Set the flag
-                takesKnowledgeFile = true;
+                acceptKnowledgeFile = true;
 
                 // Update the list
                 updateSuggestedAlgosList();
@@ -400,21 +442,21 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
 
         // Add padding and option
         priorKnowledgeOption1Box.add(Box.createRigidArea(new Dimension(10, 20)));
-        priorKnowledgeOption1Box.add(priorKnowledgeYes);
+        priorKnowledgeOption1Box.add(priorKnowledgeYesRadioBtn);
 
         // Option 2
         Box priorKnowledgeOption2Box = Box.createHorizontalBox();
         priorKnowledgeOption2Box.setAlignmentX(LEFT_ALIGNMENT);
 
-        JRadioButton priorKnowledgeNo = new JRadioButton("No");
+        JRadioButton priorKnowledgeNoRadioBtn = new JRadioButton("don't accept prior knowledge file");
 
         // Event listener
-        priorKnowledgeNo.addActionListener((ActionEvent actionEvent) -> {
+        priorKnowledgeNoRadioBtn.addActionListener((ActionEvent actionEvent) -> {
             JRadioButton button = (JRadioButton) actionEvent.getSource();
 
             if (button.isSelected()) {
                 // Set the flag
-                takesKnowledgeFile = false;
+                acceptKnowledgeFile = false;
 
                 // Update the list model
                 updateSuggestedAlgosList();
@@ -423,19 +465,24 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
 
         // Add padding and option
         priorKnowledgeOption2Box.add(Box.createRigidArea(new Dimension(10, 20)));
-        priorKnowledgeOption2Box.add(priorKnowledgeNo);
+        priorKnowledgeOption2Box.add(priorKnowledgeNoRadioBtn);
 
         // We need to group the radio buttons, otherwise all can be selected
-        priorKnowledgeBtnGrp.add(priorKnowledgeYes);
-        priorKnowledgeBtnGrp.add(priorKnowledgeNo);
+        priorKnowledgeBtnGrp.add(priorKnowledgeAllRadioBtn);
+        priorKnowledgeBtnGrp.add(priorKnowledgeYesRadioBtn);
+        priorKnowledgeBtnGrp.add(priorKnowledgeNoRadioBtn);
+
+        // Set All as the default selection
+        priorKnowledgeAllRadioBtn.setSelected(true);
 
         // Add to containg box
         priorKnowledgeBox.add(priorKnowledgeLabelBox);
+        priorKnowledgeBox.add(priorKnowledgeOptionAllBox);
         priorKnowledgeBox.add(priorKnowledgeOption1Box);
         priorKnowledgeBox.add(priorKnowledgeOption2Box);
 
         // Reset filter selections
-        JButton resetFilterSelectionsBtn = new JButton("Reset filter selections");
+        JButton resetFilterSelectionsBtn = new JButton("Reset all filters");
 
         // Event listener of clearFilterSelectionsBtn
         resetFilterSelectionsBtn.addActionListener((ActionEvent actionEvent) -> {
@@ -449,7 +496,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         algoFiltersBox.add(Box.createVerticalStrut(5));
         algoFiltersBox.add(Box.createVerticalStrut(5));
         algoFiltersBox.add(priorKnowledgeBox);
-        algoFiltersBox.add(Box.createVerticalStrut(5));
+        algoFiltersBox.add(Box.createVerticalStrut(20));
         algoFiltersBox.add(resetFilterSelectionsBtn);
 
         // Add to leftContainer
@@ -483,12 +530,11 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
 
                 selectedAgloWrapper = suggestedAlgosList.getSelectedValue();
 
-                System.out.println("Selected algo ..." + selectedAgloWrapper.getName());
-
-                // Reset description
+                // Set description
                 setAlgoDescriptionContent();
 
-                // Finally, update the test and score dropdown menus
+                // Update the test and score dropdown menus
+                // and set all other parameters
                 setAlgorithm();
             }
         });
@@ -862,36 +908,32 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
     }
 
     private void setAlgoDescriptionContent() {
-        TetradAlgorithmAnnotations algoAnno = TetradAlgorithmAnnotations.getInstance();
-        // We can use this annotation to get all its attributes
-
-        edu.cmu.tetrad.annotation.Algorithm agloAnno = selectedAgloWrapper.getAnnotatedClass().getAnnotation();
-        algoDescriptionTextArea.setText("Description of " + agloAnno.name() + ": " + agloAnno.description());
+        if (!suggestedAlgosListModel.isEmpty() && selectedAgloWrapper != null) {
+            edu.cmu.tetrad.annotation.Algorithm agloAnno = selectedAgloWrapper.getAnnotatedClass().getAnnotation();
+            algoDescriptionTextArea.setText("Description of " + agloAnno.name() + ": " + agloAnno.description());
+        } else {
+            // Erase the previous content
+            algoDescriptionTextArea.setText("");
+        }
     }
 
     private void resetAlgoFilters() {
-        // Reset algoTypesBtnGrp to select "ALL"
-        for (Enumeration<AbstractButton> buttons = algoTypesBtnGrp.getElements(); buttons.hasMoreElements();) {
-            AbstractButton button = buttons.nextElement();
+        // Reset algo type to All
+        selectedAlgoType = null;
 
-            if ("ALL".equals(button.getText())) {
-                button.setSelected(true);
-
-                // Also reset the selectedAlgoType
-                selectedAlgoType = AlgType.ALL;
-
-                break;
-            }
-        }
+        algoTypesBtnGrp.setSelected(algoTypeAllRadioBtn.getModel(), true);
 
         // Also need to reset the knowledge file flag
-        takesKnowledgeFile = null;
+        acceptKnowledgeFile = null;
 
-        // Clear all selections - the radio bottons
-        priorKnowledgeBtnGrp.clearSelection();
+        // Reset prior knowledge to All
+        priorKnowledgeBtnGrp.setSelected(priorKnowledgeAllRadioBtn.getModel(), true);
 
-        // Finally show the default list of algos
+        // Don't forget to update the list of algos
         setDefaultAlgosListModel();
+
+        // Reset default selected algorithm
+        setSelection();
     }
 
     private void updateSuggestedAlgosList() {
@@ -901,23 +943,29 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         // Create a new list model based on selections
         algoWrappers.forEach(algoWrapper -> {
             edu.cmu.tetrad.annotation.Algorithm annotation = algoWrapper.getAnnotatedClass().getAnnotation();
-            if (takesKnowledgeFile != null) {
-                if (takesKnowledgeFile) {
-                    if ((annotation.algoType() == selectedAlgoType || selectedAlgoType == AlgType.ALL) && algorithmsAcceptKnowledge.contains(algoWrapper)) {
+
+            if (acceptKnowledgeFile != null) {
+                if (acceptKnowledgeFile) {
+                    if ((annotation.algoType() == selectedAlgoType || selectedAlgoType == null) && algorithmsAcceptKnowledge.contains(algoWrapper)) {
                         suggestedAlgosListModel.addElement(algoWrapper);
                     }
-                } else if ((annotation.algoType() == selectedAlgoType || selectedAlgoType == AlgType.ALL) && !algorithmsAcceptKnowledge.contains(algoWrapper)) {
+                } else if ((annotation.algoType() == selectedAlgoType || selectedAlgoType == null) && !algorithmsAcceptKnowledge.contains(algoWrapper)) {
                     suggestedAlgosListModel.addElement(algoWrapper);
                 }
-            } else if (annotation.algoType() == selectedAlgoType || selectedAlgoType == AlgType.ALL) {
+            } else if (annotation.algoType() == selectedAlgoType || selectedAlgoType == null) {
                 suggestedAlgosListModel.addElement(algoWrapper);
             }
         });
 
         // Reset default selected algorithm
+        setSelection();
+    }
+
+    private void setSelection() {
+        // Set default selected algorithm
         setDefaultSelectedAlgo();
 
-        // Reset description
+        // Set description
         setAlgoDescriptionContent();
 
         // Set the selected algo and update the test and score dropdown menus
@@ -925,13 +973,14 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
     }
 
     private void setDefaultSelectedAlgo() {
-        suggestedAlgosList.setSelectedIndex(0);
-        selectedAgloWrapper = suggestedAlgosList.getSelectedValue();
+        if (!suggestedAlgosListModel.isEmpty()) {
+            suggestedAlgosList.setSelectedIndex(0);
+            selectedAgloWrapper = suggestedAlgosList.getSelectedValue();
 
-        System.out.println("Selected algo ..." + selectedAgloWrapper.getName());
-
-        // Set the selected algo and update the test and score dropdown menus
-        setAlgorithm();
+            // Set the selected algo and update the test and score dropdown menus
+            // also set other runner parameters
+            setAlgorithm();
+        }
     }
 
     private void doSearch(final GeneralAlgorithmRunner runner) {
@@ -1427,36 +1476,35 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
     }
 
     private void setAlgorithm() {
-        // Determine if enable/disable test and score dropdowns
-        setTestDropdown();
-        setScoreDropdown();
+        if (selectedAgloWrapper != null) {
+            // Determine if enable/disable test and score dropdowns
+            setTestDropdown();
+            setScoreDropdown();
 
-        // Determine if enable/disable the checkboxes of assumptions
-        setAssumptions();
+            // Determine if enable/disable the checkboxes of assumptions
+            setAssumptions();
 
-        // Set the algo on each selection change
-        Algorithm algorithm = getAlgorithmFromInterface();
+            // Set the algo on each selection change
+            Algorithm algorithm = getAlgorithmFromInterface();
 
-        System.out.println("algo parameters ..............");
-        System.out.println(algorithm.getParameters());
+            runner.setAlgorithm(algorithm);
 
-        runner.setAlgorithm(algorithm);
+            // Set runner parameters for target algo
+            parameters.set("testEnabled", testDropdown.isEnabled());
+            parameters.set("scoreEnabled", scoreDropdown.isEnabled());
 
-        // Set runner parameters for target algo
-        parameters.set("testEnabled", testDropdown.isEnabled());
-        parameters.set("scoreEnabled", scoreDropdown.isEnabled());
+            parameters.set("algName", selectedAgloWrapper.getName());
+            parameters.set("algType", selectedAgloWrapper.getAnnotatedClass().getAnnotation().algoType());
 
-        parameters.set("algName", selectedAgloWrapper.getName());
-        parameters.set("algType", selectedAlgoType.toString().replace(" ", "_"));
+            setTestType(((AnnotatedClassWrapper<TestOfIndependence>) testDropdown.getSelectedItem()).getName());
+            setScoreType(((AnnotatedClassWrapper<Score>) scoreDropdown.getSelectedItem()).getName());
 
-        setTestType(((AnnotatedClassWrapper<TestOfIndependence>) testDropdown.getSelectedItem()).getName());
-        setScoreType(((AnnotatedClassWrapper<Score>) scoreDropdown.getSelectedItem()).getName());
-
-        // Also need to update the corresponding parameters
-        parametersPanel = new ParameterPanel(runner.getAlgorithm().getParameters(), getParameters());
-        // Remove all and add new
-        parametersBox.removeAll();
-        parametersBox.add(parametersPanel);
+            // Also need to update the corresponding parameters
+            parametersPanel = new ParameterPanel(runner.getAlgorithm().getParameters(), getParameters());
+            // Remove all and add new
+            parametersBox.removeAll();
+            parametersBox.add(parametersPanel);
+        }
     }
 
     /**
