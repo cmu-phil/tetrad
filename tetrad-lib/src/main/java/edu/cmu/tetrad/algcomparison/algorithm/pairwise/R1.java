@@ -14,6 +14,7 @@ import edu.cmu.tetrad.util.Parameters;
 import edu.pitt.dbmi.algo.bootstrap.BootstrapEdgeEnsemble;
 import edu.pitt.dbmi.algo.bootstrap.GeneralBootstrapTest;
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 
 /**
@@ -105,13 +106,19 @@ public class R1 implements Algorithm, TakesInitialGraph {
 
     @Override
     public List<String> getParameters() {
-        List<String> parameters = algorithm.getParameters();
+        List<String> parameters = new LinkedList<>();
+
+        if (algorithm != null && !algorithm.getParameters().isEmpty()) {
+            parameters.addAll(algorithm.getParameters());
+        }
+
         // Bootstrapping
         parameters.add("bootstrapping");
         parameters.add("bootstrapSampleSize");
         parameters.add("bootstrapEnsemble");
         parameters.add("verbose");
-        return algorithm.getParameters();
+
+        return parameters;
     }
 
     @Override
