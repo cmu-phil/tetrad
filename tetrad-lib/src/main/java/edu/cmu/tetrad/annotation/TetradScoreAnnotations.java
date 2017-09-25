@@ -76,4 +76,8 @@ public class TetradScoreAnnotations extends AbstractTetradAnnotations<Score> {
                 : Collections.unmodifiableList(dataTypeNameWrappers.get(dataType));
     }
 
+    public Map<DataType, List<AnnotatedClassWrapper<Score>>> getDataTypeNameWrappers() {
+        return Collections.unmodifiableMap(dataTypeNameWrappers);
+    }
+
 }

@@ -76,4 +76,8 @@ public class TetradTestOfIndependenceAnnotations extends AbstractTetradAnnotatio
                 : Collections.unmodifiableList(dataTypeNameWrappers.get(dataType));
     }
 
+    public Map<DataType, List<AnnotatedClassWrapper<TestOfIndependence>>> getDataTypeNameWrappers() {
+        return Collections.unmodifiableMap(dataTypeNameWrappers);
+    }
+
 }
