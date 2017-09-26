@@ -36,7 +36,6 @@ import edu.cmu.tetrad.annotation.TestOfIndependence;
 import edu.cmu.tetrad.annotation.TetradAlgorithmAnnotations;
 import edu.cmu.tetrad.annotation.TetradScoreAnnotations;
 import edu.cmu.tetrad.annotation.TetradTestOfIndependenceAnnotations;
-import edu.cmu.tetrad.annotation.UnmeasuredConfounder;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataModelList;
 import edu.cmu.tetrad.data.DataSet;
@@ -114,8 +113,10 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
     private final DefaultListModel<AnnotatedClassWrapper<edu.cmu.tetrad.annotation.Algorithm>> suggestedAlgosListModel = new DefaultListModel<>();
     private final JList<AnnotatedClassWrapper<edu.cmu.tetrad.annotation.Algorithm>> suggestedAlgosList;
     private Boolean acceptKnowledgeFile = null;
+    private Boolean handleUnmeasuredConfounders = null;
     private final ButtonGroup algoTypesBtnGrp = new ButtonGroup();
     private final ButtonGroup priorKnowledgeBtnGrp = new ButtonGroup();
+    private final ButtonGroup unmeasuredConfoundersBtnGrp = new ButtonGroup();
     private AlgType selectedAlgoType = null;
     private AnnotatedClassWrapper<edu.cmu.tetrad.annotation.Algorithm> selectedAgloWrapper;
     private final JTextArea algoDescriptionTextArea = new JTextArea();
@@ -128,16 +129,15 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
 
     private JRadioButton algoTypeAllRadioBtn;
     private JRadioButton priorKnowledgeAllRadioBtn;
+    private JRadioButton unmeasuredConfoundersAllRadioBtn;
 
     // Assumption checkboxes
     private JCheckBox linearVariablesCheckbox;
     private JCheckBox gaussianVariablesCheckbox;
-    private JCheckBox unmeasuredConfoundersCheckbox;
 
     // Assumption flags
     private boolean linearRelationshipAssumption = false;
     private boolean gaussianVariablesAssumption = false;
-    private boolean unmeasuredConfoundersAssumption = false;
 
     //=========================CONSTRUCTORS============================//
     /**
@@ -238,7 +238,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
     // Use this inside the assumptions checkboxes event listener to update the tests and scores
     // based on the selections of those checkboxes
     private void updateTestAndScoreOptions() {
-        // Update the tests and scores list to show items that have @linear/Gaussian/UnmeasuredConfounder annotations
+        // Update the tests and scores list to show items that have @linear/Gaussian annotations
         filteredIndTests = tests;
         filteredScores = scores;
 
@@ -250,11 +250,6 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         if (gaussianVariablesAssumption) {
             filteredIndTests = AnnotatedClassUtils.filterByAnnotations(Gaussian.class, tests);
             filteredScores = AnnotatedClassUtils.filterByAnnotations(Gaussian.class, scores);
-        }
-
-        if (unmeasuredConfoundersAssumption) {
-            filteredIndTests = AnnotatedClassUtils.filterByAnnotations(UnmeasuredConfounder.class, tests);
-            filteredScores = AnnotatedClassUtils.filterByAnnotations(UnmeasuredConfounder.class, scores);
         }
 
         // Recreate the test and score dropdowns
@@ -286,31 +281,31 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         // Algo selection container, step 1
         // contains 3 columns, leftContainer, middleContainer, and rightContainer
         Box algoChooserContainer = Box.createHorizontalBox();
-        algoChooserContainer.setPreferredSize(new Dimension(940, 580));
+        algoChooserContainer.setPreferredSize(new Dimension(940, 560));
 
         // Parameters container, step 2
         Box parametersContainer = Box.createHorizontalBox();
-        parametersContainer.setPreferredSize(new Dimension(940, 580));
+        parametersContainer.setPreferredSize(new Dimension(940, 560));
 
         // Graph container, step 3
         graphContainer = Box.createHorizontalBox();
-        graphContainer.setPreferredSize(new Dimension(940, 600));
+        graphContainer.setPreferredSize(new Dimension(940, 580));
 
         // Contains data description and result description
         Box leftContainer = Box.createVerticalBox();
-        leftContainer.setPreferredSize(new Dimension(300, 580));
+        leftContainer.setPreferredSize(new Dimension(340, 560));
 
         Box middleContainer = Box.createVerticalBox();
-        middleContainer.setPreferredSize(new Dimension(270, 580));
+        middleContainer.setPreferredSize(new Dimension(250, 560));
 
         // Contains algo list, algo description, test, score, and parameters
         Box rightContainer = Box.createVerticalBox();
-        rightContainer.setPreferredSize(new Dimension(360, 580));
+        rightContainer.setPreferredSize(new Dimension(340, 560));
 
         // Describe your data and result using these filters
         Box algoFiltersBox = Box.createVerticalBox();
-        algoFiltersBox.setMinimumSize(new Dimension(290, 570));
-        algoFiltersBox.setMaximumSize(new Dimension(290, 570));
+        algoFiltersBox.setMinimumSize(new Dimension(330, 550));
+        algoFiltersBox.setMaximumSize(new Dimension(330, 550));
         algoFiltersBox.setAlignmentX(LEFT_ALIGNMENT);
 
         // Use a titled border with 5 px inside padding - Zhou
@@ -322,7 +317,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
 
         // Algo types label box
         Box algTypesBoxLabelBox = Box.createHorizontalBox();
-        algTypesBoxLabelBox.add(new JLabel("Filter by type: "));
+        algTypesBoxLabelBox.add(new JLabel("Filter algorithms that: "));
         algTypesBoxLabelBox.setAlignmentX(LEFT_ALIGNMENT);
 
         // Add label to containing box
@@ -399,14 +394,14 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
 
         // Add label into this label box to size
         Box priorKnowledgeLabelBox = Box.createHorizontalBox();
-        priorKnowledgeLabelBox.add(new JLabel("Filter by prior knowledge acceptance: "));
+        priorKnowledgeLabelBox.add(new JLabel("Filter algorithms that: "));
         priorKnowledgeLabelBox.setAlignmentX(LEFT_ALIGNMENT);
 
         // Option all
         Box priorKnowledgeOptionAllBox = Box.createHorizontalBox();
         priorKnowledgeOptionAllBox.setAlignmentX(LEFT_ALIGNMENT);
 
-        priorKnowledgeAllRadioBtn = new JRadioButton("All");
+        priorKnowledgeAllRadioBtn = new JRadioButton("Both");
 
         // Event listener
         priorKnowledgeAllRadioBtn.addActionListener((ActionEvent actionEvent) -> {
@@ -485,6 +480,94 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         priorKnowledgeBox.add(priorKnowledgeOption1Box);
         priorKnowledgeBox.add(priorKnowledgeOption2Box);
 
+        // Can algorithms handle unmeasured confounders?
+        Box unmeasuredConfoundersBox = Box.createVerticalBox();
+
+        // Add label into this label box to size
+        Box unmeasuredConfoundersLabelBox = Box.createHorizontalBox();
+        unmeasuredConfoundersLabelBox.add(new JLabel("Filter algorithms that: "));
+        unmeasuredConfoundersLabelBox.setAlignmentX(LEFT_ALIGNMENT);
+
+        // Option all
+        Box unmeasuredConfoundersOptionAllBox = Box.createHorizontalBox();
+        unmeasuredConfoundersOptionAllBox.setAlignmentX(LEFT_ALIGNMENT);
+
+        unmeasuredConfoundersAllRadioBtn = new JRadioButton("Both");
+
+        // Event listener
+        unmeasuredConfoundersAllRadioBtn.addActionListener((ActionEvent actionEvent) -> {
+            JRadioButton button = (JRadioButton) actionEvent.getSource();
+
+            if (button.isSelected()) {
+                // Set the flag
+                handleUnmeasuredConfounders = null;
+
+                // Update the list
+                updateSuggestedAlgosList();
+            }
+        });
+
+        // Add padding and option
+        unmeasuredConfoundersOptionAllBox.add(Box.createRigidArea(new Dimension(10, 20)));
+        unmeasuredConfoundersOptionAllBox.add(unmeasuredConfoundersAllRadioBtn);
+
+        // Option 1
+        Box unmeasuredConfoundersOption1Box = Box.createHorizontalBox();
+        unmeasuredConfoundersOption1Box.setAlignmentX(LEFT_ALIGNMENT);
+
+        JRadioButton unmeasuredConfoundersYes = new JRadioButton("can handle unmeasured confounders");
+
+        // Event listener
+        unmeasuredConfoundersYes.addActionListener((ActionEvent actionEvent) -> {
+            JRadioButton button = (JRadioButton) actionEvent.getSource();
+
+            if (button.isSelected()) {
+                // Set the flag
+                handleUnmeasuredConfounders = true;
+
+                // Update the list
+                updateSuggestedAlgosList();
+            }
+        });
+
+        // Add padding and option
+        unmeasuredConfoundersOption1Box.add(Box.createRigidArea(new Dimension(10, 20)));
+        unmeasuredConfoundersOption1Box.add(unmeasuredConfoundersYes);
+
+        // Option 2
+        Box unmeasuredConfoundersOption2Box = Box.createHorizontalBox();
+        unmeasuredConfoundersOption2Box.setAlignmentX(LEFT_ALIGNMENT);
+
+        JRadioButton unmeasuredConfoundersNo = new JRadioButton("can't handle unmeasured confounders");
+
+        // Event listener
+        unmeasuredConfoundersNo.addActionListener((ActionEvent actionEvent) -> {
+            JRadioButton button = (JRadioButton) actionEvent.getSource();
+
+            if (button.isSelected()) {
+                // Set the flag
+                handleUnmeasuredConfounders = false;
+
+                // Update the list
+                updateSuggestedAlgosList();
+            }
+        });
+
+        // Add padding and option
+        unmeasuredConfoundersOption2Box.add(Box.createRigidArea(new Dimension(10, 20)));
+        unmeasuredConfoundersOption2Box.add(unmeasuredConfoundersNo);
+
+        // We need to group the radio buttons, otherwise all can be selected
+        unmeasuredConfoundersBtnGrp.add(unmeasuredConfoundersYes);
+        unmeasuredConfoundersBtnGrp.add(unmeasuredConfoundersNo);
+
+        // Add to containing box
+        unmeasuredConfoundersBox.add(unmeasuredConfoundersLabelBox);
+        unmeasuredConfoundersBox.add(unmeasuredConfoundersOptionAllBox);
+        unmeasuredConfoundersBox.add(unmeasuredConfoundersOption1Box);
+        unmeasuredConfoundersBox.add(unmeasuredConfoundersOption2Box);
+        unmeasuredConfoundersBox.add(Box.createHorizontalGlue());
+
         // Reset filter selections
         JButton resetFilterSelectionsBtn = new JButton("Reset all filters");
 
@@ -495,11 +578,10 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
 
         // Items to put in data description box
         algoFiltersBox.add(algoTypesBox);
-        algoFiltersBox.add(Box.createVerticalStrut(5));
-        algoFiltersBox.add(Box.createVerticalStrut(5));
-        algoFiltersBox.add(Box.createVerticalStrut(5));
-        algoFiltersBox.add(Box.createVerticalStrut(5));
+        algoFiltersBox.add(Box.createVerticalStrut(10));
         algoFiltersBox.add(priorKnowledgeBox);
+        algoFiltersBox.add(Box.createVerticalStrut(10));
+        algoFiltersBox.add(unmeasuredConfoundersBox);
         algoFiltersBox.add(Box.createVerticalStrut(20));
         algoFiltersBox.add(resetFilterSelectionsBtn);
 
@@ -509,8 +591,8 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         // Components in middleContainer
         // Show a list of filtered algorithms
         Box suggestedAlgosBox = Box.createVerticalBox();
-        suggestedAlgosBox.setMinimumSize(new Dimension(260, 570));
-        suggestedAlgosBox.setMaximumSize(new Dimension(260, 570));
+        suggestedAlgosBox.setMinimumSize(new Dimension(240, 550));
+        suggestedAlgosBox.setMaximumSize(new Dimension(240, 550));
 
         // Use a titled border with 5 px inside padding - Zhou
         String suggestedAlgosBoxBorderTitle = "Choose algorithm";
@@ -545,8 +627,8 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
 
         // Put the list in a scrollable area
         JScrollPane suggestedAlgosListScrollPane = new JScrollPane(suggestedAlgosList);
-        suggestedAlgosListScrollPane.setMinimumSize(new Dimension(260, 570));
-        suggestedAlgosListScrollPane.setMaximumSize(new Dimension(260, 570));
+        suggestedAlgosListScrollPane.setMinimumSize(new Dimension(260, 550));
+        suggestedAlgosListScrollPane.setMaximumSize(new Dimension(260, 550));
 
         suggestedAlgosBox.add(suggestedAlgosListScrollPane);
 
@@ -555,8 +637,8 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         // Components in rightContainer
         // Algo description
         Box algoDescriptionBox = Box.createVerticalBox();
-        algoDescriptionBox.setMinimumSize(new Dimension(350, 335));
-        algoDescriptionBox.setMaximumSize(new Dimension(350, 335));
+        algoDescriptionBox.setMinimumSize(new Dimension(330, 335));
+        algoDescriptionBox.setMaximumSize(new Dimension(330, 335));
 
         // Use a titled border with 5 px inside padding - Zhou
         String algoDescriptionBoxBorderTitle = "Algorithm description";
@@ -570,15 +652,15 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         algoDescriptionTextArea.setEditable(false);
 
         JScrollPane algoDescriptionScrollPane = new JScrollPane(algoDescriptionTextArea);
-        algoDescriptionScrollPane.setMinimumSize(new Dimension(350, 335));
-        algoDescriptionScrollPane.setMaximumSize(new Dimension(350, 335));
+        algoDescriptionScrollPane.setMinimumSize(new Dimension(330, 335));
+        algoDescriptionScrollPane.setMaximumSize(new Dimension(330, 335));
 
         algoDescriptionBox.add(algoDescriptionScrollPane);
 
         // Choose corresponding test and score based on algorithm
         Box testAndScoreBox = Box.createVerticalBox();
-        testAndScoreBox.setMinimumSize(new Dimension(350, 220));
-        testAndScoreBox.setMaximumSize(new Dimension(350, 220));
+        testAndScoreBox.setMinimumSize(new Dimension(330, 200));
+        testAndScoreBox.setMaximumSize(new Dimension(330, 200));
 
         // Use a titled border with 5 px inside padding - Zhou
         String testAndScoreBoxBorderTitle = "Choose Independence Test and Score";
@@ -586,7 +668,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
 
         // Assumptions label box
         Box assumptionsLabelBox = Box.createHorizontalBox();
-        assumptionsLabelBox.setPreferredSize(new Dimension(350, 20));
+        assumptionsLabelBox.setPreferredSize(new Dimension(330, 20));
         JLabel assumptionsLabel = new JLabel("Filter by dataset properties: ");
         //assumptionsLabelBox.setAlignmentX(LEFT_ALIGNMENT);
         assumptionsLabelBox.add(assumptionsLabel);
@@ -624,22 +706,6 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         gaussianVariablesBox.add(gaussianVariablesCheckbox);
         gaussianVariablesBox.add(Box.createHorizontalGlue());
 
-        Box unmeasuredConfoundersBox = Box.createHorizontalBox();
-        unmeasuredConfoundersBox.add(Box.createRigidArea(new Dimension(10, 20)));
-        unmeasuredConfoundersCheckbox = new JCheckBox("Unmeasured confounders");
-
-        // Register event listener on checkbox
-        unmeasuredConfoundersCheckbox.addActionListener((ActionEvent actionEvent) -> {
-            // Set the flag
-            unmeasuredConfoundersAssumption = unmeasuredConfoundersCheckbox.isSelected();
-            // Recreate the dropdown
-            updateTestAndScoreOptions();
-        });
-
-        //unmeasuredConfoundersBox.setAlignmentX(LEFT_ALIGNMENT);
-        unmeasuredConfoundersBox.add(unmeasuredConfoundersCheckbox);
-        unmeasuredConfoundersBox.add(Box.createHorizontalGlue());
-
         // Test container
         Box testBox = Box.createHorizontalBox();
 
@@ -653,7 +719,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         // Initialize test dropdown menu
         testDropdown = new JComboBox<>(testDropdownModel);
 
-        testDropdown.setPreferredSize(new Dimension(260, 15));
+        testDropdown.setPreferredSize(new Dimension(240, 15));
 
         // Event listener of test seleciton
         testDropdown.addActionListener((ActionEvent e) -> {
@@ -681,7 +747,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
 
         // Initialize score dropdown menu
         scoreDropdown = new JComboBox<>(scoreDropdownModel);
-        scoreDropdown.setPreferredSize(new Dimension(260, 15));
+        scoreDropdown.setPreferredSize(new Dimension(240, 15));
 
         // Event listener of score seleciton
         scoreDropdown.addActionListener((ActionEvent e) -> {
@@ -701,7 +767,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         testAndScoreBox.add(assumptionsLabelBox);
         testAndScoreBox.add(linearRelationshipBox);
         testAndScoreBox.add(gaussianVariablesBox);
-        testAndScoreBox.add(unmeasuredConfoundersBox);
+
         // Add some gap
         testAndScoreBox.add(Box.createVerticalStrut(10));
         testAndScoreBox.add(testBox);
@@ -932,6 +998,12 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
 
         // Reset prior knowledge to All
         priorKnowledgeBtnGrp.setSelected(priorKnowledgeAllRadioBtn.getModel(), true);
+
+        // Also need to reset the unmeasured confounders flag
+        handleUnmeasuredConfounders = null;
+
+        // Reset unmeasured confounders to All
+        unmeasuredConfoundersBtnGrp.setSelected(unmeasuredConfoundersAllRadioBtn.getModel(), true);
 
         // Don't forget to update the list of algos
         setDefaultAlgosListModel();
@@ -1476,7 +1548,6 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
 
         linearVariablesCheckbox.setEnabled(!disabled);
         gaussianVariablesCheckbox.setEnabled(!disabled);
-        unmeasuredConfoundersCheckbox.setEnabled(!disabled);
     }
 
     private void setAlgorithm() {
