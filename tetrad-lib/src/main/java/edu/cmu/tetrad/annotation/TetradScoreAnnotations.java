@@ -20,6 +20,8 @@ package edu.cmu.tetrad.annotation;
 
 import edu.cmu.tetrad.data.DataType;
 import java.util.Collections;
+import java.util.EnumMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -36,7 +38,7 @@ public class TetradScoreAnnotations {
     private static final TetradScoreAnnotations INSTANCE = new TetradScoreAnnotations();
 
     protected final List<AnnotatedClassWrapper<Score>> nameWrappers;
-    protected final Map<DataType, List<AnnotatedClassWrapper<Score>>> dataTypeNameWrappers;
+    protected final Map<DataType, List<AnnotatedClassWrapper<Score>>> dataTypeNameWrappers = new EnumMap<>(DataType.class);
 
     private TetradScoreAnnotations() {
 
@@ -45,8 +47,17 @@ public class TetradScoreAnnotations {
                 .sorted()
                 .collect(Collectors.toList());
 
-        dataTypeNameWrappers = nameWrappers.stream()
-                .collect(Collectors.groupingBy(e -> e.annotatedClass.getAnnotation().dataType()));
+        nameWrappers.stream().forEach(e -> {
+            DataType[] dataTypes = e.getAnnotatedClass().getAnnotation().dataType();
+            for (DataType dataType : dataTypes) {
+                List<AnnotatedClassWrapper<Score>> list = dataTypeNameWrappers.get(dataType);
+                if (list == null) {
+                    list = new LinkedList<>();
+                    dataTypeNameWrappers.put(dataType, list);
+                }
+                list.add(e);
+            }
+        });
 
         // merge continuous datatype with mixed datatype
         List<AnnotatedClassWrapper<Score>> mergeList = Stream.concat(dataTypeNameWrappers.get(DataType.Continuous).stream(), dataTypeNameWrappers.get(DataType.Mixed).stream())

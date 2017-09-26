@@ -42,6 +42,6 @@ public @interface TestOfIndependence {
 
     String description() default "";
 
-    DataType dataType();
+    DataType[] dataType();
 
 }

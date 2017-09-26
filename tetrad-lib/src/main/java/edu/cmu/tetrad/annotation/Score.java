@@ -42,6 +42,6 @@ public @interface Score {
 
     String description() default "";
 
-    DataType dataType();
+    DataType[] dataType();
 
 }
