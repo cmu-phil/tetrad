@@ -515,10 +515,10 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         Box unmeasuredConfoundersOption1Box = Box.createHorizontalBox();
         unmeasuredConfoundersOption1Box.setAlignmentX(LEFT_ALIGNMENT);
 
-        JRadioButton unmeasuredConfoundersYes = new JRadioButton("can handle unmeasured confounders");
+        JRadioButton unmeasuredConfoundersYesRadioBtn = new JRadioButton("can handle unmeasured confounders");
 
         // Event listener
-        unmeasuredConfoundersYes.addActionListener((ActionEvent actionEvent) -> {
+        unmeasuredConfoundersYesRadioBtn.addActionListener((ActionEvent actionEvent) -> {
             JRadioButton button = (JRadioButton) actionEvent.getSource();
 
             if (button.isSelected()) {
@@ -532,16 +532,16 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
 
         // Add padding and option
         unmeasuredConfoundersOption1Box.add(Box.createRigidArea(new Dimension(10, 20)));
-        unmeasuredConfoundersOption1Box.add(unmeasuredConfoundersYes);
+        unmeasuredConfoundersOption1Box.add(unmeasuredConfoundersYesRadioBtn);
 
         // Option 2
         Box unmeasuredConfoundersOption2Box = Box.createHorizontalBox();
         unmeasuredConfoundersOption2Box.setAlignmentX(LEFT_ALIGNMENT);
 
-        JRadioButton unmeasuredConfoundersNo = new JRadioButton("can't handle unmeasured confounders");
+        JRadioButton unmeasuredConfoundersNoRadioBtn = new JRadioButton("can't handle unmeasured confounders");
 
         // Event listener
-        unmeasuredConfoundersNo.addActionListener((ActionEvent actionEvent) -> {
+        unmeasuredConfoundersNoRadioBtn.addActionListener((ActionEvent actionEvent) -> {
             JRadioButton button = (JRadioButton) actionEvent.getSource();
 
             if (button.isSelected()) {
@@ -555,11 +555,15 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
 
         // Add padding and option
         unmeasuredConfoundersOption2Box.add(Box.createRigidArea(new Dimension(10, 20)));
-        unmeasuredConfoundersOption2Box.add(unmeasuredConfoundersNo);
+        unmeasuredConfoundersOption2Box.add(unmeasuredConfoundersNoRadioBtn);
 
         // We need to group the radio buttons, otherwise all can be selected
-        unmeasuredConfoundersBtnGrp.add(unmeasuredConfoundersYes);
-        unmeasuredConfoundersBtnGrp.add(unmeasuredConfoundersNo);
+        unmeasuredConfoundersBtnGrp.add(unmeasuredConfoundersAllRadioBtn);
+        unmeasuredConfoundersBtnGrp.add(unmeasuredConfoundersYesRadioBtn);
+        unmeasuredConfoundersBtnGrp.add(unmeasuredConfoundersNoRadioBtn);
+
+        // Set All as the default selection
+        priorKnowledgeAllRadioBtn.setSelected(true);
 
         // Add to containing box
         unmeasuredConfoundersBox.add(unmeasuredConfoundersLabelBox);
