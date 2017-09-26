@@ -41,6 +41,7 @@ import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataModelList;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
+import edu.cmu.tetrad.data.ICovarianceMatrix;
 import edu.cmu.tetrad.data.Knowledge2;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
@@ -201,7 +202,6 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         setSelection();
     }
 
-    // Add covariace?
     private void determineTestAndScore(DataModelList dataModelList) {
         // Use annotations to get the tests based on data type
         TetradTestOfIndependenceAnnotations indTestAnno = TetradTestOfIndependenceAnnotations.getInstance();
@@ -216,7 +216,8 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
             // Check type based on the first dataset
             DataModel dataSet = dataModelList.get(0);
 
-            if (dataSet.isContinuous()) {
+            // Covariance dataset is continuous at the same time - Zhou
+            if (dataSet.isContinuous() && !(dataSet instanceof ICovarianceMatrix)) {
                 tests = indTestAnno.getNameWrappers(DataType.Continuous);
                 scores = scoreAnno.getNameWrappers(DataType.Continuous);
             } else if (dataSet.isDiscrete()) {
@@ -225,6 +226,9 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
             } else if (dataSet.isMixed()) {
                 tests = indTestAnno.getNameWrappers(DataType.Mixed);
                 scores = scoreAnno.getNameWrappers(DataType.Mixed);
+            } else if (dataSet instanceof ICovarianceMatrix) { // Better to add an isCovariance() - Zhou
+                tests = indTestAnno.getNameWrappers(DataType.Covariance);
+                scores = scoreAnno.getNameWrappers(DataType.Covariance);
             } else {
                 throw new IllegalArgumentException();
             }
