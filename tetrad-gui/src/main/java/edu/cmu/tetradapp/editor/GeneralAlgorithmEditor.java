@@ -210,21 +210,21 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
 
         // Determine the test/score dropdown menu options based on dataset
         if (dataModelList.isEmpty()) {
-            tests = indTestAnno.getNameAttributes(DataType.Graph);
-            scores = scoreAnno.getNameAttributes(DataType.Graph);
+            tests = indTestAnno.getNameWrappers(DataType.Graph);
+            scores = scoreAnno.getNameWrappers(DataType.Graph);
         } else {
             // Check type based on the first dataset
             DataModel dataSet = dataModelList.get(0);
 
             if (dataSet.isContinuous()) {
-                tests = indTestAnno.getNameAttributes(DataType.Continuous);
-                scores = scoreAnno.getNameAttributes(DataType.Continuous);
+                tests = indTestAnno.getNameWrappers(DataType.Continuous);
+                scores = scoreAnno.getNameWrappers(DataType.Continuous);
             } else if (dataSet.isDiscrete()) {
-                tests = indTestAnno.getNameAttributes(DataType.Discrete);
-                scores = scoreAnno.getNameAttributes(DataType.Discrete);
+                tests = indTestAnno.getNameWrappers(DataType.Discrete);
+                scores = scoreAnno.getNameWrappers(DataType.Discrete);
             } else if (dataSet.isMixed()) {
-                tests = indTestAnno.getNameAttributes(DataType.Mixed);
-                scores = scoreAnno.getNameAttributes(DataType.Mixed);
+                tests = indTestAnno.getNameWrappers(DataType.Mixed);
+                scores = scoreAnno.getNameWrappers(DataType.Mixed);
             } else {
                 throw new IllegalArgumentException();
             }

@@ -31,7 +31,7 @@ import java.util.stream.Stream;
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
  */
-public class TetradTestOfIndependenceAnnotations extends AbstractTetradAnnotations<TestOfIndependence> {
+public class TetradTestOfIndependenceAnnotations {
 
     private static final TetradTestOfIndependenceAnnotations INSTANCE = new TetradTestOfIndependenceAnnotations();
 
@@ -39,9 +39,8 @@ public class TetradTestOfIndependenceAnnotations extends AbstractTetradAnnotatio
     protected final Map<DataType, List<AnnotatedClassWrapper<TestOfIndependence>>> dataTypeNameWrappers;
 
     private TetradTestOfIndependenceAnnotations() {
-        super("edu.cmu.tetrad.algcomparison.independence", TestOfIndependence.class);
 
-        nameWrappers = annotatedClasses.stream()
+        nameWrappers = TestOfIndependenceAnnotations.getInstance().getAnnotatedClasses().stream()
                 .map(e -> new AnnotatedClassWrapper<>(e.getAnnotation().name(), e))
                 .sorted()
                 .collect(Collectors.toList());
@@ -70,7 +69,7 @@ public class TetradTestOfIndependenceAnnotations extends AbstractTetradAnnotatio
         return Collections.unmodifiableList(nameWrappers);
     }
 
-    public List<AnnotatedClassWrapper<TestOfIndependence>> getNameAttributes(DataType dataType) {
+    public List<AnnotatedClassWrapper<TestOfIndependence>> getNameWrappers(DataType dataType) {
         return (dataType == null)
                 ? Collections.EMPTY_LIST
                 : Collections.unmodifiableList(dataTypeNameWrappers.get(dataType));

@@ -31,7 +31,7 @@ import java.util.stream.Stream;
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
  */
-public class TetradScoreAnnotations extends AbstractTetradAnnotations<Score> {
+public class TetradScoreAnnotations {
 
     private static final TetradScoreAnnotations INSTANCE = new TetradScoreAnnotations();
 
@@ -39,9 +39,8 @@ public class TetradScoreAnnotations extends AbstractTetradAnnotations<Score> {
     protected final Map<DataType, List<AnnotatedClassWrapper<Score>>> dataTypeNameWrappers;
 
     private TetradScoreAnnotations() {
-        super("edu.cmu.tetrad.algcomparison.score", Score.class);
 
-        nameWrappers = annotatedClasses.stream()
+        nameWrappers = ScoreAnnotations.getInstance().getAnnotatedClasses().stream()
                 .map(e -> new AnnotatedClassWrapper<>(e.getAnnotation().name(), e))
                 .sorted()
                 .collect(Collectors.toList());
@@ -70,7 +69,7 @@ public class TetradScoreAnnotations extends AbstractTetradAnnotations<Score> {
         return Collections.unmodifiableList(nameWrappers);
     }
 
-    public List<AnnotatedClassWrapper<Score>> getNameAttributes(DataType dataType) {
+    public List<AnnotatedClassWrapper<Score>> getNameWrappers(DataType dataType) {
         return (dataType == null)
                 ? Collections.EMPTY_LIST
                 : Collections.unmodifiableList(dataTypeNameWrappers.get(dataType));
