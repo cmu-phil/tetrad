@@ -1,5 +1,6 @@
 package edu.cmu.tetrad.algcomparison.independence;
 
+import edu.cmu.tetrad.annotation.TestOfIndependence;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.data.DataUtils;
@@ -13,6 +14,11 @@ import java.util.List;
  *
  * @author jdramsey
  */
+@TestOfIndependence(
+        name = "BDeu Test",
+        command = "bdeu",
+        dataType = DataType.Discrete
+)
 public class BDeuTest implements IndependenceWrapper {
 
     static final long serialVersionUID = 23L;

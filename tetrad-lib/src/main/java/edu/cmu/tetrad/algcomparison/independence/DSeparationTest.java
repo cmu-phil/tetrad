@@ -11,7 +11,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Wrapper for D-separation test.
+ * Wrapper for D-separation test. Requires a true DAG as input.
  *
  * @author jdramsey
  */

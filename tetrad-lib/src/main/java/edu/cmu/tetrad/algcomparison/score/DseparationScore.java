@@ -6,7 +6,6 @@ import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.*;
 import edu.cmu.tetrad.util.Parameters;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -15,7 +14,13 @@ import java.util.List;
  *
  * @author jdramsey
  */
+@edu.cmu.tetrad.annotation.Score(
+        name = "D-separation Score",
+        command = "d-separation",
+        dataType = DataType.Graph
+)
 public class DseparationScore implements ScoreWrapper {
+
     static final long serialVersionUID = 23L;
     private final RandomGraph randomGraph;
     private DataModel dataSet;

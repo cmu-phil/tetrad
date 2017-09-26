@@ -18,7 +18,7 @@ import java.util.List;
 @TestOfIndependence(
         name = "Fisher Z Test",
         command = "fisher-z",
-        dataType = DataType.Continuous
+        dataType = {DataType.Continuous, DataType.Covariance}
 )
 @Gaussian
 @Linear
