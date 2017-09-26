@@ -18,34 +18,22 @@
  */
 package edu.cmu.tetrad.annotation;
 
-import java.lang.annotation.Annotation;
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
-import org.reflections.Reflections;
-
 /**
  *
- * Sep 20, 2017 10:59:43 AM
+ * Sep 26, 2017 1:18:28 AM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
- * @param <T> annotation type
  */
-public abstract class AbstractTetradAnnotations<T extends Annotation> {
+public class TestOfIndependenceAnnotations extends AbstractAnnotations<TestOfIndependence> {
 
-    protected final List<AnnotatedClass<T>> annotatedClasses;
+    private static final TestOfIndependenceAnnotations INSTANCE = new TestOfIndependenceAnnotations();
 
-    public AbstractTetradAnnotations(String packageName, Class<T> type) {
-        Reflections reflections = new Reflections(packageName);
-        Set<Class<?>> classes = reflections.getTypesAnnotatedWith(type);
-        this.annotatedClasses = classes.stream()
-                .map(e -> new AnnotatedClass<>(e, e.getAnnotation(type)))
-                .collect(Collectors.toList());
+    private TestOfIndependenceAnnotations() {
+        super("edu.cmu.tetrad.algcomparison.independence", TestOfIndependence.class);
     }
 
-    public List<AnnotatedClass<T>> getAnnotatedClasses() {
-        return Collections.unmodifiableList(annotatedClasses);
+    public static TestOfIndependenceAnnotations getInstance() {
+        return INSTANCE;
     }
 
 }

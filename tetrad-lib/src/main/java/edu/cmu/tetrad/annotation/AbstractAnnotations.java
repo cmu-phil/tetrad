@@ -18,34 +18,34 @@
  */
 package edu.cmu.tetrad.annotation;
 
+import java.lang.annotation.Annotation;
+import java.util.Collections;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
+import org.reflections.Reflections;
+
 /**
  *
- * Sep 20, 2017 11:52:10 AM
+ * Sep 20, 2017 10:59:43 AM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
+ * @param <T> annotation type
  */
-public class AnnotationAttribute {
+public abstract class AbstractAnnotations<T extends Annotation> {
 
-    protected final String attribute;
+    protected final List<AnnotatedClass<T>> annotatedClasses;
 
-    protected final Class clazz;
-
-    public AnnotationAttribute(String attribute, Class clazz) {
-        this.attribute = attribute;
-        this.clazz = clazz;
+    public AbstractAnnotations(String packageName, Class<T> type) {
+        Reflections reflections = new Reflections(packageName);
+        Set<Class<?>> classes = reflections.getTypesAnnotatedWith(type);
+        this.annotatedClasses = classes.stream()
+                .map(e -> new AnnotatedClass<>(e, e.getAnnotation(type)))
+                .collect(Collectors.toList());
     }
 
-    @Override
-    public String toString() {
-        return attribute;
-    }
-
-    public String getAttribute() {
-        return attribute;
-    }
-
-    public Class getClazz() {
-        return clazz;
+    public List<AnnotatedClass<T>> getAnnotatedClasses() {
+        return Collections.unmodifiableList(annotatedClasses);
     }
 
 }

@@ -18,30 +18,22 @@
  */
 package edu.cmu.tetrad.annotation;
 
-import edu.cmu.tetrad.data.DataType;
-import java.lang.annotation.Documented;
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
-
 /**
  *
- * Aug 31, 2017 4:42:08 PM
+ * Sep 26, 2017 1:14:01 AM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
  */
-@Target({ElementType.TYPE})
-@Retention(RetentionPolicy.RUNTIME)
-@Documented
-public @interface TestOfIndependence {
+public class ScoreAnnotations extends AbstractAnnotations<Score> {
 
-    String name();
+    private static final ScoreAnnotations INSTANCE = new ScoreAnnotations();
 
-    String command();
+    private ScoreAnnotations() {
+        super("edu.cmu.tetrad.algcomparison.score", Score.class);
+    }
 
-    String description() default "";
-
-    DataType[] dataType();
+    public static ScoreAnnotations getInstance() {
+        return INSTANCE;
+    }
 
 }

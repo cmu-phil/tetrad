@@ -20,6 +20,8 @@ package edu.cmu.tetrad.annotation;
 
 import edu.cmu.tetrad.data.DataType;
 import java.util.Collections;
+import java.util.EnumMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -31,23 +33,31 @@ import java.util.stream.Stream;
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
  */
-public class TetradTestOfIndependenceAnnotations extends AbstractTetradAnnotations<TestOfIndependence> {
+public class TetradTestOfIndependenceAnnotations {
 
     private static final TetradTestOfIndependenceAnnotations INSTANCE = new TetradTestOfIndependenceAnnotations();
 
     protected final List<AnnotatedClassWrapper<TestOfIndependence>> nameWrappers;
-    protected final Map<DataType, List<AnnotatedClassWrapper<TestOfIndependence>>> dataTypeNameWrappers;
+    protected final Map<DataType, List<AnnotatedClassWrapper<TestOfIndependence>>> dataTypeNameWrappers = new EnumMap<>(DataType.class);
 
     private TetradTestOfIndependenceAnnotations() {
-        super("edu.cmu.tetrad.algcomparison.independence", TestOfIndependence.class);
 
-        nameWrappers = annotatedClasses.stream()
+        nameWrappers = TestOfIndependenceAnnotations.getInstance().getAnnotatedClasses().stream()
                 .map(e -> new AnnotatedClassWrapper<>(e.getAnnotation().name(), e))
                 .sorted()
                 .collect(Collectors.toList());
 
-        dataTypeNameWrappers = nameWrappers.stream()
-                .collect(Collectors.groupingBy(e -> e.annotatedClass.getAnnotation().dataType()));
+        nameWrappers.stream().forEach(e -> {
+            DataType[] dataTypes = e.getAnnotatedClass().getAnnotation().dataType();
+            for (DataType dataType : dataTypes) {
+                List<AnnotatedClassWrapper<TestOfIndependence>> list = dataTypeNameWrappers.get(dataType);
+                if (list == null) {
+                    list = new LinkedList<>();
+                    dataTypeNameWrappers.put(dataType, list);
+                }
+                list.add(e);
+            }
+        });
 
         // merge continuous datatype with mixed datatype
         List<AnnotatedClassWrapper<TestOfIndependence>> mergeList = Stream.concat(dataTypeNameWrappers.get(DataType.Continuous).stream(), dataTypeNameWrappers.get(DataType.Mixed).stream())
@@ -70,7 +80,7 @@ public class TetradTestOfIndependenceAnnotations extends AbstractTetradAnnotatio
         return Collections.unmodifiableList(nameWrappers);
     }
 
-    public List<AnnotatedClassWrapper<TestOfIndependence>> getNameAttributes(DataType dataType) {
+    public List<AnnotatedClassWrapper<TestOfIndependence>> getNameWrappers(DataType dataType) {
         return (dataType == null)
                 ? Collections.EMPTY_LIST
                 : Collections.unmodifiableList(dataTypeNameWrappers.get(dataType));
