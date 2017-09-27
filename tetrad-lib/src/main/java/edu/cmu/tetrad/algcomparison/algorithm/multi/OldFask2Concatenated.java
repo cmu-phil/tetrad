@@ -23,6 +23,7 @@ import java.util.List;
  *
  * @author jdramsey
  */
+
 public class OldFask2Concatenated implements MultiDataSetAlgorithm, HasKnowledge {
     static final long serialVersionUID = 23L;
     private boolean empirical = false;
@@ -141,7 +142,7 @@ public class OldFask2Concatenated implements MultiDataSetAlgorithm, HasKnowledge
  		parameters.add("bootstrapSampleSize");
  		parameters.add("bootstrapEnsemble");
  		parameters.add("verbose");
-        
+
         return parameters;
     }
 

@@ -68,7 +68,7 @@ public class Fask implements Algorithm, HasKnowledge {
     		search.setParameters(parameters);    		
     		search.setVerbose(parameters.getBoolean("verbose"));
     		return search.search();
-    	}
+		}
     }
 
     @Override
