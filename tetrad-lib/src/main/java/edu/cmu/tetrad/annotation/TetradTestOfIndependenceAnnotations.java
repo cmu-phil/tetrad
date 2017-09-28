@@ -37,16 +37,18 @@ public class TetradTestOfIndependenceAnnotations {
 
     private static final TetradTestOfIndependenceAnnotations INSTANCE = new TetradTestOfIndependenceAnnotations();
 
-    protected final List<AnnotatedClassWrapper<TestOfIndependence>> nameWrappers;
-    protected final Map<DataType, List<AnnotatedClassWrapper<TestOfIndependence>>> dataTypeNameWrappers = new EnumMap<>(DataType.class);
+    private final TestOfIndependenceAnnotations testAnno = TestOfIndependenceAnnotations.getInstance();
+
+    private final List<AnnotatedClassWrapper<TestOfIndependence>> nameWrappers;
+    private final Map<DataType, List<AnnotatedClassWrapper<TestOfIndependence>>> dataTypeNameWrappers = new EnumMap<>(DataType.class);
 
     private TetradTestOfIndependenceAnnotations() {
-
-        nameWrappers = TestOfIndependenceAnnotations.getInstance().getAnnotatedClasses().stream()
+        nameWrappers = testAnno.getAnnotatedClasses().stream()
                 .map(e -> new AnnotatedClassWrapper<>(e.getAnnotation().name(), e))
                 .sorted()
                 .collect(Collectors.toList());
 
+        // group by datatype
         nameWrappers.stream().forEach(e -> {
             DataType[] dataTypes = e.getAnnotatedClass().getAnnotation().dataType();
             for (DataType dataType : dataTypes) {
@@ -81,9 +83,13 @@ public class TetradTestOfIndependenceAnnotations {
     }
 
     public List<AnnotatedClassWrapper<TestOfIndependence>> getNameWrappers(DataType dataType) {
-        return (dataType == null)
-                ? Collections.EMPTY_LIST
-                : Collections.unmodifiableList(dataTypeNameWrappers.get(dataType));
+        if (dataType == null) {
+            return Collections.EMPTY_LIST;
+        }
+
+        return dataTypeNameWrappers.containsKey(dataType)
+                ? Collections.unmodifiableList(dataTypeNameWrappers.get(dataType))
+                : Collections.EMPTY_LIST;
     }
 
     public Map<DataType, List<AnnotatedClassWrapper<TestOfIndependence>>> getDataTypeNameWrappers() {

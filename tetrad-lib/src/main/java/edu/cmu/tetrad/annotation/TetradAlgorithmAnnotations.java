@@ -32,13 +32,15 @@ public class TetradAlgorithmAnnotations {
 
     private static final TetradAlgorithmAnnotations INSTANCE = new TetradAlgorithmAnnotations();
 
-    protected final List<AnnotatedClassWrapper<Algorithm>> nameWrappers;
-    protected final List<AnnotatedClassWrapper<Algorithm>> acceptKnowledgeNameWrappers;
-    protected final List<AnnotatedClassWrapper<Algorithm>> acceptMultiDatasetNameWrappers;
+    private final AlgorithmAnnotations algoAnno = AlgorithmAnnotations.getInstance();
+
+    private final List<AnnotatedClassWrapper<Algorithm>> nameWrappers;
+    private final List<AnnotatedClassWrapper<Algorithm>> acceptKnowledgeNameWrappers;
+    private final List<AnnotatedClassWrapper<Algorithm>> acceptMultiDatasetNameWrappers;
+    private final List<AnnotatedClassWrapper<Algorithm>> handleUnmeasuredConfounderNameWrappers;
 
     private TetradAlgorithmAnnotations() {
-
-        nameWrappers = AlgorithmAnnotations.getInstance().getAnnotatedClasses().stream()
+        nameWrappers = algoAnno.getAnnotatedClasses().stream()
                 .map(e -> new AnnotatedClassWrapper<>(e.getAnnotation().name(), e))
                 .sorted()
                 .collect(Collectors.toList());
@@ -48,26 +50,33 @@ public class TetradAlgorithmAnnotations {
         acceptMultiDatasetNameWrappers = nameWrappers.stream()
                 .filter(e -> acceptMultipleDataset(e.annotatedClass.getClazz()))
                 .collect(Collectors.toList());
-    }
-
-    public boolean acceptMultipleDataset(Class clazz) {
-        return AlgorithmAnnotations.getInstance().acceptMultipleDataset(clazz);
-    }
-
-    public boolean acceptKnowledge(Class clazz) {
-        return AlgorithmAnnotations.getInstance().acceptKnowledge(clazz);
-    }
-
-    public boolean requireIndependenceTest(Class clazz) {
-        return AlgorithmAnnotations.getInstance().requireIndependenceTest(clazz);
-    }
-
-    public boolean requireScore(Class clazz) {
-        return AlgorithmAnnotations.getInstance().requireScore(clazz);
+        handleUnmeasuredConfounderNameWrappers = nameWrappers.stream()
+                .filter(e -> handleUnmeasuredConfounder(e.annotatedClass.getClazz()))
+                .collect(Collectors.toList());
     }
 
     public static TetradAlgorithmAnnotations getInstance() {
         return INSTANCE;
+    }
+
+    public boolean acceptMultipleDataset(Class clazz) {
+        return algoAnno.acceptMultipleDataset(clazz);
+    }
+
+    public boolean acceptKnowledge(Class clazz) {
+        return algoAnno.acceptKnowledge(clazz);
+    }
+
+    public boolean requireIndependenceTest(Class clazz) {
+        return algoAnno.requireIndependenceTest(clazz);
+    }
+
+    public boolean requireScore(Class clazz) {
+        return algoAnno.requireScore(clazz);
+    }
+
+    public boolean handleUnmeasuredConfounder(Class clazz) {
+        return algoAnno.handleUnmeasuredConfounder(clazz);
     }
 
     public List<AnnotatedClassWrapper<Algorithm>> getNameWrappers() {
@@ -80,6 +89,10 @@ public class TetradAlgorithmAnnotations {
 
     public List<AnnotatedClassWrapper<Algorithm>> getAcceptMultipleDatasetNameWrappers() {
         return Collections.unmodifiableList(acceptMultiDatasetNameWrappers);
+    }
+
+    public List<AnnotatedClassWrapper<Algorithm>> getUnmeasuredConfounderNameWrappers() {
+        return Collections.unmodifiableList(handleUnmeasuredConfounderNameWrappers);
     }
 
 }

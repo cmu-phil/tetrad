@@ -37,16 +37,18 @@ public class TetradScoreAnnotations {
 
     private static final TetradScoreAnnotations INSTANCE = new TetradScoreAnnotations();
 
-    protected final List<AnnotatedClassWrapper<Score>> nameWrappers;
-    protected final Map<DataType, List<AnnotatedClassWrapper<Score>>> dataTypeNameWrappers = new EnumMap<>(DataType.class);
+    private final ScoreAnnotations scoreAnno = ScoreAnnotations.getInstance();
+
+    private final List<AnnotatedClassWrapper<Score>> nameWrappers;
+    private final Map<DataType, List<AnnotatedClassWrapper<Score>>> dataTypeNameWrappers = new EnumMap<>(DataType.class);
 
     private TetradScoreAnnotations() {
-
-        nameWrappers = ScoreAnnotations.getInstance().getAnnotatedClasses().stream()
+        nameWrappers = scoreAnno.getAnnotatedClasses().stream()
                 .map(e -> new AnnotatedClassWrapper<>(e.getAnnotation().name(), e))
                 .sorted()
                 .collect(Collectors.toList());
 
+        // group by datatype
         nameWrappers.stream().forEach(e -> {
             DataType[] dataTypes = e.getAnnotatedClass().getAnnotation().dataType();
             for (DataType dataType : dataTypes) {
@@ -81,9 +83,13 @@ public class TetradScoreAnnotations {
     }
 
     public List<AnnotatedClassWrapper<Score>> getNameWrappers(DataType dataType) {
-        return (dataType == null)
-                ? Collections.EMPTY_LIST
-                : Collections.unmodifiableList(dataTypeNameWrappers.get(dataType));
+        if (dataType == null) {
+            return Collections.EMPTY_LIST;
+        }
+
+        return dataTypeNameWrappers.containsKey(dataType)
+                ? Collections.unmodifiableList(dataTypeNameWrappers.get(dataType))
+                : Collections.EMPTY_LIST;
     }
 
     public Map<DataType, List<AnnotatedClassWrapper<Score>>> getDataTypeNameWrappers() {
