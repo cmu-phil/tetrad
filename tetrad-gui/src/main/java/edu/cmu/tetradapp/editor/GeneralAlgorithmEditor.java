@@ -1031,13 +1031,15 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         List<AnnotatedClassWrapper<edu.cmu.tetrad.annotation.Algorithm>> filteredAlgosByKnowledgeFile = new LinkedList<>();
         List<AnnotatedClassWrapper<edu.cmu.tetrad.annotation.Algorithm>> filteredAlgosByUnmeasuredConfounder = new LinkedList<>();
 
+        // Don't assign algoWrappers directly to the above three lists since algoWrappers is unmodifiableList
+        // Iterate over algoWrappers so all the three lists contain all algos at the beginning
         algoWrappers.forEach(algoWrapper -> {
             filteredAlgosByType.add(algoWrapper);
             filteredAlgosByKnowledgeFile.add(algoWrapper);
             filteredAlgosByUnmeasuredConfounder.add(algoWrapper);
-
         });
 
+        // Remove algos that are not the selected type from filteredAlgosByType if a specific algo type is selected
         if (selectedAlgoType != null) {
             algoWrappers.forEach(algoWrapper -> {
                 edu.cmu.tetrad.annotation.Algorithm annotation = algoWrapper.getAnnotatedClass().getAnnotation();
@@ -1048,15 +1050,13 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
             });
         }
 
+        // Remove algos that don't meet the prior knowledge file selection
         if (acceptKnowledgeFile != null) {
             algoWrappers.forEach(algoWrapper -> {
                 Class clazz = algoWrapper.getAnnotatedClass().getClazz();
 
-                if (acceptKnowledgeFile) {
-                    if (!TetradAlgorithmAnnotations.getInstance().acceptKnowledge(clazz)) {
-                        filteredAlgosByKnowledgeFile.remove(algoWrapper);
-                    }
-                } else if (TetradAlgorithmAnnotations.getInstance().acceptKnowledge(clazz)) {
+                // Remove algo if the the flag doesn't equal to the acceptKnowledge(clazz)
+                if (acceptKnowledgeFile != TetradAlgorithmAnnotations.getInstance().acceptKnowledge(clazz)) {
                     filteredAlgosByKnowledgeFile.remove(algoWrapper);
                 }
             });
@@ -1066,11 +1066,8 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
             algoWrappers.forEach(algoWrapper -> {
                 Class clazz = algoWrapper.getAnnotatedClass().getClazz();
 
-                if (handleUnmeasuredConfounders) {
-                    if (!TetradAlgorithmAnnotations.getInstance().handleUnmeasuredConfounder(clazz)) {
-                        filteredAlgosByUnmeasuredConfounder.remove(algoWrapper);
-                    }
-                } else if (TetradAlgorithmAnnotations.getInstance().handleUnmeasuredConfounder(clazz)) {
+                // Remove algo is flag doesn't equal to the handleUnmeasuredConfounder(clazz)
+                if (handleUnmeasuredConfounders != TetradAlgorithmAnnotations.getInstance().handleUnmeasuredConfounder(clazz)) {
                     filteredAlgosByUnmeasuredConfounder.remove(algoWrapper);
                 }
             });
@@ -1083,6 +1080,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         // filteredAlgosByUnmeasuredConfounder now contains only the elements which are also contained in filteredAlgosByType
         filteredAlgosByUnmeasuredConfounder.retainAll(filteredAlgosByType);
 
+        // Add the filtered elements to suggestedAlgosListModel
         filteredAlgosByUnmeasuredConfounder.forEach(algoWrapper -> {
             suggestedAlgosListModel.addElement(algoWrapper);
         });
