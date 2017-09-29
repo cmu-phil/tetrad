@@ -74,6 +74,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.LinkedList;
 import java.util.List;
 import javax.swing.*;
 import javax.swing.border.CompoundBorder;
@@ -106,18 +107,19 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
     private String jsonResult;
     private final List<AnnotatedClassWrapper<edu.cmu.tetrad.annotation.Algorithm>> algoWrappers;
     private final List<AnnotatedClassWrapper<edu.cmu.tetrad.annotation.Algorithm>> algorithmsAcceptKnowledge;
+    private final List<AnnotatedClassWrapper<edu.cmu.tetrad.annotation.Algorithm>> algorithmsHandleUnmeasuredConfounder;
     private List<AnnotatedClassWrapper<TestOfIndependence>> tests;
     private List<AnnotatedClassWrapper<Score>> scores;
     private List<AnnotatedClassWrapper<TestOfIndependence>> filteredIndTests;
     private List<AnnotatedClassWrapper<Score>> filteredScores;
     private final DefaultListModel<AnnotatedClassWrapper<edu.cmu.tetrad.annotation.Algorithm>> suggestedAlgosListModel = new DefaultListModel<>();
     private final JList<AnnotatedClassWrapper<edu.cmu.tetrad.annotation.Algorithm>> suggestedAlgosList;
+    private AlgType selectedAlgoType = null;
     private Boolean acceptKnowledgeFile = null;
     private Boolean handleUnmeasuredConfounders = null;
     private final ButtonGroup algoTypesBtnGrp = new ButtonGroup();
     private final ButtonGroup priorKnowledgeBtnGrp = new ButtonGroup();
     private final ButtonGroup unmeasuredConfoundersBtnGrp = new ButtonGroup();
-    private AlgType selectedAlgoType = null;
     private AnnotatedClassWrapper<edu.cmu.tetrad.annotation.Algorithm> selectedAgloWrapper;
     private final JTextArea algoDescriptionTextArea = new JTextArea();
     private ParameterPanel parametersPanel;
@@ -177,6 +179,10 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         // Algos that accept knowledge file
         // Later use this to filter algos based on the knowledge siwtch
         algorithmsAcceptKnowledge = TetradAlgorithmAnnotations.getInstance().getAcceptKnowledgeNameWrappers();
+
+        // Algos that can handle unmeasured confounders
+        // Later use this to filter algos based on the unmeasured confounders siwtch
+        algorithmsHandleUnmeasuredConfounder = TetradAlgorithmAnnotations.getInstance().getUnmeasuredConfounderNameWrappers();
 
         // Use annotations to get the tests and scores based on different data types
         // Need to do this before calling createAlgoChooserPanel() - Zhou
@@ -563,7 +569,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         unmeasuredConfoundersBtnGrp.add(unmeasuredConfoundersNoRadioBtn);
 
         // Set All as the default selection
-        priorKnowledgeAllRadioBtn.setSelected(true);
+        unmeasuredConfoundersAllRadioBtn.setSelected(true);
 
         // Add to containing box
         unmeasuredConfoundersBox.add(unmeasuredConfoundersLabelBox);
@@ -1020,21 +1026,65 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         // Clear the list model
         suggestedAlgosListModel.removeAllElements();
 
-        // Create a new list model based on selections
-        algoWrappers.forEach(algoWrapper -> {
-            edu.cmu.tetrad.annotation.Algorithm annotation = algoWrapper.getAnnotatedClass().getAnnotation();
+        // Algo type, knowledge file, unmeasured confounders
+        List<AnnotatedClassWrapper<edu.cmu.tetrad.annotation.Algorithm>> filteredAlgosByType = new LinkedList<>();
+        List<AnnotatedClassWrapper<edu.cmu.tetrad.annotation.Algorithm>> filteredAlgosByKnowledgeFile = new LinkedList<>();
+        List<AnnotatedClassWrapper<edu.cmu.tetrad.annotation.Algorithm>> filteredAlgosByUnmeasuredConfounder = new LinkedList<>();
 
-            if (acceptKnowledgeFile != null) {
-                if (acceptKnowledgeFile) {
-                    if ((annotation.algoType() == selectedAlgoType || selectedAlgoType == null) && algorithmsAcceptKnowledge.contains(algoWrapper)) {
-                        suggestedAlgosListModel.addElement(algoWrapper);
-                    }
-                } else if ((annotation.algoType() == selectedAlgoType || selectedAlgoType == null) && !algorithmsAcceptKnowledge.contains(algoWrapper)) {
-                    suggestedAlgosListModel.addElement(algoWrapper);
+        algoWrappers.forEach(algoWrapper -> {
+            filteredAlgosByType.add(algoWrapper);
+            filteredAlgosByKnowledgeFile.add(algoWrapper);
+            filteredAlgosByUnmeasuredConfounder.add(algoWrapper);
+
+        });
+
+        if (selectedAlgoType != null) {
+            algoWrappers.forEach(algoWrapper -> {
+                edu.cmu.tetrad.annotation.Algorithm annotation = algoWrapper.getAnnotatedClass().getAnnotation();
+
+                if (annotation.algoType() != selectedAlgoType) {
+                    filteredAlgosByType.remove(algoWrapper);
                 }
-            } else if (annotation.algoType() == selectedAlgoType || selectedAlgoType == null) {
-                suggestedAlgosListModel.addElement(algoWrapper);
-            }
+            });
+        }
+
+        if (acceptKnowledgeFile != null) {
+            algoWrappers.forEach(algoWrapper -> {
+                Class clazz = algoWrapper.getAnnotatedClass().getClazz();
+
+                if (acceptKnowledgeFile) {
+                    if (!TetradAlgorithmAnnotations.getInstance().acceptKnowledge(clazz)) {
+                        filteredAlgosByKnowledgeFile.remove(algoWrapper);
+                    }
+                } else if (TetradAlgorithmAnnotations.getInstance().acceptKnowledge(clazz)) {
+                    filteredAlgosByKnowledgeFile.remove(algoWrapper);
+                }
+            });
+        }
+
+        if (handleUnmeasuredConfounders != null) {
+            algoWrappers.forEach(algoWrapper -> {
+                Class clazz = algoWrapper.getAnnotatedClass().getClazz();
+
+                if (handleUnmeasuredConfounders) {
+                    if (!TetradAlgorithmAnnotations.getInstance().handleUnmeasuredConfounder(clazz)) {
+                        filteredAlgosByUnmeasuredConfounder.remove(algoWrapper);
+                    }
+                } else if (TetradAlgorithmAnnotations.getInstance().handleUnmeasuredConfounder(clazz)) {
+                    filteredAlgosByUnmeasuredConfounder.remove(algoWrapper);
+                }
+            });
+        }
+
+        // Now get intersections of all three lists
+        // filteredAlgosByType now contains only the elements which are also contained in filteredAlgosByKnowledgeFile
+        filteredAlgosByType.retainAll(filteredAlgosByKnowledgeFile);
+
+        // filteredAlgosByUnmeasuredConfounder now contains only the elements which are also contained in filteredAlgosByType
+        filteredAlgosByUnmeasuredConfounder.retainAll(filteredAlgosByType);
+
+        filteredAlgosByUnmeasuredConfounder.forEach(algoWrapper -> {
+            suggestedAlgosListModel.addElement(algoWrapper);
         });
 
         // Reset default selected algorithm
