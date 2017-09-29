@@ -39,7 +39,8 @@ public abstract class AbstractAnnotations<T extends Annotation> {
     public AbstractAnnotations(String packageName, Class<T> type) {
         Reflections reflections = new Reflections(packageName);
         Set<Class<?>> classes = reflections.getTypesAnnotatedWith(type);
-        this.annotatedClasses = classes.stream()
+
+        this.annotatedClasses = classes.parallelStream()
                 .map(e -> new AnnotatedClass<>(e, e.getAnnotation(type)))
                 .collect(Collectors.toList());
     }

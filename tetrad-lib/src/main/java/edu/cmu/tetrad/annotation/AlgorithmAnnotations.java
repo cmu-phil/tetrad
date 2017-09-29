@@ -42,19 +42,33 @@ public class AlgorithmAnnotations extends AbstractAnnotations<Algorithm> {
     }
 
     public boolean acceptMultipleDataset(Class clazz) {
-        return MultiDataSetAlgorithm.class.isAssignableFrom(clazz);
+        return (clazz == null)
+                ? false
+                : MultiDataSetAlgorithm.class.isAssignableFrom(clazz);
     }
 
     public boolean acceptKnowledge(Class clazz) {
-        return HasKnowledge.class.isAssignableFrom(clazz);
+        return (clazz == null)
+                ? false
+                : HasKnowledge.class.isAssignableFrom(clazz);
     }
 
     public boolean requireIndependenceTest(Class clazz) {
-        return TakesIndependenceWrapper.class.isAssignableFrom(clazz);
+        return (clazz == null)
+                ? false
+                : TakesIndependenceWrapper.class.isAssignableFrom(clazz);
     }
 
     public boolean requireScore(Class clazz) {
-        return UsesScoreWrapper.class.isAssignableFrom(clazz);
+        return (clazz == null)
+                ? false
+                : UsesScoreWrapper.class.isAssignableFrom(clazz);
+    }
+
+    public boolean handleUnmeasuredConfounder(Class clazz) {
+        return (clazz == null)
+                ? false
+                : clazz.isAnnotationPresent(UnmeasuredConfounder.class);
     }
 
 }
