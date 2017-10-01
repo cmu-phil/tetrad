@@ -35,7 +35,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import static edu.cmu.tetrad.util.StatUtils.skewness;
 import static java.lang.Math.*;
 
 /**
@@ -66,11 +65,17 @@ public final class Fask implements GraphSearch {
     // Knowledge the the search will obey, of forbidden and required edges.
     private IKnowledge knowledge = new Knowledge2();
 
+    // Data as a double[][].
+    private final double[][] data;
+
     /**
      * @param dataSet These datasets must all have the same variables, in the same order.
      */
     public Fask(DataSet dataSet) {
         this.dataSet = dataSet;
+
+        data = dataSet.getDoubleData().transpose().toArray();
+
     }
 
     //======================================== PUBLIC METHODS ====================================//
@@ -155,7 +160,6 @@ public final class Fask implements GraphSearch {
     }
 
     private boolean bidirected(double[] x, double[] y, Graph G0, Node X, Node Y) {
-        double[][] data = dataSet.getDoubleData().transpose().toArray();
 
         Set<Node> adjSet = new HashSet<Node>(G0.getAdjacentNodes(X));
         adjSet.addAll(G0.getAdjacentNodes(Y));

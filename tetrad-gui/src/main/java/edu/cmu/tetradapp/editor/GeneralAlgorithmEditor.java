@@ -166,6 +166,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
 
         List<TestType> continuousTests = new ArrayList<>();
         continuousTests.add(TestType.Fisher_Z);
+        continuousTests.add(TestType.Positive_Correlation);
         continuousTests.add(TestType.Correlation_T);
         continuousTests.add(TestType.SEM_BIC);
         continuousTests.add(TestType.Conditional_Correlation);
@@ -1152,6 +1153,9 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
             case Fisher_Z:
                 independenceWrapper = new FisherZ();
                 break;
+            case Positive_Correlation:
+                independenceWrapper = new PositiveCorr();
+                break;
             case Correlation_T:
                 independenceWrapper = new CorrelationT();
                 break;
@@ -1460,7 +1464,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
 
     private enum TestType {
         ChiSquare, Conditional_Correlation, Conditional_Gaussian_LRT, Fisher_Z, GSquare,
-        SEM_BIC, D_SEPARATION, Discrete_BIC_Test, Correlation_T
+        SEM_BIC, D_SEPARATION, Discrete_BIC_Test, Correlation_T, Positive_Correlation
     }
 
     public enum ScoreType {BDeu, Conditional_Gaussian_BIC, Discrete_BIC, SEM_BIC, D_SEPARATION,

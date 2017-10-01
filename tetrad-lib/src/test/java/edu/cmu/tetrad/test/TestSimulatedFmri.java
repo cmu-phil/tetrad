@@ -55,7 +55,7 @@ public class TestSimulatedFmri {
         Parameters parameters = new Parameters();
         parameters.set("penaltyDiscount", 8);
         parameters.set("depth", -1);
-        parameters.set("twoCycleAlpha", 1e-8);
+        parameters.set("twoCycleAlpha", 1e-20);
 
         parameters.set("numRuns", 10);
         parameters.set("randomSelectionSize", 10);
