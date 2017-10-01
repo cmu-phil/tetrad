@@ -548,8 +548,13 @@ public class CovarianceMatrix implements ICovarianceMatrix {
 
         for (int j = 0; j < numVars; j++) {
             for (int i = 0; i <= j; i++) {
-                buf.append(nf.format(getValue(i, j))).append("\t");
+                buf.append(nf.format(getValue(i, j)));
+
+                if (i < j) {
+                    buf.append("\t");
+                }
             }
+
             buf.append("\n");
         }
 

@@ -76,7 +76,7 @@ public class ExternalAlgorithmPcalgPc extends ExternalAlgorithm {
             reader.setVariablesSupplied(true);
             DataSet dataSet2 = reader.parseTabular(file);
             System.out.println("Loading graph from " + file.getAbsolutePath());
-            Graph graph = GraphUtils.loadGraphPcAlgMatrix(dataSet2);
+            Graph graph = loadGraphPcAlgMatrix(dataSet2);
 
             GraphUtils.circleLayout(graph, 225, 200, 150);
 
@@ -119,6 +119,29 @@ public class ExternalAlgorithmPcalgPc extends ExternalAlgorithm {
         } catch (IOException e) {
             return -99;
         }
+    }
+
+    public static Graph loadGraphPcAlgMatrix(DataSet dataSet) {
+        List<Node> vars = dataSet.getVariables();
+
+        Graph graph = new EdgeListGraph(vars);
+
+        for (int i = 0; i < dataSet.getNumRows(); i++) {
+            for (int j = 0; j < dataSet.getNumColumns(); j++) {
+                if (i == j) continue;
+                int g = dataSet.getInt(i, j);
+                int h = dataSet.getInt(j, i);
+
+
+                if (g == 1 && h == 1 && !graph.isAdjacentTo(vars.get(i), vars.get(j))) {
+                    graph.addUndirectedEdge(vars.get(i), vars.get(j)); //
+                } else if (g == 1 && h == 0) {
+                    graph.addDirectedEdge(vars.get(j), vars.get(i));
+                }
+            }
+        }
+
+        return graph;
     }
 }
 

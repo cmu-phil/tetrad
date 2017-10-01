@@ -109,9 +109,7 @@ public class SemBicScore implements Score {
             }
 
             int n = getSampleSize();
-            int k = p + 1;
-//            s2 = ((n) / (double) (n - k)) * s2;
-            return -(n) * log(s2) - getPenaltyDiscount() * k * log(n);
+            return -(n) * log(s2) - getPenaltyDiscount() * log(n);
             // + getStructurePrior(parents.length);// - getStructurePrior(parents.length + 1);
         } catch (Exception e) {
             boolean removedOne = true;
@@ -158,8 +156,10 @@ public class SemBicScore implements Score {
             return Double.NaN;
         }
 
+        int p = 2 + z.length;
+
         int N = covariances.getSampleSize();
-        return -N * Math.log(1.0 - r * r) - getPenaltyDiscount() * Math.log(N);
+        return -N * Math.log(1.0 - r * r) - p * getPenaltyDiscount() * Math.log(N);
 //        return localScore(y, append(z, x)) - localScore(y, z);
     }
 

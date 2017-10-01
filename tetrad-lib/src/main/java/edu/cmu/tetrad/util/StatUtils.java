@@ -1253,8 +1253,8 @@ public final class StatUtils {
      * @return the skew of the first N values in array.
      */
     public static double skewness(double array[], int N) {
-        double mean = StatUtils.mean(array, N);
-        double secondMoment = 0.0; // StatUtils.variance(array, N);
+        double mean = mean(array, N);
+        double secondMoment = 0.0;
         double thirdMoment = 0.0;
 
         for (int j = 0; j < N; j++) {
@@ -1264,14 +1264,13 @@ public final class StatUtils {
         }
 
         double ess = secondMoment / N;
-        double esss = thirdMoment / (N - 1);
+        double esss = thirdMoment / N;
 
         if (secondMoment == 0) {
             throw new ArithmeticException("StatUtils.skew:  There is no skew " +
                     "when the variance is zero.");
         }
 
-        //        thirdMoment /= (N * Math.pow(secondMoment, 1.5));
         return esss / Math.pow(ess, 1.5);
     }
 
@@ -2008,7 +2007,7 @@ public final class StatUtils {
         return sum;
     }
 
-    public static double[] cov(double[] x, double[] y, double[] condition, double threshold, double direction) {
+    public static double[]  cov(double[] x, double[] y, double[] condition, double threshold, double direction) {
         double exy = 0.0;
         double exx = 0.0;
         double eyy = 0.0;
@@ -2040,9 +2039,9 @@ public final class StatUtils {
             }
         }
 
+        exy /= n;
         exx /= n;
         eyy /= n;
-        exy /= n;
         ex /= n;
         ey /= n;
 
@@ -2050,7 +2049,7 @@ public final class StatUtils {
         double sx = exx - ex * ex;
         double sy = eyy - ey * ey;
 
-        return new double[]{sxy, sxy / sqrt(sx * sy), sx, sy, (double) n, ex, ey};
+        return new double[]{sxy, sxy / sqrt(sx * sy), sx, sy, (double) n, ex, ey, sxy / sx};
     }
 
     public static double[][] covMatrix(double[] x, double[] y, double[][] z, double[] condition, double threshold, double direction) {

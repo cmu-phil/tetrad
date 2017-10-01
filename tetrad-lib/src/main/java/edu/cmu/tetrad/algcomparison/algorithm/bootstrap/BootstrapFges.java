@@ -57,7 +57,7 @@ public class BootstrapFges implements Algorithm, TakesInitialGraph,
 	}
 	DataSet data = (DataSet) dataSet;
 	edu.pitt.dbmi.algo.bootstrap.BootstrapTest search = new edu.pitt.dbmi.algo.bootstrap.BootstrapTest(
-		data, BootstrapAlgName.FGES);
+		data, 	BootstrapAlgName.FGES);
 	search.setParameters(parameters);
 	search.setKnowledge(knowledge);
 	search.setVerbose(parameters.getBoolean("verbose"));
