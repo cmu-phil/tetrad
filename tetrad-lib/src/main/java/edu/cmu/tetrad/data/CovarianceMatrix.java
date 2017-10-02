@@ -28,6 +28,7 @@ import java.io.ObjectInputStream;
 import java.text.NumberFormat;
 import java.util.*;
 import java.util.concurrent.RecursiveTask;
+import java.util.stream.Collectors;
 import org.apache.commons.math3.linear.RealMatrix;
 
 /**
@@ -534,20 +535,10 @@ public class CovarianceMatrix implements ICovarianceMatrix {
 
         StringBuilder buf = new StringBuilder();
 
+        // Build the variable names
+        buf.append(getVariableNames().stream().collect(Collectors.joining("\t")));
+
         int numVars = getVariableNames().size();
-        buf.append(getSampleSize()).append("\n");
-
-        for (int i = 0; i < numVars; i++) {
-            String name = getVariableNames().get(i);
-            buf.append(name).append("\t");
-
-            // Don't add ending tab after the last variable, data reader will validate this extra tab as missing value
-            // This is the fix to issue #525: https://github.com/cmu-phil/tetrad/issues/525
-            if (i < (numVars - 1)) {
-                buf.append("\t");
-            }
-        }
-
         buf.append("\n");
 
         for (int j = 0; j < numVars; j++) {
