@@ -18,20 +18,18 @@
 // along with this program; if not, write to the Free Software               //
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA //
 ///////////////////////////////////////////////////////////////////////////////
-
 package edu.cmu.tetrad.data;
 
 //import cern.colt.matrix.DoubleMatrix2D;
-
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.*;
-import org.apache.commons.math3.linear.RealMatrix;
-
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.text.NumberFormat;
 import java.util.*;
 import java.util.concurrent.RecursiveTask;
+import java.util.stream.Collectors;
+import org.apache.commons.math3.linear.RealMatrix;
 
 /**
  * Stores a covariance matrix together with variable names and sample size,
@@ -46,6 +44,7 @@ import java.util.concurrent.RecursiveTask;
  * @see edu.cmu.tetrad.data.CorrelationMatrix
  */
 public class CovarianceMatrix implements ICovarianceMatrix {
+
     static final long serialVersionUID = 23L;
 
     /**
@@ -93,9 +92,7 @@ public class CovarianceMatrix implements ICovarianceMatrix {
 
     private double[][] vectors = null;
 
-
     //=============================CONSTRUCTORS=========================//
-
     /**
      * Constructs a new covariance matrix from the given data set.
      *
@@ -116,17 +113,17 @@ public class CovarianceMatrix implements ICovarianceMatrix {
             DataBox box = ((BoxDataSet) dataSet).getDataBox().copy();
 
             if (box instanceof VerticalDoubleDataBox) {
-                if (!dataSet.getVariables().equals(variables)) throw new IllegalArgumentException();
+                if (!dataSet.getVariables().equals(variables)) {
+                    throw new IllegalArgumentException();
+                }
 
                 vectors = ((VerticalDoubleDataBox) box).getVariableVectors();
 
 //                final TetradMatrix doubleData = dataSet.getDoubleData();
-
 //                DataUtils.remean(doubleData, means);
             }
 
         }
-
 
         if (vectors == null) {
             final TetradMatrix doubleData = dataSet.getDoubleData().copy();
@@ -150,6 +147,7 @@ public class CovarianceMatrix implements ICovarianceMatrix {
         final int chunk = _chunk < minChunk ? minChunk : _chunk;
 
         class VarianceTask extends RecursiveTask<Boolean> {
+
             private int chunk;
             private int from;
             private int to;
@@ -206,6 +204,7 @@ public class CovarianceMatrix implements ICovarianceMatrix {
         }
 
         class RestOfThemTask extends RecursiveTask<Boolean> {
+
             private int chunk;
             private int from;
             private int to;
@@ -229,8 +228,12 @@ public class CovarianceMatrix implements ICovarianceMatrix {
                             int count = 0;
 
                             for (int k = 0; k < sampleSize; k++) {
-                                if (Double.isNaN(v1[k])) continue;
-                                if (Double.isNaN(v2[k])) continue;
+                                if (Double.isNaN(v1[k])) {
+                                    continue;
+                                }
+                                if (Double.isNaN(v2[k])) {
+                                    continue;
+                                }
 
                                 d += v1[k] * v2[k];
                                 count++;
@@ -268,8 +271,8 @@ public class CovarianceMatrix implements ICovarianceMatrix {
 
         DataUtils.demean(vectors, means);
 
-        this.variables=Collections.unmodifiableList(dataSet.getVariables());
-        this.sampleSize=dataSet.getNumRows();
+        this.variables = Collections.unmodifiableList(dataSet.getVariables());
+        this.sampleSize = dataSet.getNumRows();
     }
 
     /**
@@ -278,18 +281,16 @@ public class CovarianceMatrix implements ICovarianceMatrix {
      * definite matrix and sample size. The number of variables must equal the
      * dimension of the array.
      *
-     * @param variables  the list of variables (in order) for the covariance
-     *                   matrix.
-     * @param matrix     an square array of containing covariances.
+     * @param variables the list of variables (in order) for the covariance
+     * matrix.
+     * @param matrix an square array of containing covariances.
      * @param sampleSize the sample size of the data for these covariances.
      * @throws IllegalArgumentException if the given matrix is not symmetric (to
-     *                                  a tolerance of 1.e-5) and positive
-     *                                  definite, if the number of variables
-     *                                  does not equal the dimension of m, or if
-     *                                  the sample size is not positive.
+     * a tolerance of 1.e-5) and positive definite, if the number of variables
+     * does not equal the dimension of m, or if the sample size is not positive.
      */
     public CovarianceMatrix(List<Node> variables, TetradMatrix matrix,
-                            int sampleSize) {
+            int sampleSize) {
         if (variables.size() != matrix.rows() && variables.size() != matrix.columns()) {
             throw new IllegalArgumentException("# variables not equal to matrix dimension.");
         }
@@ -325,7 +326,6 @@ public class CovarianceMatrix implements ICovarianceMatrix {
     }
 
     //============================PUBLIC METHODS=========================//
-
     /**
      * @return the list of variables (unmodifiable).
      */
@@ -408,8 +408,8 @@ public class CovarianceMatrix implements ICovarianceMatrix {
     }
 
     /**
-     * @return a submatrix of the covariance matrix with variables in the
-     * given order.
+     * @return a submatrix of the covariance matrix with variables in the given
+     * order.
      */
     public final ICovarianceMatrix getSubmatrix(int[] indices) {
         List<Node> submatrixVars = new LinkedList<>();
@@ -433,8 +433,7 @@ public class CovarianceMatrix implements ICovarianceMatrix {
     }
 
     /**
-     * @return a submatrix of this matrix, with variables in the given
-     * order.
+     * @return a submatrix of this matrix, with variables in the given order.
      */
     public final CovarianceMatrix getSubmatrix(String[] submatrixVarNames) {
         List<Node> submatrixVars = new LinkedList<>();
@@ -445,9 +444,9 @@ public class CovarianceMatrix implements ICovarianceMatrix {
 
         if (!getVariables().containsAll(submatrixVars)) {
             throw new IllegalArgumentException(
-                    "The variables in the submatrix " +
-                            "must be in the original matrix: original==" +
-                            getVariables() + ", sub==" + submatrixVars);
+                    "The variables in the submatrix "
+                    + "must be in the original matrix: original=="
+                    + getVariables() + ", sub==" + submatrixVars);
         }
 
         for (int i = 0; i < submatrixVars.size(); i++) {
@@ -536,23 +535,24 @@ public class CovarianceMatrix implements ICovarianceMatrix {
 
         StringBuilder buf = new StringBuilder();
 
+        // Build the variable names
+        buf.append(getVariableNames().stream().collect(Collectors.joining("\t")));
+
         int numVars = getVariableNames().size();
-        buf.append(getSampleSize()).append("\n");
-
-        for (int i = 0; i < numVars; i++) {
-            String name = getVariableNames().get(i);
-            buf.append(name).append("\t");
-        }
-
         buf.append("\n");
 
         for (int j = 0; j < numVars; j++) {
             for (int i = 0; i <= j; i++) {
-                buf.append(nf.format(getValue(i, j))).append("\t");
+                buf.append(nf.format(getValue(i, j)));
+
+                // Don't add ending tab to each data line, data reader will validate this extra tab as missing value
+                // This is the fix to issue #525: https://github.com/cmu-phil/tetrad/issues/525
+                if (i < j) {
+                    buf.append("\t");
+                }
             }
             buf.append("\n");
         }
-
 
 //        buf.append("\nCovariance matrix:");
 //        buf.append("\n\tVariables = ").append(getVariable());
@@ -563,7 +563,6 @@ public class CovarianceMatrix implements ICovarianceMatrix {
 //        if (getKnowledge() != null && !getKnowledge().isEmpty()) {
 //            buf.append(getKnowledge());
 //        }
-
         return buf.toString();
     }
 
@@ -583,11 +582,13 @@ public class CovarianceMatrix implements ICovarianceMatrix {
     }
 
     public void setVariables(List<Node> variables) {
-        if (variables.size() != this.variables.size()) throw new IllegalArgumentException("Wrong # of variables.");
+        if (variables.size() != this.variables.size()) {
+            throw new IllegalArgumentException("Wrong # of variables.");
+        }
         for (int i = 0; i < variables.size(); i++) {
             if (!variables.get(i).getName().equals(variables.get(i).getName())) {
-                throw new IllegalArgumentException("Variable in index " + (i + 1) + " does not have the same name " +
-                        "as the variable being substituted for it.");
+                throw new IllegalArgumentException("Variable in index " + (i + 1) + " does not have the same name "
+                        + "as the variable being substituted for it.");
             }
             this.variables = variables;
         }
@@ -599,7 +600,6 @@ public class CovarianceMatrix implements ICovarianceMatrix {
     }
 
     //========================PRIVATE METHODS============================//
-
     public Node getVariable(String name) {
         for (int i = 0; i < getVariables().size(); i++) {
             Node variable = getVariables().get(i);
@@ -687,7 +687,6 @@ public class CovarianceMatrix implements ICovarianceMatrix {
 //            matrix = new TetradMatrix(matrixC.toArray());
 //            matrixC = null;
 //        }
-
         if (knowledge == null) {
             throw new NullPointerException();
         }
@@ -701,8 +700,3 @@ public class CovarianceMatrix implements ICovarianceMatrix {
         }
     }
 }
-
-
-
-
-
