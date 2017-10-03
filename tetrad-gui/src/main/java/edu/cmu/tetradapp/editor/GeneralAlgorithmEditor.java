@@ -1005,7 +1005,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
                 algorithm = new CcdMax(independenceWrapper);
                 break;
             case FASK:
-                algorithm = new Fask();
+                algorithm = new FaskConcatenated();
                 break;
             case FAS:
                 algorithm = new FAS(independenceWrapper);

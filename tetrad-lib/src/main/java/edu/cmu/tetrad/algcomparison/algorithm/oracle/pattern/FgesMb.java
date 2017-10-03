@@ -41,7 +41,7 @@ public class FgesMb implements Algorithm, TakesInitialGraph, HasKnowledge {
         Graph initial = null;
 
         if (initialGraph != null) {
-            initial = initialGraph.search(dataSet, parameters);
+//            initial = initialGraph.search(dataSet, parameters);
         }
 
 //        Score score = this.score.getScore(DataUtils.getContinuousDataSet(dataSet), parameters);

@@ -53,9 +53,9 @@ public class TestSimulatedFmri {
 
     private void task(boolean testing) {
         Parameters parameters = new Parameters();
-        parameters.set("penaltyDiscount", 8);
+        parameters.set("penaltyDiscount", 6);
         parameters.set("depth", -1);
-        parameters.set("twoCycleAlpha", 1e-20);
+        parameters.set("twoCycleAlpha", 1E-8);
 
         parameters.set("numRuns", 10);
         parameters.set("randomSelectionSize", 10);

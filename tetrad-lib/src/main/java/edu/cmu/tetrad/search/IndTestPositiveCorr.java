@@ -149,6 +149,8 @@ public final class IndTestPositiveCorr implements IndependenceTest {
      */
     public boolean isIndependent(Node x0, Node y0, List<Node> z0) {
 
+        System.out.println(SearchLogUtils.independenceFact(x0, y0, z0));
+
 
         double[] x = data[dataSet.getColumn(x0)];
         double[] y = data[dataSet.getColumn(y0)];
@@ -169,9 +171,9 @@ public final class IndTestPositiveCorr implements IndependenceTest {
         int nc1 = StatUtils.getRows(x, x, 0, +1).size();
         int nc2 = StatUtils.getRows(y, y, 0, +1).size();
 
-        double z = 0.5 * sqrt(nc - 3) * (log(1.0 + pc) - log(1.0 - pc));
-        double z1 = 0.5 * sqrt(nc1 - 3) * (log(1.0 + pc1) - log(1.0 - pc1));
-        double z2 = 0.5 * sqrt(nc2 - 3) * (log(1.0 + pc2) - log(1.0 - pc2));
+        double z = 0.5 * (log(1.0 + pc) - log(1.0 - pc));
+        double z1 = 0.5 *  (log(1.0 + pc1) - log(1.0 - pc1));
+        double z2 = 0.5 * (log(1.0 + pc2) - log(1.0 - pc2));
 
         double zv1 = (z - z1) / sqrt((1.0 / ((double) nc - 3) + 1.0 / ((double) nc1 - 3)));
         double zv2 = (z - z2) / sqrt((1.0 / ((double) nc - 3) + 1.0 / ((double) nc2 - 3)));
@@ -182,39 +184,21 @@ public final class IndTestPositiveCorr implements IndependenceTest {
         boolean rejected1 = p1 < alpha;
         boolean rejected2 = p2 < alpha;
 
-        boolean possibleTwoCycle = false;
         boolean possibleEdge = false;
 
         if (zv1 < 0 && zv2 > 0 && rejected1) {
-            possibleTwoCycle = true;
+            possibleEdge = true;
         } else if (zv1 > 0 && zv2 < 0 && rejected2) {
-            possibleTwoCycle = true;
+            possibleEdge = true;
         } else if (rejected1 && rejected2) {
-            possibleTwoCycle = true;
-        } else if (rejected1 || rejected2){
+            possibleEdge = true;
+        } else if (rejected1 || rejected2) {
             possibleEdge = true;
         }
 
-        return possibleEdge;
-    }
+        System.out.println(possibleEdge);
 
-    private double partialCorrelation(Node x, Node y, List<Node> z) throws SingularMatrixException {
-        if (z.isEmpty()) {
-            double a = covMatrix.getValue(indexMap.get(x), indexMap.get(y));
-            double b = covMatrix.getValue(indexMap.get(x), indexMap.get(x));
-            double c = covMatrix.getValue(indexMap.get(y), indexMap.get(y));
-
-            if (b * c == 0) throw new SingularMatrixException();
-
-            return -a / Math.sqrt(b * c);
-        } else {
-            int[] indices = new int[z.size() + 2];
-            indices[0] = indexMap.get(x);
-            indices[1] = indexMap.get(y);
-            for (int i = 0; i < z.size(); i++) indices[i + 2] = indexMap.get(z.get(i));
-            TetradMatrix submatrix = covMatrix.getSubmatrix(indices).getMatrix();
-            return StatUtils.partialCorrelation(submatrix);
-        }
+        return !possibleEdge;
     }
 
     public boolean isIndependent(Node x, Node y, Node... z) {

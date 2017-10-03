@@ -48,7 +48,7 @@ public class Fges implements Algorithm, TakesInitialGraph, HasKnowledge {
         Graph initial = null;
 
         if (initialGraph != null) {
-            initial = initialGraph.search(dataSet, parameters);
+//            initial = initialGraph.search(dataSet, parameters);
         }
 
         edu.cmu.tetrad.search.Fges search

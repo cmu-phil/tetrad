@@ -43,6 +43,7 @@ import edu.cmu.tetrad.sem.LargeScaleSimulation;
 import edu.cmu.tetrad.sem.SemPm;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.RandomUtil;
+import edu.cmu.tetrad.util.StatUtils;
 import org.junit.Test;
 
 import java.text.DecimalFormat;
@@ -149,9 +150,85 @@ public class TestFaskSimpleSimulaton {
         return exy / n - (ex / n) * (ey / n);
     }
 
+    public void test2() {
+
+        int xtoy = 0;
+        int ytox = 0;
+
+        int sampleSize = 1000;
+
+        double[] zzdiff = new double[sampleSize];
+        double[] xxdiff = new double[sampleSize];
+        double[] ratiodiff = new double[sampleSize];
+
+        for (int i = 0; i < 1000; i++) {
+
+            // Pick coefficients.
+            double a = .2 + RandomUtil.getInstance().nextDouble() * 0.6;
+            double b = .2 + RandomUtil.getInstance().nextDouble() * 0.6;
+            double c = .2 + RandomUtil.getInstance().nextDouble() * 0.6;
+
+            double[] z = new double[sampleSize];
+            double[] y = new double[sampleSize];
+            double[] x = new double[sampleSize];
+
+            // Generate data for x, y, z, x -> y, x < -z -> y
+            for (int j = 0; j < sampleSize; j++) {
+                z[j] = rand();
+                x[j] = c * z[j] + rand();
+                y[j] = a * x[j] + b * z[j] + rand();
+            }
+
+            // Center variables.
+            x = DataUtils.center(x);
+            y = DataUtils.center(y);
+            z = DataUtils.center(z);
+
+            // Swap x and y so y->x instead.
+//            double[] w = x;
+//            x = y;
+//            y = w;
+
+            if (leftright(x, y))
+                xtoy = xtoy + 1;
+
+            if (leftright(y, x))
+                ytox = ytox + 1;
+
+            zzdiff[i] = cu(z, z, x) - cu(z, z, y);
+            xxdiff[i] = cu(x, x, x) - cu(x, x, y);
+
+            ratiodiff[i] = (cu(z, z, x) / cu(x, x, x)) - (cu(z, z, y) / cu(x, x, y));
+
+        }
+
+        System.out.println("xtoy = " + xtoy);
+        System.out.println("ytox = " + ytox);
+
+        System.out.println("mean zzdiff = " + StatUtils.mean(zzdiff));
+        System.out.println("mean xxdiff = " + StatUtils.mean(xxdiff));
+        System.out.println("mean ratiodiff = " + StatUtils.mean(ratiodiff));
+
+    }
+
+    public static double cu(double[] x, double[] y, double[] condition) {
+        double exy = 0.0;
+
+        int n = 0;
+
+        for (int k = 0; k < x.length; k++) {
+            if (condition[k] > 0) {
+                exy += x[k] * y[k];
+                n++;
+            }
+        }
+
+        return exy / n;
+    }
+
 
     public static void main(String... args) {
-        new TestFaskSimpleSimulaton().simulation();
+        new TestFaskSimpleSimulaton().test2();
     }
 }
 

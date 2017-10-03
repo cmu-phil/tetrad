@@ -232,7 +232,7 @@ public final class Fask implements GraphSearch {
         int n = 0;
 
         for (int k = 0; k < x.length; k++) {
-            if (condition[k] > -1.5) {
+            if (condition[k] > 0) {
                 exy += x[k] * y[k];
                 n++;
             }
