@@ -21,6 +21,7 @@
 package edu.cmu.tetrad.graph;
 
 import edu.cmu.tetrad.data.DataSet;
+import edu.cmu.tetrad.graph.EdgeTypeProbability.EdgeType;
 import edu.cmu.tetrad.util.ChoiceGenerator;
 import edu.cmu.tetrad.util.ForkJoinPoolInstance;
 import edu.cmu.tetrad.util.JsonUtils;
@@ -2520,14 +2521,17 @@ public final class GraphUtils {
             if (line.equals("")) {
                 break;
             }
-//                System.out.println(line);
+                
+            System.out.println(line);
 
-            String[] tokens = line.split(" ");
+            String[] tokens = line.split("\\s+");
 
             String from = tokens[1];
             String edge = tokens[2];
             String to = tokens[3];
 
+            line = line.substring(line.indexOf(to) + to.length()).trim();
+            
             Node _from = graph.getNode(from);
             Node _to = graph.getNode(to);
 
@@ -2558,9 +2562,38 @@ public final class GraphUtils {
 
             Edge _edge = new Edge(_from, _to, _end1, _end2);
 
-            for (int i = 4; i < tokens.length; i++) {
-                _edge.addProperty(Edge.Property.valueOf(tokens[i]));
+            //Bootstrapping
+            if(line.indexOf("[no edge]") > -1){
+            	
+            	String bootstrap_format = "[no edge]:0.0000[-->]:0.0000[<--]:0.0000[o->]:0.0000[<-o]:0.0000[o-o]:0.0000[<->]:0.0000[---]:0.0000";
+            	String bootstraps = line.substring(0, bootstrap_format.length());
+            	line = line.substring(bootstrap_format.length()).trim();
+            	double nil = Double.parseDouble(bootstraps.substring(10, 16));
+            	double ta = Double.parseDouble(bootstraps.substring(22, 28));
+            	double at = Double.parseDouble(bootstraps.substring(34, 40));
+            	double ca = Double.parseDouble(bootstraps.substring(46, 52));
+            	double ac = Double.parseDouble(bootstraps.substring(58, 64));
+            	double cc = Double.parseDouble(bootstraps.substring(70, 76));
+            	double aa = Double.parseDouble(bootstraps.substring(82, 88));
+            	double tt = Double.parseDouble(bootstraps.substring(94, 100));
+            	
+            	_edge.addEdgeTypeProbability(new EdgeTypeProbability(EdgeType.nil, nil));
+            	_edge.addEdgeTypeProbability(new EdgeTypeProbability(EdgeType.ta, ta));
+            	_edge.addEdgeTypeProbability(new EdgeTypeProbability(EdgeType.at, at));
+            	_edge.addEdgeTypeProbability(new EdgeTypeProbability(EdgeType.ca, ca));
+            	_edge.addEdgeTypeProbability(new EdgeTypeProbability(EdgeType.ac, ac));
+            	_edge.addEdgeTypeProbability(new EdgeTypeProbability(EdgeType.cc, cc));
+            	_edge.addEdgeTypeProbability(new EdgeTypeProbability(EdgeType.aa, aa));
+            	_edge.addEdgeTypeProbability(new EdgeTypeProbability(EdgeType.tt, tt));
             }
+            
+            if(line.length() > 0){
+                tokens = line.split("\\s+");
+                
+                for (int i = 0; i < tokens.length; i++) {
+                    _edge.addProperty(Edge.Property.valueOf(tokens[i]));
+                }
+            }            
 
             graph.addEdge(_edge);
         }
