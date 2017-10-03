@@ -87,11 +87,11 @@ public class OldFask2Concatenated implements MultiDataSetAlgorithm, HasKnowledge
     @Override
     public Graph search(DataModel dataSet, Parameters parameters) {
     	if (!parameters.getBoolean("bootstrapping")) {
-            return search(Collections.singletonList((DataModel) DataUtils.getContinuousDataSet(dataSet)), parameters);
+        	return search(Collections.singletonList((DataModel) DataUtils.getContinuousDataSet(dataSet)), parameters);
     	}else{
     		OldFask2Concatenated algorithm = new OldFask2Concatenated(empirical);
 			algorithm.setKnowledge(knowledge);
-
+			
 			List<DataSet> dataSets = Collections.singletonList(DataUtils.getContinuousDataSet(dataSet));
 			GeneralBootstrapTest search = new GeneralBootstrapTest(dataSets, algorithm,
 					parameters.getInt("bootstrapSampleSize"));
@@ -142,7 +142,7 @@ public class OldFask2Concatenated implements MultiDataSetAlgorithm, HasKnowledge
  		parameters.add("bootstrapSampleSize");
  		parameters.add("bootstrapEnsemble");
  		parameters.add("verbose");
-
+     		
         return parameters;
     }
 

@@ -64,7 +64,7 @@ public class FaskConcatenated implements MultiDataSetAlgorithm, HasKnowledge {
             search.setKnowledge(knowledge);
             return search.search();
     	}else{
-    		FaskConcatenated algorithm = new FaskConcatenated(empirical);
+			FaskConcatenated algorithm = new FaskConcatenated(empirical);
 			algorithm.setKnowledge(knowledge);
 
 			List<DataSet> datasets = new ArrayList<>();
@@ -148,11 +148,11 @@ public class FaskConcatenated implements MultiDataSetAlgorithm, HasKnowledge {
         parameters.add("randomSelectionSize");
         parameters.add("conditionalDistributionsStandardized");
         // Bootstrapping
- 		parameters.add("bootstrapping");
- 		parameters.add("bootstrapSampleSize");
- 		parameters.add("bootstrapEnsemble");
- 		parameters.add("verbose");
-     		
+        parameters.add("bootstrapping");
+        parameters.add("bootstrapSampleSize");
+        parameters.add("bootstrapEnsemble");
+        parameters.add("verbose");
+        
         return parameters;
     }
 

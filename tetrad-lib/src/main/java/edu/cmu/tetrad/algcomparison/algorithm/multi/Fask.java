@@ -39,14 +39,14 @@ public class Fask implements Algorithm, HasKnowledge {
 
     @Override
     public Graph search(DataModel dataSet, Parameters parameters) {
-    	if(!parameters.getBoolean("bootstrapping")){
-            edu.cmu.tetrad.search.Fask search = new edu.cmu.tetrad.search.Fask((DataSet) dataSet);
-            search.setDepth(parameters.getInt("depth"));
-            search.setPenaltyDiscount(parameters.getDouble("penaltyDiscount"));
-            search.setAlpha(parameters.getDouble("twoCycleAlpha"));
-            search.setKnowledge(knowledge);
-            return getGraph(search);
-    	}else{
+		if(!parameters.getBoolean("bootstrapping")){
+	        edu.cmu.tetrad.search.Fask search = new edu.cmu.tetrad.search.Fask((DataSet) dataSet);
+	        search.setDepth(parameters.getInt("depth"));
+	        search.setPenaltyDiscount(parameters.getDouble("penaltyDiscount"));
+	        search.setAlpha(parameters.getDouble("twoCycleAlpha"));
+	        search.setKnowledge(knowledge);
+	        return getGraph(search);
+		}else{
     		Fask fask = new Fask(empirical);
     		fask.setKnowledge(knowledge);
     		

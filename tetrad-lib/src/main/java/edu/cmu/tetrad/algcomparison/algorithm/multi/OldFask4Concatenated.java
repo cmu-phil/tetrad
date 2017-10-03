@@ -138,10 +138,10 @@ public class OldFask4Concatenated implements MultiDataSetAlgorithm, HasKnowledge
         parameters.add("numRuns");
         parameters.add("randomSelectionSize");
         // Bootstrapping
- 		parameters.add("bootstrapping");
- 		parameters.add("bootstrapSampleSize");
- 		parameters.add("bootstrapEnsemble");
- 		parameters.add("verbose");
+     	parameters.add("bootstrapping");
+     	parameters.add("bootstrapSampleSize");
+     	parameters.add("bootstrapEnsemble");
+     	parameters.add("verbose");
      		
         return parameters;
     }
