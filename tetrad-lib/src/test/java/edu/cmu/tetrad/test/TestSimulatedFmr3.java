@@ -239,9 +239,7 @@ public class TestSimulatedFmr3 {
 
             Algorithms algorithms = new Algorithms();
 
-            algorithms.add(new FangConcatenated());
-            algorithms.add(new OldFask2Concatenated());
-            algorithms.add(new OldFask3Concatenated());
+            algorithms.add(new FaskConcatenated());
 
             Comparison comparison = new Comparison();
 

@@ -21,39 +21,10 @@
 
 package edu.cmu.tetrad.test;
 
-import edu.cmu.tetrad.algcomparison.Comparison;
-import edu.cmu.tetrad.algcomparison.algorithm.Algorithms;
-import edu.cmu.tetrad.algcomparison.algorithm.multi.Fang;
-import edu.cmu.tetrad.algcomparison.algorithm.multi.FasLofs;
-import edu.cmu.tetrad.algcomparison.algorithm.multi.Fask;
-import edu.cmu.tetrad.algcomparison.simulation.LoadContinuousDataAndSingleGraph;
-import edu.cmu.tetrad.algcomparison.simulation.Simulations;
-import edu.cmu.tetrad.algcomparison.statistic.*;
-import edu.cmu.tetrad.data.ContinuousVariable;
-import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataUtils;
-import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.graph.SemGraph;
-import edu.cmu.tetrad.regression.RegressionDataset;
-import edu.cmu.tetrad.regression.RegressionResult;
-import edu.cmu.tetrad.search.Lofs2;
-import edu.cmu.tetrad.sem.GeneralizedSemIm;
-import edu.cmu.tetrad.sem.GeneralizedSemPm;
-import edu.cmu.tetrad.sem.LargeScaleSimulation;
-import edu.cmu.tetrad.sem.SemPm;
-import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.RandomUtil;
 import edu.cmu.tetrad.util.StatUtils;
-import org.junit.Test;
 
-import java.text.DecimalFormat;
-import java.text.NumberFormat;
-import java.text.ParseException;
-import java.util.ArrayList;
-import java.util.List;
-
-import static edu.cmu.tetrad.util.StatUtils.*;
-import static java.lang.Math.*;
 import static java.lang.Math.max;
 
 /**

@@ -32,7 +32,7 @@ import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.Fang;
-import edu.cmu.tetrad.search.OldFask2;
+import edu.cmu.tetrad.search.Fask;
 import edu.cmu.tetrad.sem.GeneralizedSemIm;
 import edu.cmu.tetrad.sem.GeneralizedSemPm;
 import edu.cmu.tetrad.util.Parameters;
@@ -320,10 +320,9 @@ public class TestSimulatedFmri {
                 GeneralizedSemIm im = new GeneralizedSemIm(pm);
                 DataSet data = im.simulateData(N, false);
 
-                OldFask2 fang = new OldFask2(data);
+                Fask fang = new Fask(data);
                 fang.setPenaltyDiscount(penaltyDiscount);
                 fang.setAlpha(alpha);
-                fang.setThresholdForReversing(-.3);
                 Graph out = fang.search();
 
                 System.out.println(out);
@@ -361,10 +360,9 @@ public class TestSimulatedFmri {
                 GeneralizedSemIm im = new GeneralizedSemIm(pm);
                 DataSet data = im.simulateData(N, false);
 
-                OldFask2 fang = new OldFask2(data);
+                Fask fang = new Fask(data);
                 fang.setPenaltyDiscount(penaltyDiscount);
                 fang.setAlpha(alpha);
-                fang.setThresholdForReversing(0.0);
                 Graph out = fang.search();
 
                 System.out.println(out);

@@ -1,12 +1,13 @@
 package edu.cmu.tetrad.test;
 
-import edu.cmu.tetrad.algcomparison.algorithm.multi.Fang;
+import edu.cmu.tetrad.algcomparison.algorithm.multi.Fask;
 import edu.cmu.tetrad.data.DataReader;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DelimiterType;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.search.Fas;
 import edu.cmu.tetrad.util.Parameters;
 
 import java.io.File;
@@ -113,7 +114,7 @@ public class FangGraphs {
                         DataSet dataSet = reader.parseTabular(new File(path, name));
                         filenames.add(name);
                         datasets.add(dataSet);
-                        Fang fang = new Fang();
+                        Fask fang = new Fask();
                         Graph search = fang.search(dataSet, parameters);
                         graphs.add(search);
                     } else if (name.contains("typical")) {
@@ -121,7 +122,7 @@ public class FangGraphs {
                         DataSet dataSet = reader.parseTabular(new File(path, name));
                         filenames.add(name);
                         datasets.add(dataSet);
-                        Fang fang = new Fang();
+                        Fask fang = new Fask();
                         Graph search = fang.search(dataSet, parameters);
                         graphs.add(search);
                     }
