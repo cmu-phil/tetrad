@@ -152,7 +152,7 @@ public class SemBicScore implements Score {
         try {
             r = partialCorrelation(_x, _y, _z);
         } catch (SingularMatrixException e) {
-            System.out.println(SearchLogUtils.determinismDetected(_z, _x));
+//            System.out.println(SearchLogUtils.determinismDetected(_z, _x));
             return Double.NaN;
         }
 

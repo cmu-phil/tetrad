@@ -143,22 +143,22 @@ public final class SearchGraphUtils {
                 }
 
                 if (test.determines(sepset, x)) {
-                    System.out.println(SearchLogUtils.determinismDetected(sepset, x));
+//                    System.out.println(SearchLogUtils.determinismDetected(sepset, x));
                     continue;
                 }
 
                 if (test.determines(sepset, z)) {
-                    System.out.println(SearchLogUtils.determinismDetected(sepset, z));
+//                    System.out.println(SearchLogUtils.determinismDetected(sepset, z));
                     continue;
                 }
 
                 if (test.determines(augmentedSet, x)) {
-                    System.out.println(SearchLogUtils.determinismDetected(augmentedSet, x));
+//                    System.out.println(SearchLogUtils.determinismDetected(augmentedSet, x));
                     continue;
                 }
 
                 if (test.determines(augmentedSet, z)) {
-                    System.out.println(SearchLogUtils.determinismDetected(augmentedSet, z));
+//                    System.out.println(SearchLogUtils.determinismDetected(augmentedSet, z));
                     continue;
                 }
 

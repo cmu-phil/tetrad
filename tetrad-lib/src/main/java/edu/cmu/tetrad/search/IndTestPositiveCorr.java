@@ -293,7 +293,7 @@ public final class IndTestPositiveCorr implements IndependenceTest {
 //                inverse =
                 Czz.inverse();
             } catch (SingularMatrixException e) {
-                System.out.println(SearchLogUtils.determinismDetected(z, x));
+//                System.out.println(SearchLogUtils.determinismDetected(z, x));
 
                 return true;
             }
