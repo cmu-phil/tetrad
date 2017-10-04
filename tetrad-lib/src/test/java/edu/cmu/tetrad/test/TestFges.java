@@ -591,15 +591,14 @@ public class TestFges {
                 "ABILITY,GPQ,PREPROD,QFJ,SEX,CITES,PUBS\n" +
                 "\n" +
                 "Graph Edges: \n" +
-                "1. ABILITY --> GPQ\n" +
-                "2. ABILITY --> PREPROD\n" +
-                "3. ABILITY --> PUBS\n" +
-                "3. GPQ --> QFJ\n" +
-                "4. PREPROD --> CITES\n" +
-                "5. PUBS --> CITES\n" +
-                "7. QFJ --> CITES\n" +
-                "6. QFJ --> PUBS\n" +
-                "7. SEX --> PUBS";
+                "1. ABILITY --> GPQ \n" +
+                "2. ABILITY --> PREPROD \n" +
+                "3. GPQ --> QFJ \n" +
+                "4. PUBS --> CITES \n" +
+                "5. QFJ --> PUBS \n" +
+                "6. SEX --> PUBS";
+
+
 
         Graph trueGraph = null;
 
