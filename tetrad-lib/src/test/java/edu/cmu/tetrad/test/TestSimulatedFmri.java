@@ -31,7 +31,6 @@ import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.search.Fang;
 import edu.cmu.tetrad.search.Fask;
 import edu.cmu.tetrad.sem.GeneralizedSemIm;
 import edu.cmu.tetrad.sem.GeneralizedSemPm;
@@ -47,8 +46,8 @@ import java.text.ParseException;
  */
 public class TestSimulatedFmri {
 
-    public void TestCycles_Data_fMRI_FANG() {
-        task(false);
+    public void TestCycles_Data_fMRI_FASK() {
+        task(true);
     }
 
     private void task(boolean testing) {
@@ -246,9 +245,6 @@ public class TestSimulatedFmri {
 
         Algorithms algorithms = new Algorithms();
 
-//        algorithms.add(new Fges(new SemBicScore()));
-//        algorithms.add(new PcStableMax(new SemBicTest(), true));
-//        algorithms.add(new Fang());
 //        algorithms.add(new FasLofs(Lofs2.Rule.R1));
 //        algorithms.add(new FasLofs(Lofs2.Rule.R2));
 //        algorithms.add(new FasLofs(Lofs2.Rule.R3));
@@ -320,10 +316,10 @@ public class TestSimulatedFmri {
                 GeneralizedSemIm im = new GeneralizedSemIm(pm);
                 DataSet data = im.simulateData(N, false);
 
-                Fask fang = new Fask(data);
-                fang.setPenaltyDiscount(penaltyDiscount);
-                fang.setAlpha(alpha);
-                Graph out = fang.search();
+                Fask fask = new Fask(data);
+                fask.setPenaltyDiscount(penaltyDiscount);
+                fask.setAlpha(alpha);
+                Graph out = fask.search();
 
                 System.out.println(out);
             }
@@ -360,10 +356,10 @@ public class TestSimulatedFmri {
                 GeneralizedSemIm im = new GeneralizedSemIm(pm);
                 DataSet data = im.simulateData(N, false);
 
-                Fask fang = new Fask(data);
-                fang.setPenaltyDiscount(penaltyDiscount);
-                fang.setAlpha(alpha);
-                Graph out = fang.search();
+                Fask fask = new Fask(data);
+                fask.setPenaltyDiscount(penaltyDiscount);
+                fask.setAlpha(alpha);
+                Graph out = fask.search();
 
                 System.out.println(out);
 
@@ -406,16 +402,16 @@ public class TestSimulatedFmri {
         GeneralizedSemIm im = new GeneralizedSemIm(pm);
         DataSet data = im.simulateData(1000, false);
 
-        Fang fang = new Fang(data);
-        fang.setPenaltyDiscount(1);
-        fang.setAlpha(0.5);
-        Graph out = fang.search();
+        Fask fask = new Fask(data);
+        fask.setPenaltyDiscount(1);
+        fask.setAlpha(0.5);
+        Graph out = fask.search();
 
         System.out.println(out);
     }
 
     public static void main(String... args) {
-        new TestSimulatedFmri().TestCycles_Data_fMRI_FANG();
+        new TestSimulatedFmri().TestCycles_Data_fMRI_FASK();
     }
 }
 

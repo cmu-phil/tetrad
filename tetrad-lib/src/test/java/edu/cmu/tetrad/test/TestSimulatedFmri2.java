@@ -35,7 +35,7 @@ import edu.cmu.tetrad.util.Parameters;
  */
 public class TestSimulatedFmri2 {
 
-    public void TestCycles_Data_fMRI_FANG() {
+    public void TestCycles_Data_fMRI_FASK() {
         Parameters parameters = new Parameters();
 
         parameters.set("penaltyDiscount", 10);
@@ -131,7 +131,7 @@ public class TestSimulatedFmri2 {
 
 //        algorithms.add(new Fges(new edu.cmu.tetrad.algcomparison.score.SemBicScore(), true));
 //        algorithms.add(new PcStableMax(new SemBicTest(), true));
-//        algorithms.add(new Fang());
+//        algorithms.add(new Fask());
 //        algorithms.add(new OldFask2());
 //        algorithms.add(new OldFask3());
 //        algorithms.add(new FasLofs(Lofs2.Rule.R1));

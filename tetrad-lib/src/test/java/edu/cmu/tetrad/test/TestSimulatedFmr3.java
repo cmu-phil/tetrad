@@ -35,7 +35,7 @@ import edu.cmu.tetrad.util.Parameters;
  */
 public class TestSimulatedFmr3 {
 
-    public void TestCycles_Data_fMRI_FANG() {
+    public void TestCycles_Data_fMRI_FASK() {
         Parameters parameters = new Parameters();
 
         parameters.set("penaltyDiscount", 4);
@@ -129,30 +129,7 @@ public class TestSimulatedFmr3 {
 
         Algorithms algorithms = new Algorithms();
 
-//        algorithms.add(new Fges(new edu.cmu.tetrad.algcomparison.score.SemBicScore(), true));
-//        algorithms.add(new PcStableMax(new SemBicTest(), true));
         algorithms.add(new Fask());
-//        algorithms.add(new OldFask2());
-//        algorithms.add(new OldFask3());
-//        algorithms.add(new FasLofs(Lofs2.Rule.R1));
-//        algorithms.add(new FasLofs(Lofs2.Rule.R2));
-//        algorithms.add(new FasLofs(Lofs2.Rule.R3));
-//        algorithms.add(new FasLofs(Lofs2.Rule.Patel));
-//        algorithms.add(new FasLofs(Lofs2.Rule.Skew));
-//        algorithms.add(new FasLofs(Lofs2.Rule.RSkew));
-//
-//        algorithms.add(new FgesConcatenated(new edu.cmu.tetrad.algcomparison.score.SemBicScore(), true));
-//        algorithms.add(new PcStableMaxConcatenated(new SemBicTest(), true));
-//        algorithms.add(new FangConcatenated());
-//        algorithms.add(new OldFask2Concatenated());
-//        algorithms.add(new OldFask3Concatenated());
-//        algorithms.add(new Fask());
-//        algorithms.add(new FasLofsConcatenated(Lofs2.Rule.R1));
-//        algorithms.add(new FasLofsConcatenated(Lofs2.Rule.R2));
-//        algorithms.add(new FasLofsConcatenated(Lofs2.Rule.R3));
-//        algorithms.add(new FasLofsConcatenated(Lofs2.Rule.Patel));
-//        algorithms.add(new FasLofsConcatenated(Lofs2.Rule.Skew));
-//        algorithms.add(new FasLofsConcatenated(Lofs2.Rule.RSkew));
 
         Comparison comparison = new Comparison();
 
@@ -257,7 +234,7 @@ public class TestSimulatedFmr3 {
     }
 
     public static void main(String... args) {
-        new TestSimulatedFmr3().TestCycles_Data_fMRI_FANG();
+        new TestSimulatedFmr3().TestCycles_Data_fMRI_FASK();
     }
 }
 
