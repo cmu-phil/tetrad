@@ -107,7 +107,6 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
     private String jsonResult;
     private final List<AnnotatedClassWrapper<edu.cmu.tetrad.annotation.Algorithm>> algoWrappers;
     private final List<AnnotatedClassWrapper<edu.cmu.tetrad.annotation.Algorithm>> algorithmsAcceptKnowledge;
-    private final List<AnnotatedClassWrapper<edu.cmu.tetrad.annotation.Algorithm>> algorithmsHandleUnmeasuredConfounder;
     private List<AnnotatedClassWrapper<TestOfIndependence>> tests;
     private List<AnnotatedClassWrapper<Score>> scores;
     private List<AnnotatedClassWrapper<TestOfIndependence>> filteredIndTests;
@@ -118,8 +117,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
     private Boolean acceptKnowledgeFile = null;
     private Boolean handleUnmeasuredConfounders = null;
     private final ButtonGroup algoTypesBtnGrp = new ButtonGroup();
-    private final ButtonGroup priorKnowledgeBtnGrp = new ButtonGroup();
-    private final ButtonGroup unmeasuredConfoundersBtnGrp = new ButtonGroup();
+
     private AnnotatedClassWrapper<edu.cmu.tetrad.annotation.Algorithm> selectedAgloWrapper;
     private final JTextArea algoDescriptionTextArea = new JTextArea();
     private ParameterPanel parametersPanel;
@@ -130,8 +128,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
     private JButton step3Btn;
 
     private JRadioButton algoTypeAllRadioBtn;
-    private JRadioButton priorKnowledgeAllRadioBtn;
-    private JRadioButton unmeasuredConfoundersAllRadioBtn;
+    private JCheckBox priorKnowledgeCheckbox;
 
     // Assumption checkboxes
     private JCheckBox linearVariablesCheckbox;
@@ -179,10 +176,6 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         // Algos that accept knowledge file
         // Later use this to filter algos based on the knowledge siwtch
         algorithmsAcceptKnowledge = TetradAlgorithmAnnotations.getInstance().getAcceptKnowledgeNameWrappers();
-
-        // Algos that can handle unmeasured confounders
-        // Later use this to filter algos based on the unmeasured confounders siwtch
-        algorithmsHandleUnmeasuredConfounder = TetradAlgorithmAnnotations.getInstance().getUnmeasuredConfounderNameWrappers();
 
         // Use annotations to get the tests and scores based on different data types
         // Need to do this before calling createAlgoChooserPanel() - Zhou
@@ -407,7 +400,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         Box priorKnowledgeOptionBox = Box.createHorizontalBox();
         priorKnowledgeOptionBox.setAlignmentX(LEFT_ALIGNMENT);
 
-        JCheckBox priorKnowledgeCheckbox = new JCheckBox("can handle prior knowledge file");
+        priorKnowledgeCheckbox = new JCheckBox("can handle prior knowledge file");
 
         // Event listener
         priorKnowledgeCheckbox.addActionListener((ActionEvent actionEvent) -> {
@@ -430,98 +423,6 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         priorKnowledgeBox.add(priorKnowledgeLabelBox);
         priorKnowledgeBox.add(priorKnowledgeOptionBox);
 
-        // Can algorithms handle unmeasured confounders?
-        Box unmeasuredConfoundersBox = Box.createVerticalBox();
-
-        // Add label into this label box to size
-        Box unmeasuredConfoundersLabelBox = Box.createHorizontalBox();
-        unmeasuredConfoundersLabelBox.add(new JLabel("Filter algorithms that: "));
-        unmeasuredConfoundersLabelBox.setAlignmentX(LEFT_ALIGNMENT);
-
-        // Option all
-        Box unmeasuredConfoundersOptionAllBox = Box.createHorizontalBox();
-        unmeasuredConfoundersOptionAllBox.setAlignmentX(LEFT_ALIGNMENT);
-
-        unmeasuredConfoundersAllRadioBtn = new JRadioButton("Both");
-
-        // Event listener
-        unmeasuredConfoundersAllRadioBtn.addActionListener((ActionEvent actionEvent) -> {
-            JRadioButton button = (JRadioButton) actionEvent.getSource();
-
-            if (button.isSelected()) {
-                // Set the flag
-                handleUnmeasuredConfounders = null;
-
-                // Update the list
-                updateSuggestedAlgosList();
-            }
-        });
-
-        // Add padding and option
-        unmeasuredConfoundersOptionAllBox.add(Box.createRigidArea(new Dimension(10, 20)));
-        unmeasuredConfoundersOptionAllBox.add(unmeasuredConfoundersAllRadioBtn);
-
-        // Option 1
-        Box unmeasuredConfoundersOption1Box = Box.createHorizontalBox();
-        unmeasuredConfoundersOption1Box.setAlignmentX(LEFT_ALIGNMENT);
-
-        JRadioButton unmeasuredConfoundersYesRadioBtn = new JRadioButton("can handle unmeasured confounders");
-
-        // Event listener
-        unmeasuredConfoundersYesRadioBtn.addActionListener((ActionEvent actionEvent) -> {
-            JRadioButton button = (JRadioButton) actionEvent.getSource();
-
-            if (button.isSelected()) {
-                // Set the flag
-                handleUnmeasuredConfounders = true;
-
-                // Update the list
-                updateSuggestedAlgosList();
-            }
-        });
-
-        // Add padding and option
-        unmeasuredConfoundersOption1Box.add(Box.createRigidArea(new Dimension(10, 20)));
-        unmeasuredConfoundersOption1Box.add(unmeasuredConfoundersYesRadioBtn);
-
-        // Option 2
-        Box unmeasuredConfoundersOption2Box = Box.createHorizontalBox();
-        unmeasuredConfoundersOption2Box.setAlignmentX(LEFT_ALIGNMENT);
-
-        JRadioButton unmeasuredConfoundersNoRadioBtn = new JRadioButton("can't handle unmeasured confounders");
-
-        // Event listener
-        unmeasuredConfoundersNoRadioBtn.addActionListener((ActionEvent actionEvent) -> {
-            JRadioButton button = (JRadioButton) actionEvent.getSource();
-
-            if (button.isSelected()) {
-                // Set the flag
-                handleUnmeasuredConfounders = false;
-
-                // Update the list
-                updateSuggestedAlgosList();
-            }
-        });
-
-        // Add padding and option
-        unmeasuredConfoundersOption2Box.add(Box.createRigidArea(new Dimension(10, 20)));
-        unmeasuredConfoundersOption2Box.add(unmeasuredConfoundersNoRadioBtn);
-
-        // We need to group the radio buttons, otherwise all can be selected
-        unmeasuredConfoundersBtnGrp.add(unmeasuredConfoundersAllRadioBtn);
-        unmeasuredConfoundersBtnGrp.add(unmeasuredConfoundersYesRadioBtn);
-        unmeasuredConfoundersBtnGrp.add(unmeasuredConfoundersNoRadioBtn);
-
-        // Set All as the default selection
-        unmeasuredConfoundersAllRadioBtn.setSelected(true);
-
-        // Add to containing box
-        unmeasuredConfoundersBox.add(unmeasuredConfoundersLabelBox);
-        unmeasuredConfoundersBox.add(unmeasuredConfoundersOptionAllBox);
-        unmeasuredConfoundersBox.add(unmeasuredConfoundersOption1Box);
-        unmeasuredConfoundersBox.add(unmeasuredConfoundersOption2Box);
-        unmeasuredConfoundersBox.add(Box.createHorizontalGlue());
-
         // Reset filter selections
         JButton resetFilterSelectionsBtn = new JButton("Reset all filters");
 
@@ -534,8 +435,6 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         algoFiltersBox.add(algoTypesBox);
         algoFiltersBox.add(Box.createVerticalStrut(10));
         algoFiltersBox.add(priorKnowledgeBox);
-        algoFiltersBox.add(Box.createVerticalStrut(10));
-        algoFiltersBox.add(unmeasuredConfoundersBox);
         algoFiltersBox.add(Box.createVerticalStrut(20));
         algoFiltersBox.add(resetFilterSelectionsBtn);
 
@@ -950,14 +849,8 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         // Also need to reset the knowledge file flag
         acceptKnowledgeFile = null;
 
-        // Reset prior knowledge to All
-        priorKnowledgeBtnGrp.setSelected(priorKnowledgeAllRadioBtn.getModel(), true);
-
-        // Also need to reset the unmeasured confounders flag
-        handleUnmeasuredConfounders = null;
-
-        // Reset unmeasured confounders to All
-        unmeasuredConfoundersBtnGrp.setSelected(unmeasuredConfoundersAllRadioBtn.getModel(), true);
+        // Uncheck prior knowledge checkbox
+        priorKnowledgeCheckbox.setSelected(false);
 
         // Don't forget to update the list of algos
         setDefaultAlgosListModel();
@@ -970,17 +863,15 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         // Clear the list model
         suggestedAlgosListModel.removeAllElements();
 
-        // Algo type, knowledge file, unmeasured confounders
+        // Algo type, knowledge file
         List<AnnotatedClassWrapper<edu.cmu.tetrad.annotation.Algorithm>> filteredAlgosByType = new LinkedList<>();
         List<AnnotatedClassWrapper<edu.cmu.tetrad.annotation.Algorithm>> filteredAlgosByKnowledgeFile = new LinkedList<>();
-        List<AnnotatedClassWrapper<edu.cmu.tetrad.annotation.Algorithm>> filteredAlgosByUnmeasuredConfounder = new LinkedList<>();
 
         // Don't assign algoWrappers directly to the above three lists since algoWrappers is unmodifiableList
         // Iterate over algoWrappers so all the three lists contain all algos at the beginning
         algoWrappers.forEach(algoWrapper -> {
             filteredAlgosByType.add(algoWrapper);
             filteredAlgosByKnowledgeFile.add(algoWrapper);
-            filteredAlgosByUnmeasuredConfounder.add(algoWrapper);
         });
 
         // Remove algos that are not the selected type from filteredAlgosByType if a specific algo type is selected
@@ -1006,26 +897,12 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
             });
         }
 
-        if (handleUnmeasuredConfounders != null) {
-            algoWrappers.forEach(algoWrapper -> {
-                Class clazz = algoWrapper.getAnnotatedClass().getClazz();
-
-                // Remove algo is flag doesn't equal to the handleUnmeasuredConfounder(clazz)
-                if (handleUnmeasuredConfounders != TetradAlgorithmAnnotations.getInstance().handleUnmeasuredConfounder(clazz)) {
-                    filteredAlgosByUnmeasuredConfounder.remove(algoWrapper);
-                }
-            });
-        }
-
         // Now get intersections of all three lists
         // filteredAlgosByType now contains only the elements which are also contained in filteredAlgosByKnowledgeFile
         filteredAlgosByType.retainAll(filteredAlgosByKnowledgeFile);
 
-        // filteredAlgosByUnmeasuredConfounder now contains only the elements which are also contained in filteredAlgosByType
-        filteredAlgosByUnmeasuredConfounder.retainAll(filteredAlgosByType);
-
         // Add the filtered elements to suggestedAlgosListModel
-        filteredAlgosByUnmeasuredConfounder.forEach(algoWrapper -> {
+        filteredAlgosByType.forEach(algoWrapper -> {
             suggestedAlgosListModel.addElement(algoWrapper);
         });
 
