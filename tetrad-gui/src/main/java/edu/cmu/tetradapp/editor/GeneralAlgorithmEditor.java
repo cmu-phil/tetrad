@@ -1110,10 +1110,12 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
     private void doSearch(final GeneralAlgorithmRunner runner) {
         HpcAccount hpcAccount = null;
 
-        switch (selectedAgloWrapper.getName()) {
+        String algoName = selectedAgloWrapper.getName().toUpperCase();
+
+        switch (algoName) {
             case "FGES":
             case "GFCI":
-                hpcAccount = showRemoteComputingOptions(selectedAgloWrapper.getName());
+                hpcAccount = showRemoteComputingOptions(algoName);
                 break;
             default:
         }
@@ -1306,7 +1308,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
             Algorithm algorithm = runner.getAlgorithm();
             System.out.println("Algorithm: " + algorithm.getDescription());
 
-            switch (selectedAgloWrapper.getName()) {
+            switch (selectedAgloWrapper.getName().toUpperCase()) {
                 case "FGES":
                     algorithmName = AbstractAlgorithmRequest.FGES;
                     if (dataModel.isDiscrete()) {
