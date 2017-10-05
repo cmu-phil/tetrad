@@ -38,10 +38,10 @@ public class TestSimulatedFmri2 {
         Parameters parameters = new Parameters();
         parameters.set("penaltyDiscount", 8);
         parameters.set("depth", -1);
-        parameters.set("twoCycleAlpha", .01);
+        parameters.set("twoCycleAlpha", .001);
 
         parameters.set("numRuns", 60);
-        parameters.set("randomSelectionSize", 10);
+//        parameters.set("randomSelectionSize", 1);
 
         parameters.set("Structure", "Placeholder");
 
@@ -125,7 +125,7 @@ public class TestSimulatedFmri2 {
         comparison.setTabDelimitedTables(false);
         comparison.setSaveGraphs(true);
 
-        String directory = "comparison_testing_concat";
+        String directory = "comparison_testing_nonconcat";
 
         comparison.compareFromSimulations(directory, simulations, algorithms, statistics, parameters);
     }

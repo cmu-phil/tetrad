@@ -47,14 +47,14 @@ import java.text.ParseException;
 public class TestSimulatedFmri {
 
     public void TestCycles_Data_fMRI_FASK() {
-        task(true);
+        task(false);
     }
 
     private void task(boolean testing) {
         Parameters parameters = new Parameters();
         parameters.set("penaltyDiscount", 6);
         parameters.set("depth", -1);
-        parameters.set("twoCycleAlpha", 1E-8);
+        parameters.set("twoCycleAlpha", .01);
 
         parameters.set("numRuns", 10);
         parameters.set("randomSelectionSize", 10);
