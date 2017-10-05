@@ -6,7 +6,6 @@ import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.algcomparison.utils.UsesScoreWrapper;
 import edu.cmu.tetrad.annotation.AlgType;
-import edu.cmu.tetrad.annotation.UnmeasuredConfounder;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
@@ -26,10 +25,9 @@ import java.util.List;
 @edu.cmu.tetrad.annotation.Algorithm(
         name = "TsImages",
         command = "ts-imgs",
-        algoType = AlgType.allow_latent_common_causes,
+        algoType = AlgType.forbid_latent_common_causes,
         description = "Short blurb goes here"
 )
-@UnmeasuredConfounder
 public class TsImages implements Algorithm, HasKnowledge, MultiDataSetAlgorithm, UsesScoreWrapper {
 
     static final long serialVersionUID = 23L;
