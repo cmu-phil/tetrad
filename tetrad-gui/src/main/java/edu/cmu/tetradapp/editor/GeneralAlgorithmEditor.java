@@ -403,88 +403,32 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         priorKnowledgeLabelBox.add(new JLabel("Filter algorithms that: "));
         priorKnowledgeLabelBox.setAlignmentX(LEFT_ALIGNMENT);
 
-        // Option all
-        Box priorKnowledgeOptionAllBox = Box.createHorizontalBox();
-        priorKnowledgeOptionAllBox.setAlignmentX(LEFT_ALIGNMENT);
+        // Checkbox container
+        Box priorKnowledgeOptionBox = Box.createHorizontalBox();
+        priorKnowledgeOptionBox.setAlignmentX(LEFT_ALIGNMENT);
 
-        priorKnowledgeAllRadioBtn = new JRadioButton("Both");
-
-        // Event listener
-        priorKnowledgeAllRadioBtn.addActionListener((ActionEvent actionEvent) -> {
-            JRadioButton button = (JRadioButton) actionEvent.getSource();
-
-            if (button.isSelected()) {
-                // Set the flag
-                acceptKnowledgeFile = null;
-
-                // Update the list
-                updateSuggestedAlgosList();
-            }
-        });
-
-        // Add padding and option
-        priorKnowledgeOptionAllBox.add(Box.createRigidArea(new Dimension(10, 20)));
-        priorKnowledgeOptionAllBox.add(priorKnowledgeAllRadioBtn);
-
-        // Option 1
-        Box priorKnowledgeOption1Box = Box.createHorizontalBox();
-        priorKnowledgeOption1Box.setAlignmentX(LEFT_ALIGNMENT);
-
-        JRadioButton priorKnowledgeYesRadioBtn = new JRadioButton("accept prior knowledge file");
+        JCheckBox priorKnowledgeCheckbox = new JCheckBox("can handle prior knowledge file");
 
         // Event listener
-        priorKnowledgeYesRadioBtn.addActionListener((ActionEvent actionEvent) -> {
-            JRadioButton button = (JRadioButton) actionEvent.getSource();
-
-            if (button.isSelected()) {
-                // Set the flag
+        priorKnowledgeCheckbox.addActionListener((ActionEvent actionEvent) -> {
+            // Set the flag true or null, no false - Zhou
+            if (priorKnowledgeCheckbox.isSelected()) {
                 acceptKnowledgeFile = true;
-
-                // Update the list
-                updateSuggestedAlgosList();
+            } else {
+                acceptKnowledgeFile = null;
             }
+
+            // Update the list
+            updateSuggestedAlgosList();
         });
 
         // Add padding and option
-        priorKnowledgeOption1Box.add(Box.createRigidArea(new Dimension(10, 20)));
-        priorKnowledgeOption1Box.add(priorKnowledgeYesRadioBtn);
-
-        // Option 2
-        Box priorKnowledgeOption2Box = Box.createHorizontalBox();
-        priorKnowledgeOption2Box.setAlignmentX(LEFT_ALIGNMENT);
-
-        JRadioButton priorKnowledgeNoRadioBtn = new JRadioButton("don't accept prior knowledge file");
-
-        // Event listener
-        priorKnowledgeNoRadioBtn.addActionListener((ActionEvent actionEvent) -> {
-            JRadioButton button = (JRadioButton) actionEvent.getSource();
-
-            if (button.isSelected()) {
-                // Set the flag
-                acceptKnowledgeFile = false;
-
-                // Update the list model
-                updateSuggestedAlgosList();
-            }
-        });
-
-        // Add padding and option
-        priorKnowledgeOption2Box.add(Box.createRigidArea(new Dimension(10, 20)));
-        priorKnowledgeOption2Box.add(priorKnowledgeNoRadioBtn);
-
-        // We need to group the radio buttons, otherwise all can be selected
-        priorKnowledgeBtnGrp.add(priorKnowledgeAllRadioBtn);
-        priorKnowledgeBtnGrp.add(priorKnowledgeYesRadioBtn);
-        priorKnowledgeBtnGrp.add(priorKnowledgeNoRadioBtn);
-
-        // Set All as the default selection
-        priorKnowledgeAllRadioBtn.setSelected(true);
+        priorKnowledgeOptionBox.add(Box.createRigidArea(new Dimension(10, 20)));
+        priorKnowledgeOptionBox.add(priorKnowledgeCheckbox);
 
         // Add to containg box
         priorKnowledgeBox.add(priorKnowledgeLabelBox);
-        priorKnowledgeBox.add(priorKnowledgeOptionAllBox);
-        priorKnowledgeBox.add(priorKnowledgeOption1Box);
-        priorKnowledgeBox.add(priorKnowledgeOption2Box);
+        priorKnowledgeBox.add(priorKnowledgeOptionBox);
 
         // Can algorithms handle unmeasured confounders?
         Box unmeasuredConfoundersBox = Box.createVerticalBox();
