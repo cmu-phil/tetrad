@@ -39,7 +39,7 @@ public class Tanh implements Algorithm, TakesInitialGraph {
             if (initialGraph != null) {
                 initialGraph = algorithm.search(dataSet, parameters);
             } else {
-                throw new IllegalArgumentException("This algorithm needs both data and a graph source as inputs; it \n"
+                throw new IllegalArgumentException("This Tanh algorithm needs both data and a graph source as inputs; it \n"
                         + "will orient the edges in the input graph using the data");
             }
 
@@ -123,6 +123,11 @@ public class Tanh implements Algorithm, TakesInitialGraph {
 
     @Override
     public void setInitialGraph(Algorithm algorithm) {
+        if (algorithm == null) {
+            throw new IllegalArgumentException("This Tanh algorithm needs both data and a graph source as inputs; it \n"
+                    + "will orient the edges in the input graph using the data.");
+        }
+
         this.algorithm = algorithm;
     }
 
