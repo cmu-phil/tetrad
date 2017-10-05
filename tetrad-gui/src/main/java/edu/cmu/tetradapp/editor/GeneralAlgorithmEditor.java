@@ -1095,19 +1095,15 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
 
         // Set description
         setAlgoDescriptionContent();
-
-        // Set the selected algo and update the test and score dropdown menus
-        setAlgorithm();
     }
 
     private void setDefaultSelectedAlgo() {
         if (!suggestedAlgosListModel.isEmpty()) {
+            // setSelectedIndex() triggers the suggested algos list listener,
+            // so no need to call setAlgorithm() to set the selected algo
+            // and update the test and score dropdown menus.
             suggestedAlgosList.setSelectedIndex(0);
             selectedAgloWrapper = suggestedAlgosList.getSelectedValue();
-
-            // Set the selected algo and update the test and score dropdown menus
-            // also set other runner parameters
-            setAlgorithm();
         }
     }
 
