@@ -68,6 +68,9 @@ public final class Fask implements GraphSearch {
     // Data as a double[][].
     private final double[][] data;
 
+    // Cutoff for T tests for 2-cycle tests.
+    private double cutoff;
+
     /**
      * @param dataSet These datasets must all have the same variables, in the same order.
      */
@@ -75,7 +78,6 @@ public final class Fask implements GraphSearch {
         this.dataSet = dataSet;
 
         data = dataSet.getDoubleData().transpose().toArray();
-
     }
 
     //======================================== PUBLIC METHODS ====================================//
@@ -91,6 +93,8 @@ public final class Fask implements GraphSearch {
      */
     public Graph search() {
         long start = System.currentTimeMillis();
+
+        setCutoff(alpha);
 
         DataSet dataSet = DataUtils.center(this.dataSet);
 
@@ -195,11 +199,14 @@ public final class Fask implements GraphSearch {
             double zv1 = (z - z1) / sqrt((1.0 / ((double) nc - 3) + 1.0 / ((double) nc1 - 3)));
             double zv2 = (z - z2) / sqrt((1.0 / ((double) nc - 3) + 1.0 / ((double) nc2 - 3)));
 
-            double p1 = 2 * (1.0 - new NormalDistribution(0, 1).cumulativeProbability(abs(zv1)));
-            double p2 = 2 * (1.0 - new NormalDistribution(0, 1).cumulativeProbability(abs(zv2)));
+//            double p1 = 2 * (1.0 - new NormalDistribution(0, 1).cumulativeProbability(abs(zv1)));
+//            double p2 = 2 * (1.0 - new NormalDistribution(0, 1).cumulativeProbability(abs(zv2)));
 
-            boolean rejected1 = p1 < alpha;
-            boolean rejected2 = p2 < alpha;
+//            boolean rejected1 = p1 < twoCycleAlpha;
+//            boolean rejected2 = p2 < twoCycleAlpha;
+
+            boolean rejected1 = abs(zv1) > cutoff;
+            boolean rejected2 = abs(zv2) > cutoff;
 
             boolean possibleTwoCycle = false;
 
@@ -245,6 +252,18 @@ public final class Fask implements GraphSearch {
         double[][] cv = StatUtils.covMatrix(x, y, z, condition, threshold, direction);
         TetradMatrix m = new TetradMatrix(cv).transpose();
         return StatUtils.partialCorrelation(m);
+    }
+
+    /**
+     * Sets the significance level at which independence judgments should be made.  Affects the cutoff for partial
+     * correlations to be considered statistically equal to zero.
+     */
+    private void setCutoff(double alpha) {
+        if (alpha < 0.0 || alpha > 1.0) {
+            throw new IllegalArgumentException("Significance out of range: " + alpha);
+        }
+
+        this.cutoff = StatUtils.getZForAlpha(alpha);
     }
 
     /**
