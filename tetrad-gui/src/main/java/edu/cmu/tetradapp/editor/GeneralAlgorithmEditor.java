@@ -57,6 +57,7 @@ import edu.cmu.tetradapp.model.GeneralAlgorithmRunner;
 import edu.cmu.tetradapp.model.GraphSelectionWrapper;
 import edu.cmu.tetradapp.util.DesktopController;
 import edu.cmu.tetradapp.util.FinalizingEditor;
+import edu.cmu.tetradapp.util.WatchedProcess;
 import edu.pitt.dbmi.ccd.commons.file.MessageDigestHash;
 import edu.pitt.dbmi.ccd.rest.client.dto.user.JsonWebToken;
 import edu.pitt.dbmi.ccd.rest.client.service.algo.AbstractAlgorithmRequest;
@@ -94,6 +95,8 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
     private static final long serialVersionUID = -5719467682865706447L;
 
     private final GeneralAlgorithmRunner runner;
+    private Box algoChooserContainer;
+    private Box parametersContainer;
     private Box parametersBox;
     private Box graphContainer;
     private JComboBox<AnnotatedClassWrapper<TestOfIndependence>> testDropdown;
@@ -106,7 +109,6 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
     private HpcJobInfo hpcJobInfo;
     private String jsonResult;
     private final List<AnnotatedClassWrapper<edu.cmu.tetrad.annotation.Algorithm>> algoWrappers;
-    private final List<AnnotatedClassWrapper<edu.cmu.tetrad.annotation.Algorithm>> algorithmsAcceptKnowledge;
     private List<AnnotatedClassWrapper<TestOfIndependence>> tests;
     private List<AnnotatedClassWrapper<Score>> scores;
     private List<AnnotatedClassWrapper<TestOfIndependence>> filteredIndTests;
@@ -115,7 +117,6 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
     private final JList<AnnotatedClassWrapper<edu.cmu.tetrad.annotation.Algorithm>> suggestedAlgosList;
     private AlgType selectedAlgoType = null;
     private Boolean acceptKnowledgeFile = null;
-    private Boolean handleUnmeasuredConfounders = null;
     private final ButtonGroup algoTypesBtnGrp = new ButtonGroup();
 
     private AnnotatedClassWrapper<edu.cmu.tetrad.annotation.Algorithm> selectedAgloWrapper;
@@ -172,10 +173,6 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         } else {
             algoWrappers = TetradAlgorithmAnnotations.getInstance().getNameWrappers();
         }
-
-        // Algos that accept knowledge file
-        // Later use this to filter algos based on the knowledge siwtch
-        algorithmsAcceptKnowledge = TetradAlgorithmAnnotations.getInstance().getAcceptKnowledgeNameWrappers();
 
         // Use annotations to get the tests and scores based on different data types
         // Need to do this before calling createAlgoChooserPanel() - Zhou
@@ -279,11 +276,11 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
 
         // Algo selection container, step 1
         // contains 3 columns, leftContainer, middleContainer, and rightContainer
-        Box algoChooserContainer = Box.createHorizontalBox();
+        algoChooserContainer = Box.createHorizontalBox();
         algoChooserContainer.setPreferredSize(new Dimension(940, 560));
 
         // Parameters container, step 2
-        Box parametersContainer = Box.createHorizontalBox();
+        parametersContainer = Box.createHorizontalBox();
         parametersContainer.setPreferredSize(new Dimension(940, 560));
 
         // Graph container, step 3
@@ -720,46 +717,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         step3Btn = new JButton("Run Search & Generate Graph >");
 
         step3Btn.addActionListener((ActionEvent e) -> {
-            // Load all data files and hide the loading indicator once done
-            new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    doSearch(runner);
-
-                    // Schedule a Runnable which will be executed on the Event Dispatching Thread
-                    // SwingUtilities.invokeLater means that this call will return immediately
-                    // as the event is placed in Event Dispatcher Queue,
-                    // and run() method will run asynchronously
-                    SwingUtilities.invokeLater(new Runnable() {
-                        @Override
-                        public void run() {
-                            // Hide the loading indicator
-                            hideLoadingIndicator();
-
-                            // Hide algo chooser
-                            algoChooserContainer.setVisible(false);
-
-                            // Hide parameters
-                            parametersContainer.setVisible(false);
-
-                            // Show graphContainer
-                            graphContainer.setVisible(true);
-
-                            // Show back to step 2 button
-                            step2BackBtn.setVisible(true);
-
-                            // Hide step 1 back button
-                            step1BackBtn.setVisible(false);
-
-                            // Hide step 3 button
-                            step3Btn.setVisible(false);
-                        }
-                    });
-                }
-            }).start();
-
-            // Create the loading indicator dialog and show
-            showLoadingIndicator("Runing...");
+            doSearch(runner);
         });
 
         // Add to rightContainer
@@ -897,7 +855,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
             });
         }
 
-        // Now get intersections of all three lists
+        // Now get intersections of all filters
         // filteredAlgosByType now contains only the elements which are also contained in filteredAlgosByKnowledgeFile
         filteredAlgosByType.retainAll(filteredAlgosByKnowledgeFile);
 
@@ -929,37 +887,61 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
     }
 
     private void doSearch(final GeneralAlgorithmRunner runner) {
-        HpcAccount hpcAccount = null;
+        new WatchedProcess((Window) getTopLevelAncestor()) {
+            @Override
+            public void watch() {
+                HpcAccount hpcAccount = null;
 
-        String algoName = selectedAgloWrapper.getName().toUpperCase();
+                String algoName = selectedAgloWrapper.getName().toUpperCase();
 
-        switch (algoName) {
-            case "FGES":
-            case "GFCI":
-                hpcAccount = showRemoteComputingOptions(algoName);
-                break;
-            default:
-        }
+                switch (algoName) {
+                    case "FGES":
+                    case "GFCI":
+                        hpcAccount = showRemoteComputingOptions(algoName);
+                        break;
+                    default:
+                }
 
-        if (hpcAccount == null) {
-            graphEditor.saveLayout();
+                if (hpcAccount == null) {
+                    graphEditor.saveLayout();
 
-            runner.execute();
+                    runner.execute();
 
-            // Show graph
-            graphEditor.replace(runner.getGraphs());
-            graphEditor.validate();
-            firePropertyChange("modelChanged", null, null);
+                    // Show graph
+                    graphEditor.replace(runner.getGraphs());
+                    graphEditor.validate();
+                    firePropertyChange("modelChanged", null, null);
 
-            // Update the graphContainer
-            graphContainer.add(graphEditor);
-        } else {
-            try {
-                doRemoteCompute(runner, hpcAccount);
-            } catch (Exception e) {
-                e.printStackTrace();
+                    // Update the graphContainer
+                    graphContainer.add(graphEditor);
+
+                    // Hide algo chooser
+                    algoChooserContainer.setVisible(false);
+
+                    // Hide parameters
+                    parametersContainer.setVisible(false);
+
+                    // Show graphContainer
+                    graphContainer.setVisible(true);
+
+                    // Show back to step 2 button
+                    step2BackBtn.setVisible(true);
+
+                    // Hide step 1 back button
+                    step1BackBtn.setVisible(false);
+
+                    // Hide step 3 button
+                    step3Btn.setVisible(false);
+                } else {
+                    try {
+                        doRemoteCompute(runner, hpcAccount);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
             }
-        }
+        };
+
     }
 
     private HpcAccount showRemoteComputingOptions(String name) {
@@ -1451,44 +1433,6 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
             parametersBox.removeAll();
             parametersBox.add(parametersPanel);
         }
-    }
-
-    /**
-     * Create the loading indicator dialog and show
-     */
-    private void showLoadingIndicator(String message) {
-        JProgressBar progressBar = new JProgressBar(0, 100);
-        // An indeterminate progress bar continuously displays animation
-        progressBar.setIndeterminate(true);
-
-        Box dataLoadingIndicatorBox = Box.createVerticalBox();
-        dataLoadingIndicatorBox.setPreferredSize(new Dimension(200, 60));
-
-        JLabel label = new JLabel(message);
-        // JLabel label = new JLabel(message, SwingConstants.CENTER); doesn't
-        label.setAlignmentX(Component.CENTER_ALIGNMENT);
-
-        Box progressBarBox = Box.createHorizontalBox();
-        progressBarBox.add(Box.createRigidArea(new Dimension(10, 1)));
-        progressBarBox.add(progressBar);
-        progressBarBox.add(Box.createRigidArea(new Dimension(10, 1)));
-
-        // Put the label on top of progress bar
-        dataLoadingIndicatorBox.add(Box.createVerticalStrut(10));
-        dataLoadingIndicatorBox.add(label);
-        dataLoadingIndicatorBox.add(Box.createVerticalStrut(10));
-        dataLoadingIndicatorBox.add(progressBarBox);
-
-        Frame ancestor = (Frame) JOptionUtils.centeringComp().getTopLevelAncestor();
-        // Set modal true to block user input to other top-level windows when shown
-        loadingIndicatorDialog = new JDialog(ancestor, true);
-        // Remove the whole dialog title bar
-        loadingIndicatorDialog.setUndecorated(true);
-        loadingIndicatorDialog.getContentPane().add(dataLoadingIndicatorBox);
-        loadingIndicatorDialog.pack();
-        loadingIndicatorDialog.setLocationRelativeTo(JOptionUtils.centeringComp());
-
-        loadingIndicatorDialog.setVisible(true);
     }
 
     /**
