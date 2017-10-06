@@ -1435,15 +1435,6 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         }
     }
 
-    /**
-     * Hide the loading indicator
-     */
-    private void hideLoadingIndicator() {
-        loadingIndicatorDialog.setVisible(false);
-        // Also release all of the native screen resources used by this dialog
-        loadingIndicatorDialog.dispose();
-    }
-
     private Parameters getParameters() {
         return parameters;
     }
