@@ -122,7 +122,6 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
     private AnnotatedClassWrapper<edu.cmu.tetrad.annotation.Algorithm> selectedAgloWrapper;
     private final JTextArea algoDescriptionTextArea = new JTextArea();
     private ParameterPanel parametersPanel;
-    private JDialog loadingIndicatorDialog = new JDialog();
     private JButton step1BackBtn;
     private JButton step2Btn;
     private JButton step2BackBtn;
@@ -194,8 +193,25 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         // Embed the algo chooser panel into EditorWindow
         add(createAlgoChooserPanel(), BorderLayout.CENTER);
 
-        // Default to select the first algo name in list
-        setSelection();
+        // Repopulate all the previous selections if reopen the search box
+        if (runner.getGraphs() != null && runner.getGraphs().size() > 0) {
+            if (parameters.getString("algName") != null) {
+                String selectedAlgoName = parameters.getString("algName");
+                System.out.println("selectedAlgoName ===== " + selectedAlgoName);
+                for (AnnotatedClassWrapper<edu.cmu.tetrad.annotation.Algorithm> algoWraper : algoWrappers) {
+                    if (algoWraper.getName().equals(selectedAlgoName)) {
+                        suggestedAlgosList.setSelectedValue(algoWraper, true);
+                        break;
+                    }
+                }
+            }
+
+            // Calling setAlgorithm() populates the previous parameters of selected algo
+            setAlgorithm();
+        } else {
+            // Default to select the first algo name in list
+            setSelection();
+        }
     }
 
     private void determineTestAndScore(DataModelList dataModelList) {
@@ -773,6 +789,27 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
 
         container.add(buttonsContainer);
 
+        // Show the generated graph if reopen the search box
+        if (runner.getGraphs() != null && runner.getGraphs().size() > 0) {
+            // Use the already generated graphEditor
+            graphContainer.add(graphEditor);
+
+            // Hide algo chooser
+            algoChooserContainer.setVisible(false);
+
+            // Hide parameters
+            parametersContainer.setVisible(false);
+
+            // Show graphContainer
+            graphContainer.setVisible(true);
+
+            // Show back to step 2 button
+            step2BackBtn.setVisible(true);
+
+            // Hide step 2 button
+            step2Btn.setVisible(false);
+        }
+
         JPanel p = new JPanel(new BorderLayout());
         p.add(container, BoxLayout.X_AXIS);
 
@@ -882,6 +919,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
             // so no need to call setAlgorithm() to set the selected algo
             // and update the test and score dropdown menus.
             suggestedAlgosList.setSelectedIndex(0);
+
             selectedAgloWrapper = suggestedAlgosList.getSelectedValue();
         }
     }
