@@ -778,7 +778,7 @@ public final class LargeScaleSimulation {
         for (int i = 0; i < sampleSize; i++) {
             for (int j = 0; j < numVars; j++) {
                 shocks[i][j] = dist.sample();// * sqrt(errorVars[j]);
-//                shocks[i][j] = Math.pow(dist.sample(), 2);// * sqrt(errorVars[j]);
+//                shocks[i][j] = Math.pow(dist.sample(), 3);// * sqrt(errorVars[j]);
             }
         }
 
