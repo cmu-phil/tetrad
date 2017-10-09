@@ -21,6 +21,7 @@
 package edu.cmu.tetrad.data;
 
 import edu.cmu.tetrad.graph.*;
+import edu.cmu.tetrad.util.StatUtils;
 import edu.cmu.tetrad.util.TetradSerializable;
 
 import java.io.CharArrayWriter;
@@ -28,6 +29,8 @@ import java.io.IOException;
 import java.io.Writer;
 import java.util.*;
 import java.util.regex.Matcher;
+
+import static java.lang.Math.sqrt;
 
 /**
  * Stores information about required and forbidden edges and common causes for
@@ -50,9 +53,11 @@ import java.util.regex.Matcher;
  *
  * @author Joseph Ramsey
  */
-public final class Knowledge2 implements TetradSerializable, IKnowledge {
+public final class KnowledgeFask implements TetradSerializable, IKnowledge {
 
     static final long serialVersionUID = 23L;
+    private final DataSet dataSet;
+    private final double[][] colData;
 
     private Set<MyNode> myNodes = new HashSet<>();
 
@@ -107,56 +112,24 @@ public final class Knowledge2 implements TetradSerializable, IKnowledge {
     /**
      * Constructs a blank knowledge object.
      */
-    public Knowledge2() {
+    public KnowledgeFask(DataSet dataSet) {
         this.forbiddenRulesSpecs = new ArrayList<>();
         this.requiredRulesSpecs = new ArrayList<>();
         this.knowledgeGroupRules = new HashMap<>();
         this.tierSpecs = new ArrayList<>();
 
         this.namesToVars = new HashMap<>();
-    }
 
-    /**
-     * Constructs a knowledge object for the given nodes.
-     */
-    public Knowledge2(Collection<String> nodes) {
-        for (String MyNode : nodes) {
-            if (!checkVarName(MyNode)) {
-                throw new IllegalArgumentException("Bad variable node " + MyNode);
-            }
-        }
-
-        for (String name : nodes) {
-            addVariable(name);
-        }
-
-        this.forbiddenRulesSpecs = new ArrayList<>();
-        this.requiredRulesSpecs = new ArrayList<>();
-        this.knowledgeGroupRules = new HashMap<>();
-        this.tierSpecs = new ArrayList<>();
-    }
-
-    /**
-     * Makes a shallow copy.
-     */
-    private Knowledge2(Knowledge2 knowledge) {
-        this.namesToVars = new HashMap<>(knowledge.namesToVars);
-        this.myNodes = new HashSet<>(knowledge.myNodes);
-
-        this.forbiddenRulesSpecs = new ArrayList<>(knowledge.forbiddenRulesSpecs);
-        this.requiredRulesSpecs = new ArrayList<>(knowledge.requiredRulesSpecs);
-        this.knowledgeGroupRules = new HashMap<>();
-        this.tierSpecs = new ArrayList<>(knowledge.tierSpecs);
-
-        this.defaultToKnowledgeLayout = knowledge.defaultToKnowledgeLayout;
+        this.dataSet = DataUtils.center(dataSet);
+        colData = dataSet.getDoubleData().transpose().toArray();
 
     }
 
     /**
      * Generates a simple exemplar of this class to test serialization.
      */
-    public static Knowledge2 serializableInstance() {
-        return new Knowledge2();
+    public static KnowledgeFask serializableInstance() {
+        return new KnowledgeFask(new ColtDataSet(0, new ArrayList<>()));
     }
 
     //===============================PUBLIC METHODS=======================//
@@ -381,8 +354,34 @@ public final class Knowledge2 implements TetradSerializable, IKnowledge {
             return true;
         }
 
-        return false;
+        int c1 = dataSet.getColumn(dataSet.getVariable(var1));
+        int c2 = dataSet.getColumn(dataSet.getVariable(var2));
+        return leftright(colData[c2], colData[c1]);
     }
+
+
+    private boolean leftright(double[] x, double[] y) {
+        double left = cu(x, y, x) / (sqrt(cu(x, x, x) * cu(y, y, x)));
+        double right = cu(x, y, y) / (sqrt(cu(x, x, y) * cu(y, y, y)));
+
+        return (StatUtils.correlation(x, y) * (left - right) > 0);
+    }
+
+    public static double cu(double[] x, double[] y, double[] condition) {
+        double exy = 0.0;
+
+        int n = 0;
+
+        for (int k = 0; k < x.length; k++) {
+            if (condition[k] > 0) {
+                exy += x[k] * y[k];
+                n++;
+            }
+        }
+
+        return exy / n;
+    }
+
 
     /**
      * Determines whether the edge var1 --> var2 is required..
@@ -834,10 +833,10 @@ public final class Knowledge2 implements TetradSerializable, IKnowledge {
      * edges are equal, and their tiers are equal.
      */
     public final boolean equals(Object o) {
-        if (!(o instanceof Knowledge2)) {
+        if (!(o instanceof KnowledgeFask)) {
             return false;
         }
-        Knowledge2 that = (Knowledge2) o;
+        KnowledgeFask that = (KnowledgeFask) o;
 
         return this.forbiddenRulesSpecs.equals(that.forbiddenRulesSpecs)
                 && this.requiredRulesSpecs.equals(that.requiredRulesSpecs)
@@ -862,7 +861,7 @@ public final class Knowledge2 implements TetradSerializable, IKnowledge {
      */
     @Override
     public IKnowledge copy() {
-        return new Knowledge2(this);
+        return new KnowledgeFask(this.dataSet);
     }
 
     public boolean isViolatedBy(Graph graph) {

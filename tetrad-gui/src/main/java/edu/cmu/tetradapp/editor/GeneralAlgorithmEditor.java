@@ -46,6 +46,7 @@ import edu.cmu.tetrad.data.Knowledge2;
 import edu.cmu.tetrad.data.KnowledgeBoxInput;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.search.FaskGfci;
 import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.util.JOptionUtils;
 import edu.cmu.tetrad.util.JsonUtils;
@@ -213,6 +214,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         descriptions.add(new AlgorithmDescription(AlgName.RFCI, AlgType.allow_latent_common_causes, OracleType.Test));
 //        descriptions.add(new AlgorithmDescription(AlgName.CFCI, AlgType.allow_latent_common_causes, OracleType.Test));
         descriptions.add(new AlgorithmDescription(AlgName.GFCI, AlgType.allow_latent_common_causes, OracleType.Both));
+        descriptions.add(new AlgorithmDescription(AlgName.FASKGFCI, AlgType.allow_latent_common_causes, OracleType.Test));
         descriptions.add(new AlgorithmDescription(AlgName.TsFCI, AlgType.allow_latent_common_causes, OracleType.Test));
         descriptions.add(new AlgorithmDescription(AlgName.TsGFCI, AlgType.allow_latent_common_causes, OracleType.Both));
         descriptions.add(new AlgorithmDescription(AlgName.TsImages, AlgType.allow_latent_common_causes, OracleType.Test));
@@ -241,12 +243,12 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
 //        descriptions.add(new AlgorithmDescription(AlgName.Tahn, AlgType.orient_pairwise, OracleType.None));
 
         descriptions.add(new AlgorithmDescription(AlgName.BootstrapFGES,
-        		AlgType.bootstrapping, OracleType.Score));
-        	descriptions.add(new AlgorithmDescription(AlgName.BootstrapGFCI,
-        		AlgType.bootstrapping, OracleType.Score));
-        	descriptions.add(new AlgorithmDescription(AlgName.BootstrapRFCI,
-        		AlgType.bootstrapping, OracleType.Score));
-        	
+                AlgType.bootstrapping, OracleType.Score));
+        descriptions.add(new AlgorithmDescription(AlgName.BootstrapGFCI,
+                AlgType.bootstrapping, OracleType.Score));
+        descriptions.add(new AlgorithmDescription(AlgName.BootstrapRFCI,
+                AlgType.bootstrapping, OracleType.Score));
+
         mappedDescriptions = new HashMap<>();
 
         for (AlgorithmDescription description : descriptions) {
@@ -935,7 +937,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
 //                    algorithm = new FgesMeasurement(scoreWrapper);
 //                }
 //                break;
-            case PC :
+            case PC:
                 if (runner.getSourceGraph() != null && !runner.getDataModelList().isEmpty()) {
                     algorithm = new PcAll(independenceWrapper, new SingleGraphAlg(runner.getSourceGraph()));
                 } else {
@@ -968,6 +970,9 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
 //                break;
             case GFCI:
                 algorithm = new Gfci(independenceWrapper, scoreWrapper);
+                break;
+            case FASKGFCI:
+                algorithm = new edu.cmu.tetrad.algcomparison.algorithm.oracle.pag.FaskGfci(independenceWrapper);
                 break;
             case FCI:
                 algorithm = new Fci(independenceWrapper);
@@ -1087,17 +1092,17 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
                 algorithm = new Tanh(new SingleGraphAlg(runner.getSourceGraph()));
                 break;
 
-             // Bootstrapping
-             case BootstrapFGES:
-             	    algorithm = new BootstrapFges(scoreWrapper);
-             	    break;
-             case BootstrapGFCI:
-             	    algorithm = new BootstrapGfci(independenceWrapper, scoreWrapper);
-             	    break;
-             case BootstrapRFCI:
-             	    algorithm = new BootstrapRfci(independenceWrapper);
-             	    break;
-                
+            // Bootstrapping
+            case BootstrapFGES:
+                algorithm = new BootstrapFges(scoreWrapper);
+                break;
+            case BootstrapGFCI:
+                algorithm = new BootstrapGfci(independenceWrapper, scoreWrapper);
+                break;
+            case BootstrapRFCI:
+                algorithm = new BootstrapRfci(independenceWrapper);
+                break;
+
             default:
                 throw new IllegalArgumentException("Please configure that algorithm: " + name);
 
@@ -1442,7 +1447,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         PC_ALL, PC, PCStable, CPC, CPCStable, FGES, /*PcLocal,*/ PcStableMax, FAS,
         FgesMb, MBFS, Wfges, JCPC, /*FgesMeasurement,*/
         FCI, RFCI, CFCI, GFCI, TsFCI, TsGFCI, TsImages, CCD, CCD_MAX,
-        LiNGAM, MGM,
+        LiNGAM, MGM, FASKGFCI,
         IMaGES_Discrete, IMaGES_Continuous, IMaGES_CCD,
         Bpc, Fofc, Ftfc,
         GLASSO,
@@ -1463,7 +1468,8 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         SEM_BIC, D_SEPARATION, Discrete_BIC_Test, Correlation_T
     }
 
-    public enum ScoreType {BDeu, Conditional_Gaussian_BIC, Discrete_BIC, SEM_BIC, D_SEPARATION,
+    public enum ScoreType {
+        BDeu, Conditional_Gaussian_BIC, Discrete_BIC, SEM_BIC, D_SEPARATION,
         Fisher_Z_Score
     }
 
