@@ -22,12 +22,10 @@ public class FaskGfci implements Algorithm, HasKnowledge {
 
     static final long serialVersionUID = 23L;
     private IndependenceWrapper test;
-    private ScoreWrapper score;
     private IKnowledge knowledge = new Knowledge2();
 
     public FaskGfci(IndependenceWrapper test) {
         this.test = test;
-        this.score = score;
     }
 
     @Override
@@ -45,7 +43,7 @@ public class FaskGfci implements Algorithm, HasKnowledge {
     @Override
     public String getDescription() {
         return "FASKGFCI (Greedy Fast Causal Inference with FASK knowledge) using " + test.getDescription() +
-                " and " + score.getDescription();
+                " and " + test.getDescription();
     }
 
     @Override
@@ -56,7 +54,7 @@ public class FaskGfci implements Algorithm, HasKnowledge {
     @Override
     public List<String> getParameters() {
         List<String> parameters = test.getParameters();
-        parameters.addAll(score.getParameters());
+        parameters.addAll(test.getParameters());
         parameters.add("faithfulnessAssumed");
         parameters.add("maxDegree");
 //        parameters.add("printStream");

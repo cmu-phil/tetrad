@@ -122,7 +122,6 @@ public final class KnowledgeFask implements TetradSerializable, IKnowledge {
 
         this.dataSet = DataUtils.center(dataSet);
         colData = dataSet.getDoubleData().transpose().toArray();
-
     }
 
     /**
