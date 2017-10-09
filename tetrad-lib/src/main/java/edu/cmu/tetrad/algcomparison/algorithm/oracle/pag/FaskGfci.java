@@ -1,25 +1,28 @@
 package edu.cmu.tetrad.algcomparison.algorithm.oracle.pag;
 
-import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
+import edu.cmu.tetrad.algcomparison.algorithm.MultiDataSetAlgorithm;
 import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.data.*;
+import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.search.DagToPag;
-import edu.cmu.tetrad.search.DagToPag2;
 import edu.cmu.tetrad.util.Parameters;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
- * GFCI.
+ * Wraps the IMaGES algorithm for continuous variables.
+ * </p>
+ * Requires that the parameter 'randomSelectionSize' be set to indicate how many
+ * datasets should be taken at a time (randomly). This cannot given multiple values.
  *
  * @author jdramsey
  */
-public class FaskGfci implements Algorithm, HasKnowledge {
-
+public class FaskGfci implements MultiDataSetAlgorithm, HasKnowledge {
     static final long serialVersionUID = 23L;
-    private IndependenceWrapper test;
+    private final IndependenceWrapper test;
     private IKnowledge knowledge = new Knowledge2();
 
     public FaskGfci(IndependenceWrapper test) {
@@ -27,36 +30,46 @@ public class FaskGfci implements Algorithm, HasKnowledge {
     }
 
     @Override
-    public Graph search(DataModel dataSet, Parameters parameters) {
-        edu.cmu.tetrad.search.FaskGfci search = new edu.cmu.tetrad.search.FaskGfci(test.getTest(dataSet, parameters),
-                (DataSet) dataSet);
+    public Graph search(List<DataModel> dataSets, Parameters parameters) {
+        List<DataSet> centered = new ArrayList<>();
+
+        for (DataModel dataSet : dataSets) {
+            centered.add(DataUtils.center((DataSet) dataSet));
+        }
+
+        DataSet dataSet = DataUtils.concatenate(centered);
+        edu.cmu.tetrad.search.FaskGfci search = new edu.cmu.tetrad.search.FaskGfci(test.getTest(dataSet, parameters), dataSet);
+        search.setDepth(parameters.getInt("depth"));
         return search.search();
     }
 
     @Override
+    public Graph search(DataModel dataSet, Parameters parameters) {
+        return search(Collections.singletonList((DataModel) DataUtils.getContinuousDataSet(dataSet)), parameters);
+    }
+
+    @Override
     public Graph getComparisonGraph(Graph graph) {
-        return new DagToPag2(graph).convert();
+        return new EdgeListGraph(graph);
     }
 
     @Override
     public String getDescription() {
-        return "FASKGFCI (Greedy Fast Causal Inference with FASK knowledge) using " + test.getDescription() +
-                " and " + test.getDescription();
+        return "FASK Concatenated";
     }
 
     @Override
     public DataType getDataType() {
-        return test.getDataType();
+        return DataType.Continuous;
     }
 
     @Override
     public List<String> getParameters() {
         List<String> parameters = test.getParameters();
-        parameters.addAll(test.getParameters());
-        parameters.add("faithfulnessAssumed");
-        parameters.add("maxDegree");
-        parameters.add("maxPathLength");
-        parameters.add("completeRuleSetUsed");
+        parameters.add("depth");
+        parameters.add("numRuns");
+        parameters.add("randomSelectionSize");
+
         return parameters;
     }
 
@@ -69,5 +82,4 @@ public class FaskGfci implements Algorithm, HasKnowledge {
     public void setKnowledge(IKnowledge knowledge) {
         this.knowledge = knowledge;
     }
-
 }

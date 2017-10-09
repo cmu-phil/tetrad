@@ -21,8 +21,22 @@
 
 package edu.cmu.tetrad.search;
 
+import edu.cmu.tetrad.algcomparison.algorithm.oracle.pag.Gfci;
 import edu.cmu.tetrad.data.*;
-import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.graph.*;
+import edu.cmu.tetrad.util.ChoiceGenerator;
+import edu.cmu.tetrad.util.DepthChoiceGenerator;
+import edu.cmu.tetrad.util.StatUtils;
+import edu.cmu.tetrad.util.TetradMatrix;
+import org.apache.commons.math3.linear.SingularMatrixException;
+
+import java.awt.*;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
+import static java.lang.Math.*;
 
 /**
  * Fast adjacency search followed by robust skew orientation. Checks are done for adding
@@ -45,6 +59,9 @@ public final class FaskGfci implements GraphSearch {
 
     // For the Fast Adjacency Search.
     private int depth = -1;
+
+    // Alpha for orienting 2-cycles. Usually needs to be low.
+    private double twoCycleAlpha = 1e-6;
 
     // Knowledge the the search will obey, of forbidden and required edges.
     private IKnowledge knowledge = new Knowledge2();
