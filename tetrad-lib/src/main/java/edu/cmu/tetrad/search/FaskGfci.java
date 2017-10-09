@@ -46,9 +46,6 @@ public final class FaskGfci implements GraphSearch {
     // For the Fast Adjacency Search.
     private int depth = -1;
 
-    // Alpha for orienting 2-cycles. Usually needs to be low.
-    private double twoCycleAlpha = 1e-6;
-
     // Knowledge the the search will obey, of forbidden and required edges.
     private IKnowledge knowledge = new Knowledge2();
 

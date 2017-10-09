@@ -2,15 +2,13 @@ package edu.cmu.tetrad.algcomparison.algorithm.oracle.pag;
 
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
-import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.DagToPag;
-import edu.cmu.tetrad.search.GFci;
+import edu.cmu.tetrad.search.DagToPag2;
 import edu.cmu.tetrad.util.Parameters;
 
-import java.io.PrintStream;
 import java.util.List;
 
 /**
@@ -37,7 +35,7 @@ public class FaskGfci implements Algorithm, HasKnowledge {
 
     @Override
     public Graph getComparisonGraph(Graph graph) {
-        return new DagToPag(graph).convert();
+        return new DagToPag2(graph).convert();
     }
 
     @Override
@@ -57,7 +55,6 @@ public class FaskGfci implements Algorithm, HasKnowledge {
         parameters.addAll(test.getParameters());
         parameters.add("faithfulnessAssumed");
         parameters.add("maxDegree");
-//        parameters.add("printStream");
         parameters.add("maxPathLength");
         parameters.add("completeRuleSetUsed");
         return parameters;
