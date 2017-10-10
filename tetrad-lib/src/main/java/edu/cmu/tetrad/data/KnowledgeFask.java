@@ -30,6 +30,7 @@ import java.io.Writer;
 import java.util.*;
 import java.util.regex.Matcher;
 
+import static java.lang.Math.signum;
 import static java.lang.Math.sqrt;
 
 /**
@@ -123,6 +124,17 @@ public final class KnowledgeFask implements TetradSerializable, IKnowledge {
         this.dataSet = DataUtils.center(dataSet);
         colData = dataSet.getDoubleData().transpose().toArray();
 
+        for (int j = 0; j < colData.length; j++) {
+            double[] x = colData[j];
+
+            double s = signum(StatUtils.skewness(x));
+
+            for (int i = 0; i < x.length; i++) {
+                x[i] = s * x[i];
+            }
+
+            colData[j] = x;
+        }
     }
 
     /**

@@ -95,6 +95,18 @@ public final class Fask implements GraphSearch {
 
         double[][] colData = dataSet.getDoubleData().transpose().toArray();
 
+        for (int j = 0; j < colData.length; j++) {
+            double[] x = colData[j];
+
+            double s = signum(StatUtils.skewness(x));
+
+            for (int i = 0; i < x.length; i++) {
+                x[i] = s * x[i];
+            }
+
+            colData[j] = x;
+        }
+
         System.out.println("FAS");
 
         FasStable fas = new FasStable(test);
