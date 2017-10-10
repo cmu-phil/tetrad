@@ -26,7 +26,10 @@ import java.util.List;
         name = "GFCI",
         command = "gfci",
         algoType = AlgType.allow_latent_common_causes,
-        description = "Short blurb goes here"
+        description = "Greedy Fast Causal Inference Search (GFCI) is an implementation of the revised FCI algorithm."
+        + "It uses FGES followed by PC adjacency removals. Uses conservative collider orientation. Gets sepsets for X---Y from among adjacents of X or of Y.\n\n"
+        + "Following an idea of Spirtes, now it uses more of the information in FGES, to calculating possible d-separation paths and to utilize unshielded colliders found by FGES.\n\n"
+        + "For more detail about GFci implementation, please visit http://cmu-phil.github.io/tetrad/tetrad-lib-apidocs/edu/cmu/tetrad/search/GFci.html"
 )
 public class Gfci implements Algorithm, HasKnowledge, UsesScoreWrapper, TakesIndependenceWrapper {
 

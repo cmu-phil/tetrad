@@ -197,7 +197,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         if (runner.getGraphs() != null && runner.getGraphs().size() > 0) {
             if (parameters.getString("algName") != null) {
                 String selectedAlgoName = parameters.getString("algName");
-                System.out.println("selectedAlgoName ===== " + selectedAlgoName);
+
                 for (AnnotatedClassWrapper<edu.cmu.tetrad.annotation.Algorithm> algoWraper : algoWrappers) {
                     if (algoWraper.getName().equals(selectedAlgoName)) {
                         suggestedAlgosList.setSelectedValue(algoWraper, true);
@@ -828,7 +828,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
     private void setAlgoDescriptionContent() {
         if (!suggestedAlgosListModel.isEmpty() && selectedAgloWrapper != null) {
             edu.cmu.tetrad.annotation.Algorithm agloAnno = selectedAgloWrapper.getAnnotatedClass().getAnnotation();
-            algoDescriptionTextArea.setText("Description of " + agloAnno.name() + ": " + agloAnno.description());
+            algoDescriptionTextArea.setText(agloAnno.description());
         } else {
             // Erase the previous content
             algoDescriptionTextArea.setText("");
