@@ -28,10 +28,7 @@ import edu.cmu.tetrad.util.dist.Distribution;
 import edu.cmu.tetrad.util.dist.Split;
 import edu.cmu.tetrad.util.dist.Uniform;
 import org.apache.commons.collections4.map.HashedMap;
-import org.apache.commons.math3.distribution.BetaDistribution;
-import org.apache.commons.math3.distribution.NormalDistribution;
-import org.apache.commons.math3.distribution.TDistribution;
-import org.apache.commons.math3.distribution.UniformRealDistribution;
+import org.apache.commons.math3.distribution.*;
 import org.apache.commons.math3.random.Well1024a;
 
 import java.io.PrintStream;
@@ -67,7 +64,14 @@ public final class LargeScaleSimulation {
     private boolean verbose = false;
     long seed = new Date().getTime();
     private boolean alreadySetUp = false;
-    private boolean coefSymmetric = false;
+    //    private boolean coefSymmetric = false;
+    private boolean includePositiveCoefs = true;
+    private boolean includeNegativeCoefs = true;
+
+    private boolean errorsNormal = true;
+    private boolean errorsPositivelySkewedIfNonNormal = true;
+    private double betaLeftValue;
+    private double betaRightValue;
 
     //=============================CONSTRUCTORS============================//
 
@@ -370,7 +374,7 @@ public final class LargeScaleSimulation {
             for (int j = 0; j < t1.length; j++) {
                 t2[j] = shock[j];
                 for (int k = 0; k < parents[j].length; k++) {
-                    t2[j]  = t2[j] + t1[parents[j][k]] * coefs[j][k];
+                    t2[j] = t2[j] + t1[parents[j][k]] * coefs[j][k];
                 }
             }
 
@@ -431,7 +435,16 @@ public final class LargeScaleSimulation {
             System.arraycopy(coefs, 0, newCoefs, 0, coefs.length);
 
             double coef = edgeCoefDist.nextRandom();
-            if (coefSymmetric) coef = Math.abs(coef);
+//            if (coefSymmetric) coef = Math.abs(coef);
+
+            if (includePositiveCoefs && !includeNegativeCoefs) {
+                coef = Math.abs(coef);
+            } else if (!includePositiveCoefs && includeNegativeCoefs) {
+                coef = -Math.abs(coef);
+            } else if (!includePositiveCoefs && !includeNegativeCoefs) {
+                coef = 0;
+            }
+
             newCoefs[newCoefs.length - 1] = coef;
 
             this.parents[_head] = newParents;
@@ -765,10 +778,19 @@ public final class LargeScaleSimulation {
     }
 
     public double[][] getUncorrelatedShocks(int sampleSize) {
+        AbstractRealDistribution distribution;
+
+        if (errorsNormal) {
+            distribution = new NormalDistribution(new Well1024a(++seed), 0, 1);
+        } else {
+            distribution = new BetaDistribution(new Well1024a(++seed), getBetaLeftValue(), getBetaRightValue());
+//            distribution = new UniformRealDistribution(0, 1);
+        }
+
 //        TDistribution dist = new TDistribution(new Well1024a(++seed), 6);
 //        BetaDistribution dist = new BetaDistribution(new Well1024a(++seed), 2, 5);
 //        NormalDistribution dist = new NormalDistribution(new Well1024a(++seed), 0, 1);
-        UniformRealDistribution dist = new UniformRealDistribution(0, 1);
+//        UniformRealDistribution dist = new UniformRealDistribution(0, 1);
 
         int numVars = variableNodes.size();
         setupModel(numVars);
@@ -777,8 +799,17 @@ public final class LargeScaleSimulation {
 
         for (int i = 0; i < sampleSize; i++) {
             for (int j = 0; j < numVars; j++) {
-//                shocks[i][j] = dist.sample();// * sqrt(errorVars[j]);
-                shocks[i][j] = Math.pow(dist.sample(), 3);// * sqrt(errorVars[j]);
+                double sample = distribution.sample();
+
+//                if (!errorsNormal) {
+//                    sample = Math.pow(sample, 3);
+//                }
+
+                if (!errorsNormal && !errorsPositivelySkewedIfNonNormal) {
+                    sample *= -1.0;
+                }
+
+                shocks[i][j] = sample;
             }
         }
 
@@ -806,8 +837,44 @@ public final class LargeScaleSimulation {
         return shocks;
     }
 
-    public void setCoefSymmetric(boolean coefSymmetric) {
-        this.coefSymmetric = coefSymmetric;
+    public void setIncludePositiveCoefs(boolean includePositiveCoefs) {
+        this.includePositiveCoefs = includePositiveCoefs;
+    }
+
+    public void setIncludeNegativeCoefs(boolean includeNegativeCoefs) {
+        this.includeNegativeCoefs = includeNegativeCoefs;
+    }
+
+    public boolean isErrorsNormal() {
+        return errorsNormal;
+    }
+
+    public void setErrorsNormal(boolean errorsNormal) {
+        this.errorsNormal = errorsNormal;
+    }
+
+    public boolean isErrorsPositivelySkewedIfNonNormal() {
+        return errorsPositivelySkewedIfNonNormal;
+    }
+
+    public void setErrorsPositivelySkewedIfNonNormal(boolean errorsPositivelySkewedIfNonNormal) {
+        this.errorsPositivelySkewedIfNonNormal = errorsPositivelySkewedIfNonNormal;
+    }
+
+    public double getBetaRightValue() {
+        return betaRightValue;
+    }
+
+    public void setBetaRightValue(double betaRightValue) {
+        this.betaRightValue = betaRightValue;
+    }
+
+    public double getBetaLeftValue() {
+        return betaLeftValue;
+    }
+
+    public void setBetaLeftValue(double betaLeftValue) {
+        this.betaLeftValue = betaLeftValue;
     }
 }
 

@@ -91,6 +91,8 @@ public class SepsetsGreedy implements SepsetProducer {
 
                     v = possibleParents(i, v, knowledge);
 
+                    if (v.size() < d) continue;
+
                     if (getIndependenceTest().isIndependent(i, k, v)) {
                         return v;
                     }
@@ -105,6 +107,8 @@ public class SepsetsGreedy implements SepsetProducer {
                     List<Node> v = GraphUtils.asList(choice, adjk);
 
                     v = possibleParents(k, v, knowledge);
+
+                    if (v.size() < d) continue;
 
                     if (getIndependenceTest().isIndependent(i, k, v)) {
                         return v;

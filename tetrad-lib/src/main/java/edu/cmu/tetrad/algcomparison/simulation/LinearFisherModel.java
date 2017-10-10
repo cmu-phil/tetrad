@@ -87,10 +87,16 @@ public class LinearFisherModel implements Simulation, TakesData {
             simulator.setVarRange(
                     parameters.getDouble("varLow"),
                     parameters.getDouble("varHigh"));
-            simulator.setCoefSymmetric(parameters.getBoolean("coefSymmetric"));
+            simulator.setIncludePositiveCoefs(parameters.getBoolean("includePositiveCoefs"));
+            simulator.setIncludeNegativeCoefs(parameters.getBoolean("includeNegativeCoefs"));
+            simulator.setBetaLeftValue(parameters.getDouble("betaLeftValue"));
+            simulator.setBetaRightValue(parameters.getDouble("betaRightValue"));
             simulator.setMeanRange(
                     parameters.getDouble("meanLow"),
                     parameters.getDouble("meanHigh"));
+
+            simulator.setErrorsNormal(parameters.getBoolean("errorsNormal"));
+            simulator.setErrorsPositivelySkewedIfNonNormal(parameters.getBoolean("errorsPositivelySkewedIfNormal"));
 
             simulator.setVerbose(parameters.getBoolean("verbose"));
 
@@ -190,7 +196,12 @@ public class LinearFisherModel implements Simulation, TakesData {
         parameters.add("varLow");
         parameters.add("varHigh");
         parameters.add("verbose");
-        parameters.add("coefSymmetric");
+        parameters.add("includePositiveCoefs");
+        parameters.add("includeNegativeCoefs");
+        parameters.add("errorsNormal");
+        parameters.add("errorsPositivelySkewedIfNormal");
+        parameters.add("betaLeftValue");
+        parameters.add("betaRightValue");
         parameters.add("numRuns");
         parameters.add("percentDiscrete");
         parameters.add("numCategories");

@@ -70,6 +70,20 @@ public class ParamDescriptions {
                 + "values should be considered", true));
         put("retainPreviousValues", new ParamDescription("Retain previous values", false));
 
+        put("includePositiveCoefs", new ParamDescription("Yes if positive coefficient "
+                + "values should be included", true));
+        put("includeNegativeCoefs", new ParamDescription("Yes if negative coefficient "
+                + "values should be included", true));
+
+        put("errorsNormal", new ParamDescription("Yes if errors should be distibuted normally, No if skewed",
+                true));
+        put("errorsPositivelySkewedIfNormal", new ParamDescription("Yes if errors should be positively skewed" +
+                " (if skewed), No if negatively skewed", true));
+
+        put("betaLeftValue", new ParamDescription("For Beta(x, y), the 'x' (for the non-Normal case)", 2));
+        put("betaRightValue", new ParamDescription("For Beta(x, y), the 'y' (for the non-Normal case)", 5));
+
+
         // Boolean Glass parameters.
         put("lagGraphVarsPerInd", new ParamDescription("Number of variables per individual", 5, 1, Integer.MAX_VALUE));
         put("lagGraphMlag", new ParamDescription("Maximum lag of graph", 1, 1, Integer.MAX_VALUE));
