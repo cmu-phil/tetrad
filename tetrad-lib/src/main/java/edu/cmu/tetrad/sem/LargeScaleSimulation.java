@@ -69,7 +69,7 @@ public final class LargeScaleSimulation {
     private boolean includeNegativeCoefs = true;
 
     private boolean errorsNormal = true;
-    private boolean errorsPositivelySkewedIfNonNormal = true;
+//    private boolean errorsPositivelySkewedIfNonNormal = true;
     private double betaLeftValue;
     private double betaRightValue;
 
@@ -805,9 +805,9 @@ public final class LargeScaleSimulation {
 //                    sample = Math.pow(sample, 3);
 //                }
 
-                if (!errorsNormal && !errorsPositivelySkewedIfNonNormal) {
-                    sample *= -1.0;
-                }
+//                if (!errorsNormal && !errorsPositivelySkewedIfNonNormal) {
+//                    sample *= -1.0;
+//                }
 
                 shocks[i][j] = sample;
             }
@@ -853,13 +853,13 @@ public final class LargeScaleSimulation {
         this.errorsNormal = errorsNormal;
     }
 
-    public boolean isErrorsPositivelySkewedIfNonNormal() {
-        return errorsPositivelySkewedIfNonNormal;
-    }
-
-    public void setErrorsPositivelySkewedIfNonNormal(boolean errorsPositivelySkewedIfNonNormal) {
-        this.errorsPositivelySkewedIfNonNormal = errorsPositivelySkewedIfNonNormal;
-    }
+//    public boolean isErrorsPositivelySkewedIfNonNormal() {
+//        return errorsPositivelySkewedIfNonNormal;
+//    }
+//
+//    public void setErrorsPositivelySkewedIfNonNormal(boolean errorsPositivelySkewedIfNonNormal) {
+//        this.errorsPositivelySkewedIfNonNormal = errorsPositivelySkewedIfNonNormal;
+//    }
 
     public double getBetaRightValue() {
         return betaRightValue;

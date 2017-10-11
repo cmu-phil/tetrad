@@ -77,8 +77,8 @@ public class ParamDescriptions {
 
         put("errorsNormal", new ParamDescription("Yes if errors should be distibuted normally, No if skewed",
                 true));
-        put("errorsPositivelySkewedIfNormal", new ParamDescription("Yes if errors should be positively skewed" +
-                " (if skewed), No if negatively skewed", true));
+//        put("errorsPositivelySkewedIfNormal", new ParamDescription("Yes if errors should be positively skewed" +
+//                " (if skewed), No if negatively skewed", true));
 
         put("betaLeftValue", new ParamDescription("For Beta(x, y), the 'x' (for the non-Normal case)", 2));
         put("betaRightValue", new ParamDescription("For Beta(x, y), the 'y' (for the non-Normal case)", 5));

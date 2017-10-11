@@ -96,7 +96,7 @@ public class LinearFisherModel implements Simulation, TakesData {
                     parameters.getDouble("meanHigh"));
 
             simulator.setErrorsNormal(parameters.getBoolean("errorsNormal"));
-            simulator.setErrorsPositivelySkewedIfNonNormal(parameters.getBoolean("errorsPositivelySkewedIfNormal"));
+//            simulator.setErrorsPositivelySkewedIfNonNormal(parameters.getBoolean("errorsPositivelySkewedIfNormal"));
 
             simulator.setVerbose(parameters.getBoolean("verbose"));
 
@@ -199,7 +199,7 @@ public class LinearFisherModel implements Simulation, TakesData {
         parameters.add("includePositiveCoefs");
         parameters.add("includeNegativeCoefs");
         parameters.add("errorsNormal");
-        parameters.add("errorsPositivelySkewedIfNormal");
+//        parameters.add("errorsPositivelySkewedIfNormal");
         parameters.add("betaLeftValue");
         parameters.add("betaRightValue");
         parameters.add("numRuns");
