@@ -24,6 +24,8 @@ package edu.cmu.tetrad.test;
 import edu.cmu.tetrad.algcomparison.Comparison;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithms;
 import edu.cmu.tetrad.algcomparison.algorithm.multi.*;
+import edu.cmu.tetrad.algcomparison.algorithm.oracle.pag.FaskGfciConcatenated;
+import edu.cmu.tetrad.algcomparison.independence.SemBicTest;
 import edu.cmu.tetrad.algcomparison.simulation.Simulations;
 import edu.cmu.tetrad.algcomparison.statistic.*;
 import edu.cmu.tetrad.data.ContinuousVariable;
@@ -177,6 +179,7 @@ public class TestSimulatedFmri {
         Algorithms algorithms = new Algorithms();
 
         algorithms.add(new FaskConcatenated(false));
+        algorithms.add(new FaskGfciConcatenated(new SemBicTest()));
 //
         Comparison comparison = new Comparison();
 

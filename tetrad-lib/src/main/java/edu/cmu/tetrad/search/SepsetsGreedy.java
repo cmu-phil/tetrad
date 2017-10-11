@@ -80,6 +80,8 @@ public class SepsetsGreedy implements SepsetProducer {
         List<Node> adjk = graph.getAdjacentNodes(k);
         adji.remove(k);
         adjk.remove(i);
+        adji = possibleParents(i, adji, knowledge);
+        adjk = possibleParents(k, adjk, knowledge);
 
         for (int d = 0; d <= Math.min((depth == -1 ? 1000 : depth), Math.max(adji.size(), adjk.size())); d++) {
             if (d <= adji.size()) {
@@ -88,10 +90,6 @@ public class SepsetsGreedy implements SepsetProducer {
 
                 while ((choice = gen.next()) != null) {
                     List<Node> v = GraphUtils.asList(choice, adji);
-
-                    v = possibleParents(i, v, knowledge);
-
-                    if (v.size() < d) continue;
 
                     if (getIndependenceTest().isIndependent(i, k, v)) {
                         return v;
@@ -105,10 +103,6 @@ public class SepsetsGreedy implements SepsetProducer {
 
                 while ((choice = gen.next()) != null) {
                     List<Node> v = GraphUtils.asList(choice, adjk);
-
-                    v = possibleParents(k, v, knowledge);
-
-                    if (v.size() < d) continue;
 
                     if (getIndependenceTest().isIndependent(i, k, v)) {
                         return v;

@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
-// Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
+// Copyright (c) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
 // 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
 // Ramsey, and Clark Glymour.                                                //
 //                                                                           //
@@ -65,11 +65,19 @@ public final class Fask implements GraphSearch {
     // Knowledge the the search will obey, of forbidden and required edges.
     private IKnowledge knowledge = new Knowledge2();
 
+    // Data as a double[][].
+    private final double[][] data;
+
+    // Cutoff for T tests for 2-cycle tests.
+    private double cutoff;
+
     /**
      * @param dataSet These datasets must all have the same variables, in the same order.
      */
     public Fask(DataSet dataSet) {
         this.dataSet = dataSet;
+
+        data = dataSet.getDoubleData().transpose().toArray();
     }
 
     //======================================== PUBLIC METHODS ====================================//
@@ -85,6 +93,8 @@ public final class Fask implements GraphSearch {
      */
     public Graph search() {
         long start = System.currentTimeMillis();
+
+        setCutoff(alpha);
 
         DataSet dataSet = DataUtils.center(this.dataSet);
 
@@ -126,7 +136,7 @@ public final class Fask implements GraphSearch {
                 Node X = variables.get(i);
                 Node Y = variables.get(j);
 
-                // Standardized.
+                // Centered
                 final double[] x = colData[i];
                 final double[] y = colData[j];
 
@@ -166,7 +176,6 @@ public final class Fask implements GraphSearch {
     }
 
     private boolean bidirected(double[] x, double[] y, Graph G0, Node X, Node Y) {
-        double[][] data = dataSet.getDoubleData().transpose().toArray();
 
         Set<Node> adjSet = new HashSet<Node>(G0.getAdjacentNodes(X));
         adjSet.addAll(G0.getAdjacentNodes(Y));
@@ -202,11 +211,14 @@ public final class Fask implements GraphSearch {
             double zv1 = (z - z1) / sqrt((1.0 / ((double) nc - 3) + 1.0 / ((double) nc1 - 3)));
             double zv2 = (z - z2) / sqrt((1.0 / ((double) nc - 3) + 1.0 / ((double) nc2 - 3)));
 
-            double p1 = 2 * (1.0 - new NormalDistribution(0, 1).cumulativeProbability(abs(zv1)));
-            double p2 = 2 * (1.0 - new NormalDistribution(0, 1).cumulativeProbability(abs(zv2)));
+//            double p1 = 2 * (1.0 - new NormalDistribution(0, 1).cumulativeProbability(abs(zv1)));
+//            double p2 = 2 * (1.0 - new NormalDistribution(0, 1).cumulativeProbability(abs(zv2)));
 
-            boolean rejected1 = p1 < alpha;
-            boolean rejected2 = p2 < alpha;
+//            boolean rejected1 = p1 < twoCycleAlpha;
+//            boolean rejected2 = p2 < twoCycleAlpha;
+
+            boolean rejected1 = abs(zv1) > cutoff;
+            boolean rejected2 = abs(zv2) > cutoff;
 
             boolean possibleTwoCycle = false;
 
@@ -227,15 +239,43 @@ public final class Fask implements GraphSearch {
     }
 
     private boolean leftright(double[] x, double[] y) {
-        double[] e1 = StatUtils.E(x, y, x, 0, +1);
-        double[] e2 = StatUtils.E(x, y, y, 0, +1);
-        return abs(e1[1]) > abs(e2[1]);
+        double left = cu(x, y, x) / (sqrt(cu(x, x, x) * cu(y, y, x)));
+        double right = cu(x, y, y) / (sqrt(cu(x, x, y) * cu(y, y, y)));
+
+        return (StatUtils.correlation(x, y) * (left - right) > 0);
+    }
+
+    public static double cu(double[] x, double[] y, double[] condition) {
+        double exy = 0.0;
+
+        int n = 0;
+
+        for (int k = 0; k < x.length; k++) {
+            if (condition[k] > 0) {
+                exy += x[k] * y[k];
+                n++;
+            }
+        }
+
+        return exy / n;
     }
 
     private double partialCorrelation(double[] x, double[] y, double[][] z, double[] condition, double threshold, double direction) throws SingularMatrixException {
-        double[][] c = StatUtils.covMatrix(x, y, z, condition, threshold, direction);
-        TetradMatrix m = new TetradMatrix(c).transpose();
+        double[][] cv = StatUtils.covMatrix(x, y, z, condition, threshold, direction);
+        TetradMatrix m = new TetradMatrix(cv).transpose();
         return StatUtils.partialCorrelation(m);
+    }
+
+    /**
+     * Sets the significance level at which independence judgments should be made.  Affects the cutoff for partial
+     * correlations to be considered statistically equal to zero.
+     */
+    private void setCutoff(double alpha) {
+        if (alpha < 0.0 || alpha > 1.0) {
+            throw new IllegalArgumentException("Significance out of range: " + alpha);
+        }
+
+        this.cutoff = StatUtils.getZForAlpha(alpha);
     }
 
     /**

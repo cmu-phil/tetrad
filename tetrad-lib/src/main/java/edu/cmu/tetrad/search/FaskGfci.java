@@ -73,8 +73,6 @@ public final class FaskGfci implements GraphSearch {
     public FaskGfci(IndependenceTest test, DataSet dataSet) {
         this.test = test;
         this.dataSet = dataSet;
-
-        double[][] data = dataSet.getDoubleData().transpose().toArray();
     }
 
     //======================================== PUBLIC METHODS ====================================//
@@ -89,7 +87,7 @@ public final class FaskGfci implements GraphSearch {
      * and some of the adjacencies may be two-cycles.
      */
     public Graph search() {
-        DataSet dataSet = DataUtils.center(this.dataSet);
+//        DataSet dataSet = DataUtils.center(this.dataSet);
 
         IKnowledge knowledge = new KnowledgeFask(dataSet);
 

@@ -352,25 +352,23 @@ public final class KnowledgeFask implements TetradSerializable, IKnowledge {
      * Determines whether the edge var1 --> var2 is forbidden.
      */
     public final boolean isForbidden(String var1, String var2) {
+        for (OrderedPair<Set<MyNode>> rule : forbiddenRulesSpecs) {
+            if (rule.getFirst().contains(getVar(var1))) {
+                if (rule.getSecond().contains(getVar(var2))) {
+                    if (!var1.equals(var2)) {
+                        return true;
+                    }
+                }
+            }
+        }
+
+        if (isForbiddenByTiers(var1, var2)) {
+            return true;
+        }
+
         int c1 = dataSet.getColumn(dataSet.getVariable(var1));
         int c2 = dataSet.getColumn(dataSet.getVariable(var2));
         return leftright(colData[c2], colData[c1]);
-
-//        for (OrderedPair<Set<MyNode>> rule : forbiddenRulesSpecs) {
-//            if (rule.getFirst().contains(getVar(var1))) {
-//                if (rule.getSecond().contains(getVar(var2))) {
-//                    if (!var1.equals(var2)) {
-//                        return true;
-//                    }
-//                }
-//            }
-//        }
-//
-//        if (isForbiddenByTiers(var1, var2)) {
-//            return false;
-//        }
-//
-//        return false;
     }
 
 

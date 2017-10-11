@@ -46,7 +46,6 @@ import edu.cmu.tetrad.data.Knowledge2;
 import edu.cmu.tetrad.data.KnowledgeBoxInput;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.search.FaskGfci;
 import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.util.JOptionUtils;
 import edu.cmu.tetrad.util.JsonUtils;
@@ -972,7 +971,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
                 algorithm = new Gfci(independenceWrapper, scoreWrapper);
                 break;
             case FASKGFCI:
-                algorithm = new edu.cmu.tetrad.algcomparison.algorithm.oracle.pag.FaskGfci(independenceWrapper);
+                algorithm = new FaskGfciConcatenated(independenceWrapper);
                 break;
             case FCI:
                 algorithm = new Fci(independenceWrapper);

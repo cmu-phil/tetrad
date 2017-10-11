@@ -94,31 +94,10 @@ public class LinearFisherModel implements Simulation, TakesData {
             simulator.setMeanRange(
                     parameters.getDouble("meanLow"),
                     parameters.getDouble("meanHigh"));
-
             simulator.setErrorsNormal(parameters.getBoolean("errorsNormal"));
-//            simulator.setErrorsPositivelySkewedIfNonNormal(parameters.getBoolean("errorsPositivelySkewedIfNormal"));
-
             simulator.setVerbose(parameters.getBoolean("verbose"));
 
             DataSet dataSet;
-
-//            if (shocks == null) {
-//                dataSet = simulator.simulateDataFisher(
-//                        simulator.getUncorrelatedGaussianShocks(parameters.getInt("sampleSize")),
-//                        parameters.getInt("intervalBetweenShocks"),
-//                        parameters.getInt("intervalBetweenRecordings"),
-//                        parameters.getDouble("fisherEpsilon")
-//                );
-//            } else {
-//                DataSet _shocks = (DataSet) shocks.get(i);
-//
-//                dataSet = simulator.simulateDataFisher(
-//                        _shocks.getDoubleData().toArray(),
-//                        parameters.getInt("intervalBetweenShocks"),
-//                        parameters.getInt("intervalBetweenRecordings"),
-//                        parameters.getDouble("fisherEpsilon")
-//                );
-//            }
 
             if (shocks == null) {
                 dataSet = simulator.simulateDataFisher(
@@ -199,7 +178,6 @@ public class LinearFisherModel implements Simulation, TakesData {
         parameters.add("includePositiveCoefs");
         parameters.add("includeNegativeCoefs");
         parameters.add("errorsNormal");
-//        parameters.add("errorsPositivelySkewedIfNormal");
         parameters.add("betaLeftValue");
         parameters.add("betaRightValue");
         parameters.add("numRuns");

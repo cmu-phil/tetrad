@@ -20,12 +20,12 @@ import java.util.List;
  *
  * @author jdramsey
  */
-public class FaskGfci implements MultiDataSetAlgorithm, HasKnowledge {
+public class FaskGfciConcatenated implements MultiDataSetAlgorithm, HasKnowledge {
     static final long serialVersionUID = 23L;
     private final IndependenceWrapper test;
     private IKnowledge knowledge = new Knowledge2();
 
-    public FaskGfci(IndependenceWrapper test) {
+    public FaskGfciConcatenated(IndependenceWrapper test) {
         this.test = test;
     }
 
@@ -55,7 +55,7 @@ public class FaskGfci implements MultiDataSetAlgorithm, HasKnowledge {
 
     @Override
     public String getDescription() {
-        return "FASK Concatenated";
+        return "FASK GFCI Concatenated";
     }
 
     @Override
