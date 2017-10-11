@@ -35,6 +35,7 @@ public class Rfci implements Algorithm, HasKnowledge {
         search.setDepth(parameters.getInt("depth"));
         search.setMaxPathLength(parameters.getInt("maxPathLength"));
         search.setCompleteRuleSetUsed(parameters.getBoolean("completeRuleSetUsed"));
+        search.setVerbose(parameters.getBoolean("verbose"));
         return search.search();
     }
 
@@ -58,6 +59,7 @@ public class Rfci implements Algorithm, HasKnowledge {
         parameters.add("depth");
         parameters.add("maxPathLength");
         parameters.add("completeRuleSetUsed");
+        parameters.add("verbose");
         return parameters;
     }
 

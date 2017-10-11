@@ -105,6 +105,7 @@ public class PcAll implements Algorithm, TakesInitialGraph, HasKnowledge {
         search.setConflictRule(conflictRule);
         search.setUseHeuristic(parameters.getBoolean("useMaxPOrientationHeuristic"));
         search.setMaxPathLength(parameters.getInt("maxPOrientationMaxPathLength"));
+        search.setVerbose(parameters.getBoolean("verbose"));
 
         return search.search();
     }
@@ -140,6 +141,7 @@ public class PcAll implements Algorithm, TakesInitialGraph, HasKnowledge {
         parameters.add("depth");
         parameters.add("useMaxPOrientationHeuristic");
         parameters.add("maxPOrientationMaxPathLength");
+        parameters.add("verbose");
         return parameters;
     }
 

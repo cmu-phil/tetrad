@@ -43,6 +43,7 @@ public class ImagesSemBic implements MultiDataSetAlgorithm, HasKnowledge {
         score.setPenaltyDiscount(parameters.getDouble("penaltyDiscount"));
         edu.cmu.tetrad.search.Fges search = new edu.cmu.tetrad.search.Fges(score);
         search.setKnowledge(knowledge);
+        search.setVerbose(parameters.getBoolean("verbose"));
         return search.search();
     }
 
@@ -73,6 +74,7 @@ public class ImagesSemBic implements MultiDataSetAlgorithm, HasKnowledge {
         List<String> parameters = new Fges(new SemBicScore(), false).getParameters();
         parameters.add("numRuns");
         parameters.add("randomSelectionSize");
+        parameters.add("verbose");
         return parameters;
     }
 

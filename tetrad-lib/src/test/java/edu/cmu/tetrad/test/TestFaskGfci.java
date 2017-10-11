@@ -47,7 +47,7 @@ public class TestFaskGfci {
 
         // Random forward
         parameters.set("numMeasures", 50);
-        parameters.set("numLatents", 20);
+        parameters.set("numLatents", 10);
         parameters.set("avgDegree", 2);
         parameters.set("maxDegree", 100);
         parameters.set("maxIndegree", 100);

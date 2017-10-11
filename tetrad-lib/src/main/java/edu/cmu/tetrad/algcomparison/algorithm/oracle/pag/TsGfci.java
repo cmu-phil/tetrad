@@ -38,6 +38,7 @@ public class TsGfci implements Algorithm, TakesInitialGraph, HasKnowledge {
         edu.cmu.tetrad.search.TsGFci search = new edu.cmu.tetrad.search.TsGFci(test.getTest(dataSet, parameters),
                 score.getScore(dataSet, parameters));
         search.setKnowledge(dataSet.getKnowledge());
+        search.setVerbose(parameters.getBoolean("verbose"));
         return search.search();
     }
 
@@ -62,6 +63,7 @@ public class TsGfci implements Algorithm, TakesInitialGraph, HasKnowledge {
         parameters.add("faithfulnessAssumed");
         parameters.add("maxIndegree");
         parameters.add("printStream");
+        parameters.add("verbose");
         return parameters;
     }
 

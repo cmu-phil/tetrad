@@ -52,6 +52,7 @@ public class FgesMb implements Algorithm, TakesInitialGraph, HasKnowledge {
         edu.cmu.tetrad.search.FgesMb search = new edu.cmu.tetrad.search.FgesMb(score);
         search.setFaithfulnessAssumed(parameters.getBoolean("faithfulnessAssumed"));
         search.setKnowledge(knowledge);
+        search.setVerbose(parameters.getBoolean("verbose"));
 
         if (initial != null) {
             search.setInitialGraph(initial);
@@ -84,6 +85,7 @@ public class FgesMb implements Algorithm, TakesInitialGraph, HasKnowledge {
         List<String> parameters = score.getParameters();
         parameters.add("targetName");
         parameters.add("faithfulnessAssumed");
+        parameters.add("verbose");
         return parameters;
     }
 

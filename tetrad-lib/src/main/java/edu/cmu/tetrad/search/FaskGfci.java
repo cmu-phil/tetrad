@@ -65,6 +65,7 @@ public final class FaskGfci implements GraphSearch {
 
     // Knowledge the the search will obey, of forbidden and required edges.
     private IKnowledge knowledge = new Knowledge2();
+    private boolean verbose;
 
     /**
      * @param test    The test used for FAS.
@@ -93,6 +94,7 @@ public final class FaskGfci implements GraphSearch {
 
         GFci fci = new GFci(test, new ScoredIndTest(test));
         fci.setKnowledge(knowledge);
+        fci.setVerbose(verbose);
         return fci.search();
     }
 
@@ -133,6 +135,9 @@ public final class FaskGfci implements GraphSearch {
         this.knowledge = knowledge;
     }
 
+    public void setVerbose(boolean verbose) {
+        this.verbose = verbose;
+    }
 }
 
 

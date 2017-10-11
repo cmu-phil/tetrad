@@ -41,6 +41,7 @@ public class TsImages implements Algorithm, HasKnowledge, MultiDataSetAlgorithm 
         IndependenceTest test = new IndTestScore(score1);
         search = new TsGFci(test, score1);
         search.setKnowledge(dataSet.getKnowledge());
+        search.setVerbose(parameters.getBoolean("verbose"));
         return search.search();
     }
 
@@ -62,7 +63,9 @@ public class TsImages implements Algorithm, HasKnowledge, MultiDataSetAlgorithm 
 
     @Override
     public List<String> getParameters() {
-        return score.getParameters();
+        List<String> parameters = score.getParameters();
+        parameters.add("verbose");
+        return parameters;
     }
 
     @Override

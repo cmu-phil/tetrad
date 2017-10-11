@@ -38,6 +38,7 @@ public class FaskGfci implements Algorithm, HasKnowledge {
         edu.cmu.tetrad.search.FaskGfci search = new edu.cmu.tetrad.search.FaskGfci(
                 test.getTest(dataSet, parameters), (DataSet) dataSet);
         search.setDepth(parameters.getInt("depth"));
+        search.setVerbose(parameters.getBoolean("verbose"));
         return search.search();
     }
 
@@ -60,6 +61,7 @@ public class FaskGfci implements Algorithm, HasKnowledge {
     public List<String> getParameters() {
         List<String> parameters = new ArrayList<>();
         parameters.add("depth");
+        parameters.add("verbose");
         return parameters;
     }
 

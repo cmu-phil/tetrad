@@ -58,6 +58,7 @@ public class Fges implements Algorithm, TakesInitialGraph, HasKnowledge {
         search.setVerbose(parameters.getBoolean("verbose"));
         search.setMaxDegree(parameters.getInt("maxDegree"));
         search.setSymmetricFirstStep(parameters.getBoolean("symmetricFirstStep"));
+        search.setVerbose(parameters.getBoolean("verbose"));
 
         Object obj = parameters.get("printStream");
         if (obj instanceof PrintStream) {

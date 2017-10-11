@@ -40,6 +40,7 @@ public class TsFci implements Algorithm, TakesInitialGraph, HasKnowledge {
     public Graph search(DataModel dataSet, Parameters parameters) {
         edu.cmu.tetrad.search.TsFci search = new edu.cmu.tetrad.search.TsFci(test.getTest(dataSet, parameters));
         search.setDepth(parameters.getInt("depth"));
+        search.setVerbose(parameters.getBoolean("verbose"));
 
         IKnowledge _knowledge = getKnowledge() != null ? getKnowledge() : dataSet.getKnowledge();
 
@@ -63,7 +64,9 @@ public class TsFci implements Algorithm, TakesInitialGraph, HasKnowledge {
 
     @Override
     public List<String> getParameters() {
-        return test.getParameters();
+        List<String> parameters = test.getParameters();
+        parameters.add("verbose");
+        return parameters;
     }
 
     @Override

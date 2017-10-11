@@ -34,6 +34,7 @@ public class FAS implements Algorithm, HasKnowledge {
         search.setDepth(parameters.getInt("depth"));
         search.setDepth(parameters.getInt("depth"));
         search.setKnowledge(knowledge);
+        search.setVerbose(parameters.getBoolean("verbose"));
 
         return search.search();
     }
@@ -57,6 +58,7 @@ public class FAS implements Algorithm, HasKnowledge {
     public List<String> getParameters() {
         List<String> parameters = test.getParameters();
         parameters.add("depth");
+        parameters.add("verboase");
         return parameters;
     }
 

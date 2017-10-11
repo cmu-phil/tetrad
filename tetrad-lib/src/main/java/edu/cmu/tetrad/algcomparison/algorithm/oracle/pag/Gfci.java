@@ -74,6 +74,7 @@ public class Gfci implements Algorithm, HasKnowledge {
 //        parameters.add("printStream");
         parameters.add("maxPathLength");
         parameters.add("completeRuleSetUsed");
+        parameters.add("verbose");
         return parameters;
     }
 
