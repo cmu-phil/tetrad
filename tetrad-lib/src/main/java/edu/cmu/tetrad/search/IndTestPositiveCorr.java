@@ -21,9 +21,15 @@
 
 package edu.cmu.tetrad.search;
 
-import edu.cmu.tetrad.data.*;
+import edu.cmu.tetrad.data.ColtDataSet;
+import edu.cmu.tetrad.data.CovarianceMatrixOnTheFly;
+import edu.cmu.tetrad.data.DataSet;
+import edu.cmu.tetrad.data.ICovarianceMatrix;
+import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.util.*;
+import edu.cmu.tetrad.util.NumberFormatUtil;
+import edu.cmu.tetrad.util.StatUtils;
+import edu.cmu.tetrad.util.TetradMatrix;
 import org.apache.commons.math3.distribution.NormalDistribution;
 import org.apache.commons.math3.linear.SingularMatrixException;
 
@@ -34,6 +40,8 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 import static java.lang.Math.abs;
+import static java.lang.Math.log;
+import static java.lang.Math.sqrt;
 
 /**
  * Checks conditional independence of variable in a continuous data set using Fisher's Z test. See Spirtes, Glymour, and
@@ -42,12 +50,13 @@ import static java.lang.Math.abs;
  * @author Joseph Ramsey
  * @author Frank Wimberly adapted IndTestCramerT for Fisher's Z
  */
-public final class IndTestFisherZ implements IndependenceTest {
+public final class IndTestPositiveCorr implements IndependenceTest {
 
     /**
      * The covariance matrix.
      */
     private final ICovarianceMatrix covMatrix;
+    private final double[][] data;
 
 //    /**
 //     * The matrix out of the cov matrix.
@@ -97,7 +106,7 @@ public final class IndTestFisherZ implements IndependenceTest {
      * @param dataSet A data set containing only continuous columns.
      * @param alpha   The alpha level of the test.
      */
-    public IndTestFisherZ(DataSet dataSet, double alpha) {
+    public IndTestPositiveCorr(DataSet dataSet, double alpha) {
         if (!(dataSet.isContinuous())) {
             throw new IllegalArgumentException("Data set must be continuous.");
         }
@@ -115,34 +124,9 @@ public final class IndTestFisherZ implements IndependenceTest {
         setAlpha(alpha);
 
         this.dataSet = dataSet;
-    }
 
-    /**
-     * Constructs a new Fisher Z independence test with  the listed arguments.
-     *
-     * @param data      A 2D continuous data set with no missing values.
-     * @param variables A list of variables, a subset of the variables of <code>data</code>.
-     * @param alpha     The significance cutoff level. p values less than alpha will be reported as dependent.
-     */
-    public IndTestFisherZ(TetradMatrix data, List<Node> variables, double alpha) {
-        this.dataSet = ColtDataSet.makeContinuousData(variables, data);
-        this.covMatrix = new CovarianceMatrixOnTheFly(dataSet);
-        this.variables = Collections.unmodifiableList(variables);
-        this.indexMap = indexMap(variables);
-        this.nameMap = nameMap(variables);
-        setAlpha(alpha);
-    }
+        data = dataSet.getDoubleData().transpose().toArray();
 
-    /**
-     * Constructs a new independence test that will determine conditional independence facts using the given correlation
-     * matrix and the given significance level.
-     */
-    public IndTestFisherZ(ICovarianceMatrix covMatrix, double alpha) {
-        this.covMatrix = covMatrix;
-        this.variables = covMatrix.getVariables();
-        this.indexMap = indexMap(variables);
-        this.nameMap = nameMap(variables);
-        setAlpha(alpha);
     }
 
     //==========================PUBLIC METHODS=============================//
@@ -151,74 +135,70 @@ public final class IndTestFisherZ implements IndependenceTest {
      * Creates a new independence test instance for a subset of the variables.
      */
     public IndependenceTest indTestSubset(List<Node> vars) {
-        if (vars.isEmpty()) {
-            throw new IllegalArgumentException("Subset may not be empty.");
-        }
-
-        for (Node var : vars) {
-            if (!variables.contains(var)) {
-                throw new IllegalArgumentException(
-                        "All vars must be original vars");
-            }
-        }
-
-        int[] indices = new int[vars.size()];
-
-        for (int i = 0; i < indices.length; i++) {
-            indices[i] = indexMap.get(vars.get(i));
-        }
-
-        ICovarianceMatrix newCovMatrix = covMatrix.getSubmatrix(indices);
-
-        double alphaNew = getAlpha();
-        return new IndTestFisherZ(newCovMatrix, alphaNew);
+        throw new UnsupportedOperationException();
     }
 
     /**
      * Determines whether variable x is independent of variable y given a list of conditioning variables z.
      *
-     * @param x the one variable being compared.
-     * @param y the second variable being compared.
-     * @param z the list of conditioning variables.
+     * @param x0 the one variable being compared.
+     * @param y0 the second variable being compared.
+     * @param z0 the list of conditioning variables.
      * @return true iff x _||_ y | z.
      * @throws RuntimeException if a matrix singularity is encountered.
      */
-    public boolean isIndependent(Node x, Node y, List<Node> z) {
-        int n = sampleSize();
-        double r;
+    public boolean isIndependent(Node x0, Node y0, List<Node> z0) {
 
-        try {
-            r = partialCorrelation(x, y, z);
-        } catch (SingularMatrixException e) {
-//            System.out.println(SearchLogUtils.determinismDetected(z, x));
-            this.fisherZ = Double.POSITIVE_INFINITY;
-            return false;
+        System.out.println(SearchLogUtils.independenceFact(x0, y0, z0));
+
+
+        double[] x = data[dataSet.getColumn(x0)];
+        double[] y = data[dataSet.getColumn(y0)];
+
+        double[][] _Z = new double[z0.size()][];
+
+        for (int f = 0; f < z0.size(); f++) {
+            Node _z = z0.get(f);
+            int column = dataSet.getColumn(_z);
+            _Z[f] = data[column];
         }
 
-        double fisherZ = Math.sqrt(n - 3 - z.size()) * 0.5 * (Math.log(1.0 + r) - Math.log(1.0 - r));
-        this.fisherZ = fisherZ;
-        this.rho = r;
+        double pc = partialCorrelation(x, y, _Z, x, Double.NEGATIVE_INFINITY, +1);
+        double pc1 = partialCorrelation(x, y, _Z, x, 0, +1);
+        double pc2 = partialCorrelation(x, y, _Z, y, 0, +1);
 
-        return Math.abs(fisherZ) < cutoff;
-    }
+        int nc = StatUtils.getRows(x, x, Double.NEGATIVE_INFINITY, +1).size();
+        int nc1 = StatUtils.getRows(x, x, 0, +1).size();
+        int nc2 = StatUtils.getRows(y, y, 0, +1).size();
 
-    private double partialCorrelation(Node x, Node y, List<Node> z) throws SingularMatrixException {
-        if (z.isEmpty()) {
-            double a = covMatrix.getValue(indexMap.get(x), indexMap.get(y));
-            double b = covMatrix.getValue(indexMap.get(x), indexMap.get(x));
-            double c = covMatrix.getValue(indexMap.get(y), indexMap.get(y));
+        double z = 0.5 * (log(1.0 + pc) - log(1.0 - pc));
+        double z1 = 0.5 *  (log(1.0 + pc1) - log(1.0 - pc1));
+        double z2 = 0.5 * (log(1.0 + pc2) - log(1.0 - pc2));
 
-            if (b * c == 0) throw new SingularMatrixException();
+        double zv1 = (z - z1) / sqrt((1.0 / ((double) nc - 3) + 1.0 / ((double) nc1 - 3)));
+        double zv2 = (z - z2) / sqrt((1.0 / ((double) nc - 3) + 1.0 / ((double) nc2 - 3)));
 
-            return -a / Math.sqrt(b * c);
-        } else {
-            int[] indices = new int[z.size() + 2];
-            indices[0] = indexMap.get(x);
-            indices[1] = indexMap.get(y);
-            for (int i = 0; i < z.size(); i++) indices[i + 2] = indexMap.get(z.get(i));
-            TetradMatrix submatrix = covMatrix.getSubmatrix(indices).getMatrix();
-            return StatUtils.partialCorrelation(submatrix);
+        double p1 = 2 * (1.0 - new NormalDistribution(0, 1).cumulativeProbability(abs(zv1)));
+        double p2 = 2 * (1.0 - new NormalDistribution(0, 1).cumulativeProbability(abs(zv2)));
+
+        boolean rejected1 = p1 < alpha;
+        boolean rejected2 = p2 < alpha;
+
+        boolean possibleEdge = false;
+
+        if (zv1 < 0 && zv2 > 0 && rejected1) {
+            possibleEdge = true;
+        } else if (zv1 > 0 && zv2 < 0 && rejected2) {
+            possibleEdge = true;
+        } else if (rejected1 && rejected2) {
+            possibleEdge = true;
+        } else if (rejected1 || rejected2) {
+            possibleEdge = true;
         }
+
+        System.out.println(possibleEdge);
+
+        return !possibleEdge;
     }
 
     public boolean isIndependent(Node x, Node y, Node... z) {
@@ -428,6 +408,12 @@ public final class IndTestFisherZ implements IndependenceTest {
 
     public double getRho() {
         return rho;
+    }
+
+    private double partialCorrelation(double[] x, double[] y, double[][] z, double[] condition, double threshold, double direction) throws SingularMatrixException {
+        double[][] cv = StatUtils.covMatrix(x, y, z, condition, threshold, direction);
+        TetradMatrix m = new TetradMatrix(cv).transpose();
+        return StatUtils.partialCorrelation(m);
     }
 }
 

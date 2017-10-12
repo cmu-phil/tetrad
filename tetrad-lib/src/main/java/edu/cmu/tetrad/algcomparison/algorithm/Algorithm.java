@@ -1,5 +1,6 @@
 package edu.cmu.tetrad.algcomparison.algorithm;
 
+import edu.cmu.tetrad.algcomparison.simulation.Simulation;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.algcomparison.utils.HasParameters;

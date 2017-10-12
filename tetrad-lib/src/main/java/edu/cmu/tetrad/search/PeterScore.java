@@ -35,7 +35,7 @@ import static java.lang.Math.log;
  *
  * @author Joseph Ramsey
  */
-public class PeterScore implements Score {
+public class  PeterScore implements Score {
 
     private final IndTestFisherZ test;
     private final DataSet dataSet;

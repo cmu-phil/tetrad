@@ -766,7 +766,7 @@ public final class LargeScaleSimulation {
 
     public double[][] getUncorrelatedShocks(int sampleSize) {
 //        TDistribution dist = new TDistribution(new Well1024a(++seed), 6);
-        BetaDistribution dist = new BetaDistribution(new Well1024a(++seed), 2, 5);
+        BetaDistribution dist = new BetaDistribution(new Well1024a(++seed), 2, 10);
 //        NormalDistribution dist = new NormalDistribution(new Well1024a(++seed), 0, 1);
 //        UniformRealDistribution dist = new UniformRealDistribution(0, 1);
 

@@ -1,6 +1,6 @@
 package edu.cmu.tetrad.test;
 
-import edu.cmu.tetrad.algcomparison.algorithm.multi.Fang;
+import edu.cmu.tetrad.algcomparison.algorithm.multi.Fask;
 import edu.cmu.tetrad.data.DataReader;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DelimiterType;
@@ -17,11 +17,11 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * Loads autistic/typical data files from a given directory and runs FANG on each one.
+ * Loads autistic/typical data files from a given directory and runs FASK on each one.
  *
  * @author jdramsey
  */
-public class FangGraphs {
+public class FaskGraphs {
     private List<String> filenames = new ArrayList<>();
     private List<DataSet> datasets = new ArrayList<>();
     private List<Graph> graphs = new ArrayList<>();
@@ -30,10 +30,10 @@ public class FangGraphs {
     /**
      *
      * @param path The path to the directory containing the files.
-     * @param parameters Parameters for the FANG search.
+     * @param parameters Parameters for the FASK search.
      * @param contains Some string(s) the data filenames must include. May be  blank.
      */
-    public FangGraphs(String path, Parameters parameters, String... contains) {
+    public FaskGraphs(String path, Parameters parameters, String... contains) {
         loadFiles(path, parameters, contains);
     }
 
@@ -53,11 +53,11 @@ public class FangGraphs {
         return types;
     }
 
-    public void reconcileNames(FangGraphs... files) {
+    public void reconcileNames(FaskGraphs... files) {
         Set<String> allNames = new HashSet<>();
         List<Node> nodes = new ArrayList<>();
 
-        for (FangGraphs file : files) {
+        for (FaskGraphs file : files) {
             for (Graph graph : file.getGraphs()) {
                 for (Node node : graph.getNodes()) {
                     if (!allNames.contains(node.getName())) {
@@ -113,16 +113,16 @@ public class FangGraphs {
                         DataSet dataSet = reader.parseTabular(new File(path, name));
                         filenames.add(name);
                         datasets.add(dataSet);
-                        Fang fang = new Fang();
-                        Graph search = fang.search(dataSet, parameters);
+                        Fask fask = new Fask();
+                        Graph search = fask.search(dataSet, parameters);
                         graphs.add(search);
                     } else if (name.contains("typical")) {
                         types.add(false);
                         DataSet dataSet = reader.parseTabular(new File(path, name));
                         filenames.add(name);
                         datasets.add(dataSet);
-                        Fang fang = new Fang();
-                        Graph search = fang.search(dataSet, parameters);
+                        Fask fask = new Fask();
+                        Graph search = fask.search(dataSet, parameters);
                         graphs.add(search);
                     }
 

@@ -42,14 +42,10 @@ import java.util.Set;
  *
  * @author jdramsey
  */
-public class ExternalAlgorithmIntersection implements ExternalAlgorithm {
+public class ExternalAlgorithmIntersection extends ExternalAlgorithm {
     static final long serialVersionUID = 23L;
     private final ExternalAlgorithm[] algorithms;
     private String shortDescription = null;
-    private List<String> usedParameters = new ArrayList<>();
-    private Simulation simulation;
-    private String path;
-    private int simIndex;
     private long elapsed = -99;
 
     public ExternalAlgorithmIntersection(String shortDescription, ExternalAlgorithm... algorithms) {
@@ -57,7 +53,6 @@ public class ExternalAlgorithmIntersection implements ExternalAlgorithm {
         this.shortDescription = shortDescription;
     }
 
-    @Override
     /**
      * Reads in the relevant graph from the file (see above) and returns it.
      */
@@ -87,7 +82,6 @@ public class ExternalAlgorithmIntersection implements ExternalAlgorithm {
         return intersection;
     }
 
-    @Override
     /**
      * Returns the pattern of the supplied DAG.
      */
@@ -99,38 +93,10 @@ public class ExternalAlgorithmIntersection implements ExternalAlgorithm {
         return shortDescription;
     }
 
-    @Override
-    public List<String> getParameters() {
-        return usedParameters;
-    }
-
-    public int getNumDataModels() {
-        return simulation.getNumDataModels();
-    }
-
-    @Override
     public DataType getDataType() {
         return DataType.Continuous;
     }
 
-    public void setSimulation(Simulation simulation) {
-        this.simulation = simulation;
-    }
-
-    public void setPath(String path) {
-        this.path = path;
-    }
-
-    public void setSimIndex(int simIndex) {
-        this.simIndex = simIndex;
-    }
-
-    @Override
-    public Simulation getSimulation() {
-        return simulation;
-    }
-
-    @Override
     public long getElapsedTime(DataModel dataSet, Parameters parameters) {
         return this.elapsed;
     }
