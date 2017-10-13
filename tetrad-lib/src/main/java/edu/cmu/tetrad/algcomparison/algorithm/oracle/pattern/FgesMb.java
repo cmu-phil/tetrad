@@ -54,7 +54,7 @@ public class FgesMb implements Algorithm, TakesInitialGraph, HasKnowledge, UsesS
     public Graph search(DataModel dataSet, Parameters parameters) {
         if (!parameters.getBoolean("bootstrapping")) {
             if (algorithm != null) {
-                initialGraph = algorithm.search(dataSet, parameters);
+//                initialGraph = algorithm.search(dataSet, parameters);
             }
 
             Score score = this.score.getScore(dataSet, parameters);

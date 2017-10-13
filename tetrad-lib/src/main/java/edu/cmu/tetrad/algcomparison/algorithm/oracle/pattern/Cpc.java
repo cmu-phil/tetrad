@@ -49,7 +49,7 @@ public class Cpc implements Algorithm, TakesInitialGraph, HasKnowledge, TakesInd
     public Graph search(DataModel dataSet, Parameters parameters) {
     	if(!parameters.getBoolean("bootstrapping")){
             if (algorithm != null) {
-            	initialGraph = algorithm.search(dataSet, parameters);
+//            	initialGraph = algorithm.search(dataSet, parameters);
             }
             edu.cmu.tetrad.search.PcAll search = new edu.cmu.tetrad.search.PcAll(test.getTest(dataSet, parameters), initialGraph);
             search.setDepth(parameters.getInt("depth"));

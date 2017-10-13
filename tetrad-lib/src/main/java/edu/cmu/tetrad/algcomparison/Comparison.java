@@ -65,7 +65,7 @@ import java.util.concurrent.RecursiveTask;
 public class Comparison {
 
 
-    public enum ComparisonGraph {true_DAG, Pattern_of_the_true_DAG, PAG_of_the_true_DAG}
+        public enum ComparisonGraph {true_DAG, Pattern_of_the_true_DAG, PAG_of_the_true_DAG}
 
     private boolean[] graphTypeUsed;
     private PrintStream out;

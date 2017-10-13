@@ -55,7 +55,7 @@ public class PcAll implements Algorithm, TakesInitialGraph, HasKnowledge, TakesI
         if (!parameters.getBoolean("bootstrapping")) {
 
             if (algorithm != null) {
-                initialGraph = algorithm.search(dataSet, parameters);
+//                initialGraph = algorithm.search(dataSet, parameters);
             }
 
             edu.cmu.tetrad.search.PcAll.FasRule fasRule;

@@ -42,7 +42,7 @@ import edu.cmu.tetrad.util.Parameters;
  */
 public class TestKunMeasurementError {
 
-    public void TestCycles_Data_fMRI_FANG() {
+    public void TestCycles_Data_fMRI_FASK() {
         Parameters parameters = new Parameters();
 
         parameters.set("numRuns", 20);
@@ -102,7 +102,7 @@ public class TestKunMeasurementError {
     }
 
     public static void main(String... args) {
-        new TestKunMeasurementError().TestCycles_Data_fMRI_FANG();
+        new TestKunMeasurementError().TestCycles_Data_fMRI_FASK();
     }
 }
 

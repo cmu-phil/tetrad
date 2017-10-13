@@ -495,8 +495,8 @@ public final class TetradCmd {
 
         if ("pc".equalsIgnoreCase(algorithmName)) {
             runPc();
-        } else if ("fang".equalsIgnoreCase(algorithmName)) {
-            runFang();
+        } else if ("fask".equalsIgnoreCase(algorithmName)) {
+            runFask();
         } else if ("pc.stable".equalsIgnoreCase(algorithmName)) {
             runPcStable();
         } else if ("cpc".equalsIgnoreCase(algorithmName)) {
@@ -606,13 +606,13 @@ public final class TetradCmd {
         writeGraph(resultGraph);
     }
 
-    private void runFang() {
+    private void runFask() {
         if (this.data == null && this.covarianceMatrix == null) {
             throw new IllegalStateException("Data did not load correctly.");
         }
 
         if (verbose) {
-            systemPrint("FANG");
+            systemPrint("FASK");
             systemPrint(getKnowledge().toString());
             systemPrint(getVariables().toString());
 
@@ -625,7 +625,7 @@ public final class TetradCmd {
             TetradLogger.getInstance().log("info", "Testing it.");
         }
 
-        Fang pc = new Fang(data);
+        Fask pc = new Fask(data);
         pc.setAlpha(significance);
         pc.setPenaltyDiscount(penaltyDiscount);
         pc.setDepth(depth);
