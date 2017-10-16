@@ -30,7 +30,7 @@ import java.util.List;
         command = "fges",
         algoType = AlgType.forbid_latent_common_causes,
         description = "Fast Greedy Equivalence Search (FGES) is an implementation of the revised GES algorithm. "
-        + "It works for both BayesNets and SEMs.\n\n"
+        + "See Ramsey et al., 2017 for details. It works for both BayesNets and SEMs.\n\n"
         + "Some code optimization could be done for the scoring part of the graph for "
         + "discrete models (method scoreGraphChange). Some of Andrew Moore's approaches"
         + "for caching sufficient statistics, for instance.\n\n "

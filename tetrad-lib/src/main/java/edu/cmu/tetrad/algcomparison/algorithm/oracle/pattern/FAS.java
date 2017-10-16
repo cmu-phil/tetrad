@@ -27,7 +27,8 @@ import java.util.List;
         name = "FAS",
         command = "fas",
         algoType = AlgType.produce_undirected_graphs,
-        description = "Short blurb goes here"
+        description = "FAS is the adjacency search of the PC algorithm, used as an adjacency search in many algorithms and sometimes useful in it own right as an undirected search that avoids marrying of parents. See Spirtes, " +
+                "Glymour and Scheines, Causation, Prediction and Search."
 )
 public class FAS implements Algorithm, HasKnowledge, TakesIndependenceWrapper {
 

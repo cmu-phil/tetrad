@@ -28,7 +28,13 @@ import java.util.List;
         name = "PC All",
         command = "pc-all",
         algoType = AlgType.forbid_latent_common_causes,
-        description = "Short blurb goes here"
+        description = "PcAll presents a range of PC (\"Peter and Clark\") based algorithms. For the PC algorithm, " +
+                "see Spirtes, Glymour and Scheines, \n" +
+                "causation, Prediction and Search. For the conservative version, see Ramsey et al. (2012). " +
+                "The adjacency search from PC-Stable is available; the reference for that is Colombo and " +
+                "Maathuis (2014). Three collider resolution rules are available. \"Priority\" overwrites " +
+                "previous colliders; \"Overwrite\" keeps previous orientation information while orienting " +
+                "new colliders; \"Bidirected\" allows bidirected edges to be oriented when orienting new colliders."
 )
 public class PcAll implements Algorithm, TakesInitialGraph, HasKnowledge, TakesIndependenceWrapper {
 
