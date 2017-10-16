@@ -23,12 +23,12 @@ import java.util.List;
  *
  * @author jdramsey
  */
-@edu.cmu.tetrad.annotation.Algorithm(
-        name = "FASK Concatenated",
-        command = "fask-concatenated",
-        algoType = AlgType.forbid_latent_common_causes,
-        description = "Short blurb goes here"
-)
+//@edu.cmu.tetrad.annotation.Algorithm(
+//        name = "FASK Concatenated",
+//        command = "fask-concatenated",
+//        algoType = AlgType.forbid_latent_common_causes,
+//        description = "Short blurb goes here"
+//)
 public class FaskConcatenated implements MultiDataSetAlgorithm, HasKnowledge {
 
     static final long serialVersionUID = 23L;
