@@ -38,7 +38,7 @@ public class PcStableMax implements Algorithm, TakesInitialGraph, HasKnowledge {
         Graph init = null;
 
         if (initialGraph != null) {
-            init = initialGraph.search(dataSet, parameters);
+//            init = initialGraph.search(dataSet, parameters);
         }
 
         edu.cmu.tetrad.search.PcAll search = new edu.cmu.tetrad.search.PcAll(test.getTest(dataSet, parameters), init);

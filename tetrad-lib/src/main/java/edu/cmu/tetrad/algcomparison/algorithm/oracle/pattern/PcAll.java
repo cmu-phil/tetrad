@@ -40,7 +40,7 @@ public class PcAll implements Algorithm, TakesInitialGraph, HasKnowledge {
         Graph initial = null;
 
         if (initialGraph != null) {
-            initial = initialGraph.search(dataSet, parameters);
+//            initial = initialGraph.search(dataSet, parameters);
         }
 
         edu.cmu.tetrad.search.PcAll.FasRule fasRule;

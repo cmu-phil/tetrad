@@ -416,6 +416,23 @@ public final class DataUtils {
         }
     }
 
+    public static double[] center(double[] d) {
+        double sum = 0.0;
+
+        for (int i = 0; i < d.length; i++) {
+            sum += d[i];
+        }
+
+        double mean = sum / d.length;
+        double[] d2 = new double[d.length];
+
+        for (int i = 0; i < d.length; i++) {
+            d2[i] = d[i] - mean;
+        }
+
+        return d2;
+    }
+
     public static TetradMatrix centerData(TetradMatrix data) {
         TetradMatrix data2 = data.copy();
 

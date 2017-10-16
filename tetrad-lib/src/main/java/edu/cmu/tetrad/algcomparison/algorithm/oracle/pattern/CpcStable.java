@@ -39,7 +39,7 @@ public class CpcStable implements Algorithm, HasKnowledge {
     public Graph search(DataModel dataSet, Parameters parameters) {
         Graph init =  null;
         if (initialGraph != null) {
-            init = initialGraph.search(dataSet, parameters);
+//            init = initialGraph.search(dataSet, parameters);
         }
         edu.cmu.tetrad.search.PcAll search = new edu.cmu.tetrad.search.PcAll(test.getTest(dataSet, parameters), init);
         search.setDepth(parameters.getInt("depth"));

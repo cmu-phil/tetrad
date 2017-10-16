@@ -397,7 +397,7 @@ public class SemBicScoreDeterministic implements Score {
         }
 
         Node x = variables.get(i);
-        System.out.println(SearchLogUtils.determinismDetected(_sel, x));
+//        System.out.println(SearchLogUtils.determinismDetected(_sel, x));
     }
 
     private void setCovariances(ICovarianceMatrix covariances) {

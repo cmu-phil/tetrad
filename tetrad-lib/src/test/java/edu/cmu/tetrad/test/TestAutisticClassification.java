@@ -31,7 +31,6 @@ import edu.cmu.tetrad.search.Fas;
 import edu.cmu.tetrad.search.IndTestScore;
 import edu.cmu.tetrad.search.SemBicScore;
 import edu.cmu.tetrad.util.Parameters;
-import org.junit.Test;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -66,36 +65,36 @@ public class TestAutisticClassification {
         parameters.set("depth", depth);
         parameters.set("twoCycleAlpha", 1e-5);
 
-        FangGraphs train;
-        FangGraphs test = null;
+        FaskGraphs train;
+        FaskGraphs test = null;
 
         if (trainIndex == 1) {
-            train = new FangGraphs("/Users/jdramsey/Documents/LAB_NOTEBOOK.2012.04.20/data/Joe_108_Variable",
+            train = new FaskGraphs("/Users/jdramsey/Documents/LAB_NOTEBOOK.2012.04.20/data/Joe_108_Variable",
                     parameters, "ROI_data");
         } else if (trainIndex == 2) {
-            train = new FangGraphs("/Users/jdramsey/Documents/LAB_NOTEBOOK.2012.04.20/data/USM_Datasets2",
+            train = new FaskGraphs("/Users/jdramsey/Documents/LAB_NOTEBOOK.2012.04.20/data/USM_Datasets2",
                     parameters, "ROI_data");
         } else if (trainIndex == 3) {
-            train = new FangGraphs("/Users/jdramsey/Documents/LAB_NOTEBOOK.2012.04.20/data/Whole_Cerebellum_Scans",
+            train = new FaskGraphs("/Users/jdramsey/Documents/LAB_NOTEBOOK.2012.04.20/data/Whole_Cerebellum_Scans",
                     parameters, "ROI_data");
         } else if (trainIndex == 4) {
-            train = new FangGraphs("/Users/jdramsey/Downloads/USM_ABIDE", new Parameters());
+            train = new FaskGraphs("/Users/jdramsey/Downloads/USM_ABIDE", new Parameters());
         } else {
             throw new IllegalArgumentException("Type must be an index 1-4");
         }
 
         if (type == Type.TRAIN_TEST) {
             if (testIndex == 1) {
-                test = new FangGraphs("/Users/jdramsey/Documents/LAB_NOTEBOOK.2012.04.20/data/Joe_108_Variable",
+                test = new FaskGraphs("/Users/jdramsey/Documents/LAB_NOTEBOOK.2012.04.20/data/Joe_108_Variable",
                         parameters, "ROI_data");
             } else if (testIndex == 2) {
-                test = new FangGraphs("/Users/jdramsey/Documents/LAB_NOTEBOOK.2012.04.20/data/USM_Datasets2",
+                test = new FaskGraphs("/Users/jdramsey/Documents/LAB_NOTEBOOK.2012.04.20/data/USM_Datasets2",
                         parameters, "ROI_data");
             } else if (testIndex == 3) {
-                test = new FangGraphs("/Users/jdramsey/Documents/LAB_NOTEBOOK.2012.04.20/data/Whole_Cerebellum_Scans",
+                test = new FaskGraphs("/Users/jdramsey/Documents/LAB_NOTEBOOK.2012.04.20/data/Whole_Cerebellum_Scans",
                         parameters, "ROI_data");
             } else if (testIndex == 4) {
-                test = new FangGraphs("/Users/jdramsey/Downloads/USM_ABIDE", new Parameters());
+                test = new FaskGraphs("/Users/jdramsey/Downloads/USM_ABIDE", new Parameters());
             } else {
                 throw new IllegalArgumentException("Type must be an index 1-4");
             }
@@ -111,7 +110,7 @@ public class TestAutisticClassification {
         }
     }
 
-    private void trainTest(FangGraphs train, FangGraphs test) {
+    private void trainTest(FaskGraphs train, FaskGraphs test) {
         int numTp = 0;
         int numFp = 0;
         int numMeh = 0;
@@ -139,7 +138,7 @@ public class TestAutisticClassification {
         System.out.println();
     }
 
-    private void leaveOneOut(FangGraphs train) {
+    private void leaveOneOut(FaskGraphs train) {
         int numTp = 0;
         int numFp = 0;
         int numUnclassified = 0;
@@ -457,7 +456,7 @@ public class TestAutisticClassification {
         parameters.set("randomSelectionSize", 1);
         parameters.set("Structure", "Placeholder");
 
-        FangGraphs files = new FangGraphs("/Users/jdramsey/Downloads/USM_ABIDE", new Parameters());
+        FaskGraphs files = new FaskGraphs("/Users/jdramsey/Downloads/USM_ABIDE", new Parameters());
 
         List<DataSet> datasets = files.getDatasets();
         List<String> filenames = files.getFilenames();

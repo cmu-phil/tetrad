@@ -1,11 +1,13 @@
 package edu.cmu.tetrad.algcomparison.algorithm.multi;
 
 import edu.cmu.tetrad.algcomparison.algorithm.MultiDataSetAlgorithm;
+import edu.cmu.tetrad.algcomparison.graph.RandomGraph;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.search.OldFask2;
+import edu.cmu.tetrad.search.Fask;
+import edu.cmu.tetrad.search.Lofs2;
 import edu.cmu.tetrad.util.Parameters;
 
 import java.util.ArrayList;
@@ -20,17 +22,19 @@ import java.util.List;
  *
  * @author jdramsey
  */
-public class OldFask2Concatenated implements MultiDataSetAlgorithm, HasKnowledge {
+public class FasLofsConcatenated implements MultiDataSetAlgorithm, HasKnowledge {
     static final long serialVersionUID = 23L;
-    private boolean empirical = false;
+    private final Lofs2.Rule rule;
+    private RandomGraph initialGraph;
     private IKnowledge knowledge = new Knowledge2();
 
-    public OldFask2Concatenated() {
-        this.empirical = false;
+    public FasLofsConcatenated(Lofs2.Rule rule) {
+        this.rule = rule;
     }
 
-    public OldFask2Concatenated(boolean empirical) {
-        this.empirical = empirical;
+    public FasLofsConcatenated(Lofs2.Rule rule, RandomGraph initialGraph) {
+        this.rule = rule;
+        this.initialGraph = initialGraph;
     }
 
     @Override
@@ -43,12 +47,10 @@ public class OldFask2Concatenated implements MultiDataSetAlgorithm, HasKnowledge
         }
 
         DataSet dataSet = DataUtils.concatenate(centered);
-        OldFask2 search = new OldFask2(dataSet);
+        edu.cmu.tetrad.search.FasLofs search = new edu.cmu.tetrad.search.FasLofs((DataSet) dataSet, rule);
         search.setDepth(parameters.getInt("depth"));
         search.setPenaltyDiscount(parameters.getDouble("penaltyDiscount"));
-        search.setAlpha(parameters.getDouble("twoCycleAlpha"));
         search.setKnowledge(knowledge);
-        search.setThresholdForReversing(parameters.getDouble("thresholdForReversing"));
         return search.search();
     }
 
@@ -64,7 +66,7 @@ public class OldFask2Concatenated implements MultiDataSetAlgorithm, HasKnowledge
 
     @Override
     public String getDescription() {
-        return "Old FASK2 Concatenated";
+        return "FASK Concatenated";
     }
 
     @Override

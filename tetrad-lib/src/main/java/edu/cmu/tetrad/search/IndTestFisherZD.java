@@ -190,7 +190,7 @@ public final class IndTestFisherZD implements IndependenceTest {
         try {
             r = partialCorrelation(x, y, z);
         } catch (SingularMatrixException e) {
-            System.out.println(SearchLogUtils.determinismDetected(z, x));
+//            System.out.println(SearchLogUtils.determinismDetected(z, x));
             return true;
         }
 
@@ -312,7 +312,7 @@ public final class IndTestFisherZD implements IndependenceTest {
 //                inverse =
                 Czz.inverse();
             } catch (SingularMatrixException e) {
-                System.out.println(SearchLogUtils.determinismDetected(z, x));
+//                System.out.println(SearchLogUtils.determinismDetected(z, x));
 
                 return true;
             }

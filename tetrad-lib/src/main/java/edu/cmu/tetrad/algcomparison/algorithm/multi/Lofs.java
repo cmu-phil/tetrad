@@ -1,15 +1,15 @@
 package edu.cmu.tetrad.algcomparison.algorithm.multi;
 
-import edu.cmu.tetrad.algcomparison.algorithm.MultiDataSetAlgorithm;
+import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
+import edu.cmu.tetrad.algcomparison.graph.RandomGraph;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.search.OldFask4;
+import edu.cmu.tetrad.search.Lofs2;
 import edu.cmu.tetrad.util.Parameters;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 /**
@@ -20,41 +20,28 @@ import java.util.List;
  *
  * @author jdramsey
  */
-public class OldFask4Concatenated implements MultiDataSetAlgorithm, HasKnowledge {
+public class FasLofs implements Algorithm, HasKnowledge {
     static final long serialVersionUID = 23L;
-    private boolean empirical = false;
+    private final Lofs2.Rule rule;
+    private RandomGraph initialGraph;
     private IKnowledge knowledge = new Knowledge2();
 
-    public OldFask4Concatenated() {
-        this.empirical = false;
+    public FasLofs(Lofs2.Rule rule) {
+        this.rule = rule;
     }
 
-    public OldFask4Concatenated(boolean empirical) {
-        this.empirical = empirical;
-    }
-
-    @Override
-    public Graph search(List<DataModel> dataSets, Parameters parameters) {
-
-        List<DataSet> centered = new ArrayList<>();
-
-        for (DataModel dataSet : dataSets) {
-            centered.add(DataUtils.center((DataSet) dataSet));
-        }
-
-        DataSet dataSet = DataUtils.concatenate(centered);
-        OldFask4 search = new OldFask4(dataSet);
-        search.setDepth(parameters.getInt("depth"));
-        search.setPenaltyDiscount(parameters.getDouble("penaltyDiscount"));
-        search.setAlpha(parameters.getDouble("twoCycleAlpha"));
-        search.setKnowledge(knowledge);
-        search.setThresholdForReversing(parameters.getDouble("thresholdForReversing"));
-        return search.search();
+    public FasLofs(Lofs2.Rule rule, RandomGraph initialGraph) {
+        this.rule = rule;
+        this.initialGraph = initialGraph;
     }
 
     @Override
     public Graph search(DataModel dataSet, Parameters parameters) {
-        return search(Collections.singletonList((DataModel) DataUtils.getContinuousDataSet(dataSet)), parameters);
+        edu.cmu.tetrad.search.FasLofs search = new edu.cmu.tetrad.search.FasLofs((DataSet) dataSet, rule);
+        search.setDepth(parameters.getInt("depth"));
+        search.setPenaltyDiscount(parameters.getDouble("penaltyDiscount"));
+        search.setKnowledge(knowledge);
+        return search.search();
     }
 
     @Override
@@ -64,7 +51,7 @@ public class OldFask4Concatenated implements MultiDataSetAlgorithm, HasKnowledge
 
     @Override
     public String getDescription() {
-        return "Old FASK4 Concatenated";
+        return "FAS followed by " + rule;
     }
 
     @Override
@@ -77,9 +64,6 @@ public class OldFask4Concatenated implements MultiDataSetAlgorithm, HasKnowledge
         List<String> parameters = new ArrayList<>();
         parameters.add("depth");
         parameters.add("penaltyDiscount");
-        parameters.add("twoCycleAlpha");
-        parameters.add("numRuns");
-        parameters.add("randomSelectionSize");
 
         return parameters;
     }

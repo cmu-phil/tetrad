@@ -69,7 +69,7 @@ public final class LargeScaleSimulation {
     private boolean includeNegativeCoefs = true;
 
     private boolean errorsNormal = true;
-//    private boolean errorsPositivelySkewedIfNonNormal = true;
+    //    private boolean errorsPositivelySkewedIfNonNormal = true;
     private double betaLeftValue;
     private double betaRightValue;
 

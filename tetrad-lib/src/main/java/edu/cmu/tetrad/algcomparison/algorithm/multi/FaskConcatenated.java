@@ -79,7 +79,6 @@ public class FaskConcatenated implements MultiDataSetAlgorithm, HasKnowledge {
         parameters.add("twoCycleAlpha");
         parameters.add("numRuns");
         parameters.add("randomSelectionSize");
-        parameters.add("conditionalDistributionsStandardized");
 
         return parameters;
     }
