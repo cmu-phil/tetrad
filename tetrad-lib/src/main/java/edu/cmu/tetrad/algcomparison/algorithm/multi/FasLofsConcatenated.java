@@ -1,12 +1,13 @@
 package edu.cmu.tetrad.algcomparison.algorithm.multi;
 
 import edu.cmu.tetrad.algcomparison.algorithm.MultiDataSetAlgorithm;
+import edu.cmu.tetrad.algcomparison.graph.RandomGraph;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.search.*;
-import edu.cmu.tetrad.search.FasLofs;
+import edu.cmu.tetrad.search.Fask;
+import edu.cmu.tetrad.search.Lofs2;
 import edu.cmu.tetrad.util.Parameters;
 
 import java.util.ArrayList;
@@ -24,30 +25,32 @@ import java.util.List;
 public class FasLofsConcatenated implements MultiDataSetAlgorithm, HasKnowledge {
     static final long serialVersionUID = 23L;
     private final Lofs2.Rule rule;
+    private RandomGraph initialGraph;
     private IKnowledge knowledge = new Knowledge2();
 
     public FasLofsConcatenated(Lofs2.Rule rule) {
         this.rule = rule;
     }
 
-    @Override
-    public Graph search(List<DataModel> dataModels, Parameters parameters) {
-        List<DataSet> dataSets = new ArrayList<>();
+    public FasLofsConcatenated(Lofs2.Rule rule, RandomGraph initialGraph) {
+        this.rule = rule;
+        this.initialGraph = initialGraph;
+    }
 
-        for (DataModel dataModel : dataModels) {
-            dataSets.add((DataSet) dataModel);
+    @Override
+    public Graph search(List<DataModel> dataSets, Parameters parameters) {
+
+        List<DataSet> centered = new ArrayList<>();
+
+        for (DataModel dataSet : dataSets) {
+            centered.add(DataUtils.center((DataSet) dataSet));
         }
 
-        DataSet dataSet = DataUtils.concatenate(dataSets);
-
-        edu.cmu.tetrad.search.FasLofs search = new FasLofs(dataSet, rule);
+        DataSet dataSet = DataUtils.concatenate(centered);
+        edu.cmu.tetrad.search.FasLofs search = new edu.cmu.tetrad.search.FasLofs((DataSet) dataSet, rule);
         search.setDepth(parameters.getInt("depth"));
         search.setPenaltyDiscount(parameters.getDouble("penaltyDiscount"));
         search.setKnowledge(knowledge);
-        return getGraph(search);
-    }
-
-    private Graph getGraph(FasLofs search) {
         return search.search();
     }
 
@@ -63,7 +66,7 @@ public class FasLofsConcatenated implements MultiDataSetAlgorithm, HasKnowledge 
 
     @Override
     public String getDescription() {
-        return "FAS followed by " + rule;
+        return "FAS followed by " + rule + " on concatenated data";
     }
 
     @Override
@@ -76,7 +79,7 @@ public class FasLofsConcatenated implements MultiDataSetAlgorithm, HasKnowledge 
         List<String> parameters = new ArrayList<>();
         parameters.add("depth");
         parameters.add("penaltyDiscount");
-
+        parameters.add("twoCycleAlpha");
         parameters.add("numRuns");
         parameters.add("randomSelectionSize");
 

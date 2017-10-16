@@ -17,7 +17,7 @@ public class ParamDescriptions {
     public ParamDescriptions() {
         put("numMeasures", new ParamDescription("Number of measured variables", 10, 1, Integer.MAX_VALUE));
         put("numLatents", new ParamDescription("Number of latent variables", 0, 0, Integer.MAX_VALUE));
-        put("avgDegree", new ParamDescription("Average degree of graph", 2, 1, Integer.MAX_VALUE));
+        put("avgDegree", new ParamDescription("Average degree of graph", 2.0, 1, Double.POSITIVE_INFINITY));
         put("maxDegree", new ParamDescription("The maximum degree of the graph", 100, -1, Integer.MAX_VALUE));
         put("maxIndegree", new ParamDescription("Maximum indegree of graph", 100, 1, Integer.MAX_VALUE));
         put("maxOutdegree", new ParamDescription("Maximum outdegree of graph", 100, 1, Integer.MAX_VALUE));

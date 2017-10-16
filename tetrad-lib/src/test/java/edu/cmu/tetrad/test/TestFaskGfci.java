@@ -24,7 +24,9 @@ package edu.cmu.tetrad.test;
 import edu.cmu.tetrad.algcomparison.Comparison;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithms;
 import edu.cmu.tetrad.algcomparison.algorithm.multi.FaskGfci;
+import edu.cmu.tetrad.algcomparison.algorithm.oracle.pag.Fci;
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.pag.Gfci;
+import edu.cmu.tetrad.algcomparison.algorithm.oracle.pag.Rfci;
 import edu.cmu.tetrad.algcomparison.graph.RandomForward;
 import edu.cmu.tetrad.algcomparison.independence.FisherZ;
 import edu.cmu.tetrad.algcomparison.independence.SemBicTest;
@@ -46,8 +48,8 @@ public class TestFaskGfci {
         Parameters parameters = new Parameters();
 
         // Random forward
-        parameters.set("numMeasures", 50);
-        parameters.set("numLatents", 10);
+        parameters.set("numMeasures", 100);
+        parameters.set("numLatents", 20);
         parameters.set("avgDegree", 2);
         parameters.set("maxDegree", 100);
         parameters.set("maxIndegree", 100);
@@ -60,8 +62,8 @@ public class TestFaskGfci {
         parameters.set("varLow", 1);
         parameters.set("varHigh", 3);
         parameters.set("verbose", false);
-        parameters.set("includePositiveCoefs", true);
-        parameters.set("includeNegativeCoefs", true);
+        parameters.set("includePositiveCoefs", true, false);
+        parameters.set("includeNegativeCoefs", true, false);
         parameters.set("errorsNormal", false);
         parameters.set("betaLeftValue", 1);
         parameters.set("betaRightValue", 5);
@@ -101,8 +103,8 @@ public class TestFaskGfci {
 
         Algorithms algorithms = new Algorithms();
 
-//        algorithms.add(new Fci(new SemBicTest()));
-//        algorithms.add(new Rfci(new SemBicTest()));
+        algorithms.add(new Fci(new SemBicTest()));
+        algorithms.add(new Rfci(new SemBicTest()));
         algorithms.add(new Gfci(new SemBicTest(), new SemBicScore()));
         algorithms.add(new FaskGfci(new SemBicTest()));
         Comparison comparison = new Comparison();

@@ -17,18 +17,20 @@ import java.util.List;
 /**
  * @author jdramsey
  */
-public class LoadContinuousDataSmithSim implements Simulation, HasParameterValues {
+public class LoadContinuousDataPwdd7 implements Simulation, HasParameterValues {
     static final long serialVersionUID = 23L;
     private final int index;
+    private final String prefix;
     private String path;
     private Graph graph = null;
     private List<DataSet> dataSets = new ArrayList<>();
     private List<String> usedParameters = new ArrayList<>();
     private Parameters parametersValues = new Parameters();
 
-    public LoadContinuousDataSmithSim(String path, int index) {
+    public LoadContinuousDataPwdd7(String path, int index, String prefix) {
         this.path = path;
         this.index = index;
+        this.prefix = prefix;
         String structure = new File(path).getName();
         parametersValues.set("Structure", structure + " " + index);
     }
@@ -63,36 +65,36 @@ public class LoadContinuousDataSmithSim implements Simulation, HasParameterValue
         File dir = new File(path + "/data");
 
         if (dir.exists()) {
-            File[] files = dir.listFiles();
+            File[] dirs = dir.listFiles();
 
-            for (File file : files) {
-                if (!file.getName().endsWith(".txt")) continue;
-                if (!file.getName().contains("sim" + index + ".")) continue;
-                System.out.println("Loading data from " + file.getAbsolutePath());
-                try {
-                    DataReader reader = new DataReader();
-//                    reader.setVariablesSupplied(false);
-//                    reader.setDelimiter(DelimiterType.COMMA);
-                    DataSet dataSet;// = reader.parseTabular(file);
+            for (File _dir : dirs) {
+                if (_dir.getName().startsWith(".DS")) continue;
+                if (!_dir.getName().equals("50_simulation_" + index)) continue;
 
-//                    if (dataSet.getVariable().size() == 1) {
-                        DataReader reader2 = new DataReader();
-                        reader2.setVariablesSupplied(false);
-                        reader2.setDelimiter(DelimiterType.WHITESPACE);
-                        reader2.setDelimiter(DelimiterType.COMMA);
-                        dataSet = reader2.parseTabular(file);
-//                    }
+                File[] files = _dir.listFiles();
 
-                    if (dataSet.getVariables().size() > graph.getNumNodes()) {
-                        List<Node> nodes = new ArrayList<>();
-                        for (int i = 0; i < graph.getNumNodes(); i++) nodes.add(dataSet.getVariable(i));
-                        dataSet = dataSet.subsetColumns(nodes);
+                for (File file : files) {
+                    if (!file.getName().endsWith(".txt")) continue;
+                    if (!file.getName().startsWith(prefix + "_")) continue;
+                    System.out.println("Loading data from " + file.getAbsolutePath());
+
+                    try {
+                        DataReader reader = new DataReader();
+                        reader.setVariablesSupplied(false);
+                        reader.setDelimiter(DelimiterType.WHITESPACE);
+                        DataSet dataSet = reader.parseTabular(file);
+
+                        if (dataSet.getVariables().size() > graph.getNumNodes()) {
+                            List<Node> nodes = new ArrayList<>();
+                            for (int i = 0; i < graph.getNumNodes(); i++) nodes.add(dataSet.getVariable(i));
+                            dataSet = dataSet.subsetColumns(nodes);
+                        }
+
+                        dataSets.add(dataSet);
+                    } catch (Exception e) {
+                        System.out.println("Couldn't parse " + file.getAbsolutePath());
+                        e.printStackTrace();
                     }
-
-                    dataSets.add(dataSet);
-                } catch (Exception e) {
-                    System.out.println("Couldn't parse " + file.getAbsolutePath());
-                    e.printStackTrace();
                 }
             }
         }

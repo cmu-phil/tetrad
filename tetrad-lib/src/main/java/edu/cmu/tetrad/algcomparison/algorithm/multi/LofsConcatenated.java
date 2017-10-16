@@ -6,7 +6,6 @@ import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.search.Fask;
 import edu.cmu.tetrad.search.Lofs2;
 import edu.cmu.tetrad.util.Parameters;
 
@@ -22,23 +21,23 @@ import java.util.List;
  *
  * @author jdramsey
  */
-public class FasLofsConcatenated implements MultiDataSetAlgorithm, HasKnowledge {
+public class LofsConcatenated implements MultiDataSetAlgorithm, HasKnowledge, PassesInGraph {
     static final long serialVersionUID = 23L;
     private final Lofs2.Rule rule;
     private RandomGraph initialGraph;
     private IKnowledge knowledge = new Knowledge2();
 
-    public FasLofsConcatenated(Lofs2.Rule rule) {
+    public LofsConcatenated(Lofs2.Rule rule) {
         this.rule = rule;
     }
 
-    public FasLofsConcatenated(Lofs2.Rule rule, RandomGraph initialGraph) {
+    public LofsConcatenated(Lofs2.Rule rule, RandomGraph initialGraph) {
         this.rule = rule;
         this.initialGraph = initialGraph;
     }
 
     @Override
-    public Graph search(List<DataModel> dataSets, Parameters parameters) {
+    public Graph search(List<DataModel> dataSets, Parameters parameters, Graph graph) {
 
         List<DataSet> centered = new ArrayList<>();
 
@@ -51,7 +50,7 @@ public class FasLofsConcatenated implements MultiDataSetAlgorithm, HasKnowledge 
         search.setDepth(parameters.getInt("depth"));
         search.setPenaltyDiscount(parameters.getDouble("penaltyDiscount"));
         search.setKnowledge(knowledge);
-        return search.search();
+        return search.orient(graph);
     }
 
     @Override
@@ -66,7 +65,7 @@ public class FasLofsConcatenated implements MultiDataSetAlgorithm, HasKnowledge 
 
     @Override
     public String getDescription() {
-        return "FASK Concatenated";
+        return "True graph oriented by " + rule + " using concatenated data";
     }
 
     @Override
@@ -94,5 +93,10 @@ public class FasLofsConcatenated implements MultiDataSetAlgorithm, HasKnowledge 
     @Override
     public void setKnowledge(IKnowledge knowledge) {
         this.knowledge = knowledge;
+    }
+
+    @Override
+    public Graph search(List<DataModel> dataSet, Parameters parameters) {
+        throw new UnsupportedOperationException();
     }
 }

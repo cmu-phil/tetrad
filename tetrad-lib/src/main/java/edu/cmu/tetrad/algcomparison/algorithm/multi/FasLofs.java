@@ -1,6 +1,7 @@
 package edu.cmu.tetrad.algcomparison.algorithm.multi;
 
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
+import edu.cmu.tetrad.algcomparison.graph.RandomGraph;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.EdgeListGraph;
@@ -9,7 +10,6 @@ import edu.cmu.tetrad.search.Lofs2;
 import edu.cmu.tetrad.util.Parameters;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 /**
@@ -23,14 +23,16 @@ import java.util.List;
 public class FasLofs implements Algorithm, HasKnowledge {
     static final long serialVersionUID = 23L;
     private final Lofs2.Rule rule;
+    private RandomGraph initialGraph;
     private IKnowledge knowledge = new Knowledge2();
 
     public FasLofs(Lofs2.Rule rule) {
         this.rule = rule;
     }
 
-    private Graph getGraph(edu.cmu.tetrad.search.FasLofs search) {
-        return search.search();
+    public FasLofs(Lofs2.Rule rule, RandomGraph initialGraph) {
+        this.rule = rule;
+        this.initialGraph = initialGraph;
     }
 
     @Override
@@ -39,7 +41,7 @@ public class FasLofs implements Algorithm, HasKnowledge {
         search.setDepth(parameters.getInt("depth"));
         search.setPenaltyDiscount(parameters.getDouble("penaltyDiscount"));
         search.setKnowledge(knowledge);
-        return getGraph(search);
+        return search.search();
     }
 
     @Override

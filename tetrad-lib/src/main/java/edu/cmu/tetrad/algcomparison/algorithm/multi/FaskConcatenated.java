@@ -29,7 +29,7 @@ public class FaskConcatenated implements MultiDataSetAlgorithm, HasKnowledge {
         this.empirical = false;
     }
 
-    public FaskConcatenated(boolean empirical) {
+    public  FaskConcatenated(boolean empirical) {
         this.empirical = empirical;
     }
 

@@ -20,28 +20,33 @@ import java.util.List;
  *
  * @author jdramsey
  */
-public class FasLofs implements Algorithm, HasKnowledge {
+public class Lofs implements Algorithm, HasKnowledge, PassesInGraph {
     static final long serialVersionUID = 23L;
     private final Lofs2.Rule rule;
     private RandomGraph initialGraph;
     private IKnowledge knowledge = new Knowledge2();
 
-    public FasLofs(Lofs2.Rule rule) {
+    public Lofs(Lofs2.Rule rule) {
         this.rule = rule;
     }
 
-    public FasLofs(Lofs2.Rule rule, RandomGraph initialGraph) {
+    public Lofs(Lofs2.Rule rule, RandomGraph initialGraph) {
         this.rule = rule;
         this.initialGraph = initialGraph;
     }
 
     @Override
     public Graph search(DataModel dataSet, Parameters parameters) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public Graph search(List<DataModel> dataSet, Parameters parameters, Graph graph) {
         edu.cmu.tetrad.search.FasLofs search = new edu.cmu.tetrad.search.FasLofs((DataSet) dataSet, rule);
         search.setDepth(parameters.getInt("depth"));
         search.setPenaltyDiscount(parameters.getDouble("penaltyDiscount"));
         search.setKnowledge(knowledge);
-        return search.search();
+        return search.orient(graph);
     }
 
     @Override
@@ -51,7 +56,7 @@ public class FasLofs implements Algorithm, HasKnowledge {
 
     @Override
     public String getDescription() {
-        return "FAS followed by " + rule;
+        return "True graph oriented by " + rule;
     }
 
     @Override
