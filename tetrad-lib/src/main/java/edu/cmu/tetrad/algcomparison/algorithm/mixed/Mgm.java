@@ -22,7 +22,14 @@ import java.util.List;
         name = "MGM",
         command = "mgm",
         algoType = AlgType.produce_undirected_graphs,
-        description = "Short blurb goes here"
+        description = "Finds a Markov random field (with parents married) for a dataset in which continuous and discrete variables are mixed together. For example, if X->Y<-Z, the output will be X—Y—Z with X—Z. The parents of Y will be joined by an undirected edge, morally, even though this edge does not occur in the true model.\n" +
+                "\n" +
+                "Input Assumptions: Data are mixed.\n" +
+                "\n" +
+                "Output Format: A Markov random field for the data. \n" +
+                "\n" +
+                "Parameters:\n" +
+                "- MGM Tuning Parameters #1, #2, #3. Defaults for these are 0.1, though they can be adjusted. "
 )
 public class Mgm implements Algorithm {
 

@@ -29,7 +29,15 @@ import java.util.List;
         name = "IMaGES Continuous",
         command = "imgs_cont",
         algoType = AlgType.forbid_latent_common_causes,
-        description = "Short blurb goes here"
+        description = "Description: Adjusts the continuous variable score (SEM BIC) of FGES so allow for multiple datasets as input. The linear, Gaussian BIC scores for each data set are averaged at each step of the algorithm, producing a model for al data sets that assumes they have the same graphical structure across dataset.\n" +
+                "\n" +
+                "Input Assumptions: A set of continuous datasets with the same variables and sample sizes. \n" +
+                "\n" +
+                "Output Format: A pattern, interpreted as a common model for all datasets.\n" +
+                "\n" +
+                "Parameters: All of the parameters from FGES are available for IMaGES. Additionally:\n" +
+                "- The number of runs. The number of times the algorithm should select data sets and run the algorithm. Default 1.\n" +
+                "- The number of datasets that should be taken in each random sample. IMaGES will randomly select a set of datasets to run, so that on different runs one can be an estimate of the consistency of results. To use all variables, set this to the total number of datasets. Default 1.\n"
 )
 public class ImagesSemBic implements MultiDataSetAlgorithm, HasKnowledge {
 

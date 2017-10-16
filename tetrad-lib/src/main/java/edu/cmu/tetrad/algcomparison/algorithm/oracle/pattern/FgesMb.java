@@ -27,7 +27,14 @@ import java.util.List;
         name = "FgesMb",
         command = "fges-mb",
         algoType = AlgType.search_for_Markov_blankets,
-        description = "Short blurb goes here"
+        description = "This is a restriction of the FGES algorithm to union of edges over the combined Markov blankets of a set of targets, including the targets. In the interface, just one target may be specified. See Ramsey et al., 2017 for details. In the general case, finding the graph over the Markov blanket variables of a target (including the target) is far faster than finding the pattern for all of the variables.\n" +
+                "\n" +
+                "Input Assumptions: The same as FGES\n" +
+                "\n" +
+                "Output Format: A graph over a selected group of nodes that includes the target and each node in the Markov blanket of the target. This will be the same as if FGES were run and the result restricted to just these variables, so some edges may be oriented in the returned graph that may not have been oriented in a pattern over the selected nodes.\n" +
+                "\n" +
+                "Parameters: Uses the parameters of FGES.\n" +
+                "- Target Name. The name of the target variables for the Markov blanket one wishes to construct. Default blank (that is, unspecified.) A variable must be specified here to run the algorithm."
 )
 public class FgesMb implements Algorithm, TakesInitialGraph, HasKnowledge, UsesScoreWrapper {
 

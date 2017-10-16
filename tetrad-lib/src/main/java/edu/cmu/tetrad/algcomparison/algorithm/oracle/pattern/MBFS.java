@@ -29,7 +29,14 @@ import java.util.List;
         name = "MBFS",
         command = "mbfs",
         algoType = AlgType.search_for_Markov_blankets,
-        description = "Short blurb goes here"
+        description = "Markov blanket fan search. Similar to FGES-MB but using PC as the basic search instead of FGES. The rules of the PC search are restricted to just the variables in the Markov blanket of a target T, including T; the result is a graph that is a pattern over these variables.\n" +
+                "\n" +
+                "Input Assumptions: Same as for PC\n" +
+                "\n" +
+                "Output Format: A pattern over a selected group of nodes that includes the target and each node in the Markov blanket of the target. \n" +
+                "\n" +
+                "Parameters: Uses the parameters of PC.\n" +
+                "- Target Name. The name of the target variables for the Markov blanket one wishes to construct. Default blank (that is, unspecified.) A variable must be specified here to run the algorithm."
 )
 public class MBFS implements Algorithm, HasKnowledge, TakesIndependenceWrapper {
 

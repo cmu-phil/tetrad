@@ -25,7 +25,16 @@ import java.util.List;
         name = "Fofc",
         command = "fofc",
         algoType = AlgType.search_for_structure_over_latents,
-        description = "Short blurb goes here"
+        description = "The FOFC (Find One Factor Clusters) is an alternative method that achieves the same goal as BPC; in testing, it seems to scale better with somewhat better accuracy (Kummerfeld and Ramsey, 2016). The basic idea is to build up clusters one at a time by adding variables that keep them pure, in the sense that all relevant tetrad constraints still hold. There are different ways of going about this. One could try to build one cluster up as far as possible, then remove all of those variables from the set, and try to make a another cluster using the remaining variables (SAG, i.e., Seed and Grow). Or one can try in parallel to grow all possible clusters and then choose among the grown clusters using some criterion such as cluster size (GAP, Grow and Pick). In general, GAP is more accurate. The result is a clustering of variables. Similarly to BPC, MimBuild may be run on a covariance matrix estimated over the latents for the resulting clusters to find a pattern over the latents that represents the causal structure over the latents.\n" +
+                "\n" +
+                "Input Assumptions: Continuous data containing as many measures as are available.\n" +
+                "\n" +
+                "Output Format: For FOFC, a clustering of variables. For MimBuild, a pattern over latents. \n" +
+                "\n" +
+                "Parameters:\n" +
+                "- Cutoff for p-values (alpha). Conditional independence tests with p-values greater than this will be judged to be independent (H0). Default 0.01.\n" +
+                "- Yes if the Wishart test should be used. No if the Delta test should be used. These are two tests of whether a set of four variables constitutes a pure tetrad—that is, if all tetrads for this set of four variables vanish. For the notion of a vanishing tetrad, see Spirtes et al., 2000. For the Delta test, see ??. Default No (Delta test).\n" +
+                "- Yes if the GAP algorithm should be used. No if the SAG algorithm should be used."
 )
 public class Fofc implements Algorithm, TakesInitialGraph, HasKnowledge, ClusterAlgorithm {
 

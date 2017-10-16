@@ -23,7 +23,15 @@ import java.util.List;
         name = "GLASSO",
         command = "glasso",
         algoType = AlgType.produce_undirected_graphs,
-        description = "Short blurb goes here"
+        description = "A translation of the Fortran code for GLASSO - Friedman, Hastie and Tibshirani (2007) \n" +
+                "\n" +
+                "Like MGM, this produces an undirected graph in which parents are always married.\n" +
+                "Input Assumptions: The data are continuous. \n" +
+                "\n" +
+                "Output Format: A Markov random field. \n" +
+                "\n" +
+                "Parameters:\n" +
+                "- MAXIT, IA, IS, ITR, IPEN, THR. These are parameters in the translated Fortan code. Defaults are given in the interface and are the same as for the Fortran code.\n"
 )
 public class Glasso implements Algorithm {
 
