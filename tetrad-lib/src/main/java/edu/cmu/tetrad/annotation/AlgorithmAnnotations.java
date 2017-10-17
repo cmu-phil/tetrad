@@ -42,8 +42,8 @@ public class AlgorithmAnnotations extends AbstractAnnotations<Algorithm> {
         return INSTANCE;
     }
 
-    public List<AnnotatedClass<Algorithm>> filterOutExperimental(List<AnnotatedClass<Algorithm>> annoClasses) {
-        return filterOutByAnnotation(annoClasses, Experimental.class);
+    public List<AnnotatedClass<Algorithm>> filterOutExperimental(List<AnnotatedClass<Algorithm>> list) {
+        return filterOutByAnnotation(list, Experimental.class);
     }
 
     public boolean acceptMultipleDataset(Class clazz) {

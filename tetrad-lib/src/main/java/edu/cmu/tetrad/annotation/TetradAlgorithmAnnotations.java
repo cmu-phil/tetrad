@@ -40,7 +40,7 @@ public class TetradAlgorithmAnnotations {
     private final List<AnnotatedClassWrapper<Algorithm>> handleUnmeasuredConfounderNameWrappers;
 
     private TetradAlgorithmAnnotations() {
-        nameWrappers = algoAnno.getAnnotatedClasses().stream()
+        nameWrappers = algoAnno.filterOutExperimental(algoAnno.getAnnotatedClasses()).stream()
                 .map(e -> new AnnotatedClassWrapper<>(e.getAnnotation().name(), e))
                 .sorted()
                 .collect(Collectors.toList());
@@ -57,18 +57,6 @@ public class TetradAlgorithmAnnotations {
 
     public static TetradAlgorithmAnnotations getInstance() {
         return INSTANCE;
-    }
-
-    public List<AnnotatedClassWrapper<Algorithm>> filterOutExperimental(List<AnnotatedClassWrapper<Algorithm>> Algorithms) {
-        if (Algorithms == null) {
-            return Collections.EMPTY_LIST;
-        }
-
-        List<AnnotatedClassWrapper<Algorithm>> list = Algorithms.stream()
-                .filter(e -> !e.annotatedClass.getClazz().isAnnotationPresent(Experimental.class))
-                .collect(Collectors.toList());
-
-        return Collections.unmodifiableList(list);
     }
 
     public boolean acceptMultipleDataset(Class clazz) {
