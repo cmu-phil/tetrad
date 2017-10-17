@@ -22,3 +22,8 @@ causal-cmd/build/*
 tetrad-gui/build/*
 tetrad-lib/build/*
 
+tetrad-gui/target/*
+tetrad-lib/target/*
+
+tetrad-gui/bin/*
+tetrad-lib/bin/*

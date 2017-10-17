@@ -18,32 +18,30 @@
 // along with this program; if not, write to the Free Software               //
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA //
 ///////////////////////////////////////////////////////////////////////////////
-
 package edu.cmu.tetradapp.editor;
 
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
-import edu.cmu.tetrad.algcomparison.algorithm.bootstrap.BootstrapFges;
-import edu.cmu.tetrad.algcomparison.algorithm.bootstrap.BootstrapGfci;
-import edu.cmu.tetrad.algcomparison.algorithm.bootstrap.BootstrapRfci;
-import edu.cmu.tetrad.algcomparison.algorithm.cluster.Bpc;
-import edu.cmu.tetrad.algcomparison.algorithm.cluster.Fofc;
-import edu.cmu.tetrad.algcomparison.algorithm.cluster.Ftfc;
-import edu.cmu.tetrad.algcomparison.algorithm.continuous.dag.Lingam;
-import edu.cmu.tetrad.algcomparison.algorithm.mixed.Mgm;
-import edu.cmu.tetrad.algcomparison.algorithm.multi.*;
-import edu.cmu.tetrad.algcomparison.algorithm.oracle.pag.*;
+import edu.cmu.tetrad.algcomparison.algorithm.AlgorithmFactory;
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern.*;
-import edu.cmu.tetrad.algcomparison.algorithm.other.Glasso;
-import edu.cmu.tetrad.algcomparison.algorithm.pairwise.*;
-import edu.cmu.tetrad.algcomparison.graph.SingleGraph;
 import edu.cmu.tetrad.algcomparison.independence.*;
 import edu.cmu.tetrad.algcomparison.score.*;
-import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
+import edu.cmu.tetrad.algcomparison.utils.TakesInitialGraph;
+import edu.cmu.tetrad.annotation.AlgType;
+import edu.cmu.tetrad.annotation.AnnotatedClassUtils;
+import edu.cmu.tetrad.annotation.AnnotatedClassWrapper;
+import edu.cmu.tetrad.annotation.Gaussian;
+import edu.cmu.tetrad.annotation.Linear;
+import edu.cmu.tetrad.annotation.Score;
+import edu.cmu.tetrad.annotation.TestOfIndependence;
+import edu.cmu.tetrad.annotation.TetradAlgorithmAnnotations;
+import edu.cmu.tetrad.annotation.TetradScoreAnnotations;
+import edu.cmu.tetrad.annotation.TetradTestOfIndependenceAnnotations;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataModelList;
 import edu.cmu.tetrad.data.DataSet;
+import edu.cmu.tetrad.data.DataType;
+import edu.cmu.tetrad.data.ICovarianceMatrix;
 import edu.cmu.tetrad.data.Knowledge2;
-import edu.cmu.tetrad.data.KnowledgeBoxInput;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.IndependenceTest;
@@ -55,13 +53,10 @@ import edu.cmu.tetradapp.app.hpc.action.HpcJobActivityAction;
 import edu.cmu.tetradapp.app.hpc.manager.HpcAccountManager;
 import edu.cmu.tetradapp.app.hpc.manager.HpcJobManager;
 import edu.cmu.tetradapp.app.hpc.util.HpcAccountUtils;
-import edu.cmu.tetradapp.knowledge_editor.KnowledgeBoxEditor;
 import edu.cmu.tetradapp.model.GeneralAlgorithmRunner;
 import edu.cmu.tetradapp.model.GraphSelectionWrapper;
-import edu.cmu.tetradapp.model.KnowledgeBoxModel;
 import edu.cmu.tetradapp.util.DesktopController;
 import edu.cmu.tetradapp.util.FinalizingEditor;
-import edu.cmu.tetradapp.util.ImageUtils;
 import edu.cmu.tetradapp.util.WatchedProcess;
 import edu.pitt.dbmi.ccd.commons.file.MessageDigestHash;
 import edu.pitt.dbmi.ccd.rest.client.dto.user.JsonWebToken;
@@ -73,446 +68,860 @@ import edu.pitt.dbmi.tetrad.db.entity.HpcAccount;
 import edu.pitt.dbmi.tetrad.db.entity.HpcJobInfo;
 import edu.pitt.dbmi.tetrad.db.entity.HpcParameter;
 import edu.pitt.dbmi.tetrad.db.entity.JvmOption;
-
-import javax.help.CSH;
-import javax.help.HelpBroker;
-import javax.help.HelpSet;
-import javax.swing.*;
-import javax.swing.border.EmptyBorder;
-
-import org.apache.commons.lang3.StringUtils;
-
 import java.awt.*;
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.io.IOException;
-import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
+import javax.swing.*;
+import javax.swing.border.CompoundBorder;
+import javax.swing.border.EmptyBorder;
+import javax.swing.event.ListSelectionEvent;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * Edits some algorithm to search for Markov blanket patterns.
  *
  * @author Joseph Ramsey
  * @author Chirayu Kong Wongchokprasitti, PhD (chw20@pitt.edu)
+ * @author Zhou Yuan (zhy19@pitt.edu)
  */
 public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
 
-    // Note: When adding an algorithm, make sure you do all of the following:
-    // 1. Add a new type to private enum AlgName.
-    // 2. Add a desription for it to final List<AlgorithmDescription> descriptions.
-    // 3. In private Algorithm getAlgorithm, add a new case to the switch statement returning
-    // an instance of the algorithm.
-
     private static final long serialVersionUID = -5719467682865706447L;
 
-    private final HashMap<AlgName, AlgorithmDescription> mappedDescriptions;
     private final GeneralAlgorithmRunner runner;
-    private final JButton searchButton1 = new JButton("Search");
-    private final JButton searchButton2 = new JButton("Search");
-    private final JTabbedPane pane;
-    private final JComboBox<String> algTypesDropdown = new JComboBox<>();
-    private final JComboBox<AlgName> algNamesDropdown = new JComboBox<>();
-    private final JComboBox<TestType> testDropdown = new JComboBox<>();
-    private final JComboBox<ScoreType> scoreDropdown = new JComboBox<>();
+    private Box algoChooserContainer;
+    private Box parametersContainer;
+    private Box parametersBox;
+    private Box graphContainer;
+    private JComboBox<AnnotatedClassWrapper<TestOfIndependence>> testDropdown;
+    private JComboBox<AnnotatedClassWrapper<Score>> scoreDropdown;
+    private DefaultComboBoxModel<AnnotatedClassWrapper<TestOfIndependence>> testDropdownModel = new DefaultComboBoxModel<>();
+    private DefaultComboBoxModel<AnnotatedClassWrapper<Score>> scoreDropdownModel = new DefaultComboBoxModel<>();
     private final GraphSelectionEditor graphEditor;
     private final Parameters parameters;
-    private final HelpSet helpSet;
-    private final Dimension searchButton1Size;
-    private Box knowledgePanel;
-    private JLabel whatYouChose;
-
     private final TetradDesktop desktop;
     private HpcJobInfo hpcJobInfo;
-
     private String jsonResult;
+    private final List<AnnotatedClassWrapper<edu.cmu.tetrad.annotation.Algorithm>> algoWrappers;
+    private List<AnnotatedClassWrapper<TestOfIndependence>> tests;
+    private List<AnnotatedClassWrapper<Score>> scores;
+    private List<AnnotatedClassWrapper<TestOfIndependence>> filteredIndTests;
+    private List<AnnotatedClassWrapper<Score>> filteredScores;
+    private final DefaultListModel<AnnotatedClassWrapper<edu.cmu.tetrad.annotation.Algorithm>> suggestedAlgosListModel = new DefaultListModel<>();
+    private final JList<AnnotatedClassWrapper<edu.cmu.tetrad.annotation.Algorithm>> suggestedAlgosList;
+    private AlgType selectedAlgoType = null;
+    private Boolean acceptKnowledgeFile = null;
+    private final ButtonGroup algoTypesBtnGrp = new ButtonGroup();
+
+    private AnnotatedClassWrapper<edu.cmu.tetrad.annotation.Algorithm> selectedAgloWrapper;
+    private final JTextArea algoDescriptionTextArea = new JTextArea();
+    private ParameterPanel parametersPanel;
+    private JButton step1BackBtn;
+    private JButton step2Btn;
+    private JButton step2BackBtn;
+    private JButton step3Btn;
+
+    private JRadioButton algoTypeAllRadioBtn;
+    private JCheckBox priorKnowledgeCheckbox;
+
+    // Assumption checkboxes
+    private JCheckBox linearVariablesCheckbox;
+    private JCheckBox gaussianVariablesCheckbox;
+
+    // Assumption flags
+    private boolean linearRelationshipAssumption = false;
+    private boolean gaussianVariablesAssumption = false;
 
     //=========================CONSTRUCTORS============================//
-
     /**
      * Opens up an editor to let the user view the given PcRunner.
+     *
+     * @param runner
      */
     public GeneralAlgorithmEditor(final GeneralAlgorithmRunner runner) {
         this.runner = runner;
 
-        String helpHS = "/resources/javahelp/TetradHelp.hs";
+        this.desktop = (TetradDesktop) DesktopController.getInstance();
 
-        try {
-            URL url = this.getClass().getResource(helpHS);
-            this.helpSet = new HelpSet(null, url);
-        } catch (Exception ee) {
-            System.out.println("HelpSet " + ee.getMessage());
-            System.out.println("HelpSet " + helpHS + " not found");
-            throw new IllegalArgumentException();
-        }
-
-        algTypesDropdown.setFont(new Font("Dialog", Font.PLAIN, 13));
-        algNamesDropdown.setFont(new Font("Dialog", Font.PLAIN, 13));
-        testDropdown.setFont(new Font("Dialog", Font.PLAIN, 13));
-        scoreDropdown.setFont(new Font("Dialog", Font.PLAIN, 13));
-
-        Dimension dim = searchButton1.getPreferredSize();
-        searchButton1Size = new Dimension(dim.width + 5, dim.height + 5);
-
-        List<TestType> discreteTests = new ArrayList<>();
-        discreteTests.add(TestType.ChiSquare);
-        discreteTests.add(TestType.GSquare);
-        discreteTests.add(TestType.Discrete_BIC_Test);
-        discreteTests.add(TestType.Conditional_Gaussian_LRT);
-
-        List<TestType> continuousTests = new ArrayList<>();
-        continuousTests.add(TestType.Fisher_Z);
-        continuousTests.add(TestType.Positive_Correlation);
-        continuousTests.add(TestType.Correlation_T);
-        continuousTests.add(TestType.SEM_BIC);
-        continuousTests.add(TestType.Conditional_Correlation);
-        continuousTests.add(TestType.Conditional_Gaussian_LRT);
-
-        List<TestType> mixedTests = new ArrayList<>();
-        mixedTests.add(TestType.Conditional_Gaussian_LRT);
-
-        List<TestType> dsepTests = new ArrayList<>();
-        dsepTests.add(TestType.D_SEPARATION);
-
-        List<ScoreType> discreteScores = new ArrayList<>();
-        discreteScores.add(ScoreType.BDeu);
-        discreteScores.add(ScoreType.Discrete_BIC);
-        discreteScores.add(ScoreType.Conditional_Gaussian_BIC);
-
-        List<ScoreType> continuousScores = new ArrayList<>();
-        continuousScores.add(ScoreType.SEM_BIC);
-        continuousScores.add(ScoreType.Fisher_Z_Score);
-        continuousScores.add(ScoreType.Conditional_Gaussian_BIC);
-
-        List<ScoreType> mixedScores = new ArrayList<>();
-        mixedScores.add(ScoreType.Conditional_Gaussian_BIC);
-
-        List<ScoreType> dsepScores = new ArrayList<>();
-        dsepScores.add(ScoreType.D_SEPARATION);
-
-        final List<AlgorithmDescription> descriptions = new ArrayList<>();
-
-        descriptions.add(new AlgorithmDescription(AlgName.PC, AlgType.forbid_latent_common_causes, OracleType.Test));
-//        descriptions.add(new AlgorithmDescription(AlgName.PC, AlgType.forbid_latent_common_causes, OracleType.Test));
-//        descriptions.add(new AlgorithmDescription(AlgName.CPC, AlgType.forbid_latent_common_causes, OracleType.Test));
-//        descriptions.add(new AlgorithmDescription(AlgName.PCStable, AlgType.forbid_latent_common_causes, OracleType.Test));
-//        descriptions.add(new AlgorithmDescription(AlgName.CPCStable, AlgType.forbid_latent_common_causes, OracleType.Test));
-        descriptions.add(new AlgorithmDescription(AlgName.PcStableMax, AlgType.forbid_latent_common_causes, OracleType.Test));
-        descriptions.add(new AlgorithmDescription(AlgName.FGES, AlgType.forbid_latent_common_causes, OracleType.Score));
-        descriptions.add(new AlgorithmDescription(AlgName.IMaGES_Discrete, AlgType.forbid_latent_common_causes, OracleType.None));
-        descriptions.add(new AlgorithmDescription(AlgName.IMaGES_Continuous, AlgType.forbid_latent_common_causes, OracleType.None));
-//        descriptions.add(new AlgorithmDescription(AlgName.IMaGES_CCD, AlgType.forbid_latent_common_causes, OracleType.None));
-//        descriptions.add(new AlgorithmDescription(AlgName.CCD, AlgType.forbid_latent_common_causes, OracleType.Test));
-//        descriptions.add(new AlgorithmDescription(AlgName.CCD_MAX, AlgType.forbid_latent_common_causes, OracleType.Test));
-        descriptions.add(new AlgorithmDescription(AlgName.FASK, AlgType.forbid_latent_common_causes, OracleType.None));
-
-        descriptions.add(new AlgorithmDescription(AlgName.FCI, AlgType.allow_latent_common_causes, OracleType.Test));
-        descriptions.add(new AlgorithmDescription(AlgName.RFCI, AlgType.allow_latent_common_causes, OracleType.Test));
-//        descriptions.add(new AlgorithmDescription(AlgName.CFCI, AlgType.allow_latent_common_causes, OracleType.Test));
-        descriptions.add(new AlgorithmDescription(AlgName.GFCI, AlgType.allow_latent_common_causes, OracleType.Both));
-        descriptions.add(new AlgorithmDescription(AlgName.TsFCI, AlgType.allow_latent_common_causes, OracleType.Test));
-        descriptions.add(new AlgorithmDescription(AlgName.TsGFCI, AlgType.allow_latent_common_causes, OracleType.Both));
-        descriptions.add(new AlgorithmDescription(AlgName.TsImages, AlgType.allow_latent_common_causes, OracleType.Test));
-
-        descriptions.add(new AlgorithmDescription(AlgName.FgesMb, AlgType.search_for_Markov_blankets, OracleType.Score));
-        descriptions.add(new AlgorithmDescription(AlgName.MBFS, AlgType.search_for_Markov_blankets, OracleType.Score));
-        descriptions.add(new AlgorithmDescription(AlgName.FAS, AlgType.produce_undirected_graphs, OracleType.Test));
-
-//        descriptions.add(new AlgorithmDescription(AlgName.LiNGAM, AlgType.DAG, OracleType.None));
-        descriptions.add(new AlgorithmDescription(AlgName.MGM, AlgType.produce_undirected_graphs, OracleType.None));
-        descriptions.add(new AlgorithmDescription(AlgName.GLASSO, AlgType.produce_undirected_graphs, OracleType.None));
-
-        descriptions.add(new AlgorithmDescription(AlgName.Bpc, AlgType.search_for_structure_over_latents, OracleType.None));
-        descriptions.add(new AlgorithmDescription(AlgName.Fofc, AlgType.search_for_structure_over_latents, OracleType.None));
-        descriptions.add(new AlgorithmDescription(AlgName.Ftfc, AlgType.search_for_structure_over_latents, OracleType.None));
-
-        descriptions.add(new AlgorithmDescription(AlgName.EB, AlgType.orient_pairwise, OracleType.None));
-        descriptions.add(new AlgorithmDescription(AlgName.R1, AlgType.orient_pairwise, OracleType.None));
-        descriptions.add(new AlgorithmDescription(AlgName.R2, AlgType.orient_pairwise, OracleType.None));
-        descriptions.add(new AlgorithmDescription(AlgName.R3, AlgType.orient_pairwise, OracleType.None));
-        descriptions.add(new AlgorithmDescription(AlgName.R4, AlgType.orient_pairwise, OracleType.None));
-        descriptions.add(new AlgorithmDescription(AlgName.RSkew, AlgType.orient_pairwise, OracleType.None));
-        descriptions.add(new AlgorithmDescription(AlgName.RSkewE, AlgType.orient_pairwise, OracleType.None));
-        descriptions.add(new AlgorithmDescription(AlgName.Skew, AlgType.orient_pairwise, OracleType.None));
-        descriptions.add(new AlgorithmDescription(AlgName.SkewE, AlgType.orient_pairwise, OracleType.None));
-//        descriptions.add(new AlgorithmDescription(AlgName.Tahn, AlgType.orient_pairwise, OracleType.None));
-
-        descriptions.add(new AlgorithmDescription(AlgName.BootstrapFGES,
-        		AlgType.bootstrapping, OracleType.Score));
-        	descriptions.add(new AlgorithmDescription(AlgName.BootstrapGFCI,
-        		AlgType.bootstrapping, OracleType.Score));
-        	descriptions.add(new AlgorithmDescription(AlgName.BootstrapRFCI,
-        		AlgType.bootstrapping, OracleType.Score));
-        	
-        mappedDescriptions = new HashMap<>();
-
-        for (AlgorithmDescription description : descriptions) {
-            mappedDescriptions.put(description.getAlgName(), description);
-        }
-
-        this.parameters = runner.getParameters();
-        graphEditor = new GraphSelectionEditor(new GraphSelectionWrapper(runner.getGraphs(), new Parameters()));
-        setLayout(new BorderLayout());
-
-        whatYouChose = new JLabel();
-
-//        if (runner.getDataModelList() == null) {
-//            throw new NullPointerException("No data has been provided.");
-//        }
-
-        List<TestType> tests;
-
+        // Access to the uploaded dataset
         DataModelList dataModelList = runner.getDataModelList();
 
-        if ((dataModelList.isEmpty() && runner.getSourceGraph() != null)) {
-            tests = dsepTests;
-        } else if (!(dataModelList.isEmpty())) {
-            DataModel dataSet = dataModelList.get(0);
-
-            if (dataSet.isContinuous()) {
-                tests = continuousTests;
-            } else if (dataSet.isDiscrete()) {
-                tests = discreteTests;
-            } else if (dataSet.isMixed()) {
-                tests = mixedTests;
-            } else {
-                throw new IllegalArgumentException();
+        // NOTE: the dataModelList.isEmpty() returns false even if there's no real dataset
+        // Taht's because Joe's using an empty dataset to populate the empty spreadsheet - Zhou
+        // Notify the users that we need input dataset or source graph
+        // if the data model has no dataset
+        try {
+            if ((dataModelList.containsEmptyData() && runner.getSourceGraph() == null)) {
+                throw new Exception("You need either some datasets or a graph as input.");
             }
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(desktop, e.getMessage(), "Please Note", JOptionPane.INFORMATION_MESSAGE);
+        }
+
+        // Use annotations to populate algo list
+        // Only show algorithms that support multi dataset if there are multi datasets uploaded
+        // Otherwise show all algorithms that take at least one dataset
+        if (dataModelList.size() > 1) {
+            algoWrappers = TetradAlgorithmAnnotations.getInstance().getAcceptMultipleDatasetNameWrappers();
         } else {
-            throw new IllegalArgumentException("You need either some data sets or a graph as input.");
+            algoWrappers = TetradAlgorithmAnnotations.getInstance().getNameWrappers();
         }
 
-        for (TestType item : tests) {
-            testDropdown.addItem(item);
-        }
+        // Use annotations to get the tests and scores based on different data types
+        // Need to do this before calling createAlgoChooserPanel() - Zhou
+        determineTestAndScore(dataModelList);
 
-        List<ScoreType> scores;
+        // Create default models of test and score dropdowns
+        setTestAndScoreDropdownModels(tests, scores);
 
-        if ((dataModelList.isEmpty() && runner.getSourceGraph() != null)) {
-            tests = dsepTests;
-        } else if (!dataModelList.isEmpty()) {
-            DataModel dataSet = dataModelList.get(0);
+        // Create default algos list model
+        setDefaultAlgosListModel();
 
-            if (dataSet.isContinuous()) {
-                tests = continuousTests;
-            } else if (dataSet.isDiscrete()) {
-                tests = discreteTests;
-            } else if (dataSet.isMixed()) {
-                tests = mixedTests;
-            } else {
-                throw new IllegalArgumentException();
-            }
-        } else {
-            throw new IllegalArgumentException("You need either some data sets or a graph as input.");
-        }
+        // Suggested algo list
+        suggestedAlgosList = new JList<>(suggestedAlgosListModel);
 
-        if (dataModelList.isEmpty() && runner.getGraphs() != null) {
-            scores = dsepScores;
-        } else if (!(dataModelList.isEmpty())) {
-            DataModel dataSet = dataModelList.get(0);
+        this.parameters = runner.getParameters();
 
-            if (dataSet.isContinuous()) {
-                scores = continuousScores;
-            } else if (dataSet.isDiscrete()) {
-                scores = discreteScores;
-            } else if (dataSet.isMixed()) {
-                scores = mixedScores;
-            } else {
-                throw new IllegalArgumentException();
-            }
-        } else {
-            throw new IllegalArgumentException("You need either some data sets or a graph as input.");
-        }
+        graphEditor = new GraphSelectionEditor(new GraphSelectionWrapper(runner.getGraphs(), new Parameters()));
 
-        for (ScoreType item : scores) {
-            scoreDropdown.addItem(item);
-        }
+        // Embed the algo chooser panel into EditorWindow
+        add(createAlgoChooserPanel(), BorderLayout.CENTER);
 
-        for (AlgType item : AlgType.values()) {
-            algTypesDropdown.addItem(item.toString().replace("_", " "));
-        }
+        // Repopulate all the previous selections if reopen the search box
+        if (runner.getGraphs() != null && runner.getGraphs().size() > 0) {
+            if (parameters.getString("algName") != null) {
+                String selectedAlgoName = parameters.getString("algName");
 
-        for (AlgorithmDescription description : descriptions) {
-            if (description.getAlgType() == getAlgType() || getAlgType() == AlgType.ALL) {
-                algNamesDropdown.addItem(description.getAlgName());
-            }
-        }
-
-        algTypesDropdown.setSelectedItem(getAlgType().toString().replace("_", " "));
-        algNamesDropdown.setSelectedItem(getAlgName());
-
-        if (tests.contains(getTestType())) {
-            testDropdown.setSelectedItem(getTestType());
-        }
-
-        if (scores.contains(getScoreType())) {
-            scoreDropdown.setSelectedItem(getScoreType());
-        }
-
-        testDropdown.setEnabled(parameters.getBoolean("testEnabled", true));
-        scoreDropdown.setEnabled(parameters.getBoolean("scoreEnabled", false));
-
-        algTypesDropdown.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                algNamesDropdown.removeAllItems();
-
-                for (AlgorithmDescription description : descriptions) {
-                    AlgType selectedItem = AlgType.valueOf(((String) algTypesDropdown.getSelectedItem()).replace(" ", "_"));
-                    if (description.getAlgType() == selectedItem
-                            || selectedItem == AlgType.ALL) {
-                        algNamesDropdown.addItem(description.getAlgName());
+                for (AnnotatedClassWrapper<edu.cmu.tetrad.annotation.Algorithm> algoWraper : algoWrappers) {
+                    if (algoWraper.getName().equals(selectedAlgoName)) {
+                        suggestedAlgosList.setSelectedValue(algoWraper, true);
+                        break;
                     }
                 }
             }
-        });
 
-        algNamesDropdown.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                setAlgorithm();
-
-                JComboBox<AlgName> box = (JComboBox<AlgName>) e.getSource();
-                Object selectedItem = box.getSelectedItem();
-
-                if (selectedItem != null) {
-                    helpSet.setHomeID(selectedItem.toString());
-                }
-            }
-        });
-
-        testDropdown.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                setAlgorithm();
-            }
-        });
-
-        scoreDropdown.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                setAlgorithm();
-            }
-        });
-
-        pane = new JTabbedPane();
-        pane.add("Algorithm", getParametersPane());
-        getAlgorithmFromInterface();
-        pane.add("Output Graphs", graphEditor);
-        add(pane, BorderLayout.CENTER);
-
-        if (runner.getGraphs() != null && runner.getGraphs().size() > 0) {
-            pane.setSelectedComponent(graphEditor);
+            // Calling setAlgorithm() populates the previous parameters of selected algo
+            setAlgorithm();
+        } else {
+            // Default to select the first algo name in list
+            setSelection();
         }
-
-        searchButton1.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                doSearch(runner);
-            }
-        });
-
-        searchButton2.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                doSearch(runner);
-            }
-        });
-
-        setAlgorithm();
-
-        this.desktop = (TetradDesktop) DesktopController.getInstance();
     }
 
-    private Box getKnowledgePanel(GeneralAlgorithmRunner runner) {
-        class MyKnowledgeInput implements KnowledgeBoxInput {
+    private void determineTestAndScore(DataModelList dataModelList) {
+        // Use annotations to get the tests based on data type
+        TetradTestOfIndependenceAnnotations indTestAnno = TetradTestOfIndependenceAnnotations.getInstance();
+        // Use annotations to get the scores based on data type
+        TetradScoreAnnotations scoreAnno = TetradScoreAnnotations.getInstance();
 
-            private static final long serialVersionUID = 1344090367098647696L;
+        // Determine the test/score dropdown menu options based on dataset
+        if (dataModelList.isEmpty()) {
+            tests = indTestAnno.getNameWrappers(DataType.Graph);
+            scores = scoreAnno.getNameWrappers(DataType.Graph);
+        } else {
+            // Check type based on the first dataset
+            DataModel dataSet = dataModelList.get(0);
 
-            private String name;
-            private List<Node> variables;
-            private List<String> varNames;
-
-            public MyKnowledgeInput(List<Node> variables, List<String> varNames) {
-                this.variables = variables;
-                this.varNames = varNames;
-            }
-
-            @Override
-            public Graph getSourceGraph() {
-                return null;
-            }
-
-            @Override
-            public Graph getResultGraph() {
-                return null;
-            }
-
-            @Override
-            public void setName(String name) {
-                this.name = name;
-            }
-
-            @Override
-            public String getName() {
-                return name;
-            }
-
-            @Override
-            public List<Node> getVariables() {
-                return variables;
-            }
-
-            @Override
-            public List<String> getVariableNames() {
-                return varNames;
+            // Covariance dataset is continuous at the same time - Zhou
+            if (dataSet.isContinuous() && !(dataSet instanceof ICovarianceMatrix)) {
+                tests = indTestAnno.getNameWrappers(DataType.Continuous);
+                scores = scoreAnno.getNameWrappers(DataType.Continuous);
+            } else if (dataSet.isDiscrete()) {
+                tests = indTestAnno.getNameWrappers(DataType.Discrete);
+                scores = scoreAnno.getNameWrappers(DataType.Discrete);
+            } else if (dataSet.isMixed()) {
+                tests = indTestAnno.getNameWrappers(DataType.Mixed);
+                scores = scoreAnno.getNameWrappers(DataType.Mixed);
+            } else if (dataSet instanceof ICovarianceMatrix) { // Better to add an isCovariance() - Zhou
+                tests = indTestAnno.getNameWrappers(DataType.Covariance);
+                scores = scoreAnno.getNameWrappers(DataType.Covariance);
+            } else {
+                throw new IllegalArgumentException();
             }
         }
+    }
 
-        List<Node> variables = null;
-        MyKnowledgeInput myKnowledgeInput;
+    // Use this inside the assumptions checkboxes event listener to update the tests and scores
+    // based on the selections of those checkboxes
+    private void updateTestAndScoreOptions() {
+        // Update the tests and scores list to show items that have @linear/Gaussian annotations
+        filteredIndTests = tests;
+        filteredScores = scores;
 
-        if (runner.getDataModel() != null) {
-            DataModelList dataModelList = runner.getDataModelList();
-            if (dataModelList.size() > 0) {
-                variables = dataModelList.get(0).getVariables();
+        if (linearRelationshipAssumption) {
+            filteredIndTests = AnnotatedClassUtils.filterByAnnotations(Linear.class, tests);
+            filteredScores = AnnotatedClassUtils.filterByAnnotations(Linear.class, scores);
+        }
+
+        if (gaussianVariablesAssumption) {
+            filteredIndTests = AnnotatedClassUtils.filterByAnnotations(Gaussian.class, tests);
+            filteredScores = AnnotatedClassUtils.filterByAnnotations(Gaussian.class, scores);
+        }
+
+        // Recreate the test and score dropdowns
+        setTestAndScoreDropdownModels(filteredIndTests, filteredScores);
+    }
+
+    private void setTestAndScoreDropdownModels(List<AnnotatedClassWrapper<TestOfIndependence>> tests, List<AnnotatedClassWrapper<Score>> scores) {
+        // First remove all elements from combox model before recreation
+        testDropdownModel.removeAllElements();
+        scoreDropdownModel.removeAllElements();
+
+        // Recreate the dropdown menus
+        tests.forEach((test) -> {
+            testDropdownModel.addElement(test);
+        });
+
+        scores.forEach((score) -> {
+            scoreDropdownModel.addElement(score);
+        });
+    }
+
+    private JPanel createAlgoChooserPanel() {
+        // Overall container
+        // contains data preview panel, loading params panel, and load button
+        Box container = Box.createVerticalBox();
+        // Must set the size of container
+        container.setPreferredSize(new Dimension(940, 640));
+
+        // Algo selection container, step 1
+        // contains 3 columns, leftContainer, middleContainer, and rightContainer
+        algoChooserContainer = Box.createHorizontalBox();
+        algoChooserContainer.setPreferredSize(new Dimension(940, 560));
+
+        // Parameters container, step 2
+        parametersContainer = Box.createHorizontalBox();
+        parametersContainer.setPreferredSize(new Dimension(940, 560));
+
+        // Graph container, step 3
+        graphContainer = Box.createHorizontalBox();
+        graphContainer.setPreferredSize(new Dimension(940, 580));
+
+        // Contains data description and result description
+        Box leftContainer = Box.createVerticalBox();
+        leftContainer.setPreferredSize(new Dimension(340, 560));
+
+        Box middleContainer = Box.createVerticalBox();
+        middleContainer.setPreferredSize(new Dimension(250, 560));
+
+        // Contains algo list, algo description, test, score, and parameters
+        Box rightContainer = Box.createVerticalBox();
+        rightContainer.setPreferredSize(new Dimension(340, 560));
+
+        // Describe your data and result using these filters
+        Box algoFiltersBox = Box.createVerticalBox();
+        algoFiltersBox.setMinimumSize(new Dimension(330, 550));
+        algoFiltersBox.setMaximumSize(new Dimension(330, 550));
+        algoFiltersBox.setAlignmentX(LEFT_ALIGNMENT);
+
+        // Use a titled border with 5 px inside padding - Zhou
+        String algoFiltersBoxBorderTitle = "Algorithm filters";
+        algoFiltersBox.setBorder(new CompoundBorder(BorderFactory.createTitledBorder(algoFiltersBoxBorderTitle), new EmptyBorder(5, 5, 5, 5)));
+
+        // Filter based on algo types dropdown
+        Box algoTypesBox = Box.createVerticalBox();
+
+        // Algo types label box
+        Box algTypesBoxLabelBox = Box.createHorizontalBox();
+        algTypesBoxLabelBox.add(new JLabel("Filter algorithms that: "));
+        algTypesBoxLabelBox.setAlignmentX(LEFT_ALIGNMENT);
+
+        // Add label to containing box
+        algoTypesBox.add(algTypesBoxLabelBox);
+
+        // All option
+        Box algoTypeOptionAllBox = Box.createHorizontalBox();
+        algoTypeOptionAllBox.setAlignmentX(LEFT_ALIGNMENT);
+
+        algoTypeAllRadioBtn = new JRadioButton("All");
+
+        // Add to button group
+        algoTypesBtnGrp.add(algoTypeAllRadioBtn);
+
+        // Add padding and option
+        algoTypeOptionAllBox.add(Box.createRigidArea(new Dimension(10, 20)));
+        algoTypeOptionAllBox.add(algoTypeAllRadioBtn);
+
+        // Add all option to containing box
+        algoTypesBox.add(algoTypeOptionAllBox);
+
+        // Event listener on each radio button
+        algoTypeAllRadioBtn.addActionListener((ActionEvent actionEvent) -> {
+            JRadioButton button = (JRadioButton) actionEvent.getSource();
+
+            if (button.isSelected()) {
+                // Update the selected algo type to null
+                selectedAlgoType = null;
+
+                // Update the list
+                updateSuggestedAlgosList();
             }
+        });
+
+        // Show each algo type as a radio button
+        for (AlgType item : AlgType.values()) {
+            String algoType = item.toString().replace("_", " ");
+
+            // Option
+            Box algoTypeOptionBox = Box.createHorizontalBox();
+            algoTypeOptionBox.setAlignmentX(LEFT_ALIGNMENT);
+
+            JRadioButton algoTypeRadioBtn = new JRadioButton(algoType);
+
+            // Add to button group
+            algoTypesBtnGrp.add(algoTypeRadioBtn);
+
+            // Add padding and option
+            algoTypeOptionBox.add(Box.createRigidArea(new Dimension(10, 20)));
+            algoTypeOptionBox.add(algoTypeRadioBtn);
+
+            // Add each option to containing box
+            algoTypesBox.add(algoTypeOptionBox);
+
+            // Event listener on each radio button
+            algoTypeRadioBtn.addActionListener((ActionEvent actionEvent) -> {
+                JRadioButton button = (JRadioButton) actionEvent.getSource();
+
+                if (button.isSelected()) {
+                    // Update the selected algo type
+                    selectedAlgoType = AlgType.valueOf(button.getText().replace(" ", "_"));
+
+                    // Update the list
+                    updateSuggestedAlgosList();
+                }
+            });
         }
 
-        if ((variables == null || variables.isEmpty()) && runner.getSourceGraph() != null) {
-            variables = runner.getSourceGraph().getNodes();
+        // Set All as the default selection
+        algoTypeAllRadioBtn.setSelected(true);
+
+        // Is there a prior knowledge file?
+        Box priorKnowledgeBox = Box.createVerticalBox();
+
+        // Add label into this label box to size
+        Box priorKnowledgeLabelBox = Box.createHorizontalBox();
+        priorKnowledgeLabelBox.add(new JLabel("Filter algorithms that: "));
+        priorKnowledgeLabelBox.setAlignmentX(LEFT_ALIGNMENT);
+
+        // Checkbox container
+        Box priorKnowledgeOptionBox = Box.createHorizontalBox();
+        priorKnowledgeOptionBox.setAlignmentX(LEFT_ALIGNMENT);
+
+        priorKnowledgeCheckbox = new JCheckBox("can handle prior knowledge file");
+
+        // Event listener
+        priorKnowledgeCheckbox.addActionListener((ActionEvent actionEvent) -> {
+            // Set the flag true or null, no false - Zhou
+            if (priorKnowledgeCheckbox.isSelected()) {
+                acceptKnowledgeFile = true;
+            } else {
+                acceptKnowledgeFile = null;
+            }
+
+            // Update the list
+            updateSuggestedAlgosList();
+        });
+
+        // Add padding and option
+        priorKnowledgeOptionBox.add(Box.createRigidArea(new Dimension(10, 20)));
+        priorKnowledgeOptionBox.add(priorKnowledgeCheckbox);
+
+        // Add to containg box
+        priorKnowledgeBox.add(priorKnowledgeLabelBox);
+        priorKnowledgeBox.add(priorKnowledgeOptionBox);
+
+        // Reset filter selections
+        JButton resetFilterSelectionsBtn = new JButton("Reset all filters");
+
+        // Event listener of clearFilterSelectionsBtn
+        resetFilterSelectionsBtn.addActionListener((ActionEvent actionEvent) -> {
+            resetAlgoFilters();
+        });
+
+        // Items to put in data description box
+        algoFiltersBox.add(algoTypesBox);
+        algoFiltersBox.add(Box.createVerticalStrut(10));
+        algoFiltersBox.add(priorKnowledgeBox);
+        algoFiltersBox.add(Box.createVerticalStrut(20));
+        algoFiltersBox.add(resetFilterSelectionsBtn);
+
+        // Add to leftContainer
+        leftContainer.add(algoFiltersBox);
+
+        // Components in middleContainer
+        // Show a list of filtered algorithms
+        Box suggestedAlgosBox = Box.createVerticalBox();
+        suggestedAlgosBox.setMinimumSize(new Dimension(240, 550));
+        suggestedAlgosBox.setMaximumSize(new Dimension(240, 550));
+
+        // Use a titled border with 5 px inside padding - Zhou
+        String suggestedAlgosBoxBorderTitle = "Choose algorithm";
+        suggestedAlgosBox.setBorder(new CompoundBorder(BorderFactory.createTitledBorder(suggestedAlgosBoxBorderTitle), new EmptyBorder(5, 5, 5, 5)));
+
+        // suggestedAlgosList
+        // Only allow single selection
+        suggestedAlgosList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+
+        // Event listener
+        suggestedAlgosList.addListSelectionListener((ListSelectionEvent e) -> {
+            // More about why use getValueIsAdjusting()
+            // http://docs.oracle.com/javase/8/docs/api/javax/swing/ListSelectionModel.html#getValueIsAdjusting--
+            if (!e.getValueIsAdjusting()) {
+                // After selecting a different algo type, even though we set the selection index,
+                // but it won't be captured here - Zhou
+                // Seems this only captures mouse selection
+                if (suggestedAlgosList.getSelectedValue() == null) {
+                    return;
+                }
+
+                selectedAgloWrapper = suggestedAlgosList.getSelectedValue();
+
+                // Set description
+                setAlgoDescriptionContent();
+
+                // Update the test and score dropdown menus
+                // and set all other parameters
+                setAlgorithm();
+            }
+        });
+
+        // Put the list in a scrollable area
+        JScrollPane suggestedAlgosListScrollPane = new JScrollPane(suggestedAlgosList);
+        suggestedAlgosListScrollPane.setMinimumSize(new Dimension(260, 550));
+        suggestedAlgosListScrollPane.setMaximumSize(new Dimension(260, 550));
+
+        suggestedAlgosBox.add(suggestedAlgosListScrollPane);
+
+        middleContainer.add(suggestedAlgosBox);
+
+        // Components in rightContainer
+        // Algo description
+        Box algoDescriptionBox = Box.createVerticalBox();
+        algoDescriptionBox.setMinimumSize(new Dimension(330, 335));
+        algoDescriptionBox.setMaximumSize(new Dimension(330, 335));
+
+        // Use a titled border with 5 px inside padding - Zhou
+        String algoDescriptionBoxBorderTitle = "Algorithm description";
+        algoDescriptionBox.setBorder(new CompoundBorder(BorderFactory.createTitledBorder(algoDescriptionBoxBorderTitle), new EmptyBorder(5, 5, 5, 5)));
+
+        // Set line arap
+        algoDescriptionTextArea.setWrapStyleWord(true);
+        algoDescriptionTextArea.setLineWrap(true);
+
+        // Read only
+        algoDescriptionTextArea.setEditable(false);
+
+        JScrollPane algoDescriptionScrollPane = new JScrollPane(algoDescriptionTextArea);
+        algoDescriptionScrollPane.setMinimumSize(new Dimension(330, 335));
+        algoDescriptionScrollPane.setMaximumSize(new Dimension(330, 335));
+
+        algoDescriptionBox.add(algoDescriptionScrollPane);
+
+        // Choose corresponding test and score based on algorithm
+        Box testAndScoreBox = Box.createVerticalBox();
+        testAndScoreBox.setMinimumSize(new Dimension(330, 200));
+        testAndScoreBox.setMaximumSize(new Dimension(330, 200));
+
+        // Use a titled border with 5 px inside padding - Zhou
+        String testAndScoreBoxBorderTitle = "Choose Independence Test and Score";
+        testAndScoreBox.setBorder(new CompoundBorder(BorderFactory.createTitledBorder(testAndScoreBoxBorderTitle), new EmptyBorder(5, 5, 5, 5)));
+
+        // Assumptions label box
+        Box assumptionsLabelBox = Box.createHorizontalBox();
+        assumptionsLabelBox.setPreferredSize(new Dimension(330, 20));
+        JLabel assumptionsLabel = new JLabel("Filter by dataset properties: ");
+        //assumptionsLabelBox.setAlignmentX(LEFT_ALIGNMENT);
+        assumptionsLabelBox.add(assumptionsLabel);
+        assumptionsLabelBox.add(Box.createHorizontalGlue());
+
+        Box linearRelationshipBox = Box.createHorizontalBox();
+        linearRelationshipBox.add(Box.createRigidArea(new Dimension(10, 20)));
+        linearVariablesCheckbox = new JCheckBox("Variables with linear relationship");
+
+        // Register event listener on checkbox
+        linearVariablesCheckbox.addActionListener((ActionEvent actionEvent) -> {
+            // Set the flag
+            linearRelationshipAssumption = linearVariablesCheckbox.isSelected();
+            // Recreate the dropdown
+            updateTestAndScoreOptions();
+        });
+
+        //linearVariablesBox.setAlignmentX(LEFT_ALIGNMENT);
+        linearRelationshipBox.add(linearVariablesCheckbox);
+        linearRelationshipBox.add(Box.createHorizontalGlue());
+
+        Box gaussianVariablesBox = Box.createHorizontalBox();
+        gaussianVariablesBox.add(Box.createRigidArea(new Dimension(10, 20)));
+        gaussianVariablesCheckbox = new JCheckBox("Gaussian variables");
+
+        // Register event listener on checkbox
+        gaussianVariablesCheckbox.addActionListener((ActionEvent actionEvent) -> {
+            // Set the flag
+            gaussianVariablesAssumption = gaussianVariablesCheckbox.isSelected();
+            // Recreate the dropdown
+            updateTestAndScoreOptions();
+        });
+
+        //gaussianVariablesBox.setAlignmentX(LEFT_ALIGNMENT);
+        gaussianVariablesBox.add(gaussianVariablesCheckbox);
+        gaussianVariablesBox.add(Box.createHorizontalGlue());
+
+        // Test container
+        Box testBox = Box.createHorizontalBox();
+
+        Box testLabelBox = Box.createHorizontalBox();
+        testLabelBox.setPreferredSize(new Dimension(55, 15));
+        JLabel testLabel = new JLabel("Test:");
+        testLabelBox.add(testLabel);
+
+        Box testSelectionBox = Box.createHorizontalBox();
+
+        // Initialize test dropdown menu
+        testDropdown = new JComboBox<>(testDropdownModel);
+
+        testDropdown.setPreferredSize(new Dimension(240, 15));
+
+        // Event listener of test seleciton
+        testDropdown.addActionListener((ActionEvent e) -> {
+            // Don't use setAlgorithm() because we don't need to determine if
+            // enable/disable the test and score dropdown menus again - Zhou
+            if (testDropdown.getSelectedItem() != null) {
+                setTestType(((AnnotatedClassWrapper<TestOfIndependence>) testDropdown.getSelectedItem()).getName());
+            }
+        });
+
+        testSelectionBox.add(testDropdown);
+
+        testBox.add(testLabelBox);
+        testBox.add(testSelectionBox);
+
+        // Score container
+        Box scoreBox = Box.createHorizontalBox();
+
+        Box scoreLabelBox = Box.createHorizontalBox();
+        scoreLabelBox.setPreferredSize(new Dimension(55, 15));
+        JLabel scoreLabel = new JLabel("Score:");
+        scoreLabelBox.add(scoreLabel);
+
+        Box scoreSelectionBox = Box.createHorizontalBox();
+
+        // Initialize score dropdown menu
+        scoreDropdown = new JComboBox<>(scoreDropdownModel);
+        scoreDropdown.setPreferredSize(new Dimension(240, 15));
+
+        // Event listener of score seleciton
+        scoreDropdown.addActionListener((ActionEvent e) -> {
+            // Don't use setAlgorithm() because we don't need to determine if
+            // enable/disable the test and score dropdown menus again - Zhou
+            if (scoreDropdown.getSelectedItem() != null) {
+                setScoreType(((AnnotatedClassWrapper<Score>) scoreDropdown.getSelectedItem()).getName());
+            }
+        });
+
+        scoreSelectionBox.add(scoreDropdown);
+
+        scoreBox.add(scoreLabelBox);
+        scoreBox.add(scoreSelectionBox);
+
+        // Add to testAndScoreBox
+        testAndScoreBox.add(assumptionsLabelBox);
+        testAndScoreBox.add(linearRelationshipBox);
+        testAndScoreBox.add(gaussianVariablesBox);
+
+        // Add some gap
+        testAndScoreBox.add(Box.createVerticalStrut(10));
+        testAndScoreBox.add(testBox);
+        // Add some gap
+        testAndScoreBox.add(Box.createVerticalStrut(10));
+        testAndScoreBox.add(scoreBox);
+
+        // Parameters
+        parametersBox = Box.createVerticalBox();
+        parametersBox.setMinimumSize(new Dimension(940, 570));
+        parametersBox.setMaximumSize(new Dimension(940, 570));
+
+        // Use a titled border with 5 px inside padding - Zhou
+        String parametersBoxBorderTitle = "Specify algorithm parameters";
+        parametersBox.setBorder(new CompoundBorder(BorderFactory.createTitledBorder(parametersBoxBorderTitle), new EmptyBorder(5, 5, 5, 5)));
+
+        // Parameters
+        // This is only the parameters pane of the default algorithm - Zhou
+        parametersPanel = new ParameterPanel(runner.getAlgorithm().getParameters(), getParameters());
+
+        parametersPanel.setMinimumSize(new Dimension(920, 590));
+        parametersPanel.setMaximumSize(new Dimension(920, 590));
+
+        // Add to parameters box
+        parametersBox.add(parametersPanel);
+
+        // Add to parametersContainer
+        parametersContainer.add(parametersBox);
+
+        // Back to step 1 button
+        step1BackBtn = new JButton("< Choose Algorithm");
+
+        // Step 1 button listener
+        step1BackBtn.addActionListener((ActionEvent e) -> {
+            // Hide parameters
+            parametersContainer.setVisible(false);
+
+            // Show algo step 1
+            algoChooserContainer.setVisible(true);
+
+            // Show step 2 button
+            step2Btn.setVisible(true);
+
+            // Hide step 3 button
+            step3Btn.setVisible(false);
+
+            // Hide back button
+            step1BackBtn.setVisible(false);
+        });
+
+        // Hide step 2
+        parametersContainer.setVisible(false);
+
+        // Parameters button
+        step2Btn = new JButton("Set Parameters >");
+        step2BackBtn = new JButton("< Set Parameters");
+
+        // Step 2 button listener
+        step2Btn.addActionListener((ActionEvent e) -> {
+            // Show parameters
+            parametersContainer.setVisible(true);
+
+            // Hide algo step 1
+            algoChooserContainer.setVisible(false);
+
+            // SHow back to step 1 button and search button
+            step1BackBtn.setVisible(true);
+            step3Btn.setVisible(true);
+
+            // Hide step 2 button
+            step2Btn.setVisible(false);
+        });
+
+        // Step 2 button listener
+        step2BackBtn.addActionListener((ActionEvent e) -> {
+            // Show parameters
+            parametersContainer.setVisible(true);
+
+            // Hide algo step 1
+            algoChooserContainer.setVisible(false);
+
+            // Hide step 3 graph
+            graphContainer.setVisible(false);
+
+            // SHow back to step 1 button and search button
+            step1BackBtn.setVisible(true);
+            step3Btn.setVisible(true);
+
+            // Hide step 2 button
+            step2Btn.setVisible(false);
+
+            // Hide back button
+            step2BackBtn.setVisible(false);
+        });
+
+        // Step 3 button
+        step3Btn = new JButton("Run Search & Generate Graph >");
+
+        step3Btn.addActionListener((ActionEvent e) -> {
+            doSearch(runner);
+        });
+
+        // Add to rightContainer
+        rightContainer.add(Box.createVerticalStrut(10));
+        rightContainer.add(algoDescriptionBox);
+        rightContainer.add(Box.createVerticalStrut(10));
+        rightContainer.add(testAndScoreBox);
+
+        // Buttons container
+        Box buttonsContainer = Box.createVerticalBox();
+
+        // Buttons box
+        Box buttonsBox = Box.createHorizontalBox();
+        buttonsBox.add(step1BackBtn);
+        // Don't use Box.createHorizontalStrut(20)
+        buttonsBox.add(Box.createRigidArea(new Dimension(20, 0)));
+        buttonsBox.add(step2Btn);
+        buttonsBox.add(Box.createRigidArea(new Dimension(20, 0)));
+        buttonsBox.add(step2BackBtn);
+        buttonsBox.add(Box.createRigidArea(new Dimension(20, 0)));
+        buttonsBox.add(step3Btn);
+
+        // Default to only show step 2 forward button
+        step1BackBtn.setVisible(false);
+        step2BackBtn.setVisible(false);
+        step3Btn.setVisible(false);
+
+        // Add to buttons container
+        buttonsContainer.add(Box.createVerticalStrut(10));
+        buttonsContainer.add(buttonsBox);
+
+        // Add to algoChooserContainer as the first column
+        algoChooserContainer.add(leftContainer);
+
+        // Add some gap
+        algoChooserContainer.add(Box.createHorizontalStrut(10));
+
+        // Add middleContainer
+        algoChooserContainer.add(middleContainer);
+
+        // Add some gap
+        algoChooserContainer.add(Box.createHorizontalStrut(10));
+
+        // Add to algoChooserContainer as the third column
+        algoChooserContainer.add(rightContainer);
+
+        // Add to big panel
+        container.add(algoChooserContainer);
+
+        container.add(parametersContainer);
+
+        container.add(graphContainer);
+
+        container.add(buttonsContainer);
+
+        // Show the generated graph if reopen the search box
+        if (runner.getGraphs() != null && runner.getGraphs().size() > 0) {
+            // Use the already generated graphEditor
+            graphContainer.add(graphEditor);
+
+            // Hide algo chooser
+            algoChooserContainer.setVisible(false);
+
+            // Hide parameters
+            parametersContainer.setVisible(false);
+
+            // Show graphContainer
+            graphContainer.setVisible(true);
+
+            // Show back to step 2 button
+            step2BackBtn.setVisible(true);
+
+            // Hide step 2 button
+            step2Btn.setVisible(false);
         }
 
-        if (variables == null) {
-            throw new IllegalArgumentException("No source of variables!");
+        JPanel p = new JPanel(new BorderLayout());
+        p.add(container, BoxLayout.X_AXIS);
+
+        return p;
+    }
+
+    private void setDefaultAlgosListModel() {
+        // Clear the list model
+        suggestedAlgosListModel.removeAllElements();
+
+        algoWrappers.forEach(e -> {
+            suggestedAlgosListModel.addElement(e);
+        });
+    }
+
+    private void setAlgoDescriptionContent() {
+        if (!suggestedAlgosListModel.isEmpty() && selectedAgloWrapper != null) {
+            edu.cmu.tetrad.annotation.Algorithm agloAnno = selectedAgloWrapper.getAnnotatedClass().getAnnotation();
+            algoDescriptionTextArea.setText(agloAnno.description());
+        } else {
+            // Erase the previous content
+            algoDescriptionTextArea.setText("");
+        }
+    }
+
+    private void resetAlgoFilters() {
+        // Reset algo type to All
+        selectedAlgoType = null;
+
+        algoTypesBtnGrp.setSelected(algoTypeAllRadioBtn.getModel(), true);
+
+        // Also need to reset the knowledge file flag
+        acceptKnowledgeFile = null;
+
+        // Uncheck prior knowledge checkbox
+        priorKnowledgeCheckbox.setSelected(false);
+
+        // Don't forget to update the list of algos
+        setDefaultAlgosListModel();
+
+        // Reset default selected algorithm
+        setSelection();
+    }
+
+    private void updateSuggestedAlgosList() {
+        // Clear the list model
+        suggestedAlgosListModel.removeAllElements();
+
+        // Algo type, knowledge file
+        List<AnnotatedClassWrapper<edu.cmu.tetrad.annotation.Algorithm>> filteredAlgosByType = new LinkedList<>();
+        List<AnnotatedClassWrapper<edu.cmu.tetrad.annotation.Algorithm>> filteredAlgosByKnowledgeFile = new LinkedList<>();
+
+        // Don't assign algoWrappers directly to the above three lists since algoWrappers is unmodifiableList
+        // Iterate over algoWrappers so all the three lists contain all algos at the beginning
+        algoWrappers.forEach(algoWrapper -> {
+            filteredAlgosByType.add(algoWrapper);
+            filteredAlgosByKnowledgeFile.add(algoWrapper);
+        });
+
+        // Remove algos that are not the selected type from filteredAlgosByType if a specific algo type is selected
+        if (selectedAlgoType != null) {
+            algoWrappers.forEach(algoWrapper -> {
+                edu.cmu.tetrad.annotation.Algorithm annotation = algoWrapper.getAnnotatedClass().getAnnotation();
+
+                if (annotation.algoType() != selectedAlgoType) {
+                    filteredAlgosByType.remove(algoWrapper);
+                }
+            });
         }
 
+        // Remove algos that don't meet the prior knowledge file selection
+        if (acceptKnowledgeFile != null) {
+            algoWrappers.forEach(algoWrapper -> {
+                Class clazz = algoWrapper.getAnnotatedClass().getClazz();
 
-        List<String> varNames = new ArrayList<>();
-
-        for (Node node : variables) {
-            varNames.add(node.getName());
+                // Remove algo if the the flag doesn't equal to the acceptKnowledge(clazz)
+                if (acceptKnowledgeFile != TetradAlgorithmAnnotations.getInstance().acceptKnowledge(clazz)) {
+                    filteredAlgosByKnowledgeFile.remove(algoWrapper);
+                }
+            });
         }
 
-        myKnowledgeInput = new MyKnowledgeInput(variables, varNames);
+        // Now get intersections of all filters
+        // filteredAlgosByType now contains only the elements which are also contained in filteredAlgosByKnowledgeFile
+        filteredAlgosByType.retainAll(filteredAlgosByKnowledgeFile);
 
-        JPanel knowledgePanel = new JPanel();
-        knowledgePanel.setLayout(new BorderLayout());
-        KnowledgeBoxModel knowledgeBoxModel = new KnowledgeBoxModel(new KnowledgeBoxInput[]{myKnowledgeInput}, parameters);
-        knowledgeBoxModel.setKnowledge(runner.getKnowledge());
-        KnowledgeBoxEditor knowledgeEditor = new KnowledgeBoxEditor(knowledgeBoxModel);
-        Box f = Box.createVerticalBox();
-        f.add(knowledgeEditor);
-        Box g = Box.createHorizontalBox();
-        g.add(Box.createHorizontalGlue());
-        g.add(searchButton2);
-        g.add(Box.createHorizontalGlue());
-        f.add(g);
-        return f;
+        // Add the filtered elements to suggestedAlgosListModel
+        filteredAlgosByType.forEach(algoWrapper -> {
+            suggestedAlgosListModel.addElement(algoWrapper);
+        });
+
+        // Reset default selected algorithm
+        setSelection();
+    }
+
+    private void setSelection() {
+        // Set default selected algorithm
+        setDefaultSelectedAlgo();
+
+        // Set description
+        setAlgoDescriptionContent();
+    }
+
+    private void setDefaultSelectedAlgo() {
+        if (!suggestedAlgosListModel.isEmpty()) {
+            // setSelectedIndex() triggers the suggested algos list listener,
+            // so no need to call setAlgorithm() to set the selected algo
+            // and update the test and score dropdown menus.
+            suggestedAlgosList.setSelectedIndex(0);
+
+            selectedAgloWrapper = suggestedAlgosList.getSelectedValue();
+        }
     }
 
     private void doSearch(final GeneralAlgorithmRunner runner) {
@@ -521,22 +930,46 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
             public void watch() {
                 HpcAccount hpcAccount = null;
 
-                AlgName name = (AlgName) algNamesDropdown.getSelectedItem();
-                switch (name) {
-                    case FGES:
-                    case GFCI:
-                        hpcAccount = showRemoteComputingOptions(name);
+                String algoName = selectedAgloWrapper.getName().toUpperCase();
+
+                switch (algoName) {
+                    case "FGES":
+                    case "GFCI":
+                        hpcAccount = showRemoteComputingOptions(algoName);
                         break;
                     default:
                 }
 
                 if (hpcAccount == null) {
                     graphEditor.saveLayout();
+
                     runner.execute();
+
+                    // Show graph
                     graphEditor.replace(runner.getGraphs());
                     graphEditor.validate();
                     firePropertyChange("modelChanged", null, null);
-                    pane.setSelectedComponent(graphEditor);
+
+                    // Update the graphContainer
+                    graphContainer.add(graphEditor);
+
+                    // Hide algo chooser
+                    algoChooserContainer.setVisible(false);
+
+                    // Hide parameters
+                    parametersContainer.setVisible(false);
+
+                    // Show graphContainer
+                    graphContainer.setVisible(true);
+
+                    // Show back to step 2 button
+                    step2BackBtn.setVisible(true);
+
+                    // Hide step 1 back button
+                    step1BackBtn.setVisible(false);
+
+                    // Hide step 3 button
+                    step3Btn.setVisible(false);
                 } else {
                     try {
                         doRemoteCompute(runner, hpcAccount);
@@ -546,9 +979,10 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
                 }
             }
         };
+
     }
 
-    private HpcAccount showRemoteComputingOptions(AlgName name) {
+    private HpcAccount showRemoteComputingOptions(String name) {
         List<HpcAccount> hpcAccounts = desktop.getHpcAccountManager().getHpcAccounts();
 
         if (hpcAccounts == null || hpcAccounts.size() == 0) {
@@ -567,8 +1001,9 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
 
         int n = JOptionPane.showOptionDialog(this, "Would you like to execute a " + name + " search in the cloud?",
                 "A Silly Question", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE, null, options, options[0]);
-        if (n == 0)
+        if (n == 0) {
             return null;
+        }
         return hpcAccounts.get(n - 1);
     }
 
@@ -577,7 +1012,6 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         // **********************
         // Show progress panel *
         // **********************
-
         Frame ancestor = (Frame) JOptionUtils.centeringComp().getTopLevelAncestor();
         final JDialog progressDialog = new JDialog(ancestor, "HPC Job Submission's Progress...", false);
 
@@ -657,7 +1091,6 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
             // for (String line : tempLine) {
             // System.out.println(line);
             // }
-
             Files.write(file, tempLine);
 
             // Get file's MD5 hash and use it as its identifier
@@ -715,15 +1148,15 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
             String algorithmName = AbstractAlgorithmRequest.FGES;
             Algorithm algorithm = runner.getAlgorithm();
             System.out.println("Algorithm: " + algorithm.getDescription());
-            AlgName name = (AlgName) algNamesDropdown.getSelectedItem();
-            switch (name) {
-                case FGES:
+
+            switch (selectedAgloWrapper.getName().toUpperCase()) {
+                case "FGES":
                     algorithmName = AbstractAlgorithmRequest.FGES;
                     if (dataModel.isDiscrete()) {
                         algorithmName = AbstractAlgorithmRequest.FGES_DISCRETE;
                     }
                     break;
-                case GFCI:
+                case "GFCI":
                     algorithmName = AbstractAlgorithmRequest.GFCI;
                     if (dataModel.isDiscrete()) {
                         algorithmName = AbstractAlgorithmRequest.GFCI_DISCRETE;
@@ -880,7 +1313,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         graphEditor.validate();
         System.out.println("Remote graph result assigned to runner!");
         firePropertyChange("modelChanged", null, null);
-        pane.setSelectedComponent(graphEditor);
+
     }
 
     public void setAlgorithmErrorResult(String errorResult) {
@@ -888,521 +1321,168 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         throw new IllegalArgumentException(errorResult);
     }
 
+    /**
+     * Initialize algorithm
+     *
+     * @return Algorithm
+     */
     public Algorithm getAlgorithmFromInterface() {
-        AlgName name = (AlgName) algNamesDropdown.getSelectedItem();
-
-        if (name == null) {
+        if (selectedAgloWrapper == null) {
             throw new NullPointerException();
         }
 
         IndependenceWrapper independenceWrapper = getIndependenceWrapper();
         ScoreWrapper scoreWrapper = getScoreWrapper();
 
-        Algorithm algorithm = getAlgorithm(name, independenceWrapper, scoreWrapper);
+        Class algoClass = selectedAgloWrapper.getAnnotatedClass().getClazz();
 
-        if (algorithm instanceof HasKnowledge) {
-            if (knowledgePanel == null) {
-                knowledgePanel = getKnowledgePanel(runner);
+//        Algorithm algorithm = getAlgorithm(selectedAlgoName, independenceWrapper, scoreWrapper);
+        Algorithm algorithm = null;
+        try {
+            algorithm = AlgorithmFactory.create(algoClass, independenceWrapper, scoreWrapper);
+        } catch (IllegalAccessException | InstantiationException exception) {
+            // todo : use logger
+            exception.printStackTrace(System.err);
+        }
+
+//        if (algorithm instanceof HasKnowledge) {
+//            ((HasKnowledge) algorithm).setKnowledge();
+//        }
+        // Those pairwise algos (EB, R1, R2,..) require source graph to initialize - Zhou
+        if (algorithm != null && algorithm instanceof TakesInitialGraph) {
+            Algorithm initialGraph = null;
+
+            if (runner.getSourceGraph() != null && !runner.getDataModelList().isEmpty()) {
+                initialGraph = new SingleGraphAlg(runner.getSourceGraph());
             }
 
-            pane.remove(graphEditor);
-            pane.add("Knowledge", knowledgePanel);
-            pane.add("Output Graphs", graphEditor);
-        } else {
-            pane.remove(knowledgePanel);
+            // Capture the exception message and show in a message dialog - Zhou
+            try {
+                // When the initialGraph is null, the setter will throw an exception - Zhou
+                ((TakesInitialGraph) algorithm).setInitialGraph(initialGraph);
+            } catch (Exception e) {
+                JOptionPane.showMessageDialog(desktop, e.getMessage(), "Please Note", JOptionPane.INFORMATION_MESSAGE);
+            }
         }
 
-        return algorithm;
-    }
-
-    private Algorithm getAlgorithm(AlgName name, IndependenceWrapper independenceWrapper, ScoreWrapper scoreWrapper) {
-        Algorithm algorithm;
-
-
-        switch (name) {
-            case FGES:
-                algorithm = new Fges(scoreWrapper);
-
-//                if (runner.getSourceGraph() != null && !runner.getDataModelList().isEmpty()) {
-//                    algorithm = new Fges(scoreWrapper, new SingleGraphAlg(runner.getSourceGraph()));
-//                } else {
-//                algorithm = new Fges(scoreWrapper);
-//                }
-                break;
-//            case FgesMeasurement:
-//                if (runner.getSourceGraph() != null && !runner.getDataModelList().isEmpty()) {
-//                    algorithm = new FgesMeasurement(scoreWrapper, new SingleGraphAlg(runner.getSourceGraph()));
-//                } else {
-//                    algorithm = new FgesMeasurement(scoreWrapper);
-//                }
-//                break;
-            case PC :
-                if (runner.getSourceGraph() != null && !runner.getDataModelList().isEmpty()) {
-                    algorithm = new PcAll(independenceWrapper, new SingleGraphAlg(runner.getSourceGraph()));
-                } else {
-                    algorithm = new PcAll(independenceWrapper);
-                }
-                break;
-//            case PC:
-//                if (runner.getSourceGraph() != null && !runner.getDataModelList().isEmpty()) {
-//                    algorithm = new Pc(independenceWrapper, new SingleGraphAlg(runner.getSourceGraph()));
-//                } else {
-//                    algorithm = new Pc(independenceWrapper);
-//                }
-//                break;
-//            case CPC:
-//                if (runner.getSourceGraph() != null && !runner.getDataModelList().isEmpty()) {
-//                    algorithm = new Cpc(independenceWrapper, new SingleGraphAlg(runner.getSourceGraph()));
-//                } else {
-//                    algorithm = new Cpc(independenceWrapper);
-//                }
-//                break;
-//            case CPCStable:
-//                algorithm = new CpcStable(independenceWrapper);
-//                break;
-//            case PCStable:
-//                if (runner.getSourceGraph() != null && !runner.getDataModelList().isEmpty()) {
-//                    algorithm = new PcStable(independenceWrapper, new SingleGraphAlg(runner.getSourceGraph()));
-//                } else {
-//                    algorithm = new PcStable(independenceWrapper);
-//                }
-//                break;
-            case GFCI:
-                algorithm = new Gfci(independenceWrapper, scoreWrapper);
-                break;
-            case FCI:
-                algorithm = new Fci(independenceWrapper);
-//                if (runner.getSourceGraph() != null && !runner.getDataModelList().isEmpty()) {
-//                    algorithm = new Fci(independenceWrapper, new SingleGraphAlg(runner.getSourceGraph()));
-//                } else {
-//                    algorithm = new Fci(independenceWrapper);
-//                }
-                break;
-            case RFCI:
-                algorithm = new Rfci(independenceWrapper);
-                break;
-            case CFCI:
-                algorithm = new Cfci(independenceWrapper);
-                break;
-            case TsFCI:
-                algorithm = new TsFci(independenceWrapper);
-//                if (runner.getSourceGraph() != null && !runner.getDataModelList().isEmpty()) {
-//                    algorithm = new TsFci(independenceWrapper, new SingleGraphAlg(runner.getSourceGraph()));
-//                } else {
-//                    algorithm = new TsFci(independenceWrapper);
-//                }
-                break;
-            case TsGFCI:
-                algorithm = new TsGfci(independenceWrapper, scoreWrapper);
-                break;
-            case TsImages:
-                algorithm = new TsImages(scoreWrapper);
-                break;
-            case CCD:
-                algorithm = new Ccd(independenceWrapper);
-                break;
-            case CCD_MAX:
-                algorithm = new CcdMax(independenceWrapper);
-                break;
-            case FASK:
-                algorithm = new FaskConcatenated();
-                break;
-            case FAS:
-                algorithm = new FAS(independenceWrapper);
-                break;
-            case FgesMb:
-                algorithm = new FgesMb(scoreWrapper);
-//                if (runner.getSourceGraph() != null && !runner.getDataModelList().isEmpty()) {
-//                    algorithm = new FgesMb(scoreWrapper, new SingleGraphAlg(runner.getSourceGraph()));
-//                } else {
-//                    algorithm = new FgesMb(scoreWrapper);
-//                }
-                break;
-            case MBFS:
-                algorithm = new MBFS(independenceWrapper);
-                break;
-            case PcStableMax:
-                algorithm = new PcStableMax(independenceWrapper, false);
-                break;
-            case JCPC:
-                algorithm = new Jcpc(independenceWrapper, scoreWrapper);
-                break;
-            case LiNGAM:
-                algorithm = new Lingam();
-                break;
-            case MGM:
-                algorithm = new Mgm();
-                break;
-            case IMaGES_Discrete:
-                algorithm = new ImagesBDeu();
-                break;
-            case IMaGES_Continuous:
-                algorithm = new ImagesSemBic();
-                break;
-            case IMaGES_CCD:
-                algorithm = new ImagesCcd();
-                break;
-            case GLASSO:
-                algorithm = new Glasso();
-                break;
-            case Bpc:
-                algorithm = new Bpc();
-                break;
-            case Fofc:
-                algorithm = new Fofc();
-                break;
-            case Ftfc:
-                algorithm = new Ftfc();
-                break;
-
-            // LOFS algorithms.
-            case EB:
-                algorithm = new EB(new SingleGraphAlg(runner.getSourceGraph()));
-                break;
-            case R1:
-                algorithm = new R1(new SingleGraphAlg(runner.getSourceGraph()));
-                break;
-            case R2:
-                algorithm = new R2(new SingleGraphAlg(runner.getSourceGraph()));
-                break;
-            case R3:
-                algorithm = new R3(new SingleGraphAlg(runner.getSourceGraph()));
-                ((R3) algorithm).setKnowledge(runner.getKnowledge());
-                break;
-            case R4:
-                algorithm = new R4(new SingleGraphAlg(runner.getSourceGraph()));
-                break;
-            case RSkew:
-                algorithm = new RSkew(new SingleGraphAlg(runner.getSourceGraph()));
-                break;
-            case RSkewE:
-                algorithm = new RSkewE(new SingleGraphAlg(runner.getSourceGraph()));
-                break;
-            case Skew:
-                algorithm = new Skew(new SingleGraphAlg(runner.getSourceGraph()));
-                break;
-            case SkewE:
-                algorithm = new SkewE(new SingleGraphAlg(runner.getSourceGraph()));
-                break;
-            case Tahn:
-                algorithm = new Tanh(new SingleGraphAlg(runner.getSourceGraph()));
-                break;
-
-             // Bootstrapping
-             case BootstrapFGES:
-             	    algorithm = new BootstrapFges(scoreWrapper);
-             	    break;
-             case BootstrapGFCI:
-             	    algorithm = new BootstrapGfci(independenceWrapper, scoreWrapper);
-             	    break;
-             case BootstrapRFCI:
-             	    algorithm = new BootstrapRfci(independenceWrapper);
-             	    break;
-                
-            default:
-                throw new IllegalArgumentException("Please configure that algorithm: " + name);
-
-        }
         return algorithm;
     }
 
     private ScoreWrapper getScoreWrapper() {
-        ScoreType score = (ScoreType) scoreDropdown.getSelectedItem();
-        ScoreWrapper scoreWrapper;
+        AnnotatedClassWrapper<Score> score = (AnnotatedClassWrapper<Score>) scoreDropdown.getSelectedItem();
+        Class scoreClass = score.getAnnotatedClass().getClazz();
 
-        switch (score) {
-            case BDeu:
-                scoreWrapper = new BdeuScore();
-                break;
-            case Conditional_Gaussian_BIC:
-                scoreWrapper = new ConditionalGaussianBicScore();
-                break;
-            case Discrete_BIC:
-                scoreWrapper = new DiscreteBicScore();
-                break;
-            case SEM_BIC:
-                scoreWrapper = new SemBicScore();
-                break;
-            case Fisher_Z_Score:
-                scoreWrapper = new FisherZScore();
-                break;
-            case D_SEPARATION:
-                scoreWrapper = new DseparationScore(new SingleGraph(runner.getSourceGraph()));
-                break;
-            default:
-                throw new IllegalArgumentException("Please configure that score: " + score);
+        ScoreWrapper scoreWrapper = null;
+        try {
+            scoreWrapper = (ScoreWrapper) scoreClass.newInstance();
+        } catch (IllegalAccessException | InstantiationException exception) {
+            // log this error
+            throw new IllegalArgumentException("Please configure that score: " + score);
         }
+
+        if (scoreWrapper == null) {
+            return null;
+        }
+
         return scoreWrapper;
     }
 
     private IndependenceWrapper getIndependenceWrapper() {
-        TestType test = (TestType) testDropdown.getSelectedItem();
+        AnnotatedClassWrapper<TestOfIndependence> test = (AnnotatedClassWrapper<TestOfIndependence>) testDropdown.getSelectedItem();
+        Class indTestClass = test.getAnnotatedClass().getClazz();
 
-        IndependenceWrapper independenceWrapper;
-
-        switch (test) {
-            case ChiSquare:
-                independenceWrapper = new ChiSquare();
-                break;
-            case Conditional_Correlation:
-                independenceWrapper = new ConditionalCorrelation();
-                break;
-            case Conditional_Gaussian_LRT:
-                independenceWrapper = new ConditionalGaussianLRT();
-                break;
-            case Fisher_Z:
-                independenceWrapper = new FisherZ();
-                break;
-            case Positive_Correlation:
-                independenceWrapper = new PositiveCorr();
-                break;
-            case Correlation_T:
-                independenceWrapper = new CorrelationT();
-                break;
-            case GSquare:
-                independenceWrapper = new GSquare();
-                break;
-            case SEM_BIC:
-                independenceWrapper = new SemBicTest();
-                break;
-            case D_SEPARATION:
-                independenceWrapper = new DSeparationTest(new SingleGraph(runner.getSourceGraph()));
-                break;
-            default:
-                throw new IllegalArgumentException("Please configure that test: " + test);
+        IndependenceWrapper independenceWrapper = null;
+        try {
+            independenceWrapper = (IndependenceWrapper) indTestClass.newInstance();
+        } catch (IllegalAccessException | InstantiationException exception) {
+            // log this error
         }
 
-        List<IndependenceTest> tests = new ArrayList<>();
-
-        for (DataModel dataModel : runner.getDataModelList()) {
-            IndependenceTest _test = independenceWrapper.getTest(dataModel, parameters);
-            tests.add(_test);
+        if (independenceWrapper != null) {
+            // do independence test for each dataset
+            List<IndependenceTest> tests = new ArrayList<>();
+            for (DataModel dataModel : runner.getDataModelList()) {
+                IndependenceTest _test = independenceWrapper.getTest(dataModel, parameters);
+                tests.add(_test);
+            }
+            runner.setIndependenceTests(tests);
         }
 
-        runner.setIndependenceTests(tests);
         return independenceWrapper;
     }
 
-    private void setAlgorithm() {
-        AlgName name = (AlgName) algNamesDropdown.getSelectedItem();
-        AlgorithmDescription description = mappedDescriptions.get(name);
+    // Determine if enable/disable test dropdowns
+    private void setTestDropdown() {
+        // Get annotated algo
+        TetradAlgorithmAnnotations algoAnno = TetradAlgorithmAnnotations.getInstance();
+        Class algoClass = selectedAgloWrapper.getAnnotatedClass().getClazz();
 
-        if (name == null) {
-            return;
-        }
-
-        TestType test = (TestType) testDropdown.getSelectedItem();
-        ScoreType score = (ScoreType) scoreDropdown.getSelectedItem();
-
-        Algorithm algorithm = getAlgorithmFromInterface();
-
-        OracleType oracle = description.getOracleType();
-
-        if (oracle == OracleType.None) {
-            testDropdown.setEnabled(false);
-            scoreDropdown.setEnabled(false);
-        } else if (oracle == OracleType.Score) {
-            testDropdown.setEnabled(false);
-            scoreDropdown.setEnabled(true);
-        } else if (oracle == OracleType.Test) {
-            testDropdown.setEnabled(true);
-            scoreDropdown.setEnabled(false);
-        } else if (oracle == OracleType.Both) {
-            testDropdown.setEnabled(true);
-            scoreDropdown.setEnabled(true);
-        }
-
-        parameters.set("testEnabled", testDropdown.isEnabled());
-        parameters.set("scoreEnabled", scoreDropdown.isEnabled());
-
-        runner.setAlgorithm(algorithm);
-
-        setAlgName(name);
-        setTestType(test);
-        setScoreType(score);
-        setAlgType(((String) algTypesDropdown.getSelectedItem()).replace(" ", "_"));
-
-        if (whatYouChose != null) {
-            whatYouChose.setText("You chose: " + algorithm.getDescription());
-        }
-
-        if (pane != null) {
-            pane.setComponentAt(0, getParametersPane());
-        }
-
+        // Determine if enable/disable test and score dropdowns
+        testDropdown.setEnabled(algoAnno.requireIndependenceTest(algoClass));
     }
 
-    //=============================== Public Methods ==================================//
+    // Determine if enable/disable score dropdowns
+    private void setScoreDropdown() {
+        // Get annotated algo
+        TetradAlgorithmAnnotations algoAnno = TetradAlgorithmAnnotations.getInstance();
+        Class algoClass = selectedAgloWrapper.getAnnotatedClass().getClazz();
 
+        // Determine if enable/disable test and score dropdowns
+        scoreDropdown.setEnabled(algoAnno.requireScore(algoClass));
+    }
 
-    private JPanel getParametersPane() {
-        JPanel panel = new JPanel();
-        panel.setLayout(new BorderLayout());
+    // Enable/disable the checkboxes of assumptions
+    // based on if there are annotated tests/scores with assumption annotations
+    private void setAssumptions() {
+        // Disable assumptions checkboxes when both test and score dropdowns are disabled
+        boolean disabled = !testDropdown.isEnabled() && !scoreDropdown.isEnabled();
 
-        helpSet.setHomeID("tetrad_overview");
+        linearVariablesCheckbox.setEnabled(!disabled);
+        gaussianVariablesCheckbox.setEnabled(!disabled);
+    }
 
-        ParameterPanel comp = new ParameterPanel(runner.getAlgorithm().getParameters(), getParameters());
-        final JScrollPane scroll = new JScrollPane(comp);
-        scroll.setPreferredSize(new Dimension(800, 300));
+    private void setAlgorithm() {
+        if (selectedAgloWrapper != null) {
+            // Determine if enable/disable test and score dropdowns
+            setTestDropdown();
+            setScoreDropdown();
 
-        JButton explain1 = new JButton(new ImageIcon(ImageUtils.getImage(this, "info.png")));
-        JButton explain2 = new JButton(new ImageIcon(ImageUtils.getImage(this, "info.png")));
-        JButton explain3 = new JButton(new ImageIcon(ImageUtils.getImage(this, "info.png")));
-        JButton explain4 = new JButton(new ImageIcon(ImageUtils.getImage(this, "info.png")));
+            // Determine if enable/disable the checkboxes of assumptions
+            setAssumptions();
 
-        explain1.setBorder(new EmptyBorder(0, 0, 0, 0));
-        explain2.setBorder(new EmptyBorder(0, 0, 0, 0));
-        explain3.setBorder(new EmptyBorder(0, 0, 0, 0));
-        explain4.setBorder(new EmptyBorder(0, 0, 0, 0));
+            // Set the algo on each selection change
+            Algorithm algorithm = getAlgorithmFromInterface();
 
-        explain1.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-//                helpSet.setHomeID("types_of_algorithms");
-                helpSet.setHomeID("under_construction");
-                HelpBroker broker = helpSet.createHelpBroker();
-                ActionListener listener = new CSH.DisplayHelpFromSource(broker);
-                listener.actionPerformed(e);
-            }
-        });
+            runner.setAlgorithm(algorithm);
 
-        explain2.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                JComboBox box = (JComboBox) algNamesDropdown;
-                String name = box.getSelectedItem().toString();
-//                helpSet.setHomeID(name.toLowerCase());
-                helpSet.setHomeID("under_construction");
-                HelpBroker broker = helpSet.createHelpBroker();
-                ActionListener listener = new CSH.DisplayHelpFromSource(broker);
-                listener.actionPerformed(e);
-            }
-        });
+            // Set runner parameters for target algo
+            parameters.set("testEnabled", testDropdown.isEnabled());
+            parameters.set("scoreEnabled", scoreDropdown.isEnabled());
 
-        explain3.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                JComboBox box = (JComboBox) testDropdown;
-//                String name = box.getSelectedItem().toString();
-//                helpSet.setHomeID(name.toLowerCase());
-                helpSet.setHomeID("under_construction");
-                HelpBroker broker = helpSet.createHelpBroker();
-                ActionListener listener = new CSH.DisplayHelpFromSource(broker);
-                listener.actionPerformed(e);
-            }
-        });
+            parameters.set("algName", selectedAgloWrapper.getName());
+            parameters.set("algType", selectedAgloWrapper.getAnnotatedClass().getAnnotation().algoType());
 
-        explain4.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                JComboBox box = (JComboBox) scoreDropdown;
-//                String name = box.getSelectedItem().toString();
-//                helpSet.setHomeID(name.toLowerCase());
-                helpSet.setHomeID("under_construction");
-                HelpBroker broker = helpSet.createHelpBroker();
-                ActionListener listener = new CSH.DisplayHelpFromSource(broker);
-                listener.actionPerformed(e);
-            }
-        });
+            setTestType(((AnnotatedClassWrapper<TestOfIndependence>) testDropdown.getSelectedItem()).getName());
+            setScoreType(((AnnotatedClassWrapper<Score>) scoreDropdown.getSelectedItem()).getName());
 
-
-        searchButton1.setPreferredSize(searchButton1Size);
-        searchButton1.setMaximumSize(searchButton1Size);
-
-        searchButton1.setFont(new Font("Dialog", Font.BOLD, 16));
-
-        Box d3 = Box.createHorizontalBox();
-        JLabel label3 = new JLabel("List Algorithms that ");
-        label3.setFont(new Font("Dialog", Font.BOLD, 13));
-        d3.add(label3);
-        algTypesDropdown.setMaximumSize(algTypesDropdown.getPreferredSize());
-        d3.add(algTypesDropdown);
-        JLabel label4 = new JLabel(" : ");
-        label4.setFont(new Font("Dialog", Font.BOLD, 13));
-        d3.add(label4);
-        algNamesDropdown.setMaximumSize(algNamesDropdown.getPreferredSize());
-        d3.add(algNamesDropdown);
-        d3.add(explain2);
-        d3.add(new JLabel("    "));
-        d3.add(searchButton1);
-        d3.add(Box.createHorizontalGlue());
-
-        Box d1 = Box.createHorizontalBox();
-        JLabel label1 = new JLabel("Test if needed:");
-        label1.setFont(new Font("Dialog", Font.BOLD, 13));
-        d1.add(label1);
-        testDropdown.setMaximumSize(testDropdown.getPreferredSize());
-        d1.add(testDropdown);
-        d1.add(explain3);
-        d1.add(Box.createHorizontalGlue());
-
-        Box d2 = Box.createHorizontalBox();
-        JLabel label2 = new JLabel("Score if needed:");
-        label2.setFont(new Font("Dialog", Font.BOLD, 13));
-        d2.add(label2);
-        scoreDropdown.setMaximumSize(scoreDropdown.getPreferredSize());
-        d2.add(scoreDropdown);
-        d2.add(explain4);
-        d2.add(Box.createHorizontalGlue());
-
-        Box d0 = Box.createHorizontalBox();
-        JLabel label0 = new JLabel("Parameters:");
-        label0.setFont(new Font("Dialog", Font.BOLD, 13));
-        d0.add(label0);
-        d0.add(Box.createHorizontalGlue());
-
-        Box c = Box.createVerticalBox();
-        c.add(d3);
-        c.add(d1);
-        c.add(d2);
-//        c.add(Box.createVerticalGlue());
-        c.add(d0);
-        c.add(Box.createVerticalStrut(10));
-        c.add(scroll);
-
-        panel.add(c, BorderLayout.CENTER);
-
-        Algorithm algorithm = getAlgorithmFromInterface();
-        runner.setAlgorithm(algorithm);
-
-        return panel;
+            // Also need to update the corresponding parameters
+            parametersPanel = new ParameterPanel(runner.getAlgorithm().getParameters(), getParameters());
+            // Remove all and add new
+            parametersBox.removeAll();
+            parametersBox.add(parametersPanel);
+        }
     }
 
     private Parameters getParameters() {
         return parameters;
     }
 
-    private AlgType getAlgType() {
-        return AlgType.valueOf(parameters.getString("algType", "ALL").replace(" ", "_"));
+    private void setTestType(String testType) {
+        parameters.set("testType", testType);
     }
 
-    private void setAlgType(String algType) {
-        parameters.set("algType", algType.replace(" ", "_"));
-    }
-
-    private AlgName getAlgName() {
-        return AlgName.valueOf(parameters.getString("algName", "PC"));
-    }
-
-    private void setAlgName(AlgName algName) {
-        parameters.set("algName", algName.toString());
-    }
-
-    private TestType getTestType() {
-        return TestType.valueOf(parameters.getString("testType", "ChiSquare"));
-    }
-
-    private void setTestType(TestType testType) {
-        parameters.set("testType", testType.toString());
-    }
-
-    private ScoreType getScoreType() {
-        String string = parameters.getString("scoreType", "BDeu");
-        return ScoreType.valueOf(string);
-    }
-
-    private void setScoreType(ScoreType scoreType) {
-        parameters.set("scoreType", scoreType.toString());
+    private void setScoreType(String scoreType) {
+        parameters.set("scoreType", scoreType);
     }
 
     @Override
@@ -1416,59 +1496,6 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         }
 
         return true;
-    }
-
-    private class AlgorithmDescription {
-        private AlgName algName;
-        private AlgType algType;
-        private OracleType oracleType;
-
-        public AlgorithmDescription(AlgName name, AlgType algType, OracleType oracleType) {
-            this.algName = name;
-            this.algType = algType;
-            this.oracleType = oracleType;
-        }
-
-        public AlgName getAlgName() {
-            return algName;
-        }
-
-        public AlgType getAlgType() {
-            return algType;
-        }
-
-        public OracleType getOracleType() {
-            return oracleType;
-        }
-    }
-
-    private enum AlgName {
-        PC_ALL, PC, PCStable, CPC, CPCStable, FGES, /*PcLocal,*/ PcStableMax, FAS,
-        FgesMb, MBFS, Wfges, JCPC, /*FgesMeasurement,*/
-        FCI, RFCI, CFCI, GFCI, TsFCI, TsGFCI, TsImages, CCD, CCD_MAX,
-        LiNGAM, MGM,
-        IMaGES_Discrete, IMaGES_Continuous, IMaGES_CCD,
-        Bpc, Fofc, Ftfc,
-        GLASSO,
-        EB, R1, R2, R3, R4, RSkew, RSkewE, Skew, SkewE, FASK, Tahn,
-        BootstrapFGES, BootstrapGFCI, BootstrapRFCI
-    }
-
-    private enum OracleType {None, Test, Score, Both}
-
-    private enum AlgType {
-        ALL, forbid_latent_common_causes, allow_latent_common_causes, /*DAG, */
-        search_for_Markov_blankets, produce_undirected_graphs, orient_pairwise,
-        search_for_structure_over_latents, bootstrapping
-    }
-
-    private enum TestType {
-        ChiSquare, Conditional_Correlation, Conditional_Gaussian_LRT, Fisher_Z, GSquare,
-        SEM_BIC, D_SEPARATION, Discrete_BIC_Test, Correlation_T, Positive_Correlation
-    }
-
-    public enum ScoreType {BDeu, Conditional_Gaussian_BIC, Discrete_BIC, SEM_BIC, D_SEPARATION,
-        Fisher_Z_Score
     }
 
 }

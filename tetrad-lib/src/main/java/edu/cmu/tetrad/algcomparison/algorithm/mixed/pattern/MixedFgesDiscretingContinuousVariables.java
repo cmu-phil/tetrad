@@ -1,7 +1,10 @@
 package edu.cmu.tetrad.algcomparison.algorithm.mixed.pattern;
 
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
+import edu.cmu.tetrad.algcomparison.score.BdeuScore;
+import edu.cmu.tetrad.algcomparison.score.ConditionalGaussianBicScore;
 import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
+import edu.cmu.tetrad.algcomparison.score.SemBicScore;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Edge;
 import edu.cmu.tetrad.graph.EdgeListGraph;
@@ -10,6 +13,8 @@ import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.Fges;
 import edu.cmu.tetrad.search.SearchGraphUtils;
 import edu.cmu.tetrad.util.Parameters;
+import edu.pitt.dbmi.algo.bootstrap.BootstrapEdgeEnsemble;
+import edu.pitt.dbmi.algo.bootstrap.GeneralBootstrapTest;
 
 import java.util.List;
 
@@ -25,20 +30,43 @@ public class MixedFgesDiscretingContinuousVariables implements Algorithm {
     }
 
     public Graph search(DataModel dataSet, Parameters parameters) {
-        Discretizer discretizer = new Discretizer(DataUtils.getContinuousDataSet(dataSet));
-        List<Node> nodes = dataSet.getVariables();
+    	if(!parameters.getBoolean("bootstrapping")){
+            Discretizer discretizer = new Discretizer(DataUtils.getContinuousDataSet(dataSet));
+            List<Node> nodes = dataSet.getVariables();
 
-        for (Node node : nodes) {
-            if (node instanceof ContinuousVariable) {
-                discretizer.equalIntervals(node, parameters.getInt("numCategories"));
+            for (Node node : nodes) {
+                if (node instanceof ContinuousVariable) {
+                    discretizer.equalIntervals(node, parameters.getInt("numCategories"));
+                }
             }
-        }
 
-        dataSet = discretizer.discretize();
-        DataSet _dataSet = DataUtils.getDiscreteDataSet(dataSet);
-        Fges fges = new Fges(score.getScore(_dataSet, parameters));
-        Graph p = fges.search();
-        return convertBack(_dataSet, p);
+            dataSet = discretizer.discretize();
+            DataSet _dataSet = DataUtils.getDiscreteDataSet(dataSet);
+            Fges fges = new Fges(score.getScore(_dataSet, parameters));
+            Graph p = fges.search();
+            return convertBack(_dataSet, p);
+    	}else{
+    		MixedFgesDiscretingContinuousVariables algorithm = new MixedFgesDiscretingContinuousVariables(score);
+    		
+    		DataSet data = (DataSet) dataSet;
+    		GeneralBootstrapTest search = new GeneralBootstrapTest(data, algorithm, parameters.getInt("bootstrapSampleSize"));
+    		
+    		BootstrapEdgeEnsemble edgeEnsemble = BootstrapEdgeEnsemble.Highest;
+    		switch (parameters.getInt("bootstrapEnsemble", 1)) {
+    		case 0:
+    			edgeEnsemble = BootstrapEdgeEnsemble.Preserved;
+    			break;
+    		case 1:
+    			edgeEnsemble = BootstrapEdgeEnsemble.Highest;
+    			break;
+    		case 2:
+    			edgeEnsemble = BootstrapEdgeEnsemble.Majority;
+    		}
+    		search.setEdgeEnsemble(edgeEnsemble);
+    		search.setParameters(parameters);    		
+    		search.setVerbose(parameters.getBoolean("verbose"));
+    		return search.search();
+    	}
     }
 
 
@@ -84,6 +112,11 @@ public class MixedFgesDiscretingContinuousVariables implements Algorithm {
     public List<String> getParameters() {
         List<String> parameters = score.getParameters();
         parameters.add("numCategories");
+        // Bootstrapping
+        parameters.add("bootstrapping");
+        parameters.add("bootstrapSampleSize");
+        parameters.add("bootstrapEnsemble");
+        parameters.add("verbose");
         return parameters;
     }
 }

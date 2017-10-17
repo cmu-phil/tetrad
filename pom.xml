@@ -131,6 +131,11 @@
             <artifactId>slf4j-log4j12</artifactId>
             <version>1.7.19</version>
         </dependency>
+        <dependency> <!--For java annotations used by annotated algorithms-->
+            <groupId>org.reflections</groupId>
+            <artifactId>reflections</artifactId>
+            <version>0.9.10</version>
+        </dependency>
         <dependency>
             <groupId>de.bwaldvogel</groupId>
             <artifactId>liblinear</artifactId>

@@ -1,5 +1,7 @@
 package edu.pitt.dbmi.algo.bootstrap;
 
+import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
+import edu.cmu.tetrad.algcomparison.algorithm.MultiDataSetAlgorithm;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.IKnowledge;
 import edu.cmu.tetrad.data.Knowledge2;
@@ -20,17 +22,19 @@ import java.util.Map;
  * Updated: Chirayu Kong Wongchokprasitti, PhD on 4/5/2017
  * 
  */
-public class BootstrapTest {
+public class GeneralBootstrapTest {
 
 	private PrintStream out = System.out;
 
-	private final BootstrapSearch bootstrapSearch;
+	private final GeneralBootstrapSearch bootstrapSearch;
 
 	private Parameters parameters;
 
 	private boolean runParallel = true;
 
-	private BootstrapAlgName algName = BootstrapAlgName.RFCI;
+	private Algorithm algorithm = null;
+	
+	private MultiDataSetAlgorithm multiDataSetAlgorithm = null;
 	
 	private long seed = -1;
 
@@ -48,7 +52,7 @@ public class BootstrapTest {
 	/**
 	 * An initial graph to start from.
 	 */
-	private Graph initialGraph;
+	private Graph initialGraph = null;
 
 	public void setParallelMode(boolean runParallel) {
 		this.runParallel = runParallel;
@@ -77,24 +81,12 @@ public class BootstrapTest {
 		return out;
 	}
 
-	public Parameters getParameters() {
-		return parameters;
-	}
-
 	public void setParameters(Parameters parameters) {
 		this.parameters = parameters;
 	}
 
 	public void setNumBootstrapSamples(int numBootstrapSamples) {
 		this.bootstrapSearch.setNumOfBootstrap(numBootstrapSamples);
-	}
-
-	/**
-	 * @return the background knowledge.
-	 */
-
-	public IKnowledge getKnowledge() {
-		return knowledge;
 	}
 
 	/**
@@ -126,22 +118,10 @@ public class BootstrapTest {
 	}
 
 	/**
-	 * @return the initial graph for the search. The search is initialized to
-	 *         this graph and proceeds from there.
-	 */
-	public Graph getInitialGraph() {
-		return initialGraph;
-	}
-
-	/**
 	 * Sets the initial graph.
 	 */
 	public void setInitialGraph(Graph initialGraph) {
 		this.initialGraph = initialGraph;
-	}
-
-	public long getSeed() {
-		return seed;
 	}
 
 	public void setSeed(long seed) {
@@ -149,24 +129,25 @@ public class BootstrapTest {
 		RandomUtil.getInstance().setSeed(seed);
 	}
 
-	public BootstrapTest(DataSet data, String algName) {
-		this.algName = BootstrapAlgName.FGES;
-		if(algName.equalsIgnoreCase("GFCI")){
-			this.algName = BootstrapAlgName.GFCI;
-		}else if(algName.equalsIgnoreCase("RFCI")){
-			this.algName = BootstrapAlgName.RFCI;
-		}
-		bootstrapSearch = new BootstrapSearch(data);
-	}
-	
-	public BootstrapTest(DataSet data, BootstrapAlgName algName) {
-		this.algName = algName;
-		bootstrapSearch = new BootstrapSearch(data);
+	public GeneralBootstrapTest(DataSet data, Algorithm algorithm) {
+		this.algorithm = algorithm;
+		bootstrapSearch = new GeneralBootstrapSearch(data);
 	}
 
-	public BootstrapTest(DataSet data, BootstrapAlgName algName, int numBootstrapSamples) {
-		this.algName = algName;
-		bootstrapSearch = new BootstrapSearch(data);
+	public GeneralBootstrapTest(DataSet data, Algorithm algorithm, int numBootstrapSamples) {
+		this.algorithm = algorithm;
+		bootstrapSearch = new GeneralBootstrapSearch(data);
+		bootstrapSearch.setNumOfBootstrap(numBootstrapSamples);
+	}
+
+	public GeneralBootstrapTest(List<DataSet> dataSets, MultiDataSetAlgorithm multiDataSetAlgorithm) {
+		this.multiDataSetAlgorithm = multiDataSetAlgorithm;
+		bootstrapSearch = new GeneralBootstrapSearch(dataSets);
+	}
+
+	public GeneralBootstrapTest(List<DataSet> dataSets, MultiDataSetAlgorithm multiDataSetAlgorithm, int numBootstrapSamples) {
+		this.multiDataSetAlgorithm = multiDataSetAlgorithm;
+		bootstrapSearch = new GeneralBootstrapSearch(dataSets);
 		bootstrapSearch.setNumOfBootstrap(numBootstrapSamples);
 	}
 
@@ -175,13 +156,25 @@ public class BootstrapTest {
 
 		start = System.currentTimeMillis();
 
-		bootstrapSearch.setAlgorithm(algName);
+		if(algorithm != null){
+			bootstrapSearch.setAlgorithm(algorithm);
+		}else{
+			bootstrapSearch.setMultiDataSetAlgorithm(multiDataSetAlgorithm);
+		}
 		bootstrapSearch.setRunningMode(runParallel);
 		bootstrapSearch.setVerbose(verbose);
 		bootstrapSearch.setParameters(parameters);
+		
+		if(!knowledge.isEmpty()){
+			bootstrapSearch.setKnowledge(knowledge);
+		}
+		
+		if(initialGraph != null){
+			bootstrapSearch.setInitialGraph(initialGraph);
+		}
 
 		if (verbose) {
-			out.println("Bootstrapping on the " + algName + " algorithm");
+			out.println("Bootstrapping on the " + algorithm.getDescription());
 		}
 
 		PAGs = bootstrapSearch.search();
@@ -216,12 +209,19 @@ public class BootstrapTest {
 
 	private Graph generateBootstrapGraph() {
 		Graph pag = null;
+		System.out.println("PAGs: " + PAGs.size());
+		System.out.println("Ensemble: " + edgeEnsemble);
+		System.out.println();
+		if(PAGs == null || PAGs.size() == 0)return new EdgeListGraph();
+		
 		for (Graph g : PAGs) {
 			if (g != null) {
 				pag = g;
 				break;
 			}
 		}
+		if(pag==null)return new EdgeListGraph();
+		
 		Graph complete = new EdgeListGraph(pag.getNodes());
 		complete.fullyConnect(Endpoint.TAIL);
 
@@ -256,9 +256,11 @@ public class BootstrapTest {
 			// compute probability for each edge type
 			Edge eNil = new Edge(n1, n2, Endpoint.NULL, Endpoint.NULL);
 			AnilB = getProbability(eNil);
+			System.out.println(n1 + " [no edge] " + n2 + " : " + AnilB);
 
 			Edge eTA = new Edge(n1, n2, Endpoint.TAIL, Endpoint.ARROW);
 			AtoB = getProbability(eTA);
+			System.out.println(eTA + " : " + AtoB);
 			if (AtoB > maxEdgeProb) {
 				edge = eTA;
 				maxEdgeProb = AtoB;
@@ -266,6 +268,7 @@ public class BootstrapTest {
 
 			Edge eAT = new Edge(n1, n2, Endpoint.ARROW, Endpoint.TAIL);
 			BtoA = getProbability(eAT);
+			System.out.println(eAT + " : " + BtoA);
 			if (BtoA > maxEdgeProb) {
 				edge = eAT;
 				maxEdgeProb = BtoA;
@@ -273,6 +276,7 @@ public class BootstrapTest {
 
 			Edge eCA = new Edge(n1, n2, Endpoint.CIRCLE, Endpoint.ARROW);
 			ACtoB = getProbability(eCA);
+			System.out.println(eCA + " : " + ACtoB);
 			if (ACtoB > maxEdgeProb) {
 				edge = eCA;
 				maxEdgeProb = ACtoB;
@@ -280,6 +284,7 @@ public class BootstrapTest {
 
 			Edge eAC = new Edge(n1, n2, Endpoint.ARROW, Endpoint.CIRCLE);
 			BCtoA = getProbability(eAC);
+			System.out.println(eAC + " : " + BCtoA);
 			if (BCtoA > maxEdgeProb) {
 				edge = eAC;
 				maxEdgeProb = BCtoA;
@@ -287,6 +292,7 @@ public class BootstrapTest {
 
 			Edge eCC = new Edge(n1, n2, Endpoint.CIRCLE, Endpoint.CIRCLE);
 			AccB = getProbability(eCC);
+			System.out.println(eCC + " : " + AccB);
 			if (AccB > maxEdgeProb) {
 				edge = eCC;
 				maxEdgeProb = AccB;
@@ -294,6 +300,7 @@ public class BootstrapTest {
 
 			Edge eAA = new Edge(n1, n2, Endpoint.ARROW, Endpoint.ARROW);
 			AbB = getProbability(eAA);
+			System.out.println(eAA + " : " + AbB);
 			if (AbB > maxEdgeProb) {
 				edge = eAA;
 				maxEdgeProb = AbB;
@@ -301,6 +308,7 @@ public class BootstrapTest {
 
 			Edge eTT = new Edge(n1, n2, Endpoint.TAIL, Endpoint.TAIL);
 			AuB = getProbability(eTT);
+			System.out.println(eTT + " : " + AuB);
 			if (AuB > maxEdgeProb) {
 				edge = eTT;
 				maxEdgeProb = AuB;
@@ -322,6 +330,8 @@ public class BootstrapTest {
 			}
 
 			if (edge != null) {
+				System.out.println("Final result: " + edge + " : " + maxEdgeProb);
+				
 				edge.addEdgeTypeProbability(new EdgeTypeProbability(EdgeTypeProbability.EdgeType.nil, AnilB));
 				edge.addEdgeTypeProbability(new EdgeTypeProbability(EdgeTypeProbability.EdgeType.ta, AtoB));
 				edge.addEdgeTypeProbability(new EdgeTypeProbability(EdgeTypeProbability.EdgeType.at, BtoA));
@@ -347,7 +357,7 @@ public class BootstrapTest {
 				
 				graph.addEdge(edge);
 			}
-
+			System.out.println();
 		}
 
 		return graph;

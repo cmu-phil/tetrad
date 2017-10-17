@@ -6,7 +6,6 @@ import edu.cmu.tetrad.data.DataUtils;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.Score;
 import edu.cmu.tetrad.util.Parameters;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -15,7 +14,13 @@ import java.util.List;
  *
  * @author jdramsey
  */
+@edu.cmu.tetrad.annotation.Score(
+        name = "Sem BIC Score Deterministic",
+        command = "sem-bic-deterministic",
+        dataType = {DataType.Continuous, DataType.Covariance}
+)
 public class SemBicScoreDeterministic implements ScoreWrapper {
+
     static final long serialVersionUID = 23L;
     private DataModel dataSet;
 

@@ -48,7 +48,7 @@ public class Parameters implements TetradSerializable {
         StringBuilder builder = new StringBuilder();
 
         for (String param : usedParameters) {
-//            ParamDescription paramDescription = ParamDescriptions.instance().get(param);
+//            ParamDescription paramDescription = ParamDescriptions.getInstance().get(param);
 //            builder.append("\n").append(paramDescription.getDescription()).append(" = ").append(parameters.get(param)[0]);
             builder.append("\n").append(param).append(" = ").append(parameters.get(param)[0]);
         }
@@ -64,7 +64,7 @@ public class Parameters implements TetradSerializable {
      * @return The integer value of this parameter.
      */
     public int getInt(String name) {
-        return ((Number) get(name, ParamDescriptions.instance().get(name).getDefaultValue())).intValue();
+        return ((Number) get(name, ParamDescriptions.getInstance().get(name).getDefaultValue())).intValue();
     }
 
     /**
@@ -76,7 +76,7 @@ public class Parameters implements TetradSerializable {
      */
     public boolean getBoolean(String name) {
         try {
-            return (Boolean) get(name, ParamDescriptions.instance().get(name).getDefaultValue());
+            return (Boolean) get(name, ParamDescriptions.getInstance().get(name).getDefaultValue());
         } catch (Exception e) {
             throw new RuntimeException("ERROR: Parameter " + name + " was not actually boolean.");
         }
@@ -90,7 +90,7 @@ public class Parameters implements TetradSerializable {
      * @return The double value of this parameter.
      */
     public double getDouble(String name) {
-        return ((Number) get(name, ParamDescriptions.instance().get(name).getDefaultValue())).doubleValue();
+        return ((Number) get(name, ParamDescriptions.getInstance().get(name).getDefaultValue())).doubleValue();
     }
 
     /**
@@ -101,7 +101,7 @@ public class Parameters implements TetradSerializable {
      * @return The string value of this parameter.
      */
     public String getString(String name) {
-        return (String) get(name, ParamDescriptions.instance().get(name).getDefaultValue());
+        return (String) get(name, ParamDescriptions.getInstance().get(name).getDefaultValue());
     }
 
     /**
@@ -112,7 +112,7 @@ public class Parameters implements TetradSerializable {
      * @return The object value of this parameter.
      */
     public Object get(String name) {
-        return get(name, ParamDescriptions.instance().get(name).getDefaultValue());
+        return get(name, ParamDescriptions.getInstance().get(name).getDefaultValue());
     }
 
     /**
@@ -207,7 +207,7 @@ public class Parameters implements TetradSerializable {
         Object[] objects = parameters.get(name);
 
         if (objects == null) {
-            ParamDescription paramDescription = ParamDescriptions.instance().get(name);
+            ParamDescription paramDescription = ParamDescriptions.getInstance().get(name);
             if (paramDescription == null) {
                 throw new IllegalArgumentException("A description of '" + name + "' has " +
                         "not been given in ParamDescriptions.");

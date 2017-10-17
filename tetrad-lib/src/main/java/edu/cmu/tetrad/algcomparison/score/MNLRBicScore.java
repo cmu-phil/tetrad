@@ -5,11 +5,9 @@ import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.data.DataUtils;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.MNLRScore;
-import edu.cmu.tetrad.search.MVPScore;
 import edu.cmu.tetrad.search.Score;
 import edu.cmu.tetrad.util.Experimental;
 import edu.cmu.tetrad.util.Parameters;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -18,7 +16,13 @@ import java.util.List;
  *
  * @author Bryan Andrews
  */
+@edu.cmu.tetrad.annotation.Score(
+        name = "Multinomial Logistic Regression BIC Score",
+        command = "multinomial-logistic-regression-bic",
+        dataType = DataType.Mixed
+)
 public class MNLRBicScore implements ScoreWrapper, Experimental {
+
     static final long serialVersionUID = 23L;
 
     @Override

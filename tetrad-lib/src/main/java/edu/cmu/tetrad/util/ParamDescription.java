@@ -8,6 +8,7 @@ import java.io.Serializable;
  * @author jdramsey
  */
 public class ParamDescription {
+
     private String description;
     private Serializable defaultValue;
     private double lowerBoundDouble = Double.NEGATIVE_INFINITY;

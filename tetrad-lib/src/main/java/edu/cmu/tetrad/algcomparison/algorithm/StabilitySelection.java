@@ -16,16 +16,16 @@ import java.util.Map;
 import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.RecursiveAction;
 
-import static java.lang.Math.abs;
-
 /**
  * Stability selection.
  *
  * @author jdramsey
  */
 public class StabilitySelection implements Algorithm, TakesInitialGraph {
+
     static final long serialVersionUID = 23L;
     private Algorithm algorithm;
+    private Graph initialGraph = null;
 
     public StabilitySelection(Algorithm algorithm) {
         this.algorithm = algorithm;
@@ -45,18 +45,19 @@ public class StabilitySelection implements Algorithm, TakesInitialGraph {
         final ForkJoinPool pool = ForkJoinPoolInstance.getInstance().getPool();
 
         class StabilityAction extends RecursiveAction {
+
             private int chunk;
             private int from;
             private int to;
 
-            private StabilityAction(int chunk, int from, int to){
+            private StabilityAction(int chunk, int from, int to) {
                 this.chunk = chunk;
                 this.from = from;
                 this.to = to;
             }
 
             @Override
-            protected void compute(){
+            protected void compute() {
                 if (to - from <= chunk) {
                     for (int s = from; s < to; s++) {
                         BootstrapSampler sampler = new BootstrapSampler();
@@ -89,23 +90,22 @@ public class StabilitySelection implements Algorithm, TakesInitialGraph {
 //            Graph graph = algorithm.search(sample, parameters);
 //            graphs.add(graph);
 //        }
-
         for (Graph graph : graphs) {
             for (Edge edge : graph.getEdges()) {
                 increment(edge, counts);
             }
         }
 
-        Graph out = new EdgeListGraph(dataSet.getVariables());
+        initialGraph = new EdgeListGraph(dataSet.getVariables());
         double percentStability = parameters.getDouble("percentStability");
 
         for (Edge edge : counts.keySet()) {
             if (counts.get(edge) > percentStability * numSubsamples) {
-                out.addEdge(edge);
+            	initialGraph.addEdge(edge);
             }
         }
 
-        return out;
+        return initialGraph;
     }
 
     private void increment(Edge edge, Map<Edge, Integer> counts) {
@@ -139,4 +139,20 @@ public class StabilitySelection implements Algorithm, TakesInitialGraph {
 
         return parameters;
     }
+
+	@Override
+	public Graph getInitialGraph() {
+		return initialGraph;
+	}
+
+	@Override
+	public void setInitialGraph(Graph initialGraph) {
+		this.initialGraph = initialGraph;
+	}
+
+    @Override
+    public void setInitialGraph(Algorithm algorithm) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+    
 }

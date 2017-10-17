@@ -2,7 +2,6 @@ package edu.cmu.tetrad.algcomparison.algorithm;
 
 import edu.cmu.tetrad.algcomparison.utils.TakesInitialGraph;
 import edu.cmu.tetrad.data.*;
-import edu.cmu.tetrad.graph.Edge;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
@@ -14,24 +13,25 @@ import java.util.List;
 import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.RecursiveAction;
 
-import static java.lang.Math.abs;
-
 /**
  * StARS
  *
  * @author jdramsey
  */
 public class StARS implements Algorithm, TakesInitialGraph {
+
     static final long serialVersionUID = 23L;
     private final double low;
     private final double high;
     private final String parameter;
     private Algorithm algorithm;
+    private Graph initialGraph = null;
     private DataSet _dataSet;
 
-
     public StARS(Algorithm algorithm, String parameter, double low, double high) {
-        if (low >= high) throw new IllegalArgumentException("Must have low < high");
+        if (low >= high) {
+            throw new IllegalArgumentException("Must have low < high");
+        }
         this.algorithm = algorithm;
         this.low = low;
         this.high = high;
@@ -45,7 +45,6 @@ public class StARS implements Algorithm, TakesInitialGraph {
 //        int numVars = Math.min(50, ((DataSet) dataSet).getNumColumns());
 //        int[] cols = new int[numVars];
 //        for (int i = 0; i < numVars; i++) cols[i] = i;
-
         _dataSet = (DataSet) dataSet;//.subsetColumns(cols);
 
         double percentageB = parameters.getDouble("percentSubsampleSize");
@@ -65,7 +64,6 @@ public class StARS implements Algorithm, TakesInitialGraph {
 
 //        double pFrom = low;
 //        double pTo = high;
-
         double maxD = Double.NEGATIVE_INFINITY;
         double _lambda = Double.NaN;
 
@@ -139,7 +137,6 @@ public class StARS implements Algorithm, TakesInitialGraph {
 //        if (D2 > bestD) {
 //            pBest = high;
 //        }
-
         System.out.println("FINAL: lambda = " + _lambda + " D = " + maxD);
 
         System.out.println(parameter + " = " + getValue(_lambda, parameters));
@@ -149,7 +146,7 @@ public class StARS implements Algorithm, TakesInitialGraph {
     }
 
     private static double getD(Parameters params, String paramName, double paramValue, final List<DataSet> samples,
-                               Algorithm algorithm) {
+            Algorithm algorithm) {
         params.set(paramName, paramValue);
 
         List<Graph> graphs = new ArrayList<>();
@@ -159,10 +156,10 @@ public class StARS implements Algorithm, TakesInitialGraph {
 //            e = GraphUtils.replaceNodes(e, samples.get(0).getVariables());
 //            graphs.add(e);
 //        }
-
         final ForkJoinPool pool = ForkJoinPoolInstance.getInstance().getPool();
 
         class StabilityAction extends RecursiveAction {
+
             private int chunk;
             private int from;
             private int to;
@@ -211,15 +208,17 @@ public class StARS implements Algorithm, TakesInitialGraph {
                 Node y = nodes.get(j);
 
                 for (int k = 0; k < graphs.size(); k++) {
-                    if (graphs.get(k).isAdjacentTo(x, y)) theta += 1.0;
+                    if (graphs.get(k).isAdjacentTo(x, y)) {
+                        theta += 1.0;
+                    }
                 }
 
                 theta /= graphs.size();
                 double xsi = 2 * theta * (1.0 - theta);
 
 //                if (xsi != 0){
-                    D += xsi;
-                    count++;
+                D += xsi;
+                count++;
 //                }
             }
         }
@@ -263,4 +262,22 @@ public class StARS implements Algorithm, TakesInitialGraph {
 
         return parameters;
     }
+
+	@Override
+	public Graph getInitialGraph() {
+		// TODO Auto-generated method stub
+		return initialGraph;
+	}
+
+	@Override
+	public void setInitialGraph(Graph initialGraph) {
+		// TODO Auto-generated method stub
+		this.initialGraph = initialGraph;
+	}
+
+	@Override
+    public void setInitialGraph(Algorithm algorithm) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
 }

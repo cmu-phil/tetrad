@@ -1070,7 +1070,7 @@ public class Comparison {
     }
 
     private void printParameters(List<String> names, Parameters parameters, PrintStream out) {
-        ParamDescriptions descriptions = new ParamDescriptions();
+        ParamDescriptions descriptions = ParamDescriptions.getInstance();
 
         for (String name : names) {
             ParamDescription description = descriptions.get(name);
