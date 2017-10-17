@@ -96,4 +96,16 @@ public class TetradTestOfIndependenceAnnotations {
         return Collections.unmodifiableMap(dataTypeNameWrappers);
     }
 
+    public List<AnnotatedClassWrapper<TestOfIndependence>> filterOutExperimental(List<AnnotatedClassWrapper<TestOfIndependence>> TestOfIndependences) {
+        if (TestOfIndependences == null) {
+            return Collections.EMPTY_LIST;
+        }
+
+        List<AnnotatedClassWrapper<TestOfIndependence>> list = TestOfIndependences.stream()
+                .filter(e -> !e.annotatedClass.getClazz().isAnnotationPresent(Experimental.class))
+                .collect(Collectors.toList());
+
+        return Collections.unmodifiableList(list);
+    }
+
 }

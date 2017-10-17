@@ -59,6 +59,18 @@ public class TetradAlgorithmAnnotations {
         return INSTANCE;
     }
 
+    public List<AnnotatedClassWrapper<Algorithm>> filterOutExperimental(List<AnnotatedClassWrapper<Algorithm>> Algorithms) {
+        if (Algorithms == null) {
+            return Collections.EMPTY_LIST;
+        }
+
+        List<AnnotatedClassWrapper<Algorithm>> list = Algorithms.stream()
+                .filter(e -> !e.annotatedClass.getClazz().isAnnotationPresent(Experimental.class))
+                .collect(Collectors.toList());
+
+        return Collections.unmodifiableList(list);
+    }
+
     public boolean acceptMultipleDataset(Class clazz) {
         return algoAnno.acceptMultipleDataset(clazz);
     }

@@ -96,4 +96,16 @@ public class TetradScoreAnnotations {
         return Collections.unmodifiableMap(dataTypeNameWrappers);
     }
 
+    public List<AnnotatedClassWrapper<Score>> filterOutExperimental(List<AnnotatedClassWrapper<Score>> scores) {
+        if (scores == null) {
+            return Collections.EMPTY_LIST;
+        }
+
+        List<AnnotatedClassWrapper<Score>> list = scores.stream()
+                .filter(e -> !e.annotatedClass.getClazz().isAnnotationPresent(Experimental.class))
+                .collect(Collectors.toList());
+
+        return Collections.unmodifiableList(list);
+    }
+
 }

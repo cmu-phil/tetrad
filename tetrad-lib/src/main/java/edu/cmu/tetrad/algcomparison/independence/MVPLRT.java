@@ -1,12 +1,12 @@
 package edu.cmu.tetrad.algcomparison.independence;
 
+import edu.cmu.tetrad.annotation.Experimental;
 import edu.cmu.tetrad.annotation.TestOfIndependence;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.data.DataUtils;
 import edu.cmu.tetrad.search.IndTestMVPLRT;
 import edu.cmu.tetrad.search.IndependenceTest;
-import edu.cmu.tetrad.util.Experimental;
 import edu.cmu.tetrad.util.Parameters;
 import java.util.ArrayList;
 import java.util.List;
@@ -16,12 +16,13 @@ import java.util.List;
  *
  * @author jdramsey
  */
+@Experimental
 @TestOfIndependence(
         name = "Multinomial Logistic Regression Likelihood Ratio Test",
         command = "multinomial-logistic-regression-likelihood-ratio",
         dataType = DataType.Mixed
 )
-public class MVPLRT implements IndependenceWrapper, Experimental {
+public class MVPLRT implements IndependenceWrapper {
 
     static final long serialVersionUID = 23L;
 
