@@ -18,28 +18,21 @@
  */
 package edu.cmu.tetrad.annotation;
 
-import java.util.List;
+import java.lang.annotation.Documented;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
 /**
  *
- * Sep 26, 2017 1:14:01 AM
+ * Oct 17, 2017 11:40:50 AM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
  */
-public class ScoreAnnotations extends AbstractAnnotations<Score> {
-
-    private static final ScoreAnnotations INSTANCE = new ScoreAnnotations();
-
-    private ScoreAnnotations() {
-        super("edu.cmu.tetrad.algcomparison.score", Score.class);
-    }
-
-    public static ScoreAnnotations getInstance() {
-        return INSTANCE;
-    }
-
-    public List<AnnotatedClass<Score>> filterOutExperimental(List<AnnotatedClass<Score>> list) {
-        return filterOutByAnnotation(list, Experimental.class);
-    }
+@Target({ElementType.TYPE})
+@Retention(RetentionPolicy.RUNTIME)
+@Documented
+public @interface Experimental {
 
 }

@@ -22,6 +22,7 @@ import edu.cmu.tetrad.algcomparison.algorithm.MultiDataSetAlgorithm;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.algcomparison.utils.TakesIndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.utils.UsesScoreWrapper;
+import java.util.List;
 
 /**
  *
@@ -39,6 +40,10 @@ public class AlgorithmAnnotations extends AbstractAnnotations<Algorithm> {
 
     public static AlgorithmAnnotations getInstance() {
         return INSTANCE;
+    }
+
+    public List<AnnotatedClass<Algorithm>> filterOutExperimental(List<AnnotatedClass<Algorithm>> list) {
+        return filterOutByAnnotation(list, Experimental.class);
     }
 
     public boolean acceptMultipleDataset(Class clazz) {

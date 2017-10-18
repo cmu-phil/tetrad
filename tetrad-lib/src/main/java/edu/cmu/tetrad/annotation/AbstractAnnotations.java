@@ -49,4 +49,28 @@ public abstract class AbstractAnnotations<T extends Annotation> {
         return Collections.unmodifiableList(annotatedClasses);
     }
 
+    public List<AnnotatedClass<T>> filterByAnnotation(List<AnnotatedClass<T>> annoClasses, Class<? extends Annotation> type) {
+        if (annoClasses == null || type == null) {
+            return Collections.EMPTY_LIST;
+        }
+
+        List<AnnotatedClass<T>> list = annoClasses.stream()
+                .filter(e -> e.getClazz().isAnnotationPresent(type))
+                .collect(Collectors.toList());
+
+        return Collections.unmodifiableList(list);
+    }
+
+    public List<AnnotatedClass<T>> filterOutByAnnotation(List<AnnotatedClass<T>> annoClasses, Class<? extends Annotation> type) {
+        if (annoClasses == null || type == null) {
+            return Collections.EMPTY_LIST;
+        }
+
+        List<AnnotatedClass<T>> list = annoClasses.stream()
+                .filter(e -> !e.getClazz().isAnnotationPresent(type))
+                .collect(Collectors.toList());
+
+        return Collections.unmodifiableList(list);
+    }
+
 }

@@ -43,21 +43,22 @@ public class TetradTestOfIndependenceAnnotations {
     private final Map<DataType, List<AnnotatedClassWrapper<TestOfIndependence>>> dataTypeNameWrappers = new EnumMap<>(DataType.class);
 
     private TetradTestOfIndependenceAnnotations() {
-        nameWrappers = testAnno.getAnnotatedClasses().stream()
+        nameWrappers = testAnno.filterOutExperimental(testAnno.getAnnotatedClasses()).stream()
                 .map(e -> new AnnotatedClassWrapper<>(e.getAnnotation().name(), e))
                 .sorted()
                 .collect(Collectors.toList());
 
+        // initialize enum map
+        DataType[] dataTypes = DataType.values();
+        for (DataType dataType : dataTypes) {
+            dataTypeNameWrappers.put(dataType, new LinkedList<>());
+        }
+
         // group by datatype
         nameWrappers.stream().forEach(e -> {
-            DataType[] dataTypes = e.getAnnotatedClass().getAnnotation().dataType();
-            for (DataType dataType : dataTypes) {
-                List<AnnotatedClassWrapper<TestOfIndependence>> list = dataTypeNameWrappers.get(dataType);
-                if (list == null) {
-                    list = new LinkedList<>();
-                    dataTypeNameWrappers.put(dataType, list);
-                }
-                list.add(e);
+            DataType[] types = e.getAnnotatedClass().getAnnotation().dataType();
+            for (DataType dataType : types) {
+                dataTypeNameWrappers.get(dataType).add(e);
             }
         });
 

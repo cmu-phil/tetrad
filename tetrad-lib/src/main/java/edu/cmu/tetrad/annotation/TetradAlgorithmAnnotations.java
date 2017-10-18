@@ -40,7 +40,7 @@ public class TetradAlgorithmAnnotations {
     private final List<AnnotatedClassWrapper<Algorithm>> handleUnmeasuredConfounderNameWrappers;
 
     private TetradAlgorithmAnnotations() {
-        nameWrappers = algoAnno.getAnnotatedClasses().stream()
+        nameWrappers = algoAnno.filterOutExperimental(algoAnno.getAnnotatedClasses()).stream()
                 .map(e -> new AnnotatedClassWrapper<>(e.getAnnotation().name(), e))
                 .sorted()
                 .collect(Collectors.toList());
