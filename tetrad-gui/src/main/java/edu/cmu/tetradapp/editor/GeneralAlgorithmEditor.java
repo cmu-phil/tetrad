@@ -518,7 +518,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         algoDescriptionTextArea.setEditable(false);
 
         JScrollPane algoDescriptionScrollPane = new JScrollPane(algoDescriptionTextArea);
-        algoDescriptionScrollPane.setMinimumSize(new Dimension(330, 335));
+        //algoDescriptionScrollPane.setMinimumSize(new Dimension(330, 335));
         algoDescriptionScrollPane.setMaximumSize(new Dimension(330, 335));
 
         algoDescriptionBox.add(algoDescriptionScrollPane);
