@@ -829,6 +829,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         if (!suggestedAlgosListModel.isEmpty() && selectedAgloWrapper != null) {
             edu.cmu.tetrad.annotation.Algorithm agloAnno = selectedAgloWrapper.getAnnotatedClass().getAnnotation();
             algoDescriptionTextArea.setText(agloAnno.description());
+            algoDescriptionTextArea.setCaretPosition(0);
         } else {
             // Erase the previous content
             algoDescriptionTextArea.setText("");
