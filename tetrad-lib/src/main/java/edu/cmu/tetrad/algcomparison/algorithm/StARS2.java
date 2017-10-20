@@ -6,12 +6,10 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.Parameters;
-
+import static java.lang.Math.abs;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-
-import static java.lang.Math.abs;
 
 /**
  * First inflection point.
@@ -19,6 +17,7 @@ import static java.lang.Math.abs;
  * @author jdramsey
  */
 public class StARS2 implements Algorithm, TakesInitialGraph {
+
     static final long serialVersionUID = 23L;
     private final double low;
     private final double high;
@@ -29,9 +28,10 @@ public class StARS2 implements Algorithm, TakesInitialGraph {
     private DataSet _dataSet;
     Map<Double, Double> archive;
 
-
     public StARS2(Algorithm algorithm, String parameter, double low, double high, double initialGuess) {
-        if (low >= high) throw new IllegalArgumentException("Must have low < high");
+        if (low >= high) {
+            throw new IllegalArgumentException("Must have low < high");
+        }
         this.algorithm = algorithm;
         this.low = low;
         this.high = high;
@@ -44,10 +44,8 @@ public class StARS2 implements Algorithm, TakesInitialGraph {
         this._dataSet = (DataSet) dataSet;
 
 //        int numVars = Math.min(50, ((DataSet) dataSet).getNumColumns());
-
 //        int[] cols = new int[numVars];
 //        for (int i = 0; i < numVars; i++) cols[i] = i;
-
         _dataSet = (DataSet) dataSet;//.subsetColumns(cols);
 
         double percentageB = parameters.getDouble("StARS.percentageB");
@@ -101,7 +99,7 @@ public class StARS2 implements Algorithm, TakesInitialGraph {
 //        );
 //
 //        double _p = getValue(p.getPoint()[0], parameters);
-       double _p = getValue(pMid, parameters);
+        double _p = getValue(pMid, parameters);
 //        _p = Math.round(_p * 10.0) / 10.0;
         System.out.println(parameter + " = " + _p);
         _parameters.set(parameter, getValue(_p, parameters));
@@ -163,9 +161,8 @@ public class StARS2 implements Algorithm, TakesInitialGraph {
 //            return D;
 //        }
 //    }
-
     private static double getD(Parameters params, String paramName, double paramValue, List<DataSet> boostraps,
-                               int numBootstraps, Algorithm algorithm, Map<Double, Double> archive) {
+            int numBootstraps, Algorithm algorithm, Map<Double, Double> archive) {
         params.set(paramName, paramValue);
 
         List<Graph> graphs = new ArrayList<>();
@@ -237,4 +234,20 @@ public class StARS2 implements Algorithm, TakesInitialGraph {
 
         return parameters;
     }
+
+	@Override
+	public Graph getInitialGraph() {
+		return null;
+	}
+
+	@Override
+	public void setInitialGraph(Graph initialGraph) {
+		
+	}
+
+	@Override
+    public void setInitialGraph(Algorithm algorithm) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
 }

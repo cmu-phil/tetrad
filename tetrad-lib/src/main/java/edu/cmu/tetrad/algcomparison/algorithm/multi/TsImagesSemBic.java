@@ -8,6 +8,8 @@ import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.search.IndTestScore;
 import edu.cmu.tetrad.util.Parameters;
+import edu.pitt.dbmi.algo.bootstrap.BootstrapEdgeEnsemble;
+import edu.pitt.dbmi.algo.bootstrap.GeneralBootstrapTest;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.SearchGraphUtils;
 import edu.cmu.tetrad.search.SemBicScoreImages;
@@ -34,24 +36,77 @@ public class TsImagesSemBic implements MultiDataSetAlgorithm, HasKnowledge {
 
     @Override
     public Graph search(List<DataModel> dataModels, Parameters parameters) {
+    	if (!parameters.getBoolean("bootstrapping")) {
+            List<DataSet> dataSets = new ArrayList<>();
 
-        List<DataSet> dataSets = new ArrayList<>();
+            for (DataModel dataModel : dataModels) {
+                dataSets.add((DataSet) dataModel);
+            }
 
-        for (DataModel dataModel : dataModels) {
-            dataSets.add((DataSet) dataModel);
-        }
+            edu.cmu.tetrad.search.TsGFci search = new edu.cmu.tetrad.search.TsGFci(new IndTestScore(
+                    new SemBicScoreImages(dataModels)), new SemBicScoreImages(dataModels));
+            search.setFaithfulnessAssumed(true);
+            search.setKnowledge(knowledge);
 
-        edu.cmu.tetrad.search.TsGFci search = new edu.cmu.tetrad.search.TsGFci(new IndTestScore(
-                new SemBicScoreImages(dataModels)), new SemBicScoreImages(dataModels));
-        search.setFaithfulnessAssumed(true);
-        search.setKnowledge(knowledge);
+            return search.search();
+    	}else{
+    		TsImagesSemBic tsImagesSemBic = new TsImagesSemBic();
+    		tsImagesSemBic.setKnowledge(knowledge);
+    		
+    		List<DataSet> datasets = new ArrayList<>();
 
-        return search.search();
+			for (DataModel dataModel : dataModels) {
+				datasets.add((DataSet) dataModel);
+			}
+			GeneralBootstrapTest search = new GeneralBootstrapTest(datasets, tsImagesSemBic,
+					parameters.getInt("bootstrapSampleSize"));
+
+			BootstrapEdgeEnsemble edgeEnsemble = BootstrapEdgeEnsemble.Highest;
+			switch (parameters.getInt("bootstrapEnsemble", 1)) {
+			case 0:
+				edgeEnsemble = BootstrapEdgeEnsemble.Preserved;
+				break;
+			case 1:
+				edgeEnsemble = BootstrapEdgeEnsemble.Highest;
+				break;
+			case 2:
+				edgeEnsemble = BootstrapEdgeEnsemble.Majority;
+			}
+			search.setEdgeEnsemble(edgeEnsemble);
+			search.setParameters(parameters);
+			search.setVerbose(parameters.getBoolean("verbose"));
+			return search.search();
+    	}
     }
 
     @Override
     public Graph search(DataModel dataSet, Parameters parameters) {
-        return search(Collections.singletonList((DataModel) DataUtils.getContinuousDataSet(dataSet)), parameters);
+    	if (!parameters.getBoolean("bootstrapping")) {
+            return search(Collections.singletonList((DataModel) DataUtils.getContinuousDataSet(dataSet)), parameters);
+    	}else{
+    		TsImagesSemBic tsImagesSemBic = new TsImagesSemBic();
+    		tsImagesSemBic.setKnowledge(knowledge);
+    		
+    		List<DataSet> dataSets = Collections.singletonList(DataUtils.getContinuousDataSet(dataSet));
+			GeneralBootstrapTest search = new GeneralBootstrapTest(dataSets, tsImagesSemBic,
+					parameters.getInt("bootstrapSampleSize"));
+
+			BootstrapEdgeEnsemble edgeEnsemble = BootstrapEdgeEnsemble.Highest;
+			switch (parameters.getInt("bootstrapEnsemble", 1)) {
+			case 0:
+				edgeEnsemble = BootstrapEdgeEnsemble.Preserved;
+				break;
+			case 1:
+				edgeEnsemble = BootstrapEdgeEnsemble.Highest;
+				break;
+			case 2:
+				edgeEnsemble = BootstrapEdgeEnsemble.Majority;
+			}
+			search.setEdgeEnsemble(edgeEnsemble);
+			search.setParameters(parameters);
+			search.setVerbose(parameters.getBoolean("verbose"));
+			return search.search();
+    	}
     }
 
     @Override
@@ -73,6 +128,12 @@ public class TsImagesSemBic implements MultiDataSetAlgorithm, HasKnowledge {
     public List<String> getParameters() {
         List<String> parameters = new Fges(new SemBicScore(), false).getParameters();
         parameters.add("randomSelectionSize");
+        // Bootstrapping
+  		parameters.add("bootstrapping");
+  		parameters.add("bootstrapSampleSize");
+  		parameters.add("bootstrapEnsemble");
+  		parameters.add("verbose");
+  		
         return parameters;
     }
 

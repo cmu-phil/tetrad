@@ -21,6 +21,7 @@
 package edu.cmu.tetrad.graph;
 
 import edu.cmu.tetrad.data.DataSet;
+import edu.cmu.tetrad.graph.EdgeTypeProbability.EdgeType;
 import edu.cmu.tetrad.util.ChoiceGenerator;
 import edu.cmu.tetrad.util.ForkJoinPoolInstance;
 import edu.cmu.tetrad.util.JsonUtils;
@@ -2520,14 +2521,17 @@ public final class GraphUtils {
             if (line.equals("")) {
                 break;
             }
-//                System.out.println(line);
+                
+            System.out.println(line);
 
-            String[] tokens = line.split(" ");
+            String[] tokens = line.split("\\s+");
 
             String from = tokens[1];
             String edge = tokens[2];
             String to = tokens[3];
 
+            line = line.substring(line.indexOf(to) + to.length()).trim();
+            
             Node _from = graph.getNode(from);
             Node _to = graph.getNode(to);
 
@@ -2558,9 +2562,38 @@ public final class GraphUtils {
 
             Edge _edge = new Edge(_from, _to, _end1, _end2);
 
-            for (int i = 4; i < tokens.length; i++) {
-                _edge.addProperty(Edge.Property.valueOf(tokens[i]));
+            //Bootstrapping
+            if(line.indexOf("[no edge]") > -1){
+            	
+            	String bootstrap_format = "[no edge]:0.0000[-->]:0.0000[<--]:0.0000[o->]:0.0000[<-o]:0.0000[o-o]:0.0000[<->]:0.0000[---]:0.0000";
+            	String bootstraps = line.substring(0, bootstrap_format.length());
+            	line = line.substring(bootstrap_format.length()).trim();
+            	double nil = Double.parseDouble(bootstraps.substring(10, 16));
+            	double ta = Double.parseDouble(bootstraps.substring(22, 28));
+            	double at = Double.parseDouble(bootstraps.substring(34, 40));
+            	double ca = Double.parseDouble(bootstraps.substring(46, 52));
+            	double ac = Double.parseDouble(bootstraps.substring(58, 64));
+            	double cc = Double.parseDouble(bootstraps.substring(70, 76));
+            	double aa = Double.parseDouble(bootstraps.substring(82, 88));
+            	double tt = Double.parseDouble(bootstraps.substring(94, 100));
+            	
+            	_edge.addEdgeTypeProbability(new EdgeTypeProbability(EdgeType.nil, nil));
+            	_edge.addEdgeTypeProbability(new EdgeTypeProbability(EdgeType.ta, ta));
+            	_edge.addEdgeTypeProbability(new EdgeTypeProbability(EdgeType.at, at));
+            	_edge.addEdgeTypeProbability(new EdgeTypeProbability(EdgeType.ca, ca));
+            	_edge.addEdgeTypeProbability(new EdgeTypeProbability(EdgeType.ac, ac));
+            	_edge.addEdgeTypeProbability(new EdgeTypeProbability(EdgeType.cc, cc));
+            	_edge.addEdgeTypeProbability(new EdgeTypeProbability(EdgeType.aa, aa));
+            	_edge.addEdgeTypeProbability(new EdgeTypeProbability(EdgeType.tt, tt));
             }
+            
+            if(line.length() > 0){
+                tokens = line.split("\\s+");
+                
+                for (int i = 0; i < tokens.length; i++) {
+                    _edge.addProperty(Edge.Property.valueOf(tokens[i]));
+                }
+            }            
 
             graph.addEdge(_edge);
         }
@@ -3914,8 +3947,6 @@ public final class GraphUtils {
 
 			List<Edge.Property> properties = edge.getProperties();
 
-			List<EdgeTypeProbability> edgeTypeDist = edge.getEdgeTypeProbabilities();
-
 			if (count < size) {
 				String f = "%d. %s";
 
@@ -3934,51 +3965,6 @@ public final class GraphUtils {
 
 				fmt.format(f, o);
 
-				// Bootstrap edge type distribution
-				f = " ";
-
-				for (int i = 0; i < edgeTypeDist.size(); i++) {
-					f += "%s ";
-				}
-				o = new Object[edgeTypeDist.size()];
-
-				for (int i = 0; i < edgeTypeDist.size(); i++) {
-					EdgeTypeProbability etp = edgeTypeDist.get(i);
-					String _type = "" + etp.getEdgeType();
-					switch (etp.getEdgeType()) {
-					case nil:
-						_type = "no edge";
-						break;
-					case ta:
-						_type = "-->";
-						break;
-					case at:
-						_type = "<--";
-						break;
-					case ca:
-						_type = "o->";
-						break;
-					case ac:
-						_type = "<-o";
-						break;
-					case cc:
-						_type = "o-o";
-						break;
-					case aa:
-						_type = "<->";
-						break;
-					case tt:
-						_type = "---";
-						break;
-					default:
-						break;
-					}
-
-					o[i] = "[" + _type + "]:" + String.format("%.4f", etp.getProbability());
-				}
-
-				fmt.format(f, o);
-
 				fmt.format("\n");
 			} else {
 				String f = "%d. %s";
@@ -3993,51 +3979,6 @@ public final class GraphUtils {
 
 				for (int i = 0; i < properties.size(); i++) {
 					o[2 + i] = properties.get(i);
-				}
-
-				fmt.format(f, o);
-
-				// Bootstrap edge type distribution
-				f = " ";
-
-				for (int i = 0; i < edgeTypeDist.size(); i++) {
-					f += "%s ";
-				}
-				o = new Object[edgeTypeDist.size()];
-
-				for (int i = 0; i < edgeTypeDist.size(); i++) {
-					EdgeTypeProbability etp = edgeTypeDist.get(i);
-					String _type = "" + etp.getEdgeType();
-					switch (etp.getEdgeType()) {
-					case nil:
-						_type = "no edge";
-						break;
-					case ta:
-						_type = "-->";
-						break;
-					case at:
-						_type = "<--";
-						break;
-					case ca:
-						_type = "o->";
-						break;
-					case ac:
-						_type = "<-o";
-						break;
-					case cc:
-						_type = "o-o";
-						break;
-					case aa:
-						_type = "<->";
-						break;
-					case tt:
-						_type = "---";
-						break;
-					default:
-						break;
-					}
-
-					o[i] = "[" + _type + "]:" + String.format("%.4f", etp.getProbability());
 				}
 
 				fmt.format(f, o);

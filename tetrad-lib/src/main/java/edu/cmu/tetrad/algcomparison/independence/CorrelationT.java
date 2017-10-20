@@ -1,12 +1,12 @@
 package edu.cmu.tetrad.algcomparison.independence;
 
+import edu.cmu.tetrad.annotation.TestOfIndependence;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.data.DataUtils;
 import edu.cmu.tetrad.search.IndTestCorrelationT;
 import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.util.Parameters;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -15,7 +15,13 @@ import java.util.List;
  *
  * @author jdramsey
  */
+@TestOfIndependence(
+        name = "Correlation T Test",
+        command = "correlation-t",
+        dataType = DataType.Continuous
+)
 public class CorrelationT implements IndependenceWrapper {
+
     static final long serialVersionUID = 23L;
 
     @Override
@@ -26,7 +32,7 @@ public class CorrelationT implements IndependenceWrapper {
 
     @Override
     public String getDescription() {
-        return "Fisher Z test";
+        return "Correlation T Test";
     }
 
     @Override

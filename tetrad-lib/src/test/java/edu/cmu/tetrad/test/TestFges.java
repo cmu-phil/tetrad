@@ -374,7 +374,7 @@ public class TestFges {
         }
     }
 
-    @Test
+//    @Test
     public void clarkTest() {
         RandomGraph randomGraph = new RandomForward();
 

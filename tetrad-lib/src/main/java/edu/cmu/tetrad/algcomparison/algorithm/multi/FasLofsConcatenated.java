@@ -1,14 +1,15 @@
 package edu.cmu.tetrad.algcomparison.algorithm.multi;
 
 import edu.cmu.tetrad.algcomparison.algorithm.MultiDataSetAlgorithm;
-import edu.cmu.tetrad.algcomparison.graph.RandomGraph;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.search.Fask;
-import edu.cmu.tetrad.search.Lofs2;
+import edu.cmu.tetrad.search.*;
+import edu.cmu.tetrad.search.FasLofs;
 import edu.cmu.tetrad.util.Parameters;
+import edu.pitt.dbmi.algo.bootstrap.BootstrapEdgeEnsemble;
+import edu.pitt.dbmi.algo.bootstrap.GeneralBootstrapTest;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -18,81 +19,139 @@ import java.util.List;
  * Wraps the IMaGES algorithm for continuous variables.
  * </p>
  * Requires that the parameter 'randomSelectionSize' be set to indicate how many
- * datasets should be taken at a time (randomly). This cannot given multiple values.
+ * datasets should be taken at a time (randomly). This cannot given multiple
+ * values.
  *
  * @author jdramsey
  */
 public class FasLofsConcatenated implements MultiDataSetAlgorithm, HasKnowledge {
-    static final long serialVersionUID = 23L;
-    private final Lofs2.Rule rule;
-    private RandomGraph initialGraph;
-    private IKnowledge knowledge = new Knowledge2();
+	static final long serialVersionUID = 23L;
+	private final Lofs2.Rule rule;
+	private IKnowledge knowledge = new Knowledge2();
 
-    public FasLofsConcatenated(Lofs2.Rule rule) {
-        this.rule = rule;
-    }
+	public FasLofsConcatenated(Lofs2.Rule rule) {
+		this.rule = rule;
+	}
 
-    public FasLofsConcatenated(Lofs2.Rule rule, RandomGraph initialGraph) {
-        this.rule = rule;
-        this.initialGraph = initialGraph;
-    }
+	@Override
+	public Graph search(List<DataModel> dataModels, Parameters parameters) {
+		if (!parameters.getBoolean("bootstrapping")) {
+			List<DataSet> dataSets = new ArrayList<>();
 
-    @Override
-    public Graph search(List<DataModel> dataSets, Parameters parameters) {
+			for (DataModel dataModel : dataModels) {
+				dataSets.add((DataSet) dataModel);
+			}
 
-        List<DataSet> centered = new ArrayList<>();
+			DataSet dataSet = DataUtils.concatenate(dataSets);
 
-        for (DataModel dataSet : dataSets) {
-            centered.add(DataUtils.center((DataSet) dataSet));
-        }
+			edu.cmu.tetrad.search.FasLofs search = new FasLofs(dataSet, rule);
+			search.setDepth(parameters.getInt("depth"));
+			search.setPenaltyDiscount(parameters.getDouble("penaltyDiscount"));
+			search.setKnowledge(knowledge);
+			return getGraph(search);
+		} else {
+			FasLofsConcatenated algorithm = new FasLofsConcatenated(rule);
+			algorithm.setKnowledge(knowledge);
 
-        DataSet dataSet = DataUtils.concatenate(centered);
-        edu.cmu.tetrad.search.FasLofs search = new edu.cmu.tetrad.search.FasLofs((DataSet) dataSet, rule);
-        search.setDepth(parameters.getInt("depth"));
-        search.setPenaltyDiscount(parameters.getDouble("penaltyDiscount"));
-        search.setKnowledge(knowledge);
-        return search.search();
-    }
+			List<DataSet> datasets = new ArrayList<>();
 
-    @Override
-    public Graph search(DataModel dataSet, Parameters parameters) {
-        return search(Collections.singletonList((DataModel) DataUtils.getContinuousDataSet(dataSet)), parameters);
-    }
+			for (DataModel dataModel : dataModels) {
+				datasets.add((DataSet) dataModel);
+			}
+			GeneralBootstrapTest search = new GeneralBootstrapTest(datasets, algorithm,
+					parameters.getInt("bootstrapSampleSize"));
 
-    @Override
-    public Graph getComparisonGraph(Graph graph) {
-        return new EdgeListGraph(graph);
-    }
+			BootstrapEdgeEnsemble edgeEnsemble = BootstrapEdgeEnsemble.Highest;
+			switch (parameters.getInt("bootstrapEnsemble", 1)) {
+			case 0:
+				edgeEnsemble = BootstrapEdgeEnsemble.Preserved;
+				break;
+			case 1:
+				edgeEnsemble = BootstrapEdgeEnsemble.Highest;
+				break;
+			case 2:
+				edgeEnsemble = BootstrapEdgeEnsemble.Majority;
+			}
+			search.setEdgeEnsemble(edgeEnsemble);
+			search.setParameters(parameters);
+			search.setVerbose(parameters.getBoolean("verbose"));
+			return search.search();
+		}
+	}
 
-    @Override
-    public String getDescription() {
-        return "FAS followed by " + rule + " on concatenated data";
-    }
+	private Graph getGraph(FasLofs search) {
+		return search.search();
+	}
 
-    @Override
-    public DataType getDataType() {
-        return DataType.Continuous;
-    }
+	@Override
+	public Graph search(DataModel dataSet, Parameters parameters) {
+		if (!parameters.getBoolean("bootstrapping")) {
+			return search(Collections.singletonList((DataModel) DataUtils.getContinuousDataSet(dataSet)), parameters);
+		} else {
+			FasLofsConcatenated algorithm = new FasLofsConcatenated(rule);
+			algorithm.setKnowledge(knowledge);
 
-    @Override
-    public List<String> getParameters() {
-        List<String> parameters = new ArrayList<>();
-        parameters.add("depth");
-        parameters.add("penaltyDiscount");
-        parameters.add("twoCycleAlpha");
-        parameters.add("numRuns");
-        parameters.add("randomSelectionSize");
+			List<DataSet> dataSets = Collections.singletonList(DataUtils.getContinuousDataSet(dataSet));
+			GeneralBootstrapTest search = new GeneralBootstrapTest(dataSets, algorithm,
+					parameters.getInt("bootstrapSampleSize"));
 
-        return parameters;
-    }
+			BootstrapEdgeEnsemble edgeEnsemble = BootstrapEdgeEnsemble.Highest;
+			switch (parameters.getInt("bootstrapEnsemble", 1)) {
+			case 0:
+				edgeEnsemble = BootstrapEdgeEnsemble.Preserved;
+				break;
+			case 1:
+				edgeEnsemble = BootstrapEdgeEnsemble.Highest;
+				break;
+			case 2:
+				edgeEnsemble = BootstrapEdgeEnsemble.Majority;
+			}
+			search.setEdgeEnsemble(edgeEnsemble);
+			search.setParameters(parameters);
+			search.setVerbose(parameters.getBoolean("verbose"));
+			return search.search();
+		}
+	}
 
-    @Override
-    public IKnowledge getKnowledge() {
-        return knowledge;
-    }
+	@Override
+	public Graph getComparisonGraph(Graph graph) {
+		return new EdgeListGraph(graph);
+	}
 
-    @Override
-    public void setKnowledge(IKnowledge knowledge) {
-        this.knowledge = knowledge;
-    }
+	@Override
+	public String getDescription() {
+		return "FAS followed by " + rule;
+	}
+
+	@Override
+	public DataType getDataType() {
+		return DataType.Continuous;
+	}
+
+	@Override
+	public List<String> getParameters() {
+		List<String> parameters = new ArrayList<>();
+		parameters.add("depth");
+		parameters.add("penaltyDiscount");
+
+		parameters.add("numRuns");
+		parameters.add("randomSelectionSize");
+		// Bootstrapping
+		parameters.add("bootstrapping");
+		parameters.add("bootstrapSampleSize");
+		parameters.add("bootstrapEnsemble");
+		parameters.add("verbose");
+
+		return parameters;
+	}
+
+	@Override
+	public IKnowledge getKnowledge() {
+		return knowledge;
+	}
+
+	@Override
+	public void setKnowledge(IKnowledge knowledge) {
+		this.knowledge = knowledge;
+	}
 }

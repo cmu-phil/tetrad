@@ -5,16 +5,16 @@ import edu.cmu.tetrad.search.IndTestScore;
 import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.search.SemBicScoreDeterministic;
 import edu.cmu.tetrad.util.Parameters;
-
 import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Wrapper for Fisher Z test.
+ * Wrapper for Fisher Z test. Ignore this for now
  *
  * @author jdramsey
  */
 public class SemBicDTest implements IndependenceWrapper {
+
     static final long serialVersionUID = 23L;
 
     @Override

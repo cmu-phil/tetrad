@@ -18,12 +18,10 @@
 // along with this program; if not, write to the Free Software               //
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA //
 ///////////////////////////////////////////////////////////////////////////////
-
 package edu.cmu.tetrad.data;
 
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.TetradSerializable;
-
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.util.AbstractList;
@@ -39,6 +37,7 @@ import java.util.List;
  */
 public final class DataModelList extends AbstractList<DataModel>
         implements DataModel, TetradSerializable {
+
     static final long serialVersionUID = 23L;
 
     /**
@@ -70,7 +69,6 @@ public final class DataModelList extends AbstractList<DataModel>
     private IKnowledge knowledge = new Knowledge2();
 
     //===========================CONSTRUCTORS============================//
-
     public DataModelList() {
         super();
     }
@@ -98,7 +96,6 @@ public final class DataModelList extends AbstractList<DataModel>
     }
 
     //===========================PUBLIC METHODS (see AbstractList too)===//
-
     /**
      * @return this model, as an Object.
      */
@@ -109,12 +106,15 @@ public final class DataModelList extends AbstractList<DataModel>
     /**
      * @return the size of the getModel list. Required for AbstractList.
      */
+    @Override
     public int size() {
         return modelList.size();
     }
 
     public List<Node> getVariables() {
-        if (getSelectedModel() == null) throw new NullPointerException();
+        if (getSelectedModel() == null) {
+            throw new NullPointerException();
+        }
         return getSelectedModel().getVariables();
     }
 
@@ -134,7 +134,9 @@ public final class DataModelList extends AbstractList<DataModel>
      * @return the list of variable names for columns, in order.
      */
     public List<String> getVariableNames() {
-        if (getSelectedModel() == null) throw new NullPointerException();
+        if (getSelectedModel() == null) {
+            throw new NullPointerException();
+        }
         return getSelectedModel().getVariableNames();
     }
 
@@ -142,12 +144,42 @@ public final class DataModelList extends AbstractList<DataModel>
      * Adds the given DataModel to the list at the given index. Required for
      * AbstractList.
      *
-     * @param index   the index at which the DataModel is to be added.
+     * @param index the index at which the DataModel is to be added.
      * @param element the DataModel to be added. (Note that this must be a
-     *                DataModel.)
+     * DataModel.)
      */
     public void add(int index, DataModel element) {
         modelList.add(index, element);
+    }
+
+    /**
+     * Check if the modeList is empty Need to override this since this class is
+     * extending AbstractList.
+     *
+     * @return
+     */
+    @Override
+    public boolean isEmpty() {
+        return modelList.isEmpty();
+    }
+
+    /**
+     * Use this to check if the dataModelList only contains the default empty
+     * dataset that is being used to populat the empty spreadsheet - Added by
+     * Kevin
+     *
+     * @return
+     */
+    public boolean containsEmptyData() {
+        if (modelList.isEmpty()) {
+            return true;
+        } else {
+            return modelList.get(0).getVariableNames().isEmpty();
+        }
+    }
+
+    public List<DataModel> getModelList() {
+        return modelList;
     }
 
     /**
@@ -290,8 +322,3 @@ public final class DataModelList extends AbstractList<DataModel>
         }
     }
 }
-
-
-
-
-

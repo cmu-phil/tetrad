@@ -8,6 +8,8 @@ import edu.cmu.tetrad.search.IndTestScore;
 import edu.cmu.tetrad.search.SearchGraphUtils;
 import edu.cmu.tetrad.search.SemBicScoreDeterministic;
 import edu.cmu.tetrad.util.Parameters;
+import edu.pitt.dbmi.algo.bootstrap.BootstrapEdgeEnsemble;
+import edu.pitt.dbmi.algo.bootstrap.GeneralBootstrapTest;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -39,27 +41,53 @@ public class Pcd implements Algorithm, HasKnowledge {
 
     @Override
     public Graph search(DataModel dataSet, Parameters parameters) {
-        IndTestScore test;
+    	if (!parameters.getBoolean("bootstrapping")) {
+            IndTestScore test;
 
-        if (dataSet instanceof ICovarianceMatrix) {
-            SemBicScoreDeterministic score = new SemBicScoreDeterministic((ICovarianceMatrix) dataSet);
-            score.setPenaltyDiscount(parameters.getDouble("penaltyDiscount"));
-            score.setDeterminismThreshold(parameters.getDouble("determinismThreshold"));
-            test = new IndTestScore(score);
-        } else if (dataSet instanceof DataSet) {
-            SemBicScoreDeterministic score = new SemBicScoreDeterministic(new CovarianceMatrix((DataSet) dataSet));
-            score.setPenaltyDiscount(parameters.getDouble("penaltyDiscount"));
-            score.setDeterminismThreshold(parameters.getDouble("determinismThreshold"));
-            test = new IndTestScore(score);
-        } else {
-            throw new IllegalArgumentException("Expecting a dataset or a covariance matrix.");
-        }
+            if (dataSet instanceof ICovarianceMatrix) {
+                SemBicScoreDeterministic score = new SemBicScoreDeterministic((ICovarianceMatrix) dataSet);
+                score.setPenaltyDiscount(parameters.getDouble("penaltyDiscount"));
+                score.setDeterminismThreshold(parameters.getDouble("determinismThreshold"));
+                test = new IndTestScore(score);
+            } else if (dataSet instanceof DataSet) {
+                SemBicScoreDeterministic score = new SemBicScoreDeterministic(new CovarianceMatrix((DataSet) dataSet));
+                score.setPenaltyDiscount(parameters.getDouble("penaltyDiscount"));
+                score.setDeterminismThreshold(parameters.getDouble("determinismThreshold"));
+                test = new IndTestScore(score);
+            } else {
+                throw new IllegalArgumentException("Expecting a dataset or a covariance matrix.");
+            }
 
-        edu.cmu.tetrad.search.Pcd search = new edu.cmu.tetrad.search.Pcd(test);
-        search.setDepth(parameters.getInt("depth"));
-        search.setKnowledge(knowledge);
-        search.setVerbose(parameters.getBoolean("verbose"));
-        return search.search();
+            edu.cmu.tetrad.search.Pcd search = new edu.cmu.tetrad.search.Pcd(test);
+            search.setDepth(parameters.getInt("depth"));
+            search.setKnowledge(knowledge);
+            search.setVerbose(parameters.getBoolean("verbose"));
+            return search.search();
+    	}else{
+    		Pcd algorithm = new Pcd();
+    		
+    		algorithm.setKnowledge(knowledge);
+			
+			DataSet data = (DataSet) dataSet;
+			GeneralBootstrapTest search = new GeneralBootstrapTest(data, algorithm,
+					parameters.getInt("bootstrapSampleSize"));
+
+			BootstrapEdgeEnsemble edgeEnsemble = BootstrapEdgeEnsemble.Highest;
+			switch (parameters.getInt("bootstrapEnsemble", 1)) {
+			case 0:
+				edgeEnsemble = BootstrapEdgeEnsemble.Preserved;
+				break;
+			case 1:
+				edgeEnsemble = BootstrapEdgeEnsemble.Highest;
+				break;
+			case 2:
+				edgeEnsemble = BootstrapEdgeEnsemble.Majority;
+			}
+			search.setEdgeEnsemble(edgeEnsemble);
+			search.setParameters(parameters);
+			search.setVerbose(parameters.getBoolean("verbose"));
+			return search.search();
+    	}    	
     }
 
     @Override
@@ -84,6 +112,10 @@ public class Pcd implements Algorithm, HasKnowledge {
         parameters.add("depth");
         parameters.add("determinismThreshold");
         parameters.add("verbose");
+        // Bootstrapping
+        parameters.add("bootstrapping");
+        parameters.add("bootstrapSampleSize");
+        parameters.add("bootstrapEnsemble");
         return parameters;
     }
 

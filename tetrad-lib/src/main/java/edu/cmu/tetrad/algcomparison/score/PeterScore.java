@@ -6,16 +6,16 @@ import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.Score;
 import edu.cmu.tetrad.util.Parameters;
-
 import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Wrapper for Fisher Z test.
+ * Wrapper for Fisher Z test. Ignore this. This should be deleted.
  *
  * @author jdramsey
  */
 public class PeterScore implements ScoreWrapper {
+
     static final long serialVersionUID = 23L;
     private DataModel dataSet;
 
