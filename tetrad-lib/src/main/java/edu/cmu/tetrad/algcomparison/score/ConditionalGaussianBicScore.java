@@ -1,6 +1,5 @@
 package edu.cmu.tetrad.algcomparison.score;
 
-import edu.cmu.tetrad.annotation.Experimental;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.data.DataUtils;
@@ -16,7 +15,6 @@ import java.util.List;
  *
  * @author jdramsey
  */
-@Experimental
 @edu.cmu.tetrad.annotation.Score(
         name = "Conditional Gaussian BIC Score",
         command = "cond-gauss-bic",
