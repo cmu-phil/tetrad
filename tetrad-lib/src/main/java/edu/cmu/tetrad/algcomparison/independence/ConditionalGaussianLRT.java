@@ -1,6 +1,5 @@
 package edu.cmu.tetrad.algcomparison.independence;
 
-import edu.cmu.tetrad.annotation.Experimental;
 import edu.cmu.tetrad.annotation.TestOfIndependence;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataType;
@@ -16,7 +15,6 @@ import java.util.List;
  *
  * @author jdramsey
  */
-@Experimental
 @TestOfIndependence(
         name = "Conditional Gaussian Likelihood Ratio Test",
         command = "cond-gauss-lrt",
