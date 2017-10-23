@@ -55,7 +55,7 @@ public class Skew implements Algorithm, TakesInitialGraph {
 
     @Override
     public Graph search(DataModel dataSet, Parameters parameters) {
-        if (!parameters.getBoolean("bootstrapping")) {
+    	if (parameters.getInt("bootstrapSampleSize") < 1) {
             initialGraph = algorithm.search(dataSet, parameters);
 
             if (initialGraph != null) {
@@ -125,7 +125,6 @@ public class Skew implements Algorithm, TakesInitialGraph {
         }
 
         // Bootstrapping
-        parameters.add("bootstrapping");
         parameters.add("bootstrapSampleSize");
         parameters.add("bootstrapEnsemble");
         parameters.add("verbose");

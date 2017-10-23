@@ -33,7 +33,7 @@ public class Cfci implements Algorithm, HasKnowledge {
 
     @Override
     public Graph search(DataModel dataSet, Parameters parameters) {
-    	if(!parameters.getBoolean("bootstrapping")){
+    	if (parameters.getInt("bootstrapSampleSize") < 1) {
             edu.cmu.tetrad.search.Cfci search = new edu.cmu.tetrad.search.Cfci(test.getTest(dataSet, parameters));
             search.setKnowledge(knowledge);
             search.setCompleteRuleSetUsed(parameters.getBoolean("completeRuleSetUsed"));
@@ -84,7 +84,6 @@ public class Cfci implements Algorithm, HasKnowledge {
         parameters.add("depth");
         parameters.add("completeRuleSetUsed");
         // Bootstrapping
-        parameters.add("bootstrapping");
         parameters.add("bootstrapSampleSize");
         parameters.add("bootstrapEnsemble");
         parameters.add("verbose");

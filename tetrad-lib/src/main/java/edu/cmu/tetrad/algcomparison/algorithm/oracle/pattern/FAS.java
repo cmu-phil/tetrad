@@ -45,7 +45,7 @@ public class FAS implements Algorithm, HasKnowledge, TakesIndependenceWrapper {
 
     @Override
     public Graph search(DataModel dataSet, Parameters parameters) {
-        if (!parameters.getBoolean("bootstrapping")) {
+    	if (parameters.getInt("bootstrapSampleSize") < 1) {
             edu.cmu.tetrad.search.Fas search = new edu.cmu.tetrad.search.Fas(test.getTest(dataSet, parameters));
             search.setDepth(parameters.getInt("depth"));
             search.setKnowledge(knowledge);
@@ -98,7 +98,6 @@ public class FAS implements Algorithm, HasKnowledge, TakesIndependenceWrapper {
         List<String> parameters = test.getParameters();
         parameters.add("depth");
         // Bootstrapping
-        parameters.add("bootstrapping");
         parameters.add("bootstrapSampleSize");
         parameters.add("bootstrapEnsemble");
         parameters.add("verbose");

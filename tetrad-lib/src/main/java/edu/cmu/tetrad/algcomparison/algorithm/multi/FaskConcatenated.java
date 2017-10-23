@@ -45,7 +45,7 @@ public class FaskConcatenated implements MultiDataSetAlgorithm, HasKnowledge {
 
     @Override
     public Graph search(List<DataModel> dataSets, Parameters parameters) {
-        if (!parameters.getBoolean("bootstrapping")) {
+    	if (parameters.getInt("bootstrapSampleSize") < 1) {
             List<DataSet> centered = new ArrayList<>();
 
             for (DataModel dataSet : dataSets) {
@@ -144,7 +144,6 @@ public class FaskConcatenated implements MultiDataSetAlgorithm, HasKnowledge {
         parameters.add("randomSelectionSize");
         parameters.add("conditionalDistributionsStandardized");
         // Bootstrapping
-        parameters.add("bootstrapping");
         parameters.add("bootstrapSampleSize");
         parameters.add("bootstrapEnsemble");
         parameters.add("verbose");

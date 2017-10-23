@@ -40,7 +40,7 @@ public class Mgm implements Algorithm {
 
     @Override
     public Graph search(DataModel ds, Parameters parameters) {
-        if (!parameters.getBoolean("bootstrapping")) {
+    	if (parameters.getInt("bootstrapSampleSize") < 1) {
             DataSet _ds = DataUtils.getMixedDataSet(ds);
 
             double mgmParam1 = parameters.getDouble("mgmParam1");
@@ -104,7 +104,6 @@ public class Mgm implements Algorithm {
         parameters.add("mgmParam2");
         parameters.add("mgmParam3");
         // Bootstrapping
-        parameters.add("bootstrapping");
         parameters.add("bootstrapSampleSize");
         parameters.add("bootstrapEnsemble");
         parameters.add("verbose");

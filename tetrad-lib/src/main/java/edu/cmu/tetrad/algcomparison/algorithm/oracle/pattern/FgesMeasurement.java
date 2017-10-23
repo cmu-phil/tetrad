@@ -40,7 +40,7 @@ public class FgesMeasurement implements Algorithm, TakesInitialGraph, HasKnowled
 
     @Override
     public Graph search(DataModel dataModel, Parameters parameters) {
-    	if (!parameters.getBoolean("bootstrapping")) {
+    	if (parameters.getInt("bootstrapSampleSize") < 1) {
             DataSet dataSet = DataUtils.getContinuousDataSet(dataModel);
             dataSet = dataSet.copy();
 
@@ -114,7 +114,6 @@ public class FgesMeasurement implements Algorithm, TakesInitialGraph, HasKnowled
         parameters.add("verbose");
         parameters.add("measurementVariance");
 		// Bootstrapping
-        parameters.add("bootstrapping");
         parameters.add("bootstrapSampleSize");
         parameters.add("bootstrapEnsemble");
 

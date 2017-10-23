@@ -56,7 +56,7 @@ public class TsFci implements Algorithm, TakesInitialGraph, HasKnowledge, TakesI
 
     @Override
     public Graph search(DataModel dataSet, Parameters parameters) {
-        if (!parameters.getBoolean("bootstrapping")) {
+    	if (parameters.getInt("bootstrapSampleSize") < 1) {
             edu.cmu.tetrad.search.TsFci search = new edu.cmu.tetrad.search.TsFci(test.getTest(dataSet, parameters));
             search.setDepth(parameters.getInt("depth"));
 
@@ -108,7 +108,6 @@ public class TsFci implements Algorithm, TakesInitialGraph, HasKnowledge, TakesI
     public List<String> getParameters() {
         List<String> parameters = test.getParameters();
         // Bootstrapping
-        parameters.add("bootstrapping");
         parameters.add("bootstrapSampleSize");
         parameters.add("bootstrapEnsemble");
         parameters.add("verbose");

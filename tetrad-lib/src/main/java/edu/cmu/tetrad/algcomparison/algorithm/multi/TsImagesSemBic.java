@@ -36,7 +36,7 @@ public class TsImagesSemBic implements MultiDataSetAlgorithm, HasKnowledge {
 
     @Override
     public Graph search(List<DataModel> dataModels, Parameters parameters) {
-    	if (!parameters.getBoolean("bootstrapping")) {
+    	if (parameters.getInt("bootstrapSampleSize") < 1) {
             List<DataSet> dataSets = new ArrayList<>();
 
             for (DataModel dataModel : dataModels) {
@@ -129,7 +129,6 @@ public class TsImagesSemBic implements MultiDataSetAlgorithm, HasKnowledge {
         List<String> parameters = new Fges(new SemBicScore(), false).getParameters();
         parameters.add("randomSelectionSize");
         // Bootstrapping
-  		parameters.add("bootstrapping");
   		parameters.add("bootstrapSampleSize");
   		parameters.add("bootstrapEnsemble");
   		parameters.add("verbose");

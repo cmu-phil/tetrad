@@ -39,7 +39,7 @@ public class Fask implements Algorithm, HasKnowledge {
 
     @Override
     public Graph search(DataModel dataSet, Parameters parameters) {
-		if(!parameters.getBoolean("bootstrapping")){
+    	if (parameters.getInt("bootstrapSampleSize") < 1) {
 	        edu.cmu.tetrad.search.Fask search = new edu.cmu.tetrad.search.Fask((DataSet) dataSet);
 	        search.setDepth(parameters.getInt("depth"));
 	        search.setPenaltyDiscount(parameters.getDouble("penaltyDiscount"));
@@ -93,7 +93,6 @@ public class Fask implements Algorithm, HasKnowledge {
         parameters.add("penaltyDiscount");
         parameters.add("twoCycleAlpha");
         // Bootstrapping
-        parameters.add("bootstrapping");
         parameters.add("bootstrapSampleSize");
         parameters.add("bootstrapEnsemble");
         parameters.add("verbose");

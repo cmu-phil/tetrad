@@ -159,7 +159,7 @@ public class GeneralBootstrapSearch {
 	public List<Graph> search() {
 		
 		PAGs.clear();
-		parameters.set("bootstrapping", false);
+		parameters.set("bootstrapSampleSize", 0);
 		
 		long start, stop;
 		if (!this.runParallel) {

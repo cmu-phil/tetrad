@@ -22,7 +22,7 @@ import java.util.List;
 public class MixedFgesTreatingDiscreteAsContinuous implements Algorithm {
     static final long serialVersionUID = 23L;
     public Graph search(DataModel Dk, Parameters parameters) {
-    	if(!parameters.getBoolean("bootstrapping")){
+    	if (parameters.getInt("bootstrapSampleSize") < 1) {
             DataSet mixedDataSet = DataUtils.getMixedDataSet(Dk);
             mixedDataSet = DataUtils.convertNumericalDiscreteToContinuous(mixedDataSet);
             SemBicScore score = new SemBicScore(new CovarianceMatrixOnTheFly(mixedDataSet));
@@ -96,7 +96,6 @@ public class MixedFgesTreatingDiscreteAsContinuous implements Algorithm {
         List<String> parameters = new ArrayList<>();
         parameters.add("penaltyDiscount");
         // Bootstrapping
-        parameters.add("bootstrapping");
         parameters.add("bootstrapSampleSize");
         parameters.add("bootstrapEnsemble");
         parameters.add("verbose");

@@ -28,7 +28,7 @@ public class Ccd implements Algorithm {
 
     @Override
     public Graph search(DataModel dataSet, Parameters parameters) {
-    	if(!parameters.getBoolean("bootstrapping")){
+    	if (parameters.getInt("bootstrapSampleSize") < 1) {
             edu.cmu.tetrad.search.Ccd search = new edu.cmu.tetrad.search.Ccd(
                     test.getTest(dataSet, parameters));
             search.setDepth(parameters.getInt("depth"));
@@ -80,7 +80,6 @@ public class Ccd implements Algorithm {
         parameters.add("depth");
         parameters.add("applyR1");
         // Bootstrapping
-        parameters.add("bootstrapping");
         parameters.add("bootstrapSampleSize");
         parameters.add("bootstrapEnsemble");
         parameters.add("verbose");

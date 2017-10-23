@@ -59,7 +59,7 @@ public class FgesMb implements Algorithm, TakesInitialGraph, HasKnowledge, UsesS
 
     @Override
     public Graph search(DataModel dataSet, Parameters parameters) {
-        if (!parameters.getBoolean("bootstrapping")) {
+    	if (parameters.getInt("bootstrapSampleSize") < 1) {
             if (algorithm != null) {
 //                initialGraph = algorithm.search(dataSet, parameters);
             }
@@ -128,7 +128,6 @@ public class FgesMb implements Algorithm, TakesInitialGraph, HasKnowledge, UsesS
         parameters.add("targetName");
         parameters.add("faithfulnessAssumed");
         // Bootstrapping
-        parameters.add("bootstrapping");
         parameters.add("bootstrapSampleSize");
         parameters.add("bootstrapEnsemble");
         parameters.add("verbose");

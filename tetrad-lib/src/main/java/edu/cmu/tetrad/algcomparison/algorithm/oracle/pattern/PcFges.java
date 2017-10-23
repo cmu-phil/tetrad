@@ -36,7 +36,7 @@ public class PcFges implements Algorithm, TakesInitialGraph, HasKnowledge {
 
     @Override
     public Graph search(DataModel dataSet, Parameters parameters) {
-    	if (!parameters.getBoolean("bootstrapping")) {
+    	if (parameters.getInt("bootstrapSampleSize") < 1) {
             DataSet _dataSet = (DataSet) dataSet;
             ICovarianceMatrix cov = new CovarianceMatrix(_dataSet);
 
@@ -47,7 +47,6 @@ public class PcFges implements Algorithm, TakesInitialGraph, HasKnowledge {
             search.setVerbose(parameters.getBoolean("verbose"));
             search.setFaithfulnessAssumed(parameters.getBoolean("faithfulnessAssumed"));
             search.setKnowledge(knowledge);
-            search.setVerbose(parameters.getBoolean("verbose"));
             search.setMaxDegree(parameters.getInt("maxDegree"));
             search.setSymmetricFirstStep(parameters.getBoolean("symmetricFirstStep"));
 
@@ -117,7 +116,6 @@ public class PcFges implements Algorithm, TakesInitialGraph, HasKnowledge {
         parameters.add("maxDegree");
         parameters.add("verbose");
         // Bootstrapping
-        parameters.add("bootstrapping");
         parameters.add("bootstrapSampleSize");
         parameters.add("bootstrapEnsemble");
         return parameters;
