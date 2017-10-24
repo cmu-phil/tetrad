@@ -50,7 +50,7 @@ public class ImagesBDeu implements MultiDataSetAlgorithm, HasKnowledge {
 
     @Override
     public Graph search(List<DataModel> dataSets, Parameters parameters) {
-        if (!parameters.getBoolean("bootstrapping")) {
+    	if (parameters.getInt("bootstrapSampleSize") < 1) {
             BdeuScoreImages score = new BdeuScoreImages(dataSets);
             score.setSamplePrior(parameters.getDouble("samplePrior"));
             score.setStructurePrior(parameters.getDouble("structurePrior"));
@@ -140,7 +140,6 @@ public class ImagesBDeu implements MultiDataSetAlgorithm, HasKnowledge {
         parameters.add("numRuns");
         parameters.add("randomSelectionSize");
         // Bootstrapping
-        parameters.add("bootstrapping");
         parameters.add("bootstrapSampleSize");
         parameters.add("bootstrapEnsemble");
         parameters.add("verbose");

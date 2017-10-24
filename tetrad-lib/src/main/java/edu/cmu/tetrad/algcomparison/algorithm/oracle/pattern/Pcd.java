@@ -41,7 +41,7 @@ public class Pcd implements Algorithm, HasKnowledge {
 
     @Override
     public Graph search(DataModel dataSet, Parameters parameters) {
-    	if (!parameters.getBoolean("bootstrapping")) {
+    	if (parameters.getInt("bootstrapSampleSize") < 1) {
             IndTestScore test;
 
             if (dataSet instanceof ICovarianceMatrix) {
@@ -113,7 +113,6 @@ public class Pcd implements Algorithm, HasKnowledge {
         parameters.add("determinismThreshold");
         parameters.add("verbose");
         // Bootstrapping
-        parameters.add("bootstrapping");
         parameters.add("bootstrapSampleSize");
         parameters.add("bootstrapEnsemble");
         return parameters;

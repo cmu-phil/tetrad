@@ -48,7 +48,7 @@ public class Fofc implements Algorithm, TakesInitialGraph, HasKnowledge, Cluster
 
     @Override
     public Graph search(DataModel dataSet, Parameters parameters) {
-        if (!parameters.getBoolean("bootstrapping")) {
+    	if (parameters.getInt("bootstrapSampleSize") < 1) {
             ICovarianceMatrix cov = DataUtils.getCovMatrix(dataSet);
             double alpha = parameters.getDouble("alpha");
 
@@ -128,7 +128,6 @@ public class Fofc implements Algorithm, TakesInitialGraph, HasKnowledge, Cluster
         parameters.add("useGap");
         parameters.add("verbose");
         // Bootstrapping
-        parameters.add("bootstrapping");
         parameters.add("bootstrapSampleSize");
         parameters.add("bootstrapEnsemble");
         return parameters;

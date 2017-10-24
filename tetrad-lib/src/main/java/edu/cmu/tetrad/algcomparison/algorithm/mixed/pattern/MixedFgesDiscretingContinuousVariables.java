@@ -30,7 +30,7 @@ public class MixedFgesDiscretingContinuousVariables implements Algorithm {
     }
 
     public Graph search(DataModel dataSet, Parameters parameters) {
-    	if(!parameters.getBoolean("bootstrapping")){
+    	if (parameters.getInt("bootstrapSampleSize") < 1) {
             Discretizer discretizer = new Discretizer(DataUtils.getContinuousDataSet(dataSet));
             List<Node> nodes = dataSet.getVariables();
 
@@ -113,7 +113,6 @@ public class MixedFgesDiscretingContinuousVariables implements Algorithm {
         List<String> parameters = score.getParameters();
         parameters.add("numCategories");
         // Bootstrapping
-        parameters.add("bootstrapping");
         parameters.add("bootstrapSampleSize");
         parameters.add("bootstrapEnsemble");
         parameters.add("verbose");

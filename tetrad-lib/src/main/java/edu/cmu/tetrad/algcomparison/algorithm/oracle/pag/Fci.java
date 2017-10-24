@@ -56,7 +56,7 @@ public class Fci implements Algorithm, TakesInitialGraph, HasKnowledge, TakesInd
 
     @Override
     public Graph search(DataModel dataSet, Parameters parameters) {
-        if (!parameters.getBoolean("bootstrapping")) {
+    	if (parameters.getInt("bootstrapSampleSize") < 1) {
             if (algorithm != null) {
                 initialGraph = algorithm.search(dataSet, parameters);
             }
@@ -123,7 +123,6 @@ public class Fci implements Algorithm, TakesInitialGraph, HasKnowledge, TakesInd
         parameters.add("maxPathLength");
         parameters.add("completeRuleSetUsed");
         // Bootstrapping
-        parameters.add("bootstrapping");
         parameters.add("bootstrapSampleSize");
         parameters.add("bootstrapEnsemble");
         parameters.add("verbose");

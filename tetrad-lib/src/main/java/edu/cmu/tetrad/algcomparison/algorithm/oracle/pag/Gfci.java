@@ -48,7 +48,7 @@ public class Gfci implements Algorithm, HasKnowledge, UsesScoreWrapper, TakesInd
 
     @Override
     public Graph search(DataModel dataSet, Parameters parameters) {
-        if (!parameters.getBoolean("bootstrapping")) {
+    	if (parameters.getInt("bootstrapSampleSize") < 1) {
             GFci search = new GFci(test.getTest(dataSet, parameters), score.getScore(dataSet, parameters));
             search.setMaxDegree(parameters.getInt("maxDegree"));
             search.setKnowledge(knowledge);
@@ -118,7 +118,6 @@ public class Gfci implements Algorithm, HasKnowledge, UsesScoreWrapper, TakesInd
         parameters.add("maxPathLength");
         parameters.add("completeRuleSetUsed");
         // Bootstrapping
-        parameters.add("bootstrapping");
         parameters.add("bootstrapSampleSize");
         parameters.add("bootstrapEnsemble");
         parameters.add("verbose");

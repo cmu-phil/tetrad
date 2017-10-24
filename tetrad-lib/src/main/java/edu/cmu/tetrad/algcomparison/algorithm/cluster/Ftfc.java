@@ -46,7 +46,7 @@ public class Ftfc implements Algorithm, HasKnowledge, ClusterAlgorithm {
 
     @Override
     public Graph search(DataModel dataSet, Parameters parameters) {
-        if (!parameters.getBoolean("bootstrapping")) {
+    	if (parameters.getInt("bootstrapSampleSize") < 1) {
             ICovarianceMatrix cov = null;
 
             if (dataSet instanceof Dataset) {
@@ -126,7 +126,6 @@ public class Ftfc implements Algorithm, HasKnowledge, ClusterAlgorithm {
         parameters.add("useGap");
         parameters.add("verbose");
         // Bootstrapping
-        parameters.add("bootstrapping");
         parameters.add("bootstrapSampleSize");
         parameters.add("bootstrapEnsemble");
         return parameters;

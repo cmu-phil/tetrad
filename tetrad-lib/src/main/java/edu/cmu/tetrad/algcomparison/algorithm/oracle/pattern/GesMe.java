@@ -47,7 +47,7 @@ public class GesMe implements Algorithm, TakesInitialGraph/*, HasKnowledge*/ {
 
     @Override
     public Graph search(DataModel dataSet, Parameters parameters) {
-    	if (!parameters.getBoolean("bootstrapping")) {
+    	if (parameters.getInt("bootstrapSampleSize") < 1) {
 //          dataSet = DataUtils.center((DataSet) dataSet);
             CovarianceMatrix covarianceMatrix = new CovarianceMatrix((DataSet) dataSet);
 
@@ -236,7 +236,6 @@ public class GesMe implements Algorithm, TakesInitialGraph/*, HasKnowledge*/ {
         parameters.add("useVarimax");
         parameters.add("enforceMinimumLeafNodes");
         // Bootstrapping
-        parameters.add("bootstrapping");
         parameters.add("bootstrapSampleSize");
         parameters.add("bootstrapEnsemble");
         return parameters;

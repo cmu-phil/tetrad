@@ -49,7 +49,7 @@ public class ImagesSemBic implements MultiDataSetAlgorithm, HasKnowledge {
 
     @Override
     public Graph search(List<DataModel> dataSets, Parameters parameters) {
-        if (!parameters.getBoolean("bootstrapping")) {
+    	if (parameters.getInt("bootstrapSampleSize") < 1) {
             final SemBicScoreImages score = new SemBicScoreImages(dataSets);
             score.setPenaltyDiscount(parameters.getDouble("penaltyDiscount"));
             edu.cmu.tetrad.search.Fges search = new edu.cmu.tetrad.search.Fges(score);
@@ -138,7 +138,6 @@ public class ImagesSemBic implements MultiDataSetAlgorithm, HasKnowledge {
         parameters.add("numRuns");
         parameters.add("randomSelectionSize");
         // Bootstrapping
-        parameters.add("bootstrapping");
         parameters.add("bootstrapSampleSize");
         parameters.add("bootstrapEnsemble");
         parameters.add("verbose");
