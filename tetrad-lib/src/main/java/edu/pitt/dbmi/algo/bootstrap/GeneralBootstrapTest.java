@@ -83,6 +83,10 @@ public class GeneralBootstrapTest {
 
 	public void setParameters(Parameters parameters) {
 		this.parameters = parameters;
+        Object obj = parameters.get("printStream");
+        if (obj instanceof PrintStream) {
+            setOut((PrintStream) obj);
+        }
 	}
 
 	public void setNumBootstrapSamples(int numBootstrapSamples) {
@@ -209,9 +213,9 @@ public class GeneralBootstrapTest {
 
 	private Graph generateBootstrapGraph() {
 		Graph pag = null;
-		System.out.println("PAGs: " + PAGs.size());
-		System.out.println("Ensemble: " + edgeEnsemble);
-		System.out.println();
+		out.println("PAGs: " + PAGs.size());
+		out.println("Ensemble: " + edgeEnsemble);
+		out.println();
 		if(PAGs == null || PAGs.size() == 0)return new EdgeListGraph();
 		
 		for (Graph g : PAGs) {
@@ -256,11 +260,11 @@ public class GeneralBootstrapTest {
 			// compute probability for each edge type
 			Edge eNil = new Edge(n1, n2, Endpoint.NULL, Endpoint.NULL);
 			AnilB = getProbability(eNil);
-			System.out.println(n1 + " [no edge] " + n2 + " : " + AnilB);
+			out.println(n1 + " [no edge] " + n2 + " : " + AnilB);
 
 			Edge eTA = new Edge(n1, n2, Endpoint.TAIL, Endpoint.ARROW);
 			AtoB = getProbability(eTA);
-			System.out.println(eTA + " : " + AtoB);
+			out.println(eTA + " : " + AtoB);
 			if (AtoB > maxEdgeProb) {
 				edge = eTA;
 				maxEdgeProb = AtoB;
@@ -268,7 +272,7 @@ public class GeneralBootstrapTest {
 
 			Edge eAT = new Edge(n1, n2, Endpoint.ARROW, Endpoint.TAIL);
 			BtoA = getProbability(eAT);
-			System.out.println(eAT + " : " + BtoA);
+			out.println(eAT + " : " + BtoA);
 			if (BtoA > maxEdgeProb) {
 				edge = eAT;
 				maxEdgeProb = BtoA;
@@ -276,7 +280,7 @@ public class GeneralBootstrapTest {
 
 			Edge eCA = new Edge(n1, n2, Endpoint.CIRCLE, Endpoint.ARROW);
 			ACtoB = getProbability(eCA);
-			System.out.println(eCA + " : " + ACtoB);
+			out.println(eCA + " : " + ACtoB);
 			if (ACtoB > maxEdgeProb) {
 				edge = eCA;
 				maxEdgeProb = ACtoB;
@@ -284,7 +288,7 @@ public class GeneralBootstrapTest {
 
 			Edge eAC = new Edge(n1, n2, Endpoint.ARROW, Endpoint.CIRCLE);
 			BCtoA = getProbability(eAC);
-			System.out.println(eAC + " : " + BCtoA);
+			out.println(eAC + " : " + BCtoA);
 			if (BCtoA > maxEdgeProb) {
 				edge = eAC;
 				maxEdgeProb = BCtoA;
@@ -292,7 +296,7 @@ public class GeneralBootstrapTest {
 
 			Edge eCC = new Edge(n1, n2, Endpoint.CIRCLE, Endpoint.CIRCLE);
 			AccB = getProbability(eCC);
-			System.out.println(eCC + " : " + AccB);
+			out.println(eCC + " : " + AccB);
 			if (AccB > maxEdgeProb) {
 				edge = eCC;
 				maxEdgeProb = AccB;
@@ -300,7 +304,7 @@ public class GeneralBootstrapTest {
 
 			Edge eAA = new Edge(n1, n2, Endpoint.ARROW, Endpoint.ARROW);
 			AbB = getProbability(eAA);
-			System.out.println(eAA + " : " + AbB);
+			out.println(eAA + " : " + AbB);
 			if (AbB > maxEdgeProb) {
 				edge = eAA;
 				maxEdgeProb = AbB;
@@ -308,7 +312,7 @@ public class GeneralBootstrapTest {
 
 			Edge eTT = new Edge(n1, n2, Endpoint.TAIL, Endpoint.TAIL);
 			AuB = getProbability(eTT);
-			System.out.println(eTT + " : " + AuB);
+			out.println(eTT + " : " + AuB);
 			if (AuB > maxEdgeProb) {
 				edge = eTT;
 				maxEdgeProb = AuB;
@@ -330,7 +334,7 @@ public class GeneralBootstrapTest {
 			}
 
 			if (edge != null) {
-				System.out.println("Final result: " + edge + " : " + maxEdgeProb);
+				out.println("Final result: " + edge + " : " + maxEdgeProb);
 				
 				edge.addEdgeTypeProbability(new EdgeTypeProbability(EdgeTypeProbability.EdgeType.nil, AnilB));
 				edge.addEdgeTypeProbability(new EdgeTypeProbability(EdgeTypeProbability.EdgeType.ta, AtoB));
@@ -357,7 +361,7 @@ public class GeneralBootstrapTest {
 				
 				graph.addEdge(edge);
 			}
-			System.out.println();
+			out.println();
 		}
 
 		return graph;
