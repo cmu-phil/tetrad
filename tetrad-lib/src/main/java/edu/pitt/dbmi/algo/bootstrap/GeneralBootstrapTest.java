@@ -83,6 +83,10 @@ public class GeneralBootstrapTest {
 
 	public void setParameters(Parameters parameters) {
 		this.parameters = parameters;
+        Object obj = parameters.get("printStream");
+        if (obj instanceof PrintStream) {
+            setOut((PrintStream) obj);
+        }
 	}
 
 	public void setNumBootstrapSamples(int numBootstrapSamples) {
