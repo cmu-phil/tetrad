@@ -48,7 +48,7 @@ public class Bpc implements Algorithm, TakesInitialGraph, HasKnowledge, ClusterA
 
     @Override
     public Graph search(DataModel dataSet, Parameters parameters) {
-        if (!parameters.getBoolean("bootstrapping")) {
+        if (parameters.getInt("bootstrapSampleSize") < 1) {
             ICovarianceMatrix cov = DataUtils.getCovMatrix(dataSet);
             double alpha = parameters.getDouble("alpha");
 
@@ -119,7 +119,6 @@ public class Bpc implements Algorithm, TakesInitialGraph, HasKnowledge, ClusterA
         parameters.add("useWishart");
         parameters.add("verbose");
         // Bootstrapping
-        parameters.add("bootstrapping");
         parameters.add("bootstrapSampleSize");
         parameters.add("bootstrapEnsemble");
         return parameters;

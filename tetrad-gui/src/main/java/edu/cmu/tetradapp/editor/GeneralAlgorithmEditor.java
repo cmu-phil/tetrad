@@ -518,7 +518,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         algoDescriptionTextArea.setEditable(false);
 
         JScrollPane algoDescriptionScrollPane = new JScrollPane(algoDescriptionTextArea);
-        algoDescriptionScrollPane.setMinimumSize(new Dimension(330, 335));
+        //algoDescriptionScrollPane.setMinimumSize(new Dimension(330, 335));
         algoDescriptionScrollPane.setMaximumSize(new Dimension(330, 335));
 
         algoDescriptionBox.add(algoDescriptionScrollPane);
@@ -829,6 +829,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         if (!suggestedAlgosListModel.isEmpty() && selectedAgloWrapper != null) {
             edu.cmu.tetrad.annotation.Algorithm agloAnno = selectedAgloWrapper.getAnnotatedClass().getAnnotation();
             algoDescriptionTextArea.setText(agloAnno.description());
+            algoDescriptionTextArea.setCaretPosition(0);
         } else {
             // Erase the previous content
             algoDescriptionTextArea.setText("");

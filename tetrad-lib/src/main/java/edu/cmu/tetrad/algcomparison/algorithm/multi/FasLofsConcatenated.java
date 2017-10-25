@@ -35,7 +35,7 @@ public class FasLofsConcatenated implements MultiDataSetAlgorithm, HasKnowledge 
 
 	@Override
 	public Graph search(List<DataModel> dataModels, Parameters parameters) {
-		if (!parameters.getBoolean("bootstrapping")) {
+		if (parameters.getInt("bootstrapSampleSize") < 1) {
 			List<DataSet> dataSets = new ArrayList<>();
 
 			for (DataModel dataModel : dataModels) {
@@ -137,7 +137,6 @@ public class FasLofsConcatenated implements MultiDataSetAlgorithm, HasKnowledge 
 		parameters.add("numRuns");
 		parameters.add("randomSelectionSize");
 		// Bootstrapping
-		parameters.add("bootstrapping");
 		parameters.add("bootstrapSampleSize");
 		parameters.add("bootstrapEnsemble");
 		parameters.add("verbose");

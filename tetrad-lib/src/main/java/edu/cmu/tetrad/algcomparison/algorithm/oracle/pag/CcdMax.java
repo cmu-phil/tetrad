@@ -35,7 +35,7 @@ public class CcdMax implements Algorithm, HasKnowledge {
 
     @Override
     public Graph search(DataModel dataSet, Parameters parameters) {
-    	if(!parameters.getBoolean("bootstrapping")){
+    	if (parameters.getInt("bootstrapSampleSize") < 1) {
             IndependenceTest test = this.test.getTest(dataSet, parameters);
             edu.cmu.tetrad.search.CcdMax search = new edu.cmu.tetrad.search.CcdMax(test);
             search.setDoColliderOrientations(parameters.getBoolean("doColliderOrientation"));
@@ -97,7 +97,6 @@ public class CcdMax implements Algorithm, HasKnowledge {
         parameters.add("applyR1");
         parameters.add("orientTowardDConnections");
         // Bootstrapping
-        parameters.add("bootstrapping");
         parameters.add("bootstrapSampleSize");
         parameters.add("bootstrapEnsemble");
         parameters.add("verbose");

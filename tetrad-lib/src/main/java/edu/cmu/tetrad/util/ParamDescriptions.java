@@ -170,13 +170,10 @@ public class ParamDescriptions {
         map.put("thresholdForReversing", new ParamDescription("Variables with skewnesses less than this value will be reversed in sign (min = 0)", 0.0, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY));
 
         // Bootstrapping
-        map.put("bootstrapping", new ParamDescription(
-                "Yes if sampling dataset with replacement (bootstrapping) should be used",
-                false));
-        map.put("bootstrapSampleSize", new ParamDescription("The number of bootstraps (min = 1)", 10, 1, Integer.MAX_VALUE));
+        map.put("bootstrapSampleSize", new ParamDescription("The number of bootstraps (min = 0)", 0, 0, Integer.MAX_VALUE));
         map.put("bootstrapEnsemble", new ParamDescription("Ensemble method: Preserved (0), Highest (1), Majority (2)", 1, 0, 2));
-      //~Bootstrapping
-        
+        //~Bootstrapping
+
         map.put("fasRule", new ParamDescription(
                 "Adjacency search: 1 = PC, 2 = PC-Stable, 3 = Concurrent PC-Stable",
                 1, 1, 3));
@@ -220,26 +217,6 @@ public class ParamDescriptions {
         map.put("percentStability", new ParamDescription(
                 "Percentage of subsamples each feature in the output must agree on",
                 0.5, 0.0, 1.0));
-
-        map.put("includePositiveCoefs", new ParamDescription(
-                "Yes if positive coefficients should be included",
-                true));
-
-        map.put("includeNegativeCoefs", new ParamDescription(
-                "Yes if negative coefficients should be include",
-                true));
-
-        map.put("errorsNormal", new ParamDescription(
-                "Yes if errors should be Normal, No if Beta",
-                true));
-
-        map.put("betaLeftValue", new ParamDescription(
-                "Variance of additive Gaussian measurement error",
-                1, 1.0, Double.POSITIVE_INFINITY));
-
-        map.put("betaLeftValue", new ParamDescription(
-                "Variance of additive Gaussian measurement error",
-                5, 1.0, Double.POSITIVE_INFINITY));
     }
 
     public static ParamDescriptions getInstance() {

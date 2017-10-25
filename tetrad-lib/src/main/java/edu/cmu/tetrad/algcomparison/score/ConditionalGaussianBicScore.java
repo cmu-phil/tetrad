@@ -6,7 +6,6 @@ import edu.cmu.tetrad.data.DataUtils;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.ConditionalGaussianScore;
 import edu.cmu.tetrad.search.Score;
-import edu.cmu.tetrad.util.Experimental;
 import edu.cmu.tetrad.util.Parameters;
 import java.util.ArrayList;
 import java.util.List;
@@ -21,7 +20,7 @@ import java.util.List;
         command = "cond-gauss-bic",
         dataType = DataType.Mixed
 )
-public class ConditionalGaussianBicScore implements ScoreWrapper, Experimental {
+public class ConditionalGaussianBicScore implements ScoreWrapper {
 
     static final long serialVersionUID = 23L;
 

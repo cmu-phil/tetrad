@@ -38,7 +38,7 @@ public class Glasso implements Algorithm {
     static final long serialVersionUID = 23L;
 
     public Graph search(DataModel ds, Parameters parameters) {
-        if (!parameters.getBoolean("bootstrapping")) {
+    	if (parameters.getInt("bootstrapSampleSize") < 1) {
             DoubleMatrix2D cov = new DenseDoubleMatrix2D(DataUtils.getContinuousDataSet(ds)
                     .getCovarianceMatrix().toArray());
 
@@ -114,7 +114,6 @@ public class Glasso implements Algorithm {
         params.add("ipen");
         params.add("thr");
         // Bootstrapping
-        params.add("bootstrapping");
         params.add("bootstrapSampleSize");
         params.add("bootstrapEnsemble");
         params.add("verbose");

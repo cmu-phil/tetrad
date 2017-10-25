@@ -22,43 +22,53 @@ import java.util.List;
  */
 public class Fask implements Algorithm, HasKnowledge {
     static final long serialVersionUID = 23L;
-    //    private boolean empirical = false;
+    private boolean empirical = false;
     private IKnowledge knowledge = new Knowledge2();
 
-    public Fask() {}
+    public Fask() {
+        this.empirical = false;
+    }
+
+    public Fask(boolean empirical) {
+        this.empirical = empirical;
+    }
+
+    private Graph getGraph(edu.cmu.tetrad.search.Fask search) {
+        return search.search();
+    }
 
     @Override
     public Graph search(DataModel dataSet, Parameters parameters) {
-        if (!parameters.getBoolean("bootstrapping")) {
-            edu.cmu.tetrad.search.Fask search = new edu.cmu.tetrad.search.Fask((DataSet) dataSet);
-            search.setDepth(parameters.getInt("depth"));
-            search.setPenaltyDiscount(parameters.getDouble("penaltyDiscount"));
-            search.setAlpha(parameters.getDouble("twoCycleAlpha"));
-            search.setKnowledge(knowledge);
-            return search.search();
-        } else {
-            Fask fask = new Fask();
-            fask.setKnowledge(knowledge);
-
-            DataSet data = (DataSet) dataSet;
-            GeneralBootstrapTest search = new GeneralBootstrapTest(data, fask, parameters.getInt("bootstrapSampleSize"));
-
-            BootstrapEdgeEnsemble edgeEnsemble = BootstrapEdgeEnsemble.Highest;
-            switch (parameters.getInt("bootstrapEnsemble", 1)) {
-                case 0:
-                    edgeEnsemble = BootstrapEdgeEnsemble.Preserved;
-                    break;
-                case 1:
-                    edgeEnsemble = BootstrapEdgeEnsemble.Highest;
-                    break;
-                case 2:
-                    edgeEnsemble = BootstrapEdgeEnsemble.Majority;
-            }
-            search.setEdgeEnsemble(edgeEnsemble);
-            search.setParameters(parameters);
-            search.setVerbose(parameters.getBoolean("verbose"));
-            return search.search();
-        }
+    	if (parameters.getInt("bootstrapSampleSize") < 1) {
+	        edu.cmu.tetrad.search.Fask search = new edu.cmu.tetrad.search.Fask((DataSet) dataSet);
+	        search.setDepth(parameters.getInt("depth"));
+	        search.setPenaltyDiscount(parameters.getDouble("penaltyDiscount"));
+	        search.setAlpha(parameters.getDouble("twoCycleAlpha"));
+	        search.setKnowledge(knowledge);
+	        return getGraph(search);
+		}else{
+    		Fask fask = new Fask(empirical);
+    		fask.setKnowledge(knowledge);
+    		
+    		DataSet data = (DataSet) dataSet;
+    		GeneralBootstrapTest search = new GeneralBootstrapTest(data, fask, parameters.getInt("bootstrapSampleSize"));
+    		
+    		BootstrapEdgeEnsemble edgeEnsemble = BootstrapEdgeEnsemble.Highest;
+    		switch (parameters.getInt("bootstrapEnsemble", 1)) {
+    		case 0:
+    			edgeEnsemble = BootstrapEdgeEnsemble.Preserved;
+    			break;
+    		case 1:
+    			edgeEnsemble = BootstrapEdgeEnsemble.Highest;
+    			break;
+    		case 2:
+    			edgeEnsemble = BootstrapEdgeEnsemble.Majority;
+    		}
+    		search.setEdgeEnsemble(edgeEnsemble);
+    		search.setParameters(parameters);    		
+    		search.setVerbose(parameters.getBoolean("verbose"));
+    		return search.search();
+		}
     }
 
     @Override
@@ -83,11 +93,10 @@ public class Fask implements Algorithm, HasKnowledge {
         parameters.add("penaltyDiscount");
         parameters.add("twoCycleAlpha");
         // Bootstrapping
-        parameters.add("bootstrapping");
         parameters.add("bootstrapSampleSize");
         parameters.add("bootstrapEnsemble");
         parameters.add("verbose");
-
+        
         return parameters;
     }
 

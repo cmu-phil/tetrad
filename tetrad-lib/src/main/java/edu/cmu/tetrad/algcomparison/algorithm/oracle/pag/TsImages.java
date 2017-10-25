@@ -54,7 +54,7 @@ public class TsImages implements Algorithm, HasKnowledge, MultiDataSetAlgorithm,
 
     @Override
     public Graph search(DataModel dataModel, Parameters parameters) {
-        if (!parameters.getBoolean("bootstrapping")) {
+    	if (parameters.getInt("bootstrapSampleSize") < 1) {
             DataSet dataSet = (DataSet) dataModel;
             TsGFci search;
             Score score1 = score.getScore(dataSet, parameters);
@@ -106,7 +106,6 @@ public class TsImages implements Algorithm, HasKnowledge, MultiDataSetAlgorithm,
     public List<String> getParameters() {
         List<String> parameters = score.getParameters();
         // Bootstrapping
-        parameters.add("bootstrapping");
         parameters.add("bootstrapSampleSize");
         parameters.add("bootstrapEnsemble");
         parameters.add("verbose");

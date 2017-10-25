@@ -23,12 +23,12 @@ import java.util.List;
  *
  * @author jdramsey
  */
-@edu.cmu.tetrad.annotation.Algorithm(
-        name = "FASK Concatenated",
-        command = "fask-concatenated",
-        algoType = AlgType.forbid_latent_common_causes,
-        description = "Fast Adjacency Skewness"
-)
+//@edu.cmu.tetrad.annotation.Algorithm(
+//        name = "FASK Concatenated",
+//        command = "fask-concatenated",
+//        algoType = AlgType.forbid_latent_common_causes,
+//        description = "Short blurb goes here"
+//)
 public class FaskConcatenated implements MultiDataSetAlgorithm, HasKnowledge {
 
     static final long serialVersionUID = 23L;
@@ -39,13 +39,13 @@ public class FaskConcatenated implements MultiDataSetAlgorithm, HasKnowledge {
         this.empirical = false;
     }
 
-    public  FaskConcatenated(boolean empirical) {
+    public FaskConcatenated(boolean empirical) {
         this.empirical = empirical;
     }
 
     @Override
     public Graph search(List<DataModel> dataSets, Parameters parameters) {
-        if (!parameters.getBoolean("bootstrapping")) {
+    	if (parameters.getInt("bootstrapSampleSize") < 1) {
             List<DataSet> centered = new ArrayList<>();
 
             for (DataModel dataSet : dataSets) {
@@ -144,7 +144,6 @@ public class FaskConcatenated implements MultiDataSetAlgorithm, HasKnowledge {
         parameters.add("randomSelectionSize");
         parameters.add("conditionalDistributionsStandardized");
         // Bootstrapping
-        parameters.add("bootstrapping");
         parameters.add("bootstrapSampleSize");
         parameters.add("bootstrapEnsemble");
         parameters.add("verbose");

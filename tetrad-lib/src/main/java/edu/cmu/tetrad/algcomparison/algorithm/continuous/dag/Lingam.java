@@ -28,7 +28,7 @@ public class Lingam implements Algorithm {
     static final long serialVersionUID = 23L;
 
     public Graph search(DataModel dataSet, Parameters parameters) {
-    	if(!parameters.getBoolean("bootstrapping")){
+    	if (parameters.getInt("bootstrapSampleSize") < 1) {
             edu.cmu.tetrad.search.Lingam lingam = new edu.cmu.tetrad.search.Lingam();
             return lingam.search(DataUtils.getContinuousDataSet(dataSet));
     	}else{
@@ -74,7 +74,6 @@ public class Lingam implements Algorithm {
     public List<String> getParameters() {
     	List<String> parameters = new ArrayList<>();
         // Bootstrapping
-        parameters.add("bootstrapping");
         parameters.add("bootstrapSampleSize");
         parameters.add("bootstrapEnsemble");
         parameters.add("verbose");

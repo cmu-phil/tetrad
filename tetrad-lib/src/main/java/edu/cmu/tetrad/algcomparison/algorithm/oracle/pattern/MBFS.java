@@ -54,7 +54,7 @@ public class MBFS implements Algorithm, HasKnowledge, TakesIndependenceWrapper {
 
     @Override
     public Graph search(DataModel dataSet, Parameters parameters) {
-        if (!parameters.getBoolean("bootstrapping")) {
+    	if (parameters.getInt("bootstrapSampleSize") < 1) {
             IndependenceTest test = this.test.getTest(dataSet, parameters);
             edu.cmu.tetrad.search.Mbfs search = new edu.cmu.tetrad.search.Mbfs(
                     test,
@@ -115,7 +115,6 @@ public class MBFS implements Algorithm, HasKnowledge, TakesIndependenceWrapper {
         parameters.add("depth");
         parameters.add("targetName");
         // Bootstrapping
-        parameters.add("bootstrapping");
         parameters.add("bootstrapSampleSize");
         parameters.add("bootstrapEnsemble");
         parameters.add("verbose");

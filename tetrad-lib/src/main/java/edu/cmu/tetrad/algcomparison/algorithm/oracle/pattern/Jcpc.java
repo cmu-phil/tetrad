@@ -41,7 +41,7 @@ public class Jcpc implements Algorithm, TakesInitialGraph, HasKnowledge {
 
     @Override
     public Graph search(DataModel dataSet, Parameters parameters) {
-    	if (!parameters.getBoolean("bootstrapping")) {
+    	if (parameters.getInt("bootstrapSampleSize") < 1) {
             DataSet continuousDataSet = DataUtils.getContinuousDataSet(dataSet);
             edu.cmu.tetrad.search.Jcpc search = new edu.cmu.tetrad.search.Jcpc(
                     test.getTest(continuousDataSet, parameters),
@@ -100,7 +100,6 @@ public class Jcpc implements Algorithm, TakesInitialGraph, HasKnowledge {
         List<String> parameters = test.getParameters();
         parameters.add("depth");
         // Bootstrapping
-        parameters.add("bootstrapping");
         parameters.add("bootstrapSampleSize");
         parameters.add("bootstrapEnsemble");
         parameters.add("verbose");

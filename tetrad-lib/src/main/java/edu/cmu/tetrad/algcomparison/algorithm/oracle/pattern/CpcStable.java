@@ -46,7 +46,7 @@ public class CpcStable implements Algorithm, HasKnowledge, TakesIndependenceWrap
 
     @Override
     public Graph search(DataModel dataSet, Parameters parameters) {
-    	if(!parameters.getBoolean("bootstrapping")){
+    	if (parameters.getInt("bootstrapSampleSize") < 1) {
             Graph init =  null;
             if (algorithm != null) {
 //                init = algorithm.search(dataSet, parameters);
@@ -105,7 +105,6 @@ public class CpcStable implements Algorithm, HasKnowledge, TakesIndependenceWrap
         List<String> parameters = test.getParameters();
         parameters.add("depth");
         // Bootstrapping
-        parameters.add("bootstrapping");
         parameters.add("bootstrapSampleSize");
         parameters.add("bootstrapEnsemble");
         parameters.add("verbose");

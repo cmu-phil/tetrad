@@ -1,12 +1,12 @@
 package edu.cmu.tetrad.algcomparison.score;
 
+import edu.cmu.tetrad.annotation.Experimental;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.data.DataUtils;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.DiscreteMixedScore;
 import edu.cmu.tetrad.search.Score;
-import edu.cmu.tetrad.util.Experimental;
 import edu.cmu.tetrad.util.Parameters;
 import java.util.ArrayList;
 import java.util.List;
@@ -16,12 +16,13 @@ import java.util.List;
  *
  * @author jdramsey
  */
+@Experimental
 @edu.cmu.tetrad.annotation.Score(
         name = "Discrete Mixed BIC Score",
         command = "disc-mixed-bic",
         dataType = DataType.Mixed
 )
-public class DiscreteMixedBicScore implements ScoreWrapper, Experimental {
+public class DiscreteMixedBicScore implements ScoreWrapper {
 
     static final long serialVersionUID = 23L;
 

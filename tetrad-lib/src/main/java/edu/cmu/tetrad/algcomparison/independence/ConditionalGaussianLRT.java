@@ -6,7 +6,6 @@ import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.data.DataUtils;
 import edu.cmu.tetrad.search.IndTestConditionalGaussianLRT;
 import edu.cmu.tetrad.search.IndependenceTest;
-import edu.cmu.tetrad.util.Experimental;
 import edu.cmu.tetrad.util.Parameters;
 import java.util.ArrayList;
 import java.util.List;
@@ -21,7 +20,7 @@ import java.util.List;
         command = "cond-gauss-lrt",
         dataType = DataType.Mixed
 )
-public class ConditionalGaussianLRT implements IndependenceWrapper, Experimental {
+public class ConditionalGaussianLRT implements IndependenceWrapper {
 
     static final long serialVersionUID = 23L;
 

@@ -48,7 +48,7 @@ public class Rfci implements Algorithm, HasKnowledge, TakesIndependenceWrapper {
 
     @Override
     public Graph search(DataModel dataSet, Parameters parameters) {
-        if (!parameters.getBoolean("bootstrapping")) {
+    	if (parameters.getInt("bootstrapSampleSize") < 1) {
             edu.cmu.tetrad.search.Rfci search = new edu.cmu.tetrad.search.Rfci(test.getTest(dataSet, parameters));
             search.setKnowledge(knowledge);
             search.setDepth(parameters.getInt("depth"));
@@ -103,7 +103,6 @@ public class Rfci implements Algorithm, HasKnowledge, TakesIndependenceWrapper {
         parameters.add("maxPathLength");
         parameters.add("completeRuleSetUsed");
         // Bootstrapping
-        parameters.add("bootstrapping");
         parameters.add("bootstrapSampleSize");
         parameters.add("bootstrapEnsemble");
         parameters.add("verbose");

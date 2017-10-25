@@ -19,7 +19,7 @@ public class FactorAnalysis implements Algorithm {
     static final long serialVersionUID = 23L;
 
     public Graph search(DataModel ds, Parameters parameters) {
-    	if (!parameters.getBoolean("bootstrapping")) {
+    	if (parameters.getInt("bootstrapSampleSize") < 1) {
 
             DataSet selectedModel = (DataSet) ds;
 
@@ -165,7 +165,6 @@ public class FactorAnalysis implements Algorithm {
         params.add("convergenceThreshold");
         params.add("verbose");
         // Bootstrapping
-        params.add("bootstrapping");
         params.add("bootstrapSampleSize");
         params.add("bootstrapEnsemble");
         return params;
