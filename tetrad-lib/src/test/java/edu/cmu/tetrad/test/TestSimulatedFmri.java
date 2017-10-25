@@ -207,12 +207,12 @@ public class TestSimulatedFmri {
 
     public void task2() {
         Parameters parameters = new Parameters();
-        parameters.set("penaltyDiscount", 5);
+        parameters.set("penaltyDiscount", 1);
         parameters.set("depth", -1);
         parameters.set("twoCycleAlpha", 1e-6);
 
         parameters.set("numRuns", 10);
-        parameters.set("randomSelectionSize", 5);
+        parameters.set("randomSelectionSize", 1);
 
         parameters.set("Structure", "Placeholder");
 
@@ -240,15 +240,16 @@ public class TestSimulatedFmri {
         Algorithms algorithms = new Algorithms();
 
         for (int i = 1; i <= 28; i++) {
-            if (i == 21) continue;
-//            simulations.add(new LoadContinuousDataSmithSim("/Users/user/Downloads/smithsim/", i));
-            simulations.add(new LoadContinuousDataPwdd7("/Users/user/Downloads/pwdd7/", i, "50_BOLDdemefilt1"));
+//            if (i == 21) continue;
+            simulations.add(new LoadContinuousDataSmithSim("/Users/user/Downloads/smithsim/", i));
+//            simulations.add(new LoadContinuousDataPwdd7("/Users/user/Downloads/pwdd7/", i, "50_BOLDdemefilt1"));
+//            simulations.add(new LoadContinuousDataPwdd7("/Users/user/Downloads/pwdd7/", i, "50_BOLDnoise"));
         }
 
         algorithms.add(new LofsConcatenated(Lofs2.Rule.FASKLR));
 //        algorithms.add(new LofsConcatenated(Lofs2.Rule.R1));
 //        algorithms.add(new LofsConcatenated(Lofs2.Rule.R3));
-        algorithms.add(new LofsConcatenated(Lofs2.Rule.RSkew));
+//        algorithms.add(new LofsConcatenated(Lofs2.Rule.RSkew));
 //        algorithms.add(new LofsConcatenated(Lofs2.Rule.RSkewE));
 //        algorithms.add(new LofsConcatenated(Lofs2.Rule.Skew));
 //        algorithms.add(new LofsConcatenated(Lofs2.Rule.SkewE));
@@ -257,7 +258,7 @@ public class TestSimulatedFmri {
         algorithms.add(new FaskConcatenated());
 //        algorithms.add(new FasLofsConcatenated(Lofs2.Rule.R1));
 //        algorithms.add(new FasLofsConcatenated(Lofs2.Rule.R3));
-        algorithms.add(new FasLofsConcatenated(Lofs2.Rule.RSkew));
+//        algorithms.add(new FasLofsConcatenated(Lofs2.Rule.RSkew));
 //        algorithms.add(new FasLofsConfcatenated(Lofs2.Rule.RSkewE));
 //        algorithms.add(new FasLofsConcatenated(Lofs2.Rule.Skew));
 //        algorithms.add(new FasLofsConcatenated(Lofs2.Rule.SkewE));
@@ -491,7 +492,7 @@ public class TestSimulatedFmri {
     }
 
     public static void main(String... args) {
-        new TestSimulatedFmri().TestCycles_Data_fMRI_FASK();
+        new TestSimulatedFmri().task2();
     }
 }
 

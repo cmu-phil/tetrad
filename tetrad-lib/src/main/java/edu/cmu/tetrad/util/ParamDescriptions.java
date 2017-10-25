@@ -223,17 +223,23 @@ public class ParamDescriptions {
 
         map.put("includePositiveCoefs", new ParamDescription(
                 "Yes if positive coefficients should be included",
-                false));
+                true));
 
         map.put("includeNegativeCoefs", new ParamDescription(
                 "Yes if negative coefficients should be include",
-                false));
+                true));
 
         map.put("errorsNormal", new ParamDescription(
                 "Yes if errors should be Normal, No if Beta",
-                false));
+                true));
 
+        map.put("betaLeftValue", new ParamDescription(
+                "Variance of additive Gaussian measurement error",
+                1, 1.0, Double.POSITIVE_INFINITY));
 
+        map.put("betaLeftValue", new ParamDescription(
+                "Variance of additive Gaussian measurement error",
+                5, 1.0, Double.POSITIVE_INFINITY));
     }
 
     public static ParamDescriptions getInstance() {

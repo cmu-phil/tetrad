@@ -7,8 +7,10 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.sem.LargeScaleSimulation;
+import edu.cmu.tetrad.sem.LargeScaleSimulationSmithSim;
 import edu.cmu.tetrad.util.JOptionUtils;
 import edu.cmu.tetrad.util.Parameters;
+import edu.cmu.tetrad.util.RandomUtil;
 import edu.cmu.tetrad.util.dist.Split;
 
 import javax.swing.*;
@@ -79,7 +81,7 @@ public class LinearFisherModel implements Simulation, TakesData {
             int[] tiers = new int[graph.getNodes().size()];
             for (int j = 0; j < tiers.length; j++) tiers[j] = j;
 
-            LargeScaleSimulation simulator = new LargeScaleSimulation(
+            LargeScaleSimulation simulator = new LargeScaleSimulation (
                     graph, graph.getNodes(), tiers);
             simulator.setCoefRange(
                     parameters.getDouble("coefLow"),
@@ -114,6 +116,18 @@ public class LinearFisherModel implements Simulation, TakesData {
                         parameters.getInt("intervalBetweenShocks"),
                         parameters.getDouble("fisherEpsilon")
                 );
+            }
+
+            double variance = parameters.getDouble("measurementVariance");
+
+            if (variance > 0) {
+                for (int k = 0; k < dataSet.getNumRows(); k++) {
+                    for (int j = 0; j < dataSet.getNumColumns(); j++) {
+                        double d = dataSet.getDouble(k, j);
+                        double delta = RandomUtil.getInstance().nextNormal(0, Math.sqrt(variance));
+                        dataSet.setDouble(k, j, d + delta);
+                    }
+                }
             }
 
             dataSet.setName("" + (i + 1));
@@ -189,6 +203,8 @@ public class LinearFisherModel implements Simulation, TakesData {
         parameters.add("intervalBetweenRecordings");
         parameters.add("fisherEpsilon");
         parameters.add("randomizeColumns");
+        parameters.add("measurementVariance");
+
         return parameters;
     }
 

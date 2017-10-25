@@ -56,6 +56,7 @@ import java.text.NumberFormat;
 import java.util.*;
 
 import static java.lang.Math.exp;
+import static java.lang.Math.sqrt;
 import static junit.framework.TestCase.assertFalse;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -374,11 +375,88 @@ public class TestFges {
         }
     }
 
-//    @Test
-    public void clarkTest() {
-        RandomGraph randomGraph = new RandomForward();
+    @Test
+    public void test11() {
+        Parameters parameters = new Parameters();
 
-        Simulation simulation = new LinearFisherModel(randomGraph);
+        parameters.set("numMeasures", 100);
+        parameters.set("numLatents", 0);
+        parameters.set("avgDegree", 4);
+        parameters.set("maxDegree", 100);
+        parameters.set("maxIndegree", 100);
+        parameters.set("maxOutdegree", 100);
+        parameters.set("connected", false);
+
+        parameters.set("alpha", 1e-4);
+        parameters.set("penaltyDiscount", 1);
+        parameters.set("depth", -1);
+
+        parameters.set("coefLow", 0.2);
+        parameters.set("coefHigh", 0.6);
+        parameters.set("varLow", .5);
+        parameters.set("varHigh", 1);
+        parameters.set("verbose", false);
+        parameters.set("includePositiveCoefs", true);
+        parameters.set("includeNegativeCoefs", false);
+        parameters.set("errorsNormal", false);
+        parameters.set("betaLeftValue", 1);
+        parameters.set("betaRightValue", 5);
+        parameters.set("numRuns", 1);
+        parameters.set("percentDiscrete", 0);
+        parameters.set("numCategories", 3);
+        parameters.set("differentGraphs", false);
+        parameters.set("sampleSize", 1000);
+        parameters.set("intervalBetweenShocks", 20);
+        parameters.set("intervalBetweenRecordings", 20);
+        parameters.set("fisherEpsilon", 0.0001);
+        parameters.set("randomizeColumns", false);
+
+        parameters.set("numRuns", 1);
+        parameters.set("differentGraphs", false);
+        parameters.set("sampleSize", 2000);
+
+        parameters.set("faithfulnessAssumed", false);
+        parameters.set("symmetricFirstStep", false);
+        parameters.set("maxDegree", 10);
+        parameters.set("verbose", false);
+
+        parameters.set("measurementVariance", Math.pow(0.1, 2));
+
+        Simulation simulation = new LinearFisherModel(new RandomForward());
+        simulation.createData(parameters);
+
+        ScoreWrapper score = new edu.cmu.tetrad.algcomparison.score.SemBicScore();
+        IndependenceWrapper test = new edu.cmu.tetrad.algcomparison.independence.SemBicTest();
+
+        DataSet dataSet = (DataSet) simulation.getDataModel(0);
+        dataSet = DataUtils.standardizeData(dataSet);
+        Graph trueGraph = simulation.getTrueGraph(0);
+
+        Algorithm fges = new edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern.Fges(score);
+//        Algorithm pc = new edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern.Pc(test);
+//        Algorithm fas = new edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern.FAS(test);
+        Algorithm fask = new edu.cmu.tetrad.algcomparison.algorithm.multi.Fask();
+
+        Graph outGraph = fask.search(dataSet, parameters);
+//        Graph truePattern = SearchGraphUtils.patternForDag(trueGraph);
+
+        GraphUtils.GraphComparison comparison = SearchGraphUtils.getGraphComparison3(outGraph, trueGraph, System.out);
+        NumberFormat nf = new DecimalFormat("0.00");
+
+        System.out.println(
+                "\t" + nf.format(comparison.getAdjPrec()) +
+                        "\t" + nf.format(comparison.getAdjRec()) +
+                        "\t" + nf.format(comparison.getAhdPrec()) +
+                        "\t" + nf.format(comparison.getAhdRec()) +
+                        "\t" + nf.format(comparison.getTwoCycleFp())
+        );
+
+    }
+
+    //    @Test
+    public void clarkTest() {
+
+        Simulation simulation = new LinearFisherModel(new RandomForward());
 
         Parameters parameters = new Parameters();
 
@@ -396,11 +474,14 @@ public class TestFges {
         parameters.set("differentGraphs", false);
         parameters.set("sampleSize", 1000);
 
-        parameters.set("faithfulnessAssumed", false);
-        parameters.set("maxDegree", -1);
+        parameters.set("faithfulnessAssumed", true);
+        parameters.set("symmetricFirstStep", false);
+        parameters.set("maxDegree", 01);
         parameters.set("verbose", false);
 
         parameters.set("alpha", 0.01);
+
+        parameters.set("penaltyDiscount", 2);
 
         simulation.createData(parameters);
 
@@ -599,7 +680,6 @@ public class TestFges {
                 "6. SEX --> PUBS";
 
 
-
         Graph trueGraph = null;
 
 
@@ -766,7 +846,7 @@ public class TestFges {
 
         edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern.PcFges pcFges
                 = new edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern.PcFges(
-                new edu.cmu.tetrad.algcomparison.score.SemBicScore(),false);
+                new edu.cmu.tetrad.algcomparison.score.SemBicScore(), false);
 
         long start = System.currentTimeMillis();
 
@@ -1162,9 +1242,9 @@ public class TestFges {
 
                 double sum = adjPrecision + adjRecall + arrowPrecision + arrowRecall;
                 double mcAdj = (adjTp * adjTn - adjFp * adjFn) /
-                        Math.sqrt((adjTp + adjFp) * (adjTp + adjFn) * (adjTn + adjFp) * (adjTn + adjFn));
+                        sqrt((adjTp + adjFp) * (adjTp + adjFn) * (adjTn + adjFp) * (adjTn + adjFn));
                 double mcOr = (arrowsTp * arrowsTn - arrowsFp * arrowsFn) /
-                        Math.sqrt((arrowsTp + arrowsFp) * (arrowsTp + arrowsFn) *
+                        sqrt((arrowsTp + arrowsFp) * (arrowsTp + arrowsFn) *
                                 (arrowsTn + arrowsFp) * (arrowsTn + arrowsFn));
                 double f1Adj = 2 * (adjPrecision * adjRecall) / (adjPrecision + adjRecall);
                 double f1Arrows = 2 * (arrowPrecision * arrowRecall) / (arrowPrecision + arrowRecall);

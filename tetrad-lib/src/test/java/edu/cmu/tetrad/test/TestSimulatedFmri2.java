@@ -112,7 +112,7 @@ public class TestSimulatedFmri2 {
 
         Algorithms algorithms = new Algorithms();
 
-        algorithms.add(new edu.cmu.tetrad.algcomparison.algorithm.multi.Fask(false));
+        algorithms.add(new edu.cmu.tetrad.algcomparison.algorithm.multi.Fask());
 //
         Comparison comparison = new Comparison();
 
