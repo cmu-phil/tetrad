@@ -382,7 +382,7 @@ public class TestFges {
 
         parameters.set("numMeasures", 100);
         parameters.set("numLatents", 0);
-        parameters.set("avgDegree", 4);
+        parameters.set("avgDegree", 2);
         parameters.set("maxDegree", 100);
         parameters.set("maxIndegree", 100);
         parameters.set("maxOutdegree", 100);
@@ -1556,7 +1556,7 @@ public class TestFges {
 
         Parameters parameters = new Parameters();
 
-        parameters.set("numMeasures", 50);
+        parameters.set("numMeasures", 300);
         parameters.set("numLatents", 0);
         parameters.set("avgDegree", 2);
         parameters.set("maxDegree", 20);

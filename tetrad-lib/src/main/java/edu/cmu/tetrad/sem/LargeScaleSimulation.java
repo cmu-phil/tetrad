@@ -39,7 +39,7 @@ import static java.lang.Math.sqrt;
 
 /**
  * Stores a SEM model, pared down, for purposes of simulating data sets with
- * large numbers of variables and sample sizes. Assumes acyclicity.
+ * large numbers of variables and sample sizes.
  *
  * @author Joseph Ramsey
  */
@@ -62,14 +62,12 @@ public final class LargeScaleSimulation {
     private PrintStream out = System.out;
     private int[] tierIndices;
     private boolean verbose = false;
-    long seed = new Date().getTime();
+    private long seed = new Date().getTime();
     private boolean alreadySetUp = false;
-    //    private boolean coefSymmetric = false;
     private boolean includePositiveCoefs = true;
     private boolean includeNegativeCoefs = true;
 
     private boolean errorsNormal = true;
-    //    private boolean errorsPositivelySkewedIfNonNormal = true;
     private double betaLeftValue;
     private double betaRightValue;
     private double selfLoopCoef = 0.0;
@@ -442,7 +440,6 @@ public final class LargeScaleSimulation {
             System.arraycopy(coefs, 0, newCoefs, 0, coefs.length);
 
             double coef = edgeCoefDist.nextRandom();
-//            if (coefSymmetric) coef = Math.abs(coef);
 
             if (includePositiveCoefs && !includeNegativeCoefs) {
                 coef = Math.abs(coef);
@@ -566,7 +563,6 @@ public final class LargeScaleSimulation {
         if (x.getName().equals("time") || y.getName().equals("time")) {
             return new ArrayList<>();
         }
-//        System.out.println("Knowledge within returnSimilar : " + knowledge);
         int ntiers = knowledge.getNumTiers();
         int indx_tier = knowledge.isInWhichTier(x);
         int indy_tier = knowledge.isInWhichTier(y);
@@ -574,9 +570,7 @@ public final class LargeScaleSimulation {
         int indx_comp = -1;
         int indy_comp = -1;
         List tier_x = knowledge.getTier(indx_tier);
-//        Collections.sort(tier_x);
         List tier_y = knowledge.getTier(indy_tier);
-//        Collections.sort(tier_y);
 
         int i;
         for (i = 0; i < tier_x.size(); ++i) {
@@ -610,9 +604,7 @@ public final class LargeScaleSimulation {
             Node y1;
             if (indx_tier >= indy_tier) {
                 List tmp_tier1 = knowledge.getTier(i + tier_diff);
-//                Collections.sort(tmp_tier1);
                 List tmp_tier2 = knowledge.getTier(i);
-//                Collections.sort(tmp_tier2);
                 A = (String) tmp_tier1.get(indx_comp);
                 B = (String) tmp_tier2.get(indy_comp);
                 if (A.equals(B)) continue;
@@ -624,12 +616,8 @@ public final class LargeScaleSimulation {
                 simListX.add(x1);
                 simListY.add(y1);
             } else {
-                //System.out.println("############## WARNING (returnSimilarPairs): did not catch x,y pair " + x + ", " + y);
-                //System.out.println();
                 List tmp_tier1 = knowledge.getTier(i);
-//                Collections.sort(tmp_tier1);
                 List tmp_tier2 = knowledge.getTier(i + tier_diff);
-//                Collections.sort(tmp_tier2);
                 A = (String) tmp_tier1.get(indx_comp);
                 B = (String) tmp_tier2.get(indy_comp);
                 if (A.equals(B)) continue;
@@ -657,8 +645,7 @@ public final class LargeScaleSimulation {
     }
 
     public IKnowledge getKnowledge(Graph graph) {
-//        System.out.println("Entering getKnowledge ... ");
-        int numLags; // need to fix this!
+        int numLags;
         List<Node> variables = graph.getNodes();
         List<Integer> laglist = new ArrayList<>();
         IKnowledge knowledge = new Knowledge2();
@@ -677,27 +664,17 @@ public final class LargeScaleSimulation {
         }
         numLags = Collections.max(laglist);
 
-//        System.out.println("Variable list before the sort = " + variables);
         Collections.sort(variables, new Comparator<Node>() {
             @Override
             public int compare(Node o1, Node o2) {
                 String name1 = getNameNoLag(o1);
                 String name2 = getNameNoLag(o2);
 
-//                System.out.println("name 1 = " + name1);
-//                System.out.println("name 2 = " + name2);
-
                 String prefix1 = getPrefix(name1);
                 String prefix2 = getPrefix(name2);
 
-//                System.out.println("prefix 1 = " + prefix1);
-//                System.out.println("prefix 2 = " + prefix2);
-
                 int index1 = getIndex(name1);
                 int index2 = getIndex(name2);
-
-//                System.out.println("index 1 = " + index1);
-//                System.out.println("index 2 = " + index2);
 
                 if (getLag(o1.getName()) == getLag(o2.getName())) {
                     if (prefix1.compareTo(prefix2) == 0) {
@@ -718,12 +695,11 @@ public final class LargeScaleSimulation {
             String tmp;
             if (varName.indexOf(':') == -1) {
                 lag = 0;
-//                laglist.add(lag);
             } else {
                 tmp = varName.substring(varName.indexOf(':') + 1, varName.length());
                 lag = Integer.parseInt(tmp);
-//                laglist.add(lag);
             }
+
             knowledge.addToTier(numLags - lag, node.getName());
         }
 
@@ -732,20 +708,6 @@ public final class LargeScaleSimulation {
     }
 
     public static String getPrefix(String s) {
-//        int y = 0;
-//        for (int i = s.length() - 1; i >= 0; i--) {
-//            try {
-//                y = Integer.parseInt(s.substring(i));
-//            } catch (NumberFormatException e) {
-//                return s.substring(0, y);
-//            }
-//        }
-//
-//        throw new IllegalArgumentException("Not character prefix.");
-
-//        if(s.indexOf(':')== -1) return s;
-//        String tmp = s.substring(0,s.indexOf(':')-1);
-//        return tmp;
         return s.substring(0, 1);
     }
 
