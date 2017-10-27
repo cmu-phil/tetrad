@@ -22,6 +22,7 @@
 package edu.cmu.tetrad.test;
 
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
+import edu.cmu.tetrad.algcomparison.algorithm.multi.Fask;
 import edu.cmu.tetrad.algcomparison.graph.RandomForward;
 import edu.cmu.tetrad.algcomparison.graph.RandomGraph;
 import edu.cmu.tetrad.algcomparison.independence.FisherZ;
@@ -1550,6 +1551,7 @@ public class TestFges {
         return dag;
     }
 
+    @Test
     public void test9() {
 
         Parameters parameters = new Parameters();
@@ -1572,55 +1574,30 @@ public class TestFges {
         parameters.set("percentDiscrete", 0);
         parameters.set("numCategories", 3);
         parameters.set("differentGraphs", true);
-        parameters.set("sampleSize", 500);
+        parameters.set("sampleSize", 1000);
+
         parameters.set("intervalBetweenShocks", 10);
         parameters.set("intervalBetweenRecordings", 10);
+        parameters.set("selfLoopCoef", 0.);
+
         parameters.set("fisherEpsilon", 0.001);
-        parameters.set("randomizeColumns", true);
+        parameters.set("includePositiveCoefs", true);
+        parameters.set("includeNegativeCoefs", true);
+        parameters.set("errorsNormal", false);
+        parameters.set("betaLeftValue", 1);
+        parameters.set("betaRightValue", 5);
+        parameters.set("randomizeColumns", false);
+        parameters.set("measurementVariance", 0.01);
+
+        parameters.set("penaltyDiscount", 1);
 
         RandomGraph graph = new RandomForward();
         LinearFisherModel sim = new LinearFisherModel(graph);
         sim.createData(parameters);
-        Graph previous = null;
-        int prevDiff = Integer.MAX_VALUE;
 
-//        for (int l = 7; l >= 1; l--) {
-        for (int i = 2; i <= 20; i++) {
-            parameters.set("penaltyDiscount", i / (double) 10);
-//            parameters.set("alpha", Double.parseDouble("1E-" + l));
+        Algorithm alg = new Fask();
 
-//            ScoreWrapper score = new edu.cmu.tetrad.algcomparison.score.SemBicScore();
-//            Algorithm alg = new edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern.Fges(score);
-
-            IndependenceWrapper test = new SemBicTest();
-//            IndependenceWrapper test = new FisherZ();
-            Algorithm alg = new edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern.Cpc(test);
-
-            Graph out = alg.search(sim.getDataModel(0), parameters);
-//            Graph out = GraphUtils.undirectedGraph(alg.search(sim.getDataModel(0), parameters));
-
-            Set<Edge> edges1 = out.getEdges();
-
-            int numEdges = edges1.size();
-
-            if (previous != null) {
-                Set<Edge> edges2 = previous.getEdges();
-                edges2.removeAll(edges1);
-                int diff = edges2.size();
-//
-                System.out.println("Penalty discount =" + parameters.getDouble("penaltyDiscount")
-                        + " # edges = " + numEdges
-                        + " # additional = " + diff);
-
-                previous = out;
-                if (diff > prevDiff) break;
-                prevDiff = diff;
-            } else {
-                previous = out;
-            }
-        }
-
-        Graph estGraph = previous;
+        Graph estGraph = alg.search(sim.getDataModel(0), parameters);
         Graph trueGraph = sim.getTrueGraph(0);
 
         estGraph = GraphUtils.replaceNodes(estGraph, trueGraph.getNodes());
@@ -1635,7 +1612,6 @@ public class TestFges {
         System.out.println("AHP = " + ahp.getValue(trueGraph, estGraph));
         System.out.println("AHR = " + ahr.getValue(trueGraph, estGraph));
     }
-
 
     public static void main(String... args) {
         if (args.length > 0) {
@@ -1685,6 +1661,26 @@ public class TestFges {
         } else {
             new TestFges().test9();
         }
+    }
+
+    public void test13() {
+        try {
+            File file1 = new File("/Users/user/Downloads/MyFile.txt");
+            DataReader reader = new DataReader();
+            reader.setVariablesSupplied(false);
+            reader.setDelimiter(DelimiterType.COMMA);
+            DataSet data = reader.parseTabular(file1);
+            SemBicScore score = new SemBicScore(new CovarianceMatrixOnTheFly(data));
+            score.setPenaltyDiscount(1.0);
+
+            Fges fges = new Fges(score);
+
+            System.out.println(fges.search());
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+
     }
 
 }

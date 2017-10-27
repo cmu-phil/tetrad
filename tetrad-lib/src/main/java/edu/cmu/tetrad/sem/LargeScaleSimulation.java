@@ -72,6 +72,7 @@ public final class LargeScaleSimulation {
     //    private boolean errorsPositivelySkewedIfNonNormal = true;
     private double betaLeftValue;
     private double betaRightValue;
+    private double selfLoopCoef = 0.0;
 
     //=============================CONSTRUCTORS============================//
 
@@ -354,27 +355,33 @@ public final class LargeScaleSimulation {
         int recordingIndex = 0;
         double[] shock = getUncorrelatedShocks(1)[0];
 
-        while (s < sampleSize) {
-            if ((++shockIndex) % intervalBetweenShocks == 0) {
-                shock = getUncorrelatedShocks(1)[0];
-            }
+        for (int j = 0; j < t1.length; j++) {
+            t1[j] = shock[j];
+        }
 
+        while (s < sampleSize) {
             if ((++recordingIndex) % intervalBetweenRecordings == 0) {
                 for (int j = 0; j < t1.length; j++) {
-                    all[j][s] = t1[j];
+                    all[j][s] += t1[j];
                 }
 
                 s++;
             }
 
-            for (int j = 0; j < t1.length; j++) {
-                t2[j] = shock[j];
+            if ((++shockIndex) % intervalBetweenShocks == 0) {
+                shock = getUncorrelatedShocks(1)[0];
+
+                for (int j = 0; j < t1.length; j++) {
+                    t1[j] += shock[j];
+                }
             }
 
             for (int j = 0; j < t1.length; j++) {
                 t2[j] = shock[j];
+                t2[j] += getSelfLoopCoef() * t1[j];
+
                 for (int k = 0; k < parents[j].length; k++) {
-                    t2[j] = t2[j] + t1[parents[j][k]] * coefs[j][k];
+                    t2[j] += t1[parents[j][k]] * coefs[j][k];
                 }
             }
 
@@ -779,18 +786,14 @@ public final class LargeScaleSimulation {
 
     public double[][] getUncorrelatedShocks(int sampleSize) {
         AbstractRealDistribution distribution;
+        AbstractRealDistribution varDist = null;
 
         if (errorsNormal) {
             distribution = new NormalDistribution(new Well1024a(++seed), 0, 1);
+            varDist = new UniformRealDistribution(varLow, varHigh);
         } else {
             distribution = new BetaDistribution(new Well1024a(++seed), getBetaLeftValue(), getBetaRightValue());
-//            distribution = new UniformRealDistribution(0, 1);
         }
-
-//        TDistribution dist = new TDistribution(new Well1024a(++seed), 6);
-//        BetaDistribution dist = new BetaDistribution(new Well1024a(++seed), 2, 5);
-//        NormalDistribution dist = new NormalDistribution(new Well1024a(++seed), 0, 1);
-//        UniformRealDistribution dist = new UniformRealDistribution(0, 1);
 
         int numVars = variableNodes.size();
         setupModel(numVars);
@@ -801,17 +804,9 @@ public final class LargeScaleSimulation {
             for (int i = 0; i < sampleSize; i++) {
                 double sample = distribution.sample();
 
-//                if (!errorsNormal) {
-//                    sample = Math.pow(sample, 3);
-//                }
-
-//                if (!errorsNormal && !errorsPositivelySkewedIfNonNormal) {
-//                    sample *= -1.0;
-//                }
-
-//                if (RandomUtil.getInstance().nextDouble() > 0.9) {
-//                    sample *= -1.0;
-//                }
+                if (errorsNormal) {
+                    sample *= sqrt(varDist.sample());
+                }
 
                 shocks[i][j] = sample;
             }
@@ -879,6 +874,14 @@ public final class LargeScaleSimulation {
 
     public void setBetaLeftValue(double betaLeftValue) {
         this.betaLeftValue = betaLeftValue;
+    }
+
+    public double getSelfLoopCoef() {
+        return selfLoopCoef;
+    }
+
+    public void setSelfLoopCoef(double selfLoopCoef) {
+        this.selfLoopCoef = selfLoopCoef;
     }
 }
 
