@@ -591,7 +591,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         testDropdown.addActionListener((ActionEvent e) -> {
             // Don't use setAlgorithm() because we don't need to determine if
             // enable/disable the test and score dropdown menus again - Zhou
-            if (testDropdown.getSelectedItem() != null) {
+            if (testDropdown.getSelectedItem() != null) {            	
                 setTestType(((AnnotatedClassWrapper<TestOfIndependence>) testDropdown.getSelectedItem()).getName());
             }
         });
@@ -693,6 +693,9 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
 
         // Step 2 button listener
         step2Btn.addActionListener((ActionEvent e) -> {
+        	// Setup the algorithm
+        	setAlgorithm();
+        	        	
             // Show parameters
             parametersContainer.setVisible(true);
 
@@ -929,9 +932,6 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         new WatchedProcess((Window) getTopLevelAncestor()) {
             @Override
             public void watch() {
-            	// Setup the algorithm to the runner
-            	setAlgorithmRunner();
-            	
                 HpcAccount hpcAccount = null;
 
                 String algoName = selectedAgloWrapper.getName().toUpperCase();
@@ -1454,7 +1454,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
             // Determine if enable/disable the checkboxes of assumptions
             setAssumptions();
 
-            //setAlgorithmRunner();
+            setAlgorithmRunner();
 
             // Set runner parameters for target algo
             parameters.set("testEnabled", testDropdown.isEnabled());
