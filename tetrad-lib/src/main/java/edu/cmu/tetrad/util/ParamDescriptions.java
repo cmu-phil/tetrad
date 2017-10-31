@@ -148,7 +148,7 @@ public class ParamDescriptions {
 
         map.put("ngAlpha", new ParamDescription("Alpha for testing non-Gaussianity (min = 0.0)", 0.05, 0.0, 1.0));
 
-        map.put("twoCycleAlpha", new ParamDescription("Alpha orienting 2-cycles (min = 0.0)", 1e-6, 0.0, 1.0));
+        map.put("twoCycleAlpha", new ParamDescription("Alpha for orienting 2-cycles (min = 0.0)", 1e-6, 0.0, 1.0));
 
         map.put("symmetricFirstStep", new ParamDescription("Yes if the first step step for FGES should do scoring for both X->Y and Y->X", false));
 
@@ -236,7 +236,7 @@ public class ParamDescriptions {
 
         map.put("betaRightValue", new ParamDescription(
                 "For Beta(x, y), the 'y'",
-                1, 1, Double.POSITIVE_INFINITY));
+                5, 1, Double.POSITIVE_INFINITY));
 
         map.put("measurementVariance", new ParamDescription(
                 "Variance of independent measurement noise added each variable",
@@ -245,6 +245,10 @@ public class ParamDescriptions {
         map.put("selfLoopCoef", new ParamDescription(
                 "Self loop coefficient (for all variables), default 0.0",
                 0.0, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY));
+
+        map.put("presumePositiveCoefficients", new ParamDescription(
+                "Yes if coefficients should be assumed positive by default for the orientaton step",
+                false));
     }
 
     public static ParamDescriptions getInstance() {

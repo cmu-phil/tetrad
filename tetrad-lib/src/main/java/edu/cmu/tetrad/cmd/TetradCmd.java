@@ -625,7 +625,9 @@ public final class TetradCmd {
             TetradLogger.getInstance().log("info", "Testing it.");
         }
 
-        Fask pc = new Fask(data);
+        SemBicScore score = new SemBicScore(new CovarianceMatrixOnTheFly(data, false));
+        score.setPenaltyDiscount(penaltyDiscount);
+        Fask pc = new Fask(data, score);
         pc.setAlpha(significance);
         pc.setPenaltyDiscount(penaltyDiscount);
         pc.setDepth(depth);

@@ -436,7 +436,9 @@ public class TestFges {
         Algorithm fges = new edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern.Fges(score);
 //        Algorithm pc = new edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern.Pc(test);
 //        Algorithm fas = new edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern.FAS(test);
-        Algorithm fask = new edu.cmu.tetrad.algcomparison.algorithm.multi.Fask();
+
+
+        Algorithm fask = new edu.cmu.tetrad.algcomparison.algorithm.multi.Fask(new edu.cmu.tetrad.algcomparison.score.SemBicScore());
 
         Graph outGraph = fask.search(dataSet, parameters);
 //        Graph truePattern = SearchGraphUtils.patternForDag(trueGraph);
@@ -1576,7 +1578,7 @@ public class TestFges {
         parameters.set("differentGraphs", true);
         parameters.set("sampleSize", 1000);
 
-        parameters.set("intervalBetweenShocks", 10);
+        parameters.set("intervalBetweenShocks", 5);
         parameters.set("intervalBetweenRecordings", 10);
         parameters.set("selfLoopCoef", 0.);
 
@@ -1584,18 +1586,18 @@ public class TestFges {
         parameters.set("includePositiveCoefs", true);
         parameters.set("includeNegativeCoefs", true);
         parameters.set("errorsNormal", false);
-        parameters.set("betaLeftValue", 1);
+        parameters.set("betaLeftValue", 2);
         parameters.set("betaRightValue", 5);
         parameters.set("randomizeColumns", false);
-        parameters.set("measurementVariance", 0.01);
+        parameters.set("measurementVariance", 0.0);
 
-        parameters.set("penaltyDiscount", 1);
+        parameters.set("penaltyDiscount", .5);
 
         RandomGraph graph = new RandomForward();
         LinearFisherModel sim = new LinearFisherModel(graph);
         sim.createData(parameters);
 
-        Algorithm alg = new Fask();
+        Algorithm alg = new Fask(new edu.cmu.tetrad.algcomparison.score.SemBicScore());
 
         Graph estGraph = alg.search(sim.getDataModel(0), parameters);
         Graph trueGraph = sim.getTrueGraph(0);

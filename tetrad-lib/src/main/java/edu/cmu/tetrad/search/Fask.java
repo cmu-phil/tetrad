@@ -26,7 +26,6 @@ import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.DepthChoiceGenerator;
 import edu.cmu.tetrad.util.StatUtils;
 import edu.cmu.tetrad.util.TetradMatrix;
-import org.apache.commons.math3.distribution.NormalDistribution;
 import org.apache.commons.math3.linear.SingularMatrixException;
 
 import java.awt.*;
@@ -45,6 +44,12 @@ import static java.lang.Math.*;
  * @author Joseph Ramsey
  */
 public final class Fask implements GraphSearch {
+
+    // The score to be used for the FAS adjacency search.
+    private final Score score;
+
+    // An initial graph to orient, skipping the adjacency step.
+    private Graph initialGraph = null;
 
     // Elapsed time of the search, in milliseconds.
     private long elapsed = 0;
@@ -70,12 +75,14 @@ public final class Fask implements GraphSearch {
 
     // Cutoff for T tests for 2-cycle tests.
     private double cutoff;
+    private boolean presumePositiveCoefficients;
 
     /**
      * @param dataSet These datasets must all have the same variables, in the same order.
      */
-    public Fask(DataSet dataSet) {
+    public Fask(DataSet dataSet, Score score) {
         this.dataSet = dataSet;
+        this.score = score;
 
         data = dataSet.getDoubleData().transpose().toArray();
     }
@@ -98,12 +105,27 @@ public final class Fask implements GraphSearch {
 
         DataSet dataSet = DataUtils.center(this.dataSet);
 
-        SemBicScore score = new SemBicScore(new CovarianceMatrixOnTheFly(dataSet, false));
-        score.setPenaltyDiscount(penaltyDiscount);
-        IndependenceTest test = new IndTestScore(score, dataSet);
         List<Node> variables = dataSet.getVariables();
-
         double[][] colData = dataSet.getDoubleData().transpose().toArray();
+        Graph G0;
+
+        if (getInitialGraph() != null) {
+            Graph g1 = new EdgeListGraph(getInitialGraph().getNodes());
+
+            for (Edge edge : getInitialGraph().getEdges()) {
+                Node x = edge.getNode1();
+                Node y = edge.getNode2();
+
+                if (!g1.isAdjacentTo(x, y)) g1.addUndirectedEdge(x, y);
+            }
+
+            g1 = GraphUtils.replaceNodes(g1, dataSet.getVariables());
+
+            G0 = g1;
+        } else {
+//            SemBicScore score = new SemBicScore(new CovarianceMatrixOnTheFly(dataSet, false));
+//            score.setPenaltyDiscount(penaltyDiscount);
+            IndependenceTest test = new IndTestScore(score, dataSet);
 
 //        for (int j = 0; j < colData.length; j++) {
 //            double[] x = colData[j];
@@ -117,13 +139,14 @@ public final class Fask implements GraphSearch {
 //            colData[j] = x;
 //        }
 
-        System.out.println("FAS");
+            System.out.println("FAS");
 
-        FasStable fas = new FasStable(test);
-        fas.setDepth(getDepth());
-        fas.setVerbose(false);
-        fas.setKnowledge(knowledge);
-        Graph G0 = fas.search();
+            FasStable fas = new FasStable(test);
+            fas.setDepth(getDepth());
+            fas.setVerbose(false);
+            fas.setKnowledge(knowledge);
+            G0 = fas.search();
+        }
 
         SearchGraphUtils.pcOrientbk(knowledge, G0, G0.getNodes());
 
@@ -241,8 +264,9 @@ public final class Fask implements GraphSearch {
     private boolean leftright(double[] x, double[] y) {
         double left = cu(x, y, x) / (sqrt(cu(x, x, x) * cu(y, y, x)));
         double right = cu(x, y, y) / (sqrt(cu(x, x, y) * cu(y, y, y)));
-
-        return (StatUtils.correlation(x, y) * (left - right) > 0);
+        double lr = left - right;
+        if (!presumePositiveCoefficients) lr *= StatUtils.correlation(x, y);
+        return lr > 0;
     }
 
     public static double cu(double[] x, double[] y, double[] condition) {
@@ -345,6 +369,17 @@ public final class Fask implements GraphSearch {
         return knowledge.isForbidden(right.getName(), left.getName()) || knowledge.isRequired(left.getName(), right.getName());
     }
 
+    public Graph getInitialGraph() {
+        return initialGraph;
+    }
+
+    public void setInitialGraph(Graph initialGraph) {
+        this.initialGraph = initialGraph;
+    }
+
+    public void setPresumePositiveCoefficients(boolean presumePositiveCoefficients) {
+        this.presumePositiveCoefficients = presumePositiveCoefficients;
+    }
 }
 
 

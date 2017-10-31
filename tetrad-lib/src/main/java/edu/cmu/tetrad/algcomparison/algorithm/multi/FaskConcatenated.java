@@ -1,7 +1,9 @@
 package edu.cmu.tetrad.algcomparison.algorithm.multi;
 
 import edu.cmu.tetrad.algcomparison.algorithm.MultiDataSetAlgorithm;
+import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
+import edu.cmu.tetrad.algcomparison.utils.UsesScoreWrapper;
 import edu.cmu.tetrad.annotation.AlgType;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.EdgeListGraph;
@@ -10,6 +12,7 @@ import edu.cmu.tetrad.search.Fask;
 import edu.cmu.tetrad.util.Parameters;
 import edu.pitt.dbmi.algo.bootstrap.BootstrapEdgeEnsemble;
 import edu.pitt.dbmi.algo.bootstrap.GeneralBootstrapTest;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -23,29 +26,35 @@ import java.util.List;
  *
  * @author jdramsey
  */
-//@edu.cmu.tetrad.annotation.Algorithm(
-//        name = "FASK Concatenated",
-//        command = "fask-concatenated",
-//        algoType = AlgType.forbid_latent_common_causes,
-//        description = "Short blurb goes here"
-//)
-public class FaskConcatenated implements MultiDataSetAlgorithm, HasKnowledge {
+@edu.cmu.tetrad.annotation.Algorithm(
+        name = "FASK Concatenated",
+        command = "fask-concatenated",
+        algoType = AlgType.forbid_latent_common_causes,
+        description = "Searches multiple continuous datasets for models with possible cycles and 2-cycles, assuming " +
+                "the variables are skewed. Latent common causes are not supported. Uses the Fast Adjacency Search (FAS, that is, " +
+                "the adjacency search of the PC algorithms) with the linear, Gaussian BIC score as a test of conditional " +
+                "independence. One may adjust sparsity of the graph by adjusting the 'penaltyDiscount' parameter. The " +
+                "orientation procedure assumes the variables are skewed. Sensitivity for detection of 2-cycles may be " +
+                "adjusted using the 2-cycle alpha parameter. Data from different datasets are centered and concatenated, then given to\" +\n" +
+                "FASK for search."
+)
+public class FaskConcatenated implements MultiDataSetAlgorithm, HasKnowledge, UsesScoreWrapper {
 
     static final long serialVersionUID = 23L;
-    private boolean empirical = false;
+    private ScoreWrapper score;
     private IKnowledge knowledge = new Knowledge2();
 
     public FaskConcatenated() {
-        this.empirical = false;
+
     }
 
-    public FaskConcatenated(boolean empirical) {
-        this.empirical = empirical;
+    public FaskConcatenated(ScoreWrapper score) {
+        this.score = score;
     }
 
     @Override
     public Graph search(List<DataModel> dataSets, Parameters parameters) {
-    	if (parameters.getInt("bootstrapSampleSize") < 1) {
+        if (parameters.getInt("bootstrapSampleSize") < 1) {
             List<DataSet> centered = new ArrayList<>();
 
             for (DataModel dataSet : dataSets) {
@@ -53,14 +62,15 @@ public class FaskConcatenated implements MultiDataSetAlgorithm, HasKnowledge {
             }
 
             DataSet dataSet = DataUtils.concatenate(centered);
-            Fask search = new Fask(dataSet);
+            Fask search = new Fask(dataSet, score.getScore(dataSet, parameters));
             search.setDepth(parameters.getInt("depth"));
             search.setPenaltyDiscount(parameters.getDouble("penaltyDiscount"));
+            search.setPresumePositiveCoefficients(parameters.getBoolean("presumePositiveCoefficients"));
             search.setAlpha(parameters.getDouble("twoCycleAlpha"));
             search.setKnowledge(knowledge);
             return search.search();
         } else {
-            FaskConcatenated algorithm = new FaskConcatenated(empirical);
+            FaskConcatenated algorithm = new FaskConcatenated(score);
             algorithm.setKnowledge(knowledge);
 
             List<DataSet> datasets = new ArrayList<>();
@@ -94,7 +104,7 @@ public class FaskConcatenated implements MultiDataSetAlgorithm, HasKnowledge {
         if (!parameters.getBoolean("bootstrapping")) {
             return search(Collections.singletonList((DataModel) DataUtils.getContinuousDataSet(dataSet)), parameters);
         } else {
-            FaskConcatenated algorithm = new FaskConcatenated(empirical);
+            FaskConcatenated algorithm = new FaskConcatenated(score);
             algorithm.setKnowledge(knowledge);
 
             List<DataSet> dataSets = Collections.singletonList(DataUtils.getContinuousDataSet(dataSet));
@@ -140,9 +150,10 @@ public class FaskConcatenated implements MultiDataSetAlgorithm, HasKnowledge {
         parameters.add("depth");
         parameters.add("penaltyDiscount");
         parameters.add("twoCycleAlpha");
+        parameters.add("presumePositiveCoefficients");
         parameters.add("numRuns");
         parameters.add("randomSelectionSize");
-        parameters.add("conditionalDistributionsStandardized");
+
         // Bootstrapping
         parameters.add("bootstrapSampleSize");
         parameters.add("bootstrapEnsemble");
@@ -161,4 +172,8 @@ public class FaskConcatenated implements MultiDataSetAlgorithm, HasKnowledge {
         this.knowledge = knowledge;
     }
 
+    @Override
+    public void setScoreWrapper(ScoreWrapper score) {
+        this.score = score;
+    }
 }

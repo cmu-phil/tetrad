@@ -202,6 +202,7 @@ public class LinearFisherModel implements Simulation, TakesData {
         parameters.add("sampleSize");
         parameters.add("intervalBetweenShocks");
         parameters.add("intervalBetweenRecordings");
+        parameters.add("selfLoopCoef");
         parameters.add("fisherEpsilon");
         parameters.add("randomizeColumns");
         parameters.add("measurementVariance");

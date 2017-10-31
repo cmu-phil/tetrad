@@ -26,15 +26,18 @@ import edu.cmu.tetrad.algcomparison.algorithm.Algorithms;
 import edu.cmu.tetrad.algcomparison.algorithm.multi.*;
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.pag.FaskGfciConcatenated;
 import edu.cmu.tetrad.algcomparison.independence.SemBicTest;
+import edu.cmu.tetrad.algcomparison.score.SemBicScore;
 import edu.cmu.tetrad.algcomparison.simulation.Simulations;
 import edu.cmu.tetrad.algcomparison.statistic.*;
 import edu.cmu.tetrad.data.ContinuousVariable;
+import edu.cmu.tetrad.data.CovarianceMatrixOnTheFly;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.Fask;
 import edu.cmu.tetrad.search.Lofs2;
+import edu.cmu.tetrad.search.Score;
 import edu.cmu.tetrad.sem.GeneralizedSemIm;
 import edu.cmu.tetrad.sem.GeneralizedSemPm;
 import edu.cmu.tetrad.util.Parameters;
@@ -178,7 +181,7 @@ public class TestSimulatedFmri {
 
         Algorithms algorithms = new Algorithms();
 
-        algorithms.add(new FaskConcatenated(false));
+        algorithms.add(new FaskConcatenated(new SemBicScore()));
 //        algorithms.add(new FaskGfciConcatenated(new SemBicTest()));
 
         algorithms.add(new FasLofsConcatenated(Lofs2.Rule.RSkew));
@@ -255,7 +258,7 @@ public class TestSimulatedFmri {
 //        algorithms.add(new LofsConcatenated(Lofs2.Rule.SkewE));
 //        algorithms.add(new LofsConcatenated(Lofs2.Rule.Patel));
 
-        algorithms.add(new FaskConcatenated());
+        algorithms.add(new FaskConcatenated( new SemBicScore()));
 //        algorithms.add(new FasLofsConcatenated(Lofs2.Rule.R1));
 //        algorithms.add(new FasLofsConcatenated(Lofs2.Rule.R3));
 //        algorithms.add(new FasLofsConcatenated(Lofs2.Rule.RSkew));
@@ -335,7 +338,7 @@ public class TestSimulatedFmri {
 //
 //        algorithms.add(new FgesConcatenated(new edu.cmu.tetrad.algcomparison.score.SemBicScore(), true));
 //        algorithms.add(new PcStableMaxConcatenated(new SemBicTest(), true));
-        algorithms.add(new FaskConcatenated());
+        algorithms.add(new FaskConcatenated(new SemBicScore()));
 //        algorithms.add(new FasLofsConcatenated(Lofs2.Rule.R1));
 //        algorithms.add(new FasLofsConcatenated(Lofs2.Rule.R2));
 //        algorithms.add(new FasLofsConcatenated(Lofs2.Rule.R3));
@@ -397,7 +400,10 @@ public class TestSimulatedFmri {
                 GeneralizedSemIm im = new GeneralizedSemIm(pm);
                 DataSet data = im.simulateData(N, false);
 
-                Fask fask = new Fask(data);
+                edu.cmu.tetrad.search.SemBicScore score = new edu.cmu.tetrad.search.SemBicScore(new CovarianceMatrixOnTheFly(data, false));
+                score.setPenaltyDiscount(penaltyDiscount);
+
+                Fask fask = new Fask(data, score);
                 fask.setPenaltyDiscount(penaltyDiscount);
                 fask.setAlpha(alpha);
                 Graph out = fask.search();
@@ -437,7 +443,10 @@ public class TestSimulatedFmri {
                 GeneralizedSemIm im = new GeneralizedSemIm(pm);
                 DataSet data = im.simulateData(N, false);
 
-                Fask fask = new Fask(data);
+                edu.cmu.tetrad.search.SemBicScore score = new edu.cmu.tetrad.search.SemBicScore(new CovarianceMatrixOnTheFly(data, false));
+                score.setPenaltyDiscount(penaltyDiscount);
+
+                Fask fask = new Fask(data, score);
                 fask.setPenaltyDiscount(penaltyDiscount);
                 fask.setAlpha(alpha);
                 Graph out = fask.search();
@@ -483,7 +492,9 @@ public class TestSimulatedFmri {
         GeneralizedSemIm im = new GeneralizedSemIm(pm);
         DataSet data = im.simulateData(1000, false);
 
-        Fask fask = new Fask(data);
+        edu.cmu.tetrad.search.SemBicScore score = new edu.cmu.tetrad.search.SemBicScore(new CovarianceMatrixOnTheFly(data, false));
+
+        Fask fask = new Fask(data, score);
         fask.setPenaltyDiscount(1);
         fask.setAlpha(0.5);
         Graph out = fask.search();

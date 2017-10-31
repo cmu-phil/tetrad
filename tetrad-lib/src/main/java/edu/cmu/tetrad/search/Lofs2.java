@@ -744,7 +744,7 @@ public class Lofs2 {
         double left = cu(x, y, x) / (sqrt(cu(x, x, x) * cu(y, y, x)));
         double right = cu(x, y, y) / (sqrt(cu(x, x, y) * cu(y, y, y)));
 
-        return (StatUtils.correlation(x, y) * (left - right) > 0);
+        return /*StatUtils.correlation(x, y)*/ (left - right) > 0;
     }
 
     public static double cu(double[] x, double[] y, double[] condition) {
