@@ -207,7 +207,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
             }
 
             // Calling setAlgorithm() populates the previous parameters of selected algo
-            setAlgorithm();
+            setAlgorithm();            
         } else {
             // Default to select the first algo name in list
             setSelection();
@@ -1423,6 +1423,17 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
 
         // Determine if enable/disable test and score dropdowns
         testDropdown.setEnabled(algoAnno.requireIndependenceTest(algoClass));
+        
+        if(testDropdown.isEnabled() && parameters.getString("testType") != null){
+        	String previousTestType = parameters.getString("testType");
+        	for(int i=0;i<testDropdownModel.getSize();i++){
+        		AnnotatedClassWrapper<TestOfIndependence> test = testDropdownModel.getElementAt(i);
+        		if(test.getName().equalsIgnoreCase(previousTestType)){
+        			testDropdownModel.setSelectedItem(test);
+            		break;
+        		}
+        	}
+        }
     }
 
     // Determine if enable/disable score dropdowns
@@ -1433,6 +1444,17 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
 
         // Determine if enable/disable test and score dropdowns
         scoreDropdown.setEnabled(algoAnno.requireScore(algoClass));
+        
+        if(scoreDropdown.isEnabled() && parameters.getString("scoreType") != null){
+        	String previousScoreType = parameters.getString("scoreType");
+        	for(int i=0;i<scoreDropdownModel.getSize();i++){
+        		AnnotatedClassWrapper<Score> score = scoreDropdownModel.getElementAt(i);
+        		if(score.getName().equalsIgnoreCase(previousScoreType)){
+        			scoreDropdownModel.setSelectedItem(score);
+            		break;
+        		}
+        	}
+        }
     }
 
     // Enable/disable the checkboxes of assumptions
