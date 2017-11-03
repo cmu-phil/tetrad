@@ -587,11 +587,11 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
 
         testDropdown.setPreferredSize(new Dimension(240, 15));
 
-        // Event listener of test seleciton
+        // Event listener of test selection
         testDropdown.addActionListener((ActionEvent e) -> {
             // Don't use setAlgorithm() because we don't need to determine if
             // enable/disable the test and score dropdown menus again - Zhou
-            if (testDropdown.getSelectedItem() != null) {
+            if (testDropdown.getSelectedItem() != null) {            	
                 setTestType(((AnnotatedClassWrapper<TestOfIndependence>) testDropdown.getSelectedItem()).getName());
             }
         });
@@ -615,7 +615,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         scoreDropdown = new JComboBox<>(scoreDropdownModel);
         scoreDropdown.setPreferredSize(new Dimension(240, 15));
 
-        // Event listener of score seleciton
+        // Event listener of score selection
         scoreDropdown.addActionListener((ActionEvent e) -> {
             // Don't use setAlgorithm() because we don't need to determine if
             // enable/disable the test and score dropdown menus again - Zhou
@@ -693,6 +693,9 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
 
         // Step 2 button listener
         step2Btn.addActionListener((ActionEvent e) -> {
+        	// Setup the algorithm
+        	setAlgorithm();
+        	        	
             // Show parameters
             parametersContainer.setVisible(true);
 
@@ -1451,10 +1454,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
             // Determine if enable/disable the checkboxes of assumptions
             setAssumptions();
 
-            // Set the algo on each selection change
-            Algorithm algorithm = getAlgorithmFromInterface();
-
-            runner.setAlgorithm(algorithm);
+            setAlgorithmRunner();
 
             // Set runner parameters for target algo
             parameters.set("testEnabled", testDropdown.isEnabled());
@@ -1474,6 +1474,13 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         }
     }
 
+    private void setAlgorithmRunner(){
+        // Set the algo on each selection change
+        Algorithm algorithm = getAlgorithmFromInterface();
+
+        runner.setAlgorithm(algorithm);
+    }
+    
     private Parameters getParameters() {
         return parameters;
     }
