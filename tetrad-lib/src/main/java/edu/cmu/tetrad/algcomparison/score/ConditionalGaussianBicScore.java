@@ -23,9 +23,11 @@ import java.util.List;
 public class ConditionalGaussianBicScore implements ScoreWrapper {
 
     static final long serialVersionUID = 23L;
+    private DataModel dataSet;
 
     @Override
     public Score getScore(DataModel dataSet, Parameters parameters) {
+        this.dataSet = dataSet;
         final ConditionalGaussianScore conditionalGaussianScore
                 = new ConditionalGaussianScore(DataUtils.getMixedDataSet(dataSet), parameters.getDouble("structurePrior"), parameters.getBoolean("discretize"));
 
@@ -54,6 +56,6 @@ public class ConditionalGaussianBicScore implements ScoreWrapper {
 
     @Override
     public Node getVariable(String name) {
-        return null;
+        return  dataSet.getVariable(name);
     }
 }
