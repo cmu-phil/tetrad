@@ -303,13 +303,9 @@ public final class FgesMb {
         List<Node> _targets = new ArrayList<>();
 
         for (Node target : targets) {
-            target = fgesScore.getVariable(target.getName());
-
-//            if (!fgesScore.getVariables().contains(target)) throw new IllegalArgumentException(
-//                    "Target is not one of the variables for the fgesScore."
-//            );
-
-            _targets.add(target);
+            if (!fgesScore.getVariables().contains(target)) throw new IllegalArgumentException(
+                    "Target is not one of the variables for the fgesScore."
+            );
         }
 
         this.targets = _targets;
