@@ -106,30 +106,22 @@ public class EditorUtils {
         }
     }
 
-    /**
-     * Displays a save dialog in the getModel save directory and returns the
-     * selected file. The file is of form prefix.suffix.
-     *
-     * @param prefix     The prefix of the file.
-     * @param suffix     The suffix of the file.
-     * @param parent     The parent that the save dialog should be centered on
-     *                   and in front of.
-     * @param overwrite  True iff the file prefix.suffix should be overwritten.
-     *                   If false, the next avialable filename in the series
-     *                   prefix{n}.suffix will be suggested.
-     * @return null, if the selection was cancelled or there was an error.
-     */
-    public static File getSaveFile(String prefix, String suffix,
-                                   Component parent, boolean overwrite, String dialogName) {
-        JFileChooser chooser = createJFileChooser(dialogName);
-
-        String sessionSaveLocation = Preferences.userRoot().get(
-                "fileSaveLocation", Preferences.userRoot().absolutePath());
-        File dir = new File(sessionSaveLocation);
+    public static File getSaveFileWithPath(String prefix, String suffix,
+            Component parent, boolean overwrite, String dialogName, String saveLocation){
+        JFileChooser chooser = createJFileChooser(dialogName, saveLocation);
+        
+        String fileSaveLocation = null;
+        if(saveLocation == null){
+        	fileSaveLocation = Preferences.userRoot().get(
+                    "fileSaveLocation", Preferences.userRoot().absolutePath());
+        }else{
+        	fileSaveLocation = saveLocation;
+        }
+        File dir = new File(fileSaveLocation);
         chooser.setCurrentDirectory(dir);
         chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
 
-        File selectedFile = nextFile(sessionSaveLocation, prefix, suffix, overwrite);
+        File selectedFile = nextFile(fileSaveLocation, prefix, suffix, overwrite);
 
         chooser.setSelectedFile(selectedFile);
         File outfile;
@@ -161,23 +153,48 @@ public class EditorUtils {
         }
 
         outfile = ensureSuffix(outfile, suffix);
-        Preferences.userRoot().put("fileSaveLocation", outfile.getParent());
+        if(saveLocation == null){
+            Preferences.userRoot().put("fileSaveLocation", outfile.getParent());
+        }else{
+            Preferences.userRoot().put("sessionSaveLocation", outfile.getParent());
+        }
 
         return outfile;
+    }
+    
+    /**
+     * Displays a save dialog in the getModel save directory and returns the
+     * selected file. The file is of form prefix.suffix.
+     *
+     * @param prefix     The prefix of the file.
+     * @param suffix     The suffix of the file.
+     * @param parent     The parent that the save dialog should be centered on
+     *                   and in front of.
+     * @param overwrite  True iff the file prefix.suffix should be overwritten.
+     *                   If false, the next avialable filename in the series
+     *                   prefix{n}.suffix will be suggested.
+     * @return null, if the selection was cancelled or there was an error.
+     */
+    public static File getSaveFile(String prefix, String suffix,
+                                   Component parent, boolean overwrite, String dialogName) {
+    	return getSaveFileWithPath(prefix, suffix, parent, overwrite, dialogName, null);
     }
 
     /**
      * @return a new JFileChooser properly set up for Tetrad.
      */
-    private static JFileChooser createJFileChooser(String name) {
+    private static JFileChooser createJFileChooser(String name, String path) {
         if (name == null) {
             name = "Save";
         }
 
         JFileChooser chooser = new JFileChooser();
-        String sessionSaveLocation =
+        String fileSaveLocation =
                 Preferences.userRoot().get("fileSaveLocation", "");
-        chooser.setCurrentDirectory(new File(sessionSaveLocation));
+        if(path != null){
+        	fileSaveLocation = path;
+        }
+        chooser.setCurrentDirectory(new File(fileSaveLocation));
         chooser.resetChoosableFileFilters();
         chooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
         chooser.setDialogTitle(name);

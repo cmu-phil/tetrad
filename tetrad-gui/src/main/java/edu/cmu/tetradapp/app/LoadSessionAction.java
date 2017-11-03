@@ -64,7 +64,7 @@ final class LoadSessionAction extends AbstractAction {
         // select a file to open using the file chooser
         JFileChooser chooser = new JFileChooser();
         String sessionSaveLocation =
-                Preferences.userRoot().get("fileSaveLocation", "");
+                Preferences.userRoot().get("sessionSaveLocation", "");
         chooser.setCurrentDirectory(new File(sessionSaveLocation));
         chooser.addChoosableFileFilter(new TetFileFilter());
         chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
@@ -82,7 +82,7 @@ final class LoadSessionAction extends AbstractAction {
             return;
         }
 
-        Preferences.userRoot().put("fileSaveLocation", file.getParent());
+        Preferences.userRoot().put("sessionSaveLocation", file.getParent());
 
         Session session = DesktopController.getInstance().getSessionByName(file.getName());
 

@@ -57,7 +57,7 @@ final class  SaveSessionAction extends AbstractAction {
         SessionWrapper sessionWrapper = workbench.getSessionWrapper();
         TetradMetadata metadata = new TetradMetadata();
 
-        File file = new File(Preferences.userRoot().get("fileSaveLocation",
+        File file = new File(Preferences.userRoot().get("sessionSaveLocation",
                 Preferences.userRoot().absolutePath()),
                 sessionWrapper.getName());
 
