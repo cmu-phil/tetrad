@@ -2521,7 +2521,7 @@ public final class GraphUtils {
             if (line.equals("")) {
                 break;
             }
-                
+
             System.out.println(line);
 
             String[] tokens = line.split("\\s+");
@@ -2530,8 +2530,6 @@ public final class GraphUtils {
             String edge = tokens[2];
             String to = tokens[3];
 
-            line = line.substring(line.indexOf(to) + to.length()).trim();
-            
             Node _from = graph.getNode(from);
             Node _to = graph.getNode(to);
 
@@ -2563,37 +2561,32 @@ public final class GraphUtils {
             Edge _edge = new Edge(_from, _to, _end1, _end2);
 
             //Bootstrapping
-            if(line.indexOf("[no edge]") > -1){
-            	
-            	String bootstrap_format = "[no edge]:0.0000[-->]:0.0000[<--]:0.0000[o->]:0.0000[<-o]:0.0000[o-o]:0.0000[<->]:0.0000[---]:0.0000";
-            	String bootstraps = line.substring(0, bootstrap_format.length());
-            	line = line.substring(bootstrap_format.length()).trim();
-            	double nil = Double.parseDouble(bootstraps.substring(10, 16));
-            	double ta = Double.parseDouble(bootstraps.substring(22, 28));
-            	double at = Double.parseDouble(bootstraps.substring(34, 40));
-            	double ca = Double.parseDouble(bootstraps.substring(46, 52));
-            	double ac = Double.parseDouble(bootstraps.substring(58, 64));
-            	double cc = Double.parseDouble(bootstraps.substring(70, 76));
-            	double aa = Double.parseDouble(bootstraps.substring(82, 88));
-            	double tt = Double.parseDouble(bootstraps.substring(94, 100));
-            	
-            	_edge.addEdgeTypeProbability(new EdgeTypeProbability(EdgeType.nil, nil));
-            	_edge.addEdgeTypeProbability(new EdgeTypeProbability(EdgeType.ta, ta));
-            	_edge.addEdgeTypeProbability(new EdgeTypeProbability(EdgeType.at, at));
-            	_edge.addEdgeTypeProbability(new EdgeTypeProbability(EdgeType.ca, ca));
-            	_edge.addEdgeTypeProbability(new EdgeTypeProbability(EdgeType.ac, ac));
-            	_edge.addEdgeTypeProbability(new EdgeTypeProbability(EdgeType.cc, cc));
-            	_edge.addEdgeTypeProbability(new EdgeTypeProbability(EdgeType.aa, aa));
-            	_edge.addEdgeTypeProbability(new EdgeTypeProbability(EdgeType.tt, tt));
-            }
-            
-            if(line.length() > 0){
-                tokens = line.split("\\s+");
-                
-                for (int i = 0; i < tokens.length; i++) {
+            if (line.indexOf("[no edge]") > -1) {
+
+                String bootstrap_format = "[no edge]:0.0000[-->]:0.0000[<--]:0.0000[o->]:0.0000[<-o]:0.0000[o-o]:0.0000[<->]:0.0000[---]:0.0000";
+                String bootstraps = line.substring(0, bootstrap_format.length());
+                line = line.substring(bootstrap_format.length()).trim();
+                double nil = Double.parseDouble(bootstraps.substring(10, 16));
+                double ta = Double.parseDouble(bootstraps.substring(22, 28));
+                double at = Double.parseDouble(bootstraps.substring(34, 40));
+                double ca = Double.parseDouble(bootstraps.substring(46, 52));
+                double ac = Double.parseDouble(bootstraps.substring(58, 64));
+                double cc = Double.parseDouble(bootstraps.substring(70, 76));
+                double aa = Double.parseDouble(bootstraps.substring(82, 88));
+                double tt = Double.parseDouble(bootstraps.substring(94, 100));
+
+                _edge.addEdgeTypeProbability(new EdgeTypeProbability(EdgeType.nil, nil));
+                _edge.addEdgeTypeProbability(new EdgeTypeProbability(EdgeType.ta, ta));
+                _edge.addEdgeTypeProbability(new EdgeTypeProbability(EdgeType.at, at));
+                _edge.addEdgeTypeProbability(new EdgeTypeProbability(EdgeType.ca, ca));
+                _edge.addEdgeTypeProbability(new EdgeTypeProbability(EdgeType.ac, ac));
+                _edge.addEdgeTypeProbability(new EdgeTypeProbability(EdgeType.cc, cc));
+                _edge.addEdgeTypeProbability(new EdgeTypeProbability(EdgeType.aa, aa));
+                _edge.addEdgeTypeProbability(new EdgeTypeProbability(EdgeType.tt, tt));
+            } else {
+                for (int i = 4; i < tokens.length; i++)
                     _edge.addProperty(Edge.Property.valueOf(tokens[i]));
-                }
-            }            
+            }
 
             graph.addEdge(_edge);
         }
@@ -3929,66 +3922,66 @@ public final class GraphUtils {
         return sb.toString();
     }
 
-	public static String graphEdgesToText(Graph graph, String title) {
-		Formatter fmt = new Formatter();
+    public static String graphEdgesToText(Graph graph, String title) {
+        Formatter fmt = new Formatter();
 
-		if (title != null && title.length() > 0) {
-			fmt.format("%s%n", title);
-		}
+        if (title != null && title.length() > 0) {
+            fmt.format("%s%n", title);
+        }
 
-		List<Edge> edges = new ArrayList<>(graph.getEdges());
-		Edges.sortEdges(edges);
+        List<Edge> edges = new ArrayList<>(graph.getEdges());
+        Edges.sortEdges(edges);
 
-		int size = edges.size();
-		int count = 0;
+        int size = edges.size();
+        int count = 0;
 
-		for (Edge edge : edges) {
-			count++;
+        for (Edge edge : edges) {
+            count++;
 
-			List<Edge.Property> properties = edge.getProperties();
+            List<Edge.Property> properties = edge.getProperties();
 
-			if (count < size) {
-				String f = "%d. %s";
+            if (count < size) {
+                String f = "%d. %s";
 
-				for (int i = 0; i < properties.size(); i++) {
-					f += " %s";
-				}
+                for (int i = 0; i < properties.size(); i++) {
+                    f += " %s";
+                }
 
-				Object[] o = new Object[2 + properties.size()];
+                Object[] o = new Object[2 + properties.size()];
 
-				o[0] = count;
-				o[1] = edge;
+                o[0] = count;
+                o[1] = edge;
 
-				for (int i = 0; i < properties.size(); i++) {
-					o[2 + i] = properties.get(i);
-				}
+                for (int i = 0; i < properties.size(); i++) {
+                    o[2 + i] = properties.get(i);
+                }
 
-				fmt.format(f, o);
+                fmt.format(f, o);
 
-				fmt.format("\n");
-			} else {
-				String f = "%d. %s";
+                fmt.format("\n");
+            } else {
+                String f = "%d. %s";
 
-				for (int i = 0; i < properties.size(); i++) {
-					f += " %s";
-				}
-				Object[] o = new Object[2 + properties.size()];
+                for (int i = 0; i < properties.size(); i++) {
+                    f += " %s";
+                }
+                Object[] o = new Object[2 + properties.size()];
 
-				o[0] = count;
-				o[1] = edge;
+                o[0] = count;
+                o[1] = edge;
 
-				for (int i = 0; i < properties.size(); i++) {
-					o[2 + i] = properties.get(i);
-				}
+                for (int i = 0; i < properties.size(); i++) {
+                    o[2 + i] = properties.get(i);
+                }
 
-				fmt.format(f, o);
+                fmt.format(f, o);
 
-				fmt.format("\n");
-			}
-		}
+                fmt.format("\n");
+            }
+        }
 
-		return fmt.toString();
-	}
+        return fmt.toString();
+    }
 
     public static String triplesToText(Set<Triple> triples, String title) {
         Formatter fmt = new Formatter();

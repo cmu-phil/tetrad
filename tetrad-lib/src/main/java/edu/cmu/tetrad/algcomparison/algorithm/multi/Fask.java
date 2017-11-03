@@ -93,7 +93,7 @@ public class Fask implements Algorithm, HasKnowledge, UsesScoreWrapper {
 
     @Override
     public String getDescription() {
-        return "FASK";
+        return "FASK using " + score.getDescription();
     }
 
     @Override

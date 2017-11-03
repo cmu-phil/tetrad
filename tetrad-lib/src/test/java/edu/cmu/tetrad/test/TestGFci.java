@@ -289,7 +289,7 @@ public class TestGFci {
         System.out.println("Elapsed " + (stop - start) + " ms");
     }
 
-    @Test
+//    @Test
     public void testDan() {
 
         Graph graph = null;

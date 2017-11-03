@@ -249,6 +249,13 @@ public class ParamDescriptions {
         map.put("presumePositiveCoefficients", new ParamDescription(
                 "Yes if coefficients should be assumed positive by default for the orientaton step",
                 false));
+
+        map.put("adjacentsOnly", new ParamDescription(
+                "Yes if the search should be over parents and children only; No if parents of children should be included",
+                false));
+
+
+
     }
 
     public static ParamDescriptions getInstance() {

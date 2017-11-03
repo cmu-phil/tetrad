@@ -35,9 +35,9 @@ import java.io.IOException;
 import java.util.ArrayList;
 
 /**
- * Writes PNG files.
+ * Writes PNG files. Uses the given layout.
  */
-class PngWriter {
+public class PngWriter {
     public static void writePng(Graph graph, File file) {
 //        circleLayout(graph, 200, 200, 175);
 
