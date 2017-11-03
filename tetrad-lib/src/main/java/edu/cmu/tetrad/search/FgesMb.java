@@ -300,13 +300,19 @@ public final class FgesMb {
 
         if (targets == null) throw new NullPointerException();
 
+        List<Node> _targets = new ArrayList<>();
+
         for (Node target : targets) {
-            if (!fgesScore.getVariables().contains(target)) throw new IllegalArgumentException(
-                    "Target is not one of the variables for the fgesScore."
-            );
+            target = fgesScore.getVariable(target.getName());
+
+//            if (!fgesScore.getVariables().contains(target)) throw new IllegalArgumentException(
+//                    "Target is not one of the variables for the fgesScore."
+//            );
+
+            _targets.add(target);
         }
 
-        this.targets = targets;
+        this.targets = _targets;
 
         topGraphs.clear();
 
