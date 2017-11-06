@@ -20,13 +20,14 @@
 ///////////////////////////////////////////////////////////////////////////////
 package edu.cmu.tetrad.data;
 
-import edu.cmu.tetrad.graph.*;
+import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.graph.OrderedPair;
+import edu.cmu.tetrad.search.Fask;
+import edu.cmu.tetrad.search.SemBicScore;
 import edu.cmu.tetrad.util.StatUtils;
 import edu.cmu.tetrad.util.TetradSerializable;
 
-import java.io.CharArrayWriter;
-import java.io.IOException;
-import java.io.Writer;
 import java.util.*;
 import java.util.regex.Matcher;
 
@@ -59,20 +60,40 @@ public final class KnowledgeFask implements TetradSerializable, IKnowledge {
     static final long serialVersionUID = 23L;
     private final DataSet dataSet;
     private final double[][] colData;
+    private final Graph faskGraph;
+    private double alpha = 1e-6;
+    private double penaltyDiscount = 2;
+    private IKnowledge givenKnowledge = new Knowledge2();
 
     private Set<MyNode> myNodes = new HashSet<>();
 
-    private List<OrderedPair<Set<MyNode>>> forbiddenRulesSpecs;
-    private List<OrderedPair<Set<MyNode>>> requiredRulesSpecs;
-    private List<Set<MyNode>> tierSpecs;
+//    private List<OrderedPair<Set<MyNode>>> forbiddenRulesSpecs;
+//    private List<OrderedPair<Set<MyNode>>> requiredRulesSpecs;
+//    private List<Set<MyNode>> tierSpecs;
 
     // Legacy.
-    private final List<KnowledgeGroup> knowledgeGroups = new ArrayList<>();
-    private Map<KnowledgeGroup, OrderedPair<Set<MyNode>>> knowledgeGroupRules;
+//    private final List<KnowledgeGroup> knowledgeGroups = new ArrayList<>();
+//    private Map<KnowledgeGroup, OrderedPair<Set<MyNode>>> knowledgeGroupRules;
 
-    private boolean defaultToKnowledgeLayout = false;
+//    private boolean defaultToKnowledgeLayout = false;
 
     private Map<String, MyNode> namesToVars = new HashMap<>();
+
+    public double getAlpha() {
+        return alpha;
+    }
+
+    public void setAlpha(double alpha) {
+        this.alpha = alpha;
+    }
+
+    public double getPenaltyDiscount() {
+        return penaltyDiscount;
+    }
+
+    public void setPenaltyDiscount(double penaltyDiscount) {
+        this.penaltyDiscount = penaltyDiscount;
+    }
 
     // Wraps a variable name so that it has object identity. For speed.
     public static class MyNode implements Comparable, TetradSerializable {
@@ -113,11 +134,13 @@ public final class KnowledgeFask implements TetradSerializable, IKnowledge {
     /**
      * Constructs a blank knowledge object.
      */
-    public KnowledgeFask(DataSet dataSet) {
-        this.forbiddenRulesSpecs = new ArrayList<>();
-        this.requiredRulesSpecs = new ArrayList<>();
-        this.knowledgeGroupRules = new HashMap<>();
-        this.tierSpecs = new ArrayList<>();
+    public KnowledgeFask(DataSet dataSet, IKnowledge givenKnowledge) {
+        this.givenKnowledge = givenKnowledge;
+
+//        this.forbiddenRulesSpecs = new ArrayList<>();
+//        this.requiredRulesSpecs = new ArrayList<>();
+//        this.knowledgeGroupRules = new HashMap<>();
+//        this.tierSpecs = new ArrayList<>();
 
         this.namesToVars = new HashMap<>();
 
@@ -135,13 +158,21 @@ public final class KnowledgeFask implements TetradSerializable, IKnowledge {
 
             colData[j] = x;
         }
+
+        Fask fask = new Fask(dataSet, new SemBicScore(new CovarianceMatrixOnTheFly(dataSet)));
+        fask.setPenaltyDiscount(getPenaltyDiscount());
+        fask.setAlpha(getAlpha());
+        fask.setDepth(-1);
+
+        this.faskGraph = fask.search();
+
     }
 
     /**
      * Generates a simple exemplar of this class to test serialization.
      */
     public static KnowledgeFask serializableInstance() {
-        return new KnowledgeFask(new ColtDataSet(0, new ArrayList<>()));
+        return new KnowledgeFask(new ColtDataSet(0, new ArrayList<>()), new Knowledge2());
     }
 
     //===============================PUBLIC METHODS=======================//
@@ -154,27 +185,29 @@ public final class KnowledgeFask implements TetradSerializable, IKnowledge {
      * is a non-negative integer.
      */
     public final void addToTier(int tier, String spec) {
-        addVariable(spec);
+        givenKnowledge.addToTier(tier, spec);
 
-        if (tier < 0) {
-            throw new IllegalArgumentException();
-        }
-
-        if (spec == null) {
-            throw new NullPointerException();
-        }
-
-        spec = checkSpec(spec);
-        final Set<MyNode> vars = getExtent(spec);
-
-        ensureTiers(tier);
-
-        for (MyNode s : vars) {
-            if (checkVarName(s.getName())) {
-                addVariable(s.getName());
-                tierSpecs.get(tier).add(s);
-            }
-        }
+//        addVariable(spec);
+//
+//        if (tier < 0) {
+//            throw new IllegalArgumentException();
+//        }
+//
+//        if (spec == null) {
+//            throw new NullPointerException();
+//        }
+//
+//        spec = checkSpec(spec);
+//        final Set<MyNode> vars = getExtent(spec);
+//
+//        ensureTiers(tier);
+//
+//        for (MyNode s : vars) {
+//            if (checkVarName(s.getName())) {
+//                addVariable(s.getName());
+//                tierSpecs.get(tier).add(s);
+//            }
+//        }
     }
 
     /**
@@ -182,43 +215,48 @@ public final class KnowledgeFask implements TetradSerializable, IKnowledge {
      * i.
      */
     public final void addToTiersByVarNames(List<String> myNodes) {
-        if (!this.myNodes.containsAll(myNodes)) {
-            for (String variable : myNodes) {
-                if (!checkVarName(variable)) {
-                    throw new IllegalArgumentException("Bad variable name: " + variable);
-                }
-                addVariable(variable);
-            }
-        }
+        givenKnowledge.addToTiersByVarNames(myNodes);
 
-        for (Object variable : myNodes) {
-            String MyNode = (String) variable;
-            int index = MyNode.lastIndexOf(":t");
-
-            if (index != -1) {
-                String substring = MyNode.substring(index + 2);
-                addToTier(new Integer(substring), MyNode);
-            }
-        }
+//        if (!this.myNodes.containsAll(myNodes)) {
+//            for (String variable : myNodes) {
+//                if (!checkVarName(variable)) {
+//                    throw new IllegalArgumentException("Bad variable name: " + variable);
+//                }
+//                addVariable(variable);
+//            }
+//        }
+//
+//        for (Object variable : myNodes) {
+//            String MyNode = (String) variable;
+//            int index = MyNode.lastIndexOf(":t");
+//
+//            if (index != -1) {
+//                String substring = MyNode.substring(index + 2);
+//                addToTier(new Integer(substring), MyNode);
+//            }
+//        }
     }
 
     /**
      * @return a shallow copy of the list of group rules.
      */
     public List<KnowledgeGroup> getKnowledgeGroups() {
-        return new ArrayList<>(this.knowledgeGroups);
+        return givenKnowledge.getKnowledgeGroups();
+//        return new ArrayList<>(this.knowledgeGroups);
     }
 
     /**
      * Removes the knowledge group at the given index.
      */
     public void removeKnowledgeGroup(int index) {
-        OrderedPair<Set<MyNode>> old = knowledgeGroupRules.get(knowledgeGroups.get(index));
+        givenKnowledge.removeKnowledgeGroup(index);
 
-        forbiddenRulesSpecs.remove(old);
-        requiredRulesSpecs.remove(old);
-
-        this.knowledgeGroups.remove(index);
+//        OrderedPair<Set<MyNode>> old = knowledgeGroupRules.get(knowledgeGroups.get(index));
+//
+//        forbiddenRulesSpecs.remove(old);
+//        requiredRulesSpecs.remove(old);
+//
+//        this.knowledgeGroups.remove(index);
     }
 
     /**
@@ -226,103 +264,113 @@ public final class KnowledgeFask implements TetradSerializable, IKnowledge {
      * setRequired with patterns. Needed for the interface.
      */
     public void addKnowledgeGroup(KnowledgeGroup group) {
-        this.knowledgeGroups.add(group);
+        givenKnowledge.addKnowledgeGroup(group);
 
-        OrderedPair<Set<MyNode>> o = getGroupRule(group);
-        knowledgeGroupRules.put(group, o);
-
-        if (group.getType() == KnowledgeGroup.FORBIDDEN) {
-            forbiddenRulesSpecs.add(o);
-        } else if (group.getType() == KnowledgeGroup.REQUIRED) {
-            requiredRulesSpecs.add(o);
-        }
+//        this.knowledgeGroups.add(group);
+//
+//        OrderedPair<Set<MyNode>> o = getGroupRule(group);
+//        knowledgeGroupRules.put(group, o);
+//
+//        if (group.getType() == KnowledgeGroup.FORBIDDEN) {
+//            forbiddenRulesSpecs.add(o);
+//        } else if (group.getType() == KnowledgeGroup.REQUIRED) {
+//            requiredRulesSpecs.add(o);
+//        }
     }
 
     /**
      * Legacy, do not use.
      */
     public void setKnowledgeGroup(int index, KnowledgeGroup group) {
-        OrderedPair<Set<MyNode>> o = getGroupRule(group);
-        OrderedPair<Set<MyNode>> old = knowledgeGroupRules.get(knowledgeGroups.get(index));
+        givenKnowledge.setKnowledgeGroup(index, group);
 
-        forbiddenRulesSpecs.remove(old);
-        requiredRulesSpecs.remove(old);
-
-        if (group.getType() == KnowledgeGroup.FORBIDDEN) {
-            forbiddenRulesSpecs.add(o);
-        } else if (group.getType() == KnowledgeGroup.REQUIRED) {
-            requiredRulesSpecs.add(o);
-        }
-
-        knowledgeGroups.set(index, group);
+//        OrderedPair<Set<MyNode>> o = getGroupRule(group);
+//        OrderedPair<Set<MyNode>> old = knowledgeGroupRules.get(knowledgeGroups.get(index));
+//
+//        forbiddenRulesSpecs.remove(old);
+//        requiredRulesSpecs.remove(old);
+//
+//        if (group.getType() == KnowledgeGroup.FORBIDDEN) {
+//            forbiddenRulesSpecs.add(o);
+//        } else if (group.getType() == KnowledgeGroup.REQUIRED) {
+//            requiredRulesSpecs.add(o);
+//        }
+//
+//        knowledgeGroups.set(index, group);
     }
 
     /**
      * Iterator over the KnowledgeEdge's representing forbidden edges.
      */
     public final Iterator<KnowledgeEdge> forbiddenEdgesIterator() {
-        Set<KnowledgeEdge> edges = new HashSet<>();
+        return givenKnowledge.forbiddenEdgesIterator();
 
-        for (OrderedPair<Set<MyNode>> o : forbiddenRulesSpecs) {
-            final Set<MyNode> first = o.getFirst();
-            for (MyNode s1 : first) {
-                final Set<MyNode> second = o.getSecond();
-                for (MyNode s2 : second) {
-                    if (!s1.equals(s2)) {
-                        edges.add(new KnowledgeEdge(s1.getName(), s2.getName()));
-                    }
-                }
-            }
-        }
-
-        return edges.iterator();
+//        Set<KnowledgeEdge> edges = new HashSet<>();
+//
+//        for (OrderedPair<Set<MyNode>> o : forbiddenRulesSpecs) {
+//            final Set<MyNode> first = o.getFirst();
+//            for (MyNode s1 : first) {
+//                final Set<MyNode> second = o.getSecond();
+//                for (MyNode s2 : second) {
+//                    if (!s1.equals(s2)) {
+//                        edges.add(new KnowledgeEdge(s1.getName(), s2.getName()));
+//                    }
+//                }
+//            }
+//        }
+//
+//        return edges.iterator();
     }
 
     /**
      * Iterator over the knowledge's explicitly forbidden edges.
      */
     public final Iterator<KnowledgeEdge> explicitlyForbiddenEdgesIterator() {
-        Set<OrderedPair<Set<MyNode>>> copy = new HashSet<>(forbiddenRulesSpecs);
-        copy.removeAll(forbiddenTierRules());
+        return givenKnowledge.explicitlyForbiddenEdgesIterator();
 
-        for (KnowledgeGroup group : knowledgeGroups) {
-            copy.remove(knowledgeGroupRules.get(group));
-        }
-
-        Set<KnowledgeEdge> edges = new HashSet<>();
-
-        for (OrderedPair<Set<MyNode>> o : copy) {
-            final Set<MyNode> first = o.getFirst();
-            for (MyNode s1 : first) {
-                final Set<MyNode> second = o.getSecond();
-                for (MyNode s2 : second) {
-                    edges.add(new KnowledgeEdge(s1.getName(), s2.getName()));
-                }
-            }
-        }
-
-        return edges.iterator();
+//        Set<OrderedPair<Set<MyNode>>> copy = new HashSet<>(forbiddenRulesSpecs);
+//        copy.removeAll(forbiddenTierRules());
+//
+//        for (KnowledgeGroup group : knowledgeGroups) {
+//            copy.remove(knowledgeGroupRules.get(group));
+//        }
+//
+//        Set<KnowledgeEdge> edges = new HashSet<>();
+//
+//        for (OrderedPair<Set<MyNode>> o : copy) {
+//            final Set<MyNode> first = o.getFirst();
+//            for (MyNode s1 : first) {
+//                final Set<MyNode> second = o.getSecond();
+//                for (MyNode s2 : second) {
+//                    edges.add(new KnowledgeEdge(s1.getName(), s2.getName()));
+//                }
+//            }
+//        }
+//
+//        return edges.iterator();
     }
 
     /**
      * @return the list of edges not in any tier.
      */
     public final List<String> getVariablesNotInTiers() {
-        List<MyNode> notInTier = new ArrayList<>(myNodes);
+        return givenKnowledge.getVariablesNotInTiers();
 
-        for (Set<MyNode> tier : tierSpecs) {
-            if (tier == null) {
-                tier = new HashSet<>();
-            }
-            notInTier.removeAll(tier);
-        }
-
-        List<String> names = new ArrayList<>();
-        for (MyNode MyNode : notInTier) {
-            names.add(MyNode.getName());
-        }
-
-        return names;
+//        List<MyNode> notInTier = new ArrayList<>(myNodes);
+//
+//        for (Set<MyNode> tier : tierSpecs) {
+//            if (tier == null) {
+//                tier = new HashSet<>();
+//            }
+//            notInTier.removeAll(tier);
+//        }
+//
+//        List<String> names = new ArrayList<>();
+//        for (MyNode MyNode : notInTier) {
+//            names.add(MyNode.getName());
+//        }
+//
+//        return names;
     }
 
     /**
@@ -330,45 +378,39 @@ public final class KnowledgeFask implements TetradSerializable, IKnowledge {
      * @return a copy of this tier.
      */
     public final List<String> getTier(int tier) {
-        ensureTiers(tier);
+        return givenKnowledge.getTier(tier);
 
-        List<String> names = new ArrayList<>();
-        for (MyNode MyNode : tierSpecs.get(tier)) {
-            names.add(MyNode.getName());
-        }
-
-        Collections.sort(names);
-        return names;
+//        ensureTiers(tier);
+//
+//        List<String> names = new ArrayList<>();
+//        for (MyNode MyNode : tierSpecs.get(tier)) {
+//            names.add(MyNode.getName());
+//        }
+//
+//        Collections.sort(names);
+//        return names;
     }
 
     /**
      * @return the number of temporal tiers.
      */
     public final int getNumTiers() {
-        return tierSpecs.size();
+        return givenKnowledge.getNumTiers();
+//        return tierSpecs.size();
     }
 
     /**
      * Determines whether the edge var1 --> var2 is forbidden.
      */
     public final boolean isForbidden(String var1, String var2) {
-        for (OrderedPair<Set<MyNode>> rule : forbiddenRulesSpecs) {
-            if (rule.getFirst().contains(getVar(var1))) {
-                if (rule.getSecond().contains(getVar(var2))) {
-                    if (!var1.equals(var2)) {
-                        return true;
-                    }
-                }
-            }
-        }
+        Node x = faskGraph.getNode(var1);
+        Node y = faskGraph.getNode(var2);
 
-        if (isForbiddenByTiers(var1, var2)) {
-            return true;
-        }
+        if (faskGraph.getEdges(x, y).size() == 2) return false;
 
         int c1 = dataSet.getColumn(dataSet.getVariable(var1));
         int c2 = dataSet.getColumn(dataSet.getVariable(var2));
-        return leftright(colData[c2], colData[c1]);
+        return givenKnowledge.isForbidden(var1, var2) || leftright(colData[c2], colData[c1]);
     }
 
 
@@ -399,72 +441,80 @@ public final class KnowledgeFask implements TetradSerializable, IKnowledge {
      * Determines whether the edge var1 --> var2 is required..
      */
     public final boolean isRequired(String var1, String var2) {
-        for (OrderedPair<Set<MyNode>> rule : requiredRulesSpecs) {
-            if (rule.getFirst().contains(getVar(var1))) {
-                if (rule.getSecond().contains(getVar(var2))) {
-                    if (!var1.equals(var2)) {
-                        return true;
-                    }
-                }
-            }
-        }
+        return givenKnowledge.isRequired(var1, var2);
 
-        return false;
+//        for (OrderedPair<Set<MyNode>> rule : requiredRulesSpecs) {
+//            if (rule.getFirst().contains(getVar(var1))) {
+//                if (rule.getSecond().contains(getVar(var2))) {
+//                    if (!var1.equals(var2)) {
+//                        return true;
+//                    }
+//                }
+//            }
+//        }
+//
+//        return false;
     }
 
     /**
      * Legacy.
      */
     public final boolean isRequiredByGroups(String var1, String var2) {
-        Set<OrderedPair<Set<MyNode>>> s = new HashSet<>();
+        return isRequiredByGroups(var1, var2);
 
-        for (KnowledgeGroup group : knowledgeGroups) {
-            if (group.getType() == KnowledgeGroup.REQUIRED) {
-                OrderedPair<Set<MyNode>> o = getGroupRule(group);
-                s.add(o);
-            }
-        }
-
-        for (OrderedPair<Set<MyNode>> rule : s) {
-            if (rule.getFirst().contains(getVar(var1))) {
-                if (rule.getSecond().contains(getVar(var2))) {
-                    return true;
-                }
-            }
-        }
-
-        return false;
+//        Set<OrderedPair<Set<MyNode>>> s = new HashSet<>();
+//
+//        for (KnowledgeGroup group : knowledgeGroups) {
+//            if (group.getType() == KnowledgeGroup.REQUIRED) {
+//                OrderedPair<Set<MyNode>> o = getGroupRule(group);
+//                s.add(o);
+//            }
+//        }
+//
+//        for (OrderedPair<Set<MyNode>> rule : s) {
+//            if (rule.getFirst().contains(getVar(var1))) {
+//                if (rule.getSecond().contains(getVar(var2))) {
+//                    return true;
+//                }
+//            }
+//        }
+//
+//        return false;
     }
 
     /**
      * Legacy.
      */
     public final boolean isForbiddenByGroups(String var1, String var2) {
-        Set<OrderedPair<Set<MyNode>>> s = new HashSet<>();
+        return isForbiddenByGroups(var1, var2);
 
-        for (KnowledgeGroup group : knowledgeGroups) {
-            if (group.getType() == KnowledgeGroup.FORBIDDEN) {
-                OrderedPair<Set<MyNode>> o = getGroupRule(group);
-                s.add(o);
-            }
-        }
-
-        for (OrderedPair<Set<MyNode>> rule : s) {
-            if (rule.getFirst().contains(namesToVars.get(var1))) {
-                if (rule.getSecond().contains(namesToVars.get(var2))) {
-                    return true;
-                }
-            }
-        }
-
-        return false;
+//        Set<OrderedPair<Set<MyNode>>> s = new HashSet<>();
+//
+//        for (KnowledgeGroup group : knowledgeGroups) {
+//            if (group.getType() == KnowledgeGroup.FORBIDDEN) {
+//                OrderedPair<Set<MyNode>> o = getGroupRule(group);
+//                s.add(o);
+//            }
+//        }
+//
+//        for (OrderedPair<Set<MyNode>> rule : s) {
+//            if (rule.getFirst().contains(namesToVars.get(var1))) {
+//                if (rule.getSecond().contains(namesToVars.get(var2))) {
+//                    return true;
+//                }
+//            }
+//        }
+//
+//        return false;
     }
 
     /**
      * @return true iff no edge between x and y is required.
      */
     public final boolean noEdgeRequired(String x, String y) {
-        return !(isRequired(x, y) || isRequired(y, x));
+        return givenKnowledge.noEdgeRequired(x, y);
+
+//        return !(isRequired(x, y) || isRequired(y, x));
     }
 
     /**
@@ -472,91 +522,95 @@ public final class KnowledgeFask implements TetradSerializable, IKnowledge {
      * tiers.
      */
     public final boolean isForbiddenByTiers(String var1, String var2) {
-        for (OrderedPair<Set<MyNode>> rule : forbiddenTierRules()) {
-            if (rule.getFirst().contains(getVar(var1))) {
-                if (rule.getSecond().contains(getVar(var2))) {
-                    return true;
-                }
-            }
-        }
+        return givenKnowledge.isForbiddenByTiers(var1, var2);
 
-        return false;
+//        for (OrderedPair<Set<MyNode>> rule : forbiddenTierRules()) {
+//            if (rule.getFirst().contains(getVar(var1))) {
+//                if (rule.getSecond().contains(getVar(var2))) {
+//                    return true;
+//                }
+//            }
+//        }
+//
+//        return false;
     }
 
     /**
      * @return true if there is no background knowledge recorded.
      */
     public final boolean isEmpty() {
-        return forbiddenRulesSpecs.isEmpty() && requiredRulesSpecs.isEmpty() && tierSpecs.isEmpty();
+        return false;
+
+//        return forbiddenRulesSpecs.isEmpty() && requiredRulesSpecs.isEmpty() && tierSpecs.isEmpty();
     }
 
-    public void saveKnowledge(Writer out)
-            throws IOException {
-        StringBuilder buf = new StringBuilder();
-        buf.append("/knowledge");
-
-        buf.append("\naddtemporal\n");
-
-        for (int i = 0; i < tierSpecs.size(); i++) {
-            String forbiddenWithin = isTierForbiddenWithin(i) ? "*" : "";
-
-            buf.append("\n").append(i).append(forbiddenWithin).append(" ");
-
-            List<String> tier = getTier(i);
-//            Collections.sort(tier); // Do not sort!
-
-            for (Object aTier : tier) {
-                String name = (String) aTier;
-                buf.append(name).append(" ");
-            }
-        }
-
-        buf.append("\n");
-
-        buf.append("\nforbiddirect\n\n");
-
-        Set<OrderedPair<Set<MyNode>>> copy = new HashSet<>(forbiddenRulesSpecs);
-        copy.removeAll(forbiddenTierRules());
-
-        for (OrderedPair<Set<MyNode>> o : copy) {
-            Set<MyNode> first = o.getFirst();
-            Set<MyNode> second = o.getSecond();
-
-            for (MyNode s : first) {
-                buf.append(s).append(" ");
-            }
-
-            buf.append("==> ");
-
-            for (MyNode s : second) {
-                buf.append(s).append(" ");
-            }
-
-            buf.append("\n");
-        }
-
-        buf.append("requiredirect\n\n");
-
-        for (OrderedPair<Set<MyNode>> o : requiredRulesSpecs) {
-            Set<MyNode> first = o.getFirst();
-            Set<MyNode> second = o.getSecond();
-
-            for (MyNode s : first) {
-                buf.append(s).append(" ");
-            }
-
-            buf.append("==> ");
-
-            for (MyNode s : second) {
-                buf.append(s).append(" ");
-            }
-
-            buf.append("\n");
-        }
-
-        out.write(buf.toString());
-        out.flush();
-    }
+//    public void saveKnowledge(Writer out)
+//            throws IOException {
+//        StringBuilder buf = new StringBuilder();
+//        buf.append("/knowledge");
+//
+//        buf.append("\naddtemporal\n");
+//
+//        for (int i = 0; i < tierSpecs.size(); i++) {
+//            String forbiddenWithin = isTierForbiddenWithin(i) ? "*" : "";
+//
+//            buf.append("\n").append(i).append(forbiddenWithin).append(" ");
+//
+//            List<String> tier = getTier(i);
+////            Collections.sort(tier); // Do not sort!
+//
+//            for (Object aTier : tier) {
+//                String name = (String) aTier;
+//                buf.append(name).append(" ");
+//            }
+//        }
+//
+//        buf.append("\n");
+//
+//        buf.append("\nforbiddirect\n\n");
+//
+//        Set<OrderedPair<Set<MyNode>>> copy = new HashSet<>(forbiddenRulesSpecs);
+//        copy.removeAll(forbiddenTierRules());
+//
+//        for (OrderedPair<Set<MyNode>> o : copy) {
+//            Set<MyNode> first = o.getFirst();
+//            Set<MyNode> second = o.getSecond();
+//
+//            for (MyNode s : first) {
+//                buf.append(s).append(" ");
+//            }
+//
+//            buf.append("==> ");
+//
+//            for (MyNode s : second) {
+//                buf.append(s).append(" ");
+//            }
+//
+//            buf.append("\n");
+//        }
+//
+//        buf.append("requiredirect\n\n");
+//
+//        for (OrderedPair<Set<MyNode>> o : requiredRulesSpecs) {
+//            Set<MyNode> first = o.getFirst();
+//            Set<MyNode> second = o.getSecond();
+//
+//            for (MyNode s : first) {
+//                buf.append(s).append(" ");
+//            }
+//
+//            buf.append("==> ");
+//
+//            for (MyNode s : second) {
+//                buf.append(s).append(" ");
+//            }
+//
+//            buf.append("\n");
+//        }
+//
+//        out.write(buf.toString());
+//        out.flush();
+//    }
 
 //    private void saveKnowledge(Writer out)
 //            throws IOException {
@@ -628,28 +682,33 @@ public final class KnowledgeFask implements TetradSerializable, IKnowledge {
      * Iterator over the KnowledgeEdge's representing required edges.
      */
     public final Iterator<KnowledgeEdge> requiredEdgesIterator() {
-        Set<KnowledgeEdge> edges = new HashSet<>();
+        return givenKnowledge.requiredEdgesIterator();
 
-        for (OrderedPair<Set<MyNode>> o : requiredRulesSpecs) {
-            final Set<MyNode> first = o.getFirst();
-            for (MyNode s1 : first) {
-                final Set<MyNode> second = o.getSecond();
-                for (MyNode s2 : second) {
-                    if (!s1.equals(s2)) {
-                        edges.add(new KnowledgeEdge(s1.getName(), s2.getName()));
-                    }
-                }
-            }
-        }
-
-        return edges.iterator();
+//        Set<KnowledgeEdge> edges = new HashSet<>();
+//
+//        for (OrderedPair<Set<MyNode>> o : requiredRulesSpecs) {
+//            final Set<MyNode> first = o.getFirst();
+//            for (MyNode s1 : first) {
+//                final Set<MyNode> second = o.getSecond();
+//                for (MyNode s2 : second) {
+//                    if (!s1.equals(s2)) {
+//                        edges.add(new KnowledgeEdge(s1.getName(), s2.getName()));
+//                    }
+//                }
+//            }
+//        }
+//
+//        return edges.iterator();
     }
 
     /**
      * Iterator over the KnowledgeEdge's explicitly required edges.
      */
     public final Iterator<KnowledgeEdge> explicitlyRequiredEdgesIterator() {
-        return requiredEdgesIterator();
+        return givenKnowledge.explicitlyForbiddenEdgesIterator();
+
+
+//        return requiredEdgesIterator();
     }
 
     /**
@@ -660,20 +719,22 @@ public final class KnowledgeFask implements TetradSerializable, IKnowledge {
      */
     @Override
     public final void setForbidden(String spec1, String spec2) {
-        addVariable(spec1);
-        addVariable(spec2);
+        givenKnowledge.setForbidden(spec1, spec2);
 
-        spec1 = checkSpec(spec1);
-        spec2 = checkSpec(spec2);
-
-        Set<MyNode> f1 = getExtent(spec1);
-        Set<MyNode> f2 = getExtent(spec2);
-
-        OrderedPair<Set<MyNode>> o = new OrderedPair<>(f1, f2);
-
-        if (!forbiddenRulesSpecs.contains(o)) {
-            forbiddenRulesSpecs.add(o);
-        }
+//        addVariable(spec1);
+//        addVariable(spec2);
+//
+//        spec1 = checkSpec(spec1);
+//        spec2 = checkSpec(spec2);
+//
+//        Set<MyNode> f1 = getExtent(spec1);
+//        Set<MyNode> f2 = getExtent(spec2);
+//
+//        OrderedPair<Set<MyNode>> o = new OrderedPair<>(f1, f2);
+//
+//        if (!forbiddenRulesSpecs.contains(o)) {
+//            forbiddenRulesSpecs.add(o);
+//        }
     }
 
     /**
@@ -681,15 +742,17 @@ public final class KnowledgeFask implements TetradSerializable, IKnowledge {
      */
     @Override
     public final void removeForbidden(String spec1, String spec2) {
-        spec1 = checkSpec(spec1);
-        spec2 = checkSpec(spec2);
+        givenKnowledge.removeForbidden(spec1, spec2);
 
-        Set<MyNode> f1 = getExtent(spec1);
-        Set<MyNode> f2 = getExtent(spec2);
-
-        OrderedPair<Set<MyNode>> o = new OrderedPair<>(f1, f2);
-
-        forbiddenRulesSpecs.remove(o);
+//        spec1 = checkSpec(spec1);
+//        spec2 = checkSpec(spec2);
+//
+//        Set<MyNode> f1 = getExtent(spec1);
+//        Set<MyNode> f2 = getExtent(spec2);
+//
+//        OrderedPair<Set<MyNode>> o = new OrderedPair<>(f1, f2);
+//
+//        forbiddenRulesSpecs.remove(o);
     }
 
     /**
@@ -700,56 +763,63 @@ public final class KnowledgeFask implements TetradSerializable, IKnowledge {
      */
     @Override
     public final void setRequired(String spec1, String spec2) {
-        addVariable(spec1);
-        addVariable(spec2);
+        givenKnowledge.setRequired(spec1, spec2);
 
-        spec1 = checkSpec(spec1);
-        spec2 = checkSpec(spec2);
-
-        Set<MyNode> f1 = getExtent(spec1);
-        Set<MyNode> f2 = getExtent(spec2);
-
-        for (MyNode s : f1) {
-            if (checkVarName(s.getName())) {
-                addVariable(s.getName());
-            }
-        }
-
-        for (MyNode s : f2) {
-            if (checkVarName(s.getName())) {
-                addVariable(s.getName());
-            }
-        }
-
-        OrderedPair<Set<MyNode>> o = new OrderedPair<>(f1, f2);
-
-        if (!requiredRulesSpecs.contains(o)) { // Added this line.
-            requiredRulesSpecs.add(o);
-        }  // Add this line.
+//        addVariable(spec1);
+//        addVariable(spec2);
+//
+//        spec1 = checkSpec(spec1);
+//        spec2 = checkSpec(spec2);
+//
+//        Set<MyNode> f1 = getExtent(spec1);
+//        Set<MyNode> f2 = getExtent(spec2);
+//
+//        for (MyNode s : f1) {
+//            if (checkVarName(s.getName())) {
+//                addVariable(s.getName());
+//            }
+//        }
+//
+//        for (MyNode s : f2) {
+//            if (checkVarName(s.getName())) {
+//                addVariable(s.getName());
+//            }
+//        }
+//
+//        OrderedPair<Set<MyNode>> o = new OrderedPair<>(f1, f2);
+//
+//        if (!requiredRulesSpecs.contains(o)) { // Added this line.
+//            requiredRulesSpecs.add(o);
+//        }  // Add this line.
     }
 
     /**
      * Marks the edge var1 --> var2 as not required.
      */
     public final void removeRequired(String spec1, String spec2) {
-        spec1 = checkSpec(spec1);
-        spec2 = checkSpec(spec2);
+        givenKnowledge.removeRequired(spec1, spec2);
 
-        Set<MyNode> f1 = getExtent(spec1);
-        Set<MyNode> f2 = getExtent(spec2);
-
-        OrderedPair<Set<MyNode>> o = new OrderedPair<>(f1, f2);
-
-        requiredRulesSpecs.remove(o);
+//        spec1 = checkSpec(spec1);
+//        spec2 = checkSpec(spec2);
+//
+//        Set<MyNode> f1 = getExtent(spec1);
+//        Set<MyNode> f2 = getExtent(spec2);
+//
+//        OrderedPair<Set<MyNode>> o = new OrderedPair<>(f1, f2);
+//
+//        requiredRulesSpecs.remove(o);
     }
 
     /**
      * Removes the given variable from all tiers.
      */
     public final void removeFromTiers(String spec) {
-        for (Set<MyNode> tier : tierSpecs) {
-            tier.remove(getVar(spec));
-        }
+        givenKnowledge.removeFromTiers(spec);
+
+
+//        for (Set<MyNode> tier : tierSpecs) {
+//            tier.remove(getVar(spec));
+//        }
     }
 
     /**
@@ -757,15 +827,17 @@ public final class KnowledgeFask implements TetradSerializable, IKnowledge {
      * given tier, or cancels this forbidding.
      */
     public final void setTierForbiddenWithin(int tier, boolean forbidden) {
-        ensureTiers(tier);
-        Set<MyNode> _tier = tierSpecs.get(tier);
-        OrderedPair<Set<MyNode>> o = new OrderedPair<>(_tier, _tier);
+        givenKnowledge.setTierForbiddenWithin(tier, forbidden);
 
-        if (forbidden) {
-            forbiddenRulesSpecs.add(o);
-        } else {
-            forbiddenRulesSpecs.remove(o);
-        }
+//        ensureTiers(tier);
+//        Set<MyNode> _tier = tierSpecs.get(tier);
+//        OrderedPair<Set<MyNode>> o = new OrderedPair<>(_tier, _tier);
+//
+//        if (forbidden) {
+//            forbiddenRulesSpecs.add(o);
+//        } else {
+//            forbiddenRulesSpecs.remove(o);
+//        }
     }
 
     /**
@@ -773,71 +845,84 @@ public final class KnowledgeFask implements TetradSerializable, IKnowledge {
      * variable within a given tier.
      */
     public final boolean isTierForbiddenWithin(int tier) {
-        ensureTiers(tier);
+        return givenKnowledge.isTierForbiddenWithin(tier);
 
-        if (tierSpecs.get(tier).isEmpty()) {
-            return false;
-        }
-
-        Set<MyNode> _tier = tierSpecs.get(tier);
-        OrderedPair<Set<MyNode>> o = new OrderedPair<>(_tier, _tier);
-
-        return forbiddenRulesSpecs.contains(o);
+//        ensureTiers(tier);
+//
+//        if (tierSpecs.get(tier).isEmpty()) {
+//            return false;
+//        }
+//
+//        Set<MyNode> _tier = tierSpecs.get(tier);
+//        OrderedPair<Set<MyNode>> o = new OrderedPair<>(_tier, _tier);
+//
+//        return forbiddenRulesSpecs.contains(o);
 
     }
 
-    private void ensureTiers(int tier) {
-        for (int i = tierSpecs.size(); i <= tier; i++) {
-            tierSpecs.add(new LinkedHashSet<MyNode>());
-
-            for (int j = 0; j < i; j++) {
-                forbiddenRulesSpecs.add(new OrderedPair<>(tierSpecs.get(i), tierSpecs.get(j)));
-            }
-        }
-    }
+//    private void ensureTiers(int tier) {
+//        for (int i = tierSpecs.size(); i <= tier; i++) {
+//            tierSpecs.add(new LinkedHashSet<MyNode>());
+//
+//            for (int j = 0; j < i; j++) {
+//                forbiddenRulesSpecs.add(new OrderedPair<>(tierSpecs.get(i), tierSpecs.get(j)));
+//            }
+//        }
+//    }
 
     /**
      * @return the largest indes of a tier in which every variable is forbidden
      * by every other variable, or -1 if there is not such tier.
      */
     public final int getMaxTierForbiddenWithin() {
-        for (int tier = tierSpecs.size(); tier >= 0; tier--) {
-            if (isTierForbiddenWithin(tier)) {
-                return tier;
-            }
-        }
+        return givenKnowledge.getMaxTierForbiddenWithin();
 
-        return -1;
+//        for (int tier = tierSpecs.size(); tier >= 0; tier--) {
+//            if (isTierForbiddenWithin(tier)) {
+//                return tier;
+//            }
+//        }
+//
+//        return -1;
     }
 
     public final void setDefaultToKnowledgeLayout(
             boolean defaultToKnowledgeLayout) {
-        this.defaultToKnowledgeLayout = defaultToKnowledgeLayout;
+        givenKnowledge.setDefaultToKnowledgeLayout(defaultToKnowledgeLayout);
+
+
+//        this.defaultToKnowledgeLayout = defaultToKnowledgeLayout;
     }
 
     public final boolean isDefaultToKnowledgeLayout() {
-        return defaultToKnowledgeLayout;
+        return givenKnowledge.isDefaultToKnowledgeLayout();
+
+//        return defaultToKnowledgeLayout;
     }
 
     /**
      * Removes explicit knowledge and tier information.
      */
     public final void clear() {
-        this.forbiddenRulesSpecs = new ArrayList<>();
-        this.requiredRulesSpecs = new ArrayList<>();
-        this.tierSpecs = new ArrayList<>();
+        givenKnowledge.clear();
+
+//        this.forbiddenRulesSpecs = new ArrayList<>();
+//        this.requiredRulesSpecs = new ArrayList<>();
+//        this.tierSpecs = new ArrayList<>();
     }
 
     /**
      * Computes a hashcode.
      */
     public final int hashCode() {
-        int hash = 37;
-        hash += 17 * this.myNodes.hashCode() + 37;
-        hash += 17 * this.forbiddenRulesSpecs.hashCode() + 37;
-        hash += 17 * this.requiredRulesSpecs.hashCode() + 37;
-        hash += 17 * this.tierSpecs.hashCode() + 37;
-        return hash;
+        return givenKnowledge.hashCode();
+
+//        int hash = 37;
+//        hash += 17 * this.myNodes.hashCode() + 37;
+//        hash += 17 * this.forbiddenRulesSpecs.hashCode() + 37;
+//        hash += 17 * this.requiredRulesSpecs.hashCode() + 37;
+//        hash += 17 * this.tierSpecs.hashCode() + 37;
+//        return hash;
     }
 
     /**
@@ -845,27 +930,31 @@ public final class KnowledgeFask implements TetradSerializable, IKnowledge {
      * edges are equal, and their tiers are equal.
      */
     public final boolean equals(Object o) {
-        if (!(o instanceof KnowledgeFask)) {
-            return false;
-        }
-        KnowledgeFask that = (KnowledgeFask) o;
+        return givenKnowledge.equals(o);
 
-        return this.forbiddenRulesSpecs.equals(that.forbiddenRulesSpecs)
-                && this.requiredRulesSpecs.equals(that.requiredRulesSpecs)
-                && this.tierSpecs.equals(that.tierSpecs);
+//        if (!(o instanceof KnowledgeFask)) {
+//            return false;
+//        }
+//        KnowledgeFask that = (KnowledgeFask) o;
+//
+//        return this.forbiddenRulesSpecs.equals(that.forbiddenRulesSpecs)
+//                && this.requiredRulesSpecs.equals(that.requiredRulesSpecs)
+//                && this.tierSpecs.equals(that.tierSpecs);
     }
 
     /**
      * @return the contents of this Knowledge object in String form.
      */
     public final String toString() {
-        try {
-            CharArrayWriter out = new CharArrayWriter();
-            saveKnowledge(out);
-            return out.toString();
-        } catch (IOException e) {
-            throw new IllegalStateException("Could not render knowledge.");
-        }
+        return givenKnowledge.toString();
+
+//        try {
+//            CharArrayWriter out = new CharArrayWriter();
+//            saveKnowledge(out);
+//            return out.toString();
+//        } catch (IOException e) {
+//            throw new IllegalStateException("Could not render knowledge.");
+//        }
     }
 
     /**
@@ -873,91 +962,106 @@ public final class KnowledgeFask implements TetradSerializable, IKnowledge {
      */
     @Override
     public IKnowledge copy() {
-        return new KnowledgeFask(this.dataSet);
+        return givenKnowledge.copy();
+
+//        return new KnowledgeFask(this.dataSet, givenKnowledge);
     }
 
     public boolean isViolatedBy(Graph graph) {
-        if (graph == null) {
-            throw new NullPointerException("Sorry, a graph hasn't been provided.");
-        }
+        return givenKnowledge.isViolatedBy(graph);
 
-        for (Edge edge : graph.getEdges()) {
-            if (!edge.isDirected()) {
-                continue;
-            }
-
-            Node from = Edges.getDirectedEdgeTail(edge);
-            Node to = Edges.getDirectedEdgeHead(edge);
-
-            if (isForbidden(from.getName(), to.getName())) {
-                return true;
-            }
-        }
-
-        return false;
+//        if (graph == null) {
+//            throw new NullPointerException("Sorry, a graph hasn't been provided.");
+//        }
+//
+//        for (Edge edge : graph.getEdges()) {
+//            if (!edge.isDirected()) {
+//                continue;
+//            }
+//
+//            Node from = Edges.getDirectedEdgeTail(edge);
+//            Node to = Edges.getDirectedEdgeHead(edge);
+//
+//            if (isForbidden(from.getName(), to.getName())) {
+//                return true;
+//            }
+//        }
+//
+//        return false;
     }
 
     /**
      * Sets the variable in a given tier to the specified list.
      */
     public void setTier(int tier, List<String> vars) {
-        ensureTiers(tier);
-        Set<MyNode> _tier = tierSpecs.get(tier);
-        if (_tier != null) {
-            _tier.clear();
-        }
+        givenKnowledge.setTier(tier, vars);
 
-        for (String var : vars) {
-            addToTier(tier, var);
-        }
+
+//        ensureTiers(tier);
+//        Set<MyNode> _tier = tierSpecs.get(tier);
+//        if (_tier != null) {
+//            _tier.clear();
+//        }
+//
+//        for (String var : vars) {
+//            addToTier(tier, var);
+//        }
     }
 
     /**
      * Adds the given variable name to knowledge. Duplicates are ignored.
      */
     public void addVariable(String varName) {
-        if (!namesToVars.containsKey(varName) && checkVarName(varName)) {
-            MyNode e = new MyNode(varName);
-            myNodes.add(e);
-            namesToVars.put(varName, e);
-        }
+        givenKnowledge.addVariable(varName);
+
+//        if (!namesToVars.containsKey(varName) && checkVarName(varName)) {
+//            MyNode e = new MyNode(varName);
+//            myNodes.add(e);
+//            namesToVars.put(varName, e);
+//        }
     }
 
     /**
      * Removes the given variable from the list of myNodes and all rules.
      */
     public void removeVariable(String name) {
-        if (!checkVarName(name)) {
-            throw new IllegalArgumentException("Bad variable name: " + name);
-        }
+        givenKnowledge.removeVariable(name);
 
-        MyNode MyNode = getVar(name);
 
-        myNodes.remove(MyNode);
-
-        for (OrderedPair<Set<MyNode>> o : forbiddenRulesSpecs) {
-            o.getFirst().remove(MyNode);
-            o.getSecond().remove(MyNode);
-        }
-        for (OrderedPair<Set<MyNode>> o : requiredRulesSpecs) {
-            o.getFirst().remove(MyNode);
-            o.getSecond().remove(MyNode);
-        }
-        for (Set<MyNode> tier : tierSpecs) {
-            tier.remove(MyNode);
-        }
+//        if (!checkVarName(name)) {
+//            throw new IllegalArgumentException("Bad variable name: " + name);
+//        }
+//
+//        MyNode MyNode = getVar(name);
+//
+//        myNodes.remove(MyNode);
+//
+//        for (OrderedPair<Set<MyNode>> o : forbiddenRulesSpecs) {
+//            o.getFirst().remove(MyNode);
+//            o.getSecond().remove(MyNode);
+//        }
+//        for (OrderedPair<Set<MyNode>> o : requiredRulesSpecs) {
+//            o.getFirst().remove(MyNode);
+//            o.getSecond().remove(MyNode);
+//        }
+//        for (Set<MyNode> tier : tierSpecs) {
+//            tier.remove(MyNode);
+//        }
     }
 
     /**
      * @return a copy of the list of variable, in alphabetical order.
      */
     public List<String> getVariables() {
-        List<String> names = new ArrayList<>();
-        for (MyNode MyNode : myNodes) {
-            names.add(MyNode.getName());
-        }
-        Collections.sort(names);
-        return new ArrayList<>(names);
+        return givenKnowledge.getVariables();
+
+
+//        List<String> names = new ArrayList<>();
+//        for (MyNode MyNode : myNodes) {
+//            names.add(MyNode.getName());
+//        }
+//        Collections.sort(names);
+//        return new ArrayList<>(names);
     }
 
     //=====================================PRIVATE METHODS============================//
@@ -1030,40 +1134,42 @@ public final class KnowledgeFask implements TetradSerializable, IKnowledge {
         return _tokens;
     }
 
-    private Set<OrderedPair<Set<MyNode>>> forbiddenTierRules() {
-        Set<OrderedPair<Set<MyNode>>> rules = new HashSet<>();
-
-        for (int i = 0; i < tierSpecs.size(); i++) {
-            if (isTierForbiddenWithin(i)) {
-                rules.add(new OrderedPair<>(tierSpecs.get(i), tierSpecs.get(i)));
-            }
-        }
-
-        for (int i = 0; i < tierSpecs.size(); i++) {
-            for (int j = i + 1; j < tierSpecs.size(); j++) {
-                rules.add(new OrderedPair<>(tierSpecs.get(j), tierSpecs.get(i)));
-            }
-        }
-
-        return rules;
-    }
+//    private Set<OrderedPair<Set<MyNode>>> forbiddenTierRules() {
+//        Set<OrderedPair<Set<MyNode>>> rules = new HashSet<>();
+//
+//        for (int i = 0; i < tierSpecs.size(); i++) {
+//            if (isTierForbiddenWithin(i)) {
+//                rules.add(new OrderedPair<>(tierSpecs.get(i), tierSpecs.get(i)));
+//            }
+//        }
+//
+//        for (int i = 0; i < tierSpecs.size(); i++) {
+//            for (int j = i + 1; j < tierSpecs.size(); j++) {
+//                rules.add(new OrderedPair<>(tierSpecs.get(j), tierSpecs.get(i)));
+//            }
+//        }
+//
+//        return rules;
+//    }
 
     /**
      * Returns the index of the tier of node if it's in a tier, otherwise -1.
      */
     //@Override
     public int isInWhichTier(Node node) {
-        for (int i = 0; i < tierSpecs.size(); i++) {
-            Set<MyNode> tier = tierSpecs.get(i);
+        return givenKnowledge.isInWhichTier(node);
 
-            for (MyNode myNode : tier) {
-                if (myNode.getName().equals(node.getName())) {
-                    return i;
-                }
-            }
-        }
-
-        return -1;
+//        for (int i = 0; i < tierSpecs.size(); i++) {
+//            Set<MyNode> tier = tierSpecs.get(i);
+//
+//            for (MyNode myNode : tier) {
+//                if (myNode.getName().equals(node.getName())) {
+//                    return i;
+//                }
+//            }
+//        }
+//
+//        return -1;
     } // added by DMalinsky for tsFCI on 4/20/16
 
 }

@@ -50,15 +50,15 @@ import java.util.regex.Matcher;
  *
  * @author Joseph Ramsey
  */
-public final class Knowledge2 implements TetradSerializable, IKnowledge {
+public class Knowledge2 implements TetradSerializable, IKnowledge {
 
     static final long serialVersionUID = 23L;
 
     private Set<MyNode> myNodes = new HashSet<>();
 
-    private List<OrderedPair<Set<MyNode>>> forbiddenRulesSpecs;
-    private List<OrderedPair<Set<MyNode>>> requiredRulesSpecs;
-    private List<Set<MyNode>> tierSpecs;
+    List<OrderedPair<Set<MyNode>>> forbiddenRulesSpecs;
+    List<OrderedPair<Set<MyNode>>> requiredRulesSpecs;
+    List<Set<MyNode>> tierSpecs;
 
     // Legacy.
     private final List<KnowledgeGroup> knowledgeGroups = new ArrayList<>();

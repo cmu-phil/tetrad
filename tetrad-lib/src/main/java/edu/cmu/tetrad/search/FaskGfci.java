@@ -90,7 +90,7 @@ public final class FaskGfci implements GraphSearch {
     public Graph search() {
 //        DataSet dataSet = DataUtils.center(this.dataSet);
 
-        IKnowledge knowledge = new KnowledgeFask(dataSet);
+        IKnowledge knowledge = new KnowledgeFask(dataSet, this.knowledge);
 
         GFci fci = new GFci(test, new ScoredIndTest(test));
         fci.setKnowledge(knowledge);
