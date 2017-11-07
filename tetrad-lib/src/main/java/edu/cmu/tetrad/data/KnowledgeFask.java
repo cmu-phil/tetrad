@@ -63,6 +63,7 @@ public final class KnowledgeFask implements TetradSerializable, IKnowledge {
     private final Graph faskGraph;
     private double alpha = 1e-6;
     private double penaltyDiscount = 2;
+    private boolean presumePositiveCoefficients = true;
     private IKnowledge givenKnowledge = new Knowledge2();
 
     private Set<MyNode> myNodes = new HashSet<>();
@@ -93,6 +94,14 @@ public final class KnowledgeFask implements TetradSerializable, IKnowledge {
 
     public void setPenaltyDiscount(double penaltyDiscount) {
         this.penaltyDiscount = penaltyDiscount;
+    }
+
+    public boolean isPresumePositiveCoefficients() {
+        return presumePositiveCoefficients;
+    }
+
+    public void setPresumePositiveCoefficients(boolean presumePositiveCoefficients) {
+        this.presumePositiveCoefficients = presumePositiveCoefficients;
     }
 
     // Wraps a variable name so that it has object identity. For speed.
@@ -417,8 +426,9 @@ public final class KnowledgeFask implements TetradSerializable, IKnowledge {
     private boolean leftright(double[] x, double[] y) {
         double left = cu(x, y, x) / (sqrt(cu(x, x, x) * cu(y, y, x)));
         double right = cu(x, y, y) / (sqrt(cu(x, x, y) * cu(y, y, y)));
-
-        return (/*StatUtils.correlation(x, y) * */(left - right) > 0);
+        double lr = left - right;
+        if (!isPresumePositiveCoefficients()) lr *= StatUtils.correlation(x, y);
+        return lr > 0;
     }
 
     public static double cu(double[] x, double[] y, double[] condition) {

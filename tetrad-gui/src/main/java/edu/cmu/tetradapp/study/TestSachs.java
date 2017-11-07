@@ -32,6 +32,18 @@ public class TestSachs {
         Statistic ahp = new ArrowheadPrecisionIgnore2c();
         Statistic ahr = new ArrowheadRecall();
 
+        List<String> paths = new ArrayList<>();
+
+        paths.add("/Users/user/Downloads/sachs/data/Data Files/txt/1. cd3cd28.txt");
+        paths.add("/Users/user/Downloads/sachs/data/Data Files/txt/2. cd3cd28icam2.txt");
+        paths.add("/Users/user/Downloads/sachs/data/Data Files/txt/3. cd3cd28+aktinhib.txt");
+        paths.add("/Users/user/Downloads/sachs/data/Data Files/txt/4. cd3cd28+g0076.txt");
+        paths.add("/Users/user/Downloads/sachs/data/Data Files/txt/5. cd3cd28+psitect.txt");
+        paths.add("/Users/user/Downloads/sachs/data/Data Files/txt/6. cd3cd28+u0126.txt");
+        paths.add("/Users/user/Downloads/sachs/data/Data Files/txt/7. cd3cd28+ly.txt");
+        paths.add("/Users/user/Downloads/sachs/data/Data Files/txt/8. pma.txt");
+        paths.add("/Users/user/Downloads/sachs/data/Data Files/txt/9. b2camp.txt");
+
         File dir = new File("/Users/user/Downloads/sachs/data/Data Files/main.result/");
 
         File graphFile = new File("/Users/user/Downloads/sachs/graphs/ground.truth.txt");
@@ -76,7 +88,7 @@ public class TestSachs {
                 parameters.set("twoCycleAlpha", 1e-6);
                 parameters.set("presumePositiveCoefficients", true);
 
-                File commonDir = new File("/Users/user/Downloads/sachsgraphs/test/tetrad/penalty." + penalty + "/" + (logged ? "logged" : "raw"));
+                File commonDir = new File("/Users/user/Downloads/sachsgraphs/test/tetrad2/penalty." + penalty + "/" + (logged ? "logged" : "raw"));
                 commonDir.mkdirs();
 
                 for (Algorithm alg : algorithms) {
@@ -91,9 +103,10 @@ public class TestSachs {
 
                     Graph combinedGraph = new EdgeListGraph(groundTruth.getNodes());
 
+
                     for (int f = 0; f < files.size(); f++) {
 
-                        File file = files.get(f);
+                        File file = new File(paths.get(f));
 
                         System.out.println(file.getName());
 
@@ -255,9 +268,21 @@ public class TestSachs {
 
         List<DataSet> dataSets = new ArrayList<>();
 
-        for (int f = 0; f < files.size(); f++) {
+        List<String> paths = new ArrayList<>();
 
-            File file = files.get(f);
+        paths.add("/Users/user/Downloads/sachs/data/Data Files/txt/1. cd3cd28.txt");
+        paths.add("/Users/user/Downloads/sachs/data/Data Files/txt/2. cd3cd28icam2.txt");
+        paths.add("/Users/user/Downloads/sachs/data/Data Files/txt/3. cd3cd28+aktinhib.txt");
+        paths.add("/Users/user/Downloads/sachs/data/Data Files/txt/4. cd3cd28+g0076.txt");
+        paths.add("/Users/user/Downloads/sachs/data/Data Files/txt/5. cd3cd28+psitect.txt");
+        paths.add("/Users/user/Downloads/sachs/data/Data Files/txt/6. cd3cd28+u0126.txt");
+        paths.add("/Users/user/Downloads/sachs/data/Data Files/txt/7. cd3cd28+ly.txt");
+        paths.add("/Users/user/Downloads/sachs/data/Data Files/txt/8. pma.txt");
+        paths.add("/Users/user/Downloads/sachs/data/Data Files/txt/9. b2camp.txt");
+
+        for (int f = 0; f < paths.size(); f++) {
+
+            File file = new File(paths.get(f));
 
             System.out.println(file.getName());
 
@@ -271,40 +296,50 @@ public class TestSachs {
                 throw new RuntimeException(e);
             }
 
+            for (int i = 0; i < data.getNumRows(); i++) {
+                for (int j = 0; j < data.getNumColumns(); j++) {
+                    data.setDouble(i, j, log(0.0001 + data.getDouble(i, j)));
+                }
+            }
+
             dataSets.add(DataUtils.center(data));
         }
 
         DataSet concat = DataUtils.concatenate(dataSets);
 
-        double[][] concatdoubles = concat.getDoubleData().transpose().toArray();
+//        double[][] concatdoubles = concat.getDoubleData().transpose().toArray();
+//
+//        double[] min = new double[concatdoubles.length];
+//
+//        for (int j = 0; j < min.length; j++) min[j] = min(concatdoubles[j]);
+//
+//        DataSet logged = concat.copy();
+//
+//        for (int i = 0; i < concat.getNumRows(); i++) {
+//            for (int j = 0; j < concat.getNumColumns(); j++) {
+//                logged.setDouble(i, j, log(0.0001 - min[j] + concatdoubles[j][i]));
+//            }
+//        }
 
-        double[] min = new double[concatdoubles.length];
-
-        for (int j = 0; j < min.length; j++) min[j] = min(concatdoubles[j]);
-
-        DataSet logged = concat.copy();
-
-        for (int i = 0; i < concat.getNumRows(); i++) {
-            for (int j = 0; j < concat.getNumColumns(); j++) {
-                logged.setDouble(i, j, log(0.0001 - min[j] + concatdoubles[j][i]));
-            }
-        }
-
-        try {
-//            DataWriter.writeRectangularData(concat,
-//                    new FileWriter("/Users/user/Downloads/sachsgraphs/test/concat.main.result.centered.txt"),
-//                    '\t');
-            DataWriter.writeRectangularData(logged,
-                    new FileWriter("/Users/user/Downloads/sachsgraphs/test/concat.main.result.centered.logged.txt"),
-                    '\t');
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+//        try {
+////            DataWriter.writeRectangularData(concat,
+////                    new FileWriter("/Users/user/Downloads/sachsgraphs/test/concat.main.result.centered.txt"),
+////                    '\t');
+////            DataWriter.writeRectangularData(logged,
+////                    new FileWriter("/Users/user/Downloads/sachsgraphs/test/concat.main.result.centered.logged.txt"),
+////                    '\t');
+//
+////            DataWriter.writeRectangularData(concat,
+////                    new FileWriter("/Users/user/Downloads/sachsgraphs/test/concat.main.result.logged.centered.txt"),
+////                    '\t');
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
     }
 
     @Test
     public void test4() {
-        File centeredLoggedFile = new File("/Users/user/Downloads/sachsgraphs/data/combined.centered.data/concat.main.result.centered.logged.txt");
+        File centeredLoggedFile = new File("/Users/user/Downloads/sachsgraphs/data/combined.centered.data/concat.main.result.logged.centered.txt");
         File centeredFile = new File("/Users/user/Downloads/sachsgraphs/data/combined.centered.data/concat.main.result.centered.txt");
 
         List<Algorithm> algorithms = new ArrayList<>();
@@ -329,7 +364,7 @@ public class TestSachs {
                 parameters.set("twoCycleAlpha", 1e-6);
                 parameters.set("presumePositiveCoefficients", true);
 
-                File commonDir = new File("/Users/user/Downloads/sachsgraphs/test/tetrad/centeredcombined/penalty." + penalty + "/" + (logged ? "logged" : "raw"));
+                File commonDir = new File("/Users/user/Downloads/sachsgraphs/test/tetrad2/centeredcombined/penalty." + penalty + "/" + (logged ? "logged" : "raw"));
                 commonDir.mkdirs();
 
                 for (Algorithm alg : algorithms) {

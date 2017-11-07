@@ -176,7 +176,7 @@ public final class Fask implements GraphSearch {
                         Edge edge2 = Edges.directedEdge(Y, X);
 
 //                        edge1.setLineColor(Color.GREEN);
-                        edge2.setLineColor(Color.GREEN);
+//                        edge2.setLineColor(Color.GREEN);
 
                         graph.addEdge(edge1);
                         graph.addEdge(edge2);

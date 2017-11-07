@@ -21,22 +21,8 @@
 
 package edu.cmu.tetrad.search;
 
-import edu.cmu.tetrad.algcomparison.algorithm.oracle.pag.Gfci;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.util.ChoiceGenerator;
-import edu.cmu.tetrad.util.DepthChoiceGenerator;
-import edu.cmu.tetrad.util.StatUtils;
-import edu.cmu.tetrad.util.TetradMatrix;
-import org.apache.commons.math3.linear.SingularMatrixException;
-
-import java.awt.*;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
-import static java.lang.Math.*;
 
 /**
  * Fast adjacency search followed by robust skew orientation. Checks are done for adding
@@ -60,12 +46,14 @@ public final class FaskGfci implements GraphSearch {
     // For the Fast Adjacency Search.
     private int depth = -1;
 
-    // Alpha for orienting 2-cycles. Usually needs to be low.
-    private double twoCycleAlpha = 1e-6;
 
     // Knowledge the the search will obey, of forbidden and required edges.
     private IKnowledge knowledge = new Knowledge2();
     private boolean verbose;
+    // Alpha for orienting 2-cycles. Usually needs to be low.
+    private double twoCycleAlpha = 1e-6;
+    private double penaltyDiscount = 1;
+    private boolean presumePositiveCoefficients = false;
 
     /**
      * @param test    The test used for FAS.
@@ -90,7 +78,10 @@ public final class FaskGfci implements GraphSearch {
     public Graph search() {
 //        DataSet dataSet = DataUtils.center(this.dataSet);
 
-        IKnowledge knowledge = new KnowledgeFask(dataSet, this.knowledge);
+        KnowledgeFask knowledge = new KnowledgeFask(dataSet, this.knowledge);
+        knowledge.setPenaltyDiscount(getPenaltyDiscount());
+        knowledge.setAlpha(getTwoCycleAlpha());
+        knowledge.setPresumePositiveCoefficients(isPresumePositiveCoefficients());
 
         GFci fci = new GFci(test, new ScoredIndTest(test));
         fci.setKnowledge(knowledge);
@@ -137,6 +128,30 @@ public final class FaskGfci implements GraphSearch {
 
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;
+    }
+
+    public double getTwoCycleAlpha() {
+        return twoCycleAlpha;
+    }
+
+    public void setTwoCycleAlpha(double twoCycleAlpha) {
+        this.twoCycleAlpha = twoCycleAlpha;
+    }
+
+    public double getPenaltyDiscount() {
+        return penaltyDiscount;
+    }
+
+    public void setPenaltyDiscount(double penaltyDiscount) {
+        this.penaltyDiscount = penaltyDiscount;
+    }
+
+    public boolean isPresumePositiveCoefficients() {
+        return presumePositiveCoefficients;
+    }
+
+    public void setPresumePositiveCoefficients(boolean presumePositiveCoefficients) {
+        this.presumePositiveCoefficients = presumePositiveCoefficients;
     }
 }
 

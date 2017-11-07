@@ -48,6 +48,9 @@ public class FaskGfci implements Algorithm, HasKnowledge, TakesIndependenceWrapp
         edu.cmu.tetrad.search.FaskGfci search = new edu.cmu.tetrad.search.FaskGfci(
                 test.getTest(dataSet, parameters), (DataSet) dataSet);
         search.setDepth(parameters.getInt("depth"));
+        search.setPenaltyDiscount(parameters.getDouble("penaltyDiscount"));
+        search.setPresumePositiveCoefficients(parameters.getBoolean("presumePositiveCoefficients"));
+        search.setTwoCycleAlpha(parameters.getDouble("twoCycleAlpha"));
         search.setVerbose(parameters.getBoolean("verbose"));
         search.setKnowledge(knowledge);
         return search.search();
@@ -72,11 +75,11 @@ public class FaskGfci implements Algorithm, HasKnowledge, TakesIndependenceWrapp
     public List<String> getParameters() {
         List<String> parameters = test.getParameters();
         parameters.addAll(test.getParameters());
-//        parameters.add("twoCycleAlpha");
-//        parameters.add("presumePositiveCoefficients");
+        parameters.add("penaltyDiscount");
+        parameters.add("presumePositiveCoefficients");
+        parameters.add("twoCycleAlpha");
         parameters.add("faithfulnessAssumed");
         parameters.add("maxDegree");
-//        parameters.add("printStream");
         parameters.add("maxPathLength");
         parameters.add("completeRuleSetUsed");
         // Bootstrapping
