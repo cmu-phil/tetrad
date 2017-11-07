@@ -61,7 +61,7 @@ public class ImagesBDeu implements MultiDataSetAlgorithm, HasKnowledge {
             return search.search();
         } else {
             ImagesBDeu imagesBDeu = new ImagesBDeu();
-            imagesBDeu.setKnowledge(knowledge);
+            //imagesBDeu.setKnowledge(knowledge);
 
             List<DataSet> datasets = new ArrayList<>();
 
@@ -70,6 +70,7 @@ public class ImagesBDeu implements MultiDataSetAlgorithm, HasKnowledge {
             }
             GeneralBootstrapTest search = new GeneralBootstrapTest(datasets, imagesBDeu,
                     parameters.getInt("bootstrapSampleSize"));
+            search.setKnowledge(knowledge);
 
             BootstrapEdgeEnsemble edgeEnsemble = BootstrapEdgeEnsemble.Highest;
             switch (parameters.getInt("bootstrapEnsemble", 1)) {

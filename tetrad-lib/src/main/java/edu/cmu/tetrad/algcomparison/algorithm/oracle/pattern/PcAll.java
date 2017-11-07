@@ -125,7 +125,7 @@ public class PcAll implements Algorithm, TakesInitialGraph, HasKnowledge, TakesI
         } else {
             PcAll pcAll = new PcAll(test, algorithm);
 
-            pcAll.setKnowledge(knowledge);
+            //pcAll.setKnowledge(knowledge);
             if (initialGraph != null) {
                 pcAll.setInitialGraph(initialGraph);
             }
@@ -133,6 +133,7 @@ public class PcAll implements Algorithm, TakesInitialGraph, HasKnowledge, TakesI
             DataSet data = (DataSet) dataSet;
 
             GeneralBootstrapTest search = new GeneralBootstrapTest(data, pcAll, parameters.getInt("bootstrapSampleSize"));
+            search.setKnowledge(knowledge);
 
             BootstrapEdgeEnsemble edgeEnsemble = BootstrapEdgeEnsemble.Highest;
             switch (parameters.getInt("bootstrapEnsemble", 1)) {

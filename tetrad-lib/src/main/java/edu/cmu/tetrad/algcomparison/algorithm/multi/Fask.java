@@ -48,11 +48,12 @@ public class Fask implements Algorithm, HasKnowledge {
 	        return getGraph(search);
 		}else{
     		Fask fask = new Fask(empirical);
-    		fask.setKnowledge(knowledge);
+    		//fask.setKnowledge(knowledge);
     		
     		DataSet data = (DataSet) dataSet;
     		GeneralBootstrapTest search = new GeneralBootstrapTest(data, fask, parameters.getInt("bootstrapSampleSize"));
-    		
+            search.setKnowledge(knowledge);
+
     		BootstrapEdgeEnsemble edgeEnsemble = BootstrapEdgeEnsemble.Highest;
     		switch (parameters.getInt("bootstrapEnsemble", 1)) {
     		case 0:

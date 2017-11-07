@@ -69,13 +69,14 @@ public class PcStableMax implements Algorithm, TakesInitialGraph, HasKnowledge, 
         } else {
             PcStableMax pcStableMax = new PcStableMax(test, compareToTrue);
 
-            pcStableMax.setKnowledge(knowledge);
+            //pcStableMax.setKnowledge(knowledge);
             if (initialGraph != null) {
                 pcStableMax.setInitialGraph(initialGraph);
             }
             DataSet data = (DataSet) dataSet;
             GeneralBootstrapTest search = new GeneralBootstrapTest(data, pcStableMax,
                     parameters.getInt("bootstrapSampleSize"));
+            search.setKnowledge(knowledge);
 
             BootstrapEdgeEnsemble edgeEnsemble = BootstrapEdgeEnsemble.Highest;
             switch (parameters.getInt("bootstrapEnsemble", 1)) {

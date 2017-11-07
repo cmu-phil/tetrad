@@ -51,7 +51,7 @@ public class TsImagesSemBic implements MultiDataSetAlgorithm, HasKnowledge {
             return search.search();
     	}else{
     		TsImagesSemBic tsImagesSemBic = new TsImagesSemBic();
-    		tsImagesSemBic.setKnowledge(knowledge);
+    		//tsImagesSemBic.setKnowledge(knowledge);
     		
     		List<DataSet> datasets = new ArrayList<>();
 
@@ -60,6 +60,7 @@ public class TsImagesSemBic implements MultiDataSetAlgorithm, HasKnowledge {
 			}
 			GeneralBootstrapTest search = new GeneralBootstrapTest(datasets, tsImagesSemBic,
 					parameters.getInt("bootstrapSampleSize"));
+            search.setKnowledge(knowledge);
 
 			BootstrapEdgeEnsemble edgeEnsemble = BootstrapEdgeEnsemble.Highest;
 			switch (parameters.getInt("bootstrapEnsemble", 1)) {

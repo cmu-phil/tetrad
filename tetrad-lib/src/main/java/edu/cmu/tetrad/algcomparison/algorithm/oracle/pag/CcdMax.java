@@ -52,6 +52,7 @@ public class CcdMax implements Algorithm, HasKnowledge {
     		
     		DataSet data = (DataSet) dataSet;
     		GeneralBootstrapTest search = new GeneralBootstrapTest(data, algorithm, parameters.getInt("bootstrapSampleSize"));
+            search.setKnowledge(knowledge);
     		
     		BootstrapEdgeEnsemble edgeEnsemble = BootstrapEdgeEnsemble.Highest;
     		switch (parameters.getInt("bootstrapEnsemble", 1)) {

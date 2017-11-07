@@ -69,6 +69,7 @@ public class TsFci implements Algorithm, TakesInitialGraph, HasKnowledge, TakesI
 
             DataSet data = (DataSet) dataSet;
             GeneralBootstrapTest search = new GeneralBootstrapTest(data, tsFci, parameters.getInt("bootstrapSampleSize"));
+            search.setKnowledge(knowledge);
 
             BootstrapEdgeEnsemble edgeEnsemble = BootstrapEdgeEnsemble.Highest;
             switch (parameters.getInt("bootstrapEnsemble", 1)) {

@@ -66,11 +66,12 @@ public class Pcd implements Algorithm, HasKnowledge {
     	}else{
     		Pcd algorithm = new Pcd();
     		
-    		algorithm.setKnowledge(knowledge);
+    		//algorithm.setKnowledge(knowledge);
 			
 			DataSet data = (DataSet) dataSet;
 			GeneralBootstrapTest search = new GeneralBootstrapTest(data, algorithm,
 					parameters.getInt("bootstrapSampleSize"));
+            search.setKnowledge(knowledge);
 
 			BootstrapEdgeEnsemble edgeEnsemble = BootstrapEdgeEnsemble.Highest;
 			switch (parameters.getInt("bootstrapEnsemble", 1)) {

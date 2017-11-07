@@ -9,6 +9,7 @@ import java.util.concurrent.ForkJoinPool;
 
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.MultiDataSetAlgorithm;
+import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataUtils;
@@ -162,6 +163,7 @@ public class GeneralBootstrapSearch {
 		parameters.set("bootstrapSampleSize", 0);
 		
 		long start, stop;
+		
 		if (!this.runParallel) {
 			// Running in the sequential form
 			if (verbose) {

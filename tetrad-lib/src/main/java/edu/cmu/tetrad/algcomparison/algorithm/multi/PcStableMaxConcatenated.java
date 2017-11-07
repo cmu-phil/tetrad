@@ -58,7 +58,7 @@ public class PcStableMaxConcatenated implements MultiDataSetAlgorithm, HasKnowle
             return search.search();
     	}else{
     		PcStableMaxConcatenated pcStableMaxConcatenated = new PcStableMaxConcatenated(test, compareToTrue);
-    		pcStableMaxConcatenated.setKnowledge(knowledge);
+    		//pcStableMaxConcatenated.setKnowledge(knowledge);
     		
     		List<DataSet> datasets = new ArrayList<>();
 
@@ -67,6 +67,7 @@ public class PcStableMaxConcatenated implements MultiDataSetAlgorithm, HasKnowle
 			}
 			GeneralBootstrapTest search = new GeneralBootstrapTest(datasets, pcStableMaxConcatenated,
 					parameters.getInt("bootstrapSampleSize"));
+            search.setKnowledge(knowledge);
 
 			BootstrapEdgeEnsemble edgeEnsemble = BootstrapEdgeEnsemble.Highest;
 			switch (parameters.getInt("bootstrapEnsemble", 1)) {

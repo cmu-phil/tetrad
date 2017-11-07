@@ -52,13 +52,14 @@ public class Jcpc implements Algorithm, TakesInitialGraph, HasKnowledge {
     	}else{
     		Jcpc jcpc = new Jcpc(test, score);
     		
-    		jcpc.setKnowledge(knowledge);
+    		//jcpc.setKnowledge(knowledge);
 			if (initialGraph != null) {
 				jcpc.setInitialGraph(initialGraph);
 			}
 			DataSet data = (DataSet) dataSet;
 			GeneralBootstrapTest search = new GeneralBootstrapTest(data, jcpc,
 					parameters.getInt("bootstrapSampleSize"));
+            search.setKnowledge(knowledge);
 
 			BootstrapEdgeEnsemble edgeEnsemble = BootstrapEdgeEnsemble.Highest;
 			switch (parameters.getInt("bootstrapEnsemble", 1)) {

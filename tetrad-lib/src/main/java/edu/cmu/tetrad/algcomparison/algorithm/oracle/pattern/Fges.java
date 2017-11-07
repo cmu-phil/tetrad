@@ -95,10 +95,11 @@ public class Fges implements Algorithm, TakesInitialGraph, HasKnowledge, UsesSco
         } else {
             Fges fges = new Fges(score, algorithm);
 
-            fges.setKnowledge(knowledge);
+            //fges.setKnowledge(knowledge);
             DataSet data = (DataSet) dataSet;
             GeneralBootstrapTest search = new GeneralBootstrapTest(data, fges, parameters.getInt("bootstrapSampleSize"));
-
+            search.setKnowledge(knowledge);
+            
             BootstrapEdgeEnsemble edgeEnsemble = BootstrapEdgeEnsemble.Highest;
             switch (parameters.getInt("bootstrapEnsemble", 1)) {
                 case 0:
