@@ -10,6 +10,7 @@ import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.IKnowledge;
 import edu.cmu.tetrad.data.Knowledge2;
 import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.util.Parameters;
 import edu.pitt.dbmi.algo.bootstrap.GeneralBootstrapSearch;
 
@@ -127,6 +128,8 @@ public class GeneralBootstrapSearchRunnable implements Runnable {
 			graph = multiDataSetAlgorithm.search(dataSets, parameters);
 		}
 
+		graph.getEdges();
+		
 		stop = System.currentTimeMillis();
 		if (verbose) {
 			out.println("processing time of bootstrap for a thread was: "
