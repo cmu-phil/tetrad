@@ -55,6 +55,7 @@ import java.awt.event.MouseMotionAdapter;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -2102,6 +2103,7 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
 			IDisplayEdge displayEdge = (DisplayEdge) source;
 			Edge edge = displayEdge.getModelEdge();
 			if (graph.containsEdge(edge)) {
+				// Bootstrapping Distribution
 				List<EdgeTypeProbability> edgeProb = edge.getEdgeTypeProbabilities();
 				if (edgeProb != null) {
 					String endpoint1 = edge.getEndpoint1().toString();
@@ -2123,6 +2125,12 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
 					String text = "<html><b>" + edge.getNode1().getName() + 
 							" " + endpoint1 + "-" + endpoint2 + " " + 
 							edge.getNode2().getName() + "</b><br>";
+					String n1 = edge.getNode1().getName();
+					String n2 = edge.getNode2().getName();
+					List<String> nodes = new ArrayList<>();
+					nodes.add(n1);
+					nodes.add(n2);
+					Collections.sort(nodes);
 					for (EdgeTypeProbability edgeTypeProb : edgeProb) {
 						String _type = "" + edgeTypeProb.getEdgeType();
 						switch (edgeTypeProb.getEdgeType()) {
@@ -2131,24 +2139,31 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
 							break;
 						case ta:
 							_type = "--&gt;";
+							_type = nodes.get(0) + " " + _type + " " + nodes.get(1);
 							break;
 						case at:
 							_type = "&lt;--";
+							_type = nodes.get(0) + " " + _type + " " + nodes.get(1);
 							break;
 						case ca:
 							_type = "o-&gt;";
+							_type = nodes.get(0) + " " + _type + " " + nodes.get(1);
 							break;
 						case ac:
 							_type = "&lt;-o";
+							_type = nodes.get(0) + " " + _type + " " + nodes.get(1);
 							break;
 						case cc:
 							_type = "o-o";
+							_type = nodes.get(0) + " " + _type + " " + nodes.get(1);
 							break;
 						case aa:
 							_type = "&lt;-&gt;";
+							_type = nodes.get(0) + " " + _type + " " + nodes.get(1);
 							break;
 						case tt:
 							_type = "---";
+							_type = nodes.get(0) + " " + _type + " " + nodes.get(1);
 							break;
 						default:
 							break;

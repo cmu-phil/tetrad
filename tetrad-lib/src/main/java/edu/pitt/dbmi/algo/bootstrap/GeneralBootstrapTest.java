@@ -232,6 +232,7 @@ public class GeneralBootstrapTest {
 					out.println("Sampling Search Result (" + i + "):");
 					out.println(GraphUtils.graphToText(g));
 					out.println();
+					i++;
 				}
 			}
 		}
