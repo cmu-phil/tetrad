@@ -2527,11 +2527,18 @@ public final class GraphUtils {
             String[] tokens = line.split("\\s+");
 
             String from = tokens[1];
-            String edge = tokens[2];
-            String to = tokens[3];
 
-            line = line.substring(line.indexOf(to) + to.length()).trim();
+            line = line.substring(line.indexOf(from) + from.length()).trim();
+            tokens = line.split("\\s+");
             
+            String edge = tokens[0];
+
+            line = line.substring(line.indexOf(edge) + edge.length()).trim();
+            tokens = line.split("\\s+");
+            
+            String to = tokens[0];
+            line = line.substring(line.indexOf(to) + to.length()).trim();
+
             Node _from = graph.getNode(from);
             Node _to = graph.getNode(to);
 
