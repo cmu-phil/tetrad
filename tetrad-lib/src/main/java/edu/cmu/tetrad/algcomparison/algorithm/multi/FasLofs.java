@@ -45,11 +45,12 @@ public class FasLofs implements Algorithm, HasKnowledge {
             return getGraph(search);
     	}else{
     		FasLofs fasLofs = new FasLofs(rule);
-    		fasLofs.setKnowledge(knowledge);
+    		//fasLofs.setKnowledge(knowledge);
     		
     		DataSet data = (DataSet) dataSet;
     		GeneralBootstrapTest search = new GeneralBootstrapTest(data, fasLofs, parameters.getInt("bootstrapSampleSize"));
-    		
+            search.setKnowledge(knowledge);
+
     		BootstrapEdgeEnsemble edgeEnsemble = BootstrapEdgeEnsemble.Highest;
     		switch (parameters.getInt("bootstrapEnsemble", 1)) {
     		case 0:

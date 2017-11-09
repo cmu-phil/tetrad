@@ -5,11 +5,13 @@ import java.util.List;
 
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.MultiDataSetAlgorithm;
+import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.IKnowledge;
 import edu.cmu.tetrad.data.Knowledge2;
 import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.util.Parameters;
 import edu.pitt.dbmi.algo.bootstrap.GeneralBootstrapSearch;
 
@@ -121,12 +123,27 @@ public class GeneralBootstrapSearchRunnable implements Runnable {
 		}
 
 		Graph graph = null;
+		
 		if(dataSet != null){
+			if (algorithm instanceof HasKnowledge) {
+                ((HasKnowledge) algorithm).setKnowledge(knowledge);
+        		if (verbose) {
+        			out.println("knowledge being set ... ");
+        		}
+            }
 			graph = algorithm.search(dataSet, parameters);
 		}else{
+			if (multiDataSetAlgorithm instanceof HasKnowledge) {
+                ((HasKnowledge) multiDataSetAlgorithm).setKnowledge(knowledge);
+        		if (verbose) {
+        			out.println("knowledge being set ... ");
+        		}
+            }
 			graph = multiDataSetAlgorithm.search(dataSets, parameters);
 		}
 
+		graph.getEdges();
+		
 		stop = System.currentTimeMillis();
 		if (verbose) {
 			out.println("processing time of bootstrap for a thread was: "

@@ -73,7 +73,7 @@ public class Fci implements Algorithm, TakesInitialGraph, HasKnowledge, TakesInd
             return search.search();
         } else {
             Fci algorithm = new Fci(test);
-            algorithm.setKnowledge(knowledge);
+            //algorithm.setKnowledge(knowledge);
 //          if (initialGraph != null) {
 //      		algorithm.setInitialGraph(initialGraph);
 //  		}
@@ -81,7 +81,8 @@ public class Fci implements Algorithm, TakesInitialGraph, HasKnowledge, TakesInd
             DataSet data = (DataSet) dataSet;
 
             GeneralBootstrapTest search = new GeneralBootstrapTest(data, algorithm, parameters.getInt("bootstrapSampleSize"));
-
+            search.setKnowledge(knowledge);
+            
             BootstrapEdgeEnsemble edgeEnsemble = BootstrapEdgeEnsemble.Highest;
             switch (parameters.getInt("bootstrapEnsemble", 1)) {
                 case 0:

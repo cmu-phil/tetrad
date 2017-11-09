@@ -52,7 +52,7 @@ public class ImagesPcStableMax implements MultiDataSetAlgorithm, HasKnowledge {
             return search.search();
     	}else{
     		ImagesPcStableMax imagesPcStableMax = new ImagesPcStableMax();
-    		imagesPcStableMax.setKnowledge(knowledge);
+    		//imagesPcStableMax.setKnowledge(knowledge);
     		
     		List<DataSet> datasets = new ArrayList<>();
 
@@ -61,6 +61,7 @@ public class ImagesPcStableMax implements MultiDataSetAlgorithm, HasKnowledge {
 			}
 			GeneralBootstrapTest search = new GeneralBootstrapTest(datasets, imagesPcStableMax,
 					parameters.getInt("bootstrapSampleSize"));
+            search.setKnowledge(knowledge);
 
 			BootstrapEdgeEnsemble edgeEnsemble = BootstrapEdgeEnsemble.Highest;
 			switch (parameters.getInt("bootstrapEnsemble", 1)) {

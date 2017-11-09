@@ -61,7 +61,7 @@ public class FaskConcatenated implements MultiDataSetAlgorithm, HasKnowledge {
             return search.search();
         } else {
             FaskConcatenated algorithm = new FaskConcatenated(empirical);
-            algorithm.setKnowledge(knowledge);
+            //algorithm.setKnowledge(knowledge);
 
             List<DataSet> datasets = new ArrayList<>();
 
@@ -70,6 +70,7 @@ public class FaskConcatenated implements MultiDataSetAlgorithm, HasKnowledge {
             }
             GeneralBootstrapTest search = new GeneralBootstrapTest(datasets, algorithm,
                     parameters.getInt("bootstrapSampleSize"));
+            search.setKnowledge(knowledge);
 
             BootstrapEdgeEnsemble edgeEnsemble = BootstrapEdgeEnsemble.Highest;
             switch (parameters.getInt("bootstrapEnsemble", 1)) {

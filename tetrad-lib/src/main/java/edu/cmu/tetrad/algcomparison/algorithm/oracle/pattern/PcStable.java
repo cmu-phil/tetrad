@@ -62,13 +62,14 @@ public class PcStable implements Algorithm, TakesInitialGraph, HasKnowledge, Tak
     	}else{
     		PcStable pcStable = new PcStable(test, algorithm);
     		
-    		pcStable.setKnowledge(knowledge);
+    		//pcStable.setKnowledge(knowledge);
 			if (initialGraph != null) {
 				pcStable.setInitialGraph(initialGraph);
 			}
 			DataSet data = (DataSet) dataSet;
 			GeneralBootstrapTest search = new GeneralBootstrapTest(data, pcStable,
 					parameters.getInt("bootstrapSampleSize"));
+            search.setKnowledge(knowledge);
 
 			BootstrapEdgeEnsemble edgeEnsemble = BootstrapEdgeEnsemble.Highest;
 			switch (parameters.getInt("bootstrapEnsemble", 1)) {
