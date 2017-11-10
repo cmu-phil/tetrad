@@ -25,6 +25,7 @@ import java.util.EnumMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -121,13 +122,11 @@ public class TetradScoreAnnotations {
             return null;
         }
 
-        List<AnnotatedClassWrapper<Score>> results = list.stream()
+        Optional<AnnotatedClassWrapper<Score>> result = list.stream()
                 .filter(e -> e.getAnnotatedClass().getClazz().getName().equals(value))
-                .collect(Collectors.toList());
+                .findFirst();
 
-        return (results.size() == 1)
-                ? results.get(0)
-                : null;
+        return result.isPresent() ? result.get() : null;
     }
 
 }
