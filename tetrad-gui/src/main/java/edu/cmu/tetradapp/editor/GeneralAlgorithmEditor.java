@@ -75,8 +75,11 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.EnumMap;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import javax.swing.*;
 import javax.swing.border.CompoundBorder;
 import javax.swing.border.EmptyBorder;
@@ -109,6 +112,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
     private HpcJobInfo hpcJobInfo;
     private String jsonResult;
     private final List<AnnotatedClassWrapper<edu.cmu.tetrad.annotation.Algorithm>> algoWrappers;
+    private DataType dataType;
     private List<AnnotatedClassWrapper<TestOfIndependence>> tests;
     private List<AnnotatedClassWrapper<Score>> scores;
     private List<AnnotatedClassWrapper<TestOfIndependence>> filteredIndTests;
@@ -118,7 +122,8 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
     private AlgType selectedAlgoType = null;
     private Boolean acceptKnowledgeFile = null;
     private final ButtonGroup algoTypesBtnGrp = new ButtonGroup();
-
+    private Map<AnnotatedClassWrapper<edu.cmu.tetrad.annotation.Algorithm>, Map<DataType, AnnotatedClassWrapper<Score>>> algoDefaultScores = new HashMap<>();
+    private final Map<AnnotatedClassWrapper<edu.cmu.tetrad.annotation.Algorithm>, Map<DataType, AnnotatedClassWrapper<TestOfIndependence>>> algoDefaultTests = new HashMap<>();
     private AnnotatedClassWrapper<edu.cmu.tetrad.annotation.Algorithm> selectedAgloWrapper;
     private final JTextArea algoDescriptionTextArea = new JTextArea();
     private ParameterPanel parametersPanel;
@@ -207,7 +212,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
             }
 
             // Calling setAlgorithm() populates the previous parameters of selected algo
-            setAlgorithm();            
+            setAlgorithm();
         } else {
             // Default to select the first algo name in list
             setSelection();
@@ -222,6 +227,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
 
         // Determine the test/score dropdown menu options based on dataset
         if (dataModelList.isEmpty()) {
+            dataType = DataType.Graph;
             tests = indTestAnno.getNameWrappers(DataType.Graph);
             scores = scoreAnno.getNameWrappers(DataType.Graph);
         } else {
@@ -230,15 +236,19 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
 
             // Covariance dataset is continuous at the same time - Zhou
             if (dataSet.isContinuous() && !(dataSet instanceof ICovarianceMatrix)) {
+                dataType = DataType.Continuous;
                 tests = indTestAnno.getNameWrappers(DataType.Continuous);
                 scores = scoreAnno.getNameWrappers(DataType.Continuous);
             } else if (dataSet.isDiscrete()) {
+                dataType = DataType.Discrete;
                 tests = indTestAnno.getNameWrappers(DataType.Discrete);
                 scores = scoreAnno.getNameWrappers(DataType.Discrete);
             } else if (dataSet.isMixed()) {
+                dataType = DataType.Mixed;
                 tests = indTestAnno.getNameWrappers(DataType.Mixed);
                 scores = scoreAnno.getNameWrappers(DataType.Mixed);
             } else if (dataSet instanceof ICovarianceMatrix) { // Better to add an isCovariance() - Zhou
+                dataType = DataType.Covariance;
                 tests = indTestAnno.getNameWrappers(DataType.Covariance);
                 scores = scoreAnno.getNameWrappers(DataType.Covariance);
             } else {
@@ -591,8 +601,10 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         testDropdown.addActionListener((ActionEvent e) -> {
             // Don't use setAlgorithm() because we don't need to determine if
             // enable/disable the test and score dropdown menus again - Zhou
-            if (testDropdown.getSelectedItem() != null) {            	
-                setTestType(((AnnotatedClassWrapper<TestOfIndependence>) testDropdown.getSelectedItem()).getName());
+            if (testDropdown.getSelectedItem() != null) {
+                AnnotatedClassWrapper<TestOfIndependence> testWrapper = (AnnotatedClassWrapper<TestOfIndependence>) testDropdown.getSelectedItem();
+                setDefaultTest(testWrapper);
+                setTestType(testWrapper.getName());
             }
         });
 
@@ -620,7 +632,9 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
             // Don't use setAlgorithm() because we don't need to determine if
             // enable/disable the test and score dropdown menus again - Zhou
             if (scoreDropdown.getSelectedItem() != null) {
-                setScoreType(((AnnotatedClassWrapper<Score>) scoreDropdown.getSelectedItem()).getName());
+                AnnotatedClassWrapper<Score> scoreWrapper = (AnnotatedClassWrapper<Score>) scoreDropdown.getSelectedItem();
+                setDefaultScore(scoreWrapper);
+                setScoreType(scoreWrapper.getName());
             }
         });
 
@@ -693,9 +707,9 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
 
         // Step 2 button listener
         step2Btn.addActionListener((ActionEvent e) -> {
-        	// Setup the algorithm
-        	setAlgorithm();
-        	        	
+            // Setup the algorithm
+            setAlgorithm();
+
             // Show parameters
             parametersContainer.setVisible(true);
 
@@ -1415,6 +1429,24 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         return independenceWrapper;
     }
 
+    private void setDefaultScore(AnnotatedClassWrapper<Score> scoreWrapper) {
+        Map<DataType, AnnotatedClassWrapper<Score>> map = algoDefaultScores.get(selectedAgloWrapper);
+        if (map == null) {
+            map = new EnumMap(DataType.class);
+            algoDefaultScores.put(selectedAgloWrapper, map);
+        }
+        map.put(dataType, scoreWrapper);
+    }
+
+    private void setDefaultTest(AnnotatedClassWrapper<TestOfIndependence> testWrapper) {
+        Map<DataType, AnnotatedClassWrapper<TestOfIndependence>> map = algoDefaultTests.get(selectedAgloWrapper);
+        if (map == null) {
+            map = new EnumMap(DataType.class);
+            algoDefaultTests.put(selectedAgloWrapper, map);
+        }
+        map.put(dataType, testWrapper);
+    }
+
     // Determine if enable/disable test dropdowns
     private void setTestDropdown() {
         // Get annotated algo
@@ -1423,16 +1455,19 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
 
         // Determine if enable/disable test and score dropdowns
         testDropdown.setEnabled(algoAnno.requireIndependenceTest(algoClass));
-        
-        if(testDropdown.isEnabled() && parameters.getString("testType") != null){
-        	String previousTestType = parameters.getString("testType");
-        	for(int i=0;i<testDropdownModel.getSize();i++){
-        		AnnotatedClassWrapper<TestOfIndependence> test = testDropdownModel.getElementAt(i);
-        		if(test.getName().equalsIgnoreCase(previousTestType)){
-        			testDropdownModel.setSelectedItem(test);
-            		break;
-        		}
-        	}
+        if (testDropdown.isEnabled()) {
+            Map<DataType, AnnotatedClassWrapper<TestOfIndependence>> map = algoDefaultTests.get(selectedAgloWrapper);
+            if (map == null) {
+                map = new EnumMap(DataType.class);
+                algoDefaultTests.put(selectedAgloWrapper, map);
+            }
+
+            AnnotatedClassWrapper<TestOfIndependence> defaultTest = map.get(dataType);
+            if (defaultTest == null) {
+                defaultTest = TetradTestOfIndependenceAnnotations.getInstance().getDefaultNameWrapper(dataType);
+                map.put(dataType, defaultTest);
+            }
+            testDropdownModel.setSelectedItem(defaultTest);
         }
     }
 
@@ -1444,21 +1479,24 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
 
         // Determine if enable/disable test and score dropdowns
         scoreDropdown.setEnabled(algoAnno.requireScore(algoClass));
-        
-        if(scoreDropdown.isEnabled() && parameters.getString("scoreType") != null){
-        	String previousScoreType = parameters.getString("scoreType");
-        	for(int i=0;i<scoreDropdownModel.getSize();i++){
-        		AnnotatedClassWrapper<Score> score = scoreDropdownModel.getElementAt(i);
-        		if(score.getName().equalsIgnoreCase(previousScoreType)){
-        			scoreDropdownModel.setSelectedItem(score);
-            		break;
-        		}
-        	}
+        if (scoreDropdown.isEnabled()) {
+            Map<DataType, AnnotatedClassWrapper<Score>> map = algoDefaultScores.get(selectedAgloWrapper);
+            if (map == null) {
+                map = new EnumMap(DataType.class);
+                algoDefaultScores.put(selectedAgloWrapper, map);
+            }
+
+            AnnotatedClassWrapper<Score> defaultScore = map.get(dataType);
+            if (defaultScore == null) {
+                defaultScore = TetradScoreAnnotations.getInstance().getDefaultNameWrapper(dataType);
+                map.put(dataType, defaultScore);
+            }
+            scoreDropdownModel.setSelectedItem(defaultScore);
         }
     }
-
     // Enable/disable the checkboxes of assumptions
     // based on if there are annotated tests/scores with assumption annotations
+
     private void setAssumptions() {
         // Disable assumptions checkboxes when both test and score dropdowns are disabled
         boolean disabled = !testDropdown.isEnabled() && !scoreDropdown.isEnabled();
@@ -1496,13 +1534,13 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         }
     }
 
-    private void setAlgorithmRunner(){
+    private void setAlgorithmRunner() {
         // Set the algo on each selection change
         Algorithm algorithm = getAlgorithmFromInterface();
 
         runner.setAlgorithm(algorithm);
     }
-    
+
     private Parameters getParameters() {
         return parameters;
     }
