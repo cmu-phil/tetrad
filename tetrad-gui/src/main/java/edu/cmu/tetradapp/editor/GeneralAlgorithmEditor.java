@@ -1465,6 +1465,10 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
             AnnotatedClassWrapper<TestOfIndependence> defaultTest = map.get(dataType);
             if (defaultTest == null) {
                 defaultTest = TetradTestOfIndependenceAnnotations.getInstance().getDefaultNameWrapper(dataType);
+                if (defaultTest == null && testDropdownModel.getSize() > 0) {
+                    defaultTest = testDropdownModel.getElementAt(0);
+                }
+
                 map.put(dataType, defaultTest);
             }
             testDropdownModel.setSelectedItem(defaultTest);
@@ -1489,6 +1493,10 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
             AnnotatedClassWrapper<Score> defaultScore = map.get(dataType);
             if (defaultScore == null) {
                 defaultScore = TetradScoreAnnotations.getInstance().getDefaultNameWrapper(dataType);
+                if (defaultScore == null && scoreDropdownModel.getSize() > 0) {
+                    defaultScore = scoreDropdownModel.getElementAt(0);
+                }
+
                 map.put(dataType, defaultScore);
             }
             scoreDropdownModel.setSelectedItem(defaultScore);
