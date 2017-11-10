@@ -19,6 +19,7 @@
 package edu.cmu.tetrad.annotation;
 
 import edu.cmu.tetrad.data.DataType;
+import edu.cmu.tetrad.util.TetradProperties;
 import java.util.Collections;
 import java.util.EnumMap;
 import java.util.LinkedList;
@@ -95,6 +96,38 @@ public class TetradScoreAnnotations {
 
     public Map<DataType, List<AnnotatedClassWrapper<Score>>> getDataTypeNameWrappers() {
         return Collections.unmodifiableMap(dataTypeNameWrappers);
+    }
+
+    public AnnotatedClassWrapper<Score> getDefaultNameWrapper(DataType dataType) {
+        List<AnnotatedClassWrapper<Score>> list = getNameWrappers(dataType);
+
+        String property;
+        switch (dataType) {
+            case Continuous:
+                property = "datatype.continuous.score.default";
+                break;
+            case Discrete:
+                property = "datatype.discrete.score.default";
+                break;
+            case Mixed:
+                property = "datatype.mixed.score.default";
+                break;
+            default:
+                property = null;
+        }
+
+        String value = TetradProperties.getInstance().getValue(property);
+        if (value == null) {
+            return null;
+        }
+
+        List<AnnotatedClassWrapper<Score>> results = list.stream()
+                .filter(e -> e.getAnnotatedClass().getClazz().getName().equals(value))
+                .collect(Collectors.toList());
+
+        return (results.size() == 1)
+                ? results.get(0)
+                : null;
     }
 
 }
