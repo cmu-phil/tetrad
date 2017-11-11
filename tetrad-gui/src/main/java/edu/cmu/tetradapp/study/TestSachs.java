@@ -2,13 +2,18 @@ package edu.cmu.tetradapp.study;
 
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.multi.Fask;
+import edu.cmu.tetrad.algcomparison.algorithm.multi.ImagesSemBic;
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern.Cpc;
+import edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern.Fges;
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern.Pc;
+import edu.cmu.tetrad.algcomparison.independence.BDeuTest;
 import edu.cmu.tetrad.algcomparison.independence.SemBicTest;
+import edu.cmu.tetrad.algcomparison.score.BdeuScore;
 import edu.cmu.tetrad.algcomparison.score.SemBicScore;
 import edu.cmu.tetrad.algcomparison.statistic.*;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.*;
+import edu.cmu.tetrad.search.SemBicScoreImages;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetradapp.workbench.PngWriter;
 import org.junit.Test;
@@ -76,9 +81,12 @@ public class TestSachs {
         algorithms.add(new edu.cmu.tetrad.algcomparison.algorithm.oracle.pag.Gfci(new SemBicTest(), new SemBicScore()));
         algorithms.add(new edu.cmu.tetrad.algcomparison.algorithm.oracle.pag.FaskGfci(new SemBicTest()));
 
+//        algorithms.add(new edu.cmu.tetrad.algcomparison.algorithm.multi.ImagesSemBic());
+
+
         Parameters parameters = new Parameters();
 
-        double[] penalties = {.1}; // only do one at a time or the computer will freeze up!
+        double[] penalties = {2}; // only do one at a time or the computer will freeze up!
         boolean[] loggedArr = {true, false};
 
         for (double penalty : penalties) {
@@ -87,6 +95,8 @@ public class TestSachs {
                 parameters.set("penaltyDiscount", penalty);
                 parameters.set("twoCycleAlpha", 1e-6);
                 parameters.set("presumePositiveCoefficients", true);
+                parameters.set("numRuns", 1);
+                parameters.set("randomSelectionSize", 9);
 
                 File commonDir = new File("/Users/user/Downloads/sachsgraphs/test/tetrad2/penalty." + penalty + "/" + (logged ? "logged" : "raw"));
                 commonDir.mkdirs();
@@ -421,6 +431,261 @@ public class TestSachs {
                     GraphUtils.circleLayout(combinedGraph, 200, 200, 175);
                     PngWriter.writePng(combinedGraph, new File(pngDir, name + ".png"));
                 }
+            }
+        }
+    }
+
+    @Test
+    public void test5() {
+        Statistic ap = new AdjacencyPrecision();
+        Statistic ar = new AdjacencyRecall();
+        Statistic ahp = new ArrowheadPrecisionIgnore2c();
+        Statistic ahr = new ArrowheadRecall();
+
+        List<String> paths = new ArrayList<>();
+
+        paths.add("/Users/user/Downloads/sachs/data/Data Files/txt/1. cd3cd28.txt");
+        paths.add("/Users/user/Downloads/sachs/data/Data Files/txt/2. cd3cd28icam2.txt");
+        paths.add("/Users/user/Downloads/sachs/data/Data Files/txt/3. cd3cd28+aktinhib.txt");
+        paths.add("/Users/user/Downloads/sachs/data/Data Files/txt/4. cd3cd28+g0076.txt");
+        paths.add("/Users/user/Downloads/sachs/data/Data Files/txt/5. cd3cd28+psitect.txt");
+        paths.add("/Users/user/Downloads/sachs/data/Data Files/txt/6. cd3cd28+u0126.txt");
+        paths.add("/Users/user/Downloads/sachs/data/Data Files/txt/7. cd3cd28+ly.txt");
+        paths.add("/Users/user/Downloads/sachs/data/Data Files/txt/8. pma.txt");
+        paths.add("/Users/user/Downloads/sachs/data/Data Files/txt/9. b2camp.txt");
+
+        File dir = new File("/Users/user/Downloads/sachs/data/Data Files/main.result/");
+
+        File graphFile = new File("/Users/user/Downloads/sachs/graphs/ground.truth.txt");
+//        File file2 = new File("/Users/user/Downloads/sachs/graphs/biologist.view.txt");
+        Graph groundTruth = GraphUtils.loadGraphTxt(graphFile);
+
+        for (Node node : groundTruth.getNodes()) {
+            node.setName(node.getName().toLowerCase());
+            if ("plcg".equals(node.getName())) node.setName("plc");
+        }
+
+        groundTruth = GraphUtils.replaceNodes(groundTruth, groundTruth.getNodes());
+
+        File[] filesArr = dir.listFiles();
+        List<File> files = new ArrayList<>();
+
+        for (File file : filesArr) {
+            if (!file.getName().startsWith(".")) {
+                files.add(file);
+            }
+        }
+
+        List<Algorithm> algorithms = new ArrayList<>();
+
+//        algorithms.add(new Fask(new edu.cmu.tetrad.algcomparison.score.SemBicScore()));
+//        algorithms.add(new Pc(new edu.cmu.tetrad.algcomparison.independence.SemBicTest()));
+//        algorithms.add(new Cpc(new edu.cmu.tetrad.algcomparison.independence.SemBicTest()));
+//        algorithms.add(new edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern.Fges(new SemBicScore()));
+//        algorithms.add(new edu.cmu.tetrad.algcomparison.algorithm.oracle.pag.Fci(new SemBicTest()));
+//        algorithms.add(new edu.cmu.tetrad.algcomparison.algorithm.oracle.pag.Gfci(new SemBicTest(), new SemBicScore()));
+//        algorithms.add(new edu.cmu.tetrad.algcomparison.algorithm.oracle.pag.FaskGfci(new SemBicTest()));
+
+        algorithms.add(new edu.cmu.tetrad.algcomparison.algorithm.multi.ImagesSemBic());
+
+
+        Parameters parameters = new Parameters();
+
+        double[] penalties = {2, 1, .5, .1}; // only do one at a time or the computer will freeze up!
+        boolean[] loggedArr = {true, false};
+
+        for (double penalty : penalties) {
+            for (boolean logged : loggedArr) {
+
+                parameters.set("penaltyDiscount", penalty);
+                parameters.set("twoCycleAlpha", 1e-6);
+                parameters.set("presumePositiveCoefficients", true);
+                parameters.set("numRuns", 1);
+                parameters.set("randomSelectionSize", 9);
+
+                File commonDir = new File("/Users/user/Downloads/sachsgraphs/test/tetrad2/penalty." + penalty + "/" + (logged ? "logged" : "raw"));
+                commonDir.mkdirs();
+
+                for (Algorithm alg : algorithms) {
+                    File algDir = new File(commonDir, alg.getDescription() + (logged ? ".logged" : ".raw"));
+                    algDir.mkdirs();
+
+                    File txtDir = new File(algDir, "txt");
+                    txtDir.mkdirs();
+
+                    File pngDir = new File(algDir, "png");
+                    pngDir.mkdirs();
+
+                    List<DataModel> dataSets = new ArrayList<>();
+
+                    for (int f = 0; f < files.size(); f++) {
+
+                        File file = new File(paths.get(f));
+
+                        System.out.println(file.getName());
+
+                        DataSet data1 = null;
+                        try {
+                            DataReader reader = new DataReader();
+                            reader.setVariablesSupplied(true);
+                            reader.setDelimiter(DelimiterType.WHITESPACE);
+                            data1 = reader.parseTabular(file);
+
+                            for (Node node : data1.getVariables()) {
+                                node.setName(node.getName().toLowerCase());
+                                if ("praf".equals(node.getName())) node.setName("raf");
+                                if ("pmek".equals(node.getName())) node.setName("mek");
+                                if ("plcg".equals(node.getName())) node.setName("plc");
+                                if ("p44/42".equals(node.getName())) node.setName("erk");
+                                if ("pakts473".equals(node.getName())) node.setName("akt");
+                                if ("pjnk".equals(node.getName())) node.setName("jnk");
+                            }
+
+                            if (logged) {
+                                for (int i = 0; i < data1.getNumRows(); i++) {
+                                    for (int j = 0; j < data1.getNumColumns(); j++) {
+                                        data1.setDouble(i, j, log(0.0001 + data1.getDouble(i, j)));
+                                    }
+                                }
+                            }
+
+                            dataSets.add(data1);
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                    }
+
+                    SemBicScoreImages imagesScore = new SemBicScoreImages(dataSets);
+                    imagesScore.setPenaltyDiscount(penalty);
+
+                    edu.cmu.tetrad.search.Fges fges = new edu.cmu.tetrad.search.Fges(imagesScore);
+
+                    Graph combinedGraph = fges.search();
+
+                    System.out.println(combinedGraph.getNodes());
+
+//                    for (Node node : combinedGraph.getNodes()) {
+//                        node.setName(node.getName().toLowerCase());
+//                        if ("praf".equals(node.getName())) node.setName("raf");
+//                        if ("pmek".equals(node.getName())) node.setName("mek");
+//                        if ("plcg".equals(node.getName())) node.setName("plc");
+//                        if ("p44/42".equals(node.getName())) node.setName("erk");
+//                        if ("pakts473".equals(node.getName())) node.setName("akt");
+//                        if ("pjnk".equals(node.getName())) node.setName("jnk");
+//                    }
+
+                    combinedGraph = GraphUtils.replaceNodes(combinedGraph, groundTruth.getNodes());
+
+                    System.out.println(groundTruth);
+                    System.out.println(combinedGraph);
+
+                    System.out.println("AP = " + ap.getValue(groundTruth, combinedGraph));
+                    System.out.println("AR = " + ar.getValue(groundTruth, combinedGraph));
+                    System.out.println("AHP = " + ahp.getValue(groundTruth, combinedGraph));
+                    System.out.println("AHR = " + ahr.getValue(groundTruth, combinedGraph));
+
+                    for (Edge edge : combinedGraph.getEdges()) {
+                        if (!combinedGraph.containsEdge(edge)) combinedGraph.addEdge(edge);
+                    }
+
+                    String name = "combined";
+
+                    if (new File(algDir, name + ".png").exists()) {
+                        continue;
+                    }
+
+                    GraphUtils.circleLayout(combinedGraph, 200, 200, 175);
+
+                    GraphUtils.saveGraph(combinedGraph, new File(txtDir, name + ".txt"), false);
+
+                    PngWriter.writePng(combinedGraph, new File(pngDir, name + ".png"));
+                }
+            }
+        }
+    }
+
+    @Test
+    public void test6() {
+        File centeredLoggedFile = new File("/Users/user/Downloads/sachsgraphs/data/combined.centered.data/concat.main.result.logged.centered.txt");
+        File centeredFile = new File("/Users/user/Downloads/sachsgraphs/data/combined.centered.data/concat.main.result.centered.txt");
+
+        List<Algorithm> algorithms = new ArrayList<>();
+
+//        algorithms.add(new Fask(new edu.cmu.tetrad.algcomparison.score.BdeuScore()));
+        algorithms.add(new Pc(new edu.cmu.tetrad.algcomparison.independence.BDeuTest()));
+        algorithms.add(new Cpc(new edu.cmu.tetrad.algcomparison.independence.BDeuTest()));
+        algorithms.add(new edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern.Fges(new BdeuScore()));
+        algorithms.add(new edu.cmu.tetrad.algcomparison.algorithm.oracle.pag.Fci(new BDeuTest()));
+        algorithms.add(new edu.cmu.tetrad.algcomparison.algorithm.oracle.pag.Gfci(new BDeuTest(), new BdeuScore()));
+//        algorithms.add(new edu.cmu.tetrad.algcomparison.algorithm.oracle.pag.FaskGfci(new BDeuTest()));
+
+        Parameters parameters = new Parameters();
+
+        boolean[] loggedArr = {true, false};
+
+        for (boolean logged : loggedArr) {
+
+            parameters.set("twoCycleAlpha", 1e-6);
+            parameters.set("presumePositiveCoefficients", true);
+
+            File commonDir = new File("/Users/user/Downloads/sachsgraphs/test/tetrad2/centeredcombined/discrete/" + (logged ? "logged" : "raw"));
+            commonDir.mkdirs();
+
+            for (Algorithm alg : algorithms) {
+                File algDir = new File(commonDir, alg.getDescription() + (logged ? ".logged" : ".raw"));
+                algDir.mkdirs();
+
+                File txtDir = new File(algDir, "txt");
+                txtDir.mkdirs();
+
+                File pngDir = new File(algDir, "png");
+                pngDir.mkdirs();
+
+                DataSet data1 = null;
+                try {
+                    DataReader reader = new DataReader();
+                    reader.setVariablesSupplied(true);
+                    reader.setDelimiter(DelimiterType.TAB);
+
+                    if (logged) {
+                        data1 = reader.parseTabular(centeredLoggedFile);
+                        data1 = DataUtils.discretize(data1, 3, false);
+                    } else {
+                        data1 = reader.parseTabular(centeredFile);
+                        data1 = DataUtils.discretize(data1, 3, false);
+                    }
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+
+                Graph combinedGraph = alg.search(data1, parameters);
+
+                System.out.println(combinedGraph.getNodes());
+
+                for (Node node : combinedGraph.getNodes()) {
+                    node.setName(node.getName().toLowerCase());
+                    if ("praf".equals(node.getName())) node.setName("raf");
+                    if ("pmek".equals(node.getName())) node.setName("mek");
+                    if ("plcg".equals(node.getName())) node.setName("plc");
+                    if ("p44/42".equals(node.getName())) node.setName("erk");
+                    if ("pakts473".equals(node.getName())) node.setName("akt");
+                    if ("pjnk".equals(node.getName())) node.setName("jnk");
+                }
+
+                String name = "combined";
+
+                if (new File(algDir, name + ".png").exists()) {
+                    continue;
+                }
+
+                GraphUtils.circleLayout(combinedGraph, 200, 200, 175);
+
+                GraphUtils.saveGraph(combinedGraph, new File(txtDir, name + ".txt"), false);
+
+                PngWriter.writePng(combinedGraph, new File(pngDir, name + ".png"));
+
+                GraphUtils.circleLayout(combinedGraph, 200, 200, 175);
+                PngWriter.writePng(combinedGraph, new File(pngDir, name + ".png"));
             }
         }
     }

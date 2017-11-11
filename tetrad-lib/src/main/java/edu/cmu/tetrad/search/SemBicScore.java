@@ -183,7 +183,11 @@ public class SemBicScore implements Score {
 //            return -a / Math.sqrt(b * c);
 //        } else {
         int[] indices = new int[z.size() + 2];
-        indices[0] = indexMap.get(x);
+        try {
+            indices[0] = indexMap.get(x);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         indices[1] = indexMap.get(y);
         for (int i = 0; i < z.size(); i++) indices[i + 2] = indexMap.get(z.get(i));
         TetradMatrix submatrix = covariances.getSubmatrix(indices).getMatrix();
