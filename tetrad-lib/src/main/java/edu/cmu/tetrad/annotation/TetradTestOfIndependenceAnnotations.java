@@ -19,11 +19,13 @@
 package edu.cmu.tetrad.annotation;
 
 import edu.cmu.tetrad.data.DataType;
+import edu.cmu.tetrad.util.TetradProperties;
 import java.util.Collections;
 import java.util.EnumMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -95,6 +97,39 @@ public class TetradTestOfIndependenceAnnotations {
 
     public Map<DataType, List<AnnotatedClassWrapper<TestOfIndependence>>> getDataTypeNameWrappers() {
         return Collections.unmodifiableMap(dataTypeNameWrappers);
+    }
+
+    public AnnotatedClassWrapper<TestOfIndependence> getDefaultNameWrapper(DataType dataType) {
+        List<AnnotatedClassWrapper<TestOfIndependence>> list = getNameWrappers(dataType);
+        if (list.isEmpty()) {
+            return null;
+        }
+
+        String property;
+        switch (dataType) {
+            case Continuous:
+                property = "datatype.continuous.test.default";
+                break;
+            case Discrete:
+                property = "datatype.discrete.test.default";
+                break;
+            case Mixed:
+                property = "datatype.mixed.test.default";
+                break;
+            default:
+                property = null;
+        }
+
+        String value = TetradProperties.getInstance().getValue(property);
+        if (value == null) {
+            return null;
+        }
+
+        Optional<AnnotatedClassWrapper<TestOfIndependence>> result = list.stream()
+                .filter(e -> e.getAnnotatedClass().getClazz().getName().equals(value))
+                .findFirst();
+
+        return result.isPresent() ? result.get() : null;
     }
 
 }
