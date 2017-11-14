@@ -275,7 +275,7 @@ public final class FciOrient {
         changeFlag = true;
         boolean firstTime = true;
 
-        while (changeFlag) {
+        while (changeFlag && !Thread.currentThread().isInterrupted()) {
             changeFlag = false;
             rulesR1R2cycle(graph);
             ruleR3(graph);
@@ -300,7 +300,7 @@ public final class FciOrient {
             // as possible.
             changeFlag = true;
 
-            while (changeFlag) {
+            while (changeFlag && !Thread.currentThread().isInterrupted()) {
                 changeFlag = false;
                 ruleR6R7(graph);
             }
@@ -308,7 +308,7 @@ public final class FciOrient {
             // Finally, we apply R8-R10 as many times as possible.
             changeFlag = true;
 
-            while (changeFlag) {
+            while (changeFlag && !Thread.currentThread().isInterrupted()) {
                 changeFlag = false;
                 rulesR8R9R10(graph);
             }
@@ -322,6 +322,10 @@ public final class FciOrient {
         List<Node> nodes = graph.getNodes();
 
         for (Node B : nodes) {
+            if (Thread.currentThread().isInterrupted()) {
+                break;
+            }
+
             List<Node> adj = graph.getAdjacentNodes(B);
 
             if (adj.size() < 2) {
@@ -331,7 +335,7 @@ public final class FciOrient {
             ChoiceGenerator cg = new ChoiceGenerator(adj.size(), 2);
             int[] combination;
 
-            while ((combination = cg.next()) != null) {
+            while ((combination = cg.next()) != null && !Thread.currentThread().isInterrupted()) {
                 Node A = adj.get(combination[0]);
                 Node C = adj.get(combination[1]);
 
@@ -442,11 +446,18 @@ public final class FciOrient {
         List<Node> nodes = graph.getNodes();
 
         for (Node B : nodes) {
+            if (Thread.currentThread().isInterrupted()) {
+                break;
+            }
 
             List<Node> intoBArrows = graph.getNodesInTo(B, Endpoint.ARROW);
             List<Node> intoBCircles = graph.getNodesInTo(B, Endpoint.CIRCLE);
 
             for (Node D : intoBCircles) {
+                if (Thread.currentThread().isInterrupted()) {
+                    break;
+                }
+
                 if (intoBArrows.size() < 2) {
                     continue;
                 }
@@ -454,7 +465,7 @@ public final class FciOrient {
                 ChoiceGenerator gen = new ChoiceGenerator(intoBArrows.size(), 2);
                 int[] choice;
 
-                while ((choice = gen.next()) != null) {
+                while ((choice = gen.next()) != null && !Thread.currentThread().isInterrupted()) {
                     Node A = intoBArrows.get(choice[0]);
                     Node C = intoBArrows.get(choice[1]);
 
@@ -684,6 +695,9 @@ public final class FciOrient {
         List<Node> nodes = graph.getNodes();
 
         for (Node b : nodes) {
+            if (Thread.currentThread().isInterrupted()) {
+                break;
+            }
 
             //potential A and C candidate pairs are only those
             // that look like this:   A<-*Bo-*C
@@ -691,7 +705,15 @@ public final class FciOrient {
             List<Node> possC = graph.getNodesInTo(b, Endpoint.CIRCLE);
 
             for (Node a : possA) {
+                if (Thread.currentThread().isInterrupted()) {
+                    break;
+                }
+
                 for (Node c : possC) {
+                    if (Thread.currentThread().isInterrupted()) {
+                        break;
+                    }
+
                     if (!graph.isParentOf(a, c)) {
                         continue;
                     }
@@ -899,9 +921,17 @@ public final class FciOrient {
         List<Node> nodes = graph.getNodes();
 
         for (Node a : nodes) {
+            if (Thread.currentThread().isInterrupted()) {
+                break;
+            }
+
             List<Node> adjacents = graph.getNodesInTo(a, Endpoint.CIRCLE);
 
             for (Node b : adjacents) {
+                if (Thread.currentThread().isInterrupted()) {
+                    break;
+                }
+
                 if (!(graph.getEndpoint(a, b) == Endpoint.CIRCLE)) {
                     continue;
                 }
@@ -910,6 +940,10 @@ public final class FciOrient {
                 List<List<Node>> ucCirclePaths = getUcCirclePaths(a, b, graph);
 
                 for (List<Node> u : ucCirclePaths) {
+                    if (Thread.currentThread().isInterrupted()) {
+                        break;
+                    }
+
                     if (u.size() < 3) {
                         continue;
                     }
@@ -945,6 +979,10 @@ public final class FciOrient {
         List<Node> nodes = graph.getNodes();
 
         for (Node b : nodes) {
+            if (Thread.currentThread().isInterrupted()) {
+                break;
+            }
+
             List<Node> adjacents = graph.getAdjacentNodes(b);
 
             if (adjacents.size() < 2) {
@@ -953,7 +991,7 @@ public final class FciOrient {
 
             ChoiceGenerator cg = new ChoiceGenerator(adjacents.size(), 2);
 
-            for (int[] choice = cg.next(); choice != null; choice = cg.next()) {
+            for (int[] choice = cg.next(); choice != null && !Thread.currentThread().isInterrupted(); choice = cg.next()) {
                 Node a = adjacents.get(choice[0]);
                 Node c = adjacents.get(choice[1]);
 
@@ -1002,9 +1040,17 @@ public final class FciOrient {
         List<Node> nodes = graph.getNodes();
 
         for (Node c : nodes) {
+            if (Thread.currentThread().isInterrupted()) {
+                break;
+            }
+
             List<Node> intoCArrows = graph.getNodesInTo(c, Endpoint.ARROW);
 
             for (Node a : intoCArrows) {
+                if (Thread.currentThread().isInterrupted()) {
+                    break;
+                }
+
                 if (!(graph.getEndpoint(c, a) == Endpoint.CIRCLE)) {
                     continue;
                 }

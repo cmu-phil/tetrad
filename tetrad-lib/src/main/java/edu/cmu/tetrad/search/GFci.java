@@ -114,6 +114,10 @@ public final class GFci implements GraphSearch {
         sepsets = new SepsetsGreedy(fgesGraph, independenceTest, null, maxDegree);
 
         for (Node b : nodes) {
+            if (Thread.currentThread().isInterrupted()) {
+                break;
+            }
+
             List<Node> adjacentNodes = fgesGraph.getAdjacentNodes(b);
 
             if (adjacentNodes.size() < 2) {
@@ -124,6 +128,10 @@ public final class GFci implements GraphSearch {
             int[] combination;
 
             while ((combination = cg.next()) != null) {
+                if (Thread.currentThread().isInterrupted()) {
+                    break;
+                }
+
                 Node a = adjacentNodes.get(combination[0]);
                 Node c = adjacentNodes.get(combination[1]);
 
