@@ -202,7 +202,7 @@ public class DisplayEdge extends JComponent implements IDisplayEdge {
      */
     private final PropertyChangeHandler propertyChangeHandler =
             new PropertyChangeHandler();
-    private boolean dashed = false;
+    private boolean bold = false;
 
     //==========================CONSTRUCTORS============================//
 
@@ -435,12 +435,8 @@ public class DisplayEdge extends JComponent implements IDisplayEdge {
 //        g2d.setStroke(new BasicStroke(1.000001f));
         BasicStroke s;
 
-        if (dashed) {
-            float dash1[] = {10.0f};
-            s = new BasicStroke(1.0f,
-                    BasicStroke.CAP_BUTT,
-                    BasicStroke.JOIN_MITER,
-                    10.0f, dash1, 0.0f);
+        if (bold) {
+            s = new BasicStroke(3.0f);
         } else {
             s = new BasicStroke(getStrokeWidth() + 0.000001f);
         }
@@ -1038,14 +1034,12 @@ public class DisplayEdge extends JComponent implements IDisplayEdge {
         }
     }
 
-    @Override
-    public boolean getDashed() {
-        return dashed;
+    public boolean getBold() {
+        return bold;
     }
 
-    @Override
-    public void setDashed(boolean dashed) {
-        this.dashed = dashed;
+    public void setBold(boolean bold) {
+        this.bold = bold;
     }
 
     public Color getSelectedColor() {

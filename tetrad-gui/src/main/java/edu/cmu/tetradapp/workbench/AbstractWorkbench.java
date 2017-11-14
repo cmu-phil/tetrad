@@ -1276,13 +1276,13 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
 			displayEdge.setHighlighted(true);
 		}
 
-		boolean dashed = modelEdge.getProperties().contains(Edge.Property.nl) || modelEdge.isDashed();
+		boolean bold = modelEdge.getProperties().contains(Edge.Property.nl) || modelEdge.isBold();
 
 		Color lineColor = modelEdge.getProperties().contains(Edge.Property.dd) ? Color.green
 				: graph.isHighlighted(modelEdge) ? displayEdge.getHighlightedColor() : modelEdge.getLineColor();
 
 		displayEdge.setLineColor(lineColor);
-		displayEdge.setDashed(dashed);
+		displayEdge.setBold(bold);
 
 		// Link the display edge to the model edge.
 		getModelEdgesToDisplay().put(modelEdge, displayEdge);
