@@ -1456,22 +1456,33 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         // Determine if enable/disable test and score dropdowns
         testDropdown.setEnabled(algoAnno.requireIndependenceTest(algoClass));
         if (testDropdown.isEnabled()) {
-            Map<DataType, AnnotatedClassWrapper<TestOfIndependence>> map = algoDefaultTests.get(selectedAgloWrapper);
-            if (map == null) {
-                map = new EnumMap(DataType.class);
-                algoDefaultTests.put(selectedAgloWrapper, map);
-            }
-
-            AnnotatedClassWrapper<TestOfIndependence> defaultTest = map.get(dataType);
-            if (defaultTest == null) {
-                defaultTest = TetradTestOfIndependenceAnnotations.getInstance().getDefaultNameWrapper(dataType);
-                if (defaultTest == null && testDropdownModel.getSize() > 0) {
-                    defaultTest = testDropdownModel.getElementAt(0);
+            if(parameters.getString("testType") != null){
+            	String previousTestType = parameters.getString("testType");
+        		for(int i=0;i<testDropdownModel.getSize();i++){
+        			AnnotatedClassWrapper<TestOfIndependence> test = testDropdownModel.getElementAt(i);
+        			if(test.getName().equalsIgnoreCase(previousTestType)){
+        				testDropdownModel.setSelectedItem(test);
+        				break;
+        			}
+        		}
+            }else{
+                Map<DataType, AnnotatedClassWrapper<TestOfIndependence>> map = algoDefaultTests.get(selectedAgloWrapper);
+                if (map == null) {
+                    map = new EnumMap(DataType.class);
+                    algoDefaultTests.put(selectedAgloWrapper, map);
                 }
 
-                map.put(dataType, defaultTest);
+                AnnotatedClassWrapper<TestOfIndependence> defaultTest = map.get(dataType);
+                if (defaultTest == null) {
+                    defaultTest = TetradTestOfIndependenceAnnotations.getInstance().getDefaultNameWrapper(dataType);
+                    if (defaultTest == null && testDropdownModel.getSize() > 0) {
+                        defaultTest = testDropdownModel.getElementAt(0);
+                    }
+
+                    map.put(dataType, defaultTest);
+                }
+                testDropdownModel.setSelectedItem(defaultTest);
             }
-            testDropdownModel.setSelectedItem(defaultTest);
         }
     }
 
@@ -1484,22 +1495,33 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         // Determine if enable/disable test and score dropdowns
         scoreDropdown.setEnabled(algoAnno.requireScore(algoClass));
         if (scoreDropdown.isEnabled()) {
-            Map<DataType, AnnotatedClassWrapper<Score>> map = algoDefaultScores.get(selectedAgloWrapper);
-            if (map == null) {
-                map = new EnumMap(DataType.class);
-                algoDefaultScores.put(selectedAgloWrapper, map);
-            }
-
-            AnnotatedClassWrapper<Score> defaultScore = map.get(dataType);
-            if (defaultScore == null) {
-                defaultScore = TetradScoreAnnotations.getInstance().getDefaultNameWrapper(dataType);
-                if (defaultScore == null && scoreDropdownModel.getSize() > 0) {
-                    defaultScore = scoreDropdownModel.getElementAt(0);
+        	if(parameters.getString("scoreType") != null){
+        		String previousScoreType = parameters.getString("scoreType");
+        		for(int i=0;i<scoreDropdownModel.getSize();i++){
+        			AnnotatedClassWrapper<Score> score = scoreDropdownModel.getElementAt(i);
+        			if(score.getName().equalsIgnoreCase(previousScoreType)){
+        				scoreDropdownModel.setSelectedItem(score);
+        				break;
+        			}
+        		}
+        	}else{
+                Map<DataType, AnnotatedClassWrapper<Score>> map = algoDefaultScores.get(selectedAgloWrapper);
+                if (map == null) {
+                    map = new EnumMap(DataType.class);
+                    algoDefaultScores.put(selectedAgloWrapper, map);
                 }
 
-                map.put(dataType, defaultScore);
-            }
-            scoreDropdownModel.setSelectedItem(defaultScore);
+                AnnotatedClassWrapper<Score> defaultScore = map.get(dataType);
+                if (defaultScore == null) {
+                    defaultScore = TetradScoreAnnotations.getInstance().getDefaultNameWrapper(dataType);
+                    if (defaultScore == null && scoreDropdownModel.getSize() > 0) {
+                        defaultScore = scoreDropdownModel.getElementAt(0);
+                    }
+
+                    map.put(dataType, defaultScore);
+                }
+                scoreDropdownModel.setSelectedItem(defaultScore);
+        	}
         }
     }
     // Enable/disable the checkboxes of assumptions
