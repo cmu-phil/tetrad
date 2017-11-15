@@ -186,7 +186,8 @@ public final class SimulationEditor extends JPanel implements KnowledgeEditable,
         });
 
         setLayout(new BorderLayout());
-        add(tabbedPane, BorderLayout.CENTER);
+        JScrollPane scroll = new JScrollPane(tabbedPane);
+        add(scroll, BorderLayout.CENTER);
 
         JMenuBar menuBar = new JMenuBar();
 

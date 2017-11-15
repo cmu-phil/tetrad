@@ -150,6 +150,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
      * @param runner
      */
     public GeneralAlgorithmEditor(final GeneralAlgorithmRunner runner) {
+    	setLayout(new BorderLayout());
         this.runner = runner;
 
         this.desktop = (TetradDesktop) DesktopController.getInstance();
@@ -196,7 +197,8 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         graphEditor = new GraphSelectionEditor(new GraphSelectionWrapper(runner.getGraphs(), new Parameters()));
 
         // Embed the algo chooser panel into EditorWindow
-        add(createAlgoChooserPanel(), BorderLayout.CENTER);
+        JScrollPane scroll = new JScrollPane(createAlgoChooserPanel());
+        add(scroll, BorderLayout.CENTER);
 
         // Repopulate all the previous selections if reopen the search box
         if (runner.getGraphs() != null && runner.getGraphs().size() > 0) {
@@ -828,7 +830,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         }
 
         JPanel p = new JPanel(new BorderLayout());
-        p.add(container, BoxLayout.X_AXIS);
+        p.add(container, BorderLayout.CENTER);//BoxLayout.X_AXIS);
 
         return p;
     }
