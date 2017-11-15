@@ -53,6 +53,7 @@ public class EdgewiseComparisonEditor extends JPanel {
     //============================ Private Methods =========================//
 
     private void setup() {
+    	setLayout(new BorderLayout());
         java.util.List<Graph> referenceGraphs = comparison.getReferenceGraphs();
         JTabbedPane pane = new JTabbedPane(JTabbedPane.LEFT);
 
@@ -86,15 +87,22 @@ public class EdgewiseComparisonEditor extends JPanel {
 
             pane2.add("Comparison", scroll);
 
-            pane2.add("Target Graph", new GraphEditor(new GraphWrapper(comparison.getTargetGraphs().get(i))).getWorkbench());
-            pane2.add("True Graph", new GraphEditor(new GraphWrapper(comparison.getReferenceGraphs().get(i))).getWorkbench());
+            JScrollPane scrollTarget = new JScrollPane();
+            scrollTarget.setPreferredSize(new Dimension(450, 450));
+            scrollTarget.setViewportView(new GraphEditor(new GraphWrapper(comparison.getTargetGraphs().get(i))).getWorkbench());
+            pane2.add("Target Graph", scrollTarget);
+            
+            JScrollPane scrollTrue = new JScrollPane();
+            scrollTrue.setPreferredSize(new Dimension(450, 450));
+            scrollTrue.setViewportView(new GraphEditor(new GraphWrapper(comparison.getReferenceGraphs().get(i))).getWorkbench());
+            pane2.add("True Graph", scrollTrue);
 
             pane.add("" + (i + 1), pane2);
 
 
         }
 
-        add(pane);
+        add(pane, BorderLayout.CENTER);
     }
 
 }
