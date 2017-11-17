@@ -53,7 +53,7 @@ public class Edge implements TetradSerializable, Comparable {
 	// Usual coloring--set to something else for a special line color.
 	private transient Color lineColor = null;
 
-	private boolean dashed = false;
+	private boolean bold = false;
 
 	private List<Property> properties = new ArrayList<>();
 
@@ -419,12 +419,12 @@ public class Edge implements TetradSerializable, Comparable {
 		}
 	}
 
-	public boolean isDashed() {
-		return dashed;
+	public boolean isBold() {
+		return bold;
 	}
 
-	public void setDashed(boolean dashed) {
-		this.dashed = dashed;
+	public void setBold(boolean bold) {
+		this.bold = bold;
 	}
 
 	public void addProperty(Property property) {

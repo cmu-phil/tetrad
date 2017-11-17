@@ -304,11 +304,11 @@ public final class TestGraphUtils {
                 }
             }
 
-            if (edge.isDashed()) {
-                System.out.println("Dashed");
+            if (edge.isBold()) {
+                System.out.println("Bold");
 
                 if (!existsLatentPath(dag, x1, x2)) {
-                    System.out.println("Edge " + edge + " is falsely dashed.");
+                    System.out.println("Edge " + edge + " is falsely bold.");
                 }
             }
         }

@@ -3561,7 +3561,7 @@ public final class GraphUtils {
             graph.addEdge(edge);
 
             if (existsSemiDirectedPath(x, y, -1, graph)) {
-                edge.addProperty(Edge.Property.nl); // dashed.
+                edge.addProperty(Edge.Property.nl); // bold.
             } else {
                 edge.addProperty(Edge.Property.pl);
             }
