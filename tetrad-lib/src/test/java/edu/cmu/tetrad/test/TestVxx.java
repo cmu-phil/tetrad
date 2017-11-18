@@ -21,28 +21,26 @@
 
 package edu.cmu.tetrad.test;
 
-import edu.cmu.tetrad.algcomparison.Comparison;
-import edu.cmu.tetrad.algcomparison.algorithm.Algorithms;
-import edu.cmu.tetrad.algcomparison.score.SemBicScore;
-import edu.cmu.tetrad.algcomparison.simulation.Simulations;
-import edu.cmu.tetrad.algcomparison.statistic.*;
-import edu.cmu.tetrad.data.DataSet;
-import edu.cmu.tetrad.graph.EdgeListGraph;
-import edu.cmu.tetrad.graph.GraphNode;
-import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.graph.NodeType;
+import edu.cmu.tetrad.data.*;
+import edu.cmu.tetrad.graph.*;
+import edu.cmu.tetrad.search.Fask;
+import edu.cmu.tetrad.search.SearchGraphUtils;
 import edu.cmu.tetrad.sem.GeneralizedSemIm;
 import edu.cmu.tetrad.sem.GeneralizedSemPm;
-import edu.cmu.tetrad.sem.TemplateExpander;
-import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.StatUtils;
+import edu.pitt.dbmi.data.ContinuousTabularDataset;
+import edu.pitt.dbmi.data.Delimiter;
+import edu.pitt.dbmi.data.reader.DataReader;
+import edu.pitt.dbmi.data.reader.tabular.ContinuousTabularDataFileReader;
 import org.junit.Test;
 
+import java.io.File;
+import java.io.IOException;
+import java.io.PrintStream;
+import java.text.DecimalFormat;
+import java.text.NumberFormat;
 import java.text.ParseException;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 import static java.lang.Math.abs;
 
@@ -154,6 +152,109 @@ public class TestVxx {
 
         return exy / n;
     }
+
+    @Test
+    public void testRubenLoop() {
+        try {
+
+            double sumAdjPrec = 0.0;
+            double sumAdjRec = 0.0;
+            double sumAhdPrec = 0.0;
+            double sumAhdRec = 0.0;
+
+            List<DataSet> dataSets = new ArrayList<>();
+
+            for (int i = 1; i <= 60; i++) {
+
+
+                String dir = "/Users/user/Downloads/allpositive 2/";
+                File file = new File(dir, "network_E_coeff" + i + "_allpos.txt");
+
+                NumberFormat nf = new DecimalFormat("00");
+
+//                String dir = "/Users/user/Downloads/allpositive_concat/";
+//                File file = new File(dir, "concat_" + nf.format(i) + ".txt");
+
+                DataReader reader = new ContinuousTabularDataFileReader(file, Delimiter.TAB);
+
+                ContinuousTabularDataset data = (ContinuousTabularDataset) reader.readInData();
+
+                List<Node> variables = new ArrayList<>();
+
+                for (String var : data.getVariables()) {
+                    variables.add(new ContinuousVariable(var));
+                }
+
+                dataSets.add(new BoxDataSet(new DoubleDataBox(data.getData()), variables));
+            }
+
+            int count = 60;
+
+            for (int i = 1; i <= count; i++) {
+                Collections.shuffle(dataSets);
+
+                List<DataSet> toConcatenate = new ArrayList<>();
+
+                for (int j = 0; j < 10; j++) {
+                    toConcatenate.add(DataUtils.standardizeData(dataSets.get(j)));
+                }
+
+                DataSet dataSet = DataUtils.concatenate(toConcatenate);
+
+//                File f = new File("/Users/user/Downloads/stddata.txt");
+//
+//                PrintStream out = new PrintStream(f);
+//
+//                out.println(dataSet);
+//                out.close();
+
+//                dataSet = DataUtils.standardizeData(dataSet);
+
+                edu.cmu.tetrad.search.SemBicScore score = new edu.cmu.tetrad.search.SemBicScore(new CovarianceMatrixOnTheFly(dataSet));
+                score.setPenaltyDiscount(1);
+
+                Fask fask = new Fask(dataSet, score);
+                fask.setAlpha(1e-10);
+                fask.setPenaltyDiscount(2);
+//                fask.setPresumePositiveCoefficients(true);
+
+                Graph G = fask.search();
+
+                System.out.println(G);
+
+                Graph dag = new EdgeListGraph(dataSet.getVariables());
+                Node X = dag.getNode("X");
+                Node Y = dag.getNode("Y");
+                Node Z = dag.getNode("Z");
+
+                dag.addDirectedEdge(Z, X);
+                dag.addDirectedEdge(X, Y);
+                dag.addDirectedEdge(Y, Z);
+
+                GraphUtils.GraphComparison comparison = SearchGraphUtils.getGraphComparison3(G, dag);
+
+                System.out.println(comparison.getAdjPrec() + " " +
+                        comparison.getAdjRec() + " " +
+                        comparison.getAhdPrec() + " " +
+                        comparison.getAhdRec() + " ");
+
+                sumAdjPrec += comparison.getAdjPrec();
+                sumAdjRec += comparison.getAdjRec();
+                sumAhdPrec += comparison.getAhdPrec();
+                sumAhdRec += comparison.getAhdRec();
+            }
+
+            System.out.println("\nAverages:\n");
+
+            System.out.println("AdjPred = " + (sumAdjPrec / count));
+            System.out.println("AdjRec = " + (sumAdjRec / count));
+            System.out.println("AhdPred = " + (sumAhdPrec / count));
+            System.out.println("AhdRec = " + (sumAhdRec / count));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
 
     public static void main(String... args) {
         new TestVxx().TestCycles_Data_fMRI_FASK();

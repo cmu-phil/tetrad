@@ -349,8 +349,8 @@ public class TestSachs {
 
     @Test
     public void test4() {
-        File centeredLoggedFile = new File("/Users/user/Downloads/sachsgraphs/data/combined.centered.data/concat.main.result.logged.centered.txt");
-        File centeredFile = new File("/Users/user/Downloads/sachsgraphs/data/combined.centered.data/concat.main.result.centered.txt");
+        File centeredLoggedFile = new File("/Users/user/Downloads/sachsgraphs/data/combined.centered.data/standardized.concatenated.txt");
+//        File centeredFile = new File("/Users/user/Downloads/sachsgraphs/data/combined.centered.data/concat.main.result.centered.txt");
 
         List<Algorithm> algorithms = new ArrayList<>();
 
@@ -368,69 +368,67 @@ public class TestSachs {
         boolean[] loggedArr = {true, false};
 
         for (double penalty : penalties) {
-            for (boolean logged : loggedArr) {
 
-                parameters.set("penaltyDiscount", penalty);
-                parameters.set("twoCycleAlpha", 1e-6);
-                parameters.set("presumePositiveCoefficients", true);
+            parameters.set("penaltyDiscount", penalty);
+            parameters.set("twoCycleAlpha", 1e-6);
+            parameters.set("presumePositiveCoefficients", true);
 
-                File commonDir = new File("/Users/user/Downloads/sachsgraphs/test/tetrad2/centeredcombined/penalty." + penalty + "/" + (logged ? "logged" : "raw"));
-                commonDir.mkdirs();
+            File commonDir = new File("/Users/user/Downloads/sachsgraphs/test/tetrad2/standardizedcombined/penalty." + penalty + "/" + "raw");
+            commonDir.mkdirs();
 
-                for (Algorithm alg : algorithms) {
-                    File algDir = new File(commonDir, alg.getDescription() + (logged ? ".logged" : ".raw"));
-                    algDir.mkdirs();
+            for (Algorithm alg : algorithms) {
+                File algDir = new File(commonDir, alg.getDescription() + (".raw"));
+                algDir.mkdirs();
 
-                    File txtDir = new File(algDir, "txt");
-                    txtDir.mkdirs();
+                File txtDir = new File(algDir, "txt");
+                txtDir.mkdirs();
 
-                    File pngDir = new File(algDir, "png");
-                    pngDir.mkdirs();
+                File pngDir = new File(algDir, "png");
+                pngDir.mkdirs();
 
-                    DataSet data1 = null;
-                    try {
-                        DataReader reader = new DataReader();
-                        reader.setVariablesSupplied(true);
-                        reader.setDelimiter(DelimiterType.TAB);
+                DataSet data1 = null;
+                try {
+                    DataReader reader = new DataReader();
+                    reader.setVariablesSupplied(true);
+                    reader.setDelimiter(DelimiterType.TAB);
 
-                        if (logged) {
-                            data1 = reader.parseTabular(centeredLoggedFile);
-                        } else {
-                            data1 = reader.parseTabular(centeredFile);
-                        }
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-
-                    Graph combinedGraph = alg.search(data1, parameters);
-
-                    System.out.println(combinedGraph.getNodes());
-
-                    for (Node node : combinedGraph.getNodes()) {
-                        node.setName(node.getName().toLowerCase());
-                        if ("praf".equals(node.getName())) node.setName("raf");
-                        if ("pmek".equals(node.getName())) node.setName("mek");
-                        if ("plcg".equals(node.getName())) node.setName("plc");
-                        if ("p44/42".equals(node.getName())) node.setName("erk");
-                        if ("pakts473".equals(node.getName())) node.setName("akt");
-                        if ("pjnk".equals(node.getName())) node.setName("jnk");
-                    }
-
-                    String name = "combined";
-
-                    if (new File(algDir, name + ".png").exists()) {
-                        continue;
-                    }
-
-                    GraphUtils.circleLayout(combinedGraph, 200, 200, 175);
-
-                    GraphUtils.saveGraph(combinedGraph, new File(txtDir, name + ".txt"), false);
-
-                    PngWriter.writePng(combinedGraph, new File(pngDir, name + ".png"));
-
-                    GraphUtils.circleLayout(combinedGraph, 200, 200, 175);
-                    PngWriter.writePng(combinedGraph, new File(pngDir, name + ".png"));
+//                        if (logged) {
+                    data1 = reader.parseTabular(centeredLoggedFile);
+//                        } else {
+//                            data1 = reader.parseTabular(centeredFile);
+//                        }
+                } catch (IOException e) {
+                    e.printStackTrace();
                 }
+
+                Graph combinedGraph = alg.search(data1, parameters);
+
+                System.out.println(combinedGraph.getNodes());
+
+                for (Node node : combinedGraph.getNodes()) {
+                    node.setName(node.getName().toLowerCase());
+                    if ("praf".equals(node.getName())) node.setName("raf");
+                    if ("pmek".equals(node.getName())) node.setName("mek");
+                    if ("plcg".equals(node.getName())) node.setName("plc");
+                    if ("p44/42".equals(node.getName())) node.setName("erk");
+                    if ("pakts473".equals(node.getName())) node.setName("akt");
+                    if ("pjnk".equals(node.getName())) node.setName("jnk");
+                }
+
+                String name = "combined";
+
+                if (new File(algDir, name + ".png").exists()) {
+                    continue;
+                }
+
+                GraphUtils.circleLayout(combinedGraph, 200, 200, 175);
+
+//                GraphUtils.saveGraph(combinedGraph, new File(txtDir, name + ".txt"), false);
+
+                PngWriter.writePng(combinedGraph, new File(pngDir, name + ".png"));
+
+                GraphUtils.circleLayout(combinedGraph, 200, 200, 175);
+                PngWriter.writePng(combinedGraph, new File(pngDir, name + ".png"));
             }
         }
     }

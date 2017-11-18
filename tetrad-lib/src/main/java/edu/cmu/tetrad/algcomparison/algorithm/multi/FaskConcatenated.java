@@ -146,10 +146,10 @@ public class FaskConcatenated implements MultiDataSetAlgorithm, HasKnowledge, Us
 
     @Override
     public List<String> getParameters() {
-        List<String> parameters = new ArrayList<>();
-        parameters.add("depth");
-        parameters.add("penaltyDiscount");
+        List<String> parameters = score.getParameters();
         parameters.add("twoCycleAlpha");
+        parameters.add("depth");
+//        parameters.add("penaltyDiscount");
         parameters.add("presumePositiveCoefficients");
         parameters.add("numRuns");
         parameters.add("randomSelectionSize");

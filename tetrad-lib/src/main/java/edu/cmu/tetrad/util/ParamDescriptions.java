@@ -254,6 +254,9 @@ public class ParamDescriptions {
                 "Yes if the search should be over parents and children only; No if parents of children should be included",
                 false));
 
+        map.put("doNonparanormalTransform", new ParamDescription(
+                "Yes if a nonparanormal transform of the data should be done",
+                false));
 
 
     }
