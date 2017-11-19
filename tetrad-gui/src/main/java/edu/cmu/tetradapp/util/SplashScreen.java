@@ -18,14 +18,12 @@
 // along with this program; if not, write to the Free Software               //
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA //
 ///////////////////////////////////////////////////////////////////////////////
-
 package edu.cmu.tetradapp.util;
 
 import edu.cmu.tetrad.latest.LatestClient;
-
+import java.awt.*;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
-import java.awt.*;
 
 /**
  * A class that displays a splashScreen with a progress bar. Everything is
@@ -35,9 +33,11 @@ import java.awt.*;
  * @author Juan Casares
  */
 public class SplashScreen {
+
     private static int MAX;
     private static int COUNTER;
     private static SplashWindow WINDOW;
+    private static JFrame frame;
     private boolean skipLatest;
 
     public static void show(Frame parent, String title, int max, boolean skipLatest) {
@@ -45,6 +45,14 @@ public class SplashScreen {
         SplashScreen.COUNTER = 0;
         SplashScreen.MAX = max;
         WINDOW = new SplashWindow(parent, null, title, skipLatest);
+    }
+
+    public static void show(String title, int max, boolean skipLatest) {
+        hide();
+        SplashScreen.COUNTER = 0;
+        SplashScreen.MAX = max;
+        frame = new JFrame();
+        WINDOW = new SplashWindow(frame, null, title, skipLatest);
     }
 
     public static void hide() {
@@ -55,15 +63,14 @@ public class SplashScreen {
         WINDOW.bar.setValue(MAX);
         WINDOW.bar.repaint();
 
-        try {
-            Thread.sleep(2000);
-        } catch (InterruptedException e) {
-            // Ignore.
-        }
-
         WINDOW.setVisible(false);
         WINDOW.dispose();
         WINDOW = null;
+
+        if (frame != null) {
+            frame.dispose();
+            frame = null;
+        }
     }
 
     public static void increment() {
@@ -81,6 +88,7 @@ public class SplashScreen {
     }
 
     private static class SplashWindow extends Window {
+
         final Image splashIm;
         final JProgressBar bar;
 
@@ -108,14 +116,15 @@ public class SplashScreen {
 
             String text = LicenseUtils.copyright();
 
-
             // optionally check if we are running latest version
             String version = this.getClass().getPackage().getImplementationVersion();
-            if (! skipLatest) {
+            if (!skipLatest) {
                 LatestClient latestClient = LatestClient.getInstance();
 
                 // if no version it means we are not running a jar so probably development
-                if (version == null) version = "DEVELOPMENT";
+                if (version == null) {
+                    version = "DEVELOPMENT";
+                }
                 latestClient.checkLatest("tetrad", version);
                 StringBuilder latestResult = new StringBuilder(latestClient.getLatestResult(60));
                 text = text + "\n" + latestResult.toString();
@@ -138,7 +147,6 @@ public class SplashScreen {
             setLocation((screenDim.width - bounds.width) / 2,
                     (screenDim.height - bounds.height) / 2);
 
-
             setVisible(true);
             repaint();
         }
@@ -152,9 +160,3 @@ public class SplashScreen {
         }
     }
 }
-
-
-
-
-
-
