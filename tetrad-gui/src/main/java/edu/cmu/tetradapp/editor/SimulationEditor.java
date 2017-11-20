@@ -50,6 +50,7 @@ import edu.cmu.tetradapp.model.KnowledgeEditable;
 import edu.cmu.tetradapp.model.Simulation;
 import edu.cmu.tetradapp.util.WatchedProcess;
 import java.awt.BorderLayout;
+import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Window;
@@ -129,8 +130,7 @@ public final class SimulationEditor extends JPanel implements KnowledgeEditable,
         }
 
         final JTabbedPane tabbedPane = new JTabbedPane();
-        tabbedPane.addTab("Simulation Setup", getParametersPane(simulation, simulation.getSimulation(),
-                simulation.getParams()));
+        tabbedPane.addTab("Simulation Setup", getParameterPanel(simulation, simulation.getSimulation(), simulation.getParams()));
         tabbedPane.addTab("True Graph", graphEditor);
         tabbedPane.addTab("Data", dataEditor);
         tabbedPane.setPreferredSize(new Dimension(900, 600));
@@ -384,6 +384,7 @@ public final class SimulationEditor extends JPanel implements KnowledgeEditable,
     private void resetPanel(Simulation simulation, String[] graphItems, String[] simulationItems, JTabbedPane tabbedPane) {
         RandomGraph randomGraph;
 
+        simulation.setFixedGraph(false);
         if (simulation.getSourceGraph() != null) {
             randomGraph = new SingleGraph(simulation.getSourceGraph());
         } else {
@@ -470,7 +471,7 @@ public final class SimulationEditor extends JPanel implements KnowledgeEditable,
             }
         }
 
-        tabbedPane.setComponentAt(0, getParametersPane(simulation, simulation.getSimulation(),
+        tabbedPane.setComponentAt(0, getParameterPanel(simulation, simulation.getSimulation(),
                 simulation.getParams()));
     }
 
@@ -535,27 +536,16 @@ public final class SimulationEditor extends JPanel implements KnowledgeEditable,
         return simulationItems;
     }
 
-    private Box getParametersPane(Simulation _simulation,
+    private JPanel getParameterPanel(
+            Simulation simulationModel,
             edu.cmu.tetrad.algcomparison.simulation.Simulation simulation,
             Parameters parameters) {
-        JScrollPane scroll;
-
-        if (simulation != null) {
-            List<String> _params = simulation.getParameters();
-            ParameterPanel comp = new ParameterPanel(_params, parameters);
-            scroll = new JScrollPane(comp);
-        } else {
-            scroll = new JScrollPane();
-        }
-
-        boolean fixedGraph = _simulation.isFixedGraph();
+        boolean fixedGraph = simulationModel.isFixedGraph();
         graphsDropdown.setEnabled(!fixedGraph);
-        simulationsDropdown.setEnabled(!_simulation.isFixedSimulation());
+        simulationsDropdown.setEnabled(!simulationModel.isFixedSimulation());
 
-        scroll.setPreferredSize(scroll.getMaximumSize());
-
-        Box c = Box.createVerticalBox();
-
+        // type of graph options
+        Box graphTypeComp = Box.createVerticalBox();
         if (!fixedGraph) {
             Box f = Box.createHorizontalBox();
             JLabel lf = new JLabel("Type of Graph: ");
@@ -564,44 +554,51 @@ public final class SimulationEditor extends JPanel implements KnowledgeEditable,
             f.add(Box.createGlue());
             graphsDropdown.setMaximumSize(graphsDropdown.getPreferredSize());
             f.add(graphsDropdown);
-            c.add(f);
+            graphTypeComp.add(f);
         }
 
-        Box g = Box.createHorizontalBox();
+        // type of simulation model options
+        Box simModelComp = Box.createHorizontalBox();
         JLabel lg = new JLabel("Type of Simulation Model: ");
         lg.setFont(new Font("Dialog", Font.BOLD, 13));
-        g.add(lg);
-        g.add(Box.createGlue());
+        simModelComp.add(lg);
+        simModelComp.add(Box.createGlue());
         simulationsDropdown.setMaximumSize(simulationsDropdown.getPreferredSize());
-        g.add(simulationsDropdown);
-        c.add(g);
+        simModelComp.add(simulationsDropdown);
+        graphTypeComp.add(simModelComp);
 
-        c.add(Box.createVerticalStrut(15));
+        Box northBox = Box.createVerticalBox();
+        northBox.add(graphTypeComp);
+        northBox.add(Box.createVerticalStrut(10));
+        northBox.add(simModelComp);
 
-        Box d0 = Box.createHorizontalBox();
         JLabel label0 = new JLabel("Parameters for your simulation are listed below. Please adjust the parameter values.");
         label0.setFont(new Font("Dialog", Font.BOLD, 13));
-        d0.add(label0);
-        d0.add(Box.createHorizontalGlue());
-        c.add(d0);
-        c.add(Box.createVerticalStrut(10));
 
-        Box e = Box.createHorizontalBox();
-        e.add(Box.createHorizontalGlue());
-        e.add(c);
-        e.add(Box.createHorizontalGlue());
+        Box paramLbl = Box.createHorizontalBox();
+        paramLbl.add(label0);
+        paramLbl.add(Box.createGlue());
 
-        c.add(scroll);
+        JScrollPane paramScrollPane = (simulation == null)
+                ? new JScrollPane()
+                : new JScrollPane(new ParameterPanel(simulation.getParameters(), parameters));
+        paramScrollPane.setPreferredSize(paramScrollPane.getMaximumSize());
 
-        Box d6 = Box.createHorizontalBox();
-        d6.add(Box.createHorizontalGlue());
-        d6.add(simulateButton);
-        d6.add(Box.createHorizontalGlue());
-        c.add(d6);
+        Box centerBox = Box.createVerticalBox();
+        centerBox.add(paramLbl);
+        centerBox.add(Box.createVerticalStrut(10));
+        centerBox.add(paramScrollPane);
 
-        Box b = Box.createHorizontalBox();
-        b.add(c);
-        return b;
+        Box simBntBox = Box.createVerticalBox();
+        simulateButton.setAlignmentX(Component.CENTER_ALIGNMENT);
+        simBntBox.add(simulateButton);
+
+        JPanel paramPanel = new JPanel(new BorderLayout(10, 10));
+        paramPanel.add(northBox, BorderLayout.NORTH);
+        paramPanel.add(centerBox, BorderLayout.CENTER);
+        paramPanel.add(simBntBox, BorderLayout.SOUTH);
+
+        return paramPanel;
     }
 
     @Override

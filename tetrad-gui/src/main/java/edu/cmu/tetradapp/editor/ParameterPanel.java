@@ -26,8 +26,6 @@ import edu.cmu.tetradapp.util.DoubleTextField;
 import edu.cmu.tetradapp.util.IntTextField;
 import edu.cmu.tetradapp.util.StringTextField;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
@@ -41,17 +39,19 @@ import javax.swing.*;
  */
 class ParameterPanel extends JPanel {
 
+    private static final long serialVersionUID = -5435461313578700194L;
+
     public ParameterPanel(List<String> parametersToEdit, Parameters parameters) {
         Box container = Box.createHorizontalBox();
         Box paramsBox = Box.createVerticalBox();
 
         List<String> removeDuplicates = new ArrayList<>();
 
-        for (String param : parametersToEdit) {
+        parametersToEdit.forEach(param -> {
             if (!removeDuplicates.contains(param)) {
                 removeDuplicates.add(param);
             }
-        }
+        });
 
         parametersToEdit = removeDuplicates;
 
@@ -59,7 +59,7 @@ class ParameterPanel extends JPanel {
         // E.g., EB, R1...R4, RSkew, RSkewE, Skew, SkewE
         if (parametersToEdit.size() > 0) {
             // Add each param row to box
-            for (String parameter : parametersToEdit) {
+            parametersToEdit.forEach((parameter) -> {
                 Object defaultValue = ParamDescriptions.getInstance().get(parameter).getDefaultValue();
 
                 System.out.println(parameter + " " + defaultValue);
@@ -98,7 +98,7 @@ class ParameterPanel extends JPanel {
 
                 // Also add some gap between rows
                 paramsBox.add(Box.createVerticalStrut(10));
-            }
+            });
         } else {
             JLabel noParamsLabel = new JLabel("No parameters to edit");
             paramsBox.add(noParamsLabel);
@@ -110,7 +110,6 @@ class ParameterPanel extends JPanel {
 
         setLayout(new BorderLayout());
         add(container, BorderLayout.CENTER);
-
     }
 
     private DoubleTextField getDoubleField(final String parameter, final Parameters parameters,
@@ -118,28 +117,26 @@ class ParameterPanel extends JPanel {
         final DoubleTextField field = new DoubleTextField(parameters.getDouble(parameter, defaultValue),
                 8, new DecimalFormat("0.####"), new DecimalFormat("0.0#E0"), 0.001);
 
-        field.setFilter(new DoubleTextField.Filter() {
-            public double filter(double value, double oldValue) {
-                if (value == field.getValue()) {
-                    return oldValue;
-                }
-
-                if (value < lowerBound) {
-                    return oldValue;
-                }
-
-                if (value > upperBound) {
-                    return oldValue;
-                }
-
-                try {
-                    parameters.set(parameter, value);
-                } catch (Exception e) {
-                    // Ignore.
-                }
-
-                return value;
+        field.setFilter((value, oldValue) -> {
+            if (value == field.getValue()) {
+                return oldValue;
             }
+
+            if (value < lowerBound) {
+                return oldValue;
+            }
+
+            if (value > upperBound) {
+                return oldValue;
+            }
+
+            try {
+                parameters.set(parameter, value);
+            } catch (Exception e) {
+                // Ignore.
+            }
+
+            return value;
         });
 
         return field;
@@ -149,28 +146,26 @@ class ParameterPanel extends JPanel {
             final int defaultValue, final double lowerBound, final double upperBound) {
         final IntTextField field = new IntTextField(parameters.getInt(parameter, defaultValue), 8);
 
-        field.setFilter(new IntTextField.Filter() {
-            public int filter(int value, int oldValue) {
-                if (value == field.getValue()) {
-                    return oldValue;
-                }
-
-                if (value < lowerBound) {
-                    return oldValue;
-                }
-
-                if (value > upperBound) {
-                    return oldValue;
-                }
-
-                try {
-                    parameters.set(parameter, value);
-                } catch (Exception e) {
-                    // Ignore.
-                }
-
-                return value;
+        field.setFilter((value, oldValue) -> {
+            if (value == field.getValue()) {
+                return oldValue;
             }
+
+            if (value < lowerBound) {
+                return oldValue;
+            }
+
+            if (value > upperBound) {
+                return oldValue;
+            }
+
+            try {
+                parameters.set(parameter, value);
+            } catch (Exception e) {
+                // Ignore.
+            }
+
+            return value;
         });
 
         return field;
@@ -190,14 +185,11 @@ class ParameterPanel extends JPanel {
             box.setSelectedItem("No");
         }
 
-        box.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                if (((JComboBox) e.getSource()).getSelectedItem().equals("Yes")) {
-                    parameters.set(parameter, true);
-                } else {
-                    parameters.set(parameter, false);
-                }
+        box.addActionListener((e) -> {
+            if (((JComboBox) e.getSource()).getSelectedItem().equals("Yes")) {
+                parameters.set(parameter, true);
+            } else {
+                parameters.set(parameter, false);
             }
         });
 
@@ -234,24 +226,18 @@ class ParameterPanel extends JPanel {
         selectionBox.add(noButton);
 
         // Event listener
-        yesButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent actionEvent) {
-                JRadioButton button = (JRadioButton) actionEvent.getSource();
-                if (button.isSelected()) {
-                    parameters.set(parameter, true);
-                }
+        yesButton.addActionListener((e) -> {
+            JRadioButton button = (JRadioButton) e.getSource();
+            if (button.isSelected()) {
+                parameters.set(parameter, true);
             }
         });
 
         // Event listener
-        noButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent actionEvent) {
-                JRadioButton button = (JRadioButton) actionEvent.getSource();
-                if (button.isSelected()) {
-                    parameters.set(parameter, false);
-                }
+        noButton.addActionListener((e) -> {
+            JRadioButton button = (JRadioButton) e.getSource();
+            if (button.isSelected()) {
+                parameters.set(parameter, false);
             }
         });
 
@@ -261,20 +247,18 @@ class ParameterPanel extends JPanel {
     private StringTextField getStringField(final String parameter, final Parameters parameters, String defaultValue) {
         final StringTextField field = new StringTextField(parameters.getString(parameter, defaultValue), 20);
 
-        field.setFilter(new StringTextField.Filter() {
-            public String filter(String value, String oldValue) {
-                if (value.equals(field.getValue().trim())) {
-                    return oldValue;
-                }
-
-                try {
-                    parameters.set(parameter, value);
-                } catch (Exception e) {
-                    // Ignore.
-                }
-
-                return value;
+        field.setFilter((value, oldValue) -> {
+            if (value.equals(field.getValue().trim())) {
+                return oldValue;
             }
+
+            try {
+                parameters.set(parameter, value);
+            } catch (Exception e) {
+                // Ignore.
+            }
+
+            return value;
         });
 
         return field;
