@@ -59,6 +59,7 @@ import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -75,6 +76,7 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
+import javax.swing.SwingUtilities;
 
 /**
  * Displays a simulation and lets the user create new simulations. A simulation
@@ -171,36 +173,43 @@ public final class SimulationEditor extends JPanel implements KnowledgeEditable,
             new WatchedProcess((Window) getTopLevelAncestor()) {
                 @Override
                 public void watch() {
-                    edu.cmu.tetrad.algcomparison.simulation.Simulation _simulation = simulation.getSimulation();
                     try {
-                        _simulation.createData(simulation.getParams());
-                    } catch (Exception exception) {
+                        SwingUtilities.invokeAndWait(() -> {
+                            edu.cmu.tetrad.algcomparison.simulation.Simulation _simulation = simulation.getSimulation();
+                            try {
+                                _simulation.createData(simulation.getParams());
+                            } catch (Exception exception) {
+                                exception.printStackTrace(System.err);
+                                Throwable cause = exception;
+                                if (exception.getCause() != null) {
+                                    cause = exception.getCause();
+                                }
+
+                                if (cause.getMessage() == null || cause.getMessage().trim().isEmpty()) {
+                                    throw new IllegalArgumentException(
+                                            "Exception in creating data. Check model setup or parameter settings.");
+                                } else {
+                                    throw new IllegalArgumentException(cause.getMessage());
+                                }
+                            }
+
+                            firePropertyChange("modelChanged", null, null);
+
+                            List<Graph> graphs = new ArrayList<>();
+                            for (int i = 0; i < _simulation.getNumDataModels(); i++) {
+                                graphs.add(_simulation.getTrueGraph(i));
+                            }
+
+                            graphEditor.replace(graphs);
+                            DataWrapper wrapper = new DataWrapper(new Parameters());
+                            wrapper.setDataModelList(simulation.getDataModelList());
+                            tabbedPane.setComponentAt(2, new DataEditor(wrapper, false, JTabbedPane.LEFT));
+                            tabbedPane.setSelectedIndex(2);
+                        });
+                    } catch (InterruptedException | InvocationTargetException exception) {
                         exception.printStackTrace(System.err);
-                        Throwable cause = exception;
-                        if (exception.getCause() != null) {
-                            cause = exception.getCause();
-                        }
-
-                        if (cause.getMessage() == null || cause.getMessage().trim().isEmpty()) {
-                            throw new IllegalArgumentException(
-                                    "Exception in creating data. Check model setup or parameter settings.");
-                        } else {
-                            throw new IllegalArgumentException(cause.getMessage());
-                        }
+                        Thread.currentThread().interrupt();
                     }
-
-                    firePropertyChange("modelChanged", null, null);
-
-                    List<Graph> graphs = new ArrayList<>();
-                    for (int i = 0; i < _simulation.getNumDataModels(); i++) {
-                        graphs.add(_simulation.getTrueGraph(i));
-                    }
-
-                    graphEditor.replace(graphs);
-                    DataWrapper wrapper = new DataWrapper(new Parameters());
-                    wrapper.setDataModelList(simulation.getDataModelList());
-                    tabbedPane.setComponentAt(2, new DataEditor(wrapper, false, JTabbedPane.LEFT));
-                    tabbedPane.setSelectedIndex(2);
                 }
             };
         });
