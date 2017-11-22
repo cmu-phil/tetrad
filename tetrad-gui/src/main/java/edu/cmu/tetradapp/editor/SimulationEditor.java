@@ -48,6 +48,7 @@ import edu.cmu.tetradapp.model.DataWrapper;
 import edu.cmu.tetradapp.model.GraphSelectionWrapper;
 import edu.cmu.tetradapp.model.KnowledgeEditable;
 import edu.cmu.tetradapp.model.Simulation;
+import edu.cmu.tetradapp.ui.LayeredPanel;
 import edu.cmu.tetradapp.util.WatchedProcess;
 import java.awt.BorderLayout;
 import java.awt.Component;
@@ -132,7 +133,7 @@ public final class SimulationEditor extends JPanel implements KnowledgeEditable,
         }
 
         final JTabbedPane tabbedPane = new JTabbedPane();
-        tabbedPane.addTab("Simulation Setup", getParameterPanel(simulation, simulation.getSimulation(), simulation.getParams()));
+        tabbedPane.addTab("Simulation Setup", new LayeredPanel(getParameterPanel(simulation, simulation.getSimulation(), simulation.getParams())));
         tabbedPane.addTab("True Graph", graphEditor);
         tabbedPane.addTab("Data", dataEditor);
         tabbedPane.setPreferredSize(new Dimension(900, 600));
@@ -480,8 +481,8 @@ public final class SimulationEditor extends JPanel implements KnowledgeEditable,
             }
         }
 
-        tabbedPane.setComponentAt(0, getParameterPanel(simulation, simulation.getSimulation(),
-                simulation.getParams()));
+        tabbedPane.setComponentAt(0, new LayeredPanel(getParameterPanel(simulation, simulation.getSimulation(),
+                simulation.getParams())));
     }
 
     private String[] getSimulationItems(Simulation simulation) {
@@ -553,61 +554,60 @@ public final class SimulationEditor extends JPanel implements KnowledgeEditable,
         graphsDropdown.setEnabled(!fixedGraph);
         simulationsDropdown.setEnabled(!simulationModel.isFixedSimulation());
 
+        Font labelFont = new Font("Dialog", Font.BOLD, 13);
+
+        Box northBox = Box.createVerticalBox();
+
         // type of graph options
-        Box graphTypeComp = Box.createVerticalBox();
         if (!fixedGraph) {
-            Box f = Box.createHorizontalBox();
-            JLabel lf = new JLabel("Type of Graph: ");
-            lf.setFont(new Font("Dialog", Font.BOLD, 13));
-            f.add(lf);
-            f.add(Box.createGlue());
+            Box box = Box.createHorizontalBox();
+            JLabel label = new JLabel("Type of Graph: ");
+            label.setFont(labelFont);
+            box.add(label);
+            box.add(Box.createGlue());
             graphsDropdown.setMaximumSize(graphsDropdown.getPreferredSize());
-            f.add(graphsDropdown);
-            graphTypeComp.add(f);
+            box.add(graphsDropdown);
+            northBox.add(box);
         }
 
         // type of simulation model options
-        Box simModelComp = Box.createHorizontalBox();
-        JLabel lg = new JLabel("Type of Simulation Model: ");
-        lg.setFont(new Font("Dialog", Font.BOLD, 13));
-        simModelComp.add(lg);
-        simModelComp.add(Box.createGlue());
+        Box box = Box.createHorizontalBox();
+        JLabel label = new JLabel("Type of Simulation Model: ");
+        label.setFont(labelFont);
+        box.add(label);
+        box.add(Box.createGlue());
         simulationsDropdown.setMaximumSize(simulationsDropdown.getPreferredSize());
-        simModelComp.add(simulationsDropdown);
-        graphTypeComp.add(simModelComp);
-
-        Box northBox = Box.createVerticalBox();
-        northBox.add(graphTypeComp);
+        box.add(simulationsDropdown);
         northBox.add(Box.createVerticalStrut(10));
-        northBox.add(simModelComp);
+        northBox.add(box);
 
-        JLabel label0 = new JLabel("Parameters for your simulation are listed below. Please adjust the parameter values.");
-        label0.setFont(new Font("Dialog", Font.BOLD, 13));
-
-        Box paramLbl = Box.createHorizontalBox();
-        paramLbl.add(label0);
-        paramLbl.add(Box.createGlue());
+        label = new JLabel("Parameters for your simulation are listed below. Please adjust the parameter values.");
+        label.setFont(labelFont);
+        box = Box.createHorizontalBox();
+        box.add(label);
+        box.add(Box.createGlue());
+        northBox.add(Box.createVerticalStrut(20));
+        northBox.add(box);
+        northBox.add(Box.createVerticalStrut(10));
 
         JScrollPane paramScrollPane = (simulation == null)
                 ? new JScrollPane()
-                : new JScrollPane(new ParameterPanel(simulation.getParameters(), parameters));
-        paramScrollPane.setPreferredSize(paramScrollPane.getMaximumSize());
+                : new JScrollPane(new LayeredPanel(new ParameterPanel(simulation.getParameters(), parameters)));
 
         Box centerBox = Box.createVerticalBox();
-        centerBox.add(paramLbl);
-        centerBox.add(Box.createVerticalStrut(10));
         centerBox.add(paramScrollPane);
 
-        Box simBntBox = Box.createVerticalBox();
+        Box southBox = Box.createVerticalBox();
         simulateButton.setAlignmentX(Component.CENTER_ALIGNMENT);
-        simBntBox.add(simulateButton);
+        southBox.add(Box.createVerticalStrut(10));
+        southBox.add(simulateButton);
 
-        JPanel paramPanel = new JPanel(new BorderLayout(10, 10));
-        paramPanel.add(northBox, BorderLayout.NORTH);
-        paramPanel.add(centerBox, BorderLayout.CENTER);
-        paramPanel.add(simBntBox, BorderLayout.SOUTH);
+        JPanel parameterPanel = new JPanel(new BorderLayout());
+        parameterPanel.add(northBox, BorderLayout.NORTH);
+        parameterPanel.add(centerBox, BorderLayout.CENTER);
+        parameterPanel.add(southBox, BorderLayout.SOUTH);
 
-        return paramPanel;
+        return parameterPanel;
     }
 
     @Override

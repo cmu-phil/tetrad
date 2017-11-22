@@ -25,10 +25,10 @@ import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetradapp.util.DoubleTextField;
 import edu.cmu.tetradapp.util.IntTextField;
 import edu.cmu.tetradapp.util.StringTextField;
-import java.awt.*;
+import java.awt.BorderLayout;
 import java.text.DecimalFormat;
-import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 import javax.swing.*;
 
 /**
@@ -36,36 +36,41 @@ import javax.swing.*;
  * ParamDescriptions.
  *
  * @author Joseph Ramsey
+ * @author Kevin V. Bui (kvb2@pitt.edu)
  */
 class ParameterPanel extends JPanel {
 
     private static final long serialVersionUID = -5435461313578700194L;
 
+    private final List<String> parametersToEdit;
+    private final Parameters parameters;
+
     public ParameterPanel(List<String> parametersToEdit, Parameters parameters) {
-        Box container = Box.createHorizontalBox();
+        this.parametersToEdit = parametersToEdit;
+        this.parameters = parameters;
+
+        initComponents();
+    }
+
+    private void initComponents() {
+        setLayout(new BorderLayout());
+
         Box paramsBox = Box.createVerticalBox();
-
-        List<String> removeDuplicates = new ArrayList<>();
-
-        parametersToEdit.forEach(param -> {
-            if (!removeDuplicates.contains(param)) {
-                removeDuplicates.add(param);
-            }
-        });
-
-        parametersToEdit = removeDuplicates;
 
         // Some algorithms don't have parameters to edit - Zhou
         // E.g., EB, R1...R4, RSkew, RSkewE, Skew, SkewE
-        if (parametersToEdit.size() > 0) {
-            // Add each param row to box
-            parametersToEdit.forEach((parameter) -> {
+        if (parametersToEdit.isEmpty()) {
+            Box row = Box.createHorizontalBox();
+            row.add(new JLabel("No parameters to edit"));
+            paramsBox.add(row);
+        } else {
+            List<String> uniqueParams = parametersToEdit.stream()
+                    .distinct()
+                    .collect(Collectors.toList());
+            uniqueParams.forEach(parameter -> {
                 Object defaultValue = ParamDescriptions.getInstance().get(parameter).getDefaultValue();
 
-                System.out.println(parameter + " " + defaultValue);
-
                 JComponent parameterSelection;
-
                 if (defaultValue instanceof Double) {
                     double lowerBoundDouble = ParamDescriptions.getInstance().get(parameter).getLowerBoundDouble();
                     double upperBoundDouble = ParamDescriptions.getInstance().get(parameter).getUpperBoundDouble();
@@ -99,17 +104,9 @@ class ParameterPanel extends JPanel {
                 // Also add some gap between rows
                 paramsBox.add(Box.createVerticalStrut(10));
             });
-        } else {
-            JLabel noParamsLabel = new JLabel("No parameters to edit");
-            paramsBox.add(noParamsLabel);
         }
 
-        paramsBox.add(Box.createVerticalGlue());
-
-        container.add(paramsBox);
-
-        setLayout(new BorderLayout());
-        add(container, BorderLayout.CENTER);
+        add(paramsBox, BorderLayout.CENTER);
     }
 
     private DoubleTextField getDoubleField(final String parameter, final Parameters parameters,
@@ -176,9 +173,6 @@ class ParameterPanel extends JPanel {
         JComboBox<String> box = new JComboBox<>(new String[]{"Yes", "No"});
 
         boolean aBoolean = parameters.getBoolean(parameter, defaultValue);
-
-        System.out.println(parameter + " = " + aBoolean);
-
         if (aBoolean) {
             box.setSelectedItem("Yes");
         } else {
@@ -211,8 +205,6 @@ class ParameterPanel extends JPanel {
         selectionBtnGrp.add(noButton);
 
         boolean aBoolean = parameters.getBoolean(parameter, defaultValue);
-
-        System.out.println(parameter + " = " + aBoolean);
 
         // Set default selection
         if (aBoolean) {
@@ -263,4 +255,5 @@ class ParameterPanel extends JPanel {
 
         return field;
     }
+
 }
