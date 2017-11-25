@@ -29,14 +29,14 @@ import javax.swing.JPanel;
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
  */
-public class LayeredPanel extends JPanel {
+public class PaddingPanel extends JPanel {
 
     private static final long serialVersionUID = 6075091842307611079L;
 
     private final JPanel innerPanel;
     private final JLayeredPane layeredPane;
 
-    public LayeredPanel(JPanel innerPanel) {
+    public PaddingPanel(JPanel innerPanel) {
         this.innerPanel = (innerPanel == null) ? new JPanel() : innerPanel;
         this.layeredPane = new JLayeredPane();
 

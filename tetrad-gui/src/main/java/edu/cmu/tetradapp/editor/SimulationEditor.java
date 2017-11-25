@@ -48,7 +48,7 @@ import edu.cmu.tetradapp.model.DataWrapper;
 import edu.cmu.tetradapp.model.GraphSelectionWrapper;
 import edu.cmu.tetradapp.model.KnowledgeEditable;
 import edu.cmu.tetradapp.model.Simulation;
-import edu.cmu.tetradapp.ui.LayeredPanel;
+import edu.cmu.tetradapp.ui.PaddingPanel;
 import edu.cmu.tetradapp.util.WatchedProcess;
 import java.awt.BorderLayout;
 import java.awt.Component;
@@ -133,7 +133,7 @@ public final class SimulationEditor extends JPanel implements KnowledgeEditable,
         }
 
         final JTabbedPane tabbedPane = new JTabbedPane();
-        tabbedPane.addTab("Simulation Setup", new LayeredPanel(getParameterPanel(simulation, simulation.getSimulation(), simulation.getParams())));
+        tabbedPane.addTab("Simulation Setup", new PaddingPanel(getParameterPanel(simulation, simulation.getSimulation(), simulation.getParams())));
         tabbedPane.addTab("True Graph", graphEditor);
         tabbedPane.addTab("Data", dataEditor);
         tabbedPane.setPreferredSize(new Dimension(900, 600));
@@ -481,7 +481,7 @@ public final class SimulationEditor extends JPanel implements KnowledgeEditable,
             }
         }
 
-        tabbedPane.setComponentAt(0, new LayeredPanel(getParameterPanel(simulation, simulation.getSimulation(),
+        tabbedPane.setComponentAt(0, new PaddingPanel(getParameterPanel(simulation, simulation.getSimulation(),
                 simulation.getParams())));
     }
 
@@ -592,7 +592,7 @@ public final class SimulationEditor extends JPanel implements KnowledgeEditable,
 
         JScrollPane paramScrollPane = (simulation == null)
                 ? new JScrollPane()
-                : new JScrollPane(new LayeredPanel(new ParameterPanel(simulation.getParameters(), parameters)));
+                : new JScrollPane(new PaddingPanel(new ParameterPanel(simulation.getParameters(), parameters)));
 
         Box centerBox = Box.createVerticalBox();
         centerBox.add(paramScrollPane);
