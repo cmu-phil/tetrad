@@ -29,6 +29,7 @@ import edu.cmu.tetrad.graph.TripleClassifier;
 import edu.cmu.tetrad.util.TetradSerializable;
 import edu.cmu.tetradapp.model.GraphSelectionWrapper;
 import edu.cmu.tetradapp.ui.DualListPanel;
+import edu.cmu.tetradapp.ui.PaddingPanel;
 import edu.cmu.tetradapp.util.DesktopController;
 import edu.cmu.tetradapp.util.ImageUtils;
 import edu.cmu.tetradapp.util.IntTextField;
@@ -242,7 +243,7 @@ public class GraphSelectionEditor extends JPanel implements GraphEditable, Tripl
 //        b1.add(forWorkbenchScrolls);
 //        b.add(b1);
         JSplitPane pane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, true, editorPanel, forWorkbenchScrolls);
-        pane.setDividerLocation(350);
+        pane.setDividerLocation(383);
 
         JPanel buttonPanel = new JPanel();
         buttonPanel.setLayout(new FlowLayout());
@@ -818,13 +819,34 @@ public class GraphSelectionEditor extends JPanel implements GraphEditable, Tripl
         private void initGUI() {
             setLayout(new BorderLayout());
 
-            Box southBox = Box.createVerticalBox();
-            southBox.add(new VariableManipulationPanel(createSortButton(), createTextButton()));
-            southBox.add(new GraphTypePanel(atMost, equals, nField, nLabel, graphTypeCombo));
+            Box box = Box.createHorizontalBox();
+            box.add(new JLabel("Please select variables:"));
+            box.add(Box.createGlue());
 
-            add(new SelectVariableLabelPanel(new JLabel("Please select variables:")), BorderLayout.NORTH);
-            add(new ListPanel(dualListPanel), BorderLayout.CENTER);
-            add(southBox, BorderLayout.SOUTH);
+            Box northComp = Box.createVerticalBox();
+            northComp.add(box);
+            northComp.add(Box.createVerticalStrut(10));
+
+            Box varManupBox = Box.createHorizontalBox();
+            varManupBox.add(new VariableManipulationPanel(createSortButton(), createTextButton()));
+            varManupBox.add(Box.createGlue());
+
+            Box graphTypeBox = Box.createHorizontalBox();
+            graphTypeBox.add(new GraphTypePanel(atMost, equals, nField, nLabel, graphTypeCombo));
+            graphTypeBox.add(Box.createGlue());
+
+            Box southComp = Box.createVerticalBox();
+            southComp.add(Box.createVerticalStrut(20));
+            southComp.add(varManupBox);
+            southComp.add(Box.createVerticalStrut(20));
+            southComp.add(graphTypeBox);
+
+            JPanel mainPanel = new JPanel(new BorderLayout());
+            mainPanel.add(northComp, BorderLayout.NORTH);
+            mainPanel.add(dualListPanel, BorderLayout.CENTER);
+            mainPanel.add(southComp, BorderLayout.SOUTH);
+
+            add(new PaddingPanel(mainPanel), BorderLayout.CENTER);
         }
 
         private class GraphTypePanel extends JPanel {
@@ -860,29 +882,21 @@ public class GraphSelectionEditor extends JPanel implements GraphEditable, Tripl
                 this.setLayout(layout);
                 layout.setHorizontalGroup(
                         layout.createParallelGroup(GroupLayout.Alignment.LEADING)
+                                .addComponent(graphTypeCombo, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
                                 .addGroup(layout.createSequentialGroup()
-                                        .addContainerGap()
-                                        .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
-                                                .addComponent(selectGraphTypeLbl)
-                                                .addComponent(graphTypeCombo, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-                                                .addGroup(layout.createSequentialGroup()
-                                                        .addComponent(nLabel)
-                                                        .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
-                                                        .addComponent(equals)
-                                                        .addPreferredGap(LayoutStyle.ComponentPlacement.UNRELATED)
-                                                        .addComponent(atMost)
-                                                        .addPreferredGap(LayoutStyle.ComponentPlacement.UNRELATED)
-                                                        .addComponent(atLeast)
-                                                        .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
-                                                        .addComponent(nField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)))
-                                        .addContainerGap(GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                                        .addComponent(nLabel)
+                                        .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                                        .addComponent(equals)
+                                        .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                                        .addComponent(atMost)
+                                        .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                                        .addComponent(atLeast)
+                                        .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                                        .addComponent(nField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
                 );
                 layout.setVerticalGroup(
                         layout.createParallelGroup(GroupLayout.Alignment.LEADING)
                                 .addGroup(layout.createSequentialGroup()
-                                        .addContainerGap()
-                                        .addComponent(selectGraphTypeLbl)
-                                        .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
                                         .addComponent(graphTypeCombo, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
                                         .addPreferredGap(LayoutStyle.ComponentPlacement.UNRELATED)
                                         .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
@@ -890,90 +904,7 @@ public class GraphSelectionEditor extends JPanel implements GraphEditable, Tripl
                                                 .addComponent(equals)
                                                 .addComponent(atMost)
                                                 .addComponent(atLeast)
-                                                .addComponent(nField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
-                                        .addContainerGap(GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                );
-            }
-
-        }
-
-        private class ListPanel extends JPanel {
-
-            private static final long serialVersionUID = -3126875502740134359L;
-
-            private final JLayeredPane layeredPane;
-
-            private final DualListPanel dualListPanel;
-
-            public ListPanel(DualListPanel dualListPanel) {
-                this.dualListPanel = dualListPanel;
-                this.layeredPane = new JLayeredPane();
-                initComponents();
-            }
-
-            private void initComponents() {
-                layeredPane.setLayer(dualListPanel, JLayeredPane.DEFAULT_LAYER);
-
-                GroupLayout layeredPaneLayout = new GroupLayout(layeredPane);
-                layeredPane.setLayout(layeredPaneLayout);
-                layeredPaneLayout.setHorizontalGroup(
-                        layeredPaneLayout.createParallelGroup(GroupLayout.Alignment.LEADING)
-                                .addGroup(layeredPaneLayout.createSequentialGroup()
-                                        .addContainerGap()
-                                        .addComponent(dualListPanel, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                        .addContainerGap())
-                );
-                layeredPaneLayout.setVerticalGroup(
-                        layeredPaneLayout.createParallelGroup(GroupLayout.Alignment.LEADING)
-                                .addGroup(layeredPaneLayout.createSequentialGroup()
-                                        .addContainerGap()
-                                        .addComponent(dualListPanel, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                        .addContainerGap())
-                );
-
-                GroupLayout layout = new GroupLayout(this);
-                this.setLayout(layout);
-                layout.setHorizontalGroup(
-                        layout.createParallelGroup(GroupLayout.Alignment.LEADING)
-                                .addComponent(layeredPane, GroupLayout.Alignment.TRAILING)
-                );
-                layout.setVerticalGroup(
-                        layout.createParallelGroup(GroupLayout.Alignment.LEADING)
-                                .addComponent(layeredPane, GroupLayout.Alignment.TRAILING)
-                );
-            }
-
-        }
-
-        private class SelectVariableLabelPanel extends JPanel {
-
-            private static final long serialVersionUID = -6821425700473354111L;
-
-            private final JLabel selectVarLabel;
-
-            public SelectVariableLabelPanel(JLabel selectVarLabel) {
-                this.selectVarLabel = selectVarLabel;
-                initComponents();
-            }
-
-            private void initComponents() {
-                selectVarLabel.setFont(new Font("Dialog", Font.BOLD, 12));
-
-                GroupLayout layout = new GroupLayout(this);
-                this.setLayout(layout);
-                layout.setHorizontalGroup(
-                        layout.createParallelGroup(GroupLayout.Alignment.LEADING)
-                                .addGroup(layout.createSequentialGroup()
-                                        .addContainerGap()
-                                        .addComponent(selectVarLabel)
-                                        .addContainerGap(290, Short.MAX_VALUE))
-                );
-                layout.setVerticalGroup(
-                        layout.createParallelGroup(GroupLayout.Alignment.LEADING)
-                                .addGroup(layout.createSequentialGroup()
-                                        .addContainerGap()
-                                        .addComponent(selectVarLabel)
-                                        .addContainerGap(GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                                                .addComponent(nField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)))
                 );
             }
 
@@ -999,22 +930,18 @@ public class GraphSelectionEditor extends JPanel implements GraphEditable, Tripl
                 layout.setHorizontalGroup(
                         layout.createParallelGroup(GroupLayout.Alignment.LEADING)
                                 .addGroup(layout.createSequentialGroup()
-                                        .addContainerGap()
                                         .addComponent(sortBnt)
-                                        .addGap(18, 18, 18)
-                                        .addComponent(textInputBnt)
-                                        .addContainerGap(100, Short.MAX_VALUE))
+                                        .addGap(30, 30, 30)
+                                        .addComponent(textInputBnt))
                 );
-                layout.linkSize(SwingConstants.HORIZONTAL, new Component[]{sortBnt, textInputBnt});
+
+                layout.linkSize(SwingConstants.HORIZONTAL, new java.awt.Component[]{sortBnt, textInputBnt});
 
                 layout.setVerticalGroup(
                         layout.createParallelGroup(GroupLayout.Alignment.LEADING)
-                                .addGroup(layout.createSequentialGroup()
-                                        .addContainerGap()
-                                        .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
-                                                .addComponent(sortBnt)
-                                                .addComponent(textInputBnt))
-                                        .addContainerGap(GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                                .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
+                                        .addComponent(sortBnt)
+                                        .addComponent(textInputBnt))
                 );
             }
 
