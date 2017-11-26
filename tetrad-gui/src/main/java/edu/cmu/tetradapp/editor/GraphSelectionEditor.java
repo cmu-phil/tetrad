@@ -242,7 +242,7 @@ public class GraphSelectionEditor extends JPanel implements GraphEditable, Tripl
 //        b1.add(b2);
 //        b1.add(forWorkbenchScrolls);
 //        b.add(b1);
-        JSplitPane pane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, true, editorPanel, forWorkbenchScrolls);
+        JSplitPane pane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, true, new PaddingPanel(editorPanel), new PaddingPanel(forWorkbenchScrolls));
         pane.setDividerLocation(383);
 
         JPanel buttonPanel = new JPanel();
@@ -846,7 +846,7 @@ public class GraphSelectionEditor extends JPanel implements GraphEditable, Tripl
             mainPanel.add(dualListPanel, BorderLayout.CENTER);
             mainPanel.add(southComp, BorderLayout.SOUTH);
 
-            add(new PaddingPanel(mainPanel), BorderLayout.CENTER);
+            add(mainPanel, BorderLayout.CENTER);
         }
 
         private class GraphTypePanel extends JPanel {
@@ -855,19 +855,19 @@ public class GraphSelectionEditor extends JPanel implements GraphEditable, Tripl
 
             private final JRadioButton atMost;
             private final JRadioButton equals;
-            private final JTextField nField;
+            private final IntTextField nField;
             private final JLabel nLabel;
             private final ButtonGroup pathLengthBtnGrp;
             private final JLabel selectGraphTypeLbl;
             private final JComboBox<GraphSelectionWrapper.Type> graphTypeCombo;
 
-            public GraphTypePanel(JRadioButton atMost, JRadioButton equals, JTextField nField, JLabel nLabel, JComboBox<GraphSelectionWrapper.Type> graphTypeCombo) {
+            public GraphTypePanel(JRadioButton atMost, JRadioButton equals, IntTextField nField, JLabel nLabel, JComboBox<GraphSelectionWrapper.Type> graphTypeCombo) {
                 this.atMost = atMost;
                 this.equals = equals;
                 this.nField = nField;
                 this.nLabel = nLabel;
                 this.pathLengthBtnGrp = new ButtonGroup();
-                this.selectGraphTypeLbl = new JLabel();
+                this.selectGraphTypeLbl = new JLabel("Please select a graph type:");
                 this.graphTypeCombo = graphTypeCombo;
 
                 initComponents();
@@ -882,6 +882,7 @@ public class GraphSelectionEditor extends JPanel implements GraphEditable, Tripl
                 this.setLayout(layout);
                 layout.setHorizontalGroup(
                         layout.createParallelGroup(GroupLayout.Alignment.LEADING)
+                                .addComponent(selectGraphTypeLbl)
                                 .addComponent(graphTypeCombo, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
                                 .addGroup(layout.createSequentialGroup()
                                         .addComponent(nLabel)
@@ -897,6 +898,8 @@ public class GraphSelectionEditor extends JPanel implements GraphEditable, Tripl
                 layout.setVerticalGroup(
                         layout.createParallelGroup(GroupLayout.Alignment.LEADING)
                                 .addGroup(layout.createSequentialGroup()
+                                        .addComponent(selectGraphTypeLbl)
+                                        .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
                                         .addComponent(graphTypeCombo, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
                                         .addPreferredGap(LayoutStyle.ComponentPlacement.UNRELATED)
                                         .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
