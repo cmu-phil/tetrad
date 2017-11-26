@@ -242,7 +242,7 @@ public class GraphSelectionEditor extends JPanel implements GraphEditable, Tripl
 //        b1.add(b2);
 //        b1.add(forWorkbenchScrolls);
 //        b.add(b1);
-        JSplitPane pane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, true, new PaddingPanel(editorPanel), new PaddingPanel(forWorkbenchScrolls));
+        JSplitPane pane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, true, new PaddingPanel(editorPanel), forWorkbenchScrolls);
         pane.setDividerLocation(383);
 
         JPanel buttonPanel = new JPanel();
