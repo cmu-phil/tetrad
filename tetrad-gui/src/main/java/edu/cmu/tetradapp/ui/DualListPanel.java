@@ -83,14 +83,14 @@ public class DualListPanel extends JPanel {
         buttonPanel.setOpaque(false);
 
         moveToselector.setText(">");
-        moveToselector.setMaximumSize(new Dimension(80, 25));
-        moveToselector.setMinimumSize(new Dimension(80, 25));
-        moveToselector.setPreferredSize(new Dimension(80, 25));
+        moveToselector.setMaximumSize(new Dimension(64, 25));
+        moveToselector.setMinimumSize(new Dimension(64, 25));
+        moveToselector.setPreferredSize(new Dimension(64, 25));
 
         moveToSource.setText("<");
-        moveToSource.setMaximumSize(new Dimension(80, 25));
-        moveToSource.setMinimumSize(new Dimension(80, 25));
-        moveToSource.setPreferredSize(new Dimension(80, 25));
+        moveToSource.setMaximumSize(new Dimension(64, 25));
+        moveToSource.setMinimumSize(new Dimension(64, 25));
+        moveToSource.setPreferredSize(new Dimension(64, 25));
 
         GroupLayout buttonPanelLayout = new GroupLayout(buttonPanel);
         buttonPanel.setLayout(buttonPanelLayout);
