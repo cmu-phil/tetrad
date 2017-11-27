@@ -150,7 +150,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
      * @param runner
      */
     public GeneralAlgorithmEditor(final GeneralAlgorithmRunner runner) {
-    	setLayout(new BorderLayout());
+        setLayout(new BorderLayout());
         this.runner = runner;
 
         this.desktop = (TetradDesktop) DesktopController.getInstance();
@@ -1389,43 +1389,47 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
     }
 
     private ScoreWrapper getScoreWrapper() {
-        AnnotatedClassWrapper<Score> score = (AnnotatedClassWrapper<Score>) scoreDropdown.getSelectedItem();
-        Class scoreClass = score.getAnnotatedClass().getClazz();
-
         ScoreWrapper scoreWrapper = null;
-        try {
-            scoreWrapper = (ScoreWrapper) scoreClass.newInstance();
-        } catch (IllegalAccessException | InstantiationException exception) {
-            // log this error
-            throw new IllegalArgumentException("Please configure that score: " + score);
-        }
 
-        if (scoreWrapper == null) {
-            return null;
+        Object obj = scoreDropdown.getSelectedItem();
+        if (obj != null) {
+            AnnotatedClassWrapper<Score> score = (AnnotatedClassWrapper<Score>) obj;
+            Class scoreClass = score.getAnnotatedClass().getClazz();
+
+            try {
+                scoreWrapper = (ScoreWrapper) scoreClass.newInstance();
+            } catch (IllegalAccessException | InstantiationException exception) {
+                // log this error
+                throw new IllegalArgumentException("Please configure that score: " + score);
+            }
         }
 
         return scoreWrapper;
     }
 
     private IndependenceWrapper getIndependenceWrapper() {
-        AnnotatedClassWrapper<TestOfIndependence> test = (AnnotatedClassWrapper<TestOfIndependence>) testDropdown.getSelectedItem();
-        Class indTestClass = test.getAnnotatedClass().getClazz();
-
         IndependenceWrapper independenceWrapper = null;
-        try {
-            independenceWrapper = (IndependenceWrapper) indTestClass.newInstance();
-        } catch (IllegalAccessException | InstantiationException exception) {
-            // log this error
-        }
 
-        if (independenceWrapper != null) {
-            // do independence test for each dataset
-            List<IndependenceTest> tests = new ArrayList<>();
-            for (DataModel dataModel : runner.getDataModelList()) {
-                IndependenceTest _test = independenceWrapper.getTest(dataModel, parameters);
-                tests.add(_test);
+        Object obj = testDropdown.getSelectedItem();
+        if (obj != null) {
+            AnnotatedClassWrapper<TestOfIndependence> test = (AnnotatedClassWrapper<TestOfIndependence>) obj;
+            Class indTestClass = test.getAnnotatedClass().getClazz();
+
+            try {
+                independenceWrapper = (IndependenceWrapper) indTestClass.newInstance();
+            } catch (IllegalAccessException | InstantiationException exception) {
+                // log this error
             }
-            runner.setIndependenceTests(tests);
+
+            if (independenceWrapper != null) {
+                // do independence test for each dataset
+                List<IndependenceTest> testList = new ArrayList<>();
+                for (DataModel dataModel : runner.getDataModelList()) {
+                    IndependenceTest _test = independenceWrapper.getTest(dataModel, parameters);
+                    testList.add(_test);
+                }
+                runner.setIndependenceTests(testList);
+            }
         }
 
         return independenceWrapper;
@@ -1458,16 +1462,16 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         // Determine if enable/disable test and score dropdowns
         testDropdown.setEnabled(algoAnno.requireIndependenceTest(algoClass));
         if (testDropdown.isEnabled()) {
-            if(parameters.getString("testType") != null){
-            	String previousTestType = parameters.getString("testType");
-        		for(int i=0;i<testDropdownModel.getSize();i++){
-        			AnnotatedClassWrapper<TestOfIndependence> test = testDropdownModel.getElementAt(i);
-        			if(test.getName().equalsIgnoreCase(previousTestType)){
-        				testDropdownModel.setSelectedItem(test);
-        				break;
-        			}
-        		}
-            }else{
+            if (parameters.getString("testType") != null) {
+                String previousTestType = parameters.getString("testType");
+                for (int i = 0; i < testDropdownModel.getSize(); i++) {
+                    AnnotatedClassWrapper<TestOfIndependence> test = testDropdownModel.getElementAt(i);
+                    if (test.getName().equalsIgnoreCase(previousTestType)) {
+                        testDropdownModel.setSelectedItem(test);
+                        break;
+                    }
+                }
+            } else {
                 Map<DataType, AnnotatedClassWrapper<TestOfIndependence>> map = algoDefaultTests.get(selectedAgloWrapper);
                 if (map == null) {
                     map = new EnumMap(DataType.class);
@@ -1497,16 +1501,16 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         // Determine if enable/disable test and score dropdowns
         scoreDropdown.setEnabled(algoAnno.requireScore(algoClass));
         if (scoreDropdown.isEnabled()) {
-        	if(parameters.getString("scoreType") != null){
-        		String previousScoreType = parameters.getString("scoreType");
-        		for(int i=0;i<scoreDropdownModel.getSize();i++){
-        			AnnotatedClassWrapper<Score> score = scoreDropdownModel.getElementAt(i);
-        			if(score.getName().equalsIgnoreCase(previousScoreType)){
-        				scoreDropdownModel.setSelectedItem(score);
-        				break;
-        			}
-        		}
-        	}else{
+            if (parameters.getString("scoreType") != null) {
+                String previousScoreType = parameters.getString("scoreType");
+                for (int i = 0; i < scoreDropdownModel.getSize(); i++) {
+                    AnnotatedClassWrapper<Score> score = scoreDropdownModel.getElementAt(i);
+                    if (score.getName().equalsIgnoreCase(previousScoreType)) {
+                        scoreDropdownModel.setSelectedItem(score);
+                        break;
+                    }
+                }
+            } else {
                 Map<DataType, AnnotatedClassWrapper<Score>> map = algoDefaultScores.get(selectedAgloWrapper);
                 if (map == null) {
                     map = new EnumMap(DataType.class);
@@ -1523,7 +1527,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
                     map.put(dataType, defaultScore);
                 }
                 scoreDropdownModel.setSelectedItem(defaultScore);
-        	}
+            }
         }
     }
     // Enable/disable the checkboxes of assumptions
@@ -1555,8 +1559,14 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
             parameters.set("algName", selectedAgloWrapper.getName());
             parameters.set("algType", selectedAgloWrapper.getAnnotatedClass().getAnnotation().algoType());
 
-            setTestType(((AnnotatedClassWrapper<TestOfIndependence>) testDropdown.getSelectedItem()).getName());
-            setScoreType(((AnnotatedClassWrapper<Score>) scoreDropdown.getSelectedItem()).getName());
+            Object obj = testDropdown.getSelectedItem();
+            if (obj != null) {
+                setTestType(((AnnotatedClassWrapper<TestOfIndependence>) obj).getName());
+            }
+            obj = scoreDropdown.getSelectedItem();
+            if (obj != null) {
+                setScoreType(((AnnotatedClassWrapper<Score>) obj).getName());
+            }
 
             // Also need to update the corresponding parameters
             parametersPanel = new ParameterPanel(runner.getAlgorithm().getParameters(), getParameters());
