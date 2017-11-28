@@ -383,7 +383,8 @@ public final class SimulationEditor extends JPanel implements KnowledgeEditable,
 
     private void resetPanel(Simulation simulation, String[] graphItems, String[] simulationItems, JTabbedPane tabbedPane) {
         RandomGraph randomGraph;
-
+        simulation.setFixedGraph(false);
+        
         if (simulation.getSourceGraph() != null) {
             randomGraph = new SingleGraph(simulation.getSourceGraph());
         } else {
@@ -463,6 +464,7 @@ public final class SimulationEditor extends JPanel implements KnowledgeEditable,
                     simulation.setSimulation(new TimeSeriesSemSimulation(randomGraph), simulation.getParams());
 //                } else if (simulationItem.equals(simulationItems[6])) {
 //                    simulation.setSimulation(new BooleanGlassSimulation(randomGraph), simulation.getParams());
+                    System.out.println("Time series is selected.");
                     simulation.setFixedGraph(true);
                 } else {
                     throw new IllegalArgumentException("Unrecognized simulation type: " + simulationItem);
