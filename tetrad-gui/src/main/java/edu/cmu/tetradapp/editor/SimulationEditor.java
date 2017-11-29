@@ -51,8 +51,8 @@ import edu.cmu.tetradapp.model.Simulation;
 import edu.cmu.tetradapp.ui.PaddingPanel;
 import edu.cmu.tetradapp.util.WatchedProcess;
 import java.awt.BorderLayout;
-import java.awt.Component;
 import java.awt.Dimension;
+import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
@@ -546,10 +546,7 @@ public final class SimulationEditor extends JPanel implements KnowledgeEditable,
         return simulationItems;
     }
 
-    private JPanel getParameterPanel(
-            Simulation simulationModel,
-            edu.cmu.tetrad.algcomparison.simulation.Simulation simulation,
-            Parameters parameters) {
+    private JPanel getParameterPanel(Simulation simulationModel, edu.cmu.tetrad.algcomparison.simulation.Simulation simulation, Parameters parameters) {
         boolean fixedGraph = simulationModel.isFixedGraph();
         graphsDropdown.setEnabled(!fixedGraph);
         simulationsDropdown.setEnabled(!simulationModel.isFixedSimulation());
@@ -583,31 +580,27 @@ public final class SimulationEditor extends JPanel implements KnowledgeEditable,
 
         label = new JLabel("Parameters for your simulation are listed below. Please adjust the parameter values.");
         label.setFont(labelFont);
-        box = Box.createHorizontalBox();
-        box.add(label);
-        box.add(Box.createGlue());
-        northBox.add(Box.createVerticalStrut(20));
-        northBox.add(box);
-        northBox.add(Box.createVerticalStrut(10));
+
+        JPanel paramLblPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        paramLblPanel.add(label);
 
         JScrollPane paramScrollPane = (simulation == null)
                 ? new JScrollPane()
                 : new JScrollPane(new PaddingPanel(new ParameterPanel(simulation.getParameters(), parameters)));
 
-        Box centerBox = Box.createVerticalBox();
-        centerBox.add(paramScrollPane);
+        JPanel centerPanel = new JPanel(new BorderLayout());
+        centerPanel.add(paramLblPanel, BorderLayout.NORTH);
+        centerPanel.add(paramScrollPane, BorderLayout.CENTER);
 
-        Box southBox = Box.createVerticalBox();
-        simulateButton.setAlignmentX(Component.CENTER_ALIGNMENT);
-        southBox.add(Box.createVerticalStrut(10));
-        southBox.add(simulateButton);
+        JPanel southPanel = new JPanel();
+        southPanel.add(simulateButton);
 
-        JPanel parameterPanel = new JPanel(new BorderLayout());
-        parameterPanel.add(northBox, BorderLayout.NORTH);
-        parameterPanel.add(centerBox, BorderLayout.CENTER);
-        parameterPanel.add(southBox, BorderLayout.SOUTH);
+        JPanel mainPanel = new JPanel(new BorderLayout(0, 10));
+        mainPanel.add(northBox, BorderLayout.NORTH);
+        mainPanel.add(centerPanel, BorderLayout.CENTER);
+        mainPanel.add(southPanel, BorderLayout.SOUTH);
 
-        return parameterPanel;
+        return mainPanel;
     }
 
     @Override
