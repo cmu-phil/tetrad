@@ -132,7 +132,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
     private ParameterPanel parametersPanel;
     private DataType dataType;
     private AlgType selectedAlgoType;
-    private boolean acceptKnowledgeFile;
+    private boolean onlyShowAlgoAcceptKnowledge;
     private AnnotatedClassWrapper<edu.cmu.tetrad.annotation.Algorithm> selectedAgloWrapper;
     private boolean linearRelationshipAssumption;
     private boolean gaussianVariablesAssumption;
@@ -154,10 +154,10 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
     private final DefaultComboBoxModel<AnnotatedClassWrapper<Score>> scoreDropdownModel = new DefaultComboBoxModel<>();
     private final JComboBox<AnnotatedClassWrapper<TestOfIndependence>> testDropdown = new JComboBox<>(testDropdownModel);
     private final JComboBox<AnnotatedClassWrapper<Score>> scoreDropdown = new JComboBox<>(scoreDropdownModel);
-    private final JCheckBox priorKnowledgeCheckbox = new JCheckBox("can handle prior knowledge file");
+    private final JCheckBox priorKnowledgeCheckbox = new JCheckBox("accept knowledge");
     private final JCheckBox linearVariablesCheckbox = new JCheckBox("Variables with linear relationship");
     private final JCheckBox gaussianVariablesCheckbox = new JCheckBox("Gaussian variables");
-    private final JRadioButton algoTypeAllRadioBtn = new JRadioButton("All");
+    private final JRadioButton algoTypeAllRadioBtn = new JRadioButton("Show all");
     private final ButtonGroup algoTypesBtnGrp = new ButtonGroup();
 
     public GeneralAlgorithmEditor(GeneralAlgorithmRunner runner) {
@@ -181,14 +181,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
             JOptionPane.showMessageDialog(desktop, e.getMessage(), "Please Note", JOptionPane.INFORMATION_MESSAGE);
         }
 
-        // Use annotations to populate algo list
-        // Only show algorithms that support multi dataset if there are multi datasets uploaded
-        // Otherwise show all algorithms that take at least one dataset
-        if (dataModelList.size() > 1) {
-            algoWrappers = TetradAlgorithmAnnotations.getInstance().getAcceptMultipleDatasetNameWrappers();
-        } else {
-            algoWrappers = TetradAlgorithmAnnotations.getInstance().getNameWrappers();
-        }
+        algoWrappers = TetradAlgorithmAnnotations.getInstance().getNameWrappers();
 
         // Use annotations to get the tests and scores based on different data types
         // Need to do this before calling createAlgoChooserPanel() - Zhou
@@ -264,7 +257,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
             }
         });
         priorKnowledgeCheckbox.addActionListener((e) -> {
-            acceptKnowledgeFile = priorKnowledgeCheckbox.isSelected();
+            onlyShowAlgoAcceptKnowledge = priorKnowledgeCheckbox.isSelected();
             updateSuggestedAlgosList();
         });
         linearVariablesCheckbox.addActionListener((ActionEvent actionEvent) -> {
@@ -667,7 +660,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         }
 
         // Remove algos that don't meet the prior knowledge file selection
-        if (acceptKnowledgeFile) {
+        if (onlyShowAlgoAcceptKnowledge) {
             algoWrappers.forEach(algoWrapper -> {
                 Class clazz = algoWrapper.getAnnotatedClass().getClazz();
 
@@ -870,7 +863,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
             progressTextArea.updateUI();
 
             // 3.1 Algorithm name
-            String algorithmName = AbstractAlgorithmRequest.FGES;
+            String algorithmName;
             Algorithm algorithm = runner.getAlgorithm();
             System.out.println("Algorithm: " + algorithm.getDescription());
 
@@ -1026,7 +1019,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
     private HpcAccount showRemoteComputingOptions(String name) {
         List<HpcAccount> hpcAccounts = desktop.getHpcAccountManager().getHpcAccounts();
 
-        if (hpcAccounts == null || hpcAccounts.size() == 0) {
+        if (hpcAccounts == null || hpcAccounts.isEmpty()) {
             return null;
         }
 
@@ -1185,7 +1178,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
 
         // Algo types label box
         Box algTypesBoxLabelBox = Box.createHorizontalBox();
-        algTypesBoxLabelBox.add(new JLabel("Filter algorithms that: "));
+        algTypesBoxLabelBox.add(new JLabel("Show algorithms that: "));
         algTypesBoxLabelBox.setAlignmentX(LEFT_ALIGNMENT);
 
         // Add label to containing box
@@ -1246,7 +1239,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
 
         // Add label into this label box to size
         Box priorKnowledgeLabelBox = Box.createHorizontalBox();
-        priorKnowledgeLabelBox.add(new JLabel("Filter algorithms that: "));
+        priorKnowledgeLabelBox.add(new JLabel("Show only: "));
         priorKnowledgeLabelBox.setAlignmentX(LEFT_ALIGNMENT);
 
         // Checkbox container
@@ -1302,7 +1295,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
     private void resetSettingsBtnActionPerformed(ActionEvent actionEvent) {
         selectedAlgoType = null;  // reset algo type to All
         algoTypesBtnGrp.setSelected(algoTypeAllRadioBtn.getModel(), true);
-        acceptKnowledgeFile = false;  //also need to reset the knowledge file flag
+        onlyShowAlgoAcceptKnowledge = false;  //also need to reset the knowledge file flag
         priorKnowledgeCheckbox.setSelected(false);  // uncheck prior knowledge checkbox
         gaussianVariablesCheckbox.setSelected(false);
         linearVariablesCheckbox.setSelected(false);
