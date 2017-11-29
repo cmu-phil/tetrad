@@ -157,7 +157,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
     private final JCheckBox priorKnowledgeCheckbox = new JCheckBox("accept knowledge");
     private final JCheckBox linearVariablesCheckbox = new JCheckBox("Variables with linear relationship");
     private final JCheckBox gaussianVariablesCheckbox = new JCheckBox("Gaussian variables");
-    private final JRadioButton algoTypeAllRadioBtn = new JRadioButton("Show all");
+    private final JRadioButton algoTypeAllRadioBtn = new JRadioButton("show all");
     private final ButtonGroup algoTypesBtnGrp = new ButtonGroup();
 
     public GeneralAlgorithmEditor(GeneralAlgorithmRunner runner) {
@@ -1198,37 +1198,25 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         // Add all option to containing box
         algoTypesBox.add(algoTypeOptionAllBox);
 
-        // Show each algo type as a radio button
         for (AlgType item : AlgType.values()) {
-            String algoType = item.toString().replace("_", " ");
+            String name = item.name();
 
-            // Option
-            Box algoTypeOptionBox = Box.createHorizontalBox();
-            algoTypeOptionBox.setAlignmentX(LEFT_ALIGNMENT);
-
-            JRadioButton algoTypeRadioBtn = new JRadioButton(algoType);
-
-            // Add to button group
-            algoTypesBtnGrp.add(algoTypeRadioBtn);
-
-            // Add padding and option
-            algoTypeOptionBox.add(Box.createRigidArea(new Dimension(10, 20)));
-            algoTypeOptionBox.add(algoTypeRadioBtn);
-
-            // Add each option to containing box
-            algoTypesBox.add(algoTypeOptionBox);
-
-            // Event listener on each radio button
-            algoTypeRadioBtn.addActionListener(e -> {
-                JRadioButton button = (JRadioButton) e.getSource();
-                if (button.isSelected()) {
-                    // Update the selected algo type
-                    selectedAlgoType = AlgType.valueOf(button.getText().replace(" ", "_"));
-
-                    // Update the list
-                    updateSuggestedAlgosList();
-                }
+            // create radio button
+            JRadioButton radioButton = new JRadioButton(name.replace("_", " "));
+            radioButton.setActionCommand(name);
+            radioButton.addActionListener((e) -> {
+                algoFliterRadioBtnActionPerformed(e);
             });
+
+            // add radio button to button group
+            algoTypesBtnGrp.add(radioButton);
+
+            // add radio button to panel
+            Box box = Box.createHorizontalBox();
+            box.setAlignmentX(LEFT_ALIGNMENT);
+            box.add(Box.createRigidArea(new Dimension(10, 20)));
+            box.add(radioButton);
+            algoTypesBox.add(box);
         }
 
         // Set All as the default selection
@@ -1290,6 +1278,11 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         algoCard.add(new AlgoDescPanel(), BorderLayout.CENTER);
 
         return new PaddingPanel(algoCard);
+    }
+
+    private void algoFliterRadioBtnActionPerformed(ActionEvent actionEvent) {
+        selectedAlgoType = AlgType.valueOf(actionEvent.getActionCommand());
+        updateSuggestedAlgosList();
     }
 
     private void resetSettingsBtnActionPerformed(ActionEvent actionEvent) {
