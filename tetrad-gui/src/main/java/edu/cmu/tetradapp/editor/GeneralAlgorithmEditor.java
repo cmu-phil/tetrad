@@ -201,12 +201,36 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
             graphContainer.add(graphEditor);  // use the already generated graphEditor
             changeCard(GRAPH_CARD);
 
+            String prevTest = parameters.getString("testType");
+            String prevScore = parameters.getString("scoreType");
+
+            // previous test and score must be saved prior to this code
             if (parameters.getString("algName") != null) {
                 String selectedAlgoName = parameters.getString("algName");
 
                 for (AnnotatedClassWrapper<edu.cmu.tetrad.annotation.Algorithm> algoWraper : algoWrappers) {
                     if (algoWraper.getName().equals(selectedAlgoName)) {
                         suggestedAlgosList.setSelectedValue(algoWraper, true);
+                        break;
+                    }
+                }
+            }
+
+            // previous test and score must be set after setting previous algorithm
+            if (prevTest != null) {
+                for (int i = 0; i < testDropdownModel.getSize(); i++) {
+                    AnnotatedClassWrapper<TestOfIndependence> test = testDropdownModel.getElementAt(i);
+                    if (test.getName().equalsIgnoreCase(prevTest)) {
+                        setDefaultTest(test);
+                        break;
+                    }
+                }
+            }
+            if (prevScore != null) {
+                for (int i = 0; i < scoreDropdownModel.getSize(); i++) {
+                    AnnotatedClassWrapper<Score> score = scoreDropdownModel.getElementAt(i);
+                    if (score.getName().equalsIgnoreCase(prevScore)) {
+                        setDefaultScore(score);
                         break;
                     }
                 }
@@ -503,33 +527,22 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         // Determine if enable/disable test and score dropdowns
         testDropdown.setEnabled(algoAnno.requireIndependenceTest(algoClass));
         if (testDropdown.isEnabled()) {
-            if (parameters.getString("testType") != null) {
-                String previousTestType = parameters.getString("testType");
-                for (int i = 0; i < testDropdownModel.getSize(); i++) {
-                    AnnotatedClassWrapper<TestOfIndependence> test = testDropdownModel.getElementAt(i);
-                    if (test.getName().equalsIgnoreCase(previousTestType)) {
-                        testDropdownModel.setSelectedItem(test);
-                        break;
-                    }
-                }
-            } else {
-                Map<DataType, AnnotatedClassWrapper<TestOfIndependence>> map = algoDefaultTests.get(selectedAgloWrapper);
-                if (map == null) {
-                    map = new EnumMap<>(DataType.class);
-                    algoDefaultTests.put(selectedAgloWrapper, map);
-                }
-
-                AnnotatedClassWrapper<TestOfIndependence> defaultTest = map.get(dataType);
-                if (defaultTest == null) {
-                    defaultTest = TetradTestOfIndependenceAnnotations.getInstance().getDefaultNameWrapper(dataType);
-                    if (defaultTest == null && testDropdownModel.getSize() > 0) {
-                        defaultTest = testDropdownModel.getElementAt(0);
-                    }
-
-                    map.put(dataType, defaultTest);
-                }
-                testDropdownModel.setSelectedItem(defaultTest);
+            Map<DataType, AnnotatedClassWrapper<TestOfIndependence>> map = algoDefaultTests.get(selectedAgloWrapper);
+            if (map == null) {
+                map = new EnumMap<>(DataType.class);
+                algoDefaultTests.put(selectedAgloWrapper, map);
             }
+
+            AnnotatedClassWrapper<TestOfIndependence> defaultTest = map.get(dataType);
+            if (defaultTest == null) {
+                defaultTest = TetradTestOfIndependenceAnnotations.getInstance().getDefaultNameWrapper(dataType);
+                if (defaultTest == null && testDropdownModel.getSize() > 0) {
+                    defaultTest = testDropdownModel.getElementAt(0);
+                }
+
+                map.put(dataType, defaultTest);
+            }
+            testDropdownModel.setSelectedItem(defaultTest);
         }
     }
 
@@ -541,33 +554,22 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         // Determine if enable/disable test and score dropdowns
         scoreDropdown.setEnabled(algoAnno.requireScore(algoClass));
         if (scoreDropdown.isEnabled()) {
-            if (parameters.getString("scoreType") != null) {
-                String previousScoreType = parameters.getString("scoreType");
-                for (int i = 0; i < scoreDropdownModel.getSize(); i++) {
-                    AnnotatedClassWrapper<Score> score = scoreDropdownModel.getElementAt(i);
-                    if (score.getName().equalsIgnoreCase(previousScoreType)) {
-                        scoreDropdownModel.setSelectedItem(score);
-                        break;
-                    }
-                }
-            } else {
-                Map<DataType, AnnotatedClassWrapper<Score>> map = algoDefaultScores.get(selectedAgloWrapper);
-                if (map == null) {
-                    map = new EnumMap(DataType.class);
-                    algoDefaultScores.put(selectedAgloWrapper, map);
-                }
-
-                AnnotatedClassWrapper<Score> defaultScore = map.get(dataType);
-                if (defaultScore == null) {
-                    defaultScore = TetradScoreAnnotations.getInstance().getDefaultNameWrapper(dataType);
-                    if (defaultScore == null && scoreDropdownModel.getSize() > 0) {
-                        defaultScore = scoreDropdownModel.getElementAt(0);
-                    }
-
-                    map.put(dataType, defaultScore);
-                }
-                scoreDropdownModel.setSelectedItem(defaultScore);
+            Map<DataType, AnnotatedClassWrapper<Score>> map = algoDefaultScores.get(selectedAgloWrapper);
+            if (map == null) {
+                map = new EnumMap(DataType.class);
+                algoDefaultScores.put(selectedAgloWrapper, map);
             }
+
+            AnnotatedClassWrapper<Score> defaultScore = map.get(dataType);
+            if (defaultScore == null) {
+                defaultScore = TetradScoreAnnotations.getInstance().getDefaultNameWrapper(dataType);
+                if (defaultScore == null && scoreDropdownModel.getSize() > 0) {
+                    defaultScore = scoreDropdownModel.getElementAt(0);
+                }
+
+                map.put(dataType, defaultScore);
+            }
+            scoreDropdownModel.setSelectedItem(defaultScore);
         }
     }
 
@@ -1286,6 +1288,8 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
     }
 
     private void resetSettingsBtnActionPerformed(ActionEvent actionEvent) {
+        algoDefaultScores.clear();
+        algoDefaultTests.clear();
         selectedAlgoType = null;  // reset algo type to All
         algoTypesBtnGrp.setSelected(algoTypeAllRadioBtn.getModel(), true);
         onlyShowAlgoAcceptKnowledge = false;  //also need to reset the knowledge file flag
