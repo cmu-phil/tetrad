@@ -237,6 +237,14 @@ public class GraphSelectionEditor extends JPanel implements GraphEditable, Tripl
             editorPanel.setNLabel("");
         }
 
+        if (type == GraphSelectionWrapper.Type.Parents) {
+            editorPanel.setNLabel("");
+        }
+
+        if (type == GraphSelectionWrapper.Type.Children) {
+            editorPanel.setNLabel("");
+        }
+
         if (type == GraphSelectionWrapper.Type.Adjacents_of_Adjacents) {
             editorPanel.setNLabel("");
         }
@@ -425,19 +433,21 @@ public class GraphSelectionEditor extends JPanel implements GraphEditable, Tripl
     }
 
     private JMenu createGraphMenu() {
+        JMenu fileMenu = new GraphFileMenu(this, getWorkbench());
         JMenu graph = new JMenu("Graph");
 
-        graphAction = new GraphPropertiesAction(wrapper.getGraphs().get(0), getWorkbench());
+        graphAction = new GraphPropertiesAction(getWorkbench());
         graph.add(graphAction);
         graph.add(new PathsAction(getWorkbench()));
 //        graph.add(new DirectedPathsAction(getWorkbench()));
-//        graph.add(new TreksAction(getWorkbench()));
+//        graph.add(new TreksAction(getWorkbench()));x
 //        graph.add(new AllPathsAction(getWorkbench()));
 //        graph.add(new NeighborhoodsAction(getWorkbench()));
         triplesAction = new TriplesAction(wrapper.getGraphs().get(0), getWorkbench());
         graph.add(triplesAction);
+        fileMenu.add(graph);
 
-        return graph;
+        return fileMenu;
     }
 
     /**
@@ -591,7 +601,7 @@ public class GraphSelectionEditor extends JPanel implements GraphEditable, Tripl
             }
         }
         if(graphs == null){
-        	graphs = new ArrayList<>();
+            graphs = new ArrayList<>();
         }
         wrapper.setGraphs(graphs);
         resetWorkbenchScrolls(wrapper);

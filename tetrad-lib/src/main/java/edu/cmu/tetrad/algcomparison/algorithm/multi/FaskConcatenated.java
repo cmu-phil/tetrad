@@ -65,8 +65,10 @@ public class FaskConcatenated implements MultiDataSetAlgorithm, HasKnowledge, Us
             Fask search = new Fask(dataSet, score.getScore(dataSet, parameters));
             search.setDepth(parameters.getInt("depth"));
             search.setPenaltyDiscount(parameters.getDouble("penaltyDiscount"));
-            search.setPresumePositiveCoefficients(parameters.getBoolean("presumePositiveCoefficients"));
+            search.setExtraEdgeThreshold(parameters.getDouble("extraEdgeThreshold"));
             search.setAlpha(parameters.getDouble("twoCycleAlpha"));
+            search.setReverseOrientationsBySkewnessOfVariables(parameters.getBoolean("reverseOrientationsBySkewnessOfVariables"));
+            search.setReverseOrientationsBySignOfCorrelation(parameters.getBoolean("reverseOrientationsBySignOfCorrelation"));
             search.setKnowledge(knowledge);
             return search.search();
         } else {
@@ -150,7 +152,9 @@ public class FaskConcatenated implements MultiDataSetAlgorithm, HasKnowledge, Us
         parameters.add("twoCycleAlpha");
         parameters.add("depth");
 //        parameters.add("penaltyDiscount");
-        parameters.add("presumePositiveCoefficients");
+        parameters.add("extraEdgeThreshold");
+        parameters.add("reverseOrientationsBySkewnessOfVariables");
+        parameters.add("reverseOrientationsBySignOfCorrelation");
         parameters.add("numRuns");
         parameters.add("randomSelectionSize");
 

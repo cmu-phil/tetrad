@@ -18,12 +18,12 @@ public class ArrowheadPrecisionIgnore2c implements Statistic {
 
     @Override
     public String getAbbreviation() {
-        return "AHP";
+        return "AHPC";
     }
 
     @Override
     public String getDescription() {
-        return "Arrowhead precision";
+        return "Arrowhead precision Ignore 2 cycles";
     }
 
     @Override

@@ -6,6 +6,8 @@ import edu.cmu.tetrad.annotation.AlgType;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.graph.GraphUtils;
+import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.Parameters;
 import edu.pitt.dbmi.algo.bootstrap.BootstrapEdgeEnsemble;
 import edu.pitt.dbmi.algo.bootstrap.GeneralBootstrapTest;
@@ -55,18 +57,30 @@ public class FaskOrientation implements Algorithm, TakesInitialGraph {
         if (parameters.getInt("bootstrapSampleSize") < 1) {
             initialGraph = algorithm.search(dataSet, parameters);
 
-            if (initialGraph != null) {
-                initialGraph = algorithm.search(dataSet, parameters);
-            } else {
-                throw new IllegalArgumentException("This R3 algorithm needs both data and a graph source as inputs; it \n"
-                        + "will orient the edges in the input graph using the data");
+//            if (initialGraph != null) {
+//                initialGraph = algorithm.search(dataSet, parameters);
+//            } else {
+//                throw new IllegalArgumentException("This R3 algorithm needs both data and a graph source as inputs; it \n"
+//                        + "will orient the edges in the input graph using the data");
+//            }
+
+            List<String> nodes = initialGraph.getNodeNames();
+
+            initialGraph = GraphUtils.replaceNodes(initialGraph, dataSet.getVariables());
+
+            for (Node node : initialGraph.getNodes()){
+                if (!nodes.contains(node.getName())) {
+                    initialGraph.removeNode(node);
+                }
             }
+
+            dataSet = ((DataSet) dataSet).subsetColumns(initialGraph.getNodes());
 
             edu.cmu.tetrad.search.SemBicScore score = new edu.cmu.tetrad.search.SemBicScore(new CovarianceMatrixOnTheFly((DataSet) dataSet, false));
             score.setPenaltyDiscount(parameters.getDouble("penaltyDiscount"));
             edu.cmu.tetrad.search.Fask search = new edu.cmu.tetrad.search.Fask((DataSet) dataSet, score);
             search.setInitialGraph(initialGraph);
-            search.setPresumePositiveCoefficients(parameters.getBoolean("presumePositiveCoefficients"));
+            search.setExtraEdgeThreshold(parameters.getDouble("extraEdgeThreshold"));
             return search.search();
         } else {
             FaskOrientation r3 = new FaskOrientation(algorithm);
@@ -122,7 +136,7 @@ public class FaskOrientation implements Algorithm, TakesInitialGraph {
 
         // Bootstrapping
         parameters.add("twoCycleAlpha");
-        parameters.add("presumePositiveCoefficients");
+        parameters.add("extraEdgeThreshold");
         parameters.add("bootstrapSampleSize");
         parameters.add("bootstrapEnsemble");
         parameters.add("verbose");

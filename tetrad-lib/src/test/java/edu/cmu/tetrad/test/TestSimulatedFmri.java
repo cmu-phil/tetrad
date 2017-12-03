@@ -24,8 +24,6 @@ package edu.cmu.tetrad.test;
 import edu.cmu.tetrad.algcomparison.Comparison;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithms;
 import edu.cmu.tetrad.algcomparison.algorithm.multi.*;
-import edu.cmu.tetrad.algcomparison.algorithm.oracle.pag.FaskGfciConcatenated;
-import edu.cmu.tetrad.algcomparison.independence.SemBicTest;
 import edu.cmu.tetrad.algcomparison.score.SemBicScore;
 import edu.cmu.tetrad.algcomparison.simulation.Simulations;
 import edu.cmu.tetrad.algcomparison.statistic.*;
@@ -37,7 +35,6 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.Fask;
 import edu.cmu.tetrad.search.Lofs2;
-import edu.cmu.tetrad.search.Score;
 import edu.cmu.tetrad.sem.GeneralizedSemIm;
 import edu.cmu.tetrad.sem.GeneralizedSemPm;
 import edu.cmu.tetrad.util.Parameters;
@@ -61,9 +58,11 @@ public class TestSimulatedFmri {
         parameters.set("penaltyDiscount", 1);
         parameters.set("depth", -1);
         parameters.set("twoCycleAlpha", 1e-6);
+        parameters.set("reverseOrientationsBySkewnessOfVariables", true);
+        parameters.set("reverseOrientationsBySignOfCorrelation", false);
 
         parameters.set("numRuns", 10);
-        parameters.set("randomSelectionSize", 1);
+        parameters.set("randomSelectionSize", 5);
 
         parameters.set("Structure", "Placeholder");
 
@@ -184,7 +183,7 @@ public class TestSimulatedFmri {
         algorithms.add(new FaskConcatenated(new SemBicScore()));
 //        algorithms.add(new FaskGfciConcatenated(new SemBicTest()));
 
-        algorithms.add(new FasLofsConcatenated(Lofs2.Rule.RSkew));
+//        algorithms.add(new FasLofsConcatenated(Lofs2.Rule.RSkew));
 
         Comparison comparison = new Comparison();
 
@@ -215,7 +214,7 @@ public class TestSimulatedFmri {
         parameters.set("twoCycleAlpha", 1e-6);
 
         parameters.set("numRuns", 10);
-        parameters.set("randomSelectionSize", 1);
+        parameters.set("randomSelectionSize", 10);
 
         parameters.set("Structure", "Placeholder");
 
@@ -249,7 +248,7 @@ public class TestSimulatedFmri {
 //            simulations.add(new LoadContinuousDataPwdd7("/Users/user/Downloads/pwdd7/", i, "50_BOLDnoise"));
         }
 
-        algorithms.add(new LofsConcatenated(Lofs2.Rule.FASKLR));
+//        algorithms.add(new LofsConcatenated(Lofs2.Rule.FASKLR));
 //        algorithms.add(new LofsConcatenated(Lofs2.Rule.R1));
 //        algorithms.add(new LofsConcatenated(Lofs2.Rule.R3));
 //        algorithms.add(new LofsConcatenated(Lofs2.Rule.RSkew));
@@ -503,7 +502,7 @@ public class TestSimulatedFmri {
     }
 
     public static void main(String... args) {
-        new TestSimulatedFmri().task2();
+        new TestSimulatedFmri().task(true);
     }
 }
 

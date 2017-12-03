@@ -66,7 +66,9 @@ import java.util.concurrent.RecursiveTask;
 public class Comparison {
 
 
-    public enum ComparisonGraph {true_DAG, Pattern_of_the_true_DAG, PAG_of_the_true_DAG}
+    public enum ComparisonGraph {
+        true_DAG, Pattern_of_the_true_DAG, PAG_of_the_true_DAG
+    }
 
     private boolean[] graphTypeUsed;
     private PrintStream out;
@@ -84,6 +86,8 @@ public class Comparison {
     private boolean savePags = false;
     private ArrayList<String> dirs = null;
     private ComparisonGraph comparisonGraph = ComparisonGraph.true_DAG;
+    private boolean replacePartialOrientedWithDirected = false;
+
 
     public void compareFromFiles(String filePath, Algorithms algorithms,
                                  Statistics statistics, Parameters parameters) {
@@ -1040,6 +1044,9 @@ public class Comparison {
         this.comparisonGraph = comparisonGraph;
     }
 
+    public void setReplacePartialOrientedWithDirected(boolean replacePartialOrientedWithDirected) {
+        this.replacePartialOrientedWithDirected = replacePartialOrientedWithDirected;
+    }
 
     private class AlgorithmTask extends RecursiveTask<Boolean> {
         private List<AlgorithmSimulationWrapper> algorithmSimulationWrappers;
@@ -1177,6 +1184,11 @@ public class Comparison {
             return;
         }
 
+
+        if (replacePartialOrientedWithDirected) {
+            out = replaceHalfDirectedWithDirected(out);
+        }
+
         int simIndex = simulationWrappers.indexOf(simulationWrapper) + 1;
         int algIndex = algorithmWrappers.indexOf(algorithmWrapper) + 1;
 
@@ -1261,6 +1273,26 @@ public class Comparison {
                 }
             }
         }
+    }
+
+    private Graph replaceHalfDirectedWithDirected(Graph graph) {
+        EdgeListGraph graph2 = new EdgeListGraph(graph);
+
+        for (Edge edge : graph2.getEdges()) {
+            if (Edges.isPartiallyOrientedEdge(edge)) {
+                graph2.removeEdge(edge);
+
+                if (edge.pointsTowards(edge.getNode1())) {
+                    graph2.addDirectedEdge(edge.getNode2(), edge.getNode1());
+                }
+
+                if (edge.pointsTowards(edge.getNode2())) {
+                    graph2.addDirectedEdge(edge.getNode1(), edge.getNode2());
+                }
+            }
+        }
+
+        return graph2;
     }
 
     private void saveGraph(String resultsPath, Graph graph, int i, int simIndex, int algIndex,

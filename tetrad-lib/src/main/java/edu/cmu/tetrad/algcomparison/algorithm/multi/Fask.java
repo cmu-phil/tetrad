@@ -57,8 +57,12 @@ public class Fask implements Algorithm, HasKnowledge, UsesScoreWrapper {
 	        edu.cmu.tetrad.search.Fask search = new edu.cmu.tetrad.search.Fask((DataSet) dataSet, score.getScore(dataSet, parameters));
 	        search.setDepth(parameters.getInt("depth"));
 	        search.setPenaltyDiscount(parameters.getDouble("penaltyDiscount"));
-	        search.setPresumePositiveCoefficients(parameters.getBoolean("presumePositiveCoefficients"));
-	        search.setAlpha(parameters.getDouble("twoCycleAlpha"));
+            search.setExtraEdgeThreshold(parameters.getDouble("extraEdgeThreshold"));
+            search.setReverseOrientationsBySkewnessOfVariables(parameters.getBoolean("reverseOrientationsBySkewnessOfVariables"));
+	        search.setReverseOrientationsBySignOfCorrelation(parameters.getBoolean("reverseOrientationsBySignOfCorrelation"));
+            search.setUseFasAdjacencies(parameters.getBoolean("useFasAdjacencies"));
+            search.setUseCorrDiffAdjacencies(parameters.getBoolean("useCorrDiffAdjacencies"));
+            search.setAlpha(parameters.getDouble("twoCycleAlpha"));
 	        search.setKnowledge(knowledge);
 	        return getGraph(search);
 		}else{
@@ -98,7 +102,7 @@ public class Fask implements Algorithm, HasKnowledge, UsesScoreWrapper {
 
     @Override
     public DataType getDataType() {
-        return DataType.Continuous;
+        return DataType.Mixed;
     }
 
     @Override
@@ -107,12 +111,16 @@ public class Fask implements Algorithm, HasKnowledge, UsesScoreWrapper {
         parameters.add("depth");
 //        parameters.add("penaltyDiscount");
         parameters.add("twoCycleAlpha");
-        parameters.add("presumePositiveCoefficients");
+        parameters.add("extraEdgeThreshold");
+        parameters.add("reverseOrientationsBySkewnessOfVariables");
+        parameters.add("reverseOrientationsBySignOfCorrelation");
+        parameters.add("useFasAdjacencies");
+        parameters.add("useCorrDiffAdjacencies");
         // Bootstrapping
         parameters.add("bootstrapSampleSize");
         parameters.add("bootstrapEnsemble");
         parameters.add("verbose");
-        
+
         return parameters;
     }
 

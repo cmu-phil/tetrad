@@ -21,7 +21,10 @@
 
 package edu.cmu.tetrad.search;
 
-import edu.cmu.tetrad.data.*;
+import edu.cmu.tetrad.data.DataSet;
+import edu.cmu.tetrad.data.DataUtils;
+import edu.cmu.tetrad.data.IKnowledge;
+import edu.cmu.tetrad.data.Knowledge2;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.DepthChoiceGenerator;
 import edu.cmu.tetrad.util.StatUtils;
@@ -41,9 +44,12 @@ import static java.lang.Math.*;
  * two-cycles. The two-cycle checks do not require non-Gaussianity. The robust skew
  * orientation of edges left or right does.
  *
+ * This one does the FAS search including mixed variable, then removes the mixed variable
+ * and continues on with orientation.
+ *
  * @author Joseph Ramsey
  */
-public final class Fask implements GraphSearch {
+public final class FaskMixed implements GraphSearch {
 
     // The score to be used for the FAS adjacency search.
     private final Score score;
@@ -86,7 +92,7 @@ public final class Fask implements GraphSearch {
     /**
      * @param dataSet These datasets must all have the same variables, in the same order.
      */
-    public Fask(DataSet dataSet, Score score) {
+    public FaskMixed(DataSet dataSet, Score score) {
         this.dataSet = dataSet;
         this.score = score;
 
@@ -111,7 +117,6 @@ public final class Fask implements GraphSearch {
 
         DataSet dataSet = DataUtils.standardizeData(this.dataSet);
 
-        List<Node> variables = dataSet.getVariables();
         double[][] colData = dataSet.getDoubleData().transpose().toArray();
         Graph G0;
 
@@ -154,6 +159,17 @@ public final class Fask implements GraphSearch {
             G0 = fas.search();
         }
 
+        if (G0 != null) {
+            DataSet discreteData = DataUtils.copyDiscreteVariables(dataSet);
+
+            for (Node x : discreteData.getVariables()) {
+                G0.removeNode(x);
+            }
+        }
+
+        this.dataSet = DataUtils.copycContinuousVariables(this.dataSet);
+        List<Node> variables = this.dataSet.getVariables();
+
         SearchGraphUtils.pcOrientbk(knowledge, G0, G0.getNodes());
 
         System.out.println("Orientation");
@@ -169,8 +185,8 @@ public final class Fask implements GraphSearch {
                 final double[] x = colData[i];
                 final double[] y = colData[j];
 
-                double c1 = StatUtils.ucov(x, y, x, 0, +1)[1];
-                double c2 = StatUtils.ucov(x, y, y, 0, +1)[1];
+                double c1 = StatUtils.cov(x, y, x, 0, +1)[1];
+                double c2 = StatUtils.cov(x, y, y, 0, +1)[1];
 
                 if ((isUseFasAdjacencies() && G0.isAdjacentTo(X, Y)) || (isUseCorrDiffAdjacencies() && Math.abs(c1 - c2) > getExtraEdgeThreshold())) {
                     if (knowledgeOrients(X, Y)) {
@@ -284,7 +300,7 @@ public final class Fask implements GraphSearch {
             double sx = StatUtils.skewness(x);
             double sy = StatUtils.skewness(y);
 
-            if (abs(sx) > 4 * sd && abs(sy) > 4 * sd) {
+            if (abs(sx) > 5 * sd && abs(sy) > 5 * sd) {
                 lr *= signum(sx) * signum(sy);
             }
         }

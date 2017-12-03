@@ -50,11 +50,6 @@ class GraphPropertiesAction extends AbstractAction implements ClipboardOwner {
         this.workbench = workbench;
     }
 
-    public GraphPropertiesAction(Graph graph, GraphWorkbench workbench) {
-        super("Graph Properties");
-        this.workbench = workbench;
-    }
-
     /**
      * Copies a parentally closed selection of session nodes in the frontmost
      * session editor to the clipboard.

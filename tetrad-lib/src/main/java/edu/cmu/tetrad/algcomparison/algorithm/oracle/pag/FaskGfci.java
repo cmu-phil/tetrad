@@ -74,8 +74,6 @@ public class FaskGfci implements Algorithm, HasKnowledge, TakesIndependenceWrapp
     @Override
     public List<String> getParameters() {
         List<String> parameters = test.getParameters();
-        parameters.addAll(test.getParameters());
-        parameters.add("penaltyDiscount");
         parameters.add("presumePositiveCoefficients");
         parameters.add("twoCycleAlpha");
         parameters.add("faithfulnessAssumed");

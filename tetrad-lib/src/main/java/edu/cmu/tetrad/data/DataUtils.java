@@ -38,6 +38,8 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.TimeUnit;
 
+import static java.lang.Math.log;
+
 /**
  * Some static utility methods for dealing with data sets.
  *
@@ -378,14 +380,21 @@ public final class DataUtils {
         List<DataSet> outList = new ArrayList<>();
 
         for (DataSet dataSet : dataSets) {
-            if (!(dataSet.isContinuous())) {
-                throw new IllegalArgumentException("Not a continuous data set: " + dataSet.getName());
+            DataSet data2 = dataSet.copy();
+
+            double[][] doubleData = dataSet.getDoubleData().transpose().toArray();
+
+            for (int j = 0; j < data2.getNumColumns(); j++) {
+                double[] std = DataUtils.standardizeData(doubleData[j]);
+
+                if (dataSet.getVariable(j) instanceof  ContinuousVariable) {
+                    for (int i = 0; i < data2.getNumRows(); i++) {
+                        data2.setDouble(i, j, std[i]);
+                    }
+                }
             }
 
-            TetradMatrix data2 = DataUtils.standardizeData(dataSet.getDoubleData());
-
-            DataSet dataSet2 = ColtDataSet.makeContinuousData(dataSet.getVariables(), data2);
-            outList.add(dataSet2);
+            outList.add(data2);
         }
 
         return outList;
@@ -1710,19 +1719,20 @@ public final class DataUtils {
 //    }
 
     public static DataSet getNonparanormalTransformed(DataSet dataSet) {
+        dataSet = DataUtils.center(dataSet);
         final TetradMatrix data = dataSet.getDoubleData();
         final TetradMatrix X = data.like();
         final double n = dataSet.getNumRows();
-        final double delta = 1.0 / (4.0 * Math.pow(n, 0.25) * Math.sqrt(Math.PI * Math.log(n)));
+        final double delta = 0.0001;//1.0 / (4.0 * Math.pow(n, 0.25) * Math.sqrt(Math.PI * Math.log(n)));
 
         final NormalDistribution normalDistribution = new NormalDistribution();
 
         double std = Double.NaN;
 
         for (int j = 0; j < data.columns(); j++) {
-            final double[] x1 = data.getColumn(j).toArray();
-            double std1 = StatUtils.sd(x1);
-            double mu1 = StatUtils.mean(x1);
+            final double[] x1 = data.getColumn(j).copy().toArray();
+//            double std = StatUtils.sd(x1);
+            double mu = StatUtils.mean(x1);
             double[] x = ranks(data, x1);
 
             for (int i = 0; i < x.length; i++) {
@@ -1730,6 +1740,8 @@ public final class DataUtils {
                 if (x[i] < delta) x[i] = delta;
                 if (x[i] > (1. - delta)) x[i] = 1. - delta;
                 x[i] = normalDistribution.inverseCumulativeProbability(x[i]);
+
+//                System.out.println();
             }
 
             if (Double.isNaN(std)) {
@@ -1738,13 +1750,25 @@ public final class DataUtils {
 
             for (int i = 0; i < x.length; i++) {
                 x[i] /= std;
-                x[i] *= std1;
-                x[i] += mu1;
+                x[i] *= std;
+                x[i] += mu;
             }
 
             X.assignColumn(j, new TetradVector(x));
         }
         return ColtDataSet.makeContinuousData(dataSet.getVariables(), X);
+    }
+
+    public static DataSet logData(DataSet dataSet, double offset) {
+        dataSet = dataSet.copy();
+
+        for (int i = 0; i < dataSet.getNumRows(); i++) {
+            for (int j = 0; j < dataSet.getNumColumns(); j++) {
+                dataSet.setDouble(i, j, log(offset + dataSet.getDouble(i, j)));
+            }
+        }
+
+        return dataSet;
     }
 
     private static double[] ranks(TetradMatrix data, double[] x) {
@@ -1831,6 +1855,55 @@ public final class DataUtils {
         }
 
         return (DataSet) dataSet;
+    }
+
+    public static DataSet copycContinuousVariables(DataSet data) {
+        List<Node> variables = data.getVariables();
+
+        int n = 0;
+        for (Node variable : variables) {
+            if (variable instanceof ContinuousVariable) {
+                n++;
+            }
+        }
+        if (n == 0) {
+            return new ColtDataSet(0, new ArrayList<Node>());
+        }
+
+        int[] indices = new int[n];
+        int m = 0;
+        for (int i = 0; i < variables.size(); i++) {
+            if (variables.get(i) instanceof ContinuousVariable) {
+                indices[m++] = i;
+            }
+        }
+
+        return data.subsetColumns(indices);
+    }
+
+    public static DataSet copyDiscreteVariables(DataSet data) {
+        List<Node> variables = data.getVariables();
+
+        int n = 0;
+        for (Node variable : variables) {
+            if (variable instanceof DiscreteVariable) {
+                n++;
+            }
+        }
+
+        if (n == 0) {
+            return new ColtDataSet(0, new ArrayList<Node>());
+        }
+
+        int[] indices = new int[n];
+        int m = 0;
+        for (int i = 0; i < variables.size(); i++) {
+            if (variables.get(i) instanceof DiscreteVariable) {
+                indices[m++] = i;
+            }
+        }
+
+        return data.subsetColumns(indices);
     }
 }
 

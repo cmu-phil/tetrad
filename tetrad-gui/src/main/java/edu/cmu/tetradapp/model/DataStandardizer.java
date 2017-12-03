@@ -50,10 +50,6 @@ public class DataStandardizer extends DataWrapper {
 
             DataSet dataSet = (DataSet) model;
 
-            if (!(dataSet.isContinuous())) {
-                throw new IllegalArgumentException("Not a continuous data set: " + dataSet.getName());
-            }
-
             TetradMatrix data2 = DataUtils.standardizeData(dataSet.getDoubleData());
             List<Node> list = dataSet.getVariables();
 

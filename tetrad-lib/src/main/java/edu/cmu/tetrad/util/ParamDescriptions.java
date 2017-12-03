@@ -246,10 +246,6 @@ public class ParamDescriptions {
                 "Self loop coefficient (for all variables), default 0.0",
                 0.0, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY));
 
-        map.put("presumePositiveCoefficients", new ParamDescription(
-                "Yes if coefficients should be assumed positive by default for the orientaton step",
-                false));
-
         map.put("adjacentsOnly", new ParamDescription(
                 "Yes if the search should be over parents and children only; No if parents of children should be included",
                 false));
@@ -257,6 +253,27 @@ public class ParamDescriptions {
         map.put("doNonparanormalTransform", new ParamDescription(
                 "Yes if a nonparanormal transform of the data should be done",
                 false));
+
+        map.put("extraEdgeThreshold", new ParamDescription(
+                "Threshold for including extra edges",
+                0.3, 0.0, 1.0));
+
+        map.put("useFasAdjacencies", new ParamDescription(
+                "Yes if adjacencies from the FAS search should be used",
+                true));
+
+        map.put("useCorrDiffAdjacencies", new ParamDescription(
+                "Yes if adjacencies from conditional correlation differences should be used",
+                true));
+
+        map.put("reverseOrientationsBySignOfCorrelation", new ParamDescription(
+                "Yes if coefficients should be reversed by the sign of the correlation",
+                true));
+
+        map.put("reverseOrientationsBySkewnessOfVariables", new ParamDescription(
+                "Yes if orientations should be multiplied by signs of skewnesses of variables",
+                true));
+
 
 
     }
