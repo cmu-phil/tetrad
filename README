@@ -42,7 +42,7 @@ tetrad-gui package contains the "view" (GUI) code.
 
 We have a (small) team working (part-time) on this code,
 but if you have contributions to me, please feel free.
-If you have suggestions or bug reports, please subit 
+If you have suggestions or bug reports, please submit 
 those to the github issue tracker. If you have code
 contributions, these will be handled via the
 issue tracker and the GitHub pull-request procedure. As 
