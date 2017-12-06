@@ -145,7 +145,7 @@ public class SessionFileTransferHandler extends TransferHandler {
                 }
             }
         } catch (UnsupportedFlavorException | IOException exception) {
-            exception.printStackTrace(System.err);
+            LOGGER.error("", exception);
         }
 
         return super.importData(support);

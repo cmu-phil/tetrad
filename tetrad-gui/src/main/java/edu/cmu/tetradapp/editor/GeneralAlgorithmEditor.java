@@ -848,7 +848,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
                     + hpcJobInfo.getHpcAccount().getConnectionName() + " node is in the queue successfully!");
 
         } catch (IOException exception) {
-            exception.printStackTrace(System.err);
+            LOGGER.error("", exception);
         } finally {
             progressDialog.setVisible(false);
             progressDialog.dispose();
