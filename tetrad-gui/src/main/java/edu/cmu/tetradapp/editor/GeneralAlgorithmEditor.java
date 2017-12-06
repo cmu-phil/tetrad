@@ -538,13 +538,21 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         throw new IllegalArgumentException(errorResult);
     }
 
-    private void initParameterPanel() {
+    private boolean initParameterPanel() {
         AlgorithmModel algoModel = algorithmList.getSelectedValue();
         IndependenceTestModel indTestModel = indTestComboBox.getItemAt(indTestComboBox.getSelectedIndex());
         ScoreModel scoreModel = scoreComboBox.getItemAt(scoreComboBox.getSelectedIndex());
-        runner.setAlgorithm(getAlgorithmFromInterface(algoModel, indTestModel, scoreModel));
+        try {
+            runner.setAlgorithm(getAlgorithmFromInterface(algoModel, indTestModel, scoreModel));
+        } catch (IllegalArgumentException exception) {
+            JOptionPane.showMessageDialog(desktop, exception.getMessage(), "Please Note", JOptionPane.INFORMATION_MESSAGE);
+
+            return false;
+        }
 
         parametersPanel.addToPanel(runner.getAlgorithm().getParameters(), runner.getParameters());
+
+        return true;
     }
 
     /**
@@ -1127,8 +1135,9 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
     }
 
     private void algoCardFwdBtnAction(ActionEvent e) {
-        initParameterPanel();
-        changeCard(PARAMETER_CARD);
+        if (initParameterPanel()) {
+            changeCard(PARAMETER_CARD);
+        }
     }
 
     private void paramCardFwdBtnAction(ActionEvent e) {
