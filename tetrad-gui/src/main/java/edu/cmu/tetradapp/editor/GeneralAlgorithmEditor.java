@@ -139,6 +139,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
     private final Map<AlgorithmModel, Map<DataType, IndependenceTestModel>> defaultIndTestModels = new HashMap<>();
     private final Map<AlgorithmModel, Map<DataType, ScoreModel>> defaultScoreModels = new HashMap<>();
 
+    private final JPanel mainPanel = new JPanel(new CardLayout());
     private final List<JRadioButton> algoTypeOpts = new ArrayList<>();
     private final ButtonGroup algoFilterBtnGrp = new ButtonGroup();
     private final JCheckBox knowledgeChkBox = new JCheckBox("accepts knowledge");
@@ -273,11 +274,13 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
             }
         });
 
-        setLayout(new CardLayout());
-        add(new AlgorithmCard(), ALGORITHM_CARD);
-        add(new ParameterCard(), PARAMETER_CARD);
-        add(new GraphCard(), GRAPH_CARD);
-        setPreferredSize(new Dimension(940, 640));
+        mainPanel.add(new AlgorithmCard(), ALGORITHM_CARD);
+        mainPanel.add(new ParameterCard(), PARAMETER_CARD);
+        mainPanel.add(new GraphCard(), GRAPH_CARD);
+        mainPanel.setPreferredSize(new Dimension(940, 640));
+
+        setLayout(new BorderLayout());
+        add(new JScrollPane(mainPanel), BorderLayout.CENTER);
     }
 
     private void validateAlgorithmOption() {
@@ -1119,8 +1122,8 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
     }
 
     private void changeCard(String card) {
-        CardLayout cardLayout = (CardLayout) getLayout();
-        cardLayout.show(this, card);
+        CardLayout cardLayout = (CardLayout) mainPanel.getLayout();
+        cardLayout.show(mainPanel, card);
     }
 
     private void algoCardFwdBtnAction(ActionEvent e) {
