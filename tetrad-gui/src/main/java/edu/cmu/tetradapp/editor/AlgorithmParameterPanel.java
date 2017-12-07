@@ -1,27 +1,26 @@
-///////////////////////////////////////////////////////////////////////////////
-// For information as to what this class does, see the Javadoc, below.       //
-// Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
-//                                                                           //
-// This program is free software; you can redistribute it and/or modify      //
-// it under the terms of the GNU General Public License as published by      //
-// the Free Software Foundation; either version 2 of the License, or         //
-// (at your option) any later version.                                       //
-//                                                                           //
-// This program is distributed in the hope that it will be useful,           //
-// but WITHOUT ANY WARRANTY; without even the implied warranty of            //
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the             //
-// GNU General Public License for more details.                              //
-//                                                                           //
-// You should have received a copy of the GNU General Public License         //
-// along with this program; if not, write to the Free Software               //
-// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA //
-///////////////////////////////////////////////////////////////////////////////
+/*
+ * Copyright (C) 2017 University of Pittsburgh.
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
+ * MA 02110-1301  USA
+ */
 package edu.cmu.tetradapp.editor;
 
 import edu.cmu.tetrad.util.ParamDescriptions;
 import edu.cmu.tetrad.util.Parameters;
+import edu.cmu.tetradapp.ui.PaddingPanel;
 import edu.cmu.tetradapp.util.DoubleTextField;
 import edu.cmu.tetradapp.util.IntTextField;
 import edu.cmu.tetradapp.util.StringTextField;
@@ -29,31 +28,36 @@ import java.awt.BorderLayout;
 import java.text.DecimalFormat;
 import java.util.List;
 import java.util.stream.Collectors;
-import javax.swing.*;
+import javax.swing.BorderFactory;
+import javax.swing.Box;
+import javax.swing.ButtonGroup;
+import javax.swing.JComboBox;
+import javax.swing.JComponent;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JRadioButton;
 
 /**
- * Edits a list of parameters. Descriptions and defaults are looked up in
- * ParamDescriptions.
  *
- * @author Joseph Ramsey
+ * Dec 4, 2017 5:05:42 PM
+ *
  * @author Kevin V. Bui (kvb2@pitt.edu)
  */
-class ParameterPanel extends JPanel {
+public class AlgorithmParameterPanel extends JPanel {
 
-    private static final long serialVersionUID = -5435461313578700194L;
+    private static final long serialVersionUID = 274638263704283474L;
 
-    private final List<String> parametersToEdit;
-    private final Parameters parameters;
-
-    public ParameterPanel(List<String> parametersToEdit, Parameters parameters) {
-        this.parametersToEdit = parametersToEdit;
-        this.parameters = parameters;
-
+    public AlgorithmParameterPanel() {
         initComponents();
     }
 
     private void initComponents() {
         setLayout(new BorderLayout());
+        setBorder(BorderFactory.createTitledBorder("Algorithm Parameters"));
+    }
+
+    public void addToPanel(List<String> parametersToEdit, Parameters parameters) {
+        removeAll();
 
         Box paramsBox = Box.createVerticalBox();
 
@@ -106,7 +110,7 @@ class ParameterPanel extends JPanel {
             });
         }
 
-        add(paramsBox, BorderLayout.CENTER);
+        add(new PaddingPanel(paramsBox), BorderLayout.CENTER);
     }
 
     private DoubleTextField getDoubleField(final String parameter, final Parameters parameters,
