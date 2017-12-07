@@ -249,7 +249,13 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
             }
         });
         paramSetFwdBtn.addActionListener((e) -> {
-            algoCardFwdBtnAction(e);
+            AlgorithmModel algoModel = algorithmList.getSelectedValue();
+            IndependenceTestModel indTestModel = indTestComboBox.getItemAt(indTestComboBox.getSelectedIndex());
+            ScoreModel scoreModel = scoreComboBox.getItemAt(scoreComboBox.getSelectedIndex());
+            if (isValid(algoModel, indTestModel, scoreModel)) {
+                setParameterPanel(algoModel, indTestModel, scoreModel);
+                changeCard(PARAMETER_CARD);
+            }
         });
         indTestComboBox.addActionListener((e) -> {
             if (indTestComboBox.getSelectedIndex() > 0) {
@@ -281,6 +287,37 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
 
         setLayout(new BorderLayout());
         add(new JScrollPane(mainPanel), BorderLayout.CENTER);
+    }
+
+    private void setParameterPanel(AlgorithmModel algoModel, IndependenceTestModel indTestModel, ScoreModel scoreModel) {
+        runner.setAlgorithm(getAlgorithmFromInterface(algoModel, indTestModel, scoreModel));
+        parametersPanel.addToPanel(runner.getAlgorithm().getParameters(), runner.getParameters());
+    }
+
+    private boolean isValid(AlgorithmModel algoModel, IndependenceTestModel indTestModel, ScoreModel scoreModel) {
+        boolean missingTest = algoModel.isRequiredTest() && (indTestModel == null);
+        boolean missingScore = algoModel.isRequiredScore() && (scoreModel == null);
+        if (missingTest && missingScore) {
+            String msg = String.format("%s requires both test and score.",
+                    algoModel.getAlgorithm().getAnnotation().name());
+            JOptionPane.showMessageDialog(desktop, msg, "Please Note", JOptionPane.INFORMATION_MESSAGE);
+
+            return false;
+        } else if (missingTest) {
+            String msg = String.format("%s requires independence test.",
+                    algoModel.getAlgorithm().getAnnotation().name());
+            JOptionPane.showMessageDialog(desktop, msg, "Please Note", JOptionPane.INFORMATION_MESSAGE);
+
+            return false;
+        } else if (missingScore) {
+            String msg = String.format("%s requires score.",
+                    algoModel.getAlgorithm().getAnnotation().name());
+            JOptionPane.showMessageDialog(desktop, msg, "Please Note", JOptionPane.INFORMATION_MESSAGE);
+
+            return false;
+        } else {
+            return true;
+        }
     }
 
     private void validateAlgorithmOption() {
@@ -536,23 +573,6 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
     public void setAlgorithmErrorResult(String errorResult) {
         JOptionPane.showMessageDialog(desktop, jsonResult);
         throw new IllegalArgumentException(errorResult);
-    }
-
-    private boolean initParameterPanel() {
-        AlgorithmModel algoModel = algorithmList.getSelectedValue();
-        IndependenceTestModel indTestModel = indTestComboBox.getItemAt(indTestComboBox.getSelectedIndex());
-        ScoreModel scoreModel = scoreComboBox.getItemAt(scoreComboBox.getSelectedIndex());
-        try {
-            runner.setAlgorithm(getAlgorithmFromInterface(algoModel, indTestModel, scoreModel));
-        } catch (IllegalArgumentException exception) {
-            JOptionPane.showMessageDialog(desktop, exception.getMessage(), "Please Note", JOptionPane.INFORMATION_MESSAGE);
-
-            return false;
-        }
-
-        parametersPanel.addToPanel(runner.getAlgorithm().getParameters(), runner.getParameters());
-
-        return true;
     }
 
     /**
@@ -1132,12 +1152,6 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
     private void changeCard(String card) {
         CardLayout cardLayout = (CardLayout) mainPanel.getLayout();
         cardLayout.show(mainPanel, card);
-    }
-
-    private void algoCardFwdBtnAction(ActionEvent e) {
-        if (initParameterPanel()) {
-            changeCard(PARAMETER_CARD);
-        }
     }
 
     private void paramCardFwdBtnAction(ActionEvent e) {
