@@ -28,13 +28,14 @@ import edu.cmu.tetradapp.app.TetradDesktop;
 import edu.cmu.tetradapp.util.DesktopController;
 import edu.cmu.tetradapp.util.ImageUtils;
 import edu.cmu.tetradapp.util.SplashScreen;
+
+import javax.swing.*;
 import java.awt.*;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.Locale;
-import javax.swing.*;
 
 /**
  * <p>
@@ -112,11 +113,8 @@ public final class Tetrad implements PropertyChangeListener {
 
         // Check if we should skip checking for latest version
         skipLatest = argv.length > 0 && argv[0] != null && argv[0].compareToIgnoreCase("--skip-latest") == 0;
-        SplashScreen.show("Loading Tetrad...", 1000, skipLatest);
-
-        EventQueue.invokeLater(() -> {
-            new Tetrad().launchFrame();
-        });
+        
+        new Tetrad().launchFrame();
     }
 
     //===============================PRIVATE METHODS=======================//
@@ -143,6 +141,7 @@ public final class Tetrad implements PropertyChangeListener {
      * want to launch it as an applet.)
      */
     private void launchFrame() {
+        
         System.setProperty("java.util.Arrays.useLegacyMergeSort", "true");
         NodeEqualityMode.setEqualityMode(NodeEqualityMode.Type.OBJECT);
 
@@ -159,16 +158,12 @@ public final class Tetrad implements PropertyChangeListener {
         // it is maximized. For some reason, most of the details of this
         // order are important. jdramsey 12/14/02
         this.frame = new JFrame(this.mainTitle) {
-
-            private static final long serialVersionUID = -9077349253115802418L;
-
-            @Override
             public Dimension getPreferredSize() {
                 Dimension size = Toolkit.getDefaultToolkit().getScreenSize();
                 double minLength = Math.min(size.getWidth(), size.getHeight());
                 double height = minLength * 0.8;
                 double width = height * (4.0 / 3);
-
+                
                 return new Dimension((int) width, (int) height);
 //                return Toolkit.getDefaultToolkit().getScreenSize();
 
@@ -193,6 +188,8 @@ public final class Tetrad implements PropertyChangeListener {
 //        this.frame.setMinimumSize(Toolkit.getDefaultToolkit().getScreenSize());
 //        this.frame.setMaximumSize(Toolkit.getDefaultToolkit().getScreenSize());
 
+        SplashScreen.show(getFrame(), "Loading Tetrad...", 1000, skipLatest);
+        
         getFrame().setContentPane(getDesktop());
         getFrame().pack();
         getFrame().setLocationRelativeTo(null);
@@ -208,14 +205,13 @@ public final class Tetrad implements PropertyChangeListener {
         getFrame().setVisible(true);
         getFrame().setDefaultCloseOperation(
                 WindowConstants.DO_NOTHING_ON_CLOSE);
-
+        
         getFrame().addWindowListener(new WindowAdapter() {
-            @Override
             public void windowClosing(final WindowEvent e) {
                 exitApplication();
             }
         });
-
+        
         SplashScreen.hide();
 
 //        try {
@@ -230,28 +226,28 @@ public final class Tetrad implements PropertyChangeListener {
      */
     private void exitApplication() {
         boolean succeeded = getDesktop().closeAllSessions();
-
+        
         if (!succeeded) {
             return;
         }
-
+        
         getFrame().setVisible(false);
         getFrame().dispose();
         TetradLogger.getInstance().removeNextOutputStream();
-
+        
         try {
             System.exit(0);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
     }
-
+    
     private JFrame getFrame() {
         return frame;
     }
-
+    
     private TetradDesktop getDesktop() {
         return desktop;
     }
-
+    
 }
