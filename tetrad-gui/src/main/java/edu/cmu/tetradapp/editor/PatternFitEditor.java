@@ -56,7 +56,6 @@ public class PatternFitEditor extends JPanel {
     //============================ Private Methods =========================//
 
     private void setup() {
-    	setLayout(new BorderLayout());
         JTabbedPane pane = new JTabbedPane(JTabbedPane.LEFT);
 
         DataModelList data = comparison.getDataModelList();
@@ -96,12 +95,11 @@ public class PatternFitEditor extends JPanel {
         if (semPms != null) {
             for (int i = 0; i < semPms.size(); i++) {
                 SemEstimatorEditor editor = new SemEstimatorEditor(semPms.get(i), (DataSet) data.get(i));
-                JScrollPane scroll = new JScrollPane(editor);
-                pane.add("" + (i + 1), scroll);
+                pane.add("" + (i + 1), editor);
             }
         }
 
-        add(pane, BorderLayout.CENTER);
+        add(pane);
     }
 
 }

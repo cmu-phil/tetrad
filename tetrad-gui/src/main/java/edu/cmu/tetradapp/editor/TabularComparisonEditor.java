@@ -22,7 +22,6 @@ public class TabularComparisonEditor extends JPanel {
     }
 
     private void setup() {
-    	setLayout(new BorderLayout());
         java.util.List<Graph> referenceGraphs = comparison.getReferenceGraphs();
         JTabbedPane pane = new JTabbedPane(JTabbedPane.TOP);
 
@@ -32,23 +31,14 @@ public class TabularComparisonEditor extends JPanel {
 
         for (int i = 0; i < referenceGraphs.size(); i++) {
             JTabbedPane pane3 = new JTabbedPane(JTabbedPane.TOP);
-            
-            JScrollPane scrollTarget = new JScrollPane();
-            scrollTarget.setPreferredSize(new Dimension(450, 450));
-            scrollTarget.setViewportView(new GraphEditor(new GraphWrapper(comparison.getTargetGraphs().get(i))).getWorkbench());
-            pane3.add("Target Graph", scrollTarget);
-            
-            JScrollPane scrollTrue = new JScrollPane();
-            scrollTrue.setPreferredSize(new Dimension(450, 450));
-            scrollTrue.setViewportView(new GraphEditor(new GraphWrapper(comparison.getReferenceGraphs().get(i))).getWorkbench());
-            pane3.add("True Graph", scrollTrue);
-            
+            pane3.add("Target Graph", new GraphEditor(new GraphWrapper(comparison.getTargetGraphs().get(i))).getWorkbench());
+            pane3.add("True Graph", new GraphEditor(new GraphWrapper(comparison.getReferenceGraphs().get(i))).getWorkbench());
             pane2.add("" + (i + 1), pane3);
         }
 
         pane.addTab("Graphs", pane2);
 
-        add(pane, BorderLayout.CENTER);
+        add(pane);
     }
 
 
