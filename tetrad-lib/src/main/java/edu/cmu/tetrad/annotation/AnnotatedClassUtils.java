@@ -45,12 +45,12 @@ public class AnnotatedClassUtils {
                 .collect(Collectors.toList());
     }
 
-    public static <T extends Annotation> List<AnnotatedClass<T>> filterByAnnotations(Class<? extends Annotation> annotation, List<AnnotatedClass<T>> annotatedClasses) {
-        List<AnnotatedClass<T>> list = new LinkedList<>();
+    public static <T extends Annotation> List<AnnotatedClassWrapper<T>> filterByAnnotations(Class<? extends Annotation> annotation, List<AnnotatedClassWrapper<T>> annotatedClassWrappers) {
+        List<AnnotatedClassWrapper<T>> list = new LinkedList<>();
 
-        if (annotatedClasses != null && !annotatedClasses.isEmpty()) {
-            annotatedClasses.stream()
-                    .filter(e -> e.getClazz().isAnnotationPresent(annotation))
+        if (annotatedClassWrappers != null && !annotatedClassWrappers.isEmpty()) {
+            annotatedClassWrappers.stream()
+                    .filter(e -> e.annotatedClass.getClazz().isAnnotationPresent(annotation))
                     .collect(Collectors.toCollection(() -> list));
         }
 

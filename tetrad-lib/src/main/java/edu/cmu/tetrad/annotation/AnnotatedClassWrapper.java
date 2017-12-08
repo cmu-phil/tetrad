@@ -16,40 +16,44 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA 02110-1301  USA
  */
-package edu.cmu.tetradapp.ui.model;
+package edu.cmu.tetrad.annotation;
 
-import edu.cmu.tetrad.annotation.AnnotatedClass;
-import edu.cmu.tetrad.annotation.TestOfIndependence;
-import java.io.Serializable;
+import java.lang.annotation.Annotation;
 
 /**
  *
- * Dec 1, 2017 11:46:06 AM
+ * Sep 20, 2017 2:28:50 PM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
+ * @param <T> annotation
  */
-public class IndependenceTestModel implements Serializable, Comparable<IndependenceTestModel> {
+public class AnnotatedClassWrapper<T extends Annotation> implements Comparable<AnnotatedClassWrapper> {
 
-    private static final long serialVersionUID = -6802442235695595011L;
+    protected final String name;
 
-    private final AnnotatedClass<TestOfIndependence> independenceTest;
+    protected final AnnotatedClass<T> annotatedClass;
 
-    public IndependenceTestModel(AnnotatedClass<TestOfIndependence> independenceTest) {
-        this.independenceTest = independenceTest;
+    public AnnotatedClassWrapper(String name, AnnotatedClass<T> annotatedClass) {
+        this.name = name;
+        this.annotatedClass = annotatedClass;
     }
 
     @Override
-    public int compareTo(IndependenceTestModel other) {
-        return independenceTest.getAnnotation().name().compareTo(other.independenceTest.getAnnotation().name());
+    public int compareTo(AnnotatedClassWrapper other) {
+        return this.name.compareTo(other.name);
     }
 
     @Override
     public String toString() {
-        return independenceTest.getAnnotation().name();
+        return name;
     }
 
-    public AnnotatedClass<TestOfIndependence> getIndependenceTest() {
-        return independenceTest;
+    public String getName() {
+        return name;
+    }
+
+    public AnnotatedClass<T> getAnnotatedClass() {
+        return annotatedClass;
     }
 
 }
