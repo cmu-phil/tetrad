@@ -18,7 +18,6 @@
 // along with this program; if not, write to the Free Software               //
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA //
 ///////////////////////////////////////////////////////////////////////////////
-
 package edu.cmu.tetradapp.model;
 
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
@@ -27,7 +26,15 @@ import edu.cmu.tetrad.algcomparison.algorithm.cluster.ClusterAlgorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern.Fges;
 import edu.cmu.tetrad.algcomparison.score.BdeuScore;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
-import edu.cmu.tetrad.data.*;
+import edu.cmu.tetrad.data.ColtDataSet;
+import edu.cmu.tetrad.data.DataModel;
+import edu.cmu.tetrad.data.DataModelList;
+import edu.cmu.tetrad.data.DataSet;
+import edu.cmu.tetrad.data.DataType;
+import edu.cmu.tetrad.data.ICovarianceMatrix;
+import edu.cmu.tetrad.data.IKnowledge;
+import edu.cmu.tetrad.data.Knowledge2;
+import edu.cmu.tetrad.data.KnowledgeBoxInput;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
@@ -40,11 +47,11 @@ import edu.cmu.tetrad.session.SessionModel;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Unmarshallable;
 import edu.pitt.dbmi.data.Dataset;
-
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -67,11 +74,10 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
     private Graph initialGraph;
     private List<Graph> graphList = new ArrayList<>();
     private IKnowledge knowledge = new Knowledge2();
+    private final Map<String, Object> models = new HashMap<>();
     private transient List<IndependenceTest> independenceTests = null;
 
     //===========================CONSTRUCTORS===========================//
-
-
     public GeneralAlgorithmRunner(GeneralAlgorithmRunner runner, Parameters parameters) {
         this(runner.getDataWrapper(), runner, parameters, null, null);
         this.sourceGraph = runner.sourceGraph;
@@ -90,7 +96,7 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
      * containing either a DataSet or a DataSet as its selected model.
      */
     public GeneralAlgorithmRunner(DataWrapper dataWrapper, Parameters parameters,
-                                  KnowledgeBoxModel knowledgeBoxModel) {
+            KnowledgeBoxModel knowledgeBoxModel) {
         this(dataWrapper, null, parameters, knowledgeBoxModel, null);
     }
 
@@ -104,10 +110,9 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
      * containing either a DataSet or a DataSet as its selected model.
      */
     public GeneralAlgorithmRunner(DataWrapper dataWrapper, Parameters parameters,
-                                  KnowledgeBoxModel knowledgeBoxModel, IndependenceFactsModel facts) {
+            KnowledgeBoxModel knowledgeBoxModel, IndependenceFactsModel facts) {
         this(dataWrapper, null, parameters, knowledgeBoxModel, facts);
     }
-
 
     public GeneralAlgorithmRunner(DataWrapper dataWrapper, GeneralAlgorithmRunner runner, Parameters parameters) {
         this(dataWrapper, null, parameters, null, null);
@@ -120,13 +125,13 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
      * containing either a DataSet or a DataSet as its selected model.
      */
     public GeneralAlgorithmRunner(DataWrapper dataWrapper, GeneralAlgorithmRunner runner, Parameters parameters,
-                                  KnowledgeBoxModel knowledgeBoxModel) {
+            KnowledgeBoxModel knowledgeBoxModel) {
         this(dataWrapper, null, parameters, knowledgeBoxModel, null);
         this.algorithm = runner.algorithm;
     }
 
     public GeneralAlgorithmRunner(DataWrapper dataWrapper, GraphSource graphSource, GeneralAlgorithmRunner runner,
-                                  Parameters parameters) {
+            Parameters parameters) {
         this(dataWrapper, graphSource, parameters, null, null);
         this.algorithm = runner.algorithm;
     }
@@ -137,8 +142,8 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
      * containing either a DataSet or a DataSet as its selected model.
      */
     public GeneralAlgorithmRunner(DataWrapper dataWrapper, GraphSource graphSource, GeneralAlgorithmRunner runner,
-                                  Parameters parameters,
-                                  KnowledgeBoxModel knowledgeBoxModel) {
+            Parameters parameters,
+            KnowledgeBoxModel knowledgeBoxModel) {
         this(dataWrapper, graphSource, parameters, knowledgeBoxModel, null);
         this.algorithm = runner.algorithm;
     }
@@ -151,14 +156,13 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
         this.algorithm = runner.algorithm;
     }
 
-
     public GeneralAlgorithmRunner(GraphSource graphSource, Parameters parameters,
-                                  KnowledgeBoxModel knowledgeBoxModel) {
+            KnowledgeBoxModel knowledgeBoxModel) {
         this(null, graphSource, parameters, knowledgeBoxModel, null);
     }
 
     public GeneralAlgorithmRunner(IndependenceFactsModel model,
-                                  Parameters parameters, KnowledgeBoxModel knowledgeBoxModel) {
+            Parameters parameters, KnowledgeBoxModel knowledgeBoxModel) {
         this(null, null, parameters, knowledgeBoxModel, model);
     }
 
@@ -169,14 +173,13 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
         this(null, graphSource, parameters, null, null);
     }
 
-
     /**
      * Constructs a wrapper for the given DataWrapper. The DatWrapper must
      * contain a DataSet that is either a DataSet or a DataSet or a DataList
      * containing either a DataSet or a DataSet as its selected model.
      */
     public GeneralAlgorithmRunner(DataWrapper dataWrapper, GraphSource graphSource, Parameters parameters,
-                                  KnowledgeBoxModel knowledgeBoxModel, IndependenceFactsModel facts) {
+            KnowledgeBoxModel knowledgeBoxModel, IndependenceFactsModel facts) {
         if (parameters == null) {
             throw new NullPointerException();
         }
@@ -219,9 +222,7 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
         }
     }
 
-
     //============================PUBLIC METHODS==========================//
-
     @Override
     public void execute() {
         List<Graph> graphList = new ArrayList<>();
@@ -237,8 +238,8 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
 
                 graphList.add(algorithm.search(null, parameters));
             } else {
-                throw new IllegalArgumentException("The parent boxes did not include any datasets or graphs. Try opening\n" +
-                        "the editors for those boxes and loading or simulating them.");
+                throw new IllegalArgumentException("The parent boxes did not include any datasets or graphs. Try opening\n"
+                        + "the editors for those boxes and loading or simulating them.");
             }
         } else {
             if (getAlgorithm() instanceof MultiDataSetAlgorithm) {
@@ -250,8 +251,8 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
                     }
 
                     if (dataSets.size() < parameters.getInt("randomSelectionSize")) {
-                        throw new IllegalArgumentException("Sorry, the 'random selection size' is greater than " +
-                                "the number of data sets.");
+                        throw new IllegalArgumentException("Sorry, the 'random selection size' is greater than "
+                                + "the number of data sets.");
                     }
 
                     Collections.shuffle(dataSets);
@@ -276,7 +277,7 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
                         if (dataModel instanceof ICovarianceMatrix) {
                             ICovarianceMatrix dataSet = (ICovarianceMatrix) dataModel;
                             graphList.add(algorithm.search(dataSet, parameters));
-                        } else if (dataModel instanceof Dataset){
+                        } else if (dataModel instanceof Dataset) {
                             DataSet dataSet = (DataSet) dataModel;
 
                             if (!dataSet.isContinuous()) {
@@ -308,13 +309,12 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
                     } else if (data.isMixed() && algDataType == DataType.Mixed) {
                         graphList.add(algorithm.search(data, parameters));
                     } else {
-                        throw new IllegalArgumentException("The type of data changed; try opening up the search editor and " +
-                                "running the algorithm there.");
+                        throw new IllegalArgumentException("The type of data changed; try opening up the search editor and "
+                                + "running the algorithm there.");
                     }
                 }
             }
         }
-
 
         if (getKnowledge().getVariablesNotInTiers().size()
                 < getKnowledge().getVariables().size()) {
@@ -331,8 +331,8 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
     }
 
     /**
-     * By default, algorithm do not support knowledge. Those that do will
-     * speak up.
+     * By default, algorithm do not support knowledge. Those that do will speak
+     * up.
      */
     @Override
     public boolean supportsKnowledge() {
@@ -392,7 +392,9 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
     }
 
     public final DataModelList getDataModelList() {
-        if (dataWrapper == null) return new DataModelList();
+        if (dataWrapper == null) {
+            return new DataModelList();
+        }
         return dataWrapper.getDataModelList();
     }
 
@@ -411,7 +413,6 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
     }
 
     //===========================PRIVATE METHODS==========================//
-
     private void transferVarNamesToParams(List names) {
         getParameters().set("varNames", names);
     }
@@ -454,7 +455,9 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
     }
 
     public void setAlgorithm(Algorithm algorithm) {
-        if (algorithm == null) return;
+        if (algorithm == null) {
+            return;
+        }
         this.algorithm = algorithm;
     }
 
@@ -520,7 +523,9 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
     }
 
     public List<Graph> getCompareGraphs(List<Graph> graphs) {
-        if (graphs == null) throw new NullPointerException();
+        if (graphs == null) {
+            throw new NullPointerException();
+        }
 
         List<Graph> compareGraphs = new ArrayList<>();
 
@@ -530,9 +535,9 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
 
         return compareGraphs;
     }
+
+    public Map<String, Object> getModels() {
+        return models;
+    }
+
 }
-
-
-
-
-
