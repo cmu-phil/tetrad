@@ -20,18 +20,17 @@ import edu.cmu.tetrad.search.SemBicScoreImages;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.RandomUtil;
 import edu.cmu.tetradapp.workbench.PngWriter;
+import edu.pitt.dbmi.data.Dataset;
 import org.junit.Test;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.PrintStream;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
 import static edu.cmu.tetrad.util.StatUtils.mean;
 import static edu.cmu.tetrad.util.StatUtils.sd;
+import static java.lang.Math.abs;
 import static java.lang.Math.log;
 
 public class TestSachs {
@@ -57,7 +56,7 @@ public class TestSachs {
 
         File dir = new File("/Users/user/Downloads/sachs/data/Data Files/main.result/");
 
-        File graphFile = new File("/Users/user/Downloads/sachsgraphs/groundtruth/ground.truth.txt");
+        File graphFile = new File("/Users/user/Downloads/sachsgraphs/groundtruth/ground.truth2.txt");
 //        File file2 = new File("/Users/user/Downloads/sachs/graphs/biologist.view.txt");
         Graph groundTruth = GraphUtils.loadGraphTxt(graphFile);
 
@@ -100,12 +99,11 @@ public class TestSachs {
 
                 parameters.set("penaltyDiscount", penalty);
                 parameters.set("twoCycleAlpha", 1e-3);
-                parameters.set("presumePositiveCoefficients", false);
+                parameters.set("faskDelta", -0.2);
                 parameters.set("numRuns", 1);
                 parameters.set("randomSelectionSize", 9);
-//                parameters.set("doNonparanormalTransform", true);
 
-                File commonDir = new File("/Users/user/Downloads/sachsgraphs/test/tetrad2/penalty." + penalty + "/" + (logged ? "logged" : "raw"));
+                File commonDir = new File("/Users/user/Downloads/sachsgraphs/test/tetrad3/penalty." + penalty + "/" + (logged ? "logged" : "raw"));
                 commonDir.mkdirs();
 
                 for (Algorithm alg : algorithms) {
@@ -127,35 +125,19 @@ public class TestSachs {
 
                         System.out.println(file.getName());
 
-                        DataSet data1 = null;
+
+                        DataSet data = null;
+
                         try {
                             DataReader reader = new DataReader();
                             reader.setVariablesSupplied(true);
-                            reader.setDelimiter(DelimiterType.WHITESPACE);
-                            data1 = reader.parseTabular(file);
-
-                            if (logged) {
-//                                data1 = DataUtils.logData(data1,10);
-                                data1 = DataUtils.getNonparanormalTransformed(data1);
-
-//                                try {
-//                                    String datadir = "/Users/user/Downloads/sachsgraphs/sachs.data/individual/log10";
-//                                    File _datadir = new File(datadir);
-//                                    _datadir.mkdirs();
-//                                    String filename = "raw.log10." + (f + 1);
-//                                    PrintStream out = new PrintStream(new File(_datadir, filename));
-//                                    out.println(data1);
-//                                    out.close();
-//
-//                                } catch (FileNotFoundException e) {
-//                                    e.printStackTrace();
-//                                }
-                            }
+                            reader.setDelimiter(DelimiterType.TAB);
+                            data = reader.parseTabular(file);
                         } catch (IOException e) {
                             e.printStackTrace();
                         }
 
-                        Graph estGraph = alg.search(data1, parameters);
+                        Graph estGraph = alg.search(data, parameters);
 
                         System.out.println(estGraph.getNodes());
 
@@ -190,7 +172,26 @@ public class TestSachs {
                             continue;
                         }
 
-                        GraphUtils.circleLayout(estGraph, 200, 200, 175);
+                        int[][] pos = {
+                                {345, 120},
+                                {360, 210},
+                                {45, 180},
+                                {60, 380},
+                                {120, 300},
+                                {345, 285},
+                                {285, 360},
+                                {105, 105},
+                                {240, 30},
+                                {200, 270},
+                                {120, 210}
+                        };
+
+                        for (int i = 0; i < 11; i++) {
+                            Node node = estGraph.getNodes().get(i);
+                            node.setCenter(pos[i][0], pos[i][1]);
+                        }
+
+//                        GraphUtils.circleLayout(estGraph, 200, 200, 175);
 
                         GraphUtils.saveGraph(estGraph, new File(txtDir, name + ".txt"), false);
 
@@ -1100,7 +1101,7 @@ public class TestSachs {
                 allVars.addAll(data1.getVariables());
 
                 for (String var : manipVars) {
-                    allVars.add(new DiscreteVariable(var,2));
+                    allVars.add(new DiscreteVariable(var, 2));
                 }
 
                 DataSet data2 = new BoxDataSet(new DoubleDataBox(data1.getNumRows(), allVars.size()), allVars);
@@ -1146,5 +1147,113 @@ public class TestSachs {
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
+    }
+
+    @Test
+    public void test9() {
+        try {
+            String dir = "/Users/user/Documents/MATLAB";
+
+            List<Node> nodes = new ArrayList<>();
+
+            String[] nodeNames = {"raf", "mek", "plc", "pip2", "pip3", "erk", "akt", "pka", "pkc", "p38", "jnk"};
+
+            int[][] pos = {
+                    {345, 120},
+                    {360, 210},
+                    {45, 180},
+                    {60, 380},
+                    {120, 300},
+                    {345, 285},
+                    {285, 360},
+                    {105, 105},
+                    {240, 30},
+                    {200, 270},
+                    {120, 210}
+            };
+
+            for (int i = 0; i < 11; i++) {
+                ContinuousVariable node = new ContinuousVariable(nodeNames[i]);
+                node.setCenter(pos[i][0], pos[i][1]);
+                nodes.add(node);
+            }
+
+            for (int index = 1; index <= 9; index++) {
+                Graph g = new EdgeListGraph(nodes);
+
+                File file = new File(dir, "sachs.new.B" + index + ".txt");
+
+                DataReader reader = new DataReader();
+                reader.setVariablesSupplied(false);
+                reader.setDelimiter(DelimiterType.COMMA);
+
+                DataSet dataSet = reader.parseTabular(file);
+
+                for (int j = 0; j < 11; j++) {
+                    for (int i = 0; i < 11; i++) {
+                        if (abs(dataSet.getDouble(i, j)) > 0.00) {
+                            g.addDirectedEdge(nodes.get(j), nodes.get(i));
+                        }
+                    }
+                }
+
+//                GraphUtils.circleLayout(g, 200, 200, 175);
+
+                final File dir1 = new File("/Users/user/Downloads/sachsgraphs/twostepindividual3");
+                dir1.mkdirs();
+
+                GraphUtils.saveGraph(g, new File(dir1, "A" + index + ".txt"), false);
+
+                PngWriter.writePng(g, new File(dir1, "A" + index + ".png"));
+
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+
+    }
+
+    @Test
+    public void test10() {
+        List<String> paths = new ArrayList<>();
+
+        final String dir0 = "/Users/user/Downloads/sachsgraphs/sachs.data";
+        final String dir = dir0 + "/main.result";
+
+        paths.add("1. cd3cd28.txt");
+        paths.add("2. cd3cd28icam2.txt");
+        paths.add("3. cd3cd28+aktinhib.txt");
+        paths.add("4. cd3cd28+g0076.txt");
+        paths.add("5. cd3cd28+psitect.txt");
+        paths.add("6. cd3cd28+u0126.txt");
+        paths.add("7. cd3cd28+ly.txt");
+        paths.add("8. pma.txt");
+        paths.add("9. b2camp.txt");
+
+        try {
+            for (String path : paths) {
+
+                DataReader reader = new DataReader();
+                reader.setVariablesSupplied(true);
+                reader.setDelimiter(DelimiterType.TAB);
+                DataSet data = reader.parseTabular(new File(dir, path));
+
+                data = DataUtils.logData(data, 1);
+
+//                data = DataUtils.center(data);
+
+                File dir2 = new File(dir0 + "/logged1");
+                dir2.mkdirs();
+
+                final File file = new File(dir2, path);
+                System.out.println(file.getAbsolutePath());
+                DataWriter.writeRectangularData(data, new FileWriter(file), '\t');
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+
     }
 }

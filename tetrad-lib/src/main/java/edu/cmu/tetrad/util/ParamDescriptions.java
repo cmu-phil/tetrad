@@ -266,14 +266,9 @@ public class ParamDescriptions {
                 "Yes if adjacencies from conditional correlation differences should be used",
                 true));
 
-        map.put("reverseOrientationsBySignOfCorrelation", new ParamDescription(
-                "Yes if coefficients should be reversed by the sign of the correlation",
-                true));
-
-        map.put("reverseOrientationsBySkewnessOfVariables", new ParamDescription(
-                "Yes if orientations should be multiplied by signs of skewnesses of variables",
-                true));
-
+        map.put("faskDelta", new ParamDescription(
+                "Threshold for judging negative coefficient edges as X->Y (range (-1, 0)",
+                -0.2, -1.0, 1.0));
 
 
     }

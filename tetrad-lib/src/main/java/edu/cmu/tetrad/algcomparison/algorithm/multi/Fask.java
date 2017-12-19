@@ -12,7 +12,6 @@ import edu.cmu.tetrad.util.Parameters;
 import edu.pitt.dbmi.algo.bootstrap.BootstrapEdgeEnsemble;
 import edu.pitt.dbmi.algo.bootstrap.GeneralBootstrapTest;
 
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -53,41 +52,40 @@ public class Fask implements Algorithm, HasKnowledge, UsesScoreWrapper {
 
     @Override
     public Graph search(DataModel dataSet, Parameters parameters) {
-    	if (parameters.getInt("bootstrapSampleSize") < 1) {
-	        edu.cmu.tetrad.search.Fask search = new edu.cmu.tetrad.search.Fask((DataSet) dataSet, score.getScore(dataSet, parameters));
-	        search.setDepth(parameters.getInt("depth"));
-	        search.setPenaltyDiscount(parameters.getDouble("penaltyDiscount"));
+        if (parameters.getInt("bootstrapSampleSize") < 1) {
+            edu.cmu.tetrad.search.Fask search = new edu.cmu.tetrad.search.Fask((DataSet) dataSet, score.getScore(dataSet, parameters));
+            search.setDepth(parameters.getInt("depth"));
+            search.setPenaltyDiscount(parameters.getDouble("penaltyDiscount"));
             search.setExtraEdgeThreshold(parameters.getDouble("extraEdgeThreshold"));
-            search.setReverseOrientationsBySkewnessOfVariables(parameters.getBoolean("reverseOrientationsBySkewnessOfVariables"));
-	        search.setReverseOrientationsBySignOfCorrelation(parameters.getBoolean("reverseOrientationsBySignOfCorrelation"));
             search.setUseFasAdjacencies(parameters.getBoolean("useFasAdjacencies"));
-            search.setUseCorrDiffAdjacencies(parameters.getBoolean("useCorrDiffAdjacencies"));
+            search.setUseSkewAdjacencies(parameters.getBoolean("useCorrDiffAdjacencies"));
             search.setAlpha(parameters.getDouble("twoCycleAlpha"));
-	        search.setKnowledge(knowledge);
-	        return getGraph(search);
-		}else{
-    		Fask fask = new Fask(score);
-    		fask.setKnowledge(knowledge);
-    		
-    		DataSet data = (DataSet) dataSet;
-    		GeneralBootstrapTest search = new GeneralBootstrapTest(data, fask, parameters.getInt("bootstrapSampleSize"));
-    		
-    		BootstrapEdgeEnsemble edgeEnsemble = BootstrapEdgeEnsemble.Highest;
-    		switch (parameters.getInt("bootstrapEnsemble", 1)) {
-    		case 0:
-    			edgeEnsemble = BootstrapEdgeEnsemble.Preserved;
-    			break;
-    		case 1:
-    			edgeEnsemble = BootstrapEdgeEnsemble.Highest;
-    			break;
-    		case 2:
-    			edgeEnsemble = BootstrapEdgeEnsemble.Majority;
-    		}
-    		search.setEdgeEnsemble(edgeEnsemble);
-    		search.setParameters(parameters);    		
-    		search.setVerbose(parameters.getBoolean("verbose"));
-    		return search.search();
-		}
+            search.setDelta(parameters.getDouble("faskDelta"));
+            search.setKnowledge(knowledge);
+            return getGraph(search);
+        } else {
+            Fask fask = new Fask(score);
+            fask.setKnowledge(knowledge);
+
+            DataSet data = (DataSet) dataSet;
+            GeneralBootstrapTest search = new GeneralBootstrapTest(data, fask, parameters.getInt("bootstrapSampleSize"));
+
+            BootstrapEdgeEnsemble edgeEnsemble = BootstrapEdgeEnsemble.Highest;
+            switch (parameters.getInt("bootstrapEnsemble", 1)) {
+                case 0:
+                    edgeEnsemble = BootstrapEdgeEnsemble.Preserved;
+                    break;
+                case 1:
+                    edgeEnsemble = BootstrapEdgeEnsemble.Highest;
+                    break;
+                case 2:
+                    edgeEnsemble = BootstrapEdgeEnsemble.Majority;
+            }
+            search.setEdgeEnsemble(edgeEnsemble);
+            search.setParameters(parameters);
+            search.setVerbose(parameters.getBoolean("verbose"));
+            return search.search();
+        }
     }
 
     @Override
@@ -112,8 +110,7 @@ public class Fask implements Algorithm, HasKnowledge, UsesScoreWrapper {
 //        parameters.add("penaltyDiscount");
         parameters.add("twoCycleAlpha");
         parameters.add("extraEdgeThreshold");
-        parameters.add("reverseOrientationsBySkewnessOfVariables");
-        parameters.add("reverseOrientationsBySignOfCorrelation");
+        parameters.add("faskDelta");
         parameters.add("useFasAdjacencies");
         parameters.add("useCorrDiffAdjacencies");
         // Bootstrapping

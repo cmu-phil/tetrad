@@ -49,20 +49,17 @@ import java.text.ParseException;
  */
 public class TestSimulatedFmri {
 
-    public void TestCycles_Data_fMRI_FASK() {
-        task(false);
-    }
-
     private void task(boolean testing) {
         Parameters parameters = new Parameters();
-        parameters.set("penaltyDiscount", 1);
+        parameters.set("penaltyDiscount", 4);
         parameters.set("depth", -1);
-        parameters.set("twoCycleAlpha", 1e-6);
-        parameters.set("reverseOrientationsBySkewnessOfVariables", true);
+        parameters.set("twoCycleAlpha", 1e-10);
+        parameters.set("faskDelta", -.2);
         parameters.set("reverseOrientationsBySignOfCorrelation", false);
+        parameters.set("reverseOrientationsBySkewnessOfVariables", false);
 
         parameters.set("numRuns", 10);
-        parameters.set("randomSelectionSize", 5);
+        parameters.set("randomSelectionSize", 10);
 
         parameters.set("Structure", "Placeholder");
 
@@ -207,14 +204,16 @@ public class TestSimulatedFmri {
         comparison.compareFromSimulations(directory, simulations, algorithms, statistics, parameters);
     }
 
+//    @Test
     public void task2() {
         Parameters parameters = new Parameters();
         parameters.set("penaltyDiscount", 1);
         parameters.set("depth", -1);
-        parameters.set("twoCycleAlpha", 1e-6);
+        parameters.set("twoCycleAlpha", 0);
+        parameters.set("faskDelta", -.1);
 
         parameters.set("numRuns", 10);
-        parameters.set("randomSelectionSize", 10);
+        parameters.set("randomSelectionSize", 2);
 
         parameters.set("Structure", "Placeholder");
 
@@ -488,6 +487,7 @@ public class TestSimulatedFmri {
             System.out.println(e);
         }
 
+
         GeneralizedSemIm im = new GeneralizedSemIm(pm);
         DataSet data = im.simulateData(1000, false);
 
@@ -502,7 +502,7 @@ public class TestSimulatedFmri {
     }
 
     public static void main(String... args) {
-        new TestSimulatedFmri().task(true);
+        new TestSimulatedFmri().task(false);
     }
 }
 
