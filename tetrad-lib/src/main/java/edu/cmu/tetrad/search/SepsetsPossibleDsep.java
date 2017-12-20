@@ -92,6 +92,10 @@ public class SepsetsPossibleDsep implements SepsetProducer {
             int[] choice;
 
             while ((choice = cg.next()) != null) {
+                if (Thread.currentThread().isInterrupted()) {
+                    break;
+                }
+
                 List<Node> condSet = GraphUtils.asList(choice, possParents);
                 boolean independent = independenceTest.isIndependent(node1, node2, condSet);
 

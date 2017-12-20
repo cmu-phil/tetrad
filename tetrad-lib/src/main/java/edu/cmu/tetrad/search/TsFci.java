@@ -389,6 +389,10 @@ public final class TsFci implements GraphSearch {
 
         for (Iterator<KnowledgeEdge> it =
              bk.forbiddenEdgesIterator(); it.hasNext(); ) {
+            if (Thread.currentThread().isInterrupted()) {
+                break;
+            }
+
             KnowledgeEdge edge = it.next();
 
             //match strings to variables in the graph.
@@ -412,6 +416,10 @@ public final class TsFci implements GraphSearch {
 
         for (Iterator<KnowledgeEdge> it =
              bk.requiredEdgesIterator(); it.hasNext(); ) {
+            if (Thread.currentThread().isInterrupted()) {
+                break;
+            }
+
             KnowledgeEdge edge = it.next();
 
             //match strings to variables in this graph
@@ -487,6 +495,10 @@ public final class TsFci implements GraphSearch {
         if (indy_comp == -1) System.out.println("WARNING: indy_comp = -1!!!! ");
 
         for(i = 0; i < ntiers - tier_diff; ++i) {
+            if (Thread.currentThread().isInterrupted()) {
+                break;
+            }
+
             if(knowledge.getTier(i).size()==1) continue;
             String A;
             Node x1;
@@ -510,11 +522,19 @@ public final class TsFci implements GraphSearch {
                 System.out.println("removed edge between " + x1 + " and " + y1 + " because of structure knowledge");
                 List<Node> condSetAB = new ArrayList<>();
                 for (Node tempNode : condSet) {
+                    if (Thread.currentThread().isInterrupted()) {
+                        break;
+                    }
+
                     int ind_temptier = knowledge.isInWhichTier(tempNode);
                     List temptier = knowledge.getTier(ind_temptier);
 //                       Collections.sort(temptier);
                     int ind_temp = -1;
                     for (int j = 0; j < temptier.size(); ++j) {
+                        if (Thread.currentThread().isInterrupted()) {
+                            break;
+                        }
+
                         if (getNameNoLag(tempNode.getName()).equals(getNameNoLag(temptier.get(j)))) {
                             ind_temp = j;
                             break;
@@ -565,6 +585,10 @@ public final class TsFci implements GraphSearch {
                 System.out.println("removed edge between " + x1 + " and " + y1 + " because of structure knowledge");
                 List<Node> condSetAB = new ArrayList<>();
                 for (Node tempNode : condSet) {
+                    if (Thread.currentThread().isInterrupted()) {
+                        break;
+                    }
+
                     int ind_temptier = knowledge.isInWhichTier(tempNode);
                     List temptier = knowledge.getTier(ind_temptier);
 //                       Collections.sort(temptier);

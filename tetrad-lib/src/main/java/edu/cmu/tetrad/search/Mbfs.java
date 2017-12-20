@@ -252,6 +252,10 @@ public final class Mbfs implements MbSearch, GraphSearch {
 //        variables = graph.getNodes();
 
         for (Node v : graph.getAdjacentNodes(getTarget())) {
+            if (Thread.currentThread().isInterrupted()) {
+                break;
+            }
+
             constructFan(v, graph);
 
             // Optimization: For t---v---w, toss out w if <t, v, w> can't
@@ -261,6 +265,10 @@ public final class Mbfs implements MbSearch, GraphSearch {
 
             W:
             for (Node w : graph.getAdjacentNodes(v)) {
+                if (Thread.currentThread().isInterrupted()) {
+                    break;
+                }
+
                 if (a.contains(w)) {
                     continue;
                 }
@@ -275,6 +283,10 @@ public final class Mbfs implements MbSearch, GraphSearch {
                 int[] choice;
 
                 while ((choice = cg.next()) != null) {
+                    if (Thread.currentThread().isInterrupted()) {
+                        break;
+                    }
+
                     List<Node> s = GraphUtils.asList(choice, adjT);
                     if (!s.contains(v)) continue;
 
@@ -618,6 +630,10 @@ public final class Mbfs implements MbSearch, GraphSearch {
             int[] choice;
 
             while ((choice = cg.next()) != null) {
+                if (Thread.currentThread().isInterrupted()) {
+                    break;
+                }
+
                 List<Node> condSet = GraphUtils.asList(choice, adjNode);
 
                 if (independent(node, y, condSet) && !edgeRequired(node, y)) {
@@ -741,6 +757,10 @@ public final class Mbfs implements MbSearch, GraphSearch {
             int[] combination;
 
             while ((combination = cg.next()) != null) {
+                if (Thread.currentThread().isInterrupted()) {
+                    break;
+                }
+
                 Node x = adjacentNodes.get(combination[0]);
                 Node z = adjacentNodes.get(combination[1]);
 
@@ -792,10 +812,18 @@ public final class Mbfs implements MbSearch, GraphSearch {
         _depth = Math.min(_depth, _nodes.size());
 
         for (int d = 0; d <= _depth; d++) {
+            if (Thread.currentThread().isInterrupted()) {
+                break;
+            }
+
             ChoiceGenerator cg = new ChoiceGenerator(_nodes.size(), d);
             int[] choice;
 
             while ((choice = cg.next()) != null) {
+                if (Thread.currentThread().isInterrupted()) {
+                    break;
+                }
+
                 List<Node> condSet = asList(choice, _nodes);
 
                 if (independent(x, z, condSet)) {
@@ -820,10 +848,18 @@ public final class Mbfs implements MbSearch, GraphSearch {
         _depth = Math.min(_depth, _nodes.size());
 
         for (int d = 0; d <= _depth; d++) {
+            if (Thread.currentThread().isInterrupted()) {
+                break;
+            }
+
             ChoiceGenerator cg = new ChoiceGenerator(_nodes.size(), d);
             int[] choice;
 
             while ((choice = cg.next()) != null) {
+                if (Thread.currentThread().isInterrupted()) {
+                    break;
+                }
+
                 List<Node> condSet = asList(choice, _nodes);
 
                 if (independent(x, z, condSet)) {

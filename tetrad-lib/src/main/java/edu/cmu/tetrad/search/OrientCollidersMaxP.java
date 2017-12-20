@@ -108,6 +108,10 @@ public final class OrientCollidersMaxP {
             protected Boolean compute() {
                 if (to - from <= chunk) {
                     for (int i = from; i < to; i++) {
+                        if (Thread.currentThread().isInterrupted()) {
+                            break;
+                        }
+
                         doNode(graph, scores, nodes.get(i));
                     }
 
@@ -166,6 +170,10 @@ public final class OrientCollidersMaxP {
         int[] combination;
 
         while ((combination = cg.next()) != null) {
+            if (Thread.currentThread().isInterrupted()) {
+                break;
+            }
+
             Node a = adjacentNodes.get(combination[0]);
             Node c = adjacentNodes.get(combination[1]);
 
@@ -199,6 +207,10 @@ public final class OrientCollidersMaxP {
         int[] comb2;
 
         while ((comb2 = cg1.next()) != null) {
+            if (Thread.currentThread().isInterrupted()) {
+                break;
+            }
+
             List<Node> s = GraphUtils.asList(comb2, adja);
             independenceTest.isIndependent(a, c, s);
             double _score = independenceTest.getScore();
@@ -213,6 +225,10 @@ public final class OrientCollidersMaxP {
         int[] comb3;
 
         while ((comb3 = cg2.next()) != null) {
+            if (Thread.currentThread().isInterrupted()) {
+                break;
+            }
+
             List<Node> s = GraphUtils.asList(comb3, adjc);
             independenceTest.isIndependent(c, a, s);
             double _score = independenceTest.getScore();
@@ -325,6 +341,10 @@ public final class OrientCollidersMaxP {
 
                 WHILE:
                 while ((choice = gen.next()) != null) {
+                    if (Thread.currentThread().isInterrupted()) {
+                        break;
+                    }
+
                     Set<Node> v2 = GraphUtils.asSet(choice, adj);
                     v2.addAll(containing);
                     v2.removeAll(notContaining);
@@ -366,6 +386,10 @@ public final class OrientCollidersMaxP {
         int distance = 0;
 
         while (!Q.isEmpty()) {
+            if (Thread.currentThread().isInterrupted()) {
+                break;
+            }
+
             Node t = Q.remove();
 
             if (e == t) {

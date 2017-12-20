@@ -186,6 +186,10 @@ public final class FciOrient {
         List<Node> nodes = graph.getNodes();
 
         for (Node b : nodes) {
+            if (Thread.currentThread().isInterrupted()) {
+                break;
+            }
+
             List<Node> adjacentNodes = graph.getAdjacentNodes(b);
 
             if (adjacentNodes.size() < 2) {
@@ -196,6 +200,10 @@ public final class FciOrient {
             int[] combination;
 
             while ((combination = cg.next()) != null) {
+                if (Thread.currentThread().isInterrupted()) {
+                    break;
+                }
+
                 Node a = adjacentNodes.get(combination[0]);
                 Node c = adjacentNodes.get(combination[1]);
 
@@ -255,6 +263,10 @@ public final class FciOrient {
         boolean firstTime = true;
 
         while (changeFlag) {
+            if (Thread.currentThread().isInterrupted()) {
+                break;
+            }
+
             changeFlag = false;
             rulesR1R2cycle(graph);
             ruleR3(graph);
@@ -276,6 +288,10 @@ public final class FciOrient {
         boolean firstTime = true;
 
         while (changeFlag && !Thread.currentThread().isInterrupted()) {
+            if (Thread.currentThread().isInterrupted()) {
+                break;
+            }
+
             changeFlag = false;
             rulesR1R2cycle(graph);
             ruleR3(graph);
@@ -301,6 +317,10 @@ public final class FciOrient {
             changeFlag = true;
 
             while (changeFlag && !Thread.currentThread().isInterrupted()) {
+                if (Thread.currentThread().isInterrupted()) {
+                    break;
+                }
+
                 changeFlag = false;
                 ruleR6R7(graph);
             }
@@ -309,6 +329,10 @@ public final class FciOrient {
             changeFlag = true;
 
             while (changeFlag && !Thread.currentThread().isInterrupted()) {
+                if (Thread.currentThread().isInterrupted()) {
+                    break;
+                }
+
                 changeFlag = false;
                 rulesR8R9R10(graph);
             }
@@ -336,6 +360,10 @@ public final class FciOrient {
             int[] combination;
 
             while ((combination = cg.next()) != null && !Thread.currentThread().isInterrupted()) {
+                if (Thread.currentThread().isInterrupted()) {
+                    break;
+                }
+
                 Node A = adj.get(combination[0]);
                 Node C = adj.get(combination[1]);
 
@@ -547,7 +575,15 @@ public final class FciOrient {
             List<Node> possC = graph.getNodesInTo(b, Endpoint.CIRCLE);
 
             for (Node a : possA) {
+                if (Thread.currentThread().isInterrupted()) {
+                    break;
+                }
+
                 for (Node c : possC) {
+                    if (Thread.currentThread().isInterrupted()) {
+                        break;
+                    }
+
                     if (!graph.isParentOf(a, c)) {
                         continue;
                     }
@@ -595,6 +631,10 @@ public final class FciOrient {
         // the "visited" set.  b and c are added explicitly here; a will be
         // added in the first while iteration.
         while (reachable.size() > 0) {
+            if (Thread.currentThread().isInterrupted()) {
+                break;
+            }
+
             Node x = reachable.removeFirst();
             visited.add(x);
 
@@ -614,6 +654,10 @@ public final class FciOrient {
             pathExtensions.removeAll(visited);
 
             for (Node d : pathExtensions) {
+                if (Thread.currentThread().isInterrupted()) {
+                    break;
+                }
+
                 // If d is reachable and not adjacent to c, its a DDP
                 // endpoint, so do DDP orientation. Otherwise, if d <-> c,
                 // add d to the list of reachable nodes.
@@ -751,6 +795,10 @@ public final class FciOrient {
         previous.put(a, b);
 
         while (!Q.isEmpty()) {
+            if (Thread.currentThread().isInterrupted()) {
+                break;
+            }
+
             Node t = Q.poll();
 
             if (e == null || e == t) {
@@ -764,6 +812,10 @@ public final class FciOrient {
             final List<Node> nodesInTo = graph.getNodesInTo(t, Endpoint.ARROW);
 
             for (Node d : nodesInTo) {
+                if (Thread.currentThread().isInterrupted()) {
+                    break;
+                }
+
                 if (V.contains(d)) {
                     continue;
                 }
@@ -1302,6 +1354,10 @@ public final class FciOrient {
         List<Node> intoCArrows = graph.getNodesInTo(c, Endpoint.ARROW);
 
         for (Node b : intoCArrows) {
+            if (Thread.currentThread().isInterrupted()) {
+                break;
+            }
+
             if (b == a) {
                 continue;
             }
@@ -1312,6 +1368,10 @@ public final class FciOrient {
             // We know Ao->C and B-->C.
 
             for (Node d : intoCArrows) {
+                if (Thread.currentThread().isInterrupted()) {
+                    break;
+                }
+
                 if (d == a || d == b) {
                     continue;
                 }
@@ -1324,8 +1384,16 @@ public final class FciOrient {
                 List<List<Node>> ucPdPsToB = getUcPdPaths(a, b, graph);
                 List<List<Node>> ucPdPsToD = getUcPdPaths(a, d, graph);
                 for (List<Node> u1 : ucPdPsToB) {
+                    if (Thread.currentThread().isInterrupted()) {
+                        break;
+                    }
+
                     Node m = u1.get(1);
                     for (List<Node> u2 : ucPdPsToD) {
+                        if (Thread.currentThread().isInterrupted()) {
+                            break;
+                        }
+
                         Node n = u2.get(1);
 
                         if (m.equals(n)) {
@@ -1357,6 +1425,10 @@ public final class FciOrient {
 
         for (Iterator<KnowledgeEdge> it
                 = bk.forbiddenEdgesIterator(); it.hasNext();) {
+            if (Thread.currentThread().isInterrupted()) {
+                break;
+            }
+
             KnowledgeEdge edge = it.next();
 
             //match strings to variables in the graph.
@@ -1380,6 +1452,10 @@ public final class FciOrient {
 
         for (Iterator<KnowledgeEdge> it
                 = bk.requiredEdgesIterator(); it.hasNext();) {
+            if (Thread.currentThread().isInterrupted()) {
+                break;
+            }
+
             KnowledgeEdge edge = it.next();
 
             //match strings to variables in this graph

@@ -269,6 +269,10 @@ public class FasStable implements IFas {
                 if ((i + 1) % 100 == 0) out.println("Node # " + (i + 1));
             }
 
+            if (Thread.currentThread().isInterrupted()) {
+                break;
+            }
+
             Node x = nodes.get(i);
 
             for (int j = i + 1; j < nodes.size(); j++) {
@@ -392,6 +396,10 @@ public class FasStable implements IFas {
                     int[] choice;
 
                     while ((choice = cg.next()) != null) {
+                        if (Thread.currentThread().isInterrupted()) {
+                            break;
+                        }
+
                         List<Node> condSet = GraphUtils.asList(choice, ppx);
 
                         boolean independent;
