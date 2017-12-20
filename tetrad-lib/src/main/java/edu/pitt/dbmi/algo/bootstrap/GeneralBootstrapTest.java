@@ -12,6 +12,7 @@ import edu.cmu.tetrad.util.RandomUtil;
 
 import java.io.PrintStream;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -195,6 +196,9 @@ public class GeneralBootstrapTest {
 		Graph graph = generateBootstrapGraph();
 		stop = System.currentTimeMillis();
 		if (verbose) {
+			out.println("Final Bootstrapping Search Result:");
+			out.println(GraphUtils.graphToText(graph));
+			out.println();
 			out.println("probDistribution finished in " + (stop - start) + " ms");
 		}
 
@@ -218,15 +222,27 @@ public class GeneralBootstrapTest {
 		out.println();
 		if(PAGs == null || PAGs.size() == 0)return new EdgeListGraph();
 		
+		int i=0;
 		for (Graph g : PAGs) {
 			if (g != null) {
-				pag = g;
-				break;
+				if(pag == null){
+					pag = g;
+				}
+				if(verbose){
+					out.println("Sampling Search Result (" + i + "):");
+					out.println(GraphUtils.graphToText(g));
+					out.println();
+					i++;
+				}
 			}
 		}
 		if(pag==null)return new EdgeListGraph();
 		
-		Graph complete = new EdgeListGraph(pag.getNodes());
+		// Sort nodes by its name for fixing the edge orientation
+		List<Node> nodes = pag.getNodes();
+		Collections.sort(nodes);
+		
+		Graph complete = new EdgeListGraph(nodes);
 		complete.fullyConnect(Endpoint.TAIL);
 
 		Graph graph = new EdgeListGraph();

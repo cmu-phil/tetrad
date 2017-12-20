@@ -53,12 +53,12 @@ public class FAS implements Algorithm, HasKnowledge, TakesIndependenceWrapper {
             return search.search();
         } else {
             FAS algorithm = new FAS(test);
-
-            algorithm.setKnowledge(knowledge);
+            //algorithm.setKnowledge(knowledge);
 
             DataSet data = (DataSet) dataSet;
 
             GeneralBootstrapTest search = new GeneralBootstrapTest(data, algorithm, parameters.getInt("bootstrapSampleSize"));
+            search.setKnowledge(knowledge);
 
             BootstrapEdgeEnsemble edgeEnsemble = BootstrapEdgeEnsemble.Highest;
             switch (parameters.getInt("bootstrapEnsemble", 1)) {

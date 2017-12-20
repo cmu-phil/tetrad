@@ -67,12 +67,13 @@ public class Gfci implements Algorithm, HasKnowledge, UsesScoreWrapper, TakesInd
         } else {
             Gfci algorithm = new Gfci(test, score);
 
-            algorithm.setKnowledge(knowledge);
+            //algorithm.setKnowledge(knowledge);
 //          if (initialGraph != null) {
 //      		algorithm.setInitialGraph(initialGraph);
 //  		}
             DataSet data = (DataSet) dataSet;
             GeneralBootstrapTest search = new GeneralBootstrapTest(data, algorithm, parameters.getInt("bootstrapSampleSize"));
+            search.setKnowledge(knowledge);
 
             BootstrapEdgeEnsemble edgeEnsemble = BootstrapEdgeEnsemble.Highest;
             switch (parameters.getInt("bootstrapEnsemble", 1)) {

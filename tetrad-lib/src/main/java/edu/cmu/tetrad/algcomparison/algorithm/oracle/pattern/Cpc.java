@@ -61,7 +61,7 @@ public class Cpc implements Algorithm, TakesInitialGraph, HasKnowledge, TakesInd
             return search.search();
     	}else{
     		Cpc cpc = new Cpc(test, algorithm);
-    		cpc.setKnowledge(knowledge);
+    		//cpc.setKnowledge(knowledge);
 //          if (initialGraph != null) {
 //      		cpc.setInitialGraph(initialGraph);
 //  		}
@@ -69,7 +69,8 @@ public class Cpc implements Algorithm, TakesInitialGraph, HasKnowledge, TakesInd
     		DataSet data = (DataSet) dataSet;
     		
     		GeneralBootstrapTest search = new GeneralBootstrapTest(data, cpc, parameters.getInt("bootstrapSampleSize"));
-    		
+            search.setKnowledge(knowledge);
+
     		BootstrapEdgeEnsemble edgeEnsemble = BootstrapEdgeEnsemble.Highest;
     		switch (parameters.getInt("bootstrapEnsemble", 1)) {
     		case 0:

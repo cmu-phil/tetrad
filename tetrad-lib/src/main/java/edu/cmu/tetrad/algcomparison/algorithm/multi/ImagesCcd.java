@@ -56,7 +56,7 @@ public class ImagesCcd implements MultiDataSetAlgorithm, HasKnowledge {
             return search.search();
         } else {
             ImagesCcd imagesCcd = new ImagesCcd();
-            imagesCcd.setKnowledge(knowledge);
+            //imagesCcd.setKnowledge(knowledge);
 
             List<DataSet> datasets = new ArrayList<>();
 
@@ -65,6 +65,7 @@ public class ImagesCcd implements MultiDataSetAlgorithm, HasKnowledge {
             }
             GeneralBootstrapTest search = new GeneralBootstrapTest(datasets, imagesCcd,
                     parameters.getInt("bootstrapSampleSize"));
+            search.setKnowledge(knowledge);
 
             BootstrapEdgeEnsemble edgeEnsemble = BootstrapEdgeEnsemble.Highest;
             switch (parameters.getInt("bootstrapEnsemble", 1)) {

@@ -18,6 +18,7 @@
  */
 package edu.cmu.tetrad.annotation;
 
+import java.io.Serializable;
 import java.lang.annotation.Annotation;
 
 /**
@@ -27,7 +28,9 @@ import java.lang.annotation.Annotation;
  * @author Kevin V. Bui (kvb2@pitt.edu)
  * @param <T> annotation
  */
-public class AnnotatedClass<T extends Annotation> {
+public class AnnotatedClass<T extends Annotation> implements Serializable {
+
+    private static final long serialVersionUID = 5060798016477163171L;
 
     private final Class clazz;
 

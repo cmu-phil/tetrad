@@ -86,7 +86,7 @@ public class FgesConcatenated implements MultiDataSetAlgorithm, HasKnowledge {
 		} else {
 			FgesConcatenated fgesConcatenated = new FgesConcatenated(score, initialGraph);
 			fgesConcatenated.setCompareToTrue(compareToTrue);
-			fgesConcatenated.setKnowledge(knowledge);
+			//fgesConcatenated.setKnowledge(knowledge);
 
 			List<DataSet> datasets = new ArrayList<>();
 
@@ -95,6 +95,7 @@ public class FgesConcatenated implements MultiDataSetAlgorithm, HasKnowledge {
 			}
 			GeneralBootstrapTest search = new GeneralBootstrapTest(datasets, fgesConcatenated,
 					parameters.getInt("bootstrapSampleSize"));
+            search.setKnowledge(knowledge);
 
 			BootstrapEdgeEnsemble edgeEnsemble = BootstrapEdgeEnsemble.Highest;
 			switch (parameters.getInt("bootstrapEnsemble", 1)) {

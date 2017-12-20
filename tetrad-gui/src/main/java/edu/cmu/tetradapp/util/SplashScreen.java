@@ -18,14 +18,26 @@
 // along with this program; if not, write to the Free Software               //
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA //
 ///////////////////////////////////////////////////////////////////////////////
-
 package edu.cmu.tetradapp.util;
 
 import edu.cmu.tetrad.latest.LatestClient;
-
-import javax.swing.*;
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.Frame;
+import java.awt.Graphics;
+import java.awt.Image;
+import java.awt.Rectangle;
+import java.awt.Toolkit;
+import java.awt.Window;
+import javax.swing.BorderFactory;
+import javax.swing.Box;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JProgressBar;
+import javax.swing.JTextArea;
 import javax.swing.border.EmptyBorder;
-import java.awt.*;
 
 /**
  * A class that displays a splashScreen with a progress bar. Everything is
@@ -35,16 +47,25 @@ import java.awt.*;
  * @author Juan Casares
  */
 public class SplashScreen {
+
     private static int MAX;
     private static int COUNTER;
     private static SplashWindow WINDOW;
-    private boolean skipLatest;
+    private static JFrame frame;
 
     public static void show(Frame parent, String title, int max, boolean skipLatest) {
         hide();
         SplashScreen.COUNTER = 0;
         SplashScreen.MAX = max;
         WINDOW = new SplashWindow(parent, null, title, skipLatest);
+    }
+
+    public static void show(String title, int max, boolean skipLatest) {
+        hide();
+        SplashScreen.COUNTER = 0;
+        SplashScreen.MAX = max;
+        frame = new JFrame();
+        WINDOW = new SplashWindow(frame, null, title, skipLatest);
     }
 
     public static void hide() {
@@ -55,15 +76,14 @@ public class SplashScreen {
         WINDOW.bar.setValue(MAX);
         WINDOW.bar.repaint();
 
-        try {
-            Thread.sleep(2000);
-        } catch (InterruptedException e) {
-            // Ignore.
-        }
-
         WINDOW.setVisible(false);
         WINDOW.dispose();
         WINDOW = null;
+
+        if (frame != null) {
+            frame.dispose();
+            frame = null;
+        }
     }
 
     public static void increment() {
@@ -81,6 +101,9 @@ public class SplashScreen {
     }
 
     private static class SplashWindow extends Window {
+
+        private static final long serialVersionUID = 6618487747518635416L;
+
         final Image splashIm;
         final JProgressBar bar;
 
@@ -108,17 +131,17 @@ public class SplashScreen {
 
             String text = LicenseUtils.copyright();
 
-
             // optionally check if we are running latest version
             String version = this.getClass().getPackage().getImplementationVersion();
-            if (! skipLatest) {
+            if (!skipLatest) {
                 LatestClient latestClient = LatestClient.getInstance();
 
                 // if no version it means we are not running a jar so probably development
-                if (version == null) version = "DEVELOPMENT";
+                if (version == null) {
+                    version = "DEVELOPMENT";
+                }
                 latestClient.checkLatest("tetrad", version);
-                StringBuilder latestResult = new StringBuilder(latestClient.getLatestResult(60));
-                text = text + "\n" + latestResult.toString();
+                text = text + "\n" + latestClient.getLatestResult(60);
             }
 
             JTextArea textArea = new JTextArea(text);
@@ -138,12 +161,12 @@ public class SplashScreen {
             setLocation((screenDim.width - bounds.width) / 2,
                     (screenDim.height - bounds.height) / 2);
 
-
             setVisible(true);
             repaint();
         }
 
         // must move to panel
+        @Override
         public void paint(Graphics g) {
             super.paint(g);
             if (splashIm != null) {
@@ -152,9 +175,3 @@ public class SplashScreen {
         }
     }
 }
-
-
-
-
-
-

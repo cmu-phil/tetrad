@@ -54,7 +54,7 @@ public class CcdMaxConcatenated implements MultiDataSetAlgorithm, HasKnowledge {
 			return search.search();
 		} else {
 			CcdMaxConcatenated algorithm = new CcdMaxConcatenated(test);
-			algorithm.setKnowledge(knowledge);
+			//algorithm.setKnowledge(knowledge);
 
 			List<DataSet> dataSets = new ArrayList<>();
 
@@ -63,6 +63,7 @@ public class CcdMaxConcatenated implements MultiDataSetAlgorithm, HasKnowledge {
 			}
 			GeneralBootstrapTest search = new GeneralBootstrapTest(dataSets, algorithm,
 					parameters.getInt("bootstrapSampleSize"));
+            search.setKnowledge(knowledge);
 
 			BootstrapEdgeEnsemble edgeEnsemble = BootstrapEdgeEnsemble.Highest;
 			switch (parameters.getInt("bootstrapEnsemble", 1)) {

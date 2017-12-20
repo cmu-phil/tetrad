@@ -78,7 +78,7 @@ public class Fofc implements Algorithm, TakesInitialGraph, HasKnowledge, Cluster
         } else {
             Fofc algorithm = new Fofc();
 
-            algorithm.setKnowledge(knowledge);
+            //algorithm.setKnowledge(knowledge);
 //          if (initialGraph != null) {
 //      		algorithm.setInitialGraph(initialGraph);
 //  		}
@@ -86,6 +86,7 @@ public class Fofc implements Algorithm, TakesInitialGraph, HasKnowledge, Cluster
             DataSet data = (DataSet) dataSet;
 
             GeneralBootstrapTest search = new GeneralBootstrapTest(data, algorithm, parameters.getInt("bootstrapSampleSize"));
+            search.setKnowledge(knowledge);
 
             BootstrapEdgeEnsemble edgeEnsemble = BootstrapEdgeEnsemble.Highest;
             switch (parameters.getInt("bootstrapEnsemble", 1)) {

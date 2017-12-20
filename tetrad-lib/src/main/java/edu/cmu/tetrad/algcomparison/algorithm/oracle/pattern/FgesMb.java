@@ -81,13 +81,14 @@ public class FgesMb implements Algorithm, TakesInitialGraph, HasKnowledge, UsesS
         } else {
             FgesMb fgesMb = new FgesMb(score, algorithm);
 
-            fgesMb.setKnowledge(knowledge);
+            //fgesMb.setKnowledge(knowledge);
             if (initialGraph != null) {
                 fgesMb.setInitialGraph(initialGraph);
             }
             DataSet data = (DataSet) dataSet;
             GeneralBootstrapTest search = new GeneralBootstrapTest(data, fgesMb,
                     parameters.getInt("bootstrapSampleSize"));
+            search.setKnowledge(knowledge);
 
             BootstrapEdgeEnsemble edgeEnsemble = BootstrapEdgeEnsemble.Highest;
             switch (parameters.getInt("bootstrapEnsemble", 1)) {

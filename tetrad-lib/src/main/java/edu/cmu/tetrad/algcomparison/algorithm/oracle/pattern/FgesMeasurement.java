@@ -66,13 +66,14 @@ public class FgesMeasurement implements Algorithm, TakesInitialGraph, HasKnowled
     	}else{
     		FgesMeasurement fgesMeasurement = new FgesMeasurement(score, algorithm);
     		
-    		fgesMeasurement.setKnowledge(knowledge);
+    		//fgesMeasurement.setKnowledge(knowledge);
 			if (initialGraph != null) {
 				fgesMeasurement.setInitialGraph(initialGraph);
 			}
 			DataSet data = (DataSet) dataModel;
 			GeneralBootstrapTest search = new GeneralBootstrapTest(data, fgesMeasurement,
 					parameters.getInt("bootstrapSampleSize"));
+            search.setKnowledge(knowledge);
 
 			BootstrapEdgeEnsemble edgeEnsemble = BootstrapEdgeEnsemble.Highest;
 			switch (parameters.getInt("bootstrapEnsemble", 1)) {

@@ -70,7 +70,7 @@ public class Bpc implements Algorithm, TakesInitialGraph, HasKnowledge, ClusterA
         } else {
             Bpc algorithm = new Bpc();
 
-            algorithm.setKnowledge(knowledge);
+            //algorithm.setKnowledge(knowledge);
 //          if (initialGraph != null) {
 //      		algorithm.setInitialGraph(initialGraph);
 //  		}
@@ -78,7 +78,8 @@ public class Bpc implements Algorithm, TakesInitialGraph, HasKnowledge, ClusterA
             DataSet data = (DataSet) dataSet;
 
             GeneralBootstrapTest search = new GeneralBootstrapTest(data, algorithm, parameters.getInt("bootstrapSampleSize"));
-
+            search.setKnowledge(knowledge);
+            
             BootstrapEdgeEnsemble edgeEnsemble = BootstrapEdgeEnsemble.Highest;
             switch (parameters.getInt("bootstrapEnsemble", 1)) {
                 case 0:

@@ -57,12 +57,13 @@ public class Rfci implements Algorithm, HasKnowledge, TakesIndependenceWrapper {
             return search.search();
         } else {
             Rfci algorithm = new Rfci(test);
-            algorithm.setKnowledge(knowledge);
+            //algorithm.setKnowledge(knowledge);
 //          if (initialGraph != null) {
 //      		algorithm.setInitialGraph(initialGraph);
 //  		}
             DataSet data = (DataSet) dataSet;
             GeneralBootstrapTest search = new GeneralBootstrapTest(data, algorithm, parameters.getInt("bootstrapSampleSize"));
+            search.setKnowledge(knowledge);
 
             BootstrapEdgeEnsemble edgeEnsemble = BootstrapEdgeEnsemble.Highest;
             switch (parameters.getInt("bootstrapEnsemble", 1)) {

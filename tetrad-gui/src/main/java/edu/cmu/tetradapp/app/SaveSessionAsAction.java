@@ -31,6 +31,7 @@ import edu.cmu.tetradapp.util.SessionEditorIndirectRef;
 import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.io.*;
+import java.util.prefs.Preferences;
 
 /**
  * Saves a session from a file.
@@ -58,8 +59,10 @@ final class SaveSessionAsAction extends AbstractAction {
         TetradMetadata metadata = new TetradMetadata();
 
         // Select the file to save this to.
-        File file = EditorUtils.getSaveFile(sessionEditor.getName(), "tet",
-                JOptionUtils.centeringComp(), true, "Save Session As...");
+        String sessionSaveLocation =
+                Preferences.userRoot().get("sessionSaveLocation", "");
+        File file = EditorUtils.getSaveFileWithPath(sessionEditor.getName(), "tet",
+                JOptionUtils.centeringComp(), true, "Save Session As...", sessionSaveLocation);
 
         if (file == null) {
             this.saved = false;
