@@ -7,8 +7,10 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.sem.LargeScaleSimulation;
+import edu.cmu.tetrad.sem.LargeScaleSimulationSmithSim;
 import edu.cmu.tetrad.util.JOptionUtils;
 import edu.cmu.tetrad.util.Parameters;
+import edu.cmu.tetrad.util.RandomUtil;
 import edu.cmu.tetrad.util.dist.Split;
 
 import javax.swing.*;
@@ -79,7 +81,7 @@ public class LinearFisherModel implements Simulation, TakesData {
             int[] tiers = new int[graph.getNodes().size()];
             for (int j = 0; j < tiers.length; j++) tiers[j] = j;
 
-            LargeScaleSimulation simulator = new LargeScaleSimulation(
+            LargeScaleSimulation simulator = new LargeScaleSimulation (
                     graph, graph.getNodes(), tiers);
             simulator.setCoefRange(
                     parameters.getDouble("coefLow"),
@@ -87,32 +89,18 @@ public class LinearFisherModel implements Simulation, TakesData {
             simulator.setVarRange(
                     parameters.getDouble("varLow"),
                     parameters.getDouble("varHigh"));
-            simulator.setCoefSymmetric(parameters.getBoolean("coefSymmetric"));
+            simulator.setIncludePositiveCoefs(parameters.getBoolean("includePositiveCoefs"));
+            simulator.setIncludeNegativeCoefs(parameters.getBoolean("includeNegativeCoefs"));
+            simulator.setBetaLeftValue(parameters.getDouble("betaLeftValue"));
+            simulator.setBetaRightValue(parameters.getDouble("betaRightValue"));
+            simulator.setSelfLoopCoef(parameters.getDouble("selfLoopCoef"));
             simulator.setMeanRange(
                     parameters.getDouble("meanLow"),
                     parameters.getDouble("meanHigh"));
-
+            simulator.setErrorsNormal(parameters.getBoolean("errorsNormal"));
             simulator.setVerbose(parameters.getBoolean("verbose"));
 
             DataSet dataSet;
-
-//            if (shocks == null) {
-//                dataSet = simulator.simulateDataFisher(
-//                        simulator.getUncorrelatedGaussianShocks(parameters.getInt("sampleSize")),
-//                        parameters.getInt("intervalBetweenShocks"),
-//                        parameters.getInt("intervalBetweenRecordings"),
-//                        parameters.getDouble("fisherEpsilon")
-//                );
-//            } else {
-//                DataSet _shocks = (DataSet) shocks.get(i);
-//
-//                dataSet = simulator.simulateDataFisher(
-//                        _shocks.getDoubleData().toArray(),
-//                        parameters.getInt("intervalBetweenShocks"),
-//                        parameters.getInt("intervalBetweenRecordings"),
-//                        parameters.getDouble("fisherEpsilon")
-//                );
-//            }
 
             if (shocks == null) {
                 dataSet = simulator.simulateDataFisher(
@@ -129,6 +117,18 @@ public class LinearFisherModel implements Simulation, TakesData {
                         parameters.getInt("intervalBetweenShocks"),
                         parameters.getDouble("fisherEpsilon")
                 );
+            }
+
+            double variance = parameters.getDouble("measurementVariance");
+
+            if (variance > 0) {
+                for (int k = 0; k < dataSet.getNumRows(); k++) {
+                    for (int j = 0; j < dataSet.getNumColumns(); j++) {
+                        double d = dataSet.getDouble(k, j);
+                        double delta = RandomUtil.getInstance().nextNormal(0, Math.sqrt(variance));
+                        dataSet.setDouble(k, j, d + delta);
+                    }
+                }
             }
 
             dataSet.setName("" + (i + 1));
@@ -190,7 +190,11 @@ public class LinearFisherModel implements Simulation, TakesData {
         parameters.add("varLow");
         parameters.add("varHigh");
         parameters.add("verbose");
-        parameters.add("coefSymmetric");
+        parameters.add("includePositiveCoefs");
+        parameters.add("includeNegativeCoefs");
+        parameters.add("errorsNormal");
+        parameters.add("betaLeftValue");
+        parameters.add("betaRightValue");
         parameters.add("numRuns");
         parameters.add("percentDiscrete");
         parameters.add("numCategories");
@@ -198,8 +202,11 @@ public class LinearFisherModel implements Simulation, TakesData {
         parameters.add("sampleSize");
         parameters.add("intervalBetweenShocks");
         parameters.add("intervalBetweenRecordings");
+        parameters.add("selfLoopCoef");
         parameters.add("fisherEpsilon");
         parameters.add("randomizeColumns");
+        parameters.add("measurementVariance");
+
         return parameters;
     }
 

@@ -4,6 +4,7 @@ import edu.cmu.tetrad.algcomparison.Comparison;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithms;
 import edu.cmu.tetrad.algcomparison.algorithm.multi.Fask;
 import edu.cmu.tetrad.algcomparison.graph.RandomForward;
+import edu.cmu.tetrad.algcomparison.score.SemBicScore;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.algcomparison.simulation.Simulations;
 import edu.cmu.tetrad.algcomparison.statistic.*;
@@ -47,7 +48,7 @@ public class SpecialExampleSimulationClark {
 
         Algorithms algorithms = new Algorithms();
 
-        algorithms.add(new Fask());
+        algorithms.add(new Fask(new SemBicScore()));
 
         Simulations simulations = new Simulations();
 

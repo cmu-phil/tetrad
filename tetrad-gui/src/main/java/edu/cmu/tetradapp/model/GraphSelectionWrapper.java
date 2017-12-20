@@ -50,7 +50,7 @@ public class GraphSelectionWrapper implements SessionModel, GraphSource, Knowled
     private List<Graph> graphs = new ArrayList<>();
 
     public enum Type {
-        Subgraph, Adjacents, Adjacents_of_Adjacents, Adjacents_of_Adjacents_of_Adjacents, Markov_Blankets, Treks, Trek_Edges,
+        Subgraph, Parents, Children, Adjacents, Adjacents_of_Adjacents, Adjacents_of_Adjacents_of_Adjacents, Markov_Blankets, Treks, Trek_Edges,
         Paths, Path_Edges, Directed_Paths, Directed_Path_Edges, Y_Structures,
         Pag_Y_Structures, Indegree, Out_Degree, Degree
     }
@@ -175,6 +175,24 @@ public class GraphSelectionWrapper implements SessionModel, GraphSource, Knowled
 
             for (Node node : selectedVariables) {
                 adj.addAll((getSelectedGraph(k).getAdjacentNodes(node)));
+            }
+
+            selectedGraph = (getSelectedGraph(k).subgraph(new ArrayList<>(adj)));
+            params.set("highlightInEditor", selectedVariables);
+        } else if (params.getString("graphSelectionType", "subgraph").equals(Type.Parents.toString())) {
+            Set<Node> adj = new HashSet<>(selectedVariables);
+
+            for (Node node : selectedVariables) {
+                adj.addAll((getSelectedGraph(k).getParents(node)));
+            }
+
+            selectedGraph = (getSelectedGraph(k).subgraph(new ArrayList<>(adj)));
+            params.set("highlightInEditor", selectedVariables);
+        } else if (params.getString("graphSelectionType", "subgraph").equals(Type.Children.toString())) {
+            Set<Node> adj = new HashSet<>(selectedVariables);
+
+            for (Node node : selectedVariables) {
+                adj.addAll((getSelectedGraph(k).getChildren(node)));
             }
 
             selectedGraph = (getSelectedGraph(k).subgraph(new ArrayList<>(adj)));

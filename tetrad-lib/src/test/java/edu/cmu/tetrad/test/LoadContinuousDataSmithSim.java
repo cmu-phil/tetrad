@@ -19,29 +19,32 @@ import java.util.List;
  */
 public class LoadContinuousDataSmithSim implements Simulation, HasParameterValues {
     static final long serialVersionUID = 23L;
+    private final int index;
     private String path;
     private Graph graph = null;
     private List<DataSet> dataSets = new ArrayList<>();
     private List<String> usedParameters = new ArrayList<>();
     private Parameters parametersValues = new Parameters();
 
-    public LoadContinuousDataSmithSim(String path) {
+    public LoadContinuousDataSmithSim(String path, int index) {
         this.path = path;
+        this.index = index;
         String structure = new File(path).getName();
-        parametersValues.set("Structure", structure);
+        parametersValues.set("Structure", structure + " " + index);
     }
 
     @Override
     public void createData(Parameters parameters) {
         this.dataSets = new ArrayList<>();
 
-        File dir2 = new File(path + "/graph");
+        File dir2 = new File(path + "/models");
 
         if (dir2.exists()) {
             File[] files = dir2.listFiles();
 
             for (File file : files) {
                 if (!file.getName().endsWith(".txt")) continue;
+                if (!file.getName().contains("sim" + index + ".")) continue;
 
                 System.out.println("Loading graph from " + file.getAbsolutePath());
                 this.graph = readGraph(file);
@@ -64,6 +67,7 @@ public class LoadContinuousDataSmithSim implements Simulation, HasParameterValue
 
             for (File file : files) {
                 if (!file.getName().endsWith(".txt")) continue;
+                if (!file.getName().contains("sim" + index + ".")) continue;
                 System.out.println("Loading data from " + file.getAbsolutePath());
                 try {
                     DataReader reader = new DataReader();
@@ -75,6 +79,7 @@ public class LoadContinuousDataSmithSim implements Simulation, HasParameterValue
                         DataReader reader2 = new DataReader();
                         reader2.setVariablesSupplied(false);
                         reader2.setDelimiter(DelimiterType.WHITESPACE);
+                        reader2.setDelimiter(DelimiterType.COMMA);
                         dataSet = reader2.parseTabular(file);
 //                    }
 
@@ -116,7 +121,7 @@ public class LoadContinuousDataSmithSim implements Simulation, HasParameterValue
     public String getDescription() {
         try {
             StringBuilder b = new StringBuilder();
-            b.append("Load data sets and graphs from a directory.").append("\n\n");
+            b.append("Smith sim " + index).append("\n\n");
             return b.toString();
         } catch (Exception e) {
             throw new RuntimeException(e);
@@ -152,14 +157,20 @@ public class LoadContinuousDataSmithSim implements Simulation, HasParameterValue
 
             DataSet data = reader.parseTabular(file);
             List<Node> variables = data.getVariables();
-            Graph graph = new EdgeListGraph(variables);
 
+            List<Node> _variables = new ArrayList<>();
             for (int i = 0; i < variables.size(); i++) {
-                for (int j = 0; j < variables.size(); j++) {
+                _variables.add(new ContinuousVariable(variables.get(i).getName()));
+            }
+
+            Graph graph = new EdgeListGraph(_variables);
+
+            for (int i = 0; i < _variables.size(); i++) {
+                for (int j = 0; j < _variables.size(); j++) {
                     if (i == j) continue;
 
                     if (data.getDouble(i, j) != 0) {
-                        graph.addDirectedEdge(variables.get(i), variables.get(j));
+                        graph.addDirectedEdge(_variables.get(i), _variables.get(j));
                     }
                 }
             }

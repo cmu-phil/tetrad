@@ -55,18 +55,32 @@ public class MBFS implements Algorithm, HasKnowledge, TakesIndependenceWrapper {
     @Override
     public Graph search(DataModel dataSet, Parameters parameters) {
     	if (parameters.getInt("bootstrapSampleSize") < 1) {
-            IndependenceTest test = this.test.getTest(dataSet, parameters);
-            edu.cmu.tetrad.search.Mbfs search = new edu.cmu.tetrad.search.Mbfs(
-                    test,
-                    parameters.getInt("depth")
-            );
+    	    if (parameters.getBoolean("adjacentsOnly")) {
+                IndependenceTest test = this.test.getTest(dataSet, parameters);
+                edu.cmu.tetrad.search.Mbfs search = new edu.cmu.tetrad.search.Mbfs(
+                        test,
+                        parameters.getInt("depth")
+                );
 
-            search.setDepth(parameters.getInt("depth"));
-            search.setKnowledge(knowledge);
+                search.setDepth(parameters.getInt("depth"));
+                search.setKnowledge(knowledge);
 
-            this.targetName = parameters.getString("targetName");
-            Node target = test.getVariable(targetName);
-            return search.search(target);
+                this.targetName = parameters.getString("targetName");
+                Node target = test.getVariable(targetName);
+                return search.search(target);
+            } else {
+                IndependenceTest test = this.test.getTest(dataSet, parameters);
+                edu.cmu.tetrad.search.Cefs search = new edu.cmu.tetrad.search.Cefs(
+                        test,
+                        parameters.getInt("depth")
+                );
+
+                search.setDepth(parameters.getInt("depth"));
+                search.setKnowledge(knowledge);
+
+                this.targetName = parameters.getString("targetName");
+                return search.search(targetName);
+            }
         } else {
             MBFS algorithm = new MBFS(test);
 
@@ -115,6 +129,7 @@ public class MBFS implements Algorithm, HasKnowledge, TakesIndependenceWrapper {
         List<String> parameters = test.getParameters();
         parameters.add("depth");
         parameters.add("targetName");
+        parameters.add("adjacentsOnly");
         // Bootstrapping
         parameters.add("bootstrapSampleSize");
         parameters.add("bootstrapEnsemble");

@@ -24,14 +24,17 @@ package edu.cmu.tetrad.test;
 import edu.cmu.tetrad.algcomparison.Comparison;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithms;
 import edu.cmu.tetrad.algcomparison.algorithm.multi.*;
+import edu.cmu.tetrad.algcomparison.score.SemBicScore;
 import edu.cmu.tetrad.algcomparison.simulation.Simulations;
 import edu.cmu.tetrad.algcomparison.statistic.*;
 import edu.cmu.tetrad.data.ContinuousVariable;
+import edu.cmu.tetrad.data.CovarianceMatrixOnTheFly;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.Fask;
+import edu.cmu.tetrad.search.Lofs2;
 import edu.cmu.tetrad.sem.GeneralizedSemIm;
 import edu.cmu.tetrad.sem.GeneralizedSemPm;
 import edu.cmu.tetrad.util.Parameters;
@@ -46,15 +49,14 @@ import java.text.ParseException;
  */
 public class TestSimulatedFmri {
 
-    public void TestCycles_Data_fMRI_FASK() {
-        task(false);
-    }
-
     private void task(boolean testing) {
         Parameters parameters = new Parameters();
-        parameters.set("penaltyDiscount", 6);
+        parameters.set("penaltyDiscount", 4);
         parameters.set("depth", -1);
-        parameters.set("twoCycleAlpha", 1e-6);
+        parameters.set("twoCycleAlpha", 1e-10);
+        parameters.set("faskDelta", -.2);
+        parameters.set("reverseOrientationsBySignOfCorrelation", false);
+        parameters.set("reverseOrientationsBySkewnessOfVariables", false);
 
         parameters.set("numRuns", 10);
         parameters.set("randomSelectionSize", 10);
@@ -175,8 +177,11 @@ public class TestSimulatedFmri {
 
         Algorithms algorithms = new Algorithms();
 
-        algorithms.add(new FaskConcatenated(false));
-//
+        algorithms.add(new FaskConcatenated(new SemBicScore()));
+//        algorithms.add(new FaskGfciConcatenated(new SemBicTest()));
+
+//        algorithms.add(new FasLofsConcatenated(Lofs2.Rule.RSkew));
+
         Comparison comparison = new Comparison();
 
         comparison.setShowAlgorithmIndices(true);
@@ -195,6 +200,83 @@ public class TestSimulatedFmri {
         } else {
             directory = "comparison_testing";
         }
+
+        comparison.compareFromSimulations(directory, simulations, algorithms, statistics, parameters);
+    }
+
+//    @Test
+    public void task2() {
+        Parameters parameters = new Parameters();
+        parameters.set("penaltyDiscount", 1);
+        parameters.set("depth", -1);
+        parameters.set("twoCycleAlpha", 0);
+        parameters.set("faskDelta", -.1);
+
+        parameters.set("numRuns", 10);
+        parameters.set("randomSelectionSize", 2);
+
+        parameters.set("Structure", "Placeholder");
+
+        Statistics statistics = new Statistics();
+
+        statistics.add(new ParameterColumn("Structure"));
+        statistics.add(new AdjacencyPrecision());
+        statistics.add(new AdjacencyRecall());
+//        statistics.add(new MathewsCorrAdj());
+        statistics.add(new ArrowheadPrecision());
+        statistics.add(new ArrowheadRecall());
+        statistics.add(new TwoCyclePrecision());
+        statistics.add(new TwoCycleRecall());
+        statistics.add(new TwoCycleFalsePositive());
+        statistics.add(new TwoCycleFalseNegative());
+        statistics.add(new TwoCycleTruePositive());
+        statistics.add(new ElapsedTime());
+        statistics.setWeight("AHR", 1.0);
+        statistics.setWeight("2CP", 1.0);
+        statistics.setWeight("2CR", 1.0);
+        statistics.setWeight("2CFP", 1.0);
+
+        Simulations simulations = new Simulations();
+
+        Algorithms algorithms = new Algorithms();
+
+        for (int i = 1; i <= 28; i++) {
+//            if (i == 21) continue;
+            simulations.add(new LoadContinuousDataSmithSim("/Users/user/Downloads/smithsim/", i));
+//            simulations.add(new LoadContinuousDataPwdd7("/Users/user/Downloads/pwdd7/", i, "50_BOLDdemefilt1"));
+//            simulations.add(new LoadContinuousDataPwdd7("/Users/user/Downloads/pwdd7/", i, "50_BOLDnoise"));
+        }
+
+//        algorithms.add(new LofsConcatenated(Lofs2.Rule.FASKLR));
+//        algorithms.add(new LofsConcatenated(Lofs2.Rule.R1));
+//        algorithms.add(new LofsConcatenated(Lofs2.Rule.R3));
+//        algorithms.add(new LofsConcatenated(Lofs2.Rule.RSkew));
+//        algorithms.add(new LofsConcatenated(Lofs2.Rule.RSkewE));
+//        algorithms.add(new LofsConcatenated(Lofs2.Rule.Skew));
+//        algorithms.add(new LofsConcatenated(Lofs2.Rule.SkewE));
+//        algorithms.add(new LofsConcatenated(Lofs2.Rule.Patel));
+
+        algorithms.add(new FaskConcatenated( new SemBicScore()));
+//        algorithms.add(new FasLofsConcatenated(Lofs2.Rule.R1));
+//        algorithms.add(new FasLofsConcatenated(Lofs2.Rule.R3));
+//        algorithms.add(new FasLofsConcatenated(Lofs2.Rule.RSkew));
+//        algorithms.add(new FasLofsConfcatenated(Lofs2.Rule.RSkewE));
+//        algorithms.add(new FasLofsConcatenated(Lofs2.Rule.Skew));
+//        algorithms.add(new FasLofsConcatenated(Lofs2.Rule.SkewE));
+//        algorithms.add(new FasLofsConcatenated(Lofs2.Rule.Patel));
+
+        Comparison comparison = new Comparison();
+
+        comparison.setShowAlgorithmIndices(true);
+        comparison.setShowSimulationIndices(true);
+        comparison.setSortByUtility(false);
+        comparison.setShowUtilities(false);
+        comparison.setParallelized(false);
+        comparison.setSaveGraphs(false);
+        comparison.setTabDelimitedTables(false);
+        comparison.setSaveGraphs(true);
+
+        String directory = "smithsim";
 
         comparison.compareFromSimulations(directory, simulations, algorithms, statistics, parameters);
     }
@@ -254,7 +336,7 @@ public class TestSimulatedFmri {
 //
 //        algorithms.add(new FgesConcatenated(new edu.cmu.tetrad.algcomparison.score.SemBicScore(), true));
 //        algorithms.add(new PcStableMaxConcatenated(new SemBicTest(), true));
-        algorithms.add(new FaskConcatenated());
+        algorithms.add(new FaskConcatenated(new SemBicScore()));
 //        algorithms.add(new FasLofsConcatenated(Lofs2.Rule.R1));
 //        algorithms.add(new FasLofsConcatenated(Lofs2.Rule.R2));
 //        algorithms.add(new FasLofsConcatenated(Lofs2.Rule.R3));
@@ -316,7 +398,10 @@ public class TestSimulatedFmri {
                 GeneralizedSemIm im = new GeneralizedSemIm(pm);
                 DataSet data = im.simulateData(N, false);
 
-                Fask fask = new Fask(data);
+                edu.cmu.tetrad.search.SemBicScore score = new edu.cmu.tetrad.search.SemBicScore(new CovarianceMatrixOnTheFly(data, false));
+                score.setPenaltyDiscount(penaltyDiscount);
+
+                Fask fask = new Fask(data, score);
                 fask.setPenaltyDiscount(penaltyDiscount);
                 fask.setAlpha(alpha);
                 Graph out = fask.search();
@@ -356,7 +441,10 @@ public class TestSimulatedFmri {
                 GeneralizedSemIm im = new GeneralizedSemIm(pm);
                 DataSet data = im.simulateData(N, false);
 
-                Fask fask = new Fask(data);
+                edu.cmu.tetrad.search.SemBicScore score = new edu.cmu.tetrad.search.SemBicScore(new CovarianceMatrixOnTheFly(data, false));
+                score.setPenaltyDiscount(penaltyDiscount);
+
+                Fask fask = new Fask(data, score);
                 fask.setPenaltyDiscount(penaltyDiscount);
                 fask.setAlpha(alpha);
                 Graph out = fask.search();
@@ -399,10 +487,13 @@ public class TestSimulatedFmri {
             System.out.println(e);
         }
 
+
         GeneralizedSemIm im = new GeneralizedSemIm(pm);
         DataSet data = im.simulateData(1000, false);
 
-        Fask fask = new Fask(data);
+        edu.cmu.tetrad.search.SemBicScore score = new edu.cmu.tetrad.search.SemBicScore(new CovarianceMatrixOnTheFly(data, false));
+
+        Fask fask = new Fask(data, score);
         fask.setPenaltyDiscount(1);
         fask.setAlpha(0.5);
         Graph out = fask.search();
@@ -411,7 +502,7 @@ public class TestSimulatedFmri {
     }
 
     public static void main(String... args) {
-        new TestSimulatedFmri().TestCycles_Data_fMRI_FASK();
+        new TestSimulatedFmri().task(false);
     }
 }
 

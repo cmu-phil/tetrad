@@ -94,7 +94,7 @@ public class SemBicScore implements Score {
 
         try {
             double s2 = getCovariances().getValue(i, i);
-            int p = parents.length;
+            int k = parents.length + 1;
 
             TetradMatrix covxx = getSelection(getCovariances(), parents, parents);
             TetradVector covxy = getSelection(getCovariances(), parents, new int[]{i}).getColumn(0);
@@ -109,8 +109,9 @@ public class SemBicScore implements Score {
             }
 
             int n = getSampleSize();
-            return -(n) * log(s2) - getPenaltyDiscount() * log(n);
-            // + getStructurePrior(parents.length);// - getStructurePrior(parents.length + 1);
+            return -(n) * log(s2) - getPenaltyDiscount() * k * log(n);
+//                    + getStructurePrior(parents.length);
+//                    - getStructurePrior(parents.length);
         } catch (Exception e) {
             boolean removedOne = true;
 
@@ -182,7 +183,11 @@ public class SemBicScore implements Score {
 //            return -a / Math.sqrt(b * c);
 //        } else {
         int[] indices = new int[z.size() + 2];
-        indices[0] = indexMap.get(x);
+        try {
+            indices[0] = indexMap.get(x);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         indices[1] = indexMap.get(y);
         for (int i = 0; i < z.size(); i++) indices[i + 2] = indexMap.get(z.get(i));
         TetradMatrix submatrix = covariances.getSubmatrix(indices).getMatrix();

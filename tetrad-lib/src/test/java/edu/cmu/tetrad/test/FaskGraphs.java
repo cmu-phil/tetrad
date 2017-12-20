@@ -1,6 +1,8 @@
 package edu.cmu.tetrad.test;
 
 import edu.cmu.tetrad.algcomparison.algorithm.multi.Fask;
+import edu.cmu.tetrad.algcomparison.score.SemBicScore;
+import edu.cmu.tetrad.data.CovarianceMatrixOnTheFly;
 import edu.cmu.tetrad.data.DataReader;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DelimiterType;
@@ -113,7 +115,8 @@ public class FaskGraphs {
                         DataSet dataSet = reader.parseTabular(new File(path, name));
                         filenames.add(name);
                         datasets.add(dataSet);
-                        Fask fask = new Fask();
+
+                        Fask fask = new Fask(new SemBicScore());
                         Graph search = fask.search(dataSet, parameters);
                         graphs.add(search);
                     } else if (name.contains("typical")) {
@@ -121,7 +124,7 @@ public class FaskGraphs {
                         DataSet dataSet = reader.parseTabular(new File(path, name));
                         filenames.add(name);
                         datasets.add(dataSet);
-                        Fask fask = new Fask();
+                        Fask fask = new Fask(new SemBicScore());
                         Graph search = fask.search(dataSet, parameters);
                         graphs.add(search);
                     }

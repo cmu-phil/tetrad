@@ -148,7 +148,7 @@ public class ParamDescriptions {
 
         map.put("ngAlpha", new ParamDescription("Alpha for testing non-Gaussianity (min = 0.0)", 0.05, 0.0, 1.0));
 
-        map.put("twoCycleAlpha", new ParamDescription("Alpha orienting 2-cycles (min = 0.0)", 1e-6, 0.0, 1.0));
+        map.put("twoCycleAlpha", new ParamDescription("Alpha for orienting 2-cycles (min = 0.0)", 1e-6, 0.0, 1.0));
 
         map.put("symmetricFirstStep", new ParamDescription("Yes if the first step step for FGES should do scoring for both X->Y and Y->X", false));
 
@@ -217,6 +217,60 @@ public class ParamDescriptions {
         map.put("percentStability", new ParamDescription(
                 "Percentage of subsamples each feature in the output must agree on",
                 0.5, 0.0, 1.0));
+
+        map.put("includePositiveCoefs", new ParamDescription(
+                "Yes if positive coefficients should be included in the model",
+                true));
+
+        map.put("includeNegativeCoefs", new ParamDescription(
+                "Yes if negative coefficients should be included in the model",
+                true));
+
+        map.put("errorsNormal", new ParamDescription(
+                "Yes if errors should be Normal; No if they should be Beta",
+                true));
+
+        map.put("betaLeftValue", new ParamDescription(
+                "For Beta(x, y), the 'x'",
+                1, 1, Double.POSITIVE_INFINITY));
+
+        map.put("betaRightValue", new ParamDescription(
+                "For Beta(x, y), the 'y'",
+                5, 1, Double.POSITIVE_INFINITY));
+
+        map.put("measurementVariance", new ParamDescription(
+                "Variance of independent measurement noise added each variable",
+                0.0, 0.0, Double.POSITIVE_INFINITY));
+
+        map.put("selfLoopCoef", new ParamDescription(
+                "Self loop coefficient (for all variables), default 0.0",
+                0.0, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY));
+
+        map.put("adjacentsOnly", new ParamDescription(
+                "Yes if the search should be over parents and children only; No if parents of children should be included",
+                false));
+
+        map.put("doNonparanormalTransform", new ParamDescription(
+                "Yes if a nonparanormal transform of the data should be done",
+                false));
+
+        map.put("extraEdgeThreshold", new ParamDescription(
+                "Threshold for including extra edges",
+                0.3, 0.0, 1.0));
+
+        map.put("useFasAdjacencies", new ParamDescription(
+                "Yes if adjacencies from the FAS search should be used",
+                true));
+
+        map.put("useCorrDiffAdjacencies", new ParamDescription(
+                "Yes if adjacencies from conditional correlation differences should be used",
+                true));
+
+        map.put("faskDelta", new ParamDescription(
+                "Threshold for judging negative coefficient edges as X->Y (range (-1, 0)",
+                -0.2, -1.0, 1.0));
+
+
     }
 
     public static ParamDescriptions getInstance() {

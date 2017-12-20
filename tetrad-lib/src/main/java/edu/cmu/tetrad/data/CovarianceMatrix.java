@@ -96,12 +96,15 @@ public class CovarianceMatrix implements ICovarianceMatrix {
     /**
      * Constructs a new covariance matrix from the given data set.
      *
+     * @param dataSet A cenetered dataset.
      * @throws IllegalArgumentException if this is not a continuous data set.
      */
     public CovarianceMatrix(DataSet dataSet) {
         if (!dataSet.isContinuous()) {
             throw new IllegalArgumentException("Not a continuous data set.");
         }
+
+        dataSet = DataUtils.center(dataSet);
 
         this.matrix = new TetradMatrix(dataSet.getNumColumns(), dataSet.getNumColumns());
 

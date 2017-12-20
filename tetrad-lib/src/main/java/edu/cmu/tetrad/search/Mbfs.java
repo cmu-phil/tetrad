@@ -491,7 +491,6 @@ public final class Mbfs implements MbSearch, GraphSearch {
      * @param depth Ibid.
      */
     public void setDepth(int depth) {
-        if (depth < 0) throw new IllegalArgumentException("Depth must be >= 0: " + depth);
         this.depth = depth;
     }
 

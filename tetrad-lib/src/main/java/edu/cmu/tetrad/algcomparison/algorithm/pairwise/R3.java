@@ -68,7 +68,7 @@ public class R3 implements Algorithm, TakesInitialGraph {
 
             Lofs2 lofs = new Lofs2(initialGraph, dataSets);
             lofs.setRule(Lofs2.Rule.R3);
-            lofs.setKnowledge(knowledge);
+//            lofs.setKnowledge(knowledge);
 
             return lofs.orient();
         } else {

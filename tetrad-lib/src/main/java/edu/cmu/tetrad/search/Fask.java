@@ -26,15 +26,14 @@ import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.DepthChoiceGenerator;
 import edu.cmu.tetrad.util.StatUtils;
 import edu.cmu.tetrad.util.TetradMatrix;
-import org.apache.commons.math3.distribution.NormalDistribution;
 import org.apache.commons.math3.linear.SingularMatrixException;
 
-import java.awt.*;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import static edu.cmu.tetrad.util.StatUtils.skewness;
 import static java.lang.Math.*;
 
 /**
@@ -45,6 +44,12 @@ import static java.lang.Math.*;
  * @author Joseph Ramsey
  */
 public final class Fask implements GraphSearch {
+
+    // The score to be used for the FAS adjacency search.
+    private final Score score;
+
+    // An initial graph to orient, skipping the adjacency step.
+    private Graph initialGraph = null;
 
     // Elapsed time of the search, in milliseconds.
     private long elapsed = 0;
@@ -71,11 +76,24 @@ public final class Fask implements GraphSearch {
     // Cutoff for T tests for 2-cycle tests.
     private double cutoff;
 
+    // A threshold for including extra adjacencies due to skewness.
+    private double extraEdgeThreshold = 0.3;
+
+    // True if FAS adjacencies should be included in the output.
+    private boolean useFasAdjacencies = true;
+
+    // True if skew adjacencies should be included in the output.
+    private boolean useSkewAdjacencies = true;
+
+    // Threshold for reversing casual judgments for negative coefficients.
+    private double delta = -0.2;
+
     /**
      * @param dataSet These datasets must all have the same variables, in the same order.
      */
-    public Fask(DataSet dataSet) {
+    public Fask(DataSet dataSet, Score score) {
         this.dataSet = dataSet;
+        this.score = score;
 
         data = dataSet.getDoubleData().transpose().toArray();
     }
@@ -96,22 +114,35 @@ public final class Fask implements GraphSearch {
 
         setCutoff(alpha);
 
-        DataSet dataSet = DataUtils.center(this.dataSet);
+        DataSet dataSet = DataUtils.standardizeData(this.dataSet);
 
-        SemBicScore score = new SemBicScore(new CovarianceMatrixOnTheFly(dataSet));
-        score.setPenaltyDiscount(penaltyDiscount);
-        IndependenceTest test = new IndTestScore(score, dataSet);
         List<Node> variables = dataSet.getVariables();
-
         double[][] colData = dataSet.getDoubleData().transpose().toArray();
+        Graph G0;
 
-        System.out.println("FAS");
+        if (getInitialGraph() != null) {
+            Graph g1 = new EdgeListGraph(getInitialGraph().getNodes());
 
-        FasStable fas = new FasStable(test);
-        fas.setDepth(getDepth());
-        fas.setVerbose(false);
-        fas.setKnowledge(knowledge);
-        Graph G0 = fas.search();
+            for (Edge edge : getInitialGraph().getEdges()) {
+                Node x = edge.getNode1();
+                Node y = edge.getNode2();
+
+                if (!g1.isAdjacentTo(x, y)) g1.addUndirectedEdge(x, y);
+            }
+
+            g1 = GraphUtils.replaceNodes(g1, dataSet.getVariables());
+
+            G0 = g1;
+        } else {
+            IndependenceTest test = new IndTestScore(score, dataSet);
+            System.out.println("FAS");
+
+            FasStable fas = new FasStable(test);
+            fas.setDepth(getDepth());
+            fas.setVerbose(false);
+            fas.setKnowledge(knowledge);
+            G0 = fas.search();
+        }
 
         SearchGraphUtils.pcOrientbk(knowledge, G0, G0.getNodes());
 
@@ -131,7 +162,7 @@ public final class Fask implements GraphSearch {
                 double c1 = StatUtils.cov(x, y, x, 0, +1)[1];
                 double c2 = StatUtils.cov(x, y, y, 0, +1)[1];
 
-                if (G0.isAdjacentTo(X, Y) || Math.abs(c1 - c2) > .3) {
+                if ((isUseFasAdjacencies() && G0.isAdjacentTo(X, Y)) || (isUseSkewAdjacencies() && Math.abs(c1 - c2) > getExtraEdgeThreshold())) {
                     if (knowledgeOrients(X, Y)) {
                         graph.addDirectedEdge(X, Y);
                     } else if (knowledgeOrients(Y, X)) {
@@ -139,16 +170,14 @@ public final class Fask implements GraphSearch {
                     } else if (bidirected(x, y, G0, X, Y)) {
                         Edge edge1 = Edges.directedEdge(X, Y);
                         Edge edge2 = Edges.directedEdge(Y, X);
-
-                        edge1.setLineColor(Color.GREEN);
-                        edge2.setLineColor(Color.GREEN);
-
                         graph.addEdge(edge1);
                         graph.addEdge(edge2);
-                    } else if (leftright(x, y)) {
-                        graph.addDirectedEdge(X, Y);
                     } else {
-                        graph.addDirectedEdge(Y, X);
+                        if (leftright(x, y)) {
+                            graph.addDirectedEdge(X, Y);
+                        } else {
+                            graph.addDirectedEdge(Y, X);
+                        }
                     }
                 }
             }
@@ -199,12 +228,6 @@ public final class Fask implements GraphSearch {
             double zv1 = (z - z1) / sqrt((1.0 / ((double) nc - 3) + 1.0 / ((double) nc1 - 3)));
             double zv2 = (z - z2) / sqrt((1.0 / ((double) nc - 3) + 1.0 / ((double) nc2 - 3)));
 
-//            double p1 = 2 * (1.0 - new NormalDistribution(0, 1).cumulativeProbability(abs(zv1)));
-//            double p2 = 2 * (1.0 - new NormalDistribution(0, 1).cumulativeProbability(abs(zv2)));
-
-//            boolean rejected1 = p1 < twoCycleAlpha;
-//            boolean rejected2 = p2 < twoCycleAlpha;
-
             boolean rejected1 = abs(zv1) > cutoff;
             boolean rejected2 = abs(zv2) > cutoff;
 
@@ -229,11 +252,20 @@ public final class Fask implements GraphSearch {
     private boolean leftright(double[] x, double[] y) {
         double left = cu(x, y, x) / (sqrt(cu(x, x, x) * cu(y, y, x)));
         double right = cu(x, y, y) / (sqrt(cu(x, x, y) * cu(y, y, y)));
+        double lr = left - right;
 
-        return (StatUtils.correlation(x, y) * (left - right) > 0);
+        double r = StatUtils.correlation(x, y);
+        double sx = StatUtils.skewness(x);
+        double sy = StatUtils.skewness(y);
+
+        r *= signum(sx) * signum(sy);
+        lr *= signum(r);
+        if (r < getDelta()) lr *= -1;
+
+        return lr > 0;
     }
 
-    public static double cu(double[] x, double[] y, double[] condition) {
+    private static double cu(double[] x, double[] y, double[] condition) {
         double exy = 0.0;
 
         int n = 0;
@@ -333,6 +365,45 @@ public final class Fask implements GraphSearch {
         return knowledge.isForbidden(right.getName(), left.getName()) || knowledge.isRequired(left.getName(), right.getName());
     }
 
+    public Graph getInitialGraph() {
+        return initialGraph;
+    }
+
+    public void setInitialGraph(Graph initialGraph) {
+        this.initialGraph = initialGraph;
+    }
+
+    public double getExtraEdgeThreshold() {
+        return extraEdgeThreshold;
+    }
+
+    public void setExtraEdgeThreshold(double extraEdgeThreshold) {
+        this.extraEdgeThreshold = extraEdgeThreshold;
+    }
+
+    public boolean isUseFasAdjacencies() {
+        return useFasAdjacencies;
+    }
+
+    public void setUseFasAdjacencies(boolean useFasAdjacencies) {
+        this.useFasAdjacencies = useFasAdjacencies;
+    }
+
+    public boolean isUseSkewAdjacencies() {
+        return useSkewAdjacencies;
+    }
+
+    public void setUseSkewAdjacencies(boolean useSkewAdjacencies) {
+        this.useSkewAdjacencies = useSkewAdjacencies;
+    }
+
+    public double getDelta() {
+        return delta;
+    }
+
+    public void setDelta(double delta) {
+        this.delta = delta;
+    }
 }
 
 

@@ -29,6 +29,8 @@ import edu.cmu.tetrad.util.TetradSerializableUtils;
 import edu.cmu.tetradapp.model.DataWrapper;
 import edu.cmu.tetradapp.model.PcRunner;
 
+import java.util.List;
+
 /**
  * Add description
  *
@@ -74,12 +76,27 @@ public class SubsetSelectedVariablesWrapper extends DataWrapper {
 
 
     private static DataModel createRectangularModel(DataSet data) {
-        for (int i = data.getNumColumns() -1; i >= 0; i--) {
-            if (!data.isSelected(data.getVariable(i))) {
-                data.removeColumn(i);
+        int numSelected = 0;
+
+        List<Node> variables = data.getVariables();
+
+        for (Node node : variables) {
+            if (data.isSelected(node)) {
+                numSelected++;
             }
-        }                                    
-        return data;
+        }
+
+        int[] selectedIndices = new int[numSelected];
+        int index = 0;
+
+        for (int i = 0; i < variables.size(); i++) {
+            Node node = variables.get(i);
+            if (data.isSelected(node)) {
+                selectedIndices[index++] = i;
+            }
+        }
+
+        return data.subsetColumns(selectedIndices);
     }
 
     private static DataModel createCovarianceModel(ICovarianceMatrix data) {

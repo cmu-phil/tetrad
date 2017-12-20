@@ -58,6 +58,15 @@ public final class FgesMb {
 
 
     private List<Node> targets;
+    private boolean adjacentsOnly = false;
+
+    public boolean isAdjacentsOnly() {
+        return adjacentsOnly;
+    }
+
+    public void setAdjacentsOnly(boolean adjacentsOnly) {
+        this.adjacentsOnly = adjacentsOnly;
+    }
 
     /**
      * Internal.
@@ -291,13 +300,15 @@ public final class FgesMb {
 
         if (targets == null) throw new NullPointerException();
 
+        List<Node> _targets = new ArrayList<>();
+
         for (Node target : targets) {
             if (!fgesScore.getVariables().contains(target)) throw new IllegalArgumentException(
                     "Target is not one of the variables for the fgesScore."
             );
         }
 
-        this.targets = targets;
+        this.targets = _targets;
 
         topGraphs.clear();
 
@@ -333,11 +344,17 @@ public final class FgesMb {
         Set<Node> mb = new HashSet<>();
         mb.addAll(targets);
 
-        for (Node target : targets) {
-            mb.addAll(graph.getAdjacentNodes(target));
+        if (isAdjacentsOnly()) {
+            for (Node target : targets) {
+                mb.addAll(graph.getAdjacentNodes(target));
+            }
+        } else {
+            for (Node target : targets) {
+                mb.addAll(graph.getAdjacentNodes(target));
 
-            for (Node child : graph.getChildren(target)) {
-                mb.addAll(graph.getParents(child));
+                for (Node child : graph.getChildren(target)) {
+                    mb.addAll(graph.getParents(child));
+                }
             }
         }
 
@@ -363,7 +380,7 @@ public final class FgesMb {
         final Set emptySet = new HashSet();
 
         for (final Node target : targets) {
-            for (final Node x : fgesScore.getVariables()) {
+            for (final Node x : nodes) {
                 if (targets.contains(x)) {
                     continue;
                 }
@@ -372,50 +389,72 @@ public final class FgesMb {
                 int parent = hashIndices.get(x);
                 double bump = fgesScore.localScoreDiff(parent, child);
 
-                if (bump > 0) {
-                    synchronized (effectEdgesGraph) {
-                        effectEdgesGraph.addNode(x);
-                    }
-
-                    addUnconditionalArrows(x, target, emptySet);
-
-                    class MbAboutNodeTask extends RecursiveTask<Boolean> {
-
-                        public MbAboutNodeTask() {
+                if (isAdjacentsOnly()) {
+                    if (bump > 0) {
+                        synchronized (effectEdgesGraph) {
+                            effectEdgesGraph.addNode(x);
                         }
 
-                        @Override
-                        protected Boolean compute() {
-                            Queue<NodeTaskEmptyGraph> tasks = new ArrayDeque<>();
+                        addUnconditionalArrows(x, target, emptySet);
 
-                            for (final Node y : fgesScore.getVariables()) {
-                                if (x == y) continue;
+                        for (Node y : effectEdgesGraph.getNodes()) {
+                            if (effectEdgesGraph.isAdjacentTo(x, y)) continue;
 
-                                MbTask mbTask = new MbTask(x, y, target);
-                                mbTask.fork();
+                            int child2 = hashIndices.get(y);
+                            int parent2 = hashIndices.get(x);
+                            double bump2 = fgesScore.localScoreDiff(parent2, child2);
 
-                                for (NodeTaskEmptyGraph _task : new ArrayList<>(tasks)) {
-                                    if (_task.isDone()) {
+                            if (bump2 > 0) {
+                                addUnconditionalArrows(x, y, emptySet);
+                            }
+                        }
+                    }
+                } else {
+                    if (bump > 0) {
+                        synchronized (effectEdgesGraph) {
+                            effectEdgesGraph.addNode(x);
+                        }
+
+                        addUnconditionalArrows(x, target, emptySet);
+
+                        class MbAboutNodeTask extends RecursiveTask<Boolean> {
+
+                            public MbAboutNodeTask() {
+                            }
+
+                            @Override
+                            protected Boolean compute() {
+                                Queue<NodeTaskEmptyGraph> tasks = new ArrayDeque<>();
+
+                                for (final Node y : fgesScore.getVariables()) {
+                                    if (x == y) continue;
+
+                                    MbTask mbTask = new MbTask(x, y, target);
+                                    mbTask.fork();
+
+                                    for (NodeTaskEmptyGraph _task : new ArrayList<>(tasks)) {
+                                        if (_task.isDone()) {
+                                            _task.join();
+                                            tasks.remove(_task);
+                                        }
+                                    }
+
+                                    while (tasks.size() > maxThreads) {
+                                        NodeTaskEmptyGraph _task = tasks.poll();
                                         _task.join();
-                                        tasks.remove(_task);
                                     }
                                 }
 
-                                while (tasks.size() > maxThreads) {
-                                    NodeTaskEmptyGraph _task = tasks.poll();
-                                    _task.join();
+                                for (NodeTaskEmptyGraph task : tasks) {
+                                    task.join();
                                 }
-                            }
 
-                            for (NodeTaskEmptyGraph task : tasks) {
-                                task.join();
+                                return true;
                             }
-
-                            return true;
                         }
-                    }
 
-                    pool.invoke(new MbAboutNodeTask());
+                        pool.invoke(new MbAboutNodeTask());
+                    }
                 }
             }
         }

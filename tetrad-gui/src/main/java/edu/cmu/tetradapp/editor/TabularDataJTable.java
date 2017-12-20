@@ -129,7 +129,7 @@ public class TabularDataJTable extends JTable implements DataModelContainer,
         for (int i = 0; i < model.getNumColumns(); i++) {
             if (model.isSelected(model.getVariable(i))) {
                 setRowSelectionAllowed(false);
-                addColumnSelectionInterval(i + 2, i + 2);
+                addColumnSelectionInterval(i + 1, i + 1);
             }
         }
 
@@ -162,7 +162,7 @@ public class TabularDataJTable extends JTable implements DataModelContainer,
 
                 if (!getRowSelectionAllowed()) {
                     for (int i = 0; i < dataSet.getNumColumns(); i++) {
-                        if (selectionModel.isSelectedIndex(i + 2)) {
+                        if (selectionModel.isSelectedIndex(i + 1)) {
                             dataSet.setSelected(dataSet.getVariable(i), true);
                         }
                     }

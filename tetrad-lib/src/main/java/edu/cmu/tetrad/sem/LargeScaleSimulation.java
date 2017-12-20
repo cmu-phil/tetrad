@@ -28,10 +28,7 @@ import edu.cmu.tetrad.util.dist.Distribution;
 import edu.cmu.tetrad.util.dist.Split;
 import edu.cmu.tetrad.util.dist.Uniform;
 import org.apache.commons.collections4.map.HashedMap;
-import org.apache.commons.math3.distribution.BetaDistribution;
-import org.apache.commons.math3.distribution.NormalDistribution;
-import org.apache.commons.math3.distribution.TDistribution;
-import org.apache.commons.math3.distribution.UniformRealDistribution;
+import org.apache.commons.math3.distribution.*;
 import org.apache.commons.math3.random.Well1024a;
 
 import java.io.PrintStream;
@@ -42,7 +39,7 @@ import static java.lang.Math.sqrt;
 
 /**
  * Stores a SEM model, pared down, for purposes of simulating data sets with
- * large numbers of variables and sample sizes. Assumes acyclicity.
+ * large numbers of variables and sample sizes.
  *
  * @author Joseph Ramsey
  */
@@ -65,9 +62,15 @@ public final class LargeScaleSimulation {
     private PrintStream out = System.out;
     private int[] tierIndices;
     private boolean verbose = false;
-    long seed = new Date().getTime();
+    private long seed = new Date().getTime();
     private boolean alreadySetUp = false;
-    private boolean coefSymmetric = false;
+    private boolean includePositiveCoefs = true;
+    private boolean includeNegativeCoefs = true;
+
+    private boolean errorsNormal = true;
+    private double betaLeftValue;
+    private double betaRightValue;
+    private double selfLoopCoef = 0.0;
 
     //=============================CONSTRUCTORS============================//
 
@@ -350,27 +353,33 @@ public final class LargeScaleSimulation {
         int recordingIndex = 0;
         double[] shock = getUncorrelatedShocks(1)[0];
 
-        while (s < sampleSize) {
-            if ((++shockIndex) % intervalBetweenShocks == 0) {
-                shock = getUncorrelatedShocks(1)[0];
-            }
+        for (int j = 0; j < t1.length; j++) {
+            t1[j] = shock[j];
+        }
 
+        while (s < sampleSize) {
             if ((++recordingIndex) % intervalBetweenRecordings == 0) {
                 for (int j = 0; j < t1.length; j++) {
-                    all[j][s] = t1[j];
+                    all[j][s] += t1[j];
                 }
 
                 s++;
             }
 
-            for (int j = 0; j < t1.length; j++) {
-                t2[j] = shock[j];
+            if ((++shockIndex) % intervalBetweenShocks == 0) {
+                shock = getUncorrelatedShocks(1)[0];
+
+                for (int j = 0; j < t1.length; j++) {
+                    t1[j] += shock[j];
+                }
             }
 
             for (int j = 0; j < t1.length; j++) {
                 t2[j] = shock[j];
+                t2[j] += getSelfLoopCoef() * t1[j];
+
                 for (int k = 0; k < parents[j].length; k++) {
-                    t2[j]  = t2[j] + t1[parents[j][k]] * coefs[j][k];
+                    t2[j] += t1[parents[j][k]] * coefs[j][k];
                 }
             }
 
@@ -431,7 +440,15 @@ public final class LargeScaleSimulation {
             System.arraycopy(coefs, 0, newCoefs, 0, coefs.length);
 
             double coef = edgeCoefDist.nextRandom();
-            if (coefSymmetric) coef = Math.abs(coef);
+
+            if (includePositiveCoefs && !includeNegativeCoefs) {
+                coef = Math.abs(coef);
+            } else if (!includePositiveCoefs && includeNegativeCoefs) {
+                coef = -Math.abs(coef);
+            } else if (!includePositiveCoefs && !includeNegativeCoefs) {
+                coef = 0;
+            }
+
             newCoefs[newCoefs.length - 1] = coef;
 
             this.parents[_head] = newParents;
@@ -546,7 +563,6 @@ public final class LargeScaleSimulation {
         if (x.getName().equals("time") || y.getName().equals("time")) {
             return new ArrayList<>();
         }
-//        System.out.println("Knowledge within returnSimilar : " + knowledge);
         int ntiers = knowledge.getNumTiers();
         int indx_tier = knowledge.isInWhichTier(x);
         int indy_tier = knowledge.isInWhichTier(y);
@@ -554,9 +570,7 @@ public final class LargeScaleSimulation {
         int indx_comp = -1;
         int indy_comp = -1;
         List tier_x = knowledge.getTier(indx_tier);
-//        Collections.sort(tier_x);
         List tier_y = knowledge.getTier(indy_tier);
-//        Collections.sort(tier_y);
 
         int i;
         for (i = 0; i < tier_x.size(); ++i) {
@@ -590,9 +604,7 @@ public final class LargeScaleSimulation {
             Node y1;
             if (indx_tier >= indy_tier) {
                 List tmp_tier1 = knowledge.getTier(i + tier_diff);
-//                Collections.sort(tmp_tier1);
                 List tmp_tier2 = knowledge.getTier(i);
-//                Collections.sort(tmp_tier2);
                 A = (String) tmp_tier1.get(indx_comp);
                 B = (String) tmp_tier2.get(indy_comp);
                 if (A.equals(B)) continue;
@@ -604,12 +616,8 @@ public final class LargeScaleSimulation {
                 simListX.add(x1);
                 simListY.add(y1);
             } else {
-                //System.out.println("############## WARNING (returnSimilarPairs): did not catch x,y pair " + x + ", " + y);
-                //System.out.println();
                 List tmp_tier1 = knowledge.getTier(i);
-//                Collections.sort(tmp_tier1);
                 List tmp_tier2 = knowledge.getTier(i + tier_diff);
-//                Collections.sort(tmp_tier2);
                 A = (String) tmp_tier1.get(indx_comp);
                 B = (String) tmp_tier2.get(indy_comp);
                 if (A.equals(B)) continue;
@@ -637,8 +645,7 @@ public final class LargeScaleSimulation {
     }
 
     public IKnowledge getKnowledge(Graph graph) {
-//        System.out.println("Entering getKnowledge ... ");
-        int numLags; // need to fix this!
+        int numLags;
         List<Node> variables = graph.getNodes();
         List<Integer> laglist = new ArrayList<>();
         IKnowledge knowledge = new Knowledge2();
@@ -657,27 +664,17 @@ public final class LargeScaleSimulation {
         }
         numLags = Collections.max(laglist);
 
-//        System.out.println("Variable list before the sort = " + variables);
         Collections.sort(variables, new Comparator<Node>() {
             @Override
             public int compare(Node o1, Node o2) {
                 String name1 = getNameNoLag(o1);
                 String name2 = getNameNoLag(o2);
 
-//                System.out.println("name 1 = " + name1);
-//                System.out.println("name 2 = " + name2);
-
                 String prefix1 = getPrefix(name1);
                 String prefix2 = getPrefix(name2);
 
-//                System.out.println("prefix 1 = " + prefix1);
-//                System.out.println("prefix 2 = " + prefix2);
-
                 int index1 = getIndex(name1);
                 int index2 = getIndex(name2);
-
-//                System.out.println("index 1 = " + index1);
-//                System.out.println("index 2 = " + index2);
 
                 if (getLag(o1.getName()) == getLag(o2.getName())) {
                     if (prefix1.compareTo(prefix2) == 0) {
@@ -698,12 +695,11 @@ public final class LargeScaleSimulation {
             String tmp;
             if (varName.indexOf(':') == -1) {
                 lag = 0;
-//                laglist.add(lag);
             } else {
                 tmp = varName.substring(varName.indexOf(':') + 1, varName.length());
                 lag = Integer.parseInt(tmp);
-//                laglist.add(lag);
             }
+
             knowledge.addToTier(numLags - lag, node.getName());
         }
 
@@ -712,20 +708,6 @@ public final class LargeScaleSimulation {
     }
 
     public static String getPrefix(String s) {
-//        int y = 0;
-//        for (int i = s.length() - 1; i >= 0; i--) {
-//            try {
-//                y = Integer.parseInt(s.substring(i));
-//            } catch (NumberFormatException e) {
-//                return s.substring(0, y);
-//            }
-//        }
-//
-//        throw new IllegalArgumentException("Not character prefix.");
-
-//        if(s.indexOf(':')== -1) return s;
-//        String tmp = s.substring(0,s.indexOf(':')-1);
-//        return tmp;
         return s.substring(0, 1);
     }
 
@@ -765,20 +747,30 @@ public final class LargeScaleSimulation {
     }
 
     public double[][] getUncorrelatedShocks(int sampleSize) {
-//        TDistribution dist = new TDistribution(new Well1024a(++seed), 6);
-        BetaDistribution dist = new BetaDistribution(new Well1024a(++seed), 2, 10);
-//        NormalDistribution dist = new NormalDistribution(new Well1024a(++seed), 0, 1);
-//        UniformRealDistribution dist = new UniformRealDistribution(0, 1);
+        AbstractRealDistribution distribution;
+        AbstractRealDistribution varDist = null;
+
+        if (errorsNormal) {
+            distribution = new NormalDistribution(new Well1024a(++seed), 0, 1);
+            varDist = new UniformRealDistribution(varLow, varHigh);
+        } else {
+            distribution = new BetaDistribution(new Well1024a(++seed), getBetaLeftValue(), getBetaRightValue());
+        }
 
         int numVars = variableNodes.size();
         setupModel(numVars);
 
         double[][] shocks = new double[sampleSize][numVars];
 
-        for (int i = 0; i < sampleSize; i++) {
-            for (int j = 0; j < numVars; j++) {
-                shocks[i][j] = dist.sample();// * sqrt(errorVars[j]);
-//                shocks[i][j] = Math.pow(dist.sample(), 2);// * sqrt(errorVars[j]);
+        for (int j = 0; j < numVars; j++) {
+            for (int i = 0; i < sampleSize; i++) {
+                double sample = distribution.sample();
+
+                if (errorsNormal) {
+                    sample *= sqrt(varDist.sample());
+                }
+
+                shocks[i][j] = sample;
             }
         }
 
@@ -806,8 +798,52 @@ public final class LargeScaleSimulation {
         return shocks;
     }
 
-    public void setCoefSymmetric(boolean coefSymmetric) {
-        this.coefSymmetric = coefSymmetric;
+    public void setIncludePositiveCoefs(boolean includePositiveCoefs) {
+        this.includePositiveCoefs = includePositiveCoefs;
+    }
+
+    public void setIncludeNegativeCoefs(boolean includeNegativeCoefs) {
+        this.includeNegativeCoefs = includeNegativeCoefs;
+    }
+
+    public boolean isErrorsNormal() {
+        return errorsNormal;
+    }
+
+    public void setErrorsNormal(boolean errorsNormal) {
+        this.errorsNormal = errorsNormal;
+    }
+
+//    public boolean isErrorsPositivelySkewedIfNonNormal() {
+//        return errorsPositivelySkewedIfNonNormal;
+//    }
+//
+//    public void setErrorsPositivelySkewedIfNonNormal(boolean errorsPositivelySkewedIfNonNormal) {
+//        this.errorsPositivelySkewedIfNonNormal = errorsPositivelySkewedIfNonNormal;
+//    }
+
+    public double getBetaRightValue() {
+        return betaRightValue;
+    }
+
+    public void setBetaRightValue(double betaRightValue) {
+        this.betaRightValue = betaRightValue;
+    }
+
+    public double getBetaLeftValue() {
+        return betaLeftValue;
+    }
+
+    public void setBetaLeftValue(double betaLeftValue) {
+        this.betaLeftValue = betaLeftValue;
+    }
+
+    public double getSelfLoopCoef() {
+        return selfLoopCoef;
+    }
+
+    public void setSelfLoopCoef(double selfLoopCoef) {
+        this.selfLoopCoef = selfLoopCoef;
     }
 }
 

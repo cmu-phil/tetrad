@@ -1174,13 +1174,13 @@ public final class ColtDataSet implements DataSet, TetradSerializable {
 //     * @see #isMulipliersCollapsed()
      */
     public final TetradMatrix getDoubleData() {
-//        return tetradMatrix.copy();
+        return tetradMatrix.copy();
 
 //        if (!isMulipliersCollapsed()) {
 //            CaseExpander expander = new CaseExpander();
 //            return ((ColtDataSet) expander.filter(this)).tetradMatrix;
 //        } else {
-        return tetradMatrix;
+//        return tetradMatrix;
 //        }
     }
 
