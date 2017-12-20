@@ -486,7 +486,7 @@ public class GraphSelectionEditor extends JPanel implements GraphEditable, Tripl
     private JMenu createGraphMenu() {
         JMenu graph = new JMenu("Graph");
 
-        graphAction = new GraphPropertiesAction(wrapper.getGraphs().get(0), getWorkbench());
+        graphAction = new GraphPropertiesAction(getWorkbench());
         graph.add(graphAction);
         graph.add(new PathsAction(getWorkbench()));
 //        graph.add(new DirectedPathsAction(getWorkbench()));

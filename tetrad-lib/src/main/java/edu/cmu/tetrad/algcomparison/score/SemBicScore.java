@@ -29,12 +29,12 @@ public class SemBicScore implements ScoreWrapper {
     public Score getScore(DataModel dataSet, Parameters parameters) {
         this.dataSet = dataSet;
 
-        DataSet _data;
+        DataModel _data;
 
         if (parameters.getBoolean("doNonparanormalTransform")) {
             _data = DataUtils.getNonparanormalTransformed((DataSet) dataSet);
         } else {
-            _data = (DataSet) dataSet;
+            _data = dataSet;
         }
 
         edu.cmu.tetrad.search.SemBicScore semBicScore
