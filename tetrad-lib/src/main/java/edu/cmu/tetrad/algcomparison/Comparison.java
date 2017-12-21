@@ -456,9 +456,10 @@ public class Comparison {
 
         File dir0 = new File(dataPath);
         File dir;
-        int i = 0;
+        //int i = 0;
 
         dir = new File(dir0, "save");
+        
 //
 //        do {
 //            dir = new File(dir0, "Simulation" + (++i));
@@ -481,12 +482,16 @@ public class Comparison {
                 }
 
                 simulationWrapper.createData(simulationWrapper.getSimulationSpecificParameters());
-                index++;
 
-                File subdir = new File(dir, "" + index);
-                subdir.mkdirs();
+                File subdir = dir;
+                if(simulationWrappers.size() > 1){
+                    index++;
 
-                File dir1 = new File(subdir, "graph");
+                    subdir = new File(dir, "" + index);
+                    subdir.mkdirs();
+                }
+
+            	File dir1 = new File(subdir, "graph");
                 File dir2 = new File(subdir, "data");
 
                 dir1.mkdirs();

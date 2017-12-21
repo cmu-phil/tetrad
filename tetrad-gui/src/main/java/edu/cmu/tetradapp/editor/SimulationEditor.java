@@ -92,7 +92,9 @@ public final class SimulationEditor extends JPanel implements KnowledgeEditable,
 
     private static final long serialVersionUID = -4131285866048153654L;
 
-    private final JButton simulateButton = new JButton("Simulate");
+	private static final long serialVersionUID = -8320330143728802170L;
+	
+	private final JButton simulateButton = new JButton("Simulate");
     private final JComboBox<String> graphsDropdown = new JComboBox<>();
     private final JComboBox<String> simulationsDropdown = new JComboBox<>();
 
@@ -339,6 +341,7 @@ public final class SimulationEditor extends JPanel implements KnowledgeEditable,
             }
         });
 
+<<<<<<< Updated upstream
         saveSimulation.addActionListener((e) -> {
             JFileChooser chooser = new JFileChooser();
             String sessionSaveLocation = Preferences.userRoot().get("fileSaveLocation", "");
@@ -348,6 +351,19 @@ public final class SimulationEditor extends JPanel implements KnowledgeEditable,
             if (!(ret1 == JFileChooser.APPROVE_OPTION)) {
                 return;
             }
+=======
+        saveSimulation.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                JFileChooser chooser = new JFileChooser();
+                String fileSaveLocation = Preferences.userRoot().get("fileSaveLocation", "");
+                chooser.setCurrentDirectory(new File(fileSaveLocation));
+                chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
+                int ret1 = chooser.showSaveDialog(JOptionUtils.centeringComp());
+                if (!(ret1 == JFileChooser.APPROVE_OPTION)) {
+                    return;
+                }
+>>>>>>> Stashed changes
 
             final File selectedFile = chooser.getSelectedFile();
 
@@ -361,8 +377,15 @@ public final class SimulationEditor extends JPanel implements KnowledgeEditable,
 //                                    "or creating an empty directory.");
 //                    return;
 //                }
+<<<<<<< Updated upstream
             new Comparison().saveToFiles(selectedFile.getAbsolutePath(), simulation.getSimulation(),
                     simulation.getParams());
+=======
+                new Comparison().saveToFiles(file.getAbsolutePath(), simulation.getSimulation(),
+                        simulation.getParams());
+                Preferences.userRoot().put("fileSaveLocation", file.getAbsolutePath());
+            }
+>>>>>>> Stashed changes
         });
 
         file.addSeparator();
