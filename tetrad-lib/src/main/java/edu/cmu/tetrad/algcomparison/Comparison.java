@@ -1075,20 +1075,22 @@ public class Comparison {
     }
 
     private void printParameters(List<String> names, Parameters parameters, PrintStream out) {
+    	out.println("Comparison.printParameters");
         ParamDescriptions descriptions = ParamDescriptions.getInstance();
 
         for (String name : names) {
             ParamDescription description = descriptions.get(name);
+            Object defaultValue = description.getDefaultValue();
             Object value = parameters.get(name);
 
-            if (value instanceof Double) {
+            if (defaultValue instanceof Double) {
                 out.println(description.getDescription() + " = " + value.toString());
-            } else if (value instanceof Integer) {
+            } else if (defaultValue instanceof Integer) {
                 out.println(description.getDescription() + " = " + value.toString());
-            } else if (value instanceof Boolean) {
+            } else if (defaultValue instanceof Boolean) {
                 boolean b = (Boolean) value;
                 out.println(description.getDescription() + " = " + (b ? "Yes" : "No"));
-            } else if (value instanceof String) {
+            } else if (defaultValue instanceof String) {
                 out.println(description.getDescription() + " = " + value);
             }
         }

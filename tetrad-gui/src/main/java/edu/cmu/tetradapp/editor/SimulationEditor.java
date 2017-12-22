@@ -313,6 +313,25 @@ public final class SimulationEditor extends JPanel implements KnowledgeEditable,
                 wrapper.setDataModelList(list);
                 tabbedPane.setComponentAt(2, new DataEditor(wrapper, false, JTabbedPane.LEFT));
 
+                String graphPref = null;
+                String simPref = null;
+                if(_simulation.getParameters().contains("graphsDropdownPreference")){
+                	graphPref = (String)simulation.getParams().get("graphsDropdownPreference");
+                }
+                if(_simulation.getParameters().contains("simulationsDropdownPreference")){
+                	simPref = (String)simulation.getParams().get("simulationsDropdownPreference");
+                }
+                
+                if(graphPref != null){
+                	graphsDropdown.setSelectedItem(graphPref);
+                	System.out.println("Set pre-loaded Graph: " + graphPref);
+                }
+
+                if(simPref != null){
+                	simulationsDropdown.setSelectedItem(simPref);
+                	System.out.println("Set pre-loaded sim: " + simPref);
+                }
+
                 simulation.setSimulation(_simulation, simulation.getParams());
 
                 resetPanel(simulation, graphItems, simulationItems, tabbedPane);
@@ -363,7 +382,7 @@ public final class SimulationEditor extends JPanel implements KnowledgeEditable,
 //                }
             new Comparison().saveToFiles(selectedFile.getAbsolutePath(), simulation.getSimulation(),
                     simulation.getParams());
-			Preferences.userRoot().put("fileSaveLocation", selectedFile.getAbsolutePath());
+			Preferences.userRoot().put("fileSaveLocation", selectedFile.getParent());
         });
 
         file.addSeparator();
@@ -404,6 +423,7 @@ public final class SimulationEditor extends JPanel implements KnowledgeEditable,
 
         if (!simulation.isFixedGraph()) {
             String graphItem = (String) graphsDropdown.getSelectedItem();
+            System.out.println("graphItem: " + graphItem);
             simulation.getParams().set("graphsDropdownPreference", graphItem);
 
             if (graphItem.equals(graphItems[0])) {
@@ -424,6 +444,7 @@ public final class SimulationEditor extends JPanel implements KnowledgeEditable,
         if (!simulation.isFixedSimulation()) {
             if (simulation.getSourceGraph() != null) {
                 String simulationItem = (String) simulationsDropdown.getSelectedItem();
+                System.out.println("simulationItem: " + simulationItem);
                 simulation.getParams().set("simulationsDropdownPreference", simulationItem);
                 simulation.setFixedGraph(false);
 

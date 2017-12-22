@@ -52,6 +52,7 @@ public class LoadContinuousDataAndGraphs implements Simulation {
                 }
 
                 File paramFile = new File(path, "parameters.txt");
+                System.out.println("Loading parameters from " + paramFile.getAbsolutePath());
                 BufferedReader r = new BufferedReader(new FileReader(paramFile));
 
                 String line;
@@ -60,7 +61,7 @@ public class LoadContinuousDataAndGraphs implements Simulation {
                     if (line.contains(" = ")) {
                         String[] tokens = line.split(" = ");
                         String key = tokens[0];
-                        String value = tokens[1].trim();
+                        String value = tokens[1];
 
                         usedParameters.add(key);
                         try {
@@ -73,6 +74,7 @@ public class LoadContinuousDataAndGraphs implements Simulation {
                                 parameters.set(key, value);
                         	}
                         }
+                        System.out.println(key + " : " + value);
                     }
                 }
 
