@@ -80,6 +80,7 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumMap;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -88,6 +89,7 @@ import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.ButtonGroup;
 import javax.swing.ButtonModel;
+import javax.swing.ComboBoxModel;
 import javax.swing.DefaultListModel;
 import javax.swing.GroupLayout;
 import javax.swing.JButton;
@@ -136,6 +138,9 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
     private String jsonResult;
     private HpcJobInfo hpcJobInfo;
 
+    private boolean updatingTestModels;
+    private boolean updatingScoreModels;
+
     private final Map<AlgorithmModel, Map<DataType, IndependenceTestModel>> defaultIndTestModels = new HashMap<>();
     private final Map<AlgorithmModel, Map<DataType, ScoreModel>> defaultScoreModels = new HashMap<>();
 
@@ -174,7 +179,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
 
         initComponents();
         resetAllSettings();
-        populatePreviousState(runner.getModels());
+        restorePreviousState(runner.getModels());
 
         // Repopulate all the previous selections if reopen the search box
         if (runner.getGraphs() != null && runner.getGraphs().size() > 0) {
@@ -196,7 +201,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         models.put(KNOWLEDGE_PARAM, knowledgeChkBox.isSelected());
     }
 
-    private void populatePreviousState(Map<String, Object> models) {
+    private void restorePreviousState(Map<String, Object> models) {
         Object obj = models.get(LINEAR_PARAM);
         if ((obj != null) && (obj instanceof Boolean)) {
             linearVarChkBox.setSelected((Boolean) obj);
@@ -220,9 +225,50 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
             }
         }
 
-        algorithmList.setSelectedValue(models.get(ALGO_PARAM), true);
-        indTestComboBox.setSelectedItem(models.get(IND_TEST_PARAM));
-        scoreComboBox.setSelectedItem(models.get(SCORE_PARAM));
+        refreshAlgorithmList();
+        refreshTestAndScoreList();
+
+        obj = models.get(ALGO_PARAM);
+        if ((obj != null) && (obj instanceof AlgorithmModel)) {
+            String value = ((AlgorithmModel) obj).toString();
+            Enumeration<AlgorithmModel> enums = algoModels.elements();
+            while (enums.hasMoreElements()) {
+                AlgorithmModel model = enums.nextElement();
+                if (model.toString().equals(value)) {
+                    models.put(ALGO_PARAM, model);
+                    algorithmList.setSelectedValue(model, true);
+                    break;
+                }
+            }
+        }
+        obj = models.get(IND_TEST_PARAM);
+        if ((obj != null) && (obj instanceof IndependenceTestModel)) {
+            String value = ((IndependenceTestModel) obj).toString();
+            ComboBoxModel<IndependenceTestModel> comboBoxModels = indTestComboBox.getModel();
+            int size = comboBoxModels.getSize();
+            for (int i = 0; i < size; i++) {
+                IndependenceTestModel model = comboBoxModels.getElementAt(i);
+                if (model.toString().equals(value)) {
+                    models.put(IND_TEST_PARAM, model);
+                    indTestComboBox.getModel().setSelectedItem(model);
+                    break;
+                }
+            }
+        }
+        obj = models.get(SCORE_PARAM);
+        if ((obj != null) && (obj instanceof ScoreModel)) {
+            String value = ((ScoreModel) obj).toString();
+            ComboBoxModel<ScoreModel> comboBoxModels = scoreComboBox.getModel();
+            int size = comboBoxModels.getSize();
+            for (int i = 0; i < size; i++) {
+                ScoreModel model = comboBoxModels.getElementAt(i);
+                if (model.toString().equals(value)) {
+                    models.put(SCORE_PARAM, model);
+                    scoreComboBox.getModel().setSelectedItem(model);
+                    break;
+                }
+            }
+        }
     }
 
     private void initComponents() {
@@ -258,7 +304,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
             }
         });
         indTestComboBox.addActionListener((e) -> {
-            if (indTestComboBox.getSelectedIndex() > 0) {
+            if (!updatingTestModels && indTestComboBox.getSelectedIndex() >= 0) {
                 AlgorithmModel algoModel = algorithmList.getSelectedValue();
                 Map<DataType, IndependenceTestModel> map = defaultIndTestModels.get(algoModel);
                 if (map == null) {
@@ -269,7 +315,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
             }
         });
         scoreComboBox.addActionListener((e) -> {
-            if (scoreComboBox.getSelectedIndex() > 0) {
+            if (!updatingScoreModels && scoreComboBox.getSelectedIndex() >= 0) {
                 AlgorithmModel algoModel = algorithmList.getSelectedValue();
                 Map<DataType, ScoreModel> map = defaultScoreModels.get(algoModel);
                 if (map == null) {
@@ -361,6 +407,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
     }
 
     private void refreshScoreList() {
+        updatingScoreModels = true;
         scoreComboBox.removeAllItems();
         AlgorithmModel algoModel = algorithmList.getSelectedValue();
         if (algoModel != null && algoModel.isRequiredScore()) {
@@ -387,6 +434,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
                         .forEach(e -> scoreComboBox.addItem(e));
             }
         }
+        updatingScoreModels = false;
         if (scoreComboBox.getItemCount() > 0) {
             scoreComboBox.setEnabled(true);
 
@@ -410,6 +458,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
     }
 
     private void refreshTestList() {
+        updatingTestModels = true;
         indTestComboBox.removeAllItems();
         AlgorithmModel algoModel = algorithmList.getSelectedValue();
         if (algoModel != null && algoModel.isRequiredTest()) {
@@ -436,6 +485,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
                         .forEach(e -> indTestComboBox.addItem(e));
             }
         }
+        updatingTestModels = false;
         if (indTestComboBox.getItemCount() > 0) {
             indTestComboBox.setEnabled(true);
 
