@@ -136,6 +136,9 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
     private String jsonResult;
     private HpcJobInfo hpcJobInfo;
 
+    private boolean updatingTestModels;
+    private boolean updatingScoreModels;
+
     private final Map<AlgorithmModel, Map<DataType, IndependenceTestModel>> defaultIndTestModels = new HashMap<>();
     private final Map<AlgorithmModel, Map<DataType, ScoreModel>> defaultScoreModels = new HashMap<>();
 
@@ -258,7 +261,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
             }
         });
         indTestComboBox.addActionListener((e) -> {
-            if (indTestComboBox.getSelectedIndex() > 0) {
+            if (!updatingTestModels && indTestComboBox.getSelectedIndex() >= 0) {
                 AlgorithmModel algoModel = algorithmList.getSelectedValue();
                 Map<DataType, IndependenceTestModel> map = defaultIndTestModels.get(algoModel);
                 if (map == null) {
@@ -269,7 +272,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
             }
         });
         scoreComboBox.addActionListener((e) -> {
-            if (scoreComboBox.getSelectedIndex() > 0) {
+            if (!updatingScoreModels && scoreComboBox.getSelectedIndex() >= 0) {
                 AlgorithmModel algoModel = algorithmList.getSelectedValue();
                 Map<DataType, ScoreModel> map = defaultScoreModels.get(algoModel);
                 if (map == null) {
@@ -361,6 +364,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
     }
 
     private void refreshScoreList() {
+        updatingScoreModels = true;
         scoreComboBox.removeAllItems();
         AlgorithmModel algoModel = algorithmList.getSelectedValue();
         if (algoModel != null && algoModel.isRequiredScore()) {
@@ -387,6 +391,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
                         .forEach(e -> scoreComboBox.addItem(e));
             }
         }
+        updatingScoreModels = false;
         if (scoreComboBox.getItemCount() > 0) {
             scoreComboBox.setEnabled(true);
 
@@ -410,6 +415,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
     }
 
     private void refreshTestList() {
+        updatingTestModels = true;
         indTestComboBox.removeAllItems();
         AlgorithmModel algoModel = algorithmList.getSelectedValue();
         if (algoModel != null && algoModel.isRequiredTest()) {
@@ -436,6 +442,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
                         .forEach(e -> indTestComboBox.addItem(e));
             }
         }
+        updatingTestModels = false;
         if (indTestComboBox.getItemCount() > 0) {
             indTestComboBox.setEnabled(true);
 
