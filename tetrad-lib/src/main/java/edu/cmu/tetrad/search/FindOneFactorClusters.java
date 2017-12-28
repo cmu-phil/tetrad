@@ -275,6 +275,10 @@ public class FindOneFactorClusters {
         Set<Set<Integer>> puretriples = new HashSet<>();
         CHOICE:
         while ((choice = gen.next()) != null) {
+            if (Thread.currentThread().isInterrupted()) {
+                break;
+            }
+
             int n1 = allVariables.get(choice[0]);
             int n2 = allVariables.get(choice[1]);
             int n3 = allVariables.get(choice[2]);
@@ -284,6 +288,10 @@ public class FindOneFactorClusters {
             if (zeroCorr(triple)) continue;
 
             for (int o : allVariables) {
+                if (Thread.currentThread().isInterrupted()) {
+                    break;
+                }
+
                 if (triple.contains(o)) {
                     continue;
                 }
@@ -324,6 +332,10 @@ public class FindOneFactorClusters {
             int total = puretriples.size();
 
             do {
+                if (Thread.currentThread().isInterrupted()) {
+                    break;
+                }
+
                 if (!puretriples.iterator().hasNext()) {
                     break;
                 }
@@ -332,6 +344,10 @@ public class FindOneFactorClusters {
                 Set<Integer> _cluster = new HashSet<>(cluster);
 
                 for (int o : _variables) {
+                    if (Thread.currentThread().isInterrupted()) {
+                        break;
+                    }
+
                     if (_cluster.contains(o)) continue;
 
                     List<Integer> _cluster2 = new ArrayList<>(_cluster);
@@ -342,6 +358,10 @@ public class FindOneFactorClusters {
                     int[] choice;
 
                     while ((choice = gen.next()) != null) {
+                        if (Thread.currentThread().isInterrupted()) {
+                            break;
+                        }
+
                         t.clear();
                         t.add(_cluster2.get(choice[0]));
                         t.add(_cluster2.get(choice[1]));
@@ -371,6 +391,10 @@ public class FindOneFactorClusters {
                 List<Integer> _cluster3 = new ArrayList<>(_cluster);
 
                 while ((choice2 = gen2.next()) != null) {
+                    if (Thread.currentThread().isInterrupted()) {
+                        break;
+                    }
+
                     int n1 = _cluster3.get(choice2[0]);
                     int n2 = _cluster3.get(choice2[1]);
                     int n3 = _cluster3.get(choice2[2]);
@@ -410,6 +434,10 @@ public class FindOneFactorClusters {
                     int[] choice;
 
                     while ((choice = gen.next()) != null) {
+                        if (Thread.currentThread().isInterrupted()) {
+                            break;
+                        }
+
                         int n1 = _cluster2.get(choice[0]);
                         int n2 = _cluster2.get(choice[1]);
                         int n3 = _cluster2.get(choice[2]);
@@ -473,6 +501,10 @@ public class FindOneFactorClusters {
                     int[] choice;
 
                     while ((choice = gen.next()) != null) {
+                        if (Thread.currentThread().isInterrupted()) {
+                            break;
+                        }
+
                         int n1 = _cluster2.get(choice[0]);
                         int n2 = _cluster2.get(choice[1]);
                         int n3 = _cluster2.get(choice[2]);
@@ -501,6 +533,10 @@ public class FindOneFactorClusters {
                 List<Integer> _cluster3 = new ArrayList<>(_cluster);
 
                 while ((choice2 = gen2.next()) != null) {
+                    if (Thread.currentThread().isInterrupted()) {
+                        break;
+                    }
+
                     int n1 = _cluster3.get(choice2[0]);
                     int n2 = _cluster3.get(choice2[1]);
                     int n3 = _cluster3.get(choice2[2]);
@@ -528,6 +564,10 @@ public class FindOneFactorClusters {
 
             I:
             for (int i = 0; i < clusters.size(); i++) {
+                if (Thread.currentThread().isInterrupted()) {
+                    break;
+                }
+
                 System.out.println("I = " + i);
 
 //                // remove "i" clusters that intersect with previous clusters.
@@ -565,6 +605,10 @@ public class FindOneFactorClusters {
                     int[] choice;
 
                     while ((choice = gen.next()) != null) {
+                        if (Thread.currentThread().isInterrupted()) {
+                            break;
+                        }
+
                         t.clear();
                         t.add(cm.get(choice[0]));
                         t.add(cm.get(choice[1]));
@@ -682,6 +726,10 @@ public class FindOneFactorClusters {
             int[] choice;
 
             while ((choice = gen.next()) != null) {
+                if (Thread.currentThread().isInterrupted()) {
+                    break;
+                }
+
                 int n1 = _variables.get(choice[0]);
                 int n2 = _variables.get(choice[1]);
                 int n3 = _variables.get(choice[2]);
@@ -727,6 +775,10 @@ public class FindOneFactorClusters {
 //            boolean found = false;
 
             while ((choice2 = gen2.next()) != null) {
+                if (Thread.currentThread().isInterrupted()) {
+                    break;
+                }
+
                 int t1 = _cluster.get(choice2[0]);
                 int t2 = _cluster.get(choice2[1]);
                 int t3 = _cluster.get(choice2[2]);
@@ -787,6 +839,10 @@ public class FindOneFactorClusters {
             int[] choice;
 
             while ((choice = gen.next()) != null) {
+                if (Thread.currentThread().isInterrupted()) {
+                    break;
+                }
+
                 int t2 = remaining.get(choice[0]);
                 int t3 = remaining.get(choice[1]);
                 int t4 = remaining.get(choice[2]);
@@ -805,6 +861,10 @@ public class FindOneFactorClusters {
                 boolean someVanish = false;
 
                 for (int t1 : allVariables()) {
+                    if (Thread.currentThread().isInterrupted()) {
+                        break;
+                    }
+
                     if (cluster.contains(t1)) continue;
 
                     List<Integer> _cluster = new ArrayList<>(cluster);
@@ -967,6 +1027,10 @@ public class FindOneFactorClusters {
         List<Node> lowerLatents = new ArrayList<>();
 
         for (int i = 0; i < clusters.size(); i++) {
+            if (Thread.currentThread().isInterrupted()) {
+                break;
+            }
+
             List<Integer> cluster = clusters.get(i);
             Node l1 = new GraphNode("L1." + (i + 1));
             l1.setNodeType(NodeType.LATENT);

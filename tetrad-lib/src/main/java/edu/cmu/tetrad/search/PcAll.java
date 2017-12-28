@@ -450,6 +450,10 @@ public final class PcAll implements GraphSearch {
             int[] combination;
 
             while ((combination = cg.next()) != null) {
+                if (Thread.currentThread().isInterrupted()) {
+                    break;
+                }
+
                 Node x = adjacentNodes.get(combination[0]);
                 Node z = adjacentNodes.get(combination[1]);
 
@@ -512,6 +516,10 @@ public final class PcAll implements GraphSearch {
                 int[] choice;
 
                 while ((choice = gen.next()) != null) {
+                    if (Thread.currentThread().isInterrupted()) {
+                        break;
+                    }
+
                     List<Node> v = GraphUtils.asList(choice, adji);
                     if (getIndependenceTest().isIndependent(i, k, v)) sepsets.add(v);
                 }
@@ -522,6 +530,10 @@ public final class PcAll implements GraphSearch {
                 int[] choice;
 
                 while ((choice = gen.next()) != null) {
+                    if (Thread.currentThread().isInterrupted()) {
+                        break;
+                    }
+
                     List<Node> v = GraphUtils.asList(choice, adjk);
                     if (getIndependenceTest().isIndependent(i, k, v)) sepsets.add(v);
                 }
@@ -692,6 +704,10 @@ public final class PcAll implements GraphSearch {
             int[] combination;
 
             while ((combination = cg.next()) != null) {
+                if (Thread.currentThread().isInterrupted()) {
+                    break;
+                }
+
                 Node a = adjacentNodes.get(combination[0]);
                 Node c = adjacentNodes.get(combination[1]);
 

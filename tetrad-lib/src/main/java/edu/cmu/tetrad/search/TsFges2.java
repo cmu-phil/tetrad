@@ -542,6 +542,10 @@ public final class TsFges2 implements GraphSearch, GraphScorer {
                 neighbors.put(y, emptySet);
 
                 for (int j = i + 1; j < nodes.size(); j++) {
+                    if (Thread.currentThread().isInterrupted()) {
+                        break;
+                    }
+
                     Node x = nodes.get(j);
 
                     if (existsKnowledge()) {
@@ -789,6 +793,10 @@ public final class TsFges2 implements GraphSearch, GraphScorer {
 
                 if (to - from <= chunk) {
                     for (int i = from; i < to; i++) {
+                        if (Thread.currentThread().isInterrupted()) {
+                            break;
+                        }
+
                         if ((i + 1) % 1000 == 0) {
                             count[0] += 1000;
                             out.println("Initializing effect edges: " + (count[0]));
@@ -843,6 +851,10 @@ public final class TsFges2 implements GraphSearch, GraphScorer {
         TetradLogger.getInstance().log("info", "** FORWARD EQUIVALENCE SEARCH");
 
         while (!sortedArrows.isEmpty()) {
+            if (Thread.currentThread().isInterrupted()) {
+                break;
+            }
+
             Arrow arrow = sortedArrows.first();
             sortedArrows.remove(arrow);
 
@@ -877,6 +889,10 @@ public final class TsFges2 implements GraphSearch, GraphScorer {
             Set<Node> toProcess = new HashSet<>();
 
             for (Node node : visited) {
+                if (Thread.currentThread().isInterrupted()) {
+                    break;
+                }
+
                 final Set<Node> neighbors1 = getNeighbors(node);
                 final Set<Node> storedNeighbors = this.neighbors.get(node);
 
@@ -903,6 +919,10 @@ public final class TsFges2 implements GraphSearch, GraphScorer {
         initializeArrowsBackward();
 
         while (!sortedArrows.isEmpty()) {
+            if (Thread.currentThread().isInterrupted()) {
+                break;
+            }
+
             Arrow arrow = sortedArrows.first();
             sortedArrows.remove(arrow);
 
@@ -984,6 +1004,10 @@ public final class TsFges2 implements GraphSearch, GraphScorer {
     // Initiaizes the sorted arrows lists for the backward search.
     private void initializeArrowsBackward() {
         for (Edge edge : graph.getEdges()) {
+            if (Thread.currentThread().isInterrupted()) {
+                break;
+            }
+
             Node x = edge.getNode1();
             Node y = edge.getNode2();
 
@@ -1029,6 +1053,10 @@ public final class TsFges2 implements GraphSearch, GraphScorer {
             protected Boolean compute() {
                 if (to - from <= chunk) {
                     for (int _w = from; _w < to; _w++) {
+                        if (Thread.currentThread().isInterrupted()) {
+                            break;
+                        }
+
                         Node x = nodes.get(_w);
 
                         List<Node> adj;
@@ -1126,6 +1154,10 @@ public final class TsFges2 implements GraphSearch, GraphScorer {
             int[] choice;
 
             while ((choice = gen.next()) != null) {
+                if (Thread.currentThread().isInterrupted()) {
+                    break;
+                }
+
                 Set<Node> T = GraphUtils.asSet(choice, TNeighbors);
 
                 Set<Node> union = new HashSet<>(naYX);
@@ -1256,6 +1288,10 @@ public final class TsFges2 implements GraphSearch, GraphScorer {
             int[] choice;
 
             while ((choice = gen.next()) != null) {
+                if (Thread.currentThread().isInterrupted()) {
+                    break;
+                }
+
                 Set<Node> diff = GraphUtils.asSet(choice, _naYX);
 
                 Set<Node> h = new HashSet<>(_naYX);
@@ -1449,6 +1485,10 @@ public final class TsFges2 implements GraphSearch, GraphScorer {
         }
 
         for (Node _t : T) {
+            if (Thread.currentThread().isInterrupted()) {
+                break;
+            }
+
             graph.removeEdge(_t, y);
             /** removing similar edges to enforce repeating structure **/
             removeSimilarEdges(_t, y);
@@ -1597,6 +1637,10 @@ public final class TsFges2 implements GraphSearch, GraphScorer {
         if (!existsKnowledge()) return;
 
         for (Iterator<KnowledgeEdge> it = getKnowledge().requiredEdgesIterator(); it.hasNext(); ) {
+            if (Thread.currentThread().isInterrupted()) {
+                break;
+            }
+
             KnowledgeEdge next = it.next();
 
             Node nodeA = graph.getNode(next.getFrom());
@@ -1609,6 +1653,10 @@ public final class TsFges2 implements GraphSearch, GraphScorer {
             }
         }
         for (Edge edge : graph.getEdges()) {
+            if (Thread.currentThread().isInterrupted()) {
+                break;
+            }
+
             final String A = edge.getNode1().getName();
             final String B = edge.getNode2().getName();
 
@@ -1707,6 +1755,10 @@ public final class TsFges2 implements GraphSearch, GraphScorer {
             }
 
             for (Node u : graph.getAdjacentNodes(t)) {
+                if (Thread.currentThread().isInterrupted()) {
+                    break;
+                }
+
                 Edge edge = graph.getEdge(t, u);
                 Node c = traverseSemiDirected(t, edge);
                 if (c == null) continue;

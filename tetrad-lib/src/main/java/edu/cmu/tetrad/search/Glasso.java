@@ -203,6 +203,10 @@ public class Glasso {
         // (penalized if necessary).
         if (shr == 0.0) {
             for (int j = 0; j < n; j++) {
+                if (Thread.currentThread().isInterrupted()) {
+                    break;
+                }
+
                 if (!pen) {
                     ww.set(j, j, ss.get(j, j));
                 } else {
@@ -231,6 +235,10 @@ public class Glasso {
                 int l = -1;
 
                 for (int j = 0; j < n; j++) {
+                    if (Thread.currentThread().isInterrupted()) {
+                        break;
+                    }
+
                     if (j == m) continue;
                     l = l + 1;
                     x.set(l, wwi.get(j, m));
@@ -240,6 +248,10 @@ public class Glasso {
 
                 l = -1;
                 for (int j = 0; j < n; j++) {
+                    if (Thread.currentThread().isInterrupted()) {
+                        break;
+                    }
+
                     if (j == m) continue;
                     l = l + 1;
                     wwi.set(j, m, x.get(l));
@@ -266,6 +278,10 @@ public class Glasso {
                 int l = -1;
 
                 for (int k = 0; k < n; k++) {
+                    if (Thread.currentThread().isInterrupted()) {
+                        break;
+                    }
+
                     if (k == j) continue;
                     l = l + 1;
                     xs.set(l, j, wwi.get(k, j) / xjj);
@@ -315,6 +331,10 @@ public class Glasso {
                 int l = -1;
 
                 for (int j = 0; j < n; j++) {
+                    if (Thread.currentThread().isInterrupted()) {
+                        break;
+                    }
+
                     if (j == m) continue;
                     l = l + 1;
                     ww.set(j, m, so.get(l) - s.get(l));
@@ -370,6 +390,10 @@ public class Glasso {
             s.set(l, ss.get(j, m));                 // s is s12
             int i = -1;
             for (int k = 0; k < n; k++) {
+                if (Thread.currentThread().isInterrupted()) {
+                    break;
+                }
+
                 if (k == m) continue;
                 i++;
                 vv.set(i, l, ww.get(k, j));         // vv is ww.11
@@ -420,6 +444,10 @@ public class Glasso {
                 dlx = Math.max(dlx, Math.abs(del));
 
                 for (int i = 0; i < s.size(); i++) {
+                    if (Thread.currentThread().isInterrupted()) {
+                        break;
+                    }
+
                     s.set(i, s.get(i) - del * vv.get(i, j));
                 }
             }
@@ -451,6 +479,10 @@ public class Glasso {
 
             if (it == 1) {
                 for (int j = 0; j < n; j++) {
+                    if (Thread.currentThread().isInterrupted()) {
+                        break;
+                    }
+
                     double dotProduct = 0.0;
 
                     for (int i = 0; i < l; i++) {
@@ -462,6 +494,10 @@ public class Glasso {
                 }
             } else {
                 for (int j = 0; j < n; j++) {
+                    if (Thread.currentThread().isInterrupted()) {
+                        break;
+                    }
+
                     double dotProduct = 0.0;
 
                     for (int i = 0; i < l; i++) {
@@ -507,6 +543,10 @@ public class Glasso {
         }
 
         for (int j = 1; j < n - 1; j++) {
+            if (Thread.currentThread().isInterrupted()) {
+                break;
+            }
+
             int jm1 = j - 1;
             int jp1 = j + 1;
 
@@ -519,6 +559,10 @@ public class Glasso {
             double dp2 = 0.0;
 
             for (int k = j; k <= n - 2; k++) {
+                if (Thread.currentThread().isInterrupted()) {
+                    break;
+                }
+
                 dp2 += xs.get(k, j) * ww.get(k + 1, j);
             }
 

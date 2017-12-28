@@ -125,6 +125,10 @@ public final class ChoiceGenerator {
         // at that index.
         while (--i > -1) {
             if (this.choiceLocal[i] < i + this.diff) {
+                if (Thread.currentThread().isInterrupted()) {
+                    break;
+                }
+
                 fill(i);
                 begun = true;
                 System.arraycopy(choiceLocal, 0, choiceReturned, 0, b);
