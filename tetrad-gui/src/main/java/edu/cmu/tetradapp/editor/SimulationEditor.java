@@ -104,13 +104,16 @@ public final class SimulationEditor extends JPanel implements KnowledgeEditable,
      */
     public SimulationEditor(final Simulation simulation) {
         final GraphSelectionEditor graphEditor;
-        DataEditor dataEditor;
+        final DataEditor dataEditor;
 
         if (simulation.getSimulation() != null) {
+        	System.out.println("simulation.getSimulation() != null");
+        	
             List<Graph> trueGraphs = new ArrayList<>();
             DataModelList dataModelList = new DataModelList();
 
             int numDataSets = simulation.getSimulation().getNumDataModels();
+            System.out.println("numDataSets: " + numDataSets);
 
             for (int i = 0; i < numDataSets; i++) {
                 trueGraphs.add(simulation.getSimulation().getTrueGraph(i));
@@ -126,6 +129,8 @@ public final class SimulationEditor extends JPanel implements KnowledgeEditable,
                 simulation.setFixedGraph(true);
             }
         } else {
+        	System.out.println("simulation.getSimulation() = null");
+        	
             graphEditor = new GraphSelectionEditor(new GraphSelectionWrapper(Collections.<Graph>emptyList(), new Parameters()));
             dataEditor = new DataEditor(JTabbedPane.LEFT);
             simulation.setSimulation(new BayesNetSimulation(new RandomForward()), simulation.getParams());
@@ -294,24 +299,26 @@ public final class SimulationEditor extends JPanel implements KnowledgeEditable,
                         = new LoadContinuousDataAndGraphs(file.getPath());
                 _simulation.createData(simulation.getParams());
 
-                Graph trueGraph = _simulation.getTrueGraph(0);
-                edu.cmu.tetrad.graph.GraphUtils.circleLayout(trueGraph, 225, 200, 150);
-                List<Graph> graphs = new ArrayList<>();
-                for (int i = 0; i < _simulation.getNumDataModels(); i++) {
-                    graphs.add(_simulation.getTrueGraph(i));
+                if(_simulation.getNumDataModels() > 0){
+                    Graph trueGraph = _simulation.getTrueGraph(0);
+                    edu.cmu.tetrad.graph.GraphUtils.circleLayout(trueGraph, 225, 200, 150);
+                    List<Graph> graphs = new ArrayList<>();
+                    for (int i = 0; i < _simulation.getNumDataModels(); i++) {
+                        graphs.add(_simulation.getTrueGraph(i));
+                    }
+
+                    graphEditor.replace(graphs);
+                    DataWrapper wrapper = new DataWrapper(new Parameters());
+
+                    DataModelList list = new DataModelList();
+
+                    for (int i = 0; i < _simulation.getNumDataModels(); i++) {
+                        list.add(_simulation.getDataModel(i));
+                    }
+
+                    wrapper.setDataModelList(list);
+                    tabbedPane.setComponentAt(2, new DataEditor(wrapper, false, JTabbedPane.LEFT));
                 }
-
-                graphEditor.replace(graphs);
-                DataWrapper wrapper = new DataWrapper(new Parameters());
-
-                DataModelList list = new DataModelList();
-
-                for (int i = 0; i < _simulation.getNumDataModels(); i++) {
-                    list.add(_simulation.getDataModel(i));
-                }
-
-                wrapper.setDataModelList(list);
-                tabbedPane.setComponentAt(2, new DataEditor(wrapper, false, JTabbedPane.LEFT));
 
                 String graphPref = null;
                 String simPref = null;
@@ -409,6 +416,9 @@ public final class SimulationEditor extends JPanel implements KnowledgeEditable,
         if (simulation.getDataModelList().size() > 0) {
             tabbedPane.setSelectedIndex(2);
         }
+        
+        //
+        
     }
 
     private void resetPanel(Simulation simulation, String[] graphItems, String[] simulationItems, JTabbedPane tabbedPane) {
