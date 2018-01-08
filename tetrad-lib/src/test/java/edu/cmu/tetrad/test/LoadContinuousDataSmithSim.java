@@ -76,11 +76,11 @@ public class LoadContinuousDataSmithSim implements Simulation, HasParameterValue
                     DataSet dataSet;// = reader.parseTabular(file);
 
 //                    if (dataSet.getVariable().size() == 1) {
-                        DataReader reader2 = new DataReader();
-                        reader2.setVariablesSupplied(false);
-                        reader2.setDelimiter(DelimiterType.WHITESPACE);
-                        reader2.setDelimiter(DelimiterType.COMMA);
-                        dataSet = reader2.parseTabular(file);
+                    DataReader reader2 = new DataReader();
+                    reader2.setVariablesSupplied(false);
+                    reader2.setDelimiter(DelimiterType.WHITESPACE);
+                    reader2.setDelimiter(DelimiterType.COMMA);
+                    dataSet = reader2.parseTabular(file);
 //                    }
 
                     if (dataSet.getVariables().size() > graph.getNumNodes()) {
