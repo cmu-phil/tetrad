@@ -9,7 +9,7 @@ import edu.cmu.tetrad.graph.Graph;
  *
  * @author jdramsey
  */
-public class AncestorRecall implements Statistic {
+public class AncestorTrueNegatives implements Statistic {
     static final long serialVersionUID = 23L;
 
     @Override
@@ -25,9 +25,7 @@ public class AncestorRecall implements Statistic {
     @Override
     public double getValue(Graph trueGraph, Graph estGraph) {
         AncestorConfusion adjConfusion = new AncestorConfusion(trueGraph, estGraph);
-        int tp = adjConfusion.getTp();
-        int fn = adjConfusion.getFn();
-        return tp / (double) (tp + fn);
+        return adjConfusion.getTn();
     }
 
     @Override
