@@ -488,9 +488,11 @@ public class Comparison {
 
                 File dir1 = new File(subdir, "graph");
                 File dir2 = new File(subdir, "data");
+                File dir2a = new File(subdir, "data.with.latents");
 
                 dir1.mkdirs();
                 dir2.mkdirs();
+                dir2a.mkdirs();
 
                 File dir3 = null;
 
@@ -518,6 +520,12 @@ public class Comparison {
                     DataModel dataModel = (DataModel) simulationWrapper.getDataModel(j);
                     DataWriter.writeRectangularData((DataSet) dataModel, out, '\t');
                     out.close();
+
+                    File filea = new File(dir2a, "data.with.latents" + (j + 1) + ".txt");
+                    Writer outa = new FileWriter(filea);
+                    DataModel dataModelWithLatents = (DataModel) simulationWrapper.getDataModelWithLatents(j);
+                    DataWriter.writeRectangularData((DataSet) dataModelWithLatents, outa, '\t');
+                    outa.close();
 
                     if (isSavePatterns()) {
                         File file3 = new File(dir3, "pattern." + (j + 1) + ".txt");
