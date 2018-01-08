@@ -448,6 +448,10 @@ public class FasStableConcurrent implements IFas {
 
                                 COND:
                                 while ((choice = cg.next()) != null) {
+                                    if (Thread.currentThread().isInterrupted()) {
+                                        break;
+                                    }
+
                                     List<Node> condSet = GraphUtils.asList(choice, ppx);
 
                                     boolean independent;

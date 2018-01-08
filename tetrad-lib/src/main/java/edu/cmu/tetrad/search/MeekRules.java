@@ -143,12 +143,20 @@ public class MeekRules implements ImpliedOrientation {
 
         if (undirectUnforcedEdges) {
             for (Node node : nodes) {
+                if (Thread.currentThread().isInterrupted()) {
+                    break;
+                }
+
                 undirectUnforcedEdges(node, graph);
                 directStack.addAll(graph.getAdjacentNodes(node));
             }
         }
 
         for (Node node : this.nodes) {
+            if (Thread.currentThread().isInterrupted()) {
+                break;
+            }
+
             runMeekRules(node, graph, knowledge);
         }
 
@@ -156,6 +164,10 @@ public class MeekRules implements ImpliedOrientation {
             Node node = directStack.removeLast();
 
             if (undirectUnforcedEdges) {
+                if (Thread.currentThread().isInterrupted()) {
+                    break;
+                }
+
                 undirectUnforcedEdges(node, graph);
             }
 
