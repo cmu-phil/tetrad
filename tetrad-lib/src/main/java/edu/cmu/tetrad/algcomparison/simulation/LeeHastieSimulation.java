@@ -3,6 +3,7 @@ package edu.cmu.tetrad.algcomparison.simulation;
 import edu.cmu.tetrad.algcomparison.graph.RandomGraph;
 import edu.cmu.tetrad.algcomparison.utils.HasParameters;
 import edu.cmu.tetrad.data.DataModel;
+import edu.cmu.tetrad.data.DataUtils;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
@@ -25,6 +26,7 @@ public class LeeHastieSimulation implements Simulation, HasParameters {
     static final long serialVersionUID = 23L;
     private RandomGraph randomGraph;
     private List<DataSet> dataSets = new ArrayList<>();
+    private List<DataSet> dataSetsWithLatents = new ArrayList<>();
     private List<Graph> graphs = new ArrayList<>();
     private DataType dataType;
     private List<Node> shuffledOrder;
@@ -54,6 +56,7 @@ public class LeeHastieSimulation implements Simulation, HasParameters {
         Graph graph = randomGraph.createGraph(parameters);
 
         dataSets = new ArrayList<>();
+        dataSetsWithLatents = new ArrayList<>();
         graphs = new ArrayList<>();
 
         for (int i = 0; i < parameters.getInt("numRuns"); i++) {
@@ -67,7 +70,8 @@ public class LeeHastieSimulation implements Simulation, HasParameters {
 
             DataSet dataSet = simulate(graph, parameters);
             dataSet.setName("" + (i + 1));
-            dataSets.add(dataSet);
+            dataSets.add(DataUtils.restrictToMeasured(dataSet));
+            dataSetsWithLatents.add(dataSet);
         }
     }
 
@@ -79,6 +83,11 @@ public class LeeHastieSimulation implements Simulation, HasParameters {
     @Override
     public DataModel getDataModel(int index) {
         return dataSets.get(index);
+    }
+
+    @Override
+    public DataModel getDataModelWithLatents(int index) {
+        return dataSetsWithLatents.get(index);
     }
 
     @Override
@@ -136,7 +145,7 @@ public class LeeHastieSimulation implements Simulation, HasParameters {
         GeneralizedSemPm pm = MixedUtils.GaussianCategoricalPm(graph, "Split(-1.5,-.5,.5,1.5)");
         GeneralizedSemIm im = MixedUtils.GaussianCategoricalIm(pm);
 
-        DataSet ds = im.simulateDataAvoidInfinity(parameters.getInt("sampleSize"), false);
+        DataSet ds = im.simulateDataAvoidInfinity(parameters.getInt("sampleSize"), true);
         return MixedUtils.makeMixedData(ds, nd);
     }
 

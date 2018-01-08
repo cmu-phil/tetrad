@@ -21,6 +21,7 @@ public class ConditionalGaussianSimulation implements Simulation {
     static final long serialVersionUID = 23L;
     private RandomGraph randomGraph;
     private List<DataSet> dataSets = new ArrayList<>();
+    private List<DataSet> dataSetsWithLatents = new ArrayList<>();
     private List<Graph> graphs = new ArrayList<>();
     private DataType dataType;
     private List<Node> shuffledOrder;
@@ -78,7 +79,8 @@ public class ConditionalGaussianSimulation implements Simulation {
 
             DataSet dataSet = simulate(graph, parameters);
             dataSet.setName("" + (i + 1));
-            dataSets.add(dataSet);
+            dataSets.add(DataUtils.restrictToMeasured(dataSet));
+            dataSetsWithLatents.add(dataSet);
         }
     }
 
@@ -89,6 +91,11 @@ public class ConditionalGaussianSimulation implements Simulation {
 
     @Override
     public DataModel getDataModel(int index) {
+        return dataSets.get(index);
+    }
+
+    @Override
+    public DataModel getDataModelWithLatents(int index) {
         return dataSets.get(index);
     }
 

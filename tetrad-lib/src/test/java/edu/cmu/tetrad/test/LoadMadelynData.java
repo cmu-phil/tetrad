@@ -82,6 +82,11 @@ public class LoadMadelynData implements Simulation, HasParameterValues {
         return dataSets.get(index);
     }
 
+    @Override
+    public DataModel getDataModelWithLatents(int index) {
+        return dataSets.get(index);
+    }
+
     public String getDescription() {
         try {
             StringBuilder b = new StringBuilder();

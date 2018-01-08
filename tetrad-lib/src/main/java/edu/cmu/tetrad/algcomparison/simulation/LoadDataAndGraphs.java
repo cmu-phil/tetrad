@@ -122,6 +122,11 @@ public class LoadDataAndGraphs implements Simulation {
     }
 
     @Override
+    public DataModel getDataModelWithLatents(int index) {
+        return dataSets.get(index);
+    }
+
+    @Override
     public String getDescription() {
         return "Load data sets and graphs from a directory" + (!("".equals(description)) ? ": " + description : "");
 

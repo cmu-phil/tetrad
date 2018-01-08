@@ -62,6 +62,11 @@ public class LoadContinuousDataAndSingleGraphKun implements Simulation, HasParam
         return covs.get(index);
     }
 
+    @Override
+    public DataModel getDataModelWithLatents(int index) {
+        return covs.get(index);
+    }
+
     public String getDescription() {
         try {
             StringBuilder b = new StringBuilder();

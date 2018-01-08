@@ -12,6 +12,7 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemPm;
 import edu.cmu.tetrad.util.RandomUtil;
+import edu.pitt.dbmi.data.Dataset;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -25,6 +26,7 @@ public class SemSimulation implements Simulation {
     private SemPm pm;
     private SemIm im;
     private List<DataSet> dataSets = new ArrayList<>();
+    private List<DataSet> dataWithLatents = new ArrayList<>();
     private List<Graph> graphs = new ArrayList<>();
     private List<SemIm> ims = new ArrayList<>();
 
@@ -87,13 +89,19 @@ public class SemSimulation implements Simulation {
             }
 
             dataSet.setName("" + (i + 1));
-            dataSets.add(dataSet);
+            dataSets.add(DataUtils.restrictToMeasured(dataSet));
+            dataWithLatents.add(dataSet);
         }
     }
 
     @Override
     public DataModel getDataModel(int index) {
         return dataSets.get(index);
+    }
+
+    @Override
+    public DataModel getDataModelWithLatents(int index) {
+        return dataWithLatents.get(index);
     }
 
     @Override
@@ -144,6 +152,8 @@ public class SemSimulation implements Simulation {
     private DataSet simulate(Graph graph, Parameters parameters) {
         SemIm im = this.im;
 
+        DataSet dataWithLatents;
+
         if (im == null) {
             SemPm pm = this.pm;
 
@@ -151,16 +161,18 @@ public class SemSimulation implements Simulation {
                 pm = new SemPm(graph);
                 im = new SemIm(pm, parameters);
                 ims.add(im);
-                return im.simulateData(parameters.getInt("sampleSize"), false);
+                dataWithLatents = im.simulateData(parameters.getInt("sampleSize"), true);
             } else {
                 im = new SemIm(pm, parameters);
                 ims.add(im);
-                return im.simulateData(parameters.getInt("sampleSize"), false);
+                dataWithLatents = im.simulateData(parameters.getInt("sampleSize"), true);
             }
         } else {
             ims.add(im);
-            return im.simulateData(parameters.getInt("sampleSize"), false);
+            dataWithLatents = im.simulateData(parameters.getInt("sampleSize"), true);
         }
+
+        return dataWithLatents;
     }
 
     public List<SemIm> getSemIms() {

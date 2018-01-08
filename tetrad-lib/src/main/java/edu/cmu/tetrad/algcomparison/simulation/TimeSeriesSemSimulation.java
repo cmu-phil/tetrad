@@ -103,6 +103,11 @@ public class TimeSeriesSemSimulation implements Simulation, HasKnowledge {
     }
 
     @Override
+    public DataModel getDataModelWithLatents(int index) {
+        return dataSets.get(index);
+    }
+
+    @Override
     public Graph getTrueGraph(int index) {
         return graphs.get(index);
     }
