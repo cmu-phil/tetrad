@@ -21,7 +21,9 @@
 
 package edu.cmu.tetrad.search;
 
+import edu.cmu.tetrad.data.CovarianceMatrixOnTheFly;
 import edu.cmu.tetrad.data.DataSet;
+import edu.cmu.tetrad.data.DataUtils;
 import edu.cmu.tetrad.data.ICovarianceMatrix;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.DepthChoiceGenerator;
@@ -34,7 +36,6 @@ import java.io.PrintStream;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
-import static java.lang.Math.PI;
 import static java.lang.Math.log;
 
 /**
@@ -42,10 +43,14 @@ import static java.lang.Math.log;
  *
  * @author Joseph Ramsey
  */
-public class SemBicScore implements Score {
+public class SemBicScoreLinear implements Score {
 
     // The covariance matrix.
     private ICovarianceMatrix covariances;
+
+    private DataSet dataSet;
+
+    private double[][] data;
 
     // The variables of the covariance matrix.
     private List<Node> variables;
@@ -71,16 +76,21 @@ public class SemBicScore implements Score {
 
     private Map<Node, Integer> indexMap;
 
+    private int numInBootstrap = 200;
+    private int numBootstraps = 100;
+    private double bootstrapAlpha = 0.999;
 
     /**
      * Constructs the score using a covariance matrix.
      */
-    public SemBicScore(ICovarianceMatrix covariances) {
-        if (covariances == null) {
+    public SemBicScoreLinear(DataSet dataSet) {
+        if (dataSet == null) {
             throw new NullPointerException();
         }
 
-        this.setCovariances(covariances);
+        this .dataSet = dataSet;
+        this.data = dataSet.getDoubleData().transpose().toArray();
+        this.setCovariances(new CovarianceMatrixOnTheFly(dataSet));
         this.variables = covariances.getVariables();
         this.sampleSize = covariances.getSampleSize();
         this.indexMap = indexMap(variables);
@@ -108,8 +118,27 @@ public class SemBicScore implements Score {
                 return Double.NaN;
             }
 
+            double c = 0.0;
+
+            if (parents.length > 0) {
+                final double[] z = data[i];
+                final double[] x = data[parents[0]];
+
+                double[][] other = new double[parents.length - 1][];
+                for (int q = 1; q < other.length; q++) {
+                    other[i] = data[parents[q]];
+                }
+
+                boolean linear = DataUtils.linear(x, z, other, getNumInBootstrap(), getNumBootstraps(), getBootstrapAlpha());
+                System.out.println("linear  = " + linear);
+                if (!linear) return Double.NaN;
+
+//                c = 1.0 - DataUtils.linearPValue(x, z, other, getNumInBootstrap(), getNumBootstraps(), getBootstrapAlpha());
+
+            }
+
             int n = getSampleSize();
-            return -(n) * log(s2) - getPenaltyDiscount() * k * log(n);
+            return -(n) * log(s2) + getPenaltyDiscount() * k * log(n);
 //                    + getStructurePrior(parents.length);
 //                    - getStructurePrior(parents.length);
         } catch (Exception e) {
@@ -396,6 +425,30 @@ public class SemBicScore implements Score {
         double v = localScore(i, k);
 
         return Double.isNaN(v);
+    }
+
+    public int getNumInBootstrap() {
+        return numInBootstrap;
+    }
+
+    public int getNumBootstraps() {
+        return numBootstraps;
+    }
+
+    public double getBootstrapAlpha() {
+        return bootstrapAlpha;
+    }
+
+    public void setNumInBootstrap(int numInBootstrap) {
+        this.numInBootstrap = numInBootstrap;
+    }
+
+    public void setNumBootstraps(int numBootstraps) {
+        this.numBootstraps = numBootstraps;
+    }
+
+    public void setBootstrapAlpha(double bootstrapAlpha) {
+        this.bootstrapAlpha = bootstrapAlpha;
     }
 }
 

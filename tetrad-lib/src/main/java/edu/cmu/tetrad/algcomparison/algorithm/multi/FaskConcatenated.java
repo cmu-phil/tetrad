@@ -13,6 +13,7 @@ import edu.cmu.tetrad.util.Parameters;
 import edu.pitt.dbmi.algo.bootstrap.BootstrapEdgeEnsemble;
 import edu.pitt.dbmi.algo.bootstrap.GeneralBootstrapTest;
 
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -62,6 +63,11 @@ public class FaskConcatenated implements MultiDataSetAlgorithm, HasKnowledge, Us
             }
 
             DataSet dataSet = DataUtils.concatenate(centered);
+
+            dataSet.setNumberFormat(new DecimalFormat("0.000000000000000000"));
+
+            System.out.println(dataSet);
+
             Fask search = new Fask(dataSet, score.getScore(dataSet, parameters));
             search.setDepth(parameters.getInt("depth"));
             search.setPenaltyDiscount(parameters.getDouble("penaltyDiscount"));

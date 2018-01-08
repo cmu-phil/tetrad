@@ -37,10 +37,10 @@ public class TestSimulatedFmri2 {
 
     public void TestCycles_Data_fMRI_FASK() {
         Parameters parameters = new Parameters();
-        parameters.set("penaltyDiscount", 8);
+        parameters.set("penaltyDiscount", 2);
         parameters.set("depth", -1);
         parameters.set("faskDelta", -0.2);
-        parameters.set("twoCycleAlpha", 1e-15);
+        parameters.set("twoCycleAlpha", 1e-6);
 
         parameters.set("numRuns", 60);
 //        parameters.set("randomSelectionSize", 1);

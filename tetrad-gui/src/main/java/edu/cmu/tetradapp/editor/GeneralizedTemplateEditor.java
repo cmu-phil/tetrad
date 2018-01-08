@@ -553,7 +553,7 @@ class GeneralizedTemplateEditor extends JComponent {
                 {"Gamma(shape, scale)", "Gamma(%, %)"},
                 {"Gumbel(mu, beta)", "Gumbel(%, %)"},
                 {"Indicator(p)", "Indicator(%)"},
-                {"Laplace(mu, beta)", "Beta(%, %)"},
+                {"Laplace(mu, beta)", "Laplace(%, %)"},
                 {"Levy(mu, c)", "Levy(%, %)"},
                 {"LogNormal(e1, e2)", "LogNormal(%, %)"},
                 {"Nakagami(mu, omega)", "Nakagami(%, %)"},

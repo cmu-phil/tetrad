@@ -23,10 +23,14 @@ package edu.cmu.tetrad.data;
 
 import cern.colt.list.DoubleArrayList;
 import edu.cmu.tetrad.graph.*;
+import edu.cmu.tetrad.regression.RegressionDataset;
+import edu.cmu.tetrad.regression.RegressionResult;
 import edu.cmu.tetrad.util.*;
+import org.apache.commons.math3.distribution.ChiSquaredDistribution;
 import org.apache.commons.math3.distribution.NormalDistribution;
 import org.apache.commons.math3.linear.BlockRealMatrix;
 import org.apache.commons.math3.linear.RealMatrix;
+import org.apache.commons.math3.linear.SingularMatrixException;
 import org.apache.commons.math3.stat.correlation.Covariance;
 
 import java.rmi.MarshalledObject;
@@ -38,7 +42,10 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.TimeUnit;
 
+import static edu.cmu.tetrad.util.StatUtils.variance;
+import static java.lang.Math.abs;
 import static java.lang.Math.log;
+import static java.lang.Math.sqrt;
 
 /**
  * Some static utility methods for dealing with data sets.
@@ -387,7 +394,7 @@ public final class DataUtils {
             for (int j = 0; j < data2.getNumColumns(); j++) {
                 double[] std = DataUtils.standardizeData(doubleData[j]);
 
-                if (dataSet.getVariable(j) instanceof  ContinuousVariable) {
+                if (dataSet.getVariable(j) instanceof ContinuousVariable) {
                     for (int i = 0; i < data2.getNumRows(); i++) {
                         data2.setDouble(i, j, std[i]);
                     }
@@ -1904,6 +1911,266 @@ public final class DataUtils {
         }
 
         return data.subsetColumns(indices);
+    }
+
+    // Checking X->Z with other parents P of X.
+    public static boolean linear(double[] x, double[] z, double[][] p, double numInBootstrap,
+                                 int numBootstraps, double alpha) {
+
+        int N = z.length;
+        int m = p.length + 2;
+        int b = numBootstraps;
+        int dof = (b - 1);
+
+        try {
+            List<Node> nodes = new ArrayList<>();
+            nodes.add(new ContinuousVariable("cov"));
+            nodes.add(new ContinuousVariable("var0"));
+
+            for (int j = 1; j <= p.length; j++) {
+                nodes.add(new ContinuousVariable("var" + j));
+            }
+
+            DataSet dataSet = new BoxDataSet(new VerticalDoubleDataBox(b, m), nodes);
+
+            boolean[] mask = new boolean[N];
+            double[] cov0s = new double[b];
+
+            for (int _b = 0; _b < b; _b++) {
+
+                I:
+                for (int i = 0; i < N; i++) {
+                    if (RandomUtil.getInstance().nextDouble() < numInBootstrap / (double) N) {
+                        if (Double.isNaN(x[i])) continue;
+                        if (Double.isNaN(z[i])) continue;
+
+                        for (double[] otherParent : p) {
+                            if (Double.isNaN(otherParent[i])) continue I;
+                        }
+
+                        mask[i] = true;
+                    } else {
+                        mask[i] = false;
+                    }
+                }
+
+                final double cov0 = covMask(z, x, mask)[0];
+                final double cov1 = covMask(x, x, mask)[0];
+                dataSet.setDouble(_b, 0, cov0);
+                dataSet.setDouble(_b, 1, cov1);
+                cov0s[_b] = cov0;
+
+                for (int j = 0; j < p.length; j++) {
+                    final double cov3 = covMask(x, p[j], mask)[0];
+                    dataSet.setDouble(_b, j + 2, cov3);
+                }
+            }
+
+            RegressionDataset regression = new RegressionDataset(dataSet);
+            List<Node> regressors = new ArrayList<>(nodes);
+            regressors.remove(nodes.get(0));
+
+            RegressionResult result = regression.regress(nodes.get(0), regressors);
+
+            double cov0var = DataUtils.variance(cov0s, 0);
+
+            final double[] array = result.getResiduals().toArray();
+
+            double residualVar = DataUtils.variance(array, 0);
+
+            final double x2 = dof * (residualVar / (cov0var / m));
+
+            double c = new ChiSquaredDistribution(dof).cumulativeProbability(x2);
+
+            final double pValue = 1.0 - c;
+//            System.out.println("residual var = " + residualVar + " dof = " + dof + " x2 = " + x2 + " c = " + c + " pValue = " + pValue + " alpha = " + alpha);
+
+            return pValue > alpha;
+        } catch (SingularMatrixException e) {
+            System.out.println("Singular");
+            return true;
+        }
+    }
+
+    public static double linearPValue(double[] z, double[] x, double[][] p, double numInBootstrap,
+                                 int numBootstraps, double alpha) {
+
+        int N = z.length;
+        int m = p.length + 2;
+        int b = numBootstraps;
+        int dof = (b - 1);
+
+        try {
+            List<Node> nodes = new ArrayList<>();
+            nodes.add(new ContinuousVariable("cov"));
+            nodes.add(new ContinuousVariable("var0"));
+
+            for (int j = 1; j <= p.length; j++) {
+                nodes.add(new ContinuousVariable("var" + j));
+            }
+
+            DataSet dataSet = new BoxDataSet(new VerticalDoubleDataBox(b, m), nodes);
+
+            boolean[] mask = new boolean[N];
+            double[] cov0s = new double[b];
+
+            for (int _b = 0; _b < b; _b++) {
+
+                I:
+                for (int i = 0; i < N; i++) {
+                    if (RandomUtil.getInstance().nextDouble() < numInBootstrap / (double) N) {
+                        if (Double.isNaN(x[i])) continue;
+                        if (Double.isNaN(z[i])) continue;
+
+                        for (double[] otherParent : p) {
+                            if (Double.isNaN(otherParent[i])) continue I;
+                        }
+
+                        mask[i] = true;
+                    } else {
+                        mask[i] = false;
+                    }
+                }
+
+                final double cov0 = covMask(z, x, mask)[0];
+                final double cov1 = covMask(x, x, mask)[0];
+                dataSet.setDouble(_b, 0, cov0);
+                dataSet.setDouble(_b, 1, cov1);
+                cov0s[_b] = cov0;
+
+                for (int j = 0; j < p.length; j++) {
+                    final double cov3 = covMask(x, p[j], mask)[0];
+                    dataSet.setDouble(_b, j + 2, cov3);
+                }
+            }
+
+            RegressionDataset regression = new RegressionDataset(dataSet);
+            List<Node> regressors = new ArrayList<>(nodes);
+            regressors.remove(nodes.get(0));
+
+            RegressionResult result = regression.regress(nodes.get(0), regressors);
+
+            double cov0var = DataUtils.variance(cov0s, 0);
+
+            final double[] array = result.getResiduals().toArray();
+
+            double residualVar = DataUtils.variance(array, 0);
+
+            final double x2 = dof * (residualVar / (cov0var / m));
+
+            double c = new ChiSquaredDistribution(dof).cumulativeProbability(x2);
+
+            final double pValue = 1.0 - c;
+//            System.out.println("CC residual var = " + residualVar + " dof = " + dof + " x2 = " + x2 + " c = " + c + " pValue = " + pValue + " alpha = " + alpha);
+
+            return pValue;
+        } catch (SingularMatrixException e) {
+            System.out.println("Singular");
+            return 1.0;
+        }
+    }
+
+    public static double variance(double array[], double meanValue) {
+
+        int i;
+        double difference;
+        double sum = 0.0;
+        int N = array.length;
+
+        for (i = 0; i < N; i++) {
+            difference = array[i] - meanValue;
+            sum += difference * difference;
+        }
+
+        return sum / (double) (N - 1);
+    }
+
+    public static double covWithoutNonlinear(double[] x, double[] z, double percentInBootstrap,
+                                             int numBootstraps, double cutoff) {
+
+        final ContinuousVariable cov = new ContinuousVariable("cov");
+        final ContinuousVariable var = new ContinuousVariable("var0");
+
+        List<Node> nodes = new ArrayList<>();
+        nodes.add(cov);
+        nodes.add(var);
+
+        List<Node> regressors = new ArrayList<>();
+        regressors.add(var);
+
+        DataSet dataSet = new BoxDataSet(new VerticalDoubleDataBox(numBootstraps, 2), nodes);
+
+        boolean[] mask = new boolean[x.length];
+        double[] cov0s = new double[numBootstraps];
+
+        for (int b = 0; b < numBootstraps; b++) {
+            for (int i = 0; i < mask.length; i++) {
+                if (RandomUtil.getInstance().nextDouble() < percentInBootstrap) {
+                    if (Double.isNaN(x[i])) continue;
+                    if (Double.isNaN(z[i])) continue;
+
+                    mask[i] = true;
+                } else {
+                    mask[i] = false;
+                }
+            }
+
+            final double cov0 = covMask(x, z, mask)[0];
+            final double cov1 = covMask(x, x, mask)[0];
+
+            dataSet.setDouble(b, 0, cov0);
+            dataSet.setDouble(b, 1, cov1);
+            cov0s[b] = cov0;
+        }
+
+        try {
+            RegressionDataset regression = new RegressionDataset(dataSet);
+            RegressionResult result = regression.regress(cov, regressors);
+
+            final double[] residuals = result.getResiduals().toArray();
+
+            for (int b = 0; b < numBootstraps; b++) {
+                cov0s[b] -= residuals[b];
+            }
+        } catch (SingularMatrixException e) {
+            //
+        }
+
+        return cov0s[0];
+    }
+
+    public static double[] covMask(double[] x, double[] y, boolean[] mask) {
+        double exy = 0.0;
+        double exx = 0.0;
+        double eyy = 0.0;
+
+        double ex = 0.0;
+        double ey = 0.0;
+
+        int n = 0;
+
+        for (int k = 0; k < mask.length; k++) {
+            if (mask[k]) {
+                exy += x[k] * y[k];
+                exx += x[k] * x[k];
+                eyy += y[k] * y[k];
+                ex += x[k];
+                ey += y[k];
+                n++;
+            }
+        }
+
+        exy /= n;
+        exx /= n;
+        eyy /= n;
+        ex /= n;
+        ey /= n;
+
+        double sxy = exy - ex * ey;
+        double sx = exx - ex * ex;
+        double sy = eyy - ey * ey;
+
+        return new double[]{sxy, sxy / sqrt(sx * sy), sx, sy, (double) n, ex, ey, sxy / sx};
     }
 }
 

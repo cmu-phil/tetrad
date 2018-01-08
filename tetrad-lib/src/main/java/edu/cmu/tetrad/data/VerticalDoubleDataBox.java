@@ -135,7 +135,7 @@ public class VerticalDoubleDataBox implements DataBox {
             System.arraycopy(data[i], 0, copy[i], 0, data[0].length);
         }
 
-        return new VerticalDoubleDataBox(data);
+        return new VerticalDoubleDataBox(copy);
     }
 
     /**

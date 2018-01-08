@@ -270,6 +270,18 @@ public class ParamDescriptions {
                 "Threshold for judging negative coefficient edges as X->Y (range (-1, 0)",
                 -0.2, -1.0, 1.0));
 
+        map.put("numInBootstrapForLinearityTest", new ParamDescription(
+                "Sample size for bootstrap for linearity test",
+                100, 0, Integer.MAX_VALUE));
+
+        map.put("numBootstrapsForLinearityTest", new ParamDescription(
+                "Number of bootstraps for linearity test",
+                100, 0, Integer.MAX_VALUE));
+
+        map.put("alphaForLinearityTest", new ParamDescription(
+                "Alpha for linearity test",
+                0.999, 0.0, 100.0));
+
 
     }
 

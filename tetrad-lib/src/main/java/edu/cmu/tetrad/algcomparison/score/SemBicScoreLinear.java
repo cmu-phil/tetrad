@@ -1,13 +1,16 @@
 package edu.cmu.tetrad.algcomparison.score;
 
-import edu.cmu.tetrad.data.*;
+import edu.cmu.tetrad.data.DataModel;
+import edu.cmu.tetrad.data.DataSet;
+import edu.cmu.tetrad.data.DataType;
+import edu.cmu.tetrad.data.DataUtils;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.Score;
+import edu.cmu.tetrad.util.ParamDescription;
 import edu.cmu.tetrad.util.Parameters;
+
 import java.util.ArrayList;
 import java.util.List;
-
-import static java.lang.Math.log;
 
 /**
  * Wrapper for Fisher Z test.
@@ -15,11 +18,11 @@ import static java.lang.Math.log;
  * @author jdramsey
  */
 @edu.cmu.tetrad.annotation.Score(
-        name = "Sem BIC Score",
-        command = "sem-bic",
-        dataType = {DataType.Continuous, DataType.Covariance}
+        name = "Sem BIC Score Linear",
+        command = "sem-bic-linear",
+        dataType = {DataType.Continuous}
 )
-public class SemBicScore implements ScoreWrapper {
+public class SemBicScoreLinear implements ScoreWrapper {
 
     static final long serialVersionUID = 23L;
     private DataModel dataSet;
@@ -37,17 +40,21 @@ public class SemBicScore implements ScoreWrapper {
             _data = dataSet;
         }
 
-        edu.cmu.tetrad.search.SemBicScore semBicScore
-                = new edu.cmu.tetrad.search.SemBicScore(DataUtils.getCovMatrix(_data));
+        edu.cmu.tetrad.search.SemBicScoreLinear semBicScore
+                = new edu.cmu.tetrad.search.SemBicScoreLinear((DataSet)_data);
         double penaltyDiscount = parameters.getDouble("penaltyDiscount");
         this.penaltyDiscount = penaltyDiscount;
         semBicScore.setPenaltyDiscount(penaltyDiscount);
+        semBicScore.setNumInBootstrap(parameters.getInt("numInBootstrapForLinearityTest"));
+        semBicScore.setNumBootstraps(parameters.getInt("numBootstrapsForLinearityTest"));
+        semBicScore.setBootstrapAlpha(parameters.getDouble("alphaForLinearityTest"));
+
         return semBicScore;
     }
 
     @Override
     public String getDescription() {
-        return "Sem BIC Score";
+        return "Sem BIC Score Linear";
     }
 
     @Override
@@ -60,6 +67,10 @@ public class SemBicScore implements ScoreWrapper {
         List<String> parameters = new ArrayList<>();
         parameters.add("penaltyDiscount");
         parameters.add("doNonparanormalTransform");
+        parameters.add("numInBootstrapForLinearityTest");
+        parameters.add("numBootstrapsForLinearityTest");
+        parameters.add("alphaForLinearityTest");
+
         return parameters;
     }
 

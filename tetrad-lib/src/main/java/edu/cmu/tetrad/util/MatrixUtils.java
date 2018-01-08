@@ -685,7 +685,7 @@ public final class MatrixUtils {
         return toString(m, nf, variables);
     }
 
-    private static String toString(double[][] m, NumberFormat nf) {
+    public static String toString(double[][] m, NumberFormat nf) {
         return toString(m, nf, null);
     }
 
@@ -868,6 +868,7 @@ public final class MatrixUtils {
 
     public static String toString(int[][] m) {
         TextTable textTable = new TextTable(m.length, m[0].length);
+        textTable.setTabDelimited(true);
 
         for (int i = 0; i < m.length; i++) {
             for (int j = 0; j < m[0].length; j++) {
