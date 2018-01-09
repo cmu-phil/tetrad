@@ -16,7 +16,7 @@ import java.util.Map;
 import static java.lang.Math.abs;
 
 /**
- * Implementa the IDA algorithm, Maathuis, Marloes H., Markus Kalisch, and Peter Bühlmann.
+ * Implements the IDA algorithm, Maathuis, Marloes H., Markus Kalisch, and Peter Bühlmann.
  * "Estimating high-dimensional intervention effects from observational data."
  * The Annals of Statistics 37.6A (2009): 3133-3164.
  *
@@ -36,7 +36,7 @@ public class Ida {
 
     /**
      * Returns the minimum effect of X on Y.
-     *
+     * <p>
      * 1. First, estimate a pattern P from the data.
      * 2. Then, consider all combinations C of adjacents of X that include all fo the parents of X in P.
      * 3. For each such C, regress Y onto {X} U C and record the coefficient beta for X in the regression.
@@ -90,6 +90,7 @@ public class Ida {
 
     /**
      * Returns a map from nodes in V \ {Y} to their minimum effects.
+     *
      * @param y The target variable
      * @return Thia map.
      */
@@ -105,6 +106,7 @@ public class Ida {
 
     /**
      * Returns the minimum effects of X on Y for X in V \ {Y}, sorted downward by minimum effect
+     *
      * @param y The target variable.
      * @return Two sorted lists, one of nodes, the other of corresponding minimum effects, sorted downward by
      * minimum effect size.
@@ -131,6 +133,7 @@ public class Ida {
 
     /**
      * A list of nodes and corresonding minimum effects.
+     *
      * @author jdramsey@andrew.cmu.edu
      */
     public class NodeEffects {
