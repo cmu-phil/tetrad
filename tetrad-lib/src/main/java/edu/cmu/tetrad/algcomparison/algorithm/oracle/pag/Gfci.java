@@ -8,6 +8,9 @@ import edu.cmu.tetrad.algcomparison.utils.TakesIndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.utils.UsesScoreWrapper;
 import edu.cmu.tetrad.annotation.AlgType;
 import edu.cmu.tetrad.data.*;
+import edu.cmu.tetrad.graph.Edge;
+import edu.cmu.tetrad.graph.EdgeListGraph;
+import edu.cmu.tetrad.graph.Edges;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.DagToPag;
 import edu.cmu.tetrad.search.GFci;
@@ -37,6 +40,7 @@ public class Gfci implements Algorithm, HasKnowledge, UsesScoreWrapper, TakesInd
     private IndependenceWrapper test;
     private ScoreWrapper score;
     private IKnowledge knowledge = new Knowledge2();
+    private boolean replacePartiallyOrientedByDirected = false;
 
     public Gfci() {
     }
@@ -63,7 +67,7 @@ public class Gfci implements Algorithm, HasKnowledge, UsesScoreWrapper, TakesInd
                 search.setOut((PrintStream) obj);
             }
 
-            return search.search();
+            return replacePartiallyOrientedByDirected(search.search());
         } else {
             Gfci algorithm = new Gfci(test, score);
 
@@ -89,7 +93,25 @@ public class Gfci implements Algorithm, HasKnowledge, UsesScoreWrapper, TakesInd
             search.setEdgeEnsemble(edgeEnsemble);
             search.setParameters(parameters);
             search.setVerbose(parameters.getBoolean("verbose"));
-            return search.search();
+            return replacePartiallyOrientedByDirected(search.search());
+        }
+    }
+
+    private Graph replacePartiallyOrientedByDirected(Graph graph) {
+        if (replacePartiallyOrientedByDirected) {
+            Graph graph2 = new EdgeListGraph(graph.getNodes());
+
+            for (Edge edge : graph.getEdges()) {
+                if (Edges.isPartiallyOrientedEdge(edge)) {
+                    graph2.addDirectedEdge(edge.getNode1(), edge.getNode2());
+                } else {
+                    graph2.addEdge(edge);
+                }
+            }
+
+            return graph2;
+        } else {
+            return graph;
         }
     }
 
@@ -145,4 +167,11 @@ public class Gfci implements Algorithm, HasKnowledge, UsesScoreWrapper, TakesInd
         this.test = test;
     }
 
+    public boolean isReplacePartiallyOrientedByDirected() {
+        return replacePartiallyOrientedByDirected;
+    }
+
+    public void setReplacePartiallyOrientedByDirected(boolean replacePartiallyOrientedByDirected) {
+        this.replacePartiallyOrientedByDirected = replacePartiallyOrientedByDirected;
+    }
 }
