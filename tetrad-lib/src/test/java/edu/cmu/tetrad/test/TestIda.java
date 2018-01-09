@@ -59,7 +59,7 @@ public class TestIda {
 
         Node y = dataSet.getVariable("X5");
 
-        Ida ida = new Ida(dataSet);
+        Ida ida = new Ida(new CovarianceMatrixOnTheFly(dataSet));
 
         Ida.NodeEffects effects = ida.getSortedEffects(y);
 
