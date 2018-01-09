@@ -66,8 +66,6 @@ public class FaskConcatenated implements MultiDataSetAlgorithm, HasKnowledge, Us
 
             dataSet.setNumberFormat(new DecimalFormat("0.000000000000000000"));
 
-            System.out.println(dataSet);
-
             Fask search = new Fask(dataSet, score.getScore(dataSet, parameters));
             search.setDepth(parameters.getInt("depth"));
             search.setPenaltyDiscount(parameters.getDouble("penaltyDiscount"));

@@ -47,6 +47,7 @@ import edu.cmu.tetrad.search.DagToPag;
 import edu.cmu.tetrad.search.DagToPag2;
 import edu.cmu.tetrad.search.SearchGraphUtils;
 import edu.cmu.tetrad.util.*;
+import edu.pitt.dbmi.data.reader.DataReader;
 import org.reflections.Reflections;
 
 import java.io.*;
@@ -1154,6 +1155,7 @@ public class Comparison {
             }
 
             if (algorithm instanceof MultiDataSetAlgorithm) {
+
                 List<Integer> indices = new ArrayList<>();
                 int numDataModels = simulationWrapper.getSimulation().getNumDataModels();
                 for (int i = 0; i < numDataModels; i++) indices.add(i);
