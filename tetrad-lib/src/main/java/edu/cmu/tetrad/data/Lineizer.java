@@ -88,7 +88,7 @@ final class Lineizer {
     }
 
     /**
-     * Return the next token in the line.
+     * NodeEffects the next token in the line.
      */
     public final String nextLine() {
         lineNumber++;

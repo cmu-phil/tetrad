@@ -19,60 +19,58 @@
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA //
 ///////////////////////////////////////////////////////////////////////////////
 
-package edu.cmu.tetradapp.model;
+package edu.cmu.tetrad.test;
 
-import edu.cmu.tetrad.data.DataSet;
-import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.session.Executable;
-import edu.cmu.tetrad.util.Parameters;
+import edu.cmu.tetrad.data.*;
+import edu.cmu.tetrad.graph.*;
+import edu.cmu.tetrad.regression.RegressionDataset;
+import edu.cmu.tetrad.search.*;
+import edu.cmu.tetrad.sem.SemIm;
+import edu.cmu.tetrad.sem.SemPm;
+import edu.cmu.tetrad.util.RandomUtil;
+import edu.cmu.tetrad.util.TetradLogger;
+import edu.cmu.tetrad.util.TextTable;
+import org.junit.Test;
 
-import java.util.List;
+import java.text.DecimalFormat;
+import java.text.NumberFormat;
+import java.util.*;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 /**
- * Represents a runner for a Markov blanket search.
+ * Tests IDA.
  *
- * @author Tyler Gibson
+ * @author Joseph Ramsey
  */
-public interface MarkovBlanketSearchRunner extends Executable {
-    long serialVersionUID = 23L;
+public class TestIda {
 
-    /**
-     * @return the search params.
-     */
-    Parameters getParams();
+    @Test
+    public void test1() {
+        Graph graph = GraphUtils.randomGraph(10, 0, 10,
+                100, 100, 100, false);
 
+        System.out.println(graph);
 
-    /**
-     * NodeEffects the source for the search.
-     */
-    DataSet getSource();
-    
+        SemPm pm = new SemPm(graph);
+        SemIm im = new SemIm(pm);
+        DataSet dataSet = im.simulateData(1000, false);
 
-    /**
-     * @return the data model for the variables in the markov blanket.
-     */
-    DataSet getDataModelForMarkovBlanket();
+        Node y = dataSet.getVariable("X5");
 
+        Ida ida = new Ida(dataSet);
 
-    /**
-     * @return the variables in the markov blanket.
-     */
-    List<Node> getMarkovBlanket();
+        Ida.NodeEffects effects = ida.getSortedEffects(y);
 
-
-    /**
-     * @return the name of the search.
-     */
-    String getSearchName();
-
-
-    /**
-     * Sets the search name.
-     */
-    void setSearchName(String n);
-
-
+        for (int i = 0; i < effects.getNodes().size(); i++) {
+            Node x = effects.getNodes().get(i);
+            System.out.println(x + "\t" + effects.getEffects().get(i));
+        }
+    }
 }
+
+
 
 
 

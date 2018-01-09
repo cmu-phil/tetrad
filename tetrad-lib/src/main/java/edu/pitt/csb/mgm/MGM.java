@@ -1326,7 +1326,7 @@ public class MGM extends ConvexProximal implements GraphSearch{
     }
 
     /**
-     * Return time of execution for learning.
+     * NodeEffects time of execution for learning.
      * @return
      */
     public long getElapsedTime(){

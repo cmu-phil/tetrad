@@ -611,7 +611,7 @@ public final class Mbfs implements MbSearch, GraphSearch {
         logger.log("pruning", "Trying to remove edges adjacent to node " + node +
                 ", depth = " + depth + ".");
 
-        // Otherwise, try removing all other edges adjacent node node. Return
+        // Otherwise, try removing all other edges adjacent node node. NodeEffects
         // true if more edges could be removed at the next depth.
         List<Node> a = new LinkedList<>(graph.getAdjacentNodes(node));
 

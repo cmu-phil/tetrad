@@ -209,28 +209,28 @@ public class GraphChange {
     }
 
     /**
-     * Return colliders
+     * NodeEffects colliders
      */
     public List<Triple> getColliders() {
         return colliders;
     }
 
     /**
-     * Return noncolliders
+     * NodeEffects noncolliders
      */
     public List<Triple> getNoncolliders() {
         return nonColliders;
     }
 
     /**
-     * Return removes
+     * NodeEffects removes
      */
     public List<Edge> getRemoves() {
         return removes;
     }
 
     /**
-     * Return orients
+     * NodeEffects orients
      */
     public List<NodePair> getOrients() {
         return orients;

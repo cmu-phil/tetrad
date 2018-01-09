@@ -385,7 +385,7 @@ public class LingamPattern2 {
         return new Score(score, pValues);
     }
 
-    // Return the average score.
+    // NodeEffects the average score.
 
     private Score getScore(Graph dag, List<TetradMatrix> data, List<Node> variables) {
 //        System.out.println("Scoring DAG: " + dag);

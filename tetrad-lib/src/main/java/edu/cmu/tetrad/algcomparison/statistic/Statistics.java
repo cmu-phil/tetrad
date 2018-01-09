@@ -51,7 +51,7 @@ public class Statistics {
     }
 
     /**
-     * Return the list of statistics.
+     * NodeEffects the list of statistics.
      *
      * @return A copy of this list, in the order added.
      */

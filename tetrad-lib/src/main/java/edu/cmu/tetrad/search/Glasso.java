@@ -94,7 +94,7 @@ public class Glasso {
     private double thr = 1.0e-4;
 
     /**
-     * Return value of the algorithm.
+     * NodeEffects value of the algorithm.
      */
     public static class Result {
         /**

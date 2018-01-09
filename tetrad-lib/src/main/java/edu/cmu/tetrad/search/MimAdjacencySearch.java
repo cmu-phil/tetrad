@@ -75,7 +75,7 @@ public final class MimAdjacencySearch {
     }
 
     /**
-     * Return an array of Nodes who can be conditional checks can be done on stipulated by temporal tiers </p> Shane
+     * NodeEffects an array of Nodes who can be conditional checks can be done on stipulated by temporal tiers </p> Shane
      * Harwood harwood+@andrew.cmu.edu
      */
     private Object[] forbidFilter(Set<String> set1, String x, IKnowledge bk) {

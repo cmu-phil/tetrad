@@ -1634,7 +1634,7 @@ public final class StatUtils {
                 }
             }
 
-            // Return the largest k such that P(k) <= (k / m) * alpha.
+            // NodeEffects the largest k such that P(k) <= (k / m) * alpha.
             return _k;
 
         } else {
@@ -1646,7 +1646,7 @@ public final class StatUtils {
                 }
             }
 
-            // Return the largest k such that P(k) <= (k / m) * alpha.
+            // NodeEffects the largest k such that P(k) <= (k / m) * alpha.
             return _k;
 
         }

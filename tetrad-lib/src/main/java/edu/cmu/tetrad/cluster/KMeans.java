@@ -258,7 +258,7 @@ public class KMeans implements ClusteringAlgorithm {
     }
 
     /**
-     * Return the maximum number of iterations, or -1 if the algorithm is
+     * NodeEffects the maximum number of iterations, or -1 if the algorithm is
      * allowed to run unconstrainted.
      *
      * @return This value.

@@ -668,7 +668,7 @@ public final class Identifiability implements ManipulatingBayesUpdater {
     }
 
     /////////////////////////////////////////////////////////////////
-    // Return the number of c-components
+    // NodeEffects the number of c-components
     //
     private int nCComponents(int[] cComponents) {
         int currentMax = -1;
@@ -682,7 +682,7 @@ public final class Identifiability implements ManipulatingBayesUpdater {
     }
 
     /////////////////////////////////////////////////////////////////
-    //  Return the index-th c-component as a list of nodes
+    //  NodeEffects the index-th c-component as a list of nodes
     //
     private List<Node> getCComponentNodes(
             BayesIm bayesIm,

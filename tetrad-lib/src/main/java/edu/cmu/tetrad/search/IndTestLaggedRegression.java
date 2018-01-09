@@ -316,7 +316,7 @@ public final class IndTestLaggedRegression implements IndependenceTest {
     //==========================PRIVATE METHODS============================//
 
 //    /**
-//     * Return the p-value of the last calculated independence fact.
+//     * NodeEffects the p-value of the last calculated independence fact.
 //     *
 //     * @return this p-value.  When accessed through the IndependenceChecker
 //     *         interface, this p-value should only be considered to be a

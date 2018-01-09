@@ -451,7 +451,7 @@ public final class GraphUtils {
 //                delta_out=0,
 //                create_using=None,
 //                seed=None):
-//        """Return a scale free directed graph.
+//        """NodeEffects a scale free directed graph.
 //
 //        Parameters
 //                ----------

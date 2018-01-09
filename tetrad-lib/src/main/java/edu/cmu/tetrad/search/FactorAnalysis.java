@@ -261,7 +261,7 @@ public class FactorAnalysis {
      * i'th D Scalar = square root(i'th L Scalar)
      * i'th factor loading = i'th U Vector / i'th D Scalar
      * <p>
-     * Return the final i'th factor loading as our best approximation.
+     * NodeEffects the final i'th factor loading as our best approximation.
      */
     private boolean successiveResidualHelper(TetradMatrix residual, TetradMatrix approximationVector) {
         TetradMatrix l0 = approximationVector.transpose().times(residual).times(approximationVector);
