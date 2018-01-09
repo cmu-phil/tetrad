@@ -37,10 +37,11 @@ public class Ida {
     /**
      * Returns the minimum effect of X on Y.
      *
-     * 1. First, I need to estimate a pattern P from the data.
-     * 2. Then, I need to consider all combinations C of adjacents of X that include all fo the parents of X in P.
-     * 3. For each such C, I need to regress Y onto {X} U C and record the coefficient beta for X in the regression.
-     * 4. I need then to report the minimum such beta.
+     * 1. First, estimate a pattern P from the data.
+     * 2. Then, consider all combinations C of adjacents of X that include all fo the parents of X in P.
+     * 3. For each such C, regress Y onto {X} U C and record the coefficient beta for X in the regression.
+     * 4. Report the minimum such beta.
+     *
      * @param x The first variable.
      * @param y The second variable
      * @return the minimum effect of X on Y.
