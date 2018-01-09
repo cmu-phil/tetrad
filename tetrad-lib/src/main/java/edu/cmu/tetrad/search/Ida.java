@@ -34,6 +34,17 @@ public class Ida {
         regression = new RegressionCovariance(covariances);
     }
 
+    /**
+     * Returns the minimum effect of X on Y.
+     *
+     * 1. First, I need to estimate a pattern P from the data.
+     * 2. Then, I need to consider all combinations C of adjacents of X that include all fo the parents of X in P.
+     * 3. For each such C, I need to regress Y onto {X} U C and record the coefficient beta for X in the regression.
+     * 4. I need then to report the minimum such beta.
+     * @param x The first variable.
+     * @param y The second variable
+     * @return the minimum effect of X on Y.
+     */
     public double getMinimumEffect(Node x, Node y) {
         if (x == y) return 0.0;
 
@@ -76,7 +87,12 @@ public class Ida {
         return minBeta;
     }
 
-    public Map<Node, Double> calculateEffectsOnY(Node y) {
+    /**
+     * Returns a map from nodes in V \ {Y} to their minimum effects.
+     * @param y The target variable
+     * @return Thia map.
+     */
+    public Map<Node, Double> calculateMinimumEffectsOnY(Node y) {
         Map<Node, Double> effects = new HashMap<>();
 
         for (Node x : covariances.getVariables()) {
@@ -86,8 +102,14 @@ public class Ida {
         return effects;
     }
 
+    /**
+     * Returns the minimum effects of X on Y for X in V \ {Y}, sorted downward by minimum effect
+     * @param y The target variable.
+     * @return Two sorted lists, one of nodes, the other of corresponding minimum effects, sorted downward by
+     * minimum effect size.
+     */
     public NodeEffects getSortedEffects(Node y) {
-        Map<Node, Double> allEffects = calculateEffectsOnY(y);
+        Map<Node, Double> allEffects = calculateMinimumEffectsOnY(y);
 
         List<Node> nodes = new ArrayList<>(allEffects.keySet());
 
@@ -106,6 +128,10 @@ public class Ida {
         return new NodeEffects(nodes, effects);
     }
 
+    /**
+     * A list of nodes and corresonding minimum effects.
+     * @author jdramsey@andrew.cmu.edu
+     */
     public class NodeEffects {
         private List<Node> nodes;
         private List<Double> effects;
