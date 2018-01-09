@@ -217,6 +217,10 @@ public class ParamDescriptions {
         map.put("percentStability", new ParamDescription(
                 "Percentage of subsamples each feature in the output must agree on",
                 0.5, 0.0, 1.0));
+
+        map.put("replacePartiallyOrientedByDirected", new ParamDescription(
+                "Yes if o-> edges should be replaced by --> edges",
+                false));
     }
 
     public static ParamDescriptions getInstance() {

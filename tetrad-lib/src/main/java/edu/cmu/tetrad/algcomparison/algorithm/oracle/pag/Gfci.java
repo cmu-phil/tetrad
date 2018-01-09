@@ -17,6 +17,7 @@ import edu.cmu.tetrad.search.GFci;
 import edu.cmu.tetrad.util.Parameters;
 import edu.pitt.dbmi.algo.bootstrap.BootstrapEdgeEnsemble;
 import edu.pitt.dbmi.algo.bootstrap.GeneralBootstrapTest;
+
 import java.io.PrintStream;
 import java.util.List;
 
@@ -30,9 +31,9 @@ import java.util.List;
         command = "gfci",
         algoType = AlgType.allow_latent_common_causes,
         description = "Greedy Fast Causal Inference Search (GFCI) is an implementation of the revised FCI algorithm."
-        + "It uses FGES followed by PC adjacency removals. Uses conservative collider orientation. Gets sepsets for X---Y from among adjacents of X or of Y.\n\n"
-        + "Following an idea developed by Spirtes, now it uses more of the information in FGES, to calculating possible d-separation paths and to utilize unshielded colliders found by FGES.\n\n"
-        + "For more detail about GFci implementation, please visit http://cmu-phil.github.io/tetrad/tetrad-lib-apidocs/edu/cmu/tetrad/search/GFci.html"
+                + "It uses FGES followed by PC adjacency removals. Uses conservative collider orientation. Gets sepsets for X---Y from among adjacents of X or of Y.\n\n"
+                + "Following an idea developed by Spirtes, now it uses more of the information in FGES, to calculating possible d-separation paths and to utilize unshielded colliders found by FGES.\n\n"
+                + "For more detail about GFci implementation, please visit http://cmu-phil.github.io/tetrad/tetrad-lib-apidocs/edu/cmu/tetrad/search/GFci.html"
 )
 public class Gfci implements Algorithm, HasKnowledge, UsesScoreWrapper, TakesIndependenceWrapper {
 
@@ -52,7 +53,7 @@ public class Gfci implements Algorithm, HasKnowledge, UsesScoreWrapper, TakesInd
 
     @Override
     public Graph search(DataModel dataSet, Parameters parameters) {
-    	if (parameters.getInt("bootstrapSampleSize") < 1) {
+        if (parameters.getInt("bootstrapSampleSize") < 1) {
             GFci search = new GFci(test.getTest(dataSet, parameters), score.getScore(dataSet, parameters));
             search.setMaxDegree(parameters.getInt("maxDegree"));
             search.setKnowledge(knowledge);
@@ -60,6 +61,7 @@ public class Gfci implements Algorithm, HasKnowledge, UsesScoreWrapper, TakesInd
             search.setFaithfulnessAssumed(parameters.getBoolean("faithfulnessAssumed"));
             search.setMaxPathLength(parameters.getInt("maxPathLength"));
             search.setCompleteRuleSetUsed(parameters.getBoolean("completeRuleSetUsed"));
+            search.setReplacePartiallyOrientedByDirected(parameters.getBoolean("replacePartiallyOrientedByDirected"));
 
             Object obj = parameters.get("printStream");
 
@@ -67,7 +69,7 @@ public class Gfci implements Algorithm, HasKnowledge, UsesScoreWrapper, TakesInd
                 search.setOut((PrintStream) obj);
             }
 
-            return replacePartiallyOrientedByDirected(search.search());
+            return search.search();
         } else {
             Gfci algorithm = new Gfci(test, score);
 
@@ -93,25 +95,8 @@ public class Gfci implements Algorithm, HasKnowledge, UsesScoreWrapper, TakesInd
             search.setEdgeEnsemble(edgeEnsemble);
             search.setParameters(parameters);
             search.setVerbose(parameters.getBoolean("verbose"));
-            return replacePartiallyOrientedByDirected(search.search());
-        }
-    }
 
-    private Graph replacePartiallyOrientedByDirected(Graph graph) {
-        if (replacePartiallyOrientedByDirected) {
-            Graph graph2 = new EdgeListGraph(graph.getNodes());
-
-            for (Edge edge : graph.getEdges()) {
-                if (Edges.isPartiallyOrientedEdge(edge)) {
-                    graph2.addDirectedEdge(edge.getNode1(), edge.getNode2());
-                } else {
-                    graph2.addEdge(edge);
-                }
-            }
-
-            return graph2;
-        } else {
-            return graph;
+            return search.search();
         }
     }
 
@@ -140,6 +125,7 @@ public class Gfci implements Algorithm, HasKnowledge, UsesScoreWrapper, TakesInd
 //        parameters.add("printStream");
         parameters.add("maxPathLength");
         parameters.add("completeRuleSetUsed");
+        parameters.add("replacePartiallyOrientedByDirected");
         // Bootstrapping
         parameters.add("bootstrapSampleSize");
         parameters.add("bootstrapEnsemble");
