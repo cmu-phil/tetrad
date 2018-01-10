@@ -1367,6 +1367,10 @@ public final class SemIm implements IM, ISemIm, TetradSerializable {
             for (Node to : tierOrdering) {
                 List<Node> parents = semGraph.getNodesInTo(to, Endpoint.ARROW);
 
+                for (Node p : new ArrayList<>(parents)) {
+                    if (timeSeriesGraph.getNodeId(p).getLag() > 0) parents.remove(p);
+                }
+
                 double sum = 0.0;
 
                 for (Node parent : parents) {
@@ -1395,11 +1399,7 @@ public final class SemIm implements IM, ISemIm, TetradSerializable {
             }
         }
 
-        System.out.println(fullData);
-
         fullData = DataUtils.restrictToMeasured(fullData);
-
-        System.out.println(fullData);
 
         return fullData;
     }
@@ -1623,7 +1623,6 @@ public final class SemIm implements IM, ISemIm, TetradSerializable {
                         initCol != -1) {
                     int column = initialValues.getColumn(initNode);
                     value = initialValues.getDouble(row, column);
-//                    System.out.println(value);
 
                 } else {
                     if (distribution == null) {
@@ -1696,8 +1695,6 @@ public final class SemIm implements IM, ISemIm, TetradSerializable {
 //            variables.add(var);
 //        }
 //
-////        System.out.println("Creating data set.");
-//
 //        DataSet dataSet = new ColtDataSet(sampleSize, variables);
 //
 //        // Create some index arrays to hopefully speed up the simulation.
@@ -1733,14 +1730,10 @@ public final class SemIm implements IM, ISemIm, TetradSerializable {
 //            }
 //        }
 //
-////        System.out.println("Starting simulation.");
-//
 //        TetradMatrix _data = ((ColtDataSet) dataSet).getDoubleDataNoCopy();
 //
 //        // Do the simulation.
 //        for (int row = 0; row < sampleSize; row++) {
-//            if (row % 100 == 0) System.out.println("Row " + row);
-//
 //            for (int i = 0; i < tierOrdering.size(); i++) {
 //                int col = tierIndices[i];
 //                double value = RandomUtil.getInstance().nextNormal(0, 1) *
@@ -2349,7 +2342,6 @@ public final class SemIm implements IM, ISemIm, TetradSerializable {
 
     private void retainPreviousValues(SemIm oldSemIm) {
         if (oldSemIm == null) {
-            System.out.println("old sem im null");
             return;
         }
 
@@ -2535,8 +2527,6 @@ public final class SemIm implements IM, ISemIm, TetradSerializable {
             Node node = getMeasuredNodes().get(i);
             varNamesList.add(node.getName());
         }
-
-        //System.out.println("CovarianceMatrix ar order: " + varNamesList);
 
         String[] measuredVarNames = varNamesList.toArray(new String[varNamesList.size()]);
         return covMatrix.getSubmatrix(measuredVarNames);
