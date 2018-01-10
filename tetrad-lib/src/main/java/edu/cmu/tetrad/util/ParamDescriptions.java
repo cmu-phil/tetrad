@@ -217,6 +217,22 @@ public class ParamDescriptions {
         map.put("percentStability", new ParamDescription(
                 "Percentage of subsamples each feature in the output must agree on",
                 0.5, 0.0, 1.0));
+
+        map.put("extraEdgeThreshold", new ParamDescription(
+                "Threshold for including extra edges",
+                0.3, 0.0, 1.0));
+
+        map.put("useFasAdjacencies", new ParamDescription(
+                "Yes if adjacencies from the FAS search should be used",
+                true));
+
+        map.put("useCorrDiffAdjacencies", new ParamDescription(
+                "Yes if adjacencies from conditional correlation differences should be used",
+                true));
+
+        map.put("faskDelta", new ParamDescription(
+                "Threshold for judging negative coefficient edges as X->Y (range (-1, 0)",
+                -0.2, -1.0, 1.0));
     }
 
     public static ParamDescriptions getInstance() {
