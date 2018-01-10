@@ -1368,7 +1368,10 @@ public final class SemIm implements IM, ISemIm, TetradSerializable {
                 List<Node> parents = semGraph.getNodesInTo(to, Endpoint.ARROW);
 
                 for (Node p : new ArrayList<>(parents)) {
-                    if (timeSeriesGraph.getNodeId(p).getLag() > 0) parents.remove(p);
+                    final TimeLagGraph.NodeId nodeId = timeSeriesGraph.getNodeId(p);
+                    if (nodeId.getLag() > 0 && nodeId.getName().startsWith("E_")) {
+                        parents.remove(p);
+                    }
                 }
 
                 double sum = 0.0;
