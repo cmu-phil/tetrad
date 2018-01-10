@@ -375,11 +375,11 @@ public final class TimeLagGraphEditor extends JPanel
                         b2.add(maxLagSpinner);
                         box.add(b2);
 
-                        Box b3 = Box.createHorizontalBox();
-                        b3.add(new JLabel("# Initial Lags = "));
-                        b3.add(Box.createHorizontalGlue());
-                        b3.add(initialLagsSpinner);
-                        box.add(b3);
+//                        Box b3 = Box.createHorizontalBox();
+//                        b3.add(new JLabel("# Initial Lags = "));
+//                        b3.add(Box.createHorizontalGlue());
+//                        b3.add(initialLagsSpinner);
+//                        box.add(b3);
 
                         box.setBorder(new EmptyBorder(10, 10, 10, 10));
 
