@@ -121,8 +121,27 @@ public class MGM extends ConvexProximal implements GraphSearch{
 
     public MGM(DataSet ds, double[] lambda){
         this.variables = ds.getVariables();
+
+        boolean hasContinuous = false;
+        boolean hasDiscrete = false;
+
+        for (Node node : variables) {
+            if (node instanceof ContinuousVariable) {
+                hasContinuous = true;
+            }
+
+            if (node instanceof DiscreteVariable) {
+                hasDiscrete = true;
+            }
+        }
+
+        if (!hasContinuous || !hasDiscrete) {
+            throw new IllegalArgumentException("Please give data with at least one discrete and one continuous variable.");
+        }
+
         DataSet dsCont = MixedUtils.getContinousData(ds);
         DataSet dsDisc = MixedUtils.getDiscreteData(ds);
+
         this.xDat = factory2D.make(dsCont.getDoubleData().toArray());
         this.yDat = factory2D.make(dsDisc.getDoubleData().toArray());
         this.l = MixedUtils.getDiscLevels(ds);
