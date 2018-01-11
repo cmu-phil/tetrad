@@ -177,23 +177,28 @@ public final class TestLinearityTest {
         final int numBootstraps = 100;
         final double bootstrapSampleSize = 100;
         final double alpha = .99999;
-        boolean singleEdge = true;
+        boolean singleEdge = false;
 
         try {
-            File dir = new File("/Users/user/Box Sync/data/nonlinearity/simulations/example20");
+            for (int i = 1; i <= 20; i++) {
 
-            Graph graph = GraphUtils.loadGraphTxt(new File(dir, "graph.txt"));
+                File dir = new File("/Users/user/Box Sync/data/nonlinearity/simulations/example" + i);
 
-            DataReader reader = new DataReader();
-            reader.setVariablesSupplied(true);
-            reader.setDelimiter(DelimiterType.TAB);
+                Graph graph = GraphUtils.loadGraphTxt(new File(dir, "graph.txt"));
 
-            DataSet D1 = reader.parseTabular(new File(dir, "D1.txt"));
-            DataSet D2 = reader.parseTabular(new File(dir, "D2.txt"));
-            DataSet D3 = reader.parseTabular(new File(dir, "D3.txt"));
-            DataSet D4 = reader.parseTabular(new File(dir, "D4.txt"));
+                DataReader reader = new DataReader();
+                reader.setVariablesSupplied(true);
+                reader.setDelimiter(DelimiterType.TAB);
 
-            doTest(bootstrapSampleSize, numBootstraps, alpha, graph, D1, D2, D3, D4, singleEdge);
+                DataSet D1 = reader.parseTabular(new File(dir, "D1.txt"));
+                DataSet D2 = reader.parseTabular(new File(dir, "D2.txt"));
+                DataSet D3 = reader.parseTabular(new File(dir, "D3.txt"));
+                DataSet D4 = reader.parseTabular(new File(dir, "D4.txt"));
+
+                System.out.print((i) + ".\t");
+
+                doTest(bootstrapSampleSize, numBootstraps, alpha, graph, D1, D2, D3, D4, singleEdge);
+            }
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -437,9 +442,9 @@ public final class TestLinearityTest {
             }
         }
 
-        System.out.println("\nVariances0");
+//        System.out.println("\nVariances0");
 
-        System.out.println(MatrixUtils.toString(variances0));
+//        System.out.println(MatrixUtils.toString(variances0));
 
 
         double[][] variances = new double[D1.getNumColumns()][4];
@@ -457,10 +462,10 @@ public final class TestLinearityTest {
 
 //        NumberFormat nf = new DecimalFormat("0.0000E00");
 
-        System.out.println("\nVariances");
-
-        System.out.println(MatrixUtils.toString(variances));
-
+//        System.out.println("\nVariances");
+//
+//        System.out.println(MatrixUtils.toString(variances));
+//
         List<Edge> edges = new ArrayList<Edge>(graph.getEdges());
         Collections.sort(edges);
 

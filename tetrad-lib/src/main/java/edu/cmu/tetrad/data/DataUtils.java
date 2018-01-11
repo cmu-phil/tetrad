@@ -1920,7 +1920,7 @@ public final class DataUtils {
         int N = z.length;
         int m = p.length + 2;
         int b = numBootstraps;
-        int dof = (b - 1);
+        int dof = (p.length + 1) *(b - 1);
 
         try {
             List<Node> nodes = new ArrayList<>();
@@ -1978,9 +1978,13 @@ public final class DataUtils {
 
             double residualVar = DataUtils.variance(array, 0);
 
-            final double x2 = dof * (residualVar / (cov0var / m));
+            final double x2 = dof * 2 * (residualVar / cov0var);
 
             double c = new ChiSquaredDistribution(dof).cumulativeProbability(x2);
+
+            if (Double.isNaN(c)) {
+                return false;
+            }
 
             final double pValue = 1.0 - c;
 //            System.out.println("residual var = " + residualVar + " dof = " + dof + " x2 = " + x2 + " c = " + c + " pValue = " + pValue + " alpha = " + alpha);
