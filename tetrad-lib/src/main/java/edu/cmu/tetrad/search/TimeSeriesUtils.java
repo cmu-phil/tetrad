@@ -594,9 +594,9 @@ public class TimeSeriesUtils {
         return laggedData;
     }
 
-    public static TimeLagGraph graphToLagGraph(Graph _graph){
+    public static TimeLagGraph graphToLagGraph(Graph _graph, int numLags){
         TimeLagGraph graph = new TimeLagGraph();
-        int numLags = 1;
+        graph.setMaxLag(numLags);
 
         for (Node node : _graph.getNodes()) {
             graph.addNode(new ContinuousVariable(node.getName()));

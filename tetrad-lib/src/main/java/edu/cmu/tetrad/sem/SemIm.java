@@ -1386,6 +1386,7 @@ public final class SemIm implements IM, ISemIm, TetradSerializable {
                         int fromIndex = nodeIndices.get(timeSeriesGraph.getNode(id.getName(), 0));
                         int lag = id.getLag();
                         if (currentStep > lag) {
+                            System.out.println("parent = " + parent + " to = " + to);
                             double coef = getParamValue(parent, to);
                             double fromValue = fullData.getDouble(currentStep - lag, fromIndex);
                             sum += coef * fromValue;
