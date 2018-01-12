@@ -1343,13 +1343,14 @@ public final class SemIm implements IM, ISemIm, TetradSerializable {
 
         List<Node> variables = new ArrayList<>();
 
-        for (Node node : timeSeriesGraph.getLag0Nodes()) {
+        List<Node> lag0Nodes = timeSeriesGraph.getLag0Nodes();
+
+        for (Node node : lag0Nodes) {
             final ContinuousVariable _node = new ContinuousVariable(timeSeriesGraph.getNodeId(node).getName());
             _node.setNodeType(node.getNodeType());
             variables.add(_node);
         }
 
-        List<Node> lag0Nodes = timeSeriesGraph.getLag0Nodes();
 
         DataSet fullData = new ColtDataSet(sampleSize, variables);
 
@@ -1367,13 +1368,6 @@ public final class SemIm implements IM, ISemIm, TetradSerializable {
             for (Node to : tierOrdering) {
                 List<Node> parents = semGraph.getNodesInTo(to, Endpoint.ARROW);
 
-                for (Node p : new ArrayList<>(parents)) {
-                    final TimeLagGraph.NodeId nodeId = timeSeriesGraph.getNodeId(p);
-                    if (nodeId.getLag() > 0 && nodeId.getName().startsWith("E_")) {
-                        parents.remove(p);
-                    }
-                }
-
                 double sum = 0.0;
 
                 for (Node parent : parents) {
@@ -1386,7 +1380,6 @@ public final class SemIm implements IM, ISemIm, TetradSerializable {
                         int fromIndex = nodeIndices.get(timeSeriesGraph.getNode(id.getName(), 0));
                         int lag = id.getLag();
                         if (currentStep > lag) {
-                            System.out.println("parent = " + parent + " to = " + to);
                             double coef = getParamValue(parent, to);
                             double fromValue = fullData.getDouble(currentStep - lag, fromIndex);
                             sum += coef * fromValue;
@@ -1403,7 +1396,11 @@ public final class SemIm implements IM, ISemIm, TetradSerializable {
             }
         }
 
+        System.out.println(fullData);
+
         fullData = DataUtils.restrictToMeasured(fullData);
+
+        System.out.println(fullData);
 
         return fullData;
     }
@@ -1627,6 +1624,7 @@ public final class SemIm implements IM, ISemIm, TetradSerializable {
                         initCol != -1) {
                     int column = initialValues.getColumn(initNode);
                     value = initialValues.getDouble(row, column);
+//                    System.out.println(value);
 
                 } else {
                     if (distribution == null) {
@@ -1699,6 +1697,8 @@ public final class SemIm implements IM, ISemIm, TetradSerializable {
 //            variables.add(var);
 //        }
 //
+////        System.out.println("Creating data set.");
+//
 //        DataSet dataSet = new ColtDataSet(sampleSize, variables);
 //
 //        // Create some index arrays to hopefully speed up the simulation.
@@ -1734,10 +1734,14 @@ public final class SemIm implements IM, ISemIm, TetradSerializable {
 //            }
 //        }
 //
+////        System.out.println("Starting simulation.");
+//
 //        TetradMatrix _data = ((ColtDataSet) dataSet).getDoubleDataNoCopy();
 //
 //        // Do the simulation.
 //        for (int row = 0; row < sampleSize; row++) {
+//            if (row % 100 == 0) System.out.println("Row " + row);
+//
 //            for (int i = 0; i < tierOrdering.size(); i++) {
 //                int col = tierIndices[i];
 //                double value = RandomUtil.getInstance().nextNormal(0, 1) *
@@ -2346,6 +2350,7 @@ public final class SemIm implements IM, ISemIm, TetradSerializable {
 
     private void retainPreviousValues(SemIm oldSemIm) {
         if (oldSemIm == null) {
+            System.out.println("old sem im null");
             return;
         }
 
@@ -2531,6 +2536,8 @@ public final class SemIm implements IM, ISemIm, TetradSerializable {
             Node node = getMeasuredNodes().get(i);
             varNamesList.add(node.getName());
         }
+
+        //System.out.println("CovarianceMatrix ar order: " + varNamesList);
 
         String[] measuredVarNames = varNamesList.toArray(new String[varNamesList.size()]);
         return covMatrix.getSubmatrix(measuredVarNames);
