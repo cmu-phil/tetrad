@@ -54,7 +54,7 @@ public class TimeSeriesSemSimulation implements Simulation, HasKnowledge {
             graphs.add(graph);
 
             SemPm pm = new SemPm(graph);
-            SemIm im = new SemIm(pm);
+            SemIm im = new SemIm(pm, parameters);
 
             final int sampleSize = parameters.getInt("sampleSize");
 
@@ -133,10 +133,16 @@ public class TimeSeriesSemSimulation implements Simulation, HasKnowledge {
             parameters.addAll(randomGraph.getParameters());
         }
 
+        parameters.addAll(SemIm.getParameterNames());
+
+        parameters.add("standardize");
+        parameters.add("measurementVariance");
         parameters.add("numRuns");
         parameters.add("differentGraphs");
         parameters.add("sampleSize");
+
         return parameters;
+
     }
 
     @Override
