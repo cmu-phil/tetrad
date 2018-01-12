@@ -129,7 +129,7 @@ public class SemBicScoreLinear implements Score {
                     other[i] = data[parents[q]];
                 }
 
-                boolean linear = DataUtils.linear(x, z, other, getNumInBootstrap(), getNumBootstraps(), getBootstrapAlpha());
+                boolean linear = DataUtils.linear(x, z, other, getNumInBootstrap(), getNumBootstraps(), getBootstrapAlpha(), 4);
                 System.out.println("linear  = " + linear);
                 if (!linear) return Double.NaN;
 

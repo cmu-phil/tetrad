@@ -55,23 +55,25 @@ public final class TestLinearityTest {
         try {
 
             final double bootstrapSampleSize = 100;
-            final int numBootstraps = 100;
-            final double alpha = .999;
+            final int numBootstraps = 200;
+            final double alpha = .9;
+            final int sensitivity = 4;
 
             File dir = new File("/Users/user/Box Sync/data/nonlinearity/simulations/joe.test");
 //            File dir = new File("/Users/user/Box Sync/data/nonlinearity/simulations/example20");
             dir.mkdirs();
 
-            final String f = "1";
-            String factor = f + " * ";
-            String invfactor = "";//+ "(1/" + f + ") * ";
+            final String max = "10";
+            String factor = "(1 / " + max + ") * ";
+            String invfactor = max + " * ";
 
             final String linearFunction = "TSUM(NEW(B)*$)";
 
-            final String nonlinearFunction = "TSUM(NEW(B)*$^2)";
+//            final String nonlinearFunction = "TSUM(NEW(B)*$^2)";
+//            final String nonlinearFunction = "TSUM(NEW(B)*$^3)";
 
 //            final String nonlinearFunction = factor + " tanh(" + invfactor + " TSUM(NEW(B)*$^2))";
-//            final String nonlinearFunction = factor + " tanh(" + invfactor + "(TSUM(NEW(B)*$^3)))";
+            final String nonlinearFunction = factor + " tanh(" + invfactor + "(TSUM(NEW(B)*$^3)))";
 //            final String nonlinearFunction = factor + "tanh("  + invfactor + "TSUM(NEW(B)*$^2) + TSUM(NEW(B)*$^3))";
 //            final String nonlinearFunction = factor + " tanh(" + invfactor +  " TSUM(NEW(B)*$) + TSUM(NEW(B)*$^2) + TSUM(NEW(B)*$^3))";
 //            final String nonlinearFunction = factor + "tanh(" + invfactor + "(TSUM(NEW(B) * $)))";
@@ -79,17 +81,17 @@ public final class TestLinearityTest {
 
 //            final String nonlinearFunction = "(TPROD(NEW(B) * $)) * ERROR";
 
-            double variance = 0.5;
+            double variance = 1;
 
-//            final String gaussianError = "Normal(0, " + variance + ")";
-            final String gaussianError = "Normal(0, .3)";
+            final String gaussianError = "Normal(0, " + variance + ")";
+//            final String gaussianError = "Normal(0, .3)";
 
 
-//            final String nonGaussianError = "Uniform(-sqrt(" + variance + " * 12) / 2, sqrt(" + variance + "12) / 2)";
+            final String nonGaussianError = "Uniform(-sqrt(" + variance + " * 12) / 2, sqrt(" + variance + "12) / 2)";
 //            final String nonGaussianError = "Beta(2, 5)";
 //            final String nonGaussianError = "Laplace(0, sqrt(1 / 2))";
 
-            final String nonGaussianError = "0.2 * Uniform(-1, 1)";
+//            final String nonGaussianError = "0.2 * Uniform(-1, 1)";
 
 
             final String parameters = "Split(-.5,-.2,.2,.5)";
@@ -111,6 +113,7 @@ public final class TestLinearityTest {
             System.out.println("Percent in bootstrap = " + bootstrapSampleSize);
             System.out.println("Num bootstraps = " + numBootstraps);
             System.out.println("Alpha = " + alpha);
+            System.out.println("Sensitivity = " + sensitivity);
 
             Graph graph = GraphUtils.randomGraph(100, 0, 100, 100, 100, 100, false);
 
@@ -165,7 +168,7 @@ public final class TestLinearityTest {
 
             out.close();
 
-            doTest(bootstrapSampleSize, numBootstraps, alpha, graph, D1, D2, D3, D4, true);
+            doTest(bootstrapSampleSize, numBootstraps, alpha, sensitivity, graph, D1, D2, D3, D4, true);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -176,7 +179,8 @@ public final class TestLinearityTest {
     public void test2() {
         final int numBootstraps = 100;
         final double bootstrapSampleSize = 100;
-        final double alpha = .99999;
+        final double alpha = .0001;
+        final int sensitivity = 10;
         boolean singleEdge = false;
 
         try {
@@ -197,7 +201,7 @@ public final class TestLinearityTest {
 
                 System.out.print((i) + ".\t");
 
-                doTest(bootstrapSampleSize, numBootstraps, alpha, graph, D1, D2, D3, D4, singleEdge);
+                doTest(bootstrapSampleSize, numBootstraps, alpha, sensitivity, graph, D1, D2, D3, D4, singleEdge);
             }
         } catch (IOException e) {
             e.printStackTrace();
@@ -423,7 +427,7 @@ public final class TestLinearityTest {
         }
     }
 
-    private void doTest(double bootstrapSampleSize, int numBootstraps, double alpha, Graph graph,
+    private void doTest(double bootstrapSampleSize, int numBootstraps, double alpha, double sensitivity, Graph graph,
                         DataSet D1, DataSet D2, DataSet D3, DataSet D4, boolean singleEdge) {
         DataSet[] datasets = {D1, D2, D3, D4};
 
@@ -508,7 +512,7 @@ public final class TestLinearityTest {
                 }
 
                 final boolean linear = DataUtils.linear(_x, _z, _otherParents, bootstrapSampleSize,
-                        numBootstraps, alpha);
+                        numBootstraps, alpha, 4);
 
                 result[i][d] = linear ? 0 : 1;
             }
@@ -578,9 +582,9 @@ public final class TestLinearityTest {
                     double[][] _otherParents = new double[0][data[0].length];
 
                     final double linearPValue = DataUtils.linearPValue(_z, _x, _otherParents, bootstrapSampleSize,
-                            numBootstraps, alpha);
+                            numBootstraps, alpha, 4);
                     final double linearBackwardsPValue = DataUtils.linearPValue(_x, _z, _otherParents, bootstrapSampleSize,
-                            numBootstraps, alpha);
+                            numBootstraps, alpha, 4);
 
 //                    if (linearPValue < 0.7 || linearBackwardsPValue < 0.7) continue;
 

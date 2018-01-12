@@ -1915,12 +1915,12 @@ public final class DataUtils {
 
     // Checking X->Z with other parents P of X.
     public static boolean linear(double[] x, double[] z, double[][] p, double numInBootstrap,
-                                 int numBootstraps, double alpha) {
+                                 int numBootstraps, double alpha, double sensitivity) {
 
         int N = z.length;
         int m = p.length + 2;
         int b = numBootstraps;
-        int dof = (p.length + 1) *(b - 1);
+        int dof = N - 1;
 
         try {
             List<Node> nodes = new ArrayList<>();
@@ -1974,11 +1974,12 @@ public final class DataUtils {
 
             double cov0var = DataUtils.variance(cov0s, 0);
 
+
             final double[] array = result.getResiduals().toArray();
 
             double residualVar = DataUtils.variance(array, 0);
 
-            final double x2 = dof * 2 * (residualVar / cov0var);
+            final double x2 = sensitivity * dof * (residualVar / cov0var);
 
             double c = new ChiSquaredDistribution(dof).cumulativeProbability(x2);
 
@@ -1987,7 +1988,6 @@ public final class DataUtils {
             }
 
             final double pValue = 1.0 - c;
-//            System.out.println("residual var = " + residualVar + " dof = " + dof + " x2 = " + x2 + " c = " + c + " pValue = " + pValue + " alpha = " + alpha);
 
             return pValue > alpha;
         } catch (SingularMatrixException e) {
@@ -1997,12 +1997,12 @@ public final class DataUtils {
     }
 
     public static double linearPValue(double[] z, double[] x, double[][] p, double numInBootstrap,
-                                 int numBootstraps, double alpha) {
+                                      int numBootstraps, double alpha, double sensitivity) {
 
         int N = z.length;
         int m = p.length + 2;
         int b = numBootstraps;
-        int dof = (b - 1);
+        int dof = N - 1;
 
         try {
             List<Node> nodes = new ArrayList<>();
@@ -2056,21 +2056,19 @@ public final class DataUtils {
 
             double cov0var = DataUtils.variance(cov0s, 0);
 
+
             final double[] array = result.getResiduals().toArray();
 
             double residualVar = DataUtils.variance(array, 0);
 
-            final double x2 = dof * (residualVar / (cov0var / m));
+            final double x2 = sensitivity * dof * (residualVar / cov0var);
 
             double c = new ChiSquaredDistribution(dof).cumulativeProbability(x2);
 
-            final double pValue = 1.0 - c;
-//            System.out.println("CC residual var = " + residualVar + " dof = " + dof + " x2 = " + x2 + " c = " + c + " pValue = " + pValue + " alpha = " + alpha);
-
-            return pValue;
+            return 1.0 - c;
         } catch (SingularMatrixException e) {
             System.out.println("Singular");
-            return 1.0;
+            throw e;
         }
     }
 
