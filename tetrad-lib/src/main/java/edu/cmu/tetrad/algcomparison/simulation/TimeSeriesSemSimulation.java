@@ -39,7 +39,7 @@ public class TimeSeriesSemSimulation implements Simulation, HasKnowledge {
         graphs = new ArrayList<>();
 
         Graph graph = randomGraph.createGraph(parameters);
-        graph = TimeSeriesUtils.graphToLagGraph(graph, 2);
+        graph = TimeSeriesUtils.graphToLagGraph(graph, parameters.getInt("numLags"));
         topToBottomLayout((TimeLagGraph) graph);
         this.knowledge = TimeSeriesUtils.getKnowledge(graph);
 
@@ -128,6 +128,8 @@ public class TimeSeriesSemSimulation implements Simulation, HasKnowledge {
     @Override
     public List<String> getParameters() {
         List<String> parameters = new ArrayList<>();
+
+        parameters.add("numLags");
 
         if (!(randomGraph instanceof SingleGraph)) {
             parameters.addAll(randomGraph.getParameters());

@@ -1396,11 +1396,7 @@ public final class SemIm implements IM, ISemIm, TetradSerializable {
             }
         }
 
-        System.out.println(fullData);
-
         fullData = DataUtils.restrictToMeasured(fullData);
-
-        System.out.println(fullData);
 
         return fullData;
     }
