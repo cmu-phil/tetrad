@@ -288,9 +288,9 @@ public final class SemIm implements IM, ISemIm, TetradSerializable {
     }
 
     // Types of scores that yield a chi square value when minimized.
-    public enum ScoreType {
-        Fml, Fgls
-    }
+//    public enum ScoreType {
+//        Fml, Fgls
+//    }
 
     private ScoreType scoreType = ScoreType.Fml;
 
