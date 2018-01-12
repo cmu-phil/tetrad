@@ -95,9 +95,9 @@ public final class SemEstimatorEditor extends JPanel {
                 JComboBox box = (JComboBox) e.getSource();
                 String type = (String) box.getSelectedItem();
                 if ("Fgls".equals(type)) {
-                    wrapper.setScoreType(SemIm.ScoreType.Fgls);
+                    wrapper.setScoreType(ScoreType.Fgls);
                 } else if ("Fml".equals(type)) {
-                    wrapper.setScoreType(SemIm.ScoreType.Fml);
+                    wrapper.setScoreType(ScoreType.Fml);
                 }
             }
         });
@@ -116,8 +116,8 @@ public final class SemEstimatorEditor extends JPanel {
         String semOptimizerType = wrapper.getParams().getString("semOptimizerType", "Regression");
 
         optimizerCombo.setSelectedItem(semOptimizerType);
-        SemIm.ScoreType scoreType = (SemIm.ScoreType) wrapper.getParams().get("scoreType", SemIm.ScoreType.Fgls);
-        if (scoreType == null) scoreType = SemIm.ScoreType.Fgls;
+        ScoreType scoreType = (ScoreType) wrapper.getParams().get("scoreType", ScoreType.Fgls);
+        if (scoreType == null) scoreType = ScoreType.Fgls;
         scoreBox.setSelectedItem(scoreType.toString());
         restarts.setValue(wrapper.getParams().getInt("numRestarts", 1));
 
