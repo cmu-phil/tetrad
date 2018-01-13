@@ -8,10 +8,7 @@ import edu.cmu.tetrad.regression.RegressionCovariance;
 import edu.cmu.tetrad.regression.RegressionResult;
 import edu.cmu.tetrad.util.DepthChoiceGenerator;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static java.lang.Math.abs;
 
@@ -35,7 +32,8 @@ public class Ida {
     }
 
     /**
-     * Returns the minimum effect of X on Y.
+     * Returns a list of the possible effects of X on Y (with different possible parents from the pattern),
+     * sorted low to high in absolute value.
      * <p>
      * 1. First, estimate a pattern P from the data.
      * 2. Then, consider all combinations C of adjacents of X that include all fo the parents of X in P.
@@ -44,10 +42,10 @@ public class Ida {
      *
      * @param x The first variable.
      * @param y The second variable
-     * @return the minimum effect of X on Y.
+     * @return a list of the possible effects of X on Y.
      */
-    public double getMinimumEffect(Node x, Node y) {
-        if (x == y) return 0.0;
+    public List<Double> getEffects(Node x, Node y) {
+        if (x == y) return new ArrayList<>();
 
         List<Node> parents = pattern.getParents(x);
 
@@ -58,8 +56,7 @@ public class Ida {
         DepthChoiceGenerator gen = new DepthChoiceGenerator(siblings.size(), siblings.size());
         int[] choice;
 
-        double minEffect = Double.POSITIVE_INFINITY;
-        double minBeta = Double.POSITIVE_INFINITY;
+        List<Double> effects = new ArrayList<>();
 
         while ((choice = gen.next()) != null) {
             List<Node> sibbled = GraphUtils.asList(choice, siblings);
@@ -79,13 +76,12 @@ public class Ida {
                 beta = result.isZeroInterceptAssumed() ? result.getCoef()[0] : result.getCoef()[1];
             }
 
-            if (abs(beta) <= minEffect) {
-                minBeta = beta;
-                minEffect = abs(beta);
-            }
+            effects.add(beta);
         }
 
-        return minBeta;
+        effects.sort(Comparator.comparingDouble(Math::abs));
+
+        return effects;
     }
 
     /**
@@ -95,13 +91,17 @@ public class Ida {
      * @return Thia map.
      */
     public Map<Node, Double> calculateMinimumEffectsOnY(Node y) {
-        Map<Node, Double> effects = new HashMap<>();
+        Map<Node, Double> minEffects = new HashMap<>();
 
         for (Node x : covariances.getVariables()) {
-            effects.put(x, getMinimumEffect(x, y));
+            final List<Double> effects = getEffects(x, y);
+
+            if (!effects.isEmpty()) {
+                minEffects.put(x, effects.get(0));
+            }
         }
 
-        return effects;
+        return minEffects;
     }
 
     /**
@@ -160,5 +160,18 @@ public class Ida {
         public void setEffects(List<Double> effects) {
             this.effects = effects;
         }
+    }
+
+    public double trueEffect(Node x, Node y, Graph trueDag) {
+        trueDag = GraphUtils.replaceNodes(trueDag, covariances.getVariables());
+
+        List<Node> regressors = new ArrayList<>();
+        regressors.addAll(trueDag.getParents(x));
+        if (!regressors.contains(x)) regressors.add(x);
+
+        if (regressors.contains(y)) return 0.0;
+
+        RegressionResult result = regression.regress(y, regressors);
+        return result.isZeroInterceptAssumed() ? result.getCoef()[0] : result.getCoef()[1];
     }
 }

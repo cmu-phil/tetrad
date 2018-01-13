@@ -21,23 +21,20 @@
 
 package edu.cmu.tetrad.test;
 
-import edu.cmu.tetrad.data.*;
-import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.regression.RegressionDataset;
-import edu.cmu.tetrad.search.*;
+import edu.cmu.tetrad.data.CovarianceMatrixOnTheFly;
+import edu.cmu.tetrad.data.DataSet;
+import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.graph.GraphUtils;
+import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.search.Ida;
 import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemPm;
-import edu.cmu.tetrad.util.RandomUtil;
-import edu.cmu.tetrad.util.TetradLogger;
-import edu.cmu.tetrad.util.TextTable;
 import org.junit.Test;
 
-import java.text.DecimalFormat;
-import java.text.NumberFormat;
-import java.util.*;
+import java.util.List;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static java.lang.Math.abs;
+import static java.lang.Math.min;
 
 /**
  * Tests IDA.
@@ -57,7 +54,7 @@ public class TestIda {
         SemIm im = new SemIm(pm);
         DataSet dataSet = im.simulateData(1000, false);
 
-        Node y = dataSet.getVariable("X5");
+        Node y = dataSet.getVariable("X10");
 
         Ida ida = new Ida(new CovarianceMatrixOnTheFly(dataSet));
 
@@ -66,6 +63,55 @@ public class TestIda {
         for (int i = 0; i < effects.getNodes().size(); i++) {
             Node x = effects.getNodes().get(i);
             System.out.println(x + "\t" + effects.getEffects().get(i));
+        }
+    }
+
+    @Test
+    public void test2() {
+        Graph trueDag = GraphUtils.randomGraph(10, 0, 10,
+                100, 100, 100, false);
+
+        System.out.println(trueDag);
+
+        SemPm pm = new SemPm(trueDag);
+        SemIm im = new SemIm(pm);
+        DataSet dataSet = im.simulateData(1000, false);
+        trueDag = GraphUtils.replaceNodes(trueDag, dataSet.getVariables());
+
+        Ida ida = new Ida(new CovarianceMatrixOnTheFly(dataSet));
+
+        final List<Node> variables = dataSet.getVariables();
+
+        for (Node x : variables) {
+            for (Node y : variables) {
+                if (x == y) continue;
+                double trueEffect = ida.trueEffect(x, y, trueDag);
+
+                List<Double> effects = ida.getEffects(x, y);
+
+                if (!effects.isEmpty()) {
+                    double distance = 0.0;
+
+                    if (effects.size() == 1) {
+                        distance = abs(trueEffect - effects.get(0));
+                    }
+
+                    if (effects.size() > 1) {
+                        double min = effects.get(0);
+                        double max = effects.get(effects.size() - 1);
+
+                        if (trueEffect >= min && trueEffect <= max) {
+                            distance = 0.0;
+                        } else {
+                            final double m1 = abs(trueEffect - min);
+                            final double m2 = abs(trueEffect - max);
+                            distance = min(m1, m2);
+                        }
+                    }
+
+                    System.out.println("x = " + x + " y = " + y + " distance = " + distance);
+                }
+            }
         }
     }
 }
