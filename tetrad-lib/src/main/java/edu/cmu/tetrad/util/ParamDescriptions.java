@@ -221,6 +221,20 @@ public class ParamDescriptions {
         map.put("replacePartiallyOrientedByDirected", new ParamDescription(
                 "Yes if o-> edges should be replaced by --> edges",
                 false));
+
+        map.put("maxIterations", new ParamDescription(
+                "The number of iterations",
+                1000, 1, Integer.MAX_VALUE));
+
+        map.put("maxEdges", new ParamDescription(
+                "The maximum number of edges",
+                10, 1, Integer.MAX_VALUE));
+
+        map.put("numNodes", new ParamDescription(
+                "The number of nodes",
+                10, 2, Integer.MAX_VALUE));
+
+
     }
 
     public static ParamDescriptions getInstance() {
