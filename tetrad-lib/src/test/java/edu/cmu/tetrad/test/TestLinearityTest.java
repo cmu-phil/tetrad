@@ -37,6 +37,7 @@ import java.util.Collections;
 import java.util.List;
 
 import static java.lang.Math.abs;
+import static java.lang.Math.sqrt;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotSame;
 import static org.junit.Assert.assertTrue;
@@ -55,47 +56,35 @@ public final class TestLinearityTest {
         try {
 
             final double bootstrapSampleSize = 100;
-            final int numBootstraps = 200;
-            final double alpha = .9;
-            final int sensitivity = 4;
+            final int numBootstraps = 100;
+            final double alpha = .05;
+            final int sensitivity = 2;
+            final double max = .4;
+            final int N = 1000;
+            final double variance = 1.5;
 
             File dir = new File("/Users/user/Box Sync/data/nonlinearity/simulations/joe.test");
-//            File dir = new File("/Users/user/Box Sync/data/nonlinearity/simulations/example20");
             dir.mkdirs();
-
-            final String max = "10";
-            String factor = "(1 / " + max + ") * ";
-            String invfactor = max + " * ";
 
             final String linearFunction = "TSUM(NEW(B)*$)";
 
-//            final String nonlinearFunction = "TSUM(NEW(B)*$^2)";
-//            final String nonlinearFunction = "TSUM(NEW(B)*$^3)";
-
-//            final String nonlinearFunction = factor + " tanh(" + invfactor + " TSUM(NEW(B)*$^2))";
-            final String nonlinearFunction = factor + " tanh(" + invfactor + "(TSUM(NEW(B)*$^3)))";
+            final String nonlinearFunction = max + "* sin("  + (1.0 / max) + "* ((TSUM(NEW(B)*$^4) + ERROR)))";
 //            final String nonlinearFunction = factor + "tanh("  + invfactor + "TSUM(NEW(B)*$^2) + TSUM(NEW(B)*$^3))";
 //            final String nonlinearFunction = factor + " tanh(" + invfactor +  " TSUM(NEW(B)*$) + TSUM(NEW(B)*$^2) + TSUM(NEW(B)*$^3))";
 //            final String nonlinearFunction = factor + "tanh(" + invfactor + "(TSUM(NEW(B) * $)))";
 //            final String nonlinearFunction = factor + "sin(" + invfactor + "(TSUM(NEW(B) * $)))";
 
-//            final String nonlinearFunction = "(TPROD(NEW(B) * $)) * ERROR";
-
-            double variance = 1;
-
             final String gaussianError = "Normal(0, " + variance + ")";
-//            final String gaussianError = "Normal(0, .3)";
 
+            double uniformBound = sqrt(variance * 12) / 2.0;
 
-            final String nonGaussianError = "Uniform(-sqrt(" + variance + " * 12) / 2, sqrt(" + variance + "12) / 2)";
+//            final String nonGaussianError = "U(-" + uniformBound + ", " + uniformBound + ")";
 //            final String nonGaussianError = "Beta(2, 5)";
 //            final String nonGaussianError = "Laplace(0, sqrt(1 / 2))";
+//            final String nonGaussianError = "Split(-.5,-0,.0,.5)";
+            final String nonGaussianError = "U(-5, 0)";
 
-//            final String nonGaussianError = "0.2 * Uniform(-1, 1)";
-
-
-            final String parameters = "Split(-.5,-.2,.2,.5)";
-            final int N = 1000;
+            final String parameters = "Split(-1,-.2,.2,1)";
 
             PrintStream out = new PrintStream(new File(dir, "description.txt"));
 
@@ -114,8 +103,10 @@ public final class TestLinearityTest {
             System.out.println("Num bootstraps = " + numBootstraps);
             System.out.println("Alpha = " + alpha);
             System.out.println("Sensitivity = " + sensitivity);
+            System.out.println("Max = " + max);
+            System.out.println("Variance = " + variance);
 
-            Graph graph = GraphUtils.randomGraph(100, 0, 100, 100, 100, 100, false);
+            Graph graph = GraphUtils.randomGraph(100, 0, 100, 100, 100, 100, true);
 
             GeneralizedSemPm pm1 = getPm(graph, linearFunction, gaussianError, parameters);
             GeneralizedSemPm pm2 = getPm(graph, linearFunction, nonGaussianError, parameters);
@@ -179,12 +170,12 @@ public final class TestLinearityTest {
     public void test2() {
         final int numBootstraps = 100;
         final double bootstrapSampleSize = 100;
-        final double alpha = .0001;
-        final int sensitivity = 10;
+        final double alpha = .05;
+        final int sensitivity = 4;
         boolean singleEdge = false;
 
         try {
-            for (int i = 1; i <= 20; i++) {
+            for (int i = 1; i <= 23; i++) {
 
                 File dir = new File("/Users/user/Box Sync/data/nonlinearity/simulations/example" + i);
 
