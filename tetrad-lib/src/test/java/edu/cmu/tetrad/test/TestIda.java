@@ -22,6 +22,7 @@
 package edu.cmu.tetrad.test;
 
 import edu.cmu.tetrad.algcomparison.algorithm.CStar;
+import edu.cmu.tetrad.algcomparison.algorithm.CStar2;
 import edu.cmu.tetrad.data.CovarianceMatrixOnTheFly;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Graph;
@@ -134,6 +135,33 @@ public class TestIda {
         parameters.set("targetName", "X14");
 
         CStar cstar = new CStar();
+
+        Graph graph = cstar.search(dataSet, parameters);
+
+        System.out.println(graph);
+    }
+
+    @Test
+    public void testCStar2() {
+        Graph trueDag = GraphUtils.randomGraph(20, 0, 40,
+                100, 100, 100, false);
+
+        System.out.println(trueDag);
+
+        SemPm pm = new SemPm(trueDag);
+        SemIm im = new SemIm(pm);
+        DataSet dataSet = im.simulateData(1000, false);
+
+        Parameters parameters = new Parameters();
+
+        parameters.set("penaltyDiscount", 2);
+        parameters.set("numSubsamples", 200);
+        parameters.set("percentSubsampleSize", .5);
+        parameters.set("topQ", 5);
+        parameters.set("piThreshold", .7);
+        parameters.set("targetName", "X14");
+
+        CStar2 cstar = new CStar2();
 
         Graph graph = cstar.search(dataSet, parameters);
 

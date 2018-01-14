@@ -60,7 +60,7 @@ public class Ida {
 
         while ((choice = gen.next()) != null) {
             List<Node> sibbled = GraphUtils.asList(choice, siblings);
-            sibbled.remove(y);
+//            sibbled.remove(y);
 
             List<Node> regressors = new ArrayList<>();
             regressors.add(x);

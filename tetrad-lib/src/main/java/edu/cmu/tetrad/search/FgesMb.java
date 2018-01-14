@@ -336,12 +336,8 @@ public final class FgesMb {
         for (Node target : targets) {
             mb.addAll(graph.getAdjacentNodes(target));
 
-//            for (Node child : graph.getChildren(target)) {
-//                mb.addAll(graph.getParents(child));
-//            }
-
-            for (Node adj : graph.getAdjacentNodes(target)) {
-                mb.addAll(graph.getAdjacentNodes(adj));
+            for (Node child : graph.getChildren(target)) {
+                mb.addAll(graph.getParents(child));
             }
         }
 
