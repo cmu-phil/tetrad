@@ -11,6 +11,7 @@ import edu.cmu.tetrad.util.DepthChoiceGenerator;
 import java.util.*;
 
 import static java.lang.Math.abs;
+import static java.lang.Math.signum;
 
 /**
  * Implements the IDA algorithm, Maathuis, Marloes H., Markus Kalisch, and Peter Bühlmann.
@@ -51,7 +52,6 @@ public class Ida {
 
         List<Node> siblings = pattern.getAdjacentNodes(x);
         siblings.removeAll(parents);
-        siblings.remove(x);
 
         DepthChoiceGenerator gen = new DepthChoiceGenerator(siblings.size(), siblings.size());
         int[] choice;
@@ -64,15 +64,16 @@ public class Ida {
 
             List<Node> regressors = new ArrayList<>();
             regressors.add(x);
-            regressors.addAll(sibbled);
-
-            RegressionResult result = regression.regress(y, regressors);
+            for (Node n : parents) if (!regressors.contains(n)) regressors.add(n);
+            for (Node n : sibbled) if (!regressors.contains(n)) regressors.add(n);
+            regressors.remove(y);
 
             double beta;
 
             if (regressors.contains(y)) {
                 beta = 0.0;
             } else {
+                RegressionResult result = regression.regress(y, regressors);
                 beta = result.isZeroInterceptAssumed() ? result.getCoef()[0] : result.getCoef()[1];
             }
 

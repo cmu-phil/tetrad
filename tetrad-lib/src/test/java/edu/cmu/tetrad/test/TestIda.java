@@ -94,10 +94,6 @@ public class TestIda {
                 if (!effects.isEmpty()) {
                     double distance = 0.0;
 
-                    if (effects.size() == 1) {
-                        distance = abs(trueEffect - effects.get(0));
-                    }
-
                     if (effects.size() > 1) {
                         double min = effects.get(0);
                         double max = effects.get(effects.size() - 1);
