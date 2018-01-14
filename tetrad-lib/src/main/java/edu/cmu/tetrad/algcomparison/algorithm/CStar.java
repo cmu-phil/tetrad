@@ -93,7 +93,6 @@ public class CStar implements Algorithm {
 
         double[] ranks = StatUtils.getRanks(sortedFreqencies);
 
-
         int[] rankIndices = new int[variables.size()];
         
         int r = 1;
