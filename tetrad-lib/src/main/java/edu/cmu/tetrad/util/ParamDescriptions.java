@@ -207,7 +207,7 @@ public class ParamDescriptions {
                 0.01, 0.0, 1.0));
 
         map.put("numSubsamples", new ParamDescription(
-                "The number of subsamples to take for the StARZ procedure",
+                "The number of subsamples",
                 8, 1, Integer.MAX_VALUE));
 
         map.put("percentSubsampleSize", new ParamDescription(
@@ -234,6 +234,9 @@ public class ParamDescriptions {
                 "The number of nodes",
                 10, 2, Integer.MAX_VALUE));
 
+        map.put("topQRanks", new ParamDescription(
+                "The top q ranks to consider",
+                5, 1, Integer.MAX_VALUE));
 
     }
 

@@ -21,6 +21,7 @@
 
 package edu.cmu.tetrad.test;
 
+import edu.cmu.tetrad.algcomparison.algorithm.CStar;
 import edu.cmu.tetrad.data.CovarianceMatrixOnTheFly;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Graph;
@@ -29,6 +30,7 @@ import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.Ida;
 import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemPm;
+import edu.cmu.tetrad.util.Parameters;
 import org.junit.Test;
 
 import java.util.List;
@@ -58,7 +60,7 @@ public class TestIda {
 
         Ida ida = new Ida(new CovarianceMatrixOnTheFly(dataSet));
 
-        Ida.NodeEffects effects = ida.getSortedEffects(y);
+        Ida.NodeEffects effects = ida.getSortedMinEffects(y);
 
         for (int i = 0; i < effects.getNodes().size(); i++) {
             Node x = effects.getNodes().get(i);
@@ -113,6 +115,31 @@ public class TestIda {
                 }
             }
         }
+    }
+
+    @Test
+    public void testCStar() {
+        Graph trueDag = GraphUtils.randomGraph(20, 0, 20,
+                100, 100, 100, false);
+
+        System.out.println(trueDag);
+
+        SemPm pm = new SemPm(trueDag);
+        SemIm im = new SemIm(pm);
+        DataSet dataSet = im.simulateData(1000, false);
+
+        Parameters parameters = new Parameters();
+
+
+        parameters.set("numSubsamples", 200);
+        parameters.set("percentSubsampleSize", .5);
+        parameters.set("topQRanks", 1);
+
+        CStar cstar = new CStar();
+
+        Graph graph = cstar.search(dataSet, parameters);
+
+        System.out.println(graph);
     }
 }
 

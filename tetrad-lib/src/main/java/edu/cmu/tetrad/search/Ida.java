@@ -94,6 +94,7 @@ public class Ida {
         Map<Node, Double> minEffects = new HashMap<>();
 
         for (Node x : covariances.getVariables()) {
+            if (x == y) continue;
             final List<Double> effects = getEffects(x, y);
 
             if (!effects.isEmpty()) {
@@ -111,7 +112,7 @@ public class Ida {
      * @return Two sorted lists, one of nodes, the other of corresponding minimum effects, sorted downward by
      * minimum effect size.
      */
-    public NodeEffects getSortedEffects(Node y) {
+    public NodeEffects getSortedMinEffects(Node y) {
         Map<Node, Double> allEffects = calculateMinimumEffectsOnY(y);
 
         List<Node> nodes = new ArrayList<>(allEffects.keySet());
