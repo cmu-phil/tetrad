@@ -234,9 +234,15 @@ public class ParamDescriptions {
                 "The number of nodes",
                 10, 2, Integer.MAX_VALUE));
 
-        map.put("topQRanks", new ParamDescription(
-                "The top q ranks to consider",
+        map.put("topQ", new ParamDescription(
+                "Variables in the top q will be considered for ranking",
                 5, 1, Integer.MAX_VALUE));
+
+        map.put("piThreshold", new ParamDescription(
+                "Threshold for including variables in the final set",
+                0.5, 0.5, 1.0));
+
+
 
     }
 

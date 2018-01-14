@@ -42,9 +42,9 @@ public class CStar implements Algorithm {
 
         double percentageB = parameters.getDouble("percentSubsampleSize");
         int numSubsamples = parameters.getInt("numSubsamples");
-        int q = parameters.getInt("topQRanks");
-
-        Node y = dataSet.getVariables().get(0);
+        int q = parameters.getInt("topQ");
+        double pithreshold = parameters.getDouble("piThreshold");
+        Node y = dataSet.getVariable(parameters.getString("targetName"));
 
         List<Ida.NodeEffects> effects = new ArrayList<>();
 
@@ -89,33 +89,45 @@ public class CStar implements Algorithm {
             sortedFreqencies[i] = frequencies.get(variables.get(i));
         }
 
-        System.out.println(Arrays.toString(sortedFreqencies));
-
-        double[] ranks = StatUtils.getRanks(sortedFreqencies);
-
-        int[] rankIndices = new int[variables.size()];
-        
-        int r = 1;
-        double rr = ranks[0];
-
-        for (int i = 0; i < ranks.length; i++) {
-            if (ranks[i] == rr) {
-                rankIndices[i] = r;
-            } else {
-                r++;
-                rr = ranks[i];
-                rankIndices[i] = r;
-            }
+        for (int i = 0; i < sortedFreqencies.length; i++) {
+            sortedFreqencies[i] /= effects.size();
         }
 
-        System.out.println(Arrays.toString(ranks));
-        System.out.println(Arrays.toString(rankIndices));
+        System.out.println(variables);
 
+        System.out.println(Arrays.toString(sortedFreqencies));
+
+//        double[] ranks = StatUtils.getRanks(sortedFreqencies);
+//
+//        int[] rankIndices = new int[variables.size()];
+//
+//        int r = 1;
+//        double rr = ranks[0];
+//
+//        for (int i = 0; i < ranks.length; i++) {
+//            if (ranks[i] == rr) {
+//                rankIndices[i] = r;
+//            } else {
+//                r++;
+//                rr = ranks[i];
+//                rankIndices[i] = r;
+//            }
+//        }
+//
+//        System.out.println(Arrays.toString(ranks));
+//        System.out.println(Arrays.toString(rankIndices));
+//
         Graph graph = new EdgeListGraph(dataSet.getVariables());
+//
+//        for (int i = 0; i < variables.size(); i++) {
+//            if (rankIndices[i] <= q) {
+//                graph.addDirectedEdge(variables.get(i), y);
+//            }
+//        }
 
         for (int i = 0; i < variables.size(); i++) {
-            if (rankIndices[i] <= q) {
-                graph.addDirectedEdge(variables.get(i), y);
+            if (sortedFreqencies[i] > pithreshold) {
+                graph.addUndirectedEdge(variables.get(i), y);
             }
         }
 
@@ -147,8 +159,9 @@ public class CStar implements Algorithm {
         List<String> parameters = new ArrayList<>();
         parameters.add("numSubsamples");
         parameters.add("percentSubsampleSize");
-        parameters.add("topQRanks");
-
+        parameters.add("topQ");
+        parameters.add("piThreshold");
+        parameters.add("targetName");
         return parameters;
     }
 }

@@ -119,7 +119,7 @@ public class TestIda {
 
     @Test
     public void testCStar() {
-        Graph trueDag = GraphUtils.randomGraph(20, 0, 20,
+        Graph trueDag = GraphUtils.randomGraph(20, 0, 40,
                 100, 100, 100, false);
 
         System.out.println(trueDag);
@@ -130,10 +130,12 @@ public class TestIda {
 
         Parameters parameters = new Parameters();
 
-
+        parameters.set("penaltyDiscount", 2);
         parameters.set("numSubsamples", 200);
         parameters.set("percentSubsampleSize", .5);
-        parameters.set("topQRanks", 1);
+        parameters.set("topQ", 5);
+        parameters.set("piThreshold", .7);
+        parameters.set("targetName", "X14");
 
         CStar cstar = new CStar();
 
