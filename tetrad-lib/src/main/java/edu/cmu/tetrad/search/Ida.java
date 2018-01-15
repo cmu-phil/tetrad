@@ -1,5 +1,7 @@
 package edu.cmu.tetrad.search;
 
+import edu.cmu.tetrad.data.CovarianceMatrixOnTheFly;
+import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.ICovarianceMatrix;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
@@ -11,6 +13,7 @@ import edu.cmu.tetrad.util.DepthChoiceGenerator;
 import java.util.*;
 
 import static java.lang.Math.abs;
+import static java.lang.Math.min;
 import static java.lang.Math.signum;
 
 /**
@@ -28,9 +31,11 @@ public class Ida {
     public Ida(ICovarianceMatrix covariances) {
         this.covariances = covariances;
         Fges fges = new Fges(new SemBicScore(covariances));
+        fges.setMaxDegree(1);
         this.pattern = fges.search();
         regression = new RegressionCovariance(covariances);
     }
+
 
     /**
      * Returns a list of the possible effects of X on Y (with different possible parents from the pattern),
@@ -68,12 +73,12 @@ public class Ida {
             regressors.add(x);
             for (Node n : parents) if (!regressors.contains(n)) regressors.add(n);
             for (Node n : sibbled) if (!regressors.contains(n)) regressors.add(n);
-//            regressors.remove(y);
 
             double beta;
 
             if (regressors.contains(y)) {
-                beta = 0;
+//                beta = 0;
+                continue;
             } else {
                 RegressionResult result = regression.regress(y, regressors);
                 beta = result.isZeroInterceptAssumed() ? result.getCoef()[0] : result.getCoef()[1];
@@ -82,7 +87,9 @@ public class Ida {
             effects.add(beta);
         }
 
-        effects.sort(Comparator.comparingDouble(Math::abs));
+        Collections.sort(effects);
+
+//        effects.sort(Comparator.comparingDouble(Math::abs));
 
         return effects;
     }
@@ -169,12 +176,45 @@ public class Ida {
         trueDag = GraphUtils.replaceNodes(trueDag, covariances.getVariables());
 
         List<Node> regressors = new ArrayList<>();
+        regressors.add(x);
         regressors.addAll(trueDag.getParents(x));
-        if (!regressors.contains(x)) regressors.add(x);
 
-        if (regressors.contains(y)) return 0.0;
+        if (regressors.contains(y)) return Double.NaN;
 
         RegressionResult result = regression.regress(y, regressors);
         return result.isZeroInterceptAssumed() ? result.getCoef()[0] : result.getCoef()[1];
+    }
+
+    public double distance(Node x, Node y, Graph trueDag) {
+        double trueEffect = trueEffect(x, y, trueDag);
+        LinkedList<Double> effects = getEffects(x, y);
+
+        double distance = 0.0;
+
+        if (!effects.isEmpty()) {
+            if (effects.size() > 1) {
+                final Double first = effects.getFirst();
+                final Double last = effects.getLast();
+
+                double min, max;
+
+                if (first <= last) {
+                    min = first;
+                    max = last;
+                } else {
+                    min = last;
+                    max = first;
+                }
+
+                if (trueEffect >= min && trueEffect <= max) {
+                    distance = 0.0;
+                } else {
+                    final double m1 = abs(trueEffect - min);
+                    final double m2 = abs(trueEffect - max);
+                    distance = min(m1, m2);
+                }
+            }
+        }
+        return distance;
     }
 }

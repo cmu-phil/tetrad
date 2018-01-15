@@ -16,19 +16,19 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.RecursiveTask;
 
 @edu.cmu.tetrad.annotation.Algorithm(
-        name = "CStar2",
+        name = "FmbStar",
         command = "cstar2",
         algoType = AlgType.forbid_latent_common_causes,
         description = "Performs a pseudo CStar analysis (using FgesMb) and returns a graph " +
                 "in which all selected variables are shown as into the target. The target is the first variables."
 )
-public class CStar2 implements Algorithm {
+public class FmbStar implements Algorithm {
 
     static final long serialVersionUID = 23L;
     private Algorithm algorithm;
     private Graph initialGraph = null;
 
-    public CStar2() {
+    public FmbStar() {
         this.algorithm = new Fges();
     }
 
@@ -60,7 +60,7 @@ public class CStar2 implements Algorithm {
                     System.out.println("Bootstrap #" + (i + 1) + " of " + numSubsamples);
                     System.out.flush();
                 } else {
-                    System.out.print( (i + 1) + " ");
+//                    System.out.print( (i + 1) + " ");
                 }
 
                 BootstrapSampler sampler = new BootstrapSampler();
@@ -76,7 +76,7 @@ public class CStar2 implements Algorithm {
                 Graph g = fgesMb.search(y);
 
                 for (final Node key : variables) {
-                    if (g.containsNode(key) && key != y && !g.isChildOf(y, key)) counts.put(key, counts.get(key) + 1);
+                    if (g.containsNode(key) && key != y /*&& !g.isChildOf(y, key)*/) counts.put(key, counts.get(key) + 1);
                 }
 
                 return true;
@@ -91,9 +91,9 @@ public class CStar2 implements Algorithm {
 
         ForkJoinPoolInstance.getInstance().getPool().invokeAll(tasks);
 
-        if (!parameters.getBoolean("verbose")) {
-            System.out.println("\n");
-        }
+//        if (!parameters.getBoolean("verbose")) {
+//            System.out.println("\n");
+//        }
 
         List<Node> sortedVariables = new ArrayList<>(variables);
 
@@ -108,10 +108,6 @@ public class CStar2 implements Algorithm {
         for (int i = 0; i < sortedVariables.size(); i++) {
             sortedFrequencies[i] = counts.get(sortedVariables.get(i)) / (double) numSubsamples;
         }
-
-//        System.out.println(variables);
-//        System.out.println(sortedVariables);
-//        System.out.println(Arrays.toString(sortedFrequencies));
 
         Graph graph = new EdgeListGraph(dataSet.getVariables());
 

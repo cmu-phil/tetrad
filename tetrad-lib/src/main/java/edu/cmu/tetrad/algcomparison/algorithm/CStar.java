@@ -69,8 +69,8 @@ public class CStar implements Algorithm {
                 if (parameters.getBoolean("verbose")) {
                     System.out.println("Bootstrap #" + (i + 1) + " of " + numSubsamples);
                 } else {
-                    System.out.print( (i + 1) + " ");
-                    System.out.flush();
+//                    System.out.print( (i + 1) + " ");
+//                    System.out.flush();
                 }
 
                 BootstrapSampler sampler = new BootstrapSampler();
@@ -99,9 +99,9 @@ public class CStar implements Algorithm {
 
         ForkJoinPoolInstance.getInstance().getPool().invokeAll(tasks);
 
-        if (!parameters.getBoolean("verbose")) {
-            System.out.println("\n");
-        }
+//        if (!parameters.getBoolean("verbose")) {
+//            System.out.println("\n");
+//        }
 
         variables.sort((o1, o2) -> {
             final int d1 = counts.get(o1);
