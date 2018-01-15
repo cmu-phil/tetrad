@@ -45,19 +45,21 @@ public class Ida {
      * @param y The second variable
      * @return a list of the possible effects of X on Y.
      */
-    public List<Double> getEffects(Node x, Node y) {
-        if (x == y) return new ArrayList<>();
+    public LinkedList<Double> getEffects(Node x, Node y) {
+        if (x == y) return new LinkedList<>();
 
         List<Node> parents = pattern.getParents(x);
+        List<Node> children = pattern.getChildren(x);
 
         List<Node> siblings = pattern.getAdjacentNodes(x);
         siblings.removeAll(parents);
-        siblings.remove(y);
+        siblings.removeAll(children);
+//        siblings.remove(y);
 
         DepthChoiceGenerator gen = new DepthChoiceGenerator(siblings.size(), siblings.size());
         int[] choice;
 
-        List<Double> effects = new ArrayList<>();
+        LinkedList<Double> effects = new LinkedList<>();
 
         while ((choice = gen.next()) != null) {
             List<Node> sibbled = GraphUtils.asList(choice, siblings);
@@ -66,11 +68,12 @@ public class Ida {
             regressors.add(x);
             for (Node n : parents) if (!regressors.contains(n)) regressors.add(n);
             for (Node n : sibbled) if (!regressors.contains(n)) regressors.add(n);
+//            regressors.remove(y);
 
             double beta;
 
             if (regressors.contains(y)) {
-                beta = 0.0;
+                beta = 0;
             } else {
                 RegressionResult result = regression.regress(y, regressors);
                 beta = result.isZeroInterceptAssumed() ? result.getCoef()[0] : result.getCoef()[1];

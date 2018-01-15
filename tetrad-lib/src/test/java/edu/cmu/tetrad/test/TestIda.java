@@ -25,6 +25,7 @@ import edu.cmu.tetrad.algcomparison.algorithm.CStar;
 import edu.cmu.tetrad.algcomparison.algorithm.CStar2;
 import edu.cmu.tetrad.data.CovarianceMatrixOnTheFly;
 import edu.cmu.tetrad.data.DataSet;
+import edu.cmu.tetrad.graph.Edge;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
@@ -34,7 +35,7 @@ import edu.cmu.tetrad.sem.SemPm;
 import edu.cmu.tetrad.util.Parameters;
 import org.junit.Test;
 
-import java.util.List;
+import java.util.*;
 
 import static java.lang.Math.abs;
 import static java.lang.Math.min;
@@ -116,14 +117,18 @@ public class TestIda {
 
     @Test
     public void testCStar() {
-        Graph trueDag = GraphUtils.randomGraph(20, 0, 40,
+        int numNodes = 100;
+        int numEdges = 100;
+        int sampleSize = 100;
+
+        Graph trueDag = GraphUtils.randomGraph(numNodes, 0, numEdges,
                 100, 100, 100, false);
 
         System.out.println(trueDag);
 
         SemPm pm = new SemPm(trueDag);
         SemIm im = new SemIm(pm);
-        DataSet dataSet = im.simulateData(100, false);
+        DataSet dataSet = im.simulateData(sampleSize, false);
 
         Parameters parameters = new Parameters();
 
@@ -134,23 +139,30 @@ public class TestIda {
         parameters.set("piThreshold", .7);
         parameters.set("targetName", "X14");
 
-        CStar cstar = new CStar();
+        long start = System.currentTimeMillis();
 
+        CStar cstar = new CStar();
         Graph graph = cstar.search(dataSet, parameters);
 
-        System.out.println(graph);
+        long stop = System.currentTimeMillis();
+
+        printResult(trueDag, parameters, graph, stop - start, numNodes, numEdges, sampleSize, dataSet);
     }
 
     @Test
     public void testCStar2() {
-        Graph trueDag = GraphUtils.randomGraph(20, 0, 40,
+        int numNodes = 100;
+        int numEdges = 100;
+        int sampleSize = 100;
+
+        Graph trueDag = GraphUtils.randomGraph(numNodes, 0, numEdges,
                 100, 100, 100, false);
 
         System.out.println(trueDag);
 
         SemPm pm = new SemPm(trueDag);
         SemIm im = new SemIm(pm);
-        DataSet dataSet = im.simulateData(100, false);
+        DataSet dataSet = im.simulateData(sampleSize, false);
 
         Parameters parameters = new Parameters();
 
@@ -161,11 +173,123 @@ public class TestIda {
         parameters.set("piThreshold", .7);
         parameters.set("targetName", "X14");
 
-        CStar2 cstar = new CStar2();
+        long start = System.currentTimeMillis();
 
+        CStar2 cstar = new CStar2();
         Graph graph = cstar.search(dataSet, parameters);
 
-        System.out.println(graph);
+        long stop = System.currentTimeMillis();
+
+        printResult(trueDag, parameters, graph, stop - start, numNodes, numEdges, sampleSize, dataSet);
+    }
+
+    @Test
+    public void testBoth() {
+        int numNodes = 100;
+        int numEdges = 100;
+        int sampleSize = 200;
+
+        Parameters parameters = new Parameters();
+        parameters.set("penaltyDiscount", 2);
+        parameters.set("numSubsamples", 10);
+        parameters.set("percentSubsampleSize", .5);
+        parameters.set("topQ", 5);
+        parameters.set("piThreshold", .5);
+        parameters.set("targetName", "X70");
+        parameters.set("verbose", false);
+
+        parameters.set("coefLow", 0.2);
+        parameters.set("coefHigh", 0.9);
+        parameters.set("covLow", 0.5);
+        parameters.set("covHigh", 1.0);
+        parameters.set("varLow", 0.5);
+        parameters.set("varHigh", 1.1);
+        parameters.set("coefSymmetric", true);
+        parameters.set("covSymmetric", true);
+
+        Graph trueDag = GraphUtils.randomGraph(numNodes, 0, numEdges,
+                100, 100, 100, false);
+
+//        System.out.println(trueDag);
+
+        SemPm pm = new SemPm(trueDag);
+        SemIm im = new SemIm(pm, parameters);
+        DataSet dataSet = im.simulateData(sampleSize, false);
+
+        System.out.println("=====CSTAR====");
+
+        long start = System.currentTimeMillis();
+
+        CStar cstar = new CStar();
+        Graph graph = cstar.search(dataSet, parameters);
+
+        long stop = System.currentTimeMillis();
+
+        printResult(trueDag, parameters, graph, stop - start, numNodes, numEdges, sampleSize, dataSet);
+
+        System.out.println("\n\n=====CSTAR2====");
+
+        start = System.currentTimeMillis();
+
+        CStar2 cstar2 = new CStar2();
+        Graph graph2 = cstar2.search(dataSet, parameters);
+
+        stop = System.currentTimeMillis();
+
+        printResult(trueDag, parameters, graph2, stop - start, numNodes, numEdges, sampleSize, dataSet);
+    }
+
+    private void printResult(Graph trueDag, Parameters parameters, Graph graph, long elapsed, int numNodes, int numEdges, int sampleSize, DataSet dataSet) {
+        final Node target = trueDag.getNode(parameters.getString("targetName"));
+
+        System.out.println("# nodes: " + numNodes);
+        System.out.println("# edges: " + numEdges);
+        System.out.println("Sample size: " + sampleSize);
+        System.out.println("Target: " + target);
+
+        Set<Node> outputNodes = new HashSet<>();
+
+        for (Edge edge : graph.getEdges()) {
+            outputNodes.add(edge.getNode1());
+            outputNodes.add(edge.getNode2());
+        }
+
+        outputNodes.remove(graph.getNode(target.getName()));
+
+        System.out.println("Output nodes: " + outputNodes);
+
+        final List<Node> mbNodes = GraphUtils.markovBlanketDag(target, trueDag).getNodes();
+        mbNodes.remove(target);
+
+        Set<Node> adjadjNodes = new HashSet<>(trueDag.getAdjacentNodes(target));
+        for (Node node : new HashSet<>(adjadjNodes)) adjadjNodes.addAll(trueDag.getAdjacentNodes(node));
+        adjadjNodes.remove(target);
+
+        Set<Node> adjadjadjNodes = new HashSet<>(adjadjNodes);
+        for (Node node : new HashSet<>(adjadjNodes)) adjadjadjNodes.addAll(trueDag.getAdjacentNodes(node));
+        adjadjNodes.remove(target);
+
+        System.out.println("Markov blanket: " + mbNodes);
+        System.out.println("adjadjNodes = " + adjadjNodes);
+        System.out.println("adjadjadjNodes = " + adjadjadjNodes);
+        System.out.println("Elapsed " + elapsed / 1000.0 + " s");
+
+        printIdaResult(new ArrayList<>(outputNodes), target, dataSet);
+    }
+
+    private void printIdaResult(List<Node> x, Node y, DataSet dataSet) {
+        List<Node> x2 = new ArrayList<>();
+        for (Node node : x) x2.add(dataSet.getVariable(node.getName()));
+        x = x2;
+        y = dataSet.getVariable(y.getName());
+
+        Ida ida = new Ida(new CovarianceMatrixOnTheFly(dataSet));
+
+        for (Node _x : x) {
+            LinkedList<Double> effects = ida.getEffects(_x, y);
+//            System.out.println("Effects = " + effects);
+            System.out.println(_x /*+ "->" + y*/ + " min effect = " + effects.getFirst() + " max effect = " + effects.getLast());
+        }
     }
 }
 

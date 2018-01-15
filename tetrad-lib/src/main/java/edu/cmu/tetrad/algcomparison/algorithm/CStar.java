@@ -59,14 +59,19 @@ public class CStar implements Algorithm {
             private int i;
             private Map<Node, Integer> counts;
 
-            public Task(int i, Map<Node, Integer> counts) {
+            private Task(int i, Map<Node, Integer> counts) {
                 this.i = i;
                 this.counts = counts;
             }
 
             @Override
             public Boolean call() {
-                System.out.println("\nBootstrap #" + (i + 1) + " of " + numSubsamples);
+                if (parameters.getBoolean("verbose")) {
+                    System.out.println("Bootstrap #" + (i + 1) + " of " + numSubsamples);
+                } else {
+                    System.out.print( (i + 1) + " ");
+                    System.out.flush();
+                }
 
                 BootstrapSampler sampler = new BootstrapSampler();
                 sampler.setWithoutReplacements(true);
@@ -76,13 +81,9 @@ public class CStar implements Algorithm {
 
                 Ida.NodeEffects effects = ida.getSortedMinEffects(y);
 
-                for (int j = 0; j < variables.size(); j++) {
-                    int f = 0;
-
-                    final Node key = variables.get(j);
-
-                    if (effects.getNodes().indexOf(key) < q) {
-                        counts.put(key, counts.get(key) + 1);
+                for (Node variable : variables) {
+                    if (effects.getNodes().indexOf(variable) < q) {
+                        counts.put(variable, counts.get(variable) + 1);
                     }
                 }
 
@@ -98,28 +99,9 @@ public class CStar implements Algorithm {
 
         ForkJoinPoolInstance.getInstance().getPool().invokeAll(tasks);
 
-
-//        for (int i = 0; i < numSubsamples; i++) {
-//            System.out.println("\nBootstrap #" + (i + 1) + " of " + numSubsamples);
-//
-//            BootstrapSampler sampler = new BootstrapSampler();
-//            sampler.setWithoutReplacements(true);
-//            DataSet sample = sampler.sample(_dataSet, (int) (percentSubsampleSize * _dataSet.getNumRows()));
-//
-//            Ida ida = new Ida(new CovarianceMatrixOnTheFly(sample));
-//
-//            Ida.NodeEffects effects = ida.getSortedMinEffects(y);
-//
-//            for (int j = 0; j < variables.size(); j++) {
-//                int f = 0;
-//
-//                final Node key = variables.get(j);
-//
-//                if (effects.getNodes().indexOf(key) < q) {
-//                    counts.put(key, counts.get(key) + 1);
-//                }
-//            }
-//        }
+        if (!parameters.getBoolean("verbose")) {
+            System.out.println("\n");
+        }
 
         variables.sort((o1, o2) -> {
             final int d1 = counts.get(o1);
@@ -137,14 +119,10 @@ public class CStar implements Algorithm {
             sortedFreqencies[i] /= (int) numSubsamples;
         }
 
-        System.out.println(variables);
-
-        System.out.println(Arrays.toString(sortedFreqencies));
-
         Graph graph = new EdgeListGraph(dataSet.getVariables());
 
         for (int i = 0; i < variables.size(); i++) {
-            if (sortedFreqencies[i] > pithreshold) {
+            if (sortedFreqencies[i] >= pithreshold) {
                 graph.addUndirectedEdge(variables.get(i), y);
             }
         }

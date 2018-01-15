@@ -49,14 +49,19 @@ public class CStar2 implements Algorithm {
             private int i;
             private Map<Node, Integer> counts;
 
-            public Task(int i, Map<Node, Integer> counts) {
+            private Task(int i, Map<Node, Integer> counts) {
                 this.i = i;
                 this.counts = counts;
             }
 
             @Override
             public Boolean call() {
-                System.out.println("\nBootstrap #" + (i + 1) + " of " + numSubsamples);
+                if (parameters.getBoolean("verbose")) {
+                    System.out.println("Bootstrap #" + (i + 1) + " of " + numSubsamples);
+                    System.out.flush();
+                } else {
+                    System.out.print( (i + 1) + " ");
+                }
 
                 BootstrapSampler sampler = new BootstrapSampler();
                 sampler.setWithoutReplacements(true);
@@ -66,27 +71,29 @@ public class CStar2 implements Algorithm {
                 final edu.cmu.tetrad.search.SemBicScore score = new edu.cmu.tetrad.search.SemBicScore(covariances);
                 score.setPenaltyDiscount(parameters.getDouble("penaltyDiscount"));
                 FgesMb fgesMb = new FgesMb(score);
+                fgesMb.setParallelism(1);
 
                 Graph g = fgesMb.search(y);
 
-                for (int j = 0; j < variables.size(); j++) {
-                    final Node key = variables.get(j);
-                    if (g.containsNode(key) && key != y) counts.put(key, counts.get(key) + 1);
+                for (final Node key : variables) {
+                    if (g.containsNode(key) && key != y && !g.isChildOf(y, key)) counts.put(key, counts.get(key) + 1);
                 }
-
-                System.out.println("Completed #" + (i + 1));
 
                 return true;
             }
         }
 
+        List<Task> tasks = new ArrayList<>();
+
         for (int i = 0; i < numSubsamples; i++) {
-            List<Task> tasks = new ArrayList<>();
             tasks.add(new Task(i, counts));
-            ForkJoinPoolInstance.getInstance().getPool().invokeAll(tasks);
         }
 
-        System.out.println(counts);
+        ForkJoinPoolInstance.getInstance().getPool().invokeAll(tasks);
+
+        if (!parameters.getBoolean("verbose")) {
+            System.out.println("\n");
+        }
 
         List<Node> sortedVariables = new ArrayList<>(variables);
 
@@ -102,14 +109,14 @@ public class CStar2 implements Algorithm {
             sortedFrequencies[i] = counts.get(sortedVariables.get(i)) / (double) numSubsamples;
         }
 
-        System.out.println(variables);
-        System.out.println(sortedVariables);
-        System.out.println(Arrays.toString(sortedFrequencies));
+//        System.out.println(variables);
+//        System.out.println(sortedVariables);
+//        System.out.println(Arrays.toString(sortedFrequencies));
 
         Graph graph = new EdgeListGraph(dataSet.getVariables());
 
         for (int i = 0; i < sortedVariables.size(); i++) {
-            if (sortedFrequencies[i] > pithreshold) {
+            if (sortedFrequencies[i] >= pithreshold) {
                 graph.addUndirectedEdge(sortedVariables.get(i), y);
             }
         }
