@@ -90,11 +90,14 @@ public class CStar implements Algorithm {
             }
         }
 
+        List<Task> tasks = new ArrayList<>();
+
         for (int i = 0; i < numSubsamples; i++) {
-            List<Task> tasks = new ArrayList<>();
             tasks.add(new Task(i, counts));
-            ForkJoinPoolInstance.getInstance().getPool().invokeAll(tasks);
         }
+
+        ForkJoinPoolInstance.getInstance().getPool().invokeAll(tasks);
+
 
 //        for (int i = 0; i < numSubsamples; i++) {
 //            System.out.println("\nBootstrap #" + (i + 1) + " of " + numSubsamples);
