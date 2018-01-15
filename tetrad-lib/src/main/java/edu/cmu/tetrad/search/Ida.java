@@ -52,6 +52,7 @@ public class Ida {
 
         List<Node> siblings = pattern.getAdjacentNodes(x);
         siblings.removeAll(parents);
+        siblings.remove(y);
 
         DepthChoiceGenerator gen = new DepthChoiceGenerator(siblings.size(), siblings.size());
         int[] choice;
@@ -60,13 +61,11 @@ public class Ida {
 
         while ((choice = gen.next()) != null) {
             List<Node> sibbled = GraphUtils.asList(choice, siblings);
-//            sibbled.remove(y);
 
             List<Node> regressors = new ArrayList<>();
             regressors.add(x);
             for (Node n : parents) if (!regressors.contains(n)) regressors.add(n);
             for (Node n : sibbled) if (!regressors.contains(n)) regressors.add(n);
-            regressors.remove(y);
 
             double beta;
 
@@ -95,7 +94,6 @@ public class Ida {
         Map<Node, Double> minEffects = new HashMap<>();
 
         for (Node x : covariances.getVariables()) {
-            if (x == y) continue;
             final List<Double> effects = getEffects(x, y);
 
             if (!effects.isEmpty()) {

@@ -123,12 +123,12 @@ public class TestIda {
 
         SemPm pm = new SemPm(trueDag);
         SemIm im = new SemIm(pm);
-        DataSet dataSet = im.simulateData(1000, false);
+        DataSet dataSet = im.simulateData(100, false);
 
         Parameters parameters = new Parameters();
 
         parameters.set("penaltyDiscount", 2);
-        parameters.set("numSubsamples", 200);
+        parameters.set("numSubsamples", 100);
         parameters.set("percentSubsampleSize", .5);
         parameters.set("topQ", 5);
         parameters.set("piThreshold", .7);
@@ -150,12 +150,12 @@ public class TestIda {
 
         SemPm pm = new SemPm(trueDag);
         SemIm im = new SemIm(pm);
-        DataSet dataSet = im.simulateData(1000, false);
+        DataSet dataSet = im.simulateData(100, false);
 
         Parameters parameters = new Parameters();
 
         parameters.set("penaltyDiscount", 2);
-        parameters.set("numSubsamples", 200);
+        parameters.set("numSubsamples", 100);
         parameters.set("percentSubsampleSize", .5);
         parameters.set("topQ", 5);
         parameters.set("piThreshold", .7);

@@ -13,6 +13,7 @@ import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.StatUtils;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.RecursiveAction;
 
@@ -40,57 +41,54 @@ public class CStar implements Algorithm {
     public Graph search(DataModel dataSet, Parameters parameters) {
         DataSet _dataSet = (DataSet) dataSet;
 
-        double percentageB = parameters.getDouble("percentSubsampleSize");
+        double percentSubsampleSize = parameters.getDouble("percentSubsampleSize");
         int numSubsamples = parameters.getInt("numSubsamples");
         int q = parameters.getInt("topQ");
         double pithreshold = parameters.getDouble("piThreshold");
         Node y = dataSet.getVariable(parameters.getString("targetName"));
 
-        List<Ida.NodeEffects> effects = new ArrayList<>();
-
-        for (int i = 0; i < numSubsamples; i++) {
-            BootstrapSampler sampler = new BootstrapSampler();
-            sampler.setWithoutReplacements(true);
-            DataSet sample = sampler.sample(_dataSet, (int) (percentageB * _dataSet.getNumRows()));
-
-            Ida ida = new Ida(new CovarianceMatrixOnTheFly(sample));
-
-            Ida.NodeEffects _effects = ida.getSortedMinEffects(y);
-
-            effects.add(_effects);
-        }
-
         final List<Node> variables = dataSet.getVariables();
         variables.remove(y);
 
-        Map<Node, Integer> frequencies = new HashMap<>();
+        Map<Node, Integer> counts = new ConcurrentHashMap<>();
+        for (Node node : variables) counts.put(node, 0);
 
-        for (int i = 0; i < variables.size(); i++) {
-            int f = 0;
+        for (int i = 0; i < numSubsamples; i++) {
+            System.out.println("\nBootstrap #" + (i + 1) + " of " + numSubsamples);
 
-            for (int j = 0; j < effects.size(); j++) {
-                if (effects.get(j).getNodes().indexOf(variables.get(i)) < q) {
-                    f++;
+            BootstrapSampler sampler = new BootstrapSampler();
+            sampler.setWithoutReplacements(true);
+            DataSet sample = sampler.sample(_dataSet, (int) (percentSubsampleSize * _dataSet.getNumRows()));
+
+            Ida ida = new Ida(new CovarianceMatrixOnTheFly(sample));
+
+            Ida.NodeEffects effects = ida.getSortedMinEffects(y);
+
+            for (int j = 0; j < variables.size(); j++) {
+                int f = 0;
+
+                final Node key = variables.get(j);
+
+                if (effects.getNodes().indexOf(key) < q) {
+                    counts.put(key, counts.get(key) + 1);
                 }
             }
-
-            frequencies.put(variables.get(i), f);
         }
 
         variables.sort((o1, o2) -> {
-            final int d1 = frequencies.get(o1);
-            final int d2 = frequencies.get(o2);
+            final int d1 = counts.get(o1);
+            final int d2 = counts.get(o2);
             return -Integer.compare(d1, d2);
         });
 
         double[] sortedFreqencies = new double[variables.size()];
 
         for (int i = 0; i < variables.size(); i++) {
-            sortedFreqencies[i] = frequencies.get(variables.get(i));
+            sortedFreqencies[i] = counts.get(variables.get(i));
         }
 
         for (int i = 0; i < sortedFreqencies.length; i++) {
-            sortedFreqencies[i] /= effects.size();
+            sortedFreqencies[i] /= (int) numSubsamples;
         }
 
         System.out.println(variables);

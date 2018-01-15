@@ -4,15 +4,16 @@ import edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern.Fges;
 import edu.cmu.tetrad.algcomparison.score.SemBicScore;
 import edu.cmu.tetrad.annotation.AlgType;
 import edu.cmu.tetrad.data.*;
-import edu.cmu.tetrad.graph.Edge;
-import edu.cmu.tetrad.graph.EdgeListGraph;
-import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.FgesMb;
 import edu.cmu.tetrad.search.Ida;
+import edu.cmu.tetrad.util.ForkJoinPoolInstance;
 import edu.cmu.tetrad.util.Parameters;
 
 import java.util.*;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.RecursiveTask;
 
 @edu.cmu.tetrad.annotation.Algorithm(
         name = "CStar2",
@@ -41,23 +42,78 @@ public class CStar2 implements Algorithm {
         double pithreshold = parameters.getDouble("piThreshold");
         Node y = dataSet.getVariable(parameters.getString("targetName"));
 
-        Map<Node, Integer> counts = new HashMap<>();
+        Map<Node, Integer> counts = new ConcurrentHashMap<>();
         for (Node node : variables) counts.put(node, 0);
 
-        for (int i = 0; i < numSubsamples; i++) {
-            BootstrapSampler sampler = new BootstrapSampler();
-            sampler.setWithoutReplacements(true);
-            DataSet sample = sampler.sample(_dataSet, (int) (percentageB * _dataSet.getNumRows()));
+        class Task implements Callable<Boolean> {
+            private int i;
 
-            final CovarianceMatrix covariances = new CovarianceMatrix(sample);
-            FgesMb fgesMb = new FgesMb(new edu.cmu.tetrad.search.SemBicScore(covariances));
-            Graph g = fgesMb.search(y);
+            public Task(int i, Map<Node, Integer> counts) {
+                this.i = i;
+            }
 
-            for (int j = 0; j < variables.size(); j++) {
-                final Node key = variables.get(j);
-                if (g.containsNode(key) && key != y) counts.put(key, counts.get(key) + 1);
+            @Override
+            public Boolean call() {
+                System.out.println("\nBootstrap #" + (i + 1) + " of " + numSubsamples);
+
+                BootstrapSampler sampler = new BootstrapSampler();
+                sampler.setWithoutReplacements(true);
+                DataSet sample = sampler.sample(_dataSet, (int) (percentageB * _dataSet.getNumRows()));
+
+                final CovarianceMatrix covariances = new CovarianceMatrix(sample);
+                final edu.cmu.tetrad.search.SemBicScore score = new edu.cmu.tetrad.search.SemBicScore(covariances);
+                score.setPenaltyDiscount(parameters.getDouble("penaltyDiscount"));
+                FgesMb fgesMb = new FgesMb(score);
+//                fgesMb.setParallelism(1);
+
+                Graph g = fgesMb.search(y);
+
+                for (int j = 0; j < variables.size(); j++) {
+                    final Node key = variables.get(j);
+                    if (g.containsNode(key) && key != y) counts.put(key, counts.get(key) + 1);
+                }
+
+                System.out.println("Completed #" + (i + 1));
+
+                return true;
             }
         }
+
+//        List<Task> tasks = new ArrayList<>();
+
+        for (int i = 0; i < numSubsamples; i++) {
+            List<Task> tasks = new ArrayList<>();
+            tasks.add(new Task(i, counts));
+            ForkJoinPoolInstance.getInstance().getPool().invokeAll(tasks);
+        }
+
+//        ForkJoinPoolInstance.getInstance().getPool().invokeAll(tasks);
+
+//        for (int i = 0; i < numSubsamples; i++) {
+//            System.out.println("\nBootstrap #" + (i + 1) + " of " + numSubsamples);
+//
+//            BootstrapSampler sampler = new BootstrapSampler();
+//            sampler.setWithoutReplacements(true);
+//            DataSet sample = sampler.sample(_dataSet, (int) (percentageB * _dataSet.getNumRows()));
+//
+//            System.out.println("Made sample");
+//
+//            final CovarianceMatrix covariances = new CovarianceMatrix(sample);
+//            final edu.cmu.tetrad.search.SemBicScore score = new edu.cmu.tetrad.search.SemBicScore(covariances);
+//            score.setPenaltyDiscount(parameters.getDouble("penaltyDiscount"));
+//            FgesMb fgesMb = new FgesMb(score);
+//
+//            System.out.println("Made FGES-MB");
+//
+//            Graph g = fgesMb.search(y);
+//
+//            System.out.println("Search complete");
+//
+//            for (int j = 0; j < variables.size(); j++) {
+//                final Node key = variables.get(j);
+//                if (g.containsNode(key) && key != y) counts.put(key, counts.get(key) + 1);
+//            }
+//        }
 
         System.out.println(counts);
 
@@ -108,6 +164,7 @@ public class CStar2 implements Algorithm {
     @Override
     public List<String> getParameters() {
         List<String> parameters = new ArrayList<>();
+        parameters.add("penaltyDiscount");
         parameters.add("numSubsamples");
         parameters.add("percentSubsampleSize");
         parameters.add("piThreshold");

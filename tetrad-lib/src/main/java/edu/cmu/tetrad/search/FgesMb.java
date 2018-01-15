@@ -318,10 +318,10 @@ public final class FgesMb {
         fes();
         bes();
 
-        this.mode = Mode.coverNoncolliders;
-        initializeTwoStepEdges(getVariables());
-        fes();
-        bes();
+//        this.mode = Mode.coverNoncolliders;
+//        initializeTwoStepEdges(getVariables());
+//        fes();
+//        bes();
 
         long endTime = System.currentTimeMillis();
         this.elapsedTime = endTime - start;
@@ -1405,9 +1405,9 @@ public final class FgesMb {
             int[] choice;
 
             while ((choice = gen.next()) != null) {
-                if (Thread.currentThread().isInterrupted()) {
-                    break;
-                }
+//                if (Thread.currentThread().isInterrupted()) {
+//                    break;
+//                }
 
                 Set<Node> T = GraphUtils.asSet(choice, TNeighbors);
 
