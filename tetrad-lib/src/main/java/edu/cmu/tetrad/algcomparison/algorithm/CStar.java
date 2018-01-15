@@ -7,12 +7,14 @@ import edu.cmu.tetrad.graph.Edge;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.search.FgesMb;
 import edu.cmu.tetrad.search.Ida;
 import edu.cmu.tetrad.util.ForkJoinPoolInstance;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.StatUtils;
 
 import java.util.*;
+import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.RecursiveAction;
@@ -53,27 +55,68 @@ public class CStar implements Algorithm {
         Map<Node, Integer> counts = new ConcurrentHashMap<>();
         for (Node node : variables) counts.put(node, 0);
 
-        for (int i = 0; i < numSubsamples; i++) {
-            System.out.println("\nBootstrap #" + (i + 1) + " of " + numSubsamples);
+        class Task implements Callable<Boolean> {
+            private int i;
+            private Map<Node, Integer> counts;
 
-            BootstrapSampler sampler = new BootstrapSampler();
-            sampler.setWithoutReplacements(true);
-            DataSet sample = sampler.sample(_dataSet, (int) (percentSubsampleSize * _dataSet.getNumRows()));
+            public Task(int i, Map<Node, Integer> counts) {
+                this.i = i;
+                this.counts = counts;
+            }
 
-            Ida ida = new Ida(new CovarianceMatrixOnTheFly(sample));
+            @Override
+            public Boolean call() {
+                System.out.println("\nBootstrap #" + (i + 1) + " of " + numSubsamples);
 
-            Ida.NodeEffects effects = ida.getSortedMinEffects(y);
+                BootstrapSampler sampler = new BootstrapSampler();
+                sampler.setWithoutReplacements(true);
+                DataSet sample = sampler.sample(_dataSet, (int) (percentSubsampleSize * _dataSet.getNumRows()));
 
-            for (int j = 0; j < variables.size(); j++) {
-                int f = 0;
+                Ida ida = new Ida(new CovarianceMatrixOnTheFly(sample));
 
-                final Node key = variables.get(j);
+                Ida.NodeEffects effects = ida.getSortedMinEffects(y);
 
-                if (effects.getNodes().indexOf(key) < q) {
-                    counts.put(key, counts.get(key) + 1);
+                for (int j = 0; j < variables.size(); j++) {
+                    int f = 0;
+
+                    final Node key = variables.get(j);
+
+                    if (effects.getNodes().indexOf(key) < q) {
+                        counts.put(key, counts.get(key) + 1);
+                    }
                 }
+
+                return true;
             }
         }
+
+        for (int i = 0; i < numSubsamples; i++) {
+            List<Task> tasks = new ArrayList<>();
+            tasks.add(new Task(i, counts));
+            ForkJoinPoolInstance.getInstance().getPool().invokeAll(tasks);
+        }
+
+//        for (int i = 0; i < numSubsamples; i++) {
+//            System.out.println("\nBootstrap #" + (i + 1) + " of " + numSubsamples);
+//
+//            BootstrapSampler sampler = new BootstrapSampler();
+//            sampler.setWithoutReplacements(true);
+//            DataSet sample = sampler.sample(_dataSet, (int) (percentSubsampleSize * _dataSet.getNumRows()));
+//
+//            Ida ida = new Ida(new CovarianceMatrixOnTheFly(sample));
+//
+//            Ida.NodeEffects effects = ida.getSortedMinEffects(y);
+//
+//            for (int j = 0; j < variables.size(); j++) {
+//                int f = 0;
+//
+//                final Node key = variables.get(j);
+//
+//                if (effects.getNodes().indexOf(key) < q) {
+//                    counts.put(key, counts.get(key) + 1);
+//                }
+//            }
+//        }
 
         variables.sort((o1, o2) -> {
             final int d1 = counts.get(o1);
@@ -95,33 +138,7 @@ public class CStar implements Algorithm {
 
         System.out.println(Arrays.toString(sortedFreqencies));
 
-//        double[] ranks = StatUtils.getRanks(sortedFreqencies);
-//
-//        int[] rankIndices = new int[variables.size()];
-//
-//        int r = 1;
-//        double rr = ranks[0];
-//
-//        for (int i = 0; i < ranks.length; i++) {
-//            if (ranks[i] == rr) {
-//                rankIndices[i] = r;
-//            } else {
-//                r++;
-//                rr = ranks[i];
-//                rankIndices[i] = r;
-//            }
-//        }
-//
-//        System.out.println(Arrays.toString(ranks));
-//        System.out.println(Arrays.toString(rankIndices));
-//
         Graph graph = new EdgeListGraph(dataSet.getVariables());
-//
-//        for (int i = 0; i < variables.size(); i++) {
-//            if (rankIndices[i] <= q) {
-//                graph.addDirectedEdge(variables.get(i), y);
-//            }
-//        }
 
         for (int i = 0; i < variables.size(); i++) {
             if (sortedFreqencies[i] > pithreshold) {

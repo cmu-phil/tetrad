@@ -47,9 +47,11 @@ public class CStar2 implements Algorithm {
 
         class Task implements Callable<Boolean> {
             private int i;
+            private Map<Node, Integer> counts;
 
             public Task(int i, Map<Node, Integer> counts) {
                 this.i = i;
+                this.counts = counts;
             }
 
             @Override
@@ -64,7 +66,6 @@ public class CStar2 implements Algorithm {
                 final edu.cmu.tetrad.search.SemBicScore score = new edu.cmu.tetrad.search.SemBicScore(covariances);
                 score.setPenaltyDiscount(parameters.getDouble("penaltyDiscount"));
                 FgesMb fgesMb = new FgesMb(score);
-//                fgesMb.setParallelism(1);
 
                 Graph g = fgesMb.search(y);
 
@@ -79,41 +80,11 @@ public class CStar2 implements Algorithm {
             }
         }
 
-//        List<Task> tasks = new ArrayList<>();
-
         for (int i = 0; i < numSubsamples; i++) {
             List<Task> tasks = new ArrayList<>();
             tasks.add(new Task(i, counts));
             ForkJoinPoolInstance.getInstance().getPool().invokeAll(tasks);
         }
-
-//        ForkJoinPoolInstance.getInstance().getPool().invokeAll(tasks);
-
-//        for (int i = 0; i < numSubsamples; i++) {
-//            System.out.println("\nBootstrap #" + (i + 1) + " of " + numSubsamples);
-//
-//            BootstrapSampler sampler = new BootstrapSampler();
-//            sampler.setWithoutReplacements(true);
-//            DataSet sample = sampler.sample(_dataSet, (int) (percentageB * _dataSet.getNumRows()));
-//
-//            System.out.println("Made sample");
-//
-//            final CovarianceMatrix covariances = new CovarianceMatrix(sample);
-//            final edu.cmu.tetrad.search.SemBicScore score = new edu.cmu.tetrad.search.SemBicScore(covariances);
-//            score.setPenaltyDiscount(parameters.getDouble("penaltyDiscount"));
-//            FgesMb fgesMb = new FgesMb(score);
-//
-//            System.out.println("Made FGES-MB");
-//
-//            Graph g = fgesMb.search(y);
-//
-//            System.out.println("Search complete");
-//
-//            for (int j = 0; j < variables.size(); j++) {
-//                final Node key = variables.get(j);
-//                if (g.containsNode(key) && key != y) counts.put(key, counts.get(key) + 1);
-//            }
-//        }
 
         System.out.println(counts);
 
