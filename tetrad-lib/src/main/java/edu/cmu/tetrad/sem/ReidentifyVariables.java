@@ -137,7 +137,7 @@ public class ReidentifyVariables {
 
             SemOptimizer semOptimizer = new SemOptimizerPowell();
             SemEstimator est = new SemEstimator(data, pm, semOptimizer);
-            est.setScoreType(SemIm.ScoreType.Fgls);
+            est.setScoreType(ScoreType.Fgls);
             SemIm im = est.estimate();
 
             ims.put(node, im);

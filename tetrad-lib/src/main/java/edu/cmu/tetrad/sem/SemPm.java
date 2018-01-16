@@ -336,11 +336,15 @@ public final class SemPm implements PM, TetradSerializable {
         nodeB = getGraph().getExogenous(nodeB);
 
         if (nodeA.getNodeType() == NodeType.ERROR) {
-            nodeA = getGraph().getChildren(nodeA).get(0);
+            final List<Node> children = getGraph().getChildren(nodeA);
+            if (children == null || children.isEmpty()) return null;
+            nodeA = children.get(0);
         }
 
         if (nodeB.getNodeType() == NodeType.ERROR) {
-            nodeB = getGraph().getChildren(nodeB).get(0);
+            final List<Node> children = getGraph().getChildren(nodeB);
+            if (children == null || children.isEmpty()) return null;
+            nodeB = children.get(0);
         }
 
         for (Parameter parameter : this.parameters) {

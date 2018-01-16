@@ -76,7 +76,7 @@ public class Edge implements TetradSerializable, Comparable {
 	 */
 	public Edge(Node node1, Node node2, Endpoint endpoint1, Endpoint endpoint2) {
 		if (node1 == null || node2 == null) {
-			throw new NullPointerException("Nodes must not be null.");
+			throw new NullPointerException("Nodes must not be null. node1 = " + node1 + " node2 = " + node2);
 		}
 
 		if (endpoint1 == null || endpoint2 == null) {

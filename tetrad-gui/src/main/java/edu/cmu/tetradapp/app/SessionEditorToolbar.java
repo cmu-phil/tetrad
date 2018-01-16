@@ -56,6 +56,8 @@ final class SessionEditorToolbar extends JPanel {
      */
     private final String selectType = "Select";
 
+    private final String edgeSelectType = "Edge";
+
     /**
      * \
      * The map from JToggleButtons to String node types.
@@ -198,10 +200,16 @@ final class SessionEditorToolbar extends JPanel {
                 }
 
                 String propertyName = e.getPropertyName();
-
                 if ("nodeAdded".equals(propertyName)) {
                     if (!isShiftDown()) {
                         resetSelectMove();
+                    }
+                } else if ("edgeAdded".equals(propertyName)) {
+                    // keep edge select type selected
+                    JToggleButton selectButton = getButtonForType(edgeSelectType);
+                    if (!(selectButton.isSelected())) {
+                        selectButton.doClick();
+                        selectButton.requestFocus();
                     }
                 }
             }

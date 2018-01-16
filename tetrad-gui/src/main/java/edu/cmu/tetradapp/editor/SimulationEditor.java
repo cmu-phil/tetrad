@@ -265,7 +265,6 @@ public final class SimulationEditor extends JPanel implements KnowledgeEditable,
     private void resetPanel(Simulation simulation, String[] graphItems, String[] simulationItems, JTabbedPane tabbedPane) {
         RandomGraph randomGraph;
 
-        simulation.setFixedGraph(false);
         if (simulation.getSourceGraph() != null) {
             randomGraph = new SingleGraph(simulation.getSourceGraph());
         } else {
