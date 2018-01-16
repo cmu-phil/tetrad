@@ -13,6 +13,7 @@ import edu.cmu.tetrad.util.Parameters;
 import edu.pitt.dbmi.algo.bootstrap.BootstrapEdgeEnsemble;
 import edu.pitt.dbmi.algo.bootstrap.GeneralBootstrapTest;
 
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -62,6 +63,9 @@ public class FaskConcatenated implements MultiDataSetAlgorithm, HasKnowledge, Us
             }
 
             DataSet dataSet = DataUtils.concatenate(centered);
+
+            dataSet.setNumberFormat(new DecimalFormat("0.000000000000000000"));
+
             Fask search = new Fask(dataSet, score.getScore(dataSet, parameters));
             search.setDepth(parameters.getInt("depth"));
             search.setPenaltyDiscount(parameters.getDouble("penaltyDiscount"));
@@ -148,13 +152,11 @@ public class FaskConcatenated implements MultiDataSetAlgorithm, HasKnowledge, Us
     @Override
     public List<String> getParameters() {
         List<String> parameters = score.getParameters();
-        parameters.add("twoCycleAlpha");
         parameters.add("depth");
-//        parameters.add("penaltyDiscount");
+        parameters.add("twoCycleAlpha");
         parameters.add("extraEdgeThreshold");
         parameters.add("faskDelta");
-        parameters.add("reverseOrientationsBySkewnessOfVariables");
-        parameters.add("reverseOrientationsBySignOfCorrelation");
+
         parameters.add("numRuns");
         parameters.add("randomSelectionSize");
 

@@ -23,10 +23,7 @@ package edu.cmu.tetradapp.model;
 
 import edu.cmu.tetrad.algcomparison.simulation.LinearFisherModel;
 import edu.cmu.tetrad.algcomparison.simulation.SemSimulation;
-import edu.cmu.tetrad.graph.Dag;
-import edu.cmu.tetrad.graph.EdgeListGraph;
-import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemPm;
 import edu.cmu.tetrad.session.SessionModel;
@@ -121,7 +118,9 @@ public class SemPmWrapper implements SessionModel, GraphSource {
      * new BayesPm.
      */
     public SemPmWrapper(GraphSource graphWrapper, Parameters parameters) {
-        this(new EdgeListGraph(graphWrapper.getGraph()));
+        this(graphWrapper.getGraph() instanceof TimeLagGraph ?
+                new TimeLagGraph((TimeLagGraph) graphWrapper.getGraph()) :
+                new EdgeListGraph(graphWrapper.getGraph()));
     }
 
     public SemPmWrapper(GraphSource graphSource, DataWrapper dataWrapper, Parameters parameters) {

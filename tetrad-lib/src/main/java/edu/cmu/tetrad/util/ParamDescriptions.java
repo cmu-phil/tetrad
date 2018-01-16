@@ -217,6 +217,46 @@ public class ParamDescriptions {
         map.put("percentStability", new ParamDescription(
                 "Percentage of subsamples each feature in the output must agree on",
                 0.5, 0.0, 1.0));
+
+        map.put("includePositiveCoefs", new ParamDescription(
+                "Yes if positive coefficients should be included in the model",
+                true));
+
+        map.put("includeNegativeCoefs", new ParamDescription(
+                "Yes if negative coefficients should be included in the model",
+                true));
+
+        map.put("errorsNormal", new ParamDescription(
+                "Yes if errors should be Normal; No if they should be Beta",
+                true));
+
+        map.put("betaLeftValue", new ParamDescription(
+                "For Beta(x, y), the 'x'",
+                1, 1, Double.POSITIVE_INFINITY));
+
+        map.put("betaRightValue", new ParamDescription(
+                "For Beta(x, y), the 'y'",
+                5, 1, Double.POSITIVE_INFINITY));
+
+        map.put("extraEdgeThreshold", new ParamDescription(
+                "Threshold for including extra edges",
+                0.3, 0.0, 1.0));
+
+        map.put("useFasAdjacencies", new ParamDescription(
+                "Yes if adjacencies from the FAS search should be used",
+                true));
+
+        map.put("useCorrDiffAdjacencies", new ParamDescription(
+                "Yes if adjacencies from conditional correlation differences should be used",
+                true));
+
+        map.put("faskDelta", new ParamDescription(
+                "Threshold for judging negative coefficient edges as X->Y (range (-1, 0)",
+                -0.2, -1.0, 1.0));
+
+        map.put("numLags", new ParamDescription(
+                "The number of lags in the time lag model",
+                1, 1, Double.POSITIVE_INFINITY));
     }
 
     public static ParamDescriptions getInstance() {
