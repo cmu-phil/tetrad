@@ -45,7 +45,7 @@ import java.util.*;
 public class TestIda {
 
     @Test
-    public void test1() {
+    public void testIda() {
         Graph graph = GraphUtils.randomGraph(10, 0, 10,
                 100, 100, 100, false);
 
