@@ -1,5 +1,6 @@
 package edu.cmu.tetrad.performance;
 
+import edu.cmu.tetrad.sem.ScoreType;
 import edu.cmu.tetrad.util.TextTable;
 
 import java.util.ArrayList;
@@ -87,7 +88,7 @@ public class ComparisonScript {
                 count++;
                 params.setAlgorithm(alg);
                 params.setIndependenceTest(ComparisonParameters.IndependenceTestType.FisherZ);
-                params.setScore(ComparisonParameters.ScoreType.SemBic);
+                params.setScore(ScoreType.SemBic);
                 // params.setOneEdgeFaithfulnessAssumed(false);
 
                 List<ComparisonResult> resultsTrials = new ArrayList<>();

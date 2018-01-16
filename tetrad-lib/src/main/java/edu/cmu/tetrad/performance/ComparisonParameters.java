@@ -1,5 +1,7 @@
 package edu.cmu.tetrad.performance;
 
+import edu.cmu.tetrad.sem.ScoreType;
+
 /**
  * Created by jdramsey on 3/24/16. Edited by dmalinsky 5/20/16.
  */
@@ -322,6 +324,5 @@ public class ComparisonParameters {
     public enum DataType {Continuous, Discrete}
     public enum ResultType {Pattern, PAG}
     public enum IndependenceTestType {FisherZ, ChiSquare}
-    public enum ScoreType {SemBic, BDeu}
     public enum Algorithm {PC, CPC, FGES, FGES2, PCLocal, PCStableMax, FCI, GFCI, TsFCI}
 }
