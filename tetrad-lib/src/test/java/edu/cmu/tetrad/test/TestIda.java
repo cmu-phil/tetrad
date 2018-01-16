@@ -139,7 +139,7 @@ public class TestIda {
     public void testBoth() {
         int numNodes = 100;
         int numEdges = 100;
-        int sampleSize = 100;
+        int sampleSize = 300;
         int numIterations = 20;
 
         Parameters parameters = new Parameters();
