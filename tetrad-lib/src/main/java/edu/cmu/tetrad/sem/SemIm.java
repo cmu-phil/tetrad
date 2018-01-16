@@ -1343,13 +1343,14 @@ public final class SemIm implements IM, ISemIm, TetradSerializable {
 
         List<Node> variables = new ArrayList<>();
 
-        for (Node node : timeSeriesGraph.getLag0Nodes()) {
+        List<Node> lag0Nodes = timeSeriesGraph.getLag0Nodes();
+
+        for (Node node : lag0Nodes) {
             final ContinuousVariable _node = new ContinuousVariable(timeSeriesGraph.getNodeId(node).getName());
             _node.setNodeType(node.getNodeType());
             variables.add(_node);
         }
 
-        List<Node> lag0Nodes = timeSeriesGraph.getLag0Nodes();
 
         DataSet fullData = new ColtDataSet(sampleSize, variables);
 
@@ -1395,11 +1396,7 @@ public final class SemIm implements IM, ISemIm, TetradSerializable {
             }
         }
 
-        System.out.println(fullData);
-
         fullData = DataUtils.restrictToMeasured(fullData);
-
-        System.out.println(fullData);
 
         return fullData;
     }
