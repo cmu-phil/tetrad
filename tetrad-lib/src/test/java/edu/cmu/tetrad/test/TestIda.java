@@ -139,12 +139,12 @@ public class TestIda {
     public void testBoth() {
         int numNodes = 100;
         int numEdges = 100;
-        int sampleSize = 50;
-        int numIterations = 10;
+        int sampleSize = 100;
+        int numIterations = 20;
 
         Parameters parameters = new Parameters();
         parameters.set("penaltyDiscount", 1);
-        parameters.set("numSubsamples", 20);
+        parameters.set("numSubsamples", 1);
         parameters.set("percentSubsampleSize", .5);
         parameters.set("topQ", 5);
         parameters.set("piThreshold", .5);
@@ -272,15 +272,19 @@ public class TestIda {
             LinkedList<Double> effects = ida.getEffects(_x, y);
             final double trueEffect = ida.trueEffect(_x, y, trueDag);
 
-            double distance = ida.distance(effects.getFirst(), effects.getLast(), trueEffect);
+            if (!effects.isEmpty()) {
+                double distance = ida.distance(effects.getFirst(), effects.getLast(), trueEffect);
 
-            System.out.println(_x + " min effect = " + effects.getFirst() + " max effect = " + effects.getLast()
-                + " true effect = " + trueEffect + " distance = " + distance);
+                System.out.println(_x + " min effect = " + effects.getFirst() + " max effect = " + effects.getLast()
+                        + " true effect = " + trueEffect + " distance = " + distance);
 
-            List<List<Node>> directedPaths = GraphUtils.treks(trueDag, _x, y, 10);
+                List<List<Node>> directedPaths = GraphUtils.treks(trueDag, _x, y, 10);
 
-            for (List<Node> path : directedPaths) {
-                System.out.println("\tTrek: " + GraphUtils.pathString(path, trueDag));
+                for (List<Node> path : directedPaths) {
+                    System.out.println("\tTrek: " + GraphUtils.pathString(path, trueDag));
+                }
+            } else {
+                System.out.println(_x + ": no effects" + " true effect = " + trueEffect);
             }
         }
     }

@@ -664,7 +664,6 @@ public final class FgesMb {
      * Creates a new processors pool with the specified number of threads.
      */
     public void setParallelism(int numProcessors) {
-//        if (numProcessors == 1) maxThreads = 1;
         this.pool = new ForkJoinPool(numProcessors);
         maxThreads = pool.getParallelism();
     }

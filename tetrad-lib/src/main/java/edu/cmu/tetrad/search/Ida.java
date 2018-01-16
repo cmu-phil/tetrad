@@ -33,7 +33,7 @@ public class Ida {
     public Ida(DataSet dataSet) {
         this.dataSet = dataSet;
         Fges fges = new Fges(new SemBicScore(new CovarianceMatrixOnTheFly(dataSet)));
-        fges.setMaxDegree(1);
+        fges.setParallelism(1);
         this.pattern = fges.search();
         regression = new RegressionDataset(dataSet);
     }
