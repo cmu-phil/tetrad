@@ -68,16 +68,13 @@ public class CStar implements Algorithm {
             public Boolean call() {
                 if (parameters.getBoolean("verbose")) {
                     System.out.println("Bootstrap #" + (i + 1) + " of " + numSubsamples);
-                } else {
-//                    System.out.print( (i + 1) + " ");
-//                    System.out.flush();
                 }
 
                 BootstrapSampler sampler = new BootstrapSampler();
                 sampler.setWithoutReplacements(true);
                 DataSet sample = sampler.sample(_dataSet, (int) (percentSubsampleSize * _dataSet.getNumRows()));
 
-                Ida ida = new Ida(new CovarianceMatrixOnTheFly(sample));
+                Ida ida = new Ida(sample);
 
                 Ida.NodeEffects effects = ida.getSortedMinEffects(y);
 
@@ -98,10 +95,6 @@ public class CStar implements Algorithm {
         }
 
         ForkJoinPoolInstance.getInstance().getPool().invokeAll(tasks);
-
-//        if (!parameters.getBoolean("verbose")) {
-//            System.out.println("\n");
-//        }
 
         variables.sort((o1, o2) -> {
             final int d1 = counts.get(o1);

@@ -57,7 +57,7 @@ public class TestIda {
 
         Node y = dataSet.getVariable("X10");
 
-        Ida ida = new Ida(new CovarianceMatrixOnTheFly(dataSet));
+        Ida ida = new Ida(dataSet);
 
         Ida.NodeEffects effects = ida.getSortedMinEffects(y);
 
@@ -239,10 +239,14 @@ public class TestIda {
         Set<Node> hallucinations = new HashSet<>(outputNodes);
         hallucinations.removeAll(adjadjadjNodes);
 
-        System.out.println("Hallucinations: " + hallucinations);
+        Set<Node> notHallucinated = new HashSet<>(outputNodes);
+        notHallucinated.removeAll(hallucinations);
+
+        System.out.println("Hallucinations (not even in adj(adj(adj(target))) \\ target): " + hallucinations);
+        System.out.println("Not hallucinated (adj(adj(adj(target))) \\ target): " + notHallucinated);
         System.out.println("Markov blanket of target: " + mbNodes);
-        System.out.println("adj(adj(target)) \\ {target} = " + adjadjNodes);
-        System.out.println("adj(adj(adj(target))) \\ {target}  = " + adjadjadjNodes);
+        System.out.println("adj(adj(target)) \\ target = " + adjadjNodes);
+        System.out.println("adj(adj(adj(target))) \\ target  = " + adjadjadjNodes);
         System.out.println("Elapsed " + elapsed / 1000.0 + " s");
 
         printIdaResult(new ArrayList<>(outputNodes), target, trueData, trueDag);
@@ -262,7 +266,7 @@ public class TestIda {
         y = trueData.getVariable(y.getName());
         trueDag = GraphUtils.replaceNodes(trueDag, trueData.getVariables());
 
-        Ida ida = new Ida(new CovarianceMatrixOnTheFly(trueData));
+        Ida ida = new Ida(trueData);
 
         for (Node _x : x) {
             LinkedList<Double> effects = ida.getEffects(_x, y);

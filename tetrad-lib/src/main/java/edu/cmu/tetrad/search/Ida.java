@@ -7,6 +7,7 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.regression.RegressionCovariance;
+import edu.cmu.tetrad.regression.RegressionDataset;
 import edu.cmu.tetrad.regression.RegressionResult;
 import edu.cmu.tetrad.util.DepthChoiceGenerator;
 
@@ -24,16 +25,17 @@ import static java.lang.Math.signum;
  * @author jdramsey@andrew.cmu.edu
  */
 public class Ida {
-    private ICovarianceMatrix covariances;
+//    private ICovarianceMatrix covariances;
+    private DataSet dataSet;
     private final Graph pattern;
-    private final RegressionCovariance regression;
+    private final RegressionDataset regression;
 
-    public Ida(ICovarianceMatrix covariances) {
-        this.covariances = covariances;
-        Fges fges = new Fges(new SemBicScore(covariances));
+    public Ida(DataSet dataSet) {
+        this.dataSet = dataSet;
+        Fges fges = new Fges(new SemBicScore(new CovarianceMatrixOnTheFly(dataSet)));
         fges.setMaxDegree(1);
         this.pattern = fges.search();
-        regression = new RegressionCovariance(covariances);
+        regression = new RegressionDataset(dataSet);
     }
 
 
@@ -59,7 +61,6 @@ public class Ida {
         List<Node> siblings = pattern.getAdjacentNodes(x);
         siblings.removeAll(parents);
         siblings.removeAll(children);
-//        siblings.remove(y);
 
         DepthChoiceGenerator gen = new DepthChoiceGenerator(siblings.size(), siblings.size());
         int[] choice;
@@ -77,7 +78,6 @@ public class Ida {
             double beta;
 
             if (regressors.contains(y)) {
-//                beta = 0;
                 continue;
             } else {
                 RegressionResult result = regression.regress(y, regressors);
@@ -88,8 +88,6 @@ public class Ida {
         }
 
         Collections.sort(effects);
-
-//        effects.sort(Comparator.comparingDouble(Math::abs));
 
         return effects;
     }
@@ -103,7 +101,7 @@ public class Ida {
     public Map<Node, Double> calculateMinimumEffectsOnY(Node y) {
         Map<Node, Double> minEffects = new HashMap<>();
 
-        for (Node x : covariances.getVariables()) {
+        for (Node x : dataSet.getVariables()) {
             final List<Double> effects = getEffects(x, y);
 
             if (!effects.isEmpty()) {
@@ -173,7 +171,7 @@ public class Ida {
     }
 
     public double trueEffect(Node x, Node y, Graph trueDag) {
-        trueDag = GraphUtils.replaceNodes(trueDag, covariances.getVariables());
+        trueDag = GraphUtils.replaceNodes(trueDag, dataSet.getVariables());
 
         List<Node> regressors = new ArrayList<>();
         regressors.add(x);

@@ -1,29 +1,36 @@
 package edu.cmu.tetrad.algcomparison.algorithm;
 
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern.Fges;
-import edu.cmu.tetrad.algcomparison.score.SemBicScore;
 import edu.cmu.tetrad.annotation.AlgType;
 import edu.cmu.tetrad.data.*;
-import edu.cmu.tetrad.graph.*;
+import edu.cmu.tetrad.graph.EdgeListGraph;
+import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.FgesMb;
-import edu.cmu.tetrad.search.Ida;
 import edu.cmu.tetrad.util.ForkJoinPoolInstance;
 import edu.cmu.tetrad.util.Parameters;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.RecursiveTask;
 
 @edu.cmu.tetrad.annotation.Algorithm(
         name = "FmbStar",
         command = "cstar2",
         algoType = AlgType.forbid_latent_common_causes,
-        description = "Performs a pseudo CStar analysis (using FgesMb) and returns a graph " +
-                "in which all selected variables are shown as into the target. The target is the first variables."
+        description = "Uses stability selection (Meinhausen et al.) with FGES-MB (Ramsey et al.) to estimate the " +
+                "nodes in the Markov blanket of a target. May be used to estimate nodes with strong influende " +
+                "on a target, in the style of CStar (Stekhoven et al.)" +
+                "\nMeinshausen, Nicolai, and Peter Bühlmann. \"Stability selection.\" Journal of the Royal Statistical " +
+                "Society: Series B (Statistical Methodology) 72.4 (2010): 417-473." +
+                "\nStekhoven, Daniel J., et al. \"Causal stability ranking.\" Bioinformatics 28.21 (2012): 2819-2823." +
+                "\nRamsey, Joseph, et al. \"A million variables and more: the Fast Greedy Equivalence Search algorithm for " +
+                "learning high-dimensional graphical causal models, with an application to functional magnetic " +
+                "resonance images.\" International journal of data science and analytics 3.2 (2017): 121-129."
 )
 public class FmbStar implements Algorithm {
-
     static final long serialVersionUID = 23L;
     private Algorithm algorithm;
     private Graph initialGraph = null;
@@ -59,8 +66,6 @@ public class FmbStar implements Algorithm {
                 if (parameters.getBoolean("verbose")) {
                     System.out.println("Bootstrap #" + (i + 1) + " of " + numSubsamples);
                     System.out.flush();
-                } else {
-//                    System.out.print( (i + 1) + " ");
                 }
 
                 BootstrapSampler sampler = new BootstrapSampler();
@@ -76,7 +81,7 @@ public class FmbStar implements Algorithm {
                 Graph g = fgesMb.search(y);
 
                 for (final Node key : variables) {
-                    if (g.containsNode(key) && key != y /*&& !g.isChildOf(y, key)*/) counts.put(key, counts.get(key) + 1);
+                    if (g.containsNode(key) && key != y) counts.put(key, counts.get(key) + 1);
                 }
 
                 return true;
@@ -90,10 +95,6 @@ public class FmbStar implements Algorithm {
         }
 
         ForkJoinPoolInstance.getInstance().getPool().invokeAll(tasks);
-
-//        if (!parameters.getBoolean("verbose")) {
-//            System.out.println("\n");
-//        }
 
         List<Node> sortedVariables = new ArrayList<>(variables);
 
