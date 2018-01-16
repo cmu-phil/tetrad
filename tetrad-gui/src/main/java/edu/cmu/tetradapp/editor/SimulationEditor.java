@@ -235,15 +235,6 @@ public final class SimulationEditor extends JPanel implements KnowledgeEditable,
 
         add(menuBar, BorderLayout.NORTH);
 
-        fileMenu.addActionListener(new ActionListener(){
-
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				
-			}
-        	
-        });
-
         edu.cmu.tetrad.algcomparison.simulation.Simulation _simulation = simulation.getSimulation();
 
         List<Graph> graphs = new ArrayList<>();

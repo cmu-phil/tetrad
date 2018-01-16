@@ -452,8 +452,6 @@ public class Comparison {
      * @param parameters The parameters to be used in the simulationWrapper.
      */
     public void saveToFiles(String dataPath, Simulation simulation, Parameters parameters) {
-    	int numDataSets = simulation.getNumDataModels();
-        List<SimulationWrapper> simulationWrappers = getSimulationWrappers(simulation, parameters);
 
         File dir0 = new File(dataPath);
         File dir;
@@ -479,6 +477,24 @@ public class Comparison {
         //}
         
         try {
+	    	int numDataSets = simulation.getNumDataModels();
+	    	if(numDataSets <= 0){
+	    		
+	    		File dir1 = new File(dir, "graph");
+	            File dir2 = new File(dir, "data");
+	
+	            dir1.mkdirs();
+	            dir2.mkdirs();
+	            
+	    		PrintStream out = new PrintStream(new FileOutputStream(new File(dir, "parameters.txt")));
+	            out.println(simulation.getDescription());
+	            out.println(parameters);
+	            out.close();
+	            
+	    		return;
+	    	}
+	        List<SimulationWrapper> simulationWrappers = getSimulationWrappers(simulation, parameters);
+
             int index = 0;
 
             for (SimulationWrapper simulationWrapper : simulationWrappers) {
@@ -504,14 +520,14 @@ public class Comparison {
 
                 File dir3 = null;
 
-                if (numDataSets > 0 && isSavePatterns()) {
+                if (isSavePatterns()) {
                     dir3 = new File(subdir, "patterns");
                     dir3.mkdirs();
                 }
 
                 File dir4 = null;
 
-                if (numDataSets > 0 && isSavePags()) {
+                if (isSavePags()) {
                     dir4 = new File(subdir, "pags");
                     dir4.mkdirs();
                 }
@@ -521,24 +537,20 @@ public class Comparison {
                     File file2 = new File(dir1, "graph." + (j + 1) + ".txt");
                     Graph graph = simulationWrapper.getTrueGraph(j);
 
-                    if(numDataSets > 0){
-                        GraphUtils.saveGraph(graph, file2, false);
-                    }
+                    GraphUtils.saveGraph(graph, file2, false);
 
-                    if(numDataSets > 0){
-                        File file = new File(dir2, "data." + (j + 1) + ".txt");
-                        Writer out = new FileWriter(file);
-                        DataModel dataModel = (DataModel) simulationWrapper.getDataModel(j);
-                        DataWriter.writeRectangularData((DataSet) dataModel, out, '\t');
-                        out.close();
-                    }
+                    File file = new File(dir2, "data." + (j + 1) + ".txt");
+                    Writer out = new FileWriter(file);
+                    DataModel dataModel = (DataModel) simulationWrapper.getDataModel(j);
+                    DataWriter.writeRectangularData((DataSet) dataModel, out, '\t');
+                    out.close();
 
-                    if (numDataSets > 0 && isSavePatterns()) {
+                    if (isSavePatterns()) {
                         File file3 = new File(dir3, "pattern." + (j + 1) + ".txt");
                         GraphUtils.saveGraph(SearchGraphUtils.patternForDag(graph), file3, false);
                     }
 
-                    if (numDataSets > 0 && isSavePags()) {
+                    if (isSavePags()) {
                         File file4 = new File(dir4, "pag." + (j + 1) + ".txt");
                         GraphUtils.saveGraph(new DagToPag2(graph).convert(), file4, false);
                     }
@@ -546,7 +558,6 @@ public class Comparison {
 
                 PrintStream out = new PrintStream(new FileOutputStream(new File(subdir, "parameters.txt")));
                 out.println(simulationWrapper.getDescription());
-//                out.println();
                 out.println(simulationWrapper.getSimulationSpecificParameters());
                 out.close();
             }
