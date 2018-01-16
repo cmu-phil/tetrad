@@ -196,7 +196,7 @@ public class TestIda {
             fmbStarRet.add(ret2);
         }
 
-        System.out.println("\tCStarMB\t~CStar\tFmbStarMB\t~FmbStarMB");
+        System.out.println("\tCStarMB\t~CStarMB\tFmbStarMB\t~FmbStarMB");
 
         for (int i = 0; i < numIterations; i++) {
             System.out.println((i + 1) + ".\t" + cstarRet.get(i)[0] + "\t" + cstarRet.get(i)[1]
