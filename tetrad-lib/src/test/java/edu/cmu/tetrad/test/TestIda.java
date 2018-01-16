@@ -68,33 +68,6 @@ public class TestIda {
     }
 
     @Test
-    public void test2() {
-        Graph trueDag = GraphUtils.randomGraph(10, 0, 10,
-                100, 100, 100, false);
-
-        System.out.println(trueDag);
-
-        SemPm pm = new SemPm(trueDag);
-        SemIm im = new SemIm(pm);
-        DataSet dataSet = im.simulateData(1000, false);
-        trueDag = GraphUtils.replaceNodes(trueDag, dataSet.getVariables());
-
-        Ida ida = new Ida(new CovarianceMatrixOnTheFly(dataSet));
-
-        final List<Node> variables = dataSet.getVariables();
-
-        for (Node x : variables) {
-            for (Node y : variables) {
-                if (x == y) continue;
-
-                double distance = ida.distance(x, y, trueDag);
-
-                System.out.println("x = " + x + " y = " + y + " distance = " + distance);
-            }
-        }
-    }
-
-    @Test
     public void testCStar() {
         int numNodes = 100;
         int numEdges = 100;
@@ -125,7 +98,7 @@ public class TestIda {
 
         long stop = System.currentTimeMillis();
 
-        printResult(trueDag, parameters, graph, stop - start, numNodes, numEdges, sampleSize, dataSet);
+        printResult(trueDag, dataSet, graph, numNodes, numEdges, sampleSize, stop - start, parameters);
     }
 
     @Test
@@ -159,14 +132,14 @@ public class TestIda {
 
         long stop = System.currentTimeMillis();
 
-        printResult(trueDag, parameters, graph, stop - start, numNodes, numEdges, sampleSize, dataSet);
+        printResult(trueDag, dataSet, graph, numNodes, numEdges, sampleSize, stop - start, parameters);
     }
 
     @Test
     public void testBoth() {
-        int numNodes = 300;
-        int numEdges = 300;
-        int sampleSize = 200;
+        int numNodes = 100;
+        int numEdges = 100;
+        int sampleSize = 50;
         int numIterations = 1;
 
         Parameters parameters = new Parameters();
@@ -194,22 +167,20 @@ public class TestIda {
             Graph trueDag = GraphUtils.randomGraph(numNodes, 0, numEdges,
                     100, 100, 100, false);
 
-//        System.out.println(trueDag);
-
             SemPm pm = new SemPm(trueDag);
             SemIm im = new SemIm(pm, parameters);
-            DataSet dataSet = im.simulateData(sampleSize, false);
+            DataSet trueData = im.simulateData(sampleSize, false);
 
             System.out.println("\n\n=====CSTAR====");
 
             long start = System.currentTimeMillis();
 
             CStar cstar = new CStar();
-            Graph graph = cstar.search(dataSet, parameters);
+            Graph graph = cstar.search(trueData, parameters);
 
             long stop = System.currentTimeMillis();
 
-            int[] ret = printResult(trueDag, parameters, graph, stop - start, numNodes, numEdges, sampleSize, dataSet);
+            int[] ret = printResult(trueDag, trueData, graph, numNodes, numEdges, sampleSize, stop - start, parameters);
             cstarRet.add(ret);
 
             System.out.println("\n\n=====FMBStar====");
@@ -217,11 +188,11 @@ public class TestIda {
             start = System.currentTimeMillis();
 
             FmbStar cstar2 = new FmbStar();
-            Graph graph2 = cstar2.search(dataSet, parameters);
+            Graph graph2 = cstar2.search(trueData, parameters);
 
             stop = System.currentTimeMillis();
 
-            int[] ret2 = printResult(trueDag, parameters, graph2, stop - start, numNodes, numEdges, sampleSize, dataSet);
+            int[] ret2 = printResult(trueDag, trueData, graph2, numNodes, numEdges, sampleSize, stop - start, parameters);
             fmbStarRet.add(ret2);
         }
 
@@ -233,7 +204,7 @@ public class TestIda {
         }
     }
 
-    private int[] printResult(Graph trueDag, Parameters parameters, Graph graph, long elapsed, int numNodes, int numEdges, int sampleSize, DataSet dataSet) {
+    private int[] printResult(Graph trueDag, DataSet trueData, Graph graph, int numNodes, int numEdges, int sampleSize, long elapsed, Parameters parameters) {
         graph = GraphUtils.replaceNodes(graph, trueDag.getNodes());
 
         final Node target = trueDag.getNode(parameters.getString("targetName"));
@@ -266,15 +237,15 @@ public class TestIda {
         adjadjNodes.remove(target);
 
         Set<Node> hallucinations = new HashSet<>(outputNodes);
-        hallucinations.removeAll(adjadjNodes);
+        hallucinations.removeAll(adjadjadjNodes);
 
         System.out.println("Hallucinations: " + hallucinations);
-        System.out.println("Markov blanket: " + mbNodes);
-        System.out.println("adjadjNodes = " + adjadjNodes);
-        System.out.println("adjadjadjNodes = " + adjadjadjNodes);
+        System.out.println("Markov blanket of target: " + mbNodes);
+        System.out.println("adj(adj(target)) \\ {target} = " + adjadjNodes);
+        System.out.println("adj(adj(adj(target))) \\ {target}  = " + adjadjadjNodes);
         System.out.println("Elapsed " + elapsed / 1000.0 + " s");
 
-        printIdaResult(new ArrayList<>(outputNodes), target, dataSet, trueDag);
+        printIdaResult(new ArrayList<>(outputNodes), target, trueData, trueDag);
 
         int[] ret = new int[2];
 
@@ -284,22 +255,30 @@ public class TestIda {
         return ret;
     }
 
-    private void printIdaResult(List<Node> x, Node y, DataSet dataSet, Graph trueDag) {
+    private void printIdaResult(List<Node> x, Node y, DataSet trueData, Graph trueDag) {
         List<Node> x2 = new ArrayList<>();
-        for (Node node : x) x2.add(dataSet.getVariable(node.getName()));
+        for (Node node : x) x2.add(trueData.getVariable(node.getName()));
         x = x2;
-        y = dataSet.getVariable(y.getName());
+        y = trueData.getVariable(y.getName());
+        trueDag = GraphUtils.replaceNodes(trueDag, trueData.getVariables());
 
-        Ida ida = new Ida(new CovarianceMatrixOnTheFly(dataSet));
+        Ida ida = new Ida(new CovarianceMatrixOnTheFly(trueData));
 
         for (Node _x : x) {
-            double distance = ida.distance(_x, y, trueDag);
             LinkedList<Double> effects = ida.getEffects(_x, y);
-//            System.out.println("Effects = " + effects);
-            System.out.println(_x /*+ "->" + y*/ + " min effect = " + effects.getFirst() + " max effect = " + effects.getLast()
-                + " true effect = " + ida.trueEffect(_x, y, trueDag) + " distance = " + distance);
-        }
+            final double trueEffect = ida.trueEffect(_x, y, trueDag);
 
+            double distance = ida.distance(effects.getFirst(), effects.getLast(), trueEffect);
+
+            System.out.println(_x + " min effect = " + effects.getFirst() + " max effect = " + effects.getLast()
+                + " true effect = " + trueEffect + " distance = " + distance);
+
+            List<List<Node>> directedPaths = GraphUtils.treks(trueDag, _x, y, 10);
+
+            for (List<Node> path : directedPaths) {
+                System.out.println("\tTrek: " + GraphUtils.pathString(path, trueDag));
+            }
+        }
     }
 }
 

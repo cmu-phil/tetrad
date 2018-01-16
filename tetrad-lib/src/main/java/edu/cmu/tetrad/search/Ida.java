@@ -185,36 +185,23 @@ public class Ida {
         return result.isZeroInterceptAssumed() ? result.getCoef()[0] : result.getCoef()[1];
     }
 
-    public double distance(Node x, Node y, Graph trueDag) {
-        double trueEffect = trueEffect(x, y, trueDag);
-        LinkedList<Double> effects = getEffects(x, y);
+    public double distance(double minEffect, double maxEffect, double trueEffect) {
+        double min, max;
 
-        double distance = 0.0;
-
-        if (!effects.isEmpty()) {
-            if (effects.size() > 1) {
-                final Double first = effects.getFirst();
-                final Double last = effects.getLast();
-
-                double min, max;
-
-                if (first <= last) {
-                    min = first;
-                    max = last;
-                } else {
-                    min = last;
-                    max = first;
-                }
-
-                if (trueEffect >= min && trueEffect <= max) {
-                    distance = 0.0;
-                } else {
-                    final double m1 = abs(trueEffect - min);
-                    final double m2 = abs(trueEffect - max);
-                    distance = min(m1, m2);
-                }
-            }
+        if ((Double) minEffect <= (Double) maxEffect) {
+            min = minEffect;
+            max = maxEffect;
+        } else {
+            min = maxEffect;
+            max = minEffect;
         }
-        return distance;
+
+        if (trueEffect >= min && trueEffect <= max) {
+            return 0.0;
+        } else {
+            final double m1 = abs(trueEffect - min);
+            final double m2 = abs(trueEffect - max);
+            return min(m1, m2);
+        }
     }
 }
