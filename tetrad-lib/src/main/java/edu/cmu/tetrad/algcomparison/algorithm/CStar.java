@@ -112,6 +112,8 @@ public class CStar implements Algorithm {
             sortedFreqencies[i] /= (int) numSubsamples;
         }
 
+        System.out.println(Arrays.toString(sortedFreqencies));
+
         Graph graph = new EdgeListGraph(dataSet.getVariables());
 
         for (int i = 0; i < variables.size(); i++) {

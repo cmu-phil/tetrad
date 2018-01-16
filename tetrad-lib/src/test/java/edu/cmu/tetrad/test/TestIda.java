@@ -139,15 +139,15 @@ public class TestIda {
     public void testBoth() {
         int numNodes = 100;
         int numEdges = 100;
-        int sampleSize = 300;
+        int sampleSize = 100;
         int numIterations = 20;
 
         Parameters parameters = new Parameters();
         parameters.set("penaltyDiscount", 1);
         parameters.set("numSubsamples", 1);
         parameters.set("percentSubsampleSize", .5);
-        parameters.set("topQ", 5);
-        parameters.set("piThreshold", .5);
+        parameters.set("topQ", 6);
+        parameters.set("piThreshold", .9);
         parameters.set("targetName", "X70");
         parameters.set("verbose", false);
 
@@ -249,7 +249,7 @@ public class TestIda {
         System.out.println("adj(adj(adj(target))) \\ target  = " + adjadjadjNodes);
         System.out.println("Elapsed " + elapsed / 1000.0 + " s");
 
-        printIdaResult(new ArrayList<>(outputNodes), target, trueData, trueDag);
+//        printIdaResult(new ArrayList<>(outputNodes), target, trueData, trueDag);
 
         int[] ret = new int[2];
 
@@ -259,35 +259,6 @@ public class TestIda {
         return ret;
     }
 
-    private void printIdaResult(List<Node> x, Node y, DataSet trueData, Graph trueDag) {
-        List<Node> x2 = new ArrayList<>();
-        for (Node node : x) x2.add(trueData.getVariable(node.getName()));
-        x = x2;
-        y = trueData.getVariable(y.getName());
-        trueDag = GraphUtils.replaceNodes(trueDag, trueData.getVariables());
-
-        Ida ida = new Ida(trueData);
-
-        for (Node _x : x) {
-            LinkedList<Double> effects = ida.getEffects(_x, y);
-            final double trueEffect = ida.trueEffect(_x, y, trueDag);
-
-            if (!effects.isEmpty()) {
-                double distance = ida.distance(effects.getFirst(), effects.getLast(), trueEffect);
-
-                System.out.println(_x + " min effect = " + effects.getFirst() + " max effect = " + effects.getLast()
-                        + " true effect = " + trueEffect + " distance = " + distance);
-
-                List<List<Node>> directedPaths = GraphUtils.treks(trueDag, _x, y, 10);
-
-                for (List<Node> path : directedPaths) {
-                    System.out.println("\tTrek: " + GraphUtils.pathString(path, trueDag));
-                }
-            } else {
-                System.out.println(_x + ": no effects" + " true effect = " + trueEffect);
-            }
-        }
-    }
 }
 
 
