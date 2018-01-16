@@ -72,7 +72,7 @@ public class FmbStar implements Algorithm {
                 sampler.setWithoutReplacements(true);
                 DataSet sample = sampler.sample(_dataSet, (int) (percentageB * _dataSet.getNumRows()));
 
-                final CovarianceMatrix covariances = new CovarianceMatrix(sample);
+                final ICovarianceMatrix covariances = new CovarianceMatrixOnTheFly(sample);
                 final edu.cmu.tetrad.search.SemBicScore score = new edu.cmu.tetrad.search.SemBicScore(covariances);
                 score.setPenaltyDiscount(parameters.getDouble("penaltyDiscount"));
                 FgesMb fgesMb = new FgesMb(score);
@@ -81,7 +81,7 @@ public class FmbStar implements Algorithm {
                 Graph g = fgesMb.search(y);
 
                 for (final Node key : variables) {
-                    if (g.containsNode(key) && key != y) counts.put(key, counts.get(key) + 1);
+                    if (g.containsNode(key)) counts.put(key, counts.get(key) + 1);
                 }
 
                 return true;
@@ -113,6 +113,7 @@ public class FmbStar implements Algorithm {
         Graph graph = new EdgeListGraph(dataSet.getVariables());
 
         for (int i = 0; i < sortedVariables.size(); i++) {
+            if (sortedVariables.get(i) == y) continue;
             if (sortedFrequencies[i] >= pithreshold) {
                 graph.addUndirectedEdge(sortedVariables.get(i), y);
             }

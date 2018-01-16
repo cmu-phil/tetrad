@@ -140,11 +140,11 @@ public class TestIda {
         int numNodes = 100;
         int numEdges = 100;
         int sampleSize = 50;
-        int numIterations = 1;
+        int numIterations = 10;
 
         Parameters parameters = new Parameters();
         parameters.set("penaltyDiscount", 1);
-        parameters.set("numSubsamples", 10);
+        parameters.set("numSubsamples", 20);
         parameters.set("percentSubsampleSize", .5);
         parameters.set("topQ", 5);
         parameters.set("piThreshold", .5);
@@ -196,7 +196,7 @@ public class TestIda {
             fmbStarRet.add(ret2);
         }
 
-        System.out.println("\tCStarTrue\tCStarHall\tFMbStarTrue\tFmbStarHall");
+        System.out.println("\tCStarMB\t~CStar\tFmbStarMB\t~FmbStarMB");
 
         for (int i = 0; i < numIterations; i++) {
             System.out.println((i + 1) + ".\t" + cstarRet.get(i)[0] + "\t" + cstarRet.get(i)[1]
@@ -242,8 +242,8 @@ public class TestIda {
         Set<Node> notHallucinated = new HashSet<>(outputNodes);
         notHallucinated.removeAll(hallucinations);
 
-        System.out.println("Hallucinations (not even in adj(adj(adj(target))) \\ target): " + hallucinations);
-        System.out.println("Not hallucinated (adj(adj(adj(target))) \\ target): " + notHallucinated);
+        System.out.println("Not in MB: " + hallucinations);
+        System.out.println("In MB: " + notHallucinated);
         System.out.println("Markov blanket of target: " + mbNodes);
         System.out.println("adj(adj(target)) \\ target = " + adjadjNodes);
         System.out.println("adj(adj(adj(target))) \\ target  = " + adjadjadjNodes);
