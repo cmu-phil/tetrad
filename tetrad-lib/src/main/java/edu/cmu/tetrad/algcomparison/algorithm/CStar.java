@@ -109,10 +109,8 @@ public class CStar implements Algorithm {
         }
 
         for (int i = 0; i < sortedFreqencies.length; i++) {
-            sortedFreqencies[i] /= (int) numSubsamples;
+            sortedFreqencies[i] /= (double) numSubsamples;
         }
-
-        System.out.println(Arrays.toString(sortedFreqencies));
 
         Graph graph = new EdgeListGraph(dataSet.getVariables());
 
@@ -123,11 +121,6 @@ public class CStar implements Algorithm {
         }
 
         return graph;
-    }
-
-    private void increment(Edge edge, Map<Edge, Integer> counts) {
-        counts.putIfAbsent(edge, 0);
-        counts.put(edge, counts.get(edge) + 1);
     }
 
     @Override

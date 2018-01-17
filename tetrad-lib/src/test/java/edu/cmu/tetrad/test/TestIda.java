@@ -23,7 +23,6 @@ package edu.cmu.tetrad.test;
 
 import edu.cmu.tetrad.algcomparison.algorithm.CStar;
 import edu.cmu.tetrad.algcomparison.algorithm.FmbStar;
-import edu.cmu.tetrad.data.CovarianceMatrixOnTheFly;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Edge;
 import edu.cmu.tetrad.graph.Graph;
@@ -69,8 +68,8 @@ public class TestIda {
 
     @Test
     public void testCStar() {
-        int numNodes = 100;
-        int numEdges = 100;
+        int numNodes = 10;
+        int numEdges = 10;
         int sampleSize = 100;
 
         Graph trueDag = GraphUtils.randomGraph(numNodes, 0, numEdges,
@@ -89,7 +88,7 @@ public class TestIda {
         parameters.set("percentSubsampleSize", .5);
         parameters.set("topQ", 5);
         parameters.set("piThreshold", .7);
-        parameters.set("targetName", "X14");
+        parameters.set("targetName", "X5");
 
         long start = System.currentTimeMillis();
 
@@ -98,7 +97,7 @@ public class TestIda {
 
         long stop = System.currentTimeMillis();
 
-        printResult(trueDag, dataSet, graph, numNodes, numEdges, sampleSize, stop - start, parameters);
+        printResult(trueDag, parameters, graph, stop - start, numNodes, numEdges, sampleSize, dataSet);
     }
 
     @Test
@@ -132,31 +131,32 @@ public class TestIda {
 
         long stop = System.currentTimeMillis();
 
-        printResult(trueDag, dataSet, graph, numNodes, numEdges, sampleSize, stop - start, parameters);
+        printResult(trueDag, parameters, graph, stop - start, numNodes, numEdges, sampleSize, dataSet);
     }
 
     @Test
     public void testBoth() {
         int numNodes = 100;
-        int numEdges = 100;
+        int numEdges = 200;
         int sampleSize = 100;
         int numIterations = 20;
 
         Parameters parameters = new Parameters();
         parameters.set("penaltyDiscount", 1);
-        parameters.set("numSubsamples", 1);
+        parameters.set("numSubsamples", 50);
         parameters.set("percentSubsampleSize", .5);
-        parameters.set("topQ", 6);
-        parameters.set("piThreshold", .9);
-        parameters.set("targetName", "X70");
+        parameters.set("topQ", 5);
+        parameters.set("piThreshold", .5);
+        parameters.set("targetName", "X30");
         parameters.set("verbose", false);
 
         parameters.set("coefLow", 0.2);
         parameters.set("coefHigh", 0.9);
         parameters.set("covLow", 0.5);
-        parameters.set("covHigh", 1.0);
+        parameters.set("covHigh", 1.5);
         parameters.set("varLow", 0.5);
-        parameters.set("varHigh", 1.1);
+        parameters.set("varLow", 1.5);
+
         parameters.set("coefSymmetric", true);
         parameters.set("covSymmetric", true);
 
@@ -164,6 +164,7 @@ public class TestIda {
         List<int[]> fmbStarRet = new ArrayList<>();
 
         for (int i = 0; i < numIterations; i++) {
+
             Graph trueDag = GraphUtils.randomGraph(numNodes, 0, numEdges,
                     100, 100, 100, false);
 
@@ -175,36 +176,45 @@ public class TestIda {
 
             long start = System.currentTimeMillis();
 
+//            parameters.set("numSubsamples", 100);
+
             CStar cstar = new CStar();
             Graph graph = cstar.search(trueData, parameters);
 
             long stop = System.currentTimeMillis();
 
-            int[] ret = printResult(trueDag, trueData, graph, numNodes, numEdges, sampleSize, stop - start, parameters);
+            int[] ret = printResult(trueDag, parameters, graph, stop - start, numNodes, numEdges, sampleSize, trueData);
             cstarRet.add(ret);
 
-            System.out.println("\n\n=====FMBStar====");
+            System.out.println("\n\n=====FmbStar====");
 
             start = System.currentTimeMillis();
+
+//            parameters.set("numSubsamples", 100);
 
             FmbStar cstar2 = new FmbStar();
             Graph graph2 = cstar2.search(trueData, parameters);
 
             stop = System.currentTimeMillis();
 
-            int[] ret2 = printResult(trueDag, trueData, graph2, numNodes, numEdges, sampleSize, stop - start, parameters);
+            int[] ret2 = printResult(trueDag, parameters, graph2, stop - start, numNodes, numEdges, sampleSize, trueData);
             fmbStarRet.add(ret2);
         }
 
-        System.out.println("\tCStarMB\t~CStarMB\tFmbStarMB\t~FmbStarMB");
+        System.out.println("\tC\tF\t~CMB\t~FMB\t~CSAA\t~FAA\t~CAAA\t~FAAA");
 
         for (int i = 0; i < numIterations; i++) {
-            System.out.println((i + 1) + ".\t" + cstarRet.get(i)[0] + "\t" + cstarRet.get(i)[1]
-                    + "\t" + fmbStarRet.get(i)[0] + "\t" + fmbStarRet.get(i)[1]);
+            System.out.println((i + 1) + ".\t"
+                    + cstarRet.get(i)[0] + "\t" + fmbStarRet.get(i)[0] + "\t"
+                    + cstarRet.get(i)[1] + "\t" + fmbStarRet.get(i)[1] + "\t"
+                    + cstarRet.get(i)[2] + "\t" + fmbStarRet.get(i)[2] + "\t"
+                    + cstarRet.get(i)[3] + "\t" + fmbStarRet.get(i)[3] + "\t"
+            );
         }
     }
 
-    private int[] printResult(Graph trueDag, DataSet trueData, Graph graph, int numNodes, int numEdges, int sampleSize, long elapsed, Parameters parameters) {
+    private int[] printResult(Graph trueDag, Parameters parameters, Graph graph, long elapsed, int numNodes,
+                              int numEdges, int sampleSize, DataSet trueData) {
         graph = GraphUtils.replaceNodes(graph, trueDag.getNodes());
 
         final Node target = trueDag.getNode(parameters.getString("targetName"));
@@ -223,8 +233,6 @@ public class TestIda {
 
         outputNodes.remove(graph.getNode(target.getName()));
 
-        System.out.println("Output nodes: " + outputNodes);
-
         final List<Node> mbNodes = GraphUtils.markovBlanketDag(target, trueDag).getNodes();
         mbNodes.remove(target);
 
@@ -236,29 +244,57 @@ public class TestIda {
         for (Node node : new HashSet<>(adjadjNodes)) adjadjadjNodes.addAll(trueDag.getAdjacentNodes(node));
         adjadjNodes.remove(target);
 
-        Set<Node> hallucinations = new HashSet<>(outputNodes);
-        hallucinations.removeAll(adjadjadjNodes);
+        Set<Node> notInMb = new HashSet<>(outputNodes);
+        notInMb.removeAll(mbNodes);
 
-        Set<Node> notHallucinated = new HashSet<>(outputNodes);
-        notHallucinated.removeAll(hallucinations);
+        Set<Node> notInAdjAdj = new HashSet<>(outputNodes);
+        notInAdjAdj.removeAll(adjadjNodes);
 
-        System.out.println("Not in MB: " + hallucinations);
-        System.out.println("In MB: " + notHallucinated);
-        System.out.println("Markov blanket of target: " + mbNodes);
-        System.out.println("adj(adj(target)) \\ target = " + adjadjNodes);
-        System.out.println("adj(adj(adj(target))) \\ target  = " + adjadjadjNodes);
+        Set<Node> notInAdjAdjAdj = new HashSet<>(outputNodes);
+        notInAdjAdjAdj.removeAll(adjadjadjNodes);
+
+        System.out.println("Output: " + outputNodes);
+        System.out.println("Not In MB: " + notInMb);
+        System.out.println("Not In AdjAdj: " + notInAdjAdj);
+        System.out.println("Not In AdjAdjAdj: " + notInAdjAdjAdj);
+
         System.out.println("Elapsed " + elapsed / 1000.0 + " s");
 
-//        printIdaResult(new ArrayList<>(outputNodes), target, trueData, trueDag);
+        printIdaResult(new ArrayList<>(outputNodes), target, trueData, trueDag);
 
-        int[] ret = new int[2];
+        int[] ret = new int[4];
 
-        ret[0] = outputNodes.size() - hallucinations.size();
-        ret[1] = hallucinations.size();
+        ret[0] = outputNodes.size();
+        ret[1] = notInMb.size();
+        ret[2] = notInAdjAdj.size();
+        ret[3] = notInAdjAdjAdj.size();
 
         return ret;
     }
 
+    private void printIdaResult(List<Node> x, Node y, DataSet dataSet, Graph trueDag) {
+        List<Node> x2 = new ArrayList<>();
+        for (Node node : x) x2.add(dataSet.getVariable(node.getName()));
+        x = x2;
+        y = dataSet.getVariable(y.getName());
+
+        Ida ida = new Ida(dataSet);
+
+        for (Node _x : x) {
+            LinkedList<Double> effects = ida.getEffects(_x, y);
+            double trueEffect = ida.trueEffect(_x, y, trueDag);
+
+            String trueEffectString = Double.isNaN(trueEffect) ? " (child of the target) " : trueEffect + "";
+
+            if (!effects.isEmpty()) {
+                double distance = ida.distance(effects.getFirst(), effects.getLast(), trueEffect);
+                System.out.println(_x + ": min effect = " + effects.getFirst() + " max effect = " + effects.getLast()
+                        + " true effect = " + trueEffectString + " distance = " + distance);
+            } else {
+                System.out.println(_x + ": No effects returned by IDA (probably a child of the target); true effect = " + trueEffectString);
+            }
+        }
+    }
 }
 
 

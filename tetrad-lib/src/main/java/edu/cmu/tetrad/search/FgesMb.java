@@ -318,10 +318,10 @@ public final class FgesMb {
         fes();
         bes();
 
-//        this.mode = Mode.coverNoncolliders;
-//        initializeTwoStepEdges(getVariables());
-//        fes();
-//        bes();
+        this.mode = Mode.coverNoncolliders;
+        initializeTwoStepEdges(getVariables());
+        fes();
+        bes();
 
         long endTime = System.currentTimeMillis();
         this.elapsedTime = endTime - start;
@@ -390,9 +390,9 @@ public final class FgesMb {
                                 Queue<NodeTaskEmptyGraph> tasks = new ArrayDeque<>();
 
                                 for (final Node y : fgesScore.getVariables()) {
-//                                if (Thread.currentThread().isInterrupted()) {
-//                                    break;
-//                                }
+                                    if (Thread.currentThread().isInterrupted()) {
+                                        break;
+                                    }
 
                                     if (x == y) continue;
 
@@ -400,9 +400,9 @@ public final class FgesMb {
                                     mbTask.fork();
 
                                     for (NodeTaskEmptyGraph _task : new ArrayList<>(tasks)) {
-//                                    if (Thread.currentThread().isInterrupted()) {
-//                                        break;
-//                                    }
+                                        if (Thread.currentThread().isInterrupted()) {
+                                            break;
+                                        }
 
                                         if (_task.isDone()) {
                                             _task.join();
@@ -411,9 +411,9 @@ public final class FgesMb {
                                     }
 
                                     while (tasks.size() > maxThreads) {
-//                                    if (Thread.currentThread().isInterrupted()) {
-//                                        break;
-//                                    }
+                                        if (Thread.currentThread().isInterrupted()) {
+                                            break;
+                                        }
 
                                         NodeTaskEmptyGraph _task = tasks.poll();
                                         _task.join();
@@ -421,9 +421,9 @@ public final class FgesMb {
                                 }
 
                                 for (NodeTaskEmptyGraph task : tasks) {
-//                                if (Thread.currentThread().isInterrupted()) {
-//                                    break;
-//                                }
+                                    if (Thread.currentThread().isInterrupted()) {
+                                        break;
+                                    }
 
                                     task.join();
                                 }
@@ -435,9 +435,9 @@ public final class FgesMb {
                         pool.invoke(new MbAboutNodeTask());
                     } else {
                         for (final Node y : fgesScore.getVariables()) {
-//                                if (Thread.currentThread().isInterrupted()) {
-//                                    break;
-//                                }
+                            if (Thread.currentThread().isInterrupted()) {
+                                break;
+                            }
 
                             if (x == y) continue;
 
@@ -786,9 +786,9 @@ public final class FgesMb {
                 neighbors.put(y, emptySet);
 
                 for (int j = i + 1; j < nodes.size(); j++) {
-//                    if (Thread.currentThread().isInterrupted()) {
-//                        break;
-//                    }
+                    if (Thread.currentThread().isInterrupted()) {
+                        break;
+                    }
 
                     Node x = nodes.get(j);
 
@@ -854,9 +854,9 @@ public final class FgesMb {
                     int numNodesPerTask = Math.max(100, nodes.size() / maxThreads);
 
                     for (int i = 0; i < nodes.size(); i += numNodesPerTask) {
-//                    if (Thread.currentThread().isInterrupted()) {
-//                        break;
-//                    }
+                        if (Thread.currentThread().isInterrupted()) {
+                            break;
+                        }
 
                         NodeTaskEmptyGraph task = new NodeTaskEmptyGraph(i, Math.min(nodes.size(), i + numNodesPerTask),
                                 nodes, emptySet);
@@ -864,9 +864,9 @@ public final class FgesMb {
                         task.fork();
 
                         for (NodeTaskEmptyGraph _task : new ArrayList<>(tasks)) {
-//                        if (Thread.currentThread().isInterrupted()) {
-//                            break;
-//                        }
+                            if (Thread.currentThread().isInterrupted()) {
+                                break;
+                            }
 
                             if (_task.isDone()) {
                                 _task.join();
@@ -875,9 +875,9 @@ public final class FgesMb {
                         }
 
                         while (tasks.size() > maxThreads) {
-//                        if (Thread.currentThread().isInterrupted()) {
-//                            break;
-//                        }
+                            if (Thread.currentThread().isInterrupted()) {
+                                break;
+                            }
 
                             NodeTaskEmptyGraph _task = tasks.poll();
                             _task.join();
@@ -885,9 +885,9 @@ public final class FgesMb {
                     }
 
                     for (NodeTaskEmptyGraph task : tasks) {
-//                    if (Thread.currentThread().isInterrupted()) {
-//                        break;
-//                    }
+                        if (Thread.currentThread().isInterrupted()) {
+                            break;
+                        }
 
                         task.join();
                     }
@@ -968,9 +968,9 @@ public final class FgesMb {
                         Set<Node> g = new HashSet<>();
 
                         for (Node n : graph.getAdjacentNodes(y)) {
-//                            if (Thread.currentThread().isInterrupted()) {
-//                                break;
-//                            }
+                            if (Thread.currentThread().isInterrupted()) {
+                                break;
+                            }
 
                             for (Node m : graph.getAdjacentNodes(n)) {
 //                                if (Thread.currentThread().isInterrupted()) {
@@ -990,9 +990,9 @@ public final class FgesMb {
                         }
 
                         for (Node x : g) {
-//                            if (Thread.currentThread().isInterrupted()) {
-//                                break;
-//                            }
+                            if (Thread.currentThread().isInterrupted()) {
+                                break;
+                            }
 
                             if (existsKnowledge()) {
                                 if (getKnowledge().isForbidden(x.getName(), y.getName()) && getKnowledge().isForbidden(y.getName(), x.getName())) {
@@ -1078,9 +1078,9 @@ public final class FgesMb {
 
                     if (to - from <= chunk) {
                         for (int i = from; i < to; i++) {
-//                        if (Thread.currentThread().isInterrupted()) {
-//                            break;
-//                        }
+                            if (Thread.currentThread().isInterrupted()) {
+                                break;
+                            }
 
                             if ((i + 1) % 1000 == 0) {
                                 count[0] += 1000;
@@ -1124,9 +1124,9 @@ public final class FgesMb {
         D.removeAll(effectEdgesGraph.getAdjacentNodes(y));
 
         for (Node x : D) {
-//                            if (Thread.currentThread().isInterrupted()) {
-//                                break;
-//                            }
+            if (Thread.currentThread().isInterrupted()) {
+                break;
+            }
 
             if (existsKnowledge()) {
                 if (getKnowledge().isForbidden(x.getName(), y.getName()) && getKnowledge().isForbidden(y.getName(), x.getName())) {
@@ -1150,9 +1150,9 @@ public final class FgesMb {
         TetradLogger.getInstance().log("info", "** FORWARD EQUIVALENCE SEARCH");
 
         while (!sortedArrows.isEmpty()) {
-//            if (Thread.currentThread().isInterrupted()) {
-//                break;
-//            }
+            if (Thread.currentThread().isInterrupted()) {
+                break;
+            }
 
             Arrow arrow = sortedArrows.first();
             sortedArrows.remove(arrow);
@@ -1214,9 +1214,9 @@ public final class FgesMb {
         initializeArrowsBackward();
 
         while (!sortedArrows.isEmpty()) {
-//            if (Thread.currentThread().isInterrupted()) {
-//                break;
-//            }
+            if (Thread.currentThread().isInterrupted()) {
+                break;
+            }
 
             Arrow arrow = sortedArrows.first();
             sortedArrows.remove(arrow);
@@ -1454,9 +1454,9 @@ public final class FgesMb {
             int[] choice;
 
             while ((choice = gen.next()) != null) {
-//                if (Thread.currentThread().isInterrupted()) {
-//                    break;
-//                }
+                if (Thread.currentThread().isInterrupted()) {
+                    break;
+                }
 
                 Set<Node> T = GraphUtils.asSet(choice, TNeighbors);
 
@@ -1528,9 +1528,9 @@ public final class FgesMb {
                 protected Boolean compute() {
                     if (to - from <= chunk) {
                         for (int _w = from; _w < to; _w++) {
-//                        if (Thread.currentThread().isInterrupted()) {
-//                            break;
-//                        }
+                            if (Thread.currentThread().isInterrupted()) {
+                                break;
+                            }
 
                             backwardTask(_w, r, adj);
                         }
@@ -1612,9 +1612,9 @@ public final class FgesMb {
             int[] choice;
 
             while ((choice = gen.next()) != null) {
-//                if (Thread.currentThread().isInterrupted()) {
-//                    break;
-//                }
+                if (Thread.currentThread().isInterrupted()) {
+                    break;
+                }
 
                 Set<Node> diff = GraphUtils.asSet(choice, _naYX);
 
@@ -1855,9 +1855,9 @@ public final class FgesMb {
         }
 
         for (Node h : H) {
-//            if (Thread.currentThread().isInterrupted()) {
-//                break;
-//            }
+            if (Thread.currentThread().isInterrupted()) {
+                break;
+            }
 
             if (graph.isParentOf(h, y) || graph.isParentOf(h, x)) continue;
 
@@ -1953,9 +1953,9 @@ public final class FgesMb {
         }
 
         for (Edge edge : graph.getEdges()) {
-//            if (Thread.currentThread().isInterrupted()) {
-//                break;
-//            }
+            if (Thread.currentThread().isInterrupted()) {
+                break;
+            }
 
             final String A = edge.getNode1().getName();
             final String B = edge.getNode2().getName();
@@ -2160,9 +2160,9 @@ public final class FgesMb {
         double _score = 0.0;
 
         for (Node y : dag.getNodes()) {
-//            if (Thread.currentThread().isInterrupted()) {
-//                break;
-//            }
+            if (Thread.currentThread().isInterrupted()) {
+                break;
+            }
 
             Set<Node> parents = new HashSet<>(dag.getParents(y));
             int parentIndices[] = new int[parents.size()];

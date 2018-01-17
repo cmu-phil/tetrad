@@ -2,11 +2,9 @@ package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.CovarianceMatrixOnTheFly;
 import edu.cmu.tetrad.data.DataSet;
-import edu.cmu.tetrad.data.ICovarianceMatrix;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.regression.RegressionCovariance;
 import edu.cmu.tetrad.regression.RegressionDataset;
 import edu.cmu.tetrad.regression.RegressionResult;
 import edu.cmu.tetrad.util.DepthChoiceGenerator;
@@ -15,7 +13,6 @@ import java.util.*;
 
 import static java.lang.Math.abs;
 import static java.lang.Math.min;
-import static java.lang.Math.signum;
 
 /**
  * Implements the IDA algorithm, Maathuis, Marloes H., Markus Kalisch, and Peter Bühlmann.
@@ -25,7 +22,6 @@ import static java.lang.Math.signum;
  * @author jdramsey@andrew.cmu.edu
  */
 public class Ida {
-//    private ICovarianceMatrix covariances;
     private DataSet dataSet;
     private final Graph pattern;
     private final RegressionDataset regression;
@@ -84,7 +80,7 @@ public class Ida {
                 beta = result.isZeroInterceptAssumed() ? result.getCoef()[0] : result.getCoef()[1];
             }
 
-            effects.add(beta);
+            effects.add(abs(beta));
         }
 
         Collections.sort(effects);
@@ -98,8 +94,8 @@ public class Ida {
      * @param y The target variable
      * @return Thia map.
      */
-    public Map<Node, Double> calculateMinimumEffectsOnY(Node y) {
-        Map<Node, Double> minEffects = new HashMap<>();
+    private Map<Node, Double> calculateMinimumEffectsOnY(Node y) {
+        SortedMap<Node, Double> minEffects = new TreeMap<>();
 
         for (Node x : dataSet.getVariables()) {
             final List<Double> effects = getEffects(x, y);
@@ -180,7 +176,8 @@ public class Ida {
         if (regressors.contains(y)) return Double.NaN;
 
         RegressionResult result = regression.regress(y, regressors);
-        return result.isZeroInterceptAssumed() ? result.getCoef()[0] : result.getCoef()[1];
+        final double effect = result.isZeroInterceptAssumed() ? result.getCoef()[0] : result.getCoef()[1];
+        return abs(effect);
     }
 
     public double distance(double minEffect, double maxEffect, double trueEffect) {
