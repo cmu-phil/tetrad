@@ -61,8 +61,9 @@ public class AlgorithmParameterPanel extends JPanel {
 
         Box paramsBox = Box.createVerticalBox();
 
-        // Some algorithms don't have parameters to edit - Zhou
+        // Some algorithms don't have algorithm parameters to edit
         // E.g., EB, R1...R4, RSkew, RSkewE, Skew, SkewE
+        // But we added bootstrap parameters anyway  - Zhou
         if (parametersToEdit.isEmpty()) {
             Box row = Box.createHorizontalBox();
             row.add(new JLabel("No parameters to edit"));
