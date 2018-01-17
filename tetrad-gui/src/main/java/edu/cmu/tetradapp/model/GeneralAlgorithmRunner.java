@@ -290,7 +290,7 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
                 }
             } else {
                 for (DataModel data : getDataModelList()) {
-                    System.out.println("Analyzing data set # " + (++i));
+
                     Algorithm algorithm = getAlgorithm();
 
                     if (algorithm instanceof HasKnowledge) {
@@ -298,9 +298,6 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
                     }
 
                     DataType algDataType = algorithm.getDataType();
-
-                    System.out.println("data type = " + algDataType);
-                    System.out.println("Continuous = " + data.isContinuous());
 
                     if (data.isContinuous() && (algDataType == DataType.Continuous || algDataType == DataType.Mixed)) {
                         graphList.add(algorithm.search(data, parameters));

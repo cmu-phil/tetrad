@@ -39,7 +39,8 @@ import java.util.List;
 )
 public class R3 implements Algorithm, TakesInitialGraph {
 
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = -6695945219664314217L;
+
     private Algorithm algorithm = null;
     private Graph initialGraph = null;
     private IKnowledge knowledge;
@@ -54,10 +55,10 @@ public class R3 implements Algorithm, TakesInitialGraph {
     @Override
     public Graph search(DataModel dataSet, Parameters parameters) {
     	if (parameters.getInt("bootstrapSampleSize") < 1) {
-            initialGraph = algorithm.search(dataSet, parameters);
+            Graph graph = algorithm.search(dataSet, parameters);
 
-            if (initialGraph != null) {
-                initialGraph = algorithm.search(dataSet, parameters);
+            if (graph != null) {
+                initialGraph = graph;
             } else {
                 throw new IllegalArgumentException("This R3 algorithm needs both data and a graph source as inputs; it \n"
                         + "will orient the edges in the input graph using the data");
@@ -68,7 +69,6 @@ public class R3 implements Algorithm, TakesInitialGraph {
 
             Lofs2 lofs = new Lofs2(initialGraph, dataSets);
             lofs.setRule(Lofs2.Rule.R3);
-            lofs.setKnowledge(knowledge);
 
             return lofs.orient();
         } else {

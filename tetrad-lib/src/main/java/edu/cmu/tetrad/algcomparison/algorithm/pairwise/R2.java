@@ -42,7 +42,9 @@ import java.util.List;
 )
 public class R2 implements Algorithm, TakesInitialGraph {
 
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = -3276618052880178574L;
+
+    
     private Algorithm algorithm = null;
     private Graph initialGraph = null;
 
@@ -54,28 +56,12 @@ public class R2 implements Algorithm, TakesInitialGraph {
     }
 
     @Override
-    public Graph search(DataModel dataSet, Parameters parameters) {
-    	for (String name : parameters.getParametersNames()) {
-            System.out.println("Parameter name ----- " + name);
-        }
-        
-        for (Object name : parameters.getValues("varNames")) {
-            System.out.println("varNames value ----- " + name.toString());
-        }
-        
-        
+    public Graph search(DataModel dataSet, Parameters parameters) { 
         if (parameters.getInt("bootstrapSampleSize") < 1) {
-            System.out.println("Dataset name ----- " + dataSet.getName());
-            System.out.println("Dataset isContinuous----- " + dataSet.isContinuous());
-            
-            System.out.println("==================================================================");
-            System.out.println(algorithm);
-            System.out.println("==================================================================");
-            
-            Graph initial = algorithm.search(dataSet, parameters);
+            Graph graph = algorithm.search(dataSet, parameters);
 
-            if (initial != null) {
-                initialGraph = initial;
+            if (graph != null) {
+                initialGraph = graph;
             } else {
                 throw new IllegalArgumentException("This R2 algorithm needs both data and a graph source as inputs; it \n"
                         + "will orient the edges in the input graph using the data");

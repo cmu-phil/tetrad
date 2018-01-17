@@ -42,7 +42,9 @@ import java.util.List;
 )
 public class R1 implements Algorithm, TakesInitialGraph {
 
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = -262859984454884701L;
+
+    
     private Algorithm algorithm = null;
     private Graph initialGraph = null;
 
@@ -56,10 +58,10 @@ public class R1 implements Algorithm, TakesInitialGraph {
     @Override
     public Graph search(DataModel dataSet, Parameters parameters) {
     	if (parameters.getInt("bootstrapSampleSize") < 1) {
-            initialGraph = algorithm.search(dataSet, parameters);
+            Graph graph = algorithm.search(dataSet, parameters);
 
-            if (initialGraph != null) {
-                initialGraph = algorithm.search(dataSet, parameters);
+            if (graph != null) {
+                initialGraph = graph;
             } else {
                 throw new IllegalArgumentException("This R1 algorithm needs both data and a graph source as inputs; it \n"
                         + "will orient the edges in the input graph using the data");

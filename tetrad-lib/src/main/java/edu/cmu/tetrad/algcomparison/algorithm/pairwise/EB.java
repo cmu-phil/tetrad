@@ -44,7 +44,9 @@ import java.util.List;
 )
 public class EB implements Algorithm, TakesInitialGraph {
 
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = -4150667247796165160L;
+
+    
     private Algorithm algorithm = null;
     private Graph initialGraph = null;
 
