@@ -51,8 +51,9 @@ public class LoadContinuousDataAndGraphs implements Simulation {
                     dataSets.add(reader.parseTabular(file1));
                 }
 
-                File file = new File(path, "parameters.txt");
-                BufferedReader r = new BufferedReader(new FileReader(file));
+                File paramFile = new File(path, "parameters.txt");
+                System.out.println("Loading parameters from " + paramFile.getAbsolutePath());
+                BufferedReader r = new BufferedReader(new FileReader(paramFile));
 
                 String line;
 
@@ -62,14 +63,18 @@ public class LoadContinuousDataAndGraphs implements Simulation {
                         String key = tokens[0];
                         String value = tokens[1];
 
+                        usedParameters.add(key);
                         try {
                             double _value = Double.parseDouble(value);
-                            usedParameters.add(key);
                             parameters.set(key, _value);
                         } catch (NumberFormatException e) {
-                            usedParameters.add(key);
-                            parameters.set(key, value);
+                        	if(value.equalsIgnoreCase("true") || value.equalsIgnoreCase("false")){
+                                parameters.set(key, Boolean.valueOf(value));
+                        	}else{
+                                parameters.set(key, value);
+                        	}
                         }
+                        System.out.println(key + " : " + value);
                     }
                 }
 
