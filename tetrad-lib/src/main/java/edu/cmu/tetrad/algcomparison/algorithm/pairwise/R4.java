@@ -3,6 +3,7 @@ package edu.cmu.tetrad.algcomparison.algorithm.pairwise;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.utils.TakesInitialGraph;
 import edu.cmu.tetrad.annotation.AlgType;
+import edu.cmu.tetrad.annotation.Experimental;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
@@ -22,6 +23,7 @@ import java.util.List;
  *
  * @author jdramsey
  */
+@Experimental
 @edu.cmu.tetrad.annotation.Algorithm(
         name = "R4",
         command = "r4",
@@ -56,10 +58,10 @@ public class R4 implements Algorithm, TakesInitialGraph {
     @Override
     public Graph search(DataModel dataSet, Parameters parameters) {
     	if (parameters.getInt("bootstrapSampleSize") < 1) {
-            initialGraph = algorithm.search(dataSet, parameters);
+            Graph graph = algorithm.search(dataSet, parameters);
 
-            if (initialGraph != null) {
-                initialGraph = algorithm.search(dataSet, parameters);
+            if (graph != null) {
+                initialGraph = graph;
             } else {
                 throw new IllegalArgumentException("This R4 algorithm needs both data and a graph source as inputs; it \n"
                         + "will orient the edges in the input graph using the data");

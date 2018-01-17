@@ -22,6 +22,7 @@ package edu.cmu.tetradapp.editor;
 
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.AlgorithmFactory;
+import edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern.SingleGraphAlg;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.algcomparison.utils.TakesInitialGraph;
 import edu.cmu.tetrad.annotation.AlgType;
@@ -639,14 +640,20 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         Class indTestClass = (indTestModel == null) ? null : indTestModel.getIndependenceTest().getClazz();
         Class scoreClass = (scoreModel == null) ? null : scoreModel.getScore().getClazz();
 
-        Algorithm algorithm;
+        Algorithm algorithm = null;
+        
         try {
-            return AlgorithmFactory.create(algoClass, indTestClass, scoreClass);
+            algorithm = AlgorithmFactory.create(algoClass, indTestClass, scoreClass);
         } catch (IllegalAccessException | InstantiationException exception) {
-            algorithm = null;
             LOGGER.error("", exception);
         }
-
+        
+        // Those pairwise algos (R1, R2,..) require source graph to initialize - Zhou
+        if (algorithm != null && algorithm instanceof TakesInitialGraph && runner.getSourceGraph() != null && !runner.getDataModelList().isEmpty()) {
+            Algorithm initialGraph = new SingleGraphAlg(runner.getSourceGraph());
+            ((TakesInitialGraph) algorithm).setInitialGraph(initialGraph);
+        }
+        
         return algorithm;
     }
 

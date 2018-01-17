@@ -56,10 +56,10 @@ public class RSkew implements Algorithm, TakesInitialGraph {
     @Override
     public Graph search(DataModel dataSet, Parameters parameters) {
     	if (parameters.getInt("bootstrapSampleSize") < 1) {
-            initialGraph = algorithm.search(dataSet, parameters);
+            Graph graph = algorithm.search(dataSet, parameters);
 
-            if (initialGraph != null) {
-                initialGraph = algorithm.search(dataSet, parameters);
+            if (graph != null) {
+                initialGraph = graph;
             } else {
                 throw new IllegalArgumentException("This RSkew algorithm needs both data and a graph source as inputs; it \n"
                         + "will orient the edges in the input graph using the data");
