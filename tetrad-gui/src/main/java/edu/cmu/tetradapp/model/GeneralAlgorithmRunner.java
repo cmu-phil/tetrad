@@ -46,7 +46,6 @@ import edu.cmu.tetrad.session.ParamsResettable;
 import edu.cmu.tetrad.session.SessionModel;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Unmarshallable;
-import edu.pitt.dbmi.data.Dataset;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.util.ArrayList;
@@ -277,7 +276,7 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
                         if (dataModel instanceof ICovarianceMatrix) {
                             ICovarianceMatrix dataSet = (ICovarianceMatrix) dataModel;
                             graphList.add(algorithm.search(dataSet, parameters));
-                        } else if (dataModel instanceof Dataset) {
+                        } else if (dataModel instanceof DataSet) {
                             DataSet dataSet = (DataSet) dataModel;
 
                             if (!dataSet.isContinuous()) {
