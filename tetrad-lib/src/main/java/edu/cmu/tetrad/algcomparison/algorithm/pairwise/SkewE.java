@@ -42,9 +42,7 @@ import java.util.List;
 )
 public class SkewE implements Algorithm, TakesInitialGraph {
 
-    private static final long serialVersionUID = -7489646557734900310L;
-
-    
+    static final long serialVersionUID = 23L;
     private Algorithm algorithm = null;
     private Graph initialGraph = null;
 

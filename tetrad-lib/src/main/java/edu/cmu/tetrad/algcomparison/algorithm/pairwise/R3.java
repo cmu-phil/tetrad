@@ -39,11 +39,9 @@ import java.util.List;
 )
 public class R3 implements Algorithm, TakesInitialGraph {
 
-    private static final long serialVersionUID = -6695945219664314217L;
-
+    static final long serialVersionUID = 23L;
     private Algorithm algorithm = null;
     private Graph initialGraph = null;
-    private IKnowledge knowledge;
 
     public R3() {
     }
@@ -129,10 +127,6 @@ public class R3 implements Algorithm, TakesInitialGraph {
         parameters.add("verbose");
 
         return parameters;
-    }
-
-    public void setKnowledge(IKnowledge knowledge) {
-        this.knowledge = knowledge;
     }
 
     @Override

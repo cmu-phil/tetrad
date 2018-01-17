@@ -42,8 +42,7 @@ import java.util.List;
 )
 public class RSkewE implements Algorithm, TakesInitialGraph {
 
-    private static final long serialVersionUID = -5620199285459506044L;
-
+    static final long serialVersionUID = 23L;
     
     private Algorithm algorithm = null;
     private Graph initialGraph = null;

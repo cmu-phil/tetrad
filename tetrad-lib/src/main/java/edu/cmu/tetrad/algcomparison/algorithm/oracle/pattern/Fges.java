@@ -41,9 +41,8 @@ import java.util.List;
 )
 public class Fges implements Algorithm, TakesInitialGraph, HasKnowledge, UsesScoreWrapper {
 
-    private static final long serialVersionUID = -4269189533774549575L;
+    static final long serialVersionUID = 23L;
 
-    
     private boolean compareToTrue = false;
     private ScoreWrapper score;
     private Algorithm algorithm = null;

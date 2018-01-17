@@ -42,9 +42,7 @@ import java.util.List;
 )
 public class Skew implements Algorithm, TakesInitialGraph {
 
-    private static final long serialVersionUID = 4935784202138342749L;
-
-    
+    static final long serialVersionUID = 23L;
     private Algorithm algorithm = null;
     private Graph initialGraph = null;
 

@@ -42,9 +42,7 @@ import java.util.List;
 )
 public class RSkew implements Algorithm, TakesInitialGraph {
 
-    private static final long serialVersionUID = 1638729277640667169L;
-
-    
+    static final long serialVersionUID = 23L;
     private Algorithm algorithm = null;
     private Graph initialGraph = null;
 

@@ -42,9 +42,7 @@ import java.util.List;
 )
 public class R1 implements Algorithm, TakesInitialGraph {
 
-    private static final long serialVersionUID = -262859984454884701L;
-
-    
+    static final long serialVersionUID = 23L;
     private Algorithm algorithm = null;
     private Graph initialGraph = null;
 
