@@ -26,6 +26,14 @@ public class Ida {
     private final Graph pattern;
     private final RegressionDataset regression;
 
+    public Ida(DataSet dataSet, List<Node> targets) {
+        this.dataSet = dataSet;
+        FgesMb fges = new FgesMb(new SemBicScore(new CovarianceMatrixOnTheFly(dataSet)));
+        fges.setParallelism(1);
+        this.pattern = fges.search(targets);
+        regression = new RegressionDataset(dataSet);
+    }
+
     public Ida(DataSet dataSet) {
         this.dataSet = dataSet;
         Fges fges = new Fges(new SemBicScore(new CovarianceMatrixOnTheFly(dataSet)));

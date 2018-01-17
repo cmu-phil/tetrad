@@ -71,17 +71,16 @@ public class CStar implements Algorithm {
                 }
 
                 BootstrapSampler sampler = new BootstrapSampler();
-                sampler.setWithoutReplacements(true);
+                sampler.setWithoutReplacements(false);
                 DataSet sample = sampler.sample(_dataSet, (int) (percentSubsampleSize * _dataSet.getNumRows()));
 
                 Ida ida = new Ida(sample);
 
                 Ida.NodeEffects effects = ida.getSortedMinEffects(y);
 
-                for (Node variable : variables) {
-                    if (effects.getNodes().indexOf(variable) < q) {
-                        counts.put(variable, counts.get(variable) + 1);
-                    }
+                for (int i = 0; i < q; i++) {
+                    final Node key = effects.getNodes().get(i);
+                    counts.put(key, counts.get(key) + 1);
                 }
 
                 return true;

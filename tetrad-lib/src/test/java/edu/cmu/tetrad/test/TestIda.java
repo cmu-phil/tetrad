@@ -143,7 +143,7 @@ public class TestIda {
 
         Parameters parameters = new Parameters();
         parameters.set("penaltyDiscount", 1);
-        parameters.set("numSubsamples", 50);
+        parameters.set("numSubsamples", 20);
         parameters.set("percentSubsampleSize", .5);
         parameters.set("topQ", 5);
         parameters.set("piThreshold", .5);
@@ -201,11 +201,12 @@ public class TestIda {
             fmbStarRet.add(ret2);
         }
 
-        System.out.println("\tC\tF\t~CMB\t~FMB\t~CSAA\t~FAA\t~CAAA\t~FAAA");
+        System.out.println("\tC\tF\tCPred\tFPred\t~CMB\t~FMB\t~CSAA\t~FAA\t~CAAA\t~FAAA");
 
         for (int i = 0; i < numIterations; i++) {
             System.out.println((i + 1) + ".\t"
                     + cstarRet.get(i)[0] + "\t" + fmbStarRet.get(i)[0] + "\t"
+                    + cstarRet.get(i)[4] + "\t" + fmbStarRet.get(i)[4] + "\t"
                     + cstarRet.get(i)[1] + "\t" + fmbStarRet.get(i)[1] + "\t"
                     + cstarRet.get(i)[2] + "\t" + fmbStarRet.get(i)[2] + "\t"
                     + cstarRet.get(i)[3] + "\t" + fmbStarRet.get(i)[3] + "\t"
@@ -260,25 +261,37 @@ public class TestIda {
 
         System.out.println("Elapsed " + elapsed / 1000.0 + " s");
 
-        printIdaResult(new ArrayList<>(outputNodes), target, trueData, trueDag);
+        int count = printIdaResult(new ArrayList<>(outputNodes), target, trueData, trueDag, mbNodes);
 
-        int[] ret = new int[4];
+        int[] ret = new int[5];
 
         ret[0] = outputNodes.size();
         ret[1] = notInMb.size();
         ret[2] = notInAdjAdj.size();
         ret[3] = notInAdjAdjAdj.size();
+        ret[4] = count;
 
         return ret;
     }
 
-    private void printIdaResult(List<Node> x, Node y, DataSet dataSet, Graph trueDag) {
+    private int printIdaResult(List<Node> x, Node y, DataSet dataSet, Graph trueDag, List<Node> mb) {
+        trueDag = GraphUtils.replaceNodes(trueDag, dataSet.getVariables());
+
         List<Node> x2 = new ArrayList<>();
         for (Node node : x) x2.add(dataSet.getVariable(node.getName()));
         x = x2;
         y = dataSet.getVariable(y.getName());
+        List<Node> _mb = new ArrayList<>();
+        for (Node node : mb) _mb.add(dataSet.getVariable(node.getName()));
+        mb = _mb;
 
-        Ida ida = new Ida(dataSet);
+        Set<Node> targets = new HashSet<>(mb);
+        targets.add(y);
+        targets.addAll(x);
+
+        Ida ida = new Ida(dataSet, new ArrayList<>(targets));
+
+        int count = 0;
 
         for (Node _x : x) {
             LinkedList<Double> effects = ida.getEffects(_x, y);
@@ -290,10 +303,13 @@ public class TestIda {
                 double distance = ida.distance(effects.getFirst(), effects.getLast(), trueEffect);
                 System.out.println(_x + ": min effect = " + effects.getFirst() + " max effect = " + effects.getLast()
                         + " true effect = " + trueEffectString + " distance = " + distance);
+                count++;
             } else {
-                System.out.println(_x + ": No effects returned by IDA (probably a child of the target); true effect = " + trueEffectString);
+//                System.out.println(_x + ": No effects returned by IDA (probably a child of the target); true effect = " + trueEffectString);
             }
         }
+
+        return count;
     }
 }
 

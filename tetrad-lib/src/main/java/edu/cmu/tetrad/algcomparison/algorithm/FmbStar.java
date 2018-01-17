@@ -7,6 +7,7 @@ import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.FgesMb;
+import edu.cmu.tetrad.search.Ida;
 import edu.cmu.tetrad.util.ForkJoinPoolInstance;
 import edu.cmu.tetrad.util.Parameters;
 
@@ -48,6 +49,7 @@ public class FmbStar implements Algorithm {
         int numSubsamples = parameters.getInt("numSubsamples");
         double pithreshold = parameters.getDouble("piThreshold");
         Node y = dataSet.getVariable(parameters.getString("targetName"));
+        variables.remove(y);
 
         Map<Node, Integer> counts = new ConcurrentHashMap<>();
         for (Node node : variables) counts.put(node, 0);
