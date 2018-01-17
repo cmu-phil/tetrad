@@ -85,7 +85,7 @@ public class SemEstimatorWrapper implements SessionModel, GraphSource, Unmarshal
                 this.semPm = semPm;
                 SemEstimator estimator = new SemEstimator(dataSet, semPm, getOptimizer());
                 estimator.setNumRestarts(getParams().getInt("numRestarts", 1));
-                estimator.setScoreType((SemIm.ScoreType) getParams().get("scoreType", SemIm.ScoreType.Fgls));
+                estimator.setScoreType((ScoreType) getParams().get("scoreType", ScoreType.Fgls));
                 if (!degreesOfFreedomCheck(semPm));
                 estimator.estimate();
 
@@ -95,7 +95,7 @@ public class SemEstimatorWrapper implements SessionModel, GraphSource, Unmarshal
                 this.semPm = semPm;
                 SemEstimator estimator = new SemEstimator(covMatrix, semPm, getOptimizer());
                 estimator.setNumRestarts(getParams().getInt("numRestarts", 1));
-                estimator.setScoreType((SemIm.ScoreType) getParams().get("scoreType", ComparisonParameters.ScoreType.SemBic));
+                estimator.setScoreType((ScoreType) getParams().get("scoreType", ScoreType.SemBic));
                 if (!degreesOfFreedomCheck(semPm));
                 estimator.estimate();
 
@@ -153,7 +153,7 @@ public class SemEstimatorWrapper implements SessionModel, GraphSource, Unmarshal
                 this.semPm = semPm;
                 SemEstimator estimator = new SemEstimator(dataSet, semPm, getOptimizer());
                 estimator.setNumRestarts(getParams().getInt("numRestarts", 1));
-                estimator.setScoreType((SemIm.ScoreType) getParams().get("scoreType", SemIm.ScoreType.Fgls));
+                estimator.setScoreType((ScoreType) getParams().get("scoreType", ScoreType.Fgls));
                 if (!degreesOfFreedomCheck(semPm)) return true;
                 estimator.estimate();
 
@@ -164,7 +164,7 @@ public class SemEstimatorWrapper implements SessionModel, GraphSource, Unmarshal
                 this.semPm = semPm;
                 SemEstimator estimator = new SemEstimator(covMatrix, semPm, getOptimizer());
                 estimator.setNumRestarts(getParams().getInt("numRestarts", 1));
-                estimator.setScoreType((SemIm.ScoreType) getParams().get("scoreType", SemIm.ScoreType.Fgls));
+                estimator.setScoreType((ScoreType) getParams().get("scoreType", ScoreType.Fgls));
 
                 if (!degreesOfFreedomCheck(semPm)) return true;
                 estimator.estimate();
@@ -434,11 +434,11 @@ public class SemEstimatorWrapper implements SessionModel, GraphSource, Unmarshal
         return containsCovarParam;
     }
 
-    public SemIm.ScoreType getScoreType() {
-        return (SemIm.ScoreType) params.get("scoreType", ComparisonParameters.ScoreType.SemBic);
+    public ScoreType getScoreType() {
+        return (ScoreType) params.get("scoreType", ScoreType.SemBic);
     }
 
-    public void setScoreType(SemIm.ScoreType scoreType) {
+    public void setScoreType(ScoreType scoreType) {
         params.set("scoreType", scoreType);
     }
 

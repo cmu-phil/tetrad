@@ -1283,6 +1283,7 @@ public class EdgeListGraph implements Graph, TripleClassifier {
      */
     public synchronized List<Edge> getEdges(Node node) {
         List<Edge> list = edgeLists.get(node);
+        if (list == null) return new ArrayList<>();
         return new ArrayList<>(list);
     }
 

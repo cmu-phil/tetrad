@@ -88,7 +88,7 @@ public class TimeLagGraph implements Graph {
 
         boolean added = getGraph().addNode(node);
 
-        if (!lag0Nodes.contains(node)) {
+        if (!lag0Nodes.contains(node) && !node.getName().startsWith("E_")) {
             lag0Nodes.add(node);
         }
 

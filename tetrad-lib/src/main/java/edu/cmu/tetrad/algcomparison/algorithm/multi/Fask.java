@@ -61,6 +61,11 @@ public class Fask implements Algorithm, HasKnowledge, UsesScoreWrapper {
 //            search.setUseSkewAdjacencies(parameters.getBoolean("useCorrDiffAdjacencies"));
             search.setAlpha(parameters.getDouble("twoCycleAlpha"));
             search.setDelta(parameters.getDouble("faskDelta"));
+
+//            search.setPercentBootstrapForLinearityTest(parameters.getDouble("percentBootstrapForLinearityTest"));
+//            search.setNumBootstrapForLinearityTest(parameters.getInt("numBootstrapForLinearityTest"));
+//            search.setCutoffForLinearityTest(parameters.getDouble("cutoffForLinearityTest"));
+
             search.setKnowledge(knowledge);
             return getGraph(search);
         } else {
@@ -107,10 +112,10 @@ public class Fask implements Algorithm, HasKnowledge, UsesScoreWrapper {
     public List<String> getParameters() {
         List<String> parameters = score.getParameters();
         parameters.add("depth");
-//        parameters.add("penaltyDiscount");
         parameters.add("twoCycleAlpha");
         parameters.add("extraEdgeThreshold");
         parameters.add("faskDelta");
+
         parameters.add("useFasAdjacencies");
         parameters.add("useCorrDiffAdjacencies");
         // Bootstrapping

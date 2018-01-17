@@ -332,7 +332,8 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         mainPanel.setPreferredSize(new Dimension(940, 640));
 
         setLayout(new BorderLayout());
-        add(new JScrollPane(mainPanel), BorderLayout.CENTER);
+        add(mainPanel, BorderLayout.CENTER);
+//        add(new JScrollPane(mainPanel), BorderLayout.CENTER);
     }
 
     private void setParameterPanel(AlgorithmModel algoModel, IndependenceTestModel indTestModel, ScoreModel scoreModel) {
@@ -1295,7 +1296,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         private void initComponents() {
             setLayout(new BorderLayout());
 
-            add(createAlgorithmPanel(), BorderLayout.CENTER);
+            add(new JScrollPane(createAlgorithmPanel()), BorderLayout.CENTER);
             add(new SouthPanel(paramSetFwdBtn), BorderLayout.SOUTH);
         }
 
@@ -1366,7 +1367,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
                 paramCardFwdBtnAction(e);
             });
 
-            add(new PaddingPanel(parametersPanel), BorderLayout.CENTER);
+            add(new JScrollPane(new PaddingPanel(parametersPanel)), BorderLayout.CENTER);
             add(new SouthPanel(forwardBtn, backBtn), BorderLayout.SOUTH);
         }
 
@@ -1434,7 +1435,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
                 graphCardBackBtnAction(e);
             });
 
-            add(graphContainer, BorderLayout.CENTER);
+            add(new JScrollPane(graphContainer), BorderLayout.CENTER);
             add(new SouthPanel(backBtn), BorderLayout.SOUTH);
         }
 
