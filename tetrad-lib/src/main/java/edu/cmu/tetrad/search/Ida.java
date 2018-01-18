@@ -57,7 +57,9 @@ public class Ida {
      * @return a list of the possible effects of X on Y.
      */
     public LinkedList<Double> getEffects(Node x, Node y) {
-        if (x == y) return new LinkedList<>();
+        if (x == y) {
+            throw new IllegalArgumentException("x == y");
+        }
 
         List<Node> parents = pattern.getParents(x);
         List<Node> children = pattern.getChildren(x);
@@ -82,7 +84,7 @@ public class Ida {
             double beta;
 
             if (regressors.contains(y)) {
-                continue;
+                beta = 0;
             } else {
                 RegressionResult result = regression.regress(y, regressors);
                 beta = result.isZeroInterceptAssumed() ? result.getCoef()[0] : result.getCoef()[1];
@@ -106,6 +108,8 @@ public class Ida {
         SortedMap<Node, Double> minEffects = new TreeMap<>();
 
         for (Node x : dataSet.getVariables()) {
+            if (x == y) continue;
+
             final List<Double> effects = getEffects(x, y);
 
             if (!effects.isEmpty()) {
@@ -175,6 +179,8 @@ public class Ida {
     }
 
     public double trueEffect(Node x, Node y, Graph trueDag) {
+        if (x == y) throw new IllegalArgumentException("x == y");
+
         trueDag = GraphUtils.replaceNodes(trueDag, dataSet.getVariables());
 
         List<Node> regressors = new ArrayList<>();
@@ -188,23 +194,25 @@ public class Ida {
         return abs(effect);
     }
 
-    public double distance(double minEffect, double maxEffect, double trueEffect) {
-        double min, max;
+    public double distance(LinkedList<Double> effects, double trueEffect) {
+        effects = new LinkedList<>(effects);
+        if (effects.isEmpty()) return Double.NaN; // counted as not estimated.
 
-        if ((Double) minEffect <= (Double) maxEffect) {
-            min = minEffect;
-            max = maxEffect;
+        if (effects.size() == 1) {
+            double effect = effects.get(0);
+            return abs(effect - trueEffect);
         } else {
-            min = maxEffect;
-            max = minEffect;
-        }
+            Collections.sort(effects);
+            double min = effects.getFirst();
+            double max = effects.getLast();
 
-        if (trueEffect >= min && trueEffect <= max) {
-            return 0.0;
-        } else {
-            final double m1 = abs(trueEffect - min);
-            final double m2 = abs(trueEffect - max);
-            return min(m1, m2);
+            if (trueEffect >= min && trueEffect <= max) {
+                return 0.0;
+            } else {
+                final double m1 = abs(trueEffect - min);
+                final double m2 = abs(trueEffect - max);
+                return min(m1, m2);
+            }
         }
     }
 }

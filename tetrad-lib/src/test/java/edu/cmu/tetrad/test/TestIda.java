@@ -143,14 +143,14 @@ public class TestIda {
 
         Parameters parameters = new Parameters();
         parameters.set("penaltyDiscount", 1);
-        parameters.set("numSubsamples", 20);
+        parameters.set("numSubsamples", 30);
         parameters.set("percentSubsampleSize", .5);
         parameters.set("topQ", 5);
         parameters.set("piThreshold", .5);
         parameters.set("targetName", "X30");
         parameters.set("verbose", false);
 
-        parameters.set("coefLow", 0.2);
+        parameters.set("coefLow", 0.3);
         parameters.set("coefHigh", 0.9);
         parameters.set("covLow", 0.5);
         parameters.set("covHigh", 1.5);
@@ -281,32 +281,33 @@ public class TestIda {
         for (Node node : x) x2.add(dataSet.getVariable(node.getName()));
         x = x2;
         y = dataSet.getVariable(y.getName());
-        List<Node> _mb = new ArrayList<>();
-        for (Node node : mb) _mb.add(dataSet.getVariable(node.getName()));
-        mb = _mb;
+//        List<Node> _mb = new ArrayList<>();
+//        for (Node node : mb) _mb.add(dataSet.getVariable(node.getName()));
+//        mb = _mb;
+//
+//        Set<Node> targets = new HashSet<>();
+////        targets.add(y);
+//        targets.addAll(x);
 
-        Set<Node> targets = new HashSet<>(mb);
-        targets.add(y);
-        targets.addAll(x);
-
-        Ida ida = new Ida(dataSet, new ArrayList<>(targets));
+        Ida ida = new Ida(dataSet, x);
 
         int count = 0;
 
         for (Node _x : x) {
             LinkedList<Double> effects = ida.getEffects(_x, y);
+
+            if (effects.isEmpty()) continue;
+            if (effects.get(0) == 0) continue;;
+
             double trueEffect = ida.trueEffect(_x, y, trueDag);
 
-            String trueEffectString = Double.isNaN(trueEffect) ? " (child of the target) " : trueEffect + "";
+//            String trueEffectString = Double.isNaN(trueEffect) ? " (child of the target) " : trueEffect + "";
 
-            if (!effects.isEmpty()) {
-                double distance = ida.distance(effects.getFirst(), effects.getLast(), trueEffect);
-                System.out.println(_x + ": min effect = " + effects.getFirst() + " max effect = " + effects.getLast()
-                        + " true effect = " + trueEffectString + " distance = " + distance);
-                count++;
-            } else {
-//                System.out.println(_x + ": No effects returned by IDA (probably a child of the target); true effect = " + trueEffectString);
-            }
+            double distance = ida.distance(effects, trueEffect);
+            System.out.println(_x + ": min effect = " + effects.getFirst() + " max effect = " + effects.getLast()
+                    + " true effect = " + trueEffect + " distance = " + distance);
+
+            if (!Double.isNaN(trueEffect)) count++;
         }
 
         return count;
