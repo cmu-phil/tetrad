@@ -452,13 +452,13 @@ public class Comparison {
      * @param parameters The parameters to be used in the simulationWrapper.
      */
     public void saveToFiles(String dataPath, Simulation simulation, Parameters parameters) {
-        List<SimulationWrapper> simulationWrappers = getSimulationWrappers(simulation, parameters);
 
         File dir0 = new File(dataPath);
         File dir;
-        int i = 0;
+        //int i = 0;
 
         dir = new File(dir0, "save");
+        
 //
 //        do {
 //            dir = new File(dir0, "Simulation" + (++i));
@@ -472,7 +472,29 @@ public class Comparison {
 
         deleteFilesThenDirectory(dir);
 
+        //if(!dir.exists()){
+        //	dir.mkdirs();
+        //}
+        
         try {
+	    	int numDataSets = simulation.getNumDataModels();
+	    	if(numDataSets <= 0){
+	    		
+	    		File dir1 = new File(dir, "graph");
+	            File dir2 = new File(dir, "data");
+	
+	            dir1.mkdirs();
+	            dir2.mkdirs();
+	            
+	    		PrintStream out = new PrintStream(new FileOutputStream(new File(dir, "parameters.txt")));
+	            out.println(simulation.getDescription());
+	            out.println(parameters);
+	            out.close();
+	            
+	    		return;
+	    	}
+	        List<SimulationWrapper> simulationWrappers = getSimulationWrappers(simulation, parameters);
+
             int index = 0;
 
             for (SimulationWrapper simulationWrapper : simulationWrappers) {
@@ -481,12 +503,16 @@ public class Comparison {
                 }
 
                 simulationWrapper.createData(simulationWrapper.getSimulationSpecificParameters());
-                index++;
 
-                File subdir = new File(dir, "" + index);
-                subdir.mkdirs();
+                File subdir = dir;
+                if(simulationWrappers.size() > 1){
+                    index++;
 
-                File dir1 = new File(subdir, "graph");
+                    subdir = new File(dir, "" + index);
+                    subdir.mkdirs();
+                }
+
+            	File dir1 = new File(subdir, "graph");
                 File dir2 = new File(subdir, "data");
                 File dir2a = new File(subdir, "data.with.latents");
 
@@ -540,7 +566,6 @@ public class Comparison {
 
                 PrintStream out = new PrintStream(new FileOutputStream(new File(subdir, "parameters.txt")));
                 out.println(simulationWrapper.getDescription());
-//                out.println();
                 out.println(simulationWrapper.getSimulationSpecificParameters());
                 out.close();
             }
@@ -1078,20 +1103,22 @@ public class Comparison {
     }
 
     private void printParameters(List<String> names, Parameters parameters, PrintStream out) {
+    	out.println("Comparison.printParameters");
         ParamDescriptions descriptions = ParamDescriptions.getInstance();
 
         for (String name : names) {
             ParamDescription description = descriptions.get(name);
+            Object defaultValue = description.getDefaultValue();
             Object value = parameters.get(name);
 
-            if (value instanceof Double) {
+            if (defaultValue instanceof Double) {
                 out.println(description.getDescription() + " = " + value.toString());
-            } else if (value instanceof Integer) {
+            } else if (defaultValue instanceof Integer) {
                 out.println(description.getDescription() + " = " + value.toString());
-            } else if (value instanceof Boolean) {
+            } else if (defaultValue instanceof Boolean) {
                 boolean b = (Boolean) value;
                 out.println(description.getDescription() + " = " + (b ? "Yes" : "No"));
-            } else if (value instanceof String) {
+            } else if (defaultValue instanceof String) {
                 out.println(description.getDescription() + " = " + value);
             }
         }

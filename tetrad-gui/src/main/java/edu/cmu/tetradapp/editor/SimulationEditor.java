@@ -21,7 +21,13 @@
 package edu.cmu.tetradapp.editor;
 
 import edu.cmu.tetrad.algcomparison.Comparison;
-import edu.cmu.tetrad.algcomparison.graph.*;
+import edu.cmu.tetrad.algcomparison.graph.Cyclic;
+import edu.cmu.tetrad.algcomparison.graph.RandomForward;
+import edu.cmu.tetrad.algcomparison.graph.RandomGraph;
+import edu.cmu.tetrad.algcomparison.graph.RandomSingleFactorMim;
+import edu.cmu.tetrad.algcomparison.graph.RandomTwoFactorMim;
+import edu.cmu.tetrad.algcomparison.graph.ScaleFree;
+import edu.cmu.tetrad.algcomparison.graph.SingleGraph;
 import edu.cmu.tetrad.algcomparison.simulation.BayesNetSimulation;
 import edu.cmu.tetrad.algcomparison.simulation.BooleanGlassSimulation;
 import edu.cmu.tetrad.algcomparison.simulation.ConditionalGaussianSimulation;
@@ -44,7 +50,6 @@ import edu.cmu.tetradapp.model.KnowledgeEditable;
 import edu.cmu.tetradapp.model.Simulation;
 import edu.cmu.tetradapp.ui.PaddingPanel;
 import edu.cmu.tetradapp.util.WatchedProcess;
-
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
@@ -86,13 +91,21 @@ import javax.swing.SwingUtilities;
 public final class SimulationEditor extends JPanel implements KnowledgeEditable, PropertyChangeListener {
 
     private static final long serialVersionUID = -4131285866048153654L;
-
-    private final JButton simulateButton = new JButton("Simulate");
+	
+	private final JButton simulateButton = new JButton("Simulate");
     private final JComboBox<String> graphsDropdown = new JComboBox<>();
     private final JComboBox<String> simulationsDropdown = new JComboBox<>();
 
-    //==========================CONSTUCTORS===============================//
+    private final String[] graphItems = new String[]{
+            "Random Foward DAG",
+            "Scale Free DAG",
+            "Cyclic, constructed from small loops",
+            "Random One Factor MIM",
+            "Random Two Factor MIM"
+        };
 
+
+    //==========================CONSTUCTORS===============================//
     /**
      * Constructs the data editor with an empty list of data displays.
      *
@@ -100,13 +113,16 @@ public final class SimulationEditor extends JPanel implements KnowledgeEditable,
      */
     public SimulationEditor(final Simulation simulation) {
         final GraphSelectionEditor graphEditor;
-        DataEditor dataEditor;
+        final DataEditor dataEditor;
 
         if (simulation.getSimulation() != null) {
+        	System.out.println("simulation.getSimulation() != null");
+        	
             List<Graph> trueGraphs = new ArrayList<>();
             DataModelList dataModelList = new DataModelList();
 
             int numDataSets = simulation.getSimulation().getNumDataModels();
+            System.out.println("numDataSets: " + numDataSets);
 
             for (int i = 0; i < numDataSets; i++) {
                 trueGraphs.add(simulation.getSimulation().getTrueGraph(i));
@@ -122,6 +138,8 @@ public final class SimulationEditor extends JPanel implements KnowledgeEditable,
                 simulation.setFixedGraph(true);
             }
         } else {
+        	System.out.println("simulation.getSimulation() = null");
+        	
             graphEditor = new GraphSelectionEditor(new GraphSelectionWrapper(Collections.<Graph>emptyList(), new Parameters()));
             dataEditor = new DataEditor(JTabbedPane.LEFT);
             simulation.setSimulation(new BayesNetSimulation(new RandomForward()), simulation.getParams());
@@ -133,15 +151,6 @@ public final class SimulationEditor extends JPanel implements KnowledgeEditable,
         tabbedPane.addTab("True Graph", graphEditor);
         tabbedPane.addTab("Data", dataEditor);
         tabbedPane.setPreferredSize(new Dimension(900, 600));
-
-        final String[] graphItems = new String[]{
-                "Random Foward DAG",
-                "Uniformly Selected DAG",
-                "Scale Free DAG",
-                "Cyclic, constructed from small loops",
-                "Random One Factor MIM",
-                "Random Two Factor MIM"
-        };
 
         for (String item : graphItems) {
             graphsDropdown.addItem(item);
@@ -218,156 +227,11 @@ public final class SimulationEditor extends JPanel implements KnowledgeEditable,
 
         JMenuBar menuBar = new JMenuBar();
 
-        JMenu file = new JMenu("File");
-
-        JMenuItem loadSimulation = new JMenuItem("Load Simulation");
-        JMenuItem saveSimulation = new JMenuItem("Save Simulation");
-
-        loadSimulation.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                JFileChooser chooser = new JFileChooser();
-                String sessionSaveLocation = Preferences.userRoot().get("fileSaveLocation", "");
-                chooser.setCurrentDirectory(new File(sessionSaveLocation));
-                chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-                int ret1 = chooser.showOpenDialog(JOptionUtils.centeringComp());
-                if (!(ret1 == JFileChooser.APPROVE_OPTION)) {
-                    return;
-                }
-
-                File file = chooser.getSelectedFile();
-
-                if (file == null) {
-                    return;
-                }
-
-                // Check to make sure the directory has the right structure.
-                File[] files = file.listFiles();
-
-                if (files == null) {
-                    JOptionPane.showMessageDialog((SimulationEditor.this),
-                            "That wasn't a directory");
-                    return;
-                }
-
-                boolean correctStructure = isCorrectStructure(files);
-
-                if (!correctStructure) {
-                    int count = 0;
-                    File thisOne = null;
-
-                    for (File _file : files) {
-                        File[] _files = _file.listFiles();
-
-                        if (_files == null) {
-                            continue;
-                        }
-
-                        if (isCorrectStructure(_files)) {
-                            count++;
-                            thisOne = _file;
-                        }
-                    }
-
-                    if (thisOne == null) {
-                        JOptionPane.showMessageDialog((SimulationEditor.this),
-                                "That file was not a simulation, and none of its subdirectories was either. "
-                                        + "\nNeed a directory with a 'data' subdirectory, a 'graph' subdirectory, "
-                                        + "\nand a 'parameters.txt' file.");
-                        return;
-                    }
-
-                    if (count > 1) {
-                        JOptionPane.showMessageDialog((SimulationEditor.this),
-                                "More than one subdirectory of that directory was a simulation; please select "
-                                        + "\none of the subdirectories.");
-                        return;
-                    }
-
-                    file = thisOne;
-                }
-
-                edu.cmu.tetrad.algcomparison.simulation.Simulation _simulation
-                        = new LoadContinuousDataAndGraphs(file.getPath());
-                _simulation.createData(simulation.getParams());
-
-                Graph trueGraph = _simulation.getTrueGraph(0);
-                edu.cmu.tetrad.graph.GraphUtils.circleLayout(trueGraph, 225, 200, 150);
-                List<Graph> graphs = new ArrayList<>();
-                for (int i = 0; i < _simulation.getNumDataModels(); i++) {
-                    graphs.add(_simulation.getTrueGraph(i));
-                }
-
-                graphEditor.replace(graphs);
-                DataWrapper wrapper = new DataWrapper(new Parameters());
-
-                DataModelList list = new DataModelList();
-
-                for (int i = 0; i < _simulation.getNumDataModels(); i++) {
-                    list.add(_simulation.getDataModel(i));
-                }
-
-                wrapper.setDataModelList(list);
-                tabbedPane.setComponentAt(2, new DataEditor(wrapper, false, JTabbedPane.LEFT));
-
-                simulation.setSimulation(_simulation, simulation.getParams());
-
-                resetPanel(simulation, graphItems, simulationItems, tabbedPane);
-            }
-
-            private boolean isCorrectStructure(File[] files) {
-                boolean hasDataDir = false;
-                boolean hasGraphDir = false;
-                boolean hasParametersFile = false;
-
-                for (File _file : files) {
-                    if (_file.isDirectory() && _file.getName().equals("data")) {
-                        hasDataDir = true;
-                    }
-                    if (_file.isDirectory() && _file.getName().equals("graph")) {
-                        hasGraphDir = true;
-                    }
-                    if (_file.isFile() && _file.getName().equals("parameters.txt")) {
-                        hasParametersFile = true;
-                    }
-                }
-
-                return hasDataDir && hasGraphDir && hasParametersFile;
-            }
-        });
-
-        saveSimulation.addActionListener((e) -> {
-            JFileChooser chooser = new JFileChooser();
-            String sessionSaveLocation = Preferences.userRoot().get("fileSaveLocation", "");
-            chooser.setCurrentDirectory(new File(sessionSaveLocation));
-            chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
-            int ret1 = chooser.showSaveDialog(JOptionUtils.centeringComp());
-            if (!(ret1 == JFileChooser.APPROVE_OPTION)) {
-                return;
-            }
-
-            final File selectedFile = chooser.getSelectedFile();
-
-            if (selectedFile == null) {
-                return;
-            }
-
-//                if (file.listFiles().length != 0) {
-//                    JOptionPane.showMessageDialog((SimulationEditor.this),
-//                            "That wasn't a a new or empty directory; try typing a name for the directory\n" +
-//                                    "or creating an empty directory.");
-//                    return;
-//                }
-            new Comparison().saveToFiles(selectedFile.getAbsolutePath(), simulation.getSimulation(),
-                    simulation.getParams());
-        });
-
-        file.addSeparator();
-
-        file.add(loadSimulation);
-        file.add(saveSimulation);
-
-        menuBar.add(file);
+        final JMenu fileMenu = new JMenu("File");
+        
+        getFileMenu(fileMenu, simulation, graphEditor, dataEditor, tabbedPane, simulationItems);
+        
+        menuBar.add(fileMenu);
 
         add(menuBar, BorderLayout.NORTH);
 
@@ -386,6 +250,7 @@ public final class SimulationEditor extends JPanel implements KnowledgeEditable,
         if (simulation.getDataModelList().size() > 0) {
             tabbedPane.setSelectedIndex(2);
         }
+        
     }
 
     private void resetPanel(Simulation simulation, String[] graphItems, String[] simulationItems, JTabbedPane tabbedPane) {
@@ -399,19 +264,18 @@ public final class SimulationEditor extends JPanel implements KnowledgeEditable,
 
         if (!simulation.isFixedGraph()) {
             String graphItem = (String) graphsDropdown.getSelectedItem();
+            System.out.println("graphItem: " + graphItem);
             simulation.getParams().set("graphsDropdownPreference", graphItem);
 
             if (graphItem.equals(graphItems[0])) {
                 randomGraph = new RandomForward();
             } else if (graphItem.equals(graphItems[1])) {
-                randomGraph = new UniformDag();
-            } else if (graphItem.equals(graphItems[2])) {
                 randomGraph = new ScaleFree();
-            } else if (graphItem.equals(graphItems[3])) {
+            } else if (graphItem.equals(graphItems[2])) {
                 randomGraph = new Cyclic();
-            } else if (graphItem.equals(graphItems[4])) {
+            } else if (graphItem.equals(graphItems[3])) {
                 randomGraph = new RandomSingleFactorMim();
-            } else if (graphItem.equals(graphItems[5])) {
+            } else if (graphItem.equals(graphItems[4])) {
                 randomGraph = new RandomTwoFactorMim();
             } else {
                 throw new IllegalArgumentException("Unrecognized simulation type: " + graphItem);
@@ -421,6 +285,7 @@ public final class SimulationEditor extends JPanel implements KnowledgeEditable,
         if (!simulation.isFixedSimulation()) {
             if (simulation.getSourceGraph() != null) {
                 String simulationItem = (String) simulationsDropdown.getSelectedItem();
+                System.out.println("simulationItem: " + simulationItem);
                 simulation.getParams().set("simulationsDropdownPreference", simulationItem);
                 simulation.setFixedGraph(false);
 
@@ -489,25 +354,25 @@ public final class SimulationEditor extends JPanel implements KnowledgeEditable,
         if (simulation.isFixedSimulation()) {
             if (simulation.getSimulation() instanceof BayesNetSimulation) {
                 simulationItems = new String[]{
-                        "Bayes net",};
+                    "Bayes net",};
             } else if (simulation.getSimulation() instanceof SemSimulation) {
                 simulationItems = new String[]{
-                        "Structural Equation Model"
+                    "Structural Equation Model"
                 };
             } else if (simulation.getSimulation() instanceof LinearFisherModel) {
                 simulationItems = new String[]{
-                        "Linear Fisher Model"
+                    "Linear Fisher Model"
                 };
             } else if (simulation.getSimulation() instanceof StandardizedSemSimulation) {
                 simulationItems = new String[]{
-                        "Standardized Structural Equation Model"
+                    "Standardized Structural Equation Model"
                 };
             } else if (simulation.getSimulation() instanceof GeneralSemSimulation) {
                 simulationItems = new String[]{
-                        "General Structural Equation Model",};
+                    "General Structural Equation Model",};
             } else if (simulation.getSimulation() instanceof LoadContinuousDataAndGraphs) {
                 simulationItems = new String[]{
-                        "Loaded From Files",};
+                    "Loaded From Files",};
             } else {
                 throw new IllegalStateException("Not expecting that model type: "
                         + simulation.getSimulation().getClass());
@@ -520,23 +385,23 @@ public final class SimulationEditor extends JPanel implements KnowledgeEditable,
 //            } else
             if (simulation.getSourceGraph() != null) {
                 simulationItems = new String[]{
-                        "Bayes net",
-                        "Structural Equation Model",
-                        "Linear Fisher Model",
-                        //                        "General Structural Equation Model Special",
-                        "Lee & Hastie",
-                        "Conditional Gaussian",
-                        "Time Series"
+                    "Bayes net",
+                    "Structural Equation Model",
+                    "Linear Fisher Model",
+                    //                        "General Structural Equation Model Special",
+                    "Lee & Hastie",
+                    "Conditional Gaussian",
+                    "Time Series"
                 };
             } else {
                 simulationItems = new String[]{
-                        "Bayes net",
-                        "Structural Equation Model",
-                        "Linear Fisher Model",
-                        //                        "General Structural Equation Model Special",
-                        "Lee & Hastie",
-                        "Conditional Gaussian",
-                        "Time Series", //                        "Boolean Glass"
+                    "Bayes net",
+                    "Structural Equation Model",
+                    "Linear Fisher Model",
+                    //                        "General Structural Equation Model Special",
+                    "Lee & Hastie",
+                    "Conditional Gaussian",
+                    "Time Series", //                        "Boolean Glass"
                 };
             }
         }
@@ -600,6 +465,178 @@ public final class SimulationEditor extends JPanel implements KnowledgeEditable,
 
         return mainPanel;
     }
+    
+    private void getFileMenu(final JMenu fileMenu, final Simulation simulation, 
+    		final GraphSelectionEditor graphEditor, final DataEditor dataEditor,
+    		final JTabbedPane tabbedPane, final String[] simulationItems){
+        JMenuItem loadSimulation = new JMenuItem("Load Simulation");
+        JMenuItem saveSimulation = new JMenuItem("Save Simulation");
+
+        loadSimulation.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                JFileChooser chooser = new JFileChooser();
+                String sessionSaveLocation = Preferences.userRoot().get("fileSaveLocation", "");
+                chooser.setCurrentDirectory(new File(sessionSaveLocation));
+                chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+                int ret1 = chooser.showOpenDialog(JOptionUtils.centeringComp());
+                if (!(ret1 == JFileChooser.APPROVE_OPTION)) {
+                    return;
+                }
+
+                File file = chooser.getSelectedFile();
+
+                if (file == null) {
+                    return;
+                }
+
+                // Check to make sure the directory has the right structure.
+                File[] files = file.listFiles();
+
+                if (files == null) {
+                    JOptionPane.showMessageDialog((SimulationEditor.this),
+                            "That wasn't a directory");
+                    return;
+                }
+
+                boolean correctStructure = isCorrectStructure(files);
+
+                if (!correctStructure) {
+                    int count = 0;
+                    File thisOne = null;
+
+                    for (File _file : files) {
+                        File[] _files = _file.listFiles();
+
+                        if (_files == null) {
+                            continue;
+                        }
+
+                        if (isCorrectStructure(_files)) {
+                            count++;
+                            thisOne = _file;
+                        }
+                    }
+
+                    if (thisOne == null) {
+                        JOptionPane.showMessageDialog((SimulationEditor.this),
+                                "That file was not a simulation, and none of its subdirectories was either. "
+                                + "\nNeed a directory with a 'data' subdirectory, a 'graph' subdirectory, "
+                                + "\nand a 'parameters.txt' file.");
+                        return;
+                    }
+
+                    if (count > 1) {
+                        JOptionPane.showMessageDialog((SimulationEditor.this),
+                                "More than one subdirectory of that directory was a simulation; please select "
+                                + "\none of the subdirectories.");
+                        return;
+                    }
+
+                    file = thisOne;
+                }
+
+                edu.cmu.tetrad.algcomparison.simulation.Simulation _simulation
+                        = new LoadContinuousDataAndGraphs(file.getPath());
+                _simulation.createData(simulation.getParams());
+
+                if(_simulation.getNumDataModels() > 0){
+                    Graph trueGraph = _simulation.getTrueGraph(0);
+                    edu.cmu.tetrad.graph.GraphUtils.circleLayout(trueGraph, 225, 200, 150);
+                    List<Graph> graphs = new ArrayList<>();
+                    for (int i = 0; i < _simulation.getNumDataModels(); i++) {
+                        graphs.add(_simulation.getTrueGraph(i));
+                    }
+
+                    graphEditor.replace(graphs);
+                    DataWrapper wrapper = new DataWrapper(new Parameters());
+
+                    DataModelList list = new DataModelList();
+
+                    for (int i = 0; i < _simulation.getNumDataModels(); i++) {
+                        list.add(_simulation.getDataModel(i));
+                    }
+
+                    wrapper.setDataModelList(list);
+                    tabbedPane.setComponentAt(2, new DataEditor(wrapper, false, JTabbedPane.LEFT));
+                }
+
+                String graphPref = null;
+                String simPref = null;
+                if(_simulation.getParameters().contains("graphsDropdownPreference")){
+                	graphPref = (String)simulation.getParams().get("graphsDropdownPreference");
+                }
+                if(_simulation.getParameters().contains("simulationsDropdownPreference")){
+                	simPref = (String)simulation.getParams().get("simulationsDropdownPreference");
+                }
+                
+                if(graphPref != null){
+                	graphsDropdown.setSelectedItem(graphPref);
+                	System.out.println("Set pre-loaded Graph: " + graphPref);
+                }
+
+                if(simPref != null){
+                	simulationsDropdown.setSelectedItem(simPref);
+                	System.out.println("Set pre-loaded sim: " + simPref);
+                }
+
+                simulation.setSimulation(_simulation, simulation.getParams());
+
+                resetPanel(simulation, graphItems, simulationItems, tabbedPane);
+            }
+
+            private boolean isCorrectStructure(File[] files) {
+                boolean hasDataDir = false;
+                boolean hasGraphDir = false;
+                boolean hasParametersFile = false;
+
+                for (File _file : files) {
+                    if (_file.isDirectory() && _file.getName().equals("data")) {
+                        hasDataDir = true;
+                    }
+                    if (_file.isDirectory() && _file.getName().equals("graph")) {
+                        hasGraphDir = true;
+                    }
+                    if (_file.isFile() && _file.getName().equals("parameters.txt")) {
+                        hasParametersFile = true;
+                    }
+                }
+
+                return hasDataDir && hasGraphDir && hasParametersFile;
+            }
+        });
+
+        saveSimulation.addActionListener((e) -> {
+            JFileChooser chooser = new JFileChooser();
+            String sessionSaveLocation = Preferences.userRoot().get("fileSaveLocation", "");
+            chooser.setCurrentDirectory(new File(sessionSaveLocation));
+            chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
+            int ret1 = chooser.showSaveDialog(JOptionUtils.centeringComp());
+            if (!(ret1 == JFileChooser.APPROVE_OPTION)) {
+                return;
+            }
+
+            final File selectedFile = chooser.getSelectedFile();
+
+            if (selectedFile == null) {
+                return;
+            }
+
+//                if (file.listFiles().length != 0) {
+//                    JOptionPane.showMessageDialog((SimulationEditor.this),
+//                            "That wasn't a a new or empty directory; try typing a name for the directory\n" +
+//                                    "or creating an empty directory.");
+//                    return;
+//                }
+            new Comparison().saveToFiles(selectedFile.getAbsolutePath(), simulation.getSimulation(),
+                    simulation.getParams());
+			Preferences.userRoot().put("fileSaveLocation", selectedFile.getParent());
+        });
+
+        fileMenu.addSeparator();
+
+        fileMenu.add(loadSimulation);
+        fileMenu.add(saveSimulation);    }
 
     @Override
     public IKnowledge getKnowledge() {
