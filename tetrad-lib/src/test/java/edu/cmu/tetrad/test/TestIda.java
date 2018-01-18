@@ -138,7 +138,7 @@ public class TestIda {
     public void testBoth() {
         int numNodes = 100;
         int numEdges = 200;
-        int sampleSize = 100;
+        int sampleSize = 300;
         int numIterations = 20;
 
         Parameters parameters = new Parameters();
@@ -170,34 +170,30 @@ public class TestIda {
 
             SemPm pm = new SemPm(trueDag);
             SemIm im = new SemIm(pm, parameters);
-            DataSet trueData = im.simulateData(sampleSize, false);
+            DataSet fullData = im.simulateData(sampleSize, false);
 
             System.out.println("\n\n=====CSTAR====");
 
             long start = System.currentTimeMillis();
 
-//            parameters.set("numSubsamples", 100);
-
             CStar cstar = new CStar();
-            Graph graph = cstar.search(trueData, parameters);
+            Graph graph = cstar.search(fullData, parameters);
 
             long stop = System.currentTimeMillis();
 
-            int[] ret = printResult(trueDag, parameters, graph, stop - start, numNodes, numEdges, sampleSize, trueData);
+            int[] ret = printResult(trueDag, parameters, graph, stop - start, numNodes, numEdges, sampleSize, fullData);
             cstarRet.add(ret);
 
             System.out.println("\n\n=====FmbStar====");
 
             start = System.currentTimeMillis();
 
-//            parameters.set("numSubsamples", 100);
-
             FmbStar cstar2 = new FmbStar();
-            Graph graph2 = cstar2.search(trueData, parameters);
+            Graph graph2 = cstar2.search(fullData, parameters);
 
             stop = System.currentTimeMillis();
 
-            int[] ret2 = printResult(trueDag, parameters, graph2, stop - start, numNodes, numEdges, sampleSize, trueData);
+            int[] ret2 = printResult(trueDag, parameters, graph2, stop - start, numNodes, numEdges, sampleSize, fullData);
             fmbStarRet.add(ret2);
         }
 
@@ -261,7 +257,7 @@ public class TestIda {
 
         System.out.println("Elapsed " + elapsed / 1000.0 + " s");
 
-        int count = printIdaResult(new ArrayList<>(outputNodes), target, trueData, trueDag, mbNodes);
+        int count = printIdaResult(new ArrayList<>(outputNodes), target, trueData, trueDag);
 
         int[] ret = new int[5];
 
@@ -274,20 +270,13 @@ public class TestIda {
         return ret;
     }
 
-    private int printIdaResult(List<Node> x, Node y, DataSet dataSet, Graph trueDag, List<Node> mb) {
+    private int printIdaResult(List<Node> x, Node y, DataSet dataSet, Graph trueDag) {
         trueDag = GraphUtils.replaceNodes(trueDag, dataSet.getVariables());
 
         List<Node> x2 = new ArrayList<>();
         for (Node node : x) x2.add(dataSet.getVariable(node.getName()));
         x = x2;
         y = dataSet.getVariable(y.getName());
-//        List<Node> _mb = new ArrayList<>();
-//        for (Node node : mb) _mb.add(dataSet.getVariable(node.getName()));
-//        mb = _mb;
-//
-//        Set<Node> targets = new HashSet<>();
-////        targets.add(y);
-//        targets.addAll(x);
 
         Ida ida = new Ida(dataSet, x);
 
@@ -295,19 +284,12 @@ public class TestIda {
 
         for (Node _x : x) {
             LinkedList<Double> effects = ida.getEffects(_x, y);
-
-            if (effects.isEmpty()) continue;
-            if (effects.get(0) == 0) continue;;
-
             double trueEffect = ida.trueEffect(_x, y, trueDag);
-
-//            String trueEffectString = Double.isNaN(trueEffect) ? " (child of the target) " : trueEffect + "";
-
             double distance = ida.distance(effects, trueEffect);
             System.out.println(_x + ": min effect = " + effects.getFirst() + " max effect = " + effects.getLast()
                     + " true effect = " + trueEffect + " distance = " + distance);
 
-            if (!Double.isNaN(trueEffect)) count++;
+            count++;
         }
 
         return count;

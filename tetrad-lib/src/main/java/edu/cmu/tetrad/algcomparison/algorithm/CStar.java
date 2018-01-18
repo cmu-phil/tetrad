@@ -71,7 +71,7 @@ public class CStar implements Algorithm {
                 }
 
                 BootstrapSampler sampler = new BootstrapSampler();
-                sampler.setWithoutReplacements(false);
+                sampler.setWithoutReplacements(true);
                 DataSet sample = sampler.sample(_dataSet, (int) (percentSubsampleSize * _dataSet.getNumRows()));
 
                 Ida ida = new Ida(sample);
@@ -111,12 +111,30 @@ public class CStar implements Algorithm {
             sortedFreqencies[i] /= (double) numSubsamples;
         }
 
-        Graph graph = new EdgeListGraph(dataSet.getVariables());
+        List<Node> outNodes = new ArrayList<>();
 
         for (int i = 0; i < variables.size(); i++) {
             if (sortedFreqencies[i] >= pithreshold) {
-                graph.addUndirectedEdge(variables.get(i), y);
+                outNodes.add(variables.get(i));
             }
+        }
+
+        Ida ida = new Ida(_dataSet, outNodes);
+        List<Node> filteredOutNodes = new ArrayList<>();
+
+        for (int i = 0; i < new ArrayList<>(outNodes).size(); i++) {
+            final Node x = outNodes.get(i);
+            LinkedList<Double> effects = ida.getEffects(x, y);
+            if (effects.isEmpty()) continue;
+            if (effects.getFirst() == 0.0) continue;
+            filteredOutNodes.add(x);
+        }
+
+        Graph graph = new EdgeListGraph(outNodes);
+        graph.addNode(y);
+
+        for (int i = 0; i < new ArrayList<Node>(filteredOutNodes).size(); i++) {
+            graph.addDirectedEdge(filteredOutNodes.get(i), y);
         }
 
         return graph;

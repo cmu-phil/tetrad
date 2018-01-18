@@ -12,6 +12,7 @@ import edu.cmu.tetrad.util.ForkJoinPoolInstance;
 import edu.cmu.tetrad.util.Parameters;
 
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Callable;
@@ -22,7 +23,7 @@ import java.util.concurrent.ConcurrentHashMap;
         command = "cstar2",
         algoType = AlgType.forbid_latent_common_causes,
         description = "Uses stability selection (Meinhausen et al.) with FGES-MB (Ramsey et al.) to estimate the " +
-                "nodes in the Markov blanket of a target. May be used to estimate nodes with strong influende " +
+                "nodes in the Markov blanket of a target. May be used to estimate nodes with influence " +
                 "on a target, in the style of CStar (Stekhoven et al.)" +
                 "\nMeinshausen, Nicolai, and Peter Bühlmann. \"Stability selection.\" Journal of the Royal Statistical " +
                 "Society: Series B (Statistical Methodology) 72.4 (2010): 417-473." +
@@ -34,7 +35,6 @@ import java.util.concurrent.ConcurrentHashMap;
 public class FmbStar implements Algorithm {
     static final long serialVersionUID = 23L;
     private Algorithm algorithm;
-    private Graph initialGraph = null;
 
     public FmbStar() {
         this.algorithm = new Fges();
@@ -112,13 +112,30 @@ public class FmbStar implements Algorithm {
             sortedFrequencies[i] = counts.get(sortedVariables.get(i)) / (double) numSubsamples;
         }
 
-        Graph graph = new EdgeListGraph(dataSet.getVariables());
+        List<Node> outNodes = new ArrayList<>();
 
         for (int i = 0; i < sortedVariables.size(); i++) {
             if (sortedVariables.get(i) == y) continue;
             if (sortedFrequencies[i] >= pithreshold) {
-                graph.addUndirectedEdge(sortedVariables.get(i), y);
+                outNodes.add(sortedVariables.get(i));
             }
+        }
+
+        Ida ida = new Ida(_dataSet, outNodes);
+        List<Node> filteredOutNodes = new ArrayList<>();
+
+        for (int i = 0; i < new ArrayList<>(outNodes).size(); i++) {
+            LinkedList<Double> effects = ida.getEffects(outNodes.get(i), y);
+            if (effects.isEmpty()) continue;
+            if (effects.getFirst() == 0.0) continue;
+            filteredOutNodes.add(outNodes.get(i));
+        }
+
+        Graph graph = new EdgeListGraph(outNodes);
+        graph.addNode(y);
+
+        for (int i = 0; i < new ArrayList<Node>(filteredOutNodes).size(); i++) {
+            graph.addDirectedEdge(filteredOutNodes.get(i), y);
         }
 
         return graph;

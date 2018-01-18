@@ -148,7 +148,7 @@ public class Ida {
     }
 
     /**
-     * A list of nodes and corresonding minimum effects.
+     * A list of nodes and corresponding minimum effects.
      *
      * @author jdramsey@andrew.cmu.edu
      */
