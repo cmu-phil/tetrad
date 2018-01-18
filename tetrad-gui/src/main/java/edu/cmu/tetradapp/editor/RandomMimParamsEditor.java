@@ -105,7 +105,7 @@ class RandomMimParamsEditor extends JPanel {
         });
 
         IntTextField numMeasurementsPerLatent = new IntTextField(
-                parameters.getInt("measurementModelDegree", 1), 4);
+                parameters.getInt("measurementModelDegree", 5), 4);
         numMeasurementsPerLatent.setFilter(new IntTextField.Filter() {
             public int filter(int value, int oldValue) {
                 try {
