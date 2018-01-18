@@ -373,6 +373,8 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
 
         AlgorithmModel algoModel = algorithmList.getSelectedValue();
         Class algoClass = algoModel.getAlgorithm().getClazz();
+        
+        // Check if initial graph is provided for those pairwise algorithms
         if (TakesInitialGraph.class.isAssignableFrom(algoClass)) {
             if (runner.getSourceGraph() == null || runner.getDataModelList().isEmpty()) {
                 try {
@@ -391,6 +393,9 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
                 }
             }
         }
+        
+        // Check dataset data type for those algorithms take mixed data?
+        
     }
 
     private void setAlgorithmDescription() {
