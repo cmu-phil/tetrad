@@ -27,6 +27,8 @@ import javax.swing.Box;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Edits the parameters for generating random graphs.
@@ -36,6 +38,8 @@ import javax.swing.JPanel;
 class RandomMimParamsEditor extends JPanel {
 
     private static final long serialVersionUID = -1478898170626611725L;
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(RandomMimParamsEditor.class);
 
     /**
      * Constructs a dialog to edit the given workbench randomization parameters.
@@ -71,7 +75,9 @@ class RandomMimParamsEditor extends JPanel {
 
                 parameters.set("numStructuralEdges", value);
                 return value;
-            } catch (Exception e) {
+            } catch (Exception exception) {
+                LOGGER.error("", exception);
+
                 return oldValue;
             }
         });
@@ -89,7 +95,9 @@ class RandomMimParamsEditor extends JPanel {
                 parameters.set("numStructuralNodes", value);
                 numStructuralEdges.setValue(numStructuralEdges.getValue());
                 return value;
-            } catch (Exception e) {
+            } catch (Exception exception) {
+                LOGGER.error("", exception);
+
                 numStructuralEdges.setValue(numStructuralEdges.getValue());
                 return oldValue;
             }
@@ -105,7 +113,9 @@ class RandomMimParamsEditor extends JPanel {
 
                 parameters.set("measurementModelDegree", value);
                 return value;
-            } catch (Exception e) {
+            } catch (Exception exception) {
+                LOGGER.error("", exception);
+
                 return oldValue;
             }
         });
@@ -120,7 +130,9 @@ class RandomMimParamsEditor extends JPanel {
 
                 parameters.set("latentMeasuredImpureParents", value);
                 return value;
-            } catch (Exception e) {
+            } catch (Exception exception) {
+                LOGGER.error("", exception);
+
                 return oldValue;
             }
         });
@@ -135,7 +147,9 @@ class RandomMimParamsEditor extends JPanel {
 
                 parameters.set("measuredMeasuredImpureParents", value);
                 return value;
-            } catch (Exception e) {
+            } catch (Exception exception) {
+                LOGGER.error("", exception);
+
                 return oldValue;
             }
         });
@@ -151,7 +165,9 @@ class RandomMimParamsEditor extends JPanel {
                 parameters.set("measuredMeasuredImpureAssociations",
                         value);
                 return value;
-            } catch (Exception e) {
+            } catch (Exception exception) {
+                LOGGER.error("", exception);
+
                 return oldValue;
             }
         });
