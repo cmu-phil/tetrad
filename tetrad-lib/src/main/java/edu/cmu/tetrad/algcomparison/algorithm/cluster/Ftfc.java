@@ -11,7 +11,6 @@ import edu.cmu.tetrad.search.SearchGraphUtils;
 import edu.cmu.tetrad.util.Parameters;
 import edu.pitt.dbmi.algo.bootstrap.BootstrapEdgeEnsemble;
 import edu.pitt.dbmi.algo.bootstrap.GeneralBootstrapTest;
-import edu.pitt.dbmi.data.Dataset;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -36,10 +35,10 @@ public class Ftfc implements Algorithm, HasKnowledge, ClusterAlgorithm {
 
     @Override
     public Graph search(DataModel dataSet, Parameters parameters) {
-    	if (parameters.getInt("bootstrapSampleSize") < 1) {
+        if (parameters.getInt("bootstrapSampleSize") < 1) {
             ICovarianceMatrix cov = null;
 
-            if (dataSet instanceof Dataset) {
+            if (dataSet instanceof DataSet) {
                 cov = DataUtils.getCovMatrix(dataSet);
             } else if (dataSet instanceof ICovarianceMatrix) {
                 cov = (ICovarianceMatrix) dataSet;
@@ -70,7 +69,6 @@ public class Ftfc implements Algorithm, HasKnowledge, ClusterAlgorithm {
 //          if (initialGraph != null) {
 //      		algorithm.setInitialGraph(initialGraph);
 //  		}
-
             DataSet data = (DataSet) dataSet;
 
             GeneralBootstrapTest search = new GeneralBootstrapTest(data, algorithm, parameters.getInt("bootstrapSampleSize"));
