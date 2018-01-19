@@ -3,7 +3,6 @@ package edu.cmu.tetrad.algcomparison.algorithm.pairwise;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.utils.TakesInitialGraph;
 import edu.cmu.tetrad.annotation.AlgType;
-import edu.cmu.tetrad.annotation.Experimental;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
@@ -23,7 +22,6 @@ import java.util.List;
  *
  * @author jdramsey
  */
-@Experimental
 @edu.cmu.tetrad.annotation.Algorithm(
         name = "RSkew",
         command = "r-skew",
