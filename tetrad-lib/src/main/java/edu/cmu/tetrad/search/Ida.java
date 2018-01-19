@@ -1,15 +1,19 @@
 package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.algcomparison.independence.SemBicTest;
+import edu.cmu.tetrad.data.CovarianceMatrix;
 import edu.cmu.tetrad.data.CovarianceMatrixOnTheFly;
 import edu.cmu.tetrad.data.DataSet;
+import edu.cmu.tetrad.data.ICovarianceMatrix;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.regression.RegressionCovariance;
 import edu.cmu.tetrad.regression.RegressionDataset;
 import edu.cmu.tetrad.regression.RegressionResult;
+import edu.cmu.tetrad.stat.correlation.Covariance;
 import edu.cmu.tetrad.util.DepthChoiceGenerator;
+import edu.cmu.tetrad.util.TetradMatrix;
 
 import java.util.*;
 
@@ -26,24 +30,44 @@ import static java.lang.Math.nextUp;
  */
 public class Ida {
     private DataSet dataSet;
+    private final double[][] data;
     private final Graph pattern;
-    private final RegressionCovariance regression;
+    private final ICovarianceMatrix covariances;
+    private Map<Node, Integer> nodeIndices;
 
     public Ida(DataSet dataSet, List<Node> targets) {
         this.dataSet = dataSet;
-        FgesMb fges = new FgesMb(new SemBicScore(new CovarianceMatrixOnTheFly(dataSet)));
-//        Pc pc = new Pc(new IndTestFisherZ(dataSet, 0.001));
+        this.data = dataSet.getDoubleData().transpose().toArray();
+        covariances = new CovarianceMatrixOnTheFly(dataSet);
+
+        FgesMb fges = new FgesMb(new SemBicScore(covariances));
         fges.setParallelism(1);
         this.pattern = fges.search(targets);
-        regression = new RegressionCovariance(new CovarianceMatrixOnTheFly(dataSet));
+
+        nodeIndices = new HashMap<>();
+
+        final List<Node> variables = covariances.getVariables();
+
+        for (int i = 0; i < variables.size(); i++) {
+            nodeIndices.put(variables.get(i), i);
+        }
     }
 
     public Ida(DataSet dataSet) {
         this.dataSet = dataSet;
-        Fges fges = new Fges(new SemBicScore(new CovarianceMatrixOnTheFly(dataSet)));
+        this.data = dataSet.getDoubleData().transpose().toArray();
+        covariances = new CovarianceMatrixOnTheFly(dataSet);
+        Fges fges = new Fges(new SemBicScore(covariances));
         fges.setParallelism(1);
         this.pattern = fges.search();
-        regression = new RegressionCovariance(new CovarianceMatrixOnTheFly(dataSet));
+
+        nodeIndices = new HashMap<>();
+
+        final List<Node> variables = covariances.getVariables();
+
+        for (int i = 0; i < variables.size(); i++) {
+            nodeIndices.put(variables.get(i), i);
+        }
     }
 
 
@@ -90,8 +114,7 @@ public class Ida {
             if (regressors.contains(y)) {
                 beta = 0;
             } else {
-                RegressionResult result = regression.regress(y, regressors);
-                beta = result.getCoef()[1];
+                beta = getBeta(regressors, y);
             }
 
             effects.add(abs(beta));
@@ -193,9 +216,7 @@ public class Ida {
         regressors.add(x);
         regressors.addAll(trueDag.getParents(x));
 
-        RegressionResult result = regression.regress(y, regressors);
-        final double effect = result.isZeroInterceptAssumed() ? result.getCoef()[0] : result.getCoef()[1];
-        return abs(effect);
+        return abs(getBeta(regressors, y));
     }
 
     public double distance(LinkedList<Double> effects, double trueEffect) {
@@ -218,5 +239,51 @@ public class Ida {
                 return min(m1, m2);
             }
         }
+    }
+//
+//    // x must be the first regressor.
+//    private double getBeta1(List<Node> regressors, Node target) {
+//        int yIndex = nodeIndices.get(target);
+//        int[] xIndices = new int[regressors.size()];
+//
+//        for (int i = 0; i < regressors.size(); i++) {
+//            xIndices[i] = nodeIndices.get(regressors.get(i));
+//        }
+//
+//        TetradMatrix rX = covariances.getSelection(xIndices, xIndices);
+//        TetradMatrix rY = covariances.getSelection(xIndices, new int[]{yIndex});
+//
+//        return rX.inverse().times(rY).get(0, 0);
+//    }
+
+    // x must be the first regressor.
+    private double getBeta(List<Node> regressors, Node target) {
+        int yIndex = nodeIndices.get(target);
+        int[] xIndices = new int[regressors.size()];
+        for (int i = 0; i < regressors.size(); i++) xIndices[i] = nodeIndices.get(regressors.get(i));
+
+        double[] _target = data[yIndex];
+        double[][] _regressors = new double[xIndices.length + 1][];
+        for (int i = 0; i < xIndices.length; i++) _regressors[i] = data[xIndices[i]];
+
+        for (int i = 0; i < regressors.size(); i++) {
+            _regressors[i] = data[xIndices[i]];
+        }
+
+        double[] interceptCol = new double[data[0].length];
+        Arrays.fill(interceptCol, 1.0);
+        _regressors[regressors.size()] = interceptCol;
+
+        TetradMatrix y = new TetradMatrix(new double[][]{_target}).transpose();
+        TetradMatrix x = new TetradMatrix(_regressors).transpose();
+
+        TetradMatrix xT = x.transpose();
+        TetradMatrix xTx = xT.times(x);
+        TetradMatrix xTxInv = xTx.inverse();
+        TetradMatrix xTy = xT.times(y);
+        TetradMatrix b = xTxInv.times(xTy);
+
+        return b.get(0, 0);
+
     }
 }

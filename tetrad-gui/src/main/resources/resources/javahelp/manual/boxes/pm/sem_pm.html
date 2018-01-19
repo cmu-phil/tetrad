@@ -24,7 +24,7 @@ Description of the Model</span></h3>
   <p>X1 = a1 * X2 + a2 * X3 + e1,<br>
     X2 = a3 * X3 + e2,</p>
 </blockquote>
-<p>and so on, where the distribution of each error terms has a specified variance, and correlations among error terms are specified. </p>
+<p>and so on, where the distribution of each error terms has a specified variance, and covariances among error terms are specified. </p>
 <p>The graph for such a system consists of one node for each variable, one node for each error term (which may be hidden, or at least the error terms for exogenous variable may be hidden), a directed edge from each variable on the right hand side each such equation above to the variable on the left hand side of the equation, and bidirected edges between each pair of variables whose error terms are correlated. (If the error term for a variable is being shown the bidirected edge attaches to the error terms instead of the variables itself.) Cyclical dependencies among variables are permitted. See <a href="../graph/sem_graph.html">SEM Graph</a> for details.</p>
 <p>The parameters in this model consist of:</p>
 <ol>

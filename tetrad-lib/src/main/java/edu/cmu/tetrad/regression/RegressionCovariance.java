@@ -21,11 +21,8 @@
 
 package edu.cmu.tetrad.regression;
 
-import edu.cmu.tetrad.data.CorrelationMatrix;
-import edu.cmu.tetrad.data.CovarianceMatrix;
 import edu.cmu.tetrad.data.ICovarianceMatrix;
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.stat.correlation.Covariance;
 import edu.cmu.tetrad.util.ProbUtils;
 import edu.cmu.tetrad.util.TetradMatrix;
 import edu.cmu.tetrad.util.TetradVector;
@@ -34,7 +31,7 @@ import java.util.Arrays;
 import java.util.List;
 
 /**
- * Implements a regression model from correlations--that is, from a correlation
+ * Implements a regression model from covariances--that is, from a correlation
  * matrix, a list of standard deviations, and a list of means.
  *
  * @author Joseph Ramsey
@@ -49,15 +46,15 @@ public class RegressionCovariance implements Regression {
     /**
      * The covariance matrix.
      */
-    private ICovarianceMatrix correlations;
+    private ICovarianceMatrix covariances;
 
     /**2
-     * The standard deviations for the variable in <code>correlations</code>.
+     * The standard deviations for the variable in <code>covariances</code>.
      */
     private TetradVector sd;
 
     /**
-     * The means for the variables in <code>correlations</code>. May be null.
+     * The means for the variables in <code>covariances</code>. May be null.
      */
     private TetradVector means;
 
@@ -101,30 +98,30 @@ public class RegressionCovariance implements Regression {
 
     /**
      * Constructs a new covariance-based regression model, assuming the given
-     * correlations, standard deviations, and means are all specified.
+     * covariances, standard deviations, and means are all specified.
      *
-     * @param correlations       The correlation matrix, for variables
+     * @param covariances       The correlation matrix, for variables
      *                           <V1,...,Vn>.
      * @param standardDeviations Standard deviations for variables <V1,..,Vn>.
      *                           Must not be null.
      * @param means              3 for variables <V1,...,Vn>. May be null.
      */
-    private RegressionCovariance(ICovarianceMatrix correlations,
+    private RegressionCovariance(ICovarianceMatrix covariances,
                                  TetradVector standardDeviations,
                                  TetradVector means) {
-        if (correlations == null) {
+        if (covariances == null) {
             throw new NullPointerException();
         }
 
-        if (standardDeviations == null || standardDeviations.size() != correlations.getDimension()) {
+        if (standardDeviations == null || standardDeviations.size() != covariances.getDimension()) {
             throw new IllegalArgumentException();
         }
 
-        if (means != null && means.size() != correlations.getDimension()) {
+        if (means != null && means.size() != covariances.getDimension()) {
             throw new IllegalArgumentException();
         }
 
-        this.correlations = correlations;
+        this.covariances = covariances;
         this.sd = standardDeviations;
         this.means = means;
     }
@@ -159,9 +156,9 @@ public class RegressionCovariance implements Regression {
      * @return the regression plane.
      */
     public RegressionResult regress(Node target, List<Node> regressors) {
-        TetradMatrix allCorrelations = correlations.getMatrix();
+        TetradMatrix allCovariances = covariances.getMatrix();
 
-        List<Node> variables = correlations.getVariables();
+        List<Node> variables = covariances.getVariables();
 
         int yIndex = variables.indexOf(target);
 
@@ -175,8 +172,8 @@ public class RegressionCovariance implements Regression {
             }
         }
 
-        TetradMatrix rX = allCorrelations.getSelection(xIndices, xIndices);
-        TetradMatrix rY = allCorrelations.getSelection(xIndices, new int[]{yIndex});
+        TetradMatrix rX = allCovariances.getSelection(xIndices, xIndices);
+        TetradMatrix rY = allCovariances.getSelection(xIndices, new int[]{yIndex});
 
         TetradMatrix bStar = rX.inverse().times(rY);
 
@@ -207,10 +204,10 @@ public class RegressionCovariance implements Regression {
             allIndices[i] = variables.indexOf(regressors.get(i - 1));
         }
 
-        TetradMatrix r = allCorrelations.getSelection(allIndices, allIndices);
+        TetradMatrix r = allCovariances.getSelection(allIndices, allIndices);
         TetradMatrix rInv = r.inverse();
 
-        int n = correlations.getSampleSize();
+        int n = covariances.getSampleSize();
         int k = regressors.size() + 1;
 
         double vY = rInv.get(0, 0);
