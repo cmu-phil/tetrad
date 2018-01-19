@@ -12,10 +12,7 @@ import edu.cmu.tetrad.search.Ida;
 import edu.cmu.tetrad.util.ForkJoinPoolInstance;
 import edu.cmu.tetrad.util.Parameters;
 
-import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -84,11 +81,7 @@ public class FmbStar implements Algorithm {
                 Graph g = fgesMb.search(y);
 
                 for (final Node key : g.getNodes()) {
-
-                    // Exclude parents of children that aren't adjacent to Y--these can't be causal influences of Y.
-                    if (!g.isAdjacentTo(y, key)) {
-                        continue;
-                    }
+                    if (!g.isAdjacentTo(key, y)) continue;
 
                     if (g.containsNode(key)) counts.put(key, counts.get(key) + 1);
                 }
@@ -128,7 +121,7 @@ public class FmbStar implements Algorithm {
             }
         }
 
-        Ida ida = new Ida(_dataSet);
+        Ida ida = new Ida(_dataSet, outNodes);
         List<Node> filteredOutNodes = new ArrayList<>();
 
         for (int i = 0; i < new ArrayList<>(outNodes).size(); i++) {

@@ -1,10 +1,12 @@
 package edu.cmu.tetrad.search;
 
+import edu.cmu.tetrad.algcomparison.independence.SemBicTest;
 import edu.cmu.tetrad.data.CovarianceMatrixOnTheFly;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.regression.RegressionCovariance;
 import edu.cmu.tetrad.regression.RegressionDataset;
 import edu.cmu.tetrad.regression.RegressionResult;
 import edu.cmu.tetrad.util.DepthChoiceGenerator;
@@ -25,14 +27,15 @@ import static java.lang.Math.nextUp;
 public class Ida {
     private DataSet dataSet;
     private final Graph pattern;
-    private final RegressionDataset regression;
+    private final RegressionCovariance regression;
 
     public Ida(DataSet dataSet, List<Node> targets) {
         this.dataSet = dataSet;
         FgesMb fges = new FgesMb(new SemBicScore(new CovarianceMatrixOnTheFly(dataSet)));
+//        Pc pc = new Pc(new IndTestFisherZ(dataSet, 0.001));
         fges.setParallelism(1);
         this.pattern = fges.search(targets);
-        regression = new RegressionDataset(dataSet);
+        regression = new RegressionCovariance(new CovarianceMatrixOnTheFly(dataSet));
     }
 
     public Ida(DataSet dataSet) {
@@ -40,7 +43,7 @@ public class Ida {
         Fges fges = new Fges(new SemBicScore(new CovarianceMatrixOnTheFly(dataSet)));
         fges.setParallelism(1);
         this.pattern = fges.search();
-        regression = new RegressionDataset(dataSet);
+        regression = new RegressionCovariance(new CovarianceMatrixOnTheFly(dataSet));
     }
 
 
@@ -88,7 +91,7 @@ public class Ida {
                 beta = 0;
             } else {
                 RegressionResult result = regression.regress(y, regressors);
-                beta = result.isZeroInterceptAssumed() ? result.getCoef()[0] : result.getCoef()[1];
+                beta = result.getCoef()[1];
             }
 
             effects.add(abs(beta));

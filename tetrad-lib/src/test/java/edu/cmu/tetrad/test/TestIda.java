@@ -29,6 +29,7 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.Ida;
+import edu.cmu.tetrad.search.SearchGraphUtils;
 import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemPm;
 import edu.cmu.tetrad.util.Parameters;
@@ -137,8 +138,8 @@ public class TestIda {
     @Test
     public void testBoth() {
         int numNodes = 50;
-        int numEdges = 100;
-        int sampleSize = 300;
+        int numEdges = 150;
+        int sampleSize = 100;
         int numIterations = 20;
 
         Parameters parameters = new Parameters();
@@ -165,6 +166,7 @@ public class TestIda {
 
         Graph trueDag = GraphUtils.randomGraph(numNodes, 0, numEdges,
                 100, 100, 100, false);
+        Graph truePattern = SearchGraphUtils.patternForDag(trueDag);
 
         SemPm pm = new SemPm(trueDag);
         SemIm im = new SemIm(pm, parameters);
@@ -183,7 +185,7 @@ public class TestIda {
 
             long stop = System.currentTimeMillis();
 
-            int[] ret = printResult(trueDag, parameters, graph, stop - start, numNodes, numEdges, sampleSize, fullData);
+            int[] ret = printResult(truePattern, parameters, graph, stop - start, numNodes, numEdges, sampleSize, fullData);
             cstarRet.add(ret);
 
             System.out.println("\n\n=====FmbStar====");
@@ -195,16 +197,15 @@ public class TestIda {
 
             stop = System.currentTimeMillis();
 
-            int[] ret2 = printResult(trueDag, parameters, graph2, stop - start, numNodes, numEdges, sampleSize, fullData);
+            int[] ret2 = printResult(truePattern, parameters, graph2, stop - start, numNodes, numEdges, sampleSize, fullData);
             fmbStarRet.add(ret2);
         }
 
-        System.out.println("\tC\tF\tCPred\tFPred\t~CMB\t~FMB\t~CSAA\t~FAA\t~CAAA\t~FAAA");
+        System.out.println("\tCAnc\tFAnc\tCChil\tFChil\tCSib\tFSib\tCOther\tFOther");
 
         for (int i = 0; i < numIterations; i++) {
             System.out.println((i + 1) + ".\t"
                     + cstarRet.get(i)[0] + "\t" + fmbStarRet.get(i)[0] + "\t"
-                    + cstarRet.get(i)[4] + "\t" + fmbStarRet.get(i)[4] + "\t"
                     + cstarRet.get(i)[1] + "\t" + fmbStarRet.get(i)[1] + "\t"
                     + cstarRet.get(i)[2] + "\t" + fmbStarRet.get(i)[2] + "\t"
                     + cstarRet.get(i)[3] + "\t" + fmbStarRet.get(i)[3] + "\t"
@@ -212,11 +213,11 @@ public class TestIda {
         }
     }
 
-    private int[] printResult(Graph trueDag, Parameters parameters, Graph graph, long elapsed, int numNodes,
+    private int[] printResult(Graph trueGraph, Parameters parameters, Graph graph, long elapsed, int numNodes,
                               int numEdges, int sampleSize, DataSet trueData) {
-        graph = GraphUtils.replaceNodes(graph, trueDag.getNodes());
+        graph = GraphUtils.replaceNodes(graph, trueGraph.getNodes());
 
-        final Node target = trueDag.getNode(parameters.getString("targetName"));
+        final Node target = trueGraph.getNode(parameters.getString("targetName"));
 
         System.out.println("# nodes: " + numNodes);
         System.out.println("# edges: " + numEdges);
@@ -232,48 +233,43 @@ public class TestIda {
 
         outputNodes.remove(graph.getNode(target.getName()));
 
-        final List<Node> mbNodes = GraphUtils.markovBlanketDag(target, trueDag).getNodes();
-        mbNodes.remove(target);
+        final List<Node> ancestors = trueGraph.getAncestors(Collections.singletonList(target));
+        final List<Node> children = trueGraph.getChildren(target);
 
-        Set<Node> adjadjNodes = new HashSet<>(trueDag.getAdjacentNodes(target));
-        for (Node node : new HashSet<>(adjadjNodes)) adjadjNodes.addAll(trueDag.getAdjacentNodes(node));
-        adjadjNodes.remove(target);
+        ancestors.retainAll(outputNodes);
+        children.retainAll(outputNodes);
 
-        Set<Node> adjadjadjNodes = new HashSet<>(adjadjNodes);
-        for (Node node : new HashSet<>(adjadjNodes)) adjadjadjNodes.addAll(trueDag.getAdjacentNodes(node));
-        adjadjNodes.remove(target);
+        final List<Node> siblings = trueGraph.getAdjacentNodes(target);
+        siblings.retainAll(outputNodes);
+        siblings.removeAll(children);
+        siblings.removeAll(ancestors);
 
-        Set<Node> notInMb = new HashSet<>(outputNodes);
-        notInMb.removeAll(mbNodes);
+        final List<Node> other = new ArrayList<>(outputNodes);
+        other.removeAll(ancestors);
+        other.removeAll(children);
+        other.removeAll(siblings);
 
-        Set<Node> notInAdjAdj = new HashSet<>(outputNodes);
-        notInAdjAdj.removeAll(adjadjNodes);
-
-        Set<Node> notInAdjAdjAdj = new HashSet<>(outputNodes);
-        notInAdjAdjAdj.removeAll(adjadjadjNodes);
-
-        System.out.println("Output: " + outputNodes);
-        System.out.println("Not In MB: " + notInMb);
-        System.out.println("Not In AdjAdj: " + notInAdjAdj);
-        System.out.println("Not In AdjAdjAdj: " + notInAdjAdjAdj);
+        System.out.println("Ancestors: " + ancestors);
+        System.out.println("Children: " + children);
+        System.out.println("Siblings: " + siblings);
+        System.out.println("Other: " + other);
 
         System.out.println("Elapsed " + elapsed / 1000.0 + " s");
 
-        int count = printIdaResult(new ArrayList<>(outputNodes), target, trueData, trueDag);
+        printIdaResult(new ArrayList<>(outputNodes), target, trueData, trueGraph);
 
-        int[] ret = new int[5];
+        int[] ret = new int[4];
 
-        ret[0] = outputNodes.size();
-        ret[1] = notInMb.size();
-        ret[2] = notInAdjAdj.size();
-        ret[3] = notInAdjAdjAdj.size();
-        ret[4] = count;
+        ret[0] = ancestors.size();
+        ret[1] = children.size();
+        ret[2] = siblings.size();
+        ret[3] = other.size();
 
         return ret;
     }
 
-    private int printIdaResult(List<Node> x, Node y, DataSet dataSet, Graph trueDag) {
-        trueDag = GraphUtils.replaceNodes(trueDag, dataSet.getVariables());
+    private int printIdaResult(List<Node> x, Node y, DataSet dataSet, Graph trueGraph) {
+        trueGraph = GraphUtils.replaceNodes(trueGraph, dataSet.getVariables());
 
         List<Node> x2 = new ArrayList<>();
         for (Node node : x) x2.add(dataSet.getVariable(node.getName()));
@@ -286,7 +282,7 @@ public class TestIda {
 
         for (Node _x : x) {
             LinkedList<Double> effects = ida.getEffects(_x, y);
-            double trueEffect = ida.trueEffect(_x, y, trueDag);
+            double trueEffect = ida.trueEffect(_x, y, trueGraph);
             double distance = ida.distance(effects, trueEffect);
             System.out.println(_x + ": min effect = " + effects.getFirst() + " max effect = " + effects.getLast()
                     + " true effect = " + trueEffect + " distance = " + distance);

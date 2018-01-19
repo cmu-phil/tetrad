@@ -22,8 +22,10 @@
 package edu.cmu.tetrad.regression;
 
 import edu.cmu.tetrad.data.CorrelationMatrix;
+import edu.cmu.tetrad.data.CovarianceMatrix;
 import edu.cmu.tetrad.data.ICovarianceMatrix;
 import edu.cmu.tetrad.graph.*;
+import edu.cmu.tetrad.stat.correlation.Covariance;
 import edu.cmu.tetrad.util.ProbUtils;
 import edu.cmu.tetrad.util.TetradMatrix;
 import edu.cmu.tetrad.util.TetradVector;
@@ -45,9 +47,9 @@ public class RegressionCovariance implements Regression {
 //    private NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
 
     /**
-     * The correlation matrix.
+     * The covariance matrix.
      */
-    private CorrelationMatrix correlations;
+    private ICovarianceMatrix correlations;
 
     /**2
      * The standard deviations for the variable in <code>correlations</code>.
@@ -91,7 +93,9 @@ public class RegressionCovariance implements Regression {
      *                    null.
      */
     private RegressionCovariance(ICovarianceMatrix covariances, TetradVector means) {
-        this(new CorrelationMatrix(covariances), standardDeviations(covariances),
+//        this(new CorrelationMatrix(covariances), standardDeviations(covariances),
+//                means);
+        this(covariances, standardDeviations(covariances),
                 means);
     }
 
@@ -105,7 +109,7 @@ public class RegressionCovariance implements Regression {
      *                           Must not be null.
      * @param means              3 for variables <V1,...,Vn>. May be null.
      */
-    private RegressionCovariance(CorrelationMatrix correlations,
+    private RegressionCovariance(ICovarianceMatrix correlations,
                                  TetradVector standardDeviations,
                                  TetradVector means) {
         if (correlations == null) {

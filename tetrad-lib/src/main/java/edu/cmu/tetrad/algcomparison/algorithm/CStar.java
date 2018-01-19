@@ -119,22 +119,11 @@ public class CStar implements Algorithm {
             }
         }
 
-        Ida ida = new Ida(_dataSet, outNodes);
-        List<Node> filteredOutNodes = new ArrayList<>();
-
-        for (int i = 0; i < new ArrayList<>(outNodes).size(); i++) {
-            final Node x = outNodes.get(i);
-            LinkedList<Double> effects = ida.getEffects(x, y);
-            if (effects.isEmpty()) continue;
-            if (effects.getFirst() == 0.0) continue;
-            filteredOutNodes.add(x);
-        }
-
-        Graph graph = new EdgeListGraph(filteredOutNodes);
+        Graph graph = new EdgeListGraph(outNodes);
         graph.addNode(y);
 
-        for (int i = 0; i < new ArrayList<Node>(filteredOutNodes).size(); i++) {
-            graph.addDirectedEdge(filteredOutNodes.get(i), y);
+        for (int i = 0; i < new ArrayList<Node>(outNodes).size(); i++) {
+            graph.addDirectedEdge(outNodes.get(i), y);
         }
 
         return graph;
