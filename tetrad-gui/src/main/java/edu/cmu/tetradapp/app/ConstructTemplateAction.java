@@ -18,7 +18,6 @@
 // along with this program; if not, write to the Free Software               //
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA //
 ///////////////////////////////////////////////////////////////////////////////
-
 package edu.cmu.tetradapp.app;
 
 import edu.cmu.tetrad.graph.Edge;
@@ -29,13 +28,12 @@ import edu.cmu.tetradapp.model.SessionNodeWrapper;
 import edu.cmu.tetradapp.model.SessionWrapper;
 import edu.cmu.tetradapp.util.DesktopController;
 import edu.cmu.tetradapp.util.SessionEditorIndirectRef;
-
-import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
+import javax.swing.*;
 
 /**
  * Adds a new template session subgraph to the frontmost session editor. of one
@@ -49,11 +47,12 @@ final class ConstructTemplateAction extends AbstractAction {
      * The names of the templates supported by this action.
      */
     private static final String[] TEMPLATE_NAMES = new String[]{
-            "Simulate from a given graph, then search",
-            "Simulate, search, then compare",
-            "Load data and search",
-            "Search then estimate",
-            "Search, estimate, then update",
+        "Simulate from a given graph, then search",
+        "Simulate, search, then compare",
+        "Load data and search",
+        "Search then estimate",
+        "Search, estimate, then update",
+        "MIMBuild"
     };
 
     /**
@@ -72,7 +71,6 @@ final class ConstructTemplateAction extends AbstractAction {
     private SessionEditorWorkbench sessionWorkbench;
 
     //============================CONSTUCTORS============================//
-
     /**
      * Constucts an action for adding a new template to the frontmost session.
      */
@@ -88,7 +86,6 @@ final class ConstructTemplateAction extends AbstractAction {
     }
 
     //==========================PUBLIC METHODS===========================//
-
     /**
      * @return a copy of the template names. Must be public.
      */
@@ -104,6 +101,7 @@ final class ConstructTemplateAction extends AbstractAction {
      * session. It is assumed that all example sessions will be located in
      * directory "example_sessions".
      */
+    @Override
     public void actionPerformed(ActionEvent e) {
         int leftX = getLeftX();
 
@@ -117,9 +115,10 @@ final class ConstructTemplateAction extends AbstractAction {
             estimateFromSimulatedData(leftX);
         } else if (this.templateName.equals(getTemplateNames()[4])) {
             estimateThenUpdateUsingSearchResult(leftX);
+        } else if (this.templateName.equals(getTemplateNames()[5])) {
+            mimbuild(leftX);
         } else {
-            throw new IllegalStateException(
-                    "Unrecognized template name: " + this.templateName);
+            throw new IllegalStateException("Unrecognized template name: " + this.templateName);
         }
     }
 
@@ -136,13 +135,12 @@ final class ConstructTemplateAction extends AbstractAction {
     }
 
     //=============================PRIVATE METHODS========================//
-
     private int getLeftX() {
-        SessionEditorIndirectRef sessionEditorRef =
-                DesktopController.getInstance().getFrontmostSessionEditor();
+        SessionEditorIndirectRef sessionEditorRef
+                = DesktopController.getInstance().getFrontmostSessionEditor();
         SessionEditor sessionEditor = (SessionEditor) sessionEditorRef;
-        SessionEditorWorkbench sessionWorkbench =
-                sessionEditor.getSessionWorkbench();
+        SessionEditorWorkbench sessionWorkbench
+                = sessionEditor.getSessionWorkbench();
         sessionWorkbench.deselectAll();
 
         Component[] components = sessionWorkbench.getComponents();
@@ -161,11 +159,11 @@ final class ConstructTemplateAction extends AbstractAction {
     }
 
     private void searchFromLoadedOrSimulatedData(int leftX) {
-        SessionEditorIndirectRef sessionEditorRef =
-                DesktopController.getInstance().getFrontmostSessionEditor();
+        SessionEditorIndirectRef sessionEditorRef
+                = DesktopController.getInstance().getFrontmostSessionEditor();
         SessionEditor sessionEditor = (SessionEditor) sessionEditorRef;
-        SessionEditorWorkbench sessionWorkbench =
-                sessionEditor.getSessionWorkbench();
+        SessionEditorWorkbench sessionWorkbench
+                = sessionEditor.getSessionWorkbench();
         sessionWorkbench.deselectAll();
 
         List<Node> nodes = new LinkedList<>();
@@ -207,11 +205,11 @@ final class ConstructTemplateAction extends AbstractAction {
     }
 
     private void searchFromSimulatedDataWithCompare(int leftX) {
-        SessionEditorIndirectRef sessionEditorRef =
-                DesktopController.getInstance().getFrontmostSessionEditor();
+        SessionEditorIndirectRef sessionEditorRef
+                = DesktopController.getInstance().getFrontmostSessionEditor();
         SessionEditor sessionEditor = (SessionEditor) sessionEditorRef;
-        SessionEditorWorkbench sessionWorkbench =
-                sessionEditor.getSessionWorkbench();
+        SessionEditorWorkbench sessionWorkbench
+                = sessionEditor.getSessionWorkbench();
         sessionWorkbench.deselectAll();
 
         List<Node> nodes = new LinkedList<>();
@@ -232,11 +230,11 @@ final class ConstructTemplateAction extends AbstractAction {
     }
 
     private void estimateFromSimulatedData(int leftX) {
-        SessionEditorIndirectRef sessionEditorRef =
-                DesktopController.getInstance().getFrontmostSessionEditor();
+        SessionEditorIndirectRef sessionEditorRef
+                = DesktopController.getInstance().getFrontmostSessionEditor();
         SessionEditor sessionEditor = (SessionEditor) sessionEditorRef;
-        SessionEditorWorkbench sessionWorkbench =
-                sessionEditor.getSessionWorkbench();
+        SessionEditorWorkbench sessionWorkbench
+                = sessionEditor.getSessionWorkbench();
         sessionWorkbench.deselectAll();
 
         List<Node> nodes = new LinkedList<>();
@@ -267,11 +265,11 @@ final class ConstructTemplateAction extends AbstractAction {
     }
 
     private void updateFromSimulatedData(int leftX) {
-        SessionEditorIndirectRef sessionEditorRef =
-                DesktopController.getInstance().getFrontmostSessionEditor();
+        SessionEditorIndirectRef sessionEditorRef
+                = DesktopController.getInstance().getFrontmostSessionEditor();
         SessionEditor sessionEditor = (SessionEditor) sessionEditorRef;
-        SessionEditorWorkbench sessionWorkbench =
-                sessionEditor.getSessionWorkbench();
+        SessionEditorWorkbench sessionWorkbench
+                = sessionEditor.getSessionWorkbench();
         sessionWorkbench.deselectAll();
 
         List<Node> nodes = new LinkedList<>();
@@ -294,12 +292,41 @@ final class ConstructTemplateAction extends AbstractAction {
         selectSubgraph(nodes);
     }
 
+    private void mimbuild(int leftX) {
+        getSessionWorkbench().deselectAll();
+
+        List<Node> nodes = new LinkedList<>();
+
+        String graph = nextName("Graph");
+        String pm = nextName("PM");
+        String im = nextName("IM");
+        String data = nextName("Simulation");
+        String search = nextName("Search");
+        String mimbuild = nextName("MIMBuild");
+
+        nodes.add(addNode("Graph", graph, leftX, 100));
+        nodes.add(addNode("PM", pm, leftX, 200));
+        nodes.add(addNode("IM", im, leftX, 300));
+        nodes.add(addNode("Simulation", data, leftX, 400));
+        nodes.add(addNode("Search", search, 125 + leftX, 400));
+        nodes.add(addNode("Search", mimbuild, 65 + leftX, 500));
+
+        addEdge(graph, pm);
+        addEdge(pm, im);
+        addEdge(im, data);
+        addEdge(data, search);
+        addEdge(data, mimbuild);
+        addEdge(search, mimbuild);
+
+        selectSubgraph(nodes);
+    }
+
     private void estimateThenUpdateUsingSearchResult(int leftX) {
-        SessionEditorIndirectRef sessionEditorRef =
-                DesktopController.getInstance().getFrontmostSessionEditor();
+        SessionEditorIndirectRef sessionEditorRef
+                = DesktopController.getInstance().getFrontmostSessionEditor();
         SessionEditor sessionEditor = (SessionEditor) sessionEditorRef;
-        SessionEditorWorkbench sessionWorkbench =
-                sessionEditor.getSessionWorkbench();
+        SessionEditorWorkbench sessionWorkbench
+                = sessionEditor.getSessionWorkbench();
         sessionWorkbench.deselectAll();
 
         List<Node> nodes = new LinkedList<>();
@@ -334,11 +361,11 @@ final class ConstructTemplateAction extends AbstractAction {
     }
 
     private static void selectSubgraph(List<Node> nodes) {
-        SessionEditorIndirectRef sessionEditorRef =
-                DesktopController.getInstance().getFrontmostSessionEditor();
+        SessionEditorIndirectRef sessionEditorRef
+                = DesktopController.getInstance().getFrontmostSessionEditor();
         SessionEditor sessionEditor = (SessionEditor) sessionEditorRef;
-        SessionEditorWorkbench sessionWorkbench =
-                sessionEditor.getSessionWorkbench();
+        SessionEditorWorkbench sessionWorkbench
+                = sessionEditor.getSessionWorkbench();
 
         for (Node node : nodes) {
             sessionWorkbench.selectNode(node);
@@ -357,7 +384,6 @@ final class ConstructTemplateAction extends AbstractAction {
         sessionWorkbench.scrollNodesToVisible(nodes);
     }
 
-
     /**
      * Returns the next string in the sequence.
      *
@@ -365,13 +391,12 @@ final class ConstructTemplateAction extends AbstractAction {
      * @return the next string in the sequence--for example, "Graph1".
      */
     private static String nextName(String base) {
-        SessionEditorIndirectRef sessionEditorRef =
-                DesktopController.getInstance().getFrontmostSessionEditor();
+        SessionEditorIndirectRef sessionEditorRef
+                = DesktopController.getInstance().getFrontmostSessionEditor();
         SessionEditor sessionEditor = (SessionEditor) sessionEditorRef;
-        SessionEditorWorkbench sessionWorkbench =
-                sessionEditor.getSessionWorkbench();
+        SessionEditorWorkbench sessionWorkbench
+                = sessionEditor.getSessionWorkbench();
         SessionWrapper graph = sessionWorkbench.getSessionWrapper();
-
 
         if (base == null) {
             throw new NullPointerException("Base name must be non-null.");
@@ -399,11 +424,11 @@ final class ConstructTemplateAction extends AbstractAction {
     }
 
     private SessionWrapper getSessionWrapper() {
-        SessionEditorIndirectRef sessionEditorRef =
-                DesktopController.getInstance().getFrontmostSessionEditor();
+        SessionEditorIndirectRef sessionEditorRef
+                = DesktopController.getInstance().getFrontmostSessionEditor();
         SessionEditor sessionEditor = (SessionEditor) sessionEditorRef;
-        SessionEditorWorkbench sessionWorkbench =
-                sessionEditor.getSessionWorkbench();
+        SessionEditorWorkbench sessionWorkbench
+                = sessionEditor.getSessionWorkbench();
         sessionWorkbench.deselectAll();
         return sessionWorkbench.getSessionWrapper();
 
@@ -415,14 +440,14 @@ final class ConstructTemplateAction extends AbstractAction {
 
     private SessionEditorWorkbench getSessionWorkbench() {
         if (sessionWorkbench == null) {
-            SessionEditorIndirectRef sessionEditorRef =
-                    DesktopController.getInstance().getFrontmostSessionEditor();
+            SessionEditorIndirectRef sessionEditorRef
+                    = DesktopController.getInstance().getFrontmostSessionEditor();
             SessionEditor sessionEditor = (SessionEditor) sessionEditorRef;
 
             if (sessionEditor == null) {
                 DesktopController.getInstance().newSessionEditor();
-                sessionEditorRef =
-                        DesktopController.getInstance().getFrontmostSessionEditor();
+                sessionEditorRef
+                        = DesktopController.getInstance().getFrontmostSessionEditor();
                 sessionEditor = (SessionEditor) sessionEditorRef;
             }
 
@@ -432,7 +457,7 @@ final class ConstructTemplateAction extends AbstractAction {
     }
 
     private Node addNode(String nodeType, String nodeName, int centerX,
-                         int centerY) {
+            int centerY) {
         SessionNodeWrapper node = getNewModelNode(nodeType, nodeName);
         node.setCenter(centerX, centerY);
         getSessionWrapper().addNode(node);
@@ -448,14 +473,14 @@ final class ConstructTemplateAction extends AbstractAction {
         // Make sure nodes existed in the session wrapper by these names.
         if (node1 == null) {
             throw new RuntimeException(
-                    "There was no node by name nodeName1 in " +
-                            "the session wrapper: " + nodeName1);
+                    "There was no node by name nodeName1 in "
+                    + "the session wrapper: " + nodeName1);
         }
 
         if (node2 == null) {
             throw new RuntimeException(
-                    "There was no node by name nodeName2 in " +
-                            "the session wrapper: " + nodeName2);
+                    "There was no node by name nodeName2 in "
+                    + "the session wrapper: " + nodeName2);
         }
 
         // Construct an edge.
@@ -471,15 +496,15 @@ final class ConstructTemplateAction extends AbstractAction {
     }
 
     private static SessionNodeWrapper getNewModelNode(String nextButtonType,
-                                                      String name) {
+            String name) {
         if (nextButtonType == null) {
             throw new NullPointerException(
                     "Next button type must be a " + "non-null string.");
         }
 
         Class[] modelClasses = getModelClasses(nextButtonType);
-        SessionNode newNode =
-                new SessionNode(nextButtonType, name, modelClasses);
+        SessionNode newNode
+                = new SessionNode(nextButtonType, name, modelClasses);
         SessionNodeWrapper nodeWrapper = new SessionNodeWrapper(newNode);
         nodeWrapper.setButtonType(nextButtonType);
         return nodeWrapper;
@@ -487,8 +512,7 @@ final class ConstructTemplateAction extends AbstractAction {
 
     /**
      * @return the model classes associated with the given button type.
-     * @throws NullPointerException if no classes are stored for the given
-     *                              type.
+     * @throws NullPointerException if no classes are stored for the given type.
      */
     private static Class[] getModelClasses(String nextButtonType) {
         TetradApplicationConfig tetradConfig = TetradApplicationConfig.getInstance();
