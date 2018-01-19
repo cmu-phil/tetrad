@@ -42,7 +42,7 @@ import java.util.List;
 @Nonexecutable
 public class MIMBuild implements Algorithm {
 
-    private static final long serialVersionUID = -6888565875672167209L;
+    private static final long serialVersionUID = 23L;
 
     private final String description = "This MIMBuild algorithm requires both data and a measurement model as inputs; \n"
             + "You can run either Bpc or Fofc to obtain a measurement model.";
