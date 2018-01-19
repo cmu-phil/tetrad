@@ -47,14 +47,17 @@ public class MIMBuild implements Algorithm {
     private final String description = "This MIMBuild algorithm requires both data and a measurement model as inputs; \n"
             + "You can run either Bpc or Fofc to obtain a measurement model.";
 
+    private final String unsupportedMsg = "MIMBuild cannot be run directly from this class.  "
+            + "Please see the Tetrad documentation on how to setup and run MIMBuild.";
+
     @Override
     public Graph search(DataModel dataSet, Parameters parameters) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        throw new UnsupportedOperationException(unsupportedMsg);
     }
 
     @Override
     public Graph getComparisonGraph(Graph graph) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        throw new UnsupportedOperationException(unsupportedMsg);
     }
 
     @Override
