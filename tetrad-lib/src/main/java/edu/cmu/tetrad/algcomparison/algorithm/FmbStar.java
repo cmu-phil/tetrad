@@ -4,6 +4,7 @@ import edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern.Fges;
 import edu.cmu.tetrad.annotation.AlgType;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.EdgeListGraph;
+import edu.cmu.tetrad.graph.Edges;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.FgesMb;
@@ -82,7 +83,13 @@ public class FmbStar implements Algorithm {
 
                 Graph g = fgesMb.search(y);
 
-                for (final Node key : variables) {
+                for (final Node key : g.getNodes()) {
+
+                    // Exclude parents of children that aren't adjacent to Y--these can't be causal influences of Y.
+                    if (!g.isAdjacentTo(y, key)) {
+                        continue;
+                    }
+
                     if (g.containsNode(key)) counts.put(key, counts.get(key) + 1);
                 }
 
@@ -121,7 +128,7 @@ public class FmbStar implements Algorithm {
             }
         }
 
-        Ida ida = new Ida(_dataSet, outNodes);
+        Ida ida = new Ida(_dataSet);
         List<Node> filteredOutNodes = new ArrayList<>();
 
         for (int i = 0; i < new ArrayList<>(outNodes).size(); i++) {
@@ -131,7 +138,7 @@ public class FmbStar implements Algorithm {
             filteredOutNodes.add(outNodes.get(i));
         }
 
-        Graph graph = new EdgeListGraph(outNodes);
+        Graph graph = new EdgeListGraph(filteredOutNodes);
         graph.addNode(y);
 
         for (int i = 0; i < new ArrayList<Node>(filteredOutNodes).size(); i++) {

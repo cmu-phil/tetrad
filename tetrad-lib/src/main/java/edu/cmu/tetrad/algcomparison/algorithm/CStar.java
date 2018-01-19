@@ -130,7 +130,7 @@ public class CStar implements Algorithm {
             filteredOutNodes.add(x);
         }
 
-        Graph graph = new EdgeListGraph(outNodes);
+        Graph graph = new EdgeListGraph(filteredOutNodes);
         graph.addNode(y);
 
         for (int i = 0; i < new ArrayList<Node>(filteredOutNodes).size(); i++) {

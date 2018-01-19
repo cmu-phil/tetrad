@@ -136,8 +136,8 @@ public class TestIda {
 
     @Test
     public void testBoth() {
-        int numNodes = 100;
-        int numEdges = 200;
+        int numNodes = 50;
+        int numEdges = 100;
         int sampleSize = 300;
         int numIterations = 20;
 
@@ -163,14 +163,16 @@ public class TestIda {
         List<int[]> cstarRet = new ArrayList<>();
         List<int[]> fmbStarRet = new ArrayList<>();
 
-        for (int i = 0; i < numIterations; i++) {
+        Graph trueDag = GraphUtils.randomGraph(numNodes, 0, numEdges,
+                100, 100, 100, false);
 
-            Graph trueDag = GraphUtils.randomGraph(numNodes, 0, numEdges,
-                    100, 100, 100, false);
+        SemPm pm = new SemPm(trueDag);
+        SemIm im = new SemIm(pm, parameters);
+        DataSet fullData = im.simulateData(sampleSize, false);
 
-            SemPm pm = new SemPm(trueDag);
-            SemIm im = new SemIm(pm, parameters);
-            DataSet fullData = im.simulateData(sampleSize, false);
+        for (int i = 0; i < 20; i++) {
+
+            parameters.set("targetName", "X" + (30 + i + 1));
 
             System.out.println("\n\n=====CSTAR====");
 
@@ -289,7 +291,9 @@ public class TestIda {
             System.out.println(_x + ": min effect = " + effects.getFirst() + " max effect = " + effects.getLast()
                     + " true effect = " + trueEffect + " distance = " + distance);
 
-            count++;
+            if (trueEffect != 0) {
+                count++;
+            }
         }
 
         return count;

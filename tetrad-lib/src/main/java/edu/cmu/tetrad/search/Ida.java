@@ -13,6 +13,7 @@ import java.util.*;
 
 import static java.lang.Math.abs;
 import static java.lang.Math.min;
+import static java.lang.Math.nextUp;
 
 /**
  * Implements the IDA algorithm, Maathuis, Marloes H., Markus Kalisch, and Peter Bühlmann.
@@ -181,13 +182,13 @@ public class Ida {
     public double trueEffect(Node x, Node y, Graph trueDag) {
         if (x == y) throw new IllegalArgumentException("x == y");
 
+        if (!trueDag.isAncestorOf(x, y)) return 0.0;
+
         trueDag = GraphUtils.replaceNodes(trueDag, dataSet.getVariables());
 
         List<Node> regressors = new ArrayList<>();
         regressors.add(x);
         regressors.addAll(trueDag.getParents(x));
-
-        if (regressors.contains(y)) return Double.NaN;
 
         RegressionResult result = regression.regress(y, regressors);
         final double effect = result.isZeroInterceptAssumed() ? result.getCoef()[0] : result.getCoef()[1];
