@@ -13,9 +13,11 @@ import edu.cmu.tetrad.regression.RegressionDataset;
 import edu.cmu.tetrad.regression.RegressionResult;
 import edu.cmu.tetrad.stat.correlation.Covariance;
 import edu.cmu.tetrad.util.DepthChoiceGenerator;
+import edu.cmu.tetrad.util.ForkJoinPoolInstance;
 import edu.cmu.tetrad.util.TetradMatrix;
 
 import java.util.*;
+import java.util.concurrent.ForkJoinPool;
 
 import static java.lang.Math.abs;
 import static java.lang.Math.min;
@@ -36,9 +38,13 @@ public class Ida {
     private Map<Node, Integer> nodeIndices;
 
     public Ida(DataSet dataSet, List<Node> targets) {
+        this(dataSet, targets, ForkJoinPoolInstance.getInstance().getPool());
+    }
+
+    public Ida(DataSet dataSet, List<Node> targets, ForkJoinPool pool) {
         this.dataSet = dataSet;
         this.data = dataSet.getDoubleData().transpose().toArray();
-        covariances = new CovarianceMatrixOnTheFly(dataSet);
+        covariances = new CovarianceMatrixOnTheFly(dataSet, pool);
 
         FgesMb fges = new FgesMb(new SemBicScore(covariances));
         fges.setParallelism(1);
@@ -57,9 +63,17 @@ public class Ida {
         this.dataSet = dataSet;
         this.data = dataSet.getDoubleData().transpose().toArray();
         covariances = new CovarianceMatrixOnTheFly(dataSet);
+
+        System.out.println("B1");
+
         Fges fges = new Fges(new SemBicScore(covariances));
         fges.setParallelism(1);
+
+        System.out.println("B2");
+
         this.pattern = fges.search();
+
+        System.out.println("B3");
 
         nodeIndices = new HashMap<>();
 

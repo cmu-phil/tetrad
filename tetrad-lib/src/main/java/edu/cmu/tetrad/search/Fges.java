@@ -179,8 +179,6 @@ public final class Fges implements GraphSearch, GraphScorer {
     // for each edge with the maximum score chosen.
     private boolean symmetricFirstStep = false;
 
-    int maxThreads = 10 * ForkJoinPoolInstance.getInstance().getPool().getParallelism();
-
     //===========================CONSTRUCTORS=============================//
     /**
      * Construct a Score and pass it in here. The totalScore should return a
@@ -438,7 +436,6 @@ public final class Fges implements GraphSearch, GraphScorer {
      */
     public void setParallelism(int numProcessors) {
         this.pool = new ForkJoinPool(numProcessors);
-        this.maxThreads = 10 * pool.getParallelism();
     }
 
     /**
@@ -542,7 +539,7 @@ public final class Fges implements GraphSearch, GraphScorer {
     final int[] count = new int[1];
 
     public int getMinChunk(int n) {
-        return Math.max(n / maxThreads, minChunk);
+        return Math.max(n / ForkJoinPoolInstance.getInstance().getPool().getParallelism(), minChunk);
     }
 
     class NodeTaskEmptyGraph extends RecursiveTask<Boolean> {
@@ -638,7 +635,7 @@ public final class Fges implements GraphSearch, GraphScorer {
             protected Boolean compute() {
                 Queue<NodeTaskEmptyGraph> tasks = new ArrayDeque<>();
 
-                int numNodesPerTask = Math.max(100, nodes.size() / maxThreads);
+                int numNodesPerTask = Math.max(100, nodes.size() / ForkJoinPoolInstance.getInstance().getPool().getParallelism());
 
                 for (int i = 0; i < nodes.size() && !Thread.currentThread().isInterrupted(); i += numNodesPerTask) {
                     NodeTaskEmptyGraph task = new NodeTaskEmptyGraph(i, Math.min(nodes.size(), i + numNodesPerTask),
@@ -653,7 +650,7 @@ public final class Fges implements GraphSearch, GraphScorer {
                         }
                     }
 
-                    while (tasks.size() > maxThreads) {
+                    while (tasks.size() > ForkJoinPoolInstance.getInstance().getPool().getParallelism()) {
                         NodeTaskEmptyGraph _task = tasks.poll();
                         _task.join();
                     }
@@ -1288,7 +1285,7 @@ public final class Fges implements GraphSearch, GraphScorer {
             private int to;
 
             public BackwardTask(Node r, List<Node> adj, int chunk, int from, int to,
-                    Map<Node, Integer> hashIndices) {
+                                Map<Node, Integer> hashIndices) {
                 this.adj = adj;
                 this.hashIndices = hashIndices;
                 this.chunk = chunk;
@@ -1501,7 +1498,7 @@ public final class Fges implements GraphSearch, GraphScorer {
 
     // Evaluate the Insert(X, Y, T) operator (Definition 12 from Chickering, 2002).
     private double insertEval(Node x, Node y, Set<Node> t, Set<Node> naYX,
-            Map<Node, Integer> hashIndices) {
+                              Map<Node, Integer> hashIndices) {
         if (x == y) {
             throw new IllegalArgumentException();
         }
@@ -1513,7 +1510,7 @@ public final class Fges implements GraphSearch, GraphScorer {
 
     // Evaluate the Delete(X, Y, T) operator (Definition 12 from Chickering, 2002).
     private double deleteEval(Node x, Node y, Set<Node> diff, Set<Node> naYX,
-            Map<Node, Integer> hashIndices) {
+                              Map<Node, Integer> hashIndices) {
         Set<Node> set = new HashSet<>(diff);
         set.addAll(graph.getParents(y));
         set.remove(x);
@@ -1988,7 +1985,7 @@ public final class Fges implements GraphSearch, GraphScorer {
     }
 
     private double scoreGraphChange(Node y, Set<Node> parents,
-            Node x, Map<Node, Integer> hashIndices) {
+                                    Node x, Map<Node, Integer> hashIndices) {
         int yIndex = hashIndices.get(y);
 
         if (x == y) {

@@ -76,12 +76,17 @@ public class FmbStar implements Algorithm {
                 final edu.cmu.tetrad.search.SemBicScore score = new edu.cmu.tetrad.search.SemBicScore(covariances);
                 score.setPenaltyDiscount(parameters.getDouble("penaltyDiscount"));
                 FgesMb fgesMb = new FgesMb(score);
-                fgesMb.setParallelism(1);
+                fgesMb.setParallelism(2);
+
+                System.out.println("HH");
 
                 Graph g = fgesMb.search(y);
 
+                System.out.println("II");
+
                 for (final Node key : g.getNodes()) {
                     if (!g.isAdjacentTo(key, y)) continue;
+
 
                     if (g.containsNode(key)) counts.put(key, counts.get(key) + 1);
                 }
@@ -90,13 +95,12 @@ public class FmbStar implements Algorithm {
             }
         }
 
-        List<Task> tasks = new ArrayList<>();
 
         for (int i = 0; i < numSubsamples; i++) {
+            List<Task> tasks = new ArrayList<>();
             tasks.add(new Task(i, counts));
+            ForkJoinPoolInstance.getInstance().getPool().invokeAll(tasks);
         }
-
-        ForkJoinPoolInstance.getInstance().getPool().invokeAll(tasks);
 
         List<Node> sortedVariables = new ArrayList<>(variables);
 
@@ -121,7 +125,7 @@ public class FmbStar implements Algorithm {
             }
         }
 
-        Ida ida = new Ida(_dataSet, outNodes);
+        Ida ida = new Ida(_dataSet, outNodes, ForkJoinPoolInstance.getInstance().getPool());
         List<Node> filteredOutNodes = new ArrayList<>();
 
         for (int i = 0; i < new ArrayList<>(outNodes).size(); i++) {

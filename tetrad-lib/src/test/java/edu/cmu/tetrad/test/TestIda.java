@@ -69,9 +69,10 @@ public class TestIda {
 
     @Test
     public void testCStar() {
-        int numNodes = 10;
-        int numEdges = 10;
+        int numNodes = 50;
+        int numEdges = 2 * numNodes;
         int sampleSize = 100;
+        int numBootstraps = 20;
 
         Graph trueDag = GraphUtils.randomGraph(numNodes, 0, numEdges,
                 100, 100, 100, false);
@@ -85,11 +86,11 @@ public class TestIda {
         Parameters parameters = new Parameters();
 
         parameters.set("penaltyDiscount", 2);
-        parameters.set("numSubsamples", 100);
+        parameters.set("numSubsamples", numBootstraps);
         parameters.set("percentSubsampleSize", .5);
         parameters.set("topQ", 5);
-        parameters.set("piThreshold", .7);
-        parameters.set("targetName", "X5");
+        parameters.set("piThreshold", .5);
+        parameters.set("targetName", "X50");
 
         long start = System.currentTimeMillis();
 
@@ -103,8 +104,8 @@ public class TestIda {
 
     @Test
     public void testFmbStar() {
-        int numNodes = 100;
-        int numEdges = 100;
+        int numNodes = 50;
+        int numEdges = 2 * numNodes;
         int sampleSize = 100;
 
         Graph trueDag = GraphUtils.randomGraph(numNodes, 0, numEdges,
@@ -119,16 +120,16 @@ public class TestIda {
         Parameters parameters = new Parameters();
 
         parameters.set("penaltyDiscount", 2);
-        parameters.set("numSubsamples", 100);
+        parameters.set("numSubsamples", 30);
         parameters.set("percentSubsampleSize", .5);
         parameters.set("topQ", 5);
-        parameters.set("piThreshold", .7);
-        parameters.set("targetName", "X14");
+        parameters.set("piThreshold", .5);
+        parameters.set("targetName", "X50");
 
         long start = System.currentTimeMillis();
 
-        FmbStar cstar = new FmbStar();
-        Graph graph = cstar.search(dataSet, parameters);
+        FmbStar star = new FmbStar();
+        Graph graph = star.search(dataSet, parameters);
 
         long stop = System.currentTimeMillis();
 
@@ -137,19 +138,19 @@ public class TestIda {
 
     @Test
     public void testBoth() {
-        int numNodes = 50;
-        int numEdges = 150;
+        int numNodes = 200;
+        int numEdges = numNodes;
         int sampleSize = 100;
-        int numIterations = 20;
+        int numIterations = 5;
 
         Parameters parameters = new Parameters();
-        parameters.set("penaltyDiscount", 1);
+        parameters.set("penaltyDiscount", 2);
         parameters.set("numSubsamples", 30);
         parameters.set("percentSubsampleSize", .5);
         parameters.set("topQ", 5);
         parameters.set("piThreshold", .5);
         parameters.set("targetName", "X30");
-        parameters.set("verbose", false);
+        parameters.set("verbose", true);
 
         parameters.set("coefLow", 0.3);
         parameters.set("coefHigh", 0.9);

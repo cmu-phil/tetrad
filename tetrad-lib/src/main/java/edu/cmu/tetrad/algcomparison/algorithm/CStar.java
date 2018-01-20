@@ -70,30 +70,42 @@ public class CStar implements Algorithm {
                     System.out.println("Bootstrap #" + (i + 1) + " of " + numSubsamples);
                 }
 
+                System.out.println("A");
+
                 BootstrapSampler sampler = new BootstrapSampler();
                 sampler.setWithoutReplacements(true);
                 DataSet sample = sampler.sample(_dataSet, (int) (percentSubsampleSize * _dataSet.getNumRows()));
 
+                System.out.println("B");
+
                 Ida ida = new Ida(sample);
 
                 Ida.NodeEffects effects = ida.getSortedMinEffects(y);
+
+                System.out.println("C");
 
                 for (int i = 0; i < q; i++) {
                     final Node key = effects.getNodes().get(i);
                     counts.put(key, counts.get(key) + 1);
                 }
 
+                System.out.println("D");
+
+                if (parameters.getBoolean("verbose")) {
+                    System.out.println("Finished Bootstrap #" + (i + 1) + " of " + numSubsamples);
+                }
+
                 return true;
             }
         }
 
-        List<Task> tasks = new ArrayList<>();
 
         for (int i = 0; i < numSubsamples; i++) {
+            List<Task> tasks = new ArrayList<>();
             tasks.add(new Task(i, counts));
+            ForkJoinPoolInstance.getInstance().getPool().invokeAll(tasks);
         }
 
-        ForkJoinPoolInstance.getInstance().getPool().invokeAll(tasks);
 
         variables.sort((o1, o2) -> {
             final int d1 = counts.get(o1);

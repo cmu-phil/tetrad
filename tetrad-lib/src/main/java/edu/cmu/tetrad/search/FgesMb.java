@@ -183,7 +183,7 @@ public final class FgesMb {
     // Bounds the indegree of the graph.
     private int maxIndegree;
 
-    int maxThreads = ForkJoinPoolInstance.getInstance().getPool().getParallelism();
+//    int maxThreads = ForkJoinPoolInstance.getInstance().getPool().getParallelism();
 
     //===========================CONSTRUCTORS=============================//
 
@@ -285,6 +285,8 @@ public final class FgesMb {
 
     public Graph search(List<Node> targets) {
 
+        topGraphs.clear();
+
         // Assumes one-edge faithfulness.
         long start = System.currentTimeMillis();
         modelScore = 0.0;
@@ -345,6 +347,8 @@ public final class FgesMb {
 
         storeGraph(mbgraph);
 
+        pool.shutdownNow();
+
         return mbgraph;
     }
 
@@ -352,7 +356,6 @@ public final class FgesMb {
         sortedArrows = new ConcurrentSkipListSet<>();
         lookupArrows = new ConcurrentHashMap<>();
         neighbors = new ConcurrentHashMap<>();
-        final List<Node> nodes = fgesScore.getVariables();
 
         this.effectEdgesGraph = new EdgeListGraphSingleConnections();
 
@@ -379,7 +382,7 @@ public final class FgesMb {
 
                     addUnconditionalArrows(x, target, emptySet);
 
-                    if (maxThreads > 1) {
+                    if (pool.getParallelism() > 1) {
                         class MbAboutNodeTask extends RecursiveTask<Boolean> {
 
                             public MbAboutNodeTask() {
@@ -390,9 +393,9 @@ public final class FgesMb {
                                 Queue<NodeTaskEmptyGraph> tasks = new ArrayDeque<>();
 
                                 for (final Node y : fgesScore.getVariables()) {
-                                    if (Thread.currentThread().isInterrupted()) {
-                                        break;
-                                    }
+//                                    if (Thread.currentThread().isInterrupted()) {
+//                                        break;
+//                                    }
 
                                     if (x == y) continue;
 
@@ -400,9 +403,9 @@ public final class FgesMb {
                                     mbTask.fork();
 
                                     for (NodeTaskEmptyGraph _task : new ArrayList<>(tasks)) {
-                                        if (Thread.currentThread().isInterrupted()) {
-                                            break;
-                                        }
+//                                        if (Thread.currentThread().isInterrupted()) {
+//                                            break;
+//                                        }
 
                                         if (_task.isDone()) {
                                             _task.join();
@@ -410,10 +413,10 @@ public final class FgesMb {
                                         }
                                     }
 
-                                    while (tasks.size() > maxThreads) {
-                                        if (Thread.currentThread().isInterrupted()) {
-                                            break;
-                                        }
+                                    while (tasks.size() > pool.getParallelism()) {
+//                                        if (Thread.currentThread().isInterrupted()) {
+//                                            break;
+//                                        }
 
                                         NodeTaskEmptyGraph _task = tasks.poll();
                                         _task.join();
@@ -421,9 +424,9 @@ public final class FgesMb {
                                 }
 
                                 for (NodeTaskEmptyGraph task : tasks) {
-                                    if (Thread.currentThread().isInterrupted()) {
-                                        break;
-                                    }
+//                                    if (Thread.currentThread().isInterrupted()) {
+//                                        break;
+//                                    }
 
                                     task.join();
                                 }
@@ -433,18 +436,20 @@ public final class FgesMb {
                         }
 
                         pool.invoke(new MbAboutNodeTask());
-                    } else {
-                        for (final Node y : fgesScore.getVariables()) {
-                            if (Thread.currentThread().isInterrupted()) {
-                                break;
-                            }
+                    }
 
-                            if (x == y) continue;
-
-                            MbTask mbTask = new MbTask(x, y, target);
-                            mbTask.compute();
-
+                }
+                else {
+                    for (final Node y : fgesScore.getVariables()) {
+                        if (Thread.currentThread().isInterrupted()) {
+                            break;
                         }
+
+                        if (x == y) continue;
+
+                        MbTask mbTask = new MbTask(x, y, target);
+                        mbTask.compute();
+
                     }
                 }
             }
@@ -665,7 +670,12 @@ public final class FgesMb {
      */
     public void setParallelism(int numProcessors) {
         this.pool = new ForkJoinPool(numProcessors);
-        maxThreads = pool.getParallelism();
+
+//        if (numProcessors == 1) {
+//            maxThreads = 1;
+//        } else {
+//            maxThreads = pool.getParallelism();
+//        }
     }
 
     /**
@@ -758,7 +768,7 @@ public final class FgesMb {
     final int[] count = new int[1];
 
     public int getMinChunk(int n) {
-        return Math.max(n / maxThreads, minChunk);
+        return Math.max(n / pool.getParallelism(), minChunk);
     }
 
     class NodeTaskEmptyGraph extends RecursiveTask<Boolean> {
@@ -841,7 +851,7 @@ public final class FgesMb {
         long start = System.currentTimeMillis();
         this.effectEdgesGraph = new EdgeListGraphSingleConnections(nodes);
 
-        if (maxThreads > 1) {
+        if (pool.getParallelism() > 1) {
             class InitializeFromEmptyGraphTask extends RecursiveTask<Boolean> {
 
                 public InitializeFromEmptyGraphTask() {
@@ -851,7 +861,7 @@ public final class FgesMb {
                 protected Boolean compute() {
                     Queue<NodeTaskEmptyGraph> tasks = new ArrayDeque<>();
 
-                    int numNodesPerTask = Math.max(100, nodes.size() / maxThreads);
+                    int numNodesPerTask = Math.max(100, nodes.size() / pool.getParallelism());
 
                     for (int i = 0; i < nodes.size(); i += numNodesPerTask) {
                         if (Thread.currentThread().isInterrupted()) {
@@ -874,7 +884,7 @@ public final class FgesMb {
                             }
                         }
 
-                        while (tasks.size() > maxThreads) {
+                        while (tasks.size() > pool.getParallelism()) {
                             if (Thread.currentThread().isInterrupted()) {
                                 break;
                             }
@@ -1060,7 +1070,7 @@ public final class FgesMb {
 
         final Set<Node> emptySet = new HashSet<>(0);
 
-        if (maxThreads > 1) {
+        if (pool.getParallelism() > 1) {
             class InitializeFromExistingGraphTask extends RecursiveTask<Boolean> {
                 private int chunk;
                 private int from;
@@ -1328,7 +1338,7 @@ public final class FgesMb {
     // Calcuates new arrows based on changes in the graph for the forward search.
     private void reevaluateForward(final Set<Node> nodes, final Arrow arrow) {
 
-        if (maxThreads > 1) {
+        if (pool.getParallelism() > 1) {
             class AdjTask extends RecursiveTask<Boolean> {
                 private final List<Node> nodes;
                 private int from;
@@ -1505,7 +1515,7 @@ public final class FgesMb {
     // Reevaluates arrows after removing an edge from the graph.
     private void reevaluateBackward(Set<Node> toProcess) {
 
-        if (maxThreads > 1) {
+        if (pool.getParallelism() > 1) {
             class BackwardTask extends RecursiveTask<Boolean> {
                 private final Node r;
                 private List<Node> adj;
