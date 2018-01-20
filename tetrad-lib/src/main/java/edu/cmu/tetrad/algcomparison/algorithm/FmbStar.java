@@ -63,11 +63,6 @@ public class FmbStar implements Algorithm {
 
             @Override
             public Boolean call() {
-                if (parameters.getBoolean("verbose")) {
-                    System.out.println("Bootstrap #" + (i + 1) + " of " + numSubsamples);
-                    System.out.flush();
-                }
-
                 BootstrapSampler sampler = new BootstrapSampler();
                 sampler.setWithoutReplacements(true);
                 DataSet sample = sampler.sample(_dataSet, (int) (percentageB * _dataSet.getNumRows()));
@@ -76,19 +71,17 @@ public class FmbStar implements Algorithm {
                 final edu.cmu.tetrad.search.SemBicScore score = new edu.cmu.tetrad.search.SemBicScore(covariances);
                 score.setPenaltyDiscount(parameters.getDouble("penaltyDiscount"));
                 FgesMb fgesMb = new FgesMb(score);
-                fgesMb.setParallelism(2);
-
-                System.out.println("HH");
-
+//                fgesMb.setParallelism(2);
                 Graph g = fgesMb.search(y);
-
-                System.out.println("II");
 
                 for (final Node key : g.getNodes()) {
                     if (!g.isAdjacentTo(key, y)) continue;
-
-
                     if (g.containsNode(key)) counts.put(key, counts.get(key) + 1);
+                }
+
+                if (parameters.getBoolean("verbose")) {
+                    System.out.println("Bootstrap #" + (i + 1) + " of " + numSubsamples);
+                    System.out.flush();
                 }
 
                 return true;

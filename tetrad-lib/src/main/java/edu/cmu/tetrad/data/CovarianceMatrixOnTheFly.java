@@ -31,7 +31,6 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.text.NumberFormat;
 import java.util.*;
-import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.RecursiveTask;
 
 /**
@@ -117,15 +116,7 @@ public class CovarianceMatrixOnTheFly implements ICovarianceMatrix {
         this(dataSet, false);
     }
 
-    public CovarianceMatrixOnTheFly(DataSet dataSet, ForkJoinPool pool) {
-        this(dataSet, false, pool);
-    }
-
     public CovarianceMatrixOnTheFly(DataSet dataSet, boolean verbose) {
-        this(dataSet, verbose, ForkJoinPoolInstance.getInstance().getPool());
-    }
-
-    public CovarianceMatrixOnTheFly(DataSet dataSet, boolean verbose, ForkJoinPool pool) {
         if (!dataSet.isContinuous()) {
             throw new IllegalArgumentException("Not a continuous data set.");
         }
@@ -292,7 +283,7 @@ public class CovarianceMatrixOnTheFly implements ICovarianceMatrix {
         final int chunk = _chunk < minChunk ? minChunk : _chunk;
 
         VarianceTask task = new VarianceTask(chunk, 0, variables.size());
-        pool.invoke(task);
+        ForkJoinPoolInstance.getInstance().getPool().invoke(task);
 
         if (verbose) {
             System.out.println("Done with variances.");

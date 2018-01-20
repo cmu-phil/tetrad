@@ -183,8 +183,6 @@ public final class FgesMb {
     // Bounds the indegree of the graph.
     private int maxIndegree;
 
-//    int maxThreads = ForkJoinPoolInstance.getInstance().getPool().getParallelism();
-
     //===========================CONSTRUCTORS=============================//
 
     /**
@@ -347,8 +345,6 @@ public final class FgesMb {
 
         storeGraph(mbgraph);
 
-        pool.shutdownNow();
-
         return mbgraph;
     }
 
@@ -382,81 +378,22 @@ public final class FgesMb {
 
                     addUnconditionalArrows(x, target, emptySet);
 
-                    if (pool.getParallelism() > 1) {
-                        class MbAboutNodeTask extends RecursiveTask<Boolean> {
+                    List<MbTask> tasks = new ArrayList<>();
 
-                            public MbAboutNodeTask() {
-                            }
-
-                            @Override
-                            protected Boolean compute() {
-                                Queue<NodeTaskEmptyGraph> tasks = new ArrayDeque<>();
-
-                                for (final Node y : fgesScore.getVariables()) {
-//                                    if (Thread.currentThread().isInterrupted()) {
-//                                        break;
-//                                    }
-
-                                    if (x == y) continue;
-
-                                    MbTask mbTask = new MbTask(x, y, target);
-                                    mbTask.fork();
-
-                                    for (NodeTaskEmptyGraph _task : new ArrayList<>(tasks)) {
-//                                        if (Thread.currentThread().isInterrupted()) {
-//                                            break;
-//                                        }
-
-                                        if (_task.isDone()) {
-                                            _task.join();
-                                            tasks.remove(_task);
-                                        }
-                                    }
-
-                                    while (tasks.size() > pool.getParallelism()) {
-//                                        if (Thread.currentThread().isInterrupted()) {
-//                                            break;
-//                                        }
-
-                                        NodeTaskEmptyGraph _task = tasks.poll();
-                                        _task.join();
-                                    }
-                                }
-
-                                for (NodeTaskEmptyGraph task : tasks) {
-//                                    if (Thread.currentThread().isInterrupted()) {
-//                                        break;
-//                                    }
-
-                                    task.join();
-                                }
-
-                                return true;
-                            }
-                        }
-
-                        pool.invoke(new MbAboutNodeTask());
-                    }
-
-                }
-                else {
                     for (final Node y : fgesScore.getVariables()) {
-                        if (Thread.currentThread().isInterrupted()) {
-                            break;
-                        }
-
                         if (x == y) continue;
-
                         MbTask mbTask = new MbTask(x, y, target);
-                        mbTask.compute();
-
+                        tasks.add(mbTask);
                     }
+
+                    pool.invokeAll(tasks);
+
                 }
             }
         }
     }
 
-    class MbTask extends RecursiveTask<Boolean> {
+    class MbTask implements Callable<Boolean> {
         Node x;
         Node y;
         Node target;
@@ -469,7 +406,7 @@ public final class FgesMb {
         }
 
         @Override
-        protected Boolean compute() {
+        public Boolean call() {
             if (!effectEdgesGraph.isAdjacentTo(x, y) && !effectEdgesGraph.isAdjacentTo(y, target)) {
                 int child2 = hashIndices.get(x);
                 int parent2 = hashIndices.get(y);
@@ -512,7 +449,10 @@ public final class FgesMb {
         if (boundGraph != null && !boundGraph.isAdjacentTo(x, y)) return;
 
         final Edge edge = Edges.undirectedEdge(x, y);
-        effectEdgesGraph.addEdge(edge);
+
+        if (!effectEdgesGraph.isAdjacentTo(x, y)) {
+            effectEdgesGraph.addEdge(edge);
+        }
 
         if (bump > 0.0) {
             addArrow(x, y, emptySet, emptySet, bump);
@@ -670,12 +610,6 @@ public final class FgesMb {
      */
     public void setParallelism(int numProcessors) {
         this.pool = new ForkJoinPool(numProcessors);
-
-//        if (numProcessors == 1) {
-//            maxThreads = 1;
-//        } else {
-//            maxThreads = pool.getParallelism();
-//        }
     }
 
     /**
@@ -771,7 +705,7 @@ public final class FgesMb {
         return Math.max(n / pool.getParallelism(), minChunk);
     }
 
-    class NodeTaskEmptyGraph extends RecursiveTask<Boolean> {
+    class NodeTaskEmptyGraph implements Callable<Boolean> {
         private final int from;
         private final int to;
         private final List<Node> nodes;
@@ -785,7 +719,7 @@ public final class FgesMb {
         }
 
         @Override
-        protected Boolean compute() {
+        public Boolean call() {
             for (int i = from; i < to; i++) {
                 if ((i + 1) % 1000 == 0) {
                     count[0] += 1000;
@@ -851,69 +785,16 @@ public final class FgesMb {
         long start = System.currentTimeMillis();
         this.effectEdgesGraph = new EdgeListGraphSingleConnections(nodes);
 
-        if (pool.getParallelism() > 1) {
-            class InitializeFromEmptyGraphTask extends RecursiveTask<Boolean> {
+        List<NodeTaskEmptyGraph> tasks = new ArrayList<>();
+        int numNodesPerTask = Math.max(100, nodes.size() / pool.getParallelism());
 
-                public InitializeFromEmptyGraphTask() {
-                }
-
-                @Override
-                protected Boolean compute() {
-                    Queue<NodeTaskEmptyGraph> tasks = new ArrayDeque<>();
-
-                    int numNodesPerTask = Math.max(100, nodes.size() / pool.getParallelism());
-
-                    for (int i = 0; i < nodes.size(); i += numNodesPerTask) {
-                        if (Thread.currentThread().isInterrupted()) {
-                            break;
-                        }
-
-                        NodeTaskEmptyGraph task = new NodeTaskEmptyGraph(i, Math.min(nodes.size(), i + numNodesPerTask),
-                                nodes, emptySet);
-                        tasks.add(task);
-                        task.fork();
-
-                        for (NodeTaskEmptyGraph _task : new ArrayList<>(tasks)) {
-                            if (Thread.currentThread().isInterrupted()) {
-                                break;
-                            }
-
-                            if (_task.isDone()) {
-                                _task.join();
-                                tasks.remove(_task);
-                            }
-                        }
-
-                        while (tasks.size() > pool.getParallelism()) {
-                            if (Thread.currentThread().isInterrupted()) {
-                                break;
-                            }
-
-                            NodeTaskEmptyGraph _task = tasks.poll();
-                            _task.join();
-                        }
-                    }
-
-                    for (NodeTaskEmptyGraph task : tasks) {
-                        if (Thread.currentThread().isInterrupted()) {
-                            break;
-                        }
-
-                        task.join();
-                    }
-
-                    return true;
-                }
-            }
-
-            pool.invoke(new InitializeFromEmptyGraphTask());
-        } else {
-            for (int i = 0; i < nodes.size(); i++) {
-                NodeTaskEmptyGraph task = new NodeTaskEmptyGraph(i, Math.min(nodes.size(), i),
-                        nodes, emptySet);
-                task.compute();
-            }
+        for (int i = 0; i < nodes.size(); i += numNodesPerTask) {
+            NodeTaskEmptyGraph task = new NodeTaskEmptyGraph(i, Math.min(nodes.size(), i + numNodesPerTask),
+                    nodes, emptySet);
+            tasks.add(task);
         }
+
+        pool.invokeAll(tasks);
 
         long stop = System.currentTimeMillis();
 
@@ -1070,59 +951,52 @@ public final class FgesMb {
 
         final Set<Node> emptySet = new HashSet<>(0);
 
-        if (pool.getParallelism() > 1) {
-            class InitializeFromExistingGraphTask extends RecursiveTask<Boolean> {
-                private int chunk;
-                private int from;
-                private int to;
+        class InitializeFromExistingGraphTask extends RecursiveTask<Boolean> {
+            private int chunk;
+            private int from;
+            private int to;
 
-                public InitializeFromExistingGraphTask(int chunk, int from, int to) {
-                    this.chunk = chunk;
-                    this.from = from;
-                    this.to = to;
-                }
-
-                @Override
-                protected Boolean compute() {
-                    if (TaskManager.getInstance().isCanceled()) return false;
-
-                    if (to - from <= chunk) {
-                        for (int i = from; i < to; i++) {
-                            if (Thread.currentThread().isInterrupted()) {
-                                break;
-                            }
-
-                            if ((i + 1) % 1000 == 0) {
-                                count[0] += 1000;
-                                out.println("Initializing effect edges: " + (count[0]));
-                            }
-
-                            initializeEffectEdges(i, nodes, emptySet);
-                        }
-
-                        return true;
-                    } else {
-                        int mid = (to + from) / 2;
-
-                        InitializeFromExistingGraphTask left = new InitializeFromExistingGraphTask(chunk, from, mid);
-                        InitializeFromExistingGraphTask right = new InitializeFromExistingGraphTask(chunk, mid, to);
-
-                        left.fork();
-                        right.compute();
-                        left.join();
-
-                        return true;
-                    }
-                }
+            public InitializeFromExistingGraphTask(int chunk, int from, int to) {
+                this.chunk = chunk;
+                this.from = from;
+                this.to = to;
             }
 
-            pool.invoke(new InitializeFromExistingGraphTask(getMinChunk(nodes.size()), 0, nodes.size()));
-        } else {
-            for (int i = 0; i < nodes.size(); i++) {
-                initializeEffectEdges(i, nodes, Collections.EMPTY_SET);
+            @Override
+            protected Boolean compute() {
+                if (TaskManager.getInstance().isCanceled()) return false;
+
+                if (to - from <= chunk) {
+                    for (int i = from; i < to; i++) {
+                        if (Thread.currentThread().isInterrupted()) {
+                            break;
+                        }
+
+                        if ((i + 1) % 1000 == 0) {
+                            count[0] += 1000;
+                            out.println("Initializing effect edges: " + (count[0]));
+                        }
+
+                        initializeEffectEdges(i, nodes, emptySet);
+                    }
+
+                    return true;
+                } else {
+                    int mid = (to + from) / 2;
+
+                    InitializeFromExistingGraphTask left = new InitializeFromExistingGraphTask(chunk, from, mid);
+                    InitializeFromExistingGraphTask right = new InitializeFromExistingGraphTask(chunk, mid, to);
+
+                    left.fork();
+                    right.compute();
+                    left.join();
+
+                    return true;
+                }
             }
         }
 
+        pool.invoke(new InitializeFromExistingGraphTask(getMinChunk(nodes.size()), 0, nodes.size()));
     }
 
     private void initializeEffectEdges(int i, List<Node> nodes, Set<Node> emptySet) {
@@ -1338,51 +1212,45 @@ public final class FgesMb {
     // Calcuates new arrows based on changes in the graph for the forward search.
     private void reevaluateForward(final Set<Node> nodes, final Arrow arrow) {
 
-        if (pool.getParallelism() > 1) {
-            class AdjTask extends RecursiveTask<Boolean> {
-                private final List<Node> nodes;
-                private int from;
-                private int to;
-                private int chunk;
+        class AdjTask extends RecursiveTask<Boolean> {
+            private final List<Node> nodes;
+            private int from;
+            private int to;
+            private int chunk;
 
-                public AdjTask(int chunk, List<Node> nodes, int from, int to) {
-                    this.nodes = nodes;
-                    this.from = from;
-                    this.to = to;
-                    this.chunk = chunk;
-                }
+            public AdjTask(int chunk, List<Node> nodes, int from, int to) {
+                this.nodes = nodes;
+                this.from = from;
+                this.to = to;
+                this.chunk = chunk;
+            }
 
-                @Override
-                protected Boolean compute() {
-                    if (to - from <= chunk) {
-                        for (int _w = from; _w < to; _w++) {
-                            adjTask(_w, nodes);
-                        }
-
-                        return true;
-                    } else {
-                        int mid = (to - from) / 2;
-
-                        List<AdjTask> tasks = new ArrayList<>();
-
-                        tasks.add(new AdjTask(chunk, nodes, from, from + mid));
-                        tasks.add(new AdjTask(chunk, nodes, from + mid, to));
-
-                        invokeAll(tasks);
-
-                        return true;
+            @Override
+            protected Boolean compute() {
+                if (to - from <= chunk) {
+                    for (int _w = from; _w < to; _w++) {
+                        adjTask(_w, nodes);
                     }
+
+                    return true;
+                } else {
+                    int mid = (to - from) / 2;
+
+                    List<AdjTask> tasks = new ArrayList<>();
+
+                    tasks.add(new AdjTask(chunk, nodes, from, from + mid));
+                    tasks.add(new AdjTask(chunk, nodes, from + mid, to));
+
+                    invokeAll(tasks);
+
+                    return true;
                 }
-
             }
 
-            final AdjTask task = new AdjTask(getMinChunk(nodes.size()), new ArrayList<>(nodes), 0, nodes.size());
-            pool.invoke(task);
-        } else {
-            for (int i = 0; i < nodes.size(); i++) {
-                adjTask(i, new ArrayList<>(nodes));
-            }
         }
+
+        final AdjTask task = new AdjTask(getMinChunk(nodes.size()), new ArrayList<>(nodes), 0, nodes.size());
+        pool.invoke(task);
     }
 
     private void adjTask(int _w, List<Node> nodes) {
@@ -1515,70 +1383,57 @@ public final class FgesMb {
     // Reevaluates arrows after removing an edge from the graph.
     private void reevaluateBackward(Set<Node> toProcess) {
 
-        if (pool.getParallelism() > 1) {
-            class BackwardTask extends RecursiveTask<Boolean> {
-                private final Node r;
-                private List<Node> adj;
-                private Map<Node, Integer> hashIndices;
-                private int chunk;
-                private int from;
-                private int to;
+        class BackwardTask extends RecursiveTask<Boolean> {
+            private final Node r;
+            private List<Node> adj;
+            private Map<Node, Integer> hashIndices;
+            private int chunk;
+            private int from;
+            private int to;
 
-                public BackwardTask(Node r, List<Node> adj, int chunk, int from, int to,
-                                    Map<Node, Integer> hashIndices) {
-                    this.adj = adj;
-                    this.hashIndices = hashIndices;
-                    this.chunk = chunk;
-                    this.from = from;
-                    this.to = to;
-                    this.r = r;
-                }
+            public BackwardTask(Node r, List<Node> adj, int chunk, int from, int to,
+                                Map<Node, Integer> hashIndices) {
+                this.adj = adj;
+                this.hashIndices = hashIndices;
+                this.chunk = chunk;
+                this.from = from;
+                this.to = to;
+                this.r = r;
+            }
 
-                @Override
-                protected Boolean compute() {
-                    if (to - from <= chunk) {
-                        for (int _w = from; _w < to; _w++) {
-                            if (Thread.currentThread().isInterrupted()) {
-                                break;
-                            }
-
-                            backwardTask(_w, r, adj);
+            @Override
+            protected Boolean compute() {
+                if (to - from <= chunk) {
+                    for (int _w = from; _w < to; _w++) {
+                        if (Thread.currentThread().isInterrupted()) {
+                            break;
                         }
 
-                        return true;
-                    } else {
-                        int mid = (to - from) / 2;
-
-                        List<BackwardTask> tasks = new ArrayList<>();
-
-                        tasks.add(new BackwardTask(r, adj, chunk, from, from + mid, hashIndices));
-                        tasks.add(new BackwardTask(r, adj, chunk, from + mid, to, hashIndices));
-
-                        invokeAll(tasks);
-
-                        return true;
+                        backwardTask(_w, r, adj);
                     }
-                }
 
-            }
+                    return true;
+                } else {
+                    int mid = (to - from) / 2;
 
-            for (Node r : toProcess) {
-                this.neighbors.put(r, getNeighbors(r));
-                List<Node> adjacentNodes = graph.getAdjacentNodes(r);
-                pool.invoke(new BackwardTask(r, adjacentNodes, getMinChunk(adjacentNodes.size()), 0,
-                        adjacentNodes.size(), hashIndices));
-            }
-        } else {
-            for (Node r : toProcess) {
-                this.neighbors.put(r, getNeighbors(r));
-                List<Node> adjacentNodes = graph.getAdjacentNodes(r);
+                    List<BackwardTask> tasks = new ArrayList<>();
 
-                for (int w = 0; w < adjacentNodes.size(); w++) {
-                    backwardTask(w, r, adjacentNodes);
+                    tasks.add(new BackwardTask(r, adj, chunk, from, from + mid, hashIndices));
+                    tasks.add(new BackwardTask(r, adj, chunk, from + mid, to, hashIndices));
 
+                    invokeAll(tasks);
+
+                    return true;
                 }
             }
 
+        }
+
+        for (Node r : toProcess) {
+            this.neighbors.put(r, getNeighbors(r));
+            List<Node> adjacentNodes = graph.getAdjacentNodes(r);
+            pool.invoke(new BackwardTask(r, adjacentNodes, getMinChunk(adjacentNodes.size()), 0,
+                    adjacentNodes.size(), hashIndices));
         }
     }
 

@@ -138,7 +138,7 @@ public class TestIda {
 
     @Test
     public void testBoth() {
-        int numNodes = 200;
+        int numNodes = 50;
         int numEdges = numNodes;
         int sampleSize = 100;
         int numIterations = 5;
@@ -150,7 +150,7 @@ public class TestIda {
         parameters.set("topQ", 5);
         parameters.set("piThreshold", .5);
         parameters.set("targetName", "X30");
-        parameters.set("verbose", true);
+        parameters.set("verbose", false);
 
         parameters.set("coefLow", 0.3);
         parameters.set("coefHigh", 0.9);
@@ -173,9 +173,9 @@ public class TestIda {
         SemIm im = new SemIm(pm, parameters);
         DataSet fullData = im.simulateData(sampleSize, false);
 
-        for (int i = 0; i < 20; i++) {
+        for (int i = 0; i < numIterations; i++) {
 
-            parameters.set("targetName", "X" + (30 + i + 1));
+            parameters.set("targetName", "X" + (numNodes - numIterations + i));
 
             System.out.println("\n\n=====CSTAR====");
 
