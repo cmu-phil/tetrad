@@ -19,9 +19,7 @@ import edu.cmu.tetrad.util.TetradMatrix;
 import java.util.*;
 import java.util.concurrent.ForkJoinPool;
 
-import static java.lang.Math.abs;
-import static java.lang.Math.min;
-import static java.lang.Math.nextUp;
+import static java.lang.Math.*;
 
 /**
  * Implements the IDA algorithm, Maathuis, Marloes H., Markus Kalisch, and Peter Bühlmann.
@@ -36,6 +34,7 @@ public class Ida {
     private final Graph pattern;
     private final ICovarianceMatrix covariances;
     private Map<Node, Integer> nodeIndices;
+    private ForkJoinPool pool;
 
     public Ida(DataSet dataSet, List<Node> targets) {
         this(dataSet, targets, ForkJoinPoolInstance.getInstance().getPool());
@@ -47,7 +46,7 @@ public class Ida {
         covariances = new CovarianceMatrixOnTheFly(dataSet);
 
         FgesMb fges = new FgesMb(new SemBicScore(covariances));
-//        fges.setParallelism(1);
+        fges.setPool(pool);
         this.pattern = fges.search(targets);
 
         nodeIndices = new HashMap<>();
@@ -60,12 +59,16 @@ public class Ida {
     }
 
     public Ida(DataSet dataSet) {
+        this(dataSet, ForkJoinPoolInstance.getInstance().getPool());
+    }
+
+    public Ida(DataSet dataSet, ForkJoinPool pool) {
         this.dataSet = dataSet;
         this.data = dataSet.getDoubleData().transpose().toArray();
         covariances = new CovarianceMatrixOnTheFly(dataSet);
 
         Fges fges = new Fges(new SemBicScore(covariances));
-//        fges.setParallelism(1);
+        fges.setPool(pool);
         this.pattern = fges.search();
         nodeIndices = new HashMap<>();
 

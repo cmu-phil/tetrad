@@ -41,6 +41,8 @@ public class CStar implements Algorithm {
 
     @Override
     public Graph search(DataModel dataSet, Parameters parameters) {
+        ForkJoinPool pool = new ForkJoinPool(Runtime.getRuntime().availableProcessors() * 10);
+
         DataSet _dataSet = (DataSet) dataSet;
 
         double percentSubsampleSize = parameters.getDouble("percentSubsampleSize");
@@ -69,7 +71,7 @@ public class CStar implements Algorithm {
                 BootstrapSampler sampler = new BootstrapSampler();
                 sampler.setWithoutReplacements(true);
                 DataSet sample = sampler.sample(_dataSet, (int) (percentSubsampleSize * _dataSet.getNumRows()));
-                Ida ida = new Ida(sample);
+                Ida ida = new Ida(sample, pool);
                 Ida.NodeEffects effects = ida.getSortedMinEffects(y);
 
                 for (int i = 0; i < q; i++) {
@@ -86,12 +88,13 @@ public class CStar implements Algorithm {
         }
 
 
+        List<Task> tasks = new ArrayList<>();
+
         for (int i = 0; i < numSubsamples; i++) {
-            List<Task> tasks = new ArrayList<>();
             tasks.add(new Task(i, counts));
-            ForkJoinPoolInstance.getInstance().getPool().invokeAll(tasks);
         }
 
+        pool.invokeAll(tasks);
 
         variables.sort((o1, o2) -> {
             final int d1 = counts.get(o1);

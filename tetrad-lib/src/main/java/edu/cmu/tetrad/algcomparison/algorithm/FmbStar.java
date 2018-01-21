@@ -4,7 +4,6 @@ import edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern.Fges;
 import edu.cmu.tetrad.annotation.AlgType;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.EdgeListGraph;
-import edu.cmu.tetrad.graph.Edges;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.FgesMb;
@@ -12,9 +11,13 @@ import edu.cmu.tetrad.search.Ida;
 import edu.cmu.tetrad.util.ForkJoinPoolInstance;
 import edu.cmu.tetrad.util.Parameters;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ForkJoinPool;
 
 @edu.cmu.tetrad.annotation.Algorithm(
         name = "FmbStar",
@@ -40,6 +43,8 @@ public class FmbStar implements Algorithm {
 
     @Override
     public Graph search(DataModel dataSet, Parameters parameters) {
+        ForkJoinPool pool = new ForkJoinPool(Runtime.getRuntime().availableProcessors() * 10);
+
         DataSet _dataSet = (DataSet) dataSet;
         List<Node> variables = _dataSet.getVariables();
 
@@ -71,7 +76,7 @@ public class FmbStar implements Algorithm {
                 final edu.cmu.tetrad.search.SemBicScore score = new edu.cmu.tetrad.search.SemBicScore(covariances);
                 score.setPenaltyDiscount(parameters.getDouble("penaltyDiscount"));
                 FgesMb fgesMb = new FgesMb(score);
-//                fgesMb.setParallelism(2);
+                fgesMb.setPool(pool);
                 Graph g = fgesMb.search(y);
 
                 for (final Node key : g.getNodes()) {
@@ -89,11 +94,13 @@ public class FmbStar implements Algorithm {
         }
 
 
+        List<Task> tasks = new ArrayList<>();
+
         for (int i = 0; i < numSubsamples; i++) {
-            List<Task> tasks = new ArrayList<>();
             tasks.add(new Task(i, counts));
-            ForkJoinPoolInstance.getInstance().getPool().invokeAll(tasks);
         }
+
+        ForkJoinPoolInstance.getInstance().getPool().invokeAll(tasks);
 
         List<Node> sortedVariables = new ArrayList<>(variables);
 
@@ -118,7 +125,7 @@ public class FmbStar implements Algorithm {
             }
         }
 
-        Ida ida = new Ida(_dataSet, outNodes, ForkJoinPoolInstance.getInstance().getPool());
+        Ida ida = new Ida(_dataSet, outNodes, pool);
         List<Node> filteredOutNodes = new ArrayList<>();
 
         for (int i = 0; i < new ArrayList<>(outNodes).size(); i++) {

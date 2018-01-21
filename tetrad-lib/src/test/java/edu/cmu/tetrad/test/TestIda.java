@@ -125,6 +125,7 @@ public class TestIda {
         parameters.set("topQ", 5);
         parameters.set("piThreshold", .5);
         parameters.set("targetName", "X50");
+        parameters.set("verbose", false);
 
         long start = System.currentTimeMillis();
 
@@ -141,7 +142,7 @@ public class TestIda {
         int numNodes = 50;
         int numEdges = numNodes;
         int sampleSize = 100;
-        int numIterations = 5;
+        int numIterations = 10;
 
         Parameters parameters = new Parameters();
         parameters.set("penaltyDiscount", 2);
