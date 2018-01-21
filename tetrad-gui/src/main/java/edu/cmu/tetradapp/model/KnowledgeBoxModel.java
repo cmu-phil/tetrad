@@ -24,6 +24,7 @@ package edu.cmu.tetradapp.model;
 import edu.cmu.tetrad.data.IKnowledge;
 import edu.cmu.tetrad.data.Knowledge2;
 import edu.cmu.tetrad.data.KnowledgeBoxInput;
+import edu.cmu.tetrad.data.KnowledgeTransferable;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
@@ -67,6 +68,12 @@ public class KnowledgeBoxModel implements SessionModel, ParamsResettable, Knowle
     public KnowledgeBoxModel(KnowledgeBoxInput[] inputs, Parameters params) {
         if (params == null) {
             throw new NullPointerException();
+        }
+
+        if (inputs.length == 1 && inputs[0] instanceof KnowledgeTransferable) {
+            this.knowledge = ((KnowledgeTransferable) inputs[0]).getKnowledge();
+            this.numTiers = knowledge.getNumTiers();
+                return;
         }
 
         for (KnowledgeBoxInput input : inputs) {

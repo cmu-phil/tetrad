@@ -150,6 +150,8 @@ public final class TimeSeriesData implements DataModel {
     }
 
     public final IKnowledge getKnowledge() {
+        System.out.println();
+
         return this.knowledge.copy();
     }
 
