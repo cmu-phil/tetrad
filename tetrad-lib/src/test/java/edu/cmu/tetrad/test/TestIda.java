@@ -77,15 +77,13 @@ public class TestIda {
         Graph trueDag = GraphUtils.randomGraph(numNodes, 0, numEdges,
                 100, 100, 100, false);
 
-        System.out.println(trueDag);
-
         SemPm pm = new SemPm(trueDag);
         SemIm im = new SemIm(pm);
         DataSet dataSet = im.simulateData(sampleSize, false);
 
         Parameters parameters = new Parameters();
 
-        parameters.set("penaltyDiscount", 2);
+        parameters.set("penaltyDiscount", 1);
         parameters.set("numSubsamples", numBootstraps);
         parameters.set("percentSubsampleSize", .5);
         parameters.set("topQ", 5);
@@ -111,8 +109,6 @@ public class TestIda {
         Graph trueDag = GraphUtils.randomGraph(numNodes, 0, numEdges,
                 100, 100, 100, false);
 
-        System.out.println(trueDag);
-
         SemPm pm = new SemPm(trueDag);
         SemIm im = new SemIm(pm);
         DataSet dataSet = im.simulateData(sampleSize, false);
@@ -125,7 +121,7 @@ public class TestIda {
         parameters.set("topQ", 5);
         parameters.set("piThreshold", .5);
         parameters.set("targetName", "X50");
-        parameters.set("verbose", false);
+        parameters.set("verbose", true);
 
         long start = System.currentTimeMillis();
 
@@ -142,7 +138,7 @@ public class TestIda {
         int numNodes = 50;
         int numEdges = numNodes;
         int sampleSize = 100;
-        int numIterations = 10;
+        int numIterations = 5;
 
         Parameters parameters = new Parameters();
         parameters.set("penaltyDiscount", 2);
@@ -194,14 +190,16 @@ public class TestIda {
 
             start = System.currentTimeMillis();
 
-            FmbStar cstar2 = new FmbStar();
-            Graph graph2 = cstar2.search(fullData, parameters);
+            FmbStar fmbStar = new FmbStar();
+            Graph graph2 = fmbStar.search(fullData, parameters);
 
             stop = System.currentTimeMillis();
 
             int[] ret2 = printResult(truePattern, parameters, graph2, stop - start, numNodes, numEdges, sampleSize, fullData);
             fmbStarRet.add(ret2);
         }
+
+        System.out.println();
 
         System.out.println("\tCAnc\tFAnc\tCChil\tFChil\tCSib\tFSib\tCOther\tFOther");
 

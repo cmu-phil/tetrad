@@ -1,17 +1,11 @@
 package edu.cmu.tetrad.search;
 
-import edu.cmu.tetrad.algcomparison.independence.SemBicTest;
-import edu.cmu.tetrad.data.CovarianceMatrix;
 import edu.cmu.tetrad.data.CovarianceMatrixOnTheFly;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.ICovarianceMatrix;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.regression.RegressionCovariance;
-import edu.cmu.tetrad.regression.RegressionDataset;
-import edu.cmu.tetrad.regression.RegressionResult;
-import edu.cmu.tetrad.stat.correlation.Covariance;
 import edu.cmu.tetrad.util.DepthChoiceGenerator;
 import edu.cmu.tetrad.util.ForkJoinPoolInstance;
 import edu.cmu.tetrad.util.TetradMatrix;
@@ -19,7 +13,8 @@ import edu.cmu.tetrad.util.TetradMatrix;
 import java.util.*;
 import java.util.concurrent.ForkJoinPool;
 
-import static java.lang.Math.*;
+import static java.lang.Math.abs;
+import static java.lang.Math.min;
 
 /**
  * Implements the IDA algorithm, Maathuis, Marloes H., Markus Kalisch, and Peter Bühlmann.
@@ -43,7 +38,7 @@ public class Ida {
     public Ida(DataSet dataSet, List<Node> targets, ForkJoinPool pool) {
         this.dataSet = dataSet;
         this.data = dataSet.getDoubleData().transpose().toArray();
-        covariances = new CovarianceMatrixOnTheFly(dataSet);
+        covariances = new CovarianceMatrixOnTheFly(dataSet, pool);
 
         FgesMb fges = new FgesMb(new SemBicScore(covariances));
         fges.setPool(pool);
@@ -65,7 +60,7 @@ public class Ida {
     public Ida(DataSet dataSet, ForkJoinPool pool) {
         this.dataSet = dataSet;
         this.data = dataSet.getDoubleData().transpose().toArray();
-        covariances = new CovarianceMatrixOnTheFly(dataSet);
+        covariances = new CovarianceMatrixOnTheFly(dataSet, pool);
 
         Fges fges = new Fges(new SemBicScore(covariances));
         fges.setPool(pool);

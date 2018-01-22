@@ -72,7 +72,7 @@ public class FmbStar implements Algorithm {
                 sampler.setWithoutReplacements(true);
                 DataSet sample = sampler.sample(_dataSet, (int) (percentageB * _dataSet.getNumRows()));
 
-                final ICovarianceMatrix covariances = new CovarianceMatrixOnTheFly(sample);
+                final ICovarianceMatrix covariances = new CovarianceMatrixOnTheFly(sample, pool);
                 final edu.cmu.tetrad.search.SemBicScore score = new edu.cmu.tetrad.search.SemBicScore(covariances);
                 score.setPenaltyDiscount(parameters.getDouble("penaltyDiscount"));
                 FgesMb fgesMb = new FgesMb(score);
