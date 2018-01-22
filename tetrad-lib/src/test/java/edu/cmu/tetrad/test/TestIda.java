@@ -268,7 +268,7 @@ public class TestIda {
         return ret;
     }
 
-    private int printIdaResult(List<Node> x, Node y, DataSet dataSet, Graph trueGraph) {
+    private void printIdaResult(List<Node> x, Node y, DataSet dataSet, Graph trueGraph) {
         trueGraph = GraphUtils.replaceNodes(trueGraph, dataSet.getVariables());
 
         List<Node> x2 = new ArrayList<>();
@@ -291,8 +291,6 @@ public class TestIda {
                 count++;
             }
         }
-
-        return count;
     }
 }
 
