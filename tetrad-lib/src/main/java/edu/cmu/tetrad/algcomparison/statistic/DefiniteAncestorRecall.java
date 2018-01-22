@@ -1,6 +1,6 @@
 package edu.cmu.tetrad.algcomparison.statistic;
 
-import edu.cmu.tetrad.algcomparison.statistic.utils.AncestorConfusion;
+import edu.cmu.tetrad.algcomparison.statistic.utils.DefiniteAncestorConfusion;
 import edu.cmu.tetrad.graph.Graph;
 
 /**
@@ -9,24 +9,25 @@ import edu.cmu.tetrad.graph.Graph;
  *
  * @author jdramsey
  */
-public class AncestorNoDecision implements Statistic {
+public class DefiniteAncestorRecall implements Statistic {
     static final long serialVersionUID = 23L;
 
     @Override
     public String getAbbreviation() {
-        return "ANND";
+        return "ANCP";
     }
 
     @Override
     public String getDescription() {
-        return "Ancestor No Decision";
+        return "Ancestor Precision";
     }
 
     @Override
     public double getValue(Graph trueGraph, Graph estGraph) {
-        AncestorConfusion adjConfusion = new AncestorConfusion(trueGraph, estGraph);
-        int tn = adjConfusion.getTn();
-        return tn;
+        DefiniteAncestorConfusion adjConfusion = new DefiniteAncestorConfusion(trueGraph, estGraph);
+        int tp = adjConfusion.getAtp();
+        int fn = adjConfusion.getAfn();
+        return tp / (double) (tp + fn);
     }
 
     @Override

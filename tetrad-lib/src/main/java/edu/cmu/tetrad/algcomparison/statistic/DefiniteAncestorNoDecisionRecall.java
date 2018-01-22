@@ -9,23 +9,25 @@ import edu.cmu.tetrad.graph.Graph;
  *
  * @author jdramsey
  */
-public class AncestorTrueNegatives implements Statistic {
+public class DefiniteAncestorNoDecisionRecall implements Statistic {
     static final long serialVersionUID = 23L;
 
     @Override
     public String getAbbreviation() {
-        return "ANCR";
+        return "ANCP";
     }
 
     @Override
     public String getDescription() {
-        return "Ancestor Recall";
+        return "Ancestor Precision";
     }
 
     @Override
     public double getValue(Graph trueGraph, Graph estGraph) {
         DefiniteAncestorConfusion adjConfusion = new DefiniteAncestorConfusion(trueGraph, estGraph);
-        return adjConfusion.getAtn();
+        int tp = adjConfusion.getTpnd();
+        int fn = adjConfusion.getFpnd();
+        return tp / (double) (tp + fn);
     }
 
     @Override

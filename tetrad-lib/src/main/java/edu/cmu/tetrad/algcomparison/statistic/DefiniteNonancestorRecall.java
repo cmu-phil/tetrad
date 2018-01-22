@@ -1,7 +1,6 @@
 package edu.cmu.tetrad.algcomparison.statistic;
 
-import edu.cmu.tetrad.algcomparison.statistic.utils.AdjacencyConfusion;
-import edu.cmu.tetrad.algcomparison.statistic.utils.AncestorConfusion;
+import edu.cmu.tetrad.algcomparison.statistic.utils.DefiniteAncestorConfusion;
 import edu.cmu.tetrad.graph.Graph;
 
 /**
@@ -10,7 +9,7 @@ import edu.cmu.tetrad.graph.Graph;
  *
  * @author jdramsey
  */
-public class AncestorPrecision implements Statistic {
+public class DefiniteNonancestorRecall implements Statistic {
     static final long serialVersionUID = 23L;
 
     @Override
@@ -25,10 +24,10 @@ public class AncestorPrecision implements Statistic {
 
     @Override
     public double getValue(Graph trueGraph, Graph estGraph) {
-        AncestorConfusion adjConfusion = new AncestorConfusion(trueGraph, estGraph);
-        int tp = adjConfusion.getTp();
-        int fp = adjConfusion.getFp();
-        return tp / (double) (tp + fp);
+        DefiniteAncestorConfusion adjConfusion = new DefiniteAncestorConfusion(trueGraph, estGraph);
+        int tp = adjConfusion.getTpna();
+        int fn = adjConfusion.getFpna();
+        return tp / (double) (tp + fn);
     }
 
     @Override
