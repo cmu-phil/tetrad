@@ -257,6 +257,8 @@ public class ParamDescriptions {
         map.put("numLags", new ParamDescription(
                 "The number of lags in the time lag model",
                 1, 1, Double.POSITIVE_INFINITY));
+
+        map.put("saveLatentVars", new ParamDescription("Save latent variables.", false));
     }
 
     public static ParamDescriptions getInstance() {

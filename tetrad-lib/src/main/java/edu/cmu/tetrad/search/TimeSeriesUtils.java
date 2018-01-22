@@ -18,7 +18,6 @@
 // along with this program; if not, write to the Free Software               //
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA //
 ///////////////////////////////////////////////////////////////////////////////
-
 package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.*;
@@ -29,16 +28,16 @@ import edu.cmu.tetrad.regression.RegressionResult;
 import edu.cmu.tetrad.util.RandomUtil;
 import edu.cmu.tetrad.util.TetradMatrix;
 import edu.cmu.tetrad.util.TetradVector;
-import org.apache.commons.math3.exception.MaxCountExceededException;
-import org.apache.commons.math3.linear.EigenDecomposition;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import org.apache.commons.math3.exception.MaxCountExceededException;
+import org.apache.commons.math3.linear.EigenDecomposition;
 
 /**
- * Contains some utilities for doing autoregression. Should probably be improved by somebody.
+ * Contains some utilities for doing autoregression. Should probably be improved
+ * by somebody.
  *
  * @author Joseph Ramsey
  * @author Daniel Malinsky (some improvements)
@@ -46,9 +45,10 @@ import java.util.List;
 public class TimeSeriesUtils {
 
     /**
-     * @return the VAR residuals of the given time series with the given number of lags. That is, every variable at the
-     * model lag is regressed onto every variable at previous lags, up to the given number of lags, and the residuals
-     * of these regressions for each variable are returned.
+     * @return the VAR residuals of the given time series with the given number
+     * of lags. That is, every variable at the model lag is regressed onto every
+     * variable at previous lags, up to the given number of lags, and the
+     * residuals of these regressions for each variable are returned.
      */
     public static DataSet ar(DataSet timeSeries, int numLags) {
         DataSet timeLags = createLagData(timeSeries, numLags);
@@ -123,7 +123,6 @@ public class TimeSeriesUtils {
 
                 regressors.add(timeLags.getVariable(i2));
             }
-
 
             RegressionResult result = regression.regress(target, regressors);
             TetradVector residualsColumn = result.getResiduals();
@@ -216,7 +215,6 @@ public class TimeSeriesUtils {
             residuals.assignColumn(i, residualsColumn);
         }
 
-
         return new VarResult(ColtDataSet.makeContinuousData(timeSeries.getVariables(), residuals),
                 collapsedVarGraph);
     }
@@ -228,8 +226,12 @@ public class TimeSeriesUtils {
         int max = Integer.MIN_VALUE;
 
         for (int i1 = 0; i1 < shifts.length; i1++) {
-            if (shifts[i1] < min) min = shifts[i1];
-            if (shifts[i1] > max) max = shifts[i1];
+            if (shifts[i1] < min) {
+                min = shifts[i1];
+            }
+            if (shifts[i1] > max) {
+                max = shifts[i1];
+            }
         }
 
         int shiftRange = max - min;
@@ -257,6 +259,7 @@ public class TimeSeriesUtils {
     }
 
     public static class VarResult {
+
         private DataSet residuals;
         private Graph collapsedVarGraph;
 
@@ -273,7 +276,6 @@ public class TimeSeriesUtils {
             return collapsedVarGraph;
         }
     }
-
 
     public static double[] getSelfLoopCoefs(DataSet timeSeries) {
         DataSet timeLags = createLagData(timeSeries, 1);
@@ -326,18 +328,20 @@ public class TimeSeriesUtils {
         return sum / n;
     }
 
-
     /**
-     * Calculates the dth difference of the given data. If d = 0, the original data is returned. If d = 1, the data
-     * (with one fewer rows) is returned, with each row subtracted from its successor. If d = 1, the same operation is
-     * applied to the result of d = 1. And so on.
+     * Calculates the dth difference of the given data. If d = 0, the original
+     * data is returned. If d = 1, the data (with one fewer rows) is returned,
+     * with each row subtracted from its successor. If d = 1, the same operation
+     * is applied to the result of d = 1. And so on.
      *
      * @param data the data to be differenced.
-     * @param d    the number of differences to take, >= 0.
+     * @param d the number of differences to take, >= 0.
      * @return the differenced data.
      */
     public static DataSet difference(DataSet data, int d) {
-        if (d == 0) return data;
+        if (d == 0) {
+            return data;
+        }
 
         TetradMatrix _data = data.getDoubleData();
 
@@ -357,7 +361,8 @@ public class TimeSeriesUtils {
     }
 
     /**
-     * Creates new time series dataset from the given one (fixed to deal with mixed datasets)
+     * Creates new time series dataset from the given one (fixed to deal with
+     * mixed datasets)
      */
     public static DataSet createLagData(DataSet data, int numLags) {
         List<Node> variables = data.getVariables();
@@ -403,19 +408,16 @@ public class TimeSeriesUtils {
 
 //                System.out.println("name 1 = " + name1);
 //                System.out.println("name 2 = " + name2);
-
                 String prefix1 = getPrefix(name1);
                 String prefix2 = getPrefix(name2);
 
 //                System.out.println("prefix 1 = " + prefix1);
 //                System.out.println("prefix 2 = " + prefix2);
-
                 int index1 = getIndex(name1);
                 int index2 = getIndex(name2);
 
 //                System.out.println("index 1 = " + index1);
 //                System.out.println("index 2 = " + index2);
-
                 if (getLag(o1.getName()) == getLag(o2.getName())) {
                     if (prefix1.compareTo(prefix2) == 0) {
                         return Integer.compare(index1, index2);
@@ -424,22 +426,21 @@ public class TimeSeriesUtils {
                     }
 
                 } else {
-                    return getLag(o1.getName())-getLag(o2.getName());
+                    return getLag(o1.getName()) - getLag(o2.getName());
                 }
             }
         });
 
 //        System.out.println("Variable list after the sort = " + newVariables);
-
         for (Node node : newVariables) {
             String varName = node.getName();
             String tmp;
             int lag;
-            if(varName.indexOf(':')== -1){
+            if (varName.indexOf(':') == -1) {
                 lag = 0;
 //                laglist.add(lag);
             } else {
-                tmp = varName.substring(varName.indexOf(':')+1,varName.length());
+                tmp = varName.substring(varName.indexOf(':') + 1, varName.length());
                 lag = Integer.parseInt(tmp);
 //                laglist.add(lag);
             }
@@ -470,7 +471,8 @@ public class TimeSeriesUtils {
     }
 
     /**
-     * Creates new time series dataset from the given one with index variable (e.g., time)
+     * Creates new time series dataset from the given one with index variable
+     * (e.g., time)
      */
     public static DataSet createLagDataWithIndex(DataSet data, int numLags) {
         List<Node> variables = data.getVariables();
@@ -523,19 +525,16 @@ public class TimeSeriesUtils {
 
 //                System.out.println("name 1 = " + name1);
 //                System.out.println("name 2 = " + name2);
-
                 String prefix1 = getPrefix(name1);
                 String prefix2 = getPrefix(name2);
 
 //                System.out.println("prefix 1 = " + prefix1);
 //                System.out.println("prefix 2 = " + prefix2);
-
                 int index1 = getIndex(name1);
                 int index2 = getIndex(name2);
 
 //                System.out.println("index 1 = " + index1);
 //                System.out.println("index 2 = " + index2);
-
                 if (getLag(o1.getName()) == getLag(o2.getName())) {
                     if (prefix1.compareTo(prefix2) == 0) {
                         return Integer.compare(index1, index2);
@@ -544,23 +543,24 @@ public class TimeSeriesUtils {
                     }
 
                 } else {
-                    return getLag(o1.getName())-getLag(o2.getName());
+                    return getLag(o1.getName()) - getLag(o2.getName());
                 }
             }
         });
 
 //        System.out.println("Variable list after the sort = " + variables);
-
         for (Node node : newVariables) {
             String varName = node.getName();
-            if (varName.equals("time")) continue;
+            if (varName.equals("time")) {
+                continue;
+            }
             String tmp;
             int lag;
-            if(varName.indexOf(':')== -1){
+            if (varName.indexOf(':') == -1) {
                 lag = 0;
 //                laglist.add(lag);
             } else {
-                tmp = varName.substring(varName.indexOf(':')+1,varName.length());
+                tmp = varName.substring(varName.indexOf(':') + 1, varName.length());
                 lag = Integer.parseInt(tmp);
 //                laglist.add(lag);
             }
@@ -585,7 +585,7 @@ public class TimeSeriesUtils {
 
         // fill indexNode with for loop over rows
         for (int row = 0; row < laggedRows; row++) {
-            laggedData.setDouble(row, dataSize + numLags * dataSize, row+1);
+            laggedData.setDouble(row, dataSize + numLags * dataSize, row + 1);
         }
 
         knowledge.setDefaultToKnowledgeLayout(true);
@@ -594,7 +594,7 @@ public class TimeSeriesUtils {
         return laggedData;
     }
 
-    public static TimeLagGraph graphToLagGraph(Graph _graph, int numLags){
+    public static TimeLagGraph graphToLagGraph(Graph _graph, int numLags) {
         TimeLagGraph graph = new TimeLagGraph();
         graph.setMaxLag(numLags);
 
@@ -602,9 +602,15 @@ public class TimeSeriesUtils {
             graph.addNode(new ContinuousVariable(node.getName()));
 
             /* adding node from Lag 1 to Lag 0 for every node */
-            Node from = graph.getNode(node.getName(),1);
-            Node to = graph.getNode(node.getName(),0);
-            Edge edge = new Edge(from,to,Endpoint.TAIL,Endpoint.ARROW);
+            Node from = graph.getNode(node.getName(), 1);
+            if (node.getNodeType() == NodeType.LATENT) {
+                from.setNodeType(NodeType.LATENT);
+            }
+            Node to = graph.getNode(node.getName(), 0);
+            if (node.getNodeType() == NodeType.LATENT) {
+                to.setNodeType(NodeType.LATENT);
+            }
+            Edge edge = new Edge(from, to, Endpoint.TAIL, Endpoint.ARROW);
             graph.addEdge(edge);
             //graph.addDirectedEdge(from, to);
         }
@@ -620,7 +626,7 @@ public class TimeSeriesUtils {
 //            System.out.println("To node = " + to.getName());
             Node _from = graph.getNode(from.getName(), 0);
             Node _to = graph.getNode(to.getName(), 0);
-            Edge edge1 = new Edge(_from,_to,Endpoint.TAIL,Endpoint.ARROW);
+            Edge edge1 = new Edge(_from, _to, Endpoint.TAIL, Endpoint.ARROW);
             graph.addEdge(edge1);
             //graph.addDirectedEdge(_from, _to);
         }
@@ -628,15 +634,22 @@ public class TimeSeriesUtils {
         //for lag
         // for node
         //  with probability 0.3 add edge from node to *random* node at lag0
-
         for (int lag = 1; lag <= numLags; lag++) {
-            for (Node node1 : graph.getLag0Nodes()){
-                Node from = graph.getNode(node1.getName(),lag);
-                for (Node node2 : graph.getLag0Nodes()){
-                    Node to = graph.getNode(node2.getName(),0);
-                    if (node1.getName().equals(node2.getName())) continue;
-                    if (RandomUtil.getInstance().nextUniform(0,1)<=0.15){
-                        Edge edge = new Edge(from,to,Endpoint.TAIL,Endpoint.ARROW);
+            for (Node node1 : graph.getLag0Nodes()) {
+                Node from = graph.getNode(node1.getName(), lag);
+                if (node1.getNodeType() == NodeType.LATENT) {
+                    from.setNodeType(NodeType.LATENT);
+                }
+                for (Node node2 : graph.getLag0Nodes()) {
+                    Node to = graph.getNode(node2.getName(), 0);
+                    if (node2.getNodeType() == NodeType.LATENT) {
+                        to.setNodeType(NodeType.LATENT);
+                    }
+                    if (node1.getName().equals(node2.getName())) {
+                        continue;
+                    }
+                    if (RandomUtil.getInstance().nextUniform(0, 1) <= 0.15) {
+                        Edge edge = new Edge(from, to, Endpoint.TAIL, Endpoint.ARROW);
                         graph.addEdge(edge);
                         //graph.addDirectedEdge(from, to);
                     }
@@ -644,16 +657,16 @@ public class TimeSeriesUtils {
             } // for node at lag (from)
         } // for lag
 
-
-
         return graph;
     }
 
     public static String getNameNoLag(Object obj) {
         String tempS = obj.toString();
-        if(tempS.indexOf(':')== -1) {
+        if (tempS.indexOf(':') == -1) {
             return tempS;
-        } else return tempS.substring(0, tempS.indexOf(':'));
+        } else {
+            return tempS.substring(0, tempS.indexOf(':'));
+        }
     }
 
     public static String getPrefix(String s) {
@@ -671,7 +684,7 @@ public class TimeSeriesUtils {
 //        if(s.indexOf(':')== -1) return s;
 //        String tmp = s.substring(0,s.indexOf(':')-1);
 //        return tmp;
-        return s.substring(0,1);
+        return s.substring(0, 1);
     }
 
     public static int getIndex(String s) {
@@ -687,8 +700,10 @@ public class TimeSeriesUtils {
     }
 
     public static int getLag(String s) {
-        if(s.indexOf(':')== -1) return 0;
-        String tmp = s.substring(s.indexOf(':')+1,s.length());
+        if (s.indexOf(':') == -1) {
+            return 0;
+        }
+        String tmp = s.substring(s.indexOf(':') + 1, s.length());
         return (Integer.parseInt(tmp));
     }
 
@@ -702,11 +717,11 @@ public class TimeSeriesUtils {
         for (Node node : variables) {
             String varName = node.getName();
             String tmp;
-            if(varName.indexOf(':')== -1){
+            if (varName.indexOf(':') == -1) {
                 lag = 0;
                 laglist.add(lag);
             } else {
-                tmp = varName.substring(varName.indexOf(':')+1,varName.length());
+                tmp = varName.substring(varName.indexOf(':') + 1, varName.length());
                 lag = Integer.parseInt(tmp);
                 laglist.add(lag);
             }
@@ -722,19 +737,16 @@ public class TimeSeriesUtils {
 
 //                System.out.println("name 1 = " + name1);
 //                System.out.println("name 2 = " + name2);
-
                 String prefix1 = getPrefix(name1);
                 String prefix2 = getPrefix(name2);
 
 //                System.out.println("prefix 1 = " + prefix1);
 //                System.out.println("prefix 2 = " + prefix2);
-
                 int index1 = getIndex(name1);
                 int index2 = getIndex(name2);
 
 //                System.out.println("index 1 = " + index1);
 //                System.out.println("index 2 = " + index2);
-
                 if (getLag(o1.getName()) == getLag(o2.getName())) {
                     if (prefix1.compareTo(prefix2) == 0) {
                         return Integer.compare(index1, index2);
@@ -742,21 +754,20 @@ public class TimeSeriesUtils {
                         return prefix1.compareTo(prefix2);
                     }
                 } else {
-                    return getLag(o1.getName())-getLag(o2.getName());
+                    return getLag(o1.getName()) - getLag(o2.getName());
                 }
             }
         });
 
 //        System.out.println("Variable list after the sort = " + variables);
-
         for (Node node : variables) {
             String varName = node.getName();
             String tmp;
-            if(varName.indexOf(':')== -1){
+            if (varName.indexOf(':') == -1) {
                 lag = 0;
 //                laglist.add(lag);
             } else {
-                tmp = varName.substring(varName.indexOf(':')+1,varName.length());
+                tmp = varName.substring(varName.indexOf(':') + 1, varName.length());
                 lag = Integer.parseInt(tmp);
 //                laglist.add(lag);
             }
@@ -793,6 +804,3 @@ public class TimeSeriesUtils {
     }
 
 }
-
-
-
