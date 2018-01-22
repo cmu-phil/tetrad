@@ -19,7 +19,7 @@
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA //
 ///////////////////////////////////////////////////////////////////////////////
 
-package edu.cmu.tetrad.test;
+package joetest;
 
 import edu.cmu.tetrad.algcomparison.algorithm.CStar;
 import edu.cmu.tetrad.algcomparison.algorithm.FmbStar;
@@ -32,10 +32,12 @@ import edu.cmu.tetrad.search.Ida;
 import edu.cmu.tetrad.search.SearchGraphUtils;
 import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemPm;
+import edu.cmu.tetrad.util.ForkJoinPoolInstance;
 import edu.cmu.tetrad.util.Parameters;
 import org.junit.Test;
 
 import java.util.*;
+import java.util.concurrent.ForkJoinPool;
 
 /**
  * Tests IDA.
@@ -166,6 +168,8 @@ public class TestIda {
         SemIm im = new SemIm(pm, parameters);
         DataSet fullData = im.simulateData(sampleSize, false);
 
+        ForkJoinPool pool = new ForkJoinPool(Runtime.getRuntime().availableProcessors() * 10);
+
         for (int i = 0; i < numIterations; i++) {
 
             parameters.set("targetName", "X" + (numNodes - numIterations + i));
@@ -174,7 +178,7 @@ public class TestIda {
 
             long start = System.currentTimeMillis();
 
-            CStar cstar = new CStar();
+            CStar cstar = new CStar(pool);
             Graph graph = cstar.search(fullData, parameters);
 
             long stop = System.currentTimeMillis();
@@ -186,7 +190,7 @@ public class TestIda {
 
             start = System.currentTimeMillis();
 
-            FmbStar fmbStar = new FmbStar();
+            FmbStar fmbStar = new FmbStar(pool);
             Graph graph2 = fmbStar.search(fullData, parameters);
 
             stop = System.currentTimeMillis();

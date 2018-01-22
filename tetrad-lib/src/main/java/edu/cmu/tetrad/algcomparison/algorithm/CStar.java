@@ -33,16 +33,19 @@ public class CStar implements Algorithm {
 
     static final long serialVersionUID = 23L;
     private Algorithm algorithm;
-    private Graph initialGraph = null;
+    private transient final ForkJoinPool pool;
 
     public CStar() {
+        this(ForkJoinPoolInstance.getInstance().getPool());
+    }
+
+    public CStar(ForkJoinPool pool) {
         this.algorithm = new Fges();
+        this.pool = pool;
     }
 
     @Override
     public Graph search(DataModel dataSet, Parameters parameters) {
-        ForkJoinPool pool = new ForkJoinPool(Runtime.getRuntime().availableProcessors() * 10);
-
         DataSet _dataSet = (DataSet) dataSet;
 
         double percentSubsampleSize = parameters.getDouble("percentSubsampleSize");

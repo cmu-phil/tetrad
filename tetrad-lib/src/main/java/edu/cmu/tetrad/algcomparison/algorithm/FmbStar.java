@@ -35,16 +35,20 @@ import java.util.concurrent.ForkJoinPool;
 )
 public class FmbStar implements Algorithm {
     static final long serialVersionUID = 23L;
+    private transient final ForkJoinPool pool;
     private Algorithm algorithm;
 
     public FmbStar() {
+        this(ForkJoinPoolInstance.getInstance().getPool());
+    }
+
+    public FmbStar(ForkJoinPool pool) {
         this.algorithm = new Fges();
+        this.pool = pool;
     }
 
     @Override
     public Graph search(DataModel dataSet, Parameters parameters) {
-        ForkJoinPool pool = new ForkJoinPool(Runtime.getRuntime().availableProcessors() * 10);
-
         DataSet _dataSet = (DataSet) dataSet;
         List<Node> variables = _dataSet.getVariables();
 
