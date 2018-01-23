@@ -59,6 +59,8 @@ import java.util.concurrent.*;
 public final class Fges implements GraphSearch, GraphScorer {
 
 
+    private int parallelism = Runtime.getRuntime().availableProcessors() * 10;
+
     /**
      * Internal.
      */
@@ -139,9 +141,6 @@ public final class Fges implements GraphSearch, GraphScorer {
 
     // Map from variables to their column indices in the data set.
     private ConcurrentMap<Node, Integer> hashIndices;
-
-    // The static ForkJoinPool instance.
-    private ForkJoinPool pool = ForkJoinPoolInstance.getInstance().getPool();
 
     // A running tally of the total BIC totalScore.
     private double totalScore;
@@ -282,11 +281,6 @@ public final class Fges implements GraphSearch, GraphScorer {
         }
 
         this.modelScore = totalScore;
-
-        if (pool != ForkJoinPoolInstance.getInstance().getPool()) {
-            shutdownAndAwaitTermination(pool);
-        }
-
         return graph;
     }
 
@@ -445,7 +439,7 @@ public final class Fges implements GraphSearch, GraphScorer {
      * Creates a new processors pool with the specified number of threads.
      */
     public void setParallelism(int parallelism) {
-        this.pool = new ForkJoinPool(parallelism);
+        this.parallelism = parallelism;
     }
 
     /**
@@ -548,11 +542,7 @@ public final class Fges implements GraphSearch, GraphScorer {
 
     final int[] count = new int[1];
 
-    public int getMinChunk(int n) {
-        return Math.max(n / pool.getParallelism(), minChunk);
-    }
-
-    class NodeTaskEmptyGraph extends RecursiveTask<Boolean> {
+    class NodeTaskEmptyGraph implements Callable<Boolean> {
 
         private final int from;
         private final int to;
@@ -567,7 +557,7 @@ public final class Fges implements GraphSearch, GraphScorer {
         }
 
         @Override
-        protected Boolean compute() {
+        public Boolean call() {
             for (int i = from; i < to; i++) {
                 if ((i + 1) % 1000 == 0) {
                     count[0] += 1000;
@@ -624,10 +614,6 @@ public final class Fges implements GraphSearch, GraphScorer {
     }
 
     private void initializeForwardEdgesFromEmptyGraph(final List<Node> nodes) {
-//        if (verbose) {
-//            System.out.println("heuristicSpeedup = true");
-//        }
-
         sortedArrows = new ConcurrentSkipListSet<>();
         lookupArrows = new ConcurrentHashMap<>();
         neighbors = new ConcurrentHashMap<>();
@@ -636,22 +622,44 @@ public final class Fges implements GraphSearch, GraphScorer {
         long start = System.currentTimeMillis();
         this.effectEdgesGraph = new EdgeListGraphSingleConnections(nodes);
 
-        List<RecursiveTask> tasks = new ArrayList<>();
+        List<Callable<Boolean>> tasks = new ArrayList<>();
 
         for (int i = 0; i < nodes.size(); i += minChunk) {
-            final RecursiveTask task = new NodeTaskEmptyGraph(i, Math.min(nodes.size(), i + minChunk), variables, Collections.EMPTY_SET);
-            task.fork();
+            final Callable task = new NodeTaskEmptyGraph(i, Math.min(nodes.size(), i + minChunk), variables, Collections.EMPTY_SET);
             tasks.add(task);
         }
 
-        for (RecursiveTask task : tasks) {
-            task.join();
-        }
+        runCallables(tasks);
 
         long stop = System.currentTimeMillis();
 
         if (verbose) {
             out.println("Elapsed initializeForwardEdgesFromEmptyGraph = " + (stop - start) + " ms");
+        }
+    }
+
+    private void runCallables(List<Callable<Boolean>> tasks) {
+        if (tasks.isEmpty()) return;
+
+        ExecutorService executorService =
+                new ThreadPoolExecutor(parallelism, parallelism, 0L, TimeUnit.MILLISECONDS,
+                        new LinkedBlockingQueue<Runnable>());
+
+        try {
+            Boolean result = executorService.invokeAny(tasks);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        } catch (ExecutionException e) {
+            e.printStackTrace();
+        }
+
+        executorService.shutdown();
+        try {
+            if (!executorService.awaitTermination(800, TimeUnit.MILLISECONDS)) {
+                executorService.shutdownNow();
+            }
+        } catch (InterruptedException e) {
+            executorService.shutdownNow();
         }
     }
 
@@ -676,7 +684,7 @@ public final class Fges implements GraphSearch, GraphScorer {
 
         final Set<Node> emptySet = new HashSet<>(0);
 
-        class InitializeFromExistingGraphTask2 extends RecursiveTask<Boolean> {
+        class InitializeFromExistingGraphTask2 implements Callable<Boolean> {
 
             private int from;
             private int to;
@@ -687,7 +695,7 @@ public final class Fges implements GraphSearch, GraphScorer {
             }
 
             @Override
-            protected Boolean compute() {
+            public Boolean call() {
                 if (TaskManager.getInstance().isCanceled()) {
                     return false;
                 }
@@ -759,17 +767,13 @@ public final class Fges implements GraphSearch, GraphScorer {
             }
         }
 
-        List<RecursiveTask> tasks = new ArrayList<>();
+        List<Callable<Boolean>> tasks = new ArrayList<>();
 
         for (int i = 0; i < nodes.size(); i += minChunk) {
-            final RecursiveTask task = new InitializeFromExistingGraphTask2(i, Math.min(nodes.size(), i + minChunk));
-            task.fork();
-            tasks.add(task);
+            tasks.add(new InitializeFromExistingGraphTask2(i, Math.min(nodes.size(), i + minChunk)));
         }
 
-        for (RecursiveTask task : tasks) {
-            task.join();
-        }
+        runCallables(tasks);
     }
 
     private void initializeForwardEdgesFromExistingGraph(final List<Node> nodes) {
@@ -797,7 +801,7 @@ public final class Fges implements GraphSearch, GraphScorer {
 
         final Set<Node> emptySet = new HashSet<>(0);
 
-        class InitializeFromExistingGraphTask2 extends RecursiveTask<Boolean> {
+        class InitializeFromExistingGraphTask2 implements Callable<Boolean> {
 
             private int from;
             private int to;
@@ -808,7 +812,7 @@ public final class Fges implements GraphSearch, GraphScorer {
             }
 
             @Override
-            protected Boolean compute() {
+            public Boolean call() {
                 if (TaskManager.getInstance().isCanceled()) {
                     return false;
                 }
@@ -855,17 +859,13 @@ public final class Fges implements GraphSearch, GraphScorer {
             }
         }
 
-        List<RecursiveTask> tasks = new ArrayList<>();
+        List<Callable<Boolean>> tasks = new ArrayList<>();
 
         for (int i = 0; i < nodes.size(); i += minChunk) {
-            final RecursiveTask task = new InitializeFromExistingGraphTask2(i, Math.min(nodes.size(), i + minChunk));
-            task.fork();
-            tasks.add(task);
+            tasks.add(new InitializeFromExistingGraphTask2(i, Math.min(nodes.size(), i + minChunk)));
         }
 
-        for (RecursiveTask task : tasks) {
-            task.join();
-        }
+        runCallables(tasks);
     }
 
     private void fes() {
@@ -1009,8 +1009,6 @@ public final class Fges implements GraphSearch, GraphScorer {
             storeGraph();
             reevaluateBackward(toProcess);
         }
-
-//        meekOrientRestricted(getVariables(), getKnowledge());
     }
 
     private Set<Node> getCommonAdjacents(Node x, Node y) {
@@ -1068,7 +1066,7 @@ public final class Fges implements GraphSearch, GraphScorer {
     // Calcuates new arrows based on changes in the graph for the forward search.
     private void reevaluateForward(final Set<Node> nodes, final Arrow arrow) {
 
-        class AdjTask2 extends RecursiveTask<Boolean> {
+        class AdjTask2 implements Callable<Boolean> {
 
             private final List<Node> nodes;
             private int from;
@@ -1081,7 +1079,7 @@ public final class Fges implements GraphSearch, GraphScorer {
             }
 
             @Override
-            protected Boolean compute() {
+            public Boolean call() {
                 for (int _w = from; _w < to; _w++) {
                     Node x = nodes.get(_w);
 
@@ -1136,17 +1134,13 @@ public final class Fges implements GraphSearch, GraphScorer {
             }
         }
 
-        List<RecursiveTask> tasks = new ArrayList<>();
+        List<Callable<Boolean>> tasks = new ArrayList<>();
 
         for (int i = 0; i < nodes.size(); i += minChunk) {
-            final RecursiveTask task = new AdjTask2(new ArrayList<>(nodes), i, Math.min(nodes.size(), i + minChunk));
-            task.fork();
-            tasks.add(task);
+            tasks.add(new AdjTask2(new ArrayList<>(nodes), i, Math.min(nodes.size(), i + minChunk)));
         }
 
-        for (RecursiveTask task : tasks) {
-            task.join();
-        }
+        runCallables(tasks);
     }
 
     // Calculates the new arrows for an a->b edge.
@@ -1214,11 +1208,6 @@ public final class Fges implements GraphSearch, GraphScorer {
                 if (bump > 0) {
                     addArrow(a, b, naYX, T, bump);
                 }
-
-//                if (mode == Mode.heuristicSpeedup && union.isEmpty() && score.isEffectEdge(bump) &&
-//                        !effectEdgesGraph.isAdjacentTo(a, b) && graph.getParents(b).isEmpty()) {
-//                    effectEdgesGraph.addUndirectedEdge(a, b);
-//                }
             }
 
             previousCliques = newCliques;
@@ -1234,7 +1223,7 @@ public final class Fges implements GraphSearch, GraphScorer {
 
     private void reevaluateBackward(Set<Node> toProcess) {
 
-        class BackwardTask2 extends RecursiveTask<Boolean> {
+        class BackwardTask2 implements Callable<Boolean> {
             private final Node r;
             private List<Node> adj;
             private int from;
@@ -1248,7 +1237,7 @@ public final class Fges implements GraphSearch, GraphScorer {
             }
 
             @Override
-            protected Boolean compute() {
+            public Boolean call() {
                 for (int _w = from; _w < to; _w++) {
                     if (Thread.currentThread().isInterrupted()) {
                         break;
@@ -1267,18 +1256,14 @@ public final class Fges implements GraphSearch, GraphScorer {
             this.neighbors.put(r, getNeighbors(r));
             List<Node> adjacentNodes = graph.getAdjacentNodes(r);
 
-            List<BackwardTask2> tasks = new ArrayList<>();
+            List<Callable<Boolean>> tasks = new ArrayList<>();
 
             for (int i = 0; i < adjacentNodes.size(); i += minChunk) {
-                final BackwardTask2 task = new BackwardTask2(r, adjacentNodes,
-                        i, Math.min(adjacentNodes.size(), i + minChunk));
-                task.fork();
-                tasks.add(task);
+                tasks.add(new BackwardTask2(r, adjacentNodes,
+                        i, Math.min(adjacentNodes.size(), i + minChunk)));
             }
 
-            for (RecursiveTask task : tasks) {
-                task.join();
-            }
+            runCallables(tasks);
         }
     }
 
@@ -1506,11 +1491,9 @@ public final class Fges implements GraphSearch, GraphScorer {
 
         int numEdges = graph.getNumEdges();
 
-//        if (verbose) {
         if (numEdges % 1000 == 0) {
             out.println("Num edges added: " + numEdges);
         }
-//        }
 
         if (verbose) {
             String label = trueGraph != null && trueEdge != null ? "*" : "";
