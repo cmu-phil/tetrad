@@ -21,20 +21,20 @@
 
 package edu.cmu.tetrad.data;
 
+import EDU.oswego.cs.dl.util.concurrent.SyncMap;
 import cern.colt.matrix.DoubleMatrix2D;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.util.NumberFormatUtil;
-import edu.cmu.tetrad.util.TetradAlgebra;
-import edu.cmu.tetrad.util.TetradMatrix;
-import edu.cmu.tetrad.util.TetradVector;
+import edu.cmu.tetrad.util.*;
 import org.apache.commons.math3.linear.RealMatrix;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.text.NumberFormat;
 import java.util.*;
-//import java.util.concurrent.ForkJoinPool;
-//import java.util.concurrent.RecursiveTask;
+import java.util.concurrent.ForkJoinPool;
+import java.util.concurrent.ForkJoinTask;
+import java.util.concurrent.RecursiveTask;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Stores a covariance matrix together with variable names and sample size,
@@ -104,7 +104,6 @@ public class CovarianceMatrixOnTheFly implements ICovarianceMatrix {
 
     private double[] variances;
 
-
     //=============================CONSTRUCTORS=========================//
 
     /**
@@ -116,12 +115,18 @@ public class CovarianceMatrixOnTheFly implements ICovarianceMatrix {
      * @throws IllegalArgumentException if this is not a continuous data set.
      */
     public CovarianceMatrixOnTheFly(DataSet dataSet) {
-        this(dataSet, false);
+        this(dataSet, false, 4);
+    }
+
+    public CovarianceMatrixOnTheFly(DataSet dataSet, int parallelism) {
+        this(dataSet, false, parallelism);
     }
 
     public CovarianceMatrixOnTheFly(DataSet dataSet, boolean verbose) {
-//        ForkJoinPool pool = new ForkJoinPool(4);
+        this(dataSet, verbose, 4);
+    }
 
+    public CovarianceMatrixOnTheFly(DataSet dataSet, boolean verbose, int parallelism) {
         if (!dataSet.isContinuous()) {
             throw new IllegalArgumentException("Not a continuous data set.");
         }
@@ -221,107 +226,84 @@ public class CovarianceMatrixOnTheFly implements ICovarianceMatrix {
 
         this.variances = new double[variables.size()];
 
-        for (int i = 0; i < variables.size(); i++) {
-            double d = 0.0D;
+        class VarianceTask extends RecursiveTask<Boolean> {
+            private int chunk;
+            private int from;
+            private int to;
 
-            int count = 0;
-
-            double[] v1 = vectors[i];
-
-            for (int k = 0; k < sampleSize; ++k) {
-                if (Double.isNaN(v1[k])) {
-                    continue;
-                }
-
-                d += v1[k] * v1[k];
-                count++;
+            public VarianceTask(int chunk, int from, int to) {
+                this.chunk = chunk;
+                this.from = from;
+                this.to = to;
             }
 
-            double v = d;
+            @Override
+            protected Boolean compute() {
+                if (to - from <= chunk) {
+                    for (int i = from; i < to; i++) {
+                        double d = 0.0D;
+
+                        int count = 0;
+
+                        double[] v1 = vectors[i];
+
+                        for (int k = 0; k < sampleSize; ++k) {
+                            if (Double.isNaN(v1[k])) {
+                                continue;
+                            }
+
+                            d += v1[k] * v1[k];
+                            count++;
+                        }
+
+                        double v = d;
 //                        v /= (sampleSize - 1);
-            v /= (count - 1);
+                        v /= (count - 1);
 
-            variances[i] = v;
+                        variances[i] = v;
 
-            if (v == 0) {
-                System.out.println("Zero variance! " + variables.get(i));
+                        if (v == 0) {
+                            System.out.println("Zero variance! " + variables.get(i));
+                        }
+                    }
+
+                    return true;
+                } else {
+                    final int numIntervals = 4;
+
+                    int step = (to - from) / numIntervals + 1;
+
+                    List<VarianceTask> tasks = new ArrayList<>();
+
+                    for (int i = 0; i < numIntervals; i++) {
+                        VarianceTask task = new VarianceTask(chunk, from + i * step, Math.min(from + (i + 1) * step, to));
+                        tasks.add(task);
+                    }
+
+                    invokeAll(tasks);
+
+                    return true;
+                }
             }
         }
 
-//        class VarianceTask extends RecursiveTask<Boolean> {
-//            private int chunk;
-//            private int from;
-//            private int to;
-//
-//            public VarianceTask(int chunk, int from, int to) {
-//                this.chunk = chunk;
-//                this.from = from;
-//                this.to = to;
-//            }
-//
-//            @Override
-//            protected Boolean compute() {
-//                if (to - from <= chunk) {
-//                    for (int i = from; i < to; i++) {
-//                        double d = 0.0D;
-//
-//                        int count = 0;
-//
-//                        double[] v1 = vectors[i];
-//
-//                        for (int k = 0; k < sampleSize; ++k) {
-//                            if (Double.isNaN(v1[k])) {
-//                                continue;
-//                            }
-//
-//                            d += v1[k] * v1[k];
-//                            count++;
-//                        }
-//
-//                        double v = d;
-////                        v /= (sampleSize - 1);
-//                        v /= (count - 1);
-//
-//                        variances[i] = v;
-//
-//                        if (v == 0) {
-//                            System.out.println("Zero variance! " + variables.get(i));
-//                        }
-//                    }
-//
-//                    return true;
-//                } else {
-//                    final int numIntervals = 4;
-//
-//                    int step = (to - from) / numIntervals + 1;
-//
-//                    List<VarianceTask> tasks = new ArrayList<>();
-//
-//                    for (int i = 0; i < numIntervals; i++) {
-//                        VarianceTask task = new VarianceTask(chunk, from + i * step, Math.min(from + (i + 1) * step, to));
-//                        tasks.add(task);
-//                    }
-//
-//                    invokeAll(tasks);
-//
-//                    return true;
-//                }
-//            }
-//        }
+        int NTHREADS = Runtime.getRuntime().availableProcessors() * 10;
+        int _chunk = variables.size() / NTHREADS + 1;
+        int minChunk = 100;
+        final int chunk = _chunk < minChunk ? minChunk : _chunk;
 
-//        int NTHREADS = Runtime.getRuntime().availableProcessors() * 10;
-//        int _chunk = variables.size() / NTHREADS + 1;
-//        int minChunk = 100;
-//        final int chunk = _chunk < minChunk ? minChunk : _chunk;
-//
-//        VarianceTask task = new VarianceTask(chunk, 0, variables.size());
-//        pool.invoke(task);
+        ForkJoinPool pool = new ForkJoinPool(parallelism);
+
+        VarianceTask task = new VarianceTask(chunk, 0, variables.size());
+        pool.invoke(task);
 
         if (verbose) {
             System.out.println("Done with variances.");
         }
 
-
+        if (pool != ForkJoinPoolInstance.getInstance().getPool()) {
+            shutdownAndAwaitTermination(pool);
+        }
     }
 
     /**
@@ -850,6 +832,24 @@ public class CovarianceMatrixOnTheFly implements ICovarianceMatrix {
 
         if (selectedVariables == null) {
             selectedVariables = new HashSet<>();
+        }
+    }
+
+    private void shutdownAndAwaitTermination(ForkJoinPool pool) {
+        pool.shutdown(); // Disable new tasks from being submitted
+        try {
+            // Wait a while for existing tasks to terminate
+            if (!pool.awaitTermination(60, TimeUnit.SECONDS)) {
+                pool.shutdownNow(); // Cancel currently executing tasks
+                // Wait a while for tasks to respond to being cancelled
+                if (!pool.awaitTermination(60, TimeUnit.SECONDS))
+                    System.err.println("Pool did not terminate");
+            }
+        } catch (InterruptedException ie) {
+            // (Re-)Cancel if current thread also interrupted
+            pool.shutdownNow();
+            // Preserve interrupt status
+            Thread.currentThread().interrupt();
         }
     }
 }

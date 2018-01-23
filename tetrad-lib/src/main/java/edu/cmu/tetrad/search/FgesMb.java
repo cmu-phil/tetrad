@@ -281,6 +281,10 @@ public final class FgesMb {
 
         storeGraph(mbgraph);
 
+        if (pool != ForkJoinPoolInstance.getInstance().getPool()) {
+            shutdownAndAwaitTermination(pool);
+        }
+
         return mbgraph;
     }
 
@@ -548,13 +552,6 @@ public final class FgesMb {
      */
     public void setParallelism(int numProcessors) {
         this.pool = new ForkJoinPool(numProcessors);
-    }
-
-    /**
-     * Sets the ForkJoinPool.
-     */
-    public void setPool(ForkJoinPool pool) {
-        this.pool = pool;
     }
 
     /**
@@ -1947,6 +1944,25 @@ public final class FgesMb {
         }
 
         return builder.toString();
+    }
+
+    private void shutdownAndAwaitTermination(ForkJoinPool pool) {
+        this.pool = pool;
+        pool.shutdown(); // Disable new tasks from being submitted
+        try {
+            // Wait a while for existing tasks to terminate
+            if (!pool.awaitTermination(60, TimeUnit.SECONDS)) {
+                pool.shutdownNow(); // Cancel currently executing tasks
+                // Wait a while for tasks to respond to being cancelled
+                if (!pool.awaitTermination(60, TimeUnit.SECONDS))
+                    System.err.println("Pool did not terminate");
+            }
+        } catch (InterruptedException ie) {
+            // (Re-)Cancel if current thread also interrupted
+            pool.shutdownNow();
+            // Preserve interrupt status
+            Thread.currentThread().interrupt();
+        }
     }
 }
 

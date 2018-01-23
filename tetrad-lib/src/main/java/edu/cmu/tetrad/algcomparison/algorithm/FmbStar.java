@@ -39,6 +39,10 @@ public class FmbStar implements Algorithm {
     private transient final ForkJoinPool pool;
     private Algorithm algorithm;
 
+    public FmbStar() {
+        this(ForkJoinPoolInstance.getInstance().getPool());
+    }
+
     public FmbStar(ForkJoinPool pool) {
         this.algorithm = new Fges();
         this.pool = pool;
@@ -73,11 +77,11 @@ public class FmbStar implements Algorithm {
                 sampler.setWithoutReplacements(true);
                 DataSet sample = sampler.sample(_dataSet, (int) (percentageB * _dataSet.getNumRows()));
 
-                final ICovarianceMatrix covariances = new CovarianceMatrixOnTheFly(sample);
+                final ICovarianceMatrix covariances = new CovarianceMatrixOnTheFly(sample, 4);
                 final edu.cmu.tetrad.search.SemBicScore score = new edu.cmu.tetrad.search.SemBicScore(covariances);
                 score.setPenaltyDiscount(parameters.getDouble("penaltyDiscount"));
                 FgesMb fgesMb = new FgesMb(score);
-                fgesMb.setPool(pool);
+                fgesMb.setParallelism(4);
                 Graph g = fgesMb.search(y);
 
                 for (final Node key : g.getNodes()) {
@@ -101,7 +105,7 @@ public class FmbStar implements Algorithm {
             tasks.add(new Task(i, counts));
         }
 
-        pool.invokeAll(tasks);
+        ForkJoinPoolInstance.getInstance().getPool().invokeAll(tasks);
 
         List<Node> sortedVariables = new ArrayList<>(variables);
 
@@ -126,7 +130,7 @@ public class FmbStar implements Algorithm {
             }
         }
 
-        Ida ida = new Ida(_dataSet, outNodes, pool);
+        Ida ida = new Ida(_dataSet, outNodes, 4);
         List<Node> filteredOutNodes = new ArrayList<>();
 
         for (int i = 0; i < new ArrayList<>(outNodes).size(); i++) {
@@ -144,6 +148,24 @@ public class FmbStar implements Algorithm {
         }
 
         return graph;
+    }
+
+    private void shutdownAndAwaitTermination(ForkJoinPool pool) {
+        pool.shutdown(); // Disable new tasks from being submitted
+        try {
+            // Wait a while for existing tasks to terminate
+            if (!pool.awaitTermination(60, TimeUnit.SECONDS)) {
+                pool.shutdownNow(); // Cancel currently executing tasks
+                // Wait a while for tasks to respond to being cancelled
+                if (!pool.awaitTermination(60, TimeUnit.SECONDS))
+                    System.err.println("Pool did not terminate");
+            }
+        } catch (InterruptedException ie) {
+            // (Re-)Cancel if current thread also interrupted
+            pool.shutdownNow();
+            // Preserve interrupt status
+            Thread.currentThread().interrupt();
+        }
     }
 
     @Override

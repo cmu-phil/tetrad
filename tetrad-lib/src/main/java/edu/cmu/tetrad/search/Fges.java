@@ -282,6 +282,11 @@ public final class Fges implements GraphSearch, GraphScorer {
         }
 
         this.modelScore = totalScore;
+
+        if (pool != ForkJoinPoolInstance.getInstance().getPool()) {
+            shutdownAndAwaitTermination(pool);
+        }
+
         return graph;
     }
 
@@ -441,10 +446,6 @@ public final class Fges implements GraphSearch, GraphScorer {
      */
     public void setParallelism(int parallelism) {
         this.pool = new ForkJoinPool(parallelism);
-    }
-
-    public void setPool(ForkJoinPool pool) {
-        this.pool = pool;
     }
 
     /**
@@ -635,45 +636,17 @@ public final class Fges implements GraphSearch, GraphScorer {
         long start = System.currentTimeMillis();
         this.effectEdgesGraph = new EdgeListGraphSingleConnections(nodes);
 
-        class InitializeFromEmptyGraphTask extends RecursiveTask<Boolean> {
+        List<RecursiveTask> tasks = new ArrayList<>();
 
-            public InitializeFromEmptyGraphTask() {
-            }
-
-            @Override
-            protected Boolean compute() {
-                Queue<NodeTaskEmptyGraph> tasks = new ArrayDeque<>();
-
-                int numNodesPerTask = Math.max(100, nodes.size() / pool.getParallelism());
-
-                for (int i = 0; i < nodes.size() && !Thread.currentThread().isInterrupted(); i += numNodesPerTask) {
-                    NodeTaskEmptyGraph task = new NodeTaskEmptyGraph(i, Math.min(nodes.size(), i + numNodesPerTask),
-                            nodes, emptySet);
-                    tasks.add(task);
-                    task.fork();
-
-                    for (NodeTaskEmptyGraph _task : new ArrayList<>(tasks)) {
-                        if (_task.isDone()) {
-                            _task.join();
-                            tasks.remove(_task);
-                        }
-                    }
-
-                    while (tasks.size() > pool.getParallelism()) {
-                        NodeTaskEmptyGraph _task = tasks.poll();
-                        _task.join();
-                    }
-                }
-
-                for (NodeTaskEmptyGraph task : tasks) {
-                    task.join();
-                }
-
-                return true;
-            }
+        for (int i = 0; i < nodes.size(); i += minChunk) {
+            final RecursiveTask task = new NodeTaskEmptyGraph(i, Math.min(nodes.size(), i + minChunk), variables, Collections.EMPTY_SET);
+            task.fork();
+            tasks.add(task);
         }
 
-        pool.invoke(new InitializeFromEmptyGraphTask());
+        for (RecursiveTask task : tasks) {
+            task.join();
+        }
 
         long stop = System.currentTimeMillis();
 
@@ -683,10 +656,6 @@ public final class Fges implements GraphSearch, GraphScorer {
     }
 
     private void initializeTwoStepEdges(final List<Node> nodes) {
-//        if (verbose) {
-//            System.out.println("heuristicSpeedup = false");
-//        }
-
         count[0] = 0;
 
         sortedArrows = new ConcurrentSkipListSet<>();
@@ -2139,5 +2108,23 @@ public final class Fges implements GraphSearch, GraphScorer {
                 && e2.getProximalEndpoint(b) == Endpoint.ARROW;
 
         return !collider;
+    }
+
+    private void shutdownAndAwaitTermination(ForkJoinPool pool) {
+        pool.shutdown(); // Disable new tasks from being submitted
+        try {
+            // Wait a while for existing tasks to terminate
+            if (!pool.awaitTermination(60, TimeUnit.SECONDS)) {
+                pool.shutdownNow(); // Cancel currently executing tasks
+                // Wait a while for tasks to respond to being cancelled
+                if (!pool.awaitTermination(60, TimeUnit.SECONDS))
+                    System.err.println("Pool did not terminate");
+            }
+        } catch (InterruptedException ie) {
+            // (Re-)Cancel if current thread also interrupted
+            pool.shutdownNow();
+            // Preserve interrupt status
+            Thread.currentThread().interrupt();
+        }
     }
 }

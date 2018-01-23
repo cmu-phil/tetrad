@@ -14,7 +14,10 @@ import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.StatUtils;
 
 import java.util.*;
-import java.util.concurrent.*;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ForkJoinPool;
+import java.util.concurrent.RecursiveAction;
 
 import static java.lang.Math.abs;
 
@@ -29,19 +32,20 @@ import static java.lang.Math.abs;
 public class CStar implements Algorithm {
 
     static final long serialVersionUID = 23L;
-    private transient final ForkJoinPool pool;
     private Algorithm algorithm;
-    private Graph initialGraph = null;
+    private transient final ForkJoinPool pool;
+
+    public CStar() {
+        this(ForkJoinPoolInstance.getInstance().getPool());
+    }
 
     public CStar(ForkJoinPool pool) {
         this.algorithm = new Fges();
-        this.pool = pool;
+        this.pool = new ForkJoinPool(10);
     }
 
     @Override
     public Graph search(DataModel dataSet, Parameters parameters) {
-//        ForkJoinPool pool = new ForkJoinPool(Runtime.getRuntime().availableProcessors() * 10);
-
         DataSet _dataSet = (DataSet) dataSet;
 
         double percentSubsampleSize = parameters.getDouble("percentSubsampleSize");
@@ -70,7 +74,7 @@ public class CStar implements Algorithm {
                 BootstrapSampler sampler = new BootstrapSampler();
                 sampler.setWithoutReplacements(true);
                 DataSet sample = sampler.sample(_dataSet, (int) (percentSubsampleSize * _dataSet.getNumRows()));
-                Ida ida = new Ida(sample, pool);
+                Ida ida = new Ida(sample);
                 Ida.NodeEffects effects = ida.getSortedMinEffects(y);
 
                 for (int i = 0; i < q; i++) {

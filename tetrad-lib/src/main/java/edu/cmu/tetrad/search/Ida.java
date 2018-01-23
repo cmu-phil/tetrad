@@ -18,6 +18,7 @@ import edu.cmu.tetrad.util.TetradMatrix;
 
 import java.util.*;
 import java.util.concurrent.ForkJoinPool;
+import java.util.concurrent.TimeUnit;
 
 import static java.lang.Math.*;
 
@@ -37,16 +38,17 @@ public class Ida {
     private ForkJoinPool pool;
 
     public Ida(DataSet dataSet, List<Node> targets) {
-        this(dataSet, targets, ForkJoinPoolInstance.getInstance().getPool());
+        this(dataSet, targets, ForkJoinPoolInstance.getInstance().getPool().getParallelism() * 10);
     }
 
-    public Ida(DataSet dataSet, List<Node> targets, ForkJoinPool pool) {
+    public Ida(DataSet dataSet, List<Node> targets, int parallelism) {
         this.dataSet = dataSet;
         this.data = dataSet.getDoubleData().transpose().toArray();
         covariances = new CovarianceMatrixOnTheFly(dataSet);
 
         FgesMb fges = new FgesMb(new SemBicScore(covariances));
-        fges.setPool(pool);
+        fges.setParallelism(parallelism);
+
         this.pattern = fges.search(targets);
 
         nodeIndices = new HashMap<>();
@@ -59,16 +61,16 @@ public class Ida {
     }
 
     public Ida(DataSet dataSet) {
-        this(dataSet, ForkJoinPoolInstance.getInstance().getPool());
+        this(dataSet, ForkJoinPoolInstance.getInstance().getPool().getParallelism());
     }
 
-    public Ida(DataSet dataSet, ForkJoinPool pool) {
+    public Ida(DataSet dataSet, int parallelism) {
         this.dataSet = dataSet;
         this.data = dataSet.getDoubleData().transpose().toArray();
         covariances = new CovarianceMatrixOnTheFly(dataSet);
 
         Fges fges = new Fges(new SemBicScore(covariances));
-        fges.setPool(pool);
+        fges.setParallelism(parallelism);
         this.pattern = fges.search();
         nodeIndices = new HashMap<>();
 
