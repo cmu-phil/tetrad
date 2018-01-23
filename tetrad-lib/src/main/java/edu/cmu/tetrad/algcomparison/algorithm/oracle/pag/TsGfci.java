@@ -12,6 +12,7 @@ import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.data.IKnowledge;
+import edu.cmu.tetrad.data.TimeSeriesData;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.TsDagToPag;
@@ -51,7 +52,11 @@ public class TsGfci implements Algorithm, TakesInitialGraph, HasKnowledge, Takes
 
     @Override
     public Graph search(DataModel dataSet, Parameters parameters) {
-    	if (parameters.getInt("bootstrapSampleSize") < 1) {
+    	if (!(dataSet instanceof TimeSeriesData)) {
+            throw new IllegalArgumentException("You need a (labeled) time series data set to run TsGFCI.");
+        } 
+        
+        if (parameters.getInt("bootstrapSampleSize") < 1) {
             edu.cmu.tetrad.search.TsGFci search = new edu.cmu.tetrad.search.TsGFci(test.getTest(dataSet, parameters),
                     score.getScore(dataSet, parameters));
             search.setKnowledge(dataSet.getKnowledge());
