@@ -599,17 +599,13 @@ public class TimeSeriesUtils {
         graph.setMaxLag(numLags);
 
         for (Node node : _graph.getNodes()) {
-            graph.addNode(new ContinuousVariable(node.getName()));
+            Node graphNode = new ContinuousVariable(node.getName());
+            graphNode.setNodeType(node.getNodeType());
+            graph.addNode(graphNode);
 
             /* adding node from Lag 1 to Lag 0 for every node */
             Node from = graph.getNode(node.getName(), 1);
-            if (node.getNodeType() == NodeType.LATENT) {
-                from.setNodeType(NodeType.LATENT);
-            }
             Node to = graph.getNode(node.getName(), 0);
-            if (node.getNodeType() == NodeType.LATENT) {
-                to.setNodeType(NodeType.LATENT);
-            }
             Edge edge = new Edge(from, to, Endpoint.TAIL, Endpoint.ARROW);
             graph.addEdge(edge);
             //graph.addDirectedEdge(from, to);
@@ -637,14 +633,8 @@ public class TimeSeriesUtils {
         for (int lag = 1; lag <= numLags; lag++) {
             for (Node node1 : graph.getLag0Nodes()) {
                 Node from = graph.getNode(node1.getName(), lag);
-                if (node1.getNodeType() == NodeType.LATENT) {
-                    from.setNodeType(NodeType.LATENT);
-                }
                 for (Node node2 : graph.getLag0Nodes()) {
                     Node to = graph.getNode(node2.getName(), 0);
-                    if (node2.getNodeType() == NodeType.LATENT) {
-                        to.setNodeType(NodeType.LATENT);
-                    }
                     if (node1.getName().equals(node2.getName())) {
                         continue;
                     }
