@@ -127,7 +127,7 @@ final class TetradMenuBar extends JMenuBar {
       fileMenu.addSeparator();
 //      fileMenu.add(new SaveScreenshot(desktop, true, "Save Screenshot..."));
 
-      final JMenuItem menuItem = new JMenuItem("Save Session Graph Image...");
+      final JMenuItem menuItem = new JMenuItem("Save Session Workspace Image...");
       menuItem.addActionListener(new ActionListener() {
           public void actionPerformed(ActionEvent e) {
               SessionEditorIndirectRef editorRef =
