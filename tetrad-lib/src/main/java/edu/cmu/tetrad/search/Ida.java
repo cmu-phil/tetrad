@@ -35,7 +35,6 @@ public class Ida {
     private final Graph pattern;
     private final ICovarianceMatrix covariances;
     private Map<Node, Integer> nodeIndices;
-    private ForkJoinPool pool;
 
     public Ida(DataSet dataSet, List<Node> targets) {
         this(dataSet, targets, ForkJoinPoolInstance.getInstance().getPool().getParallelism() * 10);

@@ -46,6 +46,8 @@ public class CStar implements Algorithm {
 
     @Override
     public Graph search(DataModel dataSet, Parameters parameters) {
+        System.out.println("# Available Processors = " + Runtime.getRuntime().availableProcessors());
+
         DataSet _dataSet = (DataSet) dataSet;
 
         double percentSubsampleSize = parameters.getDouble("percentSubsampleSize");
@@ -74,7 +76,7 @@ public class CStar implements Algorithm {
                 BootstrapSampler sampler = new BootstrapSampler();
                 sampler.setWithoutReplacements(true);
                 DataSet sample = sampler.sample(_dataSet, (int) (percentSubsampleSize * _dataSet.getNumRows()));
-                Ida ida = new Ida(sample);
+                Ida ida = new Ida(sample, 8);
                 Ida.NodeEffects effects = ida.getSortedMinEffects(y);
 
                 for (int i = 0; i < q; i++) {
