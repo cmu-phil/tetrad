@@ -21,10 +21,12 @@
 
 package edu.cmu.tetrad.data;
 
-import EDU.oswego.cs.dl.util.concurrent.SyncMap;
 import cern.colt.matrix.DoubleMatrix2D;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.util.*;
+import edu.cmu.tetrad.util.NumberFormatUtil;
+import edu.cmu.tetrad.util.TetradAlgebra;
+import edu.cmu.tetrad.util.TetradMatrix;
+import edu.cmu.tetrad.util.TetradVector;
 import org.apache.commons.math3.linear.RealMatrix;
 
 import java.io.IOException;
@@ -32,7 +34,6 @@ import java.io.ObjectInputStream;
 import java.text.NumberFormat;
 import java.util.*;
 import java.util.concurrent.ForkJoinPool;
-import java.util.concurrent.ForkJoinTask;
 import java.util.concurrent.RecursiveTask;
 
 /**
@@ -118,15 +119,9 @@ public class CovarianceMatrixOnTheFly implements ICovarianceMatrix {
         this(dataSet, false);
     }
 
-    public CovarianceMatrixOnTheFly(DataSet dataSet, ForkJoinPool pool) {
-        this(dataSet, false, ForkJoinPoolInstance.getInstance().getPool());
-    }
-
     public CovarianceMatrixOnTheFly(DataSet dataSet, boolean verbose) {
-        this(dataSet, verbose, ForkJoinPoolInstance.getInstance().getPool());
-    }
+        ForkJoinPool pool = new ForkJoinPool(4);
 
-    public CovarianceMatrixOnTheFly(DataSet dataSet, boolean verbose, ForkJoinPool pool) {
         if (!dataSet.isContinuous()) {
             throw new IllegalArgumentException("Not a continuous data set.");
         }

@@ -36,12 +36,8 @@ public class CStar implements Algorithm {
     private transient final ForkJoinPool pool;
 
     public CStar() {
-        this(ForkJoinPoolInstance.getInstance().getPool());
-    }
-
-    public CStar(ForkJoinPool pool) {
         this.algorithm = new Fges();
-        this.pool = pool;
+        this.pool = new ForkJoinPool(10);
     }
 
     @Override
@@ -74,7 +70,7 @@ public class CStar implements Algorithm {
                 BootstrapSampler sampler = new BootstrapSampler();
                 sampler.setWithoutReplacements(true);
                 DataSet sample = sampler.sample(_dataSet, (int) (percentSubsampleSize * _dataSet.getNumRows()));
-                Ida ida = new Ida(sample, pool);
+                Ida ida = new Ida(sample);
                 Ida.NodeEffects effects = ida.getSortedMinEffects(y);
 
                 for (int i = 0; i < q; i++) {

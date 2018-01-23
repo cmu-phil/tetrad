@@ -20,10 +20,11 @@
 ///////////////////////////////////////////////////////////////////////////////
 package edu.cmu.tetrad.search;
 
-import edu.cmu.tetrad.data.*;
+import edu.cmu.tetrad.data.IKnowledge;
+import edu.cmu.tetrad.data.Knowledge2;
+import edu.cmu.tetrad.data.KnowledgeEdge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.ChoiceGenerator;
-import edu.cmu.tetrad.util.ForkJoinPoolInstance;
 import edu.cmu.tetrad.util.TaskManager;
 import edu.cmu.tetrad.util.TetradLogger;
 
@@ -139,7 +140,7 @@ public final class Fges implements GraphSearch, GraphScorer {
     private ConcurrentMap<Node, Integer> hashIndices;
 
     // The static ForkJoinPool instance.
-    private ForkJoinPool pool = ForkJoinPoolInstance.getInstance().getPool();
+    private ForkJoinPool pool;
 
     // A running tally of the total BIC totalScore.
     private double totalScore;
@@ -195,6 +196,7 @@ public final class Fges implements GraphSearch, GraphScorer {
         }
         setScore(score);
         this.graph = new EdgeListGraphSingleConnections(getVariables());
+        setParallelism(Runtime.getRuntime().availableProcessors());
     }
 
     //==========================PUBLIC METHODS==========================//
@@ -438,12 +440,8 @@ public final class Fges implements GraphSearch, GraphScorer {
     /**
      * Creates a new processors pool with the specified number of threads.
      */
-    public void setParallelism(int numProcessors) {
-        this.pool = new ForkJoinPool(numProcessors);
-    }
-
-    public void setPool(ForkJoinPool pool) {
-        this.pool = pool;
+    public void setParallelism(int parallelism) {
+        this.pool = new ForkJoinPool(parallelism);
     }
 
     /**
@@ -547,7 +545,7 @@ public final class Fges implements GraphSearch, GraphScorer {
     final int[] count = new int[1];
 
     public int getMinChunk(int n) {
-        return Math.max(n / ForkJoinPoolInstance.getInstance().getPool().getParallelism(), minChunk);
+        return Math.max(n / pool.getParallelism(), minChunk);
     }
 
     class NodeTaskEmptyGraph extends RecursiveTask<Boolean> {
@@ -643,7 +641,7 @@ public final class Fges implements GraphSearch, GraphScorer {
             protected Boolean compute() {
                 Queue<NodeTaskEmptyGraph> tasks = new ArrayDeque<>();
 
-                int numNodesPerTask = Math.max(100, nodes.size() / ForkJoinPoolInstance.getInstance().getPool().getParallelism());
+                int numNodesPerTask = Math.max(100, nodes.size() / pool.getParallelism());
 
                 for (int i = 0; i < nodes.size() && !Thread.currentThread().isInterrupted(); i += numNodesPerTask) {
                     NodeTaskEmptyGraph task = new NodeTaskEmptyGraph(i, Math.min(nodes.size(), i + numNodesPerTask),
@@ -658,7 +656,7 @@ public final class Fges implements GraphSearch, GraphScorer {
                         }
                     }
 
-                    while (tasks.size() > ForkJoinPoolInstance.getInstance().getPool().getParallelism()) {
+                    while (tasks.size() > pool.getParallelism()) {
                         NodeTaskEmptyGraph _task = tasks.poll();
                         _task.join();
                     }

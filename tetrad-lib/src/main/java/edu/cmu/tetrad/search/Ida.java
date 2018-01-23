@@ -38,10 +38,10 @@ public class Ida {
     public Ida(DataSet dataSet, List<Node> targets, ForkJoinPool pool) {
         this.dataSet = dataSet;
         this.data = dataSet.getDoubleData().transpose().toArray();
-        covariances = new CovarianceMatrixOnTheFly(dataSet, pool);
+        covariances = new CovarianceMatrixOnTheFly(dataSet);
 
         FgesMb fges = new FgesMb(new SemBicScore(covariances));
-        fges.setPool(pool);
+        fges.setParallelism(4);
         this.pattern = fges.search(targets);
 
         nodeIndices = new HashMap<>();
@@ -60,10 +60,10 @@ public class Ida {
     public Ida(DataSet dataSet, ForkJoinPool pool) {
         this.dataSet = dataSet;
         this.data = dataSet.getDoubleData().transpose().toArray();
-        covariances = new CovarianceMatrixOnTheFly(dataSet, pool);
+        covariances = new CovarianceMatrixOnTheFly(dataSet);
 
         Fges fges = new Fges(new SemBicScore(covariances));
-        fges.setPool(pool);
+        fges.setParallelism(4);
         this.pattern = fges.search();
         nodeIndices = new HashMap<>();
 

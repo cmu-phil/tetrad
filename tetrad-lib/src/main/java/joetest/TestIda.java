@@ -68,6 +68,7 @@ public class TestIda {
         }
     }
 
+//    @Test
     public void testCStar() {
         int numNodes = 50;
         int numEdges = 2 * numNodes;
@@ -132,6 +133,7 @@ public class TestIda {
         printResult(trueDag, parameters, graph, stop - start, numNodes, numEdges, sampleSize, dataSet);
     }
 
+//    @Test
     public void testBoth(int numNodes, int numEdges, int sampleSize, int numIterations) {
 //        int numNodes = 50;
 //        int numEdges = numNodes;
@@ -168,8 +170,6 @@ public class TestIda {
         SemIm im = new SemIm(pm, parameters);
         DataSet fullData = im.simulateData(sampleSize, false);
 
-        ForkJoinPool pool = new ForkJoinPool(Runtime.getRuntime().availableProcessors() * 10);
-
         for (int i = 0; i < numIterations; i++) {
 
             parameters.set("targetName", "X" + (numNodes - numIterations + i));
@@ -178,7 +178,7 @@ public class TestIda {
 
             long start = System.currentTimeMillis();
 
-            CStar cstar = new CStar(pool);
+            CStar cstar = new CStar();
             Graph graph = cstar.search(fullData, parameters);
 
             long stop = System.currentTimeMillis();
@@ -190,7 +190,7 @@ public class TestIda {
 
             start = System.currentTimeMillis();
 
-            FmbStar fmbStar = new FmbStar(pool);
+            FmbStar fmbStar = new FmbStar();
             Graph graph2 = fmbStar.search(fullData, parameters);
 
             stop = System.currentTimeMillis();

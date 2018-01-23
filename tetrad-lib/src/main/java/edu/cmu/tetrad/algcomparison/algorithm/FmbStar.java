@@ -35,16 +35,12 @@ import java.util.concurrent.ForkJoinPool;
 )
 public class FmbStar implements Algorithm {
     static final long serialVersionUID = 23L;
-    private transient final ForkJoinPool pool;
     private Algorithm algorithm;
+    private ForkJoinPool pool;
 
     public FmbStar() {
-        this(ForkJoinPoolInstance.getInstance().getPool());
-    }
-
-    public FmbStar(ForkJoinPool pool) {
         this.algorithm = new Fges();
-        this.pool = pool;
+        pool = new ForkJoinPool(10);
     }
 
     @Override
@@ -76,11 +72,10 @@ public class FmbStar implements Algorithm {
                 sampler.setWithoutReplacements(true);
                 DataSet sample = sampler.sample(_dataSet, (int) (percentageB * _dataSet.getNumRows()));
 
-                final ICovarianceMatrix covariances = new CovarianceMatrixOnTheFly(sample, pool);
+                final ICovarianceMatrix covariances = new CovarianceMatrixOnTheFly(sample);
                 final edu.cmu.tetrad.search.SemBicScore score = new edu.cmu.tetrad.search.SemBicScore(covariances);
                 score.setPenaltyDiscount(parameters.getDouble("penaltyDiscount"));
                 FgesMb fgesMb = new FgesMb(score);
-                fgesMb.setPool(pool);
                 Graph g = fgesMb.search(y);
 
                 for (final Node key : g.getNodes()) {
@@ -104,7 +99,7 @@ public class FmbStar implements Algorithm {
             tasks.add(new Task(i, counts));
         }
 
-        ForkJoinPoolInstance.getInstance().getPool().invokeAll(tasks);
+        pool.invokeAll(tasks);
 
         List<Node> sortedVariables = new ArrayList<>(variables);
 
