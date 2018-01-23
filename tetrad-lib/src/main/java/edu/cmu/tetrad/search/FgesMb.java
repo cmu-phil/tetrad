@@ -302,72 +302,117 @@ public final class FgesMb {
 
         final Set emptySet = new HashSet();
 
-        for (final Node target : targets) {
-            for (final Node x : fgesScore.getVariables()) {
-                if (targets.contains(x)) {
-                    continue;
-                }
+//        for (final Node target : targets) {
+//            for (final Node x : fgesScore.getVariables()) {
+//                if (targets.contains(x)) {
+//                    continue;
+//                }
+//
+//                int child = hashIndices.get(target);
+//                int parent = hashIndices.get(x);
+//                double bump = fgesScore.localScoreDiff(parent, child);
+//
+//                if (bump > 0) {
+//                    synchronized (effectEdgesGraph) {
+//                        effectEdgesGraph.addNode(x);
+//                    }
+//
+//                    addUnconditionalArrows(x, target, emptySet);
+//
+//                    List<RecursiveTask> tasks = new ArrayList<>();
+//
+//                    for (final Node y : fgesScore.getVariables()) {
+//                        if (x == y) continue;
+//                        RecursiveTask task = new MbTask(x, y, target);
+//                        tasks.add(task);
+//                        task.fork();
+//                    }
+//
+//                    for (RecursiveTask task : tasks) {
+//                        task.join();
+//                    }
+//                }
+//            }
+//        }
 
-                int child = hashIndices.get(target);
-                int parent = hashIndices.get(x);
-                double bump = fgesScore.localScoreDiff(parent, child);
+        for (Node target : targets) {
+            effectEdgesGraph.addNode(target);
 
-                if (bump > 0) {
-                    synchronized (effectEdgesGraph) {
-                        effectEdgesGraph.addNode(x);
-                    }
+            List<Node> adj = new ArrayList<>();
 
-                    addUnconditionalArrows(x, target, emptySet);
-
-                    List<RecursiveTask> tasks = new ArrayList<>();
-
-                    for (final Node y : fgesScore.getVariables()) {
-                        if (x == y) continue;
-                        RecursiveTask task = new MbTask(x, y, target);
-                        tasks.add(task);
-                        task.fork();
-                    }
-
-                    for (RecursiveTask task : tasks) {
-                        task.join();
-                    }
-                }
-            }
-        }
-    }
-
-    class MbTask extends RecursiveTask<Boolean> {
-        Node x;
-        Node y;
-        Node target;
-        Set<Node> emptySet = new HashSet<>();
-
-        public MbTask(Node x, Node y, Node target) {
-            this.x = x;
-            this.y = y;
-            this.target = target;
-        }
-
-        @Override
-        public Boolean compute() {
-            if (!effectEdgesGraph.isAdjacentTo(x, y) && !effectEdgesGraph.isAdjacentTo(y, target)) {
-                int child2 = hashIndices.get(x);
-                int parent2 = hashIndices.get(y);
+            for (Node x : variables) {
+                int child2 = hashIndices.get(target);
+                int parent2 = hashIndices.get(x);
 
                 double bump2 = fgesScore.localScoreDiff(parent2, child2);
 
                 if (bump2 > 0) {
                     synchronized (effectEdgesGraph) {
-                        effectEdgesGraph.addNode(y);
+                        effectEdgesGraph.addNode(x);
+                        adj.add(x);
                     }
 
-                    addUnconditionalArrows(x, y, emptySet);
+                    addUnconditionalArrows(target, x, emptySet);
                 }
+
             }
 
-            return true;
+
+            List<Node> adjadj = new ArrayList<>();
+
+            for (Node x : adj) {
+                for (Node y : variables) {
+                    int child2 = hashIndices.get(x);
+                    int parent2 = hashIndices.get(y);
+
+                    double bump2 = fgesScore.localScoreDiff(parent2, child2);
+
+                    if (bump2 > 0) {
+                        synchronized (effectEdgesGraph) {
+                            effectEdgesGraph.addNode(y);
+                            adjadj.add(y);
+                        }
+
+                        addUnconditionalArrows(x, y, emptySet);
+                    }
+                }
+            }
         }
+
     }
+
+//    class MbTask extends RecursiveTask<Boolean> {
+//        Node x;
+//        Node y;
+//        Node target;
+//        Set<Node> emptySet = new HashSet<>();
+//
+//        public MbTask(Node x, Node y, Node target) {
+//            this.x = x;
+//            this.y = y;
+//            this.target = target;
+//        }
+//
+//        @Override
+//        public Boolean compute() {
+//            if (!effectEdgesGraph.isAdjacentTo(x, y) && !effectEdgesGraph.isAdjacentTo(y, target)) {
+//                int child2 = hashIndices.get(x);
+//                int parent2 = hashIndices.get(y);
+//
+//                double bump2 = fgesScore.localScoreDiff(parent2, child2);
+//
+//                if (bump2 > 0) {
+//                    synchronized (effectEdgesGraph) {
+//                        effectEdgesGraph.addNode(y);
+//                    }
+//
+//                    addUnconditionalArrows(x, y, emptySet);
+//                }
+//            }
+//
+//            return true;
+//        }
+//    }
 
 
     private void addUnconditionalArrows(Node x, Node y, Set emptySet) {
@@ -1940,6 +1985,8 @@ public final class FgesMb {
     }
 
     private void runCallables(List<Callable<Boolean>> tasks) {
+        if (tasks.isEmpty()) return;
+
         ExecutorService executorService =
                 new ThreadPoolExecutor(parallelism, parallelism, 0L, TimeUnit.MILLISECONDS,
                         new LinkedBlockingQueue<Runnable>());
