@@ -38,6 +38,7 @@ import org.junit.Test;
 
 import java.util.*;
 import java.util.concurrent.ForkJoinPool;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Tests IDA.
@@ -68,7 +69,7 @@ public class TestIda {
         }
     }
 
-//    @Test
+    @Test
     public void testCStar() {
         int numNodes = 50;
         int numEdges = 2 * numNodes;
@@ -93,7 +94,7 @@ public class TestIda {
 
         long start = System.currentTimeMillis();
 
-        CStar cstar = new CStar();
+        CStar cstar = new CStar(new ForkJoinPool(Runtime.getRuntime().availableProcessors()));
         Graph graph = cstar.search(dataSet, parameters);
 
         long stop = System.currentTimeMillis();
@@ -101,6 +102,7 @@ public class TestIda {
         printResult(trueDag, parameters, graph, stop - start, numNodes, numEdges, sampleSize, dataSet);
     }
 
+    @Test
     public void testFmbStar() {
         int numNodes = 50;
         int numEdges = 2 * numNodes;
@@ -125,7 +127,7 @@ public class TestIda {
 
         long start = System.currentTimeMillis();
 
-        FmbStar star = new FmbStar();
+        FmbStar star = new FmbStar(new ForkJoinPool(Runtime.getRuntime().availableProcessors()));
         Graph graph = star.search(dataSet, parameters);
 
         long stop = System.currentTimeMillis();
@@ -133,7 +135,7 @@ public class TestIda {
         printResult(trueDag, parameters, graph, stop - start, numNodes, numEdges, sampleSize, dataSet);
     }
 
-//    @Test
+    //    @Test
     public void testBoth(int numNodes, int numEdges, int sampleSize, int numIterations) {
 //        int numNodes = 50;
 //        int numEdges = numNodes;
@@ -172,14 +174,19 @@ public class TestIda {
 
         for (int i = 0; i < numIterations; i++) {
 
+
             parameters.set("targetName", "X" + (numNodes - numIterations + i));
 
             System.out.println("\n\n=====CSTAR====");
 
             long start = System.currentTimeMillis();
 
-            CStar cstar = new CStar();
+            ForkJoinPool pool = new ForkJoinPool(Runtime.getRuntime().availableProcessors() * 10);
+
+            CStar cstar = new CStar(pool);
             Graph graph = cstar.search(fullData, parameters);
+
+            shutdown(pool);
 
             long stop = System.currentTimeMillis();
 
@@ -190,14 +197,20 @@ public class TestIda {
 
             start = System.currentTimeMillis();
 
-            FmbStar fmbStar = new FmbStar();
+            pool = new ForkJoinPool(Runtime.getRuntime().availableProcessors() * 10);
+
+            FmbStar fmbStar = new FmbStar(pool);
             Graph graph2 = fmbStar.search(fullData, parameters);
+
+            shutdown(pool);
 
             stop = System.currentTimeMillis();
 
             int[] ret2 = printResult(truePattern, parameters, graph2, stop - start, numNodes, numEdges, sampleSize, fullData);
             fmbStarRet.add(ret2);
+
         }
+
 
         System.out.println();
 
@@ -210,6 +223,24 @@ public class TestIda {
                     + cstarRet.get(i)[2] + "\t" + fmbStarRet.get(i)[2] + "\t"
                     + cstarRet.get(i)[3] + "\t" + fmbStarRet.get(i)[3] + "\t"
             );
+        }
+    }
+
+    private void shutdown(ForkJoinPool pool) {
+        pool.shutdown(); // Disable new tasks from being submitted
+        try {
+            // Wait a while for existing tasks to terminate
+            if (!pool.awaitTermination(60, TimeUnit.SECONDS)) {
+                pool.shutdownNow(); // Cancel currently executing tasks
+                // Wait a while for tasks to respond to being cancelled
+                if (!pool.awaitTermination(60, TimeUnit.SECONDS))
+                    System.err.println("Pool did not terminate");
+            }
+        } catch (InterruptedException ie) {
+            // (Re-)Cancel if current thread also interrupted
+            pool.shutdownNow();
+            // Preserve interrupt status
+            Thread.currentThread().interrupt();
         }
     }
 

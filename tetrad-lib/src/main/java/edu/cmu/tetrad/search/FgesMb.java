@@ -26,6 +26,7 @@ import edu.cmu.tetrad.data.Knowledge2;
 import edu.cmu.tetrad.data.KnowledgeEdge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.ChoiceGenerator;
+import edu.cmu.tetrad.util.ForkJoinPoolInstance;
 import edu.cmu.tetrad.util.TaskManager;
 import edu.cmu.tetrad.util.TetradLogger;
 
@@ -144,7 +145,7 @@ public final class FgesMb {
     private ConcurrentMap<Node, Integer> hashIndices;
 
     // The static ForkJoinPool instance.
-    private ForkJoinPool pool;
+    private ForkJoinPool pool = ForkJoinPoolInstance.getInstance().getPool();
 
     // A running tally of the total BIC totalScore.
     private double totalScore;
@@ -194,7 +195,6 @@ public final class FgesMb {
         if (score == null) throw new NullPointerException();
         setFgesScore(score);
         this.graph = new EdgeListGraphSingleConnections(getVariables());
-        setParallelism(Runtime.getRuntime().availableProcessors());
     }
 
     //==========================PUBLIC METHODS==========================//
@@ -548,6 +548,13 @@ public final class FgesMb {
      */
     public void setParallelism(int numProcessors) {
         this.pool = new ForkJoinPool(numProcessors);
+    }
+
+    /**
+     * Sets the ForkJoinPool.
+     */
+    public void setPool(ForkJoinPool pool) {
+        this.pool = pool;
     }
 
     /**

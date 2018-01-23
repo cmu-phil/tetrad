@@ -33,8 +33,8 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.text.NumberFormat;
 import java.util.*;
-import java.util.concurrent.ForkJoinPool;
-import java.util.concurrent.RecursiveTask;
+//import java.util.concurrent.ForkJoinPool;
+//import java.util.concurrent.RecursiveTask;
 
 /**
  * Stores a covariance matrix together with variable names and sample size,
@@ -120,7 +120,7 @@ public class CovarianceMatrixOnTheFly implements ICovarianceMatrix {
     }
 
     public CovarianceMatrixOnTheFly(DataSet dataSet, boolean verbose) {
-        ForkJoinPool pool = new ForkJoinPool(4);
+//        ForkJoinPool pool = new ForkJoinPool(4);
 
         if (!dataSet.isContinuous()) {
             throw new IllegalArgumentException("Not a continuous data set.");
@@ -221,74 +221,101 @@ public class CovarianceMatrixOnTheFly implements ICovarianceMatrix {
 
         this.variances = new double[variables.size()];
 
-        class VarianceTask extends RecursiveTask<Boolean> {
-            private int chunk;
-            private int from;
-            private int to;
+        for (int i = 0; i < variables.size(); i++) {
+            double d = 0.0D;
 
-            public VarianceTask(int chunk, int from, int to) {
-                this.chunk = chunk;
-                this.from = from;
-                this.to = to;
+            int count = 0;
+
+            double[] v1 = vectors[i];
+
+            for (int k = 0; k < sampleSize; ++k) {
+                if (Double.isNaN(v1[k])) {
+                    continue;
+                }
+
+                d += v1[k] * v1[k];
+                count++;
             }
 
-            @Override
-            protected Boolean compute() {
-                if (to - from <= chunk) {
-                    for (int i = from; i < to; i++) {
-                        double d = 0.0D;
-
-                        int count = 0;
-
-                        double[] v1 = vectors[i];
-
-                        for (int k = 0; k < sampleSize; ++k) {
-                            if (Double.isNaN(v1[k])) {
-                                continue;
-                            }
-
-                            d += v1[k] * v1[k];
-                            count++;
-                        }
-
-                        double v = d;
+            double v = d;
 //                        v /= (sampleSize - 1);
-                        v /= (count - 1);
+            v /= (count - 1);
 
-                        variances[i] = v;
+            variances[i] = v;
 
-                        if (v == 0) {
-                            System.out.println("Zero variance! " + variables.get(i));
-                        }
-                    }
-
-                    return true;
-                } else {
-                    final int numIntervals = 4;
-
-                    int step = (to - from) / numIntervals + 1;
-
-                    List<VarianceTask> tasks = new ArrayList<>();
-
-                    for (int i = 0; i < numIntervals; i++) {
-                        VarianceTask task = new VarianceTask(chunk, from + i * step, Math.min(from + (i + 1) * step, to));
-                        tasks.add(task);
-                    }
-
-                    invokeAll(tasks);
-
-                    return true;
-                }
+            if (v == 0) {
+                System.out.println("Zero variance! " + variables.get(i));
             }
         }
 
-        int NTHREADS = Runtime.getRuntime().availableProcessors() * 10;
-        int _chunk = variables.size() / NTHREADS + 1;
-        int minChunk = 100;
-        final int chunk = _chunk < minChunk ? minChunk : _chunk;
+//        class VarianceTask extends RecursiveTask<Boolean> {
+//            private int chunk;
+//            private int from;
+//            private int to;
+//
+//            public VarianceTask(int chunk, int from, int to) {
+//                this.chunk = chunk;
+//                this.from = from;
+//                this.to = to;
+//            }
+//
+//            @Override
+//            protected Boolean compute() {
+//                if (to - from <= chunk) {
+//                    for (int i = from; i < to; i++) {
+//                        double d = 0.0D;
+//
+//                        int count = 0;
+//
+//                        double[] v1 = vectors[i];
+//
+//                        for (int k = 0; k < sampleSize; ++k) {
+//                            if (Double.isNaN(v1[k])) {
+//                                continue;
+//                            }
+//
+//                            d += v1[k] * v1[k];
+//                            count++;
+//                        }
+//
+//                        double v = d;
+////                        v /= (sampleSize - 1);
+//                        v /= (count - 1);
+//
+//                        variances[i] = v;
+//
+//                        if (v == 0) {
+//                            System.out.println("Zero variance! " + variables.get(i));
+//                        }
+//                    }
+//
+//                    return true;
+//                } else {
+//                    final int numIntervals = 4;
+//
+//                    int step = (to - from) / numIntervals + 1;
+//
+//                    List<VarianceTask> tasks = new ArrayList<>();
+//
+//                    for (int i = 0; i < numIntervals; i++) {
+//                        VarianceTask task = new VarianceTask(chunk, from + i * step, Math.min(from + (i + 1) * step, to));
+//                        tasks.add(task);
+//                    }
+//
+//                    invokeAll(tasks);
+//
+//                    return true;
+//                }
+//            }
+//        }
 
-        VarianceTask task = new VarianceTask(chunk, 0, variables.size());
-        pool.invoke(task);
+//        int NTHREADS = Runtime.getRuntime().availableProcessors() * 10;
+//        int _chunk = variables.size() / NTHREADS + 1;
+//        int minChunk = 100;
+//        final int chunk = _chunk < minChunk ? minChunk : _chunk;
+//
+//        VarianceTask task = new VarianceTask(chunk, 0, variables.size());
+//        pool.invoke(task);
 
         if (verbose) {
             System.out.println("Done with variances.");

@@ -18,6 +18,7 @@ import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ForkJoinPool;
+import java.util.concurrent.TimeUnit;
 
 @edu.cmu.tetrad.annotation.Algorithm(
         name = "FmbStar",
@@ -35,12 +36,12 @@ import java.util.concurrent.ForkJoinPool;
 )
 public class FmbStar implements Algorithm {
     static final long serialVersionUID = 23L;
+    private transient final ForkJoinPool pool;
     private Algorithm algorithm;
-    private ForkJoinPool pool;
 
-    public FmbStar() {
+    public FmbStar(ForkJoinPool pool) {
         this.algorithm = new Fges();
-        pool = new ForkJoinPool(10);
+        this.pool = pool;
     }
 
     @Override
@@ -76,6 +77,7 @@ public class FmbStar implements Algorithm {
                 final edu.cmu.tetrad.search.SemBicScore score = new edu.cmu.tetrad.search.SemBicScore(covariances);
                 score.setPenaltyDiscount(parameters.getDouble("penaltyDiscount"));
                 FgesMb fgesMb = new FgesMb(score);
+                fgesMb.setPool(pool);
                 Graph g = fgesMb.search(y);
 
                 for (final Node key : g.getNodes()) {

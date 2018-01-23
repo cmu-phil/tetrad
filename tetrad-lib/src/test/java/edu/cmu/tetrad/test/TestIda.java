@@ -36,6 +36,7 @@ import edu.cmu.tetrad.util.Parameters;
 import org.junit.Test;
 
 import java.util.*;
+import java.util.concurrent.ForkJoinPool;
 
 /**
  * Tests IDA.
@@ -90,7 +91,7 @@ public class TestIda {
 
         long start = System.currentTimeMillis();
 
-        CStar cstar = new CStar();
+        CStar cstar = new CStar(new ForkJoinPool(Runtime.getRuntime().availableProcessors()));
         Graph graph = cstar.search(dataSet, parameters);
 
         long stop = System.currentTimeMillis();
@@ -122,7 +123,7 @@ public class TestIda {
 
         long start = System.currentTimeMillis();
 
-        FmbStar star = new FmbStar();
+        FmbStar star = new FmbStar(new ForkJoinPool(Runtime.getRuntime().availableProcessors()));
         Graph graph = star.search(dataSet, parameters);
 
         long stop = System.currentTimeMillis();
@@ -174,7 +175,7 @@ public class TestIda {
 
             long start = System.currentTimeMillis();
 
-            CStar cstar = new CStar();
+            CStar cstar = new CStar(new ForkJoinPool(Runtime.getRuntime().availableProcessors()));
             Graph graph = cstar.search(fullData, parameters);
 
             long stop = System.currentTimeMillis();
@@ -186,7 +187,7 @@ public class TestIda {
 
             start = System.currentTimeMillis();
 
-            FmbStar fmbStar = new FmbStar();
+            FmbStar fmbStar = new FmbStar(new ForkJoinPool(Runtime.getRuntime().availableProcessors()));
             Graph graph2 = fmbStar.search(fullData, parameters);
 
             stop = System.currentTimeMillis();
