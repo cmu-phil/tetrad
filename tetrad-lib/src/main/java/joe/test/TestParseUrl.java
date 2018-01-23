@@ -20,16 +20,16 @@ import java.util.List;
 
 public class TestParseUrl {
     String[] coins = {
-                    "bitcoin",
-//                    "ethereum",
-//                    "ripple",
-//                    "bitcoin-cash",
-//                    "cardano",
-//                    "litecoin",
-//                    "monero",
-//                    "bitconnect",
-//                    "sirin-labs-token",
-//            "electroneum"
+            "bitcoin",
+            "ethereum",
+            "ripple",
+            "bitcoin-cash",
+            "cardano",
+            "litecoin",
+            "monero",
+            "bitconnect",
+            "sirin-labs-token",
+            "electroneum"
     };
 
 
@@ -42,7 +42,7 @@ public class TestParseUrl {
         try {
 
             for (String coin : coins) {
-                URL url = new URL("https://coinmarketcap.com/currencies/" + coin + "/historical-data/?start=20170121&end=20180121");
+                URL url = new URL("https://coinmarketcap.com/currencies/" + coin + "/historical-data/?start=20150121&end=20180121");
                 is = url.openStream();  // throws an IOException
                 br = new BufferedReader(new InputStreamReader(is));
 
@@ -136,8 +136,8 @@ public class TestParseUrl {
             for (Node node : new ArrayList<>(regressors)) {
                 final int lag = TimeSeriesUtils.getLag(node.getName());
                 final String name = TimeSeriesUtils.getNameNoLag(node.getName());
-                if (lag == 0 ) regressors.remove(node);
-                if (!name.equalsIgnoreCase("MarketCap")) regressors.remove(node);
+                if (lag == 0) regressors.remove(node);
+//                if (!name.equalsIgnoreCase("MarketCap")) regressors.remove(node);
             }
 
             System.out.println("Coin = " + coins[0]);
