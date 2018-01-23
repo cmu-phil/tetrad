@@ -57,7 +57,8 @@ import java.util.concurrent.*;
 public final class FgesMb {
 
 
-    private List<Node> targets;
+    // The number of threads to use.
+    private int parallelism = Runtime.getRuntime().availableProcessors() * 10;
 
     /**
      * Internal.
@@ -233,7 +234,7 @@ public final class FgesMb {
             );
         }
 
-        this.targets = targets;
+//        this.targets = targets;
 
         topGraphs.clear();
 
@@ -552,6 +553,7 @@ public final class FgesMb {
      */
     public void setParallelism(int numProcessors) {
         this.pool = new ForkJoinPool(numProcessors);
+        this.parallelism = parallelism;
     }
 
     /**
@@ -644,7 +646,7 @@ public final class FgesMb {
     final int[] count = new int[1];
 
     public int getMinChunk(int n) {
-        return Math.max(n / pool.getParallelism(), minChunk);
+        return Math.max(n / parallelism, minChunk);
     }
 
     private void initializeTwoStepEdges(final List<Node> nodes) {
@@ -672,28 +674,31 @@ public final class FgesMb {
 
         final Set<Node> emptySet = new HashSet<>(0);
 
-        class InitializeFromExistingGraphTask2 extends RecursiveTask<Boolean> {
-            private int chunk;
+        class InitializeFromExistingGraphTask2 implements Callable<Boolean> {
             private int from;
             private int to;
 
-            public InitializeFromExistingGraphTask2(int chunk, int from, int to) {
-                this.chunk = chunk;
+            private InitializeFromExistingGraphTask2(int from, int to) {
                 this.from = from;
                 this.to = to;
             }
 
             @Override
-            protected Boolean compute() {
+            public Boolean call() {
                 if (TaskManager.getInstance().isCanceled()) return false;
-
                 initializeNodesFromExistingGraph(nodes, from, to, emptySet);
-
                 return true;
             }
         }
 
-        pool.invoke(new InitializeFromExistingGraphTask2(getMinChunk(nodes.size()), 0, nodes.size()));
+        List<Callable<Boolean>> tasks = new ArrayList<>();
+
+        for (int i = 0; i < nodes.size(); i += minChunk) {
+            final Callable task = new InitializeFromExistingGraphTask2(i, Math.min(nodes.size(), i + minChunk));
+            tasks.add(task);
+        }
+
+        runCallables(tasks);
     }
 
     private void initializeNodesFromExistingGraph(List<Node> nodes, int from, int to, Set<Node> emptySet) {
@@ -783,7 +788,7 @@ public final class FgesMb {
 
         final Set<Node> emptySet = new HashSet<>(0);
 
-        class InitializeFromExistingGraphTask2 extends RecursiveTask<Boolean> {
+        class InitializeFromExistingGraphTask2 implements Callable<Boolean> {
             private int from;
             private int to;
 
@@ -793,7 +798,7 @@ public final class FgesMb {
             }
 
             @Override
-            public Boolean compute() {
+            public Boolean call() {
                 for (int i = from; i < to; i++) {
                     if (Thread.currentThread().isInterrupted()) {
                         break;
@@ -813,17 +818,13 @@ public final class FgesMb {
 
         final int minChunk = getMinChunk(nodes.size());
 
-        List<RecursiveTask> tasks = new ArrayList<>();
+        List<Callable<Boolean>> tasks = new ArrayList<>();
 
         for (int i = 0; i < nodes.size(); i += minChunk) {
-            final RecursiveTask task = new InitializeFromExistingGraphTask2(i, Math.min(nodes.size(), i + minChunk));
-            task.fork();
-            tasks.add(task);
+            tasks.add(new InitializeFromExistingGraphTask2(i, Math.min(nodes.size(), i + minChunk)));
         }
 
-        for (RecursiveTask task : tasks) {
-            task.join();
-        }
+        runCallables(tasks);
     }
 
     private void initializeEffectEdges(int i, List<Node> nodes, Set<Node> emptySet) {
@@ -1039,7 +1040,7 @@ public final class FgesMb {
     // Calcuates new arrows based on changes in the graph for the forward search.
     private void reevaluateForward(final Set<Node> nodes, final Arrow arrow) {
 
-        class AdjTask2 extends RecursiveTask<Boolean> {
+        class AdjTask2 implements Callable<Boolean> {
             private final List<Node> nodes;
             private int from;
             private int to;
@@ -1051,7 +1052,7 @@ public final class FgesMb {
             }
 
             @Override
-            protected Boolean compute() {
+            public Boolean call() {
                 for (int _w = from; _w < to; _w++) {
                     adjTask(_w, nodes);
                 }
@@ -1061,17 +1062,13 @@ public final class FgesMb {
         }
 
 
-        List<RecursiveTask> tasks = new ArrayList<>();
+        List<Callable<Boolean>> tasks = new ArrayList<>();
 
         for (int i = 0; i < nodes.size(); i += minChunk) {
-            final RecursiveTask task = new AdjTask2(new ArrayList<>(nodes), i, Math.min(nodes.size(), i + minChunk));
-            task.fork();
-            tasks.add(task);
+            tasks.add(new AdjTask2(new ArrayList<>(nodes), i, Math.min(nodes.size(), i + minChunk)));
         }
 
-        for (RecursiveTask task : tasks) {
-            task.join();
-        }
+        runCallables(tasks);
     }
 
     private void adjTask(int _w, List<Node> nodes) {
@@ -1204,13 +1201,13 @@ public final class FgesMb {
     // Reevaluates arrows after removing an edge from the graph.
     private void reevaluateBackward(Set<Node> toProcess) {
 
-        class BackwardTask2 extends RecursiveTask<Boolean> {
+        class BackwardTask2 implements Callable<Boolean> {
             private final Node r;
             private List<Node> adj;
             private int from;
             private int to;
 
-            public BackwardTask2(Node r, List<Node> adj, int from, int to) {
+            private BackwardTask2(Node r, List<Node> adj, int from, int to) {
                 this.adj = adj;
                 this.from = from;
                 this.to = to;
@@ -1218,7 +1215,7 @@ public final class FgesMb {
             }
 
             @Override
-            protected Boolean compute() {
+            public Boolean call() {
                 for (int _w = from; _w < to; _w++) {
                     if (Thread.currentThread().isInterrupted()) {
                         break;
@@ -1236,18 +1233,14 @@ public final class FgesMb {
             this.neighbors.put(r, getNeighbors(r));
             List<Node> adjacentNodes = graph.getAdjacentNodes(r);
 
-            List<BackwardTask2> tasks = new ArrayList<>();
+            List<Callable<Boolean>> tasks = new ArrayList<>();
 
             for (int i = 0; i < adjacentNodes.size(); i += minChunk) {
-                final BackwardTask2 task = new BackwardTask2(r, adjacentNodes,
-                        i, Math.min(adjacentNodes.size(), i + minChunk));
-                task.fork();
-                tasks.add(task);
+                tasks.add(new BackwardTask2(r, adjacentNodes,
+                        i, Math.min(adjacentNodes.size(), i + minChunk)));
             }
 
-            for (RecursiveTask task : tasks) {
-                task.join();
-            }
+            runCallables(tasks);
         }
     }
 
@@ -1944,6 +1937,29 @@ public final class FgesMb {
         }
 
         return builder.toString();
+    }
+
+    private void runCallables(List<Callable<Boolean>> tasks) {
+        ExecutorService executorService =
+                new ThreadPoolExecutor(parallelism, parallelism, 0L, TimeUnit.MILLISECONDS,
+                        new LinkedBlockingQueue<Runnable>());
+
+        try {
+            Boolean result = executorService.invokeAny(tasks);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        } catch (ExecutionException e) {
+            e.printStackTrace();
+        }
+
+        executorService.shutdown();
+        try {
+            if (!executorService.awaitTermination(800, TimeUnit.MILLISECONDS)) {
+                executorService.shutdownNow();
+            }
+        } catch (InterruptedException e) {
+            executorService.shutdownNow();
+        }
     }
 
     private void shutdownAndAwaitTermination(ForkJoinPool pool) {
