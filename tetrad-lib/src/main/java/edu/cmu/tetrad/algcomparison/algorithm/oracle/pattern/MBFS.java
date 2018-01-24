@@ -49,17 +49,22 @@ public class MBFS implements Algorithm, HasKnowledge, TakesIndependenceWrapper {
     public Graph search(DataModel dataSet, Parameters parameters) {
     	if (parameters.getInt("bootstrapSampleSize") < 1) {
             IndependenceTest test = this.test.getTest(dataSet, parameters);
-            edu.cmu.tetrad.search.Mbfs search = new edu.cmu.tetrad.search.Mbfs(
-                    test,
-                    parameters.getInt("depth")
-            );
+            edu.cmu.tetrad.search.Mbfs search = new edu.cmu.tetrad.search.Mbfs(test, parameters.getInt("depth"));
 
             search.setDepth(parameters.getInt("depth"));
             search.setKnowledge(knowledge);
 
             this.targetName = parameters.getString("targetName");
+            if (targetName.isEmpty()) {
+                throw new IllegalArgumentException("Target variable name needs to be provided.");
+            }
+            
+            if (test.getVariable(targetName) == null) {
+                throw new IllegalArgumentException("Target variable name '" + targetName + "' not found in dataset.");
+            }
+            
             Node target = test.getVariable(targetName);
-            return search.search(target);
+            return search.search(target.getName());
         } else {
             MBFS algorithm = new MBFS(test);
 

@@ -28,7 +28,6 @@ import edu.cmu.tetrad.util.ChoiceGenerator;
 import edu.cmu.tetrad.util.DepthChoiceGenerator;
 import edu.cmu.tetrad.util.NumberFormatUtil;
 import edu.cmu.tetrad.util.TetradLogger;
-
 import java.text.NumberFormat;
 import java.util.*;
 
@@ -184,8 +183,7 @@ public final class Mbfs implements MbSearch, GraphSearch {
      */
     public Graph search(String targetName) {
         if (targetName == null) {
-            throw new IllegalArgumentException(
-                    "Null target name not permitted");
+            throw new IllegalArgumentException("Target variable name needs to be provided.");
         }
 
         this.target = getVariableForName(targetName);
@@ -503,7 +501,11 @@ public final class Mbfs implements MbSearch, GraphSearch {
      * @param depth Ibid.
      */
     public void setDepth(int depth) {
-        if (depth < 0) throw new IllegalArgumentException("Depth must be >= 0: " + depth);
+        //  If it's -1 to set it to some unreasonably high number like 1000
+        if (depth < 0) {
+            depth = 1000;
+        }
+        
         this.depth = depth;
     }
 
