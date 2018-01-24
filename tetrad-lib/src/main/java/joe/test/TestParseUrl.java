@@ -124,7 +124,7 @@ public class TestParseUrl {
     public void test2() {
 
 
-        int targetIndex = 0;
+        int targetIndex = 1;
         final int numLags = 2;
         final int sampleSize = 75;
 
@@ -207,10 +207,14 @@ public class TestParseUrl {
         System.out.println("Predicted value = " + predictedValue);
         System.out.println("(Actual value = " + actualValue + ")");
 
-        if (predictedValue > previousValue) {
+        double margin = 0.1;
+
+        if (predictedValue > previousValue * (1.0 + margin)) {
             System.out.println("BUY BUY BUY!");
-        } else {
+        } else if (predictedValue > previousValue * (1.0 - margin)) {
             System.out.println("SELL SELL SELL!");
+        } else {
+            System.out.println("HOLD!");
         }
     }
 }
