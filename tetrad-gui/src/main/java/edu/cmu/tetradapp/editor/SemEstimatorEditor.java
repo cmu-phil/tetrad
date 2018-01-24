@@ -45,8 +45,6 @@ import edu.cmu.tetradapp.util.IntTextField;
 import edu.cmu.tetradapp.util.WatchedProcess;
 import java.awt.BorderLayout;
 import java.awt.Window;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.List;
@@ -66,6 +64,8 @@ import javax.swing.JTextArea;
  * @author Joseph Ramsey
  */
 public final class SemEstimatorEditor extends JPanel {
+
+    private static final long serialVersionUID = 960988184083427499L;
 
     private final SemEstimatorWrapper wrapper;
     private final JPanel panel;
@@ -89,12 +89,9 @@ public final class SemEstimatorEditor extends JPanel {
         optimizerCombo.addItem("Random Search");
         optimizerCombo.addItem("RICF");
 
-        optimizerCombo.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                JComboBox box = (JComboBox) e.getSource();
-                wrapper.setSemOptimizerType((String) box.getSelectedItem());
-            }
+        optimizerCombo.addActionListener((e) -> {
+            JComboBox box = (JComboBox) e.getSource();
+            wrapper.setSemOptimizerType((String) box.getSelectedItem());
         });
 
         scoreBox = new JComboBox();
@@ -103,27 +100,22 @@ public final class SemEstimatorEditor extends JPanel {
         scoreBox.addItem("Fgls");
         scoreBox.addItem("Fml");
 
-        scoreBox.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                JComboBox box = (JComboBox) e.getSource();
-                String type = (String) box.getSelectedItem();
-                if ("Fgls".equals(type)) {
-                    wrapper.setScoreType(ScoreType.Fgls);
-                } else if ("Fml".equals(type)) {
-                    wrapper.setScoreType(ScoreType.Fml);
-                }
+        scoreBox.addActionListener((e) -> {
+            JComboBox box = (JComboBox) e.getSource();
+            String type = (String) box.getSelectedItem();
+            if ("Fgls".equals(type)) {
+                wrapper.setScoreType(ScoreType.Fgls);
+            } else if ("Fml".equals(type)) {
+                wrapper.setScoreType(ScoreType.Fml);
             }
         });
 
-        restarts.setFilter(new IntTextField.Filter() {
-            public int filter(int value, int oldValue) {
-                try {
-                    wrapper.setNumRestarts(value);
-                    return value;
-                } catch (Exception e) {
-                    return oldValue;
-                }
+        restarts.setFilter((value, oldValue) -> {
+            try {
+                wrapper.setNumRestarts(value);
+                return value;
+            } catch (Exception e) {
+                return oldValue;
             }
         });
 
@@ -139,43 +131,40 @@ public final class SemEstimatorEditor extends JPanel {
 
         JButton estimateButton = new JButton("Estimate Again");
 
-        estimateButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                Window owner = (Window) getTopLevelAncestor();
+        estimateButton.addActionListener((e) -> {
+            Window owner = (Window) getTopLevelAncestor();
 
-                new WatchedProcess(owner) {
-                    public void watch() {
-                        reestimate();
-                    }
-                };
-            }
+            new WatchedProcess(owner) {
+                @Override
+                public void watch() {
+                    reestimate();
+                }
+            };
         });
 
         JButton report = new JButton("Report");
 
-        report.addActionListener((new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                final JTextArea textArea = new JTextArea();
-                JScrollPane scroll = new JScrollPane(textArea);
+        report.addActionListener((e) -> {
+            final JTextArea textArea = new JTextArea();
+            JScrollPane scroll = new JScrollPane(textArea);
 
-                textArea.append(compileReport());
+            textArea.append(compileReport());
 
-                Box b = Box.createVerticalBox();
-                Box b2 = Box.createHorizontalBox();
-                b2.add(scroll);
-                textArea.setCaretPosition(0);
-                b.add(b2);
+            Box b = Box.createVerticalBox();
+            Box b2 = Box.createHorizontalBox();
+            b2.add(scroll);
+            textArea.setCaretPosition(0);
+            b.add(b2);
 
-                JPanel panel = new JPanel();
-                panel.setLayout(new BorderLayout());
-                panel.add(b);
+            JPanel panel = new JPanel();
+            panel.setLayout(new BorderLayout());
+            panel.add(b);
 
-                EditorWindow window = new EditorWindow(panel,
-                        "All Paths", "Close", false, SemEstimatorEditor.this);
-                DesktopController.getInstance().addEditorWindow(window, JLayeredPane.PALETTE_LAYER);
-                window.setVisible(true);
-            }
-        }));
+            EditorWindow window = new EditorWindow(panel,
+                    "All Paths", "Close", false, SemEstimatorEditor.this);
+            DesktopController.getInstance().addEditorWindow(window, JLayeredPane.PALETTE_LAYER);
+            window.setVisible(true);
+        });
 
         Box lowerBarA = Box.createHorizontalBox();
         lowerBarA.add(new JLabel("Score"));
