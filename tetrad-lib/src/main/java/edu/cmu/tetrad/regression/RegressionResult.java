@@ -257,7 +257,7 @@ public class RegressionResult implements TetradSerializable {
         int offset = zeroInterceptAssumed ? 0 : 1;
 
         for (int i = 0; i < getNumRegressors(); i++) {
-            yHat += b[i + offset] * x[i];
+             yHat += b[i + offset] * x[i];
         }
 
         if (!zeroInterceptAssumed) {

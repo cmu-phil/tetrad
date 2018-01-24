@@ -13,25 +13,30 @@ import edu.pitt.dbmi.data.reader.tabular.ContinuousTabularDataFileReader;
 import org.junit.Test;
 
 import java.io.*;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class TestParseUrl {
+
     String[] coins = {
             "bitcoin",
             "ethereum",
             "ripple",
             "bitcoin-cash",
             "cardano",
+            "stellar",
             "litecoin",
+            "nem",
+            "neo",
+            "eos",
+            "iota",
+            "dash",
             "monero",
             "bitconnect",
-            "sirin-labs-token",
             "electroneum"
     };
-
 
     @Test
     public void test1() {
@@ -104,8 +109,6 @@ public class TestParseUrl {
                 DataWriter.writeRectangularData(dataSet, new PrintWriter(new File(
                         "/Users/user/Downloads/" + coin)), '\t');
             }
-        } catch (MalformedURLException mue) {
-            mue.printStackTrace();
         } catch (IOException ioe) {
             ioe.printStackTrace();
         } finally {
@@ -120,37 +123,94 @@ public class TestParseUrl {
     @Test
     public void test2() {
 
-        DataReader reader = new ContinuousTabularDataFileReader(new File("/Users/user/Downloads/" + coins[0]), Delimiter.TAB);
+
+        int targetIndex = 0;
+        final int numLags = 2;
+        final int sampleSize = 75;
+
 
         try {
-            Dataset dataset = reader.readInData();
-            DataSet dataSet = (DataSet) DataConvertUtils.toDataModel(dataset);
 
-            System.out.println(dataSet);
-            DataSet lagged = TimeSeriesUtils.createLagData(dataSet, 10);
+//            for (int r = dataSet.getNumRows() - 30; r < dataSet.getNumRows() - 2; r++) {
+//                adviceForInitialRecords(r, coins[0], targetIndex, numLags, dataSet);
+//            }
 
-            List<Node> regressors = new ArrayList<>(lagged.getVariables());
-
-            Node target = regressors.get(4);
-
-            for (Node node : new ArrayList<>(regressors)) {
-                final int lag = TimeSeriesUtils.getLag(node.getName());
-                final String name = TimeSeriesUtils.getNameNoLag(node.getName());
-                if (lag == 0) regressors.remove(node);
-//                if (!name.equalsIgnoreCase("MarketCap")) regressors.remove(node);
+            for (int c = 0; c < coins.length; c++) {
+                DataReader reader = new ContinuousTabularDataFileReader(new File("/Users/user/Downloads/" + coins[c]), Delimiter.TAB);
+                DataSet dataSet = readData(reader);
+                final int r = dataSet.getNumRows() - 1;
+                adviceForInitialRecords(r, sampleSize, coins[c], targetIndex, numLags, dataSet);
             }
-
-            System.out.println("Coin = " + coins[0]);
-            System.out.println("Target = " + target);
-
-            RegressionDataset regressionDataset = new RegressionDataset(lagged);
-
-            RegressionResult result = regressionDataset.regress(target, regressors);
-
-            System.out.println(result);
-
         } catch (IOException e) {
             e.printStackTrace();
+        }
+    }
+
+    private DataSet readData(DataReader reader) throws IOException {
+        Dataset dataset = reader.readInData();
+        DataSet dataSet = (DataSet) DataConvertUtils.toDataModel(dataset);
+
+        for (int i = 0; i < dataSet.getNumRows(); i++) {
+            dataSet.setDouble(i, 4, dataSet.getDouble(i, 4) / 1e6);
+        }
+
+        return dataSet;
+    }
+
+    private void adviceForInitialRecords(int r, int sampleSize, String coin, int targetIndex, int numLags, DataSet dataSet) {
+
+        List<Integer> _rows = new ArrayList<>();
+
+        for (int i = Math.max(0, r - 1 - sampleSize); i < r - 1; i++) {
+            _rows.add(i);
+        }
+
+        int[] rows = new int[_rows.size()];
+        for (int i = 0; i < _rows.size(); i++) rows[i] = _rows.get(i);
+
+        DataSet subset = dataSet.subsetRows(rows);
+        DataSet lagged = TimeSeriesUtils.createLagData(subset, numLags);
+        List<Node> regressors = new ArrayList<>(lagged.getVariables());
+        Node target = regressors.get(targetIndex);
+
+        for (Node node : new ArrayList<>(regressors)) {
+            final int lag = TimeSeriesUtils.getLag(node.getName());
+            if (lag == 0) regressors.remove(node);
+        }
+
+        RegressionDataset regressionDataset = new RegressionDataset(lagged);
+
+        RegressionResult result = regressionDataset.regress(target, regressors);
+
+        double[] x = new double[lagged.getNumColumns() - 6];
+
+        int i = 0;
+
+        for (int w = 0; w < numLags; w++) {
+            for (int s = 0; s < 6; s++) {
+                x[i++] = subset.getDouble(subset.getNumRows() - numLags, s);
+            }
+        }
+
+//        System.out.println(Arrays.toString(x));
+
+        double predictedValue = result.getPredictedValue(x);
+
+        final double previousValue = dataSet.getDouble(r - 2, targetIndex);
+        final double actualValue = dataSet.getDouble(r - 1, targetIndex);
+
+        System.out.println();
+        System.out.println("r = " + r);
+        System.out.println("Coin = " + coin);
+        System.out.println("Target = " + target);
+        System.out.println("Previous value = " + previousValue);
+        System.out.println("Predicted value = " + predictedValue);
+        System.out.println("(Actual value = " + actualValue + ")");
+
+        if (predictedValue > previousValue) {
+            System.out.println("BUY BUY BUY!");
+        } else {
+            System.out.println("SELL SELL SELL!");
         }
     }
 }
