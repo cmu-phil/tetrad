@@ -156,11 +156,10 @@ public final class SemEstimatorEditor extends JPanel {
             textArea.setCaretPosition(0);
             b.add(b2);
 
-            JPanel panel = new JPanel();
-            panel.setLayout(new BorderLayout());
-            panel.add(b);
+            JPanel editorPanel = new JPanel(new BorderLayout());
+            editorPanel.add(b);
 
-            EditorWindow window = new EditorWindow(panel,
+            EditorWindow window = new EditorWindow(editorPanel,
                     "All Paths", "Close", false, SemEstimatorEditor.this);
             DesktopController.getInstance().addEditorWindow(window, JLayeredPane.PALETTE_LAYER);
             window.setVisible(true);
@@ -208,27 +207,28 @@ public final class SemEstimatorEditor extends JPanel {
             SemIm estSem = estimator.getEstimatedSem();
             String dataName = estimator.getDataSet().getName();
 
-            for (Parameter parameter : estSem.getFreeParameters()) {
+            estSem.getFreeParameters().forEach(parameter -> {
                 builder.append("\n");
-                builder.append(dataName + "\t");
-                builder.append(parameter.getNodeA() + "\t");
-                builder.append(parameter.getNodeB() + "\t");
-                builder.append(typeString(parameter) + "\t");
-                builder.append(asString(paramValue(estSem, parameter)) + "\t");
-                /*
-      Maximum number of free parameters for which statistics will be
-      calculated. (Calculating standard errors is high complexity.) Set this to
-      zero to turn  off statistics calculations (which can be problematic
-      sometimes).
+                builder.append(dataName).append("\t");
+                builder.append(parameter.getNodeA()).append("\t");
+                builder.append(parameter.getNodeB()).append("\t");
+                builder.append(typeString(parameter)).append("\t");
+                builder.append(asString(paramValue(estSem, parameter))).append("\t");
+
+                /**
+                 * Maximum number of free parameters for which statistics will
+                 * be calculated. (Calculating standard errors is high
+                 * complexity.) Set this to zero to turn off statistics
+                 * calculations (which can be problematic sometimes).
                  */
                 int maxFreeParamsForStatistics = 200;
                 builder.append(asString(estSem.getStandardError(parameter,
-                        maxFreeParamsForStatistics)) + "\t");
+                        maxFreeParamsForStatistics))).append("\t");
                 builder.append(asString(estSem.getTValue(parameter,
-                        maxFreeParamsForStatistics)) + "\t");
+                        maxFreeParamsForStatistics))).append("\t");
                 builder.append(asString(estSem.getPValue(parameter,
-                        maxFreeParamsForStatistics)) + "\t");
-            }
+                        maxFreeParamsForStatistics))).append("\t");
+            });
 
             List<Node> nodes = estSem.getVariableNodes();
 
@@ -245,14 +245,14 @@ public final class SemEstimatorEditor extends JPanel {
                 double p = 2.0 * (1.0 - ProbUtils.tCdf(Math.abs(tValue), df));
 
                 builder.append("\n");
-                builder.append(dataName + "\t");
-                builder.append(nodes.get(j) + "\t");
-                builder.append(nodes.get(j) + "\t");
-                builder.append("Mean" + "\t");
-                builder.append(asString(mean) + "\t");
-                builder.append(asString(stdErr) + "\t");
-                builder.append(asString(tValue) + "\t");
-                builder.append(asString(p) + "\t");
+                builder.append(dataName).append("\t");
+                builder.append(nodes.get(j)).append("\t");
+                builder.append(nodes.get(j)).append("\t");
+                builder.append("Mean").append("\t");
+                builder.append(asString(mean)).append("\t");
+                builder.append(asString(stdErr)).append("\t");
+                builder.append(asString(tValue)).append("\t");
+                builder.append(asString(p)).append("\t");
             }
         }
 
@@ -301,21 +301,25 @@ public final class SemEstimatorEditor extends JPanel {
 
         String type = wrapper.getSemOptimizerType();
 
-        if ("Regression".equals(type)) {
-            optimizer = new SemOptimizerRegression();
-        } else if ("EM".equals(type)) {
-            optimizer = new SemOptimizerEm();
-        } else if ("Powell".equals(type)) {
-            optimizer = new SemOptimizerPowell();
-        } else if ("Random Search".equals(type)) {
-            optimizer = new SemOptimizerScattershot();
-        } else if ("RICF".equals(type)) {
-            optimizer = new SemOptimizerRicf();
-        } else if ("Powell".equals(type)) {
-            optimizer = new SemOptimizerPowell();
-        } else {
-            throw new IllegalArgumentException("Unexpected optimizer "
-                    + "type: " + type);
+        switch (type) {
+            case "Regression":
+                optimizer = new SemOptimizerRegression();
+                break;
+            case "EM":
+                optimizer = new SemOptimizerEm();
+                break;
+            case "Powell":
+                optimizer = new SemOptimizerPowell();
+                break;
+            case "Random Search":
+                optimizer = new SemOptimizerScattershot();
+                break;
+            case "RICF":
+                optimizer = new SemOptimizerRicf();
+                break;
+            default:
+                throw new IllegalArgumentException("Unexpected optimizer type: "
+                        + type);
         }
 
         int numRestarts = wrapper.getNumRestarts();
@@ -324,7 +328,7 @@ public final class SemEstimatorEditor extends JPanel {
         java.util.List<SemEstimator> estimators = wrapper.getMultipleResultList();
         java.util.List<SemEstimator> newEstimators = new ArrayList<>();
 
-        for (SemEstimator estimator : estimators) {
+        estimators.forEach(estimator -> {
             SemPm semPm = estimator.getSemPm();
 
             DataSet dataSet = estimator.getDataSet();
@@ -341,14 +345,13 @@ public final class SemEstimatorEditor extends JPanel {
                 newEstimator.setNumRestarts(numRestarts);
                 newEstimator.setScoreType(wrapper.getScoreType());
             } else {
-                throw new IllegalStateException("Only continuous "
-                        + "rectangular data sets and covariance matrices "
-                        + "can be processed.");
+                throw new IllegalStateException("Only continuous rectangular"
+                        + " data sets and covariance matrices can be processed.");
             }
 
             newEstimator.estimate();
             newEstimators.add(newEstimator);
-        }
+        });
 
         wrapper.setSemEstimator(newEstimators.get(0));
 
