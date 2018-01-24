@@ -8,6 +8,7 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.FgesMb;
 import edu.cmu.tetrad.search.Ida;
+import edu.cmu.tetrad.search.SemBicScore;
 import edu.cmu.tetrad.util.ForkJoinPoolInstance;
 import edu.cmu.tetrad.util.Parameters;
 
@@ -36,16 +37,10 @@ import java.util.concurrent.TimeUnit;
 )
 public class FmbStar implements Algorithm {
     static final long serialVersionUID = 23L;
-    private transient final ForkJoinPool pool;
     private Algorithm algorithm;
 
     public FmbStar() {
-        this(ForkJoinPoolInstance.getInstance().getPool());
-    }
-
-    public FmbStar(ForkJoinPool pool) {
         this.algorithm = new Fges();
-        this.pool = pool;
     }
 
     @Override
@@ -57,6 +52,7 @@ public class FmbStar implements Algorithm {
         int numSubsamples = parameters.getInt("numSubsamples");
         double pithreshold = parameters.getDouble("piThreshold");
         Node y = dataSet.getVariable(parameters.getString("targetName"));
+        double penaltyDiscount = parameters.getDouble("penatyDiscount");
         variables.remove(y);
 
         Map<Node, Integer> counts = new ConcurrentHashMap<>();
@@ -77,9 +73,10 @@ public class FmbStar implements Algorithm {
                 sampler.setWithoutReplacements(true);
                 DataSet sample = sampler.sample(_dataSet, (int) (percentageB * _dataSet.getNumRows()));
 
-                final ICovarianceMatrix covariances = new CovarianceMatrixOnTheFly(sample, 4);
+                ICovarianceMatrix  covariances = new CovarianceMatrixOnTheFly(sample);
                 final edu.cmu.tetrad.search.SemBicScore score = new edu.cmu.tetrad.search.SemBicScore(covariances);
-                score.setPenaltyDiscount(parameters.getDouble("penaltyDiscount"));
+                score.setPenaltyDiscount(penaltyDiscount);
+
                 FgesMb fgesMb = new FgesMb(score);
                 fgesMb.setParallelism(4);
                 Graph g = fgesMb.search(y);

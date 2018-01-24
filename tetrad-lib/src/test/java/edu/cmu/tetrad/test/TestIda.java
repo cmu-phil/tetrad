@@ -91,7 +91,7 @@ public class TestIda {
 
         long start = System.currentTimeMillis();
 
-        CStar cstar = new CStar(new ForkJoinPool(Runtime.getRuntime().availableProcessors()));
+        CStar cstar = new CStar();
         Graph graph = cstar.search(dataSet, parameters);
 
         long stop = System.currentTimeMillis();
@@ -123,7 +123,7 @@ public class TestIda {
 
         long start = System.currentTimeMillis();
 
-        FmbStar star = new FmbStar(new ForkJoinPool(Runtime.getRuntime().availableProcessors()));
+        FmbStar star = new FmbStar();
         Graph graph = star.search(dataSet, parameters);
 
         long stop = System.currentTimeMillis();
@@ -132,11 +132,6 @@ public class TestIda {
     }
 
     public void testBoth(int numNodes, int numEdges, int sampleSize, int numIterations) {
-//        int numNodes = 50;
-//        int numEdges = numNodes;
-//        int sampleSize = 100;
-//        int numIterations = 5;
-
         Parameters parameters = new Parameters();
         parameters.set("penaltyDiscount", 2);
         parameters.set("numSubsamples", 30);
@@ -175,7 +170,7 @@ public class TestIda {
 
             long start = System.currentTimeMillis();
 
-            CStar cstar = new CStar(new ForkJoinPool(Runtime.getRuntime().availableProcessors()));
+            CStar cstar = new CStar();
             Graph graph = cstar.search(fullData, parameters);
 
             long stop = System.currentTimeMillis();
@@ -187,7 +182,7 @@ public class TestIda {
 
             start = System.currentTimeMillis();
 
-            FmbStar fmbStar = new FmbStar(new ForkJoinPool(Runtime.getRuntime().availableProcessors()));
+            FmbStar fmbStar = new FmbStar();
             Graph graph2 = fmbStar.search(fullData, parameters);
 
             stop = System.currentTimeMillis();

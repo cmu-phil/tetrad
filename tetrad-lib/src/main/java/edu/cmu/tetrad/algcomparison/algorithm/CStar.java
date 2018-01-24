@@ -36,10 +36,6 @@ public class CStar implements Algorithm {
     private transient final ForkJoinPool pool;
 
     public CStar() {
-        this(ForkJoinPoolInstance.getInstance().getPool());
-    }
-
-    public CStar(ForkJoinPool pool) {
         this.algorithm = new Fges();
         this.pool = new ForkJoinPool(10);
     }
@@ -55,6 +51,7 @@ public class CStar implements Algorithm {
         int q = parameters.getInt("topQ");
         double pithreshold = parameters.getDouble("piThreshold");
         Node y = dataSet.getVariable(parameters.getString("targetName"));
+        double penaltyDiscount = parameters.getDouble("penaltyDiscount");
 
         final List<Node> variables = dataSet.getVariables();
         variables.remove(y);
@@ -76,7 +73,8 @@ public class CStar implements Algorithm {
                 BootstrapSampler sampler = new BootstrapSampler();
                 sampler.setWithoutReplacements(true);
                 DataSet sample = sampler.sample(_dataSet, (int) (percentSubsampleSize * _dataSet.getNumRows()));
-                Ida ida = new Ida(sample, 8);
+                Ida ida = new Ida(sample, 4);
+                ida.setPenaltyDiscount(penaltyDiscount);
                 Ida.NodeEffects effects = ida.getSortedMinEffects(y);
 
                 for (int i = 0; i < q; i++) {
@@ -91,7 +89,6 @@ public class CStar implements Algorithm {
                 return true;
             }
         }
-
 
         List<Task> tasks = new ArrayList<>();
 
@@ -158,6 +155,7 @@ public class CStar implements Algorithm {
         parameters.add("topQ");
         parameters.add("piThreshold");
         parameters.add("targetName");
+        parameters.add("penaltyDiscount");
         return parameters;
     }
 }

@@ -25,7 +25,6 @@ import edu.cmu.tetrad.data.Knowledge2;
 import edu.cmu.tetrad.data.KnowledgeEdge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.ChoiceGenerator;
-import edu.cmu.tetrad.util.ForkJoinPoolInstance;
 import edu.cmu.tetrad.util.TaskManager;
 import edu.cmu.tetrad.util.TetradLogger;
 
@@ -646,10 +645,8 @@ public final class Fges implements GraphSearch, GraphScorer {
                         new LinkedBlockingQueue<Runnable>());
 
         try {
-            Boolean result = executorService.invokeAny(tasks);
+            List<Future<Boolean>> results = executorService.invokeAll(tasks);
         } catch (InterruptedException e) {
-            e.printStackTrace();
-        } catch (ExecutionException e) {
             e.printStackTrace();
         }
 
@@ -2091,23 +2088,5 @@ public final class Fges implements GraphSearch, GraphScorer {
                 && e2.getProximalEndpoint(b) == Endpoint.ARROW;
 
         return !collider;
-    }
-
-    private void shutdownAndAwaitTermination(ForkJoinPool pool) {
-        pool.shutdown(); // Disable new tasks from being submitted
-        try {
-            // Wait a while for existing tasks to terminate
-            if (!pool.awaitTermination(60, TimeUnit.SECONDS)) {
-                pool.shutdownNow(); // Cancel currently executing tasks
-                // Wait a while for tasks to respond to being cancelled
-                if (!pool.awaitTermination(60, TimeUnit.SECONDS))
-                    System.err.println("Pool did not terminate");
-            }
-        } catch (InterruptedException ie) {
-            // (Re-)Cancel if current thread also interrupted
-            pool.shutdownNow();
-            // Preserve interrupt status
-            Thread.currentThread().interrupt();
-        }
     }
 }

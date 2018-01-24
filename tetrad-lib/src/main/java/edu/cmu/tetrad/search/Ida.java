@@ -35,6 +35,7 @@ public class Ida {
     private final Graph pattern;
     private final ICovarianceMatrix covariances;
     private Map<Node, Integer> nodeIndices;
+    private double penaltyDiscount = 2.0;
 
     public Ida(DataSet dataSet, List<Node> targets) {
         this(dataSet, targets, ForkJoinPoolInstance.getInstance().getPool().getParallelism() * 10);
@@ -45,10 +46,12 @@ public class Ida {
         this.data = dataSet.getDoubleData().transpose().toArray();
         covariances = new CovarianceMatrixOnTheFly(dataSet);
 
-        FgesMb fges = new FgesMb(new SemBicScore(covariances));
-        fges.setParallelism(parallelism);
+        final SemBicScore score = new SemBicScore(covariances);
+        score.setPenaltyDiscount(penaltyDiscount);
+        FgesMb fgesMb = new FgesMb(score);
+        fgesMb.setParallelism(parallelism);
 
-        this.pattern = fges.search(targets);
+        this.pattern = fgesMb.search(targets);
 
         nodeIndices = new HashMap<>();
 
@@ -67,6 +70,9 @@ public class Ida {
         this.dataSet = dataSet;
         this.data = dataSet.getDoubleData().transpose().toArray();
         covariances = new CovarianceMatrixOnTheFly(dataSet);
+
+        final SemBicScore score = new SemBicScore(covariances);
+        score.setPenaltyDiscount(penaltyDiscount);
 
         Fges fges = new Fges(new SemBicScore(covariances));
         fges.setParallelism(parallelism);
@@ -182,6 +188,14 @@ public class Ida {
         }
 
         return new NodeEffects(nodes, effects);
+    }
+
+    public double getPenaltyDiscount() {
+        return penaltyDiscount;
+    }
+
+    public void setPenaltyDiscount(double penaltyDiscount) {
+        this.penaltyDiscount = penaltyDiscount;
     }
 
     /**
