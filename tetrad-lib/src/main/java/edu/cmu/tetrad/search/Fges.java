@@ -58,8 +58,6 @@ import java.util.concurrent.*;
 public final class Fges implements GraphSearch, GraphScorer {
 
 
-    private int parallelism = Runtime.getRuntime().availableProcessors() * 10;
-
     /**
      * Internal.
      */
@@ -146,9 +144,6 @@ public final class Fges implements GraphSearch, GraphScorer {
 
     // A graph where X--Y means that X and Y have non-zero total effect on one another.
     private Graph effectEdgesGraph;
-
-    // The minimum number of operations to do before parallelizing.
-    private final int minChunk = 100;
 
     // Where printed output is sent.
     private PrintStream out = System.out;
@@ -435,13 +430,6 @@ public final class Fges implements GraphSearch, GraphScorer {
     }
 
     /**
-     * Creates a new processors pool with the specified number of threads.
-     */
-    public void setParallelism(int parallelism) {
-        this.parallelism = parallelism;
-    }
-
-    /**
      * If non-null, edges not adjacent in this graph will not be added.
      */
     public void setBoundGraph(Graph boundGraph) {
@@ -616,16 +604,17 @@ public final class Fges implements GraphSearch, GraphScorer {
         sortedArrows = new ConcurrentSkipListSet<>();
         lookupArrows = new ConcurrentHashMap<>();
         neighbors = new ConcurrentHashMap<>();
-        final Set<Node> emptySet = new HashSet<>();
 
         long start = System.currentTimeMillis();
         this.effectEdgesGraph = new EdgeListGraphSingleConnections(nodes);
 
         List<Callable<Boolean>> tasks = new ArrayList<>();
 
-        for (int i = 0; i < nodes.size(); i += minChunk) {
-            final Callable task = new NodeTaskEmptyGraph(i, Math.min(nodes.size(), i + minChunk), variables, Collections.EMPTY_SET);
-            tasks.add(task);
+        int chunk = nodes.size() / Runtime.getRuntime().availableProcessors();
+        if (chunk < 10) chunk = 10;
+
+        for (int i = 0; i < nodes.size(); i += chunk) {
+            tasks.add(new NodeTaskEmptyGraph(i, Math.min(nodes.size(), i + chunk), variables, Collections.EMPTY_SET));
         }
 
         runCallables(tasks);
@@ -640,17 +629,16 @@ public final class Fges implements GraphSearch, GraphScorer {
     private void runCallables(List<Callable<Boolean>> tasks) {
         if (tasks.isEmpty()) return;
 
-        ExecutorService executorService =
-                new ThreadPoolExecutor(parallelism, parallelism, 0L, TimeUnit.MILLISECONDS,
-                        new LinkedBlockingQueue<Runnable>());
+        ExecutorService executorService = Executors.newWorkStealingPool();
 
         try {
-            List<Future<Boolean>> results = executorService.invokeAll(tasks);
+            executorService.invokeAll(tasks);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
 
         executorService.shutdown();
+
         try {
             if (!executorService.awaitTermination(800, TimeUnit.MILLISECONDS)) {
                 executorService.shutdownNow();
@@ -681,12 +669,12 @@ public final class Fges implements GraphSearch, GraphScorer {
 
         final Set<Node> emptySet = new HashSet<>(0);
 
-        class InitializeFromExistingGraphTask2 implements Callable<Boolean> {
+        class InitializeFromExistingGraphTask implements Callable<Boolean> {
 
             private int from;
             private int to;
 
-            public InitializeFromExistingGraphTask2(int from, int to) {
+            public InitializeFromExistingGraphTask(int from, int to) {
                 this.from = from;
                 this.to = to;
             }
@@ -765,9 +753,11 @@ public final class Fges implements GraphSearch, GraphScorer {
         }
 
         List<Callable<Boolean>> tasks = new ArrayList<>();
+        int chunk = nodes.size() / Runtime.getRuntime().availableProcessors();
+        if (chunk < 10) chunk = 10;
 
-        for (int i = 0; i < nodes.size(); i += minChunk) {
-            tasks.add(new InitializeFromExistingGraphTask2(i, Math.min(nodes.size(), i + minChunk)));
+        for (int i = 0; i < nodes.size(); i += chunk) {
+            tasks.add(new InitializeFromExistingGraphTask(i, Math.min(nodes.size(), i + chunk)));
         }
 
         runCallables(tasks);
@@ -798,12 +788,12 @@ public final class Fges implements GraphSearch, GraphScorer {
 
         final Set<Node> emptySet = new HashSet<>(0);
 
-        class InitializeFromExistingGraphTask2 implements Callable<Boolean> {
+        class InitializeFromExistingGraphTask implements Callable<Boolean> {
 
             private int from;
             private int to;
 
-            public InitializeFromExistingGraphTask2(int from, int to) {
+            public InitializeFromExistingGraphTask(int from, int to) {
                 this.from = from;
                 this.to = to;
             }
@@ -857,9 +847,11 @@ public final class Fges implements GraphSearch, GraphScorer {
         }
 
         List<Callable<Boolean>> tasks = new ArrayList<>();
+        int chunk = nodes.size() / Runtime.getRuntime().availableProcessors();
+        if (chunk < 10) chunk = 10;
 
-        for (int i = 0; i < nodes.size(); i += minChunk) {
-            tasks.add(new InitializeFromExistingGraphTask2(i, Math.min(nodes.size(), i + minChunk)));
+        for (int i = 0; i < nodes.size(); i += chunk) {
+            tasks.add(new InitializeFromExistingGraphTask(i, Math.min(nodes.size(), i + chunk)));
         }
 
         runCallables(tasks);
@@ -1132,9 +1124,11 @@ public final class Fges implements GraphSearch, GraphScorer {
         }
 
         List<Callable<Boolean>> tasks = new ArrayList<>();
+        int chunk = nodes.size() / Runtime.getRuntime().availableProcessors();
+        if (chunk < 10) chunk = 10;
 
-        for (int i = 0; i < nodes.size(); i += minChunk) {
-            tasks.add(new AdjTask2(new ArrayList<>(nodes), i, Math.min(nodes.size(), i + minChunk)));
+        for (int i = 0; i < nodes.size(); i += chunk) {
+            tasks.add(new AdjTask2(new ArrayList<>(nodes), i, Math.min(nodes.size(), i + chunk)));
         }
 
         runCallables(tasks);
@@ -1168,7 +1162,7 @@ public final class Fges implements GraphSearch, GraphScorer {
         List<Node> TNeighbors = getTNeighbors(a, b);
 
         Set<Set<Node>> previousCliques = new HashSet<>();
-        previousCliques.add(new HashSet<Node>());
+        previousCliques.add(new HashSet<>());
         Set<Set<Node>> newCliques = new HashSet<>();
 
         FOR:
@@ -1220,13 +1214,13 @@ public final class Fges implements GraphSearch, GraphScorer {
 
     private void reevaluateBackward(Set<Node> toProcess) {
 
-        class BackwardTask2 implements Callable<Boolean> {
+        class BackwardTask implements Callable<Boolean> {
             private final Node r;
             private List<Node> adj;
             private int from;
             private int to;
 
-            public BackwardTask2(Node r, List<Node> adj, int from, int to) {
+            public BackwardTask(Node r, List<Node> adj, int from, int to) {
                 this.adj = adj;
                 this.from = from;
                 this.to = to;
@@ -1254,10 +1248,12 @@ public final class Fges implements GraphSearch, GraphScorer {
             List<Node> adjacentNodes = graph.getAdjacentNodes(r);
 
             List<Callable<Boolean>> tasks = new ArrayList<>();
+            int chunk = adjacentNodes.size() / Runtime.getRuntime().availableProcessors();
+            if (chunk < 10) chunk = 10;
 
-            for (int i = 0; i < adjacentNodes.size(); i += minChunk) {
-                tasks.add(new BackwardTask2(r, adjacentNodes,
-                        i, Math.min(adjacentNodes.size(), i + minChunk)));
+            for (int i = 0; i < adjacentNodes.size(); i += chunk) {
+                tasks.add(new BackwardTask(r, adjacentNodes,
+                        i, Math.min(adjacentNodes.size(), i + chunk)));
             }
 
             runCallables(tasks);

@@ -49,7 +49,6 @@ public class Ida {
         final SemBicScore score = new SemBicScore(covariances);
         score.setPenaltyDiscount(penaltyDiscount);
         FgesMb fgesMb = new FgesMb(score);
-        fgesMb.setParallelism(parallelism);
 
         this.pattern = fgesMb.search(targets);
 
@@ -63,10 +62,6 @@ public class Ida {
     }
 
     public Ida(DataSet dataSet) {
-        this(dataSet, ForkJoinPoolInstance.getInstance().getPool().getParallelism());
-    }
-
-    public Ida(DataSet dataSet, int parallelism) {
         this.dataSet = dataSet;
         this.data = dataSet.getDoubleData().transpose().toArray();
         covariances = new CovarianceMatrixOnTheFly(dataSet);
@@ -75,7 +70,6 @@ public class Ida {
         score.setPenaltyDiscount(penaltyDiscount);
 
         Fges fges = new Fges(new SemBicScore(covariances));
-        fges.setParallelism(parallelism);
         this.pattern = fges.search();
         nodeIndices = new HashMap<>();
 
@@ -85,7 +79,6 @@ public class Ida {
             nodeIndices.put(variables.get(i), i);
         }
     }
-
 
     /**
      * Returns a list of the possible effects of X on Y (with different possible parents from the pattern),

@@ -55,9 +55,6 @@ import java.util.concurrent.*;
  * @author Joseph Ramsey, Revisions 5/2015
  */
 public final class FgesMb {
-
-
-    private int parallelism = Runtime.getRuntime().availableProcessors() * 10;
     private int maxIndegree;
 
     public void setMaxIndegree(int maxIndegree) {
@@ -258,10 +255,14 @@ public final class FgesMb {
 
         this.mode = FgesMb.Mode.heuristicSpeedup;
 
-        calcDConnections(targets);
+        calcDConnections1(targets);
 
         // Do forward search.
         fes();
+
+        calcDConnections2(targets);
+        fes();
+
         bes();
 
         this.mode = Mode.coverNoncolliders;
@@ -294,7 +295,7 @@ public final class FgesMb {
         return mbgraph;
     }
 
-    private void calcDConnections(List<Node> targets) {
+    private void calcDConnections1(List<Node> targets) {
 
 
         sortedArrows = new ConcurrentSkipListSet<>();
@@ -310,7 +311,7 @@ public final class FgesMb {
         final Set emptySet = new HashSet<Node>();
 
         Set<Node> adj = new ConcurrentSkipListSet<>();
-        int chunk = variables.size() / parallelism;
+        int chunk = variables.size() / Runtime.getRuntime().availableProcessors();
         if (chunk < 10) chunk = 10;
 
         List<Callable<Boolean>> tasks = new ArrayList<>();
@@ -325,19 +326,36 @@ public final class FgesMb {
         }
 
         runCallables(tasks);
+    }
+
+    private void calcDConnections2(List<Node> targets) {
+        final Set emptySet = new HashSet<Node>();
+
+        Set<Node> adj = new ConcurrentSkipListSet<>();
+
+        for (Node t : targets) {
+            adj.addAll(graph.getAdjacentNodes(t));
+        }
+
+        adj.removeAll(targets);
+
+        int chunk = variables.size() / Runtime.getRuntime().availableProcessors();
+        if (chunk < 10) chunk = 10;
 
         Set<Node> adjadj = new ConcurrentSkipListSet<>();
 
+        List<Callable<Boolean>> tasks = new ArrayList<>();
+
         for (Node x : adj) {
-            tasks = new ArrayList<>();
 
             for (int from = 0; from < variables.size(); from += chunk) {
                 final int to = Math.min(variables.size(), from + chunk);
                 tasks.add(new MbTask(from, to, variables, x, adjadj, emptySet));
             }
 
-            runCallables(tasks);
         }
+
+        runCallables(tasks);
     }
 
     class MbTask implements Callable<Boolean> {
@@ -361,18 +379,23 @@ public final class FgesMb {
         public Boolean call() throws Exception {
             int _target = hashIndices.get(target);
 
-            for (int x = from; x < to; x++) {
+            // Odd... the for loop failed here. Wouldn't iterate. Switching to while loop.
+            for (int x = 0; x < variables.size(); x++) {
+//                System.out.println("target = " + target + " x = " + variables.get(x));
                 if (x == _target) continue;
                 if (effectEdgesGraph.isAdjacentTo(target, nodes.get(x))) continue;
-                double bump2 = score.localScoreDiff(x, _target);
 
-                if (bump2 > 0) {
+                double bump = score.localScoreDiff(x, _target);
+
+                if (bump > 0) {
                     synchronized (effectEdgesGraph) {
-                        effectEdgesGraph.addNode(nodes.get(x));
-                        adj.add(variables.get(x));
+                        synchronized (effectEdgesGraph) {
+                            effectEdgesGraph.addNode(nodes.get(x));
+                            adj.add(variables.get(x));
+//                            System.out.println("Adding " + variables.get(x));
+                            addUnconditionalArrows(target, nodes.get(x), emptySet);
+                        }
                     }
-
-                    addUnconditionalArrows(target, nodes.get(x), emptySet);
                 }
             }
 
@@ -565,13 +588,6 @@ public final class FgesMb {
     }
 
     /**
-     * Creates a new processors pool with the specified number of threads.
-     */
-    public void setParallelism(int parallelism) {
-        this.parallelism = parallelism;
-    }
-
-    /**
      * If non-null, edges not adjacent in this graph will not be added.
      */
     public void setBoundGraph(Graph boundGraph) {
@@ -671,111 +687,13 @@ public final class FgesMb {
 
     final int[] count = new int[1];
 
-    class NodeTaskEmptyGraph implements Callable<Boolean> {
-
-        private final int from;
-        private final int to;
-        private final List<Node> nodes;
-        private final Set<Node> emptySet;
-
-        public NodeTaskEmptyGraph(int from, int to, List<Node> nodes, Set<Node> emptySet) {
-            this.from = from;
-            this.to = to;
-            this.nodes = nodes;
-            this.emptySet = emptySet;
-        }
-
-        @Override
-        public Boolean call() {
-            for (int i = from; i < to; i++) {
-                if ((i + 1) % 1000 == 0) {
-                    count[0] += 1000;
-                    out.println("Initializing effect edges: " + (count[0]));
-                }
-
-                Node y = nodes.get(i);
-                neighbors.put(y, emptySet);
-
-                for (int j = i + 1; j < nodes.size() && !Thread.currentThread().isInterrupted(); j++) {
-                    Node x = nodes.get(j);
-
-                    if (existsKnowledge()) {
-                        if (getKnowledge().isForbidden(x.getName(), y.getName()) && getKnowledge().isForbidden(y.getName(), x.getName())) {
-                            continue;
-                        }
-
-                        if (!validSetByKnowledge(y, emptySet)) {
-                            continue;
-                        }
-                    }
-
-                    if (adjacencies != null && !adjacencies.isAdjacentTo(x, y)) {
-                        continue;
-                    }
-
-                    int child = hashIndices.get(y);
-                    int parent = hashIndices.get(x);
-                    double bump = score.localScoreDiff(parent, child);
-
-                    if (symmetricFirstStep) {
-                        double bump2 = score.localScoreDiff(child, parent);
-                        bump = bump > bump2 ? bump : bump2;
-                    }
-
-                    if (boundGraph != null && !boundGraph.isAdjacentTo(x, y)) {
-                        continue;
-                    }
-
-                    if (bump > 0) {
-                        final Edge edge = Edges.undirectedEdge(x, y);
-                        effectEdgesGraph.addEdge(edge);
-                    }
-
-                    if (bump > 0) {
-                        addArrow(x, y, emptySet, emptySet, bump);
-                        addArrow(y, x, emptySet, emptySet, bump);
-                    }
-                }
-            }
-
-            return true;
-        }
-    }
-
-//    private void initializeForwardEdgesFromEmptyGraph(final List<Node> nodes) {
-//        sortedArrows = new ConcurrentSkipListSet<>();
-//        lookupArrows = new ConcurrentHashMap<>();
-//        neighbors = new ConcurrentHashMap<>();
-//        final Set<Node> emptySet = new HashSet<>();
-//
-//        long start = System.currentTimeMillis();
-//        this.effectEdgesGraph = new EdgeListGraphSingleConnections(nodes);
-//
-//        List<Callable<Boolean>> tasks = new ArrayList<>();
-//
-//        for (int i = 0; i < nodes.size(); i += minChunk) {
-//            final Callable task = new NodeTaskEmptyGraph(i, Math.min(nodes.size(), i + minChunk), variables, Collections.EMPTY_SET);
-//            tasks.add(task);
-//        }
-//
-//        runCallables(tasks);
-//
-//        long stop = System.currentTimeMillis();
-//
-//        if (verbose) {
-//            out.println("Elapsed initializeForwardEdgesFromEmptyGraph = " + (stop - start) + " ms");
-//        }
-//    }
-
     private void runCallables(List<Callable<Boolean>> tasks) {
         if (tasks.isEmpty()) return;
 
-        ExecutorService executorService =
-                new ThreadPoolExecutor(parallelism, parallelism, 0L, TimeUnit.MILLISECONDS,
-                        new LinkedBlockingQueue<Runnable>());
+        ExecutorService executorService = Executors.newWorkStealingPool();
 
         try {
-            List<Future<Boolean>> results = executorService.invokeAll(tasks);
+            executorService.invokeAll(tasks);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
@@ -817,7 +735,7 @@ public final class FgesMb {
             private int from;
             private int to;
 
-            public InitializeFromExistingGraphTask(int from, int to) {
+            private InitializeFromExistingGraphTask(int from, int to) {
                 this.from = from;
                 this.to = to;
             }
@@ -1051,7 +969,7 @@ public final class FgesMb {
             toProcess.add(y);
 
             storeGraph();
-            reevaluateForward(toProcess, arrow);
+            reevaluateForward(toProcess);
         }
     }
 
@@ -1184,7 +1102,7 @@ public final class FgesMb {
     }
 
     // Calcuates new arrows based on changes in the graph for the forward search.
-    private void reevaluateForward(final Set<Node> nodes, final Arrow arrow) {
+    private void reevaluateForward(final Set<Node> nodes) {
 
         class AdjTask2 implements Callable<Boolean> {
 
@@ -1192,7 +1110,7 @@ public final class FgesMb {
             private int from;
             private int to;
 
-            public AdjTask2(List<Node> nodes, int from, int to) {
+            private AdjTask2(List<Node> nodes, int from, int to) {
                 this.nodes = nodes;
                 this.from = from;
                 this.to = to;
@@ -1292,7 +1210,7 @@ public final class FgesMb {
         List<Node> TNeighbors = getTNeighbors(a, b);
 
         Set<Set<Node>> previousCliques = new HashSet<>();
-        previousCliques.add(new HashSet<Node>());
+        previousCliques.add(new HashSet<>());
         Set<Set<Node>> newCliques = new HashSet<>();
 
         FOR:
@@ -1350,7 +1268,7 @@ public final class FgesMb {
             private int from;
             private int to;
 
-            public BackwardTask(Node r, List<Node> adj, int from, int to) {
+            private BackwardTask(Node r, List<Node> adj, int from, int to) {
                 this.adj = adj;
                 this.from = from;
                 this.to = to;
@@ -1463,7 +1381,7 @@ public final class FgesMb {
         private Node b;
         private Set<Node> hOrT;
         private Set<Node> naYX;
-        private int index = 0;
+        private int index;
 
         public Arrow(double bump, Node a, Node b, Set<Node> hOrT, Set<Node> naYX, int index) {
             this.bump = bump;
@@ -1486,11 +1404,11 @@ public final class FgesMb {
             return b;
         }
 
-        public Set<Node> getHOrT() {
+        private Set<Node> getHOrT() {
             return hOrT;
         }
 
-        public Set<Node> getNaYX() {
+        private Set<Node> getNaYX() {
             return naYX;
         }
 
@@ -1961,11 +1879,11 @@ public final class FgesMb {
         return null;
     }
 
-    // Runs Meek rules on just the changed adj.
-    private Set<Node> reorientNode(List<Node> nodes) {
-        addRequiredEdges(graph);
-        return meekOrientRestricted(nodes, getKnowledge());
-    }
+//    // Runs Meek rules on just the changed adj.
+//    private Set<Node> reorientNode(List<Node> nodes) {
+//        addRequiredEdges(graph);
+//        return meekOrientRestricted(nodes, getKnowledge());
+//    }
 
     // Runs Meek rules on just the changed adj.
     private Set<Node> meekOrientRestricted(List<Node> nodes, IKnowledge knowledge) {

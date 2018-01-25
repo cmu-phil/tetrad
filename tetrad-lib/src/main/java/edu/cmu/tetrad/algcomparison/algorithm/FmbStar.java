@@ -78,7 +78,6 @@ public class FmbStar implements Algorithm {
                 score.setPenaltyDiscount(penaltyDiscount);
 
                 FgesMb fgesMb = new FgesMb(score);
-                fgesMb.setParallelism(4);
                 Graph g = fgesMb.search(y);
 
                 for (final Node key : g.getNodes()) {
