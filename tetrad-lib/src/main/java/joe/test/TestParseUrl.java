@@ -22,20 +22,20 @@ public class TestParseUrl {
 
     String[] coins = {
             "bitcoin",
-            "ethereum",
-            "ripple",
-            "bitcoin-cash",
-            "cardano",
-            "stellar",
-            "litecoin",
-            "nem",
-            "neo",
-            "eos",
-            "iota",
-            "dash",
-            "monero",
-            "bitconnect",
-            "electroneum"
+//            "ethereum",
+//            "ripple",
+//            "bitcoin-cash",
+//            "cardano",
+//            "stellar",
+//            "litecoin",
+//            "nem",
+//            "neo",
+//            "eos",
+//            "iota",
+//            "dash",
+//            "monero",
+//            "bitconnect",
+//            "electroneum"
     };
 
     @Test
@@ -126,7 +126,7 @@ public class TestParseUrl {
 //        test1();
 
 
-        int targetIndex = 3;
+        int targetIndex = 0;
         final int numLags = 4;
         final int sampleSize = 500;
         final double margin = 0;
@@ -142,7 +142,7 @@ public class TestParseUrl {
                 DataReader reader = new ContinuousTabularDataFileReader(new File("/Users/user/Downloads/" + coins[c]), Delimiter.TAB);
                 DataSet dataSet = readData(reader);
                 final int r = dataSet.getNumRows();
-                adviceForInitialRecords(r - 1, sampleSize, coins[c], targetIndex, numLags, dataSet, margin);
+                adviceForInitialRecords(r - 5, sampleSize, coins[c], targetIndex, numLags, dataSet, margin);
             }
         } catch (IOException e) {
             e.printStackTrace();
