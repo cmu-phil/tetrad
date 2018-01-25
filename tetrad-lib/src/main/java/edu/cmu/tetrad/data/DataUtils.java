@@ -289,16 +289,24 @@ public final class DataUtils {
      * @param isUnlog
      * @return
      */
-    public static TetradMatrix logData(TetradMatrix data, double a, boolean isUnlog) {
+    public static TetradMatrix logData(TetradMatrix data, double a, boolean isUnlog, int base) {
         TetradMatrix copy = data.copy();
 
         for (int j = 0; j < copy.columns(); j++) {
 
             for (int i = 0; i < copy.rows(); i++) {
                 if (isUnlog) {
-                    copy.set(i, j, Math.exp(copy.get(i, j)) - a);
+                    if (base == 0) {
+                        copy.set(i, j, Math.exp(copy.get(i, j)) - a);
+                    } else {
+                        copy.set(i, j, Math.pow(base,(copy.get(i, j))) - a);
+                    }
                 }  else {
-                    copy.set(i, j, Math.log(a + copy.get(i, j)));
+                    if (base == 0) {
+                        copy.set(i, j, Math.log(a + copy.get(i, j)));
+                    } else {
+                        copy.set(i, j, Math.log(a + copy.get(i, j)) / Math.log(base));
+                    }
                 }
             }
         }

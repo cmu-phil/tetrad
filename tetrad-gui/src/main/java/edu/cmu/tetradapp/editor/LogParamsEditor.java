@@ -96,18 +96,36 @@ public class LogParamsEditor extends JPanel implements ParameterEditor {
             }
         });
 
+        final IntTextField baseField = new IntTextField(params.getInt("base", 0), 4);
+        baseField.setFilter(new IntTextField.Filter() {
+            public int filter(int value, int oldValue) {
+                try {
+                    params.set("base", value);
+                    return value;
+                } catch (IllegalArgumentException e) {
+                    return oldValue;
+                }
+            }
+        });
+
         // continue workbench construction.
         Box b1 = Box.createVerticalBox();
 
         Box b2 = Box.createHorizontalBox();
         b2.add(new JLabel("<html>" +
                 "The input dataset will be logarithmically transformed by applying f(x) = ln(a + x) to each data point x." +
-                "<br> Can also 'unlog' the data i.e., apply g(x) = exp(x) - a"));
+                "<br> Can also 'unlog' the data i.e., apply g(x) = exp(x) - a, or override the base"));
 
+
+
+        Box b9 = Box.createHorizontalBox();
+        b9.add(Box.createHorizontalGlue());
+        b9.add(new JLabel("<html> base (use 0 for natural log and base <i>e</i>): </html>"));
+        b9.add(baseField);
 
         Box b7 = Box.createHorizontalBox();
         b7.add(Box.createHorizontalGlue());
-        b7.add(new JLabel("<html>" + "<i>a =  </i>" + "</html>"));
+        b7.add(new JLabel("<html><i>a =  </i></html>"));
         b7.add(aField);
 
 
@@ -122,7 +140,7 @@ public class LogParamsEditor extends JPanel implements ParameterEditor {
 
         Box b8 = Box.createHorizontalBox();
         b8.add(Box.createHorizontalGlue());
-        b8.add(new JLabel("<html>" + "<i>Unlog:  </i>" + "</html>"));
+        b8.add(new JLabel("<html>Unlog: </html>"));
         b8.add(unlog);
 
 
@@ -131,6 +149,8 @@ public class LogParamsEditor extends JPanel implements ParameterEditor {
         b1.add(b7);
         b1.add(Box.createHorizontalGlue());
         b1.add(b8);
+        b1.add(Box.createHorizontalGlue());
+        b1.add(b9);
         b1.add(Box.createHorizontalGlue());
         add(b1, BorderLayout.CENTER);
     }
