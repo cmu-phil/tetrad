@@ -140,11 +140,6 @@ public class TestIda {
 
     //    @Test
     public void testBoth(int numNodes, int numEdges, int sampleSize, int numIterations) {
-//        int numNodes = 50;
-//        int numEdges = numNodes;
-//        int sampleSize = 100;
-//        int numIterations = 5;
-
         Parameters parameters = new Parameters();
         parameters.set("penaltyDiscount", 2);
         parameters.set("numSubsamples", 30);
@@ -182,13 +177,15 @@ public class TestIda {
             System.out.println("\n\n=====CSTAR====");
 
             long start = System.currentTimeMillis();
-
+//
             CStar cstar = new CStar();
             Graph graph = cstar.search(fullData, parameters);
 
             long stop = System.currentTimeMillis();
 
             int[] ret = printResult(truePattern, parameters, graph, stop - start, numNodes, numEdges, sampleSize, fullData);
+//
+//            int[] ret = {0, 0, 0, 0};
             cstarRet.add(ret);
 
             System.out.println("\n\n=====FmbStar====");

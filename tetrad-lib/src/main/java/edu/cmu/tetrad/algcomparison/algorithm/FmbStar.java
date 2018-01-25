@@ -55,6 +55,20 @@ public class FmbStar implements Algorithm {
         double penaltyDiscount = parameters.getDouble("penatyDiscount");
         variables.remove(y);
 
+        List<Node> filteredOutNodes = getNodes(parameters, _dataSet, variables, percentageB, numSubsamples,
+                pithreshold, y, penaltyDiscount);
+
+        Graph graph = new EdgeListGraph(filteredOutNodes);
+        graph.addNode(y);
+
+        for (int i = 0; i < new ArrayList<Node>(filteredOutNodes).size(); i++) {
+            graph.addDirectedEdge(filteredOutNodes.get(i), y);
+        }
+
+        return graph;
+    }
+
+    private List<Node> getNodes(Parameters parameters, DataSet _dataSet, List<Node> variables, double percentageB, int numSubsamples, double pithreshold, Node y, double penaltyDiscount) {
         Map<Node, Integer> counts = new ConcurrentHashMap<>();
         for (Node node : variables) counts.put(node, 0);
 
@@ -73,8 +87,8 @@ public class FmbStar implements Algorithm {
                 sampler.setWithoutReplacements(true);
                 DataSet sample = sampler.sample(_dataSet, (int) (percentageB * _dataSet.getNumRows()));
 
-                ICovarianceMatrix  covariances = new CovarianceMatrixOnTheFly(sample);
-                final edu.cmu.tetrad.search.SemBicScore score = new edu.cmu.tetrad.search.SemBicScore(covariances);
+                ICovarianceMatrix covariances = new CovarianceMatrixOnTheFly(sample);
+                final SemBicScore score = new SemBicScore(covariances);
                 score.setPenaltyDiscount(penaltyDiscount);
 
                 FgesMb fgesMb = new FgesMb(score);
@@ -135,15 +149,7 @@ public class FmbStar implements Algorithm {
             if (effects.getFirst() == 0.0) continue;
             filteredOutNodes.add(outNodes.get(i));
         }
-
-        Graph graph = new EdgeListGraph(filteredOutNodes);
-        graph.addNode(y);
-
-        for (int i = 0; i < new ArrayList<Node>(filteredOutNodes).size(); i++) {
-            graph.addDirectedEdge(filteredOutNodes.get(i), y);
-        }
-
-        return graph;
+        return filteredOutNodes;
     }
 
     private void shutdownAndAwaitTermination(ForkJoinPool pool) {
