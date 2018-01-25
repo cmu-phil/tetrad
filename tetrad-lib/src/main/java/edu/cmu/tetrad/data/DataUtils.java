@@ -280,6 +280,33 @@ public final class DataUtils {
         return false;
     }
 
+    /**
+     *
+     * Log or unlog data
+     *
+     * @param data
+     * @param a
+     * @param isUnlog
+     * @return
+     */
+    public static TetradMatrix logData(TetradMatrix data, double a, boolean isUnlog) {
+        TetradMatrix copy = data.copy();
+
+        for (int j = 0; j < copy.columns(); j++) {
+
+            for (int i = 0; i < copy.rows(); i++) {
+                if (isUnlog) {
+                    copy.set(i, j, Math.exp(copy.get(i, j)) - a);
+                }  else {
+                    copy.set(i, j, Math.log(a + copy.get(i, j)));
+                }
+            }
+        }
+
+        return copy;
+    }
+
+
     public static TetradMatrix standardizeData(TetradMatrix data) {
         TetradMatrix data2 = data.copy();
 

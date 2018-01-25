@@ -668,6 +668,17 @@
                 </model-class>
                 <editor-class>edu.cmu.tetradapp.editor.DataEditor</editor-class>
             </model>
+            <model name="Logarithmic Transform" acronym="Log"
+                   help="data" category="Conversion of Data">
+                <logger>
+                    <event id="info" description="Information" default="on"/>
+                    <event id="data" description="Data"/>
+                </logger>
+                <model-class>edu.cmu.tetradapp.model.LogData
+                </model-class>
+                <editor-class>edu.cmu.tetradapp.editor.DataEditor</editor-class>
+                <params-editor-class>edu.cmu.tetradapp.editor.LogParamsEditor</params-editor-class>
+            </model>
             <model name="Center Data" acronym="Centered"
                    help="data" category="Conversion of Data">
                 <logger>
