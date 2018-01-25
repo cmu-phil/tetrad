@@ -47,13 +47,14 @@ public class TestParseUrl {
         try {
 
             for (String coin : coins) {
-                URL url = new URL("https://coinmarketcap.com/currencies/" + coin + "/historical-data/?start=20150121&end=20180121");
+                URL url = new URL("https://coinmarketcap.com/currencies/" + coin + "/historical-data");
                 is = url.openStream();  // throws an IOException
                 br = new BufferedReader(new InputStreamReader(is));
 
                 List<double[]> recordList = new ArrayList<>();
 
                 while ((line = br.readLine()) != null) {
+                    System.out.println(line);
 
                     if (line.contains("<tr class=\"text-right\">")) {
                         for (int i = 0; i < 1; i++) {
@@ -107,7 +108,7 @@ public class TestParseUrl {
                 }
 
                 DataWriter.writeRectangularData(dataSet, new PrintWriter(new File(
-                        "/Users/user/Downloads/" + coin)), '\t');
+                        "/Users/user/Downloads/coins/" + coin)), '\t');
             }
         } catch (IOException ioe) {
             ioe.printStackTrace();
@@ -122,11 +123,13 @@ public class TestParseUrl {
 
     @Test
     public void test2() {
+//        test1();
 
 
-        int targetIndex = 1;
-        final int numLags = 2;
-        final int sampleSize = 75;
+        int targetIndex = 3;
+        final int numLags = 4;
+        final int sampleSize = 500;
+        final double margin = 0;
 
 
         try {
@@ -138,8 +141,8 @@ public class TestParseUrl {
             for (int c = 0; c < coins.length; c++) {
                 DataReader reader = new ContinuousTabularDataFileReader(new File("/Users/user/Downloads/" + coins[c]), Delimiter.TAB);
                 DataSet dataSet = readData(reader);
-                final int r = dataSet.getNumRows() - 1;
-                adviceForInitialRecords(r, sampleSize, coins[c], targetIndex, numLags, dataSet);
+                final int r = dataSet.getNumRows();
+                adviceForInitialRecords(r - 1, sampleSize, coins[c], targetIndex, numLags, dataSet, margin);
             }
         } catch (IOException e) {
             e.printStackTrace();
@@ -148,20 +151,19 @@ public class TestParseUrl {
 
     private DataSet readData(DataReader reader) throws IOException {
         Dataset dataset = reader.readInData();
-        DataSet dataSet = (DataSet) DataConvertUtils.toDataModel(dataset);
-
-        for (int i = 0; i < dataSet.getNumRows(); i++) {
-            dataSet.setDouble(i, 4, dataSet.getDouble(i, 4) / 1e6);
-        }
-
-        return dataSet;
+        return getDataSet(dataset);
     }
 
-    private void adviceForInitialRecords(int r, int sampleSize, String coin, int targetIndex, int numLags, DataSet dataSet) {
+    private DataSet getDataSet(Dataset dataset) {
+        return (DataSet) DataConvertUtils.toDataModel(dataset);
+    }
+
+    private void adviceForInitialRecords(int r, int sampleSize, String coin, int targetIndex, int numLags, DataSet dataSet,
+                                         double margin) {
 
         List<Integer> _rows = new ArrayList<>();
 
-        for (int i = Math.max(0, r - 1 - sampleSize); i < r - 1; i++) {
+        for (int i = Math.max(0, r - sampleSize); i < r; i++) {
             _rows.add(i);
         }
 
@@ -170,6 +172,7 @@ public class TestParseUrl {
 
         DataSet subset = dataSet.subsetRows(rows);
         DataSet lagged = TimeSeriesUtils.createLagData(subset, numLags);
+
         List<Node> regressors = new ArrayList<>(lagged.getVariables());
         Node target = regressors.get(targetIndex);
 
@@ -186,18 +189,16 @@ public class TestParseUrl {
 
         int i = 0;
 
-        for (int w = 0; w < numLags; w++) {
+        for (int w = 1; w <= numLags; w++) {
             for (int s = 0; s < 6; s++) {
-                x[i++] = subset.getDouble(subset.getNumRows() - numLags, s);
+                x[i++] = subset.getDouble(subset.getNumRows() - w, s);
             }
         }
 
-//        System.out.println(Arrays.toString(x));
-
         double predictedValue = result.getPredictedValue(x);
 
-        final double previousValue = dataSet.getDouble(r - 2, targetIndex);
-        final double actualValue = dataSet.getDouble(r - 1, targetIndex);
+        final double previousValue = dataSet.getDouble(r - 1, targetIndex);
+        final double actualValue = r > dataSet.getNumRows() - 1 ? Double.NaN : dataSet.getDouble(r, targetIndex);
 
         System.out.println();
         System.out.println("r = " + r);
@@ -207,11 +208,15 @@ public class TestParseUrl {
         System.out.println("Predicted value = " + predictedValue);
         System.out.println("(Actual value = " + actualValue + ")");
 
-        double margin = 0.1;
+        double change = (predictedValue / previousValue) * 100.0 - 100.0;
+        double actualChange = (actualValue / previousValue) * 100.0 - 100.0;
 
-        if (predictedValue > previousValue * (1.0 + margin)) {
+        System.out.println("PREDICTED CHANGE = " + change + "%");
+        System.out.println("(ACTUAL CHANGE = " + actualChange + "%)");
+
+        if (change > margin) {
             System.out.println("BUY BUY BUY!");
-        } else if (predictedValue > previousValue * (1.0 - margin)) {
+        } else if (change < -margin) {
             System.out.println("SELL SELL SELL!");
         } else {
             System.out.println("HOLD!");
