@@ -14,10 +14,7 @@ import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.StatUtils;
 
 import java.util.*;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ForkJoinPool;
-import java.util.concurrent.RecursiveAction;
+import java.util.concurrent.*;
 
 import static java.lang.Math.abs;
 
@@ -33,11 +30,10 @@ public class CStar implements Algorithm {
 
     static final long serialVersionUID = 23L;
     private Algorithm algorithm;
-    private transient final ForkJoinPool pool;
+    private int parallelism = Runtime.getRuntime().availableProcessors() * 10;
 
     public CStar() {
         this.algorithm = new Fges();
-        this.pool = new ForkJoinPool(10);
     }
 
     @Override
@@ -73,7 +69,7 @@ public class CStar implements Algorithm {
                 BootstrapSampler sampler = new BootstrapSampler();
                 sampler.setWithoutReplacements(true);
                 DataSet sample = sampler.sample(_dataSet, (int) (percentSubsampleSize * _dataSet.getNumRows()));
-                Ida ida = new Ida(sample);
+                Ida ida = new Ida(sample, getParallelism());
                 ida.setPenaltyDiscount(penaltyDiscount);
                 Ida.NodeEffects effects = ida.getSortedMinEffects(y);
 
@@ -90,13 +86,13 @@ public class CStar implements Algorithm {
             }
         }
 
-        List<Task> tasks = new ArrayList<>();
+        List<Callable<Boolean>> tasks = new ArrayList<>();
 
         for (int i = 0; i < numSubsamples; i++) {
             tasks.add(new Task(i, counts));
         }
 
-        pool.invokeAll(tasks);
+        runCallables(tasks);
 
         variables.sort((o1, o2) -> {
             final int d1 = counts.get(o1);
@@ -157,5 +153,35 @@ public class CStar implements Algorithm {
         parameters.add("targetName");
         parameters.add("penaltyDiscount");
         return parameters;
+    }
+
+    public int getParallelism() {
+        return parallelism;
+    }
+
+    public void setParallelism(int parallelism) {
+        this.parallelism = parallelism;
+    }
+
+    private void runCallables(List<Callable<Boolean>> tasks) {
+        if (tasks.isEmpty()) return;
+
+        ExecutorService executorService = Executors.newWorkStealingPool();
+
+        try {
+            executorService.invokeAll(tasks);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        executorService.shutdown();
+
+        try {
+            if (!executorService.awaitTermination(800, TimeUnit.MILLISECONDS)) {
+                executorService.shutdownNow();
+            }
+        } catch (InterruptedException e) {
+            executorService.shutdownNow();
+        }
     }
 }

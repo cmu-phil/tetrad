@@ -7,19 +7,13 @@ import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.FgesMb;
-import edu.cmu.tetrad.search.Ida;
 import edu.cmu.tetrad.search.SemBicScore;
 import edu.cmu.tetrad.util.ForkJoinPoolInstance;
 import edu.cmu.tetrad.util.Parameters;
 
-import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ForkJoinPool;
-import java.util.concurrent.TimeUnit;
 
 @edu.cmu.tetrad.annotation.Algorithm(
         name = "FmbStar",
@@ -38,6 +32,7 @@ import java.util.concurrent.TimeUnit;
 public class FmbStar implements Algorithm {
     static final long serialVersionUID = 23L;
     private Algorithm algorithm;
+    private int parallelism = Runtime.getRuntime().availableProcessors();
 
     public FmbStar() {
         this.algorithm = new Fges();
@@ -55,20 +50,22 @@ public class FmbStar implements Algorithm {
         double penaltyDiscount = parameters.getDouble("penatyDiscount");
         variables.remove(y);
 
-        List<Node> filteredOutNodes = getNodes(parameters, _dataSet, variables, percentageB, numSubsamples,
+        List<Node> nodes = getNodes(parameters, _dataSet, variables, percentageB, numSubsamples,
                 pithreshold, y, penaltyDiscount);
+        Set<Node> allNodes = new HashSet<>(nodes);
 
-        Graph graph = new EdgeListGraph(filteredOutNodes);
+        Graph graph = new EdgeListGraph(new ArrayList<>(allNodes));
         graph.addNode(y);
 
-        for (int i = 0; i < new ArrayList<Node>(filteredOutNodes).size(); i++) {
-            graph.addDirectedEdge(filteredOutNodes.get(i), y);
+        for (Node w : allNodes) {
+            graph.addDirectedEdge(w, y);
         }
 
         return graph;
     }
 
-    private List<Node> getNodes(Parameters parameters, DataSet _dataSet, List<Node> variables, double percentageB, int numSubsamples, double pithreshold, Node y, double penaltyDiscount) {
+    private List<Node> getNodes(Parameters parameters, DataSet _dataSet, List<Node> variables, double percentageB,
+                               int numSubsamples, double pithreshold, Node y, double penaltyDiscount) {
         Map<Node, Integer> counts = new ConcurrentHashMap<>();
         for (Node node : variables) counts.put(node, 0);
 
@@ -92,6 +89,7 @@ public class FmbStar implements Algorithm {
                 score.setPenaltyDiscount(penaltyDiscount);
 
                 FgesMb fgesMb = new FgesMb(score);
+                fgesMb.setParallelism(getParallelism());
                 Graph g = fgesMb.search(y);
 
                 for (final Node key : g.getNodes()) {
@@ -140,34 +138,7 @@ public class FmbStar implements Algorithm {
             }
         }
 
-        Ida ida = new Ida(_dataSet, outNodes, 4);
-        List<Node> filteredOutNodes = new ArrayList<>();
-
-        for (int i = 0; i < new ArrayList<>(outNodes).size(); i++) {
-            LinkedList<Double> effects = ida.getEffects(outNodes.get(i), y);
-            if (effects.isEmpty()) continue;
-            if (effects.getFirst() == 0.0) continue;
-            filteredOutNodes.add(outNodes.get(i));
-        }
-        return filteredOutNodes;
-    }
-
-    private void shutdownAndAwaitTermination(ForkJoinPool pool) {
-        pool.shutdown(); // Disable new tasks from being submitted
-        try {
-            // Wait a while for existing tasks to terminate
-            if (!pool.awaitTermination(60, TimeUnit.SECONDS)) {
-                pool.shutdownNow(); // Cancel currently executing tasks
-                // Wait a while for tasks to respond to being cancelled
-                if (!pool.awaitTermination(60, TimeUnit.SECONDS))
-                    System.err.println("Pool did not terminate");
-            }
-        } catch (InterruptedException ie) {
-            // (Re-)Cancel if current thread also interrupted
-            pool.shutdownNow();
-            // Preserve interrupt status
-            Thread.currentThread().interrupt();
-        }
+        return outNodes;
     }
 
     @Override
@@ -194,5 +165,13 @@ public class FmbStar implements Algorithm {
         parameters.add("piThreshold");
         parameters.add("targetName");
         return parameters;
+    }
+
+    public int getParallelism() {
+        return parallelism;
+    }
+
+    public void setParallelism(int parallelism) {
+        this.parallelism = parallelism;
     }
 }

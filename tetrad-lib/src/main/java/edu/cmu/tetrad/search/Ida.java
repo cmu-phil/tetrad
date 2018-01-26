@@ -1,24 +1,15 @@
 package edu.cmu.tetrad.search;
 
-import edu.cmu.tetrad.algcomparison.independence.SemBicTest;
-import edu.cmu.tetrad.data.CovarianceMatrix;
 import edu.cmu.tetrad.data.CovarianceMatrixOnTheFly;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.ICovarianceMatrix;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.regression.RegressionCovariance;
-import edu.cmu.tetrad.regression.RegressionDataset;
-import edu.cmu.tetrad.regression.RegressionResult;
-import edu.cmu.tetrad.stat.correlation.Covariance;
 import edu.cmu.tetrad.util.DepthChoiceGenerator;
-import edu.cmu.tetrad.util.ForkJoinPoolInstance;
 import edu.cmu.tetrad.util.TetradMatrix;
 
 import java.util.*;
-import java.util.concurrent.ForkJoinPool;
-import java.util.concurrent.TimeUnit;
 
 import static java.lang.Math.*;
 
@@ -38,7 +29,7 @@ public class Ida {
     private double penaltyDiscount = 2.0;
 
     public Ida(DataSet dataSet, List<Node> targets) {
-        this(dataSet, targets, ForkJoinPoolInstance.getInstance().getPool().getParallelism() * 10);
+        this(dataSet, targets, Runtime.getRuntime().availableProcessors() * 10);
     }
 
     public Ida(DataSet dataSet, List<Node> targets, int parallelism) {
@@ -49,6 +40,7 @@ public class Ida {
         final SemBicScore score = new SemBicScore(covariances);
         score.setPenaltyDiscount(penaltyDiscount);
         FgesMb fgesMb = new FgesMb(score);
+        fgesMb.setParallelism(parallelism);
 
         this.pattern = fgesMb.search(targets);
 
@@ -62,6 +54,10 @@ public class Ida {
     }
 
     public Ida(DataSet dataSet) {
+        this(dataSet, Runtime.getRuntime().availableProcessors());
+    }
+
+    public Ida(DataSet dataSet, int parallelism) {
         this.dataSet = dataSet;
         this.data = dataSet.getDoubleData().transpose().toArray();
         covariances = new CovarianceMatrixOnTheFly(dataSet);
@@ -69,8 +65,13 @@ public class Ida {
         final SemBicScore score = new SemBicScore(covariances);
         score.setPenaltyDiscount(penaltyDiscount);
 
-        Fges fges = new Fges(new SemBicScore(covariances));
-        this.pattern = fges.search();
+//        Fges fges = new Fges(new SemBicScore(covariances));
+//        fges.setParallelism(parallelism);
+//        this.pattern = fges.search();
+
+        Pc pc = new Pc(new IndTestFisherZ(covariances, 0.001));
+        this.pattern = pc.search();
+
         nodeIndices = new HashMap<>();
 
         final List<Node> variables = covariances.getVariables();
@@ -87,7 +88,7 @@ public class Ida {
      * 1. First, estimate a pattern P from the data.
      * 2. Then, consider all combinations C of adjacents of X that include all fo the parents of X in P.
      * 3. For each such C, regress Y onto {X} U C and record the coefficient beta for X in the regression.
-     * 4. Report the minimum such beta.
+     * 4. Report the list of such betas, sorted low to high.
      *
      * @param x The first variable.
      * @param y The second variable

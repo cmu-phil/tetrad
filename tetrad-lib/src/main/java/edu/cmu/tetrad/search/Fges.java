@@ -58,6 +58,16 @@ import java.util.concurrent.*;
 public final class Fges implements GraphSearch, GraphScorer {
 
 
+    private int parallelism = Runtime.getRuntime().availableProcessors() * 10;
+
+    public int getParallelism() {
+        return parallelism;
+    }
+
+    public void setParallelism(int parallelism) {
+        this.parallelism = parallelism;
+    }
+
     /**
      * Internal.
      */
@@ -610,8 +620,7 @@ public final class Fges implements GraphSearch, GraphScorer {
 
         List<Callable<Boolean>> tasks = new ArrayList<>();
 
-        int chunk = nodes.size() / Runtime.getRuntime().availableProcessors();
-        if (chunk < 10) chunk = 10;
+        int chunk = getChunk(nodes);
 
         for (int i = 0; i < nodes.size(); i += chunk) {
             tasks.add(new NodeTaskEmptyGraph(i, Math.min(nodes.size(), i + chunk), variables, Collections.EMPTY_SET));
@@ -624,6 +633,12 @@ public final class Fges implements GraphSearch, GraphScorer {
         if (verbose) {
             out.println("Elapsed initializeForwardEdgesFromEmptyGraph = " + (stop - start) + " ms");
         }
+    }
+
+    private int getChunk(List<Node> nodes) {
+        int chunk = nodes.size() / getParallelism();
+        if (chunk < 10) chunk = 10;
+        return chunk;
     }
 
     private void runCallables(List<Callable<Boolean>> tasks) {
@@ -753,8 +768,7 @@ public final class Fges implements GraphSearch, GraphScorer {
         }
 
         List<Callable<Boolean>> tasks = new ArrayList<>();
-        int chunk = nodes.size() / Runtime.getRuntime().availableProcessors();
-        if (chunk < 10) chunk = 10;
+        int chunk = getChunk(nodes);
 
         for (int i = 0; i < nodes.size(); i += chunk) {
             tasks.add(new InitializeFromExistingGraphTask(i, Math.min(nodes.size(), i + chunk)));
@@ -847,8 +861,7 @@ public final class Fges implements GraphSearch, GraphScorer {
         }
 
         List<Callable<Boolean>> tasks = new ArrayList<>();
-        int chunk = nodes.size() / Runtime.getRuntime().availableProcessors();
-        if (chunk < 10) chunk = 10;
+        int chunk = getChunk(nodes);
 
         for (int i = 0; i < nodes.size(); i += chunk) {
             tasks.add(new InitializeFromExistingGraphTask(i, Math.min(nodes.size(), i + chunk)));
@@ -1124,8 +1137,7 @@ public final class Fges implements GraphSearch, GraphScorer {
         }
 
         List<Callable<Boolean>> tasks = new ArrayList<>();
-        int chunk = nodes.size() / Runtime.getRuntime().availableProcessors();
-        if (chunk < 10) chunk = 10;
+        int chunk = getChunk(new ArrayList<>(nodes));
 
         for (int i = 0; i < nodes.size(); i += chunk) {
             tasks.add(new AdjTask2(new ArrayList<>(nodes), i, Math.min(nodes.size(), i + chunk)));
@@ -1248,8 +1260,7 @@ public final class Fges implements GraphSearch, GraphScorer {
             List<Node> adjacentNodes = graph.getAdjacentNodes(r);
 
             List<Callable<Boolean>> tasks = new ArrayList<>();
-            int chunk = adjacentNodes.size() / Runtime.getRuntime().availableProcessors();
-            if (chunk < 10) chunk = 10;
+            int chunk = getChunk(adjacentNodes);
 
             for (int i = 0; i < adjacentNodes.size(); i += chunk) {
                 tasks.add(new BackwardTask(r, adjacentNodes,

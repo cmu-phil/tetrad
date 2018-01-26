@@ -55,7 +55,21 @@ import java.util.concurrent.*;
  * @author Joseph Ramsey, Revisions 5/2015
  */
 public final class FgesMb {
-    private int maxIndegree;
+
+    public int getParallelism() {
+        return parallelism;
+    }
+
+    public void setParallelism(int parallelism) {
+        this.parallelism = parallelism;
+    }
+
+    /**
+     * Internal.
+     */
+    private enum Mode {
+        allowUnfaithfulness, heuristicSpeedup, coverNoncolliders
+    }
 
     public void setMaxIndegree(int maxIndegree) {
         this.maxIndegree = maxIndegree;
@@ -65,12 +79,9 @@ public final class FgesMb {
         return maxIndegree;
     }
 
-    /**
-     * Internal.
-     */
-    private enum Mode {
-        allowUnfaithfulness, heuristicSpeedup, coverNoncolliders
-    }
+    private int maxIndegree;
+
+    private int parallelism = Runtime.getRuntime().availableProcessors() * 10;
 
     /**
      * Specification of forbidden and required edges.
@@ -152,9 +163,6 @@ public final class FgesMb {
     // A graph where X--Y means that X and Y have non-zero total effect on one another.
     private Graph effectEdgesGraph;
 
-    // The minimum number of operations to do before parallelizing.
-    private final int minChunk = 100;
-
     // Where printed output is sent.
     private PrintStream out = System.out;
 
@@ -166,13 +174,13 @@ public final class FgesMb {
 
     // Arrows with the same totalScore are stored in this list to distinguish their order in sortedArrows.
     // The ordering doesn't matter; it just have to be transitive.
-    int arrowIndex = 0;
+    private int arrowIndex = 0;
 
     // The final totalScore after search.
     private double modelScore;
 
     // Internal.
-    private Mode mode = Mode.heuristicSpeedup;
+    private Mode mode;
 
     /**
      * True if one-edge faithfulness is assumed. Speedse the algorithm up.
@@ -200,6 +208,7 @@ public final class FgesMb {
         }
         setScore(score);
         this.graph = new EdgeListGraphSingleConnections(getVariables());
+        this.mode = Mode.heuristicSpeedup;
     }
 
     //==========================PUBLIC METHODS==========================//
@@ -253,14 +262,14 @@ public final class FgesMb {
 
         graph = new EdgeListGraphSingleConnections(getVariables());
 
-        this.mode = FgesMb.Mode.heuristicSpeedup;
+        this.mode = Mode.heuristicSpeedup;
 
-        calcDConnections1(targets);
+        getEffectEdges(targets);
 
         // Do forward search.
         fes();
 
-        calcDConnections2(targets);
+        getEffectEdges2(targets);
         fes();
 
         bes();
@@ -277,8 +286,7 @@ public final class FgesMb {
         this.logger.log("info", "Elapsed time = " + (elapsedTime) / 1000. + " s");
         this.logger.flush();
 
-        Set<Node> mb = new HashSet<>();
-        mb.addAll(targets);
+        Set<Node> mb = new HashSet<>(targets);
 
         for (Node target : targets) {
             mb.addAll(graph.getAdjacentNodes(target));
@@ -295,7 +303,7 @@ public final class FgesMb {
         return mbgraph;
     }
 
-    private void calcDConnections1(List<Node> targets) {
+    private void getEffectEdges(List<Node> targets) {
 
 
         sortedArrows = new ConcurrentSkipListSet<>();
@@ -311,8 +319,7 @@ public final class FgesMb {
         final Set emptySet = new HashSet<Node>();
 
         Set<Node> adj = new ConcurrentSkipListSet<>();
-        int chunk = variables.size() / Runtime.getRuntime().availableProcessors();
-        if (chunk < 10) chunk = 10;
+        int chunk = getChunk(variables);
 
         List<Callable<Boolean>> tasks = new ArrayList<>();
 
@@ -328,7 +335,8 @@ public final class FgesMb {
         runCallables(tasks);
     }
 
-    private void calcDConnections2(List<Node> targets) {
+
+    private void getEffectEdges2(List<Node> targets) {
         final Set emptySet = new HashSet<Node>();
 
         Set<Node> adj = new ConcurrentSkipListSet<>();
@@ -339,15 +347,13 @@ public final class FgesMb {
 
         adj.removeAll(targets);
 
-        int chunk = variables.size() / Runtime.getRuntime().availableProcessors();
-        if (chunk < 10) chunk = 10;
+        int chunk = getChunk(variables);
 
         Set<Node> adjadj = new ConcurrentSkipListSet<>();
 
         List<Callable<Boolean>> tasks = new ArrayList<>();
 
         for (Node x : adj) {
-
             for (int from = 0; from < variables.size(); from += chunk) {
                 final int to = Math.min(variables.size(), from + chunk);
                 tasks.add(new MbTask(from, to, variables, x, adjadj, emptySet));
@@ -356,6 +362,13 @@ public final class FgesMb {
         }
 
         runCallables(tasks);
+    }
+
+
+    private int getChunk(List<Node> variables) {
+        int chunk = variables.size() / getParallelism();
+        if (chunk < 10) chunk = 10;
+        return chunk;
     }
 
     class MbTask implements Callable<Boolean> {
@@ -403,7 +416,7 @@ public final class FgesMb {
         }
     }
 
-    private void addUnconditionalArrows(Node x, Node y, Set emptySet) {
+    private void addUnconditionalArrows(Node x, Node y, Set<Node> emptySet) {
         if (existsKnowledge()) {
             if (getKnowledge().isForbidden(x.getName(), y.getName()) && getKnowledge().isForbidden(y.getName(), x.getName())) {
                 return;
@@ -485,7 +498,7 @@ public final class FgesMb {
     /**
      * @return the number of patterns to store.
      */
-    public int getNumPatternsToStore() {
+    private int getNumPatternsToStore() {
         return numPatternsToStore;
     }
 
@@ -517,10 +530,12 @@ public final class FgesMb {
             initialGraph = GraphUtils.replaceNodes(initialGraph, variables);
 
             if (verbose) {
+                assert initialGraph != null;
                 out.println("Initial graph variables: " + initialGraph.getNodes());
                 out.println("Data set variables: " + variables);
             }
 
+            assert initialGraph != null;
             if (!new HashSet<>(initialGraph.getNodes()).equals(new HashSet<>(variables))) {
                 throw new IllegalArgumentException("Variables aren't the same.");
             }
@@ -806,9 +821,10 @@ public final class FgesMb {
         }
 
         List<Callable<Boolean>> tasks = new ArrayList<>();
+        int chunk = getChunk(nodes);
 
-        for (int i = 0; i < nodes.size(); i += minChunk) {
-            tasks.add(new InitializeFromExistingGraphTask(i, Math.min(nodes.size(), i + minChunk)));
+        for (int i = 0; i < nodes.size(); i += chunk) {
+            tasks.add(new InitializeFromExistingGraphTask(i, Math.min(nodes.size(), i + chunk)));
         }
 
         runCallables(tasks);
@@ -899,8 +915,8 @@ public final class FgesMb {
 //
 //        List<Callable<Boolean>> tasks = new ArrayList<>();
 //
-//        for (int i = 0; i < nodes.size(); i += minChunk) {
-//            tasks.add(new InitializeFromExistingGraphTask(i, Math.min(nodes.size(), i + minChunk)));
+//        for (int i = 0; i < nodes.size(); i += chunk) {
+//            tasks.add(new InitializeFromExistingGraphTask(i, Math.min(nodes.size(), i + chunk)));
 //        }
 //
 //        runCallables(tasks);
@@ -1174,9 +1190,10 @@ public final class FgesMb {
         }
 
         List<Callable<Boolean>> tasks = new ArrayList<>();
+        int chunk = getChunk(new ArrayList<>(nodes));
 
-        for (int i = 0; i < nodes.size(); i += minChunk) {
-            tasks.add(new AdjTask2(new ArrayList<>(nodes), i, Math.min(nodes.size(), i + minChunk)));
+        for (int i = 0; i < nodes.size(); i += chunk) {
+            tasks.add(new AdjTask2(new ArrayList<>(nodes), i, Math.min(nodes.size(), i + chunk)));
         }
 
         runCallables(tasks);
@@ -1296,10 +1313,11 @@ public final class FgesMb {
             List<Node> adjacentNodes = graph.getAdjacentNodes(r);
 
             List<Callable<Boolean>> tasks = new ArrayList<>();
+            int chunk = getChunk(adjacentNodes);
 
-            for (int i = 0; i < adjacentNodes.size(); i += minChunk) {
+            for (int i = 0; i < adjacentNodes.size(); i += chunk) {
                 tasks.add(new BackwardTask(r, adjacentNodes,
-                        i, Math.min(adjacentNodes.size(), i + minChunk)));
+                        i, Math.min(adjacentNodes.size(), i + chunk)));
             }
 
             runCallables(tasks);

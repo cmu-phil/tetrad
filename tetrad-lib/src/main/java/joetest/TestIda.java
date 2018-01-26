@@ -23,26 +23,21 @@ package joetest;
 
 import edu.cmu.tetrad.algcomparison.algorithm.CStar;
 import edu.cmu.tetrad.algcomparison.algorithm.FmbStar;
-import edu.cmu.tetrad.data.BootstrapSampler;
-import edu.cmu.tetrad.data.CovarianceMatrixOnTheFly;
 import edu.cmu.tetrad.data.DataSet;
-import edu.cmu.tetrad.data.ICovarianceMatrix;
+import edu.cmu.tetrad.data.DataWriter;
 import edu.cmu.tetrad.graph.Edge;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.search.FgesMb;
 import edu.cmu.tetrad.search.Ida;
 import edu.cmu.tetrad.search.SearchGraphUtils;
 import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemPm;
-import edu.cmu.tetrad.util.ForkJoinPoolInstance;
 import edu.cmu.tetrad.util.Parameters;
-import org.junit.Test;
 
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.*;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ForkJoinPool;
 
 /**
  * Tests IDA.
@@ -144,7 +139,7 @@ public class TestIda {
         parameters.set("penaltyDiscount", 2);
         parameters.set("numSubsamples", 30);
         parameters.set("percentSubsampleSize", .5);
-        parameters.set("topQ", 5);
+        parameters.set("topQ", (int)(0.05 * numNodes));
         parameters.set("piThreshold", .5);
         parameters.set("targetName", "X30");
         parameters.set("verbose", false);
@@ -170,6 +165,12 @@ public class TestIda {
         SemIm im = new SemIm(pm, parameters);
         DataSet fullData = im.simulateData(sampleSize, false);
 
+        try {
+            DataWriter.writeRectangularData(fullData, new FileWriter("/Users/user/Downloads/fulldata.txt"), '\t');
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
         for (int i = 0; i < numIterations; i++) {
 
             parameters.set("targetName", "X" + (numNodes - numIterations + i));
@@ -179,13 +180,14 @@ public class TestIda {
             long start = System.currentTimeMillis();
 //
             CStar cstar = new CStar();
+            cstar.setParallelism(3);
             Graph graph = cstar.search(fullData, parameters);
 
             long stop = System.currentTimeMillis();
-
-            int[] ret = printResult(truePattern, parameters, graph, stop - start, numNodes, numEdges, sampleSize, fullData);
 //
-//            int[] ret = {0, 0, 0, 0};
+            int[] ret = printResult(truePattern, parameters, graph, stop - start, numNodes, numEdges, sampleSize, fullData);
+//            int[] ret = {0, 0, 0, 0, 0};
+
             cstarRet.add(ret);
 
             System.out.println("\n\n=====FmbStar====");
@@ -193,17 +195,18 @@ public class TestIda {
             start = System.currentTimeMillis();
 
             FmbStar fmbStar = new FmbStar();
+            fmbStar.setParallelism(3);
             Graph graph2 = fmbStar.search(fullData, parameters);
 
             stop = System.currentTimeMillis();
 
-            int[] ret2 = printResult(truePattern, parameters, graph2, stop - start, numNodes, numEdges, sampleSize, fullData);
+            int[] ret2 = printResult(trueDag, parameters, graph2, stop - start, numNodes, numEdges, sampleSize, fullData);
             fmbStarRet.add(ret2);
         }
 
         System.out.println();
 
-        System.out.println("\tCAnc\tFAnc\tCChil\tFChil\tCSib\tFSib\tCOther\tFOther");
+        System.out.println("\tCPar\tFPar\tCUrAnc\tFUrAnc\tCChil\tFChil\tCSib\tFSib\tCOther\tFOther");
 
         for (int i = 0; i < numIterations; i++) {
             System.out.println((i + 1) + ".\t"
@@ -211,6 +214,7 @@ public class TestIda {
                     + cstarRet.get(i)[1] + "\t" + fmbStarRet.get(i)[1] + "\t"
                     + cstarRet.get(i)[2] + "\t" + fmbStarRet.get(i)[2] + "\t"
                     + cstarRet.get(i)[3] + "\t" + fmbStarRet.get(i)[3] + "\t"
+                    + cstarRet.get(i)[4] + "\t" + fmbStarRet.get(i)[4] + "\t"
             );
         }
     }
@@ -235,37 +239,46 @@ public class TestIda {
 
         outputNodes.remove(graph.getNode(target.getName()));
 
-        final List<Node> ancestors = trueGraph.getAncestors(Collections.singletonList(target));
-        final List<Node> children = trueGraph.getChildren(target);
+        final List<Node> urAncestors = trueGraph.getAncestors(Collections.singletonList(target));
+        urAncestors.retainAll(outputNodes);
 
-        ancestors.retainAll(outputNodes);
+        final List<Node> parents = trueGraph.getParents(target);
+        parents.retainAll(outputNodes);
+        urAncestors.removeAll(parents);
+
+        final List<Node> children = trueGraph.getChildren(target);
         children.retainAll(outputNodes);
 
         final List<Node> siblings = trueGraph.getAdjacentNodes(target);
         siblings.retainAll(outputNodes);
         siblings.removeAll(children);
-        siblings.removeAll(ancestors);
+        siblings.removeAll(parents);
+        siblings.removeAll(urAncestors);
 
         final List<Node> other = new ArrayList<>(outputNodes);
-        other.removeAll(ancestors);
+        other.removeAll(parents);
+        other.removeAll(urAncestors);
         other.removeAll(children);
         other.removeAll(siblings);
 
-        System.out.println("Ancestors: " + ancestors);
+//        System.out.println("True ancestors: " + trueGraph.getAncestors(Collections.singletonList(target)));
+        System.out.println("Parents: " + parents);
+        System.out.println("Ur-Ancestors: " + urAncestors);
         System.out.println("Children: " + children);
         System.out.println("Siblings: " + siblings);
         System.out.println("Other: " + other);
 
         System.out.println("Elapsed " + elapsed / 1000.0 + " s");
 
-        printIdaResult(new ArrayList<>(outputNodes), target, trueData, trueGraph);
+//        printIdaResult(new ArrayList<>(outputNodes), target, trueData, trueGraph);
 
-        int[] ret = new int[4];
+        int[] ret = new int[5];
 
-        ret[0] = ancestors.size();
-        ret[1] = children.size();
-        ret[2] = siblings.size();
-        ret[3] = other.size();
+        ret[0] = parents.size();
+        ret[1] = urAncestors.size();
+        ret[2] = children.size();
+        ret[3] = siblings.size();
+        ret[4] = other.size();
 
         return ret;
     }
@@ -274,11 +287,11 @@ public class TestIda {
         trueGraph = GraphUtils.replaceNodes(trueGraph, dataSet.getVariables());
 
         List<Node> x2 = new ArrayList<>();
-        for (Node node : x) x2.add(dataSet.getVariable(node.getName()));
+        for (Node n : x) x2.add(dataSet.getVariable(n.getName()));
         x = x2;
         y = dataSet.getVariable(y.getName());
 
-        Ida ida = new Ida(dataSet, x);
+        Ida ida = new Ida(dataSet);
 
         for (Node _x : x) {
             LinkedList<Double> effects = ida.getEffects(_x, y);
