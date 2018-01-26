@@ -520,6 +520,8 @@ public final class SemImEditor extends JPanel implements LayoutEditable, DoNotSc
                         "Matrix selection must be 0, 1, 2, or 3: " + matrixSelection);
             }
 
+            SemImEditor.this.wrapper = new SemImWrapper(semIm);
+
             Graph oldGraph = getSemIm().getSemPm().getGraph();
 
             GraphUtils.arrangeBySourceGraph(getSemIm().getSemPm().getGraph(), oldGraph);
