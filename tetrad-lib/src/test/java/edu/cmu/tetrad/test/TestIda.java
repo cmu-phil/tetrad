@@ -164,7 +164,7 @@ public class TestIda {
 
         for (int i = 0; i < numIterations; i++) {
 
-            parameters.set("targetName", "X" + (numNodes - numIterations - 250 + i));
+            parameters.set("targetName", "X" + (numNodes - numIterations - i));
 
             System.out.println("\n\n=====CSTAR====");
 

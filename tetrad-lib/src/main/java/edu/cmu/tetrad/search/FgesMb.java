@@ -237,7 +237,7 @@ public final class FgesMb {
 
         topGraphs.clear();
 
-        boundGraph = effectEdgesGraph;
+//        boundGraph = effectEdgesGraph;
 
         // Assumes one-edge faithfulness.
         long start = System.currentTimeMillis();
@@ -267,13 +267,10 @@ public final class FgesMb {
         // Do forward search.
         getEffectEdges(targets);
         fes();
+        bes();
 
         getEffectEdges2(targets);
         fes();
-
-//        getEffectEdges3(targets);
-//        fes();
-
         bes();
 
         this.mode = Mode.coverNoncolliders;
@@ -293,14 +290,6 @@ public final class FgesMb {
         for (Node target : targets) {
             mb.addAll(graph.getAdjacentNodes(target));
 
-            for (Node m : new HashSet<>(mb)) {
-                mb.addAll(graph.getAdjacentNodes(m));
-            }
-
-            for (Node m : new HashSet<>(mb)) {
-                mb.addAll(graph.getAdjacentNodes(m));
-            }
-
             for (Node child : graph.getChildren(target)) {
                 mb.addAll(graph.getParents(child));
             }
@@ -314,8 +303,6 @@ public final class FgesMb {
     }
 
     private void getEffectEdges(List<Node> targets) {
-
-
         sortedArrows = new ConcurrentSkipListSet<>();
         lookupArrows = new ConcurrentHashMap<>();
         neighbors = new ConcurrentHashMap<>();
@@ -326,7 +313,7 @@ public final class FgesMb {
             this.effectEdgesGraph.addNode(target);
         }
 
-        final Set emptySet = new HashSet<Node>();
+        final Set<Node> emptySet = new HashSet<>();
 
         Set<Node> adj = new ConcurrentSkipListSet<>();
         int chunk = getChunk(variables);
@@ -345,9 +332,8 @@ public final class FgesMb {
         runCallables(tasks);
     }
 
-
     private void getEffectEdges2(List<Node> targets) {
-        final Set emptySet = new HashSet<Node>();
+        final Set<Node> emptySet = new HashSet<>();
 
         Set<Node> adj = new ConcurrentSkipListSet<>();
 
@@ -374,43 +360,6 @@ public final class FgesMb {
         runCallables(tasks);
     }
 
-    private void getEffectEdges3(List<Node> targets) {
-        final Set emptySet = new HashSet<Node>();
-
-        Set<Node> adj = new HashSet<>();
-
-        for (Node t : targets) {
-            adj.addAll(graph.getAdjacentNodes(t));
-        }
-
-        adj.removeAll(targets);
-        Set<Node> adjadj = new HashSet<>();
-
-        for (Node a : adj) {
-            adjadj.addAll(graph.getAdjacentNodes(a));
-        }
-
-        adjadj.removeAll(adj);
-        adjadj.removeAll(targets);
-
-        int chunk = getChunk(variables);
-
-        Set<Node> adjadjadj = new ConcurrentSkipListSet<>();
-
-        List<Callable<Boolean>> tasks = new ArrayList<>();
-
-        for (Node x : adjadj) {
-            for (int from = 0; from < variables.size(); from += chunk) {
-                final int to = Math.min(variables.size(), from + chunk);
-                tasks.add(new MbTask(from, to, variables, x, adjadjadj, emptySet));
-            }
-
-        }
-
-        runCallables(tasks);
-    }
-
-
     private int getChunk(List<Node> variables) {
         int chunk = variables.size() / getParallelism();
         if (chunk < 10) chunk = 10;
@@ -425,7 +374,7 @@ public final class FgesMb {
         private final Set<Node> emptySet;
         private final List<Node> nodes;
 
-        public MbTask(int from, int to, List<Node> nodes, Node target, Set<Node> adj, Set<Node> emptySet) {
+        MbTask(int from, int to, List<Node> nodes, Node target, Set<Node> adj, Set<Node> emptySet) {
             this.from = from;
             this.to = to;
             this.target = target;
@@ -438,9 +387,7 @@ public final class FgesMb {
         public Boolean call() throws Exception {
             int _target = hashIndices.get(target);
 
-            // Odd... the for loop failed here. Wouldn't iterate. Switching to while loop.
-            for (int x = 0; x < variables.size(); x++) {
-//                System.out.println("target = " + target + " x = " + variables.get(x));
+            for (int x = from; x < to; x++) {
                 if (x == _target) continue;
                 if (effectEdgesGraph.isAdjacentTo(target, nodes.get(x))) continue;
 
@@ -451,7 +398,6 @@ public final class FgesMb {
                         synchronized (effectEdgesGraph) {
                             effectEdgesGraph.addNode(nodes.get(x));
                             adj.add(variables.get(x));
-//                            System.out.println("Adding " + variables.get(x));
                             addUnconditionalArrows(target, nodes.get(x), emptySet);
                         }
                     }
