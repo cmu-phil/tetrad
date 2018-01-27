@@ -54,6 +54,12 @@ public class FmbStar implements Algorithm {
                 pithreshold, y, penaltyDiscount);
         Set<Node> allNodes = new HashSet<>(nodes);
 
+//        for (Node n : nodes) {
+//            List<Node> _nodes = getNodes(parameters, _dataSet, variables, percentageB, numSubsamples,
+//                    pithreshold, n, penaltyDiscount);
+//            allNodes.addAll(_nodes);
+//        }
+
         Graph graph = new EdgeListGraph(new ArrayList<>(allNodes));
         graph.addNode(y);
 
@@ -89,7 +95,7 @@ public class FmbStar implements Algorithm {
                 score.setPenaltyDiscount(penaltyDiscount);
 
                 FgesMb fgesMb = new FgesMb(score);
-                fgesMb.setParallelism(getParallelism());
+                fgesMb.setParallelism(1);//getParallelism());
                 Graph g = fgesMb.search(y);
 
                 for (final Node key : g.getNodes()) {

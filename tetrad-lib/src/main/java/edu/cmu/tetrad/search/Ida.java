@@ -66,10 +66,13 @@ public class Ida {
         score.setPenaltyDiscount(penaltyDiscount);
 
 //        Fges fges = new Fges(new SemBicScore(covariances));
-//        fges.setParallelism(parallelism);
+//        fges.setParallelism(1);//parallelism);
 //        this.pattern = fges.search();
-
-        Pc pc = new Pc(new IndTestFisherZ(covariances, 0.001));
+//
+        PcAll pc = new PcAll(new IndTestFisherZ(covariances, 0.001), null);
+        pc.setFasRule(PcAll.FasRule.FAS_STABLE);
+        pc.setConflictRule(PcAll.ConflictRule.PRIORITY);
+        pc.setColliderDiscovery(PcAll.ColliderDiscovery.FAS_SEPSETS);
         this.pattern = pc.search();
 
         nodeIndices = new HashMap<>();

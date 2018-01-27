@@ -136,7 +136,7 @@ public class TestIda {
         parameters.set("penaltyDiscount", 2);
         parameters.set("numSubsamples", 30);
         parameters.set("percentSubsampleSize", .5);
-        parameters.set("topQ", 5);
+        parameters.set("topQ", (int)(numNodes * 0.05));
         parameters.set("piThreshold", .5);
         parameters.set("targetName", "X30");
         parameters.set("verbose", false);
@@ -164,7 +164,7 @@ public class TestIda {
 
         for (int i = 0; i < numIterations; i++) {
 
-            parameters.set("targetName", "X" + (numNodes - numIterations + i));
+            parameters.set("targetName", "X" + (numNodes - numIterations - 250 + i));
 
             System.out.println("\n\n=====CSTAR====");
 
@@ -176,6 +176,7 @@ public class TestIda {
             long stop = System.currentTimeMillis();
 
             int[] ret = printResult(truePattern, parameters, graph, stop - start, numNodes, numEdges, sampleSize, fullData);
+//            int[] ret = {0, 0, 0, 0, 0, 0};
             cstarRet.add(ret);
 
             System.out.println("\n\n=====FmbStar====");
@@ -193,7 +194,7 @@ public class TestIda {
 
         System.out.println();
 
-        System.out.println("\tCAnc\tFAnc\tCChil\tFChil\tCSib\tFSib\tCOther\tFOther");
+        System.out.println("\tCPar\tFPar\tCAnc\tFAnc\tCChil\tFChil\tCSib\tFSib\tCPoc\tFPoc\tCOther\tFOther");
 
         for (int i = 0; i < numIterations; i++) {
             System.out.println((i + 1) + ".\t"
@@ -201,6 +202,8 @@ public class TestIda {
                     + cstarRet.get(i)[1] + "\t" + fmbStarRet.get(i)[1] + "\t"
                     + cstarRet.get(i)[2] + "\t" + fmbStarRet.get(i)[2] + "\t"
                     + cstarRet.get(i)[3] + "\t" + fmbStarRet.get(i)[3] + "\t"
+                    + cstarRet.get(i)[4] + "\t" + fmbStarRet.get(i)[4] + "\t"
+                    + cstarRet.get(i)[5] + "\t" + fmbStarRet.get(i)[5] + "\t"
             );
         }
     }
@@ -225,37 +228,55 @@ public class TestIda {
 
         outputNodes.remove(graph.getNode(target.getName()));
 
-        final List<Node> ancestors = trueGraph.getAncestors(Collections.singletonList(target));
+        final List<Node> urAncestors = trueGraph.getAncestors(Collections.singletonList(target));
+        final List<Node> parents = trueGraph.getParents(target);
         final List<Node> children = trueGraph.getChildren(target);
 
-        ancestors.retainAll(outputNodes);
+        final Set<Node> parentsOfChildren = new HashSet<>();
+
+        for (Node c : children) {
+            parentsOfChildren.addAll(trueGraph.getParents(c));
+        }
+
+        parentsOfChildren.retainAll(outputNodes);
+
+        urAncestors.retainAll(outputNodes);
+        urAncestors.removeAll(parents);
+
         children.retainAll(outputNodes);
 
         final List<Node> siblings = trueGraph.getAdjacentNodes(target);
         siblings.retainAll(outputNodes);
         siblings.removeAll(children);
-        siblings.removeAll(ancestors);
+        siblings.removeAll(urAncestors);
+        siblings.removeAll(parents);
 
         final List<Node> other = new ArrayList<>(outputNodes);
-        other.removeAll(ancestors);
+        other.removeAll(urAncestors);
         other.removeAll(children);
         other.removeAll(siblings);
+        other.removeAll(parents);
+        other.removeAll(parentsOfChildren);
 
-        System.out.println("Ancestors: " + ancestors);
+        System.out.println("Parents: " + parents);
+        System.out.println("Ur-ancestors: " + urAncestors);
         System.out.println("Children: " + children);
         System.out.println("Siblings: " + siblings);
+        System.out.println("Parents Of Children: " + parentsOfChildren);
         System.out.println("Other: " + other);
 
         System.out.println("Elapsed " + elapsed / 1000.0 + " s");
 
-        printIdaResult(new ArrayList<>(outputNodes), target, trueData, trueGraph);
+//        printIdaResult(new ArrayList<>(outputNodes), target, trueData, trueGraph);
 
-        int[] ret = new int[4];
+        int[] ret = new int[6];
 
-        ret[0] = ancestors.size();
-        ret[1] = children.size();
-        ret[2] = siblings.size();
-        ret[3] = other.size();
+        ret[0] = parents.size();
+        ret[1] = urAncestors.size();
+        ret[2] = children.size();
+        ret[3] = siblings.size();
+        ret[4] = parentsOfChildren.size();
+        ret[5] = other.size();
 
         return ret;
     }

@@ -69,7 +69,7 @@ public class CStar implements Algorithm {
                 BootstrapSampler sampler = new BootstrapSampler();
                 sampler.setWithoutReplacements(true);
                 DataSet sample = sampler.sample(_dataSet, (int) (percentSubsampleSize * _dataSet.getNumRows()));
-                Ida ida = new Ida(sample, getParallelism());
+                Ida ida = new Ida(sample, 1);//getParallelism());
                 ida.setPenaltyDiscount(penaltyDiscount);
                 Ida.NodeEffects effects = ida.getSortedMinEffects(y);
 

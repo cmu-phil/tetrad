@@ -264,13 +264,15 @@ public final class FgesMb {
 
         this.mode = Mode.heuristicSpeedup;
 
-        getEffectEdges(targets);
-
         // Do forward search.
+        getEffectEdges(targets);
         fes();
 
         getEffectEdges2(targets);
         fes();
+
+//        getEffectEdges3(targets);
+//        fes();
 
         bes();
 
@@ -290,6 +292,14 @@ public final class FgesMb {
 
         for (Node target : targets) {
             mb.addAll(graph.getAdjacentNodes(target));
+
+            for (Node m : new HashSet<>(mb)) {
+                mb.addAll(graph.getAdjacentNodes(m));
+            }
+
+            for (Node m : new HashSet<>(mb)) {
+                mb.addAll(graph.getAdjacentNodes(m));
+            }
 
             for (Node child : graph.getChildren(target)) {
                 mb.addAll(graph.getParents(child));
@@ -357,6 +367,42 @@ public final class FgesMb {
             for (int from = 0; from < variables.size(); from += chunk) {
                 final int to = Math.min(variables.size(), from + chunk);
                 tasks.add(new MbTask(from, to, variables, x, adjadj, emptySet));
+            }
+
+        }
+
+        runCallables(tasks);
+    }
+
+    private void getEffectEdges3(List<Node> targets) {
+        final Set emptySet = new HashSet<Node>();
+
+        Set<Node> adj = new HashSet<>();
+
+        for (Node t : targets) {
+            adj.addAll(graph.getAdjacentNodes(t));
+        }
+
+        adj.removeAll(targets);
+        Set<Node> adjadj = new HashSet<>();
+
+        for (Node a : adj) {
+            adjadj.addAll(graph.getAdjacentNodes(a));
+        }
+
+        adjadj.removeAll(adj);
+        adjadj.removeAll(targets);
+
+        int chunk = getChunk(variables);
+
+        Set<Node> adjadjadj = new ConcurrentSkipListSet<>();
+
+        List<Callable<Boolean>> tasks = new ArrayList<>();
+
+        for (Node x : adjadj) {
+            for (int from = 0; from < variables.size(); from += chunk) {
+                final int to = Math.min(variables.size(), from + chunk);
+                tasks.add(new MbTask(from, to, variables, x, adjadjadj, emptySet));
             }
 
         }
@@ -705,22 +751,33 @@ public final class FgesMb {
     private void runCallables(List<Callable<Boolean>> tasks) {
         if (tasks.isEmpty()) return;
 
-        ExecutorService executorService = Executors.newWorkStealingPool();
+        if (parallelism == 1) {
+            for (Callable<Boolean> task : tasks) {
+                try {
+                    task.call();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        } else {
 
-        try {
-            executorService.invokeAll(tasks);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
+            ExecutorService executorService = Executors.newWorkStealingPool();
 
-        executorService.shutdown();
+            try {
+                executorService.invokeAll(tasks);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
 
-        try {
-            if (!executorService.awaitTermination(800, TimeUnit.MILLISECONDS)) {
+            executorService.shutdown();
+
+            try {
+                if (!executorService.awaitTermination(800, TimeUnit.MILLISECONDS)) {
+                    executorService.shutdownNow();
+                }
+            } catch (InterruptedException e) {
                 executorService.shutdownNow();
             }
-        } catch (InterruptedException e) {
-            executorService.shutdownNow();
         }
     }
 
