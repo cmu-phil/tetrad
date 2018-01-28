@@ -21,6 +21,8 @@ import static java.lang.Math.*;
  * @author jdramsey@andrew.cmu.edu
  */
 public class Ida {
+    public enum PatternAlgorithm {FGES, PC_STABLE}
+
     private DataSet dataSet;
     private final double[][] data;
     private final Graph pattern;
@@ -54,10 +56,10 @@ public class Ida {
     }
 
     public Ida(DataSet dataSet) {
-        this(dataSet, Runtime.getRuntime().availableProcessors());
+        this(dataSet, Runtime.getRuntime().availableProcessors(), PatternAlgorithm.PC_STABLE);
     }
 
-    public Ida(DataSet dataSet, int parallelism) {
+    public Ida(DataSet dataSet, int parallelism, PatternAlgorithm patternAlgorithm) {
         this.dataSet = dataSet;
         this.data = dataSet.getDoubleData().transpose().toArray();
         covariances = new CovarianceMatrixOnTheFly(dataSet);
@@ -65,15 +67,19 @@ public class Ida {
         final SemBicScore score = new SemBicScore(covariances);
         score.setPenaltyDiscount(penaltyDiscount);
 
-//        Fges fges = new Fges(new SemBicScore(covariances));
-//        fges.setParallelism(1);//parallelism);
-//        this.pattern = fges.search();
-//
-        PcAll pc = new PcAll(new IndTestFisherZ(covariances, 0.001), null);
-        pc.setFasRule(PcAll.FasRule.FAS_STABLE);
-        pc.setConflictRule(PcAll.ConflictRule.PRIORITY);
-        pc.setColliderDiscovery(PcAll.ColliderDiscovery.FAS_SEPSETS);
-        this.pattern = pc.search();
+        if (patternAlgorithm == PatternAlgorithm.FGES) {
+            Fges fges = new Fges(new SemBicScore(covariances));
+            fges.setParallelism(parallelism);
+            this.pattern = fges.search();
+        } else if (patternAlgorithm == PatternAlgorithm.PC_STABLE) {
+            PcAll pc = new PcAll(new IndTestFisherZ(covariances, 0.001), null);
+            pc.setFasRule(PcAll.FasRule.FAS_STABLE);
+            pc.setConflictRule(PcAll.ConflictRule.PRIORITY);
+            pc.setColliderDiscovery(PcAll.ColliderDiscovery.FAS_SEPSETS);
+            this.pattern = pc.search();
+        } else {
+            throw new IllegalArgumentException("Not configured for that algorithm: " + patternAlgorithm);
+        }
 
         nodeIndices = new HashMap<>();
 

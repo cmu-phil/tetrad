@@ -23,6 +23,9 @@ package edu.cmu.tetrad.test;
 
 import edu.cmu.tetrad.algcomparison.algorithm.CStar;
 import edu.cmu.tetrad.algcomparison.algorithm.FmbStar;
+import edu.cmu.tetrad.algcomparison.graph.RandomForward;
+import edu.cmu.tetrad.algcomparison.graph.RandomGraph;
+import edu.cmu.tetrad.algcomparison.simulation.LinearFisherModel;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Edge;
 import edu.cmu.tetrad.graph.Graph;
@@ -30,6 +33,7 @@ import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.Ida;
 import edu.cmu.tetrad.search.SearchGraphUtils;
+import edu.cmu.tetrad.sem.LargeScaleSimulation;
 import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemPm;
 import edu.cmu.tetrad.util.Parameters;
@@ -132,11 +136,21 @@ public class TestIda {
     }
 
     public void testBoth(int numNodes, int numEdges, int sampleSize, int numIterations) {
+        final double avgDegree = 2 * numEdges / (double) numNodes;
+
         Parameters parameters = new Parameters();
+        parameters.set("numMeasures", numNodes);
+        parameters.set("numLatents", 0);
+        parameters.set("avgDegree", avgDegree);
+        parameters.set("maxDegree", 100);
+        parameters.set("maxIndegree", 100);
+        parameters.set("maxOutdegree", 100);
+        parameters.set("connected", false);
+
         parameters.set("penaltyDiscount", 2);
         parameters.set("numSubsamples", 30);
         parameters.set("percentSubsampleSize", .5);
-        parameters.set("topQ", (int)(numNodes * 0.05));
+        parameters.set("topQ", (int) (numNodes * 0.05));
         parameters.set("piThreshold", .5);
         parameters.set("targetName", "X30");
         parameters.set("verbose", false);
@@ -154,13 +168,24 @@ public class TestIda {
         List<int[]> cstarRet = new ArrayList<>();
         List<int[]> fmbStarRet = new ArrayList<>();
 
-        Graph trueDag = GraphUtils.randomGraph(numNodes, 0, numEdges,
-                100, 100, 100, false);
-        Graph truePattern = SearchGraphUtils.patternForDag(trueDag);
+//        Graph trueDag = GraphUtils.randomGraph(numNodes, 0, numEdges,
+//                100, 100, 100, false);
 
-        SemPm pm = new SemPm(trueDag);
-        SemIm im = new SemIm(pm, parameters);
-        DataSet fullData = im.simulateData(sampleSize, false);
+        RandomGraph randomForward = new RandomForward();
+        LinearFisherModel fisher = new LinearFisherModel(randomForward);
+        fisher.createData(parameters);
+        DataSet fullData = (DataSet) fisher.getDataModel(0);
+        Graph trueDag = fisher.getTrueGraph(0);
+
+//        Graph truePattern = SearchGraphUtils.patternForDag(trueDag);
+
+
+//        LargeScaleSimulation simulation = new LargeScaleSimulation(trueDag);
+//        DataSet fullData = simulation.simulateDataFisher(sampleSize);
+
+//        SemPm pm = new SemPm(trueDag);
+//        SemIm im = new SemIm(pm, parameters);
+//        DataSet fullData = im.simulateData(sampleSize, false);
 
         for (int i = 0; i < numIterations; i++) {
 
@@ -170,13 +195,13 @@ public class TestIda {
 
             long start = System.currentTimeMillis();
 
-            CStar cstar = new CStar();
-            Graph graph = cstar.search(fullData, parameters);
+//            CStar cstar = new CStar();
+//            Graph graph = cstar.search(fullData, parameters);
 
             long stop = System.currentTimeMillis();
 
-            int[] ret = printResult(truePattern, parameters, graph, stop - start, numNodes, numEdges, sampleSize, fullData);
-//            int[] ret = {0, 0, 0, 0, 0, 0};
+//            int[] ret = printResult(trueDag, parameters, graph, stop - start, numNodes, numEdges, sampleSize, fullData);
+            int[] ret = {0, 0, 0, 0, 0, 0};
             cstarRet.add(ret);
 
             System.out.println("\n\n=====FmbStar====");
@@ -188,7 +213,7 @@ public class TestIda {
 
             stop = System.currentTimeMillis();
 
-            int[] ret2 = printResult(truePattern, parameters, graph2, stop - start, numNodes, numEdges, sampleSize, fullData);
+            int[] ret2 = printResult(trueDag, parameters, graph2, stop - start, numNodes, numEdges, sampleSize, fullData);
             fmbStarRet.add(ret2);
         }
 

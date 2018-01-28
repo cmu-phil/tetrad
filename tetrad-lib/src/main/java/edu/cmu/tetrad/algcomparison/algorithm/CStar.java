@@ -69,7 +69,7 @@ public class CStar implements Algorithm {
                 BootstrapSampler sampler = new BootstrapSampler();
                 sampler.setWithoutReplacements(true);
                 DataSet sample = sampler.sample(_dataSet, (int) (percentSubsampleSize * _dataSet.getNumRows()));
-                Ida ida = new Ida(sample, 1);//getParallelism());
+                Ida ida = new Ida(sample, 1, Ida.PatternAlgorithm.PC_STABLE);
                 ida.setPenaltyDiscount(penaltyDiscount);
                 Ida.NodeEffects effects = ida.getSortedMinEffects(y);
 
@@ -155,10 +155,6 @@ public class CStar implements Algorithm {
         return parameters;
     }
 
-    public int getParallelism() {
-        return parallelism;
-    }
-
     public void setParallelism(int parallelism) {
         this.parallelism = parallelism;
     }
@@ -166,22 +162,32 @@ public class CStar implements Algorithm {
     private void runCallables(List<Callable<Boolean>> tasks) {
         if (tasks.isEmpty()) return;
 
-        ExecutorService executorService = Executors.newWorkStealingPool();
+        if (parallelism == 1) {
+            for (Callable<Boolean> task : tasks) {
+                try {
+                    task.call();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        } else {
 
-        try {
-            executorService.invokeAll(tasks);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
+            ExecutorService executorService = Executors.newWorkStealingPool();
 
-        executorService.shutdown();
+            try {
+                executorService.invokeAll(tasks);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
 
-        try {
-            if (!executorService.awaitTermination(800, TimeUnit.MILLISECONDS)) {
+            executorService.shutdown();
+
+            try {
+                if (!executorService.awaitTermination(800, TimeUnit.MILLISECONDS)) {
+                    executorService.shutdownNow();
+                }
+            } catch (InterruptedException e) {
                 executorService.shutdownNow();
             }
-        } catch (InterruptedException e) {
-            executorService.shutdownNow();
         }
-    }
-}
+    }}

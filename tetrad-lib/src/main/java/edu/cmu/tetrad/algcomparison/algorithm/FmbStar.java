@@ -7,6 +7,8 @@ import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.FgesMb;
+import edu.cmu.tetrad.search.IndTestFisherZ;
+import edu.cmu.tetrad.search.PcAll;
 import edu.cmu.tetrad.search.SemBicScore;
 import edu.cmu.tetrad.util.ForkJoinPoolInstance;
 import edu.cmu.tetrad.util.Parameters;
@@ -50,6 +52,14 @@ public class FmbStar implements Algorithm {
         double penaltyDiscount = parameters.getDouble("penatyDiscount");
         variables.remove(y);
 
+//        PcAll pc = new PcAll(new IndTestFisherZ(new CovarianceMatrixOnTheFly(_dataSet), 0.05), null);
+//        pc.setFasRule(PcAll.FasRule.FAS_STABLE);
+//        pc.setDepth(1);
+//        pc.setConflictRule(PcAll.ConflictRule.PRIORITY);
+//        pc.setColliderDiscovery(PcAll.ColliderDiscovery.FAS_SEPSETS);
+//        variables = pc.search().getAdjacentNodes(y);
+
+
         List<Node> nodes = getNodes(parameters, _dataSet, variables, percentageB, numSubsamples,
                 pithreshold, y, penaltyDiscount);
         Set<Node> allNodes = new HashSet<>(nodes);
@@ -89,6 +99,7 @@ public class FmbStar implements Algorithm {
                 BootstrapSampler sampler = new BootstrapSampler();
                 sampler.setWithoutReplacements(true);
                 DataSet sample = sampler.sample(_dataSet, (int) (percentageB * _dataSet.getNumRows()));
+//                sample = sample.subsetColumns(variables);
 
                 ICovarianceMatrix covariances = new CovarianceMatrixOnTheFly(sample);
                 final SemBicScore score = new SemBicScore(covariances);
