@@ -14,14 +14,12 @@ import org.junit.Test;
 
 import java.io.*;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 
 public class TestParseUrl {
 
-    String[] coins = {
-            "bitcoin",
+//    String[] coins = {
+//            "bitcoin",
 //            "ethereum",
 //            "ripple",
 //            "bitcoin-cash",
@@ -36,6 +34,35 @@ public class TestParseUrl {
 //            "monero",
 //            "bitconnect",
 //            "electroneum"
+//    };
+
+    String[] coins = {
+//            "ox-fina",
+            "bitcoin",
+            "augur",
+            "bancor",
+            "basic-attention-token",
+            "bitcoin-cash",
+            "bitcoin-gold",
+            "civic",
+            "dash",
+            "decred",
+            "edgeless",
+            "eos",
+            "ethereum",
+            "funfair",
+//            "gnosis",
+            "golem-network-tokens",
+            "rlc",
+            "litecoin",
+            "guppy",
+            "omisego",
+            "salt",
+            "status",
+
+//            "monero",
+//            "bitconnect",
+//            "electroneum"
     };
 
     @Test
@@ -47,15 +74,16 @@ public class TestParseUrl {
         try {
 
             for (String coin : coins) {
-                URL url = new URL("https://coinmarketcap.com/currencies/" + coin + "/historical-data");
+                final String spec = "https://coinmarketcap.com/currencies/" + coin + "/historical-data?start=20170128&end=20180128";
+                System.out.println(spec);
+
+                URL url = new URL(spec);
                 is = url.openStream();  // throws an IOException
                 br = new BufferedReader(new InputStreamReader(is));
 
                 List<double[]> recordList = new ArrayList<>();
 
                 while ((line = br.readLine()) != null) {
-                    System.out.println(line);
-
                     if (line.contains("<tr class=\"text-right\">")) {
                         for (int i = 0; i < 1; i++) {
                             br.readLine();
@@ -67,10 +95,6 @@ public class TestParseUrl {
 
                         for (int i = 0; i < 6; i++) {
                             line = br.readLine();
-
-//                            line = line.split("<")[1];
-//                            line = line.split(">")[1];
-//                            line = line.replaceAll(",", "");
 
                             line = line.split("\"")[1];
 
@@ -123,30 +147,100 @@ public class TestParseUrl {
 
     @Test
     public void test2() {
-//        test1();
-
-
         int targetIndex = 0;
-        final int numLags = 4;
-        final int sampleSize = 500;
-        final double margin = 0;
+        final int numLags = 8;
+        final int sampleSize = 365;
+        final int daysBack = 10;
+        final int skipDays = 1;
 
+        double[][][] advice = new double[daysBack][coins.length][];
 
-        try {
+        DataSet[] dataSets = new DataSet[coins.length];
 
-//            for (int r = dataSet.getNumRows() - 30; r < dataSet.getNumRows() - 2; r++) {
-//                adviceForInitialRecords(r, coins[0], targetIndex, numLags, dataSet);
-//            }
-
-            for (int c = 0; c < coins.length; c++) {
-                DataReader reader = new ContinuousTabularDataFileReader(new File("/Users/user/Downloads/" + coins[c]), Delimiter.TAB);
+        for (int c = 0; c < coins.length; c++) {
+            try {
+                DataReader reader = new ContinuousTabularDataFileReader(new File("/Users/user/Downloads/coins/" + coins[c]), Delimiter.TAB);
                 DataSet dataSet = readData(reader);
-                final int r = dataSet.getNumRows();
-                adviceForInitialRecords(r - 5, sampleSize, coins[c], targetIndex, numLags, dataSet, margin);
+                dataSets[c] = dataSet;
+            } catch (IOException e) {
+                e.printStackTrace();
             }
-        } catch (IOException e) {
-            e.printStackTrace();
         }
+
+        for (int d = daysBack - 1; d >= 0; d--) {
+            for (int c = 0; c < coins.length; c++) {
+                final int r = dataSets[c].getNumRows() - d;
+                try {
+                    double[] a = adviceForInitialRecords(r, sampleSize, targetIndex, numLags, dataSets[c], skipDays);
+                    advice[d][c] = a;
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+
+        LinkedList<Integer> hold = new LinkedList<>();
+        hold.add(indexOf(coins, "bitcoin")); // bitcoin.
+        hold.add(indexOf(coins, "ethereum")); // bitcoin.
+//        hold.add(indexOf(coins, "edgeless")); // bitcoin.
+
+        for (int d = daysBack - 1; d >= 0; d--) {
+            System.out.println("\nDays back = " + d);
+
+            LinkedList<Integer> _c = new LinkedList<>();
+            for (int c = 0; c < coins.length; c++) {
+
+                final double[] doubles = advice[d][c];
+
+                if (doubles == null) continue;
+
+                if (doubles[0] != 1.0) {
+                    _c.add(c);
+                }
+            }
+
+            sort(_c, advice[d]);
+
+            for (int c : _c) {
+                if (Math.abs(advice[d][c][0] - 1.0) > 0.0) {
+                    if (advice[d][_c.getFirst()][0] < 2) {
+                        System.out.println("Aggregate advice " + coins[c] + " Predicted = " + advice[d][c][0] + " Actual = " + advice[d][c][1]);
+                    }
+                }
+            }
+
+            if (advice[d][_c.getFirst()][0] > advice[d][hold.getLast()][0]) {
+                if (advice[d][hold.getLast()][0] < 1.0 && hold.size() > 2) {
+                    System.out.println("SELL " + coins[hold.getLast()]);
+                    hold.remove(hold.getLast());
+                }
+
+                if (!hold.contains(_c.getFirst()) && advice[d][_c.getFirst()][0] < 2) {
+                    System.out.println("\nBUY " + coins[_c.getFirst()]);
+                    hold.addFirst(_c.getFirst());
+                }
+            }
+
+            System.out.println("\nHolding:\n");
+
+            for (int c : hold) {
+                System.out.println("Holding: " + coins[c]);
+            }
+
+            sort(_c, advice[d]);
+        }
+    }
+
+    private void sort(LinkedList<Integer> _c, double[][] advice) {
+        _c.sort((c1, c2) -> -Double.compare(advice[c1][0], advice[c2][0]));
+    }
+
+    private Integer indexOf(String[] coins, String coin) {
+        for (int c = 0; c < coins.length; c++) {
+            if (coin.equalsIgnoreCase(coins[c])) return c;
+        }
+
+        return -1;
     }
 
     private DataSet readData(DataReader reader) throws IOException {
@@ -158,8 +252,9 @@ public class TestParseUrl {
         return (DataSet) DataConvertUtils.toDataModel(dataset);
     }
 
-    private void adviceForInitialRecords(int r, int sampleSize, String coin, int targetIndex, int numLags, DataSet dataSet,
-                                         double margin) {
+    private double[] adviceForInitialRecords(int r, int sampleSize, int targetIndex,
+                                             int numLags, DataSet dataSet,
+                                             int skipDays) {
 
         List<Integer> _rows = new ArrayList<>();
 
@@ -171,55 +266,39 @@ public class TestParseUrl {
         for (int i = 0; i < _rows.size(); i++) rows[i] = _rows.get(i);
 
         DataSet subset = dataSet.subsetRows(rows);
-        DataSet lagged = TimeSeriesUtils.createLagData(subset, numLags);
+        DataSet lagged = TimeSeriesUtils.createLagData(subset, numLags + skipDays);
 
         List<Node> regressors = new ArrayList<>(lagged.getVariables());
-        Node target = regressors.get(targetIndex);
+        Node target = regressors.get(targetIndex); // current.
 
         for (Node node : new ArrayList<>(regressors)) {
             final int lag = TimeSeriesUtils.getLag(node.getName());
             if (lag == 0) regressors.remove(node);
+            if (lag <= skipDays) regressors.remove(node);
         }
 
         RegressionDataset regressionDataset = new RegressionDataset(lagged);
 
         RegressionResult result = regressionDataset.regress(target, regressors);
 
-        double[] x = new double[lagged.getNumColumns() - 6];
+        double[] x = new double[lagged.getNumColumns() - 6 - 6 * skipDays];
 
         int i = 0;
 
-        for (int w = 1; w <= numLags; w++) {
+        for (int w = 1 + skipDays; w <= numLags + skipDays; w++) {
             for (int s = 0; s < 6; s++) {
-                x[i++] = subset.getDouble(subset.getNumRows() - w, s);
+                x[i++] = subset.getDouble(subset.getNumRows() - w - skipDays, s);
             }
         }
 
         double predictedValue = result.getPredictedValue(x);
 
-        final double previousValue = dataSet.getDouble(r - 1, targetIndex);
+        final double previousValue = dataSet.getDouble(r - 1 - skipDays, targetIndex);
         final double actualValue = r > dataSet.getNumRows() - 1 ? Double.NaN : dataSet.getDouble(r, targetIndex);
 
-        System.out.println();
-        System.out.println("r = " + r);
-        System.out.println("Coin = " + coin);
-        System.out.println("Target = " + target);
-        System.out.println("Previous value = " + previousValue);
-        System.out.println("Predicted value = " + predictedValue);
-        System.out.println("(Actual value = " + actualValue + ")");
+        double change = (predictedValue / previousValue);
+        double actualChange = (actualValue / previousValue);
 
-        double change = (predictedValue / previousValue) * 100.0 - 100.0;
-        double actualChange = (actualValue / previousValue) * 100.0 - 100.0;
-
-        System.out.println("PREDICTED CHANGE = " + change + "%");
-        System.out.println("(ACTUAL CHANGE = " + actualChange + "%)");
-
-        if (change > margin) {
-            System.out.println("BUY BUY BUY!");
-        } else if (change < -margin) {
-            System.out.println("SELL SELL SELL!");
-        } else {
-            System.out.println("HOLD!");
-        }
+        return new double[]{change, actualChange};
     }
 }
