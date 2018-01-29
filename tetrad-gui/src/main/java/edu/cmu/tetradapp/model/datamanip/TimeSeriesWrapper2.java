@@ -49,11 +49,11 @@ public class TimeSeriesWrapper2 extends DataWrapper {
 
         for (DataModel dataModel : dataSets) {
             if (!(dataModel instanceof DataSet)) {
-                throw new IllegalArgumentException("Only tabular data sets can be converted to time lagged form.");
+                throw new IllegalArgumentException("Can only add an index to tabular data.");
             }
 
             DataSet dataSet = (DataSet) dataModel;
-            DataSet timeSeries = TimeSeriesUtils.createLagDataWithIndex(dataSet, params.getInt("numTimeLags", 1));
+            DataSet timeSeries = TimeSeriesUtils.addIndex(dataSet);
             if (dataSet.getName() != null) {
                 timeSeries.setName(dataSet.getName());
             }
