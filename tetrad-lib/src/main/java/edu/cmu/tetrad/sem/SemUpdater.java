@@ -18,7 +18,6 @@
 // along with this program; if not, write to the Free Software               //
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA //
 ///////////////////////////////////////////////////////////////////////////////
-
 package edu.cmu.tetrad.sem;
 
 import cern.colt.matrix.DoubleMatrix1D;
@@ -34,7 +33,6 @@ import edu.cmu.tetrad.graph.SemGraph;
 import edu.cmu.tetrad.util.TetradMatrix;
 import edu.cmu.tetrad.util.TetradSerializable;
 import edu.cmu.tetrad.util.TetradVector;
-
 import java.util.List;
 
 /**
@@ -50,6 +48,7 @@ import java.util.List;
  * @see edu.cmu.tetrad.bayes.Manipulation
  */
 public class SemUpdater implements TetradSerializable {
+
     static final long serialVersionUID = 23L;
     private SemEvidence evidence;
     private SemIm semIm;
@@ -60,7 +59,6 @@ public class SemUpdater implements TetradSerializable {
         }
 
         setEvidence(new SemEvidence(semIm));
-        this.semIm = semIm;
     }
 
     /**
@@ -84,6 +82,7 @@ public class SemUpdater implements TetradSerializable {
         }
 
         this.evidence = evidence;
+        this.semIm = evidence.getSemIm();
     }
 
     /**
@@ -143,7 +142,6 @@ public class SemUpdater implements TetradSerializable {
 //                x1[++index] = i;
 //            }
 //        }
-
         // Calculate sigmaBar. (Don't know how to use it yet.)
 //        DoubleMatrix2D sigma11 = sigma.viewSelection(x1, x1);
         DoubleMatrix2D sigma12 = sigma.viewSelection(x1, x2);
@@ -168,7 +166,6 @@ public class SemUpdater implements TetradSerializable {
 //        for (int i = 0; i < variableNodes.size(); i++) {
 //            varNames[i] = ((Node) variableNodes.get(i)).getNode();
 //        }
-
 //        System.out.println(sigmaBar);
 //
 //        CovarianceMatrix covMatrix = new CovarianceMatrix(varNames,
@@ -179,7 +176,6 @@ public class SemUpdater implements TetradSerializable {
 //        SemIm semIm = estimator.getEstimatedSem();
 //        semIm.setMeanValues(muBar.toArray());
 //        return semIm;
-
         DoubleMatrix2D sigma2 = new DenseDoubleMatrix2D(manipulatedSemIm.getErrCovar().toArray());
 
 //        for (int aX2 : x2) {
@@ -194,7 +190,6 @@ public class SemUpdater implements TetradSerializable {
 //                sigma2.set(aX2, i, 0.d);
 //            }
 //        }
-
         return manipulatedSemIm.updatedIm(new TetradMatrix(sigma2.toArray()), new TetradVector(muBar.toArray()));
     }
 
@@ -209,8 +204,7 @@ public class SemUpdater implements TetradSerializable {
     }
 
     /**
-     * Alters the graph by removing edges from parents to manipulated
-     * variables.
+     * Alters the graph by removing edges from parents to manipulated variables.
      */
     private SemGraph createManipulatedGraph(Graph graph) {
         SemGraph updatedGraph = new SemGraph(graph);
@@ -233,8 +227,3 @@ public class SemUpdater implements TetradSerializable {
         return updatedGraph;
     }
 }
-
-
-
-
-

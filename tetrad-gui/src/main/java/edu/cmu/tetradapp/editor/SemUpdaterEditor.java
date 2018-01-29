@@ -209,6 +209,7 @@ public class SemUpdaterEditor extends JPanel {
             semImEditor.displaySemIm(updatedSem,
                     semImEditor.getTabSelectionIndex(),
                     semImEditor.getMatrixSelection());
+            semUpdater.setEvidence(new SemEvidence(updatedSem));
         });
 
         b2.add(button);
