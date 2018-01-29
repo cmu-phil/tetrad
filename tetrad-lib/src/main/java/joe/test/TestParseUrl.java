@@ -74,7 +74,7 @@ public class TestParseUrl {
         try {
 
             for (String coin : coins) {
-                final String spec = "https://coinmarketcap.com/currencies/" + coin + "/historical-data?start=20170128&end=20180128";
+                final String spec = "https://coinmarketcap.com/currencies/" + coin + "/historical-data?start=20170128&end=20180129";
                 System.out.println(spec);
 
                 URL url = new URL(spec);
@@ -148,12 +148,15 @@ public class TestParseUrl {
     @Test
     public void test2() {
         int targetIndex = 0;
-        final int numLags = 8;
+        final int numLags = 4;
         final int sampleSize = 365;
-        final int daysBack = 10;
-        final int skipDays = 1;
+        final int daysBack = 1;
+        final int skipDays = 0;
 
         double[][][] advice = new double[daysBack][coins.length][];
+        double[][] totalAdvice = new double[coins.length][2];
+
+        for (double[] a : totalAdvice) Arrays.fill(a, 1.0);
 
         DataSet[] dataSets = new DataSet[coins.length];
 
@@ -173,6 +176,14 @@ public class TestParseUrl {
                 try {
                     double[] a = adviceForInitialRecords(r, sampleSize, targetIndex, numLags, dataSets[c], skipDays);
                     advice[d][c] = a;
+
+                    if (!Double.isNaN(a[0])) {
+                        totalAdvice[c][0] *= a[0];
+                    }
+
+                    if (!Double.isNaN(a[1])) {
+                        totalAdvice[c][1] *= a[1];
+                    }
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -180,59 +191,75 @@ public class TestParseUrl {
         }
 
         LinkedList<Integer> hold = new LinkedList<>();
-        hold.add(indexOf(coins, "bitcoin")); // bitcoin.
-        hold.add(indexOf(coins, "ethereum")); // bitcoin.
-//        hold.add(indexOf(coins, "edgeless")); // bitcoin.
+        hold.add(indexOf(coins, "bitcoin"));
+        hold.add(indexOf(coins, "ethereum"));
+        hold.add(indexOf(coins, "edgeless"));
+        hold.add(indexOf(coins, "basic-attention-token"));
 
-        for (int d = daysBack - 1; d >= 0; d--) {
-            System.out.println("\nDays back = " + d);
+        for (int _d = 0; _d < daysBack; _d++) {
+            final int d = _d;
+            System.out.println("\nDays back = " + _d);
 
             LinkedList<Integer> _c = new LinkedList<>();
             for (int c = 0; c < coins.length; c++) {
 
-                final double[] doubles = advice[d][c];
+                final double[] a = advice[_d][c];
 
-                if (doubles == null) continue;
+                if (a == null) continue;
 
-                if (doubles[0] != 1.0) {
+                if (a[0] != 1.0) {
                     _c.add(c);
                 }
             }
 
-            sort(_c, advice[d]);
+            _c.sort((c1, c2) -> Double.compare(advice[d][c2][0], advice[d][c1][0]));
 
             for (int c : _c) {
-                if (Math.abs(advice[d][c][0] - 1.0) > 0.0) {
-                    if (advice[d][_c.getFirst()][0] < 2) {
-                        System.out.println("Aggregate advice " + coins[c] + " Predicted = " + advice[d][c][0] + " Actual = " + advice[d][c][1]);
-                    }
+                if (advice[_d][c][0] < 2) {
+                    System.out.println("Aggregate advice " + coins[c] + " Predicted = " + advice[_d][c][0] + " Actual = " + advice[_d][c][1]);
                 }
             }
 
-            if (advice[d][_c.getFirst()][0] > advice[d][hold.getLast()][0]) {
-                if (advice[d][hold.getLast()][0] < 1.0 && hold.size() > 2) {
-                    System.out.println("SELL " + coins[hold.getLast()]);
-                    hold.remove(hold.getLast());
-                }
+            if (advice[_d][hold.getLast()][0] < .95 && hold.size() > 2) {
+                System.out.println("\nSELL " + coins[hold.getLast()]);
+                hold.remove(hold.getLast());
+            }
 
-                if (!hold.contains(_c.getFirst()) && advice[d][_c.getFirst()][0] < 2) {
-                    System.out.println("\nBUY " + coins[_c.getFirst()]);
-                    hold.addFirst(_c.getFirst());
-                }
+            if (!hold.contains(_c.getFirst()) && advice[_d][_c.getFirst()][0] < 2) {
+                System.out.println("\nBUY " + coins[_c.getFirst()]);
+                hold.addFirst(_c.getFirst());
             }
 
             System.out.println("\nHolding:\n");
 
             for (int c : hold) {
-                System.out.println("Holding: " + coins[c]);
+                System.out.println("Holding: " + coins[c] + " Predicted = " + advice[_d][c][0] + " Actual = " + advice[_d][c][1]);
             }
-
-            sort(_c, advice[d]);
         }
-    }
 
-    private void sort(LinkedList<Integer> _c, double[][] advice) {
-        _c.sort((c1, c2) -> -Double.compare(advice[c1][0], advice[c2][0]));
+        System.out.println();
+
+        LinkedList<Integer> _c = new LinkedList<>();
+        for (int c = 0; c < coins.length; c++) {
+            final double[] doubles = totalAdvice[c];
+
+            if (doubles == null) continue;
+
+            if (doubles[0] != 1.0) {
+                _c.add(c);
+            }
+        }
+
+        _c.sort((c1, c2) -> Double.compare(totalAdvice[c2][0], totalAdvice[c1][0]));
+
+        for (int c : _c) {
+            System.out.println();
+            System.out.println("Total advice " + coins[c] + ": Expected = " + totalAdvice[c][0] + " Actual = " + totalAdvice[c][1]);
+
+            for (int d = 0; d < daysBack; d++) {
+                System.out.println("\tDays back " + d + " " + coins[c] + ": Expected = " + advice[d][c][0] + " Actual = " + advice[d][c][1]);
+            }
+        }
     }
 
     private Integer indexOf(String[] coins, String coin) {
