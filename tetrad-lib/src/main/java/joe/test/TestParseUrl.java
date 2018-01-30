@@ -37,7 +37,6 @@ public class TestParseUrl {
 //    };
 
     String[] coins = {
-//            "ox-fina",
             "bitcoin",
             "augur",
             "bancor",
@@ -51,7 +50,6 @@ public class TestParseUrl {
             "eos",
             "ethereum",
             "funfair",
-//            "gnosis",
             "golem-network-tokens",
             "rlc",
             "litecoin",
@@ -60,9 +58,16 @@ public class TestParseUrl {
             "salt",
             "status",
 
-//            "monero",
-//            "bitconnect",
-//            "electroneum"
+            "ripple",
+            "bitcoin-cash",
+            "cardano",
+            "stellar",
+            "nem",
+            "neo",
+            "iota",
+            "monero",
+            "bitconnect",
+            "electroneum"
     };
 
     @Test
@@ -150,7 +155,7 @@ public class TestParseUrl {
         int targetIndex = 0;
         final int numLags = 4;
         final int sampleSize = 365;
-        final int daysBack = 1;
+        final int daysBack = 10;
         final int skipDays = 0;
 
         double[][][] advice = new double[daysBack][coins.length][];
