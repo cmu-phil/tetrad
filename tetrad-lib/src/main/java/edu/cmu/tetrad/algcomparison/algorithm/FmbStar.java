@@ -10,6 +10,7 @@ import edu.cmu.tetrad.search.FgesMb;
 import edu.cmu.tetrad.search.IndTestFisherZ;
 import edu.cmu.tetrad.search.PcAll;
 import edu.cmu.tetrad.search.SemBicScore;
+import edu.cmu.tetrad.util.ConcurrencyUtils;
 import edu.cmu.tetrad.util.ForkJoinPoolInstance;
 import edu.cmu.tetrad.util.Parameters;
 
@@ -47,6 +48,7 @@ public class FmbStar implements Algorithm {
 
         double percentageB = parameters.getDouble("percentSubsampleSize");
         int numSubsamples = parameters.getInt("numSubsamples");
+        int q = parameters.getInt("topQ");
         double pithreshold = parameters.getDouble("piThreshold");
         Node y = dataSet.getVariable(parameters.getString("targetName"));
         double penaltyDiscount = parameters.getDouble("penatyDiscount");
@@ -124,35 +126,38 @@ public class FmbStar implements Algorithm {
         }
 
 
-        List<Task> tasks = new ArrayList<>();
+        List<Callable<Boolean>> tasks = new ArrayList<>();
 
         for (int i = 0; i < numSubsamples; i++) {
             tasks.add(new Task(i, counts));
         }
 
-        ForkJoinPoolInstance.getInstance().getPool().invokeAll(tasks);
+        ConcurrencyUtils.runCallables(tasks, parallelism);
 
         List<Node> sortedVariables = new ArrayList<>(variables);
 
-        sortedVariables.sort((o1, o2) -> {
-            final int d1 = counts.get(o1);
-            final int d2 = counts.get(o2);
-            return -Integer.compare(d1, d2);
-        });
+        sortedVariables.sort((o1, o2) -> Integer.compare(counts.get(o2), counts.get(o1)));
 
-        double[] sortedFrequencies = new double[counts.keySet().size()];
+        double[] pi = new double[counts.keySet().size()];
 
         for (int i = 0; i < sortedVariables.size(); i++) {
-            sortedFrequencies[i] = counts.get(sortedVariables.get(i)) / (double) numSubsamples;
+            pi[i] = counts.get(sortedVariables.get(i)) / (double) numSubsamples;
         }
 
         List<Node> outNodes = new ArrayList<>();
 
         for (int i = 0; i < sortedVariables.size(); i++) {
             if (sortedVariables.get(i) == y) continue;
-            if (sortedFrequencies[i] >= pithreshold) {
-                outNodes.add(sortedVariables.get(i));
+
+            int q = parameters.getInt("topQ");
+            int p = i + 1;
+            double e = (1.0 / (2 * pithreshold - 1)) * (((q * q) / ((double) (p ))));
+            double e1 = (1.0 / (2 * pi[i] - 1)) * (((q * q) / ((double) (p))));
+
+            if (e1 < 0.05) {
+                outNodes.add(variables.get(i));
             }
+
         }
 
         return outNodes;

@@ -135,9 +135,7 @@ public class TestIda {
         printResult(trueDag, parameters, graph, stop - start, numNodes, numEdges, sampleSize, dataSet);
     }
 
-    public void testBoth(int numNodes, int numEdges, int sampleSize, int numIterations) {
-        final double avgDegree = 2 * numEdges / (double) numNodes;
-
+    public void testBoth(int numNodes, double avgDegree, int sampleSize, int numIterations) {
         Parameters parameters = new Parameters();
         parameters.set("numMeasures", numNodes);
         parameters.set("numLatents", 0);
@@ -151,7 +149,7 @@ public class TestIda {
         parameters.set("numSubsamples", 30);
         parameters.set("percentSubsampleSize", .5);
         parameters.set("topQ", (int) (numNodes * 0.05));
-        parameters.set("piThreshold", .5);
+        parameters.set("piThreshold", .7);
         parameters.set("targetName", "X30");
         parameters.set("verbose", false);
 
@@ -177,8 +175,9 @@ public class TestIda {
         DataSet fullData = (DataSet) fisher.getDataModel(0);
         Graph trueDag = fisher.getTrueGraph(0);
 
-//        Graph truePattern = SearchGraphUtils.patternForDag(trueDag);
+        Graph truePattern = SearchGraphUtils.patternForDag(trueDag);
 
+        Graph trueGraph = truePattern;
 
 //        LargeScaleSimulation simulation = new LargeScaleSimulation(trueDag);
 //        DataSet fullData = simulation.simulateDataFisher(sampleSize);
@@ -195,13 +194,14 @@ public class TestIda {
 
             long start = System.currentTimeMillis();
 
-//            CStar cstar = new CStar();
-//            Graph graph = cstar.search(fullData, parameters);
+            CStar cstar = new CStar();
+            cstar.setParallelism(6);
+            Graph graph = cstar.search(fullData, parameters);
 
             long stop = System.currentTimeMillis();
 
-//            int[] ret = printResult(trueDag, parameters, graph, stop - start, numNodes, numEdges, sampleSize, fullData);
-            int[] ret = {0, 0, 0, 0, 0, 0};
+            int[] ret = printResult(trueGraph, parameters, graph, stop - start, numNodes, avgDegree, sampleSize, fullData);
+//            int[] ret = {0, 0, 0, 0, 0, 0};
             cstarRet.add(ret);
 
             System.out.println("\n\n=====FmbStar====");
@@ -209,17 +209,18 @@ public class TestIda {
             start = System.currentTimeMillis();
 
             FmbStar fmbStar = new FmbStar();
+            fmbStar.setParallelism(6);
             Graph graph2 = fmbStar.search(fullData, parameters);
 
             stop = System.currentTimeMillis();
 
-            int[] ret2 = printResult(trueDag, parameters, graph2, stop - start, numNodes, numEdges, sampleSize, fullData);
+            int[] ret2 = printResult(trueGraph, parameters, graph2, stop - start, numNodes, avgDegree, sampleSize, fullData);
             fmbStarRet.add(ret2);
         }
 
         System.out.println();
 
-        System.out.println("\tCPar\tFPar\tCAnc\tFAnc\tCChil\tFChil\tCSib\tFSib\tCPoc\tFPoc\tCOther\tFOther");
+        System.out.println("\tCPar\tPar\tCPAnc\tFPAnc\tCChil\tFChil\tCSib\tFSib\tCPoc\tFPoc\tCOther\tFOther");
 
         for (int i = 0; i < numIterations; i++) {
             System.out.println((i + 1) + ".\t"
@@ -234,13 +235,13 @@ public class TestIda {
     }
 
     private int[] printResult(Graph trueGraph, Parameters parameters, Graph graph, long elapsed, int numNodes,
-                              int numEdges, int sampleSize, DataSet trueData) {
+                              double avgDegree, int sampleSize, DataSet trueData) {
         graph = GraphUtils.replaceNodes(graph, trueGraph.getNodes());
 
         final Node target = trueGraph.getNode(parameters.getString("targetName"));
 
         System.out.println("# nodes: " + numNodes);
-        System.out.println("# edges: " + numEdges);
+        System.out.println("Avg Degree: " + avgDegree);
         System.out.println("Sample size: " + sampleSize);
         System.out.println("Target: " + target);
 
@@ -253,7 +254,17 @@ public class TestIda {
 
         outputNodes.remove(graph.getNode(target.getName()));
 
-        final List<Node> urAncestors = trueGraph.getAncestors(Collections.singletonList(target));
+
+        final Set<Node> possAncestors = new HashSet<>();
+
+        for (Node node : outputNodes) {
+            if (trueGraph.existsSemiDirectedPathFromTo(node, Collections.singleton(target))) {
+                possAncestors.add(node);
+            }
+        }
+
+
+//        final List<Node> possAncestors = trueGraph.getAncestors(Collections.singletonList(target));
         final List<Node> parents = trueGraph.getParents(target);
         final List<Node> children = trueGraph.getChildren(target);
 
@@ -265,26 +276,26 @@ public class TestIda {
 
         parentsOfChildren.retainAll(outputNodes);
 
-        urAncestors.retainAll(outputNodes);
-        urAncestors.removeAll(parents);
+        possAncestors.retainAll(outputNodes);
+        possAncestors.removeAll(parents);
 
         children.retainAll(outputNodes);
 
         final List<Node> siblings = trueGraph.getAdjacentNodes(target);
         siblings.retainAll(outputNodes);
         siblings.removeAll(children);
-        siblings.removeAll(urAncestors);
+        siblings.removeAll(possAncestors);
         siblings.removeAll(parents);
 
         final List<Node> other = new ArrayList<>(outputNodes);
-        other.removeAll(urAncestors);
+        other.removeAll(possAncestors);
         other.removeAll(children);
         other.removeAll(siblings);
         other.removeAll(parents);
         other.removeAll(parentsOfChildren);
 
         System.out.println("Parents: " + parents);
-        System.out.println("Ur-ancestors: " + urAncestors);
+        System.out.println("Possible ancestors: " + possAncestors);
         System.out.println("Children: " + children);
         System.out.println("Siblings: " + siblings);
         System.out.println("Parents Of Children: " + parentsOfChildren);
@@ -297,7 +308,7 @@ public class TestIda {
         int[] ret = new int[6];
 
         ret[0] = parents.size();
-        ret[1] = urAncestors.size();
+        ret[1] = possAncestors.size();
         ret[2] = children.size();
         ret[3] = siblings.size();
         ret[4] = parentsOfChildren.size();
@@ -329,17 +340,17 @@ public class TestIda {
 
         if (args.length == 0) {
             int numNodes = 50;
-            int numEdges = numNodes;
+            double avgDegree = 2;
             int sampleSize = 100;
             int numIterations = 5;
-            new TestIda().testBoth(numNodes, numEdges, sampleSize, numIterations);
+            new TestIda().testBoth(numNodes, avgDegree, sampleSize, numIterations);
         } else {
             int numNodes = Integer.parseInt(args[0]);
-            int numEdges = Integer.parseInt(args[1]);
+            double avgDegree = Double.parseDouble(args[1]);
             int sampleSize = Integer.parseInt(args[2]);
             int numIterations = Integer.parseInt(args[3]);
 
-            new TestIda().testBoth(numNodes, numEdges, sampleSize, numIterations);
+            new TestIda().testBoth(numNodes, avgDegree, sampleSize, numIterations);
 
         }
 

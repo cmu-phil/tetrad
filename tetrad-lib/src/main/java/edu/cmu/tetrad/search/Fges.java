@@ -25,6 +25,7 @@ import edu.cmu.tetrad.data.Knowledge2;
 import edu.cmu.tetrad.data.KnowledgeEdge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.ChoiceGenerator;
+import edu.cmu.tetrad.util.ConcurrencyUtils;
 import edu.cmu.tetrad.util.TaskManager;
 import edu.cmu.tetrad.util.TetradLogger;
 
@@ -626,7 +627,7 @@ public final class Fges implements GraphSearch, GraphScorer {
             tasks.add(new NodeTaskEmptyGraph(i, Math.min(nodes.size(), i + chunk), variables, Collections.EMPTY_SET));
         }
 
-        runCallables(tasks);
+        ConcurrencyUtils.runCallables(tasks, parallelism);
 
         long stop = System.currentTimeMillis();
 
@@ -639,39 +640,6 @@ public final class Fges implements GraphSearch, GraphScorer {
         int chunk = nodes.size() / getParallelism();
         if (chunk < 10) chunk = 10;
         return chunk;
-    }
-
-    private void runCallables(List<Callable<Boolean>> tasks) {
-        if (tasks.isEmpty()) return;
-
-        if (parallelism == 1) {
-            for (Callable<Boolean> task : tasks) {
-                try {
-                    task.call();
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            }
-        } else {
-
-            ExecutorService executorService = Executors.newWorkStealingPool();
-
-            try {
-                executorService.invokeAll(tasks);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-
-            executorService.shutdown();
-
-            try {
-                if (!executorService.awaitTermination(800, TimeUnit.MILLISECONDS)) {
-                    executorService.shutdownNow();
-                }
-            } catch (InterruptedException e) {
-                executorService.shutdownNow();
-            }
-        }
     }
 
     private void initializeTwoStepEdges(final List<Node> nodes) {
@@ -785,7 +753,7 @@ public final class Fges implements GraphSearch, GraphScorer {
             tasks.add(new InitializeFromExistingGraphTask(i, Math.min(nodes.size(), i + chunk)));
         }
 
-        runCallables(tasks);
+        ConcurrencyUtils.runCallables(tasks, parallelism);
     }
 
     private void initializeForwardEdgesFromExistingGraph(final List<Node> nodes) {
@@ -878,7 +846,7 @@ public final class Fges implements GraphSearch, GraphScorer {
             tasks.add(new InitializeFromExistingGraphTask(i, Math.min(nodes.size(), i + chunk)));
         }
 
-        runCallables(tasks);
+        ConcurrencyUtils.runCallables(tasks, parallelism);
     }
 
     private void fes() {
@@ -1154,7 +1122,7 @@ public final class Fges implements GraphSearch, GraphScorer {
             tasks.add(new AdjTask2(new ArrayList<>(nodes), i, Math.min(nodes.size(), i + chunk)));
         }
 
-        runCallables(tasks);
+        ConcurrencyUtils.runCallables(tasks, parallelism);
     }
 
     // Calculates the new arrows for an a->b edge.
@@ -1278,7 +1246,7 @@ public final class Fges implements GraphSearch, GraphScorer {
                         i, Math.min(adjacentNodes.size(), i + chunk)));
             }
 
-            runCallables(tasks);
+            ConcurrencyUtils.runCallables(tasks, parallelism);
         }
     }
 

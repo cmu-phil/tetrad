@@ -9,6 +9,7 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.FgesMb;
 import edu.cmu.tetrad.search.Ida;
+import edu.cmu.tetrad.util.ConcurrencyUtils;
 import edu.cmu.tetrad.util.ForkJoinPoolInstance;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.StatUtils;
@@ -92,28 +93,29 @@ public class CStar implements Algorithm {
             tasks.add(new Task(i, counts));
         }
 
-        runCallables(tasks);
+        ConcurrencyUtils.runCallables(tasks, parallelism);
 
-        variables.sort((o1, o2) -> {
-            final int d1 = counts.get(o1);
-            final int d2 = counts.get(o2);
-            return -Integer.compare(d1, d2);
-        });
+        variables.sort((o1, o2) -> Integer.compare(counts.get(o2), counts.get(o1)));
 
-        double[] sortedFreqencies = new double[variables.size()];
+        double[] pi = new double[variables.size()];
 
         for (int i = 0; i < variables.size(); i++) {
-            sortedFreqencies[i] = counts.get(variables.get(i));
+            pi[i] = counts.get(variables.get(i));
         }
 
-        for (int i = 0; i < sortedFreqencies.length; i++) {
-            sortedFreqencies[i] /= (double) numSubsamples;
+        for (int i = 0; i < pi.length; i++) {
+            pi[i] /= (double) numSubsamples;
         }
 
         List<Node> outNodes = new ArrayList<>();
 
         for (int i = 0; i < variables.size(); i++) {
-            if (sortedFreqencies[i] >= pithreshold) {
+            int p = i + 1;
+            double pcer = (((q * q) / (double) (p * p))) / (2 * pi[i] - 1);
+
+            System.out.println(pcer);
+
+            if (pcer > pithreshold) {
                 outNodes.add(variables.get(i));
             }
         }
@@ -158,36 +160,4 @@ public class CStar implements Algorithm {
     public void setParallelism(int parallelism) {
         this.parallelism = parallelism;
     }
-
-    private void runCallables(List<Callable<Boolean>> tasks) {
-        if (tasks.isEmpty()) return;
-
-        if (parallelism == 1) {
-            for (Callable<Boolean> task : tasks) {
-                try {
-                    task.call();
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            }
-        } else {
-
-            ExecutorService executorService = Executors.newWorkStealingPool();
-
-            try {
-                executorService.invokeAll(tasks);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-
-            executorService.shutdown();
-
-            try {
-                if (!executorService.awaitTermination(800, TimeUnit.MILLISECONDS)) {
-                    executorService.shutdownNow();
-                }
-            } catch (InterruptedException e) {
-                executorService.shutdownNow();
-            }
-        }
-    }}
+}

@@ -279,8 +279,8 @@ public class ParamDescriptions {
                 5, 1, Integer.MAX_VALUE));
 
         map.put("piThreshold", new ParamDescription(
-                "Threshold for including variables in the final set",
-                0.5, 0.0, 1.0));
+                "Threshold for including variables in the final set (0.5 < pi <= 1.0)",
+                1, 0.5001, 1.0));
 
 
 

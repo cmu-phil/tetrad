@@ -25,6 +25,7 @@ import edu.cmu.tetrad.data.Knowledge2;
 import edu.cmu.tetrad.data.KnowledgeEdge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.ChoiceGenerator;
+import edu.cmu.tetrad.util.ConcurrencyUtils;
 import edu.cmu.tetrad.util.TetradLogger;
 
 import java.io.PrintStream;
@@ -329,7 +330,7 @@ public final class FgesMb {
             }
         }
 
-        runCallables(tasks);
+        ConcurrencyUtils.runCallables(tasks, parallelism);
     }
 
     private void getEffectEdges2(List<Node> targets) {
@@ -357,7 +358,7 @@ public final class FgesMb {
 
         }
 
-        runCallables(tasks);
+        ConcurrencyUtils.runCallables(tasks, parallelism);
     }
 
     private int getChunk(List<Node> variables) {
@@ -694,39 +695,6 @@ public final class FgesMb {
 
     final int[] count = new int[1];
 
-    private void runCallables(List<Callable<Boolean>> tasks) {
-        if (tasks.isEmpty()) return;
-
-        if (parallelism == 1) {
-            for (Callable<Boolean> task : tasks) {
-                try {
-                    task.call();
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            }
-        } else {
-
-            ExecutorService executorService = Executors.newWorkStealingPool();
-
-            try {
-                executorService.invokeAll(tasks);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-
-            executorService.shutdown();
-
-            try {
-                if (!executorService.awaitTermination(800, TimeUnit.MILLISECONDS)) {
-                    executorService.shutdownNow();
-                }
-            } catch (InterruptedException e) {
-                executorService.shutdownNow();
-            }
-        }
-    }
-
     private void initializeTwoStepEdges(final List<Node> nodes) {
         count[0] = 0;
 
@@ -830,7 +798,7 @@ public final class FgesMb {
             tasks.add(new InitializeFromExistingGraphTask(i, Math.min(nodes.size(), i + chunk)));
         }
 
-        runCallables(tasks);
+        ConcurrencyUtils.runCallables(tasks, parallelism);
     }
 
 //    private void initializeForwardEdgesFromExistingGraph(final List<Node> nodes) {
@@ -1199,7 +1167,7 @@ public final class FgesMb {
             tasks.add(new AdjTask2(new ArrayList<>(nodes), i, Math.min(nodes.size(), i + chunk)));
         }
 
-        runCallables(tasks);
+        ConcurrencyUtils.runCallables(tasks, parallelism);
     }
 
     // Calculates the new arrows for an a->b edge.
@@ -1323,7 +1291,7 @@ public final class FgesMb {
                         i, Math.min(adjacentNodes.size(), i + chunk)));
             }
 
-            runCallables(tasks);
+            ConcurrencyUtils.runCallables(tasks, parallelism);
         }
     }
 
