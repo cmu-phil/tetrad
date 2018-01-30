@@ -115,7 +115,7 @@ public class CStar implements Algorithm {
 
             System.out.println(pcer);
 
-            if (pcer > pithreshold) {
+            if (pcer > 0) {
                 outNodes.add(variables.get(i));
             }
         }
