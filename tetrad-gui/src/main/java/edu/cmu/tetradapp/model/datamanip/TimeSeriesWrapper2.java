@@ -21,10 +21,8 @@
 
 package edu.cmu.tetradapp.model.datamanip;
 
-import edu.cmu.tetrad.data.DataModel;
-import edu.cmu.tetrad.data.DataModelList;
-import edu.cmu.tetrad.data.DataSet;
-import edu.cmu.tetrad.data.LogDataUtils;
+import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
+import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.search.TimeSeriesUtils;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
@@ -34,7 +32,7 @@ import edu.cmu.tetradapp.model.PcRunner;
 /**
  * @author Tyler
  */
-public class TimeSeriesWrapper2 extends DataWrapper {
+public class TimeSeriesWrapper2 extends DataWrapper implements KnowledgeTransferable {
     static final long serialVersionUID = 23L;
 
     /**
@@ -49,11 +47,11 @@ public class TimeSeriesWrapper2 extends DataWrapper {
 
         for (DataModel dataModel : dataSets) {
             if (!(dataModel instanceof DataSet)) {
-                throw new IllegalArgumentException("Only tabular data sets can be converted to time lagged form.");
+                throw new IllegalArgumentException("Can only add an index to tabular data.");
             }
 
             DataSet dataSet = (DataSet) dataModel;
-            DataSet timeSeries = TimeSeriesUtils.createLagDataWithIndex(dataSet, params.getInt("numTimeLags", 1));
+            DataSet timeSeries = TimeSeriesUtils.addIndex(dataSet);
             if (dataSet.getName() != null) {
                 timeSeries.setName(dataSet.getName());
             }

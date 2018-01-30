@@ -399,37 +399,37 @@ public class TimeSeriesUtils {
             }
         }
 
-//        System.out.println("Variable list before the sort = " + newVariables);
-        Collections.sort(newVariables, new Comparator<Node>() {
-            @Override
-            public int compare(Node o1, Node o2) {
-                String name1 = getNameNoLag(o1);
-                String name2 = getNameNoLag(o2);
-
-//                System.out.println("name 1 = " + name1);
-//                System.out.println("name 2 = " + name2);
-                String prefix1 = getPrefix(name1);
-                String prefix2 = getPrefix(name2);
-
-//                System.out.println("prefix 1 = " + prefix1);
-//                System.out.println("prefix 2 = " + prefix2);
-                int index1 = getIndex(name1);
-                int index2 = getIndex(name2);
-
-//                System.out.println("index 1 = " + index1);
-//                System.out.println("index 2 = " + index2);
-                if (getLag(o1.getName()) == getLag(o2.getName())) {
-                    if (prefix1.compareTo(prefix2) == 0) {
-                        return Integer.compare(index1, index2);
-                    } else {
-                        return prefix1.compareTo(prefix2);
-                    }
-
-                } else {
-                    return getLag(o1.getName()) - getLag(o2.getName());
-                }
-            }
-        });
+////        System.out.println("Variable list before the sort = " + newVariables);
+//        Collections.sort(newVariables, new Comparator<Node>() {
+//            @Override
+//            public int compare(Node o1, Node o2) {
+//                String name1 = getNameNoLag(o1);
+//                String name2 = getNameNoLag(o2);
+//
+////                System.out.println("name 1 = " + name1);
+////                System.out.println("name 2 = " + name2);
+//                String prefix1 = getPrefix(name1);
+//                String prefix2 = getPrefix(name2);
+//
+////                System.out.println("prefix 1 = " + prefix1);
+////                System.out.println("prefix 2 = " + prefix2);
+//                int index1 = getIndex(name1);
+//                int index2 = getIndex(name2);
+//
+////                System.out.println("index 1 = " + index1);
+////                System.out.println("index 2 = " + index2);
+//                if (getLag(o1.getName()) == getLag(o2.getName())) {
+//                    if (prefix1.compareTo(prefix2) == 0) {
+//                        return Integer.compare(index1, index2);
+//                    } else {
+//                        return prefix1.compareTo(prefix2);
+//                    }
+//
+//                } else {
+//                    return getLag(o1.getName()) - getLag(o2.getName());
+//                }
+//            }
+//        });
 
 //        System.out.println("Variable list after the sort = " + newVariables);
         for (Node node : newVariables) {
@@ -474,35 +474,36 @@ public class TimeSeriesUtils {
      * Creates new time series dataset from the given one with index variable
      * (e.g., time)
      */
-    public static DataSet createLagDataWithIndex(DataSet data, int numLags) {
-        ContinuousVariable time = new ContinuousVariable("Time");
+    public static DataSet addIndex(DataSet data) {
+        data = data.copy();
+        ContinuousVariable timeVar = new ContinuousVariable("Time");
+        data.addVariable(timeVar);
+        int c = data.getColumn(timeVar);
 
-        data.addVariable(time);
-        int timeCol = data.getColumn(time);
-
-        for (int i = 0; i < data.getNumRows(); i++) {
-            data.setDouble(i, timeCol, i + 1);
+        for (int r = 0; r < data.getNumRows(); r++) {
+            data.setDouble(r, c, (r + 1));
         }
 
-        return TimeSeriesUtils.createLagData(data, numLags);
+        return data;
+
 
 //        List<Node> variables = data.getVariables();
 //        int dataSize = variables.size();
 //        int laggedRows = data.getNumRows() - numLags;
 //        IKnowledge knowledge = new Knowledge2();
-//        Node[] laggedNodes = new Node[dataSize];
+//        Node[][] laggedNodes = new Node[numLags + 1][dataSize];
 //        List<Node> newVariables = new ArrayList<>((numLags + 1) * dataSize + 2); // added 1 to this
 //
-////        for (int lag = 0; lag <= numLags; lag++) {
+//        for (int lag = 0; lag <= numLags; lag++) {
 //            for (int col = 0; col < dataSize; col++) {
 //                Node node = variables.get(col);
 //                String varName = node.getName();
 //                Node laggedNode;
 //                String name = varName;
 //
-////                if (lag != 0) {
-////                    name = name + ":" + lag;
-////                }
+//                if (lag != 0) {
+//                    name = name + ":" + lag;
+//                }
 //
 //                if (node instanceof ContinuousVariable) {
 //                    laggedNode = new ContinuousVariable(name);
@@ -514,11 +515,11 @@ public class TimeSeriesUtils {
 //                    throw new IllegalStateException("Node must be either continuous or discrete");
 //                }
 //                newVariables.add(laggedNode);
-//                laggedNode.setCenter(80 * col + 50, 80 * (numLags) + 50);
-//                laggedNodes[col] = laggedNode;
+//                laggedNode.setCenter(80 * col + 50, 80 * (numLags - lag) + 50);
+//                laggedNodes[lag][col] = laggedNode;
 ////                knowledge.addToTier(numLags - lag + 1, laggedNode.getName());
 //            }
-////        }
+//        }
 //
 //        String name = "time";
 //        Node indexNode = new ContinuousVariable(name);
