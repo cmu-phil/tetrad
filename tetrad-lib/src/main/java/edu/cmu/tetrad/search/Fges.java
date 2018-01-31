@@ -18,7 +18,6 @@
 // along with this program; if not, write to the Free Software               //
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA //
 ///////////////////////////////////////////////////////////////////////////////
-
 package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.*;
@@ -27,25 +26,27 @@ import edu.cmu.tetrad.util.ChoiceGenerator;
 import edu.cmu.tetrad.util.ForkJoinPoolInstance;
 import edu.cmu.tetrad.util.TaskManager;
 import edu.cmu.tetrad.util.TetradLogger;
-
 import java.io.PrintStream;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.*;
 import java.util.concurrent.*;
 
-
 /**
- * GesSearch is an implementation of the GES algorithm, as specified in Chickering (2002) "Optimal structure
- * identification with greedy search" Journal of Machine Learning Research. It works for both BayesNets and SEMs.
+ * GesSearch is an implementation of the GES algorithm, as specified in
+ * Chickering (2002) "Optimal structure identification with greedy search"
+ * Journal of Machine Learning Research. It works for both BayesNets and SEMs.
  * <p>
- * Some code optimization could be done for the scoring part of the graph for discrete models (method scoreGraphChange).
- * Some of Andrew Moore's approaches for caching sufficient statistics, for instance.
+ * Some code optimization could be done for the scoring part of the graph for
+ * discrete models (method scoreGraphChange). Some of Andrew Moore's approaches
+ * for caching sufficient statistics, for instance.
  * <p>
- * To speed things up, it has been assumed that variables X and Y with zero correlation do not correspond to edges in
- * the graph. This is a restricted form of the heuristicSpeedup assumption, something GES does not assume. This
- * the graph. This is a restricted form of the heuristicSpeedup assumption, something GES does not assume. This
- * heuristicSpeedup assumption needs to be explicitly turned on using setHeuristicSpeedup(true).
+ * To speed things up, it has been assumed that variables X and Y with zero
+ * correlation do not correspond to edges in the graph. This is a restricted
+ * form of the heuristicSpeedup assumption, something GES does not assume. This
+ * the graph. This is a restricted form of the heuristicSpeedup assumption,
+ * something GES does not assume. This heuristicSpeedup assumption needs to be
+ * explicitly turned on using setHeuristicSpeedup(true).
  * <p>
  * A number of other optimizations were added 5/2015. See code for details.
  *
@@ -72,8 +73,9 @@ public final class Fges implements GraphSearch, GraphScorer {
     private List<Node> variables;
 
     /**
-     * The true graph, if known. If this is provided, asterisks will be printed out next to false positive added edges
-     * (that is, edges added that aren't adjacencies in the true graph).
+     * The true graph, if known. If this is provided, asterisks will be printed
+     * out next to false positive added edges (that is, edges added that aren't
+     * adjacencies in the true graph).
      */
     private Graph trueGraph;
 
@@ -180,38 +182,41 @@ public final class Fges implements GraphSearch, GraphScorer {
     final int maxThreads = 10 * ForkJoinPoolInstance.getInstance().getPool().getParallelism();
 
     //===========================CONSTRUCTORS=============================//
-
     /**
      * Construct a Score and pass it in here. The totalScore should return a
-     * positive value in case of conditional dependence and a negative
-     * values in case of conditional independence. See Chickering (2002),
-     * locally consistent scoring criterion.
+     * positive value in case of conditional dependence and a negative values in
+     * case of conditional independence. See Chickering (2002), locally
+     * consistent scoring criterion.
      */
     public Fges(Score score) {
-        if (score == null) throw new NullPointerException();
+        if (score == null) {
+            throw new NullPointerException();
+        }
         setScore(score);
         this.graph = new EdgeListGraphSingleConnections(getVariables());
     }
 
     //==========================PUBLIC METHODS==========================//
-
     /**
-     * Set to true if it is assumed that all path pairs with one length 1 path do not cancel.
+     * Set to true if it is assumed that all path pairs with one length 1 path
+     * do not cancel.
      */
     public void setFaithfulnessAssumed(boolean faithfulnessAssumed) {
         this.faithfulnessAssumed = faithfulnessAssumed;
     }
 
     /**
-     * @return true if it is assumed that all path pairs with one length 1 path do not cancel.
+     * @return true if it is assumed that all path pairs with one length 1 path
+     * do not cancel.
      */
     public boolean isFaithfulnessAssumed() {
         return faithfulnessAssumed;
     }
 
     /**
-     * Greedy equivalence search: Start from the empty graph, add edges till model is significant. Then start deleting
-     * edges till a minimum is achieved.
+     * Greedy equivalence search: Start from the empty graph, add edges till
+     * model is significant. Then start deleting edges till a minimum is
+     * achieved.
      *
      * @return the resulting Pattern.
      */
@@ -280,7 +285,6 @@ public final class Fges implements GraphSearch, GraphScorer {
     /**
      * @return the background knowledge.
      */
-
     public IKnowledge getKnowledge() {
         return knowledge;
     }
@@ -288,10 +292,13 @@ public final class Fges implements GraphSearch, GraphScorer {
     /**
      * Sets the background knowledge.
      *
-     * @param knowledge the knowledge object, specifying forbidden and required edges.
+     * @param knowledge the knowledge object, specifying forbidden and required
+     * edges.
      */
     public void setKnowledge(IKnowledge knowledge) {
-        if (knowledge == null) throw new NullPointerException();
+        if (knowledge == null) {
+            throw new NullPointerException();
+        }
         this.knowledge = knowledge;
     }
 
@@ -300,7 +307,8 @@ public final class Fges implements GraphSearch, GraphScorer {
     }
 
     /**
-     * If the true graph is set, askterisks will be printed in log output for the true edges.
+     * If the true graph is set, askterisks will be printed in log output for
+     * the true edges.
      */
     public void setTrueGraph(Graph trueGraph) {
         this.trueGraph = trueGraph;
@@ -328,7 +336,8 @@ public final class Fges implements GraphSearch, GraphScorer {
     }
 
     /**
-     * Sets the number of patterns to store. This should be set to zero for fast search.
+     * Sets the number of patterns to store. This should be set to zero for fast
+     * search.
      */
     public void setNumPatternsToStore(int numPatternsToStore) {
         if (numPatternsToStore < 0) {
@@ -339,8 +348,8 @@ public final class Fges implements GraphSearch, GraphScorer {
     }
 
     /**
-     * @return the initial graph for the search. The search is initialized to this graph and
-     * proceeds from there.
+     * @return the initial graph for the search. The search is initialized to
+     * this graph and proceeds from there.
      */
     public Graph getInitialGraph() {
         return initialGraph;
@@ -374,31 +383,32 @@ public final class Fges implements GraphSearch, GraphScorer {
     }
 
     /**
-     * Sets the output stream that output (except for log output) should be sent to.
-     * By detault System.out.
+     * Sets the output stream that output (except for log output) should be sent
+     * to. By detault System.out.
      */
     public void setOut(PrintStream out) {
         this.out = out;
     }
 
     /**
-     * @return the output stream that output (except for log output) should be sent to.
+     * @return the output stream that output (except for log output) should be
+     * sent to.
      */
     public PrintStream getOut() {
         return out;
     }
 
     /**
-     * @return the set of preset adjacenies for the algorithm; edges not in this adjacencies graph
-     * will not be added.
+     * @return the set of preset adjacenies for the algorithm; edges not in this
+     * adjacencies graph will not be added.
      */
     public Graph getAdjacencies() {
         return adjacencies;
     }
 
     /**
-     * Sets the set of preset adjacenies for the algorithm; edges not in this adjacencies graph
-     * will not be added.
+     * Sets the set of preset adjacenies for the algorithm; edges not in this
+     * adjacencies graph will not be added.
      */
     public void setAdjacencies(Graph adjacencies) {
         this.adjacencies = adjacencies;
@@ -417,8 +427,9 @@ public final class Fges implements GraphSearch, GraphScorer {
      * @param cycleBound The bound, >= 1, or -1 for unlimited.
      */
     public void setCycleBound(int cycleBound) {
-        if (!(cycleBound == -1 || cycleBound >= 1))
+        if (!(cycleBound == -1 || cycleBound >= 1)) {
             throw new IllegalArgumentException("Cycle bound needs to be -1 or >= 1: " + cycleBound);
+        }
         this.cycleBound = cycleBound;
     }
 
@@ -437,7 +448,8 @@ public final class Fges implements GraphSearch, GraphScorer {
     }
 
     /**
-     * For BIC totalScore, a multiplier on the penalty term. For continuous searches.
+     * For BIC totalScore, a multiplier on the penalty term. For continuous
+     * searches.
      *
      * @deprecated Use the getters on the individual scores instead.
      */
@@ -468,7 +480,8 @@ public final class Fges implements GraphSearch, GraphScorer {
     }
 
     /**
-     * For BIC totalScore, a multiplier on the penalty term. For continuous searches.
+     * For BIC totalScore, a multiplier on the penalty term. For continuous
+     * searches.
      *
      * @deprecated Use the setters on the individual scores instead.
      */
@@ -493,7 +506,9 @@ public final class Fges implements GraphSearch, GraphScorer {
      * @param maxDegree -1 for unlimited.
      */
     public void setMaxDegree(int maxDegree) {
-        if (maxDegree < -1) throw new IllegalArgumentException();
+        if (maxDegree < -1) {
+            throw new IllegalArgumentException();
+        }
         this.maxDegree = maxDegree;
     }
 
@@ -505,9 +520,7 @@ public final class Fges implements GraphSearch, GraphScorer {
         this.symmetricFirstStep = symmetricFirstStep;
     }
 
-
     //===========================PRIVATE METHODS========================//
-
     //Sets the discrete scoring function to use.
     private void setScore(Score totalScore) {
         this.score = totalScore;
@@ -532,6 +545,7 @@ public final class Fges implements GraphSearch, GraphScorer {
     }
 
     class NodeTaskEmptyGraph extends RecursiveTask<Boolean> {
+
         private final int from;
         private final int to;
         private final List<Node> nodes;
@@ -555,7 +569,7 @@ public final class Fges implements GraphSearch, GraphScorer {
                 Node y = nodes.get(i);
                 neighbors.put(y, emptySet);
 
-                for (int j = i + 1; j < nodes.size(); j++) {
+                for (int j = i + 1; j < nodes.size() && !Thread.currentThread().isInterrupted(); j++) {
                     Node x = nodes.get(j);
 
                     if (existsKnowledge()) {
@@ -581,7 +595,9 @@ public final class Fges implements GraphSearch, GraphScorer {
                         bump = bump > bump2 ? bump : bump2;
                     }
 
-                    if (boundGraph != null && !boundGraph.isAdjacentTo(x, y)) continue;
+                    if (boundGraph != null && !boundGraph.isAdjacentTo(x, y)) {
+                        continue;
+                    }
 
                     if (bump > 0) {
                         final Edge edge = Edges.undirectedEdge(x, y);
@@ -623,7 +639,7 @@ public final class Fges implements GraphSearch, GraphScorer {
 
                 int numNodesPerTask = Math.max(100, nodes.size() / maxThreads);
 
-                for (int i = 0; i < nodes.size(); i += numNodesPerTask) {
+                for (int i = 0; i < nodes.size() && !Thread.currentThread().isInterrupted(); i += numNodesPerTask) {
                     NodeTaskEmptyGraph task = new NodeTaskEmptyGraph(i, Math.min(nodes.size(), i + numNodesPerTask),
                             nodes, emptySet);
                     tasks.add(task);
@@ -685,6 +701,7 @@ public final class Fges implements GraphSearch, GraphScorer {
         final Set<Node> emptySet = new HashSet<>(0);
 
         class InitializeFromExistingGraphTask extends RecursiveTask<Boolean> {
+
             private int chunk;
             private int from;
             private int to;
@@ -697,10 +714,12 @@ public final class Fges implements GraphSearch, GraphScorer {
 
             @Override
             protected Boolean compute() {
-                if (TaskManager.getInstance().isCanceled()) return false;
+                if (TaskManager.getInstance().isCanceled()) {
+                    return false;
+                }
 
                 if (to - from <= chunk) {
-                    for (int i = from; i < to; i++) {
+                    for (int i = from; i < to && !Thread.currentThread().isInterrupted(); i++) {
                         if ((i + 1) % 1000 == 0) {
                             count[0] += 1000;
                             out.println("Initializing effect edges: " + (count[0]));
@@ -712,7 +731,13 @@ public final class Fges implements GraphSearch, GraphScorer {
 
                         for (Node n : graph.getAdjacentNodes(y)) {
                             for (Node m : graph.getAdjacentNodes(n)) {
-                                if (m == y) continue;
+                                if (Thread.currentThread().isInterrupted()) {
+                                    break;
+                                }
+
+                                if (m == y) {
+                                    continue;
+                                }
 
                                 if (graph.isAdjacentTo(y, m)) {
                                     continue;
@@ -727,7 +752,13 @@ public final class Fges implements GraphSearch, GraphScorer {
                         }
 
                         for (Node x : g) {
-                            if (x == y) throw new IllegalArgumentException();
+                            if (Thread.currentThread().isInterrupted()) {
+                                break;
+                            }
+
+                            if (x == y) {
+                                throw new IllegalArgumentException();
+                            }
 
                             if (existsKnowledge()) {
                                 if (getKnowledge().isForbidden(x.getName(), y.getName()) && getKnowledge().isForbidden(y.getName(), x.getName())) {
@@ -787,6 +818,10 @@ public final class Fges implements GraphSearch, GraphScorer {
 
         if (initialGraph != null) {
             for (Edge edge : initialGraph.getEdges()) {
+                if (Thread.currentThread().isInterrupted()) {
+                    break;
+                }
+
                 if (!effectEdgesGraph.isAdjacentTo(edge.getNode1(), edge.getNode2())) {
                     effectEdgesGraph.addUndirectedEdge(edge.getNode1(), edge.getNode2());
                 }
@@ -796,6 +831,7 @@ public final class Fges implements GraphSearch, GraphScorer {
         final Set<Node> emptySet = new HashSet<>(0);
 
         class InitializeFromExistingGraphTask extends RecursiveTask<Boolean> {
+
             private int chunk;
             private int from;
             private int to;
@@ -808,10 +844,12 @@ public final class Fges implements GraphSearch, GraphScorer {
 
             @Override
             protected Boolean compute() {
-                if (TaskManager.getInstance().isCanceled()) return false;
+                if (TaskManager.getInstance().isCanceled()) {
+                    return false;
+                }
 
                 if (to - from <= chunk) {
-                    for (int i = from; i < to; i++) {
+                    for (int i = from; i < to && !Thread.currentThread().isInterrupted(); i++) {
                         if ((i + 1) % 1000 == 0) {
                             count[0] += 1000;
                             out.println("Initializing effect edges: " + (count[0]));
@@ -827,6 +865,10 @@ public final class Fges implements GraphSearch, GraphScorer {
                         D.removeAll(effectEdgesGraph.getAdjacentNodes(y));
 
                         for (Node x : D) {
+                            if (Thread.currentThread().isInterrupted()) {
+                                break;
+                            }
+
                             if (existsKnowledge()) {
                                 if (getKnowledge().isForbidden(x.getName(), y.getName()) && getKnowledge().isForbidden(y.getName(), x.getName())) {
                                     continue;
@@ -882,8 +924,12 @@ public final class Fges implements GraphSearch, GraphScorer {
                 continue;
             }
 
-            if (graph.getDegree(x) > maxDegree - 1) continue;
-            if (graph.getDegree(y) > maxDegree - 1) continue;
+            if (graph.getDegree(x) > maxDegree - 1) {
+                continue;
+            }
+            if (graph.getDegree(y) > maxDegree - 1) {
+                continue;
+            }
 
             if (!arrow.getNaYX().equals(getNaYX(x, y))) {
                 continue;
@@ -901,7 +947,9 @@ public final class Fges implements GraphSearch, GraphScorer {
             double bump = arrow.getBump();
 
             boolean inserted = insert(x, y, T, bump);
-            if (!inserted) continue;
+            if (!inserted) {
+                continue;
+            }
 
             totalScore += bump;
 
@@ -947,15 +995,21 @@ public final class Fges implements GraphSearch, GraphScorer {
                 continue;
             }
 
-            if (!graph.isAdjacentTo(x, y)) continue;
+            if (!graph.isAdjacentTo(x, y)) {
+                continue;
+            }
 
             Edge edge = graph.getEdge(x, y);
-            if (edge.pointsTowards(x)) continue;
+            if (edge.pointsTowards(x)) {
+                continue;
+            }
 
             HashSet<Node> diff = new HashSet<>(arrow.getNaYX());
             diff.removeAll(arrow.getHOrT());
 
-            if (!validDelete(x, y, arrow.getHOrT(), arrow.getNaYX())) continue;
+            if (!validDelete(x, y, arrow.getHOrT(), arrow.getNaYX())) {
+                continue;
+            }
 
             Set<Node> H = arrow.getHOrT();
             double bump = arrow.getBump();
@@ -1020,7 +1074,6 @@ public final class Fges implements GraphSearch, GraphScorer {
         return !knowledge.isEmpty();
     }
 
-
     // Initiaizes the sorted arrows lists for the backward search.
     private void initializeArrowsBackward() {
         for (Edge edge : graph.getEdges()) {
@@ -1053,6 +1106,7 @@ public final class Fges implements GraphSearch, GraphScorer {
     // Calcuates new arrows based on changes in the graph for the forward search.
     private void reevaluateForward(final Set<Node> nodes, final Arrow arrow) {
         class AdjTask extends RecursiveTask<Boolean> {
+
             private final List<Node> nodes;
             private int from;
             private int to;
@@ -1107,7 +1161,9 @@ public final class Fges implements GraphSearch, GraphScorer {
                                 continue;
                             }
 
-                            if (w == x) continue;
+                            if (w == x) {
+                                continue;
+                            }
 
                             if (!graph.isAdjacentTo(w, x)) {
                                 clearArrow(w, x);
@@ -1138,11 +1194,17 @@ public final class Fges implements GraphSearch, GraphScorer {
 
     // Calculates the new arrows for an a->b edge.
     private void calculateArrowsForward(Node a, Node b) {
-        if (mode == Mode.heuristicSpeedup && !effectEdgesGraph.isAdjacentTo(a, b)) return;
-        if (adjacencies != null && !adjacencies.isAdjacentTo(a, b)) return;
+        if (mode == Mode.heuristicSpeedup && !effectEdgesGraph.isAdjacentTo(a, b)) {
+            return;
+        }
+        if (adjacencies != null && !adjacencies.isAdjacentTo(a, b)) {
+            return;
+        }
         this.neighbors.put(b, getNeighbors(b));
 
-        if (a == b) throw new IllegalArgumentException();
+        if (a == b) {
+            throw new IllegalArgumentException();
+        }
 
         if (existsKnowledge()) {
             if (getKnowledge().isForbidden(a.getName(), b.getName())) {
@@ -1151,7 +1213,9 @@ public final class Fges implements GraphSearch, GraphScorer {
         }
 
         Set<Node> naYX = getNaYX(a, b);
-        if (!isClique(naYX)) return;
+        if (!isClique(naYX)) {
+            return;
+        }
 
         List<Node> TNeighbors = getTNeighbors(a, b);
 
@@ -1183,7 +1247,9 @@ public final class Fges implements GraphSearch, GraphScorer {
                     break FOR;
                 }
 
-                if (!isClique(union)) continue;
+                if (!isClique(union)) {
+                    continue;
+                }
                 newCliques.add(union);
 
                 double bump = insertEval(a, b, T, naYX, hashIndices);
@@ -1212,6 +1278,7 @@ public final class Fges implements GraphSearch, GraphScorer {
     // Reevaluates arrows after removing an edge from the graph.
     private void reevaluateBackward(Set<Node> toProcess) {
         class BackwardTask extends RecursiveTask<Boolean> {
+
             private final Node r;
             private List<Node> adj;
             private Map<Node, Integer> hashIndices;
@@ -1220,7 +1287,7 @@ public final class Fges implements GraphSearch, GraphScorer {
             private int to;
 
             public BackwardTask(Node r, List<Node> adj, int chunk, int from, int to,
-                                Map<Node, Integer> hashIndices) {
+                    Map<Node, Integer> hashIndices) {
                 this.adj = adj;
                 this.hashIndices = hashIndices;
                 this.chunk = chunk;
@@ -1325,6 +1392,7 @@ public final class Fges implements GraphSearch, GraphScorer {
     // See Chickering (2002). The totalScore difference resulting from added in the edge (hypothetically) is recorded
     // as the "bump".
     private static class Arrow implements Comparable<Arrow> {
+
         private double bump;
         private Node a;
         private Node b;
@@ -1368,7 +1436,9 @@ public final class Fges implements GraphSearch, GraphScorer {
         // same hash code but not be equal. If we're paranoid, in this case we calculate a determinate comparison
         // not equal to zero by keeping a list. This last part is commened out by default.
         public int compareTo(Arrow arrow) {
-            if (arrow == null) throw new NullPointerException();
+            if (arrow == null) {
+                throw new NullPointerException();
+            }
 
             final int compare = Double.compare(arrow.getBump(), getBump());
 
@@ -1430,8 +1500,10 @@ public final class Fges implements GraphSearch, GraphScorer {
 
     // Evaluate the Insert(X, Y, T) operator (Definition 12 from Chickering, 2002).
     private double insertEval(Node x, Node y, Set<Node> t, Set<Node> naYX,
-                              Map<Node, Integer> hashIndices) {
-        if (x == y) throw new IllegalArgumentException();
+            Map<Node, Integer> hashIndices) {
+        if (x == y) {
+            throw new IllegalArgumentException();
+        }
         Set<Node> set = new HashSet<>(naYX);
         set.addAll(t);
         set.addAll(graph.getParents(y));
@@ -1440,7 +1512,7 @@ public final class Fges implements GraphSearch, GraphScorer {
 
     // Evaluate the Delete(X, Y, T) operator (Definition 12 from Chickering, 2002).
     private double deleteEval(Node x, Node y, Set<Node> diff, Set<Node> naYX,
-                              Map<Node, Integer> hashIndices) {
+            Map<Node, Integer> hashIndices) {
         Set<Node> set = new HashSet<>(diff);
         set.addAll(graph.getParents(y));
         set.remove(x);
@@ -1461,33 +1533,39 @@ public final class Fges implements GraphSearch, GraphScorer {
             trueEdge = trueGraph.getEdge(_x, _y);
         }
 
-        if (boundGraph != null && !boundGraph.isAdjacentTo(x, y)) return false;
+        if (boundGraph != null && !boundGraph.isAdjacentTo(x, y)) {
+            return false;
+        }
 
         graph.addDirectedEdge(x, y);
 
         if (verbose) {
             String label = trueGraph != null && trueEdge != null ? "*" : "";
-            TetradLogger.getInstance().log("insertedEdges", graph.getNumEdges() + ". INSERT " + graph.getEdge(x, y) +
-                    " " + T + " " + bump + " " + label);
+            TetradLogger.getInstance().log("insertedEdges", graph.getNumEdges() + ". INSERT " + graph.getEdge(x, y)
+                    + " " + T + " " + bump + " " + label);
         }
 
         int numEdges = graph.getNumEdges();
 
 //        if (verbose) {
-        if (numEdges % 1000 == 0) out.println("Num edges added: " + numEdges);
+        if (numEdges % 1000 == 0) {
+            out.println("Num edges added: " + numEdges);
+        }
 //        }
 
         if (verbose) {
             String label = trueGraph != null && trueEdge != null ? "*" : "";
-            out.println(graph.getNumEdges() + ". INSERT " + graph.getEdge(x, y) +
-                    " " + T + " " + bump + " " + label
+            out.println(graph.getNumEdges() + ". INSERT " + graph.getEdge(x, y)
+                    + " " + T + " " + bump + " " + label
                     + " degree = " + GraphUtils.getDegree(graph)
                     + " indegree = " + GraphUtils.getIndegree(graph));
         }
 
         for (Node _t : T) {
             graph.removeEdge(_t, y);
-            if (boundGraph != null && !boundGraph.isAdjacentTo(_t, y)) continue;
+            if (boundGraph != null && !boundGraph.isAdjacentTo(_t, y)) {
+                continue;
+            }
 
             graph.addDirectedEdge(_t, y);
 
@@ -1523,19 +1601,23 @@ public final class Fges implements GraphSearch, GraphScorer {
 
 //        if (verbose) {
         int numEdges = graph.getNumEdges();
-        if (numEdges % 1000 == 0) out.println("Num edges (backwards) = " + numEdges);
+        if (numEdges % 1000 == 0) {
+            out.println("Num edges (backwards) = " + numEdges);
+        }
 //        }
 
         if (verbose) {
             String label = trueGraph != null && trueEdge != null ? "*" : "";
-            String message = (graph.getNumEdges()) + ". DELETE " + x + "-->" + y +
-                    " H = " + H + " NaYX = " + naYX + " diff = " + diff + " (" + bump + ") " + label;
+            String message = (graph.getNumEdges()) + ". DELETE " + x + "-->" + y
+                    + " H = " + H + " NaYX = " + naYX + " diff = " + diff + " (" + bump + ") " + label;
             TetradLogger.getInstance().log("deletedEdges", message);
             out.println(message);
         }
 
         for (Node h : H) {
-            if (graph.isParentOf(h, y) || graph.isParentOf(h, x)) continue;
+            if (graph.isParentOf(h, y) || graph.isParentOf(h, x)) {
+                continue;
+            }
 
             Edge oldyh = graph.getEdge(y, h);
 
@@ -1544,8 +1626,8 @@ public final class Fges implements GraphSearch, GraphScorer {
             graph.addEdge(Edges.directedEdge(y, h));
 
             if (verbose) {
-                TetradLogger.getInstance().log("directedEdges", "--- Directing " + oldyh + " to " +
-                        graph.getEdge(y, h));
+                TetradLogger.getInstance().log("directedEdges", "--- Directing " + oldyh + " to "
+                        + graph.getEdge(y, h));
                 out.println("--- Directing " + oldyh + " to " + graph.getEdge(y, h));
             }
 
@@ -1557,13 +1639,12 @@ public final class Fges implements GraphSearch, GraphScorer {
                 graph.addEdge(Edges.directedEdge(x, h));
 
                 if (verbose) {
-                    TetradLogger.getInstance().log("directedEdges", "--- Directing " + oldxh + " to " +
-                            graph.getEdge(x, h));
+                    TetradLogger.getInstance().log("directedEdges", "--- Directing " + oldxh + " to "
+                            + graph.getEdge(x, h));
                     out.println("--- Directing " + oldxh + " to " + graph.getEdge(x, h));
                 }
             }
         }
-
 
         return true;
     }
@@ -1614,9 +1695,11 @@ public final class Fges implements GraphSearch, GraphScorer {
 
     // Adds edges required by knowledge.
     private void addRequiredEdges(Graph graph) {
-        if (!existsKnowledge()) return;
+        if (!existsKnowledge()) {
+            return;
+        }
 
-        for (Iterator<KnowledgeEdge> it = getKnowledge().requiredEdgesIterator(); it.hasNext(); ) {
+        for (Iterator<KnowledgeEdge> it = getKnowledge().requiredEdgesIterator(); it.hasNext() && !Thread.currentThread().isInterrupted();) {
             KnowledgeEdge next = it.next();
 
             Node nodeA = graph.getNode(next.getFrom());
@@ -1632,13 +1715,19 @@ public final class Fges implements GraphSearch, GraphScorer {
             }
         }
         for (Edge edge : graph.getEdges()) {
+            if (Thread.currentThread().isInterrupted()) {
+                break;
+            }
+
             final String A = edge.getNode1().getName();
             final String B = edge.getNode2().getName();
 
             if (knowledge.isForbidden(A, B)) {
                 Node nodeA = edge.getNode1();
                 Node nodeB = edge.getNode2();
-                if (nodeA == null || nodeB == null) throw new NullPointerException();
+                if (nodeA == null || nodeB == null) {
+                    throw new NullPointerException();
+                }
 
                 if (graph.isAdjacentTo(nodeA, nodeB) && !graph.isChildOf(nodeA, nodeB)) {
                     if (!graph.isAncestorOf(nodeA, nodeB)) {
@@ -1664,7 +1753,9 @@ public final class Fges implements GraphSearch, GraphScorer {
             } else if (knowledge.isForbidden(B, A)) {
                 Node nodeA = edge.getNode2();
                 Node nodeB = edge.getNode1();
-                if (nodeA == null || nodeB == null) throw new NullPointerException();
+                if (nodeA == null || nodeB == null) {
+                    throw new NullPointerException();
+                }
 
                 if (graph.isAdjacentTo(nodeA, nodeB) && !graph.isChildOf(nodeA, nodeB)) {
                     if (!graph.isAncestorOf(nodeA, nodeB)) {
@@ -1709,10 +1800,16 @@ public final class Fges implements GraphSearch, GraphScorer {
         Set<Node> nayx = new HashSet<>();
 
         for (Node z : adj) {
-            if (z == x) continue;
+            if (z == x) {
+                continue;
+            }
             Edge yz = graph.getEdge(y, z);
-            if (!Edges.isUndirectedEdge(yz)) continue;
-            if (!graph.isAdjacentTo(z, x)) continue;
+            if (!Edges.isUndirectedEdge(yz)) {
+                continue;
+            }
+            if (!graph.isAdjacentTo(z, x)) {
+                continue;
+            }
             nayx.add(z);
         }
 
@@ -1754,14 +1851,20 @@ public final class Fges implements GraphSearch, GraphScorer {
             if (e == t) {
                 e = null;
                 distance++;
-                if (distance > (bound == -1 ? 1000 : bound)) return false;
+                if (distance > (bound == -1 ? 1000 : bound)) {
+                    return false;
+                }
             }
 
             for (Node u : graph.getAdjacentNodes(t)) {
                 Edge edge = graph.getEdge(t, u);
                 Node c = traverseSemiDirected(t, edge);
-                if (c == null) continue;
-                if (cond.contains(c)) continue;
+                if (c == null) {
+                    continue;
+                }
+                if (cond.contains(c)) {
+                    continue;
+                }
 
                 if (c == to) {
                     return true;
@@ -1857,7 +1960,6 @@ public final class Fges implements GraphSearch, GraphScorer {
     }
 
     //===========================SCORING METHODS===================//
-
     /**
      * Scores the given DAG, up to a constant.
      */
@@ -1885,11 +1987,15 @@ public final class Fges implements GraphSearch, GraphScorer {
     }
 
     private double scoreGraphChange(Node y, Set<Node> parents,
-                                    Node x, Map<Node, Integer> hashIndices) {
+            Node x, Map<Node, Integer> hashIndices) {
         int yIndex = hashIndices.get(y);
 
-        if (x == y) throw new IllegalArgumentException();
-        if (parents.contains(y)) throw new IllegalArgumentException();
+        if (x == y) {
+            throw new IllegalArgumentException();
+        }
+        if (parents.contains(y)) {
+            throw new IllegalArgumentException();
+        }
 
         int[] parentIndices = new int[parents.size()];
 
@@ -1952,14 +2058,14 @@ public final class Fges implements GraphSearch, GraphScorer {
 
         builder.append("Edge Posterior Log Bayes Factors:\n\n");
 
-        builder.append("For a DAG in the IMaGES pattern with model totalScore m, for each edge e in the " +
-                "DAG, the model totalScore that would result from removing each edge, calculating " +
-                "the resulting model totalScore m(e), and then reporting m - m(e). The totalScore used is " +
-                "the IMScore, L - SUM_i{kc ln n(i)}, L is the maximum likelihood of the model, " +
-                "k isthe number of parameters of the model, n(i) is the sample size of the ith " +
-                "data set, and c is the penalty penaltyDiscount. Note that the more negative the totalScore, " +
-                "the more important the edge is to the posterior probability of the IMaGES model. " +
-                "Edges are given in order of their importance so measured.\n\n");
+        builder.append("For a DAG in the IMaGES pattern with model totalScore m, for each edge e in the "
+                + "DAG, the model totalScore that would result from removing each edge, calculating "
+                + "the resulting model totalScore m(e), and then reporting m - m(e). The totalScore used is "
+                + "the IMScore, L - SUM_i{kc ln n(i)}, L is the maximum likelihood of the model, "
+                + "k isthe number of parameters of the model, n(i) is the sample size of the ith "
+                + "data set, and c is the penalty penaltyDiscount. Note that the more negative the totalScore, "
+                + "the more important the edge is to the posterior probability of the IMaGES model. "
+                + "Edges are given in order of their importance so measured.\n\n");
 
         int i = 0;
 
@@ -2044,9 +2150,3 @@ public final class Fges implements GraphSearch, GraphScorer {
         return !collider;
     }
 }
-
-
-
-
-
-

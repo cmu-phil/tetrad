@@ -22,11 +22,13 @@ package edu.cmu.tetradapp.editor;
 
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.AlgorithmFactory;
+import edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern.SingleGraphAlg;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.algcomparison.utils.TakesInitialGraph;
 import edu.cmu.tetrad.annotation.AlgType;
 import edu.cmu.tetrad.annotation.Gaussian;
 import edu.cmu.tetrad.annotation.Linear;
+import edu.cmu.tetrad.annotation.Nonexecutable;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataModelList;
 import edu.cmu.tetrad.data.DataSet;
@@ -332,7 +334,8 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         mainPanel.setPreferredSize(new Dimension(940, 640));
 
         setLayout(new BorderLayout());
-        add(new JScrollPane(mainPanel), BorderLayout.CENTER);
+        add(mainPanel, BorderLayout.CENTER);
+//        add(new JScrollPane(mainPanel), BorderLayout.CENTER);
     }
 
     private void setParameterPanel(AlgorithmModel algoModel, IndependenceTestModel indTestModel, ScoreModel scoreModel) {
@@ -371,24 +374,49 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
 
         AlgorithmModel algoModel = algorithmList.getSelectedValue();
         Class algoClass = algoModel.getAlgorithm().getClazz();
-        if (TakesInitialGraph.class.isAssignableFrom(algoClass)) {
-            if (runner.getSourceGraph() == null || runner.getDataModelList().isEmpty()) {
+
+        if (algoClass.isAnnotationPresent(Nonexecutable.class)) {
+            String msg;
+            try {
+                Object algo = algoClass.newInstance();
+                Method m = algoClass.getDeclaredMethod("getDescription");
+                m.setAccessible(true);
                 try {
-                    Object algo = algoClass.newInstance();
-                    Method m = algoClass.getDeclaredMethod("setInitialGraph", Algorithm.class);
-                    m.setAccessible(true);
+                    msg = String.valueOf(m.invoke(algo));
+                } catch (InvocationTargetException exception) {
+                    msg = "";
+                }
+
+            } catch (IllegalAccessException | InstantiationException | NoSuchMethodException exception) {
+                LOGGER.error("", exception);
+                msg = "";
+            }
+
+            paramSetFwdBtn.setEnabled(false);
+            JOptionPane.showMessageDialog(desktop, msg, "Please Note", JOptionPane.INFORMATION_MESSAGE);
+        } else {
+            // Check if initial graph is provided for those pairwise algorithms
+            if (TakesInitialGraph.class.isAssignableFrom(algoClass)) {
+                if (runner.getSourceGraph() == null || runner.getDataModelList().isEmpty()) {
                     try {
-                        Algorithm algorithm = null;
-                        m.invoke(algo, algorithm);
-                    } catch (InvocationTargetException | IllegalArgumentException exception) {
-                        paramSetFwdBtn.setEnabled(false);
-                        JOptionPane.showMessageDialog(desktop, exception.getCause().getMessage(), "Please Note", JOptionPane.INFORMATION_MESSAGE);
+                        Object algo = algoClass.newInstance();
+                        Method m = algoClass.getDeclaredMethod("setInitialGraph", Algorithm.class);
+                        m.setAccessible(true);
+                        try {
+                            Algorithm algorithm = null;
+                            m.invoke(algo, algorithm);
+                        } catch (InvocationTargetException | IllegalArgumentException exception) {
+                            paramSetFwdBtn.setEnabled(false);
+                            JOptionPane.showMessageDialog(desktop, exception.getCause().getMessage(), "Please Note", JOptionPane.INFORMATION_MESSAGE);
+                        }
+                    } catch (IllegalAccessException | InstantiationException | NoSuchMethodException exception) {
+                        LOGGER.error("", exception);
                     }
-                } catch (IllegalAccessException | InstantiationException | NoSuchMethodException exception) {
-                    LOGGER.error("", exception);
                 }
             }
         }
+
+        // Check dataset data type for those algorithms take mixed data?
     }
 
     private void setAlgorithmDescription() {
@@ -638,12 +666,18 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         Class indTestClass = (indTestModel == null) ? null : indTestModel.getIndependenceTest().getClazz();
         Class scoreClass = (scoreModel == null) ? null : scoreModel.getScore().getClazz();
 
-        Algorithm algorithm;
+        Algorithm algorithm = null;
+
         try {
-            return AlgorithmFactory.create(algoClass, indTestClass, scoreClass);
+            algorithm = AlgorithmFactory.create(algoClass, indTestClass, scoreClass);
         } catch (IllegalAccessException | InstantiationException exception) {
-            algorithm = null;
             LOGGER.error("", exception);
+        }
+
+        // Those pairwise algos (R1, R2,..) require source graph to initialize - Zhou
+        if (algorithm != null && algorithm instanceof TakesInitialGraph && runner.getSourceGraph() != null && !runner.getDataModelList().isEmpty()) {
+            Algorithm initialGraph = new SingleGraphAlg(runner.getSourceGraph());
+            ((TakesInitialGraph) algorithm).setInitialGraph(initialGraph);
         }
 
         return algorithm;
@@ -1295,7 +1329,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         private void initComponents() {
             setLayout(new BorderLayout());
 
-            add(createAlgorithmPanel(), BorderLayout.CENTER);
+            add(new JScrollPane(createAlgorithmPanel()), BorderLayout.CENTER);
             add(new SouthPanel(paramSetFwdBtn), BorderLayout.SOUTH);
         }
 
@@ -1366,7 +1400,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
                 paramCardFwdBtnAction(e);
             });
 
-            add(new PaddingPanel(parametersPanel), BorderLayout.CENTER);
+            add(new JScrollPane(new PaddingPanel(parametersPanel)), BorderLayout.CENTER);
             add(new SouthPanel(forwardBtn, backBtn), BorderLayout.SOUTH);
         }
 
@@ -1434,7 +1468,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
                 graphCardBackBtnAction(e);
             });
 
-            add(graphContainer, BorderLayout.CENTER);
+            add(new JScrollPane(graphContainer), BorderLayout.CENTER);
             add(new SouthPanel(backBtn), BorderLayout.SOUTH);
         }
 

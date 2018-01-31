@@ -28,7 +28,6 @@ import edu.cmu.tetrad.util.ChoiceGenerator;
 import edu.cmu.tetrad.util.DepthChoiceGenerator;
 import edu.cmu.tetrad.util.NumberFormatUtil;
 import edu.cmu.tetrad.util.TetradLogger;
-
 import java.text.NumberFormat;
 import java.util.*;
 
@@ -184,8 +183,7 @@ public final class Mbfs implements MbSearch, GraphSearch {
      */
     public Graph search(String targetName) {
         if (targetName == null) {
-            throw new IllegalArgumentException(
-                    "Null target name not permitted");
+            throw new IllegalArgumentException("Target variable name needs to be provided.");
         }
 
         this.target = getVariableForName(targetName);
@@ -252,6 +250,10 @@ public final class Mbfs implements MbSearch, GraphSearch {
 //        variables = graph.getNodes();
 
         for (Node v : graph.getAdjacentNodes(getTarget())) {
+            if (Thread.currentThread().isInterrupted()) {
+                break;
+            }
+
             constructFan(v, graph);
 
             // Optimization: For t---v---w, toss out w if <t, v, w> can't
@@ -261,6 +263,10 @@ public final class Mbfs implements MbSearch, GraphSearch {
 
             W:
             for (Node w : graph.getAdjacentNodes(v)) {
+                if (Thread.currentThread().isInterrupted()) {
+                    break;
+                }
+
                 if (a.contains(w)) {
                     continue;
                 }
@@ -275,6 +281,10 @@ public final class Mbfs implements MbSearch, GraphSearch {
                 int[] choice;
 
                 while ((choice = cg.next()) != null) {
+                    if (Thread.currentThread().isInterrupted()) {
+                        break;
+                    }
+
                     List<Node> s = GraphUtils.asList(choice, adjT);
                     if (!s.contains(v)) continue;
 
@@ -491,6 +501,11 @@ public final class Mbfs implements MbSearch, GraphSearch {
      * @param depth Ibid.
      */
     public void setDepth(int depth) {
+        //  If it's -1 to set it to some unreasonably high number like 1000
+        if (depth < 0) {
+            depth = 1000;
+        }
+        
         this.depth = depth;
     }
 
@@ -617,6 +632,10 @@ public final class Mbfs implements MbSearch, GraphSearch {
             int[] choice;
 
             while ((choice = cg.next()) != null) {
+                if (Thread.currentThread().isInterrupted()) {
+                    break;
+                }
+
                 List<Node> condSet = GraphUtils.asList(choice, adjNode);
 
                 if (independent(node, y, condSet) && !edgeRequired(node, y)) {
@@ -740,6 +759,10 @@ public final class Mbfs implements MbSearch, GraphSearch {
             int[] combination;
 
             while ((combination = cg.next()) != null) {
+                if (Thread.currentThread().isInterrupted()) {
+                    break;
+                }
+
                 Node x = adjacentNodes.get(combination[0]);
                 Node z = adjacentNodes.get(combination[1]);
 
@@ -791,10 +814,18 @@ public final class Mbfs implements MbSearch, GraphSearch {
         _depth = Math.min(_depth, _nodes.size());
 
         for (int d = 0; d <= _depth; d++) {
+            if (Thread.currentThread().isInterrupted()) {
+                break;
+            }
+
             ChoiceGenerator cg = new ChoiceGenerator(_nodes.size(), d);
             int[] choice;
 
             while ((choice = cg.next()) != null) {
+                if (Thread.currentThread().isInterrupted()) {
+                    break;
+                }
+
                 List<Node> condSet = asList(choice, _nodes);
 
                 if (independent(x, z, condSet)) {
@@ -819,10 +850,18 @@ public final class Mbfs implements MbSearch, GraphSearch {
         _depth = Math.min(_depth, _nodes.size());
 
         for (int d = 0; d <= _depth; d++) {
+            if (Thread.currentThread().isInterrupted()) {
+                break;
+            }
+
             ChoiceGenerator cg = new ChoiceGenerator(_nodes.size(), d);
             int[] choice;
 
             while ((choice = cg.next()) != null) {
+                if (Thread.currentThread().isInterrupted()) {
+                    break;
+                }
+
                 List<Node> condSet = asList(choice, _nodes);
 
                 if (independent(x, z, condSet)) {

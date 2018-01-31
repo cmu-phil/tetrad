@@ -98,15 +98,18 @@ public class LoadDataAndGraphs implements Simulation {
                     if (line.contains(" = ")) {
                         String[] tokens = line.split(" = ");
                         String key = tokens[0];
-                        String value = tokens[1];
+                        String value = tokens[1].trim();
 
+                        usedParameters.add(key);
                         try {
                             double _value = Double.parseDouble(value);
-                            usedParameters.add(key);
                             parameters.set(key, _value);
                         } catch (NumberFormatException e) {
-                            usedParameters.add(key);
-                            parameters.set(key, value);
+                        	if(value.equalsIgnoreCase("true") || value.equalsIgnoreCase("false")){
+                                parameters.set(key, Boolean.valueOf(value));
+                        	}else{
+                                parameters.set(key, value);
+                        	}
                         }
                     }
                 }

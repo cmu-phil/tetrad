@@ -301,6 +301,10 @@ public final class BuildPureClusters {
 
         List<Node> latents = new ArrayList<>();
         for (int i = 0; i < clusters.size(); i++) {
+            if (Thread.currentThread().isInterrupted()) {
+                break;
+            }
+
             Node latent = new GraphNode(ClusterUtils.LATENT_PREFIX + (i + 1));
             latent.setNodeType(NodeType.LATENT);
             latents.add(latent);
@@ -308,7 +312,15 @@ public final class BuildPureClusters {
         }
 
         for (int i = 0; i < latents.size(); i++) {
+            if (Thread.currentThread().isInterrupted()) {
+                break;
+            }
+
             for (int j : (int[]) clusters.get(i)) {
+                if (Thread.currentThread().isInterrupted()) {
+                    break;
+                }
+
                 graph.addDirectedEdge(latents.get(i), nodes.get(j));
             }
         }
@@ -394,9 +406,17 @@ public final class BuildPureClusters {
         }
         it1 = solutionGraph.getNodes().iterator();
         while (it1.hasNext()) {
+            if (Thread.currentThread().isInterrupted()) {
+                break;
+            }
+
             Node next = it1.next();
             if (!(next.getNodeType() == NodeType.LATENT)) {
                 for (int w = 0; w < latentsList.size(); w++) {
+                    if (Thread.currentThread().isInterrupted()) {
+                        break;
+                    }
+
                     if (solutionGraph.getNodesInTo(next, Endpoint.ARROW)
                             .contains(latentsList.get(w))) {
                         (clusters.get(w)).add(next);
@@ -407,10 +427,22 @@ public final class BuildPureClusters {
         List arrayClusters = new ArrayList();
         String names[] = tetradTest.getVarNames();
         for (int w = 0; w < clusters.size(); w++) {
+            if (Thread.currentThread().isInterrupted()) {
+                break;
+            }
+
             List<Node> listCluster = clusters.get(w);
             int newCluster[] = new int[listCluster.size()];
             for (int v = 0; v < newCluster.length; v++) {
+                if (Thread.currentThread().isInterrupted()) {
+                    break;
+                }
+
                 for (int s = 0; s < names.length; s++) {
+                    if (Thread.currentThread().isInterrupted()) {
+                        break;
+                    }
+
                     if (names[s].equals(listCluster.get(v).toString())) {
                         newCluster[v] = s;
                         break;
@@ -420,7 +452,15 @@ public final class BuildPureClusters {
             arrayClusters.add(newCluster);
         }
         for (int i = 0; i < solutionGraph.getNodes().size() - 1; i++) {
+            if (Thread.currentThread().isInterrupted()) {
+                break;
+            }
+
             for (int j = i + 1; j < solutionGraph.getNodes().size(); j++) {
+                if (Thread.currentThread().isInterrupted()) {
+                    break;
+                }
+
                 Node nodei = (Node) solutionGraph.getNodes().get(i);
                 Node nodej = (Node) solutionGraph.getNodes().get(j);
                 if (!(nodei.getNodeType() == NodeType.LATENT) &&
@@ -910,11 +950,23 @@ public final class BuildPureClusters {
 
         int tempComponent[] = new int[size];
         while (numMarked != size) {
+            if (Thread.currentThread().isInterrupted()) {
+                break;
+            }
+
             int sizeTemp = 0;
             boolean noChange;
             do {
+                if (Thread.currentThread().isInterrupted()) {
+                    break;
+                }
+
                 noChange = true;
                 for (int i = 0; i < size; i++) {
+                    if (Thread.currentThread().isInterrupted()) {
+                        break;
+                    }
+
                     if (marked[i]) {
                         continue;
                     }
@@ -952,7 +1004,15 @@ public final class BuildPureClusters {
     private List<int[]> findMaximalCliques(int elements[], int ng[][]) {
         boolean connected[][] = new boolean[this.numVariables()][this.numVariables()];
         for (int i = 0; i < connected.length; i++) {
+            if (Thread.currentThread().isInterrupted()) {
+                break;
+            }
+
             for (int j = i; j < connected.length; j++) {
+                if (Thread.currentThread().isInterrupted()) {
+                    break;
+                }
+
                 if (i != j) {
                     connected[i][j] = connected[j][i] =
                             (ng[i][j] != EDGE_NONE);
@@ -988,9 +1048,17 @@ public final class BuildPureClusters {
         minnod = ce;
         nod = 0;
         for (i = 0; i < ce && minnod != 0; i++) {
+            if (Thread.currentThread().isInterrupted()) {
+                break;
+            }
+
             p = old[i];
             count = 0;
             for (j = ne; j < ce && count < minnod; j++) {
+                if (Thread.currentThread().isInterrupted()) {
+                    break;
+                }
+
                 if (!connected[p][old[j]]) {
                     count++;
                     pos = j;
@@ -1008,17 +1076,29 @@ public final class BuildPureClusters {
             }
         }
         for (nod = minnod + nod; nod >= 1; nod--) {
+            if (Thread.currentThread().isInterrupted()) {
+                break;
+            }
+
             p = old[s];
             old[s] = old[ne];
             sel = old[ne] = p;
             newne = 0;
             for (i = 0; i < ne; i++) {
+                if (Thread.currentThread().isInterrupted()) {
+                    break;
+                }
+
                 if (connected[sel][old[i]]) {
                     newA[newne++] = old[i];
                 }
             }
             newce = newne;
             for (i = ne + 1; i < ce; i++) {
+                if (Thread.currentThread().isInterrupted()) {
+                    break;
+                }
+
                 if (connected[sel][old[i]]) {
                     newA[newce++] = old[i];
                 }
@@ -1057,8 +1137,16 @@ public final class BuildPureClusters {
             }
             boolean found = true;
             for (int i = 0; i < size && found; i++) {
+                if (Thread.currentThread().isInterrupted()) {
+                    break;
+                }
+
                 found = false;
                 for (int j = 0; j < next.length && !found; j++) {
+                    if (Thread.currentThread().isInterrupted()) {
+                        break;
+                    }
+
                     if (newClique[i] == next[j]) {
                         found = true;
                         break;
@@ -1082,6 +1170,10 @@ public final class BuildPureClusters {
 
         Iterator<int[]> it = cliqueList.iterator();
         while (it.hasNext()) {
+            if (Thread.currentThread().isInterrupted()) {
+                break;
+            }
+
             int cluster[] = it.next();
             cliqueCopy.remove(cluster);
             if (!cliqueContained(cluster, cluster.length, cliqueCopy)) {
@@ -1096,6 +1188,10 @@ public final class BuildPureClusters {
         int total = 0;
         Iterator it = cluster.iterator();
         while (it.hasNext()) {
+            if (Thread.currentThread().isInterrupted()) {
+                break;
+            }
+
             int next[] = (int[]) it.next();
             total += next.length;
         }
@@ -1106,6 +1202,10 @@ public final class BuildPureClusters {
         int total = 0;
         Iterator it = cluster.iterator();
         while (it.hasNext()) {
+            if (Thread.currentThread().isInterrupted()) {
+                break;
+            }
+
             int next[] = (int[]) it.next();
             if (next.length > 2) {
                 total += next.length;
@@ -1117,9 +1217,17 @@ public final class BuildPureClusters {
     private void sortClusterings(int start, int end, List clusterings,
                                  int criterion[]) {
         for (int i = start; i < end - 1; i++) {
+            if (Thread.currentThread().isInterrupted()) {
+                break;
+            }
+
             int max = -1;
             int max_idx = -1;
             for (int j = i; j < end; j++) {
+                if (Thread.currentThread().isInterrupted()) {
+                    break;
+                }
+
                 if (criterion[j] > max) {
                     max = criterion[j];
                     max_idx = j;
@@ -1153,18 +1261,34 @@ public final class BuildPureClusters {
 
         //First filter: remove all overlaps
         for (Iterator it1 = clustering.iterator(); it1.hasNext(); ) {
+            if (Thread.currentThread().isInterrupted()) {
+                break;
+            }
+
             int currentCluster[] = (int[]) it1.next();
             next_item:
             for (int i = 0; i < currentCluster.length; i++) {
+                if (Thread.currentThread().isInterrupted()) {
+                    break;
+                }
+
                 if (!buffer[currentCluster[i]]) {
                     continue;
                 }
                 for (Iterator it2 = clustering.iterator(); it2.hasNext(); ) {
+                    if (Thread.currentThread().isInterrupted()) {
+                        break;
+                    }
+
                     int nextCluster[] = (int[]) it2.next();
                     if (nextCluster == currentCluster) {
                         continue;
                     }
                     for (int j = 0; j < nextCluster.length; j++) {
+                        if (Thread.currentThread().isInterrupted()) {
+                            break;
+                        }
+
                         if (currentCluster[i] == nextCluster[j]) {
                             buffer[currentCluster[i]] = false;
                             continue next_item;
@@ -1180,16 +1304,32 @@ public final class BuildPureClusters {
         //has only three indicators
         int localScore;
         for (int c1 = 0; c1 < clustering.size(); c1++) {
+            if (Thread.currentThread().isInterrupted()) {
+                break;
+            }
+
             int currentCluster[] = (int[]) clustering.get(c1);
             localScore = 0;
             next_item:
             for (int i = 0; i < currentCluster.length; i++) {
+                if (Thread.currentThread().isInterrupted()) {
+                    break;
+                }
+
                 if (!buffer[currentCluster[i]]) {
                     continue;
                 }
                 for (int c2 = c1 + 1; c2 < clustering.size(); c2++) {
+                    if (Thread.currentThread().isInterrupted()) {
+                        break;
+                    }
+
                     int nextCluster[] = (int[]) clustering.get(c2);
                     for (int j = 0; j < nextCluster.length; j++) {
+                        if (Thread.currentThread().isInterrupted()) {
+                            break;
+                        }
+
                         if (!buffer[nextCluster[j]]) {
                             continue;
                         }
@@ -1225,6 +1365,10 @@ public final class BuildPureClusters {
 
         for (int i = 0; i < baseListOfClusterings.size(); i++) {
 
+            if (Thread.currentThread().isInterrupted()) {
+                break;
+            }
+
             //First filter: remove all overlaps
             List newClustering = new ArrayList();
             List baseClustering = (List) baseListOfClusterings.get(i);
@@ -1236,18 +1380,34 @@ public final class BuildPureClusters {
             List<Integer> usedIds = new ArrayList<>();
 
             for (int j = 0; j < baseClustering.size(); j++) {
+                if (Thread.currentThread().isInterrupted()) {
+                    break;
+                }
+
                 int currentCluster[] = (int[]) baseClustering.get(j);
                 Integer currentId = baseIds.get(j);
                 int draftArea[] = new int[currentCluster.length];
                 int draftCount = 0;
                 next_item:
                 for (int jj = 0; jj < currentCluster.length; jj++) {
+                    if (Thread.currentThread().isInterrupted()) {
+                        break;
+                    }
+
                     for (int k = 0; k < baseClustering.size(); k++) {
+                        if (Thread.currentThread().isInterrupted()) {
+                            break;
+                        }
+
                         if (k == j) {
                             continue;
                         }
                         int nextCluster[] = (int[]) baseClustering.get(k);
                         for (int q = 0; q < nextCluster.length; q++) {
+                            if (Thread.currentThread().isInterrupted()) {
+                                break;
+                            }
+
                             if (currentCluster[jj] == nextCluster[q]) {
                                 continue next_item;
                             }
@@ -1273,14 +1433,30 @@ public final class BuildPureClusters {
             //remove nodes till none of these relations hold anymore
             boolean impurities[][] = new boolean[this.numVariables()][this.numVariables()];
             for (int j = 0; j < newClustering.size() - 1; j++) {
+                if (Thread.currentThread().isInterrupted()) {
+                    break;
+                }
+
                 int currentCluster[] = (int[]) newClustering.get(j);
                 for (int jj = j + 1; jj < currentCluster.length; jj++) {
+                    if (Thread.currentThread().isInterrupted()) {
+                        break;
+                    }
+
                     for (int k = 0; k < newClustering.size(); k++) {
+                        if (Thread.currentThread().isInterrupted()) {
+                            break;
+                        }
+
                         if (k == j) {
                             continue;
                         }
                         int nextCluster[] = (int[]) newClustering.get(k);
                         for (int q = 0; q < nextCluster.length; q++) {
+                            if (Thread.currentThread().isInterrupted()) {
+                                break;
+                            }
+
                             if (ng[currentCluster[jj]][nextCluster[q]] !=
                                     EDGE_NONE) {
                                 impurities[currentCluster[jj]][nextCluster[q]] =
@@ -1300,15 +1476,27 @@ public final class BuildPureClusters {
             List finalNewClustering = new ArrayList();
             List<Integer> finalUsedIds = new ArrayList<>();
             for (int j = 0; j < newClustering2.size(); j++) {
+                if (Thread.currentThread().isInterrupted()) {
+                    break;
+                }
+
                 if (((int[]) newClustering2.get(j)).length > 0) {
                     finalNewClustering.add(newClustering2.get(j));
                     finalUsedIds.add(usedIds.get(j));
                 }
             }
             if (finalNewClustering.size() > 0) {
+                if (Thread.currentThread().isInterrupted()) {
+                    break;
+                }
+
                 listOfClusterings.add(finalNewClustering);
                 int usedIdsArray[] = new int[finalUsedIds.size()];
                 for (int j = 0; j < finalUsedIds.size(); j++) {
+                    if (Thread.currentThread().isInterrupted()) {
+                        break;
+                    }
+
                     usedIdsArray[j] = finalUsedIds.get(j);
                 }
                 clusteringIds.add(usedIdsArray);
@@ -1326,6 +1514,10 @@ public final class BuildPureClusters {
         //The second criterion is the total number of their indicators.
         int numIndicators[] = new int[listOfClusterings.size()];
         for (int i = 0; i < listOfClusterings.size(); i++) {
+            if (Thread.currentThread().isInterrupted()) {
+                break;
+            }
+
             numIndicators[i] = clustersize3((List) listOfClusterings.get(i));
         }
         sortClusterings(0, listOfClusterings.size(), listOfClusterings,
@@ -1335,9 +1527,17 @@ public final class BuildPureClusters {
         }
         int start = 0;
         while (start < listOfClusterings.size()) {
+            if (Thread.currentThread().isInterrupted()) {
+                break;
+            }
+
             int size3 = clustersize3((List) listOfClusterings.get(start));
             int end = start + 1;
             for (int j = start + 1; j < listOfClusterings.size(); j++) {
+                if (Thread.currentThread().isInterrupted()) {
+                    break;
+                }
+
                 if (size3 != clustersize3((List) listOfClusterings.get(j))) {
                     break;
                 }
@@ -1362,9 +1562,17 @@ public final class BuildPureClusters {
         int partitionCount[] = new int[partition.size()];
         int countElements = 0;
         for (int p = 0; p < partition.size(); p++) {
+            if (Thread.currentThread().isInterrupted()) {
+                break;
+            }
+
             int next[] = (int[]) partition.get(p);
             partitionCount[p] = 0;
             for (int i = 0; i < next.length; i++) {
+                if (Thread.currentThread().isInterrupted()) {
+                    break;
+                }
+
                 elements[countElements][0] = next[i]; // global ID
                 elements[countElements][1] = p;       // set partition ID
                 countElements++;
@@ -1387,10 +1595,18 @@ public final class BuildPureClusters {
             eliminated[i] = false;
         }
         while (!validSolution(elements, eliminated)) {
+            if (Thread.currentThread().isInterrupted()) {
+                break;
+            }
+
             //Sort them in the descending order of number of impurities (heuristic to avoid exponential search)
             sortByImpurityPriority(elements, partitionCount, eliminated);
             eliminated[elements[0][0]] = true;
             for (int i = 0; i < elements.length; i++) {
+                if (Thread.currentThread().isInterrupted()) {
+                    break;
+                }
+
                 if (impurities[elements[i][0]][elements[0][0]]) {
                     elements[i][2]--;
                 }
@@ -1401,11 +1617,23 @@ public final class BuildPureClusters {
         List solution = new ArrayList();
         Iterator it = partition.iterator();
         while (it.hasNext()) {
+            if (Thread.currentThread().isInterrupted()) {
+                break;
+            }
+
             int next[] = (int[]) it.next();
             int draftArea[] = new int[next.length];
             int draftCount = 0;
             for (int i = 0; i < next.length; i++) {
+                if (Thread.currentThread().isInterrupted()) {
+                    break;
+                }
+
                 for (int j = 0; j < elements.length; j++) {
+                    if (Thread.currentThread().isInterrupted()) {
+                        break;
+                    }
+
                     if (elements[j][0] == next[i] &&
                             !eliminated[elements[j][0]]) {
                         draftArea[draftCount++] = next[i];
@@ -1433,8 +1661,16 @@ public final class BuildPureClusters {
 
         //First, throw all eliminated elements to the end of the array
         for (int i = 0; i < elements.length - 1; i++) {
+            if (Thread.currentThread().isInterrupted()) {
+                break;
+            }
+
             if (eliminated[elements[i][0]]) {
                 for (int j = i + 1; j < elements.length; j++) {
+                    if (Thread.currentThread().isInterrupted()) {
+                        break;
+                    }
+
                     if (!eliminated[elements[j][0]]) {
                         swapElements(elements, i, j, temp);
                         break;
@@ -1449,9 +1685,17 @@ public final class BuildPureClusters {
 
         //Sort them in the descending order of number of impurities
         for (int i = 0; i < total - 1; i++) {
+            if (Thread.currentThread().isInterrupted()) {
+                break;
+            }
+
             int max = -1;
             int max_idx = -1;
             for (int j = i; j < total; j++) {
+                if (Thread.currentThread().isInterrupted()) {
+                    break;
+                }
+
                 if (elements[j][2] > max) {
                     max = elements[j][2];
                     max_idx = j;
@@ -1464,9 +1708,17 @@ public final class BuildPureClusters {
         //Then, in decreasing order of cluster size.
         int start = 0;
         while (start < total) {
+            if (Thread.currentThread().isInterrupted()) {
+                break;
+            }
+
             int size = partitionCount[elements[start][1]];
             int end = start + 1;
             for (int j = start + 1; j < total; j++) {
+                if (Thread.currentThread().isInterrupted()) {
+                    break;
+                }
+
                 if (size != partitionCount[elements[j][1]]) {
                     break;
                 }
@@ -1474,12 +1726,20 @@ public final class BuildPureClusters {
             }
             //Put elements with partitionCount of 1 and 2 at the top of the list
             for (int i = start + 1; i < end; i++) {
+                if (Thread.currentThread().isInterrupted()) {
+                    break;
+                }
+
                 if (partitionCount[elements[i][1]] == 1) {
                     swapElements(elements, i, start, temp);
                     start++;
                 }
             }
             for (int i = start + 1; i < end; i++) {
+                if (Thread.currentThread().isInterrupted()) {
+                    break;
+                }
+
                 if (partitionCount[elements[i][1]] == 2) {
                     swapElements(elements, i, start, temp);
                     start++;
@@ -1487,9 +1747,17 @@ public final class BuildPureClusters {
             }
             //Now, order elements in the descending order of partitionCount
             for (int i = start; i < end - 1; i++) {
+                if (Thread.currentThread().isInterrupted()) {
+                    break;
+                }
+
                 int max = -1;
                 int max_idx = -1;
                 for (int j = i; j < end; j++) {
+                    if (Thread.currentThread().isInterrupted()) {
+                        break;
+                    }
+
                     if (partitionCount[elements[j][1]] > max) {
                         max = partitionCount[elements[j][1]];
                         max_idx = j;
@@ -1537,12 +1805,28 @@ public final class BuildPureClusters {
         /* Stage 1: identify (partially) uncorrelated and impure pairs */
 //        print(">> Stage 0.1");
         for (int v1 = 0; v1 < numVariables() - 1; v1++) {
+            if (Thread.currentThread().isInterrupted()) {
+                break;
+            }
+
             for (int v2 = v1 + 1; v2 < numVariables(); v2++) {
+                if (Thread.currentThread().isInterrupted()) {
+                    break;
+                }
+
                 ng[v1][v2] = ng[v2][v1] = EDGE_BLACK;
             }
         }
         for (int v1 = 0; v1 < numVariables() - 1; v1++) {
+            if (Thread.currentThread().isInterrupted()) {
+                break;
+            }
+
             for (int v2 = v1 + 1; v2 < numVariables(); v2++) {
+                if (Thread.currentThread().isInterrupted()) {
+                    break;
+                }
+
                 if (uncorrelated(v1, v2)) {
                     cv[v1][v2] = cv[v2][v1] = EDGE_NONE;
                 } else {
@@ -1552,11 +1836,23 @@ public final class BuildPureClusters {
             }
         }
         for (int v1 = 0; v1 < numVariables() - 1; v1++) {
+            if (Thread.currentThread().isInterrupted()) {
+                break;
+            }
+
             for (int v2 = v1 + 1; v2 < numVariables(); v2++) {
+                if (Thread.currentThread().isInterrupted()) {
+                    break;
+                }
+
                 if (cv[v1][v2] == EDGE_NONE) {
                     continue;
                 }
                 for (int v3 = 0; v3 < numVariables(); v3++) {
+                    if (Thread.currentThread().isInterrupted()) {
+                        break;
+                    }
+
                     if (v1 == v3 || v2 == v3) {
                         continue;
                     }
@@ -1569,7 +1865,15 @@ public final class BuildPureClusters {
         }
 
         for (int i = 0; i < numVariables(); i++) {
+            if (Thread.currentThread().isInterrupted()) {
+                break;
+            }
+
             for (int j = i + 1; j < numVariables(); j++) {
+                if (Thread.currentThread().isInterrupted()) {
+                    break;
+                }
+
                 if (cv[i][j] == EDGE_NONE) {
 //                    print(tetradTest.getVarNames()[i] + " || " +
 //                            tetradTest.getVarNames()[j] + "? YES");
@@ -1578,18 +1882,34 @@ public final class BuildPureClusters {
         }
 
         for (int v1 = 0; v1 < numVariables() - 1; v1++) {
+            if (Thread.currentThread().isInterrupted()) {
+                break;
+            }
+
             for (int v2 = v1 + 1; v2 < numVariables(); v2++) {
+                if (Thread.currentThread().isInterrupted()) {
+                    break;
+                }
+
                 if (ng[v1][v2] != EDGE_BLACK) {
                     continue;
                 }
                 boolean notFound = true;
                 for (int v3 = 0; v3 < numVariables() - 1 && notFound; v3++) {
+                    if (Thread.currentThread().isInterrupted()) {
+                        break;
+                    }
+
                     if (v1 == v3 || v2 == v3 || ng[v1][v3] == EDGE_NONE || ng[v1][v3] ==
                             EDGE_GRAY || ng[v2][v3] == EDGE_NONE || ng[v2][v3] ==
                             EDGE_GRAY) {
                         continue;
                     }
                     for (int v4 = v3 + 1; v4 < numVariables() && notFound; v4++) {
+                        if (Thread.currentThread().isInterrupted()) {
+                            break;
+                        }
+
                         if (v1 == v4 || v2 == v4 || ng[v1][v4] == EDGE_NONE ||
                                 ng[v1][v4] == EDGE_GRAY ||
                                 ng[v2][v4] == EDGE_NONE ||
@@ -1623,13 +1943,37 @@ public final class BuildPureClusters {
         /* Stage 2: prune blue edges, find yellow ones */
 //        print(">> Stage 0.2");
         for (int i = 0; i < numVariables() - 1; i++) {
+            if (Thread.currentThread().isInterrupted()) {
+                break;
+            }
+
             for (int j = i + 1; j < numVariables(); j++) {
+                if (Thread.currentThread().isInterrupted()) {
+                    break;
+                }
+
                 notYellow[i][j] = notYellow[j][i] = false;
             }
         }
 
         for (int v1 = 0; v1 < numVariables() - 1; v1++) {
+            if (Thread.currentThread().isInterrupted()) {
+                break;
+            }
+
+            if (Thread.currentThread().isInterrupted()) {
+                break;
+            }
+
             for (int v2 = v1 + 1; v2 < numVariables(); v2++) {
+                if (Thread.currentThread().isInterrupted()) {
+                    break;
+                }
+
+                if (Thread.currentThread().isInterrupted()) {
+                    break;
+                }
+
                 //Trying to find unclustered({v1, v3, v5}, {v2, v4, v6})
                 if (ng[v1][v2] != EDGE_BLUE) {
                     continue;
@@ -1638,6 +1982,14 @@ public final class BuildPureClusters {
 //                        " x " + tetradTest.getVarNames()[v2] + "...");
                 boolean notFound = true;
                 for (int v3 = 0; v3 < numVariables() - 1 && notFound; v3++) {
+                    if (Thread.currentThread().isInterrupted()) {
+                        break;
+                    }
+
+                    if (Thread.currentThread().isInterrupted()) {
+                        break;
+                    }
+
                     if (v1 == v3 || v2 == v3 || //ng[v1][v3] != EDGE_BLUE ||
                             ng[v1][v3] == EDGE_GRAY || ng[v2][v3] == EDGE_GRAY ||
                             cv[v1][v3] != EDGE_BLACK ||
@@ -1645,6 +1997,14 @@ public final class BuildPureClusters {
                         continue;
                     }
                     for (int v5 = v3 + 1; v5 < numVariables() && notFound; v5++) {
+                        if (Thread.currentThread().isInterrupted()) {
+                            break;
+                        }
+
+                        if (Thread.currentThread().isInterrupted()) {
+                            break;
+                        }
+
                         if (v1 == v5 || v2 == v5 || //ng[v1][v5] != EDGE_BLUE || ng[v3][v5] != EDGE_BLUE ||
                                 ng[v1][v5] == EDGE_GRAY ||
                                 ng[v2][v5] == EDGE_GRAY ||
@@ -1656,6 +2016,10 @@ public final class BuildPureClusters {
                             continue;
                         }
                         for (int v4 = 0; v4 < numVariables() - 1 && notFound; v4++) {
+                            if (Thread.currentThread().isInterrupted()) {
+                                break;
+                            }
+
                             if (v1 == v4 || v2 == v4 || v3 == v4 || v5 == v4 ||
                                     ng[v1][v4] == EDGE_GRAY ||
                                     ng[v2][v4] == EDGE_GRAY ||
@@ -1670,6 +2034,10 @@ public final class BuildPureClusters {
                             }
                             for (int v6 = v4 + 1;
                                  v6 < numVariables() && notFound; v6++) {
+                                if (Thread.currentThread().isInterrupted()) {
+                                    break;
+                                }
+
                                 if (v1 == v6 || v2 == v6 || v3 == v6 ||
                                         v5 == v6 || ng[v1][v6] == EDGE_GRAY ||
                                         ng[v2][v6] == EDGE_GRAY ||
@@ -1732,15 +2100,27 @@ public final class BuildPureClusters {
                 if (notFound) {
                     //Trying to find unclustered({v1, v2, v3}, {v4, v5, v6})
                     for (int v3 = 0; v3 < numVariables() && notFound; v3++) {
+                        if (Thread.currentThread().isInterrupted()) {
+                            break;
+                        }
+
                         if (v1 == v3 || v2 == v3 || ng[v1][v3] == EDGE_GRAY ||
                                 ng[v2][v3] == EDGE_GRAY ||
                                 cv[v1][v3] != EDGE_BLACK ||
                                 cv[v2][v3] != EDGE_BLACK)
                         //ng[v1][v3] != EDGE_BLUE || ng[v2][v3] != EDGE_BLUE)*/
                         {
+                            if (Thread.currentThread().isInterrupted()) {
+                                break;
+                            }
+
                             continue;
                         }
                         for (int v4 = 0; v4 < numVariables() - 2 && notFound; v4++) {
+                            if (Thread.currentThread().isInterrupted()) {
+                                break;
+                            }
+
                             if (v1 == v4 || v2 == v4 || v3 == v4 ||
                                     ng[v1][v4] == EDGE_GRAY ||
                                     ng[v2][v4] == EDGE_GRAY ||
@@ -1753,6 +2133,10 @@ public final class BuildPureClusters {
                             }
                             for (int v5 = v4 + 1;
                                  v5 < numVariables() - 1 && notFound; v5++) {
+                                if (Thread.currentThread().isInterrupted()) {
+                                    break;
+                                }
+
                                 if (v1 == v5 || v2 == v5 || v3 == v5 ||
                                         ng[v1][v5] == EDGE_GRAY ||
                                         ng[v2][v5] == EDGE_GRAY ||
@@ -1768,6 +2152,10 @@ public final class BuildPureClusters {
                                 }
                                 for (int v6 = v5 + 1;
                                      v6 < numVariables() && notFound; v6++) {
+                                    if (Thread.currentThread().isInterrupted()) {
+                                        break;
+                                    }
+
                                     if (v1 == v6 || v2 == v6 || v3 == v6 ||
                                             ng[v1][v6] == EDGE_GRAY ||
                                             ng[v2][v6] == EDGE_GRAY ||
@@ -1862,6 +2250,10 @@ public final class BuildPureClusters {
         Iterator<int[]> it = components.iterator();
 //        print(">> Stage 0.3.2");
         while (it.hasNext()) {
+            if (Thread.currentThread().isInterrupted()) {
+                break;
+            }
+
             int component[] = it.next();
 //            print(">>> Searching for cliques in ");
             printClusterIds(component);
@@ -1873,6 +2265,10 @@ public final class BuildPureClusters {
         }
         //Sort cliques by size: heuristic to keep as many indicators as possible
         for (int i = 0; i < clustering.size() - 1; i++) {
+            if (Thread.currentThread().isInterrupted()) {
+                break;
+            }
+
             int max = 0;
             int max_idx = -1;
             for (int j = i; j < clustering.size(); j++) {
@@ -1907,6 +2303,10 @@ public final class BuildPureClusters {
         List<int[]> purified = new ArrayList<>();
         int ids[] = {1};
         for (int i = 0; i < clustering.size(); i++) {
+            if (Thread.currentThread().isInterrupted()) {
+                break;
+            }
+
 //            print(" * Solving cluster #" + (i + 1));
             this.outputMessage = false;
             int rawCluster[] = (int[]) clustering.get(i); //It is important here that the same order is mantained in each list
@@ -1952,9 +2352,25 @@ public final class BuildPureClusters {
         int cset1 = cluster1.length;
         int cset2 = cluster2.length;
         for (int o1 = 0; o1 < cset1 - 2; o1++) {
+            if (Thread.currentThread().isInterrupted()) {
+                break;
+            }
+
             for (int o2 = o1 + 1; o2 < cset1 - 1; o2++) {
+                if (Thread.currentThread().isInterrupted()) {
+                    break;
+                }
+
                 for (int o3 = o2 + 1; o3 < cset1; o3++) {
+                    if (Thread.currentThread().isInterrupted()) {
+                        break;
+                    }
+
                     for (int o4 = 0; o4 < cset2 - 2; o4++) {
+                        if (Thread.currentThread().isInterrupted()) {
+                            break;
+                        }
+
 //                        if (cluster1[o4] == o1 || cluster1[o4] == o2 || cluster1[o4] == o3) continue;
 
                         if (!validClusterPairPartial1(cluster1[o1],
@@ -1962,6 +2378,10 @@ public final class BuildPureClusters {
                             continue;
                         }
                         for (int o5 = o4 + 1; o5 < cset2 - 1; o5++) {
+                            if (Thread.currentThread().isInterrupted()) {
+                                break;
+                            }
+
 //                            if (cluster1[o5] == o1 || cluster1[o5] == o2 || cluster1[o5] == o3) continue;
 
                             if (!validClusterPairPartial2(cluster1[o1],
@@ -1970,6 +2390,10 @@ public final class BuildPureClusters {
                                 continue;
                             }
                             for (int o6 = o5 + 1; o6 < cset2; o6++) {
+                                if (Thread.currentThread().isInterrupted()) {
+                                    break;
+                                }
+
 //                                if (cluster1[o6] == o1 || cluster1[o6] == o2 || cluster1[o6] == o3) continue;
 
                                 if (validClusterPairPartial3(cluster1[o1],
@@ -2008,10 +2432,22 @@ public final class BuildPureClusters {
         printClustering(initialClustering);
         List<Set<String>> forbiddenList = new ArrayList<>();
         for (int c1 = 0; c1 < initialClustering.size(); c1++) {
+            if (Thread.currentThread().isInterrupted()) {
+                break;
+            }
+
             int nextCluster[] = (int[]) initialClustering.get(c1);
             for (int i = 0; i < nextCluster.length; i++) {
+                if (Thread.currentThread().isInterrupted()) {
+                    break;
+                }
+
                 selected[nextCluster[i]] = true;
                 for (int j = i + 1; j < nextCluster.length; j++) {
+                    if (Thread.currentThread().isInterrupted()) {
+                        break;
+                    }
+
                     Set<String> nextPair = new HashSet<>();
                     nextPair.add(this.tetradTest.getVarNames()[nextCluster[i]]);
                     nextPair.add(this.tetradTest.getVarNames()[nextCluster[j]]);
@@ -2019,9 +2455,21 @@ public final class BuildPureClusters {
                 }
             }
             for (int c2 = c1 + 1; c2 < initialClustering.size(); c2++) {
+                if (Thread.currentThread().isInterrupted()) {
+                    break;
+                }
+
                 int nextCluster2[] = (int[]) initialClustering.get(c2);
                 for (int i = 0; i < nextCluster.length; i++) {
+                    if (Thread.currentThread().isInterrupted()) {
+                        break;
+                    }
+
                     for (int j = 0; j < nextCluster2.length; j++) {
+                        if (Thread.currentThread().isInterrupted()) {
+                            break;
+                        }
+
                         Set<String> nextPair = new HashSet<>();
                         nextPair.add(
                                 this.tetradTest.getVarNames()[nextCluster[i]]);
@@ -2077,7 +2525,15 @@ public final class BuildPureClusters {
         /* Stage 1: identify (partially) uncorrelated and impure pairs */
 //        print(">> Stage 1: reidentify edge colors");
         for (int i = 0; i < numVariables(); i++) {
+            if (Thread.currentThread().isInterrupted()) {
+                break;
+            }
+
             for (int j = 0; j < numVariables(); j++) {
+                if (Thread.currentThread().isInterrupted()) {
+                    break;
+                }
+
                 if (selected[i] && selected[j] &&
                         (ng[i][j] == EDGE_BLUE || ng[i][j] == EDGE_YELLOW)) {
                     ng[i][j] = EDGE_RED;
@@ -2124,8 +2580,16 @@ public final class BuildPureClusters {
 
         //Rule 1
         for (int x1 = 0; x1 < numVariables() - 1; x1++) {
+            if (Thread.currentThread().isInterrupted()) {
+                break;
+            }
+
             outer_loop:
             for (int y1 = x1 + 1; y1 < numVariables(); y1++) {
+                if (Thread.currentThread().isInterrupted()) {
+                    break;
+                }
+
                 if (ng[x1][y1] != EDGE_BLUE) {
                     continue;
                 }
@@ -2133,11 +2597,19 @@ public final class BuildPureClusters {
 //                printMessage("Searching for " + tetradTest.getVarNames()[x1] +
 //                        " x " + tetradTest.getVarNames()[y1] + "...");
                 for (int x2 = 0; x2 < numVariables(); x2++) {
+                    if (Thread.currentThread().isInterrupted()) {
+                        break;
+                    }
+
                     if (x1 == x2 || y1 == x2 || cv[x1][x2] == EDGE_NONE || cv[y1][x2] ==
                             EDGE_NONE) {
                         continue;
                     }
                     for (int x3 = 0; x3 < numVariables(); x3++) {
+                        if (Thread.currentThread().isInterrupted()) {
+                            break;
+                        }
+
                         if (x1 == x3 || x2 == x3 || y1 == x3 ||
                                 cv[x1][x3] == EDGE_NONE ||
                                 cv[x2][x3] == EDGE_NONE ||
@@ -2146,6 +2618,10 @@ public final class BuildPureClusters {
                             continue;
                         }
                         for (int y2 = 0; y2 < numVariables(); y2++) {
+                            if (Thread.currentThread().isInterrupted()) {
+                                break;
+                            }
+
                             if (x1 == y2 || x2 == y2 || x3 == y2 || y1 == y2 ||
                                     cv[x1][y2] == EDGE_NONE ||
                                     cv[x2][y2] == EDGE_NONE ||
@@ -2155,6 +2631,10 @@ public final class BuildPureClusters {
                                 continue;
                             }
                             for (int y3 = 0; y3 < numVariables(); y3++) {
+                                if (Thread.currentThread().isInterrupted()) {
+                                    break;
+                                }
+
                                 if (x1 == y3 || x2 == y3 || x3 == y3 ||
                                         y1 == y3 || y2 == y3 || cv[x1][y3] ==
                                         EDGE_NONE || cv[x2][y3] == EDGE_NONE ||
@@ -2207,8 +2687,16 @@ public final class BuildPureClusters {
 
         System.out.println("Trying RULE 2 now!");
         for (int x1 = 0; x1 < numVariables() - 1; x1++) {
+            if (Thread.currentThread().isInterrupted()) {
+                break;
+            }
+
             outer_loop:
             for (int y1 = x1 + 1; y1 < numVariables(); y1++) {
+                if (Thread.currentThread().isInterrupted()) {
+                    break;
+                }
+
                 if (ng[x1][y1] != EDGE_BLUE) {
                     continue;
                 }
@@ -2216,11 +2704,19 @@ public final class BuildPureClusters {
 //                printMessage("Searching for " + tetradTest.getVarNames()[x1] +
 //                        " x " + tetradTest.getVarNames()[y1] + "...");
                 for (int x2 = 0; x2 < numVariables(); x2++) {
+                    if (Thread.currentThread().isInterrupted()) {
+                        break;
+                    }
+
                     if (x1 == x2 || y1 == x2 || cv[x1][x2] == EDGE_NONE || cv[y1][x2] ==
                             EDGE_NONE || ng[x1][x2] == EDGE_GRAY) {
                         continue;
                     }
                     for (int y2 = 0; y2 < numVariables(); y2++) {
+                        if (Thread.currentThread().isInterrupted()) {
+                            break;
+                        }
+
                         if (x1 == y2 || x2 == y2 || y1 == y2 ||
                                 cv[x1][y2] == EDGE_NONE ||
                                 cv[x2][y2] == EDGE_NONE ||
@@ -2230,6 +2726,10 @@ public final class BuildPureClusters {
                             continue;
                         }
                         for (int x3 = 0; x3 < numVariables(); x3++) {
+                            if (Thread.currentThread().isInterrupted()) {
+                                break;
+                            }
+
                             if (x1 == x3 || x2 == x3 || y1 == x3 || y2 == x3 ||
                                     ng[x1][x3] == EDGE_GRAY ||
                                     cv[x1][x3] == EDGE_NONE ||
@@ -2240,6 +2740,10 @@ public final class BuildPureClusters {
                                 continue;
                             }
                             for (int y3 = 0; y3 < numVariables(); y3++) {
+                                if (Thread.currentThread().isInterrupted()) {
+                                    break;
+                                }
+
                                 if (x1 == y3 || x2 == y3 || x3 == y3 ||
                                         y1 == y3 || y2 == y3 || ng[y1][y3] ==
                                         EDGE_GRAY || cv[x1][y3] == EDGE_NONE ||
@@ -2333,6 +2837,10 @@ public final class BuildPureClusters {
         Iterator<int[]> it = components.iterator();
 //        print(">> Stage 3.2");
         while (it.hasNext()) {
+            if (Thread.currentThread().isInterrupted()) {
+                break;
+            }
+
             int component[] = it.next();
 //            print(">>> Searching for cliques in ");
             printClusterIds(component);
@@ -2341,9 +2849,17 @@ public final class BuildPureClusters {
         }
         //Sort cliques by size: better visualization when printing
         for (int i = 0; i < clustering.size() - 1; i++) {
+            if (Thread.currentThread().isInterrupted()) {
+                break;
+            }
+
             int max = 0;
             int max_idx = -1;
             for (int j = i; j < clustering.size(); j++) {
+                if (Thread.currentThread().isInterrupted()) {
+                    break;
+                }
+
                 if (((int[]) clustering.get(j)).length > max) {
                     max = ((int[]) clustering.get(j)).length;
                     max_idx = j;
@@ -2395,7 +2911,15 @@ public final class BuildPureClusters {
         boolean compatibility[][] = new boolean[clustering.size()][clustering.size()];
         if (need3) {
             for (int i = 0; i < clustering.size() - 1; i++) {
+                if (Thread.currentThread().isInterrupted()) {
+                    break;
+                }
+
                 for (int j = i + 1; j < clustering.size(); j++) {
+                    if (Thread.currentThread().isInterrupted()) {
+                        break;
+                    }
+
                     compatibility[i][j] = compatibility[j][i] = compatibleClusters(
                             (int[]) clustering.get(i),
                             (int[]) clustering.get(j), cv);
@@ -2421,13 +2945,25 @@ public final class BuildPureClusters {
             int bestChoice;
             double bestScore = ((int[]) clustering.get(i)).length;
             do {
+                if (Thread.currentThread().isInterrupted()) {
+                    break;
+                }
+
                 bestChoice = -1;
                 next_choice:
                 for (int j = 0; j < clustering.size(); j++) {
+                    if (Thread.currentThread().isInterrupted()) {
+                        break;
+                    }
+
                     if (marked[j]) {
                         continue;
                     }
                     for (int k = 0; k < newClustering.size(); k++) {
+                        if (Thread.currentThread().isInterrupted()) {
+                            break;
+                        }
+
                         if (need3 &&
                                 !compatibility[j][clustering.indexOf(
                                         newClustering.get(k))]) {
@@ -2471,17 +3007,37 @@ public final class BuildPureClusters {
     private boolean isNewClustering(List clusterings, List newClustering) {
         nextClustering:
         for (Iterator it = clusterings.iterator(); it.hasNext(); ) {
+            if (Thread.currentThread().isInterrupted()) {
+                break;
+            }
+
             List nextClustering = (List) it.next();
             nextOldCluster:
             for (Iterator it2 = nextClustering.iterator(); it2.hasNext(); ) {
+                if (Thread.currentThread().isInterrupted()) {
+                    break;
+                }
+
                 int cluster[] = (int[]) it2.next();
                 nextNewCluster:
                 for (Iterator it3 = newClustering.iterator(); it3.hasNext(); ) {
+                    if (Thread.currentThread().isInterrupted()) {
+                        break;
+                    }
+
                     int newCluster[] = (int[]) it3.next();
                     if (cluster.length == newCluster.length) {
                         nextElement:
                         for (int i = 0; i < cluster.length; i++) {
+                            if (Thread.currentThread().isInterrupted()) {
+                                break;
+                            }
+
                             for (int j = 0; j < newCluster.length; j++) {
+                                if (Thread.currentThread().isInterrupted()) {
+                                    break;
+                                }
+
                                 if (cluster[i] == newCluster[j]) {
                                     continue nextElement;
                                 }
@@ -2678,6 +3234,10 @@ public final class BuildPureClusters {
 
         //Try to find a solution. Maximum number of trials: 10
         for (int i = 0; i < actualClusterings.size() && i < 10; i++) {
+            if (Thread.currentThread().isInterrupted()) {
+                break;
+            }
+
             List partition = (List) actualClusterings.get(i);
 
 //            printMessage("Trying to purify");
@@ -2690,6 +3250,10 @@ public final class BuildPureClusters {
             Iterator it = partition.iterator();
             printClustering(partition);
             while (it.hasNext()) {
+                if (Thread.currentThread().isInterrupted()) {
+                    break;
+                }
+
                 int codes[] = (int[]) it.next();
                 for (int k = 0; k < codes.length; k++) {
                     String var = tetradTest.getVarNames()[codes[k]];
@@ -2701,10 +3265,18 @@ public final class BuildPureClusters {
             List<List<Node>> partition2 = new ArrayList<>();
 
             for (int j = 0; j < partition.size(); j++) {
+                if (Thread.currentThread().isInterrupted()) {
+                    break;
+                }
+
                 int[] clusterIndices = (int[]) partition.get(j);
                 List<Node> cluster = new ArrayList<>();
 
                 for (int k = 0; k < clusterIndices.length; k++) {
+                    if (Thread.currentThread().isInterrupted()) {
+                        break;
+                    }
+
                     cluster.add(tetradTest.getVariables().get(clusterIndices[k]));
                 }
 
@@ -2799,9 +3371,17 @@ public final class BuildPureClusters {
 //        print("* Substituting invalid solution for new one");
         int currentIds[] = (int[]) clusterIds.get(position);
         for (int j = position + 1; j < clusterings.size() && !found; j++) {
+            if (Thread.currentThread().isInterrupted()) {
+                break;
+            }
+
             if (((List) clusterings.get(j)).size() < currentClustering.size()) {
                 found = true;
                 for (int i = 0; i < currentClustering.size(); i++) {
+                    if (Thread.currentThread().isInterrupted()) {
+                        break;
+                    }
+
                     List newClustering = new ArrayList();
                     int newIds[] = new int[currentClustering.size() - 1];
                     for (int k = 0; k < currentClustering.size(); k++) {
@@ -2821,9 +3401,17 @@ public final class BuildPureClusters {
         }
         if (!found) {
             for (int i = 0; i < currentClustering.size(); i++) {
+                if (Thread.currentThread().isInterrupted()) {
+                    break;
+                }
+
                 List newClustering = new ArrayList();
                 int newIds[] = new int[currentClustering.size() - 1];
                 for (int k = 0; k < currentClustering.size(); k++) {
+                    if (Thread.currentThread().isInterrupted()) {
+                        break;
+                    }
+
                     if (i != k) {
                         newClustering.add(currentClustering.get(k));
                         if (k > i) {

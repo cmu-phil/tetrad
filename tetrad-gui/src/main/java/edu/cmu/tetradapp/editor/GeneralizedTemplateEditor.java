@@ -27,7 +27,16 @@ import edu.cmu.tetrad.graph.NodeType;
 import edu.cmu.tetrad.sem.GeneralizedSemPm;
 import edu.cmu.tetrad.sem.TemplateExpander;
 import edu.cmu.tetradapp.util.StringTextField;
-
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.text.ParseException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.event.AncestorEvent;
@@ -35,12 +44,6 @@ import javax.swing.event.AncestorListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.*;
-import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.text.ParseException;
-import java.util.*;
-import java.util.List;
 
 /**
  * Edits an expression for a node in the generalized SEM PM.
@@ -48,6 +51,8 @@ import java.util.List;
  * @author Joseph Ramsey
  */
 class GeneralizedTemplateEditor extends JComponent {
+
+    private static final long serialVersionUID = 3455126100397759982L;
 
     /**
      * The color that selected text is being rendered. Either black or red.

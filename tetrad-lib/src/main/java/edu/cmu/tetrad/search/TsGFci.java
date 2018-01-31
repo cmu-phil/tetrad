@@ -182,6 +182,10 @@ public final class TsGFci implements GraphSearch {
             int[] combination;
 
             while ((combination = cg.next()) != null) {
+                if (Thread.currentThread().isInterrupted()) {
+                    break;
+                }
+
                 Node a = adjacentNodes.get(combination[0]);
                 Node c = adjacentNodes.get(combination[1]);
 

@@ -9,6 +9,7 @@ import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.*;
 import edu.cmu.tetrad.sem.LargeScaleSimulation;
+import edu.cmu.tetrad.sem.ScoreType;
 import edu.cmu.tetrad.util.DataConvertUtils;
 import edu.cmu.tetrad.util.TetradMatrix;
 import edu.cmu.tetrad.util.TextTable;
@@ -126,7 +127,7 @@ public class Comparison2 {
             if (params.getAlgorithm() == ComparisonParameters.Algorithm.TsFCI) {
                 trueDag = GraphUtils.randomGraphRandomForwardEdges(
                         nodes, 0, params.getNumEdges(), 10, 10, 10, false, true);
-                trueDag = TimeSeriesUtils.graphToLagGraph(trueDag);
+                trueDag = TimeSeriesUtils.graphToLagGraph(trueDag, 2);
                 System.out.println("Creating Time Lag Graph : " + trueDag);
             }
             /**
@@ -252,7 +253,7 @@ public class Comparison2 {
                 if (params.getAlgorithm() == ComparisonParameters.Algorithm.TsFCI) {
                     trueDag = GraphUtils.randomGraphRandomForwardEdges(
                             nodes, 0, params.getNumEdges(), 10, 10, 10, false, true);
-                    trueDag = TimeSeriesUtils.graphToLagGraph(trueDag);
+                    trueDag = TimeSeriesUtils.graphToLagGraph(trueDag, 2);
                     System.out.println("Creating Time Lag Graph : " + trueDag);
                 }
                 /**
@@ -397,7 +398,7 @@ public class Comparison2 {
             params.setDataType(ComparisonParameters.DataType.Discrete);
         }
 
-        if (params.getScore() == ComparisonParameters.ScoreType.SemBic) {
+        if (params.getScore() == ScoreType.SemBic) {
             if (params.getDataType() != null && params.getDataType() != ComparisonParameters.DataType.Continuous) {
                 throw new IllegalArgumentException("Data type previously set to something other than continuous.");
             }
@@ -411,7 +412,7 @@ public class Comparison2 {
             score = semBicScore;
 
             params.setDataType(ComparisonParameters.DataType.Continuous);
-        } else if (params.getScore() == ComparisonParameters.ScoreType.BDeu) {
+        } else if (params.getScore() == ScoreType.BDeu) {
             if (params.getDataType() != null && params.getDataType() != ComparisonParameters.DataType.Discrete) {
                 throw new IllegalArgumentException("Data type previously set to something other than discrete.");
             }

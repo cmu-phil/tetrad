@@ -9,6 +9,7 @@ import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.*;
 import edu.cmu.tetrad.sem.LargeScaleSimulation;
+import edu.cmu.tetrad.sem.ScoreType;
 import edu.cmu.tetrad.util.TextTable;
 
 import java.text.DecimalFormat;
@@ -134,7 +135,7 @@ public class Comparison {
             params.setDataType(ComparisonParameters.DataType.Discrete);
         }
 
-        if (params.getScore() == ComparisonParameters.ScoreType.SemBic) {
+        if (params.getScore() == ScoreType.SemBic) {
             if (params.getDataType() != null && params.getDataType() != ComparisonParameters.DataType.Continuous) {
                 throw new IllegalArgumentException("Data type previously set to something other than continuous.");
             }
@@ -149,7 +150,7 @@ public class Comparison {
 
             params.setDataType(ComparisonParameters.DataType.Continuous);
         }
-        else if (params.getScore() == ComparisonParameters.ScoreType.BDeu) {
+        else if (params.getScore() == ScoreType.BDeu) {
             if (params.getDataType() != null && params.getDataType() != ComparisonParameters.DataType.Discrete) {
                 throw new IllegalArgumentException("Data type previously set to something other than discrete.");
             }

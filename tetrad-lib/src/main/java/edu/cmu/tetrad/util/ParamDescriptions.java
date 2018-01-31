@@ -102,7 +102,7 @@ public class ParamDescriptions {
         map.put("ipen", new ParamDescription("IPEN parameter (GLASSO)", false));
         map.put("thr", new ParamDescription("THR parameter (GLASSO) (min = 0.0)", 1e-4, 0.0, Double.MAX_VALUE));
 
-        map.put("targetName", new ParamDescription("Target name", ""));
+        map.put("targetName", new ParamDescription("Target variable name", ""));
         map.put("verbose", new ParamDescription("Yes if verbose output should be printed or logged", false));
         map.put("faithfulnessAssumed", new ParamDescription("Yes if (one edge) faithfulness should be assumed", true));
 
@@ -148,7 +148,7 @@ public class ParamDescriptions {
 
         map.put("ngAlpha", new ParamDescription("Alpha for testing non-Gaussianity (min = 0.0)", 0.05, 0.0, 1.0));
 
-        map.put("twoCycleAlpha", new ParamDescription("Alpha for orienting 2-cycles (min = 0.0)", 1e-6, 0.0, 1.0));
+        map.put("twoCycleAlpha", new ParamDescription("Alpha orienting 2-cycles (min = 0.0)", 1e-6, 0.0, 1.0));
 
         map.put("symmetricFirstStep", new ParamDescription("Yes if the first step step for FGES should do scoring for both X->Y and Y->X", false));
 
@@ -238,22 +238,6 @@ public class ParamDescriptions {
                 "For Beta(x, y), the 'y'",
                 5, 1, Double.POSITIVE_INFINITY));
 
-        map.put("measurementVariance", new ParamDescription(
-                "Variance of independent measurement noise added each variable",
-                0.0, 0.0, Double.POSITIVE_INFINITY));
-
-        map.put("selfLoopCoef", new ParamDescription(
-                "Self loop coefficient (for all variables), default 0.0",
-                0.0, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY));
-
-        map.put("adjacentsOnly", new ParamDescription(
-                "Yes if the search should be over parents and children only; No if parents of children should be included",
-                false));
-
-        map.put("doNonparanormalTransform", new ParamDescription(
-                "Yes if a nonparanormal transform of the data should be done",
-                false));
-
         map.put("extraEdgeThreshold", new ParamDescription(
                 "Threshold for including extra edges",
                 0.3, 0.0, 1.0));
@@ -270,19 +254,15 @@ public class ParamDescriptions {
                 "Threshold for judging negative coefficient edges as X->Y (range (-1, 0)",
                 -0.2, -1.0, 1.0));
 
-        map.put("numInBootstrapForLinearityTest", new ParamDescription(
-                "Sample size for bootstrap for linearity test",
-                100, 0, Integer.MAX_VALUE));
+        map.put("numLags", new ParamDescription(
+                "The number of lags in the time lag model",
+                1, 1, Double.POSITIVE_INFINITY));
 
-        map.put("numBootstrapsForLinearityTest", new ParamDescription(
-                "Number of bootstraps for linearity test",
-                100, 0, Integer.MAX_VALUE));
-
-        map.put("alphaForLinearityTest", new ParamDescription(
-                "Alpha for linearity test",
-                0.999, 0.0, 100.0));
-
-
+        map.put("saveLatentVars", new ParamDescription("Save latent variables.", false));
+        
+        map.put("probTwoCycle", new ParamDescription(
+            "The probability of creating a 2-cycles in the graph (0 - 1)",
+            0.0, 0.0, 1.0));
     }
 
     public static ParamDescriptions getInstance() {

@@ -289,7 +289,8 @@ public class TabularDataJTable extends JTable implements DataModelContainer,
                 editor.stopCellEditing();
             }
 
-            for (int i = 0; i < selectedCols.length; i++) {
+            for (int i = selectedCols.length - 1; i >= 0; i--) {
+//            for (int i = 0; i < selectedCols.length; i++) {
                 // Adjust to 0 base
                 selectedCols[i] -= getNumLeadingCols();
                 // Then remove each individual column from model

@@ -18,12 +18,21 @@
 // along with this program; if not, write to the Free Software               //
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA //
 ///////////////////////////////////////////////////////////////////////////////
-
 package edu.cmu.tetradapp.editor;
 
 import edu.cmu.tetrad.data.IKnowledge;
-import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.sem.*;
+import edu.cmu.tetrad.graph.Edge;
+import edu.cmu.tetrad.graph.Edges;
+import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.graph.GraphUtils;
+import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.graph.NodeType;
+import edu.cmu.tetrad.graph.SemGraph;
+import edu.cmu.tetrad.sem.ISemIm;
+import edu.cmu.tetrad.sem.ParamType;
+import edu.cmu.tetrad.sem.Parameter;
+import edu.cmu.tetrad.sem.SemIm;
+import edu.cmu.tetrad.sem.SemPm;
 import edu.cmu.tetrad.util.JOptionUtils;
 import edu.cmu.tetrad.util.NumberFormatUtil;
 import edu.cmu.tetrad.util.ProbUtils;
@@ -36,27 +45,47 @@ import edu.cmu.tetradapp.workbench.DisplayNode;
 import edu.cmu.tetradapp.workbench.GraphNodeMeasured;
 import edu.cmu.tetradapp.workbench.GraphWorkbench;
 import edu.cmu.tetradapp.workbench.LayoutMenu;
-
-import javax.swing.*;
-import javax.swing.border.TitledBorder;
-import javax.swing.event.AncestorEvent;
-import javax.swing.event.AncestorListener;
-import javax.swing.event.TableModelEvent;
-import javax.swing.event.TableModelListener;
-import javax.swing.table.AbstractTableModel;
-import javax.swing.table.TableCellEditor;
-import javax.swing.table.TableModel;
-import java.awt.*;
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Container;
+import java.awt.Font;
+import java.awt.Toolkit;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.StringSelection;
-import java.awt.event.*;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import javax.swing.Box;
+import javax.swing.BoxLayout;
+import javax.swing.ButtonGroup;
+import javax.swing.JCheckBoxMenuItem;
+import javax.swing.JComboBox;
+import javax.swing.JDialog;
+import javax.swing.JLabel;
+import javax.swing.JMenu;
+import javax.swing.JMenuBar;
+import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTabbedPane;
+import javax.swing.JTable;
+import javax.swing.JTextArea;
+import javax.swing.ToolTipManager;
+import javax.swing.border.TitledBorder;
+import javax.swing.event.AncestorEvent;
+import javax.swing.event.AncestorListener;
+import javax.swing.table.AbstractTableModel;
+import javax.swing.table.TableCellEditor;
+import javax.swing.table.TableModel;
 
 /**
  * Edits a SEM instantiated model.
@@ -65,12 +94,17 @@ import java.util.Map;
  * @author Joseph Ramsey
  */
 public final class SemImEditor extends JPanel implements LayoutEditable, DoNotScroll {
+
+    private static final long serialVersionUID = -1856607070184945405L;
+
     private OneEditor oneEditorPanel;
     private JPanel targetPanel;
     private int matrixSelection;
 
     /**
      * Constructs a new SemImEditor from the given OldSemEstimateAdapter.
+     *
+     * @param semImWrapper
      */
     public SemImEditor(SemImWrapper semImWrapper) {
         this(semImWrapper, "Graphical Editor", "Tabular Editor", TabbedPaneDefault.GRAPHICAL);
@@ -78,6 +112,8 @@ public final class SemImEditor extends JPanel implements LayoutEditable, DoNotSc
 
     /**
      * Constructs a new SemImEditor from the given OldSemEstimateAdapter.
+     *
+     * @param semEstWrapper
      */
     public SemImEditor(SemEstimatorWrapper semEstWrapper) {
         this(new SemImWrapper(semEstWrapper.getSemEstimator().getEstimatedSem()));
@@ -85,9 +121,14 @@ public final class SemImEditor extends JPanel implements LayoutEditable, DoNotSc
 
     /**
      * Constructs an editor for the given SemIm.
+     *
+     * @param wrapper
+     * @param graphicalEditorTitle
+     * @param tabularEditorTitle
+     * @param tabbedPaneDefault
      */
     public SemImEditor(final SemImWrapper wrapper, final String graphicalEditorTitle,
-                       final String tabularEditorTitle, final TabbedPaneDefault tabbedPaneDefault) {
+            final String tabularEditorTitle, final TabbedPaneDefault tabbedPaneDefault) {
 
         if (wrapper == null) {
             throw new NullPointerException("The SEM IM wrapper has not been specified.");
@@ -109,18 +150,14 @@ public final class SemImEditor extends JPanel implements LayoutEditable, DoNotSc
 
             comp.setSelectedIndex(wrapper.getModelIndex());
 
-            comp.addActionListener(new ActionListener() {
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    wrapper.setModelIndex(((Integer)comp.getSelectedItem()).intValue() - 1);
-                    oneEditorPanel = new OneEditor(wrapper, graphicalEditorTitle, tabularEditorTitle, tabbedPaneDefault);
-                    targetPanel.add(oneEditorPanel, BorderLayout.CENTER);
-                    validate();
-                }
+            comp.addActionListener((e) -> {
+                wrapper.setModelIndex(((Integer) comp.getSelectedItem()) - 1);
+                oneEditorPanel = new OneEditor(wrapper, graphicalEditorTitle, tabularEditorTitle, tabbedPaneDefault);
+                targetPanel.add(oneEditorPanel, BorderLayout.CENTER);
+                validate();
             });
 
 //            comp.setMaximumSize(comp.getPreferredSize());
-
             Box b = Box.createHorizontalBox();
             b.add(new JLabel("Using model"));
             b.add(comp);
@@ -134,8 +171,6 @@ public final class SemImEditor extends JPanel implements LayoutEditable, DoNotSc
         oneEditorPanel = new OneEditor(wrapper, graphicalEditorTitle, tabularEditorTitle, tabbedPaneDefault);
         targetPanel.add(oneEditorPanel, BorderLayout.CENTER);
     }
-
-
 
     @Override
     public Graph getGraph() {
@@ -192,12 +227,17 @@ public final class SemImEditor extends JPanel implements LayoutEditable, DoNotSc
         oneEditorPanel.displaySemIm(updatedSem, tabSelectionIndex, matrixSelection);
     }
 
-    public enum TabbedPaneDefault {GRAPHICAL, TABULAR, COVMATRIX, tabbedPanedDefault, STATS}
+    public enum TabbedPaneDefault {
+        GRAPHICAL, TABULAR, COVMATRIX, tabbedPanedDefault, STATS
+    }
     private SemImWrapper wrapper;
 
     private class OneEditor extends JPanel implements LayoutEditable {
+
+        private static final long serialVersionUID = 6622060253747442717L;
+
         private final TabbedPaneDefault tabbedPanedDefault;
-        private SemImWrapper semImWrapper;
+        private final SemImWrapper semImWrapper;
 
         /**
          * The graphical editor for the SemIm.
@@ -221,9 +261,9 @@ public final class SemImEditor extends JPanel implements LayoutEditable, DoNotSc
 
         /**
          * Maximum number of free parameters for which statistics will be
-         * calculated. (Calculating standard errors is high complexity.) Set this to
-         * zero to turn  off statistics calculations (which can be problematic
-         * sometimes).
+         * calculated. (Calculating standard errors is high complexity.) Set
+         * this to zero to turn off statistics calculations (which can be
+         * problematic sometimes).
          */
         private final int maxFreeParamsForStatistics = 1000;
 
@@ -246,7 +286,7 @@ public final class SemImEditor extends JPanel implements LayoutEditable, DoNotSc
         private JMenuItem errorTerms;
 
         public OneEditor(SemImWrapper wrapper, String graphicalEditorTitle, String tabularEditorTitle,
-                         final TabbedPaneDefault tabbedPaneDefault) {
+                final TabbedPaneDefault tabbedPaneDefault) {
             this.semImWrapper = wrapper;
             this.graphicalEditorTitle = graphicalEditorTitle;
             this.tabularEditorTitle = tabularEditorTitle;
@@ -295,57 +335,49 @@ public final class SemImEditor extends JPanel implements LayoutEditable, DoNotSc
                     "Save Graph Image..."));
             file.add(this.getCopyMatrixMenuItem());
 
-            JCheckBoxMenuItem covariances =
-                    new JCheckBoxMenuItem("Show standard deviations");
-            JCheckBoxMenuItem correlations =
-                    new JCheckBoxMenuItem("Show correlations");
+            JCheckBoxMenuItem covariances
+                    = new JCheckBoxMenuItem("Show standard deviations");
+            JCheckBoxMenuItem correlations
+                    = new JCheckBoxMenuItem("Show correlations");
 
             ButtonGroup correlationGroup = new ButtonGroup();
             correlationGroup.add(covariances);
             correlationGroup.add(correlations);
             covariances.setSelected(true);
 
-            covariances.addActionListener(new ActionListener() {
-                public void actionPerformed(ActionEvent e) {
-                    setEditCovariancesAsCorrelations(false);
-                }
+            covariances.addActionListener((e) -> {
+                setEditCovariancesAsCorrelations(false);
             });
 
-            correlations.addActionListener(new ActionListener() {
-                public void actionPerformed(ActionEvent e) {
-                    setEditCovariancesAsCorrelations(true);
-                }
+            correlations.addActionListener((e) -> {
+                setEditCovariancesAsCorrelations(true);
             });
 
             errorTerms = new JMenuItem();
 
             // By default, hide the error terms.
 //        getSemGraph().setShowErrorTerms(false);
-
             if (getSemGraph().isShowErrorTerms()) {
                 errorTerms.setText("Hide Error Terms");
             } else {
                 errorTerms.setText("Show Error Terms");
             }
 
-            errorTerms.addActionListener(new ActionListener() {
-                public void actionPerformed(ActionEvent e) {
-                    JMenuItem menuItem = (JMenuItem) e.getSource();
+            errorTerms.addActionListener((e) -> {
+                JMenuItem menuItem = (JMenuItem) e.getSource();
 
-                    if ("Hide Error Terms".equals(menuItem.getText())) {
-                        menuItem.setText("Show Error Terms");
-                        getSemGraph().setShowErrorTerms(false);
-                        graphicalEditor().resetLabels();
-                    } else if ("Show Error Terms".equals(menuItem.getText())) {
-                        menuItem.setText("Hide Error Terms");
-                        getSemGraph().setShowErrorTerms(true);
-                        graphicalEditor().resetLabels();
-                    }
+                if ("Hide Error Terms".equals(menuItem.getText())) {
+                    menuItem.setText("Show Error Terms");
+                    getSemGraph().setShowErrorTerms(false);
+                    graphicalEditor().resetLabels();
+                } else if ("Show Error Terms".equals(menuItem.getText())) {
+                    menuItem.setText("Hide Error Terms");
+                    getSemGraph().setShowErrorTerms(true);
+                    graphicalEditor().resetLabels();
                 }
             });
 
 //        menuBar.add(graph);
-
             meansItem = new JCheckBoxMenuItem("Show means");
             interceptsItem = new JCheckBoxMenuItem("Show intercepts");
 
@@ -354,16 +386,12 @@ public final class SemImEditor extends JPanel implements LayoutEditable, DoNotSc
             meansGroup.add(interceptsItem);
             meansItem.setSelected(true);
 
-            meansItem.addActionListener(new ActionListener() {
-                public void actionPerformed(ActionEvent e) {
-                    setEditIntercepts(false);
-                }
+            meansItem.addActionListener((e) -> {
+                setEditIntercepts(false);
             });
 
-            interceptsItem.addActionListener(new ActionListener() {
-                public void actionPerformed(ActionEvent e) {
-                    setEditIntercepts(true);
-                }
+            interceptsItem.addActionListener((e) -> {
+                setEditIntercepts(true);
             });
 
             JMenu params = new JMenu("Parameters");
@@ -385,26 +413,32 @@ public final class SemImEditor extends JPanel implements LayoutEditable, DoNotSc
             add(tabbedPane, BorderLayout.CENTER);
         }
 
+        @Override
         public Graph getGraph() {
             return semImGraphicalEditor.getWorkbench().getGraph();
         }
 
+        @Override
         public Map<Edge, Object> getModelEdgesToDisplay() {
             return getWorkbench().getModelEdgesToDisplay();
         }
 
+        @Override
         public Map<Node, Object> getModelNodesToDisplay() {
             return getWorkbench().getModelNodesToDisplay();
         }
 
+        @Override
         public IKnowledge getKnowledge() {
             return semImGraphicalEditor.getWorkbench().getKnowledge();
         }
 
+        @Override
         public Graph getSourceGraph() {
             return semImGraphicalEditor.getWorkbench().getSourceGraph();
         }
 
+        @Override
         public void layoutByGraph(Graph graph) {
             SemGraph _graph = (SemGraph) semImGraphicalEditor.getWorkbench().getGraph();
             _graph.setShowErrorTerms(false);
@@ -414,6 +448,7 @@ public final class SemImEditor extends JPanel implements LayoutEditable, DoNotSc
             errorTerms.setText("Show Error Terms");
         }
 
+        @Override
         public void layoutByKnowledge() {
             SemGraph _graph = (SemGraph) semImGraphicalEditor.getWorkbench().getGraph();
             _graph.setShowErrorTerms(false);
@@ -449,18 +484,18 @@ public final class SemImEditor extends JPanel implements LayoutEditable, DoNotSc
             return getSemIm().getSemPm().getGraph();
         }
 
-
         /**
-         * @return the index of the currently selected tab. Used to construct a new
-         * SemImEditor in the same state as a previous one.
+         * @return the index of the currently selected tab. Used to construct a
+         * new SemImEditor in the same state as a previous one.
          */
         public int getTabSelectionIndex() {
             return tabbedPane.getSelectedIndex();
         }
 
         /**
-         * @return the index of the matrix that was being viewed most recently. Used
-         * to construct a new SemImEditor in the same state as the previous one.
+         * @return the index of the matrix that was being viewed most recently.
+         * Used to construct a new SemImEditor in the same state as the previous
+         * one.
          */
         public int getMatrixSelection() {
             return impliedMatricesPanel().getMatrixSelection();
@@ -470,7 +505,7 @@ public final class SemImEditor extends JPanel implements LayoutEditable, DoNotSc
          * Sets a new SemIm to edit.
          */
         public void displaySemIm(SemIm semIm, int tabSelectionIndex,
-                                 int matrixSelection) {
+                int matrixSelection) {
             if (semIm == null) {
                 throw new NullPointerException();
             }
@@ -484,6 +519,8 @@ public final class SemImEditor extends JPanel implements LayoutEditable, DoNotSc
                 throw new IllegalArgumentException(
                         "Matrix selection must be 0, 1, 2, or 3: " + matrixSelection);
             }
+
+            SemImEditor.this.wrapper = new SemImWrapper(semIm);
 
             Graph oldGraph = getSemIm().getSemPm().getGraph();
 
@@ -511,21 +548,16 @@ public final class SemImEditor extends JPanel implements LayoutEditable, DoNotSc
         }
 
         //========================PRIVATE METHODS===========================//
-
-
         private JMenuItem getCopyMatrixMenuItem() {
             JMenuItem item = new JMenuItem("Copy Implied Covariance Matrix");
-            item.addActionListener(new ActionListener() {
-                public void actionPerformed(ActionEvent e) {
-                    String s = impliedMatricesPanel.getMatrixInTabDelimitedForm();
-                    Clipboard board = Toolkit.getDefaultToolkit().getSystemClipboard();
-                    StringSelection selection = new StringSelection(s);
-                    board.setContents(selection, selection);
-                }
+            item.addActionListener((e) -> {
+                String s = impliedMatricesPanel.getMatrixInTabDelimitedForm();
+                Clipboard board = Toolkit.getDefaultToolkit().getSystemClipboard();
+                StringSelection selection = new StringSelection(s);
+                board.setContents(selection, selection);
             });
             return item;
         }
-
 
         private ISemIm getSemIm() {
             return semImWrapper.getSemIm();
@@ -535,13 +567,9 @@ public final class SemImEditor extends JPanel implements LayoutEditable, DoNotSc
             if (this.semImGraphicalEditor == null) {
                 this.semImGraphicalEditor = new SemImGraphicalEditor(wrapper,
                         this, this.maxFreeParamsForStatistics);
-                this.semImGraphicalEditor.addPropertyChangeListener(
-                        new PropertyChangeListener() {
-                            public void propertyChange(PropertyChangeEvent evt) {
-                                SemImEditor.this.firePropertyChange(evt.getPropertyName(), null,
-                                        null);
-                            }
-                        });
+                this.semImGraphicalEditor.addPropertyChangeListener((evt) -> {
+                    SemImEditor.this.firePropertyChange(evt.getPropertyName(), null, null);
+                });
             }
             return this.semImGraphicalEditor;
         }
@@ -551,19 +579,16 @@ public final class SemImEditor extends JPanel implements LayoutEditable, DoNotSc
                 this.semImTabularEditor = new SemImTabularEditor(wrapper, this,
                         this.maxFreeParamsForStatistics);
             }
-            this.semImTabularEditor.addPropertyChangeListener(
-                    new PropertyChangeListener() {
-                        public void propertyChange(PropertyChangeEvent evt) {
-                            SemImEditor.this.firePropertyChange(evt.getPropertyName(), null, null);
-                        }
-                    });
+            this.semImTabularEditor.addPropertyChangeListener((evt) -> {
+                SemImEditor.this.firePropertyChange(evt.getPropertyName(), null, null);
+            });
             return this.semImTabularEditor;
         }
 
         private ImpliedMatricesPanel impliedMatricesPanel() {
             if (this.impliedMatricesPanel == null) {
-                this.impliedMatricesPanel =
-                        new ImpliedMatricesPanel(wrapper, this.matrixSelection);
+                this.impliedMatricesPanel
+                        = new ImpliedMatricesPanel(wrapper, this.matrixSelection);
             }
             return this.impliedMatricesPanel;
         }
@@ -623,6 +648,8 @@ public final class SemImEditor extends JPanel implements LayoutEditable, DoNotSc
      */
     final class SemImGraphicalEditor extends JPanel {
 
+        private static final long serialVersionUID = 6469399368858967087L;
+
         /**
          * Font size for parameter values in the graph.
          */
@@ -634,7 +661,8 @@ public final class SemImEditor extends JPanel implements LayoutEditable, DoNotSc
          */
         private Color LIGHT_YELLOW = new Color(255, 255, 215);
 
-        /**w
+        /**
+         * w
          * Workbench for the graphical editor.
          */
         private GraphWorkbench workbench;
@@ -650,8 +678,8 @@ public final class SemImEditor extends JPanel implements LayoutEditable, DoNotSc
         private int savedTooltipDelay = 0;
 
         /**
-         * The editor that sits inside the SemImEditor that allows the user to edit
-         * the SemIm graphically.
+         * The editor that sits inside the SemImEditor that allows the user to
+         * edit the SemIm graphically.
          */
         private SemImEditor.OneEditor editor = null;
 
@@ -671,7 +699,7 @@ public final class SemImEditor extends JPanel implements LayoutEditable, DoNotSc
          * Constructs a SemIm graphical editor for the given SemIm.
          */
         public SemImGraphicalEditor(SemImWrapper semImWrapper, SemImEditor.OneEditor editor,
-                                    int maxFreeParamsForStatistics) {
+                int maxFreeParamsForStatistics) {
             this.wrapper = semImWrapper;
             this.editor = editor;
             this.maxFreeParamsForStatistics = maxFreeParamsForStatistics;
@@ -691,12 +719,14 @@ public final class SemImEditor extends JPanel implements LayoutEditable, DoNotSc
             // almost immediately within the sem im editor but more slowly outside.
             // Ugh.
             workbench().addComponentListener(new ComponentAdapter() {
+                @Override
                 public void componentShown(ComponentEvent e) {
                     resetLabels();
                     ToolTipManager toolTipManager = ToolTipManager.sharedInstance();
                     toolTipManager.setInitialDelay(100);
                 }
 
+                @Override
                 public void componentHidden(ComponentEvent e) {
                     ToolTipManager toolTipManager = ToolTipManager.sharedInstance();
                     toolTipManager.setInitialDelay(getSavedTooltipDelay());
@@ -704,6 +734,7 @@ public final class SemImEditor extends JPanel implements LayoutEditable, DoNotSc
             });
 
             workbench().addMouseListener(new MouseAdapter() {
+                @Override
                 public void mouseEntered(MouseEvent e) {
                     if (workbench().contains(e.getPoint())) {
 
@@ -712,16 +743,17 @@ public final class SemImEditor extends JPanel implements LayoutEditable, DoNotSc
                         // from the text field they are editing without the
                         // textfield disappearing. jdramsey 3/16/2005.
 //                    resetLabels();
-                        ToolTipManager toolTipManager =
-                                ToolTipManager.sharedInstance();
+                        ToolTipManager toolTipManager
+                                = ToolTipManager.sharedInstance();
                         toolTipManager.setInitialDelay(100);
                     }
                 }
 
+                @Override
                 public void mouseExited(MouseEvent e) {
                     if (!workbench().contains(e.getPoint())) {
-                        ToolTipManager toolTipManager =
-                                ToolTipManager.sharedInstance();
+                        ToolTipManager toolTipManager
+                                = ToolTipManager.sharedInstance();
                         toolTipManager.setInitialDelay(getSavedTooltipDelay());
                     }
                 }
@@ -730,6 +762,7 @@ public final class SemImEditor extends JPanel implements LayoutEditable, DoNotSc
             // Make sure the graphical editor reflects changes made to parameters
             // in other editors.
             addComponentListener(new ComponentAdapter() {
+                @Override
                 public void componentShown(ComponentEvent e) {
                     resetLabels();
                 }
@@ -737,8 +770,6 @@ public final class SemImEditor extends JPanel implements LayoutEditable, DoNotSc
         }
 
         //========================PRIVATE METHODS===========================//
-
-
         private void beginEdgeEdit(final Edge edge) {
             finishEdit();
 
@@ -749,8 +780,8 @@ public final class SemImEditor extends JPanel implements LayoutEditable, DoNotSc
             Parameter parameter = getEdgeParameter(edge);
             double d = semIm().getParamValue(parameter);
 
-            if (editor.isEditCovariancesAsCorrelations() &&
-                    parameter.getType() == ParamType.COVAR) {
+            if (editor.isEditCovariancesAsCorrelations()
+                    && parameter.getType() == ParamType.COVAR) {
                 Node nodeA = parameter.getNodeA();
                 Node nodeB = parameter.getNodeB();
 
@@ -761,17 +792,14 @@ public final class SemImEditor extends JPanel implements LayoutEditable, DoNotSc
             }
 
             final DoubleTextField field = new DoubleTextField(d, 10, NumberFormatUtil.getInstance().getNumberFormat());
-            field.setFilter(new DoubleTextField.Filter() {
-                public double filter(double value, double oldValue) {
-                    try {
-                        setEdgeValue(edge, new Double(value).toString());
-                        return value;
-                    } catch (IllegalArgumentException e) {
-                        return oldValue;
-                    }
+            field.setFilter((value, oldValue) -> {
+                try {
+                    setEdgeValue(edge, new Double(value).toString());
+                    return value;
+                } catch (IllegalArgumentException e) {
+                    return oldValue;
                 }
             });
-
 
             Box box = Box.createHorizontalBox();
             box.add(Box.createHorizontalGlue());
@@ -780,12 +808,15 @@ public final class SemImEditor extends JPanel implements LayoutEditable, DoNotSc
             box.add(Box.createHorizontalGlue());
 
             field.addAncestorListener(new AncestorListener() {
+                @Override
                 public void ancestorMoved(AncestorEvent ancestorEvent) {
                 }
 
+                @Override
                 public void ancestorRemoved(AncestorEvent ancestorEvent) {
                 }
 
+                @Override
                 public void ancestorAdded(AncestorEvent ancestorEvent) {
                     Container ancestor = ancestorEvent.getAncestor();
 
@@ -798,16 +829,13 @@ public final class SemImEditor extends JPanel implements LayoutEditable, DoNotSc
                 }
             });
 
-            field.addActionListener(new ActionListener() {
-                public void actionPerformed(ActionEvent actionEvent) {
-                    if (SemImGraphicalEditor.this.dialog != null) {
-                        SemImGraphicalEditor.this.dialog.setVisible(false);
-                    }
+            field.addActionListener((e) -> {
+                if (SemImGraphicalEditor.this.dialog != null) {
+                    SemImGraphicalEditor.this.dialog.setVisible(false);
                 }
             });
 
             JOptionPane.showMessageDialog(workbench.getComponent(edge), box, "Coefficient for " + edge, JOptionPane.PLAIN_MESSAGE);
-
 
 //        final DoubleTextField doubleTextField = new DoubleTextField(d, 7, NumberFormatUtil.getInstance().getNumberFormat());
 //        doubleTextField.setPreferredSize(new Dimension(60, 20));
@@ -860,10 +888,9 @@ public final class SemImEditor extends JPanel implements LayoutEditable, DoNotSc
 //        if (!semIm().getSemPm().getGraph().isParameterizable(node)) {
 //            return;
 //        }
-
             Parameter parameter = getNodeParameter(node);
-            if (editor.isEditCovariancesAsCorrelations() &&
-                    parameter.getType() == ParamType.VAR) {
+            if (editor.isEditCovariancesAsCorrelations()
+                    && parameter.getType() == ParamType.VAR) {
                 return;
             }
 
@@ -886,14 +913,12 @@ public final class SemImEditor extends JPanel implements LayoutEditable, DoNotSc
             }
 
             final DoubleTextField field = new DoubleTextField(d, 10, NumberFormatUtil.getInstance().getNumberFormat());
-            field.setFilter(new DoubleTextField.Filter() {
-                public double filter(double value, double oldValue) {
-                    try {
-                        setNodeValue(node, new Double(value).toString());
-                        return value;
-                    } catch (IllegalArgumentException e) {
-                        return oldValue;
-                    }
+            field.setFilter((value, oldValue) -> {
+                try {
+                    setNodeValue(node, new Double(value).toString());
+                    return value;
+                } catch (IllegalArgumentException e) {
+                    return oldValue;
                 }
             });
 
@@ -904,12 +929,15 @@ public final class SemImEditor extends JPanel implements LayoutEditable, DoNotSc
             box.add(Box.createHorizontalGlue());
 
             field.addAncestorListener(new AncestorListener() {
+                @Override
                 public void ancestorMoved(AncestorEvent ancestorEvent) {
                 }
 
+                @Override
                 public void ancestorRemoved(AncestorEvent ancestorEvent) {
                 }
 
+                @Override
                 public void ancestorAdded(AncestorEvent ancestorEvent) {
                     Container ancestor = ancestorEvent.getAncestor();
 
@@ -919,11 +947,9 @@ public final class SemImEditor extends JPanel implements LayoutEditable, DoNotSc
                 }
             });
 
-            field.addActionListener(new ActionListener() {
-                public void actionPerformed(ActionEvent actionEvent) {
-                    if (SemImGraphicalEditor.this.dialog != null) {
-                        SemImGraphicalEditor.this.dialog.setVisible(false);
-                    }
+            field.addActionListener((e) -> {
+                if (SemImGraphicalEditor.this.dialog != null) {
+                    SemImGraphicalEditor.this.dialog.setVisible(false);
                 }
             });
 
@@ -940,7 +966,6 @@ public final class SemImEditor extends JPanel implements LayoutEditable, DoNotSc
             }
 
             JOptionPane.showMessageDialog(workbench.getComponent(node), box, s, JOptionPane.PLAIN_MESSAGE);
-
 
 //        DoubleTextField field = new DoubleTextField(d, 7, NumberFormatUtil.getInstance().getNumberFormat());
 //        field.setPreferredSize(new Dimension(60, 20));
@@ -999,15 +1024,12 @@ public final class SemImEditor extends JPanel implements LayoutEditable, DoNotSc
             if (this.getWorkbench() == null) {
                 this.workbench = new GraphWorkbench(graph());
                 this.getWorkbench().setAllowDoubleClickActions(false);
-                this.getWorkbench().addPropertyChangeListener(
-                        new PropertyChangeListener() {
-                            public void propertyChange(PropertyChangeEvent evt) {
-                                if ("BackgroundClicked".equals(
-                                        evt.getPropertyName())) {
-                                    finishEdit();
-                                }
-                            }
-                        });
+                this.getWorkbench().addPropertyChangeListener((evt) -> {
+                    if ("BackgroundClicked".equals(
+                            evt.getPropertyName())) {
+                        finishEdit();
+                    }
+                });
                 resetLabels();
                 addMouseListenerToGraphNodesMeasured();
             }
@@ -1048,14 +1070,14 @@ public final class SemImEditor extends JPanel implements LayoutEditable, DoNotSc
                 try {
                     standardError = semIm().getStandardError(parameter,
                             maxFreeParamsForStatistics);
-                } catch (Exception e) {
+                } catch (Exception exception) {
                     standardError = Double.NaN;
                 }
 
                 double tValue;
                 try {
                     tValue = semIm().getTValue(parameter, maxFreeParamsForStatistics);
-                } catch (Exception e) {
+                } catch (Exception exception) {
                     tValue = Double.NaN;
                 }
 
@@ -1063,12 +1085,12 @@ public final class SemImEditor extends JPanel implements LayoutEditable, DoNotSc
 
                 try {
                     pValue = semIm().getPValue(parameter, maxFreeParamsForStatistics);
-                } catch (Exception e) {
+                } catch (Exception exception) {
                     pValue = Double.NaN;
                 }
 
-                if (editor.isEditCovariancesAsCorrelations() &&
-                        parameter.getType() == ParamType.COVAR) {
+                if (editor.isEditCovariancesAsCorrelations()
+                        && parameter.getType() == ParamType.COVAR) {
                     Node nodeA = edge.getNode1();
                     Node nodeB = edge.getNode2();
 
@@ -1095,8 +1117,8 @@ public final class SemImEditor extends JPanel implements LayoutEditable, DoNotSc
                 label.setToolTipText(parameter.getName() + " = " + asString(val));
                 label.addMouseListener(new EdgeMouseListener(edge, this));
                 if (!Double.isNaN(standardError) && semIm().isEstimated()) {
-                    label.setToolTipText("SE=" + asString(standardError) + ", T=" +
-                            asString(tValue) + ", P=" + asString(pValue));
+                    label.setToolTipText("SE=" + asString(standardError) + ", T="
+                            + asString(tValue) + ", P=" + asString(pValue));
                 }
 
                 workbench().setEdgeLabel(edge, label);
@@ -1138,13 +1160,13 @@ public final class SemImEditor extends JPanel implements LayoutEditable, DoNotSc
             if (parameter != null) {
                 double standardError = semIm().getStandardError(parameter,
                         maxFreeParamsForStatistics);
-                double tValue =
-                        semIm().getTValue(parameter, maxFreeParamsForStatistics);
-                double pValue =
-                        semIm().getPValue(parameter, maxFreeParamsForStatistics);
+                double tValue
+                        = semIm().getTValue(parameter, maxFreeParamsForStatistics);
+                double pValue
+                        = semIm().getPValue(parameter, maxFreeParamsForStatistics);
 
-                tooltip = "SE=" + asString(standardError) + ", T=" +
-                        asString(tValue) + ", P=" + asString(pValue);
+                tooltip = "SE=" + asString(standardError) + ", T="
+                        + asString(tValue) + ", P=" + asString(pValue);
             }
 
             if (!Double.isNaN(meanOrIntercept)) {
@@ -1152,14 +1174,14 @@ public final class SemImEditor extends JPanel implements LayoutEditable, DoNotSc
                 label.setText(asString(meanOrIntercept));
 
                 if (editor.isEditIntercepts()) {
-                    tooltip = "<html>" + "B0_" + node.getName() + " = " +
-                            asString(meanOrIntercept) + "</html>";
+                    tooltip = "<html>" + "B0_" + node.getName() + " = "
+                            + asString(meanOrIntercept) + "</html>";
                 } else {
-                    tooltip = "<html>" + "Mean(" + node.getName() + ") = " +
-                            asString(meanOrIntercept) + "</html>";
+                    tooltip = "<html>" + "Mean(" + node.getName() + ") = "
+                            + asString(meanOrIntercept) + "</html>";
                 }
-            } else if (!editor.isEditCovariancesAsCorrelations() &&
-                    !Double.isNaN(stdDev)) {
+            } else if (!editor.isEditCovariancesAsCorrelations()
+                    && !Double.isNaN(stdDev)) {
                 label.setForeground(Color.BLUE);
                 label.setText(asString(stdDev));
 
@@ -1198,14 +1220,13 @@ public final class SemImEditor extends JPanel implements LayoutEditable, DoNotSc
         }
 
         /**
-         * @return the parameter for the given edge, or null if the edge does not
-         * have a parameter associated with it in the model. The edge must be either
-         * directed or bidirected, since it has to come from a SemGraph. For
-         * directed edges, this method automatically adjusts if the user has changed
-         * the endpoints of an edge X1 --> X2 to X1 <-- X2 and returns the correct
-         * parameter.
-         * @throws IllegalArgumentException if the edge is neither directed nor
-         *                                  bidirected.
+         * @return the parameter for the given edge, or null if the edge does
+         * not have a parameter associated with it in the model. The edge must
+         * be either directed or bidirected, since it has to come from a
+         * SemGraph. For directed edges, this method automatically adjusts if
+         * the user has changed the endpoints of an edge X1 --> X2 to X1 <-- X2
+         * and returns the correct parameter. @throws IllegalArgumentException
+         * if the edge is neither directed nor bidirected.
          */
         private Parameter getEdgeParameter(Edge edge) {
             if (Edges.isDirectedEdge(edge)) {
@@ -1223,8 +1244,8 @@ public final class SemImEditor extends JPanel implements LayoutEditable, DoNotSc
                 Parameter parameter = getEdgeParameter(edge);
                 double d = new Double(text);
 
-                if (editor.isEditCovariancesAsCorrelations() &&
-                        parameter.getType() == ParamType.COVAR) {
+                if (editor.isEditCovariancesAsCorrelations()
+                        && parameter.getType() == ParamType.COVAR) {
                     Node nodeA = edge.getNode1();
                     Node nodeB = edge.getNode2();
 
@@ -1237,8 +1258,8 @@ public final class SemImEditor extends JPanel implements LayoutEditable, DoNotSc
 
                     semIm().setParamValue(parameter, d);
                     SemImGraphicalEditor.this.firePropertyChange("modelChanged", null, null);
-                } else if (!editor.isEditCovariancesAsCorrelations() &&
-                        parameter.getType() == ParamType.COVAR) {
+                } else if (!editor.isEditCovariancesAsCorrelations()
+                        && parameter.getType() == ParamType.COVAR) {
                     semIm().setParamValue(parameter, d);
                     SemImGraphicalEditor.this.firePropertyChange("modelChanged", null, null);
                 } else if (parameter.getType() == ParamType.COEF) {
@@ -1283,8 +1304,8 @@ public final class SemImEditor extends JPanel implements LayoutEditable, DoNotSc
 
                     SemImGraphicalEditor.this.firePropertyChange("modelChanged", null, null);
                 }
-            } catch (Exception e) {
-                e.printStackTrace();
+            } catch (Exception exception) {
+                exception.printStackTrace(System.err);
                 // Let the old value be reinstated.
             }
 
@@ -1322,8 +1343,6 @@ public final class SemImEditor extends JPanel implements LayoutEditable, DoNotSc
 //            return nf.format(value);
 //        }
 //    }
-
-
         private void addMouseListenerToGraphNodesMeasured() {
             List nodes = graph().getNodes();
 
@@ -1380,6 +1399,7 @@ public final class SemImEditor extends JPanel implements LayoutEditable, DoNotSc
         }
 
         final class EdgeMouseListener extends MouseAdapter {
+
             private final Edge edge;
             private final SemImGraphicalEditor editor;
 
@@ -1402,6 +1422,7 @@ public final class SemImEditor extends JPanel implements LayoutEditable, DoNotSc
         }
 
         final class NodeMouseListener extends MouseAdapter {
+
             private final Node node;
             private final SemImGraphicalEditor editor;
 
@@ -1418,12 +1439,14 @@ public final class SemImEditor extends JPanel implements LayoutEditable, DoNotSc
                 return editor;
             }
 
+            @Override
             public void mouseClicked(MouseEvent e) {
                 getEditor().beginNodeEdit(getNode());
             }
         }
 
         final class EdgeActionListener implements ActionListener {
+
             private final SemImGraphicalEditor editor;
             private final Edge edge;
 
@@ -1432,6 +1455,7 @@ public final class SemImEditor extends JPanel implements LayoutEditable, DoNotSc
                 this.edge = edge;
             }
 
+            @Override
             public void actionPerformed(ActionEvent ev) {
                 DoubleTextField doubleTextField = (DoubleTextField) ev.getSource();
                 String s = doubleTextField.getText();
@@ -1448,6 +1472,7 @@ public final class SemImEditor extends JPanel implements LayoutEditable, DoNotSc
         }
 
         final class NodeActionListener implements ActionListener {
+
             private final SemImGraphicalEditor editor;
             private final Node node;
 
@@ -1456,6 +1481,7 @@ public final class SemImEditor extends JPanel implements LayoutEditable, DoNotSc
                 this.node = node;
             }
 
+            @Override
             public void actionPerformed(ActionEvent ev) {
                 DoubleTextField doubleTextField = (DoubleTextField) ev.getSource();
                 String s = doubleTextField.getText();
@@ -1476,12 +1502,15 @@ public final class SemImEditor extends JPanel implements LayoutEditable, DoNotSc
      * Edits parameter values for a SemIm as a simple list.
      */
     final class SemImTabularEditor extends JPanel {
+
+        private static final long serialVersionUID = -3652030288654100645L;
+
         private final ParamTableModel tableModel;
         private final SemImWrapper wrapper;
         private boolean editable = true;
 
         public SemImTabularEditor(SemImWrapper wrapper, SemImEditor.OneEditor editor,
-                                  int maxFreeParamsForStatistics) {
+                int maxFreeParamsForStatistics) {
             this.wrapper = wrapper;
             setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
 //        setBorder(new TitledBorder("Click parameter values to edit"));
@@ -1493,16 +1522,17 @@ public final class SemImEditor extends JPanel implements LayoutEditable, DoNotSc
             }
 
             JTable table = new JTable() {
+                private static final long serialVersionUID = -530774590911763214L;
+
+                @Override
                 public TableCellEditor getCellEditor(int row, int col) {
                     return new DataCellEditor();
                 }
             };
             tableModel = new ParamTableModel(wrapper, editor, maxFreeParamsForStatistics);
             table.setModel(getTableModel());
-            tableModel.addTableModelListener(new TableModelListener() {
-                public void tableChanged(TableModelEvent e) {
-                    SemImTabularEditor.this.firePropertyChange("modelChanged", null, null);
-                }
+            tableModel.addTableModelListener((e) -> {
+                SemImTabularEditor.this.firePropertyChange("modelChanged", null, null);
             });
 
             add(new JScrollPane(table), BorderLayout.CENTER);
@@ -1528,6 +1558,9 @@ public final class SemImEditor extends JPanel implements LayoutEditable, DoNotSc
     }
 
     final class ParamTableModel extends AbstractTableModel {
+
+        private static final long serialVersionUID = 2210883212769846304L;
+
         private final NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
         private final SemImWrapper wrapper;
         private SemImEditor.OneEditor editor = null;
@@ -1535,7 +1568,7 @@ public final class SemImEditor extends JPanel implements LayoutEditable, DoNotSc
         private boolean editable = true;
 
         public ParamTableModel(SemImWrapper wrapper, SemImEditor.OneEditor editor,
-                               int maxFreeParamsForStatistics) {
+                int maxFreeParamsForStatistics) {
             this.wrapper = wrapper;
 
             if (maxFreeParamsForStatistics < 0) {
@@ -1548,19 +1581,21 @@ public final class SemImEditor extends JPanel implements LayoutEditable, DoNotSc
             //  parameters.addAll(semIm().getFreeParameters());
             //  parameters.addAll(semIm().getFixedParameters());
             //  parameters.addAll(semIm().getMeanParameters());
-
             this.editor = editor;
         }
 
+        @Override
         public int getRowCount() {
             int numNodes = semIm().getVariableNodes().size();
             return semIm().getNumFreeParams() + semIm().getFixedParameters().size() + numNodes;
         }
 
+        @Override
         public int getColumnCount() {
             return 7;
         }
 
+        @Override
         public String getColumnName(int column) {
             switch (column) {
                 case 0:
@@ -1582,6 +1617,7 @@ public final class SemImEditor extends JPanel implements LayoutEditable, DoNotSc
             return null;
         }
 
+        @Override
         public Object getValueAt(int row, int column) {
             List nodes = semIm().getVariableNodes();
             List parameters = new ArrayList<>(semIm().getFreeParameters());
@@ -1639,7 +1675,6 @@ public final class SemImEditor extends JPanel implements LayoutEditable, DoNotSc
 //            double ar = covars.get(index, index);
 //            stdDev = Math.sqrt(ar);
 //            n = semIm().getSampleSize();
-
                 switch (column) {
                     case 0:
                         return nodes.get(index);
@@ -1695,6 +1730,7 @@ public final class SemImEditor extends JPanel implements LayoutEditable, DoNotSc
             return paramValue;
         }
 
+        @Override
         public boolean isCellEditable(int rowIndex, int columnIndex) {
             return isEditable() && columnIndex == 3;
         }
@@ -1703,6 +1739,7 @@ public final class SemImEditor extends JPanel implements LayoutEditable, DoNotSc
             return this.editable;
         }
 
+        @Override
         public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
 
             if (columnIndex == 3) {
@@ -1749,7 +1786,7 @@ public final class SemImEditor extends JPanel implements LayoutEditable, DoNotSc
 
                         }
                     }
-                } catch (Exception e1) {
+                } catch (Exception exception) {
                     // The old value will be reinstated automatically.
                 }
 
@@ -1804,9 +1841,13 @@ public final class SemImEditor extends JPanel implements LayoutEditable, DoNotSc
     }
 
     /**
-     * Dispays the implied covariance and correlation matrices for the given SemIm.
+     * Dispays the implied covariance and correlation matrices for the given
+     * SemIm.
      */
     class ImpliedMatricesPanel extends JPanel {
+
+        private static final long serialVersionUID = 2462316724126834072L;
+
         private final SemImWrapper wrapper;
         private JTable impliedJTable;
         private int matrixSelection = 0;
@@ -1824,7 +1865,6 @@ public final class SemImEditor extends JPanel implements LayoutEditable, DoNotSc
 
             setMatrixSelection(matrixSelection);
         }
-
 
         /**
          * @return the matrix in tab delimited form.
@@ -1845,7 +1885,6 @@ public final class SemImEditor extends JPanel implements LayoutEditable, DoNotSc
             return builder.toString();
         }
 
-
         private JTable impliedJTable() {
             if (this.impliedJTable == null) {
                 this.impliedJTable = new JTable();
@@ -1863,11 +1902,9 @@ public final class SemImEditor extends JPanel implements LayoutEditable, DoNotSc
                     selector.addItem(selection);
                 }
 
-                selector.addItemListener(new ItemListener() {
-                    public void itemStateChanged(ItemEvent e) {
-                        String item = (String) e.getItem();
-                        setMatrixSelection(getImpliedSelections().indexOf(item));
-                    }
+                selector.addItemListener((e) -> {
+                    String item = (String) e.getItem();
+                    setMatrixSelection(getImpliedSelections().indexOf(item));
                 });
             }
             return selector;
@@ -1936,6 +1973,8 @@ public final class SemImEditor extends JPanel implements LayoutEditable, DoNotSc
      */
     final class ImpliedCovTable extends AbstractTableModel {
 
+        private static final long serialVersionUID = -8269181589527893805L;
+
         /**
          * True iff the matrices for the observed variables ony should be
          * displayed.
@@ -1963,7 +2002,7 @@ public final class SemImEditor extends JPanel implements LayoutEditable, DoNotSc
          * which are as specified (in the order they appear in the matrix).
          */
         public ImpliedCovTable(SemImWrapper wrapper, boolean measured,
-                               boolean correlations) {
+                boolean correlations) {
             this.wrapper = wrapper;
             this.measured = measured;
             this.correlations = correlations;
@@ -1984,10 +2023,12 @@ public final class SemImEditor extends JPanel implements LayoutEditable, DoNotSc
         }
 
         /**
-         * @return the number of rows being displayed--one more than the size of the
-         * matrix, which may be different depending on whether only the observed
-         * variables are being displayed or all the variables are being displayed.
+         * @return the number of rows being displayed--one more than the size of
+         * the matrix, which may be different depending on whether only the
+         * observed variables are being displayed or all the variables are being
+         * displayed.
          */
+        @Override
         public int getRowCount() {
             if (measured()) {
                 return this.getSemIm().getMeasuredNodes().size() + 1;
@@ -1997,10 +2038,12 @@ public final class SemImEditor extends JPanel implements LayoutEditable, DoNotSc
         }
 
         /**
-         * @return the number of columns displayed--one more than the size of the
-         * matrix, which may be different depending on whether only the observed
-         * variables are being displayed or all the variables are being displayed.
+         * @return the number of columns displayed--one more than the size of
+         * the matrix, which may be different depending on whether only the
+         * observed variables are being displayed or all the variables are being
+         * displayed.
          */
+        @Override
         public int getColumnCount() {
             if (measured()) {
                 return this.getSemIm().getMeasuredNodes().size() + 1;
@@ -2010,9 +2053,10 @@ public final class SemImEditor extends JPanel implements LayoutEditable, DoNotSc
         }
 
         /**
-         * @return the name of the column at columnIndex, which is "" for column 0
-         * and the name of the variable for the other columns.
+         * @return the name of the column at columnIndex, which is "" for column
+         * 0 and the name of the variable for the other columns.
          */
+        @Override
         public String getColumnName(int columnIndex) {
             if (columnIndex == 0) {
                 return "";
@@ -2030,9 +2074,10 @@ public final class SemImEditor extends JPanel implements LayoutEditable, DoNotSc
         }
 
         /**
-         * @return the value being displayed in a cell, either a variable name or a
-         * Double.
+         * @return the value being displayed in a cell, either a variable name
+         * or a Double.
          */
+        @Override
         public Object getValueAt(int rowIndex, int columnIndex) {
             if (rowIndex == 0) {
                 return getColumnName(columnIndex);
@@ -2065,10 +2110,10 @@ public final class SemImEditor extends JPanel implements LayoutEditable, DoNotSc
                         corr[i][j] = d4;
                     } else {
                         throw new IllegalArgumentException(
-                                "Off-diagonal element at (" + i + ", " + j +
-                                        ") cannot be converted to correlation: " +
-                                        d1 + " <= Math.pow(" + d2 + " * " + d3 +
-                                        ", 0.5)");
+                                "Off-diagonal element at (" + i + ", " + j
+                                + ") cannot be converted to correlation: "
+                                + d1 + " <= Math.pow(" + d2 + " * " + d3
+                                + ", 0.5)");
                     }
                 }
             }
@@ -2088,7 +2133,8 @@ public final class SemImEditor extends JPanel implements LayoutEditable, DoNotSc
         }
 
         /**
-         * @return true iff correlations (rather than covariances) are displayed.
+         * @return true iff correlations (rather than covariances) are
+         * displayed.
          */
         private boolean correlations() {
             return correlations;
@@ -2100,6 +2146,9 @@ public final class SemImEditor extends JPanel implements LayoutEditable, DoNotSc
     }
 
     final class ModelStatisticsPanel extends JTextArea {
+
+        private static final long serialVersionUID = -9096723049787232471L;
+
         private final NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
         private final SemImWrapper wrapper;
 
@@ -2108,6 +2157,7 @@ public final class SemImEditor extends JPanel implements LayoutEditable, DoNotSc
             reset();
 
             addComponentListener(new ComponentAdapter() {
+                @Override
                 public void componentShown(ComponentEvent e) {
                     reset();
                 }
@@ -2137,7 +2187,7 @@ public final class SemImEditor extends JPanel implements LayoutEditable, DoNotSc
                 modelChiSquare = semIm().getChiSquare();
                 modelDof = semIm().getSemPm().getDof();
                 modelPValue = semIm().getPValue();
-            } catch (Exception e) {
+            } catch (Exception exception) {
                 append("Model statistics not available.");
                 return;
             }
@@ -2160,50 +2210,42 @@ public final class SemImEditor extends JPanel implements LayoutEditable, DoNotSc
                 append("\nRMSEA = " + nf.format(semIm().getRmsea()));
 
 //            append("\n(Experimental!) KIC Score = " + nf.format(semIm().getKicScore()));
-
 //            append("\n\nThe null hypothesis for the above chi square test is that " +
 //                    "the population covariance matrix over all variables (sigma) " +
 //                    "is equal to the covariance matrix, over the same variables, " +
 //                    "written as a function of the free model parameters (Bollen, " +
 //                    "Structural Equations with Latent Variables, 110).");
-
             } else {
                 int numToFix = (int) Math.abs(modelDof);
-                append("\n\nA SEM with negative degrees of freedom is underidentified, " +
-                        "\nand other model statistics are meaningless.  Please increase " +
-                        "\nthe degrees of freedom to 0 or above by fixing at least " +
-                        numToFix + " parameter" + (numToFix == 1 ? "." : "s."));
+                append("\n\nA SEM with negative degrees of freedom is underidentified, "
+                        + "\nand other model statistics are meaningless.  Please increase "
+                        + "\nthe degrees of freedom to 0 or above by fixing at least "
+                        + numToFix + " parameter" + (numToFix == 1 ? "." : "s."));
             }
 
-            append("\n\nThe above chi square test assumes that the maximum " +
-                    "likelihood function over the measured variables has been " +
-                    "minimized. Under that assumption, the null hypothesis for " +
-                    "the test is that the population covariance matrix over all " +
-                    "of the measured variables is equal to the estimated covariance " +
-                    "matrix over all of the measured variables written as a function " +
-                    "of the free model parameters--that is, the unfixed parameters " +
-                    "for each directed edge (the linear coefficient for that edge), " +
-                    "each exogenous variable (the variance for the error term for " +
-                    "that variable), and each bidirected edge (the covariance for " +
-                    "the exogenous variables it connects).  The model is explained " +
-                    "in Bollen, Structural Equations with Latent Variable, 110. " +
-                    "Degrees of freedom are calculated as m (m + 1) / 2 - d, where d " +
-                    "is the number of linear coefficients, variance terms, and error " +
-                    "covariance terms that are not fixed in the model. For latent models, " +
-                    "the degrees of freedom are termed 'estimated' since extra contraints " +
-                    "(e.g. pentad constraints) are not taken into account.");
+            append("\n\nThe above chi square test assumes that the maximum "
+                    + "likelihood function over the measured variables has been "
+                    + "minimized. Under that assumption, the null hypothesis for "
+                    + "the test is that the population covariance matrix over all "
+                    + "of the measured variables is equal to the estimated covariance "
+                    + "matrix over all of the measured variables written as a function "
+                    + "of the free model parameters--that is, the unfixed parameters "
+                    + "for each directed edge (the linear coefficient for that edge), "
+                    + "each exogenous variable (the variance for the error term for "
+                    + "that variable), and each bidirected edge (the covariance for "
+                    + "the exogenous variables it connects).  The model is explained "
+                    + "in Bollen, Structural Equations with Latent Variable, 110. "
+                    + "Degrees of freedom are calculated as m (m + 1) / 2 - d, where d "
+                    + "is the number of linear coefficients, variance terms, and error "
+                    + "covariance terms that are not fixed in the model. For latent models, "
+                    + "the degrees of freedom are termed 'estimated' since extra contraints "
+                    + "(e.g. pentad constraints) are not taken into account.");
 
         }
-
 
         private ISemIm semIm() {
             return wrapper.getSemIm();
         }
     }
+
 }
-
-
-
-
-
-

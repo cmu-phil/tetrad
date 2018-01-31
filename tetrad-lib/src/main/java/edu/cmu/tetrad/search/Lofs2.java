@@ -310,6 +310,10 @@ public class Lofs2 {
         Graph laggedSkeleton = new EdgeListGraph(dataNodes);
 
         for (Edge edge : skeleton.getEdges()) {
+            if (Thread.currentThread().isInterrupted()) {
+                break;
+            }
+
             String node1 = edge.getNode1().getName();
             String node2 = edge.getNode2().getName();
 
@@ -325,6 +329,10 @@ public class Lofs2 {
         }
 
         for (Node node : skeleton.getNodes()) {
+            if (Thread.currentThread().isInterrupted()) {
+                break;
+            }
+
             String _node = node.getName();
 
             Node node0 = laggedSkeleton.getNode(_node + ":0");
@@ -341,6 +349,10 @@ public class Lofs2 {
         graph.removeEdges(new ArrayList<>(graph.getEdges()));
 
         for (Edge edge : _graph.getEdges()) {
+            if (Thread.currentThread().isInterrupted()) {
+                break;
+            }
+
             Node node1 = edge.getNode1();
             Node node2 = edge.getNode2();
             Endpoint end1 = edge.getEndpoint1();
@@ -367,6 +379,10 @@ public class Lofs2 {
         setDataSets(centeredData);
 
         for (Node node : nodes) {
+            if (Thread.currentThread().isInterrupted()) {
+                break;
+            }
+
             SortedMap<Double, String> scoreReports = new TreeMap<>();
 
             List<Node> adj = new ArrayList<>();
@@ -385,6 +401,10 @@ public class Lofs2 {
             List<Node> parents = null;
 
             while ((choice = gen.next()) != null) {
+                if (Thread.currentThread().isInterrupted()) {
+                    break;
+                }
+
                 List<Node> _parents = GraphUtils.asList(choice, adj);
 
                 double score = score(node, _parents);
@@ -413,6 +433,10 @@ public class Lofs2 {
             }
 
             for (Node _node : adj) {
+                if (Thread.currentThread().isInterrupted()) {
+                    break;
+                }
+
                 if (parents.contains(_node)) {
                     Edge parentEdge = Edges.directedEdge(_node, node);
 
@@ -424,6 +448,10 @@ public class Lofs2 {
         }
 
         for (Edge edge : skeleton.getEdges()) {
+            if (Thread.currentThread().isInterrupted()) {
+                break;
+            }
+
             if (!graph.isAdjacentTo(edge.getNode1(), edge.getNode2())) {
                 graph.addUndirectedEdge(edge.getNode1(), edge.getNode2());
             }
@@ -437,6 +465,10 @@ public class Lofs2 {
         Set<Edge> edgeList1 = skeleton.getEdges();
 
         for (Edge adj : edgeList1) {
+            if (Thread.currentThread().isInterrupted()) {
+                break;
+            }
+
             Node x = adj.getNode1();
             Node y = adj.getNode2();
 
@@ -460,6 +492,10 @@ public class Lofs2 {
         List<Node> neighborsx = new ArrayList<>();
 
         for (Node _node : graph.getAdjacentNodes(x)) {
+            if (Thread.currentThread().isInterrupted()) {
+                break;
+            }
+
             if (!knowledge.isForbidden(_node.getName(), x.getName())) {
 //                if (!knowledge.edgeForbidden(x.getNode(), _node.getNode())) {
                 neighborsx.add(_node);
@@ -476,6 +512,10 @@ public class Lofs2 {
         int[] choicex;
 
         while ((choicex = genx.next()) != null) {
+            if (Thread.currentThread().isInterrupted()) {
+                break;
+            }
+
             List<Node> condxMinus = GraphUtils.asList(choicex, neighborsx);
 
             if (condxMinus.contains(y)) continue;
@@ -502,6 +542,10 @@ public class Lofs2 {
             List<Node> neighborsy = new ArrayList<>();
 
             for (Node _node : graph.getAdjacentNodes(y)) {
+                if (Thread.currentThread().isInterrupted()) {
+                    break;
+                }
+
                 if (!knowledge.isForbidden(_node.getName(), y.getName())) {
                     neighborsy.add(_node);
                 }
@@ -511,6 +555,10 @@ public class Lofs2 {
             int[] choicey;
 
             while ((choicey = geny.next()) != null) {
+                if (Thread.currentThread().isInterrupted()) {
+                    break;
+                }
+
                 List<Node> condyMinus = GraphUtils.asList(choicey, neighborsy);
 
                 if (condyMinus.contains(x)) continue;
@@ -697,6 +745,10 @@ public class Lofs2 {
         Set<Edge> edgeList1 = graph.getEdges();
 
         for (Edge adj : edgeList1) {
+            if (Thread.currentThread().isInterrupted()) {
+                break;
+            }
+
             Node x = adj.getNode1();
             Node y = adj.getNode2();
 
@@ -822,6 +874,10 @@ public class Lofs2 {
         List<List<Double>> avgParams = new ArrayList<>();
 
         for (int k = 0; k < nodes.size(); k++) {
+            if (Thread.currentThread().isInterrupted()) {
+                break;
+            }
+
             List<Node> adj = graph.getAdjacentNodes(nodes.get(k));
             List<Integer> row = new ArrayList<>();
             List<Double> avgParam = new ArrayList<>();
@@ -858,12 +914,20 @@ public class Lofs2 {
 
         // Estimate parameters for each data set.
         for (int i = 0; i < dataSets.size(); i++) {
+            if (Thread.currentThread().isInterrupted()) {
+                break;
+            }
+
             TetradMatrix data = dataSets.get(i).getDoubleData();
             List<List<Double>> parameters = new ArrayList<>();
 
             // Note that the 1's along the diagonal of W are hard coded into the code for calculating scores.
             // Otherwise list doubles to correspond to each parameter.
             for (int k = 0; k < nodes.size(); k++) {
+                if (Thread.currentThread().isInterrupted()) {
+                    break;
+                }
+
                 List<Double> params = new ArrayList<>();
 
                 for (int j : rows.get(k)) {
@@ -891,7 +955,15 @@ public class Lofs2 {
             Graph _graph = new EdgeListGraph(nodes);
 
             for (int i = 0; i < rows.size(); i++) {
+                if (Thread.currentThread().isInterrupted()) {
+                    break;
+                }
+
                 for (int _j = 0; _j < rows.get(i).size(); _j++) {
+                    if (Thread.currentThread().isInterrupted()) {
+                        break;
+                    }
+
                     double param = avg(paramsforDataSets, i, _j);
                     avgParams.get(i).set(_j, param);
                     int j = rows.get(i).get(_j);
@@ -914,7 +986,15 @@ public class Lofs2 {
             Graph _graph = new EdgeListGraph(nodes);
 
             for (int i = 0; i < rows.size(); i++) {
+                if (Thread.currentThread().isInterrupted()) {
+                    break;
+                }
+
                 for (int _j = 0; _j < rows.get(i).size(); _j++) {
+                    if (Thread.currentThread().isInterrupted()) {
+                        break;
+                    }
+
                     int j = rows.get(i).get(_j);
 
                     if (j > i) continue;
@@ -925,6 +1005,9 @@ public class Lofs2 {
                     double param2 = 0.0;
 
                     for (int _i = 0; _i < rows.get(j).size(); _i++) {
+                        if (Thread.currentThread().isInterrupted()) {
+                            break;
+                        }
 
                         int i2 = rows.get(j).get(_i);
 
@@ -1039,6 +1122,10 @@ public class Lofs2 {
             double maxV = Double.NEGATIVE_INFINITY;
 
             while ((comb = gen.next()) != null) {
+                if (Thread.currentThread().isInterrupted()) {
+                    break;
+                }
+
                 List<Double> params = new ArrayList<>();
 
                 for (int i = 0; i < values.length; i++) {
@@ -1066,12 +1153,20 @@ public class Lofs2 {
             }
         } else if (false) {
             for (int i = 0; i < numParams; i++) {
+                if (Thread.currentThread().isInterrupted()) {
+                    break;
+                }
+
                 parameters.get(rowIndex).set(i, -range);
                 double vLeft = scoreRow(rowIndex, data, rows, parameters);
                 double dLeft = -range;
 
                 // Search from the left for the first valley; mark that as dleft.
                 for (double d = -range + delta; d < range; d += delta) {
+                    if (Thread.currentThread().isInterrupted()) {
+                        break;
+                    }
+
                     parameters.get(rowIndex).set(i, d);
                     double v = scoreRow(rowIndex, data, rows, parameters);
                     if (Double.isNaN(v)) continue;
@@ -1087,6 +1182,10 @@ public class Lofs2 {
                 // Similarly for dright. Will take dleft and dright to be bounds for the parameter,
                 // to avoid high scores at the boundaries.
                 for (double d = range - delta; d > -range; d -= delta) {
+                    if (Thread.currentThread().isInterrupted()) {
+                        break;
+                    }
+
                     parameters.get(rowIndex).set(i, d);
                     double v = scoreRow(rowIndex, data, rows, parameters);
                     if (Double.isNaN(v)) continue;
@@ -1113,6 +1212,10 @@ public class Lofs2 {
 
             // Default case: search for the maximum score over the entire range.
             for (int i = 0; i < numParams; i++) {
+                if (Thread.currentThread().isInterrupted()) {
+                    break;
+                }
+
                 dLeftMin[i] = -range;
                 dRightMin[i] = range;
 
@@ -1125,6 +1228,10 @@ public class Lofs2 {
                 System.out.println(Arrays.toString(values));
 
                 for (int i = 0; i < values.length; i++) {
+                    if (Thread.currentThread().isInterrupted()) {
+                        break;
+                    }
+
                     parameters.get(rowIndex).set(i, values[i]);
                 }
 
@@ -1168,9 +1275,17 @@ public class Lofs2 {
         List<Integer> cols = rows.get(rowIndex);
 
         for (int i = 0; i < data.rows(); i++) {
+            if (Thread.currentThread().isInterrupted()) {
+                break;
+            }
+
             double d = 0.0;
 
             for (int j = 0; j < cols.size(); j++) {
+                if (Thread.currentThread().isInterrupted()) {
+                    break;
+                }
+
                 int _j = cols.get(j);
                 double coef = parameters.get(rowIndex).get(j);
                 double value = data.get(i, _j);
@@ -1194,9 +1309,17 @@ public class Lofs2 {
         List<Integer> cols = rows.get(rowIndex);
 
         for (int i = 0; i < data.rows(); i++) {
+            if (Thread.currentThread().isInterrupted()) {
+                break;
+            }
+
             double d = 0.0;
 
             for (int j = 0; j < cols.size(); j++) {
+                if (Thread.currentThread().isInterrupted()) {
+                    break;
+                }
+
                 int _j = cols.get(j);
                 double coef = parameters.get(rowIndex).get(j);
                 double value = data.get(i, _j);
@@ -1218,6 +1341,10 @@ public class Lofs2 {
         Graph _graph = new EdgeListGraph(graph.getNodes());
 
         for (Edge edge : graph.getEdges()) {
+            if (Thread.currentThread().isInterrupted()) {
+                break;
+            }
+
             Node x = edge.getNode1();
             Node y = edge.getNode2();
 
@@ -1262,10 +1389,18 @@ public class Lofs2 {
         Map<Node, Integer> nodesHash = new HashMap<>();
 
         for (int i = 0; i < nodes.size(); i++) {
+            if (Thread.currentThread().isInterrupted()) {
+                break;
+            }
+
             nodesHash.put(nodes.get(i), i);
         }
 
         for (Edge edge : graph.getEdges()) {
+            if (Thread.currentThread().isInterrupted()) {
+                break;
+            }
+
             Node x = edge.getNode1();
             Node y = edge.getNode2();
 
@@ -1276,6 +1411,10 @@ public class Lofs2 {
             double[] yData = data[nodesHash.get(edge.getNode2())];
 
             for (int i = 0; i < xData.length; i++) {
+                if (Thread.currentThread().isInterrupted()) {
+                    break;
+                }
+
                 double x0 = xData[i];
                 double y0 = yData[i];
 
@@ -1316,6 +1455,10 @@ public class Lofs2 {
         }
 
         for (Edge edge : graph.getEdges()) {
+            if (Thread.currentThread().isInterrupted()) {
+                break;
+            }
+
             Node x = edge.getNode1();
             Node y = edge.getNode2();
 
@@ -1334,6 +1477,10 @@ public class Lofs2 {
             }
 
             for (int i = 0; i < xData.length; i++) {
+                if (Thread.currentThread().isInterrupted()) {
+                    break;
+                }
+
                 double x0 = xData[i];
                 double y0 = yData[i];
 
@@ -1376,6 +1523,10 @@ public class Lofs2 {
         }
 
         for (Edge edge : graph.getEdges()) {
+            if (Thread.currentThread().isInterrupted()) {
+                break;
+            }
+
             Node x = edge.getNode1();
             Node y = edge.getNode2();
 
@@ -1391,6 +1542,10 @@ public class Lofs2 {
             double[] yy = new double[yData.length];
 
             for (int i = 0; i < xData.length; i++) {
+                if (Thread.currentThread().isInterrupted()) {
+                    break;
+                }
+
                 double xi = xData[i];
                 double yi = yData[i];
 
@@ -1435,6 +1590,10 @@ public class Lofs2 {
         Graph _graph = new EdgeListGraph(graph.getNodes());
 
         for (Edge edge : graph.getEdges()) {
+            if (Thread.currentThread().isInterrupted()) {
+                break;
+            }
+
             Node x = edge.getNode1();
             Node y = edge.getNode2();
 
@@ -1738,6 +1897,10 @@ public class Lofs2 {
         Graph _graph = new EdgeListGraph(graph.getNodes());
 
         for (Edge edge : graph.getEdges()) {
+            if (Thread.currentThread().isInterrupted()) {
+                break;
+            }
+
             Node x = edge.getNode1();
             Node y = edge.getNode2();
 
@@ -1886,6 +2049,10 @@ public class Lofs2 {
             });
 
             for (int i = 0; i < m - 1; i++) {
+                if (Thread.currentThread().isInterrupted()) {
+                    break;
+                }
+
                 double X1 = x[_x.get(i).index];
                 double X2 = x[_x.get(i + 1).index];
                 double Y1 = y[_x.get(i).index];
@@ -1917,6 +2084,10 @@ public class Lofs2 {
             Arrays.sort(y);
 
             for (int i = 0; i < m - 1; i++) {
+                if (Thread.currentThread().isInterrupted()) {
+                    break;
+                }
+
                 double X1 = x[i];
                 double X2 = x[i + 1];
                 double Y1 = y[i];
@@ -1940,6 +2111,10 @@ public class Lofs2 {
             Arrays.sort(y);
 
             for (int i = 0; i < m - 1; i++) {
+                if (Thread.currentThread().isInterrupted()) {
+                    break;
+                }
+
                 double X1 = x[i];
                 double X2 = x[i + 1];
                 double Y1 = y[i];
@@ -1965,6 +2140,10 @@ public class Lofs2 {
             Arrays.sort(y);
 
             for (int i = 0; i < m - 1; i++) {
+                if (Thread.currentThread().isInterrupted()) {
+                    break;
+                }
+
                 double X1 = x[i];
                 double X2 = x[i + 1];
                 double Y1 = y[i] - y[0];
@@ -2140,6 +2319,10 @@ public class Lofs2 {
 
         DATASET:
         for (int m = 0; m < dataSets.size(); m++) {
+            if (Thread.currentThread().isInterrupted()) {
+                break;
+            }
+
             DataSet dataSet = dataSets.get(m);
 
             int targetCol = dataSet.getColumn(target);
@@ -2151,6 +2334,10 @@ public class Lofs2 {
             }
 
             for (Node regressor : regressors) {
+                if (Thread.currentThread().isInterrupted()) {
+                    break;
+                }
+
                 int regressorCol = dataSet.getColumn(regressor);
 
                 for (int i = 0; i < dataSet.getNumRows(); i++) {
@@ -2214,6 +2401,10 @@ public class Lofs2 {
 
         DATASET:
         for (int m = 0; m < dataSets.size(); m++) {
+            if (Thread.currentThread().isInterrupted()) {
+                break;
+            }
+
             DataSet dataSet = dataSets.get(m);
 
             int targetCol = dataSet.getColumn(target);
@@ -2225,6 +2416,10 @@ public class Lofs2 {
             }
 
             for (int g = 0; g < regressors.size(); g++) {
+                if (Thread.currentThread().isInterrupted()) {
+                    break;
+                }
+
                 int regressorCol = dataSet.getColumn(regressors.get(g));
 
                 for (int i = 0; i < dataSet.getNumRows(); i++) {

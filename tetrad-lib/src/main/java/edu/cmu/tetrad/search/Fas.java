@@ -274,6 +274,10 @@ public class Fas implements IFas {
                 if ((i + 1) % 100 == 0) out.println("Node # " + (i + 1));
             }
 
+            if (Thread.currentThread().isInterrupted()) {
+                break;
+            }
+
             Node x = nodes.get(i);
 
             for (int j = i + 1; j < nodes.size(); j++) {
@@ -381,6 +385,10 @@ public class Fas implements IFas {
                 if (++count % 100 == 0) out.println("count " + count + " of " + nodes.size());
             }
 
+            if (Thread.currentThread().isInterrupted()) {
+                break;
+            }
+
             List<Node> adjx = new ArrayList<>(adjacencies.get(x));
 
             EDGE:
@@ -394,6 +402,14 @@ public class Fas implements IFas {
                     int[] choice;
 
                     while ((choice = cg.next()) != null) {
+                        if (Thread.currentThread().isInterrupted()) {
+                            break;
+                        }
+
+                        if (Thread.currentThread().isInterrupted()) {
+                            break;
+                        }
+
                         List<Node> condSet = GraphUtils.asList(choice, ppx);
 
                         boolean independent;

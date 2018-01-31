@@ -23,7 +23,6 @@ package edu.cmu.tetrad.sem;
 
 import cern.colt.list.DoubleArrayList;
 import cern.jet.stat.Descriptive;
-import edu.cmu.tetrad.algcomparison.simulation.Simulation;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
@@ -90,7 +89,7 @@ public final class SemEstimator implements TetradSerializable {
      */
     private DataSet dataSet;
 
-    private SemIm.ScoreType scoreType = SemIm.ScoreType.Fgls;
+    private ScoreType scoreType = ScoreType.Fgls;
     private int numRestarts = 1;
 
     //=============================CONSTRUCTORS============================//
@@ -475,11 +474,11 @@ public final class SemEstimator implements TetradSerializable {
         }
     }
 
-    public void setScoreType(SemIm.ScoreType scoreType) {
+    public void setScoreType(ScoreType scoreType) {
         this.scoreType = scoreType;
     }
 
-    private SemIm.ScoreType getScoreType() {
+    private ScoreType getScoreType() {
         return scoreType;
     }
 

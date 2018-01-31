@@ -1,5 +1,7 @@
 package edu.cmu.tetrad.performance;
 
+import edu.cmu.tetrad.sem.ScoreType;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -15,7 +17,7 @@ public class ExploreComparison {
         params.setDataType(ComparisonParameters.DataType.Continuous);
         params.setAlgorithm(ComparisonParameters.Algorithm.FGES2);
 //        params.setIndependenceTest(ComparisonParameters.IndependenceTestType.FisherZ);
-        params.setScore(ComparisonParameters.ScoreType.SemBic);
+        params.setScore(ScoreType.SemBic);
 //        params.setOneEdgeFaithfulnessAssumed(false);
         params.setNumVars(100);
         params.setNumEdges(100);

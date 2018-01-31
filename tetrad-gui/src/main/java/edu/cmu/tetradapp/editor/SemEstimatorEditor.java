@@ -18,14 +18,23 @@
 // along with this program; if not, write to the Free Software               //
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA //
 ///////////////////////////////////////////////////////////////////////////////
-
 package edu.cmu.tetradapp.editor;
 
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.ICovarianceMatrix;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.performance.ComparisonParameters;
-import edu.cmu.tetrad.sem.*;
+import edu.cmu.tetrad.sem.ParamType;
+import edu.cmu.tetrad.sem.Parameter;
+import edu.cmu.tetrad.sem.ScoreType;
+import edu.cmu.tetrad.sem.SemEstimator;
+import edu.cmu.tetrad.sem.SemIm;
+import edu.cmu.tetrad.sem.SemOptimizer;
+import edu.cmu.tetrad.sem.SemOptimizerEm;
+import edu.cmu.tetrad.sem.SemOptimizerPowell;
+import edu.cmu.tetrad.sem.SemOptimizerRegression;
+import edu.cmu.tetrad.sem.SemOptimizerRicf;
+import edu.cmu.tetrad.sem.SemOptimizerScattershot;
+import edu.cmu.tetrad.sem.SemPm;
 import edu.cmu.tetrad.util.NumberFormatUtil;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.ProbUtils;
@@ -34,17 +43,20 @@ import edu.cmu.tetradapp.model.SemImWrapper;
 import edu.cmu.tetradapp.util.DesktopController;
 import edu.cmu.tetradapp.util.IntTextField;
 import edu.cmu.tetradapp.util.WatchedProcess;
-
-import javax.swing.*;
-import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.ComponentAdapter;
-import java.awt.event.ComponentEvent;
+import java.awt.BorderLayout;
+import java.awt.Window;
 import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.List;
-
+import javax.swing.Box;
+import javax.swing.JButton;
+import javax.swing.JComboBox;
+import javax.swing.JLabel;
+import javax.swing.JLayeredPane;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTabbedPane;
+import javax.swing.JTextArea;
 
 /**
  * Lets the user interact with a SEM estimator.
@@ -52,12 +64,14 @@ import java.util.List;
  * @author Joseph Ramsey
  */
 public final class SemEstimatorEditor extends JPanel {
+
+    private static final long serialVersionUID = 960988184083427499L;
+
     private final SemEstimatorWrapper wrapper;
     private final JPanel panel;
     private final NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
     private final JComboBox scoreBox;
     private final IntTextField restarts;
-
 
     public SemEstimatorEditor(SemPm semPm, DataSet dataSet) {
         this(new SemEstimatorWrapper(dataSet, semPm, new Parameters()));
@@ -75,12 +89,9 @@ public final class SemEstimatorEditor extends JPanel {
         optimizerCombo.addItem("Random Search");
         optimizerCombo.addItem("RICF");
 
-        optimizerCombo.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                JComboBox box = (JComboBox) e.getSource();
-                wrapper.setSemOptimizerType((String) box.getSelectedItem());
-            }
+        optimizerCombo.addActionListener((e) -> {
+            JComboBox box = (JComboBox) e.getSource();
+            wrapper.setSemOptimizerType((String) box.getSelectedItem());
         });
 
         scoreBox = new JComboBox();
@@ -89,77 +100,70 @@ public final class SemEstimatorEditor extends JPanel {
         scoreBox.addItem("Fgls");
         scoreBox.addItem("Fml");
 
-        scoreBox.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                JComboBox box = (JComboBox) e.getSource();
-                String type = (String) box.getSelectedItem();
-                if ("Fgls".equals(type)) {
-                    wrapper.setScoreType(SemIm.ScoreType.Fgls);
-                } else if ("Fml".equals(type)) {
-                    wrapper.setScoreType(SemIm.ScoreType.Fml);
-                }
+        scoreBox.addActionListener((e) -> {
+            JComboBox box = (JComboBox) e.getSource();
+            String type = (String) box.getSelectedItem();
+            if ("Fgls".equals(type)) {
+                wrapper.setScoreType(ScoreType.Fgls);
+            } else if ("Fml".equals(type)) {
+                wrapper.setScoreType(ScoreType.Fml);
             }
         });
 
-        restarts.setFilter(new IntTextField.Filter() {
-            public int filter(int value, int oldValue) {
-                try {
-                    wrapper.setNumRestarts(value);
-                    return value;
-                } catch (Exception e) {
-                    return oldValue;
-                }
+        restarts.setFilter((value, oldValue) -> {
+            try {
+                wrapper.setNumRestarts(value);
+                return value;
+            } catch (Exception e) {
+                return oldValue;
             }
         });
 
         String semOptimizerType = wrapper.getParams().getString("semOptimizerType", "Regression");
 
         optimizerCombo.setSelectedItem(semOptimizerType);
-        SemIm.ScoreType scoreType = (SemIm.ScoreType) wrapper.getParams().get("scoreType", SemIm.ScoreType.Fgls);
-        if (scoreType == null) scoreType = SemIm.ScoreType.Fgls;
+        ScoreType scoreType = (ScoreType) wrapper.getParams().get("scoreType", ScoreType.Fgls);
+        if (scoreType == null) {
+            scoreType = ScoreType.Fgls;
+        }
         scoreBox.setSelectedItem(scoreType.toString());
         restarts.setValue(wrapper.getParams().getInt("numRestarts", 1));
 
         JButton estimateButton = new JButton("Estimate Again");
 
-        estimateButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                Window owner = (Window) getTopLevelAncestor();
+        estimateButton.addActionListener((e) -> {
+            Window owner = (Window) getTopLevelAncestor();
 
-                new WatchedProcess(owner) {
-                    public void watch() {
-                        reestimate();
-                    }
-                };
-            }
+            new WatchedProcess(owner) {
+                @Override
+                public void watch() {
+                    reestimate();
+                }
+            };
         });
 
         JButton report = new JButton("Report");
 
-        report.addActionListener((new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                final JTextArea textArea = new JTextArea();
-                JScrollPane scroll = new JScrollPane(textArea);
+        report.addActionListener((e) -> {
+            final JTextArea textArea = new JTextArea();
+            JScrollPane scroll = new JScrollPane(textArea);
 
-                textArea.append(compileReport());
+            textArea.append(compileReport());
 
-                Box b = Box.createVerticalBox();
-                Box b2 = Box.createHorizontalBox();
-                b2.add(scroll);
-                textArea.setCaretPosition(0);
-                b.add(b2);
+            Box b = Box.createVerticalBox();
+            Box b2 = Box.createHorizontalBox();
+            b2.add(scroll);
+            textArea.setCaretPosition(0);
+            b.add(b2);
 
-                JPanel panel = new JPanel();
-                panel.setLayout(new BorderLayout());
-                panel.add(b);
+            JPanel editorPanel = new JPanel(new BorderLayout());
+            editorPanel.add(b);
 
-                EditorWindow window = new EditorWindow(panel,
-                        "All Paths", "Close", false, SemEstimatorEditor.this);
-                DesktopController.getInstance().addEditorWindow(window, JLayeredPane.PALETTE_LAYER);
-                window.setVisible(true);
-            }
-        }));
+            EditorWindow window = new EditorWindow(editorPanel,
+                    "All Paths", "Close", false, SemEstimatorEditor.this);
+            DesktopController.getInstance().addEditorWindow(window, JLayeredPane.PALETTE_LAYER);
+            window.setVisible(true);
+        });
 
         Box lowerBarA = Box.createHorizontalBox();
         lowerBarA.add(new JLabel("Score"));
@@ -190,7 +194,6 @@ public final class SemEstimatorEditor extends JPanel {
         validate();
     }
 
-
     private String compileReport() {
         StringBuilder builder = new StringBuilder();
 
@@ -204,27 +207,28 @@ public final class SemEstimatorEditor extends JPanel {
             SemIm estSem = estimator.getEstimatedSem();
             String dataName = estimator.getDataSet().getName();
 
-            for (Parameter parameter : estSem.getFreeParameters()) {
+            estSem.getFreeParameters().forEach(parameter -> {
                 builder.append("\n");
-                builder.append(dataName + "\t");
-                builder.append(parameter.getNodeA() + "\t");
-                builder.append(parameter.getNodeB() + "\t");
-                builder.append(typeString(parameter) + "\t");
-                builder.append(asString(paramValue(estSem, parameter)) + "\t");
-     /*
-      Maximum number of free parameters for which statistics will be
-      calculated. (Calculating standard errors is high complexity.) Set this to
-      zero to turn  off statistics calculations (which can be problematic
-      sometimes).
-     */
+                builder.append(dataName).append("\t");
+                builder.append(parameter.getNodeA()).append("\t");
+                builder.append(parameter.getNodeB()).append("\t");
+                builder.append(typeString(parameter)).append("\t");
+                builder.append(asString(paramValue(estSem, parameter))).append("\t");
+
+                /**
+                 * Maximum number of free parameters for which statistics will
+                 * be calculated. (Calculating standard errors is high
+                 * complexity.) Set this to zero to turn off statistics
+                 * calculations (which can be problematic sometimes).
+                 */
                 int maxFreeParamsForStatistics = 200;
                 builder.append(asString(estSem.getStandardError(parameter,
-                        maxFreeParamsForStatistics)) + "\t");
+                        maxFreeParamsForStatistics))).append("\t");
                 builder.append(asString(estSem.getTValue(parameter,
-                        maxFreeParamsForStatistics)) + "\t");
+                        maxFreeParamsForStatistics))).append("\t");
                 builder.append(asString(estSem.getPValue(parameter,
-                        maxFreeParamsForStatistics)) + "\t");
-            }
+                        maxFreeParamsForStatistics))).append("\t");
+            });
 
             List<Node> nodes = estSem.getVariableNodes();
 
@@ -241,14 +245,14 @@ public final class SemEstimatorEditor extends JPanel {
                 double p = 2.0 * (1.0 - ProbUtils.tCdf(Math.abs(tValue), df));
 
                 builder.append("\n");
-                builder.append(dataName + "\t");
-                builder.append(nodes.get(j) + "\t");
-                builder.append(nodes.get(j) + "\t");
-                builder.append("Mean" + "\t");
-                builder.append(asString(mean) + "\t");
-                builder.append(asString(stdErr) + "\t");
-                builder.append(asString(tValue) + "\t");
-                builder.append(asString(p) + "\t");
+                builder.append(dataName).append("\t");
+                builder.append(nodes.get(j)).append("\t");
+                builder.append(nodes.get(j)).append("\t");
+                builder.append("Mean").append("\t");
+                builder.append(asString(mean)).append("\t");
+                builder.append(asString(stdErr)).append("\t");
+                builder.append(asString(tValue)).append("\t");
+                builder.append(asString(p)).append("\t");
             }
         }
 
@@ -297,21 +301,25 @@ public final class SemEstimatorEditor extends JPanel {
 
         String type = wrapper.getSemOptimizerType();
 
-        if ("Regression".equals(type)) {
-            optimizer = new SemOptimizerRegression();
-        } else if ("EM".equals(type)) {
-            optimizer = new SemOptimizerEm();
-        } else if ("Powell".equals(type)) {
-            optimizer = new SemOptimizerPowell();
-        } else if ("Random Search".equals(type)) {
-            optimizer = new SemOptimizerScattershot();
-        } else if ("RICF".equals(type)) {
-            optimizer = new SemOptimizerRicf();
-        } else if ("Powell".equals(type)) {
-            optimizer = new SemOptimizerPowell();
-        } else {
-            throw new IllegalArgumentException("Unexpected optimizer " +
-                    "type: " + type);
+        switch (type) {
+            case "Regression":
+                optimizer = new SemOptimizerRegression();
+                break;
+            case "EM":
+                optimizer = new SemOptimizerEm();
+                break;
+            case "Powell":
+                optimizer = new SemOptimizerPowell();
+                break;
+            case "Random Search":
+                optimizer = new SemOptimizerScattershot();
+                break;
+            case "RICF":
+                optimizer = new SemOptimizerRicf();
+                break;
+            default:
+                throw new IllegalArgumentException("Unexpected optimizer type: "
+                        + type);
         }
 
         int numRestarts = wrapper.getNumRestarts();
@@ -320,7 +328,7 @@ public final class SemEstimatorEditor extends JPanel {
         java.util.List<SemEstimator> estimators = wrapper.getMultipleResultList();
         java.util.List<SemEstimator> newEstimators = new ArrayList<>();
 
-        for (SemEstimator estimator : estimators) {
+        estimators.forEach(estimator -> {
             SemPm semPm = estimator.getSemPm();
 
             DataSet dataSet = estimator.getDataSet();
@@ -337,14 +345,13 @@ public final class SemEstimatorEditor extends JPanel {
                 newEstimator.setNumRestarts(numRestarts);
                 newEstimator.setScoreType(wrapper.getScoreType());
             } else {
-                throw new IllegalStateException("Only continuous " +
-                        "rectangular data sets and covariance matrices " +
-                        "can be processed.");
+                throw new IllegalStateException("Only continuous rectangular"
+                        + " data sets and covariance matrices can be processed.");
             }
 
             newEstimator.estimate();
             newEstimators.add(newEstimator);
-        }
+        });
 
         wrapper.setSemEstimator(newEstimators.get(0));
 
@@ -381,5 +388,3 @@ public final class SemEstimatorEditor extends JPanel {
         }
     }
 }
-
-
