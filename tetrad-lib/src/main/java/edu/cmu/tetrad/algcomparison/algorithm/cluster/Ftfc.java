@@ -20,7 +20,7 @@ import java.util.List;
  * @author jdramsey
  */
 @edu.cmu.tetrad.annotation.Algorithm(
-        name = "Ftfc",
+        name = "FTFC",
         command = "ftfc",
         algoType = AlgType.search_for_structure_over_latents,
         description = ""

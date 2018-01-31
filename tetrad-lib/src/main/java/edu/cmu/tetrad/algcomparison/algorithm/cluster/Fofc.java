@@ -22,7 +22,7 @@ import java.util.List;
  * @author jdramsey
  */
 @edu.cmu.tetrad.annotation.Algorithm(
-        name = "Fofc",
+        name = "FOFC",
         command = "fofc",
         algoType = AlgType.search_for_structure_over_latents,
         description = ""
