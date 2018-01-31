@@ -23,7 +23,7 @@ import java.util.List;
  * @author Daniel Malinsky
  */
 @edu.cmu.tetrad.annotation.Algorithm(
-        name = "TsImages",
+        name = "TsIMaGES",
         command = "ts-imgs",
         algoType = AlgType.forbid_latent_common_causes,
         description = ""
