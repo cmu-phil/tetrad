@@ -102,7 +102,7 @@ public class ParamDescriptions {
         map.put("ipen", new ParamDescription("IPEN parameter (GLASSO)", false));
         map.put("thr", new ParamDescription("THR parameter (GLASSO) (min = 0.0)", 1e-4, 0.0, Double.MAX_VALUE));
 
-        map.put("targetName", new ParamDescription("Target name", ""));
+        map.put("targetName", new ParamDescription("Target variable name", ""));
         map.put("verbose", new ParamDescription("Yes if verbose output should be printed or logged", false));
         map.put("faithfulnessAssumed", new ParamDescription("Yes if (one edge) faithfulness should be assumed", true));
 
@@ -257,6 +257,12 @@ public class ParamDescriptions {
         map.put("numLags", new ParamDescription(
                 "The number of lags in the time lag model",
                 1, 1, Double.POSITIVE_INFINITY));
+
+        map.put("saveLatentVars", new ParamDescription("Save latent variables.", false));
+        
+        map.put("probTwoCycle", new ParamDescription(
+            "The probability of creating a 2-cycles in the graph (0 - 1)",
+            0.0, 0.0, 1.0));
     }
 
     public static ParamDescriptions getInstance() {

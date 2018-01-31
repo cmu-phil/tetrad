@@ -18,16 +18,17 @@
 // along with this program; if not, write to the Free Software               //
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA //
 ///////////////////////////////////////////////////////////////////////////////
-
 package edu.cmu.tetradapp.editor;
 
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetradapp.util.IntTextField;
-
-import javax.swing.*;
-import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
+import java.awt.BorderLayout;
+import javax.swing.Box;
+import javax.swing.JComboBox;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Edits the parameters for generating random graphs.
@@ -36,9 +37,12 @@ import java.awt.event.ActionListener;
  */
 class RandomMimParamsEditor extends JPanel {
 
+    private static final long serialVersionUID = -1478898170626611725L;
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(RandomMimParamsEditor.class);
+
     /**
-     * Constructs a dialog to edit the given workbench randomization
-     * parameters.
+     * Constructs a dialog to edit the given workbench randomization parameters.
      */
     public RandomMimParamsEditor(final Parameters parameters) {
         final JComboBox<String> numFactors = new JComboBox<>();
@@ -46,15 +50,11 @@ class RandomMimParamsEditor extends JPanel {
         numFactors.addItem("1");
         numFactors.addItem("2");
 
-        numFactors.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                if (numFactors.getSelectedItem().equals("1")) {
-                    parameters.set("randomMimNumFactors", 1);
-                }
-                else if (numFactors.getSelectedItem().equals("2")) {
-                    parameters.set("randomMimNumFactors", 2);
-                }
+        numFactors.addActionListener((e) -> {
+            if (numFactors.getSelectedItem().equals("1")) {
+                parameters.set("randomMimNumFactors", 1);
+            } else if (numFactors.getSelectedItem().equals("2")) {
+                parameters.set("randomMimNumFactors", 2);
             }
         });
 
@@ -64,113 +64,111 @@ class RandomMimParamsEditor extends JPanel {
 
         final IntTextField numStructuralEdges = new IntTextField(
                 parameters.getInt("numStructuralEdges", 3), 4);
-        numStructuralEdges.setFilter(new IntTextField.Filter() {
-            public int filter(int value, int oldValue) {
-                try {
-                    int n = parameters.getInt("numStructuralNodes", 3);
-                    int maxNumLatentEdges = n * (n - 1) / 2;
+        numStructuralEdges.setFilter((value, oldValue) -> {
+            try {
+                int n = parameters.getInt("numStructuralNodes", 3);
+                int maxNumLatentEdges = n * (n - 1) / 2;
 
-                    if (value > maxNumLatentEdges) {
-                        value = maxNumLatentEdges;
-                    }
-
-                    parameters.set("numStructuralEdges", value);
-                    return value;
-                } catch (Exception e) {
-                    return oldValue;
+                if (value > maxNumLatentEdges) {
+                    value = maxNumLatentEdges;
                 }
+
+                parameters.set("numStructuralEdges", value);
+                return value;
+            } catch (Exception exception) {
+                LOGGER.error("", exception);
+
+                return oldValue;
             }
         });
 
         IntTextField numStructuralNodes = new IntTextField(
                 parameters.getInt("numStructuralNodes", 3), 4);
-        numStructuralNodes.setFilter(new IntTextField.Filter() {
-            public int filter(int value, int oldValue) {
-                try {
-                    if (value < 1) {
-                        throw new IllegalArgumentException(
-                                "Number of structural " +
-                                        "nodes Must be greater than 0: " + value);
-                    }
-
-                    parameters.set("numStructuralNodes", value);
-                    numStructuralEdges.setValue(numStructuralEdges.getValue());
-                    return value;
-                } catch (Exception e) {
-                    numStructuralEdges.setValue(numStructuralEdges.getValue());
-                    return oldValue;
+        numStructuralNodes.setFilter((value, oldValue) -> {
+            try {
+                if (value < 1) {
+                    throw new IllegalArgumentException(
+                            "Number of structural "
+                            + "nodes Must be greater than 0: " + value);
                 }
 
+                parameters.set("numStructuralNodes", value);
+                numStructuralEdges.setValue(numStructuralEdges.getValue());
+                return value;
+            } catch (Exception exception) {
+                LOGGER.error("", exception);
+
+                numStructuralEdges.setValue(numStructuralEdges.getValue());
+                return oldValue;
             }
         });
 
         IntTextField numMeasurementsPerLatent = new IntTextField(
-                parameters.getInt("measurementModelDegree", 1), 4);
-        numMeasurementsPerLatent.setFilter(new IntTextField.Filter() {
-            public int filter(int value, int oldValue) {
-                try {
-                    if (value < 2) {
-                        throw new IllegalArgumentException();
-                    }
-
-                    parameters.set("measurementModelDegree", value);
-                    return value;
-                } catch (Exception e) {
-                    return oldValue;
+                parameters.getInt("measurementModelDegree", 5), 4);
+        numMeasurementsPerLatent.setFilter((value, oldValue) -> {
+            try {
+                if (value < 2) {
+                    throw new IllegalArgumentException();
                 }
+
+                parameters.set("measurementModelDegree", value);
+                return value;
+            } catch (Exception exception) {
+                LOGGER.error("", exception);
+
+                return oldValue;
             }
         });
 
         IntTextField numLatentMeasuredImpureParents = new IntTextField(
                 parameters.getInt("latentMeasuredImpureParents", 0), 4);
-        numLatentMeasuredImpureParents.setFilter(new IntTextField.Filter() {
-            public int filter(int value, int oldValue) {
-                try {
-                    if (value < 0) {
-                        throw new IllegalArgumentException();
-                    }
-
-                    parameters.set("latentMeasuredImpureParents", value);
-                    return value;
-                } catch (Exception e) {
-                    return oldValue;
+        numLatentMeasuredImpureParents.setFilter((value, oldValue) -> {
+            try {
+                if (value < 0) {
+                    throw new IllegalArgumentException();
                 }
+
+                parameters.set("latentMeasuredImpureParents", value);
+                return value;
+            } catch (Exception exception) {
+                LOGGER.error("", exception);
+
+                return oldValue;
             }
         });
 
         IntTextField numMeasuredMeasuredImpureParents = new IntTextField(
                 parameters.getInt("measuredMeasuredImpureParents", 0), 4);
-        numMeasuredMeasuredImpureParents.setFilter(new IntTextField.Filter() {
-            public int filter(int value, int oldValue) {
-                try {
-                    if (value < 0) {
-                        throw new IllegalArgumentException();
-                    }
-
-                    parameters.set("measuredMeasuredImpureParents", value);
-                    return value;
-                } catch (Exception e) {
-                    return oldValue;
+        numMeasuredMeasuredImpureParents.setFilter((value, oldValue) -> {
+            try {
+                if (value < 0) {
+                    throw new IllegalArgumentException();
                 }
+
+                parameters.set("measuredMeasuredImpureParents", value);
+                return value;
+            } catch (Exception exception) {
+                LOGGER.error("", exception);
+
+                return oldValue;
             }
         });
 
         IntTextField numMeasuredMeasuredImpureAssociations = new IntTextField(
-                parameters.getInt("measuredMeasuredImpureAssociations", 0),
-                4);
-        numMeasuredMeasuredImpureAssociations.setFilter(new IntTextField.Filter() {
-            public int filter(int value, int oldValue) {
-                try {
-                    if (value < 0) {
-                        throw new IllegalArgumentException();
-                    }
-
-                    parameters.set("measuredMeasuredImpureAssociations",
-                            value);
-                    return value;
-                } catch (Exception e) {
-                    return oldValue;
+                parameters.getInt("measuredMeasuredImpureAssociations", 0), 4);
+        numMeasuredMeasuredImpureAssociations.setFilter((value, oldValue) -> {
+            try {
+                if (value < 0) {
+                    throw new IllegalArgumentException();
                 }
+
+                parameters.set("measuredMeasuredImpureAssociations",
+                        value);
+                return value;
+            } catch (Exception exception) {
+                LOGGER.error("", exception);
+
+                return oldValue;
             }
         });
 
@@ -234,8 +232,3 @@ class RandomMimParamsEditor extends JPanel {
         add(b1, BorderLayout.CENTER);
     }
 }
-
-
-
-
-

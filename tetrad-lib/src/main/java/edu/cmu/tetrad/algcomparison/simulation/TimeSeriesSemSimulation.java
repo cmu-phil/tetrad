@@ -4,14 +4,13 @@ import edu.cmu.tetrad.algcomparison.graph.RandomGraph;
 import edu.cmu.tetrad.algcomparison.graph.SingleGraph;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.data.*;
+import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.TimeLagGraph;
+import edu.cmu.tetrad.search.TimeSeriesUtils;
 import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemPm;
 import edu.cmu.tetrad.util.Parameters;
-import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.search.TimeSeriesUtils;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -22,6 +21,7 @@ import java.util.List;
  * @author Daniel Malinsky
  */
 public class TimeSeriesSemSimulation implements Simulation, HasKnowledge {
+
     static final long serialVersionUID = 23L;
     private final RandomGraph randomGraph;
     private List<Graph> graphs = new ArrayList<>();
@@ -29,7 +29,9 @@ public class TimeSeriesSemSimulation implements Simulation, HasKnowledge {
     private IKnowledge knowledge;
 
     public TimeSeriesSemSimulation(RandomGraph randomGraph) {
-        if (randomGraph == null) throw new NullPointerException();
+        if (randomGraph == null) {
+            throw new NullPointerException();
+        }
         this.randomGraph = randomGraph;
     }
 
@@ -42,7 +44,6 @@ public class TimeSeriesSemSimulation implements Simulation, HasKnowledge {
         graph = TimeSeriesUtils.graphToLagGraph(graph, parameters.getInt("numLags"));
         topToBottomLayout((TimeLagGraph) graph);
         this.knowledge = TimeSeriesUtils.getKnowledge(graph);
-
 
         for (int i = 0; i < parameters.getInt("numRuns"); i++) {
             if (parameters.getBoolean("differentGraphs") && i > 0) {
@@ -58,7 +59,8 @@ public class TimeSeriesSemSimulation implements Simulation, HasKnowledge {
 
             final int sampleSize = parameters.getInt("sampleSize");
 
-            DataSet dataSet = im.simulateData(sampleSize, false);
+            boolean saveLatentVars = parameters.getBoolean("saveLatentVars");
+            DataSet dataSet = im.simulateData(sampleSize, saveLatentVars);
 
             int numLags = ((TimeLagGraph) graph).getMaxLag();
 
@@ -103,7 +105,6 @@ public class TimeSeriesSemSimulation implements Simulation, HasKnowledge {
 //                sim.setCoefRange(0.15, 0.3);
 //                dataSet = sim.simulateDataFisher(parameters.getInt("sampleSize"));//params.getSampleSize());
 //            } //else System.out.println("Coefficient matrix is stable.");
-
 //            dataSet.setName("" + (i + 1));
 //            dataSet.setKnowledge(knowledge.copy());
 //            dataSets.add(dataSet);
@@ -142,6 +143,7 @@ public class TimeSeriesSemSimulation implements Simulation, HasKnowledge {
         parameters.add("numRuns");
         parameters.add("differentGraphs");
         parameters.add("sampleSize");
+        parameters.add("saveLatentVars");
 
         return parameters;
 

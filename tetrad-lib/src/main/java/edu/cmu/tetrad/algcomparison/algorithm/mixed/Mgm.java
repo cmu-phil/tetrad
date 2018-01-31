@@ -2,12 +2,15 @@ package edu.cmu.tetrad.algcomparison.algorithm.mixed;
 
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.annotation.AlgType;
+import edu.cmu.tetrad.data.ContinuousVariable;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.data.DataUtils;
+import edu.cmu.tetrad.data.DiscreteVariable;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
+import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.Parameters;
 import edu.pitt.csb.mgm.MGM;
 import edu.pitt.dbmi.algo.bootstrap.BootstrapEdgeEnsemble;
@@ -22,14 +25,7 @@ import java.util.List;
         name = "MGM",
         command = "mgm",
         algoType = AlgType.produce_undirected_graphs,
-        description = "Finds a Markov random field (with parents married) for a dataset in which continuous and discrete variables are mixed together. For example, if X->Y<-Z, the output will be X—Y—Z with X—Z. The parents of Y will be joined by an undirected edge, morally, even though this edge does not occur in the true model.\n" +
-                "\n" +
-                "Input Assumptions: Data are mixed.\n" +
-                "\n" +
-                "Output Format: A Markov random field for the data. \n" +
-                "\n" +
-                "Parameters:\n" +
-                "- MGM Tuning Parameters #1, #2, #3. Defaults for these are 0.1, though they can be adjusted. "
+        description = ""
 )
 public class Mgm implements Algorithm {
 
@@ -40,7 +36,26 @@ public class Mgm implements Algorithm {
 
     @Override
     public Graph search(DataModel ds, Parameters parameters) {
-    	if (parameters.getInt("bootstrapSampleSize") < 1) {
+    	// Notify the user that you need at least one continuous and one discrete variable to run MGM
+        List<Node> variables = ds.getVariables();
+        boolean hasContinuous = false;
+        boolean hasDiscrete = false;
+
+        for (Node node : variables) {
+            if (node instanceof ContinuousVariable) {
+                hasContinuous = true;
+            }
+
+            if (node instanceof DiscreteVariable) {
+                hasDiscrete = true;
+            }
+        }
+
+        if (!hasContinuous || !hasDiscrete) {
+            throw new IllegalArgumentException("You need at least one continuous and one discrete variable to run MGM.");
+        }
+        
+        if (parameters.getInt("bootstrapSampleSize") < 1) {
             DataSet _ds = DataUtils.getMixedDataSet(ds);
 
             double mgmParam1 = parameters.getDouble("mgmParam1");

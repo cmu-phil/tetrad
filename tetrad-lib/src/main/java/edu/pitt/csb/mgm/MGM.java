@@ -27,15 +27,14 @@ import cern.colt.matrix.DoubleMatrix1D;
 import cern.colt.matrix.DoubleMatrix2D;
 import cern.colt.matrix.linalg.Algebra;
 import cern.jet.math.Functions;
-import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.search.GraphSearch;
 import edu.cmu.tetrad.data.ContinuousVariable;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DiscreteVariable;
+import edu.cmu.tetrad.graph.*;
+import edu.cmu.tetrad.search.GraphSearch;
 import edu.cmu.tetrad.sem.GeneralizedSemIm;
 import edu.cmu.tetrad.sem.GeneralizedSemPm;
 import edu.cmu.tetrad.util.StatUtils;
-
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -121,6 +120,25 @@ public class MGM extends ConvexProximal implements GraphSearch{
 
     public MGM(DataSet ds, double[] lambda){
         this.variables = ds.getVariables();
+        
+        // Notify the user that you need at least one continuous and one discrete variable to run MGM
+        boolean hasContinuous = false;
+        boolean hasDiscrete = false;
+
+        for (Node node : variables) {
+            if (node instanceof ContinuousVariable) {
+                hasContinuous = true;
+            }
+
+            if (node instanceof DiscreteVariable) {
+                hasDiscrete = true;
+            }
+        }
+
+        if (!hasContinuous || !hasDiscrete) {
+            throw new IllegalArgumentException("Please give data with at least one discrete and one continuous variable to run MGM.");
+        }
+
         DataSet dsCont = MixedUtils.getContinousData(ds);
         DataSet dsDisc = MixedUtils.getDiscreteData(ds);
         this.xDat = factory2D.make(dsCont.getDoubleData().toArray());

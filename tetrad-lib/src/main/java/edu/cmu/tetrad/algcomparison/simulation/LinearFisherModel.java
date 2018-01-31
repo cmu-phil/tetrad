@@ -10,16 +10,16 @@ import edu.cmu.tetrad.sem.LargeScaleSimulation;
 import edu.cmu.tetrad.util.JOptionUtils;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.RandomUtil;
-
-import javax.swing.*;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import javax.swing.*;
 
 /**
  * @author jdramsey
  */
 public class LinearFisherModel implements Simulation, TakesData {
+
     static final long serialVersionUID = 23L;
     private List<DataSet> dataSets = new ArrayList<>();
     private List<Graph> graphs = new ArrayList<>();
@@ -38,11 +38,13 @@ public class LinearFisherModel implements Simulation, TakesData {
 
         if (shocks != null) {
             JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
-                    "The initial dataset you've provided will be used as initial shocks" +
-                            "\nfor a Fisher model.");
+                    "The initial dataset you've provided will be used as initial shocks"
+                    + "\nfor a Fisher model.");
 
             for (DataModel _shocks : shocks) {
-                if (_shocks == null) throw new NullPointerException("Dataset containing shocks must not be null.");
+                if (_shocks == null) {
+                    throw new NullPointerException("Dataset containing shocks must not be null.");
+                }
                 DataSet dataSet = (DataSet) _shocks;
                 if (!dataSet.isContinuous()) {
                     throw new IllegalArgumentException("Dataset containing shocks must be continuous tabular.");
@@ -53,6 +55,8 @@ public class LinearFisherModel implements Simulation, TakesData {
 
     @Override
     public void createData(Parameters parameters) {
+        boolean saveLatentVars = parameters.getBoolean("saveLatentVars");
+
         dataSets = new ArrayList<>();
         graphs = new ArrayList<>();
         Graph graph = randomGraph.createGraph(parameters);
@@ -77,9 +81,11 @@ public class LinearFisherModel implements Simulation, TakesData {
             graphs.add(graph);
 
             int[] tiers = new int[graph.getNodes().size()];
-            for (int j = 0; j < tiers.length; j++) tiers[j] = j;
+            for (int j = 0; j < tiers.length; j++) {
+                tiers[j] = j;
+            }
 
-            LargeScaleSimulation simulator = new LargeScaleSimulation (
+            LargeScaleSimulation simulator = new LargeScaleSimulation(
                     graph, graph.getNodes(), tiers);
             simulator.setCoefRange(
                     parameters.getDouble("coefLow"),
@@ -105,7 +111,8 @@ public class LinearFisherModel implements Simulation, TakesData {
                         parameters.getInt("intervalBetweenShocks"),
                         parameters.getInt("intervalBetweenRecordings"),
                         parameters.getInt("sampleSize"),
-                        parameters.getDouble("fisherEpsilon")
+                        parameters.getDouble("fisherEpsilon"),
+                        saveLatentVars
                 );
             } else {
                 DataSet _shocks = (DataSet) shocks.get(i);
@@ -154,7 +161,7 @@ public class LinearFisherModel implements Simulation, TakesData {
                 dataSet = DataUtils.reorderColumns(dataSet);
             }
 
-            dataSets.add(DataUtils.restrictToMeasured(dataSet));
+            dataSets.add(saveLatentVars ? dataSet : DataUtils.restrictToMeasured(dataSet));
         }
     }
 
@@ -204,6 +211,7 @@ public class LinearFisherModel implements Simulation, TakesData {
         parameters.add("fisherEpsilon");
         parameters.add("randomizeColumns");
         parameters.add("measurementVariance");
+        parameters.add("saveLatentVars");
 
         return parameters;
     }
