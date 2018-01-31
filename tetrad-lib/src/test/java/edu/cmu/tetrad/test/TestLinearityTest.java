@@ -41,6 +41,7 @@ import java.util.List;
 
 import static java.lang.Math.abs;
 import static java.lang.Math.sqrt;
+import static java.util.Collections.*;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotSame;
 import static org.junit.Assert.assertTrue;
@@ -143,7 +144,7 @@ public final class TestLinearityTest {
             GraphUtils.saveGraph(graph, new File(dir, "graph.txt"), false);
 
             List<Edge> edges = new ArrayList<Edge>(graph.getEdges());
-            Collections.sort(edges);
+            sort(edges);
             List<Node> variables = graph.getNodes();
 
             PrintStream graphOut = new PrintStream(new FileOutputStream(new File(dir, "graph.indices.txt")));
@@ -174,8 +175,8 @@ public final class TestLinearityTest {
         final int numBootstraps = 100;
         final double bootstrapSampleSize = 100;
         final double alpha = .05;
-        final int sensitivity = 4;
-        boolean singleEdge = false;
+        final double sensitivity = 0.25;
+        boolean singleEdge = true;
 
         try {
             for (int i = 1; i <= 20; i++) {
@@ -184,19 +185,10 @@ public final class TestLinearityTest {
 
                 Graph graph = GraphUtils.loadGraphTxt(new File(dir, "graph.txt"));
 
-                DataSet D1 = readInData(dir, "D1.txt");
-                DataSet D2 = readInData(dir, "D2.txt");
-                DataSet D3 = readInData(dir, "D3.txt");
-                DataSet D4 = readInData(dir, "D4.txt");
-
-//                DataReader reader = new DataReader();
-//                reader.setVariablesSupplied(true);
-//                reader.setDelimiter(DelimiterType.TAB);
-
-//                DataSet D1 = reader.parseTabular(new File(dir, "D1.txt"));
-//                DataSet D2 = reader.parseTabular(new File(dir, "D2.txt"));
-//                DataSet D3 = reader.parseTabular(new File(dir, "D3.txt"));
-//                DataSet D4 = reader.parseTabular(new File(dir, "D4.txt"));
+                DataSet D1 = readInContinuousData(dir, "D1.txt");
+                DataSet D2 = readInContinuousData(dir, "D2.txt");
+                DataSet D3 = readInContinuousData(dir, "D3.txt");
+                DataSet D4 = readInContinuousData(dir, "D4.txt");
 
                 System.out.print((i) + ".\t");
 
@@ -208,7 +200,7 @@ public final class TestLinearityTest {
 
     }
 
-    private DataSet readInData(File dir, String s) throws IOException {
+    public static DataSet readInContinuousData(File dir, String s) throws IOException {
         Dataset dataset1 = new ContinuousTabularDataFileReader(new File(dir, s), Delimiter.TAB).readInData();
         return (DataSet) DataConvertUtils.toDataModel(dataset1);
     }
@@ -298,7 +290,7 @@ public final class TestLinearityTest {
             GraphUtils.saveGraph(graph, new File(dir, "graph.txt"), false);
 
             List<Edge> edges = new ArrayList<Edge>(graph.getEdges());
-            Collections.sort(edges);
+            sort(edges);
             List<Node> variables = graph.getNodes();
 
             PrintStream graphOut = new PrintStream(new FileOutputStream(new File(dir, "graph.indices.txt")));
@@ -437,23 +429,6 @@ public final class TestLinearityTest {
 
         List<Node> variables = graph.getNodes();
 
-        int[][] variances0 = new int[D1.getNumColumns()][4];
-
-        for (int i = 0; i < datasets.length; i++) {
-            DataSet dataset = datasets[i];
-            double[][] data = dataset.getDoubleData().transpose().toArray();
-
-            for (int j = 0; j < dataset.getNumColumns(); j++) {
-                double var = StatUtils.variance(data[j]);
-//                    variances[j][i] = var;
-                variances0[j][i] = var < 1 ? 1 : 0;
-            }
-        }
-
-//        System.out.println("\nVariances0");
-
-//        System.out.println(MatrixUtils.toString(variances0));
-
 
         double[][] variances = new double[D1.getNumColumns()][4];
 
@@ -463,25 +438,16 @@ public final class TestLinearityTest {
 
             for (int j = 0; j < dataset.getNumColumns(); j++) {
                 double var = StatUtils.variance(data[j]);
-//                    variances[j][i] = var;
                 variances[j][i] = var;
             }
         }
 
-//        NumberFormat nf = new DecimalFormat("0.0000E00");
-
-//        System.out.println("\nVariances");
-//
-//        System.out.println(MatrixUtils.toString(variances));
-//
         List<Edge> edges = new ArrayList<Edge>(graph.getEdges());
-        Collections.sort(edges);
+        sort(edges);
 
         int[][] result = new int[edges.size()][4];
 
         for (int d = 0; d < 4; d++) {
-//            System.out.println("\nD" + (d + 1));
-
             DataSet d2 = datasets[d];
             double[][] data = d2.getDoubleData().transpose().toArray();
 
@@ -516,7 +482,7 @@ public final class TestLinearityTest {
                 }
 
                 final boolean linear = DataUtils.linear(_x, _z, _otherParents, bootstrapSampleSize,
-                        numBootstraps, alpha, 4);
+                        numBootstraps, alpha, sensitivity);
 
                 result[i][d] = linear ? 0 : 1;
             }
@@ -534,7 +500,6 @@ public final class TestLinearityTest {
             sums[d] = sum;
         }
 
-//        System.out.println(MatrixUtils.toString(result));
         System.out.println(MatrixUtils.toString(sums));
     }
 

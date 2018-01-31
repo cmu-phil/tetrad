@@ -2009,12 +2009,11 @@ public final class DataUtils {
 
             double cov0var = DataUtils.variance(cov0s, 0);
 
-
             final double[] array = result.getResiduals().toArray();
 
             double residualVar = DataUtils.variance(array, 0);
 
-            final double x2 = sensitivity * dof * (residualVar / cov0var);
+            final double x2 = dof * (residualVar / (sensitivity * cov0var));
 
             double c = new ChiSquaredDistribution(dof).cumulativeProbability(x2);
 
