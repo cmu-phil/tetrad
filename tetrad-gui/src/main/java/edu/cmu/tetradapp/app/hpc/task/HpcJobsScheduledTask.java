@@ -79,12 +79,12 @@ public class HpcJobsScheduledTask extends TimerTask {
 					long pid = hpcJobInfo.getPid().longValue();
 					hpcJobInfoMap.put(pid, hpcJobInfo);
 
-					LOGGER.debug("id: " + hpcJobInfo.getId() + " : " + hpcJobInfo.getAlgorithmName() + ": pid: "
+					LOGGER.debug("id: " + hpcJobInfo.getId() + " : " + hpcJobInfo.getAlgoId() + ": pid: "
 							+ pid + " : " + hpcJobInfo.getResultFileName());
 
 				} else {
 
-					LOGGER.debug("id: " + hpcJobInfo.getId() + " : " + hpcJobInfo.getAlgorithmName()
+					LOGGER.debug("id: " + hpcJobInfo.getId() + " : " + hpcJobInfo.getAlgoId()
 							+ ": no pid! : " + hpcJobInfo.getResultFileName());
 
 					hpcJobInfos.remove(hpcJobInfo);
@@ -101,7 +101,7 @@ public class HpcJobsScheduledTask extends TimerTask {
 				List<JobInfo> jobInfos = hpcJobManager.getRemoteActiveJobs(hpcAccountManager, hpcAccount);
 
 				for (JobInfo jobInfo : jobInfos) {
-					LOGGER.debug("Remote pid: " + jobInfo.getId() + " : " + jobInfo.getAlgorithmName() + " : "
+					LOGGER.debug("Remote pid: " + jobInfo.getId() + " : " + jobInfo.getAlgoId() + " : "
 							+ jobInfo.getResultFileName());
 
 					long pid = jobInfo.getId();
@@ -126,7 +126,7 @@ public class HpcJobsScheduledTask extends TimerTask {
 							hpcJobLog.setLastUpdatedTime(new Date(System.currentTimeMillis()));
 
 							String log = "Job status changed to " + recentStatusText;
-							LOGGER.debug(hpcJobInfo.getAlgorithmName() + " : id : " + hpcJobInfo.getId()
+							LOGGER.debug(hpcJobInfo.getAlgoId() + " : id : " + hpcJobInfo.getId()
 									+ " : pid : " + pid);
 							LOGGER.debug(log);
 
@@ -169,7 +169,7 @@ public class HpcJobsScheduledTask extends TimerTask {
 
 						hpcJobManager.logHpcJobLogDetail(hpcJobLog, recentStatus, recentStatusText);
 
-						LOGGER.debug(hpcJobInfo.getAlgorithmName() + " : id : " + hpcJobInfo.getId() + " : "
+						LOGGER.debug(hpcJobInfo.getAlgoId() + " : id : " + hpcJobInfo.getId() + " : "
 								+ recentStatusText);
 
 						GeneralAlgorithmEditor editor = hpcJobManager.getGeneralAlgorithmEditor(hpcJobInfo);
@@ -193,7 +193,7 @@ public class HpcJobsScheduledTask extends TimerTask {
 								hpcJobManager.logHpcJobLogDetail(hpcJobLog, recentStatus, log);
 
 								LOGGER.debug(
-										hpcJobInfo.getAlgorithmName() + " : id : " + hpcJobInfo.getId() + " : " + log);
+										hpcJobInfo.getAlgoId() + " : id : " + hpcJobInfo.getId() + " : " + log);
 
 							} else if (resultFileNames.contains(errorResultFileName)) {
 								recentStatus = 6; // Error Result Downloaded
@@ -209,7 +209,7 @@ public class HpcJobsScheduledTask extends TimerTask {
 								hpcJobManager.logHpcJobLogDetail(hpcJobLog, recentStatus, log);
 
 								LOGGER.debug(
-										hpcJobInfo.getAlgorithmName() + " : id : " + hpcJobInfo.getId() + " : " + log);
+										hpcJobInfo.getAlgoId() + " : id : " + hpcJobInfo.getId() + " : " + log);
 
 							} else {
 
@@ -227,7 +227,7 @@ public class HpcJobsScheduledTask extends TimerTask {
 									String log = "Result downloaded";
 									hpcJobManager.logHpcJobLogDetail(hpcJobLog, recentStatus, log);
 
-									LOGGER.debug(hpcJobInfo.getAlgorithmName() + " : id : " + hpcJobInfo.getId()
+									LOGGER.debug(hpcJobInfo.getAlgoId() + " : id : " + hpcJobInfo.getId()
 											+ " : " + log);
 								} else {
 									String error = downloadAlgorithmResultFile(hpcAccountManager, hpcJobManager,
@@ -242,7 +242,7 @@ public class HpcJobsScheduledTask extends TimerTask {
 										String log = "Error Result downloaded";
 										hpcJobManager.logHpcJobLogDetail(hpcJobLog, recentStatus, log);
 
-										LOGGER.debug(hpcJobInfo.getAlgorithmName() + " : id : "
+										LOGGER.debug(hpcJobInfo.getAlgoId() + " : id : "
 												+ hpcJobInfo.getId() + " : " + log);
 									} else {
 										recentStatus = 7; // Result Not Found
@@ -250,7 +250,7 @@ public class HpcJobsScheduledTask extends TimerTask {
 										String log = resultJsonFileName + " not found";
 										hpcJobManager.logHpcJobLogDetail(hpcJobLog, recentStatus, log);
 
-										LOGGER.debug(hpcJobInfo.getAlgorithmName() + " : id : "
+										LOGGER.debug(hpcJobInfo.getAlgoId() + " : id : "
 												+ hpcJobInfo.getId() + " : " + log);
 									}
 

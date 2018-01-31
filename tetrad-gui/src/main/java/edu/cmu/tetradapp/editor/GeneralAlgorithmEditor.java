@@ -60,11 +60,10 @@ import edu.pitt.dbmi.ccd.rest.client.dto.user.JsonWebToken;
 import edu.pitt.dbmi.ccd.rest.client.service.algo.AbstractAlgorithmRequest;
 import edu.pitt.dbmi.tetrad.db.entity.AlgorithmParamRequest;
 import edu.pitt.dbmi.tetrad.db.entity.AlgorithmParameter;
-import edu.pitt.dbmi.tetrad.db.entity.DataValidation;
 import edu.pitt.dbmi.tetrad.db.entity.HpcAccount;
 import edu.pitt.dbmi.tetrad.db.entity.HpcJobInfo;
 import edu.pitt.dbmi.tetrad.db.entity.HpcParameter;
-import edu.pitt.dbmi.tetrad.db.entity.JvmOption;
+import edu.pitt.dbmi.tetrad.db.entity.JvmOptions;
 import java.awt.BorderLayout;
 import java.awt.CardLayout;
 import java.awt.Dimension;
@@ -82,9 +81,12 @@ import java.util.Collections;
 import java.util.EnumMap;
 import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
+
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.ButtonGroup;
@@ -786,28 +788,29 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
             progressTextArea.append("Preparing...");
             progressTextArea.updateUI();
 
-            // 3.1 Algorithm name
-            String algorithmName;
-            switch (runner.getAlgorithmName().toUpperCase()) {
-                case "FGES":
-                    algorithmName = AbstractAlgorithmRequest.FGES;
-                    if (dataModel.isDiscrete()) {
-                        algorithmName = AbstractAlgorithmRequest.FGES_DISCRETE;
-                    }
-                    break;
-                case "GFCI":
-                    algorithmName = AbstractAlgorithmRequest.GFCI;
-                    if (dataModel.isDiscrete()) {
-                        algorithmName = AbstractAlgorithmRequest.GFCI_DISCRETE;
-                    }
-                    break;
-                default:
-                    return;
-            }
+            // 3.1 Algorithm Id, Independent Test Id, Score Id
+            AlgorithmModel algoModel = algorithmList.getSelectedValue();
+        	String algoId = algoModel.getAlgorithm().getAnnotation().command();
+    		// Test
+        	String testId = null;
+    		if(indTestComboBox.isEnabled()){
+    			IndependenceTestModel indTestModel = indTestComboBox.getItemAt(indTestComboBox.getSelectedIndex());
+    			testId = indTestModel.getIndependenceTest().getAnnotation().command();
+    		}
+    		// Score
+        	String scoreId = null;
+    		if(scoreComboBox.isEnabled()){
+    			ScoreModel scoreModel = scoreComboBox.getItemAt(scoreComboBox.getSelectedIndex());
+    			scoreId = scoreModel.getScore().getAnnotation().command();
+    		}
 
             // 3.2 Parameters
             AlgorithmParamRequest algorithmParamRequest = new AlgorithmParamRequest();
 
+            // Test and score
+            algorithmParamRequest.setTestId(testId);
+            algorithmParamRequest.setScoreId(scoreId);
+            
             // Dataset and Prior paths
             String datasetPath = file.toAbsolutePath().toString();
             LOGGER.info(datasetPath);
@@ -823,25 +826,17 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
             // VariableType
             if (dataModel.isContinuous()) {
                 algorithmParamRequest.setVariableType("continuous");
-            } else {
+            } else if (dataModel.isDiscrete()){
                 algorithmParamRequest.setVariableType("discrete");
+            } else {
+            	algorithmParamRequest.setVariableType("mixed");
             }
 
             // FileDelimiter
             String fileDelimiter = "tab"; // Pre-determined
             algorithmParamRequest.setFileDelimiter(fileDelimiter);
 
-            // Default Data Validation Parameters
-            DataValidation dataValidation = new DataValidation();
-            dataValidation.setUniqueVarName(true);
-            if (dataModel.isContinuous()) {
-                dataValidation.setNonZeroVariance(true);
-            } else {
-                dataValidation.setCategoryLimit(true);
-            }
-            algorithmParamRequest.setDataValidation(dataValidation);
-
-            List<AlgorithmParameter> AlgorithmParameters = new ArrayList<>();
+            Set<AlgorithmParameter> AlgorithmParameters = new HashSet<>();
 
             Parameters parameters = runner.getParameters();
             List<String> parameterNames = runner.getAlgorithm().getParameters();
@@ -865,11 +860,8 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
             } while (maxHeapSize != null && !StringUtils.isNumeric(maxHeapSize));
 
             if (maxHeapSize != null) {
-                JvmOption jvmOption = new JvmOption();
-                jvmOption.setParameter("maxHeapSize");
-                jvmOption.setValue(maxHeapSize);
-                List<JvmOption> jvmOptions = new ArrayList<>();
-                jvmOptions.add(jvmOption);
+                JvmOptions jvmOptions = new JvmOptions();
+                jvmOptions.setMaxHeapSize(Integer.parseInt(maxHeapSize));
                 algorithmParamRequest.setJvmOptions(jvmOptions);
             }
 
@@ -887,7 +879,9 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
                     hpcParameter.setKey("walltime");
                     hpcParameter.setValue(userwallTime.toString());
                     LOGGER.info("walltime: " + userwallTime.toString());
-                    algorithmParamRequest.setHpcParameters(Collections.singletonList(hpcParameter));
+                    Set<HpcParameter> hpcParameters = new HashSet<>();
+                    hpcParameters.add(hpcParameter);
+                    algorithmParamRequest.setHpcParameters(hpcParameters);
                 }
             }
 
@@ -911,7 +905,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
 
             // 4.1 Save HpcJobInfo
             hpcJobInfo = new HpcJobInfo();
-            hpcJobInfo.setAlgorithmName(algorithmName);
+            hpcJobInfo.setAlgoId(algoId);
             hpcJobInfo.setAlgorithmParamRequest(algorithmParamRequest);
             hpcJobInfo.setStatus(-1);
             hpcJobInfo.setHpcAccount(hpcAccount);
@@ -923,7 +917,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
 
             this.jsonResult = null;
 
-            JOptionPane.showMessageDialog(ancestor, "The " + hpcJobInfo.getAlgorithmName() + " job on the "
+            JOptionPane.showMessageDialog(ancestor, "The " + hpcJobInfo.getAlgoId() + " job on the "
                     + hpcJobInfo.getHpcAccount().getConnectionName() + " node is in the queue successfully!");
 
         } catch (IOException exception) {
@@ -937,7 +931,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
 
     }
 
-    private HpcAccount showRemoteComputingOptions(String name) {
+    private HpcAccount showRemoteComputingOptions(String algoId) {
         List<HpcAccount> hpcAccounts = desktop.getHpcAccountManager().getHpcAccounts();
 
         if (hpcAccounts == null || hpcAccounts.isEmpty()) {
@@ -954,7 +948,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
             options[i + 1] = yes_answer + connName;
         }
 
-        int n = JOptionPane.showOptionDialog(this, "Would you like to execute a " + name + " search in the cloud?",
+        int n = JOptionPane.showOptionDialog(this, "Would you like to execute a " + algoId + " search in the cloud?",
                 "A Silly Question", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE, null, options, options[0]);
         if (n == 0) {
             return null;
@@ -968,19 +962,20 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
             public void watch() {
                 AlgorithmModel algoModel = algorithmList.getSelectedValue();
                 if (algoModel != null) {
-                    String algoName = algoModel.getAlgorithm().getAnnotation().name();
-
-                    HpcAccount hpcAccount = null;
-                    switch (algoName) {
-                        case "FGES":
-                        case "GFCI":
-                            hpcAccount = showRemoteComputingOptions(algoName);
-                            break;
-                        default:
-                    }
-
-                    if (hpcAccount == null) {
-                        graphEditor.saveLayout();
+                	
+                	HpcAccount hpcAccount = null;            		
+                	
+                	
+                	
+                	if(algoModel.getAlgorithm().getAnnotation().algoType() != AlgType.orient_pairwise && 
+                			runner.getDataModelList().getModelList().size() == 1){
+                		String algoName = algoModel.getAlgorithm().getAnnotation().name();
+                		
+                		hpcAccount = showRemoteComputingOptions(algoName);
+                	}
+                	
+                	if(hpcAccount == null){
+                		graphEditor.saveLayout();
 
                         runner.execute();
 
@@ -993,13 +988,13 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
                         graphContainer.add(graphEditor);
 
                         changeCard(GRAPH_CARD);
-                    } else {
-                        try {
+                	}else{
+                		try {
                             doRemoteCompute(runner, hpcAccount);
                         } catch (Exception exception) {
                             LOGGER.error("Unable to run algorithm.", exception);
                         }
-                    }
+                	}
                 }
             }
         };

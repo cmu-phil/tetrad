@@ -436,7 +436,7 @@ public class HpcJobActivityEditor extends JPanel implements FinalizingEditor {
 				rowData.add(hpcAccount.getConnectionName());
 
 				// Algorithm
-				rowData.add(hpcJobInfo.getAlgorithmName());
+				rowData.add(hpcJobInfo.getAlgoId());
 
 				// Dataset uploading progress
 				AlgorithmParamRequest algorParamReq = hpcJobInfo.getAlgorithmParamRequest();
@@ -552,7 +552,7 @@ public class HpcJobActivityEditor extends JPanel implements FinalizingEditor {
 				rowData.add(hpcAccount.getConnectionName());
 
 				// Algorithm
-				rowData.add(hpcJobInfo.getAlgorithmName());
+				rowData.add(hpcJobInfo.getAlgoId());
 
 				// Submitted time
 				rowData.add(hpcJobInfo.getSubmittedTime() != null
