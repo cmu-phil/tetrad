@@ -28,6 +28,9 @@ import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.search.SemBicScore;
 import edu.cmu.tetrad.sem.*;
 import edu.cmu.tetrad.util.*;
+import edu.pitt.dbmi.data.Dataset;
+import edu.pitt.dbmi.data.Delimiter;
+import edu.pitt.dbmi.data.reader.tabular.ContinuousTabularDataFileReader;
 import org.junit.Test;
 
 import java.io.*;
@@ -175,20 +178,25 @@ public final class TestLinearityTest {
         boolean singleEdge = false;
 
         try {
-            for (int i = 1; i <= 23; i++) {
+            for (int i = 1; i <= 20; i++) {
 
                 File dir = new File("/Users/user/Box Sync/data/nonlinearity/simulations/example" + i);
 
                 Graph graph = GraphUtils.loadGraphTxt(new File(dir, "graph.txt"));
 
-                DataReader reader = new DataReader();
-                reader.setVariablesSupplied(true);
-                reader.setDelimiter(DelimiterType.TAB);
+                DataSet D1 = readInData(dir, "D1.txt");
+                DataSet D2 = readInData(dir, "D2.txt");
+                DataSet D3 = readInData(dir, "D3.txt");
+                DataSet D4 = readInData(dir, "D4.txt");
 
-                DataSet D1 = reader.parseTabular(new File(dir, "D1.txt"));
-                DataSet D2 = reader.parseTabular(new File(dir, "D2.txt"));
-                DataSet D3 = reader.parseTabular(new File(dir, "D3.txt"));
-                DataSet D4 = reader.parseTabular(new File(dir, "D4.txt"));
+//                DataReader reader = new DataReader();
+//                reader.setVariablesSupplied(true);
+//                reader.setDelimiter(DelimiterType.TAB);
+
+//                DataSet D1 = reader.parseTabular(new File(dir, "D1.txt"));
+//                DataSet D2 = reader.parseTabular(new File(dir, "D2.txt"));
+//                DataSet D3 = reader.parseTabular(new File(dir, "D3.txt"));
+//                DataSet D4 = reader.parseTabular(new File(dir, "D4.txt"));
 
                 System.out.print((i) + ".\t");
 
@@ -198,6 +206,11 @@ public final class TestLinearityTest {
             e.printStackTrace();
         }
 
+    }
+
+    private DataSet readInData(File dir, String s) throws IOException {
+        Dataset dataset1 = new ContinuousTabularDataFileReader(new File(dir, s), Delimiter.TAB).readInData();
+        return (DataSet) DataConvertUtils.toDataModel(dataset1);
     }
 
     @Test

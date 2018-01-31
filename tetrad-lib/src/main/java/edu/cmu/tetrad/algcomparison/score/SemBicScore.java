@@ -29,16 +29,16 @@ public class SemBicScore implements ScoreWrapper {
     public Score getScore(DataModel dataSet, Parameters parameters) {
         this.dataSet = dataSet;
 
-        DataModel _data;
+//        DataModel _data;
 
-        if (parameters.getBoolean("doNonparanormalTransform")) {
-            _data = DataUtils.getNonparanormalTransformed((DataSet) dataSet);
-        } else {
-            _data = dataSet;
-        }
+//        if (parameters.getBoolean("doNonparanormalTransform")) {
+//            _data = DataUtils.getNonparanormalTransformed((DataSet) dataSet);
+//        } else {
+//            _data = dataSet;
+//        }
 
         edu.cmu.tetrad.search.SemBicScore semBicScore
-                = new edu.cmu.tetrad.search.SemBicScore(DataUtils.getCovMatrix(_data));
+                = new edu.cmu.tetrad.search.SemBicScore(DataUtils.getCovMatrix(dataSet));
         double penaltyDiscount = parameters.getDouble("penaltyDiscount");
         this.penaltyDiscount = penaltyDiscount;
         semBicScore.setPenaltyDiscount(penaltyDiscount);
@@ -59,7 +59,7 @@ public class SemBicScore implements ScoreWrapper {
     public List<String> getParameters() {
         List<String> parameters = new ArrayList<>();
         parameters.add("penaltyDiscount");
-        parameters.add("doNonparanormalTransform");
+//        parameters.add("doNonparanormalTransform");
         return parameters;
     }
 

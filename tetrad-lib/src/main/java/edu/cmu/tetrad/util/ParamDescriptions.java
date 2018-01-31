@@ -110,12 +110,12 @@ public class ParamDescriptions {
         map.put("useGap", new ParamDescription("Yes if the GAP algorithms should be used. No if the SAG algorithm should be used", false));
 
         // Multiple indicator random graphs
-        map.put("numStructuralNodes", new ParamDescription("Number of structural nodes", 3));
-        map.put("numStructuralEdges", new ParamDescription("Number of structural edges", 3));
-        map.put("measurementModelDegree", new ParamDescription("Number of measurements per Latent", 5));
-        map.put("latentMeasuredImpureParents", new ParamDescription("Number of Latent --> Measured impure edges", 0));
-        map.put("measuredMeasuredImpureParents", new ParamDescription("Number of Measured --> Measured impure edges", 0));
-        map.put("measuredMeasuredImpureAssociations", new ParamDescription("Number of Measured <-> Measured impure edges", 0));
+        map.put("numStructuralNodes", new ParamDescription("Number of structural nodes", 3, 1, Integer.MAX_VALUE));
+        map.put("numStructuralEdges", new ParamDescription("Number of structural edges", 3, 1, Integer.MAX_VALUE));
+        map.put("measurementModelDegree", new ParamDescription("Number of measurements per Latent", 5, 1, Integer.MAX_VALUE));
+        map.put("latentMeasuredImpureParents", new ParamDescription("Number of Latent --> Measured impure edges", 0, 1, Integer.MAX_VALUE));
+        map.put("measuredMeasuredImpureParents", new ParamDescription("Number of Measured --> Measured impure edges", 0, 1, Integer.MAX_VALUE));
+        map.put("measuredMeasuredImpureAssociations", new ParamDescription("Number of Measured <-> Measured impure edges", 0, 1, Integer.MAX_VALUE));
 
 //        map.put("useRuleC", new ParamDescription("Yes if rule C for CCD should be used", false));
         map.put("applyR1", new ParamDescription("Yes if the orient away from arrow rule should be applied", true));
