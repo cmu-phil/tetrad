@@ -122,8 +122,6 @@ public class LingamRunner extends AbstractAlgorithmRunner implements GraphSource
 //        Graph graph = lingam.lingam(data).getGraph();
 
         Lingam lingam = new Lingam();
-        Parameters params = getParams();
-        lingam.setPruneFactor(params.getDouble("pruneFactor", 1.0));
         Graph graph = lingam.search(data);
 
         if (getSourceGraph() != null) {

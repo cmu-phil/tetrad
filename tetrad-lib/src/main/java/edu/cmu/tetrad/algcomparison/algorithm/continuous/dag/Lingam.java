@@ -33,7 +33,7 @@ public class Lingam implements Algorithm {
     public Graph search(DataModel dataSet, Parameters parameters) {
     	if (parameters.getInt("bootstrapSampleSize") < 1) {
             edu.cmu.tetrad.search.Lingam lingam = new edu.cmu.tetrad.search.Lingam();
-            lingam.setPruneFactor(parameters.getDouble("pruneFactor"));
+            lingam.setPenaltyDiscount(parameters.getDouble("penaltyDiscount"));
             return lingam.search(DataUtils.getContinuousDataSet(dataSet));
     	}else{
     		Lingam algorithm = new Lingam();
@@ -78,7 +78,7 @@ public class Lingam implements Algorithm {
     public List<String> getParameters() {
     	List<String> parameters = new ArrayList<>();
         // Bootstrapping
-        parameters.add("pruneFactor");
+        parameters.add("penaltyDiscount");
         parameters.add("bootstrapSampleSize");
         parameters.add("bootstrapEnsemble");
         parameters.add("verbose");
