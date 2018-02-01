@@ -263,6 +263,11 @@ public class ParamDescriptions {
         map.put("probTwoCycle", new ParamDescription(
             "The probability of creating a 2-cycles in the graph (0 - 1)",
             0.0, 0.0, 1.0));
+
+        map.put("pruneFactor", new ParamDescription(
+                "The pruning factor",
+                1.0, 0.0, Double.POSITIVE_INFINITY));
+
     }
 
     public static ParamDescriptions getInstance() {

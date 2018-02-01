@@ -1,6 +1,7 @@
 package edu.cmu.tetrad.algcomparison.algorithm.continuous.dag;
 
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
+import edu.cmu.tetrad.annotation.AlgType;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataUtils;
@@ -18,11 +19,13 @@ import java.util.List;
  *
  * @author jdramsey
  */
-/*@AlgorithmDescription(
+@edu.cmu.tetrad.annotation.Algorithm(
         name = "LiNGAM",
-        algType = AlgType.DAG,
-        oracleType = OracleType.None
-)*/
+        command = "lingam",
+        algoType = AlgType.forbid_latent_common_causes,
+        description = "The LiNGAM algorithm, for inferring a DAG when there are no latent variables in the model and " +
+                "at most one error is Gaussian."
+)
 public class Lingam implements Algorithm {
 
     static final long serialVersionUID = 23L;
@@ -30,6 +33,7 @@ public class Lingam implements Algorithm {
     public Graph search(DataModel dataSet, Parameters parameters) {
     	if (parameters.getInt("bootstrapSampleSize") < 1) {
             edu.cmu.tetrad.search.Lingam lingam = new edu.cmu.tetrad.search.Lingam();
+            lingam.setPruneFactor(parameters.getDouble("pruneFactor"));
             return lingam.search(DataUtils.getContinuousDataSet(dataSet));
     	}else{
     		Lingam algorithm = new Lingam();
@@ -74,6 +78,7 @@ public class Lingam implements Algorithm {
     public List<String> getParameters() {
     	List<String> parameters = new ArrayList<>();
         // Bootstrapping
+        parameters.add("pruneFactor");
         parameters.add("bootstrapSampleSize");
         parameters.add("bootstrapEnsemble");
         parameters.add("verbose");

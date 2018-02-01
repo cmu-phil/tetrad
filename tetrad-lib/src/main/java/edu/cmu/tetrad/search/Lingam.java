@@ -22,6 +22,7 @@
 package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.DataSet;
+import edu.cmu.tetrad.data.DataUtils;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
@@ -54,19 +55,21 @@ public class Lingam {
     }
 
     public Graph search(DataSet data) {
+        data = DataUtils.center(data);
         TetradMatrix X = data.getDoubleData();
         List<Node> nodes = data.getVariables();
 
-        EstimateResult result = estimate(X);
-        int[] k = result.getK();
-        TetradMatrix bHat = pruneEdgesByResampling(X, k);
+        CausalOrder result = estimateCausalOrder(X);
+        int[] perm = result.getPerm();
+
+        TetradMatrix bHat = pruneEdgesByResampling(X, perm);
 
         Graph graph = new EdgeListGraph(nodes);
 
-        for (int j = 0; j < bHat.columns(); j++) {
-            for (int i = 0; i < bHat.rows(); i++) {
+        for (int i = 0; i < bHat.rows(); i++) {
+            for (int j = 0; j < bHat.columns(); j++) {
                 if (bHat.get(i, j) != 0) {
-                    graph.addDirectedEdge(nodes.get(j), nodes.get(i));
+                    graph.addDirectedEdge(nodes.get(i), nodes.get(j));
                 }
             }
         }
@@ -78,42 +81,151 @@ public class Lingam {
 
     //================================PUBLIC METHODS========================//
 
-    private EstimateResult estimate(TetradMatrix X) {
+//    private CausalOrder estimateCausalOrder(TetradMatrix X) {
+//        FastIca fastIca = new FastIca(X, 20);
+//        fastIca.setVerbose(false);
+//        fastIca.setAlgorithmType(FastIca.DEFLATION);
+//        fastIca.setFunction(FastIca.LOGCOSH);
+//        fastIca.setTolerance(1e-10);
+//        FastIca.IcaResult result = fastIca.findComponents();
+//        TetradMatrix w = result.getW();
+//        TetradMatrix k = result.getK();
+//
+//        TetradMatrix W = k.times(w.transpose());
+//        System.out.println("W = " + W);
+//
+//        TetradLogger.getInstance().log("lingamDetails", "\nW " + W);
+//
+//
+//        PermutationGenerator gen = new PermutationGenerator(W.columns());
+//        int[] perm;
+//        int[] rowp = new int[0];
+//        double _sum = Double.POSITIVE_INFINITY;
+//
+//        while ((perm = gen.next()) != null) {
+//            double sum = 0.0;
+//
+//            for (int j = 0; j < W.columns(); j++) {
+//                for (int i = 0; i < j; i++) {
+//                    sum += abs(W.get(perm[i], perm[j]));
+//                }
+//            }
+//
+//            if (sum < _sum) {
+//                _sum = sum;
+//                rowp = Arrays.copyOf(perm, perm.length);
+//            }
+//        }
+//
+//        // The method that calls assign() twice could be a problem for the
+//        // negative coefficients
+//        TetradMatrix S = W.copy();
+//
+//        for (int i = 0; i < S.rows(); i++) {
+//            for (int j = 0; j < S.columns(); j++) {
+//                S.set(i, j, 1.0 / abs(W.get(i, j)));
+//            }
+//        }
+//
+//        //this is an n x 2 matrix, i.e. a list of index pairs
+//        int[][] assignment = Hungarian.hgAlgorithm(S.toArray(), "min");
+//
+//        for (int i = 0; i < rowp.length; i++) {
+//            rowp[i] = assignment[i][1];
+//        }
+//
+//        TetradLogger.getInstance().log("lingamDetails", "\nrowp = ");
+//
+//        TetradMatrix Wp = W.getSelection(rowp, rowp);//range(0, W.columns() - 1));
+//
+//        System.out.println("lingamDetails Wp = " + Wp);
+//
+//        System.out.println("lingamDetails Wp = " + Wp);
+//
+//        TetradVector diag = Wp.diag();
+//
+//        for (int i = 0; i < Wp.rows(); i++) {
+//            for (int j = 0; j < Wp.columns(); j++) {
+//                Wp.set(i, j, Wp.get(i, j) / diag.get(i));
+//            }
+//        }
+//
+//        System.out.println("lingamDetails Wp = " + Wp);
+//
+//        TetradMatrix Best = TetradMatrix.identity(Wp.rows()).minus(Wp);
+//
+//        System.out.println("lingamDetails Best " + Best);
+//
+//        TetradVector Xm = new TetradVector(X.columns());
+//
+//        for (int j = 0; j < X.columns(); j++) {
+//            double sum = 0.0;
+//
+//            for (int i = 0; i < X.rows(); i++) {
+//                double v = X.get(i, j);
+//                sum += v;
+//            }
+//
+//            double mean = sum / X.rows();
+//
+//            Xm.set(j, mean);
+//        }
+//
+//        return new CausalOrder(rowp, Best);
+//    }
+
+    private CausalOrder estimateCausalOrder(TetradMatrix X) {
         FastIca fastIca = new FastIca(X, 20);
         fastIca.setVerbose(false);
         fastIca.setAlgorithmType(FastIca.DEFLATION);
         fastIca.setFunction(FastIca.LOGCOSH);
-        fastIca.setTolerance(1e-20);
+        fastIca.setTolerance(1e-10);
         FastIca.IcaResult result = fastIca.findComponents();
         TetradMatrix w = result.getW();
         TetradMatrix k = result.getK();
 
-        TetradMatrix W = k.times(w.transpose());
+        TetradMatrix W = w.transpose().times(k);// k.times(w.transpose());
         System.out.println("W = " + W);
 
         TetradLogger.getInstance().log("lingamDetails", "\nW " + W);
 
 
-//        PermutationGenerator gen = new PermutationGenerator(W.columns());
-//        int[] perm;
-//        int[] rowp = new int[5];
-//        double maxSum = -1.0;
-//
-//        while ((perm = gen.next()) != null) {
-//            double sum = 0.0;
-//
-//            for (int i = 0; i < W.rows(); i++) {
-//                for (int j = 0; j < i; j++) {
-//                    sum += abs(W.get(perm[i], perm[j]));
-//                }
-//            }
-//
-//            if (sum > maxSum) {
-//                maxSum = sum;
-//                rowp = Arrays.copyOf(perm, perm.length);
-//            }
-//        }
+        PermutationGenerator gen = new PermutationGenerator(W.columns());
+        int[] WPerm = new int[0];
+        double WSum = Double.POSITIVE_INFINITY;
+        int[] perm;
 
+        while ((perm = gen.next()) != null) {
+            double sum = 0.0;
+
+            for (int i = 0; i < W.rows(); i++) {
+                final double Wii = W.get(perm[i], i);
+                sum += 1.0 / abs(Wii);
+            }
+
+            if (sum < WSum) {
+                WSum = sum;
+                WPerm = Arrays.copyOf(perm, perm.length);
+            }
+        }
+
+        TetradMatrix Wp = new TetradMatrix(W);
+
+        for (int i = 0; i < WPerm.length; i++) {
+            for (int j = 0; j < WPerm.length; j++) {
+                Wp.set(WPerm[i], j, W.get(i, j));
+            }
+        }
+
+        for (int i = 0; i < WPerm.length; i++) {
+            double diag = Wp.get(i, i);
+
+            for (int j = 0; j < WPerm.length; j++) {
+                Wp.set(i, j, Wp.get(i, j) / diag);
+            }
+        }
+
+        TetradMatrix B = TetradMatrix.identity(WPerm.length).minus(Wp.transpose());
 
         // The method that calls assign() twice could be a problem for the
         // negative coefficients
@@ -121,96 +233,31 @@ public class Lingam {
 
         for (int i = 0; i < S.rows(); i++) {
             for (int j = 0; j < S.columns(); j++) {
-                S.set(i, j, 1.0 / abs(S.get(i, j)));
+                S.set(i, j, 1.0 / abs(W.get(i, j)));
             }
         }
 
-        //this is an n x 2 matrix, i.e. a list of index pairs
-        int[][] assignment = Hungarian.hgAlgorithm(S.toArray(), "min");
+        PermutationGenerator gen2 = new PermutationGenerator(B.rows());
+        int[] betaPerm = new int[0];
+        double utSum = Double.POSITIVE_INFINITY;
 
-        int[] rowp = new int[assignment.length];
-
-        for (int i = 0; i < rowp.length; i++) {
-            rowp[i] = assignment[i][1];
-        }
-
-        TetradLogger.getInstance().log("lingamDetails", "\nrowp = ");
-
-//        for (int row : rowp) {
-//            System.out.println("lingamDetails " + row + "\t");
-//        }
-
-        TetradMatrix Wp = W.getSelection(rowp, rowp);//range(0, W.columns() - 1));
-
-        System.out.println("lingamDetails Wp = " + Wp);
-
-//        TetradVector estdisturbancesstd = new TetradVector(Wp.rows());
-//
-//        for (int i = 0; i < Wp.rows(); i++) {
-//            estdisturbancesstd.set(i, 1.0 / abs(Wp.get(i, i)));
-//        }
-
-        System.out.println("lingamDetails Wp = " + Wp);
-
-        TetradVector diag = Wp.diag();
-
-        for (int i = 0; i < Wp.rows(); i++) {
-            for (int j = 0; j < Wp.columns(); j++) {
-                Wp.set(i, j, Wp.get(i, j) / diag.get(i));
-            }
-        }
-
-        System.out.println("lingamDetails Wp = " + Wp);
-
-        TetradMatrix Best = TetradMatrix.identity(Wp.rows()).minus(Wp);
-
-        System.out.println("lingamDetails Best " + Best);
-
-        TetradVector Xm = new TetradVector(X.columns());
-
-        for (int j = 0; j < X.columns(); j++) {
+        while ((perm = gen2.next()) != null) {
             double sum = 0.0;
 
-            for (int i = 0; i < X.rows(); i++) {
-                double v = X.get(i, j);
-                sum += v;
+            for (int i = 0; i < B.rows(); i++) {
+                for (int j = 0; j < B.columns(); j++) {
+                    final double b = B.get(perm[i], perm[j]);
+                    sum += b * b;
+                }
             }
 
-            double mean = sum / X.rows();
-
-            Xm.set(j, mean);
+            if (sum < utSum) {
+                utSum = sum;
+                betaPerm = Arrays.copyOf(perm, perm.length);
+            }
         }
 
-//        TetradVector cest = Wp.times(Xm);
-//
-//        System.out.println("lingamDetails cest = " + cest);
-
-//        StlPruneResult result1 = stlPrune(Best);
-//
-//        TetradMatrix bestCausal = result1.getBestcausal();
-//        int[] causalperm = result1.getCausalperm();
-//
-//        System.out.println("lingamDetails Best causal " + bestCausal);
-//        System.out.println("lingamDetails causalperm = " + Arrays.toString(causalperm));
-//
-//        int[] icausal = iperm(causalperm);
-//
-//        for (int i = 0; i < bestCausal.rows(); i++) {
-//            for (int j = i + 1; j < bestCausal.columns(); j++) {
-//                bestCausal.set(i, j, 0);
-//            }
-//        }
-//
-//        System.out.println("lingamDetails bestCausal = " + bestCausal);
-//
-//        TetradMatrix B = bestCausal.getSelection(icausal, icausal).copy();
-//
-//
-//        System.out.println("lingamDetails B = " + B);
-//
-//        System.out.println("causal perm = " + Arrays.toString(causalperm));
-
-        return new EstimateResult(rowp);
+        return new CausalOrder(betaPerm, B);
     }
 
     public double getPruneFactor() {
@@ -225,15 +272,25 @@ public class Lingam {
         this.pruneFactor = pruneFactor;
     }
 
-    public static class EstimateResult {
-        private int[] k;
+    public static class CausalOrder {
+        private int[] perm;
+        private TetradMatrix BHat;
 
-        public EstimateResult(int[] k) {
-            this.k = k;
+        public CausalOrder(int[] perm, TetradMatrix BHat) {
+            this.perm = perm;
+            this.BHat = BHat;
         }
 
-        public int[] getK() {
-            return k;
+        public int[] getPerm() {
+            return perm;
+        }
+
+        public TetradMatrix getBHat() {
+            return BHat;
+        }
+
+        public void setBHat(TetradMatrix BHat) {
+            this.BHat = BHat;
         }
     }
 
@@ -385,15 +442,15 @@ public class Lingam {
     /**
      * This is the method used in Patrik's code.
      */
-    public TetradMatrix pruneEdgesByResampling(TetradMatrix data, int[] k) {
-        if (k.length != data.columns()) {
-            throw new IllegalArgumentException("Execting a permutation.");
+    public TetradMatrix pruneEdgesByResampling(TetradMatrix data, int[] perm) {
+        if (perm.length != data.columns()) {
+            throw new IllegalArgumentException("Expecting a permutation.");
         }
 
         Set<Integer> set = new LinkedHashSet<>();
 
-        for (int i = 0; i < k.length; i++) {
-            if (k[i] >= k.length) {
+        for (int i = 0; i < perm.length; i++) {
+            if (perm[i] >= perm.length) {
                 throw new IllegalArgumentException("Expecting a permutation.");
             }
 
@@ -412,20 +469,16 @@ public class Lingam {
         int piecesize = (int) Math.floor(cols / npieces);
 
         List<TetradMatrix> bpieces = new ArrayList<>();
-//        List<Vector> diststdpieces = new ArrayList<Vector>();
-//        List<Vector> cpieces = new ArrayList<Vector>();
 
         for (int p = 0; p < npieces; p++) {
 
 //          % Select subset of data, and permute the variables to the causal order
-//          Xp = X(k,((p-1)*piecesize+1):(p*piecesize));
-
             int p0 = (p) * piecesize;
             int p1 = (p + 1) * piecesize - 1;
             int[] range = range(p0, p1);
 
 
-            TetradMatrix Xp = X.getSelection(k, range);
+            TetradMatrix Xp = X.getSelection(perm, range);
 
 //          % Remember to subract out the mean
 //          Xpm = mean(Xp,2);
@@ -455,11 +508,11 @@ public class Lingam {
 
             TetradMatrix cov = Xp.times(Xp.transpose());
 
-//            for (int i = 0; i < cov.rows(); i++) {
-//                for (int j = 0; j < cov.columns(); j++) {
-//                    cov.set(i, j, cov.get(i, j) / Xp.columns());
-//                }
-//            }
+            for (int i = 0; i < cov.rows(); i++) {
+                for (int j = 0; j < cov.columns(); j++) {
+                    cov.set(i, j, cov.get(i, j) / Xp.columns());
+                }
+            }
 
 //          % Do QL decomposition on the inverse square root of cov
 //          [Q,L] = tridecomp(cov^(-0.5),'ql');
@@ -507,16 +560,16 @@ public class Lingam {
 //            cnewest = L.mult(new DenseVector(Xpm), cnewest);
 
 //          % Permute back to original variable order
-//          ik = iperm(k);
+//          ik = iperm(perm);
 //          bnewest = bnewest(ik, ik);
 //          newestdisturbancestd = newestdisturbancestd(ik);
 //          cnewest = cnewest(ik);
 
-            int[] ik = iperm(k);
+            int[] ik = iperm(perm);
 
 //            System.out.println("ik = " + Arrays.toString(ik));
 
-            bnewest = bnewest.getSelection(ik, ik);
+//            bnewest = bnewest.getSelection(ik, perm);
 //            newestdisturbancestd = Matrices.getSubVector(newestdisturbancestd, ik);
 //            cnewest = Matrices.getSubVector(cnewest, ik);
 
@@ -534,24 +587,24 @@ public class Lingam {
 
         }
 
-        TetradMatrix means = new TetradMatrix(rows, rows);
-        TetradMatrix stds = new TetradMatrix(rows, rows);
+//        TetradMatrix means = new TetradMatrix(rows, rows);
+//        TetradMatrix stds = new TetradMatrix(rows, rows);
 
         TetradMatrix BFinal = new TetradMatrix(rows, rows);
 
-        for (int i = 0; i < rows; i++) {
-            for (int j = 0; j < rows; j++) {
+        for (int j = 0; j < cols; j++) {
+            for (int i = 0; i < rows; i++) {
                 double[] b = new double[npieces];
 
                 for (int y = 0; y < npieces; y++) {
-                    b[y] = bpieces.get(y).get(i, j);
+                    b[y] = bpieces.get(y).get(j, i);
                 }
 
                 double themean = StatUtils.mean(b);
                 double thestd = StatUtils.sd(b);
 
-                means.set(i, j, themean);
-                stds.set(i, j, thestd);
+//                means.set(j, i, themean);
+//                stds.set(j, i, thestd);
 
                 if (abs(themean) < getPruneFactor() * thestd) {
                     BFinal.set(i, j, 0);
