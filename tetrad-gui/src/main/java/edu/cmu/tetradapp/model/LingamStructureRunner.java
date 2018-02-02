@@ -97,7 +97,6 @@ public class LingamStructureRunner extends AbstractAlgorithmRunner implements Gr
 
         Lingam lingam = new Lingam();
         Parameters params = getParams();
-        lingam.setPruneFactor(params.getDouble("pruneFactor", 1.0));
         Graph graph = lingam.search(data);
 
 
