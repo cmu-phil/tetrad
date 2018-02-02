@@ -83,7 +83,7 @@ public class FmbStar implements Algorithm {
     }
 
     private List<Node> getNodes(Parameters parameters, DataSet _dataSet, List<Node> variables, double percentageB,
-                               int numSubsamples, double pithreshold, Node y, double penaltyDiscount) {
+                                int numSubsamples, double pithreshold, Node y, double penaltyDiscount) {
         Map<Node, Integer> counts = new ConcurrentHashMap<>();
         for (Node node : variables) counts.put(node, 0);
 
@@ -151,16 +151,28 @@ public class FmbStar implements Algorithm {
 
             int q = parameters.getInt("topQ");
             int p = i + 1;
-            double e = (1.0 / (2 * pithreshold - 1)) * (((q * q) / ((double) (p ))));
-            double e1 = (1.0 / (2 * pi[i] - 1)) * (((q * q) / ((double) (p))));
+            double e = pcer(pithreshold, q, p);
+            double e1 = pcer(pi[i], q, p);
 
-            if (e1 < 0.05) {
+//            System.out.println("pi[" + i + "] = " + pi[i] + " pithreshold = " + pithreshold);
+
+//            if (pi[i] > pithreshold) {
+//                outNodes.add(variables.get(i));
+//            }
+
+            if (e1 > e) {
                 outNodes.add(variables.get(i));
             }
 
         }
 
         return outNodes;
+    }
+
+    private double pcer(double pithreshold, int q, int p) {
+        double pcer = (1.0 / (2 * pithreshold - 1)) * (((q * q) / ((double) (p))));
+        if (pcer < 0) pcer = 1;
+        return pcer;
     }
 
     @Override
