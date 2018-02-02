@@ -7,11 +7,8 @@ import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.FgesMb;
-import edu.cmu.tetrad.search.IndTestFisherZ;
-import edu.cmu.tetrad.search.PcAll;
 import edu.cmu.tetrad.search.SemBicScore;
 import edu.cmu.tetrad.util.ConcurrencyUtils;
-import edu.cmu.tetrad.util.ForkJoinPoolInstance;
 import edu.cmu.tetrad.util.Parameters;
 
 import java.util.*;
@@ -151,8 +148,8 @@ public class FmbStar implements Algorithm {
 
             int q = parameters.getInt("topQ");
             int p = i + 1;
-            double e = pcer(pithreshold, q, p);
-            double e1 = pcer(pi[i], q, p);
+            double e = pcer(pithreshold, p, q);
+            double e1 = pcer(pi[i], p, q);
 
 //            System.out.println("pi[" + i + "] = " + pi[i] + " pithreshold = " + pithreshold);
 
@@ -169,9 +166,9 @@ public class FmbStar implements Algorithm {
         return outNodes;
     }
 
-    private double pcer(double pithreshold, int q, int p) {
+    private double pcer(double pithreshold, int p, int q) {
         double pcer = (1.0 / (2 * pithreshold - 1)) * (((q * q) / ((double) (p))));
-        if (pcer < 0) pcer = 1;
+//        if (pcer < 0) pcer = 1;
         return pcer;
     }
 

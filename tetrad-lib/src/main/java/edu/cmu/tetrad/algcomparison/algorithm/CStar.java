@@ -3,16 +3,12 @@ package edu.cmu.tetrad.algcomparison.algorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern.Fges;
 import edu.cmu.tetrad.annotation.AlgType;
 import edu.cmu.tetrad.data.*;
-import edu.cmu.tetrad.graph.Edge;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.search.FgesMb;
 import edu.cmu.tetrad.search.Ida;
 import edu.cmu.tetrad.util.ConcurrencyUtils;
-import edu.cmu.tetrad.util.ForkJoinPoolInstance;
 import edu.cmu.tetrad.util.Parameters;
-import edu.cmu.tetrad.util.StatUtils;
 
 import java.util.*;
 import java.util.concurrent.*;
@@ -111,8 +107,8 @@ public class CStar implements Algorithm {
 
         for (int i = 0; i < variables.size(); i++) {
             int p = i + 1;
-            double e = pcer(q, pithreshold, p);
-            double e1 = pcer(q, pi[i], p);
+            double e = pcer(pithreshold, p, q);
+            double e1 = pcer(pi[i], p, q);
 
             if (e1 > e) {
                 outNodes.add(variables.get(i));
@@ -129,9 +125,9 @@ public class CStar implements Algorithm {
         return graph;
     }
 
-    private double pcer(int q, double pithreshold, int p) {
+    private double pcer(double pithreshold, int p, int q) {
         double pcer = (1.0 / (2 * pithreshold - 1)) * (((q * q) / ((double) (p))));
-        if (pcer < 0) pcer = 1;
+//        if (pcer < 0) pcer = 1;
         return pcer;
     }
 
