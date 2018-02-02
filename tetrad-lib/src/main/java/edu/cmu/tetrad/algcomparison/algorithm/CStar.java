@@ -106,11 +106,9 @@ public class CStar implements Algorithm {
         List<Node> outNodes = new ArrayList<>();
 
         for (int i = 0; i < variables.size(); i++) {
-            int p = i + 1;
-            double e = pcer(pithreshold, p, q);
-            double e1 = pcer(pi[i], p, q);
+            double e1 = pcer(pi[i], q, variables.size());
 
-            if (e1 > e) {
+            if (e1 > 0.01) {
                 outNodes.add(variables.get(i));
             }
         }
@@ -125,8 +123,8 @@ public class CStar implements Algorithm {
         return graph;
     }
 
-    private double pcer(double pithreshold, int p, int q) {
-        double pcer = (1.0 / (2 * pithreshold - 1)) * (((q * q) / ((double) (p))));
+    private double pcer(double pithreshold, int q, int p) {
+        double pcer = (1.0 / (2 * pithreshold - 1)) * (((q * q) / ((double) (p * p))));
 //        if (pcer < 0) pcer = 1;
         return pcer;
     }

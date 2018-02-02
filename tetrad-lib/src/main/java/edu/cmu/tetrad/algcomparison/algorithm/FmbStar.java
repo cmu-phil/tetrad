@@ -60,7 +60,7 @@ public class FmbStar implements Algorithm {
 
 
         List<Node> nodes = getNodes(parameters, _dataSet, variables, percentageB, numSubsamples,
-                pithreshold, y, penaltyDiscount);
+                pithreshold, y, penaltyDiscount, q);
         Set<Node> allNodes = new HashSet<>(nodes);
 
 //        for (Node n : nodes) {
@@ -80,7 +80,7 @@ public class FmbStar implements Algorithm {
     }
 
     private List<Node> getNodes(Parameters parameters, DataSet _dataSet, List<Node> variables, double percentageB,
-                                int numSubsamples, double pithreshold, Node y, double penaltyDiscount) {
+                                int numSubsamples, double pithreshold, Node y, double penaltyDiscount, int q) {
         Map<Node, Integer> counts = new ConcurrentHashMap<>();
         for (Node node : variables) counts.put(node, 0);
 
@@ -143,31 +143,19 @@ public class FmbStar implements Algorithm {
 
         List<Node> outNodes = new ArrayList<>();
 
-        for (int i = 0; i < sortedVariables.size(); i++) {
-            if (sortedVariables.get(i) == y) continue;
+        for (int i = 0; i < variables.size(); i++) {
+            double e1 = pcer(pi[i], q, variables.size());
 
-            int q = parameters.getInt("topQ");
-            int p = i + 1;
-            double e = pcer(pithreshold, p, q);
-            double e1 = pcer(pi[i], p, q);
-
-//            System.out.println("pi[" + i + "] = " + pi[i] + " pithreshold = " + pithreshold);
-
-//            if (pi[i] > pithreshold) {
-//                outNodes.add(variables.get(i));
-//            }
-
-            if (e1 > e) {
+            if (e1 > 0.01) {
                 outNodes.add(variables.get(i));
             }
-
         }
 
         return outNodes;
     }
 
-    private double pcer(double pithreshold, int p, int q) {
-        double pcer = (1.0 / (2 * pithreshold - 1)) * (((q * q) / ((double) (p))));
+    private double pcer(double pithreshold, int q, int p) {
+        double pcer = (1.0 / (2 * pithreshold - 1)) * (((q * q) / ((double) (p * p))));
 //        if (pcer < 0) pcer = 1;
         return pcer;
     }
