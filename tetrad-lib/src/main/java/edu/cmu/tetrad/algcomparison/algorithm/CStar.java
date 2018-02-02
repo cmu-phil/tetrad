@@ -66,7 +66,7 @@ public class CStar implements Algorithm {
                 BootstrapSampler sampler = new BootstrapSampler();
                 sampler.setWithoutReplacements(true);
                 DataSet sample = sampler.sample(_dataSet, (int) (percentSubsampleSize * _dataSet.getNumRows()));
-                Ida ida = new Ida(sample, 1, Ida.PatternAlgorithm.PC_STABLE);
+                Ida ida = new Ida(sample, 1, Ida.PatternAlgorithm.FGES);
                 ida.setPenaltyDiscount(penaltyDiscount);
                 Ida.NodeEffects effects = ida.getSortedMinEffects(y);
 

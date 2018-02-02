@@ -49,6 +49,7 @@ import java.util.concurrent.ForkJoinPool;
  */
 public class TestIda {
 
+    @Test
     public void testIda() {
         Graph graph = GraphUtils.randomGraph(10, 0, 10,
                 100, 100, 100, false);
