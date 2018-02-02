@@ -24,7 +24,7 @@ import java.util.List;
         command = "lingam",
         algoType = AlgType.forbid_latent_common_causes,
         description = "The LiNGAM algorithm, for inferring a DAG when there are no latent variables in the model and " +
-                "at most one error is Gaussian."
+                "at most one error is Gaussian. We use FGES with knowledge of causal order for the 'pruning' step."
 )
 public class Lingam implements Algorithm {
 
@@ -34,7 +34,6 @@ public class Lingam implements Algorithm {
         if (parameters.getInt("bootstrapSampleSize") < 1) {
             edu.cmu.tetrad.search.Lingam lingam = new edu.cmu.tetrad.search.Lingam();
             lingam.setPenaltyDiscount(parameters.getDouble("penaltyDiscount"));
-            lingam.setPruneFactor(parameters.getDouble("pruneFactor"));
             return lingam.search(DataUtils.getContinuousDataSet(dataSet));
         } else {
             Lingam algorithm = new Lingam();
@@ -80,7 +79,6 @@ public class Lingam implements Algorithm {
     	List<String> parameters = new ArrayList<>();
         // Bootstrapping
         parameters.add("penaltyDiscount");
-        parameters.add("pruneFactor");
         parameters.add("bootstrapSampleSize");
         parameters.add("bootstrapEnsemble");
         parameters.add("verbose");

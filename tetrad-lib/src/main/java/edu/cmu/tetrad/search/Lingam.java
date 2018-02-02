@@ -35,14 +35,13 @@ import static java.lang.StrictMath.abs;
 /**
  * Implements the LiNGAM algorithm in Shimizu, Hoyer, Hyvarinen, and Kerminen, A linear nongaussian acyclic model for
  * causal discovery, JMLR 7 (2006). Largely follows the Matlab code.
- * <p>
- * <p>Note: This code is currently broken; please do not use it until it's fixed. 11/24/2015</p>
  *
- * @author Gustavo Lacerda
+ * We use FGES with knowledge of causal order for the pruning step.
+ *
+ * @author Joseph Ramsey
  */
 public class Lingam {
     private double penaltyDiscount = 2;
-    private double pruneFactor = 1.0;
 
     //================================CONSTRUCTORS==========================//
 
@@ -153,14 +152,6 @@ public class Lingam {
 
     public void setPenaltyDiscount(double penaltyDiscount) {
         this.penaltyDiscount = penaltyDiscount;
-    }
-
-    public double getPruneFactor() {
-        return pruneFactor;
-    }
-
-    public void setPruneFactor(double pruneFactor) {
-        this.pruneFactor = pruneFactor;
     }
 
     public static class CausalOrder {
