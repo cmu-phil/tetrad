@@ -42,6 +42,7 @@ import static java.lang.StrictMath.abs;
  */
 public class Lingam {
     private double penaltyDiscount = 2;
+    private double pruneFactor = 1.0;
 
     //================================CONSTRUCTORS==========================//
 
@@ -53,7 +54,6 @@ public class Lingam {
 
     public Graph search(DataSet data) {
         data = DataUtils.center(data);
-        List<Node> nodes = data.getVariables();
 
         CausalOrder result = estimateCausalOrder(data);
         int[] perm = result.getPerm();
@@ -80,185 +80,87 @@ public class Lingam {
 
     private CausalOrder estimateCausalOrder(DataSet dataSet) {
         TetradMatrix X = dataSet.getDoubleData();
-        FastIca fastIca = new FastIca(X, 20);
+        FastIca fastIca = new FastIca(X, 30);
         fastIca.setVerbose(false);
-        fastIca.setAlgorithmType(FastIca.DEFLATION);
-        fastIca.setFunction(FastIca.LOGCOSH);
-        fastIca.setTolerance(1e-10);
         FastIca.IcaResult result = fastIca.findComponents();
-        TetradMatrix w = result.getW();
-        TetradMatrix k = result.getK();
+        TetradMatrix W = result.getW().transpose();
 
-        TetradMatrix W = w.transpose().times(k);// k.times(w.transpose());
         System.out.println("W = " + W);
 
-        TetradLogger.getInstance().log("lingamDetails", "\nW " + W);
+        PermutationGenerator gen1 = new PermutationGenerator(W.rows());
+        int[] perm1 = new int[0];
+        double sum1 = Double.POSITIVE_INFINITY;
+        int[] choice1;
 
-//        PermutationGenerator gen = new PermutationGenerator(W.columns());
-//        int[] WPerm = new int[0];
-//        double WSum = Double.POSITIVE_INFINITY;
-//        int[] perm;
-//
-//        while ((perm = gen.next()) != null) {
-//            double sum = 0.0;
-//
-//            for (int i = 0; i < W.rows(); i++) {
-//                final double Wii = W.get(perm[i], i);
-//                sum += 1.0 / abs(Wii);
-//            }
-//
-//            if (sum < WSum) {
-//                WSum = sum;
-//                WPerm = Arrays.copyOf(perm, perm.length);
-//            }
-//        }
-
-        TetradMatrix Wp = new TetradMatrix(W);
-
-//        for (int i = 0; i < WPerm.length; i++) {
-//            for (int j = 0; j < WPerm.length; j++) {
-//                Wp.set(WPerm[i], j, W.get(i, j));
-//            }
-//        }
-
-//        for (int i = 0; i < WPerm.length; i++) {
-//            double diag = Wp.get(i, i);
-//
-//            for (int j = 0; j < WPerm.length; j++) {
-//                Wp.set(i, j, Wp.get(i, j) / diag);
-//            }
-//        }
-
-        final int m = dataSet.getNumColumns();
-        TetradMatrix B = TetradMatrix.identity(m).minus(Wp.transpose());
-
-        class Entry {
-            private double entry;
-            private int i;
-            private int j;
-
-            public Entry(double entry, int i, int j) {
-                this.entry = entry;
-                this.i = i;
-                this.j = j;
-            }
-
-            public double getEntry() {
-                return entry;
-            }
-
-            public int getI() {
-                return i;
-            }
-
-            public int getJ() {
-                return j;
-            }
-
-            public String toString() {
-                return ("entry = " + entry + " i = " + i + " j = " + j);
-            }
-        }
-
-        List<Entry> entries = new ArrayList<>();
-
-        for (int i = 0; i < B.rows(); i++) {
-            for (int j = 0; j < B.columns(); j++) {
-                entries.add(new Entry(B.get(i, j), i, j));
-            }
-        }
-
-        entries.sort(Comparator.comparingDouble(o -> abs(o.getEntry())));
-
-        Set<Integer> indices = new HashSet<>();
-        for (int i = 0; i < dataSet.getNumColumns(); i++) indices.add(i);
-
-        List<Entry> min = new ArrayList<>();
-        Set<Integer> iIndices = new HashSet<>();
-        Set<Integer> jIndices = new HashSet<>();
-
-        for (Entry entry : entries) {
-            int i = entry.getI();
-            int j = entry.getJ();
-
-            if (!iIndices.contains(i) && !jIndices.contains(j)){
-                min.add(entry);
-                iIndices.add(i);
-                jIndices.add(j);
-
-                if (iIndices.equals(indices)) break;
-            }
-        }
-
-        for (Entry entry : entries) {
-            System.out.println(entry);
-        }
-
-        System.out.println("-------");
-
-        for (Entry entry : min) {
-            System.out.println(entry);
-        }
-
-
-
-//        int m = B.rows() * (B.rows() + 1) / 2;
-//
-//        double cutoff = entries.get(m);
-//
-//        for (int i = 0; i < B.rows(); i++) {
-//            for (int j = 0; j < B.columns(); j++) {
-//                if (abs(B.get(i, j)) > abs(cutoff)) {
-//                    B.set(i, j, 0.0);
-//                }
-//            }
-//        }
-
-        System.out.println("B = " + B);
-
-//        PermutationGenerator gen = new PermutationGenerator(W.columns());
-//        int[] WPerm = new int[0];
-//        double WSum = Double.POSITIVE_INFINITY;
-//        int[] perm;
-//
-//        while ((perm = gen.next()) != null) {
-//            double sum = 0.0;
-//
-//            for (int i = 0; i < W.rows(); i++) {
-//                final double Wii = W.get(perm[i], i);
-//                sum += 1.0 / abs(Wii);
-//            }
-//
-//            if (sum < WSum) {
-//                WSum = sum;
-//                WPerm = Arrays.copyOf(perm, perm.length);
-//            }
-//        }
-
-        PermutationGenerator gen2 = new PermutationGenerator(B.rows());
-        int[] betaPerm = new int[0];
-        double utSum = Double.POSITIVE_INFINITY;
-        int[] choice;
-
-        while ((choice = gen2.next()) != null) {
+        while ((choice1 = gen1.next()) != null) {
             double sum = 0.0;
 
             for (int i = 0; i < W.rows(); i++) {
-                final double c = B.get(i, i);
-                sum += c * c;
+                final double c = W.get(i, choice1[i]);
+                sum += 1.0 / abs(c);
             }
 
-            if (sum < utSum) {
-                utSum = sum;
-                betaPerm = Arrays.copyOf(choice, choice.length);
+            if (sum < sum1) {
+                sum1 = sum;
+                perm1 = Arrays.copyOf(choice1, choice1.length);
             }
         }
 
-        return new CausalOrder(betaPerm);
+        TetradMatrix WTilde = W.getSelection(perm1, perm1);
+
+        System.out.println("WTilde before normalization = " + WTilde);
+
+        for (int j = 0; j < WTilde.columns(); j++) {
+            for (int i = j ; i < WTilde.rows(); i++) {
+                WTilde.set(i, j, WTilde.get(i, j) / WTilde.get(j, j));
+            }
+        }
+
+        System.out.println("WTilde after normalization = " + WTilde);
+
+        final int m = dataSet.getNumColumns();
+        TetradMatrix B = TetradMatrix.identity(m).minus(WTilde.transpose());
+
+        System.out.println("B = " + B);
+
+        PermutationGenerator gen2 = new PermutationGenerator(B.rows());
+        int[] perm2 = new int[0];
+        double sum2 = Double.POSITIVE_INFINITY;
+        int[] choice2;
+
+        while ((choice2 = gen2.next()) != null) {
+            double sum = 0.0;
+
+            for (int i = 0; i < W.rows(); i++) {
+                for (int j = i; j < W.rows(); j++) {
+                    final double c = B.get(choice2[i], choice2[j]);
+                    sum += c * c;
+                }
+            }
+
+            if (sum < sum2) {
+                sum2 = sum;
+                perm2 = Arrays.copyOf(choice2, choice2.length);
+            }
+        }
+
+        TetradMatrix BTilde = B.getSelection(perm2, perm2);
+
+        System.out.println("BTilde = " + BTilde);
+
+        return new CausalOrder(perm2);
     }
 
     public void setPenaltyDiscount(double penaltyDiscount) {
         this.penaltyDiscount = penaltyDiscount;
+    }
+
+    public double getPruneFactor() {
+        return pruneFactor;
+    }
+
+    public void setPruneFactor(double pruneFactor) {
+        this.pruneFactor = pruneFactor;
     }
 
     public static class CausalOrder {
