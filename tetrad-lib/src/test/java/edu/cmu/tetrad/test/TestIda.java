@@ -171,6 +171,8 @@ public class TestIda {
         parameters.set("coefSymmetric", true);
         parameters.set("covSymmetric", true);
 
+        parameters.set("sampleSize", sampleSize);
+
         parameters.set("parallelism", 30);
         parameters.set("CStarAlg", 2);
 
