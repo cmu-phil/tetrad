@@ -9,7 +9,10 @@ import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.*;
 import edu.cmu.tetrad.util.ConcurrencyUtils;
 import edu.cmu.tetrad.util.Parameters;
+import edu.cmu.tetrad.util.TextTable;
 
+import java.text.DecimalFormat;
+import java.text.NumberFormat;
 import java.util.*;
 import java.util.concurrent.*;
 
@@ -47,6 +50,7 @@ public class CStar implements Algorithm {
         variables.remove(y);
 
         Map<String, Integer> counts = new ConcurrentHashMap<>();
+        Map<String, Double> medianEffects = new ConcurrentHashMap<>();
         for (Node node : variables) counts.put(node.getName(), 0);
 
         class Task implements Callable<Boolean> {
@@ -94,7 +98,7 @@ public class CStar implements Algorithm {
 
         ConcurrencyUtils.runCallables(tasks, parameters.getInt("parallelism"));
 
-        List<Node> outNodes = selectedVars(variables, numSubsamples, counts);
+        List<Node> outNodes = selectedVars(variables, numSubsamples, counts, parameters);
 
         Graph graph = new EdgeListGraph(outNodes);
         graph.addNode(y);
@@ -129,33 +133,56 @@ public class CStar implements Algorithm {
         return pattern;
     }
 
-    public static List<Node> selectedVars(List<Node> variables, int numSubsamples, Map<String, Integer> counts) {
+    public static List<Node> selectedVars(List<Node> variables, int numSubsamples, Map<String, Integer> counts, Parameters parameters) {
         List<Node> sortedVariables = new ArrayList<>(variables);
         sortedVariables.sort((o1, o2) -> Integer.compare(counts.get(o2.getName()), counts.get(o1.getName())));
 
         List<Double> pi = new ArrayList<>();
 
-        for (int i = 0; i < sortedVariables.size(); i++) {
-            final Integer count = counts.get(sortedVariables.get(i).getName());
+        for (Node sortedVariable : sortedVariables) {
+            final Integer count = counts.get(sortedVariable.getName());
             final double _pi = count / (double) numSubsamples;
             pi.add(_pi);
         }
 
         List<Node> outNodes = new ArrayList<>();
+        NumberFormat nf = new DecimalFormat("0.0000");
 
         for (int i = 0; i < pi.size(); i++) {
             if (pi.get(i) > 0.5) {
                 outNodes.add(sortedVariables.get(i));
+                final double pcer = pcer(pi.get(i), parameters.getInt("topQ"), variables.size());
             }
         }
+
+        TextTable table = new TextTable(outNodes.size() + 1, 4);
+
+        table.setToken(0, 0, "Index");
+        table.setToken(0, 1, "Variable");
+        table.setToken(0, 2, "Pi");
+        table.setToken(0, 3, "PCER");
+
+        for (int i = 0; i < outNodes.size(); i++) {
+            final double pcer = pcer(pi.get(i), parameters.getInt("topQ"), variables.size());
+
+            table.setToken(i + 1, 0, "" + (i + 1));
+            table.setToken(i + 1, 1, sortedVariables.get(i).getName());
+            table.setToken(i + 1, 2, nf.format(pi.get(i)));
+            table.setToken(i + 1, 3, nf.format(pcer));
+        }
+
+        System.out.println();
+        System.out.println(table);
+        System.out.println();
 
         return outNodes;
     }
 
     // Per Comparison Error Rate (PCER)
     private static double pcer(double pi, int q, int p) {
-        if (pi == 0) return 1.0;
-        else return (1.0 / (2 * pi - 1)) * (((q * q) / ((double) (p * p))));
+        final double pcer = (1.0 / (2 * pi - 1)) * (((q * q) / ((double) (p * p))));
+        if (Double.isInfinite(pcer)) return 1.0;
+        else return pcer;
     }
 
     @Override

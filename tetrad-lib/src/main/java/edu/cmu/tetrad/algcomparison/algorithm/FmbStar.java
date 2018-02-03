@@ -5,7 +5,6 @@ import edu.cmu.tetrad.annotation.AlgType;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.FgesMb;
 import edu.cmu.tetrad.search.Ida;
@@ -127,7 +126,7 @@ public class FmbStar implements Algorithm {
 
         ConcurrencyUtils.runCallables(tasks, parameters.getInt("parallelism"));
 
-        return CStar.selectedVars(variables, numSubsamples, counts);
+        return CStar.selectedVars(variables, numSubsamples, counts, parameters);
     }
 
     @Override
