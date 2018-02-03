@@ -287,6 +287,9 @@ public class ParamDescriptions {
                 1, 1, 2));
 
 
+        map.put("parallelism", new ParamDescription(
+                "Number of simultaneous threads",
+                1, 1, Integer.MAX_VALUE));
 
     }
 

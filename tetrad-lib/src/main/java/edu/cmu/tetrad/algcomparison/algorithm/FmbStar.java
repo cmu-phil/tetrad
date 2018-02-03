@@ -34,7 +34,6 @@ import java.util.concurrent.ConcurrentHashMap;
 public class FmbStar implements Algorithm {
     static final long serialVersionUID = 23L;
     private Algorithm algorithm;
-    private int parallelism = Runtime.getRuntime().availableProcessors();
 
     public FmbStar() {
         this.algorithm = new Fges();
@@ -42,6 +41,9 @@ public class FmbStar implements Algorithm {
 
     @Override
     public Graph search(DataModel dataSet, Parameters parameters) {
+        System.out.println("# Available Processors = " + Runtime.getRuntime().availableProcessors());
+        System.out.println("Parallelism = " + parameters.getInt("parallelism"));
+
         DataSet _dataSet = (DataSet) dataSet;
         List<Node> variables = _dataSet.getVariables();
 
@@ -123,7 +125,7 @@ public class FmbStar implements Algorithm {
             tasks.add(new Task(i, counts));
         }
 
-        ConcurrencyUtils.runCallables(tasks, parallelism);
+        ConcurrencyUtils.runCallables(tasks, parameters.getInt("parallelism"));
 
         return CStar.selectedVars(variables, numSubsamples, counts);
     }
@@ -151,10 +153,7 @@ public class FmbStar implements Algorithm {
         parameters.add("percentSubsampleSize");
         parameters.add("piThreshold");
         parameters.add("targetName");
+        parameters.add("parallelism");
         return parameters;
-    }
-
-    public void setParallelism(int parallelism) {
-        this.parallelism = parallelism;
     }
 }

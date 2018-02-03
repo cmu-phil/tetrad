@@ -26,7 +26,6 @@ import static java.lang.Math.abs;
 public class CStar implements Algorithm {
     static final long serialVersionUID = 23L;
     private Algorithm algorithm;
-    private int parallelism = Runtime.getRuntime().availableProcessors() * 10;
 
     public CStar() {
         this.algorithm = new Fges();
@@ -35,6 +34,7 @@ public class CStar implements Algorithm {
     @Override
     public Graph search(DataModel dataSet, Parameters parameters) {
         System.out.println("# Available Processors = " + Runtime.getRuntime().availableProcessors());
+        System.out.println("Parallelism = " + parameters.getInt("parallelism"));
 
         DataSet _dataSet = (DataSet) dataSet;
 
@@ -64,7 +64,7 @@ public class CStar implements Algorithm {
                     BootstrapSampler sampler = new BootstrapSampler();
                     sampler.setWithoutReplacements(true);
                     DataSet sample = sampler.sample(_dataSet, (int) (percentSubsampleSize * _dataSet.getNumRows()));
-                    Graph pattern = getPattern(sample, 1, parameters);
+                    Graph pattern = getPattern(sample, parameters);
                     List<Node> variables = pattern.getNodes();
 
                     Ida ida = new Ida(sample, pattern, variables);
@@ -92,7 +92,7 @@ public class CStar implements Algorithm {
             tasks.add(new Task(i, counts));
         }
 
-        ConcurrencyUtils.runCallables(tasks, parallelism);
+        ConcurrencyUtils.runCallables(tasks, parameters.getInt("parallelism"));
 
         List<Node> outNodes = selectedVars(variables, numSubsamples, counts);
 
@@ -106,7 +106,7 @@ public class CStar implements Algorithm {
         return graph;
     }
 
-    public static Graph getPattern(DataSet sample, int parallelism, Parameters parameters) {
+    public static Graph getPattern(DataSet sample, Parameters parameters) {
         ICovarianceMatrix covariances = new CovarianceMatrixOnTheFly(sample);
 
         Graph pattern;
@@ -115,7 +115,7 @@ public class CStar implements Algorithm {
 
         if (parameters.getInt("CStarAlg") == 1) {
             edu.cmu.tetrad.search.Fges fges = new edu.cmu.tetrad.search.Fges(score);
-            fges.setParallelism(parallelism);
+            fges.setParallelism(1);
             pattern = fges.search();
         } else if (parameters.getInt("CStarAlg") == 2) {
             PcAll pc = new PcAll(new IndTestScore(score), null);
@@ -183,11 +183,7 @@ public class CStar implements Algorithm {
         parameters.add("piThreshold");
         parameters.add("targetName");
         parameters.add("CStarAlg");
-        parameters.add("penaltyDiscount");
+        parameters.add("parallelism");
         return parameters;
-    }
-
-    public void setParallelism(int parallelism) {
-        this.parallelism = parallelism;
     }
 }

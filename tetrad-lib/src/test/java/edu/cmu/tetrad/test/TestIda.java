@@ -68,7 +68,7 @@ public class TestIda {
 
         Node y = dataSet.getVariable("X10");
 
-        Graph pattern = CStar.getPattern(dataSet, 4, parameters);
+        Graph pattern = CStar.getPattern(dataSet, parameters);
 
         Ida ida = new Ida(dataSet, pattern, dataSet.getVariables());
 
@@ -171,6 +171,8 @@ public class TestIda {
         parameters.set("coefSymmetric", true);
         parameters.set("covSymmetric", true);
 
+        parameters.set("parallelism", 30);
+
         List<int[]> cstarRet = new ArrayList<>();
         List<int[]> fmbStarRet = new ArrayList<>();
 
@@ -191,7 +193,6 @@ public class TestIda {
             long start = System.currentTimeMillis();
 
             CStar cstar = new CStar();
-            cstar.setParallelism(4);
             Graph graph = cstar.search(fullData, parameters);
 
             long stop = System.currentTimeMillis();
@@ -204,7 +205,6 @@ public class TestIda {
             start = System.currentTimeMillis();
 
             FmbStar fmbStar = new FmbStar();
-            fmbStar.setParallelism(6);
             Graph graph2 = fmbStar.search(fullData, parameters);
 
             stop = System.currentTimeMillis();
@@ -325,7 +325,7 @@ public class TestIda {
         x = x2;
         y = dataSet.getVariable(y.getName());
 
-        Graph pattern = CStar.getPattern(dataSet, 1, parameters);
+        Graph pattern = CStar.getPattern(dataSet, parameters);
 
         Ida ida = new Ida(dataSet, pattern, dataSet.getVariables());
 
