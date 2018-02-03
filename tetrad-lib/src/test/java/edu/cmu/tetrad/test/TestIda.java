@@ -172,6 +172,7 @@ public class TestIda {
         parameters.set("covSymmetric", true);
 
         parameters.set("parallelism", 30);
+        parameters.set("CStarAlg", 2);
 
         List<int[]> cstarRet = new ArrayList<>();
         List<int[]> fmbStarRet = new ArrayList<>();
