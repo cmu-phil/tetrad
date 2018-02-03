@@ -174,7 +174,7 @@ public class TestIda {
         parameters.set("sampleSize", sampleSize);
 
         parameters.set("parallelism", 30);
-        parameters.set("CStarAlg", 2);
+        parameters.set("CStarAlg", 1);
 
         List<int[]> cstarRet = new ArrayList<>();
         List<int[]> fmbStarRet = new ArrayList<>();
