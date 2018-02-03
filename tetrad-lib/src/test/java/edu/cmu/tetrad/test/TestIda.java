@@ -156,7 +156,7 @@ public class TestIda {
         parameters.set("penaltyDiscount", 2);
         parameters.set("numSubsamples", 30);
         parameters.set("percentSubsampleSize", .5);
-        parameters.set("topQ", 10);
+        parameters.set("topQ", 25);
         parameters.set("piThreshold", .7);
         parameters.set("targetName", "X30");
         parameters.set("verbose", false);
@@ -174,7 +174,7 @@ public class TestIda {
         parameters.set("sampleSize", sampleSize);
 
         parameters.set("parallelism", 30);
-        parameters.set("CStarAlg", 1);
+        parameters.set("CStarAlg", 2); // 1 = FGES, 2 = PC-Stable
 
         List<int[]> cstarRet = new ArrayList<>();
         List<int[]> fmbStarRet = new ArrayList<>();

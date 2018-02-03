@@ -6,17 +6,22 @@ import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.search.*;
+import edu.cmu.tetrad.search.Ida;
+import edu.cmu.tetrad.search.IndTestScore;
+import edu.cmu.tetrad.search.PcAll;
+import edu.cmu.tetrad.search.SemBicScore;
 import edu.cmu.tetrad.util.ConcurrencyUtils;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TextTable;
 
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
-import java.util.*;
-import java.util.concurrent.*;
-
-import static java.lang.Math.abs;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ConcurrentHashMap;
 
 @edu.cmu.tetrad.annotation.Algorithm(
         name = "CStar",
@@ -43,21 +48,24 @@ public class CStar implements Algorithm {
 
         double percentSubsampleSize = parameters.getDouble("percentSubsampleSize");
         int numSubsamples = parameters.getInt("numSubsamples");
-        int q = parameters.getInt("topQ");
         Node y = dataSet.getVariable(parameters.getString("targetName"));
 
         final List<Node> variables = dataSet.getVariables();
         variables.remove(y);
 
-        Map<String, Integer> counts = new ConcurrentHashMap<>();
-        Map<String, Double> medianEffects = new ConcurrentHashMap<>();
-        for (Node node : variables) counts.put(node.getName(), 0);
+        final Map<Integer, Map<String, Integer>> counts = new ConcurrentHashMap<>();
+
+        for (int q = 1; q < parameters.getInt("topQ"); q++) {
+            final HashMap<String, Integer> map = new HashMap<>();
+            for (Node node : variables) map.put(node.getName(), 0);
+            counts.put(q, map);
+        }
 
         class Task implements Callable<Boolean> {
             private int i;
-            private Map<String, Integer> counts;
+            private Map<Integer, Map<String, Integer>> counts;
 
-            private Task(int i, Map<String, Integer> counts) {
+            private Task(int i, Map<Integer, Map<String, Integer>> counts) {
                 this.i = i;
                 this.counts = counts;
             }
@@ -74,9 +82,13 @@ public class CStar implements Algorithm {
                     Ida ida = new Ida(sample, pattern, variables);
                     Ida.NodeEffects effects = ida.getSortedMinEffects(y);
 
-                    for (int i = 0; i < q; i++) {
-                        final Node key = effects.getNodes().get(i);
-                        counts.put(key.getName(), counts.get(key.getName()) + 1);
+                    for (int q = 1; q < parameters.getInt("topQ"); q++) {
+                        for (int i = 0; i < q; i++) {
+                            final Node key = effects.getNodes().get(i);
+                            final Map<String, Integer> map = counts.get(q);
+                            final String name = key.getName();
+                            map.put(name, map.get(name) + 1);
+                        }
                     }
 
                     if (parameters.getBoolean("verbose")) {
@@ -133,49 +145,58 @@ public class CStar implements Algorithm {
         return pattern;
     }
 
-    public static List<Node> selectedVars(List<Node> variables, int numSubsamples, Map<String, Integer> counts, Parameters parameters) {
-        List<Node> sortedVariables = new ArrayList<>(variables);
-        sortedVariables.sort((o1, o2) -> Integer.compare(counts.get(o2.getName()), counts.get(o1.getName())));
+    public static List<Node> selectedVars(List<Node> variables, int numSubsamples, Map<Integer, Map<String, Integer>> counts, Parameters parameters) {
 
-        List<Double> pi = new ArrayList<>();
+        List<Node> _outNodes = null;
 
-        for (Node sortedVariable : sortedVariables) {
-            final Integer count = counts.get(sortedVariable.getName());
-            final double _pi = count / (double) numSubsamples;
-            pi.add(_pi);
-        }
+        for (int q = 1; q < parameters.getInt("topQ"); q++) {
+            List<Node> sortedVariables = new ArrayList<>(variables);
+            final int _q = q;
+            sortedVariables.sort((o1, o2) -> Integer.compare(counts.get(_q).get(o2.getName()), counts.get(_q).get(o1.getName())));
 
-        List<Node> outNodes = new ArrayList<>();
-        NumberFormat nf = new DecimalFormat("0.0000");
+            List<Double> pi = new ArrayList<>();
 
-        for (int i = 0; i < pi.size(); i++) {
-            if (pi.get(i) > 0.5) {
-                outNodes.add(sortedVariables.get(i));
-                final double pcer = pcer(pi.get(i), parameters.getInt("topQ"), variables.size());
+            for (Node sortedVariable : sortedVariables) {
+                final Integer count = counts.get(q).get(sortedVariable.getName());
+                final double _pi = count / (double) numSubsamples;
+                pi.add(_pi);
             }
+
+            List<Node> outNodes = new ArrayList<>();
+            NumberFormat nf = new DecimalFormat("0.0000");
+
+            for (int i = 0; i < pi.size(); i++) {
+                if (pi.get(i) > 0.5) {
+                    outNodes.add(sortedVariables.get(i));
+                }
+            }
+
+            TextTable table = new TextTable(outNodes.size() + 1, 5);
+
+            table.setToken(0, 0, "q");
+            table.setToken(0, 1, "Index");
+            table.setToken(0, 2, "Variable");
+            table.setToken(0, 3, "Pi");
+            table.setToken(0, 4, "PCER");
+
+            for (int i = 0; i < outNodes.size(); i++) {
+                final double pcer = pcer(pi.get(i), q, variables.size());
+
+                table.setToken(i + 1, 0, "" + q);
+                table.setToken(i + 1, 1, "" + (i + 1));
+                table.setToken(i + 1, 2, sortedVariables.get(i).getName());
+                table.setToken(i + 1, 3, nf.format(pi.get(i)));
+                table.setToken(i + 1, 4, nf.format(pcer));
+            }
+
+            System.out.println();
+            System.out.println(table);
+            System.out.println();
+
+            _outNodes = outNodes;
         }
 
-        TextTable table = new TextTable(outNodes.size() + 1, 4);
-
-        table.setToken(0, 0, "Index");
-        table.setToken(0, 1, "Variable");
-        table.setToken(0, 2, "Pi");
-        table.setToken(0, 3, "PCER");
-
-        for (int i = 0; i < outNodes.size(); i++) {
-            final double pcer = pcer(pi.get(i), parameters.getInt("topQ"), variables.size());
-
-            table.setToken(i + 1, 0, "" + (i + 1));
-            table.setToken(i + 1, 1, sortedVariables.get(i).getName());
-            table.setToken(i + 1, 2, nf.format(pi.get(i)));
-            table.setToken(i + 1, 3, nf.format(pcer));
-        }
-
-        System.out.println();
-        System.out.println(table);
-        System.out.println();
-
-        return outNodes;
+        return _outNodes;
     }
 
     // Per Comparison Error Rate (PCER)

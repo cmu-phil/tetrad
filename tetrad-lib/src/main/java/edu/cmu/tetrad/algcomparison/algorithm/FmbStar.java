@@ -54,7 +54,7 @@ public class FmbStar implements Algorithm {
         variables.remove(y);
 
         List<Node> nodes = getNodes(parameters, _dataSet, variables, percentageB, numSubsamples,
-                y, penaltyDiscount, q);
+                y, penaltyDiscount);
         Set<Node> allNodes = new HashSet<>(nodes);
 
         Graph graph = new EdgeListGraph(new ArrayList<>(allNodes));
@@ -68,15 +68,19 @@ public class FmbStar implements Algorithm {
     }
 
     private List<Node> getNodes(Parameters parameters, DataSet _dataSet, List<Node> variables, double percentageB,
-                                int numSubsamples, Node y, double penaltyDiscount, int q) {
-        Map<String, Integer> counts = new ConcurrentHashMap<>();
-        for (String node : _dataSet.getVariableNames()) counts.put(node, 0);
+                                int numSubsamples, Node y, double penaltyDiscount) {
+        Map<Integer, Map<String, Integer>> counts = new ConcurrentHashMap<>();
+
+        for (int q = 1; q < parameters.getInt("topQ"); q++) {
+            counts.put(q, new HashMap<>());
+            for (Node node : variables) counts.get(q).put(node.getName(), 0);
+        }
 
         class Task implements Callable<Boolean> {
             private int i;
-            private Map<String, Integer> counts;
+            private Map<Integer, Map<String, Integer>> counts;
 
-            private Task(int i, Map<String, Integer> counts) {
+            private Task(int i, Map<Integer, Map<String, Integer>> counts) {
                 this.i = i;
                 this.counts = counts;
             }
@@ -99,10 +103,12 @@ public class FmbStar implements Algorithm {
                     Ida ida = new Ida(sample, mb, mb.getNodes());
                     Ida.NodeEffects effects = ida.getSortedMinEffects(y);
 
-                    for (int i = 0; i < q; i++) {
-                        if (i >= effects.getNodes().size()) continue;
-                        final Node key = effects.getNodes().get(i);
-                        counts.put(key.getName(), counts.get(key.getName()) + 1);
+                    for (int q = 1; q < parameters.getInt("topQ"); q++) {
+                        for (int i = 0; i < q; i++) {
+                            if (i >= effects.getNodes().size()) continue;
+                            final Node key = effects.getNodes().get(i);
+                            counts.get(q).put(key.getName(), counts.get(q).get(key.getName()) + 1);
+                        }
                     }
 
                     if (parameters.getBoolean("verbose")) {
