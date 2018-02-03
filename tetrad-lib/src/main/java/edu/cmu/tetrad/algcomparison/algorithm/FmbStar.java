@@ -5,8 +5,10 @@ import edu.cmu.tetrad.annotation.AlgType;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.FgesMb;
+import edu.cmu.tetrad.search.Ida;
 import edu.cmu.tetrad.search.SemBicScore;
 import edu.cmu.tetrad.util.ConcurrencyUtils;
 import edu.cmu.tetrad.util.Parameters;
@@ -17,7 +19,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 @edu.cmu.tetrad.annotation.Algorithm(
         name = "FmbStar",
-        command = "cstar2",
+        command = "fmbstar",
         algoType = AlgType.forbid_latent_common_causes,
         description = "Uses stability selection (Meinhausen et al.) with FGES-MB (Ramsey et al.) to estimate the " +
                 "nodes in the Markov blanket of a target. May be used to estimate nodes with influence " +
@@ -46,28 +48,13 @@ public class FmbStar implements Algorithm {
         double percentageB = parameters.getDouble("percentSubsampleSize");
         int numSubsamples = parameters.getInt("numSubsamples");
         int q = parameters.getInt("topQ");
-        double pithreshold = parameters.getDouble("piThreshold");
         Node y = dataSet.getVariable(parameters.getString("targetName"));
-        double penaltyDiscount = parameters.getDouble("penatyDiscount");
+        double penaltyDiscount = parameters.getDouble("penaltyDiscount");
         variables.remove(y);
 
-//        PcAll pc = new PcAll(new IndTestFisherZ(new CovarianceMatrixOnTheFly(_dataSet), 0.05), null);
-//        pc.setFasRule(PcAll.FasRule.FAS_STABLE);
-//        pc.setDepth(1);
-//        pc.setConflictRule(PcAll.ConflictRule.PRIORITY);
-//        pc.setColliderDiscovery(PcAll.ColliderDiscovery.FAS_SEPSETS);
-//        variables = pc.search().getAdjacentNodes(y);
-
-
         List<Node> nodes = getNodes(parameters, _dataSet, variables, percentageB, numSubsamples,
-                pithreshold, y, penaltyDiscount, q);
+                y, penaltyDiscount, q);
         Set<Node> allNodes = new HashSet<>(nodes);
-
-//        for (Node n : nodes) {
-//            List<Node> _nodes = getNodes(parameters, _dataSet, variables, percentageB, numSubsamples,
-//                    pithreshold, n, penaltyDiscount);
-//            allNodes.addAll(_nodes);
-//        }
 
         Graph graph = new EdgeListGraph(new ArrayList<>(allNodes));
         graph.addNode(y);
@@ -80,42 +67,49 @@ public class FmbStar implements Algorithm {
     }
 
     private List<Node> getNodes(Parameters parameters, DataSet _dataSet, List<Node> variables, double percentageB,
-                                int numSubsamples, double pithreshold, Node y, double penaltyDiscount, int q) {
-        Map<Node, Integer> counts = new ConcurrentHashMap<>();
-        for (Node node : variables) counts.put(node, 0);
+                                int numSubsamples, Node y, double penaltyDiscount, int q) {
+        Map<String, Integer> counts = new ConcurrentHashMap<>();
+        for (String node : _dataSet.getVariableNames()) counts.put(node, 0);
 
         class Task implements Callable<Boolean> {
             private int i;
-            private Map<Node, Integer> counts;
+            private Map<String, Integer> counts;
 
-            private Task(int i, Map<Node, Integer> counts) {
+            private Task(int i, Map<String, Integer> counts) {
                 this.i = i;
                 this.counts = counts;
             }
 
             @Override
             public Boolean call() {
-                BootstrapSampler sampler = new BootstrapSampler();
-                sampler.setWithoutReplacements(true);
-                DataSet sample = sampler.sample(_dataSet, (int) (percentageB * _dataSet.getNumRows()));
-//                sample = sample.subsetColumns(variables);
+                try {
+                    BootstrapSampler sampler = new BootstrapSampler();
+                    sampler.setWithoutReplacements(true);
+                    DataSet sample = sampler.sample(_dataSet, (int) (percentageB * _dataSet.getNumRows()));
 
-                ICovarianceMatrix covariances = new CovarianceMatrixOnTheFly(sample);
-                final SemBicScore score = new SemBicScore(covariances);
-                score.setPenaltyDiscount(penaltyDiscount);
+                    ICovarianceMatrix covariances = new CovarianceMatrixOnTheFly(sample);
+                    final SemBicScore score = new SemBicScore(covariances);
+                    score.setPenaltyDiscount(penaltyDiscount);
 
-                FgesMb fgesMb = new FgesMb(score);
-                fgesMb.setParallelism(1);//getParallelism());
-                Graph g = fgesMb.search(y);
+                    FgesMb fgesMb = new FgesMb(score);
+                    fgesMb.setParallelism(1);
+                    Graph mb = fgesMb.search(y);
 
-                for (final Node key : g.getNodes()) {
-                    if (!g.isAdjacentTo(key, y)) continue;
-                    if (g.containsNode(key)) counts.put(key, counts.get(key) + 1);
-                }
+                    Ida ida = new Ida(sample, mb, mb.getNodes());
+                    Ida.NodeEffects effects = ida.getSortedMinEffects(y);
 
-                if (parameters.getBoolean("verbose")) {
-                    System.out.println("Bootstrap #" + (i + 1) + " of " + numSubsamples);
-                    System.out.flush();
+                    for (int i = 0; i < q; i++) {
+                        if (i >= effects.getNodes().size()) continue;
+                        final Node key = effects.getNodes().get(i);
+                        counts.put(key.getName(), counts.get(key.getName()) + 1);
+                    }
+
+                    if (parameters.getBoolean("verbose")) {
+                        System.out.println("Bootstrap #" + (i + 1) + " of " + numSubsamples);
+                        System.out.flush();
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
                 }
 
                 return true;
@@ -131,33 +125,7 @@ public class FmbStar implements Algorithm {
 
         ConcurrencyUtils.runCallables(tasks, parallelism);
 
-        List<Node> sortedVariables = new ArrayList<>(variables);
-
-        sortedVariables.sort((o1, o2) -> Integer.compare(counts.get(o2), counts.get(o1)));
-
-        double[] pi = new double[counts.keySet().size()];
-
-        for (int i = 0; i < sortedVariables.size(); i++) {
-            pi[i] = counts.get(sortedVariables.get(i)) / (double) numSubsamples;
-        }
-
-        List<Node> outNodes = new ArrayList<>();
-
-        for (int i = 0; i < variables.size(); i++) {
-            double e1 = pcer(pi[i], q, variables.size());
-
-            if (e1 > 0.01) {
-                outNodes.add(variables.get(i));
-            }
-        }
-
-        return outNodes;
-    }
-
-    private double pcer(double pithreshold, int q, int p) {
-        double pcer = (1.0 / (2 * pithreshold - 1)) * (((q * q) / ((double) (p * p))));
-//        if (pcer < 0) pcer = 1;
-        return pcer;
+        return CStar.selectedVars(variables, numSubsamples, counts);
     }
 
     @Override
@@ -184,10 +152,6 @@ public class FmbStar implements Algorithm {
         parameters.add("piThreshold");
         parameters.add("targetName");
         return parameters;
-    }
-
-    public int getParallelism() {
-        return parallelism;
     }
 
     public void setParallelism(int parallelism) {

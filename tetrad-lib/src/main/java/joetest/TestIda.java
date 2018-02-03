@@ -23,14 +23,15 @@ package joetest;
 
 import edu.cmu.tetrad.algcomparison.algorithm.CStar;
 import edu.cmu.tetrad.algcomparison.algorithm.FmbStar;
+import edu.cmu.tetrad.data.CovarianceMatrixOnTheFly;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataWriter;
+import edu.cmu.tetrad.data.ICovarianceMatrix;
 import edu.cmu.tetrad.graph.Edge;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.search.Ida;
-import edu.cmu.tetrad.search.SearchGraphUtils;
+import edu.cmu.tetrad.search.*;
 import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemPm;
 import edu.cmu.tetrad.util.Parameters;
@@ -47,6 +48,17 @@ import java.util.*;
 public class TestIda {
 
     public void testIda() {
+        Parameters parameters = new Parameters();
+
+        parameters.set("penaltyDiscount", 2);
+        parameters.set("numSubsamples", 30);
+        parameters.set("percentSubsampleSize", .5);
+        parameters.set("topQ", 5);
+        parameters.set("piThreshold", .5);
+        parameters.set("targetName", "X50");
+        parameters.set("verbose", true);
+
+
         Graph graph = GraphUtils.randomGraph(10, 0, 10,
                 100, 100, 100, false);
 
@@ -58,7 +70,9 @@ public class TestIda {
 
         Node y = dataSet.getVariable("X10");
 
-        Ida ida = new Ida(dataSet);
+        Graph pattern = CStar.getPattern(dataSet, 4, parameters);
+
+        Ida ida = new Ida(dataSet, pattern, dataSet.getVariables());
 
         Ida.NodeEffects effects = ida.getSortedMinEffects(y);
 
@@ -68,7 +82,6 @@ public class TestIda {
         }
     }
 
-    //    @Test
     public void testCStar() {
         int numNodes = 50;
         int numEdges = 2 * numNodes;
@@ -139,7 +152,7 @@ public class TestIda {
         parameters.set("penaltyDiscount", 2);
         parameters.set("numSubsamples", 30);
         parameters.set("percentSubsampleSize", .5);
-        parameters.set("topQ", (int)(0.05 * numNodes));
+        parameters.set("topQ", 10);
         parameters.set("piThreshold", .5);
         parameters.set("targetName", "X30");
         parameters.set("verbose", false);
@@ -283,7 +296,7 @@ public class TestIda {
         return ret;
     }
 
-    private void printIdaResult(List<Node> x, Node y, DataSet dataSet, Graph trueGraph) {
+    private void printIdaResult(List<Node> x, Node y, DataSet dataSet, Graph trueGraph, Parameters parameters) {
         trueGraph = GraphUtils.replaceNodes(trueGraph, dataSet.getVariables());
 
         List<Node> x2 = new ArrayList<>();
@@ -291,7 +304,9 @@ public class TestIda {
         x = x2;
         y = dataSet.getVariable(y.getName());
 
-        Ida ida = new Ida(dataSet);
+        Graph pattern = CStar.getPattern(dataSet, 4, parameters);
+
+        Ida ida = new Ida(dataSet, pattern, dataSet.getVariables());
 
         for (Node _x : x) {
             LinkedList<Double> effects = ida.getEffects(_x, y);

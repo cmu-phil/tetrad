@@ -282,6 +282,10 @@ public class ParamDescriptions {
                 "Threshold for including variables in the final set (0.5 < pi <= 1.0)",
                 1, 0.5001, 1.0));
 
+        map.put("CStarAlg", new ParamDescription(
+                "Algorithm: 1 == FGES, 2 = PC-Stable",
+                1, 1, 2));
+
 
 
     }

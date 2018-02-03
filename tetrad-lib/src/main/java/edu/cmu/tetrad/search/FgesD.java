@@ -1525,7 +1525,7 @@ public final class FgesD implements GraphSearch, GraphScorer {
 
 //        if (verbose) {
         int numEdges = graph.getNumEdges();
-        if (numEdges % 1000 == 0) out.println("Num edges (backwards) = " + numEdges);
+        if (numEdges != 0 && numEdges % 1000 == 0) out.println("Num edges (backwards) = " + numEdges);
 //        }
 
         if (verbose) {

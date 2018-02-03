@@ -1,8 +1,6 @@
 package edu.cmu.tetrad.search;
 
-import edu.cmu.tetrad.data.CovarianceMatrixOnTheFly;
 import edu.cmu.tetrad.data.DataSet;
-import edu.cmu.tetrad.data.ICovarianceMatrix;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
@@ -21,72 +19,22 @@ import static java.lang.Math.*;
  * @author jdramsey@andrew.cmu.edu
  */
 public class Ida {
-    public enum PatternAlgorithm {FGES, PC_STABLE}
-
     private DataSet dataSet;
     private final double[][] data;
     private final Graph pattern;
-    private final ICovarianceMatrix covariances;
-    private Map<Node, Integer> nodeIndices;
-    private double penaltyDiscount = 2.0;
+    private Map<String, Integer> nodeIndices;
 
-    public Ida(DataSet dataSet, List<Node> targets) {
-        this(dataSet, targets, Runtime.getRuntime().availableProcessors() * 10);
-    }
-
-    public Ida(DataSet dataSet, List<Node> targets, int parallelism) {
+    public Ida(DataSet dataSet, Graph pattern, List<Node> variables) {
         this.dataSet = dataSet;
         this.data = dataSet.getDoubleData().transpose().toArray();
-        covariances = new CovarianceMatrixOnTheFly(dataSet);
-
-        final SemBicScore score = new SemBicScore(covariances);
-        score.setPenaltyDiscount(penaltyDiscount);
-        FgesMb fgesMb = new FgesMb(score);
-        fgesMb.setParallelism(parallelism);
-
-        this.pattern = fgesMb.search(targets);
+        this.pattern = pattern;
 
         nodeIndices = new HashMap<>();
 
-        final List<Node> variables = covariances.getVariables();
+        variables = GraphUtils.replaceNodes(variables, pattern.getNodes());
 
         for (int i = 0; i < variables.size(); i++) {
-            nodeIndices.put(variables.get(i), i);
-        }
-    }
-
-    public Ida(DataSet dataSet) {
-        this(dataSet, Runtime.getRuntime().availableProcessors(), PatternAlgorithm.PC_STABLE);
-    }
-
-    public Ida(DataSet dataSet, int parallelism, PatternAlgorithm patternAlgorithm) {
-        this.dataSet = dataSet;
-        this.data = dataSet.getDoubleData().transpose().toArray();
-        covariances = new CovarianceMatrixOnTheFly(dataSet);
-
-        final SemBicScore score = new SemBicScore(covariances);
-        score.setPenaltyDiscount(penaltyDiscount);
-
-        if (patternAlgorithm == PatternAlgorithm.FGES) {
-            Fges fges = new Fges(new SemBicScore(covariances));
-            fges.setParallelism(parallelism);
-            this.pattern = fges.search();
-        } else if (patternAlgorithm == PatternAlgorithm.PC_STABLE) {
-            PcAll pc = new PcAll(new IndTestFisherZ(covariances, 0.001), null);
-            pc.setFasRule(PcAll.FasRule.FAS_STABLE);
-            pc.setConflictRule(PcAll.ConflictRule.PRIORITY);
-            pc.setColliderDiscovery(PcAll.ColliderDiscovery.FAS_SEPSETS);
-            this.pattern = pc.search();
-        } else {
-            throw new IllegalArgumentException("Not configured for that algorithm: " + patternAlgorithm);
-        }
-
-        nodeIndices = new HashMap<>();
-
-        final List<Node> variables = covariances.getVariables();
-
-        for (int i = 0; i < variables.size(); i++) {
-            nodeIndices.put(variables.get(i), i);
+            nodeIndices.put(variables.get(i).getName(), i);
         }
     }
 
@@ -153,7 +101,7 @@ public class Ida {
     private Map<Node, Double> calculateMinimumEffectsOnY(Node y) {
         SortedMap<Node, Double> minEffects = new TreeMap<>();
 
-        for (Node x : dataSet.getVariables()) {
+        for (Node x : pattern.getNodes()) {
             if (x == y) continue;
 
             final List<Double> effects = getEffects(x, y);
@@ -191,14 +139,6 @@ public class Ida {
         }
 
         return new NodeEffects(nodes, effects);
-    }
-
-    public double getPenaltyDiscount() {
-        return penaltyDiscount;
-    }
-
-    public void setPenaltyDiscount(double penaltyDiscount) {
-        this.penaltyDiscount = penaltyDiscount;
     }
 
     /**
@@ -285,9 +225,9 @@ public class Ida {
 
     // x must be the first regressor.
     private double getBeta(List<Node> regressors, Node target) {
-        int yIndex = nodeIndices.get(target);
+        int yIndex = nodeIndices.get(target.getName());
         int[] xIndices = new int[regressors.size()];
-        for (int i = 0; i < regressors.size(); i++) xIndices[i] = nodeIndices.get(regressors.get(i));
+        for (int i = 0; i < regressors.size(); i++) xIndices[i] = nodeIndices.get(regressors.get(i).getName());
 
         double[] _target = data[yIndex];
         double[][] _regressors = new double[xIndices.length + 1][];
