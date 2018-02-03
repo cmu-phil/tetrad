@@ -51,7 +51,7 @@ public class TestIda {
         Parameters parameters = new Parameters();
         parameters.set("penaltyDiscount", 2);
         parameters.set("numSubsamples", 30);
-        parameters.set("percentSubsampleSize", .5);
+        parameters.set("percentSubsampleSize", 0.5);
         parameters.set("topQ", 5);
         parameters.set("piThreshold", .5);
         parameters.set("targetName", "X50");
@@ -109,7 +109,7 @@ public class TestIda {
 
         long stop = System.currentTimeMillis();
 
-        printResult(trueDag, parameters, graph, stop - start, numNodes, numEdges, sampleSize, dataSet);
+        printResult(trueDag, parameters, graph, stop - start);
     }
 
     public void testFmbStar() {
@@ -140,7 +140,7 @@ public class TestIda {
 
         long stop = System.currentTimeMillis();
 
-        printResult(trueDag, parameters, graph, stop - start, numNodes, numEdges, sampleSize, dataSet);
+        printResult(trueDag, parameters, graph, stop - start);
     }
 
     public void testBoth(int numNodes, double avgDegree, int sampleSize, int numIterations) {
@@ -154,7 +154,6 @@ public class TestIda {
         parameters.set("connected", false);
 
         parameters.set("penaltyDiscount", 2);
-        parameters.set("alpha", 0.01);
         parameters.set("numSubsamples", 30);
         parameters.set("percentSubsampleSize", .5);
         parameters.set("topQ", 10);
@@ -197,7 +196,7 @@ public class TestIda {
 
             long stop = System.currentTimeMillis();
 
-            int[] ret = printResult(truePattern, parameters, graph, stop - start, numNodes, avgDegree, sampleSize, fullData);
+            int[] ret = printResult(truePattern, parameters, graph, stop - start);
             cstarRet.add(ret);
 
             System.out.println("\n\n=====FmbStar====");
@@ -210,13 +209,13 @@ public class TestIda {
 
             stop = System.currentTimeMillis();
 
-            int[] ret2 = printResult(truePattern, parameters, graph2, stop - start, numNodes, avgDegree, sampleSize, fullData);
+            int[] ret2 = printResult(truePattern, parameters, graph2, stop - start);
             fmbStarRet.add(ret2);
         }
 
         System.out.println();
 
-        System.out.println("\tCPar\tPar\tCPAnc\tFPAnc\tCChil\tFChil\tCSib\tFSib\tCPoc\tFPoc\tCOther\tFOther");
+        System.out.println("\tCPar\tPar\tCPAnc\tFPAnc\tCDesc\tFDescl\tCSib\tFSib\tCPDesc\tFPDesc\tCOther\tFOther");
 
         for (int i = 0; i < numIterations; i++) {
             System.out.println((i + 1) + ".\t"
@@ -230,16 +229,15 @@ public class TestIda {
         }
     }
 
-    private int[] printResult(Graph trueGraph, Parameters parameters, Graph graph, long elapsed, int numNodes,
-                              double avgDegree, int sampleSize, DataSet trueData) {
+    private int[] printResult(Graph trueGraph, Parameters parameters, Graph graph, long elapsed) {
         graph = GraphUtils.replaceNodes(graph, trueGraph.getNodes());
 
         final Node target = trueGraph.getNode(parameters.getString("targetName"));
 
-        System.out.println("# nodes: " + numNodes);
-        System.out.println("Avg Degree: " + avgDegree);
-        System.out.println("Sample size: " + sampleSize);
-        System.out.println("Target: " + target);
+        System.out.println("# nodes: " + parameters.getInt("numMeasures"));
+        System.out.println("Avg Degree: " + parameters.getDouble("avgDegree"));
+        System.out.println("Sample size: " + parameters.getInt("sampleSize"));
+        System.out.println("Target: " + parameters.getString("target"));
 
         Set<Node> outputNodes = new HashSet<>();
 
@@ -258,7 +256,6 @@ public class TestIda {
                 possAncestors.add(node);
             }
         }
-
 
         final List<Node> parents = trueGraph.getParents(target);
         final List<Node> descendants = trueGraph.getDescendants(Collections.singletonList(target));
@@ -342,7 +339,6 @@ public class TestIda {
     }
 
     public static void main(String[] args) {
-
         if (args.length == 0) {
             int numNodes = 50;
             double avgDegree = 2;
@@ -356,9 +352,7 @@ public class TestIda {
             int numIterations = Integer.parseInt(args[3]);
 
             new TestIda().testBoth(numNodes, avgDegree, sampleSize, numIterations);
-
         }
-
     }
 }
 
