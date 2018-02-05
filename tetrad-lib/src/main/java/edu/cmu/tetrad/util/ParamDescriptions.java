@@ -274,13 +274,14 @@ public class ParamDescriptions {
                 "The number of nodes",
                 10, 2, Integer.MAX_VALUE));
 
-        map.put("topQ", new ParamDescription(
-                "Variables in the top q will be considered for ranking",
+        map.put("maxQ", new ParamDescription(
+                "Considering q = 1 up to this maximum",
                 5, 1, Integer.MAX_VALUE));
 
-        map.put("piThreshold", new ParamDescription(
-                "Threshold for including variables in the final set (0.5 < pi <= 1.0)",
-                1, 0.5001, 1.0));
+        map.put("maxEv", new ParamDescription(
+                "Maximum number of expected false positives for CStar",
+                0.05, 0, 1.0));
+
 
         map.put("CStarAlg", new ParamDescription(
                 "Algorithm: 1 == FGES, 2 = PC-Stable",

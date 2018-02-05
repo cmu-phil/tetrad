@@ -24,17 +24,15 @@ public class Ida {
     private final Graph pattern;
     private Map<String, Integer> nodeIndices;
 
-    public Ida(DataSet dataSet, Graph pattern, List<Node> variables) {
+    public Ida(DataSet dataSet, Graph pattern) {
         this.dataSet = dataSet;
         this.data = dataSet.getDoubleData().transpose().toArray();
         this.pattern = pattern;
 
         nodeIndices = new HashMap<>();
 
-        variables = GraphUtils.replaceNodes(variables, pattern.getNodes());
-
-        for (int i = 0; i < variables.size(); i++) {
-            nodeIndices.put(variables.get(i).getName(), i);
+        for (int i = 0; i < pattern.getNodes().size(); i++) {
+            nodeIndices.put(pattern.getNodes().get(i).getName(), i);
         }
     }
 
@@ -103,12 +101,8 @@ public class Ida {
 
         for (Node x : pattern.getNodes()) {
             if (x == y) continue;
-
-            final List<Double> effects = getEffects(x, y);
-
-            if (!effects.isEmpty()) {
-                minEffects.put(x, effects.get(0));
-            }
+            final LinkedList<Double> effects = getEffects(x, y);
+            minEffects.put(x, effects.getFirst());
         }
 
         return minEffects;
@@ -132,7 +126,7 @@ public class Ida {
             return -Double.compare(abs(d1), abs(d2));
         });
 
-        List<Double> effects = new ArrayList<>();
+        LinkedList<Double> effects = new LinkedList<>();
 
         for (Node node : nodes) {
             effects.add(allEffects.get(node));
@@ -148,9 +142,9 @@ public class Ida {
      */
     public class NodeEffects {
         private List<Node> nodes;
-        private List<Double> effects;
+        private LinkedList<Double> effects;
 
-        public NodeEffects(List<Node> nodes, List<Double> effects) {
+        public NodeEffects(List<Node> nodes, LinkedList<Double> effects) {
             this.setNodes(nodes);
             this.setEffects(effects);
         }
@@ -163,11 +157,11 @@ public class Ida {
             this.nodes = nodes;
         }
 
-        public List<Double> getEffects() {
+        public LinkedList<Double> getEffects() {
             return effects;
         }
 
-        public void setEffects(List<Double> effects) {
+        public void setEffects(LinkedList<Double> effects) {
             this.effects = effects;
         }
     }

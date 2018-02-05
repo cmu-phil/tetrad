@@ -52,8 +52,7 @@ public class TestIda {
         parameters.set("penaltyDiscount", 2);
         parameters.set("numSubsamples", 30);
         parameters.set("percentSubsampleSize", 0.5);
-        parameters.set("topQ", 5);
-        parameters.set("piThreshold", .5);
+        parameters.set("maxQ", 5);
         parameters.set("targetName", "X50");
         parameters.set("alpha", 0.001);
 
@@ -70,7 +69,7 @@ public class TestIda {
 
         Graph pattern = CStar.getPattern(dataSet, parameters);
 
-        Ida ida = new Ida(dataSet, pattern, dataSet.getVariables());
+        Ida ida = new Ida(dataSet, pattern);
 
         Ida.NodeEffects effects = ida.getSortedMinEffects(y);
 
@@ -85,8 +84,7 @@ public class TestIda {
         parameters.set("penaltyDiscount", 2);
         parameters.set("numSubsamples", 30);
         parameters.set("percentSubsampleSize", .5);
-        parameters.set("topQ", 5);
-        parameters.set("piThreshold", .5);
+        parameters.set("maxQ", 5);
         parameters.set("targetName", "X50");
         parameters.set("alpha", 0.001);
 
@@ -117,8 +115,7 @@ public class TestIda {
         parameters.set("penaltyDiscount", 2);
         parameters.set("numSubsamples", 30);
         parameters.set("percentSubsampleSize", .5);
-        parameters.set("topQ", 5);
-        parameters.set("piThreshold", .5);
+        parameters.set("maxQ", 5);
         parameters.set("targetName", "X50");
         parameters.set("alpha", 0.001);
 
@@ -153,11 +150,10 @@ public class TestIda {
         parameters.set("maxOutdegree", 100);
         parameters.set("connected", false);
 
-        parameters.set("penaltyDiscount", 2);
+        parameters.set("penaltyDiscount", 4);
         parameters.set("numSubsamples", 30);
         parameters.set("percentSubsampleSize", .5);
-        parameters.set("topQ", 10);
-        parameters.set("piThreshold", .7);
+        parameters.set("maxQ", 25);
         parameters.set("targetName", "X30");
         parameters.set("verbose", false);
 
@@ -170,6 +166,12 @@ public class TestIda {
 
         parameters.set("coefSymmetric", true);
         parameters.set("covSymmetric", true);
+
+        parameters.set("sampleSize", sampleSize);
+
+        parameters.set("parallelism", 30);
+        parameters.set("CStarAlg", 1); // 1 = FGES, 2 = PC-Stable
+        parameters.set("maxEv", 1.0);
 
         List<int[]> cstarRet = new ArrayList<>();
         List<int[]> fmbStarRet = new ArrayList<>();
@@ -184,7 +186,7 @@ public class TestIda {
 
         for (int i = 0; i < numIterations; i++) {
 
-            parameters.set("targetName", "X" + (numNodes - numIterations - i));
+            parameters.set("targetName", "X" + (numNodes - numIterations + i));
 
             System.out.println("\n\n=====CSTAR====");
 
@@ -325,7 +327,7 @@ public class TestIda {
 
         Graph pattern = CStar.getPattern(dataSet, parameters);
 
-        Ida ida = new Ida(dataSet, pattern, dataSet.getVariables());
+        Ida ida = new Ida(dataSet, pattern);
 
         for (Node _x : x) {
             LinkedList<Double> effects = ida.getEffects(_x, y);

@@ -48,7 +48,7 @@ public class FmbStar implements Algorithm {
 
         double percentageB = parameters.getDouble("percentSubsampleSize");
         int numSubsamples = parameters.getInt("numSubsamples");
-        int q = parameters.getInt("topQ");
+        int q = parameters.getInt("maxQ");
         Node y = dataSet.getVariable(parameters.getString("targetName"));
         double penaltyDiscount = parameters.getDouble("penaltyDiscount");
         variables.remove(y);
@@ -71,7 +71,7 @@ public class FmbStar implements Algorithm {
                                 int numSubsamples, Node y, double penaltyDiscount) {
         Map<Integer, Map<String, Integer>> counts = new ConcurrentHashMap<>();
 
-        for (int q = 1; q < parameters.getInt("topQ"); q++) {
+        for (int q = 1; q < parameters.getInt("maxQ"); q++) {
             counts.put(q, new HashMap<>());
             for (Node node : variables) counts.get(q).put(node.getName(), 0);
         }
@@ -100,14 +100,18 @@ public class FmbStar implements Algorithm {
                     fgesMb.setParallelism(1);
                     Graph mb = fgesMb.search(y);
 
-                    Ida ida = new Ida(sample, mb, mb.getNodes());
+                     Ida ida = new Ida(sample, mb);
                     Ida.NodeEffects effects = ida.getSortedMinEffects(y);
 
-                    for (int q = 1; q < parameters.getInt("topQ"); q++) {
+                    if (effects.getEffects().isEmpty() || effects.getEffects().getFirst() == 0.0) {
+                        return true;
+                    }
+
+                    for (int q = 1; q < parameters.getInt("maxQ"); q++) {
                         for (int i = 0; i < q; i++) {
                             if (i >= effects.getNodes().size()) continue;
-                            final Node key = effects.getNodes().get(i);
-                            counts.get(q).put(key.getName(), counts.get(q).get(key.getName()) + 1);
+                            final String name = effects.getNodes().get(i).getName();
+                            counts.get(q).put(name, counts.get(q).get(name) + 1);
                         }
                     }
 
@@ -156,8 +160,8 @@ public class FmbStar implements Algorithm {
         parameters.add("penaltyDiscount");
         parameters.add("numSubsamples");
         parameters.add("percentSubsampleSize");
-        parameters.add("piThreshold");
         parameters.add("targetName");
+        parameters.add("maxEv");
         parameters.add("parallelism");
         return parameters;
     }
