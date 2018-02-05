@@ -743,8 +743,7 @@ public final class SemImEditor extends JPanel implements LayoutEditable, DoNotSc
                         // from the text field they are editing without the
                         // textfield disappearing. jdramsey 3/16/2005.
 //                    resetLabels();
-                        ToolTipManager toolTipManager
-                                = ToolTipManager.sharedInstance();
+                        ToolTipManager toolTipManager = ToolTipManager.sharedInstance();
                         toolTipManager.setInitialDelay(100);
                     }
                 }
@@ -752,8 +751,7 @@ public final class SemImEditor extends JPanel implements LayoutEditable, DoNotSc
                 @Override
                 public void mouseExited(MouseEvent e) {
                     if (!workbench().contains(e.getPoint())) {
-                        ToolTipManager toolTipManager
-                                = ToolTipManager.sharedInstance();
+                        ToolTipManager toolTipManager = ToolTipManager.sharedInstance();
                         toolTipManager.setInitialDelay(getSavedTooltipDelay());
                     }
                 }
@@ -1113,7 +1111,9 @@ public final class SemImEditor extends JPanel implements LayoutEditable, DoNotSc
                 label.setBackground(Color.white);
                 label.setOpaque(true);
                 label.setFont(SMALL_FONT);
+                
                 label.setText(" " + asString(val) + " ");
+                
                 label.setToolTipText(parameter.getName() + " = " + asString(val));
                 label.addMouseListener(new EdgeMouseListener(edge, this));
                 if (!Double.isNaN(standardError) && semIm().isEstimated()) {

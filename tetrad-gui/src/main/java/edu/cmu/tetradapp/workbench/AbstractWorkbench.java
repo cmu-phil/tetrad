@@ -64,9 +64,7 @@ import java.util.Set;
 import java.util.prefs.Preferences;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
-import javax.swing.BorderFactory;
 import javax.swing.JComponent;
-import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPopupMenu;
 import javax.swing.KeyStroke;
@@ -577,16 +575,16 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
 	 */
 	public final void setEdgeLabel(Edge modelEdge, JComponent label) {
 		if (modelEdge == null) {
-			throw new NullPointerException("Attempt to set a label on a " + "null model edge: " + modelEdge);
+		    throw new NullPointerException("Attempt to set a label on a " + "null model edge: " + modelEdge);
 		} else if (!getModelEdgesToDisplay().containsKey(modelEdge)) {
-			throw new IllegalArgumentException(
-					"Attempt to set a label on " + "a model edge that's not " + "in the editor: " + modelEdge);
+		    throw new IllegalArgumentException("Attempt to set a label on " + "a model edge that's not " + "in the editor: " + modelEdge);
 		}
 
 		// retrieve display edge from map, or create one if not
 		// there...
 		DisplayEdge displayEdge = (DisplayEdge) getModelEdgesToDisplay().get(modelEdge);
-		GraphEdgeLabel oldLabel = getEdgeLabel(displayEdge);
+                
+                GraphEdgeLabel oldLabel = getEdgeLabel(displayEdge);
 
 		if (oldLabel != null) {
 			remove(oldLabel);
@@ -603,6 +601,24 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
 		repaint();
 	}
 
+        /**
+         * Edge tooltip to show the edge type and probabilities - Added by Zhou
+         * 
+         * @param modelEdge
+         * @param toolTipText 
+         */
+        public final void setEdgeToolTip(Edge modelEdge, String toolTipText) {
+		if (modelEdge == null) {
+		    throw new NullPointerException("Attempt to set a label on a " + "null model edge: " + modelEdge);
+		} else if (!getModelEdgesToDisplay().containsKey(modelEdge)) {
+		    throw new IllegalArgumentException("Attempt to set a label on " + "a model edge that's not " + "in the editor: " + modelEdge);
+		}
+
+		DisplayEdge displayEdge = (DisplayEdge) getModelEdgesToDisplay().get(modelEdge);
+
+                displayEdge.setToolTipText(toolTipText);
+	}
+        
 	/**
 	 * Sets the label for a node to a particular JComponent. The label will be
 	 * displayed slightly off to the right of the node.
@@ -2114,17 +2130,19 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
 						case "Star" : endpoint1 = "&#42;"; break;
 						case "Null" : endpoint1 = "Null"; break;
 					}
+                                        
 					String endpoint2 = edge.getEndpoint2().toString();
 					switch(endpoint2){
-					case "Tail" : endpoint2 = "-"; break;
-					case "Arrow" : endpoint2 = "&gt;"; break;
-					case "Circle" : endpoint2 = "o"; break;
-					case "Star" : endpoint2 = "&#42;"; break;
-					case "Null" : endpoint2 = "Null"; break;
-				}
-					String text = "<html><b>" + edge.getNode1().getName() + 
+                                            case "Tail" : endpoint2 = "-"; break;
+                                            case "Arrow" : endpoint2 = "&gt;"; break;
+                                            case "Circle" : endpoint2 = "o"; break;
+                                            case "Star" : endpoint2 = "&#42;"; break;
+                                            case "Null" : endpoint2 = "Null"; break;
+                                        }
+                                        
+					String text = "<html>" + edge.getNode1().getName() + 
 							" " + endpoint1 + "-" + endpoint2 + " " + 
-							edge.getNode2().getName() + "</b><br>";
+							edge.getNode2().getName() + "<br>";
 					String n1 = edge.getNode1().getName();
 					String n2 = edge.getNode2().getName();
 					List<String> nodes = new ArrayList<>();
@@ -2173,30 +2191,36 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
 							text += "<br>";
 						}
 					}
-					JLabel edgeTypeDistLabel = new JLabel(text);
-					edgeTypeDistLabel.setOpaque(true);
-					edgeTypeDistLabel.setBorder(BorderFactory.createLineBorder(Color.BLACK));
-					setEdgeLabel(edge, edgeTypeDistLabel);
 
+                                        // Commented out by Zhou
+//					JLabel edgeTypeDistLabel = new JLabel(text);
+//					edgeTypeDistLabel.setOpaque(true);
+//					edgeTypeDistLabel.setBorder(BorderFactory.createLineBorder(Color.BLACK));
+//					setEdgeLabel(edge, edgeTypeDistLabel);
+
+                                        // Use tooltip instead of label - Added by Zhou
+                                        setEdgeToolTip(edge, text);
 				}
 			}
 		}
 	}
 
-	private void handleMouseExited(MouseEvent e) {
-		Object source = e.getSource();
-
-		if (source instanceof DisplayEdge) {
-			IDisplayEdge displayEdge = (IDisplayEdge) source;
-			Edge edge = displayEdge.getModelEdge();
-			if (graph.containsEdge(edge)) {
-				List<EdgeTypeProbability> edgeProb = edge.getEdgeTypeProbabilities();
-				if (edgeProb != null) {
-					setEdgeLabel(edge, null);
-				}
-			}
-		}
-	}
+        // SInce we use tooltip to show edge type and probablitites, 
+        // we no longer need this call. - Commented out by Zhou
+//	private void handleMouseExited(MouseEvent e) {
+//		Object source = e.getSource();
+//
+//		if (source instanceof DisplayEdge) {
+//			IDisplayEdge displayEdge = (IDisplayEdge) source;
+//			Edge edge = displayEdge.getModelEdge();
+//			if (graph.containsEdge(edge)) {
+//				List<EdgeTypeProbability> edgeProb = edge.getEdgeTypeProbabilities();
+//				if (edgeProb != null) {
+//					setEdgeLabel(edge, null);
+//				}
+//			}
+//		}
+//	}
 
 	private void snapSingleNodeFromNegative(Object source) {
 		DisplayNode node = (DisplayNode) source;
@@ -2722,7 +2746,8 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
 		}
 
 		public final void mouseExited(MouseEvent e) {
-			workbench.handleMouseExited(e);
+                    // Commented out by Zhou
+			//workbench.handleMouseExited(e);
 		}
 	}
 
