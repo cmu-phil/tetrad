@@ -59,7 +59,6 @@ import edu.cmu.tetradapp.util.FinalizingEditor;
 import edu.cmu.tetradapp.util.WatchedProcess;
 import edu.pitt.dbmi.ccd.commons.file.MessageDigestHash;
 import edu.pitt.dbmi.ccd.rest.client.dto.user.JsonWebToken;
-import edu.pitt.dbmi.ccd.rest.client.service.algo.AbstractAlgorithmRequest;
 import edu.pitt.dbmi.tetrad.db.entity.AlgorithmParamRequest;
 import edu.pitt.dbmi.tetrad.db.entity.AlgorithmParameter;
 import edu.pitt.dbmi.tetrad.db.entity.HpcAccount;
@@ -635,6 +634,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
 
     public void setAlgorithmResult(String jsonResult) {
         this.jsonResult = jsonResult;
+        System.out.println("json result: " + jsonResult);
 
         final Graph graph = JsonUtils.parseJSONObjectToTetradGraph(jsonResult);
         final List<Graph> graphs = new ArrayList<>();
@@ -644,10 +644,14 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
             runner.getGraphs().remove(index);
         }
         runner.getGraphs().add(graph);
+        // Show graph
         graphEditor.replace(graphs);
         graphEditor.validate();
         LOGGER.info("Remote graph result assigned to runner!");
         firePropertyChange("modelChanged", null, null);
+        
+        // Update the graphContainer
+        graphContainer.add(graphEditor);
     }
 
     public void setAlgorithmErrorResult(String errorResult) {
@@ -960,7 +964,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
             progressDialog.dispose();
         }
 
-        (new HpcJobActivityAction("")).actionPerformed(null);
+        //(new HpcJobActivityAction("")).actionPerformed(null);
 
     }
 
