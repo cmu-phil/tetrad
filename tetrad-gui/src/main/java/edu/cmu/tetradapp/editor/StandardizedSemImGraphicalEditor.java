@@ -26,18 +26,17 @@ import edu.cmu.tetrad.sem.StandardizedSemIm;
 import edu.cmu.tetrad.util.NumberFormatUtil;
 import edu.cmu.tetradapp.util.DoubleTextField;
 import edu.cmu.tetradapp.workbench.GraphWorkbench;
-
-import javax.swing.*;
-import javax.swing.border.EmptyBorder;
-import javax.swing.border.TitledBorder;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
 import java.awt.*;
 import java.awt.event.*;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.text.NumberFormat;
 import java.util.List;
+import javax.swing.*;
+import javax.swing.border.EmptyBorder;
+import javax.swing.border.TitledBorder;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 
 
 /**
@@ -240,16 +239,14 @@ final class StandardizedSemImGraphicalEditor extends JPanel {
                     // from the text field they are editing without the
                     // textfield disappearing. jdramsey 3/16/2005.
 //                    resetLabels();
-                    ToolTipManager toolTipManager =
-                            ToolTipManager.sharedInstance();
+                    ToolTipManager toolTipManager = ToolTipManager.sharedInstance();
                     toolTipManager.setInitialDelay(100);
                 }
             }
 
             public void mouseExited(MouseEvent e) {
                 if (!workbench().contains(e.getPoint())) {
-                    ToolTipManager toolTipManager =
-                            ToolTipManager.sharedInstance();
+                    ToolTipManager toolTipManager = ToolTipManager.sharedInstance();
                     toolTipManager.setInitialDelay(getSavedTooltipDelay());
                 }
             }

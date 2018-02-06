@@ -25,6 +25,7 @@ import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.*;
 import org.apache.commons.math3.distribution.TDistribution;
+import org.apache.commons.math3.linear.SingularMatrixException;
 
 import java.io.PrintStream;
 import java.text.NumberFormat;
@@ -300,7 +301,8 @@ public final class IndTestCorrelationT implements IndependenceTest {
 
             try {
                 inverse = Czz.inverse();
-            } catch (Exception e) {
+            } catch (SingularMatrixException e) {
+                System.out.println(SearchLogUtils.determinismDetected(z, x));
                 return true;
             }
 
