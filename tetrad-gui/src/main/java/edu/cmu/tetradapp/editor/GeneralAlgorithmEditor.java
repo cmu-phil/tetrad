@@ -652,6 +652,8 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         
         // Update the graphContainer
         graphContainer.add(graphEditor);
+        
+        changeCard(GRAPH_CARD);
     }
 
     public void setAlgorithmErrorResult(String errorResult) {
@@ -964,7 +966,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
             progressDialog.dispose();
         }
 
-        //(new HpcJobActivityAction("")).actionPerformed(null);
+        (new HpcJobActivityAction("")).actionPerformed(null);
 
     }
 
