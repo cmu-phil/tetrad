@@ -292,6 +292,11 @@ public class ParamDescriptions {
                 "Number of simultaneous threads",
                 1, 1, Integer.MAX_VALUE));
 
+        map.put("PIThreshold", new ParamDescription(
+                "Cutoff PI threshold for including variables",
+                0.5, 0, 1.0));
+
+
     }
 
     public static ParamDescriptions getInstance() {

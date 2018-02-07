@@ -16,6 +16,8 @@ import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
 
+import static java.lang.Integer.min;
+
 @edu.cmu.tetrad.annotation.Algorithm(
         name = "FmbStar",
         command = "fmbstar",
@@ -46,7 +48,7 @@ public class FmbStar implements Algorithm {
         DataSet _dataSet = (DataSet) dataSet;
         List<Node> variables = _dataSet.getVariables();
 
-        double percentageB = parameters.getDouble("percentSubsampleSize");
+        double percentageB = 0.5;
         int numSubsamples = parameters.getInt("numSubsamples");
         int q = parameters.getInt("maxQ");
         Node y = dataSet.getVariable(parameters.getString("targetName"));
@@ -70,19 +72,34 @@ public class FmbStar implements Algorithm {
     private List<Node> getNodes(Parameters parameters, DataSet _dataSet, List<Node> variables, double percentageB,
                                 int numSubsamples, Node y, double penaltyDiscount) {
         Map<Integer, Map<String, Integer>> counts = new ConcurrentHashMap<>();
+        final Map<Integer, Map<String, Double>> minimalEffects = new ConcurrentHashMap<>();
 
         for (int q = 1; q < parameters.getInt("maxQ"); q++) {
             counts.put(q, new HashMap<>());
             for (Node node : variables) counts.get(q).put(node.getName(), 0);
         }
 
-        class Task implements Callable<Boolean> {
-            private int i;
-            private Map<Integer, Map<String, Integer>> counts;
+        for (int q = 1; q < min(parameters.getInt("maxQ"), variables.size()); q++) {
+            final HashMap<String, Integer> map = new HashMap<>();
+            for (Node node : variables) map.put(node.getName(), 0);
+            counts.put(q, map);
+        }
 
-            private Task(int i, Map<Integer, Map<String, Integer>> counts) {
-                this.i = i;
+        for (int b = 0; b < numSubsamples; b++) {
+            final HashMap<String, Double> map = new HashMap<>();
+            for (Node node : variables) map.put(node.getName(), 0.0);
+            minimalEffects.put(b, map);
+        }
+
+        class Task implements Callable<Boolean> {
+            private int b;
+            private Map<Integer, Map<String, Integer>> counts;
+            private Map<Integer, Map<String, Double>> minimalEffects;
+
+            private Task(int b, Map<Integer, Map<String, Integer>> counts, Map<Integer, Map<String, Double>> minimalEffects) {
+                this.b = b;
                 this.counts = counts;
+                this.minimalEffects = minimalEffects;
             }
 
             @Override
@@ -91,6 +108,7 @@ public class FmbStar implements Algorithm {
                     BootstrapSampler sampler = new BootstrapSampler();
                     sampler.setWithoutReplacements(true);
                     DataSet sample = sampler.sample(_dataSet, (int) (percentageB * _dataSet.getNumRows()));
+//                    sample = DataUtils.standardizeData(sample);
 
                     ICovarianceMatrix covariances = new CovarianceMatrixOnTheFly(sample);
                     final SemBicScore score = new SemBicScore(covariances);
@@ -100,24 +118,56 @@ public class FmbStar implements Algorithm {
                     fgesMb.setParallelism(1);
                     Graph mb = fgesMb.search(y);
 
-                     Ida ida = new Ida(sample, mb);
+//                    {
+//                        List<Node> targets2 = new ArrayList<>();
+//
+//                        for (Node n : mb.getNodes()) {
+//                            if (mb.existsSemiDirectedPathFromTo(n, Collections.singleton(y))) {
+//                                targets2.add(n);
+//                            }
+//                        }
+//
+//                        targets2.add(y);
+//
+//                        FgesMb fgesMb2 = new FgesMb(score);
+//                        fgesMb2.setParallelism(1);
+//                        mb = fgesMb2.search(targets2);
+//                    }
+
+//                    {
+//                        List<Node> targets2 = new ArrayList<>();
+//
+//                        for (Node n : mb.getAdjacentNodes(y)) {
+//                            if (mb.existsSemiDirectedPathFromTo(n, Collections.singleton(y))) {
+//                                targets2.add(n);
+//                            }
+//                        }
+//
+//                        targets2.add(y);
+//
+//                        FgesMb fgesMb2 = new FgesMb(score);
+//                        fgesMb2.setParallelism(1);
+//                        mb = fgesMb2.search(targets2);
+//                    }
+
+                    Ida ida = new Ida(sample, mb);
                     Ida.NodeEffects effects = ida.getSortedMinEffects(y);
 
-                    if (effects.getEffects().isEmpty() || effects.getEffects().getFirst() == 0.0) {
-                        return true;
-                    }
-
-                    for (int q = 1; q < parameters.getInt("maxQ"); q++) {
+                    for (int q = 1; q < min(parameters.getInt("maxQ"), variables.size()); q++) {
                         for (int i = 0; i < q; i++) {
-                            if (i >= effects.getNodes().size()) continue;
-                            final String name = effects.getNodes().get(i).getName();
-                            counts.get(q).put(name, counts.get(q).get(name) + 1);
+                            if (i < effects.getNodes().size()) {
+                                if (effects.getEffects().get(i) > 0) {
+                                    final String name = effects.getNodes().get(i).getName();
+                                    counts.get(q).put(name, counts.get(q).get(name) + 1);
+                                }
+                            }
                         }
                     }
 
-                    if (parameters.getBoolean("verbose")) {
-                        System.out.println("Bootstrap #" + (i + 1) + " of " + numSubsamples);
-                        System.out.flush();
+                    for (int r = 0; r < effects.getNodes().size(); r++) {
+                        Node n = effects.getNodes().get(r);
+                        Double e = effects.getEffects().get(r);
+                        minimalEffects.get(b).put(n.getName(), e);
                     }
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -130,13 +180,13 @@ public class FmbStar implements Algorithm {
 
         List<Callable<Boolean>> tasks = new ArrayList<>();
 
-        for (int i = 0; i < numSubsamples; i++) {
-            tasks.add(new Task(i, counts));
+        for (int b = 0; b < numSubsamples; b++) {
+            tasks.add(new Task(b, counts, minimalEffects));
         }
 
         ConcurrencyUtils.runCallables(tasks, parameters.getInt("parallelism"));
 
-        return CStar.selectedVars(variables, numSubsamples, counts, parameters);
+        return CStar.selectedVars(variables, numSubsamples, counts, minimalEffects, parameters);
     }
 
     @Override
@@ -159,7 +209,6 @@ public class FmbStar implements Algorithm {
         List<String> parameters = new ArrayList<>();
         parameters.add("penaltyDiscount");
         parameters.add("numSubsamples");
-        parameters.add("percentSubsampleSize");
         parameters.add("targetName");
         parameters.add("maxEv");
         parameters.add("parallelism");

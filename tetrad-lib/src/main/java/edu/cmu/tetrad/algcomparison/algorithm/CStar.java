@@ -12,6 +12,7 @@ import edu.cmu.tetrad.search.PcAll;
 import edu.cmu.tetrad.search.SemBicScore;
 import edu.cmu.tetrad.util.ConcurrencyUtils;
 import edu.cmu.tetrad.util.Parameters;
+import edu.cmu.tetrad.util.StatUtils;
 import edu.cmu.tetrad.util.TextTable;
 
 import java.text.DecimalFormat;
@@ -48,7 +49,7 @@ public class CStar implements Algorithm {
 
         DataSet _dataSet = (DataSet) dataSet;
 
-        double percentSubsampleSize = parameters.getDouble("percentSubsampleSize");
+        double percentSubsampleSize = 0.5;
         int numSubsamples = parameters.getInt("numSubsamples");
         Node y = dataSet.getVariable(parameters.getString("targetName"));
 
@@ -56,6 +57,7 @@ public class CStar implements Algorithm {
         variables.remove(y);
 
         final Map<Integer, Map<String, Integer>> counts = new ConcurrentHashMap<>();
+        final Map<Integer, Map<String, Double>> minimalEffects = new ConcurrentHashMap<>();
 
         for (int q = 1; q < min(parameters.getInt("maxQ"), variables.size()); q++) {
             final HashMap<String, Integer> map = new HashMap<>();
@@ -63,13 +65,21 @@ public class CStar implements Algorithm {
             counts.put(q, map);
         }
 
-        class Task implements Callable<Boolean> {
-            private int i;
-            private Map<Integer, Map<String, Integer>> counts;
+        for (int b = 0; b < numSubsamples; b++) {
+            final HashMap<String, Double> map = new HashMap<>();
+            for (Node node : variables) map.put(node.getName(), 0.0);
+            minimalEffects.put(b, map);
+        }
 
-            private Task(int i, Map<Integer, Map<String, Integer>> counts) {
-                this.i = i;
+        class Task implements Callable<Boolean> {
+            private int b;
+            private Map<Integer, Map<String, Integer>> counts;
+            private Map<Integer, Map<String, Double>> minimalEffects;
+
+            private Task(int b, Map<Integer, Map<String, Integer>> counts, Map<Integer, Map<String, Double>> minimalEffects) {
+                this.b = b;
                 this.counts = counts;
+                this.minimalEffects = minimalEffects;
             }
 
             @Override
@@ -78,23 +88,29 @@ public class CStar implements Algorithm {
                     BootstrapSampler sampler = new BootstrapSampler();
                     sampler.setWithoutReplacements(true);
                     DataSet sample = sampler.sample(_dataSet, (int) (percentSubsampleSize * _dataSet.getNumRows()));
+                    sample = DataUtils.standardizeData(sample);
                     Graph pattern = getPattern(sample, parameters);
 
                     Ida ida = new Ida(sample, pattern);
                     Ida.NodeEffects effects = ida.getSortedMinEffects(y);
 
-                    if (effects.getEffects().isEmpty() || effects.getEffects().getFirst() == 0.0) {
-                        return true;
-                    }
-
                     for (int q = 1; q < min(parameters.getInt("maxQ"), variables.size()); q++) {
                         for (int i = 0; i < q; i++) {
                             if (i < effects.getNodes().size()) {
-                                final String name = effects.getNodes().get(i).getName();
-                                counts.get(q).put(name, counts.get(q).get(name) + 1);
+                                if (effects.getEffects().get(i) > 0) {
+                                    final String name = effects.getNodes().get(i).getName();
+                                    counts.get(q).put(name, counts.get(q).get(name) + 1);
+                                }
                             }
                         }
                     }
+
+                    for (int r = 0; r < effects.getNodes().size(); r++) {
+                        Node n = effects.getNodes().get(r);
+                        Double e = effects.getEffects().get(r);
+                        minimalEffects.get(b).put(n.getName(), e);
+                    }
+
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -105,13 +121,13 @@ public class CStar implements Algorithm {
 
         List<Callable<Boolean>> tasks = new ArrayList<>();
 
-        for (int i = 0; i < numSubsamples; i++) {
-            tasks.add(new Task(i, counts));
+        for (int b = 0; b < numSubsamples; b++) {
+            tasks.add(new Task(b, counts, minimalEffects));
         }
 
         ConcurrencyUtils.runCallables(tasks, parameters.getInt("parallelism"));
 
-        List<Node> outNodes = selectedVars(variables, numSubsamples, counts, parameters);
+        List<Node> outNodes = selectedVars(variables, numSubsamples, counts, minimalEffects, parameters);
 
         Graph graph = new EdgeListGraph(outNodes);
         graph.addNode(y);
@@ -146,81 +162,106 @@ public class CStar implements Algorithm {
         return pattern;
     }
 
-    public static List<Node> selectedVars(List<Node> variables, int numSubsamples, Map<Integer, Map<String, Integer>> counts, Parameters parameters) {
+    public static List<Node> selectedVars(List<Node> variables, int numSubsamples, Map<Integer,
+            Map<String, Integer>> counts, Map<Integer, Map<String, Double>> minimalEffects, Parameters parameters) {
 
-        List<Node> _outNodes = new ArrayList<>();
+        List<Node> bestNodes = new ArrayList<>();
+        List<Double> bestPi = new ArrayList<>();
+        int bestQ = 1;
 
         double maxRatio = 0.0;
 
         for (int q = 1; q < min(parameters.getInt("maxQ"), variables.size()); q++) {
             List<Node> sortedVariables = new ArrayList<>(variables);
-            final int _q = q;
-            sortedVariables.sort((o1, o2) -> Integer.compare(counts.get(_q).get(o2.getName()), counts.get(_q).get(o1.getName())));
+            final int q1 = q;
+            sortedVariables.sort((o1, o2) -> Integer.compare(counts.get(q1).get(o2.getName()), counts.get(q1).get(o1.getName())));
 
             List<Double> pi = new ArrayList<>();
 
             for (Node sortedVariable : sortedVariables) {
                 final Integer count = counts.get(q).get(sortedVariable.getName());
-                final double _pi = count / (double) numSubsamples;
-                pi.add(_pi);
+                pi.add(count / ((double) numSubsamples));
             }
 
             List<Node> outNodes = new ArrayList<>();
-            NumberFormat nf = new DecimalFormat("0.0000");
+            List<Double> outPis = new ArrayList<>();
 
             for (int i = 0; i < pi.size(); i++) {
-                final double ev = ev(pi.get(i), q, pi.size());
+                final double ev = ev(pi.get(i), q, pi.size(), parameters.getDouble("PIThreshold"));
 
                 if (ev <= parameters.getDouble("maxEv")) {
-                    outNodes.add(sortedVariables.get(i));
                     if (!outNodes.contains(sortedVariables.get(i))) {
                         outNodes.add(sortedVariables.get(i));
+                        outPis.add(pi.get(i));
                     }
                 }
 
-                if ((outNodes.size() / (double) pi.size()) > maxRatio) {
+                if ((outNodes.size() / (double) pi.size()) >= maxRatio) {
                     maxRatio = outNodes.size() / (double) pi.size();
-                    _outNodes = outNodes;
+                    bestNodes = new ArrayList<>(outNodes);
+                    bestPi = new ArrayList<>(outPis);
+                    bestQ = q;
+                }
+            }
+        }
+
+        TextTable table = new TextTable(bestNodes.size() + 1, 5);
+        NumberFormat nf = new DecimalFormat("0.0000");
+
+        table.setToken(0, 0, "Index");
+        table.setToken(0, 1, "Variable");
+        table.setToken(0, 2, "PI");
+        table.setToken(0, 3, "Average Effect");
+        table.setToken(0, 4, "E[V]");
+
+        for (int i = 0; i < bestNodes.size(); i++) {
+            final double ev = ev(bestPi.get(i), bestQ, variables.size(), parameters.getDouble("PIThreshold"));
+
+            List<Double> e = new ArrayList<>();
+
+            for (int b = 0; b < numSubsamples; b++) {
+                final String name = bestNodes.get(i).getName();
+                final double m = minimalEffects.get(b).get(name);
+
+                if (m != 0 && !Double.isNaN(m)) {
+                    e.add(m);
                 }
             }
 
-            TextTable table = new TextTable(outNodes.size() + 1, 5);
+            double[] _e = new double[e.size()];
+            for (int t = 0; t < e.size(); t++) _e[t] = e.get(t);
+            double avg = StatUtils.mean(_e);
 
-            table.setToken(0, 0, "q");
-            table.setToken(0, 1, "Index");
-            table.setToken(0, 2, "Variable");
-            table.setToken(0, 3, "Pi");
-            table.setToken(0, 4, "E[V]");
-
-            for (int i = 0; i < outNodes.size(); i++) {
-                final double pcer = pcer(pi.get(i), q, variables.size());
-                final double ev = ev(pi.get(i), q, variables.size());
-
-                table.setToken(i + 1, 0, "" + q);
-                table.setToken(i + 1, 1, "" + (i + 1));
-                table.setToken(i + 1, 2, sortedVariables.get(i).getName());
-                table.setToken(i + 1, 3, nf.format(pi.get(i)));
-                table.setToken(i + 1, 4, nf.format(ev));
-            }
-
-            System.out.println();
-            System.out.println(table);
-            System.out.println();
+            table.setToken(i + 1, 0, "" + (i + 1));
+            table.setToken(i + 1, 1, bestNodes.get(i).getName());
+            table.setToken(i + 1, 2, nf.format(bestPi.get(i)));
+            table.setToken(i + 1, 3, nf.format(avg));
+            table.setToken(i + 1, 4, nf.format(ev));
         }
 
-        return _outNodes;
+        System.out.println();
+        System.out.println(table);
+        System.out.println();
+
+        return bestNodes;
     }
 
     // Per Comparison Error Rate (PCER)
-    private static double pcer(double pi, int q, int p) {
-        if (pi <= 0.5) return Double.POSITIVE_INFINITY;
-        return (1.0 / (2 * pi - 1)) * (q / ((double) p));
+    private static double pcer(double pi, int q, int p, double piThreshold) {
+        if (pi <= piThreshold) return Double.POSITIVE_INFINITY;
+        return ((q * q) / ((double) (p * p))) / (2 * (piThreshold - .5));
     }
 
     // E[V]
-    private static double ev(double pi, int q, int p) {
-        if (pi <= 0.5) return Double.POSITIVE_INFINITY;
-        return q * (1.0 / (2 * pi - 1)) * (q / ((double) p));
+    private static double ev(double pi, int q, int p, double piThreshold) {
+        double ev = (q * q) / (p * (2 * (pi - piThreshold)));
+        if (ev < 0) ev = Double.POSITIVE_INFINITY;
+        return ev;
+    }
+
+    private static double e1(double pi, int q, int p, double piThreshold) {
+        if (pi <= piThreshold) return Double.POSITIVE_INFINITY;
+        return ((q * q) / ((double) p)) / (2 * piThreshold - 1);
     }
 
     @Override
@@ -243,7 +284,6 @@ public class CStar implements Algorithm {
         List<String> parameters = new ArrayList<>();
         parameters.add("penaltyDiscount");
         parameters.add("numSubsamples");
-        parameters.add("percentSubsampleSize");
         parameters.add("maxQ");
         parameters.add("targetName");
         parameters.add("CStarAlg");

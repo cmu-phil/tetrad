@@ -160,10 +160,10 @@ public class TestIda {
         parameters.set("maxOutdegree", 100);
         parameters.set("connected", false);
 
-        parameters.set("penaltyDiscount", 1);
+        parameters.set("penaltyDiscount", 2);
         parameters.set("numSubsamples", 50);
         parameters.set("percentSubsampleSize", .5);
-        parameters.set("maxQ", 25);
+        parameters.set("maxQ", 30);
         parameters.set("verbose", false);
 
         parameters.set("coefLow", 0.3);
@@ -180,7 +180,9 @@ public class TestIda {
 
         parameters.set("parallelism", 40);
         parameters.set("CStarAlg", 2); // 1 = FGES, 2 = PC-Stable
-        parameters.set("maxEv", 4);
+        parameters.set("maxEv", 3);
+
+        parameters.set("PIThreshold", .3);
 
         List<int[]> cstarRet = new ArrayList<>();
         List<int[]> fmbStarRet = new ArrayList<>();
@@ -191,8 +193,6 @@ public class TestIda {
         DataSet fullData = (DataSet) fisher.getDataModel(0);
 
         Graph trueDag = fisher.getTrueGraph(0);
-
-        Graph truePattern = SearchGraphUtils.patternForDag(trueDag);
 
         int m = trueDag.getNumNodes() + 1;
 
@@ -206,11 +206,7 @@ public class TestIda {
                 p.addAll(trueDag.getParents(q)) ;
             }
 
-            for (Node q : new HashSet<>(p)) {
-                p.addAll(trueDag.getParents(q)) ;
-            }
-
-            if (p.size() < 30) {
+            if (p.size() < 20) {
                 i--;
                 continue;
             }
@@ -222,13 +218,12 @@ public class TestIda {
             long start = System.currentTimeMillis();
 
             DataSet selectedData = selectVariables(fullData, parameters);
-//            DataSet selectedData = fullData;
 
             CStar cstar = new CStar();
             Graph graph = cstar.search(selectedData, parameters);
-//
+
             long stop = System.currentTimeMillis();
-//
+
             int[] ret = printResult(trueDag, parameters, graph, stop - start);
             cstarRet.add(ret);
 
@@ -236,12 +231,13 @@ public class TestIda {
 
             start = System.currentTimeMillis();
 
-            FmbStar fmbStar = new FmbStar();
-            Graph graph2 = fmbStar.search(selectedData, parameters);
+//            FmbStar fmbStar = new FmbStar();
+//            Graph graph2 = fmbStar.search(selectedData, parameters);
 
             stop = System.currentTimeMillis();
 
-            int[] ret2 = printResult(truePattern, parameters, graph2, stop - start);
+//            int[] ret2 = printResult(truePattern, parameters, graph2, stop - start);
+            int[] ret2 = {0, 0, 0, 0, 0, 0};
             fmbStarRet.add(ret2);
         }
 
@@ -311,7 +307,6 @@ public class TestIda {
         }
 
         ConcurrencyUtils.runCallables(tasks, parameters.getInt("parallelism"));
-
 
         tasks = new ArrayList<>();
 

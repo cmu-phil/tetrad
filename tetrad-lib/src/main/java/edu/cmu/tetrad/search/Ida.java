@@ -123,7 +123,7 @@ public class Ida {
         nodes.sort((o1, o2) -> {
             final Double d1 = allEffects.get(o1);
             final Double d2 = allEffects.get(o2);
-            return -Double.compare(abs(d1), abs(d2));
+            return Double.compare(abs(d2), abs(d1));
         });
 
         LinkedList<Double> effects = new LinkedList<>();
