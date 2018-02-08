@@ -101,7 +101,7 @@ public class HpcJobManager {
 		List<HpcJobInfo> pendingHpcJobInfo = hpcJobInfoService.findByStatus(-1);
 		if (pendingHpcJobInfo != null) {
 			for (HpcJobInfo hpcJobInfo : pendingHpcJobInfo) {
-				LOGGER.debug("resumePreProcessJobs: " + hpcJobInfo.getAlgorithmName() + " : "
+				LOGGER.debug("resumePreProcessJobs: " + hpcJobInfo.getAlgoId() + " : "
 						+ hpcJobInfo.getHpcAccount().getConnectionName() + " : "
 						+ hpcJobInfo.getAlgorithmParamRequest().getDatasetPath());
 
@@ -249,7 +249,7 @@ public class HpcJobManager {
 	public synchronized void addNewSubmittedHpcJob(final HpcJobInfo hpcJobInfo) {
 		HpcAccount hpcAccount = hpcJobInfo.getHpcAccount();
 		LOGGER.debug("addNewSubmittedHpcJob: connection: " + hpcAccount.getConnectionName());
-		LOGGER.debug("addNewSubmittedHpcJob: algorithm: " + hpcJobInfo.getAlgorithmName());
+		LOGGER.debug("addNewSubmittedHpcJob: algorithm: " + hpcJobInfo.getAlgoId());
 		LOGGER.debug("addNewSubmittedHpcJob: status: " + hpcJobInfo.getStatus());
 		LOGGER.debug("addNewSubmittedHpcJob: " + "pid: " + hpcJobInfo.getPid());
 
@@ -266,7 +266,7 @@ public class HpcJobManager {
 	public synchronized void removeFinishedHpcJob(final HpcJobInfo hpcJobInfo) {
 		HpcAccount hpcAccount = hpcJobInfo.getHpcAccount();
 		LOGGER.debug("removedFinishedHpcJob: connection: " + hpcAccount.getConnectionName());
-		LOGGER.debug("removedFinishedHpcJob: algorithm: " + hpcJobInfo.getAlgorithmName());
+		LOGGER.debug("removedFinishedHpcJob: algorithm: " + hpcJobInfo.getAlgoId());
 		LOGGER.debug("removedFinishedHpcJob: status: " + hpcJobInfo.getStatus());
 		LOGGER.debug("removedFinishedHpcJob: pid: " + hpcJobInfo.getPid());
 		Set<HpcJobInfo> hpcJobInfos = submittedHpcJobInfoMap.get(hpcAccount);
@@ -296,7 +296,7 @@ public class HpcJobManager {
 	public synchronized void removePendingHpcJob(final HpcJobInfo hpcJobInfo) {
 		HpcAccount hpcAccount = hpcJobInfo.getHpcAccount();
 		LOGGER.debug("removedPendingHpcJob: connection: " + hpcAccount.getConnectionName());
-		LOGGER.debug("removedPendingHpcJob: algorithm: " + hpcJobInfo.getAlgorithmName());
+		LOGGER.debug("removedPendingHpcJob: algorithm: " + hpcJobInfo.getAlgoId());
 		LOGGER.debug("removedPendingHpcJob: status: " + hpcJobInfo.getStatus());
 		LOGGER.debug("removedPendingHpcJob: pid: " + hpcJobInfo.getPid());
 
