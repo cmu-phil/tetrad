@@ -2,14 +2,25 @@ package edu.cmu.tetrad.algcomparison.algorithm.oracle.pag;
 
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.MultiDataSetAlgorithm;
+import edu.cmu.tetrad.algcomparison.score.BdeuScore;
 import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
+import edu.cmu.tetrad.algcomparison.score.SemBicScore;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.algcomparison.utils.UsesScoreWrapper;
 import edu.cmu.tetrad.annotation.AlgType;
-import edu.cmu.tetrad.data.*;
+import edu.cmu.tetrad.data.DataModel;
+import edu.cmu.tetrad.data.DataSet;
+import edu.cmu.tetrad.data.DataType;
+import edu.cmu.tetrad.data.IKnowledge;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.search.*;
+import edu.cmu.tetrad.search.BdeuScoreImages;
+import edu.cmu.tetrad.search.IndTestScore;
+import edu.cmu.tetrad.search.IndependenceTest;
+import edu.cmu.tetrad.search.Score;
+import edu.cmu.tetrad.search.SemBicScoreImages;
+import edu.cmu.tetrad.search.TsDagToPag;
+import edu.cmu.tetrad.search.TsGFci;
 import edu.cmu.tetrad.util.Parameters;
 import edu.pitt.dbmi.algo.bootstrap.BootstrapEdgeEnsemble;
 import edu.pitt.dbmi.algo.bootstrap.GeneralBootstrapTest;
@@ -39,7 +50,7 @@ public class TsImages implements Algorithm, HasKnowledge, MultiDataSetAlgorithm,
     }
 
     public TsImages(ScoreWrapper score) {
-        if (!(score instanceof SemBicScore || score instanceof BDeuScore)) {
+        if (!(score instanceof SemBicScore || score instanceof BdeuScore)) {
             throw new IllegalArgumentException("Only SEM BIC score or BDeu score can be used with this, sorry.");
         }
 
@@ -48,7 +59,7 @@ public class TsImages implements Algorithm, HasKnowledge, MultiDataSetAlgorithm,
 
     @Override
     public Graph search(DataModel dataModel, Parameters parameters) {
-    	if (parameters.getInt("bootstrapSampleSize") < 1) {
+        if (parameters.getInt("bootstrapSampleSize") < 1) {
             DataSet dataSet = (DataSet) dataModel;
             TsGFci search;
             Score score1 = score.getScore(dataSet, parameters);
@@ -132,7 +143,7 @@ public class TsImages implements Algorithm, HasKnowledge, MultiDataSetAlgorithm,
             gesScore.setPenaltyDiscount(parameters.getDouble("penaltyDiscount"));
             IndependenceTest test = new IndTestScore(gesScore);
             search = new TsGFci(test, gesScore);
-        } else if (score instanceof BDeScore) {
+        } else if (score instanceof BdeuScore) {
             double samplePrior = parameters.getDouble("samplePrior", 1);
             double structurePrior = parameters.getDouble("structurePrior", 1);
             BdeuScoreImages score = new BdeuScoreImages(dataModels);
@@ -153,4 +164,5 @@ public class TsImages implements Algorithm, HasKnowledge, MultiDataSetAlgorithm,
     public void setScoreWrapper(ScoreWrapper score) {
         this.score = score;
     }
+
 }

@@ -53,6 +53,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * Stores an algorithms in the format of the algorithm comparison API.
@@ -243,32 +244,25 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
         } else {
             if (getAlgorithm() instanceof MultiDataSetAlgorithm) {
                 for (int k = 0; k < parameters.getInt("numRuns"); k++) {
-                    List<DataSet> dataSets = new ArrayList<>();
-
-                    for (DataModel dataModel : getDataModelList()) {
-                        dataSets.add((DataSet) dataModel);
-                    }
-
+                    List<DataSet> dataSets = getDataModelList().stream()
+                            .map(e -> (DataSet) e)
+                            .collect(Collectors.toCollection(ArrayList::new));
                     if (dataSets.size() < parameters.getInt("randomSelectionSize")) {
                         throw new IllegalArgumentException("Sorry, the 'random selection size' is greater than "
                                 + "the number of data sets.");
                     }
-
                     Collections.shuffle(dataSets);
 
                     List<DataModel> sub = new ArrayList<>();
-
                     for (int j = 0; j < parameters.getInt("randomSelectionSize"); j++) {
                         sub.add(dataSets.get(j));
                     }
 
-                    Algorithm algorithm = getAlgorithm();
-
-                    if (algorithm instanceof HasKnowledge) {
-                        ((HasKnowledge) algorithm).setKnowledge(getKnowledge());
+                    Algorithm algo = getAlgorithm();
+                    if (algo instanceof HasKnowledge) {
+                        ((HasKnowledge) algo).setKnowledge(getKnowledge());
                     }
-
-                    graphList.add(((MultiDataSetAlgorithm) algorithm).search(sub, parameters));
+                    graphList.add(((MultiDataSetAlgorithm) algo).search(sub, parameters));
                 }
             } else if (getAlgorithm() instanceof ClusterAlgorithm) {
                 for (int k = 0; k < parameters.getInt("numRuns"); k++) {
