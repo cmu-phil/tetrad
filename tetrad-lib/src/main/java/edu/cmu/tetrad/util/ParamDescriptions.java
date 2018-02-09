@@ -278,10 +278,9 @@ public class ParamDescriptions {
                 "Considering q = 1 up to this maximum",
                 5, 1, Integer.MAX_VALUE));
 
-        map.put("maxEv", new ParamDescription(
-                "Maximum number of expected false positives for CStar",
+        map.put("maxEr", new ParamDescription(
+                "Bound on the expected number of false positives for CStar",
                 0.05, 0, 1.0));
-
 
         map.put("CStarAlg", new ParamDescription(
                 "Algorithm: 1 == FGES, 2 = PC-Stable",
@@ -291,11 +290,6 @@ public class ParamDescriptions {
         map.put("parallelism", new ParamDescription(
                 "Number of simultaneous threads",
                 1, 1, Integer.MAX_VALUE));
-
-        map.put("PIThreshold", new ParamDescription(
-                "Cutoff PI threshold for including variables",
-                0.5, 0, 1.0));
-
 
     }
 

@@ -88,7 +88,7 @@ public class CStar implements Algorithm {
                     BootstrapSampler sampler = new BootstrapSampler();
                     sampler.setWithoutReplacements(true);
                     DataSet sample = sampler.sample(_dataSet, (int) (percentSubsampleSize * _dataSet.getNumRows()));
-                    sample = DataUtils.standardizeData(sample);
+//                    sample = DataUtils.standardizeData(sample);
                     Graph pattern = getPattern(sample, parameters);
 
                     Ida ida = new Ida(sample, pattern);
@@ -151,6 +151,12 @@ public class CStar implements Algorithm {
             fges.setParallelism(1);
             pattern = fges.search();
         } else if (parameters.getInt("CStarAlg") == 2) {
+//            Fask fask = new Fask(sample, score);
+//            fask.setUseSkewAdjacencies(false);
+//            pattern = fask.search();
+
+//            System.out.println(pattern);
+
             PcAll pc = new PcAll(new IndTestScore(score), null);
             pc.setFasRule(PcAll.FasRule.FAS_STABLE);
             pc.setConflictRule(PcAll.ConflictRule.PRIORITY);
@@ -167,9 +173,13 @@ public class CStar implements Algorithm {
 
         List<Node> bestNodes = new ArrayList<>();
         List<Double> bestPi = new ArrayList<>();
-        int bestQ = 1;
+        List<Integer> bestQs = new ArrayList<>();
 
-        double maxRatio = 0.0;
+        List<Node> bestNodes2 = new ArrayList<>();
+        List<Double> bestPi2 = new ArrayList<>();
+        List<Integer> bestQ2 = new ArrayList<>();
+
+        int maxOut = 0;
 
         for (int q = 1; q < min(parameters.getInt("maxQ"), variables.size()); q++) {
             List<Node> sortedVariables = new ArrayList<>(variables);
@@ -185,47 +195,58 @@ public class CStar implements Algorithm {
 
             List<Node> outNodes = new ArrayList<>();
             List<Double> outPis = new ArrayList<>();
+            List<Integer> outQs = new ArrayList<>();
 
             for (int i = 0; i < pi.size(); i++) {
-                final double ev = ev(pi.get(i), q, pi.size(), parameters.getDouble("PIThreshold"));
+                final double ev = er(pi.get(i), q, pi.size());
 
-                if (ev <= parameters.getDouble("maxEv")) {
+                if (ev <= parameters.getDouble("maxEr")) {
                     if (!outNodes.contains(sortedVariables.get(i))) {
                         outNodes.add(sortedVariables.get(i));
                         outPis.add(pi.get(i));
+                        outQs.add(q);
+                    }
+
+                    if (!bestNodes2.contains(sortedVariables.get(i))) {
+                        bestNodes2.add(sortedVariables.get(i));
+                        bestPi2.add(pi.get(i));
+                        bestQ2.add(q);
                     }
                 }
+            }
 
-                if ((outNodes.size() / (double) pi.size()) >= maxRatio) {
-                    maxRatio = outNodes.size() / (double) pi.size();
-                    bestNodes = new ArrayList<>(outNodes);
-                    bestPi = new ArrayList<>(outPis);
-                    bestQ = q;
-                }
+            if ((outNodes.size()) >= maxOut) {
+                maxOut = outNodes.size();
+                bestNodes = new ArrayList<>(outNodes);
+                bestPi = new ArrayList<>(outPis);
+                bestQs = new ArrayList<>(outQs);
             }
         }
 
-        TextTable table = new TextTable(bestNodes.size() + 1, 5);
+//        bestNodes = bestNodes2;
+//        bestPi = bestPi2;
+//        bestQs = bestQ2;
+
+        TextTable table = new TextTable(bestNodes.size() + 1, 6);
         NumberFormat nf = new DecimalFormat("0.0000");
 
         table.setToken(0, 0, "Index");
         table.setToken(0, 1, "Variable");
         table.setToken(0, 2, "PI");
         table.setToken(0, 3, "Average Effect");
-        table.setToken(0, 4, "E[V]");
+        table.setToken(0, 4, "PCER");
+        table.setToken(0, 5, "ER");
 
         for (int i = 0; i < bestNodes.size(); i++) {
-            final double ev = ev(bestPi.get(i), bestQ, variables.size(), parameters.getDouble("PIThreshold"));
+            final double er = er(bestPi.get(i), bestQs.get(i), variables.size());
+            final double pcer = pcer(bestPi.get(i), bestQs.get(i), variables.size());
 
             List<Double> e = new ArrayList<>();
 
             for (int b = 0; b < numSubsamples; b++) {
                 final String name = bestNodes.get(i).getName();
                 final double m = minimalEffects.get(b).get(name);
-
-                if (m != 0 && !Double.isNaN(m)) {
-                    e.add(m);
-                }
+                e.add(m);
             }
 
             double[] _e = new double[e.size()];
@@ -236,7 +257,8 @@ public class CStar implements Algorithm {
             table.setToken(i + 1, 1, bestNodes.get(i).getName());
             table.setToken(i + 1, 2, nf.format(bestPi.get(i)));
             table.setToken(i + 1, 3, nf.format(avg));
-            table.setToken(i + 1, 4, nf.format(ev));
+            table.setToken(i + 1, 4, nf.format(pcer));
+            table.setToken(i + 1, 5, nf.format(er));
         }
 
         System.out.println();
@@ -246,22 +268,18 @@ public class CStar implements Algorithm {
         return bestNodes;
     }
 
-    // Per Comparison Error Rate (PCER)
-    private static double pcer(double pi, int q, int p, double piThreshold) {
-        if (pi <= piThreshold) return Double.POSITIVE_INFINITY;
-        return ((q * q) / ((double) (p * p))) / (2 * (piThreshold - .5));
-    }
-
-    // E[V]
-    private static double ev(double pi, int q, int p, double piThreshold) {
-        double ev = (q * q) / (p * (2 * (pi - piThreshold)));
+    // E(V) count
+    private static double er(double pi, int q, int p) {
+        double ev = (q * q) / (p * (2 * pi - 1));
         if (ev < 0) ev = Double.POSITIVE_INFINITY;
         return ev;
     }
 
-    private static double e1(double pi, int q, int p, double piThreshold) {
-        if (pi <= piThreshold) return Double.POSITIVE_INFINITY;
-        return ((q * q) / ((double) p)) / (2 * piThreshold - 1);
+    // Per comparison error rate.
+    private static double pcer(double pi, int q, int p) {
+        double ev = (q * q) / (p * p * (2 * pi - 1));
+        if (ev < 0) ev = Double.POSITIVE_INFINITY;
+        return ev;
     }
 
     @Override
@@ -287,7 +305,7 @@ public class CStar implements Algorithm {
         parameters.add("maxQ");
         parameters.add("targetName");
         parameters.add("CStarAlg");
-        parameters.add("maxEv");
+        parameters.add("maxEr");
         parameters.add("parallelism");
         return parameters;
     }

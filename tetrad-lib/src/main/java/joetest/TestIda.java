@@ -171,7 +171,7 @@ public class TestIda {
 
         parameters.set("parallelism", 30);
         parameters.set("CStarAlg", 1); // 1 = FGES, 2 = PC-Stable
-        parameters.set("maxEv", 1.0);
+        parameters.set("maxEr", 1.0);
 
         List<int[]> cstarRet = new ArrayList<>();
         List<int[]> fmbStarRet = new ArrayList<>();

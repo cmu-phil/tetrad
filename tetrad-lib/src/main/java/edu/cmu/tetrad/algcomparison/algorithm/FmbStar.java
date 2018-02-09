@@ -210,7 +210,7 @@ public class FmbStar implements Algorithm {
         parameters.add("penaltyDiscount");
         parameters.add("numSubsamples");
         parameters.add("targetName");
-        parameters.add("maxEv");
+        parameters.add("maxEr");
         parameters.add("parallelism");
         return parameters;
     }

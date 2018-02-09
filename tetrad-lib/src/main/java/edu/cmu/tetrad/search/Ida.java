@@ -10,6 +10,7 @@ import edu.cmu.tetrad.util.TetradMatrix;
 import java.util.*;
 
 import static java.lang.Math.*;
+import static java.util.Collections.singleton;
 
 /**
  * Implements the IDA algorithm, Maathuis, Marloes H., Markus Kalisch, and Peter Bühlmann.
@@ -73,14 +74,15 @@ public class Ida {
             regressors.add(x);
             for (Node n : parents) if (!regressors.contains(n)) regressors.add(n);
             for (Node n : sibbled) if (!regressors.contains(n)) regressors.add(n);
+            regressors.remove(y); // These are ignored anyway.
 
             double beta;
 
-            if (regressors.contains(y)) {
-                beta = 0;
-            } else {
-                beta = getBeta(regressors, y);
-            }
+//            if (regressors.contains(y)) {// ||*/ !pattern.existsSemiDirectedPathFromTo(x, singleton(y))) {
+//                beta = 0;
+//            } else {
+            beta = getBeta(regressors, y);
+//            }
 
             effects.add(abs(beta));
         }
