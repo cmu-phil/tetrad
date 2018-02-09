@@ -18,10 +18,14 @@
 // along with this program; if not, write to the Free Software               //
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA //
 ///////////////////////////////////////////////////////////////////////////////
-
 package edu.cmu.tetradapp.model;
 
-import edu.cmu.tetrad.data.*;
+import edu.cmu.tetrad.data.ColtDataSet;
+import edu.cmu.tetrad.data.ContinuousVariable;
+import edu.cmu.tetrad.data.DataModel;
+import edu.cmu.tetrad.data.DataModelList;
+import edu.cmu.tetrad.data.DataSet;
+import edu.cmu.tetrad.data.DiscreteVariable;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
@@ -31,10 +35,13 @@ import edu.cmu.tetrad.search.ImpliedOrientation;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
-
 import java.io.IOException;
 import java.io.ObjectInputStream;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Extends AbstractAlgorithmRunner to produce a wrapper for the Regression
@@ -43,6 +50,7 @@ import java.util.*;
  * @author Frank Wimberly after Joe Ramsey's PcRunner
  */
 public class LogisticRegressionRunner implements AlgorithmRunner, RegressionModel {
+
     static final long serialVersionUID = 23L;
 
     private String name;
@@ -62,14 +70,12 @@ public class LogisticRegressionRunner implements AlgorithmRunner, RegressionMode
     private List<String> variableNames;
 
     //=========================CONSTRUCTORS===============================//
-
     /**
      * Constructs a wrapper for the given DataWrapper. The DataWrapper must
      * contain a DataSet that is either a DataSet or a DataSet or a DataList
      * containing either a DataSet or a DataSet as its selected model.
      */
-    public LogisticRegressionRunner(DataWrapper dataWrapper,
-                                    Parameters params) {
+    public LogisticRegressionRunner(DataWrapper dataWrapper, Parameters params) {
         if (dataWrapper == null) {
             throw new NullPointerException();
         }
@@ -142,7 +148,6 @@ public class LogisticRegressionRunner implements AlgorithmRunner, RegressionMode
     }
 
     //===========================PUBLIC METHODS============================//
-
     public DataModel getDataModel() {
         return dataSets.get(getModelIndex());
     }
@@ -154,6 +159,9 @@ public class LogisticRegressionRunner implements AlgorithmRunner, RegressionMode
         return alpha;//this.params.getDouble("alpha", 0.001);
     }
 
+    public void setAlpha(double alpha) {
+        this.alpha = alpha;
+    }
 
     public LogisticRegression.Result getResult() {
         return this.result;
@@ -176,21 +184,22 @@ public class LogisticRegressionRunner implements AlgorithmRunner, RegressionMode
     }
 
     //=================PUBLIC METHODS OVERRIDING ABSTRACT=================//
-
     /**
      * Executes the algorithm, producing (at least) a result workbench. Must be
      * implemented in the extending class.
      */
     public void execute() {
+        outGraph = new EdgeListGraph();
+
         if (regressorNames == null || regressorNames.isEmpty() || targetName == null) {
             report = "Response and predictor variables not set.";
-            outGraph = new EdgeListGraph();
+
             return;
         }
 
         if (regressorNames.contains(targetName)) {
             report = "Response must not be a predictor.";
-            outGraph = new EdgeListGraph();
+
             return;
         }
 
@@ -320,10 +329,11 @@ public class LogisticRegressionRunner implements AlgorithmRunner, RegressionMode
     }
 
     /**
-     * @param node The node that the classifications are for. All triple from adjacencies to this
-     *             node to adjacencies to this node through the given node will be considered.
-     * @return the list of triples corresponding to <code>getTripleClassificationNames</code>
-     * for the given node.
+     * @param node The node that the classifications are for. All triple from
+     * adjacencies to this node to adjacencies to this node through the given
+     * node will be considered.
+     * @return the list of triples corresponding to
+     * <code>getTripleClassificationNames</code> for the given node.
      */
     public List<List<Triple>> getTriplesLists(Node node) {
         return new LinkedList<>();
@@ -372,9 +382,3 @@ public class LogisticRegressionRunner implements AlgorithmRunner, RegressionMode
         return null;
     }
 }
-
-
-
-
-
-
