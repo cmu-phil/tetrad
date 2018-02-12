@@ -757,48 +757,39 @@ public final class SessionEditorNode extends DisplayNode {
             firePropertyChange("deleteNode", null, null);
         });
 
-        JMenuItem editSimulationParameters
-                = new JMenuItem("Edit Parameters...");
-        editSimulationParameters.setToolTipText("<html>");
+        popup.add(createModel);
 
-        editSimulationParameters.addActionListener((e) -> {
-            SessionModel model = getSessionNode().getModel();
-            Class modelClass;
+        SessionModel model = getSessionNode().getModel();
+        Class modelClass = (model == null)
+                ? determineTheModelClass(getSessionNode())
+                : model.getClass();
+        if (getSessionNode().existsParameterizedConstructor(modelClass) && getSessionNode().getNumChildren() > 0) {
+            JMenuItem editSimulationParameters = new JMenuItem("Edit Parameters...");
+            editSimulationParameters.setToolTipText("<html>");
+            editSimulationParameters.addActionListener((e) -> {
+                Parameters param = getSessionNode().getParam(modelClass);
+                Object[] arguments
+                        = getSessionNode().getModelConstructorArguments(
+                                modelClass);
 
-            if (model == null) {
-                modelClass = determineTheModelClass(getSessionNode());
-            } else {
-                modelClass = model.getClass();
-            }
-
-            if (!getSessionNode().existsParameterizedConstructor(
-                    modelClass)) {
-                JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
-                        "There is no parameterization for this model.");
-                return;
-            }
-
-            Parameters param = getSessionNode().getParam(modelClass);
-            Object[] arguments
-                    = getSessionNode().getModelConstructorArguments(
-                            modelClass);
-
-            if (param != null) {
-                try {
-                    editParameters(modelClass, param, arguments);
-                    int ret = JOptionPane.showConfirmDialog(JOptionUtils.centeringComp(),
-                            "Should I overwrite the contents of this box and all delete the contents\n"
-                            + "of all boxes downstream?",
-                            "Double check...", JOptionPane.YES_NO_OPTION);
-                    if (ret == JOptionPane.YES_OPTION) {
-                        getSessionNode().destroyModel();
-                        getSessionNode().createModel(modelClass, true);
+                if (param != null) {
+                    try {
+                        editParameters(modelClass, param, arguments);
+                        int ret = JOptionPane.showConfirmDialog(JOptionUtils.centeringComp(),
+                                "Should I overwrite the contents of this box and all delete the contents\n"
+                                + "of all boxes downstream?",
+                                "Double check...", JOptionPane.YES_NO_OPTION);
+                        if (ret == JOptionPane.YES_OPTION) {
+                            getSessionNode().destroyModel();
+                            getSessionNode().createModel(modelClass, true);
+                        }
+                    } catch (Exception e1) {
+                        e1.printStackTrace();
                     }
-                } catch (Exception e1) {
-                    e1.printStackTrace();
                 }
-            }
-        });
+            });
+            popup.add(editSimulationParameters);
+        }
 
 //        final SessionNode thisNode = getSessionNode();
 //
@@ -810,7 +801,7 @@ public final class SessionEditorNode extends DisplayNode {
 //
 //        popup.addSeparator();
         popup.add(createModel);
-        popup.add(editSimulationParameters);
+
         popup.add(editModel);
         popup.add(destroyModel);
 
