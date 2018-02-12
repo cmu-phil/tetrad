@@ -18,36 +18,64 @@
 // along with this program; if not, write to the Free Software               //
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA //
 ///////////////////////////////////////////////////////////////////////////////
-
 package edu.cmu.tetradapp.app;
 
-import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.session.*;
-import edu.cmu.tetrad.util.*;
+import edu.cmu.tetrad.graph.Edge;
+import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.session.CouldNotCreateModelException;
+import edu.cmu.tetrad.session.ModificationRegistery;
+import edu.cmu.tetrad.session.SessionAdapter;
+import edu.cmu.tetrad.session.SessionEvent;
+import edu.cmu.tetrad.session.SessionModel;
+import edu.cmu.tetrad.session.SessionNode;
+import edu.cmu.tetrad.session.SimulationStudy;
+import edu.cmu.tetrad.util.JOptionUtils;
+import edu.cmu.tetrad.util.NamingProtocol;
+import edu.cmu.tetrad.util.Parameters;
+import edu.cmu.tetrad.util.TetradLogger;
+import edu.cmu.tetrad.util.TetradLoggerConfig;
 import edu.cmu.tetradapp.editor.EditorWindow;
 import edu.cmu.tetradapp.editor.FinalizingParameterEditor;
 import edu.cmu.tetradapp.editor.ParameterEditor;
-import edu.cmu.tetradapp.model.*;
+import edu.cmu.tetradapp.model.SessionNodeWrapper;
+import edu.cmu.tetradapp.model.SessionWrapper;
+import edu.cmu.tetradapp.model.UnlistedSessionModel;
 import edu.cmu.tetradapp.util.DesktopController;
 import edu.cmu.tetradapp.util.SessionEditorIndirectRef;
 import edu.cmu.tetradapp.util.WatchedProcess;
 import edu.cmu.tetradapp.workbench.DisplayNode;
-
-import javax.swing.*;
-import javax.swing.border.TitledBorder;
-import javax.swing.event.InternalFrameAdapter;
-import javax.swing.event.InternalFrameEvent;
-import javax.swing.event.MenuDragMouseEvent;
-import javax.swing.event.MenuDragMouseListener;
-import java.awt.*;
+import java.awt.BorderLayout;
+import java.awt.Component;
+import java.awt.Container;
+import java.awt.Dimension;
+import java.awt.GridLayout;
 import java.awt.Point;
-import java.awt.event.*;
+import java.awt.Window;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
+import javax.swing.AbstractButton;
+import javax.swing.JCheckBox;
+import javax.swing.JComponent;
+import javax.swing.JDialog;
+import javax.swing.JLayeredPane;
+import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
+import javax.swing.SwingUtilities;
+import javax.swing.ToolTipManager;
+import javax.swing.border.TitledBorder;
+import javax.swing.event.InternalFrameAdapter;
+import javax.swing.event.InternalFrameEvent;
 
 /**
  * Wraps a SessionNodeWrapper as a DisplayNode for presentation in a
@@ -62,6 +90,8 @@ import java.util.Set;
  * @see edu.cmu.tetrad.session.Session
  */
 public final class SessionEditorNode extends DisplayNode {
+
+    private static final long serialVersionUID = -6145843764762585351L;
 
     /**
      * If an editor has been opened, this is a reference to that editor. Used to
@@ -79,7 +109,6 @@ public final class SessionEditorNode extends DisplayNode {
      */
     private SessionWrapper sessionWrapper;
 
-
     /**
      * The configuration for this editor node.
      */
@@ -87,9 +116,11 @@ public final class SessionEditorNode extends DisplayNode {
     private SessionEditorWorkbench sessionWorkbench;
 
     //===========================CONSTRUCTORS==============================//
-
     /**
      * Wraps the given SessionNodeWrapper as a SessionEditorNode.
+     *
+     * @param modelNode
+     * @param simulationStudy
      */
     public SessionEditorNode(SessionNodeWrapper modelNode, SimulationStudy simulationStudy) {
         setModelNode(modelNode);
@@ -114,10 +145,11 @@ public final class SessionEditorNode extends DisplayNode {
             add((JComponent) getSessionDisplayComp(), BorderLayout.CENTER);
             setSelected(false);
             this.addMouseListener(new MouseAdapter() {
+                @Override
                 public void mousePressed(MouseEvent e) {
                     if (SwingUtilities.isRightMouseButton(e)) {
-                        ToolTipManager toolTipManager =
-                                ToolTipManager.sharedInstance();
+                        ToolTipManager toolTipManager
+                                = ToolTipManager.sharedInstance();
                         toolTipManager.setInitialDelay(750);
                         getNotePopup().show(SessionEditorNode.this, e.getX(), e.getY());
                     }
@@ -136,7 +168,6 @@ public final class SessionEditorNode extends DisplayNode {
     }
 
     //===========================PUBLIC METHODS============================//
-
     public final void adjustToModel() {
         String acronym = getAcronym();
 
@@ -189,7 +220,7 @@ public final class SessionEditorNode extends DisplayNode {
         }
     }
 
-
+    @Override
     public void doDoubleClickAction() {
         doDoubleClickAction(null);
     }
@@ -199,6 +230,7 @@ public final class SessionEditorNode extends DisplayNode {
      *
      * @param sessionWrapper Needed to allow the option of deleting edges
      */
+    @Override
     public void doDoubleClickAction(Graph sessionWrapper) {
         this.sessionWrapper = (SessionWrapper) sessionWrapper;
         Window owner = (Window) getTopLevelAncestor();
@@ -290,7 +322,6 @@ public final class SessionEditorNode extends DisplayNode {
 //                    }
 //                }
 //            }
-
 //                Class[] consistentModelClasses = child.getConsistentModelClasses(false);
 //                if (consistentModelClasses.length == 0) {
 //                    child.removeParent(sessionNode);
@@ -301,26 +332,14 @@ public final class SessionEditorNode extends DisplayNode {
 //                    Edge edge = sessionWrapper.getEdge(node1, node2);
 //                    sessionWrapper.removeEdge(edge);
 //                }
-        } catch (
-                CouldNotCreateModelException e
-                )
-
-        {
+        } catch (CouldNotCreateModelException e) {
             SessionUtils.showPermissibleParentsDialog(e.getModelClass(),
                     SessionEditorNode.this, true, true);
             e.printStackTrace();
 
-        } catch (
-                ClassCastException e
-                )
-
-        {
+        } catch (ClassCastException e) {
             e.printStackTrace();
-        } catch (
-                Exception e
-                )
-
-        {
+        } catch (Exception e) {
             Throwable cause = e;
 
             while (cause.getCause() != null) {
@@ -351,17 +370,16 @@ public final class SessionEditorNode extends DisplayNode {
     }
 
 //===========================PRIVATE METHODS===========================//
-
     private SessionEditorWorkbench getSessionWorkbench() {
         if (sessionWorkbench == null) {
-            SessionEditorIndirectRef sessionEditorRef =
-                    DesktopController.getInstance().getFrontmostSessionEditor();
+            SessionEditorIndirectRef sessionEditorRef
+                    = DesktopController.getInstance().getFrontmostSessionEditor();
             SessionEditor sessionEditor = (SessionEditor) sessionEditorRef;
 
             if (sessionEditor == null) {
                 DesktopController.getInstance().newSessionEditor();
-                sessionEditorRef =
-                        DesktopController.getInstance().getFrontmostSessionEditor();
+                sessionEditorRef
+                        = DesktopController.getInstance().getFrontmostSessionEditor();
                 sessionEditor = (SessionEditor) sessionEditorRef;
             }
 
@@ -370,15 +388,14 @@ public final class SessionEditorNode extends DisplayNode {
         return sessionWorkbench;
     }
 
-
     private void addListeners(final SessionEditorNode sessionEditorNode,
-                              final SessionNodeWrapper modelNode) {
+            final SessionNodeWrapper modelNode) {
         // Add a mouse listener for popups.
         sessionEditorNode.addMouseListener(new MouseAdapter() {
             public void mousePressed(MouseEvent e) {
                 if (SwingUtilities.isRightMouseButton(e)) {
-                    ToolTipManager toolTipManager =
-                            ToolTipManager.sharedInstance();
+                    ToolTipManager toolTipManager
+                            = ToolTipManager.sharedInstance();
                     toolTipManager.setInitialDelay(750);
                     sessionEditorNode.getPopup().show(sessionEditorNode, e.getX(), e.getY());
                 }
@@ -402,7 +419,6 @@ public final class SessionEditorNode extends DisplayNode {
 //                }
 //            }
 //        });
-
         sessionEditorNode.addComponentListener(new ComponentAdapter() {
             public void componentMoved(ComponentEvent e) {
                 sessionEditorNode.getSimulationStudy().getSession().setSessionChanged(true);
@@ -412,6 +428,8 @@ public final class SessionEditorNode extends DisplayNode {
         SessionNode sessionNode = modelNode.getSessionNode();
 
         sessionNode.addSessionListener(new SessionAdapter() {
+
+            @Override
             public void modelCreated(SessionEvent sessionEvent) {
                 sessionEditorNode.adjustToModel();
 
@@ -425,6 +443,7 @@ public final class SessionEditorNode extends DisplayNode {
                 }
             }
 
+            @Override
             public void modelDestroyed(SessionEvent sessionEvent) {
                 sessionEditorNode.adjustToModel();
 
@@ -437,6 +456,7 @@ public final class SessionEditorNode extends DisplayNode {
                 }
             }
 
+            @Override
             public void modelUnclear(SessionEvent sessionEvent) {
                 try {
                     if (simulationStudy == null) {
@@ -451,14 +471,13 @@ public final class SessionEditorNode extends DisplayNode {
                 } catch (Exception e) {
                     String message = e.getMessage();
 
-                    message = "I could not make a model for this box, sorry. Maybe the \n" +
-                            "parents aren't right or have not been constructed yet.";
+                    message = "I could not make a model for this box, sorry. Maybe the \n"
+                            + "parents aren't right or have not been constructed yet.";
 
                     e.printStackTrace();
 
 //                    throw new IllegalArgumentException("I could not make a model for this box, sorry. Maybe the \n" +
 //                            "parents aren't right or have not been constructed yet.");
-
                     JOptionPane.showMessageDialog(sessionEditorNode, message);
                 }
             }
@@ -466,22 +485,23 @@ public final class SessionEditorNode extends DisplayNode {
     }
 
     /**
-     * Adds a property change listener that listends for "changeNodeLabel" events.
+     * Adds a property change listener that listends for "changeNodeLabel"
+     * events.
      */
     private void addEditorListener(JPanel editor) {
         editor.addPropertyChangeListener(new PropertyChangeListener() {
+            @Override
             public void propertyChange(PropertyChangeEvent evt) {
                 if ("changeNodeLabel".equals(evt.getPropertyName())) {
                     getDisplayComp().setName((String) evt.getNewValue());
-                    SessionNodeWrapper wrapper =
-                            (SessionNodeWrapper) getModelNode();
+                    SessionNodeWrapper wrapper
+                            = (SessionNodeWrapper) getModelNode();
                     wrapper.setSessionName((String) evt.getNewValue());
                     adjustToModel();
                 }
             }
         });
     }
-
 
     /**
      * Creates a popup for a note node.
@@ -496,8 +516,8 @@ public final class SessionEditorNode extends DisplayNode {
         renameBox.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 Component centeringComp = SessionEditorNode.this;
-                String name =
-                        JOptionPane.showInputDialog(centeringComp, "New name:");
+                String name
+                        = JOptionPane.showInputDialog(centeringComp, "New name:");
 
                 if (!NamingProtocol.isLegalName(name)) {
                     JOptionPane.showMessageDialog(centeringComp,
@@ -505,8 +525,8 @@ public final class SessionEditorNode extends DisplayNode {
                     return;
                 }
 
-                SessionNodeWrapper wrapper =
-                        (SessionNodeWrapper) getModelNode();
+                SessionNodeWrapper wrapper
+                        = (SessionNodeWrapper) getModelNode();
                 wrapper.setSessionName(name);
                 getSessionDisplayComp().setName(name);
                 adjustToModel();
@@ -514,11 +534,11 @@ public final class SessionEditorNode extends DisplayNode {
         });
 
         JMenuItem cloneBox = new JMenuItem("Clone Note");
-        cloneBox.setToolTipText("<html>" +
-                "Makes a copy of this session note and its contents. To clone<br>" +
-                "a whole subgraph, or to paste into a different sessions, select<br>" +
-                "the subgraph and use the Copy/Paste gadgets in the Edit menu." +
-                "</html>");
+        cloneBox.setToolTipText("<html>"
+                + "Makes a copy of this session note and its contents. To clone<br>"
+                + "a whole subgraph, or to paste into a different sessions, select<br>"
+                + "the subgraph and use the Copy/Paste gadgets in the Edit menu."
+                + "</html>");
         cloneBox.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 firePropertyChange("cloneMe", null, SessionEditorNode.this);
@@ -542,9 +562,9 @@ public final class SessionEditorNode extends DisplayNode {
                 } else {
                     Component centeringComp = SessionEditorNode.this;
                     int ret = JOptionPane.showConfirmDialog(centeringComp,
-                            "<html>" +
-                                    "Really delete note? Any information it contains will<br>" +
-                                    "be destroyed." + "</html>");
+                            "<html>"
+                            + "Really delete note? Any information it contains will<br>"
+                            + "be destroyed." + "</html>");
 
                     if (ret != JOptionPane.YES_OPTION) {
                         return;
@@ -560,8 +580,8 @@ public final class SessionEditorNode extends DisplayNode {
 
         help.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                SessionNodeWrapper sessionNodeWrapper =
-                        (SessionNodeWrapper) getModelNode();
+                SessionNodeWrapper sessionNodeWrapper
+                        = (SessionNodeWrapper) getModelNode();
                 SessionNode sessionNode = sessionNodeWrapper.getSessionNode();
                 showInfoBoxForModel(sessionNode, sessionNode.getModelClasses());
             }
@@ -589,8 +609,8 @@ public final class SessionEditorNode extends DisplayNode {
         popup = new JPopupMenu();
 
         JMenuItem createModel = new JMenuItem("Create Model");
-        createModel.setToolTipText("<html>Creates a new model for this node" +
-                "<br>of the type selected.</html>");
+        createModel.setToolTipText("<html>Creates a new model for this node"
+                + "<br>of the type selected.</html>");
 
         createModel.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
@@ -634,9 +654,9 @@ public final class SessionEditorNode extends DisplayNode {
         });
 
         JMenuItem destroyModel = new JMenuItem("Destroy Model");
-        destroyModel.setToolTipText("<html>Destroys the model for this node, " +
-                "<br>if it has one, destroying any " +
-                "<br>downstream models as well.</html>");
+        destroyModel.setToolTipText("<html>Destroys the model for this node, "
+                + "<br>if it has one, destroying any "
+                + "<br>downstream models as well.</html>");
 
         destroyModel.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
@@ -659,8 +679,8 @@ public final class SessionEditorNode extends DisplayNode {
 
                 if (found) {
                     int ret = JOptionPane.showConfirmDialog(centeringComp,
-                            "Destroying the model in this box will also destroy models in any boxes\n" +
-                                    "downstream. Is that OK?", null,
+                            "Destroying the model in this box will also destroy models in any boxes\n"
+                            + "downstream. Is that OK?", null,
                             JOptionPane.OK_CANCEL_OPTION,
                             JOptionPane.WARNING_MESSAGE);
 
@@ -673,11 +693,11 @@ public final class SessionEditorNode extends DisplayNode {
             }
         });
 
-        JMenuItem propagateDownstream =
-                new JMenuItem("Propagate changes downstream");
-        propagateDownstream.setToolTipText("<html>" +
-                "Fills in this box and downstream boxes with models," +
-                "<br>overwriting any models that already exist.</html>");
+        JMenuItem propagateDownstream
+                = new JMenuItem("Propagate changes downstream");
+        propagateDownstream.setToolTipText("<html>"
+                + "Fills in this box and downstream boxes with models,"
+                + "<br>overwriting any models that already exist.</html>");
 
         propagateDownstream.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
@@ -709,8 +729,8 @@ public final class SessionEditorNode extends DisplayNode {
         renameBox.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 Component centeringComp = SessionEditorNode.this;
-                String name =
-                        JOptionPane.showInputDialog(centeringComp, "New name:");
+                String name
+                        = JOptionPane.showInputDialog(centeringComp, "New name:");
 
                 if (!NamingProtocol.isLegalName(name)) {
                     JOptionPane.showMessageDialog(centeringComp,
@@ -718,8 +738,8 @@ public final class SessionEditorNode extends DisplayNode {
                     return;
                 }
 
-                SessionNodeWrapper wrapper =
-                        (SessionNodeWrapper) getModelNode();
+                SessionNodeWrapper wrapper
+                        = (SessionNodeWrapper) getModelNode();
                 wrapper.setSessionName(name);
                 getSessionDisplayComp().setName(name);
                 adjustToModel();
@@ -727,11 +747,11 @@ public final class SessionEditorNode extends DisplayNode {
         });
 
         JMenuItem cloneBox = new JMenuItem("Clone Box");
-        cloneBox.setToolTipText("<html>" +
-                "Makes a copy of this session box and its contents. To clone<br>" +
-                "a whole subgraph, or to paste into a different sessions, select<br>" +
-                "the subgraph and use the Copy/Paste gadgets in the Edit menu." +
-                "</html>");
+        cloneBox.setToolTipText("<html>"
+                + "Makes a copy of this session box and its contents. To clone<br>"
+                + "a whole subgraph, or to paste into a different sessions, select<br>"
+                + "the subgraph and use the Copy/Paste gadgets in the Edit menu."
+                + "</html>");
         cloneBox.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 firePropertyChange("cloneMe", null, SessionEditorNode.this);
@@ -757,8 +777,8 @@ public final class SessionEditorNode extends DisplayNode {
             }
         });
 
-        JMenuItem editSimulationParameters =
-                new JMenuItem("Edit Parameters...");
+        JMenuItem editSimulationParameters
+                = new JMenuItem("Edit Parameters...");
         editSimulationParameters.setToolTipText("<html>");
 
         editSimulationParameters.addActionListener(new ActionListener() {
@@ -780,16 +800,16 @@ public final class SessionEditorNode extends DisplayNode {
                 }
 
                 Parameters param = getSessionNode().getParam(modelClass);
-                Object[] arguments =
-                        getSessionNode().getModelConstructorArguments(
+                Object[] arguments
+                        = getSessionNode().getModelConstructorArguments(
                                 modelClass);
 
                 if (param != null) {
                     try {
                         editParameters(modelClass, param, arguments);
                         int ret = JOptionPane.showConfirmDialog(JOptionUtils.centeringComp(),
-                                "Should I overwrite the contents of this box and all delete the contents\n" +
-                                        "of all boxes downstream?",
+                                "Should I overwrite the contents of this box and all delete the contents\n"
+                                + "of all boxes downstream?",
                                 "Double check...", JOptionPane.YES_NO_OPTION);
                         if (ret == JOptionPane.YES_OPTION) {
                             getSessionNode().destroyModel();
@@ -811,7 +831,6 @@ public final class SessionEditorNode extends DisplayNode {
 //        addConsistentChildBoxMenus(popup, getConsistentChildBoxTypes(thisNode, null));
 //
 //        popup.addSeparator();
-
         popup.add(createModel);
         popup.add(editSimulationParameters);
         popup.add(editModel);
@@ -848,7 +867,6 @@ public final class SessionEditorNode extends DisplayNode {
 //            menu.add(menuItem);
 //        }
 //    }
-
 //    private JMenu addConsistentChildBoxMenus(List<String> consistentChildBoxes) {
 //        JMenu newChildren = new JMenu("New Child Box");
 //
@@ -868,7 +886,6 @@ public final class SessionEditorNode extends DisplayNode {
 //        }
 //        return newChildren;
 //    }
-
 //    private JMenu addConsistentParentMenuItems(JPopupMenu menu, List<SessionNode> consistentParentNodes) {
 //        final JMenu newParents = new JMenu("New Parent Box");
 //
@@ -889,7 +906,6 @@ public final class SessionEditorNode extends DisplayNode {
 //
 //        return newParents;
 //    }
-
 //    private List<String> getConsistentChildBoxTypes(SessionNode thisNode, SessionModel model) {
 //        List<String> consistentChildBoxes = new ArrayList<>();
 //
@@ -912,7 +928,6 @@ public final class SessionEditorNode extends DisplayNode {
 //
 //        return consistentChildBoxes;
 //    }
-
 //    private List<SessionNode> getConsistentParentBoxTypes(SessionNode thisNode) {
 //        List<SessionNode> consistentParentBoxes = new ArrayList<>();
 //
@@ -930,8 +945,6 @@ public final class SessionEditorNode extends DisplayNode {
 //
 //        return consistentParentBoxes;
 //    }
-
-
     /**
      * Adds the "Edit logger" option if applicable.
      */
@@ -950,9 +963,9 @@ public final class SessionEditorNode extends DisplayNode {
         }
     }
 
-
     /**
-     * Shows a dialog that allows the user to change the settings for the box's model logger.
+     * Shows a dialog that allows the user to change the settings for the box's
+     * model logger.
      */
     private void showLogConfig(final TetradLoggerConfig config) {
         List<TetradLoggerConfig.Event> events = config.getSupportedEvents();
@@ -976,9 +989,8 @@ public final class SessionEditorNode extends DisplayNode {
         JOptionPane.showMessageDialog(this, panel, "Edit Events to Log", JOptionPane.PLAIN_MESSAGE);
     }
 
-
     private void executeSessionNode(final SessionNode sessionNode,
-                                    final boolean overwrite) {
+            final boolean overwrite) {
         Window owner = (Window) getTopLevelAncestor();
 
         new WatchedProcess(owner) {
@@ -986,8 +998,8 @@ public final class SessionEditorNode extends DisplayNode {
                 Class c = SessionEditorWorkbench.class;
                 Container container = SwingUtilities.getAncestorOfClass(c,
                         SessionEditorNode.this);
-                SessionEditorWorkbench workbench =
-                        (SessionEditorWorkbench) container;
+                SessionEditorWorkbench workbench
+                        = (SessionEditorWorkbench) container;
 
                 System.out.println("Executing" + sessionNode);
 
@@ -1004,8 +1016,8 @@ public final class SessionEditorNode extends DisplayNode {
                 Class clazz = SessionEditorWorkbench.class;
                 Container container = SwingUtilities.getAncestorOfClass(clazz,
                         SessionEditorNode.this);
-                SessionEditorWorkbench workbench =
-                        (SessionEditorWorkbench) container;
+                SessionEditorWorkbench workbench
+                        = (SessionEditorWorkbench) container;
 
                 if (workbench != null) {
                     workbench.getSimulationStudy().createDescendantModels(
@@ -1036,9 +1048,9 @@ public final class SessionEditorNode extends DisplayNode {
         Object[] options = {"Execute", "Break Edges"};
         Component centeringComp = SessionEditorNode.this;
         int selection = JOptionPane.showOptionDialog(centeringComp,
-                "Changing this node will affect its children.\n" +
-                        "Click on \"Execute\" to percolate changes down.\n" +
-                        "Click on \"Break Edges\" to leave the children the same.",
+                "Changing this node will affect its children.\n"
+                + "Click on \"Execute\" to percolate changes down.\n"
+                + "Click on \"Break Edges\" to leave the children the same.",
                 "Warning", JOptionPane.DEFAULT_OPTION,
                 JOptionPane.WARNING_MESSAGE, null, options, options[0]);
 
@@ -1051,15 +1063,15 @@ public final class SessionEditorNode extends DisplayNode {
 
                 // only break edges to children.
                 if (edge.getNode2() == getModelNode()) {
-                    SessionNodeWrapper otherWrapper =
-                            (SessionNodeWrapper) edge.getNode1();
+                    SessionNodeWrapper otherWrapper
+                            = (SessionNodeWrapper) edge.getNode1();
                     SessionNode other = otherWrapper.getSessionNode();
                     if (getChildren().contains(other)) {
                         sessionWrapper.removeEdge(edge);
                     }
                 } else {
-                    SessionNodeWrapper otherWrapper =
-                            (SessionNodeWrapper) edge.getNode2();
+                    SessionNodeWrapper otherWrapper
+                            = (SessionNodeWrapper) edge.getNode2();
                     SessionNode other = otherWrapper.getSessionNode();
                     if (getChildren().contains(other)) {
                         sessionWrapper.removeEdge(edge);
@@ -1074,8 +1086,7 @@ public final class SessionEditorNode extends DisplayNode {
      * parent models.
      *
      * @throws IllegalStateException if the model cannot be created. The reason
-     *                               why the model cannot be created is in the
-     *                               message of the exception.
+     * why the model cannot be created is in the message of the exception.
      */
     public boolean createModel(boolean simulation) throws Exception {
         if (getSessionNode().getModel() != null) {
@@ -1139,11 +1150,10 @@ public final class SessionEditorNode extends DisplayNode {
     }
 
     /**
-     * @return the selected model class, or null if no model class was
-     * selected.
+     * @return the selected model class, or null if no model class was selected.
      */
     private Class getModelClassFromUser(Class[] modelClasses,
-                                        boolean cancelable) {
+            boolean cancelable) {
 
         // Count the number of model classes that can be listed for the user;
         // if there's only one, don't ask the user for input.
@@ -1155,10 +1165,9 @@ public final class SessionEditorNode extends DisplayNode {
             }
         }
 
-        if (reducedList.size() == 0) {
+        if (reducedList.isEmpty()) {
             throw new RuntimeException("There is no model to choose.");
         }
-
 
         SessionNodeWrapper sessionNodeWrapper = (SessionNodeWrapper) getModelNode();
         SessionNode sessionNode = sessionNodeWrapper.getSessionNode();
@@ -1199,7 +1208,7 @@ public final class SessionEditorNode extends DisplayNode {
             }
         }
 
-        if (reducedList.size() == 0) {
+        if (reducedList.isEmpty()) {
             throw new RuntimeException("There is no model to choose.");
         }
 
@@ -1213,8 +1222,8 @@ public final class SessionEditorNode extends DisplayNode {
     }
 
     public Set<SessionNode> getChildren() {
-        SessionNodeWrapper _sessionNodeWrapper =
-                (SessionNodeWrapper) getModelNode();
+        SessionNodeWrapper _sessionNodeWrapper
+                = (SessionNodeWrapper) getModelNode();
         SessionNode _sessionNode = _sessionNodeWrapper.getSessionNode();
         return _sessionNode.getChildren();
     }
@@ -1234,8 +1243,8 @@ public final class SessionEditorNode extends DisplayNode {
             if (newModelClasses != null) {
                 sessionNode.setModelClasses(newModelClasses);
             } else {
-                throw new RuntimeException("Model classes for this session " +
-                        "node were not set in the configuration.");
+                throw new RuntimeException("Model classes for this session "
+                        + "node were not set in the configuration.");
             }
         }
     }
@@ -1248,12 +1257,12 @@ public final class SessionEditorNode extends DisplayNode {
         getSessionNode().forgetOldModel();
     }
 
-
     /**
-     * Tries to edit the parameters, returns true if successfully otherwise false is returned
+     * Tries to edit the parameters, returns true if successfully otherwise
+     * false is returned
      */
     public boolean editParameters(final Class modelClass, Parameters params,
-                                  Object[] parentModels) {
+            Object[] parentModels) {
         if (parentModels == null) {
             throw new NullPointerException("Parent models array is null.");
         }
@@ -1291,8 +1300,8 @@ public final class SessionEditorNode extends DisplayNode {
                 null, null);
 
         // if finalizing editor, then deal with specially.
-        return ret == JOptionPane.OK_OPTION && (!(paramEditor instanceof FinalizingParameterEditor) ||
-                ((FinalizingParameterEditor) paramEditor).finalizeEdit());
+        return ret == JOptionPane.OK_OPTION && (!(paramEditor instanceof FinalizingParameterEditor)
+                || ((FinalizingParameterEditor) paramEditor).finalizeEdit());
 
     }
 
@@ -1341,11 +1350,9 @@ public final class SessionEditorNode extends DisplayNode {
             throw new NullPointerException("Name must not be null.");
         }
 
-        StringBuilder buffer = new StringBuilder(name);
-
-        for (int i = buffer.length() - 1; i >= 0; i--) {
-            if (!Character.isDigit(buffer.charAt(i))) {
-                return buffer.substring(0, i + 1);
+        for (int i = name.length() - 1; i >= 0; i--) {
+            if (!Character.isDigit(name.charAt(i))) {
+                return name.substring(0, i + 1);
             }
         }
 
@@ -1354,8 +1361,7 @@ public final class SessionEditorNode extends DisplayNode {
 
     /**
      * @return the model classes associated with the given button type.
-     * @throws NullPointerException if no classes are stored for the given
-     *                              type.
+     * @throws NullPointerException if no classes are stored for the given type.
      */
     private static Class[] modelClasses(String boxType) {
         TetradApplicationConfig config = TetradApplicationConfig.getInstance();
@@ -1375,7 +1381,3 @@ public final class SessionEditorNode extends DisplayNode {
         return (SessionDisplayComp) getDisplayComp();
     }
 }
-
-
-
-
