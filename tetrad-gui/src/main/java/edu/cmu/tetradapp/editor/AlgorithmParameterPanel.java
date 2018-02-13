@@ -18,8 +18,10 @@
  */
 package edu.cmu.tetradapp.editor;
 
+import edu.cmu.tetrad.annotation.Algorithm;
 import edu.cmu.tetrad.util.ParamDescriptions;
 import edu.cmu.tetrad.util.Parameters;
+import edu.cmu.tetradapp.model.GeneralAlgorithmRunner;
 import edu.cmu.tetradapp.ui.PaddingPanel;
 import edu.cmu.tetradapp.util.DoubleTextField;
 import edu.cmu.tetradapp.util.IntTextField;
@@ -47,16 +49,26 @@ public class AlgorithmParameterPanel extends JPanel {
 
     private static final long serialVersionUID = 274638263704283474L;
 
+    private static final String DEFAULT_TITLE_BORDER = "Algorithm Parameters";
+
     public AlgorithmParameterPanel() {
         initComponents();
     }
 
     private void initComponents() {
         setLayout(new BorderLayout());
-        setBorder(BorderFactory.createTitledBorder("Algorithm Parameters"));
     }
 
-    public void addToPanel(List<String> parametersToEdit, Parameters parameters) {
+    public void addToPanel(GeneralAlgorithmRunner runner) {
+        List<String> parametersToEdit = runner.getAlgorithm().getParameters();
+        Parameters parameters = runner.getParameters();
+
+        Algorithm algoAnno = runner.getAlgorithm().getClass().getAnnotation(Algorithm.class);
+        String title = (algoAnno == null)
+                ? DEFAULT_TITLE_BORDER
+                : String.format("%s Parameters", algoAnno.name());
+        setBorder(BorderFactory.createTitledBorder(title));
+
         removeAll();
 
         Box paramsBox = Box.createVerticalBox();

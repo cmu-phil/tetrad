@@ -188,7 +188,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
 
         // Repopulate all the previous selections if reopen the search box
         if (runner.getGraphs() != null && runner.getGraphs().size() > 0) {
-            parametersPanel.addToPanel(runner.getAlgorithm().getParameters(), runner.getParameters());
+            parametersPanel.addToPanel(runner);
 
             // show the generated graph if reopen the search box
             graphContainer.add(graphEditor);  // use the already generated graphEditor
@@ -343,7 +343,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
 
     private void setParameterPanel(AlgorithmModel algoModel, IndependenceTestModel indTestModel, ScoreModel scoreModel) {
         runner.setAlgorithm(getAlgorithmFromInterface(algoModel, indTestModel, scoreModel));
-        parametersPanel.addToPanel(runner.getAlgorithm().getParameters(), runner.getParameters());
+        parametersPanel.addToPanel(runner);
     }
 
     private boolean isValid(AlgorithmModel algoModel, IndependenceTestModel indTestModel, ScoreModel scoreModel) {
