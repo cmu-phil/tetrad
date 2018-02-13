@@ -48,15 +48,14 @@ public class FmbStar implements Algorithm {
         DataSet _dataSet = (DataSet) dataSet;
         List<Node> variables = _dataSet.getVariables();
 
-        double percentageB = 0.5;
         int numSubsamples = parameters.getInt("numSubsamples");
         int q = parameters.getInt("maxQ");
         Node y = dataSet.getVariable(parameters.getString("targetName"));
         double penaltyDiscount = parameters.getDouble("penaltyDiscount");
         variables.remove(y);
 
-        List<Node> nodes = getNodes(parameters, _dataSet, variables, percentageB, numSubsamples,
-                y, penaltyDiscount);
+        List<Node> nodes = getNodes(parameters, _dataSet, variables, numSubsamples,
+                y, penaltyDiscount, new ArrayList<>(), ((DataSet) dataSet).getNumRows());
         Set<Node> allNodes = new HashSet<>(nodes);
 
         Graph graph = new EdgeListGraph(new ArrayList<>(allNodes));
@@ -69,8 +68,8 @@ public class FmbStar implements Algorithm {
         return graph;
     }
 
-    private List<Node> getNodes(Parameters parameters, DataSet _dataSet, List<Node> variables, double percentageB,
-                                int numSubsamples, Node y, double penaltyDiscount) {
+    private List<Node> getNodes(Parameters parameters, DataSet _dataSet, List<Node> variables,
+                                int numSubsamples, Node y, double penaltyDiscount, List<Node> ancestors, int N) {
         Map<Integer, Map<String, Integer>> counts = new ConcurrentHashMap<>();
         final Map<Integer, Map<String, Double>> minimalEffects = new ConcurrentHashMap<>();
 
@@ -107,7 +106,7 @@ public class FmbStar implements Algorithm {
                 try {
                     BootstrapSampler sampler = new BootstrapSampler();
                     sampler.setWithoutReplacements(true);
-                    DataSet sample = sampler.sample(_dataSet, (int) (percentageB * _dataSet.getNumRows()));
+                    DataSet sample = sampler.sample(_dataSet, _dataSet.getNumRows() / 2);
 //                    sample = DataUtils.standardizeData(sample);
 
                     ICovarianceMatrix covariances = new CovarianceMatrixOnTheFly(sample);
@@ -186,7 +185,7 @@ public class FmbStar implements Algorithm {
 
         ConcurrencyUtils.runCallables(tasks, parameters.getInt("parallelism"));
 
-        return CStar.selectedVars(variables, numSubsamples, counts, minimalEffects, parameters);
+        return CStar.selectedVars(variables, numSubsamples, counts, minimalEffects, parameters, ancestors, 0.5);
     }
 
     @Override

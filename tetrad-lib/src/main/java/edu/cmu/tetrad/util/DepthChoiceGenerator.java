@@ -113,9 +113,9 @@ public final class DepthChoiceGenerator {
     public static int getNumCombinations(int a, int b) {
         int numCombinations = 0;
 
-        for (int c = 0; c <= b; c++) {
-            numCombinations += (int) round(exp(lngamma(a + 1) - lngamma(c + 1) - lngamma((a - c) + 1)));
-        }
+//        for (int c = 0; c <= b; c++) {
+        numCombinations += (int) round(exp(lngamma(a + 1) - lngamma(b + 1) - lngamma((a - b) + 1)));
+//        }
 
         return numCombinations;
     }

@@ -83,7 +83,6 @@ public class TestIda {
         Parameters parameters = new Parameters();
         parameters.set("penaltyDiscount", 2);
         parameters.set("numSubsamples", 30);
-        parameters.set("percentSubsampleSize", .5);
         parameters.set("maxQ", 5);
         parameters.set("targetName", "X50");
         parameters.set("alpha", 0.001);
@@ -102,7 +101,7 @@ public class TestIda {
 
         long start = System.currentTimeMillis();
 
-        CStar cstar = new CStar();
+        CStar cstar = new CStar(new ArrayList<>());
         Graph graph = cstar.search(dataSet, parameters);
 
         long stop = System.currentTimeMillis();
@@ -192,7 +191,7 @@ public class TestIda {
 
             long start = System.currentTimeMillis();
 
-            CStar cstar = new CStar();
+            CStar cstar = new CStar(new ArrayList<>());
             Graph graph = cstar.search(fullData, parameters);
 
             long stop = System.currentTimeMillis();

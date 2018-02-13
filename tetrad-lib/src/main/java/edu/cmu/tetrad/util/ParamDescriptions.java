@@ -210,7 +210,7 @@ public class ParamDescriptions {
                 "The number of subsamples",
                 8, 1, Integer.MAX_VALUE));
 
-        map.put("percentSubsampleSize", new ParamDescription(
+        map.put("subsampleProportion", new ParamDescription(
                 "Percentage of records to include in a random subsample",
                 0.5, 0.0, 1.0));
 
@@ -286,11 +286,13 @@ public class ParamDescriptions {
                 "Algorithm: 1 == FGES, 2 = PC-Stable",
                 1, 1, 2));
 
-
         map.put("parallelism", new ParamDescription(
                 "Number of simultaneous threads",
                 1, 1, Integer.MAX_VALUE));
 
+        map.put("bootstrapSelectionSize", new ParamDescription(
+                "The percent size of the subsamples, (0 - 1)",
+                0.5, 0, 1.0));
     }
 
     public static ParamDescriptions getInstance() {

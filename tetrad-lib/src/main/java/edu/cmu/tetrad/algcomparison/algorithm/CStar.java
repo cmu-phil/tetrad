@@ -10,10 +10,7 @@ import edu.cmu.tetrad.search.Ida;
 import edu.cmu.tetrad.search.IndTestScore;
 import edu.cmu.tetrad.search.PcAll;
 import edu.cmu.tetrad.search.SemBicScore;
-import edu.cmu.tetrad.util.ConcurrencyUtils;
-import edu.cmu.tetrad.util.Parameters;
-import edu.cmu.tetrad.util.StatUtils;
-import edu.cmu.tetrad.util.TextTable;
+import edu.cmu.tetrad.util.*;
 
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
@@ -24,7 +21,9 @@ import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
 
+import static edu.cmu.tetrad.graph.GraphUtils.replaceNodes;
 import static java.lang.Integer.min;
+import static java.lang.Math.pow;
 
 @edu.cmu.tetrad.annotation.Algorithm(
         name = "CStar",
@@ -37,19 +36,21 @@ import static java.lang.Integer.min;
 public class CStar implements Algorithm {
     static final long serialVersionUID = 23L;
     private Algorithm algorithm;
+    private List<Node> ancestors;
 
-    public CStar() {
+    public CStar(List<Node> ancestors) {
         this.algorithm = new Fges();
+        this.ancestors = ancestors;
     }
 
     @Override
     public Graph search(DataModel dataSet, Parameters parameters) {
         System.out.println("# Available Processors = " + Runtime.getRuntime().availableProcessors());
         System.out.println("Parallelism = " + parameters.getInt("parallelism"));
+        double numBootstraps = 1.0 / parameters.getDouble("bootstrapSelectionSize");
 
         DataSet _dataSet = (DataSet) dataSet;
 
-        double percentSubsampleSize = 0.5;
         int numSubsamples = parameters.getInt("numSubsamples");
         Node y = dataSet.getVariable(parameters.getString("targetName"));
 
@@ -82,13 +83,11 @@ public class CStar implements Algorithm {
                 this.minimalEffects = minimalEffects;
             }
 
-            @Override
             public Boolean call() {
                 try {
                     BootstrapSampler sampler = new BootstrapSampler();
                     sampler.setWithoutReplacements(true);
-                    DataSet sample = sampler.sample(_dataSet, (int) (percentSubsampleSize * _dataSet.getNumRows()));
-//                    sample = DataUtils.standardizeData(sample);
+                    DataSet sample = sampler.sample(_dataSet, (int) (_dataSet.getNumRows() / numBootstraps));
                     Graph pattern = getPattern(sample, parameters);
 
                     Ida ida = new Ida(sample, pattern);
@@ -127,7 +126,7 @@ public class CStar implements Algorithm {
 
         ConcurrencyUtils.runCallables(tasks, parameters.getInt("parallelism"));
 
-        List<Node> outNodes = selectedVars(variables, numSubsamples, counts, minimalEffects, parameters);
+        List<Node> outNodes = selectedVars(variables, numSubsamples, counts, minimalEffects, parameters, ancestors, numBootstraps);
 
         Graph graph = new EdgeListGraph(outNodes);
         graph.addNode(y);
@@ -151,16 +150,10 @@ public class CStar implements Algorithm {
             fges.setParallelism(1);
             pattern = fges.search();
         } else if (parameters.getInt("CStarAlg") == 2) {
-//            Fask fask = new Fask(sample, score);
-//            fask.setUseSkewAdjacencies(false);
-//            pattern = fask.search();
-
-//            System.out.println(pattern);
-
             PcAll pc = new PcAll(new IndTestScore(score), null);
             pc.setFasRule(PcAll.FasRule.FAS_STABLE);
-            pc.setConflictRule(PcAll.ConflictRule.PRIORITY);
-            pc.setColliderDiscovery(PcAll.ColliderDiscovery.FAS_SEPSETS);
+            pc.setConflictRule(PcAll.ConflictRule.OVERWRITE);
+            pc.setColliderDiscovery(PcAll.ColliderDiscovery.MAX_P);
             pattern = pc.search();
         } else {
             throw new IllegalArgumentException("Not configured for that algorithm: " + parameters.getInt("CStarAlg"));
@@ -169,7 +162,9 @@ public class CStar implements Algorithm {
     }
 
     public static List<Node> selectedVars(List<Node> variables, int numSubsamples, Map<Integer,
-            Map<String, Integer>> counts, Map<Integer, Map<String, Double>> minimalEffects, Parameters parameters) {
+            Map<String, Integer>> counts, Map<Integer, Map<String, Double>> minimalEffects, Parameters parameters,
+                                          List<Node> ancestors, double numBootstraps) {
+        ancestors = replaceNodes(ancestors, variables);
 
         List<Node> bestNodes = new ArrayList<>();
         List<Double> bestPi = new ArrayList<>();
@@ -182,14 +177,14 @@ public class CStar implements Algorithm {
         int maxOut = 0;
 
         for (int q = 1; q < min(parameters.getInt("maxQ"), variables.size()); q++) {
-            List<Node> sortedVariables = new ArrayList<>(variables);
             final int q1 = q;
+            List<Node> sortedVariables = new ArrayList<>(variables);
             sortedVariables.sort((o1, o2) -> Integer.compare(counts.get(q1).get(o2.getName()), counts.get(q1).get(o1.getName())));
 
             List<Double> pi = new ArrayList<>();
 
-            for (Node sortedVariable : sortedVariables) {
-                final Integer count = counts.get(q).get(sortedVariable.getName());
+            for (Node v : sortedVariables) {
+                final Integer count = counts.get(q).get(v.getName());
                 pi.add(count / ((double) numSubsamples));
             }
 
@@ -198,7 +193,9 @@ public class CStar implements Algorithm {
             List<Integer> outQs = new ArrayList<>();
 
             for (int i = 0; i < pi.size(); i++) {
-                final double ev = er(pi.get(i), q, pi.size());
+                final double ev = er(pi.get(i), q, variables.size(), numBootstraps);
+
+                if (ev == Double.POSITIVE_INFINITY) continue;
 
                 if (ev <= parameters.getDouble("maxEr")) {
                     if (!outNodes.contains(sortedVariables.get(i))) {
@@ -221,11 +218,10 @@ public class CStar implements Algorithm {
                 bestPi = new ArrayList<>(outPis);
                 bestQs = new ArrayList<>(outQs);
             }
+
         }
 
-//        bestNodes = bestNodes2;
-//        bestPi = bestPi2;
-//        bestQs = bestQ2;
+        printRanks(variables, numSubsamples, counts, parameters, ancestors);
 
         TextTable table = new TextTable(bestNodes.size() + 1, 6);
         NumberFormat nf = new DecimalFormat("0.0000");
@@ -237,9 +233,11 @@ public class CStar implements Algorithm {
         table.setToken(0, 4, "PCER");
         table.setToken(0, 5, "ER");
 
+        ancestors = replaceNodes(ancestors, variables);
+
         for (int i = 0; i < bestNodes.size(); i++) {
-            final double er = er(bestPi.get(i), bestQs.get(i), variables.size());
-            final double pcer = pcer(bestPi.get(i), bestQs.get(i), variables.size());
+            final double er = er(bestPi.get(i), bestQs.get(i), variables.size(), numBootstraps);
+            final double pcer = pcer(bestPi.get(i), bestQs.get(i), variables.size(), numBootstraps);
 
             List<Double> e = new ArrayList<>();
 
@@ -254,7 +252,8 @@ public class CStar implements Algorithm {
             double avg = StatUtils.mean(_e);
 
             table.setToken(i + 1, 0, "" + (i + 1));
-            table.setToken(i + 1, 1, bestNodes.get(i).getName());
+            final boolean contains = ancestors.contains(bestNodes.get(i));
+            table.setToken(i + 1, 1, (contains ? "* " : "") + bestNodes.get(i).getName());
             table.setToken(i + 1, 2, nf.format(bestPi.get(i)));
             table.setToken(i + 1, 3, nf.format(avg));
             table.setToken(i + 1, 4, nf.format(pcer));
@@ -268,18 +267,78 @@ public class CStar implements Algorithm {
         return bestNodes;
     }
 
-    // E(V) count
-    private static double er(double pi, int q, int p) {
-        double ev = (q * q) / (p * (2 * pi - 1));
-        if (ev < 0) ev = Double.POSITIVE_INFINITY;
-        return ev;
+    private static void printRanks(List<Node> variables, double numSubsamples, Map<Integer, Map<String, Integer>> counts, Parameters parameters, List<Node> ancestors) {
+        System.out.println("\n# ancestors = " + ancestors.size() + "\n");
+
+        final int maxQ = min(parameters.getInt("maxQ"), variables.size());
+
+        List<Integer> qs = new ArrayList<>();
+
+        for (int q = maxQ / 10; q < maxQ; q += maxQ / 10) qs.add(q);
+
+        double[][] ranks = new double[variables.size()][qs.size()];
+
+        for (int s = 0; s < qs.size(); s++) {
+            int q = qs.get(s);
+            List<Double> pi = new ArrayList<>();
+
+            for (Node v : variables) {
+                final Integer count = counts.get(q).get(v.getName());
+                pi.add(count / numSubsamples);
+            }
+            double[] _pi = new double[pi.size()];
+
+            for (int i = 0; i < variables.size(); i++) {
+                final Integer count = counts.get(q).get(variables.get(i).getName());
+                _pi[i] = count / numSubsamples;
+            }
+
+            double[] _ranks = StatUtils.getRanks(_pi);
+
+            for (int i = 0; i < variables.size(); i++) {
+                ranks[i][s] = _ranks[i];
+            }
+        }
+
+        double[] rankMedians = new double[ranks.length];
+
+        for (int j = 0; j < ranks.length; j++) {
+            rankMedians[j] = StatUtils.median(ranks[j]);
+        }
+
+        System.out.println("Rank medians");
+
+        List<Node> sortedVariables = new ArrayList<>(variables);
+        sortedVariables.sort((o1, o2) -> Double.compare(rankMedians[variables.indexOf(o2)], rankMedians[variables.indexOf(o1)]));
+
+        for (int j = 0; j < sortedVariables.size(); j++) {
+            final boolean contains = ancestors.contains(sortedVariables.get(j));
+            if (contains) {
+                System.out.println((j + 1) + ". " + (contains ? "* " : "") + sortedVariables.get(j) + " "
+                        + rankMedians[variables.indexOf(sortedVariables.get(j))]);
+            }
+        }
+    }
+
+    // E(V) bound
+    private static double er(double pi, double q, double p, double numBootstraps) {
+        double v = pcer(pi, q, p, numBootstraps) * p;
+        if (v < 0 || v > q) return Double.POSITIVE_INFINITY;
+        return v;
+    }
+
+    private static double erq(double pi, double q, double p, double numBootstraps) {
+        double v = er(pi, q, p, numBootstraps) / q;
+        if (v < 0 || v > 1) return Double.POSITIVE_INFINITY;
+        return v;
     }
 
     // Per comparison error rate.
-    private static double pcer(double pi, int q, int p) {
-        double ev = (q * q) / (p * p * (2 * pi - 1));
-        if (ev < 0) ev = Double.POSITIVE_INFINITY;
-        return ev;
+    private static double pcer(double pi, double q, double p, double numBootstraps) {
+        final double numCombinations = numBootstraps * (numBootstraps - 1) / 2;
+        double v = pow(q / p, numBootstraps) * (numCombinations / (2 * pi - 1));
+        if (v < 0 || v > 1) return Double.POSITIVE_INFINITY;
+        return v;
     }
 
     @Override
@@ -302,6 +361,7 @@ public class CStar implements Algorithm {
         List<String> parameters = new ArrayList<>();
         parameters.add("penaltyDiscount");
         parameters.add("numSubsamples");
+        parameters.add("bootstrapSelectionSize");
         parameters.add("maxQ");
         parameters.add("targetName");
         parameters.add("CStarAlg");

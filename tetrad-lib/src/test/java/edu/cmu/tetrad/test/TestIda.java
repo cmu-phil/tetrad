@@ -38,15 +38,10 @@ import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemPm;
 import edu.cmu.tetrad.util.ConcurrencyUtils;
 import edu.cmu.tetrad.util.Parameters;
-import edu.cmu.tetrad.util.StatUtils;
 import org.junit.Test;
 
 import java.util.*;
 import java.util.concurrent.Callable;
-
-import static edu.cmu.tetrad.util.StatUtils.correlation;
-import static edu.cmu.tetrad.util.StatUtils.variance;
-import static java.lang.Math.abs;
 
 /**
  * Tests IDA.
@@ -60,7 +55,7 @@ public class TestIda {
         parameters.set("penaltyDiscount", 2);
         parameters.set("numSubsamples", 30);
         parameters.set("percentSubsampleSize", 0.5);
-        parameters.set("maxQ", 5);
+        parameters.set("maxQ", 100);
         parameters.set("targetName", "X50");
         parameters.set("alpha", 0.001);
 
@@ -110,7 +105,7 @@ public class TestIda {
 
         long start = System.currentTimeMillis();
 
-        CStar cstar = new CStar();
+        CStar cstar = new CStar(new ArrayList<>());
         Graph graph = cstar.search(dataSet, parameters);
 
         long stop = System.currentTimeMillis();
@@ -163,23 +158,23 @@ public class TestIda {
 
         parameters.set("verbose", false);
 
-        parameters.set("coefLow", 0.5);
-        parameters.set("coefHigh", 1.0);
+        parameters.set("coefLow", 0.2);
+        parameters.set("coefHigh", 1.8);
 //        parameters.set("varLow");
 //        parameters.set("varHigh");
 //        parameters.set("verbose");
 //        parameters.set("includePositiveCoefs");
-        parameters.set("includeNegativeCoefs", false);
-        parameters.set("errorsNormal", true);
-        parameters.set("betaLeftValue", 2);
-        parameters.set("betaRightValue", 5);
+        parameters.set("includeNegativeCoefs", true);
+//        parameters.set("errorsNormal", true);
+//        parameters.set("betaLeftValue", 2);
+//        parameters.set("betaRightValue", 5);
 //        parameters.set("numRuns");
 //        parameters.set("percentDiscrete");
 //        parameters.set("numCategories");
 //        parameters.set("differentGraphs");
         parameters.set("sampleSize", sampleSize);
-//        parameters.set("intervalBetweenShocks");
-//        parameters.set("intervalBetweenRecordings");
+        parameters.set("intervalBetweenShocks", 40);
+        parameters.set("intervalBetweenRecordings", 40);
 //        parameters.set("selfLoopCoef");
 //        parameters.set("fisherEpsilon");
 //        parameters.set("randomizeColumns");
@@ -187,14 +182,14 @@ public class TestIda {
 
         parameters.set("sampleSize", sampleSize);
 
-        parameters.set("penaltyDiscount", 1);
-        parameters.set("numSubsamples", 30);
-        parameters.set("percentSubsampleSize", .5);
-        parameters.set("maxQ", 80);
-
-        parameters.set("parallelism", 60);
+        parameters.set("parallelism", 40);
         parameters.set("CStarAlg", 2); // 1 = FGES, 2 = PC-Stable
-        parameters.set("maxEr", 5);
+
+        parameters.set("penaltyDiscount", 1.5);
+        parameters.set("numSubsamples", 50);
+        parameters.set("bootstrapSelectionSize", 0.25);
+        parameters.set("maxQ", 1000);
+        parameters.set("maxEr", 15);
 
         List<int[]> cstarRet = new ArrayList<>();
         List<int[]> fmbStarRet = new ArrayList<>();
@@ -216,7 +211,7 @@ public class TestIda {
             Set<Node> p = new HashSet<>(trueDag.getParents(t));
 
             for (Node q : new HashSet<>(p)) {
-                p.addAll(trueDag.getParents(q)) ;
+                p.addAll(trueDag.getParents(q));
             }
 
             if (p.size() < 20) {
@@ -232,7 +227,17 @@ public class TestIda {
 
             DataSet selectedData = selectVariables(fullData, parameters);
 
-            CStar cstar = new CStar();
+//            final List<Node> ancestors = trueDag.getAncestors(Collections.singletonList(t));
+
+            final List<Node> ancestors = new ArrayList<>();
+
+            for (Node node : trueDag.getNodes()) {
+                if (truePattern.existsSemiDirectedPathFromTo(node, Collections.singleton(t))) {
+                    ancestors.add(node);
+                }
+            }
+
+            CStar cstar = new CStar(ancestors);
             Graph graph = cstar.search(selectedData, parameters);
 
             long stop = System.currentTimeMillis();
@@ -273,28 +278,69 @@ public class TestIda {
     private DataSet selectVariables(DataSet fullData, Parameters parameters) {
         Node y = fullData.getVariable(parameters.getString("targetName"));
 
-        final double[][] data = fullData.getDoubleData().transpose().toArray();
+        final SemBicScore score = new SemBicScore(new CovarianceMatrixOnTheFly(fullData));
+        score.setPenaltyDiscount(parameters.getDouble("penaltyDiscount"));
+        IndependenceTest test = new IndTestScore(score);
 
         List<Node> selection = new ArrayList<>();
 
         final List<Node> variables = fullData.getVariables();
 
         {
-            Map<Node, Double> absCorrs = new HashMap<>();
+            class Task implements Callable<Boolean> {
+                private int from;
+                private int to;
+                private Node y;
 
-            for (Node x : variables) {
-                final double[] d1 = data[fullData.getColumn(x)];
-                final double[] d2 = data[fullData.getColumn(y)];
-                absCorrs.put(x, abs(StatUtils.correlation(d1, d2)));
+                private Task(int from, int to, Node y) {
+                    this.from = from;
+                    this.to = to;
+                    this.y = y;
+                }
+
+                @Override
+                public Boolean call() {
+                    for (int n = from; n < to; n++) {
+                        final Node node = variables.get(n);
+                        if (node != y) {
+                            if (!test.isIndependent(node, y)) {
+                                if (!selection.contains(node)) {
+                                    selection.add(node);
+                                }
+                            }
+                        }
+                    }
+
+                    return true;
+                }
             }
 
-            variables.sort((o1, o2) -> {
-                return Double.compare(absCorrs.get(o2), absCorrs.get(o1));
-            });
+            final int chunk = 50;
+            List<Callable<Boolean>> tasks;
 
-            for (int i = 0; i < Math.min(variables.size(), 700); i++) {
-                selection.add(variables.get(i));
+            {
+                tasks = new ArrayList<>();
+
+                for (int from = 0; from < variables.size(); from += chunk) {
+                    final int to = Math.min(variables.size(), from + chunk);
+                    tasks.add(new Task(from, to, y));
+                }
+
+                ConcurrencyUtils.runCallables(tasks, parameters.getInt("parallelism"));
             }
+
+            {
+                tasks = new ArrayList<>();
+
+                for (Node s : new ArrayList<>(selection)) {
+                    for (int from = 0; from < variables.size(); from += chunk) {
+                        final int to = Math.min(variables.size(), from + chunk);
+                        tasks.add(new Task(from, to, s));
+                    }
+                }
+            }
+
+            ConcurrencyUtils.runCallables(tasks, parameters.getInt("parallelism"));
         }
 
         final DataSet dataSet = fullData.subsetColumns(selection);
@@ -302,6 +348,7 @@ public class TestIda {
         System.out.println("# selected variables = " + dataSet.getVariables().size());
 
         return dataSet;
+
     }
 
     private int[] printResult(Graph trueGraph, Parameters parameters, Graph graph, long elapsed) {

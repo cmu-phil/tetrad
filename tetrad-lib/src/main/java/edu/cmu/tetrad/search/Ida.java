@@ -1,9 +1,12 @@
 package edu.cmu.tetrad.search;
 
+import edu.cmu.tetrad.data.CovarianceMatrixOnTheFly;
 import edu.cmu.tetrad.data.DataSet;
+import edu.cmu.tetrad.data.ICovarianceMatrix;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.regression.RegressionCovariance;
 import edu.cmu.tetrad.util.DepthChoiceGenerator;
 import edu.cmu.tetrad.util.TetradMatrix;
 
@@ -24,11 +27,14 @@ public class Ida {
     private final double[][] data;
     private final Graph pattern;
     private Map<String, Integer> nodeIndices;
+    private ICovarianceMatrix allCovariances;
 
     public Ida(DataSet dataSet, Graph pattern) {
         this.dataSet = dataSet;
         this.data = dataSet.getDoubleData().transpose().toArray();
         this.pattern = pattern;
+
+        allCovariances = new CovarianceMatrixOnTheFly(dataSet);
 
         nodeIndices = new HashMap<>();
 
@@ -65,6 +71,7 @@ public class Ida {
         DepthChoiceGenerator gen = new DepthChoiceGenerator(siblings.size(), siblings.size());
         int[] choice;
 
+
         LinkedList<Double> effects = new LinkedList<>();
 
         while ((choice = gen.next()) != null) {
@@ -78,11 +85,11 @@ public class Ida {
 
             double beta;
 
-//            if (regressors.contains(y)) {// ||*/ !pattern.existsSemiDirectedPathFromTo(x, singleton(y))) {
-//                beta = 0;
-//            } else {
-            beta = getBeta(regressors, y);
-//            }
+            if (regressors.contains(y)) {
+                beta = 0;
+            } else {
+                beta = getBeta(regressors, y);
+            }
 
             effects.add(abs(beta));
         }
@@ -95,7 +102,7 @@ public class Ida {
     /**
      * Returns a map from nodes in V \ {Y} to their minimum effects.
      *
-     * @param y The target variable
+     * @param y The child variable
      * @return Thia map.
      */
     private Map<Node, Double> calculateMinimumEffectsOnY(Node y) {
@@ -113,7 +120,7 @@ public class Ida {
     /**
      * Returns the minimum effects of X on Y for X in V \ {Y}, sorted downward by minimum effect
      *
-     * @param y The target variable.
+     * @param y The child variable.
      * @return Two sorted lists, one of nodes, the other of corresponding minimum effects, sorted downward by
      * minimum effect size.
      */
@@ -203,50 +210,18 @@ public class Ida {
             }
         }
     }
-//
-//    // x must be the first regressor.
-//    private double getBeta1(List<Node> regressors, Node target) {
-//        int yIndex = nodeIndices.get(target);
-//        int[] xIndices = new int[regressors.size()];
-//
-//        for (int i = 0; i < regressors.size(); i++) {
-//            xIndices[i] = nodeIndices.get(regressors.get(i));
-//        }
-//
-//        TetradMatrix rX = covariances.getSelection(xIndices, xIndices);
-//        TetradMatrix rY = covariances.getSelection(xIndices, new int[]{yIndex});
-//
-//        return rX.inverse().times(rY).get(0, 0);
-//    }
 
     // x must be the first regressor.
-    private double getBeta(List<Node> regressors, Node target) {
-        int yIndex = nodeIndices.get(target.getName());
+    private double getBeta(List<Node> regressors, Node child) {
+        int yIndex = nodeIndices.get(child.getName());
         int[] xIndices = new int[regressors.size()];
         for (int i = 0; i < regressors.size(); i++) xIndices[i] = nodeIndices.get(regressors.get(i).getName());
 
-        double[] _target = data[yIndex];
-        double[][] _regressors = new double[xIndices.length + 1][];
-        for (int i = 0; i < xIndices.length; i++) _regressors[i] = data[xIndices[i]];
+        TetradMatrix rX = allCovariances.getSelection(xIndices, xIndices);
+        TetradMatrix rY = allCovariances.getSelection(xIndices, new int[]{yIndex});
 
-        for (int i = 0; i < regressors.size(); i++) {
-            _regressors[i] = data[xIndices[i]];
-        }
+        TetradMatrix bStar = rX.inverse().times(rY);
 
-        double[] interceptCol = new double[data[0].length];
-        Arrays.fill(interceptCol, 1.0);
-        _regressors[regressors.size()] = interceptCol;
-
-        TetradMatrix y = new TetradMatrix(new double[][]{_target}).transpose();
-        TetradMatrix x = new TetradMatrix(_regressors).transpose();
-
-        TetradMatrix xT = x.transpose();
-        TetradMatrix xTx = xT.times(x);
-        TetradMatrix xTxInv = xTx.inverse();
-        TetradMatrix xTy = xT.times(y);
-        TetradMatrix b = xTxInv.times(xTy);
-
-        return b.get(0, 0);
-
+        return bStar.get(0, 0);
     }
 }
