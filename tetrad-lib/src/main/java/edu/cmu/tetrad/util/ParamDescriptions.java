@@ -34,7 +34,7 @@ public class ParamDescriptions {
         map.put("standardize", new ParamDescription("Yes if the data should be standardized", false));
 
         map.put("measurementVariance", new ParamDescription("Additive measurement noise variance (min = 0.0)", 0.0, 0, Double.MAX_VALUE));
-        map.put("depth", new ParamDescription("Maximum size of conditioning set (min = -1)", -1, -1, Integer.MAX_VALUE));
+        map.put("depth", new ParamDescription("Maximum size of conditioning set (unlimited = -1)", -1, -1, Integer.MAX_VALUE));
         map.put("meanLow", new ParamDescription("Low end of mean range (min = 0.0)", 0.5, 0.0, Double.MAX_VALUE));
         map.put("meanHigh", new ParamDescription("High end of mean range (min = 0.0)", 1.5, 0.0, Double.MAX_VALUE));
         map.put("coefLow", new ParamDescription("Low end of coefficient range (min = 0.0)", 0.5, 0.0, Double.MAX_VALUE));
