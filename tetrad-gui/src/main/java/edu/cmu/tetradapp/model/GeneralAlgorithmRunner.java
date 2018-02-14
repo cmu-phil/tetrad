@@ -453,17 +453,17 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
 
     @Override
     public List<String> getTriplesClassificationTypes() {
-        return null;
+        return Collections.EMPTY_LIST;
     }
 
     @Override
     public List<List<Triple>> getTriplesLists(Node node) {
-        return null;
+        return Collections.EMPTY_LIST;
     }
 
     @Override
     public Map<String, String> getParamSettings() {
-        return null;
+        return Collections.EMPTY_MAP;
     }
 
     @Override
@@ -473,7 +473,7 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
 
     @Override
     public Map<String, String> getAllParamSettings() {
-        return null;
+        return Collections.EMPTY_MAP;
     }
 
     @Override
@@ -504,12 +504,12 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
 
     @Override
     public List<Node> getVariables() {
-        return null;
+        return Collections.EMPTY_LIST;
     }
 
     @Override
     public List<String> getVariableNames() {
-        return null;
+        return Collections.EMPTY_LIST;
     }
 
     public List<Graph> getCompareGraphs(List<Graph> graphs) {
