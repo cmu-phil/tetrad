@@ -190,7 +190,7 @@ public final class IndTestFisherZ implements IndependenceTest {
         try {
             r = partialCorrelation(x, y, z);
         } catch (SingularMatrixException e) {
-//            System.out.println(SearchLogUtils.determinismDetected(z, x));
+            System.out.println(SearchLogUtils.determinismDetected(z, x));
             this.fisherZ = Double.POSITIVE_INFINITY;
             return false;
         }
@@ -299,34 +299,20 @@ public final class IndTestFisherZ implements IndependenceTest {
             parents[j] = covMatrix.getVariables().indexOf(z.get(j));
         }
 
-//        int i = covMatrix.getVariable().indexOf(x);
-
-//        double variance = covMatrix.getValue(i, i);
-
         if (parents.length > 0) {
 
             // Regress z onto i, yielding regression coefficients b.
             TetradMatrix Czz = covMatrix.getSelection(parents, parents);
-//            TetradMatrix inverse;
 
             try {
-//                inverse =
                 Czz.inverse();
             } catch (SingularMatrixException e) {
-//                System.out.println(SearchLogUtils.determinismDetected(z, x));
-
+                System.out.println(SearchLogUtils.determinismDetected(z, x));
                 return true;
             }
-
-//            TetradVector Cyz = covMatrix.getSelection(parents, new int[]{i}).getColumn(0);
-//            TetradVector b = inverse.times(Cyz);
-//
-//            variance -= Cyz.dotProduct(b);
         }
 
         return false;
-
-//        return variance < 1e-20;
     }
 
     /**

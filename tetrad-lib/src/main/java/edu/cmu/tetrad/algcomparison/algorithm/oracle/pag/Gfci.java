@@ -8,16 +8,12 @@ import edu.cmu.tetrad.algcomparison.utils.TakesIndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.utils.UsesScoreWrapper;
 import edu.cmu.tetrad.annotation.AlgType;
 import edu.cmu.tetrad.data.*;
-import edu.cmu.tetrad.graph.Edge;
-import edu.cmu.tetrad.graph.EdgeListGraph;
-import edu.cmu.tetrad.graph.Edges;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.DagToPag;
 import edu.cmu.tetrad.search.GFci;
 import edu.cmu.tetrad.util.Parameters;
 import edu.pitt.dbmi.algo.bootstrap.BootstrapEdgeEnsemble;
 import edu.pitt.dbmi.algo.bootstrap.GeneralBootstrapTest;
-
 import java.io.PrintStream;
 import java.util.List;
 
@@ -30,10 +26,7 @@ import java.util.List;
         name = "GFCI",
         command = "gfci",
         algoType = AlgType.allow_latent_common_causes,
-        description = "Greedy Fast Causal Inference Search (GFCI) is an implementation of the revised FCI algorithm."
-                + "It uses FGES followed by PC adjacency removals. Uses conservative collider orientation. Gets sepsets for X---Y from among adjacents of X or of Y.\n\n"
-                + "Following an idea developed by Spirtes, now it uses more of the information in FGES, to calculating possible d-separation paths and to utilize unshielded colliders found by FGES.\n\n"
-                + "For more detail about GFci implementation, please visit http://cmu-phil.github.io/tetrad/tetrad-lib-apidocs/edu/cmu/tetrad/search/GFci.html"
+        description = ""
 )
 public class Gfci implements Algorithm, HasKnowledge, UsesScoreWrapper, TakesIndependenceWrapper {
 
@@ -41,7 +34,6 @@ public class Gfci implements Algorithm, HasKnowledge, UsesScoreWrapper, TakesInd
     private IndependenceWrapper test;
     private ScoreWrapper score;
     private IKnowledge knowledge = new Knowledge2();
-    private boolean replacePartiallyOrientedByDirected = false;
 
     public Gfci() {
     }
@@ -53,7 +45,7 @@ public class Gfci implements Algorithm, HasKnowledge, UsesScoreWrapper, TakesInd
 
     @Override
     public Graph search(DataModel dataSet, Parameters parameters) {
-        if (parameters.getInt("bootstrapSampleSize") < 1) {
+    	if (parameters.getInt("bootstrapSampleSize") < 1) {
             GFci search = new GFci(test.getTest(dataSet, parameters), score.getScore(dataSet, parameters));
             search.setMaxDegree(parameters.getInt("maxDegree"));
             search.setKnowledge(knowledge);
@@ -61,7 +53,6 @@ public class Gfci implements Algorithm, HasKnowledge, UsesScoreWrapper, TakesInd
             search.setFaithfulnessAssumed(parameters.getBoolean("faithfulnessAssumed"));
             search.setMaxPathLength(parameters.getInt("maxPathLength"));
             search.setCompleteRuleSetUsed(parameters.getBoolean("completeRuleSetUsed"));
-            search.setReplacePartiallyOrientedByDirected(parameters.getBoolean("replacePartiallyOrientedByDirected"));
 
             Object obj = parameters.get("printStream");
 
@@ -95,7 +86,6 @@ public class Gfci implements Algorithm, HasKnowledge, UsesScoreWrapper, TakesInd
             search.setEdgeEnsemble(edgeEnsemble);
             search.setParameters(parameters);
             search.setVerbose(parameters.getBoolean("verbose"));
-
             return search.search();
         }
     }
@@ -125,7 +115,6 @@ public class Gfci implements Algorithm, HasKnowledge, UsesScoreWrapper, TakesInd
 //        parameters.add("printStream");
         parameters.add("maxPathLength");
         parameters.add("completeRuleSetUsed");
-        parameters.add("replacePartiallyOrientedByDirected");
         // Bootstrapping
         parameters.add("bootstrapSampleSize");
         parameters.add("bootstrapEnsemble");
@@ -153,11 +142,4 @@ public class Gfci implements Algorithm, HasKnowledge, UsesScoreWrapper, TakesInd
         this.test = test;
     }
 
-    public boolean isReplacePartiallyOrientedByDirected() {
-        return replacePartiallyOrientedByDirected;
-    }
-
-    public void setReplacePartiallyOrientedByDirected(boolean replacePartiallyOrientedByDirected) {
-        this.replacePartiallyOrientedByDirected = replacePartiallyOrientedByDirected;
-    }
 }

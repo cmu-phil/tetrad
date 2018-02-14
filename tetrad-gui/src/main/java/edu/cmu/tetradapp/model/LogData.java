@@ -19,57 +19,58 @@
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA //
 ///////////////////////////////////////////////////////////////////////////////
 
-package edu.cmu.tetradapp.model.datamanip;
+package edu.cmu.tetradapp.model;
 
-import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.data.*;
-import edu.cmu.tetrad.search.TimeSeriesUtils;
+import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.Parameters;
+import edu.cmu.tetrad.util.TetradMatrix;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
-import edu.cmu.tetradapp.model.DataWrapper;
-import edu.cmu.tetradapp.model.PcRunner;
+
+import java.util.List;
 
 /**
- * @author Tyler
+ * Applies a logarithmic transform
+ *
+ * @author Jeremy Espino
  */
-public class TimeSeriesWrapper2 extends DataWrapper implements KnowledgeTransferable {
+public class LogData extends DataWrapper {
     static final long serialVersionUID = 23L;
 
-    /**
-     * Constructs a new time series dataset.
-     *
-     * @param data   - Previous data (from the parent node)
-     * @param params - The parameters.
-     */
-    public TimeSeriesWrapper2(DataWrapper data, Parameters params) {
-        DataModelList dataSets = data.getDataModelList();
-        DataModelList timeSeriesDataSets = new DataModelList();
+    //=============================CONSTRUCTORS==============================//
 
-        for (DataModel dataModel : dataSets) {
-            if (!(dataModel instanceof DataSet)) {
-                throw new IllegalArgumentException("Can only add an index to tabular data.");
+    public LogData(DataWrapper wrapper, Parameters params) {
+        DataModelList inList = wrapper.getDataModelList();
+        DataModelList outList = new DataModelList();
+
+        for (DataModel model : inList) {
+            if (!(model instanceof DataSet)) {
+                throw new IllegalArgumentException("Not a data set: " + model.getName());
             }
 
-            DataSet dataSet = (DataSet) dataModel;
-            DataSet timeSeries = TimeSeriesUtils.addIndex(dataSet);
-            if (dataSet.getName() != null) {
-                timeSeries.setName(dataSet.getName());
+            DataSet dataSet = (DataSet) model;
+
+            if (!(dataSet.isContinuous())) {
+                throw new IllegalArgumentException("Not a continuous data set: " + dataSet.getName());
             }
-            timeSeriesDataSets.add(timeSeries);
+
+            double a = params.getDouble("a");
+            boolean isUnlog = params.getBoolean("unlog");
+            int base = params.getInt("base");
+
+            TetradMatrix tetradMatrix = DataUtils.logData(dataSet.getDoubleData(), a, isUnlog, base);
+            List<Node> list = dataSet.getVariables();
+
+            DataSet dataSet2 = ColtDataSet.makeContinuousData(list, tetradMatrix);
+            outList.add(dataSet2);
         }
 
-//        DataModel model = data.getSelectedDataModel();
-//        if (!(model instanceof DataSet)) {
-//            throw new IllegalArgumentException("The data model must be a rectangular dataset");
-//        }
-//        model = TimeSeriesUtils.createLagData((DataSet) model, params.getNumOfTimeLags());
-        this.setDataModel(timeSeriesDataSets);
-        this.setSourceGraph(data.getSourceGraph());
+        setDataModel(outList);
+        setSourceGraph(wrapper.getSourceGraph());
 
-        LogDataUtils.logDataModelList("Expansion of parent data into lagged data.", getDataModelList());
+        LogDataUtils.logDataModelList("Logarithmic conversion of data.", getDataModelList());
 
     }
-
 
     /**
      * Generates a simple exemplar of this class to test serialization.
@@ -79,9 +80,6 @@ public class TimeSeriesWrapper2 extends DataWrapper implements KnowledgeTransfer
     public static PcRunner serializableInstance() {
         return PcRunner.serializableInstance();
     }
-
-    //=============================== Private Methods =========================//
-
 
 }
 

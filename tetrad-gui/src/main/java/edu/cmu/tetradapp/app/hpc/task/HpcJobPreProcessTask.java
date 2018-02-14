@@ -2,11 +2,9 @@ package edu.cmu.tetradapp.app.hpc.task;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.HashSet;
+import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -17,7 +15,9 @@ import edu.cmu.tetradapp.app.hpc.manager.HpcAccountService;
 import edu.cmu.tetradapp.app.hpc.manager.HpcJobManager;
 import edu.cmu.tetradapp.app.hpc.util.HpcAccountUtils;
 import edu.cmu.tetradapp.util.DesktopController;
+import edu.pitt.dbmi.ccd.rest.client.dto.algo.AlgoParameter;
 import edu.pitt.dbmi.ccd.rest.client.dto.algo.JobInfo;
+import edu.pitt.dbmi.ccd.rest.client.dto.algo.JvmOptions;
 import edu.pitt.dbmi.ccd.rest.client.dto.data.DataFile;
 import edu.pitt.dbmi.ccd.rest.client.service.data.DataUploadService;
 import edu.pitt.dbmi.ccd.rest.client.service.data.RemoteDataFileService;
@@ -28,7 +28,6 @@ import edu.pitt.dbmi.tetrad.db.entity.HpcAccount;
 import edu.pitt.dbmi.tetrad.db.entity.HpcJobInfo;
 import edu.pitt.dbmi.tetrad.db.entity.HpcJobLog;
 import edu.pitt.dbmi.tetrad.db.entity.HpcParameter;
-import edu.pitt.dbmi.tetrad.db.entity.JvmOption;
 
 /**
  * 
@@ -189,42 +188,40 @@ public class HpcJobPreProcessTask implements Runnable {
 
 			// Algorithm Job Preparation
 			edu.pitt.dbmi.ccd.rest.client.dto.algo.AlgorithmParamRequest paramRequest = new edu.pitt.dbmi.ccd.rest.client.dto.algo.AlgorithmParamRequest();
+			String algoId = hpcJobInfo.getAlgoId();
+			paramRequest.setAlgoId(algoId);
 			paramRequest.setDatasetFileId(dataFile.getId());
-
-			Map<String, Object> dataValidation = new HashMap<>();
-			dataValidation.put("skipUniqueVarName", false);
-			System.out.println("dataValidation: skipUniqueVarName: false");
-			if (algorParamReq.getVariableType().equalsIgnoreCase("discrete")) {
-				dataValidation.put("skipNonzeroVariance", false);
-				LOGGER.debug("dataValidation: skipNonzeroVariance: false");
-			} else {
-				dataValidation.put("skipCategoryLimit", false);
-				LOGGER.debug("dataValidation: skipCategoryLimit: false");
+			//Test
+			if(algorParamReq.getTestId() != null){
+				paramRequest.setTestId(algorParamReq.getTestId());
 			}
-			paramRequest.setDataValidation(dataValidation);
+			//Score
+			if(algorParamReq.getScoreId() != null){
+				paramRequest.setScoreId(algorParamReq.getScoreId());
+			}
+			
 
-			Map<String, Object> algorithmParameters = new HashMap<>();
+			Set<AlgoParameter> algorithmParameters = new HashSet<>();
 			for (AlgorithmParameter param : algorParamReq.getAlgorithmParameters()) {
-				algorithmParameters.put(param.getParameter(), param.getValue());
+				algorithmParameters.add(new AlgoParameter(param.getParameter(), param.getValue()));
 				LOGGER.debug("AlgorithmParameter: " + param.getParameter() + " : " + param.getValue());
 			}
 
 			if (priorKnowledgeFile != null) {
-				algorithmParameters.put("priorKnowledgeFileId", priorKnowledgeFile.getId());
+				paramRequest.setPriorKnowledgeFileId(priorKnowledgeFile.getId());
 				LOGGER.debug("priorKnowledgeFileId: " + priorKnowledgeFile.getId());
 			}
-			paramRequest.setAlgorithmParameters(algorithmParameters);
+			paramRequest.setAlgoParameters(algorithmParameters);
 
-			Map<String, Object> jvmOptions = new HashMap<>();
-			for (JvmOption jvmOption : algorParamReq.getJvmOptions()) {
-				jvmOptions.put(jvmOption.getParameter(), jvmOption.getValue());
-				LOGGER.debug("JvmOption: " + jvmOption.getParameter() + " : " + jvmOption.getValue());
+			if(algorParamReq.getJvmOptions() != null){
+				JvmOptions jvmOptions = new JvmOptions();
+				jvmOptions.setMaxHeapSize(algorParamReq.getJvmOptions().getMaxHeapSize());
+				paramRequest.setJvmOptions(jvmOptions);
 			}
-			paramRequest.setJvmOptions(jvmOptions);
-
-			List<HpcParameter> hpcParameters = algorParamReq.getHpcParameters();
+			
+			Set<HpcParameter> hpcParameters = algorParamReq.getHpcParameters();
 			if(hpcParameters != null){
-				List<edu.pitt.dbmi.ccd.rest.client.dto.algo.HpcParameter> hpcParams = new ArrayList<>();
+				Set<edu.pitt.dbmi.ccd.rest.client.dto.algo.HpcParameter> hpcParams = new HashSet<>();
 				for(HpcParameter param : hpcParameters){
 					edu.pitt.dbmi.ccd.rest.client.dto.algo.HpcParameter hpcParam = new edu.pitt.dbmi.ccd.rest.client.dto.algo.HpcParameter();
 					hpcParam.setKey(param.getKey());
@@ -236,9 +233,8 @@ public class HpcJobPreProcessTask implements Runnable {
 			}
 			
 			// Submit a job
-			String algorithmName = hpcJobInfo.getAlgorithmName();
 			JobQueueService jobQueueService = hpcAccountService.getJobQueueService();
-			JobInfo jobInfo = jobQueueService.addToRemoteQueue(algorithmName, paramRequest,
+			JobInfo jobInfo = jobQueueService.addToRemoteQueue(paramRequest,
 					HpcAccountUtils.getJsonWebToken(hpcAccountManager, hpcAccount));
 
 			// Log the job submission
@@ -257,7 +253,10 @@ public class HpcJobPreProcessTask implements Runnable {
 
 			LOGGER.debug(
 					"HpcJobPreProcessTask: HpcJobInfo: id : " + hpcJobInfo.getId() + " : pid : " + hpcJobInfo.getPid()
-							+ " : " + hpcJobInfo.getAlgorithmName() + " : " + hpcJobInfo.getResultFileName());
+							+ " : " + hpcJobInfo.getAlgoId()
+							+ hpcJobInfo.getAlgorithmParamRequest().getTestId() == null?"":" : " + hpcJobInfo.getAlgorithmParamRequest().getTestId()
+							+ hpcJobInfo.getAlgorithmParamRequest().getScoreId() == null?"":" : " + hpcJobInfo.getAlgorithmParamRequest().getScoreId()
+							+ " : " + hpcJobInfo.getResultFileName());
 
 			hpcJobManager.addNewSubmittedHpcJob(hpcJobInfo);
 

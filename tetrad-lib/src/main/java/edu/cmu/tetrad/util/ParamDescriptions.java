@@ -34,7 +34,7 @@ public class ParamDescriptions {
         map.put("standardize", new ParamDescription("Yes if the data should be standardized", false));
 
         map.put("measurementVariance", new ParamDescription("Additive measurement noise variance (min = 0.0)", 0.0, 0, Double.MAX_VALUE));
-        map.put("depth", new ParamDescription("Maximum size of conditioning set (min = -1)", -1, -1, Integer.MAX_VALUE));
+        map.put("depth", new ParamDescription("Maximum size of conditioning set (unlimited = -1)", -1, -1, Integer.MAX_VALUE));
         map.put("meanLow", new ParamDescription("Low end of mean range (min = 0.0)", 0.5, 0.0, Double.MAX_VALUE));
         map.put("meanHigh", new ParamDescription("High end of mean range (min = 0.0)", 1.5, 0.0, Double.MAX_VALUE));
         map.put("coefLow", new ParamDescription("Low end of coefficient range (min = 0.0)", 0.5, 0.0, Double.MAX_VALUE));
@@ -102,7 +102,7 @@ public class ParamDescriptions {
         map.put("ipen", new ParamDescription("IPEN parameter (GLASSO)", false));
         map.put("thr", new ParamDescription("THR parameter (GLASSO) (min = 0.0)", 1e-4, 0.0, Double.MAX_VALUE));
 
-        map.put("targetName", new ParamDescription("Target name", ""));
+        map.put("targetName", new ParamDescription("Target variable name", ""));
         map.put("verbose", new ParamDescription("Yes if verbose output should be printed or logged", false));
         map.put("faithfulnessAssumed", new ParamDescription("Yes if (one edge) faithfulness should be assumed", true));
 
@@ -207,10 +207,10 @@ public class ParamDescriptions {
                 0.01, 0.0, 1.0));
 
         map.put("numSubsamples", new ParamDescription(
-                "The number of subsamples",
+                "The number of subsamples to take for the StARZ procedure",
                 8, 1, Integer.MAX_VALUE));
 
-        map.put("subsampleProportion", new ParamDescription(
+        map.put("percentSubsampleSize", new ParamDescription(
                 "Percentage of records to include in a random subsample",
                 0.5, 0.0, 1.0));
 
@@ -258,41 +258,11 @@ public class ParamDescriptions {
                 "The number of lags in the time lag model",
                 1, 1, Double.POSITIVE_INFINITY));
 
-        map.put("replacePartiallyOrientedByDirected", new ParamDescription(
-                "Yes if o-> edges should be replaced by --> edges",
-                false));
-
-        map.put("maxIterations", new ParamDescription(
-                "The number of iterations",
-                1000, 1, Integer.MAX_VALUE));
-
-        map.put("maxEdges", new ParamDescription(
-                "The maximum number of edges",
-                10, 1, Integer.MAX_VALUE));
-
-        map.put("numNodes", new ParamDescription(
-                "The number of nodes",
-                10, 2, Integer.MAX_VALUE));
-
-        map.put("maxQ", new ParamDescription(
-                "Considering q = 1 up to this maximum",
-                5, 1, Integer.MAX_VALUE));
-
-        map.put("maxEr", new ParamDescription(
-                "Bound on the expected number of false positives for CStar",
-                0.05, 0, 1.0));
-
-        map.put("CStarAlg", new ParamDescription(
-                "Algorithm: 1 == FGES, 2 = PC-Stable",
-                1, 1, 2));
-
-        map.put("parallelism", new ParamDescription(
-                "Number of simultaneous threads",
-                1, 1, Integer.MAX_VALUE));
-
-        map.put("bootstrapSelectionSize", new ParamDescription(
-                "The percent size of the subsamples, (0 - 1)",
-                0.5, 0, 1.0));
+        map.put("saveLatentVars", new ParamDescription("Save latent variables.", false));
+        
+        map.put("probTwoCycle", new ParamDescription(
+            "The probability of creating a 2-cycles in the graph (0 - 1)",
+            0.0, 0.0, 1.0));
     }
 
     public static ParamDescriptions getInstance() {

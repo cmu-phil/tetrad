@@ -8,9 +8,8 @@ import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.sem.*;
 import edu.cmu.tetrad.util.*;
-import org.apache.commons.lang3.RandomUtils;
-
 import java.util.*;
+import org.apache.commons.lang3.RandomUtils;
 
 /**
  * A simulation method based on the conditional Gaussian assumption.
@@ -18,6 +17,7 @@ import java.util.*;
  * @author jdramsey
  */
 public class ConditionalGaussianSimulation implements Simulation {
+
     static final long serialVersionUID = 23L;
     private RandomGraph randomGraph;
     private List<DataSet> dataSets = new ArrayList<>();
@@ -58,8 +58,12 @@ public class ConditionalGaussianSimulation implements Simulation {
             throw new IllegalArgumentException("To simulate continuoue data, 'percentDiscrete' must be set to 100.0.");
         }
 
-        if (discrete) this.dataType = DataType.Discrete;
-        if (continuous) this.dataType = DataType.Continuous;
+        if (discrete) {
+            this.dataType = DataType.Discrete;
+        }
+        if (continuous) {
+            this.dataType = DataType.Continuous;
+        }
 
         this.shuffledOrder = null;
 
@@ -120,6 +124,8 @@ public class ConditionalGaussianSimulation implements Simulation {
         parameters.add("coefSymmetric");
         parameters.add("meanLow");
         parameters.add("meanHigh");
+        parameters.add("saveLatentVars");
+
         return parameters;
     }
 
@@ -185,7 +191,7 @@ public class ConditionalGaussianSimulation implements Simulation {
                     DiscreteVariable ersatz = erstatzNodes.get(x);
 
                     if (ersatz == null) {
-                        ersatz = new DiscreteVariable("Ersatz_" + x.getName(), RandomUtil.getInstance().nextInt(3)+2);
+                        ersatz = new DiscreteVariable("Ersatz_" + x.getName(), RandomUtil.getInstance().nextInt(3) + 2);
                         erstatzNodes.put((ContinuousVariable) x, ersatz);
                         erstatzNodesReverse.put(ersatz.getName(), (ContinuousVariable) x);
                         AG.addNode(ersatz);
@@ -318,7 +324,8 @@ public class ConditionalGaussianSimulation implements Simulation {
             }
         }
 
-        return mixedData;
+        boolean saveLatentVars = parameters.getBoolean("saveLatentVars");
+        return saveLatentVars ? mixedData : DataUtils.restrictToMeasured(mixedData);
     }
 
     private double[] getBreakpoints(DataSet mixedData, DiscreteVariable _parent, int mixedParentColumn) {
@@ -384,6 +391,7 @@ public class ConditionalGaussianSimulation implements Simulation {
     }
 
     private class Combination {
+
         private Parameter parameter;
         private Set<VariableValues> paramValues;
 
@@ -401,8 +409,12 @@ public class ConditionalGaussianSimulation implements Simulation {
         }
 
         public boolean equals(Object o) {
-            if (o == this) return true;
-            if (!(o instanceof Combination)) return false;
+            if (o == this) {
+                return true;
+            }
+            if (!(o instanceof Combination)) {
+                return false;
+            }
             Combination v = (Combination) o;
             return v.parameter == this.parameter && v.paramValues.equals(this.paramValues);
         }
@@ -413,6 +425,7 @@ public class ConditionalGaussianSimulation implements Simulation {
     }
 
     private class VariableValues {
+
         private DiscreteVariable variable;
         private int value;
 
@@ -434,8 +447,12 @@ public class ConditionalGaussianSimulation implements Simulation {
         }
 
         public boolean equals(Object o) {
-            if (o == this) return true;
-            if (!(o instanceof VariableValues)) return false;
+            if (o == this) {
+                return true;
+            }
+            if (!(o instanceof VariableValues)) {
+                return false;
+            }
             VariableValues v = (VariableValues) o;
             return v.variable.equals(this.variable) && v.value == this.value;
         }
@@ -448,11 +465,14 @@ public class ConditionalGaussianSimulation implements Simulation {
             int nL = m.get(n.getName());
             if (nL > 0) {
                 Node nNew = new DiscreteVariable(n.getName(), nL);
+                nNew.setNodeType(n.getNodeType());
                 nodes.set(i, nNew);
             } else {
                 Node nNew = new ContinuousVariable(n.getName());
+                nNew.setNodeType(n.getNodeType());
                 nodes.set(i, nNew);
             }
+
         }
 
         Graph outG = new EdgeListGraph(nodes);

@@ -469,7 +469,7 @@ class TabularDataTransferHandler extends TransferHandler {
       The number of initial "special" columns not used to display the data
       set.
      */
-        int numLeadingCols = 2;
+        int numLeadingCols = 1;
         return numLeadingCols;
     }
 

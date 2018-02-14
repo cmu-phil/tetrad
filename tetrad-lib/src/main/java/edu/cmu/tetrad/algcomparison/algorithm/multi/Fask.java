@@ -26,12 +26,7 @@ import java.util.List;
         name = "FASK",
         command = "fask",
         algoType = AlgType.forbid_latent_common_causes,
-        description = "Searches single continuous datasets for models with possible cycles and 2-cycles, assuming " +
-                "the variables are skewed. Latent common causes are not supported. Uses the Fast Adjacency Search (FAS, that is, " +
-                "the adjacency search of the PC algorithms) with the linear, Gaussian BIC score as a test of conditional " +
-                "independence. One may adjust sparsity of the graph by adjusting the 'penaltyDiscount' parameter. The " +
-                "orientation procedure assumes the variables are skewed. Sensitivity for detection of 2-cycles may be " +
-                "adjusted using the 2-cycle alpha parameter."
+        description = ""
 )
 public class Fask implements Algorithm, HasKnowledge, UsesScoreWrapper {
     static final long serialVersionUID = 23L;

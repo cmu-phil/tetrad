@@ -22,12 +22,16 @@ package edu.cmu.tetradapp.editor;
 
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.AlgorithmFactory;
+import edu.cmu.tetrad.algcomparison.algorithm.oracle.pag.TsImages;
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern.SingleGraphAlg;
+import edu.cmu.tetrad.algcomparison.score.BdeuScore;
+import edu.cmu.tetrad.algcomparison.score.SemBicScore;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.algcomparison.utils.TakesInitialGraph;
 import edu.cmu.tetrad.annotation.AlgType;
 import edu.cmu.tetrad.annotation.Gaussian;
 import edu.cmu.tetrad.annotation.Linear;
+import edu.cmu.tetrad.annotation.Nonexecutable;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataModelList;
 import edu.cmu.tetrad.data.DataSet;
@@ -58,14 +62,12 @@ import edu.cmu.tetradapp.util.FinalizingEditor;
 import edu.cmu.tetradapp.util.WatchedProcess;
 import edu.pitt.dbmi.ccd.commons.file.MessageDigestHash;
 import edu.pitt.dbmi.ccd.rest.client.dto.user.JsonWebToken;
-import edu.pitt.dbmi.ccd.rest.client.service.algo.AbstractAlgorithmRequest;
 import edu.pitt.dbmi.tetrad.db.entity.AlgorithmParamRequest;
 import edu.pitt.dbmi.tetrad.db.entity.AlgorithmParameter;
-import edu.pitt.dbmi.tetrad.db.entity.DataValidation;
 import edu.pitt.dbmi.tetrad.db.entity.HpcAccount;
 import edu.pitt.dbmi.tetrad.db.entity.HpcJobInfo;
 import edu.pitt.dbmi.tetrad.db.entity.HpcParameter;
-import edu.pitt.dbmi.tetrad.db.entity.JvmOption;
+import edu.pitt.dbmi.tetrad.db.entity.JvmOptions;
 import java.awt.BorderLayout;
 import java.awt.CardLayout;
 import java.awt.Dimension;
@@ -79,13 +81,15 @@ import java.lang.reflect.Method;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.EnumMap;
 import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.ButtonGroup;
@@ -373,24 +377,49 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
 
         AlgorithmModel algoModel = algorithmList.getSelectedValue();
         Class algoClass = algoModel.getAlgorithm().getClazz();
-        if (TakesInitialGraph.class.isAssignableFrom(algoClass)) {
-            if (runner.getSourceGraph() == null || runner.getDataModelList().isEmpty()) {
+
+        if (algoClass.isAnnotationPresent(Nonexecutable.class)) {
+            String msg;
+            try {
+                Object algo = algoClass.newInstance();
+                Method m = algoClass.getDeclaredMethod("getDescription");
+                m.setAccessible(true);
                 try {
-                    Object algo = algoClass.newInstance();
-                    Method m = algoClass.getDeclaredMethod("setInitialGraph", Algorithm.class);
-                    m.setAccessible(true);
+                    msg = String.valueOf(m.invoke(algo));
+                } catch (InvocationTargetException exception) {
+                    msg = "";
+                }
+
+            } catch (IllegalAccessException | InstantiationException | NoSuchMethodException exception) {
+                LOGGER.error("", exception);
+                msg = "";
+            }
+
+            paramSetFwdBtn.setEnabled(false);
+            JOptionPane.showMessageDialog(desktop, msg, "Please Note", JOptionPane.INFORMATION_MESSAGE);
+        } else {
+            // Check if initial graph is provided for those pairwise algorithms
+            if (TakesInitialGraph.class.isAssignableFrom(algoClass)) {
+                if (runner.getSourceGraph() == null || runner.getDataModelList().isEmpty()) {
                     try {
-                        Algorithm algorithm = null;
-                        m.invoke(algo, algorithm);
-                    } catch (InvocationTargetException | IllegalArgumentException exception) {
-                        paramSetFwdBtn.setEnabled(false);
-                        JOptionPane.showMessageDialog(desktop, exception.getCause().getMessage(), "Please Note", JOptionPane.INFORMATION_MESSAGE);
+                        Object algo = algoClass.newInstance();
+                        Method m = algoClass.getDeclaredMethod("setInitialGraph", Algorithm.class);
+                        m.setAccessible(true);
+                        try {
+                            Algorithm algorithm = null;
+                            m.invoke(algo, algorithm);
+                        } catch (InvocationTargetException | IllegalArgumentException exception) {
+                            paramSetFwdBtn.setEnabled(false);
+                            JOptionPane.showMessageDialog(desktop, exception.getCause().getMessage(), "Please Note", JOptionPane.INFORMATION_MESSAGE);
+                        }
+                    } catch (IllegalAccessException | InstantiationException | NoSuchMethodException exception) {
+                        LOGGER.error("", exception);
                     }
-                } catch (IllegalAccessException | InstantiationException | NoSuchMethodException exception) {
-                    LOGGER.error("", exception);
                 }
             }
         }
+
+        // Check dataset data type for those algorithms take mixed data?
     }
 
     private void setAlgorithmDescription() {
@@ -416,24 +445,44 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
             boolean linear = linearVarChkBox.isSelected();
             boolean gaussian = gaussianVarChkBox.isSelected();
             List<ScoreModel> models = ScoreModels.getInstance().getModels(dataType);
+            List<ScoreModel> scoreModels = new LinkedList<>();
             if (linear && gaussian) {
                 models.stream()
                         .filter(e -> e.getScore().getClazz().isAnnotationPresent(Linear.class))
                         .filter(e -> e.getScore().getClazz().isAnnotationPresent(Gaussian.class))
-                        .forEach(e -> scoreComboBox.addItem(e));
+                        .forEach(e -> scoreModels.add(e));
             } else if (linear) {
                 models.stream()
                         .filter(e -> e.getScore().getClazz().isAnnotationPresent(Linear.class))
                         .filter(e -> !e.getScore().getClazz().isAnnotationPresent(Gaussian.class))
-                        .forEach(e -> scoreComboBox.addItem(e));
+                        .forEach(e -> scoreModels.add(e));
             } else if (gaussian) {
                 models.stream()
                         .filter(e -> !e.getScore().getClazz().isAnnotationPresent(Linear.class))
                         .filter(e -> e.getScore().getClazz().isAnnotationPresent(Gaussian.class))
-                        .forEach(e -> scoreComboBox.addItem(e));
+                        .forEach(e -> scoreModels.add(e));
             } else {
                 models.stream()
-                        .forEach(e -> scoreComboBox.addItem(e));
+                        .forEach(e -> scoreModels.add(e));
+            }
+
+            // TsIMaGES can only take SEM BIC score for continuous data
+            // or BDeu score for discrete data
+            if (TsImages.class.equals(algoModel.getAlgorithm().getClazz())) {
+                switch (dataType) {
+                    case Continuous:
+                        scoreModels.stream()
+                                .filter(e -> e.getScore().getClazz().equals(SemBicScore.class))
+                                .forEach(e -> scoreComboBox.addItem(e));
+                        break;
+                    case Discrete:
+                        scoreModels.stream()
+                                .filter(e -> e.getScore().getClazz().equals(BdeuScore.class))
+                                .forEach(e -> scoreComboBox.addItem(e));
+                        break;
+                }
+            } else {
+                scoreModels.forEach(e -> scoreComboBox.addItem(e));
             }
         }
         updatingScoreModels = false;
@@ -607,6 +656,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
 
     public void setAlgorithmResult(String jsonResult) {
         this.jsonResult = jsonResult;
+        System.out.println("json result: " + jsonResult);
 
         final Graph graph = JsonUtils.parseJSONObjectToTetradGraph(jsonResult);
         final List<Graph> graphs = new ArrayList<>();
@@ -616,10 +666,16 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
             runner.getGraphs().remove(index);
         }
         runner.getGraphs().add(graph);
+        // Show graph
         graphEditor.replace(graphs);
         graphEditor.validate();
         LOGGER.info("Remote graph result assigned to runner!");
         firePropertyChange("modelChanged", null, null);
+
+        // Update the graphContainer
+        graphContainer.add(graphEditor);
+
+        changeCard(GRAPH_CARD);
     }
 
     public void setAlgorithmErrorResult(String errorResult) {
@@ -641,19 +697,19 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         Class scoreClass = (scoreModel == null) ? null : scoreModel.getScore().getClazz();
 
         Algorithm algorithm = null;
-        
+
         try {
             algorithm = AlgorithmFactory.create(algoClass, indTestClass, scoreClass);
         } catch (IllegalAccessException | InstantiationException exception) {
             LOGGER.error("", exception);
         }
-        
+
         // Those pairwise algos (R1, R2,..) require source graph to initialize - Zhou
         if (algorithm != null && algorithm instanceof TakesInitialGraph && runner.getSourceGraph() != null && !runner.getDataModelList().isEmpty()) {
             Algorithm initialGraph = new SingleGraphAlg(runner.getSourceGraph());
             ((TakesInitialGraph) algorithm).setInitialGraph(initialGraph);
         }
-        
+
         return algorithm;
     }
 
@@ -793,27 +849,28 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
             progressTextArea.append("Preparing...");
             progressTextArea.updateUI();
 
-            // 3.1 Algorithm name
-            String algorithmName;
-            switch (runner.getAlgorithmName().toUpperCase()) {
-                case "FGES":
-                    algorithmName = AbstractAlgorithmRequest.FGES;
-                    if (dataModel.isDiscrete()) {
-                        algorithmName = AbstractAlgorithmRequest.FGES_DISCRETE;
-                    }
-                    break;
-                case "GFCI":
-                    algorithmName = AbstractAlgorithmRequest.GFCI;
-                    if (dataModel.isDiscrete()) {
-                        algorithmName = AbstractAlgorithmRequest.GFCI_DISCRETE;
-                    }
-                    break;
-                default:
-                    return;
+            // 3.1 Algorithm Id, Independent Test Id, Score Id
+            AlgorithmModel algoModel = algorithmList.getSelectedValue();
+            String algoId = algoModel.getAlgorithm().getAnnotation().command();
+            // Test
+            String testId = null;
+            if (indTestComboBox.isEnabled()) {
+                IndependenceTestModel indTestModel = indTestComboBox.getItemAt(indTestComboBox.getSelectedIndex());
+                testId = indTestModel.getIndependenceTest().getAnnotation().command();
+            }
+            // Score
+            String scoreId = null;
+            if (scoreComboBox.isEnabled()) {
+                ScoreModel scoreModel = scoreComboBox.getItemAt(scoreComboBox.getSelectedIndex());
+                scoreId = scoreModel.getScore().getAnnotation().command();
             }
 
             // 3.2 Parameters
             AlgorithmParamRequest algorithmParamRequest = new AlgorithmParamRequest();
+
+            // Test and score
+            algorithmParamRequest.setTestId(testId);
+            algorithmParamRequest.setScoreId(scoreId);
 
             // Dataset and Prior paths
             String datasetPath = file.toAbsolutePath().toString();
@@ -830,25 +887,17 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
             // VariableType
             if (dataModel.isContinuous()) {
                 algorithmParamRequest.setVariableType("continuous");
-            } else {
+            } else if (dataModel.isDiscrete()) {
                 algorithmParamRequest.setVariableType("discrete");
+            } else {
+                algorithmParamRequest.setVariableType("mixed");
             }
 
             // FileDelimiter
             String fileDelimiter = "tab"; // Pre-determined
             algorithmParamRequest.setFileDelimiter(fileDelimiter);
 
-            // Default Data Validation Parameters
-            DataValidation dataValidation = new DataValidation();
-            dataValidation.setUniqueVarName(true);
-            if (dataModel.isContinuous()) {
-                dataValidation.setNonZeroVariance(true);
-            } else {
-                dataValidation.setCategoryLimit(true);
-            }
-            algorithmParamRequest.setDataValidation(dataValidation);
-
-            List<AlgorithmParameter> AlgorithmParameters = new ArrayList<>();
+            Set<AlgorithmParameter> AlgorithmParameters = new HashSet<>();
 
             Parameters parameters = runner.getParameters();
             List<String> parameterNames = runner.getAlgorithm().getParameters();
@@ -872,11 +921,8 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
             } while (maxHeapSize != null && !StringUtils.isNumeric(maxHeapSize));
 
             if (maxHeapSize != null) {
-                JvmOption jvmOption = new JvmOption();
-                jvmOption.setParameter("maxHeapSize");
-                jvmOption.setValue(maxHeapSize);
-                List<JvmOption> jvmOptions = new ArrayList<>();
-                jvmOptions.add(jvmOption);
+                JvmOptions jvmOptions = new JvmOptions();
+                jvmOptions.setMaxHeapSize(Integer.parseInt(maxHeapSize));
                 algorithmParamRequest.setJvmOptions(jvmOptions);
             }
 
@@ -894,7 +940,9 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
                     hpcParameter.setKey("walltime");
                     hpcParameter.setValue(userwallTime.toString());
                     LOGGER.info("walltime: " + userwallTime.toString());
-                    algorithmParamRequest.setHpcParameters(Collections.singletonList(hpcParameter));
+                    Set<HpcParameter> hpcParameters = new HashSet<>();
+                    hpcParameters.add(hpcParameter);
+                    algorithmParamRequest.setHpcParameters(hpcParameters);
                 }
             }
 
@@ -918,7 +966,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
 
             // 4.1 Save HpcJobInfo
             hpcJobInfo = new HpcJobInfo();
-            hpcJobInfo.setAlgorithmName(algorithmName);
+            hpcJobInfo.setAlgoId(algoId);
             hpcJobInfo.setAlgorithmParamRequest(algorithmParamRequest);
             hpcJobInfo.setStatus(-1);
             hpcJobInfo.setHpcAccount(hpcAccount);
@@ -930,7 +978,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
 
             this.jsonResult = null;
 
-            JOptionPane.showMessageDialog(ancestor, "The " + hpcJobInfo.getAlgorithmName() + " job on the "
+            JOptionPane.showMessageDialog(ancestor, "The " + hpcJobInfo.getAlgoId() + " job on the "
                     + hpcJobInfo.getHpcAccount().getConnectionName() + " node is in the queue successfully!");
 
         } catch (IOException exception) {
@@ -944,7 +992,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
 
     }
 
-    private HpcAccount showRemoteComputingOptions(String name) {
+    private HpcAccount showRemoteComputingOptions(String algoId) {
         List<HpcAccount> hpcAccounts = desktop.getHpcAccountManager().getHpcAccounts();
 
         if (hpcAccounts == null || hpcAccounts.isEmpty()) {
@@ -961,7 +1009,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
             options[i + 1] = yes_answer + connName;
         }
 
-        int n = JOptionPane.showOptionDialog(this, "Would you like to execute a " + name + " search in the cloud?",
+        int n = JOptionPane.showOptionDialog(this, "Would you like to execute a " + algoId + " search in the cloud?",
                 "A Silly Question", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE, null, options, options[0]);
         if (n == 0) {
             return null;
@@ -975,15 +1023,14 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
             public void watch() {
                 AlgorithmModel algoModel = algorithmList.getSelectedValue();
                 if (algoModel != null) {
-                    String algoName = algoModel.getAlgorithm().getAnnotation().name();
 
                     HpcAccount hpcAccount = null;
-                    switch (algoName) {
-                        case "FGES":
-                        case "GFCI":
-                            hpcAccount = showRemoteComputingOptions(algoName);
-                            break;
-                        default:
+
+                    if (algoModel.getAlgorithm().getAnnotation().algoType() != AlgType.orient_pairwise
+                            && runner.getDataModelList().getModelList().size() == 1) {
+                        String algoName = algoModel.getAlgorithm().getAnnotation().name();
+
+                        hpcAccount = showRemoteComputingOptions(algoName);
                     }
 
                     if (hpcAccount == null) {

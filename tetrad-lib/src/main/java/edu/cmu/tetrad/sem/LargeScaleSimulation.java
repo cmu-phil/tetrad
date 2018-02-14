@@ -18,7 +18,6 @@
 // along with this program; if not, write to the Free Software               //
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA //
 ///////////////////////////////////////////////////////////////////////////////
-
 package edu.cmu.tetrad.sem;
 
 import edu.cmu.tetrad.data.*;
@@ -27,15 +26,13 @@ import edu.cmu.tetrad.util.*;
 import edu.cmu.tetrad.util.dist.Distribution;
 import edu.cmu.tetrad.util.dist.Split;
 import edu.cmu.tetrad.util.dist.Uniform;
+import java.io.PrintStream;
+import static java.lang.Math.sqrt;
+import java.util.*;
+import java.util.concurrent.RecursiveTask;
 import org.apache.commons.collections4.map.HashedMap;
 import org.apache.commons.math3.distribution.*;
 import org.apache.commons.math3.random.Well1024a;
-
-import java.io.PrintStream;
-import java.util.*;
-import java.util.concurrent.RecursiveTask;
-
-import static java.lang.Math.sqrt;
 
 /**
  * Stores a SEM model, pared down, for purposes of simulating data sets with
@@ -44,6 +41,7 @@ import static java.lang.Math.sqrt;
  * @author Joseph Ramsey
  */
 public final class LargeScaleSimulation {
+
     static final long serialVersionUID = 23L;
 
     private int[][] parents;
@@ -73,7 +71,6 @@ public final class LargeScaleSimulation {
     private double selfLoopCoef = 0.0;
 
     //=============================CONSTRUCTORS============================//
-
     public LargeScaleSimulation(Graph graph) {
         this.graph = graph;
         this.variableNodes = graph.getNodes();
@@ -84,7 +81,9 @@ public final class LargeScaleSimulation {
 
         List<Node> causalOrdering = graph.getCausalOrdering();
         this.tierIndices = new int[causalOrdering.size()];
-        for (int i = 0; i < tierIndices.length; i++) tierIndices[i] = variableNodes.indexOf(causalOrdering.get(i));
+        for (int i = 0; i < tierIndices.length; i++) {
+            tierIndices[i] = variableNodes.indexOf(causalOrdering.get(i));
+        }
     }
 
     public LargeScaleSimulation(Graph graph, List<Node> nodes, int[] tierIndices) {
@@ -122,6 +121,7 @@ public final class LargeScaleSimulation {
         setupModel(size);
 
         class SimulateTask extends RecursiveTask<Boolean> {
+
             private final int from;
             private final int to;
             private double[][] all;
@@ -149,8 +149,9 @@ public final class LargeScaleSimulation {
                         NormalDistribution normal = new NormalDistribution(new Well1024a(++seed), 0, 1);//sqrt(errorVars[col]));
                         normal.sample();
 
-                        if (verbose && (i + 1) % 50 == 0)
+                        if (verbose && (i + 1) % 50 == 0) {
                             System.out.println("Simulating " + (i + 1));
+                        }
 
                         for (int col : tierIndices) {
                             double value = normal.sample() * sqrt(errorVars[col]);
@@ -194,13 +195,16 @@ public final class LargeScaleSimulation {
     }
 
     /**
-     * Simulates data using the model X = (I - B)Y^-1 * e. Errors are uncorrelated.
+     * Simulates data using the model X = (I - B)Y^-1 * e. Errors are
+     * uncorrelated.
      *
      * @param sampleSize The nubmer of samples to draw.
      */
     public DataSet simulateDataReducedForm(int sampleSize) {
-        if (sampleSize < 1) throw new IllegalArgumentException(
-                "Sample size must be >= 1: " + sampleSize);
+        if (sampleSize < 1) {
+            throw new IllegalArgumentException(
+                    "Sample size must be >= 1: " + sampleSize);
+        }
 
         int size = variableNodes.size();
         setupModel(size);
@@ -239,45 +243,51 @@ public final class LargeScaleSimulation {
     }
 
     /**
-     * Simulates data using the model of R. A. Fisher, for a linear model. Shocks are
-     * applied every so many steps. A data point is recorded before each shock is
-     * administered. If convergence happens before that number of steps has been reached,
-     * a data point is recorded and a new shock immediately applied. The model may be
-     * cyclic. If cyclic, all eigenvalues for the coefficient matrix must be less than 1,
-     * though this is not checked. Uses an interval between shocks of 50 and a convergence
+     * Simulates data using the model of R. A. Fisher, for a linear model.
+     * Shocks are applied every so many steps. A data point is recorded before
+     * each shock is administered. If convergence happens before that number of
+     * steps has been reached, a data point is recorded and a new shock
+     * immediately applied. The model may be cyclic. If cyclic, all eigenvalues
+     * for the coefficient matrix must be less than 1, though this is not
+     * checked. Uses an interval between shocks of 50 and a convergence
      * threshold of 1e-5. Uncorrelated Gaussian shocks are used.
      *
      * @param sampleSize The number of samples to be drawn. Must be a positive
-     *                   integer.
+     * integer.
      */
     public DataSet simulateDataFisher(int sampleSize) {
         return simulateDataFisher(getSoCalledPoissonShocks(sampleSize), 50, 1e-5);
     }
 
     /**
-     * Simulates data using the model of R. A. Fisher, for a linear model. Shocks are
-     * applied every so many steps. A data point is recorded before each shock is
-     * administered. If convergence happens before that number of steps has been reached,
-     * a data point is recorded and a new shock immediately applied. The model may be
-     * cyclic. If cyclic, all eigenvalues for the coefficient matrix must be less than 1,
-     * though this is not checked.
+     * Simulates data using the model of R. A. Fisher, for a linear model.
+     * Shocks are applied every so many steps. A data point is recorded before
+     * each shock is administered. If convergence happens before that number of
+     * steps has been reached, a data point is recorded and a new shock
+     * immediately applied. The model may be cyclic. If cyclic, all eigenvalues
+     * for the coefficient matrix must be less than 1, though this is not
+     * checked.
      *
-     * @param shocks                A matrix of shocks. The value at shocks[i][j] is the shock
-     *                              for the i'th time step, for the j'th variables.
-     * @param intervalBetweenShocks External shock is applied every this many steps.
-     *                              Must be positive integer.
-     * @param epsilon               The convergence criterion; |xi.t - xi.t-1| < epsilon.
+     * @param shocks A matrix of shocks. The value at shocks[i][j] is the shock
+     * for the i'th time step, for the j'th variables.
+     * @param intervalBetweenShocks External shock is applied every this many
+     * steps. Must be positive integer.
+     * @param epsilon The convergence criterion; |xi.t - xi.t-1| < epsilon.
      */
     public DataSet simulateDataFisher(double[][] shocks, int intervalBetweenShocks, double epsilon) {
-        if (intervalBetweenShocks < 1) throw new IllegalArgumentException(
-                "Interval between shocks must be >= 1: " + intervalBetweenShocks);
-        if (epsilon <= 0.0) throw new IllegalArgumentException(
-                "Epsilon must be > 0: " + epsilon);
+        if (intervalBetweenShocks < 1) {
+            throw new IllegalArgumentException(
+                    "Interval between shocks must be >= 1: " + intervalBetweenShocks);
+        }
+        if (epsilon <= 0.0) {
+            throw new IllegalArgumentException(
+                    "Epsilon must be > 0: " + epsilon);
+        }
 
         int size = variableNodes.size();
         if (shocks[0].length != size) {
-            throw new IllegalArgumentException("The number of columns in the shocks matrix does not equal " +
-                    "the number of variables.");
+            throw new IllegalArgumentException("The number of columns in the shocks matrix does not equal "
+                    + "the number of variables.");
         }
 
         setupModel(size);
@@ -334,11 +344,15 @@ public final class LargeScaleSimulation {
         return DataUtils.restrictToMeasured(boxDataSet);
     }
 
-    public DataSet simulateDataFisher(int intervalBetweenShocks, int intervalBetweenRecordings, int sampleSize, double epsilon) {
-        if (intervalBetweenShocks < 1) throw new IllegalArgumentException(
-                "Interval between shocks must be >= 1: " + intervalBetweenShocks);
-        if (epsilon <= 0.0) throw new IllegalArgumentException(
-                "Epsilon must be > 0: " + epsilon);
+    public DataSet simulateDataFisher(int intervalBetweenShocks, int intervalBetweenRecordings, int sampleSize, double epsilon, boolean saveLatentVars) {
+        if (intervalBetweenShocks < 1) {
+            throw new IllegalArgumentException(
+                    "Interval between shocks must be >= 1: " + intervalBetweenShocks);
+        }
+        if (epsilon <= 0.0) {
+            throw new IllegalArgumentException(
+                    "Epsilon must be > 0: " + epsilon);
+        }
 
         int size = variableNodes.size();
 
@@ -397,11 +411,14 @@ public final class LargeScaleSimulation {
         }
 
         BoxDataSet boxDataSet = new BoxDataSet(new VerticalDoubleDataBox(all), continuousVars);
-        return DataUtils.restrictToMeasured(boxDataSet);
+
+        return saveLatentVars ? boxDataSet : DataUtils.restrictToMeasured(boxDataSet);
     }
 
     private void setupModel(int size) {
-        if (alreadySetUp) return;
+        if (alreadySetUp) {
+            return;
+        }
 
         Map<Node, Integer> nodesHash = new HashedMap<>();
 
@@ -589,15 +606,20 @@ public final class LargeScaleSimulation {
 
         System.out.println("original independence: " + x + " and " + y);
 
-        if (indx_comp == -1) System.out.println("WARNING: indx_comp = -1!!!! ");
-        if (indy_comp == -1) System.out.println("WARNING: indy_comp = -1!!!! ");
-
+        if (indx_comp == -1) {
+            System.out.println("WARNING: indx_comp = -1!!!! ");
+        }
+        if (indy_comp == -1) {
+            System.out.println("WARNING: indy_comp = -1!!!! ");
+        }
 
         List<Node> simListX = new ArrayList<>();
         List<Node> simListY = new ArrayList<>();
 
         for (i = 0; i < ntiers - tier_diff; ++i) {
-            if (knowledge.getTier(i).size() == 1) continue;
+            if (knowledge.getTier(i).size() == 1) {
+                continue;
+            }
             String A;
             Node x1;
             String B;
@@ -607,9 +629,15 @@ public final class LargeScaleSimulation {
                 List tmp_tier2 = knowledge.getTier(i);
                 A = (String) tmp_tier1.get(indx_comp);
                 B = (String) tmp_tier2.get(indy_comp);
-                if (A.equals(B)) continue;
-                if (A.equals(tier_x.get(indx_comp)) && B.equals(tier_y.get(indy_comp))) continue;
-                if (B.equals(tier_x.get(indx_comp)) && A.equals(tier_y.get(indy_comp))) continue;
+                if (A.equals(B)) {
+                    continue;
+                }
+                if (A.equals(tier_x.get(indx_comp)) && B.equals(tier_y.get(indy_comp))) {
+                    continue;
+                }
+                if (B.equals(tier_x.get(indx_comp)) && A.equals(tier_y.get(indy_comp))) {
+                    continue;
+                }
                 x1 = graph.getNode(A);
                 y1 = graph.getNode(B);
                 System.out.println("Adding pair to simList = " + x1 + " and " + y1);
@@ -620,9 +648,15 @@ public final class LargeScaleSimulation {
                 List tmp_tier2 = knowledge.getTier(i + tier_diff);
                 A = (String) tmp_tier1.get(indx_comp);
                 B = (String) tmp_tier2.get(indy_comp);
-                if (A.equals(B)) continue;
-                if (A.equals(tier_x.get(indx_comp)) && B.equals(tier_y.get(indy_comp))) continue;
-                if (B.equals(tier_x.get(indx_comp)) && A.equals(tier_y.get(indy_comp))) continue;
+                if (A.equals(B)) {
+                    continue;
+                }
+                if (A.equals(tier_x.get(indx_comp)) && B.equals(tier_y.get(indy_comp))) {
+                    continue;
+                }
+                if (B.equals(tier_x.get(indx_comp)) && A.equals(tier_y.get(indy_comp))) {
+                    continue;
+                }
                 x1 = graph.getNode(A);
                 y1 = graph.getNode(B);
                 System.out.println("Adding pair to simList = " + x1 + " and " + y1);
@@ -641,7 +675,9 @@ public final class LargeScaleSimulation {
         String tempS = obj.toString();
         if (tempS.indexOf(':') == -1) {
             return tempS;
-        } else return tempS.substring(0, tempS.indexOf(':'));
+        } else {
+            return tempS.substring(0, tempS.indexOf(':'));
+        }
     }
 
     public IKnowledge getKnowledge(Graph graph) {
@@ -689,7 +725,6 @@ public final class LargeScaleSimulation {
         });
 
 //        System.out.println("Variable list after the sort = " + variables);
-
         for (Node node : variables) {
             String varName = node.getName();
             String tmp;
@@ -724,7 +759,9 @@ public final class LargeScaleSimulation {
     }
 
     public static int getLag(String s) {
-        if (s.indexOf(':') == -1) return 0;
+        if (s.indexOf(':') == -1) {
+            return 0;
+        }
         String tmp = s.substring(s.indexOf(':') + 1, s.length());
         return (Integer.parseInt(tmp));
     }
@@ -821,7 +858,6 @@ public final class LargeScaleSimulation {
 //    public void setErrorsPositivelySkewedIfNonNormal(boolean errorsPositivelySkewedIfNonNormal) {
 //        this.errorsPositivelySkewedIfNonNormal = errorsPositivelySkewedIfNonNormal;
 //    }
-
     public double getBetaRightValue() {
         return betaRightValue;
     }
@@ -846,6 +882,3 @@ public final class LargeScaleSimulation {
         this.selfLoopCoef = selfLoopCoef;
     }
 }
-
-
-

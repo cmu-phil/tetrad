@@ -128,12 +128,12 @@
         <dependency>
             <groupId>edu.pitt.dbmi</groupId>
             <artifactId>tetrad-db</artifactId>
-            <version>0.0.1</version>
+            <version>1.0.0</version>
         </dependency>
         <dependency>
             <groupId>edu.pitt.dbmi.ccd</groupId>
             <artifactId>causal-tetrad-rest-client</artifactId>
-            <version>0.0.1</version>
+            <version>0.1.0</version>
         </dependency>
         <dependency>
             <groupId>edu.pitt.dbmi</groupId>

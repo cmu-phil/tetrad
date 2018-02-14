@@ -29,15 +29,7 @@ import java.util.List;
         name = "FGES",
         command = "fges",
         algoType = AlgType.forbid_latent_common_causes,
-        description = "Fast Greedy Equivalence Search (FGES) is an implementation of the revised GES algorithm. "
-        + "See Ramsey et al., 2017 for details. It works for both BayesNets and SEMs.\n\n"
-        + "Some code optimization could be done for the scoring part of the graph for "
-        + "discrete models (method scoreGraphChange). Some of Andrew Moore's approaches"
-        + "for caching sufficient statistics, for instance.\n\n "
-        + "To speed things up, it has been assumed that variables X and Y with "
-        + "zero correlation do not correspond to edges in the graph. This is a restricted "
-        + "form of the faithfulness assumption, something FGES does not assume.\n\n "
-        + "For more detail about Fges implementation, please visit http://cmu-phil.github.io/tetrad/tetrad-lib-apidocs/edu/cmu/tetrad/search/Fgs.html"
+        description = ""
 )
 public class Fges implements Algorithm, TakesInitialGraph, HasKnowledge, UsesScoreWrapper {
 
