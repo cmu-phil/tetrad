@@ -207,12 +207,24 @@ public class ParamDescriptions {
                 0.01, 0.0, 1.0));
 
         map.put("numSubsamples", new ParamDescription(
-                "The number of subsamples to take for the StARZ procedure",
+                "The number of subsamples",
                 8, 1, Integer.MAX_VALUE));
 
         map.put("percentSubsampleSize", new ParamDescription(
                 "Percentage of records to include in a random subsample",
                 0.5, 0.0, 1.0));
+
+        map.put("maxQ", new ParamDescription(
+                "Ranks 1 to this value will be considered",
+                1, 1, Integer.MAX_VALUE));
+
+        map.put("maxEr", new ParamDescription(
+                "A bound on the expected number of false positives",
+                1, 0.0, Double.MAX_VALUE));
+
+        map.put("parallelism", new ParamDescription(
+                "The number of threads to use in the parallel calculation",
+                Runtime.getRuntime().availableProcessors() * 10, 1, Integer.MAX_VALUE));
 
         map.put("percentStability", new ParamDescription(
                 "Percentage of subsamples each feature in the output must agree on",

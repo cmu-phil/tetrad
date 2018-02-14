@@ -360,7 +360,7 @@ public class BooleanGlassFunction implements UpdateFunction {
     }
 
     /**
-     * Sets the rate at which the output of the Glass function influences the
+     * Sets the rate at which the output of the Glass function bestPairs the
      * change in expression level of a gene. Must be > 0.0.
      */
     public void setBooleanInfluenceRate(double booleanInfluenceRate) {

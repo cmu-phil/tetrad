@@ -10,14 +10,14 @@ import edu.cmu.tetrad.search.Ida;
 import edu.cmu.tetrad.search.IndTestScore;
 import edu.cmu.tetrad.search.PcAll;
 import edu.cmu.tetrad.search.SemBicScore;
-import edu.cmu.tetrad.util.*;
+import edu.cmu.tetrad.util.ConcurrencyUtils;
+import edu.cmu.tetrad.util.Parameters;
+import edu.cmu.tetrad.util.StatUtils;
+import edu.cmu.tetrad.util.TextTable;
 
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -25,59 +25,96 @@ import static edu.cmu.tetrad.graph.GraphUtils.replaceNodes;
 import static java.lang.Integer.min;
 import static java.lang.Math.pow;
 
+//@edu.cmu.tetrad.annotation.Algorithm(
+//        name = "CStar",
+//        command = "cstar",
+//        algoType = AlgType.forbid_latent_common_causes,
+//        description = "Performs a CStar analysis of the given dataset (Stekhoven, Daniel J., et al. " +
+//                "Causal stability ranking.\" Bioinformatics 28.21 (2012): 2819-2823) and returns a graph " +
+//                "in which all selected variables are shown as into the target. The target is the first variables."
+//)
+
 @edu.cmu.tetrad.annotation.Algorithm(
         name = "CStar",
         command = "cstar",
         algoType = AlgType.forbid_latent_common_causes,
-        description = "Performs a CStar analysis of the given dataset (Stekhoven, Daniel J., et al. " +
-                "Causal stability ranking.\" Bioinformatics 28.21 (2012): 2819-2823) and returns a graph " +
-                "in which all selected variables are shown as into the target. The target is the first variables."
+        description = ""
 )
 public class CStar implements Algorithm {
     static final long serialVersionUID = 23L;
     private Algorithm algorithm;
-    private List<Node> ancestors;
 
-    public CStar(List<Node> ancestors) {
+    public CStar() {
         this.algorithm = new Fges();
-        this.ancestors = ancestors;
     }
 
     @Override
     public Graph search(DataModel dataSet, Parameters parameters) {
         System.out.println("# Available Processors = " + Runtime.getRuntime().availableProcessors());
         System.out.println("Parallelism = " + parameters.getInt("parallelism"));
-        double numBootstraps = 1.0 / parameters.getDouble("bootstrapSelectionSize");
+        double numBootstraps = 1.0 / parameters.getDouble("percentSubsampleSize");
 
         DataSet _dataSet = (DataSet) dataSet;
 
         int numSubsamples = parameters.getInt("numSubsamples");
-        Node y = dataSet.getVariable(parameters.getString("targetName"));
+
+        List<Node> y = new ArrayList<>();
+
+        if ("all".equalsIgnoreCase(parameters.getString("targetName"))) {
+            y.addAll(dataSet.getVariables());
+        } else if ("connected".equalsIgnoreCase(parameters.getString("targetName"))) {
+            Graph pattern = getPattern(_dataSet, parameters);
+
+            for (Node n : pattern.getNodes()) {
+                if (pattern.getAdjacentNodes(n).size() >= 3
+                        ) {
+                    y.add(n);
+                }
+            }
+
+            System.out.println("# targets = " + y.size());
+        } else {
+            y.add(dataSet.getVariable(parameters.getString("targetName")));
+        }
 
         final List<Node> variables = dataSet.getVariables();
         variables.remove(y);
 
-        final Map<Integer, Map<String, Integer>> counts = new ConcurrentHashMap<>();
-        final Map<Integer, Map<String, Double>> minimalEffects = new ConcurrentHashMap<>();
+        final Map<Integer, Map<Pair, Integer>> counts = new ConcurrentHashMap<>();
+        final Map<Integer, Map<Pair, Double>> minimalEffects = new ConcurrentHashMap<>();
 
         for (int q = 1; q < min(parameters.getInt("maxQ"), variables.size()); q++) {
-            final HashMap<String, Integer> map = new HashMap<>();
-            for (Node node : variables) map.put(node.getName(), 0);
+            final HashMap<Pair, Integer> map = new HashMap<>();
+
+            for (Node x : variables) {
+                for (Node _y : y) {
+                    if (x == _y) continue;
+                    map.put(new Pair(x.getName(), _y.getName()), 0);
+                }
+            }
+
             counts.put(q, map);
         }
 
         for (int b = 0; b < numSubsamples; b++) {
-            final HashMap<String, Double> map = new HashMap<>();
-            for (Node node : variables) map.put(node.getName(), 0.0);
+            final HashMap<Pair, Double> map = new HashMap<>();
+
+            for (Node x : variables) {
+                for (Node _y : y) {
+                    if (x == _y) continue;
+                    map.put(new Pair(x.getName(), _y.getName()), 0.0);
+                }
+            }
+
             minimalEffects.put(b, map);
         }
 
         class Task implements Callable<Boolean> {
             private int b;
-            private Map<Integer, Map<String, Integer>> counts;
-            private Map<Integer, Map<String, Double>> minimalEffects;
+            private Map<Integer, Map<Pair, Integer>> counts;
+            private Map<Integer, Map<Pair, Double>> minimalEffects;
 
-            private Task(int b, Map<Integer, Map<String, Integer>> counts, Map<Integer, Map<String, Double>> minimalEffects) {
+            private Task(int b, Map<Integer, Map<Pair, Integer>> counts, Map<Integer, Map<Pair, Double>> minimalEffects) {
                 this.b = b;
                 this.counts = counts;
                 this.minimalEffects = minimalEffects;
@@ -89,25 +126,29 @@ public class CStar implements Algorithm {
                     sampler.setWithoutReplacements(true);
                     DataSet sample = sampler.sample(_dataSet, (int) (_dataSet.getNumRows() / numBootstraps));
                     Graph pattern = getPattern(sample, parameters);
-
                     Ida ida = new Ida(sample, pattern);
-                    Ida.NodeEffects effects = ida.getSortedMinEffects(y);
 
-                    for (int q = 1; q < min(parameters.getInt("maxQ"), variables.size()); q++) {
-                        for (int i = 0; i < q; i++) {
-                            if (i < effects.getNodes().size()) {
-                                if (effects.getEffects().get(i) > 0) {
-                                    final String name = effects.getNodes().get(i).getName();
-                                    counts.get(q).put(name, counts.get(q).get(name) + 1);
+                    for (Node _y : y) {
+                        Ida.NodeEffects effects = ida.getSortedMinEffects(_y);
+
+                        for (int q = 1; q < min(parameters.getInt("maxQ"), variables.size()); q++) {
+                            for (int i = 0; i < q; i++) {
+                                if (i < effects.getNodes().size()) {
+                                    if (effects.getEffects().get(i) > 0) {
+                                        final String name = effects.getNodes().get(i).getName();
+                                        final Pair key = new Pair(name, _y.getName());
+                                        counts.get(q).put(key, counts.get(q).get(key) + 1);
+                                    }
                                 }
                             }
                         }
-                    }
 
-                    for (int r = 0; r < effects.getNodes().size(); r++) {
-                        Node n = effects.getNodes().get(r);
-                        Double e = effects.getEffects().get(r);
-                        minimalEffects.get(b).put(n.getName(), e);
+                        for (int r = 0; r < effects.getNodes().size(); r++) {
+                            Node n = effects.getNodes().get(r);
+                            Double e = effects.getEffects().get(r);
+                            final Pair key = new Pair(n.getName(), _y.getName());
+                            minimalEffects.get(b).put(key, e);
+                        }
                     }
 
                 } catch (Exception e) {
@@ -126,13 +167,20 @@ public class CStar implements Algorithm {
 
         ConcurrencyUtils.runCallables(tasks, parameters.getInt("parallelism"));
 
-        List<Node> outNodes = selectedVars(variables, numSubsamples, counts, minimalEffects, parameters, ancestors, numBootstraps);
+        List<Pair> bestPairs = bestPairs(variables, numSubsamples, counts, minimalEffects, parameters, numBootstraps, y);
 
-        Graph graph = new EdgeListGraph(outNodes);
-        graph.addNode(y);
+        System.out.println("best pairs = " + bestPairs);
 
-        for (int i = 0; i < new ArrayList<Node>(outNodes).size(); i++) {
-            graph.addDirectedEdge(outNodes.get(i), y);
+        Graph graph = new EdgeListGraph();
+
+        for (Pair pair : bestPairs) {
+            Node _x = dataSet.getVariable(pair.x);
+            Node _y = dataSet.getVariable(pair.y);
+
+            if (!graph.containsNode(_x)) graph.addNode(_x);
+            if (!graph.containsNode(_y)) graph.addNode(_y);
+
+            graph.addDirectedEdge(_x, _y);
         }
 
         return graph;
@@ -141,36 +189,24 @@ public class CStar implements Algorithm {
     public static Graph getPattern(DataSet sample, Parameters parameters) {
         ICovarianceMatrix covariances = new CovarianceMatrixOnTheFly(sample);
 
-        Graph pattern;
         final SemBicScore score = new SemBicScore(covariances);
         score.setPenaltyDiscount(parameters.getDouble("penaltyDiscount"));
 
-        if (parameters.getInt("CStarAlg") == 1) {
-            edu.cmu.tetrad.search.Fges fges = new edu.cmu.tetrad.search.Fges(score);
-            fges.setParallelism(1);
-            pattern = fges.search();
-        } else if (parameters.getInt("CStarAlg") == 2) {
-            PcAll pc = new PcAll(new IndTestScore(score), null);
-            pc.setFasRule(PcAll.FasRule.FAS_STABLE);
-            pc.setConflictRule(PcAll.ConflictRule.OVERWRITE);
-            pc.setColliderDiscovery(PcAll.ColliderDiscovery.MAX_P);
-            pattern = pc.search();
-        } else {
-            throw new IllegalArgumentException("Not configured for that algorithm: " + parameters.getInt("CStarAlg"));
-        }
-        return pattern;
+        PcAll pc = new PcAll(new IndTestScore(score), null);
+        pc.setFasRule(PcAll.FasRule.FAS_STABLE);
+        pc.setConflictRule(PcAll.ConflictRule.OVERWRITE);
+        pc.setColliderDiscovery(PcAll.ColliderDiscovery.MAX_P);
+        return pc.search();
     }
 
-    public static List<Node> selectedVars(List<Node> variables, int numSubsamples, Map<Integer,
-            Map<String, Integer>> counts, Map<Integer, Map<String, Double>> minimalEffects, Parameters parameters,
-                                          List<Node> ancestors, double numBootstraps) {
-        ancestors = replaceNodes(ancestors, variables);
-
-        List<Node> bestNodes = new ArrayList<>();
+    public static List<Pair> bestPairs(List<Node> variables, int numSubsamples, Map<Integer,
+            Map<Pair, Integer>> counts, Map<Integer, Map<Pair, Double>> minimalEffects, Parameters parameters,
+                                       double numBootstraps, List<Node> y) {
+        List<Pair> bestPairs = new ArrayList<>();
         List<Double> bestPi = new ArrayList<>();
         List<Integer> bestQs = new ArrayList<>();
 
-        List<Node> bestNodes2 = new ArrayList<>();
+        List<Pair> bestPairs2 = new ArrayList<>();
         List<Double> bestPi2 = new ArrayList<>();
         List<Integer> bestQ2 = new ArrayList<>();
 
@@ -178,17 +214,20 @@ public class CStar implements Algorithm {
 
         for (int q = 1; q < min(parameters.getInt("maxQ"), variables.size()); q++) {
             final int q1 = q;
-            List<Node> sortedVariables = new ArrayList<>(variables);
-            sortedVariables.sort((o1, o2) -> Integer.compare(counts.get(q1).get(o2.getName()), counts.get(q1).get(o1.getName())));
+            List<Pair> sortedPairs = new ArrayList<>(counts.get(q).keySet());
+            sortedPairs.sort((o1, o2) -> Integer.compare(counts.get(q1).get(o2),
+                    counts.get(q1).get(o1)));
 
             List<Double> pi = new ArrayList<>();
 
-            for (Node v : sortedVariables) {
-                final Integer count = counts.get(q).get(v.getName());
+            for (Pair v : sortedPairs) {
+                final Integer count = counts.get(q).get(v);
                 pi.add(count / ((double) numSubsamples));
             }
 
-            List<Node> outNodes = new ArrayList<>();
+            System.out.println(pi);
+
+            List<Pair> outPairs = new ArrayList<>();
             List<Double> outPis = new ArrayList<>();
             List<Integer> outQs = new ArrayList<>();
 
@@ -198,52 +237,49 @@ public class CStar implements Algorithm {
                 if (ev == Double.POSITIVE_INFINITY) continue;
 
                 if (ev <= parameters.getDouble("maxEr")) {
-                    if (!outNodes.contains(sortedVariables.get(i))) {
-                        outNodes.add(sortedVariables.get(i));
+                    if (!outPairs.contains(sortedPairs.get(i))) {
+                        outPairs.add(sortedPairs.get(i));
                         outPis.add(pi.get(i));
                         outQs.add(q);
                     }
 
-                    if (!bestNodes2.contains(sortedVariables.get(i))) {
-                        bestNodes2.add(sortedVariables.get(i));
+                    if (!bestPairs2.contains(sortedPairs.get(i))) {
+                        bestPairs2.add(sortedPairs.get(i));
                         bestPi2.add(pi.get(i));
                         bestQ2.add(q);
                     }
                 }
             }
 
-            if ((outNodes.size()) >= maxOut) {
-                maxOut = outNodes.size();
-                bestNodes = new ArrayList<>(outNodes);
+            if ((outPairs.size()) >= maxOut) {
+                maxOut = outPairs.size();
+                bestPairs = new ArrayList<>(outPairs);
                 bestPi = new ArrayList<>(outPis);
                 bestQs = new ArrayList<>(outQs);
             }
 
         }
 
-        printRanks(variables, numSubsamples, counts, parameters, ancestors);
+//        printRanks(variables, numSubsamples, counts, parameters, ancestors, y);
 
-        TextTable table = new TextTable(bestNodes.size() + 1, 6);
+        TextTable table = new TextTable(bestPairs.size() + 1, 6);
         NumberFormat nf = new DecimalFormat("0.0000");
 
         table.setToken(0, 0, "Index");
-        table.setToken(0, 1, "Variable");
+        table.setToken(0, 1, "Pair");
         table.setToken(0, 2, "PI");
         table.setToken(0, 3, "Average Effect");
         table.setToken(0, 4, "PCER");
         table.setToken(0, 5, "ER");
 
-        ancestors = replaceNodes(ancestors, variables);
-
-        for (int i = 0; i < bestNodes.size(); i++) {
+        for (int i = 0; i < bestPairs.size(); i++) {
             final double er = er(bestPi.get(i), bestQs.get(i), variables.size(), numBootstraps);
             final double pcer = pcer(bestPi.get(i), bestQs.get(i), variables.size(), numBootstraps);
 
             List<Double> e = new ArrayList<>();
 
             for (int b = 0; b < numSubsamples; b++) {
-                final String name = bestNodes.get(i).getName();
-                final double m = minimalEffects.get(b).get(name);
+                final double m = minimalEffects.get(b).get(bestPairs.get(i));
                 e.add(m);
             }
 
@@ -252,8 +288,14 @@ public class CStar implements Algorithm {
             double avg = StatUtils.mean(_e);
 
             table.setToken(i + 1, 0, "" + (i + 1));
-            final boolean contains = ancestors.contains(bestNodes.get(i));
-            table.setToken(i + 1, 1, (contains ? "* " : "") + bestNodes.get(i).getName());
+
+//            Pair pair = bestPairs.get(i);
+//            Node _x = trueGraph.getNode(pair.x);
+//            Node _y = trueGraph.getNode(pair.y);
+
+            final boolean contains = false;//trueGraph.existsSemiDirectedPathFromTo(_x, Collections.singleton(_y));
+
+            table.setToken(i + 1, 1, (contains ? "* " : "") + bestPairs.get(i));
             table.setToken(i + 1, 2, nf.format(bestPi.get(i)));
             table.setToken(i + 1, 3, nf.format(avg));
             table.setToken(i + 1, 4, nf.format(pcer));
@@ -264,10 +306,11 @@ public class CStar implements Algorithm {
         System.out.println(table);
         System.out.println();
 
-        return bestNodes;
+        return bestPairs;
     }
 
-    private static void printRanks(List<Node> variables, double numSubsamples, Map<Integer, Map<String, Integer>> counts, Parameters parameters, List<Node> ancestors) {
+    private static void printRanks(List<Node> variables, double numSubsamples, Map<Integer, Map<Pair,
+            Integer>> counts, Parameters parameters, List<Node> ancestors, List<Node> y) {
         System.out.println("\n# ancestors = " + ancestors.size() + "\n");
 
         final int maxQ = min(parameters.getInt("maxQ"), variables.size());
@@ -282,20 +325,22 @@ public class CStar implements Algorithm {
             int q = qs.get(s);
             List<Double> pi = new ArrayList<>();
 
-            for (Node v : variables) {
-                final Integer count = counts.get(q).get(v.getName());
-                pi.add(count / numSubsamples);
+            for (Node _y : y) {
+                for (Node v : variables) {
+                    final Integer count = counts.get(q).get(new Pair(v.getName(), _y.getName()));
+
+                    if (count != null) {
+                        pi.add(count / numSubsamples);
+                    }
+                }
             }
             double[] _pi = new double[pi.size()];
 
-            for (int i = 0; i < variables.size(); i++) {
-                final Integer count = counts.get(q).get(variables.get(i).getName());
-                _pi[i] = count / numSubsamples;
-            }
+            for (int i = 0; i < pi.size(); i++) _pi[i] = pi.get(i);
 
             double[] _ranks = StatUtils.getRanks(_pi);
 
-            for (int i = 0; i < variables.size(); i++) {
+            for (int i = 0; i < _ranks.length; i++) {
                 ranks[i][s] = _ranks[i];
             }
         }
@@ -361,12 +406,45 @@ public class CStar implements Algorithm {
         List<String> parameters = new ArrayList<>();
         parameters.add("penaltyDiscount");
         parameters.add("numSubsamples");
-        parameters.add("bootstrapSelectionSize");
+        parameters.add("percentSubsampleSize");
         parameters.add("maxQ");
         parameters.add("targetName");
-        parameters.add("CStarAlg");
         parameters.add("maxEr");
         parameters.add("parallelism");
         return parameters;
+    }
+
+    public static class Pair {
+        private String x;
+        private String y;
+
+        public Pair(String x, String y) {
+            this.x = x;
+            this.y = y;
+        }
+
+        public String getX() {
+            return x;
+        }
+
+        public String getY() {
+            return y;
+        }
+
+        public int hashCode() {
+            return x.hashCode() + 17 * y.hashCode();
+        }
+
+        public boolean equals(Object o) {
+            if (o == this) return true;
+            if (!(o instanceof Pair)) return false;
+            Pair pair = (Pair) o;
+            return x.equals(pair.getX()) && y.equals(pair.getY());
+        }
+
+        public String toString() {
+            return "(" + x + ", " + y + ")";
+        }
+
     }
 }

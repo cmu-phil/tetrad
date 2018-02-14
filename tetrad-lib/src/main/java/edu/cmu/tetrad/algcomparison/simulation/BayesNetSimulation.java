@@ -8,9 +8,11 @@ import edu.cmu.tetrad.bayes.MlBayesIm;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
+import edu.cmu.tetrad.data.DataUtils;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.util.Parameters;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -18,12 +20,12 @@ import java.util.List;
  * @author jdramsey
  */
 public class BayesNetSimulation implements Simulation {
-
     static final long serialVersionUID = 23L;
     private RandomGraph randomGraph;
     private BayesPm pm;
     private BayesIm im;
     private List<DataSet> dataSets = new ArrayList<>();
+    private List<DataSet> dataSetsWithLatents = new ArrayList<>();
     private List<Graph> graphs = new ArrayList<>();
     private List<BayesIm> ims = new ArrayList<>();
 
@@ -36,7 +38,7 @@ public class BayesNetSimulation implements Simulation {
         this.pm = pm;
     }
 
-    public BayesNetSimulation(BayesIm im) {
+    public BayesNetSimulation(BayesIm im ) {
         this.randomGraph = new SingleGraph(im.getDag());
         this.im = im;
         this.pm = im.getBayesPm();
@@ -60,7 +62,8 @@ public class BayesNetSimulation implements Simulation {
 
             DataSet dataSet = simulate(graph, parameters);
             dataSet.setName("" + (i + 1));
-            dataSets.add(dataSet);
+            dataSets.add(DataUtils.restrictToMeasured(dataSet));
+            dataSetsWithLatents.add(dataSet);
         }
     }
 
@@ -68,6 +71,12 @@ public class BayesNetSimulation implements Simulation {
     public DataModel getDataModel(int index) {
         return dataSets.get(index);
     }
+
+    @Override
+    public DataModel getDataModelWithLatents(int index) {
+        return dataSetsWithLatents.get(index);
+    }
+
 
     @Override
     public Graph getTrueGraph(int index) {
@@ -102,8 +111,6 @@ public class BayesNetSimulation implements Simulation {
         parameters.add("numRuns");
         parameters.add("differentGraphs");
         parameters.add("sampleSize");
-        parameters.add("saveLatentVars");
-
         return parameters;
     }
 
@@ -117,9 +124,9 @@ public class BayesNetSimulation implements Simulation {
         return DataType.Discrete;
     }
 
-    private DataSet simulate(Graph graph, Parameters parameters) {
-        boolean saveLatentVars = parameters.getBoolean("saveLatentVars");
 
+
+    private DataSet simulate(Graph graph, Parameters parameters) {
         try {
             BayesIm im = this.im;
 
@@ -132,27 +139,26 @@ public class BayesNetSimulation implements Simulation {
                     pm = new BayesPm(graph, minCategories, maxCategories);
                     im = new MlBayesIm(pm, MlBayesIm.RANDOM);
                     ims.add(im);
-                    return im.simulateData(parameters.getInt("sampleSize"), saveLatentVars);
+                    return im.simulateData(parameters.getInt("sampleSize"), true);
                 } else {
                     im = new MlBayesIm(pm, MlBayesIm.RANDOM);
                     this.im = im;
                     ims.add(im);
-                    return im.simulateData(parameters.getInt("sampleSize"), saveLatentVars);
+                    return im.simulateData(parameters.getInt("sampleSize"), true);
                 }
             } else {
                 ims = new ArrayList<>();
                 ims.add(im);
-                return im.simulateData(parameters.getInt("sampleSize"), saveLatentVars);
+                return im.simulateData(parameters.getInt("sampleSize"), true);
             }
         } catch (Exception e) {
             e.printStackTrace();
-            throw new IllegalArgumentException("Sorry, I couldn't simulate from that Bayes IM; perhaps not all of\n"
-                    + "the parameters have been specified.");
+            throw new IllegalArgumentException("Sorry, I couldn't simulate from that Bayes IM; perhaps not all of\n" +
+                    "the parameters have been specified.");
         }
     }
 
     public List<BayesIm> getBayesIms() {
         return ims;
     }
-
 }

@@ -35,7 +35,7 @@ import java.util.*;
  * here to avoid ambiguity), only lags behind the getModel time step are recorded
  * temporally, with causal edges extending from lagged factors with lags >= 1 to
  * factors in the getModel time step (lag = 0) only. This "update graph" is
- * viewed as a repeating structure; for each time step, the influences from
+ * viewed as a repeating structure; for each time step, the bestPairs from
  * previous time steps of other factors are as the update graph specifies. </P>
  * </p> <P>Factor names in this model are distinct String's. The form of these
  * String's is left entirely up to the code using this package. Lags are int's
