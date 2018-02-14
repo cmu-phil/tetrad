@@ -181,7 +181,7 @@ public final class SepsetMap implements TetradSerializable {
     }
 
     public boolean isReturnEmptyIfNotSet() {
-        return returnEmptyIfNotSet;
+        return false;//returnEmptyIfNotSet;
     }
 
     public void setReturnEmptyIfNotSet(boolean returnEmptyIfNotSet) {

@@ -21,7 +21,7 @@
 
 package edu.cmu.tetrad.test;
 
-import edu.cmu.tetrad.algcomparison.algorithm.CStar;
+import edu.cmu.tetrad.algcomparison.algorithm.CStaS;
 import edu.cmu.tetrad.algcomparison.graph.RandomForward;
 import edu.cmu.tetrad.algcomparison.graph.RandomGraph;
 import edu.cmu.tetrad.algcomparison.simulation.LinearFisherModel;
@@ -69,7 +69,7 @@ public class TestIda {
 
         Node y = dataSet.getVariable("X10");
 
-        Graph pattern = CStar.getPattern(dataSet, parameters);
+        Graph pattern = CStaS.getPattern(dataSet, parameters);
 
         Ida ida = new Ida(dataSet, pattern);
 
@@ -104,7 +104,7 @@ public class TestIda {
 
         long start = System.currentTimeMillis();
 
-        CStar cstar = new CStar();
+        CStaS cstar = new CStaS();
         Graph graph = cstar.search(dataSet, parameters);
 
         long stop = System.currentTimeMillis();
@@ -124,8 +124,8 @@ public class TestIda {
 
         parameters.set("verbose", false);
 
-        parameters.set("coefLow", 0.2);
-        parameters.set("coefHigh", 1.8);
+        parameters.set("coefLow", 0.3);
+        parameters.set("coefHigh", 1.0);
 //        parameters.set("varLow");
 //        parameters.set("varHigh");
 //        parameters.set("verbose");
@@ -149,13 +149,13 @@ public class TestIda {
         parameters.set("sampleSize", sampleSize);
 
         parameters.set("parallelism", 40);
-        parameters.set("CStarAlg", 2); // 1 = FGES, 2 = PC-Stable
 
         parameters.set("penaltyDiscount", 1.5);
         parameters.set("numSubsamples", 50);
-        parameters.set("bootstrapSelectionSize", 0.5);
-        parameters.set("maxQ", 1000);
-        parameters.set("maxEr", 25);
+        parameters.set("percentSubsampleSize", 0.5);
+        parameters.set("maxQ", 200);
+        parameters.set("maxEr", 20);
+        parameters.set("depth", 3);
 
         List<int[]> cstarRet = new ArrayList<>();
 
@@ -179,7 +179,7 @@ public class TestIda {
                 p.addAll(trueDag.getParents(q));
             }
 
-            if (p.size() < 20) {
+            if (p.size() < 30) {
                 i--;
                 continue;
             }
@@ -192,15 +192,16 @@ public class TestIda {
 
             DataSet selectedData = selectVariables(fullData, parameters);
 
-            final List<Node> ancestors = new ArrayList<>();
+//            final List<Node> ancestors = new ArrayList<>();
+//
+//            for (Node node : trueDag.getNodes()) {
+//                if (truePattern.existsSemiDirectedPathFromTo(node, Collections.singleton(t))) {
+//                    ancestors.add(node);
+//                }
+//            }
 
-            for (Node node : trueDag.getNodes()) {
-                if (truePattern.existsSemiDirectedPathFromTo(node, Collections.singleton(t))) {
-                    ancestors.add(node);
-                }
-            }
-
-            CStar cstar = new CStar();
+            CStaS cstar = new CStaS();
+            cstar.setTrueDag(trueDag);
             Graph graph = cstar.search(selectedData, parameters);
 
             long stop = System.currentTimeMillis();
@@ -356,7 +357,7 @@ public class TestIda {
         x = x2;
         y = dataSet.getVariable(y.getName());
 
-        Graph pattern = CStar.getPattern(dataSet, parameters);
+        Graph pattern = CStaS.getPattern(dataSet, parameters);
 
         Ida ida = new Ida(dataSet, pattern);
 

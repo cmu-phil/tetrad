@@ -130,9 +130,7 @@ public class Ida {
         List<Node> nodes = new ArrayList<>(allEffects.keySet());
 
         nodes.sort((o1, o2) -> {
-            final Double d1 = allEffects.get(o1);
-            final Double d2 = allEffects.get(o2);
-            return Double.compare(abs(d2), abs(d1));
+            return Double.compare(abs(allEffects.get(o2)), abs(allEffects.get(o1)));
         });
 
         LinkedList<Double> effects = new LinkedList<>();
@@ -172,6 +170,16 @@ public class Ida {
 
         public void setEffects(LinkedList<Double> effects) {
             this.effects = effects;
+        }
+
+        public String toString() {
+            StringBuilder b = new StringBuilder();
+
+            for (int i = 0; i < nodes.size(); i++) {
+                b.append(nodes.get(i)).append("=").append(effects.get(i)).append(" ");
+            }
+
+            return b.toString();
         }
     }
 
