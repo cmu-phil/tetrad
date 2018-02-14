@@ -161,6 +161,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
     private final JComboBox<ScoreModel> scoreComboBox = new JComboBox<>();
     private final JTextArea algoDescTextArea = new JTextArea();
     private final Box graphContainer = Box.createHorizontalBox();
+    private final JLabel algorithmGraphTitle = new JLabel();
 
     private final AlgorithmParameterPanel parametersPanel;
     private final JButton paramSetFwdBtn = new JButton("Set Parameters   >");
@@ -188,7 +189,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
 
         // Repopulate all the previous selections if reopen the search box
         if (runner.getGraphs() != null && runner.getGraphs().size() > 0) {
-            parametersPanel.addToPanel(runner.getAlgorithm().getParameters(), runner.getParameters());
+            parametersPanel.addToPanel(runner);
 
             // show the generated graph if reopen the search box
             graphContainer.add(graphEditor);  // use the already generated graphEditor
@@ -242,6 +243,9 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
                 if (model.toString().equals(value)) {
                     models.put(ALGO_PARAM, model);
                     algorithmList.setSelectedValue(model, true);
+
+                    String title = String.format("Algorithm: %s", model.getAlgorithm().getAnnotation().name());
+                    algorithmGraphTitle.setText(title);
                     break;
                 }
             }
@@ -343,7 +347,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
 
     private void setParameterPanel(AlgorithmModel algoModel, IndependenceTestModel indTestModel, ScoreModel scoreModel) {
         runner.setAlgorithm(getAlgorithmFromInterface(algoModel, indTestModel, scoreModel));
-        parametersPanel.addToPanel(runner.getAlgorithm().getParameters(), runner.getParameters());
+        parametersPanel.addToPanel(runner);
     }
 
     private boolean isValid(AlgorithmModel algoModel, IndependenceTestModel indTestModel, ScoreModel scoreModel) {
@@ -1023,6 +1027,8 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
             public void watch() {
                 AlgorithmModel algoModel = algorithmList.getSelectedValue();
                 if (algoModel != null) {
+                    String title = String.format("Algorithm: %s", algoModel.getAlgorithm().getAnnotation().name());
+                    algorithmGraphTitle.setText(title);
 
                     HpcAccount hpcAccount = null;
 
@@ -1472,6 +1478,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         private static final long serialVersionUID = -4333810762051607855L;
 
         private JButton backBtn;
+        private JPanel titlePanel;
 
         public GraphCard() {
             initComponents();
@@ -1489,6 +1496,10 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
                 graphCardBackBtnAction(e);
             });
 
+            titlePanel = new JPanel();
+            titlePanel.add(algorithmGraphTitle);
+
+            add(titlePanel, BorderLayout.NORTH);
             add(new JScrollPane(graphContainer), BorderLayout.CENTER);
             add(new SouthPanel(backBtn), BorderLayout.SOUTH);
         }
