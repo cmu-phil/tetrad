@@ -82,4 +82,8 @@ public class CStaR implements Algorithm {
     public void setTrueDag(Graph trueDag) {
         this.trueDag = trueDag;
     }
+
+
 }
+
+

@@ -185,23 +185,11 @@ public class TestIda {
 
             parameters.set("targetName", "X" + m);
 
-            System.out.println("\n\n=====CSTAR====");
-
             long start = System.currentTimeMillis();
-
-            DataSet selectedData = selectVariables(fullData, parameters);
-
-//            final List<Node> ancestors = new ArrayList<>();
-//
-//            for (Node node : trueDag.getNodes()) {
-//                if (truePattern.existsSemiDirectedPathFromTo(node, Collections.singleton(t))) {
-//                    ancestors.add(node);
-//                }
-//            }
 
             CStaR cstar = new CStaR();
             cstar.setTrueDag(trueDag);
-            Graph graph = cstar.search(selectedData, parameters);
+            Graph graph = cstar.search(fullData, parameters);
 
             long stop = System.currentTimeMillis();
 
@@ -309,11 +297,9 @@ public class TestIda {
 
                     long start = System.currentTimeMillis();
 
-                    DataSet selectedData = selectVariables(fullData, parameters);
-
                     CStaR cstar = new CStaR();
                     cstar.setTrueDag(trueDag);
-                    Graph graph = cstar.search(selectedData, parameters);
+                    Graph graph = cstar.search(fullData, parameters);
 
                     long stop = System.currentTimeMillis();
 
@@ -338,81 +324,7 @@ public class TestIda {
     }
 
 
-    private DataSet selectVariables(DataSet fullData, Parameters parameters) {
-        Node y = fullData.getVariable(parameters.getString("targetName"));
 
-        final SemBicScore score = new SemBicScore(new CovarianceMatrixOnTheFly(fullData));
-        score.setPenaltyDiscount(parameters.getDouble("penaltyDiscount"));
-        IndependenceTest test = new IndTestScore(score);
-
-        List<Node> selection = new ArrayList<>();
-
-        final List<Node> variables = fullData.getVariables();
-
-        {
-            class Task implements Callable<Boolean> {
-                private int from;
-                private int to;
-                private Node y;
-
-                private Task(int from, int to, Node y) {
-                    this.from = from;
-                    this.to = to;
-                    this.y = y;
-                }
-
-                @Override
-                public Boolean call() {
-                    for (int n = from; n < to; n++) {
-                        final Node node = variables.get(n);
-                        if (node != y) {
-                            if (!test.isIndependent(node, y)) {
-                                if (!selection.contains(node)) {
-                                    selection.add(node);
-                                }
-                            }
-                        }
-                    }
-
-                    return true;
-                }
-            }
-
-            final int chunk = 50;
-            List<Callable<Boolean>> tasks;
-
-            {
-                tasks = new ArrayList<>();
-
-                for (int from = 0; from < variables.size(); from += chunk) {
-                    final int to = Math.min(variables.size(), from + chunk);
-                    tasks.add(new Task(from, to, y));
-                }
-
-                ConcurrencyUtils.runCallables(tasks, parameters.getInt("parallelism"));
-            }
-
-            {
-                tasks = new ArrayList<>();
-
-                for (Node s : new ArrayList<>(selection)) {
-                    for (int from = 0; from < variables.size(); from += chunk) {
-                        final int to = Math.min(variables.size(), from + chunk);
-                        tasks.add(new Task(from, to, s));
-                    }
-                }
-            }
-
-            ConcurrencyUtils.runCallables(tasks, parameters.getInt("parallelism"));
-        }
-
-        final DataSet dataSet = fullData.subsetColumns(selection);
-
-        System.out.println("# selected variables = " + dataSet.getVariables().size());
-
-        return dataSet;
-
-    }
 
     private int[] printResult(Graph trueGraph, Parameters parameters, Graph graph, long elapsed) {
         graph = GraphUtils.replaceNodes(graph, trueGraph.getNodes());

@@ -2,6 +2,7 @@ package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.BootstrapSampler;
 import edu.cmu.tetrad.data.CorrelationMatrixOnTheFly;
+import edu.cmu.tetrad.data.CovarianceMatrixOnTheFly;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
@@ -36,7 +37,9 @@ public class CStaR {
     }
 
     public List<Record> getRecords(DataSet dataSet, Node target) {
-        final List<Node> variables = dataSet.getVariables();
+        final DataSet selection = selectVariables(dataSet, target, penaltyDiscount, parallelism);
+
+        final List<Node> variables = selection.getVariables();
         variables.remove(target);
 
         final Map<Integer, Map<String, Double>> minimalEffects = new ConcurrentHashMap<>();
@@ -57,7 +60,7 @@ public class CStaR {
                 try {
                     BootstrapSampler sampler = new BootstrapSampler();
                     sampler.setWithoutReplacements(true);
-                    DataSet sample = sampler.sample(dataSet, (int) (dataSet.getNumRows() / 2));
+                    DataSet sample = sampler.sample(selection, (int) (selection.getNumRows() / 2));
                     SemBicScore score = new SemBicScore(new CorrelationMatrixOnTheFly(sample));
                     score.setPenaltyDiscount(getPenaltyDiscount());
                     IndependenceTest test = new IndTestScore(score);
@@ -386,5 +389,79 @@ public class CStaR {
             System.out.println((j + 1) + ". " + sortedVariables.get(j) + " "
                     + rankMedians[variables.indexOf(sortedVariables.get(j))]);
         }
+    }
+
+    private DataSet selectVariables(DataSet fullData, Node y, double penaltyDiscount, int parallelism) {
+        final SemBicScore score = new SemBicScore(new CovarianceMatrixOnTheFly(fullData));
+        score.setPenaltyDiscount(penaltyDiscount);
+        IndependenceTest test = new IndTestScore(score);
+
+        List<Node> selection = new ArrayList<>();
+
+        final List<Node> variables = fullData.getVariables();
+
+        {
+            class Task implements Callable<Boolean> {
+                private int from;
+                private int to;
+                private Node y;
+
+                private Task(int from, int to, Node y) {
+                    this.from = from;
+                    this.to = to;
+                    this.y = y;
+                }
+
+                @Override
+                public Boolean call() {
+                    for (int n = from; n < to; n++) {
+                        final Node node = variables.get(n);
+                        if (node != y) {
+                            if (!test.isIndependent(node, y)) {
+                                if (!selection.contains(node)) {
+                                    selection.add(node);
+                                }
+                            }
+                        }
+                    }
+
+                    return true;
+                }
+            }
+
+            final int chunk = 50;
+            List<Callable<Boolean>> tasks;
+
+            {
+                tasks = new ArrayList<>();
+
+                for (int from = 0; from < variables.size(); from += chunk) {
+                    final int to = Math.min(variables.size(), from + chunk);
+                    tasks.add(new Task(from, to, y));
+                }
+
+                ConcurrencyUtils.runCallables(tasks, parallelism);
+            }
+
+            {
+                tasks = new ArrayList<>();
+
+                for (Node s : new ArrayList<>(selection)) {
+                    for (int from = 0; from < variables.size(); from += chunk) {
+                        final int to = Math.min(variables.size(), from + chunk);
+                        tasks.add(new Task(from, to, s));
+                    }
+                }
+            }
+
+            ConcurrencyUtils.runCallables(tasks, parallelism);
+        }
+
+        final DataSet dataSet = fullData.subsetColumns(selection);
+
+        System.out.println("# selected variables = " + dataSet.getVariables().size());
+
+        return dataSet;
+
     }
 }
