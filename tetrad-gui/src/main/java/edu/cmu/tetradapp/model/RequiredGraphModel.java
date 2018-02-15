@@ -18,17 +18,19 @@
 // along with this program; if not, write to the Free Software               //
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA //
 ///////////////////////////////////////////////////////////////////////////////
-
 package edu.cmu.tetradapp.model;
 
 import edu.cmu.tetrad.data.IKnowledge;
 import edu.cmu.tetrad.data.Knowledge2;
 import edu.cmu.tetrad.data.KnowledgeBoxInput;
-import edu.cmu.tetrad.graph.*;
+import edu.cmu.tetrad.graph.Edge;
+import edu.cmu.tetrad.graph.EdgeListGraph;
+import edu.cmu.tetrad.graph.Edges;
+import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.SortedSet;
@@ -38,22 +40,20 @@ import java.util.TreeSet;
  * @author kaalpurush
  */
 public class RequiredGraphModel extends KnowledgeBoxModel {
+
     static final long serialVersionUID = 23L;
 
 //    private String name;
 //    private Parameters params;
 //    private KnowledgeBoxInput knowledgeBoxInput;
 //    private List<String> varNames = new ArrayList<String>();
-
     /**
-     * @serial
-     * @deprecated
+     * @serial @deprecated
      */
     private IKnowledge knowledge;
 
     /**
-     * @serial
-     * @deprecated
+     * @serial @deprecated
      */
 //    private List<Knowledge> knowledgeList;
     private List<Node> variables = new ArrayList<>();
@@ -132,7 +132,6 @@ public class RequiredGraphModel extends KnowledgeBoxModel {
         this(params, input);
     }
 
-
     /**
      * Constructor from dataWrapper edge
      */
@@ -174,15 +173,20 @@ public class RequiredGraphModel extends KnowledgeBoxModel {
     }
 
     private void createKnowledge(Parameters params) {
-        IKnowledge knowledge = (IKnowledge) params.get("knowledge", new Knowledge2());
-        knowledge.clear();
-
-        for (String varName : getKnowledgeBoxInput().getVariableNames()) {
-            if (!varName.startsWith("E_")) {
-                getVarNames().add(varName);
-                knowledge.addVariable(varName);
-            }
+        IKnowledge knwl = getKnowledge();
+        if (knwl == null) {
+            return;
         }
+
+        knwl.clear();
+
+        List<String> varNames = getVarNames();
+        getKnowledgeBoxInput().getVariableNames().stream()
+                .filter(e -> !e.startsWith("E_"))
+                .forEach(e -> {
+                    varNames.add(e);
+                    knwl.addVariable(e);
+                });
 
         if (resultGraph == null) {
             throw new NullPointerException("I couldn't find a parent graph.");
@@ -190,28 +194,24 @@ public class RequiredGraphModel extends KnowledgeBoxModel {
 
         List<Node> nodes = resultGraph.getNodes();
 
-        for (int i = 0; i < nodes.size(); i++) {
-            for (int j = i + 1; j < nodes.size(); j++) {
-//                if (resultGraph.getEdges().size() >= 2) continue;
-                if (nodes.get(i).getName().startsWith("E_")) continue;
-                if (nodes.get(j).getName().startsWith("E_")) continue;
+        int numOfNodes = nodes.size();
+        for (int i = 0; i < numOfNodes; i++) {
+            for (int j = i + 1; j < numOfNodes; j++) {
+                Node n1 = nodes.get(i);
+                Node n2 = nodes.get(j);
 
-                Edge edge = resultGraph.getEdge(nodes.get(i), nodes.get(j));
-
-                if (edge == null) {
+                if (n1.getName().startsWith("E_") || n2.getName().startsWith("E_")) {
                     continue;
                 }
-                else if (edge.isDirected()) {
-                    Node node1 = edge.getNode1();
-                    Node node2 = edge.getNode2();
-//                    knowledge.setEdgeForbidden(node2.getNode(), node1.getNode(), true);
-                    knowledge.setRequired(node1.getName(), node2.getName());
-                }
-                else if (Edges.isUndirectedEdge(edge)) {
-                    Node node1 = edge.getNode1();
-                    Node node2 = edge.getNode2();
-                    knowledge.setRequired(node1.getName(), node2.getName());
-                    knowledge.setRequired(node2.getName(), node1.getName());
+
+                Edge edge = resultGraph.getEdge(n1, n2);
+                if (edge == null) {
+                    continue;
+                } else if (edge.isDirected()) {
+                    knwl.setRequired(edge.getNode1().getName(), edge.getNode2().getName());
+                } else if (Edges.isUndirectedEdge(edge)) {
+                    knwl.setRequired(n1.getName(), n2.getName());
+                    knwl.setRequired(n2.getName(), n1.getName());
                 }
             }
         }
@@ -230,6 +230,3 @@ public class RequiredGraphModel extends KnowledgeBoxModel {
         return resultGraph;
     }
 }
-
-
-
