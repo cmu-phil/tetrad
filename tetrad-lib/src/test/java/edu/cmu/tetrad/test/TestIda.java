@@ -21,7 +21,7 @@
 
 package edu.cmu.tetrad.test;
 
-import edu.cmu.tetrad.algcomparison.algorithm.CStaS;
+import edu.cmu.tetrad.algcomparison.algorithm.CStaR;
 import edu.cmu.tetrad.algcomparison.graph.RandomForward;
 import edu.cmu.tetrad.algcomparison.graph.RandomGraph;
 import edu.cmu.tetrad.algcomparison.simulation.LinearFisherModel;
@@ -41,6 +41,8 @@ import org.junit.Test;
 
 import java.util.*;
 import java.util.concurrent.Callable;
+
+import static edu.cmu.tetrad.search.CStaR.getPattern;
 
 /**
  * Tests IDA.
@@ -69,7 +71,11 @@ public class TestIda {
 
         Node y = dataSet.getVariable("X10");
 
-        Graph pattern = CStaS.getPattern(dataSet, parameters);
+        SemBicScore score = new SemBicScore(new CovarianceMatrixOnTheFly(dataSet));
+        score.setPenaltyDiscount(parameters.getDouble("penaltyDiscount"));
+        IndependenceTest test = new IndTestScore(score);
+
+        Graph pattern = getPattern(test);
 
         Ida ida = new Ida(dataSet, pattern);
 
@@ -104,7 +110,7 @@ public class TestIda {
 
         long start = System.currentTimeMillis();
 
-        CStaS cstar = new CStaS();
+        CStaR cstar = new CStaR();
         Graph graph = cstar.search(dataSet, parameters);
 
         long stop = System.currentTimeMillis();
@@ -112,8 +118,23 @@ public class TestIda {
         printResult(trueDag, parameters, graph, stop - start);
     }
 
-    public void testBoth(int numNodes, double avgDegree, int sampleSize, int numIterations) {
+    public void testBoth() {
+        int numNodes = 100;
+        int avgDegree = 4;
+        int sampleSize = 200;
+        int numIterations = 1;
+        int minNumAncestors = 10;
+        double maxEr = 10;
+
         Parameters parameters = new Parameters();
+
+        parameters.set("penaltyDiscount", 2);
+        parameters.set("numSubsamples", 50);
+        parameters.set("percentSubsampleSize", 0.5);
+        parameters.set("maxQ", 200);
+        parameters.set("maxEr", maxEr);
+        parameters.set("depth", 3);
+
         parameters.set("numMeasures", numNodes);
         parameters.set("numLatents", 0);
         parameters.set("avgDegree", avgDegree);
@@ -126,36 +147,14 @@ public class TestIda {
 
         parameters.set("coefLow", 0.3);
         parameters.set("coefHigh", 1.0);
-//        parameters.set("varLow");
-//        parameters.set("varHigh");
-//        parameters.set("verbose");
-//        parameters.set("includePositiveCoefs");
         parameters.set("includeNegativeCoefs", true);
-//        parameters.set("errorsNormal", true);
-//        parameters.set("betaLeftValue", 2);
-//        parameters.set("betaRightValue", 5);
-//        parameters.set("numRuns");
-//        parameters.set("percentDiscrete");
-//        parameters.set("numCategories");
-//        parameters.set("differentGraphs");
         parameters.set("sampleSize", sampleSize);
         parameters.set("intervalBetweenShocks", 40);
         parameters.set("intervalBetweenRecordings", 40);
-//        parameters.set("selfLoopCoef");
-//        parameters.set("fisherEpsilon");
-//        parameters.set("randomizeColumns");
-//        parameters.set("measurementVariance");
 
         parameters.set("sampleSize", sampleSize);
 
         parameters.set("parallelism", 40);
-
-        parameters.set("penaltyDiscount", 1.5);
-        parameters.set("numSubsamples", 50);
-        parameters.set("percentSubsampleSize", 0.5);
-        parameters.set("maxQ", 200);
-        parameters.set("maxEr", 20);
-        parameters.set("depth", 3);
 
         List<int[]> cstarRet = new ArrayList<>();
 
@@ -179,7 +178,7 @@ public class TestIda {
                 p.addAll(trueDag.getParents(q));
             }
 
-            if (p.size() < 30) {
+            if (p.size() < minNumAncestors) {
                 i--;
                 continue;
             }
@@ -200,7 +199,7 @@ public class TestIda {
 //                }
 //            }
 
-            CStaS cstar = new CStaS();
+            CStaR cstar = new CStaR();
             cstar.setTrueDag(trueDag);
             Graph graph = cstar.search(selectedData, parameters);
 
@@ -208,8 +207,6 @@ public class TestIda {
 
             int[] ret = printResult(truePattern, parameters, graph, stop - start);
             cstarRet.add(ret);
-
-            System.out.println("\n\n=====FmbStar====");
         }
 
         System.out.println();
@@ -226,7 +223,120 @@ public class TestIda {
                     + cstarRet.get(i)[5] + "\t"
             );
         }
+
     }
+
+    @Test
+    public void testCombinations() {
+        int avgDegree = 6;
+
+        Parameters parameters = new Parameters();
+        parameters.set("numLatents", 0);
+        parameters.set("avgDegree", avgDegree);
+        parameters.set("maxDegree", 100);
+        parameters.set("maxIndegree", 100);
+        parameters.set("maxOutdegree", 100);
+        parameters.set("connected", false);
+
+        parameters.set("verbose", false);
+
+        parameters.set("coefLow", 0.3);
+        parameters.set("coefHigh", 1.0);
+//        parameters.set("varLow");
+//        parameters.set("varHigh");
+//        parameters.set("verbose");
+//        parameters.set("includePositiveCoefs");
+        parameters.set("includeNegativeCoefs", true);
+//        parameters.set("errorsNormal", true);
+//        parameters.set("betaLeftValue", 2);
+//        parameters.set("betaRightValue", 5);
+//        parameters.set("numRuns");
+//        parameters.set("percentDiscrete");
+//        parameters.set("numCategories");
+//        parameters.set("differentGraphs");
+        parameters.set("intervalBetweenShocks", 40);
+        parameters.set("intervalBetweenRecordings", 40);
+//        parameters.set("selfLoopCoef");
+//        parameters.set("fisherEpsilon");
+//        parameters.set("randomizeColumns");
+//        parameters.set("measurementVariance");
+
+        parameters.set("parallelism", 40);
+
+        parameters.set("penaltyDiscount", 2);
+        parameters.set("numSubsamples", 50);
+        parameters.set("percentSubsampleSize", 0.5);
+        parameters.set("maxQ", 200);
+        parameters.set("maxEr", 10);
+        parameters.set("depth", 3);
+
+        int numIterations = 5;
+
+        for (int numNodes : new int[]{400, 600}) {//, 100, 200, 400, 600}) {
+            for (int sampleSize : new int[]{1000}) {//50, 100, 200, 400, 600, 1000}) {
+                parameters.set("numMeasures", numNodes);
+                parameters.set("sampleSize", sampleSize);
+
+
+                List<int[]> cstarRet = new ArrayList<>();
+
+                RandomGraph randomForward = new RandomForward();
+                LinearFisherModel fisher = new LinearFisherModel(randomForward);
+                fisher.createData(parameters);
+                DataSet fullData = (DataSet) fisher.getDataModel(0);
+
+                Graph trueDag = fisher.getTrueGraph(0);
+                Graph truePattern = SearchGraphUtils.patternForDag(trueDag);
+
+                int m = trueDag.getNumNodes() + 1;
+
+                for (int i = 0; i < numIterations; i++) {
+                    m--;
+
+                    final Node t = trueDag.getNodes().get(m - 1);
+                    Set<Node> p = new HashSet<>(trueDag.getParents(t));
+
+                    for (Node q : new HashSet<>(p)) {
+                        p.addAll(trueDag.getParents(q));
+                    }
+
+                    if (p.size() < 15) {
+                        i--;
+                        continue;
+                    }
+
+                    parameters.set("targetName", "X" + m);
+
+                    long start = System.currentTimeMillis();
+
+                    DataSet selectedData = selectVariables(fullData, parameters);
+
+                    CStaR cstar = new CStaR();
+                    cstar.setTrueDag(trueDag);
+                    Graph graph = cstar.search(selectedData, parameters);
+
+                    long stop = System.currentTimeMillis();
+
+                    int[] ret = printResult(truePattern, parameters, graph, stop - start);
+                    cstarRet.add(ret);
+                }
+
+                int allFp = 0;
+
+                for (int i = 0; i < numIterations; i++) {
+                    for (int r = 2; r < 6; r++) {
+                        allFp += cstarRet.get(i)[r];
+                    }
+                }
+
+                double avgFp = allFp / (double) numIterations;
+
+                System.out.println("# nodes = " + numNodes + " sample size = " + sampleSize + " avg FP = " + avgFp);
+            }
+        }
+
+    }
+
 
     private DataSet selectVariables(DataSet fullData, Parameters parameters) {
         Node y = fullData.getVariable(parameters.getString("targetName"));
@@ -357,7 +467,11 @@ public class TestIda {
         x = x2;
         y = dataSet.getVariable(y.getName());
 
-        Graph pattern = CStaS.getPattern(dataSet, parameters);
+        SemBicScore score = new SemBicScore(new CovarianceMatrixOnTheFly(dataSet));
+        score.setPenaltyDiscount(parameters.getDouble("penaltyDiscount"));
+        IndependenceTest test = new IndTestScore(score);
+
+        Graph pattern = getPattern(test);
 
         Ida ida = new Ida(dataSet, pattern);
 
@@ -371,20 +485,7 @@ public class TestIda {
     }
 
     public static void main(String[] args) {
-        if (args.length == 0) {
-            int numNodes = 50;
-            double avgDegree = 2;
-            int sampleSize = 100;
-            int numIterations = 5;
-            new TestIda().testBoth(numNodes, avgDegree, sampleSize, numIterations);
-        } else {
-            int numNodes = Integer.parseInt(args[0]);
-            double avgDegree = Double.parseDouble(args[1]);
-            int sampleSize = Integer.parseInt(args[2]);
-            int numIterations = Integer.parseInt(args[3]);
-
-            new TestIda().testBoth(numNodes, avgDegree, sampleSize, numIterations);
-        }
+        new TestIda().testBoth();
     }
 }
 
