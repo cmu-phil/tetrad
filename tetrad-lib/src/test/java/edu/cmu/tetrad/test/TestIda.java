@@ -88,40 +88,10 @@ public class TestIda {
     }
 
 //    @Test
-    public void testCStar() {
-        Parameters parameters = new Parameters();
-        parameters.set("penaltyDiscount", 2);
-        parameters.set("numSubsamples", 30);
-        parameters.set("percentSubsampleSize", .5);
-        parameters.set("maxQ", 5);
-        parameters.set("targetName", "X50");
-        parameters.set("alpha", 0.001);
-
-        int numNodes = 50;
-        int numEdges = 2 * numNodes;
-        int sampleSize = 100;
-
-        Graph trueDag = GraphUtils.randomGraph(numNodes, 0, numEdges,
-                100, 100, 100, false);
-
-        SemPm pm = new SemPm(trueDag);
-        SemIm im = new SemIm(pm);
-        DataSet dataSet = im.simulateData(sampleSize, false);
-
-        long start = System.currentTimeMillis();
-
-        CStaS cstas = new CStaS();
-        Graph graph = cstas.search(dataSet, parameters);
-
-        long stop = System.currentTimeMillis();
-
-        printResult(trueDag, parameters, graph, stop - start);
-    }
-
     public void testBoth() {
         int numNodes = 1000;
         int avgDegree = 8;
-        int sampleSize = 100;
+        int sampleSize = 50;
         int numIterations = 10;
         int numSubsamples = 100;
         int minNumAncestors = 15;
@@ -129,7 +99,7 @@ public class TestIda {
 
         Parameters parameters = new Parameters();
 
-        parameters.set("penaltyDiscount", 1.7);
+        parameters.set("penaltyDiscount", 1.0);
         parameters.set("numSubsamples", numSubsamples);
         parameters.set("maxQ", 200);
         parameters.set("maxEr", maxEr);
@@ -185,36 +155,28 @@ public class TestIda {
 
             parameters.set("targetName", "X" + m);
 
-            long start = System.currentTimeMillis();
-
             CStaS cstas = new CStaS();
             cstas.setTrueDag(trueDag);
             Graph graph = cstas.search(fullData, parameters);
 
-            long stop = System.currentTimeMillis();
-
-            int[] ret = printResult(truePattern, parameters, graph, stop - start);
+            int[] ret = getResult(truePattern, graph);
             cstasRet.add(ret);
         }
 
         System.out.println();
 
-        System.out.println("\tCPar\tCPAnc\tCDesc\tCSib\tCPDesc\tCOther");
+        System.out.println("\tCPAnc\tCOther");
 
         for (int i = 0; i < numIterations; i++) {
             System.out.println((i + 1) + ".\t"
                     + cstasRet.get(i)[0] + "\t"
                     + cstasRet.get(i)[1] + "\t"
-                    + cstasRet.get(i)[2] + "\t"
-                    + cstasRet.get(i)[3] + "\t"
-                    + cstasRet.get(i)[4] + "\t"
-                    + cstasRet.get(i)[5] + "\t"
             );
         }
 
     }
 
-//    @Test
+    //    @Test
     public void testCombinations() {
         int avgDegree = 6;
 
@@ -279,24 +241,18 @@ public class TestIda {
 
                     parameters.set("targetName", "X" + m);
 
-                    long start = System.currentTimeMillis();
-
                     CStaS cstas = new CStaS();
                     cstas.setTrueDag(trueDag);
                     Graph graph = cstas.search(fullData, parameters);
 
-                    long stop = System.currentTimeMillis();
-
-                    int[] ret = printResult(truePattern, parameters, graph, stop - start);
+                    int[] ret = getResult(truePattern, graph);
                     cstasRet.add(ret);
                 }
 
                 int allFp = 0;
 
                 for (int i = 0; i < numIterations; i++) {
-                    for (int r = 2; r < 6; r++) {
-                        allFp += cstasRet.get(i)[r];
-                    }
+                    allFp += cstasRet.get(i)[1];
                 }
 
                 double avgFp = allFp / (double) numIterations;
@@ -307,78 +263,33 @@ public class TestIda {
 
     }
 
-    private int[] printResult(Graph trueGraph, Parameters parameters, Graph graph, long elapsed) {
+    private int[] getResult(Graph trueGraph, Graph graph) {
         graph = GraphUtils.replaceNodes(graph, trueGraph.getNodes());
 
-        Set<Edge> allParents = new HashSet<>();
+        if (graph == null) throw new NullPointerException("Graph null");
+
         Set<Edge> allPossAncestors = new HashSet<>();
-        Set<Edge> allDescendants = new HashSet<>();
-        Set<Edge> allSiblings = new HashSet<>();
-        Set<Edge> allParentsOfDescendants = new HashSet<>();
         Set<Edge> allOther = new HashSet<>();
 
         for (Edge edge : graph.getEdges()) {
             Node x = edge.getNode1();
             Node y = edge.getNode2();
 
-            final boolean parent = trueGraph.getParents(x).contains(y);
-
-            if (parent) allParents.add(edge);
-
             final boolean possibleAncestor = trueGraph.existsSemiDirectedPathFromTo(x, Collections.singleton(y));
 
-            if (possibleAncestor && !parent)
+            if (possibleAncestor) {
                 allPossAncestors.add(edge);
-
-            final boolean descendant = trueGraph.existsSemiDirectedPathFromTo(y, Collections.singleton(x));
-
-            if (descendant) allDescendants.add(edge);
-
-            if (!parent && !descendant && !possibleAncestor) {
+            } else {
                 allOther.add(edge);
             }
         }
 
-        int[] ret = new int[6];
+        int[] ret = new int[2];
 
-        ret[0] = allParents.size();
-        ret[1] = allPossAncestors.size();
-        ret[2] = allDescendants.size();
-        ret[3] = allSiblings.size();
-        ret[4] = allParentsOfDescendants.size();
-        ret[5] = allOther.size();
+        ret[0] = allPossAncestors.size();
+        ret[1] = allOther.size();
 
         return ret;
-    }
-
-    private void printIdaResult(List<Node> x, Node y, DataSet dataSet, Graph trueGraph, Parameters parameters) {
-        trueGraph = GraphUtils.replaceNodes(trueGraph, dataSet.getVariables());
-        ICovarianceMatrix covariances = new CovarianceMatrixOnTheFly(dataSet);
-
-        List<Node> x2 = new ArrayList<>();
-        for (Node node : x) x2.add(dataSet.getVariable(node.getName()));
-        x = x2;
-        y = dataSet.getVariable(y.getName());
-
-        SemBicScore score = new SemBicScore(new CovarianceMatrixOnTheFly(dataSet));
-        score.setPenaltyDiscount(parameters.getDouble("penaltyDiscount"));
-        IndependenceTest test = new IndTestScore(score);
-
-        PcAll pc = new PcAll(test, null);
-        pc.setFasRule(PcAll.FasRule.FAS_STABLE);
-        pc.setConflictRule(PcAll.ConflictRule.PRIORITY);
-        pc.setColliderDiscovery(PcAll.ColliderDiscovery.MAX_P);
-        Graph pattern = pc.search();
-
-        Ida ida = new Ida(dataSet, pattern);
-
-        for (Node _x : x) {
-            LinkedList<Double> effects = ida.getEffects(_x, y);
-            double trueEffect = ida.trueEffect(_x, y, trueGraph);
-            double distance = ida.distance(effects, trueEffect);
-            System.out.println(_x + ": min effect = " + effects.getFirst() + " max effect = " + effects.getLast()
-                    + " true effect = " + trueEffect + " distance = " + distance);
-        }
     }
 
     public static void main(String[] args) {
