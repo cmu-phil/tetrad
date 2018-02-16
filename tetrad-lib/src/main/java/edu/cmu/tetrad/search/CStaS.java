@@ -22,13 +22,19 @@ import java.util.concurrent.ConcurrentHashMap;
 import static java.lang.Math.pow;
 
 public class CStaS {
-    private int numSubsamples;
-    private double penaltyDiscount;
-    private double maxEr;
-    private int parallelism;
-    private Graph trueDag = null;
+    public enum TestType {SEM_BIC, FisherZ, ChiSquare, ConditionalGaussian}
 
-    public CStaS() {
+    private int numSubsamples = 30;
+    private double penaltyDiscount = 2;
+    private double alpha = 0.01;
+    private double maxEr = 5;
+    private int parallelism = Runtime.getRuntime().availableProcessors() * 4;
+    private Graph trueDag = null;
+    private TestType testType = TestType.SEM_BIC;
+
+    // Only certain tests are supported
+    public CStaS(TestType testType) {
+        this.testType = testType;
     }
 
     public List<Record> getRecords(DataSet dataSet, Node target) {
@@ -56,10 +62,8 @@ public class CStaS {
                     BootstrapSampler sampler = new BootstrapSampler();
                     sampler.setWithoutReplacements(true);
                     DataSet sample = sampler.sample(selection, (int) (selection.getNumRows() / 2));
-                    SemBicScore score = new SemBicScore(new CorrelationMatrixOnTheFly(sample));
-                    score.setPenaltyDiscount(getPenaltyDiscount());
-                    IndependenceTest test = new IndTestScore(score);
-                    Graph pattern = getPattern(test);
+
+                    Graph pattern = getPattern(sample);
                     Ida ida = new Ida(sample, pattern);
                     effects.add(ida.getSortedMinEffects(target));
                 } catch (Exception e) {
@@ -191,7 +195,25 @@ public class CStaS {
         return records;
     }
 
-    public static Graph getPattern(IndependenceTest test) {
+    public Graph getPattern(DataSet sample) {
+        IndependenceTest test;
+
+        if (testType == TestType.SEM_BIC) {
+            SemBicScore score = new SemBicScore(new CorrelationMatrixOnTheFly(sample));
+            score.setPenaltyDiscount(getPenaltyDiscount());
+            test = new IndTestScore(score);
+        } else if (testType == TestType.FisherZ) {
+            test = new IndTestFisherZ(sample, alpha);
+        } else if (testType == TestType.ChiSquare) {
+            test = new IndTestChiSquare(sample, alpha);
+        } else if (testType == TestType.ConditionalGaussian) {
+            final ConditionalGaussianScore conditionalGaussianScore = new ConditionalGaussianScore(sample, 1, false);
+            conditionalGaussianScore.setPenaltyDiscount(getPenaltyDiscount());
+            test = new IndTestScore(conditionalGaussianScore);
+        } else {
+            throw new IllegalArgumentException("That test has not been configured: " + testType);
+        }
+
         PcAll pc = new PcAll(test, null);
         pc.setFasRule(PcAll.FasRule.FAS_STABLE);
         pc.setConflictRule(PcAll.ConflictRule.PRIORITY);
@@ -406,4 +428,14 @@ public class CStaS {
         return dataSet;
 
     }
+
+    public double getAlpha() {
+        return alpha;
+    }
+
+    public void setAlpha(double alpha) {
+        this.alpha = alpha;
+    }
+
+
 }

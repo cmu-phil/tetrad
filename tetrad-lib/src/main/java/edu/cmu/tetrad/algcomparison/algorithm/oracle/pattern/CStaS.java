@@ -5,6 +5,7 @@ import edu.cmu.tetrad.annotation.AlgType;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
+import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.Parameters;
@@ -22,12 +23,10 @@ import java.util.List;
 )
 public class CStaS implements Algorithm {
     static final long serialVersionUID = 23L;
-    private Algorithm algorithm;
     private Graph trueDag = null;
     private List<edu.cmu.tetrad.search.CStaS.Record> records = null;
 
     public CStaS() {
-        this.algorithm = new Fges();
     }
 
     @Override
@@ -40,7 +39,19 @@ public class CStaS implements Algorithm {
         System.out.println("# Available Processors = " + Runtime.getRuntime().availableProcessors());
         System.out.println("Parallelism = " + parameters.getInt("parallelism"));
 
-        edu.cmu.tetrad.search.CStaS cStaS = new edu.cmu.tetrad.search.CStaS();
+        edu.cmu.tetrad.search.CStaS.TestType type;
+
+        if (dataSet.isContinuous()) {
+            type = edu.cmu.tetrad.search.CStaS.TestType.SEM_BIC;
+        } else if (dataSet.isDiscrete()) {
+            type = edu.cmu.tetrad.search.CStaS.TestType.ChiSquare;
+        } else if (dataSet.isMixed()) {
+            type = edu.cmu.tetrad.search.CStaS.TestType.ConditionalGaussian;
+        } else {
+            throw new IllegalArgumentException();
+        }
+
+        edu.cmu.tetrad.search.CStaS cStaS = new edu.cmu.tetrad.search.CStaS(type);
 
         cStaS.setPenaltyDiscount(parameters.getDouble("penaltyDiscount"));
         cStaS.setParallelism(parameters.getInt("parallelism"));
@@ -50,7 +61,7 @@ public class CStaS implements Algorithm {
 
         final Node target = dataSet.getVariable(parameters.getString("targetName"));
 
-        this.records =  cStaS.getRecords((DataSet) dataSet, target);
+        this.records = cStaS.getRecords((DataSet) dataSet, target);
 
         System.out.println(cStaS.makeTable(this.getRecords()));
 
@@ -60,7 +71,7 @@ public class CStaS implements Algorithm {
 
     @Override
     public Graph getComparisonGraph(Graph graph) {
-        return algorithm.getComparisonGraph(graph);
+        return new EdgeListGraph();
     }
 
     @Override
@@ -70,7 +81,7 @@ public class CStaS implements Algorithm {
 
     @Override
     public DataType getDataType() {
-        return DataType.Continuous;
+        return DataType.Mixed;
     }
 
     @Override

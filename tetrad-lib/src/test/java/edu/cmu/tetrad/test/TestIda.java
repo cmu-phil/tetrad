@@ -40,8 +40,6 @@ import org.junit.Test;
 
 import java.util.*;
 
-import static edu.cmu.tetrad.search.CStaS.getPattern;
-
 /**
  * Tests IDA.
  *
@@ -73,7 +71,11 @@ public class TestIda {
         score.setPenaltyDiscount(parameters.getDouble("penaltyDiscount"));
         IndependenceTest test = new IndTestScore(score);
 
-        Graph pattern = getPattern(test);
+        PcAll pc = new PcAll(test, null);
+        pc.setFasRule(PcAll.FasRule.FAS_STABLE);
+        pc.setConflictRule(PcAll.ConflictRule.PRIORITY);
+        pc.setColliderDiscovery(PcAll.ColliderDiscovery.MAX_P);
+        Graph pattern = pc.search();
 
         Ida ida = new Ida(dataSet, pattern);
 
@@ -362,7 +364,11 @@ public class TestIda {
         score.setPenaltyDiscount(parameters.getDouble("penaltyDiscount"));
         IndependenceTest test = new IndTestScore(score);
 
-        Graph pattern = getPattern(test);
+        PcAll pc = new PcAll(test, null);
+        pc.setFasRule(PcAll.FasRule.FAS_STABLE);
+        pc.setConflictRule(PcAll.ConflictRule.PRIORITY);
+        pc.setColliderDiscovery(PcAll.ColliderDiscovery.MAX_P);
+        Graph pattern = pc.search();
 
         Ida ida = new Ida(dataSet, pattern);
 
