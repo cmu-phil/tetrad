@@ -108,8 +108,8 @@ public class TestIda {
 
         long start = System.currentTimeMillis();
 
-        CStaS cstar = new CStaS();
-        Graph graph = cstar.search(dataSet, parameters);
+        CStaS cstas = new CStaS();
+        Graph graph = cstas.search(dataSet, parameters);
 
         long stop = System.currentTimeMillis();
 
@@ -154,7 +154,7 @@ public class TestIda {
 
         parameters.set("parallelism", 40);
 
-        List<int[]> cstarRet = new ArrayList<>();
+        List<int[]> cstasRet = new ArrayList<>();
 
         RandomGraph randomForward = new RandomForward();
         LinearFisherModel fisher = new LinearFisherModel(randomForward);
@@ -185,14 +185,14 @@ public class TestIda {
 
             long start = System.currentTimeMillis();
 
-            CStaS cstar = new CStaS();
-            cstar.setTrueDag(trueDag);
-            Graph graph = cstar.search(fullData, parameters);
+            CStaS cstas = new CStaS();
+            cstas.setTrueDag(trueDag);
+            Graph graph = cstas.search(fullData, parameters);
 
             long stop = System.currentTimeMillis();
 
             int[] ret = printResult(truePattern, parameters, graph, stop - start);
-            cstarRet.add(ret);
+            cstasRet.add(ret);
         }
 
         System.out.println();
@@ -201,12 +201,12 @@ public class TestIda {
 
         for (int i = 0; i < numIterations; i++) {
             System.out.println((i + 1) + ".\t"
-                    + cstarRet.get(i)[0] + "\t"
-                    + cstarRet.get(i)[1] + "\t"
-                    + cstarRet.get(i)[2] + "\t"
-                    + cstarRet.get(i)[3] + "\t"
-                    + cstarRet.get(i)[4] + "\t"
-                    + cstarRet.get(i)[5] + "\t"
+                    + cstasRet.get(i)[0] + "\t"
+                    + cstasRet.get(i)[1] + "\t"
+                    + cstasRet.get(i)[2] + "\t"
+                    + cstasRet.get(i)[3] + "\t"
+                    + cstasRet.get(i)[4] + "\t"
+                    + cstasRet.get(i)[5] + "\t"
             );
         }
 
@@ -248,7 +248,7 @@ public class TestIda {
                 parameters.set("sampleSize", sampleSize);
 
 
-                List<int[]> cstarRet = new ArrayList<>();
+                List<int[]> cstasRet = new ArrayList<>();
 
                 RandomGraph randomForward = new RandomForward();
                 LinearFisherModel fisher = new LinearFisherModel(randomForward);
@@ -279,21 +279,21 @@ public class TestIda {
 
                     long start = System.currentTimeMillis();
 
-                    CStaS cstar = new CStaS();
-                    cstar.setTrueDag(trueDag);
-                    Graph graph = cstar.search(fullData, parameters);
+                    CStaS cstas = new CStaS();
+                    cstas.setTrueDag(trueDag);
+                    Graph graph = cstas.search(fullData, parameters);
 
                     long stop = System.currentTimeMillis();
 
                     int[] ret = printResult(truePattern, parameters, graph, stop - start);
-                    cstarRet.add(ret);
+                    cstasRet.add(ret);
                 }
 
                 int allFp = 0;
 
                 for (int i = 0; i < numIterations; i++) {
                     for (int r = 2; r < 6; r++) {
-                        allFp += cstarRet.get(i)[r];
+                        allFp += cstasRet.get(i)[r];
                     }
                 }
 

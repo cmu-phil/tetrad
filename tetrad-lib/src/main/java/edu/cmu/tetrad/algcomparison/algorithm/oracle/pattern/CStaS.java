@@ -14,7 +14,7 @@ import java.util.List;
 
 @edu.cmu.tetrad.annotation.Algorithm(
         name = "CStaS",
-        command = "cstar",
+        command = "cstas",
         algoType = AlgType.forbid_latent_common_causes,
         description = "Performs a CStaS analysis of the given dataset (Stekhoven, Daniel J., et al. " +
                 "Causal stability ranking.\" Bioinformatics 28.21 (2012): 2819-2823) and returns a graph " +
