@@ -36,6 +36,7 @@ import edu.cmu.tetrad.search.*;
 import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemPm;
 import edu.cmu.tetrad.util.Parameters;
+import org.junit.Test;
 
 import java.util.*;
 
@@ -262,6 +263,7 @@ public class TestIda {
 
     }
 
+    @Test
     public void testConditionalGaussian() {
 
         Parameters parameters = new Parameters();
@@ -269,13 +271,13 @@ public class TestIda {
         parameters.set("numLatents", 0);
         parameters.set("avgDegree", 3);
 
-        parameters.set("numCategories", 3);
+        parameters.set("numCategories", 2);
         parameters.set("percentDiscrete", 50);
         parameters.set("numRuns", 1);
         parameters.set("differentGraphs", true);
-        parameters.set("sampleSize", 200);
+        parameters.set("sampleSize", 1000);
 
-        parameters.set("penaltyDiscount", 1.4);
+        parameters.set("penaltyDiscount", 1);
         parameters.set("numSubsamples", 30);
         parameters.set("maxEr", 10);
         parameters.set("targetName", "X45");
@@ -283,6 +285,7 @@ public class TestIda {
         RandomGraph graph = new RandomForward();
 
         LeeHastieSimulation simulation = new LeeHastieSimulation(graph);
+        simulation.createData(parameters);
 
         for (int i = 0; i < simulation.getNumDataModels(); i++) {
             edu.cmu.tetrad.search.CStaS cStaS = new edu.cmu.tetrad.search.CStaS(
