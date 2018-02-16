@@ -277,9 +277,9 @@ public class TestIda {
         parameters.set("differentGraphs", true);
         parameters.set("sampleSize", 200);
 
-        parameters.set("penaltyDiscount", 1);
+        parameters.set("penaltyDiscount", 1.4);
         parameters.set("numSubsamples", 30);
-        parameters.set("maxEr", 5);
+        parameters.set("maxEr", 10);
         parameters.set("targetName", "X45");
 
         RandomGraph graph = new RandomForward();
