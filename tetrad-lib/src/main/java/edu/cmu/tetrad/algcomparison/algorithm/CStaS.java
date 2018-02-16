@@ -35,7 +35,7 @@ public class CStaS implements Algorithm {
         System.out.println("# Available Processors = " + Runtime.getRuntime().availableProcessors());
         System.out.println("Parallelism = " + parameters.getInt("parallelism"));
 
-        edu.cmu.tetrad.search.CStaS cStaS = new edu.cmu.tetrad.search.CStaS();
+        edu.cmu.tetrad.search.CStaS cStaS = new edu.cmu.tetrad.search.CStaS(edu.cmu.tetrad.search.CStaS.TestType.SEM_BIC);
 
         cStaS.setPenaltyDiscount(parameters.getDouble("penaltyDiscount"));
         cStaS.setParallelism(parameters.getInt("parallelism"));

@@ -90,7 +90,7 @@ public class TestIda {
 
 //    @Test
     public void testBoth() {
-        int numNodes = 1000;
+        int numNodes = 500;
         int avgDegree = 6;
         int sampleSize = 50;
         int numIterations = 10;
