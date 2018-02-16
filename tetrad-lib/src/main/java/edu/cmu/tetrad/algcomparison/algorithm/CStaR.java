@@ -7,16 +7,17 @@ import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.search.CStaS;
 import edu.cmu.tetrad.util.Parameters;
 
 import java.util.ArrayList;
 import java.util.List;
 
 @edu.cmu.tetrad.annotation.Algorithm(
-        name = "CStaR",
+        name = "CStaS",
         command = "cstar",
         algoType = AlgType.forbid_latent_common_causes,
-        description = "Performs a CStaR analysis of the given dataset (Stekhoven, Daniel J., et al. " +
+        description = "Performs a CStaS analysis of the given dataset (Stekhoven, Daniel J., et al. " +
                 "Causal stability ranking.\" Bioinformatics 28.21 (2012): 2819-2823) and returns a graph " +
                 "in which all selected variables are shown as into the target. The target is the first variables."
 )
@@ -24,7 +25,7 @@ public class CStaR implements Algorithm {
     static final long serialVersionUID = 23L;
     private Algorithm algorithm;
     private Graph trueDag = null;
-    private List<edu.cmu.tetrad.search.CStaR.Record> records = null;
+    private List<CStaS.Record> records = null;
 
     public CStaR() {
         this.algorithm = new Fges();
@@ -35,21 +36,21 @@ public class CStaR implements Algorithm {
         System.out.println("# Available Processors = " + Runtime.getRuntime().availableProcessors());
         System.out.println("Parallelism = " + parameters.getInt("parallelism"));
 
-        edu.cmu.tetrad.search.CStaR cStaR = new edu.cmu.tetrad.search.CStaR();
+        CStaS cStaS = new CStaS();
 
-        cStaR.setPenaltyDiscount(parameters.getDouble("penaltyDiscount"));
-        cStaR.setParallelism(parameters.getInt("parallelism"));
-        cStaR.setMaxEr(parameters.getDouble("maxEr"));
-        cStaR.setNumSubsamples(parameters.getInt("numSubsamples"));
-        cStaR.setTrueDag(trueDag);
+        cStaS.setPenaltyDiscount(parameters.getDouble("penaltyDiscount"));
+        cStaS.setParallelism(parameters.getInt("parallelism"));
+        cStaS.setMaxEr(parameters.getDouble("maxEr"));
+        cStaS.setNumSubsamples(parameters.getInt("numSubsamples"));
+        cStaS.setTrueDag(trueDag);
 
         final Node target = dataSet.getVariable(parameters.getString("targetName"));
 
-        this.records =  cStaR.getRecords((DataSet) dataSet, target);
+        this.records =  cStaS.getRecords((DataSet) dataSet, target);
 
-        System.out.println(cStaR.makeTable(this.getRecords()));
+        System.out.println(cStaS.makeTable(this.getRecords()));
 
-        return cStaR.makeGraph(target, getRecords());
+        return cStaS.makeGraph(target, getRecords());
 
     }
 
@@ -60,7 +61,7 @@ public class CStaR implements Algorithm {
 
     @Override
     public String getDescription() {
-        return "CStaR";
+        return "CStaS";
     }
 
     @Override
@@ -83,7 +84,7 @@ public class CStaR implements Algorithm {
         this.trueDag = trueDag;
     }
 
-    public List<edu.cmu.tetrad.search.CStaR.Record> getRecords() {
+    public List<CStaS.Record> getRecords() {
         return records;
     }
 }

@@ -20,14 +20,14 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import static java.lang.Math.pow;
 
-public class CStaR {
+public class CStaS {
     private int numSubsamples;
     private double penaltyDiscount;
     private double maxEr;
     private int parallelism;
     private Graph trueDag = null;
 
-    public CStaR() {
+    public CStaS() {
     }
 
     public List<Record> getRecords(DataSet dataSet, Node target) {

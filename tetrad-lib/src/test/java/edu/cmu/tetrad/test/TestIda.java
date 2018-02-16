@@ -35,14 +35,12 @@ import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.*;
 import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemPm;
-import edu.cmu.tetrad.util.ConcurrencyUtils;
 import edu.cmu.tetrad.util.Parameters;
 import org.junit.Test;
 
 import java.util.*;
-import java.util.concurrent.Callable;
 
-import static edu.cmu.tetrad.search.CStaR.getPattern;
+import static edu.cmu.tetrad.search.CStaS.getPattern;
 
 /**
  * Tests IDA.
