@@ -24,6 +24,7 @@ package edu.cmu.tetrad.test;
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern.CStaS;
 import edu.cmu.tetrad.algcomparison.graph.RandomForward;
 import edu.cmu.tetrad.algcomparison.graph.RandomGraph;
+import edu.cmu.tetrad.algcomparison.simulation.LeeHastieSimulation;
 import edu.cmu.tetrad.algcomparison.simulation.LinearFisherModel;
 import edu.cmu.tetrad.data.CovarianceMatrixOnTheFly;
 import edu.cmu.tetrad.data.DataSet;
@@ -90,7 +91,7 @@ public class TestIda {
 //    @Test
     public void testBoth() {
         int numNodes = 1000;
-        int avgDegree = 8;
+        int avgDegree = 6;
         int sampleSize = 50;
         int numIterations = 10;
         int numSubsamples = 100;
@@ -261,6 +262,38 @@ public class TestIda {
             }
         }
 
+    }
+
+    public void testConditionalGaussian() {
+
+        Parameters parameters = new Parameters();
+        parameters.set("numMeasures", 50);
+        parameters.set("numLatents", 0);
+        parameters.set("avgDegree", 3);
+
+        parameters.set("numCategories", 3);
+        parameters.set("percentDiscrete", 50);
+        parameters.set("numRuns", 1);
+        parameters.set("differentGraphs", true);
+        parameters.set("sampleSize", 200);
+
+        parameters.set("penaltyDiscount", 1);
+        parameters.set("numSubsamples", 30);
+        parameters.set("maxEr", 5);
+        parameters.set("targetName", "X45");
+
+        RandomGraph graph = new RandomForward();
+
+        LeeHastieSimulation simulation = new LeeHastieSimulation(graph);
+
+        for (int i = 0; i < simulation.getNumDataModels(); i++) {
+            edu.cmu.tetrad.search.CStaS cStaS = new edu.cmu.tetrad.search.CStaS(
+                    edu.cmu.tetrad.search.CStaS.TestType.ConditionalGaussian);
+            cStaS.setTrueDag(simulation.getTrueGraph(i));
+            List<edu.cmu.tetrad.search.CStaS.Record> records = cStaS.getRecords((DataSet) simulation.getDataModel(i),
+                    simulation.getTrueGraph(i).getNode(parameters.getString("targetName")));
+            System.out.println(cStaS.makeTable(records));
+        }
     }
 
     private int[] getResult(Graph trueGraph, Graph graph) {
