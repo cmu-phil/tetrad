@@ -21,7 +21,7 @@
 
 package edu.cmu.tetrad.test;
 
-import edu.cmu.tetrad.algcomparison.algorithm.CStaR;
+import edu.cmu.tetrad.algcomparison.algorithm.CStaS;
 import edu.cmu.tetrad.algcomparison.graph.RandomForward;
 import edu.cmu.tetrad.algcomparison.graph.RandomGraph;
 import edu.cmu.tetrad.algcomparison.simulation.LinearFisherModel;
@@ -108,7 +108,7 @@ public class TestIda {
 
         long start = System.currentTimeMillis();
 
-        CStaR cstar = new CStaR();
+        CStaS cstar = new CStaS();
         Graph graph = cstar.search(dataSet, parameters);
 
         long stop = System.currentTimeMillis();
@@ -185,7 +185,7 @@ public class TestIda {
 
             long start = System.currentTimeMillis();
 
-            CStaR cstar = new CStaR();
+            CStaS cstar = new CStaS();
             cstar.setTrueDag(trueDag);
             Graph graph = cstar.search(fullData, parameters);
 
@@ -279,7 +279,7 @@ public class TestIda {
 
                     long start = System.currentTimeMillis();
 
-                    CStaR cstar = new CStaR();
+                    CStaS cstar = new CStaS();
                     cstar.setTrueDag(trueDag);
                     Graph graph = cstar.search(fullData, parameters);
 

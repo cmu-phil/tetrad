@@ -7,7 +7,6 @@ import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.search.CStaS;
 import edu.cmu.tetrad.util.Parameters;
 
 import java.util.ArrayList;
@@ -21,13 +20,13 @@ import java.util.List;
                 "Causal stability ranking.\" Bioinformatics 28.21 (2012): 2819-2823) and returns a graph " +
                 "in which all selected variables are shown as into the target. The target is the first variables."
 )
-public class CStaR implements Algorithm {
+public class CStaS implements Algorithm {
     static final long serialVersionUID = 23L;
     private Algorithm algorithm;
     private Graph trueDag = null;
-    private List<CStaS.Record> records = null;
+    private List<edu.cmu.tetrad.search.CStaS.Record> records = null;
 
-    public CStaR() {
+    public CStaS() {
         this.algorithm = new Fges();
     }
 
@@ -36,7 +35,7 @@ public class CStaR implements Algorithm {
         System.out.println("# Available Processors = " + Runtime.getRuntime().availableProcessors());
         System.out.println("Parallelism = " + parameters.getInt("parallelism"));
 
-        CStaS cStaS = new CStaS();
+        edu.cmu.tetrad.search.CStaS cStaS = new edu.cmu.tetrad.search.CStaS();
 
         cStaS.setPenaltyDiscount(parameters.getDouble("penaltyDiscount"));
         cStaS.setParallelism(parameters.getInt("parallelism"));
@@ -84,7 +83,7 @@ public class CStaR implements Algorithm {
         this.trueDag = trueDag;
     }
 
-    public List<CStaS.Record> getRecords() {
+    public List<edu.cmu.tetrad.search.CStaS.Record> getRecords() {
         return records;
     }
 }
