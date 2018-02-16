@@ -2,7 +2,6 @@ package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.BootstrapSampler;
 import edu.cmu.tetrad.data.CorrelationMatrixOnTheFly;
-import edu.cmu.tetrad.data.CovarianceMatrixOnTheFly;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
@@ -30,7 +29,7 @@ public class CStaS {
     private double maxEr = 5;
     private int parallelism = Runtime.getRuntime().availableProcessors() * 4;
     private Graph trueDag = null;
-    private TestType testType = TestType.SEM_BIC;
+    private TestType testType;
 
     // Only certain tests are supported
     public CStaS(TestType testType) {
@@ -38,7 +37,11 @@ public class CStaS {
     }
 
     public List<Record> getRecords(DataSet dataSet, Node target) {
-        final DataSet selection = selectVariables(dataSet, target, penaltyDiscount, parallelism);
+        return getRecords(dataSet, dataSet.getVariables(), target);
+    }
+
+    public List<Record> getRecords(DataSet dataSet, List<Node> possiblePredictors, Node target) {
+        final DataSet selection = selectVariables(dataSet, possiblePredictors, target, parallelism);
 
         final List<Node> variables = selection.getVariables();
         variables.remove(target);
@@ -360,12 +363,12 @@ public class CStaS {
         return graph;
     }
 
-    private DataSet selectVariables(DataSet fullData, Node y, double penaltyDiscount, int parallelism) {
+    private DataSet selectVariables(DataSet fullData, List<Node> possiblePredictors, Node y, int parallelism) {
         IndependenceTest test = getIndependenceTest(fullData);
 
         List<Node> selection = new ArrayList<>();
 
-        final List<Node> variables = fullData.getVariables();
+        final List<Node> variables = possiblePredictors;
 
         {
             class Task implements Callable<Boolean> {

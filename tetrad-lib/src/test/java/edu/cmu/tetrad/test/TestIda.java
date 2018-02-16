@@ -28,7 +28,6 @@ import edu.cmu.tetrad.algcomparison.simulation.LeeHastieSimulation;
 import edu.cmu.tetrad.algcomparison.simulation.LinearFisherModel;
 import edu.cmu.tetrad.data.CovarianceMatrixOnTheFly;
 import edu.cmu.tetrad.data.DataSet;
-import edu.cmu.tetrad.data.ICovarianceMatrix;
 import edu.cmu.tetrad.graph.Edge;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
@@ -37,7 +36,6 @@ import edu.cmu.tetrad.search.*;
 import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemPm;
 import edu.cmu.tetrad.util.Parameters;
-import org.junit.Test;
 
 import java.util.*;
 
@@ -92,7 +90,7 @@ public class TestIda {
     public void testBoth() {
         int numNodes = 1000;
         int avgDegree = 6;
-        int sampleSize = 50;
+        int sampleSize = 100;
         int numIterations = 10;
         int numSubsamples = 100;
         int minNumAncestors = 15;
