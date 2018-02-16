@@ -2,18 +2,18 @@ package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.CovarianceMatrixOnTheFly;
 import edu.cmu.tetrad.data.DataSet;
+import edu.cmu.tetrad.data.DataUtils;
 import edu.cmu.tetrad.data.ICovarianceMatrix;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.regression.RegressionCovariance;
 import edu.cmu.tetrad.util.DepthChoiceGenerator;
 import edu.cmu.tetrad.util.TetradMatrix;
 
 import java.util.*;
 
-import static java.lang.Math.*;
-import static java.util.Collections.singleton;
+import static java.lang.Math.abs;
+import static java.lang.Math.min;
 
 /**
  * Implements the IDA algorithm, Maathuis, Marloes H., Markus Kalisch, and Peter Bühlmann.
@@ -24,17 +24,15 @@ import static java.util.Collections.singleton;
  */
 public class Ida {
     private DataSet dataSet;
-    private final double[][] data;
     private final Graph pattern;
     private Map<String, Integer> nodeIndices;
     private ICovarianceMatrix allCovariances;
 
     public Ida(DataSet dataSet, Graph pattern) {
-        this.dataSet = dataSet;
-        this.data = dataSet.getDoubleData().transpose().toArray();
+        this.dataSet = DataUtils.convertNumericalDiscreteToContinuous(dataSet);
         this.pattern = pattern;
 
-        allCovariances = new CovarianceMatrixOnTheFly(dataSet);
+        allCovariances = new CovarianceMatrixOnTheFly(this.dataSet);
 
         nodeIndices = new HashMap<>();
 
