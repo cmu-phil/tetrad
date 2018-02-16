@@ -119,18 +119,18 @@ public class TestIda {
     }
 
     public void testBoth() {
-        int numNodes = 100;
-        int avgDegree = 4;
-        int sampleSize = 200;
-        int numIterations = 1;
-        int minNumAncestors = 10;
-        double maxEr = 10;
+        int numNodes = 1000;
+        int avgDegree = 8;
+        int sampleSize = 100;
+        int numIterations = 10;
+        int numSubsamples = 100;
+        int minNumAncestors = 15;
+        double maxEr = 5;
 
         Parameters parameters = new Parameters();
 
-        parameters.set("penaltyDiscount", 2);
-        parameters.set("numSubsamples", 50);
-        parameters.set("percentSubsampleSize", 0.5);
+        parameters.set("penaltyDiscount", 1.7);
+        parameters.set("numSubsamples", numSubsamples);
         parameters.set("maxQ", 200);
         parameters.set("maxEr", maxEr);
         parameters.set("depth", 3);
@@ -230,24 +230,8 @@ public class TestIda {
 
         parameters.set("coefLow", 0.3);
         parameters.set("coefHigh", 1.0);
-//        parameters.set("varLow");
-//        parameters.set("varHigh");
-//        parameters.set("verbose");
-//        parameters.set("includePositiveCoefs");
-        parameters.set("includeNegativeCoefs", true);
-//        parameters.set("errorsNormal", true);
-//        parameters.set("betaLeftValue", 2);
-//        parameters.set("betaRightValue", 5);
-//        parameters.set("numRuns");
-//        parameters.set("percentDiscrete");
-//        parameters.set("numCategories");
-//        parameters.set("differentGraphs");
         parameters.set("intervalBetweenShocks", 40);
         parameters.set("intervalBetweenRecordings", 40);
-//        parameters.set("selfLoopCoef");
-//        parameters.set("fisherEpsilon");
-//        parameters.set("randomizeColumns");
-//        parameters.set("measurementVariance");
 
         parameters.set("parallelism", 40);
 

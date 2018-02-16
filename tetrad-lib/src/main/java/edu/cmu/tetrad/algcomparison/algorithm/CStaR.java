@@ -24,6 +24,7 @@ public class CStaR implements Algorithm {
     static final long serialVersionUID = 23L;
     private Algorithm algorithm;
     private Graph trueDag = null;
+    private List<edu.cmu.tetrad.search.CStaR.Record> records = null;
 
     public CStaR() {
         this.algorithm = new Fges();
@@ -44,12 +45,11 @@ public class CStaR implements Algorithm {
 
         final Node target = dataSet.getVariable(parameters.getString("targetName"));
 
-        List<edu.cmu.tetrad.search.CStaR.Record> records
-                =  cStaR.getRecords((DataSet) dataSet, target);
+        this.records =  cStaR.getRecords((DataSet) dataSet, target);
 
-        System.out.println(cStaR.makeTable(records));
+        System.out.println(cStaR.makeTable(this.getRecords()));
 
-        return cStaR.makeGraph(target, records);
+        return cStaR.makeGraph(target, getRecords());
 
     }
 
@@ -83,7 +83,9 @@ public class CStaR implements Algorithm {
         this.trueDag = trueDag;
     }
 
-
+    public List<edu.cmu.tetrad.search.CStaR.Record> getRecords() {
+        return records;
+    }
 }
 
 

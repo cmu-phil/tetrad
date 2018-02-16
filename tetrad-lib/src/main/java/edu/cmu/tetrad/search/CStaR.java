@@ -9,24 +9,18 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.ConcurrencyUtils;
-import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.StatUtils;
 import edu.cmu.tetrad.util.TextTable;
 
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
 
-import static java.lang.Integer.min;
 import static java.lang.Math.pow;
 
 public class CStaR {
-
     private int numSubsamples;
     private double penaltyDiscount;
     private double maxEr;
@@ -42,11 +36,11 @@ public class CStaR {
         final List<Node> variables = selection.getVariables();
         variables.remove(target);
 
-        final Map<Integer, Map<String, Double>> minimalEffects = new ConcurrentHashMap<>();
+        final Map<Integer, Map<Node, Double>> minimalEffects = new ConcurrentHashMap<>();
 
         for (int b = 0; b < getNumSubsamples(); b++) {
-            final Map<String, Double> map = new ConcurrentHashMap<>();
-            for (Node node : variables) map.put(node.getName(), 0.0);
+            final Map<Node, Double> map = new ConcurrentHashMap<>();
+            for (Node node : variables) map.put(node, 0.0);
             minimalEffects.put(b, map);
         }
 
@@ -83,26 +77,26 @@ public class CStaR {
 
         ConcurrencyUtils.runCallables(tasks, getParallelism());
 
-        List<Node> bestNodes = new ArrayList<>();
-        List<Double> bestPi = new ArrayList<>();
-        List<Integer> bestQs = new ArrayList<>();
+        List<Node> outNodes = new ArrayList<>();
+        List<Double> outPis = new ArrayList<>();
+        int bestQ = -1;
 
-        int q = 2;
+        int q = 1;
         int maxOut = 0;
 
-        while (q++ < variables.size()) {
-            final Map<String, Integer> map = new ConcurrentHashMap<>();
-            for (Node node : variables) map.put(node.getName(), 0);
+        while (q < variables.size()) {
+            final Map<Node, Integer> counts = new HashMap<>();
+            for (Node node : variables) counts.put(node, 0);
 
             for (Ida.NodeEffects _effects : effects) {
                 for (int i = 0; i <= q; i++) {
                     if (i < _effects.getNodes().size()) {
                         if (_effects.getEffects().get(i) > 0) {
-                            map.put(_effects.getNodes().get(i).getName(), map.get(_effects.getNodes().get(i).getName()) + 1);
+                            final Node key = _effects.getNodes().get(i);
+                            counts.put(key, counts.get(key) + 1);
                         }
                     }
                 }
-
             }
 
             for (int b = 0; b < effects.size(); b++) {
@@ -111,54 +105,49 @@ public class CStaR {
                 for (int r = 0; r < _effects.getNodes().size(); r++) {
                     Node n = _effects.getNodes().get(r);
                     Double e = _effects.getEffects().get(r);
-                    minimalEffects.get(b).put(n.getName(), e);
+                    minimalEffects.get(b).put(n, e);
                 }
             }
 
             List<Node> sortedVariables = new ArrayList<>(variables);
-            sortedVariables.sort((o1, o2) -> Integer.compare(map.get(o2.getName()), map.get(o1.getName())));
+            sortedVariables.sort((o1, o2) -> Integer.compare(counts.get(o2), counts.get(o1)));
 
             List<Double> pi = new ArrayList<>();
 
             for (Node v : sortedVariables) {
-                final Integer count = map.get(v.getName());
+                final Integer count = counts.get(v);
                 pi.add(count / ((double) getNumSubsamples()));
             }
 
-            List<Node> outNodes1 = new ArrayList<>();
-            List<Double> outPis = new ArrayList<>();
-            List<Integer> outQs = new ArrayList<>();
-
-            int numOut = 0;
+            outNodes = new ArrayList<>();
+            outPis = new ArrayList<>();
 
             for (int i = 0; i < pi.size(); i++) {
                 final double ev = er(pi.get(i), q, variables.size());
 
                 if (ev <= getMaxEr()) {
-                    numOut++;
-                    outNodes1.add(sortedVariables.get(i));
+                    outNodes.add(sortedVariables.get(i));
                     outPis.add(pi.get(i));
-                    outQs.add(q);
                 }
             }
 
-            if (numOut < maxOut) {
+            bestQ = q;
+
+            if (outNodes.size() < maxOut) {
                 break;
             } else {
-                maxOut = numOut;
+                maxOut = outNodes.size();
             }
 
-            bestNodes = new ArrayList<>(outNodes1);
-            bestPi = new ArrayList<>(outPis);
-            bestQs = new ArrayList<>(outQs);
+            q++;
         }
 
         List<Node> ancestors = new ArrayList<>();
 
         if (trueDag != null) {
+            trueDag = GraphUtils.replaceNodes(trueDag, outNodes);
+            trueDag = GraphUtils.replaceNodes(trueDag, Collections.singletonList(target));
             Graph truePattern = SearchGraphUtils.patternForDag(trueDag);
-            truePattern = GraphUtils.replaceNodes(truePattern, bestNodes);
-            truePattern = GraphUtils.replaceNodes(truePattern, Collections.singletonList(target));
 
             if (truePattern != null) {
                 for (Node node : truePattern.getNodes()) {
@@ -171,16 +160,15 @@ public class CStaR {
 
         List<Record> records = new ArrayList<>();
 
-        for (int i = 0; i < bestNodes.size(); i++) {
-
-            final double er = er(bestPi.get(i), bestQs.get(i), variables.size());
-            final double pcer = pcer(bestPi.get(i), bestQs.get(i), variables.size());
+        for (int i = 0; i < outNodes.size(); i++) {
+            final double er = er(outPis.get(i), bestQ, variables.size());
+            final double pcer = pcer(outPis.get(i), bestQ, variables.size());
 
             List<Double> e = new ArrayList<>();
 
             for (int b = 0; b < getNumSubsamples(); b++) {
-                final String name = bestNodes.get(i).getName();
-                final double m = minimalEffects.get(b).get(name);
+                final Node node = outNodes.get(i);
+                final double m = minimalEffects.get(b).get(node);
                 e.add(m);
             }
 
@@ -188,8 +176,16 @@ public class CStaR {
             for (int t = 0; t < e.size(); t++) _e[t] = e.get(t);
             double avg = StatUtils.mean(_e);
 
-            records.add(new Record(bestNodes.get(i), bestPi.get(i), avg, pcer, er, ancestors.contains(bestNodes.get(i))));
+            records.add(new Record(outNodes.get(i), outPis.get(i), avg, pcer, er, ancestors.contains(outNodes.get(i))));
         }
+
+        records.sort((o1, o2) -> {
+            if (o1.getPi() == o2.getPi()) {
+                return Double.compare(o2.effect, o1.effect);
+            } else {
+                return 0;
+            }
+        });
 
         return records;
     }
@@ -197,7 +193,7 @@ public class CStaR {
     public static Graph getPattern(IndependenceTest test) {
         PcAll pc = new PcAll(test, null);
         pc.setFasRule(PcAll.FasRule.FAS_STABLE);
-        pc.setConflictRule(PcAll.ConflictRule.OVERWRITE);
+        pc.setConflictRule(PcAll.ConflictRule.PRIORITY);
         pc.setColliderDiscovery(PcAll.ColliderDiscovery.MAX_P);
         return pc.search();
     }
@@ -287,12 +283,6 @@ public class CStaR {
         return v;
     }
 
-    private static double erq(double pi, double q, double p) {
-        double v = er(pi, q, p) / q;
-        if (v < 0 || v > 1) return Double.POSITIVE_INFINITY;
-        return v;
-    }
-
     // Per comparison error rate.
     private static double pcer(double pi, double q, double p) {
         double v = pow(q / (2 * p), 2) * (1.0 / (2 * pi - 1));
@@ -335,60 +325,11 @@ public class CStaR {
         Graph graph = new EdgeListGraph(outNodes);
         graph.addNode(y);
 
-        for (int i = 0; i < new ArrayList<Node>(outNodes).size(); i++) {
+        for (int i = 0; i < new ArrayList<>(outNodes).size(); i++) {
             graph.addDirectedEdge(outNodes.get(i), y);
         }
 
         return graph;
-    }
-
-    private static void printRanks(List<Node> variables, double numSubsamples, Map<Integer, Map<String, Integer>> counts, Parameters parameters) {
-        final int maxQ = min(parameters.getInt("maxQ"), variables.size());
-
-        List<Integer> qs = new ArrayList<>();
-
-        for (int q = maxQ / 10; q < maxQ; q += maxQ / 10) qs.add(q);
-
-        double[][] ranks = new double[variables.size()][qs.size()];
-
-        for (int s = 0; s < qs.size(); s++) {
-            int q = qs.get(s);
-            List<Double> pi = new ArrayList<>();
-
-            for (Node v : variables) {
-                final Integer count = counts.get(q).get(v.getName());
-                pi.add(count / numSubsamples);
-            }
-
-            double[] _pi = new double[pi.size()];
-
-            for (int i = 0; i < variables.size(); i++) {
-                final Integer count = counts.get(q).get(variables.get(i).getName());
-                _pi[i] = count / numSubsamples;
-            }
-
-            double[] _ranks = StatUtils.getRanks(_pi);
-
-            for (int i = 0; i < variables.size(); i++) {
-                ranks[i][s] = _ranks[i];
-            }
-        }
-
-        double[] rankMedians = new double[ranks.length];
-
-        for (int j = 0; j < ranks.length; j++) {
-            rankMedians[j] = StatUtils.median(ranks[j]);
-        }
-
-        System.out.println("Rank medians");
-
-        List<Node> sortedVariables = new ArrayList<>(variables);
-        sortedVariables.sort((o1, o2) -> Double.compare(rankMedians[variables.indexOf(o2)], rankMedians[variables.indexOf(o1)]));
-
-        for (int j = 0; j < sortedVariables.size(); j++) {
-            System.out.println((j + 1) + ". " + sortedVariables.get(j) + " "
-                    + rankMedians[variables.indexOf(sortedVariables.get(j))]);
-        }
     }
 
     private DataSet selectVariables(DataSet fullData, Node y, double penaltyDiscount, int parallelism) {
