@@ -10,6 +10,7 @@ import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.ConcurrencyUtils;
 import edu.cmu.tetrad.util.StatUtils;
+import edu.cmu.tetrad.util.TetradSerializable;
 import edu.cmu.tetrad.util.TextTable;
 
 import java.text.DecimalFormat;
@@ -234,7 +235,7 @@ public class CStaS {
         this.trueDag = trueDag;
     }
 
-    public static class Record {
+    public static class Record implements TetradSerializable {
         private Node variable;
         private double pi;
         private double effect;
