@@ -2,6 +2,7 @@ package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.CovarianceMatrixOnTheFly;
 import edu.cmu.tetrad.data.DataSet;
+import edu.cmu.tetrad.data.DataUtils;
 import edu.cmu.tetrad.data.ICovarianceMatrix;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
@@ -28,10 +29,10 @@ public class Ida {
     private ICovarianceMatrix allCovariances;
 
     public Ida(DataSet dataSet, Graph pattern) {
-        this.dataSet = dataSet;
+        this.dataSet = DataUtils.convertNumericalDiscreteToContinuous(dataSet);
         this.pattern = pattern;
 
-        allCovariances = new CovarianceMatrixOnTheFly(dataSet);
+        allCovariances = new CovarianceMatrixOnTheFly(this.dataSet);
 
         nodeIndices = new HashMap<>();
 

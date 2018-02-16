@@ -196,6 +196,16 @@ public class CStaS {
     }
 
     public Graph getPattern(DataSet sample) {
+        IndependenceTest test = getIndependenceTest(sample);
+
+        PcAll pc = new PcAll(test, null);
+        pc.setFasRule(PcAll.FasRule.FAS_STABLE);
+        pc.setConflictRule(PcAll.ConflictRule.PRIORITY);
+        pc.setColliderDiscovery(PcAll.ColliderDiscovery.MAX_P);
+        return pc.search();
+    }
+
+    private IndependenceTest getIndependenceTest(DataSet sample) {
         IndependenceTest test;
 
         if (testType == TestType.SEM_BIC) {
@@ -213,12 +223,7 @@ public class CStaS {
         } else {
             throw new IllegalArgumentException("That test has not been configured: " + testType);
         }
-
-        PcAll pc = new PcAll(test, null);
-        pc.setFasRule(PcAll.FasRule.FAS_STABLE);
-        pc.setConflictRule(PcAll.ConflictRule.PRIORITY);
-        pc.setColliderDiscovery(PcAll.ColliderDiscovery.MAX_P);
-        return pc.search();
+        return test;
     }
 
     public int getNumSubsamples() {
@@ -356,9 +361,7 @@ public class CStaS {
     }
 
     private DataSet selectVariables(DataSet fullData, Node y, double penaltyDiscount, int parallelism) {
-        final SemBicScore score = new SemBicScore(new CovarianceMatrixOnTheFly(fullData));
-        score.setPenaltyDiscount(penaltyDiscount);
-        IndependenceTest test = new IndTestScore(score);
+        IndependenceTest test = getIndependenceTest(fullData);
 
         List<Node> selection = new ArrayList<>();
 
