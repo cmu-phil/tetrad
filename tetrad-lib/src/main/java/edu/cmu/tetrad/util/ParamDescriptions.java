@@ -208,7 +208,7 @@ public class ParamDescriptions {
 
         map.put("numSubsamples", new ParamDescription(
                 "The number of subsamples",
-                8, 1, Integer.MAX_VALUE));
+                30, 1, Integer.MAX_VALUE));
 
         map.put("percentSubsampleSize", new ParamDescription(
                 "Percentage of records to include in a random subsample",
