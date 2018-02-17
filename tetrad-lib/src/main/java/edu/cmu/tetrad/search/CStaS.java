@@ -41,10 +41,12 @@ public class CStaS {
     }
 
     public List<Record> getRecords(DataSet dataSet, List<Node> possiblePredictors, Node target) {
-        final DataSet selection = selectVariables(dataSet, possiblePredictors, target, parallelism);
+        possiblePredictors = GraphUtils.replaceNodes(possiblePredictors, dataSet.getVariables());
+        Node _target = dataSet.getVariable(target.getName());
+        final DataSet selection = selectVariables(dataSet, possiblePredictors, _target, parallelism);
 
         final List<Node> variables = selection.getVariables();
-        variables.remove(target);
+        variables.remove(_target);
 
         final Map<Integer, Map<Node, Double>> minimalEffects = new ConcurrentHashMap<>();
 
@@ -68,7 +70,7 @@ public class CStaS {
 
                     Graph pattern = getPattern(sample);
                     Ida ida = new Ida(sample, pattern);
-                    effects.add(ida.getSortedMinEffects(target));
+                    effects.add(ida.getSortedMinEffects(_target));
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -154,12 +156,12 @@ public class CStaS {
 
         if (trueDag != null) {
             trueDag = GraphUtils.replaceNodes(trueDag, outNodes);
-            trueDag = GraphUtils.replaceNodes(trueDag, Collections.singletonList(target));
+            trueDag = GraphUtils.replaceNodes(trueDag, Collections.singletonList(_target));
             Graph truePattern = SearchGraphUtils.patternForDag(trueDag);
 
             if (truePattern != null) {
                 for (Node node : truePattern.getNodes()) {
-                    if (truePattern.existsSemiDirectedPathFromTo(node, Collections.singleton(target))) {
+                    if (truePattern.existsSemiDirectedPathFromTo(node, Collections.singleton(_target))) {
                         ancestors.add(node);
                     }
                 }
