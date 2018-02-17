@@ -187,7 +187,7 @@ public class FasStable implements IFas {
                 Node x = nodes.get(i);
                 Node y = nodes.get(j);
 
-                if (adjacencies.get(x).contains(y)) {
+                if (adjacencies.get(x).contains(y) && !graph.isAdjacentTo(x, y)) {
                     graph.addUndirectedEdge(x, y);
                 }
             }

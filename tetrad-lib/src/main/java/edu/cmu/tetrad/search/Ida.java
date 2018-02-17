@@ -9,6 +9,7 @@ import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.DepthChoiceGenerator;
 import edu.cmu.tetrad.util.TetradMatrix;
+import org.apache.commons.math3.linear.SingularMatrixException;
 
 import java.util.*;
 
@@ -75,18 +76,24 @@ public class Ida {
         while ((choice = gen.next()) != null) {
             List<Node> sibbled = GraphUtils.asList(choice, siblings);
 
-            List<Node> regressors = new ArrayList<>();
-            regressors.add(x);
-            for (Node n : parents) if (!regressors.contains(n)) regressors.add(n);
-            for (Node n : sibbled) if (!regressors.contains(n)) regressors.add(n);
-            regressors.remove(y); // These are ignored anyway.
+            List<Node> regressors = null;
 
             double beta;
 
-            if (regressors.contains(y)) {
+            try {
+                regressors = new ArrayList<>();
+                regressors.add(x);
+                for (Node n : parents) if (!regressors.contains(n)) regressors.add(n);
+                for (Node n : sibbled) if (!regressors.contains(n)) regressors.add(n);
+                regressors.remove(y); // These are ignored anyway.
+
+                if (regressors.contains(y)) {
+                    beta = 0;
+                } else {
+                    beta = getBeta(regressors, y);
+                }
+            } catch (SingularMatrixException e) {
                 beta = 0;
-            } else {
-                beta = getBeta(regressors, y);
             }
 
             effects.add(abs(beta));

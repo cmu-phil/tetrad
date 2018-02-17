@@ -273,14 +273,14 @@ public class TestIda {
 
         parameters.set("numCategories", 2);
         parameters.set("percentDiscrete", 50);
-        parameters.set("numRuns", 1);
+        parameters.set("numRuns", 10);
         parameters.set("differentGraphs", true);
         parameters.set("sampleSize", 1000);
 
         parameters.set("penaltyDiscount", 1);
         parameters.set("numSubsamples", 30);
-        parameters.set("maxEr", 10);
-        parameters.set("targetName", "X45");
+        parameters.set("maxEr", 5);
+        parameters.set("targetName", "X50");
 
         RandomGraph graph = new RandomForward();
 
