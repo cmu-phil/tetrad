@@ -1,7 +1,6 @@
 package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.algcomparison.independence.ChiSquare;
-import edu.cmu.tetrad.algcomparison.independence.FisherZ;
 import edu.cmu.tetrad.data.BootstrapSampler;
 import edu.cmu.tetrad.data.CorrelationMatrixOnTheFly;
 import edu.cmu.tetrad.data.DataSet;
@@ -20,14 +19,66 @@ import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
 
-import static java.lang.Math.pow;
-
+/**
+ * An adaptation of the CStaR algorithm (Steckoven et al., 2012).
+ * <p>
+ * Stekhoven, D. J., Moraes, I., Sveinbjörnsson, G., Hennig, L., Maathuis, M. H., & Bühlmann, P. (2012). Causal stability ranking. Bioinformatics, 28(21), 2819-2823.
+ * <p>
+ * Meinshausen, N., & Bühlmann, P. (2010). Stability selection. Journal of the Royal Statistical Society: Series B (Statistical Methodology), 72(4), 417-473.
+ * <p>
+ * Colombo, D., & Maathuis, M. H. (2014). Order-independent constraint-based causal structure learning. The Journal of Machine Learning Research, 15(1), 3741-3782.
+ *
+ * @author jdramsey@andrew.cmu.edu
+ */
 public class CStaS {
+
+    // A single record in the returned table.
+    public static class Record implements TetradSerializable {
+        private Node variable;
+        private double pi;
+        private double effect;
+        private double pcer;
+        private double er;
+        private boolean trueInfluence;
+
+        Record(Node variable, double pi, double minEffect, double pcer, double er, boolean trueInfluence) {
+            this.variable = variable;
+            this.pi = pi;
+            this.effect = minEffect;
+            this.pcer = pcer;
+            this.er = er;
+            this.trueInfluence = trueInfluence;
+        }
+
+        public Node getVariable() {
+            return variable;
+        }
+
+        public double getPi() {
+            return pi;
+        }
+
+        public double getEffect() {
+            return effect;
+        }
+
+        public double getPcer() {
+            return pcer;
+        }
+
+        public double getEr() {
+            return er;
+        }
+
+        public boolean isTrueInfluence() {
+            return trueInfluence;
+        }
+    }
+
+
     private IndependenceTest test;
 
     private int numSubsamples = 30;
-    private double penaltyDiscount = 2;
-    private double alpha = 0.01;
     private double maxEr = 5;
     private int parallelism = Runtime.getRuntime().availableProcessors() * 10;
     private Graph trueDag = null;
@@ -39,7 +90,15 @@ public class CStaS {
         return getRecords(dataSet, dataSet.getVariables(), target, test);
     }
 
-    // Only certain tests are supported
+    /**
+     * Returns records for a set of variables with expected number of false positives bounded by getMaxEr.
+     *
+     * @param dataSet            The full datasets to search over.
+     * @param possiblePredictors A set of variables in the datasets over which to search.
+     * @param target             The target variables.
+     * @param test               This test is only used to make more tests like it for subsamples.
+     * @return
+     */
     public List<Record> getRecords(DataSet dataSet, List<Node> possiblePredictors, Node target, IndependenceTest test) {
         if (test instanceof IndTestScore && ((IndTestScore) test).getWrappedScore() instanceof SemBicScore) {
             this.test = test;
@@ -103,7 +162,7 @@ public class CStaS {
         int bestQ = -1;
 
         for (int q = 1; q <= variables.size(); q++) {
-                final Map<Node, Integer> counts = new HashMap<>();
+            final Map<Node, Integer> counts = new HashMap<>();
             for (Node node : variables) counts.put(node, 0);
 
             for (Ida.NodeEffects _effects : effects) {
@@ -204,7 +263,84 @@ public class CStaS {
         return records;
     }
 
-    public Graph getPattern(DataSet sample) {
+    /**
+     * Returns a text table from the given records
+     */
+    public String makeTable(List<Record> records) {
+        TextTable table = new TextTable(records.size() + 1, 6);
+        NumberFormat nf = new DecimalFormat("0.0000");
+
+        table.setToken(0, 0, "Index");
+        table.setToken(0, 1, "Variable");
+        table.setToken(0, 2, "PI");
+        table.setToken(0, 3, "Average Effect");
+        table.setToken(0, 4, "PCER");
+        table.setToken(0, 5, "ER");
+
+        int numStarred = 0;
+
+        for (int i = 0; i < records.size(); i++) {
+            table.setToken(i + 1, 0, "" + (i + 1));
+            final boolean contains = records.get(i).isTrueInfluence();
+            if (contains) numStarred++;
+            table.setToken(i + 1, 1, (contains ? "* " : "") + records.get(i).getVariable().getName());
+            table.setToken(i + 1, 2, nf.format(records.get(i).getPi()));
+            table.setToken(i + 1, 3, nf.format(records.get(i).getEffect()));
+            table.setToken(i + 1, 4, nf.format(records.get(i).getPcer()));
+            table.setToken(i + 1, 5, nf.format(records.get(i).getEr()));
+        }
+
+
+        final int fp = records.size() - numStarred;
+        return "\n" + table + "\n" + "# FP = " + fp + "\n";
+    }
+
+    /**
+     * Makes a graph of the estimated predictors to the target.
+     */
+    public Graph makeGraph(Node y, List<Record> records) {
+        List<Node> outNodes = new ArrayList<>();
+        for (Record record : records) outNodes.add(record.getVariable());
+
+        Graph graph = new EdgeListGraph(outNodes);
+        graph.addNode(y);
+
+        for (int i = 0; i < new ArrayList<>(outNodes).size(); i++) {
+            graph.addDirectedEdge(outNodes.get(i), y);
+        }
+
+        return graph;
+    }
+
+    public int getNumSubsamples() {
+        return numSubsamples;
+    }
+
+    public void setNumSubsamples(int numSubsamples) {
+        this.numSubsamples = numSubsamples;
+    }
+
+    public double getMaxEr() {
+        return maxEr;
+    }
+
+    public void setMaxEr(double maxEr) {
+        this.maxEr = maxEr;
+    }
+
+    public int getParallelism() {
+        return parallelism;
+    }
+
+    public void setParallelism(int parallelism) {
+        this.parallelism = parallelism;
+    }
+
+    public void setTrueDag(Graph trueDag) {
+        this.trueDag = trueDag;
+    }
+
+    private Graph getPattern(DataSet sample) {
         IndependenceTest test = getIndependenceTest(sample);
 
         PcAll pc = new PcAll(test, null);
@@ -236,87 +372,9 @@ public class CStaS {
         }
     }
 
-    public int getNumSubsamples() {
-        return numSubsamples;
-    }
-
-    public void setNumSubsamples(int numSubsamples) {
-        this.numSubsamples = numSubsamples;
-    }
-
-    public double getPenaltyDiscount() {
-        return penaltyDiscount;
-    }
-
-    public void setPenaltyDiscount(double penaltyDiscount) {
-        this.penaltyDiscount = penaltyDiscount;
-    }
-
-    public double getMaxEr() {
-        return maxEr;
-    }
-
-    public void setMaxEr(double maxEr) {
-        this.maxEr = maxEr;
-    }
-
-    public int getParallelism() {
-        return parallelism;
-    }
-
-    public void setParallelism(int parallelism) {
-        this.parallelism = parallelism;
-    }
-
-    public void setTrueDag(Graph trueDag) {
-        this.trueDag = trueDag;
-    }
-
-    public static class Record implements TetradSerializable {
-        private Node variable;
-        private double pi;
-        private double effect;
-        private double pcer;
-        private double er;
-        private boolean trueInfluence;
-
-        Record(Node variable, double pi, double minEffect, double pcer, double er, boolean trueInfluence) {
-            this.variable = variable;
-            this.pi = pi;
-            this.effect = minEffect;
-            this.pcer = pcer;
-            this.er = er;
-            this.trueInfluence = trueInfluence;
-        }
-
-        public Node getVariable() {
-            return variable;
-        }
-
-        public double getPi() {
-            return pi;
-        }
-
-        public double getEffect() {
-            return effect;
-        }
-
-        public double getPcer() {
-            return pcer;
-        }
-
-        public double getEr() {
-            return er;
-        }
-
-        public boolean isTrueInfluence() {
-            return trueInfluence;
-        }
-    }
-
     // E(V) bound
     private static double er(double pi, double q, double p) {
-        double v = ((q * q) / (4 * p)) * (1.0 / (2 * pi - 1)) ;
+        double v = ((q * q) / (4 * p)) * (1.0 / (2 * pi - 1));
         if (v < 0) return Double.POSITIVE_INFINITY;
         return v;
     }
@@ -328,48 +386,6 @@ public class CStaS {
         return v;
     }
 
-    public String makeTable(List<Record> records) {
-        TextTable table = new TextTable(records.size() + 1, 6);
-        NumberFormat nf = new DecimalFormat("0.0000");
-
-        table.setToken(0, 0, "Index");
-        table.setToken(0, 1, "Variable");
-        table.setToken(0, 2, "PI");
-        table.setToken(0, 3, "Average Effect");
-        table.setToken(0, 4, "PCER");
-        table.setToken(0, 5, "ER");
-
-        int numStarred = 0;
-
-        for (int i = 0; i < records.size(); i++) {
-            table.setToken(i + 1, 0, "" + (i + 1));
-            final boolean contains = records.get(i).isTrueInfluence();
-            if (contains) numStarred++;
-            table.setToken(i + 1, 1, (contains ? "* " : "") + records.get(i).getVariable().getName());
-            table.setToken(i + 1, 2, nf.format(records.get(i).getPi()));
-            table.setToken(i + 1, 3, nf.format(records.get(i).getEffect()));
-            table.setToken(i + 1, 4, nf.format(records.get(i).getPcer()));
-            table.setToken(i + 1, 5, nf.format(records.get(i).getEr()));
-        }
-
-
-        final int fp = records.size() - numStarred;
-        return "\n" + table + "\n" + "# FP = " + fp + "\n";
-    }
-
-    public Graph makeGraph(Node y, List<Record> records) {
-        List<Node> outNodes = new ArrayList<>();
-        for (Record record : records) outNodes.add(record.getVariable());
-
-        Graph graph = new EdgeListGraph(outNodes);
-        graph.addNode(y);
-
-        for (int i = 0; i < new ArrayList<>(outNodes).size(); i++) {
-            graph.addDirectedEdge(outNodes.get(i), y);
-        }
-
-        return graph;
-    }
 
     private DataSet selectVariables(DataSet fullData, List<Node> possiblePredictors, Node y, int parallelism) {
         IndependenceTest test = getIndependenceTest(fullData);
@@ -440,14 +456,5 @@ public class CStaS {
         System.out.println("# selected variables = " + dataSet.getVariables().size());
 
         return dataSet;
-
-    }
-
-    public double getAlpha() {
-        return alpha;
-    }
-
-    public void setAlpha(double alpha) {
-        this.alpha = alpha;
     }
 }
