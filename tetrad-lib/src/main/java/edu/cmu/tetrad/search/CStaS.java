@@ -27,7 +27,7 @@ public class CStaS {
     private double penaltyDiscount = 2;
     private double alpha = 0.01;
     private double maxEr = 5;
-    private int parallelism = Runtime.getRuntime().availableProcessors() * 4;
+    private int parallelism = Runtime.getRuntime().availableProcessors() * 10;
     private Graph trueDag = null;
     private TestType testType;
 
@@ -91,15 +91,12 @@ public class CStaS {
         List<Double> outPis = new ArrayList<>();
         int bestQ = -1;
 
-        int q = 1;
-        int maxOut = 0;
-
-        while (q < variables.size()) {
+        for (int q = 1; q <= variables.size(); q++) {
             final Map<Node, Integer> counts = new HashMap<>();
             for (Node node : variables) counts.put(node, 0);
 
             for (Ida.NodeEffects _effects : effects) {
-                for (int i = 0; i <= q; i++) {
+                for (int i = 0; i < q; i++) {
                     if (i < _effects.getNodes().size()) {
                         if (_effects.getEffects().get(i) > 0) {
                             final Node key = _effects.getNodes().get(i);
@@ -129,27 +126,23 @@ public class CStaS {
                 pi.add(count / ((double) getNumSubsamples()));
             }
 
-            outNodes = new ArrayList<>();
-            outPis = new ArrayList<>();
+            List<Node> _outNodes = new ArrayList<>();
+            List<Double> _outPis = new ArrayList<>();
 
-            for (int i = 0; i < pi.size(); i++) {
+            for (int i = 0; i < q; i++) {
                 final double ev = er(pi.get(i), q, variables.size());
 
                 if (ev <= getMaxEr()) {
-                    outNodes.add(sortedVariables.get(i));
-                    outPis.add(pi.get(i));
+                    _outNodes.add(sortedVariables.get(i));
+                    _outPis.add(pi.get(i));
                 }
             }
 
-            bestQ = q;
-
-            if (outNodes.size() < maxOut) {
-                break;
-            } else {
-                maxOut = outNodes.size();
+            if (_outNodes.size() > outNodes.size()) {
+                outNodes = _outNodes;
+                outPis = _outPis;
+                bestQ = q;
             }
-
-            q++;
         }
 
         List<Node> ancestors = new ArrayList<>();
@@ -312,14 +305,14 @@ public class CStaS {
     // E(V) bound
     private static double er(double pi, double q, double p) {
         double v = pcer(pi, q, p) * p;
-        if (v < 0 || v > q) return Double.POSITIVE_INFINITY;
+        if (v < 0) return Double.POSITIVE_INFINITY;
         return v;
     }
 
     // Per comparison error rate.
     private static double pcer(double pi, double q, double p) {
-        double v = pow(q / (2 * p), 2) * (1.0 / (2 * pi - 1));
-        if (v < 0 || v > 1) return Double.POSITIVE_INFINITY;
+        final double v = pow((q) / (2 * p), 2) * (1.0 / (2 * pi - 1));
+        if (v < 0) return Double.POSITIVE_INFINITY;
         return v;
     }
 
@@ -444,6 +437,4 @@ public class CStaS {
     public void setAlpha(double alpha) {
         this.alpha = alpha;
     }
-
-
 }

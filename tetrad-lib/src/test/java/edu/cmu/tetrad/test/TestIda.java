@@ -89,17 +89,17 @@ public class TestIda {
 
 //    @Test
     public void testBoth() {
-        int numNodes = 500;
+        int numNodes = 1000;
         int avgDegree = 6;
-        int sampleSize = 100;
+        int sampleSize = 200;
         int numIterations = 10;
         int numSubsamples = 100;
         int minNumAncestors = 15;
-        double maxEr = 5;
+        int maxEr = 5;
 
         Parameters parameters = new Parameters();
 
-        parameters.set("penaltyDiscount", 1.0);
+        parameters.set("penaltyDiscount", 1.3);
         parameters.set("numSubsamples", numSubsamples);
         parameters.set("maxQ", 200);
         parameters.set("maxEr", maxEr);

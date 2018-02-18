@@ -55,7 +55,7 @@ public class CStaS implements Algorithm {
 
         cStaS.setPenaltyDiscount(parameters.getDouble("penaltyDiscount"));
         cStaS.setParallelism(parameters.getInt("parallelism"));
-        cStaS.setMaxEr(parameters.getDouble("maxEr"));
+        cStaS.setMaxEr(parameters.getInt("maxEr"));
         cStaS.setNumSubsamples(parameters.getInt("numSubsamples"));
         cStaS.setTrueDag(trueDag);
 
