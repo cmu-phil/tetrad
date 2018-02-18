@@ -24,8 +24,10 @@ package edu.cmu.tetrad.test;
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern.CStaS;
 import edu.cmu.tetrad.algcomparison.graph.RandomForward;
 import edu.cmu.tetrad.algcomparison.graph.RandomGraph;
+import edu.cmu.tetrad.algcomparison.independence.SemBicTest;
 import edu.cmu.tetrad.algcomparison.simulation.LeeHastieSimulation;
 import edu.cmu.tetrad.algcomparison.simulation.LinearFisherModel;
+import edu.cmu.tetrad.data.CorrelationMatrixOnTheFly;
 import edu.cmu.tetrad.data.CovarianceMatrixOnTheFly;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Edge;
@@ -87,7 +89,7 @@ public class TestIda {
         }
     }
 
-//    @Test
+    //    @Test
     public void testBoth() {
         int numNodes = 1000;
         int avgDegree = 6;
@@ -155,7 +157,7 @@ public class TestIda {
 
             parameters.set("targetName", "X" + m);
 
-            CStaS cstas = new CStaS();
+            CStaS cstas = new CStaS(new SemBicTest());
             cstas.setTrueDag(trueDag);
             Graph graph = cstas.search(fullData, parameters);
 
@@ -241,7 +243,7 @@ public class TestIda {
 
                     parameters.set("targetName", "X" + m);
 
-                    CStaS cstas = new CStaS();
+                    CStaS cstas = new CStaS(new SemBicTest());
                     cstas.setTrueDag(trueDag);
                     Graph graph = cstas.search(fullData, parameters);
 
@@ -288,11 +290,15 @@ public class TestIda {
         simulation.createData(parameters);
 
         for (int i = 0; i < simulation.getNumDataModels(); i++) {
-            edu.cmu.tetrad.search.CStaS cStaS = new edu.cmu.tetrad.search.CStaS(
-                    edu.cmu.tetrad.search.CStaS.TestType.ConditionalGaussian);
+            edu.cmu.tetrad.search.CStaS cStaS = new edu.cmu.tetrad.search.CStaS();
             cStaS.setTrueDag(simulation.getTrueGraph(i));
-            List<edu.cmu.tetrad.search.CStaS.Record> records = cStaS.getRecords((DataSet) simulation.getDataModel(i),
-                    simulation.getTrueGraph(i).getNode(parameters.getString("targetName")));
+            final DataSet dataSet = (DataSet) simulation.getDataModel(i);
+            final ConditionalGaussianScore score = new ConditionalGaussianScore(dataSet, 1, false);
+            score.setPenaltyDiscount(parameters.getDouble("penaltyDiscount"));
+            final IndependenceTest test = new IndTestScore(score);
+            List<edu.cmu.tetrad.search.CStaS.Record> records = cStaS.getRecords(dataSet,
+                    simulation.getTrueGraph(i).getNode(parameters.getString("targetName")),
+                    test);
             System.out.println(cStaS.makeTable(records));
         }
     }

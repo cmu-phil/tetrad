@@ -1,5 +1,7 @@
 package edu.cmu.tetrad.search;
 
+import edu.cmu.tetrad.algcomparison.independence.ChiSquare;
+import edu.cmu.tetrad.algcomparison.independence.FisherZ;
 import edu.cmu.tetrad.data.BootstrapSampler;
 import edu.cmu.tetrad.data.CorrelationMatrixOnTheFly;
 import edu.cmu.tetrad.data.DataSet;
@@ -21,7 +23,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import static java.lang.Math.pow;
 
 public class CStaS {
-    public enum TestType {SEM_BIC, FisherZ, ChiSquare, ConditionalGaussian}
+    private IndependenceTest test;
 
     private int numSubsamples = 30;
     private double penaltyDiscount = 2;
@@ -29,18 +31,28 @@ public class CStaS {
     private double maxEr = 5;
     private int parallelism = Runtime.getRuntime().availableProcessors() * 10;
     private Graph trueDag = null;
-    private TestType testType;
+
+    public CStaS() {
+    }
+
+    public List<Record> getRecords(DataSet dataSet, Node target, IndependenceTest test) {
+        return getRecords(dataSet, dataSet.getVariables(), target, test);
+    }
 
     // Only certain tests are supported
-    public CStaS(TestType testType) {
-        this.testType = testType;
-    }
+    public List<Record> getRecords(DataSet dataSet, List<Node> possiblePredictors, Node target, IndependenceTest test) {
+        if (test instanceof IndTestScore && ((IndTestScore) test).getWrappedScore() instanceof SemBicScore) {
+            this.test = test;
+        } else if (test instanceof IndTestFisherZ) {
+            this.test = test;
+        } else if (test instanceof ChiSquare) {
+            this.test = test;
+        } else if (test instanceof IndTestScore && ((IndTestScore) test).getWrappedScore() instanceof ConditionalGaussianScore) {
+            this.test = test;
+        } else {
+            throw new IllegalArgumentException("That test is not configured.");
+        }
 
-    public List<Record> getRecords(DataSet dataSet, Node target) {
-        return getRecords(dataSet, dataSet.getVariables(), target);
-    }
-
-    public List<Record> getRecords(DataSet dataSet, List<Node> possiblePredictors, Node target) {
         possiblePredictors = GraphUtils.replaceNodes(possiblePredictors, dataSet.getVariables());
         Node _target = dataSet.getVariable(target.getName());
         final DataSet selection = selectVariables(dataSet, possiblePredictors, _target, parallelism);
@@ -204,24 +216,25 @@ public class CStaS {
     }
 
     private IndependenceTest getIndependenceTest(DataSet sample) {
-        IndependenceTest test;
-
-        if (testType == TestType.SEM_BIC) {
+        if (this.test instanceof IndTestScore && ((IndTestScore) this.test).getWrappedScore() instanceof SemBicScore) {
             SemBicScore score = new SemBicScore(new CorrelationMatrixOnTheFly(sample));
-            score.setPenaltyDiscount(getPenaltyDiscount());
-            test = new IndTestScore(score);
-        } else if (testType == TestType.FisherZ) {
-            test = new IndTestFisherZ(sample, alpha);
-        } else if (testType == TestType.ChiSquare) {
-            test = new IndTestChiSquare(sample, alpha);
-        } else if (testType == TestType.ConditionalGaussian) {
-            final ConditionalGaussianScore conditionalGaussianScore = new ConditionalGaussianScore(sample, 1, false);
-            conditionalGaussianScore.setPenaltyDiscount(getPenaltyDiscount());
-            test = new IndTestScore(conditionalGaussianScore);
+            score.setPenaltyDiscount(((SemBicScore) ((IndTestScore) this.test).getWrappedScore()).getPenaltyDiscount());
+            return new IndTestScore(score);
+        } else if (this.test instanceof IndTestFisherZ) {
+            double alpha = this.test.getAlpha();
+            return new IndTestFisherZ(new CorrelationMatrixOnTheFly(sample), alpha);
+        } else if (this.test instanceof ChiSquare) {
+            double alpha = this.test.getAlpha();
+            return new IndTestFisherZ(sample, alpha);
+        } else if (this.test instanceof IndTestScore && ((IndTestScore) this.test).getWrappedScore() instanceof ConditionalGaussianScore) {
+            ConditionalGaussianScore score = (ConditionalGaussianScore) ((IndTestScore) this.test).getWrappedScore();
+            double penaltyDiscount = score.getPenaltyDiscount();
+            ConditionalGaussianScore _score = new ConditionalGaussianScore(sample, 1, false);
+            _score.setPenaltyDiscount(penaltyDiscount);
+            return new IndTestScore(_score);
         } else {
-            throw new IllegalArgumentException("That test has not been configured: " + testType);
+            throw new IllegalArgumentException("That test is not configured.");
         }
-        return test;
     }
 
     public int getNumSubsamples() {

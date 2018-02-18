@@ -46,6 +46,7 @@ public class IndTestScore implements IndependenceTest {
     private final HashMap<Node, Integer> variablesHash;
     private double bump = Double.NaN;
     private DataModel data = null;
+    private Object wrappedScore;
 
     public  IndTestScore(Score score) {
         this(score, null);
@@ -211,6 +212,10 @@ public class IndTestScore implements IndependenceTest {
      */
     public double getScore() {
         return bump;
+    }
+
+    public Score getWrappedScore() {
+        return score;
     }
 }
 
