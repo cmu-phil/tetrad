@@ -79,7 +79,6 @@ public class CStaS {
                     BootstrapSampler sampler = new BootstrapSampler();
                     sampler.setWithoutReplacements(true);
                     DataSet sample = sampler.sample(selection, (int) (selection.getNumRows() / 2));
-
                     Graph pattern = getPattern(sample);
                     Ida ida = new Ida(sample, pattern);
                     effects.add(ida.getSortedMinEffects(_target));
@@ -104,7 +103,7 @@ public class CStaS {
         int bestQ = -1;
 
         for (int q = 1; q <= variables.size(); q++) {
-            final Map<Node, Integer> counts = new HashMap<>();
+                final Map<Node, Integer> counts = new HashMap<>();
             for (Node node : variables) counts.put(node, 0);
 
             for (Ida.NodeEffects _effects : effects) {
@@ -142,9 +141,9 @@ public class CStaS {
             List<Double> _outPis = new ArrayList<>();
 
             for (int i = 0; i < q; i++) {
-                final double ev = er(pi.get(i), q, variables.size());
+                final double er = er(pi.get(i), q, variables.size());
 
-                if (ev <= getMaxEr()) {
+                if (er <= getMaxEr()) {
                     _outNodes.add(sortedVariables.get(i));
                     _outPis.add(pi.get(i));
                 }
@@ -317,14 +316,14 @@ public class CStaS {
 
     // E(V) bound
     private static double er(double pi, double q, double p) {
-        double v = pcer(pi, q, p) * p;
+        double v = ((q * q) / (4 * p)) * (1.0 / (2 * pi - 1)) ;
         if (v < 0) return Double.POSITIVE_INFINITY;
         return v;
     }
 
     // Per comparison error rate.
     private static double pcer(double pi, double q, double p) {
-        final double v = pow((q) / (2 * p), 2) * (1.0 / (2 * pi - 1));
+        final double v = ((q * q) / (4 * p * p)) * (1.0 / (2 * pi - 1));
         if (v < 0) return Double.POSITIVE_INFINITY;
         return v;
     }
@@ -353,8 +352,9 @@ public class CStaS {
             table.setToken(i + 1, 5, nf.format(records.get(i).getEr()));
         }
 
-        return "\n" + table + "\n" + "# FP = " +
-                (records.size() - numStarred) + "\n";
+
+        final int fp = records.size() - numStarred;
+        return "\n" + table + "\n" + "# FP = " + fp + "\n";
     }
 
     public Graph makeGraph(Node y, List<Record> records) {

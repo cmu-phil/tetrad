@@ -203,7 +203,7 @@ public class TestIda {
         parameters.set("numSubsamples", 50);
         parameters.set("percentSubsampleSize", 0.5);
         parameters.set("maxQ", 200);
-        parameters.set("maxEr", 10);
+        parameters.set("maxEr", 5);
         parameters.set("depth", 3);
 
         int numIterations = 5;
