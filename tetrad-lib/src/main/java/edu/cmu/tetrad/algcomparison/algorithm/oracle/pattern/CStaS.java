@@ -1,6 +1,7 @@
 package edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern;
 
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
+import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
 import edu.cmu.tetrad.annotation.AlgType;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
@@ -24,9 +25,11 @@ import java.util.List;
 public class CStaS implements Algorithm {
     static final long serialVersionUID = 23L;
     private Graph trueDag = null;
+    private IndependenceWrapper test;
     private List<edu.cmu.tetrad.search.CStaS.Record> records = null;
 
-    public CStaS() {
+    public CStaS(IndependenceWrapper test) {
+        this.test = test;
     }
 
     @Override
@@ -39,29 +42,16 @@ public class CStaS implements Algorithm {
         System.out.println("# Available Processors = " + Runtime.getRuntime().availableProcessors());
         System.out.println("Parallelism = " + parameters.getInt("parallelism"));
 
-        edu.cmu.tetrad.search.CStaS.TestType type;
+        edu.cmu.tetrad.search.CStaS cStaS = new edu.cmu.tetrad.search.CStaS();
 
-        if (dataSet.isContinuous()) {
-            type = edu.cmu.tetrad.search.CStaS.TestType.SEM_BIC;
-        } else if (dataSet.isDiscrete()) {
-            type = edu.cmu.tetrad.search.CStaS.TestType.ChiSquare;
-        } else if (dataSet.isMixed()) {
-            type = edu.cmu.tetrad.search.CStaS.TestType.ConditionalGaussian;
-        } else {
-            throw new IllegalArgumentException();
-        }
-
-        edu.cmu.tetrad.search.CStaS cStaS = new edu.cmu.tetrad.search.CStaS(type);
-
-        cStaS.setPenaltyDiscount(parameters.getDouble("penaltyDiscount"));
         cStaS.setParallelism(parameters.getInt("parallelism"));
-        cStaS.setMaxEr(parameters.getDouble("maxEr"));
+        cStaS.setMaxEr(parameters.getInt("maxEr"));
         cStaS.setNumSubsamples(parameters.getInt("numSubsamples"));
         cStaS.setTrueDag(trueDag);
 
         final Node target = dataSet.getVariable(parameters.getString("targetName"));
 
-        this.records = cStaS.getRecords((DataSet) dataSet, target);
+        this.records = cStaS.getRecords((DataSet) dataSet, target, test.getTest(dataSet, parameters));
 
         System.out.println(cStaS.makeTable(this.getRecords()));
 
@@ -103,4 +93,3 @@ public class CStaS implements Algorithm {
         return records;
     }
 }
-

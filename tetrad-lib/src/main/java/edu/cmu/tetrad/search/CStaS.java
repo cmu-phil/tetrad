@@ -1,5 +1,6 @@
 package edu.cmu.tetrad.search;
 
+import edu.cmu.tetrad.algcomparison.independence.ChiSquare;
 import edu.cmu.tetrad.data.BootstrapSampler;
 import edu.cmu.tetrad.data.CorrelationMatrixOnTheFly;
 import edu.cmu.tetrad.data.DataSet;
@@ -18,29 +19,99 @@ import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
 
-import static java.lang.Math.pow;
-
+/**
+ * An adaptation of the CStaR algorithm (Steckoven et al., 2012).
+ * <p>
+ * Stekhoven, D. J., Moraes, I., Sveinbjörnsson, G., Hennig, L., Maathuis, M. H., & Bühlmann, P. (2012). Causal stability ranking. Bioinformatics, 28(21), 2819-2823.
+ * <p>
+ * Meinshausen, N., & Bühlmann, P. (2010). Stability selection. Journal of the Royal Statistical Society: Series B (Statistical Methodology), 72(4), 417-473.
+ * <p>
+ * Colombo, D., & Maathuis, M. H. (2014). Order-independent constraint-based causal structure learning. The Journal of Machine Learning Research, 15(1), 3741-3782.
+ *
+ * @author jdramsey@andrew.cmu.edu
+ */
 public class CStaS {
-    public enum TestType {SEM_BIC, FisherZ, ChiSquare, ConditionalGaussian}
+
+    // A single record in the returned table.
+    public static class Record implements TetradSerializable {
+        private Node variable;
+        private double pi;
+        private double effect;
+        private double pcer;
+        private double er;
+        private boolean trueInfluence;
+
+        Record(Node variable, double pi, double minEffect, double pcer, double er, boolean trueInfluence) {
+            this.variable = variable;
+            this.pi = pi;
+            this.effect = minEffect;
+            this.pcer = pcer;
+            this.er = er;
+            this.trueInfluence = trueInfluence;
+        }
+
+        public Node getVariable() {
+            return variable;
+        }
+
+        public double getPi() {
+            return pi;
+        }
+
+        public double getEffect() {
+            return effect;
+        }
+
+        public double getPcer() {
+            return pcer;
+        }
+
+        public double getEr() {
+            return er;
+        }
+
+        public boolean isTrueInfluence() {
+            return trueInfluence;
+        }
+    }
+
+
+    private IndependenceTest test;
 
     private int numSubsamples = 30;
-    private double penaltyDiscount = 2;
-    private double alpha = 0.01;
     private double maxEr = 5;
-    private int parallelism = Runtime.getRuntime().availableProcessors() * 4;
+    private int parallelism = Runtime.getRuntime().availableProcessors() * 10;
     private Graph trueDag = null;
-    private TestType testType;
 
-    // Only certain tests are supported
-    public CStaS(TestType testType) {
-        this.testType = testType;
+    public CStaS() {
     }
 
-    public List<Record> getRecords(DataSet dataSet, Node target) {
-        return getRecords(dataSet, dataSet.getVariables(), target);
+    public List<Record> getRecords(DataSet dataSet, Node target, IndependenceTest test) {
+        return getRecords(dataSet, dataSet.getVariables(), target, test);
     }
 
-    public List<Record> getRecords(DataSet dataSet, List<Node> possiblePredictors, Node target) {
+    /**
+     * Returns records for a set of variables with expected number of false positives bounded by getMaxEr.
+     *
+     * @param dataSet            The full datasets to search over.
+     * @param possiblePredictors A set of variables in the datasets over which to search.
+     * @param target             The target variables.
+     * @param test               This test is only used to make more tests like it for subsamples.
+     * @return
+     */
+    public List<Record> getRecords(DataSet dataSet, List<Node> possiblePredictors, Node target, IndependenceTest test) {
+        if (test instanceof IndTestScore && ((IndTestScore) test).getWrappedScore() instanceof SemBicScore) {
+            this.test = test;
+        } else if (test instanceof IndTestFisherZ) {
+            this.test = test;
+        } else if (test instanceof ChiSquare) {
+            this.test = test;
+        } else if (test instanceof IndTestScore && ((IndTestScore) test).getWrappedScore() instanceof ConditionalGaussianScore) {
+            this.test = test;
+        } else {
+            throw new IllegalArgumentException("That test is not configured.");
+        }
+
         possiblePredictors = GraphUtils.replaceNodes(possiblePredictors, dataSet.getVariables());
         Node _target = dataSet.getVariable(target.getName());
         final DataSet selection = selectVariables(dataSet, possiblePredictors, _target, parallelism);
@@ -67,7 +138,6 @@ public class CStaS {
                     BootstrapSampler sampler = new BootstrapSampler();
                     sampler.setWithoutReplacements(true);
                     DataSet sample = sampler.sample(selection, (int) (selection.getNumRows() / 2));
-
                     Graph pattern = getPattern(sample);
                     Ida ida = new Ida(sample, pattern);
                     effects.add(ida.getSortedMinEffects(_target));
@@ -91,15 +161,12 @@ public class CStaS {
         List<Double> outPis = new ArrayList<>();
         int bestQ = -1;
 
-        int q = 1;
-        int maxOut = 0;
-
-        while (q < variables.size()) {
+        for (int q = 1; q <= variables.size(); q++) {
             final Map<Node, Integer> counts = new HashMap<>();
             for (Node node : variables) counts.put(node, 0);
 
             for (Ida.NodeEffects _effects : effects) {
-                for (int i = 0; i <= q; i++) {
+                for (int i = 0; i < q; i++) {
                     if (i < _effects.getNodes().size()) {
                         if (_effects.getEffects().get(i) > 0) {
                             final Node key = _effects.getNodes().get(i);
@@ -129,27 +196,23 @@ public class CStaS {
                 pi.add(count / ((double) getNumSubsamples()));
             }
 
-            outNodes = new ArrayList<>();
-            outPis = new ArrayList<>();
+            List<Node> _outNodes = new ArrayList<>();
+            List<Double> _outPis = new ArrayList<>();
 
-            for (int i = 0; i < pi.size(); i++) {
-                final double ev = er(pi.get(i), q, variables.size());
+            for (int i = 0; i < q; i++) {
+                final double er = er(pi.get(i), q, variables.size());
 
-                if (ev <= getMaxEr()) {
-                    outNodes.add(sortedVariables.get(i));
-                    outPis.add(pi.get(i));
+                if (er <= getMaxEr()) {
+                    _outNodes.add(sortedVariables.get(i));
+                    _outPis.add(pi.get(i));
                 }
             }
 
-            bestQ = q;
-
-            if (outNodes.size() < maxOut) {
-                break;
-            } else {
-                maxOut = outNodes.size();
+            if (_outNodes.size() > outNodes.size()) {
+                outNodes = _outNodes;
+                outPis = _outPis;
+                bestQ = q;
             }
-
-            q++;
         }
 
         List<Node> ancestors = new ArrayList<>();
@@ -200,129 +263,9 @@ public class CStaS {
         return records;
     }
 
-    public Graph getPattern(DataSet sample) {
-        IndependenceTest test = getIndependenceTest(sample);
-
-        PcAll pc = new PcAll(test, null);
-        pc.setFasRule(PcAll.FasRule.FAS_STABLE);
-        pc.setConflictRule(PcAll.ConflictRule.PRIORITY);
-        pc.setColliderDiscovery(PcAll.ColliderDiscovery.MAX_P);
-        return pc.search();
-    }
-
-    private IndependenceTest getIndependenceTest(DataSet sample) {
-        IndependenceTest test;
-
-        if (testType == TestType.SEM_BIC) {
-            SemBicScore score = new SemBicScore(new CorrelationMatrixOnTheFly(sample));
-            score.setPenaltyDiscount(getPenaltyDiscount());
-            test = new IndTestScore(score);
-        } else if (testType == TestType.FisherZ) {
-            test = new IndTestFisherZ(sample, alpha);
-        } else if (testType == TestType.ChiSquare) {
-            test = new IndTestChiSquare(sample, alpha);
-        } else if (testType == TestType.ConditionalGaussian) {
-            final ConditionalGaussianScore conditionalGaussianScore = new ConditionalGaussianScore(sample, 1, false);
-            conditionalGaussianScore.setPenaltyDiscount(getPenaltyDiscount());
-            test = new IndTestScore(conditionalGaussianScore);
-        } else {
-            throw new IllegalArgumentException("That test has not been configured: " + testType);
-        }
-        return test;
-    }
-
-    public int getNumSubsamples() {
-        return numSubsamples;
-    }
-
-    public void setNumSubsamples(int numSubsamples) {
-        this.numSubsamples = numSubsamples;
-    }
-
-    public double getPenaltyDiscount() {
-        return penaltyDiscount;
-    }
-
-    public void setPenaltyDiscount(double penaltyDiscount) {
-        this.penaltyDiscount = penaltyDiscount;
-    }
-
-    public double getMaxEr() {
-        return maxEr;
-    }
-
-    public void setMaxEr(double maxEr) {
-        this.maxEr = maxEr;
-    }
-
-    public int getParallelism() {
-        return parallelism;
-    }
-
-    public void setParallelism(int parallelism) {
-        this.parallelism = parallelism;
-    }
-
-    public void setTrueDag(Graph trueDag) {
-        this.trueDag = trueDag;
-    }
-
-    public static class Record implements TetradSerializable {
-        private Node variable;
-        private double pi;
-        private double effect;
-        private double pcer;
-        private double er;
-        private boolean trueInfluence;
-
-        Record(Node variable, double pi, double minEffect, double pcer, double er, boolean trueInfluence) {
-            this.variable = variable;
-            this.pi = pi;
-            this.effect = minEffect;
-            this.pcer = pcer;
-            this.er = er;
-            this.trueInfluence = trueInfluence;
-        }
-
-        public Node getVariable() {
-            return variable;
-        }
-
-        public double getPi() {
-            return pi;
-        }
-
-        public double getEffect() {
-            return effect;
-        }
-
-        public double getPcer() {
-            return pcer;
-        }
-
-        public double getEr() {
-            return er;
-        }
-
-        public boolean isTrueInfluence() {
-            return trueInfluence;
-        }
-    }
-
-    // E(V) bound
-    private static double er(double pi, double q, double p) {
-        double v = pcer(pi, q, p) * p;
-        if (v < 0 || v > q) return Double.POSITIVE_INFINITY;
-        return v;
-    }
-
-    // Per comparison error rate.
-    private static double pcer(double pi, double q, double p) {
-        double v = pow(q / (2 * p), 2) * (1.0 / (2 * pi - 1));
-        if (v < 0 || v > 1) return Double.POSITIVE_INFINITY;
-        return v;
-    }
-
+    /**
+     * Returns a text table from the given records
+     */
     public String makeTable(List<Record> records) {
         TextTable table = new TextTable(records.size() + 1, 6);
         NumberFormat nf = new DecimalFormat("0.0000");
@@ -347,10 +290,14 @@ public class CStaS {
             table.setToken(i + 1, 5, nf.format(records.get(i).getEr()));
         }
 
-        return "\n" + table + "\n" + "# FP = " +
-                (records.size() - numStarred) + "\n";
+
+        final int fp = records.size() - numStarred;
+        return "\n" + table + "\n" + "# FP = " + fp + "\n";
     }
 
+    /**
+     * Makes a graph of the estimated predictors to the target.
+     */
     public Graph makeGraph(Node y, List<Record> records) {
         List<Node> outNodes = new ArrayList<>();
         for (Record record : records) outNodes.add(record.getVariable());
@@ -364,6 +311,81 @@ public class CStaS {
 
         return graph;
     }
+
+    public int getNumSubsamples() {
+        return numSubsamples;
+    }
+
+    public void setNumSubsamples(int numSubsamples) {
+        this.numSubsamples = numSubsamples;
+    }
+
+    public double getMaxEr() {
+        return maxEr;
+    }
+
+    public void setMaxEr(double maxEr) {
+        this.maxEr = maxEr;
+    }
+
+    public int getParallelism() {
+        return parallelism;
+    }
+
+    public void setParallelism(int parallelism) {
+        this.parallelism = parallelism;
+    }
+
+    public void setTrueDag(Graph trueDag) {
+        this.trueDag = trueDag;
+    }
+
+    private Graph getPattern(DataSet sample) {
+        IndependenceTest test = getIndependenceTest(sample);
+
+        PcAll pc = new PcAll(test, null);
+        pc.setFasRule(PcAll.FasRule.FAS_STABLE);
+        pc.setConflictRule(PcAll.ConflictRule.PRIORITY);
+        pc.setColliderDiscovery(PcAll.ColliderDiscovery.MAX_P);
+        return pc.search();
+    }
+
+    private IndependenceTest getIndependenceTest(DataSet sample) {
+        if (this.test instanceof IndTestScore && ((IndTestScore) this.test).getWrappedScore() instanceof SemBicScore) {
+            SemBicScore score = new SemBicScore(new CorrelationMatrixOnTheFly(sample));
+            score.setPenaltyDiscount(((SemBicScore) ((IndTestScore) this.test).getWrappedScore()).getPenaltyDiscount());
+            return new IndTestScore(score);
+        } else if (this.test instanceof IndTestFisherZ) {
+            double alpha = this.test.getAlpha();
+            return new IndTestFisherZ(new CorrelationMatrixOnTheFly(sample), alpha);
+        } else if (this.test instanceof ChiSquare) {
+            double alpha = this.test.getAlpha();
+            return new IndTestFisherZ(sample, alpha);
+        } else if (this.test instanceof IndTestScore && ((IndTestScore) this.test).getWrappedScore() instanceof ConditionalGaussianScore) {
+            ConditionalGaussianScore score = (ConditionalGaussianScore) ((IndTestScore) this.test).getWrappedScore();
+            double penaltyDiscount = score.getPenaltyDiscount();
+            ConditionalGaussianScore _score = new ConditionalGaussianScore(sample, 1, false);
+            _score.setPenaltyDiscount(penaltyDiscount);
+            return new IndTestScore(_score);
+        } else {
+            throw new IllegalArgumentException("That test is not configured.");
+        }
+    }
+
+    // E(V) bound
+    private static double er(double pi, double q, double p) {
+        double v = ((q * q) / (4 * p)) * (1.0 / (2 * pi - 1));
+        if (v < 0) return Double.POSITIVE_INFINITY;
+        return v;
+    }
+
+    // Per comparison error rate.
+    private static double pcer(double pi, double q, double p) {
+        final double v = ((q * q) / (4 * p * p)) * (1.0 / (2 * pi - 1));
+        if (v < 0) return Double.POSITIVE_INFINITY;
+        return v;
+    }
+
 
     private DataSet selectVariables(DataSet fullData, List<Node> possiblePredictors, Node y, int parallelism) {
         IndependenceTest test = getIndependenceTest(fullData);
@@ -434,16 +456,5 @@ public class CStaS {
         System.out.println("# selected variables = " + dataSet.getVariables().size());
 
         return dataSet;
-
     }
-
-    public double getAlpha() {
-        return alpha;
-    }
-
-    public void setAlpha(double alpha) {
-        this.alpha = alpha;
-    }
-
-
 }

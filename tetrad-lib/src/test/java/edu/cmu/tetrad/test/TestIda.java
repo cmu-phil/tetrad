@@ -24,6 +24,7 @@ package edu.cmu.tetrad.test;
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern.CStaS;
 import edu.cmu.tetrad.algcomparison.graph.RandomForward;
 import edu.cmu.tetrad.algcomparison.graph.RandomGraph;
+import edu.cmu.tetrad.algcomparison.independence.SemBicTest;
 import edu.cmu.tetrad.algcomparison.simulation.LeeHastieSimulation;
 import edu.cmu.tetrad.algcomparison.simulation.LinearFisherModel;
 import edu.cmu.tetrad.data.CovarianceMatrixOnTheFly;
@@ -87,19 +88,19 @@ public class TestIda {
         }
     }
 
-//    @Test
+    //    @Test
     public void testBoth() {
         int numNodes = 1000;
         int avgDegree = 6;
-        int sampleSize = 100;
+        int sampleSize = 200;
         int numIterations = 10;
         int numSubsamples = 100;
         int minNumAncestors = 15;
-        double maxEr = 5;
+        int maxEr = 5;
 
         Parameters parameters = new Parameters();
 
-        parameters.set("penaltyDiscount", 1.0);
+        parameters.set("penaltyDiscount", 1.3);
         parameters.set("numSubsamples", numSubsamples);
         parameters.set("maxQ", 200);
         parameters.set("maxEr", maxEr);
@@ -155,7 +156,7 @@ public class TestIda {
 
             parameters.set("targetName", "X" + m);
 
-            CStaS cstas = new CStaS();
+            CStaS cstas = new CStaS(new SemBicTest());
             cstas.setTrueDag(trueDag);
             Graph graph = cstas.search(fullData, parameters);
 
@@ -201,7 +202,7 @@ public class TestIda {
         parameters.set("numSubsamples", 50);
         parameters.set("percentSubsampleSize", 0.5);
         parameters.set("maxQ", 200);
-        parameters.set("maxEr", 10);
+        parameters.set("maxEr", 5);
         parameters.set("depth", 3);
 
         int numIterations = 5;
@@ -241,7 +242,7 @@ public class TestIda {
 
                     parameters.set("targetName", "X" + m);
 
-                    CStaS cstas = new CStaS();
+                    CStaS cstas = new CStaS(new SemBicTest());
                     cstas.setTrueDag(trueDag);
                     Graph graph = cstas.search(fullData, parameters);
 
@@ -271,11 +272,11 @@ public class TestIda {
         parameters.set("numLatents", 0);
         parameters.set("avgDegree", 3);
 
-        parameters.set("numCategories", 3);
+        parameters.set("numCategories", 2);
         parameters.set("percentDiscrete", 50);
         parameters.set("numRuns", 10);
         parameters.set("differentGraphs", true);
-        parameters.set("sampleSize", 200);
+        parameters.set("sampleSize", 1000);
 
         parameters.set("penaltyDiscount", 1);
         parameters.set("numSubsamples", 30);
@@ -288,11 +289,15 @@ public class TestIda {
         simulation.createData(parameters);
 
         for (int i = 0; i < simulation.getNumDataModels(); i++) {
-            edu.cmu.tetrad.search.CStaS cStaS = new edu.cmu.tetrad.search.CStaS(
-                    edu.cmu.tetrad.search.CStaS.TestType.ConditionalGaussian);
+            edu.cmu.tetrad.search.CStaS cStaS = new edu.cmu.tetrad.search.CStaS();
             cStaS.setTrueDag(simulation.getTrueGraph(i));
-            List<edu.cmu.tetrad.search.CStaS.Record> records = cStaS.getRecords((DataSet) simulation.getDataModel(i),
-                    simulation.getTrueGraph(i).getNode(parameters.getString("targetName")));
+            final DataSet dataSet = (DataSet) simulation.getDataModel(i);
+            final ConditionalGaussianScore score = new ConditionalGaussianScore(dataSet, 1, false);
+            score.setPenaltyDiscount(parameters.getDouble("penaltyDiscount"));
+            final IndependenceTest test = new IndTestScore(score);
+            List<edu.cmu.tetrad.search.CStaS.Record> records = cStaS.getRecords(dataSet,
+                    simulation.getTrueGraph(i).getNode(parameters.getString("targetName")),
+                    test);
             System.out.println(cStaS.makeTable(records));
         }
     }
@@ -330,7 +335,6 @@ public class TestIda {
         new TestIda().testBoth();
     }
 }
-
 
 
 
