@@ -279,7 +279,7 @@ public class TestIda {
 
         parameters.set("penaltyDiscount", 1);
         parameters.set("numSubsamples", 30);
-        parameters.set("maxEr", 5);
+        parameters.set("maxEr", 10);
         parameters.set("targetName", "X50");
 
         RandomGraph graph = new RandomForward();

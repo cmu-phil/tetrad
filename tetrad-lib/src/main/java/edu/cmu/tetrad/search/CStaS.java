@@ -228,18 +228,13 @@ public class CStaS {
 
         List<Node> ancestors = new ArrayList<>();
 
-        Graph truePattern;
+        trueDag = GraphUtils.replaceNodes(trueDag, outNodes);
+        trueDag = GraphUtils.replaceNodes(trueDag, Collections.singletonList(target));
 
         if (trueDag != null) {
-            trueDag = GraphUtils.replaceNodes(trueDag, outNodes);
-            trueDag = GraphUtils.replaceNodes(trueDag, Collections.singletonList(_target));
-            truePattern = SearchGraphUtils.patternForDag(trueDag);
-
-            if (truePattern != null) {
-                for (Node node : truePattern.getNodes()) {
-                    if (trueDag.isAncestorOf(node, target)) {
-                        ancestors.add(node);
-                    }
+            for (Node node : trueDag.getNodes()) {
+                if (trueDag.isAncestorOf(node, target)) {
+                    ancestors.add(node);
                 }
             }
         }
