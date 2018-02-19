@@ -44,7 +44,6 @@ public class CStaS implements Algorithm {
 
         edu.cmu.tetrad.search.CStaS cStaS = new edu.cmu.tetrad.search.CStaS();
 
-        cStaS.setPenaltyDiscount(parameters.getDouble("penaltyDiscount"));
         cStaS.setParallelism(parameters.getInt("parallelism"));
         cStaS.setMaxEr(parameters.getInt("maxEr"));
         cStaS.setNumSubsamples(parameters.getInt("numSubsamples"));
@@ -94,4 +93,3 @@ public class CStaS implements Algorithm {
         return records;
     }
 }
-
