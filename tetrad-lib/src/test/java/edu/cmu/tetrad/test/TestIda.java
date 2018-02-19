@@ -28,7 +28,6 @@ import edu.cmu.tetrad.algcomparison.independence.SemBicTest;
 import edu.cmu.tetrad.algcomparison.simulation.LeeHastieSimulation;
 import edu.cmu.tetrad.algcomparison.simulation.LinearFisherModel;
 import edu.cmu.tetrad.data.CorrelationMatrixOnTheFly;
-import edu.cmu.tetrad.data.CovarianceMatrixOnTheFly;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Edge;
 import edu.cmu.tetrad.graph.Graph;
@@ -69,7 +68,7 @@ public class TestIda {
 
         Node y = dataSet.getVariable("X10");
 
-        SemBicScore score = new SemBicScore(new CovarianceMatrixOnTheFly(dataSet));
+        SemBicScore score = new SemBicScore(new CorrelationMatrixOnTheFly(dataSet));
         score.setPenaltyDiscount(parameters.getDouble("penaltyDiscount"));
         IndependenceTest test = new IndTestScore(score);
 
@@ -91,17 +90,17 @@ public class TestIda {
 
     //    @Test
     public void testBoth() {
-        int numNodes = 1000;
-        int avgDegree = 6;
-        int sampleSize = 200;
+        int numNodes = 5000;
+        int avgDegree = 8;
+        int sampleSize = 100;
         int numIterations = 10;
-        int numSubsamples = 100;
+        int numSubsamples = 50;
         int minNumAncestors = 15;
-        int maxEr = 5;
+        int maxEr = 10;
 
         Parameters parameters = new Parameters();
 
-        parameters.set("penaltyDiscount", 1.3);
+        parameters.set("penaltyDiscount", 1.5);
         parameters.set("numSubsamples", numSubsamples);
         parameters.set("maxQ", 200);
         parameters.set("maxEr", maxEr);
@@ -136,7 +135,6 @@ public class TestIda {
         DataSet fullData = (DataSet) fisher.getDataModel(0);
 
         Graph trueDag = fisher.getTrueGraph(0);
-        Graph truePattern = SearchGraphUtils.patternForDag(trueDag);
 
         int m = trueDag.getNumNodes() + 1;
 
@@ -161,21 +159,21 @@ public class TestIda {
             cstas.setTrueDag(trueDag);
             Graph graph = cstas.search(fullData, parameters);
 
-            int[] ret = getResult(truePattern, graph);
+            int[] ret = getResult(trueDag, graph);
             cstasRet.add(ret);
         }
 
         System.out.println();
 
-        System.out.println("\tCPAnc\tCOther");
+        System.out.println("\tTreks\tAncestors\tNnn-Treks");
 
         for (int i = 0; i < numIterations; i++) {
             System.out.println((i + 1) + ".\t"
                     + cstasRet.get(i)[0] + "\t"
                     + cstasRet.get(i)[1] + "\t"
+                    + cstasRet.get(i)[2]
             );
         }
-
     }
 
     //    @Test
@@ -303,31 +301,40 @@ public class TestIda {
         }
     }
 
-    private int[] getResult(Graph trueGraph, Graph graph) {
-        graph = GraphUtils.replaceNodes(graph, trueGraph.getNodes());
+    private int[] getResult(Graph trueDag, Graph graph) {
+        graph = GraphUtils.replaceNodes(graph, trueDag.getNodes());
 
         if (graph == null) throw new NullPointerException("Graph null");
 
-        Set<Edge> allPossAncestors = new HashSet<>();
+        Set<Edge> allTreks = new HashSet<>();
+        Set<Edge> allAncestors = new HashSet<>();
         Set<Edge> allOther = new HashSet<>();
 
         for (Edge edge : graph.getEdges()) {
             Node x = edge.getNode1();
             Node y = edge.getNode2();
 
-            final boolean possibleAncestor = trueGraph.existsSemiDirectedPathFromTo(x, Collections.singleton(y));
+            boolean ancestor = trueDag.isAncestorOf(x, y);
 
-            if (possibleAncestor) {
-                allPossAncestors.add(edge);
+            List<List<Node>> treks = GraphUtils.treks(trueDag, x, y, 10);
+            boolean trekToTarget = !treks.isEmpty();
+
+            if (ancestor) {
+                allAncestors.add(edge);
+            }
+
+            if (trekToTarget) {
+                allTreks.add(edge);
             } else {
                 allOther.add(edge);
             }
         }
 
-        int[] ret = new int[2];
+        int[] ret = new int[3];
 
-        ret[0] = allPossAncestors.size();
-        ret[1] = allOther.size();
+        ret[0] = allTreks.size();
+        ret[1] = allAncestors.size();
+        ret[2] = allOther.size();
 
         return ret;
     }

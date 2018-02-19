@@ -32,6 +32,8 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class CStaS {
 
+    private int maxTrekLength = 20;
+
     // A single record in the returned table.
     public static class Record implements TetradSerializable {
         private Node variable;
@@ -39,15 +41,17 @@ public class CStaS {
         private double effect;
         private double pcer;
         private double er;
-        private boolean trueInfluence;
+        private boolean ancestor;
+        private boolean existsTrekToTarget;
 
-        Record(Node variable, double pi, double minEffect, double pcer, double er, boolean trueInfluence) {
+        Record(Node variable, double pi, double minEffect, double pcer, double er, boolean ancestor, boolean existsTrekToTarget) {
             this.variable = variable;
             this.pi = pi;
             this.effect = minEffect;
             this.pcer = pcer;
             this.er = er;
-            this.trueInfluence = trueInfluence;
+            this.ancestor = ancestor;
+            this.existsTrekToTarget = existsTrekToTarget;
         }
 
         public Node getVariable() {
@@ -70,8 +74,12 @@ public class CStaS {
             return er;
         }
 
-        public boolean isTrueInfluence() {
-            return trueInfluence;
+        public boolean isAncestor() {
+            return ancestor;
+        }
+
+        public boolean isExistsTrekToTarget() {
+            return existsTrekToTarget;
         }
     }
 
@@ -97,7 +105,6 @@ public class CStaS {
      * @param possiblePredictors A set of variables in the datasets over which to search.
      * @param target             The target variables.
      * @param test               This test is only used to make more tests like it for subsamples.
-     * @return
      */
     public List<Record> getRecords(DataSet dataSet, List<Node> possiblePredictors, Node target, IndependenceTest test) {
         if (test instanceof IndTestScore && ((IndTestScore) test).getWrappedScore() instanceof SemBicScore) {
@@ -162,6 +169,8 @@ public class CStaS {
         int bestQ = -1;
 
         for (int q = 1; q <= variables.size(); q++) {
+            if (q / (double) variables.size() > 0.2) continue;
+
             final Map<Node, Integer> counts = new HashMap<>();
             for (Node node : variables) counts.put(node, 0);
 
@@ -215,16 +224,20 @@ public class CStaS {
             }
         }
 
+        System.out.println("q = " + bestQ);
+
         List<Node> ancestors = new ArrayList<>();
+
+        Graph truePattern;
 
         if (trueDag != null) {
             trueDag = GraphUtils.replaceNodes(trueDag, outNodes);
             trueDag = GraphUtils.replaceNodes(trueDag, Collections.singletonList(_target));
-            Graph truePattern = SearchGraphUtils.patternForDag(trueDag);
+            truePattern = SearchGraphUtils.patternForDag(trueDag);
 
             if (truePattern != null) {
                 for (Node node : truePattern.getNodes()) {
-                    if (truePattern.existsSemiDirectedPathFromTo(node, Collections.singleton(_target))) {
+                    if (trueDag.isAncestorOf(node, target)) {
                         ancestors.add(node);
                     }
                 }
@@ -234,6 +247,8 @@ public class CStaS {
         List<Record> records = new ArrayList<>();
 
         for (int i = 0; i < outNodes.size(); i++) {
+
+
             final double er = er(outPis.get(i), bestQ, variables.size());
             final double pcer = pcer(outPis.get(i), bestQ, variables.size());
 
@@ -248,8 +263,15 @@ public class CStaS {
             double[] _e = new double[e.size()];
             for (int t = 0; t < e.size(); t++) _e[t] = e.get(t);
             double avg = StatUtils.mean(_e);
+            final boolean ancestor = ancestors.contains(outNodes.get(i));
+            boolean trekToTarget = false;
 
-            records.add(new Record(outNodes.get(i), outPis.get(i), avg, pcer, er, ancestors.contains(outNodes.get(i))));
+            if (trueDag != null) {
+                List<List<Node>> treks = GraphUtils.treks(trueDag, outNodes.get(i), target, maxTrekLength);
+                trekToTarget = !treks.isEmpty();
+            }
+
+            records.add(new Record(outNodes.get(i), outPis.get(i), avg, pcer, er, ancestor, trekToTarget));
         }
 
         records.sort((o1, o2) -> {
@@ -277,22 +299,24 @@ public class CStaS {
         table.setToken(0, 4, "PCER");
         table.setToken(0, 5, "ER");
 
-        int numStarred = 0;
+        int fp = 0;
 
         for (int i = 0; i < records.size(); i++) {
             table.setToken(i + 1, 0, "" + (i + 1));
-            final boolean contains = records.get(i).isTrueInfluence();
-            if (contains) numStarred++;
-            table.setToken(i + 1, 1, (contains ? "* " : "") + records.get(i).getVariable().getName());
+            final boolean possibleAncestor = records.get(i).isAncestor();
+            final boolean existsTrekToTarget = records.get(i).isExistsTrekToTarget();
+            if (!(existsTrekToTarget)) fp++;
+            table.setToken(i + 1, 1, (existsTrekToTarget ? "T " : "") + (possibleAncestor ? "A " : "")
+                    + records.get(i).getVariable().getName());
             table.setToken(i + 1, 2, nf.format(records.get(i).getPi()));
             table.setToken(i + 1, 3, nf.format(records.get(i).getEffect()));
             table.setToken(i + 1, 4, nf.format(records.get(i).getPcer()));
             table.setToken(i + 1, 5, nf.format(records.get(i).getEr()));
         }
 
-
-        final int fp = records.size() - numStarred;
-        return "\n" + table + "\n" + "# FP = " + fp + "\n";
+        return "\n" + table + "\n" + "# FP = " + fp +
+                "\n\nT = exists a trak of length no more than " + maxTrekLength + " to the target" +
+                "\nA = ancestor of the target\n";
     }
 
     /**
@@ -345,8 +369,8 @@ public class CStaS {
 
         PcAll pc = new PcAll(test, null);
         pc.setFasRule(PcAll.FasRule.FAS_STABLE);
-        pc.setConflictRule(PcAll.ConflictRule.PRIORITY);
-        pc.setColliderDiscovery(PcAll.ColliderDiscovery.MAX_P);
+        pc.setConflictRule(PcAll.ConflictRule.OVERWRITE);
+        pc.setColliderDiscovery(PcAll.ColliderDiscovery.FAS_SEPSETS);
         return pc.search();
     }
 
@@ -446,10 +470,12 @@ public class CStaS {
                         tasks.add(new Task(from, to, s));
                     }
                 }
-            }
 
-            ConcurrencyUtils.runCallables(tasks, parallelism);
+                ConcurrencyUtils.runCallables(tasks, parallelism);
+            }
         }
+
+        if (!selection.contains(y)) selection.add(y);
 
         final DataSet dataSet = fullData.subsetColumns(selection);
 
