@@ -24,6 +24,7 @@ package edu.cmu.tetrad.test;
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern.CStaS;
 import edu.cmu.tetrad.algcomparison.graph.RandomForward;
 import edu.cmu.tetrad.algcomparison.graph.RandomGraph;
+import edu.cmu.tetrad.algcomparison.independence.FisherZ;
 import edu.cmu.tetrad.algcomparison.independence.SemBicTest;
 import edu.cmu.tetrad.algcomparison.simulation.LeeHastieSimulation;
 import edu.cmu.tetrad.algcomparison.simulation.LinearFisherModel;
@@ -89,18 +90,22 @@ public class TestIda {
     }
 
     //    @Test
-    public void testBoth() {
-        int numNodes = 5000;
+    public void testCStaS() {
+        int numNodes = 10000;
         int avgDegree = 8;
-        int sampleSize = 100;
+        int sampleSize = 50;
         int numIterations = 10;
         int numSubsamples = 50;
-        int minNumAncestors = 15;
+        int minNumAncestors = 20;
         int maxEr = 10;
+
+        double penaltyDiscount = .5;
+        double alpha = .03;
 
         Parameters parameters = new Parameters();
 
-        parameters.set("penaltyDiscount", 1.5);
+        parameters.set("alpha", alpha);
+        parameters.set("penaltyDiscount", penaltyDiscount);
         parameters.set("numSubsamples", numSubsamples);
         parameters.set("maxQ", 200);
         parameters.set("maxEr", maxEr);
@@ -155,8 +160,9 @@ public class TestIda {
 
             parameters.set("targetName", "X" + m);
 
-            CStaS cstas = new CStaS(new SemBicTest());
+            CStaS cstas = new CStaS(new FisherZ());
             cstas.setTrueDag(trueDag);
+
             Graph graph = cstas.search(fullData, parameters);
 
             int[] ret = getResult(trueDag, graph);
@@ -165,7 +171,7 @@ public class TestIda {
 
         System.out.println();
 
-        System.out.println("\tTreks\tAncestors\tNnn-Treks");
+        System.out.println("\tTreks\tAncestors\tNon-Treks");
 
         for (int i = 0; i < numIterations; i++) {
             System.out.println((i + 1) + ".\t"
@@ -267,20 +273,20 @@ public class TestIda {
     public void testConditionalGaussian() {
 
         Parameters parameters = new Parameters();
-        parameters.set("numMeasures", 50);
+        parameters.set("numMeasures", 100);
         parameters.set("numLatents", 0);
-        parameters.set("avgDegree", 3);
+        parameters.set("avgDegree", 5);
 
-        parameters.set("numCategories", 2);
+        parameters.set("numCategories", 3);
         parameters.set("percentDiscrete", 50);
         parameters.set("numRuns", 10);
         parameters.set("differentGraphs", true);
         parameters.set("sampleSize", 1000);
 
-        parameters.set("penaltyDiscount", 1);
-        parameters.set("numSubsamples", 30);
+        parameters.set("penaltyDiscount", 1.2);
+        parameters.set("numSubsamples", 100);
         parameters.set("maxEr", 10);
-        parameters.set("targetName", "X50");
+        parameters.set("targetName", "X100");
 
         RandomGraph graph = new RandomForward();
 
@@ -340,7 +346,7 @@ public class TestIda {
     }
 
     public static void main(String[] args) {
-        new TestIda().testBoth();
+        new TestIda().testCStaS();
     }
 }
 

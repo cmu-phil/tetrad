@@ -1228,16 +1228,18 @@ public class EdgeListGraph implements Graph, TripleClassifier {
      * @return true if the the node was added, false if not.
      */
     public boolean addNode(Node node) {
-        if (nodes.contains(node)) return true;
+//        if (nodes.contains(node)) return true;
 
         if (node == null) {
             throw new NullPointerException();
         }
 
         if (!(getNode(node.getName()) == null)) {
-            if (nodes.contains(node)) {
-                namesHash.put(node.getName(), node);
-            }
+//            if (nodes.contains(node)) {
+//                namesHash.put(node.getName(), node);
+//            }
+
+            return true;
         }
 
         if (edgeLists.containsKey(node)) {

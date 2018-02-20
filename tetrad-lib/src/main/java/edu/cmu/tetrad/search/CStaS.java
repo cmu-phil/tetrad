@@ -4,6 +4,7 @@ import edu.cmu.tetrad.algcomparison.independence.ChiSquare;
 import edu.cmu.tetrad.data.BootstrapSampler;
 import edu.cmu.tetrad.data.CorrelationMatrixOnTheFly;
 import edu.cmu.tetrad.data.DataSet;
+import edu.cmu.tetrad.data.DiscreteVariable;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
@@ -95,7 +96,9 @@ public class CStaS {
     }
 
     public List<Record> getRecords(DataSet dataSet, Node target, IndependenceTest test) {
-        return getRecords(dataSet, dataSet.getVariables(), target, test);
+        final List<Node> vars = selectVariables(getIndependenceTest(dataSet, test), target, parallelism);
+        DataSet selection = dataSet.subsetColumns(vars);
+        return getRecords(selection, dataSet.getVariables(), target, test);
     }
 
     /**
@@ -119,9 +122,9 @@ public class CStaS {
             throw new IllegalArgumentException("That test is not configured.");
         }
 
-        possiblePredictors = GraphUtils.replaceNodes(possiblePredictors, dataSet.getVariables());
         Node _target = dataSet.getVariable(target.getName());
-        final DataSet selection = selectVariables(dataSet, possiblePredictors, _target, parallelism);
+        possiblePredictors = GraphUtils.replaceNodes(possiblePredictors, dataSet.getVariables());
+        DataSet selection = dataSet.subsetColumns(possiblePredictors);
 
         final List<Node> variables = selection.getVariables();
         variables.remove(_target);
@@ -169,7 +172,7 @@ public class CStaS {
         int bestQ = -1;
 
         for (int q = 1; q <= variables.size(); q++) {
-            if (q / (double) variables.size() > 0.2) continue;
+
 
             final Map<Node, Integer> counts = new HashMap<>();
             for (Node node : variables) counts.put(node, 0);
@@ -284,34 +287,42 @@ public class CStaS {
      * Returns a text table from the given records
      */
     public String makeTable(List<Record> records) {
-        TextTable table = new TextTable(records.size() + 1, 6);
+        TextTable table = new TextTable(records.size() + 1, 9);
         NumberFormat nf = new DecimalFormat("0.0000");
 
         table.setToken(0, 0, "Index");
         table.setToken(0, 1, "Variable");
-        table.setToken(0, 2, "PI");
-        table.setToken(0, 3, "Average Effect");
-        table.setToken(0, 4, "PCER");
-        table.setToken(0, 5, "ER");
+        table.setToken(0, 2, "Type");
+        table.setToken(0, 3, "A");
+        table.setToken(0, 4, "T");
+        table.setToken(0, 5, "PI");
+        table.setToken(0, 6, "Average Effect");
+        table.setToken(0, 7, "PCER");
+        table.setToken(0, 8, "ER");
 
         int fp = 0;
 
         for (int i = 0; i < records.size(); i++) {
-            table.setToken(i + 1, 0, "" + (i + 1));
-            final boolean possibleAncestor = records.get(i).isAncestor();
+            final Node node = records.get(i).getVariable();
+            final boolean ancestor = records.get(i).isAncestor();
             final boolean existsTrekToTarget = records.get(i).isExistsTrekToTarget();
             if (!(existsTrekToTarget)) fp++;
-            table.setToken(i + 1, 1, (existsTrekToTarget ? "T " : "") + (possibleAncestor ? "A " : "")
-                    + records.get(i).getVariable().getName());
-            table.setToken(i + 1, 2, nf.format(records.get(i).getPi()));
-            table.setToken(i + 1, 3, nf.format(records.get(i).getEffect()));
-            table.setToken(i + 1, 4, nf.format(records.get(i).getPcer()));
-            table.setToken(i + 1, 5, nf.format(records.get(i).getEr()));
+
+            table.setToken(i + 1, 0, "" + (i + 1));
+            table.setToken(i + 1, 1,  node.getName());
+            table.setToken(i + 1, 2,  node instanceof DiscreteVariable ? "D" : "C");
+            table.setToken(i + 1, 3,  ancestor ? "A" : "");
+            table.setToken(i + 1, 4,  existsTrekToTarget ? "T" : "");
+            table.setToken(i + 1, 5, nf.format(records.get(i).getPi()));
+            table.setToken(i + 1, 6, nf.format(records.get(i).getEffect()));
+            table.setToken(i + 1, 7, nf.format(records.get(i).getPcer()));
+            table.setToken(i + 1, 8, nf.format(records.get(i).getEr()));
         }
 
         return "\n" + table + "\n" + "# FP = " + fp +
                 "\n\nT = exists a trak of length no more than " + maxTrekLength + " to the target" +
-                "\nA = ancestor of the target\n";
+                "\nA = ancestor of the target" +
+                "\nType: C = continuous, D = discrete\n";
     }
 
     /**
@@ -360,34 +371,33 @@ public class CStaS {
     }
 
     private Graph getPattern(DataSet sample) {
-        IndependenceTest test = getIndependenceTest(sample);
-
+        IndependenceTest test = getIndependenceTest(sample, this.test);
         PcAll pc = new PcAll(test, null);
-        pc.setFasRule(PcAll.FasRule.FAS_STABLE);
+        pc.setFasRule(PcAll.FasRule.FAS);
         pc.setConflictRule(PcAll.ConflictRule.OVERWRITE);
-        pc.setColliderDiscovery(PcAll.ColliderDiscovery.FAS_SEPSETS);
+        pc.setColliderDiscovery(PcAll.ColliderDiscovery.MAX_P);
         return pc.search();
     }
 
-    private IndependenceTest getIndependenceTest(DataSet sample) {
-        if (this.test instanceof IndTestScore && ((IndTestScore) this.test).getWrappedScore() instanceof SemBicScore) {
+    private IndependenceTest getIndependenceTest(DataSet sample, IndependenceTest test) {
+        if (test instanceof IndTestScore && ((IndTestScore) test).getWrappedScore() instanceof SemBicScore) {
             SemBicScore score = new SemBicScore(new CorrelationMatrixOnTheFly(sample));
-            score.setPenaltyDiscount(((SemBicScore) ((IndTestScore) this.test).getWrappedScore()).getPenaltyDiscount());
+            score.setPenaltyDiscount(((SemBicScore) ((IndTestScore) test).getWrappedScore()).getPenaltyDiscount());
             return new IndTestScore(score);
-        } else if (this.test instanceof IndTestFisherZ) {
-            double alpha = this.test.getAlpha();
+        } else if (test instanceof IndTestFisherZ) {
+            double alpha = test.getAlpha();
             return new IndTestFisherZ(new CorrelationMatrixOnTheFly(sample), alpha);
-        } else if (this.test instanceof ChiSquare) {
-            double alpha = this.test.getAlpha();
+        } else if (test instanceof ChiSquare) {
+            double alpha =  test.getAlpha();
             return new IndTestFisherZ(sample, alpha);
-        } else if (this.test instanceof IndTestScore && ((IndTestScore) this.test).getWrappedScore() instanceof ConditionalGaussianScore) {
-            ConditionalGaussianScore score = (ConditionalGaussianScore) ((IndTestScore) this.test).getWrappedScore();
+        } else if (test instanceof IndTestScore && ((IndTestScore) test).getWrappedScore() instanceof ConditionalGaussianScore) {
+            ConditionalGaussianScore score = (ConditionalGaussianScore) ((IndTestScore) test).getWrappedScore();
             double penaltyDiscount = score.getPenaltyDiscount();
             ConditionalGaussianScore _score = new ConditionalGaussianScore(sample, 1, false);
             _score.setPenaltyDiscount(penaltyDiscount);
             return new IndTestScore(_score);
         } else {
-            throw new IllegalArgumentException("That test is not configured.");
+            throw new IllegalArgumentException("That test is not configured: " + test);
         }
     }
 
@@ -406,12 +416,10 @@ public class CStaS {
     }
 
 
-    private DataSet selectVariables(DataSet fullData, List<Node> possiblePredictors, Node y, int parallelism) {
-        IndependenceTest test = getIndependenceTest(fullData);
-
+    public static List<Node> selectVariables(IndependenceTest test, Node y, int parallelism) {
         List<Node> selection = new ArrayList<>();
 
-        final List<Node> variables = possiblePredictors;
+        final List<Node> variables = test.getVariables();
 
         {
             class Task implements Callable<Boolean> {
@@ -456,26 +464,24 @@ public class CStaS {
                 ConcurrencyUtils.runCallables(tasks, parallelism);
             }
 
-            {
-                tasks = new ArrayList<>();
-
-                for (Node s : new ArrayList<>(selection)) {
-                    for (int from = 0; from < variables.size(); from += chunk) {
-                        final int to = Math.min(variables.size(), from + chunk);
-                        tasks.add(new Task(from, to, s));
-                    }
-                }
-
-                ConcurrencyUtils.runCallables(tasks, parallelism);
-            }
+//            {
+//                tasks = new ArrayList<>();
+//
+//                for (Node s : new ArrayList<>(selection)) {
+//                    for (int from = 0; from < variables.size(); from += chunk) {
+//                        final int to = Math.min(variables.size(), from + chunk);
+//                        tasks.add(new Task(from, to, s));
+//                    }
+//                }
+//
+//                ConcurrencyUtils.runCallables(tasks, parallelism);
+//            }
         }
 
         if (!selection.contains(y)) selection.add(y);
 
-        final DataSet dataSet = fullData.subsetColumns(selection);
+        System.out.println("# selected variables = " + selection.size());
 
-        System.out.println("# selected variables = " + dataSet.getVariables().size());
-
-        return dataSet;
+        return selection;
     }
 }
