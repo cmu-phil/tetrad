@@ -91,16 +91,16 @@ public class TestIda {
 
     //    @Test
     public void testCStaS() {
-        int numNodes = 10000;
-        int avgDegree = 8;
-        int sampleSize = 50;
+        int numNodes = 1000;
+        int avgDegree = 6;
+        int sampleSize = 200;
         int numIterations = 10;
         int numSubsamples = 50;
         int minNumAncestors = 20;
         int maxEr = 10;
 
         double penaltyDiscount = .5;
-        double alpha = .03;
+        double alpha = .1;
 
         Parameters parameters = new Parameters();
 
@@ -109,7 +109,7 @@ public class TestIda {
         parameters.set("numSubsamples", numSubsamples);
         parameters.set("maxQ", 200);
         parameters.set("maxEr", maxEr);
-        parameters.set("depth", 3);
+        parameters.set("depth", 2);
 
         parameters.set("numMeasures", numNodes);
         parameters.set("numLatents", 0);
@@ -122,7 +122,7 @@ public class TestIda {
         parameters.set("verbose", false);
 
         parameters.set("coefLow", 0.3);
-        parameters.set("coefHigh", 1.0);
+        parameters.set("coefHigh", 1.2);
         parameters.set("includeNegativeCoefs", true);
         parameters.set("sampleSize", sampleSize);
         parameters.set("intervalBetweenShocks", 40);

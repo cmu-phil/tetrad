@@ -33,7 +33,7 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class CStaS {
 
-    private int maxTrekLength = 20;
+    private int maxTrekLength = 10;
 
     // A single record in the returned table.
     public static class Record implements TetradSerializable {
@@ -172,7 +172,7 @@ public class CStaS {
         int bestQ = -1;
 
         for (int q = 1; q <= variables.size(); q++) {
-
+            if (q > 0.1 * variables.size()) continue;
 
             final Map<Node, Integer> counts = new HashMap<>();
             for (Node node : variables) counts.put(node, 0);
@@ -373,9 +373,9 @@ public class CStaS {
     private Graph getPattern(DataSet sample) {
         IndependenceTest test = getIndependenceTest(sample, this.test);
         PcAll pc = new PcAll(test, null);
-        pc.setFasRule(PcAll.FasRule.FAS);
+        pc.setFasRule(PcAll.FasRule.FAS_STABLE);
         pc.setConflictRule(PcAll.ConflictRule.OVERWRITE);
-        pc.setColliderDiscovery(PcAll.ColliderDiscovery.MAX_P);
+        pc.setColliderDiscovery(PcAll.ColliderDiscovery.FAS_SEPSETS);
         return pc.search();
     }
 
@@ -404,14 +404,23 @@ public class CStaS {
     // E(V) bound
     private static double er(double pi, double q, double p) {
         double v = ((q * q) / (4 * p)) * (1.0 / (2 * pi - 1));
-        if (v < 0) return Double.POSITIVE_INFINITY;
+        if (v < 0) v = Double.POSITIVE_INFINITY;
+//        if (v > q) return q;
+        return v;
+    }
+
+    private static double er2(double pi, double q, double p) {
+        double v = ((q * q) / (4 * p)) * (1.0 / (2 * pi - 1));
+        if (v < 0) v = Double.POSITIVE_INFINITY;
+//        if (v > q) v = q;
         return v;
     }
 
     // Per comparison error rate.
     private static double pcer(double pi, double q, double p) {
-        final double v = ((q * q) / (4 * p * p)) * (1.0 / (2 * pi - 1));
-        if (v < 0) return Double.POSITIVE_INFINITY;
+        double v = ((q * q) / (4 * p * p)) * (1.0 / (2 * pi - 1));
+        if (v < 0) v = Double.POSITIVE_INFINITY;
+//        if (v > 1) v = 1;
         return v;
     }
 
@@ -477,6 +486,8 @@ public class CStaS {
 //                ConcurrencyUtils.runCallables(tasks, parallelism);
 //            }
         }
+
+        y = test.getVariable(y.getName());
 
         if (!selection.contains(y)) selection.add(y);
 
