@@ -421,18 +421,18 @@ public final class GraphEditor extends JPanel
         });
 
         graph.addSeparator();
-        JMenuItem meekOrient = new JMenuItem("Meek Orientation");
-        graph.add(meekOrient);
+//        JMenuItem meekOrient = new JMenuItem("Meek Orientation");
+//        graph.add(meekOrient);
 
-        meekOrient.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                MeekRules rules = new MeekRules();
-                rules.orientImplied(getGraph());
-                getWorkbench().setGraph(getGraph());
-                firePropertyChange("modelChanged", null, null);
-            }
-        }
-        );
+//        meekOrient.addActionListener(new ActionListener() {
+//            public void actionPerformed(ActionEvent e) {
+//                MeekRules rules = new MeekRules();
+//                rules.orientImplied(getGraph());
+//                getWorkbench().setGraph(getGraph());
+//                firePropertyChange("modelChanged", null, null);
+//            }
+//        }
+//        );
 
         graph.addSeparator();
         graph.add(new JMenuItem(new SelectBidirectedAction(getWorkbench()
