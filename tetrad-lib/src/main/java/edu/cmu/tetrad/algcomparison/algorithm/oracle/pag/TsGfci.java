@@ -8,13 +8,10 @@ import edu.cmu.tetrad.algcomparison.utils.TakesIndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.utils.TakesInitialGraph;
 import edu.cmu.tetrad.algcomparison.utils.UsesScoreWrapper;
 import edu.cmu.tetrad.annotation.AlgType;
-import edu.cmu.tetrad.data.DataModel;
-import edu.cmu.tetrad.data.DataSet;
-import edu.cmu.tetrad.data.DataType;
-import edu.cmu.tetrad.data.IKnowledge;
-import edu.cmu.tetrad.data.TimeSeriesData;
+import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
+  import edu.cmu.tetrad.search.SearchGraphUtils;
 import edu.cmu.tetrad.search.TsDagToPag;
 import edu.cmu.tetrad.util.Parameters;
 import edu.pitt.dbmi.algo.bootstrap.BootstrapEdgeEnsemble;
@@ -52,9 +49,9 @@ public class TsGfci implements Algorithm, TakesInitialGraph, HasKnowledge, Takes
 
     @Override
     public Graph search(DataModel dataSet, Parameters parameters) {
-    	if (!(dataSet instanceof TimeSeriesData)) {
-            throw new IllegalArgumentException("You need a (labeled) time series data set to run TsGFCI.");
-        } 
+//    	if (!(dataSet instanceof TimeSeriesData)) {
+//            throw new IllegalArgumentException("You need a (labeled) time series data set to run TsGFCI.");
+//        }
         
         if (parameters.getInt("bootstrapSampleSize") < 1) {
             edu.cmu.tetrad.search.TsGFci search = new edu.cmu.tetrad.search.TsGFci(test.getTest(dataSet, parameters),

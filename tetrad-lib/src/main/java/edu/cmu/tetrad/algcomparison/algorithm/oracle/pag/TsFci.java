@@ -53,17 +53,14 @@ public class TsFci implements Algorithm, TakesInitialGraph, HasKnowledge, TakesI
 
     @Override
     public Graph search(DataModel dataSet, Parameters parameters) {
-    	if (!(dataSet instanceof TimeSeriesData)) {
-            throw new IllegalArgumentException("You need a (labeled) time series data set to run TsFCI.");
-        } 
+//    	if (!(dataSet instanceof TimeSeriesData)) {
+//            throw new IllegalArgumentException("You need a (labeled) time series data set to run TsFCI.");
+//        }
         
         if (parameters.getInt("bootstrapSampleSize") < 1) {
             edu.cmu.tetrad.search.TsFci search = new edu.cmu.tetrad.search.TsFci(test.getTest(dataSet, parameters));
             search.setDepth(parameters.getInt("depth"));
-
-            IKnowledge _knowledge = getKnowledge() != null ? getKnowledge() : dataSet.getKnowledge();
-
-            search.setKnowledge(_knowledge);
+            search.setKnowledge(dataSet.getKnowledge());
             return search.search();
         } else {
             TsFci tsFci = new TsFci(test, algorithm);
