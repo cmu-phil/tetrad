@@ -763,32 +763,34 @@ public final class SessionEditorNode extends DisplayNode {
         Class modelClass = (model == null)
                 ? determineTheModelClass(getSessionNode())
                 : model.getClass();
-        if (getSessionNode().existsParameterizedConstructor(modelClass) && getSessionNode().getNumChildren() > 0) {
-            JMenuItem editSimulationParameters = new JMenuItem("Edit Parameters...");
-            editSimulationParameters.setToolTipText("<html>");
-            editSimulationParameters.addActionListener((e) -> {
-                Parameters param = getSessionNode().getParam(modelClass);
-                Object[] arguments
-                        = getSessionNode().getModelConstructorArguments(
-                                modelClass);
+        if (getSessionNode().existsParameterizedConstructor(modelClass)) {
+            final ParameterEditor paramEditor = getParameterEditor(modelClass);
 
-                if (param != null) {
-                    try {
-                        editParameters(modelClass, param, arguments);
-                        int ret = JOptionPane.showConfirmDialog(JOptionUtils.centeringComp(),
-                                "Should I overwrite the contents of this box and all delete the contents\n"
-                                + "of all boxes downstream?",
-                                "Double check...", JOptionPane.YES_NO_OPTION);
-                        if (ret == JOptionPane.YES_OPTION) {
-                            getSessionNode().destroyModel();
-                            getSessionNode().createModel(modelClass, true);
+            if (paramEditor != null) {
+                JMenuItem editSimulationParameters = new JMenuItem("Edit Parameters...");
+                editSimulationParameters.setToolTipText("<html>");
+                editSimulationParameters.addActionListener((e) -> {
+                    Parameters param = getSessionNode().getParam(modelClass);
+                    Object[] arguments = getSessionNode().getModelConstructorArguments(modelClass);
+
+                    if (param != null) {
+                        try {
+                            editParameters(modelClass, param, arguments);
+                            int ret = JOptionPane.showConfirmDialog(JOptionUtils.centeringComp(),
+                                    "Should I overwrite the contents of this box and all delete the contents\n"
+                                            + "of all boxes downstream?",
+                                    "Double check...", JOptionPane.YES_NO_OPTION);
+                            if (ret == JOptionPane.YES_OPTION) {
+                                getSessionNode().destroyModel();
+                                getSessionNode().createModel(modelClass, true);
+                            }
+                        } catch (Exception e1) {
+                            e1.printStackTrace();
                         }
-                    } catch (Exception e1) {
-                        e1.printStackTrace();
                     }
-                }
-            });
-            popup.add(editSimulationParameters);
+                });
+                popup.add(editSimulationParameters);
+            }
         }
 
 //        final SessionNode thisNode = getSessionNode();
@@ -817,6 +819,11 @@ public final class SessionEditorNode extends DisplayNode {
         popup.add(propagateDownstream);
 
         return popup;
+    }
+
+    private ParameterEditor getParameterEditor(Class modelClass) {
+        SessionNodeModelConfig modelConfig = this.config.getModelConfig(modelClass);
+        return modelConfig.getParameterEditorInstance();
     }
 
 //    private void addConsistentChildBoxMenus(JPopupMenu menu, List<String> consistentChildBoxes) {
@@ -1238,8 +1245,8 @@ public final class SessionEditorNode extends DisplayNode {
             throw new NullPointerException("Parameters cannot be null.");
         }
 
-        SessionNodeModelConfig modelConfig = this.config.getModelConfig(modelClass);
-        final ParameterEditor paramEditor = modelConfig.getParameterEditorInstance();
+        final ParameterEditor paramEditor = getParameterEditor(modelClass);
+
         if (paramEditor == null) {
             // if no editor, then consider the params "edited".
             return true;
