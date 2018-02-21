@@ -111,11 +111,13 @@ public class TsImages implements Algorithm, HasKnowledge, MultiDataSetAlgorithm,
     @Override
     public List<String> getParameters() {
         List<String> parameters = score.getParameters();
+        parameters.add("numRuns");
+        parameters.add("randomSelectionSize");
         // Bootstrapping
         parameters.add("bootstrapSampleSize");
         parameters.add("bootstrapEnsemble");
         parameters.add("verbose");
-        return score.getParameters();
+        return parameters;
     }
 
     @Override
