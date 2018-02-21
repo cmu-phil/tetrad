@@ -299,7 +299,6 @@ public final class SimulationEditor extends JPanel implements KnowledgeEditable,
                     simulation.setSimulation(new ConditionalGaussianSimulation(randomGraph), simulation.getParams());
                 } else if (simulationItem.equals(simulationItems[5])) {
                     simulation.setSimulation(new TimeSeriesSemSimulation(randomGraph), simulation.getParams());
-                    simulation.setFixedGraph(true);
                 } else {
                     throw new IllegalArgumentException("Unrecognized simulation type: " + simulationItem);
                 }
