@@ -172,7 +172,7 @@ public class CStaS {
         int bestQ = -1;
 
         for (int q = 1; q <= variables.size(); q++) {
-            if (q > 0.1 * variables.size()) continue;
+            if (q >= variables.size()) continue;
 
             final Map<Node, Integer> counts = new HashMap<>();
             for (Node node : variables) counts.put(node, 0);
@@ -214,10 +214,11 @@ public class CStaS {
             for (int i = 0; i < q; i++) {
                 final double er = er(pi.get(i), q, variables.size());
 
-                if (er <= getMaxEr()) {
+//                if (er <= getMaxEr()) {
+//                if (pi.get(i) > 0) {
                     _outNodes.add(sortedVariables.get(i));
                     _outPis.add(pi.get(i));
-                }
+//                }
             }
 
             if (_outNodes.size() > outNodes.size()) {
@@ -306,13 +307,13 @@ public class CStaS {
             final Node node = records.get(i).getVariable();
             final boolean ancestor = records.get(i).isAncestor();
             final boolean existsTrekToTarget = records.get(i).isExistsTrekToTarget();
-            if (!(existsTrekToTarget)) fp++;
+            if (!(ancestor)) fp++;
 
             table.setToken(i + 1, 0, "" + (i + 1));
-            table.setToken(i + 1, 1,  node.getName());
-            table.setToken(i + 1, 2,  node instanceof DiscreteVariable ? "D" : "C");
-            table.setToken(i + 1, 3,  ancestor ? "A" : "");
-            table.setToken(i + 1, 4,  existsTrekToTarget ? "T" : "");
+            table.setToken(i + 1, 1, node.getName());
+            table.setToken(i + 1, 2, node instanceof DiscreteVariable ? "D" : "C");
+            table.setToken(i + 1, 3, ancestor ? "A" : "");
+            table.setToken(i + 1, 4, existsTrekToTarget ? "T" : "");
             table.setToken(i + 1, 5, nf.format(records.get(i).getPi()));
             table.setToken(i + 1, 6, nf.format(records.get(i).getEffect()));
             table.setToken(i + 1, 7, nf.format(records.get(i).getPcer()));
@@ -388,7 +389,7 @@ public class CStaS {
             double alpha = test.getAlpha();
             return new IndTestFisherZ(new CorrelationMatrixOnTheFly(sample), alpha);
         } else if (test instanceof ChiSquare) {
-            double alpha =  test.getAlpha();
+            double alpha = test.getAlpha();
             return new IndTestFisherZ(sample, alpha);
         } else if (test instanceof IndTestScore && ((IndTestScore) test).getWrappedScore() instanceof ConditionalGaussianScore) {
             ConditionalGaussianScore score = (ConditionalGaussianScore) ((IndTestScore) test).getWrappedScore();
@@ -403,24 +404,17 @@ public class CStaS {
 
     // E(V) bound
     private static double er(double pi, double q, double p) {
-        double v = ((q * q) / (4 * p)) * (1.0 / (2 * pi - 1));
-        if (v < 0) v = Double.POSITIVE_INFINITY;
-//        if (v > q) return q;
-        return v;
-    }
-
-    private static double er2(double pi, double q, double p) {
-        double v = ((q * q) / (4 * p)) * (1.0 / (2 * pi - 1));
-        if (v < 0) v = Double.POSITIVE_INFINITY;
-//        if (v > q) v = q;
+        double v = ((q * q) / (p)) * (1.0 / (2 * pi - 1));
+        if (v < 0) v = q;
+        if (v > q) return q;
         return v;
     }
 
     // Per comparison error rate.
     private static double pcer(double pi, double q, double p) {
-        double v = ((q * q) / (4 * p * p)) * (1.0 / (2 * pi - 1));
-        if (v < 0) v = Double.POSITIVE_INFINITY;
-//        if (v > 1) v = 1;
+        double v = ((q * q) / (p * p)) * (1.0 / (2 * pi - 1));
+        if (v < 0) v = 1;
+        if (v > 1) v = 1;
         return v;
     }
 

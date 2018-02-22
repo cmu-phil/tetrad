@@ -92,14 +92,14 @@ public class TestIda {
     //    @Test
     public void testCStaS() {
         int numNodes = 1000;
-        int avgDegree = 6;
-        int sampleSize = 200;
+        int avgDegree = 8;
+        int sampleSize = 100;
         int numIterations = 10;
-        int numSubsamples = 50;
+        int numSubsamples = 100;
         int minNumAncestors = 20;
         int maxEr = 10;
 
-        double penaltyDiscount = .5;
+        double penaltyDiscount = 1.2;
         double alpha = .1;
 
         Parameters parameters = new Parameters();
@@ -160,7 +160,7 @@ public class TestIda {
 
             parameters.set("targetName", "X" + m);
 
-            CStaS cstas = new CStaS(new FisherZ());
+            CStaS cstas = new CStaS(new SemBicTest());
             cstas.setTrueDag(trueDag);
 
             Graph graph = cstas.search(fullData, parameters);
@@ -171,13 +171,14 @@ public class TestIda {
 
         System.out.println();
 
-        System.out.println("\tTreks\tAncestors\tNon-Treks");
+        System.out.println("\tTreks\tAncestors\tNon-Treks\tNon-Ancestors");
 
         for (int i = 0; i < numIterations; i++) {
             System.out.println((i + 1) + ".\t"
                     + cstasRet.get(i)[0] + "\t"
                     + cstasRet.get(i)[1] + "\t"
-                    + cstasRet.get(i)[2]
+                    + cstasRet.get(i)[2] + "\t"
+                    + cstasRet.get(i)[3]
             );
         }
     }
@@ -314,7 +315,8 @@ public class TestIda {
 
         Set<Edge> allTreks = new HashSet<>();
         Set<Edge> allAncestors = new HashSet<>();
-        Set<Edge> allOther = new HashSet<>();
+        Set<Edge> nonTreks = new HashSet<>();
+        Set<Edge> nonAncestors = new HashSet<>();
 
         for (Edge edge : graph.getEdges()) {
             Node x = edge.getNode1();
@@ -323,24 +325,28 @@ public class TestIda {
             boolean ancestor = trueDag.isAncestorOf(x, y);
 
             List<List<Node>> treks = GraphUtils.treks(trueDag, x, y, 10);
-            boolean trekToTarget = !treks.isEmpty();
 
-            if (ancestor) {
-                allAncestors.add(edge);
-            }
+            boolean trekToTarget = !treks.isEmpty();
 
             if (trekToTarget) {
                 allTreks.add(edge);
             } else {
-                allOther.add(edge);
+                nonTreks.add(edge);
+            }
+
+            if (ancestor) {
+                allAncestors.add(edge);
+            } else {
+                nonAncestors.add(edge);
             }
         }
 
-        int[] ret = new int[3];
+        int[] ret = new int[4];
 
         ret[0] = allTreks.size();
         ret[1] = allAncestors.size();
-        ret[2] = allOther.size();
+        ret[2] = nonTreks.size();
+        ret[3] = nonAncestors.size();
 
         return ret;
     }
