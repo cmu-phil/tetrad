@@ -45,7 +45,7 @@ public class CStaS implements Algorithm {
         edu.cmu.tetrad.search.CStaS cStaS = new edu.cmu.tetrad.search.CStaS();
 
         cStaS.setParallelism(parameters.getInt("parallelism"));
-        cStaS.setMaxEr(parameters.getInt("maxEr"));
+        cStaS.setMaxEr(parameters.getDouble("maxEr"));
         cStaS.setNumSubsamples(parameters.getInt("numSubsamples"));
         cStaS.setTrueDag(trueDag);
 

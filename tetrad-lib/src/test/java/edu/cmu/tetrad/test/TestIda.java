@@ -96,18 +96,17 @@ public class TestIda {
         int sampleSize = 100;
         int numIterations = 10;
         int numSubsamples = 100;
-        int minNumAncestors = 20;
-        int maxEr = 10;
+        double maxEr = .8;
 
-        double penaltyDiscount = 1.2;
-        double alpha = .1;
+        double penaltyDiscount = 1;
+        double alpha = 2;
 
         Parameters parameters = new Parameters();
 
         parameters.set("alpha", alpha);
         parameters.set("penaltyDiscount", penaltyDiscount);
         parameters.set("numSubsamples", numSubsamples);
-        parameters.set("maxQ", 200);
+        parameters.set("maxQ", 50);
         parameters.set("maxEr", maxEr);
         parameters.set("depth", 2);
 
@@ -139,26 +138,17 @@ public class TestIda {
         fisher.createData(parameters);
         DataSet fullData = (DataSet) fisher.getDataModel(0);
 
-        Graph trueDag = fisher.getTrueGraph(0);
+        final Graph trueDag = fisher.getTrueGraph(0);
 
-        int m = trueDag.getNumNodes() + 1;
+        List<Node> nodes = trueDag.getNodes();
+
+        nodes.sort((o1, o2) -> {
+            return Integer.compare(trueDag.getAncestors(Collections.singletonList(o2)).size(),
+                    trueDag.getAncestors(Collections.singletonList(o1)).size());
+        });
 
         for (int i = 0; i < numIterations; i++) {
-            m--;
-
-            final Node t = trueDag.getNodes().get(m - 1);
-            Set<Node> p = new HashSet<>(trueDag.getParents(t));
-
-            for (Node q : new HashSet<>(p)) {
-                p.addAll(trueDag.getParents(q));
-            }
-
-            if (p.size() < minNumAncestors) {
-                i--;
-                continue;
-            }
-
-            parameters.set("targetName", "X" + m);
+            parameters.set("targetName", nodes.get(i).getName());
 
             CStaS cstas = new CStaS(new SemBicTest());
             cstas.setTrueDag(trueDag);

@@ -7,6 +7,7 @@ import edu.cmu.tetrad.data.ICovarianceMatrix;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.util.ChoiceGenerator;
 import edu.cmu.tetrad.util.DepthChoiceGenerator;
 import edu.cmu.tetrad.util.TetradMatrix;
 import org.apache.commons.math3.linear.SingularMatrixException;
@@ -73,8 +74,19 @@ public class Ida {
 
         LinkedList<Double> effects = new LinkedList<>();
 
+        CHOICE:
         while ((choice = gen.next()) != null) {
             List<Node> sibbled = GraphUtils.asList(choice, siblings);
+
+            if (sibbled.size() > 1) {
+                ChoiceGenerator gen2 = new ChoiceGenerator(sibbled.size(), 2);
+                int[] choice2;
+
+                while ((choice2 = gen2.next()) != null) {
+                    List<Node> adj = GraphUtils.asList(choice2, sibbled);
+                    if (!pattern.isAdjacentTo(adj.get(0), adj.get(1))) continue CHOICE;
+                }
+            }
 
             List<Node> regressors = null;
 

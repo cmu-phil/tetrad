@@ -171,19 +171,17 @@ public class CStaS {
         List<Double> outPis = new ArrayList<>();
         int bestQ = -1;
 
-        for (int q = 1; q <= variables.size(); q++) {
-            if (q >= variables.size()) continue;
+        final Map<Node, Integer> counts = new HashMap<>();
+        for (Node node : variables) counts.put(node, 0);
 
-            final Map<Node, Integer> counts = new HashMap<>();
-            for (Node node : variables) counts.put(node, 0);
+        final int p = variables.size();
 
+        for (int q = 0; q <= p; q++) {
             for (Ida.NodeEffects _effects : effects) {
-                for (int i = 0; i < q; i++) {
-                    if (i < _effects.getNodes().size()) {
-                        if (_effects.getEffects().get(i) > 0) {
-                            final Node key = _effects.getNodes().get(i);
-                            counts.put(key, counts.get(key) + 1);
-                        }
+                if (q < _effects.getNodes().size()) {
+                    if (_effects.getEffects().get(q) > 0) {
+                        final Node key = _effects.getNodes().get(q);
+                        counts.put(key, counts.get(key) + 1);
                     }
                 }
             }
@@ -211,17 +209,20 @@ public class CStaS {
             List<Node> _outNodes = new ArrayList<>();
             List<Double> _outPis = new ArrayList<>();
 
-            for (int i = 0; i < q; i++) {
-                final double er = er(pi.get(i), q, variables.size());
+            double maxer = -1;
 
-//                if (er <= getMaxEr()) {
-//                if (pi.get(i) > 0) {
+            for (int i = 0; i < q; i++) {
+                final double er = er(pi.get(i), q, p);
+
+                if (er > maxer) maxer = er;
+
+                if (er < q) {
                     _outNodes.add(sortedVariables.get(i));
                     _outPis.add(pi.get(i));
-//                }
+                }
             }
 
-            if (_outNodes.size() > outNodes.size()) {
+            if (maxer / (double) q < getMaxEr()) {
                 outNodes = _outNodes;
                 outPis = _outPis;
                 bestQ = q;
@@ -230,26 +231,19 @@ public class CStaS {
 
         System.out.println("q = " + bestQ);
 
-        List<Node> ancestors = new ArrayList<>();
+        if (outPis.size() > 0) {
+            double bound = er(outPis.get(outPis.size() - 1), bestQ, p) * (bestQ / (double) outNodes.size());
+            System.out.println("Predicted E(V) bound = " + bound);
+        }
 
         trueDag = GraphUtils.replaceNodes(trueDag, outNodes);
         trueDag = GraphUtils.replaceNodes(trueDag, Collections.singletonList(target));
 
-        if (trueDag != null) {
-            for (Node node : trueDag.getNodes()) {
-                if (trueDag.isAncestorOf(node, target)) {
-                    ancestors.add(node);
-                }
-            }
-        }
-
         List<Record> records = new ArrayList<>();
 
         for (int i = 0; i < outNodes.size(); i++) {
-
-
-            final double er = er(outPis.get(i), bestQ, variables.size());
-            final double pcer = pcer(outPis.get(i), bestQ, variables.size());
+            double er = er(outPis.get(i), outNodes.size(), p);
+            final double pcer = pcer(outPis.get(i), bestQ, p);
 
             List<Double> e = new ArrayList<>();
 
@@ -262,7 +256,12 @@ public class CStaS {
             double[] _e = new double[e.size()];
             for (int t = 0; t < e.size(); t++) _e[t] = e.get(t);
             double avg = StatUtils.mean(_e);
-            final boolean ancestor = ancestors.contains(outNodes.get(i));
+            boolean ancestor = false;
+
+            if (trueDag != null) {
+                ancestor = trueDag.isAncestorOf(outNodes.get(i), target);
+            }
+
             boolean trekToTarget = false;
 
             if (trueDag != null) {
@@ -404,18 +403,12 @@ public class CStaS {
 
     // E(V) bound
     private static double er(double pi, double q, double p) {
-        double v = ((q * q) / (p)) * (1.0 / (2 * pi - 1));
-        if (v < 0) v = q;
-        if (v > q) return q;
-        return v;
+        return (q * q) / (p * (pi * pi));
     }
 
     // Per comparison error rate.
     private static double pcer(double pi, double q, double p) {
-        double v = ((q * q) / (p * p)) * (1.0 / (2 * pi - 1));
-        if (v < 0) v = 1;
-        if (v > 1) v = 1;
-        return v;
+        return (q * q) / (p * p * (pi * pi));
     }
 
 
@@ -466,19 +459,6 @@ public class CStaS {
 
                 ConcurrencyUtils.runCallables(tasks, parallelism);
             }
-
-//            {
-//                tasks = new ArrayList<>();
-//
-//                for (Node s : new ArrayList<>(selection)) {
-//                    for (int from = 0; from < variables.size(); from += chunk) {
-//                        final int to = Math.min(variables.size(), from + chunk);
-//                        tasks.add(new Task(from, to, s));
-//                    }
-//                }
-//
-//                ConcurrencyUtils.runCallables(tasks, parallelism);
-//            }
         }
 
         y = test.getVariable(y.getName());
