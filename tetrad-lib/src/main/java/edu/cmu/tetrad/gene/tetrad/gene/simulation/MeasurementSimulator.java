@@ -613,7 +613,7 @@ public class MeasurementSimulator implements TetradSerializable {
      * getMeasuredData(), then measuredData[i][j][k] is the expression level for
      * the i'th factor in the GeneHistory at the j'th time step stored out for
      * the k'th sample. To determine which factor is the i'th factor, look at
-     * getHistory().getFactor(). To determine which time step is the j'th time
+     * getHistory().getShrinkFactor(). To determine which time step is the j'th time
      * step, look at getTimeSteps(). The k'th sample is drawn from dish (k /
      * numSamplesPerDish).</p> </p> <p>If measured data is not saved out, this
      * method returns null.</p>
