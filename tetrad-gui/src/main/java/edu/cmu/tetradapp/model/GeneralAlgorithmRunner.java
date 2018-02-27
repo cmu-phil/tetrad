@@ -230,13 +230,13 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
 
         if (getDataModelList().isEmpty()) {
             if (getSourceGraph() != null) {
-                Algorithm algorithm = getAlgorithm();
+                Algorithm algo = getAlgorithm();
 
-                if (algorithm instanceof HasKnowledge) {
-                    ((HasKnowledge) algorithm).setKnowledge(getKnowledge());
+                if (algo instanceof HasKnowledge) {
+                    ((HasKnowledge) algo).setKnowledge(getKnowledge());
                 }
 
-                graphList.add(algorithm.search(null, parameters));
+                graphList.add(algo.search(null, parameters));
             } else {
                 throw new IllegalArgumentException("The parent boxes did not include any datasets or graphs. Try opening\n"
                         + "the editors for those boxes and loading or simulating them.");
@@ -266,7 +266,7 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
                 }
             } else if (getAlgorithm() instanceof ClusterAlgorithm) {
                 for (int k = 0; k < parameters.getInt("numRuns"); k++) {
-                    for (DataModel dataModel : getDataModelList()) {
+                    getDataModelList().forEach(dataModel -> {
                         if (dataModel instanceof ICovarianceMatrix) {
                             ICovarianceMatrix dataSet = (ICovarianceMatrix) dataModel;
                             graphList.add(algorithm.search(dataSet, parameters));
@@ -279,30 +279,33 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
 
                             graphList.add(algorithm.search(dataSet, parameters));
                         }
-                    }
+                    });
                 }
             } else {
-                for (DataModel data : getDataModelList()) {
-
-                    Algorithm algorithm = getAlgorithm();
-
-                    if (algorithm instanceof HasKnowledge) {
-                        ((HasKnowledge) algorithm).setKnowledge(getKnowledge());
+                getDataModelList().forEach(data -> {
+                    IKnowledge knowledgeFromData = data.getKnowledge();
+                    if (!(knowledgeFromData == null || knowledgeFromData.getVariables().isEmpty())) {
+                        this.knowledge = knowledgeFromData;
                     }
 
-                    DataType algDataType = algorithm.getDataType();
+                    Algorithm algo = getAlgorithm();
+                    if (algo instanceof HasKnowledge) {
+                        ((HasKnowledge) algo).setKnowledge(getKnowledge());
+                    }
+
+                    DataType algDataType = algo.getDataType();
 
                     if (data.isContinuous() && (algDataType == DataType.Continuous || algDataType == DataType.Mixed)) {
-                        graphList.add(algorithm.search(data, parameters));
+                        graphList.add(algo.search(data, parameters));
                     } else if (data.isDiscrete() && (algDataType == DataType.Discrete || algDataType == DataType.Mixed)) {
-                        graphList.add(algorithm.search(data, parameters));
+                        graphList.add(algo.search(data, parameters));
                     } else if (data.isMixed() && algDataType == DataType.Mixed) {
-                        graphList.add(algorithm.search(data, parameters));
+                        graphList.add(algo.search(data, parameters));
                     } else {
                         throw new IllegalArgumentException("The type of data changed; try opening up the search editor and "
                                 + "running the algorithm there.");
                     }
-                }
+                });
             }
         }
 
