@@ -181,7 +181,7 @@ public class MbSearchEditor extends AbstractSearchEditor
         if (getAlgorithmRunner() instanceof MbfsRunner) {
             JMenu graph = new JMenu("Graph");
             JMenuItem showDags = new JMenuItem("Show DAG's Consistent with forbid_latent_common_causes");
-            JMenuItem meekOrient = new JMenuItem("Meek Orientation");
+//            JMenuItem meekOrient = new JMenuItem("Meek Orientation");
             JMenuItem gesOrient = new JMenuItem("Global Score-based Reorientation");
             JMenuItem nextGraph = new JMenuItem("Next Graph");
             JMenuItem previousGraph = new JMenuItem("Previous Graph");
@@ -194,7 +194,7 @@ public class MbSearchEditor extends AbstractSearchEditor
 //            graph.add(new NeighborhoodsAction(getWorkbench()));
             graph.addSeparator();
 
-            graph.add(meekOrient);
+//            graph.add(meekOrient);
             graph.add(gesOrient);
             graph.addSeparator();
 
@@ -231,14 +231,14 @@ public class MbSearchEditor extends AbstractSearchEditor
                 }
             });
 
-            meekOrient.addActionListener(new ActionListener() {
-                public void actionPerformed(ActionEvent e) {
-                    ImpliedOrientation rules = getAlgorithmRunner().getMeekRules();
-                    rules.setKnowledge((IKnowledge) getAlgorithmRunner().getParams().get("knowledge", new Knowledge2()));
-                    rules.orientImplied(getGraph());
-                    getWorkbench().setGraph(getGraph());
-                }
-            });
+//            meekOrient.addActionListener(new ActionListener() {
+//                public void actionPerformed(ActionEvent e) {
+//                    ImpliedOrientation rules = getAlgorithmRunner().getMeekRules();
+//                    rules.setKnowledge((IKnowledge) getAlgorithmRunner().getParams().get("knowledge", new Knowledge2()));
+//                    rules.orientImplied(getGraph());
+//                    getWorkbench().setGraph(getGraph());
+//                }
+//            });
 
             gesOrient.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
