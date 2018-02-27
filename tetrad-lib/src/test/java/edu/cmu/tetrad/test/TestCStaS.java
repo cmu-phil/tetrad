@@ -41,11 +41,11 @@ import org.junit.Test;
 import java.util.*;
 
 /**
- * Tests IDA.
+ * Tests CStaS.
  *
  * @author Joseph Ramsey
  */
-public class TestIda {
+public class TestCStaS {
 
 //    public void testIda() {
 //        Parameters parameters = new Parameters();
@@ -341,7 +341,7 @@ public class TestIda {
     }
 
     public static void main(String[] args) {
-        new TestIda().testCStaS();
+        new TestCStaS().testCStaS();
     }
 }
 
