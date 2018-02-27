@@ -144,9 +144,7 @@ public class TestIda {
             numAncestors.put(n, trueDag.getAncestors(Collections.singletonList(n)).size());
         }
 
-        nodes.sort((o1, o2) -> {
-            return Integer.compare(numAncestors.get(o2), numAncestors.get(o1));
-        });
+        nodes.sort((o1, o2) -> Integer.compare(numAncestors.get(o2), numAncestors.get(o1)));
 
         for (int i = 0; i < numIterations; i++) {
             parameters.set("targetName", nodes.get(i).getName());
