@@ -164,9 +164,6 @@ public final class SimulationEditor extends JPanel implements KnowledgeEditable,
             simulationsDropdown.addItem(item);
         }
 
-        simulationsDropdown.setSelectedItem(simulation.getParams().getString("simulationsDropdownPreference",
-                simulationItems[0]));
-
         graphsDropdown.addActionListener((e) -> {
             resetPanel(simulation, graphItems, simulationItems, tabbedPane);
         });
@@ -249,20 +246,19 @@ public final class SimulationEditor extends JPanel implements KnowledgeEditable,
             tabbedPane.setSelectedIndex(2);
         }
 
+        // initialize simulation type selection
+        simulationsDropdown.setSelectedItem(simulation.getParams().getString("simulationsDropdownPreference",
+                simulationItems[0]));
+        resetPanel(simulation, graphItems, simulationItems, tabbedPane);
     }
 
     private void resetPanel(Simulation simulation, String[] graphItems, String[] simulationItems, JTabbedPane tabbedPane) {
-        RandomGraph randomGraph;
-
-        if (simulation.getSourceGraph() != null) {
-            randomGraph = new SingleGraph(simulation.getSourceGraph());
-        } else {
-            randomGraph = new SingleGraph(new EdgeListGraph());
-        }
+        RandomGraph randomGraph = (simulation.getSourceGraph() == null)
+                ? new SingleGraph(new EdgeListGraph())
+                : new SingleGraph(simulation.getSourceGraph());
 
         if (!simulation.isFixedGraph()) {
             String graphItem = (String) graphsDropdown.getSelectedItem();
-            System.out.println("graphItem: " + graphItem);
             simulation.getParams().set("graphsDropdownPreference", graphItem);
 
             if (graphItem.equals(graphItems[0])) {
@@ -281,35 +277,7 @@ public final class SimulationEditor extends JPanel implements KnowledgeEditable,
         }
 
         if (!simulation.isFixedSimulation()) {
-            if (simulation.getSourceGraph() != null) {
-                String simulationItem = (String) simulationsDropdown.getSelectedItem();
-                System.out.println("simulationItem: " + simulationItem);
-                simulation.getParams().set("simulationsDropdownPreference", simulationItem);
-                simulation.setFixedGraph(false);
-
-                if (randomGraph instanceof SingleGraph) {
-                    simulation.setFixedGraph(true);
-                }
-
-                if (simulationItem.equals(simulationItems[0])) {
-                    simulation.setSimulation(new BayesNetSimulation(randomGraph), simulation.getParams());
-                } else if (simulationItem.equals(simulationItems[1])) {
-                    simulation.setSimulation(new SemSimulation(randomGraph), simulation.getParams());
-                } else if (simulationItem.equals(simulationItems[2])) {
-                    simulation.setSimulation(new LinearFisherModel(randomGraph), simulation.getParams());
-//                } else if (simulationItem.equals(simulationItems[3])) {
-//                    simulation.setSimulation(new GeneralSemSimulationSpecial1(randomGraph), simulation.getParams());
-                } else if (simulationItem.equals(simulationItems[3])) {
-                    simulation.setSimulation(new LeeHastieSimulation(randomGraph), simulation.getParams());
-                } else if (simulationItem.equals(simulationItems[4])) {
-                    simulation.setSimulation(new ConditionalGaussianSimulation(randomGraph), simulation.getParams());
-                } else if (simulationItem.equals(simulationItems[5])) {
-                    simulation.setSimulation(new TimeSeriesSemSimulation(randomGraph), simulation.getParams());
-                } else {
-                    throw new IllegalArgumentException("Unrecognized simulation type: " + simulationItem);
-                }
-
-            } else {
+            if (simulation.getSourceGraph() == null) {
                 String simulationItem = (String) simulationsDropdown.getSelectedItem();
                 simulation.getParams().set("simulationsDropdownPreference", simulationItem);
                 simulation.setFixedGraph(false);
@@ -325,17 +293,36 @@ public final class SimulationEditor extends JPanel implements KnowledgeEditable,
                 } else if (simulationItem.equals(simulationItems[2])) {
                     simulation.setSimulation(new LinearFisherModel(randomGraph, simulation.getInputDataModelList()),
                             simulation.getParams());
-//                } else if (simulationItem.equals(simulationItems[3])) {
-//                    simulation.setSimulation(new GeneralSemSimulationSpecial1(randomGraph), simulation.getParams());
                 } else if (simulationItem.equals(simulationItems[3])) {
                     simulation.setSimulation(new LeeHastieSimulation(randomGraph), simulation.getParams());
                 } else if (simulationItem.equals(simulationItems[4])) {
                     simulation.setSimulation(new ConditionalGaussianSimulation(randomGraph), simulation.getParams());
                 } else if (simulationItem.equals(simulationItems[5])) {
                     simulation.setSimulation(new TimeSeriesSemSimulation(randomGraph), simulation.getParams());
-//                } else if (simulationItem.equals(simulationItems[6])) {
-//                    simulation.setSimulation(new BooleanGlassSimulation(randomGraph), simulation.getParams());
+                } else {
+                    throw new IllegalArgumentException("Unrecognized simulation type: " + simulationItem);
+                }
+            } else {
+                String simulationItem = (String) simulationsDropdown.getSelectedItem();
+                simulation.getParams().set("simulationsDropdownPreference", simulationItem);
+                simulation.setFixedGraph(false);
+
+                if (randomGraph instanceof SingleGraph) {
                     simulation.setFixedGraph(true);
+                }
+
+                if (simulationItem.equals(simulationItems[0])) {
+                    simulation.setSimulation(new BayesNetSimulation(randomGraph), simulation.getParams());
+                } else if (simulationItem.equals(simulationItems[1])) {
+                    simulation.setSimulation(new SemSimulation(randomGraph), simulation.getParams());
+                } else if (simulationItem.equals(simulationItems[2])) {
+                    simulation.setSimulation(new LinearFisherModel(randomGraph), simulation.getParams());
+                } else if (simulationItem.equals(simulationItems[3])) {
+                    simulation.setSimulation(new LeeHastieSimulation(randomGraph), simulation.getParams());
+                } else if (simulationItem.equals(simulationItems[4])) {
+                    simulation.setSimulation(new ConditionalGaussianSimulation(randomGraph), simulation.getParams());
+                } else if (simulationItem.equals(simulationItems[5])) {
+                    simulation.setSimulation(new TimeSeriesSemSimulation(randomGraph), simulation.getParams());
                 } else {
                     throw new IllegalArgumentException("Unrecognized simulation type: " + simulationItem);
                 }
@@ -351,42 +338,27 @@ public final class SimulationEditor extends JPanel implements KnowledgeEditable,
 
         if (simulation.isFixedSimulation()) {
             if (simulation.getSimulation() instanceof BayesNetSimulation) {
-                simulationItems = new String[]{
-                    "Bayes net",};
+                simulationItems = new String[]{"Bayes net"};
             } else if (simulation.getSimulation() instanceof SemSimulation) {
-                simulationItems = new String[]{
-                    "Structural Equation Model"
-                };
+                simulationItems = new String[]{"Structural Equation Model"};
             } else if (simulation.getSimulation() instanceof LinearFisherModel) {
-                simulationItems = new String[]{
-                    "Linear Fisher Model"
-                };
+                simulationItems = new String[]{"Linear Fisher Model"};
             } else if (simulation.getSimulation() instanceof StandardizedSemSimulation) {
-                simulationItems = new String[]{
-                    "Standardized Structural Equation Model"
-                };
+                simulationItems = new String[]{"Standardized Structural Equation Model"};
             } else if (simulation.getSimulation() instanceof GeneralSemSimulation) {
-                simulationItems = new String[]{
-                    "General Structural Equation Model",};
+                simulationItems = new String[]{"General Structural Equation Model"};
             } else if (simulation.getSimulation() instanceof LoadContinuousDataAndGraphs) {
-                simulationItems = new String[]{
-                    "Loaded From Files",};
+                simulationItems = new String[]{"Loaded From Files"};
             } else {
                 throw new IllegalStateException("Not expecting that model type: "
                         + simulation.getSimulation().getClass());
             }
         } else {
-//            if (simulation.getSimulation() instanceof TakesData) {
-//                simulationItems = new String[]{
-//                        "Linear Fisher Model",
-//                };
-//            } else
             if (simulation.getSourceGraph() != null) {
                 simulationItems = new String[]{
                     "Bayes net",
                     "Structural Equation Model",
                     "Linear Fisher Model",
-                    //                        "General Structural Equation Model Special",
                     "Lee & Hastie",
                     "Conditional Gaussian",
                     "Time Series"
@@ -396,10 +368,9 @@ public final class SimulationEditor extends JPanel implements KnowledgeEditable,
                     "Bayes net",
                     "Structural Equation Model",
                     "Linear Fisher Model",
-                    //                        "General Structural Equation Model Special",
                     "Lee & Hastie",
                     "Conditional Gaussian",
-                    "Time Series", //                        "Boolean Glass"
+                    "Time Series"
                 };
             }
         }

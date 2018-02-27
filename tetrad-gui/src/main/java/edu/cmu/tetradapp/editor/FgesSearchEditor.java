@@ -378,7 +378,7 @@ public class FgesSearchEditor extends AbstractSearchEditor
 
         JMenu graph = new JMenu("Graph");
         JMenuItem showDags = new JMenuItem("Show DAGs in forbid_latent_common_causes");
-        JMenuItem meekOrient = new JMenuItem("Meek Orientation");
+//        JMenuItem meekOrient = new JMenuItem("Meek Orientation");
         final JMenuItem dagInPattern = new JMenuItem("Choose DAG in forbid_latent_common_causes");
         JMenuItem gesOrient = new JMenuItem("Global Score-based Reorientation");
         JMenuItem nextGraph = new JMenuItem("Next Graph");
@@ -393,7 +393,7 @@ public class FgesSearchEditor extends AbstractSearchEditor
 //        graph.add(new TriplesAction(getWorkbench(), getAlgorithmRunner()));
         graph.addSeparator();
 
-        graph.add(meekOrient);
+//        graph.add(meekOrient);
         graph.add(dagInPattern);
         graph.add(gesOrient);
         graph.addSeparator();
@@ -458,16 +458,16 @@ public class FgesSearchEditor extends AbstractSearchEditor
             }
         });
 
-        meekOrient.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                ImpliedOrientation rules = getAlgorithmRunner().getMeekRules();
-                rules.setKnowledge((IKnowledge) getAlgorithmRunner().getParams().get("knowledge", new Knowledge2()));
-                rules.orientImplied(getGraph());
-                getGraphHistory().add(getGraph());
-                getWorkbench().setGraph(getGraph());
-                firePropertyChange("modelChanged", null, null);
-            }
-        });
+//        meekOrient.addActionListener(new ActionListener() {
+//            public void actionPerformed(ActionEvent e) {
+//                ImpliedOrientation rules = getAlgorithmRunner().getMeekRules();
+//                rules.setKnowledge((IKnowledge) getAlgorithmRunner().getParams().get("knowledge", new Knowledge2()));
+//                rules.orientImplied(getGraph());
+//                getGraphHistory().add(getGraph());
+//                getWorkbench().setGraph(getGraph());
+//                firePropertyChange("modelChanged", null, null);
+//            }
+//        });
 
         dagInPattern.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
