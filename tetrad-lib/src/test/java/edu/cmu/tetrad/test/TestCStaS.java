@@ -90,13 +90,13 @@ public class TestCStaS {
     //    @Test
     private void testCStaS() {
         int numNodes = 800;
-        int avgDegree = 4;
+        int avgDegree = 6;
         int sampleSize = 100;
         int numIterations = 10;
         int numSubsamples = 50;
         double penaltyDiscount = 1;
         double selectionAlpha = 0.03;
-        double lift = 2.0;
+        double lift = 2.5;
 
         Parameters parameters = new Parameters();
 

@@ -289,7 +289,7 @@ public class CStaS {
      * Returns a text table from the given records
      */
     public String makeTable(List<Record> records) {
-        TextTable table = new TextTable(records.size() + 1, 9);
+        TextTable table = new TextTable(records.size() + 1, 8);
         NumberFormat nf = new DecimalFormat("0.0000");
 
         table.setToken(0, 0, "Index");
@@ -300,7 +300,7 @@ public class CStaS {
         table.setToken(0, 5, "PI");
         table.setToken(0, 6, "Average Effect");
         table.setToken(0, 7, "PCER");
-        table.setToken(0, 8, "ER");
+//        table.setToken(0, 8, "ER");
 
         int fp = 0;
 
@@ -318,10 +318,10 @@ public class CStaS {
             table.setToken(i + 1, 5, nf.format(records.get(i).getPi()));
             table.setToken(i + 1, 6, nf.format(records.get(i).getEffect()));
             table.setToken(i + 1, 7, nf.format(records.get(i).getPcer()));
-            table.setToken(i + 1, 8, nf.format(records.get(i).getEr()));
+//            table.setToken(i + 1, 8, nf.format(records.get(i).getEr()));
         }
 
-        return "\n" + table + "\n" + "# FP = " + fp +
+        return "\n" + table + "\n" + "# FP = " + fp + " E(V) = " + nf.format(records.get(0).getEr()) +
                 "\n\nT = exists a trek of length no more than " + maxTrekLength + " to the target" +
                 "\nA = ancestor of the target" +
                 "\nType: C = continuous, D = discrete\n";
@@ -418,7 +418,9 @@ public class CStaS {
 
     // Per comparison error rate.
     private static double pcer(double pi, double q, double p) {
-        return (q * q) / (p * p * (2 * pi - 1));
+        double v = (q * q) / (p * p * (2 * pi - 1));
+        if (v < 0 || v > 1) v = 1;
+        return v;
     }
 
     private static List<Node> selectVariables(DataSet dataSet, Node y, double alpha, int parallelism) {
