@@ -264,14 +264,17 @@ public class ParamDescriptions {
             "The probability of creating a 2-cycles in the graph (0 - 1)",
             0.0, 0.0, 1.0));
 
-
-        map.put("shrinkFactor", new ParamDescription(
-                "How much the bound on expected false positives shinks due to multiple paths",
-                1.0, 0.0, 1));
+        map.put("selectionAlpha", new ParamDescription(
+                "The alpha used for a Fisher Z test to select variables associated with the target",
+                0.05, 0.0, 1));
 
         map.put("maxEr", new ParamDescription(
                 "Bound on the expected false positive error rate",
                 5.0, 0.0, Double.POSITIVE_INFINITY));
+
+        map.put("lift", new ParamDescription(
+                "Find a model with at least this factor times chance level",
+                2.0, 1.0, Double.POSITIVE_INFINITY));
 
         map.put("parallelism", new ParamDescription(
                 "The number of threads to use in the parallel calculation",

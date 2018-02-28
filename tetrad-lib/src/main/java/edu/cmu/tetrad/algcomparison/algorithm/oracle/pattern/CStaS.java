@@ -45,14 +45,14 @@ public class CStaS implements Algorithm {
         edu.cmu.tetrad.search.CStaS cStaS = new edu.cmu.tetrad.search.CStaS();
 
         cStaS.setParallelism(parameters.getInt("parallelism"));
-        cStaS.setShrinkFactor(parameters.getDouble("shrinkFactor"));
-        cStaS.setMaxEr(parameters.getDouble("maxEr"));
         cStaS.setNumSubsamples(parameters.getInt("numSubsamples"));
+        cStaS.setLift(parameters.getDouble("lift"));
         cStaS.setTrueDag(trueDag);
 
         final Node target = dataSet.getVariable(parameters.getString("targetName"));
 
-        this.records = cStaS.getRecords((DataSet) dataSet, target, test.getTest(dataSet, parameters), 0.04);
+        this.records = cStaS.getRecords((DataSet) dataSet, target, test.getTest(dataSet, parameters),
+                parameters.getDouble("selectionAlpha"));
 
         System.out.println(cStaS.makeTable(this.getRecords()));
 
@@ -78,9 +78,9 @@ public class CStaS implements Algorithm {
     @Override
     public List<String> getParameters() {
         List<String> parameters = new ArrayList<>();
+        parameters.add("selectionAlpha");
         parameters.add("penaltyDiscount");
         parameters.add("numSubsamples");
-        parameters.add("shrinkFactor");
         parameters.add("targetName");
         parameters.add("parallelism");
         return parameters;

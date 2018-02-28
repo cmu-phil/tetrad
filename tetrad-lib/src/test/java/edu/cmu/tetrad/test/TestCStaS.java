@@ -89,22 +89,22 @@ public class TestCStaS {
 
     //    @Test
     private void testCStaS() {
-        int numNodes = 5000;
-        int avgDegree = 6;
-        int sampleSize = 50;
+        int numNodes = 800;
+        int avgDegree = 4;
+        int sampleSize = 100;
         int numIterations = 10;
         int numSubsamples = 50;
-        double shrinkFactor = .6;
-        double maxEr = 20;
         double penaltyDiscount = 1;
+        double selectionAlpha = 0.03;
+        double lift = 2.0;
 
         Parameters parameters = new Parameters();
 
         parameters.set("penaltyDiscount", penaltyDiscount);
         parameters.set("numSubsamples", numSubsamples);
-        parameters.set("shrinkFactor", shrinkFactor);
-        parameters.set("maxEr", maxEr);
         parameters.set("depth", 2);
+        parameters.set("selectionAlpha", selectionAlpha);
+        parameters.set("lift", lift);
 
         parameters.set("numMeasures", numNodes);
         parameters.set("numLatents", 0);

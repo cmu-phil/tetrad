@@ -35,12 +35,11 @@ import java.util.concurrent.CopyOnWriteArrayList;
 public class CStaS {
 
     private int maxTrekLength = 15;
-    private double shrinkFactor = 1.0;
-    private double maxEr = 1.0;
     private int numSubsamples = 30;
     private int parallelism = Runtime.getRuntime().availableProcessors() * 10;
     private Graph trueDag = null;
     private IndependenceTest test;
+    private double lift = 2.0;
 
     // A single record in the returned table.
     public static class Record implements TetradSerializable {
@@ -98,12 +97,12 @@ public class CStaS {
         List<Node> vars = selectVariables(dataSet, target, selectionAlpha, parallelism);
         vars = GraphUtils.replaceNodes(vars, test.getVariables());
         DataSet selection = dataSet.subsetColumns(vars);
+
         return getRecords(selection, dataSet.getVariables(), target, test);
     }
 
     /**
      * Returns records for a set of variables with expected number of false positives bounded by q.
-     *
      * @param dataSet            The full datasets to search over.
      * @param possiblePredictors A set of variables in the datasets over which to search.
      * @param target             The target variables.
@@ -146,8 +145,8 @@ public class CStaS {
             public Boolean call() {
                 try {
                     BootstrapSampler sampler = new BootstrapSampler();
-                    sampler.setWithoutReplacements(true);
-                    DataSet sample = sampler.sample(selection, selection.getNumRows() / 2);
+                    sampler.setWithoutReplacements(false);
+                    DataSet sample = sampler.sample(selection, selection.getNumRows());
                     Graph pattern = getPatternFges(sample);
                     Ida ida = new Ida(sample, pattern);
                     effects.add(ida.getSortedMinEffects(_target));
@@ -176,8 +175,9 @@ public class CStaS {
 
         final int p = variables.size();
 
-        Q:
-        for (int q = 1; q <= .5 * p; q++) {
+        double maxEv = 0.0;
+
+        for (int q = 1; q <= p; q++) {
             for (Ida.NodeEffects _effects : effects) {
                 if (q - 1 < _effects.getNodes().size()) {
                     final Node key = _effects.getNodes().get(q - 1);
@@ -205,22 +205,34 @@ public class CStaS {
                 pi.add(count / ((double) getNumSubsamples()));
             }
 
-            List<Node> _outNodes = new ArrayList<>();
-            List<Double> _outPis = new ArrayList<>();
+            double sum = 0.0;
 
-            for (int i = 0; i < q; i++) {
-                if (er(pi.get(i), q, p, getShrinkFactor()) > getMaxEr()) {
-                    continue Q;
-                }
-
-                _outNodes.add(sortedVariables.get(i));
-                _outPis.add(pi.get(i));
+            for (int g = 0; g < q; g++) {
+                sum += pi.get(g);
             }
 
-            if (_outPis.size() >= outNodes.size()) {
-                outNodes = _outNodes;
-                outPis = _outPis;
-                bestQ = q;
+            double ev = q - sum;
+
+            if (ev > maxEv) {
+                maxEv = ev;
+            }
+
+            if (sum >= getLift() * q * q / (double) p) {
+                List<Node> _outNodes = new ArrayList<>();
+                List<Double> _outPis = new ArrayList<>();
+
+                for (int i = 0; i < q; i++) {
+                    _outNodes.add(sortedVariables.get(i));
+                    _outPis.add(pi.get(i));
+                }
+
+                if ( _outNodes.size() > outNodes.size()) {
+                    outNodes = _outNodes;
+                    outPis = _outPis;
+                    bestQ = q;
+                }
+            } else {
+                break;
             }
         }
 
@@ -232,7 +244,7 @@ public class CStaS {
         List<Record> records = new ArrayList<>();
 
         for (int i = 0; i < outNodes.size(); i++) {
-            double er = er(outPis.get(i), outNodes.size(), p, getShrinkFactor());
+//            double er = er(outPis.get(i), outNodes.size(), p);
             final double pcer = pcer(outPis.get(i), bestQ, p);
 
             List<Double> e = new ArrayList<>();
@@ -259,7 +271,7 @@ public class CStaS {
                 trekToTarget = !treks.isEmpty();
             }
 
-            records.add(new Record(outNodes.get(i), outPis.get(i), avg, pcer, er, ancestor, trekToTarget));
+            records.add(new Record(outNodes.get(i), outPis.get(i), avg, pcer, maxEv, ancestor, trekToTarget));
         }
 
         records.sort((o1, o2) -> {
@@ -344,13 +356,8 @@ public class CStaS {
         this.trueDag = trueDag;
     }
 
-
-    public void setShrinkFactor(double shrinkFactor) {
-        this.shrinkFactor = shrinkFactor;
-    }
-
-    public void setMaxEr(double maxEr) {
-        this.maxEr = maxEr;
+    public void setLift(double lift) {
+        this.lift = lift;
     }
 
     //=============================PRIVATE==============================//
@@ -363,22 +370,18 @@ public class CStaS {
         return parallelism;
     }
 
-    private double getShrinkFactor() {
-        return shrinkFactor;
+    private double getLift() {
+        return lift;
     }
 
-    private double getMaxEr() {
-        return maxEr;
+    private Graph getPattern(DataSet sample) {
+        IndependenceTest test = getIndependenceTest(sample, this.test);
+        PcAll pc = new PcAll(test, null);
+        pc.setFasRule(PcAll.FasRule.FAS_STABLE);
+        pc.setConflictRule(PcAll.ConflictRule.OVERWRITE);
+        pc.setColliderDiscovery(PcAll.ColliderDiscovery.FAS_SEPSETS);
+        return pc.search();
     }
-
-//    private Graph getPattern(DataSet sample) {
-//        IndependenceTest test = getIndependenceTest(sample, this.test);
-//        PcAll pc = new PcAll(test, null);
-//        pc.setFasRule(PcAll.FasRule.FAS_STABLE);
-//        pc.setConflictRule(PcAll.ConflictRule.OVERWRITE);
-//        pc.setColliderDiscovery(PcAll.ColliderDiscovery.FAS_SEPSETS);
-//        return pc.search();
-//    }
 
     private Graph getPatternFges(DataSet sample) {
         Score score = new ScoredIndTest(getIndependenceTest(sample, this.test));
@@ -409,14 +412,13 @@ public class CStaS {
     }
 
     // E(|V|) bound
-    private static double er(double pi, double q, double p, double factor) {
-        return factor * (q * q) / (p * pi * pi);
+    private static double er(double pi, double q, double p) {
+        return q * q / (p * (2 * pi - 1));
     }
-
 
     // Per comparison error rate.
     private static double pcer(double pi, double q, double p) {
-        return (q * q) / (p * p * (pi * pi));
+        return (q * q) / (p * p * (2 * pi - 1));
     }
 
     private static List<Node> selectVariables(DataSet dataSet, Node y, double alpha, int parallelism) {
