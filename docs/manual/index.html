@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+<title>Tetrad Single HTML Manual</title>
+<meta name="description" content="">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<link rel="stylesheet" href="css/tetrad.css">
+</head>
+<body>
+<!--[if lte IE 9]>
+<p class="browserupgrade">You are using an <strong>outdated</strong> browser. Please <a href="https://browsehappy.com/">upgrade your browser</a> to improve your experience and security.</p>
+<![endif]-->
+
+<div class="main">
+
+<h1>Tetrad Manual</h1>
+<p>Last updated and revised: June 2017</p>
+
+<!-- Table of Contents, give each section a unique id -->
+<div class="toc_container">
+
+<b>Table of Contents</b>
+<ul class="ul">
+<li><a href="#graph_box">Graph Box</a></li>
+<li><a href="#">Compare Box</a></li>
+<li><a href="#">Parametric Model Box</a></li>
+<li><a href="#">Instantiated Model Box</a></li>
+<li><a href="#">Data Box</a></li>
+<li><a href="#">Estimator Box</a></li>
+<li><a href="#">Updater Box</a></li>
+<li><a href="#">Classify Box</a></li>
+<li><a href="#">Knowledge Box</a></li>
+<li><a href="#">Simulation Box</a></li>
+<li><a href="#">Search Box</a></li>
+<li><a href="#">Regression Box</a></li>
+</ul>
+
+</div>
+
+<!-- Assign id with the section name, this will be linked in the table of contents -->
+<h2 id="graph_box">Graph Box</h2>
+
+<p>The graph box can be used to create a new graph, or to copy or edit a graph from another box.</p>
+
+
+<!-- Follow this example to create a list of items -->
+<b>Possible Parent Boxes of the Graph Box</b>
+
+<!-- Assign a class="ul" for pretty look -->
+<ul class="ul">
+<li>Another graph box</li>
+<li>A parametric model box</li>
+<li>An instantiated model box</li>
+<li>An estimator box</li>
+<li>A data box</li>
+<li>A simulation box</li>
+<li>A search box</li>
+<li>An updater box</li>
+<li>A regression box</li>
+</ul>
+
+<!-- Follow this image example to add an image -->
+<img src="images/tetrad-desktop.png" alt="Tetrad Desktop" width="800">
+
+<!-- Assign id with the algorithm short name and wrap descriptions, parameters in a div -->
+<div id="fges">
+
+<h3>The FGES Algorithm</h3>
+
+<p>
+Description: FGES is an optimized and parallelized version of an algorithm developed by Meek
+[Meek, 1997] called the Greedy Equivalence Search (GES). The algorithm was further developed
+and studied by Chickering [Chickering, 2002]. GES is a Bayesian algorithm that heuristically
+searches the space of CBNs and returns the model with highest Bayesian score it finds. In
+particular, GES starts its search with the empty graph. It then performs a forward stepping search in
+which edges are added between nodes in order to increase the Bayesian score. This process
+continues until no single edge addition increases the score. Finally, it performs a backward
+stepping search that removes edges until no single edge removal can increase the score. For more
+information see http://www.ccd.pitt.edu/pdfs/fgesc.pdf. The reference is Ramsey et al., 2017.
+</p>
+
+<p>
+The algorithms requires a decomposable score—that is, a score that for the entire DAG model is a
+sum of logged scores of each variables given its parents in the model. The algorithms can take all
+continuous data (using the SEM BIC score), all discrete data (using the BDeu score) or a mixture
+of continuous and discrete data (using the Conditional Gaussian score); these are all decomposable
+scores.
+</p>
+
+<p>
+Input Assumptions: Data that’s all continuous, all discrete, or a mixture of continuous and discrete
+variables. Continuous variables will be assumed to be linearly associated; discrete variable will be
+assumed to be associated by multinomial conditional probability tables. Continuous variables for
+the mixed case will be assumed to be jointly Gaussian.
+</p>
+
+<P> 
+Output Format: A pattern, same as PC.
+</P>
+
+<!-- Use table to show parameters -->
+<h4>Parameters</h4>
+
+<!-- Assign a class="table" for pretty look -->
+<table class="table">
+
+<thead>
+<tr><th>Parameter</th><th>Description</th></tr>
+</thead>
+
+<tbody>
+<tr>
+<td>Sample prior</td>
+<td> For the BDeu score (discrete variables), this is the effective sample
+size added to each conditional probability table. Must be at least 1 (blame the 
+90
+Dirichlet distribution). Default 1.</td>
+</tr>
+
+<tr>
+<td>Structure prior</td>
+<td> For the BDeu score (discrete variables), this is the number of
+variables one expects to see on average in any particular conditional probability
+table. If one expects to see for the most part conditional models of variables with
+two parents, then this should be set to 2. Default 1.
+</td>
+</tr>
+
+<tr>
+<td>Penalty discount</td>
+<td>  For the SEM BIC score (continuous variables), BIC is calculated
+as BIC = 2 L – c k ln n, where L is the likelihood, k is the number of degrees of
+freedom, n is the sample size, and c (the “penalty discount” is some positive
+constant, usual greater than or equal to 1. Setting this to a larger number makes the
+output of FGES sparser. Default 2.</td>
+</tr>
+
+<tr>
+<td>Yes if the first step of FGES should do scoring for both X->Y and Y->X</td>
+<td> For the
+linear, Gaussian case, and for the multinomial case, the scores for these two
+directions are guaranteed to be equal, but in some domains, like mixed variables
+search, they are not, and the best score of the two should be used. Default false.</td>
+</tr>
+
+<tr>
+<td>Yes if (one edge) faithfulness should be assumed</td>
+<td>The algorithm will remove edges
+X—Y in the initial step if X and Y are uncorrelated; this speeds up the algorithm
+(See Maathuis, ??, Ramsey et al., ??). However, this may remove edges that the
+original GES algorithm would not remove, so an additional pass through the
+algorithm may need to be done to pick up these additional edges and guarantee
+correctness. This should be set to Yes if the additional pass should not be done, No
+if the additional pass should be done. Default false.</td>
+</tr>
+
+<tr>
+<td>The maximum degree of the graph</td>
+<td> For some graphs, FGES may be inclined to find
+many adjacents for particular nodes, and in the forward step it will add adjacents
+that will later be removed in the backward step. To keep such edges from being
+added, one may specify a maximum degree for the graph. In the forward step, fGES
+will not add edges that results in the degree of any node exceeding this maximum.
+Default 100.</td>
+</tr>
+</tbody>
+
+</table>
+
+</div>
+
+
+</div>
+
+<!-- Google Analytics: change UA-XXXXX-Y to be your site's ID. -->
+<script>
+window.ga=function(){ga.q.push(arguments)};ga.q=[];ga.l=+new Date;
+ga('create','UA-XXXXX-Y','auto');ga('send','pageview')
+</script>
+<script src="https://www.google-analytics.com/analytics.js" async defer></script>
+
+</body>
+
+</html>
+

@@ -37,8 +37,8 @@ public class ParamDescriptions {
         map.put("depth", new ParamDescription("Maximum size of conditioning set (unlimited = -1)", -1, -1, Integer.MAX_VALUE));
         map.put("meanLow", new ParamDescription("Low end of mean range (min = 0.0)", 0.5, 0.0, Double.MAX_VALUE));
         map.put("meanHigh", new ParamDescription("High end of mean range (min = 0.0)", 1.5, 0.0, Double.MAX_VALUE));
-        map.put("coefLow", new ParamDescription("Low end of coefficient range (min = 0.0)", 0.5, 0.0, Double.MAX_VALUE));
-        map.put("coefHigh", new ParamDescription("High end of coefficient range (min = 0.0)", 1.5, 0.0, Double.MAX_VALUE));
+        map.put("coefLow", new ParamDescription("Low end of coefficient range (min = 0.0)", 0.2, 0.0, Double.MAX_VALUE));
+        map.put("coefHigh", new ParamDescription("High end of coefficient range (min = 0.0)", 0.7, 0.0, Double.MAX_VALUE));
         map.put("covLow", new ParamDescription("Low end of covariance range (min = 0.0)", 0.5, 0.0, Double.MAX_VALUE));
         map.put("covHigh", new ParamDescription("High end of covariance range (min = 0.0)", 1.5, 0.0, Double.MAX_VALUE));
         map.put("varLow", new ParamDescription("Low end of variance range (min = 0.0)", 1.0, 0.0, Double.MAX_VALUE));
@@ -259,10 +259,10 @@ public class ParamDescriptions {
                 1, 1, Double.POSITIVE_INFINITY));
 
         map.put("saveLatentVars", new ParamDescription("Save latent variables.", false));
-        
+
         map.put("probTwoCycle", new ParamDescription(
-            "The probability of creating a 2-cycles in the graph (0 - 1)",
-            0.0, 0.0, 1.0));
+                "The probability of creating a 2-cycles in the graph (0 - 1)",
+                0.0, 0.0, 1.0));
     }
 
     public static ParamDescriptions getInstance() {
