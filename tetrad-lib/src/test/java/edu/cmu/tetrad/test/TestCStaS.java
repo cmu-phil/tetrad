@@ -40,6 +40,8 @@ import org.junit.Test;
 
 import java.util.*;
 
+import static java.lang.Math.log;
+
 /**
  * Tests CStaS.
  *
@@ -89,14 +91,14 @@ public class TestCStaS {
 
     //    @Test
     private void testCStaS() {
-        int numNodes = 800;
+        int numNodes = 5000;
         int avgDegree = 6;
-        int sampleSize = 100;
+        int sampleSize = 50;
         int numIterations = 10;
         int numSubsamples = 50;
-        double penaltyDiscount = 1;
-        double selectionAlpha = 0.03;
-        double lift = 2.5;
+        double penaltyDiscount = .8;
+        double selectionAlpha = 0.02;
+        double lift = 2;//log(numNodes);
 
         Parameters parameters = new Parameters();
 

@@ -94,6 +94,7 @@ public class CStaS {
     }
 
     public List<Record> getRecords(DataSet dataSet, Node target, IndependenceTest test, double selectionAlpha) {
+        this.test = test;
         List<Node> vars = selectVariables(dataSet, target, selectionAlpha, parallelism);
         vars = GraphUtils.replaceNodes(vars, test.getVariables());
         DataSet selection = dataSet.subsetColumns(vars);
@@ -320,8 +321,9 @@ public class CStaS {
             table.setToken(i + 1, 7, nf.format(records.get(i).getPcer()));
 //            table.setToken(i + 1, 8, nf.format(records.get(i).getEr()));
         }
+        final double er = !records.isEmpty() ? records.get(0).getEr() : Double.NaN;
 
-        return "\n" + table + "\n" + "# FP = " + fp + " E(V) = " + nf.format(records.get(0).getEr()) +
+        return "\n" + table + "\n" + "# FP = " + fp + " E(V) = " + nf.format(er) +
                 "\n\nT = exists a trek of length no more than " + maxTrekLength + " to the target" +
                 "\nA = ancestor of the target" +
                 "\nType: C = continuous, D = discrete\n";
@@ -389,6 +391,12 @@ public class CStaS {
         return fges.search();
     }
 
+    private Graph getPatternFgesMb(DataSet sample, Node target) {
+        Score score = new ScoredIndTest(getIndependenceTest(sample, this.test));
+        FgesMb fges = new FgesMb(score);
+        return fges.search(target);
+    }
+
     private IndependenceTest getIndependenceTest(DataSet sample, IndependenceTest test) {
         if (test instanceof IndTestScore && ((IndTestScore) test).getWrappedScore() instanceof SemBicScore) {
             SemBicScore score = new SemBicScore(new CorrelationMatrixOnTheFly(sample));
@@ -423,7 +431,12 @@ public class CStaS {
         return v;
     }
 
-    private static List<Node> selectVariables(DataSet dataSet, Node y, double alpha, int parallelism) {
+    private List<Node> selectVariables(DataSet dataSet, Node y, double alpha, int parallelism) {
+//        if (true) {
+//            y = dataSet.getVariable(y.getName());
+//            return getPatternFgesMb(dataSet, y).getNodes();
+//        }
+
         IndependenceTest test = new IndTestFisherZ(dataSet, alpha);
         List<Node> selection = new CopyOnWriteArrayList<>();
 
@@ -467,6 +480,21 @@ public class CStaS {
                 for (int from = 0; from < variables.size(); from += chunk) {
                     final int to = Math.min(variables.size(), from + chunk);
                     tasks.add(new Task(from, to, y));
+                }
+
+                ConcurrencyUtils.runCallables(tasks, parallelism);
+            }
+
+            test.setAlpha(0.00001);
+
+            {
+                tasks = new ArrayList<>();
+
+                for (Node s : new ArrayList<>(selection)) {
+                    for (int from = 0; from < variables.size(); from += chunk) {
+                        final int to = Math.min(variables.size(), from + chunk);
+                        tasks.add(new Task(from, to, s));
+                    }
                 }
 
                 ConcurrencyUtils.runCallables(tasks, parallelism);
