@@ -233,6 +233,8 @@ public class CStaS {
                 if (ev > maxEv) {
                     maxEv = ev;
                 }
+            } else {
+                break;
             }
         }
 

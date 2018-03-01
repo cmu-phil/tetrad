@@ -211,20 +211,14 @@ public class CStaSMulti {
 
         for (int t = 0; t < targets.size(); t++) {
             counts.add(new HashMap<>());
-            for (Node node : variables) counts.get(t).put(node, 0);
+            for (Node node : possiblePredictors) counts.get(t).put(node, 0);
         }
 
         final int p = possiblePredictors.size() * targets.size();
 
         double maxEv = 0.0;
 
-        List<List<Double>> pi = new ArrayList<>();
-
-        for (int t = 0; t < targets.size(); t++) {
-            pi.add(new ArrayList<>());
-        }
-
-        for (int q = 1; q <= p; q++) {
+        for (int q = 1; q <= p / 2; q++) {
             for (int t = 0; t < targets.size(); t++) {
                 for (Ida.NodeEffects _effects : effects.get(t)) {
                     if (q - 1 < _effects.getNodes().size()) {
@@ -246,14 +240,23 @@ public class CStaSMulti {
                 }
             }
 
-//                final int _t = t;
-//                sortedVariables.get(t).sort((o1, o2) -> Integer.compare(counts.get(_t).get(o2), counts.get(_t).get(o1)));
+            List<List<Double>> _pi = new ArrayList<>();
+            List<List<Node>> _sortedVariables = new ArrayList<>();
 
             for (int t = 0; t < targets.size(); t++) {
-                for (Node v : possiblePredictors) {
+                final int _t = t;
+                List<Node> sortedVariables = new ArrayList<>(possiblePredictors);
+                sortedVariables.sort((o1, o2) -> Integer.compare(counts.get(_t).get(o2), counts.get(_t).get(o1)));
+                _sortedVariables.add(sortedVariables);
+
+                List<Double> pi = new ArrayList<>();
+
+                for (Node v : sortedVariables) {
                     final Integer count = counts.get(t).get(v);
-                    pi.get(t).add(count / ((double) getNumSubsamples()));
+                    pi.add(count / ((double) getNumSubsamples()));
                 }
+
+                _pi.add(pi);
             }
 
             // Need to put all of the lists together.
@@ -261,8 +264,8 @@ public class CStaSMulti {
             List<Tuple> tuples = new ArrayList<>();
 
             for (int t = 0; t < targets.size(); t++) {
-                for (int v = 0; v < possiblePredictors.size(); v++) {
-                    tuples.add(new Tuple(possiblePredictors.get(v), targets.get(t), pi.get(t).get(v)));
+                for (int v = 0; v < _sortedVariables.get(t).size(); v++) {
+                    tuples.add(new Tuple(_sortedVariables.get(t).get(v), targets.get(t), _pi.get(t).get(v)));
                 }
             }
 
@@ -270,14 +273,14 @@ public class CStaSMulti {
 
             double sum = 0.0;
 
-            for (int g = 0; g < targets.size() * q; g++) {
+            for (int g = 0; g < q; g++) {
                 sum += tuples.get(g).getPi();
             }
 
-            if (sum >= getLift() * targets.size() * targets.size() * q * q / (double) p) {
+            if (sum >= getLift() * q * q / (double) p) {
                 List<Tuple> _outTuples = new ArrayList<>();
 
-                for (int i = 0; i < targets.size() * q; i++) {
+                for (int i = 0; i < q; i++) {
                     _outTuples.add(tuples.get(i));
                 }
 
@@ -286,11 +289,13 @@ public class CStaSMulti {
                     bestQ = q;
                 }
 
-                double ev = targets.size() * q - sum;
+                double ev =  q - sum;
 
                 if (ev > maxEv) {
                     maxEv = ev;
                 }
+            } else {
+                break;
             }
         }
 

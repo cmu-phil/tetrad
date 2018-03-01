@@ -173,7 +173,7 @@ public class TestCStaS {
 
     @Test
     public void testCStaSMulti() {
-        int numNodes = 500;
+        int numNodes = 800;
         int avgDegree = 4;
         int sampleSize = 100;
         int numIterations = 10;
@@ -242,7 +242,7 @@ public class TestCStaS {
 
             List<Node> targets = new ArrayList<>();
 
-            for (int t = 0; t < 1; t++) {
+            for (int t = 0; t < 4; t++) {
                 targets.add(nodes.get(t));
             }
 
