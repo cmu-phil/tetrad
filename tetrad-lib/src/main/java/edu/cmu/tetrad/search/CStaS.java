@@ -21,6 +21,8 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 
+import static java.lang.Math.log;
+
 /**
  * An adaptation of the CStaR algorithm (Steckoven et al., 2012).
  * <p>
@@ -39,7 +41,6 @@ public class CStaS {
     private int parallelism = Runtime.getRuntime().availableProcessors() * 10;
     private Graph trueDag = null;
     private IndependenceTest test;
-    private double lift = 2.0;
 
     // A single record in the returned table.
     public static class Record implements TetradSerializable {
@@ -179,7 +180,7 @@ public class CStaS {
 
         double maxEv = 0.0;
 
-        for (int q = 1; q <= p; q++) {
+        for (int q = 1; q <= p / 2; q++) {
             for (Ida.NodeEffects _effects : effects) {
                 if (q - 1 < _effects.getNodes().size()) {
                     final Node key = _effects.getNodes().get(q - 1);
@@ -213,7 +214,7 @@ public class CStaS {
                 sum += pi.get(g);
             }
 
-            if (sum >= getLift() * q * q / (double) p) {
+            if (sum >= log(possiblePredictors.size()) * q * q / (double) possiblePredictors.size()) {
                 List<Node> _outNodes = new ArrayList<>();
                 List<Double> _outPis = new ArrayList<>();
 
@@ -359,10 +360,6 @@ public class CStaS {
         this.trueDag = trueDag;
     }
 
-    public void setLift(double lift) {
-        this.lift = lift;
-    }
-
     //=============================PRIVATE==============================//
 
     private int getNumSubsamples() {
@@ -371,10 +368,6 @@ public class CStaS {
 
     private int getParallelism() {
         return parallelism;
-    }
-
-    private double getLift() {
-        return lift;
     }
 
     private Graph getPattern(DataSet sample) {
@@ -486,20 +479,20 @@ public class CStaS {
                 ConcurrencyUtils.runCallables(tasks, parallelism);
             }
 
-            test.setAlpha(0.00001);
-
-            {
-                tasks = new ArrayList<>();
-
-                for (Node s : new ArrayList<>(selection)) {
-                    for (int from = 0; from < variables.size(); from += chunk) {
-                        final int to = Math.min(variables.size(), from + chunk);
-                        tasks.add(new Task(from, to, s));
-                    }
-                }
-
-                ConcurrencyUtils.runCallables(tasks, parallelism);
-            }
+//            test.setAlpha(test.getAlpha() / 100);
+//
+//            {
+//                tasks = new ArrayList<>();
+//
+//                for (Node s : new ArrayList<>(selection)) {
+//                    for (int from = 0; from < variables.size(); from += chunk) {
+//                        final int to = Math.min(variables.size(), from + chunk);
+//                        tasks.add(new Task(from, to, s));
+//                    }
+//                }
+//
+//                ConcurrencyUtils.runCallables(tasks, parallelism);
+//            }
         }
 
         y = test.getVariable(y.getName());

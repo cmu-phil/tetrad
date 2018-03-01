@@ -24,6 +24,8 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 
+import static java.lang.Math.log;
+
 /**
  * An adaptation of the CStaR algorithm (Steckoven et al., 2012).
  * <p>
@@ -42,7 +44,6 @@ public class CStaSMulti {
     private int parallelism = Runtime.getRuntime().availableProcessors() * 10;
     private Graph trueDag = null;
     private IndependenceTest test;
-    private double lift = 2.0;
 
     // A single record in the returned table.
     public static class Record implements TetradSerializable {
@@ -214,11 +215,9 @@ public class CStaSMulti {
             for (Node node : possiblePredictors) counts.get(t).put(node, 0);
         }
 
-        final int p = possiblePredictors.size() * targets.size();
-
         double maxEv = 0.0;
 
-        for (int q = 1; q <= p / 2; q++) {
+        for (int q = 1; q <= possiblePredictors.size(); q++) {
             for (int t = 0; t < targets.size(); t++) {
                 for (Ida.NodeEffects _effects : effects.get(t)) {
                     if (q - 1 < _effects.getNodes().size()) {
@@ -277,7 +276,7 @@ public class CStaSMulti {
                 sum += tuples.get(g).getPi();
             }
 
-            if (sum >= getLift() * q * q / (double) p) {
+            if (sum >= log(possiblePredictors.size()) * q * q / (double) possiblePredictors.size()) {
                 List<Tuple> _outTuples = new ArrayList<>();
 
                 for (int i = 0; i < q; i++) {
@@ -308,7 +307,7 @@ public class CStaSMulti {
 
         for (Tuple tuple : outTuples) {
             //            double er = er(outPis.get(i), outTuples.size(), p);
-            final double pcer = pcer(tuple.getPi(), bestQ, p);
+            final double pcer = pcer(tuple.getPi(), bestQ, possiblePredictors.size());
 
             List<Double> e = new ArrayList<>();
 
@@ -422,10 +421,6 @@ public class CStaSMulti {
         this.trueDag = trueDag;
     }
 
-    public void setLift(double lift) {
-        this.lift = lift;
-    }
-
     //=============================PRIVATE==============================//
 
     private int getNumSubsamples() {
@@ -434,10 +429,6 @@ public class CStaSMulti {
 
     private int getParallelism() {
         return parallelism;
-    }
-
-    private double getLift() {
-        return lift;
     }
 
     private Graph getPattern(DataSet sample) {
@@ -549,18 +540,18 @@ public class CStaSMulti {
                 ConcurrencyUtils.runCallables(tasks, parallelism);
             }
 
-            test.setAlpha(0.00001);
-
-            {
-                tasks = new ArrayList<>();
-
-                for (int from = 0; from < variables.size(); from += chunk) {
-                    final int to = Math.min(variables.size(), from + chunk);
-                    tasks.add(new Task(from, to, new ArrayList<>(selection)));
-                }
-
-                ConcurrencyUtils.runCallables(tasks, parallelism);
-            }
+//            test.setAlpha(test.getAlpha() / 20);
+//
+//            {
+//                tasks = new ArrayList<>();
+//
+//                for (int from = 0; from < variables.size(); from += chunk) {
+//                    final int to = Math.min(variables.size(), from + chunk);
+//                    tasks.add(new Task(from, to, new ArrayList<>(selection)));
+//                }
+//
+//                ConcurrencyUtils.runCallables(tasks, parallelism);
+//            }
         }
 
         for (Node target : y) {

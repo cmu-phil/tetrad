@@ -272,10 +272,6 @@ public class ParamDescriptions {
                 "Bound on the expected false positive error rate",
                 5.0, 0.0, Double.POSITIVE_INFINITY));
 
-        map.put("lift", new ParamDescription(
-                "Find a model with at least this factor times chance level",
-                2.0, 1.0, Double.POSITIVE_INFINITY));
-
         map.put("parallelism", new ParamDescription(
                 "The number of threads to use in the parallel calculation",
                 Runtime.getRuntime().availableProcessors() * 10, 1, Integer.MAX_VALUE));

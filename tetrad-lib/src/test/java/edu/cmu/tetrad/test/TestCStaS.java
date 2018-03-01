@@ -39,6 +39,9 @@ import org.junit.Test;
 
 import java.util.*;
 
+import static java.lang.Math.log;
+import static java.lang.Math.log10;
+
 /**
  * Tests CStaS.
  *
@@ -88,14 +91,13 @@ public class TestCStaS {
 
     @Test
     public void testCStaS() {
-        int numNodes = 500;
-        int avgDegree = 4;
-        int sampleSize = 100;
+        int numNodes = 5000;
+        int avgDegree = 6;
+        int sampleSize = 200;
         int numIterations = 10;
         int numSubsamples = 50;
-        double penaltyDiscount = 1.2;
-        double selectionAlpha = 0.001;
-        double lift = 2;//log(numNodes);
+        double penaltyDiscount = 1;
+        double selectionAlpha = 0.03;
 
         Parameters parameters = new Parameters();
 
@@ -103,7 +105,6 @@ public class TestCStaS {
         parameters.set("numSubsamples", numSubsamples);
         parameters.set("depth", 2);
         parameters.set("selectionAlpha", selectionAlpha);
-        parameters.set("lift", lift);
 
         parameters.set("numMeasures", numNodes);
         parameters.set("numLatents", 0);
@@ -173,14 +174,14 @@ public class TestCStaS {
 
     @Test
     public void testCStaSMulti() {
-        int numNodes = 800;
-        int avgDegree = 4;
-        int sampleSize = 100;
+        int numNodes = 5000;
+        int numTargets = 4;
+        int avgDegree = 8;
+        int sampleSize = 200;
         int numIterations = 10;
         int numSubsamples = 50;
-        double penaltyDiscount = 1.2;
+        double penaltyDiscount = 1.5;
         double selectionAlpha = 0.001;
-        double lift = 2;
 
         Parameters parameters = new Parameters();
 
@@ -188,7 +189,6 @@ public class TestCStaS {
         parameters.set("numSubsamples", numSubsamples);
         parameters.set("depth", 2);
         parameters.set("selectionAlpha", selectionAlpha);
-        parameters.set("lift", lift);
 
         parameters.set("numMeasures", numNodes);
         parameters.set("numLatents", 0);
@@ -236,13 +236,12 @@ public class TestCStaS {
 
             CStaSMulti cstas = new CStaSMulti();
             cstas.setTrueDag(trueDag);
-            cstas.setLift(lift);
             cstas.setNumSubsamples(numSubsamples);
 
 
             List<Node> targets = new ArrayList<>();
 
-            for (int t = 0; t < 4; t++) {
+            for (int t = 0; t < numTargets; t++) {
                 targets.add(nodes.get(t));
             }
 

@@ -46,7 +46,6 @@ public class CStaS implements Algorithm {
 
         cStaS.setParallelism(parameters.getInt("parallelism"));
         cStaS.setNumSubsamples(parameters.getInt("numSubsamples"));
-        cStaS.setLift(parameters.getDouble("lift"));
         cStaS.setTrueDag(trueDag);
 
         final Node target = dataSet.getVariable(parameters.getString("targetName"));
@@ -57,7 +56,6 @@ public class CStaS implements Algorithm {
         System.out.println(cStaS.makeTable(this.getRecords()));
 
         return cStaS.makeGraph(target, getRecords());
-
     }
 
     @Override
