@@ -244,7 +244,7 @@ public final class FgesMb {
 //        addRequiredEdges(graph);
 //
 //        if (faithfulnessAssumed) {
-//            initializeForwardEdgesFromEmptyGraph(getVariable());
+//            initializeForwardEdgesFromEmptyGraph(getPredictor());
 //
 //            // Do forward search.
 //            this.mode = Mode.heuristicSpeedup;
@@ -252,11 +252,11 @@ public final class FgesMb {
 //            bes();
 //
 //            this.mode = Mode.coverNoncolliders;
-//            initializeTwoStepEdges(getVariable());
+//            initializeTwoStepEdges(getPredictor());
 //            fes();
 //            bes();
 //        } else {
-//            initializeForwardEdgesFromEmptyGraph(getVariable());
+//            initializeForwardEdgesFromEmptyGraph(getPredictor());
 //
 //            // Do forward search.
 //            this.mode = Mode.heuristicSpeedup;
@@ -264,7 +264,7 @@ public final class FgesMb {
 //            bes();
 //
 //            this.mode = Mode.allowUnfaithfulness;
-//            initializeForwardEdgesFromExistingGraph(getVariable());
+//            initializeForwardEdgesFromExistingGraph(getPredictor());
 //            fes();
 //            bes();
 //        }

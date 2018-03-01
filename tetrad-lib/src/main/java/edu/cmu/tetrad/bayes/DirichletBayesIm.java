@@ -905,7 +905,7 @@ public final class DirichletBayesIm implements BayesIm {
 //        }
 //
 //        for (int i = 0; i < variables.size(); i++) {
-//            Node node = dataSet.getVariable(i);
+//            Node node = dataSet.getPredictor(i);
 //            Node _node = variables.get(i);
 //            dataSet.changeVariable(node, _node);
 //        }

@@ -16,7 +16,10 @@ import edu.cmu.tetrad.util.TextTable;
 
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -32,7 +35,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
  *
  * @author jdramsey@andrew.cmu.edu
  */
-public class CStaS {
+public class CStaSMulti {
 
     private int maxTrekLength = 15;
     private int numSubsamples = 30;
@@ -43,7 +46,8 @@ public class CStaS {
 
     // A single record in the returned table.
     public static class Record implements TetradSerializable {
-        private Node variable;
+        private Node predictor;
+        private Node target;
         private double pi;
         private double effect;
         private double pcer;
@@ -51,8 +55,9 @@ public class CStaS {
         private boolean ancestor;
         private boolean existsTrekToTarget;
 
-        Record(Node variable, double pi, double minEffect, double pcer, double er, boolean ancestor, boolean existsTrekToTarget) {
-            this.variable = variable;
+        Record(Node predictor, Node target, double pi, double minEffect, double pcer, double er, boolean ancestor, boolean existsTrekToTarget) {
+            this.predictor = predictor;
+            this.target = target;
             this.pi = pi;
             this.effect = minEffect;
             this.pcer = pcer;
@@ -61,8 +66,12 @@ public class CStaS {
             this.existsTrekToTarget = existsTrekToTarget;
         }
 
-        public Node getVariable() {
-            return variable;
+        public Node getPredictor() {
+            return predictor;
+        }
+
+        public Node getTarget() {
+            return target;
         }
 
         public double getPi() {
@@ -90,26 +99,18 @@ public class CStaS {
         }
     }
 
-    public CStaS() {
-    }
-
-    public List<Record> getRecords(DataSet dataSet, Node target, IndependenceTest test, double selectionAlpha) {
-        this.test = test;
-        List<Node> vars = selectVariables(dataSet, target, selectionAlpha, parallelism);
-        vars = GraphUtils.replaceNodes(vars, test.getVariables());
-        DataSet selection = dataSet.subsetColumns(vars);
-
-        return getRecords(selection, dataSet.getVariables(), target, test);
+    public CStaSMulti() {
     }
 
     /**
      * Returns records for a set of variables with expected number of false positives bounded by q.
+     *
      * @param dataSet            The full datasets to search over.
      * @param possiblePredictors A set of variables in the datasets over which to search.
-     * @param target             The target variables.
+     * @param targets            The target variables.
      * @param test               This test is only used to make more tests like it for subsamples.
      */
-    public List<Record> getRecords(DataSet dataSet, List<Node> possiblePredictors, Node target, IndependenceTest test) {
+    public List<Record> getRecords(DataSet dataSet, List<Node> possiblePredictors, List<Node> targets, IndependenceTest test) {
         if (test instanceof IndTestScore && ((IndTestScore) test).getWrappedScore() instanceof SemBicScore) {
             this.test = test;
         } else if (test instanceof IndTestFisherZ) {
@@ -122,23 +123,55 @@ public class CStaS {
             throw new IllegalArgumentException("That test is not configured.");
         }
 
-        Node _target = dataSet.getVariable(target.getName());
-        possiblePredictors = GraphUtils.replaceNodes(possiblePredictors, dataSet.getVariables());
-        DataSet selection = dataSet.subsetColumns(possiblePredictors);
+        class Tuple {
+            private Node predictor;
+            private Node target;
+            private double pi;
 
-        final List<Node> variables = selection.getVariables();
-        variables.remove(_target);
+            public Tuple(Node predictor, Node target, double pi) {
+                this.predictor = predictor;
+                this.target = target;
+                this.pi = pi;
+            }
 
-        final Map<Integer, Map<Node, Double>> minimalEffects = new ConcurrentHashMap<>();
+            public Node getPredictor() {
+                return predictor;
+            }
 
-        for (int b = 0; b < getNumSubsamples(); b++) {
-            final Map<Node, Double> map = new ConcurrentHashMap<>();
-            for (Node node : variables) map.put(node, 0.0);
-            minimalEffects.put(b, map);
+            public Node getTarget() {
+                return target;
+            }
+
+            public double getPi() {
+                return pi;
+            }
         }
 
-        final List<Ida.NodeEffects> effects = new ArrayList<>();
-        final List<Node> _possiblePredictors = new ArrayList<>(possiblePredictors);
+        targets = GraphUtils.replaceNodes(targets, dataSet.getVariables());
+        possiblePredictors = GraphUtils.replaceNodes(possiblePredictors, dataSet.getVariables());
+        final DataSet selection = dataSet.subsetColumns(possiblePredictors);
+
+        final List<Node> variables = selection.getVariables();
+        variables.removeAll(targets);
+
+        final List<Map<Integer, Map<Node, Double>>> minimalEffects = new ArrayList<>();
+
+        for (int t = 0; t < targets.size(); t++) {
+            minimalEffects.add(new ConcurrentHashMap<>());
+
+            for (int b = 0; b < getNumSubsamples(); b++) {
+                final Map<Node, Double> map = new ConcurrentHashMap<>();
+                for (Node node : possiblePredictors) map.put(node, 0.0);
+                minimalEffects.get(t).put(b, map);
+            }
+        }
+
+        final List<List<Ida.NodeEffects>> effects = new ArrayList<>();
+        final List<Node> _targets = new ArrayList<>(targets);
+
+        for (int t = 0; t < targets.size(); t++) {
+            effects.add(new ArrayList<>());
+        }
 
         class Task implements Callable<Boolean> {
             private Task() {
@@ -151,7 +184,10 @@ public class CStaS {
                     DataSet sample = sampler.sample(selection, selection.getNumRows());
                     Graph pattern = getPatternFges(sample);
                     Ida ida = new Ida(sample, pattern);
-                    effects.add(ida.getSortedMinEffects(_target));
+
+                    for (int t = 0; t < _targets.size(); t++) {
+                        effects.get(t).add(ida.getSortedMinEffects(_targets.get(t)));
+                    }
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -168,67 +204,89 @@ public class CStaS {
 
         ConcurrencyUtils.runCallables(tasks, getParallelism());
 
-        List<Node> outNodes = new ArrayList<>();
-        List<Double> outPis = new ArrayList<>();
+        List<Tuple> outTuples = new ArrayList<>();
         int bestQ = -1;
 
-        final Map<Node, Integer> counts = new HashMap<>();
-        for (Node node : variables) counts.put(node, 0);
+        final List<Map<Node, Integer>> counts = new ArrayList<>();
 
-        final int p = variables.size();
+        for (int t = 0; t < targets.size(); t++) {
+            counts.add(new HashMap<>());
+            for (Node node : variables) counts.get(t).put(node, 0);
+        }
+
+        final int p = possiblePredictors.size() * targets.size();
 
         double maxEv = 0.0;
 
+        List<List<Double>> pi = new ArrayList<>();
+
+        for (int t = 0; t < targets.size(); t++) {
+            pi.add(new ArrayList<>());
+        }
+
         for (int q = 1; q <= p; q++) {
-            for (Ida.NodeEffects _effects : effects) {
-                if (q - 1 < _effects.getNodes().size()) {
-                    final Node key = _effects.getNodes().get(q - 1);
-                    counts.put(key, counts.get(key) + 1);
+            for (int t = 0; t < targets.size(); t++) {
+                for (Ida.NodeEffects _effects : effects.get(t)) {
+                    if (q - 1 < _effects.getNodes().size()) {
+                        final Node key = _effects.getNodes().get(q - 1);
+                        counts.get(t).put(key, counts.get(t).get(key) + 1);
+                    }
                 }
             }
 
-            for (int b = 0; b < effects.size(); b++) {
-                Ida.NodeEffects _effects = effects.get(b);
+            for (int t = 0; t < targets.size(); t++) {
+                for (int b = 0; b < effects.get(t).size(); b++) {
+                    Ida.NodeEffects _effects = effects.get(t).get(b);
 
-                for (int r = 0; r < _effects.getNodes().size(); r++) {
-                    Node n = _effects.getNodes().get(r);
-                    Double e = _effects.getEffects().get(r);
-                    minimalEffects.get(b).put(n, e);
+                    for (int r = 0; r < _effects.getNodes().size(); r++) {
+                        Node n = _effects.getNodes().get(r);
+                        Double e = _effects.getEffects().get(r);
+                        minimalEffects.get(t).get(b).put(n, e);
+                    }
                 }
             }
 
-            List<Node> sortedVariables = new ArrayList<>(variables);
-            sortedVariables.sort((o1, o2) -> Integer.compare(counts.get(o2), counts.get(o1)));
+//                final int _t = t;
+//                sortedVariables.get(t).sort((o1, o2) -> Integer.compare(counts.get(_t).get(o2), counts.get(_t).get(o1)));
 
-            List<Double> pi = new ArrayList<>();
-
-            for (Node v : sortedVariables) {
-                final Integer count = counts.get(v);
-                pi.add(count / ((double) getNumSubsamples()));
+            for (int t = 0; t < targets.size(); t++) {
+                for (Node v : possiblePredictors) {
+                    final Integer count = counts.get(t).get(v);
+                    pi.get(t).add(count / ((double) getNumSubsamples()));
+                }
             }
+
+            // Need to put all of the lists together.
+
+            List<Tuple> tuples = new ArrayList<>();
+
+            for (int t = 0; t < targets.size(); t++) {
+                for (int v = 0; v < possiblePredictors.size(); v++) {
+                    tuples.add(new Tuple(possiblePredictors.get(v), targets.get(t), pi.get(t).get(v)));
+                }
+            }
+
+            tuples.sort((o1, o2) -> Double.compare(o2.getPi(), o1.getPi()));
 
             double sum = 0.0;
 
-            for (int g = 0; g < q; g++) {
-                sum += pi.get(g);
+            for (int g = 0; g < targets.size() * q; g++) {
+                sum += tuples.get(g).getPi();
             }
 
-            if (sum >= getLift() * q * q / (double) p) {
-                List<Node> _outNodes = new ArrayList<>();
-                List<Double> _outPis = new ArrayList<>();
+            if (sum >= getLift() * targets.size() * targets.size() * q * q / (double) p) {
+                List<Tuple> _outTuples = new ArrayList<>();
 
-                for (int i = 0; i < q; i++) {
-                    _outNodes.add(sortedVariables.get(i));
-                    _outPis.add(pi.get(i));
+                for (int i = 0; i < targets.size() * q; i++) {
+                    _outTuples.add(tuples.get(i));
                 }
 
-                if ( _outNodes.size() > outNodes.size()) {
-                    outNodes = _outNodes;
-                    outPis = _outPis;
+                if (_outTuples.size() > outTuples.size()) {
+                    outTuples = _outTuples;
                     bestQ = q;
                 }
 
-                double ev = q - sum;
+                double ev = targets.size() * q - sum;
 
                 if (ev > maxEv) {
                     maxEv = ev;
@@ -238,20 +296,19 @@ public class CStaS {
 
         System.out.println("q = " + bestQ);
 
-        trueDag = GraphUtils.replaceNodes(trueDag, outNodes);
-        trueDag = GraphUtils.replaceNodes(trueDag, Collections.singletonList(target));
+        trueDag = GraphUtils.replaceNodes(trueDag, possiblePredictors);
+        trueDag = GraphUtils.replaceNodes(trueDag, targets);
 
         List<Record> records = new ArrayList<>();
 
-        for (int i = 0; i < outNodes.size(); i++) {
-//            double er = er(outPis.get(i), outNodes.size(), p);
-            final double pcer = pcer(outPis.get(i), bestQ, p);
+        for (Tuple tuple : outTuples) {
+            //            double er = er(outPis.get(i), outTuples.size(), p);
+            final double pcer = pcer(tuple.getPi(), bestQ, p);
 
             List<Double> e = new ArrayList<>();
 
             for (int b = 0; b < getNumSubsamples(); b++) {
-                final Node node = outNodes.get(i);
-                final double m = minimalEffects.get(b).get(node);
+                final double m = minimalEffects.get(targets.indexOf(tuple.getTarget())).get(b).get(tuple.getPredictor());
                 e.add(m);
             }
 
@@ -261,17 +318,17 @@ public class CStaS {
             boolean ancestor = false;
 
             if (trueDag != null) {
-                ancestor = trueDag.isAncestorOf(outNodes.get(i), target);
+                ancestor = trueDag.isAncestorOf(tuple.getPredictor(), tuple.getTarget());
             }
 
             boolean trekToTarget = false;
 
             if (trueDag != null) {
-                List<List<Node>> treks = GraphUtils.treks(trueDag, outNodes.get(i), target, maxTrekLength);
+                List<List<Node>> treks = GraphUtils.treks(trueDag, tuple.getPredictor(), tuple.getTarget(), maxTrekLength);
                 trekToTarget = !treks.isEmpty();
             }
 
-            records.add(new Record(outNodes.get(i), outPis.get(i), avg, pcer, maxEv, ancestor, trekToTarget));
+            records.add(new Record(tuple.getPredictor(), tuple.getTarget(), tuple.getPi(), avg, pcer, maxEv, ancestor, trekToTarget));
         }
 
         records.sort((o1, o2) -> {
@@ -289,35 +346,38 @@ public class CStaS {
      * Returns a text table from the given records
      */
     public String makeTable(List<Record> records) {
-        TextTable table = new TextTable(records.size() + 1, 8);
+        TextTable table = new TextTable(records.size() + 1, 9);
         NumberFormat nf = new DecimalFormat("0.0000");
 
         table.setToken(0, 0, "Index");
-        table.setToken(0, 1, "Variable");
-        table.setToken(0, 2, "Type");
-        table.setToken(0, 3, "A");
-        table.setToken(0, 4, "T");
-        table.setToken(0, 5, "PI");
-        table.setToken(0, 6, "Average Effect");
-        table.setToken(0, 7, "PCER");
+        table.setToken(0, 1, "Predictor");
+        table.setToken(0, 2, "Target");
+        table.setToken(0, 3, "Type");
+        table.setToken(0, 4, "A");
+        table.setToken(0, 5, "T");
+        table.setToken(0, 6, "PI");
+        table.setToken(0, 7, "Average Effect");
+        table.setToken(0, 8, "PCER");
 //        table.setToken(0, 8, "ER");
 
         int fp = 0;
 
         for (int i = 0; i < records.size(); i++) {
-            final Node node = records.get(i).getVariable();
+            final Node predictor = records.get(i).getPredictor();
+            final Node target = records.get(i).getTarget();
             final boolean ancestor = records.get(i).isAncestor();
             final boolean existsTrekToTarget = records.get(i).isExistsTrekToTarget();
             if (!(ancestor)) fp++;
 
             table.setToken(i + 1, 0, "" + (i + 1));
-            table.setToken(i + 1, 1, node.getName());
-            table.setToken(i + 1, 2, node instanceof DiscreteVariable ? "D" : "C");
-            table.setToken(i + 1, 3, ancestor ? "A" : "");
-            table.setToken(i + 1, 4, existsTrekToTarget ? "T" : "");
-            table.setToken(i + 1, 5, nf.format(records.get(i).getPi()));
-            table.setToken(i + 1, 6, nf.format(records.get(i).getEffect()));
-            table.setToken(i + 1, 7, nf.format(records.get(i).getPcer()));
+            table.setToken(i + 1, 1, predictor.getName());
+            table.setToken(i + 1, 2, target.getName());
+            table.setToken(i + 1, 3, predictor instanceof DiscreteVariable ? "D" : "C");
+            table.setToken(i + 1, 4, ancestor ? "A" : "");
+            table.setToken(i + 1, 5, existsTrekToTarget ? "T" : "");
+            table.setToken(i + 1, 6, nf.format(records.get(i).getPi()));
+            table.setToken(i + 1, 7, nf.format(records.get(i).getEffect()));
+            table.setToken(i + 1, 8, nf.format(records.get(i).getPcer()));
 //            table.setToken(i + 1, 8, nf.format(records.get(i).getEr()));
         }
         final double er = !records.isEmpty() ? records.get(0).getEr() : Double.NaN;
@@ -333,7 +393,7 @@ public class CStaS {
      */
     public Graph makeGraph(Node y, List<Record> records) {
         List<Node> outNodes = new ArrayList<>();
-        for (Record record : records) outNodes.add(record.getVariable());
+        for (Record record : records) outNodes.add(record.getPredictor());
 
         Graph graph = new EdgeListGraph(outNodes);
         graph.addNode(y);
@@ -430,24 +490,22 @@ public class CStaS {
         return v;
     }
 
-    private List<Node> selectVariables(DataSet dataSet, Node y, double alpha, int parallelism) {
-//        if (true) {
-//            y = dataSet.getPredictor(y.getName());
-//            return getPatternFgesMb(dataSet, y).getNodes();
-//        }
-
+    public List<Node> selectVariables(DataSet dataSet, List<Node> _y, double alpha, int parallelism) {
         IndependenceTest test = new IndTestFisherZ(dataSet, alpha);
         List<Node> selection = new CopyOnWriteArrayList<>();
 
-        final List<Node> variables = test.getVariables();
+        final List<Node> variables = dataSet.getVariables();
+        _y = GraphUtils.replaceNodes(_y, test.getVariables());
+
+        final List<Node> y = new ArrayList<>(_y);
 
         {
             class Task implements Callable<Boolean> {
                 private int from;
                 private int to;
-                private Node y;
+                private List<Node> y;
 
-                private Task(int from, int to, Node y) {
+                private Task(int from, int to, List<Node> y) {
                     this.from = from;
                     this.to = to;
                     this.y = y;
@@ -457,10 +515,12 @@ public class CStaS {
                 public Boolean call() {
                     for (int n = from; n < to; n++) {
                         final Node node = variables.get(n);
-                        if (node != y) {
-                            if (!test.isIndependent(node, y)) {
-                                if (!selection.contains(node)) {
-                                    selection.add(node);
+                        if (!y.contains(node)) {
+                            for (Node target : y) {
+                                if (!test.isIndependent(node, target)) {
+                                    if (!selection.contains(node)) {
+                                        selection.add(node);
+                                    }
                                 }
                             }
                         }
@@ -489,20 +549,18 @@ public class CStaS {
             {
                 tasks = new ArrayList<>();
 
-                for (Node s : new ArrayList<>(selection)) {
-                    for (int from = 0; from < variables.size(); from += chunk) {
-                        final int to = Math.min(variables.size(), from + chunk);
-                        tasks.add(new Task(from, to, s));
-                    }
+                for (int from = 0; from < variables.size(); from += chunk) {
+                    final int to = Math.min(variables.size(), from + chunk);
+                    tasks.add(new Task(from, to, new ArrayList<>(selection)));
                 }
 
                 ConcurrencyUtils.runCallables(tasks, parallelism);
             }
         }
 
-        y = test.getVariable(y.getName());
-
-        if (!selection.contains(y)) selection.add(y);
+        for (Node target : y) {
+            if (!selection.contains(target)) selection.add(target);
+        }
 
         System.out.println("# selected variables = " + selection.size());
 

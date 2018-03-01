@@ -733,28 +733,28 @@ public final class BuildPureClusters {
 
         }
 
-//        return getIndependenceTest().isIndependent(dataSet.getVariable(v1),
-//                dataSet.getVariable(v2));
+//        return getIndependenceTest().isIndependent(dataSet.getPredictor(v1),
+//                dataSet.getPredictor(v2));
 
 
 //        if (getCovarianceMatrix() != null) {
 //            if (getIndependenceTest().isIndependent(
-//                    getCovarianceMatrix().getVariable().get(v1),
-//                    getCovarianceMatrix().getVariable().get(v2),
+//                    getCovarianceMatrix().getPredictor().get(v1),
+//                    getCovarianceMatrix().getPredictor().get(v2),
 //                    new ArrayList<Node>())) {
-////                System.out.println(getCovarianceMatrix().getVariable()
+////                System.out.println(getCovarianceMatrix().getPredictor()
 ////                        .get(v1) + " " +
-////                        getCovarianceMatrix().getVariable().get(v2) +
+////                        getCovarianceMatrix().getPredictor().get(v2) +
 ////                        " == " + getCovarianceMatrix().getValue(v1, v2));
 ////            }
 //
 //                return getIndependenceTest().isIndependent(
-//                        getCovarianceMatrix().getVariable().get(v1),
-//                        getCovarianceMatrix().getVariable().get(v2),
+//                        getCovarianceMatrix().getPredictor().get(v1),
+//                        getCovarianceMatrix().getPredictor().get(v2),
 //                        new ArrayList<Node>());
 //            } else {
-//                return getIndependenceTest().isIndependent(dataSet.getVariable(v1),
-//                        dataSet.getVariable(v2), new ArrayList<Node>());
+//                return getIndependenceTest().isIndependent(dataSet.getPredictor(v1),
+//                        dataSet.getPredictor(v2), new ArrayList<Node>());
 //            }
     }
 

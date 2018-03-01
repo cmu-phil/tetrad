@@ -58,7 +58,7 @@ included in the readObject() method, so it's important that objects be self
 consistent in this sense.
 
 It's possible of course that sessions may load in but incorrectly. The most
-important cases of this are when a variable is renamed. An extra condition is
+important cases of this are when a predictor is renamed. An extra condition is
 added, therefore, to prevent variables from being renamed, so that that fields
 from old sessions may never be removed. This is checked automatically by saving
 out the list of field names for each class when examplar archives are created.

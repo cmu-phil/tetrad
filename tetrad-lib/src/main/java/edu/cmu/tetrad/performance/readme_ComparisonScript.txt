@@ -51,7 +51,7 @@ graph2-1.dat.txt
 graph2-2.dat.txt
 graph3-1.dat.txt
 
-The default delimiter for the data is tab (“\t”). You can change this in Comparison2.java. Also note that Tetrad might save a data file with a column of 1’s in the first column, under the heading “MULT”. You have to remove this (or don’t save it that way) because the data reader will think this is a variable.
+The default delimiter for the data is tab (“\t”). You can change this in Comparison2.java. Also note that Tetrad might save a data file with a column of 1’s in the first column, under the heading “MULT”. You have to remove this (or don’t save it that way) because the data reader will think this is a predictor.
 
 For mode 3):
 
@@ -59,7 +59,7 @@ In ComparisonScript.java set parameters.isNoData(true) (it is false by default).
 
 In this mode you want to see perfect performance everywhere: perfect precision and recall, etc. If you see any deviation from this, there must be a mistake somewhere. Note that this procedure compares, for example, the output of PC or FGES with a true graph specified by DagToPattern. FCI or GFCI would be compared with the output of DagToPag. If you want to examine an algorithm which searches for something other than a standard Pattern or PAG, you have to add the appropriate method in Comparison2.java. Just search for “DagToPag” and you’ll see where it goes.
 
-Note also that some algorithms are quite slow running directly on graphs. Start with small variable sets.
+Note also that some algorithms are quite slow running directly on graphs. Start with small predictor sets.
 
 *****
 

@@ -31,13 +31,13 @@ different from those conventionally used in statistics.</font></p>
   <li><font color="#000000">Many of the search algorithms allow the user to specify background information that will be used in the search procedure. In many cases the search results will be uninformative unless such background assumptions are explicitly made. This design not only provides for more flexibility, it also encourages the user to be conscious of the additional assumptions imposed in deriving a model from data.<br>
     </font></li>
   <li><font color="#000000">Even with background assumptions, data often do not determine a unique best or robust explanation. The search algorithms take in data and return information about a <span style="font-style: italic;">collection</span> of alternative causal graphs that can explain features of the data. They do not usually return a unique graph, although they sometimes will if sufficient prior knowledge is specified. In contrast</font><font
- color="#000000">, if one searches for a regression model of the influences of a set of variables on a selected variable, a regression model will certainly be found (provided there are sufficient data points), specifying which variables influence the target and which do not. <br>
+ color="#000000">, if one searches for a regression model of the influences of a set of variables on a selected predictor, a regression model will certainly be found (provided there are sufficient data points), specifying which variables influence the target and which do not. <br>
   </font></li>
-  <li><font color="#000000"> The algorithms are in some respects cautious. Search algorithms such as FCI and PC , described below, will often say, correctly, that it cannot be determined whether or not a particular variable influences another.<br>
+  <li><font color="#000000"> The algorithms are in some respects cautious. Search algorithms such as FCI and PC , described below, will often say, correctly, that it cannot be determined whether or not a particular predictor influences another.<br>
   </font></li>
   <li><font color="#000000">The algorithms are not just useful guesses.&nbsp; Under explicit assumptions (which often hold at best only approximately), the algorithms are "pointwise consistent"--they converge almost surely to the correct answer. The conditions for this sort of consistency of the seaarch procedures are described in the references. Conventional model search algorithms--stepwise regression, for example--have such guarantees only under very strong prior assumptions about the causal structure.<br>
   </font></li>
-  <li><font color="#000000">The output of the search algorithms provides a variety of indirect information about how much the conclusions of the algorithm can be trusted. They can, for example, be run repeatedly for a variety of specifications of depErrorsAlpha values in their statistical tests, to gain insight about robustness. For search algorithms such as PC, CCD, GES and MimBuild, described below,&nbsp; if the search algorithms return "spaghetti"--a highly connected graph--that indicates the serach cannot determine whether all of the connected variables may be influenced&nbsp; by a common unmeasured cause. If the PC algoirthm returns an edge with two arrowheads, that indicates a latent variable may be acting; if searches other than CCD return graphs with cycles, that indicates the assumptions of the search algoirthm are violated. <br>
+  <li><font color="#000000">The output of the search algorithms provides a variety of indirect information about how much the conclusions of the algorithm can be trusted. They can, for example, be run repeatedly for a variety of specifications of depErrorsAlpha values in their statistical tests, to gain insight about robustness. For search algorithms such as PC, CCD, GES and MimBuild, described below,&nbsp; if the search algorithms return "spaghetti"--a highly connected graph--that indicates the serach cannot determine whether all of the connected variables may be influenced&nbsp; by a common unmeasured cause. If the PC algoirthm returns an edge with two arrowheads, that indicates a latent predictor may be acting; if searches other than CCD return graphs with cycles, that indicates the assumptions of the search algoirthm are violated. <br>
   </font></li>
   <li><font color="#000000">Some of the search procedures are robust against common difficulties in sampling designs--they give correct, but reduced information in such cases. For example, the FCI algorithm allows that there may be unobserved latent common causes of measured variables--or not--and that the sample may have been formed by a process in which the values of measured variables invlucne whether or not a unit is included in the sample (<span style="font-style: italic;">sample selection bias</span>). The CCD algorithm allows that the correct causal structure may be "non-recursive"--essentially a cyclic graphical mode, a folded up time series.<br>
   </font></li>
@@ -46,13 +46,13 @@ different from those conventionally used in statistics.</font></p>
 <p><font color="#000000">The search procedures available are named:</font></p>
 <ul>
   <li><font color="#000000"><a href="pc.html">PC</a> - Searches for </font><font color="#000000"> Bayes net or SEM
-        models when it is assumed there is no latent (unrecorded) variable that
+        models when it is assumed there is no latent (unrecorded) predictor that
     contributes to the association of two or more measured variables.</font></li>
   <li><font color="#000000">CPC - Variant of PC that improves arrow orientation accuracy. </font></li>
   <li>PCD - Variant of PC that can be applied to deterministic data. </li>
   <li><font color="#000000"><a href="fci.html">FCI </a>--which performs a search similar to PC but allowing that there may be latent variables.</font></li>
   <li><font color="#000000"><a href="ccd.html">CCD</a>--for searching for non-recursive SEM models (models of feedback systems using cyclic graphs) without latent variables </font></li>
-  <li><a href="ges.html">GES</a> -- <font color="#000000">Scoring search for  Bayes net or SEM models when it is assumed there is no latent (unrecorded) variable that contributes to the association of two or more measured variables.</font></li>
+  <li><a href="ges.html">GES</a> -- <font color="#000000">Scoring search for  Bayes net or SEM models when it is assumed there is no latent (unrecorded) predictor that contributes to the association of two or more measured variables.</font></li>
   <li><font color="#000000"><a href="mbf.html">MBF</a> -- Searches for the Markov blankets DAGs for a given target T over a list of variables &lt;v1,...,vn,T&gt;.</font><font color="#000000"></font></li>
   <li>CEF - Variant of MBF that searches for the causal environment of a T (i.e., parents and children of T). </li>
   <li>Structural EM - </li>
@@ -120,7 +120,7 @@ possibility of hidden common causes:</font></p>
     by scoring a graph by its asymptotic posterior probability.</font></li>
 </ul>
 <p><font color="#000000">The second class concerns algorithms to search
-for&nbsp; latent variable structural equation models from data and
+for&nbsp; latent predictor structural equation models from data and
 background knowledge.<br>
 </font></p>
 <ul>
@@ -137,7 +137,7 @@ background knowledge.<br>
     </font></li>
   <li><font color="#000000"><b><a href="purify.html">Purify algorithm</a></b>: 
     given a measurement model, this method searches for a submodel in which there 
-    are no every measured variable is influenced by one and only one latent variable.<br>
+    are no every measured predictor is influenced by one and only one latent predictor.<br>
     </font></li>
 </ul>
 <p>Select the desired algorithm that meets your assumptions from the
@@ -176,8 +176,8 @@ distribution of the variables is the same for all units.<br>
 <br>
 2. The joint probability distribution is locally Markov. In acyclic
 cases, this is equivalent to a simpler "global" Markov condition:&nbsp;
-that a variable is independent of all variables that are not its
-effects conditional on the direct causes of the variable in the causal
+that a predictor is independent of all variables that are not its
+effects conditional on the direct causes of the predictor in the causal
 graph (its "parents"). In cyclic cases, the local Markov condition has
 a related but more technical definition. (See Spirtes, et al., 2000).<br>
 <br>

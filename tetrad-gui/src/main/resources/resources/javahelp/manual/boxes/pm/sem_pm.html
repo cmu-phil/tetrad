@@ -19,13 +19,13 @@
 <h3><span class="style1"><br>
 Description of the Model</span></h3>
 <p>A SEM Parametric Model (SEM PM) is structural equation model (SEM) up to specification of what the parameters of the model are, without giving values for those parameters.</p>
-<p>The implementation of structural equation models in Tetrad essentially follows Bollen (???). A structual equation model is a set of linear equations expressing each variable as a linear sum of its parents plus an exogenous error term--e.g.,</p>
+<p>The implementation of structural equation models in Tetrad essentially follows Bollen (???). A structual equation model is a set of linear equations expressing each predictor as a linear sum of its parents plus an exogenous error term--e.g.,</p>
 <blockquote>
   <p>X1 = a1 * X2 + a2 * X3 + e1,<br>
     X2 = a3 * X3 + e2,</p>
 </blockquote>
 <p>and so on, where the distribution of each error terms has a specified variance, and correlations among error terms are specified. </p>
-<p>The graph for such a system consists of one node for each variable, one node for each error term (which may be hidden, or at least the error terms for exogenous variable may be hidden), a directed edge from each variable on the right hand side each such equation above to the variable on the left hand side of the equation, and bidirected edges between each pair of variables whose error terms are correlated. (If the error term for a variable is being shown the bidirected edge attaches to the error terms instead of the variables itself.) Cyclical dependencies among variables are permitted. See <a href="../graph/sem_graph.html">SEM Graph</a> for details.</p>
+<p>The graph for such a system consists of one node for each predictor, one node for each error term (which may be hidden, or at least the error terms for exogenous predictor may be hidden), a directed edge from each predictor on the right hand side each such equation above to the predictor on the left hand side of the equation, and bidirected edges between each pair of variables whose error terms are correlated. (If the error term for a predictor is being shown the bidirected edge attaches to the error terms instead of the variables itself.) Cyclical dependencies among variables are permitted. See <a href="../graph/sem_graph.html">SEM Graph</a> for details.</p>
 <p>The parameters in this model consist of:</p>
 <ol>
   <li>Each linear coefficient in the structural equations for the model (e.g., a1, a2, and a3, above), plus</li>
@@ -49,7 +49,7 @@ How to Construct a SEM PM </h3>
 <p><img src="../../images/sempm5.gif" width="458" height="500"></p>
 <p>Clicking OK, you see that the name of the paramter has been changed.</p>
 <p><img src="../../images/sempm6.gif" width="457" height="480"> </p>
-<p>It is important to notice what you cannot do in this editor. You cannot change the list of variable or the names of variables, and you cannot add or remove edges to the graph. To do these things, simply edit the graph that was used to construct the SEM PM model.</p>
+<p>It is important to notice what you cannot do in this editor. You cannot change the list of predictor or the names of variables, and you cannot add or remove edges to the graph. To do these things, simply edit the graph that was used to construct the SEM PM model.</p>
 <h3><br>
 Potential Parents for a Sem PM </h3>
 <p>The SEM PM must be constructed using an nodes that has a graph in it of a type that can be used to construct a structural equation model. The obvious choice is a <a href="../graph/sem_graph.html">SEM Graph</a>, since with this graph, you can add bidirected edges and cycles. You can, however, construct a SEM PM using a <a href="../graph/dag.html">Directed Acyclic Graph</a>, if you don't care that the graph cannot contain bidirected edges or cycles, or a <a href="../graph/general_graph.html">General Graph</a>, if you don't mind making sure on your own that the graph contains <em>only</em> directed and bidirected edges. </p>

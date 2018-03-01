@@ -27,20 +27,17 @@ import edu.cmu.tetrad.algcomparison.graph.RandomGraph;
 import edu.cmu.tetrad.algcomparison.independence.SemBicTest;
 import edu.cmu.tetrad.algcomparison.simulation.LeeHastieSimulation;
 import edu.cmu.tetrad.algcomparison.simulation.LinearFisherModel;
+import edu.cmu.tetrad.data.CovarianceMatrixOnTheFly;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Edge;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.search.ConditionalGaussianScore;
-import edu.cmu.tetrad.search.IndTestScore;
-import edu.cmu.tetrad.search.IndependenceTest;
+import edu.cmu.tetrad.search.*;
 import edu.cmu.tetrad.util.Parameters;
 import org.junit.Test;
 
 import java.util.*;
-
-import static java.lang.Math.log;
 
 /**
  * Tests CStaS.
@@ -67,7 +64,7 @@ public class TestCStaS {
 //        SemIm im = new SemIm(pm);
 //        DataSet dataSet = im.simulateData(1000, false);
 //
-//        Node y = dataSet.getVariable("X10");
+//        Node y = dataSet.getPredictor("X10");
 //
 //        SemBicScore score = new SemBicScore(new CorrelationMatrixOnTheFly(dataSet));
 //        score.setPenaltyDiscount(parameters.getDouble("penaltyDiscount"));
@@ -89,15 +86,15 @@ public class TestCStaS {
 //        }
 //    }
 
-    //    @Test
-    private void testCStaS() {
-        int numNodes = 5000;
-        int avgDegree = 6;
-        int sampleSize = 50;
+    @Test
+    public void testCStaS() {
+        int numNodes = 500;
+        int avgDegree = 4;
+        int sampleSize = 100;
         int numIterations = 10;
         int numSubsamples = 50;
-        double penaltyDiscount = .8;
-        double selectionAlpha = 0.02;
+        double penaltyDiscount = 1.2;
+        double selectionAlpha = 0.001;
         double lift = 2;//log(numNodes);
 
         Parameters parameters = new Parameters();
@@ -172,6 +169,112 @@ public class TestCStaS {
                     + cstasRet.get(i)[3]
             );
         }
+    }
+
+    @Test
+    public void testCStaSMulti() {
+        int numNodes = 500;
+        int avgDegree = 4;
+        int sampleSize = 100;
+        int numIterations = 10;
+        int numSubsamples = 50;
+        double penaltyDiscount = 1.2;
+        double selectionAlpha = 0.001;
+        double lift = 2;
+
+        Parameters parameters = new Parameters();
+
+        parameters.set("penaltyDiscount", penaltyDiscount);
+        parameters.set("numSubsamples", numSubsamples);
+        parameters.set("depth", 2);
+        parameters.set("selectionAlpha", selectionAlpha);
+        parameters.set("lift", lift);
+
+        parameters.set("numMeasures", numNodes);
+        parameters.set("numLatents", 0);
+        parameters.set("avgDegree", avgDegree);
+        parameters.set("maxDegree", 100);
+        parameters.set("maxIndegree", 100);
+        parameters.set("maxOutdegree", 100);
+        parameters.set("connected", false);
+
+        parameters.set("verbose", false);
+
+        parameters.set("coefLow", 0.5);
+        parameters.set("coefHigh", 1.0);
+        parameters.set("includeNegativeCoefs", true);
+        parameters.set("sampleSize", sampleSize);
+        parameters.set("intervalBetweenShocks", 5);
+        parameters.set("intervalBetweenRecordings", 5);
+
+        parameters.set("sampleSize", sampleSize);
+
+        parameters.set("parallelism", 40);
+
+        List<int[]> cstasRet = new ArrayList<>();
+
+
+
+        for (int i = 0; i < numIterations; i++) {
+            RandomGraph randomForward = new RandomForward();
+            LinearFisherModel fisher = new LinearFisherModel(randomForward);
+            fisher.createData(parameters);
+            DataSet fullData = (DataSet) fisher.getDataModel(0);
+
+            final Graph trueDag = fisher.getTrueGraph(0);
+
+            List<Node> nodes = trueDag.getNodes();
+
+            Map<Node, Integer> numAncestors = new HashMap<>();
+
+            for (Node n : nodes) {
+                numAncestors.put(n, trueDag.getAncestors(Collections.singletonList(n)).size());
+            }
+
+            nodes.sort((o1, o2) -> Integer.compare(numAncestors.get(o2), numAncestors.get(o1)));
+            parameters.set("targetName", nodes.get(i).getName());
+
+            CStaSMulti cstas = new CStaSMulti();
+            cstas.setTrueDag(trueDag);
+            cstas.setLift(lift);
+            cstas.setNumSubsamples(numSubsamples);
+
+
+            List<Node> targets = new ArrayList<>();
+
+            for (int t = 0; t < 1; t++) {
+                targets.add(nodes.get(t));
+            }
+
+            List<Node> vars = cstas.selectVariables(fullData, targets, selectionAlpha, 40);
+            vars = GraphUtils.replaceNodes(vars, fullData.getVariables());
+            DataSet selection = fullData.subsetColumns(vars);
+
+            SemBicScore score = new SemBicScore(new CovarianceMatrixOnTheFly(fullData));
+            score.setPenaltyDiscount(penaltyDiscount);
+            IndependenceTest test = new IndTestScore(score);
+
+            List<CStaSMulti.Record> records = cstas.getRecords(selection, selection.getVariables(), targets, test);
+
+            System.out.println(cstas.makeTable(records));
+
+
+//            int[] ret = getResult(trueDag, graph);
+//            cstasRet.add(ret);
+        }
+
+//        System.out.println();
+//
+//        System.out.println("\tTreks\tAncestors\tNon-Treks\tNon-Ancestors");
+//
+//        for (int i = 0; i < numIterations; i++) {
+//            System.out.println((i + 1) + ".\t"
+//                    + cstasRet.get(i)[0] + "\t"
+//                    + cstasRet.get(i)[1] + "\t"
+//                    + cstasRet.get(i)[2] + "\t"
+//                    + cstasRet.get(i)[3]
+//            );
+//        }
     }
 
     //    @Test

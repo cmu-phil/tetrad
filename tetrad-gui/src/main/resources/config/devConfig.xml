@@ -520,7 +520,7 @@
                     edu.cmu.tetradapp.editor.datamanip.TimeSeriesParamsEditor
                 </params-editor-class>
             </model>
-            <model name="Add an index variable" acronym="Add Index"
+            <model name="Add an index predictor" acronym="Add Index"
                    help="data" category="Conversion of Data">
                 <logger>
                     <event id="info" description="Information" default="on"/>

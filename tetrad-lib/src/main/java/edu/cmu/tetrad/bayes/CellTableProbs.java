@@ -125,7 +125,7 @@ public final class CellTableProbs implements DiscreteProbs {
 
     /**
      * @return the estimated probability for the given cell. The order of the
-     * variable values is the order of the variables in getVariable().
+     * variable values is the order of the variables in getPredictor().
      */
     public double getCellProb(int[] variableValues) {
         int cellIndex = getCellIndex(variableValues);

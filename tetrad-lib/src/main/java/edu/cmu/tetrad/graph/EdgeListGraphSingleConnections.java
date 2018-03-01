@@ -293,7 +293,8 @@ public class EdgeListGraphSingleConnections extends EdgeListGraph implements Tri
         if (edge == null) throw new NullPointerException();
 
         if (isAdjacentTo(edge.getNode1(), edge.getNode2())) {
-            throw new IllegalArgumentException("Already adjacent.");
+            return true;
+//            throw new IllegalArgumentException("Already adjacent.");
         }
 
         List<Edge> edgeList1 = edgeLists.get(edge.getNode1());

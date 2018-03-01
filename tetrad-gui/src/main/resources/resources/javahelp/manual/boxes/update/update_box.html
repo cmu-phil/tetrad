@@ -18,7 +18,7 @@
  style="width: 250px; height: 94px;"></font></p>
 <p><br style="font-family: times new roman;">
   The functions inside the Update Box enable you to use an Instantiated Bayes 
-  Net model to compute the conditional probability of any variable in the model 
+  Net model to compute the conditional probability of any predictor in the model
   from values you specify for any other variables in the model.<br
  style="font-family: times new roman;">
   <br style="font-family: times new roman;">
@@ -54,7 +54,7 @@
   in the Bayes net is large and the number of variables in manipulationEvidencetionEvidencetionEvidencetionEvidencetionEvidencetionEvidencetionEvidencetionEvidencetionEvidencetionEvidencetionEvidencetionEvidencetionEvidencetionEvidencetionEvidencetionEvidencetionEvidencetionEvidencetionEvidencetionEvidencetionEvidencetionEvidencetionEvidencetionEvidencetionEvidencetionEvidencetionEvidencetionEvidencetionEvidencetionEvidencetionEvidencetionEvidencetionEvidencetionEvidencetionEvidencetionEvidencetionEvidencetionEvidencetionEvidencetionEvidencetionEvidencetionEvidence is small.
   However, the row summing updater can be extremely useful (and fast) if almost 
   all of the variables in the Bayes net are in manipulationEvidencetionEvidencetionEvidencetionEvidencetionEvidencetionEvidencetionEvidencetionEvidencetionEvidencetionEvidencetionEvidencetionEvidencetionEvidencetionEvidencetionEvidencetionEvidencetionEvidencetionEvidencetionEvidencetionEvidencetionEvidencetionEvidencetionEvidencetionEvidencetionEvidencetionEvidencetionEvidencetionEvidencetionEvidencetionEvidencetionEvidencetionEvidencetionEvidencetionEvidencetionEvidencetionEvidencetionEvidencetionEvidencetionEvidencetionEvidencetionEvidencetionEvidence. For instance, if all
-  but one variable (say, X) is in manipulationEvidencetionEvidencetionEvidencetionEvidencetionEvidencetionEvidencetionEvidencetionEvidencetionEvidencetionEvidencetionEvidencetionEvidencetionEvidencetionEvidencetionEvidencetionEvidencetionEvidencetionEvidencetionEvidencetionEvidencetionEvidencetionEvidencetionEvidencetionEvidencetionEvidencetionEvidencetionEvidencetionEvidencetionEvidencetionEvidencetionEvidencetionEvidencetionEvidencetionEvidencetionEvidencetionEvidencetionEvidencetionEvidencetionEvidencetionEvidencetionEvidencetionEvidence, then the number of rows in the joint
+  but one predictor (say, X) is in manipulationEvidencetionEvidencetionEvidencetionEvidencetionEvidencetionEvidencetionEvidencetionEvidencetionEvidencetionEvidencetionEvidencetionEvidencetionEvidencetionEvidencetionEvidencetionEvidencetionEvidencetionEvidencetionEvidencetionEvidencetionEvidencetionEvidencetionEvidencetionEvidencetionEvidencetionEvidencetionEvidencetionEvidencetionEvidencetionEvidencetionEvidencetionEvidencetionEvidencetionEvidencetionEvidencetionEvidencetionEvidencetionEvidencetionEvidencetionEvidencetionEvidencetionEvidence, then the number of rows in the joint
   probability table that have to be examined in order to calculate marginals for 
   X is just the number of categories of X. <br>
 </p>
@@ -64,8 +64,8 @@
   Bayes net" (in a sense to be defined), and second, calculating marginals recursively 
   from this updated Bayes net. Probabilities for a Bayes net are specified in 
   terms of conditional probability tables for its variables. These are tables 
-  of the probability for each category of a variable conditional on each combination 
-  of parent values of that variable, P(V = v' | P1 = p1' &amp; ...&amp; Pn = pn'). 
+  of the probability for each category of a predictor conditional on each combination
+  of parent values of that predictor, P(V = v' | P1 = p1' &amp; ...&amp; Pn = pn').
   Define an "updated Bayes net" as the Bayes net in which each of these probabilities 
   has been replaced by P(V = v' | P1 = p1' &amp;... &amp; Pn = pn' &amp; E). (These 
   replacement values will not be defined if the conjunction P1 = p1' &amp;... 
@@ -75,13 +75,13 @@
   <br>
   In updating a Bayes net, in the sense defined above, only the conditional probabilty 
   tables for ancestors of the manipulationEvidencetionEvidencetionEvidencetionEvidencetionEvidencetionEvidencetionEvidencetionEvidencetionEvidencetionEvidencetionEvidencetionEvidencetionEvidencetionEvidencetionEvidencetionEvidencetionEvidencetionEvidencetionEvidencetionEvidencetionEvidencetionEvidencetionEvidencetionEvidencetionEvidencetionEvidencetionEvidencetionEvidencetionEvidencetionEvidencetionEvidencetionEvidencetionEvidencetionEvidencetionEvidencetionEvidencetionEvidencetionEvidencetionEvidencetionEvidencetionEvidencetionEvidence variables are altered. This suggests an
-  algorithm for updating a Bayes net given manipulationEvidencetionEvidencetionEvidencetionEvidencetionEvidencetionEvidencetionEvidencetionEvidencetionEvidencetionEvidencetionEvidencetionEvidencetionEvidencetionEvidencetionEvidencetionEvidencetionEvidencetionEvidencetionEvidencetionEvidencetionEvidencetionEvidencetionEvidencetionEvidencetionEvidencetionEvidencetionEvidencetionEvidencetionEvidencetionEvidencetionEvidencetionEvidencetionEvidencetionEvidencetionEvidencetionEvidencetionEvidencetionEvidencetionEvidencetionEvidencetionEvidencetionEvidence E. For each variable that's
+  algorithm for updating a Bayes net given manipulationEvidencetionEvidencetionEvidencetionEvidencetionEvidencetionEvidencetionEvidencetionEvidencetionEvidencetionEvidencetionEvidencetionEvidencetionEvidencetionEvidencetionEvidencetionEvidencetionEvidencetionEvidencetionEvidencetionEvidencetionEvidencetionEvidencetionEvidencetionEvidencetionEvidencetionEvidencetionEvidencetionEvidencetionEvidencetionEvidencetionEvidencetionEvidencetionEvidencetionEvidencetionEvidencetionEvidencetionEvidencetionEvidencetionEvidencetionEvidencetionEvidencetionEvidence E. For each predictor that's
   an ancestor of manipulationEvidencetionEvidencetionEvidencetionEvidencetionEvidencetionEvidencetionEvidencetionEvidencetionEvidencetionEvidencetionEvidencetionEvidencetionEvidencetionEvidencetionEvidencetionEvidencetionEvidencetionEvidencetionEvidencetionEvidencetionEvidencetionEvidencetionEvidencetionEvidencetionEvidencetionEvidencetionEvidencetionEvidencetionEvidencetionEvidencetionEvidencetionEvidencetionEvidencetionEvidencetionEvidencetionEvidencetionEvidencetionEvidencetionEvidencetionEvidencetionEvidencetionEvidence, use the row summing method to calculate updated conditional
-  probabilities in that variable's conditional probability table. Otherwise, just 
+  probabilities in that predictor's conditional probability table. Otherwise, just
   keep the conditional probabilities from the original Bayes net. This is the 
   algorithms that is implemented. <br>
   <br>
-  For calculating single-variable marginals from a Bayes net, Bayes Theorem is 
+  For calculating single-predictor marginals from a Bayes net, Bayes Theorem is
   used recursively. For example, if X--&gt;Y, where X and Y both have categories 
   {0, 1}, P(Y = 0) = P(Y = 0 | X = 0) P(X = 0) + P(Y = 0 | X = 1) P(X = 1). Since 
   all of the probabilites on the right side of this equation are stored in the 

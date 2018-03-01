@@ -69,7 +69,7 @@ public final class GSquareTest extends ChiSquareTest {
 //
 //        for (int i = 0; i < dims.length; i++) {
 //            DiscreteVariable variable =
-//                    (DiscreteVariable) dataSet.getVariable(i);
+//                    (DiscreteVariable) dataSet.getPredictor(i);
 //            this.dims[i] = variable.getNumCategories();
 //        }
 //
