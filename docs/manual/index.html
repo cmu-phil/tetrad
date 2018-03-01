@@ -24,7 +24,7 @@
 <b>Table of Contents</b>
 <ul class="ul">
 <li><a href="#graph_box">Graph Box</a></li>
-<li><a href="#">Compare Box</a></li>
+<li><a href="#compare_box">Compare Box</a></li>
 <li><a href="#">Parametric Model Box</a></li>
 <li><a href="#">Instantiated Model Box</a></li>
 <li><a href="#">Data Box</a></li>
@@ -40,7 +40,7 @@
 </div>
 
 <!-- Assign id with the section name, this will be linked in the table of contents -->
-<h2 id="graph_box">Graph Box</h2>
+<h2 id="graph_box"><span  class="section_heading">Graph Box</span></h2>
 
 <p>The graph box can be used to create a new graph, or to copy or edit a graph from another box.</p>
 
@@ -61,8 +61,248 @@
 <li>A regression box</li>
 </ul>
 
+<!-- Follow this example to create a list of items -->
+<b>Possible Child Boxes of the Graph Box</b>
+
+<!-- Assign a class="ul" for pretty look -->
+<ul class="ul">
+<li>Another graph box</li>
+<li>A compare box</li>
+<li>A parametric model box</li>
+<li>A data box</li>
+<li>A simulation box</li>
+<li>A search box</li>
+<li>A knowledge box</li>
+</ul>
+
+<b>Creating a New Graph</b>
+
+<p>When you first open a graph box with no parent, you will be presented with several options for which kind of graph you would like to create: a directed acyclic graph (DAG), a structural equation model (SEM)graph, a general graph, or a time lag graph. Once you have selected the type of graph you want to create, an empty graph box will open.</p>
+
+<p>You can add variables to your graph by clicking on the variable button on the left, then clicking inside the graph area. Add edges by clicking on an edge type, then clicking and dragging from one variable to another.  Variables may be measured (represented by rectangular icons) or latents (represented by elliptical icons). Edges may be directed, undirected, bidirected, or uncertain (represented by circles at the ends of an edge). Depending on the type of graph you choose to create, your choice of edges may be limited.</p>
+
+<p>DAGs allow only directed, bidirected, and uncertain edges. If an edge would create a cycle (or potential cycle, in the case of uncertain edges) it will not be accepted. A graph box containing a DAG can be used as input for any parametric model box, and is the only kind of graph box that can be used as input for a Bayes parametric model.</p>
+
+<p>SEM graphs allow only directed and bidirected edges. A graph box containing a SEM graph can be used as input to a SEM parametric model or generalized SEM parametric model, where a bidirected edge between two variables X and Y will be interpreted as X and Y having correlated error terms.
+Time lag graphs allow only directed edges. New variables that you add will be initialized with a single lag. (The number of lags in the graph may be changed under “Edit—Configuration…”) Edges from later lags to earlier lags will not be accepted. Edges added within one lag will automatically be replicated in later lags.</p>
+
+<p>The general graph option allows all edge types and configurations.</p>
+
+
+<b>Creating a Random Graph </b>
+
+<p>Instead of manually creating a new graph, you can randomly create one. To do so, open up a new empty graph box and click on “Graph—Random Graph.” This will open up a dialog box from which you can choose the type of random graph you would like to create by clicking through the tabs at the top of the window. Tetrad will randomly generate a DAG, a multiple indicator model (MIM) graph, or a scale-free graph. Each type of graph is associated with a number of parameters (including but not limited to the number of nodes and the maximum degree) which you can set.</p>
+
+<p>Once a graph has been randomly generated, you can directly edit it within the same graph box by adding or removing any variables or edges that that type of graph box allows. So, for instance, although you cannot randomly generate a graph with bidirected edges, you can manually add bidirected edges to a randomly generated DAG in a SEM graph box.</p>
+
+<p>Random graph generation is not available for time lag graphs. </p>
+
+
+<b>Loading a Saved Graph</b>
+
+<p>If you have previously saved a graph from Tetrad, you can load it into a new graph box by clicking “File—Load…,” and then clicking on the file type of the saved graph. Tetrad can load graphs from XML, from text, and from JSON files.</p>
+
+<p>To save a graph to file, click “File—Save…,” then click on the file type you would like to save your graph as. Tetrad can save graphs to XML, text, JSON, and R files. (If you save your graph to R, you will not be able to load that file back into Tetrad.)</p>
+
+<p>You can also save an image of your graph by clicking “File—Save Graph Image…” Tetrad cannot load graphs from saved image files.</p>
+
+
+<b>Copying a Graph</b>
+
+<p>There are two ways to copy a graph. </p>
+
+<p>The first method allows you to copy a graph from any box which contains one. First, create a new graph box in the workspace, and draw an arrow from the box whose graph you want to copy to the new graph box. When opened, the new graph box will automatically contain a direct copy of the graph its parent box contains. </p>
+
+<p>The second method allows you to copy a graph directly from most types of graph box. First, highlight the graph in the old graph box and click “Edit—Copy Selected Graph.” Then open up your new graph box and click “Edit—Paste Selected Graph.” (Some types of graph box do not have this functionality; see “Manipulating a Graph.”)</p>
+
+
+<b>Manipulating a Graph</b>
+
+<p>If you create a graph box as a child of another box, you can also choose to perform a graph manipulation on the parent graph. Your graph box will then contain the manipulated version of the parent graph.</p>
+
+<p>The available graph manipulations are:</p>
+
+<p>Display Subgraphs: This option allows you to isolate a subgraph from the parent graph. Add variables to the subgraph by highlighting the variable name in the “Unselected” pane and clicking on the right arrow. The hiighlighted variable will then show up in the “Selected” pane. (You may also define which variables go in the “Selected” pane by clicking on the “Text Input…” button and typing the variable names directly into the window.) Choose the type of subgraph you want to display from the drop-down panel below. Then click “Graph It!” and the resulting subgraph of the selected variables will appear in the pane on the right. (Some types of subgraph, such as “Markov Blanket,” will include unselected variables if they are part of the subgraph as defined on the selected variables. So, for instance, an unselected variable that is in the Markov blanket of a selected variable will appear in the Markov Blanket subgraph. Edges between unselected variables will not be shown.) For large or very dense graphs, it may take a long time to isolate and display subgraphs.</p>
+
+<p>The types of subgraphs that can be displayed are:</p>
+
+<ul class="ul">
+<li>Subgraph (displays the selected nodes and all edges between them)</li>
+<li>Adjacents (displays the selected nodes and all edges between them, as well as nodes 	adjacent to the selected nodes)</li>
+<li>Adjacents of adjacents (displays the selected nodes and all edges between them, as 	well as nodes adjacent to the selected nodes and nodes adjacent to adjacencies of the 	selected nodes)</li>
+<li>Adjacents of adjacents of adjacents (displays the selected nodes and all edges 	between them, as well as nodes adjacent to the selected nodes, nodes adjacent to 	adjacencies of the selected nodes, and nodes adjacent to adjacencies  of adjacencies 	of the selected nodes)</li>
+<li>Markov Blankets (displays the selected nodes and all edges between them, as well 	as the Markov blankets of each selected node)</li>
+<li>Treks (displays the selected nodes, with an edge between each pair if and only if a 	trek exists between them in the full graph)</li>
+<li>Trek Edges (displays the selected nodes, and any treks between them, including 	nodes not in the selected set if they are part of a trek)</li>
+<li>Paths (displays the selected nodes, with an edge between each pair if and only if a 	path exists between them in the full graph)</li>
+<li>Path Edges (displays the selected nodes, and any paths between them, including 	nodes not in the selected set if they are part of a path)</li>
+<li>Directed Paths (displays the selected nodes, with a directed edge between each pair 	if and only if a directed path exists between them in the full graph)</li>
+<li>Directed Path Edges (displays the selected nodes, and any directed paths between 	them, including nodes not in the selected set if they are part of a path)</li>
+<li>Y Structures (displays any Y structures involving  at least two of the selected nodes)</li>
+<li>Indegree (displays the selected nodes and their parents)</li>
+<li>Outdegree (displays the selected nodes and their children)</li>
+<li>Degree (displays the selected nodes and their parents and children)</li>
+</ul>
+
+<p>The “Graph Properties” and “Paths” functions are available in this type of graph box, but they will display information about the full graph, not the currently displayed subgraph. To see graph properties for the subgraph, first copy it into a new graph box.</p>
+
+<p>Choose DAG in Pattern: If given a pattern as input, this chooses a random DAG from the Markov equivalence class of the pattern to display. The resulting DAG functions as a normal graph box.</p>
+
+<p>Choose MAG in PAG: If given a partial ancestral graph (PAG) as input, this chooses a random mixed ancestral graph (MAG) from the equivalence class of the PAG to display. The resulting MAG functions as a normal graph box.</p>
+
+<p>Show DAGs in Pattern: If given a pattern as input, this displays all DAGs in the pattern’s Markov equivalence class. Each DAG is displayed in its own tab. Most graph box functionality is not available in this type of graph box, but the DAG currently on display can be copied by clicking “Copy Selected Graph.”</p>
+
+<p>Generate Pattern from DAG: If given a DAG as input, this displays the pattern of the Markov equivalence class to which the parent graph belongs. The resulting pattern functions as a normal graph box.</p>
+
+<p>Generate PAG from DAG: Converts an input graph from partial ancestral to directed acyclic format. The resulting DAG functions as a normal graph box.</p>
+
+<p>Generate PAG from tsDAG: Converts an input graph from partial ancestral to time series DAG format. The resulting DAG functions as a normal graph box.</p>
+
+<p>Make Bidirected Edges Undirected: Replaces all bidirected edges in the input graph with undirected edges.</p>
+
+<p>Make Undirected Edges Bidirected: Replaces all undirected edges in the input graph with bidirected edges.</p>
+
+<p>Make All Edges Undirected: Replaces all edges in the input graph with undirected edges.</p>
+
+<p>Generate Complete Graph</p>
+
+<p>Extract Structure Model</p>
+
+
+<b>Other Graph Box Functions</b>
+
+<p><i>Layout:</i> You can change the layout of your graph by clicking on the “Layout” tab and choosing between several common layouts. You can also rearrange the layout of one graph box to match the layout of another graph box (so long as the two graphs have identical variables) by clicking “Layout—Copy Layout” and “Layout—Paste Layout.” You do not need to a highlight the graph in order to copy the layout.</p>
+
+<p><i>Graph Properties:</i> Clicking on “Graph—Graph Properties” will give you a text box containing the following properties of your graph:</p>
+
+<ul class="ul">
+<li>Number of nodes</li>
+<li>Number of latent nodes</li>
+<li>Number of edges</li>
+<li>Number of directed edges</li>
+<li>Number of bidirected edges</li>
+<li>Number of undirected edges</li>
+<li>Max degree</li>
+<li>Max indegree</li>
+<li>Max outdegree</li>
+<li>Cyclicity</li>
+</ul>
+
+<p><i>Paths:</i> Clicking on “Graph—Paths” opens a dialog box that allows you to see all the paths between any two variables. You can specify whether you want to see only adjacencies, only directed paths, only semidirected paths, or all treks between the two variables of interest, and the maximum length of the paths you are interested in using drop boxes at the top of the pane. To apply those settings, click “update.”</p>
+
+<p><i>Meek Orientation:</i> Clicking “Meek Orientation” will orient a pattern according to the Meek orientation rules.</p>
+
+<p><i>Correlation:</i> You can automatically correlate or uncorrelated exogenous variables under the Graph tab.</p>
+
+<p><i>Highlighting:</i> You can highlight bidirected edges, undirected edges, and latent nodes under the Graph tab.</p>
+
+
+
+
+<h2 id="compare_box"><span  class="section_heading">Compare Box</span></h2>
+
+<p>The compare box compares two or more graphs.</p>
+
+<!-- Follow this example to create a list of items -->
+<b>Possible Parent Boxes of the Compare box:</b>
+
+<!-- Assign a class="ul" for pretty look -->
+<ul class="ul">
+<li>A graph box
+<li>An instantiated model box</li>
+<li>An estimator box</li>
+<li>A simulation box</li>
+<li>A search box</li>
+<li>A regression box</li>
+</ul>
+
+<!-- Follow this example to create a list of items -->
+<b>Possible Child Boxes of the Compare box:</b>
+
+<!-- Assign a class="ul" for pretty look -->
+<ul class="ul">
+<li>None</li>
+</ul>
+
+<b>Edgewise Comparisons</b>
+
+<p>An edgewise comparison compares two graphs, and gives a textual list of the edges which must be added to or taken away from one to make it identical to the other.</p>
+
+<p>Take, for example, the following two graphs. The first is the reference graph, the second is the graph to be compared to it. </p>
+
 <!-- Follow this image example to add an image -->
-<img src="images/tetrad-desktop.png" alt="Tetrad Desktop" width="800">
+<img src="images/compare_box_1.png" alt="" width="600">
+
+<img src="images/compare_box_2.png" alt="" width="600">
+
+<p>When these two graphs are input into the graph compare box, a window appears which allows you to specify which of the two graphs is the reference graph. When the comparison is complete, the following window results</p>
+
+<img src="images/compare_box_3.png" alt="" width="600">
+
+
+<p>When the listed changes have been made to the second graph, it will be identical to the first graph.</p>
+
+<p>If one of the parent boxes contains multiple graphs, each graph will be compared separately to the reference graph (or the estimated graph will be compared separately to each reference graph, depending on which parent box is selected as the reference), and each comparison will be housed in its own tab, located on the left side of the window.</p>
+
+<b>Tabular Graph Comparisons</b>
+
+<p>A tabular graph comparison tallies up and presents counts of the differences and similarities between a true graph and a reference graph. Consider the example used in the above section; once again, we’ll let graph one be the true graph. Just as above, when the graphs are input to the tabular graph compare box, we must specify which of the graphs is the reference graph, and whether it contains latent variables. When the comparison is complete, the following window results:</p>
+
+<img src="images/compare_box_4.png" alt="" width="600">
+
+
+<p>The first column lists the number of adjacencies in the reference graph that are also in the true graph. The second column lists the number of adjacencies in the reference graph which are not in the compared graph. The third column lists the number of adjacencies in the comparison graph which are not in the reference graph.  The next three columns list analogous information for arrowpoints (orientations of edges).</p>
+
+<p>If one of the parent boxes contains multiple graphs, each graph will be compared separately to the reference graph (or the estimated graph will be compared separately to each reference graph, depending on which parent box is selected as the reference), and the results listed in a separate row of the table.</p>
+
+<b>Misclassifications</b>
+
+<p>A misclassification procedure organizes a graph comparison by edge type. The edge types (undirected, directed, uncertain, partially uncertain, bidirected, and null) are listed as the rows and columns of a matrix, with the reference graph edges as the row headers and the estimate graph edges as the column headers. If, for example, there are three pairs of variables that are connected by undirected edges in the reference graph, but are connected by directed edges in the estimated graph, then there will be a 3 in the (undirected, directed) cell of the matrix. An analogous method is used to represent endpoint errors. For example:</p>
+
+<img src="images/compare_box_5.png" alt="" width="600">
+
+<p>If one of the parent boxes contains multiple graphs, then each estimated graph will be individually compared to the reference graph (or vice versa), and the results housed in their own tab, found on the left.</p>
+
+<b>Graph Intersections</b>
+
+<p>A graph intersection compares two or more graphs in the same comparison. It does so by ranking adjacencies (edges without regard to direction) and orientations based on how many of the graphs they appear in. In an n-graph comparison, it first lists any adjacencies found in all n graphs. Then it lists all adjacencies found in n – 1 graphs, then adjacencies found in n – 2 graphs, and so on. </p>
+
+<p>After it has listed all adjacencies, it lists any orientations that are not contradicted among the graphs, again in descending order of how many graphs the orientation appears in. An uncontradicted orientation is one on which all graphs either agree or have no opinion. So if the edge X  Y appears in all n graphs, it will be listed first. If the edge X  Z appears in n – 1 graphs, it will be listed next, but only if the nth graph doesn’t contradict it—that is, only if the edge Z  X does not appear in the final graph. If the undirected edge Z – X appears in the final graph, the orientation X  Z is still considered to be uncontradicted.</p>
+
+<p>Finally, any contradicted orientations (orientations that the graphs disagree on) are listed.</p>
+
+<b>Independence Facts Comparison</b>
+
+<p>Rather than comparing edges or orientation, this option directly compares the implied dependencies in two graphs. When you initially open the box, you will see the following window:</p>
+
+<img src="images/compare_box_6.png" alt="" width="600">
+
+<p>The drop-down menu allows you to choose which variables you want to check the dependence of. If you select more than two variables, an subsequent variables will be considered members of the conditioning set. So, if you select variables X1, X2, and X3, in that order, the box will determine whether X1 is independent of X2, conditional on X3, in each of the graphs being compared.  When you click “List,” in the bottom right of the window, the results will be displayed in the center of the window: </p>
+
+<img src="images/compare_box_7.png" alt="" width="600">
+
+<b>Edge Weight Similarity Comparisons</b>
+
+<p>Edge weight (linear coefficient) similarity comparisons compare two linear SEM instantiated models. The output is a score equal to the sum of the squares of the differences between each corresponding edge weight in each model. Therefore, the lower the score, the more similar the two graphs are. The score has peculiarities: it does not take account of the variances of the variables, and may therefore best be used with standardized models; the complete absence of an edge is scored as 0—so a negative coefficient compares less well with a positive coefficient than does no edge at all.</p>
+
+<p>Consider, for example, an edge weight similarity comparison between the following two SEM IMs:</p>
+
+<img src="images/compare_box_8.png" alt="" width="600">
+
+<img src="images/compare_box_9.png" alt="" width="600">
+
+<p>When they are input into an edge weight similarity comparison, the following window results: </p>
+
+
+<img src="images/compare_box_10.png" alt="" width="600">
+
+<p>This is, unsurprisingly, a high score; the input models have few adjacencies in common, let alone similar parameters.</p>
+
+<b>Model Fit</b>
+
+<p>A model fit comparison takes a simulation box and a search box (ideally, a search that has been run on the simulated data in the simulation box), and provides goodness-of-fit statistics for the output graph and the data, as well as estimating the values of any parameters. It looks and functions identically to the estimator box, but unlike the estimator box, it takes the search box directly as a parent, without needing to isolate and parameterize the graph output by the search.</p>
+
+
 
 <!-- Assign id with the algorithm short name and wrap descriptions, parameters in a div -->
 <div id="fges">

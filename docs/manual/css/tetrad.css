@@ -830,3 +830,12 @@ display: table;
 padding: 20px;
 width: auto;
 }
+
+.section_heading {
+border-left: 5px solid #D66061;
+padding-left:10px;
+}
+
+img {
+display:block;
+}
