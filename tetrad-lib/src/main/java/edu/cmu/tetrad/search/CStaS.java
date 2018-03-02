@@ -96,15 +96,22 @@ public class CStaS {
 
     public List<Record> getRecords(DataSet dataSet, Node target, IndependenceTest test, double selectionAlpha) {
         this.test = test;
-        List<Node> vars = selectVariables(dataSet, target, selectionAlpha, parallelism);
-        vars = GraphUtils.replaceNodes(vars, test.getVariables());
-        DataSet selection = dataSet.subsetColumns(vars);
 
-        return getRecords(selection, dataSet.getVariables(), target, test);
+        List<Node> selectionVars = selectVariables(dataSet, target, selectionAlpha, 40);
+        selectionVars = GraphUtils.replaceNodes(selectionVars, dataSet.getVariables());
+        List<Node> augmented = new ArrayList<>(selectionVars);
+
+        if (!augmented.contains(target)) augmented.add(target);
+
+        augmented = GraphUtils.replaceNodes(augmented, dataSet.getVariables());
+        DataSet selection = dataSet.subsetColumns(augmented);
+
+        return getRecords(selection, selectionVars, target, test);
     }
 
     /**
      * Returns records for a set of variables with expected number of false positives bounded by q.
+     *
      * @param dataSet            The full datasets to search over.
      * @param possiblePredictors A set of variables in the datasets over which to search.
      * @param target             The target variables.
@@ -125,7 +132,12 @@ public class CStaS {
 
         Node _target = dataSet.getVariable(target.getName());
         possiblePredictors = GraphUtils.replaceNodes(possiblePredictors, dataSet.getVariables());
-        DataSet selection = dataSet.subsetColumns(possiblePredictors);
+
+        List<Node> augmented = new ArrayList<>();
+        augmented.add(_target);
+        augmented.addAll(possiblePredictors);
+
+        DataSet selection = dataSet.subsetColumns(augmented);
 
         final List<Node> variables = selection.getVariables();
         variables.remove(_target);
@@ -151,7 +163,7 @@ public class CStaS {
                     sampler.setWithoutReplacements(false);
                     DataSet sample = sampler.sample(selection, selection.getNumRows());
                     Graph pattern = getPatternFges(sample);
-                    Ida ida = new Ida(sample, pattern);
+                    Ida ida = new Ida(sample, pattern, _possiblePredictors);
                     effects.add(ida.getSortedMinEffects(_target));
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -223,7 +235,7 @@ public class CStaS {
                     _outPis.add(pi.get(i));
                 }
 
-                if ( _outNodes.size() > outNodes.size()) {
+                if (_outNodes.size() > outNodes.size()) {
                     outNodes = _outNodes;
                     outPis = _outPis;
                     bestQ = q;
@@ -497,7 +509,7 @@ public class CStaS {
 
         y = test.getVariable(y.getName());
 
-        if (!selection.contains(y)) selection.add(y);
+//        if (!selection.contains(y)) selection.add(y);
 
         System.out.println("# selected variables = " + selection.size());
 

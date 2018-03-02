@@ -28,15 +28,24 @@ import edu.cmu.tetrad.algcomparison.independence.SemBicTest;
 import edu.cmu.tetrad.algcomparison.simulation.LeeHastieSimulation;
 import edu.cmu.tetrad.algcomparison.simulation.LinearFisherModel;
 import edu.cmu.tetrad.data.CovarianceMatrixOnTheFly;
+import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Edge;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.*;
+import edu.cmu.tetrad.util.DataConvertUtils;
 import edu.cmu.tetrad.util.Parameters;
+import edu.pitt.dbmi.data.ContinuousTabularDataset;
+import edu.pitt.dbmi.data.Dataset;
+import edu.pitt.dbmi.data.Delimiter;
+import edu.pitt.dbmi.data.reader.tabular.ContinuousTabularDataFileReader;
+import edu.pitt.dbmi.data.reader.tabular.TabularDataReader;
 import org.junit.Test;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.*;
 
 import static java.lang.Math.log;
@@ -96,8 +105,8 @@ public class TestCStaS {
         int sampleSize = 200;
         int numIterations = 10;
         int numSubsamples = 50;
-        double penaltyDiscount = 1;
-        double selectionAlpha = 0.03;
+        double penaltyDiscount = 2;
+        double selectionAlpha = 0.005;
 
         Parameters parameters = new Parameters();
 
@@ -174,14 +183,15 @@ public class TestCStaS {
 
     @Test
     public void testCStaSMulti() {
+        int numTargets = 10;
+
         int numNodes = 5000;
-        int numTargets = 4;
-        int avgDegree = 8;
+        int avgDegree = 6;
         int sampleSize = 200;
         int numIterations = 10;
         int numSubsamples = 50;
-        double penaltyDiscount = 1.5;
-        double selectionAlpha = 0.001;
+        double penaltyDiscount = 2;
+        double selectionAlpha = 0.00001;
 
         Parameters parameters = new Parameters();
 
@@ -219,7 +229,7 @@ public class TestCStaS {
             RandomGraph randomForward = new RandomForward();
             LinearFisherModel fisher = new LinearFisherModel(randomForward);
             fisher.createData(parameters);
-            DataSet fullData = (DataSet) fisher.getDataModel(0);
+            DataSet dataSet = (DataSet) fisher.getDataModel(0);
 
             final Graph trueDag = fisher.getTrueGraph(0);
 
@@ -245,15 +255,23 @@ public class TestCStaS {
                 targets.add(nodes.get(t));
             }
 
-            List<Node> vars = cstas.selectVariables(fullData, targets, selectionAlpha, 40);
-            vars = GraphUtils.replaceNodes(vars, fullData.getVariables());
-            DataSet selection = fullData.subsetColumns(vars);
+            List<Node> selectionVars = cstas.selectVariables(dataSet, targets, selectionAlpha, 40);
+            selectionVars = GraphUtils.replaceNodes(selectionVars, dataSet.getVariables());
+            List<Node> augmented = new ArrayList<>(selectionVars);
 
-            SemBicScore score = new SemBicScore(new CovarianceMatrixOnTheFly(fullData));
+            for (Node target : targets) {
+                final Node variable = dataSet.getVariable(target.getName());
+                if (!augmented.contains(variable)) augmented.add(variable);
+            }
+
+            augmented = GraphUtils.replaceNodes(augmented, dataSet.getVariables());
+            DataSet augmentedData = dataSet.subsetColumns(augmented);
+
+            SemBicScore score = new SemBicScore(new CovarianceMatrixOnTheFly(augmentedData));
             score.setPenaltyDiscount(penaltyDiscount);
             IndependenceTest test = new IndTestScore(score);
 
-            List<CStaSMulti.Record> records = cstas.getRecords(selection, selection.getVariables(), targets, test);
+            List<CStaSMulti.Record> records = cstas.getRecords(augmentedData, selectionVars, targets, test);
 
             System.out.println(cstas.makeTable(records));
 
@@ -274,6 +292,62 @@ public class TestCStaS {
 //                    + cstasRet.get(i)[3]
 //            );
 //        }
+    }
+
+    @Test
+    public void testStandDataExp() {
+//        int numNodes = 5000;
+//        int numTargets = 4;
+//        int avgDegree = 8;
+//        int sampleSize = 200;
+//        int numIterations = 10;
+        int numSubsamples = 50;
+        double penaltyDiscount = 8;
+        double selectionAlpha = 1E-10;
+
+        try {
+            File file = new File("/Users/user/Downloads/stand.data.exp.csv");
+
+            TabularDataReader reader = new ContinuousTabularDataFileReader(file, Delimiter.COMMA);
+            Dataset data = reader.readInData();
+
+            DataSet dataSet = (DataSet) DataConvertUtils.toDataModel(data);
+
+//            System.out.println(dataSet);
+
+
+            CStaSMulti cstas = new CStaSMulti();
+//            cstas.setTrueDag(trueDag);
+            cstas.setNumSubsamples(numSubsamples);
+
+            List<Node> targets = new ArrayList<>();
+
+            for (int i = 0; i < 50; i++) targets.add(dataSet.getVariables().get(i));
+
+            List<Node> selectionVars = cstas.selectVariables(dataSet, targets, selectionAlpha, 40);
+            selectionVars = GraphUtils.replaceNodes(selectionVars, dataSet.getVariables());
+            List<Node> augmented = new ArrayList<>(selectionVars);
+
+            for (Node target : targets) {
+                final Node variable = dataSet.getVariable(target.getName());
+                if (!augmented.contains(variable)) augmented.add(variable);
+            }
+
+            augmented = GraphUtils.replaceNodes(augmented, dataSet.getVariables());
+            DataSet selection = dataSet.subsetColumns(augmented);
+
+            SemBicScore score = new SemBicScore(new CovarianceMatrixOnTheFly(dataSet));
+            score.setPenaltyDiscount(penaltyDiscount);
+            IndependenceTest test = new IndTestScore(score);
+
+            List<CStaSMulti.Record> records = cstas.getRecords(selection, selectionVars, targets, test);
+
+            System.out.println(cstas.makeTable(records));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+
     }
 
     //    @Test

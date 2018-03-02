@@ -16,10 +16,7 @@ import edu.cmu.tetrad.util.TextTable;
 
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -112,6 +109,13 @@ public class CStaSMulti {
      * @param test               This test is only used to make more tests like it for subsamples.
      */
     public List<Record> getRecords(DataSet dataSet, List<Node> possiblePredictors, List<Node> targets, IndependenceTest test) {
+        targets = GraphUtils.replaceNodes(targets, dataSet.getVariables());
+        possiblePredictors = GraphUtils.replaceNodes(possiblePredictors, dataSet.getVariables());
+
+        if (new HashSet<>(possiblePredictors).removeAll(new HashSet<>(targets))) {
+            throw new IllegalArgumentException("Possible predictors and targets must be disjoint sets.");
+        }
+
         if (test instanceof IndTestScore && ((IndTestScore) test).getWrappedScore() instanceof SemBicScore) {
             this.test = test;
         } else if (test instanceof IndTestFisherZ) {
@@ -123,6 +127,9 @@ public class CStaSMulti {
         } else {
             throw new IllegalArgumentException("That test is not configured.");
         }
+
+        List<Node> augmented = new ArrayList<>(targets);
+        augmented.addAll(possiblePredictors);
 
         class Tuple {
             private Node predictor;
@@ -148,9 +155,7 @@ public class CStaSMulti {
             }
         }
 
-        targets = GraphUtils.replaceNodes(targets, dataSet.getVariables());
-        possiblePredictors = GraphUtils.replaceNodes(possiblePredictors, dataSet.getVariables());
-        final DataSet selection = dataSet.subsetColumns(possiblePredictors);
+        final DataSet selection = dataSet.subsetColumns(augmented);
 
         final List<Node> variables = selection.getVariables();
         variables.removeAll(targets);
@@ -174,6 +179,8 @@ public class CStaSMulti {
             effects.add(new ArrayList<>());
         }
 
+        final List<Node> _possiblePredictors = new ArrayList<>(possiblePredictors);
+
         class Task implements Callable<Boolean> {
             private Task() {
             }
@@ -184,7 +191,7 @@ public class CStaSMulti {
                     sampler.setWithoutReplacements(false);
                     DataSet sample = sampler.sample(selection, selection.getNumRows());
                     Graph pattern = getPatternFges(sample);
-                    Ida ida = new Ida(sample, pattern);
+                    Ida ida = new Ida(sample, pattern, _possiblePredictors);
 
                     for (int t = 0; t < _targets.size(); t++) {
                         effects.get(t).add(ida.getSortedMinEffects(_targets.get(t)));
@@ -240,17 +247,17 @@ public class CStaSMulti {
             }
 
             List<List<Double>> _pi = new ArrayList<>();
-            List<List<Node>> _sortedVariables = new ArrayList<>();
+//            List<List<Node>> _sortedVariables = new ArrayList<>();
 
             for (int t = 0; t < targets.size(); t++) {
-                final int _t = t;
-                List<Node> sortedVariables = new ArrayList<>(possiblePredictors);
-                sortedVariables.sort((o1, o2) -> Integer.compare(counts.get(_t).get(o2), counts.get(_t).get(o1)));
-                _sortedVariables.add(sortedVariables);
-
+//                final int _t = t;
+//                List<Node> sortedVariables = new ArrayList<>(possiblePredictors);
+//                sortedVariables.sort((o1, o2) -> Integer.compare(counts.get(_t).get(o2), counts.get(_t).get(o1)));
+//                _sortedVariables.add(sortedVariables);
+//
                 List<Double> pi = new ArrayList<>();
 
-                for (Node v : sortedVariables) {
+                for (Node v : possiblePredictors) {
                     final Integer count = counts.get(t).get(v);
                     pi.add(count / ((double) getNumSubsamples()));
                 }
@@ -263,8 +270,8 @@ public class CStaSMulti {
             List<Tuple> tuples = new ArrayList<>();
 
             for (int t = 0; t < targets.size(); t++) {
-                for (int v = 0; v < _sortedVariables.get(t).size(); v++) {
-                    tuples.add(new Tuple(_sortedVariables.get(t).get(v), targets.get(t), _pi.get(t).get(v)));
+                for (int v = 0; v < possiblePredictors.size(); v++) {
+                    tuples.add(new Tuple(possiblePredictors.get(v), targets.get(t), _pi.get(t).get(v)));
                 }
             }
 
@@ -486,14 +493,14 @@ public class CStaSMulti {
         return v;
     }
 
-    public List<Node> selectVariables(DataSet dataSet, List<Node> _y, double alpha, int parallelism) {
+    public List<Node> selectVariables(DataSet dataSet, List<Node> targets, double alpha, int parallelism) {
         IndependenceTest test = new IndTestFisherZ(dataSet, alpha);
         List<Node> selection = new CopyOnWriteArrayList<>();
 
         final List<Node> variables = dataSet.getVariables();
-        _y = GraphUtils.replaceNodes(_y, test.getVariables());
+        targets = GraphUtils.replaceNodes(targets, test.getVariables());
 
-        final List<Node> y = new ArrayList<>(_y);
+        final List<Node> y = new ArrayList<>(targets);
 
         {
             class Task implements Callable<Boolean> {
@@ -554,9 +561,7 @@ public class CStaSMulti {
 //            }
         }
 
-        for (Node target : y) {
-            if (!selection.contains(target)) selection.add(target);
-        }
+        selection.removeAll(targets);
 
         System.out.println("# selected variables = " + selection.size());
 

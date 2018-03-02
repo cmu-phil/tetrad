@@ -26,12 +26,15 @@ import static java.lang.Math.min;
 public class Ida {
     private DataSet dataSet;
     private final Graph pattern;
+    private final List<Node> possiblePredictors;
     private Map<String, Integer> nodeIndices;
     private ICovarianceMatrix allCovariances;
 
-    public Ida(DataSet dataSet, Graph pattern) {
+    public Ida(DataSet dataSet, Graph pattern, List<Node> possiblePredictors) {
         this.dataSet = DataUtils.convertNumericalDiscreteToContinuous(dataSet);
         this.pattern = pattern;
+        possiblePredictors = GraphUtils.replaceNodes(possiblePredictors, dataSet.getVariables());
+        this.possiblePredictors = possiblePredictors;
 
         allCovariances = new CovarianceMatrixOnTheFly(this.dataSet);
 
@@ -64,6 +67,10 @@ public class Ida {
         }
 
         return new NodeEffects(nodes, effects);
+    }
+
+    public List<Node> getPossiblePredictors() {
+        return possiblePredictors;
     }
 
     /**
@@ -225,7 +232,7 @@ public class Ida {
     private Map<Node, Double> calculateMinimumEffectsOnY(Node y) {
         SortedMap<Node, Double> minEffects = new TreeMap<>();
 
-        for (Node x : pattern.getNodes()) {
+        for (Node x : possiblePredictors) {
             if (x == y) continue;
             final LinkedList<Double> effects = getEffects(x, y);
             minEffects.put(x, effects.getFirst());
