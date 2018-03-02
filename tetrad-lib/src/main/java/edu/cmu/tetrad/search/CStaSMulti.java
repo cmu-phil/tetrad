@@ -247,14 +247,8 @@ public class CStaSMulti {
             }
 
             List<List<Double>> _pi = new ArrayList<>();
-//            List<List<Node>> _sortedVariables = new ArrayList<>();
 
             for (int t = 0; t < targets.size(); t++) {
-//                final int _t = t;
-//                List<Node> sortedVariables = new ArrayList<>(possiblePredictors);
-//                sortedVariables.sort((o1, o2) -> Integer.compare(counts.get(_t).get(o2), counts.get(_t).get(o1)));
-//                _sortedVariables.add(sortedVariables);
-//
                 List<Double> pi = new ArrayList<>();
 
                 for (Node v : possiblePredictors) {

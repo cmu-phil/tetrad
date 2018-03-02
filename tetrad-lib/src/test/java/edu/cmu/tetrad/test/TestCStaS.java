@@ -186,7 +186,7 @@ public class TestCStaS {
         int numTargets = 10;
 
         int numNodes = 5000;
-        int avgDegree = 6;
+        int avgDegree = 4;
         int sampleSize = 200;
         int numIterations = 10;
         int numSubsamples = 50;
@@ -247,7 +247,6 @@ public class TestCStaS {
             CStaSMulti cstas = new CStaSMulti();
             cstas.setTrueDag(trueDag);
             cstas.setNumSubsamples(numSubsamples);
-
 
             List<Node> targets = new ArrayList<>();
 
