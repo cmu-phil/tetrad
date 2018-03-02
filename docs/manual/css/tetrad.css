@@ -132,16 +132,6 @@ dfn {
 }
 
 /**
- * Address variable `h1` font-size and margin within `section` and `article`
- * contexts in Firefox 4+, Safari 5, and Chrome.
- */
-
-h1 {
-  font-size: 2em;
-  margin: 0.67em 0;
-}
-
-/**
  * Address styling not present in IE 8/9.
  */
 
@@ -719,83 +709,6 @@ background-color:#fefbd6;
 }
 
 
-/* ==========================================================================
-   Print styles.
-   Inlined to avoid required HTTP connection: h5bp.com/r
-   ========================================================================== */
-
-@media print {
-    * {
-        background: transparent !important;
-        color: #000 !important; /* Black prints faster: h5bp.com/s */
-        box-shadow: none !important;
-        text-shadow: none !important;
-    }
-
-    a,
-    a:visited {
-        text-decoration: underline;
-    }
-
-    /* Disabled by PotatoGuide
-    a[href]:after {
-        content: " (" attr(href) ")";
-    }
-
-    abbr[title]:after {
-        content: " (" attr(title) ")";
-    }
-    */
-
-    /*
-     * Don't show links for images, or javascript/internal links
-     */
-
-    a[href^="javascript:"]:after,
-    a[href^="#"]:after {
-        content: "";
-    }
-
-    pre,
-    blockquote {
-        border: 1px solid #999;
-        page-break-inside: avoid;
-    }
-
-    thead {
-        display: table-header-group; /* h5bp.com/t */
-    }
-
-    tr,
-    img {
-        page-break-inside: avoid;
-    }
-
-    img {
-        max-width: 100% !important;
-    }
-
-    p,
-    h2,
-    h3 {
-        orphans: 3;
-        widows: 3;
-    }
-
-    h2,
-    h3 {
-        page-break-after: avoid;
-    }
-    
-    /* PotatoGuide */
-    .print_hide {
-        display: none !important; 
-    }
-
-    .print_show {
-        display: inherit !important; 
-    }
-}
 
 
 /*--------------------------------------------------------------
@@ -819,9 +732,28 @@ background-color: #ddd;
 -------------------------------------------------------------- */
 .main {
 margin:40px 100px;
-padding:20px;
+padding:40px;
 background-color: #fff;
 }
+
+h1 {
+font-size: 3em;
+margin: 0.67em 0;
+}
+
+h2 {
+font-size: 2.2em;
+margin: 1em 0 0.5em;
+padding-bottom: 9px;
+border-bottom: 1px solid #eee;
+}
+
+
+h3 {
+font-size: 1.4em;
+margin: 0.4em 0;
+}
+
 
 .toc_container {
 background: #f9f9f9;
@@ -838,4 +770,5 @@ padding-left:10px;
 
 img {
 display:block;
+margin:10px auto;
 }
