@@ -540,7 +540,389 @@ Time lag graphs allow only directed edges. New variables that you add will be in
 <p>If you double click on a formula in either the graph or the Variables tab, you can change the value of the parameters in that formula. </p>
 
 
+<h2 id="data_box"><span  class="section_heading">Data Box</span></h2>
 
+<p>The data box stores or manipulates data sets.</p>
+
+<h3>Possible Parent Boxes of the Data Box</h3>
+
+<ul class="ul">
+<li>A graph box</li>
+<li>An estimator box</li>
+<li>Another data box</li>
+<li>A simulation box</li>
+<li>A regression box</li>
+</ul>
+
+
+<h3>Possible Child Boxes of the Data Box</h3>
+
+<ul class="ul">
+<li>A graph box</li>
+<li>A parametric model box</li>
+<li>Another data box</li>
+<li>An estimator box</li>
+<li>A simulation box</li>
+<li>A search box</li>
+<li>A classify box</li>
+<li>A regression box</li>
+<li>A knowledge box</li>
+</ul>
+
+<h3>Using the Data Box:</h3>
+
+<p>The data box stores the actual data sets from which causal structures are determined. Data can be loaded into the data box from a preexisting source, manually filled in Tetrad, or simulated from an instantiated model.</p>
+
+<h3>Loading Data</h3>
+
+<p>Data sets loaded into Tetrad may be categorical, continuous, mixed, or covariance data.</p>
+
+<p>Covariance matrices loaded into Tetrad should be ascii text files. The first row contains the sample size, the second row contains the names of the variables. The first two rows are followed by a lower triangular matrix. For example:</p>
+
+<pre>
+1000
+X1	X2	X3	X4	X5	X6 
+1.0000
+0.0312	1.0000
+-0.5746	0.4168	1.0000
+-0.5996	0.4261	0.9544	1.0000
+0.8691	0.0414	-0.4372	-0.4487	1.0000	
+0.6188	0.0427	-0.1023	-0.0913	0.7172	1.0000
+</pre>
+
+
+<p>Categorical, continuous, or mixed data should also be an ascii text file, with columns representing variables and rows representing cases. Beyond that, there is a great deal of flexibility in the layout: delimiters may be commas, colons, tabs, spaces, semicolons, pipe symbols, or whitespace; comments and missing data may be marked by any symbol you like; there may be a row of variable names or not; and case IDs may be present or not.  There should be no sample size row.  For example:</p>
+
+<pre>
+X1	X2	X3	X4	X5
+-3.0133	1.0361	0.2329	2.7829	-0.2878
+0.5542	0.3661	0.2480	1.6881	0.0775
+3.5579	-0.7431	-0.5960	-2.5502	1.5641
+-0.0858	1.0400	-0.8255	0.3021	0.2654
+-0.9666	-0.5873	-0.6350	-0.1248	1.1684
+-1.7821	1.8063	-0.9814	1.8505	-0.7537
+-0.8162	-0.6715	0.3339	2.6631	0.9014
+-0.3150	-0.5103	-2.2830	-1.2462	-1.2765
+-4.1204	2.9980	-0.3609	4.8079	0.6005
+1.4658	-1.4069	1.7234	-1.7129	-3.8298
+</pre>
+
+<p>To load data, create a data box with no parent. When you open it, an empty data window will appear: </p>
+
+<img src="images/data_box_1.png" alt="" width="600">
+
+<p>Click File: Load Data… and select the text file or files that contain your data. The following window will appear:</p>
+
+<p>The text of the source file appears in the Data Preview window. Above, there are options to describe your file, so that Tetrad can load it correctly. If you are loading categorical, continuous, or mixed data values, select the “Tabular Data” button. If you are loading a covariance matrix, select “Covariance Data.” Note that if you are loading a covariance matrix, your text file should contain only the lower half of the matrix, as Tetrad will not accept an entire matrix.</p>
+
+<p>Below the file type, you can specify a number of other details about your file, including information about the type of data (categorical/continuous/mixed), delimiter between data values, variable names, and more. If your data is mixed (some variables categorical, and some continuous), you must specify the maximum number of categories discrete variables in your data can take on. All columns with more than that number of values will be treated as continuous; the others will be treated as categorical. If you do not list the variable names in the file, you should uncheck “First row variable names.” If you provide case IDs, check the box for the appropriate column in the “Case ID column to ignore” area. If the case ID column is labeled, provide the name of the label; otherwise, the case ID column should be the first column, and you should check “First column.”</p>
+
+<p>Below this, you can specify your comment markers, quote characters, and the character which marks missing data values. Tetrad will use that information to distinguish continuous from discrete variables. You may also choose more files to load (or remove files that you do not wish to load) in the “Files” panel on the lower left.</p>
+
+<img src="images/data_box_2.png" alt="" width="600">
+
+<p>When you are satisfied with your description of your data, click “Validate” at the bottom of the window. Tetrad will check that your file is correctly formatted. If it is, you will receive a screen telling you that validation has passed with no error. At this point, you can revisit the settings page, or click “Load” to load the data. </p>
+
+<img src="images/data_box_3.png" alt="" width="600">
+
+<img src="images/data_box_4.png" alt="" width="600">
+
+<p>You can now save this data set to a text file by clicking File: Save Data.</p>
+
+<p>In addition to loading data from a file, you can manually enter data values and variable names by overwriting cells in the data table.</p>
+
+<h3>Manipulating Data</h3>
+
+<p>The data box can also be used to manipulate data sets that have already been loaded or simulated. If you create a data box as the child of another box containing a data set, you will be presented with a list of operations that can be performed on the data. The available data manipulations are:</p>
+
+<p><i>Discretize Dataset:</i> This operation allows you to make some or all variables in a data set discrete. If you choose it, a window will open. </p>
+
+<img src="images/data_box_5.png" alt="" width="600">
+
+<p>When the window first opens, no variables are selected, and the right side of the window appears blank; in this case, we have already selected X1 ourselves. In order to discretize a variable, Tetrad assigns all data points within a certain range to a category.  You can tell Tetrad to break the range of the dataset into approximately even sections (Evenly Distributed Intervals) or to break the data points themselves into approximately even chunks (Evenly Distributed Values). Use the scrolling menu to increase or decrease the number of categories to create. You can also rename categories by overwriting the text boxes on the left, or change the ranges of the categories by overwriting the text boxes on the right. To discretize another variable, simply select it from the left. If you want your new data set to include the variables you did not discretize, check the box at the bottom of the window.</p>
+
+
+<p>You may discretize multiple variables at once by selecting multiple variables. In this case, the ranges are not shown, as they will be different from variable to variable.</p>
+
+<p><i>Convert Numerical Discrete to Continuous:</i> If you choose this option, any discrete variables with numerical category values will be treated as continuous variables with real values. For example, “1” will be converted to “1.0.”</p>
+
+<p><i>Calculate:</i> The Calculate option allows you to add and edit relationships between variables in your data set, and to add new variables to the data set. </p>
+
+
+<img src="images/data_box_6.png" alt="" width="600">
+
+<p>In many ways, this tool works like the Edit Expression window in a generalized SEM parametric model. To edit the formula that defines a variable (which will change that variable’s values in the table) type that variable name into the text box to the left of the equals sign. To create a new variable, type a name for that variable into the text box to the left of the equals sign. Then, in the box on the right, write the formula by which you wish to define a new variable in place of, or in addition to, the old variable. You can select functions from the scrolling menu below. (For an explanation of the meaning of some the functions, see the section on generalized SEM models in the Parametric Model Box chapter.) To edit or create several formulae at once, click the “Add Expression” button, and another blank formula will appear. To delete a formula, check the box next to it and click the “Remove Selected Expressions” button.</p>
+
+<p>When you click “Save” a table will appear listing the data. Values of variables whose formulae you changed will be changed, and any new variables you created will appear with defined values.</p>
+
+<p><i>Merge Datasets:</i> This operation takes two or more data boxes as parents and creates a data box containing all data sets in the parent boxes. Individual data sets will be contained in their own tabs in the resulting box.</p>
+
+<p><i>Convert to Correlation Matrix:</i> This operation takes a tabular data set and outputs the lower half of the correlation matrix of that data set.</p>
+
+<p><i>Convert to Covariance Matrix:</i> This operation takes a tabular data set and outputs the lower half of the covariance matrix of that data set.</p>
+
+<p><i>Inverse Matrix:</i> This operation takes a covariance or correlation matrix and outputs its inverse. (Note: The output will not be acceptable in Tetrad as a covariance or correlation matrix, as it is not lower triangular.)</p>
+
+<p><i>Simulate Tabular from Covariance:</i> This operation takes a covariance matrix and outputs a tabular data set whose covariances comply with the matrix.</p>
+
+<p><i>Difference of Covariance Matrices:</i> This operation takes two covariance matrices and outputs their difference. The resulting matrix will be a well-formatted Tetrad covariance matrix data set.</p>
+
+<p><i>Sum of Covariance Matrices:</i> This operation takes two covariance matrices and outputs their sum. The resulting matrix will be a well-formatted Tetrad covariance matrix data set.</p>
+
+<p><i>Average of Covariance Matrices:</i> This operation takes two or more covariance matrices and outputs their average. The resulting matrix will be a well-formatted Tetrad covariance matrix data set.</p>
+
+<p><i>Convert to Time Lag Data:</i> This operation takes a tabular data set and outputs a time lag data set, in which each variable is recorded several times over the course of an experiment. You can specify the number of lags in the data. Each contains the same data, shifted by one “time unit.” For instance, if the original data set had 1000 cases, and you specify that the time lag data set should contain two lags, then the third stage variable values will be those of cases 1 to 998, the second stage variable values will be those of cases 2 to 999, and the first stage variable values will be those of cases 3 to 1000.</p>
+
+<p><i>Convert to Time Lag Data with Index:</i> This operation takes a tabular data set and outputs a time lag data set in the same manner as “Convert to Time Lag Data,” then adds an index variable.</p>
+
+<p><i>Convert to AR Residuals:</i> This operation is performed on a time lag data set. Tetrad performs a linear regression on each variable in each lag with respect to each of the variables in the previous lag, and derives the error terms.  The output data set contains only the error terms.</p>
+
+<p><i>Whiten:</i> Takes a continuous tabular data set and converts it to a data set whose covariance matrix is the identity matrix.</p>
+
+<p><i>Nonparanormal Transform:</i> Takes a continuous tabular data set and increases its Gaussianity, using a nonparanormal transformation to smooth the variables. (Note: This operation increases only marginal Gaussanity, not the joint, and in linear systems may eliminate information about higher moments that can aid in non-Gaussian orientation procedures.) </p>
+
+<p><i>Convert to Residuals:</i> The input for this operation is a directed acyclic graph (DAG) and a data set. Tetrad performs a linear regression on each variable in the data set with respect to all of the variables that the graph shows to be its parents, and derives the error terms. The output data set contains only the error terms.</p>
+
+<p><i>Standardize Data:</i> This operation manipulates the data in your data set such that each variable has 0 mean and unit variance.</p>
+
+<p><i>Remove Cases with Missing Values:</i> If you choose this operation, Tetrad will remove any row in which one or more of the values is missing.</p>
+
+<p><i>Replace Missing Values with Column Mode:</i> If you choose this operation, Tetrad will replace any missing value markers with the most commonly used value in the column.</p>
+
+<p><i>Replace Missing Values with Column Mean:</i> If you choose this operation, Tetrad will replace any missing value markers with the average of all of the values in the column.
+Replace Missing Values with Regression Predictions: If you choose this operation, Tetrad will perform a linear regression on the data in order to estimate the most likely value of any missing value.</p>
+
+<p><i>Replace Missing Values by Extra Category:</i> This operation takes as input a discrete data set. For every variable which has missing values, Tetrad will create an extra category for that variable (named by default “Missing”) and replace any missing data markers with that category.</p>
+
+<p><i>Replace Missing with Random:</i> For discrete data, replaces missing values at random from the list of categories the variable takes in other cases. For continuous data, finds the minimum and maximum values of the column (ignoring the missing values) and picks a random number from U(min, max)</p>
+
+<p><i>Inject Missing Data Randomly:</i> If you choose this operation, Tetrad will replace randomly selected data values with a missing data marker.  You can set the probability with which any particular value will be replaced (that is, approximately the percentage of values for each variable which will be replaced with missing data markers).</p>
+
+<p><i>Bootstrap Sample:</i> This operation draws a random subset of the input data set (you specify the size of the subset) with replacement (that is, cases which appear once in the original data set can appear multiple times in the subset). The resulting data set can be used along with similar subsets to achieve more accurate estimates of parameters.</p>
+
+<p><i>Split by Cases:</i> This operation allows you to split a data set into several smaller data sets. When you choose it, a window opens. </p>
+
+<img src="images/data_box_7.png" alt="" width="600">
+
+
+<p>If you would like the subsets to retain the ordering they had in the original set, click “Original Order.” Otherwise, the ordering of the subsets will be assigned at random. You can also increase and decrease the number of subsets created, and specify the range of each subset.</p>
+
+<p><i>Permute Rows:</i> This operation randomly reassigns the ordering of a data set’s cases.</p>
+
+<p><i>First Differences:</i> This operation takes a tabular data set and outputs the first differences of the data (i.e., if X is a variable in the original data set and X’ is its equivalent in the first differences data set, X’1 = X2 – X1). The resulting data set will have one fewer row than the original.</p>
+
+<p><i>Concatenate Datasets:</i> This operation takes two or more datasets and concatenates. The parent datasets must have the same number of variables.</p>
+
+<p><i>Copy Continuous Variables:</i> This operation takes as input a data set and creates a new data set containing only the continuous variables present in the original.</p>
+
+<p><i>Copy Discrete Variables:</i> This operation takes as input a data set and creates a new data set containing only the discrete variables present in the original.</p>
+
+<p><i>Remove Selected Variables </i></p>
+
+<p><i>Copy Selected Variables:</i> As explained above, you can select an entire column in a data set by clicking on the C1, C2, C3, etc… cell above the column. To select multiple columns, press and hold the “control” key while clicking on the cells. Once you have done so, you can use the Copy Selected Variables tool to create a data set in which only those columns appear.</p>
+
+<p><i>Remove Constant Columns:</i> This operation takes a data set as input, and creates a data set which contains all columns in the original data set except for those with constant values (such as, for example, a column containing nothing but 2’s).</p>
+
+<p><i>Randomly Reorder Columns:</i> This operation randomly reassigns the ordering of a data set’s variables.</p>
+
+<h3>Manually Editing Data</h3>
+
+<p>Under the Edit tab, there are several options to manipulate data. If you select a number of cells and click “Clear Cells,” Tetrad will replace the data values in the selected cells with a missing data marker.  If you select an entire row or column and click “Delete selected rows or columns,” Tetrad will delete all data values in the row or column, and the name of the row or column. (To select an entire column, click on the category number above it, labeled C1, C2, C3, and so on.  To select an entire row, click on the row number to the left of it, labeled 1, 2, 3, and so on.) You can also copy, cut, and paste data values to and from selected cells. You can choose to show or hide category names, and if you click on “Set Constants Col to Missing,” then in any column in which the variable takes on only one value (for example, a column in which every cell contains the number 2) Tetrad will set every cell to the missing data marker.</p>
+
+<p>Under the Tools tab, the Calculator tool allows you add and edit relationships between variables in the graph. For more information on how the Calculator tool works, see “Manipulating Data” section above.</p>
+
+<h3>Data Information</h3>
+
+<p>Under the Tools tab, there are options to view information about your data in several different formats.</p>
+
+<p>The Histograms tool shows histograms of the variables in the data set.</p>
+
+
+<img src="images/data_box_8.png" alt="" width="600">
+
+
+<p>These show the distribution of data for each variable, with the width of each bar representing a range of values, and height of each bar representing how many data points fall into that range. Using histograms, you can determine whether each variable has a distribution that is approximately Normal. To select a variable to view, choose it from the drop-down menu on the right.  You can increase or decrease the number of bars in the histogram (and therefore decrease or increase the range of each bar, and increase or decrease the accuracy of the histogram) using the menu on the right. You can also view only ranges with a certain amount of the data using the “cull bins” menu.</p>
+
+<p>The Scatter Plots tool allows you to view scatter plots of two variables plotted against each other.</p>
+
+<img src="images/data_box_9.png" alt="" width="600">
+
+<p>To view a variable as the x- or y-axis of the graph, select it from one the drop-down menus to the right.  To view the regression line of the graph, check the box on the right.</p>
+
+<p>You can see the correlation of two variables conditional on a third variable by using the Add New Conditional Variable button at the bottom of the window. This will open up a slider and a box in which you can set the granularity of the slider. By moving the slider to the left or right, you can change the range of values of the conditional variable for which the scatter plot shows the correlation of the variables on the x- and y- axes. You can increase and decrease the width of the ranges by changing the granularity of the slider. A slider with granularity 1 will break the values of the conditional variable into sections one unit long, etc. The granularity cannot be set lower than one.</p>
+
+<p>In a well-formed model, the scatter plot of a variable plotted against itself should appear as a straight line along the line y = x.</p>
+
+<p>The Q-Q Plot tool is a test for normality of distribution. </p>
+
+<img src="images/data_box_10.png" alt="" width="600">
+
+<p>If a variable has a distribution which is approximately Normal, its Q-Q plot should appear as a straight line with a positive slope. You can select the variable whose Q-Q plot you wish to view from the drop-down menu on the right.</p>
+
+<p>The Normality Tests tool gives a text box with the results of the Kolmogorov and Anderson Darling Tests for normality for each variable. The Descriptive Statistics tool gives a text box with statistical information such as the mean, median, and variance of each variable.</p>
+
+
+<h2 id="estimator_box"><span  class="section_heading">Estimator Box</span></h2>
+
+<p>The estimator box takes as input a data box (or simulation box) and a parametric model box and estimates, tests, and outputs an instantiated model for the data. With the exception of the EM Bayes estimator, Tetrad estimators do not accept missing values. If your data set contains missing values, the missing values can interpolated or removed using the data box. (Note that missing values are allowed in various Tetrad search procedures; see the section on the search box.)</p>
+
+<h3>Possible Parent Boxes of the Estimator Box:</h3>
+
+<ul class="ul">
+<li>A parametric model box</li>
+<li>An instantiated model box</li>
+<li>A data box</li>
+<li>A simulation box</li>
+</ul>
+
+
+<h3>Possible Child Boxes of the Estimator Box:</h3>
+
+<ul class="ul">
+<li>A graph box</li>
+<li>A compare box</li>
+<li>A parametric model box</li>
+<li>An instantiated model box</li>
+<li>A data box</li>
+<li>A simulation box</li>
+<li>A search box</li>
+<li>An updater box</li>
+</ul>
+
+<h3>ML Bayes Estimations</h3>
+
+<p>Bayes nets are acyclic graphical models parameterized by the conditional probability distribution of each variable on its parents’ values, as in the instantiated model box. When the model contains no latent variables, the maximum likelihood (ML) estimate of each model parameter is just the corresponding conditional frequency from the data. </p>
+
+<p>The ML Bayes estimator, because it estimates Bayes IMs, works only on models with discrete variables. The model estimated must not include latent variables, and the input data set must not include missing data values.  A sample estimate looks like this:</p>
+
+<img src="images/estimator_box_1.png" alt="" width="600">
+
+<p>The Model tab works exactly as it does in a Bayes instantiated model. The Model Statistics tab provides the p-value for a chi square test of the model, degrees of freedom, the chi square value, and the Bayes Information Criterion (BIC) score of the model.</p>
+
+<h3>Dirichlet Estimations</h3>
+
+<p>A Dirichlet estimate estimates a Bayes instantiated model using a Dirichlet distribution for each category. In a Dirichlet estimate, the probability of each value of a variable (conditional on the values of the variable’s parents) is estimated by adding together a prior pseudo count (which is 1, by default) of cases and the number of cases in which the variable takes that value in the data, and then dividing by the total number of cases in the prior and in the data with that configuration of parent variables. The default prior pseudo-count can be changed inside the box. (For a full explanation of pseudocounts and Dirichlet estimate, see the section on Dirichlet instantiated models.) </p>
+
+<p>Dirichlet estimates do not work if the input data set contains missing data values.</p>
+
+<h3>EM Bayes Estimations</h3>
+
+<p>The EM Bayes estimator takes the same input and gives the same output as the ML Bayes estimator, but is designed to handle data sets with missing data values, and input models with latent variables.</p>
+
+<h3>SEM Estimates</h3>
+
+<p>A SEM estimator estimates the values of parameters for a SEM parametric model. SEM estimates do not work if the input data set contains missing data values. A sample output looks like this: </p>
+
+<img src="images/estimator_box_2.png" alt="" width="600">
+
+<p>Tetrad provides five parameter optimizers: RICF, expectation-maximization (EM), regression, Powell and random search. Accurate regression estimates assume that the input parametric model is a DAG, and that its associated statistics are based on a linear, Gaussian model. The EM optimizer has the same input constraints as regression, but can handle latent variables. </p>
+
+<p>Tetrad also provides two scores that can be used in estimation: feasible generalized least squares (FGLS) and Full Information Maximum Likelihood (FML). </p>
+
+<p>If the graph for the SEM is a DAG, and we may assume that the SEM is linear with Gaussian error terms, we use multilinear regression to estimate coefficients and residual variances. Otherwise, we use a standard maximum likelihoood fitting function (see Bollen, Structural Equations with Latent Variables, Wiley, 1989, pg. 107) to minimize the distance between (a) the covariance over the variables as implied by the coefficient and error covariance parameter values of the model and (b) the sample covariance matrix. Following Bollen, we denote this function Fml; it maps points in parameter values space to real numbers, and, when minimized, yields the maximum likelihood estimation point in parameter space.</p>
+
+<p>In either case, an Fml value may be obtained for the maximum likelihood point in parameter space, either by regression or by direct minimization of the Fml function itself. The value of Fml at this minimum (maximum likelihood) point, multiplied by N - 1 (where N is the sample size), yields a chi square statistics (ch^2) for the model, which when referred to the chi square table with appropriate degrees of freedom, yields a model p value. The degrees of freedom (dof) in this case is equal to the m(m-1)/2 - f, where m is the number of measured variables, and f is the number of free parameters, equal to the number of coefficient parameters plus the number of covariance parameters. (Note that the degrees of freedom many be negative, in which case estimation should not be done.) The BIC score is calculated as ch^2 - dof * log(N).</p>
+
+<p>You can change which score optimizer Tetrad uses by choosing them from the drop-down menus at the bottom of the window and clicking “Estimate Again.”</p>
+
+<p>The Tabular Editor and Implied Matrices tabs function exactly as they do in the instantiated model box, but in the estimator box, the last three columns of the table in the Tabular Editor tab are filled in. The SE, T, and P columns provide the standard errors, t statistics, and p values of the estimation.</p>
+
+<p>The Model Statistics tab provides the degrees of freedom, chi square, p value, comparative fit index (CFI), root mean square error of approximation (RMSEA) and BIC score of a test of the model. It should be noted that while these test statistics are standard, they are not in general correct.  See Mathias Drton, 2009, Likelihood ratio tests and singularities. Annals of Statistics 37(2):979-1012. arXiv:math.ST/0703360. </p>
+
+
+
+<h2 id="updater_box"><span  class="section_heading">Updater Box</span></h2>
+
+<p>The updater box takes an instantiated model as input, and, given information about the values of parameters in that model, updates the information about the values and relationships of other parameters.</p>
+
+<p>There are four available updater algorithms in Tetrad: the approximate updater, the row summing exact updater, the CPT invariant updater, and the SEM updater. All except for the SEM updater function only when given Bayes instantiated models as input; the SEM updater functions when given a SEM instantiated model as input. None of the updaters work on cyclic models.</p>
+
+<h3>Possible Parent Boxes of the Updater Box:</h3>
+
+<ul class="ul">
+<li>An instantiated model box</li>
+<li>An estimator box</li>
+</ul>
+
+
+<h3>Possible Child Boxes of the Updater Box:</h3>
+
+<ul class="ul">
+<li>A graph box</li>
+<li>An instantiated model box</li>
+<li>An estimator box</li>
+</ul>
+
+<h3>Approximate Updater</h3>
+
+<p>The approximated updater is a fast but inexact algorithm. It randomly draws a sample data set from the instantiated model and calculates the conditional frequency of the variable to be estimated.</p>
+
+<p>Take, for example, the following instantiated model: </p>
+
+<img src="images/updater_box_1.png" alt="" width="600">
+
+<p>When it is input into the approximate updater, the following window results:</p>
+
+<img src="images/updater_box_2.png" alt="" width="600">
+
+<p>If we click “Do Update Now” now, without giving the updater any evidence, the right side of the screen changes to show us the marginal probabilities of the variables.</p>
+
+<img src="images/updater_box_3.png" alt="" width="600">
+
+<p>The blue lines, and the values listed across from them, indicate the probability that the variable takes on the given value in the input instantiated model. The red lines indicate the probability that the variable takes on the given value, given the evidence we’ve added to the updater. </p>
+
+<p>Since we have added no evidence to the updater, the red and blue lines are very similar in length. To view the marginal probabilities for a variable, either click on the variable in the graph to the left, or choose it from the scrolling menu at the top of the window. At the moment, they should all be very close to the marginal probabilities taken from the instantiated model.</p>
+
+<p>Now, we’ll return to the original window. We can do so by clicking “Edit Evidence” under the Evidence tab. Suppose we know that X1 takes on the value 1 in our model, or suppose we merely want to see how X1 taking that value affects the values of the other variables. We can click on the box that says “1” next to X1.  When we click “Do Update Now,” we again get a list of the marginal probabilities for X1.</p>
+
+<img src="images/updater_box_4.png" alt="" width="600">
+
+<p>Now that we have added evidence, the “red line” marginal probabilities have changed; for X1, the probability that X1=1 is 1, because we’ve told Tetrad that that is the case. Likewise, the probabilities that X1=0 and X1=2 are both 0.</p>
+
+<p>Now, let’s look at the updated marginal probabilities for X2, a parent of X1.</p>
+
+<img src="images/updater_box_5.png" alt="" width="600">
+
+<img src="images/updater_box_6.png" alt="" width="600">
+
+<p>The image on the left is the marginal probabilities before we added the evidence that X1=1. The image on the right is the updated marginal probabilities. They have changed; in particular, it has become much more likely that X2=0.</p>
+
+<p>Under the Mode tab, we can change the type of information that the updater box gives us. The mode we have been using so far is “Marginals Only (Multiple Variables).” We can switch the mode to “In-Depth Information (Single Variable).” Under this mode, when we perform the update, we receive more information (such as log odds and joints, when supported; joint probabilities are not supported by the approximate updater), but only about the variable which was selected in the graph when we performed the update. To view information about a different variable, we must re-edit the evidence with that variable selected.</p>
+
+<p>If the variable can take one of several values, or if we know the values of more than one variable, we can select multiple values by pressing and holding the Shift key and then making our selections. For instance, in the model above, suppose that we know that X1 can be 1 or 2, but not 0. We can hold the Shift key and select the boxes for 1 and 2, and when we click “Do Update Now,” the marginal probabilities for X2 look like this: </p>
+
+<img src="images/updater_box_7.png" alt="" width="600">
+
+<p>Since X1 must be 1 or 2, the updated probability that it is 0 is now 0. The marginal probabilities of X2 also change: </p>
+
+<img src="images/updater_box_8.png" alt="" width="600">
+
+<p>The updated marginal probabilities are much closer to their original values than they were when we knew that X1 was 1.</p>
+
+<p>Finally, if we are arbitrarily setting the value of a variable—that is, the values of its parents have no effect on its value—we can check the “Manipulated” box next to it while we are we editing evidence, and the update will reflect this information.</p>
+
+<h3>Row Summing Exact Updater</h3>
+
+<p>The row summing exact updater is a slower but more accurate updater than the approximate updater. The complexity of the algorithm depends on the number of variables and the number of categories each variable has. It creates a full exact conditional probability table and updates from that. Its window functions exactly as the approximate updater does, with two exceptions: in “Multiple Variables” mode, you can see conditional as well as marginal probabilities, and in “Single Variable” mode, you can see joint values. </p>
+
+<h3>CPT Invariant Exact Updater</h3>
+
+<p>The CPT invariant exact updater is more accurate than the approximate updater, but slightly faster than the row summing exact updater. Ifs window functions exactly as the approximate updater down, with one exception: in “Multiple Variables” mode, you can see conditional as well as marginal probabilities.</p>
+
+<h3>SEM Updater</h3>
+
+<p>The SEM updater does not deal with marginal probabilities; instead, it deals with means.</p>
+
+
+<img src="images/updater_box_9.png" alt="" width="600">
+
+<p>When it is input to the SEM updater, the following window results: </p>
+
+<img src="images/updater_box_10.png" alt="" width="600">
+
+<p>Suppose we know that the mean of X1 is .5. When we enter that value into the text box on the left and click “Do Update Now,” the model on the right updates to reflect that mean, changing the means of both X1 and several other variables. In the new model, the means of X2, X4, and X5 will all have changed. If we click the “Manipulated” check box as well, it means that we have arbitrarily set the mean of X1 to .5, and that the value of its parent variable, X4, has no effect on it. The graph, as well as the updated means, changes to reflect this.</p>
+
+<p>The rest of the window has the same functionality as a SEM instantiated model window.</p>
 
 
 
