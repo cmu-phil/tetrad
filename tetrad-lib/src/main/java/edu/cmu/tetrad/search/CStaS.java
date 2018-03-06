@@ -19,9 +19,10 @@ import java.text.NumberFormat;
 import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentSkipListSet;
 import java.util.concurrent.CopyOnWriteArrayList;
 
-import static java.lang.Math.log;
+import static java.lang.Math.*;
 
 /**
  * An adaptation of the CStaR algorithm (Steckoven et al., 2012).
@@ -152,6 +153,7 @@ public class CStaS {
 
         final List<Ida.NodeEffects> effects = new ArrayList<>();
         final List<Node> _possiblePredictors = new ArrayList<>(possiblePredictors);
+        final List<Integer> edgeCounts = new ArrayList<>();
 
         class Task implements Callable<Boolean> {
             private Task() {
@@ -165,6 +167,7 @@ public class CStaS {
                     Graph pattern = getPatternFges(sample);
                     Ida ida = new Ida(sample, pattern, _possiblePredictors);
                     effects.add(ida.getSortedMinEffects(_target));
+                    edgeCounts.add(pattern.getNumEdges());
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -181,6 +184,16 @@ public class CStaS {
 
         ConcurrencyUtils.runCallables(tasks, getParallelism());
 
+        int totalEdges = 0;
+
+        for (int count : edgeCounts) {
+            totalEdges += count;
+        }
+
+        double avgEdges = totalEdges / getNumSubsamples();
+
+        System.out.println("Avg edges = " + avgEdges);
+
         List<Node> outNodes = new ArrayList<>();
         List<Double> outPis = new ArrayList<>();
         int bestQ = -1;
@@ -188,13 +201,16 @@ public class CStaS {
         final Map<Node, Integer> counts = new HashMap<>();
         for (Node node : variables) counts.put(node, 0);
 
-        final int p = variables.size();
+        final int p = dataSet.getNumColumns();
 
-        double maxEv = 0.0;
+        final double avgDegree = 2.0 * avgEdges / p;
+        System.out.println("avg degree = " + avgDegree);
 
-        for (int q = 1; q <= p / 2; q++) {
+        double bestEv = 0.0;
+
+        for (int q = 1; q <= possiblePredictors.size(); q++) {
             for (Ida.NodeEffects _effects : effects) {
-                if (q - 1 < _effects.getNodes().size()) {
+                if (q - 1 < possiblePredictors.size()) {
                     final Node key = _effects.getNodes().get(q - 1);
                     counts.put(key, counts.get(key) + 1);
                 }
@@ -226,7 +242,7 @@ public class CStaS {
                 sum += pi.get(g);
             }
 
-            if (sum >= log(possiblePredictors.size()) * q * q / (double) possiblePredictors.size()) {
+            if (sum / q >= avgDegree * q / p) {
                 List<Node> _outNodes = new ArrayList<>();
                 List<Double> _outPis = new ArrayList<>();
 
@@ -239,15 +255,8 @@ public class CStaS {
                     outNodes = _outNodes;
                     outPis = _outPis;
                     bestQ = q;
+                    bestEv = q - sum;
                 }
-
-                double ev = q - sum;
-
-                if (ev > maxEv) {
-                    maxEv = ev;
-                }
-            } else {
-                break;
             }
         }
 
@@ -259,8 +268,7 @@ public class CStaS {
         List<Record> records = new ArrayList<>();
 
         for (int i = 0; i < outNodes.size(); i++) {
-//            double er = er(outPis.get(i), outNodes.size(), p);
-            final double pcer = pcer(outPis.get(i), bestQ, p);
+            final double pcer = pcer(outPis.get(i), bestQ, possiblePredictors.size());
 
             List<Double> e = new ArrayList<>();
 
@@ -282,11 +290,11 @@ public class CStaS {
             boolean trekToTarget = false;
 
             if (trueDag != null) {
-                List<List<Node>> treks = GraphUtils.treks(trueDag, outNodes.get(i), target, maxTrekLength);
-                trekToTarget = !treks.isEmpty();
+//                List<List<Node>> treks = GraphUtils.treks(trueDag, outNodes.get(i), target, maxTrekLength);
+//                trekToTarget = !treks.isEmpty();
             }
 
-            records.add(new Record(outNodes.get(i), outPis.get(i), avg, pcer, maxEv, ancestor, trekToTarget));
+            records.add(new Record(outNodes.get(i), outPis.get(i), avg, pcer, bestEv, ancestor, trekToTarget));
         }
 
         records.sort((o1, o2) -> {
@@ -437,12 +445,7 @@ public class CStaS {
         return v;
     }
 
-    private List<Node> selectVariables(DataSet dataSet, Node y, double alpha, int parallelism) {
-//        if (true) {
-//            y = dataSet.getPredictor(y.getName());
-//            return getPatternFgesMb(dataSet, y).getNodes();
-//        }
-
+    public static List<Node> selectVariables(DataSet dataSet, Node y, double alpha, int parallelism) {
         IndependenceTest test = new IndTestFisherZ(dataSet, alpha);
         List<Node> selection = new CopyOnWriteArrayList<>();
 
@@ -490,26 +493,7 @@ public class CStaS {
 
                 ConcurrencyUtils.runCallables(tasks, parallelism);
             }
-
-//            test.setAlpha(test.getAlpha() / 100);
-//
-//            {
-//                tasks = new ArrayList<>();
-//
-//                for (Node s : new ArrayList<>(selection)) {
-//                    for (int from = 0; from < variables.size(); from += chunk) {
-//                        final int to = Math.min(variables.size(), from + chunk);
-//                        tasks.add(new Task(from, to, s));
-//                    }
-//                }
-//
-//                ConcurrencyUtils.runCallables(tasks, parallelism);
-//            }
         }
-
-        y = test.getVariable(y.getName());
-
-//        if (!selection.contains(y)) selection.add(y);
 
         System.out.println("# selected variables = " + selection.size());
 

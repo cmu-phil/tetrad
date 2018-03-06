@@ -100,14 +100,13 @@ public class TestCStaS {
 
     @Test
     public void testCStaS() {
-        int numNodes = 5000;
-        int avgDegree = 6;
-        int sampleSize = 200;
+        int numNodes = 10000;
+        int avgDegree = 7;
+        int sampleSize = 50;
         int numIterations = 10;
         int numSubsamples = 50;
-        double penaltyDiscount = 2;
-        double selectionAlpha = 0.005;
-
+        double penaltyDiscount = 1;
+        double selectionAlpha = 0.02;
         Parameters parameters = new Parameters();
 
         parameters.set("penaltyDiscount", penaltyDiscount);
@@ -126,7 +125,7 @@ public class TestCStaS {
         parameters.set("verbose", false);
 
         parameters.set("coefLow", 0.5);
-        parameters.set("coefHigh", 1.0);
+        parameters.set("coefHigh", 1.2);
         parameters.set("includeNegativeCoefs", true);
         parameters.set("sampleSize", sampleSize);
         parameters.set("intervalBetweenShocks", 5);
@@ -185,13 +184,13 @@ public class TestCStaS {
     public void testCStaSMulti() {
         int numTargets = 10;
 
-        int numNodes = 5000;
-        int avgDegree = 4;
+        int numNodes = 500;
+        int avgDegree = 6;
         int sampleSize = 200;
         int numIterations = 10;
         int numSubsamples = 50;
-        double penaltyDiscount = 2;
-        double selectionAlpha = 0.00001;
+        double penaltyDiscount = 1;
+        double selectionAlpha = 0.01;
 
         Parameters parameters = new Parameters();
 
@@ -223,8 +222,6 @@ public class TestCStaS {
 
         List<int[]> cstasRet = new ArrayList<>();
 
-
-
         for (int i = 0; i < numIterations; i++) {
             RandomGraph randomForward = new RandomForward();
             LinearFisherModel fisher = new LinearFisherModel(randomForward);
@@ -242,7 +239,6 @@ public class TestCStaS {
             }
 
             nodes.sort((o1, o2) -> Integer.compare(numAncestors.get(o2), numAncestors.get(o1)));
-            parameters.set("targetName", nodes.get(i).getName());
 
             CStaSMulti cstas = new CStaSMulti();
             cstas.setTrueDag(trueDag);
@@ -254,7 +250,18 @@ public class TestCStaS {
                 targets.add(nodes.get(t));
             }
 
-            List<Node> selectionVars = cstas.selectVariables(dataSet, targets, selectionAlpha, 40);
+            List<Node> selectionVars = new ArrayList<>();
+            targets = GraphUtils.replaceNodes(targets, dataSet.getVariables());
+
+            for (Node target : targets) {
+                List<Node> _selectionVars = edu.cmu.tetrad.search.CStaS.selectVariables(dataSet, target, selectionAlpha, 40);
+                _selectionVars.removeAll(targets);
+
+                if (_selectionVars.size() > selectionVars.size()) {
+                    selectionVars = _selectionVars;
+                }
+            }
+
             selectionVars = GraphUtils.replaceNodes(selectionVars, dataSet.getVariables());
             List<Node> augmented = new ArrayList<>(selectionVars);
 
@@ -301,8 +308,8 @@ public class TestCStaS {
 //        int sampleSize = 200;
 //        int numIterations = 10;
         int numSubsamples = 50;
-        double penaltyDiscount = 8;
-        double selectionAlpha = 1E-10;
+        double penaltyDiscount = 10;
+        double selectionAlpha = 1E-9;
 
         try {
             File file = new File("/Users/user/Downloads/stand.data.exp.csv");

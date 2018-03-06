@@ -22,6 +22,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 import static java.lang.Math.log;
+import static java.lang.Math.max;
 
 /**
  * An adaptation of the CStaR algorithm (Steckoven et al., 2012).
@@ -111,6 +112,8 @@ public class CStaSMulti {
     public List<Record> getRecords(DataSet dataSet, List<Node> possiblePredictors, List<Node> targets, IndependenceTest test) {
         targets = GraphUtils.replaceNodes(targets, dataSet.getVariables());
         possiblePredictors = GraphUtils.replaceNodes(possiblePredictors, dataSet.getVariables());
+        final int dSize = dataSet.getNumColumns();
+        final int tSize = targets.size();
 
         if (new HashSet<>(possiblePredictors).removeAll(new HashSet<>(targets))) {
             throw new IllegalArgumentException("Possible predictors and targets must be disjoint sets.");
@@ -162,7 +165,7 @@ public class CStaSMulti {
 
         final List<Map<Integer, Map<Node, Double>>> minimalEffects = new ArrayList<>();
 
-        for (int t = 0; t < targets.size(); t++) {
+        for (int t = 0; t < tSize; t++) {
             minimalEffects.add(new ConcurrentHashMap<>());
 
             for (int b = 0; b < getNumSubsamples(); b++) {
@@ -175,11 +178,12 @@ public class CStaSMulti {
         final List<List<Ida.NodeEffects>> effects = new ArrayList<>();
         final List<Node> _targets = new ArrayList<>(targets);
 
-        for (int t = 0; t < targets.size(); t++) {
+        for (int t = 0; t < tSize; t++) {
             effects.add(new ArrayList<>());
         }
 
         final List<Node> _possiblePredictors = new ArrayList<>(possiblePredictors);
+        final List<Integer> edgeCounts = new ArrayList<>();
 
         class Task implements Callable<Boolean> {
             private Task() {
@@ -196,6 +200,8 @@ public class CStaSMulti {
                     for (int t = 0; t < _targets.size(); t++) {
                         effects.get(t).add(ida.getSortedMinEffects(_targets.get(t)));
                     }
+
+                    edgeCounts.add(pattern.getNumEdges());
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -212,33 +218,43 @@ public class CStaSMulti {
 
         ConcurrencyUtils.runCallables(tasks, getParallelism());
 
+        int totalEdges = 0;
+
+        for (int count : edgeCounts) {
+            totalEdges += count;
+        }
+
         List<Tuple> outTuples = new ArrayList<>();
         int bestQ = -1;
 
         final List<Map<Node, Integer>> counts = new ArrayList<>();
 
-        for (int t = 0; t < targets.size(); t++) {
+        for (int t = 0; t < tSize; t++) {
             counts.add(new HashMap<>());
             for (Node node : possiblePredictors) counts.get(t).put(node, 0);
         }
 
         double maxEv = 0.0;
 
-        for (int q = 1; q <= possiblePredictors.size(); q++) {
-            for (int t = 0; t < targets.size(); t++) {
+        final int p = possiblePredictors.size();
+        double avgEdges = totalEdges / getNumSubsamples();
+        final double avgDegree = 2.0 * avgEdges / p;
+
+        for (int q = 1; q <= p; q++) {
+            for (int t = 0; t < tSize; t++) {
                 for (Ida.NodeEffects _effects : effects.get(t)) {
-                    if (q - 1 < _effects.getNodes().size()) {
+                    if (q - 1 < p) {
                         final Node key = _effects.getNodes().get(q - 1);
                         counts.get(t).put(key, counts.get(t).get(key) + 1);
                     }
                 }
             }
 
-            for (int t = 0; t < targets.size(); t++) {
+            for (int t = 0; t < tSize; t++) {
                 for (int b = 0; b < effects.get(t).size(); b++) {
                     Ida.NodeEffects _effects = effects.get(t).get(b);
 
-                    for (int r = 0; r < _effects.getNodes().size(); r++) {
+                    for (int r = 0; r < p; r++) {
                         Node n = _effects.getNodes().get(r);
                         Double e = _effects.getEffects().get(r);
                         minimalEffects.get(t).get(b).put(n, e);
@@ -248,7 +264,7 @@ public class CStaSMulti {
 
             List<List<Double>> _pi = new ArrayList<>();
 
-            for (int t = 0; t < targets.size(); t++) {
+            for (int t = 0; t < tSize; t++) {
                 List<Double> pi = new ArrayList<>();
 
                 for (Node v : possiblePredictors) {
@@ -263,8 +279,8 @@ public class CStaSMulti {
 
             List<Tuple> tuples = new ArrayList<>();
 
-            for (int t = 0; t < targets.size(); t++) {
-                for (int v = 0; v < possiblePredictors.size(); v++) {
+            for (int t = 0; t < tSize; t++) {
+                for (int v = 0; v < p; v++) {
                     tuples.add(new Tuple(possiblePredictors.get(v), targets.get(t), _pi.get(t).get(v)));
                 }
             }
@@ -277,7 +293,7 @@ public class CStaSMulti {
                 sum += tuples.get(g).getPi();
             }
 
-            if (sum >= log(possiblePredictors.size()) * q * q / (double) possiblePredictors.size()) {
+            if (sum / q >= avgDegree * q / p) {
                 List<Tuple> _outTuples = new ArrayList<>();
 
                 for (int i = 0; i < q; i++) {
@@ -289,13 +305,13 @@ public class CStaSMulti {
                     bestQ = q;
                 }
 
-                double ev =  q - sum;
+                double ev = q - sum;
 
                 if (ev > maxEv) {
                     maxEv = ev;
                 }
             } else {
-                break;
+//                break;
             }
         }
 
@@ -308,7 +324,7 @@ public class CStaSMulti {
 
         for (Tuple tuple : outTuples) {
             //            double er = er(outPis.get(i), outTuples.size(), p);
-            final double pcer = pcer(tuple.getPi(), bestQ, possiblePredictors.size());
+            final double pcer = pcer(tuple.getPi(), bestQ, p);
 
             List<Double> e = new ArrayList<>();
 
