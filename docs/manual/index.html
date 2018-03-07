@@ -1153,32 +1153,294 @@ Replace Missing Values with Regression Predictions: If you choose this operation
 
 
 
+<h2 id="search_box"><span  class="section_heading">Search Box</span></h2>
+
+<p>The search box takes as input a data set (in either a data or simulation box) and optionally a knowledge box, and searches for causal explanations represented by directed graphs. The result of a search is not necessarily—and not usually—a unique graph, but an object such as a pattern that represents a set of graphs, usually a Markov Equivalence class. More alternatives can be found by varying the parameters of search algorithms.</p>
+
+<h3>Possible Parent Boxes of the Search Box</h3>
+
+<ul class="ul">
+<li>A graph box</li>
+<li>A parametric model box</li>
+<li>An instantiated model box</li>
+<li>An estimator box</li>
+<li>A data box</li>
+<li>A simulation box</li>
+<li>Another search box</li>
+<li>A regression box</li>
+<li>A knowledge box</li>
+</ul>
+
+
+<h3>Possible Child Boxes of the Simulation Box</h3>
+
+<ul class="ul">
+<li>A graph box</li>
+<li>A compare box</li>
+<li>A parametric model box</li>
+<li>A simulation box</li>
+<li>Another search box</li>
+<li>A knowledge box</li>
+</ul>
+
+<h3>Using the Search Box</h3>
+
+<p>When you first open the search box, you will be presented with a number of options for the kind of search you would like to perform:</p>
+
+<img src="images/search_box_1.png" alt="" width="600">
+
+
+<p>The “Output Graphs” tab is where the results of your search will be stored after it has been performed. The “Knowledge” tab contains a copy of the “Tiers and Edges” knowledge box, which you can use to add knowledge directly in the search box. (See the Knowledge Box section for more information.)</p>
+
+<p>In the “Algorithm” tab, you can choose which search algorithm you want to perform, and set any relevant parameters. (As most of the algorithms require different parameters, the contents of the “Parameters” pane will change depending on which algorithm you select.) To choose an algorithm, select it from the drop-down list next to the “Search” button.</p>
+
+<p>Choosing the correct algorithm for your needs is an important consideration. Tetrad provides over 30 search algorithms (and more are added all of the time) each of which makes different assumptions about the input data, uses different parameters, and produces different kinds of output. For instance, some algorithms produce Markov blankets or patterns, and some produce full graphs; some algorithms work best with Gaussian or non-Gaussian data; some algorithms require an alpha value, some require a penalty discount, and some require both or neither. You can narrow down the list using the “List algorithms that” dropdown box, which allows you to limit the provided algorithms according to whichever factor is important to you.</p>
+
+<p>Once you have selected an algorithm, click “Search” to have Tetrad perform the search or searches.</p>
+
+<h3>The PC Algorithm</h3>
+
+<h4>Description</h4>
+
+<div id="pc-all">
+
+<p>PC algorithm (Spirtes and Glymour, Social Science Computer Review, 1991) is a pattern search which assumes that the underlying causal structure of the input data is acyclic, and that no two variables are caused by the same latent (unmeasured) variable. In addition, it is 	assumed that the input data set is either entirely continuous or entirely discrete; if the data set is  continuous, it is assumed that the causal relation between any two variables is linear, and that the distribution of each variable is Normal. Finally, the sample should ideally be i.i.d.. Simulations show that PC and several of the other algorithms described here often succeed when these assumptions, needed to prove their correctness, do not strictly hold. The PC algorithm will sometimes output double headed edges. In the large sample limit, double headed edges in the output indicate that the adjacent variables have an unrecorded common cause, but PC tends to produce false positive double headed edges on small samples.</p>
+
+<p>The PC algorithm is correct whenever decision procedures for independence and conditional independence are available. The procedure conducts a sequence of independence and conditional independence tests, and efficiently builds a pattern from the results of those tests. As implemented in TETRAD, PC is intended for multinomial and approximately Normal distributions with i.i.d. data. The tests have an alpha value for rejecting the null hypothesis, which is always a hypothesis of independence or conditional independence. For continuous variables, PC uses tests of zero correlation or zero partial correlation for independence or conditional independence respectively. For discrete or categorical variables, PC uses either a chi square or a g square test of independence or conditional independence (see Causation, Prediction, and Search for details on tests). In either case, the tests require an alpha value for rejecting the null hypothesis, which can be adjusted by the user. The procedures make no adjustment for multiple testing. (For PC, CPC, JPC, JCPC, FCI, all testing searches.) </p>
+
+</div>
+
+<h4>Input Assumptions</h4>
+
+<p>The algorithm effectively takes conditional independence facts as input. Thus it will work for any type of data for which a conditional independence facts are known. In the interface, it will work for linear, Gaussian data (the Fisher Z test), discrete multinomial data the Chi Square test) and mixed multinomial/Gaussian data (the Conditional Gaussian test).</p>
+
+<h4>Output Format</h4>
+
+<p>The graph outputs a pattern (or CP-DAG). This is an equivalence class of directed acyclic graphs (DAGs). Each DAG in the equivalence class has all of the adjacencies (and no more) of the pattern. Each oriented edge in the pattern is so oriented in each of the DAG in the equivalence class. Unoriented edges in the equivalence class cannot be oriented by conditional independence facts. For example, if the model is X->Y->Z, the output will be X—Y—Z. There are not collider in this model, so the algorithm will not detect one. Since there are not colliders, the Meek cannot orient additional edges. If the model were X<-Y<-Z, the output would also be X—Y—Z; this model is in the same equivalence class as X->Y->Z. The model X->Y<-Z would be its own equivalence class, since the collider in this model can be oriented. See Spirtes et al. (2000) for more details.</p>
+
+<h4>Parameters</h4>
+
+<table class="table">
+
+<thead>
+<tr><th>Parameter</th><th>Description</th></tr>
+</thead>
+
+<tbody>
+<tr>
+<td>Cutoff for p-values (alpha)</td>
+<td>Conditional independence tests with p-values greater than this will be judged to be independent (H0). Default 0.01.</td>
+</tr>
+
+<tr>
+<td>Maximum size of conditioning set (depth)</td>
+<td>PC in the adjacency phase will consider conditioning sets for conditional independences of increasing size, up to this value.  For instance, for depth 3, the maximum size of a conditioning set considered will be 3. Default -1 = unlimited.
+</td>
+</tr>
+
+</tbody>
+
+</table>
+
+
+
+<h3>The CPC Algorithm</h3>
+
+<h4>Description</h4>
+
+<div id="cpc">
+
+<p>The CPC (Conservative PC) algorithm (Ramsey et al., ??) modifies the collider orientation step of PC to make it more conservative—that is, to increase the precision of collider orientations at the expense of recall. It does this as follows. Say you want to orient X—Y—Z as a collider or a noncollider; the PC algorithm looks at variables adjacent to X or variables adjacent to Z to find a subset S such that X is independent of Z conditional on S. The CPC algorithm considers all possible such sets and records the set on which X is conditionally independent of Z. If all of these sets contain Y, it orients X—Y—Z as a noncollider. If none of them contains Z, if orient X—Y—Z as a collider. If some contain Z but other don’t, it marks it as ambiguous, with an underline. Thus, the output is ambiguous between patterns; in order to get a specific pattern out of the output, one needs first to decide whether the underlined triples are colliders or noncolliders and then to apply the orientation rules in Meek (1997).</p>
+
+<p>The PC algorithm is correct whenever decision procedures for independence and conditional independence are available. The procedure conducts a sequence of independence and conditional independence tests, and efficiently builds a pattern from the results of those tests. As implemented in TETRAD, PC is intended for multinomial and approximately Normal distributions with i.i.d. data. The tests have an alpha value for rejecting the null hypothesis, which is always a hypothesis of independence or conditional independence. For continuous variables, PC uses tests of zero correlation or zero partial correlation for independence or conditional independence respectively. For discrete or categorical variables, PC uses either a chi square or a g square test of independence or conditional independence (see Causation, Prediction, and Search for details on tests). In either case, the tests require an alpha value for rejecting the null hypothesis, which can be adjusted by the user. The procedures make no adjustment for multiple testing. (For PC, CPC, JPC, JCPC, FCI, all testing searches.) </p>
+
+</div>
+
+<h4>Input Assumptions</h4>
+
+<p>Same as for PC.</p>
+
+<h4>Output Format</h4>
+
+<p>An e-pattern (extended pattern), consistent of directed and undirected edges where some of the triple may have been marked with underlines to indicate ambiguity, as above. It may be that bidirected edges are oriented as X->Y<->X<-W if two adjacent colliders are oriented; this is not ruled out.</p>
+
+<h4>Parameters</h4>
+
+<table class="table">
+
+<thead>
+<tr><th>Parameter</th><th>Description</th></tr>
+</thead>
+
+<tbody>
+<tr>
+<td>Cutoff for p-values (alpha)</td>
+<td>Conditional independence tests with p-values greater than this will be judged to be independent (H0). Default 0.01.</td>
+</tr>
+
+<tr>
+<td>Maximum size of conditioning set (depth)</td>
+<td>PC in the adjacency phase will consider conditioning sets for conditional independences of increasing size, up to this value. For instance, for depth 3, the maximum size of a conditioning set considered will be 3. Default -1 = unlimited.
+</td>
+</tr>
+
+</tbody>
+
+</table>
+
+
+
+<h3>The PCStable Algorithm</h3>
+
+<h4>Description</h4>
+
+<div id="pc-stable">
+
+<p>See Drton and Maathuis (??). The idea is to modify the adjacency search of PC so that if the order of the variables is randomized, the adjacency output is not affected. This is done as follows. The order of operations for the step where unconditional independencies are calculated is not affected; these may be done in any order. However, for the step in which one conditions on one variable, the output of that step could be affected by the order in which the operations are done. So instead of removing edges in this step, one simply records which edges one would remove, and then at the end of the step removes them all. Similarly for subsequence steps. In this way, the adjacencies of variables in the output of the adjacency step are fixed no matter the order in which the operations are visited. One them does collider orientation and applies the orientation rules in Meek (1997); there may be orientation differences from one run to the next still, if the order of the variables in the dataset is modified.</p>
+</div>
+
+<h4>Input Assumptions</h4>
+
+<p>Same as for PC.</p>
+
+<h4>Output Format</h4>
+
+<p>Same as for PC.</p>
+
+<h4>Parameters</h4>
+
+<table class="table">
+
+<thead>
+<tr><th>Parameter</th><th>Description</th></tr>
+</thead>
+
+<tbody>
+<tr>
+<td>Cutoff for p-values (alpha)</td>
+<td>Conditional independence tests with p-values greater than this will be judged to be independent (H0). Default 0.01.</td>
+</tr>
+
+<tr>
+<td>Maximum size of conditioning set (depth)</td>
+<td>PC in the adjacency phase will consider conditioning sets for conditional independences of increasing size, up to this value. For instance, for depth 3, the maximum size of a conditioning set considered will be 3. Default -1 = unlimited.
+</td>
+</tr>
+
+</tbody>
+
+</table>
 
 
 
 
+<h3>The CPCStable Algorithm</h3>
+
+<h4>Description</h4>
+
+<div id="cpc-stable">
+
+<p>CPC, with the PC-Stable adjacency step substituted for the PC adjacency search.</p>
+
+</div>
+
+<h4>Input Assumptions</h4>
+
+<p>Same as for PC.</p>
+
+<h4>Output Format</h4>
+
+<p>Same as for CPC (an e-pattern).</p>
+
+<h4>Parameters</h4>
+
+<table class="table">
+
+<thead>
+<tr><th>Parameter</th><th>Description</th></tr>
+</thead>
+
+<tbody>
+<tr>
+<td>Cutoff for p-values (alpha)</td>
+<td>Conditional independence tests with p-values greater than this will be judged to be independent (H0). Default 0.01.</td>
+</tr>
+
+<tr>
+<td>Maximum size of conditioning set (depth)</td>
+<td>PC in the adjacency phase will consider conditioning sets for conditional independences of increasing size, up to this value. For instance, for depth 3, the maximum size of a conditioning set considered will be 3. Default -1 = unlimited.
+</td>
+</tr>
+
+</tbody>
+
+</table>
 
 
 
+<h3>The PcMax Algorithm</h3>
+
+<h4>Description</h4>
+
+<div id="cpc-stable">
+
+<p>Similar in spirit to CPC but orients all unshielded triples using maximum likelihood conditioning sets. The idea is as follows. The adjacency search is the same as for PC, but colliders are oriented differently. Let X—Y—Z be an unshielded triple (X not adjacent to Z) and find all subsets S from among the adjacents of X or the adjacents of Z such that X is independent of Z conditional on S. However, instead of using the CPC rule to orient the triple, instead just list the p-values for each of these conditional independence judgments and pick the set S’ that yields the highest such p-value. Then orient X->Y<-Z if S does not contain Y and X—Y—Z otherwise. This orients all unshielded triples. It’s possible (though rare) that adjacent triples both both be oriented as 2-cycles, X->Y<->Z<-W. If this happens, pick one of the other of these triples or orient as a collider, arbitrarily. This guarantees that the resulting graph will be a pattern.</p>
+
+</div>
+
+<h4>Input Assumptions</h4>
+
+<p>Same as for PC.</p>
+
+<h4>Output Format</h4>
+
+<p>Same as PC, a pattern.</p>
+
+<h4>Parameters</h4>
+
+<table class="table">
+
+<thead>
+<tr><th>Parameter</th><th>Description</th></tr>
+</thead>
+
+<tbody>
+<tr>
+<td>Cutoff for p-values (alpha)</td>
+<td>Conditional independence tests with p-values greater than this will be judged to be independent (H0). Default 0.01.</td>
+</tr>
+
+<tr>
+<td>Maximum size of conditioning set (depth)</td>
+<td>PC in the adjacency phase will consider conditioning sets for conditional independences of increasing size, up to this value. For instance, for depth 3, the maximum size of a conditioning set considered will be 3. Default -1 = unlimited.
+</td>
+</tr>
+
+<tr>
+<td>Yes if heuristic for orienting ushielded colliders for max P should be used</td>
+<td>For orienting X->Y<-Z, if the adjacents of X and of Z are not too close to each other in the graph, one can tell that this is a collider by looking at the difference in p-value between X _||_ Z | Y and X _||_ Z. This is faster and under the “closeness” condition is more accurate. Should not be used for dense graphs. Default true.</td>
+</tr>
+
+<tr>
+<td>Maximum path length for the unshielded collider heuristic for max P</td>
+<td>This is the furthest distance among adjacents of X and Z that will be tolerated if the heuristic above is to be used. Default 3.</td>
+</tr>
+
+</tbody>
+
+</table>
 
 
 
-
-
-
-
-
-
-
-
-
-<!-- Assign id with the algorithm short name and wrap descriptions, parameters in a div -->
-<div id="fges">
 
 <h3>The FGES Algorithm</h3>
 
+<h4>Description</h4>
+
+<div id="fges">
+
 <p>
-Description: FGES is an optimized and parallelized version of an algorithm developed by Meek
+FGES is an optimized and parallelized version of an algorithm developed by Meek
 [Meek, 1997] called the Greedy Equivalence Search (GES). The algorithm was further developed
 and studied by Chickering [Chickering, 2002]. GES is a Bayesian algorithm that heuristically
 searches the space of CBNs and returns the model with highest Bayesian score it finds. In
@@ -1197,21 +1459,22 @@ of continuous and discrete data (using the Conditional Gaussian score); these ar
 scores.
 </p>
 
-<p>
-Input Assumptions: Data that’s all continuous, all discrete, or a mixture of continuous and discrete
+</div>
+
+<h4>Input Assumptions</h4>
+
+<p>Data that’s all continuous, all discrete, or a mixture of continuous and discrete
 variables. Continuous variables will be assumed to be linearly associated; discrete variable will be
 assumed to be associated by multinomial conditional probability tables. Continuous variables for
-the mixed case will be assumed to be jointly Gaussian.
-</p>
+the mixed case will be assumed to be jointly Gaussian.</p>
 
-<P> 
-Output Format: A pattern, same as PC.
-</P>
+<h4>Output Format</h4>
 
-<!-- Use table to show parameters -->
+<p>A pattern, same as PC.</p>
+
+
 <h4>Parameters</h4>
 
-<!-- Assign a class="table" for pretty look -->
 <table class="table">
 
 <thead>
@@ -1277,7 +1540,746 @@ Default 100.</td>
 
 </table>
 
+
+<h3>The IMaGES Algorithm (BDeu Score)</h3>
+
+<h4>Description</h4>
+
+<div id="img">
+
+<p>Adjusts the discrete BDeu variable score of FGES so allow for multiple datasets as input. The BDeu scores for each data set are averaged at each step of the algorithm, producing a model for al data sets that assumes they have the same graphical structure across dataset. Note that in order to use this algorithm in a nontrivial way, one needs to have loaded or simulated multiple dataset.</p>
+
 </div>
+
+<h4>Input Assumptions</h4>
+
+<p>A set of discrete datasets with the same variables and sample sizes.</p>
+
+<h4>Output Format</h4>
+
+<p>A pattern, interpreted as a common model for all datasets.</p>
+
+<h4>Parameters</h4>
+
+<p>All of the parameters from FGES are available for IMaGES. Additionally:</p>
+
+<table class="table">
+
+<thead>
+<tr><th>Parameter</th><th>Description</th></tr>
+</thead>
+
+<tbody>
+<tr>
+<td>The number of runs</td>
+<td>The number of times the algorithm should select data sets and run the algorithm. Default 1.</td>
+</tr>
+
+<tr>
+<td>The number of datasets that should be taken in each random sample</td>
+<td>IMaGES will randomly select a set of datasets to run, so that on different runs one can be an estimate of the consistency of results. To use all variables, set this to the total number of datasets. Default 1.
+</td>
+</tr>
+
+</tbody>
+
+</table>
+
+
+
+<h3>The IMaGES Algorithm (SEM BIC Score)</h3>
+
+<h4>Description</h4>
+
+<div id="img">
+
+<p>Adjusts the continuous variable score (SEM BIC) of FGES so allow for multiple datasets as input. The linear, Gaussian BIC scores for each data set are averaged at each step of the algorithm, producing a model for al data sets that assumes they have the same graphical structure across dataset.</p>
+
+</div>
+
+<h4>Input Assumptions</h4>
+
+<p>A set of continuous datasets with the same variables and sample sizes.</p>
+
+<h4>Output Format</h4>
+
+<p>A pattern, interpreted as a common model for all datasets.</p>
+
+<h4>Parameters</h4>
+
+<p>All of the parameters from FGES are available for IMaGES. Additionally:</p>
+
+<table class="table">
+
+<thead>
+<tr><th>Parameter</th><th>Description</th></tr>
+</thead>
+
+<tbody>
+<tr>
+<td>The number of runs</td>
+<td>The number of times the algorithm should select data sets and run the algorithm. Default 1.</td>
+</tr>
+
+<tr>
+<td>The number of datasets that should be taken in each random sample</td>
+<td>IMaGES will randomly select a set of datasets to run, so that on different runs one can be an estimate of the consistency of results. To use all variables, set this to the total number of datasets. Default 1.
+</td>
+</tr>
+
+</tbody>
+
+</table>
+
+
+<h3>The FCI Algorithm</h3>
+
+<h4>Description</h4>
+
+<div id="fci">
+
+<p>The FCI algorithm is a constraint-based algorithm that takes as input sample data and optional background knowledge and in the large sample limit outputs an equivalence class of CBNs that (including those with hidden confounders) that entail the set of conditional independence relations judged to hold in the population. It is limited to several thousand variables, and on realistic sample sizes it is inaccurate in both adjacencies and orientations. FCI has two phases: an adjacency phase and an orientation phase. The adjacency phase of the algorithm starts with a complete undirected graph and then performs a sequence of conditional independence tests that lead to the removal of an edge between any two adjacent variables that are judged to be independent, conditional on some subset of the observed variables; any conditioning set that leads to the removal of an adjacency is stored. After the adjacency phase, the resulting undirected graph has the correct set of adjacencies, but all of the edges are unoriented. FCI then enters an orientation phase that uses the stored conditioning sets that led to the removal of adjacencies to orient as many of the edges as possible. </p>
+
+</div>
+
+<h4>Input Assumptions</h4>
+
+<p>The data are continuous, discrete, or mixed.</p>
+
+<h4>Output Format</h4>
+
+<p>A partial ancestral graph (see Spirtes et al., 2000).</p>
+
+<h4>Parameters</h4>
+
+<p>All of the parameters from FGES are available for IMaGES. Additionally:</p>
+
+<table class="table">
+
+<thead>
+<tr><th>Parameter</th><th>Description</th></tr>
+</thead>
+
+<tbody>
+<tr>
+<td>Cutoff for p-values (alpha)</td>
+<td>Conditional independence tests with p-values greater than this will be judged to be independent (H0). Defualt 0.01.</td>
+</tr>
+
+<tr>
+<td>Maximum size of conditioning set (depth)</td>
+<td>PC in the adjacency phase will consider conditioning sets for conditional independences of increasing size, up to this value. For instance, for depth 3, the maximum size of a conditioning set considered will be 3. Default -1 = unlimited.
+</td>
+</tr>
+
+<tr>
+<td>The maximum length for any discriminating path</td>
+<td>For a description of discriminating paths, please see Spirtes et al, 2000. The idea is that one needs to search out from each variable in the orientation phase of the algorithm down all connected paths tree-like to see if there is a path of a certain sort. This can take time and for complex models can slow the algorithm down. A fix for this is to limit just how long these paths can be expected to be in maximum. The default is -1, or unlimited. Defualt -1 = unlimited.</td>
+</tr>
+
+<tr>
+<td>Yes if the complete FCI rule set should be used</td>
+<td>The standard rule set used in Spirtes et al., 2000, is guaranteed to include all arrowheads that can be found in the model but not all tails. Zhang (??) provides an extended rule set that is tail complete. This can be of benefit, for instance, when investigating selection bias. Default no (i.e. the algorithm in Spirtes et al., 2000).</td>
+</tr>
+
+</tbody>
+
+</table>
+
+
+
+
+<h3>The RFCI Algorithm</h3>
+
+<h4>Description</h4>
+
+<div id="rfci">
+
+<p>A modification of the FCI algorithm in which some expensive steps are finessed and the output is somewhat differently interpreted. In most cases this runs faster than FCI (which can be slow in some steps) and is almost as informative. See ??.</p>
+
+</div>
+
+<h4>Input Assumptions</h4>
+
+<p>Data for which a conditional independence test is available.</p>
+
+<h4>Output Format</h4>
+
+<p>A partial ancestral graph (PAG). See Spirtes et al., 2000.</p>
+
+<h4>Parameters</h4>
+
+<p>All of the parameters from FGES are available for IMaGES. Additionally:</p>
+
+<table class="table">
+
+<thead>
+<tr><th>Parameter</th><th>Description</th></tr>
+</thead>
+
+<tbody>
+<tr>
+<td>Cutoff for p-values (alpha)</td>
+<td>Conditional independence tests with p-values greater than this will be judged to be independent (H0). Defualt 0.01.</td>
+</tr>
+
+<tr>
+<td>Maximum size of conditioning set (depth)</td>
+<td>PC in the adjacency phase will consider conditioning sets for conditional independences of increasing size, up to this value. For instance, for depth 3, the maximum size of a conditioning set considered will be 3. Default -1 = unlimited.
+</td>
+</tr>
+
+<tr>
+<td>Yes if the complete FCI rule set should be used</td>
+<td>The standard rule set used in Spirtes et al., 2000, is guaranteed to include all arrowheads that can be found in the model but not all tails. Zhang (??) provides an extended rule set that is tail complete. This can be of benefit, for instance, when investigating selection bias. Default no (i.e. the algorithm in Spirtes et al., 2000).</td>
+</tr>
+
+</tbody>
+
+</table>
+
+
+<h3>The GFCI Algorithm</h3>
+
+<h4>Description</h4>
+
+<div id="gfci">
+
+<p>GFCI is a combination of the FGES [CCD-FGES, 2016] algorithm and the FCI algorithm [Spirtes, 1993] that improves upon the accuracy and efficiency of FCI. In order to understand the basic methodology of GFCI, it is necessary to understand some basic facts about the FGES and FCI algorithms.  The FGES algorithm is used to improve the accuracy of both the adjacency phase and the orientation phase of FCI by providing a more accurate initial graph that contains a subset of both the non-adjacencies and orientations of the final output of FCI. The initial set of nonadjacencies given by FGES is augmented by FCI performing a set of conditional independence tests that lead to the removal of some further adjacencies whenever a conditioning set is found that makes two adjacent variables independent. After the adjacency phase of FCI, some of the orientations of FGES are then used to provide an initial orientation of the undirected graph that is then augmented by the orientation phase of FCI to provide additional orientations.</p>
+
+</div>
+
+<h4>Input Assumptions</h4>
+
+<p>Same as for FCI.</p>
+
+<h4>Output Format</h4>
+
+<p>Same as for FCI.</p>
+
+<h4>Parameters</h4>
+
+<p>Uses all of the parameters of FCI (see) and FGES (see).</p>
+
+
+<h3>The TsFCI Algorithm</h3>
+
+<h4>Description</h4>
+
+<div id="tsfci">
+
+<p>The tsGFCI algorithm is a version of GFCI for time series data. See the GFCI documentation for a description of the GFCI algorithm, which allows for unmeasured (hidden, latent) variables in the data-generating process and produces a PAG (partial ancestral graph). tsGFCI takes as input a “time lag data set,” i.e., a data set which includes time series observations of variables X1, X2, X3, ..., and their lags X1:1, X2:1, X3:1, ..., X1:2, X2:2,X3:2, ... and so on. X1:n is the nth-lag of the variable X1. To create a time lag data set from a standard tabular data set (i.e., a matrix of observations of X1, X2, X3, ...), use the “create time lag data” function in the data manipulation toolbox. The user will be prompted to specify the number of lags (n), and a new data set will be created with the above naming convention. The new sample size will be the old sample size minus n.</p>
+
+</div>
+
+<h4>Input Assumptions</h4>
+
+<p>The (continuous) data has been generated by a time series.</p>
+
+<h4>Output Format</h4>
+
+<p>(Need to get this from Dan.)</p>
+
+<h4>Parameters</h4>
+
+<table class="table">
+
+<thead>
+<tr><th>Parameter</th><th>Description</th></tr>
+</thead>
+
+<tbody>
+<tr>
+<td>Cutoff for p-values (alpha)</td>
+<td>Conditional independence tests with p-values greater than this will be judged to be independent (H0). Defualt 0.01.</td>
+</tr>
+
+</tbody>
+
+</table>
+
+
+
+
+<h3>The TsGFCI Algorithm</h3>
+
+<h4>Description</h4>
+
+<div id="ts-gfci">
+
+<p>tsGFCI uses a BIC score to search for a skeleton. Thus, the only user-specified parameter is an optional “penalty score” to bias the search in favor of more sparse models. See the description of the GES algorithm for discussion of the penalty score. For the traditional definition of the BIC score, set the penalty to 1.0. The orientation rules are the same as for FCI.
+As is the case with tsFCI, tsGFCI will automatically respect the time order of the variables and impose a repeating structure. Firstly, it puts lagged variables in appropriate tiers so, e.g., X3:2 can cause X3:1 and X3 but X3:1 cannot cause X3:2 and X3 cannot cause either X3:1 or X3:2. Also, it will assume that the causal structure is the same across time, so that if the edge between X1 and X2 is removed because this increases the BIC score, then also the edge between X1:1 and X2:1 is removed, and so on for additional lags if they exist. When some edge is removed as the result of a score increase, all similar (or “homologous”) edges are also removed.
+</p>
+
+</div>
+
+<h4>Input Assumptions</h4>
+
+<p>The (continuous) data has been generated by a time series.</p>
+
+<h4>Output Format</h4>
+
+<p>(Need to get this from Dan.)</p>
+
+<h4>Parameters</h4>
+
+<p>Uses the parameters of FCI (see) and FGES (see).</p>
+
+
+
+<h3>The TsIMaGES Algorithm</h3>
+
+<h4>Description</h4>
+
+<div id="ts-imgs">
+
+<p>tsIMAGES is a version of tsGFCI which averages BIC scores across multiple data sets. Thus, it is used to search for a PAG (partial ancestral graph) from time series data from multiple units (subjects, countries, etc). tsIMAGES allows both for unmeasured (hidden, latent) variables and the possibility that different subjects have different causal parameters, though they share the
+same qualitative causal structure. As with IMAGES, the user can specify a “penalty score” to produce more sparse models. For the traditional definition of the BIC score, set the penalty to 1.0. See the documentation for IMAGES and tsGFCI.
+
+</p>
+
+</div>
+
+<h4>Input Assumptions</h4>
+
+<p>The (continuous) data has been generated by a time series.</p>
+
+<h4>Output Format</h4>
+
+<p>(Need to get this from Dan.)</p>
+
+<h4>Parameters</h4>
+
+<p>Uses the parameters of IMaGES (see).</p>
+
+
+<h3>The FGES-MB Algorithm</h3>
+
+<h4>Description</h4>
+
+<div id="fges-mb">
+
+<p>This is a restriction of the FGES algorithm to union of edges over the combined Markov blankets of a set of targets, including the targets. In the interface, just one target may be specified. See Ramsey et al., 2017 for details. In the general case, finding the graph over the Markov blanket variables of a target (including the target) is far faster than finding the pattern for all of the variables.</p>
+
+</div>
+
+<h4>Input Assumptions</h4>
+
+<p>The same as FGES</p>
+
+<h4>Output Format</h4>
+
+<p>A graph over a selected group of nodes that includes the target and each node in the Markov blanket of the target. This will be the same as if FGES were run and the result restricted to just these variables, so some edges may be oriented in the returned graph that may not have been oriented in a pattern over the selected nodes.</p>
+
+<h4>Parameters</h4>
+
+<p>Uses the parameters of FGES (see). </p>
+
+<table class="table">
+
+<thead>
+<tr><th>Parameter</th><th>Description</th></tr>
+</thead>
+
+<tbody>
+<tr>
+<td>Target Name</td>
+<td>The name of the target variables for the Markov blanket one wishes to construct. Default blank (that is, unspecified.) A variable must be specified here to run the algorithm.</td>
+</tr>
+
+</tbody>
+
+</table>
+
+
+<h3>The MBFS Algorithm</h3>
+
+<h4>Description</h4>
+
+<div id="mbfs">
+
+<p>Markov blanket fan search. Similar to FGES-MB (see) but using PC as the basic search instead of FGES. The rules of the PC search are restricted to just the variables in the Markov blanket of a target T, including T; the result is a graph that is a pattern over these variables.</p>
+
+</div>
+
+<h4>Input Assumptions</h4>
+
+<p>Same as for PC</p>
+
+<h4>Output Format</h4>
+
+<p>A pattern over a selected group of nodes that includes the target and each node in the Markov blanket of the target.</p>
+
+<h4>Parameters</h4>
+
+<p>Uses the parameters of PC (see).</p>
+
+<table class="table">
+
+<thead>
+<tr><th>Parameter</th><th>Description</th></tr>
+</thead>
+
+<tbody>
+<tr>
+<td>Target Name</td>
+<td>The name of the target variables for the Markov blanket one wishes to construct. Default blank (that is, unspecified.) A variable must be specified here to run the algorithm.</td>
+</tr>
+
+</tbody>
+
+</table>
+
+
+
+<h3>The FAS Algorithm</h3>
+
+<h4>Description</h4>
+
+<div id="fas">
+
+<p>This is just the adjacency search of the PC algorithm, included here for times when just the adjacency search is needed, as when one is subsequently just going to orient variables pairwise.</p>
+
+</div>
+
+<h4>Input Assumptions</h4>
+
+<p>Same as for PC</p>
+
+<h4>Output Format</h4>
+
+<p>An undirected graph over the variables of the input dataset. In particular, parents of a variables are not married by FAS, so the resulting graph is not a Markov random field. For example, if X->Y<-Z, the output will be X—Y—Z with X—Z. The parents of Y will be joined by an undirected edge, morally, only if they are joined by a trek in the true graph.</p>
+
+<h4>Parameters</h4>
+
+<table class="table">
+
+<thead>
+<tr><th>Parameter</th><th>Description</th></tr>
+</thead>
+
+<tbody>
+<tr>
+<td>Cutoff for p-values (alpha)</td>
+<td>Conditional independence tests with p-values greater than this will be judged to be independent (H0). Default 0.01.</td>
+</tr>
+
+<tr>
+<td>Maximum size of conditioning set (depth)</td>
+<td>PC in the adjacency phase will consider conditioning sets for conditional independences of increasing size, up to this value. For instance, for depth 3, the maximum size of a conditioning set considered will be 3. Default -1 = unlimited.</td>
+</tr>
+</tbody>
+
+</table>
+
+
+<h3>The MGM Algorithm</h3>
+
+<h4>Description</h4>
+
+<div id="mgm">
+
+<p>Need reference. Finds a Markov random field (with parents married) for a dataset in which continuous and discrete variables are mixed together. For example, if X->Y<-Z, the output will be X—Y—Z with X—Z. The parents of Y will be joined by an undirected edge, morally, even though this edge does not occur in the true model.</p>
+
+</div>
+
+<h4>Input Assumptions</h4>
+
+<p>Data are mixed.</p>
+
+<h4>Output Format</h4>
+
+<p>A Markov random field for the data.</p>
+
+<h4>Parameters</h4>
+
+<table class="table">
+
+<thead>
+<tr><th>Parameter</th><th>Description</th></tr>
+</thead>
+
+<tbody>
+<tr>
+<td>MGM Tuning Parameters #1, #2, #3</td>
+<td>Defaults for these are 0.1, though they can be adjusted. See ??.</td>
+</tr>
+
+</tbody>
+
+</table>
+
+
+
+<h3>The GLASSO Algorithm</h3>
+
+<h4>Description</h4>
+
+<div id="glasso">
+
+<p>A translation of the Fortran code for GLASSO (Graphical LASSO—see Tibshirani anad Hastie, ??) Like MGM, this produces an undirected graph in which parents are always married.</p>
+
+</div>
+
+<h4>Input Assumptions</h4>
+
+<p>The data are continuous.</p>
+
+<h4>Output Format</h4>
+
+<p>A Markov random field.</p>
+
+<h4>Parameters</h4>
+
+<table class="table">
+
+<thead>
+<tr><th>Parameter</th><th>Description</th></tr>
+</thead>
+
+<tbody>
+<tr>
+<td>MAXIT, IA, IS,  ITR, IPEN, THR</td>
+<td>These are parameters in the translated Fortan code (see). Defaults are given in the interface and are the same as for the Fortran code.</td>
+</tr>
+
+</tbody>
+
+</table>
+
+
+
+<h3>The BPC Algorithm</h3>
+
+<h4>Description</h4>
+
+<div id="bpc">
+
+<p>Searches for causal structure over latent variables, where the true models are Multiple Indicator Models (MIM’s) as described in the Graphs section. The idea is this. There is a set of latent (unmeasured) variables over which a directed acyclic model has been defined. Then for each of these latent L there are 3 (preferably 4) or more measures of that variable—that is, measured variables that are all children of L. Under these conditions, one may define tetrad constraints (see Spirtes et al., 2000). There is a theorem to the effect that if certain patterns of these tetrad constraints hold, there must be a latent common cause of all of them (the Tetrad Representation Theorem, see Silva and Scheines, ??, where the BPC (“Build Pure Clusters”) algorithm is defined and discussed.) Moreover, once one has such a “measurement model,” once can estimate a covariance matrix over the latent variables that are parents of the measures and use some algorithm such as PC or GES to estimate a pattern over the latents. The algorithm to run PC or GES on this covariance matrix is called MimBuild (“MIM” is the the graph, Multiple Indicator Model; “Build” means build). In this way, one may recover causal structure over the latents. The more measures one has for each latent, the better the result is, generally. The larger the sample size the better. One important issue is that the algorithm is sensitive to so-called “impurities”—that is, causal edges among the measured variables, or between measured variables and unintended latent. The algorithm will in effect remove one measure in each impure pair from consideration.</p>
+
+</div>
+
+<h4>Input Assumptions</h4>
+
+<p>Continuous data, a collection of measurements in the above sense, excluding the latent variables (which are to be learned).</p>
+
+<h4>Output Format</h4>
+
+<p>For BPC, a measurement model, in the above sense. This is represented as a clustering of variables; it may be inferred that there is a single latent for each output cluster. For MimBuild, a pattern over the latent variables, one for each cluster.</p>
+
+<h4>Parameters</h4>
+
+<table class="table">
+
+<thead>
+<tr><th>Parameter</th><th>Description</th></tr>
+</thead>
+
+<tbody>
+<tr>
+<td>Cutoff for p-values (alpha)</td>
+<td>Conditional independence tests with p-values greater than this will be judged to be independent (H0). Default 0.01.</td>
+</tr>
+
+<tr>
+<td>Yes if the Wishart test should be used. No if the Delta test should be used.</td>
+<td>These are two tests of whether a set of four variables constitutes a pure tetrad—that is, if all tetrads for this set of four variables vanish. For the notion of a vanishing tetrad, see Spirtes et al., 2000. For the Delta test, see ??. Default No (Delta test).</td>
+</tr>
+</tbody>
+
+</table>
+
+
+<h3>The FOFC Algorithm</h3>
+
+<h4>Description</h4>
+
+<div id="fofc">
+
+<p>The FOFC (Find One Factor Clusters) is an alternative method that achieves the same goal as BPC; in testing, it seems to scale better with somewhat better accuracy (Kummerfeld and Ramsey, ??). The basic idea is to build up clusters one at a time by adding variables that keep them pure, in the sense that all relevant tetrad constraints still hold. There are different ways of going about this. One could try to build one cluster up as far as possible, then remove all of those variables from the set, and try to make a another cluster using the remaining variables (SAG, Seed and Grow). Or one can try in parallel to grow all possible clusters and then choose among the grown clusters using some criterion such as cluster size (GAP, Grow and Pick). In general, GAP is more accurate. The result is a clustering of variables. Similarly to BPC, MimBuild may be run on a covariance matrix estimated over the latents for the resulting clusters to find a pattern over the latents that represents the causal structure over the latents.</p>
+
+</div>
+
+<h4>Input Assumptions</h4>
+
+<p>Continuous data containing as many measures as are available.</p>
+
+<h4>Output Format</h4>
+
+<p>For FOFC, a clustering of variables. For MimBuild, a pattern over latents.</p>
+
+<h4>Parameters</h4>
+
+<table class="table">
+
+<thead>
+<tr><th>Parameter</th><th>Description</th></tr>
+</thead>
+
+<tbody>
+<tr>
+<td>Cutoff for p-values (alpha)</td>
+<td>Conditional independence tests with p-values greater than this will be judged to be independent (H0). Default 0.01.</td>
+</tr>
+
+<tr>
+<td>Yes if the Wishart test should be used. No if the Delta test should be used.</td>
+<td>These are two tests of whether a set of four variables constitutes a pure tetrad—that is, if all tetrads for this set of four variables vanish. For the notion of a vanishing tetrad, see Spirtes et al., 2000. For the Delta test, see ??. Default No (Delta test).</td>
+</tr>
+
+<tr>
+<td>Yes if the GAP algorithm should be used. No if the SAG algorithm should be used. </td>
+<td>See algorithm description, above. Default No (SAG algorithm, faster, less accurate).</td>
+</tr>
+</tbody>
+
+</table>
+
+
+
+<h3>The FTFC Algorithm</h3>
+
+<h4>Description</h4>
+
+<div id="ftfc">
+
+<p>FTFC (Find Two Factor Clusters) is similar to FOFC, but instead of each cluster having one latent that is the parent of all of the measure in the cluster, it instead has two such latents. So each measure has two latent parents; these are two “factors.” Similarly to FOFC, constraints are checked for, but in this case, the constraints must be sextad constraints, and more of them must be satisfied for each pure cluster (see Kummerfelt et al., ??) Thus, the number of measures in each cluster, once impure edges have been taken into account, must be at least six, preferably more.</p>
+
+</div>
+
+<h4>Input Assumptions</h4>
+
+<p>Continuous data over the measures with at least six variable variables in each cluster once variables involve in impure edges have been removed.</p>
+
+<h4>Output Format</h4>
+
+<p>A clustering of measures. It may be assumed that each cluster has at least two factors and that the clusters are pure.</p>
+
+<h4>Parameters</h4>
+
+<table class="table">
+
+<thead>
+<tr><th>Parameter</th><th>Description</th></tr>
+</thead>
+
+<tbody>
+<tr>
+<td>Cutoff for p-values (alpha)</td>
+<td>Conditional independence tests with p-values greater than this will be judged to be independent (H0). Default 0.01.</td>
+</tr>
+
+<tr>
+<td>Yes if the Wishart test should be used. No if the Delta test should be used.</td>
+<td>These are two tests of whether a set of four variables constitutes a pure tetrad—that is, if all tetrads for this set of four variables vanish. For the notion of a vanishing tetrad, see Spirtes et al., 2000. For the Delta test, see ??. Default No (Delta test).</td>
+</tr>
+
+<tr>
+<td>Yes if the GAP algorithm should be used. No if the SAG algorithm should be used. </td>
+<td>See algorithm description, above. Default No (SAG algorithm, faster, less accurate).</td>
+</tr>
+</tbody>
+
+</table>
+
+
+
+
+<h3>Orientation Algorithms (EB, R1, R2, R3, R4, RSkew, RSkewE, Skew, SkewE)</h3>
+
+<h4>Description</h4>
+
+<div id="">
+
+<p>These are algorithms that orient edges X—Y for continuous variables pairwise based on non-Gaussian information. (If the variables are all Gaussian, one cannot orient these edges. That is, these rules will orient left or right randomly.) For EB, RSkew, RSkewE, Skew and SkewE, see Hyvarinen and Smith, ??. For R1, R2, R3 and R4, see Ramsey et al., ??.</p>
+
+<p>The principles governing these rules vary. R1 and R2 appeal directly to the Central Limit Theorem to judge which of various conditioning sets yields the greatest non-Gaussianity measure. (The measure for non-Gaussianity measure used is Anderson-Darling.) R4 does as well, but allows coefficients for relevant parameters to be adjusted to achieve maximum non-Gaussianity. EB works by appealing to entropy for the orientation. R3 uses the same rule as EB except using the Anderson-Darling score for a measure of non-Gaussianity. RSkew and Skew appeal to measures of skew for the variables and assume positive skewness for all variables. The rules for the two are different; please see Hyvarinen and Smith for details. SkewE and RSkewE adjust the signs of variables by the signs of their skewnesses to ensure that the assumption of positive skewness holds. A comparison of all of these methods is given in Ramsey et al., ??. In general, for fMRI data, we find that the RSkew method works the best, followed by the R3 method. Cycles can be oriented using these methods, since each edge is oriented independently of the others.</p>
+
+</div>
+
+<h4>Input Assumptions</h4>
+
+<p>Continuous data in which the variables are non-Gaussian. Non-Gaussianity can be assessed using the Anderson-Darling score, which is available in the Data box.</p>
+
+<h4>Output Format</h4>
+
+<p>Orients all of the edges in the input graph using the selected score.</p>
+
+<h4>Parameters</h4>
+
+<table class="table">
+
+<thead>
+<tr><th>Parameter</th><th>Description</th></tr>
+</thead>
+
+<tbody>
+<tr>
+<td>Cutoff for p-values (alpha)</td>
+<td>Conditional independence tests with p-values greater than this will be judged to be independent (H0). Default 0.01.</td>
+</tr>
+
+<tr>
+<td>Maximum size of conditioning set (depth)</td>
+<td>PC in the adjacency phase will consider conditioning sets for conditional independences of increasing size, up to this value. For instance, for depth 3, the maximum size of a conditioning set considered will be 3.</td>
+</tr>
+</tbody>
+
+</table>
+
+
+
+<h2 id="regression_box"><span  class="section_heading">Regression Box</span></h2>
+
+<p>The regression box performs regression on variables in a data set, in an attempt to discover causal correlations between them. Both linear and logistic regression are available.</p>
+
+<h3>Possible Parent Boxes of the Regression Box</h3>
+
+<ul class="ul">
+<li>A data box</li>
+<li>A simulation box</li>
+</ul>
+
+<h3>Possible Child Boxes of the Instantiated Model Box:</h3>
+
+<ul class="ul">
+<li>A graph box</li>
+<li>A compare box</li>
+<li>A parametric model box</li>
+<li>A data box</li>
+<li>A simulation box</li>
+<li>A search box</li>
+</ul>
+
+<h3>Multiple Linear Regression</h3>
+
+<p>Linear regression is performed upon continuous data sets. If you have a categorical data set upon which you would like to perform linear regression, you can make it continuous using the data manipulation box.</p>
+
+<p>Take, for example, a data set with the following underlying causal structure:</p>
+
+<img src="images/regression_box_1.png" alt="" width="600">
+
+<p>When used as input to the linear regression box, the following window results: </p>
+
+<img src="images/regression_box_2.png" alt="" width="600">
+
+<p>To select a variable as the response variable, click on it in the leftmost box, and then click on the top right-pointing arrow. If you change your mind about which variable should be the response variable, simply click on another variable and click on the arrow again. </p>
+
+<p>To select a variable as a predictor variable, click on it in the leftmost box, and then click on the second right- pointing arrow. To remove a predictor variable, click on it in the predictor box and then click on the left-pointing arrow.</p>
+
+<p>Clicking “Sort Variables” rearranges the variables in the predictor box so that they follow the same order they did in the leftmost box.  The alpha value in the lower left corner is a threshold for independence; the higher it is set, the less discerning Tetrad is when determining the independence of two variables.</p>
+
+<p>When we click “Execute,” the results of the regression appear in the box to the right. For each predictor variable, Tetrad lists the standard error, t value, and p value, and whether its correlation with the response variable is significant. </p>
+
+<p>The Output Graph tab contains a graphical model of the information contained in the Model tab. For the case in which X4 is the response variable and X1, X2, and X3 are the predictors, Tetrad finds that only X1 is significant, and the output graph looks like this:</p>
+
+<img src="images/regression_box_3.png" alt="" width="60">
+
+<p>Comparison to the true causal model shows that this correlation does exist, but that it runs in the opposite direction.</p>
+
+<h3>Logistic Regression</h3>
+
+<p>Logistic regression may be run on discrete, continuous, or mixed data sets; however, the response variable must be binary. In all other ways, the logistic regression box functions like the linear regression box.</p>
 
 
 </div>
