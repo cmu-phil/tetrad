@@ -926,14 +926,228 @@ Replace Missing Values with Regression Predictions: If you choose this operation
 
 
 
+<h2 id="classify_box"><span  class="section_heading">Classify Box</span></h2>
+
+<p>The classify box takes as input a categorical data set and a Bayes instantiated model and, for a given variable, tries to predict that variable’s value in each case based on the other variables’ values in that case.</p>
+
+<h3>Possible Parents Boxes of the Classify Box: </h3>
+
+<ul class="ul">
+<li>An instantiated model box</li>
+<li>A data box</li>
+<li>A simulation box</li>
+</ul>
+
+<h3>Possible Child Boxes of the Classify Box: </h3>
+
+<ul class="ul">
+<li>None</li>
+</ul>
+
+
+<h3>Using the Classify Box:</h3>
+
+<p>Consider the following instantiated model, and a data set derived from it:</p>
+
+<img src="images/classify_box_1.png" alt="" width="600">
+
+<p>When they are input to the classify box, the following window results: </p>
+
+<img src="images/classify_box_2.png" alt="" width="600">
+
+<p>By clicking on the “Test Data” tab, we can see the data set which we input. Now, suppose we want to predict the values of X1 in each case. We select X1 from the scrolling menu at the top and click “Classify.” Three new tabs now appear: “Classification,” “ROC Plot,” and “Confusion Matrix.”  The classification tab, in this case, looks like this: </p>
+
+<img src="images/classify_box_3.png" alt="" width="600">
+
+
+<p>There is a column for each of the possible values which X1 can take, and for each case, Tetrad has computed the probability that X1 will take each value, based on the configuration of other variables in that case. It then chooses the category with the highest conditional probability, and assigns X1 that value for that case. Comparison to the test data will show that the values are reasonably (though not completely) similar.</p>
+
+<p>The ROC plot tab displays the receiver operating characteristic (ROC) curve for whichever value you specified before classification.</p>
+
+<p>The confusion matrix tab provides information on how similar the estimated values of the target variable are to the true values (if the true values are available). </p> 
+
+<p>Because classification is a form of estimation, the variable which is classified does not have to be in the input data set; it merely has to be in the input instantiated model. In this case, the ROC plot and confusion matrix tabs will not appear.</p>
 
 
 
+<h2 id="knowledge_box"><span  class="section_heading">Knowledge Box</span></h2>
+
+<p>The knowledge box takes as input a graph or a data set and imposes additional constraints onto it, to aid with search.</p>
+
+<h3>Possible Parent Boxes of the Knowledge Box:</h3>
+
+<ul class="ul">
+<li>A graph box</li>
+<li>A parametric model box</li>
+<li>An instantiated model box</li>
+<li>A data box</li>
+<li>A simulation box</li>
+<li>A search box</li>
+<li>Another knowledge box</li>
+</ul>
+
+<h3>Possible Child Boxes of the Knowledge Box:</h3>
+
+<ul class="ul">
+<li>A search box</li>
+<li>Another knowledge box</li>
+</ul>
+
+<h3>Tiers and Edges</h3>
+
+<p>The tiers and edges option allows you to sort variables into groupings that can or cannot affect each other. It also allows you to manually add forbidden and required edges one at a time.</p>
+
+<h4>Tiers</h4>
+
+<p>The tiers tab for a graph with four variables looks like this: </p>
+
+<img src="images/knowledge_box_1.png" alt="" width="600">
+
+<p>Tiers separate your variables into a time line. Variables in higher-numbered tiers occur later than variables in lower-numbered tiers, which gives Tetrad information about causation. For example, a variable in Tier 3 could not possibly be a cause of a variable in Tier 1.</p>
+
+<p>To place a variable in a tier, click on the variable in the “Not in tier” box, and then click on the box of the tier. If you check the “Forbid Within Tier” box for a tier, variables in that tier will not be allowed to be causes of each other. To increase or decrease the number of tiers, use the scrolling box in the upper right corner of the window.</p>
+
+<h4>Groups</h4>
+
+<p>The groups tab for a graph with four variables looks like this: </p>
+
+<img src="images/knowledge_box_2.png" alt="" width="600">
+
+<p>In the groups tab, you can specify certain groups of variables which are forbidden or required to cause other groups of variables. To add a variable to the “cause” section of a group, click on the variable in the box at the top, and then click on the box to the left of the group’s arrow. To add a variable to the “effect” section of a group, click on the variable in the box at the top, and then click on the box to the right of the group’s arrow. You can add a group by clicking on one of the buttons at the top of the window, and remove one by clicking the “remove” button above the group’s boxes.</p>
+
+<h4>Edges</h4>
+
+<p>The edges tab for a graph with four variables looks like this: </p>
+
+<img src="images/knowledge_box_3.png" alt="" width="600">
+
+<p>In the edges tab, you can require or forbid individual causal edges between variables. To add an edge, click the type of edge you’d like to create, and then click and drag from the “cause” variable to the “effect” variable.</p>
+
+<p>You can also use this tab to see the effects of the knowledge you created in the other tabs by checking and unchecking the boxes at the bottom of the window.  You can adjust the layout to mimic the layout of the source (by clicking “source layout”) or to see the variables in their timeline tiers (by clicking “knowledge layout”).</p>
+
+<h3>Forbidden Graph</h3>
+
+<p>If you use a graph as input to a knowledge box with the “Forbidden Graph” operation, the box will immediately add all edges in the parent graph as forbidden edges. It will otherwise work like a Tiers and Edges box.</p>
+
+<h3>Required Graph</h3>
+
+<p>If you use a graph as input to a knowledge box with the “Required Graph” operation, the box will immediately add all edges in the parent graph as required edges. It will otherwise work like a Tiers and Edges box.</p>
+
+<h3>Measurement Model</h3>
+
+<p>This option allows you to build clusters for a measurement model. When first opened, the window looks like this:</p>
+
+<img src="images/knowledge_box_4.png" alt="" width="600">
+
+<p>You can change the number of clusters using the text box in the upper right hand corner. To place a variable in a cluster, click and drag the box with its name into the cluster pane. To move multiple variables at once, shift- or command-click on the variables, and (without releasing the shift/command button or the mouse after the final click) drag. In the search boxes, these variables will be assumed to be children of a common latent cause.</p>
 
 
+<h2 id="simulation_box"><span  class="section_heading">Simulation Box</span></h2>
+
+<p>The simulation box takes a graph, parametric model, or instantiated model and uses it to simulate a data set.</p>
+
+<h3>Possible Parent Boxes of the Simulation Box</h3>
+
+<ul class="ul">
+<li>A graph box</li>
+<li>A parametric model box</li>
+<li>An instantiated model box</li>
+<li>An estimator box</li>
+<li>A data box</li>
+<li>Another simulation box</li>
+<li>A search box</li>
+<li>An updater box</li>
+<li>A regression box</li>
+</ul>
 
 
+<h3>Possible Child Boxes of the Simulation Box</h3>
 
+<ul class="ul">
+<li>A graph box</li>
+<li>A compare box</li>
+<li>A parametric model box</li>
+<li>An instantiated model box</li>
+<li>An estimator box</li>
+<li>A data box</li>
+<li>Another simulation box</li>
+<li>A search box</li>
+<li>A classify box</li>
+<li>A regression box</li>
+<li>A knowledge box</li>
+</ul>
+
+
+<h3>Using the Simulator Box</h3>
+
+<p>When you first open the simulation box, you will see some variation on this window:</p>
+
+<img src="images/simulation_box_1.png" alt="" width="600">
+
+<p>The “True Graph” tab contains a copy of the “Generate Subgraphs” function from the graph box. This allows you to isolate subgraphs of the parent graph to use to model data. The “Data” tab will contain the data once it has been simulated.</p>
+
+<p>Exactly what you see and can do in the simulation box is determined by what kind of box you input into it. </p>
+
+
+<h4>The Simulation Box with no Input</h4>
+
+<p>Because it has no input box to create constraints, a parentless simulation box offers the greatest freedom for setting the graph type, model type, and parameters of your simulated data. In particular, it is the only way that the simulation box will allow you to create a random graph or graphs within the box. (If you are simulating multiple data sets, and want to use a different random graph for each one, you can select “Yes” under “Yes if a different graph should be used for each run.”) You can choose the type of graph you want Tetrad to create from the “Type of Graph” drop-down list.</p>
+
+<ul class="ul">
+<li><i>Random Forward DAG:</i> This option creates a DAG by randomly adding forward edges (edges that do not point to a variable’s ancestors) one at a time. You can specify graph parameters such as number of variables, maximum and minimum degrees, and connectedness.</li>
+<li><i>Scale Free DAG:</i> This option creates a DAG whose variable’s degrees obey a power law. You can specify graph parameters such as number of variables, alpha, beta, and delta values.</li>
+<li><i>Cyclic, constructed from small loops:</i> This option creates a cyclic graph. You can specify graph parameters such as number of variables, maximum and average degrees, and the probability of the graph containing at least one cycle.</li>
+<li><i>Random One Factor MIM:</i> This option creates a one-factor multiple indicator model. You can specify graph parameters such as number of latent nodes, number of measurements per latent, and number of impure edges.</li>
+<li><i>Random Two Factor MIM:</i> This option creates a two-factor multiple indicator model. You can specify graph parameters such as number of latent nodes, number of measurements per latent, and number of impure edges.</li>
+</ul>
+
+<p>In addition to the graph type, you can also specify the type of model you would like Tetrad to simulate.</p>
+
+<ul class="ul">
+<li><i>Bayes net:</i> Simulates a Bayes instantiated model. You can specify model parameters including maximum and minimum number of categories for each variable.</li>
+<li><i>Structural Equation Model:</i> Simulates a SEM instantiated model. You can specify model parameters including coefficient, variance, and covariance ranges.</li>
+<li>
+	<i>Linear Fisher Model:</i> Simulates data using a linear Markov 1 DBN without concurrent edges. The Fisher model suggests that shocks should be applied at intervals and the time series be allowed to move to convergence between shocks. This simulation has many parameters that can be adjusted, as indicated in the interface. The ones that require some explanation are as follows.
+<ul class="ul">
+<li>Low end of coefficient range, high end of coefficient range, low end of variance range, high end of variance range. Each variable is a linear function of the parents of the variable (in the previous time lag) plus Gaussian noise. The coefficients are drawn randomly from U(a, b) where a is the low end of the coefficient range and b is the high end of the coefficient range. Here, a < b. The Gaussian noise is drawn uniformly from U(c, d), where c is the low end of the variance range and d is the high end of the variance range. Here, c < d.</li>
+<li>Yes, if negative values should be considered. If no, only positive values will be recorded. This should not be used for large numbers of variables, since it is more difficult to find cases with all positive values when the number of variables is large.</li>
+<li>Percentage of discrete variables. The model generates continuous data, but some or all of the variables may be discretized at random. The user needs to indicate the percentage of variables (randomly chosen that one wishes to have discretized. The default is zero—i.e., all continuous variables.</li>
+<li>Number of categories of discrete variables. For the variables that are discretized, the number of categories to use to discretize each of these variables.</li>
+<li>Sample size. The number of records to be simulated.</li>
+<li>Interval between shocks. The number of time steps between shocks in the model.</li>
+<li>Interval between data recordings. The data are recorded every so many steps. If one wishes to allow to completely converge between steps (i.e., produce equilibrium data), set this interval to some large number like 20 and set the interval between shocks likewise to 20 Other values can be used, however.</li>
+<li>Epsilon for convergence. Even if you set the interval between data recordings to a large number, you can specify an epsilon such that if all values of variables differ from their values one time step back by less than epsilon, the series will be taken to have converged, and the remaining steps between data recordings will be skipped, the data point being recorded at convergence.</li>
+</ul>
+</li>
+<li><i>Lee & Hastie:</i> This is a model for simulating mixed data (data with both continuous and discrete variables. The model is given in Lee J, Hastie T. 2013, Structure Learning of Mixed Graphical Models, Journal of Machine Learning Research 31: 388-396. Here, mixtures of continuous and discrete variables are treated as log-linear.
+<ul class="ul">
+<li>Percentage of discrete variables. The model generates continuous data, but some or all of the variables may be discretized at random. The user needs to indicate the percentage of variables (randomly chosen that one wishes to have discretized. The default is zero—i.e., all continuous variables.</li>
+<li>Number of categories of discrete variables. For the variables that are discretized, the number of categories to use to discretize each of these variables.</li>
+<li>Sample size. The number of records to be simulated.</li>
+</ul>
+
+</li>
+<li><i>Time Series:</i> This is a special simulation for representing time series. Concurrent edges are allowed. This can take a Time Series Graph as input, in which variables in the current lag are written as functions of the parents in the current and previous lags.
+	<ul class="ul">
+<li>Sample size. The number of records to be simulated.</li>
+</ul>
+
+</li>
+<li><i>Boolean Glass:</i> The instantiated model used to simulate the data will be re-parameterized for each run of the simulation.</li>
+</ul>
+
+<h4>The Simulation Box with a Graph Input</h4>
+
+<p>If you input a graph, you will be able to simulate any kind of model, with any parameters. But the model will be constrained by the graph you have input (or the subgraph you choose in the “True Graph” tab.) Because of this, if you create a simulation box with a graph as a parent, you will not see the “Type of Graph” option.</p>
+
+<h4>The Simulation Box with a Parametric Model Input</h4>
+
+<p>At the time of writing, a simulation box with a parametric model input acts as though the PM’s underlying graph had been input into the box.</p>
+
+
+<h4>The Simulation Box with an Instantiated Model Input</h4>
+
+<p>If you input an instantiated model, your only options will be the sample size of your simulation and the number of data sets you want to simulate; Tetrad will simulate every one of them based on the parameters of the IM. The model will not be re-parameterized for each run of the simulation.</p>
 
 
 
