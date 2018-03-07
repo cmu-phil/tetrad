@@ -6,6 +6,7 @@
 <title>Tetrad Single HTML Manual</title>
 <meta name="description" content="">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<link rel="stylesheet" href="css/normalize.css">
 <link rel="stylesheet" href="css/tetrad.css">
 </head>
 <body>
@@ -13,10 +14,12 @@
 <p class="browserupgrade">You are using an <strong>outdated</strong> browser. Please <a href="https://browsehappy.com/">upgrade your browser</a> to improve your experience and security.</p>
 <![endif]-->
 
-<div class="main">
+<div class="inner">
 
+<div class="header">
 <h1>Tetrad Manual</h1>
-<p>Last updated and revised: June 2017</p>
+<p>Last updated: March 7th, 2018</p>
+</div>
 
 <!-- Table of Contents, give each section a unique id -->
 <div class="toc_container">
@@ -43,7 +46,6 @@
 <h2 id="graph_box"><span  class="section_heading">Graph Box</span></h2>
 
 <p>The graph box can be used to create a new graph, or to copy or edit a graph from another box.</p>
-
 
 <!-- Follow this example to create a list of items -->
 <h3>Possible Parent Boxes of the Graph Box</h3>
@@ -81,12 +83,14 @@
 
 <p>You can add variables to your graph by clicking on the variable button on the left, then clicking inside the graph area. Add edges by clicking on an edge type, then clicking and dragging from one variable to another.  Variables may be measured (represented by rectangular icons) or latents (represented by elliptical icons). Edges may be directed, undirected, bidirected, or uncertain (represented by circles at the ends of an edge). Depending on the type of graph you choose to create, your choice of edges may be limited.</p>
 
-<p>DAGs allow only directed, bidirected, and uncertain edges. If an edge would create a cycle (or potential cycle, in the case of uncertain edges) it will not be accepted. A graph box containing a DAG can be used as input for any parametric model box, and is the only kind of graph box that can be used as input for a Bayes parametric model.</p>
+<p><i>DAGs</i> allow only directed, bidirected, and uncertain edges. If an edge would create a cycle (or potential cycle, in the case of uncertain edges) it will not be accepted. A graph box containing a DAG can be used as input for any parametric model box, and is the only kind of graph box that can be used as input for a Bayes parametric model.</p>
 
-<p>SEM graphs allow only directed and bidirected edges. A graph box containing a SEM graph can be used as input to a SEM parametric model or generalized SEM parametric model, where a bidirected edge between two variables X and Y will be interpreted as X and Y having correlated error terms.
-Time lag graphs allow only directed edges. New variables that you add will be initialized with a single lag. (The number of lags in the graph may be changed under “Edit—Configuration…”) Edges from later lags to earlier lags will not be accepted. Edges added within one lag will automatically be replicated in later lags.</p>
+<p><i>SEM graphs</i> allow only directed and bidirected edges. A graph box containing a SEM graph can be used as input to a SEM parametric model or generalized SEM parametric model, where a bidirected edge between two variables X and Y will be interpreted as X and Y having correlated error terms.</p>
 
-<p>The general graph option allows all edge types and configurations.</p>
+
+<p><i>Time lag graphs</i> allow only directed edges. New variables that you add will be initialized with a single lag. (The number of lags in the graph may be changed under “Edit—Configuration…”) Edges from later lags to earlier lags will not be accepted. Edges added within one lag will automatically be replicated in later lags.</p>
+
+<p>The general <i>graph</i> option allows all edge types and configurations.</p>
 
 
 <h3>Creating a Random Graph </h3>
@@ -122,7 +126,9 @@ Time lag graphs allow only directed edges. New variables that you add will be in
 
 <p>The available graph manipulations are:</p>
 
-<p>Display Subgraphs: This option allows you to isolate a subgraph from the parent graph. Add variables to the subgraph by highlighting the variable name in the “Unselected” pane and clicking on the right arrow. The hiighlighted variable will then show up in the “Selected” pane. (You may also define which variables go in the “Selected” pane by clicking on the “Text Input…” button and typing the variable names directly into the window.) Choose the type of subgraph you want to display from the drop-down panel below. Then click “Graph It!” and the resulting subgraph of the selected variables will appear in the pane on the right. (Some types of subgraph, such as “Markov Blanket,” will include unselected variables if they are part of the subgraph as defined on the selected variables. So, for instance, an unselected variable that is in the Markov blanket of a selected variable will appear in the Markov Blanket subgraph. Edges between unselected variables will not be shown.) For large or very dense graphs, it may take a long time to isolate and display subgraphs.</p>
+<h4>Display Subgraphs</h4>
+
+<p>This option allows you to isolate a subgraph from the parent graph. Add variables to the subgraph by highlighting the variable name in the “Unselected” pane and clicking on the right arrow. The hiighlighted variable will then show up in the “Selected” pane. (You may also define which variables go in the “Selected” pane by clicking on the “Text Input…” button and typing the variable names directly into the window.) Choose the type of subgraph you want to display from the drop-down panel below. Then click “Graph It!” and the resulting subgraph of the selected variables will appear in the pane on the right. (Some types of subgraph, such as “Markov Blanket,” will include unselected variables if they are part of the subgraph as defined on the selected variables. So, for instance, an unselected variable that is in the Markov blanket of a selected variable will appear in the Markov Blanket subgraph. Edges between unselected variables will not be shown.) For large or very dense graphs, it may take a long time to isolate and display subgraphs.</p>
 
 <p>The types of subgraphs that can be displayed are:</p>
 
@@ -146,34 +152,56 @@ Time lag graphs allow only directed edges. New variables that you add will be in
 
 <p>The “Graph Properties” and “Paths” functions are available in this type of graph box, but they will display information about the full graph, not the currently displayed subgraph. To see graph properties for the subgraph, first copy it into a new graph box.</p>
 
-<p>Choose DAG in Pattern: If given a pattern as input, this chooses a random DAG from the Markov equivalence class of the pattern to display. The resulting DAG functions as a normal graph box.</p>
+<h4>Choose DAG in Pattern</h4>
 
-<p>Choose MAG in PAG: If given a partial ancestral graph (PAG) as input, this chooses a random mixed ancestral graph (MAG) from the equivalence class of the PAG to display. The resulting MAG functions as a normal graph box.</p>
+<p>If given a pattern as input, this chooses a random DAG from the Markov equivalence class of the pattern to display. The resulting DAG functions as a normal graph box.</p>
 
-<p>Show DAGs in Pattern: If given a pattern as input, this displays all DAGs in the pattern’s Markov equivalence class. Each DAG is displayed in its own tab. Most graph box functionality is not available in this type of graph box, but the DAG currently on display can be copied by clicking “Copy Selected Graph.”</p>
+<h4>Choose MAG in PAG</h4>
 
-<p>Generate Pattern from DAG: If given a DAG as input, this displays the pattern of the Markov equivalence class to which the parent graph belongs. The resulting pattern functions as a normal graph box.</p>
+<p>If given a partial ancestral graph (PAG) as input, this chooses a random mixed ancestral graph (MAG) from the equivalence class of the PAG to display. The resulting MAG functions as a normal graph box.</p>
 
-<p>Generate PAG from DAG: Converts an input graph from partial ancestral to directed acyclic format. The resulting DAG functions as a normal graph box.</p>
+<h4>Show DAGs in Pattern</h4>
 
-<p>Generate PAG from tsDAG: Converts an input graph from partial ancestral to time series DAG format. The resulting DAG functions as a normal graph box.</p>
+<p>If given a pattern as input, this displays all DAGs in the pattern’s Markov equivalence class. Each DAG is displayed in its own tab. Most graph box functionality is not available in this type of graph box, but the DAG currently on display can be copied by clicking “Copy Selected Graph.”</p>
 
-<p>Make Bidirected Edges Undirected: Replaces all bidirected edges in the input graph with undirected edges.</p>
+<h4>Generate Pattern from DAG</h4>
 
-<p>Make Undirected Edges Bidirected: Replaces all undirected edges in the input graph with bidirected edges.</p>
+<p>If given a DAG as input, this displays the pattern of the Markov equivalence class to which the parent graph belongs. The resulting pattern functions as a normal graph box.</p>
 
-<p>Make All Edges Undirected: Replaces all edges in the input graph with undirected edges.</p>
+<h4>Generate PAG from DAG</h4>
 
-<p>Generate Complete Graph</p>
+<p>Converts an input graph from partial ancestral to directed acyclic format. The resulting DAG functions as a normal graph box.</p>
 
-<p>Extract Structure Model</p>
+<h4>Generate PAG from tsDAG</h4>
+
+<p>Converts an input graph from partial ancestral to time series DAG format. The resulting DAG functions as a normal graph box.</p>
+
+<h4>Make Bidirected Edges Undirected</h4>
+
+<p>Replaces all bidirected edges in the input graph with undirected edges.</p>
+
+<h4>Make Undirected Edges Bidirected</h4>
+
+<p>Replaces all undirected edges in the input graph with bidirected edges.</p>
+
+<h4>Make All Edges Undirected</h4>
+
+<p>Replaces all edges in the input graph with undirected edges.</p>
+
+<h4>Generate Complete Graph</h4>
+
+<h4>Extract Structure Model</h4>
 
 
 <h3>Other Graph Box Functions</h3>
 
-<p><i>Layout:</i> You can change the layout of your graph by clicking on the “Layout” tab and choosing between several common layouts. You can also rearrange the layout of one graph box to match the layout of another graph box (so long as the two graphs have identical variables) by clicking “Layout—Copy Layout” and “Layout—Paste Layout.” You do not need to a highlight the graph in order to copy the layout.</p>
+<h4>Layout</h4>
 
-<p><i>Graph Properties:</i> Clicking on “Graph—Graph Properties” will give you a text box containing the following properties of your graph:</p>
+<p>You can change the layout of your graph by clicking on the “Layout” tab and choosing between several common layouts. You can also rearrange the layout of one graph box to match the layout of another graph box (so long as the two graphs have identical variables) by clicking “Layout—Copy Layout” and “Layout—Paste Layout.” You do not need to a highlight the graph in order to copy the layout.</p>
+
+<h4>Graph Properties</h4>
+
+<p>Clicking on “Graph—Graph Properties” will give you a text box containing the following properties of your graph:</p>
 
 <ul class="ul">
 <li>Number of nodes</li>
@@ -188,13 +216,21 @@ Time lag graphs allow only directed edges. New variables that you add will be in
 <li>Cyclicity</li>
 </ul>
 
-<p><i>Paths:</i> Clicking on “Graph—Paths” opens a dialog box that allows you to see all the paths between any two variables. You can specify whether you want to see only adjacencies, only directed paths, only semidirected paths, or all treks between the two variables of interest, and the maximum length of the paths you are interested in using drop boxes at the top of the pane. To apply those settings, click “update.”</p>
+<h4>Paths</h4>
 
-<p><i>Meek Orientation:</i> Clicking “Meek Orientation” will orient a pattern according to the Meek orientation rules.</p>
+<p>Clicking on “Graph—Paths” opens a dialog box that allows you to see all the paths between any two variables. You can specify whether you want to see only adjacencies, only directed paths, only semidirected paths, or all treks between the two variables of interest, and the maximum length of the paths you are interested in using drop boxes at the top of the pane. To apply those settings, click “update.”</p>
 
-<p><i>Correlation:</i> You can automatically correlate or uncorrelated exogenous variables under the Graph tab.</p>
+<h4>Meek Orientation</h4>
 
-<p><i>Highlighting:</i> You can highlight bidirected edges, undirected edges, and latent nodes under the Graph tab.</p>
+<p>Clicking “Meek Orientation” will orient a pattern according to the Meek orientation rules.</p>
+
+<h4>Correlation</h4>
+
+<p>You can automatically correlate or uncorrelated exogenous variables under the Graph tab.</p>
+
+<h4>Highlighting</h4>
+
+<p>You can highlight bidirected edges, undirected edges, and latent nodes under the Graph tab.</p>
 
 
 
@@ -227,13 +263,13 @@ Time lag graphs allow only directed edges. New variables that you add will be in
 <p>Take, for example, the following two graphs. The first is the reference graph, the second is the graph to be compared to it. </p>
 
 <!-- Follow this image example to add an image -->
-<img src="images/compare_box_1.png" alt="" width="600">
+<img src="images/compare_box_1.png" alt="" width="360">
 
-<img src="images/compare_box_2.png" alt="" width="600">
+<img src="images/compare_box_2.png" alt="" width="360">
 
 <p>When these two graphs are input into the graph compare box, a window appears which allows you to specify which of the two graphs is the reference graph. When the comparison is complete, the following window results</p>
 
-<img src="images/compare_box_3.png" alt="" width="600">
+<img src="images/compare_box_3.png" alt="" width="450">
 
 
 <p>When the listed changes have been made to the second graph, it will be identical to the first graph.</p>
@@ -244,7 +280,7 @@ Time lag graphs allow only directed edges. New variables that you add will be in
 
 <p>A tabular graph comparison tallies up and presents counts of the differences and similarities between a true graph and a reference graph. Consider the example used in the above section; once again, we’ll let graph one be the true graph. Just as above, when the graphs are input to the tabular graph compare box, we must specify which of the graphs is the reference graph, and whether it contains latent variables. When the comparison is complete, the following window results:</p>
 
-<img src="images/compare_box_4.png" alt="" width="600">
+<img src="images/compare_box_4.png" alt="" width="650">
 
 
 <p>The first column lists the number of adjacencies in the reference graph that are also in the true graph. The second column lists the number of adjacencies in the reference graph which are not in the compared graph. The third column lists the number of adjacencies in the comparison graph which are not in the reference graph.  The next three columns list analogous information for arrowpoints (orientations of edges).</p>
@@ -255,7 +291,7 @@ Time lag graphs allow only directed edges. New variables that you add will be in
 
 <p>A misclassification procedure organizes a graph comparison by edge type. The edge types (undirected, directed, uncertain, partially uncertain, bidirected, and null) are listed as the rows and columns of a matrix, with the reference graph edges as the row headers and the estimate graph edges as the column headers. If, for example, there are three pairs of variables that are connected by undirected edges in the reference graph, but are connected by directed edges in the estimated graph, then there will be a 3 in the (undirected, directed) cell of the matrix. An analogous method is used to represent endpoint errors. For example:</p>
 
-<img src="images/compare_box_5.png" alt="" width="600">
+<img src="images/compare_box_5.png" alt="" width="650">
 
 <p>If one of the parent boxes contains multiple graphs, then each estimated graph will be individually compared to the reference graph (or vice versa), and the results housed in their own tab, found on the left.</p>
 
@@ -271,11 +307,11 @@ Time lag graphs allow only directed edges. New variables that you add will be in
 
 <p>Rather than comparing edges or orientation, this option directly compares the implied dependencies in two graphs. When you initially open the box, you will see the following window:</p>
 
-<img src="images/compare_box_6.png" alt="" width="600">
+<img src="images/compare_box_6.png" alt="" width="650">
 
 <p>The drop-down menu allows you to choose which variables you want to check the dependence of. If you select more than two variables, an subsequent variables will be considered members of the conditioning set. So, if you select variables X1, X2, and X3, in that order, the box will determine whether X1 is independent of X2, conditional on X3, in each of the graphs being compared.  When you click “List,” in the bottom right of the window, the results will be displayed in the center of the window: </p>
 
-<img src="images/compare_box_7.png" alt="" width="600">
+<img src="images/compare_box_7.png" alt="" width="650">
 
 <h3>Edge Weight Similarity Comparisons</h3>
 
@@ -283,14 +319,14 @@ Time lag graphs allow only directed edges. New variables that you add will be in
 
 <p>Consider, for example, an edge weight similarity comparison between the following two SEM IMs:</p>
 
-<img src="images/compare_box_8.png" alt="" width="600">
+<img src="images/compare_box_8.png" alt="" width="360">
 
-<img src="images/compare_box_9.png" alt="" width="600">
+<img src="images/compare_box_9.png" alt="" width="360">
 
 <p>When they are input into an edge weight similarity comparison, the following window results: </p>
 
 
-<img src="images/compare_box_10.png" alt="" width="600">
+<img src="images/compare_box_10.png" alt="" width="450">
 
 <p>This is, unsurprisingly, a high score; the input models have few adjacencies in common, let alone similar parameters.</p>
 
@@ -342,11 +378,11 @@ Time lag graphs allow only directed edges. New variables that you add will be in
 
 <p>Take, for example, the following DAG:</p>
 
-<img src="images/parametric_model_box_1.png" alt="" width="600">
+<img src="images/parametric_model_box_1.png" alt="" width="360">
 
 <p>One possible random Bayes PM that Tetrad might generate from the above DAG, using the default settings, looks like this:</p>
 
-<img src="images/parametric_model_box_2.png" alt="" width="600">
+<img src="images/parametric_model_box_2.png" alt="" width="650">
 
 <p>To view the number and names of the categories associated with each variable, you can click on that variable in the graph, or choose it from the drop-down menu on the right. In this graph, X1 and X2 each have three categories, and the rest of the variables have four categories. The categories are named numerically by default.</p>
 
@@ -364,9 +400,9 @@ Time lag graphs allow only directed edges. New variables that you add will be in
 
 <p>Here is an example of a SEM graph and the SEM PM that Tetrad creates from it:</p>
 
-<img src="images/parametric_model_box_3.png" alt="" width="600">
+<img src="images/parametric_model_box_3.png" alt="" width="360">
 
-<img src="images/parametric_model_box_4.png" alt="" width="600">
+<img src="images/parametric_model_box_4.png" alt="" width="450">
 
 <p>You can see the error terms in the model by clicking “Parameters—Show Error Terms.” In a SEM model, a bidirected edge indicates that error terms are correlated, so when error terms are visible, the edge between X1 and X2 will instead run between their error terms.</p>
 
@@ -378,9 +414,9 @@ Time lag graphs allow only directed edges. New variables that you add will be in
 
 <p>Here is an example of a general graph and the default generalized SEM PM Tetrad creates using it:</p>
 
-<img src="images/parametric_model_box_5.png" alt="" width="600">
+<img src="images/parametric_model_box_5.png" alt="" width="360">
 
-<img src="images/parametric_model_box_6.png" alt="" width="600">
+<img src="images/parametric_model_box_6.png" alt="" width="650">
 
 
 <p>You can view the error terms by clicking “Tools: Show Error Terms.”
@@ -393,7 +429,7 @@ Time lag graphs allow only directed edges. New variables that you add will be in
 
 <p>For instance, if you double click on the expression next to X1 (b1*X5+E_X1), the following window opens:</p>
 
-<img src="images/parametric_model_box_7.png" alt="" width="600">
+<img src="images/parametric_model_box_7.png" alt="" width="500">
 
 <p>The drop-down menu at the top of the window lists valid operators and functions. You could, for example, change the expression from linear to quadratic by replacing b1*X5+E_X1 with b1*X5^2+E_X1. You can also form more complicated expressions, using, for instance, exponential or sine functions. If the expression you type is well-formed, it will appear in black text; if it is invalid, it will appear in red text. Tetrad will not accept any invalid changes. </p> 
 
@@ -401,7 +437,7 @@ Time lag graphs allow only directed edges. New variables that you add will be in
 
 <p>If you want several expressions or parameters to follow the same non-linear model, you may wish to use the Apply Templates tool. This allows you to edit the expressions or parameters associated with several variables at the same time. To use the Apply Templates tool, click “Tools: Apply Templates….”  This will open the following window:</p> 
 
-<img src="images/parametric_model_box_8.png" alt="" width="600">
+<img src="images/parametric_model_box_8.png" alt="" width="500">
 
 <p>You can choose to edit variables, error terms, or parameters by clicking through the “apply to” radio buttons.  If you type a letter or expression into the “starts with” box, the template you create will apply only to variables, error terms, or parameters which begin with that letter for expression. For example, in the given generalized PM, there are two types of parameters: the standard deviations s1-s6 and the edge weights b1-b7. If you click on the “Parameters” radio button and type “b” into the “Starts with” box, only parameters b1-b7 will be affected by the changes you make.</p> 
 
@@ -446,9 +482,9 @@ Time lag graphs allow only directed edges. New variables that you add will be in
 
 <p>Here is an example of a Bayes PM and its randomly created instantiated model:</p>
 
-<img src="images/instantiated_model_box_1.png" alt="" width="600">
+<img src="images/instantiated_model_box_1.png" alt="" width="650">
 
-<img src="images/instantiated_model_box_2.png" alt="" width="600">
+<img src="images/instantiated_model_box_2.png" alt="" width="650">
 
 <p>In the model above, when X4 and X5 are both 0, the probability that X5 is 0 is 0.0346, that X5 is 1 is 0.4425, and that X5 is 2 is 0.5229. Since X5 must be 0, 1, or 2, those three values must add up to one, as must the values in every row.</p>
 
@@ -467,9 +503,9 @@ Time lag graphs allow only directed edges. New variables that you add will be in
 
 <p>Here is an example of a Bayes PM and the Dirichlet IM which Tetrad creates from it when all pseudocounts are set to one:</p>
 
-<img src="images/instantiated_model_box_3.png" alt="" width="600">
+<img src="images/instantiated_model_box_3.png" alt="" width="650">
 
-<img src="images/instantiated_model_box_4.png" alt="" width="600">
+<img src="images/instantiated_model_box_4.png" alt="" width="650">
 
 <p>In the above model, when X2=0 and X6=0, there is one (pseudo) data point at which X4=0, one at which X4=1, and one at which X4=2. There are three total (pseudo) data points in which X2=0 and X6=0. You can view the pseudocounts of any variable by clicking on it in the graph or choosing it from the drop-down menu at the top of the window. To edit the value of a pseudocount, double click on it and overwrite it. The total count of a row cannot be directly edited.</p>
 
@@ -477,32 +513,32 @@ Time lag graphs allow only directed edges. New variables that you add will be in
 
 <p>To view the table of conditional probabilities for a variable, click the Probabilities tab. In the above model, the Probabilities tab looks like this: </p>
 
-<img src="images/instantiated_model_box_5.png" alt="" width="600">
+<img src="images/instantiated_model_box_5.png" alt="" width="650">
 
 <h3>SEM Instantiated Models</h3>
 
 <p>A SEM instantiated model is a SEM parametric model in which the parameters and error terms have defined values.  If you choose to create a SEM IM, the following window will open:</p>
 
-<img src="images/instantiated_model_box_6.png" alt="" width="600">
+<img src="images/instantiated_model_box_6.png" alt="" width="450">
 
 
 <p>Using this box, you can specify the ranges of values from which you want coefficients, covariances, and variances to be drawn for the parameters in the model. In the above box, for example, all linear coefficients will be between -1.5 and -0.5 or 0.5 and 1.5. If you uncheck “symmetric about zero,” they will only be between 0.5 and 1.5.</p>
 
 <p>Here is an example of a SEM PM and a SEM IM generated from it using the default settings: </p>
 
-<img src="images/instantiated_model_box_7.png" alt="" width="600">
+<img src="images/instantiated_model_box_7.png" alt="" width="360">
 
-<img src="images/instantiated_model_box_8.png" alt="" width="600">
+<img src="images/instantiated_model_box_8.png" alt="" width="450">
 
 <p>You can now manually edit the values of parameters in one of two ways.  Double clicking on the parameter in the graph will open up a small text box for you to overwrite. Or you can click on the Tabular Editor tab, which will show all of the parameters in a table which you can edit.  The Tabular Editor tab of our SEM IM looks like this:</p>
 
-<img src="images/instantiated_model_box_9.png" alt="" width="600">
+<img src="images/instantiated_model_box_9.png" alt="" width="450">
 
 <p>In the Tabular Editor tab of a SEM estimator box (which functions similarly to the SEM IM box), the SE, T, and P columns provide statistics showing how robust the estimation of each parameter is. Our SEM IM, however, is in an instantiated model box, so these columns are empty.</p>
 
 <p>The Implied Matrices tab shows matrices of relationships between variables in the model. In the Implied Matrices tab, you can view the covariance or correlation matrix for all variables (including latents) or just measured variables. In our SEM IM, the Implied Matrices tab looks like this:</p>
 
-<img src="images/instantiated_model_box_10.png" alt="" width="600">
+<img src="images/instantiated_model_box_10.png" alt="" width="450">
 
 <p>You can choose the matrix you wish to view from the drop-down menu at the top of the window. Only half of any matrix is shown, because in a well-formed acyclic model, the matrices should be symmetric.  The cells in the Implied Matrices tab cannot be edited.</p>
 
@@ -515,9 +551,9 @@ Time lag graphs allow only directed edges. New variables that you add will be in
 
 <p>Here is an example of an acyclic SEM PM and the standardized SEM IM which Tetrad creates from it</p>
 
-<img src="images/instantiated_model_box_11.png" alt="" width="600">
+<img src="images/instantiated_model_box_11.png" alt="" width="360">
 
-<img src="images/instantiated_model_box_12.png" alt="" width="600">
+<img src="images/instantiated_model_box_12.png" alt="" width="450">
 
 
 <p>To edit a parameter, double click on it. A slider will open at the bottom of the window (shown above for the edge parameter between X1 and X2). Click and drag the slider to change the value of the parameter, or enter the specific value you wish into the box. The value must stay within a certain range in order for the Normal distribution to stay standardized, so if you attempt to overwrite the text box on the bottom right with a value outside the listed range, Tetrad will not allow it. In a standardized SEM IM, error terms are not considered parameters and cannot be edited, but you can view them by clicking Parameters: Show Error Terms. </p>
@@ -531,9 +567,9 @@ Time lag graphs allow only directed edges. New variables that you add will be in
 
 <p>Here is an example of a generalized SEM PM and its generalized SEM IM:</p>
 
-<img src="images/instantiated_model_box_13.png" alt="" width="600">
+<img src="images/instantiated_model_box_13.png" alt="" width="450">
 
-<img src="images/instantiated_model_box_14.png" alt="" width="600">
+<img src="images/instantiated_model_box_14.png" alt="" width="450">
 
 <p>Note that the expressions for X6 and X2 are not shown, having been replaced with the words “long formula.” Formulae over a certain length—the default setting is 25 characters—are hidden to improve visibility. Long formulae can be viewed in the Variables tab, which lists all variables and their formulae. You can change the cutoff point for long formulae by clicking Tools: Formula Cutoff.</p>
 
@@ -609,7 +645,7 @@ X1	X2	X3	X4	X5
 
 <p>To load data, create a data box with no parent. When you open it, an empty data window will appear: </p>
 
-<img src="images/data_box_1.png" alt="" width="600">
+<img src="images/data_box_1.png" alt="" width="650">
 
 <p>Click File: Load Data… and select the text file or files that contain your data. The following window will appear:</p>
 
@@ -619,13 +655,13 @@ X1	X2	X3	X4	X5
 
 <p>Below this, you can specify your comment markers, quote characters, and the character which marks missing data values. Tetrad will use that information to distinguish continuous from discrete variables. You may also choose more files to load (or remove files that you do not wish to load) in the “Files” panel on the lower left.</p>
 
-<img src="images/data_box_2.png" alt="" width="600">
+<img src="images/data_box_2.png" alt="" width="650">
 
 <p>When you are satisfied with your description of your data, click “Validate” at the bottom of the window. Tetrad will check that your file is correctly formatted. If it is, you will receive a screen telling you that validation has passed with no error. At this point, you can revisit the settings page, or click “Load” to load the data. </p>
 
-<img src="images/data_box_3.png" alt="" width="600">
+<img src="images/data_box_3.png" alt="" width="650">
 
-<img src="images/data_box_4.png" alt="" width="600">
+<img src="images/data_box_4.png" alt="" width="650">
 
 <p>You can now save this data set to a text file by clicking File: Save Data.</p>
 
@@ -635,95 +671,162 @@ X1	X2	X3	X4	X5
 
 <p>The data box can also be used to manipulate data sets that have already been loaded or simulated. If you create a data box as the child of another box containing a data set, you will be presented with a list of operations that can be performed on the data. The available data manipulations are:</p>
 
-<p><i>Discretize Dataset:</i> This operation allows you to make some or all variables in a data set discrete. If you choose it, a window will open. </p>
+<h4>Discretize Dataset:</h4>
 
-<img src="images/data_box_5.png" alt="" width="600">
+<p>This operation allows you to make some or all variables in a data set discrete. If you choose it, a window will open. </p>
+
+<img src="images/data_box_5.png" alt="" width="650">
 
 <p>When the window first opens, no variables are selected, and the right side of the window appears blank; in this case, we have already selected X1 ourselves. In order to discretize a variable, Tetrad assigns all data points within a certain range to a category.  You can tell Tetrad to break the range of the dataset into approximately even sections (Evenly Distributed Intervals) or to break the data points themselves into approximately even chunks (Evenly Distributed Values). Use the scrolling menu to increase or decrease the number of categories to create. You can also rename categories by overwriting the text boxes on the left, or change the ranges of the categories by overwriting the text boxes on the right. To discretize another variable, simply select it from the left. If you want your new data set to include the variables you did not discretize, check the box at the bottom of the window.</p>
 
-
 <p>You may discretize multiple variables at once by selecting multiple variables. In this case, the ranges are not shown, as they will be different from variable to variable.</p>
 
+<h4>Discretize Dataset</h4>
+
 <p><i>Convert Numerical Discrete to Continuous:</i> If you choose this option, any discrete variables with numerical category values will be treated as continuous variables with real values. For example, “1” will be converted to “1.0.”</p>
+
+<h4>Discretize Dataset:</h4>
 
 <p><i>Calculate:</i> The Calculate option allows you to add and edit relationships between variables in your data set, and to add new variables to the data set. </p>
 
 
-<img src="images/data_box_6.png" alt="" width="600">
+<img src="images/data_box_6.png" alt="" width="650">
 
 <p>In many ways, this tool works like the Edit Expression window in a generalized SEM parametric model. To edit the formula that defines a variable (which will change that variable’s values in the table) type that variable name into the text box to the left of the equals sign. To create a new variable, type a name for that variable into the text box to the left of the equals sign. Then, in the box on the right, write the formula by which you wish to define a new variable in place of, or in addition to, the old variable. You can select functions from the scrolling menu below. (For an explanation of the meaning of some the functions, see the section on generalized SEM models in the Parametric Model Box chapter.) To edit or create several formulae at once, click the “Add Expression” button, and another blank formula will appear. To delete a formula, check the box next to it and click the “Remove Selected Expressions” button.</p>
 
 <p>When you click “Save” a table will appear listing the data. Values of variables whose formulae you changed will be changed, and any new variables you created will appear with defined values.</p>
 
-<p><i>Merge Datasets:</i> This operation takes two or more data boxes as parents and creates a data box containing all data sets in the parent boxes. Individual data sets will be contained in their own tabs in the resulting box.</p>
+<h4>Merge Datasets</h4>
 
-<p><i>Convert to Correlation Matrix:</i> This operation takes a tabular data set and outputs the lower half of the correlation matrix of that data set.</p>
+<p>This operation takes two or more data boxes as parents and creates a data box containing all data sets in the parent boxes. Individual data sets will be contained in their own tabs in the resulting box.</p>
 
-<p><i>Convert to Covariance Matrix:</i> This operation takes a tabular data set and outputs the lower half of the covariance matrix of that data set.</p>
+<h4>Convert to Correlation Matrix</h4>
 
-<p><i>Inverse Matrix:</i> This operation takes a covariance or correlation matrix and outputs its inverse. (Note: The output will not be acceptable in Tetrad as a covariance or correlation matrix, as it is not lower triangular.)</p>
+<p>This operation takes a tabular data set and outputs the lower half of the correlation matrix of that data set.</p>
 
-<p><i>Simulate Tabular from Covariance:</i> This operation takes a covariance matrix and outputs a tabular data set whose covariances comply with the matrix.</p>
+<h4>Convert to Covariance Matrix</h4>
 
-<p><i>Difference of Covariance Matrices:</i> This operation takes two covariance matrices and outputs their difference. The resulting matrix will be a well-formatted Tetrad covariance matrix data set.</p>
+<p>This operation takes a tabular data set and outputs the lower half of the covariance matrix of that data set.</p>
 
-<p><i>Sum of Covariance Matrices:</i> This operation takes two covariance matrices and outputs their sum. The resulting matrix will be a well-formatted Tetrad covariance matrix data set.</p>
+<h4>Inverse Matrix</h4>
 
-<p><i>Average of Covariance Matrices:</i> This operation takes two or more covariance matrices and outputs their average. The resulting matrix will be a well-formatted Tetrad covariance matrix data set.</p>
+<p>This operation takes a covariance or correlation matrix and outputs its inverse. (Note: The output will not be acceptable in Tetrad as a covariance or correlation matrix, as it is not lower triangular.)</p>
 
-<p><i>Convert to Time Lag Data:</i> This operation takes a tabular data set and outputs a time lag data set, in which each variable is recorded several times over the course of an experiment. You can specify the number of lags in the data. Each contains the same data, shifted by one “time unit.” For instance, if the original data set had 1000 cases, and you specify that the time lag data set should contain two lags, then the third stage variable values will be those of cases 1 to 998, the second stage variable values will be those of cases 2 to 999, and the first stage variable values will be those of cases 3 to 1000.</p>
+<h4>Simulate Tabular from Covariance</h4>
 
-<p><i>Convert to Time Lag Data with Index:</i> This operation takes a tabular data set and outputs a time lag data set in the same manner as “Convert to Time Lag Data,” then adds an index variable.</p>
+<p>This operation takes a covariance matrix and outputs a tabular data set whose covariances comply with the matrix.</p>
 
-<p><i>Convert to AR Residuals:</i> This operation is performed on a time lag data set. Tetrad performs a linear regression on each variable in each lag with respect to each of the variables in the previous lag, and derives the error terms.  The output data set contains only the error terms.</p>
+<h4>Difference of Covariance Matrices</h4>
 
-<p><i>Whiten:</i> Takes a continuous tabular data set and converts it to a data set whose covariance matrix is the identity matrix.</p>
+<p>This operation takes two covariance matrices and outputs their difference. The resulting matrix will be a well-formatted Tetrad covariance matrix data set.</p>
 
-<p><i>Nonparanormal Transform:</i> Takes a continuous tabular data set and increases its Gaussianity, using a nonparanormal transformation to smooth the variables. (Note: This operation increases only marginal Gaussanity, not the joint, and in linear systems may eliminate information about higher moments that can aid in non-Gaussian orientation procedures.) </p>
+<h4>Sum of Covariance Matrices</h4>
 
-<p><i>Convert to Residuals:</i> The input for this operation is a directed acyclic graph (DAG) and a data set. Tetrad performs a linear regression on each variable in the data set with respect to all of the variables that the graph shows to be its parents, and derives the error terms. The output data set contains only the error terms.</p>
+<p>This operation takes two covariance matrices and outputs their sum. The resulting matrix will be a well-formatted Tetrad covariance matrix data set.</p>
 
-<p><i>Standardize Data:</i> This operation manipulates the data in your data set such that each variable has 0 mean and unit variance.</p>
+<h4>Average of Covariance Matrices</h4>
 
-<p><i>Remove Cases with Missing Values:</i> If you choose this operation, Tetrad will remove any row in which one or more of the values is missing.</p>
+<p>This operation takes two or more covariance matrices and outputs their average. The resulting matrix will be a well-formatted Tetrad covariance matrix data set.</p>
 
-<p><i>Replace Missing Values with Column Mode:</i> If you choose this operation, Tetrad will replace any missing value markers with the most commonly used value in the column.</p>
+<h4>Convert to Time Lag Data</h4>
 
-<p><i>Replace Missing Values with Column Mean:</i> If you choose this operation, Tetrad will replace any missing value markers with the average of all of the values in the column.
+<p>This operation takes a tabular data set and outputs a time lag data set, in which each variable is recorded several times over the course of an experiment. You can specify the number of lags in the data. Each contains the same data, shifted by one “time unit.” For instance, if the original data set had 1000 cases, and you specify that the time lag data set should contain two lags, then the third stage variable values will be those of cases 1 to 998, the second stage variable values will be those of cases 2 to 999, and the first stage variable values will be those of cases 3 to 1000.</p>
+
+<h4>Convert to Time Lag Data with Index</h4>
+
+<p>This operation takes a tabular data set and outputs a time lag data set in the same manner as “Convert to Time Lag Data,” then adds an index variable.</p>
+
+<h4>Convert to AR Residuals</h4>
+
+<p>This operation is performed on a time lag data set. Tetrad performs a linear regression on each variable in each lag with respect to each of the variables in the previous lag, and derives the error terms.  The output data set contains only the error terms.</p>
+
+<h4>Whiten</h4>
+
+<p>Takes a continuous tabular data set and converts it to a data set whose covariance matrix is the identity matrix.</p>
+
+<h4>Nonparanormal Transform</h4>
+
+<p>Takes a continuous tabular data set and increases its Gaussianity, using a nonparanormal transformation to smooth the variables. (Note: This operation increases only marginal Gaussanity, not the joint, and in linear systems may eliminate information about higher moments that can aid in non-Gaussian orientation procedures.) </p>
+
+<h4>Convert to Residuals</h4>
+
+<p>The input for this operation is a directed acyclic graph (DAG) and a data set. Tetrad performs a linear regression on each variable in the data set with respect to all of the variables that the graph shows to be its parents, and derives the error terms. The output data set contains only the error terms.</p>
+
+<h4>Standardize Data</h4>
+
+<p>This operation manipulates the data in your data set such that each variable has 0 mean and unit variance.</p>
+
+<h4>Remove Cases with Missing Values</h4>
+
+<p>If you choose this operation, Tetrad will remove any row in which one or more of the values is missing.</p>
+
+<h4>Replace Missing Values with Column Mode</h4>
+
+<p>If you choose this operation, Tetrad will replace any missing value markers with the most commonly used value in the column.</p>
+
+<h4>Replace Missing Values with Column Mean</h4>
+
+<p>If you choose this operation, Tetrad will replace any missing value markers with the average of all of the values in the column.
 Replace Missing Values with Regression Predictions: If you choose this operation, Tetrad will perform a linear regression on the data in order to estimate the most likely value of any missing value.</p>
 
-<p><i>Replace Missing Values by Extra Category:</i> This operation takes as input a discrete data set. For every variable which has missing values, Tetrad will create an extra category for that variable (named by default “Missing”) and replace any missing data markers with that category.</p>
+<h4>Replace Missing Values by Extra Category</h4>
 
-<p><i>Replace Missing with Random:</i> For discrete data, replaces missing values at random from the list of categories the variable takes in other cases. For continuous data, finds the minimum and maximum values of the column (ignoring the missing values) and picks a random number from U(min, max)</p>
+<p>This operation takes as input a discrete data set. For every variable which has missing values, Tetrad will create an extra category for that variable (named by default “Missing”) and replace any missing data markers with that category.</p>
 
-<p><i>Inject Missing Data Randomly:</i> If you choose this operation, Tetrad will replace randomly selected data values with a missing data marker.  You can set the probability with which any particular value will be replaced (that is, approximately the percentage of values for each variable which will be replaced with missing data markers).</p>
+<h4>Replace Missing with Random</h4>
 
-<p><i>Bootstrap Sample:</i> This operation draws a random subset of the input data set (you specify the size of the subset) with replacement (that is, cases which appear once in the original data set can appear multiple times in the subset). The resulting data set can be used along with similar subsets to achieve more accurate estimates of parameters.</p>
+<p>For discrete data, replaces missing values at random from the list of categories the variable takes in other cases. For continuous data, finds the minimum and maximum values of the column (ignoring the missing values) and picks a random number from U(min, max)</p>
 
-<p><i>Split by Cases:</i> This operation allows you to split a data set into several smaller data sets. When you choose it, a window opens. </p>
+<h4>Inject Missing Data Randomly</h4>
 
-<img src="images/data_box_7.png" alt="" width="600">
+<p>If you choose this operation, Tetrad will replace randomly selected data values with a missing data marker.  You can set the probability with which any particular value will be replaced (that is, approximately the percentage of values for each variable which will be replaced with missing data markers).</p>
+
+<h4>Bootstrap Sample</h4>
+
+<p>This operation draws a random subset of the input data set (you specify the size of the subset) with replacement (that is, cases which appear once in the original data set can appear multiple times in the subset). The resulting data set can be used along with similar subsets to achieve more accurate estimates of parameters.</p>
+
+<h4>Split by Cases</h4>
+
+<p>This operation allows you to split a data set into several smaller data sets. When you choose it, a window opens. </p>
+
+<img src="images/data_box_7.png" alt="" width="360">
 
 
 <p>If you would like the subsets to retain the ordering they had in the original set, click “Original Order.” Otherwise, the ordering of the subsets will be assigned at random. You can also increase and decrease the number of subsets created, and specify the range of each subset.</p>
 
-<p><i>Permute Rows:</i> This operation randomly reassigns the ordering of a data set’s cases.</p>
+<h4>Permute Rows</h4>
 
-<p><i>First Differences:</i> This operation takes a tabular data set and outputs the first differences of the data (i.e., if X is a variable in the original data set and X’ is its equivalent in the first differences data set, X’1 = X2 – X1). The resulting data set will have one fewer row than the original.</p>
+<p>This operation randomly reassigns the ordering of a data set’s cases.</p>
 
-<p><i>Concatenate Datasets:</i> This operation takes two or more datasets and concatenates. The parent datasets must have the same number of variables.</p>
+<h4>First Differences</h4>
 
-<p><i>Copy Continuous Variables:</i> This operation takes as input a data set and creates a new data set containing only the continuous variables present in the original.</p>
+<p>This operation takes a tabular data set and outputs the first differences of the data (i.e., if X is a variable in the original data set and X’ is its equivalent in the first differences data set, X’1 = X2 – X1). The resulting data set will have one fewer row than the original.</p>
 
-<p><i>Copy Discrete Variables:</i> This operation takes as input a data set and creates a new data set containing only the discrete variables present in the original.</p>
+<h4>Concatenate Datasets</h4>
 
-<p><i>Remove Selected Variables </i></p>
+<p>This operation takes two or more datasets and concatenates. The parent datasets must have the same number of variables.</p>
 
-<p><i>Copy Selected Variables:</i> As explained above, you can select an entire column in a data set by clicking on the C1, C2, C3, etc… cell above the column. To select multiple columns, press and hold the “control” key while clicking on the cells. Once you have done so, you can use the Copy Selected Variables tool to create a data set in which only those columns appear.</p>
+<h4>Copy Continuous Variables</h4>
 
-<p><i>Remove Constant Columns:</i> This operation takes a data set as input, and creates a data set which contains all columns in the original data set except for those with constant values (such as, for example, a column containing nothing but 2’s).</p>
+<p>This operation takes as input a data set and creates a new data set containing only the continuous variables present in the original.</p>
 
-<p><i>Randomly Reorder Columns:</i> This operation randomly reassigns the ordering of a data set’s variables.</p>
+<h4>Copy Discrete Variables</h4>
+
+<p>This operation takes as input a data set and creates a new data set containing only the discrete variables present in the original.</p>
+
+<h4>Remove Selected Variables</h4>
+
+<h4>Copy Selected Variables</h4>
+
+<p>As explained above, you can select an entire column in a data set by clicking on the C1, C2, C3, etc… cell above the column. To select multiple columns, press and hold the “control” key while clicking on the cells. Once you have done so, you can use the Copy Selected Variables tool to create a data set in which only those columns appear.</p>
+
+<h4>Remove Constant Columns</h4>
+
+<p>This operation takes a data set as input, and creates a data set which contains all columns in the original data set except for those with constant values (such as, for example, a column containing nothing but 2’s).</p>
+
+<h4>Randomly Reorder Columns</h4>
+
+<p>This operation randomly reassigns the ordering of a data set’s variables.</p>
 
 <h3>Manually Editing Data</h3>
 
@@ -738,14 +841,14 @@ Replace Missing Values with Regression Predictions: If you choose this operation
 <p>The Histograms tool shows histograms of the variables in the data set.</p>
 
 
-<img src="images/data_box_8.png" alt="" width="600">
+<img src="images/data_box_8.png" alt="" width="650">
 
 
 <p>These show the distribution of data for each variable, with the width of each bar representing a range of values, and height of each bar representing how many data points fall into that range. Using histograms, you can determine whether each variable has a distribution that is approximately Normal. To select a variable to view, choose it from the drop-down menu on the right.  You can increase or decrease the number of bars in the histogram (and therefore decrease or increase the range of each bar, and increase or decrease the accuracy of the histogram) using the menu on the right. You can also view only ranges with a certain amount of the data using the “cull bins” menu.</p>
 
 <p>The Scatter Plots tool allows you to view scatter plots of two variables plotted against each other.</p>
 
-<img src="images/data_box_9.png" alt="" width="600">
+<img src="images/data_box_9.png" alt="" width="650">
 
 <p>To view a variable as the x- or y-axis of the graph, select it from one the drop-down menus to the right.  To view the regression line of the graph, check the box on the right.</p>
 
@@ -755,7 +858,7 @@ Replace Missing Values with Regression Predictions: If you choose this operation
 
 <p>The Q-Q Plot tool is a test for normality of distribution. </p>
 
-<img src="images/data_box_10.png" alt="" width="600">
+<img src="images/data_box_10.png" alt="" width="650">
 
 <p>If a variable has a distribution which is approximately Normal, its Q-Q plot should appear as a straight line with a positive slope. You can select the variable whose Q-Q plot you wish to view from the drop-down menu on the right.</p>
 
@@ -795,7 +898,7 @@ Replace Missing Values with Regression Predictions: If you choose this operation
 
 <p>The ML Bayes estimator, because it estimates Bayes IMs, works only on models with discrete variables. The model estimated must not include latent variables, and the input data set must not include missing data values.  A sample estimate looks like this:</p>
 
-<img src="images/estimator_box_1.png" alt="" width="600">
+<img src="images/estimator_box_1.png" alt="" width="650">
 
 <p>The Model tab works exactly as it does in a Bayes instantiated model. The Model Statistics tab provides the p-value for a chi square test of the model, degrees of freedom, the chi square value, and the Bayes Information Criterion (BIC) score of the model.</p>
 
@@ -813,7 +916,7 @@ Replace Missing Values with Regression Predictions: If you choose this operation
 
 <p>A SEM estimator estimates the values of parameters for a SEM parametric model. SEM estimates do not work if the input data set contains missing data values. A sample output looks like this: </p>
 
-<img src="images/estimator_box_2.png" alt="" width="600">
+<img src="images/estimator_box_2.png" alt="" width="650">
 
 <p>Tetrad provides five parameter optimizers: RICF, expectation-maximization (EM), regression, Powell and random search. Accurate regression estimates assume that the input parametric model is a DAG, and that its associated statistics are based on a linear, Gaussian model. The EM optimizer has the same input constraints as regression, but can handle latent variables. </p>
 
@@ -859,15 +962,15 @@ Replace Missing Values with Regression Predictions: If you choose this operation
 
 <p>Take, for example, the following instantiated model: </p>
 
-<img src="images/updater_box_1.png" alt="" width="600">
+<img src="images/updater_box_1.png" alt="" width="650">
 
 <p>When it is input into the approximate updater, the following window results:</p>
 
-<img src="images/updater_box_2.png" alt="" width="600">
+<img src="images/updater_box_2.png" alt="" width="650">
 
 <p>If we click “Do Update Now” now, without giving the updater any evidence, the right side of the screen changes to show us the marginal probabilities of the variables.</p>
 
-<img src="images/updater_box_3.png" alt="" width="600">
+<img src="images/updater_box_3.png" alt="" width="360">
 
 <p>The blue lines, and the values listed across from them, indicate the probability that the variable takes on the given value in the input instantiated model. The red lines indicate the probability that the variable takes on the given value, given the evidence we’ve added to the updater. </p>
 
@@ -875,15 +978,15 @@ Replace Missing Values with Regression Predictions: If you choose this operation
 
 <p>Now, we’ll return to the original window. We can do so by clicking “Edit Evidence” under the Evidence tab. Suppose we know that X1 takes on the value 1 in our model, or suppose we merely want to see how X1 taking that value affects the values of the other variables. We can click on the box that says “1” next to X1.  When we click “Do Update Now,” we again get a list of the marginal probabilities for X1.</p>
 
-<img src="images/updater_box_4.png" alt="" width="600">
+<img src="images/updater_box_4.png" alt="" width="360">
 
 <p>Now that we have added evidence, the “red line” marginal probabilities have changed; for X1, the probability that X1=1 is 1, because we’ve told Tetrad that that is the case. Likewise, the probabilities that X1=0 and X1=2 are both 0.</p>
 
 <p>Now, let’s look at the updated marginal probabilities for X2, a parent of X1.</p>
 
-<img src="images/updater_box_5.png" alt="" width="600">
+<img src="images/updater_box_5.png" alt="" width="360">
 
-<img src="images/updater_box_6.png" alt="" width="600">
+<img src="images/updater_box_6.png" alt="" width="360">
 
 <p>The image on the left is the marginal probabilities before we added the evidence that X1=1. The image on the right is the updated marginal probabilities. They have changed; in particular, it has become much more likely that X2=0.</p>
 
@@ -891,11 +994,11 @@ Replace Missing Values with Regression Predictions: If you choose this operation
 
 <p>If the variable can take one of several values, or if we know the values of more than one variable, we can select multiple values by pressing and holding the Shift key and then making our selections. For instance, in the model above, suppose that we know that X1 can be 1 or 2, but not 0. We can hold the Shift key and select the boxes for 1 and 2, and when we click “Do Update Now,” the marginal probabilities for X2 look like this: </p>
 
-<img src="images/updater_box_7.png" alt="" width="600">
+<img src="images/updater_box_7.png" alt="" width="650">
 
 <p>Since X1 must be 1 or 2, the updated probability that it is 0 is now 0. The marginal probabilities of X2 also change: </p>
 
-<img src="images/updater_box_8.png" alt="" width="600">
+<img src="images/updater_box_8.png" alt="" width="650">
 
 <p>The updated marginal probabilities are much closer to their original values than they were when we knew that X1 was 1.</p>
 
@@ -914,11 +1017,11 @@ Replace Missing Values with Regression Predictions: If you choose this operation
 <p>The SEM updater does not deal with marginal probabilities; instead, it deals with means.</p>
 
 
-<img src="images/updater_box_9.png" alt="" width="600">
+<img src="images/updater_box_9.png" alt="" width="360">
 
 <p>When it is input to the SEM updater, the following window results: </p>
 
-<img src="images/updater_box_10.png" alt="" width="600">
+<img src="images/updater_box_10.png" alt="" width="650">
 
 <p>Suppose we know that the mean of X1 is .5. When we enter that value into the text box on the left and click “Do Update Now,” the model on the right updates to reflect that mean, changing the means of both X1 and several other variables. In the new model, the means of X2, X4, and X5 will all have changed. If we click the “Manipulated” check box as well, it means that we have arbitrarily set the mean of X1 to .5, and that the value of its parent variable, X4, has no effect on it. The graph, as well as the updated means, changes to reflect this.</p>
 
@@ -949,15 +1052,15 @@ Replace Missing Values with Regression Predictions: If you choose this operation
 
 <p>Consider the following instantiated model, and a data set derived from it:</p>
 
-<img src="images/classify_box_1.png" alt="" width="600">
+<img src="images/classify_box_1.png" alt="" width="650">
 
 <p>When they are input to the classify box, the following window results: </p>
 
-<img src="images/classify_box_2.png" alt="" width="600">
+<img src="images/classify_box_2.png" alt="" width="650">
 
 <p>By clicking on the “Test Data” tab, we can see the data set which we input. Now, suppose we want to predict the values of X1 in each case. We select X1 from the scrolling menu at the top and click “Classify.” Three new tabs now appear: “Classification,” “ROC Plot,” and “Confusion Matrix.”  The classification tab, in this case, looks like this: </p>
 
-<img src="images/classify_box_3.png" alt="" width="600">
+<img src="images/classify_box_3.png" alt="" width="650">
 
 
 <p>There is a column for each of the possible values which X1 can take, and for each case, Tetrad has computed the probability that X1 will take each value, based on the configuration of other variables in that case. It then chooses the category with the highest conditional probability, and assigns X1 that value for that case. Comparison to the test data will show that the values are reasonably (though not completely) similar.</p>
@@ -1001,7 +1104,7 @@ Replace Missing Values with Regression Predictions: If you choose this operation
 
 <p>The tiers tab for a graph with four variables looks like this: </p>
 
-<img src="images/knowledge_box_1.png" alt="" width="600">
+<img src="images/knowledge_box_1.png" alt="" width="650">
 
 <p>Tiers separate your variables into a time line. Variables in higher-numbered tiers occur later than variables in lower-numbered tiers, which gives Tetrad information about causation. For example, a variable in Tier 3 could not possibly be a cause of a variable in Tier 1.</p>
 
@@ -1011,7 +1114,7 @@ Replace Missing Values with Regression Predictions: If you choose this operation
 
 <p>The groups tab for a graph with four variables looks like this: </p>
 
-<img src="images/knowledge_box_2.png" alt="" width="600">
+<img src="images/knowledge_box_2.png" alt="" width="650">
 
 <p>In the groups tab, you can specify certain groups of variables which are forbidden or required to cause other groups of variables. To add a variable to the “cause” section of a group, click on the variable in the box at the top, and then click on the box to the left of the group’s arrow. To add a variable to the “effect” section of a group, click on the variable in the box at the top, and then click on the box to the right of the group’s arrow. You can add a group by clicking on one of the buttons at the top of the window, and remove one by clicking the “remove” button above the group’s boxes.</p>
 
@@ -1019,7 +1122,7 @@ Replace Missing Values with Regression Predictions: If you choose this operation
 
 <p>The edges tab for a graph with four variables looks like this: </p>
 
-<img src="images/knowledge_box_3.png" alt="" width="600">
+<img src="images/knowledge_box_3.png" alt="" width="650">
 
 <p>In the edges tab, you can require or forbid individual causal edges between variables. To add an edge, click the type of edge you’d like to create, and then click and drag from the “cause” variable to the “effect” variable.</p>
 
@@ -1037,7 +1140,7 @@ Replace Missing Values with Regression Predictions: If you choose this operation
 
 <p>This option allows you to build clusters for a measurement model. When first opened, the window looks like this:</p>
 
-<img src="images/knowledge_box_4.png" alt="" width="600">
+<img src="images/knowledge_box_4.png" alt="" width="650">
 
 <p>You can change the number of clusters using the text box in the upper right hand corner. To place a variable in a cluster, click and drag the box with its name into the cluster pane. To move multiple variables at once, shift- or command-click on the variables, and (without releasing the shift/command button or the mouse after the final click) drag. In the search boxes, these variables will be assumed to be children of a common latent cause.</p>
 
@@ -1082,7 +1185,7 @@ Replace Missing Values with Regression Predictions: If you choose this operation
 
 <p>When you first open the simulation box, you will see some variation on this window:</p>
 
-<img src="images/simulation_box_1.png" alt="" width="600">
+<img src="images/simulation_box_1.png" alt="" width="650">
 
 <p>The “True Graph” tab contains a copy of the “Generate Subgraphs” function from the graph box. This allows you to isolate subgraphs of the parent graph to use to model data. The “Data” tab will contain the data once it has been simulated.</p>
 
@@ -1093,21 +1196,40 @@ Replace Missing Values with Regression Predictions: If you choose this operation
 
 <p>Because it has no input box to create constraints, a parentless simulation box offers the greatest freedom for setting the graph type, model type, and parameters of your simulated data. In particular, it is the only way that the simulation box will allow you to create a random graph or graphs within the box. (If you are simulating multiple data sets, and want to use a different random graph for each one, you can select “Yes” under “Yes if a different graph should be used for each run.”) You can choose the type of graph you want Tetrad to create from the “Type of Graph” drop-down list.</p>
 
-<ul class="ul">
-<li><i>Random Forward DAG:</i> This option creates a DAG by randomly adding forward edges (edges that do not point to a variable’s ancestors) one at a time. You can specify graph parameters such as number of variables, maximum and minimum degrees, and connectedness.</li>
-<li><i>Scale Free DAG:</i> This option creates a DAG whose variable’s degrees obey a power law. You can specify graph parameters such as number of variables, alpha, beta, and delta values.</li>
-<li><i>Cyclic, constructed from small loops:</i> This option creates a cyclic graph. You can specify graph parameters such as number of variables, maximum and average degrees, and the probability of the graph containing at least one cycle.</li>
-<li><i>Random One Factor MIM:</i> This option creates a one-factor multiple indicator model. You can specify graph parameters such as number of latent nodes, number of measurements per latent, and number of impure edges.</li>
-<li><i>Random Two Factor MIM:</i> This option creates a two-factor multiple indicator model. You can specify graph parameters such as number of latent nodes, number of measurements per latent, and number of impure edges.</li>
-</ul>
+<h5>Random Forward DAG</h5>
+
+<p> This option creates a DAG by randomly adding forward edges (edges that do not point to a variable’s ancestors) one at a time. You can specify graph parameters such as number of variables, maximum and minimum degrees, and connectedness.</p>
+
+<h5>Scale Free DAG</h5>
+
+<p> This option creates a DAG whose variable’s degrees obey a power law. You can specify graph parameters such as number of variables, alpha, beta, and delta values.</p>
+
+<h5>Cyclic, constructed from small loops</h5>
+
+<p> This option creates a cyclic graph. You can specify graph parameters such as number of variables, maximum and average degrees, and the probability of the graph containing at least one cycle.</p>
+
+<h5>Random One Factor MIM</h5>
+
+<p> This option creates a one-factor multiple indicator model. You can specify graph parameters such as number of latent nodes, number of measurements per latent, and number of impure edges.</p>
+
+<h5>Random Two Factor MIM</h5>
+
+<p> This option creates a two-factor multiple indicator model. You can specify graph parameters such as number of latent nodes, number of measurements per latent, and number of impure edges.</p>
 
 <p>In addition to the graph type, you can also specify the type of model you would like Tetrad to simulate.</p>
 
-<ul class="ul">
-<li><i>Bayes net:</i> Simulates a Bayes instantiated model. You can specify model parameters including maximum and minimum number of categories for each variable.</li>
-<li><i>Structural Equation Model:</i> Simulates a SEM instantiated model. You can specify model parameters including coefficient, variance, and covariance ranges.</li>
-<li>
-	<i>Linear Fisher Model:</i> Simulates data using a linear Markov 1 DBN without concurrent edges. The Fisher model suggests that shocks should be applied at intervals and the time series be allowed to move to convergence between shocks. This simulation has many parameters that can be adjusted, as indicated in the interface. The ones that require some explanation are as follows.
+<h5>Bayes net</h5>
+
+<p> Simulates a Bayes instantiated model. You can specify model parameters including maximum and minimum number of categories for each variable.</p>
+
+<h5>Structural Equation Model</h5>
+
+<p> Simulates a SEM instantiated model. You can specify model parameters including coefficient, variance, and covariance ranges.</p>
+
+<h5>Linear Fisher Model</h5>
+
+<p>Simulates data using a linear Markov 1 DBN without concurrent edges. The Fisher model suggests that shocks should be applied at intervals and the time series be allowed to move to convergence between shocks. This simulation has many parameters that can be adjusted, as indicated in the interface. The ones that require some explanation are as follows.</p>
+
 <ul class="ul">
 <li>Low end of coefficient range, high end of coefficient range, low end of variance range, high end of variance range. Each variable is a linear function of the parents of the variable (in the previous time lag) plus Gaussian noise. The coefficients are drawn randomly from U(a, b) where a is the low end of the coefficient range and b is the high end of the coefficient range. Here, a < b. The Gaussian noise is drawn uniformly from U(c, d), where c is the low end of the variance range and d is the high end of the variance range. Here, c < d.</li>
 <li>Yes, if negative values should be considered. If no, only positive values will be recorded. This should not be used for large numbers of variables, since it is more difficult to find cases with all positive values when the number of variables is large.</li>
@@ -1118,23 +1240,29 @@ Replace Missing Values with Regression Predictions: If you choose this operation
 <li>Interval between data recordings. The data are recorded every so many steps. If one wishes to allow to completely converge between steps (i.e., produce equilibrium data), set this interval to some large number like 20 and set the interval between shocks likewise to 20 Other values can be used, however.</li>
 <li>Epsilon for convergence. Even if you set the interval between data recordings to a large number, you can specify an epsilon such that if all values of variables differ from their values one time step back by less than epsilon, the series will be taken to have converged, and the remaining steps between data recordings will be skipped, the data point being recorded at convergence.</li>
 </ul>
-</li>
-<li><i>Lee & Hastie:</i> This is a model for simulating mixed data (data with both continuous and discrete variables. The model is given in Lee J, Hastie T. 2013, Structure Learning of Mixed Graphical Models, Journal of Machine Learning Research 31: 388-396. Here, mixtures of continuous and discrete variables are treated as log-linear.
+
+<h5>Lee &amp; Hastie</h5>
+
+<p> This is a model for simulating mixed data (data with both continuous and discrete variables. The model is given in Lee J, Hastie T. 2013, Structure Learning of Mixed Graphical Models, Journal of Machine Learning Research 31: 388-396. Here, mixtures of continuous and discrete variables are treated as log-linear.</p>
+
 <ul class="ul">
 <li>Percentage of discrete variables. The model generates continuous data, but some or all of the variables may be discretized at random. The user needs to indicate the percentage of variables (randomly chosen that one wishes to have discretized. The default is zero—i.e., all continuous variables.</li>
 <li>Number of categories of discrete variables. For the variables that are discretized, the number of categories to use to discretize each of these variables.</li>
 <li>Sample size. The number of records to be simulated.</li>
 </ul>
 
-</li>
-<li><i>Time Series:</i> This is a special simulation for representing time series. Concurrent edges are allowed. This can take a Time Series Graph as input, in which variables in the current lag are written as functions of the parents in the current and previous lags.
-	<ul class="ul">
+<h5>Time Series</h5>
+
+<p> This is a special simulation for representing time series. Concurrent edges are allowed. This can take a Time Series Graph as input, in which variables in the current lag are written as functions of the parents in the current and previous lags.</p>
+
+<ul class="ul">
 <li>Sample size. The number of records to be simulated.</li>
 </ul>
 
-</li>
-<li><i>Boolean Glass:</i> The instantiated model used to simulate the data will be re-parameterized for each run of the simulation.</li>
-</ul>
+<h5>Boolean Glass</h5>
+
+<p> The instantiated model used to simulate the data will be re-parameterized for each run of the simulation.</p>
+
 
 <h4>The Simulation Box with a Graph Input</h4>
 
@@ -1187,7 +1315,7 @@ Replace Missing Values with Regression Predictions: If you choose this operation
 
 <p>When you first open the search box, you will be presented with a number of options for the kind of search you would like to perform:</p>
 
-<img src="images/search_box_1.png" alt="" width="600">
+<img src="images/search_box_1.png" alt="" width="650">
 
 
 <p>The “Output Graphs” tab is where the results of your search will be stored after it has been performed. The “Knowledge” tab contains a copy of the “Tiers and Edges” knowledge box, which you can use to add knowledge directly in the search box. (See the Knowledge Box section for more information.)</p>
@@ -2257,11 +2385,11 @@ same qualitative causal structure. As with IMAGES, the user can specify a “pen
 
 <p>Take, for example, a data set with the following underlying causal structure:</p>
 
-<img src="images/regression_box_1.png" alt="" width="600">
+<img src="images/regression_box_1.png" alt="" width="360">
 
 <p>When used as input to the linear regression box, the following window results: </p>
 
-<img src="images/regression_box_2.png" alt="" width="600">
+<img src="images/regression_box_2.png" alt="" width="650">
 
 <p>To select a variable as the response variable, click on it in the leftmost box, and then click on the top right-pointing arrow. If you change your mind about which variable should be the response variable, simply click on another variable and click on the arrow again. </p>
 
@@ -2273,7 +2401,7 @@ same qualitative causal structure. As with IMAGES, the user can specify a “pen
 
 <p>The Output Graph tab contains a graphical model of the information contained in the Model tab. For the case in which X4 is the response variable and X1, X2, and X3 are the predictors, Tetrad finds that only X1 is significant, and the output graph looks like this:</p>
 
-<img src="images/regression_box_3.png" alt="" width="60">
+<img src="images/regression_box_3.png" alt="" width="70">
 
 <p>Comparison to the true causal model shows that this correlation does exist, but that it runs in the opposite direction.</p>
 
@@ -2283,6 +2411,8 @@ same qualitative causal structure. As with IMAGES, the user can specify a “pen
 
 
 </div>
+
+
 
 <!-- Google Analytics: change UA-XXXXX-Y to be your site's ID. -->
 <script>

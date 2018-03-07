@@ -1,255 +1,3 @@
-/*!
- * =====================================================
- * Simple front-end web style/pattern guide for consistent design
- *
- * Copyright 2014 Zhou Yuan
- * Licensed under MIT
- * =====================================================
-
-/*! normalize.css v3.0.0 | MIT License | git.io/normalize */
-
-/**
- * 1. Set default font family to sans-serif.
- * 2. Prevent iOS text size adjust after orientation change, without disabling
- *    user zoom.
- */
-
-html {
-  font-family: sans-serif; /* 1 */
-  -ms-text-size-adjust: 100%; /* 2 */
-  -webkit-text-size-adjust: 100%; /* 2 */
-}
-
-/**
- * Remove default margin.
- */
-
-body {
-  margin: 0;
-}
-
-/* HTML5 display definitions
-   ========================================================================== */
-
-/**
- * Correct `block` display not defined in IE 8/9.
- */
-
-article,
-aside,
-details,
-figcaption,
-figure,
-footer,
-header,
-hgroup,
-main,
-nav,
-section,
-summary {
-  display: block;
-}
-
-/**
- * 1. Correct `inline-block` display not defined in IE 8/9.
- * 2. Normalize vertical alignment of `progress` in Chrome, Firefox, and Opera.
- */
-
-audio,
-canvas,
-progress,
-video {
-  display: inline-block; /* 1 */
-  vertical-align: baseline; /* 2 */
-}
-
-/**
- * Prevent modern browsers from displaying `audio` without controls.
- * Remove excess height in iOS 5 devices.
- */
-
-audio:not([controls]) {
-  display: none;
-  height: 0;
-}
-
-/**
- * Address `[hidden]` styling not present in IE 8/9.
- * Hide the `template` element in IE, Safari, and Firefox < 22.
- */
-
-[hidden],
-template {
-  display: none;
-}
-
-/* Links
-   ========================================================================== */
-
-/**
- * Remove the gray background color from active links in IE 10.
- */
-
-a {
-  background: transparent;
-}
-
-/**
- * Improve readability when focused and also mouse hovered in all browsers.
- */
-
-a:active,
-a:hover {
-  outline: 0;
-}
-
-/* Text-level semantics
-   ========================================================================== */
-
-/**
- * Address styling not present in IE 8/9, Safari 5, and Chrome.
- */
-
-abbr[title] {
-  border-bottom: 1px dotted;
-}
-
-/**
- * Address style set to `bolder` in Firefox 4+, Safari 5, and Chrome.
- */
-
-b,
-strong {
-  font-weight: bold;
-}
-
-/**
- * Address styling not present in Safari 5 and Chrome.
- */
-
-dfn {
-  font-style: italic;
-}
-
-/**
- * Address styling not present in IE 8/9.
- */
-
-mark {
-  background: #ff0;
-  color: #000;
-}
-
-/**
- * Address inconsistent and variable font size in all browsers.
- */
-
-small {
-  font-size: 80%;
-}
-
-/**
- * Prevent `sub` and `sup` affecting `line-height` in all browsers.
- */
-
-sub,
-sup {
-  font-size: 75%;
-  line-height: 0;
-  position: relative;
-  vertical-align: baseline;
-}
-
-sup {
-  top: -0.5em;
-}
-
-sub {
-  bottom: -0.25em;
-}
-
-/* Embedded content
-   ========================================================================== */
-
-/**
- * Remove border when inside `a` element in IE 8/9.
- */
-
-img {
-  border: 0;
-}
-
-/**
- * Correct overflow displayed oddly in IE 9.
- */
-
-svg:not(:root) {
-  overflow: hidden;
-}
-
-/* Grouping content
-   ========================================================================== */
-
-/**
- * Address margin not present in IE 8/9 and Safari 5.
- */
-
-figure {
-  margin: 1em 40px;
-}
-
-/**
- * Address differences between Firefox and other browsers.
- */
-
-hr {
-  -moz-box-sizing: content-box;
-  box-sizing: content-box;
-  height: 0;
-}
-
-/**
- * Contain overflow in all browsers.
- */
-
-pre {
-  overflow: auto;
-}
-
-/**
- * Address odd `em`-unit font size rendering in all browsers.
- */
-
-code,
-kbd,
-pre,
-samp {
-  font-family: monospace, monospace;
-  font-size: 1em;
-}
-
-/* Tables
-   ========================================================================== */
-
-/**
- * Remove most spacing between table cells.
- */
-
-table {
-  border-collapse: collapse;
-  border-spacing: 0;
-}
-
-td,
-th {
-  padding: 0;
-}
-
-
-
-/* ==========================================================================
-   PotatoGuide | MIT License | http://potatoguide.com/
-   ========================================================================== */
 
 /*
  * Remove text-shadow in selection highlight: h5bp.com/i
@@ -322,6 +70,24 @@ h5,
 h6{
 line-height: 1.1;
 }
+
+/* Tables
+   ========================================================================== */
+
+/**
+ * Remove most spacing between table cells.
+ */
+
+table {
+  border-collapse: collapse;
+  border-spacing: 0;
+}
+
+td,
+th {
+  padding: 0;
+}
+
 
 /* Unordered Lists and Ordered Lists */
 /* http://www.w3.org/wiki/Styling_lists_and_links */
@@ -691,8 +457,7 @@ margin:20px 0;
 }
 
 .table th {
-line-height:1.6;
-padding:15px 10px; 
+padding:10px; 
 background:#ebeff9;
 border:1px solid #ccc;
 /* The text in th are bold and centered by default. */
@@ -703,12 +468,6 @@ line-height:1.6;
 padding:10px; 
 border:1px solid #ccc;
 }
-
-.table_hover>tbody>tr:hover>td{
-background-color:#fefbd6;
-}
-
-
 
 
 /*--------------------------------------------------------------
@@ -730,9 +489,9 @@ background-color: #ddd;
 
 /* page layout / structure
 -------------------------------------------------------------- */
-.main {
-margin:40px 100px;
-padding:40px;
+.inner {
+margin:20px auto;
+padding:40px 40px;
 background-color: #fff;
 }
 
@@ -754,12 +513,28 @@ font-size: 1.4em;
 margin: 0.4em 0;
 }
 
+h4 {
+font-size: 1.2em;
+margin: 0.4em 0;
+}
+
+h5 {
+font-size: 1em;
+margin: 0.4em 0;
+}
+
+.header {
+background:#ddd;
+padding:20px;
+text-align:center;
+}
 
 .toc_container {
 background: #f9f9f9;
 border: 1px solid #aaa;
 display: table;
 padding: 20px;
+margin-top:40px;
 width: auto;
 }
 
