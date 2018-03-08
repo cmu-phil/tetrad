@@ -42,6 +42,8 @@ public class CStaS {
 
     // A single record in the returned table.
     public static class Record implements TetradSerializable {
+        static final long serialVersionUID = 23L;
+
         private Node predictor;
         private double pi;
         private double effect;

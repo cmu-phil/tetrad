@@ -104,7 +104,7 @@ public class TestCStaS {
 //        }
 //    }
 
-    @Test
+//    @Test
     public void testCStaS() {
         int numNodes = 400;
         int avgDegree = 6;
@@ -187,7 +187,7 @@ public class TestCStaS {
         }
     }
 
-    @Test
+//    @Test
     public void testCStaSMulti() {
         int numTargets = 10;
 
@@ -305,7 +305,7 @@ public class TestCStaS {
 //        }
     }
 
-    @Test
+//    @Test
     public void testFgesMbAncestors() {
         int numNodes = 500;
         int avgDegree = 7;
@@ -565,7 +565,7 @@ public class TestCStaS {
 //
 //    }
 
-    @Test
+//    @Test
     public void testHughes() {
         int numSubsamples = 50;
 
@@ -741,7 +741,7 @@ public class TestCStaS {
         return sum / (double) (mutants.getNumRows());
     }
 
-    @Test
+//    @Test
     public void testConditionalGaussian() {
 
         Parameters parameters = new Parameters();
