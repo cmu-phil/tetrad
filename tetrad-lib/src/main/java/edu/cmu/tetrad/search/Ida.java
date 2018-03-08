@@ -7,6 +7,7 @@ import edu.cmu.tetrad.data.ICovarianceMatrix;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.util.ChoiceGenerator;
 import edu.cmu.tetrad.util.DepthChoiceGenerator;
 import edu.cmu.tetrad.util.TetradMatrix;
 import org.apache.commons.math3.linear.SingularMatrixException;
@@ -26,12 +27,15 @@ import static java.lang.Math.min;
 public class Ida {
     private DataSet dataSet;
     private final Graph pattern;
+    private final List<Node> possiblePredictors;
     private Map<String, Integer> nodeIndices;
     private ICovarianceMatrix allCovariances;
 
-    public Ida(DataSet dataSet, Graph pattern) {
+    public Ida(DataSet dataSet, Graph pattern, List<Node> possiblePredictors) {
         this.dataSet = DataUtils.convertNumericalDiscreteToContinuous(dataSet);
         this.pattern = pattern;
+        possiblePredictors = GraphUtils.replaceNodes(possiblePredictors, dataSet.getVariables());
+        this.possiblePredictors = possiblePredictors;
 
         allCovariances = new CovarianceMatrixOnTheFly(this.dataSet);
 
@@ -40,86 +44,6 @@ public class Ida {
         for (int i = 0; i < pattern.getNodes().size(); i++) {
             nodeIndices.put(pattern.getNodes().get(i).getName(), i);
         }
-    }
-
-    /**
-     * Returns a list of the possible effects of X on Y (with different possible parents from the pattern),
-     * sorted low to high in absolute value.
-     * <p>
-     * 1. First, estimate a pattern P from the data.
-     * 2. Then, consider all combinations C of adjacents of X that include all fo the parents of X in P.
-     * 3. For each such C, regress Y onto {X} U C and record the coefficient beta for X in the regression.
-     * 4. Report the list of such betas, sorted low to high.
-     *
-     * @param x The first variable.
-     * @param y The second variable
-     * @return a list of the possible effects of X on Y.
-     */
-    public LinkedList<Double> getEffects(Node x, Node y) {
-        if (x == y) {
-            throw new IllegalArgumentException("x == y");
-        }
-
-        List<Node> parents = pattern.getParents(x);
-        List<Node> children = pattern.getChildren(x);
-
-        List<Node> siblings = pattern.getAdjacentNodes(x);
-        siblings.removeAll(parents);
-        siblings.removeAll(children);
-
-        DepthChoiceGenerator gen = new DepthChoiceGenerator(siblings.size(), siblings.size());
-        int[] choice;
-
-
-        LinkedList<Double> effects = new LinkedList<>();
-
-        while ((choice = gen.next()) != null) {
-            List<Node> sibbled = GraphUtils.asList(choice, siblings);
-
-            List<Node> regressors = null;
-
-            double beta;
-
-            try {
-                regressors = new ArrayList<>();
-                regressors.add(x);
-                for (Node n : parents) if (!regressors.contains(n)) regressors.add(n);
-                for (Node n : sibbled) if (!regressors.contains(n)) regressors.add(n);
-                regressors.remove(y); // These are ignored anyway.
-
-                if (regressors.contains(y)) {
-                    beta = 0;
-                } else {
-                    beta = getBeta(regressors, y);
-                }
-            } catch (SingularMatrixException e) {
-                beta = 0;
-            }
-
-            effects.add(abs(beta));
-        }
-
-        Collections.sort(effects);
-
-        return effects;
-    }
-
-    /**
-     * Returns a map from nodes in V \ {Y} to their minimum effects.
-     *
-     * @param y The child variable
-     * @return Thia map.
-     */
-    private Map<Node, Double> calculateMinimumEffectsOnY(Node y) {
-        SortedMap<Node, Double> minEffects = new TreeMap<>();
-
-        for (Node x : pattern.getNodes()) {
-            if (x == y) continue;
-            final LinkedList<Double> effects = getEffects(x, y);
-            minEffects.put(x, effects.getFirst());
-        }
-
-        return minEffects;
     }
 
     /**
@@ -133,10 +57,9 @@ public class Ida {
         Map<Node, Double> allEffects = calculateMinimumEffectsOnY(y);
 
         List<Node> nodes = new ArrayList<>(allEffects.keySet());
+        Collections.shuffle(nodes);
 
-        nodes.sort((o1, o2) -> {
-            return Double.compare(abs(allEffects.get(o2)), abs(allEffects.get(o1)));
-        });
+        nodes.sort((o1, o2) -> Double.compare(abs(allEffects.get(o2)), abs(allEffects.get(o1))));
 
         LinkedList<Double> effects = new LinkedList<>();
 
@@ -145,6 +68,10 @@ public class Ida {
         }
 
         return new NodeEffects(nodes, effects);
+    }
+
+    public List<Node> getPossiblePredictors() {
+        return possiblePredictors;
     }
 
     /**
@@ -156,7 +83,7 @@ public class Ida {
         private List<Node> nodes;
         private LinkedList<Double> effects;
 
-        public NodeEffects(List<Node> nodes, LinkedList<Double> effects) {
+        NodeEffects(List<Node> nodes, LinkedList<Double> effects) {
             this.setNodes(nodes);
             this.setEffects(effects);
         }
@@ -195,6 +122,10 @@ public class Ida {
 
         trueDag = GraphUtils.replaceNodes(trueDag, dataSet.getVariables());
 
+        if (trueDag == null) {
+            throw new NullPointerException("True graph is null.");
+        }
+
         List<Node> regressors = new ArrayList<>();
         regressors.add(x);
         regressors.addAll(trueDag.getParents(x));
@@ -224,17 +155,112 @@ public class Ida {
         }
     }
 
+    /**
+     * Returns a list of the possible effects of X on Y (with different possible parents from the pattern),
+     * sorted low to high in absolute value.
+     * <p>
+     * 1. First, estimate a pattern P from the data.
+     * 2. Then, consider all combinations C of adjacents of X that include all fo the parents of X in P.
+     * 3. For each such C, regress Y onto {X} U C and record the coefficient beta for X in the regression.
+     * 4. Report the list of such betas, sorted low to high.
+     *
+     * @param x The first variable.
+     * @param y The second variable
+     * @return a list of the possible effects of X on Y.
+     */
+    private LinkedList<Double> getEffects(Node x, Node y) {
+        if (x == y) {
+            throw new IllegalArgumentException("x == y");
+        }
+
+        List<Node> parents = pattern.getParents(x);
+        List<Node> children = pattern.getChildren(x);
+
+        List<Node> siblings = pattern.getAdjacentNodes(x);
+        siblings.removeAll(parents);
+        siblings.removeAll(children);
+
+        DepthChoiceGenerator gen = new DepthChoiceGenerator(siblings.size(), siblings.size());
+        int[] choice;
+
+        LinkedList<Double> effects = new LinkedList<>();
+
+        CHOICE:
+        while ((choice = gen.next()) != null) {
+            try {
+                List<Node> sibbled = GraphUtils.asList(choice, siblings);
+
+                if (sibbled.size() > 1) {
+                    ChoiceGenerator gen2 = new ChoiceGenerator(sibbled.size(), 2);
+                    int[] choice2;
+
+                    while ((choice2 = gen2.next()) != null) {
+                        List<Node> adj = GraphUtils.asList(choice2, sibbled);
+                        if (!pattern.isAdjacentTo(adj.get(0), adj.get(1))) continue CHOICE;
+                    }
+                }
+
+                if (!sibbled.isEmpty()) {
+                    for (Node p : parents) {
+                        for (Node s : sibbled) {
+                            if (!pattern.isAdjacentTo(p, s)) continue CHOICE;
+                        }
+                    }
+                }
+
+                List<Node> regressors = new ArrayList<>();
+                regressors.add(x);
+                for (Node n : parents) if (!regressors.contains(n)) regressors.add(n);
+                for (Node n : sibbled) if (!regressors.contains(n)) regressors.add(n);
+
+                if (regressors.contains(y)) {
+                    effects.add(0.0);
+                } else {
+                    effects.add(abs(getBeta(regressors, y)));
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+
+        Collections.sort(effects);
+
+        return effects;
+    }
+
+    /**
+     * Returns a map from nodes in V \ {Y} to their minimum effects.
+     *
+     * @param y The child variable
+     * @return Thia map.
+     */
+    private Map<Node, Double> calculateMinimumEffectsOnY(Node y) {
+        SortedMap<Node, Double> minEffects = new TreeMap<>();
+
+        for (Node x : possiblePredictors) {
+            if (x == y) continue;
+            final LinkedList<Double> effects = getEffects(x, y);
+            minEffects.put(x, effects.getFirst());
+        }
+
+        return minEffects;
+    }
+
     // x must be the first regressor.
     private double getBeta(List<Node> regressors, Node child) {
-        int yIndex = nodeIndices.get(child.getName());
-        int[] xIndices = new int[regressors.size()];
-        for (int i = 0; i < regressors.size(); i++) xIndices[i] = nodeIndices.get(regressors.get(i).getName());
+        try {
+            int yIndex = nodeIndices.get(child.getName());
+            int[] xIndices = new int[regressors.size()];
+            for (int i = 0; i < regressors.size(); i++) xIndices[i] = nodeIndices.get(regressors.get(i).getName());
 
-        TetradMatrix rX = allCovariances.getSelection(xIndices, xIndices);
-        TetradMatrix rY = allCovariances.getSelection(xIndices, new int[]{yIndex});
+            TetradMatrix rX = allCovariances.getSelection(xIndices, xIndices);
+            TetradMatrix rY = allCovariances.getSelection(xIndices, new int[]{yIndex});
 
-        TetradMatrix bStar = rX.inverse().times(rY);
+            TetradMatrix bStar = rX.inverse().times(rY);
 
-        return bStar.get(0, 0);
+            return bStar.get(0, 0);
+        } catch (SingularMatrixException e) {
+            return 0.0;
+        }
     }
 }

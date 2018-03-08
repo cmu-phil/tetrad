@@ -23,8 +23,8 @@
 <p>A Bayes Instantiated Model (Bayes IM) extends a <a href="../pm/bayes_pm.html">Bayes Parameterized Model</a>,
     specifying values for all of the parameters in the Bayes net. The parameters for a Bayes net (in the form that
     they're used in Tetrad) are conditional probabilities stored in <em>conditional probability tables</em>, one for
-    each variable in the Bayes net. A variable X has a (possibly empty) list of parents P1, ..., Pn--i.e., variables Pi
-    such that Pi--&gt;X in the Bayes PM. The variable itself and each of its parents has a list of categories. A
+    each predictor in the Bayes net. A predictor X has a (possibly empty) list of parents P1, ..., Pn--i.e., variables Pi
+    such that Pi--&gt;X in the Bayes PM. The predictor itself and each of its parents has a list of categories. A
     conditional probability table for X is a specification of the probability P(X=x' | P1=p1', ..., Pn=pn') for each
     category x' of X and each combination of categories &lt;p1', ..., pn'&gt; for parents P1, ..., Pn of X. For any
     particular combination of parent values &lt;p1', ..., pn'&gt;, the sum of the conditional probabilities P(X=xj |
@@ -81,7 +81,7 @@
 <p>Old text:</p>
 <p><br>
     If you choose an ML Instantiated Bayes Model, the program will either randomly specify the conditional probability
-    of each value of each variable given the values of its parents, or you can specify them manually through the dialog
+    of each value of each predictor given the values of its parents, or you can specify them manually through the dialog
     box:<br>
     <br>
     <br>
@@ -91,14 +91,14 @@
             style="width: 859px; height: 495px;"><br>
     <br>
     <br>
-    Choose a variable either using the "Next" button on the right side of the window or by clicking on the variable in
+    Choose a predictor either using the "Next" button on the right side of the window or by clicking on the predictor in
     the graph on the left<br>
     side of the window. In either case, you will see one or more rows of entry spaces, with each entry space labeled by
     the name of the value of the selected variables. Each row corresponds to an allowed assignment of variables to the
-    variables that are parents of the selected variable. For each row--each assignment of allowed values to the
-    variables that are parents of the variable you have selected--you must enter a numerical value between 0 and 1 for
-    each value of the variable you have selected. These are the respective probabilities of the values of your selected
-    variable, condiitonal on the values in that row of its parents variables.&nbsp;&nbsp; The numbers you put into any
+    variables that are parents of the selected predictor. For each row--each assignment of allowed values to the
+    variables that are parents of the predictor you have selected--you must enter a numerical value between 0 and 1 for
+    each value of the predictor you have selected. These are the respective probabilities of the values of your selected
+    predictor, condiitonal on the values in that row of its parents variables.&nbsp;&nbsp; The numbers you put into any
     row must add up exactly to 1. If they don't the program will simply erase the values you have entered in that row.&nbsp;
     If you start entering numbers in a row from the left, which is highly recommended, the program will automatically
     fill in the next to last entry space with the number (if one exists) needed to make the row numbers sum to 1. <br>
@@ -107,7 +107,7 @@
     for it other than to estimate the condiitonal probabilities from a data set, or to randomize.&nbsp; If you
     choose "Random" instead of "Manual" you will get a window very much like the one above, except that randomly chosen
     values will be entered in each row. You can edit these values by clicking on a row and typing. As in other windows
-    showing graphs, you can select a variable by clicking on it.</p>
+    showing graphs, you can select a predictor by clicking on it.</p>
 <h3>Potential Parents for Bayes Instantiated Model </h3>
 <p>The Bayes IM can accept the following potential parents. </p>
 <ol>

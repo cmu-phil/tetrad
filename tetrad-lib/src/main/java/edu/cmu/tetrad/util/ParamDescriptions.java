@@ -276,10 +276,13 @@ public class ParamDescriptions {
             "The probability of creating a 2-cycles in the graph (0 - 1)",
             0.0, 0.0, 1.0));
 
+        map.put("selectionAlpha", new ParamDescription(
+                "The alpha used for a Fisher Z test to select variables associated with the target",
+                0.05, 0.0, 1));
 
         map.put("maxEr", new ParamDescription(
-                "A bound on the expected number of false positives",
-                10, 0.0, Double.MAX_VALUE));
+                "Bound on the expected false positive error rate",
+                5.0, 0.0, Double.POSITIVE_INFINITY));
 
         map.put("parallelism", new ParamDescription(
                 "The number of threads to use in the parallel calculation",

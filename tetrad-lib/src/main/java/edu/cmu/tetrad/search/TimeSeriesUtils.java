@@ -203,7 +203,7 @@ public class TimeSeriesUtils {
             List<Node> regressors = new ArrayList<>();
 
             // Collect up parents from each lagged variable behind
-            // timelags.getVariable(i).
+            // timelags.getPredictor(i).
             for (int j = 0; j <= 0 /*numLags*/; j++) {
                 Node variable = timeLags.getVariable(i + j * timeSeries.getNumColumns());
                 regressors.addAll(graph.getParents(variable));

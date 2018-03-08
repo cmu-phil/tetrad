@@ -88,7 +88,7 @@ public class Simulation extends DataWrapper implements SessionModel,
             this.name = simulation.name + ".copy";
             this.fixedGraph = simulation.fixedGraph;
             this.fixedSimulation = simulation.fixedSimulation;
-            createSimulation();
+//            createSimulation(); // The suggestion is that you should't actually simulate before the user clicks 'simulate'
         } else {
             simulation = new BayesNetSimulation(new SingleGraph(graphSource.getGraph()));
             this.fixedGraph = true;
@@ -101,79 +101,79 @@ public class Simulation extends DataWrapper implements SessionModel,
     public Simulation(BayesImWrapper wrapper, Parameters parameters) {
         simulation = new BayesNetSimulation(wrapper.getBayesIm());
         this.parameters = parameters;
-        createSimulation();
+//        createSimulation();
     }
 
     public Simulation(BayesImWrapperObs wrapper, Parameters parameters) {
         simulation = new BayesNetSimulation(wrapper.getBayesIm());
         this.parameters = parameters;
-        createSimulation();
+//        createSimulation();
     }
 
     public Simulation(BayesPmWrapper wrapper, Parameters parameters) {
         simulation = new BayesNetSimulation(wrapper.getBayesPm());
         this.parameters = parameters;
-        createSimulation();
+//        createSimulation();
     }
 
     public Simulation(BayesEstimatorWrapper wrapper, Parameters parameters) {
         simulation = new BayesNetSimulation(wrapper.getEstimatedBayesIm());
         this.parameters = parameters;
-        createSimulation();
+//        createSimulation();
     }
 
     public Simulation(DirichletBayesImWrapper wrapper, Parameters parameters) {
         simulation = new BayesNetSimulation(wrapper.getDirichletBayesIm());
         this.parameters = parameters;
-        createSimulation();
+//        createSimulation();
     }
 
     public Simulation(DirichletEstimatorWrapper wrapper, Parameters parameters) {
         simulation = new BayesNetSimulation(wrapper.getEstimatedBayesIm());
         this.parameters = parameters;
-        createSimulation();
+//        createSimulation();
     }
 
     public Simulation(CptInvariantUpdaterWrapper wrapper, Parameters parameters) {
         simulation = new BayesNetSimulation(wrapper.getBayesUpdater().getManipulatedBayesIm());
         this.parameters = parameters;
-        createSimulation();
+//        createSimulation();
     }
 
     public Simulation(SemPmWrapper wrapper, Parameters parameters) {
         simulation = new SemSimulation(wrapper.getSemPm());
         this.parameters = parameters;
-        createSimulation();
+//        createSimulation();
     }
 
     public Simulation(SemImWrapper wrapper, Parameters parameters) {
         simulation = new SemSimulation(wrapper.getSemIm());
         this.parameters = parameters;
-        createSimulation();
+//        createSimulation();
     }
 
     public Simulation(StandardizedSemImWrapper wrapper, Parameters parameters) {
         simulation = new StandardizedSemSimulation(wrapper.getStandardizedSemIm());
         this.parameters = parameters;
-        createSimulation();
+//        createSimulation();
     }
 
     public Simulation(SemEstimatorWrapper wrapper, Parameters parameters) {
         simulation = new SemSimulation(wrapper.getEstimatedSemIm());
         this.parameters = parameters;
-        createSimulation();
+//        createSimulation();
     }
 
     public Simulation(SemUpdaterWrapper wrapper, Parameters parameters) {
         simulation = new SemSimulation(wrapper.getSemUpdater().getManipulatedSemIm());
         this.parameters = parameters;
-        createSimulation();
+//        createSimulation();
     }
 
     public Simulation(GeneralizedSemPmWrapper wrapper, Parameters parameters) {
         simulation = new GeneralSemSimulation(wrapper.getSemPm());
         this.parameters = parameters;
-        createSimulation();
+//        createSimulation();
     }
 
     public Simulation(GeneralizedSemImWrapper wrapper, Parameters parameters) {
@@ -183,7 +183,7 @@ public class Simulation extends DataWrapper implements SessionModel,
 
         simulation = new GeneralSemSimulation(wrapper.getSemIms().get(0));
         this.parameters = parameters;
-        createSimulation();
+//        createSimulation();
     }
 
     public Simulation(DataWrapper dataWrapper, Parameters parameters) {

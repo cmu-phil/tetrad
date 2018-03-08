@@ -260,7 +260,7 @@ public final class Cpc implements GraphSearch {
         this.colliderTriples = new HashSet<>();
         this.noncolliderTriples = new HashSet<>();
 
-//        this.logger.log("info", "Variables " + independenceTest.getVariable());
+//        this.logger.log("info", "Variables " + independenceTest.getPredictor());
 
         long startTime = System.currentTimeMillis();
 
@@ -347,14 +347,14 @@ public final class Cpc implements GraphSearch {
 //     * constructor.
 //     */
 //    public final Graph orientationForGraph(Dag trueGraph) {
-//        Graph graph = new EdgeListGraphSingleConnections(independenceTest.getVariable());
+//        Graph graph = new EdgeListGraphSingleConnections(independenceTest.getPredictor());
 //
 //        for (Edge edge : trueGraph.getEdges()) {
 //            Node nodeA = edge.getNode1();
 //            Node nodeB = edge.getNode2();
 //
-//            Node _nodeA = independenceTest.getVariable(nodeA.getNode());
-//            Node _nodeB = independenceTest.getVariable(nodeB.getNode());
+//            Node _nodeA = independenceTest.getPredictor(nodeA.getNode());
+//            Node _nodeB = independenceTest.getPredictor(nodeB.getNode());
 //
 //            graph.addUndirectedEdge(_nodeA, _nodeB);
 //        }

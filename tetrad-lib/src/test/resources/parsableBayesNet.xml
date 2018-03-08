@@ -26,14 +26,14 @@
     </parentsFor>
   </parents>
   <cpts rowSumTolerance="0.0001">
-    <cpt variable="a" numRows="1" numCols="2">
+    <cpt predictor="a" numRows="1" numCols="2">
       <row>0.91191 0.08809</row>
     </cpt>
-    <cpt variable="b" numRows="2" numCols="3">
+    <cpt predictor="b" numRows="2" numCols="3">
       <row>0.26413 0.31986 0.41601</row>
       <row>0.11941 0.77750 0.10309</row>
     </cpt>
-    <cpt variable="c" numRows="6" numCols="2">
+    <cpt predictor="c" numRows="6" numCols="2">
       <row>0.01459 0.98541</row>
       <row>0.95857 0.04143</row>
       <row>0.99523 0.00477</row>

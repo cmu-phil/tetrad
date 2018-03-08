@@ -512,10 +512,10 @@ public final class DataReader implements IDataReader {
 //        DataSet dataSet = new BoxDataSet(new DoubleDataBox(description.getNumRows(),
 //                variables.size()), variables);
 //        DataSet dataSet = new NumberObjectDataSet(description.getNumRows(),
-//                description.getVariable());
+//                description.getPredictor());
 
-//        ShortDataBox box = new ShortDataBox(description.getNumRows(), description.getVariable().size());
-//        BoxDataSet dataSet = new BoxDataSet(box, description.getVariable());
+//        ShortDataBox box = new ShortDataBox(description.getNumRows(), description.getPredictor().size());
+//        BoxDataSet dataSet = new BoxDataSet(box, description.getPredictor());
         int row = -1;
 
         while (lineizer.hasMoreLines()) {

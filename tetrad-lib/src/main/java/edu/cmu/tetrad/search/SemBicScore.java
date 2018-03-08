@@ -32,9 +32,7 @@ import org.apache.commons.math3.linear.SingularMatrixException;
 
 import java.io.PrintStream;
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
 
-import static java.lang.Math.PI;
 import static java.lang.Math.log;
 
 /**
@@ -69,7 +67,7 @@ public class SemBicScore implements Score {
     // Variables that caused computational problems and so are to be avoided.
     private Set<Integer> forbidden = new HashSet<>();
 
-    private Map<Node, Integer> indexMap;
+    private Map<String, Integer> indexMap;
 
 
     /**
@@ -83,7 +81,7 @@ public class SemBicScore implements Score {
         this.setCovariances(covariances);
         this.variables = covariances.getVariables();
         this.sampleSize = covariances.getSampleSize();
-        this.indexMap = indexMap(variables);
+        this.indexMap = indexMap(this.variables);
     }
 
     /**
@@ -172,29 +170,19 @@ public class SemBicScore implements Score {
     }
 
     private double partialCorrelation(Node x, Node y, List<Node> z) throws SingularMatrixException {
-//        if (z.isEmpty()) {
-//            double a = covariances.getValue(indexMap.get(x), indexMap.get(y));
-//            double b = covariances.getValue(indexMap.get(x), indexMap.get(x));
-//            double c = covariances.getValue(indexMap.get(y), indexMap.get(y));
-//
-//            if (b * c == 0) throw new SingularMatrixException();
-//
-//            return -a / Math.sqrt(b * c);
-//        } else {
         int[] indices = new int[z.size() + 2];
-        indices[0] = indexMap.get(x);
-        indices[1] = indexMap.get(y);
-        for (int i = 0; i < z.size(); i++) indices[i + 2] = indexMap.get(z.get(i));
+        indices[0] = indexMap.get(x.getName());
+        indices[1] = indexMap.get(y.getName());
+        for (int i = 0; i < z.size(); i++) indices[i + 2] = indexMap.get(z.get(i).getName());
         TetradMatrix submatrix = covariances.getSubmatrix(indices).getMatrix();
         return StatUtils.partialCorrelation(submatrix);
-//        }
     }
 
-    private Map<Node, Integer> indexMap(List<Node> variables) {
-        Map<Node, Integer> indexMap = new ConcurrentHashMap<>();
+    private Map<String, Integer> indexMap(List<Node> variables) {
+        Map<String, Integer> indexMap = new HashMap<>();
 
         for (int i = 0; i < variables.size(); i++) {
-            indexMap.put(variables.get(i), i);
+            indexMap.put(variables.get(i).getName(), i);
         }
 
         return indexMap;

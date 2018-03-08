@@ -1476,8 +1476,8 @@ public final class TsFciOrient {
 //                if(i != indy_tier) {
 //                    A = (String)knowledge.getTier(i + tier_diff).get(indx_comp);
 //                    B = (String)knowledge.getTier(i).get(indy_comp);
-//                    x1 = this.independenceTest.getVariable(A);
-//                    y1 = this.independenceTest.getVariable(B);
+//                    x1 = this.independenceTest.getPredictor(A);
+//                    y1 = this.independenceTest.getPredictor(B);
 //                    if(graph.isAdjacentTo(x1, y1) && graph.getEndpoint(x1, y1) == Endpoint.CIRCLE) {
 //                        System.out.print("Orient edge " + graph.getEdge(x1, y1).toString());
 //                        graph.setEndpoint(x1, y1, mark);
@@ -1487,8 +1487,8 @@ public final class TsFciOrient {
 //            } else if(i != indx_tier) {
 //                A = (String)knowledge.getTier(i).get(indx_comp);
 //                B = (String)knowledge.getTier(i + tier_diff).get(indy_comp);
-//                x1 = this.independenceTest.getVariable(A);
-//                y1 = this.independenceTest.getVariable(B);
+//                x1 = this.independenceTest.getPredictor(A);
+//                y1 = this.independenceTest.getPredictor(B);
 //                if(graph.isAdjacentTo(x1, y1) && graph.getEndpoint(x1, y1) == Endpoint.CIRCLE) {
 //                    System.out.print("Orient edge " + graph.getEdge(x1, y1).toString());
 //                    graph.setEndpoint(x1, y1, mark);
