@@ -271,7 +271,7 @@ public class ParamDescriptions {
                 1, 1, Double.POSITIVE_INFINITY));
 
         map.put("saveLatentVars", new ParamDescription("Save latent variables.", false));
-        
+
         map.put("probTwoCycle", new ParamDescription(
             "The probability of creating a 2-cycles in the graph (0 - 1)",
             0.0, 0.0, 1.0));
@@ -288,6 +288,8 @@ public class ParamDescriptions {
                 "The number of threads to use in the parallel calculation",
                 Runtime.getRuntime().availableProcessors() * 10, 1, Integer.MAX_VALUE));
 
+                "The probability of creating a 2-cycles in the graph (0 - 1)",
+                0.0, 0.0, 1.0));
     }
 
     public static ParamDescriptions getInstance() {
