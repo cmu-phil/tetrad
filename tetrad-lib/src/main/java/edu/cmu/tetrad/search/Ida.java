@@ -10,6 +10,7 @@ import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.ChoiceGenerator;
 import edu.cmu.tetrad.util.DepthChoiceGenerator;
 import edu.cmu.tetrad.util.TetradMatrix;
+import org.apache.commons.math3.linear.SingularMatrixException;
 
 import java.util.*;
 
@@ -212,7 +213,11 @@ public class Ida {
                 for (Node n : parents) if (!regressors.contains(n)) regressors.add(n);
                 for (Node n : sibbled) if (!regressors.contains(n)) regressors.add(n);
 
-                effects.add(abs(getBeta(regressors, y)));
+                if (regressors.contains(y)) {
+                    effects.add(0.0);
+                } else {
+                    effects.add(abs(getBeta(regressors, y)));
+                }
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -243,15 +248,19 @@ public class Ida {
 
     // x must be the first regressor.
     private double getBeta(List<Node> regressors, Node child) {
-        int yIndex = nodeIndices.get(child.getName());
-        int[] xIndices = new int[regressors.size()];
-        for (int i = 0; i < regressors.size(); i++) xIndices[i] = nodeIndices.get(regressors.get(i).getName());
+        try {
+            int yIndex = nodeIndices.get(child.getName());
+            int[] xIndices = new int[regressors.size()];
+            for (int i = 0; i < regressors.size(); i++) xIndices[i] = nodeIndices.get(regressors.get(i).getName());
 
-        TetradMatrix rX = allCovariances.getSelection(xIndices, xIndices);
-        TetradMatrix rY = allCovariances.getSelection(xIndices, new int[]{yIndex});
+            TetradMatrix rX = allCovariances.getSelection(xIndices, xIndices);
+            TetradMatrix rY = allCovariances.getSelection(xIndices, new int[]{yIndex});
 
-        TetradMatrix bStar = rX.inverse().times(rY);
+            TetradMatrix bStar = rX.inverse().times(rY);
 
-        return bStar.get(0, 0);
+            return bStar.get(0, 0);
+        } catch (SingularMatrixException e) {
+            return 0.0;
+        }
     }
 }

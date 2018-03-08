@@ -1948,7 +1948,7 @@ public final class GraphUtils {
 
         for (Node node : originalNodes) {
             for (Node _node : newNodes) {
-                if (node.getName().equals(_node.getName())) {
+                   if (node.getName().equals(_node.getName())) {
                     convertedNodes.add(_node);
                     break;
                 }

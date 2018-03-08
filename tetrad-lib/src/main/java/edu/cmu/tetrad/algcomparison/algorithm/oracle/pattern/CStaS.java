@@ -2,6 +2,7 @@ package edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern;
 
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
+import edu.cmu.tetrad.algcomparison.utils.TakesIndependenceWrapper;
 import edu.cmu.tetrad.annotation.AlgType;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
@@ -22,19 +23,15 @@ import java.util.List;
                 "Causal stability ranking.\" Bioinformatics 28.21 (2012): 2819-2823) and returns a graph " +
                 "in which all selected variables are shown as into the target. The target is the first variables."
 )
-public class CStaS implements Algorithm {
+public class CStaS implements Algorithm, TakesIndependenceWrapper {
     static final long serialVersionUID = 23L;
     private Graph trueDag = null;
     private IndependenceWrapper test;
     private List<edu.cmu.tetrad.search.CStaS.Record> records = null;
+    private double evBound;
+    private double MBEvBound;
 
-    public CStaS(IndependenceWrapper test) {
-        this.test = test;
-    }
-
-    @Override
-    public int hashCode() {
-        return super.hashCode();
+    public CStaS() {
     }
 
     @Override
@@ -52,6 +49,8 @@ public class CStaS implements Algorithm {
 
         this.records = cStaS.getRecords((DataSet) dataSet, target, test.getTest(dataSet, parameters),
                 parameters.getDouble("selectionAlpha"));
+        evBound = records.get(0).getEv();
+        MBEvBound = records.get(0).getMBEv();
 
         System.out.println(cStaS.makeTable(this.getRecords()));
 
@@ -76,6 +75,7 @@ public class CStaS implements Algorithm {
     @Override
     public List<String> getParameters() {
         List<String> parameters = new ArrayList<>();
+        parameters.addAll(test.getParameters());
         parameters.add("selectionAlpha");
         parameters.add("penaltyDiscount");
         parameters.add("numSubsamples");
@@ -90,5 +90,18 @@ public class CStaS implements Algorithm {
 
     public List<edu.cmu.tetrad.search.CStaS.Record> getRecords() {
         return records;
+    }
+
+    @Override
+    public void setIndependenceWrapper(IndependenceWrapper independenceWrapper) {
+        this.test = independenceWrapper;
+    }
+
+    public double getEvBound() {
+        return evBound;
+    }
+
+    public double getMBEvBound() {
+        return MBEvBound;
     }
 }

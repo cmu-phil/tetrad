@@ -19,10 +19,7 @@ import java.text.NumberFormat;
 import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentSkipListSet;
 import java.util.concurrent.CopyOnWriteArrayList;
-
-import static java.lang.Math.*;
 
 /**
  * An adaptation of the CStaR algorithm (Steckoven et al., 2012).
@@ -45,26 +42,28 @@ public class CStaS {
 
     // A single record in the returned table.
     public static class Record implements TetradSerializable {
-        private Node variable;
+        private Node predictor;
         private double pi;
         private double effect;
         private double pcer;
         private double er;
         private boolean ancestor;
         private boolean existsTrekToTarget;
+        private double MBEv;
 
-        Record(Node variable, double pi, double minEffect, double pcer, double er, boolean ancestor, boolean existsTrekToTarget) {
-            this.variable = variable;
+        Record(Node predictor, double pi, double minEffect, double pcer, double ev, double MBEv, boolean ancestor, boolean existsTrekToTarget) {
+            this.predictor = predictor;
             this.pi = pi;
             this.effect = minEffect;
             this.pcer = pcer;
-            this.er = er;
+            this.er = ev;
+            this.MBEv = MBEv;
             this.ancestor = ancestor;
             this.existsTrekToTarget = existsTrekToTarget;
         }
 
-        public Node getVariable() {
-            return variable;
+        public Node getPredictor() {
+            return predictor;
         }
 
         public double getPi() {
@@ -75,11 +74,11 @@ public class CStaS {
             return effect;
         }
 
-        double getPcer() {
+        public double getPcer() {
             return pcer;
         }
 
-        double getEr() {
+        public double getEv() {
             return er;
         }
 
@@ -87,8 +86,12 @@ public class CStaS {
             return ancestor;
         }
 
-        boolean isExistsTrekToTarget() {
+        public boolean isExistsTrekToTarget() {
             return existsTrekToTarget;
+        }
+
+        public double getMBEv() {
+            return MBEv;
         }
     }
 
@@ -163,7 +166,7 @@ public class CStaS {
                 try {
                     BootstrapSampler sampler = new BootstrapSampler();
                     sampler.setWithoutReplacements(false);
-                    DataSet sample = sampler.sample(selection, selection.getNumRows());
+                    DataSet sample = sampler.sample(dataSet, dataSet.getNumRows());
                     Graph pattern = getPatternFges(sample);
                     Ida ida = new Ida(sample, pattern, _possiblePredictors);
                     effects.add(ida.getSortedMinEffects(_target));
@@ -207,8 +210,10 @@ public class CStaS {
         System.out.println("avg degree = " + avgDegree);
 
         double bestEv = 0.0;
+        double bestMBEv = 0.0;
+        double max = 0;
 
-        for (int q = 1; q <= possiblePredictors.size(); q++) {
+        for (int q = 1; q <= possiblePredictors.size() / 2; q++) {
             for (Ida.NodeEffects _effects : effects) {
                 if (q - 1 < possiblePredictors.size()) {
                     final Node key = _effects.getNodes().get(q - 1);
@@ -243,6 +248,12 @@ public class CStaS {
             }
 
             if (sum / q >= avgDegree * q / p) {
+                if (sum / q > max) {
+                    max = sum / q;
+                } else {
+                    continue;
+                }
+
                 List<Node> _outNodes = new ArrayList<>();
                 List<Double> _outPis = new ArrayList<>();
 
@@ -251,12 +262,17 @@ public class CStaS {
                     _outPis.add(pi.get(i));
                 }
 
-                if (_outNodes.size() > outNodes.size()) {
-                    outNodes = _outNodes;
-                    outPis = _outPis;
-                    bestQ = q;
-                    bestEv = q - sum;
+                double pi_thr = Double.NaN;
+
+                for (int i = 0; i < q; i++) {
+                    if (Double.isNaN(pi_thr) || pi.get(i) < pi_thr) pi_thr = pi.get(i);
                 }
+
+                outNodes = _outNodes;
+                outPis = _outPis;
+                bestQ = q;
+                bestEv = q - sum;
+                bestMBEv = er(pi_thr, q, p);
             }
         }
 
@@ -268,7 +284,7 @@ public class CStaS {
         List<Record> records = new ArrayList<>();
 
         for (int i = 0; i < outNodes.size(); i++) {
-            final double pcer = pcer(outPis.get(i), bestQ, possiblePredictors.size());
+            final double pcer = pcer(outPis.get(i), bestQ, p);
 
             List<Double> e = new ArrayList<>();
 
@@ -294,7 +310,7 @@ public class CStaS {
 //                trekToTarget = !treks.isEmpty();
             }
 
-            records.add(new Record(outNodes.get(i), outPis.get(i), avg, pcer, bestEv, ancestor, trekToTarget));
+            records.add(new Record(outNodes.get(i), outPis.get(i), avg, pcer, bestEv, bestMBEv, ancestor, trekToTarget));
         }
 
         records.sort((o1, o2) -> {
@@ -328,7 +344,7 @@ public class CStaS {
         int fp = 0;
 
         for (int i = 0; i < records.size(); i++) {
-            final Node node = records.get(i).getVariable();
+            final Node node = records.get(i).getPredictor();
             final boolean ancestor = records.get(i).isAncestor();
             final boolean existsTrekToTarget = records.get(i).isExistsTrekToTarget();
             if (!(ancestor)) fp++;
@@ -341,11 +357,12 @@ public class CStaS {
             table.setToken(i + 1, 5, nf.format(records.get(i).getPi()));
             table.setToken(i + 1, 6, nf.format(records.get(i).getEffect()));
             table.setToken(i + 1, 7, nf.format(records.get(i).getPcer()));
-//            table.setToken(i + 1, 8, nf.format(records.get(i).getEr()));
+//            table.setToken(i + 1, 8, nf.format(records.get(i).getEv()));
         }
-        final double er = !records.isEmpty() ? records.get(0).getEr() : Double.NaN;
+        final double er = !records.isEmpty() ? records.get(0).getEv() : Double.NaN;
+        final double mbEv = !records.isEmpty() ? records.get(0).getMBEv() : Double.NaN;
 
-        return "\n" + table + "\n" + "# FP = " + fp + " E(V) = " + nf.format(er) +
+        return "\n" + table + "\n" + "# FP = " + fp + " E(V) = " + nf.format(er) + " MB-E(V) = " + nf.format(mbEv) +
                 "\n\nT = exists a trek of length no more than " + maxTrekLength + " to the target" +
                 "\nA = ancestor of the target" +
                 "\nType: C = continuous, D = discrete\n";
@@ -356,7 +373,7 @@ public class CStaS {
      */
     public Graph makeGraph(Node y, List<Record> records) {
         List<Node> outNodes = new ArrayList<>();
-        for (Record record : records) outNodes.add(record.getVariable());
+        for (Record record : records) outNodes.add(record.getPredictor());
 
         Graph graph = new EdgeListGraph(outNodes);
         graph.addNode(y);
@@ -435,7 +452,9 @@ public class CStaS {
 
     // E(|V|) bound
     private static double er(double pi, double q, double p) {
-        return q * q / (p * (2 * pi - 1));
+        double v = q * q / (p * (2 * pi - 1));
+        if (v < 0 || v > q) v = q;
+        return v;
     }
 
     // Per comparison error rate.

@@ -17,7 +17,9 @@ import edu.pitt.dbmi.algo.bootstrap.BootstrapEdgeEnsemble;
 import edu.pitt.dbmi.algo.bootstrap.GeneralBootstrapTest;
 
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * FGES (the heuristic version).
@@ -25,8 +27,8 @@ import java.util.List;
  * @author jdramsey
  */
 @edu.cmu.tetrad.annotation.Algorithm(
-        name = "FGES-MB",
-        command = "fges-mb",
+        name = "FGES-MB-Ancestors",
+        command = "fges-mb-ancestors",
         algoType = AlgType.search_for_Markov_blankets,
         description = ""
 )
@@ -53,24 +55,48 @@ public class FgesMbAncestors implements Algorithm, TakesInitialGraph, HasKnowled
 
     @Override
     public Graph search(DataModel dataSet, Parameters parameters) {
+        DataSet _dataSet = (DataSet) dataSet.copy();
+        this.targetName = parameters.getString("targetName");
+        Node target = dataSet.getVariable(targetName);
+        List<Node> _selectionVars = edu.cmu.tetrad.search.CStaS.selectVariables(_dataSet, target, parameters.getDouble("selectionAlpha"), 40);
+        _selectionVars.add(_dataSet.getVariable(targetName));
+        _dataSet = _dataSet.subsetColumns(_selectionVars);
+
     	if (parameters.getInt("bootstrapSampleSize") < 1) {
-            if (algorithm != null) {
-//                initialGraph = algorithm.search(dataSet, parameters);
+            Set<Node> ancestors = new HashSet<>();
+
+            while (true) {
+                Score score = this.score.getScore(_dataSet, parameters);
+
+                edu.cmu.tetrad.search.FgesMb search = new edu.cmu.tetrad.search.FgesMb(score);
+                search.setFaithfulnessAssumed(parameters.getBoolean("faithfulnessAssumed"));
+                search.setKnowledge(knowledge);
+
+                if (initialGraph != null) {
+                    search.setInitialGraph(initialGraph);
+                }
+
+                Graph _adj = search.search(Collections.singletonList(target));
+                List<Node> parents =_adj.getParents(target);
+
+                if (parents.isEmpty()) break;
+
+                for (Node p : parents) {
+                    _dataSet.removeColumn(p);
+                }
+
+                ancestors.addAll(parents);
             }
 
-            Score score = this.score.getScore(dataSet, parameters);
-            edu.cmu.tetrad.search.FgesMb search = new edu.cmu.tetrad.search.FgesMb(score);
-            search.setFaithfulnessAssumed(parameters.getBoolean("faithfulnessAssumed"));
-            search.setKnowledge(knowledge);
+            Graph out = new EdgeListGraph();
+            out.addNode(target);
 
-            if (initialGraph != null) {
-                search.setInitialGraph(initialGraph);
+            for (Node node : ancestors) {
+                out.addNode(node);
+                out.addDirectedEdge(node, target);
             }
 
-            this.targetName = parameters.getString("targetName");
-            Node target = this.score.getVariable(targetName);
-
-            return search.search(Collections.singletonList(target));
+            return out;
         } else {
             FgesMbAncestors fgesMb = new FgesMbAncestors(score, algorithm);
 

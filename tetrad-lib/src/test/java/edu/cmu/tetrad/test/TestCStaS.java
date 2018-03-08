@@ -22,13 +22,14 @@
 package edu.cmu.tetrad.test;
 
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern.CStaS;
+import edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern.FgesMbAncestors;
 import edu.cmu.tetrad.algcomparison.graph.RandomForward;
 import edu.cmu.tetrad.algcomparison.graph.RandomGraph;
 import edu.cmu.tetrad.algcomparison.independence.SemBicTest;
 import edu.cmu.tetrad.algcomparison.simulation.LeeHastieSimulation;
 import edu.cmu.tetrad.algcomparison.simulation.LinearFisherModel;
+import edu.cmu.tetrad.data.ColtDataSet;
 import edu.cmu.tetrad.data.CovarianceMatrixOnTheFly;
-import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Edge;
 import edu.cmu.tetrad.graph.Graph;
@@ -37,19 +38,24 @@ import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.*;
 import edu.cmu.tetrad.util.DataConvertUtils;
 import edu.cmu.tetrad.util.Parameters;
-import edu.pitt.dbmi.data.ContinuousTabularDataset;
+import edu.cmu.tetrad.util.StatUtils;
+import edu.cmu.tetrad.util.TextTable;
 import edu.pitt.dbmi.data.Dataset;
 import edu.pitt.dbmi.data.Delimiter;
 import edu.pitt.dbmi.data.reader.tabular.ContinuousTabularDataFileReader;
 import edu.pitt.dbmi.data.reader.tabular.TabularDataReader;
+import org.apache.commons.math3.distribution.NormalDistribution;
 import org.junit.Test;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileReader;
 import java.io.IOException;
+import java.text.DecimalFormat;
+import java.text.NumberFormat;
 import java.util.*;
 
-import static java.lang.Math.log;
-import static java.lang.Math.log10;
+import static java.lang.Math.abs;
 
 /**
  * Tests CStaS.
@@ -100,13 +106,13 @@ public class TestCStaS {
 
     @Test
     public void testCStaS() {
-        int numNodes = 10000;
-        int avgDegree = 7;
+        int numNodes = 400;
+        int avgDegree = 6;
         int sampleSize = 50;
         int numIterations = 10;
-        int numSubsamples = 50;
-        double penaltyDiscount = 1;
-        double selectionAlpha = 0.02;
+        int numSubsamples = 100;
+        double penaltyDiscount = 1.2;
+        double selectionAlpha = 0.1;
         Parameters parameters = new Parameters();
 
         parameters.set("penaltyDiscount", penaltyDiscount);
@@ -157,7 +163,8 @@ public class TestCStaS {
         for (int i = 0; i < numIterations; i++) {
             parameters.set("targetName", nodes.get(i).getName());
 
-            CStaS cstas = new CStaS(new SemBicTest());
+            CStaS cstas = new CStaS();
+            cstas.setIndependenceWrapper(new SemBicTest());
             cstas.setTrueDag(trueDag);
 
             Graph graph = cstas.search(fullData, parameters);
@@ -219,8 +226,6 @@ public class TestCStaS {
         parameters.set("sampleSize", sampleSize);
 
         parameters.set("parallelism", 40);
-
-        List<int[]> cstasRet = new ArrayList<>();
 
         for (int i = 0; i < numIterations; i++) {
             RandomGraph randomForward = new RandomForward();
@@ -301,58 +306,175 @@ public class TestCStaS {
     }
 
     @Test
-    public void testStandDataExp() {
-//        int numNodes = 5000;
-//        int numTargets = 4;
-//        int avgDegree = 8;
-//        int sampleSize = 200;
-//        int numIterations = 10;
-        int numSubsamples = 50;
-        double penaltyDiscount = 10;
-        double selectionAlpha = 1E-9;
+    public void testFgesMbAncestors() {
+        int numNodes = 500;
+        int avgDegree = 7;
+        int sampleSize = 100;
+        int numIterations = 10;
+        int numSubsamples = 100;
+        double penaltyDiscount = 1.3;
+        double selectionAlpha = 0.05;
+        Parameters parameters = new Parameters();
 
-        try {
-            File file = new File("/Users/user/Downloads/stand.data.exp.csv");
+        parameters.set("penaltyDiscount", penaltyDiscount);
+        parameters.set("numSubsamples", numSubsamples);
+        parameters.set("depth", 2);
+        parameters.set("selectionAlpha", selectionAlpha);
 
-            TabularDataReader reader = new ContinuousTabularDataFileReader(file, Delimiter.COMMA);
-            Dataset data = reader.readInData();
+        parameters.set("numMeasures", numNodes);
+        parameters.set("numLatents", 0);
+        parameters.set("avgDegree", avgDegree);
+        parameters.set("maxDegree", 100);
+        parameters.set("maxIndegree", 100);
+        parameters.set("maxOutdegree", 100);
+        parameters.set("connected", false);
 
-            DataSet dataSet = (DataSet) DataConvertUtils.toDataModel(data);
+        parameters.set("verbose", false);
 
-//            System.out.println(dataSet);
+        parameters.set("coefLow", 0.5);
+        parameters.set("coefHigh", 1.2);
+        parameters.set("includeNegativeCoefs", true);
+        parameters.set("sampleSize", sampleSize);
+        parameters.set("intervalBetweenShocks", 5);
+        parameters.set("intervalBetweenRecordings", 5);
 
+        parameters.set("sampleSize", sampleSize);
 
-            CStaSMulti cstas = new CStaSMulti();
-//            cstas.setTrueDag(trueDag);
-            cstas.setNumSubsamples(numSubsamples);
+        parameters.set("parallelism", 40);
 
-            List<Node> targets = new ArrayList<>();
+        RandomGraph randomForward = new RandomForward();
+        LinearFisherModel fisher = new LinearFisherModel(randomForward);
+        fisher.createData(parameters);
+        DataSet fullData = (DataSet) fisher.getDataModel(0);
 
-            for (int i = 0; i < 50; i++) targets.add(dataSet.getVariables().get(i));
+        final Graph trueDag = fisher.getTrueGraph(0);
 
-            List<Node> selectionVars = cstas.selectVariables(dataSet, targets, selectionAlpha, 40);
-            selectionVars = GraphUtils.replaceNodes(selectionVars, dataSet.getVariables());
-            List<Node> augmented = new ArrayList<>(selectionVars);
+        List<Node> nodes = trueDag.getNodes();
 
-            for (Node target : targets) {
-                final Node variable = dataSet.getVariable(target.getName());
-                if (!augmented.contains(variable)) augmented.add(variable);
-            }
+        Map<Node, Integer> numAncestors = new HashMap<>();
 
-            augmented = GraphUtils.replaceNodes(augmented, dataSet.getVariables());
-            DataSet selection = dataSet.subsetColumns(augmented);
-
-            SemBicScore score = new SemBicScore(new CovarianceMatrixOnTheFly(dataSet));
-            score.setPenaltyDiscount(penaltyDiscount);
-            IndependenceTest test = new IndTestScore(score);
-
-            List<CStaSMulti.Record> records = cstas.getRecords(selection, selectionVars, targets, test);
-
-            System.out.println(cstas.makeTable(records));
-        } catch (IOException e) {
-            e.printStackTrace();
+        for (Node n : nodes) {
+            numAncestors.put(n, trueDag.getAncestors(Collections.singletonList(n)).size());
         }
 
+        nodes.sort((o1, o2) -> Integer.compare(numAncestors.get(o2), numAncestors.get(o1)));
+
+        int[][] counts = new int[numIterations][4];
+        double[][] times = new double[numIterations][2];
+        int[][] fp = new int[numIterations][2];
+        double[][] cev = new double[numIterations][2];
+
+        for (int i = 0; i < numIterations; i++) {
+            parameters.set("targetName", nodes.get(i).getName());
+
+            CStaS c = new CStaS();
+            c.setIndependenceWrapper(new SemBicTest());
+            c.setTrueDag(trueDag);
+
+            long cStart = System.currentTimeMillis();
+
+            Graph cGraph = c.search(fullData, parameters);
+            cev[i][0] = c.getEvBound();
+            cev[i][1] = c.getMBEvBound();
+
+            long cStop = System.currentTimeMillis();
+
+            FgesMbAncestors f = new FgesMbAncestors();
+            f.setScoreWrapper(new edu.cmu.tetrad.algcomparison.score.SemBicScore());
+
+            long fStart = System.currentTimeMillis();
+
+            Graph fGraph = f.search(fullData, parameters);
+
+            long fStop = System.currentTimeMillis();
+
+            int cTotal = cGraph.getNumNodes() - 1;
+            int cAnc = 0;
+
+            List<Node> cNodes = cGraph.getNodes();
+            cNodes = GraphUtils.replaceNodes(cNodes, trueDag.getNodes());
+
+            for (Node node : cNodes) {
+                if (node == nodes.get(i)) continue;
+                if (trueDag.isAncestorOf(node, nodes.get(i))) {
+                    cAnc++;
+                }
+            }
+
+            int fTotal = fGraph.getNumNodes() - 1;
+            int fAnc = 0;
+
+            List<Node> fNodes = fGraph.getNodes();
+            fNodes = GraphUtils.replaceNodes(fNodes, trueDag.getNodes());
+
+            for (Node node : fNodes) {
+                if (node == nodes.get(i)) continue;
+                if (trueDag.isAncestorOf(node, nodes.get(i))) {
+                    fAnc++;
+                }
+            }
+
+            final double cTime = (cStop - cStart) / 1000.0;
+            final double fTime = (fStop - fStart) / 1000.0;
+
+            System.out.println("### cTotal = " + (cTotal - 1) + " cAnc = " + cAnc + " fTotal = " + (fTotal - 1) + " fAnc = " + fAnc);
+            System.out.println("### cElapsed = " + cTime + "s fElapsed = " + fTime + "s");
+            System.out.println();
+
+            counts[i][0] = cTotal;
+            counts[i][1] = cAnc;
+            counts[i][2] = fTotal;
+            counts[i][3] = fAnc;
+
+            fp[i][0] = cTotal - cAnc;
+            fp[i][1] = fTotal - fAnc;
+
+            times[i][0] = cTime;
+            times[i][1] = fTime;
+
+        }
+
+        TextTable table = new TextTable(numIterations + 1, 11);
+        int col = 0;
+
+        table.setToken(0, col++, "Index");
+
+        table.setToken(0, col++, "" + "cTotal");
+        table.setToken(0, col++, "" + "cAnc");
+        table.setToken(0, col++, "" + "cFP");
+        table.setToken(0, col++, "" + "cEV");
+        table.setToken(0, col++, "" + "cEV-MB");
+
+        table.setToken(0, col++, "" + "fTotal");
+        table.setToken(0, col++, "" + "fAnc");
+        table.setToken(0, col++, "" + "fFP");
+
+        table.setToken(0, col++, "" + "cTime");
+        table.setToken(0, col++, "" + "rTime");
+
+        NumberFormat nf = new DecimalFormat("0.00");
+
+        for (int i = 0; i < numIterations; i++) {
+            col = 0;
+
+            table.setToken(i + 1, col++, "" + (i + 1));
+
+            table.setToken(i + 1, col++, "" + counts[i][0]);
+            table.setToken(i + 1, col++, "" + counts[i][1]);
+            table.setToken(i + 1, col++, "" + fp[i][0]);
+            table.setToken(i + 1, col++, "" + nf.format(cev[i][0]));
+            table.setToken(i + 1, col++, "" + nf.format(cev[i][1]));
+
+            table.setToken(i + 1, col++, "" + counts[i][2]);
+            table.setToken(i + 1, col++, "" + counts[i][3]);
+            table.setToken(i + 1, col++, "" + fp[i][1]);
+
+
+            table.setToken(i + 1, col++, "" + times[i][0]);
+            table.setToken(i + 1, col++, "" + times[i][1]);
+        }
+
+        System.out.println(table);
 
     }
 
@@ -442,6 +564,182 @@ public class TestCStaS {
 //        }
 //
 //    }
+
+    @Test
+    public void testHughes() {
+        int numSubsamples = 50;
+
+        try {
+            File file = new File("/Users/user/Downloads/stand.data.exp.csv");
+            File file2 = new File("/Users/user/Downloads/mutant.txt");
+            File file3 = new File("/Users/user/Downloads/z.pos.txt");
+
+            TabularDataReader reader = new ContinuousTabularDataFileReader(file, Delimiter.COMMA);
+            Dataset data = reader.readInData();
+
+            DataSet standDataExp = (DataSet) DataConvertUtils.toDataModel(data);
+
+            for (Node node : standDataExp.getVariables()) {
+                String name = node.getName();
+                if (name.startsWith("\""))
+                    name = name.substring(1, name.length() - 1);
+                node.setName(name);
+            }
+
+            TabularDataReader reader2 = new ContinuousTabularDataFileReader(file2, Delimiter.TAB);
+            Dataset data2 = reader2.readInData();
+
+            DataSet mutant = (DataSet) DataConvertUtils.toDataModel(data2);
+
+            BufferedReader in = new BufferedReader(new FileReader(file3));
+            String line;
+            List<Node> selectionVars = new ArrayList<>();
+            List<Integer> zPos = new ArrayList<>();
+
+            // Predictors.
+            while ((line = in.readLine()) != null) {
+                line = line.trim();
+                if (line.isEmpty()) continue;
+                String[] tokens = line.split(" ");
+
+                for (String token : tokens) {
+                    final int index = Integer.parseInt(token) - 1; // one-indexed.
+                    selectionVars.add(standDataExp.getVariable(index));
+                    zPos.add(index);
+                }
+            }
+
+            // Targets.
+            List<Node> targets = new ArrayList<>();
+            int i = 0;
+            int count = 0;
+
+            while (count < 300) {
+                final Node node = standDataExp.getVariables().get(i);
+
+                if (!selectionVars.contains(node)) {
+                    targets.add(node);
+                    count++;
+                }
+
+                i++;
+            }
+
+            List<Node> augmented = new ArrayList<>(selectionVars);
+
+            for (Node target : targets) {
+                if (!augmented.contains(target)) augmented.add(target);
+            }
+
+            DataSet selection = standDataExp.subsetColumns(augmented);
+
+            SemBicScore score = new SemBicScore(new CovarianceMatrixOnTheFly(selection));
+            score.setPenaltyDiscount(3);
+            IndependenceTest test = new IndTestScore(score);
+
+            edu.cmu.tetrad.search.CStaSMulti cstas = new edu.cmu.tetrad.search.CStaSMulti();
+            cstas.setNumSubsamples(numSubsamples);
+
+            List<edu.cmu.tetrad.search.CStaSMulti.Record> records = cstas.getRecords(selection, selectionVars, targets, test);
+
+            System.out.println(cstas.makeTable(records));
+
+            List<Double> sortedRatios = new ArrayList<>();
+            DataSet ratios = new ColtDataSet(mutant.getNumRows(), mutant.getVariables());
+
+            for (int predictor = 0; predictor < mutant.getNumRows(); predictor++) {
+                final double predictorBump = abs(cell(predictor, zPos.get(predictor), mutant) - avg(zPos.get(predictor), mutant));
+
+                for (int target = 0; target < mutant.getNumColumns(); target++) {
+                    final double targetBump = abs(cell(predictor, target, mutant) - avg(target, mutant));
+
+                    double ratio = abs(predictorBump / targetBump);
+                    ratios.setDouble(predictor, target, ratio);
+
+                    double minBump = 0.01;
+
+                    if (targetBump > minBump && predictorBump > minBump) {
+                        sortedRatios.add(ratio);
+                    }
+                }
+            }
+
+            sortedRatios.sort((o1, o2) -> Double.compare(o2, o1));
+
+            int size = sortedRatios.size();
+
+            double[] cutoffs = {0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5, 0.6, 0.7, .8, .9, 1.0};
+            double[] _cutoffs = new double[cutoffs.length];
+
+            for (int w = 0; w < cutoffs.length; w++) {
+                final Double cutoff = sortedRatios.get((int) (size * cutoffs[w] - 1));
+                System.out.println(cutoffs[w] * 100 + "% cutoff = " + cutoff);
+                _cutoffs[w] = cutoff;
+            }
+
+            System.out.println("A");
+
+            System.out.println("B");
+
+            int[] counts = new int[cutoffs.length];
+
+            for (int e = 0; e < records.size(); e++) {
+                CStaSMulti.Record record = records.get(e);
+                Node predictor = record.getPredictor();
+                Node target = record.getTarget();
+
+
+                int _predictor = mutant.getColumn(mutant.getVariable(predictor.getName()));
+
+                for (int s = 0; s < zPos.size(); s++) {
+                    if (_predictor == zPos.get(s)) _predictor = s;
+                }
+
+                int _target = mutant.getColumn(mutant.getVariable(target.getName()));
+
+                final double ratio = ratios.getDouble(_predictor, _target);
+                System.out.println((e + 1) + ". " + ratio);
+
+                for (int w = 0; w < cutoffs.length; w++) {
+                    if (ratio >= _cutoffs[w]) counts[w]++;
+                }
+            }
+
+            System.out.println("\nCounts greater than x%");
+            System.out.println();
+
+            for (int w = 0; w < counts.length; w++) {
+                System.out.println((cutoffs[w] * 100.0) + "% " + (counts[w]));
+            }
+
+            System.out.println("\nPercentages");
+            System.out.println();
+            NumberFormat nf = new DecimalFormat("0.00");
+
+            for (int w = 0; w < counts.length; w++) {
+                System.out.println((cutoffs[w] * 100.0) + "% " + nf.format(100.0 * (counts[w] / (double) records.size())));
+            }
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+
+    }
+
+    private double cell(int predictor, int target, DataSet mutants) {
+        return mutants.getDouble(predictor, target);
+    }
+
+    private double avg(int target, DataSet mutants) {
+        double sum = 0.0;
+
+        for (int p = 0; target < mutants.getNumRows(); target++) {
+            sum += cell(p, target, mutants);
+        }
+
+        return sum / (double) (mutants.getNumRows());
+    }
 
     @Test
     public void testConditionalGaussian() {

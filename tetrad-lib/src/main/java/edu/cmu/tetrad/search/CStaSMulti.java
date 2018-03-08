@@ -21,7 +21,6 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 
-import static java.lang.Math.log;
 import static java.lang.Math.max;
 
 /**
@@ -51,16 +50,18 @@ public class CStaSMulti {
         private double effect;
         private double pcer;
         private double er;
+        private double MBEv;
         private boolean ancestor;
         private boolean existsTrekToTarget;
 
-        Record(Node predictor, Node target, double pi, double minEffect, double pcer, double er, boolean ancestor, boolean existsTrekToTarget) {
+        Record(Node predictor, Node target, double pi, double minEffect, double pcer, double ev, double MBev, boolean ancestor, boolean existsTrekToTarget) {
             this.predictor = predictor;
             this.target = target;
             this.pi = pi;
             this.effect = minEffect;
             this.pcer = pcer;
-            this.er = er;
+            this.er = ev;
+            this.MBEv = MBev;
             this.ancestor = ancestor;
             this.existsTrekToTarget = existsTrekToTarget;
         }
@@ -96,6 +97,10 @@ public class CStaSMulti {
         boolean isExistsTrekToTarget() {
             return existsTrekToTarget;
         }
+
+        public double getMBEv() {
+            return MBEv;
+        }
     }
 
     public CStaSMulti() {
@@ -112,7 +117,6 @@ public class CStaSMulti {
     public List<Record> getRecords(DataSet dataSet, List<Node> possiblePredictors, List<Node> targets, IndependenceTest test) {
         targets = GraphUtils.replaceNodes(targets, dataSet.getVariables());
         possiblePredictors = GraphUtils.replaceNodes(possiblePredictors, dataSet.getVariables());
-        final int dSize = dataSet.getNumColumns();
         final int tSize = targets.size();
 
         if (new HashSet<>(possiblePredictors).removeAll(new HashSet<>(targets))) {
@@ -193,7 +197,7 @@ public class CStaSMulti {
                 try {
                     BootstrapSampler sampler = new BootstrapSampler();
                     sampler.setWithoutReplacements(false);
-                    DataSet sample = sampler.sample(selection, selection.getNumRows());
+                    DataSet sample = sampler.sample(dataSet, dataSet.getNumRows());
                     Graph pattern = getPatternFges(sample);
                     Ida ida = new Ida(sample, pattern, _possiblePredictors);
 
@@ -202,6 +206,8 @@ public class CStaSMulti {
                     }
 
                     edgeCounts.add(pattern.getNumEdges());
+
+                    System.out.println("R");
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -234,16 +240,21 @@ public class CStaSMulti {
             for (Node node : possiblePredictors) counts.get(t).put(node, 0);
         }
 
-        double maxEv = 0.0;
+        double bestEv = 0.0;
+        double bestMbEv = 0.0;
 
-        final int p = possiblePredictors.size();
+        int p = dataSet.getNumColumns();
+
         double avgEdges = totalEdges / getNumSubsamples();
-        final double avgDegree = 2.0 * avgEdges / p;
+        final double avgDegree = 2.0 * avgEdges / possiblePredictors.size();
+        double max = 0.0;
 
-        for (int q = 1; q <= p; q++) {
+        for (int q = 1; q <= possiblePredictors.size(); q++) {
+            System.out.println("qq = " + q);
+
             for (int t = 0; t < tSize; t++) {
                 for (Ida.NodeEffects _effects : effects.get(t)) {
-                    if (q - 1 < p) {
+                    if (q - 1 < possiblePredictors.size()) {
                         final Node key = _effects.getNodes().get(q - 1);
                         counts.get(t).put(key, counts.get(t).get(key) + 1);
                     }
@@ -254,7 +265,7 @@ public class CStaSMulti {
                 for (int b = 0; b < effects.get(t).size(); b++) {
                     Ida.NodeEffects _effects = effects.get(t).get(b);
 
-                    for (int r = 0; r < p; r++) {
+                    for (int r = 0; r < possiblePredictors.size(); r++) {
                         Node n = _effects.getNodes().get(r);
                         Double e = _effects.getEffects().get(r);
                         minimalEffects.get(t).get(b).put(n, e);
@@ -280,7 +291,7 @@ public class CStaSMulti {
             List<Tuple> tuples = new ArrayList<>();
 
             for (int t = 0; t < tSize; t++) {
-                for (int v = 0; v < p; v++) {
+                for (int v = 0; v < possiblePredictors.size(); v++) {
                     tuples.add(new Tuple(possiblePredictors.get(v), targets.get(t), _pi.get(t).get(v)));
                 }
             }
@@ -293,25 +304,30 @@ public class CStaSMulti {
                 sum += tuples.get(g).getPi();
             }
 
-            if (sum / q >= avgDegree * q / p) {
+            double pi_thr = Double.NaN;
+
+            for (int g = 0; g < q; g++) {
+                if (Double.isNaN(pi_thr) || tuples.get(g).getPi() < pi_thr) pi_thr = tuples.get(g).getPi();
+            }
+
+            if (sum / q >= avgDegree * q / possiblePredictors.size()) {
+                if (sum / q > max) {
+                    max = sum / q;
+                } else {
+                    continue;
+                }
+
                 List<Tuple> _outTuples = new ArrayList<>();
 
                 for (int i = 0; i < q; i++) {
                     _outTuples.add(tuples.get(i));
                 }
 
-                if (_outTuples.size() > outTuples.size()) {
-                    outTuples = _outTuples;
-                    bestQ = q;
-                }
 
-                double ev = q - sum;
-
-                if (ev > maxEv) {
-                    maxEv = ev;
-                }
-            } else {
-//                break;
+                outTuples = _outTuples;
+                bestQ = q;
+                bestEv = q - sum;
+                bestMbEv = er(pi_thr, q, p);
             }
         }
 
@@ -349,7 +365,7 @@ public class CStaSMulti {
                 trekToTarget = !treks.isEmpty();
             }
 
-            records.add(new Record(tuple.getPredictor(), tuple.getTarget(), tuple.getPi(), avg, pcer, maxEv, ancestor, trekToTarget));
+            records.add(new Record(tuple.getPredictor(), tuple.getTarget(), tuple.getPi(), avg, bestEv, bestEv, bestMbEv, ancestor, trekToTarget));
         }
 
         records.sort((o1, o2) -> {
@@ -399,11 +415,12 @@ public class CStaSMulti {
             table.setToken(i + 1, 6, nf.format(records.get(i).getPi()));
             table.setToken(i + 1, 7, nf.format(records.get(i).getEffect()));
             table.setToken(i + 1, 8, nf.format(records.get(i).getPcer()));
-//            table.setToken(i + 1, 8, nf.format(records.get(i).getEr()));
+//            table.setToken(i + 1, 8, nf.format(records.get(i).getEv()));
         }
         final double er = !records.isEmpty() ? records.get(0).getEr() : Double.NaN;
+        final double mbEv = !records.isEmpty() ? records.get(0).getMBEv() : Double.NaN;
 
-        return "\n" + table + "\n" + "# FP = " + fp + " E(V) = " + nf.format(er) +
+        return "\n" + table + "\n" + "# FP = " + fp + " E(V) = " + nf.format(er) + " MB-E(V) = " + nf.format(mbEv) +
                 "\n\nT = exists a trek of length no more than " + maxTrekLength + " to the target" +
                 "\nA = ancestor of the target" +
                 "\nType: C = continuous, D = discrete\n";
@@ -448,7 +465,7 @@ public class CStaSMulti {
         return parallelism;
     }
 
-    private Graph getPattern(DataSet sample) {
+    private Graph getPatternPcStable(DataSet sample) {
         IndependenceTest test = getIndependenceTest(sample, this.test);
         PcAll pc = new PcAll(test, null);
         pc.setFasRule(PcAll.FasRule.FAS_STABLE);
@@ -493,7 +510,9 @@ public class CStaSMulti {
 
     // E(|V|) bound
     private static double er(double pi, double q, double p) {
-        return q * q / (p * (2 * pi - 1));
+        double v = q * q / (p * (2 * pi - 1));
+        if (v < 0 || v > q) v = q;
+        return v;
     }
 
     // Per comparison error rate.
