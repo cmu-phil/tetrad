@@ -565,9 +565,12 @@ public class TestCStaS {
 //
 //    }
 
-//    @Test
+    @Test
     public void testHughes() {
-        int numSubsamples = 50;
+        int numSubsamples = 200;
+        int numEffects = 500;
+        double penaltyDiscount = 3;
+        double minBump = 0.05;
 
         try {
             File file = new File("/Users/user/Downloads/stand.data.exp.csv");
@@ -614,7 +617,7 @@ public class TestCStaS {
             int i = 0;
             int count = 0;
 
-            while (count < 300) {
+            while (count < numEffects) {
                 final Node node = standDataExp.getVariables().get(i);
 
                 if (!selectionVars.contains(node)) {
@@ -634,7 +637,7 @@ public class TestCStaS {
             DataSet selection = standDataExp.subsetColumns(augmented);
 
             SemBicScore score = new SemBicScore(new CovarianceMatrixOnTheFly(selection));
-            score.setPenaltyDiscount(3);
+            score.setPenaltyDiscount(penaltyDiscount);
             IndependenceTest test = new IndTestScore(score);
 
             edu.cmu.tetrad.search.CStaSMulti cstas = new edu.cmu.tetrad.search.CStaSMulti();
@@ -648,17 +651,14 @@ public class TestCStaS {
             DataSet ratios = new ColtDataSet(mutant.getNumRows(), mutant.getVariables());
 
             for (int predictor = 0; predictor < mutant.getNumRows(); predictor++) {
-                final double predictorBump = abs(cell(predictor, zPos.get(predictor), mutant) - avg(zPos.get(predictor), mutant));
+                final double causeBump = abs(cell(predictor, zPos.get(predictor), mutant) - avg(zPos.get(predictor), mutant));
 
-                for (int target = 0; target < mutant.getNumColumns(); target++) {
-                    final double targetBump = abs(cell(predictor, target, mutant) - avg(target, mutant));
+                for (int cause = 0; cause < mutant.getNumColumns(); cause++) {
+                    final double effectBump = abs(cell(predictor, cause, mutant) - avg(cause, mutant));
+                    double ratio = causeBump / effectBump;
+                    ratios.setDouble(predictor, cause, ratio);
 
-                    double ratio = abs(predictorBump / targetBump);
-                    ratios.setDouble(predictor, target, ratio);
-
-                    double minBump = 0.01;
-
-                    if (targetBump > minBump && predictorBump > minBump) {
+                    if (effectBump > minBump) {
                         sortedRatios.add(ratio);
                     }
                 }
@@ -727,15 +727,15 @@ public class TestCStaS {
 
     }
 
-    private double cell(int predictor, int target, DataSet mutants) {
-        return mutants.getDouble(predictor, target);
+    private double cell(int predictor, int effect, DataSet mutants) {
+        return mutants.getDouble(predictor, effect);
     }
 
-    private double avg(int target, DataSet mutants) {
+    private double avg(int effect, DataSet mutants) {
         double sum = 0.0;
 
-        for (int p = 0; target < mutants.getNumRows(); target++) {
-            sum += cell(p, target, mutants);
+        for (int p = 0; effect < mutants.getNumRows(); effect++) {
+            sum += cell(p, effect, mutants);
         }
 
         return sum / (double) (mutants.getNumRows());

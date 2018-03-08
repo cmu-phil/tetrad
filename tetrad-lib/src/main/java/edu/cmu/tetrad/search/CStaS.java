@@ -421,6 +421,7 @@ public class CStaS {
     private Graph getPatternFges(DataSet sample) {
         Score score = new ScoredIndTest(getIndependenceTest(sample, this.test));
         Fges fges = new Fges(score);
+        fges.setParallelism(1);
         return fges.search();
     }
 

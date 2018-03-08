@@ -342,7 +342,7 @@ public class CStaSMulti {
 
         for (Tuple tuple : outTuples) {
             //            double er = er(outPis.get(i), outTuples.size(), p);
-            final double pcer = pcer(tuple.getPi(), bestQ, p);
+//            final double pcer = pcer(tuple.getPi(), bestQ, p);
 
             List<Double> e = new ArrayList<>();
 
@@ -363,8 +363,8 @@ public class CStaSMulti {
             boolean trekToTarget = false;
 
             if (trueDag != null) {
-                List<List<Node>> treks = GraphUtils.treks(trueDag, tuple.getPredictor(), tuple.getTarget(), maxTrekLength);
-                trekToTarget = !treks.isEmpty();
+//                List<List<Node>> treks = GraphUtils.treks(trueDag, tuple.getPredictor(), tuple.getTarget(), maxTrekLength);
+//                trekToTarget = !treks.isEmpty();
             }
 
             records.add(new Record(tuple.getPredictor(), tuple.getTarget(), tuple.getPi(), avg, bestEv, bestEv, bestMbEv, ancestor, trekToTarget));
@@ -479,6 +479,7 @@ public class CStaSMulti {
     private Graph getPatternFges(DataSet sample) {
         Score score = new ScoredIndTest(getIndependenceTest(sample, this.test));
         Fges fges = new Fges(score);
+        fges.setParallelism(1);
         return fges.search();
     }
 
