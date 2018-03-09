@@ -511,8 +511,8 @@ public final class SemEstimatorGibbs {
 //        int[] varIndices = new int[measuredVarNames.length];
 //
 //        for (int i = 0; i < measuredVarNames.length; i++) {
-//            Node variable = dataSet.getPredictor(measuredVarNames[i]);
-//            varIndices[i] = dataSet.getPredictor().indexOf(variable);
+//            Node variable = dataSet.getCause(measuredVarNames[i]);
+//            varIndices[i] = dataSet.getCause().indexOf(variable);
 //        }
 //
 //        return dataSet.subsetColumns(varIndices);

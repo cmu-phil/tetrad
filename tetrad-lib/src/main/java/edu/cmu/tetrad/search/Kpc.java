@@ -249,7 +249,7 @@ public class Kpc implements GraphSearch {
         this.logger.log("info", "Starting kPC algorithm");
         this.logger.log("info", "Independence test = " + getIndependenceTest() + ".");
 
-//        this.logger.log("info", "Variables " + independenceTest.getPredictor());
+//        this.logger.log("info", "Variables " + independenceTest.getCause());
 
         long startTime = System.currentTimeMillis();
 

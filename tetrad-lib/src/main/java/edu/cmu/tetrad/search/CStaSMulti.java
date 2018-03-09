@@ -18,10 +18,11 @@ import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.*;
 import java.util.concurrent.Callable;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 import static java.lang.Math.max;
+import static java.lang.Math.min;
+import static java.lang.Math.multiplyExact;
 
 /**
  * An adaptation of the CStaR algorithm (Steckoven et al., 2012).
@@ -38,9 +39,37 @@ public class CStaSMulti {
 
     private int maxTrekLength = 15;
     private int numSubsamples = 30;
+    private int qFrom = 1;
+    private int qTo = 1;
+    private int qIncrement = 1;
+
     private int parallelism = Runtime.getRuntime().availableProcessors() * 10;
     private Graph trueDag = null;
     private IndependenceTest test;
+
+    public int getqFrom() {
+        return qFrom;
+    }
+
+    public void setqFrom(int qFrom) {
+        this.qFrom = qFrom;
+    }
+
+    public int getqTo() {
+        return qTo;
+    }
+
+    public void setqTo(int qTo) {
+        this.qTo = qTo;
+    }
+
+    public int getqIncrement() {
+        return qIncrement;
+    }
+
+    public void setqIncrement(int qIncrement) {
+        this.qIncrement = qIncrement;
+    }
 
     // A single record in the returned table.
     public static class Record implements TetradSerializable {
@@ -54,9 +83,8 @@ public class CStaSMulti {
         private double er;
         private double MBEv;
         private boolean ancestor;
-        private boolean existsTrekToTarget;
 
-        Record(Node predictor, Node target, double pi, double minEffect, double pcer, double ev, double MBev, boolean ancestor, boolean existsTrekToTarget) {
+        Record(Node predictor, Node target, double pi, double minEffect, double pcer, double ev, double MBev, boolean ancestor) {
             this.predictor = predictor;
             this.target = target;
             this.pi = pi;
@@ -65,10 +93,9 @@ public class CStaSMulti {
             this.er = ev;
             this.MBEv = MBev;
             this.ancestor = ancestor;
-            this.existsTrekToTarget = existsTrekToTarget;
         }
 
-        public Node getPredictor() {
+        public Node getCause() {
             return predictor;
         }
 
@@ -96,10 +123,6 @@ public class CStaSMulti {
             return ancestor;
         }
 
-        boolean isExistsTrekToTarget() {
-            return existsTrekToTarget;
-        }
-
         public double getMBEv() {
             return MBEv;
         }
@@ -112,16 +135,16 @@ public class CStaSMulti {
      * Returns records for a set of variables with expected number of false positives bounded by q.
      *
      * @param dataSet            The full datasets to search over.
-     * @param possiblePredictors A set of variables in the datasets over which to search.
-     * @param targets            The target variables.
+     * @param possibleCauses A set of variables in the datasets over which to search.
+     * @param targets            The effect variables.
      * @param test               This test is only used to make more tests like it for subsamples.
      */
-    public List<Record> getRecords(DataSet dataSet, List<Node> possiblePredictors, List<Node> targets, IndependenceTest test) {
+    public LinkedList<List<Record>> getRecords(DataSet dataSet, List<Node> possibleCauses, List<Node> targets, IndependenceTest test) {
         targets = GraphUtils.replaceNodes(targets, dataSet.getVariables());
-        possiblePredictors = GraphUtils.replaceNodes(possiblePredictors, dataSet.getVariables());
+        possibleCauses = GraphUtils.replaceNodes(possibleCauses, dataSet.getVariables());
         final int tSize = targets.size();
 
-        if (new HashSet<>(possiblePredictors).removeAll(new HashSet<>(targets))) {
+        if (new HashSet<>(possibleCauses).removeAll(new HashSet<>(targets))) {
             throw new IllegalArgumentException("Possible predictors and targets must be disjoint sets.");
         }
 
@@ -138,25 +161,25 @@ public class CStaSMulti {
         }
 
         List<Node> augmented = new ArrayList<>(targets);
-        augmented.addAll(possiblePredictors);
+        augmented.addAll(possibleCauses);
 
         class Tuple {
-            private Node predictor;
-            private Node target;
+            private Node cause;
+            private Node effect;
             private double pi;
 
-            public Tuple(Node predictor, Node target, double pi) {
-                this.predictor = predictor;
-                this.target = target;
+            public Tuple(Node cause, Node effect, double pi) {
+                this.cause = cause;
+                this.effect = effect;
                 this.pi = pi;
             }
 
-            public Node getPredictor() {
-                return predictor;
+            public Node getCause() {
+                return cause;
             }
 
-            public Node getTarget() {
-                return target;
+            public Node getEffect() {
+                return effect;
             }
 
             public double getPi() {
@@ -169,17 +192,17 @@ public class CStaSMulti {
         final List<Node> variables = selection.getVariables();
         variables.removeAll(targets);
 
-        final List<Map<Integer, Map<Node, Double>>> minimalEffects = new ArrayList<>();
+//        final List<Map<Integer, Map<Node, Double>>> minimalEffects = new ArrayList<>();
 
-        for (int t = 0; t < tSize; t++) {
-            minimalEffects.add(new ConcurrentHashMap<>());
-
-            for (int b = 0; b < getNumSubsamples(); b++) {
-                final Map<Node, Double> map = new ConcurrentHashMap<>();
-                for (Node node : possiblePredictors) map.put(node, 0.0);
-                minimalEffects.get(t).put(b, map);
-            }
-        }
+//        for (int t = 0; t < tSize; t++) {
+//            minimalEffects.add(new ConcurrentHashMap<>());
+//
+//            for (int b = 0; b < getNumSubsamples(); b++) {
+//                final Map<Node, Double> map = new ConcurrentHashMap<>();
+//                for (Node node : possibleCauses) map.put(node, 0.0);
+//                minimalEffects.get(t).put(b, map);
+//            }
+//        }
 
         final List<List<Ida.NodeEffects>> effects = new ArrayList<>();
         final List<Node> _targets = new ArrayList<>(targets);
@@ -188,7 +211,7 @@ public class CStaSMulti {
             effects.add(new ArrayList<>());
         }
 
-        final List<Node> _possiblePredictors = new ArrayList<>(possiblePredictors);
+        final List<Node> _possiblePredictors = new ArrayList<>(possibleCauses);
         final List<Integer> edgeCounts = new ArrayList<>();
 
         class Task implements Callable<Boolean> {
@@ -232,73 +255,88 @@ public class CStaSMulti {
             totalEdges += count;
         }
 
-        List<Tuple> outTuples = new ArrayList<>();
-        int bestQ = -1;
-
-        final List<Map<Node, Integer>> counts = new ArrayList<>();
-
-        for (int t = 0; t < tSize; t++) {
-            counts.add(new HashMap<>());
-            for (Node node : possiblePredictors) counts.get(t).put(node, 0);
-        }
-
-        double bestEv = 0.0;
-        double bestMbEv = 0.0;
-
         int p = dataSet.getNumColumns();
 
         double avgEdges = totalEdges / getNumSubsamples();
-        final double avgDegree = 2.0 * avgEdges / possiblePredictors.size();
-        double max = 0.0;
+        final double avgDegree = 2.0 * avgEdges / possibleCauses.size();
 
-        for (int q = 1; q <= possiblePredictors.size(); q++) {
-            System.out.println("qq = " + q);
+        System.out.println();
+        LinkedList<List<Record>> allRecords = new LinkedList<>();
+
+        for (int q = getqFrom(); q <= getqTo(); q += getqIncrement()) {
+            System.out.println("Examining q = " + q);
+
+            final List<Map<Node, Integer>> counts = new ArrayList<>();
 
             for (int t = 0; t < tSize; t++) {
-                for (Ida.NodeEffects _effects : effects.get(t)) {
-                    if (q - 1 < possiblePredictors.size()) {
-                        final Node key = _effects.getNodes().get(q - 1);
-                        counts.get(t).put(key, counts.get(t).get(key) + 1);
+                counts.add(new HashMap<>());
+                for (Node node : possibleCauses) counts.get(t).put(node, 0);
+            }
+
+            for (int w = 1; w <= q; w++) {
+                for (int t = 0; t < tSize; t++) {
+                    final Map<Node, Integer> _counts = counts.get(t);
+
+                    for (Ida.NodeEffects _effects : effects.get(t)) {
+                        final List<Node> nodes = _effects.getNodes();
+
+                        if (w - 1 < possibleCauses.size()) {
+                            final Node key = nodes.get(w - 1);
+                            _counts.put(key, _counts.get(key) + 1);
+                        }
                     }
                 }
             }
 
+//            for (int t = 0; t < tSize; t++) {
+//                for (int b = 0; b < effects.get(t).size(); b++) {
+//                    Ida.NodeEffects _effects = effects.get(t).get(b);
+//                    final List<Node> nodes = _effects.getNodes();
+//                    final LinkedList<Double> effects1 = _effects.getEffects();
+//                    final Map<Node, Double> _minimalEffects = minimalEffects.get(t).get(b);
+//
+//                    for (int r = 0; r < possibleCauses.size(); r++) {
+//                        Node n = nodes.get(r);
+//                        Double e = effects1.get(r);
+//                        _minimalEffects.put(n, e);
+//                    }
+//                }
+//            }
+
+            LinkedList<Tuple> tuples = new LinkedList<>();
+
+            double minPi = Double.POSITIVE_INFINITY;
+
             for (int t = 0; t < tSize; t++) {
-                for (int b = 0; b < effects.get(t).size(); b++) {
-                    Ida.NodeEffects _effects = effects.get(t).get(b);
-
-                    for (int r = 0; r < possiblePredictors.size(); r++) {
-                        Node n = _effects.getNodes().get(r);
-                        Double e = _effects.getEffects().get(r);
-                        minimalEffects.get(t).get(b).put(n, e);
-                    }
-                }
-            }
-
-            List<List<Double>> _pi = new ArrayList<>();
-
-            for (int t = 0; t < tSize; t++) {
-                List<Double> pi = new ArrayList<>();
-
-                for (Node v : possiblePredictors) {
+                for (Node v : possibleCauses) {
                     final Integer count = counts.get(t).get(v);
-                    pi.add(count / ((double) getNumSubsamples()));
+                    final double pi = count / ((double) getNumSubsamples());
+
+                    if (tuples.size() < q) {
+                        tuples.add(new Tuple(v, targets.get(t), pi));
+                        if (pi < minPi) minPi = pi;
+                    } else {
+                        if (pi > minPi) {
+                            tuples.add(new Tuple(v, targets.get(t), pi));
+                        }
+
+                        if (tuples.size() > q) {
+                            int index = -1;
+                            double _min = Double.POSITIVE_INFINITY;
+
+                            for (int s = 0; s < tuples.size(); s++) {
+                                if (tuples.get(s).getPi() < _min) {
+                                    index = s;
+                                    minPi = _min;
+                                    _min = tuples.get(s).getPi();
+                                }
+                            }
+
+                            tuples.remove(index);
+                        }
+                    }
                 }
-
-                _pi.add(pi);
             }
-
-            // Need to put all of the lists together.
-
-            List<Tuple> tuples = new ArrayList<>();
-
-            for (int t = 0; t < tSize; t++) {
-                for (int v = 0; v < possiblePredictors.size(); v++) {
-                    tuples.add(new Tuple(possiblePredictors.get(v), targets.get(t), _pi.get(t).get(v)));
-                }
-            }
-
-            tuples.sort((o1, o2) -> Double.compare(o2.getPi(), o1.getPi()));
 
             double sum = 0.0;
 
@@ -312,128 +350,105 @@ public class CStaSMulti {
                 if (Double.isNaN(pi_thr) || tuples.get(g).getPi() < pi_thr) pi_thr = tuples.get(g).getPi();
             }
 
-            if (sum / q >= avgDegree * q / possiblePredictors.size()) {
-                if (sum / q > max) {
-                    max = sum / q;
+            trueDag = GraphUtils.replaceNodes(trueDag, possibleCauses);
+            trueDag = GraphUtils.replaceNodes(trueDag, targets);
+
+            List<Record> records = new ArrayList<>();
+
+            for (Tuple tuple : tuples) {
+                List<Double> e = new ArrayList<>();
+
+                for (int b = 0; b < getNumSubsamples(); b++) {
+                    Ida.NodeEffects _effects = effects.get(targets.indexOf(tuple.getEffect())).get(b);
+                    final LinkedList<Double> effects1 = _effects.getEffects();
+
+                    for (int r = 0; r < possibleCauses.size(); r++) {
+                        e.add(effects1.get(r));
+                    }
+                }
+
+                double[] _e = new double[e.size()];
+                for (int t = 0; t < e.size(); t++) _e[t] = e.get(t);
+                double avg = StatUtils.mean(_e);
+                boolean ancestor = false;
+
+                if (trueDag != null) {
+                    ancestor = trueDag.isAncestorOf(tuple.getCause(), tuple.getEffect());
+                }
+
+                double ev = q - sum;
+                double mbev = er(pi_thr, q, p);
+
+                records.add(new Record(tuple.getCause(), tuple.getEffect(), tuple.getPi(), avg, ev, ev, mbev, ancestor));
+            }
+
+            records.sort((o1, o2) -> {
+                if (o1.getPi() == o2.getPi()) {
+                    return Double.compare(o2.getEffect(), o1.getEffect());
                 } else {
-                    continue;
+                    return Double.compare(o2.getPi(), o1.getPi());
                 }
+            });
 
-                List<Tuple> _outTuples = new ArrayList<>();
-
-                for (int i = 0; i < q; i++) {
-                    _outTuples.add(tuples.get(i));
-                }
-
-
-                outTuples = _outTuples;
-                bestQ = q;
-                bestEv = q - sum;
-                bestMbEv = er(pi_thr, q, p);
-            }
+            allRecords.add(records);
         }
 
-        System.out.println("q = " + bestQ);
 
-        trueDag = GraphUtils.replaceNodes(trueDag, possiblePredictors);
-        trueDag = GraphUtils.replaceNodes(trueDag, targets);
-
-        List<Record> records = new ArrayList<>();
-
-        for (Tuple tuple : outTuples) {
-            //            double er = er(outPis.get(i), outTuples.size(), p);
-//            final double pcer = pcer(tuple.getPi(), bestQ, p);
-
-            List<Double> e = new ArrayList<>();
-
-            for (int b = 0; b < getNumSubsamples(); b++) {
-                final double m = minimalEffects.get(targets.indexOf(tuple.getTarget())).get(b).get(tuple.getPredictor());
-                e.add(m);
-            }
-
-            double[] _e = new double[e.size()];
-            for (int t = 0; t < e.size(); t++) _e[t] = e.get(t);
-            double avg = StatUtils.mean(_e);
-            boolean ancestor = false;
-
-            if (trueDag != null) {
-                ancestor = trueDag.isAncestorOf(tuple.getPredictor(), tuple.getTarget());
-            }
-
-            boolean trekToTarget = false;
-
-            if (trueDag != null) {
-//                List<List<Node>> treks = GraphUtils.treks(trueDag, tuple.getPredictor(), tuple.getTarget(), maxTrekLength);
-//                trekToTarget = !treks.isEmpty();
-            }
-
-            records.add(new Record(tuple.getPredictor(), tuple.getTarget(), tuple.getPi(), avg, bestEv, bestEv, bestMbEv, ancestor, trekToTarget));
-        }
-
-        records.sort((o1, o2) -> {
-            if (o1.getPi() == o2.getPi()) {
-                return Double.compare(o2.effect, o1.effect);
-            } else {
-                return 0;
-            }
-        });
-
-        return records;
+        return allRecords;
     }
 
     /**
      * Returns a text table from the given records
      */
     public String makeTable(List<Record> records) {
-        TextTable table = new TextTable(records.size() + 1, 9);
+        TextTable table = new TextTable(records.size() + 1, 8);
         NumberFormat nf = new DecimalFormat("0.0000");
+        int col = 0;
 
-        table.setToken(0, 0, "Index");
-        table.setToken(0, 1, "Predictor");
-        table.setToken(0, 2, "Target");
-        table.setToken(0, 3, "Type");
-        table.setToken(0, 4, "A");
-        table.setToken(0, 5, "T");
-        table.setToken(0, 6, "PI");
-        table.setToken(0, 7, "Average Effect");
-        table.setToken(0, 8, "PCER");
+        table.setToken(0, col++, "Index");
+        table.setToken(0, col++, "Predictor");
+        table.setToken(0, col++, "Target");
+        table.setToken(0, col++, "Type");
+        table.setToken(0, col++, "A");
+        table.setToken(0, col++, "PI");
+        table.setToken(0, col++, "Average Effect");
+        table.setToken(0, col++, "PCER");
 //        table.setToken(0, 8, "ER");
 
         int fp = 0;
 
         for (int i = 0; i < records.size(); i++) {
-            final Node predictor = records.get(i).getPredictor();
+            final Node predictor = records.get(i).getCause();
             final Node target = records.get(i).getTarget();
             final boolean ancestor = records.get(i).isAncestor();
-            final boolean existsTrekToTarget = records.get(i).isExistsTrekToTarget();
             if (!(ancestor)) fp++;
+            col = 0;
 
-            table.setToken(i + 1, 0, "" + (i + 1));
-            table.setToken(i + 1, 1, predictor.getName());
-            table.setToken(i + 1, 2, target.getName());
-            table.setToken(i + 1, 3, predictor instanceof DiscreteVariable ? "D" : "C");
-            table.setToken(i + 1, 4, ancestor ? "A" : "");
-            table.setToken(i + 1, 5, existsTrekToTarget ? "T" : "");
-            table.setToken(i + 1, 6, nf.format(records.get(i).getPi()));
-            table.setToken(i + 1, 7, nf.format(records.get(i).getEffect()));
-            table.setToken(i + 1, 8, nf.format(records.get(i).getPcer()));
-//            table.setToken(i + 1, 8, nf.format(records.get(i).getEv()));
+            table.setToken(i + 1, col++, "" + (i + 1));
+            table.setToken(i + 1, col++, predictor.getName());
+            table.setToken(i + 1, col++, target.getName());
+            table.setToken(i + 1, col++, predictor instanceof DiscreteVariable ? "D" : "C");
+            table.setToken(i + 1, col++, ancestor ? "A" : "");
+            table.setToken(i + 1, col++, nf.format(records.get(i).getPi()));
+            table.setToken(i + 1, col++, nf.format(records.get(i).getEffect()));
+            table.setToken(i + 1, col++, nf.format(records.get(i).getPcer()));
         }
+
         final double er = !records.isEmpty() ? records.get(0).getEr() : Double.NaN;
         final double mbEv = !records.isEmpty() ? records.get(0).getMBEv() : Double.NaN;
 
         return "\n" + table + "\n" + "# FP = " + fp + " E(V) = " + nf.format(er) + " MB-E(V) = " + nf.format(mbEv) +
-                "\n\nT = exists a trek of length no more than " + maxTrekLength + " to the target" +
-                "\nA = ancestor of the target" +
+                "\n\nT = exists a trek of length no more than " + maxTrekLength + " to the effect" +
+                "\nA = ancestor of the effect" +
                 "\nType: C = continuous, D = discrete\n";
     }
 
     /**
-     * Makes a graph of the estimated predictors to the target.
+     * Makes a graph of the estimated predictors to the effect.
      */
     public Graph makeGraph(Node y, List<Record> records) {
         List<Node> outNodes = new ArrayList<>();
-        for (Record record : records) outNodes.add(record.getPredictor());
+        for (Record record : records) outNodes.add(record.getCause());
 
         Graph graph = new EdgeListGraph(outNodes);
         graph.addNode(y);

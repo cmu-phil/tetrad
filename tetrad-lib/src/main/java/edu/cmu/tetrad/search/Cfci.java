@@ -159,7 +159,7 @@ public final class Cfci implements GraphSearch {
 
         setMaxReachablePathLength(maxReachablePathLength);
 
-        //List<Node> variables = independenceTest.getPredictor();       - Robert Tillman 2008
+        //List<Node> variables = independenceTest.getCause();       - Robert Tillman 2008
         List<Node> nodes = new LinkedList<>();
 
         for (Node variable : variables) {

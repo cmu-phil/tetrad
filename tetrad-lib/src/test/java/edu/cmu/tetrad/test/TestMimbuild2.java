@@ -185,7 +185,7 @@ public class TestMimbuild2 {
 //
 //            DataSet data = im.simulateData(300, false);
 //
-//            mim = GraphUtils.replaceNodes(mim, data.getPredictor());
+//            mim = GraphUtils.replaceNodes(mim, data.getCause());
 //            List<List<Node>> trueClusters = MimUtils.convertToClusters2(mim);
 //
 //            CovarianceMatrix _cov = new CovarianceMatrix(data);
@@ -199,7 +199,7 @@ public class TestMimbuild2 {
 //            if (algorithm.equals("FOFC")) {
 //                FindOneFactorClusters fofc = new FindOneFactorClusters(cov, TestType.TETRAD_WISHART, 0.001);
 //                searchGraph = fofc.search();
-//                searchGraph = GraphUtils.replaceNodes(searchGraph, data.getPredictor());
+//                searchGraph = GraphUtils.replaceNodes(searchGraph, data.getCause());
 //                partition = MimUtils.convertToClusters2(searchGraph);
 //            } else if (algorithm.equals("BPC")) {
 //                TestType testType = TestType.TETRAD_WISHART;
@@ -216,7 +216,7 @@ public class TestMimbuild2 {
 //                throw new IllegalStateException();
 //            }
 //
-//            mimStructure = GraphUtils.replaceNodes(mimStructure, data.getPredictor());
+//            mimStructure = GraphUtils.replaceNodes(mimStructure, data.getCause());
 //
 //            List<String> latentVarList = reidentifyVariables(mim, data, partition, 2);
 //
@@ -234,7 +234,7 @@ public class TestMimbuild2 {
 //                continue;
 //            }
 //
-//            mimbuildStructure = GraphUtils.replaceNodes(mimbuildStructure, data.getPredictor());
+//            mimbuildStructure = GraphUtils.replaceNodes(mimbuildStructure, data.getCause());
 //
 //            int shd = SearchGraphUtils.structuralHammingDistance(restrictToEmpiricalLatents(mimStructure, mimbuildStructure), mimbuildStructure);
 //            boolean impureCluster = containsImpureCluster(partition, trueClusters);
@@ -457,7 +457,7 @@ public class TestMimbuild2 {
 //
 //            DataSet data = im.simulateData(1000, false);
 //
-//            mim = GraphUtils.replaceNodes(mim, data.getPredictor());
+//            mim = GraphUtils.replaceNodes(mim, data.getCause());
 //            List<List<Node>> trueClusters = MimUtils.convertToClusters2(mim);
 //
 //            CovarianceMatrix _cov = new CovarianceMatrix(data);
@@ -471,7 +471,7 @@ public class TestMimbuild2 {
 //            if (algorithm.equals("FOFC")) {
 //                FindOneFactorClusters fofc = new FindOneFactorClusters(cov, TestType.TETRAD_WISHART, 0.001f);
 //                searchGraph = fofc.search();
-//                searchGraph = GraphUtils.replaceNodes(searchGraph, data.getPredictor());
+//                searchGraph = GraphUtils.replaceNodes(searchGraph, data.getCause());
 //                partition = MimUtils.convertToClusters2(searchGraph);
 //            } else if (algorithm.equals("BPC")) {
 //                TestType testType = TestType.TETRAD_WISHART;
@@ -488,7 +488,7 @@ public class TestMimbuild2 {
 //                throw new IllegalStateException();
 //            }
 //
-//            mimStructure = GraphUtils.replaceNodes(mimStructure, data.getPredictor());
+//            mimStructure = GraphUtils.replaceNodes(mimStructure, data.getCause());
 //
 //            List<String> latentVarList = reidentifyVariables(mim, data, partition, 2);
 //
@@ -505,7 +505,7 @@ public class TestMimbuild2 {
 //                continue;
 //            }
 //
-//            mimbuildStructure = GraphUtils.replaceNodes(mimbuildStructure, data.getPredictor());
+//            mimbuildStructure = GraphUtils.replaceNodes(mimbuildStructure, data.getCause());
 //            mimbuildStructure = condense(mimStructure, mimbuildStructure);
 //
 //            int shd = SearchGraphUtils.structuralHammingDistance(mimStructure, mimbuildStructure);

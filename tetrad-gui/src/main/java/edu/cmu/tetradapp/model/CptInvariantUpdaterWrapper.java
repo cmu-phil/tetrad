@@ -126,7 +126,7 @@ public class CptInvariantUpdaterWrapper implements SessionModel, UpdaterWrapper,
                     (Evidence) params.get("evidence", null));
         }
 
-//        Node node = getParameters().getPredictor();
+//        Node node = getParameters().getCause();
 //
 //        if (node != null) {
 //            NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
@@ -144,7 +144,7 @@ public class CptInvariantUpdaterWrapper implements SessionModel, UpdaterWrapper,
 //            Proposition proposition = evidence.getProposition();
 //
 //            for (int i = 0; i < proposition.getNumVariables(); i++) {
-//                Node variable = proposition.getVariableSource().getPredictor().get(i);
+//                Node variable = proposition.getVariableSource().getCause().get(i);
 //                int category = proposition.getSingleCategory(i);
 //
 //                if (category != -1) {

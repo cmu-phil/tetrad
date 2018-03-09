@@ -70,7 +70,7 @@ public class SubsetDiscreteVariablesWrapper extends DataWrapper {
 
     private static DataModel createModel(DataSet data) {
 //        for (int i = data.getNumColumns() -1; i >= 0; i--) {
-//            if (!(data.getPredictor(i) instanceof DiscreteVariable)) {
+//            if (!(data.getCause(i) instanceof DiscreteVariable)) {
 //                data.removeColumn(i);
 //            }
 //        }

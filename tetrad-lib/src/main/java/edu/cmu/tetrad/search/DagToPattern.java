@@ -207,7 +207,7 @@ public class DagToPattern {
 
         this.logger.log("info", "Starting PC algorithm");
 
-//        this.logger.log("info", "Variables " + independenceTest.getPredictor());
+//        this.logger.log("info", "Variables " + independenceTest.getCause());
 
         long startTime = System.currentTimeMillis();
 

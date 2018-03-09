@@ -103,7 +103,7 @@ public final class IntAveDataSetProbs implements DiscreteProbs {
 
     /**
      * @return the estimated probability for the given cell. The order of the
-     * variable values is the order of the variables in getPredictor().
+     * variable values is the order of the variables in getCause().
      */
     public double getCellProb(int[] variableValues) {
         int[] point = new int[dims.length];
