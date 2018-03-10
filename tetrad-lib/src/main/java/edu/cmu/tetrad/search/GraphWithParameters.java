@@ -109,7 +109,7 @@ public class GraphWithParameters {
 
         TetradMatrix Bmatrix = dataSet.getDoubleData();
 
-//    	List<Node> variables = Bmatrix.getCause();
+//    	List<Node> variables = Bmatrix.getCauseNode();
 
         this.graph = new EdgeListGraph();
         weightHash = new HashMap<>();
@@ -459,7 +459,7 @@ public class GraphWithParameters {
      * @return the B matrix corresponding to the graph we do the reverse of Shimizu2006Search.makeDagWithParms()
      */
     //possible difference: makeDagWithParms() uses
-    //    	List<Node> variables = ltDataSet.getCause();
+    //    	List<Node> variables = ltDataSet.getCauseNode();
     public DataSet getGraphMatrix() {
         int n = this.getGraph().getNumNodes();
         TetradMatrix matrix = new TetradMatrix(n, n);

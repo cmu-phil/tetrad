@@ -354,7 +354,7 @@ public class Vcfas {
 
 //        if (data instanceof DataSet) {
 //            DataSet dataSet = (DataSet) data;
-//            int j = dataSet.getColumn(dataSet.getCause(x.getNode()));
+//            int j = dataSet.getColumn(dataSet.getCauseNode(x.getNode()));
 //
 //            for (int i = 0; i < dataSet.getNumRows(); i++) {
 //                if (!Double.isNaN(dataSet.getDouble(i, j))) {

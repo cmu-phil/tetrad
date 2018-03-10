@@ -307,7 +307,7 @@ public final class SampleVcpc implements GraphSearch {
      * See PC for caveats. The number of possible cycles and bidirected edges is far less with CPC than with PC.
      */
 //    public final Graph search() {
-//        return search(independenceTest.getCause());
+//        return search(independenceTest.getCauseNode());
 //    }
 
 ////    public Graph search(List<Node> nodes) {
@@ -331,7 +331,7 @@ public final class SampleVcpc implements GraphSearch {
         definitelyNonadjacencies = new HashSet<>();
         markovInAllPatterns = new HashSet<>();
 
-//        this.logger.log("info", "Variables " + independenceTest.getCause());
+//        this.logger.log("info", "Variables " + independenceTest.getCauseNode());
 
         long startTime = System.currentTimeMillis();
 

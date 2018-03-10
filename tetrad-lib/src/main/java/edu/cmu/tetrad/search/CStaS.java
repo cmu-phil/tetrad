@@ -115,9 +115,10 @@ public class CStaS {
      * @param possibleEffects The target variables.
      * @param test            This test is only used to make more tests like it for subsamples.
      */
-    public LinkedList<Record> getRecords(DataSet dataSet, List<Node> possibleCauses, List<Node> possibleEffects, IndependenceTest test) {
+    public LinkedList<List<Record>> getRecords(DataSet dataSet, List<Node> possibleCauses, List<Node> possibleEffects, IndependenceTest test) {
         possibleEffects = GraphUtils.replaceNodes(possibleEffects, dataSet.getVariables());
         possibleCauses = GraphUtils.replaceNodes(possibleCauses, dataSet.getVariables());
+        LinkedList<List<Record>> allRecords = new LinkedList<>();
 
         if (new HashSet<>(possibleCauses).removeAll(new HashSet<>(possibleEffects))) {
             throw new IllegalArgumentException("Possible predictors and possibleEffects must be disjoint sets.");
@@ -149,7 +150,7 @@ public class CStaS {
                 this.pi = pi;
             }
 
-            public Node getPredictor() {
+            public Node getCauseNode() {
                 return predictor;
             }
 
@@ -242,17 +243,15 @@ public class CStaS {
         double avgEdges = totalEdges / getNumSubsamples();
         final double avgDegree = 2.0 * avgEdges / possibleCauses.size();
 
-        List<Tuple> outTuples = new ArrayList<>();
-        int bestQ = -1;
-
-        double bestEv = 0.0;
-        double bestMbEv = 0.0;
-
         int p = dataSet.getNumColumns();
 
-        double max = 0.0;
+        List<Integer> qs = new ArrayList<>();
 
         for (int q = qFrom; q <= qTo; q += qIncrement) {
+            qs.add(q);
+        }
+
+        for (int q : qs) {
             if (verbose) {
                 System.out.println("Examining q = " + q);
             }
@@ -279,17 +278,6 @@ public class CStaS {
                 }
             }
 
-            for (int t = 0; t < possibleEffects.size(); t++) {
-                for (int b = 0; b < effects.get(t).size(); b++) {
-                    Ida.NodeEffects effectSize = effects.get(t).get(b);
-
-                    for (int r = 0; r < possibleCauses.size(); r++) {
-                        Node n = effectSize.getNodes().get(r);
-                        Double e = effectSize.getEffects().get(r);
-                        minimalEffects.get(t).get(b).put(n, e);
-                    }
-                }
-            }
 
             List<Tuple> tuples = new ArrayList<>();
 
@@ -331,50 +319,52 @@ public class CStaS {
                 _outTuples.add(tuples.get(i));
             }
 
-            outTuples = _outTuples;
-            bestQ = q;
-            bestEv = q - sum;
-            bestMbEv = er(pi_thr, q, p);
+//            outTuples = _outTuples;
+            double ev = q - sum;
+            double mbev = er(pi_thr, q, p);
+            double pcer = pcer(pi_thr, q, p);
 //            }
+
+            trueDag = GraphUtils.replaceNodes(trueDag, possibleCauses);
+            trueDag = GraphUtils.replaceNodes(trueDag, possibleEffects);
+
+            LinkedList<Record> records = new LinkedList<>();
+
+            for (Tuple tuple : _outTuples) {
+                List<Double> e = new ArrayList<>();
+
+                for (int b = 0; b < getNumSubsamples(); b++) {
+                    final int t = possibleEffects.indexOf(tuple.getTarget());
+                    Ida.NodeEffects effectSizes = effects.get(t).get(b);
+                    int r = effectSizes.getNodes().indexOf(tuple.getCauseNode());
+                    e.add(effectSizes.getEffects().get(r));
+                }
+
+                double[] _e = new double[e.size()];
+                for (int t = 0; t < e.size(); t++) _e[t] = e.get(t);
+                double avg = StatUtils.mean(_e);
+
+                boolean ancestor = false;
+
+                if (trueDag != null) {
+                    ancestor = trueDag.isAncestorOf(tuple.getCauseNode(), tuple.getTarget());
+                }
+
+                records.add(new Record(tuple.getCauseNode(), tuple.getTarget(), tuple.getPi(), avg, pcer, ev, mbev, ancestor));
+            }
+
+            records.sort((o1, o2) -> {
+                if (o1.getPi() == o2.getPi()) {
+                    return Double.compare(o2.getEffect(), o1.getEffect());
+                } else {
+                    return Double.compare(o2.getPi(), o1.getPi());
+                }
+            });
+
+            allRecords.add(records);
         }
 
-        System.out.println("Best q = " + bestQ);
-
-        trueDag = GraphUtils.replaceNodes(trueDag, possibleCauses);
-        trueDag = GraphUtils.replaceNodes(trueDag, possibleEffects);
-
-        LinkedList<Record> records = new LinkedList<>();
-
-        for (Tuple tuple : outTuples) {
-            List<Double> e = new ArrayList<>();
-
-            for (int b = 0; b < getNumSubsamples(); b++) {
-                final double m = minimalEffects.get(possibleEffects.indexOf(tuple.getTarget())).get(b).get(tuple.getPredictor());
-                e.add(m);
-            }
-
-            double[] _e = new double[e.size()];
-            for (int t = 0; t < e.size(); t++) _e[t] = e.get(t);
-            double avg = StatUtils.mean(_e);
-
-            boolean ancestor = false;
-
-            if (trueDag != null) {
-                ancestor = trueDag.isAncestorOf(tuple.getPredictor(), tuple.getTarget());
-            }
-
-            records.add(new Record(tuple.getPredictor(), tuple.getTarget(), tuple.getPi(), avg, bestEv, bestEv, bestMbEv, ancestor));
-        }
-
-        records.sort((o1, o2) -> {
-            if (o1.getPi() == o2.getPi()) {
-                return Double.compare(o2.getEffect(), o1.getEffect());
-            } else {
-                return Double.compare(o2.getPi(), o1.getPi());
-            }
-        });
-
-        return records;
+        return allRecords;
     }
 
     /**
@@ -392,7 +382,6 @@ public class CStaS {
         table.setToken(0, 6, "PI");
         table.setToken(0, 7, "Average Effect");
         table.setToken(0, 8, "PCER");
-//        table.setToken(0, 8, "ER");
 
         int fp = 0;
 
@@ -410,7 +399,6 @@ public class CStaS {
             table.setToken(i + 1, 6, nf.format(records.get(i).getPi()));
             table.setToken(i + 1, 7, nf.format(records.get(i).getEffect()));
             table.setToken(i + 1, 8, nf.format(records.get(i).getPcer()));
-//            table.setToken(i + 1, 8, nf.format(records.get(i).getEv()));
         }
         final double er = !records.isEmpty() ? records.get(0).getEv() : Double.NaN;
         final double mbEv = !records.isEmpty() ? records.get(0).getMBEv() : Double.NaN;

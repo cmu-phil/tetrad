@@ -137,7 +137,7 @@ public final class EmBayesEstimator {
         }
 
         //Make sure variables in dataset are measured variables in the BayesPM
-//        for (Node dataSetVariable : this.dataSet.getCause()) {
+//        for (Node dataSetVariable : this.dataSet.getCauseNode()) {
 //            if (!observedVars.contains(dataSetVariable)) {
 //                throw new IllegalArgumentException(
 //                        "Some ar in the dataset is not a " +
@@ -695,9 +695,9 @@ public final class EmBayesEstimator {
 
         // Make sure all of the variables in the PM are in the data set;
         // otherwise, estimation is impossible.
-//        List pmvars = bayesPm.getCause();
-//        List dsvars = dataSet.getCause();
-//        List obsVars = observedIm.getBayesPm().getCause();
+//        List pmvars = bayesPm.getCauseNode();
+//        List dsvars = dataSet.getCauseNode();
+//        List obsVars = observedIm.getBayesPm().getCauseNode();
 
         //System.out.println("Bayes PM as received by estimateMixedIM:  ");
         //System.out.println(bayesPm);

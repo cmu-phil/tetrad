@@ -582,7 +582,7 @@ public class TestMarkovBlanketSearches {
 //            List<Node> _nodes = new ArrayList<Node>();
 //
 //            for (Node node : nodes) {
-//                _nodes.add(dataSet.getCause(node.getNode()));
+//                _nodes.add(dataSet.getCauseNode(node.getNode()));
 //            }
 //
 //            DataSet _dataSet = dataSet.subsetColumns(_nodes);

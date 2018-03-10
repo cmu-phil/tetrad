@@ -203,7 +203,7 @@ public class TestCStaS {
             score.setPenaltyDiscount(penaltyDiscount);
             IndependenceTest test = new IndTestScore(score);
 
-            List<CStaS.Record> records = cstas.getRecords(augmentedData, selectionVars, targets, test);
+            List<CStaS.Record> records = cstas.getRecords(augmentedData, selectionVars, targets, test).getLast();
 
             System.out.println(cstas.makeTable(records));
         }
@@ -212,12 +212,12 @@ public class TestCStaS {
     @Test
     public void testHughes() {
         int numSubsamples = 100;
-        int numEffects = 200;
+        int numEffects = 100;
         double penaltyDiscount = 3;
         double minBump = 0.001;
         int qFrom = 50;
         int qTo = 500;
-        int qIcrement = 50;
+        int qIncrement = 50;
         CStaS.PatternAlgorithm algorithm = CStaS.PatternAlgorithm.PC_STABLE;
 
         try {
@@ -295,11 +295,11 @@ public class TestCStaS {
             cstas.setNumSubsamples(numSubsamples);
             cstas.setqFrom(qFrom);
             cstas.setqTo(qTo);
-            cstas.setqIncrement(qIcrement);
+            cstas.setqIncrement(qIncrement);
             cstas.setPatternAlgorithm(algorithm);
             cstas.setVerbose(true);
 
-            List<CStaS.Record> records = cstas.getRecords(augmentedData, possibleCauses, effects, test);
+            List<CStaS.Record> records = cstas.getRecords(augmentedData, possibleCauses, effects, test).getLast();
 
             System.out.println(cstas.makeTable(records));
 

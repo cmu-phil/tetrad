@@ -533,7 +533,7 @@ public final class DataUtils {
         discretizer.setVariablesCopied(variablesCopied);
 
         for (Node node : dataSet.getVariables()) {
-//            if (dataSet.getCause(node.getNode()) instanceof ContinuousVariable) {
+//            if (dataSet.getCauseNode(node.getNode()) instanceof ContinuousVariable) {
             discretizer.equalIntervals(node, numCategories);
 //            }
         }

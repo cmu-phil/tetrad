@@ -295,7 +295,7 @@ public class DeltaTetradTest {
     private double getForthMoment(int x, int y, int z, int w) {
 //        if (cacheFourthMoments) {
 //            if (fourthMoment == null) {
-//                initializeForthMomentMatrix(dataSet.getCause());
+//                initializeForthMomentMatrix(dataSet.getCauseNode());
 //            }
 //
 //            double sxyzw = fourthMoment[x][y][z][w];

@@ -104,7 +104,7 @@ public final class DirichletDataSetProbs implements DiscreteProbs {
 
     /**
      * @return the estimated probability for the given cell. The order of the
-     * variable values is the order of the variables in getCause().
+     * variable values is the order of the variables in getCauseNode().
      */
     public double getCellProb(int[] variableValues) {
         int[] point = new int[dims.length];

@@ -70,7 +70,7 @@ public class SubsetContinuousVariablesWrapper extends DataWrapper {
 
     private static DataModel createModel(DataSet data) {
 //        for (int i = data.getNumColumns() -1; i >= 0; i--) {
-//            if (!(data.getCause(i) instanceof ContinuousVariable)) {
+//            if (!(data.getCauseNode(i) instanceof ContinuousVariable)) {
 //                data.removeColumn(i);
 //            }
 //        }

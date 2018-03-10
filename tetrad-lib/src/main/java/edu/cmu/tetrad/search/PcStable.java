@@ -210,7 +210,7 @@ public class PcStable implements GraphSearch {
         this.logger.log("info", "Starting PC algorithm");
         this.logger.log("info", "Independence test = " + getIndependenceTest() + ".");
 
-//        this.logger.log("info", "Variables " + independenceTest.getCause());
+//        this.logger.log("info", "Variables " + independenceTest.getCauseNode());
 
         long startTime = System.currentTimeMillis();
 

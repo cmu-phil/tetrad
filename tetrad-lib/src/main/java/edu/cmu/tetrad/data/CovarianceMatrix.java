@@ -555,7 +555,7 @@ public class CovarianceMatrix implements ICovarianceMatrix {
         }
 
 //        buf.append("\nCovariance matrix:");
-//        buf.append("\n\tVariables = ").append(getCause());
+//        buf.append("\n\tVariables = ").append(getCauseNode());
 //        buf.append("\n\tSample size = ").append(getSampleSize());
 //        buf.append("\n");
 //        buf.append(MatrixUtils.toString(matrixC.toArray()));

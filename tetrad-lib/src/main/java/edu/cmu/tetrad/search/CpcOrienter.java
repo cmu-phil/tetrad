@@ -174,7 +174,7 @@ public final class CpcOrienter implements Reorienter {
             throw new NullPointerException();
         }
 
-//        List allNodes = getIndependenceTest().getCause();
+//        List allNodes = getIndependenceTest().getCauseNode();
 //        if (!allNodes.containsAll(nodes)) {
 //            throw new IllegalArgumentException("All of the given nodes must " +
 //                    "be in the domain of the independence test provided.");
@@ -251,14 +251,14 @@ public final class CpcOrienter implements Reorienter {
 
 
 //    public final Graph orientationForGraph(Dag trueGraph) {
-//        Graph graph = new EdgeListGraph(independenceTest.getCause());
+//        Graph graph = new EdgeListGraph(independenceTest.getCauseNode());
 //
 //        for (Edge edge : trueGraph.getEdges()) {
 //            Node nodeA = edge.getNode1();
 //            Node nodeB = edge.getNode2();
 //
-//            Node _nodeA = independenceTest.getCause(nodeA.getNode());
-//            Node _nodeB = independenceTest.getCause(nodeB.getNode());
+//            Node _nodeA = independenceTest.getCauseNode(nodeA.getNode());
+//            Node _nodeB = independenceTest.getCauseNode(nodeB.getNode());
 //
 //            graph.addUndirectedEdge(_nodeA, _nodeB);
 //        }

@@ -279,7 +279,7 @@ public final class IndTestPositiveCorr implements IndependenceTest {
             parents[j] = covMatrix.getVariables().indexOf(z.get(j));
         }
 
-//        int i = covMatrix.getCause().indexOf(x);
+//        int i = covMatrix.getCauseNode().indexOf(x);
 
 //        double variance = covMatrix.getValue(i, i);
 
