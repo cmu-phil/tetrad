@@ -281,14 +281,14 @@ public class YeastPcCcdSearchWrapper {
                 String namej2 = (String) names.get(j + ngenes);
 
                 //Set adjacency matrix for CCD search
-                if(ccdModel.isAdjacent(cds.get(namei1).getPredictor(),
-                                     cds.get(namej1).getPredictor()) ||
-                  ccdModel.isAdjacent(cds.get(namei1).getPredictor(),
-                                     cds.get(namej2).getPredictor()) ||
-                  ccdModel.isAdjacent(cds.get(namei2).getPredictor(),
-                                     cds.get(namej1).getPredictor()) ||
-                  ccdModel.isAdjacent(cds.get(namei2).getPredictor(),
-                                     cds.get(namej2).getPredictor()))
+                if(ccdModel.isAdjacent(cds.get(namei1).getCauseNode(),
+                                     cds.get(namej1).getCauseNode()) ||
+                  ccdModel.isAdjacent(cds.get(namei1).getCauseNode(),
+                                     cds.get(namej2).getCauseNode()) ||
+                  ccdModel.isAdjacent(cds.get(namei2).getCauseNode(),
+                                     cds.get(namej1).getCauseNode()) ||
+                  ccdModel.isAdjacent(cds.get(namei2).getCauseNode(),
+                                     cds.get(namej2).getCauseNode()))
                   ccdModelAdj[i][j] = 1;
                 else ccdModelAdj[i][j] = 0;
               }
@@ -377,14 +377,14 @@ public class YeastPcCcdSearchWrapper {
                 String namej2 = (String) names.get(j + ngenes);
 
                 //Set adjacency matrix for PC search
-                if(pcModel.isAdjacent(cds.get(namei1).getPredictor(),
-                                     cds.get(namej1).getPredictor()) ||
-                  pcModel.isAdjacent(cds.get(namei1).getPredictor(),
-                                     cds.get(namej2).getPredictor()) ||
-                  pcModel.isAdjacent(cds.get(namei2).getPredictor(),
-                                     cds.get(namej1).getPredictor()) ||
-                  pcModel.isAdjacent(cds.get(namei2).getPredictor(),
-                                     cds.get(namej2).getPredictor()))
+                if(pcModel.isAdjacent(cds.get(namei1).getCauseNode(),
+                                     cds.get(namej1).getCauseNode()) ||
+                  pcModel.isAdjacent(cds.get(namei1).getCauseNode(),
+                                     cds.get(namej2).getCauseNode()) ||
+                  pcModel.isAdjacent(cds.get(namei2).getCauseNode(),
+                                     cds.get(namej1).getCauseNode()) ||
+                  pcModel.isAdjacent(cds.get(namei2).getCauseNode(),
+                                     cds.get(namej2).getCauseNode()))
                   pcModelAdj[i][j] = 1;
                 else pcModelAdj[i][j] = 0;
               }
@@ -474,14 +474,14 @@ public class YeastPcCcdSearchWrapper {
 //                String namej2 = (String) names.get(j + ngenes);
 //
 //                //Set adjacency matrix for FCI search
-//                if(fciModel.isAdjacent(cds.get(namei1).getPredictor(),
-//                                     cds.get(namej1).getPredictor()) ||
-//                  fciModel.isAdjacent(cds.get(namei1).getPredictor(),
-//                                     cds.get(namej2).getPredictor()) ||
-//                  fciModel.isAdjacent(cds.get(namei2).getPredictor(),
-//                                     cds.get(namej1).getPredictor()) ||
-//                  fciModel.isAdjacent(cds.get(namei2).getPredictor(),
-//                                     cds.get(namej2).getPredictor()))
+//                if(fciModel.isAdjacent(cds.get(namei1).getCauseNode(),
+//                                     cds.get(namej1).getCauseNode()) ||
+//                  fciModel.isAdjacent(cds.get(namei1).getCauseNode(),
+//                                     cds.get(namej2).getCauseNode()) ||
+//                  fciModel.isAdjacent(cds.get(namei2).getCauseNode(),
+//                                     cds.get(namej1).getCauseNode()) ||
+//                  fciModel.isAdjacent(cds.get(namei2).getCauseNode(),
+//                                     cds.get(namej2).getCauseNode()))
 //                  fciModelAdj[i][j] = 1;
 //                else fciModelAdj[i][j] = 0;
 //              }
@@ -499,8 +499,8 @@ public class YeastPcCcdSearchWrapper {
 //                String namej = (String) names.get(j);
 //                int timej = j / ngenes + 1;
 //
-//                Variable vari = indTestCramerT.getPredictor(namei);
-//                Variable varj = indTestCramerT.getPredictor(namej);
+//                Variable vari = indTestCramerT.getCauseNode(namei);
+//                Variable varj = indTestCramerT.getCauseNode(namej);
 //
 //                if (!fciModel.isAdjacentTo(vari, varj)) {
 //                    continue;
@@ -512,8 +512,8 @@ public class YeastPcCcdSearchWrapper {
 //                fciModelAdj[genei][genej] = 0;
 //
 //                //If timei < timej but variablej -> variablei continue
-//                //if(timei < timej && ccdModel.getEndpoint(cds.get(namej).getPredictor(),
-//                //cds.get(namei).getPredictor()) == Endpoint.FISHER_Z) continue;
+//                //if(timei < timej && ccdModel.getEndpoint(cds.get(namej).getCauseNode(),
+//                //cds.get(namei).getCauseNode()) == Endpoint.FISHER_Z) continue;
 //                fciModelAdj[genei][genej] = 1;
 //            }
 //        }

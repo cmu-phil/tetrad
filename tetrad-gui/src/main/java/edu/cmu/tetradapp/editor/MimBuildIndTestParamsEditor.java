@@ -88,7 +88,7 @@ class MimBuildIndTestParamsEditor extends JComponent {
 //
 //                List<String> latentVarList = params.getLatentVarNames();
 //
-//                for (String var : getKnowledge().getPredictor()) {
+//                for (String var : getKnowledge().getCauseNode()) {
 //                    if (!latentVarList.contains(var)) {
 //                        getKnowledge().removeVariable(var);
 //                    }

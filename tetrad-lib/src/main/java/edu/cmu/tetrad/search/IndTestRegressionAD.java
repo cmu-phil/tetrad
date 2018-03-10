@@ -153,7 +153,7 @@ public final class IndTestRegressionAD implements IndependenceTest {
 
             v2 = regression.getResidualsWithoutFirstRegressor();
 
-//            regressors.remove(dataSet.getPredictor(yVar.getNode()));
+//            regressors.remove(dataSet.getCauseNode(yVar.getNode()));
 //            regression = new RegressionDataset(dataSet);
 //            result = regression.regress(xVar, regressors);
 //            v2 = result.getResiduals();

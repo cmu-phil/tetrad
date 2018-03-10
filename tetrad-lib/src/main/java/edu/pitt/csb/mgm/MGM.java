@@ -1208,7 +1208,7 @@ public class MGM extends ConvexProximal implements GraphSearch{
      */
     public Graph graphFromMGM(){
 
-        //List<Node> variables = getPredictor();
+        //List<Node> variables = getCauseNode();
         Graph g = new EdgeListGraph(variables);
 
         for (int i = 0; i < p; i++) {
@@ -1282,7 +1282,7 @@ public class MGM extends ConvexProximal implements GraphSearch{
      * @return
      */
     public DoubleMatrix2D adjMatFromMGM(){
-        //List<Node> variables = getPredictor();
+        //List<Node> variables = getCauseNode();
         DoubleMatrix2D outMat = DoubleFactory2D.dense.make(p+q,p+q);
 
         outMat.viewPart(0,0,p,p).assign(params.beta.copy().assign(alg.transpose(params.beta), Functions.plus));

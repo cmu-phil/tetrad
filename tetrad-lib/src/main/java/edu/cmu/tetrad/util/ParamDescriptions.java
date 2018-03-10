@@ -37,8 +37,8 @@ public class ParamDescriptions {
         map.put("depth", new ParamDescription("Maximum size of conditioning set (unlimited = -1)", -1, -1, Integer.MAX_VALUE));
         map.put("meanLow", new ParamDescription("Low end of mean range (min = 0.0)", 0.5, 0.0, Double.MAX_VALUE));
         map.put("meanHigh", new ParamDescription("High end of mean range (min = 0.0)", 1.5, 0.0, Double.MAX_VALUE));
-        map.put("coefLow", new ParamDescription("Low end of coefficient range (min = 0.0)", 0.5, 0.0, Double.MAX_VALUE));
-        map.put("coefHigh", new ParamDescription("High end of coefficient range (min = 0.0)", 1.5, 0.0, Double.MAX_VALUE));
+        map.put("coefLow", new ParamDescription("Low end of coefficient range (min = 0.0)", 0.2, 0.0, Double.MAX_VALUE));
+        map.put("coefHigh", new ParamDescription("High end of coefficient range (min = 0.0)", 0.7, 0.0, Double.MAX_VALUE));
         map.put("covLow", new ParamDescription("Low end of covariance range (min = 0.0)", 0.5, 0.0, Double.MAX_VALUE));
         map.put("covHigh", new ParamDescription("High end of covariance range (min = 0.0)", 1.5, 0.0, Double.MAX_VALUE));
         map.put("varLow", new ParamDescription("Low end of variance range (min = 0.0)", 1.0, 0.0, Double.MAX_VALUE));
@@ -214,18 +214,6 @@ public class ParamDescriptions {
                 "Percentage of records to include in a random subsample",
                 0.5, 0.0, 1.0));
 
-        map.put("maxQ", new ParamDescription(
-                "Ranks 1 to this value will be considered",
-                10, 1, Integer.MAX_VALUE));
-
-        map.put("maxEr", new ParamDescription(
-                "A bound on the expected number of false positives",
-                10, 0.0, Double.MAX_VALUE));
-
-        map.put("parallelism", new ParamDescription(
-                "The number of threads to use in the parallel calculation",
-                Runtime.getRuntime().availableProcessors() * 10, 1, Integer.MAX_VALUE));
-
         map.put("percentStability", new ParamDescription(
                 "Percentage of subsamples each feature in the output must agree on",
                 0.5, 0.0, 1.0));
@@ -288,8 +276,25 @@ public class ParamDescriptions {
                 "The number of threads to use in the parallel calculation",
                 Runtime.getRuntime().availableProcessors() * 10, 1, Integer.MAX_VALUE));
 
-                "The probability of creating a 2-cycles in the graph (0 - 1)",
-                0.0, 0.0, 1.0));
+        map.put("q", new ParamDescription(
+                "Examine this q (top brack of variables)",
+                10, 1, Integer.MAX_VALUE));
+
+
+        map.put("qFrom", new ParamDescription(
+                "Examine qs from this integer",
+                10, 1, Integer.MAX_VALUE));
+
+        map.put("qTo", new ParamDescription(
+                "Examine qs to this integer",
+                1, 1, Integer.MAX_VALUE));
+
+        map.put("qIncrement", new ParamDescription(
+                "Examine qs in incrementing by this each time",
+                1, 1, Integer.MAX_VALUE));
+
+        map.put("targetNames", new ParamDescription("Target variable names (comnma separated list)", ""));
+
     }
 
     public static ParamDescriptions getInstance() {

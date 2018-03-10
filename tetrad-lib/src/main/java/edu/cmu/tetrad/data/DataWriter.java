@@ -128,7 +128,7 @@ public final class DataWriter {
 ////        StringBuilder buf = new StringBuilder();
 //
 //        for (int col = 0; col < dataSet.getNumColumns(); col++) {
-//            String name = dataSet.getPredictor(col).getNode();
+//            String name = dataSet.getCauseNode(col).getNode();
 //
 //            if (name.trim().equals("")) {
 //                name = "C" + (col - 1);
@@ -145,7 +145,7 @@ public final class DataWriter {
 //            out.append("\n");
 //
 //            for (int col = 0; col < dataSet.getNumColumns(); col++) {
-//                Node variable = dataSet.getPredictor(col);
+//                Node variable = dataSet.getCauseNode(col);
 //
 //                if (variable instanceof ContinuousVariable) {
 //                    double value = dataSet.getDouble(row, col);

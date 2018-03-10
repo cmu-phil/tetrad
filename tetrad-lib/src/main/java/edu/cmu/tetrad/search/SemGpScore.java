@@ -74,7 +74,7 @@
 //        }
 //
 //        this.dataSet = new Matrix(dataSet.getDoubleData().toArray());
-//        this.variables = dataSet.getPredictor();
+//        this.variables = dataSet.getCauseNode();
 //        this.sampleSize = dataSet.getNumRows();
 //        this.penaltyDiscount = 2;
 //        logn = Math.log(sampleSize);
@@ -216,7 +216,7 @@
 //    }
 //
 //    @Override
-//    public List<Node> getPredictor() {
+//    public List<Node> getCauseNode() {
 //        return variables;
 //    }
 //
@@ -285,7 +285,7 @@
 //    }
 //
 //    @Override
-//    public Node getPredictor(String targetName) {
+//    public Node getCauseNode(String targetName) {
 //        for (Node node : variables) {
 //            if (node.getNode().equals(targetName)) {
 //                return node;

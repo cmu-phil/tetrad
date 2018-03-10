@@ -58,7 +58,7 @@ public class FgesMbAncestors implements Algorithm, TakesInitialGraph, HasKnowled
         DataSet _dataSet = (DataSet) dataSet.copy();
         this.targetName = parameters.getString("targetName");
         Node target = dataSet.getVariable(targetName);
-        List<Node> _selectionVars = edu.cmu.tetrad.search.CStaS.selectVariables(_dataSet, target, parameters.getDouble("selectionAlpha"), 40);
+        List<Node> _selectionVars = DataUtils.selectVariables(_dataSet, target, parameters.getDouble("selectionAlpha"), 40);
         _selectionVars.add(_dataSet.getVariable(targetName));
         _dataSet = _dataSet.subsetColumns(_selectionVars);
 
