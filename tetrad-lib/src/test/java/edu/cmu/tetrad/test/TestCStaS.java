@@ -299,9 +299,10 @@ public class TestCStaS {
             cstas.setPatternAlgorithm(algorithm);
             cstas.setVerbose(true);
 
-            List<CStaS.Record> records = cstas.getRecords(augmentedData, possibleCauses, effects, test).getLast();
+            List<List<CStaS.Record>> allRecords = cstas.getRecords(augmentedData, possibleCauses, effects, test);
 
-            System.out.println(cstas.makeTable(records));
+            final LinkedList<CStaS.Record> cStaRecords = CStaS.cStar(allRecords);
+            System.out.println(cstas.makeTable(cStaRecords));
 
             List<Double> sortedRatios = new ArrayList<>();
 
@@ -337,8 +338,8 @@ public class TestCStaS {
 
             int[] counts = new int[cutoffs.length];
 
-            for (int e = 0; e < records.size(); e++) {
-                CStaS.Record record = records.get(e);
+            for (int e = 0; e < cStaRecords.size(); e++) {
+                CStaS.Record record = cStaRecords.get(e);
                 Node causeNode = record.getCauseNode();
                 Node effectNode = record.getEffectNode();
 
@@ -371,7 +372,7 @@ public class TestCStaS {
             NumberFormat nf = new DecimalFormat("0.00");
 
             for (int w = 0; w < counts.length; w++) {
-                System.out.println((cutoffs[w] * 100.0) + "% " + nf.format(100.0 * (counts[w] / (double) records.size())));
+                System.out.println((cutoffs[w] * 100.0) + "% " + nf.format(100.0 * (counts[w] / (double) cStaRecords.size())));
             }
 
         } catch (IOException e) {

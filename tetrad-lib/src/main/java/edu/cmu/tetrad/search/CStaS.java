@@ -5,10 +5,7 @@ import edu.cmu.tetrad.data.BootstrapSampler;
 import edu.cmu.tetrad.data.CorrelationMatrixOnTheFly;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DiscreteVariable;
-import edu.cmu.tetrad.graph.EdgeListGraph;
-import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.graph.GraphUtils;
-import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.ConcurrencyUtils;
 import edu.cmu.tetrad.util.StatUtils;
 import edu.cmu.tetrad.util.TetradSerializable;
@@ -46,6 +43,31 @@ public class CStaS {
     private PatternAlgorithm patternAlgorithm = PatternAlgorithm.FGES;
 
     private boolean verbose = false;
+
+
+    private class Tuple {
+        private Node predictor;
+        private Node target;
+        private double pi;
+
+        private Tuple(Node predictor, Node target, double pi) {
+            this.predictor = predictor;
+            this.target = target;
+            this.pi = pi;
+        }
+
+        public Node getCauseNode() {
+            return predictor;
+        }
+
+        public Node getTarget() {
+            return target;
+        }
+
+        public double getPi() {
+            return pi;
+        }
+    }
 
     // A single record in the returned table.
     public static class Record implements TetradSerializable {
@@ -139,29 +161,6 @@ public class CStaS {
         List<Node> augmented = new ArrayList<>(possibleEffects);
         augmented.addAll(possibleCauses);
 
-        class Tuple {
-            private Node predictor;
-            private Node target;
-            private double pi;
-
-            private Tuple(Node predictor, Node target, double pi) {
-                this.predictor = predictor;
-                this.target = target;
-                this.pi = pi;
-            }
-
-            public Node getCauseNode() {
-                return predictor;
-            }
-
-            public Node getTarget() {
-                return target;
-            }
-
-            public double getPi() {
-                return pi;
-            }
-        }
 
         final List<Map<Integer, Map<Node, Double>>> minimalEffects = new ArrayList<>();
 
@@ -251,120 +250,203 @@ public class CStaS {
             qs.add(q);
         }
 
+        class Task2 implements Callable<Boolean> {
+            private List<Node> possibleCauses;
+            private List<Node> possibleEffects;
+            private int q;
+
+            private Task2(List<Node> possibleCauses, List<Node> possibleEffects, int q) {
+                this.possibleCauses = possibleCauses;
+                this.possibleEffects = possibleEffects;
+                this.q = q;
+
+            }
+
+            public Boolean call() {
+                try {
+                    LinkedList<Record> records = getRecords(possibleCauses, possibleEffects, effects, p, q);
+                    allRecords.add(records);
+                    return true;
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+
+                return null;
+            }
+        }
+
+        List<Callable<Boolean>> task2s = new ArrayList<>();
+
         for (int q : qs) {
-            if (verbose) {
-                System.out.println("Examining q = " + q);
-            }
+            task2s.add(new Task2(possibleCauses, possibleEffects, q));
+        }
 
-            final List<Map<Node, Integer>> counts = new ArrayList<>();
+        ConcurrencyUtils.runCallables(task2s, getParallelism());
 
+        allRecords.sort(Comparator.comparingDouble(List::size));
+
+        return allRecords;
+    }
+
+    private LinkedList<Record> getRecords(List<Node> possibleCauses, List<Node> possibleEffects, List<List<Ida.NodeEffects>> effects, int p, int q) {
+        if (verbose) {
+            System.out.println("Examining q = " + q);
+        }
+
+        final List<Map<Node, Integer>> counts = new ArrayList<>();
+
+        for (int t = 0; t < possibleEffects.size(); t++) {
+            counts.add(new HashMap<>());
+            for (Node node : possibleCauses) counts.get(t).put(node, 0);
+        }
+
+        for (int w = 1; w <= q; w++) {
             for (int t = 0; t < possibleEffects.size(); t++) {
-                counts.add(new HashMap<>());
-                for (Node node : possibleCauses) counts.get(t).put(node, 0);
-            }
+                final Map<Node, Integer> _counts = counts.get(t);
 
-            for (int w = 1; w <= q; w++) {
-                for (int t = 0; t < possibleEffects.size(); t++) {
-                    final Map<Node, Integer> _counts = counts.get(t);
+                for (Ida.NodeEffects effectSize : effects.get(t)) {
+                    final List<Node> nodes = effectSize.getNodes();
 
-                    for (Ida.NodeEffects effectSize : effects.get(t)) {
-                        final List<Node> nodes = effectSize.getNodes();
-
-                        if (w - 1 < possibleCauses.size()) {
-                            final Node key = nodes.get(w - 1);
-                            _counts.put(key, _counts.get(key) + 1);
-                        }
+                    if (w - 1 < possibleCauses.size()) {
+                        final Node key = nodes.get(w - 1);
+                        _counts.put(key, _counts.get(key) + 1);
                     }
                 }
             }
+        }
 
+        List<Tuple> tuples = new ArrayList<>();
 
-            List<Tuple> tuples = new ArrayList<>();
-
-            for (int t = 0; t < possibleEffects.size(); t++) {
-                for (Node v : possibleCauses) {
-                    final Integer count = counts.get(t).get(v);
-                    final double pi = count / ((double) getNumSubsamples());
-                    tuples.add(new Tuple(v, possibleEffects.get(t), pi));
-                }
+        for (int t = 0; t < possibleEffects.size(); t++) {
+            for (Node v : possibleCauses) {
+                final Integer count = counts.get(t).get(v);
+                final double pi = count / ((double) getNumSubsamples());
+                tuples.add(new Tuple(v, possibleEffects.get(t), pi));
             }
+        }
 
-            tuples.sort((o1, o2) -> Double.compare(o2.getPi(), o1.getPi()));
+        tuples.sort((o1, o2) -> Double.compare(o2.getPi(), o1.getPi()));
 
-            double sum = 0.0;
+        double sum = 0.0;
 
-            for (int g = 0; g < q; g++) {
-                sum += tuples.get(g).getPi();
-            }
+        for (int g = 0; g < q; g++) {
+            sum += tuples.get(g).getPi();
+        }
 
-            double minPi = Double.POSITIVE_INFINITY;
+        double minPi = Double.POSITIVE_INFINITY;
 
-            for (int g = 0; g < q; g++) {
-                double pi = tuples.get(g).getPi();
-                if (pi < minPi) minPi = pi;
-            }
+        for (int g = 0; g < q; g++) {
+            double pi = tuples.get(g).getPi();
+            if (pi < minPi) minPi = pi;
+        }
 
 //            if (sum / q >= max && sum / q > avgDegree * q / p) {
 //            max = sum / q;
 
-            double pi_thr = Double.NaN;
+        double pi_thr = Double.NaN;
 
-            for (int g = 0; g < q; g++) {
-                if (Double.isNaN(pi_thr) || tuples.get(g).getPi() < pi_thr) pi_thr = tuples.get(g).getPi();
-            }
-
-            List<Tuple> _outTuples = new ArrayList<>();
-
-            for (int i = 0; i < q; i++) {
-                _outTuples.add(tuples.get(i));
-            }
-
-//            outTuples = _outTuples;
-            double ev = q - sum;
-            double mbev = er(pi_thr, q, p);
-            double pcer = pcer(pi_thr, q, p);
-//            }
-
-            trueDag = GraphUtils.replaceNodes(trueDag, possibleCauses);
-            trueDag = GraphUtils.replaceNodes(trueDag, possibleEffects);
-
-            LinkedList<Record> records = new LinkedList<>();
-
-            for (Tuple tuple : _outTuples) {
-                List<Double> e = new ArrayList<>();
-
-                for (int b = 0; b < getNumSubsamples(); b++) {
-                    final int t = possibleEffects.indexOf(tuple.getTarget());
-                    Ida.NodeEffects effectSizes = effects.get(t).get(b);
-                    int r = effectSizes.getNodes().indexOf(tuple.getCauseNode());
-                    e.add(effectSizes.getEffects().get(r));
-                }
-
-                double[] _e = new double[e.size()];
-                for (int t = 0; t < e.size(); t++) _e[t] = e.get(t);
-                double avg = StatUtils.mean(_e);
-
-                boolean ancestor = false;
-
-                if (trueDag != null) {
-                    ancestor = trueDag.isAncestorOf(tuple.getCauseNode(), tuple.getTarget());
-                }
-
-                records.add(new Record(tuple.getCauseNode(), tuple.getTarget(), tuple.getPi(), avg, pcer, ev, mbev, ancestor));
-            }
-
-            records.sort((o1, o2) -> {
-                if (o1.getPi() == o2.getPi()) {
-                    return Double.compare(o2.getEffect(), o1.getEffect());
-                } else {
-                    return Double.compare(o2.getPi(), o1.getPi());
-                }
-            });
-
-            allRecords.add(records);
+        for (int g = 0; g < q; g++) {
+            if (Double.isNaN(pi_thr) || tuples.get(g).getPi() < pi_thr) pi_thr = tuples.get(g).getPi();
         }
 
-        return allRecords;
+        List<Tuple> _outTuples = new ArrayList<>();
+
+        for (int i = 0; i < q; i++) {
+            _outTuples.add(tuples.get(i));
+        }
+
+        double ev = q - sum;
+        double mbev = er(pi_thr, q, p);
+        double pcer = pcer(pi_thr, q, p);
+
+        trueDag = GraphUtils.replaceNodes(trueDag, possibleCauses);
+        trueDag = GraphUtils.replaceNodes(trueDag, possibleEffects);
+
+        LinkedList<Record> records = new LinkedList<>();
+
+        for (Tuple tuple : _outTuples) {
+            List<Double> e = new ArrayList<>();
+
+            for (int b = 0; b < getNumSubsamples(); b++) {
+                final int t = possibleEffects.indexOf(tuple.getTarget());
+                Ida.NodeEffects effectSizes = effects.get(t).get(b);
+                int r = effectSizes.getNodes().indexOf(tuple.getCauseNode());
+                e.add(effectSizes.getEffects().get(r));
+            }
+
+            double[] _e = new double[e.size()];
+            for (int t = 0; t < e.size(); t++) _e[t] = e.get(t);
+            double avg = StatUtils.mean(_e);
+
+            boolean ancestor = false;
+
+            if (trueDag != null) {
+                ancestor = trueDag.isAncestorOf(tuple.getCauseNode(), tuple.getTarget());
+            }
+
+            records.add(new Record(tuple.getCauseNode(), tuple.getTarget(), tuple.getPi(), avg, pcer, ev, mbev, ancestor));
+        }
+
+        records.sort((o1, o2) -> {
+            if (o1.getPi() == o2.getPi()) {
+                return Double.compare(o2.getEffect(), o1.getEffect());
+            } else {
+                return Double.compare(o2.getPi(), o1.getPi());
+            }
+        });
+
+        return records;
+    }
+
+    public static LinkedList<Record> cStar(List<List<Record>> allRecords) {
+        Map<Edge, List<Record>> map = new HashMap<>();
+
+        for (List<Record> records : allRecords) {
+            for (Record record : records) {
+                Edge edge = Edges.directedEdge(record.getCauseNode(), record.getEffectNode());
+                map.computeIfAbsent(edge, k -> new ArrayList<>());
+                map.get(edge).add(record);
+            }
+        }
+
+        LinkedList<Record> cstar = new LinkedList<>();
+
+        for (Edge edge : map.keySet()) {
+            List<Record> recordList = map.get(edge);
+            double[] pis = new double[recordList.size()];
+            double[] effects = new double[recordList.size()];
+            double[] pcers = new double[recordList.size()];
+            double[] evs = new double[recordList.size()];
+            double[] mbevs = new double[recordList.size()];
+
+            for (int i = 0; i < recordList.size(); i++) {
+                pis[i] = recordList.get(i).getPi();
+                effects[i] = recordList.get(i).getEffect();
+                pcers[i] = recordList.get(i).getPcer();
+                evs[i] = recordList.get(i).getEv();
+                mbevs[i] = recordList.get(i).getMBEv();
+            }
+
+            double medianPis = StatUtils.median(pis);
+            double medianEffects = StatUtils.median(effects);
+            double medianPcers = StatUtils.median(pcers);
+            double medianEvs = StatUtils.median(evs);
+            double medianMbevs = StatUtils.median(mbevs);
+
+            Record _record = new Record(edge.getNode1(), edge.getNode2(), medianPis, medianEffects, medianPcers,
+                    medianEvs, medianMbevs, recordList.get(0).isAncestor());
+            cstar.add(_record);
+        }
+
+        cstar.sort((o1, o2) -> {
+            if (o1.getPi() == o2.getPi()) {
+                return Double.compare(o2.getEffect(), o1.getEffect());
+            } else {
+                return Double.compare(o2.getPi(), o1.getPi());
+            }
+        });
+
+        return cstar;
     }
 
     /**
