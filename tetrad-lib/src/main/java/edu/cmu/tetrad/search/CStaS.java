@@ -34,7 +34,7 @@ import static java.lang.Math.max;
  *
  * @author jdramsey@andrew.cmu.edu
  */
-public class CStaSMulti {
+public class CStaS {
     public enum PatternAlgorithm {FGES, PC_STABLE}
 
     private int numSubsamples = 30;
@@ -105,7 +105,7 @@ public class CStaSMulti {
         }
     }
 
-    public CStaSMulti() {
+    public CStaS() {
     }
 
     /**

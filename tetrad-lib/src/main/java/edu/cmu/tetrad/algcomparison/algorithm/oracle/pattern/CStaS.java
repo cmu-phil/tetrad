@@ -10,11 +10,9 @@ import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.search.CStaSMulti;
 import edu.cmu.tetrad.util.Parameters;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -30,7 +28,7 @@ public class CStaS implements Algorithm, TakesIndependenceWrapper {
     static final long serialVersionUID = 23L;
     private Graph trueDag = null;
     private IndependenceWrapper test;
-    private LinkedList<CStaSMulti.Record> records = null;
+    private LinkedList<edu.cmu.tetrad.search.CStaS.Record> records = null;
     private double evBound;
     private double MBEvBound;
 
@@ -42,7 +40,7 @@ public class CStaS implements Algorithm, TakesIndependenceWrapper {
         System.out.println("# Available Processors = " + Runtime.getRuntime().availableProcessors());
         System.out.println("Parallelism = " + parameters.getInt("parallelism"));
 
-        edu.cmu.tetrad.search.CStaSMulti cStaS = new edu.cmu.tetrad.search.CStaSMulti();
+        edu.cmu.tetrad.search.CStaS cStaS = new edu.cmu.tetrad.search.CStaS();
 
         cStaS.setParallelism(parameters.getInt("parallelism"));
         cStaS.setNumSubsamples(parameters.getInt("numSubsamples"));
@@ -96,7 +94,7 @@ public class CStaS implements Algorithm, TakesIndependenceWrapper {
         this.trueDag = trueDag;
     }
 
-    public List<edu.cmu.tetrad.search.CStaSMulti.Record> getRecords() {
+    public List<edu.cmu.tetrad.search.CStaS.Record> getRecords() {
         return records;
     }
 

@@ -21,7 +21,6 @@
 
 package edu.cmu.tetrad.test;
 
-import edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern.CStaS;
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern.FgesMbAncestors;
 import edu.cmu.tetrad.algcomparison.graph.RandomForward;
 import edu.cmu.tetrad.algcomparison.graph.RandomGraph;
@@ -103,7 +102,7 @@ public class TestCStaS {
     }
 
     @Test
-    public void testCStaSMulti() {
+    public void testCStaS() {
         int numTargets = 10;
 
         int numNodes = 500;
@@ -113,7 +112,7 @@ public class TestCStaS {
         int numSubsamples = 50;
         double penaltyDiscount = 1;
         double selectionAlpha = 0.1;
-        CStaSMulti.PatternAlgorithm algorithm = CStaSMulti.PatternAlgorithm.PC_STABLE;
+        CStaS.PatternAlgorithm algorithm = CStaS.PatternAlgorithm.PC_STABLE;
 
         Parameters parameters = new Parameters();
 
@@ -161,7 +160,7 @@ public class TestCStaS {
 
             nodes.sort((o1, o2) -> Integer.compare(numAncestors.get(o2), numAncestors.get(o1)));
 
-            CStaSMulti cstas = new CStaSMulti();
+            CStaS cstas = new CStaS();
             cstas.setTrueDag(trueDag);
             cstas.setNumSubsamples(numSubsamples);
             cstas.setPatternAlgorithm(algorithm);
@@ -204,7 +203,7 @@ public class TestCStaS {
             score.setPenaltyDiscount(penaltyDiscount);
             IndependenceTest test = new IndTestScore(score);
 
-            List<CStaSMulti.Record> records = cstas.getRecords(augmentedData, selectionVars, targets, test);
+            List<CStaS.Record> records = cstas.getRecords(augmentedData, selectionVars, targets, test);
 
             System.out.println(cstas.makeTable(records));
         }
@@ -272,7 +271,7 @@ public class TestCStaS {
         for (int i = 0; i < numIterations; i++) {
             parameters.set("targetName", nodes.get(i).getName());
 
-            CStaS c = new CStaS();
+            edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern.CStaS c = new edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern.CStaS();
             c.setIndependenceWrapper(new SemBicTest());
             c.setTrueDag(trueDag);
 
@@ -392,7 +391,7 @@ public class TestCStaS {
         int qFrom = 50;
         int qTo = 500;
         int qIcrement = 50;
-        CStaSMulti.PatternAlgorithm algorithm = CStaSMulti.PatternAlgorithm.PC_STABLE;
+        CStaS.PatternAlgorithm algorithm = CStaS.PatternAlgorithm.PC_STABLE;
 
         try {
 
@@ -466,14 +465,14 @@ public class TestCStaS {
             score.setPenaltyDiscount(penaltyDiscount);
             IndependenceTest test = new IndTestScore(score);
 
-            edu.cmu.tetrad.search.CStaSMulti cstas = new edu.cmu.tetrad.search.CStaSMulti();
+            CStaS cstas = new CStaS();
             cstas.setNumSubsamples(numSubsamples);
             cstas.setqFrom(qFrom);
             cstas.setqTo(qTo);
             cstas.setqIncrement(qIcrement);
             cstas.setPatternAlgorithm(algorithm);
 
-            List<edu.cmu.tetrad.search.CStaSMulti.Record> records = cstas.getRecords(augmentedData, possibleCauses, effects, test);
+            List<CStaS.Record> records = cstas.getRecords(augmentedData, possibleCauses, effects, test);
 
             System.out.println(cstas.makeTable(records));
 
@@ -513,7 +512,7 @@ public class TestCStaS {
             int[] counts = new int[cutoffs.length];
 
             for (int e = 0; e < records.size(); e++) {
-                CStaSMulti.Record record = records.get(e);
+                CStaS.Record record = records.get(e);
                 Node causeNode = record.getCauseNode();
                 Node effectNode = record.getEffectNode();
 
