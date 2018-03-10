@@ -28,9 +28,7 @@ import edu.cmu.tetrad.algcomparison.graph.RandomGraph;
 import edu.cmu.tetrad.algcomparison.independence.SemBicTest;
 import edu.cmu.tetrad.algcomparison.simulation.LeeHastieSimulation;
 import edu.cmu.tetrad.algcomparison.simulation.LinearFisherModel;
-import edu.cmu.tetrad.data.ColtDataSet;
-import edu.cmu.tetrad.data.CovarianceMatrixOnTheFly;
-import edu.cmu.tetrad.data.DataSet;
+import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Edge;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
@@ -54,6 +52,7 @@ import java.text.NumberFormat;
 import java.util.*;
 
 import static java.lang.Math.abs;
+import static java.lang.Math.max;
 
 /**
  * Tests CStaS.
@@ -80,7 +79,7 @@ public class TestCStaS {
 //        SemIm im = new SemIm(pm);
 //        DataSet dataSet = im.simulateData(1000, false);
 //
-//        Node y = dataSet.getPredictor("X10");
+//        Node y = dataSet.getCauseNode("X10");
 //
 //        SemBicScore score = new SemBicScore(new CorrelationMatrixOnTheFly(dataSet));
 //        score.setPenaltyDiscount(parameters.getDouble("penaltyDiscount"));
@@ -110,7 +109,7 @@ public class TestCStaS {
         int numIterations = 10;
         int numSubsamples = 100;
         double penaltyDiscount = 1.2;
-        double selectionAlpha = 0.2;
+        double selectionAlpha = 0.6;
         Parameters parameters = new Parameters();
 
         parameters.set("penaltyDiscount", penaltyDiscount);
@@ -196,6 +195,7 @@ public class TestCStaS {
         int numSubsamples = 50;
         double penaltyDiscount = 1;
         double selectionAlpha = 0.1;
+        CStaSMulti.PatternAlgorithm algorithm = CStaSMulti.PatternAlgorithm.PC_STABLE;
 
         Parameters parameters = new Parameters();
 
@@ -246,6 +246,10 @@ public class TestCStaS {
             CStaSMulti cstas = new CStaSMulti();
             cstas.setTrueDag(trueDag);
             cstas.setNumSubsamples(numSubsamples);
+            cstas.setPatternAlgorithm(algorithm);
+            cstas.setqFrom(50);
+            cstas.setqTo(100);
+            cstas.setqIncrement(1);
 
             List<Node> targets = new ArrayList<>();
 
@@ -264,6 +268,8 @@ public class TestCStaS {
                     selectionVars = _selectionVars;
                 }
             }
+
+            System.out.println("Selected # nodes = " + selectionVars.size());
 
             selectionVars = GraphUtils.replaceNodes(selectionVars, dataSet.getVariables());
             List<Node> augmented = new ArrayList<>(selectionVars);
@@ -568,12 +574,16 @@ public class TestCStaS {
         int numSubsamples = 100;
         int numEffects = 100;
         double penaltyDiscount = 3;
-        double minBump = 0.05;
-        int qFrom = 100;
-        int qTo = 100;
-        int qIcrement = 100;
+        double minBump = 0.001;
+        int qFrom = 50;
+        int qTo = 500;
+        int qIcrement = 50;
+        CStaSMulti.PatternAlgorithm algorithm = CStaSMulti.PatternAlgorithm.PC_STABLE;
 
         try {
+
+            // load stand.daa.exp, mutant, and z.pos.
+
             File file = new File("/Users/user/Downloads/stand.data.exp.csv");
             File file2 = new File("/Users/user/Downloads/mutant.txt");
             File file3 = new File("/Users/user/Downloads/z.pos.txt");
@@ -597,10 +607,10 @@ public class TestCStaS {
 
             BufferedReader in = new BufferedReader(new FileReader(file3));
             String line;
-            List<Node> selectionVars = new ArrayList<>();
+            List<Node> possibleCauses = new ArrayList<>();
             List<Integer> zPos = new ArrayList<>();
 
-            // Predictors.
+            // Causes.
             while ((line = in.readLine()) != null) {
                 line = line.trim();
                 if (line.isEmpty()) continue;
@@ -608,36 +618,38 @@ public class TestCStaS {
 
                 for (String token : tokens) {
                     final int index = Integer.parseInt(token) - 1; // one-indexed.
-                    selectionVars.add(standDataExp.getVariable(index));
+                    possibleCauses.add(standDataExp.getVariable(index));
                     zPos.add(index);
                 }
             }
 
-            // Targets.
-            List<Node> targets = new ArrayList<>();
+            // Effects.
+            List<Node> effects = new ArrayList<>();
             int i = 0;
             int count = 0;
 
             while (count < numEffects) {
                 final Node node = standDataExp.getVariables().get(i);
 
-                if (!selectionVars.contains(node)) {
-                    targets.add(node);
+                if (!possibleCauses.contains(node)) {
+                    effects.add(node);
                     count++;
                 }
 
                 i++;
             }
 
-            List<Node> augmented = new ArrayList<>(selectionVars);
+            List<Node> augmented = new ArrayList<>(possibleCauses);
 
-            for (Node target : targets) {
-                if (!augmented.contains(target)) augmented.add(target);
+            for (Node effect : effects) {
+                if (!augmented.contains(effect)) augmented.add(effect);
             }
 
-            DataSet selection = standDataExp.subsetColumns(augmented);
+            DataSet augmentedData = standDataExp.subsetColumns(augmented);
 
-            SemBicScore score = new SemBicScore(new CovarianceMatrixOnTheFly(selection));
+            // Run CStaS.
+
+            SemBicScore score = new SemBicScore(new CovarianceMatrixOnTheFly(augmentedData));
             score.setPenaltyDiscount(penaltyDiscount);
             IndependenceTest test = new IndTestScore(score);
 
@@ -646,26 +658,36 @@ public class TestCStaS {
             cstas.setqFrom(qFrom);
             cstas.setqTo(qTo);
             cstas.setqIncrement(qIcrement);
+            cstas.setPatternAlgorithm(algorithm);
 
-            List<edu.cmu.tetrad.search.CStaSMulti.Record> records = cstas.getRecords(selection, selectionVars, targets, test);
+            List<edu.cmu.tetrad.search.CStaSMulti.Record> records = cstas.getRecords(augmentedData, possibleCauses, effects, test);
 
             System.out.println(cstas.makeTable(records));
 
             List<Double> sortedRatios = new ArrayList<>();
-            DataSet ratios = new ColtDataSet(mutant.getNumRows(), mutant.getVariables());
+
+            List<Node> variables = mutant.getVariables();
+            double[][] ratios = new double[mutant.getNumRows()][mutant.getNumColumns()];
 
             for (int cause = 0; cause < mutant.getNumRows(); cause++) {
-                final double causeBump = abs(cell(cause, zPos.get(cause), mutant) - avg(cause, zPos.get(cause), standDataExp));
+                final double causeBump = (cell(cause, zPos.get(cause), mutant) - avg(cause, zPos.get(cause), mutant));
+
+                double maxRatio = 0.0;
 
                 for (int effect = 0; effect < mutant.getNumColumns(); effect++) {
-                    final double effectBump = abs(cell(cause, effect, mutant) - avg(cause, effect, standDataExp));
-                    double ratio = causeBump / effectBump;
-                    ratios.setDouble(cause, effect, ratio);
+                    final double effectBump = (cell(cause, effect, mutant) - avg(cause, effect, mutant));
+
+                    double ratio = (effectBump / causeBump);
+
+                    ratios[cause][effect] = ratio;
 
                     if (effectBump > minBump) {
+                        if (ratio > maxRatio) maxRatio = ratio;
                         sortedRatios.add(ratio);
                     }
                 }
+
+                System.out.println("max ratio = " + maxRatio);
             }
 
             sortedRatios.sort((o1, o2) -> Double.compare(o2, o1));
@@ -685,19 +707,27 @@ public class TestCStaS {
 
             for (int e = 0; e < records.size(); e++) {
                 CStaSMulti.Record record = records.get(e);
-                Node predictor = record.getPredictor();
-                Node target = record.getTarget();
+                Node causeNode = record.getCauseNode();
+                Node effectNode = record.getEffectNode();
 
-                int _predictor = mutant.getColumn(mutant.getVariable(predictor.getName()));
+                int _cause = variables.indexOf(causeNode);
 
                 for (int s = 0; s < zPos.size(); s++) {
-                    if (_predictor == zPos.get(s)) _predictor = s;
+                    if (_cause == zPos.get(s)) {
+                        _cause = s;
+                        break;
+                    }
                 }
 
-                int _target = mutant.getColumn(mutant.getVariable(target.getName()));
+                int _effect = variables.indexOf(effectNode);
 
-                final double ratio = ratios.getDouble(_predictor, _target);
-                System.out.println((e + 1) + ". " + ratio);
+                double ratio = -1;
+                try {
+                    ratio = ratios[_cause][_effect];
+                    System.out.println((e + 1) + ". " + ratio);
+                } catch (Exception e1) {
+                    e1.printStackTrace();
+                }
 
                 for (int w = 0; w < cutoffs.length; w++) {
                     if (ratio >= _cutoffs[w]) counts[w]++;
