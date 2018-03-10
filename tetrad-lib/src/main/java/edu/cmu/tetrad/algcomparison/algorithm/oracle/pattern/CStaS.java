@@ -44,15 +44,22 @@ public class CStaS implements Algorithm, TakesIndependenceWrapper {
 
         cStaS.setParallelism(parameters.getInt("parallelism"));
         cStaS.setNumSubsamples(parameters.getInt("numSubsamples"));
+        cStaS.setqFrom(parameters.getInt("q"));
+        cStaS.setqTo(parameters.getInt("q"));
+        cStaS.setqIncrement(1);
         cStaS.setTrueDag(trueDag);
+        cStaS.setVerbose(parameters.getBoolean("verbose"));
 
-        Node target = dataSet.getVariable(parameters.getString("targetName"));
+        final String targetName = parameters.getString("targetNames");
+        String[] names = targetName.split(",");
+        List<Node> possibleEffects = new ArrayList<>();
+
+        for (String name : names) {
+            possibleEffects.add(dataSet.getVariable(name));
+        }
 
         List<Node> possibleCauses = new ArrayList<>(dataSet.getVariables());
-        possibleCauses.remove(target);
-
-        List<Node> possibleEffects = new ArrayList<>();
-        possibleEffects.add(target);
+        possibleCauses.removeAll(possibleEffects);
 
         this.records = cStaS.getRecords((DataSet) dataSet, possibleCauses, possibleEffects, test.getTest(dataSet, parameters));
         evBound = this.records.get(0).getEv();
@@ -60,7 +67,7 @@ public class CStaS implements Algorithm, TakesIndependenceWrapper {
 
         System.out.println(cStaS.makeTable(this.getRecords()));
 
-        return cStaS.makeGraph(target, getRecords());
+        return cStaS.makeGraph(getRecords());
     }
 
     @Override
@@ -80,12 +87,12 @@ public class CStaS implements Algorithm, TakesIndependenceWrapper {
 
     @Override
     public List<String> getParameters() {
-        List<String> parameters = new ArrayList<>();
-        parameters.addAll(test.getParameters());
+        List<String> parameters = new ArrayList<>(test.getParameters());
         parameters.add("selectionAlpha");
         parameters.add("penaltyDiscount");
         parameters.add("numSubsamples");
-        parameters.add("targetName");
+        parameters.add("targetNames");
+        parameters.add("q");
         parameters.add("parallelism");
         return parameters;
     }

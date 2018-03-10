@@ -19,9 +19,6 @@ import java.text.NumberFormat;
 import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.RecursiveTask;
-
-import static java.lang.Math.max;
 
 /**
  * An adaptation of the CStaR algorithm (Steckoven et al., 2012).
@@ -47,6 +44,8 @@ public class CStaS {
     private IndependenceTest test;
 
     private PatternAlgorithm patternAlgorithm = PatternAlgorithm.FGES;
+
+    private boolean verbose = false;
 
     // A single record in the returned table.
     public static class Record implements TetradSerializable {
@@ -215,7 +214,9 @@ public class CStaS {
 
                     edgeCounts.add(pattern.getNumEdges());
 
-                    System.out.println("Completed one pattern search");
+                    if (verbose) {
+                        System.out.println("Completed one pattern search");
+                    }
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -252,7 +253,9 @@ public class CStaS {
         double max = 0.0;
 
         for (int q = qFrom; q <= qTo; q += qIncrement) {
-            System.out.println("Examining = " + q);
+            if (verbose) {
+                System.out.println("Examining q = " + q);
+            }
 
             final List<Map<Node, Integer>> counts = new ArrayList<>();
 
@@ -313,26 +316,26 @@ public class CStaS {
                 if (pi < minPi) minPi = pi;
             }
 
-            if (sum / q >= max && sum / q > avgDegree * q / p) {
-                max = sum / q;
+//            if (sum / q >= max && sum / q > avgDegree * q / p) {
+//            max = sum / q;
 
-                double pi_thr = Double.NaN;
+            double pi_thr = Double.NaN;
 
-                for (int g = 0; g < q; g++) {
-                    if (Double.isNaN(pi_thr) || tuples.get(g).getPi() < pi_thr) pi_thr = tuples.get(g).getPi();
-                }
-
-                List<Tuple> _outTuples = new ArrayList<>();
-
-                for (int i = 0; i < q; i++) {
-                    _outTuples.add(tuples.get(i));
-                }
-
-                outTuples = _outTuples;
-                bestQ = q;
-                bestEv = q - sum;
-                bestMbEv = er(pi_thr, q, p);
+            for (int g = 0; g < q; g++) {
+                if (Double.isNaN(pi_thr) || tuples.get(g).getPi() < pi_thr) pi_thr = tuples.get(g).getPi();
             }
+
+            List<Tuple> _outTuples = new ArrayList<>();
+
+            for (int i = 0; i < q; i++) {
+                _outTuples.add(tuples.get(i));
+            }
+
+            outTuples = _outTuples;
+            bestQ = q;
+            bestEv = q - sum;
+            bestMbEv = er(pi_thr, q, p);
+//            }
         }
 
         System.out.println("Best q = " + bestQ);
@@ -419,7 +422,7 @@ public class CStaS {
     /**
      * Makes a graph of the estimated predictors to the target.
      */
-    public Graph makeGraph(Node y, List<Record> records) {
+    public Graph makeGraph(List<Record> records) {
         List<Node> outNodes = new ArrayList<>();
 
         Graph graph = new EdgeListGraph(outNodes);
@@ -459,6 +462,10 @@ public class CStaS {
 
     public void setPatternAlgorithm(PatternAlgorithm patternAlgorithm) {
         this.patternAlgorithm = patternAlgorithm;
+    }
+
+    public void setVerbose(boolean verbose) {
+        this.verbose = verbose;
     }
 
     //=============================PRIVATE==============================//

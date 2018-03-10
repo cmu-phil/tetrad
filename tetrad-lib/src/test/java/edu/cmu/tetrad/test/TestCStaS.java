@@ -209,179 +209,6 @@ public class TestCStaS {
         }
     }
 
-    //    @Test
-    public void testFgesMbAncestors() {
-        int numNodes = 500;
-        int avgDegree = 7;
-        int sampleSize = 100;
-        int numIterations = 10;
-        int numSubsamples = 100;
-        double penaltyDiscount = 1.3;
-        double selectionAlpha = 0.05;
-        Parameters parameters = new Parameters();
-
-        parameters.set("penaltyDiscount", penaltyDiscount);
-        parameters.set("numSubsamples", numSubsamples);
-        parameters.set("depth", 2);
-        parameters.set("selectionAlpha", selectionAlpha);
-
-        parameters.set("numMeasures", numNodes);
-        parameters.set("numLatents", 0);
-        parameters.set("avgDegree", avgDegree);
-        parameters.set("maxDegree", 100);
-        parameters.set("maxIndegree", 100);
-        parameters.set("maxOutdegree", 100);
-        parameters.set("connected", false);
-
-        parameters.set("verbose", false);
-
-        parameters.set("coefLow", 0.5);
-        parameters.set("coefHigh", 1.2);
-        parameters.set("includeNegativeCoefs", true);
-        parameters.set("sampleSize", sampleSize);
-        parameters.set("intervalBetweenShocks", 5);
-        parameters.set("intervalBetweenRecordings", 5);
-
-        parameters.set("sampleSize", sampleSize);
-
-        parameters.set("parallelism", 40);
-
-        RandomGraph randomForward = new RandomForward();
-        LinearFisherModel fisher = new LinearFisherModel(randomForward);
-        fisher.createData(parameters);
-        DataSet fullData = (DataSet) fisher.getDataModel(0);
-
-        final Graph trueDag = fisher.getTrueGraph(0);
-
-        List<Node> nodes = trueDag.getNodes();
-
-        Map<Node, Integer> numAncestors = new HashMap<>();
-
-        for (Node n : nodes) {
-            numAncestors.put(n, trueDag.getAncestors(Collections.singletonList(n)).size());
-        }
-
-        nodes.sort((o1, o2) -> Integer.compare(numAncestors.get(o2), numAncestors.get(o1)));
-
-        int[][] counts = new int[numIterations][4];
-        double[][] times = new double[numIterations][2];
-        int[][] fp = new int[numIterations][2];
-        double[][] cev = new double[numIterations][2];
-
-        for (int i = 0; i < numIterations; i++) {
-            parameters.set("targetName", nodes.get(i).getName());
-
-            edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern.CStaS c = new edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern.CStaS();
-            c.setIndependenceWrapper(new SemBicTest());
-            c.setTrueDag(trueDag);
-
-            long cStart = System.currentTimeMillis();
-
-            Graph cGraph = c.search(fullData, parameters);
-            cev[i][0] = c.getEvBound();
-            cev[i][1] = c.getMBEvBound();
-
-            long cStop = System.currentTimeMillis();
-
-            FgesMbAncestors f = new FgesMbAncestors();
-            f.setScoreWrapper(new edu.cmu.tetrad.algcomparison.score.SemBicScore());
-
-            long fStart = System.currentTimeMillis();
-
-            Graph fGraph = f.search(fullData, parameters);
-
-            long fStop = System.currentTimeMillis();
-
-            int cTotal = cGraph.getNumNodes() - 1;
-            int cAnc = 0;
-
-            List<Node> cNodes = cGraph.getNodes();
-            cNodes = GraphUtils.replaceNodes(cNodes, trueDag.getNodes());
-
-            for (Node node : cNodes) {
-                if (node == nodes.get(i)) continue;
-                if (trueDag.isAncestorOf(node, nodes.get(i))) {
-                    cAnc++;
-                }
-            }
-
-            int fTotal = fGraph.getNumNodes() - 1;
-            int fAnc = 0;
-
-            List<Node> fNodes = fGraph.getNodes();
-            fNodes = GraphUtils.replaceNodes(fNodes, trueDag.getNodes());
-
-            for (Node node : fNodes) {
-                if (node == nodes.get(i)) continue;
-                if (trueDag.isAncestorOf(node, nodes.get(i))) {
-                    fAnc++;
-                }
-            }
-
-            final double cTime = (cStop - cStart) / 1000.0;
-            final double fTime = (fStop - fStart) / 1000.0;
-
-            System.out.println("### cTotal = " + (cTotal - 1) + " cAnc = " + cAnc + " fTotal = " + (fTotal - 1) + " fAnc = " + fAnc);
-            System.out.println("### cElapsed = " + cTime + "s fElapsed = " + fTime + "s");
-            System.out.println();
-
-            counts[i][0] = cTotal;
-            counts[i][1] = cAnc;
-            counts[i][2] = fTotal;
-            counts[i][3] = fAnc;
-
-            fp[i][0] = cTotal - cAnc;
-            fp[i][1] = fTotal - fAnc;
-
-            times[i][0] = cTime;
-            times[i][1] = fTime;
-
-        }
-
-        TextTable table = new TextTable(numIterations + 1, 11);
-        int col = 0;
-
-        table.setToken(0, col++, "Index");
-
-        table.setToken(0, col++, "" + "cTotal");
-        table.setToken(0, col++, "" + "cAnc");
-        table.setToken(0, col++, "" + "cFP");
-        table.setToken(0, col++, "" + "cEV");
-        table.setToken(0, col++, "" + "cEV-MB");
-
-        table.setToken(0, col++, "" + "fTotal");
-        table.setToken(0, col++, "" + "fAnc");
-        table.setToken(0, col++, "" + "fFP");
-
-        table.setToken(0, col++, "" + "cTime");
-        table.setToken(0, col++, "" + "rTime");
-
-        NumberFormat nf = new DecimalFormat("0.00");
-
-        for (int i = 0; i < numIterations; i++) {
-            col = 0;
-
-            table.setToken(i + 1, col++, "" + (i + 1));
-
-            table.setToken(i + 1, col++, "" + counts[i][0]);
-            table.setToken(i + 1, col++, "" + counts[i][1]);
-            table.setToken(i + 1, col++, "" + fp[i][0]);
-            table.setToken(i + 1, col++, "" + nf.format(cev[i][0]));
-            table.setToken(i + 1, col++, "" + nf.format(cev[i][1]));
-
-            table.setToken(i + 1, col++, "" + counts[i][2]);
-            table.setToken(i + 1, col++, "" + counts[i][3]);
-            table.setToken(i + 1, col++, "" + fp[i][1]);
-
-
-            table.setToken(i + 1, col++, "" + times[i][0]);
-            table.setToken(i + 1, col++, "" + times[i][1]);
-        }
-
-        System.out.println(table);
-
-    }
-
     @Test
     public void testHughes() {
         int numSubsamples = 100;
@@ -460,7 +287,6 @@ public class TestCStaS {
             DataSet augmentedData = standDataExp.subsetColumns(augmented);
 
             // Run CStaS.
-
             SemBicScore score = new SemBicScore(new CovarianceMatrixOnTheFly(augmentedData));
             score.setPenaltyDiscount(penaltyDiscount);
             IndependenceTest test = new IndTestScore(score);
@@ -471,6 +297,7 @@ public class TestCStaS {
             cstas.setqTo(qTo);
             cstas.setqIncrement(qIcrement);
             cstas.setPatternAlgorithm(algorithm);
+            cstas.setVerbose(true);
 
             List<CStaS.Record> records = cstas.getRecords(augmentedData, possibleCauses, effects, test);
 
@@ -505,7 +332,6 @@ public class TestCStaS {
 
             for (int w = 0; w < cutoffs.length; w++) {
                 final Double cutoff = sortedRatios.get((int) (size * cutoffs[w] - 1));
-                System.out.println(cutoffs[w] * 100 + "% cutoff = " + cutoff);
                 _cutoffs[w] = cutoff;
             }
 
@@ -531,7 +357,6 @@ public class TestCStaS {
 
                 try {
                     ratio = ratios[_cause][_effect];
-                    System.out.println((e + 1) + ". " + ratio);
                 } catch (Exception e1) {
                     e1.printStackTrace();
                 }
@@ -539,13 +364,6 @@ public class TestCStaS {
                 for (int w = 0; w < cutoffs.length; w++) {
                     if (ratio >= _cutoffs[w]) counts[w]++;
                 }
-            }
-
-            System.out.println("\nCounts greater than x%");
-            System.out.println();
-
-            for (int w = 0; w < counts.length; w++) {
-                System.out.println((cutoffs[w] * 100.0) + "% " + (counts[w]));
             }
 
             System.out.println("\nPercentages");

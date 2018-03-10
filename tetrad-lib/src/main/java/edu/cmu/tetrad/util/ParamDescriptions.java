@@ -275,6 +275,26 @@ public class ParamDescriptions {
         map.put("parallelism", new ParamDescription(
                 "The number of threads to use in the parallel calculation",
                 Runtime.getRuntime().availableProcessors() * 10, 1, Integer.MAX_VALUE));
+
+        map.put("q", new ParamDescription(
+                "Examine this q (top brack of variables)",
+                10, 1, Integer.MAX_VALUE));
+
+
+        map.put("qFrom", new ParamDescription(
+                "Examine qs from this integer",
+                10, 1, Integer.MAX_VALUE));
+
+        map.put("qTo", new ParamDescription(
+                "Examine qs to this integer",
+                1, 1, Integer.MAX_VALUE));
+
+        map.put("qIncrement", new ParamDescription(
+                "Examine qs in incrementing by this each time",
+                1, 1, Integer.MAX_VALUE));
+
+        map.put("targetNames", new ParamDescription("Target variable names (comnma separated list)", ""));
+
     }
 
     public static ParamDescriptions getInstance() {
