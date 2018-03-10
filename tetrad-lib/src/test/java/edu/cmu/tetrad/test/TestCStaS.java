@@ -379,8 +379,8 @@ public class TestCStaS {
         }
     }
 
-    private double cell(int predictor, int effect, DataSet mutants) {
-        return mutants.getDouble(predictor, effect);
+    private double cell(int cause, int effect, DataSet mutants) {
+        return mutants.getDouble(cause, effect);
     }
 
     private double avg(int cause, int effect, DataSet mutants) {
@@ -394,49 +394,6 @@ public class TestCStaS {
         }
 
         return sum / count;
-    }
-
-    private int[] getResult(Graph trueDag, Graph graph) {
-        graph = GraphUtils.replaceNodes(graph, trueDag.getNodes());
-
-        if (graph == null) throw new NullPointerException("Graph null");
-
-        Set<Edge> allTreks = new HashSet<>();
-        Set<Edge> allAncestors = new HashSet<>();
-        Set<Edge> nonTreks = new HashSet<>();
-        Set<Edge> nonAncestors = new HashSet<>();
-
-        for (Edge edge : graph.getEdges()) {
-            Node x = edge.getNode1();
-            Node y = edge.getNode2();
-
-            boolean ancestor = trueDag.isAncestorOf(x, y);
-
-            List<List<Node>> treks = GraphUtils.treks(trueDag, x, y, 10);
-
-            boolean trekToTarget = !treks.isEmpty();
-
-            if (trekToTarget) {
-                allTreks.add(edge);
-            } else {
-                nonTreks.add(edge);
-            }
-
-            if (ancestor) {
-                allAncestors.add(edge);
-            } else {
-                nonAncestors.add(edge);
-            }
-        }
-
-        int[] ret = new int[4];
-
-        ret[0] = allTreks.size();
-        ret[1] = allAncestors.size();
-        ret[2] = nonTreks.size();
-        ret[3] = nonAncestors.size();
-
-        return ret;
     }
 }
 
