@@ -26,14 +26,18 @@ import edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern.FgesMbAncestors;
 import edu.cmu.tetrad.algcomparison.graph.RandomForward;
 import edu.cmu.tetrad.algcomparison.graph.RandomGraph;
 import edu.cmu.tetrad.algcomparison.independence.SemBicTest;
-import edu.cmu.tetrad.algcomparison.simulation.LeeHastieSimulation;
 import edu.cmu.tetrad.algcomparison.simulation.LinearFisherModel;
-import edu.cmu.tetrad.data.*;
+import edu.cmu.tetrad.data.CorrelationMatrixOnTheFly;
+import edu.cmu.tetrad.data.CovarianceMatrixOnTheFly;
+import edu.cmu.tetrad.data.DataSet;
+import edu.cmu.tetrad.data.DataUtils;
 import edu.cmu.tetrad.graph.Edge;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.*;
+import edu.cmu.tetrad.sem.SemIm;
+import edu.cmu.tetrad.sem.SemPm;
 import edu.cmu.tetrad.util.DataConvertUtils;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TextTable;
@@ -51,9 +55,6 @@ import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.*;
 
-import static java.lang.Math.abs;
-import static java.lang.Math.max;
-
 /**
  * Tests CStaS.
  *
@@ -61,126 +62,43 @@ import static java.lang.Math.max;
  */
 public class TestCStaS {
 
-//    public void testIda() {
-//        Parameters parameters = new Parameters();
-//        parameters.set("penaltyDiscount", 2);
-//        parameters.set("numSubsamples", 30);
-//        parameters.set("percentSubsampleSize", 0.5);
-//        parameters.set("maxQ", 100);
-//        parameters.set("targetName", "X50");
-//        parameters.set("alpha", 0.001);
-//
-//        Graph graph = GraphUtils.randomGraph(10, 0, 10,
-//                100, 100, 100, false);
-//
-//        System.out.println(graph);
-//
-//        SemPm pm = new SemPm(graph);
-//        SemIm im = new SemIm(pm);
-//        DataSet dataSet = im.simulateData(1000, false);
-//
-//        Node y = dataSet.getCauseNode("X10");
-//
-//        SemBicScore score = new SemBicScore(new CorrelationMatrixOnTheFly(dataSet));
-//        score.setPenaltyDiscount(parameters.getDouble("penaltyDiscount"));
-//        IndependenceTest test = new IndTestScore(score);
-//
-//        PcAll pc = new PcAll(test, null);
-//        pc.setFasRule(PcAll.FasRule.FAS_STABLE);
-//        pc.setConflictRule(PcAll.ConflictRule.PRIORITY);
-//        pc.setColliderDiscovery(PcAll.ColliderDiscovery.MAX_P);
-//        Graph pattern = pc.search();
-//
-//        Ida ida = new Ida(dataSet, pattern);
-//
-//        Ida.NodeEffects effects = ida.getSortedMinEffects(y);
-//
-//        for (int i = 0; i < effects.getNodes().size(); i++) {
-//            Node x = effects.getNodes().get(i);
-//            System.out.println(x + "\t" + effects.getEffects().get(i));
-//        }
-//    }
-
-    //    @Test
-    public void testCStaS() {
-        int numNodes = 400;
-        int avgDegree = 4;
-        int sampleSize = 50;
-        int numIterations = 10;
-        int numSubsamples = 100;
-        double penaltyDiscount = 1.2;
-        double selectionAlpha = 0.6;
+    public void testIda() {
         Parameters parameters = new Parameters();
+        parameters.set("penaltyDiscount", 2);
+        parameters.set("numSubsamples", 30);
+        parameters.set("percentSubsampleSize", 0.5);
+        parameters.set("maxQ", 100);
+        parameters.set("targetName", "X50");
+        parameters.set("alpha", 0.001);
 
-        parameters.set("penaltyDiscount", penaltyDiscount);
-        parameters.set("numSubsamples", numSubsamples);
-        parameters.set("depth", 2);
-        parameters.set("selectionAlpha", selectionAlpha);
+        Graph graph = GraphUtils.randomGraph(10, 0, 10,
+                100, 100, 100, false);
 
-        parameters.set("numMeasures", numNodes);
-        parameters.set("numLatents", 0);
-        parameters.set("avgDegree", avgDegree);
-        parameters.set("maxDegree", 100);
-        parameters.set("maxIndegree", 100);
-        parameters.set("maxOutdegree", 100);
-        parameters.set("connected", false);
+        System.out.println(graph);
 
-        parameters.set("verbose", false);
+        SemPm pm = new SemPm(graph);
+        SemIm im = new SemIm(pm);
+        DataSet dataSet = im.simulateData(1000, false);
 
-        parameters.set("coefLow", 0.5);
-        parameters.set("coefHigh", 1.2);
-        parameters.set("includeNegativeCoefs", true);
-        parameters.set("sampleSize", sampleSize);
-        parameters.set("intervalBetweenShocks", 5);
-        parameters.set("intervalBetweenRecordings", 5);
+        Node y = dataSet.getVariable("X10");
 
-        parameters.set("sampleSize", sampleSize);
+        SemBicScore score = new SemBicScore(new CorrelationMatrixOnTheFly(dataSet));
+        score.setPenaltyDiscount(parameters.getDouble("penaltyDiscount"));
+        IndependenceTest test = new IndTestScore(score);
 
-        parameters.set("parallelism", 40);
+        PcAll pc = new PcAll(test, null);
+        pc.setFasRule(PcAll.FasRule.FAS_STABLE);
+        pc.setConflictRule(PcAll.ConflictRule.PRIORITY);
+        pc.setColliderDiscovery(PcAll.ColliderDiscovery.MAX_P);
+        Graph pattern = pc.search();
 
-        List<int[]> cstasRet = new ArrayList<>();
+        Ida ida = new Ida(dataSet, pattern, dataSet.getVariables());
 
-        RandomGraph randomForward = new RandomForward();
-        LinearFisherModel fisher = new LinearFisherModel(randomForward);
-        fisher.createData(parameters);
-        DataSet fullData = (DataSet) fisher.getDataModel(0);
+        Ida.NodeEffects effects = ida.getSortedMinEffects(y);
 
-        final Graph trueDag = fisher.getTrueGraph(0);
-
-        List<Node> nodes = trueDag.getNodes();
-
-        Map<Node, Integer> numAncestors = new HashMap<>();
-
-        for (Node n : nodes) {
-            numAncestors.put(n, trueDag.getAncestors(Collections.singletonList(n)).size());
-        }
-
-        nodes.sort((o1, o2) -> Integer.compare(numAncestors.get(o2), numAncestors.get(o1)));
-
-        for (int i = 0; i < numIterations; i++) {
-            parameters.set("targetName", nodes.get(i).getName());
-
-            CStaS cstas = new CStaS();
-            cstas.setIndependenceWrapper(new SemBicTest());
-            cstas.setTrueDag(trueDag);
-
-            Graph graph = cstas.search(fullData, parameters);
-
-            int[] ret = getResult(trueDag, graph);
-            cstasRet.add(ret);
-        }
-
-        System.out.println();
-
-        System.out.println("\tTreks\tAncestors\tNon-Treks\tNon-Ancestors");
-
-        for (int i = 0; i < numIterations; i++) {
-            System.out.println((i + 1) + ".\t"
-                    + cstasRet.get(i)[0] + "\t"
-                    + cstasRet.get(i)[1] + "\t"
-                    + cstasRet.get(i)[2] + "\t"
-                    + cstasRet.get(i)[3]
-            );
+        for (int i = 0; i < effects.getNodes().size(); i++) {
+            Node x = effects.getNodes().get(i);
+            System.out.println(x + "\t" + effects.getEffects().get(i));
         }
     }
 
@@ -261,7 +179,7 @@ public class TestCStaS {
             targets = GraphUtils.replaceNodes(targets, dataSet.getVariables());
 
             for (Node target : targets) {
-                List<Node> _selectionVars = edu.cmu.tetrad.search.CStaS.selectVariables(dataSet, target, selectionAlpha, 40);
+                List<Node> _selectionVars = DataUtils.selectVariables(dataSet, target, selectionAlpha, 40);
                 _selectionVars.removeAll(targets);
 
                 if (_selectionVars.size() > selectionVars.size()) {
@@ -289,24 +207,7 @@ public class TestCStaS {
             List<CStaSMulti.Record> records = cstas.getRecords(augmentedData, selectionVars, targets, test);
 
             System.out.println(cstas.makeTable(records));
-
-
-//            int[] ret = getResult(trueDag, graph);
-//            cstasRet.add(ret);
         }
-
-//        System.out.println();
-//
-//        System.out.println("\tTreks\tAncestors\tNon-Treks\tNon-Ancestors");
-//
-//        for (int i = 0; i < numIterations; i++) {
-//            System.out.println((i + 1) + ".\t"
-//                    + cstasRet.get(i)[0] + "\t"
-//                    + cstasRet.get(i)[1] + "\t"
-//                    + cstasRet.get(i)[2] + "\t"
-//                    + cstasRet.get(i)[3]
-//            );
-//        }
     }
 
     //    @Test
@@ -482,97 +383,10 @@ public class TestCStaS {
 
     }
 
-    //    @Test
-//    public void testCombinations() {
-//        int avgDegree = 6;
-//
-//        Parameters parameters = new Parameters();
-//        parameters.set("numLatents", 0);
-//        parameters.set("avgDegree", avgDegree);
-//        parameters.set("maxDegree", 100);
-//        parameters.set("maxIndegree", 100);
-//        parameters.set("maxOutdegree", 100);
-//        parameters.set("connected", false);
-//
-//        parameters.set("verbose", false);
-//
-//        parameters.set("coefLow", 0.3);
-//        parameters.set("coefHigh", 1.0);
-//        parameters.set("intervalBetweenShocks", 40);
-//        parameters.set("intervalBetweenRecordings", 40);
-//
-//        parameters.set("parallelism", 40);
-//
-//        parameters.set("penaltyDiscount", 2);
-//        parameters.set("numSubsamples", 50);
-//        parameters.set("percentSubsampleSize", 0.5);
-//        parameters.set("maxQ", 200);
-//        parameters.set("maxEr", 5);
-//        parameters.set("depth", 3);
-//
-//        int numIterations = 5;
-//
-//        for (int numNodes : new int[]{400, 600}) {//, 100, 200, 400, 600}) {
-//            for (int sampleSize : new int[]{1000}) {//50, 100, 200, 400, 600, 1000}) {
-//                parameters.set("numMeasures", numNodes);
-//                parameters.set("sampleSize", sampleSize);
-//
-//
-//                List<int[]> cstasRet = new ArrayList<>();
-//
-//                RandomGraph randomForward = new RandomForward();
-//                LinearFisherModel fisher = new LinearFisherModel(randomForward);
-//                fisher.createData(parameters);
-//                DataSet fullData = (DataSet) fisher.getDataModel(0);
-//
-//                Graph trueDag = fisher.getTrueGraph(0);
-//                Graph truePattern = SearchGraphUtils.patternForDag(trueDag);
-//
-//                int m = trueDag.getNumNodes() + 1;
-//
-//                for (int i = 0; i < numIterations; i++) {
-//                    m--;
-//
-//                    final Node t = trueDag.getNodes().get(m - 1);
-//                    Set<Node> p = new HashSet<>(trueDag.getParents(t));
-//
-//                    for (Node q : new HashSet<>(p)) {
-//                        p.addAll(trueDag.getParents(q));
-//                    }
-//
-//                    if (p.size() < 15) {
-//                        i--;
-//                        continue;
-//                    }
-//
-//                    parameters.set("targetName", "X" + m);
-//
-//                    CStaS cstas = new CStaS(new SemBicTest());
-//                    cstas.setTrueDag(trueDag);
-//                    Graph graph = cstas.search(fullData, parameters);
-//
-//                    int[] ret = getResult(truePattern, graph);
-//                    cstasRet.add(ret);
-//                }
-//
-//                int allFp = 0;
-//
-//                for (int i = 0; i < numIterations; i++) {
-//                    allFp += cstasRet.get(i)[1];
-//                }
-//
-//                double avgFp = allFp / (double) numIterations;
-//
-//                System.out.println("# nodes = " + numNodes + " sample size = " + sampleSize + " avg FP = " + avgFp);
-//            }
-//        }
-//
-//    }
-
     @Test
     public void testHughes() {
         int numSubsamples = 100;
-        int numEffects = 100;
+        int numEffects = 200;
         double penaltyDiscount = 3;
         double minBump = 0.001;
         int qFrom = 50;
@@ -582,8 +396,7 @@ public class TestCStaS {
 
         try {
 
-            // load stand.daa.exp, mutant, and z.pos.
-
+            // Load stand.daa.exp, mutant, and z.pos.
             File file = new File("/Users/user/Downloads/stand.data.exp.csv");
             File file2 = new File("/Users/user/Downloads/mutant.txt");
             File file3 = new File("/Users/user/Downloads/z.pos.txt");
@@ -672,22 +485,16 @@ public class TestCStaS {
             for (int cause = 0; cause < mutant.getNumRows(); cause++) {
                 final double causeBump = (cell(cause, zPos.get(cause), mutant) - avg(cause, zPos.get(cause), mutant));
 
-                double maxRatio = 0.0;
-
                 for (int effect = 0; effect < mutant.getNumColumns(); effect++) {
                     final double effectBump = (cell(cause, effect, mutant) - avg(cause, effect, mutant));
 
-                    double ratio = (effectBump / causeBump);
-
+                    double ratio = effectBump / causeBump;
                     ratios[cause][effect] = ratio;
 
                     if (effectBump > minBump) {
-                        if (ratio > maxRatio) maxRatio = ratio;
                         sortedRatios.add(ratio);
                     }
                 }
-
-                System.out.println("max ratio = " + maxRatio);
             }
 
             sortedRatios.sort((o1, o2) -> Double.compare(o2, o1));
@@ -722,6 +529,7 @@ public class TestCStaS {
                 int _effect = variables.indexOf(effectNode);
 
                 double ratio = -1;
+
                 try {
                     ratio = ratios[_cause][_effect];
                     System.out.println((e + 1) + ". " + ratio);
@@ -752,8 +560,6 @@ public class TestCStaS {
         } catch (IOException e) {
             e.printStackTrace();
         }
-
-
     }
 
     private double cell(int predictor, int effect, DataSet mutants) {
@@ -771,44 +577,6 @@ public class TestCStaS {
         }
 
         return sum / count;
-    }
-
-    //    @Test
-    public void testConditionalGaussian() {
-
-        Parameters parameters = new Parameters();
-        parameters.set("numMeasures", 100);
-        parameters.set("numLatents", 0);
-        parameters.set("avgDegree", 5);
-
-        parameters.set("numCategories", 3);
-        parameters.set("percentDiscrete", 50);
-        parameters.set("numRuns", 10);
-        parameters.set("differentGraphs", true);
-        parameters.set("sampleSize", 1000);
-
-        parameters.set("penaltyDiscount", 1.2);
-        parameters.set("numSubsamples", 100);
-        parameters.set("maxEr", 10);
-        parameters.set("targetName", "X100");
-
-        RandomGraph graph = new RandomForward();
-
-        LeeHastieSimulation simulation = new LeeHastieSimulation(graph);
-        simulation.createData(parameters);
-
-        for (int i = 0; i < simulation.getNumDataModels(); i++) {
-            edu.cmu.tetrad.search.CStaS cStaS = new edu.cmu.tetrad.search.CStaS();
-            cStaS.setTrueDag(simulation.getTrueGraph(i));
-            final DataSet dataSet = (DataSet) simulation.getDataModel(i);
-            final ConditionalGaussianScore score = new ConditionalGaussianScore(dataSet, 1, false);
-            score.setPenaltyDiscount(parameters.getDouble("penaltyDiscount"));
-            final IndependenceTest test = new IndTestScore(score);
-            List<edu.cmu.tetrad.search.CStaS.Record> records = cStaS.getRecords(dataSet,
-                    simulation.getTrueGraph(i).getNode(parameters.getString("targetName")),
-                    test, 0.02);
-            System.out.println(cStaS.makeTable(records));
-        }
     }
 
     private int[] getResult(Graph trueDag, Graph graph) {
@@ -852,10 +620,6 @@ public class TestCStaS {
         ret[3] = nonAncestors.size();
 
         return ret;
-    }
-
-    public static void main(String[] args) {
-        new TestCStaS().testCStaS();
     }
 }
 

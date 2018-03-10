@@ -19,6 +19,7 @@ import java.text.NumberFormat;
 import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.RecursiveTask;
 
 import static java.lang.Math.max;
 
@@ -56,7 +57,7 @@ public class CStaSMulti {
         private double pi;
         private double effect;
         private double pcer;
-        private double er;
+        private double ev;
         private double MBEv;
         private boolean ancestor;
 
@@ -66,7 +67,7 @@ public class CStaSMulti {
             this.pi = pi;
             this.effect = minEffect;
             this.pcer = pcer;
-            this.er = ev;
+            this.ev = ev;
             this.MBEv = MBev;
             this.ancestor = ancestor;
         }
@@ -87,12 +88,12 @@ public class CStaSMulti {
             return effect;
         }
 
-        double getPcer() {
+        public double getPcer() {
             return pcer;
         }
 
-        double getEr() {
-            return er;
+        public double getEv() {
+            return ev;
         }
 
         public boolean isAncestor() {
@@ -115,7 +116,7 @@ public class CStaSMulti {
      * @param possibleEffects The target variables.
      * @param test            This test is only used to make more tests like it for subsamples.
      */
-    public List<Record> getRecords(DataSet dataSet, List<Node> possibleCauses, List<Node> possibleEffects, IndependenceTest test) {
+    public LinkedList<Record> getRecords(DataSet dataSet, List<Node> possibleCauses, List<Node> possibleEffects, IndependenceTest test) {
         possibleEffects = GraphUtils.replaceNodes(possibleEffects, dataSet.getVariables());
         possibleCauses = GraphUtils.replaceNodes(possibleCauses, dataSet.getVariables());
 
@@ -339,7 +340,7 @@ public class CStaSMulti {
         trueDag = GraphUtils.replaceNodes(trueDag, possibleCauses);
         trueDag = GraphUtils.replaceNodes(trueDag, possibleEffects);
 
-        List<Record> records = new ArrayList<>();
+        LinkedList<Record> records = new LinkedList<>();
 
         for (Tuple tuple : outTuples) {
             List<Double> e = new ArrayList<>();
@@ -408,7 +409,7 @@ public class CStaSMulti {
             table.setToken(i + 1, 8, nf.format(records.get(i).getPcer()));
 //            table.setToken(i + 1, 8, nf.format(records.get(i).getEv()));
         }
-        final double er = !records.isEmpty() ? records.get(0).getEr() : Double.NaN;
+        final double er = !records.isEmpty() ? records.get(0).getEv() : Double.NaN;
         final double mbEv = !records.isEmpty() ? records.get(0).getMBEv() : Double.NaN;
 
         return "\n" + table + "\n" + "# FP = " + fp + " E(V) = " + nf.format(er) + " MB-E(V) = " + nf.format(mbEv) +
@@ -420,13 +421,13 @@ public class CStaSMulti {
      */
     public Graph makeGraph(Node y, List<Record> records) {
         List<Node> outNodes = new ArrayList<>();
-        for (Record record : records) outNodes.add(record.getCauseNode());
 
         Graph graph = new EdgeListGraph(outNodes);
-        graph.addNode(y);
 
-        for (int i = 0; i < new ArrayList<>(outNodes).size(); i++) {
-            graph.addDirectedEdge(outNodes.get(i), y);
+        for (Record record : records) {
+            graph.addNode(record.getCauseNode());
+            graph.addNode(record.getEffectNode());
+            graph.addDirectedEdge(record.getCauseNode(), record.getEffectNode());
         }
 
         return graph;
