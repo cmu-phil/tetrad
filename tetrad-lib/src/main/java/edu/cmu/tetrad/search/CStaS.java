@@ -137,10 +137,11 @@ public class CStaS {
      * @param possibleEffects The target variables.
      * @param test            This test is only used to make more tests like it for subsamples.
      */
-    public LinkedList<List<Record>> getRecords(DataSet dataSet, List<Node> possibleCauses, List<Node> possibleEffects, IndependenceTest test) {
+    public LinkedList<LinkedList<Record>> getRecords(DataSet dataSet, List<Node> possibleCauses, List<Node> possibleEffects,
+                                               IndependenceTest test) {
         possibleEffects = GraphUtils.replaceNodes(possibleEffects, dataSet.getVariables());
         possibleCauses = GraphUtils.replaceNodes(possibleCauses, dataSet.getVariables());
-        LinkedList<List<Record>> allRecords = new LinkedList<>();
+        LinkedList<LinkedList<Record>> allRecords = new LinkedList<>();
 
         if (new HashSet<>(possibleCauses).removeAll(new HashSet<>(possibleEffects))) {
             throw new IllegalArgumentException("Possible predictors and possibleEffects must be disjoint sets.");
@@ -184,7 +185,7 @@ public class CStaS {
         }
 
         final List<Node> _possiblePredictors = new ArrayList<>(possibleCauses);
-        final List<Integer> edgeCounts = new ArrayList<>();
+//        final List<Integer> edgeCounts = new ArrayList<>();
 
         class Task implements Callable<Boolean> {
             private Task() {
@@ -193,8 +194,8 @@ public class CStaS {
             public Boolean call() {
                 try {
                     BootstrapSampler sampler = new BootstrapSampler();
-                    sampler.setWithoutReplacements(false);
-                    DataSet sample = sampler.sample(dataSet, dataSet.getNumRows());
+                    sampler.setWithoutReplacements(true);
+                    DataSet sample = sampler.sample(dataSet, dataSet.getNumRows() / 2);
                     Graph pattern;
 
                     if (patternAlgorithm == PatternAlgorithm.FGES) {
@@ -212,7 +213,7 @@ public class CStaS {
                         effects.get(t).add(ida.getSortedMinEffects(_effects.get(t)));
                     }
 
-                    edgeCounts.add(pattern.getNumEdges());
+//                    edgeCounts.add(pattern.getNumEdges());
 
                     if (verbose) {
                         System.out.println("Completed one pattern search");
@@ -233,14 +234,14 @@ public class CStaS {
 
         ConcurrencyUtils.runCallables(tasks, getParallelism());
 
-        int totalEdges = 0;
+//        int totalEdges = 0;
+//
+//        for (int count : edgeCounts) {
+//            totalEdges += count;
+//        }
 
-        for (int count : edgeCounts) {
-            totalEdges += count;
-        }
-
-        double avgEdges = totalEdges / getNumSubsamples();
-        final double avgDegree = 2.0 * avgEdges / possibleCauses.size();
+//        double avgEdges = totalEdges / getNumSubsamples();
+//        final double avgDegree = 2.0 * avgEdges / possibleCauses.size();
 
         int p = dataSet.getNumColumns();
 
@@ -355,12 +356,10 @@ public class CStaS {
             _outTuples.add(tuples.get(i));
         }
 
-        double ev = q - sum;
-        double mbev = er(pi_thr, q, p);
-        double pcer = pcer(pi_thr, q, p);
-
         trueDag = GraphUtils.replaceNodes(trueDag, possibleCauses);
         trueDag = GraphUtils.replaceNodes(trueDag, possibleEffects);
+
+        double ev = q - sum;
 
         LinkedList<Record> records = new LinkedList<>();
 
@@ -384,6 +383,9 @@ public class CStaS {
                 ancestor = trueDag.isAncestorOf(tuple.getCauseNode(), tuple.getTarget());
             }
 
+            double mbev = er(tuple.getPi(), q, p);
+            double pcer = pcer(tuple.getPi(), q, p);
+
             records.add(new Record(tuple.getCauseNode(), tuple.getTarget(), tuple.getPi(), avg, pcer, ev, mbev, ancestor));
         }
 
@@ -398,7 +400,7 @@ public class CStaS {
         return records;
     }
 
-    public static LinkedList<Record> cStar(List<List<Record>> allRecords) {
+    public static LinkedList<Record> cStar(LinkedList<LinkedList<Record>> allRecords) {
         Map<Edge, List<Record>> map = new HashMap<>();
 
         for (List<Record> records : allRecords) {
@@ -413,6 +415,7 @@ public class CStaS {
 
         for (Edge edge : map.keySet()) {
             List<Record> recordList = map.get(edge);
+
             double[] pis = new double[recordList.size()];
             double[] effects = new double[recordList.size()];
             double[] pcers = new double[recordList.size()];
@@ -452,7 +455,7 @@ public class CStaS {
     /**
      * Returns a text table from the given records
      */
-    public String makeTable(List<Record> records) {
+    public static String makeTable(LinkedList<Record> records) {
         TextTable table = new TextTable(records.size() + 1, 9);
         NumberFormat nf = new DecimalFormat("0.0000");
 
@@ -482,10 +485,13 @@ public class CStaS {
             table.setToken(i + 1, 7, nf.format(records.get(i).getEffect()));
             table.setToken(i + 1, 8, nf.format(records.get(i).getPcer()));
         }
-        final double er = !records.isEmpty() ? records.get(0).getEv() : Double.NaN;
-        final double mbEv = !records.isEmpty() ? records.get(0).getMBEv() : Double.NaN;
 
-        return "\n" + table + "\n" + "# FP = " + fp + " E(V) = " + nf.format(er) + " MB-E(V) = " + nf.format(mbEv) +
+        final double pcer = !records.isEmpty() ? records.getLast().getPcer() : Double.NaN;
+        final double ev = !records.isEmpty() ? records.getLast().getEv() : Double.NaN;
+        final double mbEv = !records.isEmpty() ? records.getLast().getMBEv() : Double.NaN;
+
+        return "\n" + table + "\n" + "# FP = " + fp + " PCER = " + pcer + " q - SUM(pi) = " + nf.format(ev)
+                + " MB-E(V) = " + nf.format(mbEv) +
                 "\nA = ancestor of the target" + "\nType: C = continuous, D = discrete\n";
     }
 

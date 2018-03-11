@@ -21,16 +21,13 @@
 
 package edu.cmu.tetrad.test;
 
-import edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern.FgesMbAncestors;
 import edu.cmu.tetrad.algcomparison.graph.RandomForward;
 import edu.cmu.tetrad.algcomparison.graph.RandomGraph;
-import edu.cmu.tetrad.algcomparison.independence.SemBicTest;
 import edu.cmu.tetrad.algcomparison.simulation.LinearFisherModel;
 import edu.cmu.tetrad.data.CorrelationMatrixOnTheFly;
 import edu.cmu.tetrad.data.CovarianceMatrixOnTheFly;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataUtils;
-import edu.cmu.tetrad.graph.Edge;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
@@ -39,12 +36,10 @@ import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemPm;
 import edu.cmu.tetrad.util.DataConvertUtils;
 import edu.cmu.tetrad.util.Parameters;
-import edu.cmu.tetrad.util.TextTable;
 import edu.pitt.dbmi.data.Dataset;
 import edu.pitt.dbmi.data.Delimiter;
 import edu.pitt.dbmi.data.reader.tabular.ContinuousTabularDataFileReader;
 import edu.pitt.dbmi.data.reader.tabular.TabularDataReader;
-import org.junit.Test;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -101,7 +96,7 @@ public class TestCStaS {
         }
     }
 
-    @Test
+    //    @Test
     public void testCStaS() {
         int numTargets = 10;
 
@@ -203,22 +198,22 @@ public class TestCStaS {
             score.setPenaltyDiscount(penaltyDiscount);
             IndependenceTest test = new IndTestScore(score);
 
-            List<CStaS.Record> records = cstas.getRecords(augmentedData, selectionVars, targets, test).getLast();
+            LinkedList<CStaS.Record> records = cstas.getRecords(augmentedData, selectionVars, targets, test).getLast();
 
-            System.out.println(cstas.makeTable(records));
+            System.out.println(CStaS.makeTable(records));
         }
     }
 
-    @Test
+    //    @Test
     public void testHughes() {
         int numSubsamples = 100;
         int numEffects = 100;
         double penaltyDiscount = 3;
-        double minBump = 0.001;
-        int qFrom = 50;
-        int qTo = 500;
-        int qIncrement = 50;
-        CStaS.PatternAlgorithm algorithm = CStaS.PatternAlgorithm.PC_STABLE;
+        double minBump = 0.0;
+        int qFrom = 500;
+        int qTo = 5000;
+        int qIncrement = 500;
+        CStaS.PatternAlgorithm algorithm = CStaS.PatternAlgorithm.FGES;
 
         try {
 
@@ -299,81 +294,82 @@ public class TestCStaS {
             cstas.setPatternAlgorithm(algorithm);
             cstas.setVerbose(true);
 
-            List<List<CStaS.Record>> allRecords = cstas.getRecords(augmentedData, possibleCauses, effects, test);
+            LinkedList<LinkedList<CStaS.Record>> allRecords = cstas.getRecords(augmentedData, possibleCauses, effects, test);
 
-            final LinkedList<CStaS.Record> cStaRecords = CStaS.cStar(allRecords);
-            System.out.println(cstas.makeTable(cStaRecords));
+            for (LinkedList<CStaS.Record> records : allRecords) {
+                System.out.println(CStaS.makeTable(records));
 
-            List<Double> sortedRatios = new ArrayList<>();
+                List<Double> sortedRatios = new ArrayList<>();
 
-            List<Node> variables = mutant.getVariables();
-            double[][] ratios = new double[mutant.getNumRows()][mutant.getNumColumns()];
+                List<Node> variables = mutant.getVariables();
+                double[][] ratios = new double[mutant.getNumRows()][mutant.getNumColumns()];
 
-            for (int cause = 0; cause < mutant.getNumRows(); cause++) {
-                final double causeBump = (cell(cause, zPos.get(cause), mutant) - avg(cause, zPos.get(cause), mutant));
+                for (int cause = 0; cause < mutant.getNumRows(); cause++) {
+                    final double causeBump = (cell(cause, zPos.get(cause), mutant) - avg(cause, zPos.get(cause), mutant));
 
-                for (int effect = 0; effect < mutant.getNumColumns(); effect++) {
-                    final double effectBump = (cell(cause, effect, mutant) - avg(cause, effect, mutant));
+                    for (int effect = 0; effect < mutant.getNumColumns(); effect++) {
+                        final double effectBump = (cell(cause, effect, mutant) - avg(cause, effect, mutant));
 
-                    double ratio = effectBump / causeBump;
-                    ratios[cause][effect] = ratio;
+                        double ratio = effectBump / causeBump;
+                        ratios[cause][effect] = ratio;
 
-                    if (effectBump > minBump) {
-                        sortedRatios.add(ratio);
-                    }
-                }
-            }
-
-            sortedRatios.sort((o1, o2) -> Double.compare(o2, o1));
-
-            int size = sortedRatios.size();
-
-            double[] cutoffs = {0.01, 0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5, 0.6, 0.7, .8, .9, 1.0};
-            double[] _cutoffs = new double[cutoffs.length];
-
-            for (int w = 0; w < cutoffs.length; w++) {
-                final Double cutoff = sortedRatios.get((int) (size * cutoffs[w] - 1));
-                _cutoffs[w] = cutoff;
-            }
-
-            int[] counts = new int[cutoffs.length];
-
-            for (int e = 0; e < cStaRecords.size(); e++) {
-                CStaS.Record record = cStaRecords.get(e);
-                Node causeNode = record.getCauseNode();
-                Node effectNode = record.getEffectNode();
-
-                int _cause = variables.indexOf(causeNode);
-
-                for (int s = 0; s < zPos.size(); s++) {
-                    if (_cause == zPos.get(s)) {
-                        _cause = s;
-                        break;
+                        if (effectBump > minBump) {
+                            sortedRatios.add(ratio);
+                        }
                     }
                 }
 
-                int _effect = variables.indexOf(effectNode);
+                sortedRatios.sort((o1, o2) -> Double.compare(o2, o1));
 
-                double ratio = -1;
+                int size = sortedRatios.size();
 
-                try {
-                    ratio = ratios[_cause][_effect];
-                } catch (Exception e1) {
-                    e1.printStackTrace();
-                }
+                double[] cutoffs = {0.01, 0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5, 0.6, 0.7, .8, .9, 1.0};
+                double[] _cutoffs = new double[cutoffs.length];
 
                 for (int w = 0; w < cutoffs.length; w++) {
-                    if (ratio >= _cutoffs[w]) counts[w]++;
+                    final Double cutoff = sortedRatios.get((int) (size * cutoffs[w] - 1));
+                    _cutoffs[w] = cutoff;
                 }
+
+                int[] counts = new int[cutoffs.length];
+
+                for (CStaS.Record record : records) {
+                    Node causeNode = record.getCauseNode();
+                    Node effectNode = record.getEffectNode();
+
+                    int _cause = variables.indexOf(causeNode);
+
+                    for (int s = 0; s < zPos.size(); s++) {
+                        if (_cause == zPos.get(s)) {
+                            _cause = s;
+                            break;
+                        }
+                    }
+
+                    int _effect = variables.indexOf(effectNode);
+
+                    double ratio = ratios[_cause][_effect];
+
+                    for (int w = 0; w < cutoffs.length; w++) {
+                        if (ratio >= _cutoffs[w]) counts[w]++;
+                    }
+                }
+
+                System.out.println("\nPercentages");
+                System.out.println();
+                NumberFormat nf = new DecimalFormat("0.00");
+
+                for (int w = 0; w < counts.length; w++) {
+                    System.out.println((cutoffs[w] * 100.0) + "% " + nf.format(100.0 * (counts[w] / (double) records.size())));
+                }
+
             }
 
-            System.out.println("\nPercentages");
-            System.out.println();
-            NumberFormat nf = new DecimalFormat("0.00");
+            System.out.println("\n\nCStaR table");
 
-            for (int w = 0; w < counts.length; w++) {
-                System.out.println((cutoffs[w] * 100.0) + "% " + nf.format(100.0 * (counts[w] / (double) cStaRecords.size())));
-            }
+            final LinkedList<CStaS.Record> records = CStaS.cStar(allRecords);
+
+            System.out.println(CStaS.makeTable(records));
 
         } catch (IOException e) {
             e.printStackTrace();
@@ -395,6 +391,10 @@ public class TestCStaS {
         }
 
         return sum / count;
+    }
+
+    public static void main(String... args) {
+        new TestCStaS().testHughes();
     }
 }
 
