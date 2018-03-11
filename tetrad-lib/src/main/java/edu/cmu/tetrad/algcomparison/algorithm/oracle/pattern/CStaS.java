@@ -29,8 +29,6 @@ public class CStaS implements Algorithm, TakesIndependenceWrapper {
     private Graph trueDag = null;
     private IndependenceWrapper test;
     private LinkedList<edu.cmu.tetrad.search.CStaS.Record> records = null;
-    private double evBound;
-    private double MBEvBound;
 
     public CStaS() {
     }
@@ -64,10 +62,8 @@ public class CStaS implements Algorithm, TakesIndependenceWrapper {
         final LinkedList<LinkedList<edu.cmu.tetrad.search.CStaS.Record>> allRecords
                 = cStaS.getRecords((DataSet) dataSet, possibleCauses, possibleEffects, test.getTest(dataSet, parameters));
         this.records = allRecords.getLast();
-        evBound = this.records.get(0).getEv();
-        MBEvBound = this.records.get(0).getMBEv();
 
-        System.out.println(edu.cmu.tetrad.search.CStaS.makeTable(this.getRecords()));
+        System.out.println(cStaS.makeTable(this.getRecords()));
 
         return cStaS.makeGraph(getRecords());
     }
@@ -110,13 +106,5 @@ public class CStaS implements Algorithm, TakesIndependenceWrapper {
     @Override
     public void setIndependenceWrapper(IndependenceWrapper independenceWrapper) {
         this.test = independenceWrapper;
-    }
-
-    public double getEvBound() {
-        return evBound;
-    }
-
-    public double getMBEvBound() {
-        return MBEvBound;
     }
 }

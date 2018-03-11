@@ -96,7 +96,6 @@ public class TestCStaS {
         }
     }
 
-    //    @Test
     public void testCStaS() {
         int numTargets = 10;
 
@@ -108,6 +107,7 @@ public class TestCStaS {
         double penaltyDiscount = 1;
         double selectionAlpha = 0.1;
         CStaS.PatternAlgorithm algorithm = CStaS.PatternAlgorithm.PC_STABLE;
+        CStaS.SampleStyle sampleStyle = CStaS.SampleStyle.SPLIT;
 
         Parameters parameters = new Parameters();
 
@@ -159,6 +159,7 @@ public class TestCStaS {
             cstas.setTrueDag(trueDag);
             cstas.setNumSubsamples(numSubsamples);
             cstas.setPatternAlgorithm(algorithm);
+            cstas.setSampleStyle(sampleStyle);
             cstas.setqFrom(50);
             cstas.setqTo(100);
             cstas.setqIncrement(1);
@@ -200,24 +201,24 @@ public class TestCStaS {
 
             LinkedList<CStaS.Record> records = cstas.getRecords(augmentedData, selectionVars, targets, test).getLast();
 
-            System.out.println(CStaS.makeTable(records));
+            System.out.println(cstas.makeTable(records));
         }
     }
 
-    //    @Test
-    public void testHughes() {
+    private void testHughes() {
         int numSubsamples = 100;
         int numEffects = 100;
         double penaltyDiscount = 3;
         double minBump = 0.0;
-        int qFrom = 500;
-        int qTo = 5000;
-        int qIncrement = 500;
+        int qFrom = 40;
+        int qTo = 200;
+        int qIncrement = 20;
         CStaS.PatternAlgorithm algorithm = CStaS.PatternAlgorithm.FGES;
+        CStaS.SampleStyle sampleStyle = CStaS.SampleStyle.BOOTSTRAP;
 
         try {
 
-            // Load stand.daa.exp, mutant, and z.pos.
+            // Load stand.data.exp, mutant, and z.pos.
             File file = new File("/Users/user/Downloads/stand.data.exp.csv");
             File file2 = new File("/Users/user/Downloads/mutant.txt");
             File file3 = new File("/Users/user/Downloads/z.pos.txt");
@@ -292,12 +293,13 @@ public class TestCStaS {
             cstas.setqTo(qTo);
             cstas.setqIncrement(qIncrement);
             cstas.setPatternAlgorithm(algorithm);
+            cstas.setSampleStyle(sampleStyle);
             cstas.setVerbose(true);
 
             LinkedList<LinkedList<CStaS.Record>> allRecords = cstas.getRecords(augmentedData, possibleCauses, effects, test);
 
             for (LinkedList<CStaS.Record> records : allRecords) {
-                System.out.println(CStaS.makeTable(records));
+                System.out.println(cstas.makeTable(records));
 
                 List<Double> sortedRatios = new ArrayList<>();
 
@@ -305,10 +307,10 @@ public class TestCStaS {
                 double[][] ratios = new double[mutant.getNumRows()][mutant.getNumColumns()];
 
                 for (int cause = 0; cause < mutant.getNumRows(); cause++) {
-                    final double causeBump = (cell(cause, zPos.get(cause), mutant) - avg(cause, zPos.get(cause), mutant));
+                    final double causeBump = cell(cause, zPos.get(cause), mutant) - avg(cause, zPos.get(cause), mutant);
 
                     for (int effect = 0; effect < mutant.getNumColumns(); effect++) {
-                        final double effectBump = (cell(cause, effect, mutant) - avg(cause, effect, mutant));
+                        final double effectBump = cell(cause, effect, mutant) - avg(cause, effect, mutant);
 
                         double ratio = effectBump / causeBump;
                         ratios[cause][effect] = ratio;
@@ -369,7 +371,7 @@ public class TestCStaS {
 
             final LinkedList<CStaS.Record> records = CStaS.cStar(allRecords);
 
-            System.out.println(CStaS.makeTable(records));
+            System.out.println(cstas.makeTable(records));
 
         } catch (IOException e) {
             e.printStackTrace();
