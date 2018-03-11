@@ -31,6 +31,8 @@ import java.util.concurrent.ConcurrentHashMap;
 public class CStaS {
     public enum PatternAlgorithm {FGES, PC_STABLE}
 
+    public enum SampleStyle {BOOTSTRAP, SPLIT}
+
     private int numSubsamples = 30;
     private int qFrom = 1;
     private int qTo = 1;
@@ -41,6 +43,7 @@ public class CStaS {
     private IndependenceTest test;
 
     private PatternAlgorithm patternAlgorithm = PatternAlgorithm.FGES;
+    private SampleStyle sampleStyle = SampleStyle.BOOTSTRAP;
 
     private boolean verbose = false;
 
@@ -60,7 +63,7 @@ public class CStaS {
             return predictor;
         }
 
-        public Node getTarget() {
+        public Node getEffectNode() {
             return target;
         }
 
@@ -77,20 +80,18 @@ public class CStaS {
         private Node target;
         private double pi;
         private double effect;
-        private double pcer;
-        private double ev;
-        private double MBEv;
         private boolean ancestor;
+        private double q;
+        private double p;
 
-        Record(Node predictor, Node target, double pi, double minEffect, double pcer, double ev, double MBev, boolean ancestor) {
+        Record(Node predictor, Node target, double pi, double minEffect, boolean ancestor, int q, int p) {
             this.causeNode = predictor;
             this.target = target;
             this.pi = pi;
             this.effect = minEffect;
-            this.pcer = pcer;
-            this.ev = ev;
-            this.MBEv = MBev;
             this.ancestor = ancestor;
+            this.q = q;
+            this.p = p;
         }
 
         public Node getCauseNode() {
@@ -109,20 +110,16 @@ public class CStaS {
             return effect;
         }
 
-        public double getPcer() {
-            return pcer;
-        }
-
-        public double getEv() {
-            return ev;
-        }
-
         public boolean isAncestor() {
             return ancestor;
         }
 
-        public double getMBEv() {
-            return MBEv;
+        public double getQ() {
+            return q;
+        }
+
+        public double getP() {
+            return p;
         }
     }
 
@@ -137,10 +134,11 @@ public class CStaS {
      * @param possibleEffects The target variables.
      * @param test            This test is only used to make more tests like it for subsamples.
      */
-    public LinkedList<List<Record>> getRecords(DataSet dataSet, List<Node> possibleCauses, List<Node> possibleEffects, IndependenceTest test) {
+    public LinkedList<LinkedList<Record>> getRecords(DataSet dataSet, List<Node> possibleCauses, List<Node> possibleEffects,
+                                                     IndependenceTest test) {
         possibleEffects = GraphUtils.replaceNodes(possibleEffects, dataSet.getVariables());
         possibleCauses = GraphUtils.replaceNodes(possibleCauses, dataSet.getVariables());
-        LinkedList<List<Record>> allRecords = new LinkedList<>();
+        LinkedList<LinkedList<Record>> allRecords = new LinkedList<>();
 
         if (new HashSet<>(possibleCauses).removeAll(new HashSet<>(possibleEffects))) {
             throw new IllegalArgumentException("Possible predictors and possibleEffects must be disjoint sets.");
@@ -184,17 +182,29 @@ public class CStaS {
         }
 
         final List<Node> _possiblePredictors = new ArrayList<>(possibleCauses);
-        final List<Integer> edgeCounts = new ArrayList<>();
 
         class Task implements Callable<Boolean> {
-            private Task() {
+            int b;
+
+            private Task(int b) {
+                this.b = b;
             }
 
             public Boolean call() {
                 try {
                     BootstrapSampler sampler = new BootstrapSampler();
-                    sampler.setWithoutReplacements(false);
-                    DataSet sample = sampler.sample(dataSet, dataSet.getNumRows());
+                    DataSet sample;
+
+                    if (sampleStyle == SampleStyle.BOOTSTRAP) {
+                        sampler.setWithoutReplacements(false);
+                        sample = sampler.sample(dataSet, dataSet.getNumRows());
+                    } else if (sampleStyle == SampleStyle.SPLIT) {
+                        sampler.setWithoutReplacements(true);
+                        sample = sampler.sample(dataSet, dataSet.getNumRows() / 2);
+                    } else {
+                        throw new IllegalArgumentException("That type of sample is not configured: " + sampleStyle);
+                    }
+
                     Graph pattern;
 
                     if (patternAlgorithm == PatternAlgorithm.FGES) {
@@ -212,10 +222,8 @@ public class CStaS {
                         effects.get(t).add(ida.getSortedMinEffects(_effects.get(t)));
                     }
 
-                    edgeCounts.add(pattern.getNumEdges());
-
                     if (verbose) {
-                        System.out.println("Completed one pattern search");
+                        System.out.println("Bootstrap " + (b + 1));
                     }
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -228,19 +236,10 @@ public class CStaS {
         List<Callable<Boolean>> tasks = new ArrayList<>();
 
         for (int b = 0; b < getNumSubsamples(); b++) {
-            tasks.add(new Task());
+            tasks.add(new Task(b));
         }
 
         ConcurrencyUtils.runCallables(tasks, getParallelism());
-
-        int totalEdges = 0;
-
-        for (int count : edgeCounts) {
-            totalEdges += count;
-        }
-
-        double avgEdges = totalEdges / getNumSubsamples();
-        final double avgDegree = 2.0 * avgEdges / possibleCauses.size();
 
         int p = dataSet.getNumColumns();
 
@@ -327,22 +326,6 @@ public class CStaS {
 
         tuples.sort((o1, o2) -> Double.compare(o2.getPi(), o1.getPi()));
 
-        double sum = 0.0;
-
-        for (int g = 0; g < q; g++) {
-            sum += tuples.get(g).getPi();
-        }
-
-        double minPi = Double.POSITIVE_INFINITY;
-
-        for (int g = 0; g < q; g++) {
-            double pi = tuples.get(g).getPi();
-            if (pi < minPi) minPi = pi;
-        }
-
-//            if (sum / q >= max && sum / q > avgDegree * q / p) {
-//            max = sum / q;
-
         double pi_thr = Double.NaN;
 
         for (int g = 0; g < q; g++) {
@@ -355,10 +338,6 @@ public class CStaS {
             _outTuples.add(tuples.get(i));
         }
 
-        double ev = q - sum;
-        double mbev = er(pi_thr, q, p);
-        double pcer = pcer(pi_thr, q, p);
-
         trueDag = GraphUtils.replaceNodes(trueDag, possibleCauses);
         trueDag = GraphUtils.replaceNodes(trueDag, possibleEffects);
 
@@ -368,7 +347,7 @@ public class CStaS {
             List<Double> e = new ArrayList<>();
 
             for (int b = 0; b < getNumSubsamples(); b++) {
-                final int t = possibleEffects.indexOf(tuple.getTarget());
+                final int t = possibleEffects.indexOf(tuple.getEffectNode());
                 Ida.NodeEffects effectSizes = effects.get(t).get(b);
                 int r = effectSizes.getNodes().indexOf(tuple.getCauseNode());
                 e.add(effectSizes.getEffects().get(r));
@@ -381,10 +360,10 @@ public class CStaS {
             boolean ancestor = false;
 
             if (trueDag != null) {
-                ancestor = trueDag.isAncestorOf(tuple.getCauseNode(), tuple.getTarget());
+                ancestor = trueDag.isAncestorOf(tuple.getCauseNode(), tuple.getEffectNode());
             }
 
-            records.add(new Record(tuple.getCauseNode(), tuple.getTarget(), tuple.getPi(), avg, pcer, ev, mbev, ancestor));
+            records.add(new Record(tuple.getCauseNode(), tuple.getEffectNode(), tuple.getPi(), avg, ancestor, q, p));
         }
 
         records.sort((o1, o2) -> {
@@ -398,7 +377,7 @@ public class CStaS {
         return records;
     }
 
-    public static LinkedList<Record> cStar(List<List<Record>> allRecords) {
+    public static LinkedList<Record> cStar(LinkedList<LinkedList<Record>> allRecords) {
         Map<Edge, List<Record>> map = new HashMap<>();
 
         for (List<Record> records : allRecords) {
@@ -413,28 +392,20 @@ public class CStaS {
 
         for (Edge edge : map.keySet()) {
             List<Record> recordList = map.get(edge);
+
             double[] pis = new double[recordList.size()];
             double[] effects = new double[recordList.size()];
-            double[] pcers = new double[recordList.size()];
-            double[] evs = new double[recordList.size()];
-            double[] mbevs = new double[recordList.size()];
 
             for (int i = 0; i < recordList.size(); i++) {
                 pis[i] = recordList.get(i).getPi();
                 effects[i] = recordList.get(i).getEffect();
-                pcers[i] = recordList.get(i).getPcer();
-                evs[i] = recordList.get(i).getEv();
-                mbevs[i] = recordList.get(i).getMBEv();
             }
 
             double medianPis = StatUtils.median(pis);
             double medianEffects = StatUtils.median(effects);
-            double medianPcers = StatUtils.median(pcers);
-            double medianEvs = StatUtils.median(evs);
-            double medianMbevs = StatUtils.median(mbevs);
 
-            Record _record = new Record(edge.getNode1(), edge.getNode2(), medianPis, medianEffects, medianPcers,
-                    medianEvs, medianMbevs, recordList.get(0).isAncestor());
+            Record _record = new Record(edge.getNode1(), edge.getNode2(), medianPis, medianEffects,
+                    recordList.get(0).isAncestor(), -1, -1);
             cstar.add(_record);
         }
 
@@ -452,8 +423,8 @@ public class CStaS {
     /**
      * Returns a text table from the given records
      */
-    public String makeTable(List<Record> records) {
-        TextTable table = new TextTable(records.size() + 1, 9);
+    public String makeTable(LinkedList<Record> records) {
+        TextTable table = new TextTable(records.size() + 1, 8);
         NumberFormat nf = new DecimalFormat("0.0000");
 
         table.setToken(0, 0, "Index");
@@ -463,7 +434,6 @@ public class CStaS {
         table.setToken(0, 4, "A");
         table.setToken(0, 6, "PI");
         table.setToken(0, 7, "Average Effect");
-        table.setToken(0, 8, "PCER");
 
         int fp = 0;
 
@@ -480,13 +450,23 @@ public class CStaS {
             table.setToken(i + 1, 4, ancestor ? "A" : "");
             table.setToken(i + 1, 6, nf.format(records.get(i).getPi()));
             table.setToken(i + 1, 7, nf.format(records.get(i).getEffect()));
-            table.setToken(i + 1, 8, nf.format(records.get(i).getPcer()));
         }
-        final double er = !records.isEmpty() ? records.get(0).getEv() : Double.NaN;
-        final double mbEv = !records.isEmpty() ? records.get(0).getMBEv() : Double.NaN;
 
-        return "\n" + table + "\n" + "# FP = " + fp + " E(V) = " + nf.format(er) + " MB-E(V) = " + nf.format(mbEv) +
-                "\nA = ancestor of the target" + "\nType: C = continuous, D = discrete\n";
+        double sum = 0.0;
+
+        for (Record record : records) {
+            sum += record.getPi();
+        }
+
+        final double pcer = !records.isEmpty() ? pcer(records.getLast().getPi(), records.getLast().getQ(), records.getLast().getP()) : Double.NaN;
+        final double jrev = !records.isEmpty() ? records.getLast().getQ() - sum : Double.NaN;
+        final double mbEv = !records.isEmpty() ? er(records.getLast().getPi(), records.getLast().getQ(), records.getLast().getP()) : Double.NaN;
+
+        return "\n" + table + "\n" + "# FP = "
+                + fp + (records.getLast().getQ() != -1 && sampleStyle == SampleStyle.SPLIT ? " PCER = " + nf.format(pcer) : "")
+                + (records.getLast().getQ() != -1 ? " q - SUM(pi) = " + nf.format(jrev) : "")
+                + (records.getLast().getQ() != -1 && sampleStyle == SampleStyle.SPLIT ? " E(V) bound = " + nf.format(mbEv) : "")
+                + "\nA = ancestor of the target" + "\nType: C = continuous, D = discrete\n";
     }
 
     /**
@@ -536,6 +516,10 @@ public class CStaS {
 
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;
+    }
+
+    public void setSampleStyle(SampleStyle sampleStyle) {
+        this.sampleStyle = sampleStyle;
     }
 
     //=============================PRIVATE==============================//
