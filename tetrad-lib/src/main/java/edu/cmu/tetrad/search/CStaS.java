@@ -81,8 +81,8 @@ public class CStaS {
         private double pi;
         private double effect;
         private boolean ancestor;
-        private double q;
-        private double p;
+        private int q;
+        private int p;
 
         Record(Node predictor, Node target, double pi, double minEffect, boolean ancestor, int q, int p) {
             this.causeNode = predictor;
@@ -114,11 +114,11 @@ public class CStaS {
             return ancestor;
         }
 
-        public double getQ() {
+        public int getQ() {
             return q;
         }
 
-        public double getP() {
+        public int getP() {
             return p;
         }
     }
@@ -452,18 +452,28 @@ public class CStaS {
             table.setToken(i + 1, 7, nf.format(records.get(i).getEffect()));
         }
 
+        int p = records.getLast().getP();
+        int q = records.getLast().getQ();
+        double piMin = records.getLast().getPi();
+
         double sum = 0.0;
 
         for (Record record : records) {
-            sum += record.getPi();
+            final double pi2 = record.getPi() - q / (double) p;
+            if (pi2 < 0) continue;
+            sum += pi2;
         }
 
-        final double pcer = !records.isEmpty() ? pcer(records.getLast().getPi(), records.getLast().getQ(), records.getLast().getP()) : Double.NaN;
-        final double jrev = !records.isEmpty() ? records.getLast().getQ() - sum : Double.NaN;
-        final double mbEv = !records.isEmpty() ? er(records.getLast().getPi(), records.getLast().getQ(), records.getLast().getP()) : Double.NaN;
+        final double pcer = !records.isEmpty() ? pcer(records.getLast().getPi(), q, p) : Double.NaN;
+        final double jrev = !records.isEmpty() ? q - sum : Double.NaN;
+        final double mbEv = !records.isEmpty() ? er(records.getLast().getPi(), q, p) : Double.NaN;
 
-        return "\n" + table + "\n" + "# FP = "
-                + fp + (records.getLast().getQ() != -1 && sampleStyle == SampleStyle.SPLIT ? " PCER = " + nf.format(pcer) : "")
+
+//        System.out.println("p = " + p + " q = " + q + " PI = " + sum + " 2 * pi * q^2 / p = " + (2 * piMin * q * q / (double) p));
+
+        return "\n" + /*table* + */ "\n"
+                + "p = " + p + " q = " + q + " 2 * pi * q^2 / p = " + (2 * piMin * q * q / (double) p) + "\n"
+                + "# FP = "+ fp + (records.getLast().getQ() != -1 && sampleStyle == SampleStyle.SPLIT ? " PCER = " + nf.format(pcer) + "\n" : "\n")
                 + (records.getLast().getQ() != -1 ? " q - SUM(pi) = " + nf.format(jrev) : "")
                 + (records.getLast().getQ() != -1 && sampleStyle == SampleStyle.SPLIT ? " E(V) bound = " + nf.format(mbEv) : "")
                 + "\nA = ancestor of the target" + "\nType: C = continuous, D = discrete\n";
