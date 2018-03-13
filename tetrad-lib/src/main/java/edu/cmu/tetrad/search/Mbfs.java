@@ -381,7 +381,7 @@ public final class Mbfs implements MbSearch, GraphSearch {
         Arrays.fill(maxRemainingAtDepth, -1);
         Arrays.fill(maxVariableAtDepth, null);
 
-//        logger.info("target = " + getEffect());
+//        logger.info("target = " + getMinBeta());
 
         Graph graph = new EdgeListGraph();
 

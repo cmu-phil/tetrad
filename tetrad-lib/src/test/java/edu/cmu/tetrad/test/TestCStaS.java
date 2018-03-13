@@ -97,15 +97,20 @@ public class TestCStaS {
     }
 
     public void testCStaS() {
-        int numTargets = 10;
+        int numTargets = 2;
 
         int numNodes = 500;
-        int avgDegree = 4;
-        int sampleSize = 200;
-        int numIterations = 10;
-        int numSubsamples = 50;
+        int avgDegree = 6;
+        int sampleSize = 50;
+        int numIterations = 1;
+        int numSubsamples = 100;
         double penaltyDiscount = 1;
-        double selectionAlpha = 0.1;
+        double selectionAlpha = 0.2;
+
+        int qFrom = 4;
+        int qTo = 300;
+        int qIncrement = 4;
+
         CStaS.PatternAlgorithm algorithm = CStaS.PatternAlgorithm.PC_STABLE;
         CStaS.SampleStyle sampleStyle = CStaS.SampleStyle.SPLIT;
 
@@ -160,9 +165,10 @@ public class TestCStaS {
             cstas.setNumSubsamples(numSubsamples);
             cstas.setPatternAlgorithm(algorithm);
             cstas.setSampleStyle(sampleStyle);
-            cstas.setqFrom(50);
-            cstas.setqTo(100);
-            cstas.setqIncrement(1);
+            cstas.setqFrom(qFrom);
+            cstas.setqTo(qTo);
+            cstas.setqIncrement(qIncrement);
+            cstas.setVerbose(true);
 
             List<Node> targets = new ArrayList<>();
 
@@ -199,22 +205,24 @@ public class TestCStaS {
             score.setPenaltyDiscount(penaltyDiscount);
             IndependenceTest test = new IndTestScore(score);
 
-            LinkedList<CStaS.Record> records = cstas.getRecords(augmentedData, selectionVars, targets, test).getLast();
+            final LinkedList<LinkedList<CStaS.Record>> allRecords = cstas.getRecords(augmentedData, selectionVars, targets, test);
 
-            System.out.println(cstas.makeTable(records));
+            for (LinkedList<CStaS.Record> records : allRecords) {
+                System.out.println(cstas.makeTable(records));
+            }
         }
     }
 
     private void testHughes() {
-        int numSubsamples = 100;
-        int numEffects = 100;
+        int numSubsamples = 50;
+        int numEffects = 200;
         double penaltyDiscount = 3;
         double minBump = 0.0;
-        int qFrom = 40;
-        int qTo = 200;
-        int qIncrement = 20;
+        int qFrom = 50;
+        int qTo = 300;
+        int qIncrement = 50;
         CStaS.PatternAlgorithm algorithm = CStaS.PatternAlgorithm.FGES;
-        CStaS.SampleStyle sampleStyle = CStaS.SampleStyle.BOOTSTRAP;
+        CStaS.SampleStyle sampleStyle = CStaS.SampleStyle.SPLIT;
 
         try {
 
@@ -396,7 +404,7 @@ public class TestCStaS {
     }
 
     public static void main(String... args) {
-        new TestCStaS().testHughes();
+        new TestCStaS().testCStaS();
     }
 }
 

@@ -52,11 +52,13 @@ public class CStaS {
         private Node predictor;
         private Node target;
         private double pi;
+        private double minBeta;
 
-        private Tuple(Node predictor, Node target, double pi) {
+        private Tuple(Node predictor, Node target, double pi, double minBeta) {
             this.predictor = predictor;
             this.target = target;
             this.pi = pi;
+            this.minBeta = minBeta;
         }
 
         public Node getCauseNode() {
@@ -70,6 +72,10 @@ public class CStaS {
         public double getPi() {
             return pi;
         }
+
+        public double getMinBeta() {
+            return minBeta;
+        }
     }
 
     // A single record in the returned table.
@@ -81,8 +87,8 @@ public class CStaS {
         private double pi;
         private double effect;
         private boolean ancestor;
-        private double q;
-        private double p;
+        private int q;
+        private int p;
 
         Record(Node predictor, Node target, double pi, double minEffect, boolean ancestor, int q, int p) {
             this.causeNode = predictor;
@@ -106,7 +112,7 @@ public class CStaS {
             return pi;
         }
 
-        public double getEffect() {
+        public double getMinBeta() {
             return effect;
         }
 
@@ -114,11 +120,11 @@ public class CStaS {
             return ancestor;
         }
 
-        public double getQ() {
+        public int getQ() {
             return q;
         }
 
-        public double getP() {
+        public int getP() {
             return p;
         }
     }
@@ -172,13 +178,13 @@ public class CStaS {
             }
         }
 
-        final List<List<Ida.NodeEffects>> effects = new ArrayList<>();
+        final Map<Integer, List<Ida.NodeEffects>> effects = new ConcurrentHashMap<>();
 
         // Need final for inner class.
         final List<Node> _effects = new ArrayList<>(possibleEffects);
 
         for (int t = 0; t < possibleEffects.size(); t++) {
-            effects.add(new ArrayList<>());
+            effects.put(t, new ArrayList<>());
         }
 
         final List<Node> _possiblePredictors = new ArrayList<>(possibleCauses);
@@ -263,7 +269,7 @@ public class CStaS {
 
             public Boolean call() {
                 try {
-                    LinkedList<Record> records = getRecords(possibleCauses, possibleEffects, effects, p, q);
+                    LinkedList<Record> records = getRecords(possibleCauses, possibleEffects, effects, p, q, dataSet);
                     allRecords.add(records);
                     return true;
                 } catch (Exception e) {
@@ -287,7 +293,8 @@ public class CStaS {
         return allRecords;
     }
 
-    private LinkedList<Record> getRecords(List<Node> possibleCauses, List<Node> possibleEffects, List<List<Ida.NodeEffects>> effects, int p, int q) {
+    private LinkedList<Record> getRecords(List<Node> possibleCauses, List<Node> possibleEffects, Map<Integer,
+            List<Ida.NodeEffects>> effects, int p, int q, DataSet data) {
         if (verbose) {
             System.out.println("Examining q = " + q);
         }
@@ -316,25 +323,49 @@ public class CStaS {
 
         List<Tuple> tuples = new ArrayList<>();
 
+
+        List<List<Map<Node, Integer>>> effectNodeHashMap = new ArrayList<>();
+
         for (int t = 0; t < possibleEffects.size(); t++) {
-            for (Node v : possibleCauses) {
-                final Integer count = counts.get(t).get(v);
-                final double pi = count / ((double) getNumSubsamples());
-                tuples.add(new Tuple(v, possibleEffects.get(t), pi));
+            effectNodeHashMap.add(new ArrayList<>());
+
+            for (int b = 0; b < effects.get(t).size(); b++) {
+                effectNodeHashMap.get(t).add(new HashMap<>());
+
+                Ida.NodeEffects effectSizes = effects.get(t).get(b);
+
+                for (int i = 0; i < effectSizes.getNodes().size(); i++) {
+                    effectNodeHashMap.get(t).get(b).put(effectSizes.getNodes().get(i), i);
+                }
             }
         }
 
-        tuples.sort((o1, o2) -> Double.compare(o2.getPi(), o1.getPi()));
+        for (Node v : possibleCauses) {
+            for (int t = 0; t < possibleEffects.size(); t++) {
+                final Integer count = counts.get(t).get(v);
+                final double pi = count / ((double) getNumSubsamples());
+                tuples.add(new Tuple(v, possibleEffects.get(t), pi,
+                        avgMinEffect(possibleEffects, effects, v, possibleEffects.get(t), effectNodeHashMap)));
+            }
+        }
+
+        tuples.sort((o1, o2) -> {
+            if (o1.getPi() == o2.getPi()) {
+                return Double.compare(o2.getMinBeta(), o1.getMinBeta());
+            } else {
+                return Double.compare(o2.getPi(), o1.getPi());
+            }
+        });
 
         double pi_thr = Double.NaN;
 
-        for (int g = 0; g < q; g++) {
+        for (int g = 0; g < Math.min(q, tuples.size()); g++) {
             if (Double.isNaN(pi_thr) || tuples.get(g).getPi() < pi_thr) pi_thr = tuples.get(g).getPi();
         }
 
         List<Tuple> _outTuples = new ArrayList<>();
 
-        for (int i = 0; i < q; i++) {
+        for (int i = 0; i < Math.min(q, tuples.size()); i++) {
             _outTuples.add(tuples.get(i));
         }
 
@@ -344,37 +375,35 @@ public class CStaS {
         LinkedList<Record> records = new LinkedList<>();
 
         for (Tuple tuple : _outTuples) {
-            List<Double> e = new ArrayList<>();
-
-            for (int b = 0; b < getNumSubsamples(); b++) {
-                final int t = possibleEffects.indexOf(tuple.getEffectNode());
-                Ida.NodeEffects effectSizes = effects.get(t).get(b);
-                int r = effectSizes.getNodes().indexOf(tuple.getCauseNode());
-                e.add(effectSizes.getEffects().get(r));
-            }
-
-            double[] _e = new double[e.size()];
-            for (int t = 0; t < e.size(); t++) _e[t] = e.get(t);
-            double avg = StatUtils.mean(_e);
+            double avg = tuple.getMinBeta();
 
             boolean ancestor = false;
 
-            if (trueDag != null) {
+            if (trueDag != null && tuple.getCauseNode() != null && tuple.getEffectNode() != null) {
                 ancestor = trueDag.isAncestorOf(tuple.getCauseNode(), tuple.getEffectNode());
             }
 
             records.add(new Record(tuple.getCauseNode(), tuple.getEffectNode(), tuple.getPi(), avg, ancestor, q, p));
         }
 
-        records.sort((o1, o2) -> {
-            if (o1.getPi() == o2.getPi()) {
-                return Double.compare(o2.getEffect(), o1.getEffect());
-            } else {
-                return Double.compare(o2.getPi(), o1.getPi());
-            }
-        });
-
         return records;
+    }
+
+    private double avgMinEffect(List<Node> possibleEffects, Map<Integer, List<Ida.NodeEffects>> effects,
+                                Node causeNode, Node effectNode, List<List<Map<Node, Integer>>> effectNodeHashMap) {
+        List<Double> e = new ArrayList<>();
+
+        final int t = possibleEffects.indexOf(effectNode);
+
+        for (int b = 0; b < effects.get(t).size(); b++) {
+            Ida.NodeEffects effectSizes = effects.get(t).get(b);
+            int r = effectNodeHashMap.get(t).get(b).get(causeNode);
+            e.add(effectSizes.getEffects().get(r));
+        }
+
+        double[] _e = new double[e.size()];
+        for (int b = 0; b < e.size(); b++) _e[b] = e.get(b);
+        return StatUtils.mean(_e);
     }
 
     public static LinkedList<Record> cStar(LinkedList<LinkedList<Record>> allRecords) {
@@ -398,7 +427,7 @@ public class CStaS {
 
             for (int i = 0; i < recordList.size(); i++) {
                 pis[i] = recordList.get(i).getPi();
-                effects[i] = recordList.get(i).getEffect();
+                effects[i] = recordList.get(i).getMinBeta();
             }
 
             double medianPis = StatUtils.median(pis);
@@ -411,7 +440,7 @@ public class CStaS {
 
         cstar.sort((o1, o2) -> {
             if (o1.getPi() == o2.getPi()) {
-                return Double.compare(o2.getEffect(), o1.getEffect());
+                return Double.compare(o2.getMinBeta(), o1.getMinBeta());
             } else {
                 return Double.compare(o2.getPi(), o1.getPi());
             }
@@ -449,23 +478,31 @@ public class CStaS {
             table.setToken(i + 1, 3, predictor instanceof DiscreteVariable ? "D" : "C");
             table.setToken(i + 1, 4, ancestor ? "A" : "");
             table.setToken(i + 1, 6, nf.format(records.get(i).getPi()));
-            table.setToken(i + 1, 7, nf.format(records.get(i).getEffect()));
+            table.setToken(i + 1, 7, nf.format(records.get(i).getMinBeta()));
         }
+
+        int p = records.getLast().getP();
+        int q = records.getLast().getQ();
 
         double sum = 0.0;
 
         for (Record record : records) {
-            sum += record.getPi();
+            final double pi2 = record.getPi() - q / (double) p;
+            if (pi2 < 0) continue;
+            sum += pi2;
         }
 
-        final double pcer = !records.isEmpty() ? pcer(records.getLast().getPi(), records.getLast().getQ(), records.getLast().getP()) : Double.NaN;
-        final double jrev = !records.isEmpty() ? records.getLast().getQ() - sum : Double.NaN;
-        final double mbEv = !records.isEmpty() ? er(records.getLast().getPi(), records.getLast().getQ(), records.getLast().getP()) : Double.NaN;
+        final double pcer = !records.isEmpty() ? pcer(records.getLast().getPi(), q, p) : Double.NaN;
+        final double jrev = !records.isEmpty() ? q - sum : Double.NaN;
+        final double mbEv = !records.isEmpty() ? er(records.getLast().getPi(), q, p) : Double.NaN;
 
-        return "\n" + table + "\n" + "# FP = "
-                + fp + (records.getLast().getQ() != -1 && sampleStyle == SampleStyle.SPLIT ? " PCER = " + nf.format(pcer) : "")
-                + (records.getLast().getQ() != -1 ? " q - SUM(pi) = " + nf.format(jrev) : "")
-                + (records.getLast().getQ() != -1 && sampleStyle == SampleStyle.SPLIT ? " E(V) bound = " + nf.format(mbEv) : "")
+        final String fpString = " # FP = " + fp + (records.getLast().getQ() != -1 && sampleStyle == SampleStyle.SPLIT ? " PCER = " + nf.format(pcer) + "" : "");
+
+        return "\n" + table + "\n"
+                + "p = " + p + " q = " + q
+                + (fp != records.size() ? fpString : "")
+                + (records.getLast().getQ() != -1 ? " JR E(V) = " + nf.format(jrev) : "")
+                + (records.getLast().getQ() != -1 && sampleStyle == SampleStyle.SPLIT ? " MB E(V) bound = " + nf.format(mbEv) : "")
                 + "\nA = ancestor of the target" + "\nType: C = continuous, D = discrete\n";
     }
 
