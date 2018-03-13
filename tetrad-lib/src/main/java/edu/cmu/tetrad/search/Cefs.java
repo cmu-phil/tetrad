@@ -245,7 +245,7 @@ public final class Cefs {
 //        // or children of adjacencies to the target. Call this set PCPC.
 //        LogUtils.getInstance().info("BEGINNING step 3 (prune PCPC).");
 //
-//        for (Node v : graph.getAdjacentNodes(getEffect())) {
+//        for (Node v : graph.getAdjacentNodes(getMinBeta())) {
 //            for (Node w : graph.getAdjacentNodes(v)) {
 //                if (getVisited().contains(w)) {
 //                    continue;
@@ -274,7 +274,7 @@ public final class Cefs {
 //        LogUtils.getInstance().info("BEGINNING step 5 (Trim graph to {T} U PC U " +
 //                "{Parents(Children(T))}).");
 
-//        MbUtils.trimToMbNodes(graph, getEffect());
+//        MbUtils.trimToMbNodes(graph, getMinBeta());
         MbUtils.trimToAdjacents(graph, target);
 
 //        LogUtils.getInstance().fine(
@@ -283,8 +283,8 @@ public final class Cefs {
 //
 //        LogUtils.getInstance().info("BEGINNING step 6 (Remove edges among P and P of C).");
 //
-//        MbUtils.trimEdgesAmongParents(graph, getEffect());
-//        MbUtils.trimEdgesAmongParentsOfChildren(graph, getEffect());
+//        MbUtils.trimEdgesAmongParents(graph, getMinBeta());
+//        MbUtils.trimEdgesAmongParentsOfChildren(graph, getMinBeta());
 
         TetradLogger.getInstance().log("graph", "After step 6 (Remove edges among P and P of C)" + graph);
 //        TetradLogger.getInstance().log("details", "Bounds: ");

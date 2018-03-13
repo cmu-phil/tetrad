@@ -97,9 +97,9 @@ public class TestCStaS {
     }
 
     public void testCStaS() {
-        int numTargets = 10;
+        int numTargets = 2;
 
-        int numNodes = 500;
+        int numNodes = 100;
         int avgDegree = 6;
         int sampleSize = 50;
         int numIterations = 1;
@@ -403,7 +403,7 @@ public class TestCStaS {
     }
 
     public static void main(String... args) {
-        new TestCStaS().testCStaS();
+        new TestCStaS().testHughes();
     }
 }
 
