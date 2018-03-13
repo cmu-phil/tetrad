@@ -153,6 +153,13 @@
             <version>2.3.0</version>
         </dependency>
 
+        <!-- For parsing Tetrad single-page HTML manual to get algorithm descriptions -->
+        <dependency>
+            <groupId>org.jsoup</groupId>
+            <artifactId>jsoup</artifactId>
+            <version>1.11.2</version>
+        </dependency>
+
     </dependencies>
 
     <!--<distributionManagement> -->
