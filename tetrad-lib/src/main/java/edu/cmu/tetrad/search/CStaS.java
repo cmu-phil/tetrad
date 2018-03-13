@@ -380,7 +380,7 @@ public class CStaS {
             boolean ancestor = false;
 
             if (trueDag != null && tuple.getCauseNode() != null && tuple.getEffectNode() != null) {
-                ancestor = trueDag.isAncestorOf(data.getVariable(tuple.getCauseNode().getName()), data.getVariable(tuple.getEffectNode().getName()));
+                ancestor = trueDag.isAncestorOf(tuple.getCauseNode(), tuple.getEffectNode());
             }
 
             records.add(new Record(tuple.getCauseNode(), tuple.getEffectNode(), tuple.getPi(), avg, ancestor, q, p));
@@ -483,7 +483,6 @@ public class CStaS {
 
         int p = records.getLast().getP();
         int q = records.getLast().getQ();
-        double piMin = records.getLast().getPi();
 
         double sum = 0.0;
 
@@ -497,10 +496,11 @@ public class CStaS {
         final double jrev = !records.isEmpty() ? q - sum : Double.NaN;
         final double mbEv = !records.isEmpty() ? er(records.getLast().getPi(), q, p) : Double.NaN;
 
+        final String fpString = " # FP = " + fp + (records.getLast().getQ() != -1 && sampleStyle == SampleStyle.SPLIT ? " PCER = " + nf.format(pcer) + "" : "");
 
         return "\n" + table + "\n"
                 + "p = " + p + " q = " + q
-                + "# FP = " + fp + (records.getLast().getQ() != -1 && sampleStyle == SampleStyle.SPLIT ? " PCER = " + nf.format(pcer) + "" : "")
+                + (fp != records.size() ? fpString : "")
                 + (records.getLast().getQ() != -1 ? " JR E(V) = " + nf.format(jrev) : "")
                 + (records.getLast().getQ() != -1 && sampleStyle == SampleStyle.SPLIT ? " MB E(V) bound = " + nf.format(mbEv) : "")
                 + "\nA = ancestor of the target" + "\nType: C = continuous, D = discrete\n";

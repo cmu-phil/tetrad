@@ -277,7 +277,7 @@ public class ParamDescriptions {
                 Runtime.getRuntime().availableProcessors() * 10, 1, Integer.MAX_VALUE));
 
         map.put("q", new ParamDescription(
-                "Examine this q (top brack of variables)",
+                "Examine this q",
                 10, 1, Integer.MAX_VALUE));
 
 

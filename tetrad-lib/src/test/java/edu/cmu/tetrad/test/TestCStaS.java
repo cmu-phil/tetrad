@@ -99,13 +99,13 @@ public class TestCStaS {
     public void testCStaS() {
         int numTargets = 2;
 
-        int numNodes = 100;
+        int numNodes = 500;
         int avgDegree = 6;
         int sampleSize = 50;
         int numIterations = 1;
         int numSubsamples = 100;
         double penaltyDiscount = 1;
-        double selectionAlpha = 0.1;
+        double selectionAlpha = 0.2;
 
         int qFrom = 4;
         int qTo = 300;
@@ -168,6 +168,7 @@ public class TestCStaS {
             cstas.setqFrom(qFrom);
             cstas.setqTo(qTo);
             cstas.setqIncrement(qIncrement);
+            cstas.setVerbose(true);
 
             List<Node> targets = new ArrayList<>();
 
@@ -213,15 +214,15 @@ public class TestCStaS {
     }
 
     private void testHughes() {
-        int numSubsamples = 100;
-        int numEffects = 5;
+        int numSubsamples = 50;
+        int numEffects = 200;
         double penaltyDiscount = 3;
         double minBump = 0.0;
         int qFrom = 50;
         int qTo = 300;
         int qIncrement = 50;
         CStaS.PatternAlgorithm algorithm = CStaS.PatternAlgorithm.FGES;
-        CStaS.SampleStyle sampleStyle = CStaS.SampleStyle.BOOTSTRAP;
+        CStaS.SampleStyle sampleStyle = CStaS.SampleStyle.SPLIT;
 
         try {
 
@@ -403,7 +404,7 @@ public class TestCStaS {
     }
 
     public static void main(String... args) {
-        new TestCStaS().testHughes();
+        new TestCStaS().testCStaS();
     }
 }
 
