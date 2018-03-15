@@ -437,7 +437,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         }
         
         // Testing algo descriptions - Zhou
-        String algoDesc = AlgorithmDescriptions.getInstance().get("fges");
+        String algoDesc = AlgorithmDescriptions.getInstance().get(model.getAlgorithm().getAnnotation().command());
         System.out.println("=========algoDesc==========");
         System.out.println(algoDesc);
         System.out.println("=========algoDesc==========");

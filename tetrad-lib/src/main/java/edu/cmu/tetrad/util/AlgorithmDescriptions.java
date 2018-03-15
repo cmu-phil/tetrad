@@ -9,10 +9,14 @@ package edu.cmu.tetrad.util;
 import edu.cmu.tetrad.annotation.Algorithm;
 import edu.cmu.tetrad.annotation.AlgorithmAnnotations;
 import edu.cmu.tetrad.annotation.AnnotatedClass;
+import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
+import org.jsoup.Connection;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -35,30 +39,56 @@ public class AlgorithmDescriptions {
     private AlgorithmDescriptions() {
         List<AnnotatedClass<Algorithm>> annotatedClasses = AlgorithmAnnotations.getInstance().getAnnotatedClasses();
         
-        try {
-            Document doc = Jsoup.connect("http://cmu-phil.github.io/tetrad/manual/index.html").get();
+        // Get the html manual URL and file path from properties file
+        final Properties applicationProperties = new Properties();
 
-            for (AnnotatedClass<Algorithm> clazz: annotatedClasses) {
-                String algoShortName = clazz.getAnnotation().command();
-
-                Element algoDescription = doc.getElementById(algoShortName);
-
-                String desc = "";
-
-                if (algoDescription != null) {
-                    Elements paragraphs = algoDescription.children();
-                    
-                    for (Element p : paragraphs) {
-                        desc += p.text() + "\n\n";
-                    }
-                }
-
-                algoDescMap.put(algoShortName, desc);
+        try (InputStream inputStream = this.getClass().getClassLoader().getResourceAsStream("tetrad-lib.properties")) {
+            if (inputStream != null) {
+                applicationProperties.load(inputStream);
             }
-        } catch (IOException ex) {
-            LOGGER.error("Failed to fetch HTML", ex);
+        } catch (IOException exception) {
+            LOGGER.error("Could not read tetrad-lib.properties file", exception);
         }
 
+        String manualUrl = applicationProperties.getProperty("manual.html.url");
+        String manualFile = applicationProperties.getProperty("manual.html.file");
+
+        Connection conn = Jsoup.connect(manualUrl);
+        File input = new File(manualFile);
+        
+        Document doc = null;
+        
+        // Always try to get the latest manual via URL, if failed, try read the local HTML file        
+        if (conn != null) {
+            try {
+                doc = conn.get();
+            } catch (IOException ex) {
+                LOGGER.error("Failed to fetch tetrad HTML manual via Github Pages URL.", ex);
+            }
+        } else {
+            try {
+                doc = Jsoup.parse(input, "UTF-8", "");
+            } catch (IOException ex) {
+                LOGGER.error("Failed to read tetrad HTML manual file.", ex);
+            }
+        }
+
+        // Get the description of each algorithm, use empty string if not found
+        for (AnnotatedClass<Algorithm> clazz: annotatedClasses) {
+            String algoShortName = clazz.getAnnotation().command();
+            String desc = "";
+
+            if (doc != null) {
+                Element algoDescription = doc.getElementById(algoShortName);
+                if (algoDescription != null) {
+                    Elements paragraphs = algoDescription.children();
+
+                    desc = paragraphs.stream().map((p) -> p.text() + "\n\n").reduce(desc, String::concat);
+                }
+            }
+            
+            algoDescMap.put(algoShortName, desc);
+        }
     }
     
     public static AlgorithmDescriptions getInstance() {
