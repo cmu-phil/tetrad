@@ -52,13 +52,9 @@ import java.awt.dnd.DropTargetDragEvent;
 import java.awt.dnd.DropTargetDropEvent;
 import java.awt.dnd.DropTargetEvent;
 import java.awt.dnd.DropTargetListener;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.awt.event.InputEvent;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.io.CharArrayWriter;
 import java.io.File;
 import java.io.FileReader;
@@ -66,7 +62,6 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 import java.util.prefs.Preferences;
@@ -87,7 +82,6 @@ import javax.swing.JScrollPane;
 import javax.swing.JSpinner;
 import javax.swing.JTabbedPane;
 import javax.swing.JTextArea;
-import javax.swing.ListCellRenderer;
 import javax.swing.SpinnerNumberModel;
 import javax.swing.SwingConstants;
 import javax.swing.border.CompoundBorder;
@@ -95,8 +89,6 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.border.LineBorder;
 import javax.swing.border.MatteBorder;
 import javax.swing.border.TitledBorder;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
 
 /**
  * Edits knowledge of forbidden and required edges.
@@ -178,73 +170,69 @@ public class KnowledgeBoxEditor extends JPanel {
         file.add(load);
         file.add(save);
 
-        load.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                JFileChooser chooser = new JFileChooser();
-                String sessionSaveLocation
-                        = Preferences.userRoot().get("fileSaveLocation", "");
-                chooser.setCurrentDirectory(new File(sessionSaveLocation));
-                chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
+        load.addActionListener((e) -> {
+            JFileChooser chooser = new JFileChooser();
+            String sessionSaveLocation
+                    = Preferences.userRoot().get("fileSaveLocation", "");
+            chooser.setCurrentDirectory(new File(sessionSaveLocation));
+            chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
 
-                int ret1 = chooser.showOpenDialog(JOptionUtils.centeringComp());
+            int ret1 = chooser.showOpenDialog(JOptionUtils.centeringComp());
 
-                if (!(ret1 == JFileChooser.APPROVE_OPTION)) {
-                    return;
+            if (!(ret1 == JFileChooser.APPROVE_OPTION)) {
+                return;
+            }
+
+            final File selectedFile = chooser.getSelectedFile();
+
+            if (selectedFile == null) {
+                return;
+            }
+
+            Preferences.userRoot().put("fileSaveLocation", selectedFile.getParent());
+
+            try {
+                IKnowledge knowledge = new DataReader().parseKnowledge(selectedFile);
+
+                if (knowledge == null) {
+                    throw new NullPointerException("No knowledge found in this file. Perhaps the formatting is off");
                 }
 
-                final File file = chooser.getSelectedFile();
-
-                if (file == null) {
-                    return;
-                }
-
-                Preferences.userRoot().put("fileSaveLocation", file.getParent());
-
-                try {
-                    IKnowledge knowledge = new DataReader().parseKnowledge(file);
-
-                    if (knowledge == null) {
-                        throw new NullPointerException("No knowledge found in this file. Perhaps the formatting is off");
-                    }
-
-                    setKnowledge(knowledge);
-                    resetTabbedPane(KnowledgeBoxEditor.this.tabbedPane);
-                } catch (Exception e1) {
-                    JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
-                            e1.getMessage());
-                    e1.printStackTrace();
-                }
+                setKnowledge(knowledge);
+                resetTabbedPane(KnowledgeBoxEditor.this.tabbedPane);
+            } catch (Exception e1) {
+                JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
+                        e1.getMessage());
+                e1.printStackTrace();
             }
         });
 
-        save.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                JFileChooser chooser = new JFileChooser();
-                String sessionSaveLocation
-                        = Preferences.userRoot().get("fileSaveLocation", "");
-                chooser.setCurrentDirectory(new File(sessionSaveLocation));
-                chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
+        save.addActionListener((e) -> {
+            JFileChooser chooser = new JFileChooser();
+            String sessionSaveLocation
+                    = Preferences.userRoot().get("fileSaveLocation", "");
+            chooser.setCurrentDirectory(new File(sessionSaveLocation));
+            chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
 
-                int ret1 = chooser.showSaveDialog(JOptionUtils.centeringComp());
+            int ret1 = chooser.showSaveDialog(JOptionUtils.centeringComp());
 
-                if (!(ret1 == JFileChooser.APPROVE_OPTION)) {
-                    return;
-                }
+            if (!(ret1 == JFileChooser.APPROVE_OPTION)) {
+                return;
+            }
 
-                final File file = chooser.getSelectedFile();
+            final File selectedFile = chooser.getSelectedFile();
 
-                if (file == null) {
-                    return;
-                }
+            if (selectedFile == null) {
+                return;
+            }
 
-                Preferences.userRoot().put("fileSaveLocation", file.getParent());
+            Preferences.userRoot().put("fileSaveLocation", selectedFile.getParent());
 
-                try {
-                    Knowledge.saveKnowledge(knowledgeBoxModel.getKnowledge(), new FileWriter(file));
-                } catch (Exception e1) {
-                    JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
-                            e1.getMessage());
-                }
+            try {
+                Knowledge.saveKnowledge(knowledgeBoxModel.getKnowledge(), new FileWriter(selectedFile));
+            } catch (Exception e1) {
+                JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
+                        e1.getMessage());
             }
         });
 
@@ -256,28 +244,19 @@ public class KnowledgeBoxEditor extends JPanel {
         tabbedPane.add("Tiers", tierDisplay());
         tabbedPane.add("Other Groups", new OtherGroupsEditor(knowledgeBoxModel.getKnowledge(), this.varNames));
         tabbedPane.add("Edges", edgeDisplay());
-//        tabbedPane.add("Text", textDisplay());
 
-        tabbedPane.addChangeListener(new ChangeListener() {
-            public void stateChanged(ChangeEvent e) {
-                JTabbedPane pane = (JTabbedPane) e.getSource();
-                if (pane.getSelectedIndex() == 0) {
-                    setNumDisplayTiers(getNumTiers());
-                } else if (pane.getSelectedIndex() == 2) {
-                    resetEdgeDisplay();
-                }
-//                else if (pane.getSelectedIndex() == 3) {
-//                    resetTextDisplay();
-//                }
+        tabbedPane.addChangeListener((e) -> {
+            JTabbedPane pane = (JTabbedPane) e.getSource();
+            if (pane.getSelectedIndex() == 0) {
+                setNumDisplayTiers(getNumTiers());
+            } else if (pane.getSelectedIndex() == 2) {
+                resetEdgeDisplay();
             }
         });
 
         this.tabbedPane = tabbedPane;
     }
 
-    // public KnowledgeEditor(KnowledgeWrapper wrapper) {
-    // this(wrapper.getKnowledge());
-    // }
     private Box tierDisplay() {
         if (getNumTiers() < 0) {
             int numTiers = getKnowledge().getNumTiers();
@@ -295,30 +274,20 @@ public class KnowledgeBoxEditor extends JPanel {
         b1.add(new JLabel("# Tiers = "));
         SpinnerNumberModel spinnerNumberModel = new SpinnerNumberModel(
                 getNumTiers(), 2, 100, 1);
-        spinnerNumberModel.addChangeListener(new ChangeListener() {
-            public void stateChanged(ChangeEvent e) {
-                SpinnerNumberModel model = (SpinnerNumberModel) e.getSource();
-                int numTiers = model.getNumber().intValue();
+        spinnerNumberModel.addChangeListener((e) -> {
+            SpinnerNumberModel model = (SpinnerNumberModel) e.getSource();
+            int numTiers = model.getNumber().intValue();
 
-//                int knowledgeNumTiers = getKnowledge().getNumTiers();
-//
-//                if (numTiers >= knowledgeNumTiers) {
-                setNumDisplayTiers(numTiers);
-                setNumTiers(numTiers);
-                model.setValue(numTiers);
-//                } else {
-//                    model.setValue(numTiers);
-//                    setNumTiers(knowledgeNumTiers);
-//                    model.setValue(numTiers);
-//                }
+            setNumDisplayTiers(numTiers);
+            setNumTiers(numTiers);
+            model.setValue(numTiers);
 
-                for (int i = getNumTiers(); i <= getKnowledge()
-                        .getMaxTierForbiddenWithin(); i++) {
-                    getKnowledge().setTierForbiddenWithin(i, false);
-                }
-
-                notifyKnowledge();
+            for (int i = getNumTiers(); i <= getKnowledge()
+                    .getMaxTierForbiddenWithin(); i++) {
+                getKnowledge().setTierForbiddenWithin(i, false);
             }
+
+            notifyKnowledge();
         });
 
         JSpinner spinner = new JSpinner(spinnerNumberModel);
@@ -397,25 +366,20 @@ public class KnowledgeBoxEditor extends JPanel {
                     getKnowledge().isTierForbiddenWithin(_tier));
             final JComponent upReference = this;
 
-            forbiddenCheckbox.addActionListener(new ActionListener() {
-                public void actionPerformed(ActionEvent e) {
-                    JCheckBox checkbox = (JCheckBox) e.getSource();
-                    try {
-                        getKnowledge().setTierForbiddenWithin(_tier,
-                                checkbox.isSelected());
-                    } catch (Exception e1) {
-                        checkbox.setSelected(false);
-                        JOptionPane.showMessageDialog(upReference, e1.getMessage());
-//                        throw new RuntimeException(e1);
-                    }
-
-                    notifyKnowledge();
+            forbiddenCheckbox.addActionListener((e) -> {
+                JCheckBox checkbox = (JCheckBox) e.getSource();
+                try {
+                    getKnowledge().setTierForbiddenWithin(_tier,
+                            checkbox.isSelected());
+                } catch (Exception e1) {
+                    checkbox.setSelected(false);
+                    JOptionPane.showMessageDialog(upReference, e1.getMessage());
                 }
+
+                notifyKnowledge();
             });
 
             textRow.add(forbiddenCheckbox);
-//            JButton expressionButton = new JButton("Add Expression");
-//            textRow.add(expressionButton);
 
             d.add(textRow);
 
@@ -439,11 +403,9 @@ public class KnowledgeBoxEditor extends JPanel {
     private JPanel edgeDisplay() {
         KnowledgeGraph graph = new KnowledgeGraph(getKnowledge());
 
-        graph.addPropertyChangeListener(new PropertyChangeListener() {
-            public void propertyChange(PropertyChangeEvent evt) {
-                if ("modelChanged".equals(evt.getPropertyName())) {
-                    notifyKnowledge();
-                }
+        graph.addPropertyChangeListener((evt) -> {
+            if ("modelChanged".equals(evt.getPropertyName())) {
+                notifyKnowledge();
             }
         });
 
@@ -461,44 +423,34 @@ public class KnowledgeBoxEditor extends JPanel {
         JCheckBox showForbiddenGroupsCheckBox = new JCheckBox(
                 "Show Forbidden by Groups", this.showForbiddenByGroups);
 
-        showRequiredGroupsCheckBox.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                JCheckBox box = (JCheckBox) e.getSource();
-                showRequiredByGroups = box.isSelected();
-                resetEdgeDisplay();
-            }
+        showRequiredGroupsCheckBox.addActionListener((e) -> {
+            JCheckBox box = (JCheckBox) e.getSource();
+            showRequiredByGroups = box.isSelected();
+            resetEdgeDisplay();
         });
 
-        showForbiddenGroupsCheckBox.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                JCheckBox box = (JCheckBox) e.getSource();
-                showForbiddenByGroups = box.isSelected();
-                resetEdgeDisplay();
-            }
+        showForbiddenGroupsCheckBox.addActionListener((e) -> {
+            JCheckBox box = (JCheckBox) e.getSource();
+            showForbiddenByGroups = box.isSelected();
+            resetEdgeDisplay();
         });
 
-        showForbiddenByTiersCheckbox.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                JCheckBox checkBox = (JCheckBox) e.getSource();
-                setShowForbiddenByTiers(checkBox.isSelected());
-                resetEdgeDisplay();
-            }
+        showForbiddenByTiersCheckbox.addActionListener((e) -> {
+            JCheckBox checkBox = (JCheckBox) e.getSource();
+            setShowForbiddenByTiers(checkBox.isSelected());
+            resetEdgeDisplay();
         });
 
-        showForbiddenExplicitlyCheckbox.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                JCheckBox checkBox = (JCheckBox) e.getSource();
-                setShowForbiddenExplicitly(checkBox.isSelected());
-                resetEdgeDisplay();
-            }
+        showForbiddenExplicitlyCheckbox.addActionListener((e) -> {
+            JCheckBox checkBox = (JCheckBox) e.getSource();
+            setShowForbiddenExplicitly(checkBox.isSelected());
+            resetEdgeDisplay();
         });
 
-        showRequiredCheckbox.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                JCheckBox checkBox = (JCheckBox) e.getSource();
-                setShowRequired(checkBox.isSelected());
-                resetEdgeDisplay();
-            }
+        showRequiredCheckbox.addActionListener((e) -> {
+            JCheckBox checkBox = (JCheckBox) e.getSource();
+            setShowRequired(checkBox.isSelected());
+            resetEdgeDisplay();
         });
 
         JPanel workbenchPanel = new JPanel();
@@ -681,70 +633,60 @@ public class KnowledgeBoxEditor extends JPanel {
         final JButton loadFromTextPaneButton = new JButton("Load from Text Pane");
         final JButton loadFromFileButton = new JButton("Load from File");
 
-        testButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-
-                try {
-                    String text = getTextArea().getText();
-                    DataReader reader = new DataReader();
-                    reader.parseKnowledge(text.toCharArray());
-                    JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
-                            "Looks good.");
-                } catch (Exception e1) {
-                    JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
-                            e1.getMessage());
-                }
+        testButton.addActionListener((e) -> {
+            try {
+                String text = getTextArea().getText();
+                DataReader reader = new DataReader();
+                reader.parseKnowledge(text.toCharArray());
+                JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
+                        "Looks good.");
+            } catch (Exception e1) {
+                JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
+                        e1.getMessage());
             }
         });
 
-        loadFromTextPaneButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                try {
-                    String text = getTextArea().getText();
-                    DataReader reader = new DataReader();
-                    IKnowledge knowledge = reader.parseKnowledge(text.toCharArray());
-                    setKnowledge(knowledge);
-//                    setNumTiers(-1);
-                    resetTabbedPane(KnowledgeBoxEditor.this.tabbedPane);
-//                    JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
-//                            "Loaded.");
-                } catch (Exception e1) {
-                    JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
-                            e1.getMessage());
-                }
+        loadFromTextPaneButton.addActionListener((e) -> {
+            try {
+                String text = getTextArea().getText();
+                DataReader reader = new DataReader();
+                IKnowledge knowledge = reader.parseKnowledge(text.toCharArray());
+                setKnowledge(knowledge);
+                resetTabbedPane(KnowledgeBoxEditor.this.tabbedPane);
+            } catch (Exception e1) {
+                JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
+                        e1.getMessage());
             }
         });
 
-        loadFromFileButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                JFileChooser chooser = new JFileChooser();
-                String sessionSaveLocation
-                        = Preferences.userRoot().get("fileSaveLocation", "");
-                chooser.setCurrentDirectory(new File(sessionSaveLocation));
-                chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
+        loadFromFileButton.addActionListener((e) -> {
+            JFileChooser chooser = new JFileChooser();
+            String sessionSaveLocation
+                    = Preferences.userRoot().get("fileSaveLocation", "");
+            chooser.setCurrentDirectory(new File(sessionSaveLocation));
+            chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
 
-                int ret1 = chooser.showOpenDialog(JOptionUtils.centeringComp());
+            int ret1 = chooser.showOpenDialog(JOptionUtils.centeringComp());
 
-                if (!(ret1 == JFileChooser.APPROVE_OPTION)) {
-                    return;
-                }
+            if (!(ret1 == JFileChooser.APPROVE_OPTION)) {
+                return;
+            }
 
-                final File file = chooser.getSelectedFile();
+            final File file = chooser.getSelectedFile();
 
-                if (file == null) {
-                    return;
-                }
+            if (file == null) {
+                return;
+            }
 
-                Preferences.userRoot().put("fileSaveLocation", file.getParent());
+            Preferences.userRoot().put("fileSaveLocation", file.getParent());
 
-                try {
-                    IKnowledge knowledge = new DataReader().parseKnowledge(file);
-                    setKnowledge(knowledge);
-                    resetTabbedPane(KnowledgeBoxEditor.this.tabbedPane);
-                } catch (Exception e1) {
-                    JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
-                            e1.getMessage());
-                }
+            try {
+                IKnowledge knowledge = new DataReader().parseKnowledge(file);
+                setKnowledge(knowledge);
+                resetTabbedPane(KnowledgeBoxEditor.this.tabbedPane);
+            } catch (Exception e1) {
+                JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
+                        e1.getMessage());
             }
         });
 
@@ -881,30 +823,26 @@ public class KnowledgeBoxEditor extends JPanel {
 
             setLayoutOrientation(JList.HORIZONTAL_WRAP);
             setVisibleRowCount(0);
-            this.setCellRenderer(new ListCellRenderer() {
-                public Component getListCellRendererComponent(JList list,
-                        Object value, int index, boolean isSelected,
-                        boolean cellHasFocus) {
-                    Color fillColor = new Color(153, 204, 204);
-                    Color selectedFillColor = new Color(255, 204, 102);
+            this.setCellRenderer((list, value, index, isSelected, cellHasFocus) -> {
+                Color fillColor = new Color(153, 204, 204);
+                Color selectedFillColor = new Color(255, 204, 102);
 
-                    JLabel comp = new JLabel(" " + value + " ");
-                    comp.setOpaque(true);
+                JLabel comp = new JLabel(" " + value + " ");
+                comp.setOpaque(true);
 
-                    if (isSelected) {
-                        comp.setForeground(Color.BLACK);
-                        comp.setBackground(selectedFillColor);
-                    } else {
-                        comp.setForeground(Color.BLACK);
-                        comp.setBackground(fillColor);
-                    }
-
-                    comp.setHorizontalAlignment(SwingConstants.CENTER);
-                    comp.setBorder(new CompoundBorder(new MatteBorder(2, 2, 2,
-                            2, Color.WHITE), new LineBorder(Color.BLACK)));
-
-                    return comp;
+                if (isSelected) {
+                    comp.setForeground(Color.BLACK);
+                    comp.setBackground(selectedFillColor);
+                } else {
+                    comp.setForeground(Color.BLACK);
+                    comp.setBackground(fillColor);
                 }
+
+                comp.setHorizontalAlignment(SwingConstants.CENTER);
+                comp.setBorder(new CompoundBorder(new MatteBorder(2, 2, 2,
+                        2, Color.WHITE), new LineBorder(Color.BLACK)));
+
+                return comp;
             });
 
             new DropTarget(this, DnDConstants.ACTION_MOVE, this, true);
@@ -913,15 +851,14 @@ public class KnowledgeBoxEditor extends JPanel {
                     DnDConstants.ACTION_MOVE, this);
 
             setModel(new DefaultListModel());
-            for (Object item : items) {
-                ((DefaultListModel) getModel()).addElement(item);
-            }
+            items.forEach(item -> ((DefaultListModel) getModel()).addElement(item));
         }
 
         public int getTier() {
             return tier;
         }
 
+        @Override
         public void dragGestureRecognized(DragGestureEvent dragGestureEvent) {
             if (getSelectedIndex() == -1) {
                 return;
@@ -939,6 +876,7 @@ public class KnowledgeBoxEditor extends JPanel {
             }
         }
 
+        @Override
         public void drop(DropTargetDropEvent dropTargetDropEvent) {
             try {
                 Transferable tr = dropTargetDropEvent.getTransferable();
@@ -978,6 +916,7 @@ public class KnowledgeBoxEditor extends JPanel {
             }
         }
 
+        @Override
         public void dragDropEnd(DragSourceDropEvent dsde) {
             if (!dsde.getDropSuccess()) {
                 return;
@@ -992,27 +931,35 @@ public class KnowledgeBoxEditor extends JPanel {
             }
         }
 
+        @Override
         public void dragEnter(DropTargetDragEvent dtde) {
         }
 
+        @Override
         public void dragOver(DropTargetDragEvent dtde) {
         }
 
+        @Override
         public void dropActionChanged(DropTargetDragEvent dtde) {
         }
 
+        @Override
         public void dragExit(DropTargetEvent dte) {
         }
 
+        @Override
         public void dragEnter(DragSourceDragEvent dsde) {
         }
 
+        @Override
         public void dragOver(DragSourceDragEvent dsde) {
         }
 
+        @Override
         public void dropActionChanged(DragSourceDragEvent dsde) {
         }
 
+        @Override
         public void dragExit(DragSourceEvent dse) {
         }
 
@@ -1024,28 +971,25 @@ public class KnowledgeBoxEditor extends JPanel {
                 strings.add((String) e);
             }
 
-            Collections.sort(strings, new Comparator<String>() {
-                @Override
-                public int compare(String o1, String o2) {
-                    String[] tokens1 = o1.split(":");
-                    String[] tokens2 = o2.split(":");
+            Collections.sort(strings, (o1, o2) -> {
+                String[] tokens1 = o1.split(":");
+                String[] tokens2 = o2.split(":");
 
-                    if (tokens1.length == 1) {
-                        tokens1 = new String[]{tokens1[0], "0"};
-                    }
+                if (tokens1.length == 1) {
+                    tokens1 = new String[]{tokens1[0], "0"};
+                }
 
-                    if (tokens2.length == 1) {
-                        tokens2 = new String[]{tokens2[0], "0"};
-                    }
+                if (tokens2.length == 1) {
+                    tokens2 = new String[]{tokens2[0], "0"};
+                }
 
-                    int i1 = tokens1[1].compareTo(tokens2[1]);
-                    int i0 = tokens1[0].compareTo(tokens2[0]);
+                int i1 = tokens1[1].compareTo(tokens2[1]);
+                int i0 = tokens1[0].compareTo(tokens2[0]);
 
-                    if (i1 == 0) {
-                        return i0;
-                    } else {
-                        return i1;
-                    }
+                if (i1 == 0) {
+                    return i0;
+                } else {
+                    return i1;
                 }
             });
 
@@ -1057,21 +1001,26 @@ public class KnowledgeBoxEditor extends JPanel {
         }
     }
 
-    private static final class MyDragGestureRecognizer extends
-            DragGestureRecognizer {
+    private static final class MyDragGestureRecognizer extends DragGestureRecognizer {
+
+        private static final long serialVersionUID = -2859027146893129647L;
 
         public MyDragGestureRecognizer(DragSource ds) {
             super(ds);
         }
 
+        @Override
         protected void registerListeners() {
         }
 
+        @Override
         protected void unregisterListeners() {
         }
 
+        @Override
         protected synchronized void appendEvent(InputEvent awtie) {
             super.appendEvent(awtie);
         }
     }
+
 }
