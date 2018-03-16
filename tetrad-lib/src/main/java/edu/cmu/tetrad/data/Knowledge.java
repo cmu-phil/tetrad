@@ -41,6 +41,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
+import java.util.stream.Collectors;
 
 /**
  * Stores information about required and forbidden edges and common causes for
@@ -547,24 +548,22 @@ public final class Knowledge implements TetradSerializable, IKnowledge {
      * 4 x5
      * </pre>
      */
-    public static void saveKnowledge(IKnowledge knowledge, Writer out)
-            throws IOException {
+    public static void saveKnowledge(IKnowledge knowledge, Writer out) throws IOException {
         StringBuilder buf = new StringBuilder();
         buf.append("/knowledge");
 
-        buf.append("\naddtemporal");
+        buf.append("\naddtemporal\n");
 
         for (int i = 0; i < knowledge.getNumTiers(); i++) {
             String forbiddenWithin
                     = knowledge.isTierForbiddenWithin(i) ? "*" : "";
 
-            buf.append("\n").append(i + 1).append(forbiddenWithin).append(" ");
+            buf.append("\n").append(i + 1).append(forbiddenWithin);
 
             List<String> tier = knowledge.getTier(i);
-
-            for (Object aTier : tier) {
-                String name = (String) aTier;
-                buf.append(name).append(" ");
+            if (!(tier == null || tier.isEmpty())) {
+                buf.append(" ");
+                buf.append(tier.stream().collect(Collectors.joining(" ")));
             }
         }
 
