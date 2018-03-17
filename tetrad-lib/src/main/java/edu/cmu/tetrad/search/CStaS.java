@@ -49,24 +49,24 @@ public class CStaS {
 
 
     private class Tuple {
-        private Node predictor;
-        private Node target;
+        private Node cause;
+        private Node effect;
         private double pi;
         private double minBeta;
 
-        private Tuple(Node predictor, Node target, double pi, double minBeta) {
-            this.predictor = predictor;
-            this.target = target;
+        private Tuple(Node cause, Node effect, double pi, double minBeta) {
+            this.cause = cause;
+            this.effect = effect;
             this.pi = pi;
             this.minBeta = minBeta;
         }
 
         public Node getCauseNode() {
-            return predictor;
+            return cause;
         }
 
         public Node getEffectNode() {
-            return target;
+            return effect;
         }
 
         public double getPi() {
@@ -137,7 +137,7 @@ public class CStaS {
      *
      * @param dataSet         The full datasets to search over.
      * @param possibleCauses  A set of variables in the datasets over which to search.
-     * @param possibleEffects The target variables.
+     * @param possibleEffects The effect variables.
      * @param test            This test is only used to make more tests like it for subsamples.
      */
     public LinkedList<LinkedList<Record>> getRecords(DataSet dataSet, List<Node> possibleCauses, List<Node> possibleEffects,
@@ -145,10 +145,6 @@ public class CStaS {
         possibleEffects = GraphUtils.replaceNodes(possibleEffects, dataSet.getVariables());
         possibleCauses = GraphUtils.replaceNodes(possibleCauses, dataSet.getVariables());
         LinkedList<LinkedList<Record>> allRecords = new LinkedList<>();
-
-        if (new HashSet<>(possibleCauses).removeAll(new HashSet<>(possibleEffects))) {
-            throw new IllegalArgumentException("Possible predictors and possibleEffects must be disjoint sets.");
-        }
 
         if (test instanceof IndTestScore && ((IndTestScore) test).getWrappedScore() instanceof SemBicScore) {
             this.test = test;
@@ -165,7 +161,6 @@ public class CStaS {
         List<Node> augmented = new ArrayList<>(possibleEffects);
         augmented.addAll(possibleCauses);
 
-
         final List<Map<Integer, Map<Node, Double>>> minimalEffects = new ArrayList<>();
 
         for (int t = 0; t < possibleEffects.size(); t++) {
@@ -178,22 +173,20 @@ public class CStaS {
             }
         }
 
-        final Map<Integer, List<Ida.NodeEffects>> effects = new ConcurrentHashMap<>();
-
         // Need final for inner class.
-        final List<Node> _effects = new ArrayList<>(possibleEffects);
-
-        for (int t = 0; t < possibleEffects.size(); t++) {
-            effects.put(t, new ArrayList<>());
-        }
-
-        final List<Node> _possiblePredictors = new ArrayList<>(possibleCauses);
+        final List<double[][]> allEffects = new ArrayList<>();
 
         class Task implements Callable<Boolean> {
-            int b;
+            private final List<Node> possibleCauses;
+            private final List<Node> possibleEffects;
+            private final List<double[][]> allEffects;
+            private final int b;
 
-            private Task(int b) {
+            private Task(int b, List<Node> possibleCauses, List<Node> possibleEffects, List<double[][]> allEffects) {
                 this.b = b;
+                this.possibleCauses = possibleCauses;
+                this.possibleEffects = possibleEffects;
+                this.allEffects = allEffects;
             }
 
             public Boolean call() {
@@ -222,11 +215,19 @@ public class CStaS {
                                 + patternAlgorithm);
                     }
 
-                    Ida ida = new Ida(sample, pattern, _possiblePredictors);
+                    Ida ida = new Ida(sample, pattern, possibleCauses);
 
-                    for (int t = 0; t < _effects.size(); t++) {
-                        effects.get(t).add(ida.getSortedMinEffects(_effects.get(t)));
+                    double[][] effects = new double[possibleCauses.size()][possibleEffects.size()];
+
+                    for (int e = 0; e < possibleEffects.size(); e++) {
+                        Map<Node, Double> minEffects = ida.calculateMinimumEffectsOnY(possibleEffects.get(e));
+
+                        for (int c = 0; c < possibleCauses.size(); c++) {
+                            effects[c][e] = minEffects.get(possibleCauses.get(c));
+                        }
                     }
+
+                    allEffects.add(effects);
 
                     if (verbose) {
                         System.out.println("Bootstrap " + (b + 1));
@@ -242,12 +243,12 @@ public class CStaS {
         List<Callable<Boolean>> tasks = new ArrayList<>();
 
         for (int b = 0; b < getNumSubsamples(); b++) {
-            tasks.add(new Task(b));
+            tasks.add(new Task(b, possibleCauses, possibleEffects, allEffects));
         }
 
         ConcurrencyUtils.runCallables(tasks, getParallelism());
 
-        int p = dataSet.getNumColumns();
+        int p = possibleCauses.size() * possibleEffects.size();
 
         List<Integer> qs = new ArrayList<>();
 
@@ -264,12 +265,83 @@ public class CStaS {
                 this.possibleCauses = possibleCauses;
                 this.possibleEffects = possibleEffects;
                 this.q = q;
-
             }
 
             public Boolean call() {
                 try {
-                    LinkedList<Record> records = getRecords(possibleCauses, possibleEffects, effects, p, q, dataSet);
+                    if (verbose) {
+                        System.out.println("Examining q = " + q);
+                    }
+
+                    double[] cutoffs = new double[getNumSubsamples()];
+
+                    for (int k = 0; k < getNumSubsamples(); k++) {
+                        double[][] effects = allEffects.get(k);
+
+                        List<Double> doubles = new ArrayList<>();
+
+                        for (int c = 0; c < possibleCauses.size(); c++) {
+                            for (int e = 0; e < possibleEffects.size(); e++) {
+                                doubles.add(effects[c][e]);
+                            }
+                        }
+
+                        doubles.sort((o1, o2) -> Double.compare(o2, o1));
+                        cutoffs[k] = doubles.get(Math.min(q - 1, doubles.size() - 1));
+                    }
+
+                    List<List<Map<Node, Integer>>> effectNodeHashMap = new ArrayList<>();
+
+                    List<Tuple> tuples = new ArrayList<>();
+
+                    for (int e = 0; e < possibleEffects.size(); e++) {
+                        for (int c = 0; c < possibleCauses.size(); c++) {
+                            int count = 0;
+
+                            for (int k = 0; k < getNumSubsamples(); k++) {
+                                if (allEffects.get(k)[c][e] >= cutoffs[k]) {
+                                    count++;
+                                }
+                            }
+
+                            if (count > 0) {
+                                final double pi = count / ((double) getNumSubsamples());
+                                final Node cause = possibleCauses.get(c);
+                                final Node effect = possibleEffects.get(e);
+                                tuples.add(new Tuple(cause, effect, pi,
+                                        avgMinEffect(possibleCauses, possibleEffects, allEffects, cause, effect, effectNodeHashMap)));
+                            }
+                        }
+
+                    }
+
+                    tuples.sort((o1, o2) -> {
+                        if (o1.getPi() == o2.getPi()) {
+                            return Double.compare(o2.getMinBeta(), o1.getMinBeta());
+                        } else {
+                            return Double.compare(o2.getPi(), o1.getPi());
+                        }
+                    });
+
+                    LinkedList<Record> records = new LinkedList<>();
+
+                    for (int i = 0; i < Math.min(q, tuples.size()); i++) {
+                        Tuple tuple = tuples.get(i);
+                        double avg = tuple.getMinBeta();
+
+                        boolean ancestor = false;
+
+                        final Node causeNode = tuple.getCauseNode();
+                        final Node effectNode = tuple.getEffectNode();
+
+                        if (trueDag != null) {
+                            ancestor = trueDag.isAncestorOf(trueDag.getNode(causeNode.getName()),
+                                    trueDag.getNode(effectNode.getName()));
+                        }
+
+                        records.add(new Record(causeNode, effectNode, tuple.getPi(), avg, ancestor, q, p));
+                    }
+
                     allRecords.add(records);
                     return true;
                 } catch (Exception e) {
@@ -293,117 +365,80 @@ public class CStaS {
         return allRecords;
     }
 
-    private LinkedList<Record> getRecords(List<Node> possibleCauses, List<Node> possibleEffects, Map<Integer,
-            List<Ida.NodeEffects>> effects, int p, int q, DataSet data) {
-        if (verbose) {
-            System.out.println("Examining q = " + q);
+    class Pair {
+        private final Node cause;
+        private final Node effect;
+
+        public Pair(Node cause, Node effect) {
+            this.cause = cause;
+            this.effect = effect;
         }
 
-        final List<Map<Node, Integer>> counts = new ArrayList<>();
-
-        for (int t = 0; t < possibleEffects.size(); t++) {
-            counts.add(new HashMap<>());
-            for (Node node : possibleCauses) counts.get(t).put(node, 0);
+        public Node getCause() {
+            return cause;
         }
 
-        for (int w = 1; w <= q; w++) {
-            for (int t = 0; t < possibleEffects.size(); t++) {
-                final Map<Node, Integer> _counts = counts.get(t);
-
-                for (Ida.NodeEffects effectSize : effects.get(t)) {
-                    final List<Node> nodes = effectSize.getNodes();
-
-                    if (w - 1 < possibleCauses.size()) {
-                        final Node key = nodes.get(w - 1);
-                        _counts.put(key, _counts.get(key) + 1);
-                    }
-                }
-            }
+        public Node getEffect() {
+            return effect;
         }
 
-        List<Tuple> tuples = new ArrayList<>();
-
-
-        List<List<Map<Node, Integer>>> effectNodeHashMap = new ArrayList<>();
-
-        for (int t = 0; t < possibleEffects.size(); t++) {
-            effectNodeHashMap.add(new ArrayList<>());
-
-            for (int b = 0; b < effects.get(t).size(); b++) {
-                effectNodeHashMap.get(t).add(new HashMap<>());
-
-                Ida.NodeEffects effectSizes = effects.get(t).get(b);
-
-                for (int i = 0; i < effectSizes.getNodes().size(); i++) {
-                    effectNodeHashMap.get(t).get(b).put(effectSizes.getNodes().get(i), i);
-                }
-            }
+        public int hashCode() {
+            return 5 * cause.hashCode() + 7 * effect.hashCode();
         }
 
-        for (Node v : possibleCauses) {
-            for (int t = 0; t < possibleEffects.size(); t++) {
-                final Integer count = counts.get(t).get(v);
-                final double pi = count / ((double) getNumSubsamples());
-                tuples.add(new Tuple(v, possibleEffects.get(t), pi,
-                        avgMinEffect(possibleEffects, effects, v, possibleEffects.get(t), effectNodeHashMap)));
-            }
+        public boolean equals(Object o) {
+            if (!(o instanceof Pair)) throw new IllegalArgumentException("Not a pair.");
+            Pair pair = (Pair) o;
+            return pair.cause == cause && pair.effect == effect;
         }
-
-        tuples.sort((o1, o2) -> {
-            if (o1.getPi() == o2.getPi()) {
-                return Double.compare(o2.getMinBeta(), o1.getMinBeta());
-            } else {
-                return Double.compare(o2.getPi(), o1.getPi());
-            }
-        });
-
-        double pi_thr = Double.NaN;
-
-        for (int g = 0; g < Math.min(q, tuples.size()); g++) {
-            if (Double.isNaN(pi_thr) || tuples.get(g).getPi() < pi_thr) pi_thr = tuples.get(g).getPi();
-        }
-
-        List<Tuple> _outTuples = new ArrayList<>();
-
-        for (int i = 0; i < Math.min(q, tuples.size()); i++) {
-            _outTuples.add(tuples.get(i));
-        }
-
-        trueDag = GraphUtils.replaceNodes(trueDag, possibleCauses);
-        trueDag = GraphUtils.replaceNodes(trueDag, possibleEffects);
-
-        LinkedList<Record> records = new LinkedList<>();
-
-        for (Tuple tuple : _outTuples) {
-            double avg = tuple.getMinBeta();
-
-            boolean ancestor = false;
-
-            if (trueDag != null && tuple.getCauseNode() != null && tuple.getEffectNode() != null) {
-                ancestor = trueDag.isAncestorOf(tuple.getCauseNode(), tuple.getEffectNode());
-            }
-
-            records.add(new Record(tuple.getCauseNode(), tuple.getEffectNode(), tuple.getPi(), avg, ancestor, q, p));
-        }
-
-        return records;
     }
 
-    private double avgMinEffect(List<Node> possibleEffects, Map<Integer, List<Ida.NodeEffects>> effects,
-                                Node causeNode, Node effectNode, List<List<Map<Node, Integer>>> effectNodeHashMap) {
-        List<Double> e = new ArrayList<>();
+    class Pair2 {
+        private final Pair pair;
+        private final double beta;
 
-        final int t = possibleEffects.indexOf(effectNode);
-
-        for (int b = 0; b < effects.get(t).size(); b++) {
-            Ida.NodeEffects effectSizes = effects.get(t).get(b);
-            int r = effectNodeHashMap.get(t).get(b).get(causeNode);
-            e.add(effectSizes.getEffects().get(r));
+        public Pair2(Pair pair, double beta) {
+            if (pair == null) throw new NullPointerException("Null pair");
+            this.pair = pair;
+            this.beta = beta;
         }
 
-        double[] _e = new double[e.size()];
-        for (int b = 0; b < e.size(); b++) _e[b] = e.get(b);
-        return StatUtils.mean(_e);
+        public int hashCode() {
+            return 5 * pair.hashCode();
+        }
+
+        public boolean equals(Object o) {
+            if (!(o instanceof Pair2)) throw new IllegalArgumentException("Not a pair2.");
+            Pair2 pair = (Pair2) o;
+            return pair.pair == this.pair;
+        }
+
+        public Pair getPair() {
+            return pair;
+        }
+
+        public double getBeta() {
+            return beta;
+        }
+    }
+
+    private double avgMinEffect(List<Node> possibleCauses, List<Node> possibleEffects, List<double[][]> allEffects,
+                                Node causeNode, Node effectNode, List<List<Map<Node, Integer>>> effectNodeHashMap) {
+        List<Double> f = new ArrayList<>();
+
+        if (allEffects == null) {
+            throw new NullPointerException("effects null");
+        }
+
+        for (int k = 0; k < getNumSubsamples(); k++) {
+            int c = possibleCauses.indexOf(causeNode);
+            int e = possibleEffects.indexOf(effectNode);
+            f.add(allEffects.get(k)[c][e]);
+        }
+
+        double[] _f = new double[f.size()];
+        for (int b = 0; b < f.size(); b++) _f[b] = f.get(b);
+        return StatUtils.mean(_f);
     }
 
     public static LinkedList<Record> cStar(LinkedList<LinkedList<Record>> allRecords) {
@@ -452,17 +487,19 @@ public class CStaS {
     /**
      * Returns a text table from the given records
      */
-    public String makeTable(LinkedList<Record> records) {
+    public String makeTable(LinkedList<Record> records, boolean printTable) {
         TextTable table = new TextTable(records.size() + 1, 8);
         NumberFormat nf = new DecimalFormat("0.0000");
 
         table.setToken(0, 0, "Index");
-        table.setToken(0, 1, "Predictor");
-        table.setToken(0, 2, "Target");
+        table.setToken(0, 1, "Cause");
+        table.setToken(0, 2, "Effect");
         table.setToken(0, 3, "Type");
         table.setToken(0, 4, "A");
         table.setToken(0, 6, "PI");
-        table.setToken(0, 7, "Average Effect");
+        table.setToken(0, 7, "Effect");
+//        table.setToken(0, 8, "PCER");
+//        table.setToken(0, 9, "E(V)");
 
         int fp = 0;
 
@@ -479,6 +516,8 @@ public class CStaS {
             table.setToken(i + 1, 4, ancestor ? "A" : "");
             table.setToken(i + 1, 6, nf.format(records.get(i).getPi()));
             table.setToken(i + 1, 7, nf.format(records.get(i).getMinBeta()));
+//            table.setToken(i + 1, 8, nf.format(pcer(records.get(i).getPi(), i + 1, records.get(i).getP())));
+//            table.setToken(i + 1, 9, nf.format(er(records.get(i).getPi(), i + 1, records.get(i).getP())));
         }
 
         int p = records.getLast().getP();
@@ -488,26 +527,29 @@ public class CStaS {
 
         for (Record record : records) {
             final double pi2 = record.getPi() - q / (double) p;
-            if (pi2 < 0) continue;
+//            if (pi2 < 0) continue;
             sum += pi2;
         }
 
+        sum /= q;
+
         final double pcer = !records.isEmpty() ? pcer(records.getLast().getPi(), q, p) : Double.NaN;
-        final double jrev = !records.isEmpty() ? q - sum : Double.NaN;
+//        final double jrev = !records.isEmpty() ? q - sum : Double.NaN;
+        final double jretp = !records.isEmpty() ? sum : Double.NaN;
         final double mbEv = !records.isEmpty() ? er(records.getLast().getPi(), q, p) : Double.NaN;
 
-        final String fpString = " # FP = " + fp + (records.getLast().getQ() != -1 && sampleStyle == SampleStyle.SPLIT ? " PCER = " + nf.format(pcer) + "" : "");
+        final String fpString = " # TP = " + (q - fp) + " # FP = " + fp + (records.getLast().getQ() != -1 && sampleStyle == SampleStyle.SPLIT ? " PCER = " + nf.format(pcer) + "" : "");
 
-        return "\n" + table + "\n"
+        return printTable ? "\n" + table : "" + "\n"
                 + "p = " + p + " q = " + q
                 + (fp != records.size() ? fpString : "")
-                + (records.getLast().getQ() != -1 ? " JR E(V) = " + nf.format(jrev) : "")
+                + (records.getLast().getQ() != -1 ? " SUM(PI - q / p) / q = " + nf.format(jretp) : "")
                 + (records.getLast().getQ() != -1 && sampleStyle == SampleStyle.SPLIT ? " MB E(V) bound = " + nf.format(mbEv) : "")
-                + "\nA = ancestor of the target" + "\nType: C = continuous, D = discrete\n";
+                + "\nA = ancestor of the effect" + "\nType: C = continuous, D = discrete\n";
     }
 
     /**
-     * Makes a graph of the estimated predictors to the target.
+     * Makes a graph of the estimated predictors to the effect.
      */
     public Graph makeGraph(List<Record> records) {
         List<Node> outNodes = new ArrayList<>();

@@ -70,10 +70,6 @@ public class Ida {
         return new NodeEffects(nodes, effects);
     }
 
-    public List<Node> getPossiblePredictors() {
-        return possiblePredictors;
-    }
-
     /**
      * A list of nodes and corresponding minimum effects.
      *
@@ -169,9 +165,9 @@ public class Ida {
      * @return a list of the possible effects of X on Y.
      */
     private LinkedList<Double> getEffects(Node x, Node y) {
-        if (x == y) {
-            throw new IllegalArgumentException("x == y");
-        }
+//        if (x == y) {
+//            throw new IllegalArgumentException("x == y");
+//        }
 
         List<Node> parents = pattern.getParents(x);
         List<Node> children = pattern.getChildren(x);
@@ -234,11 +230,11 @@ public class Ida {
      * @param y The child variable
      * @return Thia map.
      */
-    private Map<Node, Double> calculateMinimumEffectsOnY(Node y) {
+    public Map<Node, Double> calculateMinimumEffectsOnY(Node y) {
         SortedMap<Node, Double> minEffects = new TreeMap<>();
 
         for (Node x : possiblePredictors) {
-            if (x == y) continue;
+//            if (x == y) continue;
             final LinkedList<Double> effects = getEffects(x, y);
             minEffects.put(x, effects.getFirst());
         }
