@@ -48,22 +48,29 @@ public class CStaS implements Algorithm, TakesIndependenceWrapper {
         cStaS.setTrueDag(trueDag);
         cStaS.setVerbose(parameters.getBoolean("verbose"));
 
-        final String targetName = parameters.getString("targetNames");
-        String[] names = targetName.split(",");
         List<Node> possibleEffects = new ArrayList<>();
 
-        for (String name : names) {
-            possibleEffects.add(dataSet.getVariable(name));
+        final String targetName = parameters.getString("targetNames");
+
+        if (targetName.trim().equalsIgnoreCase("all")) {
+            for (String name : dataSet.getVariableNames()) {
+                possibleEffects.add(dataSet.getVariable(name));
+            }
+        } else {
+            String[] names = targetName.split(",");
+
+            for (String name : names) {
+                possibleEffects.add(dataSet.getVariable(name.trim()));
+            }
         }
 
         List<Node> possibleCauses = new ArrayList<>(dataSet.getVariables());
-        possibleCauses.removeAll(possibleEffects);
 
         final LinkedList<LinkedList<edu.cmu.tetrad.search.CStaS.Record>> allRecords
                 = cStaS.getRecords((DataSet) dataSet, possibleCauses, possibleEffects, test.getTest(dataSet, parameters));
         this.records = allRecords.getLast();
 
-        System.out.println(cStaS.makeTable(this.getRecords()));
+        System.out.println(cStaS.makeTable(this.getRecords(), false));
 
         return cStaS.makeGraph(getRecords());
     }

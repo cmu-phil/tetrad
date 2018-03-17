@@ -97,19 +97,18 @@ public class TestCStaS {
     }
 
     public void testCStaS() {
-        int numTargets = 2;
+        int numEffects = 100;
 
-        int numNodes = 500;
+        int numNodes = 200;
         int avgDegree = 6;
-        int sampleSize = 50;
-        int numIterations = 1;
+        int sampleSize = 100;
         int numSubsamples = 100;
         double penaltyDiscount = 1;
         double selectionAlpha = 0.2;
 
-        int qFrom = 4;
-        int qTo = 300;
-        int qIncrement = 4;
+        int qFrom = 100;
+        int qTo = 2000;
+        int qIncrement = 100;
 
         CStaS.PatternAlgorithm algorithm = CStaS.PatternAlgorithm.PC_STABLE;
         CStaS.SampleStyle sampleStyle = CStaS.SampleStyle.SPLIT;
@@ -118,7 +117,7 @@ public class TestCStaS {
 
         parameters.set("penaltyDiscount", penaltyDiscount);
         parameters.set("numSubsamples", numSubsamples);
-        parameters.set("depth", 2);
+        parameters.set("depth", 4);
         parameters.set("selectionAlpha", selectionAlpha);
 
         parameters.set("numMeasures", numNodes);
@@ -142,86 +141,89 @@ public class TestCStaS {
 
         parameters.set("parallelism", 40);
 
-        for (int i = 0; i < numIterations; i++) {
-            RandomGraph randomForward = new RandomForward();
-            LinearFisherModel fisher = new LinearFisherModel(randomForward);
-            fisher.createData(parameters);
-            DataSet dataSet = (DataSet) fisher.getDataModel(0);
+        RandomGraph randomForward = new RandomForward();
+        LinearFisherModel fisher = new LinearFisherModel(randomForward);
+        fisher.createData(parameters);
+        DataSet dataSet = (DataSet) fisher.getDataModel(0);
 
-            final Graph trueDag = fisher.getTrueGraph(0);
+        final Graph trueDag = fisher.getTrueGraph(0);
 
-            List<Node> nodes = trueDag.getNodes();
+        List<Node> nodes = trueDag.getNodes();
 
-            Map<Node, Integer> numAncestors = new HashMap<>();
+        Map<Node, Integer> numAncestors = new HashMap<>();
 
-            for (Node n : nodes) {
-                numAncestors.put(n, trueDag.getAncestors(Collections.singletonList(n)).size());
-            }
+        for (Node n : nodes) {
+            numAncestors.put(n, trueDag.getAncestors(Collections.singletonList(n)).size());
+        }
 
-            nodes.sort((o1, o2) -> Integer.compare(numAncestors.get(o2), numAncestors.get(o1)));
+        nodes.sort((o1, o2) -> Integer.compare(numAncestors.get(o2), numAncestors.get(o1)));
 
-            CStaS cstas = new CStaS();
-            cstas.setTrueDag(trueDag);
-            cstas.setNumSubsamples(numSubsamples);
-            cstas.setPatternAlgorithm(algorithm);
-            cstas.setSampleStyle(sampleStyle);
-            cstas.setqFrom(qFrom);
-            cstas.setqTo(qTo);
-            cstas.setqIncrement(qIncrement);
-            cstas.setVerbose(true);
+        CStaS cstas = new CStaS();
+        cstas.setTrueDag(trueDag);
+        cstas.setNumSubsamples(numSubsamples);
+        cstas.setPatternAlgorithm(algorithm);
+        cstas.setSampleStyle(sampleStyle);
+        cstas.setqFrom(qFrom);
+        cstas.setqTo(qTo);
+        cstas.setqIncrement(qIncrement);
+        cstas.setVerbose(true);
 
-            List<Node> targets = new ArrayList<>();
+        List<Node> potentialEffects = new ArrayList<>();
 
-            for (int t = 0; t < numTargets; t++) {
-                targets.add(nodes.get(t));
-            }
+        for (int t = 0; t < numEffects; t++) {
+            potentialEffects.add(nodes.get(t));
+        }
 
-            List<Node> selectionVars = new ArrayList<>();
-            targets = GraphUtils.replaceNodes(targets, dataSet.getVariables());
+        List<Node> potentialCauses = new ArrayList<>();
+        potentialEffects = GraphUtils.replaceNodes(potentialEffects, dataSet.getVariables());
 
-            for (Node target : targets) {
-                List<Node> _selectionVars = DataUtils.selectVariables(dataSet, target, selectionAlpha, 40);
-                _selectionVars.removeAll(targets);
+        for (Node target : potentialEffects) {
+            List<Node> _selectionVars = DataUtils.selectVariables(dataSet, target, selectionAlpha, 40);
 
-                if (_selectionVars.size() > selectionVars.size()) {
-                    selectionVars = _selectionVars;
-                }
-            }
-
-            System.out.println("Selected # nodes = " + selectionVars.size());
-
-            selectionVars = GraphUtils.replaceNodes(selectionVars, dataSet.getVariables());
-            List<Node> augmented = new ArrayList<>(selectionVars);
-
-            for (Node target : targets) {
-                final Node variable = dataSet.getVariable(target.getName());
-                if (!augmented.contains(variable)) augmented.add(variable);
-            }
-
-            augmented = GraphUtils.replaceNodes(augmented, dataSet.getVariables());
-            DataSet augmentedData = dataSet.subsetColumns(augmented);
-
-            SemBicScore score = new SemBicScore(new CovarianceMatrixOnTheFly(augmentedData));
-            score.setPenaltyDiscount(penaltyDiscount);
-            IndependenceTest test = new IndTestScore(score);
-
-            final LinkedList<LinkedList<CStaS.Record>> allRecords = cstas.getRecords(augmentedData, selectionVars, targets, test);
-
-            for (LinkedList<CStaS.Record> records : allRecords) {
-                System.out.println(cstas.makeTable(records));
+            if (_selectionVars.size() > potentialCauses.size()) {
+                potentialCauses = _selectionVars;
             }
         }
+
+        System.out.println("Selected # nodes = " + potentialCauses.size());
+
+        potentialCauses = GraphUtils.replaceNodes(potentialCauses, dataSet.getVariables());
+        List<Node> augmented = new ArrayList<>(potentialCauses);
+
+        for (Node target : potentialEffects) {
+            final Node variable = dataSet.getVariable(target.getName());
+            if (!augmented.contains(variable)) augmented.add(variable);
+        }
+
+        augmented = GraphUtils.replaceNodes(augmented, dataSet.getVariables());
+        DataSet augmentedData = dataSet.subsetColumns(augmented);
+
+        SemBicScore score = new SemBicScore(new CovarianceMatrixOnTheFly(augmentedData));
+        score.setPenaltyDiscount(penaltyDiscount);
+        IndependenceTest test = new IndTestScore(score);
+
+        final LinkedList<LinkedList<CStaS.Record>> allRecords = cstas.getRecords(augmentedData, potentialCauses, potentialEffects, test);
+
+        for (LinkedList<CStaS.Record> records : allRecords) {
+            System.out.println(cstas.makeTable(records, false));
+        }
+
+        System.out.println("\n\nCStaR table");
+
+        final LinkedList<CStaS.Record> records = CStaS.cStar(allRecords);
+
+        System.out.println(cstas.makeTable(records, true));
     }
 
     private void testHughes() {
         int numSubsamples = 50;
         int numEffects = 200;
-        double penaltyDiscount = 3;
+        double penaltyDiscount = 2;
         double minBump = 0.0;
-        int qFrom = 50;
-        int qTo = 300;
-        int qIncrement = 50;
-        CStaS.PatternAlgorithm algorithm = CStaS.PatternAlgorithm.FGES;
+        int qFrom = 100;
+        int qTo = 5000;
+        int qIncrement = 100;
+        CStaS.PatternAlgorithm algorithm = CStaS.PatternAlgorithm.PC_STABLE;
         CStaS.SampleStyle sampleStyle = CStaS.SampleStyle.SPLIT;
 
         try {
@@ -267,24 +269,15 @@ public class TestCStaS {
             }
 
             // Effects.
-            List<Node> effects = new ArrayList<>();
-            int i = 0;
-            int count = 0;
+            List<Node> possibleEffects = new ArrayList<>();
 
-            while (count < numEffects) {
-                final Node node = standDataExp.getVariables().get(i);
-
-                if (!possibleCauses.contains(node)) {
-                    effects.add(node);
-                    count++;
-                }
-
-                i++;
+            for (int i = 0; i < numEffects; i++) {
+                possibleEffects.add(standDataExp.getVariables().get(i));
             }
 
             List<Node> augmented = new ArrayList<>(possibleCauses);
 
-            for (Node effect : effects) {
+            for (Node effect : possibleEffects) {
                 if (!augmented.contains(effect)) augmented.add(effect);
             }
 
@@ -304,10 +297,10 @@ public class TestCStaS {
             cstas.setSampleStyle(sampleStyle);
             cstas.setVerbose(true);
 
-            LinkedList<LinkedList<CStaS.Record>> allRecords = cstas.getRecords(augmentedData, possibleCauses, effects, test);
+            LinkedList<LinkedList<CStaS.Record>> allRecords = cstas.getRecords(augmentedData, possibleCauses, possibleEffects, test);
 
             for (LinkedList<CStaS.Record> records : allRecords) {
-                System.out.println(cstas.makeTable(records));
+                System.out.println(cstas.makeTable(records, false));
 
                 List<Double> sortedRatios = new ArrayList<>();
 
@@ -379,7 +372,7 @@ public class TestCStaS {
 
             final LinkedList<CStaS.Record> records = CStaS.cStar(allRecords);
 
-            System.out.println(cstas.makeTable(records));
+            System.out.println(cstas.makeTable(records, false));
 
         } catch (IOException e) {
             e.printStackTrace();
