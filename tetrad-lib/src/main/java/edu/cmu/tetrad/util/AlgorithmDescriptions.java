@@ -9,7 +9,6 @@ package edu.cmu.tetrad.util;
 import edu.cmu.tetrad.annotation.Algorithm;
 import edu.cmu.tetrad.annotation.AlgorithmAnnotations;
 import edu.cmu.tetrad.annotation.AnnotatedClass;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.HashMap;
@@ -51,11 +50,9 @@ public class AlgorithmDescriptions {
         }
 
         String manualUrl = applicationProperties.getProperty("manual.html.url");
-        String manualFile = applicationProperties.getProperty("manual.html.file");
 
         Connection conn = Jsoup.connect(manualUrl);
-        File input = new File(manualFile);
-        
+  
         Document doc = null;
         
         // Always try to get the latest manual via URL, if failed, try read the local HTML file        
@@ -66,10 +63,13 @@ public class AlgorithmDescriptions {
                 LOGGER.error("Failed to fetch tetrad HTML manual via Github Pages URL.", ex);
             }
         } else {
-            try {
-                doc = Jsoup.parse(input, "UTF-8", "");
+            // Read the copied maunal/index.html from within the jar
+            try (InputStream inputStream = this.getClass().getClassLoader().getResourceAsStream("manual/index.html")) {
+                if (inputStream != null) {
+                    doc = Jsoup.parse(inputStream, "UTF-8", "");
+                }
             } catch (IOException ex) {
-                LOGGER.error("Failed to read tetrad HTML manual file.", ex);
+                LOGGER.error("Failed to read tetrad HTML manual 'maunal/index.html' file from within the jar.", ex);
             }
         }
 
@@ -82,7 +82,6 @@ public class AlgorithmDescriptions {
                 Element algoDescription = doc.getElementById(algoShortName);
                 if (algoDescription != null) {
                     Elements paragraphs = algoDescription.children();
-
                     desc = paragraphs.stream().map((p) -> p.text() + "\n\n").reduce(desc, String::concat);
                 }
             }
