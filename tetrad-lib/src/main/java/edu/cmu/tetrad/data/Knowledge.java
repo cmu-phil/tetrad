@@ -364,11 +364,28 @@ public final class Knowledge implements TetradSerializable, IKnowledge {
 //        return Collections.unmodifiableSet(getForbiddenEdges()).iterator();
     }
 
+    @Override
+    public List<KnowledgeEdge> getListOfForbiddenEdges() {
+        return getForbiddenEdges().stream()
+                .collect(Collectors.toList());
+    }
+
+//    public List<KnowledgeEdge> getForbiddenEdges() {
+//        return get
+//    }
     /**
      * Iterator over the knowledge's explicitly forbidden edges.
      */
     public final Iterator<KnowledgeEdge> explicitlyForbiddenEdgesIterator() {
         return Collections.unmodifiableSet(this.explicitlyForbiddenEdges).iterator();
+    }
+
+    @Override
+    public List<KnowledgeEdge> getListOfExplicitlyForbiddenEdges() {
+        List<KnowledgeEdge> list = this.explicitlyForbiddenEdges.stream()
+                .collect(Collectors.toList());
+
+        return Collections.unmodifiableList(list);
     }
 
     /**
@@ -610,11 +627,27 @@ public final class Knowledge implements TetradSerializable, IKnowledge {
         return Collections.unmodifiableSet(this.allRequiredEdges).iterator();
     }
 
+    @Override
+    public List<KnowledgeEdge> getListOfRequiredEdges() {
+        List<KnowledgeEdge> list = this.allRequiredEdges.stream()
+                .collect(Collectors.toList());
+
+        return Collections.unmodifiableList(list);
+    }
+
     /**
      * Iterator over the KnowledgeEdge's explicitly required edges.
      */
     public final Iterator<KnowledgeEdge> explicitlyRequiredEdgesIterator() {
         return Collections.unmodifiableSet(this.requiredEdges).iterator();
+    }
+
+    @Override
+    public List<KnowledgeEdge> getListOfExplicitlyRequiredEdges() {
+        List<KnowledgeEdge> list = this.requiredEdges.stream()
+                .collect(Collectors.toList());
+
+        return Collections.unmodifiableList(list);
     }
 
     /**
