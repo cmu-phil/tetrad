@@ -22,6 +22,7 @@ import edu.cmu.tetrad.algcomparison.utils.TakesIndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.utils.UsesScoreWrapper;
 import edu.cmu.tetrad.annotation.Algorithm;
 import edu.cmu.tetrad.annotation.AnnotatedClass;
+import edu.cmu.tetrad.util.AlgorithmDescriptions;
 import java.io.Serializable;
 
 /**
@@ -37,6 +38,7 @@ public class AlgorithmModel implements Serializable, Comparable<AlgorithmModel> 
     private final AnnotatedClass<Algorithm> algorithm;
     private final boolean requiredScore;
     private final boolean requiredTest;
+    private final String description;
 
     public AlgorithmModel(AnnotatedClass<Algorithm> algorithm) {
         if (algorithm == null) {
@@ -46,6 +48,7 @@ public class AlgorithmModel implements Serializable, Comparable<AlgorithmModel> 
         this.algorithm = algorithm;
         this.requiredScore = UsesScoreWrapper.class.isAssignableFrom(algorithm.getClazz());
         this.requiredTest = TakesIndependenceWrapper.class.isAssignableFrom(algorithm.getClazz());
+        this.description = AlgorithmDescriptions.getInstance().get(algorithm.getAnnotation().command());
     }
 
     @Override
@@ -68,6 +71,10 @@ public class AlgorithmModel implements Serializable, Comparable<AlgorithmModel> 
 
     public boolean isRequiredTest() {
         return requiredTest;
+    }
+
+    public String getDescription() {
+        return description;
     }
 
 }

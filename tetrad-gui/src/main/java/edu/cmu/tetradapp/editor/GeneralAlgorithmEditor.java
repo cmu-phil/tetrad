@@ -40,7 +40,6 @@ import edu.cmu.tetrad.data.ICovarianceMatrix;
 import edu.cmu.tetrad.data.Knowledge2;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.util.AlgorithmDescriptions;
 import edu.cmu.tetrad.util.JOptionUtils;
 import edu.cmu.tetrad.util.JsonUtils;
 import edu.cmu.tetrad.util.Parameters;
@@ -432,16 +431,9 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         if (model == null) {
             algoDescTextArea.setText("");
         } else {
-            algoDescTextArea.setText(model.getAlgorithm().getAnnotation().description());
+            algoDescTextArea.setText(model.getDescription());
             algoDescTextArea.setCaretPosition(0);
         }
-        
-        // Testing algo descriptions - Zhou
-        String algoDesc = AlgorithmDescriptions.getInstance().get(model.getAlgorithm().getAnnotation().command());
-        System.out.println("=========algoDesc==========");
-        System.out.println(algoDesc);
-        System.out.println("=========algoDesc==========");
-        algoDescTextArea.setText(algoDesc);
     }
 
     private void refreshTestAndScoreList() {
