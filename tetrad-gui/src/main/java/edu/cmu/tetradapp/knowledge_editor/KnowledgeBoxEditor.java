@@ -103,7 +103,7 @@ public class KnowledgeBoxEditor extends JPanel {
     private KnowledgeWorkbench edgeWorkbench;
     private JPanel tiersPanel;
     private boolean showForbiddenExplicitly = true;
-    private boolean showForbiddenByTiers = true;
+    private boolean showForbiddenByTiers = false;
     private boolean showRequired = true;
     private boolean showRequiredByGroups = true;
     private boolean showForbiddenByGroups = true;
@@ -413,7 +413,7 @@ public class KnowledgeBoxEditor extends JPanel {
         resetEdgeDisplay();
 
         JCheckBox showForbiddenByTiersCheckbox = new JCheckBox(
-                "Show Forbidden By Tiers", showForbiddenExplicitly);
+                "Show Forbidden By Tiers", showForbiddenByTiers);
         JCheckBox showForbiddenExplicitlyCheckbox = new JCheckBox(
                 "Show Forbidden Explicitly", showForbiddenExplicitly);
         JCheckBox showRequiredCheckbox = new JCheckBox(
@@ -489,6 +489,124 @@ public class KnowledgeBoxEditor extends JPanel {
     }
 
     private void resetEdgeDisplay() {
+        IKnowledge knowledge = getKnowledge();
+        KnowledgeGraph graph = new KnowledgeGraph(getKnowledge());
+        getVarNames().forEach(e -> {
+            knowledge.addVariable(e);
+            graph.addNode(new KnowledgeModelNode(e));
+        });
+
+        if (this.showRequiredByGroups) {
+            knowledge.getListOfRequiredEdges().forEach(e -> {
+                String from = e.getFrom();
+                String to = e.getTo();
+                if (knowledge.isRequiredByGroups(from, to)) {
+                    KnowledgeModelNode fromNode = (KnowledgeModelNode) graph
+                            .getNode(from);
+                    KnowledgeModelNode toNode = (KnowledgeModelNode) graph
+                            .getNode(to);
+
+                    graph.addEdge(new KnowledgeModelEdge(fromNode, toNode,
+                            KnowledgeModelEdge.REQUIRED_BY_GROUPS));
+                }
+            });
+        }
+
+        if (this.showForbiddenByGroups) {
+            knowledge.getListOfForbiddenEdges().forEach(e -> {
+                String from = e.getFrom();
+                String to = e.getTo();
+                if (knowledge.isForbiddenByGroups(from, to)) {
+                    KnowledgeModelNode fromNode = (KnowledgeModelNode) graph
+                            .getNode(from);
+                    KnowledgeModelNode toNode = (KnowledgeModelNode) graph
+                            .getNode(to);
+
+                    graph.addEdge(new KnowledgeModelEdge(fromNode, toNode,
+                            KnowledgeModelEdge.FORBIDDEN_BY_GROUPS));
+                }
+            });
+        }
+
+        if (showRequired) {
+            knowledge.getListOfExplicitlyRequiredEdges().forEach(e -> {
+                String from = e.getFrom();
+                String to = e.getTo();
+                KnowledgeModelNode fromNode = (KnowledgeModelNode) graph
+                        .getNode(from);
+                KnowledgeModelNode toNode = (KnowledgeModelNode) graph
+                        .getNode(to);
+
+                if (!(fromNode == null || toNode == null)) {
+                    graph.addEdge(new KnowledgeModelEdge(fromNode, toNode,
+                            KnowledgeModelEdge.REQUIRED));
+                }
+            });
+        }
+
+        if (showForbiddenByTiers) {
+            knowledge.getListOfForbiddenEdges().forEach(e -> {
+                String from = e.getFrom();
+                String to = e.getTo();
+                if (knowledge.isForbiddenByTiers(from, to)) {
+                    KnowledgeModelNode fromNode = (KnowledgeModelNode) graph
+                            .getNode(from);
+                    KnowledgeModelNode toNode = (KnowledgeModelNode) graph
+                            .getNode(to);
+
+                    if (fromNode == null) {
+                        graph.addNode(new KnowledgeModelNode(from));
+                        fromNode = (KnowledgeModelNode) graph.getNode(from);
+                    }
+
+                    if (toNode == null) {
+                        graph.addNode(new KnowledgeModelNode(to));
+                        toNode = (KnowledgeModelNode) graph.getNode(to);
+                    }
+
+                    KnowledgeModelEdge knowledgeModelEdge = new KnowledgeModelEdge(
+                            fromNode, toNode, KnowledgeModelEdge.FORBIDDEN_BY_TIERS);
+
+                    graph.addEdge(knowledgeModelEdge);
+                }
+            });
+        }
+
+        if (showForbiddenExplicitly) {
+            knowledge.getListOfExplicitlyForbiddenEdges().forEach(e -> {
+                String from = e.getFrom();
+                String to = e.getTo();
+                KnowledgeModelNode fromNode = (KnowledgeModelNode) graph
+                        .getNode(from);
+                KnowledgeModelNode toNode = (KnowledgeModelNode) graph
+                        .getNode(to);
+
+                KnowledgeModelEdge edge = new KnowledgeModelEdge(fromNode,
+                        toNode, KnowledgeModelEdge.FORBIDDEN_EXPLICITLY);
+                if (!graph.containsEdge(edge)) {
+                    graph.addEdge(edge);
+                }
+            });
+        }
+
+        boolean arrangedAll = GraphUtils.arrangeBySourceGraph(graph,
+                edgeWorkbench.getGraph());
+
+        if (!arrangedAll) {
+            GraphUtils.circleLayout(graph, 200, 200, 150);
+        }
+
+        edgeWorkbench.setGraph(graph);
+        if (knowledgeBoxModel != null) {
+            notifyKnowledge();
+        }
+
+    }
+
+    /**
+     * This is an old method that needs to be removed when cleaning up code.
+     */
+    private void resetEdgeDisplayOld() {
         List<String> varNames = getVarNames();
         IKnowledge knowledge = getKnowledge();
 
