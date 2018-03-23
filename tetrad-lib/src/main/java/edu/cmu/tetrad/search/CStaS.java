@@ -341,7 +341,7 @@ public class CStaS {
 
         ConcurrencyUtils.runCallables(tasks, getParallelism());
 
-        final double avgAvgDegree = totalAvgDegree[0] / getNumSubsamples();
+        final double avgAvgDegree = 2 * totalAvgDegree[0] / getNumSubsamples();
 
         List<List<Double>> doubles = new ArrayList<>();
 
@@ -616,8 +616,8 @@ public class CStaS {
 
         int tp = 0;
         int fp = 0;
-        int tpCounts = 0;
-        int fpCounts = 0;
+        double tpPi = 0;
+        double fpPi = 0;
         int totalCounts = 0;
         double sum = 0.0;
         int p = records.getLast().getP();
@@ -629,10 +629,10 @@ public class CStaS {
 
             if (records.get(i).isAncestor()) {
                 tp++;
-                tpCounts += getNumSubsamples() * records.get(i).getPi();
+                tpPi += records.get(i).getPi();
             } else {
                 fp++;
-                fpCounts += getNumSubsamples() * records.get(i).getPi();
+                fpPi += records.get(i).getPi();
             }
 
             totalCounts += getNumSubsamples() * records.get(i).getPi();
@@ -640,6 +640,8 @@ public class CStaS {
             sum += records.get(i).getPi();
 
             double factor = 1 / ((double) getNumSubsamples());
+
+            final double avgAvgDegree = records.get(i).getAvgAvgDegree();
 
             column = 0;
 
@@ -655,10 +657,10 @@ public class CStaS {
             table.setToken(i + 1, column++, nf.format(sum));
             table.setToken(i + 1, column++, nf.format(er(records.get(i).getPi(), q, p)));
 
-            table.setToken(i + 1, column++, nf.format(tpCounts * factor));
-            table.setToken(i + 1, column++, nf.format(fpCounts * factor));
+            table.setToken(i + 1, column++, nf.format(tpPi / tp));
+            table.setToken(i + 1, column++, nf.format(fpPi / fp));
             table.setToken(i + 1, column++, nf.format(totalCounts * factor));
-            table.setToken(i + 1, column++, nf.format(records.get(i).getAvgAvgDegree()));
+            table.setToken(i + 1, column++, nf.format(avgAvgDegree));
         }
 
         final double pi_thr = records.getLast().getPi();
