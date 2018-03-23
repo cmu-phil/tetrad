@@ -36,6 +36,7 @@ import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemPm;
 import edu.cmu.tetrad.util.DataConvertUtils;
 import edu.cmu.tetrad.util.Parameters;
+import edu.cmu.tetrad.util.RandomUtil;
 import edu.pitt.dbmi.data.Dataset;
 import edu.pitt.dbmi.data.Delimiter;
 import edu.pitt.dbmi.data.reader.tabular.ContinuousTabularDataFileReader;
@@ -68,8 +69,6 @@ public class TestCStaS {
         Graph graph = GraphUtils.randomGraph(10, 0, 10,
                 100, 100, 100, false);
 
-        System.out.println(graph);
-
         SemPm pm = new SemPm(graph);
         SemIm im = new SemIm(pm);
         DataSet dataSet = im.simulateData(1000, false);
@@ -97,20 +96,140 @@ public class TestCStaS {
     }
 
     public void testCStaS() {
-        int numEffects = 100;
-
-        int numNodes = 200;
+        int numNodes = 500;
+        int numEffects = 500;
         int avgDegree = 6;
         int sampleSize = 100;
-        int numSubsamples = 100;
+        int numSubsamples = 50;
         double penaltyDiscount = 1;
         double selectionAlpha = 0.2;
 
         int qFrom = 100;
-        int qTo = 2000;
+        int qTo = 1000;
         int qIncrement = 100;
 
-        CStaS.PatternAlgorithm algorithm = CStaS.PatternAlgorithm.PC_STABLE;
+        CStaS.PatternAlgorithm algorithm = CStaS.PatternAlgorithm.FGES;
+        CStaS.SampleStyle sampleStyle = CStaS.SampleStyle.SPLIT;
+
+        Parameters parameters = new Parameters();
+
+        parameters.set("penaltyDiscount", penaltyDiscount);
+        parameters.set("numSubsamples", numSubsamples);
+        parameters.set("depth", 4);
+        parameters.set("selectionAlpha", selectionAlpha);
+
+        parameters.set("numMeasures", numNodes);
+        parameters.set("numLatents", 0);
+        parameters.set("avgDegree", avgDegree);
+        parameters.set("maxDegree", 100);
+        parameters.set("maxIndegree", 100);
+        parameters.set("maxOutdegree", 100);
+        parameters.set("connected", false);
+
+        parameters.set("verbose", false);
+
+        parameters.set("coefLow", 0.5);
+        parameters.set("coefHigh", 1.0);
+        parameters.set("includeNegativeCoefs", true);
+        parameters.set("sampleSize", sampleSize);
+        parameters.set("intervalBetweenShocks", 5);
+        parameters.set("intervalBetweenRecordings", 5);
+
+        parameters.set("sampleSize", sampleSize);
+
+        parameters.set("parallelism", 40);
+
+        RandomUtil.getInstance().setSeed(10302005L);
+
+        RandomGraph randomForward = new RandomForward();
+        LinearFisherModel fisher = new LinearFisherModel(randomForward);
+        fisher.createData(parameters);
+        DataSet dataSet = (DataSet) fisher.getDataModel(0);
+
+        final Graph trueDag = fisher.getTrueGraph(0);
+
+        List<Node> nodes = trueDag.getNodes();
+
+        Map<Node, Integer> numAncestors = new HashMap<>();
+
+        for (Node n : nodes) {
+            numAncestors.put(n, trueDag.getAncestors(Collections.singletonList(n)).size());
+        }
+
+        nodes.sort((o1, o2) -> Integer.compare(numAncestors.get(o2), numAncestors.get(o1)));
+
+        CStaS cstas = new CStaS();
+        cstas.setTrueDag(trueDag);
+        cstas.setNumSubsamples(numSubsamples);
+        cstas.setPatternAlgorithm(algorithm);
+        cstas.setSampleStyle(sampleStyle);
+        cstas.setqFrom(qFrom);
+        cstas.setqTo(qTo);
+        cstas.setqIncrement(qIncrement);
+        cstas.setVerbose(true);
+
+        List<Node> potentialEffects = new ArrayList<>();
+
+        for (int t = 0; t < numEffects; t++) {
+            potentialEffects.add(nodes.get(t));
+        }
+
+        List<Node> potentialCauses = new ArrayList<>();
+        potentialEffects = GraphUtils.replaceNodes(potentialEffects, dataSet.getVariables());
+
+        for (Node target : potentialEffects) {
+            List<Node> _selectionVars = DataUtils.selectVariables(dataSet, target, selectionAlpha, 40);
+
+            if (_selectionVars.size() > potentialCauses.size()) {
+                potentialCauses = _selectionVars;
+            }
+        }
+
+        System.out.println("Selected # nodes = " + potentialCauses.size());
+
+        potentialCauses = GraphUtils.replaceNodes(potentialCauses, dataSet.getVariables());
+        List<Node> augmented = new ArrayList<>(potentialCauses);
+
+        for (Node target : potentialEffects) {
+            final Node variable = dataSet.getVariable(target.getName());
+            if (!augmented.contains(variable)) augmented.add(variable);
+        }
+
+        augmented = GraphUtils.replaceNodes(augmented, dataSet.getVariables());
+        DataSet augmentedData = dataSet.subsetColumns(augmented);
+
+        SemBicScore score = new SemBicScore(new CovarianceMatrixOnTheFly(augmentedData));
+        score.setPenaltyDiscount(penaltyDiscount);
+        IndependenceTest test = new IndTestScore(score);
+
+        final LinkedList<LinkedList<CStaS.Record>> allRecords = cstas.getRecords(
+                augmentedData, potentialCauses, potentialEffects, test, "/Users/user/Downloads/cstas.fges.out");
+
+        for (LinkedList<CStaS.Record> records : allRecords) {
+            System.out.println(cstas.makeTable(records, false));
+        }
+
+//        System.out.println("\n\nCStaR table");
+//
+//        final LinkedList<CStaS.Record> records = CStaS.cStar(allRecords);
+//
+//        System.out.println(cstas.makeTable(records, false));
+    }
+
+    public void testCStaS2() {
+        int numNodes = 500;
+        int numEffects = 5;
+        double avgDegree = 3;
+        int sampleSize = 400;
+        int numSubsamples = 50;
+        double penaltyDiscount = 1;
+        double selectionAlpha = .1;
+
+        int qFrom = 200;
+        int qTo = qFrom;
+        int qIncrement = 1;
+
+        CStaS.PatternAlgorithm algorithm = CStaS.PatternAlgorithm.FGES;
         CStaS.SampleStyle sampleStyle = CStaS.SampleStyle.SPLIT;
 
         Parameters parameters = new Parameters();
@@ -202,28 +321,29 @@ public class TestCStaS {
         score.setPenaltyDiscount(penaltyDiscount);
         IndependenceTest test = new IndTestScore(score);
 
-        final LinkedList<LinkedList<CStaS.Record>> allRecords = cstas.getRecords(augmentedData, potentialCauses, potentialEffects, test);
+        final LinkedList<LinkedList<CStaS.Record>> allRecords = cstas.getRecords(
+                augmentedData, potentialCauses, potentialEffects, test);
 
         for (LinkedList<CStaS.Record> records : allRecords) {
-            System.out.println(cstas.makeTable(records, false));
+            System.out.println(cstas.makeTable(records, true));
         }
 
-        System.out.println("\n\nCStaR table");
-
-        final LinkedList<CStaS.Record> records = CStaS.cStar(allRecords);
-
-        System.out.println(cstas.makeTable(records, true));
+//        System.out.println("\n\nCStaR table");
+//
+//        final LinkedList<CStaS.Record> records = CStaS.cStar(allRecords);
+//
+//        System.out.println(cstas.makeTable(records, false));
     }
 
     private void testHughes() {
         int numSubsamples = 50;
-        int numEffects = 200;
+        int numEffects = 500;
         double penaltyDiscount = 2;
         double minBump = 0.0;
         int qFrom = 100;
         int qTo = 5000;
         int qIncrement = 100;
-        CStaS.PatternAlgorithm algorithm = CStaS.PatternAlgorithm.PC_STABLE;
+        CStaS.PatternAlgorithm algorithm = CStaS.PatternAlgorithm.FGES;
         CStaS.SampleStyle sampleStyle = CStaS.SampleStyle.SPLIT;
 
         try {
@@ -297,7 +417,8 @@ public class TestCStaS {
             cstas.setSampleStyle(sampleStyle);
             cstas.setVerbose(true);
 
-            LinkedList<LinkedList<CStaS.Record>> allRecords = cstas.getRecords(augmentedData, possibleCauses, possibleEffects, test);
+            LinkedList<LinkedList<CStaS.Record>> allRecords
+                    = cstas.getRecords(augmentedData, possibleCauses, possibleEffects, test,  "/Users/user/Downloads/hughes.out");
 
             for (LinkedList<CStaS.Record> records : allRecords) {
                 System.out.println(cstas.makeTable(records, false));
@@ -397,7 +518,7 @@ public class TestCStaS {
     }
 
     public static void main(String... args) {
-        new TestCStaS().testCStaS();
+        new TestCStaS().testCStaS2();
     }
 }
 

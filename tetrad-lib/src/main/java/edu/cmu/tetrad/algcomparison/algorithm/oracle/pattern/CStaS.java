@@ -46,6 +46,8 @@ public class CStaS implements Algorithm, TakesIndependenceWrapper {
         cStaS.setqTo(parameters.getInt("q"));
         cStaS.setqIncrement(1);
         cStaS.setTrueDag(trueDag);
+        cStaS.setPatternAlgorithm(edu.cmu.tetrad.search.CStaS.PatternAlgorithm.PC_STABLE);
+        cStaS.setSampleStyle(edu.cmu.tetrad.search.CStaS.SampleStyle.SPLIT);
         cStaS.setVerbose(parameters.getBoolean("verbose"));
 
         List<Node> possibleEffects = new ArrayList<>();

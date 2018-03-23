@@ -21,6 +21,7 @@
 package edu.cmu.tetrad.data;
 
 import edu.cmu.tetrad.graph.Node;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -67,10 +68,10 @@ public class MixedDataBox implements DataBox {
      * This constructor allows other data readers to populate the fields
      * directly.
      *
-     * @param variables list of discrete and continuous variables
-     * @param numRows number of cases in the dataset
+     * @param variables      list of discrete and continuous variables
+     * @param numRows        number of cases in the dataset
      * @param continuousData continuous data
-     * @param discreteData discrete data
+     * @param discreteData   discrete data
      */
     public MixedDataBox(List<Node> variables, int numRows, double[][] continuousData, int[][] discreteData) {
         this.variables = variables;
@@ -129,7 +130,6 @@ public class MixedDataBox implements DataBox {
     }
 
     /**
-     *
      * @return the number of rows in this continuousData box.
      */
     @Override
@@ -138,7 +138,6 @@ public class MixedDataBox implements DataBox {
     }
 
     /**
-     *
      * @return the number of columns in this continuousData box.
      */
     @Override
@@ -156,17 +155,26 @@ public class MixedDataBox implements DataBox {
      */
     @Override
     public void set(int row, int col, Number value) {
-        if (continuousData[col] != null) {
-            continuousData[col][row] = value.doubleValue();
-        } else if (discreteData[col] != null) {
-            discreteData[col][row] = value.intValue();
+        if (value == null) {
+            if (continuousData[col] != null) {
+                continuousData[col][row] = Double.NaN;
+            } else if (discreteData[col] != null) {
+                discreteData[col][row] = -99;
+            } else {
+                throw new IllegalArgumentException("Indices out of bounds or null value.");
+            }
         } else {
-            throw new IllegalArgumentException("Indices out of bounds or null value.");
+            if (continuousData[col] != null) {
+                continuousData[col][row] = value.doubleValue();
+            } else if (discreteData[col] != null) {
+                discreteData[col][row] = value.intValue();
+            } else {
+                throw new IllegalArgumentException("Indices out of bounds or null value.");
+            }
         }
     }
 
     /**
-     *
      * @param row
      * @param col
      * @return the Number value at the given row and column. If the value is
@@ -186,7 +194,6 @@ public class MixedDataBox implements DataBox {
     }
 
     /**
-     *
      * @return a copy of this continuousData box.
      */
     @Override
@@ -203,7 +210,6 @@ public class MixedDataBox implements DataBox {
     }
 
     /**
-     *
      * @return a DataBox of type DoubleDataBox, but with the given dimensions.
      */
     @Override
