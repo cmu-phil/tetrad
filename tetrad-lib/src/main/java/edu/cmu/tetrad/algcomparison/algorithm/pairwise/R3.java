@@ -22,8 +22,7 @@ import java.util.List;
 @edu.cmu.tetrad.annotation.Algorithm(
         name = "R3",
         command = "r3",
-        algoType = AlgType.orient_pairwise,
-        description = ""
+        algoType = AlgType.orient_pairwise
 )
 public class R3 implements Algorithm, TakesInitialGraph {
 

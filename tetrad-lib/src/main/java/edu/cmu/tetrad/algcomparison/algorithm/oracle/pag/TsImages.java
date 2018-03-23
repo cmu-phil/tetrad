@@ -36,8 +36,7 @@ import java.util.List;
 @edu.cmu.tetrad.annotation.Algorithm(
         name = "TsIMaGES",
         command = "ts-imgs",
-        algoType = AlgType.forbid_latent_common_causes,
-        description = ""
+        algoType = AlgType.forbid_latent_common_causes
 )
 public class TsImages implements Algorithm, HasKnowledge, MultiDataSetAlgorithm, UsesScoreWrapper {
 

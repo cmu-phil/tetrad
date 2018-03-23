@@ -26,8 +26,7 @@ import java.util.List;
 @edu.cmu.tetrad.annotation.Algorithm(
         name = "FGES-MB",
         command = "fges-mb",
-        algoType = AlgType.search_for_Markov_blankets,
-        description = ""
+        algoType = AlgType.search_for_Markov_blankets
 )
 public class FgesMb implements Algorithm, TakesInitialGraph, HasKnowledge, UsesScoreWrapper {
 

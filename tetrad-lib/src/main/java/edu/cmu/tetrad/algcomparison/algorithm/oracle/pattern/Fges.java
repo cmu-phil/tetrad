@@ -28,8 +28,7 @@ import java.util.List;
 @edu.cmu.tetrad.annotation.Algorithm(
         name = "FGES",
         command = "fges",
-        algoType = AlgType.forbid_latent_common_causes,
-        description = ""
+        algoType = AlgType.forbid_latent_common_causes
 )
 public class Fges implements Algorithm, TakesInitialGraph, HasKnowledge, UsesScoreWrapper {
 
