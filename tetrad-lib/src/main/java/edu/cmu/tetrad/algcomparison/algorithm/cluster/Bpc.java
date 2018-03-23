@@ -95,7 +95,7 @@ public class Bpc implements Algorithm, TakesInitialGraph, HasKnowledge, ClusterA
 
     @Override
     public String getDescription() {
-        return "FOFC (Find One Factor Clusters)";
+        return "BPC (Build Pure Clusters)";
     }
 
     @Override
