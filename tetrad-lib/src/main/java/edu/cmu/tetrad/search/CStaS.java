@@ -296,7 +296,7 @@ public class CStaS {
                                     + patternAlgorithm);
                         }
 
-                        double avgDegree = pattern.getNumEdges() / (double) pattern.getNumNodes();
+                        double avgDegree = 2 * pattern.getNumEdges() / (double) pattern.getNumNodes();
                         totalAvgDegree[0] += avgDegree;
 
                         if (dir != null) {
@@ -341,7 +341,7 @@ public class CStaS {
 
         ConcurrencyUtils.runCallables(tasks, getParallelism());
 
-        final double avgAvgDegree = 2 * totalAvgDegree[0] / getNumSubsamples();
+        final double avgAvgDegree = totalAvgDegree[0] / getNumSubsamples();
 
         List<List<Double>> doubles = new ArrayList<>();
 
@@ -401,7 +401,7 @@ public class CStaS {
                             }
 
                             if (count > 0) {
-                                final double pi = count / ((double) allEffects.size());
+                                final double pi = count / ((double) getNumSubsamples());
                                 final Node cause = possibleCauses.get(c);
                                 final Node effect = possibleEffects.get(e);
                                 tuples.add(new Tuple(cause, effect, pi,
@@ -593,7 +593,7 @@ public class CStaS {
 //
 //        records = _records;
 
-        TextTable table = new TextTable(records.size() + 1, 16);
+        TextTable table = new TextTable(records.size() + 1, 17);
         NumberFormat nf = new DecimalFormat("0.0000");
         int column = 0;
 
@@ -604,22 +604,25 @@ public class CStaS {
         table.setToken(0, column++, "A");
         table.setToken(0, column++, "PI");
         table.setToken(0, column++, "Effect");
-        table.setToken(0, column++, "TP");
         table.setToken(0, column++, "FP");
+        table.setToken(0, column++, "TP");
         table.setToken(0, column++, "SUM(Pi)");
+        table.setToken(0, column++, "S");
         table.setToken(0, column++, "E(V)");
-        table.setToken(0, column++, "TPCounts");
-        table.setToken(0, column++, "FPCounts");
+
+        table.setToken(0, column++, "pi1");
+        table.setToken(0, column++, "pi2");
+
         table.setToken(0, column++, "TotalCounts");
         table.setToken(0, column++, "AvgDegree");
 
 
         int tp = 0;
         int fp = 0;
-        double tpPi = 0;
-        double fpPi = 0;
+        double tpSumPi = 0;
+        double fpSumPi = 0;
         int totalCounts = 0;
-        double sum = 0.0;
+        double sumPi = 0.0;
         int p = records.getLast().getP();
         int q = records.getLast().getQ();
 
@@ -629,15 +632,23 @@ public class CStaS {
 
             if (records.get(i).isAncestor()) {
                 tp++;
-                tpPi += records.get(i).getPi();
+                tpSumPi += records.get(i).getPi();
             } else {
                 fp++;
-                fpPi += records.get(i).getPi();
+                fpSumPi += records.get(i).getPi();
             }
 
             totalCounts += getNumSubsamples() * records.get(i).getPi();
 
-            sum += records.get(i).getPi();
+            sumPi += records.get(i).getPi();
+
+            // average pi for the false positives
+            double pi1 = fpSumPi / (fp);
+            double pi2 = tpSumPi / (tp) ;
+            int R = (i + 1);
+
+            double S = R * (pi2 / (1 + pi2 - pi1));
+
 
             double factor = 1 / ((double) getNumSubsamples());
 
@@ -652,13 +663,15 @@ public class CStaS {
             table.setToken(i + 1, column++, records.get(i).isAncestor() ? "A" : "");
             table.setToken(i + 1, column++, nf.format(records.get(i).getPi()));
             table.setToken(i + 1, column++, nf.format(records.get(i).getMinBeta()));
-            table.setToken(i + 1, column++, nf.format(tp));
             table.setToken(i + 1, column++, nf.format(fp));
-            table.setToken(i + 1, column++, nf.format(sum));
+            table.setToken(i + 1, column++, nf.format(tp));
+            table.setToken(i + 1, column++, nf.format(sumPi));
+            table.setToken(i + 1, column++, nf.format(S));
             table.setToken(i + 1, column++, nf.format(er(records.get(i).getPi(), q, p)));
 
-            table.setToken(i + 1, column++, nf.format(tpPi / tp));
-            table.setToken(i + 1, column++, nf.format(fpPi / fp));
+            table.setToken(i + 1, column++, nf.format(pi1));
+            table.setToken(i + 1, column++, nf.format(pi2));
+
             table.setToken(i + 1, column++, nf.format(totalCounts * factor));
             table.setToken(i + 1, column++, nf.format(avgAvgDegree));
         }
@@ -674,7 +687,7 @@ public class CStaS {
         return (printTable ? "\n" + table : "" + "")
                 + "p = " + p + " q = " + q
                 + (fp != records.size() ? fpString : "")
-                + (q != -1 ? " SUM(PI)  = " + nf.format(sum) : "")
+                + (q != -1 ? " SUM(PI)  = " + nf.format(sumPi) : "")
                 + (q != -1 ? " PCER = " + nf.format(pcer) + "" : "")
                 + (q != -1 ? " MB E(V) = " + nf.format(mbEv) : "")
                 + (printTable ? "\nA = ancestor of the effect" + "\nType: C = continuous, D = discrete\n" : "");

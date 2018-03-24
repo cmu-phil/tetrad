@@ -218,14 +218,14 @@ public class TestCStaS {
 
     public void testCStaS2() {
         int numNodes = 500;
-        int numEffects = 70;
-        double avgDegree = 6;
-        int sampleSize = 100;
-        int numSubsamples = 50;
-        double penaltyDiscount = 2;
+        int numEffects = 3;
+        double avgDegree = 2;
+        int sampleSize = 50;
+        int numSubsamples = 100;
+        double penaltyDiscount = 1;
         double selectionAlpha = .1;
 
-        int qFrom = 200;
+        int qFrom = 100;
         int qTo = qFrom;
         int qIncrement = 1;
 
