@@ -21,10 +21,7 @@
 
 package edu.cmu.tetrad.test;
 
-import edu.cmu.tetrad.graph.EdgeListGraph;
-import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.graph.GraphNode;
-import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.Ion;
 import edu.cmu.tetrad.search.IonJoeModifications;
 
@@ -58,13 +55,21 @@ public class TestIonForClark {
         graph2.addNode(C);
         graph2.addNode(D);
 
+        Edge e1 = new Edge(A, B, Endpoint.CIRCLE, Endpoint.TAIL);
+        Edge e2 = new Edge(A, D, Endpoint.CIRCLE, Endpoint.TAIL);
 
-        graph1.addUndirectedEdge(A, B);
-        graph1.addUndirectedEdge(A, D);
+        graph1.addEdge(e1);
+        graph1.addEdge(e2);
 
-        graph2.addUndirectedEdge(B, D);
-        graph2.addUndirectedEdge(D, C);
-        graph2.addUndirectedEdge(B, C);
+//        graph1.addPartiallyOrientedEdge(A, B);
+//        graph1.addPartiallyOrientedEdge(A, D);
+
+        graph2.addNondirectedEdge(B, C);
+        graph2.addNondirectedEdge(B, D);
+        graph2.addNondirectedEdge(C, D);
+
+        System.out.println("Graph 1 = " + graph1);
+        System.out.println("Graph 2 = " + graph2);
 
         in.add(graph1);
         in.add(graph2);
@@ -72,6 +77,8 @@ public class TestIonForClark {
         IonJoeModifications ion = new IonJoeModifications(in);
 //        Ion ion = new Ion(in);
         List<Graph> result = ion.search();
+
+        System.out.println("ION outputs:\n");
 
         for (Graph graph : result) {
             System.out.println(graph);

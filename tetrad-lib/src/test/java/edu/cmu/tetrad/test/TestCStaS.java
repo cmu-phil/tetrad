@@ -218,15 +218,15 @@ public class TestCStaS {
 
     public void testCStaS2() {
         int numNodes = 500;
-        int numEffects = 50;
-        double avgDegree = 6;
-        int sampleSize = 100;
+        int numEffects = 100;
+        double avgDegree = 8;
+        int sampleSize = 200;
         int numSubsamples = 50;
-        double penaltyDiscount = 1;
+        double penaltyDiscount = 4;
         double selectionAlpha = .2;
         int startIndex = 0;
 
-        int qFrom = 20;
+        int qFrom = 1000;
         int qTo = qFrom;
         int qIncrement = 1;
 
@@ -243,7 +243,7 @@ public class TestCStaS {
         parameters.set("numMeasures", numNodes);
         parameters.set("numLatents", 0);
         parameters.set("avgDegree", avgDegree);
-        parameters.set("maxDegree", 100);
+        parameters.set("maxDegree", 200);
         parameters.set("maxIndegree", 100);
         parameters.set("maxOutdegree", 100);
         parameters.set("connected", false);
