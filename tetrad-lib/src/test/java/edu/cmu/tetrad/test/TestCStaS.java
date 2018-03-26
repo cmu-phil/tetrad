@@ -98,7 +98,7 @@ public class TestCStaS {
     public void testCStaS() {
         int numNodes = 500;
         int numEffects = 500;
-        int avgDegree = 6;
+        int avgDegree = 1;
         int sampleSize = 100;
         int numSubsamples = 50;
         double penaltyDiscount = 1;
@@ -218,14 +218,15 @@ public class TestCStaS {
 
     public void testCStaS2() {
         int numNodes = 500;
-        int numEffects = 3;
-        double avgDegree = 2;
-        int sampleSize = 50;
-        int numSubsamples = 100;
+        int numEffects = 50;
+        double avgDegree = 6;
+        int sampleSize = 100;
+        int numSubsamples = 50;
         double penaltyDiscount = 1;
-        double selectionAlpha = .1;
+        double selectionAlpha = .2;
+        int startIndex = 0;
 
-        int qFrom = 100;
+        int qFrom = 20;
         int qTo = qFrom;
         int qIncrement = 1;
 
@@ -290,7 +291,7 @@ public class TestCStaS {
         List<Node> potentialEffects = new ArrayList<>();
 
         for (int t = 0; t < numEffects; t++) {
-            potentialEffects.add(nodes.get(t));
+            potentialEffects.add(nodes.get(t + startIndex));
         }
 
         List<Node> potentialCauses = new ArrayList<>();
@@ -342,7 +343,7 @@ public class TestCStaS {
         double minBump = 0.0;
         int qFrom = 100;
         int qTo = 5000;
-        int qIncrement = 100;
+        int qIncrement = 0;
         CStaS.PatternAlgorithm algorithm = CStaS.PatternAlgorithm.FGES;
         CStaS.SampleStyle sampleStyle = CStaS.SampleStyle.SPLIT;
 

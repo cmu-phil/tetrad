@@ -12,8 +12,7 @@ import java.io.*;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.*;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.*;
 
 /**
  * An adaptation of the CStaR algorithm (Steckoven et al., 2012).
@@ -212,8 +211,6 @@ public class CStaS {
             }
         }
 
-        final DataSet _dataSet = dataSet;
-
         if (test instanceof IndTestScore && ((IndTestScore) test).getWrappedScore() instanceof SemBicScore) {
             this.test = test;
         } else if (test instanceof IndTestFisherZ) {
@@ -242,23 +239,22 @@ public class CStaS {
         }
 
         // Need final for inner class.
-        final List<double[][]> allEffects = new ArrayList<>();
-        final double[] totalAvgDegree = new double[1];
+       final double[] totalAvgDegree = new double[1];
 
-        class Task implements Callable<Boolean> {
+        class Task implements Callable<double[][]> {
             private final List<Node> possibleCauses;
             private final List<Node> possibleEffects;
-            private final List<double[][]> allEffects;
             private final int k;
+            private DataSet _dataSet;
 
-            private Task(int k, List<Node> possibleCauses, List<Node> possibleEffects, List<double[][]> allEffects) {
+            private Task(int k, List<Node> possibleCauses, List<Node> possibleEffects, DataSet _dataSet) {
                 this.k = k;
                 this.possibleCauses = possibleCauses;
                 this.possibleEffects = possibleEffects;
-                this.allEffects = allEffects;
+                this._dataSet = _dataSet;
             }
 
-            public Boolean call() {
+            public double[][] call() {
                 try {
                     BootstrapSampler sampler = new BootstrapSampler();
                     DataSet sample;
@@ -268,7 +264,7 @@ public class CStaS {
                         sample = sampler.sample(_dataSet, _dataSet.getNumRows());
                     } else if (sampleStyle == SampleStyle.SPLIT) {
                         sampler.setWithoutReplacements(true);
-                        sample = sampler.sample(_dataSet, _dataSet.getNumRows() / 2);
+                        sample = sampler.sample(this._dataSet, this._dataSet.getNumRows() / 2);
                     } else {
                         throw new IllegalArgumentException("That type of sample is not configured: " + sampleStyle);
                     }
@@ -303,15 +299,15 @@ public class CStaS {
                             GraphUtils.saveGraph(pattern, new File(dir, "pattern." + (k + 1) + ".txt"), false);
                         }
 
-                        Ida ida = new Ida(sample, pattern, possibleCauses);
+                        Ida ida = new Ida(sample, pattern, this.possibleCauses);
 
-                        effects = new double[possibleCauses.size()][possibleEffects.size()];
+                        effects = new double[this.possibleCauses.size()][this.possibleEffects.size()];
 
-                        for (int e = 0; e < possibleEffects.size(); e++) {
-                            Map<Node, Double> minEffects = ida.calculateMinimumEffectsOnY(possibleEffects.get(e));
+                        for (int e = 0; e < this.possibleEffects.size(); e++) {
+                            Map<Node, Double> minEffects = ida.calculateMinimumEffectsOnY(this.possibleEffects.get(e));
 
-                            for (int c = 0; c < possibleCauses.size(); c++) {
-                                effects[c][e] = minEffects.get(possibleCauses.get(c));
+                            for (int c = 0; c < this.possibleCauses.size(); c++) {
+                                effects[c][e] = minEffects.get(this.possibleCauses.get(c));
                             }
                         }
 
@@ -320,32 +316,30 @@ public class CStaS {
                         }
                     }
 
-                    allEffects.add(effects);
-
                     if (verbose) {
                         System.out.println("Bootstrap " + (k + 1));
                     }
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
 
-                return true;
+                    return effects;
+                } catch (Exception e) {
+                    throw new RuntimeException(e);
+                }
             }
         }
 
-        List<Callable<Boolean>> tasks = new ArrayList<>();
+        List<Callable<double[][]>> tasks = new ArrayList<>();
 
         for (int k = 0; k < getNumSubsamples(); k++) {
-            tasks.add(new Task(k, possibleCauses, possibleEffects, allEffects));
+            tasks.add(new Task(k, possibleCauses, possibleEffects, dataSet));
         }
 
-        ConcurrencyUtils.runCallables(tasks, getParallelism());
+        final List<double[][]> allEffects = runCallablesDoubleArray(tasks, getParallelism());
 
         final double avgAvgDegree = totalAvgDegree[0] / getNumSubsamples();
 
         List<List<Double>> doubles = new ArrayList<>();
 
-        for (int k = 0; k < allEffects.size(); k++) {
+        for (int k = 0; k < getNumSubsamples(); k++) {
             double[][] effects = allEffects.get(k);
 
             if (effects.length != possibleCauses.size() || effects[0].length != possibleEffects.size()) {
@@ -422,6 +416,12 @@ public class CStaS {
 
                     for (int i = 0; i < Math.min(q, tuples.size()); i++) {
                         Tuple tuple = tuples.get(i);
+
+                        if (tuple.getPi() < (q / (double) p)) continue;
+//                        if (tuple.getPi() < (q / (double) p  + 0.5 * (1.0 - q / (double) p))) continue;
+//
+//                        if (tuple.getPi() <= 0.5) continue;
+
                         double avg = tuple.getMinBeta();
 
                         boolean ancestor = false;
@@ -593,7 +593,7 @@ public class CStaS {
 //
 //        records = _records;
 
-        TextTable table = new TextTable(records.size() + 1, 17);
+        TextTable table = new TextTable(records.size() + 1, 12);
         NumberFormat nf = new DecimalFormat("0.0000");
         int column = 0;
 
@@ -601,20 +601,21 @@ public class CStaS {
         table.setToken(0, column++, "Cause");
         table.setToken(0, column++, "Effect");
         table.setToken(0, column++, "Type");
-        table.setToken(0, column++, "A");
+        table.setToken(0, column++, "Anc");
         table.setToken(0, column++, "PI");
         table.setToken(0, column++, "Effect");
-        table.setToken(0, column++, "FP");
-        table.setToken(0, column++, "TP");
+        table.setToken(0, column++, "SUM(FP)");
+        table.setToken(0, column++, "SUM(TP)");
+        table.setToken(0, column++, "R-SUM(Pi)");
         table.setToken(0, column++, "SUM(Pi)");
-        table.setToken(0, column++, "S");
+//        table.setToken(0, column++, "S");
         table.setToken(0, column++, "E(V)");
 
-        table.setToken(0, column++, "pi1");
-        table.setToken(0, column++, "pi2");
+//        table.setToken(0, column++, "pi1");
+//        table.setToken(0, column++, "pi2");
 
-        table.setToken(0, column++, "TotalCounts");
-        table.setToken(0, column++, "AvgDegree");
+//        table.setToken(0, column++, "TotalCounts");
+//        table.setToken(0, column++, "AvgDegree");
 
 
         int tp = 0;
@@ -622,9 +623,19 @@ public class CStaS {
         double tpSumPi = 0;
         double fpSumPi = 0;
         int totalCounts = 0;
-        double sumPi = 0.0;
+        double sum = 0.0;
+
+        if (records.isEmpty()) {
+            return "\nThere are no records above chance.\n";
+        }
+
         int p = records.getLast().getP();
         int q = records.getLast().getQ();
+
+        if (!records.isEmpty()) {
+            final double avgAvgDegree = records.get(0).getAvgAvgDegree();
+            System.out.println("Average degree of the patterns = " + avgAvgDegree);
+        }
 
         for (int i = 0; i < records.size(); i++) {
             final Node predictor = records.get(i).getCauseNode();
@@ -640,19 +651,15 @@ public class CStaS {
 
             totalCounts += getNumSubsamples() * records.get(i).getPi();
 
-            sumPi += records.get(i).getPi();
+            sum += records.get(i).getPi() - (q / (double) p);
+//            sum += records.get(i).getPi() - (q / (double) p  + 0.5 * (1.0 - q / (double) p));
 
             // average pi for the false positives
             double pi1 = fpSumPi / (fp);
-            double pi2 = tpSumPi / (tp) ;
+            double pi2 = tpSumPi / (tp);
             int R = (i + 1);
 
             double S = R * (pi2 / (1 + pi2 - pi1));
-
-
-            double factor = 1 / ((double) getNumSubsamples());
-
-            final double avgAvgDegree = records.get(i).getAvgAvgDegree();
 
             column = 0;
 
@@ -665,15 +672,16 @@ public class CStaS {
             table.setToken(i + 1, column++, nf.format(records.get(i).getMinBeta()));
             table.setToken(i + 1, column++, nf.format(fp));
             table.setToken(i + 1, column++, nf.format(tp));
-            table.setToken(i + 1, column++, nf.format(sumPi));
-            table.setToken(i + 1, column++, nf.format(S));
+            table.setToken(i + 1, column++, nf.format(R - sum));
+            table.setToken(i + 1, column++, nf.format(sum));
+//            table.setToken(i + 1, column++, nf.format(S));
             table.setToken(i + 1, column++, nf.format(er(records.get(i).getPi(), q, p)));
 
-            table.setToken(i + 1, column++, nf.format(pi1));
-            table.setToken(i + 1, column++, nf.format(pi2));
+//            table.setToken(i + 1, column++, nf.format(pi1));
+//            table.setToken(i + 1, column++, nf.format(pi2));
 
-            table.setToken(i + 1, column++, nf.format(totalCounts * factor));
-            table.setToken(i + 1, column++, nf.format(avgAvgDegree));
+//            table.setToken(i + 1, column++, nf.format(totalCounts * factor));
+//            table.setToken(i + 1, column++, nf.format(avgAvgDegree));
         }
 
         final double pi_thr = records.getLast().getPi();
@@ -687,7 +695,7 @@ public class CStaS {
         return (printTable ? "\n" + table : "" + "")
                 + "p = " + p + " q = " + q
                 + (fp != records.size() ? fpString : "")
-                + (q != -1 ? " SUM(PI)  = " + nf.format(sumPi) : "")
+                + (q != -1 ? " SUM(PI)  = " + nf.format(sum) : "")
                 + (q != -1 ? " PCER = " + nf.format(pcer) + "" : "")
                 + (q != -1 ? " MB E(V) = " + nf.format(mbEv) : "")
                 + (printTable ? "\nA = ancestor of the effect" + "\nType: C = continuous, D = discrete\n" : "");
@@ -827,5 +835,46 @@ public class CStaS {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    private List<double[][]> runCallablesDoubleArray(List<Callable<double[][]>> tasks, int parallelism) {
+        if (tasks.isEmpty()) return new ArrayList<>();
+
+        List<double[][]> results = new ArrayList<>();
+
+        if (parallelism == 1) {
+            for (Callable<double[][]> task : tasks) {
+                try {
+                    results.add(task.call());
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        } else {
+
+            ExecutorService executorService = Executors.newWorkStealingPool();
+
+            try {
+                List<Future<double[][]>> futures = executorService.invokeAll(tasks);
+
+                for (Future<double[][]> future : futures) {
+                    results.add(future.get());
+                }
+            } catch (InterruptedException | ExecutionException e) {
+                e.printStackTrace();
+            }
+
+            executorService.shutdown();
+
+            try {
+                if (!executorService.awaitTermination(800, TimeUnit.MILLISECONDS)) {
+                    executorService.shutdownNow();
+                }
+            } catch (InterruptedException e) {
+                executorService.shutdownNow();
+            }
+        }
+
+        return results;
     }
 }
