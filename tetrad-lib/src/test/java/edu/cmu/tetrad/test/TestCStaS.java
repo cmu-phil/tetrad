@@ -159,7 +159,6 @@ public class TestCStaS {
         nodes.sort((o1, o2) -> Integer.compare(numAncestors.get(o2), numAncestors.get(o1)));
 
         CStaS cstas = new CStaS();
-        cstas.setTrueDag(trueDag);
         cstas.setNumSubsamples(numSubsamples);
         cstas.setPatternAlgorithm(algorithm);
         cstas.setSampleStyle(sampleStyle);
@@ -219,14 +218,14 @@ public class TestCStaS {
     public void testCStaS2() {
         int numNodes = 500;
         int numEffects = 100;
-        double avgDegree = 8;
+        double avgDegree = 6;
         int sampleSize = 200;
         int numSubsamples = 50;
-        double penaltyDiscount = 4;
+        double penaltyDiscount = 2;
         double selectionAlpha = .2;
         int startIndex = 0;
 
-        int qFrom = 1000;
+        int qFrom = numEffects * 10;
         int qTo = qFrom;
         int qIncrement = 1;
 
@@ -279,7 +278,6 @@ public class TestCStaS {
         nodes.sort((o1, o2) -> Integer.compare(numAncestors.get(o2), numAncestors.get(o1)));
 
         CStaS cstas = new CStaS();
-        cstas.setTrueDag(trueDag);
         cstas.setNumSubsamples(numSubsamples);
         cstas.setPatternAlgorithm(algorithm);
         cstas.setSampleStyle(sampleStyle);

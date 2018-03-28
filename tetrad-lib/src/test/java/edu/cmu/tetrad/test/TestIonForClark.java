@@ -55,18 +55,12 @@ public class TestIonForClark {
         graph2.addNode(C);
         graph2.addNode(D);
 
-        Edge e1 = new Edge(A, B, Endpoint.CIRCLE, Endpoint.TAIL);
-        Edge e2 = new Edge(A, D, Endpoint.CIRCLE, Endpoint.TAIL);
-
-        graph1.addEdge(e1);
-        graph1.addEdge(e2);
-
-//        graph1.addPartiallyOrientedEdge(A, B);
-//        graph1.addPartiallyOrientedEdge(A, D);
+        graph1.addNondirectedEdge(A, B);
+        graph1.addNondirectedEdge(A, D);
 
         graph2.addNondirectedEdge(B, C);
-        graph2.addNondirectedEdge(B, D);
         graph2.addNondirectedEdge(C, D);
+        graph2.addNondirectedEdge(B, D);
 
         System.out.println("Graph 1 = " + graph1);
         System.out.println("Graph 2 = " + graph2);

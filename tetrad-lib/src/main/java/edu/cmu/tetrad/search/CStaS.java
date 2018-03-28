@@ -36,7 +36,6 @@ public class CStaS {
     private int qIncrement = 1;
 
     private int parallelism = Runtime.getRuntime().availableProcessors() * 10;
-    private Graph trueDag = null;
     private IndependenceTest test;
 
     private PatternAlgorithm patternAlgorithm = PatternAlgorithm.FGES;
@@ -196,18 +195,10 @@ public class CStaS {
                 possibleCauses = readVars(dataSet, dir, "possible.causes.txt");
                 possibleEffects = readVars(dataSet, dir, "possible.effects.txt");
                 dataSet = readData(dir, "data.txt");
-
-                if (new File(dir, "trueDag.txt").exists()) {
-                    trueDag = GraphUtils.loadGraphTxt(new File(dir, "trueDag.txt"));
-                }
             } else {
                 writeVars(possibleCauses, dir, "possible.causes.txt");
                 writeVars(possibleEffects, dir, "possible.effects.txt");
                 writeData(dataSet, dir, "data.txt");
-
-                if (trueDag != null) {
-                    GraphUtils.saveGraph(trueDag, new File(dir, "trueDag.txt"), false);
-                }
             }
         }
 
@@ -316,6 +307,7 @@ public class CStaS {
                         }
                     }
 
+
                     if (verbose) {
                         System.out.println("Bootstrap " + (k + 1));
                     }
@@ -416,23 +408,12 @@ public class CStaS {
 
                     for (int i = 0; i < Math.min(q, tuples.size()); i++) {
                         Tuple tuple = tuples.get(i);
-
                         if (tuple.getPi() < (q / (double) p)) continue;
-//                        if (tuple.getPi() < (q / (double) p  + 0.5 * (1.0 - q / (double) p))) continue;
-//
-//                        if (tuple.getPi() <= 0.5) continue;
-
                         double avg = tuple.getMinBeta();
-
                         boolean ancestor = false;
 
                         final Node causeNode = tuple.getCauseNode();
                         final Node effectNode = tuple.getEffectNode();
-
-                        if (trueDag != null) {
-                            ancestor = trueDag.isAncestorOf(trueDag.getNode(causeNode.getName()),
-                                    trueDag.getNode(effectNode.getName()));
-                        }
 
                         records.add(new Record(causeNode, effectNode, tuple.getPi(), avg, ancestor, q, p, avgAvgDegree));
                     }
@@ -585,15 +566,7 @@ public class CStaS {
      * Returns a text table from the given records
      */
     public String makeTable(LinkedList<Record> records, boolean printTable) {
-//        LinkedList<Record> _records = new LinkedList<>();
-//
-//        for (int i = 0; i < records.size(); i++) {
-//            if (records.get(i).getPi() > 0.8) _records.add(records.get(i));
-//        }
-//
-//        records = _records;
-
-        TextTable table = new TextTable(records.size() + 1, 12);
+        TextTable table = new TextTable(records.size() + 1, 10);
         NumberFormat nf = new DecimalFormat("0.0000");
         int column = 0;
 
@@ -601,29 +574,14 @@ public class CStaS {
         table.setToken(0, column++, "Cause");
         table.setToken(0, column++, "Effect");
         table.setToken(0, column++, "Type");
-        table.setToken(0, column++, "Anc");
         table.setToken(0, column++, "PI");
         table.setToken(0, column++, "Effect");
-        table.setToken(0, column++, "SUM(FP)");
-        table.setToken(0, column++, "SUM(TP)");
-        table.setToken(0, column++, "R-SUM(Pi)");
         table.setToken(0, column++, "SUM(Pi)");
-//        table.setToken(0, column++, "S");
+        table.setToken(0, column++, "R-SUM(Pi)");
         table.setToken(0, column++, "E(V)");
+        table.setToken(0, column++, "PCER");
 
-//        table.setToken(0, column++, "pi1");
-//        table.setToken(0, column++, "pi2");
-
-//        table.setToken(0, column++, "TotalCounts");
-//        table.setToken(0, column++, "AvgDegree");
-
-
-        int tp = 0;
-        int fp = 0;
-        double tpSumPi = 0;
-        double fpSumPi = 0;
-        int totalCounts = 0;
-        double sum = 0.0;
+        double sumPi = 0.0;
 
         if (records.isEmpty()) {
             return "\nThere are no records above chance.\n";
@@ -641,64 +599,25 @@ public class CStaS {
             final Node predictor = records.get(i).getCauseNode();
             final Node target = records.get(i).getEffectNode();
 
-            if (records.get(i).isAncestor()) {
-                tp++;
-                tpSumPi += records.get(i).getPi();
-            } else {
-                fp++;
-                fpSumPi += records.get(i).getPi();
-            }
-
-            totalCounts += getNumSubsamples() * records.get(i).getPi();
-
-            sum += records.get(i).getPi() - (q / (double) p);
-//            sum += records.get(i).getPi() - (q / (double) p  + 0.5 * (1.0 - q / (double) p));
-
-            // average pi for the false positives
-            double pi1 = fpSumPi / (fp);
-            double pi2 = tpSumPi / (tp);
             int R = (i + 1);
-
-            double S = R * (pi2 / (1 + pi2 - pi1));
-
+            sumPi += records.get(i).getPi();
             column = 0;
 
             table.setToken(i + 1, column++, "" + (i + 1));
             table.setToken(i + 1, column++, predictor.getName());
             table.setToken(i + 1, column++, target.getName());
             table.setToken(i + 1, column++, predictor instanceof DiscreteVariable ? "D" : "C");
-            table.setToken(i + 1, column++, records.get(i).isAncestor() ? "A" : "");
             table.setToken(i + 1, column++, nf.format(records.get(i).getPi()));
             table.setToken(i + 1, column++, nf.format(records.get(i).getMinBeta()));
-            table.setToken(i + 1, column++, nf.format(fp));
-            table.setToken(i + 1, column++, nf.format(tp));
-            table.setToken(i + 1, column++, nf.format(R - sum));
-            table.setToken(i + 1, column++, nf.format(sum));
-//            table.setToken(i + 1, column++, nf.format(S));
+            table.setToken(i + 1, column++, nf.format(sumPi));
+            table.setToken(i + 1, column++, nf.format(R - sumPi));
             table.setToken(i + 1, column++, nf.format(er(records.get(i).getPi(), q, p)));
-
-//            table.setToken(i + 1, column++, nf.format(pi1));
-//            table.setToken(i + 1, column++, nf.format(pi2));
-
-//            table.setToken(i + 1, column++, nf.format(totalCounts * factor));
-//            table.setToken(i + 1, column++, nf.format(avgAvgDegree));
+            table.setToken(i + 1, column++, nf.format(pcer(records.get(i).getPi(), q, p)));
         }
-
-        final double pi_thr = records.getLast().getPi();
-        final double pcer = !records.isEmpty() ? pcer(pi_thr, q, p) : Double.NaN;
-        final double mbEv = !records.isEmpty() ? er(pi_thr, q, p) : Double.NaN;
-
-        final String fpString =
-                " TP = " + nf.format(tp / (double) 1) + " FP = " + nf.format((fp) / (double) 1);
-
 
         return (printTable ? "\n" + table : "" + "")
                 + "p = " + p + " q = " + q
-                + (fp != records.size() ? fpString : "")
-                + (q != -1 ? " SUM(PI)  = " + nf.format(sum) : "")
-                + (q != -1 ? " PCER = " + nf.format(pcer) + "" : "")
-                + (q != -1 ? " MB E(V) = " + nf.format(mbEv) : "")
-                + (printTable ? "\nA = ancestor of the effect" + "\nType: C = continuous, D = discrete\n" : "");
+                + (printTable ? "Type: C = continuous, D = discrete\n" : "");
     }
 
     /**
@@ -724,10 +643,6 @@ public class CStaS {
 
     public void setParallelism(int parallelism) {
         this.parallelism = parallelism;
-    }
-
-    public void setTrueDag(Graph trueDag) {
-        this.trueDag = trueDag;
     }
 
     public void setqFrom(int qFrom) {
@@ -802,12 +717,12 @@ public class CStaS {
         }
     }
 
-    // E(|V|) bound
+    // Meinhausen and Buhlmann E(|V|) bound
     private static double er(double pi, double q, double p) {
         return p * pcer(pi, q, p);
     }
 
-    // Per comparison error rate.
+    // Meinhausen and Buhlmann per comparison error rate (PCER)
     private static double pcer(double pi, double q, double p) {
         return (q * q) / (p * p * (2 * pi - 1));
     }
@@ -851,7 +766,6 @@ public class CStaS {
                 }
             }
         } else {
-
             ExecutorService executorService = Executors.newWorkStealingPool();
 
             try {
