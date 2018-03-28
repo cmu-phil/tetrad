@@ -82,20 +82,16 @@ public class CStaS {
         private Node target;
         private double pi;
         private double effect;
-        private boolean ancestor;
         private int q;
         private int p;
-        private double avgAvgDegree;
 
-        Record(Node predictor, Node target, double pi, double minEffect, boolean ancestor, int q, int p, double avgAvgDegree) {
+        Record(Node predictor, Node target, double pi, double minEffect, int q, int p) {
             this.causeNode = predictor;
             this.target = target;
             this.pi = pi;
             this.effect = minEffect;
-            this.ancestor = ancestor;
             this.q = q;
             this.p = p;
-            this.avgAvgDegree = avgAvgDegree;
         }
 
         public Node getCauseNode() {
@@ -114,20 +110,12 @@ public class CStaS {
             return effect;
         }
 
-        public boolean isAncestor() {
-            return ancestor;
-        }
-
         public int getQ() {
             return q;
         }
 
         public int getP() {
             return p;
-        }
-
-        public double getAvgAvgDegree() {
-            return avgAvgDegree;
         }
     }
 
@@ -229,9 +217,6 @@ public class CStaS {
             }
         }
 
-        // Need final for inner class.
-       final double[] totalAvgDegree = new double[1];
-
         class Task implements Callable<double[][]> {
             private final List<Node> possibleCauses;
             private final List<Node> possibleEffects;
@@ -283,9 +268,6 @@ public class CStaS {
                                     + patternAlgorithm);
                         }
 
-                        double avgDegree = 2 * pattern.getNumEdges() / (double) pattern.getNumNodes();
-                        totalAvgDegree[0] += avgDegree;
-
                         if (dir != null) {
                             GraphUtils.saveGraph(pattern, new File(dir, "pattern." + (k + 1) + ".txt"), false);
                         }
@@ -326,8 +308,6 @@ public class CStaS {
         }
 
         final List<double[][]> allEffects = runCallablesDoubleArray(tasks, getParallelism());
-
-        final double avgAvgDegree = totalAvgDegree[0] / getNumSubsamples();
 
         List<List<Double>> doubles = new ArrayList<>();
 
@@ -410,12 +390,11 @@ public class CStaS {
                         Tuple tuple = tuples.get(i);
                         if (tuple.getPi() < (q / (double) p)) continue;
                         double avg = tuple.getMinBeta();
-                        boolean ancestor = false;
 
                         final Node causeNode = tuple.getCauseNode();
                         final Node effectNode = tuple.getEffectNode();
 
-                        records.add(new Record(causeNode, effectNode, tuple.getPi(), avg, ancestor, q, p, avgAvgDegree));
+                        records.add(new Record(causeNode, effectNode, tuple.getPi(), avg, q, p));
                     }
 
                     allRecords.add(records);
@@ -547,7 +526,7 @@ public class CStaS {
             double medianEffects = StatUtils.median(effects);
 
             Record _record = new Record(edge.getNode1(), edge.getNode2(), medianPis, medianEffects,
-                    recordList.get(0).isAncestor(), -1, -1, Double.NaN);
+                    -1, -1);
             cstar.add(_record);
         }
 
@@ -590,11 +569,6 @@ public class CStaS {
         int p = records.getLast().getP();
         int q = records.getLast().getQ();
 
-        if (!records.isEmpty()) {
-            final double avgAvgDegree = records.get(0).getAvgAvgDegree();
-            System.out.println("Average degree of the patterns = " + avgAvgDegree);
-        }
-
         for (int i = 0; i < records.size(); i++) {
             final Node predictor = records.get(i).getCauseNode();
             final Node target = records.get(i).getEffectNode();
@@ -617,7 +591,7 @@ public class CStaS {
 
         return (printTable ? "\n" + table : "" + "")
                 + "p = " + p + " q = " + q
-                + (printTable ? "Type: C = continuous, D = discrete\n" : "");
+                + (printTable ? " Type: C = continuous, D = discrete\n" : "");
     }
 
     /**
