@@ -2854,7 +2854,7 @@ public final class SearchGraphUtils {
     /**
      * Just counts arrowpoint errors--for cyclic edges counts an arrowpoint at each node.
      */
-    public static GraphUtils.GraphComparison getGraphComparison3(Graph graph, Graph trueGraph, PrintStream out) {
+    public static GraphUtils.GraphComparison getGraphComparison3(Graph graph, Graph trueGraph) {
         graph = GraphUtils.replaceNodes(graph, trueGraph.getNodes());
         GraphUtils.TwoCycleErrors twoCycleErrors = GraphUtils.getTwoCycleErrors(trueGraph, graph);
 

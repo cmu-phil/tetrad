@@ -26,7 +26,6 @@ import java.util.List;
 )
 public class CStaS implements Algorithm, TakesIndependenceWrapper {
     static final long serialVersionUID = 23L;
-    private Graph trueDag = null;
     private IndependenceWrapper test;
     private LinkedList<edu.cmu.tetrad.search.CStaS.Record> records = null;
 
@@ -45,7 +44,8 @@ public class CStaS implements Algorithm, TakesIndependenceWrapper {
         cStaS.setqFrom(parameters.getInt("q"));
         cStaS.setqTo(parameters.getInt("q"));
         cStaS.setqIncrement(1);
-        cStaS.setTrueDag(trueDag);
+        cStaS.setPatternAlgorithm(edu.cmu.tetrad.search.CStaS.PatternAlgorithm.PC_STABLE);
+        cStaS.setSampleStyle(edu.cmu.tetrad.search.CStaS.SampleStyle.SPLIT);
         cStaS.setVerbose(parameters.getBoolean("verbose"));
 
         List<Node> possibleEffects = new ArrayList<>();
@@ -100,10 +100,6 @@ public class CStaS implements Algorithm, TakesIndependenceWrapper {
         parameters.add("q");
         parameters.add("parallelism");
         return parameters;
-    }
-
-    public void setTrueDag(Graph trueDag) {
-        this.trueDag = trueDag;
     }
 
     public LinkedList<edu.cmu.tetrad.search.CStaS.Record> getRecords() {

@@ -927,8 +927,8 @@ public final class BoxDataSet implements DataSet, TetradSerializable {
         StringBuilder buf = new StringBuilder();
         List<Node> variables = getVariables();
 
-        buf.append("\n");
-
+//        buf.append("\n");
+//
         for (int i = 0; i < getNumColumns(); i++) {
             buf.append(variables.get(i));
 
@@ -980,10 +980,10 @@ public final class BoxDataSet implements DataSet, TetradSerializable {
                 }
             }
 
-            buf.append("\n");
+            if (i < getNumRows() - 1) {
+                buf.append("\n");
+            }
         }
-
-        buf.append("\n");
 
         if (knowledge != null && !knowledge.isEmpty()) {
             buf.append(knowledge);

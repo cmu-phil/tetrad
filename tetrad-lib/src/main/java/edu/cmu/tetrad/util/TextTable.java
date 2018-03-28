@@ -201,6 +201,8 @@ public class TextTable {
             buffer.append("\n");
         }
 
+        buffer.append(("\n"));
+
         return buffer.toString();
     }
 

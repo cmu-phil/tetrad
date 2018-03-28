@@ -27,15 +27,15 @@ import static java.lang.Math.min;
 public class Ida {
     private DataSet dataSet;
     private final Graph pattern;
-    private final List<Node> possiblePredictors;
+    private final List<Node> possibleCauses;
     private Map<String, Integer> nodeIndices;
     private ICovarianceMatrix allCovariances;
 
-    public Ida(DataSet dataSet, Graph pattern, List<Node> possiblePredictors) {
+    public Ida(DataSet dataSet, Graph pattern, List<Node> possibleCauses) {
         this.dataSet = DataUtils.convertNumericalDiscreteToContinuous(dataSet);
         this.pattern = pattern;
-        possiblePredictors = GraphUtils.replaceNodes(possiblePredictors, dataSet.getVariables());
-        this.possiblePredictors = possiblePredictors;
+        possibleCauses = GraphUtils.replaceNodes(possibleCauses, dataSet.getVariables());
+        this.possibleCauses = possibleCauses;
 
         allCovariances = new CovarianceMatrixOnTheFly(this.dataSet);
 
@@ -165,10 +165,6 @@ public class Ida {
      * @return a list of the possible effects of X on Y.
      */
     private LinkedList<Double> getEffects(Node x, Node y) {
-//        if (x == y) {
-//            throw new IllegalArgumentException("x == y");
-//        }
-
         List<Node> parents = pattern.getParents(x);
         List<Node> children = pattern.getChildren(x);
 
@@ -233,8 +229,7 @@ public class Ida {
     public Map<Node, Double> calculateMinimumEffectsOnY(Node y) {
         SortedMap<Node, Double> minEffects = new TreeMap<>();
 
-        for (Node x : possiblePredictors) {
-//            if (x == y) continue;
+        for (Node x : possibleCauses) {
             final LinkedList<Double> effects = getEffects(x, y);
             minEffects.put(x, effects.getFirst());
         }

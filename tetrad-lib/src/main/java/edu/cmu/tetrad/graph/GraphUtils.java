@@ -2534,7 +2534,7 @@ public final class GraphUtils {
                 break;
             }
 
-            System.out.println(line);
+//            System.out.println(line);
 
             String[] tokens = line.split("\\s+");
 
@@ -3697,9 +3697,9 @@ public final class GraphUtils {
                 if (range <= chunk) {
                     for (int i = from; i < to; i++) {
                         int j = ++count[0];
-                        if (j % 1000 == 0) {
-                            System.out.println("Counted " + (count[0]));
-                        }
+//                        if (j % 1000 == 0) {
+//                            System.out.println("Counted " + (count[0]));
+//                        }
 
                         Edge edge = edges.get(i);
 
