@@ -18,7 +18,6 @@
 // along with this program; if not, write to the Free Software               //
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA //
 ///////////////////////////////////////////////////////////////////////////////
-
 package edu.cmu.tetrad.data;
 
 import edu.cmu.tetrad.graph.Edge;
@@ -26,18 +25,32 @@ import edu.cmu.tetrad.graph.Edges;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.TetradSerializable;
-
-import java.io.*;
-import java.util.*;
+import java.io.BufferedReader;
+import java.io.CharArrayWriter;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.Writer;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.SortedSet;
+import java.util.TreeSet;
+import java.util.stream.Collectors;
 
 /**
  * Stores information about required and forbidden edges and common causes for
- * use in algorithm.  This information can be set edge by edge or else globally
- * via temporal tiers.  When setting temporal tiers, all edges from later tiers
+ * use in algorithm. This information can be set edge by edge or else globally
+ * via temporal tiers. When setting temporal tiers, all edges from later tiers
  * to earlier tiers are forbidden. </p> For this class, all varNames are
- * referenced by name only.  This is because the same Knowledge object is
+ * referenced by name only. This is because the same Knowledge object is
  * intended to plug into different graphs with nodes that possibly have the same
- * names.  Thus, if the Knowledge object forbids the edge X --> Y, then it
+ * names. Thus, if the Knowledge object forbids the edge X --> Y, then it
  * forbids any edge which connects a node named "X" to a node named "Y", even if
  * the underlying nodes themselves named "X" and "Y", respectively, are not the
  * same.
@@ -49,6 +62,7 @@ import java.util.*;
  * @author Tyler Gibson modifications 2/07
  */
 public final class Knowledge implements TetradSerializable, IKnowledge {
+
     static final long serialVersionUID = 23L;
 
     /**
@@ -58,10 +72,10 @@ public final class Knowledge implements TetradSerializable, IKnowledge {
 
     /**
      * This is a representation of the temporal tiers, a map from Strings to
-     * Integers.  Each variable name is mapped to exactly one tier (an Integer).
+     * Integers. Each variable name is mapped to exactly one tier (an Integer).
      * To determine whether an edge v1 --> v2 is forbidden by the tiers, find
      * tierMap(v1) and tierMap(v2); if tierMap(v1) > tierMap(v2), the edge is
-     * forbidden by tiers.  If either tierMap(v1) or tierMap(v2) is null, the
+     * forbidden by tiers. If either tierMap(v1) or tierMap(v2) is null, the
      * edge is not forbidden by tiers, and if tierMap(v1) <= tierMap(v2), the
      * edge is not forbidden by tiers. In this representation, in order to get
      * all the varNames of a given tier, iterate through the domain of the map
@@ -74,16 +88,16 @@ public final class Knowledge implements TetradSerializable, IKnowledge {
     /**
      * This is the set of edges explicitly required by the user
      * <p>
-     * Note: Should really be called "explicitlyRequiredEdges" (can't change though).
+     * Note: Should really be called "explicitlyRequiredEdges" (can't change
+     * though).
      *
      * @serial
      */
     private Set<KnowledgeEdge> requiredEdges;
 
-
     /**
-     * This is the set of all edges that are required, including edges explicitly required and
-     * required by groups.
+     * This is the set of all edges that are required, including edges
+     * explicitly required and required by groups.
      *
      * @serial
      */
@@ -124,14 +138,12 @@ public final class Knowledge implements TetradSerializable, IKnowledge {
      */
     private Set<Integer> tiersForbiddenWithin = new HashSet<>();
 
-
     /**
      * The knowledge groups, this contains all the grouping information.
      *
      * @serial
      */
     private List<KnowledgeGroup> knowledgeGroups = new ArrayList<>();
-
 
     /**
      * When the graph for this knowledge is displayed, it defauls to the
@@ -143,8 +155,6 @@ public final class Knowledge implements TetradSerializable, IKnowledge {
     private boolean lagged = false;
 
     //================================CONSTRUCTORS========================//
-
-
     /**
      * Constructs a blank knowledge object.
      */
@@ -159,17 +169,17 @@ public final class Knowledge implements TetradSerializable, IKnowledge {
     private Knowledge(Knowledge knowledge) {
         this.tierMap = new HashMap<>(knowledge.tierMap);
         this.allRequiredEdges = new HashSet<>(knowledge.allRequiredEdges);
-        this.requiredEdges =
-                new HashSet<>(knowledge.requiredEdges);
+        this.requiredEdges
+                = new HashSet<>(knowledge.requiredEdges);
 //        this.setForbiddenEdges(new HashSet<KnowledgeEdge>(knowledge.getForbiddenEdges()));
-        this.explicitlyForbiddenEdges =
-                new HashSet<>(knowledge.explicitlyForbiddenEdges);
-        this.requiredCommonCauses =
-                new HashSet<>(knowledge.requiredCommonCauses);
-        this.forbiddenCommonCauses =
-                new HashSet<>(knowledge.forbiddenCommonCauses);
-        this.tiersForbiddenWithin =
-                new HashSet<>(knowledge.tiersForbiddenWithin);
+        this.explicitlyForbiddenEdges
+                = new HashSet<>(knowledge.explicitlyForbiddenEdges);
+        this.requiredCommonCauses
+                = new HashSet<>(knowledge.requiredCommonCauses);
+        this.forbiddenCommonCauses
+                = new HashSet<>(knowledge.forbiddenCommonCauses);
+        this.tiersForbiddenWithin
+                = new HashSet<>(knowledge.tiersForbiddenWithin);
         this.defaultToKnowledgeLayout = knowledge.defaultToKnowledgeLayout;
         this.knowledgeGroups = knowledge.knowledgeGroups;
         this.lagged = knowledge.lagged;
@@ -183,14 +193,13 @@ public final class Knowledge implements TetradSerializable, IKnowledge {
     }
 
     //===============================PUBLIC METHODS=======================//
-
     /**
-     * Adds the given variable to the given tier.  If a variable is added which
+     * Adds the given variable to the given tier. If a variable is added which
      * is already in a tier, it is moved to the new tier.
      *
      * @param tier a (usually) non-negative integer. Negative integers may be
-     *             specified without breaking anything.
-     * @param var  the name of a variable to put in that tier.
+     * specified without breaking anything.
+     * @param var the name of a variable to put in that tier.
      */
     public final void addToTier(int tier, String var) {
         if (!variables.contains(var)) {
@@ -210,19 +219,19 @@ public final class Knowledge implements TetradSerializable, IKnowledge {
 
             if (tier2 < tier) {
                 if (isRequired(var, var2)) {
-                    throw new IllegalStateException("Edge " + var + "-->" +
-                            var2 +
-                            " is a required edge. Please remove that requirement " +
-                            "or adjust \nthe tiers so that " + var + "-->" +
-                            var2 + " will not be forbidden.");
+                    throw new IllegalStateException("Edge " + var + "-->"
+                            + var2
+                            + " is a required edge. Please remove that requirement "
+                            + "or adjust \nthe tiers so that " + var + "-->"
+                            + var2 + " will not be forbidden.");
                 }
             } else if (tier < tier2) {
                 if (isRequired(var2, var)) {
-                    throw new IllegalStateException("Edge " + var2 + "-->" +
-                            var +
-                            " is a required edge. Please remove that requirement " +
-                            "or adjust \nthe tiers so that " + var2 + "-->" +
-                            var + " will not be forbidden.");
+                    throw new IllegalStateException("Edge " + var2 + "-->"
+                            + var
+                            + " is a required edge. Please remove that requirement "
+                            + "or adjust \nthe tiers so that " + var2 + "-->"
+                            + var + " will not be forbidden.");
                 }
             }
         }
@@ -233,8 +242,7 @@ public final class Knowledge implements TetradSerializable, IKnowledge {
     }
 
     /**
-     * Puts a variable into tier i if its name is xxx:i for some xxx and some
-     * i.
+     * Puts a variable into tier i if its name is xxx:i for some xxx and some i.
      */
     public final void addToTiersByVarNames(List<String> varNames) {
         if (!variables.containsAll(varNames)) {
@@ -254,14 +262,12 @@ public final class Knowledge implements TetradSerializable, IKnowledge {
         }
     }
 
-
     /**
      * @return - all the knowledge groups.
      */
     public List<KnowledgeGroup> getKnowledgeGroups() {
         return Collections.unmodifiableList(this.knowledgeGroups);
     }
-
 
     /**
      * Removes the <code>KnowledgeGroup</code> at the given index.
@@ -304,7 +310,6 @@ public final class Knowledge implements TetradSerializable, IKnowledge {
         }
     }
 
-
     /**
      * Replaces the <code>KnowledgeGroup</code> at the given index.
      */
@@ -314,8 +319,8 @@ public final class Knowledge implements TetradSerializable, IKnowledge {
             if (i != index) {
                 KnowledgeGroup g = this.knowledgeGroups.get(i);
                 if (group.isConflict(g)) {
-                    throw new IllegalArgumentException("Changes to the knowedge group at " + (index + 1) +
-                            " conflict with the knowledge group at " + (i + 1));
+                    throw new IllegalArgumentException("Changes to the knowedge group at " + (index + 1)
+                            + " conflict with the knowledge group at " + (i + 1));
                 }
             }
         }
@@ -359,7 +364,15 @@ public final class Knowledge implements TetradSerializable, IKnowledge {
 //        return Collections.unmodifiableSet(getForbiddenEdges()).iterator();
     }
 
+    @Override
+    public List<KnowledgeEdge> getListOfForbiddenEdges() {
+        return getForbiddenEdges().stream()
+                .collect(Collectors.toList());
+    }
 
+//    public List<KnowledgeEdge> getForbiddenEdges() {
+//        return get
+//    }
     /**
      * Iterator over the knowledge's explicitly forbidden edges.
      */
@@ -367,6 +380,13 @@ public final class Knowledge implements TetradSerializable, IKnowledge {
         return Collections.unmodifiableSet(this.explicitlyForbiddenEdges).iterator();
     }
 
+    @Override
+    public List<KnowledgeEdge> getListOfExplicitlyForbiddenEdges() {
+        List<KnowledgeEdge> list = this.explicitlyForbiddenEdges.stream()
+                .collect(Collectors.toList());
+
+        return Collections.unmodifiableList(list);
+    }
 
     /**
      * @return the list of edges not in any tier.
@@ -424,14 +444,12 @@ public final class Knowledge implements TetradSerializable, IKnowledge {
         return forbiddenCommonCauses.contains(new KnowledgeEdge(var1, var2));
     }
 
-
     /**
      * Determines whether the dge var1 --> var2 is explicitly required.
      */
     public final boolean edgeExplicitlyRequired(String var1, String var2) {
         return this.requiredEdges.contains(new KnowledgeEdge(var1, var2));
     }
-
 
     /**
      * Determines whether edge is explicitly required.
@@ -440,10 +458,9 @@ public final class Knowledge implements TetradSerializable, IKnowledge {
         return this.requiredEdges.contains(edge);
     }
 
-
     /**
-     * Determines whether the edge var1 --> var2 is forbidden, either explicitly, by tiers
-     * or by groups.
+     * Determines whether the edge var1 --> var2 is forbidden, either
+     * explicitly, by tiers or by groups.
      */
     public final boolean isForbidden(String var1, String var2) {
         if (isForbiddenByTiers(var1, var2)) {
@@ -455,16 +472,17 @@ public final class Knowledge implements TetradSerializable, IKnowledge {
     }
 
     /**
-     * Determines whether the edge var1 --> var2 is required either explicitly or by grups.
+     * Determines whether the edge var1 --> var2 is required either explicitly
+     * or by grups.
      */
     public final boolean isRequired(String var1, String var2) {
         KnowledgeEdge edge = new KnowledgeEdge(var1, var2);
         return this.allRequiredEdges.contains(edge);
     }
 
-
     /**
-     * Determines whether the edge var1 --> var2 is required by a knowledge group.
+     * Determines whether the edge var1 --> var2 is required by a knowledge
+     * group.
      */
     public final boolean isRequiredByGroups(String var1, String var2) {
         KnowledgeEdge edge = new KnowledgeEdge(var1, var2);
@@ -476,9 +494,9 @@ public final class Knowledge implements TetradSerializable, IKnowledge {
         return false;
     }
 
-
     /**
-     * Determines whether the edge var1 --> var2 is forbidden by a knowledge group.
+     * Determines whether the edge var1 --> var2 is forbidden by a knowledge
+     * group.
      */
     public final boolean isForbiddenByGroups(String var1, String var2) {
         KnowledgeEdge edge = new KnowledgeEdge(var1, var2);
@@ -490,15 +508,13 @@ public final class Knowledge implements TetradSerializable, IKnowledge {
         return false;
     }
 
-
     /**
      * @return true iff no edge between x and y is required.
      */
     public final boolean noEdgeRequired(String x, String y) {
-        return !(isCommonCauseRequired(x, y) || isRequired(x, y) ||
-                isRequired(y, x));
+        return !(isCommonCauseRequired(x, y) || isRequired(x, y)
+                || isRequired(y, x));
     }
-
 
     /**
      * Determines whether a common cause is required between two varNames.
@@ -533,9 +549,9 @@ public final class Knowledge implements TetradSerializable, IKnowledge {
      * @return true if there is no background knowledge recorded.
      */
     public final boolean isEmpty() {
-        return this.allRequiredEdges.isEmpty() && getForbiddenEdges().isEmpty() &&
-                requiredCommonCauses.isEmpty() &&
-                forbiddenCommonCauses.isEmpty() && this.isGroupKnowledgeEmpty();
+        return this.allRequiredEdges.isEmpty() && getForbiddenEdges().isEmpty()
+                && requiredCommonCauses.isEmpty()
+                && forbiddenCommonCauses.isEmpty() && this.isGroupKnowledgeEmpty();
     }
 
     /**
@@ -549,31 +565,29 @@ public final class Knowledge implements TetradSerializable, IKnowledge {
      * 4 x5
      * </pre>
      */
-    public static void saveKnowledge(IKnowledge knowledge, Writer out)
-            throws IOException {
+    public static void saveKnowledge(IKnowledge knowledge, Writer out) throws IOException {
         StringBuilder buf = new StringBuilder();
         buf.append("/knowledge");
 
-        buf.append("\naddtemporal");
+        buf.append("\naddtemporal\n");
 
         for (int i = 0; i < knowledge.getNumTiers(); i++) {
-            String forbiddenWithin =
-                    knowledge.isTierForbiddenWithin(i) ? "*" : "";
+            String forbiddenWithin
+                    = knowledge.isTierForbiddenWithin(i) ? "*" : "";
 
-            buf.append("\n").append(i + 1).append(forbiddenWithin).append(" ");
+            buf.append("\n").append(i + 1).append(forbiddenWithin);
 
             List<String> tier = knowledge.getTier(i);
-
-            for (Object aTier : tier) {
-                String name = (String) aTier;
-                buf.append(name).append(" ");
+            if (!(tier == null || tier.isEmpty())) {
+                buf.append(" ");
+                buf.append(tier.stream().collect(Collectors.joining(" ")));
             }
         }
 
         buf.append("\n\nforbiddirect");
 
-        for (Iterator<KnowledgeEdge> i =
-             knowledge.forbiddenEdgesIterator(); i.hasNext(); ) {
+        for (Iterator<KnowledgeEdge> i
+                = knowledge.forbiddenEdgesIterator(); i.hasNext();) {
             KnowledgeEdge pair = i.next();
             String from = pair.getFrom();
             String to = pair.getTo();
@@ -587,8 +601,8 @@ public final class Knowledge implements TetradSerializable, IKnowledge {
 
         buf.append("\n\nrequiredirect");
 
-        for (Iterator<KnowledgeEdge> i =
-             knowledge.requiredEdgesIterator(); i.hasNext(); ) {
+        for (Iterator<KnowledgeEdge> i
+                = knowledge.requiredEdgesIterator(); i.hasNext();) {
             KnowledgeEdge pair = i.next();
             String from = pair.getFrom();
             String to = pair.getTo();
@@ -598,7 +612,6 @@ public final class Knowledge implements TetradSerializable, IKnowledge {
         out.write(buf.toString());
         out.flush();
     }
-
 
     /**
      * Iterator over the KnowledgeEdge's representing required common causes.
@@ -614,6 +627,14 @@ public final class Knowledge implements TetradSerializable, IKnowledge {
         return Collections.unmodifiableSet(this.allRequiredEdges).iterator();
     }
 
+    @Override
+    public List<KnowledgeEdge> getListOfRequiredEdges() {
+        List<KnowledgeEdge> list = this.allRequiredEdges.stream()
+                .collect(Collectors.toList());
+
+        return Collections.unmodifiableList(list);
+    }
+
     /**
      * Iterator over the KnowledgeEdge's explicitly required edges.
      */
@@ -621,6 +642,13 @@ public final class Knowledge implements TetradSerializable, IKnowledge {
         return Collections.unmodifiableSet(this.requiredEdges).iterator();
     }
 
+    @Override
+    public List<KnowledgeEdge> getListOfExplicitlyRequiredEdges() {
+        List<KnowledgeEdge> list = this.requiredEdges.stream()
+                .collect(Collectors.toList());
+
+        return Collections.unmodifiableList(list);
+    }
 
     /**
      * Marks the edge var1 --> var2 as forbid.
@@ -634,13 +662,13 @@ public final class Knowledge implements TetradSerializable, IKnowledge {
             return;
         }
         if (this.isRequiredByGroups(var1, var2)) {
-            throw new IllegalStateException("The edge " + var1 + "-->" + var2 +
-                    " is required by a knowledge group. Please remove that requirement first.");
+            throw new IllegalStateException("The edge " + var1 + "-->" + var2
+                    + " is required by a knowledge group. Please remove that requirement first.");
         }
 
         if (isRequired(var1, var2)) {
-            throw new IllegalStateException("The edge " + var1 + "-->" +
-                    var2 + " is already required. Please first remove that requirement.");
+            throw new IllegalStateException("The edge " + var1 + "-->"
+                    + var2 + " is already required. Please first remove that requirement.");
         }
 
         explicitlyForbiddenEdges.add(new KnowledgeEdge(var1, var2));
@@ -657,8 +685,8 @@ public final class Knowledge implements TetradSerializable, IKnowledge {
         }
 
         if (isForbiddenByTiers(var1, var2)) {
-            throw new IllegalStateException("The edge " + var1 + "-->" +
-                    var2 + " is forbidden by tiers. Please adjust tiers first.");
+            throw new IllegalStateException("The edge " + var1 + "-->"
+                    + var2 + " is forbidden by tiers. Please adjust tiers first.");
         }
 
         explicitlyForbiddenEdges.remove(new KnowledgeEdge(var1, var2));
@@ -666,26 +694,25 @@ public final class Knowledge implements TetradSerializable, IKnowledge {
         generateForbiddenEdgeList();
     }
 
-
     /**
      * Marks the edge var1 --> var2 as required.
      */
     public final void setRequired(String var1, String var2) {
         if (isForbiddenByTiers(var1, var2)) {
-            throw new IllegalArgumentException("The edge " + var1 +
-                    " --> " + var2 +
-                    " is forbidden by temporal tiers. Please adjust tiers first.");
+            throw new IllegalArgumentException("The edge " + var1
+                    + " --> " + var2
+                    + " is forbidden by temporal tiers. Please adjust tiers first.");
         }
         if (this.isForbiddenByGroups(var1, var2)) {
-            throw new IllegalArgumentException("The edge " + var1 + " --> " +
-                    var2 + "is forbidden by a knowledge group. Please remove this requirement first");
+            throw new IllegalArgumentException("The edge " + var1 + " --> "
+                    + var2 + "is forbidden by a knowledge group. Please remove this requirement first");
         }
 
         if (isForbidden(var1, var2)) {
-            throw new IllegalArgumentException("The edge " + var1 +
-                    " --> " + var2 +
-                    " has been forbidden explicitly. Please adjust that " +
-                    "requirement first.");
+            throw new IllegalArgumentException("The edge " + var1
+                    + " --> " + var2
+                    + " has been forbidden explicitly. Please adjust that "
+                    + "requirement first.");
         }
 
         KnowledgeEdge edge = new KnowledgeEdge(var1, var2);
@@ -705,7 +732,6 @@ public final class Knowledge implements TetradSerializable, IKnowledge {
         }
     }
 
-
     /**
      * Removes the given variable from the given tier.
      */
@@ -714,7 +740,6 @@ public final class Knowledge implements TetradSerializable, IKnowledge {
 //        this.forbiddenEdges = null;
 //        generateForbiddenEdgeList();
     }
-
 
     public final void setTierForbiddenWithin(int tier, boolean forbidden) {
         if (forbidden) {
@@ -763,7 +788,6 @@ public final class Knowledge implements TetradSerializable, IKnowledge {
     public final boolean isDefaultToKnowledgeLayout() {
         return defaultToKnowledgeLayout;
     }
-
 
     /**
      * Removes explicit knowledge and tier information.
@@ -846,7 +870,6 @@ public final class Knowledge implements TetradSerializable, IKnowledge {
     }
 
     //===========================PRIVATE METHODS==========================//
-
     private boolean isGroupKnowledgeEmpty() {
         for (KnowledgeGroup group : this.knowledgeGroups) {
             if (!group.isEmpty()) {
@@ -856,37 +879,34 @@ public final class Knowledge implements TetradSerializable, IKnowledge {
         return true;
     }
 
-
     private void checkAgainstRequired(KnowledgeEdge edge) {
         if (this.requiredEdges.contains(edge)) {
-            throw new IllegalArgumentException("The edge " + edge.getFrom() + " --> " + edge.getTo() +
-                    " is already required. Please first remove that requirement.");
+            throw new IllegalArgumentException("The edge " + edge.getFrom() + " --> " + edge.getTo()
+                    + " is already required. Please first remove that requirement.");
         }
     }
-
 
     private void checkAgainstForbidden(KnowledgeEdge edge) {
         if (isForbiddenByTiers(edge.getFrom(), edge.getTo())) {
-            throw new IllegalArgumentException("The edge " + edge.getFrom() +
-                    " --> " + edge.getTo() +
-                    " is forbidden by temporal tiers. Please adjust tiers first.");
+            throw new IllegalArgumentException("The edge " + edge.getFrom()
+                    + " --> " + edge.getTo()
+                    + " is forbidden by temporal tiers. Please adjust tiers first.");
         }
 
         if (this.explicitlyForbiddenEdges.contains(edge)) {
-            throw new IllegalArgumentException("The edge " + edge.getFrom() +
-                    " --> " + edge.getTo() +
-                    " has been forbidden explicitly. Please adjust that " +
-                    "requirement first.");
+            throw new IllegalArgumentException("The edge " + edge.getFrom()
+                    + " --> " + edge.getTo()
+                    + " has been forbidden explicitly. Please adjust that "
+                    + "requirement first.");
         }
     }
-
 
     /**
      * Sets whether a common cause is forbidden along an edge connecting var1
      * and var2.
      */
     private void setCommonCauseForbidden(String var1, String var2,
-                                         boolean forbidden) {
+            boolean forbidden) {
         KnowledgeEdge edge1 = new KnowledgeEdge(var1, var2);
         KnowledgeEdge edge2 = new KnowledgeEdge(var2, var1);
 
@@ -905,7 +925,7 @@ public final class Knowledge implements TetradSerializable, IKnowledge {
      * var2.
      */
     private void setCommonCauseRequired(String var1, String var2,
-                                        boolean required) {
+            boolean required) {
         KnowledgeEdge edge1 = new KnowledgeEdge(var1, var2);
         KnowledgeEdge edge2 = new KnowledgeEdge(var2, var1);
 
@@ -934,7 +954,6 @@ public final class Knowledge implements TetradSerializable, IKnowledge {
         tierMap = new HashMap<>();
     }
 
-
     /**
      * Generates the <code>allRequiredEdges</code> set.
      */
@@ -949,7 +968,6 @@ public final class Knowledge implements TetradSerializable, IKnowledge {
         }
         this.allRequiredEdges.addAll(this.requiredEdges);
     }
-
 
     /**
      * Method generateForbiddenEdgeList
@@ -987,7 +1005,7 @@ public final class Knowledge implements TetradSerializable, IKnowledge {
     }
 
     private static String readLineSkippingComments(BufferedReader in,
-                                                   String commentIndicator, int[] lineNo) throws IOException {
+            String commentIndicator, int[] lineNo) throws IOException {
         if (commentIndicator == null) {
             lineNo[0]++;
             return in.readLine();
@@ -1037,7 +1055,6 @@ public final class Knowledge implements TetradSerializable, IKnowledge {
 //        if (getForbiddenEdges() == null) {
 //            throw new NullPointerException();
 //        }
-
         if (explicitlyForbiddenEdges == null) {
             throw new NullPointerException();
         }
@@ -1074,7 +1091,6 @@ public final class Knowledge implements TetradSerializable, IKnowledge {
 //        }
 
     }
-
 
     public boolean isViolatedBy(Graph graph) {
         for (Edge edge : graph.getEdges()) {
@@ -1149,7 +1165,6 @@ public final class Knowledge implements TetradSerializable, IKnowledge {
 //    private void setForbiddenEdges(Set<KnowledgeEdge> forbiddenEdge) {
 //        this.forbiddenEdges = forbiddenEdge;
 //    }
-
     public boolean isLagged() {
         return lagged;
     }
@@ -1164,4 +1179,3 @@ public final class Knowledge implements TetradSerializable, IKnowledge {
     } // added by DMalinsky for tsFCI on 4/20/16
 
 }
-
