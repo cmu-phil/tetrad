@@ -163,7 +163,9 @@ public final class Fask implements GraphSearch {
                 double c2 = StatUtils.cov(x, y, y, 0, +1)[1];
 
                 if ((isUseFasAdjacencies() && G0.isAdjacentTo(X, Y)) || (isUseSkewAdjacencies() && Math.abs(c1 - c2) > getExtraEdgeThreshold())) {
-                    if (knowledgeOrients(X, Y)) {
+                    if (edgeForbiddenByKnowledge(X, Y)) {
+                        // Don't add an edge.
+                    } else if (knowledgeOrients(X, Y)) {
                         graph.addDirectedEdge(X, Y);
                     } else if (knowledgeOrients(Y, X)) {
                         graph.addDirectedEdge(Y, X);
@@ -204,45 +206,50 @@ public final class Fask implements GraphSearch {
         int[] choice;
 
         while ((choice = gen.next()) != null) {
-            List<Node> _adj = GraphUtils.asList(choice, adj);
-            double[][] _Z = new double[_adj.size()][];
+            try {
+                List<Node> _adj = GraphUtils.asList(choice, adj);
+                double[][] _Z = new double[_adj.size()][];
 
-            for (int f = 0; f < _adj.size(); f++) {
-                Node _z = _adj.get(f);
-                int column = dataSet.getColumn(_z);
-                _Z[f] = data[column];
-            }
+                for (int f = 0; f < _adj.size(); f++) {
+                    Node _z = _adj.get(f);
+                    int column = dataSet.getColumn(_z);
+                    _Z[f] = data[column];
+                }
 
-            double pc = partialCorrelation(x, y, _Z, x, Double.NEGATIVE_INFINITY, +1);
-            double pc1 = partialCorrelation(x, y, _Z, x, 0, +1);
-            double pc2 = partialCorrelation(x, y, _Z, y, 0, +1);
+                double pc = partialCorrelation(x, y, _Z, x, Double.NEGATIVE_INFINITY, +1);
+                double pc1 = partialCorrelation(x, y, _Z, x, 0, +1);
+                double pc2 = partialCorrelation(x, y, _Z, y, 0, +1);
 
-            int nc = StatUtils.getRows(x, x, Double.NEGATIVE_INFINITY, +1).size();
-            int nc1 = StatUtils.getRows(x, x, 0, +1).size();
-            int nc2 = StatUtils.getRows(y, y, 0, +1).size();
+                int nc = StatUtils.getRows(x, x, Double.NEGATIVE_INFINITY, +1).size();
+                int nc1 = StatUtils.getRows(x, x, 0, +1).size();
+                int nc2 = StatUtils.getRows(y, y, 0, +1).size();
 
-            double z = 0.5 * (log(1.0 + pc) - log(1.0 - pc));
-            double z1 = 0.5 * (log(1.0 + pc1) - log(1.0 - pc1));
-            double z2 = 0.5 * (log(1.0 + pc2) - log(1.0 - pc2));
+                double z = 0.5 * (log(1.0 + pc) - log(1.0 - pc));
+                double z1 = 0.5 * (log(1.0 + pc1) - log(1.0 - pc1));
+                double z2 = 0.5 * (log(1.0 + pc2) - log(1.0 - pc2));
 
-            double zv1 = (z - z1) / sqrt((1.0 / ((double) nc - 3) + 1.0 / ((double) nc1 - 3)));
-            double zv2 = (z - z2) / sqrt((1.0 / ((double) nc - 3) + 1.0 / ((double) nc2 - 3)));
+                double zv1 = (z - z1) / sqrt((1.0 / ((double) nc - 3) + 1.0 / ((double) nc1 - 3)));
+                double zv2 = (z - z2) / sqrt((1.0 / ((double) nc - 3) + 1.0 / ((double) nc2 - 3)));
 
-            boolean rejected1 = abs(zv1) > cutoff;
-            boolean rejected2 = abs(zv2) > cutoff;
+                boolean rejected1 = abs(zv1) > cutoff;
+                boolean rejected2 = abs(zv2) > cutoff;
 
-            boolean possibleTwoCycle = false;
+                boolean possibleTwoCycle = false;
 
-            if (zv1 < 0 && zv2 > 0 && rejected1) {
-                possibleTwoCycle = true;
-            } else if (zv1 > 0 && zv2 < 0 && rejected2) {
-                possibleTwoCycle = true;
-            } else if (rejected1 && rejected2) {
-                possibleTwoCycle = true;
-            }
+                if (zv1 < 0 && zv2 > 0 && rejected1) {
+                    possibleTwoCycle = true;
+                } else if (zv1 > 0 && zv2 < 0 && rejected2) {
+                    possibleTwoCycle = true;
+                } else if (rejected1 && rejected2) {
+                    possibleTwoCycle = true;
+                }
 
-            if (!possibleTwoCycle) {
-                return false;
+                if (!possibleTwoCycle) {
+                    return false;
+                }
+
+            } catch (SingularMatrixException e) {
+                e.printStackTrace();
             }
         }
 
@@ -363,6 +370,10 @@ public final class Fask implements GraphSearch {
 
     private boolean knowledgeOrients(Node left, Node right) {
         return knowledge.isForbidden(right.getName(), left.getName()) || knowledge.isRequired(left.getName(), right.getName());
+    }
+
+    private boolean edgeForbiddenByKnowledge(Node left, Node right) {
+        return knowledge.isForbidden(right.getName(), left.getName()) && knowledge.isForbidden(left.getName(), right.getName());
     }
 
     public Graph getInitialGraph() {

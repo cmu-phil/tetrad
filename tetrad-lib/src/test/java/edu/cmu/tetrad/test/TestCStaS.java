@@ -217,20 +217,18 @@ public class TestCStaS {
 
     public void testCStaS2() {
         int numNodes = 500;
-        int numEffects = 100;
         double avgDegree = 6;
-        int sampleSize = 200;
+        int sampleSize = 100;
+
+        int numEffects = 6;
         int numSubsamples = 50;
-        double penaltyDiscount = 2;
+
+        double penaltyDiscount = 1;
         double selectionAlpha = .2;
         int startIndex = 0;
 
-        int qFrom = numEffects * 10;
-        int qTo = qFrom;
-        int qIncrement = 1;
-
         CStaS.PatternAlgorithm algorithm = CStaS.PatternAlgorithm.FGES;
-        CStaS.SampleStyle sampleStyle = CStaS.SampleStyle.SPLIT;
+        CStaS.SampleStyle sampleStyle = CStaS.SampleStyle.BOOTSTRAP;
 
         Parameters parameters = new Parameters();
 
@@ -277,14 +275,13 @@ public class TestCStaS {
 
         nodes.sort((o1, o2) -> Integer.compare(numAncestors.get(o2), numAncestors.get(o1)));
 
-        CStaS cstas = new CStaS();
-        cstas.setNumSubsamples(numSubsamples);
-        cstas.setPatternAlgorithm(algorithm);
-        cstas.setSampleStyle(sampleStyle);
-        cstas.setqFrom(qFrom);
-        cstas.setqTo(qTo);
-        cstas.setqIncrement(qIncrement);
-        cstas.setVerbose(true);
+//        int qFrom = 150;
+//        int qTo = qFrom;
+//        int qIncrement = 1;
+//
+
+
+
 
         List<Node> potentialEffects = new ArrayList<>();
 
@@ -303,7 +300,33 @@ public class TestCStaS {
             }
         }
 
+        int totalCauseEffect = 0;
+
+        for (Node effect : potentialEffects) {
+            for (Node cause : potentialCauses) {
+                if (trueDag.isAncestorOf(trueDag.getNode(cause.getName()), trueDag.getNode(effect.getName()))) {
+                    totalCauseEffect++;
+                }
+            }
+        }
+
+
         System.out.println("Selected # nodes = " + potentialCauses.size());
+        System.out.println("Total # cause/effect pairs: " + totalCauseEffect);
+
+        int qFrom = totalCauseEffect / 2;
+        int qTo = qFrom;
+        int qIncrement = 1;
+
+        CStaS cstas = new CStaS();
+        cstas.setNumSubsamples(numSubsamples);
+        cstas.setPatternAlgorithm(algorithm);
+        cstas.setSampleStyle(sampleStyle);
+        cstas.setqFrom(qFrom);
+        cstas.setqTo(qTo);
+        cstas.setqIncrement(qIncrement);
+        cstas.setVerbose(true);
+        cstas.setTrueDag(trueDag);
 
         potentialCauses = GraphUtils.replaceNodes(potentialCauses, dataSet.getVariables());
         List<Node> augmented = new ArrayList<>(potentialCauses);
@@ -417,7 +440,7 @@ public class TestCStaS {
             cstas.setVerbose(true);
 
             LinkedList<LinkedList<CStaS.Record>> allRecords
-                    = cstas.getRecords(augmentedData, possibleCauses, possibleEffects, test,  "/Users/user/Downloads/hughes.out");
+                    = cstas.getRecords(augmentedData, possibleCauses, possibleEffects, test, "/Users/user/Downloads/hughes.out");
 
             for (LinkedList<CStaS.Record> records : allRecords) {
                 System.out.println(cstas.makeTable(records, false));
