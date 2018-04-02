@@ -26,8 +26,7 @@ import java.util.List;
 @edu.cmu.tetrad.annotation.Algorithm(
         name = "FAS",
         command = "fas",
-        algoType = AlgType.produce_undirected_graphs,
-        description = ""
+        algoType = AlgType.produce_undirected_graphs
 )
 public class FAS implements Algorithm, HasKnowledge, TakesIndependenceWrapper {
 
