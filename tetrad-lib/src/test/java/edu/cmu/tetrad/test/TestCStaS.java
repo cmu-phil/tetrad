@@ -42,10 +42,7 @@ import edu.pitt.dbmi.data.Delimiter;
 import edu.pitt.dbmi.data.reader.tabular.ContinuousTabularDataFileReader;
 import edu.pitt.dbmi.data.reader.tabular.TabularDataReader;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
+import java.io.*;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.*;
@@ -216,19 +213,19 @@ public class TestCStaS {
     }
 
     public void testCStaS2() {
-        int numNodes = 500;
-        double avgDegree = 6;
-        int sampleSize = 100;
+        int numNodes = 300;
+        double avgDegree = 1;
+        int sampleSize = 300;
 
-        int numEffects = 6;
+        int numEffects = 10;
         int numSubsamples = 50;
 
         double penaltyDiscount = 1;
-        double selectionAlpha = .2;
+        double selectionAlpha = .3;
         int startIndex = 0;
 
         CStaS.PatternAlgorithm algorithm = CStaS.PatternAlgorithm.FGES;
-        CStaS.SampleStyle sampleStyle = CStaS.SampleStyle.BOOTSTRAP;
+        CStaS.SampleStyle sampleStyle = CStaS.SampleStyle.SPLIT;
 
         Parameters parameters = new Parameters();
 
@@ -236,6 +233,8 @@ public class TestCStaS {
         parameters.set("numSubsamples", numSubsamples);
         parameters.set("depth", 4);
         parameters.set("selectionAlpha", selectionAlpha);
+
+        parameters.set("parallelism", 40);
 
         parameters.set("numMeasures", numNodes);
         parameters.set("numLatents", 0);
@@ -256,7 +255,6 @@ public class TestCStaS {
 
         parameters.set("sampleSize", sampleSize);
 
-        parameters.set("parallelism", 40);
 
         RandomGraph randomForward = new RandomForward();
         LinearFisherModel fisher = new LinearFisherModel(randomForward);
@@ -274,14 +272,6 @@ public class TestCStaS {
         }
 
         nodes.sort((o1, o2) -> Integer.compare(numAncestors.get(o2), numAncestors.get(o1)));
-
-//        int qFrom = 150;
-//        int qTo = qFrom;
-//        int qIncrement = 1;
-//
-
-
-
 
         List<Node> potentialEffects = new ArrayList<>();
 
@@ -314,7 +304,7 @@ public class TestCStaS {
         System.out.println("Selected # nodes = " + potentialCauses.size());
         System.out.println("Total # cause/effect pairs: " + totalCauseEffect);
 
-        int qFrom = totalCauseEffect / 2;
+        int qFrom = (int)(.5 * totalCauseEffect);
         int qTo = qFrom;
         int qIncrement = 1;
 
@@ -537,6 +527,54 @@ public class TestCStaS {
         }
 
         return sum / count;
+    }
+
+    public void testXueEr() {
+        try {
+            File dir = new File("//Users/user/Downloads");
+
+            Dataset dataset = new ContinuousTabularDataFileReader(new File(dir, "searchexpv1.csv"), Delimiter.TAB).readInData();
+            final DataSet dataSet = (DataSet) DataConvertUtils.toDataModel(dataset);
+
+
+            List<Node> possibleCauses = new ArrayList<>();
+            List<Node> possibleEffects = new ArrayList<>();
+
+            possibleCauses.add(dataSet.getVariable("G1"));
+
+            SemBicScore score = new SemBicScore(new CovarianceMatrixOnTheFly(dataSet));
+            score.setPenaltyDiscount(2);
+
+            IndependenceTest test = new IndTestScore(score);
+
+            int numSubsamples = 50;
+            CStaS.PatternAlgorithm algorithm = CStaS.PatternAlgorithm.FGES;
+            CStaS.SampleStyle sampleStyle = CStaS.SampleStyle.SPLIT;
+
+            final CStaS cStaS = new CStaS();
+            cStaS.setNumSubsamples(numSubsamples);
+            cStaS.setPatternAlgorithm(algorithm);
+            cStaS.setSampleStyle(sampleStyle);
+            cStaS.setqFrom(100);
+            cStaS.setqTo(1000);
+            cStaS.setqIncrement(100);
+            cStaS.setVerbose(true);
+            LinkedList<LinkedList<CStaS.Record>> records = cStaS.getRecords(dataSet, possibleCauses, possibleEffects, test);
+
+            for (LinkedList<CStaS.Record> _records : records) {
+                cStaS.makeTable(_records, true);
+            }
+
+            final LinkedList<CStaS.Record> cstarRecords = CStaS.cStar(records);
+            System.out.println(cStaS.makeTable(cstarRecords, true));
+
+
+
+
+            // Run CStaS as above.
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     public static void main(String... args) {
