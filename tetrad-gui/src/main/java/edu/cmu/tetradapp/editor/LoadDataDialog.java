@@ -120,6 +120,8 @@ final class LoadDataDialog extends JPanel {
 
     private Box validationMessageBox;
 
+    private final int validationWarnErrMsgThreshold = 10;
+    
     private Box buttonsBox;
 
     private JButton addFileButton;
@@ -733,8 +735,6 @@ final class LoadDataDialog extends JPanel {
      */
     private void validateAllFiles() {
         for (int i = 0; i < loadedFiles.size(); i++) {
-            System.out.println("Validating file index = " + i);
-
             // Validate each individual file
             String output = "<p>Validation result of " + loadedFiles.get(i).getName() + ": </p>";
 
@@ -777,10 +777,23 @@ final class LoadDataDialog extends JPanel {
 
             // Show warning messages
             if (!warnings.isEmpty()) {
-                output = output + "<p style=\"color: orange;\"><b>Warning: </b></p>";
-                for (ValidationResult warning : warnings) {
-                    output = output + "<p style=\"color: orange;\">" + warning.getMessage() + "</p>";
+                
+                int warnCount = warnings.size();
+                
+                if (warnCount > validationWarnErrMsgThreshold) {
+                    output = output + "<p style=\"color: orange;\"><b>Warning (total " + warnCount + ", showing the first " + validationWarnErrMsgThreshold + "): </b></p>";
+                    
+                    for (ValidationResult warning : warnings.subList(0, validationWarnErrMsgThreshold)) {
+                        output = output + "<p style=\"color: orange;\">" + warning.getMessage() + "</p>";
+                    }
+                } else {
+                    output = output + "<p style=\"color: orange;\"><b>Warning (total " + warnCount + "): </b></p>";
+                    
+                    for (ValidationResult warning : warnings) {
+                        output = output + "<p style=\"color: orange;\">" + warning.getMessage() + "</p>";
+                    }
                 }
+                    
             }
 
             // Show errors if found
@@ -788,13 +801,23 @@ final class LoadDataDialog extends JPanel {
                 int errorCount = errors.size();
 
                 String errorCountString = (errorCount > 1) ? " errors" : " error";
-                output = output + "<p style=\"color: red;\"><b>Validation failed!<br>Please fix the following " + errorCount + errorCountString + " and validate again:</b></p>";
+                
+                if (errorCount > validationWarnErrMsgThreshold) {
+                    output = output + "<p style=\"color: red;\"><b>Validation failed!<br>Please fix the following " + validationWarnErrMsgThreshold + errorCountString + " (total " + errorCount + ") and validate again:</b></p>";
 
-                for (ValidationResult error : errors) {
-                    // Remember to excape the html tags if the data file contains any
-                    output = output + "<p style=\"color: red;\">" + escapeHtml4(error.getMessage()) + "</p>";
+                    for (ValidationResult error : errors.subList(0, validationWarnErrMsgThreshold)) {
+                        // Remember to excape the html tags if the data file contains any
+                        output = output + "<p style=\"color: red;\">" + escapeHtml4(error.getMessage()) + "</p>";
+                    }
+                } else {
+                    output = output + "<p style=\"color: red;\"><b>Validation failed!<br>Please fix the following " + errorCount + errorCountString + " and validate again:</b></p>";
+
+                    for (ValidationResult error : errors) {
+                        // Remember to excape the html tags if the data file contains any
+                        output = output + "<p style=\"color: red;\">" + escapeHtml4(error.getMessage()) + "</p>";
+                    }
                 }
-
+  
                 // Also add the file name to failed list
                 // this determines if to show the Load button
                 failedFiles.add(loadedFiles.get(i).getName());
