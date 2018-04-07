@@ -32,9 +32,7 @@ import org.apache.commons.math3.linear.SingularMatrixException;
 
 import java.io.PrintStream;
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
 
-import static java.lang.Math.PI;
 import static java.lang.Math.log;
 
 /**
@@ -69,7 +67,7 @@ public class SemBicScore implements Score {
     // Variables that caused computational problems and so are to be avoided.
     private Set<Integer> forbidden = new HashSet<>();
 
-    private Map<Node, Integer> indexMap;
+    private Map<String, Integer> indexMap;
 
 
     /**
@@ -83,7 +81,7 @@ public class SemBicScore implements Score {
         this.setCovariances(covariances);
         this.variables = covariances.getVariables();
         this.sampleSize = covariances.getSampleSize();
-        this.indexMap = indexMap(variables);
+        this.indexMap = indexMap(this.variables);
     }
 
     /**
@@ -94,7 +92,7 @@ public class SemBicScore implements Score {
 
         try {
             double s2 = getCovariances().getValue(i, i);
-            int k = parents.length + 1;
+            int p = parents.length;
 
             TetradMatrix covxx = getSelection(getCovariances(), parents, parents);
             TetradVector covxy = getSelection(getCovariances(), parents, new int[]{i}).getColumn(0);
@@ -109,9 +107,8 @@ public class SemBicScore implements Score {
             }
 
             int n = getSampleSize();
-            return -(n) * log(s2) - getPenaltyDiscount() * k * log(n);
-//                    + getStructurePrior(parents.length);
-//                    - getStructurePrior(parents.length);
+            return -(n) * log(s2) - getPenaltyDiscount() * log(n);
+            // + getStructurePrior(parents.length);// - getStructurePrior(parents.length + 1);
         } catch (Exception e) {
             boolean removedOne = true;
 
@@ -173,33 +170,19 @@ public class SemBicScore implements Score {
     }
 
     private double partialCorrelation(Node x, Node y, List<Node> z) throws SingularMatrixException {
-//        if (z.isEmpty()) {
-//            double a = covariances.getValue(indexMap.get(x), indexMap.get(y));
-//            double b = covariances.getValue(indexMap.get(x), indexMap.get(x));
-//            double c = covariances.getValue(indexMap.get(y), indexMap.get(y));
-//
-//            if (b * c == 0) throw new SingularMatrixException();
-//
-//            return -a / Math.sqrt(b * c);
-//        } else {
         int[] indices = new int[z.size() + 2];
-        try {
-            indices[0] = indexMap.get(x);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        indices[1] = indexMap.get(y);
-        for (int i = 0; i < z.size(); i++) indices[i + 2] = indexMap.get(z.get(i));
+        indices[0] = indexMap.get(x.getName());
+        indices[1] = indexMap.get(y.getName());
+        for (int i = 0; i < z.size(); i++) indices[i + 2] = indexMap.get(z.get(i).getName());
         TetradMatrix submatrix = covariances.getSubmatrix(indices).getMatrix();
         return StatUtils.partialCorrelation(submatrix);
-//        }
     }
 
-    private Map<Node, Integer> indexMap(List<Node> variables) {
-        Map<Node, Integer> indexMap = new ConcurrentHashMap<>();
+    private Map<String, Integer> indexMap(List<Node> variables) {
+        Map<String, Integer> indexMap = new HashMap<>();
 
         for (int i = 0; i < variables.size(); i++) {
-            indexMap.put(variables.get(i), i);
+            indexMap.put(variables.get(i).getName(), i);
         }
 
         return indexMap;

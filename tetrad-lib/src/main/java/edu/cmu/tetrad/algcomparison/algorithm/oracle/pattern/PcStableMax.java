@@ -5,7 +5,6 @@ import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.algcomparison.utils.TakesIndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.utils.TakesInitialGraph;
-import edu.cmu.tetrad.annotation.AlgType;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
@@ -28,8 +27,7 @@ import java.util.List;
 //@edu.cmu.tetrad.annotation.Algorithm(
 //        name = "PcStableMax",
 //        command = "pc-stable-max",
-//        algoType = AlgType.forbid_latent_common_causes,
-//        description = "A revision (Ramsey, 2016). \"Improving Accuracy and Scalability of the PC Algorithm by Maximizing P-value.\" arXiv preprint arXiv:1610.00378 (2016).) of the PC algorithm (Spirtes, Glymour and Scheines, 2000) in which colliders are oriented following the regime of CPC (Ramsey et al. (2012)), except instead of looking for conflicts among orientation for independence judgements, one picks the separating set with the maximal p-value and judges collider orientation with respect to this set."
+//        algoType = AlgType.forbid_latent_common_causes
 //)
 public class PcStableMax implements Algorithm, TakesInitialGraph, HasKnowledge, TakesIndependenceWrapper {
 

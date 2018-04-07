@@ -18,7 +18,6 @@
 // along with this program; if not, write to the Free Software               //
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA //
 ///////////////////////////////////////////////////////////////////////////////
-
 package edu.cmu.tetradapp.editor;
 
 import edu.cmu.tetrad.graph.Graph;
@@ -29,12 +28,17 @@ import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetradapp.model.LogisticRegressionRunner;
 import edu.cmu.tetradapp.workbench.GraphWorkbench;
-
-import javax.swing.*;
-import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
+import java.awt.BorderLayout;
+import java.awt.Dimension;
 import java.text.NumberFormat;
+import javax.swing.Box;
+import javax.swing.JButton;
+import javax.swing.JComboBox;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTabbedPane;
+import javax.swing.JTextArea;
 
 /**
  * Allows the user to execute a logistic regression in the GUI. Contains a panel
@@ -46,42 +50,27 @@ import java.text.NumberFormat;
  *
  * @author Joseph Ramsey jdramsey@andrew.cmu.edu
  * @author Frank Wimberly - adapted for EM Bayes estimator and Strucural EM
- *         Bayes estimator
+ * Bayes estimator
  */
 public class LogisticRegressionEditor extends JPanel {
+
+    private static final long serialVersionUID = 7779226528390174L;
 
     /**
      * Text area for display output.
      */
     private final JTextArea modelParameters;
 
-
     /**
      * The number formatter used for printing reports.
      */
     private final NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
-
 
     public LogisticRegressionEditor(final LogisticRegressionRunner regressionRunner) {
         final LogisticRegressionRunner regRunner = regressionRunner;
         final GraphWorkbench workbench = new GraphWorkbench();
         this.modelParameters = new JTextArea();
         final JButton executeButton = new JButton("Execute");
-
-        //this.modelParameters.setFont(new Font("Monospaced", Font.PLAIN, 12));
-
-        executeButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                regRunner.execute();
-                //  modelParameters.setText(regRunner.getReport());
-                print(regRunner.getResult(), regRunner.getAlpha());
-                Graph outGraph = regRunner.getOutGraph();
-                GraphUtils.circleLayout(outGraph, 200, 200, 150);
-                GraphUtils.fruchtermanReingoldLayout(outGraph);
-                workbench.setGraph(outGraph);
-                TetradLogger.getInstance().log("result", modelParameters.getText());
-            }
-        });
 
         JTabbedPane tabbedPane = new JTabbedPane();
         tabbedPane.setPreferredSize(new Dimension(600, 400));
@@ -115,11 +104,8 @@ public class LogisticRegressionEditor extends JPanel {
                 comp.addItem(i + 1);
             }
 
-            comp.addActionListener(new ActionListener() {
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    regressionRunner.setModelIndex(((Integer)comp.getSelectedItem()).intValue() - 1);
-                }
+            comp.addActionListener((e) -> {
+                regressionRunner.setModelIndex(((Integer) comp.getSelectedItem()) - 1);
             });
 
             comp.setMaximumSize(comp.getPreferredSize());
@@ -133,60 +119,67 @@ public class LogisticRegressionEditor extends JPanel {
 
             add(c, BorderLayout.NORTH);
         }
+
+        //this.modelParameters.setFont(new Font("Monospaced", Font.PLAIN, 12));
+        executeButton.addActionListener((e) -> {
+            regRunner.setAlpha(paramsPanel.getParams().getDouble("alpha", 0.001));
+            regRunner.execute();
+            //  modelParameters.setText(regRunner.getReport());
+            print(regRunner.getResult(), regRunner.getAlpha());
+            Graph outGraph = regRunner.getOutGraph();
+            GraphUtils.circleLayout(outGraph, 200, 200, 150);
+            GraphUtils.fruchtermanReingoldLayout(outGraph);
+            workbench.setGraph(outGraph);
+            TetradLogger.getInstance().log("result", modelParameters.getText());
+        });
     }
 
     /**
      * Sets the name of this editor.
      */
+    @Override
     public void setName(String name) {
         String oldName = getName();
         super.setName(name);
         this.firePropertyChange("name", oldName, getName());
     }
 
-
     //============================== Private Methods =====================================//
-
     /**
-     * Prints the info in the result to the text area (doesn't use the results representation).
+     * Prints the info in the result to the text area (doesn't use the results
+     * representation).
      */
-    private void print(LogisticRegression.Result result, double alpha){
-        if(result == null){
+    private void print(LogisticRegression.Result result, double alpha) {
+        if (result == null) {
             return;
         }
         // print cases
-        String text = result.getNy0() + " cases have " + result.getTarget()  + " = 0; ";
+        String text = result.getNy0() + " cases have " + result.getTarget() + " = 0; ";
         text += result.getNy1() + " cases have " + result.getTarget() + " = 1.\n\n";
         // print avgs/SD
         text += "Var\tAvg\tSD\n";
-        for(int i = 1; i<=result.getNumRegressors(); i++){
+        for (int i = 1; i <= result.getNumRegressors(); i++) {
             text += result.getRegressorNames().get(i - 1) + "\t";
             text += nf.format(result.getxMeans()[i]) + "\t";
             text += nf.format(result.getxStdDevs()[i]) + "\n";
         }
         text += "\nCoefficients and Standard Errors:\n";
         text += "Var\tCoeff.\tStdErr\tProb.\tSig.\n";
-        for(int i = 1; i<=result.getNumRegressors(); i++){
+        for (int i = 1; i <= result.getNumRegressors(); i++) {
             text += result.getRegressorNames().get(i - 1) + "\t";
             text += nf.format(result.getCoefs()[i]) + "\t";
             text += nf.format(result.getStdErrs()[i]) + "\t";
             text += nf.format(result.getProbs()[i]) + "\t";
-            if(result.getProbs()[i] < alpha){
+            if (result.getProbs()[i] < alpha) {
                 text += "*\n";
             } else {
                 text += "\n";
             }
         }
 
-        text+= "\n\nIntercept = " + nf.format(result.getIntercept()) + "\n";
+        text += "\n\nIntercept = " + nf.format(result.getIntercept()) + "\n";
 
         this.modelParameters.setText(text);
     }
 
-
-
 }
-
-
-
-

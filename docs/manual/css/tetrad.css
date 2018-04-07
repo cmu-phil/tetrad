@@ -1,0 +1,549 @@
+
+/*
+ * Remove text-shadow in selection highlight: h5bp.com/i
+ * These selection rule sets have to be separate.
+ * Customize the background color to match your design.
+ */
+::-moz-selection {
+background: #b3d4fc;
+text-shadow: none;
+}
+
+::selection {
+background: #b3d4fc;
+text-shadow: none;
+}
+
+/*
+ * Remove the gap between images, videos, audio and canvas and the bottom of
+ * their containers: h5bp.com/i/440
+ */
+audio,
+canvas,
+img,
+svg,
+video {
+vertical-align: middle;
+}
+
+/*
+ * Remove default fieldset styles.
+ */
+fieldset {
+    border: 0;
+    margin: 0;
+    padding: 0;
+}
+
+/*
+ * Allow only vertical resizing of textareas.
+ */
+textarea {
+    resize: vertical;
+}
+
+/* Hyperlinks */
+a:link, a:visited {
+color:#3b5998;
+}
+
+/* a:hover MUST come after a:link and a:visited in the CSS definition in order to be effective! */
+a:hover {
+color:#f75342;
+}
+
+/* selected link */
+/* a:active MUST come after a:hover in the CSS definition in order to be effective! */
+a:active {
+color:#f75342;
+}
+
+p {
+line-height:1.6;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6{
+line-height: 1.1;
+}
+
+/* Tables
+   ========================================================================== */
+
+/**
+ * Remove most spacing between table cells.
+ */
+
+table {
+  border-collapse: collapse;
+  border-spacing: 0;
+}
+
+td,
+th {
+  padding: 0;
+}
+
+
+/* Unordered Lists and Ordered Lists */
+/* http://www.w3.org/wiki/Styling_lists_and_links */
+.ul, .ol {
+margin-left: 0;
+padding-left: 0;
+}
+
+.ul li {
+margin-left:1.8em;
+line-height:1.6;
+}
+
+.ol li {
+margin-left:2em;
+line-height:1.6;
+}
+
+/* Description Lists */
+.dl {
+margin:20px 0;
+}
+
+.dl dt{
+font-weight: 700;
+}
+
+.dl dd {
+margin-bottom: 10px;
+margin-left: 0;
+line-height:1.6;
+}
+
+/* 12 or 16 Column Grid Layout  */
+.inner {
+width:940px;
+margin:0 auto;
+padding:0;
+}
+
+.row12, .row16 {
+margin-left: -20px;
+width: 960px; /* Total width 940px  */
+}
+
+.row12:before, .row12:after, .row16:before, .row16:after {
+display: table;
+content: "";
+}
+
+.row12:after, .row16:after {
+clear: both;
+}
+
+/* 12 Column Grid */
+.row12 .span1,
+.row12 .span2,
+.row12 .span3,
+.row12 .span4,
+.row12 .span5,
+.row12 .span6,
+.row12 .span7,
+.row12 .span8,
+.row12 .span9,
+.row12 .span10,
+.row12 .span11,
+.row12 .span12 {
+float: left;
+margin-left: 20px; /*Gutter 20px */
+min-height: 1px; /* In case empty columns collapse horizontally */
+}
+
+/* 12 Column Grid */
+.row12 .span1 {
+width: 60px;
+}
+
+.row12 .span2 {
+width: 140px;
+}
+
+.row12 .span3 {
+width: 220px;
+}
+
+.row12 .span4 {
+width: 300px;
+}
+
+.row12 .span5 {
+width: 380px;
+}
+
+.row12 .span6 {
+width: 460px;
+}
+
+.row12 .span7 {
+width: 540px;
+}
+
+.row12 .span8 {
+width: 620px;
+}
+
+.row12 .span9 {
+width: 700px;
+}
+
+.row12 .span10 {
+width: 780px;
+}
+
+.row12 .span11 {
+width: 860px;
+}
+
+.row12 .span12 {
+width: 940px;
+}
+
+/* 16 Column Grid */
+.row16 .span1,
+.row16 .span2,
+.row16 .span3,
+.row16 .span4,
+.row16 .span5,
+.row16 .span6,
+.row16 .span7,
+.row16 .span8,
+.row16 .span9,
+.row16 .span10,
+.row16 .span11,
+.row16 .span12,
+.row16 .span13,
+.row16 .span14,
+.row16 .span15,
+.row16 .span16 {
+float: left;
+margin-left: 20px; /*Gutter 20px */
+min-height: 1px; /* In case empty columns collapse horizontally */
+}
+
+/* 16 Column Grid */
+.row16 .span1 {
+width: 40px;
+}
+
+.row16 .span2 {
+width: 100px;
+}
+
+.row16 .span3 {
+width: 160px;
+}
+
+.row16 .span4 {
+width: 220px;
+}
+
+.row16 .span5 {
+width: 280px;
+}
+
+.row16 .span6 {
+width: 340px;
+}
+
+.row16 .span7 {
+width: 400px;
+}
+
+.row16 .span8 {
+width: 460px;
+}
+
+.row16 .span9 {
+width: 520px;
+}
+
+.row16 .span10 {
+width: 580px;
+}
+
+.row16 .span11 {
+width: 640px;
+}
+
+.row16 .span12 {
+width: 700px;
+}
+
+.row16 .span13 {
+width: 760px;
+}
+
+.row16 .span14 {
+width: 820px;
+}
+
+.row16 .span15 {
+width: 880px;
+}
+
+.row16 .span16 {
+width: 940px;
+}
+
+
+/* Text Colors */
+.red_tx{
+color:#e27b67 !important;
+}
+
+.orange_tx{
+color:#ff8d5b !important;
+}
+
+.yellow_tx{
+color:#fbdca0 !important;
+}
+
+.green_tx{
+color:#7AC4A0 !important;
+}
+
+.grey_tx{
+color:#d6d6d6 !important;
+}
+
+.blue_tx{
+color:#82ACDE !important;
+}
+
+.purple_tx{
+color:#8763A3 !important;
+}
+
+/* Background Colors */
+.red_bg{
+background-color:#e27b67 !important;
+}
+
+.orange_bg{
+background-color:#ff8d5b !important;
+}
+
+.yellow_bg{
+background-color:#fbdca0 !important;
+}
+
+.green_bg{
+background-color:#7AC4A0 !important;
+}
+
+.grey_bg{
+background-color:#d6d6d6 !important;
+}
+
+.blue_bg{
+background-color:#82ACDE !important;
+}
+
+.purple_bg{
+background-color:#AE87C4 !important;
+}
+
+/* Misc CSS Helper Classes */
+.quote {
+font-family: "Georgia", serif;
+font-size: 17.5px;
+color: #666;
+border-left: 5px solid #859ce6;
+padding-left:20px;
+margin:20px;
+line-height:1.6;
+}
+
+.quote footer {
+display: block;
+font-size: .85em;
+color: #999;
+}
+
+.quote footer:before {
+content: '\2014 \00A0';
+}
+
+/* clearfix hack http://nicolasgallagher.com/micro-clearfix-hack/ */
+.clearfix:before,
+.clearfix:after {
+content: " "; /* 1 */
+display: table; /* 2 */
+}
+
+.clearfix:after {
+clear: both;
+}
+
+.inline_code {
+padding: 2px 4px;
+font-size: 90%;
+color: #DC4945;
+white-space: nowrap;
+background-color: #f9f2f4;
+border-radius: 4px;
+}
+
+/* The <acronym> tag is not supported in HTML5. Use the <abbr> tag instead. */
+.abbr { 
+border-bottom:1px dotted #ff0000; 
+cursor:help;
+}
+
+/* For the <address> tag. */
+.addr {
+margin:10px 0 20px;
+font-style: normal;
+line-height: 1.428571429;
+}
+
+.hide { 
+display: none; 
+}
+
+.float_left {
+float:left;
+}
+
+.float_right {
+float:right;
+}
+
+.align_left {
+text-align:left;
+}
+
+.align_right {
+text-align:right;
+}
+
+.align_center {
+text-align:center;
+}
+
+.line_through{
+text-decoration:line-through;
+}
+
+.external_link {
+background-image:url('images/external_link.png') !important; 
+background-repeat:no-repeat !important;
+background-position: center right !important; 
+padding-right:12px !important;
+}
+
+.card { 
+padding:20px; 
+border:1px solid #ccc; 
+}
+
+/* Table */
+.table {
+width:100%;
+border:1px solid #ccc;
+margin:20px 0;
+}
+
+.table th {
+padding:10px; 
+background:#ebeff9;
+border:1px solid #ccc;
+/* The text in th are bold and centered by default. */
+}
+
+.table td {
+line-height:1.6;
+padding:10px; 
+border:1px solid #ccc;
+}
+
+
+/*--------------------------------------------------------------
+Application-specific Styles
+-------------------------------------------------------------- */
+html {
+overflow-y:scroll;
+font-size: 62.5%; /* 16*62.5%=10px */
+-webkit-tap-highlight-color: rgba(0, 0, 0, 0);
+}
+
+body {
+font-family:Arial, Helvetica, sans-serif;
+font-size: 14px;
+line-height: 1.428571429;
+color: #333;
+background-color: #ddd;
+}
+
+/* page layout / structure
+-------------------------------------------------------------- */
+.inner {
+margin:20px auto;
+padding:40px 40px;
+background-color: #fff;
+}
+
+h1 {
+font-size: 3em;
+margin: 0.67em 0;
+}
+
+h2 {
+font-size: 2.2em;
+margin: 1em 0 0.5em;
+padding-bottom: 9px;
+border-bottom: 1px solid #eee;
+}
+
+
+h3 {
+font-size: 1.4em;
+margin: 0.4em 0;
+}
+
+h4 {
+font-size: 1.2em;
+margin: 0.4em 0;
+}
+
+h5 {
+font-size: 1em;
+margin: 0.4em 0;
+}
+
+.header {
+background:#ddd;
+padding:20px;
+text-align:center;
+}
+
+.toc_container {
+background: #f9f9f9;
+border: 1px solid #aaa;
+display: table;
+padding: 20px;
+margin-top:40px;
+width: auto;
+}
+
+.section_heading {
+border-left: 5px solid #D66061;
+padding-left:10px;
+}
+
+img {
+display:block;
+margin:10px auto;
+}

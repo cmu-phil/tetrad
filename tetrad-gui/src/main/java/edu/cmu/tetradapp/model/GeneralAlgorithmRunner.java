@@ -53,6 +53,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * Stores an algorithms in the format of the algorithm comparison API.
@@ -229,13 +230,13 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
 
         if (getDataModelList().isEmpty()) {
             if (getSourceGraph() != null) {
-                Algorithm algorithm = getAlgorithm();
+                Algorithm algo = getAlgorithm();
 
-                if (algorithm instanceof HasKnowledge) {
-                    ((HasKnowledge) algorithm).setKnowledge(getKnowledge());
+                if (algo instanceof HasKnowledge) {
+                    ((HasKnowledge) algo).setKnowledge(getKnowledge());
                 }
 
-                graphList.add(algorithm.search(null, parameters));
+                graphList.add(algo.search(null, parameters));
             } else {
                 throw new IllegalArgumentException("The parent boxes did not include any datasets or graphs. Try opening\n"
                         + "the editors for those boxes and loading or simulating them.");
@@ -243,36 +244,29 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
         } else {
             if (getAlgorithm() instanceof MultiDataSetAlgorithm) {
                 for (int k = 0; k < parameters.getInt("numRuns"); k++) {
-                    List<DataSet> dataSets = new ArrayList<>();
-
-                    for (DataModel dataModel : getDataModelList()) {
-                        dataSets.add((DataSet) dataModel);
-                    }
-
+                    List<DataSet> dataSets = getDataModelList().stream()
+                            .map(e -> (DataSet) e)
+                            .collect(Collectors.toCollection(ArrayList::new));
                     if (dataSets.size() < parameters.getInt("randomSelectionSize")) {
                         throw new IllegalArgumentException("Sorry, the 'random selection size' is greater than "
                                 + "the number of data sets.");
                     }
-
                     Collections.shuffle(dataSets);
 
                     List<DataModel> sub = new ArrayList<>();
-
                     for (int j = 0; j < parameters.getInt("randomSelectionSize"); j++) {
                         sub.add(dataSets.get(j));
                     }
 
-                    Algorithm algorithm = getAlgorithm();
-
-                    if (algorithm instanceof HasKnowledge) {
-                        ((HasKnowledge) algorithm).setKnowledge(getKnowledge());
+                    Algorithm algo = getAlgorithm();
+                    if (algo instanceof HasKnowledge) {
+                        ((HasKnowledge) algo).setKnowledge(getKnowledge());
                     }
-
-                    graphList.add(((MultiDataSetAlgorithm) algorithm).search(sub, parameters));
+                    graphList.add(((MultiDataSetAlgorithm) algo).search(sub, parameters));
                 }
             } else if (getAlgorithm() instanceof ClusterAlgorithm) {
                 for (int k = 0; k < parameters.getInt("numRuns"); k++) {
-                    for (DataModel dataModel : getDataModelList()) {
+                    getDataModelList().forEach(dataModel -> {
                         if (dataModel instanceof ICovarianceMatrix) {
                             ICovarianceMatrix dataSet = (ICovarianceMatrix) dataModel;
                             graphList.add(algorithm.search(dataSet, parameters));
@@ -285,30 +279,33 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
 
                             graphList.add(algorithm.search(dataSet, parameters));
                         }
-                    }
+                    });
                 }
             } else {
-                for (DataModel data : getDataModelList()) {
-
-                    Algorithm algorithm = getAlgorithm();
-
-                    if (algorithm instanceof HasKnowledge) {
-                        ((HasKnowledge) algorithm).setKnowledge(getKnowledge());
+                getDataModelList().forEach(data -> {
+                    IKnowledge knowledgeFromData = data.getKnowledge();
+                    if (!(knowledgeFromData == null || knowledgeFromData.getVariables().isEmpty())) {
+                        this.knowledge = knowledgeFromData;
                     }
 
-                    DataType algDataType = algorithm.getDataType();
+                    Algorithm algo = getAlgorithm();
+                    if (algo instanceof HasKnowledge) {
+                        ((HasKnowledge) algo).setKnowledge(getKnowledge());
+                    }
+
+                    DataType algDataType = algo.getDataType();
 
                     if (data.isContinuous() && (algDataType == DataType.Continuous || algDataType == DataType.Mixed)) {
-                        graphList.add(algorithm.search(data, parameters));
+                        graphList.add(algo.search(data, parameters));
                     } else if (data.isDiscrete() && (algDataType == DataType.Discrete || algDataType == DataType.Mixed)) {
-                        graphList.add(algorithm.search(data, parameters));
+                        graphList.add(algo.search(data, parameters));
                     } else if (data.isMixed() && algDataType == DataType.Mixed) {
-                        graphList.add(algorithm.search(data, parameters));
+                        graphList.add(algo.search(data, parameters));
                     } else {
                         throw new IllegalArgumentException("The type of data changed; try opening up the search editor and "
                                 + "running the algorithm there.");
                     }
-                }
+                });
             }
         }
 
@@ -459,17 +456,17 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
 
     @Override
     public List<String> getTriplesClassificationTypes() {
-        return null;
+        return Collections.EMPTY_LIST;
     }
 
     @Override
     public List<List<Triple>> getTriplesLists(Node node) {
-        return null;
+        return Collections.EMPTY_LIST;
     }
 
     @Override
     public Map<String, String> getParamSettings() {
-        return null;
+        return Collections.EMPTY_MAP;
     }
 
     @Override
@@ -479,7 +476,7 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
 
     @Override
     public Map<String, String> getAllParamSettings() {
-        return null;
+        return Collections.EMPTY_MAP;
     }
 
     @Override
@@ -510,12 +507,12 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
 
     @Override
     public List<Node> getVariables() {
-        return null;
+        return Collections.EMPTY_LIST;
     }
 
     @Override
     public List<String> getVariableNames() {
-        return null;
+        return Collections.EMPTY_LIST;
     }
 
     public List<Graph> getCompareGraphs(List<Graph> graphs) {

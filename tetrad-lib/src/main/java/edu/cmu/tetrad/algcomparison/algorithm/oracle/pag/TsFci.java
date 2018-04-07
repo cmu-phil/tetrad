@@ -10,7 +10,6 @@ import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.data.IKnowledge;
-import edu.cmu.tetrad.data.TimeSeriesData;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.TsDagToPag;
@@ -28,8 +27,7 @@ import java.util.List;
 @edu.cmu.tetrad.annotation.Algorithm(
         name = "TsFCI",
         command = "ts-fci",
-        algoType = AlgType.allow_latent_common_causes,
-        description = ""
+        algoType = AlgType.allow_latent_common_causes
 )
 public class TsFci implements Algorithm, TakesInitialGraph, HasKnowledge, TakesIndependenceWrapper {
 
@@ -53,17 +51,14 @@ public class TsFci implements Algorithm, TakesInitialGraph, HasKnowledge, TakesI
 
     @Override
     public Graph search(DataModel dataSet, Parameters parameters) {
-    	if (!(dataSet instanceof TimeSeriesData)) {
-            throw new IllegalArgumentException("You need a (labeled) time series data set to run TsFCI.");
-        } 
+//    	if (!(dataSet instanceof TimeSeriesData)) {
+//            throw new IllegalArgumentException("You need a (labeled) time series data set to run TsFCI.");
+//        }
         
         if (parameters.getInt("bootstrapSampleSize") < 1) {
             edu.cmu.tetrad.search.TsFci search = new edu.cmu.tetrad.search.TsFci(test.getTest(dataSet, parameters));
             search.setDepth(parameters.getInt("depth"));
-
-            IKnowledge _knowledge = getKnowledge() != null ? getKnowledge() : dataSet.getKnowledge();
-
-            search.setKnowledge(_knowledge);
+            search.setKnowledge(dataSet.getKnowledge());
             return search.search();
         } else {
             TsFci tsFci = new TsFci(test, algorithm);

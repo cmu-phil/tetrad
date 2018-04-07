@@ -34,11 +34,11 @@ public class ParamDescriptions {
         map.put("standardize", new ParamDescription("Yes if the data should be standardized", false));
 
         map.put("measurementVariance", new ParamDescription("Additive measurement noise variance (min = 0.0)", 0.0, 0, Double.MAX_VALUE));
-        map.put("depth", new ParamDescription("Maximum size of conditioning set (min = -1)", -1, -1, Integer.MAX_VALUE));
+        map.put("depth", new ParamDescription("Maximum size of conditioning set (unlimited = -1)", -1, -1, Integer.MAX_VALUE));
         map.put("meanLow", new ParamDescription("Low end of mean range (min = 0.0)", 0.5, 0.0, Double.MAX_VALUE));
         map.put("meanHigh", new ParamDescription("High end of mean range (min = 0.0)", 1.5, 0.0, Double.MAX_VALUE));
-        map.put("coefLow", new ParamDescription("Low end of coefficient range (min = 0.0)", 0.5, 0.0, Double.MAX_VALUE));
-        map.put("coefHigh", new ParamDescription("High end of coefficient range (min = 0.0)", 1.5, 0.0, Double.MAX_VALUE));
+        map.put("coefLow", new ParamDescription("Low end of coefficient range (min = 0.0)", 0.2, 0.0, Double.MAX_VALUE));
+        map.put("coefHigh", new ParamDescription("High end of coefficient range (min = 0.0)", 0.7, 0.0, Double.MAX_VALUE));
         map.put("covLow", new ParamDescription("Low end of covariance range (min = 0.0)", 0.5, 0.0, Double.MAX_VALUE));
         map.put("covHigh", new ParamDescription("High end of covariance range (min = 0.0)", 1.5, 0.0, Double.MAX_VALUE));
         map.put("varLow", new ParamDescription("Low end of variance range (min = 0.0)", 1.0, 0.0, Double.MAX_VALUE));
@@ -110,12 +110,12 @@ public class ParamDescriptions {
         map.put("useGap", new ParamDescription("Yes if the GAP algorithms should be used. No if the SAG algorithm should be used", false));
 
         // Multiple indicator random graphs
-        map.put("numStructuralNodes", new ParamDescription("Number of structural nodes", 3, 1, Integer.MAX_VALUE));
-        map.put("numStructuralEdges", new ParamDescription("Number of structural edges", 3, 1, Integer.MAX_VALUE));
-        map.put("measurementModelDegree", new ParamDescription("Number of measurements per Latent", 5, 1, Integer.MAX_VALUE));
-        map.put("latentMeasuredImpureParents", new ParamDescription("Number of Latent --> Measured impure edges", 0, 1, Integer.MAX_VALUE));
-        map.put("measuredMeasuredImpureParents", new ParamDescription("Number of Measured --> Measured impure edges", 0, 1, Integer.MAX_VALUE));
-        map.put("measuredMeasuredImpureAssociations", new ParamDescription("Number of Measured <-> Measured impure edges", 0, 1, Integer.MAX_VALUE));
+        map.put("numStructuralNodes", new ParamDescription("Number of structural nodes", 3));
+        map.put("numStructuralEdges", new ParamDescription("Number of structural edges", 3));
+        map.put("measurementModelDegree", new ParamDescription("Number of measurements per Latent", 5));
+        map.put("latentMeasuredImpureParents", new ParamDescription("Number of Latent --> Measured impure edges", 0));
+        map.put("measuredMeasuredImpureParents", new ParamDescription("Number of Measured --> Measured impure edges", 0));
+        map.put("measuredMeasuredImpureAssociations", new ParamDescription("Number of Measured <-> Measured impure edges", 0));
 
 //        map.put("useRuleC", new ParamDescription("Yes if rule C for CCD should be used", false));
         map.put("applyR1", new ParamDescription("Yes if the orient away from arrow rule should be applied", true));
@@ -259,15 +259,10 @@ public class ParamDescriptions {
                 1, 1, Double.POSITIVE_INFINITY));
 
         map.put("saveLatentVars", new ParamDescription("Save latent variables.", false));
-        
+
         map.put("probTwoCycle", new ParamDescription(
-            "The probability of creating a 2-cycles in the graph (0 - 1)",
-            0.0, 0.0, 1.0));
-
-        map.put("pruneFactor", new ParamDescription(
-                "The pruning factor",
-                1.0, 0.0, Double.POSITIVE_INFINITY));
-
+                "The probability of creating a 2-cycles in the graph (0 - 1)",
+                0.0, 0.0, 1.0));
     }
 
     public static ParamDescriptions getInstance() {

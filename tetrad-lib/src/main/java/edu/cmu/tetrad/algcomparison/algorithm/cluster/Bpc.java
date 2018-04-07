@@ -22,10 +22,9 @@ import java.util.List;
  * @author jdramsey
  */
 @edu.cmu.tetrad.annotation.Algorithm(
-        name = "Bpc",
+        name = "BPC",
         command = "bpc",
-        algoType = AlgType.search_for_structure_over_latents,
-        description = ""
+        algoType = AlgType.search_for_structure_over_latents
 )
 public class Bpc implements Algorithm, TakesInitialGraph, HasKnowledge, ClusterAlgorithm {
 
@@ -96,7 +95,7 @@ public class Bpc implements Algorithm, TakesInitialGraph, HasKnowledge, ClusterA
 
     @Override
     public String getDescription() {
-        return "FOFC (Find One Factor Clusters)";
+        return "BPC (Build Pure Clusters)";
     }
 
     @Override

@@ -8,11 +8,7 @@ import edu.cmu.tetrad.algcomparison.utils.TakesIndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.utils.TakesInitialGraph;
 import edu.cmu.tetrad.algcomparison.utils.UsesScoreWrapper;
 import edu.cmu.tetrad.annotation.AlgType;
-import edu.cmu.tetrad.data.DataModel;
-import edu.cmu.tetrad.data.DataSet;
-import edu.cmu.tetrad.data.DataType;
-import edu.cmu.tetrad.data.IKnowledge;
-import edu.cmu.tetrad.data.TimeSeriesData;
+import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.TsDagToPag;
@@ -30,8 +26,7 @@ import java.util.List;
 @edu.cmu.tetrad.annotation.Algorithm(
         name = "TsGFCI",
         command = "ts-gfci",
-        algoType = AlgType.allow_latent_common_causes,
-        description = ""
+        algoType = AlgType.allow_latent_common_causes
 )
 public class TsGfci implements Algorithm, TakesInitialGraph, HasKnowledge, TakesIndependenceWrapper, UsesScoreWrapper {
 
@@ -52,13 +47,14 @@ public class TsGfci implements Algorithm, TakesInitialGraph, HasKnowledge, Takes
 
     @Override
     public Graph search(DataModel dataSet, Parameters parameters) {
-    	if (!(dataSet instanceof TimeSeriesData)) {
-            throw new IllegalArgumentException("You need a (labeled) time series data set to run TsGFCI.");
-        } 
+//    	if (!(dataSet instanceof TimeSeriesData)) {
+//            throw new IllegalArgumentException("You need a (labeled) time series data set to run TsGFCI.");
+//        }
         
         if (parameters.getInt("bootstrapSampleSize") < 1) {
             edu.cmu.tetrad.search.TsGFci search = new edu.cmu.tetrad.search.TsGFci(test.getTest(dataSet, parameters),
                     score.getScore(dataSet, parameters));
+            IKnowledge _knowledge = dataSet.getKnowledge() != null ? dataSet.getKnowledge() : new Knowledge2();
             search.setKnowledge(dataSet.getKnowledge());
             return search.search();
         } else {

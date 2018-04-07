@@ -56,7 +56,7 @@ public class LingamRunner extends AbstractAlgorithmRunner implements GraphSource
     public LingamRunner(DataWrapper dataWrapper) {
         super(dataWrapper, new Parameters(), null);
     }
-    
+
     public LingamRunner(DataWrapper dataWrapper, Parameters params) {
         super(dataWrapper, params, null);
     }
@@ -75,14 +75,14 @@ public class LingamRunner extends AbstractAlgorithmRunner implements GraphSource
     public LingamRunner(GraphSource graphWrapper, Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
         super(graphWrapper.getGraph(), params, knowledgeBoxModel);
     }
-    
+
     /**
      * Constucts a wrapper for the given EdgeListGraph.
      */
     public LingamRunner(GraphSource graphWrapper, Parameters params) {
         super(graphWrapper.getGraph(), params, null);
     }
-    
+
     /**
      * Generates a simple exemplar of this class to test serialization.
      *
@@ -197,5 +197,4 @@ public class LingamRunner extends AbstractAlgorithmRunner implements GraphSource
         if (!getListeners().contains(l)) getListeners().add(l);
     }
 }
-
 

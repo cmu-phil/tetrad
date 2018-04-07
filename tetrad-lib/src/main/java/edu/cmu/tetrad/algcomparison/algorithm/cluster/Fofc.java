@@ -22,10 +22,9 @@ import java.util.List;
  * @author jdramsey
  */
 @edu.cmu.tetrad.annotation.Algorithm(
-        name = "Fofc",
+        name = "FOFC",
         command = "fofc",
-        algoType = AlgType.search_for_structure_over_latents,
-        description = ""
+        algoType = AlgType.search_for_structure_over_latents
 )
 public class Fofc implements Algorithm, TakesInitialGraph, HasKnowledge, ClusterAlgorithm {
 

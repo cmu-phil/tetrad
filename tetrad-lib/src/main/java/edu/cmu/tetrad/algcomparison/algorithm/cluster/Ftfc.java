@@ -20,10 +20,9 @@ import java.util.List;
  * @author jdramsey
  */
 @edu.cmu.tetrad.annotation.Algorithm(
-        name = "Ftfc",
+        name = "FTFC",
         command = "ftfc",
-        algoType = AlgType.search_for_structure_over_latents,
-        description = ""
+        algoType = AlgType.search_for_structure_over_latents
 )
 public class Ftfc implements Algorithm, HasKnowledge, ClusterAlgorithm {
 
