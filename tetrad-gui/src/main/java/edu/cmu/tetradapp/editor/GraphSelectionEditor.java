@@ -352,6 +352,14 @@ public class GraphSelectionEditor extends JPanel implements GraphEditable, Tripl
         if (type == GraphSelectionWrapper.Type.Descendants) {
             editorPanel.setNLabel("");
         }
+
+        if (type == GraphSelectionWrapper.Type.Parents) {
+            editorPanel.setNLabel("");
+        }
+
+        if (type == GraphSelectionWrapper.Type.Children) {
+            editorPanel.setNLabel("");
+        }
     }
 
     private void initSelection(GraphSelectionWrapper wrapper) {

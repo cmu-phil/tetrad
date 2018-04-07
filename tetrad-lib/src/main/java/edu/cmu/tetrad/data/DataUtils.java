@@ -1807,7 +1807,7 @@ public final class DataUtils {
             return dataSet;
         }
 
-        List<Integer> keepCols = new ArrayList<>();
+        List<Node> keepCols = new ArrayList<>();
 
         for (int j = 0; j < columns; j++) {
             Object previous = dataSet.getObject(0, j);
@@ -1820,13 +1820,38 @@ public final class DataUtils {
                 }
             }
 
-            if (!constant) keepCols.add(j);
+            if (!constant) keepCols.add(dataSet.getVariable(j));
         }
 
-        int[] newCols = new int[keepCols.size()];
-        for (int j = 0; j < keepCols.size(); j++) newCols[j] = keepCols.get(j);
+        return dataSet.subsetColumns(keepCols);
+    }
 
-        return dataSet.subsetColumns(newCols);
+    public static DataSet removeLowVarianceColumns(DataSet dataSet, double minVariance) {
+        double[][] data = dataSet.getDoubleData().transpose().toArray();
+
+        List<Node> keepCols = new ArrayList<>();
+
+        for (int j = 0; j < data.length; j++) {
+            if (StatUtils.variance(data[j]) >= minVariance) {
+                keepCols.add(dataSet.getVariable(j));
+            }
+        }
+
+        return dataSet.subsetColumns(keepCols);
+    }
+
+    public static DataSet removeLowSdColumns(DataSet dataSet, double minSd) {
+        double[][] data = dataSet.getDoubleData().transpose().toArray();
+
+        List<Node> keepCols = new ArrayList<>();
+
+        for (int j = 0; j < data.length; j++) {
+            if (StatUtils.sd(data[j]) >= minSd) {
+                keepCols.add(dataSet.getVariable(j));
+            }
+        }
+
+        return dataSet.subsetColumns(keepCols);
     }
 
     public static ICovarianceMatrix getCovMatrix(DataModel dataModel) {

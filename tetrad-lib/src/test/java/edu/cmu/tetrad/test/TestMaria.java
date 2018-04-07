@@ -60,13 +60,20 @@ public class TestMaria {
         try {
             File dir = new File("//Users/user/Downloads");
 
-            Dataset dataset = new ContinuousTabularDataFileReader(new File(dir, "searchexpv1.csv"), Delimiter.COMMA).readInData();
-            final DataSet dataSet = (DataSet) DataConvertUtils.toDataModel(dataset);
+            Dataset dataset = new ContinuousTabularDataFileReader(new File(dir, "searchexpv4.csv"), Delimiter.COMMA).readInData();
+            DataSet dataSet = (DataSet) DataConvertUtils.toDataModel(dataset);
+
+//            dataSet = DataUtils.removeConstantColumns(dataSet);
+            dataSet = DataUtils.removeLowSdColumns(dataSet, 0.1);
 
 //            Pc pc = new Pc(new IndTestFisherZ(dataSet, 0.001));
             final SemBicScore score = new SemBicScore(new CovarianceMatrixOnTheFly(dataSet));
             score.setPenaltyDiscount(2);
-            Fges pc = new Fges(score);
+            Fask pc = new Fask(dataSet, score);
+            pc.setDepth(3);
+            pc.setDelta(.5);
+            pc.setAlpha(1e-5);
+//            Fges pc = new Fges(score);
             Graph graph = pc.search();
             System.out.println(graph);
 
