@@ -27,8 +27,7 @@ import java.util.List;
 @edu.cmu.tetrad.annotation.Algorithm(
         name = "PC All",
         command = "pc-all",
-        algoType = AlgType.forbid_latent_common_causes,
-        description = ""
+        algoType = AlgType.forbid_latent_common_causes
 )
 public class PcAll implements Algorithm, TakesInitialGraph, HasKnowledge, TakesIndependenceWrapper {
 

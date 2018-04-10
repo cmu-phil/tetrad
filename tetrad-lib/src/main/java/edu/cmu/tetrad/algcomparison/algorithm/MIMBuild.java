@@ -36,8 +36,7 @@ import java.util.List;
 @edu.cmu.tetrad.annotation.Algorithm(
         name = "MIMBuild",
         command = "mimbuild",
-        algoType = AlgType.search_for_structure_over_latents,
-        description = ""
+        algoType = AlgType.search_for_structure_over_latents
 )
 @Nonexecutable
 public class MIMBuild implements Algorithm {
