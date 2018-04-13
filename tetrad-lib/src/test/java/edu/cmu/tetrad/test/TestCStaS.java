@@ -214,18 +214,24 @@ public class TestCStaS {
 
     public void testCStaS2() {
         int numNodes = 300;
-        double avgDegree = 1;
-        int sampleSize = 300;
+        double avgDegree = 2;
+        int sampleSize = 200;
 
-        int numEffects = 10;
+        int numEffects = 20;
         int numSubsamples = 50;
 
         double penaltyDiscount = 1;
-        double selectionAlpha = .3;
+        double selectionAlpha = .5;
         int startIndex = 0;
 
+
         CStaS.PatternAlgorithm algorithm = CStaS.PatternAlgorithm.FGES;
-        CStaS.SampleStyle sampleStyle = CStaS.SampleStyle.SPLIT;
+        CStaS.SampleStyle sampleStyle = CStaS.SampleStyle.BOOTSTRAP;
+        CStaS.QStyle qStyle = CStaS.QStyle.DEFAULT;
+
+        int qFrom = 50;
+        int qTo = qFrom;
+        int qIncrement = 1;
 
         Parameters parameters = new Parameters();
 
@@ -304,14 +310,16 @@ public class TestCStaS {
         System.out.println("Selected # nodes = " + potentialCauses.size());
         System.out.println("Total # cause/effect pairs: " + totalCauseEffect);
 
-        int qFrom = (int)(.5 * totalCauseEffect);
-        int qTo = qFrom;
-        int qIncrement = 1;
+//        int qFrom = (int)(totalCauseEffect);
+//        int qTo = qFrom;
+//        int qIncrement = 1;
+
 
         CStaS cstas = new CStaS();
         cstas.setNumSubsamples(numSubsamples);
         cstas.setPatternAlgorithm(algorithm);
         cstas.setSampleStyle(sampleStyle);
+        cstas.setQStyle(qStyle);
         cstas.setqFrom(qFrom);
         cstas.setqTo(qTo);
         cstas.setqIncrement(qIncrement);

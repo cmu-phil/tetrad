@@ -70,7 +70,7 @@ public final class Cci {
     private NormalDistribution normal = new NormalDistribution(0, 1);
 
     /**
-     * the most recent list of P values, for calculating Q.
+     * the most recent list of P values, for calculating QStyle.
      */
     private List<Double> scores;
 
@@ -133,7 +133,7 @@ public final class Cci {
     }
 
     /**
-     * @return FDR Q, if calculated, otherwise Double.NaN.
+     * @return FDR QStyle, if calculated, otherwise Double.NaN.
      */
     private double getQ(List<Double> p) {
         return calculateFdrQ(p);

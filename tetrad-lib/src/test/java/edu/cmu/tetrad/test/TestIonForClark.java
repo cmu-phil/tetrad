@@ -21,68 +21,164 @@
 
 package edu.cmu.tetrad.test;
 
-import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.search.Ion;
-import edu.cmu.tetrad.search.IonJoeModifications;
+import edu.cmu.tetrad.data.CovarianceMatrixOnTheFly;
+import edu.cmu.tetrad.data.DataSet;
+import edu.cmu.tetrad.data.DataUtils;
+import edu.cmu.tetrad.graph.EdgeListGraph;
+import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.graph.GraphNode;
+import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.search.*;
+import edu.cmu.tetrad.sem.SemIm;
+import edu.cmu.tetrad.sem.SemPm;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 /**
- * Tests CStaS.
+ * Tests the BayesIm.
  *
  * @author Joseph Ramsey
  */
-public class TestIonForClark {
-    public void test1() {
-        List<Graph> in = new ArrayList<>();
+public final class TestIonForClark {
 
-        Graph graph1 = new EdgeListGraph();
-        Graph graph2 = new EdgeListGraph();
+    public void test1() {
 
         Node A = new GraphNode("A");
         Node B = new GraphNode("B");
         Node C = new GraphNode("C");
         Node D = new GraphNode("D");
 
+        Graph graph1 = new EdgeListGraph();
+        graph1.addNode(A);
+        graph1.addNode(B);
+        graph1.addNode(D);
+        graph1.addUndirectedEdge(B, A);
+        graph1.addUndirectedEdge(A, D);
+
+        Graph graph2 = new EdgeListGraph();
+        graph1.addNode(C);
+        graph1.addNode(B);
+        graph1.addNode(D);
+        graph1.addUndirectedEdge(C, B);
+        graph1.addUndirectedEdge(C, D);
+        graph1.addUndirectedEdge(B, D);
+
+        List<Graph> graphs = new ArrayList<>();
+        graphs.add(graph1);
+        graphs.add(graph2);
+
+        Ion ion = new Ion(graphs);
+        List<Graph> outGraphs = ion.search();
+
+        System.out.println(outGraphs);
+
+    }
+
+    public void test2() {
+
+        Node A = new GraphNode("A");
+        Node B = new GraphNode("B");
+        Node C = new GraphNode("C");
+        Node D = new GraphNode("D");
+
+        Graph graph1 = new EdgeListGraph();
         graph1.addNode(A);
         graph1.addNode(B);
         graph1.addNode(C);
         graph1.addNode(D);
+        graph1.addDirectedEdge(A, B);
+        graph1.addDirectedEdge(B, C);
+        graph1.addDirectedEdge(A, D);
+        graph1.addDirectedEdge(D, C);
 
-        graph2.addNode(A);
-        graph2.addNode(B);
-        graph2.addNode(C);
-        graph2.addNode(D);
+        SemPm pm = new SemPm(graph1);
+        SemIm im = new SemIm(pm);
 
-        graph1.addNondirectedEdge(A, B);
-        graph1.addNondirectedEdge(A, D);
+        DataSet data1 = im.simulateData(500, false);
+        DataSet data2 = im.simulateData(500, false);
 
-        graph2.addNondirectedEdge(B, C);
-        graph2.addNondirectedEdge(C, D);
-        graph2.addNondirectedEdge(B, D);
+        keep(data1, "B", "A", "D");
+        keep(data2, "B", "C", "D");
 
-        System.out.println("Graph 1 = " + graph1);
-        System.out.println("Graph 2 = " + graph2);
+        DataSet concat = DataUtils.concatenate(data1, data2);
 
-        in.add(graph1);
-        in.add(graph2);
 
-        IonJoeModifications ion = new IonJoeModifications(in);
-//        Ion ion = new Ion(in);
-        List<Graph> result = ion.search();
+        System.out.println(concat);
 
-        System.out.println("ION outputs:\n");
+        final SemBicScore score = new SemBicScore(new CovarianceMatrixOnTheFly(concat));
+        Fask fask = new Fask(concat, score);
 
-        for (Graph graph : result) {
-            System.out.println(graph);
+        System.out.println(fask.search());
+
+        Fges fges = new Fges(score);
+
+        System.out.println(fges.search());
+
+    }
+
+    private void keep(DataSet data1, String...vars) {
+        Set<String> names = new HashSet<>(Arrays.asList(vars));
+
+        for (int i = 0; i < data1.getNumRows(); i++) {
+            for (int j = 0; j < data1.getNumColumns(); j++) {
+                final String name = data1.getVariable(j).getName();
+
+                if (!names.contains(name)) {
+                    data1.setDouble(i, j, Double.NaN);
+                }
+            }
         }
     }
 
-    public static void main(String... args) {
-        new TestIonForClark().test1();
+    public void test3() {
+
+        Node X = new GraphNode("X");
+        Node C = new GraphNode("C");
+        Node B = new GraphNode("B");
+        Node A = new GraphNode("A");
+        Node Y = new GraphNode("Y");
+
+        Graph graph1 = new EdgeListGraph();
+        graph1.addNode(X);
+        graph1.addNode(C);
+        graph1.addNode(B);
+        graph1.addNode(A);
+        graph1.addNode(Y);
+        graph1.addDirectedEdge(X, C);
+        graph1.addDirectedEdge(C, B);
+        graph1.addDirectedEdge(A, B);
+        graph1.addDirectedEdge(Y, A);
+
+        SemPm pm = new SemPm(graph1);
+        SemIm im = new SemIm(pm);
+
+        DataSet data1 = im.simulateData(500, false);
+        DataSet data2 = im.simulateData(500, false);
+        DataSet data3 = im.simulateData(500, false);
+
+        keep(data1, "X", "Y", "A");
+        keep(data2, "X", "Y", "B");
+        keep(data3, "X", "Y", "C");
+
+        DataSet concat = DataUtils.concatenate(data1, data2, data3);
+
+        System.out.println(concat);
+
+        final SemBicScore score = new SemBicScore(new CovarianceMatrixOnTheFly(concat));
+        Fges fges = new Fges(score);
+        System.out.println(fges.search());
+
     }
+
+    public static void main(String...args) {
+        new TestIonForClark().test3();
+    }
+
 }
+
 
 
 

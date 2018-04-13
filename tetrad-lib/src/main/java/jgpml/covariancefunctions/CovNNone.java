@@ -85,11 +85,11 @@ public class CovNNone implements CovarianceFunction{
 
 //        Matrix Xc= X.times(1/ell);
 //
-//        Q = Xc.times(Xc.transpose());
-//        System.out.print("Q=");Q.print(Q.getColumnDimension(), 8);
+//        QStyle = Xc.times(Xc.transpose());
+//        System.out.print("QStyle=");QStyle.print(QStyle.getColumnDimension(), 8);
 
-//        Q = new Matrix(m,m);
-//        double[][] q = Q.getArray();
+//        QStyle = new Matrix(m,m);
+//        double[][] q = QStyle.getArray();
         q = new double[m][m];
 
         for(int i=0;i<m;i++){
@@ -101,11 +101,11 @@ public class CovNNone implements CovarianceFunction{
                 q[i][j]=t;
             }
         }
-//        System.out.print("q=");Q.print(Q.getColumnDimension(), 8);
+//        System.out.print("q=");QStyle.print(QStyle.getColumnDimension(), 8);
 
-//        Matrix dQ = diag(Q);
+//        Matrix dQ = diag(QStyle);
 //        Matrix dQT = dQ.transpose();
-//        Matrix Qc = Q.copy();
+//        Matrix Qc = QStyle.copy();
 //        K = addValue(Qc,em2).arrayRightDivide(sqrt(addValue(dQ,1+em2)).times(sqrt(addValue(dQT,1+em2))));
 //        System.out.print("K=");K.print(K.getColumnDimension(), 8);
 
@@ -291,11 +291,11 @@ public class CovNNone implements CovarianceFunction{
         }
 
 //        Matrix Xc= XX.times(1/ell);
-//        Matrix Q = Xc.times(Xc.transpose());
+//        Matrix QStyle = Xc.times(Xc.transpose());
 //
-//        Matrix dQ = diag(Q);
+//        Matrix dQ = diag(QStyle);
 //        Matrix dQT = dQ.transpose();
-//        Matrix K = addValue(Q.copy(),em2).arrayRightDivide(sqrt(addValue(dQ.copy(),1+em2)).times(sqrt(addValue(dQT,1+em2))));
+//        Matrix K = addValue(QStyle.copy(),em2).arrayRightDivide(sqrt(addValue(dQ.copy(),1+em2)).times(sqrt(addValue(dQT,1+em2))));
 //        Matrix dQc = dQ.copy();
 
         Matrix A;
@@ -318,7 +318,7 @@ public class CovNNone implements CovarianceFunction{
 //            Matrix V = addValue(sumRows(X.arrayTimes(X)),em2).arrayRightDivide(tmp);
 //
 //            tmp = sqrt(tmp);
-//            tmp = addValue(Q.copy(),em2).arrayRightDivide(tmp.times(tmp.transpose()));
+//            tmp = addValue(QStyle.copy(),em2).arrayRightDivide(tmp.times(tmp.transpose()));
 
             for(int i=0; i<m; i++){
                 final double vi = v[i];
