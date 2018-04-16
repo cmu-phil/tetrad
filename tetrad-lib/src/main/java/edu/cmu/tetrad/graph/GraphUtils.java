@@ -1464,7 +1464,7 @@ public final class GraphUtils {
 
     public static List<List<Node>> semidirectedPathsFromTo(Graph graph, Node node1, Node node2, int maxLength) {
         List<List<Node>> paths = new LinkedList<>();
-        semidirectedPathsFromToVisit(graph, node1, node2, new LinkedList<Node>(), paths, maxLength);
+        semidirectedPathsFromToVisit(graph, node1, node2, new LinkedList<>(), paths, maxLength);
         return paths;
     }
 
