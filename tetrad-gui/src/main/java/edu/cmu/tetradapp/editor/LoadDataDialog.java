@@ -121,7 +121,7 @@ final class LoadDataDialog extends JPanel {
     private Box validationMessageBox;
 
     private final int validationWarnErrMsgThreshold = 10;
-    
+
     private Box buttonsBox;
 
     private JButton addFileButton;
@@ -761,39 +761,36 @@ final class LoadDataDialog extends JPanel {
 
             // Show some file info
             if (!infos.isEmpty()) {
-                output = output + "<p><b>File info: </b></p>";
-                for (ValidationResult info : infos) {
-                    // More examples of how to get attributes for customized parsing
-                    //                    Object obj = info.getAttributes().get(ROW_NUMBER);
-                    //                    int numOfLines = (obj instanceof Integer) ? (Integer) obj : 0;
-                    //                    obj = info.getAttributes().get(COLUMN_COUNT);
-                    //                    int numOfColumns = (obj instanceof Integer) ? (Integer) obj : 0;
-                    //                    System.out.printf("numOfLines: %d%n", numOfLines);
-                    //                    System.out.printf("numOfColumns: %d%n", numOfColumns);
-
-                    output = output + "<p>" + info.getMessage() + "</p>";
-                }
+                StringBuilder infoBuilder = new StringBuilder();
+                infoBuilder.append("<p>");
+                infoBuilder.append("<b>File info:</b><br />");
+                infos.forEach(e -> {
+                    infoBuilder.append(e.getMessage());
+                    infoBuilder.append("<br />");
+                });
+                infoBuilder.append("</p>");
+                output = infoBuilder.toString();
             }
 
             // Show warning messages
             if (!warnings.isEmpty()) {
-                
+
                 int warnCount = warnings.size();
-                
+
                 if (warnCount > validationWarnErrMsgThreshold) {
                     output = output + "<p style=\"color: orange;\"><b>Warning (total " + warnCount + ", showing the first " + validationWarnErrMsgThreshold + "): </b></p>";
-                    
+
                     for (ValidationResult warning : warnings.subList(0, validationWarnErrMsgThreshold)) {
                         output = output + "<p style=\"color: orange;\">" + warning.getMessage() + "</p>";
                     }
                 } else {
                     output = output + "<p style=\"color: orange;\"><b>Warning (total " + warnCount + "): </b></p>";
-                    
+
                     for (ValidationResult warning : warnings) {
                         output = output + "<p style=\"color: orange;\">" + warning.getMessage() + "</p>";
                     }
                 }
-                    
+
             }
 
             // Show errors if found
@@ -801,7 +798,7 @@ final class LoadDataDialog extends JPanel {
                 int errorCount = errors.size();
 
                 String errorCountString = (errorCount > 1) ? " errors" : " error";
-                
+
                 if (errorCount > validationWarnErrMsgThreshold) {
                     output = output + "<p style=\"color: red;\"><b>Validation failed!<br>Please fix the following " + validationWarnErrMsgThreshold + errorCountString + " (total " + errorCount + ") and validate again:</b></p>";
 
@@ -817,7 +814,7 @@ final class LoadDataDialog extends JPanel {
                         output = output + "<p style=\"color: red;\">" + escapeHtml4(error.getMessage()) + "</p>";
                     }
                 }
-  
+
                 // Also add the file name to failed list
                 // this determines if to show the Load button
                 failedFiles.add(loadedFiles.get(i).getName());
