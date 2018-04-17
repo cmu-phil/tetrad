@@ -19,6 +19,7 @@
 package edu.pitt.dbmi.algo.rcit;
 
 import edu.cmu.tetrad.util.RandomUtil;
+import edu.cmu.tetrad.util.TetradMatrix;
 
 /**
  * 
@@ -29,42 +30,89 @@ import edu.cmu.tetrad.util.RandomUtil;
  */
 public class RandomFourierFeatures {
 
-	public double[][] feature;
+	public TetradMatrix feature;
 	
-	public double[][] w;
+	public TetradMatrix w;
 	
-	public double[][] b;
+	public TetradMatrix b;
 	
 	
-	public double[][] getX() {
+	public TetradMatrix getFeature() {
 		return feature;
 	}
 
 
-	public void setFeature(double[][] feature) {
+	public void setFeature(TetradMatrix feature) {
 		this.feature = feature;
 	}
 
 
-	public double[][] getW() {
+	public TetradMatrix getW() {
 		return w;
 	}
 
 
-	public void setW(double[][] w) {
+	public void setW(TetradMatrix w) {
 		this.w = w;
 	}
 
 
-	public double[][] getB() {
+	public TetradMatrix getB() {
 		return b;
 	}
 
 
-	public void setB(double[][] b) {
+	public void setB(TetradMatrix b) {
 		this.b = b;
 	}
 
+	public static RandomFourierFeatures generate(TetradMatrix x, TetradMatrix w,TetradMatrix b,int num_f,double sigma,long seed){
+		
+		if(sigma == 0){
+			sigma = 1;
+		}
+		
+		if(num_f < 1){
+			num_f = 25;
+		}
+		
+		int row = x.rows();
+		int col = x.columns();
+		
+		if(w == null){
+			RandomUtil ru = RandomUtil.getInstance();
+			ru.setSeed(seed);
+			w = new TetradMatrix(num_f, col);
+			for(int i=0;i<num_f;i++){
+				for(int j=0;j<col;j++){
+					w.set(i, j, (1/sigma)*ru.nextNormal(0, 1));
+				}
+			}
+			
+			double[][] uniformFeat = new double[num_f][1];
+			for(int i=0;i<num_f;i++){
+				uniformFeat[i][0] = 2*Math.PI*ru.nextUniform(0, 1);
+			}
+			double[][] _b = RandomFourierFeatures.repMat(uniformFeat, 1, row);
+			b = new TetradMatrix(_b);
+		}
+		
+		// feat = sqrt(2)*t(cos(w[1:num_f,1:c]%*%t(x)+b[1:num_f,]));
+		TetradMatrix feature = w.times(x.transpose()).plus(b);
+		feature = feature.transpose();
+		for(int i=0;i<feature.rows();i++) {
+			for(int j=0;j<feature.columns();j++) {
+				feature.set(i, j, Math.sqrt(2)*Math.cos(feature.get(i, j)));
+			}
+		}
+		
+		RandomFourierFeatures randomFourierFeatures = new RandomFourierFeatures();
+		randomFourierFeatures.setFeature(feature);
+		randomFourierFeatures.setW(w);
+		randomFourierFeatures.setB(b);
+		
+		return randomFourierFeatures;
+	}
 
 	public static RandomFourierFeatures generate(double[][] x, double[][] w,double[][] b,int num_f,double sigma,long seed){
 		
@@ -93,33 +141,44 @@ public class RandomFourierFeatures {
 			for(int i=0;i<num_f;i++){
 				uniformFeat[i][0] = 2*Math.PI*ru.nextUniform(0, 1);
 			}
-			b = RandomFourierFeatures.repMat(uniformFeat, 1, row);
+			b = RandomFourierFeatures.repMat(uniformFeat, 1, row);			
 		}
 		
 		double[][] feature = new double[row][num_f];
-		// feat = sqrt(2)*t(cos(w[1:num_f,1:c]%*%t(x)+b[1:num_f,]));
-		for(int i=0;i<row;i++){
-			for(int j=0;j<num_f;j++){
+		
+		int w_row = w.length;
+		int w_col = w[0].length;
+		
+		// w_row
+		for(int i=0;i<w_row;i++){
+			// row
+			for(int j=0;j<row;j++){
 				// w[1:num_f,1:c]%*%t(x)+b[1:num_f,]
 				double wx_b = 0;
-				// w*x
-				for(int k=0;k<col;k++){
-					for(int l=0;l<row;l++){
-						wx_b += w[i][k]*x[j][l];
+				
+				// w[1:num_f,1:c]%*%t(x)
+				// w_col
+				for(int k=0;k<w_col;k++){
+					// col
+					for(int l=0;l<col;l++){
+						double _w = w[i][k];
+						double _x = x[j][l];
+						wx_b += _w*_x;
 					}
 				}
 				// w*x + b
-				wx_b += b[row][num_f];
+				wx_b += b[i][j];
 				
-				feature[i][j] = Math.sqrt(2)*Math.cos(wx_b);
+				// feat = sqrt(2)*t(cos(w[1:num_f,1:c]%*%t(x)+b[1:num_f,]));
+				feature[j][i] = Math.sqrt(2)*Math.cos(wx_b);
 			}
 			
 		}
 		
 		RandomFourierFeatures randomFourierFeatures = new RandomFourierFeatures();
-		randomFourierFeatures.setFeature(feature);
-		randomFourierFeatures.setW(w);
-		randomFourierFeatures.setB(b);
+		randomFourierFeatures.setFeature(new TetradMatrix(feature));
+		randomFourierFeatures.setW(new TetradMatrix(w));
+		randomFourierFeatures.setB(new TetradMatrix(b));
 		
 		return randomFourierFeatures;
 	}
@@ -140,4 +199,51 @@ public class RandomFourierFeatures {
 		
 		return repmat;
 	}
+	
+	public static void main(String args[]){
+		int seed = 25;
+		RandomUtil ru = RandomUtil.getInstance();
+		ru.setSeed(seed);
+		
+		double[][] x = new double[4][1];
+		for(int i=0;i<x.length;i++) {
+			for(int j=0;j<x[0].length;j++) {
+				x[i][j] = ru.nextNormal(0, 1);
+				System.out.println("x[" + i +  "][" + j + "]: " + x[i][j]);
+			}
+		}
+		
+		int num_f = 5;
+		double sigma = 1;
+		TetradMatrix matrix_x = new TetradMatrix(x);
+		RandomFourierFeatures r = RandomFourierFeatures.generate(matrix_x, null, null, num_f, sigma, seed);
+		TetradMatrix feature = r.getFeature();
+		System.out.println("feature rows: " + feature.rows());
+		System.out.println("feature columns: " + feature.columns());
+		for(int i=0;i<feature.rows();i++) {
+			for(int j=0;j<feature.columns();j++) {
+				System.out.println("feature[" + i +  "][" + j + "]: " + feature.get(i, j));
+			}
+		}
+		
+		TetradMatrix w = r.getW();
+		System.out.println("w rows: " + w.rows());
+		System.out.println("w columns: " + w.columns());
+		for(int i=0;i<w.rows();i++) {
+			for(int j=0;j<w.columns();j++) {
+				System.out.println("w[" + i +  "][" + j + "]: " + w.get(i, j));
+			}
+		}
+		
+		TetradMatrix b = r.getB();
+		System.out.println("b rows: " + b.rows());
+		System.out.println("b columns: " + b.columns());
+		for(int i=0;i<b.rows();i++) {
+			for(int j=0;j<b.columns();j++) {
+				System.out.println("b[" + i +  "][" + j + "]: " + b.get(i, j));
+			}
+		}
+		
+	}
+	
 }
