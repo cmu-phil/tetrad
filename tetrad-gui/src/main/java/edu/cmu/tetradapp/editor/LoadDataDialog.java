@@ -120,6 +120,8 @@ final class LoadDataDialog extends JPanel {
 
     private Box validationMessageBox;
 
+    private final int validationWarnErrMsgThreshold = 10;
+
     private Box buttonsBox;
 
     private JButton addFileButton;
@@ -733,10 +735,10 @@ final class LoadDataDialog extends JPanel {
      */
     private void validateAllFiles() {
         for (int i = 0; i < loadedFiles.size(); i++) {
-            System.out.println("Validating file index = " + i);
-
-            // Validate each individual file
-            String output = "<p>Validation result of " + loadedFiles.get(i).getName() + ": </p>";
+            StringBuilder strBuilder = new StringBuilder();
+            strBuilder.append("<p>Validation result of ");
+            strBuilder.append(loadedFiles.get(i).getName());
+            strBuilder.append(":</p>");
 
             DataValidation validation = dataLoaderSettings.validateDataWithSettings(loadedFiles.get(i));
 
@@ -761,26 +763,40 @@ final class LoadDataDialog extends JPanel {
 
             // Show some file info
             if (!infos.isEmpty()) {
-                output = output + "<p><b>File info: </b></p>";
-                for (ValidationResult info : infos) {
-                    // More examples of how to get attributes for customized parsing
-                    //                    Object obj = info.getAttributes().get(ROW_NUMBER);
-                    //                    int numOfLines = (obj instanceof Integer) ? (Integer) obj : 0;
-                    //                    obj = info.getAttributes().get(COLUMN_COUNT);
-                    //                    int numOfColumns = (obj instanceof Integer) ? (Integer) obj : 0;
-                    //                    System.out.printf("numOfLines: %d%n", numOfLines);
-                    //                    System.out.printf("numOfColumns: %d%n", numOfColumns);
-
-                    output = output + "<p>" + info.getMessage() + "</p>";
-                }
+                strBuilder.append("<p><b>File info:</b><br />");
+                infos.forEach(e -> {
+                    strBuilder.append(e.getMessage());
+                    strBuilder.append("<br />");
+                });
+                strBuilder.append("</p>");
             }
 
             // Show warning messages
             if (!warnings.isEmpty()) {
-                output = output + "<p style=\"color: orange;\"><b>Warning: </b></p>";
-                for (ValidationResult warning : warnings) {
-                    output = output + "<p style=\"color: orange;\">" + warning.getMessage() + "</p>";
+                int warnCount = warnings.size();
+
+                strBuilder.append("<p style=\"color: orange;\"><b>Warning (total ");
+                strBuilder.append(warnCount);
+                    
+                if (warnCount > validationWarnErrMsgThreshold) {
+                    strBuilder.append(", showing the first ");
+                    strBuilder.append(validationWarnErrMsgThreshold);
+                    strBuilder.append("): </b><br />");
+
+                    warnings.subList(0, validationWarnErrMsgThreshold).forEach(e -> {
+                        strBuilder.append(e.getMessage());
+                        strBuilder.append("<br />");
+                    });
+                } else {
+                    strBuilder.append("): </b><br />");
+
+                    warnings.forEach(e -> {
+                        strBuilder.append(e.getMessage());
+                        strBuilder.append("<br />");
+                    });
                 }
+
+                strBuilder.append("</p>");
             }
 
             // Show errors if found
@@ -788,27 +804,49 @@ final class LoadDataDialog extends JPanel {
                 int errorCount = errors.size();
 
                 String errorCountString = (errorCount > 1) ? " errors" : " error";
-                output = output + "<p style=\"color: red;\"><b>Validation failed!<br>Please fix the following " + errorCount + errorCountString + " and validate again:</b></p>";
 
-                for (ValidationResult error : errors) {
-                    // Remember to excape the html tags if the data file contains any
-                    output = output + "<p style=\"color: red;\">" + escapeHtml4(error.getMessage()) + "</p>";
+                strBuilder.append("<p style=\"color: red;\"><b>Validation failed!<br>Please fix the following ");
+                
+                if (errorCount > validationWarnErrMsgThreshold) {
+                    strBuilder.append(validationWarnErrMsgThreshold);
+                    strBuilder.append(errorCountString);
+                    strBuilder.append(" (total ");
+                    strBuilder.append(errorCount);
+                    strBuilder.append(") and validate again:</b><br />");
+ 
+                    errors.subList(0, validationWarnErrMsgThreshold).forEach(e -> {
+                        // Remember to excape the html tags if the data file contains any
+                        strBuilder.append(escapeHtml4(e.getMessage()));
+                        strBuilder.append("<br />");
+                    });
+                } else {
+                    strBuilder.append(errorCount);
+                    strBuilder.append(errorCountString);
+                    strBuilder.append(") and validate again:</b><br />");
+
+                    errors.forEach(e -> {
+                        // Remember to excape the html tags if the data file contains any
+                        strBuilder.append(escapeHtml4(e.getMessage()));
+                        strBuilder.append("<br />");
+                    });
                 }
+                
+                strBuilder.append("</p>");
 
                 // Also add the file name to failed list
                 // this determines if to show the Load button
                 failedFiles.add(loadedFiles.get(i).getName());
             } else if (loadedFiles.get(i).length() == 0) {
                 // We don't allow users to load empty file
-                output = output + "<p style=\"color: red;\"><b>This is an empty data file!</b></p>";
+                strBuilder.append("<p style=\"color: red;\"><b>This is an empty data file!</b></p>");
                 // Also add the file name to failed list
                 // this determines if to show the Load button
                 failedFiles.add(loadedFiles.get(i).getName());
             } else {
-                output = output + "<p style=\"color: green;\"><b>Validation passed with no error!</b></p>";
+                strBuilder.append("<p style=\"color: green;\"><b>Validation passed with no error!</b></p>");
             }
 
-            validationResults.add(output);
+            validationResults.add(strBuilder.toString());
         }
 
         showValidationResults();
