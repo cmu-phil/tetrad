@@ -18,6 +18,9 @@
  */
 package edu.pitt.dbmi.algo.rcit;
 
+import java.util.Date;
+
+import edu.cmu.tetrad.util.MatrixUtils;
 import edu.cmu.tetrad.util.RandomUtil;
 import edu.cmu.tetrad.util.TetradMatrix;
 
@@ -66,7 +69,7 @@ public class RandomFourierFeatures {
 		this.b = b;
 	}
 
-	public static RandomFourierFeatures generate(TetradMatrix x, TetradMatrix w,TetradMatrix b,int num_f,double sigma,long seed){
+	public static RandomFourierFeatures generate(TetradMatrix x, TetradMatrix w,TetradMatrix b,int num_f,double sigma){
 		
 		if(sigma == 0){
 			sigma = 1;
@@ -81,7 +84,6 @@ public class RandomFourierFeatures {
 		
 		if(w == null){
 			RandomUtil ru = RandomUtil.getInstance();
-			ru.setSeed(seed);
 			w = new TetradMatrix(num_f, col);
 			for(int i=0;i<num_f;i++){
 				for(int j=0;j<col;j++){
@@ -93,7 +95,9 @@ public class RandomFourierFeatures {
 			for(int i=0;i<num_f;i++){
 				uniformFeat[i][0] = 2*Math.PI*ru.nextUniform(0, 1);
 			}
+			
 			double[][] _b = RandomFourierFeatures.repMat(uniformFeat, 1, row);
+			
 			b = new TetradMatrix(_b);
 		}
 		
@@ -114,7 +118,7 @@ public class RandomFourierFeatures {
 		return randomFourierFeatures;
 	}
 
-	public static RandomFourierFeatures generate(double[][] x, double[][] w,double[][] b,int num_f,double sigma,long seed){
+	public static RandomFourierFeatures generate(double[][] x, double[][] w,double[][] b,int num_f,double sigma){
 		
 		if(sigma == 0){
 			sigma = 1;
@@ -129,7 +133,6 @@ public class RandomFourierFeatures {
 		
 		if(w == null){
 			RandomUtil ru = RandomUtil.getInstance();
-			ru.setSeed(seed);
 			w = new double[num_f][col];
 			for(int i=0;i<num_f;i++){
 				for(int j=0;j<col;j++){
@@ -141,7 +144,8 @@ public class RandomFourierFeatures {
 			for(int i=0;i<num_f;i++){
 				uniformFeat[i][0] = 2*Math.PI*ru.nextUniform(0, 1);
 			}
-			b = RandomFourierFeatures.repMat(uniformFeat, 1, row);			
+			
+			b = RandomFourierFeatures.repMat(uniformFeat, 1, row);
 		}
 		
 		double[][] feature = new double[row][num_f];
@@ -198,52 +202,6 @@ public class RandomFourierFeatures {
 		}
 		
 		return repmat;
-	}
-	
-	public static void main(String args[]){
-		int seed = 25;
-		RandomUtil ru = RandomUtil.getInstance();
-		ru.setSeed(seed);
-		
-		double[][] x = new double[4][1];
-		for(int i=0;i<x.length;i++) {
-			for(int j=0;j<x[0].length;j++) {
-				x[i][j] = ru.nextNormal(0, 1);
-				System.out.println("x[" + i +  "][" + j + "]: " + x[i][j]);
-			}
-		}
-		
-		int num_f = 5;
-		double sigma = 1;
-		TetradMatrix matrix_x = new TetradMatrix(x);
-		RandomFourierFeatures r = RandomFourierFeatures.generate(matrix_x, null, null, num_f, sigma, seed);
-		TetradMatrix feature = r.getFeature();
-		System.out.println("feature rows: " + feature.rows());
-		System.out.println("feature columns: " + feature.columns());
-		for(int i=0;i<feature.rows();i++) {
-			for(int j=0;j<feature.columns();j++) {
-				System.out.println("feature[" + i +  "][" + j + "]: " + feature.get(i, j));
-			}
-		}
-		
-		TetradMatrix w = r.getW();
-		System.out.println("w rows: " + w.rows());
-		System.out.println("w columns: " + w.columns());
-		for(int i=0;i<w.rows();i++) {
-			for(int j=0;j<w.columns();j++) {
-				System.out.println("w[" + i +  "][" + j + "]: " + w.get(i, j));
-			}
-		}
-		
-		TetradMatrix b = r.getB();
-		System.out.println("b rows: " + b.rows());
-		System.out.println("b columns: " + b.columns());
-		for(int i=0;i<b.rows();i++) {
-			for(int j=0;j<b.columns();j++) {
-				System.out.println("b[" + i +  "][" + j + "]: " + b.get(i, j));
-			}
-		}
-		
 	}
 	
 }
