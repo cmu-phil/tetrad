@@ -1,7 +1,6 @@
 package edu.cmu.tetrad.search;
 
-import edu.cmu.tetrad.data.CovarianceMatrixOnTheFly;
-import edu.cmu.tetrad.data.DataSet;
+import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.DepthChoiceGenerator;
 
@@ -94,7 +93,7 @@ public class FgesIon {
         return new Edge(n1, n4, edge1.getProximalEndpoint(n1), edge2.getProximalEndpoint(n4));
     }
 
-    public List<Graph> allModels(Graph p, Graph augmented, List<Edge> removeableEdges) {
+    public List<Graph> allModels(Graph p, Graph augmented, List<Edge> removeableEdges, Score score) {
         List<Graph> models = new ArrayList<>();
         edgesRemoved.clear();
 
@@ -111,6 +110,17 @@ public class FgesIon {
             for (Edge edge : toRemove) {
                 Q.removeEdge(edge);
             }
+
+//            IKnowledge knowledge = new Knowledge2();
+
+//            for (Edge edge : toRemove) {
+//                knowledge.setForbidden(edge.getNode1().toString(), edge.getNode2().toString());
+//                knowledge.setForbidden(edge.getNode2().toString(), edge.getNode1().toString());
+//            }
+
+//            Fges fges = new Fges(score);
+//            fges.setKnowledge(knowledge);
+//            Q = fges.search();
 
             List<Node> nodes = augmented.getNodes();
 
@@ -137,8 +147,10 @@ public class FgesIon {
                 }
             }
 
-            edgesRemoved.add(toRemove);
-            models.add(Q);
+            if (!models.contains(Q)) {
+                edgesRemoved.add(toRemove);
+                models.add(Q);
+            }
         }
 
         return models;

@@ -182,7 +182,7 @@ public final class TestIonForClark {
             System.out.println(i++ + ". " + edge);
         }
 
-        List<Graph> models = ion.allModels(p, ion.getAugmented(), ion.getRemoveableEdges());
+        List<Graph> models = ion.allModels(p, ion.getAugmented(), ion.getRemoveableEdges(), new SemBicScore(new CovarianceMatrixOnTheFly(concat)));
         List<List<Edge>> edgesREmoved = ion.getEdgesRemoved();
 
         FgesIon.printModels(models, edgesREmoved);
