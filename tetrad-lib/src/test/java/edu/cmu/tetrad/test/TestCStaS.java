@@ -548,7 +548,13 @@ public class TestCStaS {
             List<Node> possibleCauses = new ArrayList<>();
             List<Node> possibleEffects = new ArrayList<>();
 
-            possibleCauses.add(dataSet.getVariable("G1"));
+            for (int i = 0; i < 100; i++) {
+                possibleCauses.add(dataSet.getVariable("G" + i));
+            }
+
+            for (int i = 100; i < 200; i++) {
+                possibleEffects.add(dataSet.getVariable("G" + i));
+            }
 
             SemBicScore score = new SemBicScore(new CovarianceMatrixOnTheFly(dataSet));
             score.setPenaltyDiscount(2);
