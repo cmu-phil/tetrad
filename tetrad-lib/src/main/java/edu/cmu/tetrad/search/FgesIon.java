@@ -90,7 +90,8 @@ public class FgesIon {
         Edge edge1 = P.getEdge(n1, n2);
         Edge edge2 = P.getEdge(n3, n4);
 
-        return new Edge(n1, n4, edge1.getProximalEndpoint(n1), edge2.getProximalEndpoint(n4));
+//        return new Edge(n1, n4, edge1.getProximalEndpoint(n1), edge2.getProximalEndpoint(n4));
+        return Edges.directedEdge(n1, n4);
     }
 
     public List<Graph> allModels(Graph p, Graph augmented, List<Edge> removeableEdges, Score score) {

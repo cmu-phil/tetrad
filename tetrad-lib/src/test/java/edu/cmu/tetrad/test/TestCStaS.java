@@ -556,6 +556,19 @@ public class TestCStaS {
                 possibleEffects.add(dataSet.getVariable("G" + i));
             }
 
+//            for(int i=1;i<=1430;i++) {
+//                final Node variable = dataSet.getVariable("G" + i);
+//
+//                if (variable == null) {
+//                    System.out.println("G" + i + " is not in the dataset");
+//                }
+//
+//                possibleCauses.add(variable);
+//            }
+
+            for(int i=1;i<=1074;i++)
+                possibleEffects.add(dataSet.getVariable("g"+i));
+
             SemBicScore score = new SemBicScore(new CovarianceMatrixOnTheFly(dataSet));
             score.setPenaltyDiscount(2);
 
