@@ -22,8 +22,7 @@ import java.util.List;
 @edu.cmu.tetrad.annotation.Algorithm(
         name = "GLASSO",
         command = "glasso",
-        algoType = AlgType.produce_undirected_graphs,
-        description = ""
+        algoType = AlgType.produce_undirected_graphs
 )
 public class Glasso implements Algorithm {
 

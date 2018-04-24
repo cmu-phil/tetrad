@@ -18,23 +18,25 @@
 // along with this program; if not, write to the Free Software               //
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA //
 ///////////////////////////////////////////////////////////////////////////////
-
 package edu.cmu.tetrad.util;
 
-import cern.colt.matrix.DoubleMatrix2D;
 import cern.colt.matrix.impl.DenseDoubleMatrix1D;
 import cern.colt.matrix.impl.DenseDoubleMatrix2D;
 import cern.colt.matrix.linalg.CholeskyDecomposition;
 import cern.colt.matrix.linalg.Property;
-import org.apache.commons.math3.exception.NotStrictlyPositiveException;
-import org.apache.commons.math3.exception.OutOfRangeException;
-import org.apache.commons.math3.linear.*;
-
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import org.apache.commons.math3.exception.NotStrictlyPositiveException;
+import org.apache.commons.math3.exception.OutOfRangeException;
+import org.apache.commons.math3.linear.AbstractRealMatrix;
+import org.apache.commons.math3.linear.BlockRealMatrix;
+import org.apache.commons.math3.linear.NonPositiveDefiniteMatrixException;
+import org.apache.commons.math3.linear.RealMatrix;
+import org.apache.commons.math3.linear.RectangularCholeskyDecomposition;
+import org.apache.commons.math3.linear.SingularValueDecomposition;
 
 /**
  * Class Matrix includes several public static functions performing matrix
@@ -44,11 +46,85 @@ import java.util.List;
  *
  * @author Tianjiao Chu
  * @author Joseph Ramsey
+ * @author Kevin V. Bui
  */
 public final class MatrixUtils {
 
-    //=========================PUBLIC METHODS===========================//
+    /**
+     * Make a repeat copy of matrix mat.
+     *
+     * @param mat matrix to copy
+     * @param nRow number of repeat copy of row
+     * @param mColumn number of repeat copy of column
+     * @return
+     */
+    public static double[][] repmat(double[][] mat, int nRow, int mColumn) {
+        int numOfRow = mat.length;
+        double[][] repMat = new double[numOfRow * nRow][];
+        for (int row = 0; row < numOfRow; row++) {
+            repMat[row] = repeatCopyVector(mat[row], mColumn);
+        }
 
+        repeatCopyRow(repMat, --nRow, numOfRow, numOfRow);
+
+        return repMat;
+    }
+
+    /**
+     * Make a n repeat copy of the rows and columns of the matrix mat.
+     *
+     * @param mat
+     * @param n number of repeat copy
+     * @return
+     */
+    public static double[][] repmat(double[][] mat, int n) {
+        int numOfRow = mat.length;
+        double[][] repMat = new double[numOfRow * n][];
+        for (int row = 0; row < numOfRow; row++) {
+            repMat[row] = repeatCopyVector(mat[row], n);
+        }
+
+        repeatCopyRow(repMat, --n, numOfRow, numOfRow);
+        return repMat;
+    }
+
+    /**
+     * Repeat copy of rows.
+     *
+     * @param mat matrix
+     * @param n number of repeat copy
+     * @param startRowPos starting row
+     * @param numOfRow number of rows to copy nth times
+     */
+    private static void repeatCopyRow(double[][] mat, int n, int startRowPos, int numOfRow) {
+        for (int i = 0; i < n; i++) {
+            for (int row = 0; row < numOfRow; row++) {
+                double[] src = mat[row];
+                double[] dest = new double[src.length];
+                System.arraycopy(src, 0, dest, 0, src.length);
+
+                mat[startRowPos++] = dest;
+            }
+        }
+    }
+
+    /**
+     * Repeat copy of a vector.
+     *
+     * @param src vector
+     * @param n number of repeat copy
+     * @return a new vector of n copy of the vector
+     */
+    private static double[] repeatCopyVector(double[] src, int n) {
+        double[] dest = new double[src.length * n];
+        for (int i = 0; i < n; i++) {
+            System.arraycopy(src, 0, dest, i * src.length, src.length);
+        }
+
+        return dest;
+    }
+
+    //=========================PUBLIC METHODS===========================//
     /**
      * Tests two matrices for equality.
      *
@@ -57,11 +133,15 @@ public final class MatrixUtils {
      * @return True iff the first and second matrices are equal.
      */
     public static boolean equals(double[][] ma, double[][] mb) {
-        if (ma.length != mb.length) return false;
+        if (ma.length != mb.length) {
+            return false;
+        }
         for (int i = 0; i < ma.length; i++) {
             double[] _ma = ma[i];
             double[] _mb = mb[i];
-            if (!Arrays.equals(_ma, _mb)) return false;
+            if (!Arrays.equals(_ma, _mb)) {
+                return false;
+            }
         }
 
         return true;
@@ -83,13 +163,13 @@ public final class MatrixUtils {
      * If any two corresponding elements differ by more than the given
      * tolerance, false is returned.
      *
-     * @param ma        The first 2D matrix to check.
-     * @param mb        The second 2D matrix to check.
+     * @param ma The first 2D matrix to check.
+     * @param mb The second 2D matrix to check.
      * @param tolerance A double >= 0.
      * @return Ibid.
      */
     public static boolean equals(double[][] ma, double[][] mb,
-                                 double tolerance) {
+            double tolerance) {
         return new TetradMatrix(ma).equals(new TetradMatrix(mb), tolerance);
         //new Property(tolerance).equals(TetradMatrix.instance(ma),
         //     TetradMatrix.instance(mb));
@@ -100,8 +180,8 @@ public final class MatrixUtils {
      * any two corresponding elements differ by more than the given tolerance,
      * false is returned.
      *
-     * @param va        The first matrix to check.
-     * @param vb        The second matrix to check.
+     * @param va The first matrix to check.
+     * @param vb The second matrix to check.
      * @param tolerance A double >= 0.
      * @return Ibid.
      */
@@ -120,7 +200,7 @@ public final class MatrixUtils {
     }
 
     /**
-     * @param m         The matrix to check.
+     * @param m The matrix to check.
      * @param tolerance A double >= 0.
      * @return Ibid.
      */
@@ -357,27 +437,27 @@ public final class MatrixUtils {
 
     /**
      * @param edgeCoef The edge covariance matrix. edgeCoef(i, j) is a parameter
-     *                 in this matrix just in case i-->j is an edge in the model. All other
-     *                 entries in the matrix are zero.
+     * in this matrix just in case i-->j is an edge in the model. All other
+     * entries in the matrix are zero.
      * @param errCovar The error covariance matrix. errCovar(i, i) is the
-     *                 variance of i; off-diagonal errCovar(i, j) are covariance parameters
-     *                 that are specified in the model. All other matrix entries are zero.
+     * variance of i; off-diagonal errCovar(i, j) are covariance parameters that
+     * are specified in the model. All other matrix entries are zero.
      * @return The implied covariance matrix, which is the covariance matrix
      * over the measured variables that is implied by all the given information.
      * @throws IllegalArgumentException if edgeCoef or errCovar contains an
-     *                                  undefined value (Double.NaN).
+     * undefined value (Double.NaN).
      */
     public static TetradMatrix impliedCovar2(TetradMatrix edgeCoef, TetradMatrix errCovar) {
         if (containsNaN(edgeCoef)) {
-            throw new IllegalArgumentException("Edge coefficient matrix must not " +
-                    "contain undefined values. Probably the search put them " +
-                    "there.");
+            throw new IllegalArgumentException("Edge coefficient matrix must not "
+                    + "contain undefined values. Probably the search put them "
+                    + "there.");
         }
 
         if (containsNaN(errCovar)) {
-            throw new IllegalArgumentException("Error covariance matrix must not " +
-                    "contain undefined values. Probably the search put them " +
-                    "there.");
+            throw new IllegalArgumentException("Error covariance matrix must not "
+                    + "contain undefined values. Probably the search put them "
+                    + "there.");
         }
 
         int sampleSize = 10000;
@@ -401,24 +481,20 @@ public final class MatrixUtils {
     public static TetradMatrix impliedCovar(TetradMatrix edgeCoef, TetradMatrix errCovar) {
         if (containsNaN(edgeCoef)) {
             System.out.println(edgeCoef);
-            throw new IllegalArgumentException("Edge coefficient matrix must not " +
-                    "contain undefined values. Probably the search put them " +
-                    "there.");
+            throw new IllegalArgumentException("Edge coefficient matrix must not "
+                    + "contain undefined values. Probably the search put them "
+                    + "there.");
         }
 
         if (containsNaN(errCovar)) {
-            throw new IllegalArgumentException("Error covariance matrix must not " +
-                    "contain undefined values. Probably the search put them " +
-                    "there.");
+            throw new IllegalArgumentException("Error covariance matrix must not "
+                    + "contain undefined values. Probably the search put them "
+                    + "there.");
         }
 
 //        TetradMatrix g = TetradMatrix.identity(edgeCoef.rows()).minus(edgeCoef);
-
 //        return g.times(errCovar).times(g.transpose());
 //        return g.transpose().times(errCovar).times(g);
-
-
-
         // I - B
         TetradMatrix m1 = TetradMatrix.identity(edgeCoef.rows()).minus(edgeCoef);
 //
@@ -600,8 +676,8 @@ public final class MatrixUtils {
     }
 
     /**
-     * Converts a covariance matrix to a correlation matrix in place; the same matrix
-     * is returned for convenience, but m is modified in the process.
+     * Converts a covariance matrix to a correlation matrix in place; the same
+     * matrix is returned for convenience, but m is modified in the process.
      */
     public static TetradMatrix convertCovToCorr(TetradMatrix m) {
         for (int i = 0; i < m.rows(); i++) {
@@ -845,7 +921,6 @@ public final class MatrixUtils {
         return result;
     }
 
-
     public static String toString(double[] m) {
         StringBuilder buf = new StringBuilder();
 
@@ -901,18 +976,16 @@ public final class MatrixUtils {
     }
 
     //=========================PRIVATE METHODS===========================//
-
     private static String nullMessage() {
-        return "\n" +
-                "\t" +
-                "<Matrix is null>";
+        return "\n"
+                + "\t"
+                + "<Matrix is null>";
     }
 
     /**
      * @return the order of the matrix for which this is the vech.
      * @throws IllegalArgumentException in case this matrix does not have
-     *                                  dimension n x 1 for some n = 0 + 1 + 2 +
-     *                                  ... + k for some k.
+     * dimension n x 1 for some n = 0 + 1 + 2 + ... + k for some k.
      */
     private static int vechOrder(double[] vech) {
         int difference = vech.length;
@@ -926,7 +999,6 @@ public final class MatrixUtils {
         }
         return order;
     }
-
 
     public static int[] copyOf(int[] arr, int length) {
         int[] copy = new int[arr.length];
@@ -979,8 +1051,3 @@ public final class MatrixUtils {
         };
     }
 }
-
-
-
-
-

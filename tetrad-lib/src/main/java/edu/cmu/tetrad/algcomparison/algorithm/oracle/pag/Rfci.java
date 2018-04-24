@@ -26,8 +26,7 @@ import java.util.List;
 @edu.cmu.tetrad.annotation.Algorithm(
         name = "RFCI",
         command = "rfci",
-        algoType = AlgType.allow_latent_common_causes,
-        description = ""
+        algoType = AlgType.allow_latent_common_causes
 )
 public class Rfci implements Algorithm, HasKnowledge, TakesIndependenceWrapper {
 

@@ -12,7 +12,6 @@ import edu.cmu.tetrad.search.Fask;
 import edu.cmu.tetrad.util.Parameters;
 import edu.pitt.dbmi.algo.bootstrap.BootstrapEdgeEnsemble;
 import edu.pitt.dbmi.algo.bootstrap.GeneralBootstrapTest;
-
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -30,8 +29,7 @@ import java.util.List;
 @edu.cmu.tetrad.annotation.Algorithm(
         name = "FASK Concatenated",
         command = "fask-concatenated",
-        algoType = AlgType.forbid_latent_common_causes,
-        description = ""
+        algoType = AlgType.forbid_latent_common_causes
 )
 public class FaskConcatenated implements MultiDataSetAlgorithm, HasKnowledge, UsesScoreWrapper {
 

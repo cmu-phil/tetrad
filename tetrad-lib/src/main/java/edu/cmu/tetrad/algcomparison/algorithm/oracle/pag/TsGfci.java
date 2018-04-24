@@ -11,7 +11,6 @@ import edu.cmu.tetrad.annotation.AlgType;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
-  import edu.cmu.tetrad.search.SearchGraphUtils;
 import edu.cmu.tetrad.search.TsDagToPag;
 import edu.cmu.tetrad.util.Parameters;
 import edu.pitt.dbmi.algo.bootstrap.BootstrapEdgeEnsemble;
@@ -27,8 +26,7 @@ import java.util.List;
 @edu.cmu.tetrad.annotation.Algorithm(
         name = "TsGFCI",
         command = "ts-gfci",
-        algoType = AlgType.allow_latent_common_causes,
-        description = ""
+        algoType = AlgType.allow_latent_common_causes
 )
 public class TsGfci implements Algorithm, TakesInitialGraph, HasKnowledge, TakesIndependenceWrapper, UsesScoreWrapper {
 

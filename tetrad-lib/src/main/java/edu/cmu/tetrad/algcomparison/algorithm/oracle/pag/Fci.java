@@ -27,8 +27,7 @@ import java.util.List;
 @edu.cmu.tetrad.annotation.Algorithm(
         name = "FCI",
         command = "fci",
-        algoType = AlgType.allow_latent_common_causes,
-        description = ""
+        algoType = AlgType.allow_latent_common_causes
 )
 public class Fci implements Algorithm, TakesInitialGraph, HasKnowledge, TakesIndependenceWrapper {
 

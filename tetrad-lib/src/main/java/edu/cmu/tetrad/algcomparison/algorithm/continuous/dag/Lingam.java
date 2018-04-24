@@ -4,13 +4,13 @@ import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.annotation.AlgType;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
+import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.data.DataUtils;
 import edu.cmu.tetrad.graph.EdgeListGraph;
+import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.util.Parameters;
 import edu.pitt.dbmi.algo.bootstrap.BootstrapEdgeEnsemble;
 import edu.pitt.dbmi.algo.bootstrap.GeneralBootstrapTest;
-import edu.cmu.tetrad.data.DataType;
-import edu.cmu.tetrad.graph.Graph;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -22,9 +22,7 @@ import java.util.List;
 @edu.cmu.tetrad.annotation.Algorithm(
         name = "LiNGAM",
         command = "lingam",
-        algoType = AlgType.forbid_latent_common_causes,
-        description = "The LiNGAM algorithm, for inferring a DAG when there are no latent variables in the model and " +
-                "at most one error is Gaussian. We use FGES with knowledge of causal order for the 'pruning' step."
+        algoType = AlgType.forbid_latent_common_causes
 )
 public class Lingam implements Algorithm {
 

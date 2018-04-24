@@ -431,7 +431,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         if (model == null) {
             algoDescTextArea.setText("");
         } else {
-            algoDescTextArea.setText(model.getAlgorithm().getAnnotation().description());
+            algoDescTextArea.setText(model.getDescription());
             algoDescTextArea.setCaretPosition(0);
         }
     }

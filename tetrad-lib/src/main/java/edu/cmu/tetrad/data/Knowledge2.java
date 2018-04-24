@@ -22,7 +22,6 @@ package edu.cmu.tetrad.data;
 
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.TetradSerializable;
-
 import java.io.CharArrayWriter;
 import java.io.IOException;
 import java.io.Writer;
@@ -293,6 +292,25 @@ public final class Knowledge2 implements TetradSerializable, IKnowledge {
         return edges.iterator();
     }
 
+    @Override
+    public List<KnowledgeEdge> getListOfForbiddenEdges() {
+        List<KnowledgeEdge> edges = new LinkedList<>();
+
+        forbiddenRulesSpecs.forEach(e -> {
+            Set<MyNode> s1 = e.getFirst();
+            Set<MyNode> s2 = e.getSecond();
+            s1.forEach(e1 -> {
+                s2.forEach(e2 -> {
+                    if (!e1.equals(e2)) {
+                        edges.add(new KnowledgeEdge(e1.getName(), e2.getName()));
+                    }
+                });
+            });
+        });
+
+        return edges;
+    }
+
     /**
      * Iterator over the knowledge's explicitly forbidden edges.
      */
@@ -317,6 +335,27 @@ public final class Knowledge2 implements TetradSerializable, IKnowledge {
         }
 
         return edges.iterator();
+    }
+
+    @Override
+    public List<KnowledgeEdge> getListOfExplicitlyForbiddenEdges() {
+        Set<OrderedPair<Set<MyNode>>> copy = new HashSet<>(forbiddenRulesSpecs);
+        copy.removeAll(forbiddenTierRules());
+
+        knowledgeGroups.forEach(e -> copy.remove(knowledgeGroupRules.get(e)));
+
+        List<KnowledgeEdge> edges = new LinkedList<>();
+        copy.forEach(e -> {
+            Set<MyNode> s1 = e.getFirst();
+            Set<MyNode> s2 = e.getSecond();
+            s1.forEach(e1 -> {
+                s2.forEach(e2 -> {
+                    edges.add(new KnowledgeEdge(e1.getName(), e2.getName()));
+                });
+            });
+        });
+
+        return edges;
     }
 
     /**
@@ -634,11 +673,35 @@ public final class Knowledge2 implements TetradSerializable, IKnowledge {
         return edges.iterator();
     }
 
+    @Override
+    public List<KnowledgeEdge> getListOfRequiredEdges() {
+        List<KnowledgeEdge> edges = new LinkedList<>();
+
+        requiredRulesSpecs.forEach(e -> {
+            Set<MyNode> s1 = e.getFirst();
+            Set<MyNode> s2 = e.getSecond();
+            s1.forEach(e1 -> {
+                s2.forEach(e2 -> {
+                    if (!e1.equals(e2)) {
+                        edges.add(new KnowledgeEdge(e1.getName(), e2.getName()));
+                    }
+                });
+            });
+        });
+
+        return edges;
+    }
+
     /**
      * Iterator over the KnowledgeEdge's explicitly required edges.
      */
     public final Iterator<KnowledgeEdge> explicitlyRequiredEdgesIterator() {
         return requiredEdgesIterator();
+    }
+
+    @Override
+    public List<KnowledgeEdge> getListOfExplicitlyRequiredEdges() {
+        return getListOfRequiredEdges();
     }
 
     /**
