@@ -2,6 +2,7 @@ package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.*;
+import edu.cmu.tetrad.util.ChoiceGenerator;
 import edu.cmu.tetrad.util.DepthChoiceGenerator;
 
 import java.util.ArrayList;
@@ -12,6 +13,7 @@ public class FgesIon {
     private Graph augmented;
     private List<Edge> reusableEdges;
     private List<List<Edge>> edgesRemoved = new ArrayList<>();
+    private IKnowledge knowledge = new Knowledge2();
 
     public FgesIon() {
     }
@@ -22,19 +24,19 @@ public class FgesIon {
         System.out.println();
 
         for (int i = 0; i < models.size(); i++) {
-            System.out.println((i + 1) + ", Removing" + edgesRemoved.get(i) + " \n" + models.get(i) + "\n");
+            System.out.println((i + 1) + ". Removing" + edgesRemoved.get(i) + " \n" + models.get(i) + "\n");
         }
     }
 
     public Graph search(DataSet dataSet) {
         final SemBicScore score = new SemBicScore(new CovarianceMatrixOnTheFly(dataSet));
-        Fges fges = new Fges(score);
-        fges.setVerbose(true);
-        final Graph p = fges.search();
-        this.augmented = getAugmentedGraph(score, p);
-        this.reusableEdges = getRemoveableEdges(this.augmented, p, score);
-
-        return p;
+        score.setPenaltyDiscount(6);
+        Fges3 fges = new Fges3(score);
+        fges.setKnowledge(knowledge);
+        final Graph fgesGraph = fges.search();
+        this.augmented = getAugmentedGraph(score, fgesGraph);
+        this.reusableEdges = getRemoveableEdges(this.augmented, score);
+        return fgesGraph;
     }
 
     private Graph getAugmentedGraph(SemBicScore score, Graph p) {
@@ -43,6 +45,8 @@ public class FgesIon {
         final Graph augmented = new EdgeListGraph(p);
 
         for (int i = 0; i < nodes.size(); i++) {
+
+            NODES:
             for (int j = 0; j < nodes.size(); j++) {
                 if (i == j) continue;
 
@@ -58,10 +62,41 @@ public class FgesIon {
                         intermediaries.add(path.get(k));
                     }
 
+                    List<Node> adjx = augmented.getAdjacentNodes(x);
+                    adjx.remove(y);
+
+                    List<Node> adjy = augmented.getAdjacentNodes(y);
+                    adjy.remove(x);
+
+                    ChoiceGenerator gen = new ChoiceGenerator(adjx.size(), adjx.size());
+                    int[] choice;
+
+                    while ((choice = gen.next()) != null) {
+                        List<Node> n = GraphUtils.asList(choice, adjx);
+                        double v = score.localScoreDiff(nodes.indexOf(x), nodes.indexOf(y), varIndices(n, nodes));
+
+                        if (!Double.isNaN(v) && v < 0) {
+                            continue NODES;
+                        }
+                    }
+
+                    gen = new ChoiceGenerator(adjy.size(), adjy.size());
+
+                    while ((choice = gen.next()) != null) {
+                        List<Node> n = GraphUtils.asList(choice, adjy);
+                        double v = score.localScoreDiff(nodes.indexOf(x), nodes.indexOf(y), varIndices(n, nodes));
+
+                        if (!Double.isNaN(v) && v < 0) {
+                            continue NODES;
+                        }
+                    }
+
                     double v = score.localScoreDiff(nodes.indexOf(x), nodes.indexOf(y), varIndices(intermediaries, nodes));
 
                     if (Double.isNaN(v)) {
-                        augmented.addEdge(getAugmentedEdge(path, intermediaries, p));
+                        final Edge augmentedEdge = getAugmentedEdge(path, intermediaries, p);
+                        augmented.addEdge(augmentedEdge);
+                        continue NODES;
                     }
                 }
             }
@@ -90,11 +125,12 @@ public class FgesIon {
         Edge edge1 = P.getEdge(n1, n2);
         Edge edge2 = P.getEdge(n3, n4);
 
-//        return new Edge(n1, n4, edge1.getProximalEndpoint(n1), edge2.getProximalEndpoint(n4));
-        return Edges.directedEdge(n1, n4);
+        return new Edge(n1, n4, edge1.getProximalEndpoint(n1), edge2.getProximalEndpoint(n4));
     }
 
-    public List<Graph> allModels(Graph p, Graph augmented, List<Edge> removeableEdges, Score score) {
+    public List<Graph> allModels(Graph fgesGraph, Graph augmented, List<Edge> removeableEdges) {
+        System.out.println("fgesGraph = " + fgesGraph);
+
         List<Graph> models = new ArrayList<>();
         edgesRemoved.clear();
 
@@ -107,39 +143,26 @@ public class FgesIon {
             for (int aChoice : choice) toRemove.add(removeableEdges.get(aChoice));
 
             Graph Q = new EdgeListGraph(augmented);
+            List<Node> theseNodes = new ArrayList<>();
 
             for (Edge edge : toRemove) {
                 Q.removeEdge(edge);
+                theseNodes.add(edge.getNode1());
+                theseNodes.add(edge.getNode2());
             }
 
-//            IKnowledge knowledge = new Knowledge2();
+            final MeekRules meekRules = new MeekRules();
+            meekRules.setKnowledge(knowledge);
+            meekRules.orientImplied(Q);
 
-//            for (Edge edge : toRemove) {
-//                knowledge.setForbidden(edge.getNode1().toString(), edge.getNode2().toString());
-//                knowledge.setForbidden(edge.getNode2().toString(), edge.getNode1().toString());
-//            }
-
-//            Fges fges = new Fges(score);
-//            fges.setKnowledge(knowledge);
-//            Q = fges.search();
-
-            List<Node> nodes = augmented.getNodes();
-
-            for (int r = 0; r < nodes.size(); r++) {
-                for (int s = r + 1; s < nodes.size(); s++) {
-                    Node x = nodes.get(r);
-                    Node y = nodes.get(s);
+            for (Node x : theseNodes) {
+                for (Node y : theseNodes) {
+                    if (x == y) continue;
 
                     boolean yes = true;
 
-                    if (p.existsSemiDirectedPathFromTo(x, Collections.singleton(y))) {
+                    if (fgesGraph.existsSemiDirectedPathFromTo(x, Collections.singleton(y))) {
                         if (!Q.existsSemiDirectedPathFromTo(x, Collections.singleton(y))) {
-                            yes = false;
-                        }
-                    }
-
-                    if (p.existsSemiDirectedPathFromTo(y, Collections.singleton(x))) {
-                        if (!Q.existsSemiDirectedPathFromTo(y, Collections.singleton(x))) {
                             yes = false;
                         }
                     }
@@ -157,7 +180,7 @@ public class FgesIon {
         return models;
     }
 
-    private List<Edge> getRemoveableEdges(Graph augmented, Graph fgesGraph, Score score) {
+    private List<Edge> getRemoveableEdges(Graph augmented, Score score) {
         List<Node> nodes = score.getVariables();
         List<Edge> removeableEdges = new ArrayList<>();
 
@@ -179,9 +202,6 @@ public class FgesIon {
 
             double vx = score.localScoreDiff(nodes.indexOf(x), nodes.indexOf(y), varIndices(adjx, nodes));
             double vy = score.localScoreDiff(nodes.indexOf(x), nodes.indexOf(y), varIndices(adjy, nodes));
-
-            Graph p2 = new EdgeListGraph(augmented);
-            p2.removeEdge(edge);
 
             if ((Double.isNaN(vx) || Double.isNaN(vy))) {
                 removeableEdges.add(edge);
@@ -211,5 +231,13 @@ public class FgesIon {
 
     public List<List<Edge>> getEdgesRemoved() {
         return edgesRemoved;
+    }
+
+    public IKnowledge getKnowledge() {
+        return knowledge;
+    }
+
+    public void setKnowledge(IKnowledge knowledge) {
+        this.knowledge = knowledge;
     }
 }

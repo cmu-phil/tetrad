@@ -26,12 +26,12 @@ import java.util.Set;
  *
  * @author jdramsey
  */
-@edu.cmu.tetrad.annotation.Algorithm(
-        name = "FGES-MB-Ancestors",
-        command = "fges-mb-ancestors",
-        algoType = AlgType.search_for_Markov_blankets,
-        description = ""
-)
+//@edu.cmu.tetrad.annotation.Algorithm(
+//        name = "FGES-MB-Ancestors",
+//        command = "fges-mb-ancestors",
+//        algoType = AlgType.search_for_Markov_blankets,
+//        description = ""
+//)
 public class FgesMbAncestors implements Algorithm, TakesInitialGraph, HasKnowledge, UsesScoreWrapper {
 
     static final long serialVersionUID = 23L;
