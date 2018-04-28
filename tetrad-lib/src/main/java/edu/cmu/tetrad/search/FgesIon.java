@@ -29,17 +29,95 @@ public class FgesIon {
     }
 
     public Graph search(DataSet dataSet) {
-        final SemBicScore score = new SemBicScore(new CovarianceMatrixOnTheFly(dataSet));
-        score.setPenaltyDiscount(6);
+        final ISemBicScore score = new SemBicScore2(new CovarianceMatrixOnTheFly2(dataSet));
+        score.setPenaltyDiscount(4);
         Fges3 fges = new Fges3(score);
+        fges.setVerbose(true);
         fges.setKnowledge(knowledge);
-        final Graph fgesGraph = fges.search();
-        this.augmented = getAugmentedGraph(score, fgesGraph);
+        final Graph graph = fges.search();
+
+//        Pc pc = new Pc(new IndTestScore(score));
+//        pc.setKnowledge(knowledge);
+//        Graph graph = pc.search();
+
+        this.augmented = getAugmentedGraph(score, graph);
         this.reusableEdges = getRemoveableEdges(this.augmented, score);
-        return fgesGraph;
+        return graph;
+
+
     }
 
-    private Graph getAugmentedGraph(SemBicScore score, Graph p) {
+//    private Graph getAugmentedGraph(SemBicScore score, Graph p) {
+//        final List<Node> nodes = p.getNodes();
+//
+//        final Graph augmented = new EdgeListGraph(p);
+//
+//        for (int i = 0; i < nodes.size(); i++) {
+//
+//            NODES:
+//            for (int j = 0; j < nodes.size(); j++) {
+//                if (i == j) continue;
+//
+//                List<List<Node>> paths = GraphUtils.semidirectedPathsFromTo(p, nodes.get(i), nodes.get(j), 5);
+//
+//                for (List<Node> path : paths) {
+//                    Node x = path.get(0);
+//                    Node y = path.get(path.size() - 1);
+//
+//                    List<Node> intermediaries = new ArrayList<>();
+//
+//                    for (int k = 1; k < path.size() - 1; k++) {
+//                        intermediaries.add(path.get(k));
+//                    }
+//
+//                    List<Node> adjx = augmented.getAdjacentNodes(x);
+//                    adjx.remove(y);
+//
+//                    List<Node> adjy = augmented.getAdjacentNodes(y);
+//                    adjy.remove(x);
+//
+//                    if (adjx.size() < 1) continue;
+//
+//                    ChoiceGenerator gen = new ChoiceGenerator(adjx.size(), 1);
+//                    int[] choice;
+//
+//                    while ((choice = gen.next()) != null) {
+//                        List<Node> n = GraphUtils.asList(choice, adjx);
+//                        double v = score.localScoreDiff(nodes.indexOf(x), nodes.indexOf(y), varIndices(n, nodes));
+//
+//                        if (!Double.isNaN(v) && v < 0) {
+//                            continue NODES;
+//                        }
+//                    }
+//
+//                    if (adjy.size() < 1) continue;
+//
+//                    gen = new ChoiceGenerator(adjy.size(), adjy.size());
+//
+//                    while ((choice = gen.next()) != null) {
+//                        List<Node> n = GraphUtils.asList(choice, adjy);
+//                        double v = score.localScoreDiff(nodes.indexOf(x), nodes.indexOf(y), varIndices(n, nodes));
+//
+//                        if (!Double.isNaN(v) && v < 0) {
+//                            continue NODES;
+//                        }
+//                    }
+//
+//                    double v = score.localScoreDiff(nodes.indexOf(x), nodes.indexOf(y), varIndices(intermediaries, nodes));
+//
+//                    if (Double.isNaN(v)) {
+//                        final Edge augmentedEdge = getAugmentedEdge(path, intermediaries, p);
+//                        augmented.addEdge(augmentedEdge);
+//                        continue NODES;
+//                    }
+//                }
+//            }
+//        }
+//
+//        return augmented;
+//    }
+
+    private Graph getAugmentedGraph(ISemBicScore score, Graph p) {
         final List<Node> nodes = p.getNodes();
 
         final Graph augmented = new EdgeListGraph(p);
@@ -52,51 +130,67 @@ public class FgesIon {
 
                 List<List<Node>> paths = GraphUtils.semidirectedPathsFromTo(p, nodes.get(i), nodes.get(j), 5);
 
-                for (List<Node> path : paths) {
-                    Node x = path.get(0);
-                    Node y = path.get(path.size() - 1);
+                if (paths.isEmpty()) continue;
+                List<Node> path = paths.get(0);
 
-                    List<Node> intermediaries = new ArrayList<>();
+                System.out.println(GraphUtils.pathString(paths.get(0), p));
 
-                    for (int k = 1; k < path.size() - 1; k++) {
-                        intermediaries.add(path.get(k));
-                    }
+                Node x = path.get(0);
+                Node y = path.get(path.size() - 1);
 
-                    List<Node> adjx = augmented.getAdjacentNodes(x);
-                    adjx.remove(y);
+                List<Node> intermediaries = new ArrayList<>();
 
-                    List<Node> adjy = augmented.getAdjacentNodes(y);
-                    adjy.remove(x);
+                for (int k = 1; k < path.size() - 1; k++) {
+                    intermediaries.add(path.get(k));
+                }
 
-                    ChoiceGenerator gen = new ChoiceGenerator(adjx.size(), adjx.size());
-                    int[] choice;
+                List<Node> adjx = augmented.getAdjacentNodes(x);
+                adjx.remove(y);
 
-                    while ((choice = gen.next()) != null) {
-                        List<Node> n = GraphUtils.asList(choice, adjx);
-                        double v = score.localScoreDiff(nodes.indexOf(x), nodes.indexOf(y), varIndices(n, nodes));
+                List<Node> adjy = augmented.getAdjacentNodes(y);
+                adjy.remove(x);
 
-                        if (!Double.isNaN(v) && v < 0) {
-                            continue NODES;
-                        }
-                    }
+                if (adjx.size() < 1) continue;
 
-                    gen = new ChoiceGenerator(adjy.size(), adjy.size());
+                ChoiceGenerator gen = new ChoiceGenerator(adjx.size(), 1);
+                int[] choice;
 
-                    while ((choice = gen.next()) != null) {
-                        List<Node> n = GraphUtils.asList(choice, adjy);
-                        double v = score.localScoreDiff(nodes.indexOf(x), nodes.indexOf(y), varIndices(n, nodes));
+                while ((choice = gen.next()) != null) {
+                    List<Node> n = GraphUtils.asList(choice, adjx);
+                    double v = score.localScoreDiff(nodes.indexOf(x), nodes.indexOf(y), varIndices(n, nodes));
+                    System.out.println("v = " + v + " n = " + n);
 
-                        if (!Double.isNaN(v) && v < 0) {
-                            continue NODES;
-                        }
-                    }
-
-                    double v = score.localScoreDiff(nodes.indexOf(x), nodes.indexOf(y), varIndices(intermediaries, nodes));
-
-                    if (Double.isNaN(v)) {
-                        final Edge augmentedEdge = getAugmentedEdge(path, intermediaries, p);
-                        augmented.addEdge(augmentedEdge);
+                    if (!Double.isNaN(v) && v < 0) {
+                        augmented.removeEdge(x, y);
                         continue NODES;
+                    }
+                }
+
+                if (adjy.size() < 1) continue;
+
+                gen = new ChoiceGenerator(adjy.size(), adjy.size());
+
+                while ((choice = gen.next()) != null) {
+                    List<Node> n = GraphUtils.asList(choice, adjy);
+                    double v = score.localScoreDiff(nodes.indexOf(x), nodes.indexOf(y), varIndices(n, nodes));
+                    System.out.println("vv = " + v + " n = " + n);
+
+                    if (!Double.isNaN(v) && v < 0) {
+                        augmented.removeEdge(x, y);
+                        continue NODES;
+                    }
+                }
+
+                double v = score.localScoreDiff(nodes.indexOf(x), nodes.indexOf(y), varIndices(intermediaries, nodes));
+
+                if (Double.isNaN(v)) {
+                    System.out.println("###");
+
+                    final Edge augmentedEdge = getAugmentedEdge(path, intermediaries, p);
+
+                    if (augmentedEdge != null) {
+                        System.out.println("Adding edge: " + augmentedEdge);
+                        augmented.addEdge(augmentedEdge);
                     }
                 }
             }
@@ -129,8 +223,6 @@ public class FgesIon {
     }
 
     public List<Graph> allModels(Graph fgesGraph, Graph augmented, List<Edge> removeableEdges) {
-        System.out.println("fgesGraph = " + fgesGraph);
-
         List<Graph> models = new ArrayList<>();
         edgesRemoved.clear();
 
@@ -153,6 +245,7 @@ public class FgesIon {
 
             final MeekRules meekRules = new MeekRules();
             meekRules.setKnowledge(knowledge);
+            SearchGraphUtils.basicPattern(Q, false);
             meekRules.orientImplied(Q);
 
             for (Node x : theseNodes) {

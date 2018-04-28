@@ -35,8 +35,6 @@ import java.util.*;
  * @author Joseph Ramsey
  */
 public final class TestIonForClark {
-    IKnowledge knowledge = new Knowledge2();
-
     public void test2(boolean ion) {
         IKnowledge knowledge = new Knowledge2();
         knowledge.addToTier(1, "A");
@@ -44,47 +42,61 @@ public final class TestIonForClark {
         knowledge.addToTier(2, "C");
         knowledge.addToTier(2, "D");
 
-        this.knowledge = knowledge;
+        knowledge = new Knowledge2();
 
         Graph graph1 = GraphConverter.convert("A-->B,B-->C,A-->D,D-->C");
-        runModel(graph1, new String[][]{{"B", "A", "D"}, {"B", "C", "D"}}, ion);
+        runModel(graph1, new String[][]{{"B", "A", "D"}, {"B", "C", "D"}},
+                ion,
+                knowledge);
     }
 
     public void test3(boolean ion) {
         Graph graph1 = GraphConverter.convert("X-->C,C-->B,A-->B,Y-->A");
-        runModel(graph1, new String[][]{{"X", "Y", "A"}, {"X", "Y", "B"}, {"X", "Y", "C"}}, ion);
+        runModel(graph1, new String[][]{{"X", "Y", "A"}, {"X", "Y", "B"}, {"X", "Y", "C"}},
+                ion,
+                new Knowledge2());
     }
 
     public void test3a(boolean ion) {
         Graph graph1 = GraphConverter.convert("X-->C,C-->B,A-->B,Y-->A");
-        runModel(graph1, new String[][]{{"X", "Y", "A"}, {"X", "Y", "B"}, {"X", "Y", "C"},  {"A", "B", "C"}}, ion);
+        runModel(graph1, new String[][]{{"X", "Y", "A"}, {"X", "Y", "B"}, {"X", "Y", "C"}, {"A", "B", "C"}},
+                ion,
+                new Knowledge2());
     }
 
     public void test4(boolean ion) {
         Graph graph1 = GraphConverter.convert("A-->B,B-->C,A-->D,D-->C");
-        runModel(graph1, new String[][]{{"A", "B", "C"}, {"A", "D", "C"}}, ion);
+        runModel(graph1, new String[][]{{"A", "B", "C"}, {"A", "D", "C"}},
+                ion,
+                new Knowledge2());
     }
 
     public void test5(boolean ion) {
-        Graph graph1 = GraphConverter.convert("R-->S,T-->S,T-->W");
-        runModel(graph1, new String[][]{{"R", "S", "T"}, {"S", "W"}}, ion);
+        Graph graph1 = GraphConverter.convert("T-->W, R-->S,T-->S");
+        runModel(graph1, new String[][]{{"R", "S", "T"}, {"T", "W"}},
+                ion,
+                new Knowledge2());
     }
 
     public void test6(boolean ion) {
         Graph graph1 = GraphUtils.randomGraph(10, 0, 10, 100, 100, 100, false);
 //        runModel(graph1, new String[][]{{"X1", "X2", "X3"}, {"X2", "X3", "X4"}, {"X3", "X4", "X5"}}, ion);
-        runModel(graph1, new String[][]{{"X1", "X2", "X3", "X4", "X5", "X6", "X7", "X8"}, { "X2", "X3", "X4", "X5", "X6", "X7", "X8", "X10"}}, ion);
+        runModel(graph1,
+                new String[][]{{"X1", "X2", "X3", "X4", "X5", "X6", "X7", "X8"},
+                        {"X2", "X3", "X4", "X5", "X6", "X7", "X8", "X10"}},
+                ion,
+                new Knowledge2());
     }
 
-    private void runModel(Graph graph, String[][] groupings, boolean ion) {
+    private void runModel(Graph graph, String[][] groupings, boolean ion, IKnowledge knowledge) {
         if (ion) {
-            runModelIon(graph, groupings);
+            runModelIon(graph, groupings, knowledge);
         } else {
-            runModelFgesIon(graph, groupings);
+            runModelFgesIon(graph, groupings, knowledge);
         }
     }
 
-    private void runModelFgesIon(Graph graph, String[][] groupings) {
+    private void runModelFgesIon(Graph graph, String[][] groupings, IKnowledge knowledge) {
         int sampleSize = 10000;
 
         SemPm pm = new SemPm(graph);
@@ -124,7 +136,7 @@ public final class TestIonForClark {
         FgesIon.printModels(models, edgesRemoved);
     }
 
-    private void runModelIon(Graph graph, String[][] groupings) {
+    private void runModelIon(Graph graph, String[][] groupings, IKnowledge knowledge) {
         SemPm pm = new SemPm(graph);
         SemIm im = new SemIm(pm);
 
@@ -141,6 +153,7 @@ public final class TestIonForClark {
         }
 
         IonJoeModifications ion = new IonJoeModifications(graphs);
+        ion.setKnowledge(knowledge);
         List<Graph> outGraphs = ion.search();
 
         Set<Graph> out2 = new LinkedHashSet<>();
@@ -196,12 +209,12 @@ public final class TestIonForClark {
     public static void main(String... args) {
         boolean ion = false;
 
-        new TestIonForClark().test2(ion);
+//        new TestIonForClark().test2(ion);
 //        new TestIonForClark().test3(ion);
 //        new TestIonForClark().test3a(ion);
 //        new TestIonForClark().test4(ion);
 //        new TestIonForClark().test5(ion);
-//        new TestIonForClark().test6(ion);
+        new TestIonForClark().test6(ion);
 
     }
 

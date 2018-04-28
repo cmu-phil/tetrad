@@ -21,6 +21,7 @@
 
 package edu.cmu.tetrad.search;
 
+import edu.cmu.tetrad.data.CovarianceMatrixOnTheFly2;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.ICovarianceMatrix;
 import edu.cmu.tetrad.graph.Node;
@@ -40,10 +41,10 @@ import static java.lang.Math.log;
  *
  * @author Joseph Ramsey
  */
-public class SemBicScore implements Score, ISemBicScore {
+public class SemBicScore2 implements Score, ISemBicScore {
 
     // The covariance matrix.
-    private ICovarianceMatrix covariances;
+    private CovarianceMatrixOnTheFly2 covariances;
 
     // The variables of the covariance matrix.
     private List<Node> variables;
@@ -73,7 +74,7 @@ public class SemBicScore implements Score, ISemBicScore {
     /**
      * Constructs the score using a covariance matrix.
      */
-    public SemBicScore(ICovarianceMatrix covariances) {
+    public SemBicScore2(CovarianceMatrixOnTheFly2 covariances) {
         if (covariances == null) {
             throw new NullPointerException();
         }
@@ -90,12 +91,22 @@ public class SemBicScore implements Score, ISemBicScore {
     public double localScore(int i, int... parents) {
         for (int p : parents) if (forbidden.contains(p)) return Double.NaN;
 
+        int[] all = new int[parents.length + 1];
+        all[0] = i;
+        for (int k = 0; k < parents.length; k++) all[k + 1] = parents[k];
+
+        int[] dataRows = covariances.getRows(all, all);
+
+        if (dataRows.length == 0) {
+            return Double.NaN;
+        }
+
         try {
             double s2 = getCovariances().getValue(i, i);
             int p = parents.length;
 
-            TetradMatrix covxx = getSelection(getCovariances(), parents, parents);
-            TetradVector covxy = getSelection(getCovariances(), parents, new int[]{i}).getColumn(0);
+            TetradMatrix covxx = getSelection(covariances, parents, parents, dataRows);
+            TetradVector covxy = getSelection(covariances, parents, new int[]{i}, dataRows).getColumn(0);
             s2 -= covxx.inverse().times(covxy).dotProduct(covxy);
 
             if (s2 <= 0) {
@@ -106,7 +117,7 @@ public class SemBicScore implements Score, ISemBicScore {
                 return Double.NaN;
             }
 
-            int n = getSampleSize();
+            int n = dataRows.length;
             return -(n) * log(s2) - getPenaltyDiscount() * log(n);
             // + getStructurePrior(parents.length);// - getStructurePrior(parents.length + 1);
         } catch (Exception e) {
@@ -306,8 +317,8 @@ public class SemBicScore implements Score, ISemBicScore {
         return variables;
     }
 
-    private TetradMatrix getSelection(ICovarianceMatrix cov, int[] rows, int[] cols) {
-        return cov.getSelection(rows, cols);
+    private TetradMatrix getSelection(CovarianceMatrixOnTheFly2 cov, int[] rows, int[] cols, int[] dataRows) {
+        return cov.getSelection(rows, cols, dataRows);
     }
 
     // Prints a smallest subset of parents that causes a singular matrix exception.
@@ -341,7 +352,7 @@ public class SemBicScore implements Score, ISemBicScore {
         return false;
     }
 
-    private void setCovariances(ICovarianceMatrix covariances) {
+    private void setCovariances(CovarianceMatrixOnTheFly2 covariances) {
         this.covariances = covariances;
     }
 
