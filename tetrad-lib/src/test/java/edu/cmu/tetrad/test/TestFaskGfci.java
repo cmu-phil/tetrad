@@ -23,7 +23,6 @@ package edu.cmu.tetrad.test;
 
 import edu.cmu.tetrad.algcomparison.Comparison;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithms;
-import edu.cmu.tetrad.algcomparison.algorithm.oracle.pag.FaskGfci;
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.pag.Fci;
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.pag.Gfci;
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.pag.Rfci;
@@ -104,7 +103,6 @@ public class TestFaskGfci {
         algorithms.add(new Fci(new SemBicTest()));
         algorithms.add(new Rfci(new SemBicTest()));
         algorithms.add(new Gfci(new SemBicTest(), new SemBicScore()));
-        algorithms.add(new FaskGfci(new SemBicTest()));
         Comparison comparison = new Comparison();
 
         comparison.setShowAlgorithmIndices(true);

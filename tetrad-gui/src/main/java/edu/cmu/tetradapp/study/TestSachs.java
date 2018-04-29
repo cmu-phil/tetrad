@@ -378,7 +378,6 @@ public class TestSachs {
         algorithms.add(new edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern.Fges(new SemBicScore()));
         algorithms.add(new edu.cmu.tetrad.algcomparison.algorithm.oracle.pag.Fci(new SemBicTest()));
         algorithms.add(new edu.cmu.tetrad.algcomparison.algorithm.oracle.pag.Gfci(new SemBicTest(), new SemBicScore()));
-        algorithms.add(new edu.cmu.tetrad.algcomparison.algorithm.oracle.pag.FaskGfci(new SemBicTest()));
 
         Parameters parameters = new Parameters();
 
@@ -765,7 +764,6 @@ public class TestSachs {
         algorithms.add(new edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern.Fges(new SemBicScore()));
         algorithms.add(new edu.cmu.tetrad.algcomparison.algorithm.oracle.pag.Fci(new SemBicTest()));
         algorithms.add(new edu.cmu.tetrad.algcomparison.algorithm.oracle.pag.Gfci(new SemBicTest(), new SemBicScore()));
-        algorithms.add(new edu.cmu.tetrad.algcomparison.algorithm.oracle.pag.FaskGfci(new SemBicTest()));
         algorithms.add(new SingleGraphAlg(sachsGraph));
 
         Simulations simulations = new Simulations();
