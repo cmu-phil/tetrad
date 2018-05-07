@@ -24,7 +24,7 @@ public final class TestRandomFourierFeatures {
 		int num_f = 5;
 		double sigma = 1;
 
-		RandomFourierFeatures r = RandomFourierFeatures.generate(x, null, null, num_f, sigma, seed);
+		RandomFourierFeatures r = RandomFourierFeatures.generate(x, null, null, num_f, sigma);
 
 		TetradMatrix feature = r.getFeature();
 		System.out.println("feature rows: " + feature.rows());
@@ -72,7 +72,7 @@ public final class TestRandomFourierFeatures {
 		double sigma = 1;
 
 		TetradMatrix matrix_x = new TetradMatrix(x);
-		RandomFourierFeatures r = RandomFourierFeatures.generate(matrix_x, null, null, num_f, sigma, seed);
+		RandomFourierFeatures r = RandomFourierFeatures.generate(matrix_x, null, null, num_f, sigma);
 
 		TetradMatrix feature = r.getFeature();
 		System.out.println("feature rows: " + feature.rows());
