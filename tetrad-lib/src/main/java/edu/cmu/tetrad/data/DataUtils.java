@@ -1949,7 +1949,7 @@ public final class DataUtils {
     }
 
     // Checking X->Z with other parents P of X.
-    public static boolean linear(double[] x, double[] z, double[][] p, double numInBootstrap,
+    public static boolean linear(double[] x, double[] z, double[][] p, double bootstrapSampleSize,
                                  int numBootstraps, double alpha, double sensitivity) {
 
         int N = z.length;
@@ -1975,7 +1975,7 @@ public final class DataUtils {
 
                 I:
                 for (int i = 0; i < N; i++) {
-                    if (RandomUtil.getInstance().nextDouble() < numInBootstrap / (double) N) {
+                    if (RandomUtil.getInstance().nextDouble() < bootstrapSampleSize / (double) N) {
                         if (Double.isNaN(x[i])) continue;
                         if (Double.isNaN(z[i])) continue;
 
@@ -2031,7 +2031,7 @@ public final class DataUtils {
     }
 
     public static double linearPValue(double[] z, double[] x, double[][] p, double numInBootstrap,
-                                      int numBootstraps, double alpha, double sensitivity) {
+                                      int numBootstraps, double sensitivity) {
 
         int N = z.length;
         int m = p.length + 2;

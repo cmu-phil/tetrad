@@ -36,11 +36,9 @@ import org.junit.Test;
 import java.io.*;
 import java.text.ParseException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 import static java.lang.Math.abs;
-import static java.lang.Math.sqrt;
 import static java.util.Collections.*;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotSame;
@@ -57,36 +55,28 @@ public final class TestLinearityTest {
     @Test
     public void test1() {
 
+//        Linear function TSUM(NEW(B)*$)
+//        Nonlinear function TSUM(NEW(B)*$) + TSUM(NEW(B)*$^2) + TSUM(NEW(B)*$^3)
+//        Gaussian error Normal(0, .3)
+//        Non-Gaussian error .2 * U(-1, 1)
+//        Parameters Split(-.5,-.2,.2,.5)
+//        Sample size 1000
+
         try {
 
             final double bootstrapSampleSize = 100;
             final int numBootstraps = 100;
             final double alpha = .05;
-            final int sensitivity = 2;
-            final double max = .4;
+            final double sensitivity = .25;
             final int N = 1000;
-            final double variance = 1.5;
 
             File dir = new File("/Users/user/Box Sync/data/nonlinearity/simulations/joe.test");
             dir.mkdirs();
 
             final String linearFunction = "TSUM(NEW(B)*$)";
-
-            final String nonlinearFunction = max + "* sin("  + (1.0 / max) + "* ((TSUM(NEW(B)*$^4) + ERROR)))";
-//            final String nonlinearFunction = factor + "tanh("  + invfactor + "TSUM(NEW(B)*$^2) + TSUM(NEW(B)*$^3))";
-//            final String nonlinearFunction = factor + " tanh(" + invfactor +  " TSUM(NEW(B)*$) + TSUM(NEW(B)*$^2) + TSUM(NEW(B)*$^3))";
-//            final String nonlinearFunction = factor + "tanh(" + invfactor + "(TSUM(NEW(B) * $)))";
-//            final String nonlinearFunction = factor + "sin(" + invfactor + "(TSUM(NEW(B) * $)))";
-
-            final String gaussianError = "Normal(0, " + variance + ")";
-
-            double uniformBound = sqrt(variance * 12) / 2.0;
-
-//            final String nonGaussianError = "U(-" + uniformBound + ", " + uniformBound + ")";
-//            final String nonGaussianError = "Beta(2, 5)";
-//            final String nonGaussianError = "Laplace(0, sqrt(1 / 2))";
-//            final String nonGaussianError = "Split(-.5,-0,.0,.5)";
-            final String nonGaussianError = "U(-5, 0)";
+            final String nonlinearFunction = "TSUM(NEW(B)*$) + TSUM(NEW(B)*$^2) + TSUM(NEW(B)*$^3)";
+            final String gaussianError = "Normal(0, .5)";
+            final String nonGaussianError = " Beta(2, 5)";
 
             final String parameters = "Split(-1,-.2,.2,1)";
 
@@ -107,8 +97,6 @@ public final class TestLinearityTest {
             System.out.println("Num bootstraps = " + numBootstraps);
             System.out.println("Alpha = " + alpha);
             System.out.println("Sensitivity = " + sensitivity);
-            System.out.println("Max = " + max);
-            System.out.println("Variance = " + variance);
 
             Graph graph = GraphUtils.randomGraph(100, 0, 100, 100, 100, 100, true);
 
@@ -551,9 +539,9 @@ public final class TestLinearityTest {
                     double[][] _otherParents = new double[0][data[0].length];
 
                     final double linearPValue = DataUtils.linearPValue(_z, _x, _otherParents, bootstrapSampleSize,
-                            numBootstraps, alpha, 4);
+                            numBootstraps, 4);
                     final double linearBackwardsPValue = DataUtils.linearPValue(_x, _z, _otherParents, bootstrapSampleSize,
-                            numBootstraps, alpha, 4);
+                            numBootstraps, 4);
 
 //                    if (linearPValue < 0.7 || linearBackwardsPValue < 0.7) continue;
 

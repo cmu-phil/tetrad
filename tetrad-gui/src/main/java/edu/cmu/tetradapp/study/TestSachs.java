@@ -1254,4 +1254,51 @@ public class TestSachs {
 
 
     }
+
+    @Test
+    public void testMakeALittleTable() {
+//        final String trueName = "ground.truth.sachs.txt";
+        final String trueName = "supplemented.ground.truth.txt";
+
+        System.out.println("Comparing to " + trueName);
+
+        final File dir = new File("/Users/user/Downloads/files.for.fask.sachs.report/txt");
+        Graph trueGraph = GraphUtils.loadGraphTxt(new File(dir, trueName));
+
+        List<Statistic> statistics = new ArrayList<>();
+
+        String[] estNames = new String[]{
+                "sachs.model.txt",
+                "figure7.txt",
+                "figure11.txt",
+                "glasso.txt",
+                "aragam.continuous.txt",
+                "aragam.discrete.txt",
+                "henao.txt",
+                "miller.txt",
+                "desgranges.txt",
+                "mooij.txt",
+                "cgnn.txt",
+                "sam.txt"
+        };
+
+        statistics.add(new AdjacencyPrecision());
+        statistics.add(new AdjacencyRecall());
+        statistics.add(new ArrowheadPrecisionIgnore2c());
+        statistics.add(new ArrowheadRecall());
+
+        for (String estName : estNames) {
+            Graph estGraph = GraphUtils.loadGraphTxt(new File(dir, estName));
+            estGraph = GraphUtils.replaceNodes(estGraph, trueGraph.getNodes());
+
+            double adjFp = statistics.get(0).getValue(trueGraph, estGraph);
+            double adjFn = statistics.get(1).getValue(trueGraph, estGraph);
+            double ahTp = statistics.get(2).getValue(trueGraph, estGraph);
+            double ahFp = statistics.get(3).getValue(trueGraph, estGraph);
+
+            System.out.println(estName + "\t" + adjFp + "\t" + adjFn + "\t" + ahTp + "\t" + ahFp);
+
+        }
+
+    }
 }
