@@ -381,7 +381,7 @@ public final class RandomizedConditionalIndependenceTest implements Independence
 			        // if (!is.numeric(p) | is.nan(p)){
 			        //   p=1-hbe(eig_d$values,Sta);
 			        // }
-					
+					this.pValue = 1.0 - lpd4(eig_d, this.statistic);
 				}
 			}
 			
@@ -478,7 +478,7 @@ public final class RandomizedConditionalIndependenceTest implements Independence
 		return - gamma.cumulativeProbability(x_chisqnu_vec);
 	}
 	
-	private double lpb4(List<Double> coeff, double x) {
+	private double lpd4(List<Double> coeff, double x) {
 		// Lindsay-Pilla-Basak method
 		// Computes the cdf of a positively-weighted sum of chi-squared random variables with 
 		// the Lindsay-Pilla-Basak (LPB4) method using four support points.
@@ -592,6 +592,178 @@ public final class RandomizedConditionalIndependenceTest implements Independence
 		
 		
 		return Double.NaN;
+	}
+	
+	private TetradVector get_weighted_sum_of_chi_squared_moments() {
+		return null;
+	}
+	
+	// get the cumulants kappa_1, kappa_2, ..., kappa_2p
+	private TetradVector get_cumulant_vec_vectorised() {
+		return null;
+	}
+	
+	// returns the sum of the elements raised to a power
+	private double sum_of_powers(int[] index, double x) {
+		double sum = 0;
+		for(int i = 0;i<index.length;i++) {
+			sum += powers(index[i], x);
+		}
+		return sum;
+	}
+	
+	private double powers(int p, double x) {
+		boolean inversed = false;
+		if(p < 0) {
+			inversed = true;
+			p = -p;
+		}
+		if(p == 0) {
+			return 1.0;
+		}
+		boolean odd = false;
+		if(p%2 == 1) {
+			odd = true;
+			p -= 1;
+		}
+		int height = binlog(p);
+		double product = 1.0;
+		for(int i=0;i<height;i++) {
+			if(product == 1.0) {
+				product = x*x;
+			}else {
+				product = product*product;
+			}
+		}
+		if(odd) {
+			product = product*x;
+		}
+		if(inversed) {
+			product = 1/product;
+		}
+		return product;
+	}
+	
+	// https://stackoverflow.com/questions/3305059/how-do-you-calculate-log-base-2-in-java-for-integers
+	// 10 times faster than Math.log(x)/Math.log(2)
+	private int binlog(int bits) {
+		int log = 0;
+	    if( ( bits & 0xffff0000 ) != 0 ) { bits >>>= 16; log = 16; }
+	    if( bits >= 256 ) { bits >>>= 8; log += 8; }
+	    if( bits >= 16  ) { bits >>>= 4; log += 4; }
+	    if( bits >= 4   ) { bits >>>= 2; log += 2; }
+	    return log + ( bits >>> 1 );
+	}
+	
+	// get the moment vector from the cumulant vector 
+	// have removed one for loop (vectorised), but can't remove the other one
+	private TetradVector get_moments_from_cumulants() {
+		return null;
+	}
+	
+	// returns the sum of the additional terms/lower products of moments and cumulants
+	// used in the computation of moments
+	private double update_moment_from_lower_moments_and_cumulants() {
+		return Double.NaN;
+	}
+	
+	// Step 2.1: get lambdatilde_1
+	// no need to use bisection method - can get lambdatilde_1 directly 
+	private double get_lambdatilde_1(double m1, double m2) {
+		return m2/(m1*m1) - 1;
+	}
+	
+	// Step 2.2: generate delta_mat_N and det_delta_mat_N
+	// compute the delta_N matrix - vectorised using lapply and mapply
+	private TetradMatrix deltaNmat_applied(TetradMatrix x, double m_vec, int n) {
+		return null;
+	}
+	
+	// get_partial_products gets prod[1:index] 
+	private double get_partial_products(int index, double[] vec) {
+		double product = 1.0;
+		for(int i=0;i<index;i++) {
+			product *= vec[i];
+		}
+		return product;
+	}
+	
+	// this function in deltaNmat_applied computes the index from i and j, and then returns the appropriate product
+	// of vec1 and vec2 
+	// (in deltaNmat_applied, these vectors are the moment vector and the vector of the products of the (1+N*lambda)^(-1) terms)
+	private double get_index_element(int i, int j, double[] vec1, double[] vec2) {
+		int index = i + j - 1;
+		return vec1[index]*vec2[index];
+	}
+	
+	// Simply uses above matrix generation function
+	private double det_deltamat_n(TetradMatrix x, double m_vec, int n) {
+		return Double.NaN;
+	}
+	
+	// Step 3: get lambdatilde_p
+	// uses det_delta_mat_n and uniroot
+	// get lambdatilde_p by using bisection method repeatedly. 
+	// Need lambdatilde_1 to start
+	// Need to use R function uniroot
+	private double get_lambdatilde_p() {
+		return Double.NaN;
+	}
+	
+	// Step 5.2: Compute polynomial coefficients for mu polynomial
+	// We could use the linear algebra trick described in the Lindsay paper, but want to avoid
+	// dealing with small eigenvalues. Instead, we simply compute p+1 determinants.
+	// This method replaces last column with the base vectors (0, ..., 0 , 1, 0, ... 0) 
+	// to compute the coefficients, and so does not need to compute 
+	// any eigen decomposition, just (p+1) determinants
+	private TetradVector get_Stilde_polynomial_coefficients() {
+		return null;
+	}
+	
+	// generate a base vector of all zeros except for 1 in ith position
+	private TetradVector get_base_vector(int n, int i) {
+		TetradVector base_vec = new TetradVector(n);
+		base_vec.assign(0);
+		base_vec.set(0, 1);
+		return base_vec;
+	}
+	
+	// get the ith coefficient by computing determinant of appropriate matrix
+	private double get_ith_coeff_of_Stilde_poly() {
+		return Double.NaN;
+	}
+	
+	// Step 6:Generate van der monde (VDM) matrix and solve the system VDM * pi_vec = b
+	// generates the VDM matrix and solves the linear system. 
+	// uses R's built in solve function - there may be a better VDM routine (as cited in Lindsay)
+	private TetradVector generate_and_solve_VDM_system() {
+		return null;
+	}
+	
+	// simply takes the last column, and removes last element of last column
+	private TetradVector get_VDM_b_vec(TetradMatrix mat) {
+		return null;
+	}
+	
+	// generates the van der monde matrix from a vector
+	private TetradMatrix generate_van_der_monde(TetradVector vec) {
+		return null;
+	}
+	
+	// Step 7: Here we use mu_vec, pi_vec and lambdatilde_p to compute the composite pgamma values 
+	//		 and combine them into the ifnal pvalue
+
+	// get_mixed_p_val - weight sum of pgammas
+	// now compute for a vector of quantiles - assume the vector of quantiles is very long,
+	// while p < 10 (so vectorise over length of quantiles)
+	private TetradVector get_mixed_p_val_vec() {
+		return null;
+	}
+	
+	// computes pgamma of the appropriate gamma function
+	private double compute_composite_pgamma(int index, double qval, double shape_val, double[] scale_vec) {
+		GammaDistribution gamma = new GammaDistribution(shape_val, scale_vec[index]);
+		return gamma.cumulativeProbability(qval);
 	}
 	
 	@Override
