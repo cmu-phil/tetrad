@@ -92,7 +92,7 @@ public class SemBicScore implements Score {
 
         try {
             double s2 = getCovariances().getValue(i, i);
-            int p = parents.length;
+//            int p = parents.length;
 
             TetradMatrix covxx = getSelection(getCovariances(), parents, parents);
             TetradVector covxy = getSelection(getCovariances(), parents, new int[]{i}).getColumn(0);

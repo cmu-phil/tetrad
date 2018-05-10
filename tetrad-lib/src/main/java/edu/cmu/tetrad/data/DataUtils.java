@@ -23,6 +23,7 @@ package edu.cmu.tetrad.data;
 
 import cern.colt.list.DoubleArrayList;
 import edu.cmu.tetrad.graph.*;
+import edu.cmu.tetrad.regression.RegressionCovariance;
 import edu.cmu.tetrad.regression.RegressionDataset;
 import edu.cmu.tetrad.regression.RegressionResult;
 import edu.cmu.tetrad.util.*;
@@ -1948,40 +1949,37 @@ public final class DataUtils {
         return data.subsetColumns(indices);
     }
 
-    // Checking X->Z with other parents P of X.
-    public static boolean linear(double[] x, double[] z, double[][] p, double bootstrapSampleSize,
-                                 int numBootstraps, double alpha, double sensitivity) {
+    /**
+     * Checking whether Z->X is linear and non-heteroskedastic given the parents of X.
+     * @param x
+     * @param z
+     * @param bootstrapSampleSize
+     * @param numBootstraps
+     * @param sensitivity
+     * @return
+     */
+    public static boolean linear(double[] x, double[] z, double bootstrapSampleSize,
+                                 int numBootstraps, double sensitivity) {
 
         int N = z.length;
-        int m = p.length + 2;
         int b = numBootstraps;
         int dof = N - 1;
 
         try {
             List<Node> nodes = new ArrayList<>();
             nodes.add(new ContinuousVariable("cov"));
-            nodes.add(new ContinuousVariable("var0"));
+            nodes.add(new ContinuousVariable("cov1var"));
 
-            for (int j = 1; j <= p.length; j++) {
-                nodes.add(new ContinuousVariable("var" + j));
-            }
-
-            DataSet dataSet = new BoxDataSet(new VerticalDoubleDataBox(b, m), nodes);
+            DataSet dataSet = new BoxDataSet(new VerticalDoubleDataBox(b, 2), nodes);
 
             boolean[] mask = new boolean[N];
             double[] cov0s = new double[b];
 
             for (int _b = 0; _b < b; _b++) {
-
-                I:
                 for (int i = 0; i < N; i++) {
                     if (RandomUtil.getInstance().nextDouble() < bootstrapSampleSize / (double) N) {
                         if (Double.isNaN(x[i])) continue;
                         if (Double.isNaN(z[i])) continue;
-
-                        for (double[] otherParent : p) {
-                            if (Double.isNaN(otherParent[i])) continue I;
-                        }
 
                         mask[i] = true;
                     } else {
@@ -1994,11 +1992,6 @@ public final class DataUtils {
                 dataSet.setDouble(_b, 0, cov0);
                 dataSet.setDouble(_b, 1, cov1);
                 cov0s[_b] = cov0;
-
-                for (int j = 0; j < p.length; j++) {
-                    final double cov3 = covMask(x, p[j], mask)[0];
-                    dataSet.setDouble(_b, j + 2, cov3);
-                }
             }
 
             RegressionDataset regression = new RegressionDataset(dataSet);
@@ -2017,13 +2010,15 @@ public final class DataUtils {
 
             double c = new ChiSquaredDistribution(dof).cumulativeProbability(x2);
 
+            System.out.println(new ChiSquaredDistribution(1000).cumulativeProbability(900));
+
             if (Double.isNaN(c)) {
                 return false;
             }
 
             final double pValue = 1.0 - c;
 
-            return pValue > alpha;
+            return pValue > 0.05;
         } catch (SingularMatrixException e) {
             System.out.println("Singular");
             return true;
