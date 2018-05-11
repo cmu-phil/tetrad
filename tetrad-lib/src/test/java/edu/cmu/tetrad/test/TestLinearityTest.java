@@ -323,6 +323,135 @@ public final class TestLinearityTest {
         }
     }
 
+    @Test
+    public void test4() {
+
+        double shrinkFactor = 0.5;
+
+        String[] linearFunctions = new String[]{
+                "TSUM(NEW(B)*$)"
+        };
+
+        String[] nonlinearFunctions = new String[]{
+                shrinkFactor + " * abs(TSUM(NEW(B) * $)) + TSUM(NEW(B)*$)",
+                shrinkFactor + " * TSUM(NEW(B) * (abs($) ^ 1.05)) + TSUM(NEW(B)*$)",
+                shrinkFactor + " * TSUM(NEW(B) * (abs($) ^ 1.5)) + TSUM(NEW(B)*$)",
+                shrinkFactor + " * TSUM(NEW(B) * ($ ^ 2)) + TSUM(NEW(B)*$)",
+                shrinkFactor + " * TSUM(NEW(B) * ($ ^ 3)) + TSUM(NEW(B)*$)",
+                "tanh(0.2 * NEW(B) * (TSUM($))) + TSUM(NEW(B)*$)",
+                0.05 + " * (TSUM(sin(NEW(B) * $)) + TSUM(cos(NEW(B) * $))) + TSUM(NEW(B)*$)"
+        };
+
+        String[] gaussianErrors = new String[]{
+                "Normal(0, 0.3)"
+        };
+
+        String[] nonGaussianErrors = new String[]{
+                "    U(0, 1)^3"
+
+//                "Uniform(-1, 1)",
+//                "2 * Beta(4, 5) - 1",
+//                "2 * U(0, 1)^3 - 1",
+//                "0.1 * Laplace(0, 1)"
+        };
+
+        final String parameters = "Split(-.5,-.2,.2,.5)";
+
+        int index = 1;
+
+        try {
+            for (String linearFunction : linearFunctions) {
+                for (String nonlinearFunction : nonlinearFunctions) {
+                    for (String gaussianError : gaussianErrors) {
+                        for (String nonGaussianError : nonGaussianErrors) {
+                            final double bootstrapSampleSize = 100;
+                            final int numBootstraps = 50;
+                            final double sensitivity = .25;
+                            final int N = 1000;
+
+                            File dir = new File("/home/bandrews/Desktop/tetrad_linearity/data/example" + index++);
+                            dir.mkdirs();
+
+                            PrintStream out = new PrintStream(new File(dir, "description.txt"));
+
+                            out.println("Linear function " + linearFunction);
+                            out.println("Nonlinear function " + nonlinearFunction);
+                            out.println("Gaussian error " + gaussianError);
+                            out.println("Non-Gaussian error " + nonGaussianError);
+                            out.println("Parameters " + parameters);
+                            out.println("Sample size " + N);
+                            out.println("Percent in bootstrap = " + bootstrapSampleSize);
+                            out.println("Num bootstraps = " + numBootstraps);
+                            out.println("Sensitivity = " + sensitivity);
+
+                            out.println();
+                            out.close();
+
+                            Graph graph = GraphUtils.randomGraph(100, 0, 100, 100, 100, 100, true);
+
+                            GeneralizedSemPm pm1 = getPm(graph, linearFunction, gaussianError, parameters);
+                            GeneralizedSemPm pm2 = getPm(graph, linearFunction, nonGaussianError, parameters);
+                            GeneralizedSemPm pm3 = getPm(graph, nonlinearFunction, gaussianError, parameters);
+                            GeneralizedSemPm pm4 = getPm(graph, nonlinearFunction, nonGaussianError, parameters);
+
+                            GeneralizedSemIm im1 = new GeneralizedSemIm(pm1);
+                            GeneralizedSemIm im2 = new GeneralizedSemIm(pm2);
+                            GeneralizedSemIm im3 = new GeneralizedSemIm(pm3);
+                            GeneralizedSemIm im4 = new GeneralizedSemIm(pm4);
+
+                            DataSet D1 = im1.simulateData(N, false);
+                            DataSet D2 = im2.simulateData(N, false);
+                            DataSet D3 = im3.simulateData(N, false);
+                            DataSet D4 = im4.simulateData(N, false);
+
+                            D1 = DataUtils.center(D1);
+                            D2 = DataUtils.center(D2);
+                            D3 = DataUtils.center(D3);
+                            D4 = DataUtils.center(D4);
+
+                            // Save these dataset out so we can compare with the White test. The judgements should be that edges for
+                            // D1 and D2 are nonlinear and edges for D3 and D4 are nonlinear.
+                            // Make sure you save out the graph as well.
+
+                            DataWriter.writeRectangularData(D1, new FileWriter(new File(dir, "D1.txt")), '\t');
+                            DataWriter.writeRectangularData(D2, new FileWriter(new File(dir, "D2.txt")), '\t');
+                            DataWriter.writeRectangularData(D3, new FileWriter(new File(dir, "D3.txt")), '\t');
+                            DataWriter.writeRectangularData(D4, new FileWriter(new File(dir, "D4.txt")), '\t');
+
+                            GraphUtils.saveGraph(graph, new File(dir, "graph.txt"), false);
+
+                            List<Edge> edges = new ArrayList<Edge>(graph.getEdges());
+                            sort(edges);
+                            List<Node> variables = graph.getNodes();
+
+                            PrintStream graphOut = new PrintStream(new FileOutputStream(new File(dir, "graph.indices.txt")));
+
+                            for (int i = 0; i < edges.size(); i++) {
+                                Edge edge = edges.get(i);
+
+                                Node x = edge.getNode1();
+                                Node y = edge.getNode2();
+
+                                int j1 = variables.indexOf(x);
+                                int j2 = variables.indexOf(y);
+
+                                graphOut.println((j1 + 1) + "\t" + (j2 + 1));
+                            }
+
+                            out.close();
+
+                            doTest(bootstrapSampleSize, numBootstraps, sensitivity, graph, D1, D2, D3, D4, true);
+                        }
+                    }
+                }
+            }
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+
     public static DataSet readInContinuousData(File dir, String s) throws IOException {
         Dataset dataset1 = new ContinuousTabularDataFileReader(new File(dir, s), Delimiter.TAB).readInData();
         return (DataSet) DataConvertUtils.toDataModel(dataset1);
