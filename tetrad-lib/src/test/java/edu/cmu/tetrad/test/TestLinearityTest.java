@@ -205,13 +205,15 @@ public final class TestLinearityTest {
         };
 
         String[] nonlinearFunctions = new String[]{
-                shrinkFactor + " * abs(TSUM(NEW(B) * $))",
-                shrinkFactor + " * TSUM(NEW(B) * (abs($) ^ 1.05))",
-                shrinkFactor + " * TSUM(NEW(B) * (abs($) ^ 1.5))",
-                shrinkFactor + " * TSUM(NEW(B) * ($ ^ 2))",
-                shrinkFactor + " * TSUM(NEW(B) * ($ ^ 3))",
-                "tanh(0.2 * NEW(B) * (TSUM($)))",
-                0.05 + " * (TSUM(sin(NEW(B) * $)) + TSUM(cos(NEW(B) * $)))"
+//                shrinkFactor + " * abs(TSUM(NEW(B) * $))",
+//                shrinkFactor + " * TSUM(NEW(B) * (abs($) ^ 1.05))",
+//                shrinkFactor + " * TSUM(NEW(B) * (abs($) ^ 1.5))",
+                shrinkFactor + " * (TSUM(NEW(B)*$) + TSUM(NEW(B) * ($ ^ 2)))",
+//                shrinkFactor + " * TSUM(NEW(B) * ($ ^ 2))",
+//
+//                shrinkFactor + " * TSUM(NEW(B) * ($ ^ 3))",
+//                "tanh(0.2 * NEW(B) * (TSUM($)))",
+//                0.05 + " * (TSUM(sin(NEW(B) * $)) + TSUM(cos(NEW(B) * $)))"
         };
 
         String[] gaussianErrors = new String[]{

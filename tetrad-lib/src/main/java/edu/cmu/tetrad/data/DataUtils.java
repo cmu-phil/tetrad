@@ -2010,8 +2010,6 @@ public final class DataUtils {
 
             double c = new ChiSquaredDistribution(dof).cumulativeProbability(x2);
 
-            System.out.println(new ChiSquaredDistribution(1000).cumulativeProbability(900));
-
             if (Double.isNaN(c)) {
                 return false;
             }
