@@ -577,6 +577,7 @@ public final class RandomizedConditionalIndependenceTest implements Independence
 		// Step 2.2: get lambdatilde_1 - this method is exact (no bisection), solves
 		// determinant equation
 		// lambdatilde_1 <- get_lambdatilde_1(moment_vec[1], moment_vec[2])
+		double lambdatilde_1 = get_lambdatilde_1(moment_vec.get(0),moment_vec.get(1));
 
 		// Step 3: Use bisection method (R uniroot) to find lambdatilde_2
 		// and others up to lambdatilde_p, for tol=bisect_tol
@@ -584,6 +585,8 @@ public final class RandomizedConditionalIndependenceTest implements Independence
 		// lambdatilde_2, lambdatilde_3, etc
 		// bisect_tol <- 1e-9
 		// lambdatilde_p <- get_lambdatilde_p(lambdatilde_1, p, moment_vec, bisect_tol)
+		double bisect_tol = 1e-9;
+		double lambdatilde_p = get_lambdatilde_p(lambdatilde_1, p, moment_vec, bisect_tol);
 
 		// Step 4:
 		// Calculate delta_star_lambda_p
@@ -592,19 +595,23 @@ public final class RandomizedConditionalIndependenceTest implements Independence
 		// Step 5.1: use the deltastar_i(lambdatilde_p) from Step 4 to generate
 		// M_p, which will be used to create matrix Stilde(lambdatilde_p, t)
 		// M_p <- deltaNmat_applied(lambdatilde_p, moment_vec, p)
+		TetradMatrix m_p = deltaNmat_applied(lambdatilde_p, moment_vec, p);
 
 		// Step 5.2: Compute polynomial coefficients of the modified M_p matrix (as in
 		// paper).
 		// mu_poly_coeff_vec <- get_Stilde_polynomial_coefficients(M_p)
+		TetradVector mu_poly_coeff_vec = get_Stilde_polynomial_coefficients(m_p);
 
 		// step 5.3 use Re(polyroot(coeff_vec)) to obtain roots of polynomial
 		// denoted mu_vec = (mu_1, ..., mu_p)
 		// mu_roots <- Re(polyroot(mu_poly_coeff_vec))
+		TetradVector mu_roots = null;
 
 		// Step 6: Generate Vandermonde matrix using mu_vec
 		// and vector using deltastar_i's, to solve for
 		// pi_vec = (pi_1, ..., pi_p)
 		// pi_vec <- generate_and_solve_VDM_system(M_p, mu_roots)
+		TetradVector pi_vec = generate_and_solve_VDM_system(m_p, mu_roots);
 
 		// Step 7: Compute the linear combination (using pi_vec)
 		// of the i gamma cdfs using parameters lambdatilde_p and mu_i
@@ -612,8 +619,9 @@ public final class RandomizedConditionalIndependenceTest implements Independence
 		//
 		// This is the final answer
 		// mixed_p_val_vec <- get_mixed_p_val_vec(x, mu_roots, pi_vec, lambdatilde_p)
-
-		return Double.NaN;
+		double mixed_p_val = get_mixed_p_val_vec(x, mu_roots, pi_vec, lambdatilde_p);
+		
+		return mixed_p_val;
 	}
 
 	// Step 1:
@@ -650,6 +658,7 @@ public final class RandomizedConditionalIndependenceTest implements Independence
 		return sum;
 	}
 
+	// return x^p
 	private double powers(int p, double x) {
 		if (p == 0) {
 			return 1.0;
@@ -952,20 +961,23 @@ public final class RandomizedConditionalIndependenceTest implements Independence
 	// generates the VDM matrix and solves the linear system.
 	// uses R's built in solve function - there may be a better VDM routine (as
 	// cited in Lindsay)
-	private TetradVector generate_and_solve_VDM_system() {
+	private TetradVector generate_and_solve_VDM_system(TetradMatrix m_p, TetradVector mu_roots) {
 		// easiest way to get rhs vector is to just take first column of M_p
 		// b_vec <- get_VDM_b_vec(M_p)
+		TetradVector b_vec = get_VDM_b_vec(m_p);
 		
 		// generate Van der Monde matrix; just powers of mu_roots
 		// VDM <- generate_van_der_monde(mu_roots)
+		TetradMatrix vdm = generate_van_der_monde(mu_roots);
 		
 		// use R's solve function to solve the linear system
 		// there may be better routines for this, but such an implementation is deferred until later
 		// NB: If p is too large (p>10), this can yield an error (claims the matrix is singluar).
 		// A tailor-made VDM solver should fix this.
 		// pi_vec <- solve(VDM, b_vec)
+		TetradVector pi_vec = vdm.inverse().times(b_vec);
 		
-		return null;
+		return pi_vec;
 	}
 
 	// simply takes the last column, and removes last element of last column
@@ -985,11 +997,22 @@ public final class RandomizedConditionalIndependenceTest implements Independence
 	// generates the van der monde matrix from a vector
 	private TetradMatrix generate_van_der_monde(TetradVector vec) {
 		// p <- length(vec)
+		int p = vec.size();
+		
 		// vdm <- matrix(0, p, p)
+		TetradMatrix vdm = new TetradMatrix(p, p);
+		
+		
 		// for (i in 0:(p-1)){
 		//	vdm[i+1, ] <- vec^i
 		// }
-		return null;
+		for(int i=0;i<p;i++) {
+			for(int j=0;i<p;j++) {
+				vdm.set(i, j, powers(i, vec.get(j)));
+			}
+		}
+		
+		return vdm;
 	}
 
 	// Step 7: Here we use mu_vec, pi_vec and lambdatilde_p to compute the composite
@@ -1000,26 +1023,37 @@ public final class RandomizedConditionalIndependenceTest implements Independence
 	// now compute for a vector of quantiles - assume the vector of quantiles is
 	// very long,
 	// while p < 10 (so vectorise over length of quantiles)
-	private TetradVector get_mixed_p_val_vec() {
+	private double get_mixed_p_val_vec(double quantile, TetradVector mu_vec, TetradVector pi_vec, double lambdatilde_p) {
 		// First compute the composite pvalues
 		// p <- length(mu_vec)
+		int p = mu_vec.size();
 		
 		// For pgamma, we need to specify the shape and scale parameters
 		// shape alpha = 1/lambda
 		// alpha <- 1/lambdatilde_p
+		double alpha = 1/lambdatilde_p;
 		
 		// NB: scale beta = mu/alpha, as per formulation in Lindsay paper
 		// beta_vec <- mu_vec/alpha
+		TetradVector beta_vec = mu_vec.scalarMult(1/alpha);
 		
-		// we could probablu vectorise this, but this is simpler
+		// we could probably vectorise this, but this is simpler
 		// we use the pgamma to compute a vector of pvalues from the vector of quantiles, for a given distribution
 		// we then scale this by the appropriate pi_vec value, and add this vector to a 0 vector, and repeat
 		// finally, each component of the vector is a pi_vec-scaled sum of pvalues
 		// partial_pval_vec <- rep(0, length(quantile_vec))
+		double partial_pval_vec = 0;
+		
 		// for (i in 1:p){		
 		// 	partial_pval_vec <- partial_pval_vec + pi_vec[i] * pgamma(quantile_vec, shape=alpha, scale = beta_vec[i])		
 		// }
-		return null;
+		for(int i=0;i<p;i++) {
+			GammaDistribution gamma = new GammaDistribution(alpha, beta_vec.get(i));
+			double pi = pi_vec.get(i);
+			partial_pval_vec += pi*gamma.cumulativeProbability(quantile);
+		}
+		
+		return partial_pval_vec;
 	}
 
 	// computes pgamma of the appropriate gamma function
