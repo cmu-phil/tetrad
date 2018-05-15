@@ -53,7 +53,7 @@ import static java.util.Collections.sort;
 /**
  * Tests the SLiCK linearity test.
  *
- * Symmetric about the Linear Coefficient Kolmogorov-Smirnov test
+ * Symmetric about the Linear Coefficient (Kolmogorov-Smirnov/Kuiper) test for linearity
  *
  * @author Bryan Andrews bja43@pitt.edu
  */
@@ -71,7 +71,12 @@ public final class TestSLiCK {
                 "TSUM(NEW(B) * (abs($) ^ .8))",
                 "TSUM(NEW(B) * (abs($) ^ 1.05))",
                 "TSUM(NEW(B) * (abs($) ^ 1.5))",
-                "(TSUM(NEW(B)*$) + TSUM(NEW(B) * ($^2)))"
+                "(TSUM(NEW(B)*$) + TSUM(NEW(B) * ($^2)))",
+                "TSUM(NEW(B) * ($ ^ 2))",
+                "TSUM(NEW(B) * ($ ^ 3))",
+                "TSUM(NEW(B) * ln(cosh($)))",
+                "0.2 * tanh(NEW(B) * (TSUM($)))",
+                "0.2 * (TSUM(sin(NEW(B) * $)) + TSUM(cos(NEW(B) * $)))"
         };
 
         String[] gaussianErrors = new String[]{
@@ -79,12 +84,12 @@ public final class TestSLiCK {
         };
 
         String[] nonGaussianErrors = new String[]{
-//                "Uniform(-1, 1)",
+                "Uniform(-1, 1)",
                 "2 * U(0, 1)^3 - 1",
-//                "0.1 * Laplace(0, 1)"
+                "0.1 * Laplace(0, 1)"
         };
 
-        final String parameters = "Split(-.5,-.2,.2,.5)";
+        final String parameters = "Split(-.4,-.1,.1,.4)";
 
         int index = 1;
 
@@ -93,8 +98,8 @@ public final class TestSLiCK {
                 for (String nonlinearFunction : nonlinearFunctions) {
                     for (String gaussianError : gaussianErrors) {
                         for (String nonGaussianError : nonGaussianErrors) {
-                            final double quantile = 0.5;
-                            final double alpha = 0.05;
+                            final double quantile = 0.33;
+                            final double alpha = 0.01;
                             final int N = 1000;
 
                             File dir = new File("/home/bandrews/Desktop/tetrad_linearity/data/example" + index++);
@@ -182,8 +187,8 @@ public final class TestSLiCK {
     // To the same but loading datasets and graphs in from files.
     @Test
     public void test2() {
-        final double quantile = 0.5;
-        final double alpha = 0.05;
+        final double quantile = 0.33;
+        final double alpha = 0.01;
         boolean singleEdge = true;
 
         try {
@@ -233,6 +238,9 @@ public final class TestSLiCK {
 
         double x;
         double KSstat = 0;
+        // For Kuiper's statistic
+        double k0 = 0;
+        double k1 = 0;
 
         while(1-cdf0 >= step0/2 && 1-cdf1 >= step1/2) {
             if(x0.get(i0+1) <= x1.get(i1+1)) {
@@ -248,10 +256,13 @@ public final class TestSLiCK {
                 cdf1 += step1;
             }
             KSstat = Math.max(KSstat, Math.abs(cdf0-cdf1));
+            k0 = Math.max(k0, cdf0-cdf1);
+            k1 = Math.max(k1, cdf1-cdf0);
         }
 
         double c = Math.sqrt(-0.5 * Math.log(alpha/2));
-        return KSstat > c * Math.sqrt((double)(n0+n1)/(n0*n1));
+//        return KSstat > c * Math.sqrt((double)(n0+n1)/(n0*n1));
+        return (k0 + k1) > c * Math.sqrt((double)(n0+n1)/(n0*n1));
     }
 
 
@@ -338,7 +349,7 @@ public final class TestSLiCK {
 
                 final boolean linear = SLiCK(_x, _z, quantile, alpha);
 
-                result[i][d] = linear ? 0 : 1;
+                result[i][d] = linear ? 1 : 0;
             }
         }
 
