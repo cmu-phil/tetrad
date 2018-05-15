@@ -84,12 +84,21 @@ public final class TestSLiCK {
         };
 
         String[] nonGaussianErrors = new String[]{
+<<<<<<< HEAD
                 "Uniform(-1, 1)",
                 "2 * U(0, 1)^3 - 1",
                 "0.1 * Laplace(0, 1)"
         };
 
         final String parameters = "Split(-.4,-.1,.1,.4)";
+=======
+//                "Uniform(-1, 1)",
+                "2 * (U(0, 1)^3 - .5)",
+//                "0.1 * Laplace(0, 1)"
+        };
+
+        final String parameters = "Split(-.4,-.2,.2,.4)";
+>>>>>>> 5e0e325ed0c8a2c8ed973facafa7c79e3e640530
 
         int index = 1;
 
@@ -102,7 +111,7 @@ public final class TestSLiCK {
                             final double alpha = 0.01;
                             final int N = 1000;
 
-                            File dir = new File("/home/bandrews/Desktop/tetrad_linearity/data/example" + index++);
+                            File dir = new File("/Users/user/Box Sync/data/nonlinearity/simulations8/example" + index++);
                             dir.mkdirs();
 
                             PrintStream out = new PrintStream(new File(dir, "description.txt"));

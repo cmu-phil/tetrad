@@ -853,6 +853,9 @@ public class GeneralizedSemIm implements IM, Simulator, TetradSerializable {
      */
     public DataSet simulateDataFisher(int sampleSize, int intervalBetweenShocks,
                                       double epsilon) {
+        boolean printedUndefined = false;
+        boolean printedInfinite = false;
+
         if (intervalBetweenShocks < 1) throw new IllegalArgumentException(
                 "Interval between shocks must be >= 1: " + intervalBetweenShocks);
         if (epsilon <= 0.0) throw new IllegalArgumentException(
@@ -886,6 +889,7 @@ public class GeneralizedSemIm implements IM, Simulator, TetradSerializable {
         double[][] all = new double[variableNodes.size()][sampleSize];
 
         // Do the simulation.
+
         for (int row = 0; row < sampleSize; row++) {
             for (int j = 0; j < t1.length; j++) {
                 Node error = pm.getErrorNode(variableNodes.get(j));
@@ -907,10 +911,24 @@ public class GeneralizedSemIm implements IM, Simulator, TetradSerializable {
 
             for (int i = 0; i < intervalBetweenShocks; i++) {
                 for (int j = 0; j < t1.length; j++) {
-                    t2[j] = shocks[j];
                     Node node = variableNodes.get(j);
                     Expression expression = pm.getNodeExpression(node);
                     t2[j] = expression.evaluate(context);
+
+                    if (Double.isNaN(t2[j])) {
+                        if (!printedUndefined) {
+                            System.out.println("Undefined value.");
+                            printedUndefined = true;
+                        }
+                    }
+
+                    if (Double.isInfinite(t2[j])) {
+                        if (!printedInfinite) {
+                            System.out.println("Infinite value.");
+                            printedInfinite = true;
+                        }
+                    }
+
                     variableValues.put(node.getName(), t2[j]);
                 }
 

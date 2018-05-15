@@ -83,21 +83,21 @@ public final class IndTestConditionalCorrelation implements IndependenceTest {
      * given data set (must be continuous). The given significance level is used.
      *
      * @param dataSet A data set containing only continuous columns.
-     * @param alpha   The alpha level of the test.
+     * @param q   The q level of the test.
      */
-    public IndTestConditionalCorrelation(DataSet dataSet, double alpha) {
+    public IndTestConditionalCorrelation(DataSet dataSet, double q) {
         if (!(dataSet.isContinuous())) {
             throw new IllegalArgumentException("Data set must be continuous.");
         }
 
-        if (!(alpha >= 0 && alpha <= 1)) {
-                throw new IllegalArgumentException("Alpha mut be in [0, 1]");
+        if (!(q >= 0 && q <= 1)) {
+                throw new IllegalArgumentException("Q mut be in [0, 1]");
         }
 
         List<Node> nodes = dataSet.getVariables();
 
         this.variables = Collections.unmodifiableList(nodes);
-        setAlpha(alpha);
+        setAlpha(q);
 
         this.dataSet = dataSet;
         data = this.dataSet.getDoubleData().getRealMatrix();
@@ -105,7 +105,7 @@ public final class IndTestConditionalCorrelation implements IndependenceTest {
         List<String> varNames = new ArrayList<>();
         for (int i = 0; i < variables.size(); i++) varNames.add(variables.get(i).getName());
 
-        this.cci = new Cci(data, varNames, alpha);
+        this.cci = new Cci(data, varNames, q);
 
         indices = new HashMap<>();
 
@@ -129,8 +129,6 @@ public final class IndTestConditionalCorrelation implements IndependenceTest {
         List<String> _z = new ArrayList<>();
         for (Node node : z) _z.add(node.getName());
         boolean independent = cci.isIndependent(_x, _y, _z);
-
-//        System.out.println(Runtime.getRuntime().freeMemory());
 
         if (verbose) {
             if (independent) {
@@ -275,7 +273,7 @@ public final class IndTestConditionalCorrelation implements IndependenceTest {
      * @return a string representation of this test.
      */
     public String toString() {
-        return "Conditional Correlation, alpha = " + nf.format(getAlpha());
+        return "Conditional Correlation, q = " + nf.format(getAlpha());
     }
 
     public boolean isVerbose() {
