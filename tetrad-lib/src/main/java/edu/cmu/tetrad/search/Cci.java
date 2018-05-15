@@ -121,7 +121,7 @@ public final class Cci {
     public boolean isIndependent(String x, String y, List<String> z) {
         double[] rXZ = residuals(x, z);
         double[] rYZ = residuals(y, z);
-        return independent(rXZ, rYZ);
+        return independent(rXZ, rYZ, z.size());
     }
 
     /**
@@ -148,7 +148,7 @@ public final class Cci {
      * once undefined values have been removed. Left public so it can be
      * accessed separately.
      */
-    public boolean independent(double[] x, double[] y) {
+    public boolean independent(double[] x, double[] y, int numCond) {
         int both = 0;
 
         for (int i = 0; i < x.length; i++) {
@@ -193,27 +193,22 @@ public final class Cci {
                     _y[i] = function(n, y[i]);
                 }
 
-                scores.add(calcScore(_x, _y));
+                scores.add(calcScore(_x, _y, numCond));
             }
         }
 
         Collections.sort(scores);
 //        double cutoff = fdr(alpha, scores, true);
-        double max = scores.size() == 0 ? Double.NaN : scores.get(scores.size() - 1);
-        this.score = max;
+        double index = StatUtils.fdr(alpha, scores);
+
+//        System.out.println("cutoff = " + cutoff + " index = " + index);
+        this.score = scores.size() == 0 ? Double.NaN : scores.get(scores.size() - 1);
 
         this.scores = scores;
-
-//        if (Double.isNaN(min)) {
-//            this.score = Double.NaN;
-//            return true; // No basis on which to remove an edge for PC.
-//        }
-
-        return score < 0;
-//        return getQ(scores) > alpha;
+        return index >= 0;
     }
 
-    private double calcScore(double[] _x, double[] _y) {
+    private double calcScore(double[] _x, double[] _y, int numCond) {
         double sigmaXY = covariance(_x, _y);
         double sigmaXX = covariance(_x, _x);
         double sigmaYY = covariance(_y, _y);
@@ -225,18 +220,16 @@ public final class Cci {
 
         // Non-parametric Fisher Z test.
         double _z = 0.5 * (log(1.0 + r) - log(1.0 - r));
-        double w = sqrt(_x.length) * _z;
+        final int N = _x.length;
+        double w = sqrt(N - 3 - numCond) * _z;
 
         // Testing the hypothesis that _x and _y are uncorrelated and assuming that 4th moments of _x and _y
         // are finite and that the sample is large.
         standardize(_x);
         standardize(_y);
 
-        double t2 = moment22(_x, _y);
-
-        double t = sqrt(t2);
-        return abs(w / t) - cutoff;
-//        return 2.0 * (1.0 - normalCdf(0.0 , t, abs));
+        double t = sqrt(moment22(_x, _y));
+        return 2.0 * (1.0 - normalCdf(0.0, t, abs(w)));
     }
 
     /**
@@ -346,13 +339,16 @@ public final class Cci {
 
     // Polynomial basis. The 1 is left out according to Daudin.
     private double function(int index, double x) {
-        double g = 1.0;
+        return sin((index + 1) * x) + cos((index + 1) * x);
 
-        for (int i = 0; i <= index; i++) {
-            g *= x;
-        }
 
-        return g;
+//        double g = 1.0;
+//
+//        for (int i = 0; i <= index; i++) {
+//            g *= x;
+//        }
+//
+//        return g;
     }
 
     // The number of basis functions to use.
@@ -465,7 +461,7 @@ public final class Cci {
         return calculateFdrQ(scores);
     }
 
-    public synchronized double calculateFdrQ(List<Double> p) {
+    private synchronized double calculateFdrQ(List<Double> p) {
 
         // If a legitimate scores value is desired for this test, should estimate the FDR q value.
         Collections.sort(p);

@@ -80,11 +80,11 @@ public final class TestSLiCK {
 
         String[] nonGaussianErrors = new String[]{
 //                "Uniform(-1, 1)",
-                "2 * U(0, 1)^3 - 1",
+                "2 * (U(0, 1)^3 - .5)",
 //                "0.1 * Laplace(0, 1)"
         };
 
-        final String parameters = "Split(-.5,-.2,.2,.5)";
+        final String parameters = "Split(-.4,-.2,.2,.4)";
 
         int index = 1;
 
@@ -97,7 +97,7 @@ public final class TestSLiCK {
                             final double alpha = 0.05;
                             final int N = 1000;
 
-                            File dir = new File("/home/bandrews/Desktop/tetrad_linearity/data/example" + index++);
+                            File dir = new File("/Users/user/Box Sync/data/nonlinearity/simulations8/example" + index++);
                             dir.mkdirs();
 
                             PrintStream out = new PrintStream(new File(dir, "description.txt"));
@@ -338,7 +338,7 @@ public final class TestSLiCK {
 
                 final boolean linear = SLiCK(_x, _z, quantile, alpha);
 
-                result[i][d] = linear ? 0 : 1;
+                result[i][d] = linear ? 1 : 0;
             }
         }
 
