@@ -21,10 +21,20 @@
 
 package edu.cmu.tetrad.test;
 
-import edu.cmu.tetrad.data.*;
-import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.sem.*;
-import edu.cmu.tetrad.util.*;
+import edu.cmu.tetrad.data.DataSet;
+import edu.cmu.tetrad.data.DataUtils;
+import edu.cmu.tetrad.data.DataWriter;
+import edu.cmu.tetrad.graph.Edge;
+import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.graph.GraphUtils;
+import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.sem.GeneralizedSemIm;
+import edu.cmu.tetrad.sem.GeneralizedSemPm;
+import edu.cmu.tetrad.sem.TemplateExpander;
+import edu.cmu.tetrad.util.DataConvertUtils;
+import edu.cmu.tetrad.util.MatrixUtils;
+import edu.cmu.tetrad.util.StatUtils;
+import edu.cmu.tetrad.util.TetradMatrix;
 import edu.pitt.dbmi.data.Dataset;
 import edu.pitt.dbmi.data.Delimiter;
 import edu.pitt.dbmi.data.reader.tabular.ContinuousTabularDataFileReader;
@@ -33,144 +43,147 @@ import org.junit.Test;
 import java.io.*;
 import java.text.ParseException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
-import static java.lang.Math.abs;
-import static java.util.Collections.*;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotSame;
-import static org.junit.Assert.assertTrue;
+import static java.util.Collections.checkedCollection;
+import static java.util.Collections.sort;
 
 
 /**
- * Tests the BTN linearity test.
+ * Tests the SLiCK linearity test.
  *
- * @author Joseph Ramsey jdramsey@andrew.cmu.edu
+ * Symmetric about the Linear Coefficient Kolmogorov-Smirnov test
+ *
+ * @author Bryan Andrews bja43@pitt.edu
  */
-public final class TestLinearityTest {
+public final class TestSLiCK {
 
     @Test
     public void test1() {
 
-//        Linear function TSUM(NEW(B)*$)
-//        Nonlinear function TSUM(NEW(B)*$) + TSUM(NEW(B)*$^2) + TSUM(NEW(B)*$^3)
-//        Gaussian error Normal(0, .3)
-//        Non-Gaussian error .2 * U(-1, 1)
-//        Parameters Split(-.5,-.2,.2,.5)
-//        Sample size 1000
+        String[] linearFunctions = new String[]{
+                "TSUM(NEW(B)*$)"
+        };
 
-//        Linear function TSUM(NEW(B)*$)
-//        Nonlinear function TSUM(NEW(B)*$) + TSUM(NEW(B)*$^2) + TSUM(NEW(B)*$^3)
-//        Gaussian error .3 * Normal(0, .1)
-//        Non-Gaussian error Laplace(0, 0.387)
-//        Parameters Split(-.5,-.2,.2,.5)
-//        Sample size 1000
+        String[] nonlinearFunctions = new String[]{
+                "abs(TSUM(NEW(B) * $))",
+                "TSUM(NEW(B) * (abs($) ^ .8))",
+                "TSUM(NEW(B) * (abs($) ^ 1.05))",
+                "TSUM(NEW(B) * (abs($) ^ 1.5))",
+                "(TSUM(NEW(B)*$) + TSUM(NEW(B) * ($^2)))"
+        };
 
+        String[] gaussianErrors = new String[]{
+                "Normal(0, 0.3)"
+        };
+
+        String[] nonGaussianErrors = new String[]{
+//                "Uniform(-1, 1)",
+                "2 * U(0, 1)^3 - 1",
+//                "0.1 * Laplace(0, 1)"
+        };
+
+        final String parameters = "Split(-.5,-.2,.2,.5)";
+
+        int index = 1;
 
         try {
+            for (String linearFunction : linearFunctions) {
+                for (String nonlinearFunction : nonlinearFunctions) {
+                    for (String gaussianError : gaussianErrors) {
+                        for (String nonGaussianError : nonGaussianErrors) {
+                            final double quantile = 0.5;
+                            final double alpha = 0.05;
+                            final int N = 1000;
 
-            final double bootstrapSampleSize = 100;
-            final int numBootstraps = 100;
-            final double sensitivity = .15;
-            final int N = 500;
+                            File dir = new File("/home/bandrews/Desktop/tetrad_linearity/data/example" + index++);
+                            dir.mkdirs();
 
-            File dir = new File("/Users/user/Box Sync/data/nonlinearity/simulations/joe.test");
-            dir.mkdirs();
+                            PrintStream out = new PrintStream(new File(dir, "description.txt"));
 
-//            final String linearFunction = "TSUM(NEW(B)*$)";
-//            final String nonlinearFunction = "TSUM(NEW(B)*$) + TSUM(NEW(B)*$^2) + TSUM(NEW(B)*$^3)";
-//            final String gaussianError = "Normal(0, .5)";
-//            final String nonGaussianError = "2 * Beta(2, 5)";
-//            final String parameters = "Split(-.8,-.2,.2,.8)";
+                            out.println("Linear function " + linearFunction);
+                            out.println("Nonlinear function " + nonlinearFunction);
+                            out.println("Gaussian error " + gaussianError);
+                            out.println("Non-Gaussian error " + nonGaussianError);
+                            out.println("Parameters " + parameters);
+                            out.println("Sample size " + N);
+                            out.println("Quantile = " + quantile);
+                            out.println("Alpha = " + alpha);
 
+                            out.println();
+                            out.close();
 
-            final String linearFunction = "TSUM(NEW(B)*$)";
-            final String nonlinearFunction = "TSUM(NEW(B)*$^1.05)";
-            final String gaussianError = "Normal(0, .5)";
-            final String nonGaussianError = "Laplace(0, .378)";
-            final String parameters = "Split(-.5,-.2,.2,.5)";
+                            Graph graph = GraphUtils.randomGraph(100, 0, 100, 100, 100, 100, true);
 
+                            GeneralizedSemPm pm1 = getPm(graph, linearFunction, gaussianError, parameters);
+                            GeneralizedSemPm pm2 = getPm(graph, linearFunction, nonGaussianError, parameters);
+                            GeneralizedSemPm pm3 = getPm(graph, nonlinearFunction, gaussianError, parameters);
+                            GeneralizedSemPm pm4 = getPm(graph, nonlinearFunction, nonGaussianError, parameters);
 
-            PrintStream out = new PrintStream(new File(dir, "description.txt"));
+                            GeneralizedSemIm im1 = new GeneralizedSemIm(pm1);
+                            GeneralizedSemIm im2 = new GeneralizedSemIm(pm2);
+                            GeneralizedSemIm im3 = new GeneralizedSemIm(pm3);
+                            GeneralizedSemIm im4 = new GeneralizedSemIm(pm4);
 
-            out.println("Linear function " + linearFunction);
-            out.println("Nonlinear function " + nonlinearFunction);
-            out.println("Gaussian error " + gaussianError);
-            out.println("Non-Gaussian error " + nonGaussianError);
-            out.println("Parameters " + parameters);
-            out.println("Sample size " + N);
-            out.println("Percent in bootstrap = " + bootstrapSampleSize);
-            out.println("Num bootstraps = " + numBootstraps);
-            out.println("Sensitivity = " + sensitivity);
+                            DataSet D1 = im1.simulateData(N, false);
+                            DataSet D2 = im2.simulateData(N, false);
+                            DataSet D3 = im3.simulateData(N, false);
+                            DataSet D4 = im4.simulateData(N, false);
 
-            out.println();
-            out.close();
+                            D1 = DataUtils.center(D1);
+                            D2 = DataUtils.center(D2);
+                            D3 = DataUtils.center(D3);
+                            D4 = DataUtils.center(D4);
 
-            Graph graph = GraphUtils.randomGraph(100, 0, 100, 100, 100, 100, true);
+                            // Save these dataset out so we can compare with the White test. The judgements should be that edges for
+                            // D1 and D2 are nonlinear and edges for D3 and D4 are nonlinear.
+                            // Make sure you save out the graph as well.
 
-            GeneralizedSemPm pm1 = getPm(graph, linearFunction, gaussianError, parameters);
-            GeneralizedSemPm pm2 = getPm(graph, linearFunction, nonGaussianError, parameters);
-            GeneralizedSemPm pm3 = getPm(graph, nonlinearFunction, gaussianError, parameters);
-            GeneralizedSemPm pm4 = getPm(graph, nonlinearFunction, nonGaussianError, parameters);
+                            DataWriter.writeRectangularData(D1, new FileWriter(new File(dir, "D1.txt")), '\t');
+                            DataWriter.writeRectangularData(D2, new FileWriter(new File(dir, "D2.txt")), '\t');
+                            DataWriter.writeRectangularData(D3, new FileWriter(new File(dir, "D3.txt")), '\t');
+                            DataWriter.writeRectangularData(D4, new FileWriter(new File(dir, "D4.txt")), '\t');
 
-            GeneralizedSemIm im1 = new GeneralizedSemIm(pm1);
-            GeneralizedSemIm im2 = new GeneralizedSemIm(pm2);
-            GeneralizedSemIm im3 = new GeneralizedSemIm(pm3);
-            GeneralizedSemIm im4 = new GeneralizedSemIm(pm4);
+                            GraphUtils.saveGraph(graph, new File(dir, "graph.txt"), false);
 
-            DataSet D1 = im1.simulateData(N, false);
-            DataSet D2 = im2.simulateData(N, false);
-            DataSet D3 = im3.simulateData(N, false);
-            DataSet D4 = im4.simulateData(N, false);
+                            List<Edge> edges = new ArrayList<Edge>(graph.getEdges());
+                            sort(edges);
+                            List<Node> variables = graph.getNodes();
 
-            D1 = DataUtils.center(D1);
-            D2 = DataUtils.center(D2);
-            D3 = DataUtils.center(D3);
-            D4 = DataUtils.center(D4);
+                            PrintStream graphOut = new PrintStream(new FileOutputStream(new File(dir, "graph.indices.txt")));
 
-            // Save these dataset out so we can compare with the White test. The judgements should be that edges for
-            // D1 and D2 are nonlinear and edges for D3 and D4 are nonlinear.
-            // Make sure you save out the graph as well.
+                            for (int i = 0; i < edges.size(); i++) {
+                                Edge edge = edges.get(i);
 
-            DataWriter.writeRectangularData(D1, new FileWriter(new File(dir, "D1.txt")), '\t');
-            DataWriter.writeRectangularData(D2, new FileWriter(new File(dir, "D2.txt")), '\t');
-            DataWriter.writeRectangularData(D3, new FileWriter(new File(dir, "D3.txt")), '\t');
-            DataWriter.writeRectangularData(D4, new FileWriter(new File(dir, "D4.txt")), '\t');
+                                Node x = edge.getNode1();
+                                Node y = edge.getNode2();
 
-            GraphUtils.saveGraph(graph, new File(dir, "graph.txt"), false);
+                                int j1 = variables.indexOf(x);
+                                int j2 = variables.indexOf(y);
 
-            List<Edge> edges = new ArrayList<Edge>(graph.getEdges());
-            sort(edges);
-            List<Node> variables = graph.getNodes();
+                                graphOut.println((j1 + 1) + "\t" + (j2 + 1));
+                            }
 
-            PrintStream graphOut = new PrintStream(new FileOutputStream(new File(dir, "graph.indices.txt")));
+                            out.close();
 
-            for (int i = 0; i < edges.size(); i++) {
-                Edge edge = edges.get(i);
-
-                Node x = edge.getNode1();
-                Node y = edge.getNode2();
-
-                int j1 = variables.indexOf(x);
-                int j2 = variables.indexOf(y);
-
-                graphOut.println((j1 + 1) + "\t" + (j2 + 1));
+                            doTest(quantile, alpha, graph, D1, D2, D3, D4, true);
+                        }
+                    }
+                }
             }
 
-            out.close();
-
-            doTest(bootstrapSampleSize, numBootstraps, sensitivity, graph, D1, D2, D3, D4, true);
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
+
     // To the same but loading datasets and graphs in from files.
     @Test
     public void test2() {
-        final int numBootstraps = 100;
-        final double bootstrapSampleSize = 100;
-        final double sensitivity = 0.25;
+        final double quantile = 0.5;
+        final double alpha = 0.05;
         boolean singleEdge = true;
 
         try {
@@ -187,270 +200,12 @@ public final class TestLinearityTest {
 
                 System.out.print((i) + ".\t");
 
-                doTest(bootstrapSampleSize, numBootstraps, sensitivity, graph, D1, D2, D3, D4, singleEdge);
+                doTest(quantile, alpha, graph, D1, D2, D3, D4, singleEdge);
             }
         } catch (IOException e) {
             e.printStackTrace();
         }
 
-    }
-
-    @Test
-    public void test3() {
-
-        double shrinkFactor = 0.5;
-
-        String[] linearFunctions = new String[]{
-                "TSUM(NEW(B)*$)"
-        };
-
-        String[] nonlinearFunctions = new String[]{
-//                shrinkFactor + " * abs(TSUM(NEW(B) * $))",
-//                shrinkFactor + " * TSUM(NEW(B) * (abs($) ^ 1.05))",
-//                shrinkFactor + " * TSUM(NEW(B) * (abs($) ^ 1.5))",
-                shrinkFactor + " * (TSUM(NEW(B)*$) + TSUM(NEW(B) * ($ ^ 2)))",
-//                shrinkFactor + " * TSUM(NEW(B) * ($ ^ 2))",
-//
-//                shrinkFactor + " * TSUM(NEW(B) * ($ ^ 3))",
-//                "tanh(0.2 * NEW(B) * (TSUM($)))",
-//                0.05 + " * (TSUM(sin(NEW(B) * $)) + TSUM(cos(NEW(B) * $)))"
-        };
-
-        String[] gaussianErrors = new String[]{
-                "Normal(0, 0.3)"
-        };
-
-        String[] nonGaussianErrors = new String[]{
-                "    U(0, 1)^3"
-
-//                "Uniform(-1, 1)",
-//                "2 * Beta(4, 5) - 1",
-//                "2 * U(0, 1)^3 - 1",
-//                "0.1 * Laplace(0, 1)"
-        };
-
-        final String parameters = "Split(-.5,-.2,.2,.5)";
-
-        int index = 1;
-
-        try {
-            for (String linearFunction : linearFunctions) {
-                for (String nonlinearFunction : nonlinearFunctions) {
-                    for (String gaussianError : gaussianErrors) {
-                        for (String nonGaussianError : nonGaussianErrors) {
-                            final double bootstrapSampleSize = 100;
-                            final int numBootstraps = 50;
-                            final double sensitivity = .25;
-                            final int N = 1000;
-
-                            File dir = new File("/Users/user/Box Sync/data/nonlinearity/simulations6/example" + index++);
-                            dir.mkdirs();
-
-                            PrintStream out = new PrintStream(new File(dir, "description.txt"));
-
-                            out.println("Linear function " + linearFunction);
-                            out.println("Nonlinear function " + nonlinearFunction);
-                            out.println("Gaussian error " + gaussianError);
-                            out.println("Non-Gaussian error " + nonGaussianError);
-                            out.println("Parameters " + parameters);
-                            out.println("Sample size " + N);
-                            out.println("Percent in bootstrap = " + bootstrapSampleSize);
-                            out.println("Num bootstraps = " + numBootstraps);
-                            out.println("Sensitivity = " + sensitivity);
-
-                            out.println();
-                            out.close();
-
-                            Graph graph = GraphUtils.randomGraph(100, 0, 100, 100, 100, 100, true);
-
-                            GeneralizedSemPm pm1 = getPm(graph, linearFunction, gaussianError, parameters);
-                            GeneralizedSemPm pm2 = getPm(graph, linearFunction, nonGaussianError, parameters);
-                            GeneralizedSemPm pm3 = getPm(graph, nonlinearFunction, gaussianError, parameters);
-                            GeneralizedSemPm pm4 = getPm(graph, nonlinearFunction, nonGaussianError, parameters);
-
-                            GeneralizedSemIm im1 = new GeneralizedSemIm(pm1);
-                            GeneralizedSemIm im2 = new GeneralizedSemIm(pm2);
-                            GeneralizedSemIm im3 = new GeneralizedSemIm(pm3);
-                            GeneralizedSemIm im4 = new GeneralizedSemIm(pm4);
-
-                            DataSet D1 = im1.simulateData(N, false);
-                            DataSet D2 = im2.simulateData(N, false);
-                            DataSet D3 = im3.simulateData(N, false);
-                            DataSet D4 = im4.simulateData(N, false);
-
-                            D1 = DataUtils.center(D1);
-                            D2 = DataUtils.center(D2);
-                            D3 = DataUtils.center(D3);
-                            D4 = DataUtils.center(D4);
-
-                            // Save these dataset out so we can compare with the White test. The judgements should be that edges for
-                            // D1 and D2 are nonlinear and edges for D3 and D4 are nonlinear.
-                            // Make sure you save out the graph as well.
-
-                            DataWriter.writeRectangularData(D1, new FileWriter(new File(dir, "D1.txt")), '\t');
-                            DataWriter.writeRectangularData(D2, new FileWriter(new File(dir, "D2.txt")), '\t');
-                            DataWriter.writeRectangularData(D3, new FileWriter(new File(dir, "D3.txt")), '\t');
-                            DataWriter.writeRectangularData(D4, new FileWriter(new File(dir, "D4.txt")), '\t');
-
-                            GraphUtils.saveGraph(graph, new File(dir, "graph.txt"), false);
-
-                            List<Edge> edges = new ArrayList<Edge>(graph.getEdges());
-                            sort(edges);
-                            List<Node> variables = graph.getNodes();
-
-                            PrintStream graphOut = new PrintStream(new FileOutputStream(new File(dir, "graph.indices.txt")));
-
-                            for (int i = 0; i < edges.size(); i++) {
-                                Edge edge = edges.get(i);
-
-                                Node x = edge.getNode1();
-                                Node y = edge.getNode2();
-
-                                int j1 = variables.indexOf(x);
-                                int j2 = variables.indexOf(y);
-
-                                graphOut.println((j1 + 1) + "\t" + (j2 + 1));
-                            }
-
-                            out.close();
-
-                            doTest(bootstrapSampleSize, numBootstraps, sensitivity, graph, D1, D2, D3, D4, true);
-                        }
-                    }
-                }
-            }
-
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    @Test
-    public void test4() {
-
-        double shrinkFactor = 0.5;
-
-        String[] linearFunctions = new String[]{
-                "TSUM(NEW(B)*$)"
-        };
-
-        String[] nonlinearFunctions = new String[]{
-                shrinkFactor + " * abs(TSUM(NEW(B) * $)) + TSUM(NEW(B)*$)",
-                shrinkFactor + " * TSUM(NEW(B) * (abs($) ^ 1.05)) + TSUM(NEW(B)*$)",
-                shrinkFactor + " * TSUM(NEW(B) * (abs($) ^ 1.5)) + TSUM(NEW(B)*$)",
-                shrinkFactor + " * TSUM(NEW(B) * ($ ^ 2)) + TSUM(NEW(B)*$)",
-                shrinkFactor + " * TSUM(NEW(B) * ($ ^ 3)) + TSUM(NEW(B)*$)",
-                "tanh(0.2 * NEW(B) * (TSUM($))) + TSUM(NEW(B)*$)",
-                0.05 + " * (TSUM(sin(NEW(B) * $)) + TSUM(cos(NEW(B) * $))) + TSUM(NEW(B)*$)"
-        };
-
-        String[] gaussianErrors = new String[]{
-                "Normal(0, 0.3)"
-        };
-
-        String[] nonGaussianErrors = new String[]{
-                "    U(0, 1)^3"
-
-//                "Uniform(-1, 1)",
-//                "2 * Beta(4, 5) - 1",
-//                "2 * U(0, 1)^3 - 1",
-//                "0.1 * Laplace(0, 1)"
-        };
-
-        final String parameters = "Split(-.5,-.2,.2,.5)";
-
-        int index = 1;
-
-        try {
-            for (String linearFunction : linearFunctions) {
-                for (String nonlinearFunction : nonlinearFunctions) {
-                    for (String gaussianError : gaussianErrors) {
-                        for (String nonGaussianError : nonGaussianErrors) {
-                            final double bootstrapSampleSize = 100;
-                            final int numBootstraps = 50;
-                            final double sensitivity = .25;
-                            final int N = 1000;
-
-                            File dir = new File("/home/bandrews/Desktop/tetrad_linearity/data/example" + index++);
-                            dir.mkdirs();
-
-                            PrintStream out = new PrintStream(new File(dir, "description.txt"));
-
-                            out.println("Linear function " + linearFunction);
-                            out.println("Nonlinear function " + nonlinearFunction);
-                            out.println("Gaussian error " + gaussianError);
-                            out.println("Non-Gaussian error " + nonGaussianError);
-                            out.println("Parameters " + parameters);
-                            out.println("Sample size " + N);
-                            out.println("Percent in bootstrap = " + bootstrapSampleSize);
-                            out.println("Num bootstraps = " + numBootstraps);
-                            out.println("Sensitivity = " + sensitivity);
-
-                            out.println();
-                            out.close();
-
-                            Graph graph = GraphUtils.randomGraph(100, 0, 100, 100, 100, 100, true);
-
-                            GeneralizedSemPm pm1 = getPm(graph, linearFunction, gaussianError, parameters);
-                            GeneralizedSemPm pm2 = getPm(graph, linearFunction, nonGaussianError, parameters);
-                            GeneralizedSemPm pm3 = getPm(graph, nonlinearFunction, gaussianError, parameters);
-                            GeneralizedSemPm pm4 = getPm(graph, nonlinearFunction, nonGaussianError, parameters);
-
-                            GeneralizedSemIm im1 = new GeneralizedSemIm(pm1);
-                            GeneralizedSemIm im2 = new GeneralizedSemIm(pm2);
-                            GeneralizedSemIm im3 = new GeneralizedSemIm(pm3);
-                            GeneralizedSemIm im4 = new GeneralizedSemIm(pm4);
-
-                            DataSet D1 = im1.simulateData(N, false);
-                            DataSet D2 = im2.simulateData(N, false);
-                            DataSet D3 = im3.simulateData(N, false);
-                            DataSet D4 = im4.simulateData(N, false);
-
-                            D1 = DataUtils.center(D1);
-                            D2 = DataUtils.center(D2);
-                            D3 = DataUtils.center(D3);
-                            D4 = DataUtils.center(D4);
-
-                            // Save these dataset out so we can compare with the White test. The judgements should be that edges for
-                            // D1 and D2 are nonlinear and edges for D3 and D4 are nonlinear.
-                            // Make sure you save out the graph as well.
-
-                            DataWriter.writeRectangularData(D1, new FileWriter(new File(dir, "D1.txt")), '\t');
-                            DataWriter.writeRectangularData(D2, new FileWriter(new File(dir, "D2.txt")), '\t');
-                            DataWriter.writeRectangularData(D3, new FileWriter(new File(dir, "D3.txt")), '\t');
-                            DataWriter.writeRectangularData(D4, new FileWriter(new File(dir, "D4.txt")), '\t');
-
-                            GraphUtils.saveGraph(graph, new File(dir, "graph.txt"), false);
-
-                            List<Edge> edges = new ArrayList<Edge>(graph.getEdges());
-                            sort(edges);
-                            List<Node> variables = graph.getNodes();
-
-                            PrintStream graphOut = new PrintStream(new FileOutputStream(new File(dir, "graph.indices.txt")));
-
-                            for (int i = 0; i < edges.size(); i++) {
-                                Edge edge = edges.get(i);
-
-                                Node x = edge.getNode1();
-                                Node y = edge.getNode2();
-
-                                int j1 = variables.indexOf(x);
-                                int j2 = variables.indexOf(y);
-
-                                graphOut.println((j1 + 1) + "\t" + (j2 + 1));
-                            }
-
-                            out.close();
-
-                            doTest(bootstrapSampleSize, numBootstraps, sensitivity, graph, D1, D2, D3, D4, true);
-                        }
-                    }
-                }
-            }
-
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
     }
 
 
@@ -460,24 +215,87 @@ public final class TestLinearityTest {
     }
 
 
-    private void doTest(double bootstrapSampleSize, int numBootstraps, double sensitivity, Graph graph,
-                        DataSet D1, DataSet D2, DataSet D3, DataSet D4, boolean singleEdge) {
+    private boolean KStest(ArrayList<Double> x0, ArrayList<Double> x1, double alpha) {
+        Collections.sort(x0);
+        Collections.sort(x1);
+
+        int n0 = x0.size();
+        int n1 = x1.size();
+
+        double step0 = 1.0/n0;
+        double step1 = 1.0/n1;
+
+        double cdf0 = 0;
+        double cdf1 = 0;
+
+        int i0 = -1;
+        int i1 = -1;
+
+        double x;
+        double KSstat = 0;
+
+        while(1-cdf0 >= step0/2 && 1-cdf1 >= step1/2) {
+            if(x0.get(i0+1) <= x1.get(i1+1)) {
+                i0 ++;
+                x = x0.get(i0);
+            } else {
+                i1++;
+                x = x1.get(i1);
+            }
+            if(i0 != -1 && x0.get(i0) == x) {
+                cdf0 += step0;
+            } else {
+                cdf1 += step1;
+            }
+            KSstat = Math.max(KSstat, Math.abs(cdf0-cdf1));
+        }
+
+        double c = Math.sqrt(-0.5 * Math.log(alpha/2));
+        return KSstat > c * Math.sqrt((double)(n0+n1)/(n0*n1));
+    }
+
+
+    private boolean SLiCK(double[] _x, double[] _y, double quantile, double alpha) {
+        TetradMatrix X = new TetradMatrix(_x.length, 2);
+        TetradMatrix y = new TetradMatrix(_y.length, 1);
+
+        for(int i = 0; i < _x.length; i++) {
+            X.set(i, 0, 1);
+            X.set(i, 1, _x[i]);
+            y.set(i, 0, _y[i]);
+        }
+
+        TetradMatrix r = y.minus(X.times(((X.transpose().times(X)).inverse()).times(X.transpose().times(y))));
+
+        ArrayList<Double> x0 = new ArrayList<>();
+        ArrayList<Double> x1 = new ArrayList<>();
+
+        ArrayList<Double> sorted = new ArrayList();
+        for(int i = 0; i < r.rows(); i++) {
+            sorted.add(r.get(i,0));
+        }
+        Collections.sort(sorted);
+
+        int t = (int) (Math.min(0.5, quantile) * r.rows());
+        double t0 = sorted.get(r.rows()-t);
+        double t1 = sorted.get(t);
+
+        for(int i = 0; i < r.rows(); i++) {
+            if(r.get(i,0) >= t0){
+                x0.add(X.get(i, 1));
+            } else if(r.get(i,0) <= t1){
+                x1.add(X.get(i, 1));
+            }
+        }
+
+        return KStest(x0, x1, alpha);
+    }
+
+
+    private void doTest(double quantile, double alpha, Graph graph, DataSet D1, DataSet D2, DataSet D3, DataSet D4, boolean singleEdge) {
         DataSet[] datasets = {D1, D2, D3, D4};
 
         List<Node> variables = graph.getNodes();
-
-
-        double[][] variances = new double[D1.getNumColumns()][4];
-
-        for (int i = 0; i < datasets.length; i++) {
-            DataSet dataset = datasets[i];
-            double[][] data = dataset.getDoubleData().transpose().toArray();
-
-            for (int j = 0; j < dataset.getNumColumns(); j++) {
-                double var = StatUtils.variance(data[j]);
-                variances[j][i] = var;
-            }
-        }
 
         List<Edge> edges = new ArrayList<Edge>(graph.getEdges());
         sort(edges);
@@ -518,8 +336,7 @@ public final class TestLinearityTest {
                     _otherParents[j] = _o;
                 }
 
-                final boolean linear = DataUtils.linear(_x, _z, bootstrapSampleSize,
-                        numBootstraps, sensitivity);
+                final boolean linear = SLiCK(_x, _z, quantile, alpha);
 
                 result[i][d] = linear ? 0 : 1;
             }
