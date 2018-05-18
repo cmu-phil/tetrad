@@ -25,22 +25,9 @@ import edu.cmu.tetrad.graph.Edges;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.TetradSerializable;
-import java.io.BufferedReader;
-import java.io.CharArrayWriter;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.Writer;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.SortedSet;
-import java.util.TreeSet;
+
+import java.io.*;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -137,6 +124,8 @@ public final class Knowledge implements TetradSerializable, IKnowledge {
      * @serial
      */
     private Set<Integer> tiersForbiddenWithin = new HashSet<>();
+
+    private Set<Integer> onlyCausesNextTier = new HashSet<>();
 
     /**
      * The knowledge groups, this contains all the grouping information.
@@ -388,6 +377,22 @@ public final class Knowledge implements TetradSerializable, IKnowledge {
         return Collections.unmodifiableList(list);
     }
 
+    @Override
+    public boolean isOnlyCanCauseNextTier(int tier) {
+        // todo: UNIMPLEMENTED in this knowledge implementation!!!
+
+        return onlyCausesNextTier.contains(tier);
+    }
+
+    @Override
+    public void setOnlyCanCauseNextTier(int tier, boolean onlyCausesNext) {
+        if (onlyCausesNext) {
+            onlyCausesNextTier.add(tier);
+        } else {
+            onlyCausesNextTier.remove(tier);
+        }
+    }
+
     /**
      * @return the list of edges not in any tier.
      */
@@ -572,8 +577,11 @@ public final class Knowledge implements TetradSerializable, IKnowledge {
         buf.append("\naddtemporal\n");
 
         for (int i = 0; i < knowledge.getNumTiers(); i++) {
-            String forbiddenWithin
-                    = knowledge.isTierForbiddenWithin(i) ? "*" : "";
+
+            String forbiddenWithin = knowledge.isTierForbiddenWithin(i) ? "*" : "";
+            String onlyCanCauseNextTier = knowledge.isOnlyCanCauseNextTier(i) ? "-" : "";
+            buf.append("\n").append(i).append(forbiddenWithin).append(onlyCanCauseNextTier).append(" ");
+
 
             buf.append("\n").append(i + 1).append(forbiddenWithin);
 

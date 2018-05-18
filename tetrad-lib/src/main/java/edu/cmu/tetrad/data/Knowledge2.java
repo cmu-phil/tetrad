@@ -358,6 +358,49 @@ public final class Knowledge2 implements TetradSerializable, IKnowledge {
         return edges;
     }
 
+    @Override
+    public boolean isOnlyCanCauseNextTier(int tier) {
+        ensureTiers(tier);
+
+        Set<MyNode> _tier = tierSpecs.get(tier);
+
+        if (tierSpecs.get(tier).isEmpty()) {
+            return false;
+        }
+
+        if (tier + 2 >= tierSpecs.size()) return false;
+
+        // all successive tiers > tier + 2 must be forbidden
+        for (int tierN = tier + 2; tierN < tierSpecs.size(); tierN++) {
+            Set<MyNode> _tierN = tierSpecs.get(tierN);
+            OrderedPair<Set<MyNode>> o = new OrderedPair<>(_tier, _tierN);
+
+            if (! forbiddenRulesSpecs.contains(o)) return false;
+        }
+
+        return true;
+
+    }
+
+    @Override
+    public void setOnlyCanCauseNextTier(int tier, boolean onlyCausesNext) {
+        ensureTiers(tier);
+
+        Set<MyNode> _tier = tierSpecs.get(tier);
+
+        for (int tierN = tier + 2; tierN < tierSpecs.size(); tierN++) {
+            Set<MyNode> _tierN = tierSpecs.get(tierN);
+            OrderedPair<Set<MyNode>> o = new OrderedPair<>(_tier, _tierN);
+
+            if (onlyCausesNext) {
+                forbiddenRulesSpecs.add(o);
+            } else {
+                forbiddenRulesSpecs.remove(o);
+            }
+        }
+
+    }
+
     /**
      * @return the list of edges not in any tier.
      */
@@ -518,6 +561,7 @@ public final class Knowledge2 implements TetradSerializable, IKnowledge {
         return forbiddenRulesSpecs.isEmpty() && requiredRulesSpecs.isEmpty() && tierSpecs.isEmpty();
     }
 
+    // todo: move this to datawriter - there are versions of this in Knowledge and Knowledge2 -jue
     public void saveKnowledge(Writer out)
             throws IOException {
         StringBuilder buf = new StringBuilder();
@@ -527,8 +571,8 @@ public final class Knowledge2 implements TetradSerializable, IKnowledge {
 
         for (int i = 0; i < tierSpecs.size(); i++) {
             String forbiddenWithin = isTierForbiddenWithin(i) ? "*" : "";
-
-            buf.append("\n").append(i).append(forbiddenWithin).append(" ");
+            String onlyCanCauseNextTier = isOnlyCanCauseNextTier(i) ? "-" : "";
+            buf.append("\n").append(i).append(forbiddenWithin).append(onlyCanCauseNextTier).append(" ");
 
             List<String> tier = getTier(i);
 //            Collections.sort(tier); // Do not sort!
@@ -1088,6 +1132,14 @@ public final class Knowledge2 implements TetradSerializable, IKnowledge {
         for (int i = 0; i < tierSpecs.size(); i++) {
             if (isTierForbiddenWithin(i)) {
                 rules.add(new OrderedPair<>(tierSpecs.get(i), tierSpecs.get(i)));
+            }
+        }
+
+        for (int i = 0; i < tierSpecs.size(); i++) {
+            if (isOnlyCanCauseNextTier(i)) {
+                for (int j = i + 2; j < tierSpecs.size(); j++) {
+                    rules.add(new OrderedPair<>(tierSpecs.get(i), tierSpecs.get(j)));
+                }
             }
         }
 

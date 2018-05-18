@@ -366,6 +366,10 @@ public class KnowledgeBoxEditor extends JPanel {
 
             JCheckBox forbiddenCheckbox = new JCheckBox("Forbid Within Tier",
                     getKnowledge().isTierForbiddenWithin(_tier));
+
+            JCheckBox causesOnlyNextTierCheckbox =  new JCheckBox("Can Cause Only Next Tier",
+                                getKnowledge().isOnlyCanCauseNextTier(_tier));
+
             final JComponent upReference = this;
 
             forbiddenCheckbox.addActionListener((e) -> {
@@ -382,6 +386,21 @@ public class KnowledgeBoxEditor extends JPanel {
             });
 
             textRow.add(forbiddenCheckbox);
+
+            causesOnlyNextTierCheckbox.addActionListener((e) -> {
+                JCheckBox checkbox = (JCheckBox) e.getSource();
+                try {
+                    getKnowledge().setOnlyCanCauseNextTier(_tier,
+                            checkbox.isSelected());
+                } catch (Exception e1) {
+                    checkbox.setSelected(false);
+                    JOptionPane.showMessageDialog(upReference, e1.getMessage());
+                }
+
+                notifyKnowledge();
+            });
+
+            if (tier + 2 < numTiers) textRow.add(causesOnlyNextTierCheckbox);
 
             d.add(textRow);
 
