@@ -75,8 +75,8 @@ public final class TestSLiCK {
                 "TSUM(NEW(B) * ($ ^ 2))",
                 "TSUM(NEW(B) * ($ ^ 3))",
                 "TSUM(NEW(B) * ln(cosh($)))",
-                "0.2 * tanh(NEW(B) * (TSUM($)))",
-                "0.2 * (TSUM(sin(NEW(B) * $)) + TSUM(cos(NEW(B) * $)))"
+                " tanh(NEW(B) * (TSUM($)))",
+                " (TSUM(sin(NEW(B) * $)) + TSUM(cos(NEW(B) * $)))"
         };
 
         String[] gaussianErrors = new String[]{
@@ -84,8 +84,8 @@ public final class TestSLiCK {
         };
 
         String[] nonGaussianErrors = new String[]{
-//                "Uniform(-1, 1)",
-                "2 * (U(0, 1)^3 - .5)",
+                "0.5 * Uniform(-1, 1)",
+//                "(U(0, 1)^3 - .5)",
 //                "0.1 * Laplace(0, 1)"
         };
 
