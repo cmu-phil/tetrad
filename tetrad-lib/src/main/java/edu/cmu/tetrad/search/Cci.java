@@ -186,8 +186,8 @@ public final class Cci {
 
         List<Double> scores = new ArrayList<>();
 
-        for (int m = 0; m < getNumFunctions(); m++) {
-            for (int n = 0; n < getNumFunctions(); n++) {
+        for (int m = 1; m <= getNumFunctions(); m++) {
+            for (int n = 1; n <= getNumFunctions(); n++) {
                 for (int i = 0; i < x.length; i++) {
                     _x[i] = function(m, x[i]);
                     _y[i] = function(n, y[i]);
@@ -197,7 +197,7 @@ public final class Cci {
             }
         }
 
-        Collections.sort(scores);
+//        Collections.sort(scores);
 //        double cutoff = fdr(alpha, scores, true);
         double index = StatUtils.fdr(alpha, scores);
 
@@ -205,7 +205,7 @@ public final class Cci {
         this.score = scores.size() == 0 ? Double.NaN : scores.get(scores.size() - 1);
 
         this.scores = scores;
-        return index >= 0;
+        return index == -1;
     }
 
     private double calcScore(double[] _x, double[] _y, int numCond) {
@@ -339,16 +339,16 @@ public final class Cci {
 
     // Polynomial basis. The 1 is left out according to Daudin.
     private double function(int index, double x) {
-        return sin((index + 1) * x) + cos((index + 1) * x);
+//        return sin((index) * x) + cos((index) * x);
 
 
-//        double g = 1.0;
-//
-//        for (int i = 0; i <= index; i++) {
-//            g *= x;
-//        }
-//
-//        return g;
+        double g = 1.0;
+
+        for (int i = 1; i <= index; i++) {
+            g *= x;
+        }
+
+        return g;
     }
 
     // The number of basis functions to use.

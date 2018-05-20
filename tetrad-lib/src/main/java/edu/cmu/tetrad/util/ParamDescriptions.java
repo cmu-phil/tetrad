@@ -263,6 +263,9 @@ public class ParamDescriptions {
         map.put("probTwoCycle", new ParamDescription(
                 "The probability of creating a 2-cycles in the graph (0 - 1)",
                 0.0, 0.0, 1.0));
+
+        map.put("fdrQ", new ParamDescription("Q values for an FDR test", 0.2, 0.0, 1.0));
+
     }
 
     public static ParamDescriptions getInstance() {

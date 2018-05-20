@@ -2032,8 +2032,7 @@ public final class DataUtils {
         }
     }
 
-    public static boolean xydep(double[] x, double[] y, double bootstrapSampleSize,
-                                int numBootstraps, double sensitivity) {
+    public static boolean xydep(double[] x, double[] y) {
 
         try {
 
@@ -2068,9 +2067,9 @@ public final class DataUtils {
 
             DataSet dataSet2 = new BoxDataSet(new VerticalDoubleDataBox(all2), nodes2);
 
-            IndependenceTest test = new IndTestConditionalCorrelation(dataSet2, 1);
+            IndependenceTest test = new IndTestConditionalCorrelation(dataSet2, .2);
 
-            return test.isDependent(X, Y);
+            return !test.isIndependent(X, Y);
         } catch (SingularMatrixException e) {
             System.out.println("Singular");
             return true;
@@ -2155,8 +2154,7 @@ public final class DataUtils {
         }
     }
 
-    public static boolean linear4(double[] x, double[] y, double bootstrapSampleSize,
-                                  int numBootstraps, double sensitivity) {
+    public static boolean linear4(double[] x, double[] y, double alpha) {
 
         try {
 
@@ -2177,9 +2175,7 @@ public final class DataUtils {
                     Collections.singletonList(X));
             double p = result.getP()[1];
 
-            final boolean linear = p < 0.00001;
-            final boolean xydep = xydep(x, y, bootstrapSampleSize, numBootstraps, sensitivity);
-            return !(!linear && xydep);
+            return p < alpha;
         } catch (SingularMatrixException e) {
             System.out.println("Singular");
             return true;

@@ -89,7 +89,7 @@ public final class TestSLiCK {
 //                "0.1 * Laplace(0, 1)"
         };
 
-        String parameters = "Split(-.4, -.1, .1, .4)";
+        String parameters = "Split(-.5, -.2, .2, .5)";
 
         int index = 1;
 
