@@ -52,24 +52,7 @@ import static org.junit.Assert.assertTrue;
  */
 public final class TestLinearityTest {
 
-    @Test
     public void test1() {
-
-
-//        Linear function TSUM(NEW(B)*$)
-//        Nonlinear function TSUM(NEW(B)*$) + TSUM(NEW(B)*$^2) + TSUM(NEW(B)*$^3)
-//        Gaussian error Normal(0, .3)
-//        Non-Gaussian error .2 * U(-1, 1)
-//        Parameters Split(-.5,-.2,.2,.5)
-//        Sample size 1000
-
-//        Linear function TSUM(NEW(B)*$)
-//        Nonlinear function TSUM(NEW(B)*$) + TSUM(NEW(B)*$^2) + TSUM(NEW(B)*$^3)
-//        Gaussian error .3 * Normal(0, .1)
-//        Non-Gaussian error Laplace(0, 0.387)
-//        Parameters Split(-.5,-.2,.2,.5)
-//        Sample size 1000
-
 
         try {
             double alpha = 1e-6;
@@ -81,13 +64,6 @@ public final class TestLinearityTest {
 
             File dir = new File("/Users/user/Box Sync/data/nonlinearity/simulations/joe.test");
             dir.mkdirs();
-
-//            final String linearFunction = "TSUM(NEW(B)*$)";
-//            final String nonlinearFunction = "TSUM(NEW(B)*$) + TSUM(NEW(B)*$^2) + TSUM(NEW(B)*$^3)";
-//            final String gaussianError = "Normal(0, .5)";
-//            final String nonGaussianError = "2 * Beta(2, 5)";
-//            final String parameters = "Split(-.8,-.2,.2,.8)";
-
 
             final String linearFunction = "TSUM(NEW(B)*$)";
             final String nonlinearFunction = "TSUM(NEW(B)*$^1.05)";
@@ -171,15 +147,11 @@ public final class TestLinearityTest {
     }
 
     // To the same but loading datasets and graphs in from files.
-    @Test
     public void test2() {
-        final int numBootstraps = 100;
-        final double bootstrapSampleSize = 100;
-        final double sensitivity = 4;
-        boolean singleEdge = true;
+        final double alpha = 1e-6;
 
         try {
-            for (int i = 1; i <= 21; i++) {
+            for (int i = 1; i <= 10; i++) {
 
                 File dir = new File("/Users/user/Box Sync/data/nonlinearity/simulations7/example" + i);
 
@@ -192,7 +164,7 @@ public final class TestLinearityTest {
 
                 System.out.print((i) + ".\t");
 
-                doTest(bootstrapSampleSize, graph, D1, D2, D3, D4);
+                doTest(alpha, graph, D1, D2, D3, D4);
             }
         } catch (IOException e) {
             e.printStackTrace();
@@ -200,7 +172,6 @@ public final class TestLinearityTest {
 
     }
 
-    @Test
     public void test3() {
 
         double alpha = 1e-6;
@@ -330,7 +301,6 @@ public final class TestLinearityTest {
         }
     }
 
-    @Test
     public void test5() {
         String function = "TSUM($^3)";
         String error = "U(-1, 1)";
@@ -454,7 +424,6 @@ public final class TestLinearityTest {
                 + " || # dep = " + MatrixUtils.toString(sumsDep));
     }
 
-
     private GeneralizedSemPm getPm(Graph graph, String function, String error, String parameters) {
         GeneralizedSemPm pm = new GeneralizedSemPm(graph);
 
@@ -481,6 +450,10 @@ public final class TestLinearityTest {
         }
 
         return pm;
+    }
+
+    public static void main(String...args) {
+        new TestLinearityTest().test3();;
     }
 }
 

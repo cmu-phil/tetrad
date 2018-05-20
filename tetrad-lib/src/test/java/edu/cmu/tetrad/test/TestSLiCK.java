@@ -59,7 +59,6 @@ import static java.util.Collections.sort;
  */
 public final class TestSLiCK {
 
-    @Test
     public void test1() {
 
         String[] linearFunctions = new String[]{
@@ -185,7 +184,6 @@ public final class TestSLiCK {
 
 
     // To the same but loading datasets and graphs in from files.
-    @Test
     public void test2() {
         final double quantile = 0.33;
         final double alpha = 0.01;
@@ -395,6 +393,10 @@ public final class TestSLiCK {
         }
 
         return pm;
+    }
+
+    public static void main(String...args) {
+        new TestSLiCK().test1();
     }
 }
 
