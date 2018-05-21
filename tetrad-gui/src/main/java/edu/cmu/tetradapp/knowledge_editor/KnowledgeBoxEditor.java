@@ -20,10 +20,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 package edu.cmu.tetradapp.knowledge_editor;
 
-import edu.cmu.tetrad.data.DataReader;
-import edu.cmu.tetrad.data.IKnowledge;
-import edu.cmu.tetrad.data.Knowledge;
-import edu.cmu.tetrad.data.KnowledgeEdge;
+import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.util.JOptionUtils;
@@ -231,7 +228,7 @@ public class KnowledgeBoxEditor extends JPanel {
             Preferences.userRoot().put("fileSaveLocation", selectedFile.getParent());
 
             try {
-                Knowledge.saveKnowledge(knowledgeBoxModel.getKnowledge(), new FileWriter(selectedFile));
+                DataWriter.saveKnowledge(knowledgeBoxModel.getKnowledge(), new FileWriter(selectedFile));
             } catch (Exception e1) {
                 JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
                         e1.getMessage());
@@ -917,7 +914,7 @@ public class KnowledgeBoxEditor extends JPanel {
         try {
             IKnowledge knowledge = getKnowledge();
             CharArrayWriter out = new CharArrayWriter();
-            Knowledge.saveKnowledge(knowledge, out);
+            DataWriter.saveKnowledge(knowledge, out);
 
             getTextArea().setText(out.toString());
         } catch (IOException e) {

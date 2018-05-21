@@ -32,12 +32,7 @@ import edu.cmu.tetrad.annotation.AlgType;
 import edu.cmu.tetrad.annotation.Gaussian;
 import edu.cmu.tetrad.annotation.Linear;
 import edu.cmu.tetrad.annotation.Nonexecutable;
-import edu.cmu.tetrad.data.DataModel;
-import edu.cmu.tetrad.data.DataModelList;
-import edu.cmu.tetrad.data.DataSet;
-import edu.cmu.tetrad.data.DataType;
-import edu.cmu.tetrad.data.ICovarianceMatrix;
-import edu.cmu.tetrad.data.Knowledge2;
+import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.JOptionUtils;
@@ -825,7 +820,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
             Knowledge2 knowledge = (Knowledge2) dataModel.getKnowledge();
             if (knowledge != null && !knowledge.isEmpty()) {
                 prior = Files.createTempFile(file.getFileName().toString(), ".prior");
-                knowledge.saveKnowledge(Files.newBufferedWriter(prior));
+                DataWriter.saveKnowledge(knowledge, Files.newBufferedWriter(prior));
 
                 progressTextArea.replaceRange("Done", progressTextLength, progressTextArea.getText().length());
                 progressTextArea.append(newline);
