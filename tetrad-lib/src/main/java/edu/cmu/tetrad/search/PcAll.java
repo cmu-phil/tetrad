@@ -365,7 +365,7 @@ public final class PcAll implements GraphSearch {
             //            orientUnshieldedTriplesConcurrent(knowledge, getIndependenceTest(), getMaxIndegree());
         }
 
-        SearchGraphUtils.basicPattern(graph, false);
+//        SearchGraphUtils.basicPattern(graph, false);
         graph = GraphUtils.replaceNodes(graph, nodes);
 
         MeekRules meekRules = new MeekRules();
