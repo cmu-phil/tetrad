@@ -41,7 +41,7 @@ public interface FinalizingParameterEditor extends ParameterEditor {
      * user selects "Ok" or something of that nature). If false is returned the edit is considered
      * invalid and it will be treated as if the user selected "cancelAll".
      *
-     * @return - true iff the edit was committed.
+     * @return - true if the edit was committed.
      */
     boolean finalizeEdit();
 
