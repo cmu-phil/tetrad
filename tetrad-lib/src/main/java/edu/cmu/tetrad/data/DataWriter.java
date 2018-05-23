@@ -228,7 +228,7 @@ public final class DataWriter {
 
         buf.append("\naddtemporal\n");
 
-        for (int i = 0; i < knowledge.getNumTiers(); i++) {
+        for (int i = 1; i < knowledge.getNumTiers(); i++) {
 
             String forbiddenWithin = knowledge.isTierForbiddenWithin(i) ? "*" : "";
             String onlyCanCauseNextTier = knowledge.isOnlyCanCauseNextTier(i) ? "-" : "";
