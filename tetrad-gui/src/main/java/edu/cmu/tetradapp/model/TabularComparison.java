@@ -201,13 +201,13 @@ public final class TabularComparison implements SessionModel, SimulationParamsSo
 
     private void newExecution() {
         statistics = new ArrayList<>();
-//        statistics.add(new AdjacencyPrecision());
-//        statistics.add(new AdjacencyRecall());
-//        statistics.add(new ArrowheadPrecision());
-//        statistics.add(new ArrowheadRecall());
-//        statistics.add(new TwoCyclePrecision());
-//        statistics.add(new TwoCycleRecall());
-//        statistics.add(new TwoCycleFalsePositive());
+        statistics.add(new AdjacencyPrecision());
+        statistics.add(new AdjacencyRecall());
+        statistics.add(new ArrowheadPrecision());
+        statistics.add(new ArrowheadRecall());
+        statistics.add(new TwoCyclePrecision());
+        statistics.add(new TwoCycleRecall());
+        statistics.add(new TwoCycleFalsePositive());
 
 //        statistics.add(new ElapsedTime());
 //        statistics.add(new F1Adj());
@@ -216,10 +216,10 @@ public final class TabularComparison implements SessionModel, SimulationParamsSo
 //        statistics.add(new MathewsCorrArrow());
 //        statistics.add(new SHD());
 
-        statistics.add(new AdjacencyPrecision());
-        statistics.add(new AdjacencyRecall());
-        statistics.add(new ArrowheadPrecisionIgnore2c());
-        statistics.add(new ArrowheadRecall());
+//        statistics.add(new AdjacencyPrecision());
+//        statistics.add(new AdjacencyRecall());
+//        statistics.add(new ArrowheadPrecisionIgnore2c());
+//        statistics.add(new ArrowheadRecall());
 
 //        statistics.add(new AncestorPrecision());
 //        statistics.add(new AncestorRecall());

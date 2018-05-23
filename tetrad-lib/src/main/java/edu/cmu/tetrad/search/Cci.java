@@ -21,7 +21,6 @@
 
 package edu.cmu.tetrad.search;
 
-import edu.cmu.tetrad.util.StatUtils;
 import org.apache.commons.math3.distribution.NormalDistribution;
 import org.apache.commons.math3.linear.RealMatrix;
 
@@ -70,14 +69,9 @@ public final class Cci {
     private NormalDistribution normal = new NormalDistribution(0, 1);
 
     /**
-     * the most recent list of P values, for calculating Q.
+     * the most recent list of P values, for calculating alpha.
      */
     private List<Double> scores;
-
-    /**
-     * Z cutoff corresponding to the desired alpha.
-     */
-    private final double cutoff;
 
     //==================CONSTRUCTORS====================//
 
@@ -97,7 +91,6 @@ public final class Cci {
         }
 
         this.alpha = alpha;
-        this.cutoff = StatUtils.getZForAlpha(alpha);
         this.data = data;
 
         indices = new HashMap<>();
@@ -133,13 +126,13 @@ public final class Cci {
     }
 
     /**
-     * @return FDR Q, if calculated, otherwise Double.NaN.
+     * @return FDR alpha, if calculated, otherwise Double.NaN.
      */
     private double getQ(List<Double> p) {
         return calculateFdrQ(p);
     }
 
-    public double getQ() {
+    public double getAlpha() {
         return getQ(scores);
     }
 
@@ -184,7 +177,7 @@ public final class Cci {
         double[] _x = new double[x.length];
         double[] _y = new double[x.length];
 
-        List<Double> scores = new ArrayList<>();
+        double minScore = Double.POSITIVE_INFINITY;
 
         for (int m = 1; m <= getNumFunctions(); m++) {
             for (int n = 1; n <= getNumFunctions(); n++) {
@@ -193,19 +186,14 @@ public final class Cci {
                     _y[i] = function(n, y[i]);
                 }
 
-                scores.add(calcScore(_x, _y, numCond));
+                final double score = calcScore(_x, _y, 0);
+                if (score < minScore) minScore = score;
             }
         }
 
-//        Collections.sort(scores);
-//        double cutoff = fdr(alpha, scores, true);
-        double index = StatUtils.fdr(alpha, scores);
+        this.score = 1.0 - minScore;
 
-//        System.out.println("cutoff = " + cutoff + " index = " + index);
-        this.score = scores.size() == 0 ? Double.NaN : scores.get(scores.size() - 1);
-
-        this.scores = scores;
-        return index == -1;
+        return minScore > alpha;
     }
 
     private double calcScore(double[] _x, double[] _y, int numCond) {
@@ -215,21 +203,17 @@ public final class Cci {
 
         double r = sigmaXY / sqrt(sigmaXX * sigmaYY);
 
-        if (r > 1) r = 1;
-        if (r < -1) r = -1;
-
         // Non-parametric Fisher Z test.
         double _z = 0.5 * (log(1.0 + r) - log(1.0 - r));
-        final int N = _x.length;
-        double w = sqrt(N - 3 - numCond) * _z;
+        final double N = _x.length;
+        double w = sqrt(N - numCond) * _z;
 
         // Testing the hypothesis that _x and _y are uncorrelated and assuming that 4th moments of _x and _y
         // are finite and that the sample is large.
-        standardize(_x);
-        standardize(_y);
+        _x = standardize(_x);
+        _y = standardize(_y);
 
-        double t = sqrt(moment22(_x, _y));
-        return 2.0 * (1.0 - normalCdf(0.0, t, abs(w)));
+        return 2.0 * (1.0 - normalCdf(0.0, sqrt(moment22(_x, _y)), abs(w)));
     }
 
     /**
@@ -340,8 +324,8 @@ public final class Cci {
     // Polynomial basis. The 1 is left out according to Daudin.
     private double function(int index, double x) {
 //        return sin((index) * x) + cos((index) * x);
-
-
+//
+//
         double g = 1.0;
 
         for (int i = 1; i <= index; i++) {
@@ -351,9 +335,23 @@ public final class Cci {
         return g;
     }
 
+    // Polynomial basis. The 1 is left out according to Daudin.
+    private double function(int index, double x, double y) {
+//        return sin((index) * x) + cos((index) * x);
+//
+//
+        double g = 1.0;
+
+        for (int i = 1; i <= index; i++) {
+            g *= (x + y);
+        }
+
+        return g;
+    }
+
     // The number of basis functions to use.
     private int getNumFunctions() {
-        return 15;
+        return 8;
     }
 
     private double covariance(double[] x, double[] y) {
@@ -406,7 +404,9 @@ public final class Cci {
     }
 
     // Standardizes the given data array.
-    private void standardize(double[] data) {
+    private double[] standardize(double[] data1) {
+        double[] data = Arrays.copyOf(data1, data1.length);
+
         double sum = 0.0;
 
         for (double d : data) {
@@ -431,6 +431,8 @@ public final class Cci {
         for (int i = 0; i < data.length; i++) {
             data[i] /= sd;
         }
+
+        return data;
     }
 
     // False discovery rate, assuming non-negative correlations.

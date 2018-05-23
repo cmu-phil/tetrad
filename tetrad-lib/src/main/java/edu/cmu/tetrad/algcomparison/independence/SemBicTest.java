@@ -30,11 +30,11 @@ public class SemBicTest implements IndependenceWrapper {
         } else {
             DataSet _data;
 
-            if (parameters.getBoolean("doNonparanormalTransform")) {
-                _data = DataUtils.getNonparanormalTransformed((DataSet) dataSet);
-            } else {
+//            if (parameters.getBoolean("doNonparanormalTransform")) {
+//                _data = DataUtils.getNonparanormalTransformed((DataSet) dataSet);
+//            } else {
                 _data = (DataSet) dataSet;
-            }
+//            }
 
 
             score = new SemBicScore(new CovarianceMatrix(_data));

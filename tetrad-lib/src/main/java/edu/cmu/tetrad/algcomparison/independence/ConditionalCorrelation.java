@@ -27,7 +27,7 @@ public class ConditionalCorrelation implements IndependenceWrapper {
     @Override
     public IndependenceTest getTest(DataModel dataSet, Parameters parameters) {
         return new IndTestConditionalCorrelation(DataUtils.getContinuousDataSet(dataSet),
-                parameters.getDouble("FDR Q"));
+                parameters.getDouble("alpha"));
     }
 
     @Override
@@ -43,7 +43,7 @@ public class ConditionalCorrelation implements IndependenceWrapper {
     @Override
     public List<String> getParameters() {
         List<String> params = new ArrayList<>();
-        params.add("fdrQ");
+        params.add("alpha");
         return params;
     }
 

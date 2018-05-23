@@ -83,21 +83,21 @@ public final class IndTestConditionalCorrelation implements IndependenceTest {
      * given data set (must be continuous). The given significance level is used.
      *
      * @param dataSet A data set containing only continuous columns.
-     * @param q   The q level of the test.
+     * @param alpha   The q level of the test.
      */
-    public IndTestConditionalCorrelation(DataSet dataSet, double q) {
+    public IndTestConditionalCorrelation(DataSet dataSet, double alpha) {
         if (!(dataSet.isContinuous())) {
             throw new IllegalArgumentException("Data set must be continuous.");
         }
 
-        if (!(q >= 0 && q <= 1)) {
+        if (!(alpha >= 0 && alpha <= 1)) {
                 throw new IllegalArgumentException("Q mut be in [0, 1]");
         }
 
         List<Node> nodes = dataSet.getVariables();
 
         this.variables = Collections.unmodifiableList(nodes);
-        setAlpha(q);
+        setAlpha(alpha);
 
         this.dataSet = dataSet;
         data = this.dataSet.getDoubleData().getRealMatrix();
@@ -105,7 +105,7 @@ public final class IndTestConditionalCorrelation implements IndependenceTest {
         List<String> varNames = new ArrayList<>();
         for (int i = 0; i < variables.size(); i++) varNames.add(variables.get(i).getName());
 
-        this.cci = new Cci(data, varNames, q);
+        this.cci = new Cci(data, varNames, alpha);
 
         indices = new HashMap<>();
 
@@ -176,7 +176,7 @@ public final class IndTestConditionalCorrelation implements IndependenceTest {
      * @return the probability associated with the most recently computed independence test.
      */
     public double getPValue() {
-        return cci.getQ();
+        return cci.getAlpha();
     }
 
     /**
