@@ -22,6 +22,7 @@ import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.JTextPane;
 
 /**
  *
@@ -61,6 +62,10 @@ public class ExperimentalVariablesParamsEditor extends JPanel implements Finaliz
     public void setup() {
         System.out.println("=========ExperimentalVariablesParamsEditor setup()=========");
 
+        // Container
+        Box container = Box.createVerticalBox();
+        container.setPreferredSize(new Dimension(500, 460));
+        
         final List<String> variables = this.sourceDataSet.getVariableNames();
 
         DefaultListModel varNamesListModel = new DefaultListModel();
@@ -75,7 +80,7 @@ public class ExperimentalVariablesParamsEditor extends JPanel implements Finaliz
         JList varNamesList = new JList(varNamesListModel);
         
         JScrollPane variablesListScroller = new JScrollPane(varNamesList);
-        variablesListScroller.setPreferredSize(new Dimension(450, 300));
+        variablesListScroller.setPreferredSize(new Dimension(450, 150));
         variablesListScroller.setAlignmentX(LEFT_ALIGNMENT);
 
         //Lay out the label and scroll pane from top to bottom.
@@ -88,40 +93,30 @@ public class ExperimentalVariablesParamsEditor extends JPanel implements Finaliz
         variablesListPane.add(variablesListScroller);
         variablesListPane.setBorder(BorderFactory.createEmptyBorder(10,10,10,10));
 
-        
-        // Datasets
-        DefaultListModel dataSetsListModel = new DefaultListModel();
-        
+        // Add to container
+        container.add(variablesListPane);
+    
         System.out.println("========ExperimentalVariablesWraper setParentModels()=========");
         for (DataModel dataModel : dataSets) {
-            System.out.println(dataModel.getName());
+            String dataSetName = dataModel.getName();
+            System.out.println(dataSetName);
+
+            // Create context for each dataset
+            Box contextBox = Box.createVerticalBox();
+            contextBox.setPreferredSize(new Dimension(450, 140));
+            JLabel contextLabel = new JLabel("Context of " + dataSetName);
+            JTextPane contextArea = new JTextPane();
+            contextArea.setPreferredSize(new Dimension(450, 100));
             
-            dataSetsListModel.addElement(dataModel.getName());
+            contextBox.add(contextLabel);
+            contextBox.add(Box.createVerticalStrut(10));
+            contextBox.add(contextArea);
+            contextBox.add(Box.createVerticalStrut(10));
+            
+            // Add to the parent container
+            container.add(contextBox);
         }
-        
-        JList dataSetsList = new JList(dataSetsListModel);
-        
-        JScrollPane dataSetslistScroller = new JScrollPane(dataSetsList);
-        dataSetslistScroller.setPreferredSize(new Dimension(450, 200));
-        dataSetslistScroller.setAlignmentX(LEFT_ALIGNMENT);
 
-        //Lay out the label and scroll pane from top to bottom.
-        JPanel dataSetsListPane = new JPanel();
-        dataSetsListPane.setLayout(new BoxLayout(dataSetsListPane, BoxLayout.PAGE_AXIS));
-        JLabel label = new JLabel("Datasets");
-
-        dataSetsListPane.add(label);
-        dataSetsListPane.add(Box.createRigidArea(new Dimension(0,5)));
-        dataSetsListPane.add(dataSetslistScroller);
-        dataSetsListPane.setBorder(BorderFactory.createEmptyBorder(10,10,10,10));
-        
-        Box container = Box.createVerticalBox();
-        container.setPreferredSize(new Dimension(500, 440));
-        
-        container.add(variablesListPane);
-        container.add(Box.createVerticalStrut(10));
-        container.add(dataSetsListPane);
-        
         // Adds the specified component to the end of this container.
         add(container, BorderLayout.CENTER);
         
