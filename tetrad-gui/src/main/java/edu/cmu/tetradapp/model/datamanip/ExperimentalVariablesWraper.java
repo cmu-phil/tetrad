@@ -24,19 +24,22 @@ public class ExperimentalVariablesWraper extends DataWrapper {
     /**
      * Constructs the <code>ExperimentalVariablesWraper</code>
      * <code>DataModel</code>.
+     * @param dataWrapper
+     * @param params
      */
-    public ExperimentalVariablesWraper(DataWrapper data, Parameters params) {
-        if (data == null) {
+    public ExperimentalVariablesWraper(DataWrapper dataWrapper, Parameters params) {
+        if (dataWrapper == null) {
             throw new NullPointerException("The given data must not be null");
         }
         if (params == null) {
             throw new NullPointerException("The given parameters must not be null");
         }
 
-        DataModelList dataSets = data.getDataModelList();
+        DataModelList dataSets = dataWrapper.getDataModelList();
 
+        System.out.println("========ExperimentalVariablesWraper=========");
         for (DataModel dataModel : dataSets) {
-            System.out.println("========ExperimentalVariablesWraper=========");
+            System.out.println(dataModel.getName());
         }
     }
 
@@ -44,6 +47,7 @@ public class ExperimentalVariablesWraper extends DataWrapper {
     /**
      * Generates a simple exemplar of this class to test serialization.
      *
+     * @return 
      * @see TetradSerializableUtils
      */
     public static PcRunner serializableInstance() {
