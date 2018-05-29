@@ -19,16 +19,14 @@ import java.util.LinkedList;
 import java.util.List;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
-import javax.swing.BoxLayout;
-import javax.swing.DefaultListModel;
 import javax.swing.JButton;
 import javax.swing.JLabel;
-import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
-import javax.swing.JTextPane;
+import javax.swing.JTable;
 import javax.swing.border.CompoundBorder;
 import javax.swing.border.EmptyBorder;
+import javax.swing.table.DefaultTableModel;
 
 /**
  *
@@ -48,6 +46,10 @@ public class ExperimentalVariablesParamsEditor extends JPanel implements Finaliz
     private DataModelList dataSets = null;
 
     private StringTextField interventionalVarNameField;
+    
+    private List<String> columnNames;
+    
+    private DefaultTableModel tableModel;
     
     //==========================CONSTUCTORS===============================//
     
@@ -69,38 +71,11 @@ public class ExperimentalVariablesParamsEditor extends JPanel implements Finaliz
     public void setup() {
         System.out.println("=========ExperimentalVariablesParamsEditor setup()=========");
 
-        List<JTextPane> contextAreaList = new LinkedList<>();
-        
         // Container
         Box container = Box.createVerticalBox();
         container.setPreferredSize(new Dimension(640, 460));
         
         final List<String> variables = this.sourceDataSet.getVariableNames();
-
-        DefaultListModel varNamesListModel = new DefaultListModel();
-        
-        variables.forEach(varName -> {
-            System.out.println(varName);
-
-            // Add each file name to the list model
-            varNamesListModel.addElement(varName);
-        });
-        
-        JList varNamesList = new JList(varNamesListModel);
-        
-        JScrollPane variablesListScroller = new JScrollPane(varNamesList);
-        variablesListScroller.setPreferredSize(new Dimension(480, 120));
-        
-        String variablesContainerBorderTitle = "Variables";
-        // Use a titled border with 5 px inside padding
-        variablesListScroller.setBorder(new CompoundBorder(BorderFactory.createTitledBorder(variablesContainerBorderTitle), new EmptyBorder(5, 5, 5, 5)));
-
-        //Lay out the label and scroll pane from top to bottom.
-        JPanel variablesListPane = new JPanel();
-        variablesListPane.setLayout(new BoxLayout(variablesListPane, BoxLayout.PAGE_AXIS));
-
-        variablesListPane.add(Box.createRigidArea(new Dimension(0,5)));
-        variablesListPane.add(variablesListScroller);
         
         // Container of all the contexts
         // Don't set size to this container since it grows 
@@ -113,15 +88,22 @@ public class ExperimentalVariablesParamsEditor extends JPanel implements Finaliz
         interventionalVarNameField = new StringTextField("", 10);
         JButton addInterventionBtn= new JButton("Add");
         
+        List<String> interventionalVariables = new LinkedList<>();
+        
+        interventionalVariables.add("I_default");
+        
         // Add file button listener
         addInterventionBtn.addActionListener((ActionEvent e) -> {
             // Add the new interventional variable to each context
-            String varName = getInterventionalVarName();
+            String varName = "I_" + getInterventionalVarName();
             
-            contextAreaList.forEach(contextArea -> {
-                String text = contextArea.getText();
-                contextArea.setText(text + "<br>I_" + varName + "<br>");
-            });
+            interventionalVariables.add(varName);
+            
+            // Add new row to table
+            addRow(tableModel, varName);
+            
+            // Reset the input field
+            resetInterventionalVarNameField();
         });
         
         interventionalVarBox.add(new JLabel("Interventional variable name: "));
@@ -135,47 +117,50 @@ public class ExperimentalVariablesParamsEditor extends JPanel implements Finaliz
         contextContainer.add(interventionalVarBox);
         contextContainer.add(Box.createVerticalStrut(10));
         
-      
-        // Create context for each dataset
-        for (DataModel dataModel : dataSets) {
-            String dataSetName = dataModel.getName();
-            System.out.println(dataSetName);
-
-            // context containeing box
-            Box contextBox = Box.createVerticalBox();
-            contextBox.setPreferredSize(new Dimension(400, 120));
-            
-            JLabel contextLabel = new JLabel(dataSetName);
-            
-            JTextPane contextArea = new JTextPane();
-//            contextArea.setContentType("text/html");
-//            contextArea.setEditable(true);
-            
-            // Add to list for later use
-            contextAreaList.add(contextArea);
-            
-            JScrollPane contextAreaScroller = new JScrollPane(contextArea);
-            
-            contextBox.add(contextLabel);
-            contextBox.add(contextAreaScroller);
-            
-            // Add to the parent contextContainer
-            contextContainer.add(contextBox);
-            contextContainer.add(Box.createVerticalStrut(10));
-        }
         
+        
+        // Create object of table and table model
+        JTable table = new JTable();
+        tableModel = new DefaultTableModel(0, 0);
+
+        // Headers
+        columnNames = new LinkedList<>();
+        // The very left header
+        columnNames.add("Interventional Variable");
+        
+        // Add headers of data file names
+        dataSets.forEach(dataSet -> {
+            columnNames.add(dataSet.getName());
+        });
+   
+        // 
+        tableModel.setColumnIdentifiers(columnNames.toArray());
+
+        // Row of headers
+        tableModel.addRow(columnNames.toArray());
+        
+        // Dynamically add table row based on interventional variables
+        interventionalVariables.forEach(var -> {
+            addRow(tableModel, var);
+        });
+        
+        
+        //set model into the table object
+        table.setModel(tableModel);   
+                
+        // Add table to parent containerr       
+        contextContainer.add(table);
+
         // Provides a scrollable view of the contextContainer
         JScrollPane contextScroller = new JScrollPane(contextContainer);
-        contextScroller.setPreferredSize(new Dimension(480, 320));
+        contextScroller.setPreferredSize(new Dimension(600, 420));
         
-        String contextContainerBorderTitle = "Context & Interventions";
+        String contextContainerBorderTitle = "Interventions";
         // Use a titled border with 5 px inside padding
         contextScroller.setBorder(new CompoundBorder(BorderFactory.createTitledBorder(contextContainerBorderTitle), new EmptyBorder(5, 5, 5, 5)));
         
 
         // Add to container
-        container.add(variablesListPane);
-        container.add(Box.createVerticalStrut(10));
         container.add(contextScroller);
         
         // Adds the specified component to the end of this container.
@@ -250,5 +235,22 @@ public class ExperimentalVariablesParamsEditor extends JPanel implements Finaliz
         } else {
             return "";
         }
+    }
+    
+    private void resetInterventionalVarNameField() {
+        if (!interventionalVarNameField.getText().isEmpty()) {
+            interventionalVarNameField.setValue("");
+        }
+    }
+    
+    private void addRow(DefaultTableModel tableModel, String var) {
+        List<Object> row = new LinkedList<>();
+        row.add(var);
+
+        dataSets.forEach(dataSet -> {
+            row.add(false);
+        });
+
+        tableModel.addRow(row.toArray());
     }
 }
