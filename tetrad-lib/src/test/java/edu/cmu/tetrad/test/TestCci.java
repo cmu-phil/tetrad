@@ -22,8 +22,9 @@
 package edu.cmu.tetrad.test;
 
 import edu.cmu.tetrad.algcomparison.algorithm.multi.Fask;
+import edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern.FAS;
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern.PcAll;
-import edu.cmu.tetrad.algcomparison.independence.ConditionalCorrelation;
+import edu.cmu.tetrad.algcomparison.independence.*;
 import edu.cmu.tetrad.algcomparison.score.SemBicScore;
 import edu.cmu.tetrad.algcomparison.statistic.*;
 import edu.cmu.tetrad.data.*;
@@ -64,15 +65,16 @@ public class TestCci {
 
         String[] nonlinearFunctions = new String[]{
 //                "abs(TSUM(NEW(B) * $))",
-//                    "TSUM(NEW(B) * (abs($) ^ .8))",
-//                    "TSUM(NEW(B) * (abs($) ^ 1.05))",
-                    "TSUM(NEW(B) * (abs($) ^ 1.5))",
-//                    "(TSUM(NEW(B)*$) + TSUM(NEW(B) * ($^2)))",
-//                    "TSUM(NEW(B) * ($ ^ 2))",
-//                    "TSUM(NEW(B) * ($ ^ 3))",
-//                    "TSUM(NEW(B) * ln(cosh($)))",
-//                    " tanh(NEW(B) * (TSUM($)))",
-//                    " (TSUM(sin(NEW(B) * $)) + TSUM(cos(NEW(B) * $)))"
+//                "TSUM(NEW(B) * (abs($) ^ .8))",
+//                "TSUM(NEW(B) * (abs($) ^ 1.05))",
+//                "TSUM(NEW(B) * (abs($) ^ 1.5))",
+                "TSUM(NEW(B)*$) + TSUM(NEW(B) * (abs($) ^ 1.5))",
+                "(TSUM(NEW(B)*$) + TSUM(NEW(B) * ($^2)))",
+//                "TSUM(NEW(B) * ($ ^ 2))",
+                "TSUM(NEW(B) * ($ ^ 3))",
+//                "TSUM(NEW(B) * ln(cosh($)))",
+                "tanh(NEW(B) * (TSUM($)))",
+                "(TSUM(sin(NEW(B) * $)) + TSUM(cos(NEW(B) * $)))"
         };
 
         String[] gaussianErrors = new String[]{
@@ -81,11 +83,11 @@ public class TestCci {
 
         String[] nonGaussianErrors = new String[]{
 //                "0.5 * Uniform(-1, 1)",
-                "5 * (U(0, 1)^3 - .5)",
+                "(U(0, 1)^3 - .5)",
 //                "0.1 * Laplace(0, 1)"
         };
 
-//        String parameters = "Split(-.5, -.2, .2, .5)";
+//        String parameters = "Split(-.6, -.2, .2, .6)";
         String parameters = "U(.2, .5)";
 
         int index = 1;
@@ -174,7 +176,7 @@ public class TestCci {
                             parameters1.set("penaltyDiscount", 1);
 
                             parameters1.set("depth", -1);
-                            parameters1.set("twoCycleAlpha", 1e-6);
+                            parameters1.set("twoCycleAlpha", 1e-20);
                             parameters1.set("extraEdgeThreshold", .5);
                             parameters1.set("faskDelta", -0.2);
 
@@ -185,31 +187,34 @@ public class TestCci {
 //                                parameters1.set("bootstrapEnsemble");
 //                                parameters1.set("verbose");
 
-                            DataSet d = D2;
+                            DataSet d = D4;
 
-
-                            ConditionalCorrelation cc = new ConditionalCorrelation();
-                            PcAll pcall = new PcAll(cc);
-                            Graph g2 = pcall.search(D4, parameters1);
+                            d = DataUtils.getNonparanormalTransformed(d);
+//
+//
+//                            IndependenceWrapper test = new SemBicTest();
+//                            FAS pcall = new FAS(test);
+//                            Graph g2 = pcall.search(D4, parameters1);
 
                             Score score = new edu.cmu.tetrad.search.SemBicScore(new CovarianceMatrixOnTheFly(d));
 
                             edu.cmu.tetrad.search.Fask fask = new edu.cmu.tetrad.search.Fask(d, score);
-                            fask.setInitialGraph(graph);
+//                            fask.setInitialGraph(g2);
                             Graph _g = fask.search();
 
 //                            _g = g2;
 
                             _g = GraphUtils.replaceNodes(_g, graph.getNodes());
 
-                            System.out.println("graph = " + graph + " _g = " + _g);
+//                            System.out.println("graph = " + graph + " _g = " + _g);
 
                             double ap = new AdjacencyPrecision().getValue(_g, graph);
-                            double an = new AdjacencyRecall().getValue(graph, _g);
+                            double ar = new AdjacencyRecall().getValue(graph, _g);
                             double ahp = new ArrowheadPrecisionIgnore2c().getValue(graph, _g);
-                            double ahn = new ArrowheadRecall().getValue(graph, _g);
+                            double ahr = new ArrowheadRecall().getValue(graph, _g);
 
-                            System.out.println("AP = " + ap + " AN = " + an + " AHP = " + ahp + " AHN = " + ahn);
+                            System.out.println("\nNonlinear function: " + nonlinearFunction);
+                            System.out.println("AP = " + ap + " AR = " + ar + " AHP = " + ahp + " AHR = " + ahr);
                         }
                     }
                 }
