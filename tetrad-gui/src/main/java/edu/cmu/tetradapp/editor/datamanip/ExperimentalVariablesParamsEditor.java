@@ -8,6 +8,7 @@ package edu.cmu.tetradapp.editor.datamanip;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataModelList;
 import edu.cmu.tetrad.data.DataSet;
+import edu.cmu.tetrad.util.JOptionUtils;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetradapp.editor.FinalizingParameterEditor;
 import edu.cmu.tetradapp.model.DataWrapper;
@@ -21,12 +22,14 @@ import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.JButton;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.border.CompoundBorder;
 import javax.swing.border.EmptyBorder;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableColumn;
 
 /**
  *
@@ -50,6 +53,8 @@ public class ExperimentalVariablesParamsEditor extends JPanel implements Finaliz
     private List<String> columnNames;
     
     private DefaultTableModel tableModel;
+    
+    private final String interventionalVarPrefix = "I_";
     
     //==========================CONSTUCTORS===============================//
     
@@ -75,12 +80,9 @@ public class ExperimentalVariablesParamsEditor extends JPanel implements Finaliz
         Box container = Box.createVerticalBox();
         container.setPreferredSize(new Dimension(640, 460));
         
+        // Variables of dataset
         final List<String> variables = this.sourceDataSet.getVariableNames();
-        
-        // Container of all the contexts
-        // Don't set size to this container since it grows 
-        Box contextContainer = Box.createVerticalBox();
-        
+
         // Container for interventional variable
         Box interventionalVarBox = Box.createHorizontalBox();
         interventionalVarBox.setPreferredSize(new Dimension(400, 20));
@@ -89,21 +91,26 @@ public class ExperimentalVariablesParamsEditor extends JPanel implements Finaliz
         JButton addInterventionBtn= new JButton("Add");
         
         List<String> interventionalVariables = new LinkedList<>();
-        
-        interventionalVariables.add("I_default");
-        
+
         // Add file button listener
         addInterventionBtn.addActionListener((ActionEvent e) -> {
-            // Add the new interventional variable to each context
-            String varName = "I_" + getInterventionalVarName();
+            String varName = getInterventionalVarName();
             
-            interventionalVariables.add(varName);
-            
-            // Add new row to table
-            addRow(tableModel, varName);
-            
-            // Reset the input field
-            resetInterventionalVarNameField();
+            // Validation to prevent empty input
+            if (varName.isEmpty()) {
+                JOptionPane.showMessageDialog(JOptionUtils.centeringComp(), "Interventional variable name must be specified!");
+            } else {
+                // Add the new interventional variable to each context
+                String formattedVarName = interventionalVarPrefix + varName;
+
+                interventionalVariables.add(formattedVarName);
+
+                // Add new row to table
+                addRow(tableModel, formattedVarName);
+
+                // Reset the input field
+                resetInterventionalVarNameField();
+            }
         });
         
         interventionalVarBox.add(new JLabel("Interventional variable name: "));
@@ -114,14 +121,19 @@ public class ExperimentalVariablesParamsEditor extends JPanel implements Finaliz
         interventionalVarBox.add(Box.createHorizontalGlue());
         
         // Add interventionalVarBox to contextContainer
-        contextContainer.add(interventionalVarBox);
-        contextContainer.add(Box.createVerticalStrut(10));
+        container.add(interventionalVarBox);
+        container.add(Box.createVerticalStrut(10));
         
         
         
         // Create object of table and table model
         JTable table = new JTable();
-        tableModel = new DefaultTableModel(0, 0);
+        tableModel = new DefaultTableModel();
+        
+        // Set model into the table object
+        table.setModel(tableModel); 
+        
+        
 
         // Headers
         columnNames = new LinkedList<>();
@@ -132,37 +144,30 @@ public class ExperimentalVariablesParamsEditor extends JPanel implements Finaliz
         dataSets.forEach(dataSet -> {
             columnNames.add(dataSet.getName());
         });
-   
-        // 
+
+        // Table header
         tableModel.setColumnIdentifiers(columnNames.toArray());
 
-        // Row of headers
-        tableModel.addRow(columnNames.toArray());
-        
-        // Dynamically add table row based on interventional variables
-        interventionalVariables.forEach(var -> {
-            addRow(tableModel, var);
-        });
-        
-        
-        //set model into the table object
-        table.setModel(tableModel);   
-                
-        // Add table to parent containerr       
-        contextContainer.add(table);
+        System.out.println("=========column count =========" + table.getColumnCount());
 
-        // Provides a scrollable view of the contextContainer
-        JScrollPane contextScroller = new JScrollPane(contextContainer);
-        contextScroller.setPreferredSize(new Dimension(600, 420));
+        // To be able to see the header, we need to put the table in a JScrollPane
+        JScrollPane tablePane = new JScrollPane(table);
         
+        
+        // Show checkboxes in table cells
+        for (int i = 0; i < dataSets.size(); i++) {
+            TableColumn tc = table.getColumnModel().getColumn(1 + i);
+            tc.setCellEditor(table.getDefaultEditor(Boolean.class));
+            tc.setCellRenderer(table.getDefaultRenderer(Boolean.class));
+        } 
+                 
+        // Add table to parent containerr       
+        container.add(tablePane);
+
         String contextContainerBorderTitle = "Interventions";
         // Use a titled border with 5 px inside padding
-        contextScroller.setBorder(new CompoundBorder(BorderFactory.createTitledBorder(contextContainerBorderTitle), new EmptyBorder(5, 5, 5, 5)));
-        
-
-        // Add to container
-        container.add(contextScroller);
-        
+        container.setBorder(new CompoundBorder(BorderFactory.createTitledBorder(contextContainerBorderTitle), new EmptyBorder(5, 5, 5, 5)));
+ 
         // Adds the specified component to the end of this container.
         add(container, BorderLayout.CENTER);
     }
