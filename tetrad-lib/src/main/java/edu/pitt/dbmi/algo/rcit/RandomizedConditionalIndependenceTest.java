@@ -210,37 +210,110 @@ public final class RandomizedConditionalIndependenceTest implements Independence
 		} else {
 			
 			// res_x = f_x-repmat(t(matrix(colMeans(f_x))),r,1);
+			TetradMatrix colMeans_f_x = new TetradMatrix(1, fxMatrix.columns());
+			for(int i=0;i<fxMatrix.columns();i++) {
+				colMeans_f_x.set(0, i, StatUtils.mean(fxMatrix.getColumn(i).toArray()));
+			}
+			TetradMatrix res_x = fxMatrix.minus(new TetradMatrix(RandomFourierFeatures.repMat(colMeans_f_x.toArray(), row, 1)));
+			
 		    // res_y = f_y-repmat(t(matrix(colMeans(f_y))),r,1);
+			TetradMatrix colMeans_f_y = new TetradMatrix(1, fyMatrix.columns());
+			for(int i=0;i<fyMatrix.columns();i++) {
+				colMeans_f_y.set(0, i, StatUtils.mean(fyMatrix.getColumn(i).toArray()));
+			}
+			TetradMatrix res_y = fyMatrix.minus(new TetradMatrix(RandomFourierFeatures.repMat(colMeans_f_y.toArray(), row, 1)));
 			
 			// d =expand.grid(1:ncol(f_x),1:ncol(f_y));
+			int fxMatrix_cols = fxMatrix.columns();
+			int fyMatrix_cols = fyMatrix.columns();
+			TetradMatrix d = new TetradMatrix(fxMatrix_cols * fyMatrix_cols, 2);
+			int d_row = 0;
+			for (int fy_col = 0; fy_col < fyMatrix_cols; fy_col++) {
+				for (int fx_col = 0; fx_col < fxMatrix_cols; fx_col++) {
+					d.set(d_row, 0, fx_col);
+					d.set(d_row, 1, fy_col);
+					d_row++;
+				}
+			}
+
 			// res = res_x[,d[,1]]*res_y[,d[,2]];
+			TetradMatrix res = new TetradMatrix(res_x.rows(), d.rows());
+			// System.out.println("res.rows() " + res.rows());
+			for (int i = 0; i < res_x.rows(); i++) {
+				for(int j=0;j<d.rows();j++) {
+					int _d_0 = (int) d.get(j, 0);
+					int _d_1 = (int) d.get(j, 1);
+					//System.out.println("i= " + i + " _d_0:_d_1 " + _d_0 + ":" +_d_1);
+					
+					double _res_x = res_x.get(i, _d_0);
+					double _res_y = res_y.get(i, _d_1);
+					//System.out.println("_res_x:_res_y " + _res_x + ":" +_res_y);
+					
+					res.set(i, j, _res_x * _res_y);
+				}
+			}
+			
 		    // Cov = 1/r * (t(res)%*%res);
+			TetradMatrix covMatrix = res.transpose().times(res).scalarMult(1 / (double) row);			
 			
 			if(approx == RandomIndApproximateMethod.chi2) {
 				// i_Cov = ginv(Cov)
+				TetradMatrix iCovMatrix = covMatrix.ginverse();
 
 				// Sta = r * (c(Cxy)%*%  i_Cov %*% c(Cxy) );
+				// Flatten Cxy
+				TetradMatrix flattenCxyMatrix = new TetradMatrix(cxyMatrix.rows() * cxyMatrix.columns(), 1);
+				int index = 0;
+				for (int j = 0; j < cxyMatrix.columns(); j++) {
+					for (int i = 0; i < cxyMatrix.rows(); i++) {
+						flattenCxyMatrix.set(index, 0, cxyMatrix.get(i, j));
+						index++;
+					}
+				}
+
+				this.statistic = flattenCxyMatrix.times(iCovMatrix).times(flattenCxyMatrix.transpose()).get(0, 0);
+
 				// p = 1-pchisq(Sta, length(c(Cxy)));
+				this.pValue = 1.0 - ProbUtils.chisqCdf(this.statistic, flattenCxyMatrix.columns());
 			}else {
 				// eig_d = eigen(Cov);
-			    // eig_d$values=eig_d$values[eig_d$values>0];
+				EigenDecomposition eigen = new EigenDecomposition(new BlockRealMatrix(covMatrix.toArray()));
 				
+				// eig_d$values=eig_d$values[eig_d$values>0];
+				List<Double> eig_d = new ArrayList<>();
+				for (int i = 0; i < eigen.getRealEigenvalues().length; i++) {
+					double value = eigen.getRealEigenvalue(i);
+					if (value > 0) {
+						eig_d.add(value);
+					}
+				}
+
 				if(approx == RandomIndApproximateMethod.gamma) {
 					// p=1-sw(eig_d$values,Sta);
+					this.pValue = 1.0 - sw(eig_d, this.statistic);
 				} else if (approx == RandomIndApproximateMethod.hbe) {
 					// p=1-hbe(eig_d$values,Sta);
+					this.pValue = 1.0 - hbe(eig_d, this.statistic);
 				} else if (approx == RandomIndApproximateMethod.lpd4) {
 					// eig_d_values=eig_d$values;
 				    // p=try(1-lpb4(eig_d_values,Sta), silent=TRUE);
 				    // if (!is.numeric(p)){
 				    //   p=1-hbe(eig_d$values,Sta);
 				    // }
-					
+					try {
+						this.pValue = 1.0 - lpd4(eig_d, this.statistic);
+					} catch (Exception e) {
+						this.pValue = 1.0 - hbe(eig_d, this.statistic);
+					}
 				}
 			}
 		}
 		
-		return false;
+		if (this.pValue < 0) {
+			this.pValue = 0;
+		}
+
+		return this.pValue > alpha;
 	}
 	
 	
