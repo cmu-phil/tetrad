@@ -7,6 +7,7 @@ package edu.cmu.tetradapp.model.datamanip;
 
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataModelList;
+import edu.cmu.tetrad.data.LogDataUtils;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetradapp.model.DataWrapper;
 import edu.cmu.tetradapp.model.PcRunner;
@@ -41,6 +42,14 @@ public class ExperimentalVariablesWraper extends DataWrapper {
         for (DataModel dataModel : dataSets) {
             System.out.println(dataModel.getName());
         }
+        
+        // Put together with added interventions to get the final combined dataset
+        
+        // Display the combined dataset with all added interventions in the data editor 
+        // when users click the "OK" button on the Interventions editor panel
+        setDataModel(dataSets.get(0)); // Just use the first dataset for testing
+        
+        LogDataUtils.logDataModelList("Combined data with experimental interventions in the parent node.", getDataModelList());
     }
 
 
