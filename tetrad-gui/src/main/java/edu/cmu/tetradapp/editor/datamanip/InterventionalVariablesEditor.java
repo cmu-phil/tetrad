@@ -35,7 +35,7 @@ import javax.swing.table.TableColumn;
  *
  * @author Zhou Yuan <zhy19@pitt.edu>
  */
-public class ExperimentalVariablesEditor extends JPanel implements FinalizingParameterEditor {
+public class InterventionalVariablesEditor extends JPanel implements FinalizingParameterEditor {
 
     private static final long serialVersionUID = 6513664419620810219L;
 
@@ -64,7 +64,7 @@ public class ExperimentalVariablesEditor extends JPanel implements FinalizingPar
      * Constructs a new editor that will allow the user to define the experimental variables
      * The editor will return the combined single data set.
      */
-    public ExperimentalVariablesEditor() {
+    public InterventionalVariablesEditor() {
     
     }
 
@@ -76,7 +76,7 @@ public class ExperimentalVariablesEditor extends JPanel implements FinalizingPar
      */
     @Override
     public void setup() {
-        System.out.println("=========ExperimentalVariablesParamsEditor setup()=========");
+        System.out.println("=========InterventionalVariablesEditor setup()=========");
 
         // Container
         Box container = Box.createVerticalBox();

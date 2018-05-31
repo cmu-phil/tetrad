@@ -18,7 +18,7 @@ import java.io.ObjectInputStream;
  *
  * @author Zhou Yuan <zhy19@pitt.edu>
  */
-public class ExperimentalVariablesWraper extends DataWrapper {
+public class InterventionalVariablesWraper extends DataWrapper {
 
     private static final long serialVersionUID = -5573234622763285581L;
     
@@ -28,7 +28,7 @@ public class ExperimentalVariablesWraper extends DataWrapper {
      * @param dataWrapper
      * @param params
      */
-    public ExperimentalVariablesWraper(DataWrapper dataWrapper, Parameters params) {
+    public InterventionalVariablesWraper(DataWrapper dataWrapper, Parameters params) {
         if (dataWrapper == null) {
             throw new NullPointerException("The given data must not be null");
         }
@@ -38,7 +38,7 @@ public class ExperimentalVariablesWraper extends DataWrapper {
 
         DataModelList dataSets = dataWrapper.getDataModelList();
 
-        System.out.println("========ExperimentalVariablesWraper=========");
+        System.out.println("========InterventionalVariablesWraper=========");
         for (DataModel dataModel : dataSets) {
             System.out.println(dataModel.getName());
         }

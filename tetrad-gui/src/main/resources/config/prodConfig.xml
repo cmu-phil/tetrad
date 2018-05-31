@@ -348,18 +348,18 @@
                 <model-class>edu.cmu.tetradapp.model.DataWrapper</model-class>
                 <editor-class>edu.cmu.tetradapp.editor.DataEditor</editor-class>
             </model>
-            <!-- Define experimental variables, added by Zhou -->
-            <model name="Define experimental variables" acronym="Define experimental variables" help="data" category="Manipulation of Data">
+            <!-- Define interventional variables, added by Zhou -->
+            <model name="Define interventional variables" acronym="Data with Intervention" help="data" category="Manipulation of Data">
                 <logger>
                     <event id="info" description="Information" default="on"/>
                     <event id="data" description="Data"/>
                 </logger>
                 <model-class>
-                    edu.cmu.tetradapp.model.datamanip.ExperimentalVariablesWraper
+                    edu.cmu.tetradapp.model.datamanip.InterventionalVariablesWraper
                 </model-class>
                 <editor-class>edu.cmu.tetradapp.editor.DataEditor</editor-class>
                 <params-editor-class>
-                    edu.cmu.tetradapp.editor.datamanip.ExperimentalVariablesParamsEditor
+                    edu.cmu.tetradapp.editor.datamanip.InterventionalVariablesEditor
                 </params-editor-class>
             </model>
             <model name="Discretize Dataset" acronym="Discretize" help="data"
