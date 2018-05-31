@@ -44,6 +44,8 @@ public class ExperimentalVariablesWraper extends DataWrapper {
         }
         
         // Put together with added interventions to get the final combined dataset
+        // Create a new class in tetrad-lib data package to handle the data processing
+        // Kepp the origional data unchanged, use copies for combinging.
         
         // Display the combined dataset with all added interventions in the data editor 
         // when users click the "OK" button on the Interventions editor panel
