@@ -56,6 +56,8 @@ public class ExperimentalVariablesParamsEditor extends JPanel implements Finaliz
     
     private final String interventionalVarPrefix = "I_";
     
+    private List<String> interventionalVariables;
+    
     //==========================CONSTUCTORS===============================//
     
     /**
@@ -90,7 +92,7 @@ public class ExperimentalVariablesParamsEditor extends JPanel implements Finaliz
         interventionalVarNameField = new StringTextField("", 10);
         JButton addInterventionBtn= new JButton("Add");
         
-        List<String> interventionalVariables = new LinkedList<>();
+        interventionalVariables = new LinkedList<>();
 
         // Add file button listener
         addInterventionBtn.addActionListener((ActionEvent e) -> {
@@ -123,17 +125,14 @@ public class ExperimentalVariablesParamsEditor extends JPanel implements Finaliz
         // Add interventionalVarBox to contextContainer
         container.add(interventionalVarBox);
         container.add(Box.createVerticalStrut(10));
-        
-        
-        
+
         // Create object of table and table model
         JTable table = new JTable();
+  
         tableModel = new DefaultTableModel();
         
         // Set model into the table object
         table.setModel(tableModel); 
-        
-        
 
         // Headers
         columnNames = new LinkedList<>();
@@ -152,8 +151,7 @@ public class ExperimentalVariablesParamsEditor extends JPanel implements Finaliz
 
         // To be able to see the header, we need to put the table in a JScrollPane
         JScrollPane tablePane = new JScrollPane(table);
-        
-        
+
         // Show checkboxes in table cells
         for (int i = 0; i < dataSets.size(); i++) {
             TableColumn tc = table.getColumnModel().getColumn(1 + i);
@@ -174,12 +172,19 @@ public class ExperimentalVariablesParamsEditor extends JPanel implements Finaliz
 
 
     /**
-     * Adds all the info to the params.
+     * Tells the editor to commit any final details before it is closed (only called when the
+     * user selects "Ok" or something of that nature). If false is returned the edit is considered
+     * invalid and it will be treated as if the user selected "cancelAll".
      *
-     * @return true if the edit was finalized.
+     * @return - true if the edit was committed.
      */
     @Override
     public boolean finalizeEdit() {
+        interventionalVariables.forEach(e->{
+            System.out.println(e);
+        });
+       
+        
         return true;
     }
 
