@@ -30,9 +30,9 @@ public class FgesIon {
 
     public Graph search(DataSet dataSet) {
         final ISemBicScore score = new SemBicScore2(new CovarianceMatrixOnTheFly2(dataSet));
-        score.setPenaltyDiscount(4);
+        score.setPenaltyDiscount(2);
         Fges3 fges = new Fges3(score);
-        fges.setVerbose(true);
+//        fges.setVerbose(true);
         fges.setKnowledge(knowledge);
         final Graph graph = fges.search();
 
@@ -133,7 +133,7 @@ public class FgesIon {
                 if (paths.isEmpty()) continue;
                 List<Node> path = paths.get(0);
 
-                System.out.println(GraphUtils.pathString(paths.get(0), p));
+//                System.out.println(GraphUtils.pathString(paths.get(0), p));
 
                 Node x = path.get(0);
                 Node y = path.get(path.size() - 1);
@@ -158,7 +158,7 @@ public class FgesIon {
                 while ((choice = gen.next()) != null) {
                     List<Node> n = GraphUtils.asList(choice, adjx);
                     double v = score.localScoreDiff(nodes.indexOf(x), nodes.indexOf(y), varIndices(n, nodes));
-                    System.out.println("v = " + v + " n = " + n);
+//                    System.out.println("v = " + v + " n = " + n);
 
                     if (!Double.isNaN(v) && v < 0) {
                         augmented.removeEdge(x, y);
@@ -173,7 +173,7 @@ public class FgesIon {
                 while ((choice = gen.next()) != null) {
                     List<Node> n = GraphUtils.asList(choice, adjy);
                     double v = score.localScoreDiff(nodes.indexOf(x), nodes.indexOf(y), varIndices(n, nodes));
-                    System.out.println("vv = " + v + " n = " + n);
+//                    System.out.println("vv = " + v + " n = " + n);
 
                     if (!Double.isNaN(v) && v < 0) {
                         augmented.removeEdge(x, y);
@@ -184,12 +184,12 @@ public class FgesIon {
                 double v = score.localScoreDiff(nodes.indexOf(x), nodes.indexOf(y), varIndices(intermediaries, nodes));
 
                 if (Double.isNaN(v)) {
-                    System.out.println("###");
+//                    System.out.println("###");
 
                     final Edge augmentedEdge = getAugmentedEdge(path, intermediaries, p);
 
                     if (augmentedEdge != null) {
-                        System.out.println("Adding edge: " + augmentedEdge);
+//                        System.out.println("Adding edge: " + augmentedEdge);
                         augmented.addEdge(augmentedEdge);
                     }
                 }

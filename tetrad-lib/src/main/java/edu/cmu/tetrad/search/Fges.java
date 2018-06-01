@@ -1940,7 +1940,9 @@ public final class Fges implements GraphSearch, GraphScorer {
         final double v = score.localScoreDiff(hashIndices.get(x), yIndex, parentIndices);
 
         if (Double.isNaN(v)) {
-            System.out.println("NaN for " + SearchLogUtils.independenceFact(y, x, new ArrayList<>(parents)));
+            if (verbose) {
+                System.out.println("NaN for " + SearchLogUtils.independenceFact(y, x, new ArrayList<>(parents)));
+            }
             indeterminateFacts.add(new IndependenceFact(y, x, new ArrayList<>(parents)));
         }
 

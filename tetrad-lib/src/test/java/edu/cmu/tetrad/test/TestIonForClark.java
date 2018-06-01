@@ -26,8 +26,13 @@ import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.*;
 import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemPm;
+import edu.cmu.tetrad.util.StatUtils;
 
 import java.util.*;
+
+import static java.lang.Math.abs;
+import static java.lang.Math.log;
+import static java.lang.Math.sqrt;
 
 /**
  * Tests the BayesIm.
@@ -82,8 +87,16 @@ public final class TestIonForClark {
         Graph graph1 = GraphUtils.randomGraph(10, 0, 10, 100, 100, 100, false);
 //        runModel(graph1, new String[][]{{"X1", "X2", "X3"}, {"X2", "X3", "X4"}, {"X3", "X4", "X5"}}, ion);
         runModel(graph1,
-                new String[][]{{"X1", "X2", "X3", "X4", "X5", "X6", "X7", "X8"},
+                new String[][]{{"X1", "X2", "X3", "X4", "X5", "X6", "X7", "X9"},
                         {"X2", "X3", "X4", "X5", "X6", "X7", "X8", "X10"}},
+                ion,
+                new Knowledge2());
+    }
+
+    public void test7(boolean ion) {
+        Graph graph1 = GraphConverter.convert("A-->B,A-->C,C-->B");
+//        Graph graph1 = GraphConverter.convert("A-->B,A-->C,C<--B");
+        runModel(graph1, new String[][]{{"A", "B", "C"}},
                 ion,
                 new Knowledge2());
     }
@@ -131,7 +144,87 @@ public final class TestIonForClark {
         }
 
         List<Graph> models = ion.allModels(p, ion.getAugmented(), ion.getRemoveableEdges());
+
+        final List<Node> nodes = concat.getVariables();
+
+        for (Graph model : models) {
+            model = GraphUtils.replaceNodes(model, nodes);
+        }
+
+        ICovarianceMatrix cov = new CorrelationMatrixOnTheFly2(concat);
+
+        System.out.println("\nCovariance = " + cov);
+
         List<List<Edge>> edgesRemoved = ion.getEdgesRemoved();
+
+        int l = 1;
+
+        for (Graph model : new ArrayList<>(models)) {
+
+            System.out.println("Model " + (l++));
+
+            II:
+            for (int ii = 0; ii < nodes.size(); ii++) {
+                for (int jj = 0; jj < nodes.size(); jj++) {
+                    if (ii == jj)  continue;
+
+                    Node x = nodes.get(ii);
+                    Node y = nodes.get(jj);
+
+                    List<List<Node>> treks = GraphUtils.semidirectedTreks(model, x, y, 4);
+                    if (treks.size() == 0) continue;
+
+                    double sum = 0.0;
+
+                    for (List<Node> trek : treks) {
+                        System.out.println("Semidirected trek: " + GraphUtils.pathString(trek, model));
+
+                        double prod = 1.0;
+
+                        for (int m = 0; m < trek.size() - 1; m++) {
+                            final Node m1 = trek.get(m);
+                            final Node m2 = trek.get(m + 1);
+
+                            double r = cov.getValue(nodes.indexOf(m1), nodes.indexOf(m2));
+                            prod *= r;
+                        }
+
+                        System.out.println("prod = " + prod);
+
+                        if (abs(sum + prod) > 1.0) {
+                            System.out.println("Sum > 1");
+                            continue;
+                        }
+
+                        sum += prod;
+                    }
+
+                    double rr = cov.getValue(ii, jj);
+
+                    if (Double.isNaN(sum) || Double.isNaN(rr)) continue;
+
+                    double ncsum = sampleSize;
+                    double ncr = sampleSize;
+                    double alpha = 0.000001;
+
+                    double zsum = 0.5 * (log(1.0 + sum) - log(1.0 - sum));
+                    double zr = 0.5 * (log(1.0 + rr) - log(1.0 - rr));
+
+                    double z = (zsum - zr) / sqrt((1.0 / ((double) ncsum - 3) + 1.0 / ((double) ncr - 3)));
+                    double cutoff = StatUtils.getZForAlpha(alpha);
+
+                    System.out.println("sum = " + sum + " zsum = " + zsum + " zr = " + zr + " z = " +  " x = " + x + " y = " + y + " z = " + z + " cutoff = " + cutoff + " rr = " + rr + " sum = " + sum);
+
+                    boolean rejected = abs(z) > cutoff;
+
+                    if (rejected) {
+                        models.remove(model);
+                        System.out.println("Rejected");
+                        break II;
+                    }
+                }
+            }
+        }
 
         FgesIon.printModels(models, edgesRemoved);
     }
@@ -214,7 +307,8 @@ public final class TestIonForClark {
 //        new TestIonForClark().test3a(ion);
 //        new TestIonForClark().test4(ion);
 //        new TestIonForClark().test5(ion);
-        new TestIonForClark().test6(ion);
+//        new TestIonForClark().test6(ion);
+        new TestIonForClark().test7(ion);
 
     }
 
