@@ -26,13 +26,10 @@ import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.*;
 import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemPm;
-import edu.cmu.tetrad.util.StatUtils;
 
 import java.util.*;
 
 import static java.lang.Math.abs;
-import static java.lang.Math.log;
-import static java.lang.Math.sqrt;
 
 /**
  * Tests the BayesIm.
@@ -40,219 +37,188 @@ import static java.lang.Math.sqrt;
  * @author Joseph Ramsey
  */
 public final class TestIonForClark {
-    public void test2(boolean ion) {
-        IKnowledge knowledge = new Knowledge2();
-        knowledge.addToTier(1, "A");
-        knowledge.addToTier(2, "B");
-        knowledge.addToTier(2, "C");
-        knowledge.addToTier(2, "D");
 
-        knowledge = new Knowledge2();
+    private double penaltyDiscount = 1;
+    private int sampleSizePerDataset = 1000;
 
-        Graph graph1 = GraphConverter.convert("A-->B,B-->C,A-->D,D-->C");
-        runModel(graph1, new String[][]{{"B", "A", "D"}, {"B", "C", "D"}},
-                ion,
-                knowledge);
+    public void test1() {
+        runModel("A-->B,B-->C,A-->D,D-->C", new String[][]{{"B", "A", "D"}, {"B", "C", "D"}});
     }
 
-    public void test3(boolean ion) {
-        Graph graph1 = GraphConverter.convert("X-->C,C-->B,A-->B,Y-->A");
-        runModel(graph1, new String[][]{{"X", "Y", "A"}, {"X", "Y", "B"}, {"X", "Y", "C"}},
-                ion,
-                new Knowledge2());
+    public void test2() {
+        runModel("X-->A,A-->B,C-->B,Y-->C", new String[][]{{"X", "Y", "A"}, {"X", "Y", "B"}, {"X", "Y", "C"}});
     }
 
-    public void test3a(boolean ion) {
-        Graph graph1 = GraphConverter.convert("X-->C,C-->B,A-->B,Y-->A");
-        runModel(graph1, new String[][]{{"X", "Y", "A"}, {"X", "Y", "B"}, {"X", "Y", "C"}, {"A", "B", "C"}},
-                ion,
-                new Knowledge2());
+    public void test3() {
+        runModel("X-->A,A-->B,C-->B,Y-->C", new String[][]{{"X", "Y", "A"}, {"X", "Y", "B"}, {"X", "Y", "C"}, {"A", "B", "C"}});
     }
 
-    public void test4(boolean ion) {
-        Graph graph1 = GraphConverter.convert("A-->B,B-->C,A-->D,D-->C");
-        runModel(graph1, new String[][]{{"A", "B", "C"}, {"A", "D", "C"}},
-                ion,
-                new Knowledge2());
+    public void test4() {
+        runModel("A-->B,B-->C,A-->D,D-->C", new String[][]{{"A", "B", "C"}, {"A", "D", "C"}});
     }
 
-    public void test5(boolean ion) {
-        Graph graph1 = GraphConverter.convert("T-->W, R-->S,T-->S");
-        runModel(graph1, new String[][]{{"R", "S", "T"}, {"T", "W"}},
-                ion,
-                new Knowledge2());
+    public void test5() {
+        runModel("T-->W, R-->S,T-->S", new String[][]{{"R", "S", "T"}, {"T", "W"}});
     }
 
-    public void test6(boolean ion) {
-        Graph graph1 = GraphUtils.randomGraph(10, 0, 10, 100, 100, 100, false);
-//        runModel(graph1, new String[][]{{"X1", "X2", "X3"}, {"X2", "X3", "X4"}, {"X3", "X4", "X5"}}, ion);
-        runModel(graph1,
-                new String[][]{{"X1", "X2", "X3", "X4", "X5", "X6", "X7", "X9"},
-                        {"X2", "X3", "X4", "X5", "X6", "X7", "X8", "X10"}},
-                ion,
-                new Knowledge2());
-    }
+    public void test6() {
+        final int numNodes = 5;
+        Graph graph1 = GraphUtils.randomGraph(numNodes, 0, numNodes, 100, 100, 100, false);
+        List<Edge> edges = new ArrayList<>(graph1.getEdges());
 
-    public void test7(boolean ion) {
-        Graph graph1 = GraphConverter.convert("A-->B,A-->C,C-->B");
-//        Graph graph1 = GraphConverter.convert("A-->B,A-->C,C<--B");
-        runModel(graph1, new String[][]{{"A", "B", "C"}},
-                ion,
-                new Knowledge2());
-    }
-
-    private void runModel(Graph graph, String[][] groupings, boolean ion, IKnowledge knowledge) {
-        if (ion) {
-            runModelIon(graph, groupings, knowledge);
-        } else {
-            runModelFgesIon(graph, groupings, knowledge);
+        StringBuilder graphSpec = new StringBuilder();
+        for (int i = 0; i < graph1.getNumEdges(); i++) {
+            graphSpec.append(edges.get(i).getNode1()).append("-->").append(edges.get(i).getNode2());
+            if (i < edges.size() - 1) graphSpec.append(",");
         }
+
+        runModel(graphSpec.toString(),
+                new String[][]{
+                        {"X1", "X2", "X3", "X4", "X5"},//, "X6", "X7", "X8", "X9"},
+                        {"X2", "X3", "X4", "X5"}//, "X6", "X7", "X8", "X10"}});
+        });
     }
 
-    private void runModelFgesIon(Graph graph, String[][] groupings, IKnowledge knowledge) {
-        int sampleSize = 10000;
+    public void test7() {
+        final String graphSpec = "A-->B,A-->C,C-->B";
+        final String[][] groupings = {{"A", "B", "C"}};
 
+        runModel(graphSpec, groupings);
+    }
+
+    public void test8() {
+        runModel("A-->B,B-->C,D-->C", new String[][]{{"A", "B", "C"}, {"A", "D", "C"}});
+    }
+
+    private void runModel(String graphSpec, String[][] groupings) {
+
+        System.out.println("\n\n**********************************************************");
+
+        System.out.println();
+
+        System.out.println("Graph spec = " + graphSpec);
+
+        System.out.println("\nGroupings: ");
+        int i = 1;
+
+        for (String[] grouping : groupings) {
+            System.out.print(i++ + ": {");
+            for (int g = 0; g < grouping.length; g++) {
+                System.out.print(grouping[g]);
+                if (g < grouping.length - 1) System.out.print(",");
+            }
+            System.out.println("}");
+        }
+
+        System.out.println("\n**********************************************************\n");
+
+
+        Graph graph = GraphConverter.convert(graphSpec);
+        runModel(graph, groupings);
+    }
+
+    public double getPenaltyDiscount() {
+        return penaltyDiscount;
+    }
+
+    public void setPenaltyDiscount(double penaltyDiscount) {
+        this.penaltyDiscount = penaltyDiscount;
+    }
+
+    public int getSampleSizePerDataset() {
+        return sampleSizePerDataset;
+    }
+
+    public void setSampleSizePerDataset(int sampleSizePerDataset) {
+        this.sampleSizePerDataset = sampleSizePerDataset;
+    }
+
+    //===================================PRIVATE METHODS===================================//
+
+    private void runModel(Graph graph, String[][] groupings) {
         SemPm pm = new SemPm(graph);
         SemIm im = new SemIm(pm);
 
         List<DataSet> dataSets = new ArrayList<>();
 
-        for (int i = 0; i < groupings.length; i++) {
-            final DataSet dataSet = im.simulateData(sampleSize / groupings.length, false);
-            keep(dataSet, groupings[i]);
+        for (String[] grouping : groupings) {
+            final DataSet dataSet = im.simulateData(getSampleSizePerDataset(), false);
+            setMIssing(dataSet, grouping);
             dataSets.add(dataSet);
         }
 
         DataSet concat = DataUtils.concatenate(dataSets);
 
-        FgesIon ion = new FgesIon();
-        ion.setKnowledge(knowledge);
-        Graph p = ion.search(concat);
+        List<Graph> modelsIon = new ArrayList<>();
+        List<Graph> modelsPcIon = new ArrayList<>();
 
-        System.out.println("FGES model = " + p);
-
-        System.out.println("Augmented = " + ion.getAugmented());
-
-        List<Edge> removableEdges = ion.getRemoveableEdges();
-
-        System.out.println("RemoveableEdges");
-
-        int i = 1;
-
-        for (Edge edge : removableEdges) {
-            System.out.println(i++ + ". " + edge);
+        try {
+            modelsIon = runModelIon(dataSets, groupings, graph);
+        } catch (Exception e) {
+            e.printStackTrace();
         }
 
-        List<Graph> models = ion.allModels(p, ion.getAugmented(), ion.getRemoveableEdges());
-
-        final List<Node> nodes = concat.getVariables();
-
-        for (Graph model : models) {
-            model = GraphUtils.replaceNodes(model, nodes);
+        try {
+            modelsPcIon = runModelPcIon(dataSets, graph);
+        } catch (Exception e) {
+            e.printStackTrace();
         }
 
-        ICovarianceMatrix cov = new CorrelationMatrixOnTheFly2(concat);
+        List<Graph> modelsIon2 = new ArrayList<>();
 
-        System.out.println("\nCovariance = " + cov);
-
-        List<List<Edge>> edgesRemoved = ion.getEdgesRemoved();
-
-        int l = 1;
-
-        for (Graph model : new ArrayList<>(models)) {
-
-            System.out.println("Model " + (l++));
-
-            II:
-            for (int ii = 0; ii < nodes.size(); ii++) {
-                for (int jj = 0; jj < nodes.size(); jj++) {
-                    if (ii == jj)  continue;
-
-                    Node x = nodes.get(ii);
-                    Node y = nodes.get(jj);
-
-                    List<List<Node>> treks = GraphUtils.semidirectedTreks(model, x, y, 4);
-                    if (treks.size() == 0) continue;
-
-                    double sum = 0.0;
-
-                    for (List<Node> trek : treks) {
-                        System.out.println("Semidirected trek: " + GraphUtils.pathString(trek, model));
-
-                        double prod = 1.0;
-
-                        for (int m = 0; m < trek.size() - 1; m++) {
-                            final Node m1 = trek.get(m);
-                            final Node m2 = trek.get(m + 1);
-
-                            double r = cov.getValue(nodes.indexOf(m1), nodes.indexOf(m2));
-                            prod *= r;
-                        }
-
-                        System.out.println("prod = " + prod);
-
-                        if (abs(sum + prod) > 1.0) {
-                            System.out.println("Sum > 1");
-                            continue;
-                        }
-
-                        sum += prod;
-                    }
-
-                    double rr = cov.getValue(ii, jj);
-
-                    if (Double.isNaN(sum) || Double.isNaN(rr)) continue;
-
-                    double ncsum = sampleSize;
-                    double ncr = sampleSize;
-                    double alpha = 0.000001;
-
-                    double zsum = 0.5 * (log(1.0 + sum) - log(1.0 - sum));
-                    double zr = 0.5 * (log(1.0 + rr) - log(1.0 - rr));
-
-                    double z = (zsum - zr) / sqrt((1.0 / ((double) ncsum - 3) + 1.0 / ((double) ncr - 3)));
-                    double cutoff = StatUtils.getZForAlpha(alpha);
-
-                    System.out.println("sum = " + sum + " zsum = " + zsum + " zr = " + zr + " z = " +  " x = " + x + " y = " + y + " z = " + z + " cutoff = " + cutoff + " rr = " + rr + " sum = " + sum);
-
-                    boolean rejected = abs(z) > cutoff;
-
-                    if (rejected) {
-                        models.remove(model);
-                        System.out.println("Rejected");
-                        break II;
-                    }
-                }
-            }
+        for (Graph graph2 : modelsIon) {
+            modelsIon2.add(GraphUtils.replaceNodes(graph2, concat.getVariables()));
         }
 
-        FgesIon.printModels(models, edgesRemoved);
+        List<Graph> modelsPcIon2 = new ArrayList<>();
+
+        for (Graph graph2 : modelsPcIon) {
+            modelsPcIon2.add(GraphUtils.replaceNodes(graph2, concat.getVariables()));
+        }
+
+        List<Graph> models2 = new ArrayList<>(modelsIon2);
+        models2.removeAll(modelsPcIon2);
+
+        System.out.println("In ION but not PC ION = " + models2.size());
+
+        for (int i = 0; i < models2.size(); i++) {
+            System.out.println("\n[" + (i + 1) + "]. " + models2.get(i));
+        }
+
+        List<Graph> models3 = new ArrayList<>(modelsPcIon2);
+        models3.removeAll(modelsIon2);
+
+        System.out.println("In PC ION but not ION = " + models3.size());
+
+        for (int i = 0; i < models3.size(); i++) {
+            System.out.println("\n[" + (i + 1) + "]. " + models3.get(i));
+        }
     }
 
-    private void runModelIon(Graph graph, String[][] groupings, IKnowledge knowledge) {
-        SemPm pm = new SemPm(graph);
-        SemIm im = new SemIm(pm);
-
+    private List<Graph> runModelIon(List<DataSet> dataSets, String[][] groupings, Graph trueGraph) {
+        System.out.println("\n================================================");
+        System.out.println("====================== ION =====================");
+        System.out.println("================================================\n");
         List<Graph> graphs = new ArrayList<>();
 
+        // For checking independence facts.
+        DataSet concat = DataUtils.concatenate(dataSets);
+
         for (int i = 0; i < groupings.length; i++) {
-            DataSet dataSet = im.simulateData(1000, false);
-            dataSet = keepVariables(dataSet, groupings[i]);
+            DataSet dataSet = keepVariables(dataSets.get(i), groupings[i]);
             SemBicScore score1 = new SemBicScore(new CovarianceMatrixOnTheFly(dataSet));
-            score1.setPenaltyDiscount(4);
+            score1.setPenaltyDiscount(getPenaltyDiscount());
             Fci fci = new edu.cmu.tetrad.search.Fci(new IndTestScore(score1));
             Graph g1 = fci.search();
             graphs.add(g1);
         }
 
-        IonJoeModifications ion = new IonJoeModifications(graphs);
-        ion.setKnowledge(knowledge);
-        List<Graph> outGraphs = ion.search();
-
-        Set<Graph> out2 = new LinkedHashSet<>();
+        Ion ion = new Ion(graphs);
+        List<Graph> models = ion.search();
+        List<Graph> outGraphs = new ArrayList<>();
 
         G:
-        for (Graph g : outGraphs) {
+        for (Graph g : models) {
             for (Edge edge : g.getEdges()) {
                 if (Edges.isBidirectedEdge(edge)) {
                     continue G;
@@ -262,20 +228,42 @@ public final class TestIonForClark {
                 if (edge.getEndpoint2() == Endpoint.CIRCLE) edge.setEndpoint2(Endpoint.TAIL);
             }
 
-            out2.add(g);
+            SearchGraphUtils.basicPattern(g, false);
+            new MeekRules().orientImplied(g);
+            outGraphs.add(g);
         }
-
-        outGraphs = new ArrayList<>(out2);
 
         int i = 1;
 
         for (Graph g : outGraphs) {
-            System.out.println(i++ + ". " + g);
+            System.out.println("\n(" + i++ + "). " + g);
         }
+
+        return outGraphs;
     }
 
+    private List<Graph> runModelPcIon(List<DataSet> dataSets, Graph trueGraph) {
+        System.out.println("\n================================================");
+        System.out.println("===================== PC ION ===================");
+        System.out.println("================================================\n");
 
-    private void keep(DataSet data1, String... vars) {
+        DataSet concat = DataUtils.concatenate(dataSets);
+
+        FgesIon ion = new FgesIon();
+        ion.setPatternAlgorithm(FgesIon.PatternAlgorithm.FGES);
+        ion.setPenaltyDiscount(penaltyDiscount);
+        List<Graph> models = ion.search(concat, trueGraph);
+
+        int i = 1;
+
+        for (Graph g : models) {
+            System.out.println("\n(" + i++ + "). " + g);
+        }
+
+        return models;
+    }
+
+    private void setMIssing(DataSet data1, String... vars) {
         Set<String> names = new HashSet<>(Arrays.asList(vars));
 
         for (int i = 0; i < data1.getNumRows(); i++) {
@@ -293,23 +281,27 @@ public final class TestIonForClark {
         List<Node> nodes = new ArrayList<>();
 
         for (String s : vars) {
-            nodes.add(data1.getVariable(s));
+            if (data1.getVariable(s) != null) {
+                nodes.add(data1.getVariable(s));
+            }
         }
 
         return data1.subsetColumns(nodes);
     }
 
+    //==================================MAIN======================================;/
+
     public static void main(String... args) {
-        boolean ion = false;
+        new TestIonForClark().test1();
+//        new TestIonForClark().test2();
+//        new TestIonForClark().test3();
+//        new TestIonForClark().test4();
+//        new TestIonForClark().test5();
+//        new TestIonForClark().test6();
+//        new TestIonForClark().test7();
+//        new TestIonForClark().test8();
 
-//        new TestIonForClark().test2(ion);
-//        new TestIonForClark().test3(ion);
-//        new TestIonForClark().test3a(ion);
-//        new TestIonForClark().test4(ion);
-//        new TestIonForClark().test5(ion);
-//        new TestIonForClark().test6(ion);
-        new TestIonForClark().test7(ion);
-
+//        new TestIonForClark().testG();
     }
 
 }

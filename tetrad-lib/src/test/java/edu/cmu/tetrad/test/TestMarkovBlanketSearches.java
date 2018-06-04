@@ -898,7 +898,7 @@ public class TestMarkovBlanketSearches {
 //        }
 //    }
 
-//    public void test3() {
+//    public void test2() {
 //        Graph graph = new EdgeListGraph();
 //
 //        Node t = new GraphNode("t");

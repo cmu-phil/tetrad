@@ -43,6 +43,9 @@ import static java.lang.Math.log;
  */
 public class SemBicScore2 implements Score, ISemBicScore {
 
+    private final DataSet dataSet;
+    private final double[][] _data;
+
     // The covariance matrix.
     private CovarianceMatrixOnTheFly2 covariances;
 
@@ -74,10 +77,14 @@ public class SemBicScore2 implements Score, ISemBicScore {
     /**
      * Constructs the score using a covariance matrix.
      */
-    public SemBicScore2(CovarianceMatrixOnTheFly2 covariances) {
+    public SemBicScore2(CovarianceMatrixOnTheFly2 covariances, DataSet dataSet) {
         if (covariances == null) {
             throw new NullPointerException();
         }
+
+        this.dataSet = dataSet;
+
+        this._data = dataSet.getDoubleData().transpose().toArray();
 
         this.setCovariances(covariances);
         this.variables = covariances.getVariables();
@@ -101,12 +108,26 @@ public class SemBicScore2 implements Score, ISemBicScore {
             return Double.NaN;
         }
 
+        List<Integer> rows = new ArrayList<>();
+
+        R:
+        for (int r = 0; r < dataSet.getNumRows(); r++) {
+            if (Double.isNaN(_data[i][r])) continue;
+            for (int p : parents) {
+                if (Double.isNaN(_data[p][r])) continue R;
+            }
+            rows.add(r);
+        }
+
+        int[] _rows = new int[rows.size()];
+        for (int r = 0; r < rows.size(); r++) _rows[r] = rows.get(r);
+
         try {
             double s2 = getCovariances().getValue(i, i);
             int p = parents.length;
 
-            TetradMatrix covxx = getSelection(covariances, parents, parents, dataRows);
-            TetradVector covxy = getSelection(covariances, parents, new int[]{i}, dataRows).getColumn(0);
+            TetradMatrix covxx = getSelection(covariances, parents, parents, _rows);
+            TetradVector covxy = getSelection(covariances, parents, new int[]{i}, _rows).getColumn(0);
             s2 -= covxx.inverse().times(covxy).dotProduct(covxy);
 
             if (s2 <= 0) {
@@ -151,6 +172,20 @@ public class SemBicScore2 implements Score, ISemBicScore {
 
     @Override
     public double localScoreDiff(int x, int y, int[] z) {
+        List<Integer> rows = new ArrayList<>();
+
+        R:
+        for (int r = 0; r < dataSet.getNumRows(); r++) {
+            if (Double.isNaN(_data[x][r])) continue;
+            if (Double.isNaN(_data[y][r])) continue;
+            for (int p : z) {
+                if (Double.isNaN(_data[p][r])) continue R;
+            }
+            rows.add(r);
+        }
+
+        int[] _rows = new int[rows.size()];
+        for (int r = 0; r < rows.size(); r++) _rows[r] = rows.get(r);
 
         Node _x = variables.get(x);
         Node _y = variables.get(y);
@@ -159,7 +194,7 @@ public class SemBicScore2 implements Score, ISemBicScore {
         double r;
 
         try {
-            r = partialCorrelation(_x, _y, _z);
+            r = partialCorrelation(_x, _y, _z, _rows);
         } catch (SingularMatrixException e) {
 //            System.out.println(SearchLogUtils.determinismDetected(_z, _x));
             return Double.NaN;
@@ -180,12 +215,12 @@ public class SemBicScore2 implements Score, ISemBicScore {
         return variables;
     }
 
-    private double partialCorrelation(Node x, Node y, List<Node> z) throws SingularMatrixException {
+    private double partialCorrelation(Node x, Node y, List<Node> z, int[] rows) throws SingularMatrixException {
         int[] indices = new int[z.size() + 2];
         indices[0] = indexMap.get(x.getName());
         indices[1] = indexMap.get(y.getName());
         for (int i = 0; i < z.size(); i++) indices[i + 2] = indexMap.get(z.get(i).getName());
-        TetradMatrix submatrix = covariances.getSubmatrix(indices).getMatrix();
+        TetradMatrix submatrix = covariances.getSubmatrix(indices, rows).getMatrix();
         return StatUtils.partialCorrelation(submatrix);
     }
 
@@ -297,7 +332,7 @@ public class SemBicScore2 implements Score, ISemBicScore {
     }
 
     public DataSet getDataSet() {
-        throw new UnsupportedOperationException();
+        return dataSet;
     }
 
     public void setPenaltyDiscount(double penaltyDiscount) {

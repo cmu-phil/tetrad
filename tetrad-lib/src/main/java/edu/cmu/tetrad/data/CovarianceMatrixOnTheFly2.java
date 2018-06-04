@@ -483,8 +483,12 @@ public class CovarianceMatrixOnTheFly2 implements ICovarianceMatrix {
         int count = 0;
 
         for (int k : rows) {
-            if (Double.isNaN(v1[k])) continue;
-            if (Double.isNaN(v2[k])) continue;
+            if (Double.isNaN(v1[k])) {
+                continue;
+            }
+            if (Double.isNaN(v2[k])) {
+                continue;
+            }
 
             d += v1[k] * v2[k];
             count++;
