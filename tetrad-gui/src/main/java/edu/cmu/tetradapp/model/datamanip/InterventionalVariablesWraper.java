@@ -5,7 +5,6 @@
  */
 package edu.cmu.tetradapp.model.datamanip;
 
-import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataModelList;
 import edu.cmu.tetrad.data.LogDataUtils;
 import edu.cmu.tetrad.util.Parameters;
@@ -38,11 +37,6 @@ public class InterventionalVariablesWraper extends DataWrapper {
 
         DataModelList dataSets = dataWrapper.getDataModelList();
 
-        System.out.println("========InterventionalVariablesWraper=========");
-        for (DataModel dataModel : dataSets) {
-            System.out.println(dataModel.getName());
-        }
-        
         // Put together with added interventions to get the final combined dataset
         // Create a new class in tetrad-lib data package to handle the data processing
         // Kepp the origional data unchanged, use copies for combinging.

@@ -16,6 +16,7 @@ import edu.cmu.tetradapp.util.StringTextField;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
+import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 import javax.swing.BorderFactory;
@@ -52,6 +53,8 @@ public class InterventionalVariablesEditor extends JPanel implements FinalizingP
     
     private List<String> columnNames;
     
+    private JTable table;
+    
     private DefaultTableModel tableModel;
     
     private final String interventionalVarPrefix = "I_";
@@ -81,9 +84,6 @@ public class InterventionalVariablesEditor extends JPanel implements FinalizingP
         // Container
         Box container = Box.createVerticalBox();
         container.setPreferredSize(new Dimension(640, 460));
-        
-        // Variables of dataset
-        final List<String> variables = this.sourceDataSet.getVariableNames();
 
         // Container for interventional variable
         Box interventionalVarBox = Box.createHorizontalBox();
@@ -127,7 +127,7 @@ public class InterventionalVariablesEditor extends JPanel implements FinalizingP
         container.add(Box.createVerticalStrut(10));
 
         // Create object of table and table model
-        JTable table = new JTable();
+        table = new JTable();
   
         tableModel = new DefaultTableModel();
         
@@ -158,7 +158,7 @@ public class InterventionalVariablesEditor extends JPanel implements FinalizingP
             tc.setCellEditor(table.getDefaultEditor(Boolean.class));
             tc.setCellRenderer(table.getDefaultRenderer(Boolean.class));
         } 
-                 
+                
         // Add table to parent containerr       
         container.add(tablePane);
 
@@ -180,9 +180,29 @@ public class InterventionalVariablesEditor extends JPanel implements FinalizingP
      */
     @Override
     public boolean finalizeEdit() {
+        System.out.println("===============Added Interventioanl Variables==============");
         interventionalVariables.forEach(e->{
             System.out.println(e);
         });
+        
+        System.out.println("===============Datasets==============");
+        dataSets.forEach(e -> {
+            System.out.println(e.getName());
+        });
+        
+        // 2D array of all cell values, true/false
+        boolean interventions[][] = new boolean[interventionalVariables.size()][dataSets.size()];
+        
+        for (int row = 0; row < interventionalVariables.size(); row++) {
+            for (int col = 0; col < dataSets.size(); col++) {
+                // Skip the first column which is the interventional variable names
+                boolean cellValue = (boolean) table.getValueAt(row, col + 1);
+                interventions[row][col] = cellValue;
+            }
+        }
+        
+        System.out.println("===============Interventions (Row) & Datasets (Column)==============");
+        System.out.println(Arrays.deepToString(interventions).replace("], ", "]\n"));
         
         // Combine the datasets with added interventional variables and also add the file index column
         // Then put the combined single dataset into the tetrad-lib data package to be used by the wraper
