@@ -277,54 +277,56 @@ public final class SimulationEditor extends JPanel implements KnowledgeEditable,
         }
 
         if (!simulation.isFixedSimulation()) {
-            if (simulation.getSourceGraph() == null) {
-                String simulationItem = (String) simulationsDropdown.getSelectedItem();
-                simulation.getParams().set("simulationsDropdownPreference", simulationItem);
-                simulation.setFixedGraph(false);
+            if (simulation.getSimulation().getNumDataModels() == 0) {
+                if (simulation.getSourceGraph() == null) {
+                    String simulationItem = (String) simulationsDropdown.getSelectedItem();
+                    simulation.getParams().set("simulationsDropdownPreference", simulationItem);
+                    simulation.setFixedGraph(false);
 
-                if (randomGraph instanceof SingleGraph) {
-                    simulation.setFixedGraph(true);
-                }
+                    if (randomGraph instanceof SingleGraph) {
+                        simulation.setFixedGraph(true);
+                    }
 
-                if (simulationItem.equals(simulationItems[0])) {
-                    simulation.setSimulation(new BayesNetSimulation(randomGraph), simulation.getParams());
-                } else if (simulationItem.equals(simulationItems[1])) {
-                    simulation.setSimulation(new SemSimulation(randomGraph), simulation.getParams());
-                } else if (simulationItem.equals(simulationItems[2])) {
-                    simulation.setSimulation(new LinearFisherModel(randomGraph, simulation.getInputDataModelList()),
-                            simulation.getParams());
-                } else if (simulationItem.equals(simulationItems[3])) {
-                    simulation.setSimulation(new LeeHastieSimulation(randomGraph), simulation.getParams());
-                } else if (simulationItem.equals(simulationItems[4])) {
-                    simulation.setSimulation(new ConditionalGaussianSimulation(randomGraph), simulation.getParams());
-                } else if (simulationItem.equals(simulationItems[5])) {
-                    simulation.setSimulation(new TimeSeriesSemSimulation(randomGraph), simulation.getParams());
+                    if (simulationItem.equals(simulationItems[0])) {
+                        simulation.setSimulation(new BayesNetSimulation(randomGraph), simulation.getParams());
+                    } else if (simulationItem.equals(simulationItems[1])) {
+                        simulation.setSimulation(new SemSimulation(randomGraph), simulation.getParams());
+                    } else if (simulationItem.equals(simulationItems[2])) {
+                        simulation.setSimulation(new LinearFisherModel(randomGraph, simulation.getInputDataModelList()),
+                                simulation.getParams());
+                    } else if (simulationItem.equals(simulationItems[3])) {
+                        simulation.setSimulation(new LeeHastieSimulation(randomGraph), simulation.getParams());
+                    } else if (simulationItem.equals(simulationItems[4])) {
+                        simulation.setSimulation(new ConditionalGaussianSimulation(randomGraph), simulation.getParams());
+                    } else if (simulationItem.equals(simulationItems[5])) {
+                        simulation.setSimulation(new TimeSeriesSemSimulation(randomGraph), simulation.getParams());
+                    } else {
+                        throw new IllegalArgumentException("Unrecognized simulation type: " + simulationItem);
+                    }
                 } else {
-                    throw new IllegalArgumentException("Unrecognized simulation type: " + simulationItem);
-                }
-            } else {
-                String simulationItem = (String) simulationsDropdown.getSelectedItem();
-                simulation.getParams().set("simulationsDropdownPreference", simulationItem);
-                simulation.setFixedGraph(false);
+                    String simulationItem = (String) simulationsDropdown.getSelectedItem();
+                    simulation.getParams().set("simulationsDropdownPreference", simulationItem);
+                    simulation.setFixedGraph(false);
 
-                if (randomGraph instanceof SingleGraph) {
-                    simulation.setFixedGraph(true);
-                }
+                    if (randomGraph instanceof SingleGraph) {
+                        simulation.setFixedGraph(true);
+                    }
 
-                if (simulationItem.equals(simulationItems[0])) {
-                    simulation.setSimulation(new BayesNetSimulation(randomGraph), simulation.getParams());
-                } else if (simulationItem.equals(simulationItems[1])) {
-                    simulation.setSimulation(new SemSimulation(randomGraph), simulation.getParams());
-                } else if (simulationItem.equals(simulationItems[2])) {
-                    simulation.setSimulation(new LinearFisherModel(randomGraph), simulation.getParams());
-                } else if (simulationItem.equals(simulationItems[3])) {
-                    simulation.setSimulation(new LeeHastieSimulation(randomGraph), simulation.getParams());
-                } else if (simulationItem.equals(simulationItems[4])) {
-                    simulation.setSimulation(new ConditionalGaussianSimulation(randomGraph), simulation.getParams());
-                } else if (simulationItem.equals(simulationItems[5])) {
-                    simulation.setSimulation(new TimeSeriesSemSimulation(randomGraph), simulation.getParams());
-                } else {
-                    throw new IllegalArgumentException("Unrecognized simulation type: " + simulationItem);
+                    if (simulationItem.equals(simulationItems[0])) {
+                        simulation.setSimulation(new BayesNetSimulation(randomGraph), simulation.getParams());
+                    } else if (simulationItem.equals(simulationItems[1])) {
+                        simulation.setSimulation(new SemSimulation(randomGraph), simulation.getParams());
+                    } else if (simulationItem.equals(simulationItems[2])) {
+                        simulation.setSimulation(new LinearFisherModel(randomGraph), simulation.getParams());
+                    } else if (simulationItem.equals(simulationItems[3])) {
+                        simulation.setSimulation(new LeeHastieSimulation(randomGraph), simulation.getParams());
+                    } else if (simulationItem.equals(simulationItems[4])) {
+                        simulation.setSimulation(new ConditionalGaussianSimulation(randomGraph), simulation.getParams());
+                    } else if (simulationItem.equals(simulationItems[5])) {
+                        simulation.setSimulation(new TimeSeriesSemSimulation(randomGraph), simulation.getParams());
+                    } else {
+                        throw new IllegalArgumentException("Unrecognized simulation type: " + simulationItem);
+                    }
                 }
             }
         }
