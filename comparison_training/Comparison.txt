@@ -1,0 +1,202 @@
+Tue Jan 09 13:51:49 EST 2018
+
+Statistics:
+
+Structure = Extra column for Structure
+AP = Adjacency Precision
+AR = Adjacency Recall
+AHP = Arrowhead precision
+AHR = Arrowhead recall
+2CP = 2-cycle precision
+2CR = 2-cycle recall
+2CFP = 2-cycle false positive
+2CFN = 2-cycle false negative
+2CTP = 2-cycle true positive
+E = Elapsed Time in Seconds
+
+Simulations:
+
+Simulation 1: Load data sets and graphs from a directory.
+
+
+
+
+Simulation 2: Load data sets and graphs from a directory.
+
+
+
+
+Simulation 3: Load data sets and graphs from a directory.
+
+
+
+
+Simulation 4: Load data sets and graphs from a directory.
+
+
+
+
+Simulation 5: Load data sets and graphs from a directory.
+
+
+
+
+Simulation 6: Load data sets and graphs from a directory.
+
+
+
+
+Simulation 7: Load data sets and graphs from a directory.
+
+
+
+
+Simulation 8: Load data sets and graphs from a directory.
+
+
+
+
+Simulation 9: Load data sets and graphs from a directory.
+
+
+
+
+Simulation 10: Load data sets and graphs from a directory.
+
+
+
+
+Simulation 11: Load data sets and graphs from a directory.
+
+
+
+
+Simulation 12: Load data sets and graphs from a directory.
+
+
+
+
+Simulation 13: Load data sets and graphs from a directory.
+
+
+
+
+Simulation 14: Load data sets and graphs from a directory.
+
+
+
+
+Simulation 15: Load data sets and graphs from a directory.
+
+
+
+
+Simulation 16: Load data sets and graphs from a directory.
+
+
+
+
+Simulation 17: Load data sets and graphs from a directory.
+
+
+
+
+Simulation 18: Load data sets and graphs from a directory.
+
+
+
+
+Simulation 19: Load data sets and graphs from a directory.
+
+
+
+
+Simulation 20: Load data sets and graphs from a directory.
+
+
+
+
+Algorithms:
+
+1. FASK Concatenated
+
+Graphs are being compared to the true DAG.
+
+AVERAGE STATISTICS
+
+All edges
+
+  Sim  Alg            Structure    AP    AR   AHP   AHR   2CP   2CR  2CFP  2CFN  2CTP        E
+    1    1         Network1_amp  1.00  1.00  1.00  1.00  1.00  1.00     -     -  1.00     0.02
+    2    1         Network2_amp  0.99  1.00  0.99  1.00  1.00  1.00     -     -  2.00     0.02
+    3    1         Network3_amp  0.98  1.00  0.98  1.00  1.00  1.00     -     -  2.00     0.02
+    4    1         Network4_amp  1.00  0.94  1.00  0.96  1.00  1.00     -     -  4.00     0.08
+    5    1         Network5_amp  0.98  1.00  0.98  1.00  1.00  1.00     -     -  1.00     0.01
+    6    1       Network5_contr  0.79  1.00  0.82  1.00  1.00  1.00     -     -  1.00     0.02
+    7    1  Network5_contr_p2n6  0.99  1.00  0.98  0.83  0.92  0.18  0.02  0.82  0.18     0.01
+    8    1  Network5_contr_p6n2  0.96  1.00  0.97  0.91  1.00  0.55     -  0.45  0.55     0.01
+    9    1         Network6_amp  0.99  1.00  0.99  1.00  1.00  1.00     -     -  1.00     0.02
+   10    1       Network6_contr  0.87  1.00  0.88  0.99  1.00  1.00     -     -  1.00     0.02
+   11    1         Network7_amp  1.00  1.00  1.00  1.00     *     *     -     -     -     0.01
+   12    1       Network7_contr  0.96  1.00  0.80  0.83     *     *     -     -     -     0.01
+   13    1     Network8_amp_amp  1.00  1.00  1.00  1.00     *     *     -     -     -     0.02
+   14    1   Network8_amp_contr  1.00  1.00  0.89  0.89     *     *     -     -     -     0.02
+   15    1   Network8_contr_amp  1.00  1.00  0.90  0.90     *     *     -     -     -     0.01
+   16    1     Network9_amp_amp  1.00  1.00  1.00  1.00     *     *     -     -     -     0.02
+   17    1   Network9_amp_contr  0.99  1.00  0.89  0.90     *     *     -     -     -     0.02
+   18    1   Network9_contr_amp  1.00  1.00  0.90  0.90     *     *     -     -     -     0.02
+   19    1              Diamond  1.00  0.98  1.00  0.98     *     *     -     -     -  7.87E-3
+   20    1     Markov_Complex_1  0.98  0.94  0.98  0.94  1.00  1.00     -     -  5.00     0.49
+
+STANDARD DEVIATIONS
+
+All edges
+
+  Sim  Alg            Structure    AP    AR       AHP       AHR  2CP   2CR  2CFP  2CFN  2CTP        E
+    1    1         Network1_amp     -     -         -         -    -     -     -     -     -     0.02
+    2    1         Network2_amp  0.04     -      0.03         -    -     -     -     -     -  8.35E-3
+    3    1         Network3_amp  0.06     -      0.04         -    -     -     -     -     -  6.72E-3
+    4    1         Network4_amp  0.01  0.05      0.01      0.04    -     -     -     -     -     0.02
+    5    1         Network5_amp  0.06     -      0.05         -    -     -     -     -     -  3.97E-3
+    6    1       Network5_contr  0.13     -      0.11         -    -     -     -     -     -  3.86E-3
+    7    1  Network5_contr_p2n6  0.04     -      0.06      0.09    *  0.39  0.13  0.39  0.39  4.13E-3
+    8    1  Network5_contr_p6n2  0.09     -      0.08      0.10    *  0.50     -  0.50  0.50  4.98E-3
+    9    1         Network6_amp  0.03     -      0.02         -    -     -     -     -     -  4.25E-3
+   10    1       Network6_contr  0.07     -      0.06      0.03    -     -     -     -     -  3.14E-3
+   11    1         Network7_amp     -     -         -         -    *     *     -     -     -  3.10E-3
+   12    1       Network7_contr  0.06     -      0.06      0.02    *     *     -     -     -  5.44E-3
+   13    1     Network8_amp_amp  0.01     -      0.01         -    *     *     -     -     -  5.41E-3
+   14    1   Network8_amp_contr     -     -      0.01      0.01    *     *     -     -     -  4.75E-3
+   15    1   Network8_contr_amp     -     -      0.03      0.03    *     *     -     -     -  4.43E-3
+   16    1     Network9_amp_amp     -     -         -         -    *     *     -     -     -  7.32E-3
+   17    1   Network9_amp_contr  0.03     -      0.03  1.01E-15    *     *     -     -     -  4.30E-3
+   18    1   Network9_contr_amp     -     -  1.01E-15  1.01E-15    *     *     -     -     -  3.72E-3
+   19    1              Diamond     -  0.06         -      0.06    *     *     -     -     -  1.75E-3
+   20    1     Markov_Complex_1  0.02  0.02      0.02      0.02    -     -     -     -     -     0.08
+
+WORST CASE
+
+All edges
+
+  Sim  Alg            Structure    AP    AR   AHP   AHR   2CP   2CR  2CFP  2CFN  2CTP        E
+    1    1         Network1_amp  1.00  1.00  1.00  1.00  1.00  1.00     -     -  1.00  9.00E-3
+    2    1         Network2_amp  0.83  1.00  0.88  1.00  1.00  1.00     -     -  2.00     0.01
+    3    1         Network3_amp  0.83  1.00  0.88  1.00  1.00  1.00     -     -  2.00  8.00E-3
+    4    1         Network4_amp  0.92  0.80  0.94  0.84  1.00  1.00     -     -  4.00     0.04
+    5    1         Network5_amp  0.80  1.00  0.83  1.00  1.00  1.00     -     -  1.00  9.00E-3
+    6    1       Network5_contr  0.67  1.00  0.71  1.00  1.00  1.00     -     -  1.00     0.01
+    7    1  Network5_contr_p2n6  0.80  1.00  0.75  0.60     -     -     -     -     -  6.00E-3
+    8    1  Network5_contr_p6n2  0.67  1.00  0.67  0.80  1.00     -     -     -     -  5.00E-3
+    9    1         Network6_amp  0.88  1.00  0.89  1.00  1.00  1.00     -     -  1.00     0.01
+   10    1       Network6_contr  0.70  1.00  0.73  0.88  1.00  1.00     -     -  1.00     0.01
+   11    1         Network7_amp  1.00  1.00  1.00  1.00     *     *     -     -     -  7.00E-3
+   12    1       Network7_contr  0.86  1.00  0.57  0.67     *     *     -     -     -  7.00E-3
+   13    1     Network8_amp_amp  0.90  1.00  0.90  1.00     *     *     -     -     -     0.01
+   14    1   Network8_amp_contr  1.00  1.00  0.78  0.78     *     *     -     -     -  9.00E-3
+   15    1   Network8_contr_amp  1.00  1.00  0.89  0.89     *     *     -     -     -  9.00E-3
+   16    1     Network9_amp_amp  1.00  1.00  1.00  1.00     *     *     -     -     -     0.01
+   17    1   Network9_amp_contr  0.91  1.00  0.82  0.90     *     *     -     -     -     0.01
+   18    1   Network9_contr_amp  1.00  1.00  0.90  0.90     *     *     -     -     -     0.01
+   19    1              Diamond  1.00  0.80  1.00  0.80     *     *     -     -     -  5.00E-3
+   20    1     Markov_Complex_1  0.94  0.87  0.94  0.88  1.00  1.00     -     -  5.00     0.23
+
