@@ -31,7 +31,6 @@ import edu.cmu.tetrad.session.SessionModel;
 import edu.cmu.tetrad.session.SimulationParamsSource;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -64,7 +63,8 @@ public class Simulation extends DataWrapper implements SessionModel,
 
     public Simulation(Parameters parameters) {
         if (simulation == null) {
-            this.simulation = new BayesNetSimulation(new RandomForward());
+            // By default there shouldn't be a simulation until the users create one - Zhou
+            //this.simulation = new BayesNetSimulation(new RandomForward());
             this.parameters = parameters;
             this.fixedGraph = false;
             this.fixedSimulation = false;
