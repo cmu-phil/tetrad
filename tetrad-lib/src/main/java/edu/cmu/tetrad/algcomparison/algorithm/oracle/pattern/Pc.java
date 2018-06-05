@@ -21,11 +21,11 @@ import edu.pitt.dbmi.algo.bootstrap.GeneralBootstrapTest;
 
 import java.util.List;
 
-@edu.cmu.tetrad.annotation.Algorithm(
-        name = "PC",
-        command = "pc",
-        algoType = AlgType.forbid_latent_common_causes
-)
+//@edu.cmu.tetrad.annotation.Algorithm(
+//        name = "PC",
+//        command = "pc",
+//        algoType = AlgType.forbid_latent_common_causes
+//)
 public class Pc implements Algorithm, TakesInitialGraph, HasKnowledge, TakesIndependenceWrapper {
 
     static final long serialVersionUID = 23L;

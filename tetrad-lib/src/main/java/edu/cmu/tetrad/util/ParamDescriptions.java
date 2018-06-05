@@ -207,8 +207,8 @@ public class ParamDescriptions {
                 0.01, 0.0, 1.0));
 
         map.put("numSubsamples", new ParamDescription(
-                "The number of subsamples to take for the StARZ procedure",
-                8, 1, Integer.MAX_VALUE));
+                "The number of subsamples",
+                30, 1, Integer.MAX_VALUE));
 
         map.put("percentSubsampleSize", new ParamDescription(
                 "Percentage of records to include in a random subsample",
@@ -261,10 +261,39 @@ public class ParamDescriptions {
         map.put("saveLatentVars", new ParamDescription("Save latent variables.", false));
 
         map.put("probTwoCycle", new ParamDescription(
-                "The probability of creating a 2-cycles in the graph (0 - 1)",
-                0.0, 0.0, 1.0));
+            "The probability of creating a 2-cycles in the graph (0 - 1)",
+            0.0, 0.0, 1.0));
 
-        map.put("fdrQ", new ParamDescription("Q values for an FDR test", 0.2, 0.0, 1.0));
+        map.put("selectionAlpha", new ParamDescription(
+                "The alpha used for a Fisher Z test to select variables associated with the target",
+                0.05, 0.0, 1));
+
+        map.put("maxEr", new ParamDescription(
+                "Bound on the expected false positive error rate",
+                5.0, 0.0, Double.POSITIVE_INFINITY));
+
+        map.put("parallelism", new ParamDescription(
+                "The number of threads to use in the parallel calculation",
+                Runtime.getRuntime().availableProcessors() * 10, 1, Integer.MAX_VALUE));
+
+        map.put("q", new ParamDescription(
+                "Examine this q",
+                10, 1, Integer.MAX_VALUE));
+
+
+        map.put("qFrom", new ParamDescription(
+                "Examine qs from this integer",
+                10, 1, Integer.MAX_VALUE));
+
+        map.put("qTo", new ParamDescription(
+                "Examine qs to this integer",
+                1, 1, Integer.MAX_VALUE));
+
+        map.put("qIncrement", new ParamDescription(
+                "Examine qs in incrementing by this each time",
+                1, 1, Integer.MAX_VALUE));
+
+        map.put("targetNames", new ParamDescription("Target variable names (comnma separated list)", ""));
 
     }
 
