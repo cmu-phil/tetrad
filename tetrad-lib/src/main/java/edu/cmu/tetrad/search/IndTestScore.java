@@ -96,7 +96,7 @@ public class IndTestScore implements IndependenceTest {
             return false;
         }
 
-        return v < 0;
+        return /*Double.isNaN(v) ||*/ v < 0;
     }
 
     private int[] varIndices(List<Node> z) {

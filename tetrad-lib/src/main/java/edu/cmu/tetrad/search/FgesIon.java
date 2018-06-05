@@ -12,40 +12,38 @@ public class FgesIon {
     public enum PatternAlgorithm {PC, FGES}
     private PatternAlgorithm patternAlgorithm = PatternAlgorithm.FGES;
     private Graph augmented;
-    private List<Edge> reusableEdges;
-    private List<List<Edge>> edgesRemoved = new ArrayList<>();
+    private List<Edge> removableEdges;
     private ISemBicScore score;
-    private Graph trueGraph;
     private double penaltyDiscount = 2;
 
     public FgesIon() {
     }
 
-    public List<Graph> search(DataSet dataSet, Graph trueGraph) {
-        this.trueGraph = trueGraph;
+    public List<Graph> search(DataSet dataSet) {
         final ISemBicScore score = new SemBicScore2(new CovarianceMatrixOnTheFly2(dataSet), dataSet);
         this.score = score;
         score.setPenaltyDiscount(penaltyDiscount);
 
-        final Graph graph;
+        final Graph pattern;
 
         if (patternAlgorithm == PatternAlgorithm.FGES) {
             Fges fges = new Fges(score);
-            graph = fges.search();
+            pattern = fges.search();
         } else if (patternAlgorithm == PatternAlgorithm.PC) {
             Pc pc = new Pc(new IndTestScore(score));
-            graph = pc.search();
+            pattern = pc.search();
         } else {
             throw new IllegalArgumentException("Unrecognized pattern algorithm.");
         }
 
-        System.out.println("Pattern = " + graph);
+        System.out.println("Pattern = " + pattern);
 
-        this.augmented = getAugmentedGraph(graph);
+        this.augmented = getAugmentedGraph(pattern);
 
-        System.out.println("\nAugemented graph = " + augmented);
+        System.out.println("\nAugemented pattern = " + augmented);
 
-        this.reusableEdges = getRemoveableEdges(this.augmented, score);
+        this.removableEdges = getRemoveableEdges(this.augmented, score);
+
         return allModels(getAugmented(), getRemoveableEdges());
     }
 
@@ -64,11 +62,7 @@ public class FgesIon {
     }
 
     private List<Edge> getRemoveableEdges() {
-        return reusableEdges;
-    }
-
-    public List<List<Edge>> getEdgesRemoved() {
-        return edgesRemoved;
+        return removableEdges;
     }
 
     public double getPenaltyDiscount() {
@@ -79,17 +73,13 @@ public class FgesIon {
         this.penaltyDiscount = penaltyDiscount;
     }
 
-    public PatternAlgorithm getPatternAlgorithm() {
-        return patternAlgorithm;
-    }
-
     public void setPatternAlgorithm(PatternAlgorithm patternAlgorithm) {
         this.patternAlgorithm = patternAlgorithm;
     }
 
     //====================================PRIVATE METHODS=================================//
 
-    private static boolean impliedFactsCheckOut(Graph model, Graph trueGraph, Score score) {
+    private boolean impliedFactsCheckOut(Graph model, Score score) {
         if (model == null) throw new NullPointerException();
 
         final List<Node> variables = score.getVariables();
@@ -97,28 +87,21 @@ public class FgesIon {
 
         if (model == null) throw new NullPointerException("Null models");
 
-        trueGraph = GraphUtils.replaceNodes(trueGraph, variables);
+        final List<Node> nodes = model.getNodes();
 
-        boolean ok = true;
+        for (int i = 0; i < nodes.size(); i++) {
+            for (int j = i + 1; j < nodes.size(); j++) {
+                final Node x = nodes.get(i);
+                final Node y = nodes.get(j);
 
-        I:
-        for (int i = 0; i < model.getNodes().size(); i++) {
-            for (int j = i + 1; j < model.getNodes().size(); j++) {
-                Set<Node> _adj = new HashSet<>();
-                final Node x = model.getNodes().get(i);
-                final Node y = model.getNodes().get(j);
+                List<Node> adjx = model.getAdjacentNodes(x);
+                adjx.remove(y);
 
-                _adj.addAll(model.getAdjacentNodes(x));
-                _adj.addAll(model.getAdjacentNodes(y));
-                List<Node> adj = new ArrayList<>(_adj);
-                adj.remove(x);
-                adj.remove(y);
-
-                DepthChoiceGenerator gen2 = new DepthChoiceGenerator(adj.size(), adj.size());
+                DepthChoiceGenerator gen2 = new DepthChoiceGenerator(adjx.size(), adjx.size());
                 int[] choice2;
 
                 while ((choice2 = gen2.next()) != null) {
-                    List<Node> t = GraphUtils.asList(choice2, adj);
+                    List<Node> t = GraphUtils.asList(choice2, adjx);
 
                     int indx = variables.indexOf(x);
                     int indy = variables.indexOf(y);
@@ -127,23 +110,44 @@ public class FgesIon {
                     for (int g = 0; g < t.size(); g++) indz[g] = variables.indexOf(t.get(g));
 
                     final double s = score.localScoreDiff(indx, indy, indz);
+
+                    if (Double.isNaN(s)) continue;
+
                     final boolean dSeparated = !GraphUtils.isDConnectedTo(x, y, t, model);
-                    final boolean dSeparatedTrue = !GraphUtils.isDConnectedTo(x, y, t, trueGraph);
+
+                    if (!((dSeparated && s < 0) || (!dSeparated && s > 0))) {
+                        return false;
+                    }
+                }
+
+                List<Node> adjy = model.getAdjacentNodes(y);
+                adjy.remove(x);
+
+                gen2 = new DepthChoiceGenerator(adjy.size(), adjy.size());
+
+                while ((choice2 = gen2.next()) != null) {
+                    List<Node> t = GraphUtils.asList(choice2, adjy);
+
+                    int indx = variables.indexOf(x);
+                    int indy = variables.indexOf(y);
+
+                    int[] indz = new int[t.size()];
+                    for (int g = 0; g < t.size(); g++) indz[g] = variables.indexOf(t.get(g));
+
+                    final double s = score.localScoreDiff(indx, indy, indz);
+
+                    if (Double.isNaN(s)) continue;
+
+                    final boolean dSeparated = !GraphUtils.isDConnectedTo(x, y, t, model);
 
                     if (!Double.isNaN(s) && !((dSeparated && s < 0) || (!dSeparated && s > 0))) {
-//                        System.out.println("fail " + SearchLogUtils.independenceFact(x, y, t));
-//                        System.out.println("   d-separated in model = " + dSeparated);
-//                        System.out.println("   d-separated in true graph = " + dSeparatedTrue);
-//                        System.out.println("   score = " + s);
-
-                        ok = false;
-                        break I;
+                        return false;
                     }
                 }
             }
         }
 
-        return ok;
+        return true;
     }
 
     private Graph getAugmentedGraph(Graph p) {
@@ -155,19 +159,8 @@ public class FgesIon {
 
             NODES:
             for (int j = i + 1; j < nodes.size(); j++) {
-                List<List<Node>> paths = GraphUtils.allPathsFromTo(p, nodes.get(i), nodes.get(j), 5);
-
-                if (paths.isEmpty()) continue;
-                List<Node> path = paths.get(0);
-
-                Node x = path.get(0);
-                Node y = path.get(path.size() - 1);
-
-                List<Node> intermediaries = new ArrayList<>();
-
-                for (int k = 1; k < path.size() - 1; k++) {
-                    intermediaries.add(path.get(k));
-                }
+                final Node x = nodes.get(i);
+                final Node y = nodes.get(j);
 
                 List<Node> adjx = augmented.getAdjacentNodes(x);
                 adjx.remove(y);
@@ -179,8 +172,8 @@ public class FgesIon {
                 int[] choice;
 
                 while ((choice = gen.next()) != null) {
-                    List<Node> n = GraphUtils.asList(choice, adjx);
-                    double v = score.localScoreDiff(nodes.indexOf(x), nodes.indexOf(y), varIndices(n, nodes));
+                    List<Node> _adjx = GraphUtils.asList(choice, adjx);
+                    double v = score.localScoreDiff(nodes.indexOf(x), nodes.indexOf(y), varIndices(_adjx, nodes));
 
                     if (!Double.isNaN(v) && v < 0) {
                         augmented.removeEdge(x, y);
@@ -188,24 +181,33 @@ public class FgesIon {
                     }
                 }
 
-                if (adjy.size() < 1) continue;
-
                 gen = new DepthChoiceGenerator(adjy.size(), adjy.size());
 
                 while ((choice = gen.next()) != null) {
-                    List<Node> n = GraphUtils.asList(choice, adjy);
-                    double v = score.localScoreDiff(nodes.indexOf(x), nodes.indexOf(y), varIndices(n, nodes));
+                    List<Node> _adjy = GraphUtils.asList(choice, adjy);
+                    double v = score.localScoreDiff(nodes.indexOf(x), nodes.indexOf(y), varIndices(_adjy, nodes));
 
                     if (!Double.isNaN(v) && v < 0) {
                         augmented.removeEdge(x, y);
                         continue NODES;
                     }
+                }
+
+                List<List<Node>> paths = GraphUtils.semidirectedTreks(p, x, y, 5);
+
+                if (paths.isEmpty()) continue;
+                List<Node> path = paths.get(0);
+
+                List<Node> intermediaries = new ArrayList<>();
+
+                for (int k = 1; k < path.size() - 1; k++) {
+                    intermediaries.add(path.get(k));
                 }
 
                 double v = score.localScoreDiff(nodes.indexOf(x), nodes.indexOf(y), varIndices(intermediaries, nodes));
 
                 if (Double.isNaN(v)) {
-                    final Edge augmentedEdge = getAugmentedEdge(path, intermediaries, p);
+                    final Edge augmentedEdge = getAugmentedEdge(path, intermediaries);
 
                     if (augmentedEdge != null) {
                         if (!augmented.isAdjacentTo(augmentedEdge.getNode1(), augmentedEdge.getNode2())) {
@@ -219,7 +221,7 @@ public class FgesIon {
         return augmented;
     }
 
-    private Edge getAugmentedEdge(List<Node> path, List<Node> these, Graph P) {
+    private Edge getAugmentedEdge(List<Node> path, List<Node> these) {
         if (these.size() == 0) return null;
 
         int min = Integer.MAX_VALUE;
@@ -238,7 +240,6 @@ public class FgesIon {
     }
 
     private List<Graph> allModels(Graph augmented, List<Edge> removeableEdges) {
-        edgesRemoved.clear();
         List<Graph> models = new ArrayList<>();
 
         DepthChoiceGenerator gen = new DepthChoiceGenerator(removeableEdges.size(), removeableEdges.size());
@@ -309,10 +310,9 @@ public class FgesIon {
             SearchGraphUtils.basicPattern(Q2, false);
             new MeekRules().orientImplied(Q2);
 
-            boolean ok = impliedFactsCheckOut(Q2, trueGraph, score);
+            boolean ok = impliedFactsCheckOut(Q2, score);
 
             if (ok && !models.contains(Q2)) {
-                edgesRemoved.add(toRemove);
                 models.add(Q2);
             }
         }

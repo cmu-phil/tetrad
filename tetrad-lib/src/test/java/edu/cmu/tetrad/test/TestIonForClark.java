@@ -21,15 +21,15 @@
 
 package edu.cmu.tetrad.test;
 
-import edu.cmu.tetrad.data.*;
+import edu.cmu.tetrad.data.CovarianceMatrixOnTheFly;
+import edu.cmu.tetrad.data.DataSet;
+import edu.cmu.tetrad.data.DataUtils;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.*;
 import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemPm;
 
 import java.util.*;
-
-import static java.lang.Math.abs;
 
 /**
  * Tests the BayesIm.
@@ -38,7 +38,7 @@ import static java.lang.Math.abs;
  */
 public final class TestIonForClark {
 
-    private double penaltyDiscount = 1;
+    private double penaltyDiscount = 2;
     private int sampleSizePerDataset = 1000;
 
     public void test1() {
@@ -62,7 +62,7 @@ public final class TestIonForClark {
     }
 
     public void test6() {
-        final int numNodes = 5;
+        final int numNodes = 8;
         Graph graph1 = GraphUtils.randomGraph(numNodes, 0, numNodes, 100, 100, 100, false);
         List<Edge> edges = new ArrayList<>(graph1.getEdges());
 
@@ -74,8 +74,8 @@ public final class TestIonForClark {
 
         runModel(graphSpec.toString(),
                 new String[][]{
-                        {"X1", "X2", "X3", "X4", "X5"},//, "X6", "X7", "X8", "X9"},
-                        {"X2", "X3", "X4", "X5"}//, "X6", "X7", "X8", "X10"}});
+                        {"X1", "X3", "X4", "X5", "X6", "X7", "X8", "X8", "10"},
+                        {"X2", "X3", "X4", "X5", "X6", "X7", "X8", "X8", "10"},
         });
     }
 
@@ -125,12 +125,8 @@ public final class TestIonForClark {
         this.penaltyDiscount = penaltyDiscount;
     }
 
-    public int getSampleSizePerDataset() {
+    private int getSampleSizePerDataset() {
         return sampleSizePerDataset;
-    }
-
-    public void setSampleSizePerDataset(int sampleSizePerDataset) {
-        this.sampleSizePerDataset = sampleSizePerDataset;
     }
 
     //===================================PRIVATE METHODS===================================//
@@ -153,13 +149,13 @@ public final class TestIonForClark {
         List<Graph> modelsPcIon = new ArrayList<>();
 
         try {
-            modelsIon = runModelIon(dataSets, groupings, graph);
+            modelsIon = runModelIon(dataSets, groupings);
         } catch (Exception e) {
             e.printStackTrace();
         }
 
         try {
-            modelsPcIon = runModelPcIon(dataSets, graph);
+            modelsPcIon = runModelPcIon(dataSets);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -195,14 +191,11 @@ public final class TestIonForClark {
         }
     }
 
-    private List<Graph> runModelIon(List<DataSet> dataSets, String[][] groupings, Graph trueGraph) {
+    private List<Graph> runModelIon(List<DataSet> dataSets, String[][] groupings) {
         System.out.println("\n================================================");
         System.out.println("====================== ION =====================");
         System.out.println("================================================\n");
         List<Graph> graphs = new ArrayList<>();
-
-        // For checking independence facts.
-        DataSet concat = DataUtils.concatenate(dataSets);
 
         for (int i = 0; i < groupings.length; i++) {
             DataSet dataSet = keepVariables(dataSets.get(i), groupings[i]);
@@ -242,7 +235,7 @@ public final class TestIonForClark {
         return outGraphs;
     }
 
-    private List<Graph> runModelPcIon(List<DataSet> dataSets, Graph trueGraph) {
+    private List<Graph> runModelPcIon(List<DataSet> dataSets) {
         System.out.println("\n================================================");
         System.out.println("===================== PC ION ===================");
         System.out.println("================================================\n");
@@ -250,9 +243,9 @@ public final class TestIonForClark {
         DataSet concat = DataUtils.concatenate(dataSets);
 
         FgesIon ion = new FgesIon();
-        ion.setPatternAlgorithm(FgesIon.PatternAlgorithm.FGES);
+        ion.setPatternAlgorithm(FgesIon.PatternAlgorithm.PC);
         ion.setPenaltyDiscount(penaltyDiscount);
-        List<Graph> models = ion.search(concat, trueGraph);
+        List<Graph> models = ion.search(concat);
 
         int i = 1;
 
@@ -292,8 +285,8 @@ public final class TestIonForClark {
     //==================================MAIN======================================;/
 
     public static void main(String... args) {
-        new TestIonForClark().test1();
-//        new TestIonForClark().test2();
+//        new TestIonForClark().test1();
+        new TestIonForClark().test2();
 //        new TestIonForClark().test3();
 //        new TestIonForClark().test4();
 //        new TestIonForClark().test5();
