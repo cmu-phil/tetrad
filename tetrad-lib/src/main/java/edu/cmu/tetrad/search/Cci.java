@@ -109,7 +109,7 @@ public final class Cci {
     public boolean isIndependent(String x, String y, List<String> z) {
         double[] rXZ = residuals(x, z);
         double[] rYZ = residuals(y, z);
-        return independent(rXZ, rYZ, z.size());
+        return independent(rXZ, rYZ);
     }
 
     /**
@@ -129,7 +129,7 @@ public final class Cci {
      * once undefined values have been removed. Left public so it can be
      * accessed separately.
      */
-    public boolean independent(double[] x, double[] y, int numCond) {
+    public boolean independent(double[] x, double[] y) {
         int both = 0;
 
         for (int i = 0; i < x.length; i++) {
@@ -174,7 +174,7 @@ public final class Cci {
                     _y[i] = function(n, y[i]);
                 }
 
-                final double score = calcScore(_x, _y, 0);
+                final double score = calcScore(_x, _y);
                 if (score < minScore) minScore = score;
             }
         }
@@ -184,7 +184,7 @@ public final class Cci {
         return minScore > alpha;
     }
 
-    private double calcScore(double[] _x, double[] _y, int numCond) {
+    private double calcScore(double[] _x, double[] _y) {
         double sigmaXY = covariance(_x, _y);
         double sigmaXX = covariance(_x, _x);
         double sigmaYY = covariance(_y, _y);
@@ -194,7 +194,7 @@ public final class Cci {
         // Non-parametric Fisher Z test.
         double _z = 0.5 * (log(1.0 + r) - log(1.0 - r));
         final double N = _x.length;
-        double w = sqrt(N - numCond) * _z;
+        double w = sqrt(N) * _z;
 
         // Testing the hypothesis that _x and _y are uncorrelated and assuming that 4th moments of _x and _y
         // are finite and that the sample is large.
@@ -312,8 +312,7 @@ public final class Cci {
     // Polynomial basis. The 1 is left out according to Daudin.
     private double function(int index, double x) {
 //        return sin((index) * x) + cos((index) * x);
-//
-//
+
         double g = 1.0;
 
         for (int i = 1; i <= index; i++) {
@@ -342,7 +341,6 @@ public final class Cci {
 
         return sumXY / N - (sumX / N) * (sumY / N);
     }
-
 
     // Optimal bandwidth qsuggested by Bowman and Azzalini (1997) q.31,
     // using MAD.
@@ -407,26 +405,6 @@ public final class Cci {
         }
 
         return data;
-    }
-
-    // False discovery rate, assuming non-negative correlations.
-    private double fdr(double alpha, List<Double> pValues, boolean pSorted) {
-        if (!pSorted) {
-            pValues = new ArrayList<>(pValues);
-            Collections.sort(pValues);
-        }
-
-        int m = pValues.size();
-
-        int index = -1;
-
-        for (int k = 0; k < m; k++) {
-            if (pValues.get(k) <= ((k + 1) / (double) (m + 1)) * alpha) {
-                index = k;
-            }
-        }
-
-        return index == -1 ? 0 : pValues.get(index);
     }
 
     private double normalCdf(double mean, double sd, double value) {

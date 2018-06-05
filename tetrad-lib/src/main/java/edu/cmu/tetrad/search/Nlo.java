@@ -64,7 +64,7 @@ public class Nlo {
 
                 double[] p = column(adj);
 
-                boolean indep = cci.independent(r, p, 0);
+                boolean indep = cci.independent(r, p);
 
                 if (indep) {
                     graph.setEndpoint(adj, node, Endpoint.ARROW);
@@ -93,7 +93,7 @@ public class Nlo {
 
             double[] cx = column(x);
 
-            boolean indep1 = cci.independent(r1, cx, 0);
+            boolean indep1 = cci.independent(r1, cx);
             double py = cci.getAlpha();
 
             List<Node> _y = Collections.singletonList(y);
@@ -102,7 +102,7 @@ public class Nlo {
 
             double[] cy = column(y);
 
-            boolean indep2 = cci.independent(r2, cy, 0);
+            boolean indep2 = cci.independent(r2, cy);
 
             if (indep1 && !indep2) {
                 graph.setEndpoint(x, y, Endpoint.ARROW);
@@ -149,12 +149,12 @@ public class Nlo {
             double[] r1 = cci.residuals(name(y), names(Collections.singletonList(x)));
             double[] cx = column(x);
 
-            cci.independent(r1, cx, 0);
+            cci.independent(r1, cx);
             double px = cci.getAlpha();
 
             double[] r2 = cci.residuals(x.toString(), names(Collections.singletonList(y)));
             double[] cy = column(y);
-            cci.independent(r2, cy, 0);
+            cci.independent(r2, cy);
 
             double py = cci.getAlpha();
 
@@ -199,7 +199,7 @@ public class Nlo {
 
                 for (Node parent : parents) {
                     double[] p = column(parent);
-                    boolean indep = cci.independent(r, p, 0);
+                    boolean indep = cci.independent(r, p);
 
                     if (!indep) {
                         allIndep = false;
@@ -247,7 +247,7 @@ public class Nlo {
                 double[] r = cci.residuals(name(node), names(adj2));
 
                 double[] p = column(a);
-                boolean indep = cci.independent(r, p, 0);
+                boolean indep = cci.independent(r, p);
 
                 if (indep) {
                     graph.setEndpoint(a, node, Endpoint.ARROW);
@@ -626,7 +626,7 @@ public class Nlo {
 
         for (Node x : X) {
             double[] _x = column(x);
-            boolean indep = cci.independent(_x, y, 0);
+            boolean indep = cci.independent(_x, y);
             double q = cci.getAlpha();
 
 //            boolean indep = q > alpha;
@@ -664,7 +664,7 @@ public class Nlo {
             LOOP:
             for (int i = 0; i < residuals.size(); i++) {
                 for (int j = i + 1; j < residuals.size(); j++) {
-                    if (!cci.independent(residuals.get(i), residuals.get(j), 0)) {
+                    if (!cci.independent(residuals.get(i), residuals.get(j))) {
                         allIndep = false;
                         break LOOP;
                     }
