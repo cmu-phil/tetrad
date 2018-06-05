@@ -68,11 +68,6 @@ public final class Cci {
      */
     private NormalDistribution normal = new NormalDistribution(0, 1);
 
-    /**
-     * the most recent list of P values, for calculating alpha.
-     */
-    private List<Double> scores;
-
     //==================CONSTRUCTORS====================//
 
     /**
@@ -125,15 +120,8 @@ public final class Cci {
         return score;
     }
 
-    /**
-     * @return FDR alpha, if calculated, otherwise Double.NaN.
-     */
-    private double getQ(List<Double> p) {
-        return calculateFdrQ(p);
-    }
-
     public double getAlpha() {
-        return getQ(scores);
+        return alpha;
     }
 
     /**
@@ -335,20 +323,6 @@ public final class Cci {
         return g;
     }
 
-    // Polynomial basis. The 1 is left out according to Daudin.
-    private double function(int index, double x, double y) {
-//        return sin((index) * x) + cos((index) * x);
-//
-//
-        double g = 1.0;
-
-        for (int i = 1; i <= index; i++) {
-            g *= (x + y);
-        }
-
-        return g;
-    }
-
     // The number of basis functions to use.
     private int getNumFunctions() {
         return 8;
@@ -458,40 +432,6 @@ public final class Cci {
     private double normalCdf(double mean, double sd, double value) {
         return normal.cumulativeProbability((value - mean) / sd);
     }
-
-    public double calculateFdrQ() {
-        return calculateFdrQ(scores);
-    }
-
-    private synchronized double calculateFdrQ(List<Double> p) {
-
-        // If a legitimate scores value is desired for this test, should estimate the FDR q value.
-        Collections.sort(p);
-        double min = p.size() == 0 ? Double.NaN : p.get(0);
-        double high = 1.0;
-        double low = 0.0;
-        double q = alpha;
-
-        while (high - low > 1e-5) {
-            double midpoint = (high + low) / 2.0;
-            q = midpoint;
-            boolean sorted = true;
-
-            double _cutoff = fdr(q, p, sorted);
-
-            if (_cutoff < min) {
-                low = midpoint;
-            } else if (_cutoff > min) {
-                high = midpoint;
-            } else {
-                low = midpoint;
-                high = midpoint;
-            }
-        }
-
-        return q;
-    }
-
 }
 
 
