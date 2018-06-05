@@ -110,6 +110,10 @@ public final class Tetrad implements PropertyChangeListener {
      * @param argv --skip-latest argument will skip checking for latest version.
      */
     public static void main(final String[] argv) {
+
+        // Avoid updates to swing code that causes comparison-method-violates-its-general-contract warnings
+        System.setProperty("java.util.Arrays.useLegacyMergeSort", "true");
+
         setLookAndFeel();
 
         // This is needed to get numbers to be parsed and rendered uniformly, especially in the interface.
@@ -118,7 +122,6 @@ public final class Tetrad implements PropertyChangeListener {
         // Check if we should skip checking for latest version
         skipLatest = argv.length > 0 && argv[0] != null && argv[0].compareToIgnoreCase("--skip-latest") == 0;
         SplashScreen.show("Loading Tetrad...", 1000, skipLatest);
-
         EventQueue.invokeLater(() -> {
             new Tetrad().launchFrame();
         });
