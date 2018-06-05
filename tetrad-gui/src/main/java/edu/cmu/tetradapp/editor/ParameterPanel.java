@@ -62,7 +62,7 @@ class ParameterPanel extends JPanel {
             for (String parameter : parametersToEdit) {
                 Object defaultValue = ParamDescriptions.getInstance().get(parameter).getDefaultValue();
 
-                System.out.println(parameter + " " + defaultValue);
+                //System.out.println(parameter + " " + defaultValue);
 
                 JComponent parameterSelection;
 
@@ -182,7 +182,7 @@ class ParameterPanel extends JPanel {
 
         boolean aBoolean = parameters.getBoolean(parameter, defaultValue);
 
-        System.out.println(parameter + " = " + aBoolean);
+        //System.out.println(parameter + " = " + aBoolean);
 
         if (aBoolean) {
             box.setSelectedItem("Yes");
@@ -220,7 +220,7 @@ class ParameterPanel extends JPanel {
 
         boolean aBoolean = parameters.getBoolean(parameter, defaultValue);
 
-        System.out.println(parameter + " = " + aBoolean);
+        //System.out.println(parameter + " = " + aBoolean);
 
         // Set default selection
         if (aBoolean) {
