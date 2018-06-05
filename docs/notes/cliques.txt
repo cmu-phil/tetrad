@@ -3,9 +3,9 @@ This is an algorithm for listing all of the cliques for an undirected graph G.
 J Ramsey 12/2006
 
 Graph G is an undirected graph over nodes 1,...,n. L1 and L2 are perpetually
-sorted lists of integers. adj(k) is a procedure that returns the list of nodes
-adjacent to n in G. addable(k, L1) is a function that returns true just in case
-k is adjacent to every node in L1 in graph G.
+sorted lists of integers. adj(perm) is a procedure that returns the list of nodes
+adjacent to n in G. addable(perm, L1) is a function that returns true just in case
+perm is adjacent to every node in L1 in graph G.
 
 PROCEDURE cliques(G).
 1. nodes <- the nodes of G

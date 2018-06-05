@@ -25,6 +25,7 @@ import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithms;
 import edu.cmu.tetrad.algcomparison.algorithm.ExternalAlgorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.MultiDataSetAlgorithm;
+import edu.cmu.tetrad.algcomparison.algorithm.multi.PassesInGraph;
 import edu.cmu.tetrad.algcomparison.independence.FisherZ;
 import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.score.BdeuScore;
@@ -46,6 +47,7 @@ import edu.cmu.tetrad.search.DagToPag;
 import edu.cmu.tetrad.search.DagToPag2;
 import edu.cmu.tetrad.search.SearchGraphUtils;
 import edu.cmu.tetrad.util.*;
+import edu.pitt.dbmi.data.reader.DataReader;
 import org.reflections.Reflections;
 
 import java.io.*;
@@ -65,7 +67,9 @@ import java.util.concurrent.RecursiveTask;
 public class Comparison {
 
 
-        public enum ComparisonGraph {true_DAG, Pattern_of_the_true_DAG, PAG_of_the_true_DAG}
+    public enum ComparisonGraph {
+        true_DAG, Pattern_of_the_true_DAG, PAG_of_the_true_DAG
+    }
 
     private boolean[] graphTypeUsed;
     private PrintStream out;
@@ -83,6 +87,8 @@ public class Comparison {
     private boolean savePags = false;
     private ArrayList<String> dirs = null;
     private ComparisonGraph comparisonGraph = ComparisonGraph.true_DAG;
+    private boolean replacePartialOrientedWithDirected = false;
+
 
     public void compareFromFiles(String filePath, Algorithms algorithms,
                                  Statistics statistics, Parameters parameters) {
@@ -1064,6 +1070,9 @@ public class Comparison {
         this.comparisonGraph = comparisonGraph;
     }
 
+    public void setReplacePartialOrientedWithDirected(boolean replacePartialOrientedWithDirected) {
+        this.replacePartialOrientedWithDirected = replacePartialOrientedWithDirected;
+    }
 
     private class AlgorithmTask extends RecursiveTask<Boolean> {
         private List<AlgorithmSimulationWrapper> algorithmSimulationWrappers;
@@ -1173,6 +1182,7 @@ public class Comparison {
             }
 
             if (algorithm instanceof MultiDataSetAlgorithm) {
+
                 List<Integer> indices = new ArrayList<>();
                 int numDataModels = simulationWrapper.getSimulation().getNumDataModels();
                 for (int i = 0; i < numDataModels; i++) indices.add(i);
@@ -1186,7 +1196,12 @@ public class Comparison {
                 }
 
                 Parameters _params = algorithmWrapper.getAlgorithmSpecificParameters();
-                out = ((MultiDataSetAlgorithm) algorithm).search(dataModels, _params);
+
+                if (algorithm instanceof PassesInGraph) {
+                    out = ((PassesInGraph) algorithm).search(dataModels, _params, simulation.getTrueGraph(0));
+                } else {
+                    out = ((MultiDataSetAlgorithm) algorithm).search(dataModels, _params);
+                }
             } else {
                 DataModel dataModel = copyData ? data.copy() : data;
                 Parameters _params = algorithmWrapper.getAlgorithmSpecificParameters();
@@ -1196,6 +1211,11 @@ public class Comparison {
             System.out.println("Could not run " + algorithmWrapper.getDescription());
             e.printStackTrace();
             return;
+        }
+
+
+        if (replacePartialOrientedWithDirected) {
+            out = replaceHalfDirectedWithDirected(out);
         }
 
         int simIndex = simulationWrappers.indexOf(simulationWrapper) + 1;
@@ -1282,6 +1302,26 @@ public class Comparison {
                 }
             }
         }
+    }
+
+    private Graph replaceHalfDirectedWithDirected(Graph graph) {
+        EdgeListGraph graph2 = new EdgeListGraph(graph);
+
+        for (Edge edge : graph2.getEdges()) {
+            if (Edges.isPartiallyOrientedEdge(edge)) {
+                graph2.removeEdge(edge);
+
+                if (edge.pointsTowards(edge.getNode1())) {
+                    graph2.addDirectedEdge(edge.getNode2(), edge.getNode1());
+                }
+
+                if (edge.pointsTowards(edge.getNode2())) {
+                    graph2.addDirectedEdge(edge.getNode1(), edge.getNode2());
+                }
+            }
+        }
+
+        return graph2;
     }
 
     private void saveGraph(String resultsPath, Graph graph, int i, int simIndex, int algIndex,
@@ -1720,8 +1760,8 @@ public class Comparison {
         }
 
         @Override
-        public Graph search(DataModel DataModel, Parameters parameters) {
-            return algorithmWrapper.getAlgorithm().search(DataModel, parameters);
+        public Graph search(DataModel dataModel, Parameters parameters) {
+            return algorithmWrapper.getAlgorithm().search(dataModel, parameters);
         }
 
         @Override
@@ -1813,9 +1853,9 @@ public class Comparison {
         }
 
         public void setValue(String name, Object value) {
-            if (!(value instanceof Number)) {
-                throw new IllegalArgumentException();
-            }
+//            if (!(value instanceof Number)) {
+//                throw new IllegalArgumentException();
+//            }
 
             parameters.set(name, value);
         }

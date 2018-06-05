@@ -23,8 +23,10 @@ package edu.cmu.tetrad.data;
 
 import cern.colt.list.DoubleArrayList;
 import edu.cmu.tetrad.graph.*;
+import edu.cmu.tetrad.regression.RegressionCovariance;
 import edu.cmu.tetrad.regression.RegressionDataset;
 import edu.cmu.tetrad.regression.RegressionResult;
+import edu.cmu.tetrad.search.IndTestConditionalCorrelation;
 import edu.cmu.tetrad.search.IndTestFisherZ;
 import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.util.*;
@@ -39,7 +41,10 @@ import java.rmi.MarshalledObject;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.*;
-import java.util.concurrent.*;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ForkJoinPool;
+import java.util.concurrent.TimeUnit;
 
 import static edu.cmu.tetrad.util.StatUtils.variance;
 import static java.lang.Math.abs;
@@ -289,7 +294,6 @@ public final class DataUtils {
     }
 
     /**
-     *
      * Log or unlog data
      *
      * @param data
@@ -307,9 +311,9 @@ public final class DataUtils {
                     if (base == 0) {
                         copy.set(i, j, Math.exp(copy.get(i, j)) - a);
                     } else {
-                        copy.set(i, j, Math.pow(base,(copy.get(i, j))) - a);
+                        copy.set(i, j, Math.pow(base, (copy.get(i, j))) - a);
                     }
-                }  else {
+                } else {
                     if (base == 0) {
                         copy.set(i, j, Math.log(a + copy.get(i, j)));
                     } else {
@@ -1947,40 +1951,32 @@ public final class DataUtils {
         return data.subsetColumns(indices);
     }
 
-    // Checking X->Z with other parents P of X.
-    public static boolean linear(double[] x, double[] z, double[][] p, double numInBootstrap,
-                                 int numBootstraps, double alpha, double sensitivity) {
+    /**
+     * Checking whether X->Z is linear and non-heteroskedastic given the parents of X.
+     */
+    public static boolean linear(double[] x, double[] y, double bootstrapSampleSize,
+                                 int numBootstraps, double sensitivity) {
 
-        int N = z.length;
-        int m = p.length + 2;
+        int N = y.length;
         int b = numBootstraps;
         int dof = N - 1;
 
         try {
             List<Node> nodes = new ArrayList<>();
             nodes.add(new ContinuousVariable("cov"));
-            nodes.add(new ContinuousVariable("var0"));
+            nodes.add(new ContinuousVariable("cov1var"));
 
-            for (int j = 1; j <= p.length; j++) {
-                nodes.add(new ContinuousVariable("var" + j));
-            }
-
-            DataSet dataSet = new BoxDataSet(new VerticalDoubleDataBox(b, m), nodes);
+            DataSet dataSet = new BoxDataSet(new VerticalDoubleDataBox(b, 2), nodes);
 
             boolean[] mask = new boolean[N];
-            double[] cov0s = new double[b];
+            double[] covxys = new double[b];
+            double[] varxs = new double[b];
 
             for (int _b = 0; _b < b; _b++) {
-
-                I:
                 for (int i = 0; i < N; i++) {
-                    if (RandomUtil.getInstance().nextDouble() < numInBootstrap / (double) N) {
+                    if (RandomUtil.getInstance().nextDouble() < bootstrapSampleSize / (double) N) {
                         if (Double.isNaN(x[i])) continue;
-                        if (Double.isNaN(z[i])) continue;
-
-                        for (double[] otherParent : p) {
-                            if (Double.isNaN(otherParent[i])) continue I;
-                        }
+                        if (Double.isNaN(y[i])) continue;
 
                         mask[i] = true;
                     } else {
@@ -1988,16 +1984,17 @@ public final class DataUtils {
                     }
                 }
 
-                final double cov0 = covMask(z, x, mask)[0];
-                final double cov1 = covMask(x, x, mask)[0];
-                dataSet.setDouble(_b, 0, cov0);
-                dataSet.setDouble(_b, 1, cov1);
-                cov0s[_b] = cov0;
+                final double covxy = covMask(y, x, mask)[0];
+                final double varx = covMask(x, x, mask)[0];
 
-                for (int j = 0; j < p.length; j++) {
-                    final double cov3 = covMask(x, p[j], mask)[0];
-                    dataSet.setDouble(_b, j + 2, cov3);
-                }
+//                double beta = covxy / varx;
+
+//                System.out.println(beta);
+
+                dataSet.setDouble(_b, 0, covxy);
+                dataSet.setDouble(_b, 1, varx);
+                covxys[_b] = covxy;
+                varxs[_b] = varx;
             }
 
             RegressionDataset regression = new RegressionDataset(dataSet);
@@ -2006,13 +2003,16 @@ public final class DataUtils {
 
             RegressionResult result = regression.regress(nodes.get(0), regressors);
 
-            double cov0var = DataUtils.variance(cov0s, 0);
+            double covxyvar = DataUtils.variance(covxys, 0);
+//            double varxvar = DataUtils.variance(varxs, 0);
 
             final double[] array = result.getResiduals().toArray();
 
             double residualVar = DataUtils.variance(array, 0);
 
-            final double x2 = dof * (residualVar / (sensitivity * cov0var));
+//            System.out.println(residualVar);
+
+            final double x2 = sensitivity * dof * (residualVar / (covxyvar));
 
             double c = new ChiSquaredDistribution(dof).cumulativeProbability(x2);
 
@@ -2020,9 +2020,162 @@ public final class DataUtils {
                 return false;
             }
 
-            final double pValue = 1.0 - c;
+            final double p = 1.0 - c;
 
-            return pValue > alpha;
+//            System.out.println("dof = " + dof + " x2 = " + x2 + " p = " + p);
+
+
+            return p > 0.01;
+        } catch (SingularMatrixException e) {
+            System.out.println("Singular");
+            return true;
+        }
+    }
+
+    public static boolean xydep(double[] x, double[] y) {
+
+        try {
+
+//            int N = y.length;
+//            int b = numBootstraps;
+//            int dof = b - 1;
+
+            double[][] all = new double[][]{x, y};
+
+            final ContinuousVariable X = new ContinuousVariable("X");
+            final ContinuousVariable Y = new ContinuousVariable("Y");
+            final ContinuousVariable R = new ContinuousVariable("R");
+
+            List<Node> nodes = new ArrayList<>();
+            nodes.add(X);
+            nodes.add(Y);
+
+            DataSet dataSet = new BoxDataSet(new VerticalDoubleDataBox(all), nodes);
+
+            RegressionDataset regression = new RegressionDataset(dataSet);
+
+            RegressionResult result = regression.regress(X, Collections.singletonList(Y));
+            double[] r = result.getResiduals().toArray();
+
+            // Is x _||_ r?
+            double[][] all2 = new double[][]{x, y, r};
+
+            List<Node> nodes2 = new ArrayList<>();
+            nodes2.add(X);
+            nodes2.add(Y);
+            nodes2.add(R);
+
+            DataSet dataSet2 = new BoxDataSet(new VerticalDoubleDataBox(all2), nodes2);
+
+            IndependenceTest test = new IndTestConditionalCorrelation(dataSet2, .2);
+
+            return !test.isIndependent(X, Y);
+        } catch (SingularMatrixException e) {
+            System.out.println("Singular");
+            return true;
+        }
+    }
+
+    public static boolean linear3(double[] x, double[] y, double bootstrapSampleSize,
+                                  int numBootstraps, double sensitivity) {
+
+        int N = y.length;
+        int b = numBootstraps;
+        int dof = N - 1;
+
+        try {
+            List<Node> nodes = new ArrayList<>();
+            nodes.add(new ContinuousVariable("cov"));
+            nodes.add(new ContinuousVariable("cov1var"));
+
+            DataSet dataSet = new BoxDataSet(new VerticalDoubleDataBox(b, 2), nodes);
+
+            boolean[] mask = new boolean[N];
+            double[] covxys = new double[b];
+            double[] varxs = new double[b];
+
+            for (int _b = 0; _b < b; _b++) {
+                for (int i = 0; i < N; i++) {
+                    if (RandomUtil.getInstance().nextDouble() < bootstrapSampleSize / (double) N) {
+                        if (Double.isNaN(x[i])) continue;
+                        if (Double.isNaN(y[i])) continue;
+
+                        mask[i] = true;
+                    } else {
+                        mask[i] = false;
+                    }
+                }
+
+                final double covxy = covMask(y, x, mask)[0];
+                final double varx = covMask(x, x, mask)[0];
+
+//                double beta = covxy / varx;
+
+//                System.out.println(beta);
+
+                dataSet.setDouble(_b, 0, covxy);
+                dataSet.setDouble(_b, 1, varx);
+                covxys[_b] = covxy;
+                varxs[_b] = varx;
+            }
+
+            RegressionDataset regression = new RegressionDataset(dataSet);
+            List<Node> regressors = new ArrayList<>(nodes);
+            regressors.remove(nodes.get(0));
+
+            RegressionResult result = regression.regress(nodes.get(0), regressors);
+
+            double covxyvar = DataUtils.variance(covxys, 0);
+//            double varxvar = DataUtils.variance(varxs, 0);
+
+            final double[] array = result.getResiduals().toArray();
+
+            double residualVar = DataUtils.variance(array, 0);
+
+//            System.out.println(residualVar);
+
+            final double x2 = sensitivity * dof * (residualVar / (covxyvar));
+
+            double c = new ChiSquaredDistribution(dof).cumulativeProbability(x2);
+
+            if (Double.isNaN(c)) {
+                return false;
+            }
+
+            final double p = 1.0 - c;
+
+//            System.out.println("dof = " + dof + " x2 = " + x2 + " p = " + p);
+
+
+            return p > 0.01;
+        } catch (SingularMatrixException e) {
+            System.out.println("Singular");
+            return true;
+        }
+    }
+
+    public static boolean linear4(double[] x, double[] y, double alpha) {
+
+        try {
+
+            List<Node> nodes = new ArrayList<>();
+
+            final Node X = new ContinuousVariable("X");
+            final Node Y = new ContinuousVariable("Y");
+
+            nodes.add(X);
+            nodes.add(Y);
+
+            final double[][] doubles = {x, y};
+            DataSet dataSet = new BoxDataSet(new VerticalDoubleDataBox(doubles), nodes);
+
+            RegressionDataset regression = new RegressionDataset(dataSet);
+
+            RegressionResult result = regression.regress(Y,
+                    Collections.singletonList(X));
+            double p = result.getP()[1];
+
+            return p < alpha;
         } catch (SingularMatrixException e) {
             System.out.println("Singular");
             return true;
@@ -2030,7 +2183,7 @@ public final class DataUtils {
     }
 
     public static double linearPValue(double[] z, double[] x, double[][] p, double numInBootstrap,
-                                      int numBootstraps, double alpha, double sensitivity) {
+                                      int numBootstraps, double sensitivity) {
 
         int N = z.length;
         int m = p.length + 2;
@@ -2207,90 +2360,8 @@ public final class DataUtils {
 
         return new double[]{sxy, sxy / sqrt(sx * sy), sx, sy, (double) n, ex, ey, sxy / sx};
     }
-
-    public static List<Node> selectVariables(DataSet dataSet, Node y, double alpha, int parallelism) {
-        IndependenceTest test = new IndTestFisherZ(dataSet, alpha);
-        List<Node> selection = new CopyOnWriteArrayList<>();
-
-        final List<Node> variables = test.getVariables();
-
-        {
-            class Task implements Callable<Boolean> {
-                private int from;
-                private int to;
-                private Node y;
-
-                private Task(int from, int to, Node y) {
-                    this.from = from;
-                    this.to = to;
-                    this.y = y;
-                }
-
-                @Override
-                public Boolean call() {
-                    for (int n = from; n < to; n++) {
-                        final Node node = variables.get(n);
-                        if (node != y) {
-                            if (!test.isIndependent(node, y)) {
-                                if (!selection.contains(node)) {
-                                    selection.add(node);
-                                }
-                            }
-                        }
-                    }
-
-                    return true;
-                }
-            }
-
-            final int chunk = 50;
-            List<Callable<Boolean>> tasks;
-
-            {
-                tasks = new ArrayList<>();
-
-                for (int from = 0; from < variables.size(); from += chunk) {
-                    final int to = Math.min(variables.size(), from + chunk);
-                    tasks.add(new Task(from, to, y));
-                }
-
-                ConcurrencyUtils.runCallables(tasks, parallelism);
-            }
-        }
-
-        System.out.println("# selected variables = " + selection.size());
-
-        return selection;
-    }
-
-    public static DataSet removeLowVarianceColumns(DataSet dataSet, double minVariance) {
-        double[][] data = dataSet.getDoubleData().transpose().toArray();
-
-        List<Node> keepCols = new ArrayList<>();
-
-        for (int j = 0; j < data.length; j++) {
-            if (StatUtils.variance(data[j]) >= minVariance) {
-                keepCols.add(dataSet.getVariable(j));
-            }
-        }
-
-        return dataSet.subsetColumns(keepCols);
-    }
-
-    public static DataSet removeLowSdColumns(DataSet dataSet, double minSd) {
-        double[][] data = dataSet.getDoubleData().transpose().toArray();
-
-        List<Node> keepCols = new ArrayList<>();
-
-        for (int j = 0; j < data.length; j++) {
-            if (StatUtils.sd(data[j]) >= minSd) {
-                keepCols.add(dataSet.getVariable(j));
-            }
-        }
-
-        return dataSet.subsetColumns(keepCols);
-    }
 }
+
 
 
 

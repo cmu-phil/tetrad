@@ -131,7 +131,7 @@ public class Lofs2 {
     // orientStrongerDirection list of past and present rules.
     public enum Rule {
         IGCI, R1TimeLag, R1, R2, R3, R4, Tanh, EB, Skew, SkewE, RSkew, RSkewE,
-        Patel, Patel25, Patel50, Patel75, Patel90, FastICA, RC, Nlo
+        Patel, Patel25, Patel50, Patel75, Patel90, FastICA, RC, Nlo, FASKLR
     }
 
     public Graph orient() {
@@ -154,7 +154,7 @@ public class Lofs2 {
         } else if (this.rule == Rule.R4) {
             graph = GraphUtils.undirectedGraph(skeleton);
             return ruleR4(graph);
-        } else if (this.rule == Rule.EB) {
+        }  else if (this.rule == Rule.EB) {
             graph = GraphUtils.undirectedGraph(skeleton);
             return entropyBased(graph);
         } else if (this.rule == Rule.Tanh) {
@@ -206,6 +206,9 @@ public class Lofs2 {
             return nlo.fullOrient4(_graph);
 //            return nlo.fullOrient5(_graph);
 //            return nlo.pairwiseOrient3(_graph);
+        } else if (this.rule == Rule.FASKLR) {
+            graph = GraphUtils.undirectedGraph(skeleton);
+            return ruleFaskLR(graph);
         }
 
         return graph;
@@ -754,6 +757,61 @@ public class Lofs2 {
 
         return graph;
 
+    }
+
+    private Graph ruleFaskLR(Graph graph) {
+        this.dataSets = DataUtils.center(dataSets);
+        DataSet dataSet = DataUtils.concatenate(dataSets);
+
+        double[][] colData = dataSet.getDoubleData().transpose().toArray();
+
+//        for (int j = 0; j < colData.length; j++) {
+//            double[] x = colData[j];
+//
+//            double s = signum(StatUtils.skewness(x));
+//
+//            for (int i = 0; i < x.length; i++) {
+//                x[i] = s * x[i];
+//            }
+//
+//            colData[j] = x;
+//        }
+
+        Graph out = new EdgeListGraph(graph.getNodes());
+
+        for (Edge edge : graph.getEdges()) {
+            int c1 = dataSet.getColumn(dataSet.getVariable(edge.getNode1().getName()));
+            int c2 = dataSet.getColumn(dataSet.getVariable(edge.getNode2().getName()));
+            if (leftright(colData[c1], colData[c2])) {
+                out.addDirectedEdge(edge.getNode1(), edge.getNode2());
+            } else {
+                out.addDirectedEdge(edge.getNode2(), edge.getNode1());
+            }
+        }
+
+        return out;
+    }
+
+    private boolean leftright(double[] x, double[] y) {
+        double left = cu(x, y, x) / (sqrt(cu(x, x, x) * cu(y, y, x)));
+        double right = cu(x, y, y) / (sqrt(cu(x, x, y) * cu(y, y, y)));
+
+        return /*StatUtils.correlation(x, y)*/ (left - right) > 0;
+    }
+
+    public static double cu(double[] x, double[] y, double[] condition) {
+        double exy = 0.0;
+
+        int n = 0;
+
+        for (int k = 0; k < x.length; k++) {
+            if (condition[k] > 0) {
+                exy += x[k] * y[k];
+                n++;
+            }
+        }
+
+        return exy / n;
     }
 
     private void resolveOneEdgeMaxR3(Graph graph, Node x, Node y) {

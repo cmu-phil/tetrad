@@ -367,6 +367,10 @@ public final class Cefs {
         return this.depth;
     }
 
+    public void setDepth(int depth) {
+        this.depth = depth;
+    }
+
     /**
      * @return the result graph of the most recent search.
      */

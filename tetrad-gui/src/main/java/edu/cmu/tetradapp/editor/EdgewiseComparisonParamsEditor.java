@@ -165,6 +165,10 @@ public class EdgewiseComparisonParamsEditor extends JPanel implements ParameterE
         group.add(graph1);
         group.add(graph2);
 
+        graph1.setSelected(true);
+        getParams().set("referenceGraphName", model1.getName());
+        getParams().set("targetGraphName", model2.getName());
+
         boolean alreadySet = false;
 
         if (model1 instanceof GeneralAlgorithmRunner) {

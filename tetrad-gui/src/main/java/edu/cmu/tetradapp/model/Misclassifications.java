@@ -314,18 +314,12 @@ public final class Misclassifications implements SessionModel, DoNotAddOldModel 
 
                 log("info", "Graph Comparison");
 
-        for (
-                int i = 0;
-                i < referenceGraphs.size(); i++)
-
-        {
+        for (int i = 0; i < referenceGraphs.size(); i++) {
             TetradLogger.getInstance().log("comparison", "\nModel " + (i + 1));
             TetradLogger.getInstance().log("comparison", getComparisonString(i));
         }
 
-        this.nf = NumberFormatUtil.getInstance().
-
-                getNumberFormat();
+        this.nf = NumberFormatUtil.getInstance().getNumberFormat();
 
     }
 

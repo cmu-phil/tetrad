@@ -362,7 +362,7 @@ public final class IndTestFisherZGeneralizedInverse implements IndependenceTest 
 //        final double upperBound = 9.0;
 //        final double delta = 0.001;
 //                double alpha = this.alpha/2.0;    //Two sided test
-//        return CutoffFinder.getCutoff(npdf, upperBound, alpha, delta);
+//        return CutoffFinder.getBootstrapAlpha(npdf, upperBound, alpha, delta);
     }
 
     private int sampleSize() {

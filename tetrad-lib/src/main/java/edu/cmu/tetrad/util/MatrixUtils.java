@@ -761,7 +761,7 @@ public final class MatrixUtils {
         return toString(m, nf, variables);
     }
 
-    private static String toString(double[][] m, NumberFormat nf) {
+    public static String toString(double[][] m, NumberFormat nf) {
         return toString(m, nf, null);
     }
 

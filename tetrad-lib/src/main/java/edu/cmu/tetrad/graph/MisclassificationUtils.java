@@ -129,6 +129,9 @@ public class MisclassificationUtils {
     public static String edgeMisclassifications(Graph estGraph, Graph refGraph) {
         StringBuilder builder = new StringBuilder();
 
+        estGraph = GraphUtils.replaceNodes(estGraph, refGraph.getNodes());
+        refGraph = GraphUtils.replaceNodes(refGraph, estGraph.getNodes());
+
         TextTable table2 = new TextTable(9, 7);
 
         table2.setToken(1, 0, "---");

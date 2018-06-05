@@ -112,6 +112,7 @@ public final class GFci implements GraphSearch {
         Graph fgesGraph = new EdgeListGraphSingleConnections(graph);
 
         sepsets = new SepsetsGreedy(fgesGraph, independenceTest, null, maxDegree);
+        ((SepsetsGreedy) sepsets).setKnowledge(knowledge);
 
         for (Node b : nodes) {
             if (Thread.currentThread().isInterrupted()) {
