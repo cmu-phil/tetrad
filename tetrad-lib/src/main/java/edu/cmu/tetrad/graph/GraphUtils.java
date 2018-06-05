@@ -2516,8 +2516,9 @@ public final class GraphUtils {
             if (xml) {
                 out.print(graphToXml(graph));
             } else {
-                out.println(graph);
+                out.print(graph);
             }
+            out.flush();
             out.close();
         } catch (IOException e1) {
             throw new IllegalArgumentException(
