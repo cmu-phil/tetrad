@@ -1,0 +1,266 @@
+Tue Dec 19 10:06:02 EST 2017
+
+Statistics:
+
+Structure = Extra column for Structure
+AP = Adjacency Precision
+AR = Adjacency Recall
+AHP = Arrowhead precision
+AHR = Arrowhead recall
+2CP = 2-cycle precision
+2CR = 2-cycle recall
+2CFP = 2-cycle false positive
+2CFN = 2-cycle false negative
+2CTP = 2-cycle true positive
+E = Elapsed Time in Seconds
+
+Simulations:
+
+Simulation 1: Smith sim 1
+
+
+
+
+Simulation 2: Smith sim 2
+
+
+
+
+Simulation 3: Smith sim 3
+
+
+
+
+Simulation 4: Smith sim 4
+
+
+
+
+Simulation 5: Smith sim 5
+
+
+
+
+Simulation 6: Smith sim 6
+
+
+
+
+Simulation 7: Smith sim 7
+
+
+
+
+Simulation 8: Smith sim 8
+
+
+
+
+Simulation 9: Smith sim 9
+
+
+
+
+Simulation 10: Smith sim 10
+
+
+
+
+Simulation 11: Smith sim 11
+
+
+
+
+Simulation 12: Smith sim 12
+
+
+
+
+Simulation 13: Smith sim 13
+
+
+
+
+Simulation 14: Smith sim 14
+
+
+
+
+Simulation 15: Smith sim 15
+
+
+
+
+Simulation 16: Smith sim 16
+
+
+
+
+Simulation 17: Smith sim 17
+
+
+
+
+Simulation 18: Smith sim 18
+
+
+
+
+Simulation 19: Smith sim 19
+
+
+
+
+Simulation 20: Smith sim 20
+
+
+
+
+Simulation 21: Smith sim 21
+
+
+
+
+Simulation 22: Smith sim 22
+
+
+
+
+Simulation 23: Smith sim 23
+
+
+
+
+Simulation 24: Smith sim 24
+
+
+
+
+Simulation 25: Smith sim 25
+
+
+
+
+Simulation 26: Smith sim 26
+
+
+
+
+Simulation 27: Smith sim 27
+
+
+
+
+Simulation 28: Smith sim 28
+
+
+
+
+Algorithms:
+
+1. FASK Concatenated
+
+Graphs are being compared to the true DAG.
+
+AVERAGE STATISTICS
+
+All edges
+
+  Sim  Alg    Structure    AP    AR   AHP   AHR  2CP  2CR  2CFP  2CFN  2CTP        E
+    1    1   smithsim 1  1.00  0.82  0.95  0.78    *    *     -     -     -     0.01
+    2    1   smithsim 2  0.99  0.85  0.88  0.75    *    *     -     -     -     0.01
+    3    1   smithsim 3  0.99  0.69  0.89  0.63    *    *     -     -     -     0.01
+    4    1   smithsim 4  0.96  0.68  0.87  0.62    *    *     -     -     -     0.03
+    5    1   smithsim 5  1.00  1.00  1.00  1.00    *    *     -     -     -  6.10E-3
+    6    1   smithsim 6  1.00  1.00  0.99  0.99    *    *     -     -     -     0.01
+    7    1   smithsim 7  0.95  1.00  0.95  1.00    *    *     -     -     -     0.03
+    8    1   smithsim 8  0.88  0.74  0.77  0.66    *    *     -     -     -  1.10E-3
+    9    1   smithsim 9  0.76  1.00  0.76  1.00    *    *     -     -     -     0.02
+   10    1  smithsim 10  1.00  0.98  0.94  0.92    *    *     -     -     -  2.30E-3
+   11    1  smithsim 11  0.56  0.43  0.50  0.38    *    *     -     -     -  4.60E-3
+   12    1  smithsim 12  0.99  0.75  0.90  0.68    *    *     -     -     -  3.30E-3
+   13    1  smithsim 13  1.00  0.48  0.92  0.28    *    -     -  3.00     -  1.60E-3
+   14    1  smithsim 14  1.00  0.88  0.93  0.82    *    *     -     -     -  1.70E-3
+   15    1  smithsim 15  0.97  1.00  0.95  0.98    *    *     -     -     -  2.60E-3
+   16    1  smithsim 16  1.00  0.61  0.96  0.59    *    *     -     -     -  2.80E-3
+   17    1  smithsim 17  1.00  0.94  0.99  0.93    *    *     -     -     -  4.50E-3
+   18    1  smithsim 18  0.98  0.90  0.90  0.82    *    *     -     -     -  1.80E-3
+   19    1  smithsim 19  0.91  1.00  0.44  0.48    *    *     -     -     -     0.02
+   20    1  smithsim 20  0.90  1.00  0.48  0.52    *    *     -     -     -     0.02
+   21    1  smithsim 21  1.00  0.80  0.96  0.76    *    *     -     -     -  1.80E-3
+   22    1  smithsim 22  1.00  0.78  0.48  0.36    *    *     -     -     -  1.70E-3
+   23    1  smithsim 23  1.00  0.96  0.89  0.86    *    *     -     -     -  2.60E-3
+   24    1  smithsim 24  0.62  0.62  0.36  0.36    *    *     -     -     -  2.00E-3
+   25    1  smithsim 25  0.93  0.58  0.83  0.52    *    *     -     -     -  1.10E-3
+   26    1  smithsim 26  0.76  0.42  0.66  0.38    *    *     -     -     -  1.00E-3
+   27    1  smithsim 27  0.89  0.74  0.78  0.64    *    *     -     -     -  1.00E-3
+   28    1  smithsim 28  0.98  0.78  0.96  0.76    *    *     -     -     -  8.00E-4
+
+STANDARD DEVIATIONS
+
+All edges
+
+  Sim  Alg    Structure    AP    AR   AHP   AHR  2CP  2CR  2CFP  2CFN  2CTP        E
+    1    1   smithsim 1     -  0.22  0.12  0.24    *    *     -     -     -     0.02
+    2    1   smithsim 2  0.03  0.13  0.11  0.15    *    *     -     -     -     0.01
+    3    1   smithsim 3  0.03  0.11  0.04  0.12    *    *     -     -     -  5.88E-3
+    4    1   smithsim 4  0.02  0.05  0.04  0.05    *    *     -     -     -  8.00E-3
+    5    1   smithsim 5     -     -     -     -    *    *     -     -     -  1.52E-3
+    6    1   smithsim 6     -     -  0.03  0.03    *    *     -     -     -  4.19E-3
+    7    1   smithsim 7  0.08     -  0.08     -    *    *     -     -     -     0.02
+    8    1   smithsim 8  0.20  0.28  0.31  0.28    *    *     -     -     -  3.16E-4
+    9    1   smithsim 9  0.09     -  0.09     -    *    *     -     -     -  5.90E-3
+   10    1  smithsim 10     -  0.06  0.13  0.14    *    *     -     -     -  1.16E-3
+   11    1  smithsim 11  0.09  0.04  0.14  0.09    *    *     -     -     -  1.43E-3
+   12    1  smithsim 12  0.04  0.17  0.10  0.16    *    *     -     -     -  1.16E-3
+   13    1  smithsim 13     -  0.10  0.18  0.08    *    -     -     -     -  5.16E-4
+   14    1  smithsim 14     -  0.17  0.11  0.20    *    *     -     -     -  4.83E-4
+   15    1  smithsim 15  0.07     -  0.11  0.06    *    *     -     -     -  1.43E-3
+   16    1  smithsim 16     -  0.10  0.10  0.11    *    *     -     -     -  1.14E-3
+   17    1  smithsim 17     -  0.06  0.03  0.07    *    *     -     -     -  1.08E-3
+   18    1  smithsim 18  0.06  0.11  0.11  0.11    *    *     -     -     -  4.22E-4
+   19    1  smithsim 19  0.12     -  0.30  0.32    *    *     -     -     -  4.24E-3
+   20    1  smithsim 20  0.11     -  0.27  0.25    *    *     -     -     -  3.28E-3
+   21    1  smithsim 21     -  0.19  0.08  0.16    *    *     -     -     -  6.32E-4
+   22    1  smithsim 22     -  0.22  0.26  0.21    *    *     -     -     -  4.83E-4
+   23    1  smithsim 23     -  0.08  0.15  0.16    *    *     -     -     -  3.34E-3
+   24    1  smithsim 24  0.17  0.20  0.15  0.16    *    *     -     -     -  1.15E-3
+   25    1  smithsim 25  0.14  0.11  0.18  0.14    *    *     -     -     -  7.38E-4
+   26    1  smithsim 26  0.22  0.15  0.39  0.22    *    *     -     -     -  8.16E-4
+   27    1  smithsim 27  0.12  0.21  0.21  0.18    *    *     -     -     -  4.71E-4
+   28    1  smithsim 28  0.05  0.18  0.08  0.16    *    *     -     -     -  4.22E-4
+
+WORST CASE
+
+All edges
+
+  Sim  Alg    Structure    AP    AR   AHP   AHR  2CP  2CR  2CFP  2CFN  2CTP        E
+    1    1   smithsim 1  1.00  0.40  0.67  0.40    *    *     -     -     -  4.00E-3
+    2    1   smithsim 2  0.90  0.64  0.70  0.55    *    *     -     -     -  6.00E-3
+    3    1   smithsim 3  0.92  0.44  0.82  0.39    *    *     -     -     -  5.00E-3
+    4    1   smithsim 4  0.91  0.61  0.81  0.52    *    *     -     -     -     0.02
+    5    1   smithsim 5  1.00  1.00  1.00  1.00    *    *     -     -     -  4.00E-3
+    6    1   smithsim 6  1.00  1.00  0.91  0.91    *    *     -     -     -  9.00E-3
+    7    1   smithsim 7  0.83  1.00  0.83  1.00    *    *     -     -     -     0.01
+    8    1   smithsim 8  0.50  0.20     -     -    *    *     -     -     -  1.00E-3
+    9    1   smithsim 9  0.62  1.00  0.62  1.00    *    *     -     -     -     0.01
+   10    1  smithsim 10  1.00  0.80  0.60  0.60    *    *     -     -     -  1.00E-3
+   11    1  smithsim 11  0.44  0.36  0.29  0.18    *    *     -     -     -  3.00E-3
+   12    1  smithsim 12  0.89  0.45  0.78  0.45    *    *     -     -     -  2.00E-3
+   13    1  smithsim 13  1.00  0.40  0.50  0.12    *    -     -  3.00     -  1.00E-3
+   14    1  smithsim 14  1.00  0.60  0.75  0.60    *    *     -     -     -  1.00E-3
+   15    1  smithsim 15  0.83  1.00  0.67  0.80    *    *     -     -     -  1.00E-3
+   16    1  smithsim 16  1.00  0.43  0.75  0.43    *    *     -     -     -  1.00E-3
+   17    1  smithsim 17  1.00  0.82  0.90  0.82    *    *     -     -     -  3.00E-3
+   18    1  smithsim 18  0.80  0.80  0.75  0.60    *    *     -     -     -  1.00E-3
+   19    1  smithsim 19  0.71  1.00     -     -    *    *     -     -     -     0.01
+   20    1  smithsim 20  0.71  1.00  0.14  0.20    *    *     -     -     -     0.01
+   21    1  smithsim 21  1.00  0.60  0.80  0.60    *    *     -     -     -  1.00E-3
+   22    1  smithsim 22  1.00  0.40  0.20  0.20    *    *     -     -     -  1.00E-3
+   23    1  smithsim 23  1.00  0.80  0.60  0.60    *    *     -     -     -  1.00E-3
+   24    1  smithsim 24  0.33  0.40  0.17  0.20    *    *     -     -     -  1.00E-3
+   25    1  smithsim 25  0.67  0.40  0.67  0.40    *    *     -     -     -        -
+   26    1  smithsim 26  0.50  0.20     -     -    *    *     -     -     -        -
+   27    1  smithsim 27  0.67  0.40  0.50  0.20    *    *     -     -     -        -
+   28    1  smithsim 28  0.83  0.60  0.80  0.60    *    *     -     -     -        -
+

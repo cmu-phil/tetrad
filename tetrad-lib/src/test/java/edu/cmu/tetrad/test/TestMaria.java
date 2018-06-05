@@ -63,7 +63,7 @@ public class TestMaria {
             DataSet dataSet = (DataSet) DataConvertUtils.toDataModel(dataset);
 
 //            dataSet = DataUtils.removeConstantColumns(dataSet);
-            dataSet = DataUtils.removeLowSdColumns(dataSet, 0.0001);
+//            dataSet = DataUtils.removeLowSdColumns(dataSet, 0.0001);
 
             IKnowledge knowledge = new Knowledge2();
 

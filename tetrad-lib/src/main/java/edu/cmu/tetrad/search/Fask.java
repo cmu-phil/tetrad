@@ -163,8 +163,6 @@ public final class Fask implements GraphSearch {
                 double c2 = StatUtils.cov(x, y, y, 0, +1)[1];
 
                 if ((isUseFasAdjacencies() && G0.isAdjacentTo(X, Y)) || (isUseSkewAdjacencies() && Math.abs(c1 - c2) > getExtraEdgeThreshold())) {
-                    if (!DataUtils.linear(x, y, new double[0][x.length], 100, 50, .05, 1    )) continue;
-
                     if (edgeForbiddenByKnowledge(X, Y)) {
                         // Don't add an edge.
                     } else if (knowledgeOrients(X, Y)) {

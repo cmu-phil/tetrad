@@ -52,7 +52,7 @@ public class GraphSelectionWrapper implements SessionModel, GraphSource, Knowled
     public enum Type {
         Subgraph, Parents, Children, Adjacents, Adjacents_of_Adjacents, Adjacents_of_Adjacents_of_Adjacents, Markov_Blankets, Treks, Trek_Edges,
         Paths, Path_Edges, Directed_Paths, Directed_Path_Edges, Y_Structures,
-        Pag_Y_Structures, Indegree, Out_Degree, Degree, Ancestors, Descendants, Parents, Children
+        Pag_Y_Structures, Indegree, Out_Degree, Degree, Ancestors, Descendants
     }
 
     public enum nType {equals, atMost, atLeast}

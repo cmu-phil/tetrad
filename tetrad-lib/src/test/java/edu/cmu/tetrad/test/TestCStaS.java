@@ -173,13 +173,13 @@ public class TestCStaS {
         List<Node> potentialCauses = new ArrayList<>();
         potentialEffects = GraphUtils.replaceNodes(potentialEffects, dataSet.getVariables());
 
-        for (Node target : potentialEffects) {
-            List<Node> _selectionVars = DataUtils.selectVariables(dataSet, target, selectionAlpha, 40);
-
-            if (_selectionVars.size() > potentialCauses.size()) {
-                potentialCauses = _selectionVars;
-            }
-        }
+//        for (Node target : potentialEffects) {
+//            List<Node> _selectionVars = DataUtils.selectVariables(dataSet, target, selectionAlpha, 40);
+//
+//            if (_selectionVars.size() > potentialCauses.size()) {
+//                potentialCauses = _selectionVars;
+//            }
+//        }
 
         System.out.println("Selected # nodes = " + potentialCauses.size());
 
@@ -288,13 +288,13 @@ public class TestCStaS {
         List<Node> potentialCauses = new ArrayList<>();
         potentialEffects = GraphUtils.replaceNodes(potentialEffects, dataSet.getVariables());
 
-        for (Node target : potentialEffects) {
-            List<Node> _selectionVars = DataUtils.selectVariables(dataSet, target, selectionAlpha, 40);
-
-            if (_selectionVars.size() > potentialCauses.size()) {
-                potentialCauses = _selectionVars;
-            }
-        }
+//        for (Node target : potentialEffects) {
+//            List<Node> _selectionVars = DataUtils.selectVariables(dataSet, target, selectionAlpha, 40);
+//
+//            if (_selectionVars.size() > potentialCauses.size()) {
+//                potentialCauses = _selectionVars;
+//            }
+//        }
 
         int totalCauseEffect = 0;
 
