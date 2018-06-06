@@ -7,7 +7,6 @@ branches:
   only:
   - development
   - fang
-  - 6.4.0
 
 
 env:
