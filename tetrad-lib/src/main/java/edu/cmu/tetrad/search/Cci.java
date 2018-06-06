@@ -21,7 +21,6 @@
 
 package edu.cmu.tetrad.search;
 
-import edu.cmu.tetrad.util.StatUtils;
 import org.apache.commons.math3.distribution.NormalDistribution;
 import org.apache.commons.math3.linear.RealMatrix;
 
@@ -69,16 +68,6 @@ public final class Cci {
      */
     private NormalDistribution normal = new NormalDistribution(0, 1);
 
-    /**
-     * the most recent list of P values, for calculating Q.
-     */
-    private List<Double> scores;
-
-    /**
-     * Z cutoff corresponding to the desired alpha.
-     */
-    private final double cutoff;
-
     //==================CONSTRUCTORS====================//
 
     /**
@@ -97,7 +86,6 @@ public final class Cci {
         }
 
         this.alpha = alpha;
-        this.cutoff = StatUtils.getZForAlpha(alpha);
         this.data = data;
 
         indices = new HashMap<>();
@@ -132,15 +120,8 @@ public final class Cci {
         return score;
     }
 
-    /**
-     * @return FDR Q, if calculated, otherwise Double.NaN.
-     */
-    private double getQ(List<Double> p) {
-        return calculateFdrQ(p);
-    }
-
-    public double getQ() {
-        return getQ(scores);
+    public double getAlpha() {
+        return alpha;
     }
 
     /**
@@ -184,33 +165,23 @@ public final class Cci {
         double[] _x = new double[x.length];
         double[] _y = new double[x.length];
 
-        List<Double> scores = new ArrayList<>();
+        double minScore = Double.POSITIVE_INFINITY;
 
-        for (int m = 0; m < getNumFunctions(); m++) {
-            for (int n = 0; n < getNumFunctions(); n++) {
+        for (int m = 1; m <= getNumFunctions(); m++) {
+            for (int n = 1; n <= getNumFunctions(); n++) {
                 for (int i = 0; i < x.length; i++) {
                     _x[i] = function(m, x[i]);
                     _y[i] = function(n, y[i]);
                 }
 
-                scores.add(calcScore(_x, _y));
+                final double score = calcScore(_x, _y);
+                if (score < minScore) minScore = score;
             }
         }
 
-        Collections.sort(scores);
-//        double cutoff = fdr(alpha, scores, true);
-        double max = scores.size() == 0 ? Double.NaN : scores.get(scores.size() - 1);
-        this.score = max;
+        this.score = 1.0 - minScore;
 
-        this.scores = scores;
-
-//        if (Double.isNaN(min)) {
-//            this.score = Double.NaN;
-//            return true; // No basis on which to remove an edge for PC.
-//        }
-
-        return score < 0;
-//        return getQ(scores) > alpha;
+        return minScore > alpha;
     }
 
     private double calcScore(double[] _x, double[] _y) {
@@ -220,23 +191,17 @@ public final class Cci {
 
         double r = sigmaXY / sqrt(sigmaXX * sigmaYY);
 
-        if (r > 1) r = 1;
-        if (r < -1) r = -1;
-
         // Non-parametric Fisher Z test.
         double _z = 0.5 * (log(1.0 + r) - log(1.0 - r));
-        double w = sqrt(_x.length) * _z;
+        final double N = _x.length;
+        double w = sqrt(N) * _z;
 
         // Testing the hypothesis that _x and _y are uncorrelated and assuming that 4th moments of _x and _y
         // are finite and that the sample is large.
-        standardize(_x);
-        standardize(_y);
+        _x = standardize(_x);
+        _y = standardize(_y);
 
-        double t2 = moment22(_x, _y);
-
-        double t = sqrt(t2);
-        return abs(w / t) - cutoff;
-//        return 2.0 * (1.0 - normalCdf(0.0 , t, abs));
+        return 2.0 * (1.0 - normalCdf(0.0, sqrt(moment22(_x, _y)), abs(w)));
     }
 
     /**
@@ -346,9 +311,11 @@ public final class Cci {
 
     // Polynomial basis. The 1 is left out according to Daudin.
     private double function(int index, double x) {
+//        return sin((index) * x) + cos((index) * x); // This would be a sin cosine basis.
+
         double g = 1.0;
 
-        for (int i = 0; i <= index; i++) {
+        for (int i = 1; i <= index; i++) {
             g *= x;
         }
 
@@ -357,7 +324,7 @@ public final class Cci {
 
     // The number of basis functions to use.
     private int getNumFunctions() {
-        return 15;
+        return 8;
     }
 
     private double covariance(double[] x, double[] y) {
@@ -374,7 +341,6 @@ public final class Cci {
 
         return sumXY / N - (sumX / N) * (sumY / N);
     }
-
 
     // Optimal bandwidth qsuggested by Bowman and Azzalini (1997) q.31,
     // using MAD.
@@ -410,7 +376,9 @@ public final class Cci {
     }
 
     // Standardizes the given data array.
-    private void standardize(double[] data) {
+    private double[] standardize(double[] data1) {
+        double[] data = Arrays.copyOf(data1, data1.length);
+
         double sum = 0.0;
 
         for (double d : data) {
@@ -435,65 +403,13 @@ public final class Cci {
         for (int i = 0; i < data.length; i++) {
             data[i] /= sd;
         }
-    }
 
-    // False discovery rate, assuming non-negative correlations.
-    private double fdr(double alpha, List<Double> pValues, boolean pSorted) {
-        if (!pSorted) {
-            pValues = new ArrayList<>(pValues);
-            Collections.sort(pValues);
-        }
-
-        int m = pValues.size();
-
-        int index = -1;
-
-        for (int k = 0; k < m; k++) {
-            if (pValues.get(k) <= ((k + 1) / (double) (m + 1)) * alpha) {
-                index = k;
-            }
-        }
-
-        return index == -1 ? 0 : pValues.get(index);
+        return data;
     }
 
     private double normalCdf(double mean, double sd, double value) {
         return normal.cumulativeProbability((value - mean) / sd);
     }
-
-    public double calculateFdrQ() {
-        return calculateFdrQ(scores);
-    }
-
-    public synchronized double calculateFdrQ(List<Double> p) {
-
-        // If a legitimate scores value is desired for this test, should estimate the FDR q value.
-        Collections.sort(p);
-        double min = p.size() == 0 ? Double.NaN : p.get(0);
-        double high = 1.0;
-        double low = 0.0;
-        double q = alpha;
-
-        while (high - low > 1e-5) {
-            double midpoint = (high + low) / 2.0;
-            q = midpoint;
-            boolean sorted = true;
-
-            double _cutoff = fdr(q, p, sorted);
-
-            if (_cutoff < min) {
-                low = midpoint;
-            } else if (_cutoff > min) {
-                high = midpoint;
-            } else {
-                low = midpoint;
-                high = midpoint;
-            }
-        }
-
-        return q;
-    }
-
 }
 
 

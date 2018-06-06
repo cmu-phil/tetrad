@@ -21,11 +21,14 @@
 
 package edu.cmu.tetrad.search;
 
+import edu.cmu.tetrad.data.IKnowledge;
+import edu.cmu.tetrad.data.Knowledge2;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.ChoiceGenerator;
 
+import java.util.LinkedList;
 import java.util.List;
 
 /**
@@ -38,7 +41,7 @@ public class SepsetsGreedy implements SepsetProducer {
     private final SepsetMap extraSepsets;
     private int depth = 3;
     private boolean verbose = false;
-    private Graph dag;
+    private IKnowledge knowledge = new Knowledge2();
 
     public SepsetsGreedy(Graph graph, IndependenceTest independenceTest, SepsetMap extraSepsets, int depth) {
         this.graph = graph;
@@ -77,6 +80,8 @@ public class SepsetsGreedy implements SepsetProducer {
         List<Node> adjk = graph.getAdjacentNodes(k);
         adji.remove(k);
         adjk.remove(i);
+        adji = possibleParents(i, adji, knowledge);
+        adjk = possibleParents(k, adjk, knowledge);
 
         for (int d = 0; d <= Math.min((depth == -1 ? 1000 : depth), Math.max(adji.size(), adjk.size())); d++) {
             if (d <= adji.size()) {
@@ -152,6 +157,34 @@ public class SepsetsGreedy implements SepsetProducer {
 
     public void setDepth(int depth) {
         this.depth = depth;
+    }
+
+    private List<Node> possibleParents(Node x, List<Node> adjx,
+                                       IKnowledge knowledge) {
+        List<Node> possibleParents = new LinkedList<>();
+        String _x = x.getName();
+
+        for (Node z : adjx) {
+            String _z = z.getName();
+
+            if (possibleParentOf(_z, _x, knowledge)) {
+                possibleParents.add(z);
+            }
+        }
+
+        return possibleParents;
+    }
+
+    private boolean possibleParentOf(String z, String x, IKnowledge knowledge) {
+        return !knowledge.isForbidden(z, x) && !knowledge.isRequired(x, z);
+    }
+
+    public IKnowledge getKnowledge() {
+        return knowledge;
+    }
+
+    public void setKnowledge(IKnowledge knowledge) {
+        this.knowledge = knowledge;
     }
 }
 

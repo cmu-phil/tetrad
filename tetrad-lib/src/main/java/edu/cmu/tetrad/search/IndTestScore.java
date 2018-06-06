@@ -88,9 +88,15 @@ public class IndTestScore implements IndependenceTest {
         if (determines(z1, y)) return false;
 
         double v = this.score.localScoreDiff(variables.indexOf(x), variables.indexOf(y), varIndices(z));
-//        if (Double.isNaN(v)) throw new IllegalArgumentException();
+        if (Double.isNaN(v)) throw new IllegalArgumentException();
         this.bump = v;
-        return v < 0;
+
+        if (Double.isNaN(v)) {
+            System.out.println("Unmeasured: " + SearchLogUtils.independenceFact(x, y, z));
+            return false;
+        }
+
+        return /*Double.isNaN(v) ||*/ v < 0;
     }
 
     private int[] varIndices(List<Node> z) {

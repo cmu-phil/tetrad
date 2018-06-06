@@ -471,6 +471,8 @@ public class CovarianceMatrixOnTheFly implements ICovarianceMatrix {
             count++;
         }
 
+        if (count == 0) return Double.NaN;
+
         double v = d;
 //        v /= (sampleSize - 1);
         v /= (count - 1);

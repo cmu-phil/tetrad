@@ -26,6 +26,8 @@ import java.util.concurrent.*;
  * @author jdramsey@andrew.cmu.edu
  */
 public class CStaS {
+
+
     public enum PatternAlgorithm {FGES, PC_STABLE}
 
     public enum SampleStyle {BOOTSTRAP, SPLIT}
@@ -43,6 +45,7 @@ public class CStaS {
 
     private boolean verbose = false;
 
+    private Graph trueDag;
 
     private class Tuple {
         private Node cause;
@@ -217,6 +220,9 @@ public class CStaS {
             }
         }
 
+        final int[] edgesTotal = new int[1];
+        final int[] edgesCount = new int[1];
+
         class Task implements Callable<double[][]> {
             private final List<Node> possibleCauses;
             private final List<Node> possibleEffects;
@@ -268,6 +274,11 @@ public class CStaS {
                                     + patternAlgorithm);
                         }
 
+                        System.out.println("# edges = " + pattern.getNumEdges());
+
+                        edgesTotal[0] += pattern.getNumEdges();
+                        edgesCount[0]++;
+
                         if (dir != null) {
                             GraphUtils.saveGraph(pattern, new File(dir, "pattern." + (k + 1) + ".txt"), false);
                         }
@@ -309,7 +320,15 @@ public class CStaS {
 
         final List<double[][]> allEffects = runCallablesDoubleArray(tasks, getParallelism());
 
+        int avgEdges = (int) (edgesTotal[0] / (double) edgesCount[0]);
+//        avgEdges /= 2.0;
+
+        qs.clear();
+        qs.add(avgEdges);
+
+
         List<List<Double>> doubles = new ArrayList<>();
+//        List<Double> allDoubles = new ArrayList<>();
 
         for (int k = 0; k < getNumSubsamples(); k++) {
             double[][] effects = allEffects.get(k);
@@ -366,13 +385,14 @@ public class CStaS {
                                 }
                             }
 
-                            if (count > 0) {
-                                final double pi = count / ((double) getNumSubsamples());
-                                final Node cause = possibleCauses.get(c);
-                                final Node effect = possibleEffects.get(e);
-                                tuples.add(new Tuple(cause, effect, pi,
-                                        avgMinEffect(possibleCauses, possibleEffects, allEffects, cause, effect)));
-                            }
+//                            if (count > 0) {
+                            final double pi = count / ((double) getNumSubsamples());
+                            if (pi < (q / (double) p)) continue;
+                            final Node cause = possibleCauses.get(c);
+                            final Node effect = possibleEffects.get(e);
+                            tuples.add(new Tuple(cause, effect, pi,
+                                    avgMinEffect(possibleCauses, possibleEffects, allEffects, cause, effect)));
+//                            }
                         }
                     }
 
@@ -385,10 +405,12 @@ public class CStaS {
                     });
 
                     LinkedList<Record> records = new LinkedList<>();
+                    double sum = 0.0;
 
-                    for (int i = 0; i < Math.min(q, tuples.size()); i++) {
+                    for (int i = 0; i < tuples.size() /*Math.min(q, tuples.size())*/; i++) {
                         Tuple tuple = tuples.get(i);
-                        if (tuple.getPi() < (q / (double) p)) continue;
+
+                        sum += tuple.getPi();
                         double avg = tuple.getMinBeta();
 
                         final Node causeNode = tuple.getCauseNode();
@@ -545,20 +567,31 @@ public class CStaS {
      * Returns a text table from the given records
      */
     public String makeTable(LinkedList<Record> records, boolean printTable) {
-        TextTable table = new TextTable(records.size() + 1, 10);
+        int numColumns = 8;
+
+        if (trueDag != null) {
+            numColumns++;
+        }
+
+        TextTable table = new TextTable(records.size() + 1, numColumns);
+//        table.setLatex(true);
         NumberFormat nf = new DecimalFormat("0.0000");
         int column = 0;
 
         table.setToken(0, column++, "Index");
         table.setToken(0, column++, "Cause");
         table.setToken(0, column++, "Effect");
-        table.setToken(0, column++, "Type");
+//        table.setToken(0, column++, "Type");
         table.setToken(0, column++, "PI");
         table.setToken(0, column++, "Effect");
-        table.setToken(0, column++, "SUM(Pi)");
+//        table.setToken(0, column++, "SUM(Pi)");
         table.setToken(0, column++, "R-SUM(Pi)");
         table.setToken(0, column++, "E(V)");
         table.setToken(0, column++, "PCER");
+
+        if (trueDag != null) {
+            table.setToken(0, column++, "SUM(FP)");
+        }
 
         double sumPi = 0.0;
 
@@ -569,24 +602,35 @@ public class CStaS {
         int p = records.getLast().getP();
         int q = records.getLast().getQ();
 
+        int ancestorCount = 0;
+
         for (int i = 0; i < records.size(); i++) {
-            final Node predictor = records.get(i).getCauseNode();
-            final Node target = records.get(i).getEffectNode();
+            final Node cause = records.get(i).getCauseNode();
+            final Node effect = records.get(i).getEffectNode();
 
             int R = (i + 1);
             sumPi += records.get(i).getPi();
             column = 0;
 
+
             table.setToken(i + 1, column++, "" + (i + 1));
-            table.setToken(i + 1, column++, predictor.getName());
-            table.setToken(i + 1, column++, target.getName());
-            table.setToken(i + 1, column++, predictor instanceof DiscreteVariable ? "D" : "C");
+            table.setToken(i + 1, column++, cause.getName());
+            table.setToken(i + 1,    column++, effect.getName());
+//            table.setToken(i + 1, column++, cause instanceof DiscreteVariable ? "D" : "C");
             table.setToken(i + 1, column++, nf.format(records.get(i).getPi()));
             table.setToken(i + 1, column++, nf.format(records.get(i).getMinBeta()));
-            table.setToken(i + 1, column++, nf.format(sumPi));
+//            table.setToken(i + 1, column++, nf.format(sumPi));
             table.setToken(i + 1, column++, nf.format(R - sumPi));
-            table.setToken(i + 1, column++, nf.format(er(records.get(i).getPi(), q, p)));
-            table.setToken(i + 1, column++, nf.format(pcer(records.get(i).getPi(), q, p)));
+            final double er = er(records.get(i).getPi(), (i + 1), p);
+            table.setToken(i + 1, column++, records.get(i).getPi() <= 0.5 ? "*" : nf.format(er));
+            final double pcer = pcer(records.get(i).getPi(), (i + 1), p);
+            table.setToken(i + 1, column++, records.get(i).getPi() <= 0.5 ? "*" : nf.format(pcer));
+
+            if (trueDag != null) {
+                boolean ancestor = trueDag.isAncestorOf(trueDag.getNode(cause.getName()), trueDag.getNode(effect.getName()));
+                if (ancestor) ancestorCount++;
+                table.setToken(i + 1, column++, nf.format((R - ancestorCount)));
+            }
         }
 
         return (printTable ? "\n" + table : "" + "")
@@ -641,6 +685,10 @@ public class CStaS {
 
     public void setSampleStyle(SampleStyle sampleStyle) {
         this.sampleStyle = sampleStyle;
+    }
+
+    public void setTrueDag(Graph trueDag) {
+        this.trueDag = trueDag;
     }
 
     //=============================PRIVATE==============================//

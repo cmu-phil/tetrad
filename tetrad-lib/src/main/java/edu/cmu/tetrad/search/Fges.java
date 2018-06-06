@@ -60,6 +60,7 @@ public final class Fges implements GraphSearch, GraphScorer {
 
 
     private int parallelism = Runtime.getRuntime().availableProcessors() * 10;
+    private Set<IndependenceFact> indeterminateFacts = new LinkedHashSet<>();
 
     public int getParallelism() {
         return parallelism;
@@ -229,6 +230,7 @@ public final class Fges implements GraphSearch, GraphScorer {
      * @return the resulting Pattern.
      */
     public Graph search() {
+        indeterminateFacts.clear();
         topGraphs.clear();
 
         lookupArrows = new ConcurrentHashMap<>();
@@ -519,6 +521,11 @@ public final class Fges implements GraphSearch, GraphScorer {
     public void setSymmetricFirstStep(boolean symmetricFirstStep) {
         this.symmetricFirstStep = symmetricFirstStep;
     }
+
+    public Set<IndependenceFact> getIndeterminateFacts() {
+        return indeterminateFacts;
+    }
+
 
     //===========================PRIVATE METHODS========================//
     //Sets the discrete scoring function to use.
@@ -1930,7 +1937,16 @@ public final class Fges implements GraphSearch, GraphScorer {
             parentIndices[count++] = hashIndices.get(parent);
         }
 
-        return score.localScoreDiff(hashIndices.get(x), yIndex, parentIndices);
+        final double v = score.localScoreDiff(hashIndices.get(x), yIndex, parentIndices);
+
+        if (Double.isNaN(v)) {
+            if (verbose) {
+                System.out.println("NaN for " + SearchLogUtils.independenceFact(y, x, new ArrayList<>(parents)));
+            }
+            indeterminateFacts.add(new IndependenceFact(y, x, new ArrayList<>(parents)));
+        }
+
+        return v;
     }
 
     private List<Node> getVariables() {

@@ -28,8 +28,7 @@ import java.util.List;
 @edu.cmu.tetrad.annotation.Algorithm(
         name = "IMaGES Continuous",
         command = "imgs_cont",
-        algoType = AlgType.forbid_latent_common_causes,
-        description = ""
+        algoType = AlgType.forbid_latent_common_causes
 )
 public class ImagesSemBic implements MultiDataSetAlgorithm, HasKnowledge {
 
@@ -80,7 +79,7 @@ public class ImagesSemBic implements MultiDataSetAlgorithm, HasKnowledge {
 
     @Override
     public Graph search(DataModel dataSet, Parameters parameters) {
-        if (!parameters.getBoolean("bootstrapping")) {
+        if (parameters.getInt("bootstrapSampleSize") < 1) {
             return search(Collections.singletonList((DataModel) DataUtils.getContinuousDataSet(dataSet)), parameters);
         } else {
             ImagesSemBic imagesSemBic = new ImagesSemBic();

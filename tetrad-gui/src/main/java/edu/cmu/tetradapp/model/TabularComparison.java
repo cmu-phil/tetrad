@@ -96,9 +96,10 @@ public final class TabularComparison implements SessionModel, SimulationParamsSo
         String referenceName = params.getString("referenceGraphName", null);
 
         if (referenceName.equals(model1.getName())) {
-            if (model1 instanceof Simulation && model2 instanceof GeneralAlgorithmRunner) {
-                this.referenceGraphs = ((GeneralAlgorithmRunner) model2).getCompareGraphs(((Simulation) model1).getGraphs());
-            } else if (model1 instanceof MultipleGraphSource) {
+//            if (model1 instanceof Simulation && model2 instanceof GeneralAlgorithmRunner) {
+//                this.referenceGraphs = ((GeneralAlgorithmRunner) model2).getCompareGraphs(((Simulation) model1).getGraphs());
+//            } else
+            if (model1 instanceof MultipleGraphSource) {
                 this.referenceGraphs = ((MultipleGraphSource) model1).getGraphs();
             }
 
@@ -130,9 +131,10 @@ public final class TabularComparison implements SessionModel, SimulationParamsSo
                 this.targetGraphs = Collections.singletonList(((GraphSource) model2).getGraph());
             }
         } else if (referenceName.equals(model2.getName())) {
-            if (model2 instanceof Simulation && model1 instanceof GeneralAlgorithmRunner) {
-                this.referenceGraphs = ((GeneralAlgorithmRunner) model1).getCompareGraphs(((Simulation) model2).getGraphs());
-            } else if (model1 instanceof MultipleGraphSource) {
+//            if (model2 instanceof Simulation && model1 instanceof GeneralAlgorithmRunner) {
+//                this.referenceGraphs = ((GeneralAlgorithmRunner) model1).getCompareGraphs(((Simulation) model2).getGraphs());
+//            } else
+            if (model1 instanceof MultipleGraphSource) {
                 this.referenceGraphs = ((MultipleGraphSource) model2).getGraphs();
             }
 
@@ -178,7 +180,9 @@ public final class TabularComparison implements SessionModel, SimulationParamsSo
         }
         if (algorithm != null) {
             for (int i = 0; i < referenceGraphs.size(); i++) {
-                referenceGraphs.set(i, algorithm.getComparisonGraph(referenceGraphs.get(i)));
+                Graph comparisonGraph = algorithm.getComparisonGraph(referenceGraphs.get(i));
+                comparisonGraph = GraphUtils.replaceNodes(comparisonGraph, getTrueGraph().getNodes());
+                referenceGraphs.set(i, comparisonGraph);
             }
         }
 
@@ -204,12 +208,29 @@ public final class TabularComparison implements SessionModel, SimulationParamsSo
         statistics.add(new TwoCyclePrecision());
         statistics.add(new TwoCycleRecall());
         statistics.add(new TwoCycleFalsePositive());
+
 //        statistics.add(new ElapsedTime());
 //        statistics.add(new F1Adj());
 //        statistics.add(new F1Arrow());
 //        statistics.add(new MathewsCorrAdj());
 //        statistics.add(new MathewsCorrArrow());
 //        statistics.add(new SHD());
+
+//        statistics.add(new AdjacencyPrecision());
+//        statistics.add(new AdjacencyRecall());
+//        statistics.add(new ArrowheadPrecisionIgnore2c());
+//        statistics.add(new ArrowheadRecall());
+
+//        statistics.add(new AncestorPrecision());
+//        statistics.add(new AncestorRecall());
+//        statistics.add(new TwoCycleFalsePositive());
+//        statistics.add(new TwoCycleFalseNegative());
+////        statistics.add(new MathewsCorrAdj());
+//        statistics.add(new MathewsCorrArrow());
+////        statistics.add(new F1Adj());
+////        statistics.add(new F1Arrow());
+////        statistics.add(new SHD());
+////        statistics.add(new ElapsedTime());
 
         List<Node> variables = new ArrayList<>();
 
@@ -243,7 +264,6 @@ public final class TabularComparison implements SessionModel, SimulationParamsSo
 //    }
 
     //==============================PUBLIC METHODS========================//
-
     public DataSet getDataSet() {
         return this.dataSet;
     }

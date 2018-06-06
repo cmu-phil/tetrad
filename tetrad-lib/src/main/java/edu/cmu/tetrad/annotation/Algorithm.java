@@ -39,8 +39,6 @@ public @interface Algorithm {
 
     String command();
 
-    String description() default "";
-
     AlgType algoType();
 
 }

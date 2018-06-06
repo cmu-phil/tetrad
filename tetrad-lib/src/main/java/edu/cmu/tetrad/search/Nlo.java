@@ -94,7 +94,7 @@ public class Nlo {
             double[] cx = column(x);
 
             boolean indep1 = cci.independent(r1, cx);
-            double py = cci.getQ();
+            double py = cci.getAlpha();
 
             List<Node> _y = Collections.singletonList(y);
 
@@ -150,13 +150,13 @@ public class Nlo {
             double[] cx = column(x);
 
             cci.independent(r1, cx);
-            double px = cci.getQ();
+            double px = cci.getAlpha();
 
             double[] r2 = cci.residuals(x.toString(), names(Collections.singletonList(y)));
             double[] cy = column(y);
             cci.independent(r2, cy);
 
-            double py = cci.getQ();
+            double py = cci.getAlpha();
 
             if (py > px) {
                 graph.setEndpoint(y, x, Endpoint.ARROW);
@@ -206,7 +206,7 @@ public class Nlo {
                         break;
                     }
 
-                    double _p = cci.getQ();
+                    double _p = cci.getAlpha();
                     sumP += _p;
                 }
 
@@ -399,7 +399,7 @@ public class Nlo {
 
                 boolean indep = testIndependence(W, r);
 
-                double q = cci.getQ();
+                double q = cci.getAlpha();
 
                 System.out.println("\tW = " + W + " indep = " + (indep) + " q = " + q);
 
@@ -422,7 +422,7 @@ public class Nlo {
 
                 boolean indep = testIndependence(W, r);
 
-                double q = cci.getQ();
+                double q = cci.getAlpha();
 
                 System.out.println("\tW = " + W + " indep = " + (indep) + " q = " + q);
 
@@ -627,7 +627,7 @@ public class Nlo {
         for (Node x : X) {
             double[] _x = column(x);
             boolean indep = cci.independent(_x, y);
-            double q = cci.getQ();
+            double q = cci.getAlpha();
 
 //            boolean indep = q > alpha;
 

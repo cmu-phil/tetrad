@@ -1287,10 +1287,16 @@ public final class BoxDataSet implements DataSet, TetradSerializable {
      * @param cols The number of columns in the redimensioned data.
      */
     private void resize(int rows, int cols) {
-        DataBox _data = dataBox.like();
+        int[] _rows = new int[rows];
+        int[] _cols = new int[cols];
 
-        for (int i = 0; i < _data.numRows(); i++) {
-            for (int j = 0; j < _data.numCols(); j++) {
+        for (int i = 0; i < _rows.length; i++) _rows[i] = i;
+        for (int j = 0; j < _cols.length; j++) _cols[j] = j;
+
+        DataBox _data = dataBox.viewSelection(_rows, _cols);
+
+        for (int i = 0; i < rows; i++) {
+            for (int j = 0; j < cols; j++) {
                 if (i < dataBox.numRows() && j < dataBox.numCols()) {
                     _data.set(i, j, dataBox.get(i, j));
                 } else {

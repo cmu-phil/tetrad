@@ -1506,16 +1506,16 @@
             <!--</editor-class>-->
             <!--</model>-->
             <!--Heuristic Best Significant Model Search-->
-            <!--<model name="BFF" acronym="BFF" help="bff"-->
-            <!--category="forbid_latent_common_causes Searches">-->
-            <!--<logger>-->
-            <!--<event id="info" description="Information" default="on"/>-->
-            <!--<event id="details" description="Misc Fine Details" default="on"/>-->
-            <!--</logger>-->
-            <!--<model-class>edu.cmu.tetradapp.model.PValueImproverWrapper</model-class>-->
-            <!--<editor-class>edu.cmu.tetradapp.editor.PValueImproverEditor-->
-            <!--</editor-class>-->
-            <!--</model>-->
+            <model name="BFF" acronym="BFF" help="bff"
+                   category="forbid_latent_common_causes Searches">
+                <logger>
+                    <event id="info" description="Information" default="on"/>
+                    <event id="details" description="Misc Fine Details" default="on"/>
+                </logger>
+                <model-class>edu.cmu.tetradapp.model.PValueImproverWrapper</model-class>
+                <editor-class>edu.cmu.tetradapp.editor.PValueImproverEditor
+                </editor-class>
+            </model>
 
             <!--Restored Mimbuild on 6/20/2017 -->          
             <model name="MIMBuild" acronym="MIMBuild" help="mimbuild"

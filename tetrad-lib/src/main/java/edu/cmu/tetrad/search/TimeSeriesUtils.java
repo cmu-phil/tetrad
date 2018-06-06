@@ -481,6 +481,8 @@ public class TimeSeriesUtils {
         int c = data.getColumn(timeVar);
 
         for (int r = 0; r < data.getNumRows(); r++) {
+            System.out.println("num cols = " + data.getNumColumns());
+
             data.setDouble(r, c, (r + 1));
         }
 

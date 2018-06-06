@@ -22,7 +22,7 @@
 package edu.cmu.tetrad.bayes;
 
 /**
- * Q-factors, for use in Identifiability
+ * QStyle-factors, for use in Identifiability
  *
  * @author Choh Man Teng
  */
@@ -42,7 +42,7 @@ final class QList {
     //=============================CONSTRUCTORS=========================//
 
     /////////////////////////////////////////////////////////////////
-    // intialize an empty QList: Q(emptyset) = 1
+    // intialize an empty QList: QStyle(emptyset) = 1
     public QList(int nVariables) {
         this.nVariables = nVariables;
         initialize();
@@ -339,7 +339,7 @@ final class QList {
 
         for (int i = 0; i < nVariables; i++) {
             sumOverVariables[i] = 0;
-            probTerm[i] = 0;   // Q(emptyset) = 1
+            probTerm[i] = 0;   // QStyle(emptyset) = 1
         }
 
         inNumerator = true;

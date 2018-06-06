@@ -25,8 +25,7 @@ import java.util.List;
 @edu.cmu.tetrad.annotation.Algorithm(
         name = "GFCI",
         command = "gfci",
-        algoType = AlgType.allow_latent_common_causes,
-        description = ""
+        algoType = AlgType.allow_latent_common_causes
 )
 public class Gfci implements Algorithm, HasKnowledge, UsesScoreWrapper, TakesIndependenceWrapper {
 
@@ -109,7 +108,14 @@ public class Gfci implements Algorithm, HasKnowledge, UsesScoreWrapper, TakesInd
     @Override
     public List<String> getParameters() {
         List<String> parameters = test.getParameters();
-        parameters.addAll(score.getParameters());
+        List<String> parameters1 = score.getParameters();
+
+        for (String param : parameters1) {
+            if (!parameters.contains(param)) {
+                parameters.add(param);
+            }
+        }
+
         parameters.add("faithfulnessAssumed");
         parameters.add("maxDegree");
 //        parameters.add("printStream");

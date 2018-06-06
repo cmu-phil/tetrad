@@ -18,21 +18,20 @@
 // along with this program; if not, write to the Free Software               //
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA //
 ///////////////////////////////////////////////////////////////////////////////
-
 package edu.cmu.tetrad.data;
 
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.TetradSerializable;
-
 import java.util.Iterator;
 import java.util.List;
 
 /**
- * Interface for knowledge of forbidden and required edges. Implemented
- * in different ways. See implementations.
+ * Interface for knowledge of forbidden and required edges. Implemented in
+ * different ways. See implementations.
  */
 public interface IKnowledge extends TetradSerializable {
+
     long serialVersionUID = 23L;
 
     void addToTier(int tier, String var);
@@ -116,7 +115,13 @@ public interface IKnowledge extends TetradSerializable {
     IKnowledge copy();
 
     int isInWhichTier(Node node); // added by DMalinsky for tsFCI 4/20/16
+
+    public List<KnowledgeEdge> getListOfRequiredEdges();
+
+    public List<KnowledgeEdge> getListOfExplicitlyRequiredEdges();
+
+    public List<KnowledgeEdge> getListOfForbiddenEdges();
+
+    public List<KnowledgeEdge> getListOfExplicitlyForbiddenEdges();
+
 }
-
-
-

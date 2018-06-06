@@ -29,6 +29,7 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 
 import java.util.Collections;
+import java.util.List;
 
 /**
  * Fast adjacency search followed by robust skew orientation. Checks are done for adding
@@ -76,13 +77,17 @@ public final class FasLofs implements GraphSearch {
      * and some of the adjacencies may be two-cycles.
      */
     public Graph search() {
-        long start = System.currentTimeMillis();
-
         SemBicScore score = new SemBicScore(new CovarianceMatrixOnTheFly(dataSet));
         score.setPenaltyDiscount(penaltyDiscount);
         IndependenceTest test = new IndTestScore(score, dataSet);
 
         System.out.println("FAS");
+
+//        Score scoredIndTest = new ScoredIndTest(test);
+//        Fges fges = new Fges(scoredIndTest);
+//        fges.setMaxDegree(5);
+//        fges.setKnowledge(knowledge);
+//        Graph G0 = fges.search();
 
         FasStable fas = new FasStable(test);
         fas.setDepth(getDepth());
@@ -90,17 +95,18 @@ public final class FasLofs implements GraphSearch {
         fas.setKnowledge(knowledge);
         Graph G0 = fas.search();
 
+        return orient(G0);
+    }
+
+    public Graph orient(Graph g0) {
         System.out.println("LOFS orientation, rule " + rule);
 
-        Lofs2 lofs2 = new Lofs2(G0, Collections.singletonList(dataSet));
+        Lofs2 lofs2 = new Lofs2(g0, Collections.singletonList(dataSet));
         lofs2.setRule(rule);
         lofs2.setKnowledge(knowledge);
         Graph graph = lofs2.orient();
 
         System.out.println("Done");
-
-        long stop = System.currentTimeMillis();
-        this.elapsed = stop - start;
 
         return graph;
     }

@@ -115,29 +115,18 @@ public final class SimulationEditor extends JPanel implements KnowledgeEditable,
         final DataEditor dataEditor;
 
         if (simulation.getSimulation() != null) {
-            System.out.println("simulation.getSimulation() != null");
+            //System.out.println("simulation.getSimulation() != null");
 
-            List<Graph> trueGraphs = new ArrayList<>();
-            DataModelList dataModelList = new DataModelList();
-
-            int numDataSets = simulation.getSimulation().getNumDataModels();
-            System.out.println("numDataSets: " + numDataSets);
-
-            for (int i = 0; i < numDataSets; i++) {
-                trueGraphs.add(simulation.getSimulation().getTrueGraph(i));
-                dataModelList.add(simulation.getSimulation().getDataModel(i));
-            }
-
-            graphEditor = new GraphSelectionEditor(new GraphSelectionWrapper(trueGraphs, new Parameters()));
+            graphEditor = new GraphSelectionEditor(new GraphSelectionWrapper(simulation.getGraphs(), new Parameters()));
             DataWrapper wrapper = new DataWrapper(new Parameters());
-            wrapper.setDataModelList(dataModelList);
+            wrapper.setDataModelList(simulation.getDataModelList());
             dataEditor = new DataEditor(wrapper, false, JTabbedPane.LEFT);
 
             if (simulation.getSimulation() instanceof BooleanGlassSimulation) {
                 simulation.setFixedGraph(true);
             }
         } else {
-            System.out.println("simulation.getSimulation() = null");
+            //System.out.println("simulation.getSimulation() = null");
 
             graphEditor = new GraphSelectionEditor(new GraphSelectionWrapper(Collections.<Graph>emptyList(), new Parameters()));
             dataEditor = new DataEditor(JTabbedPane.LEFT);
@@ -178,9 +167,8 @@ public final class SimulationEditor extends JPanel implements KnowledgeEditable,
                 public void watch() {
                     try {
                         SwingUtilities.invokeAndWait(() -> {
-                            edu.cmu.tetrad.algcomparison.simulation.Simulation _simulation = simulation.getSimulation();
                             try {
-                                _simulation.createData(simulation.getParams());
+                                simulation.createSimulation();
                             } catch (Exception exception) {
                                 exception.printStackTrace(System.err);
                                 Throwable cause = exception;
@@ -198,12 +186,7 @@ public final class SimulationEditor extends JPanel implements KnowledgeEditable,
 
                             firePropertyChange("modelChanged", null, null);
 
-                            List<Graph> graphs = new ArrayList<>();
-                            for (int i = 0; i < _simulation.getNumDataModels(); i++) {
-                                graphs.add(_simulation.getTrueGraph(i));
-                            }
-
-                            graphEditor.replace(graphs);
+                            graphEditor.replace(simulation.getGraphs());
                             DataWrapper wrapper = new DataWrapper(new Parameters());
                             wrapper.setDataModelList(simulation.getDataModelList());
                             tabbedPane.setComponentAt(2, new DataEditor(wrapper, false, JTabbedPane.LEFT));
@@ -230,14 +213,7 @@ public final class SimulationEditor extends JPanel implements KnowledgeEditable,
 
         add(menuBar, BorderLayout.NORTH);
 
-        edu.cmu.tetrad.algcomparison.simulation.Simulation _simulation = simulation.getSimulation();
-
-        List<Graph> graphs = new ArrayList<>();
-        for (int i = 0; i < _simulation.getNumDataModels(); i++) {
-            graphs.add(_simulation.getTrueGraph(i));
-        }
-
-        graphEditor.replace(graphs);
+        graphEditor.replace(simulation.getGraphs());
         DataWrapper wrapper = new DataWrapper(new Parameters());
         wrapper.setDataModelList(simulation.getDataModelList());
         tabbedPane.setComponentAt(2, new DataEditor(wrapper, false, JTabbedPane.LEFT));
@@ -277,54 +253,56 @@ public final class SimulationEditor extends JPanel implements KnowledgeEditable,
         }
 
         if (!simulation.isFixedSimulation()) {
-            if (simulation.getSourceGraph() == null) {
-                String simulationItem = (String) simulationsDropdown.getSelectedItem();
-                simulation.getParams().set("simulationsDropdownPreference", simulationItem);
-                simulation.setFixedGraph(false);
+            if (simulation.getSimulation().getNumDataModels() == 0) {
+                if (simulation.getSourceGraph() == null) {
+                    String simulationItem = (String) simulationsDropdown.getSelectedItem();
+                    simulation.getParams().set("simulationsDropdownPreference", simulationItem);
+                    simulation.setFixedGraph(false);
 
-                if (randomGraph instanceof SingleGraph) {
-                    simulation.setFixedGraph(true);
-                }
+                    if (randomGraph instanceof SingleGraph) {
+                        simulation.setFixedGraph(true);
+                    }
 
-                if (simulationItem.equals(simulationItems[0])) {
-                    simulation.setSimulation(new BayesNetSimulation(randomGraph), simulation.getParams());
-                } else if (simulationItem.equals(simulationItems[1])) {
-                    simulation.setSimulation(new SemSimulation(randomGraph), simulation.getParams());
-                } else if (simulationItem.equals(simulationItems[2])) {
-                    simulation.setSimulation(new LinearFisherModel(randomGraph, simulation.getInputDataModelList()),
-                            simulation.getParams());
-                } else if (simulationItem.equals(simulationItems[3])) {
-                    simulation.setSimulation(new LeeHastieSimulation(randomGraph), simulation.getParams());
-                } else if (simulationItem.equals(simulationItems[4])) {
-                    simulation.setSimulation(new ConditionalGaussianSimulation(randomGraph), simulation.getParams());
-                } else if (simulationItem.equals(simulationItems[5])) {
-                    simulation.setSimulation(new TimeSeriesSemSimulation(randomGraph), simulation.getParams());
+                    if (simulationItem.equals(simulationItems[0])) {
+                        simulation.setSimulation(new BayesNetSimulation(randomGraph), simulation.getParams());
+                    } else if (simulationItem.equals(simulationItems[1])) {
+                        simulation.setSimulation(new SemSimulation(randomGraph), simulation.getParams());
+                    } else if (simulationItem.equals(simulationItems[2])) {
+                        simulation.setSimulation(new LinearFisherModel(randomGraph, simulation.getInputDataModelList()),
+                                simulation.getParams());
+                    } else if (simulationItem.equals(simulationItems[3])) {
+                        simulation.setSimulation(new LeeHastieSimulation(randomGraph), simulation.getParams());
+                    } else if (simulationItem.equals(simulationItems[4])) {
+                        simulation.setSimulation(new ConditionalGaussianSimulation(randomGraph), simulation.getParams());
+                    } else if (simulationItem.equals(simulationItems[5])) {
+                        simulation.setSimulation(new TimeSeriesSemSimulation(randomGraph), simulation.getParams());
+                    } else {
+                        throw new IllegalArgumentException("Unrecognized simulation type: " + simulationItem);
+                    }
                 } else {
-                    throw new IllegalArgumentException("Unrecognized simulation type: " + simulationItem);
-                }
-            } else {
-                String simulationItem = (String) simulationsDropdown.getSelectedItem();
-                simulation.getParams().set("simulationsDropdownPreference", simulationItem);
-                simulation.setFixedGraph(false);
+                    String simulationItem = (String) simulationsDropdown.getSelectedItem();
+                    simulation.getParams().set("simulationsDropdownPreference", simulationItem);
+                    simulation.setFixedGraph(false);
 
-                if (randomGraph instanceof SingleGraph) {
-                    simulation.setFixedGraph(true);
-                }
+                    if (randomGraph instanceof SingleGraph) {
+                        simulation.setFixedGraph(true);
+                    }
 
-                if (simulationItem.equals(simulationItems[0])) {
-                    simulation.setSimulation(new BayesNetSimulation(randomGraph), simulation.getParams());
-                } else if (simulationItem.equals(simulationItems[1])) {
-                    simulation.setSimulation(new SemSimulation(randomGraph), simulation.getParams());
-                } else if (simulationItem.equals(simulationItems[2])) {
-                    simulation.setSimulation(new LinearFisherModel(randomGraph), simulation.getParams());
-                } else if (simulationItem.equals(simulationItems[3])) {
-                    simulation.setSimulation(new LeeHastieSimulation(randomGraph), simulation.getParams());
-                } else if (simulationItem.equals(simulationItems[4])) {
-                    simulation.setSimulation(new ConditionalGaussianSimulation(randomGraph), simulation.getParams());
-                } else if (simulationItem.equals(simulationItems[5])) {
-                    simulation.setSimulation(new TimeSeriesSemSimulation(randomGraph), simulation.getParams());
-                } else {
-                    throw new IllegalArgumentException("Unrecognized simulation type: " + simulationItem);
+                    if (simulationItem.equals(simulationItems[0])) {
+                        simulation.setSimulation(new BayesNetSimulation(randomGraph), simulation.getParams());
+                    } else if (simulationItem.equals(simulationItems[1])) {
+                        simulation.setSimulation(new SemSimulation(randomGraph), simulation.getParams());
+                    } else if (simulationItem.equals(simulationItems[2])) {
+                        simulation.setSimulation(new LinearFisherModel(randomGraph), simulation.getParams());
+                    } else if (simulationItem.equals(simulationItems[3])) {
+                        simulation.setSimulation(new LeeHastieSimulation(randomGraph), simulation.getParams());
+                    } else if (simulationItem.equals(simulationItems[4])) {
+                        simulation.setSimulation(new ConditionalGaussianSimulation(randomGraph), simulation.getParams());
+                    } else if (simulationItem.equals(simulationItems[5])) {
+                        simulation.setSimulation(new TimeSeriesSemSimulation(randomGraph), simulation.getParams());
+                    } else {
+                        throw new IllegalArgumentException("Unrecognized simulation type: " + simulationItem);
+                    }
                 }
             }
         }

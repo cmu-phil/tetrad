@@ -28,8 +28,7 @@ import java.util.List;
 @edu.cmu.tetrad.annotation.Algorithm(
         name = "MBFS",
         command = "mbfs",
-        algoType = AlgType.search_for_Markov_blankets,
-        description = ""
+        algoType = AlgType.search_for_Markov_blankets
 )
 public class MBFS implements Algorithm, HasKnowledge, TakesIndependenceWrapper {
 

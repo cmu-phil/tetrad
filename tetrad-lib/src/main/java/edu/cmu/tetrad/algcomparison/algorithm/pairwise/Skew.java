@@ -25,8 +25,7 @@ import java.util.List;
 @edu.cmu.tetrad.annotation.Algorithm(
         name = "Skew",
         command = "skew",
-        algoType = AlgType.orient_pairwise,
-        description = ""
+        algoType = AlgType.orient_pairwise
 )
 public class Skew implements Algorithm, TakesInitialGraph {
 

@@ -469,7 +469,7 @@ public class Ling {
             }
 
 //          % Do QL decomposition on the inverse square root of cov
-//          [Q,L] = tridecomp(cov^(-0.5),'ql');
+//          [QStyle,L] = tridecomp(cov^(-0.5),'ql');
 
             boolean posDef = LingUtils.isPositiveDefinite(cov);
 //            TetradLogger.getInstance().log("lingamDetails","Positive definite = " + posDef);

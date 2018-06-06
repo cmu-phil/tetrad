@@ -21,6 +21,7 @@
 
 package edu.cmu.tetrad.search;
 
+import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.EdgeListGraphSingleConnections;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
@@ -34,11 +35,11 @@ import java.util.List;
  * @author Joseph Ramsey
  */
 public class DagSepsets implements SepsetProducer {
-    private EdgeListGraphSingleConnections dag;
+    private EdgeListGraph dag;
     private boolean verbose = false;
 
     public DagSepsets(Graph dag) {
-        this.dag = new EdgeListGraphSingleConnections(dag);
+        this.dag = new EdgeListGraph(dag);
     }
 
     @Override

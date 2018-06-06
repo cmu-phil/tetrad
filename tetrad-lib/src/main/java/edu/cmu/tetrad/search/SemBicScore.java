@@ -40,7 +40,7 @@ import static java.lang.Math.log;
  *
  * @author Joseph Ramsey
  */
-public class SemBicScore implements Score {
+public class SemBicScore implements Score, ISemBicScore {
 
     // The covariance matrix.
     private ICovarianceMatrix covariances;
@@ -92,7 +92,7 @@ public class SemBicScore implements Score {
 
         try {
             double s2 = getCovariances().getValue(i, i);
-            int p = parents.length;
+//            int p = parents.length;
 
             TetradMatrix covxx = getSelection(getCovariances(), parents, parents);
             TetradVector covxy = getSelection(getCovariances(), parents, new int[]{i}).getColumn(0);

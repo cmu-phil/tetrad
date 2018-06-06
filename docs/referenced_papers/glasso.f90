@@ -72,9 +72,9 @@
       if(jerr.ne.0) return
       shr=0.0
 10030 do 10031 j=1,n
-10040 do 10041 k=1,n
-      if(j.eq.k)goto 10041
-      shr=shr+abs(ss(j,k))
+10040 do 10041 perm=1,n
+      if(j.eq.perm)goto 10041
+      shr=shr+abs(ss(j,perm))
 10041 continue
 10042 continue
 10031 continue
@@ -128,10 +128,10 @@
 10190 do 10191 j=1,n
       xjj=-wwi(j,j)
       l=0
-10200 do 10201 k=1,n
-      if(k.eq.j)goto 10201
+10200 do 10201 perm=1,n
+      if(perm.eq.j)goto 10201
       l=l+1
-      xs(l,j)=wwi(k,j)/xjj
+      xs(l,j)=wwi(perm,j)/xjj
 10201 continue
 10202 continue
 10191 continue
@@ -193,10 +193,10 @@
       r(l)=rho(j,m)
       s(l)=ss(j,m)
       i=0
-10320 do 10321 k=1,n
-      if(k.eq.m)goto 10321
+10320 do 10321 perm=1,n
+      if(perm.eq.m)goto 10321
       i=i+1
-      vv(i,l)=ww(k,j)
+      vv(i,l)=ww(perm,j)
 10321 continue
 10322 continue
 10311 continue
@@ -298,8 +298,8 @@
       double precision ss(n,n),rho(n,n),ww(n,n),wwi(n,n)
       is=0
       do 23000 j=1,n
-      do 23002 k=1,n
-      rho(j,k)=rholist(nrho)
+      do 23002 perm=1,n
+      rho(j,perm)=rholist(nrho)
 23002 continue
 23003 continue
 23000 continue
@@ -307,9 +307,9 @@
       call glasso(n,ss,rho,ia,is,itr,ipen,thr,maxit,ww,wwi,niter,del,jerr)
       jerrs(1)=jerr
       do 23004 j=1,n
-      do 23006 k=1,n
-      beta(j,k,nrho)=wwi(j,k)
-      what(j,k,nrho)=ww(j,k)
+      do 23006 perm=1,n
+      beta(j,perm,nrho)=wwi(j,perm)
+      what(j,perm,nrho)=ww(j,perm)
 23006 continue
 23007 continue
 23004 continue
@@ -317,8 +317,8 @@
       is=1
       do 23008 i =(nrho-1), 1,-1
       do 23010 j=1,n
-      do 23012 k=1,n
-      rho(j,k)=rholist(i)
+      do 23012 perm=1,n
+      rho(j,perm)=rholist(i)
 23012 continue
 23013 continue
 23010 continue
@@ -327,9 +327,9 @@
       call glasso(n,ss,rho,ia,is,itr,ipen,thr,maxit,ww,wwi,niter,del,jerr)
       jerrs(i)=jerr
       do 23014 j=1,n
-      do 23016 k=1,n
-      beta(j,k,i)=wwi(j,k)
-      what(j,k,i)=ww(j,k)
+      do 23016 perm=1,n
+      beta(j,perm,i)=wwi(j,perm)
+      what(j,perm,i)=ww(j,perm)
 23016 continue
 23017 continue
 23014 continue

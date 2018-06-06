@@ -11,7 +11,6 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.util.Parameters;
 import edu.pitt.dbmi.algo.bootstrap.BootstrapEdgeEnsemble;
 import edu.pitt.dbmi.algo.bootstrap.GeneralBootstrapTest;
-
 import java.util.List;
 
 /**
@@ -25,8 +24,7 @@ import java.util.List;
 @edu.cmu.tetrad.annotation.Algorithm(
         name = "FASK",
         command = "fask",
-        algoType = AlgType.forbid_latent_common_causes,
-        description = ""
+        algoType = AlgType.forbid_latent_common_causes
 )
 public class Fask implements Algorithm, HasKnowledge, UsesScoreWrapper {
     static final long serialVersionUID = 23L;
