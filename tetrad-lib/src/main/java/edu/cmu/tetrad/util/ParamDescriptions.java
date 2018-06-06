@@ -295,6 +295,10 @@ public class ParamDescriptions {
 
         map.put("targetNames", new ParamDescription("Target variable names (comnma separated list)", ""));
 
+        map.put("numBasisFunctions", new ParamDescription(
+                "Number of functions to use in (truncated) basis",
+                6, 1, Integer.MAX_VALUE));
+
     }
 
     public static ParamDescriptions getInstance() {

@@ -68,6 +68,8 @@ public final class Cci {
      */
     private NormalDistribution normal = new NormalDistribution(0, 1);
 
+    private int numFunctions = 10;
+
     //==================CONSTRUCTORS====================//
 
     /**
@@ -117,7 +119,8 @@ public final class Cci {
      * recent independence check.
      */
     public double getScore() {
-        return score;
+        return alpha - score;
+//        return score > alpha ? -1.0 : 1.0;
     }
 
     public double getAlpha() {
@@ -175,11 +178,12 @@ public final class Cci {
                 }
 
                 final double score = calcScore(_x, _y);
+                if (Double.isInfinite(score) || Double.isNaN(score)) continue;
                 if (score < minScore) minScore = score;
             }
         }
 
-        this.score = 1.0 - minScore;
+        this.score = minScore;
 
         return minScore > alpha;
     }
@@ -296,6 +300,14 @@ public final class Cci {
         return residuals;
     }
 
+    private double normalCdf(double mean, double sd, double value) {
+        return normal.cumulativeProbability((value - mean) / sd);
+    }
+
+    public void setNumFunctions(int numFunctions) {
+        this.numFunctions = numFunctions;
+    }
+
     //=====================PRIVATE METHODS====================//
 
     private double moment22(double[] x, double[] y) {
@@ -322,7 +334,9 @@ public final class Cci {
         return g;
     }
 
-    // The number of basis functions to use.
+    /**
+     * Number of functions to use in (truncated) basis
+     */ // The number of basis functions to use.
     private int getNumFunctions() {
         return 8;
     }
@@ -405,10 +419,6 @@ public final class Cci {
         }
 
         return data;
-    }
-
-    private double normalCdf(double mean, double sd, double value) {
-        return normal.cumulativeProbability((value - mean) / sd);
     }
 }
 

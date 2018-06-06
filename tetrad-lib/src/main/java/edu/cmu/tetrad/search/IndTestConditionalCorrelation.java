@@ -76,6 +76,8 @@ public final class IndTestConditionalCorrelation implements IndependenceTest {
     private Map<Node, Integer> indices;
     private boolean verbose = false;
 
+    private int numFunctions = 10;
+
     //==========================CONSTRUCTORS=============================//
 
     /**
@@ -106,6 +108,7 @@ public final class IndTestConditionalCorrelation implements IndependenceTest {
         for (int i = 0; i < variables.size(); i++) varNames.add(variables.get(i).getName());
 
         this.cci = new Cci(data, varNames, alpha);
+        this.cci.setNumFunctions(getNumFunctions());
 
         indices = new HashMap<>();
 
@@ -176,7 +179,7 @@ public final class IndTestConditionalCorrelation implements IndependenceTest {
      * @return the probability associated with the most recently computed independence test.
      */
     public double getPValue() {
-        return cci.getAlpha();
+        return cci.getScore();
     }
 
     /**
@@ -282,6 +285,17 @@ public final class IndTestConditionalCorrelation implements IndependenceTest {
 
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;
+    }
+
+    /**
+     * Number of functions to use in (truncated) basis.
+     */
+    public int getNumFunctions() {
+        return numFunctions;
+    }
+
+    public void setNumFunctions(int numFunctions) {
+        this.numFunctions = numFunctions;
     }
 
     //==================================PRIVATE METHODS================================
