@@ -24,8 +24,7 @@ import java.util.List;
 @edu.cmu.tetrad.annotation.Algorithm(
         name = "MGM",
         command = "mgm",
-        algoType = AlgType.produce_undirected_graphs,
-        description = ""
+        algoType = AlgType.produce_undirected_graphs
 )
 public class Mgm implements Algorithm {
 

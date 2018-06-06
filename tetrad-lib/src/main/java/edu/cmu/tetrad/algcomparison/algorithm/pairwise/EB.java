@@ -27,8 +27,7 @@ import java.util.List;
 @edu.cmu.tetrad.annotation.Algorithm(
         name = "EB",
         command = "eb",
-        algoType = AlgType.orient_pairwise,
-        description = ""
+        algoType = AlgType.orient_pairwise
 )
 public class EB implements Algorithm, TakesInitialGraph {
 
