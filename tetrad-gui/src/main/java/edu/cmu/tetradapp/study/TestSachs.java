@@ -980,6 +980,11 @@ public class TestSachs {
         }
 
         @Override
+        public DataModel getDataModelWithLatents(int index) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
         public String getDescription() {
             return "Load data sets and graphs from a directory" + (!("".equals(description)) ? ": " + description : "");
 

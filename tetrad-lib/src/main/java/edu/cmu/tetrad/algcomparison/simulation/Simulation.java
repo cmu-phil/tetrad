@@ -43,7 +43,9 @@ public interface Simulation extends HasParameters, TetradSerializable {
      * @param index The index of the desired simulated data set.
      * @return That data set.
      */
-    DataModel getDataModelWithLatents(int index);
+    default DataModel getDataModelWithLatents(int index) {
+        throw new UnsupportedOperationException();
+    }
 
     /**
      * @return Returns the type of the data, continuous, discrete or mixed.

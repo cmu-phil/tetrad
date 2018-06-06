@@ -120,6 +120,11 @@ public class LoadContinuousDataPwdd7 implements Simulation, HasParameterValues {
         return dataSets.get(index);
     }
 
+    @Override
+    public DataModel getDataModelWithLatents(int index) {
+        throw new UnsupportedOperationException();
+    }
+
     public String getDescription() {
         try {
             StringBuilder b = new StringBuilder();
