@@ -23,7 +23,6 @@ package edu.cmu.tetrad.data;
 
 import cern.colt.list.DoubleArrayList;
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.regression.RegressionCovariance;
 import edu.cmu.tetrad.regression.RegressionDataset;
 import edu.cmu.tetrad.regression.RegressionResult;
 import edu.cmu.tetrad.search.IndTestConditionalCorrelation;
@@ -41,13 +40,8 @@ import java.rmi.MarshalledObject;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.*;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ForkJoinPool;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 
-import static edu.cmu.tetrad.util.StatUtils.variance;
-import static java.lang.Math.abs;
 import static java.lang.Math.log;
 import static java.lang.Math.sqrt;
 
@@ -2359,6 +2353,61 @@ public final class DataUtils {
         double sy = eyy - ey * ey;
 
         return new double[]{sxy, sxy / sqrt(sx * sy), sx, sy, (double) n, ex, ey, sxy / sx};
+    }
+
+    public static List<Node> selectVariables(DataSet dataSet, Node y, double alpha, int parallelism) {
+        IndependenceTest test = new IndTestFisherZ(dataSet, alpha);
+        List<Node> selection = new CopyOnWriteArrayList<>();
+
+        final List<Node> variables = test.getVariables();
+
+        {
+            class Task implements Callable<Boolean> {
+                private int from;
+                private int to;
+                private Node y;
+
+                private Task(int from, int to, Node y) {
+                    this.from = from;
+                    this.to = to;
+                    this.y = y;
+                }
+
+                @Override
+                public Boolean call() {
+                    for (int n = from; n < to; n++) {
+                        final Node node = variables.get(n);
+                        if (node != y) {
+                            if (!test.isIndependent(node, y)) {
+                                if (!selection.contains(node)) {
+                                    selection.add(node);
+                                }
+                            }
+                        }
+                    }
+
+                    return true;
+                }
+            }
+
+            final int chunk = 50;
+            List<Callable<Boolean>> tasks;
+
+            {
+                tasks = new ArrayList<>();
+
+                for (int from = 0; from < variables.size(); from += chunk) {
+                    final int to = Math.min(variables.size(), from + chunk);
+                    tasks.add(new Task(from, to, y));
+                }
+
+                ConcurrencyUtils.runCallables(tasks, parallelism);
+            }
+        }
+
+        System.out.println("# selected variables = " + selection.size());
+
+        return selection;
     }
 }
 

@@ -26,9 +26,11 @@ import java.util.concurrent.*;
  * @author jdramsey@andrew.cmu.edu
  */
 public class CStaS {
+
+
     public enum PatternAlgorithm {FGES, PC_STABLE}
+
     public enum SampleStyle {BOOTSTRAP, SPLIT}
-    public enum QStyle {DEFAULT, PICK_RANGE}
 
     private int numSubsamples = 30;
     private int qFrom = 1;
@@ -40,7 +42,6 @@ public class CStaS {
 
     private PatternAlgorithm patternAlgorithm = PatternAlgorithm.FGES;
     private SampleStyle sampleStyle = SampleStyle.BOOTSTRAP;
-    private QStyle qStyle = QStyle.DEFAULT;
 
     private boolean verbose = false;
 
@@ -158,17 +159,15 @@ public class CStaS {
 
         List<Integer> qs = new ArrayList<>();
 
-        if (qStyle == QStyle.DEFAULT) {
-            qs.add(-1);
-        } else {
-            for (int q = qFrom; q <= qTo; q += qIncrement) {
-                if (q <= p) {
-                    qs.add(q);
-                } else {
-                    System.out.println("q = " + q + " > p = " + p + "; skipping");
-                }
+        for (int q = qFrom; q <= qTo; q += qIncrement) {
+            if (q <= p) {
+                qs.add(q);
+            } else {
+                System.out.println("q = " + q + " > p = " + p + "; skipping");
             }
         }
+
+        if (qs.isEmpty()) return new LinkedList<>();
 
         LinkedList<LinkedList<Record>> allRecords = new LinkedList<>();
 
@@ -221,7 +220,8 @@ public class CStaS {
             }
         }
 
-        final int[] edgesMax = new int[1];
+        final int[] edgesTotal = new int[1];
+        final int[] edgesCount = new int[1];
 
         class Task implements Callable<double[][]> {
             private final List<Node> possibleCauses;
@@ -276,9 +276,8 @@ public class CStaS {
 
                         System.out.println("# edges = " + pattern.getNumEdges());
 
-                        if (pattern.getNumEdges() > edgesMax[0]) {
-                            edgesMax[0] = pattern.getNumEdges();
-                        }
+                        edgesTotal[0] += pattern.getNumEdges();
+                        edgesCount[0]++;
 
                         if (dir != null) {
                             GraphUtils.saveGraph(pattern, new File(dir, "pattern." + (k + 1) + ".txt"), false);
@@ -321,12 +320,12 @@ public class CStaS {
 
         final List<double[][]> allEffects = runCallablesDoubleArray(tasks, getParallelism());
 
-        int _q = edgesMax[0] / 2;
+        int avgEdges = (int) (edgesTotal[0] / (double) edgesCount[0]);
+//        avgEdges /= 2.0;
 
-        if (qs.get(0) == -1) {
-            qs.clear();
-            qs.add(_q);
-        }
+        qs.clear();
+        qs.add(avgEdges);
+
 
         List<List<Double>> doubles = new ArrayList<>();
 //        List<Double> allDoubles = new ArrayList<>();
@@ -386,12 +385,14 @@ public class CStaS {
                                 }
                             }
 
+//                            if (count > 0) {
                             final double pi = count / ((double) getNumSubsamples());
                             if (pi < (q / (double) p)) continue;
                             final Node cause = possibleCauses.get(c);
                             final Node effect = possibleEffects.get(e);
                             tuples.add(new Tuple(cause, effect, pi,
                                     avgMinEffect(possibleCauses, possibleEffects, allEffects, cause, effect)));
+//                            }
                         }
                     }
 
@@ -688,10 +689,6 @@ public class CStaS {
 
     public void setTrueDag(Graph trueDag) {
         this.trueDag = trueDag;
-    }
-
-    public void setQStyle(QStyle qStyle) {
-        this.qStyle = qStyle;
     }
 
     //=============================PRIVATE==============================//

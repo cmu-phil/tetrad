@@ -173,13 +173,13 @@ public class TestCStaS {
         List<Node> potentialCauses = new ArrayList<>();
         potentialEffects = GraphUtils.replaceNodes(potentialEffects, dataSet.getVariables());
 
-//        for (Node target : potentialEffects) {
-//            List<Node> _selectionVars = DataUtils.selectVariables(dataSet, target, selectionAlpha, 40);
-//
-//            if (_selectionVars.size() > potentialCauses.size()) {
-//                potentialCauses = _selectionVars;
-//            }
-//        }
+        for (Node target : potentialEffects) {
+            List<Node> _selectionVars = DataUtils.selectVariables(dataSet, target, selectionAlpha, 40);
+
+            if (_selectionVars.size() > potentialCauses.size()) {
+                potentialCauses = _selectionVars;
+            }
+        }
 
         System.out.println("Selected # nodes = " + potentialCauses.size());
 
@@ -214,24 +214,18 @@ public class TestCStaS {
 
     public void testCStaS2() {
         int numNodes = 300;
-        double avgDegree = 2;
-        int sampleSize = 200;
+        double avgDegree = 1;
+        int sampleSize = 300;
 
-        int numEffects = 20;
+        int numEffects = 10;
         int numSubsamples = 50;
 
         double penaltyDiscount = 1;
-        double selectionAlpha = .5;
+        double selectionAlpha = .3;
         int startIndex = 0;
 
-
         CStaS.PatternAlgorithm algorithm = CStaS.PatternAlgorithm.FGES;
-        CStaS.SampleStyle sampleStyle = CStaS.SampleStyle.BOOTSTRAP;
-        CStaS.QStyle qStyle = CStaS.QStyle.DEFAULT;
-
-        int qFrom = 50;
-        int qTo = qFrom;
-        int qIncrement = 1;
+        CStaS.SampleStyle sampleStyle = CStaS.SampleStyle.SPLIT;
 
         Parameters parameters = new Parameters();
 
@@ -288,13 +282,13 @@ public class TestCStaS {
         List<Node> potentialCauses = new ArrayList<>();
         potentialEffects = GraphUtils.replaceNodes(potentialEffects, dataSet.getVariables());
 
-//        for (Node target : potentialEffects) {
-//            List<Node> _selectionVars = DataUtils.selectVariables(dataSet, target, selectionAlpha, 40);
-//
-//            if (_selectionVars.size() > potentialCauses.size()) {
-//                potentialCauses = _selectionVars;
-//            }
-//        }
+        for (Node target : potentialEffects) {
+            List<Node> _selectionVars = DataUtils.selectVariables(dataSet, target, selectionAlpha, 40);
+
+            if (_selectionVars.size() > potentialCauses.size()) {
+                potentialCauses = _selectionVars;
+            }
+        }
 
         int totalCauseEffect = 0;
 
@@ -310,16 +304,14 @@ public class TestCStaS {
         System.out.println("Selected # nodes = " + potentialCauses.size());
         System.out.println("Total # cause/effect pairs: " + totalCauseEffect);
 
-//        int qFrom = (int)(totalCauseEffect);
-//        int qTo = qFrom;
-//        int qIncrement = 1;
-
+        int qFrom = (int)(.5 * totalCauseEffect);
+        int qTo = qFrom;
+        int qIncrement = 1;
 
         CStaS cstas = new CStaS();
         cstas.setNumSubsamples(numSubsamples);
         cstas.setPatternAlgorithm(algorithm);
         cstas.setSampleStyle(sampleStyle);
-        cstas.setQStyle(qStyle);
         cstas.setqFrom(qFrom);
         cstas.setqTo(qTo);
         cstas.setqIncrement(qIncrement);
@@ -548,26 +540,7 @@ public class TestCStaS {
             List<Node> possibleCauses = new ArrayList<>();
             List<Node> possibleEffects = new ArrayList<>();
 
-            for (int i = 0; i < 100; i++) {
-                possibleCauses.add(dataSet.getVariable("G" + i));
-            }
-
-            for (int i = 100; i < 200; i++) {
-                possibleEffects.add(dataSet.getVariable("G" + i));
-            }
-
-//            for(int i=1;i<=1430;i++) {
-//                final Node variable = dataSet.getVariable("G" + i);
-//
-//                if (variable == null) {
-//                    System.out.println("G" + i + " is not in the dataset");
-//                }
-//
-//                possibleCauses.add(variable);
-//            }
-
-            for(int i=1;i<=1074;i++)
-                possibleEffects.add(dataSet.getVariable("g"+i));
+            possibleCauses.add(dataSet.getVariable("G1"));
 
             SemBicScore score = new SemBicScore(new CovarianceMatrixOnTheFly(dataSet));
             score.setPenaltyDiscount(2);
