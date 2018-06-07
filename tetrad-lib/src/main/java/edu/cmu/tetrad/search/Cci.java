@@ -328,10 +328,9 @@ public final class Cci {
 
     // Polynomial basis. The 1 is left out according to Daudin.
     private double function(int index, double x) {
-//        return sin((index) * x) + cos((index) * x); // This would be a sin cosine basis.
-
         x *= getScale();
-
+//        return sin((index) * x) + cos((index) * x); // This would be a sin cosine basis.
+//
         double g = 1.0;
 
         for (int i = 1; i <= index; i++) {
