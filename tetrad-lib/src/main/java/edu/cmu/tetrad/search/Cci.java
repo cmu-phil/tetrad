@@ -21,6 +21,7 @@
 
 package edu.cmu.tetrad.search;
 
+import edu.cmu.tetrad.util.StatUtils;
 import org.apache.commons.math3.distribution.NormalDistribution;
 import org.apache.commons.math3.linear.RealMatrix;
 
@@ -68,7 +69,15 @@ public final class Cci {
      */
     private NormalDistribution normal = new NormalDistribution(0, 1);
 
+    /**
+     * Number of functions to use in the (truncated) basis.
+     */
     private int numFunctions = 10;
+
+    /**
+     * Z cutoff for testing; depends on alpha.
+     */
+    private double cutoff;
 
     //==================CONSTRUCTORS====================//
 
@@ -101,6 +110,8 @@ public final class Cci {
         for (int i = 0; i < data.getColumnDimension(); i++) {
             h[i] = h(variables.get(i));
         }
+
+        this.cutoff = StatUtils.getZForAlpha(alpha);
     }
 
     //=================PUBLIC METHODS====================//
@@ -119,8 +130,7 @@ public final class Cci {
      * recent independence check.
      */
     public double getScore() {
-        return alpha - score;
-//        return score > alpha ? -1.0 : 1.0;
+        return score - cutoff;
     }
 
     public double getAlpha() {
@@ -168,7 +178,7 @@ public final class Cci {
         double[] _x = new double[x.length];
         double[] _y = new double[x.length];
 
-        double minScore = Double.POSITIVE_INFINITY;
+        double maxScore = Double.NEGATIVE_INFINITY;
 
         for (int m = 1; m <= getNumFunctions(); m++) {
             for (int n = 1; n <= getNumFunctions(); n++) {
@@ -179,13 +189,13 @@ public final class Cci {
 
                 final double score = calcScore(_x, _y);
                 if (Double.isInfinite(score) || Double.isNaN(score)) continue;
-                if (score < minScore) minScore = score;
+                if (score > maxScore) maxScore = score;
             }
         }
 
-        this.score = minScore;
+        this.score = maxScore;
 
-        return minScore > alpha;
+        return maxScore < cutoff;
     }
 
     private double calcScore(double[] _x, double[] _y) {
@@ -205,7 +215,7 @@ public final class Cci {
         _x = standardize(_x);
         _y = standardize(_y);
 
-        return 2.0 * (1.0 - normalCdf(0.0, sqrt(moment22(_x, _y)), abs(w)));
+        return abs(w) / sqrt(moment22(_x, _y));
     }
 
     /**
@@ -300,9 +310,9 @@ public final class Cci {
         return residuals;
     }
 
-    private double normalCdf(double mean, double sd, double value) {
-        return normal.cumulativeProbability((value - mean) / sd);
-    }
+//    private double normalCdf(double mean, double sd, double value) {
+//        return normal.cumulativeProbability((value - mean) / sd);
+//    }
 
     public void setNumFunctions(int numFunctions) {
         this.numFunctions = numFunctions;
@@ -336,9 +346,9 @@ public final class Cci {
 
     /**
      * Number of functions to use in (truncated) basis
-     */ // The number of basis functions to use.
+     */
     private int getNumFunctions() {
-        return 8;
+        return numFunctions;
     }
 
     private double covariance(double[] x, double[] y) {
