@@ -64,10 +64,10 @@ public final class Cci {
      */
     private Map<String, Integer> indices;
 
-    /**
-     * Constructing apache NormalDistribution takes a while, so do it once.
-     */
-    private NormalDistribution normal = new NormalDistribution(0, 1);
+//    /**
+//     * Constructing apache NormalDistribution takes a while, so do it once.
+//     */
+//    private NormalDistribution normal = new NormalDistribution(0, 1);
 
     /**
      * Number of functions to use in the (truncated) basis.
