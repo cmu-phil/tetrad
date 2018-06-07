@@ -80,8 +80,6 @@ public final class IndTestConditionalCorrelation implements IndependenceTest {
      */
     private int numFunctions = 10;
 
-    private double scale = 1.0;
-
     /**
      * True if verbose output should be printed.
      */
@@ -118,7 +116,6 @@ public final class IndTestConditionalCorrelation implements IndependenceTest {
 
         this.cci = new Cci(data, varNames, alpha);
         this.cci.setNumFunctions(getNumFunctions());
-        this.cci.setScale(getScale());
 
         indices = new HashMap<>();
 
@@ -307,20 +304,6 @@ public final class IndTestConditionalCorrelation implements IndependenceTest {
     public void setNumFunctions(int numFunctions) {
         this.numFunctions = numFunctions;
     }
-
-    /**
-     * Data will be multiplied by this scale.
-     */
-    public double getScale() {
-        return scale;
-    }
-
-    public void setScale(double scale) {
-        this.scale = scale;
-    }
-
-    //==================================PRIVATE METHODS================================
-
 }
 
 

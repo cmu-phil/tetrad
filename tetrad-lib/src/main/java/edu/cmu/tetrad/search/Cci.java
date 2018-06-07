@@ -24,7 +24,10 @@ package edu.cmu.tetrad.search;
 import edu.cmu.tetrad.util.StatUtils;
 import org.apache.commons.math3.linear.RealMatrix;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import static edu.cmu.tetrad.util.StatUtils.median;
 import static java.lang.Math.*;
@@ -72,11 +75,6 @@ public final class Cci {
      * Z cutoff for testing; depends on alpha.
      */
     private double cutoff;
-
-    /**
-     * All data values will be multiplied by this scale.
-     */
-    private double scale = 1.0;
 
     //==================CONSTRUCTORS====================//
 
@@ -186,6 +184,9 @@ public final class Cci {
                     _y[i] = function(n, y[i]);
                 }
 
+                _x = scale(_x);
+                _y = scale(_y);
+
                 final double score = calcScore(_x, _y);
                 if (Double.isInfinite(score) || Double.isNaN(score)) continue;
                 if (score > maxScore) maxScore = score;
@@ -195,6 +196,21 @@ public final class Cci {
         this.score = maxScore;
 
         return maxScore < cutoff;
+    }
+
+    private double[] scale(double[] x) {
+        double max = StatUtils.max(x);
+        double min = StatUtils.min(x);
+
+        double factor = Math.max(abs(max), abs(min));
+
+        double[] _x = new double[x.length];
+
+        for (int i = 0; i < x.length; i++) {
+            _x[i] = x[i] / factor;
+        }
+
+        return _x;
     }
 
     private double calcScore(double[] _x, double[] _y) {
@@ -328,7 +344,6 @@ public final class Cci {
 
     // Polynomial basis. The 1 is left out according to Daudin.
     private double function(int index, double x) {
-        x *= getScale();
 //        return sin((index) * x) + cos((index) * x); // This would be a sin cosine basis.
 //
         double g = 1.0;
@@ -425,18 +440,6 @@ public final class Cci {
         }
 
         return data;
-    }
-
-    /**
-     * All data values will be multiplied by this scale. If the data are greater than 1 in
-     * absolute value, scaled, then larger exponent functions will not be visited.
-     */
-    public double getScale() {
-        return scale;
-    }
-
-    public void setScale(double scale) {
-        this.scale = scale;
     }
 }
 

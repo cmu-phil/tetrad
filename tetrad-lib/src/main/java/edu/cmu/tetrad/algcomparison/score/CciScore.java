@@ -35,7 +35,6 @@ public class CciScore implements ScoreWrapper {
         final double alpha = parameters.getDouble("alpha");
         IndTestConditionalCorrelation test = new IndTestConditionalCorrelation((DataSet) dataSet, alpha);
         test.setNumFunctions(parameters.getInt("numFunctions"));
-        test.setScale(parameters.getDouble("cciScale"));
         return new ScoredIndTest(test);
     }
 
@@ -54,7 +53,6 @@ public class CciScore implements ScoreWrapper {
         List<String> parameters = new ArrayList<>();
         parameters.add("alpha");
         parameters.add("numBasisFunctions");
-        parameters.add("cciScale");
         return parameters;
     }
 
