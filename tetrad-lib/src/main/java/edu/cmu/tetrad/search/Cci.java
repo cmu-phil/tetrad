@@ -64,11 +64,6 @@ public final class Cci {
      */
     private Map<String, Integer> indices;
 
-//    /**
-//     * Constructing apache NormalDistribution takes a while, so do it once.
-//     */
-//    private NormalDistribution normal = new NormalDistribution(0, 1);
-
     /**
      * Number of functions to use in the (truncated) basis.
      */
@@ -309,10 +304,6 @@ public final class Cci {
 
         return residuals;
     }
-
-//    private double normalCdf(double mean, double sd, double value) {
-//        return normal.cumulativeProbability((value - mean) / sd);
-//    }
 
     public void setNumFunctions(int numFunctions) {
         this.numFunctions = numFunctions;
