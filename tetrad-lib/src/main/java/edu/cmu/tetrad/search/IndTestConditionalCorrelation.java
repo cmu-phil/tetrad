@@ -74,9 +74,18 @@ public final class IndTestConditionalCorrelation implements IndependenceTest {
      * Map from nodes to the indices.
      */
     private Map<Node, Integer> indices;
-    private boolean verbose = false;
 
+    /**
+     * The number of functions to use in the basis.
+     */
     private int numFunctions = 10;
+
+    private double scale = 1.0;
+
+    /**
+     * True if verbose output should be printed.
+     */
+    private boolean verbose = false;
 
     //==========================CONSTRUCTORS=============================//
 
@@ -109,6 +118,7 @@ public final class IndTestConditionalCorrelation implements IndependenceTest {
 
         this.cci = new Cci(data, varNames, alpha);
         this.cci.setNumFunctions(getNumFunctions());
+        this.cci.setScale(getScale());
 
         indices = new HashMap<>();
 
@@ -296,6 +306,17 @@ public final class IndTestConditionalCorrelation implements IndependenceTest {
 
     public void setNumFunctions(int numFunctions) {
         this.numFunctions = numFunctions;
+    }
+
+    /**
+     * Data will be multiplied by this scale.
+     */
+    public double getScale() {
+        return scale;
+    }
+
+    public void setScale(double scale) {
+        this.scale = scale;
     }
 
     //==================================PRIVATE METHODS================================

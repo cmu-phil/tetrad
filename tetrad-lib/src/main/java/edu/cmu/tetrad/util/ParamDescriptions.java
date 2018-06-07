@@ -299,6 +299,11 @@ public class ParamDescriptions {
                 "Number of functions to use in (truncated) basis",
                 6, 1, Integer.MAX_VALUE));
 
+        map.put("cciScale", new ParamDescription(
+                "Data should be scaled by this factor",
+                1.0, Double.MIN_VALUE, Double.POSITIVE_INFINITY));
+
+
     }
 
     public static ParamDescriptions getInstance() {

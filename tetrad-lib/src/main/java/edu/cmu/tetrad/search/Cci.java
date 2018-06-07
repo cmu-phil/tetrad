@@ -22,7 +22,6 @@
 package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.util.StatUtils;
-import org.apache.commons.math3.distribution.NormalDistribution;
 import org.apache.commons.math3.linear.RealMatrix;
 
 import java.util.*;
@@ -73,6 +72,11 @@ public final class Cci {
      * Z cutoff for testing; depends on alpha.
      */
     private double cutoff;
+
+    /**
+     * All data values will be multiplied by this scale.
+     */
+    private double scale = 1.0;
 
     //==================CONSTRUCTORS====================//
 
@@ -326,6 +330,8 @@ public final class Cci {
     private double function(int index, double x) {
 //        return sin((index) * x) + cos((index) * x); // This would be a sin cosine basis.
 
+        x *= getScale();
+
         double g = 1.0;
 
         for (int i = 1; i <= index; i++) {
@@ -420,6 +426,18 @@ public final class Cci {
         }
 
         return data;
+    }
+
+    /**
+     * All data values will be multiplied by this scale. If the data are greater than 1 in
+     * absolute value, scaled, then larger exponent functions will not be visited.
+     */
+    public double getScale() {
+        return scale;
+    }
+
+    public void setScale(double scale) {
+        this.scale = scale;
     }
 }
 
