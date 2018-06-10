@@ -44,7 +44,7 @@ public final class Cci {
      * The matrix of data, N x M, where N is the number of samples, M the number
      * of variables, gotten from dataSet.
      */
-    private RealMatrix data;
+    private double[][] data;
 
     /**
      * The significance level of the independence tests.
@@ -94,7 +94,7 @@ public final class Cci {
         }
 
         this.alpha = alpha;
-        this.data = data;
+        this.data = data.transpose().getData();
 
         indices = new HashMap<>();
 
@@ -117,8 +117,9 @@ public final class Cci {
      * @return true iff x is independent of y conditional on z.
      */
     public boolean isIndependent(String x, String y, List<String> z) {
-        double[] rXZ = residuals(x, z);
-        double[] rYZ = residuals(y, z);
+        double[][] ret = residuals(x, y, z);
+        double[] rXZ = ret[0];
+        double[] rYZ = ret[1];
         return independent(rXZ, rYZ);
     }
 
@@ -238,17 +239,19 @@ public final class Cci {
      * so it can be accessed separately.
      */
     public double[] residuals(String x, List<String> z) {
-        int N = data.getRowDimension();
+        int N = data[0].length;
 
         int _x = indices.get(x);
 
         double[] residuals = new double[N];
 
+        final double[] xdata = data[_x];
+
         if (z.size() == 0) {
 
             // No need to center; the covariance calculation does that.
             for (int i = 0; i < N; i++) {
-                residuals[i] = data.getEntry(i, _x);
+                residuals[i] = xdata[i];
 
                 if (Double.isNaN(residuals[i])) {
                     residuals[i] = 0;
@@ -274,55 +277,179 @@ public final class Cci {
 
         h *= sqrt(_z.length);
 
-        double[] sums = new double[N];
-        double[] weights = new double[N];
+//        double[] sums = new double[N];
+//        double[] weights = new double[N];
 
         for (int i = 0; i < N; i++) {
 
-            double xi = data.getEntry(i, _x);
+            double sumsi = 0.0;
+            double weightsi = 0.0;
 
-            if (Double.isNaN(xi)) xi = 0.0;
+            double xi = xdata[i];
 
-            for (int j = i + 1; j < N; j++) {
+            for (int j = 0; j < N; j++) {
 
                 // Skips NaN values.
                 double d = distance(data, _z, i, j);
                 double k = kernel(d / h);
 
-                double xj = data.getEntry(j, _x);
+                double xj = xdata[j];
 
                 if (Double.isNaN(xj)) xj = 0.0;
 
-                sums[i] += k * xj;
-                weights[i] += k;
-
-                sums[j] += k * xi;
-                weights[j] += k;
+                sumsi += k * xj;
+                weightsi += k;
             }
-        }
 
-        for (int i = 0; i < N; i++) {
-            double xi = data.getEntry(i, _x);
-
-            if (Double.isNaN(xi)) xi = 0.0;
-
-            // Skips NaN values.
-            double d = distance(data, _z, i, i);
-            double k = kernel(d / h);
-
-            sums[i] += k * xi;
-            weights[i] += k;
-        }
-
-        for (int i = 0; i < residuals.length; i++) {
-            residuals[i] = data.getEntry(i, _x) - sums[i] / weights[i];
+            residuals[i] = xi - sumsi / weightsi;
 
             if (Double.isNaN(residuals[i])) {
                 residuals[i] = 0;
             }
         }
 
+//        for (int i = 0; i < N; i++) {
+//            double xi = xdata[i];
+//
+//            if (Double.isNaN(xi)) xi = 0.0;
+//
+//            // Skips NaN values.
+////            double d = 0;//distance(data, _z, i, i);
+//            double k = 0.5;//kernel(d / h);
+//
+//            sums[i] += k * xi;
+//            weights[i] += k;
+//        }
+
+//        for (int i = 0; i < residuals.length; i++) {
+//            residuals[i] = xdata[i] - sums[i] / weights[i];
+//
+//            if (Double.isNaN(residuals[i])) {
+//                residuals[i] = 0;
+//            }
+//        }
+
         return residuals;
+    }
+
+
+    /**
+     * Calculates the residuals of x regressed nonparametrically onto z. Left public
+     * so it can be accessed separately.
+     */
+    public double[][] residuals(String x, String y, List<String> z) {
+        int N = data[0].length;
+
+        int _x = indices.get(x);
+        int _y = indices.get(y);
+
+        double[] residualsx = new double[N];
+        double[] residualsy = new double[N];
+
+        final double[] xdata = data[_x];
+        final double[] ydata = data[_y];
+
+        if (z.size() == 0) {
+
+            // No need to center; the covariance calculation does that.
+            for (int i = 0; i < N; i++) {
+                residualsx[i] = xdata[i];
+
+                if (Double.isNaN(residualsx[i])) {
+                    residualsx[i] = 0;
+                }
+            }
+
+            for (int i = 0; i < N; i++) {
+                residualsy[i] = ydata[i];
+
+                if (Double.isNaN(residualsy[i])) {
+                    residualsy[i] = 0;
+                }
+            }
+        } else {
+
+            double[] sumsx = new double[N];
+            double[] sumsy = new double[N];
+
+            double[] weights = new double[N];
+
+            int[] _z = new int[z.size()];
+
+            for (int m = 0; m < z.size(); m++) {
+                _z[m] = indices.get(z.get(m));
+            }
+
+            double h = 0.0;
+
+            for (int c : _z) {
+                if (this.h[c] > h) {
+                    h = this.h[c];
+                }
+            }
+
+            h *= sqrt(_z.length);
+
+            for (int i = 0; i < N; i++) {
+                double xi = xdata[i];
+                double yi = ydata[i];
+
+                for (int j = i + 1; j < N; j++) {
+
+                    double xj = xdata[j];
+                    double yj = ydata[j];
+
+                    // Skips NaN values.
+                    double d = distance(data, _z, i, j);
+                    double k = kernel(d / h);
+
+                    if (Double.isNaN(xi)) xi = 0.0;
+                    if (Double.isNaN(yi)) yi = 0.0;
+
+                    sumsx[i] += k * xj;
+                    sumsy[i] += k * yj;
+
+                    sumsx[j] += k * xi;
+                    sumsy[j] += k * yi;
+
+                    weights[i] += k;
+                    weights[j] += k;
+                }
+
+                if (Double.isNaN(residualsx[i])) {
+                    residualsx[i] = 0;
+                }
+
+                if (Double.isNaN(residualsy[i])) {
+                    residualsy[i] = 0;
+                }
+            }
+
+            for (int i = 0; i < N; i++) {
+                double xi = xdata[i];
+                double yi = ydata[i];
+
+                if (Double.isNaN(xi)) xi = 0.0;
+                if (Double.isNaN(yi)) yi = 0.0;
+
+                double k = 0.5;
+
+                sumsx[i] += k * xi;
+                sumsy[i] += k * yi;
+                weights[i] += k;
+            }
+
+            for (int i = 0; i < N; i++) {
+                residualsx[i] = xdata[i] - sumsx[i] / weights[i];
+                residualsy[i] = ydata[i] - sumsy[i] / weights[i];
+            }
+        }
+
+        double[][] ret = new double[2][];
+        ret[0] = residualsx;
+        ret[1] = residualsy;
+
+        return ret;
     }
 
     public void setNumFunctions(int numFunctions) {
@@ -381,7 +508,7 @@ public final class Cci {
     // using MAD.
     private double h(String x) {
 
-        double[] xCol = data.getColumn(indices.get(x));
+        double[] xCol = data[indices.get(x)];
         double[] g = new double[xCol.length];
         double median = median(xCol);
         for (int j = 0; j < xCol.length; j++) g[j] = abs(xCol[j] - median);
@@ -396,11 +523,11 @@ public final class Cci {
     }
 
     // Euclidean distance.
-    private double distance(RealMatrix data, int[] yCols, int i, int j) {
+    private double distance(double[][] data, int[] yCols, int i, int j) {
         double sum = 0.0;
 
         for (int yCol : yCols) {
-            double d = data.getEntry(i, yCol) - data.getEntry(j, yCol);
+            double d = data[yCol][i] - data[yCol][j];
 
             if (!Double.isNaN(d)) {
                 sum += d * d;

@@ -22,6 +22,7 @@
 package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.DataSet;
+import edu.cmu.tetrad.data.DataUtils;
 import edu.cmu.tetrad.data.ICovarianceMatrix;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.NumberFormatUtil;
@@ -109,7 +110,7 @@ public final class IndTestConditionalCorrelation implements IndependenceTest {
         setAlpha(alpha);
 
         this.dataSet = dataSet;
-        data = this.dataSet.getDoubleData().getRealMatrix();
+        data = dataSet.getDoubleData().getRealMatrix();
 
         List<String> varNames = new ArrayList<>();
         for (int i = 0; i < variables.size(); i++) varNames.add(variables.get(i).getName());
