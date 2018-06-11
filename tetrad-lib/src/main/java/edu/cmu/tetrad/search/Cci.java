@@ -29,6 +29,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static edu.cmu.tetrad.util.StatUtils.cov;
 import static edu.cmu.tetrad.util.StatUtils.median;
 import static java.lang.Math.*;
 
@@ -141,31 +142,34 @@ public final class Cci {
      * accessed separately.
      */
     public boolean independent(double[] x, double[] y) {
-        int both = 0;
 
-        for (int i = 0; i < x.length; i++) {
-            if (!Double.isNaN(x[i]) && !Double.isNaN(y[i])) {
-                both++;
-            }
-        }
-
-        // Get rid of NaN's.
-        double[] _rXZ = new double[both];
-        double[] _rYZ = new double[both];
-
-        if (both != x.length) {
-            int index = -1;
+        if (false) {
+            int both = 0;
 
             for (int i = 0; i < x.length; i++) {
                 if (!Double.isNaN(x[i]) && !Double.isNaN(y[i])) {
-                    ++index;
-                    _rXZ[index] = x[i];
-                    _rYZ[index] = y[i];
+                    both++;
                 }
             }
 
-            x = _rXZ;
-            y = _rYZ;
+            // Get rid of NaN's.
+            double[] _rXZ = new double[both];
+            double[] _rYZ = new double[both];
+
+            if (both != x.length) {
+                int index = -1;
+
+                for (int i = 0; i < x.length; i++) {
+                    if (!Double.isNaN(x[i]) && !Double.isNaN(y[i])) {
+                        ++index;
+                        _rXZ[index] = x[i];
+                        _rYZ[index] = y[i];
+                    }
+                }
+
+                x = _rXZ;
+                y = _rYZ;
+            }
         }
 
         if (x.length < 10) {
@@ -191,11 +195,14 @@ public final class Cci {
                 final double score = calcScore(_x, _y);
                 if (Double.isInfinite(score) || Double.isNaN(score)) continue;
                 if (score > maxScore) maxScore = score;
+//                if (maxScore > cutoff) {
+//                    this.score = maxScore;
+//                    return false;
+//                }
             }
         }
 
         this.score = maxScore;
-
         return maxScore < cutoff;
     }
 
@@ -205,25 +212,33 @@ public final class Cci {
 
         double factor = Math.max(abs(max), abs(min));
 
-        double[] _x = new double[x.length];
+//        double[] _x = new double[x.length];
 
         for (int i = 0; i < x.length; i++) {
-            _x[i] = x[i] / factor;
+            x[i] = x[i] / factor;
         }
 
-        return _x;
+        return x;
     }
 
     private double calcScore(double[] _x, double[] _y) {
-        double sigmaXY = covariance(_x, _y);
-        double sigmaXX = covariance(_x, _x);
-        double sigmaYY = covariance(_y, _y);
+        double[] covs = covariance(_x, _y);
+
+        double sigmaXY = covs[0];
+        double sigmaXX = covs[1];
+        double sigmaYY = covs[2];
+        double N = covs[3];
+
+
+//        double sigmaXY = covariance(_x, _y);
+//        double sigmaXX = covariance(_x, _x);
+//        double sigmaYY = covariance(_y, _y);
 
         double r = sigmaXY / sqrt(sigmaXX * sigmaYY);
 
         // Non-parametric Fisher Z test.
         double _z = 0.5 * (log(1.0 + r) - log(1.0 - r));
-        final double N = _x.length;
+//        final double N = _x.length;
         double w = sqrt(N) * _z;
 
         // Testing the hypothesis that _x and _y are uncorrelated and assuming that 4th moments of _x and _y
@@ -471,13 +486,16 @@ public final class Cci {
 
     // Polynomial basis. The 1 is left out according to Daudin.
     private double function(int index, double x) {
-//        return sin((index) * x) + cos((index) * x); // This would be a sin cosine basis.
+//        double g = sin((index) * x) + cos((index) * x); // This would be a sin cosine basis.
 //
+//        double g = Math.pow(x, index);
         double g = 1.0;
 
         for (int i = 1; i <= index; i++) {
             g *= x;
         }
+
+        if (abs(g) == Double.POSITIVE_INFINITY) g = Double.NaN;
 
         return g;
     }
@@ -489,19 +507,33 @@ public final class Cci {
         return numFunctions;
     }
 
-    private double covariance(double[] x, double[] y) {
+    private double[] covariance(double[] x, double[] y) {
         double sumXY = 0.0;
+        double sumXX = 0.0;
+        double sumYY = 0.0;
         double sumX = 0.0;
         double sumY = 0.0;
-        double N = x.length;
+        int N = 0;
 
-        for (int i = 0; i < N; i++) {
+        for (int i = 0; i < x.length; i++) {
+            if (Double.isNaN(x[i]) || Double.isNaN(y[i])) continue;
+
             sumXY += x[i] * y[i];
+            sumXX += x[i] * x[i];
+            sumYY += y[i] * y[i];
             sumX += x[i];
             sumY += y[i];
+
+            N++;
         }
 
-        return sumXY / N - (sumX / N) * (sumY / N);
+        double covxy = sumXY / N - (sumX / N) * (sumY / N);
+        double covxx = sumXX / N - (sumX / N) * (sumX / N);
+        double covyy = sumYY / N - (sumY / N) * (sumY / N);
+
+        return new double[]{covxy, covxx, covyy, N};
+
+//        return sumXY / N - (sumX / N) * (sumY / N);
     }
 
     // Optimal bandwidth qsuggested by Bowman and Azzalini (1997) q.31,

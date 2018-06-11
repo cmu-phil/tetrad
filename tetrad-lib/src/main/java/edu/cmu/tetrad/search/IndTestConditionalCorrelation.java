@@ -109,8 +109,8 @@ public final class IndTestConditionalCorrelation implements IndependenceTest {
         this.variables = Collections.unmodifiableList(nodes);
         setAlpha(alpha);
 
-        this.dataSet = dataSet;
-        data = dataSet.getDoubleData().getRealMatrix();
+        this.dataSet = DataUtils.center(dataSet);
+        data = this.dataSet.getDoubleData().getRealMatrix();
 
         List<String> varNames = new ArrayList<>();
         for (int i = 0; i < variables.size(); i++) varNames.add(variables.get(i).getName());
