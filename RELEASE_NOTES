@@ -11,3 +11,5 @@ Fixed general contract warnings
 
 6.5.1
 
+Fixed simulation data disappearing bug
+Fixed knowledge box variable dragging bug
