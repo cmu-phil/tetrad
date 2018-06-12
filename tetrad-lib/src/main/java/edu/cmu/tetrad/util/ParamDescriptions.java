@@ -299,6 +299,10 @@ public class ParamDescriptions {
                 "Number of functions to use in (truncated) basis",
                 6, 1, Integer.MAX_VALUE));
 
+        map.put("kciCutoff", new ParamDescription(
+                "Cutoff",
+                6, 1, Integer.MAX_VALUE));
+
     }
 
     public static ParamDescriptions getInstance() {
