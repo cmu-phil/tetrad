@@ -8,3 +8,12 @@ Fixed PCall loading knowledge
 Fixed data reader missing value bugs
 Fixed simulation data disappearing
 Fixed general contract warnings
+
+6.5.1
+
+Fixed simulation data disappearing bug
+Fixed knowledge box variable dragging bug
+
+6.5.2
+
+Fixed simulation from im box bug
