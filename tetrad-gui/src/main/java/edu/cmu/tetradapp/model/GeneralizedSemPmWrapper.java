@@ -18,7 +18,6 @@
 // along with this program; if not, write to the Free Software               //
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA //
 ///////////////////////////////////////////////////////////////////////////////
-
 package edu.cmu.tetradapp.model;
 
 import edu.cmu.tetrad.algcomparison.simulation.GeneralSemSimulation;
@@ -31,7 +30,6 @@ import edu.cmu.tetrad.sem.TemplateExpander;
 import edu.cmu.tetrad.session.SessionModel;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
-
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.text.ParseException;
@@ -39,13 +37,13 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-
 /**
  * Wraps a Bayes Pm for use in the Tetrad application.
  *
  * @author Joseph Ramsey
  */
-public class GeneralizedSemPmWrapper implements SessionModel, GraphSource, KnowledgeBoxInput {
+public class GeneralizedSemPmWrapper implements SessionModel, KnowledgeBoxInput {
+
     static final long serialVersionUID = 23L;
 
     /**
@@ -66,7 +64,6 @@ public class GeneralizedSemPmWrapper implements SessionModel, GraphSource, Knowl
     private boolean showErrors;
 
     //==============================CONSTRUCTORS==========================//
-
     public GeneralizedSemPmWrapper(Simulation simulation) {
         GeneralizedSemPm semPm = null;
 
@@ -105,8 +102,7 @@ public class GeneralizedSemPmWrapper implements SessionModel, GraphSource, Knowl
         } else {
             try {
                 this.semPm = new GeneralizedSemPm(new SemGraph(graph));
-            }
-            catch (Exception e) {
+            } catch (Exception e) {
                 e.printStackTrace();
                 throw new RuntimeException(e);
             }
@@ -143,7 +139,6 @@ public class GeneralizedSemPmWrapper implements SessionModel, GraphSource, Knowl
 //                System.out.println("\nnode = " + node);
 //                System.out.println("Parents = " + parents);
 //                System.out.println("Old referenced names = " + oldReferencedNames);
-
                 String template;
 
                 if (semPm.getVariableNodes().contains(node)) {
@@ -160,9 +155,7 @@ public class GeneralizedSemPmWrapper implements SessionModel, GraphSource, Knowl
                     //
                 }
 
-
                 this.semPm.setNodeExpression(node, newExpression);
-
 
                 if (_node == null || !parents.equals(oldReferencedNames)) {
                     this.semPm.setNodeExpression(node, newExpression);
@@ -211,7 +204,7 @@ public class GeneralizedSemPmWrapper implements SessionModel, GraphSource, Knowl
         Set<String> parameters = semPm.getReferencedParameters(node);
 
         for (String parameter : parameters) {
-            
+
         }
     }
 
@@ -263,7 +256,6 @@ public class GeneralizedSemPmWrapper implements SessionModel, GraphSource, Knowl
         semPm = new GeneralizedSemPm(pmWrapper.getSemPm());
     }
 
-
     /**
      * Creates a new SemPm from the given workbench and uses it to construct a
      * new BayesPm.
@@ -272,14 +264,12 @@ public class GeneralizedSemPmWrapper implements SessionModel, GraphSource, Knowl
         this(wrapper.getGraph());
     }
 
-
     public GeneralizedSemPmWrapper(SemEstimatorWrapper wrapper) {
         try {
             SemPm oldSemPm = wrapper.getSemEstimator().getEstimatedSem()
                     .getSemPm();
             this.semPm = new GeneralizedSemPm(oldSemPm);
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             throw new RuntimeException("SemPm could not be deep cloned.", e);
         }
         log(semPm);
@@ -299,7 +289,9 @@ public class GeneralizedSemPmWrapper implements SessionModel, GraphSource, Knowl
 
     public GeneralizedSemPmWrapper(BuildPureClustersRunner wrapper) {
         Graph graph = wrapper.getResultGraph();
-        if (graph == null) throw new IllegalArgumentException("No graph to display.");
+        if (graph == null) {
+            throw new IllegalArgumentException("No graph to display.");
+        }
         SemPm oldSemPm = new SemPm(graph);
         this.semPm = new GeneralizedSemPm(oldSemPm);
         log(semPm);
@@ -319,7 +311,6 @@ public class GeneralizedSemPmWrapper implements SessionModel, GraphSource, Knowl
     }
 
     //============================PUBLIC METHODS=========================//
-
     public GeneralizedSemPm getSemPm() {
         return this.semPm;
     }
@@ -367,7 +358,6 @@ public class GeneralizedSemPmWrapper implements SessionModel, GraphSource, Knowl
     }
 
     //======================= Private methods ====================//
-
     private void log(GeneralizedSemPm pm) {
         TetradLogger.getInstance().log("info", "Generalized Structural Equation Parameter Model (Generalized SEM PM)");
         TetradLogger.getInstance().log("pm", pm.toString());
@@ -389,7 +379,4 @@ public class GeneralizedSemPmWrapper implements SessionModel, GraphSource, Knowl
         return getGraph().getNodes();
     }
 
-
 }
-
-

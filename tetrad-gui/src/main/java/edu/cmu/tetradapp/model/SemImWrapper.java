@@ -18,7 +18,6 @@
 // along with this program; if not, write to the Free Software               //
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA //
 ///////////////////////////////////////////////////////////////////////////////
-
 package edu.cmu.tetradapp.model;
 
 import edu.cmu.tetrad.algcomparison.simulation.LinearFisherModel;
@@ -31,7 +30,6 @@ import edu.cmu.tetrad.session.SessionModel;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
-
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.rmi.MarshalledObject;
@@ -43,7 +41,8 @@ import java.util.List;
  *
  * @author Joseph Ramsey
  */
-public class SemImWrapper implements SessionModel, GraphSource {
+public class SemImWrapper implements SessionModel {
+
     static final long serialVersionUID = 23L;
     private List<SemIm> semIms;
 
@@ -52,13 +51,11 @@ public class SemImWrapper implements SessionModel, GraphSource {
      */
     private String name;
 
-
     private int numModels = 1;
     private int modelIndex = 0;
     private String modelSourceName = null;
 
     //============================CONSTRUCTORS==========================//
-
     public SemImWrapper(SemIm semIm) {
         setSemIm(semIm);
     }
@@ -72,8 +69,7 @@ public class SemImWrapper implements SessionModel, GraphSource {
 
         try {
             setSemIm((SemIm) new MarshalledObject(oldSemIm).get());
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             throw new RuntimeException("SemIm could not be deep cloned.", e);
         }
     }
@@ -90,8 +86,8 @@ public class SemImWrapper implements SessionModel, GraphSource {
         }
 
         if (_simulation instanceof LinearFisherModel) {
-            throw new IllegalArgumentException("Large SEM simulations cannot be represented " +
-                    "using a SEM PM or IM box, sorry.");
+            throw new IllegalArgumentException("Large SEM simulations cannot be represented "
+                    + "using a SEM PM or IM box, sorry.");
         }
 
         if (!(_simulation instanceof SemSimulation)) {
@@ -118,7 +114,7 @@ public class SemImWrapper implements SessionModel, GraphSource {
     }
 
     public SemImWrapper(SemPmWrapper semPmWrapper, SemImWrapper oldSemImWrapper,
-                        Parameters params) {
+            Parameters params) {
         if (semPmWrapper == null) {
             throw new NullPointerException("SemPmWrapper must not be null.");
         }
@@ -180,11 +176,9 @@ public class SemImWrapper implements SessionModel, GraphSource {
     }
 
     //===========================PUBLIC METHODS=========================//
-
     public SemIm getSemIm() {
         return this.semIms.get(getModelIndex());
     }
-
 
     public Graph getGraph() {
         return getSemIm().getSemPm().getGraph();
@@ -199,7 +193,6 @@ public class SemImWrapper implements SessionModel, GraphSource {
     }
 
     //======================== Private methods =======================//
-
     private void log(int i, SemIm pm) {
         TetradLogger.getInstance().log("info", "Linear SEM IM");
         TetradLogger.getInstance().log("info", "IM # " + (i + 1));
@@ -256,8 +249,3 @@ public class SemImWrapper implements SessionModel, GraphSource {
         this.modelIndex = modelIndex;
     }
 }
-
-
-
-
-
