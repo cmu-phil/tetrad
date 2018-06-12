@@ -144,9 +144,9 @@ public class ConditionalGaussianLikelihood {
     }
 
     private DataSet useErsatzVariables() {
-        if (!discretize) {
-            return mixedDataSet;
-        }
+//        if (!discretize) {
+//            return mixedDataSet;
+//        }
 
         List<Node> nodes = new ArrayList<>();
         int numCategories = numCategoriesToDiscretize;
