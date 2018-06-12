@@ -18,23 +18,17 @@
 // along with this program; if not, write to the Free Software               //
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA //
 ///////////////////////////////////////////////////////////////////////////////
-
 package edu.cmu.tetradapp.model;
 
-import edu.cmu.tetrad.algcomparison.simulation.GeneralSemSimulation;
 import edu.cmu.tetrad.bayes.BayesPm;
 import edu.cmu.tetrad.bayes.DirichletBayesIm;
-import edu.cmu.tetrad.bayes.DirichletEstimator;
-import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.KnowledgeBoxInput;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.sem.GeneralizedSemIm;
 import edu.cmu.tetrad.session.SessionModel;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
-
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.util.List;
@@ -44,7 +38,8 @@ import java.util.List;
  *
  * @author Joseph Ramsey
  */
-public class DirichletBayesImWrapper implements SessionModel, GraphSource, KnowledgeBoxInput {
+public class DirichletBayesImWrapper implements SessionModel, KnowledgeBoxInput {
+
     static final long serialVersionUID = 23L;
 
     /**
@@ -58,13 +53,12 @@ public class DirichletBayesImWrapper implements SessionModel, GraphSource, Knowl
     private DirichletBayesIm dirichletBayesIm;
 
     //===========================CONSTRUCTORS=============================//
-
     public DirichletBayesImWrapper(Simulation simulation) {
         throw new NullPointerException("Sorry, that was not a Dirichlet Bayes IM simulation.");
     }
 
     public DirichletBayesImWrapper(BayesPmWrapper bayesPmWrapper,
-                                   Parameters params) {
+            Parameters params) {
         if (bayesPmWrapper == null) {
             throw new NullPointerException("BayesPmWrapper must not be null.");
         }
@@ -109,11 +103,9 @@ public class DirichletBayesImWrapper implements SessionModel, GraphSource, Knowl
 //
 //        log(this.dirichletBayesIm);
 //    }
-
 //    public DirichletBayesImWrapper(BayesPmWrapper bayesPmWrapper, Simulation simulation) {
 //        this(bayesPmWrapper, (DataWrapper) simulation);
 //    }
-
     public DirichletBayesImWrapper(DirichletEstimatorWrapper wrapper) {
         if (wrapper == null) {
             throw new NullPointerException();
@@ -134,7 +126,6 @@ public class DirichletBayesImWrapper implements SessionModel, GraphSource, Knowl
     }
 
     //================================PUBLIC METHODS=======================//
-
     public DirichletBayesIm getDirichletBayesIm() {
         return this.dirichletBayesIm;
     }
@@ -189,14 +180,8 @@ public class DirichletBayesImWrapper implements SessionModel, GraphSource, Knowl
         return getGraph().getNodes();
     }
 
-
     private void log(DirichletBayesIm im) {
         TetradLogger.getInstance().log("info", "Dirichlet Bayes IM");
         TetradLogger.getInstance().log("im", im.toString());
     }
 }
-
-
-
-
-
