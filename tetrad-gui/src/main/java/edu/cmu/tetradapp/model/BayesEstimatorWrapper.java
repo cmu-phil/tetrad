@@ -18,7 +18,6 @@
 // along with this program; if not, write to the Free Software               //
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA //
 ///////////////////////////////////////////////////////////////////////////////
-
 package edu.cmu.tetradapp.model;
 
 import edu.cmu.tetrad.bayes.BayesIm;
@@ -32,7 +31,6 @@ import edu.cmu.tetrad.graph.NodeType;
 import edu.cmu.tetrad.session.SessionModel;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
-
 import java.io.IOException;
 import java.io.ObjectInputStream;
 
@@ -41,7 +39,8 @@ import java.io.ObjectInputStream;
  *
  * @author Joseph Ramsey
  */
-public class BayesEstimatorWrapper implements SessionModel, GraphSource {
+public class BayesEstimatorWrapper implements SessionModel {
+
     static final long serialVersionUID = 23L;
 
     /**
@@ -60,9 +59,8 @@ public class BayesEstimatorWrapper implements SessionModel, GraphSource {
     private DataSet dataSet;
 
     //=================================CONSTRUCTORS========================//
-
     public BayesEstimatorWrapper(DataWrapper dataWrapper,
-                                 BayesPmWrapper bayesPmWrapper) {
+            BayesPmWrapper bayesPmWrapper) {
 
         if (dataWrapper instanceof Simulation) {
 
@@ -85,7 +83,6 @@ public class BayesEstimatorWrapper implements SessionModel, GraphSource {
 //        if (DataUtils.containsMissingValue(dataSet)) {
 //            throw new IllegalArgumentException("Please remove or impute missing values.");
 //        }
-
         System.out.println(dataSet);
 
         estimate(dataSet, bayesPm);
@@ -113,7 +110,6 @@ public class BayesEstimatorWrapper implements SessionModel, GraphSource {
 //        estimate(dataSet, bayesPm);
 //        log(bayesIm);
 //    }
-
     /**
      * Generates a simple exemplar of this class to test serialization.
      *
@@ -124,9 +120,6 @@ public class BayesEstimatorWrapper implements SessionModel, GraphSource {
     }
 
     //==============================PUBLIC METHODS========================//
-
-
-
     public BayesIm getEstimatedBayesIm() {
         return this.bayesIm;
     }
@@ -137,8 +130,8 @@ public class BayesEstimatorWrapper implements SessionModel, GraphSource {
         for (Object o : graph.getNodes()) {
             Node node = (Node) o;
             if (node.getNodeType() == NodeType.LATENT) {
-                throw new IllegalArgumentException("Estimation of Bayes IM's " +
-                        "with latents is not supported.");
+                throw new IllegalArgumentException("Estimation of Bayes IM's "
+                        + "with latents is not supported.");
             }
         }
 
@@ -149,11 +142,10 @@ public class BayesEstimatorWrapper implements SessionModel, GraphSource {
         try {
             MlBayesEstimator estimator = new MlBayesEstimator();
             this.bayesIm = estimator.estimate(bayesPm, dataSet);
-        }
-        catch (ArrayIndexOutOfBoundsException e) {
+        } catch (ArrayIndexOutOfBoundsException e) {
             e.printStackTrace();
-            throw new RuntimeException("Value assignments between Bayes PM " +
-                    "and discrete data set do not match.");
+            throw new RuntimeException("Value assignments between Bayes PM "
+                    + "and discrete data set do not match.");
         }
     }
 
@@ -200,14 +192,8 @@ public class BayesEstimatorWrapper implements SessionModel, GraphSource {
     }
 
     //======================== Private Methods ======================//
-
     private void log(BayesIm im) {
         TetradLogger.getInstance().log("info", "ML estimated Bayes IM.");
         TetradLogger.getInstance().log("im", im.toString());
     }
 }
-
-
-
-
-

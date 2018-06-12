@@ -62,7 +62,7 @@ import javax.swing.JOptionPane;
  *
  * @author Joseph Ramsey
  */
-public class SemEstimatorWrapper implements SessionModel, GraphSource, Unmarshallable {
+public class SemEstimatorWrapper implements SessionModel, Unmarshallable {
 
     static final long serialVersionUID = 23L;
 
