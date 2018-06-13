@@ -89,8 +89,8 @@ public final class TabularComparison implements SessionModel, SimulationParamsSo
             this.algorithm = generalAlgorithmRunner.getAlgorithm();
         }
 
-        this.targetName = params.getString("referenceGraphName", null);
-        this.referenceName = params.getString("targetGraphName", null);
+        this.referenceName = params.getString("referenceGraphName", null);
+        this.targetName = params.getString("targetGraphName", null);
 
         if (referenceName.equals(model1.getName())) {
             if (model1 instanceof Simulation && model2 instanceof GeneralAlgorithmRunner) {
