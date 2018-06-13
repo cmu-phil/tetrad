@@ -1167,17 +1167,17 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
     }
 
     private void adjustForNewModelNodes() {
-        for (Node _node : getGraph().getNodes()) {
-            if (getModelNodesToDisplay().get(_node) == null) {
-                int centerX = _node.getCenterX();
-                int centerY = _node.getCenterY();
+        this.graph.getNodes().forEach(node -> {
+            if (this.modelNodesToDisplay.get(node) == null) {
+                int centerX = node.getCenterX();
+                int centerY = node.getCenterY();
 
                 // Construct a display node for the model node.
-                DisplayNode displayNode = getNewDisplayNode(_node);
+                DisplayNode displayNode = getNewDisplayNode(node);
 
                 // Link the display node to the model node.
-                getModelNodesToDisplay().put(_node, displayNode);
-                getDisplayToModel().put(displayNode, _node);
+                this.modelNodesToDisplay.put(node, displayNode);
+                this.displayToModel.put(displayNode, node);
 
                 // Set the bounds of the display node.
                 Dimension dim = displayNode.getPreferredSize();
@@ -1197,36 +1197,37 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
                 // Fire notification event. jdramsey 12/11/01
                 firePropertyChange("nodeAdded", null, displayNode);
             }
-        }
+        });
 
-        for (Object o : getDisplayToModel().keySet()) {
-            if (!(o instanceof DisplayNode)) {
-                continue;
+        Map<DisplayNode, Node> trashMap = new HashMap<>();
+        this.displayToModel.forEach((k, v) -> {
+            if (k instanceof DisplayNode && v instanceof Node) {
+                DisplayNode displayNode = (DisplayNode) k;
+                Node node = (Node) v;
+
+                if (!graph.containsNode(node)) {
+                    trashMap.put(displayNode, node);
+                }
             }
-            DisplayNode displayNode = (DisplayNode) o;
-            Node _node = (Node) getDisplayToModel().get(displayNode);
+        });
 
-            if (!getGraph().containsNode(_node)) {
-                getModelNodesToDisplay().remove(_node);
-                getDisplayToModel().remove(displayNode);
-            }
+        trashMap.forEach((k, v) -> {
+            this.displayToModel.remove(k);
+            this.modelNodesToDisplay.remove(v);
+            firePropertyChange("nodeRemoved", null, k);
+        });
 
-            // Fire notification event. jdramsey 12/11/01
-            firePropertyChange("nodeRemoved", null, displayNode);
-        }
-
-        for (Node _node : getGraph().getNodes()) {
-            int centerX = _node.getCenterX();
-            int centerY = _node.getCenterY();
-
-            DisplayNode displayNode = (DisplayNode) getModelNodesToDisplay().get(_node);
+        this.graph.getNodes().forEach(node -> {
+            int centerX = node.getCenterX();
+            int centerY = node.getCenterY();
+            DisplayNode displayNode = (DisplayNode) this.modelNodesToDisplay.get(node);
 
             // Set the bounds of the display node.
             Dimension dim = displayNode.getPreferredSize();
 
             displayNode.setSize(dim);
             displayNode.setLocation(centerX - dim.width / 2, centerY - dim.height / 2);
-        }
+        });
     }
 
     /**
