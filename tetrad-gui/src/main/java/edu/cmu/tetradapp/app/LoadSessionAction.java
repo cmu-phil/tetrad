@@ -142,8 +142,8 @@ final class LoadSessionAction extends AbstractAction {
                         SimpleDateFormat df = new SimpleDateFormat("MMM dd, yyyy");
 
                         JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
-                                "Could not load this session file \n" +
-                                        "the session was saved by Tetrad " + version + "on " +  df.format(date));
+                                "Could not load this session file! \n" +
+                                        "The session was saved by Tetrad " + version + " on " +  df.format(date));
 
                         return;
                     }
