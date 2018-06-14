@@ -126,6 +126,7 @@ public class Version implements TetradSerializable {
             throw new IllegalArgumentException("Version should be either of the " +
                     "form a.b.c or a.b.c-d or a.b.c-SNAPSHOT or a.b.c-d.e " + spec);
         }
+        
     }
 
     private Version(int majorVersion, int minorVersion, int minorSubversion,
@@ -186,8 +187,7 @@ public class Version implements TetradSerializable {
             URL url = Version.class.getResource(path);
 
             if (url == null) {
-                throw new RuntimeException(
-                        "Please run 'ant copyresources' and try again. The problem " +
+                throw new RuntimeException("Please run 'ant copyresources' and try again. The problem " +
                                 "\nis that the file /resources/version is not in the ejar build.");
             }
 
@@ -195,6 +195,7 @@ public class Version implements TetradSerializable {
             Reader reader = new InputStreamReader(inStream);
             BufferedReader bufReader = new BufferedReader(reader);
             String spec = bufReader.readLine();
+
             bufReader.close();
 
             return new Version(spec);
