@@ -18,7 +18,6 @@
 // along with this program; if not, write to the Free Software               //
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA //
 ///////////////////////////////////////////////////////////////////////////////
-
 package edu.cmu.tetradapp.model;
 
 import edu.cmu.tetrad.algcomparison.simulation.GeneralSemSimulation;
@@ -30,19 +29,18 @@ import edu.cmu.tetrad.sem.GeneralizedSemPm;
 import edu.cmu.tetrad.session.SessionModel;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
-
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.util.ArrayList;
 import java.util.List;
-
 
 /**
  * Wraps a Bayes Pm for use in the Tetrad application.
  *
  * @author Joseph Ramsey
  */
-public class GeneralizedSemImWrapper implements SessionModel, GraphSource, KnowledgeBoxInput {
+public class GeneralizedSemImWrapper implements SessionModel, KnowledgeBoxInput {
+
     static final long serialVersionUID = 23L;
 
     /**
@@ -61,7 +59,6 @@ public class GeneralizedSemImWrapper implements SessionModel, GraphSource, Knowl
     private boolean showErrors;
 
     //==============================CONSTRUCTORS==========================//
-
     public GeneralizedSemImWrapper(Simulation simulation) {
         List<GeneralizedSemIm> semIms = new ArrayList<>();
 
@@ -91,7 +88,6 @@ public class GeneralizedSemImWrapper implements SessionModel, GraphSource, Knowl
             throw new IllegalArgumentException("I'm sorry; this editor can only edit a single generalized SEM IM.");
         }
     }
-
 
     private GeneralizedSemImWrapper(GeneralizedSemPm semPm) {
         if (semPm == null) {
@@ -123,7 +119,6 @@ public class GeneralizedSemImWrapper implements SessionModel, GraphSource, Knowl
     }
 
     //============================PUBLIC METHODS=========================//
-
     public List<GeneralizedSemIm> getSemIms() {
         return this.semIms;
     }
@@ -171,29 +166,25 @@ public class GeneralizedSemImWrapper implements SessionModel, GraphSource, Knowl
     }
 
     //======================= Private methods ====================//
-
-    private void log(GeneralizedSemIm im){
+    private void log(GeneralizedSemIm im) {
         TetradLogger.getInstance().log("info", "Generalized SEM IM");
         TetradLogger.getInstance().log("im", im.toString());
     }
 
-	public Graph getSourceGraph() {
-		return getGraph();
-	}
+    public Graph getSourceGraph() {
+        return getGraph();
+    }
 
     public Graph getResultGraph() {
         return getGraph();
     }
 
     public List<String> getVariableNames() {
-		return getGraph().getNodeNames();
-	}
+        return getGraph().getNodeNames();
+    }
 
-	public List<Node> getVariables() {
-		return getGraph().getNodes();
-	}
-
+    public List<Node> getVariables() {
+        return getGraph().getNodes();
+    }
 
 }
-
-

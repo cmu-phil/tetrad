@@ -65,6 +65,7 @@ public class FaskConcatenated implements MultiDataSetAlgorithm, HasKnowledge, Us
             search.setDelta(parameters.getDouble("faskDelta"));
             search.setAlpha(parameters.getDouble("twoCycleAlpha"));
             search.setKnowledge(knowledge);
+            
             return search.search();
         } else {
             FaskConcatenated algorithm = new FaskConcatenated(score);

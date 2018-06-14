@@ -18,7 +18,6 @@
 // along with this program; if not, write to the Free Software               //
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA //
 ///////////////////////////////////////////////////////////////////////////////
-
 package edu.cmu.tetradapp.model;
 
 import edu.cmu.tetrad.algcomparison.simulation.LinearFisherModel;
@@ -30,7 +29,6 @@ import edu.cmu.tetrad.session.SessionModel;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
-
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.rmi.MarshalledObject;
@@ -42,7 +40,8 @@ import java.util.List;
  *
  * @author Joseph Ramsey
  */
-public class SemPmWrapper implements SessionModel, GraphSource {
+public class SemPmWrapper implements SessionModel {
+
     static final long serialVersionUID = 23L;
     private int numModels = 1;
     private int modelIndex = 0;
@@ -56,7 +55,6 @@ public class SemPmWrapper implements SessionModel, GraphSource {
     private List<SemPm> semPms;
 
     //==============================CONSTRUCTORS==========================//
-
     public SemPmWrapper(Graph graph) {
         if (graph == null) {
             throw new NullPointerException("Graph must not be null.");
@@ -88,8 +86,8 @@ public class SemPmWrapper implements SessionModel, GraphSource {
         }
 
         if (_simulation instanceof LinearFisherModel) {
-            throw new IllegalArgumentException("Large SEM simulations cannot be represented " +
-                    "using a SEM PM or IM box, sorry.");
+            throw new IllegalArgumentException("Large SEM simulations cannot be represented "
+                    + "using a SEM PM or IM box, sorry.");
         }
 
         if (!(_simulation instanceof SemSimulation)) {
@@ -118,9 +116,9 @@ public class SemPmWrapper implements SessionModel, GraphSource {
      * new BayesPm.
      */
     public SemPmWrapper(GraphSource graphWrapper, Parameters parameters) {
-        this(graphWrapper.getGraph() instanceof TimeLagGraph ?
-                new TimeLagGraph((TimeLagGraph) graphWrapper.getGraph()) :
-                new EdgeListGraph(graphWrapper.getGraph()));
+        this(graphWrapper.getGraph() instanceof TimeLagGraph
+                ? new TimeLagGraph((TimeLagGraph) graphWrapper.getGraph())
+                : new EdgeListGraph(graphWrapper.getGraph()));
     }
 
     public SemPmWrapper(GraphSource graphSource, DataWrapper dataWrapper, Parameters parameters) {
@@ -158,7 +156,9 @@ public class SemPmWrapper implements SessionModel, GraphSource {
 
     public SemPmWrapper(BuildPureClustersRunner wrapper) {
         Graph graph = wrapper.getResultGraph();
-        if (graph == null) throw new IllegalArgumentException("No graph to display.");
+        if (graph == null) {
+            throw new IllegalArgumentException("No graph to display.");
+        }
         SemPm pm = new SemPm(graph);
         setSemPm(pm);
 
@@ -202,7 +202,6 @@ public class SemPmWrapper implements SessionModel, GraphSource {
     }
 
     //============================PUBLIC METHODS=========================//
-
     public SemPm getSemPm() {
         return this.semPms.get(getModelIndex());
     }
@@ -237,9 +236,7 @@ public class SemPmWrapper implements SessionModel, GraphSource {
         this.name = name;
     }
 
-
     //======================= Private methods ====================//
-
     private void log(int i, SemPm pm) {
         TetradLogger.getInstance().log("info", "Linear Structural Equation Parametric Model (SEM PM)");
         TetradLogger.getInstance().log("info", "PM # " + (i + 1));
@@ -287,11 +284,3 @@ public class SemPmWrapper implements SessionModel, GraphSource {
         this.modelIndex = modelIndex;
     }
 }
-
-
-
-
-
-
-
-
