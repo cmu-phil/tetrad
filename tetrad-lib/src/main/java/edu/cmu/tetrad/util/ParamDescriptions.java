@@ -256,13 +256,18 @@ public class ParamDescriptions {
 
         map.put("numLags", new ParamDescription(
                 "The number of lags in the time lag model",
-                1, 1, Double.POSITIVE_INFINITY));
+                1, 1, Integer.MAX_VALUE));
 
         map.put("saveLatentVars", new ParamDescription("Save latent variables.", false));
 
         map.put("probTwoCycle", new ParamDescription(
                 "The probability of creating a 2-cycles in the graph (0 - 1)",
                 0.0, 0.0, 1.0));
+
+        map.put("rcitNumFeatures", new ParamDescription(
+                "The number of random features to use",
+                25, 1, Integer.MAX_VALUE));
+
     }
 
     public static ParamDescriptions getInstance() {
