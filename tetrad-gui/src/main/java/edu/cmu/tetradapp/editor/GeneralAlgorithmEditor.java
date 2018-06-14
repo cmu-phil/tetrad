@@ -708,7 +708,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
             LOGGER.error("", exception);
         }
 
-        // Those pairwise algos (R1, R2,..) require source graph to initialize - Zhou
+        // Those pairwise algos (R3, RShew, Skew..) require source graph to initialize - Zhou
         if (algorithm != null && algorithm instanceof TakesInitialGraph && runner.getSourceGraph() != null && !runner.getDataModelList().isEmpty()) {
             Algorithm initialGraph = new SingleGraphAlg(runner.getSourceGraph());
             ((TakesInitialGraph) algorithm).setInitialGraph(initialGraph);
