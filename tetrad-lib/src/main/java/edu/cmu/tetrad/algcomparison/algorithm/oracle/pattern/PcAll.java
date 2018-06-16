@@ -2,6 +2,7 @@ package edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern;
 
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
+import edu.cmu.tetrad.algcomparison.score.ConditionalGaussianBicScore;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.algcomparison.utils.TakesIndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.utils.TakesInitialGraph;
@@ -13,6 +14,7 @@ import edu.cmu.tetrad.data.IKnowledge;
 import edu.cmu.tetrad.data.Knowledge2;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.search.ConditionalGaussianScore;
 import edu.cmu.tetrad.search.SearchGraphUtils;
 import edu.cmu.tetrad.util.Parameters;
 import edu.pitt.dbmi.algo.bootstrap.BootstrapEdgeEnsemble;
@@ -114,7 +116,19 @@ public class PcAll implements Algorithm, TakesInitialGraph, HasKnowledge, TakesI
             search.setUseHeuristic(parameters.getBoolean("useMaxPOrientationHeuristic"));
             search.setMaxPathLength(parameters.getInt("maxPOrientationMaxPathLength"));
 
-            return search.search();
+
+
+            final Graph search1 = search.search();
+//
+//            Graph dag = SearchGraphUtils.dagFromPattern(search1);
+//
+//            final ConditionalGaussianScore score = new ConditionalGaussianScore((DataSet) dataSet, 1, false);
+//            edu.cmu.tetrad.search.Fges fges = new edu.cmu.tetrad.search.Fges(score);
+//
+//            double modelScore = fges.getScore(dag);
+//
+//            System.out.println("Model score = " + modelScore);
+            return search1;
         } else {
             PcAll pcAll = new PcAll(test, algorithm);
 

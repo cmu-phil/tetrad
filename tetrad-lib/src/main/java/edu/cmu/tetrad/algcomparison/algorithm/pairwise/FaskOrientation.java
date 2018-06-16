@@ -81,6 +81,8 @@ public class FaskOrientation implements Algorithm, TakesInitialGraph {
             edu.cmu.tetrad.search.Fask search = new edu.cmu.tetrad.search.Fask((DataSet) dataSet, score);
             search.setInitialGraph(initialGraph);
             search.setExtraEdgeThreshold(parameters.getDouble("extraEdgeThreshold"));
+            search.setAlpha(parameters.getDouble("twoCycleAlpha"));
+            search.setDelta(parameters.getDouble("faskDelta"));
             return search.search();
         } else {
             FaskOrientation r3 = new FaskOrientation(algorithm);
@@ -137,6 +139,7 @@ public class FaskOrientation implements Algorithm, TakesInitialGraph {
         // Bootstrapping
         parameters.add("twoCycleAlpha");
         parameters.add("extraEdgeThreshold");
+        parameters.add("faskDelta");
         parameters.add("bootstrapSampleSize");
         parameters.add("bootstrapEnsemble");
         parameters.add("verbose");
