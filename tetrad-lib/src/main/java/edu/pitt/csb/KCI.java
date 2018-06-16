@@ -6,15 +6,18 @@ import edu.cmu.tetrad.data.ICovarianceMatrix;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.IndependenceTest;
+import edu.cmu.tetrad.search.SearchLogUtils;
+import edu.cmu.tetrad.util.RandomUtil;
+import edu.cmu.tetrad.util.StatUtils;
 import edu.cmu.tetrad.util.TetradMatrix;
 import edu.cmu.tetrad.util.TetradVector;
-import edu.cmu.tetrad.util.dist.ChiSquare;
 import edu.pitt.csb.mgm.EigenDecomposition;
-import edu.pitt.csb.mgm.IndTestMultinomialAJ;
+import org.apache.commons.math3.distribution.ChiSquaredDistribution;
 import org.apache.commons.math3.distribution.GammaDistribution;
 import org.apache.commons.math3.linear.RealVector;
+import org.apache.commons.math3.random.SynchronizedRandomGenerator;
+import org.apache.commons.math3.random.Well44497b;
 
-import java.io.FileOutputStream;
 import java.io.PrintStream;
 import java.util.*;
 
@@ -24,6 +27,7 @@ import java.util.*;
 public class KCI implements IndependenceTest {
 
 
+    private double[][] _data;
     /**
      * Kernel Based Conditional Independence Test
      * Code Written by: Vineet Raghu
@@ -33,54 +37,43 @@ public class KCI implements IndependenceTest {
     double alpha;
     double alpha2;
     DataSet dat;
-    DataSet forInd;
+//    DataSet forInd;
     public Graph truth;
     int graphNum;
     double lastP;
 
     double lambdaMGM;
-    IndTestMultinomialAJ ii;
     private ArrayList<Double> chiSquareRand;
     PrintStream out;
-    private int cutoff = -1;
     private TetradMatrix Hmat;
     private TetradMatrix eye;
     private final double lambda = 1E-3;
     private TetradMatrix lamEye;
     private TetradMatrix[] kyArr;
-    private boolean twoStage; //Are we doing the two stage test? Or just KCI?
-    private boolean[][] stopTesting; //Once we found an edge to have a linear relationship, there's no need to test it for nonlinearity
 
-    //First threshold is p-value for KCI, second is p-value for Likelihood Ratio
-    public void setCutoff(int c) {
-        cutoff = c;
-    }
-
+    ChiSquaredDistribution chisq = new ChiSquaredDistribution(new SynchronizedRandomGenerator(new Well44497b(193924L)), 1);
 
     public KCI(DataSet data, double threshold) {
-        twoStage = false;
-        stopTesting = new boolean[data.getNumColumns()][data.getNumColumns()];
-        int T = data.getNumRows();
+
+        _data = data.getDoubleData().transpose().toArray();
+        int N = data.getNumRows();
         kyArr = new TetradMatrix[data.getNumColumns()];
-        double[][] H = new double[T][T];
-        for (int i = 0; i < T; i++) {
-            for (int j = 0; j < T; j++) {
+        double[][] H = new double[N][N];
+        for (int i = 0; i < N; i++) {
+            for (int j = 0; j < N; j++) {
                 if (i == j)
-                    H[i][j] = 1.0 - 1.0 / T;
+                    H[i][j] = 1.0 - 1.0 / N;
                 else
-                    H[i][j] = -1.0 / T;
+                    H[i][j] = -1.0 / N;
             }
         }
         Hmat = new TetradMatrix(H);
-        eye = new TetradMatrix(T, T);
-        for (int i = 0; i < T; i++)
-            eye.set(i, i, 1);
+        eye = TetradMatrix.identity(N);
         lamEye = eye.scalarMult(lambda);
         alpha = threshold;
         dat = data;
-        forInd = dat.copy();
         lastP = -1;
-        A:
+
         for (int i = 0; i < dat.getNumColumns(); i++) {
             try {
                 double[] curr = new double[dat.getNumRows()];
@@ -88,154 +81,133 @@ public class KCI implements IndependenceTest {
                     curr[j] = dat.getDouble(j, i);
 
                 }
-                double m = mean(curr);
-                double std = std(curr, m);
+
+                double m = StatUtils.mean(curr);
+                double std = StatUtils.sd(curr);
 
                 for (int j = 0; j < dat.getNumRows(); j++) {
                     dat.setDouble(j, i, (dat.getDouble(j, i) - m) / std);
                 }
             } catch (Exception e) {
-                continue A;
+                // Skip.
             }
         }
-        chiSquareRand = new ArrayList<Double>();
-        ChiSquare cs = new ChiSquare();
-        for (int i = 0; i < 1000 * dat.getNumRows(); i++) {
-            chiSquareRand.add(cs.nextRandom());
+
+        chiSquareRand = new ArrayList<>();
+
+        for (int i = 0; i < 100 * dat.getNumRows(); i++) {
+            chiSquareRand.add(chisq.sample());
         }
     }
 
-    public KCI(DataSet data, double threshold, double threshold2, Graph g, double lamb) {
-        twoStage = true;
-        stopTesting = new boolean[data.getNumColumns()][data.getNumColumns()];
-        int T = data.getNumRows();
-        kyArr = new TetradMatrix[data.getNumColumns()];
-        double[][] H = new double[T][T];
-        for (int i = 0; i < T; i++) {
-            for (int j = 0; j < T; j++) {
-                if (i == j)
-                    H[i][j] = 1.0 - 1.0 / T;
-                else
-                    H[i][j] = -1.0 / T;
-            }
-        }
-        Hmat = new TetradMatrix(H);
-        eye = new TetradMatrix(T, T);
-        for (int i = 0; i < T; i++)
-            eye.set(i, i, 1);
-        lamEye = eye.scalarMult(lambda);
-        truth = g;
-        lambdaMGM = lamb;
-        try {
-            out = new PrintStream(new FileOutputStream("pvals.txt", true));
-            out.println("Method\tP\tCond_Size\tX_Continuous\tY_Continuous\tX_Name\tY_Name\tZ_Names\tMGM_lambda");
-        } catch (Exception e) {
+//    public KCI(DataSet data, double threshold, double threshold2, Graph g, double lamb) {
+//        _data = data.getDoubleData().transpose().toArray();
+//
+//        int N = data.getNumRows();
+//        kyArr = new TetradMatrix[data.getNumColumns()];
+//        double[][] H = new double[N][N];
+//        for (int i = 0; i < N; i++) {
+//            for (int j = 0; j < N; j++) {
+//                if (i == j)
+//                    H[i][j] = 1.0 - 1.0 / N;
+//                else
+//                    H[i][j] = -1.0 / N;
+//            }
+//        }
+//        Hmat = new TetradMatrix(H);
+//        eye = TetradMatrix.identity(N);
+//        lamEye = eye.scalarMult(lambda);
+//        truth = g;
+//        lambdaMGM = lamb;
+//        try {
+//            out = new PrintStream(new FileOutputStream("pvals.txt", true));
+//            out.println("Method\tP\tCond_Size\tX_Continuous\tY_Continuous\tX_Name\tY_Name\tZ_Names\tMGM_lambda");
+//        } catch (Exception e) {
+//
+//        }
+//        alpha = threshold;
+//        alpha2 = threshold2;
+//        dat = data;
+////        forInd = dat.copy();
+////        ii = new IndTestMultinomialAJ(forInd, threshold2);
+//        lastP = -1;
+//        A:
+//        for (int i = 0; i < dat.getNumColumns(); i++) {
+//            try {
+//                double[] curr = new double[dat.getNumRows()];
+//                for (int j = 0; j < dat.getNumRows(); j++) {
+//                    curr[j] = dat.getDouble(j, i);
+//
+//                }
+//                double m = mean(curr);
+//                double std = std(curr, m);
+//
+//                for (int j = 0; j < dat.getNumRows(); j++) {
+//                    dat.setDouble(j, i, (dat.getDouble(j, i) - m) / std);
+//                }
+//            } catch (Exception e) {
+//                continue A;
+//            }
+//        }
+//        chiSquareRand = new ArrayList<Double>();
+//        for (int i = 0; i < 100 * dat.getNumRows(); i++) {
+//            chiSquareRand.add(chisq.sample());
+//        }
+//        //Normalize dataset data
+//        //Subtract by mean and divide by standard deviation
+//
+//    }
 
-        }
-        alpha = threshold;
-        alpha2 = threshold2;
-        dat = data;
-        forInd = dat.copy();
-        ii = new IndTestMultinomialAJ(forInd, threshold2);
-        lastP = -1;
-        A:
-        for (int i = 0; i < dat.getNumColumns(); i++) {
-            try {
-                double[] curr = new double[dat.getNumRows()];
-                for (int j = 0; j < dat.getNumRows(); j++) {
-                    curr[j] = dat.getDouble(j, i);
-
-                }
-                double m = mean(curr);
-                double std = std(curr, m);
-
-                for (int j = 0; j < dat.getNumRows(); j++) {
-                    dat.setDouble(j, i, (dat.getDouble(j, i) - m) / std);
-                }
-            } catch (Exception e) {
-                continue A;
-            }
-        }
-        chiSquareRand = new ArrayList<Double>();
-        ChiSquare cs = new ChiSquare();
-        for (int i = 0; i < 1000 * dat.getNumRows(); i++) {
-            chiSquareRand.add(cs.nextRandom());
-        }
-        //Normalize dataset data
-        //Subtract by mean and divide by standard deviation
-
-    }
-
-    public KCI(DataSet data, double threshold, double threshold2) {
-        stopTesting = new boolean[data.getNumColumns()][data.getNumColumns()];
-        int T = data.getNumRows();
-        kyArr = new TetradMatrix[data.getNumColumns()];
-        double[][] H = new double[T][T];
-        for (int i = 0; i < T; i++) {
-            for (int j = 0; j < T; j++) {
-                if (i == j)
-                    H[i][j] = 1.0 - 1.0 / T;
-                else
-                    H[i][j] = -1.0 / T;
-            }
-        }
-        Hmat = new TetradMatrix(H);
-        eye = new TetradMatrix(T, T);
-        for (int i = 0; i < T; i++)
-            eye.set(i, i, 1);
-        lamEye = eye.scalarMult(lambda);
-        alpha = threshold;
-        alpha2 = threshold2;
-        dat = data;
-        forInd = dat.copy();
-        ii = new IndTestMultinomialAJ(forInd, threshold2);
-        lastP = -1;
-        A:
-        for (int i = 0; i < dat.getNumColumns(); i++) {
-            try {
-                double[] curr = new double[dat.getNumRows()];
-                for (int j = 0; j < dat.getNumRows(); j++) {
-                    curr[j] = dat.getDouble(j, i);
-
-                }
-                double m = mean(curr);
-                double std = std(curr, m);
-
-                for (int j = 0; j < dat.getNumRows(); j++) {
-                    dat.setDouble(j, i, (dat.getDouble(j, i) - m) / std);
-                }
-            } catch (Exception e) {
-                continue A;
-            }
-        }
-        chiSquareRand = new ArrayList<Double>();
-        ChiSquare cs = new ChiSquare();
-        for (int i = 0; i < 1000 * dat.getNumRows(); i++) {
-            chiSquareRand.add(cs.nextRandom());
-        }
-        //Normalize dataset data
-        //Subtract by mean and divide by standard deviation
-
-    }
-
-    public static double mean(double[] curr) {
-
-        double sum = 0;
-        int num = curr.length;
-        for (int i = 0; i < num; i++)
-            sum += curr[i];
-        return sum / num;
-    }
-
-    public static double std(double[] curr, double mean) {
-        double sum = 0;
-        for (int i = 0; i < curr.length; i++) {
-            sum += Math.pow((curr[i] - mean), 2);
-        }
-        sum = sum / curr.length;
-        return Math.sqrt(sum);
-
-    }
+//    public KCI(DataSet data, double threshold, double threshold2) {
+//        _data = data.getDoubleData().transpose().toArray();
+//
+//
+//        int N = data.getNumRows();
+//        kyArr = new TetradMatrix[data.getNumColumns()];
+//        double[][] H = new double[N][N];
+//        for (int i = 0; i < N; i++) {
+//            for (int j = 0; j < N; j++) {
+//                if (i == j)
+//                    H[i][j] = 1.0 - 1.0 / N;
+//                else
+//                    H[i][j] = -1.0 / N;
+//            }
+//        }
+//        Hmat = new TetradMatrix(H);
+//        eye = TetradMatrix.identity(N);
+//        lamEye = eye.scalarMult(lambda);
+//        alpha = threshold;
+//        alpha2 = threshold2;
+//        dat = data;
+////        forInd = dat.copy();
+////        ii = new IndTestMultinomialAJ(forInd, threshold2);
+//        lastP = -1;
+//        A:
+//        for (int i = 0; i < dat.getNumColumns(); i++) {
+//            try {
+//                double[] curr = new double[dat.getNumRows()];
+//                for (int j = 0; j < dat.getNumRows(); j++) {
+//                    curr[j] = dat.getDouble(j, i);
+//
+//                }
+//                double m = mean(curr);
+//                double std = std(curr, m);
+//
+//                for (int j = 0; j < dat.getNumRows(); j++) {
+//                    dat.setDouble(j, i, (dat.getDouble(j, i) - m) / std);
+//                }
+//            } catch (Exception e) {
+//                continue A;
+//            }
+//        }
+//        chiSquareRand = new ArrayList<Double>();
+//        for (int i = 0; i < 100 * dat.getNumRows(); i++) {
+//            chiSquareRand.add(chisq.sample());
+//        }
+//        //Normalize dataset data
+//        //Subtract by mean and divide by standard deviation
+//
+//    }
 
     /**
      * Returns an Independence test for a subset of the variables.
@@ -250,99 +222,75 @@ public class KCI implements IndependenceTest {
      * getVariableNames().
      */
     public boolean isIndependent(Node x, Node y, List<Node> z) {
-        // System.out.println("Is " + x + " ind of " + y + " given " + z);
-        ArrayList<Node> zzzz = new ArrayList<Node>();
+        System.out.println("Testing " + SearchLogUtils.independenceFact(x, y, z));
+//        ArrayList<Node> zzzz = new ArrayList<Node>();
 
-        if (z == null) {
-            return isIndependentUncon(x, y);
-        }
-        boolean xCont = false;
-        boolean yCont = false;
+//        if (z.isEmpty()) {
+//            return isIndependentUncon(x, y);
+//        }
+//        boolean xCont = false;
+//        boolean yCont = false;
        /* if(z.size() > cutoff)
             return false;*/
-        if (ii != null) {
-            if (z != null) {
-                for (Node tempo : z)
-                    zzzz.add(ii.getVariable(tempo.getName()));
-            }
-            try {
-
-                ii.getData().setDouble(1, ii.getData().getColumn(ii.getVariable(x.getName())), ii.getData().getDouble(1, ii.getData().getColumn(ii.getVariable(x.getName()))));
-                xCont = true;
-                // System.out.println(x + ": is Continuous");
-            } catch (Exception e) {
-            }
-            try {
-                ii.getData().setDouble(1, ii.getData().getColumn(ii.getVariable(y.getName())), ii.getData().getDouble(1, ii.getData().getColumn(ii.getVariable(y.getName()))));
-                yCont = true;
-                //System.out.println(y + ": is Continuous");
-            } catch (Exception ee) {
-            }
-            if (ii.isDependent(ii.getVariable(x.getName()), ii.getVariable(y.getName()), zzzz)) {
-                lastP = ii.getPValue();
-                List<Node> temp = new ArrayList<Node>();
-                if (cutoff == zzzz.size()) {
-                    stopTesting[ii.getData().getColumn(ii.getVariable(x.getName()))][ii.getData().getColumn(ii.getVariable(y.getName()))] = true;
-                    stopTesting[ii.getData().getColumn(ii.getVariable(y.getName()))][ii.getData().getColumn(ii.getVariable(x.getName()))] = true;
-                }
-                if (truth != null) {
-                    for (Node pz : zzzz)
-                        temp.add(truth.getNode(pz.getName()));
-                    if (!truth.isDSeparatedFrom(truth.getNode(x.getName()), truth.getNode(y.getName()), temp) && lastP > alpha)
-                        out.println("MULT\t" + lastP + "\t" + temp.size() + "\t" + xCont + "\t" + yCont + "\t" + x.getName() + "\t" + y.getName() + "\t" + temp + "\t" + lambdaMGM);
-                    out.flush();
-                }
-                return false;
-            }
-            if (stopTesting[ii.getData().getColumn(ii.getVariable(x.getName()))][ii.getData().getColumn(ii.getVariable(y.getName()))]) {
-                lastP = ii.getPValue();
-                // System.out.println(x + "," + y + " was previously dependent so not asking KCI");
-                return true;
-            }
-            lastP = ii.getPValue();
-        }
-        List<Node> temp = new ArrayList<Node>();
-        if (out != null && truth != null) {
-            for (Node pz : zzzz)
-                temp.add(truth.getNode(pz.getName()));
-            if (!truth.isDSeparatedFrom(truth.getNode(x.getName()), truth.getNode(y.getName()), temp) && lastP > alpha)
-                out.println("MULT\t" + lastP + "\t" + temp.size() + "\t" + xCont + "\t" + yCont + "\t" + x.getName() + "\t" + y.getName() + "\t" + temp + "\t" + lambdaMGM);
-            out.flush();
-        }
+//        if (ii != null) {
+//            if (z != null) {
+//                for (Node tempo : z)
+//                    zzzz.add(ii.getVariable(tempo.getName()));
+//            }
+//            try {
+//
+//                ii.getData().setDouble(1, ii.getData().getColumn(ii.getVariable(x.getName())), ii.getData().getDouble(1, ii.getData().getColumn(ii.getVariable(x.getName()))));
+//                xCont = true;
+//                // System.out.println(x + ": is Continuous");
+//            } catch (Exception e) {
+//            }
+//            try {
+//                ii.getData().setDouble(1, ii.getData().getColumn(ii.getVariable(y.getName())), ii.getData().getDouble(1, ii.getData().getColumn(ii.getVariable(y.getName()))));
+//                yCont = true;
+//                //System.out.println(y + ": is Continuous");
+//            } catch (Exception ee) {
+//            }
+//            if (ii.isDependent(ii.getVariable(x.getName()), ii.getVariable(y.getName()), zzzz)) {
+//                lastP = ii.getPValue();
+//                List<Node> temp = new ArrayList<Node>();
+//                if (cutoff == zzzz.size()) {
+//                    stopTesting[ii.getData().getColumn(ii.getVariable(x.getName()))][ii.getData().getColumn(ii.getVariable(y.getName()))] = true;
+//                    stopTesting[ii.getData().getColumn(ii.getVariable(y.getName()))][ii.getData().getColumn(ii.getVariable(x.getName()))] = true;
+//                }
+//                if (truth != null) {
+//                    for (Node pz : zzzz)
+//                        temp.add(truth.getNode(pz.getName()));
+//                    if (!truth.isDSeparatedFrom(truth.getNode(x.getName()), truth.getNode(y.getName()), temp) && lastP > alpha)
+//                        out.println("MULT\t" + lastP + "\t" + temp.size() + "\t" + xCont + "\t" + yCont + "\t" + x.getName() + "\t" + y.getName() + "\t" + temp + "\t" + lambdaMGM);
+//                    out.flush();
+//                }
+//                return false;
+//            }
+//            if (stopTesting[ii.getData().getColumn(ii.getVariable(x.getName()))][ii.getData().getColumn(ii.getVariable(y.getName()))]) {
+//                lastP = ii.getPValue();
+//                // System.out.println(x + "," + y + " was previously dependent so not asking KCI");
+//                return true;
+//            }
+//            lastP = ii.getPValue();
+//        }
+//        List<Node> temp = new ArrayList<Node>();
+//        if (out != null && truth != null) {
+//            for (Node pz : zzzz)
+//                temp.add(truth.getNode(pz.getName()));
+//            if (!truth.isDSeparatedFrom(truth.getNode(x.getName()), truth.getNode(y.getName()), temp) && lastP > alpha)
+//                out.println("MULT\t" + lastP + "\t" + temp.size() + "\t" + xCont + "\t" + yCont + "\t" + x.getName() + "\t" + y.getName() + "\t" + temp + "\t" + lambdaMGM);
+//            out.flush();
+//        }
         if (z.isEmpty()) {
-            boolean b = isIndependentUncon(x, y);
-
-            return b;
+            return isIndependentUncon(x, y);
         } else {
-            boolean b = isIndependentCon(x, y, z);
-
-            return b;
-
-
+            return isIndependentCon(x, y, z);
         }
     }
 
     private boolean isIndependentCon(Node x, Node y, List<Node> z) {
         boolean xCont = false;
         boolean yCont = false;
-       /* if(z.size() > cutoff)
-            return false;*/
-        if (ii != null) {
-            try {
-
-                ii.getData().setDouble(1, ii.getData().getColumn(ii.getVariable(x.getName())), ii.getData().getDouble(1, ii.getData().getColumn(ii.getVariable(x.getName()))));
-                xCont = true;
-                // System.out.println(x + ": is Continuous");
-            } catch (Exception e) {
-            }
-            try {
-                ii.getData().setDouble(1, ii.getData().getColumn(ii.getVariable(y.getName())), ii.getData().getDouble(1, ii.getData().getColumn(ii.getVariable(y.getName()))));
-                yCont = true;
-                //System.out.println(y + ": is Continuous");
-            } catch (Exception ee) {
-            }
-        }
-        long time = System.nanoTime();
         boolean unbiased = false;
         boolean GP = unbiased;
         boolean bootstrap = false;
@@ -355,7 +303,6 @@ public class KCI implements IndependenceTest {
             xArr[i] = dat.getDouble(i, colnumX);
             yArr[i] = dat.getDouble(i, colnumY);
         }
-        int num_eig = T;
         int T_BS = 5000;
 
         double thres = 1E-5;
@@ -369,7 +316,6 @@ public class KCI implements IndependenceTest {
             width = 0.4;
         double theta = 1 / (width * width * dim);
         // System.out.println("Initial Stuff: " + (System.nanoTime()-time));
-        time = System.nanoTime();
 
 
         TetradMatrix kernArg = new TetradMatrix(T, z.size() + 1);
@@ -386,8 +332,6 @@ public class KCI implements IndependenceTest {
         temp[0] = theta;
         temp[1] = 1;
         TetradMatrix KX = kernel(kernArg, kernArg, temp);
-        kernArg = null;
-        time = System.nanoTime();
         KX = Hmat.times(KX.times(Hmat));
         TetradMatrix KY;
         if (kyArr[colnumY] != null)
@@ -409,7 +353,6 @@ public class KCI implements IndependenceTest {
             //TO DO optimize hyperparameters
 
         } else {
-            time = System.nanoTime();
             TetradMatrix KZ = new TetradMatrix(T, z.size());
             for (int i = 0; i < T; i++) {
                 for (int j = 0; j < z.size(); j++) {
@@ -423,25 +366,18 @@ public class KCI implements IndependenceTest {
             KXZ = KZ.times(KX.times(KZ.transpose()));
             KYZ = KZ.times(KY.times(KZ.transpose()));
             sta = KXZ.times(KYZ).trace();
-            df = eye.minus(KZ).trace();
-            // System.out.println("Time for setting up kernel matrices(Multiplication): " + (System.nanoTime()-time));
-            // System.out.println(sta);
-            //System.out.println(df);
         }
         EigenDecomposition ed1;
         EigenDecomposition ed2;
         try {
-            time = System.nanoTime();
             ed1 = new EigenDecomposition(KXZ.plus(KXZ.transpose()).scalarMult(.5).getRealMatrix());
             ed2 = new EigenDecomposition(KYZ.plus(KYZ.transpose()).scalarMult(.5).getRealMatrix());
             // System.out.println("Time for EigenValue Decomp:" + (System.nanoTime()-time));
         } catch (Exception e) {
             System.out.println("Eigenvalue didn't converge");
-            return true;
+            return false;
         }
 
-
-        time = System.nanoTime();
         double[] evalues1 = ed1.getRealEigenvalues();
         double[] evalues2 = ed2.getRealEigenvalues();
 
@@ -505,10 +441,6 @@ public class KCI implements IndependenceTest {
         TetradMatrix eiv_prodx = tv1.times(eigKxz.transpose());
         TetradMatrix eiv_prody = tv2.times(eigKyz.transpose());
 
-        eigKxz = null;
-        eigKyz = null;
-        tv1 = null;
-        tv2 = null;
         int numx = eiv_prodx.columns();
         int numy = eiv_prody.columns();
         int size_u = numx * numy;
@@ -529,7 +461,6 @@ public class KCI implements IndependenceTest {
 
         if (bootstrap) {
             //TO DO
-            time = System.nanoTime();
             EigenDecomposition ee;
             try {
                 ee = new EigenDecomposition(uu_prod.getRealMatrix());
@@ -639,64 +570,64 @@ public class KCI implements IndependenceTest {
         boolean yCont = false;
        /* if(z.size() > cutoff)
             return false;*/
-        if (ii != null) {
-            try {
-                ii.getData().setDouble(1, ii.getData().getColumn(ii.getVariable(x.getName())), ii.getData().getDouble(1, ii.getData().getColumn(ii.getVariable(x.getName()))));
-                xCont = true;
-                // System.out.println(x + ": is Continuous");
-            } catch (Exception e) {
-            }
-            try {
-                ii.getData().setDouble(1, ii.getData().getColumn(ii.getVariable(y.getName())), ii.getData().getDouble(1, ii.getData().getColumn(ii.getVariable(y.getName()))));
-                yCont = true;
-                //System.out.println(y + ": is Continuous");
-            } catch (Exception ee) {
-            }
-            if (ii.isDependent(ii.getVariable(x.getName()), ii.getVariable(y.getName()))) {
-                lastP = ii.getPValue();
-                if (cutoff == 0) {
-                    stopTesting[ii.getData().getColumn(ii.getVariable(x.getName()))][ii.getData().getColumn(ii.getVariable(y.getName()))] = true;
-                    stopTesting[ii.getData().getColumn(ii.getVariable(y.getName()))][ii.getData().getColumn(ii.getVariable(x.getName()))] = true;
-                }
-                return false;
-            }
-        }
+//        if (ii != null) {
+//            try {
+//                ii.getData().setDouble(1, ii.getData().getColumn(ii.getVariable(x.getName())), ii.getData().getDouble(1, ii.getData().getColumn(ii.getVariable(x.getName()))));
+//                xCont = true;
+//                // System.out.println(x + ": is Continuous");
+//            } catch (Exception e) {
+//            }
+//            try {
+//                ii.getData().setDouble(1, ii.getData().getColumn(ii.getVariable(y.getName())), ii.getData().getDouble(1, ii.getData().getColumn(ii.getVariable(y.getName()))));
+//                yCont = true;
+//                //System.out.println(y + ": is Continuous");
+//            } catch (Exception ee) {
+//            }
+//            if (ii.isDependent(ii.getVariable(x.getName()), ii.getVariable(y.getName()))) {
+//                lastP = ii.getPValue();
+//                if (cutoff == 0) {
+//                    stopTesting[ii.getData().getColumn(ii.getVariable(x.getName()))][ii.getData().getColumn(ii.getVariable(y.getName()))] = true;
+//                    stopTesting[ii.getData().getColumn(ii.getVariable(y.getName()))][ii.getData().getColumn(ii.getVariable(x.getName()))] = true;
+//                }
+//                return false;
+//            }
+//        }
         List<Node> tem = Collections.emptyList();
         //System.out.println(x + " " + y);
-        int columnNum = dat.getColumn(x);
-        int columnNumY = dat.getColumn(y);
-        int T = dat.getNumRows();
+        int xCol = dat.getColumn(x);
+        int yCol = dat.getColumn(y);
+        int N = dat.getNumRows();
 
-        double[] xArr = new double[T];
-        double[] yArr = new double[T];
+        double[] xArr = new double[N];
+        double[] yArr = new double[N];
 
-        for (int i = 0; i < T; i++) {
-            xArr[i] = dat.getDouble(i, columnNum);
-            yArr[i] = dat.getDouble(i, columnNumY);
+        for (int i = 0; i < N; i++) {
+            xArr[i] = dat.getDouble(i, xCol);
+            yArr[i] = dat.getDouble(i, yCol);
         }
 
         boolean approx = false;
-        int num_eig = T;
-        if (T > 1000) {
+        int num_eig = N;
+        if (N > 1000) {
             approx = true;
-            num_eig = T / 2;
+            num_eig = N / 2;
         }
         int T_BS = 1000;
         double lambda = 1E-3;
         double thresh = 1E-6;
         double width = .8;
-        if (T > 200)
+        if (N > 200)
             width = 0.5;
-        if (T > 1200)
+        if (N > 1200)
             width = 0.3;
         double theta = 1 / (width * width);
-        double[][] H = new double[T][T];
-        for (int i = 0; i < T; i++) {
-            for (int j = 0; j < T; j++) {
+        double[][] H = new double[N][N];
+        for (int i = 0; i < N; i++) {
+            for (int j = 0; j < N; j++) {
                 if (i == j)
-                    H[i][j] = 1.0 - 1.0 / T;
+                    H[i][j] = 1.0 - 1.0 / N;
                 else
-                    H[i][j] = -1.0 / T;
+                    H[i][j] = -1.0 / N;
             }
         }
         double[] temp = new double[2];
@@ -705,23 +636,23 @@ public class KCI implements IndependenceTest {
         TetradMatrix kx;
         TetradMatrix ky;
         TetradMatrix h = new TetradMatrix(H);
-        if (kyArr[columnNum] != null) {
-            kx = kyArr[columnNum];
+        if (kyArr[xCol] != null) {
+            kx = kyArr[xCol];
         } else {
             double[][] Kx = kernel(xArr, xArr, temp);
             kx = new TetradMatrix(Kx);
             kx = h.times(kx);
             kx = kx.times(h);
-            kyArr[columnNum] = kx;
+            kyArr[xCol] = kx;
         }
-        if (kyArr[columnNumY] != null) {
-            ky = kyArr[columnNumY];
+        if (kyArr[yCol] != null) {
+            ky = kyArr[yCol];
         } else {
             double[][] Ky = kernel(yArr, yArr, temp);
             ky = new TetradMatrix(Ky);
             ky = h.times(ky);
             ky = ky.times(h);
-            kyArr[columnNumY] = ky;
+            kyArr[yCol] = ky;
         }
 
 
@@ -736,39 +667,21 @@ public class KCI implements IndependenceTest {
         double p_val = -1;
         if (!approx) //Bootstrap
         {
-
-            org.apache.commons.math3.linear.EigenDecomposition eda1 = null;
-            org.apache.commons.math3.linear.EigenDecomposition eda2 = null;
-
+            EigenDecomposition ed1;
+            EigenDecomposition ed2;
             try {
                 time = System.currentTimeMillis();
-                eda1 = new org.apache.commons.math3.linear.EigenDecomposition(kx.plus(kx).scalarMult(0.5).getRealMatrix());
-                eda2 = new org.apache.commons.math3.linear.EigenDecomposition(ky.plus(ky).scalarMult(0.5).getRealMatrix());
-
+                ed1 = new EigenDecomposition(kx.plus(kx.transpose()).scalarMult(0.5).getRealMatrix());
+                ed2 = new EigenDecomposition(ky.plus(ky.transpose()).scalarMult(0.5).getRealMatrix());
                 // System.out.println("Time to do EigenValue: " + (System.currentTimeMillis()-time));
             } catch (Exception e) {
                 System.out.println("Eigenvalue didn't converge");
                 lastP = thresh + 0.01;
                 return true;
             }
-
-
-//            EigenDecomposition ed1;
-//            EigenDecomposition ed2;
-//            try {
-//                time = System.currentTimeMillis();
-//                ed1 = new EigenDecomposition(kx.plus(kx.transpose()).scalarMult(0.5).getRealMatrix());
-//                ed2 = new EigenDecomposition(ky.plus(ky.transpose()).scalarMult(0.5).getRealMatrix());
-//                // System.out.println("Time to do EigenValue: " + (System.currentTimeMillis()-time));
-//            } catch (Exception e) {
-//                System.out.println("Eigenvalue didn't converge");
-//                lastP = thresh + 0.01;
-//                return true;
-//            }
-
             time = System.currentTimeMillis();
-            double[] ev1 = eda1.getRealEigenvalues();
-            double[] ev2 = eda2.getRealEigenvalues();
+            double[] ev1 = ed1.getRealEigenvalues();
+            double[] ev2 = ed2.getRealEigenvalues();
             double[] eigProd = new double[ev1.length * ev2.length];
             double maxEig = Double.MIN_VALUE;
             for (int i = 0; i < ev1.length; i++) {
@@ -786,7 +699,7 @@ public class KCI implements IndependenceTest {
                     d.add(eigProd[i]);
             }
             // System.out.println("Time to do some more multiplication: " + (System.currentTimeMillis()-time));
-            if (d.size() * T < 1E6) {
+            if (d.size() * N < 1E6) {
                 //THIS IS TAKING FOREVER
                 //TO DO CACHE THE NULL AND REUSE THE CRAP OUT OF IT
                 time = System.currentTimeMillis();
@@ -806,7 +719,7 @@ public class KCI implements IndependenceTest {
 
                 TetradMatrix f_rand = new TetradMatrix(f_rand1);
                 TetradMatrix ep = new TetradMatrix(data);
-                ep = ep.scalarMult(1 / (double) T);
+                ep = ep.scalarMult(1 / (double) N);
                 double[][] nullDist = ep.times(f_rand).toArray();
                 int sum = 0;
                 // System.out.println("Time for some multiplication before p-value: " + (System.currentTimeMillis()-time));
@@ -837,19 +750,18 @@ public class KCI implements IndependenceTest {
                 //TODO Iteratively calculate the null distribution!
                 int length = 0;
                 double[] nullDist = new double[T_BS];
-                if (1E6 / T > 100)
-                    length = (int) (1E6 / T);
+                if (1E6 / N > 100)
+                    length = (int) (1E6 / N);
                 else
                     length = 100;
                 int itmax = (int) Math.floor(d.size() / length);
                 TetradVector nd = new TetradVector(nullDist);
 
                 for (int iter = 0; iter < itmax; iter++) {
-                    ChiSquare cs = new ChiSquare();
                     double[][] f_rand1 = new double[(int) length][T_BS];
                     for (int j = 0; j < length; j++) {
                         for (int k = 0; k < T_BS; k++) {
-                            f_rand1[j][k] = cs.nextRandom();
+                            f_rand1[j][k] = RandomUtil.getInstance().nextChiSquare(1);
                         }
                     }
                     int start = iter * length + 1;
@@ -872,19 +784,19 @@ public class KCI implements IndependenceTest {
 
         } else {
             time = System.currentTimeMillis();
-            double mean_appr = kx.trace() * ky.trace() / T;
-            double var_appr = 2 * kx.times(kx).trace() * ky.times(ky).trace() / (T * T);//can optimize by not actually performing matrix multiplication
+            double mean_appr = kx.trace() * ky.trace() / N;
+            double var_appr = 2 * kx.times(kx).trace() * ky.times(ky).trace() / (N * N);//can optimize by not actually performing matrix multiplication
             double k_appr = mean_appr * mean_appr / var_appr;
             double theta_appr = var_appr / mean_appr;
             GammaDistribution g = new GammaDistribution(k_appr, theta_appr);
             double p_appr = 1 - g.cumulativeProbability(sta);
             lastP = p_appr;
             // System.out.println("Time to approximate p value: " + (System.currentTimeMillis()-time));
-            if (out != null && truth != null) {
-                if (!truth.isDSeparatedFrom(truth.getNode(x.getName()), truth.getNode(y.getName()), tem) && lastP > alpha)
-                    out.println("KCI\t" + lastP + "\t0" + "\t" + xCont + "\t" + yCont + "\t" + x.getName() + "\t" + y.getName() + "\t" + null + "\t" + lambdaMGM);
-                out.flush();
-            }
+//            if (out != null && truth != null) {
+//                if (!truth.isDSeparatedFrom(truth.getNode(x.getName()), truth.getNode(y.getName()), tem) && lastP > alpha)
+//                    out.println("KCI\t" + lastP + "\t0" + "\t" + xCont + "\t" + yCont + "\t" + x.getName() + "\t" + y.getName() + "\t" + null + "\t" + lambdaMGM);
+//                out.flush();
+//            }
             if (p_appr < alpha) {
                 return false;
             } else {
@@ -898,8 +810,8 @@ public class KCI implements IndependenceTest {
         double[][] sum = new double[x.length][y.length];
         for (int i = 0; i < x.length; i++) {
             for (int j = 0; j < y.length; j++) {
-                sum[i][j] = Math.pow(x[i] - y[j], 2);
-
+                final double d = x[i] - y[j];
+                sum[i][j] = d * d;
             }
         }
         return sum;

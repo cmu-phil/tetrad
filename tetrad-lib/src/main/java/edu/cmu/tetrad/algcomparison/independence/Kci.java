@@ -32,7 +32,6 @@ public class Kci implements IndependenceWrapper {
     public IndependenceTest getTest(DataModel dataSet, Parameters parameters) {
         final KCI kci = new KCI(DataUtils.getContinuousDataSet(dataSet),
                 parameters.getDouble("alpha"));
-        kci.setCutoff(-1);//parameters.getInt("kciCutoff"));
         return kci;
     }
 
@@ -50,7 +49,6 @@ public class Kci implements IndependenceWrapper {
     public List<String> getParameters() {
         List<String> params = new ArrayList<>();
         params.add("alpha");
-        params.add("kciCutoff");
         return params;
     }
 }

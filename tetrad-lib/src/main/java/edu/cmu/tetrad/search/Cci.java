@@ -488,7 +488,7 @@ public final class Cci {
     private double function(int index, double x) {
 //        double g = sin((index) * x) + cos((index) * x); // This would be a sin cosine basis.
 //
-//        double g = Math.pow(x, index);
+//        double g = Math.pow(x, index / 2.0);
         double g = 1.0;
 
         for (int i = 1; i <= index; i++) {
