@@ -73,7 +73,7 @@ public class EigenDecomposition {
     /** Internally used epsilon criteria. */
     private static final double EPSILON = 1e-12;
     /** Maximum number of iterations accepted in the implicit QL transformation */
-    private byte maxIter = 120;
+    private byte maxIter = 50;
     /** Main diagonal of the tridiagonal matrix. */
     private double[] main;
     /** Secondary diagonal of the tridiagonal matrix. */
@@ -109,7 +109,7 @@ public class EigenDecomposition {
      * results in a matrix with zero norm
      * @since 3.1
      */
-    public EigenDecomposition(final RealMatrix matrix)
+    public  EigenDecomposition(final RealMatrix matrix)
             throws MathArithmeticException {
         final double symTol = 10 * matrix.getRowDimension() * matrix.getColumnDimension() * Precision.EPSILON;
         isSymmetric = MatrixUtils.isSymmetric(matrix, symTol);

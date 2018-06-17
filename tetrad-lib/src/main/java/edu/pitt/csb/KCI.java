@@ -15,7 +15,6 @@ import org.apache.commons.math3.linear.RealVector;
 import org.apache.commons.math3.random.SynchronizedRandomGenerator;
 import org.apache.commons.math3.random.Well44497b;
 
-import java.io.PrintStream;
 import java.util.*;
 
 /**
@@ -31,14 +30,13 @@ public class KCI implements IndependenceTest {
     private double[][] _data;
     private double alpha;
     private double lastP;
-    private PrintStream out;
     private TetradMatrix H;
     private TetradMatrix eye;
-    private final double lambda = 1E-3;
     private TetradMatrix lamEye;
     private ChiSquaredDistribution chisq = new ChiSquaredDistribution(new SynchronizedRandomGenerator(
             new Well44497b(193924L)), 1);
     private boolean bootstrap = true;
+    private boolean approx = false;
 
     public KCI(DataSet data, double threshold) {
         this.data = DataUtils.standardizeData(data);
@@ -46,6 +44,7 @@ public class KCI implements IndependenceTest {
         int T = data.getNumRows();
         this.eye = TetradMatrix.identity(T);
         this.H = eye.minus(TetradMatrix.ones(T, T).scalarMult(1.0 / T));
+        double lambda = 1E-3;
         this.lamEye = eye.scalarMult(lambda);
         this.alpha = threshold;
         this.lastP = -1;
@@ -79,7 +78,6 @@ public class KCI implements IndependenceTest {
         double[] xArr = _data[data.getColumn(x)];
         double[] yArr = _data[data.getColumn(y)];
 
-        boolean approx = false;
         int T_BS = 1000;
         double thresh = 1E-6;
         double width = .8;
@@ -89,22 +87,17 @@ public class KCI implements IndependenceTest {
         if (T > 1200)
             width = 0.3;
 
-        double theta = 1 / (width * width);
+        double theta = 1.0 / (width * width);
         double[] temp = new double[2];
         temp[0] = theta;
         temp[1] = 1;
-        TetradMatrix kx;
-        TetradMatrix ky;
 
-        TetradMatrix Kx = kernel(xArr, xArr, temp);
-        kx = H.times(Kx).times(H);
-
-        TetradMatrix Ky = kernel(yArr, yArr, temp);
-        ky = H.times(Ky).times(H);
+        TetradMatrix kx = H.times(kernel(xArr, xArr, temp)).times(H);
+        TetradMatrix ky = H.times(kernel(yArr, yArr, temp)).times(H);
 
         double sta = kx.times(ky).trace();
 
-        if (!approx) {
+        if (!isApprox()) {
             EigenDecomposition ed1;
             EigenDecomposition ed2;
 
@@ -198,13 +191,15 @@ public class KCI implements IndependenceTest {
         double thres = 1E-5;
         int dim = z.size();
 
-        double width = 0;
+        double width;
+
         if (T <= 200)
             width = 1.2;
         else if (T < 1200)
             width = 0.7;
         else
             width = 0.4;
+
         double theta = 1 / (width * width * dim);
 
         TetradMatrix kernArg = new TetradMatrix(T, z.size() + 1);
@@ -341,7 +336,9 @@ public class KCI implements IndependenceTest {
                 System.out.println("Eigenvalue Didn't converge conditional");
                 return true;
             }
-            int num = -1;
+
+            int num;
+
             if (T < size_u)
                 num = T;
             else
@@ -355,11 +352,13 @@ public class KCI implements IndependenceTest {
                 valsToKeep[count] = evals[i];
                 count++;
             }
+
             double max = valsToKeep[0];
-            ArrayList<Double> finalVals = new ArrayList<Double>();
-            for (int i = 0; i < valsToKeep.length; i++) {
-                if (valsToKeep[i] >= max * thres)
-                    finalVals.add(valsToKeep[i]);
+            ArrayList<Double> finalVals = new ArrayList<>();
+
+            for (double aValsToKeep : valsToKeep) {
+                if (aValsToKeep >= max * thres)
+                    finalVals.add(aValsToKeep);
             }
 
             if (finalVals.size() * T < 1E6) {
@@ -402,14 +401,13 @@ public class KCI implements IndependenceTest {
                 return false;
             }
         } else {
-            double p_appr = -1;
             double mean_appr = uu_prod.trace();
             double var_appr = 2 * uu_prod.times(uu_prod).trace();
             double k_appr = mean_appr * mean_appr / var_appr;
             double theta_appr = var_appr / mean_appr;
             GammaDistribution g = new GammaDistribution(k_appr, theta_appr);
 
-            p_appr = 1 - g.cumulativeProbability(sta);
+            double p_appr = 1 - g.cumulativeProbability(sta);
             lastP = p_appr;
             return p_appr > alpha;
         }
@@ -469,7 +467,7 @@ public class KCI implements IndependenceTest {
      * getVariableNames().
      */
     public boolean isIndependent(Node x, Node y, Node... z) {
-        LinkedList<Node> thez = new LinkedList<Node>();
+        LinkedList<Node> thez = new LinkedList<>();
         Collections.addAll(thez, z);
         return isIndependent(x, y, thez);
     }
@@ -563,7 +561,7 @@ public class KCI implements IndependenceTest {
     }
 
     public List<DataSet> getDataSets() {
-        LinkedList<DataSet> L = new LinkedList<DataSet>();
+        LinkedList<DataSet> L = new LinkedList<>();
         L.add(data);
         return L;
     }
@@ -586,5 +584,9 @@ public class KCI implements IndependenceTest {
 
     public void setBootstrap(boolean bootstrap) {
         this.bootstrap = bootstrap;
+    }
+
+    private boolean isApprox() {
+        return approx;
     }
 }
