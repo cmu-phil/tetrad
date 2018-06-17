@@ -112,6 +112,17 @@ public class TetradMatrix implements TetradSerializable {
         return new TetradMatrix(0, 0);
     }
 
+    public static TetradMatrix ones(int rows, int cols) {
+        TetradMatrix matrix = new TetradMatrix(rows, cols);
+        for (int i = 0; i < rows; i++) {
+            for (int j = 0; j < cols; j++) {
+                matrix.set(i, j, 1);
+            }
+        }
+
+        return matrix;
+    }
+
     public TetradMatrix sqrt() {
         SingularValueDecomposition svd = new SingularValueDecomposition(getRealMatrix());
         RealMatrix U = svd.getU();

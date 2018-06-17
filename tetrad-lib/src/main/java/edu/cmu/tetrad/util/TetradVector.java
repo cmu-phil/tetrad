@@ -51,6 +51,12 @@ public class TetradVector implements TetradSerializable {
         return new TetradVector(0);
     }
 
+    public static TetradVector ones(int t) {
+        TetradVector v = new TetradVector(t);
+        for (int i = 0; i < v.size(); i++) v.set(i, 1);
+        return v;
+    }
+
     public double[] toArray() {
         return data.toArray();
     }
