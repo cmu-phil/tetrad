@@ -1,7 +1,5 @@
 package edu.cmu.tetrad.algcomparison.independence;
 
-import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
-import edu.cmu.tetrad.algcomparison.utils.TakesInitialGraph;
 import edu.cmu.tetrad.annotation.TestOfIndependence;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataType;
@@ -33,6 +31,7 @@ public class ConditionalCorrelation implements IndependenceWrapper {
         final IndTestConditionalCorrelation cci = new IndTestConditionalCorrelation(DataUtils.getContinuousDataSet(dataSet),
                 parameters.getDouble("alpha"));
         cci.setNumFunctions(parameters.getInt("numBasisFunctions"));
+        cci.setWidth(parameters.getDouble("kernelWidth"));
         return cci;
     }
 
@@ -51,6 +50,7 @@ public class ConditionalCorrelation implements IndependenceWrapper {
         List<String> params = new ArrayList<>();
         params.add("alpha");
         params.add("numBasisFunctions");
+        params.add("kernelWidth");
         return params;
     }
 }

@@ -73,7 +73,7 @@ public class EigenDecomposition {
     /** Internally used epsilon criteria. */
     private static final double EPSILON = 1e-12;
     /** Maximum number of iterations accepted in the implicit QL transformation */
-    private byte maxIter = 50;
+    private byte maxIter = 100;
     /** Main diagonal of the tridiagonal matrix. */
     private double[] main;
     /** Secondary diagonal of the tridiagonal matrix. */

@@ -45,6 +45,7 @@ public final class IndTestConditionalCorrelation implements IndependenceTest {
      * The instance of CCI that is wrapped.
      */
     private final Cci cci;
+//    private double weight = 0.8;
 
     /**
      * The variables of the covariance data, in order. (Unmodifiable list.)
@@ -76,10 +77,10 @@ public final class IndTestConditionalCorrelation implements IndependenceTest {
      */
     private Map<Node, Integer> indices;
 
-    /**
-     * The number of functions to use in the basis.
-     */
-    private int numFunctions = 10;
+//    /**
+//     * The number of functions to use in the basis.
+//     */
+//    private int numFunctions = 10;
 
     /**
      * True if verbose output should be printed.
@@ -116,7 +117,6 @@ public final class IndTestConditionalCorrelation implements IndependenceTest {
         for (int i = 0; i < variables.size(); i++) varNames.add(variables.get(i).getName());
 
         this.cci = new Cci(data, varNames, alpha);
-        this.cci.setNumFunctions(getNumFunctions());
 
         indices = new HashMap<>();
 
@@ -299,11 +299,19 @@ public final class IndTestConditionalCorrelation implements IndependenceTest {
      * Number of functions to use in (truncated) basis.
      */
     public int getNumFunctions() {
-        return numFunctions;
+        return this.cci.getNumFunctions();
     }
 
     public void setNumFunctions(int numFunctions) {
-        this.numFunctions = numFunctions;
+        this.cci.setNumFunctions(numFunctions);
+    }
+
+    public double getWeight() {
+        return this.cci.getWidth();
+    }
+
+    public void setWidth(double width) {
+        this.cci.setWidth(width);
     }
 }
 

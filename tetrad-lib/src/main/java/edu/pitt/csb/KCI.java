@@ -95,7 +95,7 @@ public class KCI implements IndependenceTest {
         TetradMatrix kx = H.times(kernel(xArr, xArr, temp)).times(H);
         TetradMatrix ky = H.times(kernel(yArr, yArr, temp)).times(H);
 
-        double sta = kx.times(ky).trace();
+        double trace = kx.times(ky).trace();
 
         if (!isApprox()) {
             EigenDecomposition ed1;
@@ -154,7 +154,7 @@ public class KCI implements IndependenceTest {
 
                 for (double[] aNullDist : nullDist) {
                     for (double anANullDist : aNullDist) {
-                        if (anANullDist > sta)
+                        if (anANullDist > trace)
                             sum++;
                     }
                 }
@@ -172,7 +172,7 @@ public class KCI implements IndependenceTest {
             double k_appr = mean_appr * mean_appr / var_appr;
             double theta_appr = var_appr / mean_appr;
             GammaDistribution g = new GammaDistribution(k_appr, theta_appr);
-            double p_appr = 1 - g.cumulativeProbability(sta);
+            double p_appr = 1.0 - g.cumulativeProbability(trace);
             lastP = p_appr;
 
             return p_appr > alpha;
@@ -231,8 +231,8 @@ public class KCI implements IndependenceTest {
         KZ = H.times(kernel(KZ, KZ, temp).times(H));
 
         KZ = eye.minus(KZ.times((KZ.plus(lamEye).inverse())));
-        TetradMatrix KXZ = KZ.times(Kx.times(KZ.transpose()));
-        TetradMatrix KYZ = KZ.times(Ky.times(KZ.transpose()));
+        TetradMatrix KXZ = KZ.times(Kx).times(KZ.transpose());
+        TetradMatrix KYZ = KZ.times(Ky).times(KZ.transpose());
 
         double sta = KXZ.times(KYZ).trace();
 
@@ -287,7 +287,6 @@ public class KCI implements IndependenceTest {
         TetradMatrix tv2 = new TetradMatrix(ed2.getEigenvector(0).getDimension(), inds2.size());
 
         for (int i = 0; i < inds1.size(); i++) {
-
             eigKxz.set(i, i, Math.sqrt(evalues1[inds1.get(i)]));
             RealVector t = ed1.getEigenvector(inds1.get(i));
 
@@ -328,7 +327,6 @@ public class KCI implements IndependenceTest {
             uu_prod = uu.transpose().times(uu);
 
         if (isBootstrap()) {
-            //TO DO
             EigenDecomposition ee;
             try {
                 ee = new EigenDecomposition(uu_prod.getRealMatrix());

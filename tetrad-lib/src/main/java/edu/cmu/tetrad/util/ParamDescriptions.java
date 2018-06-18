@@ -303,6 +303,11 @@ public class ParamDescriptions {
                 "Cutoff",
                 6, 1, Integer.MAX_VALUE));
 
+        map.put("kernelWidth", new ParamDescription(
+                "Kernel width",
+                1.0, Double.MIN_VALUE, Double.POSITIVE_INFINITY));
+
+
     }
 
     public static ParamDescriptions getInstance() {

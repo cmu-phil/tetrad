@@ -32,10 +32,11 @@ public class CciScore implements ScoreWrapper {
     @Override
     public Score getScore(DataModel dataSet, Parameters parameters) {
         this.dataSet = dataSet;
-        final double alpha = parameters.getDouble("alpha");
-        IndTestConditionalCorrelation test = new IndTestConditionalCorrelation((DataSet) dataSet, alpha);
-        test.setNumFunctions(parameters.getInt("numFunctions"));
-        return new ScoredIndTest(test);
+        final IndTestConditionalCorrelation cci = new IndTestConditionalCorrelation(DataUtils.getContinuousDataSet(dataSet),
+                parameters.getDouble("alpha"));
+        cci.setNumFunctions(parameters.getInt("numBasisFunctions"));
+        cci.setWidth(parameters.getDouble("kernelWidth"));
+        return new ScoredIndTest(cci);
     }
 
     @Override
@@ -53,6 +54,7 @@ public class CciScore implements ScoreWrapper {
         List<String> parameters = new ArrayList<>();
         parameters.add("alpha");
         parameters.add("numBasisFunctions");
+        parameters.add("kernelWidth");
         return parameters;
     }
 

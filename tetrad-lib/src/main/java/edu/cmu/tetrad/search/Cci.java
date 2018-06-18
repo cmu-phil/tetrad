@@ -29,7 +29,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static edu.cmu.tetrad.util.StatUtils.cov;
 import static edu.cmu.tetrad.util.StatUtils.median;
 import static java.lang.Math.*;
 
@@ -76,6 +75,7 @@ public final class Cci {
      * Z cutoff for testing; depends on alpha.
      */
     private double cutoff;
+    private double width = 0.8;
 
     //==================CONSTRUCTORS====================//
 
@@ -143,38 +143,9 @@ public final class Cci {
      */
     public boolean independent(double[] x, double[] y) {
 
-        if (false) {
-            int both = 0;
-
-            for (int i = 0; i < x.length; i++) {
-                if (!Double.isNaN(x[i]) && !Double.isNaN(y[i])) {
-                    both++;
-                }
-            }
-
-            // Get rid of NaN's.
-            double[] _rXZ = new double[both];
-            double[] _rYZ = new double[both];
-
-            if (both != x.length) {
-                int index = -1;
-
-                for (int i = 0; i < x.length; i++) {
-                    if (!Double.isNaN(x[i]) && !Double.isNaN(y[i])) {
-                        ++index;
-                        _rXZ[index] = x[i];
-                        _rYZ[index] = y[i];
-                    }
-                }
-
-                x = _rXZ;
-                y = _rYZ;
-            }
-        }
-
         if (x.length < 10) {
             score = Double.NaN;
-            return false; // For PC, should not remove the edge for this reason.
+            return false;
         }
 
         double[] _x = new double[x.length];
@@ -195,10 +166,6 @@ public final class Cci {
                 final double score = calcScore(_x, _y);
                 if (Double.isInfinite(score) || Double.isNaN(score)) continue;
                 if (score > maxScore) maxScore = score;
-//                if (maxScore > cutoff) {
-//                    this.score = maxScore;
-//                    return false;
-//                }
             }
         }
 
@@ -211,8 +178,6 @@ public final class Cci {
         double min = StatUtils.min(x);
 
         double factor = Math.max(abs(max), abs(min));
-
-//        double[] _x = new double[x.length];
 
         for (int i = 0; i < x.length; i++) {
             x[i] = x[i] / factor;
@@ -229,16 +194,10 @@ public final class Cci {
         double sigmaYY = covs[2];
         double N = covs[3];
 
-
-//        double sigmaXY = covariance(_x, _y);
-//        double sigmaXX = covariance(_x, _x);
-//        double sigmaYY = covariance(_y, _y);
-
         double r = sigmaXY / sqrt(sigmaXX * sigmaYY);
 
         // Non-parametric Fisher Z test.
         double _z = 0.5 * (log(1.0 + r) - log(1.0 - r));
-//        final double N = _x.length;
         double w = sqrt(N) * _z;
 
         // Testing the hypothesis that _x and _y are uncorrelated and assuming that 4th moments of _x and _y
@@ -292,9 +251,6 @@ public final class Cci {
 
         h *= sqrt(_z.length);
 
-//        double[] sums = new double[N];
-//        double[] weights = new double[N];
-
         for (int i = 0; i < N; i++) {
 
             double sumsi = 0.0;
@@ -304,9 +260,8 @@ public final class Cci {
 
             for (int j = 0; j < N; j++) {
 
-                // Skips NaN values.
                 double d = distance(data, _z, i, j);
-                double k = kernel(d / h);
+                double k = kernelGaussian(d / h);
 
                 double xj = xdata[j];
 
@@ -322,27 +277,6 @@ public final class Cci {
                 residuals[i] = 0;
             }
         }
-
-//        for (int i = 0; i < N; i++) {
-//            double xi = xdata[i];
-//
-//            if (Double.isNaN(xi)) xi = 0.0;
-//
-//            // Skips NaN values.
-////            double d = 0;//distance(data, _z, i, i);
-//            double k = 0.5;//kernel(d / h);
-//
-//            sums[i] += k * xi;
-//            weights[i] += k;
-//        }
-
-//        for (int i = 0; i < residuals.length; i++) {
-//            residuals[i] = xdata[i] - sums[i] / weights[i];
-//
-//            if (Double.isNaN(residuals[i])) {
-//                residuals[i] = 0;
-//            }
-//        }
 
         return residuals;
     }
@@ -416,7 +350,7 @@ public final class Cci {
 
                     // Skips NaN values.
                     double d = distance(data, _z, i, j);
-                    double k = kernel(d / h);
+                    double k = kernelUniform(d / h);
 
                     if (Double.isNaN(xi)) xi = 0.0;
                     if (Double.isNaN(yi)) yi = 0.0;
@@ -488,13 +422,21 @@ public final class Cci {
     private double function(int index, double x) {
 //        double g = sin((index) * x) + cos((index) * x); // This would be a sin cosine basis.
 //
+
+//        double g;
+//
+//        if (index % 2 == 0) {
+//            g = Math.pow(x, index / 2);
+//        } else {
+//            g = Math.pow(x, 1.0 / ((index - 1) / 2));
+//        }
 //        double g = Math.pow(x, index / 2.0);
         double g = 1.0;
 
         for (int i = 1; i <= index; i++) {
             g *= x;
         }
-
+//
         if (abs(g) == Double.POSITIVE_INFINITY) g = Double.NaN;
 
         return g;
@@ -503,7 +445,7 @@ public final class Cci {
     /**
      * Number of functions to use in (truncated) basis
      */
-    private int getNumFunctions() {
+    public int getNumFunctions() {
         return numFunctions;
     }
 
@@ -549,9 +491,15 @@ public final class Cci {
     }
 
     // Uniform kernel.
-    private double kernel(double z) {
-        if (abs(z) > 1.) return 0.;
-        else return .5;
+    private double kernelUniform(double z) {
+        if (abs(z) > getWidth() / 2) return 0.;
+        else return 1.0 / getWidth();
+    }
+
+
+    private double kernelGaussian(double z) {
+        double wi2 = getWidth() / 2.0;
+        return Math.exp(-z * wi2);
     }
 
     // Euclidean distance.
@@ -599,6 +547,14 @@ public final class Cci {
         }
 
         return data;
+    }
+
+    public double getWidth() {
+        return width;
+    }
+
+    public void setWidth(double width) {
+        this.width = width;
     }
 }
 
