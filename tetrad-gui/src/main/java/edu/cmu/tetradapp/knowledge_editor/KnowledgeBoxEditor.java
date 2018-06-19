@@ -35,38 +35,26 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Font;
-import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
 import java.awt.datatransfer.UnsupportedFlavorException;
-import java.awt.dnd.DnDConstants;
-import java.awt.dnd.DragGestureEvent;
-import java.awt.dnd.DragGestureListener;
-import java.awt.dnd.DragGestureRecognizer;
-import java.awt.dnd.DragSource;
-import java.awt.dnd.DragSourceDragEvent;
-import java.awt.dnd.DragSourceDropEvent;
-import java.awt.dnd.DragSourceEvent;
-import java.awt.dnd.DragSourceListener;
-import java.awt.dnd.DropTarget;
-import java.awt.dnd.DropTargetDragEvent;
-import java.awt.dnd.DropTargetDropEvent;
-import java.awt.dnd.DropTargetEvent;
-import java.awt.dnd.DropTargetListener;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
-import java.awt.event.InputEvent;
 import java.io.CharArrayWriter;
 import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.prefs.Preferences;
 import javax.swing.Box;
 import javax.swing.DefaultListModel;
+import javax.swing.DropMode;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComponent;
@@ -84,6 +72,7 @@ import javax.swing.JTabbedPane;
 import javax.swing.JTextArea;
 import javax.swing.SpinnerNumberModel;
 import javax.swing.SwingConstants;
+import javax.swing.TransferHandler;
 import javax.swing.border.CompoundBorder;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.LineBorder;
@@ -100,6 +89,11 @@ public class KnowledgeBoxEditor extends JPanel {
     private static final long serialVersionUID = 959706288096545158L;
 
     private static final long EDGE_LIMIT = 100;
+
+    private final Color UNSELECTED_BG = new Color(153, 204, 204);
+    private final Color SELECTED_BG = new Color(255, 204, 102);
+
+    private final Map<String, JLabel> labelMap = new HashMap<>();
 
     private List<String> varNames;
     private KnowledgeWorkbench edgeWorkbench;
@@ -159,6 +153,24 @@ public class KnowledgeBoxEditor extends JPanel {
                 TetradLogger.getInstance().log("knowledge", knowledgeBoxModel.getKnowledge().toString());
             }
         });
+
+        initComponents();
+    }
+
+    private void initComponents() {
+        getKnowledge().getVariables().forEach(e -> labelMap.put(e, createJLabel(e)));
+        getKnowledge().getVariablesNotInTiers().forEach(e -> labelMap.put(e, createJLabel(e)));
+    }
+
+    private JLabel createJLabel(String name) {
+        JLabel label = new JLabel(String.format("  %s  ", name));
+        label.setOpaque(true);
+        label.setHorizontalAlignment(SwingConstants.CENTER);
+        label.setBorder(new CompoundBorder(new MatteBorder(2, 2, 2, 2, Color.WHITE), new LineBorder(Color.BLACK)));
+        label.setForeground(Color.BLACK);
+        label.setBackground(UNSELECTED_BG);
+
+        return label;
     }
 
     private JMenuBar menuBar() {
@@ -971,177 +983,132 @@ public class KnowledgeBoxEditor extends JPanel {
         return sourceGraph;
     }
 
-    public class DragDropList extends JList implements DropTargetListener,
-            DragSourceListener, DragGestureListener {
+    private class DragDropList extends JList<String> {
 
-        private List movedList;
+        private static final long serialVersionUID = 7240458207688841986L;
 
-        /**
-         * This is the tier that this particular component is representing, or
-         * -1 if it's the bin for unused variable names. It's needed so that
-         * dropped gadgets can cause variable names to be put into the correct
-         * tier.
-         */
-        private int tier;
+        private final List<String> items;
+        private final int tier;
 
-        public DragDropList(List items, int tier) {
-            if (tier < -1) {
-                throw new IllegalArgumentException();
-            }
-
+        public DragDropList(List<String> items, int tier) {
+            this.items = items;
             this.tier = tier;
 
+            initComponents();
+        }
+
+        private void initComponents() {
             setLayoutOrientation(JList.HORIZONTAL_WRAP);
             setVisibleRowCount(0);
-            this.setCellRenderer((list, value, index, isSelected, cellHasFocus) -> {
-                Color fillColor = new Color(153, 204, 204);
-                Color selectedFillColor = new Color(255, 204, 102);
-
-                JLabel comp = new JLabel(" " + value + " ");
-                comp.setOpaque(true);
-
-                if (isSelected) {
-                    comp.setForeground(Color.BLACK);
-                    comp.setBackground(selectedFillColor);
-                } else {
-                    comp.setForeground(Color.BLACK);
-                    comp.setBackground(fillColor);
+            setDropMode(DropMode.ON_OR_INSERT);
+            setDragEnabled(true);
+            setCellRenderer((JList<? extends String> list, String value, int index, boolean isSelected, boolean cellHasFocus) -> {
+                JLabel label = labelMap.get(value);
+                if (label == null) {
+                    label = new JLabel();
                 }
 
-                comp.setHorizontalAlignment(SwingConstants.CENTER);
-                comp.setBorder(new CompoundBorder(new MatteBorder(2, 2, 2,
-                        2, Color.WHITE), new LineBorder(Color.BLACK)));
+                label.setBackground(isSelected ? SELECTED_BG : UNSELECTED_BG);
 
-                return comp;
+                return label;
             });
+            setTransferHandler(new TransferHandler() {
 
-            new DropTarget(this, DnDConstants.ACTION_MOVE, this, true);
-            DragSource dragSource = DragSource.getDefaultDragSource();
-            dragSource.createDefaultDragGestureRecognizer(this,
-                    DnDConstants.ACTION_MOVE, this);
+                private static final long serialVersionUID = 3109256773218160485L;
 
-            setModel(new DefaultListModel());
-            items.forEach(item -> ((DefaultListModel) getModel()).addElement(item));
-        }
+                @Override
+                public boolean canImport(TransferHandler.TransferSupport info) {
+                    return info.isDataFlavorSupported(ListTransferable.DATA_FLAVOR);
+                }
 
-        public int getTier() {
-            return tier;
-        }
+                @Override
+                protected Transferable createTransferable(JComponent c) {
+                    JList<String> source = (JList<String>) c;
 
-        @Override
-        public void dragGestureRecognized(DragGestureEvent dragGestureEvent) {
-            if (getSelectedIndex() == -1) {
-                return;
-            }
+                    List<String> list = source.getSelectedValuesList();
+                    if (list == null) {
+                        getToolkit().beep();
+                        list = Collections.EMPTY_LIST;
+                    }
 
-            List list = getSelectedValuesList();
+                    return new ListTransferable(list);
+                }
 
-            if (list == null) {
-                getToolkit().beep();
-            } else {
-                this.movedList = list;
-                ListTransferable transferable = new ListTransferable(list);
-                dragGestureEvent.startDrag(DragSource.DefaultMoveDrop,
-                        transferable, this);
-            }
-        }
+                @Override
+                public int getSourceActions(JComponent c) {
+                    return TransferHandler.COPY_OR_MOVE;
+                }
 
-        @Override
-        public void drop(DropTargetDropEvent dropTargetDropEvent) {
-            try {
-                Transferable tr = dropTargetDropEvent.getTransferable();
-                DataFlavor flavor = tr.getTransferDataFlavors()[0];
-                List<String> list = (List<String>) tr.getTransferData(flavor);
+                @Override
+                public boolean importData(TransferHandler.TransferSupport info) {
+                    if (!info.isDrop()) {
+                        return false;
+                    }
 
-                for (String name : list) {
-                    if (getTier() >= 0) {
+                    JList<String> source = (JList<String>) info.getComponent();
+                    DefaultListModel listModel = (DefaultListModel) source.getModel();
+                    IKnowledge knowledge = getKnowledge();
+
+                    Transferable transferable = info.getTransferable();
+                    try {
+                        List<String> list = (List<String>) transferable.getTransferData(ListTransferable.DATA_FLAVOR);
+                        list.forEach(name -> {
+                            if (tier >= 0) {
+                                try {
+                                    knowledge.removeFromTiers(name);
+                                    knowledge.addToTier(tier, name);
+
+                                    notifyKnowledge();
+
+                                    listModel.addElement(name);
+                                    sort(listModel);
+                                } catch (IllegalStateException e) {
+                                    JOptionPane.showMessageDialog(JOptionUtils.centeringComp(), e.getMessage());
+                                }
+                            } else {
+                                knowledge.removeFromTiers(name);
+
+                                notifyKnowledge();
+                                listModel.addElement(name);
+                                sort(listModel);
+                            }
+                        });
+                    } catch (IOException | UnsupportedFlavorException exception) {
+                        exception.printStackTrace(System.err);
+                        return false;
+                    }
+
+                    return true;
+                }
+
+                @Override
+                protected void exportDone(JComponent c, Transferable data, int action) {
+                    if (action == TransferHandler.MOVE) {
+                        JList<String> source = (JList<String>) c;
+                        DefaultListModel<String> listModel = (DefaultListModel<String>) source.getModel();
                         try {
-                            getKnowledge().removeFromTiers(name);
-                            getKnowledge().addToTier(getTier(), name);
-
-                            notifyKnowledge();
-                            DefaultListModel model = (DefaultListModel) getModel();
-                            model.addElement(name);
-                            sort(model);
-                            dropTargetDropEvent.dropComplete(true);
-                        } catch (IllegalStateException e) {
-                            JOptionPane.showMessageDialog(JOptionUtils
-                                    .centeringComp(), e.getMessage());
-                            dropTargetDropEvent.dropComplete(false);
+                            List<String> list = (List<String>) data.getTransferData(ListTransferable.DATA_FLAVOR);
+                            list.forEach(listModel::removeElement);
+                        } catch (IOException | UnsupportedFlavorException exception) {
                         }
-                    } else {
-                        getKnowledge().removeFromTiers(name);
-
-                        notifyKnowledge();
-                        DefaultListModel model = (DefaultListModel) getModel();
-                        model.addElement(name);
-                        sort(model);
-                        dropTargetDropEvent.dropComplete(true);
                     }
                 }
-            } catch (UnsupportedFlavorException e) {
-                e.printStackTrace();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+
+            });
+
+            DefaultListModel<String> listModel = new DefaultListModel<>();
+            items.forEach(listModel::addElement);
+            setModel(listModel);
         }
 
-        @Override
-        public void dragDropEnd(DragSourceDropEvent dsde) {
-            if (!dsde.getDropSuccess()) {
-                return;
-            }
-
-            if (this.movedList != null) {
-                for (Object aMovedList : this.movedList) {
-                    ((DefaultListModel) getModel()).removeElement(aMovedList);
-                }
-
-                this.movedList = null;
-            }
-        }
-
-        @Override
-        public void dragEnter(DropTargetDragEvent dtde) {
-        }
-
-        @Override
-        public void dragOver(DropTargetDragEvent dtde) {
-        }
-
-        @Override
-        public void dropActionChanged(DropTargetDragEvent dtde) {
-        }
-
-        @Override
-        public void dragExit(DropTargetEvent dte) {
-        }
-
-        @Override
-        public void dragEnter(DragSourceDragEvent dsde) {
-        }
-
-        @Override
-        public void dragOver(DragSourceDragEvent dsde) {
-        }
-
-        @Override
-        public void dropActionChanged(DragSourceDragEvent dsde) {
-        }
-
-        @Override
-        public void dragExit(DragSourceEvent dse) {
-        }
-
-        private void sort(DefaultListModel model) {
-            Object[] elements = model.toArray();
-
-            List<String> strings = new ArrayList<>();
-            for (Object e : elements) {
-                strings.add((String) e);
+        private void sort(DefaultListModel<String> listModel) {
+            Object[] elements = listModel.toArray();
+            String[] values = new String[elements.length];
+            for (int i = 0; i < elements.length; i++) {
+                values[i] = (String) elements[i];
             }
 
-            Collections.sort(strings, (o1, o2) -> {
+            Arrays.sort(values, (o1, o2) -> {
                 String[] tokens1 = o1.split(":");
                 String[] tokens2 = o2.split(":");
 
@@ -1163,34 +1130,11 @@ public class KnowledgeBoxEditor extends JPanel {
                 }
             });
 
-            model.clear();
+            listModel.clear();
 
-            for (Object string : strings) {
-                model.addElement(string);
-            }
-        }
-    }
-
-    private static final class MyDragGestureRecognizer extends DragGestureRecognizer {
-
-        private static final long serialVersionUID = -2859027146893129647L;
-
-        public MyDragGestureRecognizer(DragSource ds) {
-            super(ds);
+            Arrays.stream(values).forEach(listModel::addElement);
         }
 
-        @Override
-        protected void registerListeners() {
-        }
-
-        @Override
-        protected void unregisterListeners() {
-        }
-
-        @Override
-        protected synchronized void appendEvent(InputEvent awtie) {
-            super.appendEvent(awtie);
-        }
     }
 
 }

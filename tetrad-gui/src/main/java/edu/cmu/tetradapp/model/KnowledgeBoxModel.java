@@ -18,7 +18,6 @@
 // along with this program; if not, write to the Free Software               //
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA //
 ///////////////////////////////////////////////////////////////////////////////
-
 package edu.cmu.tetradapp.model;
 
 import edu.cmu.tetrad.data.IKnowledge;
@@ -34,7 +33,6 @@ import edu.cmu.tetrad.session.SessionModel;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.SortedSet;
@@ -45,6 +43,7 @@ import java.util.TreeSet;
  */
 public class KnowledgeBoxModel implements SessionModel, ParamsResettable, KnowledgeEditable,
         KnowledgeBoxInput, KnowledgeBoxNotifiable {
+
     static final long serialVersionUID = 23L;
 
     private String name;
@@ -56,7 +55,6 @@ public class KnowledgeBoxModel implements SessionModel, ParamsResettable, Knowle
     private final Graph sourceGraph = new EdgeListGraph();
     private IKnowledge knowledge = new Knowledge2();
     private int numTiers = 3;
-
 
     public KnowledgeBoxModel(GeneralAlgorithmRunner runner) {
         this.knowledge = runner.getKnowledge();
@@ -137,7 +135,7 @@ public class KnowledgeBoxModel implements SessionModel, ParamsResettable, Knowle
      * @see TetradSerializableUtils
      */
     public static KnowledgeBoxModel serializableInstance() {
-        return new KnowledgeBoxModel(new KnowledgeBoxInput[] {GraphWrapper.serializableInstance()}, new Parameters());
+        return new KnowledgeBoxModel(new KnowledgeBoxInput[]{GraphWrapper.serializableInstance()}, new Parameters());
     }
 
     private IKnowledge createKnowledge(IKnowledge knowledge) {
@@ -148,50 +146,64 @@ public class KnowledgeBoxModel implements SessionModel, ParamsResettable, Knowle
         return knowledge;
     }
 
+    @Override
     public String getName() {
         return this.name;
     }
 
+    @Override
     public Graph getSourceGraph() {
         return sourceGraph;
     }
 
+    @Override
     public Graph getResultGraph() {
         return sourceGraph;
     }
 
+    @Override
     public List<String> getVarNames() {
         return varNames;
     }
 
+    @Override
     public void setKnowledge(IKnowledge knowledge) {
-        if (knowledge == null) throw new NullPointerException();
+        if (knowledge == null) {
+            throw new NullPointerException();
+        }
         this.knowledge = knowledge;
+        this.numTiers = knowledge.getNumTiers();
         TetradLogger.getInstance().log("knowledge", knowledge.toString());
     }
 
+    @Override
     public IKnowledge getKnowledge() {
         return knowledge;
     }
 
+    @Override
     public void setName(String name) {
         this.name = name;
     }
 
+    @Override
     public void resetParams(Object params) {
         this.params = (Parameters) params;
         freshenKnowledgeIfEmpty();
         TetradLogger.getInstance().log("knowledge", knowledge.toString());
     }
 
+    @Override
     public Object getResettableParams() {
         return this.params;
     }
 
+    @Override
     public List<Node> getVariables() {
         return variables;
     }
 
+    @Override
     public List<String> getVariableNames() {
         return variableNames;
     }
@@ -212,5 +224,3 @@ public class KnowledgeBoxModel implements SessionModel, ParamsResettable, Knowle
         this.numTiers = numTiers;
     }
 }
-
-

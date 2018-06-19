@@ -1,0 +1,24 @@
+6.5.0
+
+Added html manual
+Tetrad now uses online html manual for algorithm descritpions
+Tetradcmd removed
+Fixed slow loading and initialization of knowledge box
+Fixed PCall loading knowledge
+Fixed data reader missing value bugs
+Fixed simulation data disappearing
+Fixed general contract warnings
+
+6.5.1
+
+Fixed simulation data disappearing bug
+Fixed knowledge box variable dragging bug
+
+6.5.2
+
+Fixed simulation from im box bug
+
+6.5.3
+Fix NPE error for true graph in tabular comparison
+Fix simulation type selection from IM
+
