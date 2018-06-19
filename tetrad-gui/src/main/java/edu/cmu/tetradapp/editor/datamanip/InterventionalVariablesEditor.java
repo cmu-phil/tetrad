@@ -57,6 +57,8 @@ public class InterventionalVariablesEditor extends JPanel implements FinalizingP
     
     private DefaultTableModel tableModel;
     
+    private final String interventionalVarColumnName = "Interventional Variable";
+    
     private final String interventionalVarPrefix = "I_";
     
     private List<String> interventionalVariables;
@@ -105,6 +107,12 @@ public class InterventionalVariablesEditor extends JPanel implements FinalizingP
                 // Add the new interventional variable to each context
                 String formattedVarName = interventionalVarPrefix + varName;
 
+                // Prevent duplicate
+                if (interventionalVariables.stream().anyMatch(str -> str.trim().equalsIgnoreCase(formattedVarName))) {
+                    JOptionPane.showMessageDialog(JOptionUtils.centeringComp(), "Duplicate interventional variable name!");
+                    return;
+                }
+                
                 interventionalVariables.add(formattedVarName);
 
                 // Add new row to table
@@ -115,7 +123,7 @@ public class InterventionalVariablesEditor extends JPanel implements FinalizingP
             }
         });
         
-        interventionalVarBox.add(new JLabel("Interventional variable name: "));
+        interventionalVarBox.add(new JLabel("Interventional variable name: I_"));
         interventionalVarBox.add(interventionalVarNameField);
         interventionalVarBox.add(Box.createRigidArea(new Dimension(10, 1)));
         interventionalVarBox.add(addInterventionBtn);
@@ -137,7 +145,7 @@ public class InterventionalVariablesEditor extends JPanel implements FinalizingP
         // Headers
         columnNames = new LinkedList<>();
         // The very left header
-        columnNames.add("Interventional Variable");
+        columnNames.add(interventionalVarColumnName);
         
         // Add headers of data file names
         dataSets.forEach(dataSet -> {
@@ -263,7 +271,7 @@ public class InterventionalVariablesEditor extends JPanel implements FinalizingP
     //=============================== Private Methods ================================//
     private String getInterventionalVarName() {
         if (!interventionalVarNameField.getText().isEmpty()) {
-            return interventionalVarNameField.getText();
+            return interventionalVarNameField.getText().trim();
         } else {
             return "";
         }
