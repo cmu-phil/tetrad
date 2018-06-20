@@ -21,6 +21,9 @@
 
 package edu.cmu.tetrad.search;
 
+import edu.cmu.tetrad.data.DataSet;
+import edu.cmu.tetrad.data.DataUtils;
+import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.StatUtils;
 import org.apache.commons.math3.linear.RealMatrix;
 
@@ -72,6 +75,10 @@ public final class Cci {
      * Z cutoff for testing; depends on alpha.
      */
     private double cutoff;
+
+    /**
+     * Kernel width.
+     */
     private double width = 0.8;
 
     //==================CONSTRUCTORS====================//
@@ -81,29 +88,27 @@ public final class Cci {
      * correlation data implied by the given data set (must be continuous). The given
      * significance level is used.
      *
-     * @param data  A data set containing only continuous columns.
+     * @param dataSet  A data set containing only continuous columns.
      * @param alpha The alpha level of the test.
      */
-    public Cci(RealMatrix data, List<String> variables, double alpha) {
-        if (data == null) throw new NullPointerException();
-        if (variables == null) throw new NullPointerException();
-        if (data.getColumnDimension() != variables.size()) {
-            throw new IllegalArgumentException("Columns in data do not match # variables.");
-        }
+    public Cci(DataSet dataSet, double alpha) {
+        if (dataSet == null) throw new NullPointerException();
 
         this.alpha = alpha;
-        this.data = data.transpose().getData();
+        dataSet = DataUtils.center(dataSet);
+        this.data = dataSet.getDoubleData().transpose().toArray();
+        List<Node> variables = dataSet.getVariables();
 
         indices = new HashMap<>();
 
         for (int i = 0; i < variables.size(); i++) {
-            indices.put(variables.get(i), i);
+            indices.put(variables.get(i).toString(), i);
         }
 
-        h = new double[data.getColumnDimension()];
+        h = new double[dataSet.getNumColumns()];
 
-        for (int i = 0; i < data.getColumnDimension(); i++) {
-            h[i] = h(variables.get(i));
+        for (int i = 0; i < dataSet.getNumColumns(); i++) {
+            h[i] = h(variables.get(i).toString());
         }
 
         this.cutoff = StatUtils.getZForAlpha(alpha);
@@ -149,7 +154,6 @@ public final class Cci {
         double[] _y = new double[x.length];
 
         double maxScore = Double.NEGATIVE_INFINITY;
-        List<Double> scores = new ArrayList<>();
 
         for (int m = 1; m <= getNumFunctions(); m++) {
             for (int n = 1; n <= getNumFunctions(); n++) {
@@ -164,13 +168,8 @@ public final class Cci {
                 final double score = calcScore(_x, _y);
                 if (Double.isInfinite(score) || Double.isNaN(score)) continue;
                 if (score > maxScore) maxScore = score;
-                scores.add(score);
             }
         }
-
-        Collections.sort(scores);
-
-        maxScore = scores.get((int) ((1.0 - alpha) * scores.size()));
 
         this.score = maxScore;
         return maxScore < cutoff;
@@ -199,9 +198,10 @@ public final class Cci {
 
         double r = sigmaXY / sqrt(sigmaXX * sigmaYY);
 
+        if (Double.isNaN(r) || abs(r) > 1.0) return Double.NaN;
+
         // Non-parametric Fisher Z test.
-        double _z = 0.5 * (log(1.0 + r) - log(1.0 - r));
-        double w = sqrt(N) * _z;
+        double w = sqrt(N) * 0.5 * (log(1.0 + r) - log(1.0 - r));
 
         // Testing the hypothesis that _x and _y are uncorrelated and assuming that 4th moments of _x and _y
         // are finite and that the sample is large.
@@ -424,22 +424,13 @@ public final class Cci {
     // Polynomial basis. The 1 is left out according to Daudin.
     private double function(int index, double x) {
 //        double g = sin((index) * x) + cos((index) * x); // This would be a sin cosine basis.
-//
 
-//        double g;
-//
-//        if (index % 2 == 0) {
-//            g = Math.pow(x, index / 2);
-//        } else {
-//            g = Math.pow(x, 1.0 / ((index - 1) / 2));
-//        }
-//        double g = Math.pow(x, index / 2.0);
         double g = 1.0;
 
         for (int i = 1; i <= index; i++) {
             g *= x;
         }
-//
+
         if (abs(g) == Double.POSITIVE_INFINITY) g = Double.NaN;
 
         return g;
@@ -472,13 +463,11 @@ public final class Cci {
             N++;
         }
 
-        double covxy = sumXY / N - (sumX / N) * (sumY / N);
-        double covxx = sumXX / N - (sumX / N) * (sumX / N);
-        double covyy = sumYY / N - (sumY / N) * (sumY / N);
+        double covxy = sumXY / (N - 1) - (sumX / (N - 1)) * (sumY / (N - 1));
+        double covxx = sumXX / (N - 1) - (sumX / (N - 1)) * (sumX / (N - 1));
+        double covyy = sumYY / (N - 1) - (sumY / (N - 1)) * (sumY / (N - 1));
 
         return new double[]{covxy, covxx, covyy, N};
-
-//        return sumXY / N - (sumX / N) * (sumY / N);
     }
 
     // Optimal bandwidth qsuggested by Bowman and Azzalini (1997) q.31,

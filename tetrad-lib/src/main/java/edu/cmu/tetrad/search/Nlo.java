@@ -43,8 +43,7 @@ public class Nlo {
     public Nlo(DataSet dataSet, double alpha) {
         this.dataSet = dataSet;
         this.data = dataSet.getDoubleData();
-        List<String> varNames = dataSet.getVariableNames();
-        cci = new Cci(dataSet.getDoubleData().getRealMatrix(), varNames, alpha);
+        cci = new Cci(dataSet, alpha);
         this.alpha = alpha;
     }
 

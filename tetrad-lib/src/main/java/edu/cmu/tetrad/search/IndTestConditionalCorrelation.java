@@ -68,11 +68,6 @@ public final class IndTestConditionalCorrelation implements IndependenceTest {
     private DataSet dataSet;
 
     /**
-     * The matrix of data, N x M, where N is the number of samples, M the number of variables, gotten from dataSet.
-     */
-    private RealMatrix data;
-
-    /**
      * Map from nodes to the indices.
      */
     private Map<Node, Integer> indices;
@@ -110,13 +105,10 @@ public final class IndTestConditionalCorrelation implements IndependenceTest {
         this.variables = Collections.unmodifiableList(nodes);
         setAlpha(alpha);
 
-        this.dataSet = DataUtils.center(dataSet);
-        data = this.dataSet.getDoubleData().getRealMatrix();
-
         List<String> varNames = new ArrayList<>();
         for (int i = 0; i < variables.size(); i++) varNames.add(variables.get(i).getName());
 
-        this.cci = new Cci(data, varNames, alpha);
+        this.cci = new Cci(dataSet, alpha);
 
         indices = new HashMap<>();
 

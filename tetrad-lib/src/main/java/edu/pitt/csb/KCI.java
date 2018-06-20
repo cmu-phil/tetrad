@@ -113,7 +113,7 @@ public class KCI implements IndependenceTest {
             double[] ev1 = ed1.getRealEigenvalues();
             double[] ev2 = ed2.getRealEigenvalues();
             double[] eigProd = new double[ev1.length * ev2.length];
-            double maxEig = Double.MIN_VALUE;
+            double maxEig = Double.NEGATIVE_INFINITY;
 
             for (int i = 0; i < ev1.length; i++) {
                 for (int j = 0; j < ev2.length; j++) {
