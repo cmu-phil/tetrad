@@ -24,10 +24,7 @@ package edu.cmu.tetrad.search;
 import edu.cmu.tetrad.util.StatUtils;
 import org.apache.commons.math3.linear.RealMatrix;
 
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static edu.cmu.tetrad.util.StatUtils.median;
 import static java.lang.Math.*;
@@ -152,6 +149,7 @@ public final class Cci {
         double[] _y = new double[x.length];
 
         double maxScore = Double.NEGATIVE_INFINITY;
+        List<Double> scores = new ArrayList<>();
 
         for (int m = 1; m <= getNumFunctions(); m++) {
             for (int n = 1; n <= getNumFunctions(); n++) {
@@ -166,8 +164,13 @@ public final class Cci {
                 final double score = calcScore(_x, _y);
                 if (Double.isInfinite(score) || Double.isNaN(score)) continue;
                 if (score > maxScore) maxScore = score;
+                scores.add(score);
             }
         }
+
+        Collections.sort(scores);
+
+        maxScore = scores.get((int) ((1.0 - alpha) * scores.size()));
 
         this.score = maxScore;
         return maxScore < cutoff;
