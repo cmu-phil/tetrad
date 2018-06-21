@@ -215,6 +215,10 @@ public class InterventionalVariablesEditor extends JPanel implements FinalizingP
         // Combine the datasets with added interventional variables and also add the file index column
         // Then put the combined single dataset into the tetrad-lib data package to be used by the wraper
         
+        // For testing, use the first dataset
+        // May also need to set a file name?
+        parameters.set("combinedDataset", dataSets.get(0));
+        
         return true;
     }
 

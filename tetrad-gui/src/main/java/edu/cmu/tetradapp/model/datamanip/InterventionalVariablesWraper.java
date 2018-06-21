@@ -5,7 +5,7 @@
  */
 package edu.cmu.tetradapp.model.datamanip;
 
-import edu.cmu.tetrad.data.DataModelList;
+import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.LogDataUtils;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetradapp.model.DataWrapper;
@@ -35,15 +35,16 @@ public class InterventionalVariablesWraper extends DataWrapper {
             throw new NullPointerException("The given parameters must not be null");
         }
 
-        DataModelList dataSets = dataWrapper.getDataModelList();
-
         // Put together with added interventions to get the final combined dataset
         // Create a new class in tetrad-lib data package to handle the data processing
         // Kepp the origional data unchanged, use copies for combinging.
         
         // Display the combined dataset with all added interventions in the data editor 
         // when users click the "OK" button on the Interventions editor panel
-        setDataModel(dataSets.get(0)); // Just use the first dataset for testing
+        
+        // Get the combined data through parameter set by the editor
+        DataModel combinedDataset = (DataModel) params.get("combinedDataset");
+        setDataModel(combinedDataset); 
         
         LogDataUtils.logDataModelList("Combined data with experimental interventions in the parent node.", getDataModelList());
     }
