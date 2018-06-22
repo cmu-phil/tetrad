@@ -25,9 +25,11 @@ import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataUtils;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.StatUtils;
-import org.apache.commons.math3.linear.RealMatrix;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import static edu.cmu.tetrad.util.StatUtils.median;
 import static java.lang.Math.*;
@@ -39,6 +41,8 @@ import static java.lang.Math.*;
  * @author Joseph Ramsey
  */
 public final class Cci {
+
+    public enum Kernel {Uniform, Gaussian}
 
     /**
      * The matrix of data, N x M, where N is the number of samples, M the number
@@ -81,6 +85,8 @@ public final class Cci {
      */
     private double width = 0.8;
 
+    private Kernel kernel = Kernel.Gaussian;
+
     //==================CONSTRUCTORS====================//
 
     /**
@@ -88,8 +94,8 @@ public final class Cci {
      * correlation data implied by the given data set (must be continuous). The given
      * significance level is used.
      *
-     * @param dataSet  A data set containing only continuous columns.
-     * @param alpha The alpha level of the test.
+     * @param dataSet A data set containing only continuous columns.
+     * @param alpha   The alpha level of the test.
      */
     public Cci(DataSet dataSet, double alpha) {
         if (dataSet == null) throw new NullPointerException();
@@ -175,41 +181,6 @@ public final class Cci {
         return maxScore < cutoff;
     }
 
-    private double[] scale(double[] x) {
-        double max = StatUtils.max(x);
-        double min = StatUtils.min(x);
-
-        double factor = Math.max(abs(max), abs(min));
-
-        for (int i = 0; i < x.length; i++) {
-            x[i] = x[i] / factor;
-        }
-
-        return x;
-    }
-
-    private double calcScore(double[] _x, double[] _y) {
-        double[] covs = covariance(_x, _y);
-
-        double sigmaXY = covs[0];
-        double sigmaXX = covs[1];
-        double sigmaYY = covs[2];
-        double N = covs[3];
-
-        double r = sigmaXY / sqrt(sigmaXX * sigmaYY);
-
-        if (Double.isNaN(r) || abs(r) > 1.0) return Double.NaN;
-
-        // Non-parametric Fisher Z test.
-        double w = sqrt(N) * 0.5 * (log(1.0 + r) - log(1.0 - r));
-
-        // Testing the hypothesis that _x and _y are uncorrelated and assuming that 4th moments of _x and _y
-        // are finite and that the sample is large.
-        _x = standardize(_x);
-        _y = standardize(_y);
-
-        return abs(w) / sqrt(moment22(_x, _y));
-    }
 
     /**
      * Calculates the residuals of x regressed nonparametrically onto z. Left public
@@ -256,25 +227,33 @@ public final class Cci {
 
         for (int i = 0; i < N; i++) {
 
-            double sumsi = 0.0;
-            double weightsi = 0.0;
+            double sums = 0.0;
+            double weights = 0.0;
 
             double xi = xdata[i];
 
             for (int j = 0; j < N; j++) {
 
                 double d = distance(data, _z, i, j);
-                double k = kernelGaussian(d / h);
+                double k;
+
+                if (getKernel() == Kernel.Uniform) {
+                    k = kernelUniform(d / h);
+                } else if (getKernel() == Kernel.Gaussian) {
+                    k = kernelGaussian(d / h);
+                } else {
+                    throw new IllegalStateException("Unsupported kernel type: " + getKernel());
+                }
 
                 double xj = xdata[j];
 
                 if (Double.isNaN(xj)) xj = 0.0;
 
-                sumsi += k * xj;
-                weightsi += k;
+                sums += k * xj;
+                weights += k;
             }
 
-            residuals[i] = xi - sumsi / weightsi;
+            residuals[i] = xi - sums / weights;
 
             if (Double.isNaN(residuals[i])) {
                 residuals[i] = 0;
@@ -353,7 +332,15 @@ public final class Cci {
 
                     // Skips NaN values.
                     double d = distance(data, _z, i, j);
-                    double k = kernelUniform(d / h);
+                    double k;
+
+                    if (getKernel() == Kernel.Uniform) {
+                        k = kernelUniform(d / h);
+                    } else if (getKernel() == Kernel.Gaussian) {
+                        k = kernelGaussian(d / h);
+                    } else {
+                        throw new IllegalStateException("Unsupported kernel type: " + kernel);
+                    }
 
                     if (Double.isNaN(xi)) xi = 0.0;
                     if (Double.isNaN(yi)) yi = 0.0;
@@ -384,7 +371,16 @@ public final class Cci {
                 if (Double.isNaN(xi)) xi = 0.0;
                 if (Double.isNaN(yi)) yi = 0.0;
 
-                double k = 0.5;
+                double d = distance(data, _z, i, i);
+                double k;
+
+                if (getKernel() == Kernel.Uniform) {
+                    k = kernelUniform(d / h);
+                } else if (getKernel() == Kernel.Gaussian) {
+                    k = kernelGaussian(d / h);
+                } else {
+                    throw new IllegalStateException("Unsupported kernel type: " + kernel);
+                }
 
                 sumsx[i] += k * xi;
                 sumsy[i] += k * yi;
@@ -408,7 +404,54 @@ public final class Cci {
         this.numFunctions = numFunctions;
     }
 
+    /**
+     * Kernel
+     */
+    public Kernel getKernel() {
+        return kernel;
+    }
+
+    public void setKernel(Kernel kernel) {
+        this.kernel = kernel;
+    }
+
     //=====================PRIVATE METHODS====================//
+
+    private double[] scale(double[] x) {
+        double max = StatUtils.max(x);
+        double min = StatUtils.min(x);
+
+        double factor = Math.max(abs(max), abs(min));
+
+        for (int i = 0; i < x.length; i++) {
+            x[i] = x[i] / factor;
+        }
+
+        return x;
+    }
+
+    private double calcScore(double[] _x, double[] _y) {
+        double[] covs = covariance(_x, _y);
+
+        double sigmaXY = covs[0];
+        double sigmaXX = covs[1];
+        double sigmaYY = covs[2];
+        double N = covs[3];
+
+        double r = sigmaXY / sqrt(sigmaXX * sigmaYY);
+
+        if (Double.isNaN(r) || abs(r) > 1.0) return Double.NaN;
+
+        // Non-parametric Fisher Z test.
+        double w = sqrt(N) * 0.5 * (log(1.0 + r) - log(1.0 - r));
+
+        // Testing the hypothesis that _x and _y are uncorrelated and assuming that 4th moments of _x and _y
+        // are finite and that the sample is large.
+        _x = standardize(_x);
+        _y = standardize(_y);
+
+        return abs(w) / sqrt(moment22(_x, _y));
+    }
 
     private double moment22(double[] x, double[] y) {
         int N = x.length;

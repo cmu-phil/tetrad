@@ -307,6 +307,9 @@ public class ParamDescriptions {
                 "Kernel width",
                 1.0, Double.MIN_VALUE, Double.POSITIVE_INFINITY));
 
+        map.put("kernelType", new ParamDescription(
+                "Kernel type (1 = Gaussian, 2 = Uniform)",
+                1, 1, 2));
 
     }
 

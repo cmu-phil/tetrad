@@ -305,6 +305,10 @@ public final class IndTestConditionalCorrelation implements IndependenceTest {
     public void setWidth(double width) {
         this.cci.setWidth(width);
     }
+
+    public void setKernel(Cci.Kernel kernel) {
+        cci.setKernel(kernel);
+    }
 }
 
 
