@@ -421,7 +421,7 @@ public final class Cci {
         double max = StatUtils.max(x);
         double min = StatUtils.min(x);
 
-        double factor = Math.max(abs(max), abs(min));
+        double factor = Math.max(abs(max), abs(min)) + 0.01;
 
         for (int i = 0; i < x.length; i++) {
             x[i] = x[i] / factor;
