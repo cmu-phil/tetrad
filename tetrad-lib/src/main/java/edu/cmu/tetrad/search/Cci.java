@@ -85,6 +85,9 @@ public final class Cci {
      */
     private double width = 0.8;
 
+    /**
+     * Kernel
+     */
     private Kernel kernel = Kernel.Gaussian;
 
     //==================CONSTRUCTORS====================//
@@ -193,13 +196,13 @@ public final class Cci {
 
         double[] residuals = new double[N];
 
-        final double[] xdata = data[_x];
+        final double[] data = this.data[_x];
 
         if (z.size() == 0) {
 
             // No need to center; the covariance calculation does that.
             for (int i = 0; i < N; i++) {
-                residuals[i] = xdata[i];
+                residuals[i] = data[i];
 
                 if (Double.isNaN(residuals[i])) {
                     residuals[i] = 0;
@@ -230,11 +233,11 @@ public final class Cci {
             double sums = 0.0;
             double weights = 0.0;
 
-            double xi = xdata[i];
+            double xi = data[i];
 
             for (int j = 0; j < N; j++) {
 
-                double d = distance(data, _z, i, j);
+                double d = distance(this.data, _z, i, j);
                 double k;
 
                 if (getKernel() == Kernel.Uniform) {
@@ -245,7 +248,7 @@ public final class Cci {
                     throw new IllegalStateException("Unsupported kernel type: " + getKernel());
                 }
 
-                double xj = xdata[j];
+                double xj = data[j];
 
                 if (Double.isNaN(xj)) xj = 0.0;
 
@@ -361,6 +364,7 @@ public final class Cci {
 
                 if (Double.isNaN(residualsy[i])) {
                     residualsy[i] = 0;
+
                 }
             }
 
