@@ -16,15 +16,18 @@ import edu.cmu.tetradapp.util.StringTextField;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
+import javax.swing.ButtonGroup;
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.border.CompoundBorder;
@@ -63,6 +66,8 @@ public class InterventionalVariablesEditor extends JPanel implements FinalizingP
     
     private List<String> interventionalVariables;
     
+    private boolean discreteInterventionalVariables = false;
+    
     //==========================CONSTUCTORS===============================//
     
     /**
@@ -86,12 +91,17 @@ public class InterventionalVariablesEditor extends JPanel implements FinalizingP
         // Container
         Box container = Box.createVerticalBox();
         container.setPreferredSize(new Dimension(640, 460));
+        
+        String contextContainerBorderTitle = "Interventions";
+        // Use a titled border with 5 px inside padding
+        container.setBorder(new CompoundBorder(BorderFactory.createTitledBorder(contextContainerBorderTitle), new EmptyBorder(5, 5, 5, 5)));
 
         // Container for interventional variable
         Box interventionalVarBox = Box.createHorizontalBox();
         interventionalVarBox.setPreferredSize(new Dimension(400, 20));
         
         interventionalVarNameField = new StringTextField("", 10);
+
         JButton addInterventionBtn= new JButton("Add");
         
         interventionalVariables = new LinkedList<>();
@@ -121,6 +131,9 @@ public class InterventionalVariablesEditor extends JPanel implements FinalizingP
                 // Reset the input field
                 resetInterventionalVarNameField();
             }
+            
+            // Input focus
+            interventionalVarNameField.requestFocus();
         });
         
         interventionalVarBox.add(new JLabel("Interventional variable name: I_"));
@@ -169,11 +182,52 @@ public class InterventionalVariablesEditor extends JPanel implements FinalizingP
                 
         // Add table to parent containerr       
         container.add(tablePane);
+        container.add(Box.createVerticalStrut(10));
 
-        String contextContainerBorderTitle = "Interventions";
-        // Use a titled border with 5 px inside padding
-        container.setBorder(new CompoundBorder(BorderFactory.createTitledBorder(contextContainerBorderTitle), new EmptyBorder(5, 5, 5, 5)));
+        // Data type of interventional variables
+        Box interventionalVarsDataTypeBox = Box.createHorizontalBox();
+        
+        JRadioButton continousRadioButton = new JRadioButton("Continuous");
+        JRadioButton discreteRadioButton = new JRadioButton("Discrete");
  
+        // // Continuous radio button is selected by default
+        continousRadioButton.setSelected(true);
+        
+        // Event listener
+        continousRadioButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent actionEvent) {
+                JRadioButton button = (JRadioButton) actionEvent.getSource();
+                if (button.isSelected()) {
+                    discreteInterventionalVariables = false;
+                }
+            }
+        });
+        
+        discreteRadioButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent actionEvent) {
+                JRadioButton button = (JRadioButton) actionEvent.getSource();
+                if (button.isSelected()) {
+                    discreteInterventionalVariables = true;
+                }
+            }
+        });
+        
+        // We need to group the radio buttons, otherwise all can be selected
+        ButtonGroup dataTypeBtnGrp = new ButtonGroup();
+        dataTypeBtnGrp.add(continousRadioButton);
+        dataTypeBtnGrp.add(discreteRadioButton);
+        
+        interventionalVarsDataTypeBox.add(new JLabel("Data type of ALL added interventional variables: "));
+        interventionalVarsDataTypeBox.add(continousRadioButton);
+        interventionalVarsDataTypeBox.add(discreteRadioButton);
+        // Must use the glue, otherwise the label is not left-aligned
+        interventionalVarsDataTypeBox.add(Box.createHorizontalGlue());
+        
+        // Add data type box to container
+        container.add(interventionalVarsDataTypeBox);
+        
         // Adds the specified component to the end of this container.
         add(container, BorderLayout.CENTER);
     }
@@ -188,6 +242,11 @@ public class InterventionalVariablesEditor extends JPanel implements FinalizingP
      */
     @Override
     public boolean finalizeEdit() {
+        if (interventionalVariables.isEmpty()) {
+            JOptionPane.showMessageDialog(JOptionUtils.centeringComp(), "You must specify at least one interventional variable!");
+            return false;
+        }
+        
         System.out.println("===============Added Interventioanl Variables==============");
         interventionalVariables.forEach(e->{
             System.out.println(e);
@@ -212,11 +271,10 @@ public class InterventionalVariablesEditor extends JPanel implements FinalizingP
         System.out.println("===============Interventions (Row) & Datasets (Column)==============");
         System.out.println(Arrays.deepToString(interventions).replace("], ", "]\n"));
         
-        // Combine the datasets with added interventional variables and also add the file index column
-        // Then put the combined single dataset into the tetrad-lib data package to be used by the wraper
+        System.out.println("===============Data type of ALL interventional variables==============: " + discreteInterventionalVariables);
         
+        // Combine the datasets with added interventional variables 
         // For testing, use the first dataset
-        // May also need to set a file name?
         parameters.set("combinedDataset", dataSets.get(0));
         
         return true;
