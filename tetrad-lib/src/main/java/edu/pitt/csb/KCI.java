@@ -573,7 +573,7 @@ public class KCI implements IndependenceTest {
     }
 
     public double getScore() {
-        return 0;
+        return getAlpha() - getPValue();
     }
 
     public boolean isBootstrap() {
