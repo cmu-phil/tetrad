@@ -97,7 +97,16 @@ public class KCI implements IndependenceTest {
 
         double trace = kx.times(ky).trace();
 
-        if (!isApprox()) {
+        if (isApprox()) {
+            double mean_appr = kx.trace() * ky.trace() / T;
+            double var_appr = 2 * kx.times(kx).trace() * ky.times(ky).trace() / (T * T);//can optimize by not actually performing matrix multiplication
+            double k_appr = mean_appr * mean_appr / var_appr;
+            double theta_appr = var_appr / mean_appr;
+            GammaDistribution g = new GammaDistribution(k_appr, theta_appr);
+            double p_appr = 1.0 - g.cumulativeProbability(trace);
+            lastP = p_appr;
+            return p_appr > alpha;
+        } else {
             EigenDecomposition ed1;
             EigenDecomposition ed2;
 
@@ -121,7 +130,6 @@ public class KCI implements IndependenceTest {
                     if (curr > maxEig)
                         maxEig = curr;
                     eigProd[i * ev2.length + j] = curr;
-
                 }
             }
 
@@ -166,16 +174,6 @@ public class KCI implements IndependenceTest {
             } else {
                 return false;
             }
-        } else {
-            double mean_appr = kx.trace() * ky.trace() / T;
-            double var_appr = 2 * kx.times(kx).trace() * ky.times(ky).trace() / (T * T);//can optimize by not actually performing matrix multiplication
-            double k_appr = mean_appr * mean_appr / var_appr;
-            double theta_appr = var_appr / mean_appr;
-            GammaDistribution g = new GammaDistribution(k_appr, theta_appr);
-            double p_appr = 1.0 - g.cumulativeProbability(trace);
-            lastP = p_appr;
-
-            return p_appr > alpha;
         }
 
     }
