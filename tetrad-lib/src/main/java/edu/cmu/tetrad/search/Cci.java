@@ -393,7 +393,7 @@ public final class Cci {
 
             for (int i = 0; i < N; i++) {
                 residualsx[i] = xdata[i] - sumsx[i] / weights[i];
-                residualsy[i] = ydata[i] - sumsy[i] / weights[i];
+                residualsy[i] = ydata[i];// - sumsy[i] / weights[i];
             }
         }
 
