@@ -63,7 +63,6 @@ public class Lofs2 {
     private Graph pattern;
     private List<DataSet> dataSets;
     private List<TetradMatrix> matrices;
-    private double alpha = 1.1;
     private List<Regression> regressions;
     private List<Node> variables;
     private List<String> varnames;
@@ -200,7 +199,7 @@ public class Lofs2 {
             System.out.println(result.getW());
             return new EdgeListGraph();
         } else if (this.rule == Rule.Nlo) {
-            Nlo nlo = new Nlo(dataSets.get(0), alpha);
+            Nlo nlo = new Nlo(dataSets.get(0), 1.0);
             Graph _graph = new EdgeListGraph(skeleton);
             _graph = GraphUtils.replaceNodes(_graph, dataSets.get(0).getVariables());
             return nlo.fullOrient4(_graph);
@@ -212,18 +211,6 @@ public class Lofs2 {
         }
 
         return graph;
-    }
-
-    public double getAlpha() {
-        return alpha;
-    }
-
-    public void setAlpha(double alpha) {
-        if (alpha < 0.0 || alpha > 1.0) {
-            throw new IllegalArgumentException("Alpha is in range [0, 1]");
-        }
-
-        this.alpha = alpha;
     }
 
     public boolean isOrientStrongerDirection() {
@@ -416,12 +403,6 @@ public class Lofs2 {
                 }
             }
 
-//            double p = pValue(node, parents);
-//
-//            if (p > alpha) {
-//                continue;
-//            }
-
             for (double score : scoreReports.keySet()) {
                 TetradLogger.getInstance().log("score", "For " + node + " parents = " + scoreReports.get(score) + " score = " + -score);
             }
@@ -527,18 +508,6 @@ public class Lofs2 {
             double xPlus = score(x, condxPlus);
             double xMinus = score(x, condxMinus);
 
-            double p = pValue(x, condxPlus);
-
-            if (p > alpha) {
-                continue;
-            }
-
-            double p2 = pValue(x, condxMinus);
-
-            if (p2 > alpha) {
-                continue;
-            }
-
             List<Node> neighborsy = new ArrayList<>();
 
             for (Node _node : graph.getAdjacentNodes(y)) {
@@ -568,18 +537,6 @@ public class Lofs2 {
 
                 double yPlus = score(y, condyPlus);
                 double yMinus = score(y, condyMinus);
-
-                double p3 = pValue(y, condyPlus);
-
-//                if (p3 > alpha) {
-//                    continue;
-//                }
-
-                double p4 = pValue(y, condyMinus);
-
-//                if (p4 > alpha) {
-//                    continue;
-//                }
 
                 boolean forbiddenLeft = knowledge.isForbidden(y.getName(), x.getName());
                 boolean forbiddenRight = knowledge.isForbidden(x.getName(), y.getName());
@@ -835,26 +792,16 @@ public class Lofs2 {
         List<Node> condyMinus = Collections.emptyList();
         List<Node> condyPlus = Collections.singletonList(x);
 
-//        double px = pValue(x, condxMinus);
-//        double py = pValue(y, condyMinus);
-
-//        if (px > alpha || py > alpha) {
-//            return;
-//        }
-
         double xPlus = score(x, condxPlus);
         double xMinus = score(x, condxMinus);
 
         double yPlus = score(y, condyPlus);
         double yMinus = score(y, condyMinus);
 
-//        if (!(xPlus > 0.8 && xMinus > 0.8 && yPlus > 0.8 && yMinus > 0.8)) return;
-
         double deltaX = xPlus - xMinus;
         double deltaY = yPlus - yMinus;
 
         graph.removeEdges(x, y);
-//        double epsilon = 0;
 
         if (deltaY > deltaX) {
             graph.addDirectedEdge(x, y);
