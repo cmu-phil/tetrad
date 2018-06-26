@@ -44,11 +44,6 @@ public class InterventionalVariablesEditor extends JPanel implements FinalizingP
 
     private static final long serialVersionUID = 6513664419620810219L;
 
-    /**
-     * The data set
-     */
-    private DataSet sourceDataSet;
-
     private Parameters parameters;
 
     private DataModelList dataSets = null;
@@ -193,25 +188,9 @@ public class InterventionalVariablesEditor extends JPanel implements FinalizingP
         continousRadioButton.setSelected(true);
 
         // Event listener
-        continousRadioButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent actionEvent) {
-                JRadioButton button = (JRadioButton) actionEvent.getSource();
-                if (button.isSelected()) {
-                    discreteInterventionalVariables = false;
-                }
-            }
-        });
-
-        discreteRadioButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent actionEvent) {
-                JRadioButton button = (JRadioButton) actionEvent.getSource();
-                if (button.isSelected()) {
-                    discreteInterventionalVariables = true;
-                }
-            }
-        });
+        ActionListener intervVarTypeAction = e -> discreteInterventionalVariables = discreteRadioButton.isSelected();
+        continousRadioButton.addActionListener(intervVarTypeAction);
+        discreteRadioButton.addActionListener(intervVarTypeAction);
 
         // We need to group the radio buttons, otherwise all can be selected
         ButtonGroup dataTypeBtnGrp = new ButtonGroup();
@@ -270,11 +249,15 @@ public class InterventionalVariablesEditor extends JPanel implements FinalizingP
         System.out.println("===============Interventions (Row) & Datasets (Column)==============");
         System.out.println(Arrays.deepToString(interventions).replace("], ", "]\n"));
 
-        System.out.println("===============Data type of ALL interventional variables==============: " + discreteInterventionalVariables);
+        System.out.println("===============ALL interventional variables are discrete==============: " + discreteInterventionalVariables);
 
         // Combine the datasets with added interventional variables
-        // For testing, use the first dataset
-        parameters.set("combinedDataset", InterventionalDataUtils.createInterventionalDataset(dataSets.getModelList(), interventionalVariables, interventions, discreteInterventionalVariables));
+        DataModel combinedDataset = InterventionalDataUtils.createInterventionalDataset(dataSets.getModelList(), interventionalVariables, interventions, discreteInterventionalVariables);
+        
+        System.out.println("===combinedDataset: " + combinedDataset);
+        
+        // This way we can pass the combinedDataset to the wrapper
+        parameters.set("combinedDataset", combinedDataset);
 
         return true;
     }
@@ -314,8 +297,6 @@ public class InterventionalVariablesEditor extends JPanel implements FinalizingP
         if (!(model instanceof DataSet)) {
             throw new IllegalArgumentException("The dataset must be a rectangular dataset");
         }
-
-        this.sourceDataSet = (DataSet) model;
 
         // All loaded datasets
         this.dataSets = dataWrapper.getDataModelList();

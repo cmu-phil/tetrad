@@ -56,9 +56,9 @@ public class InterventionalDataUtils {
                 }
             } else if (dataModel.isDiscrete()) {
                 if (asDiscrete) {
-                    createDiscreteWithDiscreteIntervention(dataModels, intervVars, interventions);
+                    return createDiscreteWithDiscreteIntervention(dataModels, intervVars, interventions);
                 } else {
-                    createDiscreteWithContinuousIntervention(dataModels, intervVars, interventions);
+                    return createDiscreteWithContinuousIntervention(dataModels, intervVars, interventions);
                 }
             } else {
             }
