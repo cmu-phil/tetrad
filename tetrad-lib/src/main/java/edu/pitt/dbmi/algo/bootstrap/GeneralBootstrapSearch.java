@@ -160,7 +160,7 @@ public class GeneralBootstrapSearch {
 	public List<Graph> search() {
 		
 		PAGs.clear();
-		parameters.set("bootstrapSampleSize", 0);
+		parameters.set("bootstrapSampleSize", 0); // This needs to be set to zero to not loop indefinitely
 		
 		long start, stop;
 		
@@ -245,6 +245,7 @@ public class GeneralBootstrapSearch {
 		}
 		
 		parameters.set("bootstrapping", true);
+		parameters.set("bootstrapSampleSize", numBootstrap); // This needs to be reset back to the previous value
 		
 		return PAGs;
 	}
