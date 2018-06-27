@@ -135,10 +135,10 @@ public final class IndTestConditionalCorrelation implements IndependenceTest {
 
         if (verbose) {
             if (independent) {
-                TetradLogger.getInstance().log("independencies",
+                TetradLogger.getInstance().log("info",
                         SearchLogUtils.independenceFactMsg(x, y, z, getPValue()));
             } else {
-                TetradLogger.getInstance().log("dependencies",
+                TetradLogger.getInstance().log("info",
                         SearchLogUtils.dependenceFactMsg(x, y, z, getPValue()));
             }
         }

@@ -184,7 +184,6 @@ public final class Cci {
         return maxScore < cutoff;
     }
 
-
     /**
      * Calculates the residuals of x regressed nonparametrically onto z. Left public
      * so it can be accessed separately.
