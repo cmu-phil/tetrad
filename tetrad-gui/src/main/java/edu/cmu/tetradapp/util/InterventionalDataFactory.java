@@ -28,7 +28,7 @@ import edu.cmu.tetrad.data.MixedDataBox;
 import edu.cmu.tetrad.data.VerticalIntDataBox;
 import edu.cmu.tetrad.graph.Node;
 import java.util.Arrays;
-import java.util.Collections;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -52,56 +52,213 @@ public class InterventionalDataFactory {
                 if (isDiscreteIntervention) {
                     return createContinuousDataWithDiscreteInterventions(dataModels, intervVars, interventions);
                 } else {
-                    return (dataModels.size() == 1)
-                            ? createContinuousDataWithContinuousInterventions(dataModels.get(0), intervVars, interventions)
-                            : createContinuousDataWithContinuousInterventions(dataModels, intervVars, interventions);
+                    return createContinuousDataWithContinuousInterventions(dataModels, intervVars, interventions);
                 }
-            } else if (dataModel.isContinuous()) {
+            } else if (dataModel.isDiscrete()) {
                 if (isDiscreteIntervention) {
-                    return (dataModels.size() == 1)
-                            ? createDiscreteDataWithContinuousInterventions(dataModels.get(0), intervVars, interventions)
-                            : createDiscreteDataWithContinuousInterventions(dataModels, intervVars, interventions);
+                    return createDiscreteDataWithDiscreteInterventions(dataModels, intervVars, interventions);
                 } else {
+                    return createDiscreteDataWithContinuousInterventions(dataModels, intervVars, interventions);
                 }
             } else {
+                if (isDiscreteIntervention) {
+                    return createMixedDataWithDiscreteInterventions(dataModels, intervVars, interventions);
+                } else {
+                    return createMixedDataWithContinuousInterventions(dataModels, intervVars, interventions);
+                }
             }
         }
 
         return null;
     }
 
-    private static DataModel createDiscreteDataWithContinuousInterventions(DataModel dataModel, List<String> intervVars, boolean[][] interventions) {
-        int numOfDataCols = getNumberOfColumns(dataModel);
+    private static DataModel createMixedDataWithDiscreteInterventions(List<DataModel> dataModels, List<String> intervVars, boolean[][] interventions) {
+        int[] numOfDataRows = getNumberOfRows(dataModels);
+        int numOfDataCols = getNumberOfColumns(dataModels.get(0));
 
-        int numOfRows = getNumberOfRows(dataModel);
+        int numOfRows = Arrays.stream(numOfDataRows).sum();
         int numOfCols = numOfDataCols + intervVars.size();
 
-        VerticalIntDataBox dataBox = (VerticalIntDataBox) ((BoxDataSet) dataModel).getDataBox();
-        int[][] data = dataBox.getVariableVectors();
+        List<MixedDataBox> list = dataModels.stream()
+                .filter(e -> e.isMixed())
+                .map(e -> (MixedDataBox) ((BoxDataSet) e).getDataBox())
+                .collect(Collectors.toList());
+        MixedDataBox[] models = list.toArray(new MixedDataBox[list.size()]);
+
+        // merge the existing discrete data over
+        int[][] discreteData = new int[numOfCols][];
+        for (int col = 0; col < numOfDataCols; col++) {
+            int[] rowData = new int[numOfRows];
+            int index = 0;
+            for (MixedDataBox model : models) {
+                int[][] data = model.getDiscreteData();
+                int[] values = data[col];
+                if (values == null) {
+                    rowData = null;
+                    break;
+                } else {
+                    System.arraycopy(values, 0, rowData, index, values.length);
+                    index += values.length;
+                }
+            }
+            discreteData[col] = rowData;
+        }
+
+        // merge the existing continuous data over
+        double[][] continuousData = new double[numOfCols][];
+        for (int col = 0; col < numOfDataCols; col++) {
+            double[] rowData = new double[numOfRows];
+            int index = 0;
+            for (MixedDataBox model : models) {
+                double[][] data = model.getContinuousData();
+                double[] values = data[col];
+                if (values == null) {
+                    rowData = null;
+                    break;
+                } else {
+                    System.arraycopy(values, 0, rowData, index, values.length);
+                    index += values.length;
+                }
+            }
+            continuousData[col] = rowData;
+        }
+
+        int intervCol = 0;
+        for (int col = numOfDataCols; col < numOfCols; col++) {
+            int[] rowData = new int[numOfRows];
+            int row = 0;
+            boolean[] intervColumn = interventions[intervCol++];
+            for (int d = 0; d < intervColumn.length; d++) {
+                int r = numOfDataRows[d];
+                if (intervColumn[d]) {
+                    Arrays.fill(rowData, row, row + r, 1);
+                }
+                row += r;
+            }
+            discreteData[col] = rowData;
+        }
+
+        List<Node> variables = createMixedVariables(dataModels, intervVars, true);
+
+        return new BoxDataSet(new MixedDataBox(variables, numOfRows, continuousData, discreteData), variables);
+    }
+
+    private static DataModel createMixedDataWithContinuousInterventions(List<DataModel> dataModels, List<String> intervVars, boolean[][] interventions) {
+        int[] numOfDataRows = getNumberOfRows(dataModels);
+        int numOfDataCols = getNumberOfColumns(dataModels.get(0));
+
+        int numOfRows = Arrays.stream(numOfDataRows).sum();
+        int numOfCols = numOfDataCols + intervVars.size();
+
+        List<MixedDataBox> list = dataModels.stream()
+                .filter(e -> e.isMixed())
+                .map(e -> (MixedDataBox) ((BoxDataSet) e).getDataBox())
+                .collect(Collectors.toList());
+        MixedDataBox[] models = list.toArray(new MixedDataBox[list.size()]);
+
+        // merge the existing discrete data over
+        int[][] discreteData = new int[numOfCols][];
+        for (int col = 0; col < numOfDataCols; col++) {
+            int[] rowData = new int[numOfRows];
+            int index = 0;
+            for (MixedDataBox model : models) {
+                int[][] data = model.getDiscreteData();
+                int[] values = data[col];
+                if (values == null) {
+                    rowData = null;
+                    break;
+                } else {
+                    System.arraycopy(values, 0, rowData, index, values.length);
+                    index += values.length;
+                }
+            }
+            discreteData[col] = rowData;
+        }
+
+        // merge the existing continuous data over
+        double[][] continuousData = new double[numOfCols][];
+        for (int col = 0; col < numOfDataCols; col++) {
+            double[] rowData = new double[numOfRows];
+            int index = 0;
+            for (MixedDataBox model : models) {
+                double[][] data = model.getContinuousData();
+                double[] values = data[col];
+                if (values == null) {
+                    rowData = null;
+                    break;
+                } else {
+                    System.arraycopy(values, 0, rowData, index, values.length);
+                    index += values.length;
+                }
+            }
+            continuousData[col] = rowData;
+        }
+
+        int intervCol = 0;
+        for (int col = numOfDataCols; col < numOfCols; col++) {
+            double[] rowData = new double[numOfRows];
+            int row = 0;
+            boolean[] intervColumn = interventions[intervCol++];
+            for (int d = 0; d < intervColumn.length; d++) {
+                int r = numOfDataRows[d];
+                if (intervColumn[d]) {
+                    Arrays.fill(rowData, row, row + r, 1.0);
+                }
+                row += r;
+            }
+            continuousData[col] = rowData;
+        }
+
+        List<Node> variables = createMixedVariables(dataModels, intervVars, false);
+
+        return new BoxDataSet(new MixedDataBox(variables, numOfRows, continuousData, discreteData), variables);
+    }
+
+    private static DataModel createDiscreteDataWithDiscreteInterventions(List<DataModel> dataModels, List<String> intervVars, boolean[][] interventions) {
+        int[] numOfDataRows = getNumberOfRows(dataModels);
+        int numOfDataCols = getNumberOfColumns(dataModels.get(0));
+
+        int numOfRows = Arrays.stream(numOfDataRows).sum();
+        int numOfCols = numOfDataCols + intervVars.size();
+
+        List<VerticalIntDataBox> list = dataModels.stream()
+                .filter(e -> e.isDiscrete())
+                .map(e -> (VerticalIntDataBox) ((BoxDataSet) e).getDataBox())
+                .collect(Collectors.toList());
+        VerticalIntDataBox[] models = list.toArray(new VerticalIntDataBox[list.size()]);
 
         // merge the existing data over
         int[][] discreteData = new int[numOfCols][];
         for (int col = 0; col < numOfDataCols; col++) {
             int[] rowData = new int[numOfRows];
-            int[] values = data[col];
-            System.arraycopy(values, 0, rowData, 0, values.length);
+            int index = 0;
+            for (VerticalIntDataBox model : models) {
+                int[][] data = model.getVariableVectors();
+                int[] values = data[col];
+                System.arraycopy(values, 0, rowData, index, values.length);
+                index += values.length;
+            }
             discreteData[col] = rowData;
         }
 
-        int col = numOfDataCols;
-        double[][] continuousData = new double[numOfCols][];
-        for (boolean[] intervColumn : interventions) {
-            double[] rowData = new double[numOfRows];
-            if (intervColumn[0]) {
-                Arrays.fill(rowData, 1.0);
+        int intervCol = 0;
+        for (int col = numOfDataCols; col < numOfCols; col++) {
+            int[] rowData = new int[numOfRows];
+            int row = 0;
+            boolean[] intervColumn = interventions[intervCol++];
+            for (int d = 0; d < intervColumn.length; d++) {
+                int r = numOfDataRows[d];
+                if (intervColumn[d]) {
+                    Arrays.fill(rowData, row, row + r, 1);
+                }
+                row += r;
             }
-            continuousData[col] = rowData;
+            discreteData[col] = rowData;
         }
 
-        List<Node> variables = copyVariables(dataModel);
-        addInterventionalVariables(variables, intervVars, false);
+        List<Node> variables = createMixedVariables(dataModels, intervVars, true);
 
-        return null;
+        return new BoxDataSet(new VerticalIntDataBox(discreteData), variables);
     }
 
     private static DataModel createDiscreteDataWithContinuousInterventions(List<DataModel> dataModels, List<String> intervVars, boolean[][] interventions) {
@@ -139,55 +296,15 @@ public class InterventionalDataFactory {
             boolean[] intervColumn = interventions[intervCol++];
             for (int d = 0; d < intervColumn.length; d++) {
                 int r = numOfDataRows[d];
-                while (r > 0) {
-                    if (intervColumn[d]) {
-                        rowData[row] = 1.0;
-                    }
-                    row++;
-                    r--;
+                if (intervColumn[d]) {
+                    Arrays.fill(rowData, row, row + r, 1.0);
                 }
+                row += r;
             }
             continuousData[col] = rowData;
         }
 
-        List<Node> variables = copyVariables(dataModels.get(0));
-        addInterventionalVariables(variables, intervVars, false);
-
-        return new BoxDataSet(new MixedDataBox(variables, numOfRows, continuousData, discreteData), variables);
-    }
-
-    private static DataModel createContinuousDataWithDiscreteInterventions(DataModel dataModel, List<String> intervVars, boolean[][] interventions) {
-        int numOfDataCols = getNumberOfColumns(dataModel);
-
-        int numOfRows = getNumberOfRows(dataModel);
-        int numOfCols = numOfDataCols + intervVars.size();
-
-        DoubleDataBox dataBox = (DoubleDataBox) ((BoxDataSet) dataModel).getDataBox();
-        double[][] data = dataBox.getData();
-
-        // copy and transpose original data
-        double[][] continuousData = new double[numOfCols][];
-        for (int col = 0; col < numOfDataCols; col++) {
-            double[] rowData = new double[numOfRows];
-            for (int row = 0; row < numOfRows; row++) {
-                rowData[row] = data[row][col];
-            }
-            continuousData[col] = rowData;
-        }
-
-        // combine inventional data
-        int col = numOfDataCols;
-        int[][] discreteData = new int[numOfCols][];
-        for (boolean[] intervColumn : interventions) {
-            int[] rowData = new int[numOfRows];
-            if (intervColumn[0]) {
-                Arrays.fill(rowData, 1);
-            }
-            discreteData[col] = rowData;
-        }
-
-        List<Node> variables = copyVariables(dataModel);
-        addInterventionalVariables(variables, intervVars, true);
+        List<Node> variables = createMixedVariables(dataModels, intervVars, false);
 
         return new BoxDataSet(new MixedDataBox(variables, numOfRows, continuousData, discreteData), variables);
     }
@@ -239,42 +356,9 @@ public class InterventionalDataFactory {
             discreteData[col] = rowData;
         }
 
-        List<Node> variables = copyVariables(dataModels.get(0));
-        addInterventionalVariables(variables, intervVars, true);
+        List<Node> variables = createVariables(dataModels.get(0), intervVars, true);
 
         return new BoxDataSet(new MixedDataBox(variables, numOfRows, continuousData, discreteData), variables);
-    }
-
-    private static DataModel createContinuousDataWithContinuousInterventions(DataModel dataModel, List<String> intervVars, boolean[][] interventions) {
-        int numOfRows = getNumberOfRows(dataModel);
-        int numOfDataCols = getNumberOfColumns(dataModel);
-
-        int numOfCols = numOfDataCols + intervVars.size();
-
-        DoubleDataBox dataBox = (DoubleDataBox) ((BoxDataSet) dataModel).getDataBox();
-        double[][] data = dataBox.getData();
-
-        // copy original data over
-        double[][] continuousData = new double[numOfRows][numOfCols];
-        for (int row = 0; row < numOfRows; row++) {
-            System.arraycopy(data[row], 0, continuousData[row], 0, numOfDataCols);
-        }
-
-        int dataCol = numOfDataCols;
-        for (boolean[] intervColumn : interventions) {
-            if (intervColumn[0]) {
-                for (int row = 0; row < numOfRows; row++) {
-                    continuousData[row][dataCol] = 1.0;
-                }
-            }
-
-            dataCol++;
-        }
-
-        List<Node> variables = copyVariables(dataModel);
-        addInterventionalVariables(variables, intervVars, false);
-
-        return new BoxDataSet(new DoubleDataBox(continuousData), variables);
     }
 
     private static DataModel createContinuousDataWithContinuousInterventions(List<DataModel> dataModels, List<String> intervVars, boolean[][] interventions) {
@@ -315,22 +399,52 @@ public class InterventionalDataFactory {
             dataCol++;
         }
 
-        List<Node> variables = copyVariables(dataModels.get(0));
-        addInterventionalVariables(variables, intervVars, false);
+        List<Node> variables = createVariables(dataModels.get(0), intervVars, false);
 
         return new BoxDataSet(new DoubleDataBox(continuousData), variables);
     }
 
-    private static List<Node> copyVariables(DataModel dataModel) {
-        return (dataModel == null)
-                ? Collections.EMPTY_LIST
-                : dataModel.getVariables().stream().collect(Collectors.toList());
+    private static List<Node> createMixedVariables(List<DataModel> dataModels, List<String> intervVars, boolean isDiscrete) {
+        int size = dataModels.get(0).getVariables().size();
+        Node[] vars = new Node[size + intervVars.size()];
+        dataModels.forEach(e -> {
+            int index = 0;
+            for (Node node : e.getVariables()) {
+                Node n1 = vars[index];
+                if (n1 == null) {
+                    vars[index] = node;
+                } else {
+                    if (node instanceof DiscreteVariable && n1 instanceof DiscreteVariable) {
+                        if (((DiscreteVariable) n1).getNumCategories() < ((DiscreteVariable) node).getNumCategories()) {
+                            vars[index] = node;
+                        }
+                    }
+                }
+                index++;
+            }
+        });
+
+        int index = size;
+        for (String var : intervVars) {
+            vars[index++] = isDiscrete ? new DiscreteVariable(var, 2) : new ContinuousVariable(var);
+        }
+
+        return Arrays.asList(vars);
     }
 
-    private static void addInterventionalVariables(List<Node> variables, List<String> intervVars, boolean isDiscrete) {
+    private static List<Node> createVariables(DataModel dataModel, List<String> intervVars, boolean isDiscrete) {
+        List<Node> variables = new LinkedList<>();
+
+        // copy original variables
+        dataModel.getVariables().stream()
+                .collect(Collectors.toCollection(() -> variables));
+
+        // create interventional variables
         intervVars.stream()
                 .map(e -> isDiscrete ? new DiscreteVariable(e, 2) : new ContinuousVariable(e))
                 .collect(Collectors.toCollection(() -> variables));
+
+        return variables;
     }
 
     private static int[] getNumberOfRows(List<DataModel> dataModels) {
@@ -344,12 +458,6 @@ public class InterventionalDataFactory {
         }
 
         return counts;
-    }
-
-    private static int getNumberOfRows(DataModel dataModel) {
-        return (dataModel instanceof BoxDataSet)
-                ? ((BoxDataSet) dataModel).getNumRows()
-                : 0;
     }
 
     private static int getNumberOfColumns(DataModel dataModel) {
