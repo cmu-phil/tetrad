@@ -12,7 +12,7 @@ import edu.cmu.tetrad.util.JOptionUtils;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetradapp.editor.FinalizingParameterEditor;
 import edu.cmu.tetradapp.model.DataWrapper;
-import edu.cmu.tetradapp.util.InterventionalDataUtils;
+import edu.cmu.tetradapp.util.InterventionalDataFactory;
 import edu.cmu.tetradapp.util.StringTextField;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
@@ -252,10 +252,10 @@ public class InterventionalVariablesEditor extends JPanel implements FinalizingP
         System.out.println("===============ALL interventional variables are discrete==============: " + discreteInterventionalVariables);
 
         // Combine the datasets with added interventional variables
-        DataModel combinedDataset = InterventionalDataUtils.createInterventionalDataset(dataSets.getModelList(), interventionalVariables, interventions, discreteInterventionalVariables);
-        
+        DataModel combinedDataset = InterventionalDataFactory.createData(dataSets.getModelList(), interventionalVariables, interventions, discreteInterventionalVariables);
+
         System.out.println("===combinedDataset: " + combinedDataset);
-        
+
         // This way we can pass the combinedDataset to the wrapper
         parameters.set("combinedDataset", combinedDataset);
 

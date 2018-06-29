@@ -255,4 +255,12 @@ public class MixedDataBox implements DataBox {
         return _dataBox;
     }
 
+    public double[][] getContinuousData() {
+        return continuousData;
+    }
+
+    public int[][] getDiscreteData() {
+        return discreteData;
+    }
+
 }
