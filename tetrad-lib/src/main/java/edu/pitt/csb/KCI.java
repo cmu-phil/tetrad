@@ -63,13 +63,21 @@ public class KCI implements IndependenceTest {
      * getVariableNames().
      */
     public boolean isIndependent(Node x, Node y, List<Node> z) {
-        System.out.println("Testing " + SearchLogUtils.independenceFact(x, y, z));
+        boolean independent;
 
         if (z.isEmpty()) {
-            return isIndependentUncon(x, y);
+            independent = isIndependentUncon(x, y);
         } else {
-            return isIndependentCon(x, y, z);
+            independent = isIndependentCon(x, y, z);
         }
+
+        if (independent) {
+            System.out.println(SearchLogUtils.independenceFact(x, y, z) + " Independent");
+        } else {
+            System.out.println(SearchLogUtils.independenceFact(x, y, z));
+        }
+
+        return independent;
     }
 
     private boolean isIndependentUncon(Node x, Node y) {

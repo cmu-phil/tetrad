@@ -240,9 +240,9 @@ public final class Cci {
                 double k;
 
                 if (getKernel() == Kernel.Uniform) {
-                    k = kernelUniform(d / h);
+                    k = kernelUniform(d, h);
                 } else if (getKernel() == Kernel.Gaussian) {
-                    k = kernelGaussian(d / h);
+                    k = kernelGaussian(d, h);
                 } else {
                     throw new IllegalStateException("Unsupported kernel type: " + getKernel());
                 }
@@ -337,9 +337,9 @@ public final class Cci {
                     double k;
 
                     if (getKernel() == Kernel.Uniform) {
-                        k = kernelUniform(d / h);
+                        k = kernelUniform(d, h);
                     } else if (getKernel() == Kernel.Gaussian) {
-                        k = kernelGaussian(d / h);
+                        k = kernelGaussian(d, h);
                     } else {
                         throw new IllegalStateException("Unsupported kernel type: " + kernel);
                     }
@@ -378,9 +378,9 @@ public final class Cci {
                 double k;
 
                 if (getKernel() == Kernel.Uniform) {
-                    k = kernelUniform(d / h);
+                    k = kernelUniform(d, h);
                 } else if (getKernel() == Kernel.Gaussian) {
-                    k = kernelGaussian(d / h);
+                    k = kernelGaussian(d, h);
                 } else {
                     throw new IllegalStateException("Unsupported kernel type: " + kernel);
                 }
@@ -529,15 +529,16 @@ public final class Cci {
     }
 
     // Uniform kernel.
-    private double kernelUniform(double z) {
-        if (abs(z) > getWidth() / 2) return 0.;
-        else return 1.0 / getWidth();
+    private double kernelUniform(double z, double h) {
+        z /= getWidth() * h;
+        if (abs(z) > 0.5) return 0.0;
+        else return 0.5;
     }
 
 
-    private double kernelGaussian(double z) {
-        double wi2 = getWidth() / 2.0;
-        return Math.exp(-z * wi2);
+    private double kernelGaussian(double z, double h) {
+        z /= getWidth() * h;
+        return Math.exp(-z);
     }
 
     // Euclidean distance.
