@@ -104,6 +104,7 @@ public class KnowledgeBoxEditor extends JPanel {
     private boolean showRequired = false;
     private boolean showRequiredByGroups = false;
     private boolean showForbiddenByGroups = false;
+    private boolean hideInterventional = false;
     private JTextArea textArea;
 
     // Unused, moved to KnowledgeBoxModel. Keeping for serialization. Can delete after a while. 2017.06.17
@@ -145,7 +146,7 @@ public class KnowledgeBoxEditor extends JPanel {
         resetTabbedPane(tabbedPane);
 
         add(tabbedPane, BorderLayout.CENTER);
-        setPreferredSize(new Dimension(550, 500));
+        setPreferredSize(new Dimension(680, 500));
 
         add(menuBar(), BorderLayout.NORTH);
 
@@ -480,7 +481,18 @@ public class KnowledgeBoxEditor extends JPanel {
                 "Show Required by Groups", this.showRequiredByGroups);
         JCheckBox showForbiddenGroupsCheckBox = new JCheckBox(
                 "Show Forbidden by Groups", this.showForbiddenByGroups);
+        
+        
+        // Added for interventional variables
+        JCheckBox hideInterventionalCheckBox = new JCheckBox(
+                "Hide Interventional Variables", this.hideInterventional);
 
+        hideInterventionalCheckBox.addActionListener((e) -> {
+            JCheckBox box = (JCheckBox) e.getSource();
+            hideInterventional = box.isSelected();
+            resetEdgeDisplay(hideInterventionalCheckBox);
+        });
+        
         showRequiredGroupsCheckBox.addActionListener((e) -> {
             JCheckBox box = (JCheckBox) e.getSource();
             showRequiredByGroups = box.isSelected();
@@ -528,15 +540,16 @@ public class KnowledgeBoxEditor extends JPanel {
         Box vBox = Box.createVerticalBox();
 
         Box b4 = Box.createHorizontalBox();
-        b4.add(Box.createHorizontalGlue());
         b4.add(showForbiddenByTiersCheckbox);
         b4.add(showForbiddenExplicitlyCheckbox);
         b4.add(showRequiredCheckbox);
+        b4.add(Box.createHorizontalGlue());
 
         Box hBox = Box.createHorizontalBox();
-        hBox.add(Box.createHorizontalGlue());
         hBox.add(showRequiredGroupsCheckBox);
         hBox.add(showForbiddenGroupsCheckBox);
+        hBox.add(hideInterventionalCheckBox);
+        hBox.add(Box.createHorizontalGlue());
 
         vBox.add(b4);
         vBox.add(hBox);
@@ -606,6 +619,10 @@ public class KnowledgeBoxEditor extends JPanel {
             }
         }
 
+        if (hideInterventional) {
+            System.out.println("dadadasdsdsadasda");
+        }
+        
         if (showRequired) {
             List<KnowledgeEdge> list = knowledge.getListOfExplicitlyRequiredEdges();
             if (list.size() > EDGE_LIMIT) {
