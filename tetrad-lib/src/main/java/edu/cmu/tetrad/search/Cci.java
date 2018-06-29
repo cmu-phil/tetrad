@@ -56,7 +56,7 @@ public final class Cci {
     private double alpha;
 
     /**
-     * Kernel widths of each variable.
+     * Azzalini Kernel widths of each variable.
      */
     private double[] h;
 
@@ -81,14 +81,14 @@ public final class Cci {
     private double cutoff;
 
     /**
-     * Kernel width.
+     * Azzalini kernel widths are multiplied by this.
      */
-    private double width = 0.8;
+    private double width = 1.0;
 
     /**
      * Kernel
      */
-    private Kernel kernel = Kernel.Gaussian;
+    private Kernel kernelMultiplier = Kernel.Gaussian;
 
     //==================CONSTRUCTORS====================//
 
@@ -239,12 +239,12 @@ public final class Cci {
                 double d = distance(this.data, _z, i, j);
                 double k;
 
-                if (getKernel() == Kernel.Uniform) {
+                if (getKernelMultiplier() == Kernel.Uniform) {
                     k = kernelUniform(d, h);
-                } else if (getKernel() == Kernel.Gaussian) {
+                } else if (getKernelMultiplier() == Kernel.Gaussian) {
                     k = kernelGaussian(d, h);
                 } else {
-                    throw new IllegalStateException("Unsupported kernel type: " + getKernel());
+                    throw new IllegalStateException("Unsupported kernel type: " + getKernelMultiplier());
                 }
 
                 double xj = data[j];
@@ -336,12 +336,12 @@ public final class Cci {
                     double d = distance(data, _z, i, j);
                     double k;
 
-                    if (getKernel() == Kernel.Uniform) {
+                    if (getKernelMultiplier() == Kernel.Uniform) {
                         k = kernelUniform(d, h);
-                    } else if (getKernel() == Kernel.Gaussian) {
+                    } else if (getKernelMultiplier() == Kernel.Gaussian) {
                         k = kernelGaussian(d, h);
                     } else {
-                        throw new IllegalStateException("Unsupported kernel type: " + kernel);
+                        throw new IllegalStateException("Unsupported kernel type: " + kernelMultiplier);
                     }
 
                     if (Double.isNaN(xi)) xi = 0.0;
@@ -377,12 +377,12 @@ public final class Cci {
                 double d = distance(data, _z, i, i);
                 double k;
 
-                if (getKernel() == Kernel.Uniform) {
+                if (getKernelMultiplier() == Kernel.Uniform) {
                     k = kernelUniform(d, h);
-                } else if (getKernel() == Kernel.Gaussian) {
+                } else if (getKernelMultiplier() == Kernel.Gaussian) {
                     k = kernelGaussian(d, h);
                 } else {
-                    throw new IllegalStateException("Unsupported kernel type: " + kernel);
+                    throw new IllegalStateException("Unsupported kernel type: " + kernelMultiplier);
                 }
 
                 sumsx[i] += k * xi;
@@ -410,12 +410,12 @@ public final class Cci {
     /**
      * Kernel
      */
-    public Kernel getKernel() {
-        return kernel;
+    public Kernel getKernelMultiplier() {
+        return kernelMultiplier;
     }
 
-    public void setKernel(Kernel kernel) {
-        this.kernel = kernel;
+    public void setKernelMultiplier(Kernel kernelMultiplier) {
+        this.kernelMultiplier = kernelMultiplier;
     }
 
     //=====================PRIVATE METHODS====================//

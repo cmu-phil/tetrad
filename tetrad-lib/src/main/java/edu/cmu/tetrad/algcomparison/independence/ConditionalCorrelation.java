@@ -39,7 +39,7 @@ public class ConditionalCorrelation implements IndependenceWrapper {
             throw new IllegalStateException("Kernel not configured.");
         }
         cci.setNumFunctions(parameters.getInt("numBasisFunctions"));
-        cci.setWidth(parameters.getDouble("kernelWidth"));
+        cci.setKernelMultiplier(parameters.getDouble("kernelMultiplier"));
         return cci;
     }
 
@@ -59,7 +59,7 @@ public class ConditionalCorrelation implements IndependenceWrapper {
         params.add("alpha");
         params.add("numBasisFunctions");
         params.add("kernelType");
-        params.add("kernelWidth");
+        params.add("kernelMultiplier");
         return params;
     }
 }

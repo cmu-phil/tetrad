@@ -1,12 +1,10 @@
 package edu.cmu.tetrad.algcomparison.score;
 
 import edu.cmu.tetrad.data.DataModel;
-import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.data.DataUtils;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.IndTestConditionalCorrelation;
-import edu.cmu.tetrad.search.IndTestScore;
 import edu.cmu.tetrad.search.Score;
 import edu.cmu.tetrad.search.ScoredIndTest;
 import edu.cmu.tetrad.util.Parameters;
@@ -35,7 +33,7 @@ public class CciScore implements ScoreWrapper {
         final IndTestConditionalCorrelation cci = new IndTestConditionalCorrelation(DataUtils.getContinuousDataSet(dataSet),
                 parameters.getDouble("alpha"));
         cci.setNumFunctions(parameters.getInt("numBasisFunctions"));
-        cci.setWidth(parameters.getDouble("kernelWidth"));
+        cci.setKernelMultiplier(parameters.getDouble("kernelWidth"));
         return new ScoredIndTest(cci);
     }
 
