@@ -49,6 +49,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.prefs.Preferences;
@@ -110,6 +111,8 @@ public class KnowledgeBoxEditor extends JPanel {
     private final KnowledgeBoxModel knowledgeBoxModel;
     private JTabbedPane tabbedPane = null;
     private Graph sourceGraph;
+    
+    private final String interventionalVarPrefix = "I_";
 
     public KnowledgeBoxEditor(final KnowledgeBoxModel knowledgeBoxModel) {
         this(knowledgeBoxModel, knowledgeBoxModel.getVarNames());
@@ -348,7 +351,48 @@ public class KnowledgeBoxEditor extends JPanel {
         tiersPanel.repaint();
     }
 
+    /**
+     * Handle interventional variables
+     * If the knowledge box sees variables that have  I_<varname> 
+     * it automatically places I_<varname> variables in the first tier 
+     * and the rest of domain variables in second tier - Zhou
+     * @param varNames 
+     */
+    private void handleInterventionalVariables() {
+        List<String> interventionalVars = new LinkedList<>();
+        List<String> nonInterventionalVars = new LinkedList<>();
+
+        System.out.println("=========All Vars==========");
+        varNames.forEach(e -> {
+            System.out.println(e);
+            if (e.startsWith(interventionalVarPrefix)) {
+                interventionalVars.add(e);
+            } else {
+                nonInterventionalVars.add(e);
+            }
+        });
+
+        System.out.println("=========interventionalVars==========");
+        interventionalVars.forEach(e->{
+            System.out.println(e);
+        });
+
+        System.out.println("=========nonInterventionalVars==========");
+        nonInterventionalVars.forEach(e->{
+            System.out.println(e);
+        });
+
+        // Display interventional variables in first tier and the rest in second tier
+        getKnowledge().setTier(0, interventionalVars);
+        getKnowledge().setTier(1, nonInterventionalVars);
+    }
+    
     private Box getTierBoxes(int numTiers) {
+        // Only for combined dataset with interventional variables
+        if (getKnowledge().isEmpty()) {
+            handleInterventionalVariables();
+        }
+
         Box c = Box.createVerticalBox();
 
         for (String var : varNames) {
