@@ -298,19 +298,19 @@ public class KCI implements IndependenceTest {
                 eigenvectorsY.assignColumn(i, separateY.get(i));
             }
 
-            TetradMatrix eigKxz = new TetradMatrix(eigenValuesX.size(), eigenValuesX.size());
-            TetradMatrix eigKyz = new TetradMatrix(eigenValuesY.size(), eigenValuesY.size());
+            TetradMatrix DX = new TetradMatrix(eigenValuesX.size(), eigenValuesX.size());
+            TetradMatrix DY = new TetradMatrix(eigenValuesY.size(), eigenValuesY.size());
 
             for (int i = 0; i < eigenValuesX.size(); i++) {
-                eigKxz.set(i, i, Math.sqrt(eigenValuesX.get(i)));
+                DX.set(i, i, Math.sqrt(eigenValuesX.get(i)));
             }
 
             for (int i = 0; i < eigenValuesY.size(); i++) {
-                eigKyz.set(i, i, Math.sqrt(eigenValuesY.get(i)));
+                DY.set(i, i, Math.sqrt(eigenValuesY.get(i)));
             }
 
-            TetradMatrix eiv_prodx = eigenvectorsX.times(eigKxz.transpose());
-            TetradMatrix eiv_prody = eigenvectorsY.times(eigKyz.transpose());
+            TetradMatrix eiv_prodx = eigenvectorsX.times(DX);
+            TetradMatrix eiv_prody = eigenvectorsY.times(DY);
 
             int numEigenX = eiv_prodx.columns();
             int numEigenY = eiv_prody.columns();
