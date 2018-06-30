@@ -553,7 +553,8 @@ public final class Cci {
             }
         }
 
-        return sqrt(sum);
+//        return sqrt(sum);
+        return sum;
     }
 
     // Standardizes the given data array.

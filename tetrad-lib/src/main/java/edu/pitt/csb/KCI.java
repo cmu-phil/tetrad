@@ -8,10 +8,13 @@ import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.search.SearchLogUtils;
 import edu.cmu.tetrad.util.TetradMatrix;
+import edu.cmu.tetrad.util.TetradVector;
 import edu.pitt.csb.mgm.EigenDecomposition;
 import org.apache.commons.math3.distribution.ChiSquaredDistribution;
 import org.apache.commons.math3.distribution.GammaDistribution;
+import org.apache.commons.math3.exception.NotStrictlyPositiveException;
 import org.apache.commons.math3.linear.RealVector;
+import org.apache.commons.math3.linear.SingularMatrixException;
 import org.apache.commons.math3.random.SynchronizedRandomGenerator;
 import org.apache.commons.math3.random.Well44497b;
 
@@ -26,6 +29,7 @@ import java.util.*;
  * @author jdramsey refactoring 6/17/2018
  */
 public class KCI implements IndependenceTest {
+    private final int N;
     private DataSet data;
     private double[][] _data;
     private double alpha;
@@ -37,17 +41,24 @@ public class KCI implements IndependenceTest {
             new Well44497b(193924L)), 1);
     private boolean bootstrap = true;
     private boolean approx = false;
+    private Map<Node, Integer> hash;
 
     public KCI(DataSet data, double threshold) {
         this.data = DataUtils.standardizeData(data);
         this._data = this.data.getDoubleData().transpose().toArray();
-        int T = data.getNumRows();
-        this.eye = TetradMatrix.identity(T);
-        this.H = eye.minus(TetradMatrix.ones(T, T).scalarMult(1.0 / T));
+        N = data.getNumRows();
+        this.eye = TetradMatrix.identity(N);
+        this.H = eye.minus(TetradMatrix.ones(N, N).scalarMult(1.0 / N));
         double lambda = 1E-3;
         this.lamEye = eye.scalarMult(lambda);
         this.alpha = threshold;
         this.lastP = -1;
+
+        hash = new HashMap<>();
+
+        for (int i = 0; i < getVariables().size(); i++) {
+            hash.put(getVariables().get(i), i);
+        }
     }
 
     /**
@@ -83,25 +94,18 @@ public class KCI implements IndependenceTest {
     private boolean isIndependentUncon(Node x, Node y) {
         int T = data.getNumRows();
 
-        double[] xArr = _data[data.getColumn(x)];
-        double[] yArr = _data[data.getColumn(y)];
-
-        int T_BS = 1000;
+        int T_BS = 100;
         double thresh = 1E-6;
-        double width = .8;
+        double width = getWidth(T);
 
-        if (T > 200)
-            width = 0.5;
-        if (T > 1200)
-            width = 0.3;
 
         double theta = 1.0 / (width * width);
-        double[] temp = new double[2];
-        temp[0] = theta;
-        temp[1] = 1;
 
-        TetradMatrix kx = H.times(kernel(xArr, xArr, temp)).times(H);
-        TetradMatrix ky = H.times(kernel(yArr, yArr, temp)).times(H);
+        int[] _x = new int[]{hash.get(x)};
+        int[] _y = new int[]{hash.get(y)};
+
+        TetradMatrix kx = H.times(kernelMatrix(_data, theta, _x)).times(H);
+        TetradMatrix ky = H.times(kernelMatrix(_data, theta, _y)).times(H);
 
         double trace = kx.times(ky).trace();
 
@@ -115,354 +119,354 @@ public class KCI implements IndependenceTest {
             lastP = p_appr;
             return p_appr > alpha;
         } else {
-            EigenDecomposition ed1;
-            EigenDecomposition ed2;
-
-            try {
-                ed1 = new EigenDecomposition(kx.plus(kx.transpose()).scalarMult(0.5).getRealMatrix());
-                ed2 = new EigenDecomposition(ky.plus(ky.transpose()).scalarMult(0.5).getRealMatrix());
-            } catch (Exception e) {
-                System.out.println("Eigenvalue didn't converge");
-                lastP = thresh + 0.01;
-                return true;
-            }
-
-            double[] ev1 = ed1.getRealEigenvalues();
-            double[] ev2 = ed2.getRealEigenvalues();
-            double[] eigProd = new double[ev1.length * ev2.length];
-            double maxEig = Double.NEGATIVE_INFINITY;
-
-            for (int i = 0; i < ev1.length; i++) {
-                for (int j = 0; j < ev2.length; j++) {
-                    double curr = ev1[i] * ev2[j];
-                    if (curr > maxEig)
-                        maxEig = curr;
-                    eigProd[i * ev2.length + j] = curr;
-                }
-            }
-
-            ArrayList<Double> d = new ArrayList<>();
-
-            for (double anEigProd : eigProd) {
-                if (anEigProd > maxEig * thresh)
-                    d.add(anEigProd);
-            }
-
-            if (d.size() * T < 1E6) {
-                double[][] f_rand1 = new double[d.size()][T_BS];
-                for (int i = 0; i < d.size(); i++) {
-                    for (int j = 0; j < T_BS; j++) {
-                        f_rand1[i][j] = chisq.sample();
-                    }
-                }
-
-                double[][] data = new double[1][d.size()];
-
-                for (int i = 0; i < d.size(); i++) {
-                    data[0][i] = d.get(i);
-                }
-
-                TetradMatrix f_rand = new TetradMatrix(f_rand1);
-                TetradMatrix ep = new TetradMatrix(data);
-                ep = ep.scalarMult(1 / (double) T);
-                double[][] nullDist = ep.times(f_rand).toArray();
-                int sum = 0;
-
-                for (double[] aNullDist : nullDist) {
-                    for (double anANullDist : aNullDist) {
-                        if (anANullDist > trace)
-                            sum++;
-                    }
-                }
-
-                double pval = (double) sum / T_BS;
-                lastP = pval;
-
-                return pval > alpha;
-            } else {
-                return false;
-            }
+            return compareToNull1(T, T_BS, thresh, kx, ky, trace);
         }
 
     }
 
-    private boolean isIndependentCon(Node x, Node y, List<Node> z) {
-        boolean unbiased = false;
-        int T = data.getNumRows();
-        double[] xArr = _data[data.getColumn(x)];
-        double[] yArr = _data[data.getColumn(y)];
-
-        int T_BS = 5000;
-
-        double thres = 1E-5;
-        int dim = z.size();
-
-        double width;
-
-        if (T <= 200)
-            width = 1.2;
-        else if (T < 1200)
-            width = 0.7;
-        else
-            width = 0.4;
-
-        double theta = 1 / (width * width * dim);
-
-        TetradMatrix kernArg = new TetradMatrix(T, z.size() + 1);
-
-        for (int i = 0; i < T; i++) {
-            for (int j = 0; j < z.size() + 1; j++) {
-                if (j == 0)
-                    kernArg.set(i, j, xArr[i]);
-                else
-                    kernArg.set(i, j, data.getDouble(i, data.getColumn(z.get(j - 1))));
-            }
-        }
-
-        //  System.out.println("Time to setup preliminary kernel matrices: " + (System.nanoTime()-time));
-        double[] temp = new double[2];
-        temp[0] = theta;
-        temp[1] = 1;
-        TetradMatrix Kx = H.times(kernel(kernArg, kernArg, temp)).times(H);
-        TetradMatrix Ky = H.times(kernel(yArr, yArr, temp)).times(H);
-
-        TetradMatrix KZ = new TetradMatrix(T, z.size());
-
-        for (int i = 0; i < T; i++) {
-            for (int j = 0; j < z.size(); j++) {
-                KZ.set(i, j, data.getDouble(i, data.getColumn(z.get(j))));
-            }
-        }
-
-        KZ = H.times(kernel(KZ, KZ, temp).times(H));
-
-        KZ = eye.minus(KZ.times((KZ.plus(lamEye).inverse())));
-        TetradMatrix KXZ = KZ.times(Kx).times(KZ.transpose());
-        TetradMatrix KYZ = KZ.times(Ky).times(KZ.transpose());
-
-        double sta = KXZ.times(KYZ).trace();
-
+    private boolean compareToNull1(int t, int t_BS, double thresh, TetradMatrix kx, TetradMatrix ky, double trace) {
         EigenDecomposition ed1;
         EigenDecomposition ed2;
 
         try {
-            ed1 = new EigenDecomposition(KXZ.plus(KXZ.transpose()).scalarMult(.5).getRealMatrix());
-            ed2 = new EigenDecomposition(KYZ.plus(KYZ.transpose()).scalarMult(.5).getRealMatrix());
+            ed1 = new EigenDecomposition(kx.plus(kx.transpose()).scalarMult(0.5).getRealMatrix());
+            ed2 = new EigenDecomposition(ky.plus(ky.transpose()).scalarMult(0.5).getRealMatrix());
         } catch (Exception e) {
             System.out.println("Eigenvalue didn't converge");
-            return false;
+            lastP = thresh + 0.01;
+            return true;
         }
 
-        double[] evalues1 = ed1.getRealEigenvalues();
-        double[] evalues2 = ed2.getRealEigenvalues();
+        double[] ev1 = ed1.getRealEigenvalues();
+        double[] ev2 = ed2.getRealEigenvalues();
+        double[] eigProd = new double[ev1.length * ev2.length];
+        double maxEig = Double.NEGATIVE_INFINITY;
 
-        double max1 = 0;
-
-        for (double anEvalues1 : evalues1) {
-            if (anEvalues1 > max1)
-                max1 = anEvalues1;
-
-        }
-
-        double max2 = 0;
-
-        for (double anEvalues2 : evalues2) {
-            if (anEvalues2 > max2)
-                max2 = anEvalues2;
-        }
-
-        ArrayList<Integer> inds1 = new ArrayList<>();
-
-        for (int i = 0; i < evalues1.length; i++) {
-            if (evalues1[i] > max1 * thres)
-                inds1.add(i);
-        }
-
-        ArrayList<Integer> inds2 = new ArrayList<>();
-
-        for (int i = 0; i < evalues2.length; i++) {
-            if (evalues2[i] > max2 * thres) {
-                inds2.add(i);
+        for (int i = 0; i < ev1.length; i++) {
+            for (int j = 0; j < ev2.length; j++) {
+                double curr = ev1[i] * ev2[j];
+                if (curr > maxEig)
+                    maxEig = curr;
+                eigProd[i * ev2.length + j] = curr;
             }
         }
 
-        TetradMatrix eigKxz = new TetradMatrix(inds1.size(), inds1.size());
-        TetradMatrix eigKyz = new TetradMatrix(inds2.size(), inds2.size());
+        ArrayList<Double> d = new ArrayList<>();
 
-        TetradMatrix tv1 = new TetradMatrix(ed1.getEigenvector(0).getDimension(), inds1.size());
-        TetradMatrix tv2 = new TetradMatrix(ed2.getEigenvector(0).getDimension(), inds2.size());
-
-        for (int i = 0; i < inds1.size(); i++) {
-            eigKxz.set(i, i, Math.sqrt(evalues1[inds1.get(i)]));
-            RealVector t = ed1.getEigenvector(inds1.get(i));
-
-            for (int j = 0; j < t.getDimension(); j++) {
-                tv1.set(j, i, t.getEntry(j));
-            }
+        for (double anEigProd : eigProd) {
+            if (anEigProd > maxEig * thresh)
+                d.add(anEigProd);
         }
 
-        for (int i = 0; i < inds2.size(); i++) {
-            eigKyz.set(i, i, Math.sqrt(evalues2[inds2.get(i)]));
-            RealVector t = ed2.getEigenvector(inds2.get(i));
-            for (int j = 0; j < t.getDimension(); j++) {
-                tv2.set(j, i, t.getEntry(j));
-            }
-        }
-
-        TetradMatrix eiv_prodx = tv1.times(eigKxz.transpose());
-        TetradMatrix eiv_prody = tv2.times(eigKyz.transpose());
-
-        int numx = eiv_prodx.columns();
-        int numy = eiv_prody.columns();
-        int size_u = numx * numy;
-        TetradMatrix uu = new TetradMatrix(T, size_u);
-
-        for (int i = 0; i < numx; i++) {
-            for (int j = 0; j < numy; j++) {
-                for (int k = 0; k < T; k++) {
-                    uu.set(k, i * numy + j, eiv_prodx.get(k, i) * eiv_prody.get(k, j));
+        if (d.size() * t < 1E6) {
+            double[][] f_rand1 = new double[d.size()][t_BS];
+            for (int i = 0; i < d.size(); i++) {
+                for (int j = 0; j < t_BS; j++) {
+                    f_rand1[i][j] = chisq.sample();
                 }
             }
-        }
 
-        TetradMatrix uu_prod;
+            double[][] data = new double[1][d.size()];
 
-        if (size_u > T)
-            uu_prod = uu.times(uu.transpose());
-        else
-            uu_prod = uu.transpose().times(uu);
-
-        if (isBootstrap()) {
-            EigenDecomposition ee;
-            try {
-                ee = new EigenDecomposition(uu_prod.getRealMatrix());
-            } catch (Exception e) {
-                System.out.println("Eigenvalue Didn't converge conditional");
-                return true;
+            for (int i = 0; i < d.size(); i++) {
+                data[0][i] = d.get(i);
             }
 
-            int num;
+            TetradMatrix f_rand = new TetradMatrix(f_rand1);
+            TetradMatrix ep = new TetradMatrix(data);
+            ep = ep.scalarMult(1 / (double) t);
+            double[][] nullDist = ep.times(f_rand).toArray();
+            int sum = 0;
 
-            if (T < size_u)
-                num = T;
-            else
-                num = size_u;
-
-            double[] evals = ee.getRealEigenvalues();
-            double[] valsToKeep = new double[num];
-            Arrays.sort(evals);
-            int count = 0;
-            for (int i = evals.length - 1; i >= 0; i--) {
-                valsToKeep[count] = evals[i];
-                count++;
-            }
-
-            double max = valsToKeep[0];
-            ArrayList<Double> finalVals = new ArrayList<>();
-
-            for (double aValsToKeep : valsToKeep) {
-                if (aValsToKeep >= max * thres)
-                    finalVals.add(aValsToKeep);
-            }
-
-            if (finalVals.size() * T < 1E6) {
-                double[][] frand1 = new double[finalVals.size()][T_BS];
-                for (int i = 0; i < finalVals.size(); i++) {
-                    for (int j = 0; j < T_BS; j++) {
-                        frand1[i][j] = chisq.sample();
-                    }
-                }
-
-                double[][] eiguu = new double[1][finalVals.size()];
-
-                for (int j = 0; j < finalVals.size(); j++) {
-                    eiguu[0][j] = finalVals.get(j);
-                }
-
-                TetradMatrix fr = new TetradMatrix(frand1);
-                TetradMatrix eig_uu = new TetradMatrix(eiguu);
-                TetradMatrix nullDist;
-
-                if (unbiased) {
-                    System.out.println("Can only return unbiased if hyperparameters are learned");
-                    return false;
-                } else {
-                    nullDist = eig_uu.times(fr);
-                }
-
-                int sum = 0;
-
-                for (int i = 0; i < nullDist.columns(); i++) {
-                    if (nullDist.get(0, i) > sta)
+            for (double[] aNullDist : nullDist) {
+                for (double anANullDist : aNullDist) {
+                    if (anANullDist > trace)
                         sum++;
                 }
+            }
 
-                lastP = sum / (double) T_BS;
+            double pval = (double) sum / t_BS;
+            lastP = pval;
 
-                return lastP > alpha;
-            } else {
-                System.out.println("Unimplemented iteratively calculating null");
+            return pval > alpha;
+        } else {
+            return false;
+        }
+    }
+
+    private boolean isIndependentCon(Node x, Node y, List<Node> z) {
+        try {
+            boolean unbiased = false;
+            int T = data.getNumRows();
+
+            int T_BS = 100;
+
+            double thres = 1E-5;
+            int dim = z.size();
+
+            double width = getWidth(T);
+
+            double theta = 1 / (width * width * dim);
+
+            int[] colsY = new int[1];
+            int[] colsXZ = new int[z.size() + 1];
+            int[] colsZ = new int[z.size()];
+            colsY[0] = hash.get(y);
+            colsXZ[0] = hash.get(x);
+            for (int j = 0; j < z.size(); j++) {
+                colsZ[j] = hash.get(z.get(j));
+                colsXZ[j + 1] = hash.get(z.get(j));
+            }
+
+            //  System.out.println("Time to setup preliminary kernel matrices: " + (System.nanoTime()-time));
+            TetradMatrix Kx = H.times(kernelMatrix(_data, theta, colsXZ)).times(H);
+            TetradMatrix Ky = H.times(kernelMatrix(_data, theta, colsY)).times(H);
+
+            TetradMatrix KZ = new TetradMatrix(T, z.size());
+
+            for (int i = 0; i < T; i++) {
+                for (int j = 0; j < z.size(); j++) {
+                    KZ.set(i, j, data.getDouble(i, data.getColumn(z.get(j))));
+                }
+            }
+
+            KZ = H.times(kernelMatrix(_data, theta, colsZ).times(H));
+
+            KZ = eye.minus(KZ.times((KZ.plus(lamEye).inverse())));
+            TetradMatrix KXZ = KZ.times(Kx).times(KZ.transpose());
+            TetradMatrix KYZ = KZ.times(Ky).times(KZ.transpose());
+
+            double sta = KXZ.times(KYZ).trace();
+
+            EigenDecomposition ed1;
+            EigenDecomposition ed2;
+
+            try {
+                ed1 = new EigenDecomposition(KXZ.plus(KXZ.transpose()).scalarMult(.5).getRealMatrix());
+                ed2 = new EigenDecomposition(KYZ.plus(KYZ.transpose()).scalarMult(.5).getRealMatrix());
+            } catch (Exception e) {
+                System.out.println("Eigenvalue didn't converge");
                 return false;
             }
-        } else {
-            double mean_appr = uu_prod.trace();
-            double var_appr = 2 * uu_prod.times(uu_prod).trace();
-            double k_appr = mean_appr * mean_appr / var_appr;
-            double theta_appr = var_appr / mean_appr;
-            GammaDistribution g = new GammaDistribution(k_appr, theta_appr);
 
-            double p_appr = 1 - g.cumulativeProbability(sta);
-            lastP = p_appr;
-            return p_appr > alpha;
-        }
-    }
+            double[] evalues1 = ed1.getRealEigenvalues();
+            double[] evalues2 = ed2.getRealEigenvalues();
 
-    private static double[][] dist(double[] x, double[] y) {
-        double[][] sum = new double[x.length][y.length];
-        for (int i = 0; i < x.length; i++) {
-            for (int j = 0; j < y.length; j++) {
-                final double d = x[i] - y[j];
-                sum[i][j] = d * d;
+            double max1 = 0;
+
+            for (double v : evalues1) {
+                if (v > max1)
+                    max1 = v;
+
             }
+
+            double max2 = 0;
+
+            for (double v : evalues2) {
+                if (v > max2)
+                    max2 = v;
+            }
+
+            ArrayList<Double> eigenValuesX = new ArrayList<>();
+            ArrayList<Double> eigenValuesY = new ArrayList<>();
+
+            List<TetradVector> separateX = new ArrayList<>();
+            List<TetradVector> separateY = new ArrayList<>();
+
+            for (int i = 0; i < evalues1.length; i++) {
+                if (evalues1[i] > max1 * thres) {
+                    eigenValuesX.add(evalues1[i]);
+                    separateX.add(new TetradVector(ed1.getEigenvector(i).toArray()));
+                }
+            }
+
+            for (int i = 0; i < evalues2.length; i++) {
+                if (evalues2[i] > max2 * thres) {
+                    eigenValuesY.add(evalues2[i]);
+                    separateY.add(new TetradVector(ed2.getEigenvector(i).toArray()));
+                }
+            }
+
+            TetradMatrix eigenvectorsX = new TetradMatrix(N, separateX.size());
+            TetradMatrix eigenvectorsY = new TetradMatrix(N, separateY.size());
+
+            for (int i = 0; i < eigenValuesX.size(); i++) {
+                eigenvectorsX.assignColumn(i, separateX.get(i));
+            }
+
+            for (int i = 0; i < eigenValuesY.size(); i++) {
+                eigenvectorsY.assignColumn(i, separateY.get(i));
+            }
+
+            TetradMatrix eigKxz = new TetradMatrix(eigenValuesX.size(), eigenValuesX.size());
+            TetradMatrix eigKyz = new TetradMatrix(eigenValuesY.size(), eigenValuesY.size());
+
+            for (int i = 0; i < eigenValuesX.size(); i++) {
+                eigKxz.set(i, i, Math.sqrt(eigenValuesX.get(i)));
+            }
+
+            for (int i = 0; i < eigenValuesY.size(); i++) {
+                eigKyz.set(i, i, Math.sqrt(eigenValuesY.get(i)));
+            }
+
+            TetradMatrix eiv_prodx = eigenvectorsX.times(eigKxz.transpose());
+            TetradMatrix eiv_prody = eigenvectorsY.times(eigKyz.transpose());
+
+            int numEigenX = eiv_prodx.columns();
+            int numEigenY = eiv_prody.columns();
+            int numEigenvalueCombinations = numEigenX * numEigenY;
+            TetradMatrix uu = new TetradMatrix(T, numEigenvalueCombinations);
+
+            for (int i = 0; i < numEigenX; i++) {
+                for (int j = 0; j < numEigenY; j++) {
+                    for (int k = 0; k < T; k++) {
+                        uu.set(k, i * numEigenY + j, eiv_prodx.get(k, i) * eiv_prody.get(k, j));
+                    }
+                }
+            }
+
+            TetradMatrix uu_prod;
+
+            if (numEigenvalueCombinations > T)
+                uu_prod = uu.times(uu.transpose());
+            else
+                uu_prod = uu.transpose().times(uu);
+
+            if (isApprox()) {
+                double mean_appr = uu_prod.trace();
+                double var_appr = 2 * uu_prod.times(uu_prod).trace();
+                double k_appr = mean_appr * mean_appr / var_appr;
+                double theta_appr = var_appr / mean_appr;
+                GammaDistribution g = new GammaDistribution(k_appr, theta_appr);
+
+                double p_appr = 1 - g.cumulativeProbability(sta);
+                lastP = p_appr;
+                return p_appr > alpha;
+            } else {
+                return compareToNull2(unbiased, T, T_BS, thres, sta, numEigenvalueCombinations, uu_prod);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
         }
-        return sum;
+
+        return true;
     }
 
-    private static double dist2(double[] x, double[] y) {
-        double sum = 0;
-
-        for (int i = 0; i < x.length; i++) {
-            final double d = x[i] - y[i];
-            sum += d * d;
+    private boolean compareToNull2(boolean unbiased, int t, int t_BS, double thres, double sta, int size_u, TetradMatrix uu_prod) {
+        EigenDecomposition ee;
+        try {
+            ee = new EigenDecomposition(uu_prod.getRealMatrix());
+        } catch (Exception e) {
+            System.out.println("Eigenvalue Didn't converge conditional");
+            return true;
         }
 
-        return sum;
+        int num;
+
+        if (t < size_u)
+            num = t;
+        else
+            num = size_u;
+
+        double[] evals = ee.getRealEigenvalues();
+        double[] valsToKeep = new double[num];
+        Arrays.sort(evals);
+        int count = 0;
+        for (int i = evals.length - 1; i >= 0; i--) {
+            valsToKeep[count] = evals[i];
+            count++;
+        }
+
+        double max = valsToKeep[0];
+        ArrayList<Double> finalVals = new ArrayList<>();
+
+        for (double aValsToKeep : valsToKeep) {
+            if (aValsToKeep >= max * thres)
+                finalVals.add(aValsToKeep);
+        }
+
+        if (finalVals.size() * t < 1E6) {
+            double[][] frand1 = new double[finalVals.size()][t_BS];
+            for (int i = 0; i < finalVals.size(); i++) {
+                for (int j = 0; j < t_BS; j++) {
+                    frand1[i][j] = chisq.sample();
+                }
+            }
+
+            double[][] eiguu = new double[1][finalVals.size()];
+
+            for (int j = 0; j < finalVals.size(); j++) {
+                eiguu[0][j] = finalVals.get(j);
+            }
+
+            TetradMatrix fr = new TetradMatrix(frand1);
+            TetradMatrix eig_uu = new TetradMatrix(eiguu);
+            TetradMatrix nullDist;
+
+            if (unbiased) {
+                System.out.println("Can only return unbiased if hyperparameters are learned");
+                return false;
+            } else {
+                nullDist = eig_uu.times(fr);
+            }
+
+            int sum = 0;
+
+            for (int i = 0; i < nullDist.columns(); i++) {
+                if (nullDist.get(0, i) > sta)
+                    sum++;
+            }
+
+            lastP = sum / (double) t_BS;
+
+            return lastP > alpha;
+        } else {
+            System.out.println("Unimplemented iteratively calculating null");
+            return false;
+        }
     }
 
-    private static TetradMatrix kernel(TetradMatrix x, TetradMatrix xKern, double[] theta) {
-        TetradMatrix result = new TetradMatrix(x.rows(), xKern.rows());
-        for (int i = 0; i < x.rows(); i++) {
-            double[] currRow = x.getRow(i).toArray();
+    private double getWidth(int t) {
+        double width;
 
-            for (int j = 0; j < xKern.rows(); j++) {
-                double[] secRow = xKern.getRow(j).toArray();
-                result.set(i, j, Math.exp(-1 * dist2(currRow, secRow) * theta[0] / 2));
+        if (t <= 200)
+            width = 1.2;
+        else if (t < 1200)
+            width = 0.7;
+        else
+            width = 0.4;
+        return width;
+    }
+
+    private TetradMatrix kernelMatrix(double[][] _data, double width, int[] cols) {
+        TetradMatrix result = new TetradMatrix(N, N);
+        for (int i = 0; i < N; i++) {
+            for (int j = 0; j < N; j++) {
+                double d = distance(_data, cols, i, j);
+                result.set(i, j, kernelGaussian(d, width));
             }
         }
         return result;
     }
 
-    private static TetradMatrix kernel(double[] x, double[] y, double[] theta) {
-        double[][] n2 = dist(x, y);
-        double wi2 = theta[0] / 2;
-        TetradMatrix kx = new TetradMatrix(x.length, y.length);
-        for (int i = 0; i < x.length; i++) {
-            for (int j = 0; j < y.length; j++) {
-                kx.set(i, j, Math.exp(-1 * n2[i][j] * wi2));
+    private double kernelGaussian(double z, double width) {
+        z /= width;
+        return Math.exp(-z);
+    }
+
+    // Euclidean distance.
+    private double distance(double[][] data, int[] yCols, int i, int j) {
+        double sum = 0.0;
+
+        for (int yCol : yCols) {
+            double d = data[yCol][i] - data[yCol][j];
+
+            if (!Double.isNaN(d)) {
+                sum += d * d;
             }
         }
-        return kx;
 
+        return sum;
     }
 
     /**
