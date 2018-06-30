@@ -43,6 +43,9 @@ public class KCI implements IndependenceTest {
     private boolean bootstrap = true;
     private boolean approx = false;
     private Map<Node, Integer> hash;
+    private double threshold = 1e-5;
+    private int n_bootstrap = 100;
+    private double width = 1.0;
 
     public KCI(DataSet data, double threshold) {
 //        this.data = DataUtils.standardizeData(data);
@@ -112,9 +115,7 @@ public class KCI implements IndependenceTest {
     }
 
     private boolean isIndependentUncon(Node x, Node y) {
-        int n_bootstrap = 100;
-        double threshold = 1E-6;
-        double width = getWidth(N);
+        double width = getWidth();
 
         int[] _x = new int[]{hash.get(x)};
         int[] _y = new int[]{hash.get(y)};
@@ -133,12 +134,12 @@ public class KCI implements IndependenceTest {
             lastP = p_appr;
             return p_appr > alpha;
         } else {
-            return compareToNull(N, n_bootstrap, threshold, kx, ky);
+            return compareToNull(kx, ky);
         }
 
     }
 
-    private boolean compareToNull(int t, int t_BS, double thresh, TetradMatrix kx, TetradMatrix ky) {
+    private boolean compareToNull(TetradMatrix kx, TetradMatrix ky) {
         double trace = kx.times(ky).trace();
 
         EigenDecomposition ed1;
@@ -149,7 +150,7 @@ public class KCI implements IndependenceTest {
             ed2 = new EigenDecomposition(ky.plus(ky.transpose()).scalarMult(0.5).getRealMatrix());
         } catch (Exception e) {
             System.out.println("Eigenvalue didn't converge");
-            lastP = thresh + 0.01;
+            lastP = threshold + 0.01;
             return true;
         }
 
@@ -170,14 +171,14 @@ public class KCI implements IndependenceTest {
         ArrayList<Double> d = new ArrayList<>();
 
         for (double anEigProd : eigProd) {
-            if (anEigProd > maxEig * thresh)
+            if (anEigProd > maxEig * threshold)
                 d.add(anEigProd);
         }
 
-        if (d.size() * t < 1E6) {
-            double[][] f_rand1 = new double[d.size()][t_BS];
+        if (d.size() * N < 1E6) {
+            double[][] f_rand1 = new double[d.size()][n_bootstrap];
             for (int i = 0; i < d.size(); i++) {
-                for (int j = 0; j < t_BS; j++) {
+                for (int j = 0; j < n_bootstrap; j++) {
                     f_rand1[i][j] = chisq.sample();
                 }
             }
@@ -190,7 +191,7 @@ public class KCI implements IndependenceTest {
 
             TetradMatrix f_rand = new TetradMatrix(f_rand1);
             TetradMatrix ep = new TetradMatrix(data);
-            ep = ep.scalarMult(1 / (double) t);
+            ep = ep.scalarMult(1 / (double) N);
             double[][] nullDist = ep.times(f_rand).toArray();
             int sum = 0;
 
@@ -201,7 +202,7 @@ public class KCI implements IndependenceTest {
                 }
             }
 
-            double pval = (double) sum / t_BS;
+            double pval = (double) sum /  n_bootstrap;
             lastP = pval;
 
             return pval > alpha;
@@ -212,12 +213,8 @@ public class KCI implements IndependenceTest {
 
     private boolean isIndependentCon(Node x, Node y, List<Node> z) {
         try {
-            int n_bootstrap = 100;
-
-            double threshold = 1E-5;
-            int dim = z.size();
-
-            double width = getWidth(N);
+            n_bootstrap = 100;
+            double width = getWidth();
 
             int[] colsY = new int[1];
             int[] colsXZ = new int[z.size() + 1];
@@ -248,7 +245,7 @@ public class KCI implements IndependenceTest {
             TetradMatrix ky = KZ.times(Ky).times(KZ.transpose());
 
 //            if (true) {
-            return compareToNull(N, n_bootstrap, threshold, kx, ky);
+            return compareToNull(kx, ky);
 //            }
 
 //            EigenDecomposition ed1;
@@ -425,18 +422,6 @@ public class KCI implements IndependenceTest {
 //        return lastP > alpha;
 //    }
 
-    private double getWidth(int t) {
-        double width;
-
-        if (t <= 200)
-            width = 1.2;
-        else if (t < 1200)
-            width = 0.7;
-        else
-            width = 0.4;
-        return width;
-    }
-
     private TetradMatrix kernelMatrix(double[][] _data, double width, int[] cols) {
         TetradMatrix result = new TetradMatrix(N, N);
         for (int i = 0; i < N; i++) {
@@ -460,7 +445,7 @@ public class KCI implements IndependenceTest {
     }
 
     private double kernelGaussian(double z, double width, double h) {
-        z /= width;// * h;
+        z /= width * h;
         return Math.exp(-z);
     }
 
@@ -606,5 +591,14 @@ public class KCI implements IndependenceTest {
 
     private boolean isApprox() {
         return approx;
+    }
+
+    public double getWidth() {
+        return width;
+    }
+
+    public void setWidth(double width) {
+        if (width <= 0) throw new IllegalStateException("Width must be > 0");
+        this.width = width;
     }
 }
