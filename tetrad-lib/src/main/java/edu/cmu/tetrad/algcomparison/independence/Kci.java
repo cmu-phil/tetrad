@@ -38,7 +38,7 @@ public class Kci implements IndependenceWrapper {
 
     @Override
     public String getDescription() {
-        return "Conditional Correlation Test";
+        return "Kernel Independence Test";
     }
 
     @Override
