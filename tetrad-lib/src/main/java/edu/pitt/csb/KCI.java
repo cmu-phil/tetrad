@@ -134,12 +134,12 @@ public class KCI implements IndependenceTest {
             lastP = p_appr;
             return p_appr > alpha;
         } else {
-            return compareToNull(kx, ky);
+            return independent(kx, ky);
         }
 
     }
 
-    private boolean compareToNull(TetradMatrix kx, TetradMatrix ky) {
+    private boolean independent(TetradMatrix kx, TetradMatrix ky) {
         double trace = kx.times(ky).trace();
 
         EigenDecomposition ed1;
@@ -233,7 +233,7 @@ public class KCI implements IndependenceTest {
 
             for (int i = 0; i < N; i++) {
                 for (int j = 0; j < z.size(); j++) {
-                    KZ.set(i, j, data.getDouble(i, data.getColumn(z.get(j))));
+                    KZ.set(i, j, _data[hash.get(z.get(j))][i]);
                 }
             }
 
@@ -243,12 +243,28 @@ public class KCI implements IndependenceTest {
             TetradMatrix kx = KZ.times(Kx).times(KZ.transpose());
             TetradMatrix ky = KZ.times(Ky).times(KZ.transpose());
 
-            return compareToNull(kx, ky);
+            if (isApprox()) {
+                return approxIndependent(kx, ky);
+            } else {
+                return independent(kx, ky);
+            }
         } catch (Exception e) {
             e.printStackTrace();
         }
 
         return true;
+    }
+
+    private boolean approxIndependent(TetradMatrix kx, TetradMatrix ky) {
+        double trace = kx.times(ky).trace();
+        double mean_appr = kx.trace() * ky.trace() / N;
+        double var_appr = 2 * kx.times(kx).trace() * ky.times(ky).trace() / (N * N);//can optimize by not actually performing matrix multiplication
+        double k_appr = mean_appr * mean_appr / var_appr;
+        double theta_appr = var_appr / mean_appr;
+        GammaDistribution g = new GammaDistribution(k_appr, theta_appr);
+        double p_appr = 1.0 - g.cumulativeProbability(trace);
+        lastP = p_appr;
+        return p_appr > alpha;
     }
 
     private TetradMatrix kernelMatrix(double[][] _data, int[] cols, double width) {
@@ -272,6 +288,13 @@ public class KCI implements IndependenceTest {
         }
 
         return result;
+    }
+
+    // Uniform kernel.
+    private double kernelUniform(double z, double width, double h) {
+        z /= width * h;
+        if (abs(z) > 0.5) return 0.0;
+        else return 0.5;
     }
 
     private double kernelGaussian(double z, double width, double h) {
