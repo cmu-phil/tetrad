@@ -323,6 +323,8 @@ public final class Cci {
 
             h *= sqrt(_z.length);
 
+            if (h == 0) h = 1;
+
             for (int i = 0; i < N; i++) {
                 double xi = xdata[i];
                 double yi = ydata[i];
@@ -538,6 +540,7 @@ public final class Cci {
 
     private double kernelGaussian(double z, double h) {
         z /= getWidth() * h;
+        if (abs(z) > 0.5) return 0.0;
         return Math.exp(-z);
     }
 

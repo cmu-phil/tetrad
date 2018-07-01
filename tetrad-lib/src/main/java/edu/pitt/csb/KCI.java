@@ -2,7 +2,6 @@ package edu.pitt.csb;
 
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
-import edu.cmu.tetrad.data.DataUtils;
 import edu.cmu.tetrad.data.ICovarianceMatrix;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.IndependenceTest;
@@ -42,26 +41,23 @@ public class KCI implements IndependenceTest {
     private ChiSquaredDistribution chisq = new ChiSquaredDistribution(new SynchronizedRandomGenerator(
             new Well44497b(193924L)), 1);
     private boolean bootstrap = true;
-    private boolean approx = true;
+    private boolean approx = false;
     private Map<Node, Integer> hash;
-    private double threshold = 1e-4;
+    private double threshold = 1e-5;
     private int n_bootstrap = 100;
     private double width = 1.0;
 
-    public KCI(DataSet data, double alpha) {
-        data = DataUtils.center(data);
+    public KCI(DataSet data, double threshold) {
+//        this.data = DataUtils.standardizeData(data);
         this.data = data;
+        this._data = this.data.getDoubleData().scalarMult(.3).transpose().toArray();
         N = data.getNumRows();
-
         double lambda = 1.0 / N;
         this.eye = TetradMatrix.identity(N);
         this.H = eye.minus(TetradMatrix.ones(N, N).scalarMult(lambda));
         this.lamEye = eye.scalarMult(lambda);
-        this.alpha = alpha;
+        this.alpha = threshold;
         this.lastP = -1;
-
-        TetradMatrix _data = data.getDoubleData();
-        this._data = _data.transpose().toArray();
 
         hash = new HashMap<>();
 
@@ -72,13 +68,13 @@ public class KCI implements IndependenceTest {
         h = new double[data.getNumColumns()];
 
         for (int i = 0; i < data.getNumColumns(); i++) {
-            h[i] = h(data.getVariables().get(i).toString(), data);
+            h[i] = h(data.getVariables().get(i).toString());
         }
     }
 
     // Optimal bandwidth qsuggested by Bowman and Azzalini (1997) q.31,
     // using MAD.
-    private double h(String x, DataSet data) {
+    private double h(String x) {
 
         double[] xCol = _data[hash.get(data.getVariable(x))];
         double[] g = new double[xCol.length];
@@ -119,21 +115,31 @@ public class KCI implements IndependenceTest {
     }
 
     private boolean isIndependentUncon(Node x, Node y) {
+        double width = getWidth();
+
         int[] _x = new int[]{hash.get(x)};
         int[] _y = new int[]{hash.get(y)};
 
-        TetradMatrix kx = H.times(kernelMatrix(_data, _x, getWidth())).times(H);
-        TetradMatrix ky = H.times(kernelMatrix(_data, _y, getWidth())).times(H);
+        TetradMatrix kx = H.times(kernelMatrix(_data, _x, width)).times(H);
+        TetradMatrix ky = H.times(kernelMatrix(_data, _y, width)).times(H);
 
         if (isApprox()) {
-            return approxIndependent(kx, ky);
+            double trace = kx.times(ky).trace();
+            double mean_appr = kx.trace() * ky.trace() / N;
+            double var_appr = 2 * kx.times(kx).trace() * ky.times(ky).trace() / (N * N);//can optimize by not actually performing matrix multiplication
+            double k_appr = mean_appr * mean_appr / var_appr;
+            double theta_appr = var_appr / mean_appr;
+            GammaDistribution g = new GammaDistribution(k_appr, theta_appr);
+            double p_appr = 1.0 - g.cumulativeProbability(trace);
+            lastP = p_appr;
+            return p_appr > alpha;
         } else {
-            return independent(kx, ky);
+            return compareToNull(kx, ky);
         }
 
     }
 
-    private boolean independent(TetradMatrix kx, TetradMatrix ky) {
+    private boolean compareToNull(TetradMatrix kx, TetradMatrix ky) {
         double trace = kx.times(ky).trace();
 
         EigenDecomposition ed1;
@@ -227,7 +233,7 @@ public class KCI implements IndependenceTest {
 
             for (int i = 0; i < N; i++) {
                 for (int j = 0; j < z.size(); j++) {
-                    KZ.set(i, j, _data[hash.get(z.get(j))][i]);
+                    KZ.set(i, j, data.getDouble(i, data.getColumn(z.get(j))));
                 }
             }
 
@@ -237,28 +243,12 @@ public class KCI implements IndependenceTest {
             TetradMatrix kx = KZ.times(Kx).times(KZ.transpose());
             TetradMatrix ky = KZ.times(Ky).times(KZ.transpose());
 
-            if (isApprox()) {
-                return approxIndependent(kx, ky);
-            } else {
-                return independent(kx, ky);
-            }
+            return compareToNull(kx, ky);
         } catch (Exception e) {
             e.printStackTrace();
         }
 
         return true;
-    }
-
-    private boolean approxIndependent(TetradMatrix kx, TetradMatrix ky) {
-        double trace = kx.times(ky).trace();
-        double mean_appr = kx.trace() * ky.trace() / N;
-        double var_appr = 2 * kx.times(kx).trace() * ky.times(ky).trace() / (N * N);//can optimize by not actually performing matrix multiplication
-        double k_appr = mean_appr * mean_appr / var_appr;
-        double theta_appr = var_appr / mean_appr;
-        GammaDistribution g = new GammaDistribution(k_appr, theta_appr);
-        double p_appr = 1.0 - g.cumulativeProbability(trace);
-        lastP = p_appr;
-        return p_appr > alpha;
     }
 
     private TetradMatrix kernelMatrix(double[][] _data, int[] cols, double width) {
@@ -301,7 +291,7 @@ public class KCI implements IndependenceTest {
             }
         }
 
-        return sqrt(sum);
+        return sum;
     }
 
     /**
