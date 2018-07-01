@@ -117,11 +117,11 @@ public class KCI implements IndependenceTest {
     private boolean isIndependentUncon(Node x, Node y) {
         double width = getWidth();
 
-        int[] _x = new int[]{hash.get(x)};
-        int[] _y = new int[]{hash.get(y)};
+        int _x = hash.get(x);
+        int _y = hash.get(y);
 
-        TetradMatrix kx = H.times(kernelMatrix(_data, _x, width)).times(H);
-        TetradMatrix ky = H.times(kernelMatrix(_data, _y, width)).times(H);
+        TetradMatrix kx = H.times(kernelMatrix(_data, _x, new int[0], width)).times(H);
+        TetradMatrix ky = H.times(kernelMatrix(_data, _y, new int[0], width)).times(H);
 
         if (isApprox()) {
             double trace = kx.times(ky).trace();
@@ -215,19 +215,15 @@ public class KCI implements IndependenceTest {
         try {
             double width = getWidth();
 
-            int[] colsY = new int[1];
-            int[] colsXZ = new int[z.size() + 1];
-            int[] colsZ = new int[z.size()];
-            colsY[0] = hash.get(y);
-            colsXZ[0] = hash.get(x);
-            for (int j = 0; j < z.size(); j++) {
-                colsZ[j] = hash.get(z.get(j));
-                colsXZ[j + 1] = hash.get(z.get(j));
-            }
+            int _x = hash.get(x);
+            int _y = hash.get(y);
+
+            int[] _z = new int[z.size()];
+            for (int i = 0; i < z.size(); i++) _z[i] = hash.get(z.get(i));
 
             //  System.out.println("Time to setup preliminary kernel matrices: " + (System.nanoTime()-time));
-            TetradMatrix Kx = H.times(kernelMatrix(_data, colsXZ, width)).times(H);
-            TetradMatrix Ky = H.times(kernelMatrix(_data, colsY, width)).times(H);
+            TetradMatrix Kx = H.times(kernelMatrix(_data, _x, _z, width)).times(H);
+            TetradMatrix Ky = H.times(kernelMatrix(_data, _y, new int[0], width)).times(H);
 
             TetradMatrix KZ = new TetradMatrix(N, z.size());
 
@@ -237,7 +233,7 @@ public class KCI implements IndependenceTest {
                 }
             }
 
-            KZ = H.times(kernelMatrix(_data, colsZ, width).times(H));
+            KZ = H.times(kernelMatrix(_data, -1, _z, width).times(H));
             KZ = eye.minus(KZ.times((KZ.plus(lamEye).inverse())));
 
             TetradMatrix kx = KZ.times(Kx).times(KZ.transpose());
@@ -267,22 +263,30 @@ public class KCI implements IndependenceTest {
         return p_appr > alpha;
     }
 
-    private TetradMatrix kernelMatrix(double[][] _data, int[] cols, double width) {
-        double h = 0.0;
+    private TetradMatrix kernelMatrix(double[][] _data, int x, int[] z, double width) {
 
-        for (int c : cols) {
+        if (x != -1) {
+            int[] _z = new int[z.length + 1];
+            System.arraycopy(z, 0, _z, 1, z.length);
+            _z[0] = x;
+            z = _z;
+        }
+
+        double h = 0;
+
+        for (int c : z) {
             if (this.h[c] > h) {
                 h = this.h[c];
             }
         }
 
-        h *= sqrt(cols.length);
+        h *= sqrt(z.length);
 
         TetradMatrix result = new TetradMatrix(N, N);
 
         for (int i = 0; i < N; i++) {
             for (int j = 0; j < N; j++) {
-                double d = distance(_data, cols, i, j);
+                double d = distance(_data, z, i, j, x);
                 result.set(i, j, kernelGaussian(d, width, h));
             }
         }
@@ -303,7 +307,7 @@ public class KCI implements IndependenceTest {
     }
 
     // Euclidean distance.
-    private double distance(double[][] data, int[] yCols, int i, int j) {
+    private double distance(double[][] data, int[] yCols, int i, int j, int x) {
         double sum = 0.0;
 
         for (int yCol : yCols) {
