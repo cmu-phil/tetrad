@@ -4,6 +4,7 @@ import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.data.DataUtils;
 import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.search.Cci;
 import edu.cmu.tetrad.search.IndTestConditionalCorrelation;
 import edu.cmu.tetrad.search.Score;
 import edu.cmu.tetrad.search.ScoredIndTest;
@@ -32,8 +33,15 @@ public class CciScore implements ScoreWrapper {
         this.dataSet = dataSet;
         final IndTestConditionalCorrelation cci = new IndTestConditionalCorrelation(DataUtils.getContinuousDataSet(dataSet),
                 parameters.getDouble("alpha"));
+        if (parameters.getInt("kernelType") == 1) {
+            cci.setKernel(Cci.Kernel.Gaussian);
+        } else if (parameters.getInt("kernelType") == 2) {
+            cci.setKernel(Cci.Kernel.Epinechnikov);
+        } else {
+            throw new IllegalStateException("Kernel not configured.");
+        }
         cci.setNumFunctions(parameters.getInt("numBasisFunctions"));
-        cci.setKernelMultiplier(parameters.getDouble("kernelWidth"));
+        cci.setKernelMultiplier(parameters.getDouble("kernelMultiplier"));
         return new ScoredIndTest(cci);
     }
 
@@ -52,7 +60,8 @@ public class CciScore implements ScoreWrapper {
         List<String> parameters = new ArrayList<>();
         parameters.add("alpha");
         parameters.add("numBasisFunctions");
-        parameters.add("kernelWidth");
+        parameters.add("kernelType");
+        parameters.add("kernelMultiplier");
         return parameters;
     }
 

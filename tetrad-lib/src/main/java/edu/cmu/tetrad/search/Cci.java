@@ -31,6 +31,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static edu.cmu.tetrad.util.StatUtils.covariance;
 import static edu.cmu.tetrad.util.StatUtils.median;
 import static java.lang.Math.*;
 
@@ -42,7 +43,8 @@ import static java.lang.Math.*;
  */
 public final class Cci {
 
-    public enum Kernel {Uniform, Gaussian}
+    public enum Kernel {Epinechnikov, Gaussian}
+    public enum Basis {Polynomial, Cosine}
 
     /**
      * The matrix of data, N x M, where N is the number of samples, M the number
@@ -90,6 +92,8 @@ public final class Cci {
      */
     private Kernel kernelMultiplier = Kernel.Gaussian;
 
+    private Basis basis = Basis.Polynomial;
+
     //==================CONSTRUCTORS====================//
 
     /**
@@ -106,6 +110,11 @@ public final class Cci {
         this.alpha = alpha;
         dataSet = DataUtils.center(dataSet);
         this.data = dataSet.getDoubleData().transpose().toArray();
+
+        for (int j = 0; j < data.length; j++) {
+            data[j] = scale(data[j]);
+        }
+
         List<Node> variables = dataSet.getVariables();
 
         indices = new HashMap<>();
@@ -171,10 +180,10 @@ public final class Cci {
                     _y[i] = function(n, y[i]);
                 }
 
-                _x = scale(_x);
-                _y = scale(_y);
+//                _x = scale(_x);
+//                _y = scale(_y);
 
-                final double score = calcScore(_x, _y);
+                final double score = abs(nonparametricFisherZ(_x, _y));
                 if (Double.isInfinite(score) || Double.isNaN(score)) continue;
                 if (score > maxScore) maxScore = score;
             }
@@ -239,8 +248,8 @@ public final class Cci {
                 double d = distance(this.data, _z, i, j);
                 double k;
 
-                if (getKernelMultiplier() == Kernel.Uniform) {
-                    k = kernelUniform(d, h);
+                if (getKernelMultiplier() == Kernel.Epinechnikov) {
+                    k = kernelEpinechnikov(d, h);
                 } else if (getKernelMultiplier() == Kernel.Gaussian) {
                     k = kernelGaussian(d, h);
                 } else {
@@ -338,8 +347,8 @@ public final class Cci {
                     double d = distance(data, _z, i, j);
                     double k;
 
-                    if (getKernelMultiplier() == Kernel.Uniform) {
-                        k = kernelUniform(d, h);
+                    if (getKernelMultiplier() == Kernel.Epinechnikov) {
+                        k = kernelEpinechnikov(d, h);
                     } else if (getKernelMultiplier() == Kernel.Gaussian) {
                         k = kernelGaussian(d, h);
                     } else {
@@ -379,7 +388,7 @@ public final class Cci {
                 double d = distance(data, _z, i, i);
                 double k;
 
-                if (getKernelMultiplier() == Kernel.Uniform) {
+                if (getKernelMultiplier() == Kernel.Epinechnikov) {
                     k = kernelUniform(d, h);
                 } else if (getKernelMultiplier() == Kernel.Gaussian) {
                     k = kernelGaussian(d, h);
@@ -420,13 +429,21 @@ public final class Cci {
         this.kernelMultiplier = kernelMultiplier;
     }
 
+    public Basis getBasis() {
+        return basis;
+    }
+
+    public void setBasis(Basis basis) {
+        this.basis = basis;
+    }
+
     //=====================PRIVATE METHODS====================//
 
     private double[] scale(double[] x) {
         double max = StatUtils.max(x);
         double min = StatUtils.min(x);
 
-        double factor = Math.max(abs(max), abs(min)) + 0.01;
+        double factor = Math.max(abs(max), abs(min));
 
         for (int i = 0; i < x.length; i++) {
             x[i] = x[i] / factor;
@@ -435,27 +452,22 @@ public final class Cci {
         return x;
     }
 
-    private double calcScore(double[] _x, double[] _y) {
-        double[] covs = covariance(_x, _y);
-
-        double sigmaXY = covs[0];
-        double sigmaXX = covs[1];
-        double sigmaYY = covs[2];
-        double N = covs[3];
-
-        double r = sigmaXY / sqrt(sigmaXX * sigmaYY);
-
-        if (Double.isNaN(r) || abs(r) > 1.0) return Double.NaN;
-
-        // Non-parametric Fisher Z test.
-        double w = sqrt(N) * 0.5 * (log(1.0 + r) - log(1.0 - r));
+    private double nonparametricFisherZ(double[] _x, double[] _y) {
 
         // Testing the hypothesis that _x and _y are uncorrelated and assuming that 4th moments of _x and _y
         // are finite and that the sample is large.
         _x = standardize(_x);
         _y = standardize(_y);
 
-        return abs(w) / sqrt(moment22(_x, _y));
+        double r = covariance(_x, _y); // correlation
+        int N = _x.length;
+
+        if (Double.isNaN(r) || abs(r) > 1.0) return Double.NaN;
+
+        // Non-parametric Fisher Z test.
+        double z = 0.5 * sqrt(N) * (log(1.0 + r) - log(1.0 - r));
+
+        return z / sqrt(4 * moment22(_x, _y));
     }
 
     private double moment22(double[] x, double[] y) {
@@ -471,17 +483,21 @@ public final class Cci {
 
     // Polynomial basis. The 1 is left out according to Daudin.
     private double function(int index, double x) {
-//        double g = sin((index) * x) + cos((index) * x); // This would be a sin cosine basis.
+        if (basis == Basis.Polynomial) {
+            double g = 1.0;
 
-        double g = 1.0;
+            for (int i = 1; i <= index; i++) {
+                g *= x;
+            }
 
-        for (int i = 1; i <= index; i++) {
-            g *= x;
+            if (abs(g) == Double.POSITIVE_INFINITY) g = Double.NaN;
+
+            return g;
+        } else if (basis == Basis.Cosine) {
+            return cos(index + x);
+        } else {
+            throw new IllegalStateException("That basis is not configured: " + basis);
         }
-
-        if (abs(g) == Double.POSITIVE_INFINITY) g = Double.NaN;
-
-        return g;
     }
 
     /**
@@ -489,33 +505,6 @@ public final class Cci {
      */
     public int getNumFunctions() {
         return numFunctions;
-    }
-
-    private double[] covariance(double[] x, double[] y) {
-        double sumXY = 0.0;
-        double sumXX = 0.0;
-        double sumYY = 0.0;
-        double sumX = 0.0;
-        double sumY = 0.0;
-        int N = 0;
-
-        for (int i = 0; i < x.length; i++) {
-            if (Double.isNaN(x[i]) || Double.isNaN(y[i])) continue;
-
-            sumXY += x[i] * y[i];
-            sumXX += x[i] * x[i];
-            sumYY += y[i] * y[i];
-            sumX += x[i];
-            sumY += y[i];
-
-            N++;
-        }
-
-        double covxy = sumXY / (N - 1) - (sumX / (N - 1)) * (sumY / (N - 1));
-        double covxx = sumXX / (N - 1) - (sumX / (N - 1)) * (sumX / (N - 1));
-        double covyy = sumYY / (N - 1) - (sumY / (N - 1)) * (sumY / (N - 1));
-
-        return new double[]{covxy, covxx, covyy, N};
     }
 
     // Optimal bandwidth qsuggested by Bowman and Azzalini (1997) q.31,
@@ -532,16 +521,27 @@ public final class Cci {
 
     // Uniform kernel.
     private double kernelUniform(double z, double h) {
-        z /= getWidth() * h;
-        if (abs(z) > 0.5) return 0.0;
+        final double lambda = 1.0 / (getWidth() * h);
+        if (lambda * abs(lambda * z) > 1) return 0.0;
         else return 0.5;
+    }
+
+    private double kernelTriangular(double z, double h) {
+        z /= getWidth() * h;
+        if (abs(z) > 1) return 0.0;
+        else return (1.0 - abs(z));
+    }
+
+    private double kernelEpinechnikov(double z, double h) {
+        z /= getWidth() * h;
+        if (abs(z) > 1) return 0.0;
+        else return (0.75 * (1.0 - z * z));
     }
 
 
     private double kernelGaussian(double z, double h) {
         z /= getWidth() * h;
-        if (abs(z) > 0.5) return 0.0;
-        return Math.exp(-z);
+        return Math.exp(-z * z);
     }
 
     // Euclidean distance.

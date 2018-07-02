@@ -312,8 +312,12 @@ public class ParamDescriptions {
                 1.0, Double.MIN_VALUE, Double.POSITIVE_INFINITY));
 
         map.put("kernelType", new ParamDescription(
-                "Kernel type (1 = Gaussian, 2 = Uniform)",
+                "Kernel type (1 = Gaussian, 2 = Epinechnikov)",
                 1, 1, 2));
+
+        map.put("basisType", new ParamDescription(
+                "Basis type (1 = Polynomial, 2 = Cosine)",
+                2, 1, 2));
 
     }
 

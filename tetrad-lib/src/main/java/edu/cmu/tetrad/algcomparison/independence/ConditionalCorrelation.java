@@ -34,12 +34,22 @@ public class ConditionalCorrelation implements IndependenceWrapper {
         if (parameters.getInt("kernelType") == 1) {
             cci.setKernel(Cci.Kernel.Gaussian);
         } else if (parameters.getInt("kernelType") == 2) {
-            cci.setKernel(Cci.Kernel.Uniform);
+            cci.setKernel(Cci.Kernel.Epinechnikov);
         } else {
             throw new IllegalStateException("Kernel not configured.");
         }
+
+        if (parameters.getInt("basisType") == 1) {
+            cci.setBasis(Cci.Basis.Polynomial);
+        } else if (parameters.getInt("basisType") == 2) {
+            cci.setBasis(Cci.Basis.Cosine);
+        } else {
+            throw new IllegalStateException("Basis not configured.");
+        }
+
         cci.setNumFunctions(parameters.getInt("numBasisFunctions"));
         cci.setKernelMultiplier(parameters.getDouble("kernelMultiplier"));
+
         return cci;
     }
 
@@ -60,6 +70,7 @@ public class ConditionalCorrelation implements IndependenceWrapper {
         params.add("numBasisFunctions");
         params.add("kernelType");
         params.add("kernelMultiplier");
+        params.add("basisType");
         return params;
     }
 }

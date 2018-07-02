@@ -305,6 +305,10 @@ public final class IndTestConditionalCorrelation implements IndependenceTest {
     public void setKernel(Cci.Kernel kernel) {
         cci.setKernelMultiplier(kernel);
     }
+
+    public void setBasis(Cci.Basis basis) {
+        cci.setBasis(basis);
+    }
 }
 
 
