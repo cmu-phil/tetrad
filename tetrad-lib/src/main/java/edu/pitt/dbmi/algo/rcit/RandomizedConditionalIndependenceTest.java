@@ -56,7 +56,9 @@ public final class RandomizedConditionalIndependenceTest implements Independence
 	 */
 	private DataSet dataSet;
 
-	private RandomIndApproximateMethod approx = RandomIndApproximateMethod.lpd4;
+	final private List<Node> variables;
+	
+	private RandomIndApproximateMethod approx = RandomIndApproximateMethod.chi2;
 
 	private int num_feature = 25;
 
@@ -66,7 +68,13 @@ public final class RandomizedConditionalIndependenceTest implements Independence
 
 	private double statistic = Double.NaN;
 
-	public RandomizedConditionalIndependenceTest(final DataSet dataSet) {
+	public RandomizedConditionalIndependenceTest(DataSet dataSet) {
+		if (!(dataSet.isContinuous())) {
+            throw new IllegalArgumentException("Data set must be continuous.");
+        }
+
+		this.variables = new ArrayList<>(dataSet.getVariables());
+		
 		this.dataSet = dataSet;
 	}
 
@@ -163,9 +171,11 @@ public final class RandomizedConditionalIndependenceTest implements Independence
 				sum_cxy_squared += cxy*cxy;
 			}
 		}
+		//System.out.println("sum_cxy_squared: " + sum_cxy_squared);
 
 		// Sta = r*sum(Cxy^2);
 		this.statistic = (double) row * sum_cxy_squared;
+		//System.out.println("statistic: " + statistic);
 		
 		if (approx == RandomIndApproximateMethod.perm) {
 			// nperm =1000;
@@ -206,7 +216,8 @@ public final class RandomizedConditionalIndependenceTest implements Independence
 			}
 
 			// p = 1-(sum(Sta >= Stas)/length(Stas));
-			this.pValue = 1 - (double) perm_stat_less_than_stat / nperm;
+			this.pValue = 1.0 - (double) perm_stat_less_than_stat / nperm;
+			//System.out.println("RIT:perm:p-value: " + pValue);
 		} else {
 			
 			// res_x = f_x-repmat(t(matrix(colMeans(f_x))),r,1);
@@ -260,7 +271,6 @@ public final class RandomizedConditionalIndependenceTest implements Independence
 				// i_Cov = ginv(Cov)
 				TetradMatrix iCovMatrix = covMatrix.ginverse();
 
-				// Sta = r * (c(Cxy)%*%  i_Cov %*% c(Cxy) );
 				// Flatten Cxy
 				TetradMatrix flattenCxyMatrix = new TetradMatrix(cxyMatrix.rows() * cxyMatrix.columns(), 1);
 				int index = 0;
@@ -271,10 +281,13 @@ public final class RandomizedConditionalIndependenceTest implements Independence
 					}
 				}
 
-				this.statistic = flattenCxyMatrix.times(iCovMatrix).times(flattenCxyMatrix.transpose()).get(0, 0);
+				// Sta = r * (c(Cxy)%*%  i_Cov %*% c(Cxy) );
+				this.statistic = ((double) row)*flattenCxyMatrix.transpose().times(iCovMatrix).times(flattenCxyMatrix).get(0, 0);
+				//System.out.println("statistic: " + statistic);
 
 				// p = 1-pchisq(Sta, length(c(Cxy)));
 				this.pValue = 1.0 - ProbUtils.chisqCdf(this.statistic, flattenCxyMatrix.columns());
+				//System.out.println("RIT:chi2:p-value: " + pValue);
 			}else {
 				// eig_d = eigen(Cov);
 				EigenDecomposition eigen = new EigenDecomposition(new BlockRealMatrix(covMatrix.toArray()));
@@ -291,9 +304,12 @@ public final class RandomizedConditionalIndependenceTest implements Independence
 				if(approx == RandomIndApproximateMethod.gamma) {
 					// p=1-sw(eig_d$values,Sta);
 					this.pValue = 1.0 - sw(eig_d, this.statistic);
+					//System.out.println("RIT:gamma:p-value: " + pValue);
 				} else if (approx == RandomIndApproximateMethod.hbe) {
 					// p=1-hbe(eig_d$values,Sta);
 					this.pValue = 1.0 - hbe(eig_d, this.statistic);
+					//System.out.println("hbe(eig_d, this.statistic): " + hbe(eig_d, this.statistic));
+					//System.out.println("RIT:hbe:p-value: " + pValue);
 				} else if (approx == RandomIndApproximateMethod.lpd4) {
 					// eig_d_values=eig_d$values;
 				    // p=try(1-lpb4(eig_d_values,Sta), silent=TRUE);
@@ -302,8 +318,10 @@ public final class RandomizedConditionalIndependenceTest implements Independence
 				    // }
 					try {
 						this.pValue = 1.0 - lpd4(eig_d, this.statistic);
+						//System.out.println("RIT:lpd4:p-value: " + pValue);
 					} catch (Exception e) {
 						this.pValue = 1.0 - hbe(eig_d, this.statistic);
+						//System.out.println("RIT:hbe:p-value: " + pValue);
 					}
 				}
 			}
@@ -312,7 +330,8 @@ public final class RandomizedConditionalIndependenceTest implements Independence
 		if (this.pValue < 0) {
 			this.pValue = 0;
 		}
-
+		
+		//System.out.println("pValue > alpha: " + (this.pValue > alpha));
 		return this.pValue > alpha;
 	}
 	
@@ -357,7 +376,8 @@ public final class RandomizedConditionalIndependenceTest implements Independence
 			return RandomizedIndepedentTest(x, y);
 		} else if (StatUtils.sd(varX.getDoubleData().getColumn(0).toArray()) == 0
 				|| StatUtils.sd(varY.getDoubleData().getColumn(0).toArray()) == 0) {
-			return (this.pValue = 1) > alpha;
+			this.pValue = 1;
+			return this.pValue > alpha;
 		}
 
 		// r=nrow(x);
@@ -537,6 +557,7 @@ public final class RandomizedConditionalIndependenceTest implements Independence
 
 			// Sta = r*sum(Cxy_z^2);
 			this.statistic = ((double) row) * sum_cxy_z_squared;
+			//System.out.println("statistic: " + statistic);
 
 			// nperm =1000;
 			int nperm = 1000;
@@ -591,6 +612,7 @@ public final class RandomizedConditionalIndependenceTest implements Independence
 
 			// Sta = r*sum(Cxy_z^2);
 			this.statistic = (double) row * sum_cxy_z_squared;
+			//System.out.println("statistic: " + statistic);
 
 			// d =expand.grid(1:ncol(f_x),1:ncol(f_y));
 			int fxMatrix_cols = fxMatrix.columns();
@@ -642,7 +664,7 @@ public final class RandomizedConditionalIndependenceTest implements Independence
 					}
 				}
 
-				this.statistic = flattenCxy_zMatrix.times(iCovMatrix).times(flattenCxy_zMatrix.transpose()).get(0, 0);
+				this.statistic = ((double) row)*flattenCxy_zMatrix.transpose().times(iCovMatrix).times(flattenCxy_zMatrix).get(0, 0);
 
 				// p = 1-pchisq(Sta, length(c(Cxy_z)));
 				this.pValue = 1.0 - ProbUtils.chisqCdf(this.statistic, flattenCxy_zMatrix.columns());
@@ -777,7 +799,7 @@ public final class RandomizedConditionalIndependenceTest implements Independence
 		// now this is a chi_sq(nu) variable
 		// p_chisqnu_vec <- pgamma(x_chisqnu_vec, shape=gamma_k, scale=gamma_theta)
 		GammaDistribution gamma = new GammaDistribution(gamma_k, gamma_theta);
-		return -gamma.cumulativeProbability(x_chisqnu_vec);
+		return gamma.cumulativeProbability(x_chisqnu_vec);
 	}
 
 	private double lpd4(List<Double> coeff, double x) {
@@ -1380,22 +1402,34 @@ public final class RandomizedConditionalIndependenceTest implements Independence
 
 	@Override
 	public double getPValue() {
-		return 0;
+		return this.pValue;
 	}
 
 	@Override
 	public List<Node> getVariables() {
-		return null;
+		return Collections.unmodifiableList(variables);
 	}
 
 	@Override
 	public Node getVariable(String name) {
-		return null;
+		for (int i = 0; i < getVariables().size(); i++) {
+            Node variable = getVariables().get(i);
+            if (variable.getName().equals(name)) {
+                return variable;
+            }
+        }
+
+        return null;
 	}
 
 	@Override
 	public List<String> getVariableNames() {
-		return null;
+		List<Node> variables = getVariables();
+        List<String> variableNames = new ArrayList<>();
+        for (Node variable1 : variables) {
+            variableNames.add(variable1.getName());
+        }
+        return variableNames;
 	}
 
 	@Override
@@ -1429,7 +1463,11 @@ public final class RandomizedConditionalIndependenceTest implements Independence
 
 	@Override
 	public List<DataSet> getDataSets() {
-		return null;
+		List<DataSet> dataSets = new ArrayList<>();
+
+        dataSets.add(dataSet);
+
+        return dataSets;
 	}
 
 	@Override
