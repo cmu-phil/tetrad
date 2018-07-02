@@ -153,7 +153,7 @@ public class Lofs2 {
         } else if (this.rule == Rule.R4) {
             graph = GraphUtils.undirectedGraph(skeleton);
             return ruleR4(graph);
-        }  else if (this.rule == Rule.EB) {
+        } else if (this.rule == Rule.EB) {
             graph = GraphUtils.undirectedGraph(skeleton);
             return entropyBased(graph);
         } else if (this.rule == Rule.Tanh) {
@@ -198,13 +198,6 @@ public class Lofs2 {
             FastIca.IcaResult result = fastIca.findComponents();
             System.out.println(result.getW());
             return new EdgeListGraph();
-        } else if (this.rule == Rule.Nlo) {
-            Nlo nlo = new Nlo(dataSets.get(0), 1.0);
-            Graph _graph = new EdgeListGraph(skeleton);
-            _graph = GraphUtils.replaceNodes(_graph, dataSets.get(0).getVariables());
-            return nlo.fullOrient4(_graph);
-//            return nlo.fullOrient5(_graph);
-//            return nlo.pairwiseOrient3(_graph);
         } else if (this.rule == Rule.FASKLR) {
             graph = GraphUtils.undirectedGraph(skeleton);
             return ruleFaskLR(graph);

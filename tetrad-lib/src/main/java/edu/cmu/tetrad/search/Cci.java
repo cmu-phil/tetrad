@@ -26,7 +26,6 @@ import edu.cmu.tetrad.data.DataUtils;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.StatUtils;
 
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -44,6 +43,7 @@ import static java.lang.Math.*;
 public final class Cci {
 
     public enum Kernel {Epinechnikov, Gaussian}
+
     public enum Basis {Polynomial, Cosine}
 
     /**
@@ -92,6 +92,9 @@ public final class Cci {
      */
     private Kernel kernelMultiplier = Kernel.Gaussian;
 
+    /**
+     * Basis
+     */
     private Basis basis = Basis.Polynomial;
 
     //==================CONSTRUCTORS====================//
@@ -168,8 +171,9 @@ public final class Cci {
             return false;
         }
 
+        // Can't reuse these--parallelization
         double[] _x = new double[x.length];
-        double[] _y = new double[x.length];
+        double[] _y = new double[y.length];
 
         double maxScore = Double.NEGATIVE_INFINITY;
 
@@ -179,9 +183,6 @@ public final class Cci {
                     _x[i] = function(m, x[i]);
                     _y[i] = function(n, y[i]);
                 }
-
-//                _x = scale(_x);
-//                _y = scale(_y);
 
                 final double score = abs(nonparametricFisherZ(_x, _y));
                 if (Double.isInfinite(score) || Double.isNaN(score)) continue;
@@ -196,88 +197,9 @@ public final class Cci {
     /**
      * Calculates the residuals of x regressed nonparametrically onto z. Left public
      * so it can be accessed separately.
-     */
-    public double[] residuals(String x, List<String> z) {
-        int N = data[0].length;
-
-        int _x = indices.get(x);
-
-        double[] residuals = new double[N];
-
-        final double[] data = this.data[_x];
-
-        if (z.size() == 0) {
-
-            // No need to center; the covariance calculation does that.
-            for (int i = 0; i < N; i++) {
-                residuals[i] = data[i];
-
-                if (Double.isNaN(residuals[i])) {
-                    residuals[i] = 0;
-                }
-            }
-
-            return residuals;
-        }
-
-        int[] _z = new int[z.size()];
-
-        for (int m = 0; m < z.size(); m++) {
-            _z[m] = indices.get(z.get(m));
-        }
-
-        double h = 0.0;
-
-        for (int c : _z) {
-            if (this.h[c] > h) {
-                h = this.h[c];
-            }
-        }
-
-        h *= sqrt(_z.length);
-
-        for (int i = 0; i < N; i++) {
-
-            double sums = 0.0;
-            double weights = 0.0;
-
-            double xi = data[i];
-
-            for (int j = 0; j < N; j++) {
-
-                double d = distance(this.data, _z, i, j);
-                double k;
-
-                if (getKernelMultiplier() == Kernel.Epinechnikov) {
-                    k = kernelEpinechnikov(d, h);
-                } else if (getKernelMultiplier() == Kernel.Gaussian) {
-                    k = kernelGaussian(d, h);
-                } else {
-                    throw new IllegalStateException("Unsupported kernel type: " + getKernelMultiplier());
-                }
-
-                double xj = data[j];
-
-                if (Double.isNaN(xj)) xj = 0.0;
-
-                sums += k * xj;
-                weights += k;
-            }
-
-            residuals[i] = xi - sums / weights;
-
-            if (Double.isNaN(residuals[i])) {
-                residuals[i] = 0;
-            }
-        }
-
-        return residuals;
-    }
-
-
-    /**
-     * Calculates the residuals of x regressed nonparametrically onto z. Left public
-     * so it can be accessed separately.
+     *
+     * @return a double[2][] array. The first double[] array contains the residuals for x
+     * and the second double[] array contains the resituls for y.
      */
     public double[][] residuals(String x, String y, List<String> z) {
         int N = data[0].length;
@@ -352,11 +274,8 @@ public final class Cci {
                     } else if (getKernelMultiplier() == Kernel.Gaussian) {
                         k = kernelGaussian(d, h);
                     } else {
-                        throw new IllegalStateException("Unsupported kernel type: " + kernelMultiplier);
+                        throw new IllegalStateException("Unsupported kernel type: " + getKernelMultiplier());
                     }
-
-                    if (Double.isNaN(xi)) xi = 0.0;
-                    if (Double.isNaN(yi)) yi = 0.0;
 
                     sumsx[i] += k * xj;
                     sumsy[i] += k * yj;
@@ -367,23 +286,11 @@ public final class Cci {
                     weights[i] += k;
                     weights[j] += k;
                 }
-
-                if (Double.isNaN(residualsx[i])) {
-                    residualsx[i] = 0;
-                }
-
-                if (Double.isNaN(residualsy[i])) {
-                    residualsy[i] = 0;
-
-                }
             }
 
             for (int i = 0; i < N; i++) {
                 double xi = xdata[i];
                 double yi = ydata[i];
-
-                if (Double.isNaN(xi)) xi = 0.0;
-                if (Double.isNaN(yi)) yi = 0.0;
 
                 double d = distance(data, _z, i, i);
                 double k;
@@ -404,6 +311,14 @@ public final class Cci {
             for (int i = 0; i < N; i++) {
                 residualsx[i] = xdata[i] - sumsx[i] / weights[i];
                 residualsy[i] = ydata[i] - sumsy[i] / weights[i];
+
+                if (Double.isNaN(residualsx[i])) {
+                    residualsx[i] = 0;
+                }
+
+                if (Double.isNaN(residualsy[i])) {
+                    residualsy[i] = 0;
+                }
             }
         }
 
@@ -412,6 +327,13 @@ public final class Cci {
         ret[1] = residualsy;
 
         return ret;
+    }
+
+    /**
+     * Number of functions to use in (truncated) basis
+     */
+    public int getNumFunctions() {
+        return numFunctions;
     }
 
     public void setNumFunctions(int numFunctions) {
@@ -435,6 +357,14 @@ public final class Cci {
 
     public void setBasis(Basis basis) {
         this.basis = basis;
+    }
+
+    public double getWidth() {
+        return width;
+    }
+
+    public void setWidth(double width) {
+        this.width = width;
     }
 
     //=====================PRIVATE METHODS====================//
@@ -500,13 +430,6 @@ public final class Cci {
         }
     }
 
-    /**
-     * Number of functions to use in (truncated) basis
-     */
-    public int getNumFunctions() {
-        return numFunctions;
-    }
-
     // Optimal bandwidth qsuggested by Bowman and Azzalini (1997) q.31,
     // using MAD.
     private double h(String x) {
@@ -535,7 +458,7 @@ public final class Cci {
     private double kernelEpinechnikov(double z, double h) {
         z /= getWidth() * h;
         if (abs(z) > 1) return 0.0;
-        else return (0.75 * (1.0 - z * z));
+        else return (/*0.75 **/ (1.0 - z * z));
     }
 
 
@@ -559,9 +482,9 @@ public final class Cci {
         return sqrt(sum);
     }
 
-    // Standardizes the given data array.
-    private double[] standardize(double[] data1) {
-        double[] data = Arrays.copyOf(data1, data1.length);
+    // Standardizes the given data array. No need to make a copy here.
+    private double[] standardize(double[] data) {
+//        double[] data = Arrays.copyOf(data, data.length);
 
         double sum = 0.0;
 
@@ -589,14 +512,6 @@ public final class Cci {
         }
 
         return data;
-    }
-
-    public double getWidth() {
-        return width;
-    }
-
-    public void setWidth(double width) {
-        this.width = width;
     }
 }
 

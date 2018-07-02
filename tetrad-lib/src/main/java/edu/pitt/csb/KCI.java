@@ -221,7 +221,6 @@ public class KCI implements IndependenceTest {
             int[] _z = new int[z.size()];
             for (int i = 0; i < z.size(); i++) _z[i] = hash.get(z.get(i));
 
-            //  System.out.println("Time to setup preliminary kernel matrices: " + (System.nanoTime()-time));
             TetradMatrix Kx = H.times(kernelMatrix(_data, _x, _z, width)).times(H);
             TetradMatrix Ky = H.times(kernelMatrix(_data, _y, new int[0], width)).times(H);
 
