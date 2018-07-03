@@ -23,12 +23,15 @@ import static com.google.common.primitives.Doubles.asList;
 import static edu.cmu.tetrad.util.StatUtils.median;
 import static java.lang.Math.*;
 
-/**
- * Kernel Based Conditional Independence Test
- * Code Written by: Vineet Raghu
- * Test published in: Kernel-based Conditional Independence Test and Application in Causal Discovery (Zhang et al.)
+/***
+ * Kernal Independence Test (KCI).
  *
- * @author vinee_000 on 7/3/2016
+ * Zhang, K., Peters, J., Janzing, D., & Schölkopf, B. (2012). Kernel-based conditional independence
+ * test and application in causal discovery. arXiv preprint arXiv:1202.3775.
+ *
+ * Please see that paper, especially theorems 3 and 4.
+ *
+ * @author Vineet Raghu on 7/3/2016
  * @author jdramsey refactoring 6/17/2018
  */
 public class KCI implements IndependenceTest {
@@ -81,7 +84,8 @@ public class KCI implements IndependenceTest {
 
     /**
      * Constructor.
-     * @param data The dataset to analyse. Must be continuous.
+     *
+     * @param data  The dataset to analyse. Must be continuous.
      * @param alpha The alpha value of the test.
      */
     public KCI(DataSet data, double alpha) {
@@ -90,7 +94,18 @@ public class KCI implements IndependenceTest {
         this._data = this.data.getDoubleData().transpose().toArray();
         this.N = data.getNumRows();
         this.I = TetradMatrix.identity(N);
-        this.H = I.minus(TetradMatrix.ones(N, N).scalarMult(1.0 / N));
+
+        double delta = 1.0 / N;
+
+        this.I = TetradMatrix.identity(N);
+        this.H = TetradMatrix.identity(N);
+
+        for (int i = 0; i < N; i++) {
+            for (int j = 0; j < N; j++) {
+                H.set(i, j, H.get(i, j) - delta);
+            }
+        }
+
         this.alpha = alpha;
         this.p = -1;
 
@@ -279,6 +294,7 @@ public class KCI implements IndependenceTest {
 
     /**
      * KCI independence for the unconditional case. Uses Theorem 4 from the paper.
+     *
      * @return true just in case independence holds.
      */
     private boolean isIndependentUnconditional(Node x, Node y) {
@@ -294,6 +310,7 @@ public class KCI implements IndependenceTest {
 
     /**
      * KCI independence for the conditional case. Uses Theorem 3 from the paper.
+     *
      * @return true just in case independence holds.
      */
     private boolean isIndependentConditional(Node x, Node y, List<Node> z) {
@@ -334,7 +351,7 @@ public class KCI implements IndependenceTest {
             indx.sort((o1, o2) -> Double.compare(evxAll.get(o2), evxAll.get(o1))); // Sorted downward by eigenvalue
             List<Integer> topXIndices = getTopIndices(evxAll, indx, threshold); // Get the ones above threshold.
 
-            // VD
+            // square roots eigenvalues down the diagonal
             TetradMatrix dx = new TetradMatrix(topXIndices.size(), topXIndices.size());
 
             for (int i = 0; i < topXIndices.size(); i++) {
@@ -357,7 +374,7 @@ public class KCI implements IndependenceTest {
             indy.sort((o1, o2) -> Double.compare(evyAll.get(o2), evyAll.get(o1))); // Sorted downward by eigenvalue
             List<Integer> topYIndices = getTopIndices(evyAll, indy, threshold); // Get the ones above threshold.
 
-            // square roots eigenvalues down the diagonal, like SVD
+            // square roots eigenvalues down the diagonal
             TetradMatrix dy = new TetradMatrix(topYIndices.size(), topYIndices.size());
 
             for (int j = 0; j < topYIndices.size(); j++) {
@@ -372,7 +389,7 @@ public class KCI implements IndependenceTest {
                 vy.assignColumn(i, new TetradVector(t));
             }
 
-            // VD
+            // U = VD
             TetradMatrix udx = vx.times(dx);
             TetradMatrix udy = vy.times(dy);
 
@@ -389,7 +406,7 @@ public class KCI implements IndependenceTest {
             }
 
             // Whichever gives the smaller matrix.
-            TetradMatrix uprod = prod > N ? U.times(U.transpose()) :  U.transpose().times(U);
+            TetradMatrix uprod = prod > N ? U.times(U.transpose()) : U.transpose().times(U);
 
             // Get top eigenvalues of that.
             EigenDecomposition edu = new EigenDecomposition(uprod.getRealMatrix());
@@ -432,56 +449,57 @@ public class KCI implements IndependenceTest {
     }
 
     private double getChisqSample(int sampleCount) {
-        for (int i = samples.size(); i <= sampleCount; i++) samples.add(chisq.sample());
+        if (sampleCount >= samples.size()) {
+            samples.add(chisq.sample());
+        }
         return samples.get(sampleCount);
     }
 
     private boolean theorem4(TetradMatrix kx, TetradMatrix ky) {
-        double trace = kx.times(ky).trace();
-
-        // Eigen decomposition of kx and ky.
-        List<Double> evx;
-        List<Double> evy;
 
         try {
+            double trace = kx.times(ky).trace();
+
+            // Eigen decomposition of kx and ky.
             EigenDecomposition ed1 = new EigenDecomposition(symmetrized(kx));
             EigenDecomposition ed2 = new EigenDecomposition(symmetrized(ky));
-            evx = asList(ed1.getRealEigenvalues());
-            evy = asList(ed2.getRealEigenvalues());
+            List<Double> evx = asList(ed1.getRealEigenvalues());
+            List<Double> evy = asList(ed2.getRealEigenvalues());
+
+            // Sorts the eigenvalues high to low.
+            evx.sort((o1, o2) -> Double.compare(o2, o1));
+            evy.sort((o1, o2) -> Double.compare(o2, o1));
+
+            // Gets the guys in ev1 and ev2 that are greater than threshold * max guy.
+            evx = getTopGuys(evx, threshold);
+            evy = getTopGuys(evy, threshold);
+
+            int sampleIndex = -1;
+
+            // Calculate formula (9).
+            double sum = 0;
+
+            for (int j = 0; j < getnBootstraps(); j++) {
+                double s = 0.0;
+
+                for (double lambdax : evx) {
+                    for (double lambday : evy) {
+                        s += lambdax * lambday * getChisqSample(++sampleIndex);
+                    }
+                }
+
+                if (s / (double) (evx.size() * evy.size()) > trace) sum++;
+            }
+
+            // Calculate p.
+            p = sum / getnBootstraps();
+            return p > alpha;
         } catch (Exception e) {
             System.out.println("Eigenvalue didn't converge");
             p = 0.0;
             return true;
         }
 
-        // Sorts the eigenvalues high to low.
-        evx.sort((o1, o2) -> Double.compare(o2, o1));
-        evy.sort((o1, o2) -> Double.compare(o2, o1));
-
-        // Gets the guys in ev1 and ev2 that are above threshold.
-        evx = getTopGuys(evx, threshold);
-        evy = getTopGuys(evy, threshold);
-
-        int sampleIndex = -1;
-
-        // Calculate formula (9).
-        double sum = 0;
-
-        for (int j = 0; j < getnBootstraps(); j++) {
-            double s = 0.0;
-
-            for (double lambdax : evx) {
-                for (double lambday : evy) {
-                    s += lambdax * lambday * getChisqSample(++sampleIndex);
-                }
-            }
-
-            if (s / (double) (evx.size() * evy.size()) > trace) sum++;
-        }
-
-        // Calculate p.
-        p = sum / getnBootstraps();
-        return p > alpha;
     }
 
     // Optimal bandwidth qsuggested by Bowman and Azzalini (1997) q.31,
