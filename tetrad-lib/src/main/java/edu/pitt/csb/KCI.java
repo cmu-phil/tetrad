@@ -7,10 +7,12 @@ import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.search.SearchLogUtils;
 import edu.cmu.tetrad.util.TetradMatrix;
+import edu.cmu.tetrad.util.TetradVector;
 import edu.pitt.csb.mgm.EigenDecomposition;
 import org.apache.commons.math3.distribution.ChiSquaredDistribution;
 import org.apache.commons.math3.distribution.GammaDistribution;
 import org.apache.commons.math3.linear.RealMatrix;
+import org.apache.commons.math3.linear.RealVector;
 import org.apache.commons.math3.random.SynchronizedRandomGenerator;
 import org.apache.commons.math3.random.Well44497b;
 
@@ -44,7 +46,7 @@ public class KCI implements IndependenceTest {
     private boolean approx = false;
     private Map<Node, Integer> hash;
     private double threshold = 0.01;
-    private int nBootstraps = 200;
+    private int nBootstraps = 5000;
     private double width = 1.0;
 
     public KCI(DataSet data, double threshold) {
@@ -129,32 +131,123 @@ public class KCI implements IndependenceTest {
     }
 
     private boolean isIndependentConditional(Node x, Node y, List<Node> z) {
-        try {
-            double width = getWidth();
+        double width = getWidth();
 
-            TetradMatrix Kx = center(kernelMatrix(_data, x, z, width));
-            TetradMatrix Ky = center(kernelMatrix(_data, y, null, width));
+        TetradMatrix Kx = center(kernelMatrix(_data, x, z, width));
+        TetradMatrix Ky = center(kernelMatrix(_data, y, null, width));
+        TetradMatrix KZ = kernelMatrix(_data, null, z, width);
 
-            TetradMatrix KZ = kernelMatrix(_data, null, z, width);
-            KZ = eye.minus(KZ.times((KZ.plus(lamEye).inverse())));
+        KZ = eye.minus(KZ.times((KZ.plus(lamEye).inverse())));
 
-            TetradMatrix kx = KZ.times(Kx).times(KZ);
-            TetradMatrix ky = KZ.times(Ky).times(KZ);;
+        TetradMatrix kx = KZ.times(Kx).times(KZ);
+        TetradMatrix ky = KZ.times(Ky).times(KZ);
 
-            if (isApprox()) {
-                return approxIndependent(kx, ky);
-            } else {
-                return theorem4(kx, ky);
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        return theorem3(kx, ky);
+    }
 
-        return true;
+    private List<Integer> series(int size) {
+        List<Integer> series = new ArrayList<>();
+        for (int i = 0; i < size; i++) series.add(i);
+        return series;
     }
 
     private TetradMatrix center(TetradMatrix K) {
         return H.times(K).times(H);
+    }
+
+    private boolean theorem3(TetradMatrix kx, TetradMatrix ky) {
+
+        try {
+            double trace = kx.times(ky).trace();
+
+            // Eigen decomposition of kx
+            EigenDecomposition edx = new EigenDecomposition(symmetrized(kx));
+
+            List<Double> evxAll = asList(edx.getRealEigenvalues());
+            List<Integer> indx = series(evxAll.size()); // 1 2 3...
+            indx.sort((o1, o2) -> Double.compare(evxAll.get(o2), evxAll.get(o1))); // Sorted downward by eigenvalue
+            List<Integer> topXIndices = getTopIndices(evxAll, indx, threshold); // Get the ones above threshold.
+
+            // square roots eigenvalues down the diagonal, like SVD
+            TetradMatrix dx = new TetradMatrix(topXIndices.size(), topXIndices.size());
+
+            for (int i = 0; i < topXIndices.size(); i++) {
+                dx.set(i, i, Math.sqrt(evxAll.get(topXIndices.get(i))));
+            }
+
+            // Corresponding eigenvectors.
+            TetradMatrix ux = new TetradMatrix(N, topXIndices.size());
+
+            for (int i = 0; i < topXIndices.size(); i++) {
+                RealVector t = edx.getEigenvector(topXIndices.get(i));
+                ux.assignColumn(i, new TetradVector(t));
+            }
+
+            // Now, eigen decomposition of ky
+            EigenDecomposition edy = new EigenDecomposition(symmetrized(ky));
+
+            List<Double> evyAll = asList(edy.getRealEigenvalues());
+            List<Integer> indy = series(evyAll.size()); // 1 2 3...
+            indy.sort((o1, o2) -> Double.compare(evyAll.get(o2), evyAll.get(o1))); // Sorted downward by eigenvalue
+            List<Integer> topYIndices = getTopIndices(evyAll, indy, threshold); // Get the ones above threshold.
+
+            // square roots eigenvalues down the diagonal, like SVD
+            TetradMatrix dy = new TetradMatrix(topYIndices.size(), topYIndices.size());
+
+            for (int j = 0; j < topYIndices.size(); j++) {
+                dy.set(j, j, Math.sqrt(evyAll.get(topYIndices.get(j))));
+            }
+
+            // Corresponding eigenvectors.
+            TetradMatrix uy = new TetradMatrix(N, topYIndices.size());
+
+            for (int i = 0; i < topYIndices.size(); i++) {
+                RealVector t = edy.getEigenvector(topYIndices.get(i));
+                uy.assignColumn(i, new TetradVector(t));
+            }
+
+            // UD as in SVD with U the eigenvectors.
+            TetradMatrix udx = ux.times(dx);
+            TetradMatrix udy = uy.times(dy);
+
+            final int prod = topXIndices.size() * topYIndices.size();
+            TetradMatrix U = new TetradMatrix(N, prod);
+
+            // stack
+            for (int i = 0; i < topXIndices.size(); i++) {
+                for (int j = 0; j < topYIndices.size(); j++) {
+                    for (int k = 0; k < N; k++) {
+                        U.set(k, i * topYIndices.size() + j, udx.get(k, i) * udy.get(k, j));
+                    }
+                }
+            }
+
+            // Whichever gives the smaller matrix.
+            TetradMatrix uuProd = prod > N ? U.times(U.transpose()) :  U.transpose().times(U);
+
+            EigenDecomposition edu = new EigenDecomposition(uuProd.getRealMatrix());
+            List<Double> evu = asList(edu.getRealEigenvalues());
+            evu = getTopGuys(evu, threshold);
+
+            double sum = 0;
+
+            for (int j = 0; j < nBootstraps; j++) {
+                double s = 0.0;
+
+                for (double f : evu) {
+                    s += f * chisq.sample();
+                }
+
+                if (s > trace) sum++;
+            }
+
+            this.p = sum / (double) nBootstraps;
+            return this.p > alpha;
+        } catch (Exception e) {
+            System.out.println("Eigenvalue didn't converge");
+            p = 0.0;
+            return true;
+        }
     }
 
     private boolean theorem4(TetradMatrix kx, TetradMatrix ky) {
@@ -218,18 +311,32 @@ public class KCI implements IndependenceTest {
         return approx(kx, ky);
     }
 
-    private List<Double> getTopGuys(List<Double> prod, double threshold) {
-        double maxEig = prod.get(0);
+    private List<Double> getTopGuys(List<Double> allDoubles, double threshold) {
+        double maxEig = allDoubles.get(0);
 
         List<Double> prodSelection = new ArrayList<>();
 
-        for (double p : prod) {
+        for (double p : allDoubles) {
             if (p > maxEig * threshold) {
                 prodSelection.add(p);
             }
         }
 
         return prodSelection;
+    }
+
+    private List<Integer> getTopIndices(List<Double> prod, List<Integer> allIndices, double threshold) {
+        double maxEig = prod.get(allIndices.get(0));
+
+        List<Integer> indices = new ArrayList<>();
+
+        for (int i : allIndices) {
+            if (prod.get(i) > maxEig * threshold) {
+                indices.add(i);
+            }
+        }
+
+        return indices;
     }
 
     private RealMatrix symmetrized(TetradMatrix kx) {

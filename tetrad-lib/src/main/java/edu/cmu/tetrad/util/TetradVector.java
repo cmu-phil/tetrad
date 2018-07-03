@@ -40,7 +40,7 @@ public class TetradVector implements TetradSerializable {
         this.data = new ArrayRealVector(size);
     }
 
-    private TetradVector(RealVector data) {
+    public TetradVector(RealVector data) {
         this.data = data;
     }
 
