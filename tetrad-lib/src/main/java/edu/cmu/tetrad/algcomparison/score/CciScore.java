@@ -42,6 +42,15 @@ public class CciScore implements ScoreWrapper {
         }
         cci.setNumFunctions(parameters.getInt("numBasisFunctions"));
         cci.setKernelMultiplier(parameters.getDouble("kernelMultiplier"));
+
+        if (parameters.getInt("basisType") == 1) {
+            cci.setBasis(Cci.Basis.Polynomial);
+        } else if (parameters.getInt("basisType") == 2) {
+            cci.setBasis(Cci.Basis.Cosine);
+        } else {
+            throw new IllegalStateException("Basis not configured.");
+        }
+
         return new ScoredIndTest(cci);
     }
 
@@ -62,6 +71,7 @@ public class CciScore implements ScoreWrapper {
         parameters.add("numBasisFunctions");
         parameters.add("kernelType");
         parameters.add("kernelMultiplier");
+        parameters.add("basisType");
         return parameters;
     }
 

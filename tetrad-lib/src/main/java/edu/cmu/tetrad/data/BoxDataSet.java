@@ -1128,7 +1128,7 @@ public final class BoxDataSet implements DataSet, TetradSerializable {
             retainedVars.add(variables.get(retainedCol));
         }
 
-        dataBox = viewSelection(rows, cols);
+        dataBox = viewSelection(rows, retainedCols);
         variables = retainedVars;
         selection = new HashSet<>();
         multipliers = new HashMap<>(multipliers);

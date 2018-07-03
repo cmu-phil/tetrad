@@ -133,7 +133,7 @@ public class VerticalIntDataBox implements DataBox {
      * @return a copy of this data box.
      */
     public DataBox copy() {
-        double[][] copy = new double[numCols()][numRows()];
+        int[][] copy = new int[numCols()][numRows()];
 
         for (int i = 0; i < numRows(); i++) {
             for (int j = 0; j < numCols(); j++) {
@@ -141,7 +141,7 @@ public class VerticalIntDataBox implements DataBox {
             }
         }
 
-        return new VerticalDoubleDataBox(copy);
+        return new VerticalIntDataBox(copy);
     }
 
     /**
