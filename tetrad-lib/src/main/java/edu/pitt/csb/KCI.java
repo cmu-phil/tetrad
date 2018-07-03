@@ -32,32 +32,66 @@ import static java.lang.Math.*;
  * @author jdramsey refactoring 6/17/2018
  */
 public class KCI implements IndependenceTest {
+
+    // Sample size.
     private final int N;
+
+    // Azzalini optimal bandwidths for each variable.
     private final double[] h;
+
+    // The supplied data set, standardized
     private DataSet data;
+
+    // The data stored in vertical columns.
     private double[][] _data;
+
+    // The alpha level of the test.
     private double alpha;
+
+    // P value used to judge independence. This is the last p value calculated.
     private double p;
+
+    // Centering matrix.
     private TetradMatrix H;
+
+    // Identity N x N
     private TetradMatrix I;
+
+    // A chisq distribution with 1 degree of freedom.
     private ChiSquaredDistribution chisq = new ChiSquaredDistribution(new SynchronizedRandomGenerator(
             new Well44497b(193924L)), 1);
-    private boolean bootstrap = true;
+
+    // True if the approximation algorithms should be used instead of Theorems 3 or 4.
     private boolean approx = false;
+
+    // Convenience map from nodes to their indices in the list of variables.
     private Map<Node, Integer> hash;
+
+    // Eigenvalues greater than this time the maximum will be kept.
     private double threshold = 0.01;
+
+    // Number of bostraps for Theorems 3 and 4.
     private int nBootstraps = 5000;
-    private double width = 1.0;
+
+    // Azzalini opttimal kernel widths will be multiplied by this.
+    private double widthMultiplier = 1.0;
+
+    // List of independent chisq(1) samples to be reused.
     private static List<Double> samples = new ArrayList<>();
 
-    public KCI(DataSet data, double threshold) {
+    /**
+     * Constructor.
+     * @param data The dataset to analyse. Must be continuous.
+     * @param alpha The alpha value of the test.
+     */
+    public KCI(DataSet data, double alpha) {
         this.data = DataUtils.standardizeData(data);
         this.data = data;
-        this._data = this.data.getDoubleData()./*scalarMult(.3).*/transpose().toArray();
+        this._data = this.data.getDoubleData().transpose().toArray();
         this.N = data.getNumRows();
         this.I = TetradMatrix.identity(N);
         this.H = I.minus(TetradMatrix.ones(N, N).scalarMult(1.0 / N));
-        this.alpha = threshold;
+        this.alpha = alpha;
         this.p = -1;
 
         hash = new HashMap<>();
@@ -72,6 +106,8 @@ public class KCI implements IndependenceTest {
             h[i] = h(data.getVariables().get(i).toString());
         }
     }
+
+    //====================================PUBLIC METHODS==================================//
 
     /**
      * Returns an Independence test for a subset of the variables.
@@ -103,15 +139,174 @@ public class KCI implements IndependenceTest {
         return independent;
     }
 
+    /**
+     * Returns true if the given independence question is judged true, false if not. The independence question is of the
+     * form x _||_ y | z, z = <z1,...,zn>, where x, y, z1,...,zn are variables in the list returned by
+     * getVariableNames().
+     */
+    public boolean isIndependent(Node x, Node y, Node... z) {
+        LinkedList<Node> thez = new LinkedList<>();
+        Collections.addAll(thez, z);
+        return isIndependent(x, y, thez);
+    }
+
+    /**
+     * Returns true if the given independence question is judged false, true if not. The independence question is of the
+     * form x _||_ y | z, z = <z1,...,zn>, where x, y, z1,...,zn are variables in the list returned by
+     * getVariableNames().
+     */
+    public boolean isDependent(Node x, Node y, List<Node> z) {
+        return !isIndependent(x, y, z);
+    }
+
+    /**
+     * Returns true if the given independence question is judged false, true if not. The independence question is of the
+     * form x _||_ y | z, z = <z1,...,zn>, where x, y, z1,...,zn are variables in the list returned by
+     * getVariableNames().
+     */
+    public boolean isDependent(Node x, Node y, Node... z) {
+        LinkedList<Node> thez = new LinkedList<>();
+        Collections.addAll(thez, z);
+        return isDependent(x, y, thez);
+    }
+
+    /**
+     * Returns the probability associated with the most recently executed independence test, of Double.NaN if p value is
+     * not meaningful for tis test.
+     */
+    public double getPValue() {
+        return p;
+    }
+
+    /**
+     * Returns the list of variables over which this independence checker is capable of determinining independence
+     * relations.
+     */
+    public List<Node> getVariables() {
+        return data.getVariables();
+    }
+
+    /**
+     * Returns the variable by the given name.
+     */
+    public Node getVariable(String name) {
+        return data.getVariable(name);
+    }
+
+    /**
+     * Returns the list of names for the variables in getNodesInEvidence.
+     */
+    public List<String> getVariableNames() {
+        return data.getVariableNames();
+    }
+
+    /**
+     * Returns true if y is determined the variable in z.
+     */
+    public boolean determines(List<Node> z, Node y) {
+        return false;
+    }
+
+    /**
+     * Returns the significance level of the independence test.
+     *
+     * @throws UnsupportedOperationException if there is no significance level.
+     */
+    public double getAlpha() {
+        return alpha;
+    }
+
+    /**
+     * Sets the significance level.
+     */
+    public void setAlpha(double alpha2) {
+        alpha = alpha2;
+    }
+
+    /**
+     * @return The data model for the independence test.
+     */
+    public DataModel getData() {
+        return data;
+    }
+
+
+    public ICovarianceMatrix getCov() {
+        throw new UnsupportedOperationException();
+    }
+
+    public List<DataSet> getDataSets() {
+        LinkedList<DataSet> L = new LinkedList<>();
+        L.add(data);
+        return L;
+    }
+
+    public int getSampleSize() {
+        return data.getNumRows();
+    }
+
+    public List<TetradMatrix> getCovMatrices() {
+        throw new UnsupportedOperationException();
+    }
+
+    public double getScore() {
+        return getAlpha() - getPValue();
+    }
+
+    private boolean isApprox() {
+        return approx;
+    }
+
+    public double getWidthMultiplier() {
+        return widthMultiplier;
+    }
+
+    public void setWidthMultiplier(double widthMultiplier) {
+        if (widthMultiplier <= 0) throw new IllegalStateException("Width must be > 0");
+        this.widthMultiplier = widthMultiplier;
+    }
+
+    public int getnBootstraps() {
+        return nBootstraps;
+    }
+
+    public void setnBootstraps(int nBootstraps) {
+        if (nBootstraps < 1) throw new IllegalArgumentException("Num bootstraps should be >= 1: " + nBootstraps);
+        this.nBootstraps = nBootstraps;
+    }
+
+    //====================================PRIVATE METHODS==================================//
+
+    /**
+     * KCI independence for the unconditional case. Uses Theorem 4 from the paper.
+     * @return true just in case independence holds.
+     */
     private boolean isIndependentUnconditional(Node x, Node y) {
-        TetradMatrix kx = center(kernelMatrix(_data, x, null, getWidth()));
-        TetradMatrix ky = center(kernelMatrix(_data, y, null, getWidth()));
+        TetradMatrix kx = center(kernelMatrix(_data, x, null, getWidthMultiplier()));
+        TetradMatrix ky = center(kernelMatrix(_data, y, null, getWidthMultiplier()));
 
         if (isApprox()) {
             return approx(kx, ky);
         } else {
             return theorem4(kx, ky);
         }
+    }
+
+    /**
+     * KCI independence for the conditional case. Uses Theorem 3 from the paper.
+     * @return true just in case independence holds.
+     */
+    private boolean isIndependentConditional(Node x, Node y, List<Node> z) {
+        TetradMatrix Kx = center(kernelMatrix(_data, x, z, getWidthMultiplier()));
+        TetradMatrix Ky = center(kernelMatrix(_data, y, null, getWidthMultiplier()));
+        TetradMatrix KZ = kernelMatrix(_data, null, z, getWidthMultiplier());
+
+        KZ = I.minus(KZ.times((KZ.plus(I.scalarMult(1.0 / N)).inverse())));
+
+        TetradMatrix kx = KZ.times(Kx).times(KZ);
+        TetradMatrix ky = KZ.times(Ky).times(KZ);
+
+        return theorem3(kx, ky);
     }
 
     private boolean approx(TetradMatrix kx, TetradMatrix ky) {
@@ -124,19 +319,6 @@ public class KCI implements IndependenceTest {
         double p_appr = 1.0 - g.cumulativeProbability(trace);
         p = p_appr;
         return p_appr > alpha;
-    }
-
-    private boolean isIndependentConditional(Node x, Node y, List<Node> z) {
-        TetradMatrix Kx = center(kernelMatrix(_data, x, z, getWidth()));
-        TetradMatrix Ky = center(kernelMatrix(_data, y, null, getWidth()));
-        TetradMatrix KZ = kernelMatrix(_data, null, z, getWidth());
-
-        KZ = I.minus(KZ.times((KZ.plus(I.scalarMult(1.0 / N)).inverse())));
-
-        TetradMatrix kx = KZ.times(Kx).times(KZ);
-        TetradMatrix ky = KZ.times(Ky).times(KZ);
-
-        return theorem3(kx, ky);
     }
 
     private boolean theorem3(TetradMatrix kx, TetradMatrix ky) {
@@ -313,10 +495,6 @@ public class KCI implements IndependenceTest {
         return (1.4826 * mad) * pow((4.0 / 3.0) / xCol.length, 0.2);
     }
 
-    private boolean approxIndependent(TetradMatrix kx, TetradMatrix ky) {
-        return approx(kx, ky);
-    }
-
     private List<Double> getTopGuys(List<Double> allDoubles, double threshold) {
         double maxEig = allDoubles.get(0);
 
@@ -411,152 +589,5 @@ public class KCI implements IndependenceTest {
         }
 
         return sqrt(sum);
-    }
-
-    /**
-     * Returns true if the given independence question is judged true, false if not. The independence question is of the
-     * form x _||_ y | z, z = <z1,...,zn>, where x, y, z1,...,zn are variables in the list returned by
-     * getVariableNames().
-     */
-    public boolean isIndependent(Node x, Node y, Node... z) {
-        LinkedList<Node> thez = new LinkedList<>();
-        Collections.addAll(thez, z);
-        return isIndependent(x, y, thez);
-    }
-
-    /**
-     * Returns true if the given independence question is judged false, true if not. The independence question is of the
-     * form x _||_ y | z, z = <z1,...,zn>, where x, y, z1,...,zn are variables in the list returned by
-     * getVariableNames().
-     */
-    public boolean isDependent(Node x, Node y, List<Node> z) {
-        return !isIndependent(x, y, z);
-    }
-
-    /**
-     * Returns true if the given independence question is judged false, true if not. The independence question is of the
-     * form x _||_ y | z, z = <z1,...,zn>, where x, y, z1,...,zn are variables in the list returned by
-     * getVariableNames().
-     */
-    public boolean isDependent(Node x, Node y, Node... z) {
-        LinkedList<Node> thez = new LinkedList<>();
-        Collections.addAll(thez, z);
-        return isDependent(x, y, thez);
-    }
-
-    /**
-     * Returns the probability associated with the most recently executed independence test, of Double.NaN if p value is
-     * not meaningful for tis test.
-     */
-    public double getPValue() {
-        return p;
-    }
-
-    /**
-     * Returns the list of variables over which this independence checker is capable of determinining independence
-     * relations.
-     */
-    public List<Node> getVariables() {
-        return data.getVariables();
-    }
-
-    /**
-     * Returns the variable by the given name.
-     */
-    public Node getVariable(String name) {
-        return data.getVariable(name);
-    }
-
-    /**
-     * Returns the list of names for the variables in getNodesInEvidence.
-     */
-    public List<String> getVariableNames() {
-        return data.getVariableNames();
-    }
-
-    /**
-     * Returns true if y is determined the variable in z.
-     */
-    public boolean determines(List<Node> z, Node y) {
-
-        return false;
-    }
-
-    /**
-     * Returns the significance level of the independence test.
-     *
-     * @throws UnsupportedOperationException if there is no significance level.
-     */
-    public double getAlpha() {
-        return alpha;
-    }
-
-    /**
-     * Sets the significance level.
-     */
-    public void setAlpha(double alpha2) {
-        alpha = alpha2;
-    }
-
-    /**
-     * '
-     *
-     * @return The data model for the independence test.
-     */
-    public DataModel getData() {
-        return data;
-    }
-
-
-    public ICovarianceMatrix getCov() {
-        throw new UnsupportedOperationException();
-    }
-
-    public List<DataSet> getDataSets() {
-        LinkedList<DataSet> L = new LinkedList<>();
-        L.add(data);
-        return L;
-    }
-
-    public int getSampleSize() {
-        return data.getNumRows();
-    }
-
-    public List<TetradMatrix> getCovMatrices() {
-        throw new UnsupportedOperationException();
-    }
-
-    public double getScore() {
-        return getAlpha() - getPValue();
-    }
-
-    public boolean isBootstrap() {
-        return bootstrap;
-    }
-
-    public void setBootstrap(boolean bootstrap) {
-        this.bootstrap = bootstrap;
-    }
-
-    private boolean isApprox() {
-        return approx;
-    }
-
-    public double getWidth() {
-        return width;
-    }
-
-    public void setWidth(double width) {
-        if (width <= 0) throw new IllegalStateException("Width must be > 0");
-        this.width = width;
-    }
-
-    public int getnBootstraps() {
-        return nBootstraps;
-    }
-
-    public void setnBootstraps(int nBootstraps) {
-        if (nBootstraps < 1) throw new IllegalArgumentException("Num bootstraps should be >= 1: " + nBootstraps);
-        this.nBootstraps = nBootstraps;
     }
 }
