@@ -98,7 +98,14 @@ public class SessionFileTransferHandler extends TransferHandler {
                     if (o instanceof TetradMetadata) {
                         metadata = (TetradMetadata) o;
 
-                        sessionWrapper = (SessionWrapper) objIn.readObject();
+                        try {
+                            sessionWrapper = (SessionWrapper) objIn.readObject();
+                        } catch (ClassNotFoundException e1) {
+                            throw e1;
+                        } catch (Exception e2) {
+                            e2.printStackTrace();
+                            sessionWrapper = null;
+                        }
                     } else if (o instanceof SessionWrapper) {
                         metadata = null;
                         sessionWrapper = (SessionWrapper) o;
@@ -116,10 +123,8 @@ public class SessionFileTransferHandler extends TransferHandler {
                         SimpleDateFormat df = new SimpleDateFormat("MMM dd, yyyy");
 
                         JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
-                                "Could not load session. The version of the session was \n"
-                                + version + "; it was saved on "
-                                + df.format(date) + ". You "
-                                + "\nmight try loading it with that version instead.");
+                                "Could not load this session file into Tetrad " + Version.currentViewableVersion() + "! \n" +
+                                "The session was saved by Tetrad " + version + " on " +  df.format(date));
 
                         return false;
                     }
@@ -134,8 +139,7 @@ public class SessionFileTransferHandler extends TransferHandler {
 
                     DesktopController.getInstance().addSessionEditor(editor);
                     DesktopController.getInstance().closeEmptySessions();
-                    DesktopController.getInstance().putMetadata(sessionWrapper,
-                            metadata);
+                    DesktopController.getInstance().putMetadata(sessionWrapper, metadata);
                 } catch (FileNotFoundException exception) {
                     LOGGER.error("", exception);
                     JOptionPane.showMessageDialog(JOptionUtils.centeringComp(), "That wasn't a TETRAD session file: " + file);

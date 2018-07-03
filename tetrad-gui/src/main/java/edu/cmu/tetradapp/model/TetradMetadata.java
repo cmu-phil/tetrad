@@ -64,9 +64,8 @@ public class TetradMetadata
     public TetradMetadata() {
         try {
             version = Version.currentViewableVersion();
-        }
-        catch (Exception e) {
-            version = new Version("4.3.1-5");
+        } catch (Exception e) {
+            throw new RuntimeException("Can't retrive the current version of this tetrad release.");
         }
 
         date = new Date();

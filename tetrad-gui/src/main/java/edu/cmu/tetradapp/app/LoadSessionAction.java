@@ -29,14 +29,13 @@ import edu.cmu.tetradapp.model.SessionWrapper;
 import edu.cmu.tetradapp.model.TetradMetadata;
 import edu.cmu.tetradapp.util.DesktopController;
 import edu.cmu.tetradapp.util.WatchedProcess;
-
-import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.io.*;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.prefs.Preferences;
+import javax.swing.*;
 
 
 /**
@@ -107,7 +106,6 @@ final class LoadSessionAction extends AbstractAction {
             public void watch() {
                 try {
                     FileInputStream in = new FileInputStream(file);
-//                    ObjectInputStream objIn = new ObjectInputStream(in);
                     DecompressibleInputStream objIn = new DecompressibleInputStream(in);
                     Object o = objIn.readObject();
 
@@ -142,10 +140,8 @@ final class LoadSessionAction extends AbstractAction {
                         SimpleDateFormat df = new SimpleDateFormat("MMM dd, yyyy");
 
                         JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
-                                "Could not load session. The version of the session was \n" +
-                                        version + "; it was saved on " +
-                                        df.format(date) + ". You " +
-                                        "\nmight try loading it with that version instead.");
+                                "Could not load this session file into Tetrad " + Version.currentViewableVersion() + "! \n" +
+                                "The session was saved by Tetrad " + version + " on " +  df.format(date));
 
                         return;
                     }
@@ -160,15 +156,12 @@ final class LoadSessionAction extends AbstractAction {
 
                     DesktopController.getInstance().addSessionEditor(editor);
                     DesktopController.getInstance().closeEmptySessions();
-                    DesktopController.getInstance().putMetadata(sessionWrapper,
-                            metadata);
+                    DesktopController.getInstance().putMetadata(sessionWrapper, metadata);
                 } catch (FileNotFoundException ex) {
-                    JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
-                            "That wasn't a TETRAD session file: " + file);
+                    JOptionPane.showMessageDialog(JOptionUtils.centeringComp(), "That wasn't a TETRAD session file: " + file);
                 } catch (Exception ex) {
                     ex.printStackTrace();
-                    JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
-                            "An error occurred attempting to load the session.");
+                    JOptionPane.showMessageDialog(JOptionUtils.centeringComp(), "An error occurred attempting to load the session.");
                 }
             }
         };
