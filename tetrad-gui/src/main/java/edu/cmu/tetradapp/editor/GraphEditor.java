@@ -24,7 +24,6 @@ import edu.cmu.tetrad.data.IKnowledge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.IndTestDSep;
 import edu.cmu.tetrad.search.IndependenceTest;
-import edu.cmu.tetrad.search.MeekRules;
 import edu.cmu.tetrad.util.JOptionUtils;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.RandomUtil;
@@ -44,8 +43,12 @@ import java.awt.event.KeyEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.net.URL;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import javax.help.CSH;
 import javax.help.HelpBroker;
 import javax.help.HelpSet;
@@ -435,12 +438,10 @@ public final class GraphEditor extends JPanel
 //        );
 
         graph.addSeparator();
-        graph.add(new JMenuItem(new SelectBidirectedAction(getWorkbench()
-        )));
-        graph.add(new JMenuItem(new SelectUndirectedAction(getWorkbench()
-        )));
-        graph.add(new JMenuItem(new SelectLatentsAction(getWorkbench()
-        )));
+        graph.add(new JMenuItem(new SelectBidirectedAction(getWorkbench())));
+        graph.add(new JMenuItem(new SelectUndirectedAction(getWorkbench())));
+        graph.add(new JMenuItem(new SelectLatentsAction(getWorkbench())));
+        graph.add(new JMenuItem(new SelectInterventionalAction(getWorkbench())));
 
 //        graph.addSeparator();
 //        IndependenceFactsAction action = new IndependenceFactsAction(
