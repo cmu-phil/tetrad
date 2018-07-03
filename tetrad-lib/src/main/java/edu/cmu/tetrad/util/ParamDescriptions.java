@@ -319,6 +319,9 @@ public class ParamDescriptions {
                 "Basis type (1 = Polynomial, 2 = Cosine)",
                 2, 1, 2));
 
+        map.put("kciNumBootstraps", new ParamDescription(
+                "Number of bootstraps for Theorems 3 and 4 for KCI",
+                5000, 1, Integer.MAX_VALUE));
     }
 
     public static ParamDescriptions getInstance() {

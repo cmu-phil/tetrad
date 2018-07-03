@@ -2,6 +2,7 @@ package edu.pitt.csb;
 
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
+import edu.cmu.tetrad.data.DataUtils;
 import edu.cmu.tetrad.data.ICovarianceMatrix;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.IndependenceTest;
@@ -38,8 +39,7 @@ public class KCI implements IndependenceTest {
     private double alpha;
     private double p;
     private TetradMatrix H;
-    private TetradMatrix eye;
-    private TetradMatrix lamEye;
+    private TetradMatrix I;
     private ChiSquaredDistribution chisq = new ChiSquaredDistribution(new SynchronizedRandomGenerator(
             new Well44497b(193924L)), 1);
     private boolean bootstrap = true;
@@ -48,16 +48,15 @@ public class KCI implements IndependenceTest {
     private double threshold = 0.01;
     private int nBootstraps = 5000;
     private double width = 1.0;
+    private static List<Double> samples = new ArrayList<>();
 
     public KCI(DataSet data, double threshold) {
-//        this.data = DataUtils.standardizeData(data);
+        this.data = DataUtils.standardizeData(data);
         this.data = data;
         this._data = this.data.getDoubleData()./*scalarMult(.3).*/transpose().toArray();
-        N = data.getNumRows();
-        double lambda = 1.0 / N;
-        this.eye = TetradMatrix.identity(N);
-        this.H = eye.minus(TetradMatrix.ones(N, N).scalarMult(lambda));
-        this.lamEye = eye.scalarMult(lambda);
+        this.N = data.getNumRows();
+        this.I = TetradMatrix.identity(N);
+        this.H = I.minus(TetradMatrix.ones(N, N).scalarMult(1.0 / N));
         this.alpha = threshold;
         this.p = -1;
 
@@ -73,7 +72,6 @@ public class KCI implements IndependenceTest {
             h[i] = h(data.getVariables().get(i).toString());
         }
     }
-
 
     /**
      * Returns an Independence test for a subset of the variables.
@@ -106,10 +104,8 @@ public class KCI implements IndependenceTest {
     }
 
     private boolean isIndependentUnconditional(Node x, Node y) {
-        double width = getWidth();
-
-        TetradMatrix kx = center(kernelMatrix(_data, x, null, width));
-        TetradMatrix ky = center(kernelMatrix(_data, y, null, width));
+        TetradMatrix kx = center(kernelMatrix(_data, x, null, getWidth()));
+        TetradMatrix ky = center(kernelMatrix(_data, y, null, getWidth()));
 
         if (isApprox()) {
             return approx(kx, ky);
@@ -131,28 +127,16 @@ public class KCI implements IndependenceTest {
     }
 
     private boolean isIndependentConditional(Node x, Node y, List<Node> z) {
-        double width = getWidth();
+        TetradMatrix Kx = center(kernelMatrix(_data, x, z, getWidth()));
+        TetradMatrix Ky = center(kernelMatrix(_data, y, null, getWidth()));
+        TetradMatrix KZ = kernelMatrix(_data, null, z, getWidth());
 
-        TetradMatrix Kx = center(kernelMatrix(_data, x, z, width));
-        TetradMatrix Ky = center(kernelMatrix(_data, y, null, width));
-        TetradMatrix KZ = kernelMatrix(_data, null, z, width);
-
-        KZ = eye.minus(KZ.times((KZ.plus(lamEye).inverse())));
+        KZ = I.minus(KZ.times((KZ.plus(I.scalarMult(1.0 / N)).inverse())));
 
         TetradMatrix kx = KZ.times(Kx).times(KZ);
         TetradMatrix ky = KZ.times(Ky).times(KZ);
 
         return theorem3(kx, ky);
-    }
-
-    private List<Integer> series(int size) {
-        List<Integer> series = new ArrayList<>();
-        for (int i = 0; i < size; i++) series.add(i);
-        return series;
-    }
-
-    private TetradMatrix center(TetradMatrix K) {
-        return H.times(K).times(H);
     }
 
     private boolean theorem3(TetradMatrix kx, TetradMatrix ky) {
@@ -168,7 +152,7 @@ public class KCI implements IndependenceTest {
             indx.sort((o1, o2) -> Double.compare(evxAll.get(o2), evxAll.get(o1))); // Sorted downward by eigenvalue
             List<Integer> topXIndices = getTopIndices(evxAll, indx, threshold); // Get the ones above threshold.
 
-            // square roots eigenvalues down the diagonal, like SVD
+            // VD
             TetradMatrix dx = new TetradMatrix(topXIndices.size(), topXIndices.size());
 
             for (int i = 0; i < topXIndices.size(); i++) {
@@ -176,11 +160,11 @@ public class KCI implements IndependenceTest {
             }
 
             // Corresponding eigenvectors.
-            TetradMatrix ux = new TetradMatrix(N, topXIndices.size());
+            TetradMatrix vx = new TetradMatrix(N, topXIndices.size());
 
             for (int i = 0; i < topXIndices.size(); i++) {
                 RealVector t = edx.getEigenvector(topXIndices.get(i));
-                ux.assignColumn(i, new TetradVector(t));
+                vx.assignColumn(i, new TetradVector(t));
             }
 
             // Now, eigen decomposition of ky
@@ -199,16 +183,16 @@ public class KCI implements IndependenceTest {
             }
 
             // Corresponding eigenvectors.
-            TetradMatrix uy = new TetradMatrix(N, topYIndices.size());
+            TetradMatrix vy = new TetradMatrix(N, topYIndices.size());
 
             for (int i = 0; i < topYIndices.size(); i++) {
                 RealVector t = edy.getEigenvector(topYIndices.get(i));
-                uy.assignColumn(i, new TetradVector(t));
+                vy.assignColumn(i, new TetradVector(t));
             }
 
-            // UD as in SVD with U the eigenvectors.
-            TetradMatrix udx = ux.times(dx);
-            TetradMatrix udy = uy.times(dy);
+            // VD
+            TetradMatrix udx = vx.times(dx);
+            TetradMatrix udy = vy.times(dy);
 
             final int prod = topXIndices.size() * topYIndices.size();
             TetradMatrix U = new TetradMatrix(N, prod);
@@ -223,31 +207,51 @@ public class KCI implements IndependenceTest {
             }
 
             // Whichever gives the smaller matrix.
-            TetradMatrix uuProd = prod > N ? U.times(U.transpose()) :  U.transpose().times(U);
+            TetradMatrix uprod = prod > N ? U.times(U.transpose()) :  U.transpose().times(U);
 
-            EigenDecomposition edu = new EigenDecomposition(uuProd.getRealMatrix());
+            // Get top eigenvalues of that.
+            EigenDecomposition edu = new EigenDecomposition(uprod.getRealMatrix());
             List<Double> evu = asList(edu.getRealEigenvalues());
             evu = getTopGuys(evu, threshold);
 
+            // We're going to reuse the chisq samples.
+            int sampleCount = -1;
+
+            // Bootstrap.
             double sum = 0;
 
-            for (int j = 0; j < nBootstraps; j++) {
+            for (int j = 0; j < getnBootstraps(); j++) {
                 double s = 0.0;
 
-                for (double f : evu) {
-                    s += f * chisq.sample();
+                for (double lambdaStar : evu) {
+                    s += lambdaStar * getChisqSample(++sampleCount);
                 }
 
                 if (s > trace) sum++;
             }
 
-            this.p = sum / (double) nBootstraps;
+            this.p = sum / (double) getnBootstraps();
             return this.p > alpha;
         } catch (Exception e) {
             System.out.println("Eigenvalue didn't converge");
             p = 0.0;
             return true;
         }
+    }
+
+    private List<Integer> series(int size) {
+        List<Integer> series = new ArrayList<>();
+        for (int i = 0; i < size; i++) series.add(i);
+        return series;
+    }
+
+    private TetradMatrix center(TetradMatrix K) {
+        return H.times(K).times(H);
+    }
+
+    private double getChisqSample(int sampleCount) {
+        for (int i = samples.size(); i <= sampleCount; i++) samples.add(chisq.sample());
+        return samples.get(sampleCount);
     }
 
     private boolean theorem4(TetradMatrix kx, TetradMatrix ky) {
@@ -276,15 +280,17 @@ public class KCI implements IndependenceTest {
         evx = getTopGuys(evx, threshold);
         evy = getTopGuys(evy, threshold);
 
+        int sampleIndex = -1;
+
         // Calculate formula (9).
         double sum = 0;
 
-        for (int j = 0; j < nBootstraps; j++) {
+        for (int j = 0; j < getnBootstraps(); j++) {
             double s = 0.0;
 
-            for (double x : evx) {
-                for (double y : evy) {
-                    s += x * y * chisq.sample();
+            for (double lambdax : evx) {
+                for (double lambday : evy) {
+                    s += lambdax * lambday * getChisqSample(++sampleIndex);
                 }
             }
 
@@ -292,7 +298,7 @@ public class KCI implements IndependenceTest {
         }
 
         // Calculate p.
-        p = sum / nBootstraps;
+        p = sum / getnBootstraps();
         return p > alpha;
     }
 
@@ -385,13 +391,6 @@ public class KCI implements IndependenceTest {
         }
 
         return result;
-    }
-
-    // Uniform kernel.
-    private double kernelUniform(double z, double width, double h) {
-        z /= width * h;
-        if (abs(z) > 0.5) return 0.0;
-        else return 0.5;
     }
 
     private double kernelGaussian(double z, double width, double h) {
@@ -550,5 +549,14 @@ public class KCI implements IndependenceTest {
     public void setWidth(double width) {
         if (width <= 0) throw new IllegalStateException("Width must be > 0");
         this.width = width;
+    }
+
+    public int getnBootstraps() {
+        return nBootstraps;
+    }
+
+    public void setnBootstraps(int nBootstraps) {
+        if (nBootstraps < 1) throw new IllegalArgumentException("Num bootstraps should be >= 1: " + nBootstraps);
+        this.nBootstraps = nBootstraps;
     }
 }
