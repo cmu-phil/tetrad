@@ -67,7 +67,6 @@ import javax.swing.JTabbedPane;
 import javax.swing.JTextArea;
 import javax.swing.SpinnerNumberModel;
 import javax.swing.SwingConstants;
-import javax.swing.SwingUtilities;
 import javax.swing.TransferHandler;
 import javax.swing.border.CompoundBorder;
 import javax.swing.border.EmptyBorder;
@@ -100,7 +99,7 @@ public class KnowledgeBoxEditor extends JPanel {
     private boolean showRequired = false;
     private boolean showRequiredByGroups = false;
     private boolean showForbiddenByGroups = false;
-    private boolean highlightInterventional = false;
+    private boolean hideInterventional = false;
     private JTextArea textArea;
 
     // Unused, moved to KnowledgeBoxModel. Keeping for serialization. Can delete after a while. 2017.06.17
@@ -177,13 +176,6 @@ public class KnowledgeBoxEditor extends JPanel {
         return label;
     }
 
-    // Not working
-    private void highlightInterventionalVar(String name) {
-        JLabel label = labelMap.get(name);
-        System.out.println("label.getText(): ==== " + label.getText());
-        label.setBackground(INTERVENTIONAL_VAR_BG);
-    }
-    
     private JMenuBar menuBar() {
         JMenuBar menuBar = new JMenuBar();
         JMenu file = new JMenu("File");
@@ -365,9 +357,7 @@ public class KnowledgeBoxEditor extends JPanel {
      * and the rest of domain variables in second tier - Zhou
      */
     private void checkInterventionalVariables() {
-        System.out.println("=========All Vars==========");
         varNames.forEach(e -> {
-            System.out.println(e);
             if (e.startsWith(interventionalVarPrefix)) {
                 interventionalVars.add(e);
             } else {
@@ -484,30 +474,14 @@ public class KnowledgeBoxEditor extends JPanel {
                 "Show Required by Groups", this.showRequiredByGroups);
         JCheckBox showForbiddenGroupsCheckBox = new JCheckBox(
                 "Show Forbidden by Groups", this.showForbiddenByGroups);
-
         // Added for interventional variables
-        JCheckBox highlightInterventionalCheckBox = new JCheckBox(
-                "Highlight Interventional Variables", this.highlightInterventional);
+        JCheckBox hideInterventionalCheckBox = new JCheckBox(
+                "Hide Interventional Variables", this.hideInterventional);
 
-        highlightInterventionalCheckBox.addActionListener((e) -> {
+        hideInterventionalCheckBox.addActionListener((e) -> {
             JCheckBox box = (JCheckBox) e.getSource();
-            highlightInterventional = box.isSelected();
-            
-            //perform SSH in a separate thread
-            Thread highlightInterventionalVars = new Thread(){
-                public void run(){
-                    //update the GUI in the event dispatch thread
-                    SwingUtilities.invokeLater(new Runnable() {
-                        public void run() {
-                            interventionalVars.forEach(e->{
-                                highlightInterventionalVar(e);
-                            });
-                        }
-                    });
-                }
-            };
-            
-            highlightInterventionalVars.start();
+            hideInterventional = box.isSelected();
+            resetEdgeDisplay(hideInterventionalCheckBox);
         });
         
         showRequiredGroupsCheckBox.addActionListener((e) -> {
@@ -564,7 +538,7 @@ public class KnowledgeBoxEditor extends JPanel {
         Box hBox = Box.createHorizontalBox();
         hBox.add(showRequiredGroupsCheckBox);
         hBox.add(showForbiddenGroupsCheckBox);
-        hBox.add(highlightInterventionalCheckBox);
+        hBox.add(hideInterventionalCheckBox);
         hBox.add(Box.createHorizontalGlue());
 
         vBox.add(b4);
@@ -725,9 +699,13 @@ public class KnowledgeBoxEditor extends JPanel {
                 });
             }
         }
+        
+        // Hide all interventional nodes and edges
+        if (hideInterventional) {
+            
+        }
 
-        boolean arrangedAll = GraphUtils.arrangeBySourceGraph(graph,
-                edgeWorkbench.getGraph());
+        boolean arrangedAll = GraphUtils.arrangeBySourceGraph(graph, edgeWorkbench.getGraph());
 
         if (!arrangedAll) {
             GraphUtils.circleLayout(graph, 200, 200, 150);
