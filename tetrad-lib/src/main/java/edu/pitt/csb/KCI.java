@@ -2,7 +2,6 @@ package edu.pitt.csb;
 
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
-import edu.cmu.tetrad.data.DataUtils;
 import edu.cmu.tetrad.data.ICovarianceMatrix;
 import edu.cmu.tetrad.graph.IndependenceFact;
 import edu.cmu.tetrad.graph.Node;
@@ -29,7 +28,12 @@ import static java.lang.Math.*;
  * Zhang, K., Peters, J., Janzing, D., & Schölkopf, B. (2012). Kernel-based conditional independence
  * test and application in causal discovery. arXiv preprint arXiv:1202.3775.
  *
- * Please see that paper, especially theorems 3 and 4.
+ * Please see that paper, especially Theorem 4 and Proposition 5.
+ *
+ * Using optimal kernel bandwidths suggested by Bowman and Azzalini (1997):
+ *
+ * Bowman, A. W., & Azzalini, A. (1997). Applied smoothing techniques for data analysis: the kernel
+ * approach with S-Plus illustrations (Vol. 18). OUP Oxford.
  *
  * @author Vineet Raghu on 7/3/2016
  * @author jdramsey refactoring 7/4/2018
@@ -39,7 +43,7 @@ public class KCI implements IndependenceTest, ScoreForFact {
     // Sample size.
     private final int N;
 
-    // Azzalini optimal bandwidths for each variable.
+    // Bowman and Azzalini optimal bandwidths for each variable.
     private final double[] h;
 
     // The supplied data set, standardized
@@ -79,7 +83,7 @@ public class KCI implements IndependenceTest, ScoreForFact {
     // Number of bostraps for Theorems 3 and 4.
     private int numBootstraps = 5000;
 
-    // Azzalini opttimal kernel widths will be multiplied by this.
+    // Azzalini optimal kernel widths will be multiplied by this.
     private double widthMultiplier = 1.0;
 
     // List of independent normal(1) samples to be reused.
@@ -339,14 +343,14 @@ public class KCI implements IndependenceTest, ScoreForFact {
     private boolean isIndependentConditional(Node x, Node y, List<Node> z, IndependenceFact fact) {
         TetradMatrix Kx = center(kernelMatrix(_data, x, z, getWidthMultiplier()));
         TetradMatrix Ky = center(kernelMatrix(_data, y, null, getWidthMultiplier()));
-        TetradMatrix KZ = kernelMatrix(_data, null, z, getWidthMultiplier());
+        TetradMatrix KZ = center(kernelMatrix(_data, null, z, getWidthMultiplier()));
 
-        KZ = I.minus(KZ.times((KZ.plus(I.scalarMult(1.0 / N)).inverse())));
+        TetradMatrix Rz = I.minus(KZ.times((KZ.plus(I.scalarMult(1.0 / N)).inverse())));
 
-        TetradMatrix kx = KZ.times(Kx).times(KZ);
-        TetradMatrix ky = KZ.times(Ky).times(KZ);
+        TetradMatrix kx = Rz.times(Kx).times(Rz);
+        TetradMatrix ky = Rz.times(Ky).times(Rz);
 
-        return theorem3(kx, ky, fact);
+        return proposition5(kx, ky, fact);
     }
 
     private boolean approx(TetradMatrix kx, TetradMatrix ky) {
@@ -361,10 +365,61 @@ public class KCI implements IndependenceTest, ScoreForFact {
         return p_appr > alpha;
     }
 
-    private boolean theorem3(TetradMatrix kx, TetradMatrix ky, IndependenceFact fact) {
+    private boolean theorem4(TetradMatrix kx, TetradMatrix ky, IndependenceFact fact) {
 
         try {
-            double S = (1.0 / sqrt(N)) * kx.times(ky).trace();
+            double T = (1.0 / N) * (kx.times(ky).trace());
+
+            // Eigen decomposition of kx and ky.
+            EigenDecomposition ed1 = new EigenDecomposition(symmetrized(kx));
+            EigenDecomposition ed2 = new EigenDecomposition(symmetrized(ky));
+            List<Double> evx = asList(ed1.getRealEigenvalues());
+            List<Double> evy = asList(ed2.getRealEigenvalues());
+
+            // Sorts the eigenvalues high to low.
+            evx.sort((o1, o2) -> Double.compare(o2, o1));
+            evy.sort((o1, o2) -> Double.compare(o2, o1));
+
+            // Gets the guys in ev1 and ev2 that are greater than threshold * max guy.
+            evx = getTopGuys(evx, 0);
+            evy = getTopGuys(evy, 0);
+
+            // We're going to reuse the samples.
+            int sampleIndex = -1;
+
+            // Calculate formula (9).
+            int sum = 0;
+
+            for (int j = 0; j < getNumBootstraps(); j++) {
+                double s = 0.0;
+
+                for (double lambdax : evx) {
+                    for (double lambday : evy) {
+                        s += lambdax * lambday * getChisqSample(++sampleIndex);
+                    }
+                }
+
+                s /= (double) (N * N);
+
+                if (s > T) sum++;
+            }
+
+            // Calculate p.
+            p = sum / (double) getNumBootstraps();
+            pValues.put(fact, this.p);
+            return p > alpha;
+        } catch (Exception e) {
+            System.out.println("Eigenvalue didn't converge");
+            p = 0.0;
+            return true;
+        }
+
+    }
+
+    private boolean proposition5(TetradMatrix kx, TetradMatrix ky, IndependenceFact fact) {
+
+        try {
+            double T = (1.0 / N) * kx.times(ky).trace();
 
             // Eigen decomposition of kx
             EigenDecomposition edx = new EigenDecomposition(symmetrized(kx));
@@ -374,7 +429,7 @@ public class KCI implements IndependenceTest, ScoreForFact {
             indx.sort((o1, o2) -> Double.compare(evxAll.get(o2), evxAll.get(o1))); // Sorted downward by eigenvalue
             List<Integer> topXIndices = getTopIndices(evxAll, indx, getThreshold()); // Get the ones above threshold.
 
-            // square roots eigenvalues down the diagonal
+            // square roots eigenvalues down the diagonal, D = Lambda^1/2
             TetradMatrix dx = new TetradMatrix(topXIndices.size(), topXIndices.size());
 
             for (int i = 0; i < topXIndices.size(); i++) {
@@ -397,7 +452,7 @@ public class KCI implements IndependenceTest, ScoreForFact {
             indy.sort((o1, o2) -> Double.compare(evyAll.get(o2), evyAll.get(o1))); // Sorted downward by eigenvalue
             List<Integer> topYIndices = getTopIndices(evyAll, indy, getThreshold()); // Get the ones above threshold.
 
-            // square roots eigenvalues down the diagonal
+            // square roots eigenvalues down the diagonal, D = Lambda^1/2
             TetradMatrix dy = new TetradMatrix(topYIndices.size(), topYIndices.size());
 
             for (int j = 0; j < topYIndices.size(); j++) {
@@ -435,20 +490,22 @@ public class KCI implements IndependenceTest, ScoreForFact {
             List<Double> evu = asList(edu.getRealEigenvalues());
             evu = getTopGuys(evu, getThreshold());
 
-            // We're going to reuse the normal samples.
+            // We're going to reuse the samples.
             int sampleCount = -1;
 
-            // Calculate formula (5).
+            // Calculate formulas (13) and (14).
             int sum = 0;
 
             for (int j = 0; j < getNumBootstraps(); j++) {
                 double s = 0.0;
 
                 for (double lambdaStar : evu) {
-                    s += lambdaStar * getChisqSample(++sampleCount);
+                    s += lambdaStar * getChisqSample(++sampleCount) * getChisqSample(++sampleCount);
                 }
 
-                if (s > S * S) sum++;
+                s *= 1.0 / N;
+
+                if (s > T) sum++;
             }
 
             this.p = sum / (double) getNumBootstraps();
@@ -459,55 +516,6 @@ public class KCI implements IndependenceTest, ScoreForFact {
             p = 0.0;
             return true;
         }
-    }
-
-    private boolean theorem4(TetradMatrix kx, TetradMatrix ky, IndependenceFact fact) {
-
-        try {
-            double T = (1.0 / N) * (kx.times(ky).trace());
-
-            // Eigen decomposition of kx and ky.
-            EigenDecomposition ed1 = new EigenDecomposition(symmetrized(kx));
-            EigenDecomposition ed2 = new EigenDecomposition(symmetrized(ky));
-            List<Double> evx = asList(ed1.getRealEigenvalues());
-            List<Double> evy = asList(ed2.getRealEigenvalues());
-
-            // Sorts the eigenvalues high to low.
-            evx.sort((o1, o2) -> Double.compare(o2, o1));
-            evy.sort((o1, o2) -> Double.compare(o2, o1));
-
-            // Gets the guys in ev1 and ev2 that are greater than threshold * max guy.
-            evx = getTopGuys(evx, getThreshold());
-            evy = getTopGuys(evy, getThreshold());
-
-            // We're going to reuse the normal samples.
-            int sampleIndex = -1;
-
-            // Calculate formula (9).
-            int sum = 0;
-
-            for (int j = 0; j < getNumBootstraps(); j++) {
-                double s = 0.0;
-
-                for (double lambdax : evx) {
-                    for (double lambday : evy) {
-                        s += lambdax * lambday * getChisqSample(++sampleIndex);
-                    }
-                }
-
-                if (s / (double) (N * N) > T) sum++;
-            }
-
-            // Calculate p.
-            p = sum / (double) getNumBootstraps();
-            pValues.put(fact, this.p);
-            return p > alpha;
-        } catch (Exception e) {
-            System.out.println("Eigenvalue didn't converge");
-            p = 0.0;
-            return true;
-        }
-
     }
 
     private List<Integer> series(int size) {
@@ -620,6 +628,12 @@ public class KCI implements IndependenceTest, ScoreForFact {
         return Math.exp(-z * z);
     }
 
+    private double kernelEpinechnikov(double z, double width, double h) {
+        z /= width * h;
+        if (abs(z) > 1) return 0.0;
+        else return (/*0.75 **/ (1.0 - z * z));
+    }
+
     // Euclidean distance.
     private double distance(double[][] data, List<Integer> cols, int i, int j) {
         double sum = 0.0;
@@ -640,7 +654,7 @@ public class KCI implements IndependenceTest, ScoreForFact {
     }
 
     public void setThreshold(double threshold) {
-        if (threshold <= 0.0) throw new IllegalArgumentException("Threshold must be > 0.0: " + threshold);
+        if (threshold < 0.0) throw new IllegalArgumentException("Threshold must be >= 0.0: " + threshold);
         this.threshold = threshold;
     }
 }

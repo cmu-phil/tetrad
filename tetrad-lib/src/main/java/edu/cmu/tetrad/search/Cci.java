@@ -58,7 +58,7 @@ public final class Cci {
     private double alpha;
 
     /**
-     * Azzalini Kernel widths of each variable.
+     * Bowman and Azzalini Kernel widths of each variable.
      */
     private double[] h;
 
@@ -429,7 +429,7 @@ public final class Cci {
         }
     }
 
-    // Optimal bandwidth qsuggested by Bowman and Azzalini (1997) q.31,
+    // Optimal bandwidth qsuggested by Bowman and Bowman and Azzalini (1997) q.31,
     // using MAD.
     private double h(String x) {
 
