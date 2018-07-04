@@ -1,11 +1,9 @@
 package edu.cmu.tetrad.algcomparison.score;
 
-import edu.cmu.tetrad.algcomparison.independence.Kci;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.data.DataUtils;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.search.IndTestConditionalCorrelation;
 import edu.cmu.tetrad.search.Score;
 import edu.cmu.tetrad.search.ScoredIndTest;
 import edu.cmu.tetrad.util.Parameters;
@@ -34,6 +32,9 @@ public class KciScore implements ScoreWrapper {
         this.dataSet = dataSet;
         final KCI kci = new KCI(DataUtils.getContinuousDataSet(dataSet),
                 parameters.getDouble("alpha"));
+        kci.setWidthMultiplier(parameters.getDouble("kernelMultiplier"));
+        kci.setNumBootstraps(parameters.getInt("kciNumBootstraps"));
+        kci.setThreshold(parameters.getDouble("thresholdForNumEigenvalues"));
         return new ScoredIndTest(kci);
     }
 
@@ -51,8 +52,9 @@ public class KciScore implements ScoreWrapper {
     public List<String> getParameters() {
         List<String> parameters = new ArrayList<>();
         parameters.add("alpha");
-        parameters.add("numBasisFunctions");
-        parameters.add("kernelWidth");
+        parameters.add("kernelMultiplier");
+        parameters.add("kciNumBootstraps");
+        parameters.add("thresholdForNumEigenvalues");
         return parameters;
     }
 

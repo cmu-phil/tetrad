@@ -31,7 +31,8 @@ public class Kci implements IndependenceWrapper {
         final KCI kci = new KCI(DataUtils.getContinuousDataSet(dataSet),
                 parameters.getDouble("alpha"));
         kci.setWidthMultiplier(parameters.getDouble("kernelMultiplier"));
-        kci.setnBootstraps(parameters.getInt("kciNumBootstraps"));
+        kci.setNumBootstraps(parameters.getInt("kciNumBootstraps"));
+        kci.setThreshold(parameters.getDouble("thresholdForNumEigenvalues"));
         return kci;
     }
 
@@ -51,6 +52,7 @@ public class Kci implements IndependenceWrapper {
         params.add("alpha");
         params.add("kernelMultiplier");
         params.add("kciNumBootstraps");
+        params.add("thresholdForNumEigenvalues");
         return params;
     }
 }

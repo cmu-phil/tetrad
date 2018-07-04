@@ -4,14 +4,14 @@ import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataUtils;
 import edu.cmu.tetrad.data.ICovarianceMatrix;
+import edu.cmu.tetrad.graph.IndependenceFact;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.IndependenceTest;
-import edu.cmu.tetrad.search.SearchLogUtils;
 import edu.cmu.tetrad.util.TetradMatrix;
 import edu.cmu.tetrad.util.TetradVector;
 import edu.pitt.csb.mgm.EigenDecomposition;
-import org.apache.commons.math3.distribution.ChiSquaredDistribution;
 import org.apache.commons.math3.distribution.GammaDistribution;
+import org.apache.commons.math3.distribution.NormalDistribution;
 import org.apache.commons.math3.linear.RealMatrix;
 import org.apache.commons.math3.linear.RealVector;
 import org.apache.commons.math3.random.SynchronizedRandomGenerator;
@@ -32,9 +32,9 @@ import static java.lang.Math.*;
  * Please see that paper, especially theorems 3 and 4.
  *
  * @author Vineet Raghu on 7/3/2016
- * @author jdramsey refactoring 6/17/2018
+ * @author jdramsey refactoring 7/4/2018
  */
-public class KCI implements IndependenceTest {
+public class KCI implements IndependenceTest, ScoreForFact {
 
     // Sample size.
     private final int N;
@@ -48,6 +48,9 @@ public class KCI implements IndependenceTest {
     // The data stored in vertical columns.
     private double[][] _data;
 
+    // Variables in data
+    private List<Node> variables;
+
     // The alpha level of the test.
     private double alpha;
 
@@ -60,9 +63,9 @@ public class KCI implements IndependenceTest {
     // Identity N x N
     private TetradMatrix I;
 
-    // A chisq distribution with 1 degree of freedom.
-    private ChiSquaredDistribution chisq = new ChiSquaredDistribution(new SynchronizedRandomGenerator(
-            new Well44497b(193924L)), 1);
+    // A normal distribution with 1 degree of freedom.
+    private NormalDistribution normal = new NormalDistribution(new SynchronizedRandomGenerator(
+            new Well44497b(193924L)), 0, 1);
 
     // True if the approximation algorithms should be used instead of Theorems 3 or 4.
     private boolean approx = false;
@@ -74,13 +77,19 @@ public class KCI implements IndependenceTest {
     private double threshold = 0.01;
 
     // Number of bostraps for Theorems 3 and 4.
-    private int nBootstraps = 5000;
+    private int numBootstraps = 5000;
 
     // Azzalini opttimal kernel widths will be multiplied by this.
     private double widthMultiplier = 1.0;
 
-    // List of independent chisq(1) samples to be reused.
+    // List of independent normal(1) samples to be reused.
     private static List<Double> samples = new ArrayList<>();
+
+    // Record of independence facts
+    private Map<IndependenceFact, Boolean> facts = new HashMap<>();
+
+    // Record of independence pValues
+    private Map<IndependenceFact, Double> pValues = new HashMap<>();
 
     /**
      * Constructor.
@@ -89,9 +98,9 @@ public class KCI implements IndependenceTest {
      * @param alpha The alpha value of the test.
      */
     public KCI(DataSet data, double alpha) {
-        this.data = DataUtils.standardizeData(data);
         this.data = data;
-        this._data = this.data.getDoubleData().transpose().toArray();
+        this.variables = data.getVariables();
+        this._data = data.getDoubleData().transpose().toArray();
         this.N = data.getNumRows();
         this.I = TetradMatrix.identity(N);
 
@@ -139,16 +148,25 @@ public class KCI implements IndependenceTest {
     public boolean isIndependent(Node x, Node y, List<Node> z) {
         boolean independent;
 
-        if (z.isEmpty()) {
-            independent = isIndependentUnconditional(x, y);
+        IndependenceFact fact = new IndependenceFact(x, y, z);
+
+        if (facts.get(fact) != null) {
+            independent = facts.get(fact);
+            this.p = pValues.get(fact);
         } else {
-            independent = isIndependentConditional(x, y, z);
+            if (z.isEmpty()) {
+                independent = isIndependentUnconditional(x, y, fact);
+            } else {
+                independent = isIndependentConditional(x, y, z, fact);
+            }
+
+            facts.put(fact, independent);
         }
 
         if (independent) {
-            System.out.println(SearchLogUtils.independenceFact(x, y, z) + " Independent");
+            System.out.println(fact + " Independent");
         } else {
-            System.out.println(SearchLogUtils.independenceFact(x, y, z));
+            System.out.println(fact);
         }
 
         return independent;
@@ -198,7 +216,7 @@ public class KCI implements IndependenceTest {
      * relations.
      */
     public List<Node> getVariables() {
-        return data.getVariables();
+        return this.variables;
     }
 
     /**
@@ -219,7 +237,7 @@ public class KCI implements IndependenceTest {
      * Returns true if y is determined the variable in z.
      */
     public boolean determines(List<Node> z, Node y) {
-        return false;
+        throw new UnsupportedOperationException();
     }
 
     /**
@@ -234,8 +252,8 @@ public class KCI implements IndependenceTest {
     /**
      * Sets the significance level.
      */
-    public void setAlpha(double alpha2) {
-        alpha = alpha2;
+    public void setAlpha(double alpha) {
+        this.alpha = alpha;
     }
 
     /**
@@ -268,6 +286,11 @@ public class KCI implements IndependenceTest {
         return getAlpha() - getPValue();
     }
 
+    @Override
+    public double getScoreForFact(IndependenceFact fact) {
+        return getAlpha() - pValues.get(fact);
+    }
+
     private boolean isApprox() {
         return approx;
     }
@@ -281,13 +304,13 @@ public class KCI implements IndependenceTest {
         this.widthMultiplier = widthMultiplier;
     }
 
-    public int getnBootstraps() {
-        return nBootstraps;
+    public int getNumBootstraps() {
+        return numBootstraps;
     }
 
-    public void setnBootstraps(int nBootstraps) {
-        if (nBootstraps < 1) throw new IllegalArgumentException("Num bootstraps should be >= 1: " + nBootstraps);
-        this.nBootstraps = nBootstraps;
+    public void setNumBootstraps(int numBootstraps) {
+        if (numBootstraps < 1) throw new IllegalArgumentException("Num bootstraps should be >= 1: " + numBootstraps);
+        this.numBootstraps = numBootstraps;
     }
 
     //====================================PRIVATE METHODS==================================//
@@ -297,14 +320,14 @@ public class KCI implements IndependenceTest {
      *
      * @return true just in case independence holds.
      */
-    private boolean isIndependentUnconditional(Node x, Node y) {
+    private boolean isIndependentUnconditional(Node x, Node y, IndependenceFact fact) {
         TetradMatrix kx = center(kernelMatrix(_data, x, null, getWidthMultiplier()));
         TetradMatrix ky = center(kernelMatrix(_data, y, null, getWidthMultiplier()));
 
         if (isApprox()) {
             return approx(kx, ky);
         } else {
-            return theorem4(kx, ky);
+            return theorem4(kx, ky, fact);
         }
     }
 
@@ -313,7 +336,7 @@ public class KCI implements IndependenceTest {
      *
      * @return true just in case independence holds.
      */
-    private boolean isIndependentConditional(Node x, Node y, List<Node> z) {
+    private boolean isIndependentConditional(Node x, Node y, List<Node> z, IndependenceFact fact) {
         TetradMatrix Kx = center(kernelMatrix(_data, x, z, getWidthMultiplier()));
         TetradMatrix Ky = center(kernelMatrix(_data, y, null, getWidthMultiplier()));
         TetradMatrix KZ = kernelMatrix(_data, null, z, getWidthMultiplier());
@@ -323,7 +346,7 @@ public class KCI implements IndependenceTest {
         TetradMatrix kx = KZ.times(Kx).times(KZ);
         TetradMatrix ky = KZ.times(Ky).times(KZ);
 
-        return theorem3(kx, ky);
+        return theorem3(kx, ky, fact);
     }
 
     private boolean approx(TetradMatrix kx, TetradMatrix ky) {
@@ -338,10 +361,10 @@ public class KCI implements IndependenceTest {
         return p_appr > alpha;
     }
 
-    private boolean theorem3(TetradMatrix kx, TetradMatrix ky) {
+    private boolean theorem3(TetradMatrix kx, TetradMatrix ky, IndependenceFact fact) {
 
         try {
-            double trace = kx.times(ky).trace();
+            double S = (1.0 / sqrt(N)) * kx.times(ky).trace();
 
             // Eigen decomposition of kx
             EigenDecomposition edx = new EigenDecomposition(symmetrized(kx));
@@ -349,7 +372,7 @@ public class KCI implements IndependenceTest {
             List<Double> evxAll = asList(edx.getRealEigenvalues());
             List<Integer> indx = series(evxAll.size()); // 1 2 3...
             indx.sort((o1, o2) -> Double.compare(evxAll.get(o2), evxAll.get(o1))); // Sorted downward by eigenvalue
-            List<Integer> topXIndices = getTopIndices(evxAll, indx, threshold); // Get the ones above threshold.
+            List<Integer> topXIndices = getTopIndices(evxAll, indx, getThreshold()); // Get the ones above threshold.
 
             // square roots eigenvalues down the diagonal
             TetradMatrix dx = new TetradMatrix(topXIndices.size(), topXIndices.size());
@@ -372,7 +395,7 @@ public class KCI implements IndependenceTest {
             List<Double> evyAll = asList(edy.getRealEigenvalues());
             List<Integer> indy = series(evyAll.size()); // 1 2 3...
             indy.sort((o1, o2) -> Double.compare(evyAll.get(o2), evyAll.get(o1))); // Sorted downward by eigenvalue
-            List<Integer> topYIndices = getTopIndices(evyAll, indy, threshold); // Get the ones above threshold.
+            List<Integer> topYIndices = getTopIndices(evyAll, indy, getThreshold()); // Get the ones above threshold.
 
             // square roots eigenvalues down the diagonal
             TetradMatrix dy = new TetradMatrix(topYIndices.size(), topYIndices.size());
@@ -389,53 +412,102 @@ public class KCI implements IndependenceTest {
                 vy.assignColumn(i, new TetradVector(t));
             }
 
-            // U = VD
+            // VD
             TetradMatrix udx = vx.times(dx);
             TetradMatrix udy = vy.times(dy);
 
             final int prod = topXIndices.size() * topYIndices.size();
-            TetradMatrix U = new TetradMatrix(N, prod);
+            TetradMatrix stacked = new TetradMatrix(N, prod);
 
             // stack
             for (int i = 0; i < topXIndices.size(); i++) {
                 for (int j = 0; j < topYIndices.size(); j++) {
                     for (int k = 0; k < N; k++) {
-                        U.set(k, i * topYIndices.size() + j, udx.get(k, i) * udy.get(k, j));
+                        stacked.set(k, i * topYIndices.size() + j, udx.get(k, i) * udy.get(k, j));
                     }
                 }
             }
 
-            // Whichever gives the smaller matrix.
-            TetradMatrix uprod = prod > N ? U.times(U.transpose()) : U.transpose().times(U);
+            TetradMatrix uprod = prod > N ? stacked.times(stacked.transpose()) : stacked.transpose().times(stacked);
 
             // Get top eigenvalues of that.
             EigenDecomposition edu = new EigenDecomposition(uprod.getRealMatrix());
             List<Double> evu = asList(edu.getRealEigenvalues());
-            evu = getTopGuys(evu, threshold);
+            evu = getTopGuys(evu, getThreshold());
 
-            // We're going to reuse the chisq samples.
+            // We're going to reuse the normal samples.
             int sampleCount = -1;
 
-            // Bootstrap.
-            double sum = 0;
+            // Calculate formula (5).
+            int sum = 0;
 
-            for (int j = 0; j < getnBootstraps(); j++) {
+            for (int j = 0; j < getNumBootstraps(); j++) {
                 double s = 0.0;
 
                 for (double lambdaStar : evu) {
                     s += lambdaStar * getChisqSample(++sampleCount);
                 }
 
-                if (s > trace) sum++;
+                if (s > S * S) sum++;
             }
 
-            this.p = sum / (double) getnBootstraps();
+            this.p = sum / (double) getNumBootstraps();
+            pValues.put(fact, this.p);
             return this.p > alpha;
         } catch (Exception e) {
             System.out.println("Eigenvalue didn't converge");
             p = 0.0;
             return true;
         }
+    }
+
+    private boolean theorem4(TetradMatrix kx, TetradMatrix ky, IndependenceFact fact) {
+
+        try {
+            double T = (1.0 / N) * (kx.times(ky).trace());
+
+            // Eigen decomposition of kx and ky.
+            EigenDecomposition ed1 = new EigenDecomposition(symmetrized(kx));
+            EigenDecomposition ed2 = new EigenDecomposition(symmetrized(ky));
+            List<Double> evx = asList(ed1.getRealEigenvalues());
+            List<Double> evy = asList(ed2.getRealEigenvalues());
+
+            // Sorts the eigenvalues high to low.
+            evx.sort((o1, o2) -> Double.compare(o2, o1));
+            evy.sort((o1, o2) -> Double.compare(o2, o1));
+
+            // Gets the guys in ev1 and ev2 that are greater than threshold * max guy.
+            evx = getTopGuys(evx, getThreshold());
+            evy = getTopGuys(evy, getThreshold());
+
+            // We're going to reuse the normal samples.
+            int sampleIndex = -1;
+
+            // Calculate formula (9).
+            int sum = 0;
+
+            for (int j = 0; j < getNumBootstraps(); j++) {
+                double s = 0.0;
+
+                for (double lambdax : evx) {
+                    for (double lambday : evy) {
+                        s += lambdax * lambday * getChisqSample(++sampleIndex);
+                    }
+                }
+
+                if (s / (double) (N * N) > T) sum++;
+            }
+
+            // Calculate p.
+            p = sum / (double) getNumBootstraps();
+            pValues.put(fact, this.p);
+            return p > alpha;
+        } catch (Exception e) {
+            System.out.println("Eigenvalue didn't converge");
+            p = 0.0;
+            return true;
+        }
+
     }
 
     private List<Integer> series(int size) {
@@ -450,56 +522,10 @@ public class KCI implements IndependenceTest {
 
     private double getChisqSample(int sampleCount) {
         if (sampleCount >= samples.size()) {
-            samples.add(chisq.sample());
+            double z = normal.sample();
+            samples.add(z * z);
         }
         return samples.get(sampleCount);
-    }
-
-    private boolean theorem4(TetradMatrix kx, TetradMatrix ky) {
-
-        try {
-            double trace = kx.times(ky).trace();
-
-            // Eigen decomposition of kx and ky.
-            EigenDecomposition ed1 = new EigenDecomposition(symmetrized(kx));
-            EigenDecomposition ed2 = new EigenDecomposition(symmetrized(ky));
-            List<Double> evx = asList(ed1.getRealEigenvalues());
-            List<Double> evy = asList(ed2.getRealEigenvalues());
-
-            // Sorts the eigenvalues high to low.
-            evx.sort((o1, o2) -> Double.compare(o2, o1));
-            evy.sort((o1, o2) -> Double.compare(o2, o1));
-
-            // Gets the guys in ev1 and ev2 that are greater than threshold * max guy.
-            evx = getTopGuys(evx, threshold);
-            evy = getTopGuys(evy, threshold);
-
-            int sampleIndex = -1;
-
-            // Calculate formula (9).
-            double sum = 0;
-
-            for (int j = 0; j < getnBootstraps(); j++) {
-                double s = 0.0;
-
-                for (double lambdax : evx) {
-                    for (double lambday : evy) {
-                        s += lambdax * lambday * getChisqSample(++sampleIndex);
-                    }
-                }
-
-                if (s / (double) (evx.size() * evy.size()) > trace) sum++;
-            }
-
-            // Calculate p.
-            p = sum / getnBootstraps();
-            return p > alpha;
-        } catch (Exception e) {
-            System.out.println("Eigenvalue didn't converge");
-            p = 0.0;
-            return true;
-        }
-
     }
 
     // Optimal bandwidth qsuggested by Bowman and Azzalini (1997) q.31,
@@ -607,5 +633,14 @@ public class KCI implements IndependenceTest {
         }
 
         return sqrt(sum);
+    }
+
+    public double getThreshold() {
+        return threshold;
+    }
+
+    public void setThreshold(double threshold) {
+        if (threshold <= 0.0) throw new IllegalArgumentException("Threshold must be > 0.0: " + threshold);
+        this.threshold = threshold;
     }
 }

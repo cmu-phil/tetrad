@@ -22,8 +22,10 @@
 package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.DataSet;
+import edu.cmu.tetrad.graph.IndependenceFact;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.NodeType;
+import edu.pitt.csb.ScoreForFact;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -76,8 +78,17 @@ public class ScoredIndTest implements Score {
 
     @Override
     public double localScoreDiff(int x, int y, int[] z) {
-        test.isIndependent(variables.get(x), variables.get(y), getVariableList(z));
-        return test.getScore();
+        final Node _x = variables.get(x);
+        final Node _y = variables.get(y);
+        final List<Node> _z = getVariableList(z);
+
+        test.isIndependent(_x, _y, _z);
+
+        if (test instanceof ScoreForFact) {
+            return ((ScoreForFact) test).getScoreForFact(new IndependenceFact(_x, _y, _z));
+        } else {
+            return test.getScore();
+        }
     }
 
     @Override

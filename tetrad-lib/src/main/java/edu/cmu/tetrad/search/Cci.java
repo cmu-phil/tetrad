@@ -288,20 +288,19 @@ public final class Cci {
                 }
             }
 
+            double k;
+
+            if (getKernelMultiplier() == Kernel.Epinechnikov) {
+                k = kernelUniform(0, h);
+            } else if (getKernelMultiplier() == Kernel.Gaussian) {
+                k = kernelGaussian(0, h);
+            } else {
+                throw new IllegalStateException("Unsupported kernel type: " + kernelMultiplier);
+            }
+
             for (int i = 0; i < N; i++) {
                 double xi = xdata[i];
                 double yi = ydata[i];
-
-                double d = distance(data, _z, i, i);
-                double k;
-
-                if (getKernelMultiplier() == Kernel.Epinechnikov) {
-                    k = kernelUniform(d, h);
-                } else if (getKernelMultiplier() == Kernel.Gaussian) {
-                    k = kernelGaussian(d, h);
-                } else {
-                    throw new IllegalStateException("Unsupported kernel type: " + kernelMultiplier);
-                }
 
                 sumsx[i] += k * xi;
                 sumsy[i] += k * yi;

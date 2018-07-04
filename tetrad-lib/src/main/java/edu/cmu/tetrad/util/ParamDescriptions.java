@@ -322,6 +322,13 @@ public class ParamDescriptions {
         map.put("kciNumBootstraps", new ParamDescription(
                 "Number of bootstraps for Theorems 3 and 4 for KCI",
                 5000, 1, Integer.MAX_VALUE));
+
+        map.put("thresholdForNumEigenvalues", new ParamDescription(
+                "Threshold to determine how many eigenvalues to use--the lower the more",
+                0.01, 0, Double.POSITIVE_INFINITY));
+
+
+
     }
 
     public static ParamDescriptions getInstance() {
