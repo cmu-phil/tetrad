@@ -18,11 +18,9 @@
 // along with this program; if not, write to the Free Software               //
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA //
 ///////////////////////////////////////////////////////////////////////////////
-
 package edu.cmu.tetradapp.model;
 
 import edu.cmu.tetrad.data.KnowledgeBoxInput;
-import edu.cmu.tetrad.gene.tetrad.gene.history.PreviousStepOnly;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.sem.SemIm;
@@ -30,18 +28,17 @@ import edu.cmu.tetrad.sem.StandardizedSemIm;
 import edu.cmu.tetrad.session.SessionModel;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
-
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.util.List;
-
 
 /**
  * Wraps a Bayes Pm for use in the Tetrad application.
  *
  * @author Joseph Ramsey
  */
-public class StandardizedSemImWrapper implements SessionModel, GraphSource, KnowledgeBoxInput {
+public class StandardizedSemImWrapper implements SessionModel, KnowledgeBoxInput {
+
     static final long serialVersionUID = 23L;
 
     /**
@@ -60,7 +57,6 @@ public class StandardizedSemImWrapper implements SessionModel, GraphSource, Know
     private boolean showErrors;
 
     //============================CONSTRUCTORS==========================//
-
     public StandardizedSemImWrapper(SemImWrapper semImWrapper) {
         if (semImWrapper == null) {
             throw new NullPointerException();
@@ -91,11 +87,9 @@ public class StandardizedSemImWrapper implements SessionModel, GraphSource, Know
     }
 
     //===========================PUBLIC METHODS=========================//
-
     public StandardizedSemIm getStandardizedSemIm() {
         return this.standardizedSemIm;
     }
-
 
     public Graph getGraph() {
         return standardizedSemIm.getSemPm().getGraph();
@@ -118,7 +112,6 @@ public class StandardizedSemImWrapper implements SessionModel, GraphSource, Know
     }
 
     //======================== Private methods =======================//
-
     /**
      * Adds semantic checks to the default deserialization method. This method
      * must have the standard signature for a readObject method, and the body of
@@ -140,25 +133,25 @@ public class StandardizedSemImWrapper implements SessionModel, GraphSource, Know
             throw new NullPointerException();
         }
     }
-	public Graph getSourceGraph() {
-		return getGraph();
-	}
+
+    public Graph getSourceGraph() {
+        return getGraph();
+    }
 
     public Graph getResultGraph() {
         return getGraph();
     }
 
     public List<String> getVariableNames() {
-		return getGraph().getNodeNames();
-	}
+        return getGraph().getNodeNames();
+    }
 
-	public List<Node> getVariables() {
-		return getGraph().getNodes();
-	}
+    public List<Node> getVariables() {
+        return getGraph().getNodes();
+    }
 
-    private void log(StandardizedSemIm pm){
+    private void log(StandardizedSemIm pm) {
         TetradLogger.getInstance().log("info", "Standardized SEM IM");
         TetradLogger.getInstance().log("im", pm.toString());
-    }}
-
-
+    }
+}

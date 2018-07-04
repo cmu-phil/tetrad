@@ -18,15 +18,12 @@
 // along with this program; if not, write to the Free Software               //
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA //
 ///////////////////////////////////////////////////////////////////////////////
-
 package edu.cmu.tetradapp.model;
 
 import edu.cmu.tetrad.bayes.BayesIm;
 import edu.cmu.tetrad.bayes.BayesPm;
 import edu.cmu.tetrad.bayes.MlBayesIm;
 import edu.cmu.tetrad.bayes.MlBayesImObs;
-import edu.cmu.tetrad.data.KnowledgeBoxInput;
-import edu.cmu.tetrad.graph.Dag;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.session.SessionModel;
@@ -34,19 +31,18 @@ import edu.cmu.tetrad.util.Memorable;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
-
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.util.List;
 
 ///////////////////////////////////////////////////////////
-// Wraps a Bayes Im (observed variables only) for use 
+// Wraps a Bayes Im (observed variables only) for use
 // in the Tetrad application.
 //
 // @author Joseph Ramsey
 ///////////////////////////////////////////////////////////
+public class BayesImWrapperObs implements SessionModel, Memorable {
 
-public class BayesImWrapperObs implements SessionModel, Memorable, GraphSource {
     static final long serialVersionUID = 23L;
 
     /**
@@ -60,16 +56,14 @@ public class BayesImWrapperObs implements SessionModel, Memorable, GraphSource {
     private BayesIm bayesIm;
 
     //===========================CONSTRUCTORS===========================//
-
-	/////////////////////////////////////////////////////////////////
-	// Disregard all other methods of instantiating an IM
-	// Only constructed from a PM or from another BayesIm
-	//
-	// If from a regular BayesIm, the new probability values are 
-	// the marginalized values of the allowUnfaithfulness probability values in
-	// the old BayesIm, stored in a JPD
-	//
-
+    /////////////////////////////////////////////////////////////////
+    // Disregard all other methods of instantiating an IM
+    // Only constructed from a PM or from another BayesIm
+    //
+    // If from a regular BayesIm, the new probability values are
+    // the marginalized values of the allowUnfaithfulness probability values in
+    // the old BayesIm, stored in a JPD
+    //
 //    public BayesImWrapperObs(BayesPmWrapper bayesPmWrapper,
 //							 BayesImWrapperObs oldBayesImwrapper,
 //							 Parameters params) {
@@ -95,7 +89,7 @@ public class BayesImWrapperObs implements SessionModel, Memorable, GraphSource {
 //        log(bayesIm);
 //    }
 
-	/*
+    /*
     public BayesImWrapperObs(BayesEstimatorWrapper wrapper) {
         if (wrapper == null) {
             throw new NullPointerException();
@@ -143,8 +137,7 @@ public class BayesImWrapperObs implements SessionModel, Memorable, GraphSource {
         this.bayesIm = wrapper.getBayesUpdater().getUpdatedBayesIm();
         log(bayesIm);
     }
-	 */
-	
+     */
     public BayesImWrapperObs(BayesPmWrapper bayesPmWrapper, Parameters params) {
         if (bayesPmWrapper == null) {
             throw new NullPointerException("BayesPmWrapper must not be null.");
@@ -166,7 +159,7 @@ public class BayesImWrapperObs implements SessionModel, Memorable, GraphSource {
 
         log(bayesIm);
     }
-	
+
 //	// from regular allowUnfaithfulness BayesIm
 //	// marginalize the probability values from the old BayesIm
 //    public BayesImWrapperObs(BayesImWrapper bayesImWrapper) {
@@ -178,7 +171,6 @@ public class BayesImWrapperObs implements SessionModel, Memorable, GraphSource {
 //
 //		log(bayesIm);
 //    }
-
 //	// from BayesIm with only observed variables
 //    public BayesImWrapperObs(BayesImWrapperObs bayesImWrapperObs) {
 //        if (bayesImWrapperObs == null) {
@@ -189,7 +181,6 @@ public class BayesImWrapperObs implements SessionModel, Memorable, GraphSource {
 //
 //        log(bayesIm);
 //    }
-
 //	// brand new BayesIm
 //    public BayesImWrapperObs() {
 //        Dag graph = new Dag();
@@ -199,22 +190,19 @@ public class BayesImWrapperObs implements SessionModel, Memorable, GraphSource {
 //
 //        log(bayesIm);
 //    }
-
     /**
      * Generates a simple exemplar of this class to test serialization.
      *
      * @see TetradSerializableUtils
      */
-	 public static PcRunner serializableInstance() {
+    public static PcRunner serializableInstance() {
         return PcRunner.serializableInstance();
     }
 
     //=============================PUBLIC METHODS=========================//
-
     public BayesIm getBayesIm() {
         return this.bayesIm;
     }
-
 
     public Graph getGraph() {
         return bayesIm.getBayesPm().getDag();
@@ -229,10 +217,9 @@ public class BayesImWrapperObs implements SessionModel, Memorable, GraphSource {
     }
 
     //============================== private methods ============================//
-	
     private void log(BayesIm im) {
-        TetradLogger.getInstance().log("info", 
-						"Maximum likelihood Bayes IM: Observed Variables Only");
+        TetradLogger.getInstance().log("info",
+                "Maximum likelihood Bayes IM: Observed Variables Only");
         TetradLogger.getInstance().log("im", im.toString());
     }
 
@@ -258,30 +245,23 @@ public class BayesImWrapperObs implements SessionModel, Memorable, GraphSource {
         }
     }
 
-	public Graph getSourceGraph() {
-		return getGraph();
-	}
+    public Graph getSourceGraph() {
+        return getGraph();
+    }
 
     public Graph getResultGraph() {
         return getGraph();
     }
 
     public List<String> getVariableNames() {
-		return getGraph().getNodeNames();
-	}
+        return getGraph().getNodeNames();
+    }
 
-	public List<Node> getVariables() {
-		return getGraph().getNodes();
-	}
-
+    public List<Node> getVariables() {
+        return getGraph().getNodes();
+    }
 
     public void setBayesIm(BayesIm bayesIm) {
         this.bayesIm = bayesIm;
     }
 }
-
-
-
-
-
-

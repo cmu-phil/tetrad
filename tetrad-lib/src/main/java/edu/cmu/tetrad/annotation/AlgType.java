@@ -9,6 +9,6 @@ public enum AlgType {
     /*DAG, */
     search_for_Markov_blankets, // FGES-MB, MBFS
     produce_undirected_graphs, // FAS, MGM, GLASSO
-    orient_pairwise, // EB, R1, R2, R3, R4, RSkew, RSkewE, Skew, SkewE
+    orient_pairwise, // R3, RSkew, Skew
     search_for_structure_over_latents // BPC, FOFC, FTFC
 }

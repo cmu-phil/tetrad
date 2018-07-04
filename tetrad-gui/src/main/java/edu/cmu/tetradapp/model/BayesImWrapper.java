@@ -18,25 +18,19 @@
 // along with this program; if not, write to the Free Software               //
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA //
 ///////////////////////////////////////////////////////////////////////////////
-
 package edu.cmu.tetradapp.model;
 
 import edu.cmu.tetrad.algcomparison.simulation.BayesNetSimulation;
-import edu.cmu.tetrad.algcomparison.simulation.SemSimulation;
 import edu.cmu.tetrad.bayes.BayesIm;
 import edu.cmu.tetrad.bayes.BayesPm;
 import edu.cmu.tetrad.bayes.MlBayesIm;
-import edu.cmu.tetrad.data.KnowledgeBoxInput;
-import edu.cmu.tetrad.graph.Dag;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.sem.Parameter;
 import edu.cmu.tetrad.session.SessionModel;
 import edu.cmu.tetrad.util.Memorable;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
-
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.util.ArrayList;
@@ -47,7 +41,8 @@ import java.util.List;
  *
  * @author Joseph Ramsey
  */
-public class BayesImWrapper implements SessionModel, Memorable, GraphSource {
+public class BayesImWrapper implements SessionModel, Memorable {
+
     static final long serialVersionUID = 23L;
 
     private int numModels = 1;
@@ -65,7 +60,6 @@ public class BayesImWrapper implements SessionModel, Memorable, GraphSource {
     private List<BayesIm> bayesIms;
 
     //===========================CONSTRUCTORS===========================//
-
     public BayesImWrapper(BayesPmWrapper bayesPmWrapper, BayesImWrapper oldBayesImwrapper, Parameters params) {
         if (bayesPmWrapper == null) {
             throw new NullPointerException("BayesPmWrapper must not be null.");
@@ -206,7 +200,6 @@ public class BayesImWrapper implements SessionModel, Memorable, GraphSource {
 //        BayesPm pm = new BayesPm(graph);
 //        setBayesIm(new MlBayesIm(pm));
 //    }
-
     /**
      * Generates a simple exemplar of this class to test serialization.
      *
@@ -218,11 +211,9 @@ public class BayesImWrapper implements SessionModel, Memorable, GraphSource {
     }
 
     //=============================PUBLIC METHODS=========================//
-
     public BayesIm getBayesIm() {
         return bayesIms.get(getModelIndex());
     }
-
 
     public Graph getGraph() {
         return getBayesIm().getBayesPm().getDag();
@@ -237,7 +228,6 @@ public class BayesImWrapper implements SessionModel, Memorable, GraphSource {
     }
 
     //============================== private methods ============================//
-
     private void log(BayesIm im) {
         TetradLogger.getInstance().log("info", "Maximum likelihood Bayes IM");
         TetradLogger.getInstance().log("im", im.toString());
@@ -277,7 +267,6 @@ public class BayesImWrapper implements SessionModel, Memorable, GraphSource {
         return getGraph().getNodes();
     }
 
-
     public void setBayesIm(BayesIm bayesIm) {
         bayesIms = new ArrayList<>();
         bayesIms.add(bayesIm);
@@ -299,9 +288,3 @@ public class BayesImWrapper implements SessionModel, Memorable, GraphSource {
         this.modelIndex = modelIndex;
     }
 }
-
-
-
-
-
-

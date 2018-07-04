@@ -126,6 +126,7 @@ public class Version implements TetradSerializable {
             throw new IllegalArgumentException("Version should be either of the " +
                     "form a.b.c or a.b.c-d or a.b.c-SNAPSHOT or a.b.c-d.e " + spec);
         }
+        
     }
 
     private Version(int majorVersion, int minorVersion, int minorSubversion,
@@ -169,10 +170,9 @@ public class Version implements TetradSerializable {
             throw new RuntimeException(
                     "Please correct the file project/resources/version " +
                             "\nso that it contains a version number of the form " +
-                            "\na.b.c-d, where a, b, c, and a are integers. It should have " +
-                            "\nbeen in CVS. Try doing cvs up or looking in an recent version " +
-                            "\nof the repository in case someone removed it. This should be " +
-                            "\nthe version of last published version of Tetrad.");
+                            "\na.b.c or a.b.c-d or a.b.c-SNAPSHOT or a.b.c-d.e. " +
+                            "\nNormally this is set automatically by the Maven build " +
+                            "\nsystem.");
         }
     }
 
@@ -187,14 +187,18 @@ public class Version implements TetradSerializable {
 
             if (url == null) {
                 throw new RuntimeException(
-                        "Please run 'ant copyresources' and try again. The problem " +
-                                "\nis that the file /resources/version is not in the ejar build.");
+                    "Please correct the file project/resources/version " +
+                            "\nso that it contains a version number of the form " +
+                            "\na.b.c or a.b.c-d or a.b.c-SNAPSHOT or a.b.c-d.e. " +
+                            "\nNormally this is set automatically by the Maven build " +
+                            "\nsystem.");
             }
 
             InputStream inStream = url.openStream();
             Reader reader = new InputStreamReader(inStream);
             BufferedReader bufReader = new BufferedReader(reader);
             String spec = bufReader.readLine();
+
             bufReader.close();
 
             return new Version(spec);
@@ -203,12 +207,11 @@ public class Version implements TetradSerializable {
         }
 
         throw new RuntimeException(
-                "Please correct the file project/resources/version " +
-                        "\nso that it contains a version number of the form " +
-                        "\na.b.c-d, where a, b, c, and a are integers. It should have " +
-                        "\nbeen in CVS. Try doing cvs up or looking in an recent version " +
-                        "\nof the repository in case someone removed it. This should be " +
-                        "\nthe version of last published version of Tetrad.");
+                    "Please correct the file project/resources/version " +
+                            "\nso that it contains a version number of the form " +
+                            "\na.b.c or a.b.c-d or a.b.c-SNAPSHOT or a.b.c-d.e. " +
+                            "\nNormally this is set automatically by the Maven build " +
+                            "\nsystem.");
     }
 
     /**

@@ -65,6 +65,8 @@ public class TsImages implements Algorithm, HasKnowledge, MultiDataSetAlgorithm,
             IndependenceTest test = new IndTestScore(score1);
             search = new TsGFci(test, score1);
             search.setKnowledge(dataSet.getKnowledge());
+            search.setVerbose(parameters.getBoolean("verbose"));
+            
             return search.search();
         } else {
             TsImages algorithm = new TsImages(score);

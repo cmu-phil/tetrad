@@ -56,6 +56,9 @@ public class TsGfci implements Algorithm, TakesInitialGraph, HasKnowledge, Takes
                     score.getScore(dataSet, parameters));
             IKnowledge _knowledge = dataSet.getKnowledge() != null ? dataSet.getKnowledge() : new Knowledge2();
             search.setKnowledge(dataSet.getKnowledge());
+            
+            search.setVerbose(parameters.getBoolean("verbose"));
+            
             return search.search();
         } else {
             TsGfci algorithm = new TsGfci(test, score);

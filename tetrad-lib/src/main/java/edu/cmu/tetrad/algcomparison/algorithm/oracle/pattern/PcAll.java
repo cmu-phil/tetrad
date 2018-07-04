@@ -115,6 +115,7 @@ public class PcAll implements Algorithm, TakesInitialGraph, HasKnowledge, TakesI
             search.setConflictRule(conflictRule);
             search.setUseHeuristic(parameters.getBoolean("useMaxPOrientationHeuristic"));
             search.setMaxPathLength(parameters.getInt("maxPOrientationMaxPathLength"));
+            search.setVerbose(parameters.getBoolean("verbose"));
 
 
 
