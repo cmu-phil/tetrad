@@ -1472,7 +1472,7 @@ public final class RandomizedConditionalIndependenceTest implements Independence
 
 	@Override
 	public int getSampleSize() {
-		return 0;
+		return dataSet.getNumRows();
 	}
 
 	@Override
