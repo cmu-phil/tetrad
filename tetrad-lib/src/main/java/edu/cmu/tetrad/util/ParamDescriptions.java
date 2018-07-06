@@ -261,8 +261,8 @@ public class ParamDescriptions {
         map.put("saveLatentVars", new ParamDescription("Save latent variables.", false));
 
         map.put("probTwoCycle", new ParamDescription(
-            "The probability of creating a 2-cycles in the graph (0 - 1)",
-            0.0, 0.0, 1.0));
+                "The probability of creating a 2-cycles in the graph (0 - 1)",
+                0.0, 0.0, 1.0));
 
         map.put("selectionAlpha", new ParamDescription(
                 "The alpha used for a Fisher Z test to select variables associated with the target",
@@ -324,17 +324,15 @@ public class ParamDescriptions {
                 5000, 1, Integer.MAX_VALUE));
 
         map.put("thresholdForNumEigenvalues", new ParamDescription(
-                "Threshold to determine how many eigenvalues to use--the lower the more",
+                "Threshold to determine how many eigenvalues to use--the lower the more (0 to 1)",
                 0.01, 0, Double.POSITIVE_INFINITY));
-
-
-
-                "The probability of creating a 2-cycles in the graph (0 - 1)",
-                0.0, 0.0, 1.0));
 
         map.put("rcitNumFeatures", new ParamDescription(
                 "The number of random features to use",
                 25, 1, Integer.MAX_VALUE));
+
+        map.put("kciUseAppromation", new ParamDescription(
+                "Use the approximate Gamma approximation algorithm", false));
 
     }
 

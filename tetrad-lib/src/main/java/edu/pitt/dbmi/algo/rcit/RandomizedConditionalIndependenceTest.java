@@ -58,7 +58,7 @@ public final class RandomizedConditionalIndependenceTest implements Independence
 
 	final private List<Node> variables;
 	
-	private RandomIndApproximateMethod approx = RandomIndApproximateMethod.chi2;
+	private RandomIndApproximateMethod approx = RandomIndApproximateMethod.perm;
 
 	private int num_feature = 25;
 
@@ -1482,7 +1482,7 @@ public final class RandomizedConditionalIndependenceTest implements Independence
 
 	@Override
 	public double getScore() {
-		return 0;
+		return getAlpha() - pValue;
 	}
 
 	public DataSet getDataSet() {

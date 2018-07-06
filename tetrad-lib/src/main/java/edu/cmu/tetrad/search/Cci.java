@@ -25,12 +25,15 @@ import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataUtils;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.StatUtils;
+import edu.cmu.tetrad.util.dist.Normal;
+import org.apache.commons.math3.distribution.NormalDistribution;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import static edu.cmu.tetrad.util.StatUtils.covariance;
+import static edu.cmu.tetrad.util.StatUtils.getZForAlpha;
 import static edu.cmu.tetrad.util.StatUtils.median;
 import static java.lang.Math.*;
 
@@ -111,7 +114,7 @@ public final class Cci {
         if (dataSet == null) throw new NullPointerException();
 
         this.alpha = alpha;
-        dataSet = DataUtils.center(dataSet);
+        dataSet = DataUtils.standardizeData(dataSet);
         this.data = dataSet.getDoubleData().transpose().toArray();
 
         for (int j = 0; j < data.length; j++) {
@@ -132,10 +135,20 @@ public final class Cci {
             h[i] = h(variables.get(i).toString());
         }
 
-        this.cutoff = StatUtils.getZForAlpha(alpha);
+        final int N = dataSet.getNumRows();
+
+        double z = getZForAlpha(alpha);
+
+        z = sqrt(N) / sqrt(1000.0) * z;
+
+        this.cutoff = z;
+
+        double newAlpha = 2.0 * (1.0 - new NormalDistribution(0, 1).cumulativeProbability(z));
+
+        System.out.println("alpha for 1000 = " + alpha + " alpha for " + N + " = " + newAlpha);
     }
 
-    //=================PUBLIC METHODS====================//
+    //=================PUBLIC METHODS====================//z
 
     /**
      * @return true iff x is independent of y conditional on z.
@@ -184,7 +197,7 @@ public final class Cci {
                     _y[i] = function(n, y[i]);
                 }
 
-                final double score = abs(nonparametricFisherZ(_x, _y));
+                final double score = 0.5 * abs(nonparametricFisherZ(_x, _y));
                 if (Double.isInfinite(score) || Double.isNaN(score)) continue;
                 if (score > maxScore) maxScore = score;
             }
@@ -372,10 +385,10 @@ public final class Cci {
         double max = StatUtils.max(x);
         double min = StatUtils.min(x);
 
-        double factor = Math.max(abs(max), abs(min));
+        double factor = 0.3;//Math.max(abs(max), abs(min));
 
         for (int i = 0; i < x.length; i++) {
-            x[i] = x[i] / factor;
+            x[i] = x[i] * factor;
         }
 
         return x;
@@ -391,12 +404,10 @@ public final class Cci {
         double r = covariance(_x, _y); // correlation
         int N = _x.length;
 
-        if (Double.isNaN(r) || abs(r) > 1.0) return Double.NaN;
-
         // Non-parametric Fisher Z test.
-        double z = 0.5 * sqrt(N) * (log(1.0 + r) - log(1.0 - r));
+        double z = sqrt(N) * (log(1.0 + r) - log(1.0 - r));
 
-        return z / sqrt(4 * moment22(_x, _y));
+        return z / (sqrt(4 * (moment22(_x, _y))));
     }
 
     private double moment22(double[] x, double[] y) {

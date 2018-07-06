@@ -9,6 +9,7 @@ import edu.cmu.tetrad.search.IndTestConditionalCorrelation;
 import edu.cmu.tetrad.search.Score;
 import edu.cmu.tetrad.search.ScoredIndTest;
 import edu.cmu.tetrad.util.Parameters;
+import edu.pitt.dbmi.algo.rcit.RandomizedConditionalIndependenceTest;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -19,11 +20,11 @@ import java.util.List;
  * @author jdramsey
  */
 @edu.cmu.tetrad.annotation.Score(
-        name = "Conditional Correlation Score",
-        command = "cci-score",
+        name = "RCIT Score",
+        command = "rcit-score",
         dataType = {DataType.Continuous}
 )
-public class CciScore implements ScoreWrapper {
+public class RcitScore implements ScoreWrapper {
 
     static final long serialVersionUID = 23L;
     private DataModel dataSet;
@@ -31,32 +32,15 @@ public class CciScore implements ScoreWrapper {
     @Override
     public Score getScore(DataModel dataSet, Parameters parameters) {
         this.dataSet = dataSet;
-        final IndTestConditionalCorrelation cci = new IndTestConditionalCorrelation(DataUtils.getContinuousDataSet(dataSet),
-                parameters.getDouble("alpha"));
-        if (parameters.getInt("kernelType") == 1) {
-            cci.setKernel(Cci.Kernel.Gaussian);
-        } else if (parameters.getInt("kernelType") == 2) {
-            cci.setKernel(Cci.Kernel.Epinechnikov);
-        } else {
-            throw new IllegalStateException("Kernel not configured.");
-        }
-        cci.setNumFunctions(parameters.getInt("numBasisFunctions"));
-        cci.setKernelMultiplier(parameters.getDouble("kernelMultiplier"));
-
-        if (parameters.getInt("basisType") == 1) {
-            cci.setBasis(Cci.Basis.Polynomial);
-        } else if (parameters.getInt("basisType") == 2) {
-            cci.setBasis(Cci.Basis.Cosine);
-        } else {
-            throw new IllegalStateException("Basis not configured.");
-        }
-
-        return new ScoredIndTest(cci);
+        final RandomizedConditionalIndependenceTest rcit = new RandomizedConditionalIndependenceTest(DataUtils.getContinuousDataSet(dataSet));
+        rcit.setAlpha(parameters.getDouble("alpha"));
+        rcit.setNum_feature(parameters.getInt("rcitNumFeatures"));
+        return new ScoredIndTest(rcit);
     }
 
     @Override
     public String getDescription() {
-        return "CCI Score";
+        return "RCIT Score";
     }
 
     @Override
@@ -68,10 +52,7 @@ public class CciScore implements ScoreWrapper {
     public List<String> getParameters() {
         List<String> parameters = new ArrayList<>();
         parameters.add("alpha");
-        parameters.add("numBasisFunctions");
-        parameters.add("kernelType");
-        parameters.add("kernelMultiplier");
-        parameters.add("basisType");
+        parameters.add("rcitNumFeatures");
         return parameters;
     }
 

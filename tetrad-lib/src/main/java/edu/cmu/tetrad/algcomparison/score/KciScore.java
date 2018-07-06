@@ -32,6 +32,7 @@ public class KciScore implements ScoreWrapper {
         this.dataSet = dataSet;
         final KCI kci = new KCI(DataUtils.getContinuousDataSet(dataSet),
                 parameters.getDouble("alpha"));
+        kci.setApproximate(parameters.getBoolean("kciUseAppromation"));
         kci.setWidthMultiplier(parameters.getDouble("kernelMultiplier"));
         kci.setNumBootstraps(parameters.getInt("kciNumBootstraps"));
         kci.setThreshold(parameters.getDouble("thresholdForNumEigenvalues"));
@@ -51,6 +52,7 @@ public class KciScore implements ScoreWrapper {
     @Override
     public List<String> getParameters() {
         List<String> parameters = new ArrayList<>();
+        parameters.add("kciUseAppromation");
         parameters.add("alpha");
         parameters.add("kernelMultiplier");
         parameters.add("kciNumBootstraps");

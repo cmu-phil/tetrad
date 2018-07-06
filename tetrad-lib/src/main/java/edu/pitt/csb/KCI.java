@@ -72,7 +72,7 @@ public class KCI implements IndependenceTest, ScoreForFact {
             new Well44497b(193924L)), 0, 1);
 
     // True if the approximation algorithms should be used instead of Theorems 3 or 4.
-    private boolean approx = false;
+    private boolean approximate = false;
 
     // Convenience map from nodes to their indices in the list of variables.
     private Map<Node, Integer> hash;
@@ -295,8 +295,12 @@ public class KCI implements IndependenceTest, ScoreForFact {
         return getAlpha() - pValues.get(fact);
     }
 
-    private boolean isApprox() {
-        return approx;
+    public boolean isApproximate() {
+        return approximate;
+    }
+
+    public void setApproximate(boolean approximate) {
+        this.approximate = approximate;
     }
 
     public double getWidthMultiplier() {
@@ -328,8 +332,8 @@ public class KCI implements IndependenceTest, ScoreForFact {
         TetradMatrix kx = center(kernelMatrix(_data, x, null, getWidthMultiplier()));
         TetradMatrix ky = center(kernelMatrix(_data, y, null, getWidthMultiplier()));
 
-        if (isApprox()) {
-            return approx(kx, ky);
+        if (isApproximate()) {
+            return approximate(kx, ky, fact);
         } else {
             return theorem4(kx, ky, fact);
         }
@@ -345,15 +349,20 @@ public class KCI implements IndependenceTest, ScoreForFact {
         TetradMatrix Ky = center(kernelMatrix(_data, y, null, getWidthMultiplier()));
         TetradMatrix KZ = center(kernelMatrix(_data, null, z, getWidthMultiplier()));
 
-        TetradMatrix Rz = I.minus(KZ.times((KZ.plus(I.scalarMult(1.0 / N)).inverse())));
+        double epsilon = 1e-6;
+        TetradMatrix Rz = I.minus(KZ.times((KZ.plus(I.scalarMult(epsilon)).inverse())));
 
         TetradMatrix kx = Rz.times(Kx).times(Rz);
         TetradMatrix ky = Rz.times(Ky).times(Rz);
 
-        return proposition5(kx, ky, fact);
+        if (isApproximate()) {
+            return approximate(kx, ky, fact);
+        } else {
+            return proposition5(kx, ky, fact);
+        }
     }
 
-    private boolean approx(TetradMatrix kx, TetradMatrix ky) {
+    private boolean approximate(TetradMatrix kx, TetradMatrix ky, IndependenceFact fact) {
         double trace = kx.times(ky).trace();
         double mean_appr = kx.trace() * ky.trace() / N;
         double var_appr = 2 * kx.times(kx).trace() * ky.times(ky).trace() / (N * N);//can optimize by not actually performing matrix multiplication
@@ -362,6 +371,7 @@ public class KCI implements IndependenceTest, ScoreForFact {
         GammaDistribution g = new GammaDistribution(k_appr, theta_appr);
         double p_appr = 1.0 - g.cumulativeProbability(trace);
         p = p_appr;
+        pValues.put(fact, p);
         return p_appr > alpha;
     }
 
@@ -468,8 +478,8 @@ public class KCI implements IndependenceTest, ScoreForFact {
             }
 
             // VD
-            TetradMatrix udx = vx.times(dx);
-            TetradMatrix udy = vy.times(dy);
+            TetradMatrix vdx = vx.times(dx);
+            TetradMatrix vdy = vy.times(dy);
 
             final int prod = topXIndices.size() * topYIndices.size();
             TetradMatrix stacked = new TetradMatrix(N, prod);
@@ -478,7 +488,7 @@ public class KCI implements IndependenceTest, ScoreForFact {
             for (int i = 0; i < topXIndices.size(); i++) {
                 for (int j = 0; j < topYIndices.size(); j++) {
                     for (int k = 0; k < N; k++) {
-                        stacked.set(k, i * topYIndices.size() + j, udx.get(k, i) * udy.get(k, j));
+                        stacked.set(k, i * topYIndices.size() + j, vdx.get(k, i) * vdy.get(k, j));
                     }
                 }
             }
@@ -593,15 +603,7 @@ public class KCI implements IndependenceTest, ScoreForFact {
             }
         }
 
-        double h = 0;
-
-        for (int c : _z) {
-            if (this.h[c] > h) {
-                h = this.h[c];
-            }
-        }
-
-        h *= sqrt(_z.size());
+        double h = getH(_z);
 
         TetradMatrix result = new TetradMatrix(N, N);
 
@@ -621,6 +623,19 @@ public class KCI implements IndependenceTest, ScoreForFact {
         }
 
         return result;
+    }
+
+    private double getH(List<Integer> _z) {
+        double h = 0;
+
+        for (int c : _z) {
+            if (this.h[c] > h) {
+                h = this.h[c];
+            }
+        }
+
+        h *= sqrt(_z.size());
+        return h;
     }
 
     private double kernelGaussian(double z, double width, double h) {
