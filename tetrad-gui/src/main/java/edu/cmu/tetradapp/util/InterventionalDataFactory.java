@@ -27,6 +27,7 @@ import edu.cmu.tetrad.data.DoubleDataBox;
 import edu.cmu.tetrad.data.MixedDataBox;
 import edu.cmu.tetrad.data.VerticalIntDataBox;
 import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.graph.NodeType;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
@@ -439,9 +440,9 @@ public class InterventionalDataFactory {
         dataModel.getVariables().stream()
                 .collect(Collectors.toCollection(() -> variables));
 
-        // create interventional variables
+        // create interventional variables, set node type instead of using the default NodeType.MEASURED
         intervVars.stream()
-                .map(e -> isDiscrete ? new DiscreteVariable(e, 2) : new ContinuousVariable(e))
+                .map(e -> isDiscrete ? new DiscreteVariable(e, 2, NodeType.INTERVENTIONAL) : new ContinuousVariable(e, NodeType.INTERVENTIONAL))
                 .collect(Collectors.toCollection(() -> variables));
 
         return variables;

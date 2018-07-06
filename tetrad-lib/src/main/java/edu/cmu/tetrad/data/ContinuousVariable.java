@@ -25,7 +25,6 @@ import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.NodeEqualityMode;
 import edu.cmu.tetrad.graph.NodeType;
 import edu.cmu.tetrad.util.TetradSerializable;
-
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.IOException;
@@ -86,6 +85,18 @@ public final class ContinuousVariable extends AbstractVariable
     }
 
     /**
+     * Set node type at the same time, used for interventional variables - Zhou
+     * 
+     * @param variable
+     * @param nodeType 
+     */
+    public ContinuousVariable(String name, NodeType nodeType) {
+        super(name);
+        
+        setNodeType(nodeType);
+    }
+    
+    /**
      * Copy constructor.
      */
     public ContinuousVariable(ContinuousVariable variable) {
@@ -94,6 +105,8 @@ public final class ContinuousVariable extends AbstractVariable
         this.centerX = variable.centerX;
         this.centerY = variable.centerY;
     }
+    
+    
 
     /**
      * Generates a simple exemplar of this class to test serialization.

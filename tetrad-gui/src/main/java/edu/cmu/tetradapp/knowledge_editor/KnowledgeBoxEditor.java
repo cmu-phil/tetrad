@@ -357,7 +357,9 @@ public class KnowledgeBoxEditor extends JPanel {
      * and the rest of domain variables in second tier - Zhou
      */
     private void checkInterventionalVariables() {
+        System.out.println("All variables =============");
         varNames.forEach(e -> {
+            System.out.println(e);
             if (e.startsWith(interventionalVarPrefix)) {
                 interventionalVars.add(e);
             } else {

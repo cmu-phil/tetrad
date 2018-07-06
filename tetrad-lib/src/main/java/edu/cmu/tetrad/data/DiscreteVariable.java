@@ -22,7 +22,6 @@
 package edu.cmu.tetrad.data;
 
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.graph.NodeEqualityMode;
 import edu.cmu.tetrad.graph.NodeType;
 import edu.cmu.tetrad.util.TetradSerializable;
 
@@ -158,6 +157,19 @@ public final class DiscreteVariable extends AbstractVariable
         setCategoryNamesDisplayed(false);
     }
 
+    /**
+     * Set node type at the same time, used for interventional variables - Zhou
+     * @param name
+     * @param numCategories
+     * @param nodetype 
+     */
+    public DiscreteVariable(String name, int numCategories, NodeType nodetype) {
+        super(name);
+        setCategories(numCategories);
+        setCategoryNamesDisplayed(false);
+        setNodeType(nodetype);
+    }
+    
     /**
      * Builds a qualitative variable with the given name and array of possible
      * categories.
