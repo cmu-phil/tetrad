@@ -655,17 +655,6 @@ public class KCI implements IndependenceTest, ScoreForFact {
         return result;
     }
 
-
-//    private double getKunWidths() {
-//        if (N  <= 200) {
-//            return 1.2;
-//        } else if (N <= 1200) {
-//            return 0.7;
-//        } else {
-//            return 0.4;
-//        }
-//    }
-
     private double getH(List<Integer> _z) {
         double h = 0;
 
@@ -683,12 +672,6 @@ public class KCI implements IndependenceTest, ScoreForFact {
         z /= width;
         return Math.exp(-z * z);
     }
-
-//    private double kernelEpinechnikov(double z, double width) {
-//        z /= width;
-//        if (abs(z) > 1) return 0.0;
-//        else return (/*0.75 **/ (1.0 - z * z));
-//    }
 
     // Euclidean distance.
     private double distance(double[][] data, List<Integer> cols, int i, int j) {
