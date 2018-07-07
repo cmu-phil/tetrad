@@ -58,7 +58,7 @@ public final class RandomizedConditionalIndependenceTest implements Independence
 
 	final private List<Node> variables;
 	
-	private RandomIndApproximateMethod approx = RandomIndApproximateMethod.perm;
+	private RandomIndApproximateMethod approx = RandomIndApproximateMethod.chi2;
 
 	private int num_feature = 25;
 

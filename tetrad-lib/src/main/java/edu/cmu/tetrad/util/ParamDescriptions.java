@@ -320,7 +320,7 @@ public class ParamDescriptions {
                 2, 1, 2));
 
         map.put("kciNumBootstraps", new ParamDescription(
-                "Number of bootstraps for Theorems 3 and 4 for KCI",
+                "Number of bootstraps for Theorems 4 and Proposition 5 for KCI",
                 5000, 1, Integer.MAX_VALUE));
 
         map.put("thresholdForNumEigenvalues", new ParamDescription(
@@ -333,6 +333,9 @@ public class ParamDescriptions {
 
         map.put("kciUseAppromation", new ParamDescription(
                 "Use the approximate Gamma approximation algorithm", false));
+
+        map.put("kciEpsilon", new ParamDescription(
+                "Epsilon for Proposition 5, a small positive number", 1e-6, 0, Double.POSITIVE_INFINITY));
 
     }
 

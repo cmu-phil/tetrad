@@ -197,7 +197,7 @@ public final class Cci {
                     _y[i] = function(n, y[i]);
                 }
 
-                final double score = 0.5 * abs(nonparametricFisherZ(_x, _y));
+                final double score = abs(nonparametricFisherZ(_x, _y));
                 if (Double.isInfinite(score) || Double.isNaN(score)) continue;
                 if (score > maxScore) maxScore = score;
             }
@@ -385,7 +385,7 @@ public final class Cci {
         double max = StatUtils.max(x);
         double min = StatUtils.min(x);
 
-        double factor = 0.3;//Math.max(abs(max), abs(min));
+        double factor = 1.0 / Math.max(abs(max), abs(min));
 
         for (int i = 0; i < x.length; i++) {
             x[i] = x[i] * factor;
@@ -405,9 +405,9 @@ public final class Cci {
         int N = _x.length;
 
         // Non-parametric Fisher Z test.
-        double z = sqrt(N) * (log(1.0 + r) - log(1.0 - r));
+        double z = 0.5 * sqrt(N) * (log(1.0 + r) - log(1.0 - r));
 
-        return z / (sqrt(4 * (moment22(_x, _y))));
+        return z / (sqrt((moment22(_x, _y))));
     }
 
     private double moment22(double[] x, double[] y) {
@@ -434,7 +434,7 @@ public final class Cci {
 
             return g;
         } else if (basis == Basis.Cosine) {
-            return cos(index + x);
+            return sin(index * x) + cos(index * x);
         } else {
             throw new IllegalStateException("That basis is not configured: " + basis);
         }

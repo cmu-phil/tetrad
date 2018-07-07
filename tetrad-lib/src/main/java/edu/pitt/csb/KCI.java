@@ -6,12 +6,12 @@ import edu.cmu.tetrad.data.ICovarianceMatrix;
 import edu.cmu.tetrad.graph.IndependenceFact;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.IndependenceTest;
+import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetrad.util.TetradMatrix;
 import edu.cmu.tetrad.util.TetradVector;
 import edu.pitt.csb.mgm.EigenDecomposition;
 import org.apache.commons.math3.distribution.GammaDistribution;
 import org.apache.commons.math3.distribution.NormalDistribution;
-import org.apache.commons.math3.linear.RealMatrix;
 import org.apache.commons.math3.linear.RealVector;
 import org.apache.commons.math3.random.SynchronizedRandomGenerator;
 import org.apache.commons.math3.random.Well44497b;
@@ -80,7 +80,7 @@ public class KCI implements IndependenceTest, ScoreForFact {
     // Eigenvalues greater than this time the maximum will be kept.
     private double threshold = 0.01;
 
-    // Number of bostraps for Theorems 3 and 4.
+    // Number of bostraps for Theorem 4 and Proposition 5.
     private int numBootstraps = 5000;
 
     // Azzalini optimal kernel widths will be multiplied by this.
@@ -95,6 +95,9 @@ public class KCI implements IndependenceTest, ScoreForFact {
     // Record of independence pValues
     private Map<IndependenceFact, Double> pValues = new HashMap<>();
 
+    // Epsilon for Propositio 5.
+    private double epsilon = 0.001;
+
     /**
      * Constructor.
      *
@@ -103,6 +106,7 @@ public class KCI implements IndependenceTest, ScoreForFact {
      */
     public KCI(DataSet data, double alpha) {
         this.data = data;
+//        this.data = DataUtils.standardizeData(data);
         this.variables = data.getVariables();
         this._data = data.getDoubleData().transpose().toArray();
         this.N = data.getNumRows();
@@ -169,8 +173,11 @@ public class KCI implements IndependenceTest, ScoreForFact {
 
         if (independent) {
             System.out.println(fact + " Independent");
+            TetradLogger.getInstance().log("info", fact + " Independent");
+
         } else {
             System.out.println(fact);
+            TetradLogger.getInstance().log("info", fact.toString());
         }
 
         return independent;
@@ -321,6 +328,24 @@ public class KCI implements IndependenceTest, ScoreForFact {
         this.numBootstraps = numBootstraps;
     }
 
+
+    public double getThreshold() {
+        return threshold;
+    }
+
+    public void setThreshold(double threshold) {
+        if (threshold < 0.0) throw new IllegalArgumentException("Threshold must be >= 0.0: " + threshold);
+        this.threshold = threshold;
+    }
+
+    public double getEpsilon() {
+        return epsilon;
+    }
+
+    public void setEpsilon(double epsilon) {
+        this.epsilon = epsilon;
+    }
+
     //====================================PRIVATE METHODS==================================//
 
     /**
@@ -333,7 +358,15 @@ public class KCI implements IndependenceTest, ScoreForFact {
         TetradMatrix ky = center(kernelMatrix(_data, y, null, getWidthMultiplier()));
 
         if (isApproximate()) {
-            return approximate(kx, ky, fact);
+            double sta = kx.times(ky).trace();
+            double mean_appr = kx.trace() * ky.trace() / N;
+            double var_appr = 2 * kx.times(kx).trace() * ky.times(ky).trace() / (N * N);
+            double k_appr = mean_appr * mean_appr / var_appr;
+            double theta_appr = var_appr / mean_appr;
+            double p_appr = 1.0 - new GammaDistribution(k_appr, theta_appr).cumulativeProbability(sta);
+            p = p_appr;
+            pValues.put(fact, p);
+            return p_appr > alpha;
         } else {
             return theorem4(kx, ky, fact);
         }
@@ -349,30 +382,24 @@ public class KCI implements IndependenceTest, ScoreForFact {
         TetradMatrix Ky = center(kernelMatrix(_data, y, null, getWidthMultiplier()));
         TetradMatrix KZ = center(kernelMatrix(_data, null, z, getWidthMultiplier()));
 
-        double epsilon = 1e-6;
-        TetradMatrix Rz = I.minus(KZ.times((KZ.plus(I.scalarMult(epsilon)).inverse())));
+        TetradMatrix Rz = (KZ.plus(I.scalarMult(getEpsilon())).inverse().scalarMult(epsilon));
 
-        TetradMatrix kx = Rz.times(Kx).times(Rz);
-        TetradMatrix ky = Rz.times(Ky).times(Rz);
+        TetradMatrix kx = symmetrized(Rz.times(Kx).times(Rz.transpose()));
+        TetradMatrix ky = symmetrized(Rz.times(Ky).times(Rz.transpose()));
 
         if (isApproximate()) {
-            return approximate(kx, ky, fact);
+            double mean_appr = kx.trace() * ky.trace() / N;
+            double var_appr = 2 * kx.times(kx).trace() * ky.times(ky).trace() / (N * N);
+            double k_appr = mean_appr * mean_appr / var_appr;
+            double theta_appr = var_appr / mean_appr;
+            GammaDistribution g = new GammaDistribution(k_appr, theta_appr);
+            double p_appr = 1.0 - g.cumulativeProbability(kx.times(ky).trace());
+            p = p_appr;
+            pValues.put(fact, p);
+            return p_appr > alpha;
         } else {
             return proposition5(kx, ky, fact);
         }
-    }
-
-    private boolean approximate(TetradMatrix kx, TetradMatrix ky, IndependenceFact fact) {
-        double trace = kx.times(ky).trace();
-        double mean_appr = kx.trace() * ky.trace() / N;
-        double var_appr = 2 * kx.times(kx).trace() * ky.times(ky).trace() / (N * N);//can optimize by not actually performing matrix multiplication
-        double k_appr = mean_appr * mean_appr / var_appr;
-        double theta_appr = var_appr / mean_appr;
-        GammaDistribution g = new GammaDistribution(k_appr, theta_appr);
-        double p_appr = 1.0 - g.cumulativeProbability(trace);
-        p = p_appr;
-        pValues.put(fact, p);
-        return p_appr > alpha;
     }
 
     private boolean theorem4(TetradMatrix kx, TetradMatrix ky, IndependenceFact fact) {
@@ -381,8 +408,8 @@ public class KCI implements IndependenceTest, ScoreForFact {
             double T = (1.0 / N) * (kx.times(ky).trace());
 
             // Eigen decomposition of kx and ky.
-            EigenDecomposition ed1 = new EigenDecomposition(symmetrized(kx));
-            EigenDecomposition ed2 = new EigenDecomposition(symmetrized(ky));
+            EigenDecomposition ed1 = new EigenDecomposition(kx.getRealMatrix());
+            EigenDecomposition ed2 = new EigenDecomposition(ky.getRealMatrix());
             List<Double> evx = asList(ed1.getRealEigenvalues());
             List<Double> evy = asList(ed2.getRealEigenvalues());
 
@@ -420,6 +447,8 @@ public class KCI implements IndependenceTest, ScoreForFact {
             return p > alpha;
         } catch (Exception e) {
             System.out.println("Eigenvalue didn't converge");
+            pValues.put(fact, 0.0);
+            facts.put(fact, false);
             p = 0.0;
             return true;
         }
@@ -432,7 +461,7 @@ public class KCI implements IndependenceTest, ScoreForFact {
             double T = (1.0 / N) * kx.times(ky).trace();
 
             // Eigen decomposition of kx
-            EigenDecomposition edx = new EigenDecomposition(symmetrized(kx));
+            EigenDecomposition edx = new EigenDecomposition(kx.getRealMatrix());
 
             List<Double> evxAll = asList(edx.getRealEigenvalues());
             List<Integer> indx = series(evxAll.size()); // 1 2 3...
@@ -455,7 +484,7 @@ public class KCI implements IndependenceTest, ScoreForFact {
             }
 
             // Now, eigen decomposition of ky
-            EigenDecomposition edy = new EigenDecomposition(symmetrized(ky));
+            EigenDecomposition edy = new EigenDecomposition(ky.getRealMatrix());
 
             List<Double> evyAll = asList(edy.getRealEigenvalues());
             List<Integer> indy = series(evyAll.size()); // 1 2 3...
@@ -493,38 +522,51 @@ public class KCI implements IndependenceTest, ScoreForFact {
                 }
             }
 
-            TetradMatrix uprod = prod > N ? stacked.times(stacked.transpose()) : stacked.transpose().times(stacked);
+            TetradMatrix uuprod = prod > N ? stacked.times(stacked.transpose()) : stacked.transpose().times(stacked);
 
-            // Get top eigenvalues of that.
-            EigenDecomposition edu = new EigenDecomposition(uprod.getRealMatrix());
-            List<Double> evu = asList(edu.getRealEigenvalues());
-            evu = getTopGuys(evu, getThreshold());
+            if (isApproximate()) {
+                double sta = kx.times(ky).trace();
+                double mean_appr = uuprod.trace();
+                double var_appr = 2.0 * uuprod.times(uuprod).trace();
+                double k_appr = mean_appr * mean_appr /var_appr;
+                double theta_appr = var_appr/mean_appr;
+                double p = 1.0 - new GammaDistribution(k_appr, theta_appr).cumulativeProbability(sta);
+                return p > getAlpha();
+            } else {
 
-            // We're going to reuse the samples.
-            int sampleCount = -1;
+                // Get top eigenvalues of that.
+                EigenDecomposition edu = new EigenDecomposition(uuprod.getRealMatrix());
+                List<Double> evu = asList(edu.getRealEigenvalues());
+                evu = getTopGuys(evu, getThreshold());
 
-            // Calculate formulas (13) and (14).
-            int sum = 0;
+                // We're going to reuse the samples.
+                int sampleCount = -1;
 
-            for (int j = 0; j < getNumBootstraps(); j++) {
-                double s = 0.0;
+                // Calculate formulas (13) and (14).
+                int sum = 0;
 
-                for (double lambdaStar : evu) {
-                    s += lambdaStar * getChisqSample(++sampleCount) * getChisqSample(++sampleCount);
+                for (int j = 0; j < getNumBootstraps(); j++) {
+                    double s = 0.0;
+
+                    for (double lambdaStar : evu) {
+                        s += lambdaStar * getChisqSample(++sampleCount);
+                    }
+
+                    s *= 1.0 / N;
+
+                    if (s > T) sum++;
                 }
 
-                s *= 1.0 / N;
-
-                if (s > T) sum++;
+                this.p = sum / (double) getNumBootstraps();
+                pValues.put(fact, this.p);
+                return this.p > alpha;
             }
-
-            this.p = sum / (double) getNumBootstraps();
-            pValues.put(fact, this.p);
-            return this.p > alpha;
         } catch (Exception e) {
             System.out.println("Eigenvalue didn't converge");
             p = 0.0;
-            return true;
+            pValues.put(fact, p);
+            facts.put(fact, false);
+            return false;
         }
     }
 
@@ -585,11 +627,11 @@ public class KCI implements IndependenceTest, ScoreForFact {
         return indices;
     }
 
-    private RealMatrix symmetrized(TetradMatrix kx) {
-        return kx.plus(kx.transpose()).scalarMult(0.5).getRealMatrix();
+    private TetradMatrix symmetrized(TetradMatrix kx) {
+        return kx.plus(kx.transpose()).scalarMult(0.5);
     }
 
-    private TetradMatrix kernelMatrix(double[][] _data, Node x, List<Node> z, double width) {
+    private TetradMatrix kernelMatrix(double[][] _data, Node x, List<Node> z, double widthMultiplier) {
 
         List<Integer> _z = new ArrayList<>();
 
@@ -610,13 +652,13 @@ public class KCI implements IndependenceTest, ScoreForFact {
         for (int i = 0; i < N; i++) {
             for (int j = i + 1; j < N; j++) {
                 double d = distance(_data, _z, i, j);
-                final double k = kernelGaussian(d, width, h);
+                final double k = kernelGaussian(d, widthMultiplier * h);
                 result.set(i, j, k);
                 result.set(j, i, k);
             }
         }
 
-        final double k = kernelGaussian(0, width, h);
+        final double k = kernelGaussian(0, widthMultiplier * h);
 
         for (int i = 0; i < N; i++) {
             result.set(i, i, k);
@@ -624,6 +666,17 @@ public class KCI implements IndependenceTest, ScoreForFact {
 
         return result;
     }
+
+
+//    private double getKunWidths() {
+//        if (N  <= 200) {
+//            return 1.2;
+//        } else if (N <= 1200) {
+//            return 0.7;
+//        } else {
+//            return 0.4;
+//        }
+//    }
 
     private double getH(List<Integer> _z) {
         double h = 0;
@@ -638,16 +691,16 @@ public class KCI implements IndependenceTest, ScoreForFact {
         return h;
     }
 
-    private double kernelGaussian(double z, double width, double h) {
-        z /= width * h;
+    private double kernelGaussian(double z, double width) {
+        z /= width;
         return Math.exp(-z * z);
     }
 
-    private double kernelEpinechnikov(double z, double width, double h) {
-        z /= width * h;
-        if (abs(z) > 1) return 0.0;
-        else return (/*0.75 **/ (1.0 - z * z));
-    }
+//    private double kernelEpinechnikov(double z, double width) {
+//        z /= width;
+//        if (abs(z) > 1) return 0.0;
+//        else return (/*0.75 **/ (1.0 - z * z));
+//    }
 
     // Euclidean distance.
     private double distance(double[][] data, List<Integer> cols, int i, int j) {
@@ -664,12 +717,4 @@ public class KCI implements IndependenceTest, ScoreForFact {
         return sqrt(sum);
     }
 
-    public double getThreshold() {
-        return threshold;
-    }
-
-    public void setThreshold(double threshold) {
-        if (threshold < 0.0) throw new IllegalArgumentException("Threshold must be >= 0.0: " + threshold);
-        this.threshold = threshold;
-    }
 }
