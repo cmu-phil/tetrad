@@ -387,19 +387,7 @@ public class KCI implements IndependenceTest, ScoreForFact {
         TetradMatrix kx = symmetrized(Rz.times(Kx).times(Rz.transpose()));
         TetradMatrix ky = symmetrized(Rz.times(Ky).times(Rz.transpose()));
 
-        if (isApproximate()) {
-            double mean_appr = kx.trace() * ky.trace() / N;
-            double var_appr = 2 * kx.times(kx).trace() * ky.times(ky).trace() / (N * N);
-            double k_appr = mean_appr * mean_appr / var_appr;
-            double theta_appr = var_appr / mean_appr;
-            GammaDistribution g = new GammaDistribution(k_appr, theta_appr);
-            double p_appr = 1.0 - g.cumulativeProbability(kx.times(ky).trace());
-            p = p_appr;
-            pValues.put(fact, p);
-            return p_appr > alpha;
-        } else {
-            return proposition5(kx, ky, fact);
-        }
+        return proposition5(kx, ky, fact);
     }
 
     private boolean theorem4(TetradMatrix kx, TetradMatrix ky, IndependenceFact fact) {
@@ -528,8 +516,8 @@ public class KCI implements IndependenceTest, ScoreForFact {
                 double sta = kx.times(ky).trace();
                 double mean_appr = uuprod.trace();
                 double var_appr = 2.0 * uuprod.times(uuprod).trace();
-                double k_appr = mean_appr * mean_appr /var_appr;
-                double theta_appr = var_appr/mean_appr;
+                double k_appr = mean_appr * mean_appr / var_appr;
+                double theta_appr = var_appr / mean_appr;
                 double p = 1.0 - new GammaDistribution(k_appr, theta_appr).cumulativeProbability(sta);
                 return p > getAlpha();
             } else {
