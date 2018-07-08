@@ -1,11 +1,11 @@
-package edu.cmu.tetrad.algcomparison.independence;
+package edu.cmu.tetrad.algcomparison.score;
 
-import edu.cmu.tetrad.annotation.TestOfIndependence;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.data.DataUtils;
-import edu.cmu.tetrad.search.IndTestConditionalCorrelation;
-import edu.cmu.tetrad.search.IndependenceTest;
+import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.search.Score;
+import edu.cmu.tetrad.search.ScoredIndTest;
 import edu.cmu.tetrad.util.Parameters;
 import edu.pitt.dbmi.algo.rcit.RandomIndApproximateMethod;
 import edu.pitt.dbmi.algo.rcit.RandomizedConditionalIndependenceTest;
@@ -14,21 +14,23 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Wrapper for Fisher Z test.
+ * Wrapper for CCI Score.
  *
  * @author jdramsey
  */
-@TestOfIndependence(
-        name = "RCIT Test",
-        command = "rcit-test",
-        dataType = DataType.Continuous
+@edu.cmu.tetrad.annotation.Score(
+        name = "RCIT Score",
+        command = "rcit-score",
+        dataType = {DataType.Continuous}
 )
-public class RCITTest implements IndependenceWrapper {
+public class RcitScore implements ScoreWrapper {
 
     static final long serialVersionUID = 23L;
+    private DataModel dataSet;
 
     @Override
-    public IndependenceTest getTest(DataModel dataSet, Parameters parameters) {
+    public Score getScore(DataModel dataSet, Parameters parameters) {
+        this.dataSet = dataSet;
         final RandomizedConditionalIndependenceTest rcit = new RandomizedConditionalIndependenceTest(DataUtils.getContinuousDataSet(dataSet));
         rcit.setAlpha(parameters.getDouble("alpha"));
         rcit.setNum_feature(parameters.getInt("rcitNumFeatures"));
@@ -38,7 +40,7 @@ public class RCITTest implements IndependenceWrapper {
 //                lpd4,  // the Lindsay-Pilla-Basak method (default)
 //                gamma, // the Satterthwaite-Welch method
 //                hbe,   // the Hall-Buckley-Eagleson method
-//                chi2,  // a normalized chi-squared statistic -- won't work JR
+//                chi2,  // a normalized chi-squared statistic   -- won't work JR
 //                perm   // permutation testing (warning: this one is slow but recommended for small samples generally <500 )
 
         if (algType == 1) {
@@ -51,12 +53,12 @@ public class RCITTest implements IndependenceWrapper {
             rcit.setApprox(RandomIndApproximateMethod.perm);
         }
 
-        return rcit;
+        return new ScoredIndTest(rcit);
     }
 
     @Override
     public String getDescription() {
-        return "Conditional Correlation Test";
+        return "RCIT Score";
     }
 
     @Override
@@ -66,11 +68,16 @@ public class RCITTest implements IndependenceWrapper {
 
     @Override
     public List<String> getParameters() {
-        List<String> params = new ArrayList<>();
-        params.add("rcitApproxType");
-        params.add("alpha");
-        params.add("rcitNumFeatures");
-        return params;
+        List<String> parameters = new ArrayList<>();
+        parameters.add("rcitApproxType");
+        parameters.add("alpha");
+        parameters.add("rcitNumFeatures");
+        return parameters;
+    }
+
+    @Override
+    public Node getVariable(String name) {
+        return dataSet.getVariable(name);
     }
 
 }
