@@ -88,6 +88,127 @@ public final class RandomizedConditionalIndependenceTest implements Independence
         return null;
     }
 
+    public boolean isVerbose() {
+        return verbose;
+    }
+
+    public void setVerbose(boolean verbose) {
+        this.verbose = verbose;
+    }
+
+    @Override
+    public boolean isIndependent(Node x, Node y, Node... z) {
+        List<Node> zList = Arrays.asList(z);
+        return isIndependent(x, y, zList);
+    }
+
+    @Override
+    public boolean isDependent(Node x, Node y, List<Node> z) {
+        return !this.isIndependent(x, y, z);
+    }
+
+    @Override
+    public boolean isDependent(Node x, Node y, Node... z) {
+        List<Node> zList = Arrays.asList(z);
+        return isDependent(x, y, zList);
+    }
+
+    @Override
+    public double getPValue() {
+        return this.pValue;
+    }
+
+    @Override
+    public List<Node> getVariables() {
+        return Collections.unmodifiableList(variables);
+    }
+
+    @Override
+    public Node getVariable(String name) {
+        for (int i = 0; i < getVariables().size(); i++) {
+            Node variable = getVariables().get(i);
+            if (variable.getName().equals(name)) {
+                return variable;
+            }
+        }
+
+        return null;
+    }
+
+    @Override
+    public List<String> getVariableNames() {
+        List<Node> variables = getVariables();
+        List<String> variableNames = new ArrayList<>();
+        for (Node variable1 : variables) {
+            variableNames.add(variable1.getName());
+        }
+        return variableNames;
+    }
+
+    @Override
+    public boolean determines(List<Node> z, Node y) {
+        return false;
+    }
+
+    @Override
+    public double getAlpha() {
+        return this.alpha;
+    }
+
+    @Override
+    public void setAlpha(double alpha) {
+        if (alpha < 0.0 || alpha > 1.0) {
+            throw new IllegalArgumentException("Significance level must be in " + "[0, 1]: " + alpha);
+        }
+
+        this.alpha = alpha;
+    }
+
+    @Override
+    public DataModel getData() {
+        return dataSet;
+    }
+
+    @Override
+    public ICovarianceMatrix getCov() {
+        return null;
+    }
+
+    @Override
+    public List<DataSet> getDataSets() {
+        List<DataSet> dataSets = new ArrayList<>();
+
+        dataSets.add(dataSet);
+
+        return dataSets;
+    }
+
+    @Override
+    public int getSampleSize() {
+        return 0;
+    }
+
+    @Override
+    public List<TetradMatrix> getCovMatrices() {
+        return null;
+    }
+
+    @Override
+    public double getScore() {
+        return getAlpha() - pValue;
+    }
+
+    public DataSet getDataSet() {
+        return dataSet;
+    }
+
+    public void setApprox(RandomIndApproximateMethod approx) {
+        this.approx = approx;
+    }
+
+    public void setNum_feature(int num_feature) {
+        this.num_feature = num_feature;
+    }
 
 
     //===================================PRIVATE METHODS===============================//
@@ -984,7 +1105,6 @@ public final class RandomizedConditionalIndependenceTest implements Independence
 
     // return x^p
     private double powers(int p, double x) {
-//        return Math.pow(x, p);
         if (p == 0) {
             return 1.0;
         }
@@ -1164,14 +1284,6 @@ public final class RandomizedConditionalIndependenceTest implements Independence
     private static double get_index_element(int i, int j, double[] vec1, double[] vec2) {
         int index = i + j;
         return vec1[index] * vec2[index];
-    }
-
-    public boolean isVerbose() {
-        return verbose;
-    }
-
-    public void setVerbose(boolean verbose) {
-        this.verbose = verbose;
     }
 
     // Simply uses above matrix generation function
@@ -1404,129 +1516,6 @@ public final class RandomizedConditionalIndependenceTest implements Independence
     //	return gamma.cumulativeProbability(qval);
     //}
 
-    @Override
-    public boolean isIndependent(Node x, Node y, Node... z) {
-        List<Node> zList = Arrays.asList(z);
-        return isIndependent(x, y, zList);
-    }
-
-    @Override
-    public boolean isDependent(Node x, Node y, List<Node> z) {
-        return !this.isIndependent(x, y, z);
-    }
-
-    @Override
-    public boolean isDependent(Node x, Node y, Node... z) {
-        List<Node> zList = Arrays.asList(z);
-        return isDependent(x, y, zList);
-    }
-
-    @Override
-    public double getPValue() {
-        return this.pValue;
-    }
-
-    @Override
-    public List<Node> getVariables() {
-        return Collections.unmodifiableList(variables);
-    }
-
-    @Override
-    public Node getVariable(String name) {
-        for (int i = 0; i < getVariables().size(); i++) {
-            Node variable = getVariables().get(i);
-            if (variable.getName().equals(name)) {
-                return variable;
-            }
-        }
-
-        return null;
-    }
-
-    @Override
-    public List<String> getVariableNames() {
-        List<Node> variables = getVariables();
-        List<String> variableNames = new ArrayList<>();
-        for (Node variable1 : variables) {
-            variableNames.add(variable1.getName());
-        }
-        return variableNames;
-    }
-
-    @Override
-    public boolean determines(List<Node> z, Node y) {
-        return false;
-    }
-
-    @Override
-    public double getAlpha() {
-        return this.alpha;
-    }
-
-    @Override
-    public void setAlpha(double alpha) {
-        if (alpha < 0.0 || alpha > 1.0) {
-            throw new IllegalArgumentException("Significance level must be in " + "[0, 1]: " + alpha);
-        }
-
-        this.alpha = alpha;
-    }
-
-    @Override
-    public DataModel getData() {
-        return dataSet;
-    }
-
-    @Override
-    public ICovarianceMatrix getCov() {
-        return null;
-    }
-
-    @Override
-    public List<DataSet> getDataSets() {
-        List<DataSet> dataSets = new ArrayList<>();
-
-        dataSets.add(dataSet);
-
-        return dataSets;
-    }
-
-    @Override
-    public int getSampleSize() {
-        return 0;
-    }
-
-    @Override
-    public List<TetradMatrix> getCovMatrices() {
-        return null;
-    }
-
-    @Override
-    public double getScore() {
-        return getAlpha() - pValue;
-    }
-
-    public DataSet getDataSet() {
-        return dataSet;
-    }
-
-    public void setApprox(RandomIndApproximateMethod approx) {
-        this.approx = approx;
-    }
-
-    public void setNum_feature(int num_feature) {
-        this.num_feature = num_feature;
-    }
-
-    private double getDistance(double[] x, double[] y) {
-        double distance = 0;
-        for (int i = 0; i < x.length; i++) {
-            double diff = x[i] - y[i];
-            distance += diff * diff;
-        }
-        return Math.sqrt(distance);
-    }
-
     // Euclidean distance.
     private double distance(double[][] data, int[] yCols, int i, int j) {
         double sum = 0.0;
@@ -1587,5 +1576,17 @@ public final class RandomizedConditionalIndependenceTest implements Independence
 
         return prodSelection;
     }
+
+    private double getDistance(double[] x, double[] y) {
+        double distance = 0;
+        for (int i = 0; i < x.length; i++) {
+            double diff = x[i] - y[i];
+            distance += diff * diff;
+        }
+        return Math.sqrt(distance);
+    }
+
+
+
 
 }
