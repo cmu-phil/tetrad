@@ -140,4 +140,3 @@ public class TetradVector implements TetradSerializable {
 }
 
 
-
