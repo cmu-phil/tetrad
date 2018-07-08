@@ -80,8 +80,8 @@ public final class RandomizedConditionalIndependenceTest implements Independence
             throw new IllegalArgumentException("Data set must be continuous.");
         }
 
+        this.dataSet = dataSet;
         this.variables = new ArrayList<>(dataSet.getVariables());
-        this.dataSet = DataUtils.standardizeData(dataSet);
         this._data = this.dataSet.getDoubleData().transpose().toArray();
     }
 
@@ -89,6 +89,10 @@ public final class RandomizedConditionalIndependenceTest implements Independence
     public IndependenceTest indTestSubset(List<Node> vars) {
         return null;
     }
+
+
+
+    //===================================PRIVATE METHODS===============================//
 
     private boolean independentUnconditional(Node x, Node y) {
         // x=matrix2(x);
@@ -159,19 +163,13 @@ public final class RandomizedConditionalIndependenceTest implements Independence
         // Covariance Matrix f_x,f_y
         // Cxy=cov(f_x,f_y);
         TetradMatrix cxyMatrix = new TetradMatrix(fxMatrix.columns(), fyMatrix.columns());
-        double sum_cxy_squared = 0;
-        for (int i = 0; i < fxMatrix.columns(); i++) {
-            for (int j = 0; j < fyMatrix.columns(); j++) {
-                double cxy = StatUtils.covariance(fxMatrix.getColumn(i).toArray(), fyMatrix.getColumn(j).toArray());
-                cxyMatrix.set(i, j, cxy);
-                sum_cxy_squared += cxy * cxy;
-            }
-        }
+        double sum_cxy_squared = getSum_cxy_squared(fxMatrix, fyMatrix, cxyMatrix);
 
         // Sta = r*sum(Cxy^2);
         this.statistic = (double) R * sum_cxy_squared;
 
         if (approx == RandomIndApproximateMethod.perm) {
+
             // nperm =1000;
             int nperm = 1000;
 
@@ -182,6 +180,7 @@ public final class RandomizedConditionalIndependenceTest implements Independence
             //    Stas = c(Stas, Sta_p);
             //  }
             int perm_stat_less_than_stat = 0;
+
             for (int perm = 0; perm < nperm; perm++) {
                 TetradMatrix permMatrix = new TetradMatrix(fxMatrix.rows(), fxMatrix.columns());
                 List<Integer> perm_order = new ArrayList<>();
@@ -214,52 +213,21 @@ public final class RandomizedConditionalIndependenceTest implements Independence
         } else {
 
             // res_x = f_x-repmat(t(matrix(colMeans(f_x))),r,1);
-            TetradMatrix colMeans_f_x = new TetradMatrix(1, fxMatrix.columns());
-            for (int i = 0; i < fxMatrix.columns(); i++) {
-                colMeans_f_x.set(0, i, StatUtils.mean(fxMatrix.getColumn(i).toArray()));
-            }
-            TetradMatrix res_x = fxMatrix.minus(new TetradMatrix(RandomFourierFeatures.repMat(colMeans_f_x.toArray(), R, 1)));
+            TetradMatrix res_x = getTetradMatrix(R, fxMatrix);
 
             // res_y = f_y-repmat(t(matrix(colMeans(f_y))),r,1);
-            TetradMatrix colMeans_f_y = new TetradMatrix(1, fyMatrix.columns());
-            for (int i = 0; i < fyMatrix.columns(); i++) {
-                colMeans_f_y.set(0, i, StatUtils.mean(fyMatrix.getColumn(i).toArray()));
-            }
-            TetradMatrix res_y = fyMatrix.minus(new TetradMatrix(RandomFourierFeatures.repMat(colMeans_f_y.toArray(), R, 1)));
+            TetradMatrix res_y = getTetradMatrix(R, fyMatrix);
 
             // d =expand.grid(1:ncol(f_x),1:ncol(f_y));
-            int fxMatrix_cols = fxMatrix.columns();
-            int fyMatrix_cols = fyMatrix.columns();
-            TetradMatrix d = new TetradMatrix(fxMatrix_cols * fyMatrix_cols, 2);
-            int d_row = 0;
-            for (int fy_col = 0; fy_col < fyMatrix_cols; fy_col++) {
-                for (int fx_col = 0; fx_col < fxMatrix_cols; fx_col++) {
-                    d.set(d_row, 0, fx_col);
-                    d.set(d_row, 1, fy_col);
-                    d_row++;
-                }
-            }
+            TetradMatrix d = getD(fxMatrix, fyMatrix);
 
             // res = res_x[,d[,1]]*res_y[,d[,2]];
-            TetradMatrix res = new TetradMatrix(res_x.rows(), d.rows());
-            // System.out.println("res.rows() " + res.rows());
-            for (int i = 0; i < res_x.rows(); i++) {
-                for (int j = 0; j < d.rows(); j++) {
-                    int _d_0 = (int) d.get(j, 0);
-                    int _d_1 = (int) d.get(j, 1);
-
-                    double _res_x = res_x.get(i, _d_0);
-                    double _res_y = res_y.get(i, _d_1);
-
-                    res.set(i, j, _res_x * _res_y);
-                }
-            }
+            TetradMatrix res = getRes(res_x, res_y, d);
 
             // Cov = 1/r * (t(res)%*%res);
             TetradMatrix covMatrix = res.transpose().times(res).scalarMult(1 / (double) R);
 
             if (approx == RandomIndApproximateMethod.chi2) {
-
 
                 // i_Cov = ginv(Cov)
                 TetradMatrix iCovMatrix = covMatrix.ginverse();
@@ -276,14 +244,7 @@ public final class RandomizedConditionalIndependenceTest implements Independence
             } else {
 
 //                // eig_d = eigen(Cov);
-                edu.pitt.csb.mgm.EigenDecomposition ed1 = new edu.pitt.csb.mgm.EigenDecomposition(covMatrix.getRealMatrix());
-                List<Double> eig_d = asList(ed1.getRealEigenvalues());
-
-                // Sorts the eigenvalues high to low.
-                eig_d.sort((o1, o2) -> Double.compare(o2, o1));
-
-                // Gets the guys in ev1 and ev2 that are greater than threshold * max guy.
-                eig_d = getTopGuys(eig_d, 0);
+                List<Double> eig_d = getTopEigenvalues(covMatrix);
 
                 if (approx == RandomIndApproximateMethod.gamma) {
 
@@ -317,6 +278,70 @@ public final class RandomizedConditionalIndependenceTest implements Independence
         return this.pValue > alpha;
     }
 
+    private TetradMatrix getRes(TetradMatrix res_x, TetradMatrix res_y, TetradMatrix d) {
+        TetradMatrix res = new TetradMatrix(res_x.rows(), d.rows());
+        // System.out.println("res.rows() " + res.rows());
+        for (int i = 0; i < res_x.rows(); i++) {
+            for (int j = 0; j < d.rows(); j++) {
+                int _d_0 = (int) d.get(j, 0);
+                int _d_1 = (int) d.get(j, 1);
+
+                double _res_x = res_x.get(i, _d_0);
+                double _res_y = res_y.get(i, _d_1);
+
+                res.set(i, j, _res_x * _res_y);
+            }
+        }
+        return res;
+    }
+
+    private TetradMatrix getD(TetradMatrix fxMatrix, TetradMatrix fyMatrix) {
+        int fxMatrix_cols = fxMatrix.columns();
+        int fyMatrix_cols = fyMatrix.columns();
+        TetradMatrix d = new TetradMatrix(fxMatrix_cols * fyMatrix_cols, 2);
+        int d_row = 0;
+        for (int fy_col = 0; fy_col < fyMatrix_cols; fy_col++) {
+            for (int fx_col = 0; fx_col < fxMatrix_cols; fx_col++) {
+                d.set(d_row, 0, fx_col);
+                d.set(d_row, 1, fy_col);
+                d_row++;
+            }
+        }
+        return d;
+    }
+
+    private List<Double> getTopEigenvalues(TetradMatrix covMatrix) {
+        edu.pitt.csb.mgm.EigenDecomposition ed1 = new edu.pitt.csb.mgm.EigenDecomposition(covMatrix.getRealMatrix());
+        List<Double> eig_d = asList(ed1.getRealEigenvalues());
+
+        // Sorts the eigenvalues high to low.
+        eig_d.sort((o1, o2) -> Double.compare(o2, o1));
+
+        // Gets the guys in ev1 and ev2 that are greater than threshold * max guy.
+        eig_d = getTopGuys(eig_d, 0);
+        return eig_d;
+    }
+
+    private TetradMatrix getTetradMatrix(int r, TetradMatrix fxMatrix) {
+        TetradMatrix colMeans_f_x = new TetradMatrix(1, fxMatrix.columns());
+        for (int i = 0; i < fxMatrix.columns(); i++) {
+            colMeans_f_x.set(0, i, StatUtils.mean(fxMatrix.getColumn(i).toArray()));
+        }
+        return fxMatrix.minus(new TetradMatrix(RandomFourierFeatures.repMat(colMeans_f_x.toArray(), r, 1)));
+    }
+
+    private double getSum_cxy_squared(TetradMatrix fxMatrix, TetradMatrix fyMatrix, TetradMatrix cxyMatrix) {
+        double sum_cxy_squared = 0;
+        for (int i = 0; i < fxMatrix.columns(); i++) {
+            for (int j = 0; j < fyMatrix.columns(); j++) {
+                double cxy = StatUtils.covariance(fxMatrix.getColumn(i).toArray(), fyMatrix.getColumn(j).toArray());
+                cxyMatrix.set(i, j, cxy);
+                sum_cxy_squared += cxy * cxy;
+            }
+        }
+        return sum_cxy_squared;
+    }
+
     private void printResult(RandomIndApproximateMethod approx, Node x, Node y, List<Node> z, double pValue) {
         if (verbose) {
             System.out.println(approx + " " + SearchLogUtils.independenceFact(x, y, z) + " p = " + pValue + " "
@@ -340,9 +365,6 @@ public final class RandomizedConditionalIndependenceTest implements Independence
 
     @Override
     public boolean isIndependent(Node x, Node y, List<Node> z) {
-        IndependenceFact fact = new IndependenceFact(x, y, z);
-
-
         boolean independent;
 
         if (z == null || z.size() == 0) {
@@ -350,15 +372,6 @@ public final class RandomizedConditionalIndependenceTest implements Independence
         } else {
             independent = independentConditional(x, y, z);
         }
-
-//        if (independent) {
-//            System.out.println(fact + " Independent");
-//            TetradLogger.getInstance().log("info", fact + " Independent");
-//
-//        } else {
-//            System.out.println(fact);
-//            TetradLogger.getInstance().log("info", fact.toString());
-//        }
 
         return independent;
     }
@@ -478,69 +491,29 @@ public final class RandomizedConditionalIndependenceTest implements Independence
 
         // Standardize randomized Fourier features
         // f_x=normalize(four_x$feat);
-        TetradMatrix fxMatrix = new TetradMatrix(four_x.getFeature().rows(), four_x.getFeature().columns());
-        for (int i = 0; i < fxMatrix.columns(); i++) {
-            fxMatrix.assignColumn(i,
-                    new TetradVector(StatUtils.standardizeData(four_x.getFeature().getColumn(i).toArray())));
-        }
+        TetradMatrix fxMatrix = standardizedRandomFourierFeatures(four_x);
 
         // f_y=normalize(four_y$feat);
-        TetradMatrix fyMatrix = new TetradMatrix(four_y.getFeature().rows(), four_y.getFeature().columns());
-        for (int i = 0; i < fyMatrix.columns(); i++) {
-            fyMatrix.assignColumn(i,
-                    new TetradVector(StatUtils.standardizeData(four_y.getFeature().getColumn(i).toArray())));
-        }
+        TetradMatrix fyMatrix = standardizedRandomFourierFeatures(four_y);
 
         // f_z=normalize(four_z$feat);
-        TetradMatrix fzMatrix = new TetradMatrix(four_z.getFeature().rows(), four_z.getFeature().columns());
-        for (int i = 0; i < fzMatrix.columns(); i++) {
-            fzMatrix.assignColumn(i,
-                    new TetradVector(StatUtils.standardizeData(four_z.getFeature().getColumn(i).toArray())));
-        }
+        TetradMatrix fzMatrix = standardizedRandomFourierFeatures(four_z);
 
         // Covariance Matrix f_x,f_y
         // Cxy=cov(f_x,f_y);
-        TetradMatrix cxyMatrix = new TetradMatrix(fxMatrix.columns(), fyMatrix.columns());
-        for (int i = 0; i < fxMatrix.columns(); i++) {
-            for (int j = 0; j < fyMatrix.columns(); j++) {
-                cxyMatrix.set(i, j,
-                        StatUtils.covariance(fxMatrix.getColumn(i).toArray(), fyMatrix.getColumn(j).toArray()));
-            }
-        }
+        TetradMatrix cxyMatrix = fourierCovarianceMatrix(fxMatrix, fyMatrix);
 
         // Covariance Matrix f_x,f_z
         // Cxz=cov(f_x,f_z);
-        TetradMatrix cxzMatrix = new TetradMatrix(fxMatrix.columns(), fzMatrix.columns());
-        for (int i = 0; i < fxMatrix.columns(); i++) {
-            for (int j = 0; j < fzMatrix.columns(); j++) {
-                cxzMatrix.set(i, j,
-                        StatUtils.covariance(fxMatrix.getColumn(i).toArray(), fzMatrix.getColumn(j).toArray()));
-            }
-        }
+        TetradMatrix cxzMatrix = fourierCovarianceMatrix(fxMatrix, fzMatrix);
 
         // Covariance Matrix f_z,f_y
         // double[][] czy = new double[f_z.length][f_y.length];
-        TetradMatrix czyMatrix = new TetradMatrix(fzMatrix.columns(), fyMatrix.columns());
-        for (int i = 0; i < fzMatrix.columns(); i++) {
-            for (int j = 0; j < fyMatrix.columns(); j++) {
-                czyMatrix.set(i, j,
-                        StatUtils.covariance(fzMatrix.getColumn(i).toArray(), fyMatrix.getColumn(j).toArray()));
-            }
-        }
+        TetradMatrix czyMatrix = fourierCovarianceMatrix(fzMatrix, fyMatrix);
 
         // Covariance matrix f_z
         // double[][] czz = new double[f_z.length][f_z.length];
-        TetradMatrix czzMatrix = new TetradMatrix(fzMatrix.columns(), fzMatrix.columns());
-        for (int i = 0; i < fzMatrix.columns(); i++) {
-            for (int j = i; j < fzMatrix.columns(); j++) {
-                czzMatrix.set(i, j,
-                        StatUtils.covariance(fzMatrix.getColumn(i).toArray(), fzMatrix.getColumn(j).toArray()));
-                if (i != j) {
-                    czzMatrix.set(j, i,
-                            StatUtils.covariance(fzMatrix.getColumn(i).toArray(), fzMatrix.getColumn(j).toArray()));
-                }
-            }
-        }
+        TetradMatrix czzMatrix = getCzzMatrix(fzMatrix);
 
         // i_Czz = ginv(Czz+diag(num_f)*1E-10);
         TetradMatrix diagFeature = new TetradMatrix(MatrixUtils.identity(num_feature));
@@ -577,9 +550,7 @@ public final class RandomizedConditionalIndependenceTest implements Independence
 
             // Sta = r*sum(Cxy_z^2);
             this.statistic = ((double) row) * sum_cxy_z_squared;
-            //System.out.println("statistic: " + statistic);
 
-            // nperm =1000;
             int nperm = 1000;
 
             // Stas = c();
@@ -629,39 +600,18 @@ public final class RandomizedConditionalIndependenceTest implements Independence
             // d =expand.grid(1:ncol(f_x),1:ncol(f_y));
             int fxMatrix_cols = fxMatrix.columns();
             int fyMatrix_cols = fyMatrix.columns();
-            TetradMatrix d = new TetradMatrix(fxMatrix_cols * fyMatrix_cols, 2);
-            int d_row = 0;
-            for (int fy_col = 0; fy_col < fyMatrix_cols; fy_col++) {
-                for (int fx_col = 0; fx_col < fxMatrix_cols; fx_col++) {
-                    d.set(d_row, 0, fx_col);
-                    d.set(d_row, 1, fy_col);
-                    d_row++;
-                }
-            }
+            TetradMatrix d = getD(fxMatrix_cols, fyMatrix_cols);
 
             // System.out.println("d.rows() " + d.rows());
 
             // res = res_x[,d[,1]]*res_y[,d[,2]];
-            TetradMatrix res = new TetradMatrix(res_x.rows(), d.rows());
-            // System.out.println("res.rows() " + res.rows());
-            for (int i = 0; i < res_x.rows(); i++) {
-                for (int j = 0; j < d.rows(); j++) {
-                    int _d_0 = (int) d.get(j, 0);
-                    int _d_1 = (int) d.get(j, 1);
-                    //System.out.println("i= " + i + " _d_0:_d_1 " + _d_0 + ":" +_d_1);
-
-                    double _res_x = res_x.get(i, _d_0);
-                    double _res_y = res_y.get(i, _d_1);
-                    //System.out.println("_res_x:_res_y " + _res_x + ":" +_res_y);
-
-                    res.set(i, j, _res_x * _res_y);
-                }
-            }
+            TetradMatrix res = getRes(res_x, res_y, d);
 
             // Cov = 1/r * (t(res)%*%res);
             TetradMatrix covMatrix = res.transpose().times(res).scalarMult(1.0 / (double) row);
 
             if (approx == RandomIndApproximateMethod.chi2) {
+
                 // i_Cov = ginv(Cov)
                 TetradMatrix iCovMatrix = covMatrix.inverse();
 
@@ -675,28 +625,7 @@ public final class RandomizedConditionalIndependenceTest implements Independence
                 this.pValue = 1.0 - ProbUtils.chisqCdf(this.statistic, flattened.rows());
 
             } else {
-
-                edu.pitt.csb.mgm.EigenDecomposition ed1 = new edu.pitt.csb.mgm.EigenDecomposition(covMatrix.getRealMatrix());
-                List<Double> eig_d = asList(ed1.getRealEigenvalues());
-
-                // Sorts the eigenvalues high to low.
-                eig_d.sort((o1, o2) -> Double.compare(o2, o1));
-
-                // Gets the guys in ev1 and ev2 that are greater than threshold * max guy.
-                eig_d = getTopGuys(eig_d, 0);
-
-
-//                // eig_d = eigen(Cov,symmetric=TRUE);
-//                EigenDecomposition eigen = new EigenDecomposition(covMatrix.getRealMatrix());
-//
-//                // eig_d$values=eig_d$values[eig_d$values>0];
-//                List<Double> eig_d = new ArrayList<>();
-//                for (int i = 0; i < eigen.getRealEigenvalues().length; i++) {
-//                    double value = eigen.getRealEigenvalue(i);
-//                    if (value > 0) {
-//                        eig_d.add(value);
-//                    }
-//                }
+                List<Double> eig_d = getTopEigenvalues(covMatrix);
 
                 if (approx == RandomIndApproximateMethod.gamma) {
 
@@ -733,6 +662,54 @@ public final class RandomizedConditionalIndependenceTest implements Independence
         printResult(approx, x, y, new ArrayList<>(), pValue);
 
         return this.pValue > alpha;
+    }
+
+    private TetradMatrix getD(int fxMatrix_cols, int fyMatrix_cols) {
+        TetradMatrix d = new TetradMatrix(fxMatrix_cols * fyMatrix_cols, 2);
+        int d_row = 0;
+        for (int fy_col = 0; fy_col < fyMatrix_cols; fy_col++) {
+            for (int fx_col = 0; fx_col < fxMatrix_cols; fx_col++) {
+                d.set(d_row, 0, fx_col);
+                d.set(d_row, 1, fy_col);
+                d_row++;
+            }
+        }
+        return d;
+    }
+
+    private TetradMatrix getCzzMatrix(TetradMatrix fzMatrix) {
+        TetradMatrix czzMatrix = new TetradMatrix(fzMatrix.columns(), fzMatrix.columns());
+        for (int i = 0; i < fzMatrix.columns(); i++) {
+            for (int j = i; j < fzMatrix.columns(); j++) {
+                czzMatrix.set(i, j,
+                        StatUtils.covariance(fzMatrix.getColumn(i).toArray(), fzMatrix.getColumn(j).toArray()));
+                if (i != j) {
+                    czzMatrix.set(j, i,
+                            StatUtils.covariance(fzMatrix.getColumn(i).toArray(), fzMatrix.getColumn(j).toArray()));
+                }
+            }
+        }
+        return czzMatrix;
+    }
+
+    private TetradMatrix fourierCovarianceMatrix(TetradMatrix fxMatrix, TetradMatrix fyMatrix) {
+        TetradMatrix cxyMatrix = new TetradMatrix(fxMatrix.columns(), fyMatrix.columns());
+        for (int i = 0; i < fxMatrix.columns(); i++) {
+            for (int j = 0; j < fyMatrix.columns(); j++) {
+                cxyMatrix.set(i, j,
+                        StatUtils.covariance(fxMatrix.getColumn(i).toArray(), fyMatrix.getColumn(j).toArray()));
+            }
+        }
+        return cxyMatrix;
+    }
+
+    private TetradMatrix standardizedRandomFourierFeatures(RandomFourierFeatures four_x) {
+        TetradMatrix fxMatrix = new TetradMatrix(four_x.getFeature().rows(), four_x.getFeature().columns());
+        for (int i = 0; i < fxMatrix.columns(); i++) {
+            fxMatrix.assignColumn(i,
+                    new TetradVector(StatUtils.standardizeData(four_x.getFeature().getColumn(i).toArray())));
+        }
+        return fxMatrix;
     }
 
     private double getSum_cxy_z_squared(TetradMatrix cxy_zMatrix) {
@@ -1522,10 +1499,6 @@ public final class RandomizedConditionalIndependenceTest implements Independence
 
     public DataSet getDataSet() {
         return dataSet;
-    }
-
-    public RandomIndApproximateMethod getApprox() {
-        return approx;
     }
 
     public void setApprox(RandomIndApproximateMethod approx) {
