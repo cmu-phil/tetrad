@@ -329,7 +329,7 @@ public class ParamDescriptions {
 
         map.put("rcitNumFeatures", new ParamDescription(
                 "The number of random features to use",
-                25, 1, Integer.MAX_VALUE));
+                10, 1, Integer.MAX_VALUE));
 
         map.put("kciUseAppromation", new ParamDescription(
                 "Use the approximate Gamma approximation algorithm", false));
