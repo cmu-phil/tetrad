@@ -25,17 +25,15 @@ import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataUtils;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.StatUtils;
-import edu.cmu.tetrad.util.dist.Normal;
 import org.apache.commons.math3.distribution.NormalDistribution;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static edu.cmu.tetrad.util.StatUtils.covariance;
-import static edu.cmu.tetrad.util.StatUtils.getZForAlpha;
-import static edu.cmu.tetrad.util.StatUtils.median;
+import static edu.cmu.tetrad.util.StatUtils.*;
 import static java.lang.Math.*;
+import static java.lang.Math.pow;
 
 /**
  * Checks conditional independence of variable in a continuous data set using a
