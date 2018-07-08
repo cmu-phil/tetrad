@@ -20,9 +20,7 @@ package edu.pitt.dbmi.algo.rcit;
 
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
-import edu.cmu.tetrad.data.DataUtils;
 import edu.cmu.tetrad.data.ICovarianceMatrix;
-import edu.cmu.tetrad.graph.IndependenceFact;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.search.SearchLogUtils;
@@ -120,11 +118,9 @@ public final class RandomizedConditionalIndependenceTest implements Independence
         // sigma_x
         // median(c(t(dist(x[1:r1,])))
         double[] dist_x = new double[(r1 - 1) * (r1) / 2];
-        int k = 0;
         for (int i = 0; i < r1; i++) {
             for (int j = i + 1; j < r1; j++) {
                 dist_x[i] = distance(_data, new int[_x], i, j);
-                k++;
             }
         }
         double sigma_x = StatUtils.median(dist_x);
@@ -135,11 +131,9 @@ public final class RandomizedConditionalIndependenceTest implements Independence
         // sigma_y
         // median(c(t(dist(y[1:r1,]))))
         double[] dist_y = new double[(r1 - 1) * (r1) / 2];
-        k = 0;
         for (int i = 0; i < r1; i++) {
             for (int j = i + 1; j < r1; j++) {
                 dist_x[i] = distance(_data, new int[_y], i, j);
-                k++;
             }
         }
         double sigma_y = StatUtils.median(dist_y);
@@ -261,10 +255,10 @@ public final class RandomizedConditionalIndependenceTest implements Independence
                     //   p=1-hbe(eig_d$values,Sta);
                     // }
                     try {
-                        this.pValue = lpd4(eig_d, this.statistic);
+                        this.pValue = 1.0 - lpd4(eig_d, this.statistic);
                     } catch (Exception e) {
                         e.printStackTrace();
-                        this.pValue = hbe(eig_d, this.statistic);
+                        this.pValue = 1.0 - hbe(eig_d, this.statistic);
                     }
                 }
             }
@@ -318,7 +312,7 @@ public final class RandomizedConditionalIndependenceTest implements Independence
         eig_d.sort((o1, o2) -> Double.compare(o2, o1));
 
         // Gets the guys in ev1 and ev2 that are greater than threshold * max guy.
-        eig_d = getTopGuys(eig_d, 0);
+        eig_d = getPositiveGuys(eig_d);
         return eig_d;
     }
 
@@ -343,7 +337,7 @@ public final class RandomizedConditionalIndependenceTest implements Independence
     }
 
     private void printResult(RandomIndApproximateMethod approx, Node x, Node y, List<Node> z, double pValue) {
-        if (verbose) {
+        if (isVerbose()) {
             System.out.println(approx + " " + SearchLogUtils.independenceFact(x, y, z) + " p = " + pValue + " "
                     + ((pValue > alpha) ? "Independent" : "Dependent"));
         }
@@ -590,6 +584,7 @@ public final class RandomizedConditionalIndependenceTest implements Independence
             // p = 1-(sum(Sta >= Stas)/length(Stas));
             this.pValue = 1 - (double) perm_stat_less_than_stat / nperm;
         } else {
+
             // Cxy_z=Cxy-Cxz%*%i_Czz%*%Czy; #less accurate for permutation testing
             TetradMatrix cxy_zMatrix = cxyMatrix.minus(cxzMatrix.times(i_czzMatrix.times(czyMatrix)));
             double sum_cxy_z_squared = getSum_cxy_z_squared(cxy_zMatrix);
@@ -645,10 +640,10 @@ public final class RandomizedConditionalIndependenceTest implements Independence
                     // p=1-hbe(eig_d$values,Sta);
                     // }
                     try {
-                        this.pValue = lpd4(eig_d, this.statistic);
+                        this.pValue = 1.0 - lpd4(eig_d, this.statistic);
                     } catch (Exception e) {
                         e.printStackTrace();
-                        this.pValue = hbe(eig_d, this.statistic);
+                        this.pValue = 1.0 - hbe(eig_d, this.statistic);
                     }
                 }
             }
@@ -679,6 +674,7 @@ public final class RandomizedConditionalIndependenceTest implements Independence
 
     private TetradMatrix getCzzMatrix(TetradMatrix fzMatrix) {
         TetradMatrix czzMatrix = new TetradMatrix(fzMatrix.columns(), fzMatrix.columns());
+
         for (int i = 0; i < fzMatrix.columns(); i++) {
             for (int j = i; j < fzMatrix.columns(); j++) {
                 czzMatrix.set(i, j,
@@ -689,26 +685,31 @@ public final class RandomizedConditionalIndependenceTest implements Independence
                 }
             }
         }
+
         return czzMatrix;
     }
 
     private TetradMatrix fourierCovarianceMatrix(TetradMatrix fxMatrix, TetradMatrix fyMatrix) {
         TetradMatrix cxyMatrix = new TetradMatrix(fxMatrix.columns(), fyMatrix.columns());
+
         for (int i = 0; i < fxMatrix.columns(); i++) {
             for (int j = 0; j < fyMatrix.columns(); j++) {
                 cxyMatrix.set(i, j,
                         StatUtils.covariance(fxMatrix.getColumn(i).toArray(), fyMatrix.getColumn(j).toArray()));
             }
         }
+
         return cxyMatrix;
     }
 
     private TetradMatrix standardizedRandomFourierFeatures(RandomFourierFeatures four_x) {
         TetradMatrix fxMatrix = new TetradMatrix(four_x.getFeature().rows(), four_x.getFeature().columns());
+
         for (int i = 0; i < fxMatrix.columns(); i++) {
             fxMatrix.assignColumn(i,
                     new TetradVector(StatUtils.standardizeData(four_x.getFeature().getColumn(i).toArray())));
         }
+
         return fxMatrix;
     }
 
@@ -726,6 +727,7 @@ public final class RandomizedConditionalIndependenceTest implements Independence
     }
 
     private double sw(List<Double> coeff, double x) {
+
         // Satterthwaite-Welch method
         // translated from sw.R, momentchi2 library
         // https://cran.r-project.org/web/packages/momentchi2/index.html
@@ -758,6 +760,7 @@ public final class RandomizedConditionalIndependenceTest implements Independence
     }
 
     private double hbe(List<Double> coeff, double x) {
+
         // Hall-Buckley-Eagleson method
         // translated from hbe.R, momentchi2 library
         // https://cran.r-project.org/web/packages/momentchi2/index.html
@@ -804,6 +807,7 @@ public final class RandomizedConditionalIndependenceTest implements Independence
     }
 
     private double lpd4(List<Double> coeff, double x) {
+
         // Lindsay-Pilla-Basak method
         // Computes the cdf of a positively-weighted sum of chi-squared random variables
         // with
@@ -875,7 +879,7 @@ public final class RandomizedConditionalIndependenceTest implements Independence
         // moment_vec <- get_weighted_sum_of_chi_squared_moments(coeff, p)
         TetradVector coeffvec = new TetradVector(coeff.size());
         for (int i = 0; i < coeffvec.size(); i++) {
-            coeffvec.set(i, coeff.get(i).doubleValue());
+            coeffvec.set(i, coeff.get(i));
         }
         TetradVector moment_vec = get_weighted_sum_of_chi_squared_moments(coeffvec, p);
 
@@ -906,7 +910,7 @@ public final class RandomizedConditionalIndependenceTest implements Independence
         // Step 5.1: use the deltastar_i(lambdatilde_p) from Step 4 to generate
         // M_p, which will be used to create matrix Stilde(lambdatilde_p, t)
         // M_p <- deltaNmat_applied(lambdatilde_p, moment_vec, p)
-        TetradMatrix m_p = deltaNmat_applied(lambdatilde_p, moment_vec, p);
+        TetradMatrix m_p = deltaNmat_applied(lambdatilde_p, moment_vec, p - 1);
 
         // Step 5.2: Compute polynomial coefficients of the modified M_p matrix (as in
         // paper).
@@ -941,17 +945,15 @@ public final class RandomizedConditionalIndependenceTest implements Independence
         //
         // This is the final answer
         // mixed_p_val_vec <- get_mixed_p_val_vec(x, mu_roots, pi_vec, lambdatilde_p)
-        double mixed_p_val = get_mixed_p_val_vec(x, mu_roots, pi_vec, lambdatilde_p);
 
-        return mixed_p_val;
+        return get_mixed_p_val_vec(x, mu_roots, pi_vec, lambdatilde_p);
     }
 
     // Step 1:
     // hides the computation of the cumulants, by just talking about moments
     private TetradVector get_weighted_sum_of_chi_squared_moments(TetradVector coeffvec, int p) {
         TetradVector cumulant_vec = get_cumulant_vec_vectorised(coeffvec, p);
-        TetradVector moment_vec = get_moments_from_cumulants(cumulant_vec);
-        return moment_vec;
+        return get_moments_from_cumulants(cumulant_vec);
     }
 
     // get the cumulants kappa_1, kappa_2, ..., kappa_2p
@@ -982,40 +984,40 @@ public final class RandomizedConditionalIndependenceTest implements Independence
 
     // return x^p
     private double powers(int p, double x) {
-        return Math.pow(x, p);
-//        if (p == 0) {
-//            return 1.0;
-//        }
-//        boolean inversed = false;
-//        if (p < 0) {
-//            inversed = true;
-//            p = -p;
-//        }
-//        if (p == 1) {
-//            return !inversed ? x : 1 / x;
-//        }
-//        int odd = 0;
-//        if (p % 2 == 1) {
-//            odd++;
-//            p -= 1;
-//        }
-//        int height = binlog(p);
-//        odd += p - powers(height, 2);
-//        double product = 1.0;
-//        for (int i = 0; i < height; i++) {
-//            if (product == 1.0) {
-//                product = x * x;
-//            } else {
-//                product = product * product;
-//            }
-//        }
-//        if (odd > 0) {
-//            product = product * powers(odd, x);
-//        }
-//        if (inversed) {
-//            product = 1 / product;
-//        }
-//        return product;
+//        return Math.pow(x, p);
+        if (p == 0) {
+            return 1.0;
+        }
+        boolean inversed = false;
+        if (p < 0) {
+            inversed = true;
+            p = -p;
+        }
+        if (p == 1) {
+            return !inversed ? x : 1 / x;
+        }
+        int odd = 0;
+        if (p % 2 == 1) {
+            odd++;
+            p -= 1;
+        }
+        int height = binlog(p);
+        odd += p - powers(height, 2);
+        double product = 1.0;
+        for (int i = 0; i < height; i++) {
+            if (product == 1.0) {
+                product = x * x;
+            } else {
+                product = product * product;
+            }
+        }
+        if (odd > 0) {
+            product = product * powers(odd, x);
+        }
+        if (inversed) {
+            product = 1 / product;
+        }
+        return product;
     }
 
     // https://stackoverflow.com/questions/3305059/how-do-you-calculate-log-base-2-in-java-for-integers
@@ -1100,10 +1102,10 @@ public final class RandomizedConditionalIndependenceTest implements Independence
 
         // want moments 0, 1, ..., 2N
         // m_vec <- c(1, m_vec[1:(2*N)])
-        m_vec = new TetradVector(2 * n + 1);
-        for (int i = 0; i < 2 * n + 1; i++) {
-            m_vec.set(i, i);
-        }
+//        m_vec = new TetradVector(2 * n + 1);
+//        for (int i = 0; i < 2 * n + 1; i++) {
+//            m_vec.set(i, i);
+//        }
 
         // these will be the coefficients for the x in (1+c_1*x)*(1+c_2*x)*...
         // want coefficients 0, 0, 1, 2, .., 2N-1 - so 2N+1 in total
@@ -1164,13 +1166,21 @@ public final class RandomizedConditionalIndependenceTest implements Independence
         return vec1[index] * vec2[index];
     }
 
+    public boolean isVerbose() {
+        return verbose;
+    }
+
+    public void setVerbose(boolean verbose) {
+        this.verbose = verbose;
+    }
+
     // Simply uses above matrix generation function
     private static class DetDeltamatN implements UnivariateFunction {
 
         private TetradVector m_vec;
         private int n;
 
-        public void setM_vec(TetradVector m_vec) {
+        void setM_vec(TetradVector m_vec) {
             this.m_vec = m_vec;
         }
 
@@ -1181,7 +1191,7 @@ public final class RandomizedConditionalIndependenceTest implements Independence
         @Override
         public double value(double x) {
             // TODO Auto-generated method stub
-            return deltaNmat_applied(x, this.m_vec, this.n).det();
+            return deltaNmat_applied(x , this.m_vec, this.n).det();
         }
 
 
@@ -1215,7 +1225,7 @@ public final class RandomizedConditionalIndependenceTest implements Independence
                 double upper = lambdatilde_vec.get(i);
                 double root;
                 if (upper == 0) {
-                    root = 1;
+                    root = .0001;
                 } else {
                     root = solver.solve(maximumIterations, det_deltamat_n, lower, upper);
                 }
@@ -1227,9 +1237,8 @@ public final class RandomizedConditionalIndependenceTest implements Independence
         }
         // now distinguish lambdatilde_p
         // lambdatilde_p <- lambdatilde_vec[p]
-        double lambdatilde_p = lambdatilde_vec.get(p - 1);
 
-        return lambdatilde_p;
+        return lambdatilde_vec.get(p - 1);
     }
 
     // Step 5.2: Compute polynomial coefficients for mu polynomial
@@ -1264,7 +1273,7 @@ public final class RandomizedConditionalIndependenceTest implements Independence
     private TetradVector get_base_vector(int n, int i) {
         TetradVector base_vec = new TetradVector(n);
         base_vec.assign(0);
-        base_vec.set(0, 1);
+        base_vec.set(i, 1);
         return base_vec;
     }
 
@@ -1303,7 +1312,7 @@ public final class RandomizedConditionalIndependenceTest implements Independence
         // NB: If p is too large (p>10), this can yield an error (claims the matrix is singluar).
         // A tailor-made VDM solver should fix this.
         // pi_vec <- solve(VDM, b_vec)
-        TetradVector pi_vec = null;
+        TetradVector pi_vec;
         try {
             pi_vec = vdm.inverse().times(b_vec);
         } catch (SingularMatrixException e) {
@@ -1465,7 +1474,7 @@ public final class RandomizedConditionalIndependenceTest implements Independence
 
     @Override
     public DataModel getData() {
-        return (DataModel) dataSet;
+        return dataSet;
     }
 
     @Override
@@ -1503,10 +1512,6 @@ public final class RandomizedConditionalIndependenceTest implements Independence
 
     public void setApprox(RandomIndApproximateMethod approx) {
         this.approx = approx;
-    }
-
-    public int getNum_feature() {
-        return num_feature;
     }
 
     public void setNum_feature(int num_feature) {
@@ -1571,13 +1576,11 @@ public final class RandomizedConditionalIndependenceTest implements Independence
         return data;
     }
 
-    private List<Double> getTopGuys(List<Double> allDoubles, double threshold) {
-        double maxEig = allDoubles.get(0);
-
+    private List<Double> getPositiveGuys(List<Double> d) {
         List<Double> prodSelection = new ArrayList<>();
 
-        for (double p : allDoubles) {
-            if (p > maxEig * threshold) {
+        for (double p : d) {
+            if (p > 0) {
                 prodSelection.add(p);
             }
         }
