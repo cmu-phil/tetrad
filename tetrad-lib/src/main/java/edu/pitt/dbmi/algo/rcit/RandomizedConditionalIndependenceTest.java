@@ -48,24 +48,31 @@ import static java.lang.Math.sqrt;
  */
 public final class RandomizedConditionalIndependenceTest implements IndependenceTest {
 
-    /**
-     * The data set this test uses.
-     */
-    private DataSet dataSet;
-
-    private double[][] _data;
-
-    final private List<Node> variables;
-
+    // The type of approximation to use.
     private RandomIndApproximateMethod approx = RandomIndApproximateMethod.chi2;
 
+    // The data passed into the test.
+    private DataSet dataSet;
+
+    // Data converted to column arrays. _data[1] is the data for the first columns, e.g.
+    private double[][] _data;
+
+    // The variable in the dataset.
+    private final List<Node> variables;
+
+    // The number of random features to use per test.
     private int num_feature = 25;
 
+    // The alpha level to use.
     private double alpha = 0.01;
 
+    // The p-value of the latest test.
     private double pValue = Double.NaN;
 
+    // The statistic for the latest test.
     private double statistic = Double.NaN;
+
+    // True if verbose output should be printed to console.
     private boolean verbose = true;
 
     public RandomizedConditionalIndependenceTest(DataSet dataSet) {
@@ -160,11 +167,9 @@ public final class RandomizedConditionalIndependenceTest implements Independence
                 sum_cxy_squared += cxy * cxy;
             }
         }
-        //System.out.println("sum_cxy_squared: " + sum_cxy_squared);
 
         // Sta = r*sum(Cxy^2);
         this.statistic = (double) R * sum_cxy_squared;
-        //System.out.println("statistic: " + statistic);
 
         if (approx == RandomIndApproximateMethod.perm) {
             // nperm =1000;
@@ -206,7 +211,6 @@ public final class RandomizedConditionalIndependenceTest implements Independence
 
             // p = 1-(sum(Sta >= Stas)/length(Stas));
             this.pValue = 1.0 - (double) perm_stat_less_than_stat / nperm;
-            //System.out.println("RIT:perm:p-value: " + pValue);
         } else {
 
             // res_x = f_x-repmat(t(matrix(colMeans(f_x))),r,1);
@@ -243,11 +247,9 @@ public final class RandomizedConditionalIndependenceTest implements Independence
                 for (int j = 0; j < d.rows(); j++) {
                     int _d_0 = (int) d.get(j, 0);
                     int _d_1 = (int) d.get(j, 1);
-                    //System.out.println("i= " + i + " _d_0:_d_1 " + _d_0 + ":" +_d_1);
 
                     double _res_x = res_x.get(i, _d_0);
                     double _res_y = res_y.get(i, _d_1);
-                    //System.out.println("_res_x:_res_y " + _res_x + ":" +_res_y);
 
                     res.set(i, j, _res_x * _res_y);
                 }
@@ -271,7 +273,6 @@ public final class RandomizedConditionalIndependenceTest implements Independence
 
                 // p = 1-pchisq(Sta, length(c(Cxy)));
                 this.pValue = 1.0 - ProbUtils.chisqCdf(this.statistic, flattened.rows());
-                //System.out.println("RIT:chi2:p-value: " + pValue);
             } else {
 
 //                // eig_d = eigen(Cov);
@@ -292,6 +293,7 @@ public final class RandomizedConditionalIndependenceTest implements Independence
                     // p=1-hbe(eig_d$values,Sta);
                     this.pValue = 1.0 - hbe(eig_d, this.statistic);
                 } else if (approx == RandomIndApproximateMethod.lpd4) {
+
                     // eig_d_values=eig_d$values;
                     // p=try(1-lpb4(eig_d_values,Sta), silent=TRUE);
                     // if (!is.numeric(p)){
@@ -311,13 +313,15 @@ public final class RandomizedConditionalIndependenceTest implements Independence
             this.pValue = 0;
         }
 
-        printResult(approx, x, y,  new ArrayList<>(), pValue);
+        printResult(approx, x, y, new ArrayList<>(), pValue);
         return this.pValue > alpha;
     }
 
     private void printResult(RandomIndApproximateMethod approx, Node x, Node y, List<Node> z, double pValue) {
-        System.out.println(approx + " " + SearchLogUtils.independenceFact(x, y, z) + " p = " + pValue + " "
-                + ((pValue > alpha) ? "Independent" : "Dependent"));
+        if (verbose) {
+            System.out.println(approx + " " + SearchLogUtils.independenceFact(x, y, z) + " p = " + pValue + " "
+                    + ((pValue > alpha) ? "Independent" : "Dependent"));
+        }
 
     }
 
@@ -344,7 +348,7 @@ public final class RandomizedConditionalIndependenceTest implements Independence
         if (z == null || z.size() == 0) {
             independent = independentUnconditional(x, y);
         } else {
-            independent = independentConditional (x, y, z);
+            independent = independentConditional(x, y, z);
         }
 
 //        if (independent) {
@@ -726,7 +730,7 @@ public final class RandomizedConditionalIndependenceTest implements Independence
             this.pValue = 0;
         }
 
-        printResult(approx, x, y,  new ArrayList<>(), pValue);
+        printResult(approx, x, y, new ArrayList<>(), pValue);
 
         return this.pValue > alpha;
     }
