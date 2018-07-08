@@ -25,10 +25,10 @@ import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.search.SearchLogUtils;
 import edu.cmu.tetrad.util.*;
+import edu.pitt.csb.mgm.EigenDecomposition;
 import org.apache.commons.math3.analysis.UnivariateFunction;
 import org.apache.commons.math3.analysis.solvers.BrentSolver;
 import org.apache.commons.math3.distribution.GammaDistribution;
-import org.apache.commons.math3.linear.EigenDecomposition;
 import org.apache.commons.math3.linear.SingularMatrixException;
 
 import java.util.ArrayList;
@@ -203,6 +203,10 @@ public final class RandomizedConditionalIndependenceTest implements Independence
     }
 
     public void setApprox(RandomIndApproximateMethod approx) {
+        if (approx == RandomIndApproximateMethod.chi2) {
+            throw new IllegalArgumentException("The chi square method is not configured.");
+        }
+
         this.approx = approx;
     }
 
@@ -356,21 +360,22 @@ public final class RandomizedConditionalIndependenceTest implements Independence
             // Cov = 1/r * (t(res)%*%res);
             TetradMatrix covMatrix = res.transpose().times(res).scalarMult(1 / (double) R);
 
-            if (approx == RandomIndApproximateMethod.chi2) {
-
-                // i_Cov = ginv(Cov)
-                TetradMatrix iCovMatrix = covMatrix.ginverse();
-
-                // Flatten Cxy
-                TetradMatrix flattened = c(cxyMatrix);
-
-                // Sta = r * (c(Cxy)%*%  i_Cov %*% c(Cxy) );
-                this.statistic = ((double) R) * flattened.transpose().times(iCovMatrix).times(flattened).get(0, 0);
-                //System.out.println("statistic: " + statistic);
-
-                // p = 1-pchisq(Sta, length(c(Cxy)));
-                this.pValue = 1.0 - ProbUtils.chisqCdf(this.statistic, flattened.rows());
-            } else {
+//            if (approx == RandomIndApproximateMethod.chi2) {
+//
+//                // i_Cov = ginv(Cov)
+//                TetradMatrix iCovMatrix = covMatrix.ginverse();
+//
+//                // Flatten Cxy
+//                TetradMatrix flattened = c(cxyMatrix);
+//
+//                // Sta = r * (c(Cxy)%*%  i_Cov %*% c(Cxy) );
+//                this.statistic = ((double) R) * flattened.transpose().times(iCovMatrix).times(flattened).get(0, 0);
+//                //System.out.println("statistic: " + statistic);
+//
+//                // p = 1-pchisq(Sta, length(c(Cxy)));
+//                this.pValue = 1.0 - ProbUtils.chisqCdf(this.statistic, flattened.rows());
+//            } else
+            {
 
 //                // eig_d = eigen(Cov);
                 List<Double> eig_d = getTopEigenvalues(covMatrix);
@@ -644,21 +649,22 @@ public final class RandomizedConditionalIndependenceTest implements Independence
             // Cov = 1/r * (t(res)%*%res);
             TetradMatrix covMatrix = res.transpose().times(res).scalarMult(1.0 / (double) R);
 
-            if (approx == RandomIndApproximateMethod.chi2) {
-
-                // i_Cov = ginv(Cov)
-                TetradMatrix iCovMatrix = covMatrix.ginverse();
-
-                // Sta = r * (c(Cxy_z)%*% i_Cov %*% c(Cxy_z) );
-                // Flatten Cxy_z
-                TetradMatrix c = c(cxy_zMatrix);
-
-                this.statistic = ((double) R) * c.transpose().times(iCovMatrix).times(c).get(0, 0);
-
-                // p = 1-pchisq(Sta, length(c(Cxy_z)));
-                this.pValue = 1.0 - ProbUtils.chisqCdf(this.statistic, c.rows());
-
-            } else {
+//            if (approx == RandomIndApproximateMethod.chi2) {
+//
+//                // i_Cov = ginv(Cov)
+//                TetradMatrix iCovMatrix = covMatrix.ginverse();
+//
+//                // Sta = r * (c(Cxy_z)%*% i_Cov %*% c(Cxy_z) );
+//                // Flatten Cxy_z
+//                TetradMatrix c = c(cxy_zMatrix);
+//
+//                this.statistic = ((double) R) * c.transpose().times(iCovMatrix).times(c).get(0, 0);
+//
+//                // p = 1-pchisq(Sta, length(c(Cxy_z)));
+//                this.pValue = 1.0 - ProbUtils.chisqCdf(this.statistic, c.rows());
+//
+//            } else
+            {
                 List<Double> eig_d = getTopEigenvalues(covMatrix);
 
                 if (approx == RandomIndApproximateMethod.gamma) {
@@ -782,7 +788,6 @@ public final class RandomizedConditionalIndependenceTest implements Independence
         }
         return flattenCxyMatrix;
     }
-
 
 
     private TetradMatrix getD(int fxMatrix_cols, int fyMatrix_cols) {
@@ -1308,7 +1313,7 @@ public final class RandomizedConditionalIndependenceTest implements Independence
         @Override
         public double value(double x) {
             // TODO Auto-generated method stub
-            return deltaNmat_applied(x , this.m_vec, this.n).det();
+            return deltaNmat_applied(x, this.m_vec, this.n).det();
         }
 
 
@@ -1590,8 +1595,6 @@ public final class RandomizedConditionalIndependenceTest implements Independence
         }
         return Math.sqrt(distance);
     }
-
-
 
 
 }

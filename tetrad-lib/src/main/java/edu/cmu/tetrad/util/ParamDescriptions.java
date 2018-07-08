@@ -338,8 +338,8 @@ public class ParamDescriptions {
                 "Epsilon for Proposition 5, a small positive number", 1e-6, 0, Double.POSITIVE_INFINITY));
 
         map.put("rcitApproxType", new ParamDescription(
-                "Approximation Type: 1 = LPD4, 2 = Gamma, 3 = HBE, 4 = CHI2, 5 = PERM",
-                4, 1, 5));
+                "Approximation Type: 1 = LPD4, 2 = Gamma, 3 = HBE, 4 = PERM",
+                4, 1, 4));
     }
 
     public static ParamDescriptions getInstance() {

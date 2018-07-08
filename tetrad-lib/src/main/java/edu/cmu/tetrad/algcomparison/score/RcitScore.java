@@ -42,7 +42,7 @@ public class RcitScore implements ScoreWrapper {
 //                lpd4,  // the Lindsay-Pilla-Basak method (default)
 //                gamma, // the Satterthwaite-Welch method
 //                hbe,   // the Hall-Buckley-Eagleson method
-//                chi2,  // a normalized chi-squared statistic
+//                chi2,  // a normalized chi-squared statistic   -- won't work JR
 //                perm   // permutation testing (warning: this one is slow but recommended for small samples generally <500 )
 
         if (algType == 1) {
@@ -52,8 +52,6 @@ public class RcitScore implements ScoreWrapper {
         } else if (algType == 3) {
             rcit.setApprox(RandomIndApproximateMethod.hbe);
         } else if (algType == 4) {
-            rcit.setApprox(RandomIndApproximateMethod.chi2);
-        } else if (algType == 5) {
             rcit.setApprox(RandomIndApproximateMethod.perm);
         }
 
