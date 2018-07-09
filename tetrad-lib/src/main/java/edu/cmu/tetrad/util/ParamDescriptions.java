@@ -325,7 +325,7 @@ public class ParamDescriptions {
 
         map.put("thresholdForNumEigenvalues", new ParamDescription(
                 "Threshold to determine how many eigenvalues to use--the lower the more (0 to 1)",
-                0.01, 0, Double.POSITIVE_INFINITY));
+                0.001, 0, Double.POSITIVE_INFINITY));
 
         map.put("rcitNumFeatures", new ParamDescription(
                 "The number of random features to use",
@@ -335,7 +335,7 @@ public class ParamDescriptions {
                 "Use the approximate Gamma approximation algorithm", false));
 
         map.put("kciEpsilon", new ParamDescription(
-                "Epsilon for Proposition 5, a small positive number", 1e-6, 0, Double.POSITIVE_INFINITY));
+                "Epsilon for Proposition 5, a small positive number", 0.001, 0, Double.POSITIVE_INFINITY));
 
         map.put("rcitApproxType", new ParamDescription(
                 "Approximation Type: 1 = LPD4, 2 = Gamma, 3 = HBE, 4 = PERM",

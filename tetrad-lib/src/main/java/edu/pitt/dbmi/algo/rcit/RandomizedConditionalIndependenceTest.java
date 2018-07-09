@@ -219,10 +219,15 @@ public final class RandomizedConditionalIndependenceTest implements Independence
 	public boolean isIndependent(Node x, Node y, List<Node> z) {
 		boolean independent;
 
-		if (z == null || z.size() == 0) {
-			independent = independentUnconditional(x, y);
-		} else {
-			independent = independentConditional(x, y, z);
+		try {
+			if (z == null || z.size() == 0) {
+				independent = independentUnconditional(x, y);
+			} else {
+				independent = independentConditional(x, y, z);
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+			independent = false;
 		}
 
 		return independent;
@@ -378,7 +383,7 @@ public final class RandomizedConditionalIndependenceTest implements Independence
 			{
 
 //                // eig_d = eigen(Cov);
-				List<Double> eig_d = getTopEigenvalues(covMatrix);
+				List<Double> eig_d = getPositiveEigenvalues(covMatrix);
 
 				if (approx == RandomIndApproximateMethod.gamma) {
 
@@ -665,7 +670,7 @@ public final class RandomizedConditionalIndependenceTest implements Independence
 //
 //            } else
 			{
-				List<Double> eig_d = getTopEigenvalues(covMatrix);
+				List<Double> eig_d = getPositiveEigenvalues(covMatrix);
 
 				if (approx == RandomIndApproximateMethod.gamma) {
 
@@ -737,7 +742,7 @@ public final class RandomizedConditionalIndependenceTest implements Independence
 		return d;
 	}
 
-	private List<Double> getTopEigenvalues(TetradMatrix covMatrix) {
+	private List<Double> getPositiveEigenvalues(TetradMatrix covMatrix) {
 		EigenDecomposition ed1 = new EigenDecomposition(covMatrix.getRealMatrix());
 		List<Double> eig_d = asList(ed1.getRealEigenvalues());
 

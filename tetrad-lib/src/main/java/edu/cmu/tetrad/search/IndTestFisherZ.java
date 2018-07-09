@@ -33,7 +33,9 @@ import java.text.NumberFormat;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
+import static edu.cmu.tetrad.util.StatUtils.getZForAlpha;
 import static java.lang.Math.abs;
+import static java.lang.Math.sqrt;
 
 /**
  * Checks conditional independence of variable in a continuous data set using Fisher's Z test. See Spirtes, Glymour, and
@@ -112,9 +114,9 @@ public final class IndTestFisherZ implements IndependenceTest {
         this.variables = Collections.unmodifiableList(nodes);
         this.indexMap = indexMap(variables);
         this.nameMap = nameMap(variables);
-        setAlpha(alpha);
 
         this.dataSet = dataSet;
+        setAlpha(alpha);
     }
 
     /**
@@ -252,6 +254,20 @@ public final class IndTestFisherZ implements IndependenceTest {
 
         this.alpha = alpha;
         this.cutoff = StatUtils.getZForAlpha(alpha);
+
+//        if (true) {
+//            double z = getZForAlpha(alpha);
+//
+//            final int referenceSampleSize = 1000;
+//            double z2 = sqrt(dataSet.getNumRows() / (double) referenceSampleSize) * z;
+//
+//            this.cutoff = z2;
+//
+//            double newAlpha = 2.0 * (1.0 - new NormalDistribution(0, 1).cumulativeProbability(z2));
+//
+//            System.out.println("z = " + z + " z2 = " + z2 + " alpha for " + referenceSampleSize
+//                    + " = " + alpha + " alpha for " + dataSet.getNumRows() + " = " + newAlpha);
+//        }
     }
 
     /**

@@ -134,24 +134,35 @@ public final class Cci {
         }
 
         final int N = dataSet.getNumRows();
+        final int m = dataSet.getNumColumns();
+
+        alpha *= (10 * 11) / (double) (m * (m + 1)) * alpha;
 
         double z = getZForAlpha(alpha);
-
-        z = sqrt(N) / sqrt(1000.0) * z;
-
         this.cutoff = z;
 
-        double newAlpha = 2.0 * (1.0 - new NormalDistribution(0, 1).cumulativeProbability(z));
 
-        System.out.println("alpha for 1000 = " + alpha + " alpha for " + N + " = " + newAlpha);
+        final int referenceSampleSize = 1000;
+        double z2 = sqrt(N / (double) referenceSampleSize) * z;
+
+        this.cutoff = z2;
+
+        double newAlpha = 2.0 * (1.0 - new NormalDistribution(0, 1).cumulativeProbability(z2));
+
+        System.out.println("z = " + z + " z2 = " + z2 + " alpha for " + referenceSampleSize
+                + " = " + alpha + " alpha for " + N + " = " + newAlpha);
     }
 
     //=================PUBLIC METHODS====================//z
+
+    int c = 1;
 
     /**
      * @return true iff x is independent of y conditional on z.
      */
     public boolean isIndependent(String x, String y, List<String> z) {
+        System.out.println("# tests = " + c++);
+
         double[][] ret = residuals(x, y, z);
         double[] rXZ = ret[0];
         double[] rYZ = ret[1];

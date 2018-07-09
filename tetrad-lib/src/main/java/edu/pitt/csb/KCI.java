@@ -12,7 +12,9 @@ import edu.cmu.tetrad.util.TetradVector;
 import edu.pitt.csb.mgm.EigenDecomposition;
 import org.apache.commons.math3.distribution.GammaDistribution;
 import org.apache.commons.math3.distribution.NormalDistribution;
+import org.apache.commons.math3.exception.NotStrictlyPositiveException;
 import org.apache.commons.math3.linear.RealVector;
+import org.apache.commons.math3.linear.SingularMatrixException;
 import org.apache.commons.math3.random.SynchronizedRandomGenerator;
 import org.apache.commons.math3.random.Well44497b;
 
@@ -357,18 +359,27 @@ public class KCI implements IndependenceTest, ScoreForFact {
         TetradMatrix kx = center(kernelMatrix(_data, x, null, getWidthMultiplier()));
         TetradMatrix ky = center(kernelMatrix(_data, y, null, getWidthMultiplier()));
 
-        if (isApproximate()) {
-            double sta = kx.times(ky).trace();
-            double mean_appr = kx.trace() * ky.trace() / N;
-            double var_appr = 2 * kx.times(kx).trace() * ky.times(ky).trace() / (N * N);
-            double k_appr = mean_appr * mean_appr / var_appr;
-            double theta_appr = var_appr / mean_appr;
-            double p_appr = 1.0 - new GammaDistribution(k_appr, theta_appr).cumulativeProbability(sta);
-            p = p_appr;
-            pValues.put(fact, p);
-            return p_appr > alpha;
-        } else {
-            return theorem4(kx, ky, fact);
+        try {
+            if (isApproximate()) {
+                double sta = kx.times(ky).trace();
+                double mean_appr = kx.trace() * ky.trace() / N;
+                double var_appr = 2 * kx.times(kx).trace() * ky.times(ky).trace() / (N * N);
+                double k_appr = mean_appr * mean_appr / var_appr;
+                double theta_appr = var_appr / mean_appr;
+                double p_appr = 1.0 - new GammaDistribution(k_appr, theta_appr).cumulativeProbability(sta);
+                p = p_appr;
+                pValues.put(fact, p);
+                return p_appr > alpha;
+            } else {
+                pValues.put(fact, 0.0);
+                facts.put(fact, false);
+                return theorem4(kx, ky, fact);
+            }
+        } catch (NotStrictlyPositiveException e) {
+            e.printStackTrace();
+            pValues.put(fact, 0.0);
+            facts.put(fact, false);
+            return false;
         }
     }
 
@@ -378,183 +389,177 @@ public class KCI implements IndependenceTest, ScoreForFact {
      * @return true just in case independence holds.
      */
     private boolean isIndependentConditional(Node x, Node y, List<Node> z, IndependenceFact fact) {
-        TetradMatrix Kx = center(kernelMatrix(_data, x, z, getWidthMultiplier()));
-        TetradMatrix Ky = center(kernelMatrix(_data, y, null, getWidthMultiplier()));
-        TetradMatrix KZ = center(kernelMatrix(_data, null, z, getWidthMultiplier()));
+        TetradMatrix kx = null;
+        TetradMatrix ky = null;
 
-        TetradMatrix Rz = (KZ.plus(I.scalarMult(getEpsilon())).inverse().scalarMult(epsilon));
+        try {
+            TetradMatrix Kx = center(kernelMatrix(_data, x, z, getWidthMultiplier()));
+            TetradMatrix Ky = center(kernelMatrix(_data, y, null, getWidthMultiplier()));
+            TetradMatrix KZ = center(kernelMatrix(_data, null, z, getWidthMultiplier()));
 
-        TetradMatrix kx = symmetrized(Rz.times(Kx).times(Rz.transpose()));
-        TetradMatrix ky = symmetrized(Rz.times(Ky).times(Rz.transpose()));
+            TetradMatrix Rz = (KZ.plus(I.scalarMult(getEpsilon())).inverse().scalarMult(epsilon));
 
-        return proposition5(kx, ky, fact);
+            kx = symmetrized(Rz.times(Kx).times(Rz.transpose()));
+            ky = symmetrized(Rz.times(Ky).times(Rz.transpose()));
+
+            return proposition5(kx, ky, fact);
+        } catch (SingularMatrixException e) {
+            e.printStackTrace();
+            pValues.put(fact, 0.0);
+            facts.put(fact, false);
+            return false;
+        }
     }
 
     private boolean theorem4(TetradMatrix kx, TetradMatrix ky, IndependenceFact fact) {
 
-        try {
-            double T = (1.0 / N) * (kx.times(ky).trace());
+        double T = (1.0 / N) * (kx.times(ky).trace());
 
-            // Eigen decomposition of kx and ky.
-            EigenDecomposition ed1 = new EigenDecomposition(kx.getRealMatrix());
-            EigenDecomposition ed2 = new EigenDecomposition(ky.getRealMatrix());
-            List<Double> evx = asList(ed1.getRealEigenvalues());
-            List<Double> evy = asList(ed2.getRealEigenvalues());
+        // Eigen decomposition of kx and ky.
+        EigenDecomposition ed1 = new EigenDecomposition(kx.getRealMatrix());
+        EigenDecomposition ed2 = new EigenDecomposition(ky.getRealMatrix());
+        List<Double> evx = asList(ed1.getRealEigenvalues());
+        List<Double> evy = asList(ed2.getRealEigenvalues());
 
-            // Sorts the eigenvalues high to low.
-            evx.sort((o1, o2) -> Double.compare(o2, o1));
-            evy.sort((o1, o2) -> Double.compare(o2, o1));
+        // Sorts the eigenvalues high to low.
+        evx.sort((o1, o2) -> Double.compare(o2, o1));
+        evy.sort((o1, o2) -> Double.compare(o2, o1));
 
-            // Gets the guys in ev1 and ev2 that are greater than threshold * max guy.
-            evx = getTopGuys(evx, 0);
-            evy = getTopGuys(evy, 0);
+        // Gets the guys in ev1 and ev2 that are greater than threshold * max guy.
+        evx = getTopGuys(evx, 0);
+        evy = getTopGuys(evy, 0);
+
+        // We're going to reuse the samples.
+        int sampleIndex = -1;
+
+        // Calculate formula (9).
+        int sum = 0;
+
+        for (int j = 0; j < getNumBootstraps(); j++) {
+            double tui = 0.0;
+
+            for (double lambdax : evx) {
+                for (double lambday : evy) {
+                    tui += lambdax * lambday * getChisqSample(++sampleIndex);
+                }
+            }
+
+            tui /= (double) (N * N);
+
+            if (tui > T) sum++;
+        }
+
+        // Calculate p.
+        p = sum / (double) getNumBootstraps();
+        pValues.put(fact, this.p);
+        return p > alpha;
+    }
+
+    private boolean proposition5(TetradMatrix kx, TetradMatrix ky, IndependenceFact fact) {
+
+        double T = (1.0 / N) * kx.times(ky).trace();
+
+        // Eigen decomposition of kx
+        EigenDecomposition edx = new EigenDecomposition(kx.getRealMatrix());
+
+        List<Double> evxAll = asList(edx.getRealEigenvalues());
+        List<Integer> indx = series(evxAll.size()); // 1 2 3...
+        indx.sort((o1, o2) -> Double.compare(evxAll.get(o2), evxAll.get(o1))); // Sorted downward by eigenvalue
+        List<Integer> topXIndices = getTopIndices(evxAll, indx, getThreshold()); // Get the ones above threshold.
+
+        // square roots eigenvalues down the diagonal, D = Lambda^1/2
+        TetradMatrix dx = new TetradMatrix(topXIndices.size(), topXIndices.size());
+
+        for (int i = 0; i < topXIndices.size(); i++) {
+            dx.set(i, i, Math.sqrt(evxAll.get(topXIndices.get(i))));
+        }
+
+        // Corresponding eigenvectors.
+        TetradMatrix vx = new TetradMatrix(N, topXIndices.size());
+
+        for (int i = 0; i < topXIndices.size(); i++) {
+            RealVector t = edx.getEigenvector(topXIndices.get(i));
+            vx.assignColumn(i, new TetradVector(t));
+        }
+
+        // Now, eigen decomposition of ky
+        EigenDecomposition edy = new EigenDecomposition(ky.getRealMatrix());
+
+        List<Double> evyAll = asList(edy.getRealEigenvalues());
+        List<Integer> indy = series(evyAll.size()); // 1 2 3...
+        indy.sort((o1, o2) -> Double.compare(evyAll.get(o2), evyAll.get(o1))); // Sorted downward by eigenvalue
+        List<Integer> topYIndices = getTopIndices(evyAll, indy, getThreshold()); // Get the ones above threshold.
+
+        // square roots eigenvalues down the diagonal, D = Lambda^1/2
+        TetradMatrix dy = new TetradMatrix(topYIndices.size(), topYIndices.size());
+
+        for (int j = 0; j < topYIndices.size(); j++) {
+            dy.set(j, j, Math.sqrt(evyAll.get(topYIndices.get(j))));
+        }
+
+        // Corresponding eigenvectors.
+        TetradMatrix vy = new TetradMatrix(N, topYIndices.size());
+
+        for (int i = 0; i < topYIndices.size(); i++) {
+            RealVector t = edy.getEigenvector(topYIndices.get(i));
+            vy.assignColumn(i, new TetradVector(t));
+        }
+
+        // VD
+        TetradMatrix vdx = vx.times(dx);
+        TetradMatrix vdy = vy.times(dy);
+
+        final int prod = topXIndices.size() * topYIndices.size();
+        TetradMatrix stacked = new TetradMatrix(N, prod);
+
+        // stack
+        for (int i = 0; i < topXIndices.size(); i++) {
+            for (int j = 0; j < topYIndices.size(); j++) {
+                for (int k = 0; k < N; k++) {
+                    stacked.set(k, i * topYIndices.size() + j, vdx.get(k, i) * vdy.get(k, j));
+                }
+            }
+        }
+
+        TetradMatrix uuprod = prod > N ? stacked.times(stacked.transpose()) : stacked.transpose().times(stacked);
+
+        if (isApproximate()) {
+            double sta = kx.times(ky).trace();
+            double mean_appr = uuprod.trace();
+            double var_appr = 2.0 * uuprod.times(uuprod).trace();
+            double k_appr = mean_appr * mean_appr / var_appr;
+            double theta_appr = var_appr / mean_appr;
+            double p = 1.0 - new GammaDistribution(k_appr, theta_appr).cumulativeProbability(sta);
+            pValues.put(fact, p);
+            return p > getAlpha();
+        } else {
+
+            // Get top eigenvalues of that.
+            EigenDecomposition edu = new EigenDecomposition(uuprod.getRealMatrix());
+            List<Double> evu = asList(edu.getRealEigenvalues());
+            evu = getTopGuys(evu, getThreshold());
 
             // We're going to reuse the samples.
-            int sampleIndex = -1;
+            int sampleCount = -1;
 
-            // Calculate formula (9).
+            // Calculate formulas (13) and (14).
             int sum = 0;
 
             for (int j = 0; j < getNumBootstraps(); j++) {
                 double s = 0.0;
 
-                for (double lambdax : evx) {
-                    for (double lambday : evy) {
-                        s += lambdax * lambday * getChisqSample(++sampleIndex);
-                    }
+                for (double lambdaStar : evu) {
+                    s += lambdaStar * getChisqSample(++sampleCount);
                 }
 
-                s /= (double) (N * N);
+                s *= 1.0 / N;
 
                 if (s > T) sum++;
             }
 
-            // Calculate p.
-            p = sum / (double) getNumBootstraps();
+            this.p = sum / (double) getNumBootstraps();
             pValues.put(fact, this.p);
-            return p > alpha;
-        } catch (Exception e) {
-            System.out.println("Eigenvalue didn't converge");
-            pValues.put(fact, 0.0);
-            facts.put(fact, false);
-            p = 0.0;
-            return true;
-        }
-
-    }
-
-    private boolean proposition5(TetradMatrix kx, TetradMatrix ky, IndependenceFact fact) {
-
-        try {
-            double T = (1.0 / N) * kx.times(ky).trace();
-
-            // Eigen decomposition of kx
-            EigenDecomposition edx = new EigenDecomposition(kx.getRealMatrix());
-
-            List<Double> evxAll = asList(edx.getRealEigenvalues());
-            List<Integer> indx = series(evxAll.size()); // 1 2 3...
-            indx.sort((o1, o2) -> Double.compare(evxAll.get(o2), evxAll.get(o1))); // Sorted downward by eigenvalue
-            List<Integer> topXIndices = getTopIndices(evxAll, indx, getThreshold()); // Get the ones above threshold.
-
-            // square roots eigenvalues down the diagonal, D = Lambda^1/2
-            TetradMatrix dx = new TetradMatrix(topXIndices.size(), topXIndices.size());
-
-            for (int i = 0; i < topXIndices.size(); i++) {
-                dx.set(i, i, Math.sqrt(evxAll.get(topXIndices.get(i))));
-            }
-
-            // Corresponding eigenvectors.
-            TetradMatrix vx = new TetradMatrix(N, topXIndices.size());
-
-            for (int i = 0; i < topXIndices.size(); i++) {
-                RealVector t = edx.getEigenvector(topXIndices.get(i));
-                vx.assignColumn(i, new TetradVector(t));
-            }
-
-            // Now, eigen decomposition of ky
-            EigenDecomposition edy = new EigenDecomposition(ky.getRealMatrix());
-
-            List<Double> evyAll = asList(edy.getRealEigenvalues());
-            List<Integer> indy = series(evyAll.size()); // 1 2 3...
-            indy.sort((o1, o2) -> Double.compare(evyAll.get(o2), evyAll.get(o1))); // Sorted downward by eigenvalue
-            List<Integer> topYIndices = getTopIndices(evyAll, indy, getThreshold()); // Get the ones above threshold.
-
-            // square roots eigenvalues down the diagonal, D = Lambda^1/2
-            TetradMatrix dy = new TetradMatrix(topYIndices.size(), topYIndices.size());
-
-            for (int j = 0; j < topYIndices.size(); j++) {
-                dy.set(j, j, Math.sqrt(evyAll.get(topYIndices.get(j))));
-            }
-
-            // Corresponding eigenvectors.
-            TetradMatrix vy = new TetradMatrix(N, topYIndices.size());
-
-            for (int i = 0; i < topYIndices.size(); i++) {
-                RealVector t = edy.getEigenvector(topYIndices.get(i));
-                vy.assignColumn(i, new TetradVector(t));
-            }
-
-            // VD
-            TetradMatrix vdx = vx.times(dx);
-            TetradMatrix vdy = vy.times(dy);
-
-            final int prod = topXIndices.size() * topYIndices.size();
-            TetradMatrix stacked = new TetradMatrix(N, prod);
-
-            // stack
-            for (int i = 0; i < topXIndices.size(); i++) {
-                for (int j = 0; j < topYIndices.size(); j++) {
-                    for (int k = 0; k < N; k++) {
-                        stacked.set(k, i * topYIndices.size() + j, vdx.get(k, i) * vdy.get(k, j));
-                    }
-                }
-            }
-
-            TetradMatrix uuprod = prod > N ? stacked.times(stacked.transpose()) : stacked.transpose().times(stacked);
-
-            if (isApproximate()) {
-                double sta = kx.times(ky).trace();
-                double mean_appr = uuprod.trace();
-                double var_appr = 2.0 * uuprod.times(uuprod).trace();
-                double k_appr = mean_appr * mean_appr / var_appr;
-                double theta_appr = var_appr / mean_appr;
-                double p = 1.0 - new GammaDistribution(k_appr, theta_appr).cumulativeProbability(sta);
-                return p > getAlpha();
-            } else {
-
-                // Get top eigenvalues of that.
-                EigenDecomposition edu = new EigenDecomposition(uuprod.getRealMatrix());
-                List<Double> evu = asList(edu.getRealEigenvalues());
-                evu = getTopGuys(evu, getThreshold());
-
-                // We're going to reuse the samples.
-                int sampleCount = -1;
-
-                // Calculate formulas (13) and (14).
-                int sum = 0;
-
-                for (int j = 0; j < getNumBootstraps(); j++) {
-                    double s = 0.0;
-
-                    for (double lambdaStar : evu) {
-                        s += lambdaStar * getChisqSample(++sampleCount);
-                    }
-
-                    s *= 1.0 / N;
-
-                    if (s > T) sum++;
-                }
-
-                this.p = sum / (double) getNumBootstraps();
-                pValues.put(fact, this.p);
-                return this.p > alpha;
-            }
-        } catch (Exception e) {
-            System.out.println("Eigenvalue didn't converge");
-            p = 0.0;
-            pValues.put(fact, p);
-            facts.put(fact, false);
-            return false;
+            return this.p > alpha;
         }
     }
 
