@@ -134,23 +134,24 @@ public final class Cci {
         }
 
         final int N = dataSet.getNumRows();
-        final int m = dataSet.getNumColumns();
+        final int m1 = 10;
+        final int m2 = dataSet.getNumColumns();
 
-        alpha *= (10 * 11) / (double) (m * (m + 1)) * alpha;
+        double alpha2 = ((m1 - 1) / (double) (m2 - 1)) * alpha;
 
-        double z = getZForAlpha(alpha);
-        this.cutoff = z;
-
-
-        final int referenceSampleSize = 1000;
-        double z2 = sqrt(N / (double) referenceSampleSize) * z;
-
+        double z1 = getZForAlpha(alpha);
+        double z2 = getZForAlpha(alpha2);
         this.cutoff = z2;
 
-        double newAlpha = 2.0 * (1.0 - new NormalDistribution(0, 1).cumulativeProbability(z2));
+        final int referenceSampleSize = 500;
+        double z3 = sqrt(N / (double) referenceSampleSize) * z2;
 
-        System.out.println("z = " + z + " z2 = " + z2 + " alpha for " + referenceSampleSize
-                + " = " + alpha + " alpha for " + N + " = " + newAlpha);
+        this.cutoff = z3;
+
+        double alpha3 = 2.0 * (1.0 - new NormalDistribution(0, 1).cumulativeProbability(z3));
+
+        System.out.println("z1 = " + z1 + " z2 = " + z2 + " z3 = " + z3 + " alpha = " + alpha +
+                " alpha2 for " + referenceSampleSize + " = " + alpha2 + " alpha3 for " + N + " = " + alpha3);
     }
 
     //=================PUBLIC METHODS====================//z
@@ -161,7 +162,7 @@ public final class Cci {
      * @return true iff x is independent of y conditional on z.
      */
     public boolean isIndependent(String x, String y, List<String> z) {
-        System.out.println("# tests = " + c++);
+//        System.out.println("# tests = " + c++);
 
         double[][] ret = residuals(x, y, z);
         double[] rXZ = ret[0];
@@ -313,7 +314,7 @@ public final class Cci {
             double k;
 
             if (getKernelMultiplier() == Kernel.Epinechnikov) {
-                k = kernelUniform(0, h);
+                k = kernelEpinechnikov(0, h);
             } else if (getKernelMultiplier() == Kernel.Gaussian) {
                 k = kernelGaussian(0, h);
             } else {
