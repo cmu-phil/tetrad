@@ -26,11 +26,10 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.NodeType;
 import edu.cmu.tetrad.util.TetradSerializableExcluded;
-
-import javax.swing.*;
 import java.awt.*;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import javax.swing.*;
 
 /**
  * This class represents a node in a workbench; it is an abstract class, but
@@ -55,6 +54,11 @@ public class DisplayNode extends JComponent implements Node, TetradSerializableE
      */
     private DisplayComp displayComp;
     private int uniqueId = AbstractVariable.LAST_ID++;
+    
+    /**
+     * If this variable is interventional variable
+     */
+    private boolean interventional;
 
     //===========================CONSTRUCTORS==============================//
 
@@ -231,6 +235,16 @@ public class DisplayNode extends JComponent implements Node, TetradSerializableE
         else {
             return i1;
         }
+    }
+
+    @Override
+    public boolean isInterventional() {
+        return interventional;
+    }
+
+    @Override
+    public void setInterventional(boolean interventional) {
+        this.interventional = interventional;
     }
 }
 

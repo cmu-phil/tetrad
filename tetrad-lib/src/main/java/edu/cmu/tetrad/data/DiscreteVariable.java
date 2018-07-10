@@ -24,7 +24,6 @@ package edu.cmu.tetrad.data;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.NodeType;
 import edu.cmu.tetrad.util.TetradSerializable;
-
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.IOException;
@@ -134,6 +133,11 @@ public final class DiscreteVariable extends AbstractVariable
      * Fires property change events.
      */
     private transient PropertyChangeSupport pcs;
+    
+    /**
+     * If this variable is interventional variable
+     */
+    private boolean interventional;
 
     //=========================CONSTRUCTORS=============================//
 
@@ -158,16 +162,17 @@ public final class DiscreteVariable extends AbstractVariable
     }
 
     /**
-     * Set node type at the same time, used for interventional variables - Zhou
+     * Set node type at the same time, only used for interventional variables - Zhou
      * @param name
      * @param numCategories
+     * @param interventional
      * @param nodetype 
      */
-    public DiscreteVariable(String name, int numCategories, NodeType nodetype) {
+    public DiscreteVariable(String name, int numCategories, boolean interventional) {
         super(name);
         setCategories(numCategories);
         setCategoryNamesDisplayed(false);
-        setNodeType(nodetype);
+        setInterventional(interventional);
     }
     
     /**
@@ -597,6 +602,14 @@ public final class DiscreteVariable extends AbstractVariable
         if (nodeType == null) {
             throw new NullPointerException();
         }
+    }
+
+    public boolean isInterventional() {
+        return interventional;
+    }
+
+    public void setInterventional(boolean interventional) {
+        this.interventional = interventional;
     }
 }
 

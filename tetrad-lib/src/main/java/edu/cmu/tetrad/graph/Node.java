@@ -22,7 +22,6 @@
 package edu.cmu.tetrad.graph;
 
 import edu.cmu.tetrad.util.TetradSerializable;
-
 import java.beans.PropertyChangeListener;
 
 /**
@@ -55,6 +54,18 @@ public interface Node extends TetradSerializable, Comparable {
      */
     void setNodeType(NodeType nodeType);
 
+    /**
+     * 
+     * @return true for interventional variables, otherwise false
+     */
+    boolean isInterventional();
+    
+    /**
+     * Sets the boolean flag for interventional variables
+     * @param interventional 
+     */
+    void setInterventional(boolean interventional);
+    
     /**
      * @return a string representation of the node.
      */

@@ -494,6 +494,7 @@ public class LagGraph implements Graph {
     public void setPattern(boolean pattern) {
         this.pattern = pattern;
     }
+    
 }
 
 

@@ -27,7 +27,6 @@ import edu.cmu.tetrad.graph.NodeType;
 import edu.cmu.tetrad.util.NamingProtocol;
 import edu.cmu.tetrad.util.TetradSerializableExcluded;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
-
 import java.beans.PropertyChangeListener;
 
 /**
@@ -53,6 +52,11 @@ public class KnowledgeModelNode implements Node, TetradSerializableExcluded {
      * @serial
      */
     private int centerY;
+    
+    /**
+     * If this variable is interventional variable
+     */
+    private boolean interventional;
 
     //=============================CONSTRUCTORS=========================//
 
@@ -163,6 +167,16 @@ public class KnowledgeModelNode implements Node, TetradSerializableExcluded {
         else {
             return i1;
         }
+    }
+
+    @Override
+    public boolean isInterventional() {
+        return interventional;
+    }
+
+    @Override
+    public void setInterventional(boolean interventional) {
+        this.interventional = interventional;
     }
 }
 

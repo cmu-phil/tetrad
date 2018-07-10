@@ -288,6 +288,7 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
                 grabFocus();
             }
         });
+        
     }
 
     // ============================PUBLIC METHODS==========================//
@@ -918,7 +919,7 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
             displayNode.setSize(dim);
             displayNode.setLocation(centerX - dim.width / 2, centerY - dim.height / 2);
         }
-
+        
         // setGraphWithoutNotify(graph);
     }
 

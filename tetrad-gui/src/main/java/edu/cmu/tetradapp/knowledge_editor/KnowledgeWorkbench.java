@@ -26,7 +26,6 @@ import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetradapp.workbench.AbstractWorkbench;
 import edu.cmu.tetradapp.workbench.DisplayNode;
 import edu.cmu.tetradapp.workbench.IDisplayEdge;
-
 import java.awt.*;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -96,7 +95,7 @@ public class KnowledgeWorkbench extends AbstractWorkbench {
                 }
             }
         });
-
+        
         return displayNode;
     }
 
@@ -214,6 +213,8 @@ public class KnowledgeWorkbench extends AbstractWorkbench {
                 throw new IllegalArgumentException();
         }
     }
+    
+    
 }
 
 

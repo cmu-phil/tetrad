@@ -26,7 +26,6 @@ import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.TetradSerializableExcluded;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
-
 import java.beans.PropertyChangeListener;
 import java.util.Collection;
 import java.util.List;
@@ -55,7 +54,7 @@ public class KnowledgeGraph implements Graph, TetradSerializableExcluded {
     private IKnowledge knowledge;
     private boolean pag;
     private boolean pattern;
-
+    
     //============================CONSTRUCTORS=============================//
 
     /**
@@ -586,6 +585,7 @@ public class KnowledgeGraph implements Graph, TetradSerializableExcluded {
     public void setPattern(boolean pattern) {
         this.pattern = pattern;
     }
+
 }
 
 

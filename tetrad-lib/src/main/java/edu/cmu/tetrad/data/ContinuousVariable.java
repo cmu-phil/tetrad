@@ -72,6 +72,12 @@ public final class ContinuousVariable extends AbstractVariable
      * Fires property change events.
      */
     private transient PropertyChangeSupport pcs;
+    
+    /**
+     * If this variable is interventional variable
+     */
+    private boolean interventional;
+
 
     //============================CONSTRUCTORS=========================//
 
@@ -85,15 +91,15 @@ public final class ContinuousVariable extends AbstractVariable
     }
 
     /**
-     * Set node type at the same time, used for interventional variables - Zhou
+     * Set node type at the same time, only used for interventional variables - Zhou
      * 
-     * @param variable
-     * @param nodeType 
+     * @param name
+     * @param interventional
      */
-    public ContinuousVariable(String name, NodeType nodeType) {
+    public ContinuousVariable(String name, boolean interventional) {
         super(name);
-        
-        setNodeType(nodeType);
+
+        setInterventional(interventional);
     }
     
     /**
@@ -263,6 +269,14 @@ public final class ContinuousVariable extends AbstractVariable
         setCenterY(centerY);
     }
 
+    public boolean isInterventional() {
+        return interventional;
+    }
+
+    public void setInterventional(boolean interventional) {
+        this.interventional = interventional;
+    }
+    
     /**
      * Adds a property change listener.
      */

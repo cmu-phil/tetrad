@@ -23,7 +23,6 @@ package edu.cmu.tetrad.graph;
 
 
 import edu.cmu.tetrad.util.TetradSerializable;
-
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.IOException;
@@ -72,6 +71,11 @@ public class GraphNode implements Node, TetradSerializable {
      * Fires property change events.
      */
     private transient PropertyChangeSupport pcs;
+    
+    /**
+     * If this variable is interventional variable
+     */
+    private boolean interventional;
 
     //============================CONSTRUCTORS==========================//
 
@@ -289,6 +293,16 @@ public class GraphNode implements Node, TetradSerializable {
         } else {
             return i1;
         }
+    }
+    
+    @Override
+    public boolean isInterventional() {
+        return interventional;
+    }
+
+    @Override
+    public void setInterventional(boolean interventional) {
+        this.interventional = interventional;
     }
 }
 

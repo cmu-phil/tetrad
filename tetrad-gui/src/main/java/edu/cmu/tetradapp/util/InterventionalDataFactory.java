@@ -27,7 +27,6 @@ import edu.cmu.tetrad.data.DoubleDataBox;
 import edu.cmu.tetrad.data.MixedDataBox;
 import edu.cmu.tetrad.data.VerticalIntDataBox;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.graph.NodeType;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
@@ -440,9 +439,10 @@ public class InterventionalDataFactory {
         dataModel.getVariables().stream()
                 .collect(Collectors.toCollection(() -> variables));
 
-        // create interventional variables, set node type instead of using the default NodeType.MEASURED
+        // create interventional variables, use the default NodeType.MEASURED and set interventional flag to true
+        // so they can be identified later in knowledge graph and search resulting graph - Zhou
         intervVars.stream()
-                .map(e -> isDiscrete ? new DiscreteVariable(e, 2, NodeType.INTERVENTIONAL) : new ContinuousVariable(e, NodeType.INTERVENTIONAL))
+                .map(e -> isDiscrete ? new DiscreteVariable(e, 2, true) : new ContinuousVariable(e, true))
                 .collect(Collectors.toCollection(() -> variables));
 
         return variables;

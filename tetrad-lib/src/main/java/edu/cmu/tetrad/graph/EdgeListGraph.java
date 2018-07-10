@@ -21,14 +21,13 @@
 
 package edu.cmu.tetrad.graph;
 
+import static edu.cmu.tetrad.graph.Edges.directedEdge;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
-
-import static edu.cmu.tetrad.graph.Edges.directedEdge;
 
 /**
  * <p>Stores a graph a list of lists of edges adjacent to each node in the
@@ -108,7 +107,7 @@ public class EdgeListGraph implements Graph, TripleClassifier {
     private boolean pattern = false;
 
     private boolean pag = false;
-
+    
     //==============================CONSTUCTORS===========================//
 
     /**
@@ -2015,6 +2014,7 @@ public class EdgeListGraph implements Graph, TripleClassifier {
 	boolean stuffRemovedSinceLastTripleAccess) {
 	this.stuffRemovedSinceLastTripleAccess = stuffRemovedSinceLastTripleAccess;
     }
+  
 
 }
 

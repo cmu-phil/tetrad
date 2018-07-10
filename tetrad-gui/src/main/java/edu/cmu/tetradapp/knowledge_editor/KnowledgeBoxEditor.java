@@ -87,7 +87,6 @@ public class KnowledgeBoxEditor extends JPanel {
 
     private final Color UNSELECTED_BG = new Color(153, 204, 204);
     private final Color SELECTED_BG = new Color(255, 204, 102);
-    private final Color INTERVENTIONAL_VAR_BG = new Color(44, 160, 44);
 
     private final Map<String, JLabel> labelMap = new HashMap<>();
 
@@ -99,7 +98,7 @@ public class KnowledgeBoxEditor extends JPanel {
     private boolean showRequired = false;
     private boolean showRequiredByGroups = false;
     private boolean showForbiddenByGroups = false;
-    private boolean hideInterventional = false;
+    private boolean highlightInterventional = false;
     private JTextArea textArea;
 
     // Unused, moved to KnowledgeBoxModel. Keeping for serialization. Can delete after a while. 2017.06.17
@@ -477,13 +476,13 @@ public class KnowledgeBoxEditor extends JPanel {
         JCheckBox showForbiddenGroupsCheckBox = new JCheckBox(
                 "Show Forbidden by Groups", this.showForbiddenByGroups);
         // Added for interventional variables
-        JCheckBox hideInterventionalCheckBox = new JCheckBox(
-                "Hide Interventional Variables", this.hideInterventional);
+        JCheckBox highlightInterventionalCheckBox = new JCheckBox(
+                "Highlight Interventional Nodes", this.highlightInterventional);
 
-        hideInterventionalCheckBox.addActionListener((e) -> {
+        highlightInterventionalCheckBox.addActionListener((e) -> {
             JCheckBox box = (JCheckBox) e.getSource();
-            hideInterventional = box.isSelected();
-            resetEdgeDisplay(hideInterventionalCheckBox);
+            highlightInterventional = box.isSelected();
+            resetEdgeDisplay(highlightInterventionalCheckBox);
         });
         
         showRequiredGroupsCheckBox.addActionListener((e) -> {
@@ -540,7 +539,12 @@ public class KnowledgeBoxEditor extends JPanel {
         Box hBox = Box.createHorizontalBox();
         hBox.add(showRequiredGroupsCheckBox);
         hBox.add(showForbiddenGroupsCheckBox);
-        hBox.add(hideInterventionalCheckBox);
+        
+        // Only show the checkbox when there are interventional variables - Zhou
+        if (interventionalVars.size() > 0) {
+            hBox.add(highlightInterventionalCheckBox);
+        }
+        
         hBox.add(Box.createHorizontalGlue());
 
         vBox.add(b4);
@@ -688,10 +692,8 @@ public class KnowledgeBoxEditor extends JPanel {
                 list.forEach(e -> {
                     String from = e.getFrom();
                     String to = e.getTo();
-                    KnowledgeModelNode fromNode = (KnowledgeModelNode) graph
-                            .getNode(from);
-                    KnowledgeModelNode toNode = (KnowledgeModelNode) graph
-                            .getNode(to);
+                    KnowledgeModelNode fromNode = (KnowledgeModelNode) graph.getNode(from);
+                    KnowledgeModelNode toNode = (KnowledgeModelNode) graph.getNode(to);
 
                     KnowledgeModelEdge edge = new KnowledgeModelEdge(fromNode,
                             toNode, KnowledgeModelEdge.FORBIDDEN_EXPLICITLY);
@@ -702,8 +704,8 @@ public class KnowledgeBoxEditor extends JPanel {
             }
         }
         
-        // Hide all interventional nodes and edges
-        if (hideInterventional) {
+        // Highlight all interventional nodes
+        if (highlightInterventional) {
             
         }
 

@@ -716,6 +716,7 @@ public final class Dag implements Graph {
     public void setPattern(boolean pattern) {
         this.pattern = pattern;
     }
+
 }
 
 

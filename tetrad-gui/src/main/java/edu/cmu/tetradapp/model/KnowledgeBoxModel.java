@@ -85,8 +85,7 @@ public class KnowledgeBoxModel implements SessionModel, ParamsResettable, Knowle
 
         for (KnowledgeBoxInput input : inputs) {
             for (Node node : input.getVariables()) {
-                // Added NodeType.INTERVENTIONAL
-                if (node.getNodeType() == NodeType.MEASURED || node.getNodeType() == NodeType.INTERVENTIONAL) {
+                if (node.getNodeType() == NodeType.MEASURED) {
                     variableNodes.add(node);
                     variableNames.add(node.getName());
                 }

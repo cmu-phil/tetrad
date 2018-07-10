@@ -22,7 +22,6 @@
 package edu.cmu.tetrad.graph;
 
 import edu.cmu.tetrad.util.TetradSerializable;
-
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -82,7 +81,7 @@ public final class SemGraph implements Graph, TetradSerializable {
 
     private boolean pag;
     private boolean pattern;
-
+    
     //=========================CONSTRUCTORS============================//
 
     /**
@@ -996,6 +995,7 @@ public final class SemGraph implements Graph, TetradSerializable {
     public void setPattern(boolean pattern) {
         this.pattern = pattern;
     }
+
 }
 
 

@@ -5,10 +5,8 @@
  */
 package edu.cmu.tetradapp.editor;
 
-import edu.cmu.tetrad.graph.Edge;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.NodeType;
-import edu.cmu.tetradapp.workbench.DisplayEdge;
 import edu.cmu.tetradapp.workbench.DisplayNode;
 import edu.cmu.tetradapp.workbench.GraphWorkbench;
 import java.awt.Component;
@@ -24,6 +22,8 @@ import javax.swing.AbstractAction;
  */
 public class SelectInterventionalAction extends AbstractAction implements ClipboardOwner {
 
+    private static final long serialVersionUID = -1981559602783726423L;
+
     /**
      * The desktop containing the target session editor.
      */
@@ -32,6 +32,7 @@ public class SelectInterventionalAction extends AbstractAction implements Clipbo
     /**
      * Creates a new copy subsession action for the given desktop and
      * clipboard.
+     * @param workbench
      */
     public SelectInterventionalAction(GraphWorkbench workbench) {
         super("Highlight Interventional Nodes");
@@ -46,26 +47,18 @@ public class SelectInterventionalAction extends AbstractAction implements Clipbo
     /**
      * Copies a parentally closed selection of session nodes in the frontmost
      * session editor to the clipboard.
+     * @param e
      */
+    @Override
     public void actionPerformed(ActionEvent e) {
         workbench.deselectAll();
 
         for (Component comp : workbench.getComponents()) {
             if (comp instanceof DisplayNode) {
                 Node node = ((DisplayNode) comp).getModelNode();
-                if (node.getNodeType() == NodeType.INTERVENTIONAL) {
+                // Only interventional nodes has the `interventioanl` flag as true
+                if (node.getNodeType() == NodeType.MEASURED && node.isInterventional()) {
                     workbench.selectNode(node);
-                }
-            }
-        }
-
-        for (Component comp : workbench.getComponents()) {
-            if (comp instanceof DisplayEdge) {
-                Edge edge = ((DisplayEdge) comp).getModelEdge();
-
-                if (edge.getNode1().getNodeType() == NodeType.INTERVENTIONAL
-                        && edge.getNode2().getNodeType() == NodeType.INTERVENTIONAL) {
-                    workbench.selectEdge(edge);
                 }
             }
         }
@@ -74,6 +67,7 @@ public class SelectInterventionalAction extends AbstractAction implements Clipbo
     /**
      * Required by the AbstractAction interface; does nothing.
      */
+    @Override
     public void lostOwnership(Clipboard clipboard, Transferable contents) {
     }
     

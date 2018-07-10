@@ -90,7 +90,7 @@ public class EndpointMatrixGraph implements Graph {
 
     private boolean pag;
     private boolean pattern;
-
+    
     //==============================CONSTUCTORS===========================//
 
     /**
@@ -2007,6 +2007,7 @@ public class EndpointMatrixGraph implements Graph {
             dottedUnderLineTriples = new HashSet<>();
         }
     }
+    
 }
 
 
