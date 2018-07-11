@@ -133,15 +133,16 @@ public final class Cci {
             h[i] = h(variables.get(i).toString());
         }
 
+        // Scale z and alpha.
         final int N = dataSet.getNumRows();
-        final int m1 = 10;
+        final int m1 = 10; // reference
         final int m2 = dataSet.getNumColumns();
 
         double alpha2 = ((m1 - 1) / (double) (m2 - 1)) * alpha;
 
         double z1 = getZForAlpha(alpha);
         double z2 = getZForAlpha(alpha2);
-        this.cutoff = z2;
+//        this.cutoff = z2;
 
         final int referenceSampleSize = 500;
         double z3 = sqrt(N / (double) referenceSampleSize) * z2;
@@ -187,7 +188,7 @@ public final class Cci {
      * once undefined values have been removed. Left public so it can be
      * accessed separately.
      */
-    public boolean independent(double[] x, double[] y) {
+    private boolean independent(double[] x, double[] y) {
 
         if (x.length < 10) {
             score = Double.NaN;
@@ -236,113 +237,113 @@ public final class Cci {
         final double[] xdata = data[_x];
         final double[] ydata = data[_y];
 
-        if (z.size() == 0) {
+//        if (z.size() == 0) {
+//
+//            // No need to center; the covariance calculation does that.
+//            for (int i = 0; i < N; i++) {
+//                residualsx[i] = xdata[i];
+//
+//                if (Double.isNaN(residualsx[i])) {
+//                    residualsx[i] = 0;
+//                }
+//            }
+//
+//            for (int i = 0; i < N; i++) {
+//                residualsy[i] = ydata[i];
+//
+//                if (Double.isNaN(residualsy[i])) {
+//                    residualsy[i] = 0;
+//                }
+//            }
+//        } else {
 
-            // No need to center; the covariance calculation does that.
-            for (int i = 0; i < N; i++) {
-                residualsx[i] = xdata[i];
+        double[] sumsx = new double[N];
+        double[] sumsy = new double[N];
 
-                if (Double.isNaN(residualsx[i])) {
-                    residualsx[i] = 0;
-                }
-            }
+        double[] weights = new double[N];
 
-            for (int i = 0; i < N; i++) {
-                residualsy[i] = ydata[i];
+        int[] _z = new int[z.size()];
 
-                if (Double.isNaN(residualsy[i])) {
-                    residualsy[i] = 0;
-                }
-            }
-        } else {
+        for (int m = 0; m < z.size(); m++) {
+            _z[m] = indices.get(z.get(m));
+        }
 
-            double[] sumsx = new double[N];
-            double[] sumsy = new double[N];
+        double h = 0.0;
 
-            double[] weights = new double[N];
-
-            int[] _z = new int[z.size()];
-
-            for (int m = 0; m < z.size(); m++) {
-                _z[m] = indices.get(z.get(m));
-            }
-
-            double h = 0.0;
-
-            for (int c : _z) {
-                if (this.h[c] > h) {
-                    h = this.h[c];
-                }
-            }
-
-            h *= sqrt(_z.length);
-
-            if (h == 0) h = 1;
-
-            for (int i = 0; i < N; i++) {
-                double xi = xdata[i];
-                double yi = ydata[i];
-
-                for (int j = i + 1; j < N; j++) {
-
-                    double xj = xdata[j];
-                    double yj = ydata[j];
-
-                    // Skips NaN values.
-                    double d = distance(data, _z, i, j);
-                    double k;
-
-                    if (getKernelMultiplier() == Kernel.Epinechnikov) {
-                        k = kernelEpinechnikov(d, h);
-                    } else if (getKernelMultiplier() == Kernel.Gaussian) {
-                        k = kernelGaussian(d, h);
-                    } else {
-                        throw new IllegalStateException("Unsupported kernel type: " + getKernelMultiplier());
-                    }
-
-                    sumsx[i] += k * xj;
-                    sumsy[i] += k * yj;
-
-                    sumsx[j] += k * xi;
-                    sumsy[j] += k * yi;
-
-                    weights[i] += k;
-                    weights[j] += k;
-                }
-            }
-
-            double k;
-
-            if (getKernelMultiplier() == Kernel.Epinechnikov) {
-                k = kernelEpinechnikov(0, h);
-            } else if (getKernelMultiplier() == Kernel.Gaussian) {
-                k = kernelGaussian(0, h);
-            } else {
-                throw new IllegalStateException("Unsupported kernel type: " + kernelMultiplier);
-            }
-
-            for (int i = 0; i < N; i++) {
-                double xi = xdata[i];
-                double yi = ydata[i];
-
-                sumsx[i] += k * xi;
-                sumsy[i] += k * yi;
-                weights[i] += k;
-            }
-
-            for (int i = 0; i < N; i++) {
-                residualsx[i] = xdata[i] - sumsx[i] / weights[i];
-                residualsy[i] = ydata[i] - sumsy[i] / weights[i];
-
-                if (Double.isNaN(residualsx[i])) {
-                    residualsx[i] = 0;
-                }
-
-                if (Double.isNaN(residualsy[i])) {
-                    residualsy[i] = 0;
-                }
+        for (int c : _z) {
+            if (this.h[c] > h) {
+                h = this.h[c];
             }
         }
+
+        h *= sqrt(_z.length);
+
+        if (h == 0) h = 1;
+
+        for (int i = 0; i < N; i++) {
+            double xi = xdata[i];
+            double yi = ydata[i];
+
+            for (int j = i + 1; j < N; j++) {
+
+                double xj = xdata[j];
+                double yj = ydata[j];
+
+                // Skips NaN values.
+                double d = distance(data, _z, i, j);
+                double k;
+
+                if (getKernelMultiplier() == Kernel.Epinechnikov) {
+                    k = kernelEpinechnikov(d, h);
+                } else if (getKernelMultiplier() == Kernel.Gaussian) {
+                    k = kernelGaussian(d, h);
+                } else {
+                    throw new IllegalStateException("Unsupported kernel type: " + getKernelMultiplier());
+                }
+
+                sumsx[i] += k * xj;
+                sumsy[i] += k * yj;
+
+                sumsx[j] += k * xi;
+                sumsy[j] += k * yi;
+
+                weights[i] += k;
+                weights[j] += k;
+            }
+        }
+
+        double k;
+
+        if (getKernelMultiplier() == Kernel.Epinechnikov) {
+            k = kernelEpinechnikov(0, h);
+        } else if (getKernelMultiplier() == Kernel.Gaussian) {
+            k = kernelGaussian(0, h);
+        } else {
+            throw new IllegalStateException("Unsupported kernel type: " + kernelMultiplier);
+        }
+
+        for (int i = 0; i < N; i++) {
+            double xi = xdata[i];
+            double yi = ydata[i];
+
+            sumsx[i] += k * xi;
+            sumsy[i] += k * yi;
+            weights[i] += k;
+        }
+
+        for (int i = 0; i < N; i++) {
+            residualsx[i] = xdata[i] - sumsx[i] / weights[i];
+            residualsy[i] = ydata[i] - sumsy[i] / weights[i];
+
+            if (Double.isNaN(residualsx[i])) {
+                residualsx[i] = 0;
+            }
+
+            if (Double.isNaN(residualsy[i])) {
+                residualsy[i] = 0;
+            }
+        }
+//        }
 
         double[][] ret = new double[2][];
         ret[0] = residualsx;

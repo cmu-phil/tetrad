@@ -426,8 +426,8 @@ public class KCI implements IndependenceTest, ScoreForFact {
         evy.sort((o1, o2) -> Double.compare(o2, o1));
 
         // Gets the guys in ev1 and ev2 that are greater than threshold * max guy.
-        evx = getTopGuys(evx, 0);
-        evy = getTopGuys(evy, 0);
+        evx = getTopGuys(evx, getThreshold());
+        evy = getTopGuys(evy, getThreshold());
 
         // We're going to reuse the samples.
         int sampleIndex = -1;

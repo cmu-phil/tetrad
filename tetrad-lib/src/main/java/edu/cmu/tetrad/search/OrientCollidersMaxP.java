@@ -43,7 +43,7 @@ public final class OrientCollidersMaxP {
     private int depth = -1;
     private long elapsed = 0;
     private IKnowledge knowledge = new Knowledge2();
-    private boolean useHeuristic = true;
+    private boolean useHeuristic = false;
     private int maxPathLength = 3;
     private PcAll.ConflictRule conflictRule = PcAll.ConflictRule.OVERWRITE;
 
@@ -142,7 +142,7 @@ public final class OrientCollidersMaxP {
 
             @Override
             public int compare(Triple o1, Triple o2) {
-                return Double.compare(scores.get(o2), scores.get(o1));
+                return Double.compare(scores.get(o1), scores.get(o2));
             }
         });
 
@@ -151,11 +151,11 @@ public final class OrientCollidersMaxP {
             Node b = triple.getY();
             Node c = triple.getZ();
 
-//            if (!(graph.getEndpoint(b, a) == Endpoint.ARROW || graph.getEndpoint(b, c) == Endpoint.ARROW)) {
-//                graph.setEndpoint(a, b, Endpoint.ARROW);
-//                graph.setEndpoint(c, b, Endpoint.ARROW);
-            orientCollider(graph, a, b, c, getConflictRule());
-//            }
+            if (!(graph.getEndpoint(b, a) == Endpoint.ARROW || graph.getEndpoint(b, c) == Endpoint.ARROW)) {
+                graph.setEndpoint(a, b, Endpoint.ARROW);
+                graph.setEndpoint(c, b, Endpoint.ARROW);
+                orientCollider(graph, a, b, c, getConflictRule());
+            }
         }
     }
 
