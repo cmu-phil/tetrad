@@ -7,6 +7,7 @@ package edu.cmu.tetradapp.editor;
 
 import edu.cmu.tetrad.graph.Edge;
 import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.graph.NodeType;
 import edu.cmu.tetradapp.workbench.DisplayEdge;
 import edu.cmu.tetradapp.workbench.DisplayNode;
 import edu.cmu.tetradapp.workbench.GraphWorkbench;
@@ -21,10 +22,9 @@ import javax.swing.AbstractAction;
  *
  * @author Zhou Yuan <zhy19@pitt.edu>
  */
-public class SelectInterventionalAction extends AbstractAction implements ClipboardOwner {
+public class HideShowInterventionalAction extends AbstractAction implements ClipboardOwner {
 
-    private static final long serialVersionUID = -1981559602783726423L;
-
+    private static final long serialVersionUID = 5569188974311195200L;
     /**
      * The desktop containing the target session editor.
      */
@@ -35,8 +35,8 @@ public class SelectInterventionalAction extends AbstractAction implements Clipbo
      * clipboard.
      * @param workbench
      */
-    public SelectInterventionalAction(GraphWorkbench workbench) {
-        super("Highlight Interventional Nodes");
+    public HideShowInterventionalAction(GraphWorkbench workbench) {
+        super("Hide/Show Interventional Nodes");
 
         if (workbench == null) {
             throw new NullPointerException("Desktop must not be null.");
@@ -52,14 +52,17 @@ public class SelectInterventionalAction extends AbstractAction implements Clipbo
      */
     @Override
     public void actionPerformed(ActionEvent e) {
-        workbench.deselectAll();
-
         for (Component comp : workbench.getComponents()) {
             if (comp instanceof DisplayNode) {
+                
                 Node node = ((DisplayNode) comp).getModelNode();
                 // Only interventional nodes has the `interventioanl` flag as true
-                if (node.isInterventional()) {
-                    workbench.selectNode(node);
+                if (node.getNodeType() == NodeType.MEASURED && node.isInterventional()) {
+                    if (comp.isVisible()) {
+                        comp.setVisible(false);
+                    } else {
+                        comp.setVisible(true);
+                    }
                 }
             }
             
@@ -67,11 +70,15 @@ public class SelectInterventionalAction extends AbstractAction implements Clipbo
                 Edge edge = ((DisplayEdge) comp).getModelEdge();
 
                 if (edge.getNode1().isInterventional() || edge.getNode2().isInterventional()) {
-                    workbench.selectEdge(edge);
+                    if (comp.isVisible()) {
+                        comp.setVisible(false);
+                    } else {
+                        comp.setVisible(true);
+                    }
                 }
             }
         }
-  
+        
     }
 
     /**
@@ -80,5 +87,4 @@ public class SelectInterventionalAction extends AbstractAction implements Clipbo
     @Override
     public void lostOwnership(Clipboard clipboard, Transferable contents) {
     }
-    
 }

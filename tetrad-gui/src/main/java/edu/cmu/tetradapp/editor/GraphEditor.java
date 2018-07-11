@@ -73,9 +73,21 @@ public final class GraphEditor extends JPanel
     private Parameters parameters;
 
     private final HelpSet helpSet;
+    
+    /**
+     * Flag to indicate if interventional variables are in the graph - Zhou
+     */
+    private boolean hasInterventional;
+    
+    
 
     //===========================PUBLIC METHODS========================//
     public GraphEditor(GraphSettable graphWrapper) {
+        // Check if this graph has interventional nodes - Zhou
+        boolean result = graphWrapper.getGraph().getNodes().stream().anyMatch(e -> e.isInterventional());
+        setHasInterventional(result);
+
+ 
         // Initialize helpSet - Zhou
         String helpHS = "/resources/javahelp/TetradHelp.hs";
 
@@ -441,8 +453,13 @@ public final class GraphEditor extends JPanel
         graph.add(new JMenuItem(new SelectBidirectedAction(getWorkbench())));
         graph.add(new JMenuItem(new SelectUndirectedAction(getWorkbench())));
         graph.add(new JMenuItem(new SelectLatentsAction(getWorkbench())));
-        graph.add(new JMenuItem(new SelectInterventionalAction(getWorkbench())));
-
+        
+        // Only show these menu options for graph that has interventional nodes - Zhou
+        if (isHasInterventional()) {
+            graph.add(new JMenuItem(new SelectInterventionalAction(getWorkbench())));
+            graph.add(new JMenuItem(new HideShowInterventionalAction(getWorkbench())));
+        }
+        
 //        graph.addSeparator();
 //        IndependenceFactsAction action = new IndependenceFactsAction(
 //                JOptionUtils.centeringComp(), this, "D Separation Facts...");
@@ -508,5 +525,13 @@ public final class GraphEditor extends JPanel
         Graph graph = getWorkbench().getGraph();
         EdgeListGraph listGraph = new EdgeListGraph(graph);
         return new IndTestDSep(listGraph);
+    }
+
+    public boolean isHasInterventional() {
+        return hasInterventional;
+    }
+
+    public void setHasInterventional(boolean hasInterventional) {
+        this.hasInterventional = hasInterventional;
     }
 }
