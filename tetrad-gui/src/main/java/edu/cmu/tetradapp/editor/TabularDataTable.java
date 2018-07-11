@@ -113,9 +113,21 @@ class TabularDataTable extends AbstractTableModel {
             Node variable = dataSet.getVariable(columnIndex);
 
             if (row == 0) {
-                boolean discrete = variable instanceof DiscreteVariable;
-                return "C" + Integer.toString(columnIndex + 1)
-                        + (discrete ? "-T" : "");
+                // Add "-T" to discrete variables, "-C" for continuous
+                // and add additional "-I" for those added interventional variables - Zhou
+                String columnHeader = "C" + Integer.toString(columnIndex + 1);
+                
+                if (variable instanceof DiscreteVariable) {
+                    columnHeader += "-T";
+                } else {
+                    columnHeader += "-C";
+                }
+                
+                if (variable.isInterventional()) {
+                    columnHeader += "-I";
+                }
+                
+                return columnHeader;
             } else if (row == 1) {
                 return dataSet.getVariable(columnIndex).getName();
             } else if (rowIndex >= dataSet.getNumRows()) {
