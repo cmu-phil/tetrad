@@ -585,7 +585,7 @@ public class KnowledgeGraph implements Graph, TetradSerializableExcluded {
     public void setPattern(boolean pattern) {
         this.pattern = pattern;
     }
-
+ 
 }
 
 

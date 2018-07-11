@@ -475,16 +475,7 @@ public class KnowledgeBoxEditor extends JPanel {
                 "Show Required by Groups", this.showRequiredByGroups);
         JCheckBox showForbiddenGroupsCheckBox = new JCheckBox(
                 "Show Forbidden by Groups", this.showForbiddenByGroups);
-        // Added for interventional variables
-        JCheckBox highlightInterventionalCheckBox = new JCheckBox(
-                "Highlight Interventional Nodes", this.highlightInterventional);
 
-        highlightInterventionalCheckBox.addActionListener((e) -> {
-            JCheckBox box = (JCheckBox) e.getSource();
-            highlightInterventional = box.isSelected();
-            resetEdgeDisplay(highlightInterventionalCheckBox);
-        });
-        
         showRequiredGroupsCheckBox.addActionListener((e) -> {
             JCheckBox box = (JCheckBox) e.getSource();
             showRequiredByGroups = box.isSelected();
@@ -539,12 +530,6 @@ public class KnowledgeBoxEditor extends JPanel {
         Box hBox = Box.createHorizontalBox();
         hBox.add(showRequiredGroupsCheckBox);
         hBox.add(showForbiddenGroupsCheckBox);
-        
-        // Only show the checkbox when there are interventional variables - Zhou
-        if (interventionalVars.size() > 0) {
-            hBox.add(highlightInterventionalCheckBox);
-        }
-        
         hBox.add(Box.createHorizontalGlue());
 
         vBox.add(b4);
@@ -558,6 +543,7 @@ public class KnowledgeBoxEditor extends JPanel {
     private void resetEdgeDisplay(JCheckBox checkBox) {
         IKnowledge knowledge = getKnowledge();
         KnowledgeGraph graph = new KnowledgeGraph(getKnowledge());
+        
         getVarNames().forEach(e -> {
             knowledge.addVariable(e);
             graph.addNode(new KnowledgeModelNode(e));
@@ -702,11 +688,6 @@ public class KnowledgeBoxEditor extends JPanel {
                     }
                 });
             }
-        }
-        
-        // Highlight all interventional nodes
-        if (highlightInterventional) {
-            
         }
 
         boolean arrangedAll = GraphUtils.arrangeBySourceGraph(graph, edgeWorkbench.getGraph());
