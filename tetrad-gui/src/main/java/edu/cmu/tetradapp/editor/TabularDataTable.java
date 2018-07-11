@@ -119,7 +119,7 @@ class TabularDataTable extends AbstractTableModel {
                 
                 if (variable instanceof DiscreteVariable) {
                     columnHeader += "-T";
-                } else {
+                } else if (variable instanceof ContinuousVariable) {
                     columnHeader += "-C";
                 }
                 
