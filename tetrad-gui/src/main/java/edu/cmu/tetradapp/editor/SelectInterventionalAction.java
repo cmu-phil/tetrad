@@ -57,7 +57,6 @@ public class SelectInterventionalAction extends AbstractAction implements Clipbo
         for (Component comp : workbench.getComponents()) {
             if (comp instanceof DisplayNode) {
                 Node node = ((DisplayNode) comp).getModelNode();
-                // Only interventional nodes has the `interventioanl` flag as true
                 if (node.isInterventional()) {
                     workbench.selectNode(node);
                 }
@@ -65,7 +64,6 @@ public class SelectInterventionalAction extends AbstractAction implements Clipbo
             
             if (comp instanceof DisplayEdge) {
                 Edge edge = ((DisplayEdge) comp).getModelEdge();
-
                 if (edge.getNode1().isInterventional() || edge.getNode2().isInterventional()) {
                     workbench.selectEdge(edge);
                 }

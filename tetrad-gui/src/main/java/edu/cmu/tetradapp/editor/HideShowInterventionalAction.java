@@ -7,7 +7,6 @@ package edu.cmu.tetradapp.editor;
 
 import edu.cmu.tetrad.graph.Edge;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.graph.NodeType;
 import edu.cmu.tetradapp.workbench.DisplayEdge;
 import edu.cmu.tetradapp.workbench.DisplayNode;
 import edu.cmu.tetradapp.workbench.GraphWorkbench;
@@ -54,27 +53,16 @@ public class HideShowInterventionalAction extends AbstractAction implements Clip
     public void actionPerformed(ActionEvent e) {
         for (Component comp : workbench.getComponents()) {
             if (comp instanceof DisplayNode) {
-                
                 Node node = ((DisplayNode) comp).getModelNode();
-                // Only interventional nodes has the `interventioanl` flag as true
-                if (node.getNodeType() == NodeType.MEASURED && node.isInterventional()) {
-                    if (comp.isVisible()) {
-                        comp.setVisible(false);
-                    } else {
-                        comp.setVisible(true);
-                    }
+                if (node.isInterventional()) {
+                    comp.setVisible(!comp.isVisible());
                 }
             }
             
             if (comp instanceof DisplayEdge) {
                 Edge edge = ((DisplayEdge) comp).getModelEdge();
-
                 if (edge.getNode1().isInterventional() || edge.getNode2().isInterventional()) {
-                    if (comp.isVisible()) {
-                        comp.setVisible(false);
-                    } else {
-                        comp.setVisible(true);
-                    }
+                    comp.setVisible(!comp.isVisible());
                 }
             }
         }
