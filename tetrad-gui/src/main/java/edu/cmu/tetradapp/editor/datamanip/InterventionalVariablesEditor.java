@@ -44,6 +44,8 @@ public class InterventionalVariablesEditor extends JPanel implements FinalizingP
 
     private static final long serialVersionUID = 6513664419620810219L;
 
+    private DataSet sourceDataSet;
+    
     private Parameters parameters;
 
     private DataModelList dataSets = null;
@@ -57,8 +59,6 @@ public class InterventionalVariablesEditor extends JPanel implements FinalizingP
     private DefaultTableModel tableModel;
 
     private final String interventionalVarColumnName = "Interventional Variable";
-
-    private final String interventionalVarPrefix = "I_";
 
     private List<String> interventionalVariables;
 
@@ -108,19 +108,23 @@ public class InterventionalVariablesEditor extends JPanel implements FinalizingP
             if (varName.isEmpty()) {
                 JOptionPane.showMessageDialog(JOptionUtils.centeringComp(), "Interventional variable name must be specified!");
             } else {
-                // Add the new interventional variable to each context
-                String formattedVarName = interventionalVarPrefix + varName;
-
                 // Prevent duplicate
-                if (interventionalVariables.stream().anyMatch(str -> str.trim().equalsIgnoreCase(formattedVarName))) {
-                    JOptionPane.showMessageDialog(JOptionUtils.centeringComp(), "Duplicate interventional variable name!");
+                List<String> datasetVariables = this.sourceDataSet.getVariableNames();
+                
+                if (datasetVariables.stream().anyMatch(str -> str.trim().equalsIgnoreCase(varName))) {
+                    JOptionPane.showMessageDialog(JOptionUtils.centeringComp(), "This variable name has been already taken in the source dataset, use a different one!");
+                    return;
+                }
+                
+                if (interventionalVariables.stream().anyMatch(str -> str.trim().equalsIgnoreCase(varName))) {
+                    JOptionPane.showMessageDialog(JOptionUtils.centeringComp(), "You've already added this interventional variable!");
                     return;
                 }
 
-                interventionalVariables.add(formattedVarName);
+                interventionalVariables.add(varName);
 
                 // Add new row to table
-                addRow(tableModel, formattedVarName);
+                addRow(tableModel, varName);
 
                 // Reset the input field
                 resetInterventionalVarNameField();
@@ -130,7 +134,7 @@ public class InterventionalVariablesEditor extends JPanel implements FinalizingP
             interventionalVarNameField.requestFocus();
         });
 
-        interventionalVarBox.add(new JLabel("Interventional variable name: I_"));
+        interventionalVarBox.add(new JLabel("Interventional variable name: "));
         interventionalVarBox.add(interventionalVarNameField);
         interventionalVarBox.add(Box.createRigidArea(new Dimension(10, 1)));
         interventionalVarBox.add(addInterventionBtn);
@@ -298,6 +302,8 @@ public class InterventionalVariablesEditor extends JPanel implements FinalizingP
             throw new IllegalArgumentException("The dataset must be a rectangular dataset");
         }
 
+        this.sourceDataSet = (DataSet) model;
+        
         // All loaded datasets
         this.dataSets = dataWrapper.getDataModelList();
     }

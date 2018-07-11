@@ -604,10 +604,12 @@ public final class DiscreteVariable extends AbstractVariable
         }
     }
 
+    @Override
     public boolean isInterventional() {
         return interventional;
     }
 
+    @Override
     public void setInterventional(boolean interventional) {
         this.interventional = interventional;
     }

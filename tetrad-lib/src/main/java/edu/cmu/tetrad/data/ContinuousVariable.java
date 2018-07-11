@@ -269,10 +269,12 @@ public final class ContinuousVariable extends AbstractVariable
         setCenterY(centerY);
     }
 
+    @Override
     public boolean isInterventional() {
         return interventional;
     }
 
+    @Override
     public void setInterventional(boolean interventional) {
         this.interventional = interventional;
     }

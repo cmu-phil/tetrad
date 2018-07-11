@@ -98,7 +98,6 @@ public class KnowledgeBoxEditor extends JPanel {
     private boolean showRequired = false;
     private boolean showRequiredByGroups = false;
     private boolean showForbiddenByGroups = false;
-    private boolean highlightInterventional = false;
     private JTextArea textArea;
 
     // Unused, moved to KnowledgeBoxModel. Keeping for serialization. Can delete after a while. 2017.06.17
@@ -106,9 +105,7 @@ public class KnowledgeBoxEditor extends JPanel {
     private final KnowledgeBoxModel knowledgeBoxModel;
     private JTabbedPane tabbedPane = null;
     private Graph sourceGraph;
-    
-    private final String interventionalVarPrefix = "I_";
-    
+ 
     private final List<String> interventionalVars = new LinkedList<>();
     private final List<String> nonInterventionalVars = new LinkedList<>();
 
@@ -143,7 +140,7 @@ public class KnowledgeBoxEditor extends JPanel {
         resetTabbedPane(tabbedPane);
 
         add(tabbedPane, BorderLayout.CENTER);
-        setPreferredSize(new Dimension(720, 500));
+        setPreferredSize(new Dimension(640, 500));
 
         add(menuBar(), BorderLayout.NORTH);
 
@@ -357,12 +354,12 @@ public class KnowledgeBoxEditor extends JPanel {
      */
     private void checkInterventionalVariables() {
         System.out.println("All variables =============");
-        varNames.forEach(e -> {
-            System.out.println(e);
-            if (e.startsWith(interventionalVarPrefix)) {
-                interventionalVars.add(e);
+        knowledgeBoxModel.getVariables().forEach(e->{
+            System.out.println(e.getName());
+            if (e.isInterventional()) {
+                interventionalVars.add(e.getName());
             } else {
-                nonInterventionalVars.add(e);
+                nonInterventionalVars.add(e.getName());
             }
         });
 
