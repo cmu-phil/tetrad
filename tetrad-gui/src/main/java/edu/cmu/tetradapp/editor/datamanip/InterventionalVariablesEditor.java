@@ -18,7 +18,6 @@ import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 import javax.swing.BorderFactory;
@@ -166,8 +165,6 @@ public class InterventionalVariablesEditor extends JPanel implements FinalizingP
         // Table header
         tableModel.setColumnIdentifiers(columnNames.toArray());
 
-        System.out.println("=========column count =========" + table.getColumnCount());
-
         // To be able to see the header, we need to put the table in a JScrollPane
         JScrollPane tablePane = new JScrollPane(table);
 
@@ -229,16 +226,6 @@ public class InterventionalVariablesEditor extends JPanel implements FinalizingP
             return false;
         }
 
-        System.out.println("===============Added Interventioanl Variables==============");
-        interventionalVariables.forEach(e -> {
-            System.out.println(e);
-        });
-
-        System.out.println("===============Datasets==============");
-        dataSets.forEach(e -> {
-            System.out.println(e.getName());
-        });
-
         // 2D array of all cell values, true/false
         boolean interventions[][] = new boolean[interventionalVariables.size()][dataSets.size()];
 
@@ -250,15 +237,8 @@ public class InterventionalVariablesEditor extends JPanel implements FinalizingP
             }
         }
 
-        System.out.println("===============Interventions (Row) & Datasets (Column)==============");
-        System.out.println(Arrays.deepToString(interventions).replace("], ", "]\n"));
-
-        System.out.println("===============ALL interventional variables are discrete==============: " + discreteInterventionalVariables);
-
         // Combine the datasets with added interventional variables
         DataModel combinedDataset = InterventionalDataFactory.createData(dataSets.getModelList(), interventionalVariables, interventions, discreteInterventionalVariables);
-
-        System.out.println("===combinedDataset: " + combinedDataset);
 
         // This way we can pass the combinedDataset to the wrapper
         parameters.set("combinedDataset", combinedDataset);

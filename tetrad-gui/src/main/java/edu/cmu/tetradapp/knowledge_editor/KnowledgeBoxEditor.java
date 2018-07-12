@@ -348,29 +348,17 @@ public class KnowledgeBoxEditor extends JPanel {
     }
 
     /**
-     * If the knowledge box sees variables that have  I_<varname> 
-     * it automatically places I_<varname> variables in the first tier 
+     * If the knowledge box sees interventional variables 
+     * it automatically places those variables in the first tier 
      * and the rest of domain variables in second tier - Zhou
      */
     private void checkInterventionalVariables() {
-        System.out.println("All variables =============");
         knowledgeBoxModel.getVariables().forEach(e->{
-            System.out.println(e.getName());
             if (e.isInterventional()) {
                 interventionalVars.add(e.getName());
             } else {
                 nonInterventionalVars.add(e.getName());
             }
-        });
-
-        System.out.println("=========interventionalVars==========");
-        interventionalVars.forEach(e->{
-            System.out.println(e);
-        });
-
-        System.out.println("=========nonInterventionalVars==========");
-        nonInterventionalVars.forEach(e->{
-            System.out.println(e);
         });
     }
     
