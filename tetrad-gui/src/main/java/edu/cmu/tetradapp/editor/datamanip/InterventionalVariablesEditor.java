@@ -18,6 +18,8 @@ import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
 import java.util.LinkedList;
 import java.util.List;
 import javax.swing.BorderFactory;
@@ -79,8 +81,6 @@ public class InterventionalVariablesEditor extends JPanel implements FinalizingP
      */
     @Override
     public void setup() {
-        System.out.println("=========InterventionalVariablesEditor setup()=========");
-
         // Container
         Box container = Box.createVerticalBox();
         container.setPreferredSize(new Dimension(640, 460));
@@ -146,7 +146,9 @@ public class InterventionalVariablesEditor extends JPanel implements FinalizingP
 
         // Create object of table and table model
         table = new JTable();
-
+        
+        
+        
         tableModel = new DefaultTableModel();
 
         // Set model into the table object
@@ -165,9 +167,24 @@ public class InterventionalVariablesEditor extends JPanel implements FinalizingP
         // Table header
         tableModel.setColumnIdentifiers(columnNames.toArray());
 
+        
+        
         // To be able to see the header, we need to put the table in a JScrollPane
         JScrollPane tablePane = new JScrollPane(table);
+ 
+        tablePane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
 
+        table.getParent().addComponentListener(new ComponentAdapter() {
+            @Override
+            public void componentResized(final ComponentEvent e) {
+                if (table.getPreferredSize().width < table.getParent().getWidth()) {
+                    table.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
+                } else {
+                    table.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
+                }
+            }
+        });
+        
         // Show checkboxes in table cells
         for (int i = 0; i < dataSets.size(); i++) {
             TableColumn tc = table.getColumnModel().getColumn(1 + i);
