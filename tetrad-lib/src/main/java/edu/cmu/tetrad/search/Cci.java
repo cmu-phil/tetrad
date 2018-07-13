@@ -112,8 +112,8 @@ public final class Cci {
         if (dataSet == null) throw new NullPointerException();
 
         this.alpha = alpha;
-        dataSet = DataUtils.standardizeData(dataSet);
-        this.data = dataSet.getDoubleData().transpose().toArray();
+        dataSet = DataUtils.center(dataSet);
+        this                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               .data = dataSet.getDoubleData().transpose().toArray();
 
         for (int j = 0; j < data.length; j++) {
             data[j] = scale(data[j]);
@@ -237,26 +237,6 @@ public final class Cci {
         final double[] xdata = data[_x];
         final double[] ydata = data[_y];
 
-//        if (z.size() == 0) {
-//
-//            // No need to center; the covariance calculation does that.
-//            for (int i = 0; i < N; i++) {
-//                residualsx[i] = xdata[i];
-//
-//                if (Double.isNaN(residualsx[i])) {
-//                    residualsx[i] = 0;
-//                }
-//            }
-//
-//            for (int i = 0; i < N; i++) {
-//                residualsy[i] = ydata[i];
-//
-//                if (Double.isNaN(residualsy[i])) {
-//                    residualsy[i] = 0;
-//                }
-//            }
-//        } else {
-
         double[] sumsx = new double[N];
         double[] sumsy = new double[N];
 
@@ -343,7 +323,6 @@ public final class Cci {
                 residualsy[i] = 0;
             }
         }
-//        }
 
         double[][] ret = new double[2][];
         ret[0] = residualsx;
@@ -363,19 +342,12 @@ public final class Cci {
         this.numFunctions = numFunctions;
     }
 
-    /**
-     * Kernel
-     */
     public Kernel getKernelMultiplier() {
         return kernelMultiplier;
     }
 
     public void setKernelMultiplier(Kernel kernelMultiplier) {
         this.kernelMultiplier = kernelMultiplier;
-    }
-
-    public Basis getBasis() {
-        return basis;
     }
 
     public void setBasis(Basis basis) {
@@ -432,7 +404,6 @@ public final class Cci {
         return sum / N;
     }
 
-    // Polynomial basis. The 1 is left out according to Daudin.
     private double function(int index, double x) {
         if (basis == Basis.Polynomial) {
             double g = 1.0;
