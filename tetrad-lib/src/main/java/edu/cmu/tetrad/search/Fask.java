@@ -25,6 +25,7 @@ import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.DepthChoiceGenerator;
 import edu.cmu.tetrad.util.StatUtils;
+import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetrad.util.TetradMatrix;
 import org.apache.commons.math3.linear.SingularMatrixException;
 
@@ -163,7 +164,9 @@ public final class Fask implements GraphSearch {
                 double c2 = StatUtils.cov(x, y, y, 0, +1)[1];
 
                 if ((isUseFasAdjacencies() && G0.isAdjacentTo(X, Y)) || (isUseSkewAdjacencies() && Math.abs(c1 - c2) > getExtraEdgeThreshold())) {
-                    if (knowledgeOrients(X, Y)) {
+                    if (edgeForbiddenByKnowledge(X, Y)) {
+                        // Don't add an edge.
+                    } else if (knowledgeOrients(X, Y)) {
                         graph.addDirectedEdge(X, Y);
                     } else if (knowledgeOrients(Y, X)) {
                         graph.addDirectedEdge(Y, X);
@@ -194,7 +197,7 @@ public final class Fask implements GraphSearch {
 
     private boolean bidirected(double[] x, double[] y, Graph G0, Node X, Node Y) {
 
-        Set<Node> adjSet = new HashSet<Node>(G0.getAdjacentNodes(X));
+        Set<Node> adjSet = new HashSet<>(G0.getAdjacentNodes(X));
         adjSet.addAll(G0.getAdjacentNodes(Y));
         List<Node> adj = new ArrayList<>(adjSet);
         adj.remove(X);
@@ -213,9 +216,19 @@ public final class Fask implements GraphSearch {
                 _Z[f] = data[column];
             }
 
-            double pc = partialCorrelation(x, y, _Z, x, Double.NEGATIVE_INFINITY, +1);
-            double pc1 = partialCorrelation(x, y, _Z, x, 0, +1);
-            double pc2 = partialCorrelation(x, y, _Z, y, 0, +1);
+            double pc = 0;
+            double pc1 = 0;
+            double pc2 = 0;
+
+            try {
+                pc = partialCorrelation(x, y, _Z, x, Double.NEGATIVE_INFINITY, +1);
+                pc1 = partialCorrelation(x, y, _Z, x, 0, +1);
+                pc2 = partialCorrelation(x, y, _Z, y, 0, +1);
+            } catch (SingularMatrixException e) {
+                System.out.println("Singularity X = " + X + " Y = " + Y + " adj = " + adj);
+                TetradLogger.getInstance().log("info", "Singularity X = " + X + " Y = " + Y + " adj = " + adj);
+                continue;
+            }
 
             int nc = StatUtils.getRows(x, x, Double.NEGATIVE_INFINITY, +1).size();
             int nc1 = StatUtils.getRows(x, x, 0, +1).size();
@@ -365,6 +378,10 @@ public final class Fask implements GraphSearch {
         return knowledge.isForbidden(right.getName(), left.getName()) || knowledge.isRequired(left.getName(), right.getName());
     }
 
+    private boolean edgeForbiddenByKnowledge(Node left, Node right) {
+        return knowledge.isForbidden(right.getName(), left.getName()) && knowledge.isForbidden(left.getName(), right.getName());
+    }
+
     public Graph getInitialGraph() {
         return initialGraph;
     }
@@ -405,6 +422,7 @@ public final class Fask implements GraphSearch {
         this.delta = delta;
     }
 }
+
 
 
 
