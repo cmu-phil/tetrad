@@ -134,7 +134,6 @@ public final class Cci {
         }
 
         // Scale z and alpha.
-        final int N = dataSet.getNumRows();
         final int m1 = 10; // reference
         final int m2 = dataSet.getNumColumns();
 
@@ -142,17 +141,17 @@ public final class Cci {
 
         double z1 = getZForAlpha(alpha);
         double z2 = getZForAlpha(alpha2);
-//        this.cutoff = z2;
 
-        final int referenceSampleSize = 500;
-        double z3 = sqrt(N / (double) referenceSampleSize) * z2;
+        final int N1 = 500;
+        final int N2 = dataSet.getNumRows();
+        double z3 = sqrt(N2 / (double) N1) * z2;
 
         this.cutoff = z3;
 
         double alpha3 = 2.0 * (1.0 - new NormalDistribution(0, 1).cumulativeProbability(z3));
 
         System.out.println("z1 = " + z1 + " z2 = " + z2 + " z3 = " + z3 + " alpha = " + alpha +
-                " alpha2 for " + referenceSampleSize + " = " + alpha2 + " alpha3 for " + N + " = " + alpha3);
+                " alpha2 for " + N1 + " = " + alpha2 + " alpha3 for " + N2 + " = " + alpha3);
     }
 
     //=================PUBLIC METHODS====================//z
