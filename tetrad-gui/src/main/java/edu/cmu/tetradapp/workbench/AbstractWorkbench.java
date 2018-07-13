@@ -2619,7 +2619,6 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
          * @param label the JComponent which serves as the label.
          */
         public GraphNodeLabel(DisplayNode node, JComponent label, int xOffset, int yOffset) {
-
             this.label = label;
 
             Rectangle rectangle = node.getBounds();

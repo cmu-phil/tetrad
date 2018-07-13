@@ -26,10 +26,12 @@ import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.data.KnowledgeEdge;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
+import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.JOptionUtils;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetradapp.model.ForbiddenGraphModel;
 import edu.cmu.tetradapp.model.KnowledgeBoxModel;
+import edu.cmu.tetradapp.util.ImageUtils;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
@@ -51,6 +53,7 @@ import java.util.prefs.Preferences;
 import javax.swing.Box;
 import javax.swing.DefaultListModel;
 import javax.swing.DropMode;
+import javax.swing.ImageIcon;
 import javax.swing.JCheckBox;
 import javax.swing.JComponent;
 import javax.swing.JFileChooser;
@@ -89,6 +92,8 @@ public class KnowledgeBoxEditor extends JPanel {
     private final Color SELECTED_BG = new Color(255, 204, 102);
 
     private final Map<String, JLabel> labelMap = new HashMap<>();
+    
+    private final Map<String, Node> varNodeMap = new HashMap<>();
 
     private List<String> varNames;
     private KnowledgeWorkbench edgeWorkbench;
@@ -128,6 +133,12 @@ public class KnowledgeBoxEditor extends JPanel {
             throw new NullPointerException();
         }
 
+        // Create a map of variable names -> corresponding nodes - Zhou
+        knowledgeBoxModel.getVariables().forEach(e->{
+            varNodeMap.put(e.getName(), e);
+        });
+        
+        
         if (varNames == null) {
             varNames = new ArrayList<>();
         }
@@ -160,18 +171,37 @@ public class KnowledgeBoxEditor extends JPanel {
         getKnowledge().getVariablesNotInTiers().forEach(e -> labelMap.put(e, createJLabel(e)));
     }
 
-    private JLabel createJLabel(String name) {
-        // Extra whitespaces around the variable name
-        JLabel label = new JLabel(String.format("  %s  ", name));
+    private JLabel createJLabel(String varName) {
+        Node node = getNodeFromVarName(varName);
+        JLabel label;
+        if (node.isInterventional()) {
+            // Extra whitespaces around the variable name
+            label = new JLabel(String.format("  %s  ", varName), new ImageIcon(ImageUtils.getImage(this, "interventional.png")), SwingConstants.LEFT);
+        } else {
+            label = new JLabel(String.format("  %s  ", varName));
+        }
+        
         label.setOpaque(true);
         label.setHorizontalAlignment(SwingConstants.CENTER);
         label.setBorder(new CompoundBorder(new MatteBorder(2, 2, 2, 2, Color.WHITE), new LineBorder(Color.BLACK)));
         label.setForeground(Color.BLACK);
         label.setBackground(UNSELECTED_BG);
+        
+        
+        
+//        if (node.isInterventional()) {
+//            label.setBorder(new CompoundBorder(new MatteBorder(2, 2, 2, 2, Color.WHITE), BorderFactory.createTitledBorder(BorderFactory.createLineBorder(Color.BLACK), "I", TitledBorder.LEADING, TitledBorder.BELOW_TOP, new Font(Font.SANS_SERIF, Font.PLAIN, 8))));
+//        } else {
+//            label.setBorder(new CompoundBorder(new MatteBorder(2, 2, 2, 2, Color.WHITE), new LineBorder(Color.BLACK)));
+//        }
 
         return label;
     }
-
+    
+    private Node getNodeFromVarName(String varName) {
+        return varNodeMap.get(varName);
+    }
+    
     private JMenuBar menuBar() {
         JMenuBar menuBar = new JMenuBar();
         JMenu file = new JMenu("File");
@@ -255,7 +285,7 @@ public class KnowledgeBoxEditor extends JPanel {
     private void resetTabbedPane(JTabbedPane tabbedPane) {
         tabbedPane.removeAll();
         tabbedPane.add("Tiers", tierDisplay());
-        tabbedPane.add("Other Groups", new OtherGroupsEditor(knowledgeBoxModel.getKnowledge(), this.varNames));
+        tabbedPane.add("Other Groups", new OtherGroupsEditor(knowledgeBoxModel.getKnowledge(), knowledgeBoxModel.getVariables()));
         tabbedPane.add("Edges", edgeDisplay());
 
         tabbedPane.addChangeListener((e) -> {

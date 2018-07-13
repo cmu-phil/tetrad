@@ -28,11 +28,10 @@ import edu.cmu.tetrad.util.JOptionUtils;
 import edu.cmu.tetrad.util.NamingProtocol;
 import edu.cmu.tetradapp.workbench.DisplayNode;
 import edu.cmu.tetradapp.workbench.DisplayNodeUtils;
-
-import javax.swing.*;
 import java.awt.*;
 import java.awt.geom.Rectangle2D;
 import java.util.List;
+import javax.swing.*;
 
 /**
  * This class represents a knowledge variable on screen.

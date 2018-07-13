@@ -82,7 +82,7 @@ public class KnowledgeWorkbench extends AbstractWorkbench {
      * @param modelNode the model node.
      * @return the new display node.
      */
-    public DisplayNode getNewDisplayNode(Node modelNode) {
+    public DisplayNode getNewDisplayNode(Node modelNode) { 
         DisplayNode displayNode = new KnowledgeDisplayNode(modelNode);
 
         displayNode.addPropertyChangeListener(new PropertyChangeListener() {

@@ -23,21 +23,31 @@ package edu.cmu.tetradapp.knowledge_editor;
 
 import edu.cmu.tetrad.data.IKnowledge;
 import edu.cmu.tetrad.data.KnowledgeGroup;
+import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetradapp.util.ImageUtils;
 import edu.cmu.tetradapp.workbench.LayoutUtils;
-
-import javax.swing.*;
-import javax.swing.border.CompoundBorder;
-import javax.swing.border.EmptyBorder;
-import javax.swing.border.LineBorder;
-import javax.swing.border.MatteBorder;
-import java.awt.*;
+import java.awt.Color;
+import java.awt.Component;
+import java.awt.Dimension;
+import java.awt.Graphics;
+import java.awt.Insets;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
 import java.awt.dnd.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.*;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import javax.swing.*;
+import javax.swing.border.CompoundBorder;
+import javax.swing.border.EmptyBorder;
+import javax.swing.border.LineBorder;
+import javax.swing.border.MatteBorder;
 
 /**
  * Edits fobiddings or requirings of groups of node to other groups of nodes.
@@ -51,22 +61,36 @@ class OtherGroupsEditor extends JPanel {
      */
     private IKnowledge knowledge;
 
+    private final Map<String, Node> varNodeMap = new HashMap<>();
 
     /**
      * The variables in the graph.
      */
-    private List<String> variables;
+    private List<String> variables = new LinkedList<>();
+    
+    private final Color UNSELECTED_BG = new Color(153, 204, 204);
+    private final Color SELECTED_BG = new Color(255, 204, 102);
+    
+    private final Map<String, JLabel> labelMap = new HashMap<>();
 
 
-    public OtherGroupsEditor(IKnowledge knowledge, List<String> vars) {
+    public OtherGroupsEditor(IKnowledge knowledge, List<Node> varNodes) {
         if (knowledge == null) {
             throw new NullPointerException("The given knowledge must not be null");
         }
-        if (vars == null) {
-            throw new NullPointerException("The given list of variables must not be null");
+        if (varNodes == null) {
+            throw new NullPointerException("The given list of variable nodes must not be null");
         }
         this.knowledge = knowledge;
-        this.variables = new ArrayList<>(vars);
+        
+        varNodes.forEach(e->{
+            this.variables.add(e.getName());
+            
+            varNodeMap.put(e.getName(), e);
+        });
+
+        variables.forEach(e -> labelMap.put(e, createJLabel(e)));
+        
         this.setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
         setBorder(new EmptyBorder(5, 5, 5, 5));
 
@@ -76,6 +100,32 @@ class OtherGroupsEditor extends JPanel {
 
     //===================== Private Methods ============================//
 
+    private JLabel createJLabel(String varName) {
+        Node node = getNodeFromVarName(varName);
+        JLabel label;
+        if (node.isInterventional()) {
+            // Extra whitespaces around the variable name
+            label = new JLabel(String.format("  %s  ", varName), new ImageIcon(ImageUtils.getImage(this, "interventional.png")), SwingConstants.LEFT);
+        } else {
+            label = new JLabel(String.format("  %s  ", varName));
+        }
+        
+        label.setOpaque(true);
+        label.setHorizontalAlignment(SwingConstants.CENTER);
+        label.setBorder(new CompoundBorder(new MatteBorder(2, 2, 2, 2, Color.WHITE), new LineBorder(Color.BLACK)));
+        label.setForeground(Color.BLACK);
+        label.setBackground(UNSELECTED_BG);
+        
+        
+        
+//        if (node.isInterventional()) {
+//            label.setBorder(new CompoundBorder(new MatteBorder(2, 2, 2, 2, Color.WHITE), BorderFactory.createTitledBorder(BorderFactory.createLineBorder(Color.BLACK), "I", TitledBorder.LEADING, TitledBorder.BELOW_TOP, new Font(Font.SANS_SERIF, Font.PLAIN, 8))));
+//        } else {
+//            label.setBorder(new CompoundBorder(new MatteBorder(2, 2, 2, 2, Color.WHITE), new LineBorder(Color.BLACK)));
+//        }
+
+        return label;
+    }
 
     private Box buildComponent() {
         Box vBox = Box.createVerticalBox();
@@ -130,6 +180,10 @@ class OtherGroupsEditor extends JPanel {
     }
 
 
+    private Node getNodeFromVarName(String varName) {
+        return varNodeMap.get(varName);
+    }
+    
     /**
      * Builds a group box using the given knowledge group (if null a default instance
      * is returned).
@@ -262,10 +316,7 @@ class OtherGroupsEditor extends JPanel {
     /**
      * Renderer for variables.
      */
-    private static class VariableRenderer extends DefaultListCellRenderer {
-
-        private final Color fillColor = new Color(153, 204, 204);
-        private final Color selectedFillColor = new Color(255, 204, 102);
+    private class VariableRenderer extends DefaultListCellRenderer {
 
         public VariableRenderer() {
             this.setOpaque(true);
@@ -279,16 +330,14 @@ class OtherGroupsEditor extends JPanel {
         public Component getListCellRendererComponent(JList list, Object value, int index,
                                                       boolean isSelected, boolean cellHasFocus) {
 
-            setText(" " + value + " ");
-            if (isSelected) {
-                setForeground(Color.BLACK);
-                setBackground(selectedFillColor);
-            } else {
-                setForeground(Color.BLACK);
-                setBackground(fillColor);
-            }
+            JLabel label = labelMap.get(value);
+                if (label == null) {
+                    label = new JLabel();
+                }
 
-            return this;
+                label.setBackground(isSelected ? SELECTED_BG : UNSELECTED_BG);
+
+                return label;
         }
     }
 
@@ -311,6 +360,7 @@ class OtherGroupsEditor extends JPanel {
             this.from = from;
             setLayoutOrientation(JList.HORIZONTAL_WRAP);
             setVisibleRowCount(0);
+            
             this.setCellRenderer(new VariableRenderer());
 
             new DropTarget(this, DnDConstants.ACTION_MOVE, this, true);
@@ -464,11 +514,12 @@ class OtherGroupsEditor extends JPanel {
      * A list that allows the user to move variables from it to others. The variables are not deleted when
      * moved.
      */
-    private static class VariableDragList extends JList implements DragGestureListener, DropTargetListener {
+    private class VariableDragList extends JList implements DragGestureListener, DropTargetListener {
 
         public VariableDragList(List<String> items) {
             setLayoutOrientation(JList.HORIZONTAL_WRAP);
             setVisibleRowCount(0);
+            
             this.setCellRenderer(new VariableRenderer());
 
             new DropTarget(this, DnDConstants.ACTION_MOVE, this, true);
