@@ -371,11 +371,9 @@ public class KCI implements IndependenceTest, ScoreForFact {
                 pValues.put(fact, p);
                 return p_appr > alpha;
             } else {
-                pValues.put(fact, 0.0);
-                facts.put(fact, false);
                 return theorem4(kx, ky, fact);
             }
-        } catch (NotStrictlyPositiveException e) {
+        } catch (Exception e) {
             e.printStackTrace();
             pValues.put(fact, 0.0);
             facts.put(fact, false);
@@ -403,7 +401,7 @@ public class KCI implements IndependenceTest, ScoreForFact {
             ky = symmetrized(Rz.times(Ky).times(Rz.transpose()));
 
             return proposition5(kx, ky, fact);
-        } catch (SingularMatrixException e) {
+        } catch (Exception e) {
             e.printStackTrace();
             pValues.put(fact, 0.0);
             facts.put(fact, false);
