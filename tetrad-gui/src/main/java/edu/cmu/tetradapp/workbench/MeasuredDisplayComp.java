@@ -21,9 +21,9 @@
 
 package edu.cmu.tetradapp.workbench;
 
-import javax.swing.*;
 import java.awt.*;
 import java.awt.geom.RoundRectangle2D;
+import javax.swing.*;
 
 /**
  * The display component for measured nodes--an opaque rounded rectangle.
@@ -32,13 +32,23 @@ import java.awt.geom.RoundRectangle2D;
  */
 public class MeasuredDisplayComp extends JComponent implements DisplayComp {
     private boolean selected = false;
+    
+    private boolean interventional;
 
-    public MeasuredDisplayComp(String name) {
-        setBackground(DisplayNodeUtils.getNodeFillColor());
+    public MeasuredDisplayComp(String name, boolean isInterventional) {
+        setInterventional(isInterventional);
         setFont(DisplayNodeUtils.getFont());
         setName(name);
     }
 
+    public boolean isInterventional() {
+        return interventional;
+    }
+
+    public void setInterventional(boolean interventional) {
+        this.interventional = interventional;
+    }
+    
     public void setName(String name) {
         super.setName(name);
         setSize(getPreferredSize());
@@ -73,11 +83,12 @@ public class MeasuredDisplayComp extends JComponent implements DisplayComp {
         int stringX = (width - stringWidth) / 2;
         int stringY = fm.getAscent() + DisplayNodeUtils.getPixelGap();
 
-        g2.setColor(isSelected() ? DisplayNodeUtils.getNodeSelectedFillColor() :
-                DisplayNodeUtils.getNodeFillColor());
+        // Use a different color for interventional nodes - Zhou
+        Color fillColor = isInterventional() ? DisplayNodeUtils.getNodeFillColorInterventional() : DisplayNodeUtils.getNodeFillColor();
+        
+        g2.setColor(isSelected() ? DisplayNodeUtils.getNodeSelectedFillColor() : fillColor);
         g2.fill(getShape());
-        g2.setColor(isSelected() ? DisplayNodeUtils.getNodeSelectedEdgeColor() :
-                DisplayNodeUtils.getNodeEdgeColor());
+        g2.setColor(isSelected() ? DisplayNodeUtils.getNodeSelectedEdgeColor() : DisplayNodeUtils.getNodeEdgeColor());
         g2.draw(getShape());
         g2.setColor(DisplayNodeUtils.getNodeTextColor());
         g2.setFont(DisplayNodeUtils.getFont());

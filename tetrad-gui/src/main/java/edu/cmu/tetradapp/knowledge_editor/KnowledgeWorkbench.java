@@ -82,7 +82,10 @@ public class KnowledgeWorkbench extends AbstractWorkbench {
      * @param modelNode the model node.
      * @return the new display node.
      */
+    @Override
     public DisplayNode getNewDisplayNode(Node modelNode) { 
+        System.out.println("modelNode interventional? " + modelNode.isInterventional());
+        
         DisplayNode displayNode = new KnowledgeDisplayNode(modelNode);
 
         displayNode.addPropertyChangeListener(new PropertyChangeListener() {

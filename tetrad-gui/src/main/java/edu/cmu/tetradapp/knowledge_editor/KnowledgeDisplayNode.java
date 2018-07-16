@@ -45,7 +45,6 @@ public class KnowledgeDisplayNode extends DisplayNode {
      */
     public KnowledgeDisplayNode(Node modelNode) {
         setModelNode(modelNode);
-        setBackground(DisplayNodeUtils.getNodeFillColor());
         setFont(DisplayNodeUtils.getFont());
     }
 
@@ -170,11 +169,16 @@ public class KnowledgeDisplayNode extends DisplayNode {
         int stringX = 6;
         int stringY = fm.getMaxAscent() + 1;
 
-        g2.setColor(isSelected() ? DisplayNodeUtils.getNodeSelectedFillColor() : DisplayNodeUtils.getNodeFillColor());
+        // Use a different color for interventional nodes - Zhou
+        Color fillColor = isInterventional() ? DisplayNodeUtils.getNodeFillColorInterventional() : DisplayNodeUtils.getNodeFillColor();
+        
+        g2.setColor(isSelected() ? DisplayNodeUtils.getNodeSelectedFillColor() : fillColor);
+        
         g2.fill(getShape());
-        g2.setColor(Color.BLACK);
+        g2.setColor(isSelected() ? DisplayNodeUtils.getNodeSelectedEdgeColor() : DisplayNodeUtils.getNodeEdgeColor());
         g2.draw(getShape());
-        g2.setColor(Color.BLACK);
+        g2.setColor(DisplayNodeUtils.getNodeTextColor());
+        g2.setFont(DisplayNodeUtils.getFont());
         g2.drawString(getName(), stringX, stringY);
     }
 }

@@ -26,11 +26,10 @@ import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.NodeType;
 import edu.cmu.tetrad.util.JOptionUtils;
 import edu.cmu.tetrad.util.NamingProtocol;
-
-import javax.swing.*;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
 import java.util.List;
+import javax.swing.*;
 
 /**
  * Represents a measured (observed) variable in the workbench. Appears as an
@@ -59,8 +58,7 @@ public class GraphNodeMeasured extends DisplayNode {
                     "a GraphNode of type NodeType.MEASURED.");
         }
 
-        setDisplayComp(new MeasuredDisplayComp(modelNode.getName()));
-//        setDisplayComp(new MeasuredDisplaySmallComp(modelNode.getNode()));
+        setDisplayComp(new MeasuredDisplayComp(modelNode.getName(), modelNode.isInterventional()));
     }
 
     /**

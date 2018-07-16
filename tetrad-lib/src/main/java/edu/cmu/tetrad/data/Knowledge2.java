@@ -72,7 +72,7 @@ public final class Knowledge2 implements TetradSerializable, IKnowledge {
 
         static final long serialVersionUID = 23L;
         private final String name;
-
+        
         public MyNode(String name) {
             this.name = name;
         }

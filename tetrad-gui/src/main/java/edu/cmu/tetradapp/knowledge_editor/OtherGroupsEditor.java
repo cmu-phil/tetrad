@@ -24,7 +24,7 @@ package edu.cmu.tetradapp.knowledge_editor;
 import edu.cmu.tetrad.data.IKnowledge;
 import edu.cmu.tetrad.data.KnowledgeGroup;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetradapp.util.ImageUtils;
+import edu.cmu.tetradapp.workbench.DisplayNodeUtils;
 import edu.cmu.tetradapp.workbench.LayoutUtils;
 import java.awt.Color;
 import java.awt.Component;
@@ -102,28 +102,22 @@ class OtherGroupsEditor extends JPanel {
 
     private JLabel createJLabel(String varName) {
         Node node = getNodeFromVarName(varName);
-        JLabel label;
-        if (node.isInterventional()) {
-            // Extra whitespaces around the variable name
-            label = new JLabel(String.format("  %s  ", varName), new ImageIcon(ImageUtils.getImage(this, "interventional.png")), SwingConstants.LEFT);
-        } else {
-            label = new JLabel(String.format("  %s  ", varName));
-        }
         
+        // Extra whitespaces around the variable name
+        JLabel label = new JLabel(String.format("  %s  ", varName));
+ 
         label.setOpaque(true);
         label.setHorizontalAlignment(SwingConstants.CENTER);
         label.setBorder(new CompoundBorder(new MatteBorder(2, 2, 2, 2, Color.WHITE), new LineBorder(Color.BLACK)));
         label.setForeground(Color.BLACK);
-        label.setBackground(UNSELECTED_BG);
         
+        if (node.isInterventional()) {
+            System.out.println("Other groups Interventional node " + node.getName());
+            label.setBackground(DisplayNodeUtils.getNodeFillColorInterventional());
+        } else {
+            label.setBackground(UNSELECTED_BG);
+        }
         
-        
-//        if (node.isInterventional()) {
-//            label.setBorder(new CompoundBorder(new MatteBorder(2, 2, 2, 2, Color.WHITE), BorderFactory.createTitledBorder(BorderFactory.createLineBorder(Color.BLACK), "I", TitledBorder.LEADING, TitledBorder.BELOW_TOP, new Font(Font.SANS_SERIF, Font.PLAIN, 8))));
-//        } else {
-//            label.setBorder(new CompoundBorder(new MatteBorder(2, 2, 2, 2, Color.WHITE), new LineBorder(Color.BLACK)));
-//        }
-
         return label;
     }
 
@@ -335,7 +329,9 @@ class OtherGroupsEditor extends JPanel {
                     label = new JLabel();
                 }
 
-                label.setBackground(isSelected ? SELECTED_BG : UNSELECTED_BG);
+                if (isSelected) {
+                    label.setBackground(SELECTED_BG);
+                }
 
                 return label;
         }

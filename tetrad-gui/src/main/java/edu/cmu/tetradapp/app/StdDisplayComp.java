@@ -23,10 +23,9 @@ package edu.cmu.tetradapp.app;
 
 import edu.cmu.tetradapp.util.ImageUtils;
 import edu.cmu.tetradapp.workbench.DisplayNodeUtils;
-
-import javax.swing.*;
 import java.awt.*;
 import java.awt.geom.Rectangle2D;
+import javax.swing.*;
 
 /**
  * Appearance of session nodes for standard nodes.

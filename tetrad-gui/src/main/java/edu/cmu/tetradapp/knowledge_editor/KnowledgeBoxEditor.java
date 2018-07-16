@@ -31,7 +31,7 @@ import edu.cmu.tetrad.util.JOptionUtils;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetradapp.model.ForbiddenGraphModel;
 import edu.cmu.tetradapp.model.KnowledgeBoxModel;
-import edu.cmu.tetradapp.util.ImageUtils;
+import edu.cmu.tetradapp.workbench.DisplayNodeUtils;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
@@ -53,7 +53,6 @@ import java.util.prefs.Preferences;
 import javax.swing.Box;
 import javax.swing.DefaultListModel;
 import javax.swing.DropMode;
-import javax.swing.ImageIcon;
 import javax.swing.JCheckBox;
 import javax.swing.JComponent;
 import javax.swing.JFileChooser;
@@ -173,27 +172,22 @@ public class KnowledgeBoxEditor extends JPanel {
 
     private JLabel createJLabel(String varName) {
         Node node = getNodeFromVarName(varName);
-        JLabel label;
-        if (node.isInterventional()) {
-            // Extra whitespaces around the variable name
-            label = new JLabel(String.format("  %s  ", varName), new ImageIcon(ImageUtils.getImage(this, "interventional.png")), SwingConstants.LEFT);
-        } else {
-            label = new JLabel(String.format("  %s  ", varName));
-        }
         
+        // Extra whitespaces around the variable name
+        JLabel label = new JLabel(String.format("  %s  ", varName));
+
         label.setOpaque(true);
         label.setHorizontalAlignment(SwingConstants.CENTER);
         label.setBorder(new CompoundBorder(new MatteBorder(2, 2, 2, 2, Color.WHITE), new LineBorder(Color.BLACK)));
         label.setForeground(Color.BLACK);
-        label.setBackground(UNSELECTED_BG);
         
-        
-        
-//        if (node.isInterventional()) {
-//            label.setBorder(new CompoundBorder(new MatteBorder(2, 2, 2, 2, Color.WHITE), BorderFactory.createTitledBorder(BorderFactory.createLineBorder(Color.BLACK), "I", TitledBorder.LEADING, TitledBorder.BELOW_TOP, new Font(Font.SANS_SERIF, Font.PLAIN, 8))));
-//        } else {
-//            label.setBorder(new CompoundBorder(new MatteBorder(2, 2, 2, 2, Color.WHITE), new LineBorder(Color.BLACK)));
-//        }
+        if (node.isInterventional()) {
+            System.out.println("Tiers Interventional node " + node.getName());
+            label.setBackground(DisplayNodeUtils.getNodeFillColorInterventional());
+            System.out.println("Tiers Interventional node background color " + label.getColorModel().toString());
+        } else {
+            label.setBackground(UNSELECTED_BG);
+        }
 
         return label;
     }
@@ -1059,8 +1053,10 @@ public class KnowledgeBoxEditor extends JPanel {
                     label = new JLabel();
                 }
 
-                label.setBackground(isSelected ? SELECTED_BG : UNSELECTED_BG);
-
+                if (isSelected) {
+                    label.setBackground(SELECTED_BG);
+                }
+                
                 return label;
             });
             setTransferHandler(new TransferHandler() {

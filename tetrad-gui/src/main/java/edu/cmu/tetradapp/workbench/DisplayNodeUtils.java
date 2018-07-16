@@ -31,6 +31,7 @@ public class DisplayNodeUtils {
     // Note that this component must be a JComponent, since non-rectangular
 // shapes are used for some extensions.
     private static final Color NODE_FILL_COLOR = new Color(148, 198, 226);
+    private static final Color NODE_FILL_COLOR_INTERVENTIONAL = new Color(222, 158, 214);
     private static final Color NODE_EDGE_COLOR = new Color(146, 154, 166);
     private static final Color NODE_SELECTED_FILL_COLOR = new Color(244, 219, 110);
     private static final Color NODE_SELECTED_EDGE_COLOR = new Color(215, 193, 97);
@@ -49,6 +50,10 @@ public class DisplayNodeUtils {
 
     public static Color getNodeFillColor() {
         return NODE_FILL_COLOR;
+    }
+    
+    public static Color getNodeFillColorInterventional() {
+        return NODE_FILL_COLOR_INTERVENTIONAL;
     }
 
     public static Color getNodeEdgeColor() {
