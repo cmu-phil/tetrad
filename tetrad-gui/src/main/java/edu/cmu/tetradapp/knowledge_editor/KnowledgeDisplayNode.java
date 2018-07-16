@@ -170,6 +170,7 @@ public class KnowledgeDisplayNode extends DisplayNode {
         int stringY = fm.getMaxAscent() + 1;
 
         // Use a different color for interventional nodes - Zhou
+        System.out.println("isInterventional() " + isInterventional());
         Color fillColor = isInterventional() ? DisplayNodeUtils.getNodeFillColorInterventional() : DisplayNodeUtils.getNodeFillColor();
         
         g2.setColor(isSelected() ? DisplayNodeUtils.getNodeSelectedFillColor() : fillColor);

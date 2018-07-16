@@ -136,8 +136,7 @@ public class KnowledgeBoxEditor extends JPanel {
         knowledgeBoxModel.getVariables().forEach(e->{
             varNodeMap.put(e.getName(), e);
         });
-        
-        
+
         if (varNames == null) {
             varNames = new ArrayList<>();
         }
@@ -182,9 +181,7 @@ public class KnowledgeBoxEditor extends JPanel {
         label.setForeground(Color.BLACK);
         
         if (node.isInterventional()) {
-            System.out.println("Tiers Interventional node " + node.getName());
             label.setBackground(DisplayNodeUtils.getNodeFillColorInterventional());
-            System.out.println("Tiers Interventional node background color " + label.getColorModel().toString());
         } else {
             label.setBackground(UNSELECTED_BG);
         }
@@ -472,6 +469,7 @@ public class KnowledgeBoxEditor extends JPanel {
         });
 
         edgeWorkbench = new KnowledgeWorkbench(graph);
+
         resetEdgeDisplay(null);
 
         JCheckBox showForbiddenByTiersCheckbox = new JCheckBox(
@@ -551,6 +549,7 @@ public class KnowledgeBoxEditor extends JPanel {
 
     private void resetEdgeDisplay(JCheckBox checkBox) {
         IKnowledge knowledge = getKnowledge();
+
         KnowledgeGraph graph = new KnowledgeGraph(getKnowledge());
         
         getVarNames().forEach(e -> {
@@ -1053,6 +1052,7 @@ public class KnowledgeBoxEditor extends JPanel {
                     label = new JLabel();
                 }
 
+                // Only overwrite for selected - Zhou
                 if (isSelected) {
                     label.setBackground(SELECTED_BG);
                 }

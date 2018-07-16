@@ -329,6 +329,7 @@ class OtherGroupsEditor extends JPanel {
                     label = new JLabel();
                 }
 
+                // Only overwrite for selected - Zhou
                 if (isSelected) {
                     label.setBackground(SELECTED_BG);
                 }
