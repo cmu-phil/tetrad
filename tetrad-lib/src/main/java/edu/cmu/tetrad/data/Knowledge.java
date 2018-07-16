@@ -61,7 +61,6 @@ import java.util.stream.Collectors;
  * @author Ricardo Silva modification 04/03
  * @author Tyler Gibson modifications 2/07
  */
-@Deprecated 
 public final class Knowledge implements TetradSerializable, IKnowledge {
 
     static final long serialVersionUID = 23L;
