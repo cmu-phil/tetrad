@@ -67,6 +67,15 @@ public class KnowledgeModelNode implements Node, TetradSerializableExcluded {
 
         this.name = varName;
     }
+    
+    public KnowledgeModelNode(String varName, boolean interventional) {
+        if (varName == null) {
+            throw new NullPointerException();
+        }
+
+        this.name = varName;
+        setInterventional(interventional);
+    }
 
     public KnowledgeModelNode(KnowledgeModelNode node) {
         this.name = node.name;

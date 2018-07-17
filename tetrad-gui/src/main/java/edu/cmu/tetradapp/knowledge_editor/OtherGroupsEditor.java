@@ -112,7 +112,6 @@ class OtherGroupsEditor extends JPanel {
         label.setForeground(Color.BLACK);
         
         if (node.isInterventional()) {
-            System.out.println("Other groups Interventional node " + node.getName());
             label.setBackground(DisplayNodeUtils.getNodeFillColorInterventional());
         } else {
             label.setBackground(UNSELECTED_BG);
@@ -324,14 +323,21 @@ class OtherGroupsEditor extends JPanel {
         public Component getListCellRendererComponent(JList list, Object value, int index,
                                                       boolean isSelected, boolean cellHasFocus) {
 
-            JLabel label = labelMap.get(value);
+            JLabel label = labelMap.get((String) value);
                 if (label == null) {
                     label = new JLabel();
                 }
 
-                // Only overwrite for selected - Zhou
                 if (isSelected) {
                     label.setBackground(SELECTED_BG);
+                } else {
+                    Node node = getNodeFromVarName((String) value);
+
+                    if (node.isInterventional()) {
+                        label.setBackground(DisplayNodeUtils.getNodeFillColorInterventional());
+                    } else {
+                        label.setBackground(UNSELECTED_BG);
+                    }
                 }
 
                 return label;

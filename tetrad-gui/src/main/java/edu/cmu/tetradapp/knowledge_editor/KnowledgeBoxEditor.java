@@ -552,9 +552,10 @@ public class KnowledgeBoxEditor extends JPanel {
 
         KnowledgeGraph graph = new KnowledgeGraph(getKnowledge());
         
-        getVarNames().forEach(e -> {
-            knowledge.addVariable(e);
-            graph.addNode(new KnowledgeModelNode(e));
+        knowledgeBoxModel.getVariables().forEach(e->{
+            knowledge.addVariable(e.getName());
+            // Also tell the knowledge graph if the node is interventional - Zhou
+            graph.addNode(new KnowledgeModelNode(e.getName(), e.isInterventional()));
         });
 
         if (this.showRequiredByGroups) {
@@ -1052,9 +1053,16 @@ public class KnowledgeBoxEditor extends JPanel {
                     label = new JLabel();
                 }
 
-                // Only overwrite for selected - Zhou
                 if (isSelected) {
                     label.setBackground(SELECTED_BG);
+                } else {
+                    Node node = getNodeFromVarName(value);
+
+                    if (node.isInterventional()) {
+                        label.setBackground(DisplayNodeUtils.getNodeFillColorInterventional());
+                    } else {
+                        label.setBackground(UNSELECTED_BG);
+                    }
                 }
                 
                 return label;

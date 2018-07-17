@@ -46,6 +46,8 @@ public class KnowledgeDisplayNode extends DisplayNode {
     public KnowledgeDisplayNode(Node modelNode) {
         setModelNode(modelNode);
         setFont(DisplayNodeUtils.getFont());
+        // Must call setInterventional in order to use a different color for rendering - Zhou
+        setInterventional(modelNode.isInterventional());
     }
 
     /**
@@ -170,7 +172,6 @@ public class KnowledgeDisplayNode extends DisplayNode {
         int stringY = fm.getMaxAscent() + 1;
 
         // Use a different color for interventional nodes - Zhou
-        System.out.println("isInterventional() " + isInterventional());
         Color fillColor = isInterventional() ? DisplayNodeUtils.getNodeFillColorInterventional() : DisplayNodeUtils.getNodeFillColor();
         
         g2.setColor(isSelected() ? DisplayNodeUtils.getNodeSelectedFillColor() : fillColor);
