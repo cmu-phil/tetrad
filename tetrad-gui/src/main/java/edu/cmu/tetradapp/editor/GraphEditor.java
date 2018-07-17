@@ -449,7 +449,6 @@ public final class GraphEditor extends JPanel
 //        }
 //        );
 
-        graph.addSeparator();
         graph.add(new JMenuItem(new SelectBidirectedAction(getWorkbench())));
         graph.add(new JMenuItem(new SelectUndirectedAction(getWorkbench())));
         graph.add(new JMenuItem(new SelectLatentsAction(getWorkbench())));
