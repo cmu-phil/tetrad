@@ -2,6 +2,7 @@ package edu.pitt.csb;
 
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
+import edu.cmu.tetrad.data.DataUtils;
 import edu.cmu.tetrad.data.ICovarianceMatrix;
 import edu.cmu.tetrad.graph.IndependenceFact;
 import edu.cmu.tetrad.graph.Node;
@@ -12,9 +13,9 @@ import edu.cmu.tetrad.util.TetradVector;
 import edu.pitt.csb.mgm.EigenDecomposition;
 import org.apache.commons.math3.distribution.GammaDistribution;
 import org.apache.commons.math3.distribution.NormalDistribution;
-import org.apache.commons.math3.exception.NotStrictlyPositiveException;
+import org.apache.commons.math3.linear.RealMatrix;
 import org.apache.commons.math3.linear.RealVector;
-import org.apache.commons.math3.linear.SingularMatrixException;
+import org.apache.commons.math3.linear.SingularValueDecomposition;
 import org.apache.commons.math3.random.SynchronizedRandomGenerator;
 import org.apache.commons.math3.random.Well44497b;
 
@@ -108,10 +109,10 @@ public class KCI implements IndependenceTest, ScoreForFact {
      */
     public KCI(DataSet data, double alpha) {
         this.data = data;
-//        this.data = DataUtils.standardizeData(data);
+        this.data = DataUtils.standardizeData(data);
         this.variables = data.getVariables();
-        this._data = data.getDoubleData().transpose().toArray();
-        this.N = data.getNumRows();
+        this._data = this.data.getDoubleData().transpose().toArray();
+        this.N = this.data.getNumRows();
         this.I = TetradMatrix.identity(N);
 
         double delta = 1.0 / N;
@@ -134,10 +135,23 @@ public class KCI implements IndependenceTest, ScoreForFact {
             hash.put(getVariables().get(i), i);
         }
 
-        h = new double[data.getNumColumns()];
+        h = new double[this.data.getNumColumns()];
+        double sum = 0.0;
+        int count = 0;
 
-        for (int i = 0; i < data.getNumColumns(); i++) {
-            h[i] = h(data.getVariables().get(i).toString());
+        for (int i = 0; i < this.data.getNumColumns(); i++) {
+            h[i] = h(this.data.getVariables().get(i).toString());
+
+            if (h[i] != 0) {
+                sum += h[i];
+                count++;
+            }
+        }
+
+        double avg = sum / count;
+
+        for (int i = 0; i < h.length; i++) {
+            if (h[i] == 0) h[i] = avg;
         }
     }
 
@@ -391,13 +405,13 @@ public class KCI implements IndependenceTest, ScoreForFact {
         TetradMatrix ky = null;
 
         try {
-            TetradMatrix Kx = center(kernelMatrix(_data, x, z, getWidthMultiplier()));
+            TetradMatrix KXZ = center(kernelMatrix(_data, x, z, getWidthMultiplier()));
             TetradMatrix Ky = center(kernelMatrix(_data, y, null, getWidthMultiplier()));
             TetradMatrix KZ = center(kernelMatrix(_data, null, z, getWidthMultiplier()));
 
-            TetradMatrix Rz = (KZ.plus(I.scalarMult(getEpsilon())).inverse().scalarMult(epsilon));
+            TetradMatrix Rz = (KZ.plus(I.scalarMult(epsilon)).inverse().scalarMult(epsilon));
 
-            kx = symmetrized(Rz.times(Kx).times(Rz.transpose()));
+            kx = symmetrized(Rz.times(KXZ).times(Rz.transpose()));
             ky = symmetrized(Rz.times(Ky).times(Rz.transpose()));
 
             return proposition5(kx, ky, fact);
@@ -414,18 +428,11 @@ public class KCI implements IndependenceTest, ScoreForFact {
         double T = (1.0 / N) * (kx.times(ky).trace());
 
         // Eigen decomposition of kx and ky.
-        EigenDecomposition ed1 = new EigenDecomposition(kx.getRealMatrix());
-        EigenDecomposition ed2 = new EigenDecomposition(ky.getRealMatrix());
-        List<Double> evx = asList(ed1.getRealEigenvalues());
-        List<Double> evy = asList(ed2.getRealEigenvalues());
+        Eigendecomposition eigendecompositionx = new Eigendecomposition(kx).invoke();
+        List<Double> evx = eigendecompositionx.getTopEigenvalues();
 
-        // Sorts the eigenvalues high to low.
-        evx.sort((o1, o2) -> Double.compare(o2, o1));
-        evy.sort((o1, o2) -> Double.compare(o2, o1));
-
-        // Gets the guys in ev1 and ev2 that are greater than threshold * max guy.
-        evx = getTopGuys(evx, getThreshold());
-        evy = getTopGuys(evy, getThreshold());
+        Eigendecomposition eigendecompositiony = new Eigendecomposition(ky).invoke();
+        List<Double> evy = eigendecompositiony.getTopEigenvalues();
 
         // We're going to reuse the samples.
         int sampleIndex = -1;
@@ -457,69 +464,43 @@ public class KCI implements IndependenceTest, ScoreForFact {
 
         double T = (1.0 / N) * kx.times(ky).trace();
 
-        // Eigen decomposition of kx
-        EigenDecomposition edx = new EigenDecomposition(kx.getRealMatrix());
+        Eigendecomposition eigendecompositionx = new Eigendecomposition(kx).invoke();
+        TetradMatrix vx = eigendecompositionx.getV();
+        TetradMatrix dx = eigendecompositionx.getD();
 
-        List<Double> evxAll = asList(edx.getRealEigenvalues());
-        List<Integer> indx = series(evxAll.size()); // 1 2 3...
-        indx.sort((o1, o2) -> Double.compare(evxAll.get(o2), evxAll.get(o1))); // Sorted downward by eigenvalue
-        List<Integer> topXIndices = getTopIndices(evxAll, indx, getThreshold()); // Get the ones above threshold.
+        Eigendecomposition eigendecompositiony = new Eigendecomposition(ky).invoke();
+        TetradMatrix vy = eigendecompositiony.getV();
+        TetradMatrix dy = eigendecompositiony.getD();
 
-        // square roots eigenvalues down the diagonal, D = Lambda^1/2
-        TetradMatrix dx = new TetradMatrix(topXIndices.size(), topXIndices.size());
-
-        for (int i = 0; i < topXIndices.size(); i++) {
-            dx.set(i, i, Math.sqrt(evxAll.get(topXIndices.get(i))));
+        if (vx.columns() == 0) {
+            System.out.println("vx = " + eigendecompositionx.getTopEigenvalues());
         }
 
-        // Corresponding eigenvectors.
-        TetradMatrix vx = new TetradMatrix(N, topXIndices.size());
-
-        for (int i = 0; i < topXIndices.size(); i++) {
-            RealVector t = edx.getEigenvector(topXIndices.get(i));
-            vx.assignColumn(i, new TetradVector(t));
-        }
-
-        // Now, eigen decomposition of ky
-        EigenDecomposition edy = new EigenDecomposition(ky.getRealMatrix());
-
-        List<Double> evyAll = asList(edy.getRealEigenvalues());
-        List<Integer> indy = series(evyAll.size()); // 1 2 3...
-        indy.sort((o1, o2) -> Double.compare(evyAll.get(o2), evyAll.get(o1))); // Sorted downward by eigenvalue
-        List<Integer> topYIndices = getTopIndices(evyAll, indy, getThreshold()); // Get the ones above threshold.
-
-        // square roots eigenvalues down the diagonal, D = Lambda^1/2
-        TetradMatrix dy = new TetradMatrix(topYIndices.size(), topYIndices.size());
-
-        for (int j = 0; j < topYIndices.size(); j++) {
-            dy.set(j, j, Math.sqrt(evyAll.get(topYIndices.get(j))));
-        }
-
-        // Corresponding eigenvectors.
-        TetradMatrix vy = new TetradMatrix(N, topYIndices.size());
-
-        for (int i = 0; i < topYIndices.size(); i++) {
-            RealVector t = edy.getEigenvector(topYIndices.get(i));
-            vy.assignColumn(i, new TetradVector(t));
+        if (vy.columns() == 0) {
+            System.out.println("vy = " + eigendecompositiony.getTopEigenvalues());
         }
 
         // VD
         TetradMatrix vdx = vx.times(dx);
         TetradMatrix vdy = vy.times(dy);
 
-        final int prod = topXIndices.size() * topYIndices.size();
-        TetradMatrix stacked = new TetradMatrix(N, prod);
+        final int prod = vx.columns() * vy.columns();
+        TetradMatrix UU = new TetradMatrix(N, prod);
 
         // stack
-        for (int i = 0; i < topXIndices.size(); i++) {
-            for (int j = 0; j < topYIndices.size(); j++) {
+        for (int i = 0; i < vx.columns(); i++) {
+            for (int j = 0; j < vy.columns(); j++) {
                 for (int k = 0; k < N; k++) {
-                    stacked.set(k, i * topYIndices.size() + j, vdx.get(k, i) * vdy.get(k, j));
+                    UU.set(k, i * dy.columns() + j, vdx.get(k, i) * vdy.get(k, j));
                 }
             }
         }
 
-        TetradMatrix uuprod = prod > N ? stacked.times(stacked.transpose()) : stacked.transpose().times(stacked);
+        TetradMatrix uuprod = prod > N ? UU.times(UU.transpose()) : UU.transpose().times(UU);
+
+        if (uuprod.columns() == 0 || uuprod.rows() == 0) {
+            System.out.println();
+        }
 
         if (isApproximate()) {
             double sta = kx.times(ky).trace();
@@ -533,9 +514,8 @@ public class KCI implements IndependenceTest, ScoreForFact {
         } else {
 
             // Get top eigenvalues of that.
-            EigenDecomposition edu = new EigenDecomposition(uuprod.getRealMatrix());
-            List<Double> evu = asList(edu.getRealEigenvalues());
-            evu = getTopGuys(evu, getThreshold());
+            Eigendecomposition eigendecompositionu = new Eigendecomposition(uuprod).invoke();
+            List<Double> eigenu = eigendecompositionu.getTopEigenvalues();
 
             // We're going to reuse the samples.
             int sampleCount = -1;
@@ -546,7 +526,7 @@ public class KCI implements IndependenceTest, ScoreForFact {
             for (int j = 0; j < getNumBootstraps(); j++) {
                 double s = 0.0;
 
-                for (double lambdaStar : evu) {
+                for (double lambdaStar : eigenu) {
                     s += lambdaStar * getChisqSample(++sampleCount);
                 }
 
@@ -572,11 +552,14 @@ public class KCI implements IndependenceTest, ScoreForFact {
     }
 
     private double getChisqSample(int sampleCount) {
-        if (sampleCount >= samples.size()) {
-            double z = normal.sample();
-            samples.add(z * z);
-        }
-        return samples.get(sampleCount);
+//        if (sampleCount >= samples.size()) {
+//            double z = normal.sample();
+//            samples.add(z * z);
+//        }
+//        return samples.get(sampleCount);
+
+        double z = normal.sample();
+        return z * z;
     }
 
     // Optimal bandwidth qsuggested by Bowman and Azzalini (1997) q.31,
@@ -590,20 +573,6 @@ public class KCI implements IndependenceTest, ScoreForFact {
         return (1.4826 * mad) * pow((4.0 / 3.0) / xCol.length, 0.2);
     }
 
-    private List<Double> getTopGuys(List<Double> allDoubles, double threshold) {
-        double maxEig = allDoubles.get(0);
-
-        List<Double> prodSelection = new ArrayList<>();
-
-        for (double p : allDoubles) {
-            if (p > maxEig * threshold) {
-                prodSelection.add(p);
-            }
-        }
-
-        return prodSelection;
-    }
-
     private List<Integer> getTopIndices(List<Double> prod, List<Integer> allIndices, double threshold) {
         double maxEig = prod.get(allIndices.get(0));
 
@@ -613,6 +582,10 @@ public class KCI implements IndependenceTest, ScoreForFact {
             if (prod.get(i) > maxEig * threshold) {
                 indices.add(i);
             }
+        }
+
+        if (indices.isEmpty()) {
+            System.out.println();
         }
 
         return indices;
@@ -672,6 +645,10 @@ public class KCI implements IndependenceTest, ScoreForFact {
     }
 
     private double kernelGaussian(double z, double width) {
+        if (width == 0) {
+            throw new IllegalArgumentException("Width is zero.");
+        }
+
         z /= width;
         return Math.exp(-z * z);
     }
@@ -691,4 +668,91 @@ public class KCI implements IndependenceTest, ScoreForFact {
         return sqrt(sum);
     }
 
+    private class Eigendecomposition {
+        private TetradMatrix k;
+        private List<Integer> topIndices;
+        private TetradMatrix D;
+        private TetradMatrix V;
+        private List<Double> topEigenvalues;
+
+        public Eigendecomposition(TetradMatrix k) {
+            if (k.rows() == 0 || k.columns() == 0) {
+                throw new IllegalArgumentException("Empty matrix to decompose. Please don't do that to me.");
+            }
+
+            this.k = k;
+        }
+
+        public TetradMatrix getD() {
+            return D;
+        }
+
+        public TetradMatrix getV() {
+            return V;
+        }
+
+        public List<Double> getTopEigenvalues() {
+            return topEigenvalues;
+        }
+
+        public Eigendecomposition invoke() {
+            if (true) {
+                EigenDecomposition ed = new EigenDecomposition(k.getRealMatrix());
+
+                List<Double> evxAll = asList(ed.getRealEigenvalues());
+                List<Integer> indx = series(evxAll.size()); // 1 2 3...
+                topIndices = getTopIndices(evxAll, indx, getThreshold());
+
+                D = new TetradMatrix(topIndices.size(), topIndices.size());
+
+                for (int i = 0; i < topIndices.size(); i++) {
+                    D.set(i, i, Math.sqrt(evxAll.get(topIndices.get(i))));
+                }
+
+                topEigenvalues = new ArrayList<>();
+
+                for (int t : topIndices) {
+                    getTopEigenvalues().add(evxAll.get(t));
+                }
+
+                V = new TetradMatrix(ed.getEigenvector(0).getDimension(), topIndices.size());
+
+                for (int i = 0; i < topIndices.size(); i++) {
+                    RealVector t = ed.getEigenvector(topIndices.get(i));
+                    V.assignColumn(i, new TetradVector(t));
+                }
+            } else {
+                SingularValueDecomposition svd = new SingularValueDecomposition(k.getRealMatrix());
+
+                List<Double> evxAll = asList(svd.getSingularValues());
+
+                List<Integer> indx = series(evxAll.size()); // 1 2 3...
+                topIndices = getTopIndices(evxAll, indx, getThreshold());
+
+                D = new TetradMatrix(topIndices.size(), topIndices.size());
+
+                for (int i = 0; i < topIndices.size(); i++) {
+                    D.set(i, i, Math.sqrt(evxAll.get(topIndices.get(i))));
+                }
+
+                RealMatrix V0 = svd.getV();
+
+                V = new TetradMatrix(V0.getRowDimension(), topIndices.size());
+
+                for (int i = 0; i < V.columns(); i++) {
+                    double[] t = V0.getColumn(topIndices.get(i));
+                    V.assignColumn(i, new TetradVector(t));
+                }
+
+                topEigenvalues = new ArrayList<>();
+
+                for (int t : topIndices) {
+                    getTopEigenvalues().add(evxAll.get(t));
+                }
+
+            }
+
+            return this;
+        }
+    }
 }

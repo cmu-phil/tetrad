@@ -297,7 +297,7 @@ public class ParamDescriptions {
 
         map.put("numBasisFunctions", new ParamDescription(
                 "Number of functions to use in (truncated) basis",
-                6, 1, Integer.MAX_VALUE));
+                10, 1, Integer.MAX_VALUE));
 
         map.put("kciCutoff", new ParamDescription(
                 "Cutoff",
@@ -317,7 +317,7 @@ public class ParamDescriptions {
 
         map.put("basisType", new ParamDescription(
                 "Basis type (1 = Polynomial, 2 = Cosine)",
-                2, 1, 2));
+                1, 1, 2));
 
         map.put("kciNumBootstraps", new ParamDescription(
                 "Number of bootstraps for Theorems 4 and Proposition 5 for KCI",
@@ -332,7 +332,7 @@ public class ParamDescriptions {
                 10, 1, Integer.MAX_VALUE));
 
         map.put("kciUseAppromation", new ParamDescription(
-                "Use the approximate Gamma approximation algorithm", false));
+                "Use the approximate Gamma approximation algorithm", true));
 
         map.put("kciEpsilon", new ParamDescription(
                 "Epsilon for Proposition 5, a small positive number", 0.001, 0, Double.POSITIVE_INFINITY));

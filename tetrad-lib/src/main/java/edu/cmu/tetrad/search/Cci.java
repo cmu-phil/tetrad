@@ -415,7 +415,13 @@ public final class Cci {
 
             return g;
         } else if (basis == Basis.Cosine) {
-            return sin(index * x) + cos(index * x);
+            int i = (index + 1) / 2;
+
+            if (index % 2 == 1) {
+                return sin(i * x);
+            } else {
+                return cos(i * x);
+            }
         } else {
             throw new IllegalStateException("That basis is not configured: " + basis);
         }
