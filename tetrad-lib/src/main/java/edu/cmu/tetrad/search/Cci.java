@@ -112,8 +112,8 @@ public final class Cci {
         if (dataSet == null) throw new NullPointerException();
 
         this.alpha = alpha;
-        dataSet = DataUtils.center(dataSet);
-        this                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               .data = dataSet.getDoubleData().transpose().toArray();
+        dataSet = DataUtils.standardizeData(dataSet);
+        this.data = dataSet.getDoubleData().transpose().toArray();
 
         for (int j = 0; j < data.length; j++) {
             data[j] = scale(data[j]);
@@ -128,9 +128,22 @@ public final class Cci {
         }
 
         h = new double[dataSet.getNumColumns()];
+        double sum = 0.0;
+        int count = 0;
 
         for (int i = 0; i < dataSet.getNumColumns(); i++) {
-            h[i] = h(variables.get(i).toString());
+            h[i] = h(dataSet.getVariables().get(i).toString());
+
+            if (h[i] != 0) {
+                sum += h[i];
+                count++;
+            }
+        }
+
+        double avg = sum / count;
+
+        for (int i = 0; i < h.length; i++) {
+            if (h[i] == 0) h[i] = avg;
         }
 
         // Scale z and alpha.
@@ -236,28 +249,23 @@ public final class Cci {
         final double[] xdata = data[_x];
         final double[] ydata = data[_y];
 
-        double[] sumsx = new double[N];
-        double[] sumsy = new double[N];
+        double[] sumsx_xz = new double[N];
+        double[] sumsy_z = new double[N];
 
-        double[] weights = new double[N];
+        double[] weightsxzx = new double[N];
+        double[] weightszy = new double[N];
 
+        int[] _zx = new int[z.size() + 1];
         int[] _z = new int[z.size()];
 
         for (int m = 0; m < z.size(); m++) {
+            _zx[m] = indices.get(z.get(m));
             _z[m] = indices.get(z.get(m));
         }
 
-        double h = 0.0;
+        _zx[_zx.length - 1] = indices.get(x);
 
-        for (int c : _z) {
-            if (this.h[c] > h) {
-                h = this.h[c];
-            }
-        }
-
-        h *= sqrt(_z.length);
-
-        if (h == 0) h = 1;
+        double h = getH(_z);
 
         for (int i = 0; i < N; i++) {
             double xi = xdata[i];
@@ -269,34 +277,41 @@ public final class Cci {
                 double yj = ydata[j];
 
                 // Skips NaN values.
-                double d = distance(data, _z, i, j);
-                double k;
+                double dxz = distance(data, _zx, i, j);
+                double dz = distance(data, _z, i, j);
+                double kxz, kz;
 
                 if (getKernelMultiplier() == Kernel.Epinechnikov) {
-                    k = kernelEpinechnikov(d, h);
+                    kxz = kernelEpinechnikov(dxz, h);
+                    kz = kernelEpinechnikov(dz, h);
                 } else if (getKernelMultiplier() == Kernel.Gaussian) {
-                    k = kernelGaussian(d, h);
+                    kxz = kernelGaussian(dxz, h);
+                    kz = kernelGaussian(dz, h);
                 } else {
                     throw new IllegalStateException("Unsupported kernel type: " + getKernelMultiplier());
                 }
 
-                sumsx[i] += k * xj;
-                sumsy[i] += k * yj;
+                sumsx_xz[i] += kxz * xj;
+                sumsy_z[i] += kz * yj;
 
-                sumsx[j] += k * xi;
-                sumsy[j] += k * yi;
+                sumsx_xz[j] += kxz * xi;
+                sumsy_z[j] += kz * yi;
 
-                weights[i] += k;
-                weights[j] += k;
+                weightsxzx[i] += kxz;
+                weightsxzx[j] += kxz;
+
+                weightszy[i] += kz;
+                weightszy[j] += kz;
             }
         }
 
         double k;
+        double epsilon = 0.001;
 
         if (getKernelMultiplier() == Kernel.Epinechnikov) {
-            k = kernelEpinechnikov(0, h);
+            k = kernelEpinechnikov(0, h) + epsilon;
         } else if (getKernelMultiplier() == Kernel.Gaussian) {
-            k = kernelGaussian(0, h);
+            k = kernelGaussian(0, h) + epsilon;
         } else {
             throw new IllegalStateException("Unsupported kernel type: " + kernelMultiplier);
         }
@@ -305,14 +320,15 @@ public final class Cci {
             double xi = xdata[i];
             double yi = ydata[i];
 
-            sumsx[i] += k * xi;
-            sumsy[i] += k * yi;
-            weights[i] += k;
+            sumsx_xz[i] += k * xi;
+            sumsy_z[i] += k * yi;
+            weightsxzx[i] += k;
+            weightszy[i] += k;
         }
 
         for (int i = 0; i < N; i++) {
-            residualsx[i] = xdata[i] - sumsx[i] / weights[i];
-            residualsy[i] = ydata[i] - sumsy[i] / weights[i];
+            residualsx[i] = xdata[i] - sumsx_xz[i] / weightsxzx[i];
+            residualsy[i] = ydata[i] - sumsy_z[i] / weightszy[i];
 
             if (Double.isNaN(residualsx[i])) {
                 residualsx[i] = 0;
@@ -328,6 +344,20 @@ public final class Cci {
         ret[1] = residualsy;
 
         return ret;
+    }
+
+    private double getH(int[] _z) {
+        double h = 0.0;
+
+        for (int c : _z) {
+            if (this.h[c] > h) {
+                h = this.h[c];
+            }
+        }
+
+        h *= sqrt(_z.length);
+        if (h == 0) h = 1;
+        return h;
     }
 
     /**

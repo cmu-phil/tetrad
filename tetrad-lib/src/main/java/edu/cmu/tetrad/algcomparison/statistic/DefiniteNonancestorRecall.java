@@ -14,12 +14,12 @@ public class DefiniteNonancestorRecall implements Statistic {
 
     @Override
     public String getAbbreviation() {
-        return "ANCP";
+        return "ANCR";
     }
 
     @Override
     public String getDescription() {
-        return "Ancestor Precision";
+        return "Ancestor Recall";
     }
 
     @Override
