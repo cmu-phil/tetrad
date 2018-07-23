@@ -23,10 +23,12 @@ package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.ICovarianceMatrix;
+import edu.cmu.tetrad.graph.IndependenceFact;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.NumberFormatUtil;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetrad.util.TetradMatrix;
+import org.apache.commons.math3.distribution.NormalDistribution;
 
 import java.text.NumberFormat;
 import java.util.*;
@@ -95,7 +97,7 @@ public final class IndTestConditionalCorrelation implements IndependenceTest {
         }
 
         if (!(alpha >= 0 && alpha <= 1)) {
-                throw new IllegalArgumentException("Q mut be in [0, 1]");
+            throw new IllegalArgumentException("Q mut be in [0, 1]");
         }
 
         List<Node> nodes = dataSet.getVariables();
@@ -131,11 +133,18 @@ public final class IndTestConditionalCorrelation implements IndependenceTest {
         for (Node node : z) _z.add(node.getName());
         boolean independent = cci.isIndependent(_x, _y, _z);
 
-        if (verbose) {
+
+        if (true) {
+            IndependenceFact fact = new IndependenceFact(x, y, z);
+            double p = cci.getPValue();
+
             if (independent) {
-                System.out.println(SearchLogUtils.independenceFact(x, y, z) + " Independent");
+                System.out.println(fact + " Independent p = " + p);
+                TetradLogger.getInstance().log("info", fact + " Independent");
+
             } else {
-                System.out.println(SearchLogUtils.independenceFact(x, y, z));
+                System.out.println(fact + " p = " + p);
+                TetradLogger.getInstance().log("info", fact.toString());
             }
         }
 

@@ -22,11 +22,11 @@
 package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.DataSet;
-import edu.cmu.tetrad.data.DataUtils;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.StatUtils;
 import org.apache.commons.math3.distribution.NormalDistribution;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -112,7 +112,6 @@ public final class Cci {
         if (dataSet == null) throw new NullPointerException();
 
         this.alpha = alpha;
-        dataSet = DataUtils.standardizeData(dataSet);
         this.data = dataSet.getDoubleData().transpose().toArray();
 
         for (int j = 0; j < data.length; j++) {
@@ -159,7 +158,7 @@ public final class Cci {
         final int N2 = dataSet.getNumRows();
         double z3 = sqrt(N2 / (double) N1) * z2;
 
-        this.cutoff = z3;
+        this.cutoff = z1;
 
         double alpha3 = 2.0 * (1.0 - new NormalDistribution(0, 1).cumulativeProbability(z3));
 
@@ -167,7 +166,7 @@ public final class Cci {
                 " alpha2 for " + N1 + " = " + alpha2 + " alpha3 for " + N2 + " = " + alpha3);
     }
 
-    //=================PUBLIC METHODS====================//z
+    //=================PUBLIC METHODS====================//
 
     int c = 1;
 
@@ -175,12 +174,18 @@ public final class Cci {
      * @return true iff x is independent of y conditional on z.
      */
     public boolean isIndependent(String x, String y, List<String> z) {
-//        System.out.println("# tests = " + c++);
+        double[] f1 = residuals(x, z, false);
+        double[] g = residuals(y, z, false);
+        final boolean independent1 = independent(f1, g);
 
-        double[][] ret = residuals(x, y, z);
-        double[] rXZ = ret[0];
-        double[] rYZ = ret[1];
-        return independent(rXZ, rYZ);
+        double _score = score;
+
+        double[] f2 = residuals(x, z, true);
+        final boolean independent2 = independent(f2, g);
+
+        if (score < _score) score = _score;
+
+        return independent1 && independent2;
     }
 
     /**
@@ -201,11 +206,6 @@ public final class Cci {
      * accessed separately.
      */
     private boolean independent(double[] x, double[] y) {
-
-        if (x.length < 10) {
-            score = Double.NaN;
-            return false;
-        }
 
         // Can't reuse these--parallelization
         double[] _x = new double[x.length];
@@ -237,113 +237,97 @@ public final class Cci {
      * @return a double[2][] array. The first double[] array contains the residuals for x
      * and the second double[] array contains the resituls for y.
      */
-    public double[][] residuals(String x, String y, List<String> z) {
+    public double[] residuals(String x, List<String> z, boolean cross) {
         int N = data[0].length;
 
         int _x = indices.get(x);
-        int _y = indices.get(y);
 
         double[] residualsx = new double[N];
-        double[] residualsy = new double[N];
 
-        final double[] xdata = data[_x];
-        final double[] ydata = data[_y];
+        double[] xdata = data[_x];
 
-        double[] sumsx_xz = new double[N];
-        double[] sumsy_z = new double[N];
+        if (cross) {
+            xdata = Arrays.copyOf(data[_x], data[_x].length);
 
-        double[] weightsxzx = new double[N];
-        double[] weightszy = new double[N];
+            for (int i = 0; i < xdata.length; i++) {
+                for (String _z : z) {
+                    xdata[i] += data[indices.get(_z)][i];
+                }
+            }
+        }
 
-        int[] _zx = new int[z.size() + 1];
+        double[] sumx = new double[N];
+
+        double[] totalWeightx = new double[N];
+        double[] totalWeighty = new double[N];
+
         int[] _z = new int[z.size()];
 
         for (int m = 0; m < z.size(); m++) {
-            _zx[m] = indices.get(z.get(m));
             _z[m] = indices.get(z.get(m));
         }
 
-        _zx[_zx.length - 1] = indices.get(x);
-
-        double h = getH(_z);
+        double hx = getH(_z);
+        double hy = getH(_z);
 
         for (int i = 0; i < N; i++) {
             double xi = xdata[i];
-            double yi = ydata[i];
 
             for (int j = i + 1; j < N; j++) {
 
                 double xj = xdata[j];
-                double yj = ydata[j];
 
                 // Skips NaN values.
-                double dxz = distance(data, _zx, i, j);
-                double dz = distance(data, _z, i, j);
-                double kxz, kz;
+                double d = distance(data, _z, i, j);
+                double k;
 
                 if (getKernelMultiplier() == Kernel.Epinechnikov) {
-                    kxz = kernelEpinechnikov(dxz, h);
-                    kz = kernelEpinechnikov(dz, h);
+                    k = kernelEpinechnikov(d, hx);
                 } else if (getKernelMultiplier() == Kernel.Gaussian) {
-                    kxz = kernelGaussian(dxz, h);
-                    kz = kernelGaussian(dz, h);
+                    k = kernelGaussian(d, hx);
                 } else {
                     throw new IllegalStateException("Unsupported kernel type: " + getKernelMultiplier());
                 }
 
-                sumsx_xz[i] += kxz * xj;
-                sumsy_z[i] += kz * yj;
+                sumx[i] += k * xj;
 
-                sumsx_xz[j] += kxz * xi;
-                sumsy_z[j] += kz * yi;
+                sumx[j] += k * xi;
 
-                weightsxzx[i] += kxz;
-                weightsxzx[j] += kxz;
+                totalWeightx[i] += k;
+                totalWeightx[j] += k;
 
-                weightszy[i] += kz;
-                weightszy[j] += kz;
+                totalWeighty[i] += k;
+                totalWeighty[j] += k;
             }
         }
 
         double k;
-        double epsilon = 0.001;
 
         if (getKernelMultiplier() == Kernel.Epinechnikov) {
-            k = kernelEpinechnikov(0, h) + epsilon;
+            k = kernelEpinechnikov(0, hy);
         } else if (getKernelMultiplier() == Kernel.Gaussian) {
-            k = kernelGaussian(0, h) + epsilon;
+            k = kernelGaussian(0, hy);
         } else {
             throw new IllegalStateException("Unsupported kernel type: " + kernelMultiplier);
         }
 
         for (int i = 0; i < N; i++) {
             double xi = xdata[i];
-            double yi = ydata[i];
 
-            sumsx_xz[i] += k * xi;
-            sumsy_z[i] += k * yi;
-            weightsxzx[i] += k;
-            weightszy[i] += k;
+            sumx[i] += k * xi;
+            totalWeightx[i] += k;
+            totalWeighty[i] += k;
         }
 
         for (int i = 0; i < N; i++) {
-            residualsx[i] = xdata[i] - sumsx_xz[i] / weightsxzx[i];
-            residualsy[i] = ydata[i] - sumsy_z[i] / weightszy[i];
+            residualsx[i] = xdata[i] - sumx[i] / totalWeightx[i];
 
             if (Double.isNaN(residualsx[i])) {
                 residualsx[i] = 0;
             }
-
-            if (Double.isNaN(residualsy[i])) {
-                residualsy[i] = 0;
-            }
         }
 
-        double[][] ret = new double[2][];
-        ret[0] = residualsx;
-        ret[1] = residualsy;
-
-        return ret;
+        return residualsx;
     }
 
     private double getH(int[] _z) {
@@ -391,16 +375,20 @@ public final class Cci {
         this.width = width;
     }
 
+    public double getPValue() {
+        return 2.0 * (1.0 - new NormalDistribution(0, 1).cumulativeProbability(score));
+
+    }
+
+
     //=====================PRIVATE METHODS====================//
 
     private double[] scale(double[] x) {
         double max = StatUtils.max(x);
         double min = StatUtils.min(x);
 
-        double factor = 1.0 / Math.max(abs(max), abs(min));
-
         for (int i = 0; i < x.length; i++) {
-            x[i] = x[i] * factor;
+            x[i] = min + (x[i] - min) / (max - min);
         }
 
         return x;
@@ -495,11 +483,11 @@ public final class Cci {
     }
 
     // Euclidean distance.
-    private double distance(double[][] data, int[] yCols, int i, int j) {
+    private double distance(double[][] data, int[] z, int i, int j) {
         double sum = 0.0;
 
-        for (int yCol : yCols) {
-            double d = data[yCol][i] - data[yCol][j];
+        for (int _z : z) {
+            double d = (data[_z][i] - data[_z][j]) / 2.0;
 
             if (!Double.isNaN(d)) {
                 sum += d * d;

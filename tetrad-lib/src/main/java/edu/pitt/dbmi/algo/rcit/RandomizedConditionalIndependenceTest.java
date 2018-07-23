@@ -47,7 +47,7 @@ import static java.lang.Math.sqrt;
 public final class RandomizedConditionalIndependenceTest implements IndependenceTest {
 
 	// The type of approximation to use.
-	private RandomIndApproximateMethod approx = RandomIndApproximateMethod.chi2;
+	private RandomIndApproximateMethod approx = RandomIndApproximateMethod.hbe;
 
 	// The data passed into the test.
 	private DataSet dataSet;
@@ -203,9 +203,9 @@ public final class RandomizedConditionalIndependenceTest implements Independence
 	}
 
 	public void setApprox(RandomIndApproximateMethod approx) {
-		if (approx == RandomIndApproximateMethod.chi2) {
-			throw new IllegalArgumentException("The chi square method is not configured.");
-		}
+//		if (approx == RandomIndApproximateMethod.chi2) {
+//			throw new IllegalArgumentException("The chi square method is not configured.");
+//		}
 
 		this.approx = approx;
 	}
