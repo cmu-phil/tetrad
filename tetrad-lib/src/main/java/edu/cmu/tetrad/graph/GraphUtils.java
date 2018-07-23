@@ -2589,7 +2589,14 @@ public final class GraphUtils {
             Edge _edge = new Edge(_from, _to, _end1, _end2);
 
             //Bootstrapping
-            if (line.indexOf("[") > -1) {
+            if (line.indexOf("[no edge]") > -1 || 
+            		line.indexOf("[-->]") > -1 ||
+            		line.indexOf("[<--]") > -1 ||
+            		line.indexOf("[o->]") > -1 ||
+            		line.indexOf("[<-o]") > -1 ||
+            		line.indexOf("[o-o]") > -1 ||
+            		line.indexOf("[<->]") > -1 ||
+            		line.indexOf("[---]") > -1) {
 
                 // String bootstrap_format = "[no edge]:0.0000;[-->]:0.0000;[<--]:0.0000;[o->]:0.0000;[<-o]:0.0000;[o-o]:0.0000;[<->]:0.0000;[---]:0.0000;";
                 int last_semicolon = line.lastIndexOf(";");
@@ -2622,9 +2629,9 @@ public final class GraphUtils {
                         _edge.addEdgeTypeProbability(new EdgeTypeProbability(EdgeType.ac, prob));
                 	}else if(orient.equalsIgnoreCase("[o-o]")) {
                         _edge.addEdgeTypeProbability(new EdgeTypeProbability(EdgeType.cc, prob));
-                	}else if(orient.equalsIgnoreCase("[o-o]")) {
+                	}else if(orient.equalsIgnoreCase("[<->]")) {
                 		_edge.addEdgeTypeProbability(new EdgeTypeProbability(EdgeType.aa, prob));
-                	}else {
+                	}else {// [---]
                 		_edge.addEdgeTypeProbability(new EdgeTypeProbability(EdgeType.tt, prob));
                 	}
                     
