@@ -446,6 +446,9 @@ public final class GraphEditor extends JPanel
 //        IndependenceFactsAction action = new IndependenceFactsAction(
 //                JOptionUtils.centeringComp(), this, "D Separation Facts...");
 //        graph.add(action);
+        
+        graph.add(new JMenuItem(new HideShowNoConnectionNodesAction(getWorkbench())));
+        
         return graph;
     }
 
