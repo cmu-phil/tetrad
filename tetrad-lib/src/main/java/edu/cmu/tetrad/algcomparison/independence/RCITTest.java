@@ -55,7 +55,7 @@ public class RCITTest implements IndependenceWrapper {
 
     @Override
     public String getDescription() {
-        return "Conditional Correlation Test";
+        return "RCIT";
     }
 
     @Override
