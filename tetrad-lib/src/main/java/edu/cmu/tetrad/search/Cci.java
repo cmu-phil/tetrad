@@ -180,6 +180,10 @@ public final class Cci {
 
         double _score = score;
 
+//        if (!independent1) {
+//            return false;
+//        }
+
         double[] f2 = residuals(x, z, true);
         final boolean independent2 = independent(f2, g);
 

@@ -6,17 +6,14 @@ import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.algcomparison.utils.TakesIndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.utils.TakesInitialGraph;
 import edu.cmu.tetrad.annotation.AlgType;
-import edu.cmu.tetrad.data.DataModel;
-import edu.cmu.tetrad.data.DataSet;
-import edu.cmu.tetrad.data.DataType;
-import edu.cmu.tetrad.data.IKnowledge;
-import edu.cmu.tetrad.data.Knowledge2;
+import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.DagToPag;
 import edu.cmu.tetrad.util.Parameters;
 import edu.pitt.dbmi.algo.bootstrap.BootstrapEdgeEnsemble;
 import edu.pitt.dbmi.algo.bootstrap.GeneralBootstrapTest;
+
 import java.util.List;
 
 /**
@@ -25,11 +22,11 @@ import java.util.List;
  * @author jdramsey
  */
 @edu.cmu.tetrad.annotation.Algorithm(
-        name = "FCI",
-        command = "fci",
+        name = "FCIMax",
+        command = "fci-max",
         algoType = AlgType.allow_latent_common_causes
 )
-public class Fci implements Algorithm, TakesInitialGraph, HasKnowledge, TakesIndependenceWrapper {
+public class FciMax implements Algorithm, TakesInitialGraph, HasKnowledge, TakesIndependenceWrapper {
 
     static final long serialVersionUID = 23L;
     private IndependenceWrapper test;
@@ -37,14 +34,14 @@ public class Fci implements Algorithm, TakesInitialGraph, HasKnowledge, TakesInd
     private Graph initialGraph = null;
     private IKnowledge knowledge = new Knowledge2();
 
-    public Fci() {
+    public FciMax() {
     }
 
-    public Fci(IndependenceWrapper test) {
+    public FciMax(IndependenceWrapper test) {
         this.test = test;
     }
 
-    public Fci(IndependenceWrapper test, Algorithm algorithm) {
+    public FciMax(IndependenceWrapper test, Algorithm algorithm) {
         this.test = test;
         this.algorithm = algorithm;
     }
@@ -56,7 +53,7 @@ public class Fci implements Algorithm, TakesInitialGraph, HasKnowledge, TakesInd
                 initialGraph = algorithm.search(dataSet, parameters);
             }
 
-            edu.cmu.tetrad.search.Fci search = new edu.cmu.tetrad.search.Fci(test.getTest(dataSet, parameters));
+            edu.cmu.tetrad.search.FciMax search = new edu.cmu.tetrad.search.FciMax(test.getTest(dataSet, parameters));
             search.setDepth(parameters.getInt("depth"));
             search.setKnowledge(knowledge);
             search.setMaxPathLength(parameters.getInt("maxPathLength"));
@@ -68,7 +65,7 @@ public class Fci implements Algorithm, TakesInitialGraph, HasKnowledge, TakesInd
 //            }
             return search.search();
         } else {
-            Fci algorithm = new Fci(test);
+            FciMax algorithm = new FciMax(test);
             //algorithm.setKnowledge(knowledge);
 //          if (initialGraph != null) {
 //      		algorithm.setInitialGraph(initialGraph);
@@ -103,7 +100,7 @@ public class Fci implements Algorithm, TakesInitialGraph, HasKnowledge, TakesInd
     }
 
     public String getDescription() {
-        return "FCI (Fast Causal Inference) using " + test.getDescription()
+        return "FCIMax (Fast Causal Inference Max) using " + test.getDescription()
                 + (algorithm != null ? " with initial graph from "
                         + algorithm.getDescription() : "");
     }

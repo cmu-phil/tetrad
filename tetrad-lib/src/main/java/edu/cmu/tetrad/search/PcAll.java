@@ -368,7 +368,7 @@ public final class PcAll implements GraphSearch {
         graph = GraphUtils.replaceNodes(graph, nodes);
 
         MeekRules meekRules = new MeekRules();
-//        meekRules.setAggressivelyPreventCycles(this.aggressivelyPreventCycles);
+        meekRules.setAggressivelyPreventCycles(this.aggressivelyPreventCycles);
         meekRules.setKnowledge(knowledge);
         meekRules.orientImplied(graph);
 

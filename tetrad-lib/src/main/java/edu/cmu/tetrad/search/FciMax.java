@@ -215,70 +215,11 @@ public final class FciMax implements GraphSearch {
     }
 
     private void addColliders(Graph graph) {
-        final Map<Triple, Double> scores = new ConcurrentHashMap<>();
-
-        List<Node> nodes = graph.getNodes();
-
-        class Task extends RecursiveTask<Boolean> {
-            int from;
-            int to;
-            int chunk = 20;
-            List<Node> nodes;
-            Graph graph;
-
-            public Task(List<Node> nodes, Graph graph, Map<Triple, Double> scores, int from, int to) {
-                this.nodes = nodes;
-                this.graph = graph;
-                this.from = from;
-                this.to = to;
-            }
-
-            @Override
-            protected Boolean compute() {
-                if (to - from <= chunk) {
-                    for (int i = from; i < to; i++) {
-                        doNode(graph, scores, nodes.get(i));
-                    }
-
-                    return true;
-                } else {
-                    int mid = (to + from) / 2;
-
-                    Task left = new Task(nodes, graph, scores, from, mid);
-                    Task right = new Task(nodes, graph, scores, mid, to);
-
-                    left.fork();
-                    right.compute();
-                    left.join();
-
-                    return true;
-                }
-            }
-        }
-
-        Task task = new Task(nodes, graph, scores, 0, nodes.size());
-
-        ForkJoinPoolInstance.getInstance().getPool().invoke(task);
-
-        List<Triple> tripleList = new ArrayList<>(scores.keySet());
-
-        // Most independent ones first.
-        Collections.sort(tripleList, new Comparator<Triple>() {
-
-            @Override
-            public int compare(Triple o1, Triple o2) {
-                return Double.compare(scores.get(o2), scores.get(o1));
-            }
-        });
-
-        for (Triple triple : tripleList) {
-            Node a = triple.getX();
-            Node b = triple.getY();
-            Node c = triple.getZ();
-
-            graph.setEndpoint(a, b, Endpoint.ARROW);
-            graph.setEndpoint(c, b, Endpoint.ARROW);
-        }
+        final OrientCollidersMaxP orientCollidersMaxP = new OrientCollidersMaxP(independenceTest, PcAll.ConflictRule.PRIORITY);
+        orientCollidersMaxP.setConflictRule(PcAll.ConflictRule.PRIORITY);
+        orientCollidersMaxP.orient(graph);
+        orientCollidersMaxP.setUseHeuristic(false);
+        orientCollidersMaxP.setMaxPathLength(maxPathLength);
     }
 
     private void doNode(Graph graph, Map<Triple, Double> scores, Node b) {
