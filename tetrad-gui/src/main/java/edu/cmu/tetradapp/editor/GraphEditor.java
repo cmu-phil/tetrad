@@ -434,7 +434,6 @@ public final class GraphEditor extends JPanel
 //        }
 //        );
 
-        graph.addSeparator();
         graph.add(new JMenuItem(new SelectBidirectedAction(getWorkbench()
         )));
         graph.add(new JMenuItem(new SelectUndirectedAction(getWorkbench()
@@ -447,6 +446,7 @@ public final class GraphEditor extends JPanel
 //                JOptionUtils.centeringComp(), this, "D Separation Facts...");
 //        graph.add(action);
         
+        graph.addSeparator();
         graph.add(new JMenuItem(new HideShowNoConnectionNodesAction(getWorkbench())));
         
         return graph;
