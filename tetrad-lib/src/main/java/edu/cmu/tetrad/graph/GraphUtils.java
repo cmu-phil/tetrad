@@ -3997,23 +3997,24 @@ public final class GraphUtils {
         for (Edge edge : edges) {
             count++;
 
-            List<Edge.Property> properties = edge.getProperties();
+            // We will print edge's properties in the edge (via toString() function) level.
+            //List<Edge.Property> properties = edge.getProperties();
 
             if (count < size) {
                 String f = "%d. %s";
 
-                for (int i = 0; i < properties.size(); i++) {
-                    f += " %s";
-                }
+                //for (int i = 0; i < properties.size(); i++) {
+                //    f += " %s";
+                //}
 
-                Object[] o = new Object[2 + properties.size()];
+                Object[] o = new Object[2 /*+ properties.size()*/];
 
                 o[0] = count;
-                o[1] = edge;
+                o[1] = edge; // <- here we include its properties (nl dd pl pd)
 
-                for (int i = 0; i < properties.size(); i++) {
-                    o[2 + i] = properties.get(i);
-                }
+                //for (int i = 0; i < properties.size(); i++) {
+                //    o[2 + i] = properties.get(i);
+                //}
 
                 fmt.format(f, o);
 
@@ -4021,17 +4022,17 @@ public final class GraphUtils {
             } else {
                 String f = "%d. %s";
 
-                for (int i = 0; i < properties.size(); i++) {
-                    f += " %s";
-                }
-                Object[] o = new Object[2 + properties.size()];
+                //for (int i = 0; i < properties.size(); i++) {
+                //    f += " %s";
+                //}
+                Object[] o = new Object[2 /*+ properties.size()*/];
 
                 o[0] = count;
-                o[1] = edge;
+                o[1] = edge; // <- here we include its properties (nl dd pl pd)
 
-                for (int i = 0; i < properties.size(); i++) {
-                    o[2 + i] = properties.get(i);
-                }
+                //for (int i = 0; i < properties.size(); i++) {
+                //    o[2 + i] = properties.get(i);
+                //}
 
                 fmt.format(f, o);
 

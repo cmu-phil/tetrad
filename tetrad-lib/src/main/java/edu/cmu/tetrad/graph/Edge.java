@@ -295,6 +295,14 @@ public class Edge implements TetradSerializable, Comparable {
             }
         }
         
+        List<Property> properties = getProperties();
+        if(properties != null && properties.size() > 0) {
+        	for(Property property : properties) {
+        		buf.append(" ");
+        		buf.append(property.toString());
+        	}
+        }
+        
 		return buf.toString();
 	}
 
