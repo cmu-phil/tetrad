@@ -43,7 +43,7 @@ public final class IndTestDaudinConditionalIndependence implements IndependenceT
     /**
      * The instance of CCI that is wrapped.
      */
-    private final DaudinConditionalCorrelation daudinConditionalCorrelation;
+    private final DaudinConditionalIndependence daudinConditionalCorrelation;
 //    private double weight = 0.8;
 
     /**
@@ -107,7 +107,7 @@ public final class IndTestDaudinConditionalIndependence implements IndependenceT
         List<String> varNames = new ArrayList<>();
         for (int i = 0; i < variables.size(); i++) varNames.add(variables.get(i).getName());
 
-        this.daudinConditionalCorrelation = new DaudinConditionalCorrelation(dataSet, alpha);
+        this.daudinConditionalCorrelation = new DaudinConditionalIndependence(dataSet, alpha);
 
         indices = new HashMap<>();
 
@@ -310,11 +310,11 @@ public final class IndTestDaudinConditionalIndependence implements IndependenceT
         this.daudinConditionalCorrelation.setWidth(multiplier);
     }
 
-    public void setKernel(DaudinConditionalCorrelation.Kernel kernel) {
+    public void setKernel(DaudinConditionalIndependence.Kernel kernel) {
         daudinConditionalCorrelation.setKernelMultiplier(kernel);
     }
 
-    public void setBasis(DaudinConditionalCorrelation.Basis basis) {
+    public void setBasis(DaudinConditionalIndependence.Basis basis) {
         daudinConditionalCorrelation.setBasis(basis);
     }
 }

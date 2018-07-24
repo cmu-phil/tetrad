@@ -48,7 +48,7 @@ import static java.lang.Math.pow;
  *
  * @author Joseph Ramsey
  */
-public final class DaudinConditionalCorrelation {
+public final class DaudinConditionalIndependence {
 
     public enum Kernel {Epinechnikov, Gaussian}
 
@@ -115,7 +115,7 @@ public final class DaudinConditionalCorrelation {
      * @param dataSet A data set containing only continuous columns.
      * @param alpha   The alpha level of the test.
      */
-    public DaudinConditionalCorrelation(DataSet dataSet, double alpha) {
+    public DaudinConditionalIndependence(DataSet dataSet, double alpha) {
         if (dataSet == null) throw new NullPointerException();
 
         this.alpha = alpha;

@@ -5,7 +5,7 @@ import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.data.DataUtils;
 import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.search.DaudinConditionalCorrelation;
+import edu.cmu.tetrad.search.DaudinConditionalIndependence;
 import edu.cmu.tetrad.search.IndTestDaudinConditionalIndependence;
 import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.util.Parameters;
@@ -34,18 +34,18 @@ public class ConditionalCorrelation implements IndependenceWrapper {
         final IndTestDaudinConditionalIndependence cci = new IndTestDaudinConditionalIndependence(DataUtils.getContinuousDataSet(dataSet),
                 parameters.getDouble("alpha"));
         if (parameters.getInt("kernelType") == 1) {
-            cci.setKernel(DaudinConditionalCorrelation.Kernel.Gaussian);
+            cci.setKernel(DaudinConditionalIndependence.Kernel.Gaussian);
 
         } else if (parameters.getInt("kernelType") == 2) {
-            cci.setKernel(DaudinConditionalCorrelation.Kernel.Epinechnikov);
+            cci.setKernel(DaudinConditionalIndependence.Kernel.Epinechnikov);
         } else {
             throw new IllegalStateException("Kernel not configured.");
         }
 
         if (parameters.getInt("basisType") == 1) {
-            cci.setBasis(DaudinConditionalCorrelation.Basis.Polynomial);
+            cci.setBasis(DaudinConditionalIndependence.Basis.Polynomial);
         } else if (parameters.getInt("basisType") == 2) {
-            cci.setBasis(DaudinConditionalCorrelation.Basis.Cosine);
+            cci.setBasis(DaudinConditionalIndependence.Basis.Cosine);
         } else {
             throw new IllegalStateException("Basis not configured.");
         }
