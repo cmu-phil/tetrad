@@ -25,7 +25,7 @@ import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithms;
 import edu.cmu.tetrad.algcomparison.algorithm.ExternalAlgorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.MultiDataSetAlgorithm;
-import edu.cmu.tetrad.algcomparison.algorithm.multi.PassesInGraph;
+import edu.cmu.tetrad.algcomparison.utils.PassesInGraph;
 import edu.cmu.tetrad.algcomparison.independence.FisherZ;
 import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.score.BdeuScore;
@@ -47,7 +47,6 @@ import edu.cmu.tetrad.search.DagToPag;
 import edu.cmu.tetrad.search.DagToPag2;
 import edu.cmu.tetrad.search.SearchGraphUtils;
 import edu.cmu.tetrad.util.*;
-import edu.pitt.dbmi.data.reader.DataReader;
 import org.reflections.Reflections;
 
 import java.io.*;

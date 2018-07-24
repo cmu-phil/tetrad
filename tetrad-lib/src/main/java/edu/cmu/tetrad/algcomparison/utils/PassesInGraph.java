@@ -1,4 +1,4 @@
-package edu.cmu.tetrad.algcomparison.algorithm.multi;
+package edu.cmu.tetrad.algcomparison.utils;
 
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.graph.Graph;

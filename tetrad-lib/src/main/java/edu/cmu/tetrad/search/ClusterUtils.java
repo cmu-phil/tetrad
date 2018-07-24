@@ -686,7 +686,7 @@ public class ClusterUtils {
 //            List<Node> adj = mim.getAdjacentNodes(node);
 //            adj.removeAll(latents);
 //
-//            adj = GraphUtils.replaceNodes(adj, data.getCauseNode());
+//            adj = GraphUtils.replaceNodes(adj, data.getVariable());
 //
 //            clustering.add(adj);
 //        }
@@ -760,7 +760,7 @@ public class ClusterUtils {
 //        addNodesToSubclusters(clustering, clusterSelection, maxClusterSelectionSize);
 //
 //        for (List<Node> cluster : clusterSelection) {
-//            GraphUtils.replaceNodes(cluster, data.getCauseNode());
+//            GraphUtils.replaceNodes(cluster, data.getVariable());
 //        }
 //        return clusterSelection;
 //    }

@@ -135,7 +135,7 @@ public class DagIterator {
             decoratedGraphs.add(graph);
         }
 
-        // NodeEffects the DAG.
+        // Return the DAG.
         return new EdgeListGraph(decoratedGraphs.getLast().getGraph());
     }
 

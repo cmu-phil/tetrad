@@ -28,16 +28,7 @@ public class SemBicTest implements IndependenceWrapper {
             score = new SemBicScore((ICovarianceMatrix) dataSet);
             score.setPenaltyDiscount(parameters.getDouble("penaltyDiscount"));
         } else {
-            DataSet _data;
-
-//            if (parameters.getBoolean("doNonparanormalTransform")) {
-//                _data = DataUtils.getNonparanormalTransformed((DataSet) dataSet);
-//            } else {
-                _data = (DataSet) dataSet;
-//            }
-
-
-            score = new SemBicScore(new CovarianceMatrix(_data));
+            score = new SemBicScore(new CovarianceMatrix((DataSet) dataSet));
             score.setPenaltyDiscount(parameters.getDouble("penaltyDiscount"));
 
         }
@@ -59,7 +50,6 @@ public class SemBicTest implements IndependenceWrapper {
     public List<String> getParameters() {
         List<String> params = new ArrayList<>();
         params.add("penaltyDiscount");
-        params.add("doNonparanormalTransform");
         return params;
     }
 }

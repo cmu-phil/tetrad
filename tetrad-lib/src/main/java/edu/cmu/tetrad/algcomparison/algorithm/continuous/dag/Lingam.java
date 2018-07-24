@@ -1,6 +1,7 @@
 package edu.cmu.tetrad.algcomparison.algorithm.continuous.dag;
 
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
+import edu.cmu.tetrad.annotation.AlgType;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataUtils;
@@ -18,11 +19,11 @@ import java.util.List;
  *
  * @author jdramsey
  */
-/*@AlgorithmDescription(
+@edu.cmu.tetrad.annotation.Algorithm(
         name = "LiNGAM",
-        algType = AlgType.DAG,
-        oracleType = OracleType.None
-)*/
+        command = "lingam",
+        algoType = AlgType.forbid_latent_common_causes
+)
 public class Lingam implements Algorithm {
 
     static final long serialVersionUID = 23L;
@@ -31,29 +32,29 @@ public class Lingam implements Algorithm {
     	if (parameters.getInt("bootstrapSampleSize") < 1) {
             edu.cmu.tetrad.search.Lingam lingam = new edu.cmu.tetrad.search.Lingam();
             return lingam.search(DataUtils.getContinuousDataSet(dataSet));
-    	}else{
-    		Lingam algorithm = new Lingam();
-    		
-    		DataSet data = (DataSet) dataSet;
-    		
-    		GeneralBootstrapTest search = new GeneralBootstrapTest(data, algorithm, parameters.getInt("bootstrapSampleSize"));
-    		
-    		BootstrapEdgeEnsemble edgeEnsemble = BootstrapEdgeEnsemble.Highest;
-    		switch (parameters.getInt("bootstrapEnsemble", 1)) {
-    		case 0:
-    			edgeEnsemble = BootstrapEdgeEnsemble.Preserved;
-    			break;
-    		case 1:
-    			edgeEnsemble = BootstrapEdgeEnsemble.Highest;
-    			break;
-    		case 2:
-    			edgeEnsemble = BootstrapEdgeEnsemble.Majority;
-    		}
-    		search.setEdgeEnsemble(edgeEnsemble);
-    		search.setParameters(parameters);    		
-    		search.setVerbose(parameters.getBoolean("verbose"));
-    		return search.search();
-    	}
+        } else {
+            Lingam algorithm = new Lingam();
+
+            DataSet data = (DataSet) dataSet;
+
+            GeneralBootstrapTest search = new GeneralBootstrapTest(data, algorithm, parameters.getInt("bootstrapSampleSize"));
+
+            BootstrapEdgeEnsemble edgeEnsemble = BootstrapEdgeEnsemble.Highest;
+            switch (parameters.getInt("bootstrapEnsemble", 1)) {
+                case 0:
+                    edgeEnsemble = BootstrapEdgeEnsemble.Preserved;
+                    break;
+                case 1:
+                    edgeEnsemble = BootstrapEdgeEnsemble.Highest;
+                    break;
+                case 2:
+                    edgeEnsemble = BootstrapEdgeEnsemble.Majority;
+            }
+            search.setEdgeEnsemble(edgeEnsemble);
+            search.setParameters(parameters);
+            search.setVerbose(parameters.getBoolean("verbose"));
+            return search.search();
+        }
     }
 
     @Override

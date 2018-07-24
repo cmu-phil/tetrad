@@ -137,7 +137,7 @@ public final class EmBayesEstimator {
         }
 
         //Make sure variables in dataset are measured variables in the BayesPM
-//        for (Node dataSetVariable : this.dataSet.getCauseNode()) {
+//        for (Node dataSetVariable : this.dataSet.getVariable()) {
 //            if (!observedVars.contains(dataSetVariable)) {
 //                throw new IllegalArgumentException(
 //                        "Some ar in the dataset is not a " +

@@ -96,7 +96,7 @@ public class CovarianceMatrix implements ICovarianceMatrix {
     /**
      * Constructs a new covariance matrix from the given data set.
      *
-     * @param dataSet A cenetered dataset.
+     * @param dataSet A dataset.
      * @throws IllegalArgumentException if this is not a continuous data set.
      */
     public CovarianceMatrix(DataSet dataSet) {

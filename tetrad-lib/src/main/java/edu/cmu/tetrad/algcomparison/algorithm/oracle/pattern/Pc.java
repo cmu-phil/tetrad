@@ -5,7 +5,6 @@ import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.algcomparison.utils.TakesIndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.utils.TakesInitialGraph;
-import edu.cmu.tetrad.annotation.AlgType;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
@@ -21,11 +20,11 @@ import edu.pitt.dbmi.algo.bootstrap.GeneralBootstrapTest;
 
 import java.util.List;
 
-//@edu.cmu.tetrad.annotation.Algorithm(
-//        name = "PC",
-//        command = "pc",
-//        algoType = AlgType.forbid_latent_common_causes
-//)
+/**
+ * PC.
+ *
+ * @author jdramsey
+ */
 public class Pc implements Algorithm, TakesInitialGraph, HasKnowledge, TakesIndependenceWrapper {
 
     static final long serialVersionUID = 23L;
@@ -57,9 +56,12 @@ public class Pc implements Algorithm, TakesInitialGraph, HasKnowledge, TakesInde
             if (algorithm != null) {
 //            	initialGraph = algorithm.search(dataSet, parameters);
             }
-            edu.cmu.tetrad.search.Pc search = new edu.cmu.tetrad.search.Pc(test.getTest(dataSet, parameters));
+            edu.cmu.tetrad.search.PcAll search = new edu.cmu.tetrad.search.PcAll(test.getTest(dataSet, parameters), initialGraph);
             search.setDepth(parameters.getInt("depth"));
             search.setKnowledge(knowledge);
+            search.setFasRule(PcAll.FasRule.FAS);
+            search.setColliderDiscovery(PcAll.ColliderDiscovery.FAS_SEPSETS);
+            search.setConflictRule(PcAll.ConflictRule.PRIORITY);
             search.setVerbose(parameters.getBoolean("verbose"));
             return search.search();
         }else{

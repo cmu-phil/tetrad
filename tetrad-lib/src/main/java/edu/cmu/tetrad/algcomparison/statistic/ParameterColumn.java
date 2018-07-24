@@ -32,7 +32,7 @@ public class ParameterColumn implements Statistic {
 
     @Override
     /**
-     * NodeEffects "Extra column for " + parameter".
+     * Return "Extra column for " + parameter".
      */
     public String getDescription() {
         return "Extra column for " + parameter;

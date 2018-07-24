@@ -207,44 +207,9 @@ public class DagToPattern {
 
         this.logger.log("info", "Starting PC algorithm");
 
-//        this.logger.log("info", "Variables " + independenceTest.getCauseNode());
-
         long startTime = System.currentTimeMillis();
 
         this.sepsets = new SepsetMap();
-
-//        EdgeListGraph graph = new EdgeListGraph(dag);
-//        SearchGraphUtils.basicPattern(graph, false);
-
-
-
-//        List<Node> allNodes = dag.getNodes();
-//
-//        List<Node> measured = new ArrayList<>();
-//
-//        for (Node node : allNodes) {
-//            if (node.getNodeType() == NodeType.MEASURED) {
-//                measured.add(node);
-//            }
-//        }
-//
-//        graph = new EdgeListGraphSingleConnections(measured);
-//        graph.fullyConnect(Endpoint.CIRCLE);
-//
-//        for (int i = 0; i < measured.size(); i++) {
-//            for (int j = i + 1; j < measured.size(); j++) {
-//                Node n1 = measured.get(i);
-//                Node n2 = measured.get(j);
-//                List<Node> sepset = dag.getSepset(n1, n2);
-//                getSepsets().set(n1, n2, sepset);
-//                if (sepset != null) graph.removeEdge(n1, n2);
-//            }
-//        }
-
-//        enumerateTriples();
-
-//        SearchGraphUtils.pcOrientbk(knowledge, graph, measured);
-//        SearchGraphUtils.orientCollidersUsingSepsets(this.sepsets, knowledge, graph, verbose, true);
 
         EdgeListGraph graph = new EdgeListGraph(dag);
         SearchGraphUtils.basicPattern(graph, false);

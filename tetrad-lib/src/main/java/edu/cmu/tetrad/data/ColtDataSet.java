@@ -110,7 +110,7 @@ public final class ColtDataSet implements DataSet, TetradSerializable {
     /**
      * The container storing the data. Rows are cases; columns are variables.
      * The order of columns is coordinated with the order of variables in
-     * getCauseNode().
+     * getVariable().
      *
      * @serial
      */
@@ -438,7 +438,7 @@ public final class ColtDataSet implements DataSet, TetradSerializable {
      */
     public final void setDouble(int row, int column, double value) {
         if ((getVariable(column) instanceof DiscreteVariable)) {
-//            if (!(getCauseNode(column) instanceof ContinuousVariable)) {
+//            if (!(getVariable(column) instanceof ContinuousVariable)) {
             throw new IllegalArgumentException(
                     "Can only set doubles for continuous columns: " + getVariable(column));
         }
@@ -599,7 +599,7 @@ public final class ColtDataSet implements DataSet, TetradSerializable {
 
     /**
      * @return the index of the column of the given variable. You can also get
-     * this by calling getCauseNode().indexOf(variable).
+     * this by calling getVariable().indexOf(variable).
      */
     public final int getColumn(Node variable) {
         return variables.indexOf(variable);

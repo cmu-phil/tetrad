@@ -120,7 +120,6 @@ public class FgesMb implements Algorithm, TakesInitialGraph, HasKnowledge, UsesS
     public List<String> getParameters() {
         List<String> parameters = score.getParameters();
         parameters.add("targetName");
-        parameters.add("adjacentsOnly");
         parameters.add("faithfulnessAssumed");
         // Bootstrapping
         parameters.add("bootstrapSampleSize");

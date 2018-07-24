@@ -4,6 +4,7 @@ import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
 import edu.cmu.tetrad.algcomparison.score.SemBicScoreDeterministic;
 import edu.cmu.tetrad.algcomparison.utils.TakesInitialGraph;
+import edu.cmu.tetrad.annotation.Experimental;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
@@ -29,6 +30,7 @@ import static java.lang.Math.sqrt;
  *
  * @author jdramsey
  */
+@Experimental
 public class GesMe implements Algorithm, TakesInitialGraph/*, HasKnowledge*/ {
 
     static final long serialVersionUID = 23L;

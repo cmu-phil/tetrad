@@ -23,7 +23,6 @@ package edu.cmu.tetrad.data;
 
 import cern.colt.matrix.DoubleMatrix2D;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.search.FgesMb;
 import edu.cmu.tetrad.util.*;
 import org.apache.commons.math3.linear.RealMatrix;
 

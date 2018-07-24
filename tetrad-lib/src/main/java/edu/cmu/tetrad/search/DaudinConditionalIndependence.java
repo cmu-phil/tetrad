@@ -46,6 +46,11 @@ import static java.lang.Math.pow;
  * Zhang, K., Peters, J., Janzing, D., & Schölkopf, B. (2012). Kernel-based conditional independence test and
  * application in causal discovery. arXiv preprint arXiv:1202.3775.
  *
+ * This all follows the original Daudin paper, which is this:
+ *
+ * Daudin, J. J. (1980). Partial association measures and an application to qualitative regression.
+ * Biometrika, 67(3), 581-590.
+ *
  * @author Joseph Ramsey
  */
 public final class DaudinConditionalIndependence {

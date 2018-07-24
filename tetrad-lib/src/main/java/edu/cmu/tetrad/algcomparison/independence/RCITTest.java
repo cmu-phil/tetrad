@@ -1,5 +1,6 @@
 package edu.cmu.tetrad.algcomparison.independence;
 
+import edu.cmu.tetrad.annotation.Experimental;
 import edu.cmu.tetrad.annotation.TestOfIndependence;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataType;
@@ -22,6 +23,7 @@ import java.util.List;
         command = "rcit-test",
         dataType = DataType.Continuous
 )
+@Experimental
 public class RCITTest implements IndependenceWrapper {
 
     static final long serialVersionUID = 23L;
