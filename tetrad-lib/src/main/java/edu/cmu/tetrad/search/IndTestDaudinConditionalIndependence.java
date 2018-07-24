@@ -28,7 +28,6 @@ import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.NumberFormatUtil;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetrad.util.TetradMatrix;
-import org.apache.commons.math3.distribution.NormalDistribution;
 
 import java.text.NumberFormat;
 import java.util.*;
@@ -39,12 +38,12 @@ import java.util.*;
  *
  * @author Joseph Ramsey
  */
-public final class IndTestConditionalCorrelation implements IndependenceTest {
+public final class IndTestDaudinConditionalIndependence implements IndependenceTest {
 
     /**
      * The instance of CCI that is wrapped.
      */
-    private final Cci cci;
+    private final DaudinConditionalCorrelation daudinConditionalCorrelation;
 //    private double weight = 0.8;
 
     /**
@@ -91,7 +90,7 @@ public final class IndTestConditionalCorrelation implements IndependenceTest {
      * @param dataSet A data set containing only continuous columns.
      * @param alpha   The q level of the test.
      */
-    public IndTestConditionalCorrelation(DataSet dataSet, double alpha) {
+    public IndTestDaudinConditionalIndependence(DataSet dataSet, double alpha) {
         if (!(dataSet.isContinuous())) {
             throw new IllegalArgumentException("Data set must be continuous.");
         }
@@ -108,7 +107,7 @@ public final class IndTestConditionalCorrelation implements IndependenceTest {
         List<String> varNames = new ArrayList<>();
         for (int i = 0; i < variables.size(); i++) varNames.add(variables.get(i).getName());
 
-        this.cci = new Cci(dataSet, alpha);
+        this.daudinConditionalCorrelation = new DaudinConditionalCorrelation(dataSet, alpha);
 
         indices = new HashMap<>();
 
@@ -131,12 +130,12 @@ public final class IndTestConditionalCorrelation implements IndependenceTest {
         String _y = y.getName();
         List<String> _z = new ArrayList<>();
         for (Node node : z) _z.add(node.getName());
-        boolean independent = cci.isIndependent(_x, _y, _z);
+        boolean independent = daudinConditionalCorrelation.isIndependent(_x, _y, _z);
 
 
         if (true) {
             IndependenceFact fact = new IndependenceFact(x, y, z);
-            double p = cci.getPValue();
+            double p = daudinConditionalCorrelation.getPValue();
 
             if (independent) {
                 System.out.println(fact + " Independent p = " + p);
@@ -160,7 +159,7 @@ public final class IndTestConditionalCorrelation implements IndependenceTest {
         String _y = y.getName();
         List<String> _z = new ArrayList<>();
         for (Node node : z) _z.add(node.getName());
-        boolean independent = cci.isIndependent(_x, _y, _z);
+        boolean independent = daudinConditionalCorrelation.isIndependent(_x, _y, _z);
 
         if (verbose) {
             if (independent) {
@@ -184,7 +183,7 @@ public final class IndTestConditionalCorrelation implements IndependenceTest {
      * @return the probability associated with the most recently computed independence test.
      */
     public double getPValue() {
-        return cci.getScore();
+        return daudinConditionalCorrelation.getScore();
     }
 
     /**
@@ -274,7 +273,7 @@ public final class IndTestConditionalCorrelation implements IndependenceTest {
 
     @Override
     public double getScore() {
-        return cci.getScore();
+        return daudinConditionalCorrelation.getScore();
     }
 
     /**
@@ -296,27 +295,27 @@ public final class IndTestConditionalCorrelation implements IndependenceTest {
      * Number of functions to use in (truncated) basis.
      */
     public int getNumFunctions() {
-        return this.cci.getNumFunctions();
+        return this.daudinConditionalCorrelation.getNumFunctions();
     }
 
     public void setNumFunctions(int numFunctions) {
-        this.cci.setNumFunctions(numFunctions);
+        this.daudinConditionalCorrelation.setNumFunctions(numFunctions);
     }
 
     public double getWeight() {
-        return this.cci.getWidth();
+        return this.daudinConditionalCorrelation.getWidth();
     }
 
     public void setKernelMultiplier(double multiplier) {
-        this.cci.setWidth(multiplier);
+        this.daudinConditionalCorrelation.setWidth(multiplier);
     }
 
-    public void setKernel(Cci.Kernel kernel) {
-        cci.setKernelMultiplier(kernel);
+    public void setKernel(DaudinConditionalCorrelation.Kernel kernel) {
+        daudinConditionalCorrelation.setKernelMultiplier(kernel);
     }
 
-    public void setBasis(Cci.Basis basis) {
-        cci.setBasis(basis);
+    public void setBasis(DaudinConditionalCorrelation.Basis basis) {
+        daudinConditionalCorrelation.setBasis(basis);
     }
 }
 

@@ -36,12 +36,19 @@ import static java.lang.Math.*;
 import static java.lang.Math.pow;
 
 /**
- * Checks conditional independence of variable in a continuous data set using a
- * conditional correlation test for the nonlinear nonGaussian case.
+ * Checks conditional independence of variable in a continuous data set using Daudin's method. See
+ *
+ * Ramsey, J. D. (2014). A scalable conditional independence test for nonlinear, non-Gaussian data. arXiv
+ * preprint arXiv:1401.5031.
+ *
+ * This is corrected using Lemma 2, condition 4 of
+ *
+ * Zhang, K., Peters, J., Janzing, D., & Schölkopf, B. (2012). Kernel-based conditional independence test and
+ * application in causal discovery. arXiv preprint arXiv:1202.3775.
  *
  * @author Joseph Ramsey
  */
-public final class Cci {
+public final class DaudinConditionalCorrelation {
 
     public enum Kernel {Epinechnikov, Gaussian}
 
@@ -108,7 +115,7 @@ public final class Cci {
      * @param dataSet A data set containing only continuous columns.
      * @param alpha   The alpha level of the test.
      */
-    public Cci(DataSet dataSet, double alpha) {
+    public DaudinConditionalCorrelation(DataSet dataSet, double alpha) {
         if (dataSet == null) throw new NullPointerException();
 
         this.alpha = alpha;
@@ -180,16 +187,16 @@ public final class Cci {
 
         double _score = score;
 
-//        if (!independent1) {
-//            return false;
-//        }
+        if (!independent1) {
+            return false;
+        }
 
         double[] f2 = residuals(x, z, true);
         final boolean independent2 = independent(f2, g);
 
         if (score < _score) score = _score;
 
-        return independent1 && independent2;
+        return independent2;
     }
 
     /**
@@ -461,19 +468,6 @@ public final class Cci {
         return (1.4826 * mad) * pow((4.0 / 3.0) / xCol.length, 0.2);
     }
 
-    // Uniform kernel.
-    private double kernelUniform(double z, double h) {
-        final double lambda = 1.0 / (getWidth() * h);
-        if (lambda * abs(lambda * z) > 1) return 0.0;
-        else return 0.5;
-    }
-
-    private double kernelTriangular(double z, double h) {
-        z /= getWidth() * h;
-        if (abs(z) > 1) return 0.0;
-        else return (1.0 - abs(z));
-    }
-
     private double kernelEpinechnikov(double z, double h) {
         z /= getWidth() * h;
         if (abs(z) > 1) return 0.0;
@@ -503,8 +497,6 @@ public final class Cci {
 
     // Standardizes the given data array. No need to make a copy here.
     private double[] standardize(double[] data) {
-//        double[] data = Arrays.copyOf(data, data.length);
-
         double sum = 0.0;
 
         for (double d : data) {

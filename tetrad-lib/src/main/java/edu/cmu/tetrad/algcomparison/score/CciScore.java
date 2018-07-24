@@ -4,8 +4,8 @@ import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.data.DataUtils;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.search.Cci;
-import edu.cmu.tetrad.search.IndTestConditionalCorrelation;
+import edu.cmu.tetrad.search.DaudinConditionalCorrelation;
+import edu.cmu.tetrad.search.IndTestDaudinConditionalIndependence;
 import edu.cmu.tetrad.search.Score;
 import edu.cmu.tetrad.search.ScoredIndTest;
 import edu.cmu.tetrad.util.Parameters;
@@ -31,12 +31,12 @@ public class CciScore implements ScoreWrapper {
     @Override
     public Score getScore(DataModel dataSet, Parameters parameters) {
         this.dataSet = dataSet;
-        final IndTestConditionalCorrelation cci = new IndTestConditionalCorrelation(DataUtils.getContinuousDataSet(dataSet),
+        final IndTestDaudinConditionalIndependence cci = new IndTestDaudinConditionalIndependence(DataUtils.getContinuousDataSet(dataSet),
                 parameters.getDouble("alpha"));
         if (parameters.getInt("kernelType") == 1) {
-            cci.setKernel(Cci.Kernel.Gaussian);
+            cci.setKernel(DaudinConditionalCorrelation.Kernel.Gaussian);
         } else if (parameters.getInt("kernelType") == 2) {
-            cci.setKernel(Cci.Kernel.Epinechnikov);
+            cci.setKernel(DaudinConditionalCorrelation.Kernel.Epinechnikov);
         } else {
             throw new IllegalStateException("Kernel not configured.");
         }
@@ -44,9 +44,9 @@ public class CciScore implements ScoreWrapper {
         cci.setKernelMultiplier(parameters.getDouble("kernelMultiplier"));
 
         if (parameters.getInt("basisType") == 1) {
-            cci.setBasis(Cci.Basis.Polynomial);
+            cci.setBasis(DaudinConditionalCorrelation.Basis.Polynomial);
         } else if (parameters.getInt("basisType") == 2) {
-            cci.setBasis(Cci.Basis.Cosine);
+            cci.setBasis(DaudinConditionalCorrelation.Basis.Cosine);
         } else {
             throw new IllegalStateException("Basis not configured.");
         }
