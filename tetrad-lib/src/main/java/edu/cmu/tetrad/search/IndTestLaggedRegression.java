@@ -172,10 +172,10 @@ public final class IndTestLaggedRegression implements IndependenceTest {
         }
 
         List<Node> regressors = new ArrayList<>();
-//        regressors.add(dataSet.getCauseNode(yVar.getNode()));
+//        regressors.add(dataSet.getVariable(yVar.getNode()));
 //
 //        for (Node zVar : zList) {
-//            regressors.add(dataSet.getCauseNode(zVar.getNode()));
+//            regressors.add(dataSet.getVariable(zVar.getNode()));
 //        }
 
 //        TetradMatrix residuals = new TetradMatrix(timeLags.getNumRows(), timeSeries.getNumColumns());
@@ -316,7 +316,7 @@ public final class IndTestLaggedRegression implements IndependenceTest {
     //==========================PRIVATE METHODS============================//
 
 //    /**
-//     * NodeEffects the p-value of the last calculated independence fact.
+//     * Return the p-value of the last calculated independence fact.
 //     *
 //     * @return this p-value.  When accessed through the IndependenceChecker
 //     *         interface, this p-value should only be considered to be a
@@ -340,7 +340,7 @@ public final class IndTestLaggedRegression implements IndependenceTest {
 //        final double upperBound = 9.0;
 //        final double delta = 0.001;
 //        //        double alpha = this.alpha/2.0;    //Two sided test
-//        return CutoffFinder.getBootstrapAlpha(npdf, upperBound, alpha, delta);
+//        return CutoffFinder.getCutoff(npdf, upperBound, alpha, delta);
 //    }
 
 //    private int sampleSize() {
@@ -363,10 +363,10 @@ public final class IndTestLaggedRegression implements IndependenceTest {
 //        int size = zList.size();
 //        int[] zCols = new int[size];
 //
-//        int xIndex = getCauseNode().indexOf(xVar);
+//        int xIndex = getVariable().indexOf(xVar);
 //
 //        for (int i = 0; i < zList.size(); i++) {
-//            zCols[i] = getCauseNode().indexOf(zList.get(i));
+//            zCols[i] = getVariable().indexOf(zList.get(i));
 //        }
 //
 //        int[] zRows = new int[data.rows()];

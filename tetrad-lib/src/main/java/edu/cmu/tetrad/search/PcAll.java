@@ -298,7 +298,7 @@ public final class PcAll implements GraphSearch {
     }
 
     public Graph search(List<Node> nodes) {
-        this.logger.log("info", "Starting PC algorithm");
+        this.logger.log("info", "Starting CPC algorithm");
         this.logger.log("info", "Independence test = " + getIndependenceTest() + ".");
         this.allTriples = new HashSet<>();
         this.ambiguousTriples = new HashSet<>();
@@ -368,7 +368,7 @@ public final class PcAll implements GraphSearch {
         graph = GraphUtils.replaceNodes(graph, nodes);
 
         MeekRules meekRules = new MeekRules();
-        meekRules.setAggressivelyPreventCycles(this.aggressivelyPreventCycles);
+//        meekRules.setAggressivelyPreventCycles(this.aggressivelyPreventCycles);
         meekRules.setKnowledge(knowledge);
         meekRules.orientImplied(graph);
 

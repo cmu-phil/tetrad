@@ -285,7 +285,7 @@ public final class IndTestRegression implements IndependenceTest {
     //==========================PRIVATE METHODS============================//
 
 //    /**
-//     * NodeEffects the p-value of the last calculated independence fact.
+//     * Return the p-value of the last calculated independence fact.
 //     *
 //     * @return this p-value.  When accessed through the IndependenceChecker
 //     *         interface, this p-value should only be considered to be a
@@ -309,7 +309,7 @@ public final class IndTestRegression implements IndependenceTest {
 //        final double upperBound = 9.0;
 //        final double delta = 0.001;
 //        //        double alpha = this.alpha/2.0;    //Two sided test
-//        return CutoffFinder.getBootstrapAlpha(npdf, upperBound, alpha, delta);
+//        return CutoffFinder.getCutoff(npdf, upperBound, alpha, delta);
 //    }
 
 //    private int sampleSize() {

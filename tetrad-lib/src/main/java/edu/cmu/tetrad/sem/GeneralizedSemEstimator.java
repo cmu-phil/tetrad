@@ -604,7 +604,7 @@ public class GeneralizedSemEstimator {
 //            int[] indices = new int[tierOrdering.size()];
 //
 //            for (int i = 0; i < tierOrdering.size(); i++) {
-//                indices[i] = data.getColumn(data.getCauseNode(tierOrdering.get(i).getNode()));
+//                indices[i] = data.getColumn(data.getVariable(tierOrdering.get(i).getNode()));
 //            }
 //
 //            for (int i = 0; i < data.getNumRows(); i++) {

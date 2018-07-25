@@ -587,20 +587,16 @@ public final class GeneralizedSemPm implements PM, TetradSerializable {
     private void setSuitableParameterDistribution(String parameter) throws ParseException {
         boolean found = false;
 
-        try {
-            for (String prefix : startsWithParametersTemplates.keySet()) {
-                if (parameter.startsWith(prefix)) {
-                    if (parameterExpressions.get(parameter) == null) {
-                        setParameterExpression(parameter, startsWithParametersTemplates.get(prefix));
-                    }
-                    if (parameterEstimationInitializationExpressions.get(parameter) == null) {
-                        setParameterEstimationInitializationExpression(parameter, startsWithParametersTemplates.get(prefix));
-                    }
-                    found = true;
+        for (String prefix : startsWithParametersTemplates.keySet()) {
+            if (parameter.startsWith(prefix)) {
+                if (parameterExpressions.get(parameter) == null) {
+                    setParameterExpression(parameter, startsWithParametersTemplates.get(prefix));
                 }
+                if (parameterEstimationInitializationExpressions.get(parameter) == null) {
+                    setParameterEstimationInitializationExpression(parameter, startsWithParametersTemplates.get(prefix));
+                }
+                found = true;
             }
-        } catch (Exception e) {
-            e.printStackTrace();
         }
 
         if (!found) {

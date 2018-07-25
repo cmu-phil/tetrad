@@ -1974,9 +1974,9 @@ public final class TsFges2 implements GraphSearch, GraphScorer {
         int tier_diff = Math.max(indx_tier, indy_tier) - Math.min(indx_tier, indy_tier);
         int indx_comp = -1;
         int indy_comp = -1;
-        List tier_x = new ArrayList();// knowledge.getTier(indx_tier);
+        List tier_x = knowledge.getTier(indx_tier);
 //        Collections.sort(tier_x);
-        List tier_y = new ArrayList();// knowledge.getTier(indy_tier);
+        List tier_y = knowledge.getTier(indy_tier);
 //        Collections.sort(tier_y);
 
         int i;

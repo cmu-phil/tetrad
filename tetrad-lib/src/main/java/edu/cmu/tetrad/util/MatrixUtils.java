@@ -642,7 +642,7 @@ public final class MatrixUtils {
     }
 
     /**
-     * NodeEffects true if the given matrix is symmetric positive definite--that is,
+     * Return true if the given matrix is symmetric positive definite--that is,
      * if it would make a valid covariance matrix.
      */
     @SuppressWarnings({"BooleanMethodIsAlwaysInverted"})

@@ -153,7 +153,7 @@ public final class IndTestRegressionAD implements IndependenceTest {
 
             v2 = regression.getResidualsWithoutFirstRegressor();
 
-//            regressors.remove(dataSet.getCauseNode(yVar.getNode()));
+//            regressors.remove(dataSet.getVariable(yVar.getNode()));
 //            regression = new RegressionDataset(dataSet);
 //            result = regression.regress(xVar, regressors);
 //            v2 = result.getResiduals();
@@ -280,7 +280,7 @@ public final class IndTestRegressionAD implements IndependenceTest {
     //==========================PRIVATE METHODS============================//
 
 //    /**
-//     * NodeEffects the p-value of the last calculated independence fact.
+//     * Return the p-value of the last calculated independence fact.
 //     *
 //     * @return this p-value.  When accessed through the IndependenceChecker
 //     *         interface, this p-value should only be considered to be a
@@ -304,7 +304,7 @@ public final class IndTestRegressionAD implements IndependenceTest {
 //        final double upperBound = 9.0;
 //        final double delta = 0.001;
 //        //        double alpha = this.alpha/2.0;    //Two sided test
-//        return CutoffFinder.getBootstrapAlpha(npdf, upperBound, alpha, delta);
+//        return CutoffFinder.getCutoff(npdf, upperBound, alpha, delta);
 //    }
 
 //    private int sampleSize() {

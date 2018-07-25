@@ -305,7 +305,7 @@ public final class SemPm implements PM, TetradSerializable {
     }
 
     /**
-     * NodeEffects the parameter for the variance of the error term for the given
+     * Return the parameter for the variance of the error term for the given
      * node, which is the variance of the node if the node is an error term,
      * and the variance of the node's error term if not.
      */
