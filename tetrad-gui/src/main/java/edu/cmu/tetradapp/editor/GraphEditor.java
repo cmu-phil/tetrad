@@ -24,7 +24,6 @@ import edu.cmu.tetrad.data.IKnowledge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.IndTestDSep;
 import edu.cmu.tetrad.search.IndependenceTest;
-import edu.cmu.tetrad.search.MeekRules;
 import edu.cmu.tetrad.util.JOptionUtils;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.RandomUtil;
@@ -37,23 +36,29 @@ import edu.cmu.tetradapp.workbench.DisplayEdge;
 import edu.cmu.tetradapp.workbench.DisplayNode;
 import edu.cmu.tetradapp.workbench.GraphWorkbench;
 import edu.cmu.tetradapp.workbench.LayoutMenu;
-import java.awt.*;
+import java.awt.BorderLayout;
+import java.awt.Component;
+import java.awt.Dimension;
+import java.awt.Font;
+import java.awt.Point;
+import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
 import java.awt.event.KeyEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.net.URL;
 import java.util.*;
-import java.util.List;
 import javax.help.CSH;
 import javax.help.HelpBroker;
 import javax.help.HelpSet;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
-import javax.swing.border.MatteBorder;
 import javax.swing.event.InternalFrameAdapter;
 import javax.swing.event.InternalFrameEvent;
+import javax.swing.table.DefaultTableModel;
 
 /**
  * Displays a workbench editing workbench area together with a toolbench for
@@ -162,14 +167,17 @@ public final class GraphEditor extends JPanel
         GraphToolbar toolbar = new GraphToolbar(getWorkbench());
         JMenuBar menuBar = createGraphMenuBar();
         JScrollPane scroll = new JScrollPane();
-        scroll.setPreferredSize(new Dimension(450, 450));
+        scroll.setPreferredSize(new Dimension(650, 450));
         scroll.setViewportView(getWorkbench());
 
         add(scroll, BorderLayout.CENTER);
         add(toolbar, BorderLayout.WEST);
         add(menuBar, BorderLayout.NORTH);
 
-        JLabel label = new JLabel("Double click variable to change name. More information on graph edge types");
+        // Instruction with info button 
+        Box instructionBox = Box.createHorizontalBox();
+        
+        JLabel label = new JLabel("Double click variable/node rectangle to change name. More information on graph edge types");
         label.setFont(new Font("SansSerif", Font.PLAIN, 12));
 
         // Info button added by Zhou to show edge types
@@ -187,14 +195,89 @@ public final class GraphEditor extends JPanel
             }
         });
 
-        Box b = Box.createHorizontalBox();
-        b.add(Box.createHorizontalStrut(2));
-        b.add(label);
-        b.add(infoBtn);
-        b.add(Box.createHorizontalGlue());
-        b.setBorder(new MatteBorder(0, 0, 1, 0, Color.GRAY));
+        instructionBox.add(label);
+        instructionBox.add(Box.createHorizontalStrut(2));
+        instructionBox.add(infoBtn);
+        
+        
+        // Bottom container contains instructionBox and bootstrap table
+        Box bottomBox = Box.createVerticalBox();
+        bottomBox.setPreferredSize(new Dimension(650, 150));
+        
+        bottomBox.add(instructionBox);
+        bottomBox.add(Box.createVerticalStrut(10));
+        
+        //bottomBox.add(Box.createHorizontalGlue());
+        
+        // Bootstrap table view
+        // Create object of table and table model
+        JTable table = new JTable();
+ 
+        DefaultTableModel tableModel = new DefaultTableModel();
 
-        add(b, BorderLayout.SOUTH);
+        // Set model into the table object
+        table.setModel(tableModel);
+
+        // Headers
+        List<String> columnNames = new LinkedList<>();
+        // The very left header
+        columnNames.add("Shared Edge Name");
+        columnNames.add("Shared Interaction");
+        columnNames.add("Edge Type probabilities");
+        
+        // Table header
+        tableModel.setColumnIdentifiers(columnNames.toArray());
+
+        // Add new row to table
+        graph.getEdges().forEach(e->{
+            String edgeType = "";
+            Endpoint endpoint1 = e.getEndpoint1();
+            Endpoint endpoint2 = e.getEndpoint2();
+
+            String endpoint1Str = "";
+            if (endpoint1 == Endpoint.TAIL) {
+                endpoint1Str = "-";
+            } else if (endpoint1 == Endpoint.ARROW) {
+                endpoint1Str = "<";
+            } else if (endpoint1 == Endpoint.CIRCLE) {
+                endpoint1Str = "o";
+            }
+
+            String endpoint2Str = "";
+            if (endpoint2 == Endpoint.TAIL) {
+                endpoint2Str = "-";
+            } else if (endpoint2 == Endpoint.ARROW) {
+                endpoint2Str = ">";
+            } else if (endpoint2 == Endpoint.CIRCLE) {
+                endpoint2Str = "o";
+            }
+            // Produce a string representation of the edge
+            edgeType = endpoint1Str + "-" + endpoint2Str;
+            
+            List<EdgeTypeProbability> edgeTypeProbabilities = e.getEdgeTypeProbabilities();
+            
+            addRow(tableModel, e.getNode1().getName(), e.getNode2().getName(), edgeType, edgeTypeProbabilities);
+        });
+        
+        
+        // To be able to see the header, we need to put the table in a JScrollPane
+        JScrollPane tablePane = new JScrollPane(table);
+ 
+        tablePane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+
+        table.getParent().addComponentListener(new ComponentAdapter() {
+            public void componentResized(final ComponentEvent e) {
+                if (table.getPreferredSize().width < table.getParent().getWidth()) {
+                    table.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
+                } else {
+                    table.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
+                }
+            }
+        });
+        
+        bottomBox.add(tablePane);
+        
+        add(bottomBox, BorderLayout.SOUTH);
         validate();
     }
 
@@ -311,6 +394,20 @@ public final class GraphEditor extends JPanel
         return menuBar;
     }
 
+    // Add a new row to bootstrap table
+    private void addRow(DefaultTableModel tableModel, String node1, String node2, String edgeType, List<EdgeTypeProbability> edgeTypeProbabilities) {
+        List<Object> row = new LinkedList<>();
+        
+        String sharedEdgeName = node1 + " (" + edgeType + ") " + node2;
+ 
+        row.add(sharedEdgeName);
+        row.add(edgeType);
+        row.add(edgeTypeProbabilities);
+
+        tableModel.addRow(row.toArray());
+    }
+    
+    
 //    /**
 //     * Creates the "file" menu, which allows the user to load, save, and post
 //     * workbench models.
