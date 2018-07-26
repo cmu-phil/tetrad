@@ -151,7 +151,7 @@ public final class FciMax implements GraphSearch {
     }
 
     public Graph search() {
-        FasStableConcurrent fas = new FasStableConcurrent(initialGraph, getIndependenceTest());
+        FasStable fas = new FasStable(initialGraph, getIndependenceTest());
         fas.setVerbose(verbose);
         return search(fas);
     }
@@ -411,6 +411,10 @@ public final class FciMax implements GraphSearch {
         }
 
         logger.log("info", "Finishing BK Orientation.");
+    }
+
+    public void setPossibleDsepDepth(int possibleDsepDepth) {
+        this.possibleDsepDepth = possibleDsepDepth;
     }
 }
 

@@ -138,12 +138,12 @@ public final class IndTestDaudinConditionalIndependence implements IndependenceT
             double p = daudinConditionalCorrelation.getPValue();
 
             if (independent) {
-                System.out.println(fact + " Independent p = " + p);
+                System.out.println(fact + " INDEPENDENT p = " + p);
                 TetradLogger.getInstance().log("info", fact + " Independent");
 
             } else {
-                System.out.println(fact + " p = " + p);
-                TetradLogger.getInstance().log("info", fact.toString());
+//                System.out.println(fact + " dependent p = " + p);
+//                TetradLogger.getInstance().log("info", fact.toString());
             }
         }
 

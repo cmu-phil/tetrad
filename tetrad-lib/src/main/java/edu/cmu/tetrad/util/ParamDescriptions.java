@@ -340,6 +340,9 @@ public class ParamDescriptions {
         map.put("rcitApproxType", new ParamDescription(
                 "Approximation Type: 1 = LPD4, 2 = Gamma, 3 = HBE, 4 = PERM",
                 4, 1, 4));
+
+        map.put("possibleDsepDone", new ParamDescription(
+                "Yes if the possible dsep search should be done", true));
     }
 
     public static ParamDescriptions getInstance() {

@@ -58,6 +58,8 @@ public class FciMax implements Algorithm, TakesInitialGraph, HasKnowledge, Takes
             search.setKnowledge(knowledge);
             search.setMaxPathLength(parameters.getInt("maxPathLength"));
             search.setCompleteRuleSetUsed(parameters.getBoolean("completeRuleSetUsed"));
+            search.setPossibleDsepSearchDone(parameters.getBoolean("possibleDsepDone"));
+            search.setPossibleDsepDepth(parameters.getInt("possibleDsepDepth"));
             search.setVerbose(parameters.getBoolean("verbose"));
 
 //            if (initialGraph != null) {

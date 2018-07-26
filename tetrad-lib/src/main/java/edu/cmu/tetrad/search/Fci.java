@@ -110,11 +110,8 @@ public final class Fci implements GraphSearch {
     private boolean verbose = false;
     private Graph truePag;
     private ConcurrentMap<Node, Integer> hashIndices;
-    private ICovarianceMatrix covarianceMatrix;
     private double penaltyDiscount = 2;
-    private SepsetMap possibleDsepSepsets = new SepsetMap();
     private Graph initialGraph;
-    private int possibleDsepDepth = -1;
 
 
     //============================CONSTRUCTORS============================//
@@ -428,14 +425,6 @@ public final class Fci implements GraphSearch {
         }
 
         logger.log("info", "Finishing BK Orientation.");
-    }
-
-    public int getPossibleDsepDepth() {
-        return possibleDsepDepth;
-    }
-
-    public void setPossibleDsepDepth(int possibleDsepDepth) {
-        this.possibleDsepDepth = possibleDsepDepth;
     }
 }
 
