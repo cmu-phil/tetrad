@@ -40,6 +40,8 @@ import java.util.Set;
  */
 public final class PcAll implements GraphSearch {
 
+//    private double maxOrientationP = 0.01;
+
     public boolean isUseHeuristic() {
         return useHeuristic;
     }
@@ -55,6 +57,14 @@ public final class PcAll implements GraphSearch {
     public void setMaxPathLength(int maxPathLength) {
         this.maxPathLength = maxPathLength;
     }
+//
+//    public double getMaxOrientationP() {
+//        return maxOrientationP;
+//    }
+//
+//    public void setMaxOrientationP(double maxOrientationP) {
+//        this.maxOrientationP = maxOrientationP;
+//    }
 
     public enum FasRule {FAS, FAS_STABLE, FAS_STABLE_CONCURRENT}
 
@@ -350,6 +360,8 @@ public final class PcAll implements GraphSearch {
                 System.out.println("MaxP orientation...");
             }
 
+//            independenceTest.setAlpha(getMaxOrientationP());
+
             final OrientCollidersMaxP orientCollidersMaxP = new OrientCollidersMaxP(independenceTest, conflictRule);
             orientCollidersMaxP.setConflictRule(conflictRule);
             orientCollidersMaxP.orient(graph);
@@ -437,6 +449,7 @@ public final class PcAll implements GraphSearch {
         noncolliderTriples = new HashSet<>();
         ambiguousTriples = new HashSet<>();
         List<Node> nodes = graph.getNodes();
+//        independenceTest.setAlpha(getMaxOrientationP());
 
         for (Node y : nodes) {
             List<Node> adjacentNodes = graph.getAdjacentNodes(y);

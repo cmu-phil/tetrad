@@ -343,6 +343,10 @@ public class ParamDescriptions {
 
         map.put("possibleDsepDone", new ParamDescription(
                 "Yes if the possible dsep search should be done", true));
+
+        map.put("maxOrientationP", new ParamDescription(
+                "For Max P and Conservative orientation, the maximum p value used in the collider orienation step",
+                0.01, 0.0, 1.0));
     }
 
     public static ParamDescriptions getInstance() {

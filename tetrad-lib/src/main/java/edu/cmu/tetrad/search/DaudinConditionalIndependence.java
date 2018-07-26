@@ -55,6 +55,8 @@ import static java.lang.Math.pow;
  */
 public final class DaudinConditionalIndependence {
 
+    private final double alpha0;
+
     public enum Kernel {Epinechnikov, Gaussian}
 
     public enum Basis {Polynomial, Cosine}
@@ -122,6 +124,7 @@ public final class DaudinConditionalIndependence {
      */
     public DaudinConditionalIndependence(DataSet dataSet, double alpha) {
         if (dataSet == null) throw new NullPointerException();
+        this.alpha0 = alpha;
 
         this.alpha = alpha;
         this.data = dataSet.getDoubleData().transpose().toArray();
@@ -187,6 +190,12 @@ public final class DaudinConditionalIndependence {
         double[] f1 = residuals(x, z, false);
         double[] g = residuals(y, z, false);
         final boolean independent1 = independent(f1, g);
+
+        final int m1 = 2; // reference
+        final int m2 = 2 + z.size();
+
+        alpha = ((m1 - 1) / (double) (m2 - 1)) * alpha0;
+        cutoff = getZForAlpha(alpha);
 
         if (!independent1) {
             return false;

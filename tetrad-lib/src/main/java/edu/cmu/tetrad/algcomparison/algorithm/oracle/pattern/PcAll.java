@@ -106,6 +106,7 @@ public class PcAll implements Algorithm, TakesInitialGraph, HasKnowledge, TakesI
             }
 
             edu.cmu.tetrad.search.PcAll search = new edu.cmu.tetrad.search.PcAll(test.getTest(dataSet, parameters), initialGraph);
+//            search.setMaxOrientationP(parameters.getDouble("maxOrientationP"));
             search.setDepth(parameters.getInt("depth"));
             search.setKnowledge(knowledge);
             search.setFasRule(fasRule);
@@ -167,6 +168,7 @@ public class PcAll implements Algorithm, TakesInitialGraph, HasKnowledge, TakesI
     @Override
     public List<String> getParameters() {
         List<String> parameters = test.getParameters();
+//        parameters.add("maxOrientationP");
 
 //        public enum FasRule {FAS, FAS_STABLE, FAS_STABLE_CONCURRENT}
 //        public enum ColliderDiscovery {FAS_SEPSETS, CONSERVATIVE, MAX_P}

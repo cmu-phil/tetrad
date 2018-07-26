@@ -142,8 +142,8 @@ public final class IndTestDaudinConditionalIndependence implements IndependenceT
                 TetradLogger.getInstance().log("info", fact + " Independent");
 
             } else {
-//                System.out.println(fact + " dependent p = " + p);
-//                TetradLogger.getInstance().log("info", fact.toString());
+                System.out.println(fact + " dependent p = " + p);
+                TetradLogger.getInstance().log("info", fact.toString());
             }
         }
 
