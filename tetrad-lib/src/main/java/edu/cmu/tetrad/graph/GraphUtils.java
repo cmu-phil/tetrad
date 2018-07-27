@@ -2647,28 +2647,53 @@ public final class GraphUtils {
             Edge _edge = new Edge(_from, _to, _end1, _end2);
 
             //Bootstrapping
-            if (line.indexOf("[no edge]") > -1) {
+            if (line.indexOf("[no edge]") > -1 || 
+            		line.indexOf("[-->]") > -1 ||
+            		line.indexOf("[<--]") > -1 ||
+            		line.indexOf("[o->]") > -1 ||
+            		line.indexOf("[<-o]") > -1 ||
+            		line.indexOf("[o-o]") > -1 ||
+            		line.indexOf("[<->]") > -1 ||
+            		line.indexOf("[---]") > -1) {
 
-                String bootstrap_format = "[no edge]:0.0000[-->]:0.0000[<--]:0.0000[o->]:0.0000[<-o]:0.0000[o-o]:0.0000[<->]:0.0000[---]:0.0000";
-                String bootstraps = line.substring(0, bootstrap_format.length());
-                line = line.substring(bootstrap_format.length()).trim();
-                double nil = Double.parseDouble(bootstraps.substring(10, 16));
-                double ta = Double.parseDouble(bootstraps.substring(22, 28));
-                double at = Double.parseDouble(bootstraps.substring(34, 40));
-                double ca = Double.parseDouble(bootstraps.substring(46, 52));
-                double ac = Double.parseDouble(bootstraps.substring(58, 64));
-                double cc = Double.parseDouble(bootstraps.substring(70, 76));
-                double aa = Double.parseDouble(bootstraps.substring(82, 88));
-                double tt = Double.parseDouble(bootstraps.substring(94, 100));
+                // String bootstrap_format = "[no edge]:0.0000;[-->]:0.0000;[<--]:0.0000;[o->]:0.0000;[<-o]:0.0000;[o-o]:0.0000;[<->]:0.0000;[---]:0.0000;";
+                int last_semicolon = line.lastIndexOf(";");
+            	String bootstraps = "";
+            	if(last_semicolon != -1) {
+            		bootstraps = line.substring(0, last_semicolon + 1);
+            	}else {
+            		bootstraps = line;
+            	}
+                
+                line = line.substring(bootstraps.length()).trim();
 
-                _edge.addEdgeTypeProbability(new EdgeTypeProbability(EdgeType.nil, nil));
-                _edge.addEdgeTypeProbability(new EdgeTypeProbability(EdgeType.ta, ta));
-                _edge.addEdgeTypeProbability(new EdgeTypeProbability(EdgeType.at, at));
-                _edge.addEdgeTypeProbability(new EdgeTypeProbability(EdgeType.ca, ca));
-                _edge.addEdgeTypeProbability(new EdgeTypeProbability(EdgeType.ac, ac));
-                _edge.addEdgeTypeProbability(new EdgeTypeProbability(EdgeType.cc, cc));
-                _edge.addEdgeTypeProbability(new EdgeTypeProbability(EdgeType.aa, aa));
-                _edge.addEdgeTypeProbability(new EdgeTypeProbability(EdgeType.tt, tt));
+                String[] bootstrap = bootstraps.split(";");
+                for(int i=0;i<bootstrap.length;i++) {
+                	String[] token = bootstrap[i].split(":");
+                	if(token == null || token.length < 2) continue;
+
+                	String orient = token[0];
+                	double prob = Double.parseDouble(token[1]);
+                	
+                	if(orient.equalsIgnoreCase("[no edge]")) {
+                        _edge.addEdgeTypeProbability(new EdgeTypeProbability(EdgeType.nil, prob));
+                	}else if(orient.equalsIgnoreCase("[-->]")) {
+                        _edge.addEdgeTypeProbability(new EdgeTypeProbability(EdgeType.ta, prob));
+                	}else if(orient.equalsIgnoreCase("[<--]")) {
+                        _edge.addEdgeTypeProbability(new EdgeTypeProbability(EdgeType.at, prob));
+                	}else if(orient.equalsIgnoreCase("[o->]")) {
+                        _edge.addEdgeTypeProbability(new EdgeTypeProbability(EdgeType.ca, prob));
+                	}else if(orient.equalsIgnoreCase("[<-o]")) {
+                        _edge.addEdgeTypeProbability(new EdgeTypeProbability(EdgeType.ac, prob));
+                	}else if(orient.equalsIgnoreCase("[o-o]")) {
+                        _edge.addEdgeTypeProbability(new EdgeTypeProbability(EdgeType.cc, prob));
+                	}else if(orient.equalsIgnoreCase("[<->]")) {
+                		_edge.addEdgeTypeProbability(new EdgeTypeProbability(EdgeType.aa, prob));
+                	}else {// [---]
+                		_edge.addEdgeTypeProbability(new EdgeTypeProbability(EdgeType.tt, prob));
+                	}
+                    
+                }
             }
 
             if (line.length() > 0) {
@@ -4030,23 +4055,24 @@ public final class GraphUtils {
         for (Edge edge : edges) {
             count++;
 
-            List<Edge.Property> properties = edge.getProperties();
+            // We will print edge's properties in the edge (via toString() function) level.
+            //List<Edge.Property> properties = edge.getProperties();
 
             if (count < size) {
                 String f = "%d. %s";
 
-                for (int i = 0; i < properties.size(); i++) {
-                    f += " %s";
-                }
+                //for (int i = 0; i < properties.size(); i++) {
+                //    f += " %s";
+                //}
 
-                Object[] o = new Object[2 + properties.size()];
+                Object[] o = new Object[2 /*+ properties.size()*/];
 
                 o[0] = count;
-                o[1] = edge;
+                o[1] = edge; // <- here we include its properties (nl dd pl pd)
 
-                for (int i = 0; i < properties.size(); i++) {
-                    o[2 + i] = properties.get(i);
-                }
+                //for (int i = 0; i < properties.size(); i++) {
+                //    o[2 + i] = properties.get(i);
+                //}
 
                 fmt.format(f, o);
 
@@ -4054,17 +4080,17 @@ public final class GraphUtils {
             } else {
                 String f = "%d. %s";
 
-                for (int i = 0; i < properties.size(); i++) {
-                    f += " %s";
-                }
-                Object[] o = new Object[2 + properties.size()];
+                //for (int i = 0; i < properties.size(); i++) {
+                //    f += " %s";
+                //}
+                Object[] o = new Object[2 /*+ properties.size()*/];
 
                 o[0] = count;
-                o[1] = edge;
+                o[1] = edge; // <- here we include its properties (nl dd pl pd)
 
-                for (int i = 0; i < properties.size(); i++) {
-                    o[2 + i] = properties.get(i);
-                }
+                //for (int i = 0; i < properties.size(); i++) {
+                //    o[2 + i] = properties.get(i);
+                //}
 
                 fmt.format(f, o);
 

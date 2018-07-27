@@ -257,38 +257,50 @@ public class Edge implements TetradSerializable, Comparable {
             buf.append(" ");
             for (int i = 0; i < edgeTypeDist.size(); i++) {
             	EdgeTypeProbability etp = edgeTypeDist.get(i);
-    			String _type = "" + etp.getEdgeType();
-    			switch (etp.getEdgeType()) {
-    			case nil:
-    				_type = "no edge";
-    				break;
-    			case ta:
-    				_type = "-->";
-    				break;
-    			case at:
-    				_type = "<--";
-    				break;
-    			case ca:
-    				_type = "o->";
-    				break;
-    			case ac:
-    				_type = "<-o";
-    				break;
-    			case cc:
-    				_type = "o-o";
-    				break;
-    			case aa:
-    				_type = "<->";
-    				break;
-    			case tt:
-    				_type = "---";
-    				break;
-    			default:
-    				break;
-    			}
-    			
-    			buf.append("[" + _type + "]:" + String.format("%.4f", etp.getProbability()));
+            	double prob = etp.getProbability();
+            	if(prob > 0) {
+        			String _type = "" + etp.getEdgeType();
+        			switch (etp.getEdgeType()) {
+        			case nil:
+        				_type = "no edge";
+        				break;
+        			case ta:
+        				_type = "-->";
+        				break;
+        			case at:
+        				_type = "<--";
+        				break;
+        			case ca:
+        				_type = "o->";
+        				break;
+        			case ac:
+        				_type = "<-o";
+        				break;
+        			case cc:
+        				_type = "o-o";
+        				break;
+        			case aa:
+        				_type = "<->";
+        				break;
+        			case tt:
+        				_type = "---";
+        				break;
+        			default:
+        				break;
+        			}
+        			
+        			buf.append("[" + _type + "]:" + String.format("%.4f", etp.getProbability()) + ";");
+        			
+            	}
             }
+        }
+        
+        List<Property> properties = getProperties();
+        if(properties != null && properties.size() > 0) {
+        	for(Property property : properties) {
+        		buf.append(" ");
+        		buf.append(property.toString());
+        	}
         }
         
 		return buf.toString();
