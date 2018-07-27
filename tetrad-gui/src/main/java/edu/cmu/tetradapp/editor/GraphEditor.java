@@ -221,9 +221,18 @@ public final class GraphEditor extends JPanel
         // Headers
         List<String> columnNames = new LinkedList<>();
         // The very left header
-        columnNames.add("Shared Edge Name");
-        columnNames.add("Shared Interaction");
-        columnNames.add("Edge Type probabilities");
+        columnNames.add(0, "Shared Edge Name");
+        columnNames.add(1, "Shared Interaction");
+
+        // Edge Type probabilities
+        columnNames.add(2, "No edge");
+        columnNames.add(3, "-->");
+        columnNames.add(4, "<--");
+        columnNames.add(5, "o->");
+        columnNames.add(6, "<-o");
+        columnNames.add(7, "o-o");
+        columnNames.add(8, "<->");
+        columnNames.add(9, "---");
         
         // Table header
         tableModel.setColumnIdentifiers(columnNames.toArray());
@@ -266,6 +275,7 @@ public final class GraphEditor extends JPanel
         tablePane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
 
         table.getParent().addComponentListener(new ComponentAdapter() {
+            @Override
             public void componentResized(final ComponentEvent e) {
                 if (table.getPreferredSize().width < table.getParent().getWidth()) {
                     table.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
@@ -396,15 +406,63 @@ public final class GraphEditor extends JPanel
 
     // Add a new row to bootstrap table
     private void addRow(DefaultTableModel tableModel, String node1, String node2, String edgeType, List<EdgeTypeProbability> edgeTypeProbabilities) {
-        List<Object> row = new LinkedList<>();
+        String[] row = new String[10];
         
         String sharedEdgeName = node1 + " (" + edgeType + ") " + node2;
  
-        row.add(sharedEdgeName);
-        row.add(edgeType);
-        row.add(edgeTypeProbabilities);
+        row[0] = sharedEdgeName;
+        row[1] = edgeType;
+        
+        String edgeTypeProbabilitiesStr = "";
+        for (EdgeTypeProbability edgeTypeProb : edgeTypeProbabilities) {
+            String type = "";
+            switch (edgeTypeProb.getEdgeType()) {
+                case nil:
+                    type = "no edge";
+                    row[2] = "[" + type + "]:" + String.format("%.4f", edgeTypeProb.getProbability());
+                    break;
+                case ta:
+                    type = "-->";
+                    type = node1 + " " + type + " " + node2;
+                    row[3] = "[" + type + "]:" + String.format("%.4f", edgeTypeProb.getProbability());
+                    break;
+                case at:
+                    type = "<--";
+                    type = node1 + " " + type + " " + node2;
+                    row[4] = "[" + type + "]:" + String.format("%.4f", edgeTypeProb.getProbability());
+                    break;
+                case ca:
+                    type = "o->";
+                    type = node1 + " " + type + " " + node2;
+                    row[5] = "[" + type + "]:" + String.format("%.4f", edgeTypeProb.getProbability());
+                    break;
+                case ac:
+                    type = "<-o";
+                    type = node1 + " " + type + " " + node2;
+                    row[6] = "[" + type + "]:" + String.format("%.4f", edgeTypeProb.getProbability());
+                    break;
+                case cc:
+                    type = "o-o";
+                    type = node1 + " " + type + " " + node2;
+                    row[7] = "[" + type + "]:" + String.format("%.4f", edgeTypeProb.getProbability());
+                    break;
+                case aa:
+                    type = "<->";
+                    type = node1 + " " + type + " " + node2;
+                    row[8] = "[" + type + "]:" + String.format("%.4f", edgeTypeProb.getProbability());
+                    break;
+                case tt:
+                    type = "---";
+                    type = node1 + " " + type + " " + node2;
+                    row[9] = "[" + type + "]:" + String.format("%.4f", edgeTypeProb.getProbability());
+                    break;
+                default:
+                    break;
+            }
 
-        tableModel.addRow(row.toArray());
+        }
+
+        tableModel.addRow(row);
     }
     
     
