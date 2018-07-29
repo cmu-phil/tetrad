@@ -38,7 +38,7 @@ import java.util.concurrent.RecursiveTask;
  *
  * @author Joseph Ramsey
  */
-public final class OrientCollidersMaxP {
+public final class OrientCollidersMaxP2 {
     private final IndependenceTest independenceTest;
     private int depth = -1;
     private long elapsed = 0;
@@ -47,7 +47,7 @@ public final class OrientCollidersMaxP {
     private int maxPathLength = 3;
     private PcAll.ConflictRule conflictRule = PcAll.ConflictRule.OVERWRITE;
 
-    public OrientCollidersMaxP(IndependenceTest test) {
+    public OrientCollidersMaxP2(IndependenceTest test) {
         if (test == null) throw new NullPointerException();
         this.independenceTest = test;
     }
@@ -138,11 +138,7 @@ public final class OrientCollidersMaxP {
         List<Triple> tripleList = new ArrayList<>(scores.keySet());
 
         // Most independent ones first.
-        tripleList.sort(Comparator.comparingDouble(scores::get));
-
-        for (Triple triple : tripleList) {
-           System.out.println(triple + " score = " + scores.get(triple));
-        }
+        tripleList.sort((o1, o2) -> Double.compare(scores.get(o2), scores.get(o1)));
 
         for (Triple triple : tripleList) {
             Node a = triple.getX();
@@ -193,45 +189,56 @@ public final class OrientCollidersMaxP {
         List<Node> adjc = graph.getAdjacentNodes(c);
         adja.remove(c);
         adjc.remove(a);
+        adja.remove(b);
+        adjc.remove(b);
 
         double score = Double.POSITIVE_INFINITY;
         List<Node> S = null;
 
         DepthChoiceGenerator cg1 = new DepthChoiceGenerator(adja.size(), -1);
-        int[] comb2;
+        int[] comb1;
 
-        while ((comb2 = cg1.next()) != null) {
+        while ((comb1 = cg1.next()) != null) {
             if (Thread.currentThread().isInterrupted()) {
                 break;
             }
 
-            List<Node> s = GraphUtils.asList(comb2, adja);
+            List<Node> s = GraphUtils.asList(comb1, adja);
+            List<Node> s2 = new ArrayList<>(s);
+            s2.add(c);
 
-            if (independenceTest.isIndependent(a, c, s)) {
-                double _score = independenceTest.getScore();
+            final boolean independent1 = independenceTest.isIndependent(a, c, s);
+            double sc2 = independenceTest.getScore();
 
-                if (_score < score) {
-                    score = _score;
+            if (independent1 && !independenceTest.isIndependent(a, c, s2)) {
+
+
+                if (sc2 < score) {
+                    score = sc2;
                     S = s;
                 }
             }
         }
 
         DepthChoiceGenerator cg2 = new DepthChoiceGenerator(adjc.size(), -1);
-        int[] comb3;
+        int[] comb2;
 
-        while ((comb3 = cg2.next()) != null) {
+        while ((comb2 = cg2.next()) != null) {
             if (Thread.currentThread().isInterrupted()) {
                 break;
             }
 
-            List<Node> s = GraphUtils.asList(comb3, adjc);
+            List<Node> s = GraphUtils.asList(comb2, adjc);
+            List<Node> s2 = new ArrayList<>(s);
+            s2.add(c);
 
-            if (independenceTest.isIndependent(c, a, s)) {
-                double _score = independenceTest.getScore();
+            final boolean independent2 = independenceTest.isIndependent(a, c, s);
+            double sc2 = independenceTest.getScore();
 
-                if (_score < score) {
-                    score = _score;
+            if (independent2 && !independenceTest.isIndependent(a, c, s2)) {
+
+                if (sc2 < score) {
+                    score = sc2;
                     S = s;
                 }
             }

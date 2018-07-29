@@ -189,7 +189,7 @@ public class PcStableMax implements GraphSearch {
 
         SearchGraphUtils.pcOrientbk(knowledge, graph, nodes);
 
-        final OrientCollidersMaxP orientCollidersMaxP = new OrientCollidersMaxP(independenceTest, PcAll.ConflictRule.OVERWRITE);
+        final OrientCollidersMaxP orientCollidersMaxP = new OrientCollidersMaxP(independenceTest);
         orientCollidersMaxP.setKnowledge(knowledge);
         orientCollidersMaxP.setUseHeuristic(useHeuristic);
         orientCollidersMaxP.setMaxPathLength(maxPathLength);

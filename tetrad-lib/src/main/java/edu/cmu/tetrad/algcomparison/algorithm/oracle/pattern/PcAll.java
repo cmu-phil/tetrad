@@ -51,7 +51,7 @@ public class PcAll implements Algorithm, TakesInitialGraph, HasKnowledge, TakesI
 
     @Override
     public Graph search(DataModel dataSet, Parameters parameters) {
-    	if (parameters.getInt("bootstrapSampleSize") < 1) {
+        if (parameters.getInt("bootstrapSampleSize") < 1) {
 
             if (algorithm != null) {
 //                initialGraph = algorithm.search(dataSet, parameters);
@@ -106,7 +106,7 @@ public class PcAll implements Algorithm, TakesInitialGraph, HasKnowledge, TakesI
             }
 
             edu.cmu.tetrad.search.PcAll search = new edu.cmu.tetrad.search.PcAll(test.getTest(dataSet, parameters), initialGraph);
-//            search.setMaxOrientationP(parameters.getDouble("maxOrientationP"));
+            search.setMaxOrientationP(parameters.getDouble("maxOrientationP"));
             search.setDepth(parameters.getInt("depth"));
             search.setKnowledge(knowledge);
             search.setFasRule(fasRule);
@@ -168,11 +168,7 @@ public class PcAll implements Algorithm, TakesInitialGraph, HasKnowledge, TakesI
     @Override
     public List<String> getParameters() {
         List<String> parameters = test.getParameters();
-//        parameters.add("maxOrientationP");
-
-//        public enum FasRule {FAS, FAS_STABLE, FAS_STABLE_CONCURRENT}
-//        public enum ColliderDiscovery {FAS_SEPSETS, CONSERVATIVE, MAX_P}
-//        public enum ConflictRule {PRIORITY, BIDIRECTED, OVERWRITE}
+        parameters.add("maxOrientationP");
         parameters.add("fasRule");
         parameters.add("colliderDiscoveryRule");
         parameters.add("conflictRule");

@@ -111,7 +111,7 @@ public final class TabularComparison implements SessionModel, SimulationParamsSo
                 Graph graph = referenceGraphs.get(0);
                 referenceGraphs = new ArrayList<>();
                 for (Graph _graph : targetGraphs) {
-                    referenceGraphs.add(_graph);
+                    referenceGraphs.add(graph);
                 }
             }
 

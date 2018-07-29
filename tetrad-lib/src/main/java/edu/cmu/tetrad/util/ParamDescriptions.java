@@ -128,7 +128,7 @@ public class ParamDescriptions {
 
         map.put("useMaxPOrientationHeuristic", new ParamDescription(
                 "Yes if the heuristic for orienting unshielded colliders for max P should be used",
-                true));
+                false));
         map.put("maxPOrientationMaxPathLength", new ParamDescription("Maximum path length for the unshielded collider heuristic for max P (min = 0)", 3, 0, Integer.MAX_VALUE));
         map.put("orientTowardDConnections", new ParamDescription(
                 "Yes if Richardson's step C (orient toward d-connection) should be used",
@@ -347,6 +347,9 @@ public class ParamDescriptions {
         map.put("maxOrientationP", new ParamDescription(
                 "For Max P and Conservative orientation, the maximum p value used in the collider orienation step",
                 0.01, 0.0, 1.0));
+
+        map.put("selfLoopCoef", new ParamDescription(
+                "The coefficient for the self-loop (default 0.0)", 0.0, 0.0, Double.POSITIVE_INFINITY));
     }
 
     public static ParamDescriptions getInstance() {

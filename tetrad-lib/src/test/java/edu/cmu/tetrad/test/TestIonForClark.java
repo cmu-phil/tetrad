@@ -90,6 +90,10 @@ public final class TestIonForClark {
         runModel("A-->B,B-->C,D-->C", new String[][]{{"A", "B", "C"}, {"A", "D", "C"}});
     }
 
+    public void test9() {
+        runModel("X-->B,Y-->B,A-->X,A-->C,C-->Y", new String[][]{{"X", "Y", "A"}, {"X", "Y", "B"}, {"X", "Y", "C"}});
+    }
+
     private void runModel(String graphSpec, String[][] groupings) {
 
         System.out.println("\n\n**********************************************************");
@@ -286,13 +290,14 @@ public final class TestIonForClark {
 
     public static void main(String... args) {
 //        new TestIonForClark().test1();
-        new TestIonForClark().test2();
+//        new TestIonForClark().test2();
 //        new TestIonForClark().test3();
 //        new TestIonForClark().test4();
 //        new TestIonForClark().test5();
 //        new TestIonForClark().test6();
 //        new TestIonForClark().test7();
 //        new TestIonForClark().test8();
+        new TestIonForClark().test9();
 
 //        new TestIonForClark().testG();
     }

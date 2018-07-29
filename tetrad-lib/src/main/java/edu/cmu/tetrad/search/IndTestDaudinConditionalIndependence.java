@@ -102,12 +102,12 @@ public final class IndTestDaudinConditionalIndependence implements IndependenceT
         List<Node> nodes = dataSet.getVariables();
 
         this.variables = Collections.unmodifiableList(nodes);
-        setAlpha(alpha);
 
         List<String> varNames = new ArrayList<>();
         for (int i = 0; i < variables.size(); i++) varNames.add(variables.get(i).getName());
 
         this.daudinConditionalCorrelation = new DaudinConditionalIndependence(dataSet, alpha);
+        this.alpha = alpha;
 
         indices = new HashMap<>();
 
@@ -196,6 +196,7 @@ public final class IndTestDaudinConditionalIndependence implements IndependenceT
         }
 
         this.alpha = alpha;
+        daudinConditionalCorrelation.setAlpha(alpha);
     }
 
     /**

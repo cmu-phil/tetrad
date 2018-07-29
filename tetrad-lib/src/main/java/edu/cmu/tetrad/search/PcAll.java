@@ -40,7 +40,7 @@ import java.util.Set;
  */
 public final class PcAll implements GraphSearch {
 
-//    private double maxOrientationP = 0.01;
+    private double maxOrientationP = 0.001;
 
     public boolean isUseHeuristic() {
         return useHeuristic;
@@ -57,14 +57,14 @@ public final class PcAll implements GraphSearch {
     public void setMaxPathLength(int maxPathLength) {
         this.maxPathLength = maxPathLength;
     }
-//
-//    public double getMaxOrientationP() {
-//        return maxOrientationP;
-//    }
-//
-//    public void setMaxOrientationP(double maxOrientationP) {
-//        this.maxOrientationP = maxOrientationP;
-//    }
+    //
+    public double getMaxOrientationP() {
+        return maxOrientationP;
+    }
+
+    public void setMaxOrientationP(double maxOrientationP) {
+        this.maxOrientationP = maxOrientationP;
+    }
 
     public enum FasRule {FAS, FAS_STABLE, FAS_STABLE_CONCURRENT}
 
@@ -349,6 +349,7 @@ public final class PcAll implements GraphSearch {
         sepsets = fas.getSepsets();
 
         SearchGraphUtils.pcOrientbk(knowledge, graph, nodes);
+        double alpha = independenceTest.getAlpha();
 
         if (colliderDiscovery == ColliderDiscovery.FAS_SEPSETS) {
             if (verbose) {
@@ -360,22 +361,26 @@ public final class PcAll implements GraphSearch {
                 System.out.println("MaxP orientation...");
             }
 
-//            independenceTest.setAlpha(getMaxOrientationP());
+            independenceTest.setAlpha(getMaxOrientationP());
 
-            final OrientCollidersMaxP orientCollidersMaxP = new OrientCollidersMaxP(independenceTest, conflictRule);
+            final OrientCollidersMaxP orientCollidersMaxP = new OrientCollidersMaxP(independenceTest);
             orientCollidersMaxP.setConflictRule(conflictRule);
-            orientCollidersMaxP.orient(graph);
             orientCollidersMaxP.setUseHeuristic(useHeuristic);
             orientCollidersMaxP.setMaxPathLength(maxPathLength);
+            orientCollidersMaxP.orient(graph);
         } else if (colliderDiscovery == ColliderDiscovery.CONSERVATIVE) {
             if (verbose) {
                 System.out.println("CPC orientation...");
             }
 
+            independenceTest.setAlpha(getMaxOrientationP());
+
             orientUnshieldedTriplesConservative(knowledge);
 
             //            orientUnshieldedTriplesConcurrent(knowledge, getIndependenceTest(), getMaxIndegree());
         }
+
+        independenceTest.setAlpha(alpha);
 
         graph = GraphUtils.replaceNodes(graph, nodes);
 
@@ -449,7 +454,7 @@ public final class PcAll implements GraphSearch {
         noncolliderTriples = new HashSet<>();
         ambiguousTriples = new HashSet<>();
         List<Node> nodes = graph.getNodes();
-//        independenceTest.setAlpha(getMaxOrientationP());
+        independenceTest.setAlpha(getMaxOrientationP());
 
         for (Node y : nodes) {
             List<Node> adjacentNodes = graph.getAdjacentNodes(y);

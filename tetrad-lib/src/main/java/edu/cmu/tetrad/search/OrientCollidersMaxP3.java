@@ -33,12 +33,13 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.RecursiveTask;
 
+
 /**
  * This is an optimization of the CCD (Cyclic Causal Discovery) algorithm by Thomas Richardson.
  *
  * @author Joseph Ramsey
  */
-public final class OrientCollidersMaxP {
+public final class OrientCollidersMaxP3 {
     private final IndependenceTest independenceTest;
     private int depth = -1;
     private long elapsed = 0;
@@ -47,7 +48,7 @@ public final class OrientCollidersMaxP {
     private int maxPathLength = 3;
     private PcAll.ConflictRule conflictRule = PcAll.ConflictRule.OVERWRITE;
 
-    public OrientCollidersMaxP(IndependenceTest test) {
+    public OrientCollidersMaxP3(IndependenceTest test) {
         if (test == null) throw new NullPointerException();
         this.independenceTest = test;
     }
@@ -90,58 +91,62 @@ public final class OrientCollidersMaxP {
 
         List<Node> nodes = graph.getNodes();
 
-        class Task extends RecursiveTask<Boolean> {
-            int from;
-            int to;
-            int chunk = 20;
-            List<Node> nodes;
-            Graph graph;
-
-            public Task(List<Node> nodes, Graph graph, Map<Triple, Double> scores, int from, int to) {
-                this.nodes = nodes;
-                this.graph = graph;
-                this.from = from;
-                this.to = to;
-            }
-
-            @Override
-            protected Boolean compute() {
-                if (to - from <= chunk) {
-                    for (int i = from; i < to; i++) {
-                        if (Thread.currentThread().isInterrupted()) {
-                            break;
-                        }
-
-                        doNode(graph, scores, nodes.get(i));
-                    }
-
-                    return true;
-                } else {
-                    int mid = (to + from) / 2;
-
-                    Task left = new Task(nodes, graph, scores, from, mid);
-                    Task right = new Task(nodes, graph, scores, mid, to);
-
-                    left.fork();
-                    right.compute();
-                    left.join();
-
-                    return true;
-                }
-            }
+        for (Node node : graph.getNodes()) {
+            doNode(graph, scores, node);
         }
 
-        Task task = new Task(nodes, graph, scores, 0, nodes.size());
+//        class Task extends RecursiveTask<Boolean> {
+//            int from;
+//            int to;
+//            int chunk = 20;
+//            List<Node> nodes;
+//            Graph graph;
+//
+//            public Task(List<Node> nodes, Graph graph, Map<Triple, Double> scores, int from, int to) {
+//                this.nodes = nodes;
+//                this.graph = graph;
+//                this.from = from;
+//                this.to = to;
+//            }
+//
+//            @Override
+//            protected Boolean compute() {
+//                if (to - from <= chunk) {
+//                    for (int i = from; i < to; i++) {
+//                        if (Thread.currentThread().isInterrupted()) {
+//                            break;
+//                        }
+//
+//                        doNode(graph, scores, nodes.get(i));
+//                    }
+//
+//                    return true;
+//                } else {
+//                    int mid = (to + from) / 2;
+//
+//                    Task left = new Task(nodes, graph, scores, from, mid);
+//                    Task right = new Task(nodes, graph, scores, mid, to);
+//
+//                    left.fork();
+//                    right.compute();
+//                    left.join();
+//
+//                    return true;
+//                }
+//            }
+//        }
 
-        ForkJoinPoolInstance.getInstance().getPool().invoke(task);
+//        Task task = new Task(nodes, graph, scores, 0, nodes.size());
+//
+//        ForkJoinPoolInstance.getInstance().getPool().invoke(task);
 
         List<Triple> tripleList = new ArrayList<>(scores.keySet());
 
         // Most independent ones first.
-        tripleList.sort(Comparator.comparingDouble(scores::get));
+        tripleList.sort((o1, o2) -> Double.compare(scores.get(o2), scores.get(o1)));
 
         for (Triple triple : tripleList) {
-           System.out.println(triple + " score = " + scores.get(triple));
+            System.out.println(triple + " score = " + scores.get(triple));
         }
 
         for (Triple triple : tripleList) {
@@ -193,9 +198,10 @@ public final class OrientCollidersMaxP {
         List<Node> adjc = graph.getAdjacentNodes(c);
         adja.remove(c);
         adjc.remove(a);
+        adja.remove(b);
+        adjc.remove(b);
 
         double score = Double.POSITIVE_INFINITY;
-        List<Node> S = null;
 
         DepthChoiceGenerator cg1 = new DepthChoiceGenerator(adja.size(), -1);
         int[] comb2;
@@ -206,14 +212,16 @@ public final class OrientCollidersMaxP {
             }
 
             List<Node> s = GraphUtils.asList(comb2, adja);
+            boolean ind1 = independenceTest.isIndependent(c, a, s);
+            double s1 = independenceTest.getScore();
 
-            if (independenceTest.isIndependent(a, c, s)) {
-                double _score = independenceTest.getScore();
+            s.add(b);
 
-                if (_score < score) {
-                    score = _score;
-                    S = s;
-                }
+            boolean ind2 = independenceTest.isIndependent(c, a, s);
+            double s2 = independenceTest.getScore();
+
+            if (s1 - s2 < score) {
+                score = s1 - s2;
             }
         }
 
@@ -226,20 +234,27 @@ public final class OrientCollidersMaxP {
             }
 
             List<Node> s = GraphUtils.asList(comb3, adjc);
+            boolean ind1 = independenceTest.isIndependent(c, a, s);
+            double s1 = independenceTest.getScore();
 
-            if (independenceTest.isIndependent(c, a, s)) {
-                double _score = independenceTest.getScore();
+            s.add(b);
 
-                if (_score < score) {
-                    score = _score;
-                    S = s;
-                }
+            boolean ind2 = independenceTest.isIndependent(c, a, s);
+            double s2 = independenceTest.getScore();
+
+            if (s1 - s2 < score) {
+                score = s1 - s2;
             }
         }
 
-        if (S != null && !S.contains(b)) {
+        if (score < 0 && score > -1) {
             scores.put(new Triple(a, b, c), score);
         }
+
+//        if (S != null && S.contains(b)) {
+////            scores.put(new Triple(a, b, c), score);
+//        } else {
+//        }
     }
 
     private void testColliderHeuristic(Graph graph, Map<Triple, Double> colliders, Node a, Node b, Node c) {

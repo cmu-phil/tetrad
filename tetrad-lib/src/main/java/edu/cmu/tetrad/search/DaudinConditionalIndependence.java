@@ -23,6 +23,7 @@ package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.util.MathUtils;
 import edu.cmu.tetrad.util.StatUtils;
 import org.apache.commons.math3.distribution.NormalDistribution;
 
@@ -31,6 +32,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static edu.cmu.tetrad.util.MathUtils.logChoose;
 import static edu.cmu.tetrad.util.StatUtils.*;
 import static java.lang.Math.*;
 import static java.lang.Math.pow;
@@ -54,8 +56,6 @@ import static java.lang.Math.pow;
  * @author Joseph Ramsey
  */
 public final class DaudinConditionalIndependence {
-
-    private final double alpha0;
 
     public enum Kernel {Epinechnikov, Gaussian}
 
@@ -124,8 +124,6 @@ public final class DaudinConditionalIndependence {
      */
     public DaudinConditionalIndependence(DataSet dataSet, double alpha) {
         if (dataSet == null) throw new NullPointerException();
-        this.alpha0 = alpha;
-
         this.alpha = alpha;
         this.data = dataSet.getDoubleData().transpose().toArray();
 
@@ -187,15 +185,24 @@ public final class DaudinConditionalIndependence {
      * @return true iff x is independent of y conditional on z.
      */
     public boolean isIndependent(String x, String y, List<String> z) {
+        final int m1 = 2; // reference
+        final int m2 = 2 + z.size();
+        final int v = data.length;
+
+        double alpha2 = ((m1 - 1) / (double) (m2 - 1)) * alpha;
+        double alpha3 = exp(log(alpha) + logChoose(v, m1) - logChoose(v, m2));
+        double alpha4 = exp(log(alpha) + (logChoose(v, m1) - logChoose(v, m2))
+                + (logChoose(v, m2 - 2) - logChoose(v, m1 - 2)));
+
+        double alpha5 = (exp(log(alpha) + logChoose(v, m1 - 2) - logChoose(v, m2 - 2)));
+        cutoff = getZForAlpha(alpha5);
+
+
+        System.out.println("alpha = " + alpha + " alpha2 = " + alpha2 + " alpha3  " + alpha3 + " alpha5 = " + alpha5);
+
         double[] f1 = residuals(x, z, false);
         double[] g = residuals(y, z, false);
         final boolean independent1 = independent(f1, g);
-
-        final int m1 = 2; // reference
-        final int m2 = 2 + z.size();
-
-        alpha = ((m1 - 1) / (double) (m2 - 1)) * alpha0;
-        cutoff = getZForAlpha(alpha);
 
         if (!independent1) {
             return false;
@@ -211,6 +218,10 @@ public final class DaudinConditionalIndependence {
      */
     public double getScore() {
         return score - cutoff;
+    }
+
+    public void setAlpha(double alpha) {
+        this.alpha = alpha;
     }
 
     public double getAlpha() {

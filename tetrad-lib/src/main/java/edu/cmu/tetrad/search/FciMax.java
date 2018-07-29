@@ -27,12 +27,9 @@ import edu.cmu.tetrad.data.KnowledgeEdge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.ChoiceGenerator;
 import edu.cmu.tetrad.util.DepthChoiceGenerator;
-import edu.cmu.tetrad.util.ForkJoinPoolInstance;
 import edu.cmu.tetrad.util.TetradLogger;
 
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.RecursiveTask;
 
 
 /**
@@ -215,7 +212,7 @@ public final class FciMax implements GraphSearch {
     }
 
     private void addColliders(Graph graph) {
-        final OrientCollidersMaxP orientCollidersMaxP = new OrientCollidersMaxP(independenceTest, PcAll.ConflictRule.PRIORITY);
+        final OrientCollidersMaxP orientCollidersMaxP = new OrientCollidersMaxP(independenceTest);
         orientCollidersMaxP.setConflictRule(PcAll.ConflictRule.PRIORITY);
         orientCollidersMaxP.orient(graph);
         orientCollidersMaxP.setUseHeuristic(false);

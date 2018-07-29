@@ -33,7 +33,11 @@ import java.text.NumberFormat;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
+import static edu.cmu.tetrad.util.MathUtils.logChoose;
+import static edu.cmu.tetrad.util.StatUtils.getZForAlpha;
 import static java.lang.Math.abs;
+import static java.lang.Math.exp;
+import static java.lang.Math.log;
 
 /**
  * Checks conditional independence of variable in a continuous data set using Fisher's Z test. See Spirtes, Glymour, and
@@ -195,9 +199,27 @@ public final class IndTestFisherZ implements IndependenceTest {
             return false;
         }
 
-        double fisherZ = Math.sqrt(n - 3 - z.size()) * 0.5 * (Math.log(1.0 + r) - Math.log(1.0 - r));
+        double fisherZ = Math.sqrt(n) * 0.5 * (Math.log(1.0 + r) - Math.log(1.0 - r));
+//        double fisherZ = Math.sqrt(n - 3 - z.size()) * 0.5 * (Math.log(1.0 + r) - Math.log(1.0 - r));
         this.fisherZ = fisherZ;
         this.rho = r;
+        final int m1 = 2; // reference
+        final int m2 = 2 + z.size();
+        final int v = variables.size();
+
+        double alpha2 = ((m1 - 1) / (double) (m2 - 1)) * alpha;
+        double alpha3 = exp(log(alpha) + logChoose(v, m1) - logChoose(v, m2));
+        double alpha4 = exp(log(alpha) + (logChoose(v, m1) - logChoose(v, m2))
+                + (logChoose(v, m2 - 2) - logChoose(v, m1 - 2)));
+
+        double alpha5 = (exp(log(alpha) + logChoose(v - 2, m1 - 2) - logChoose(v - 2, m2 - 2)));
+        cutoff = getZForAlpha(alpha5);
+
+
+//        if (m2 == 4) {
+//            System.out.println("alpha2 = " + alpha2 + " alpha3 = " + alpha3);
+//            System.out.println();
+//        }
 
         return Math.abs(fisherZ) < cutoff;
     }
