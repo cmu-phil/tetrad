@@ -213,7 +213,7 @@ public final class FciMax implements GraphSearch {
 
     private void addColliders(Graph graph) {
         final OrientCollidersMaxP orientCollidersMaxP = new OrientCollidersMaxP(independenceTest);
-        orientCollidersMaxP.setConflictRule(PcAll.ConflictRule.PRIORITY);
+        orientCollidersMaxP.setConflictRule(PcAll.ConflictRule.BIDIRECTED);
         orientCollidersMaxP.orient(graph);
         orientCollidersMaxP.setUseHeuristic(false);
         orientCollidersMaxP.setMaxPathLength(maxPathLength);

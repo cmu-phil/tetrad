@@ -185,20 +185,12 @@ public final class DaudinConditionalIndependence {
      * @return true iff x is independent of y conditional on z.
      */
     public boolean isIndependent(String x, String y, List<String> z) {
-        final int m1 = 2; // reference
-        final int m2 = 2 + z.size();
+        final int d1 = 0; // reference
+        final int d2 = z.size();
         final int v = data.length;
 
-        double alpha2 = ((m1 - 1) / (double) (m2 - 1)) * alpha;
-        double alpha3 = exp(log(alpha) + logChoose(v, m1) - logChoose(v, m2));
-        double alpha4 = exp(log(alpha) + (logChoose(v, m1) - logChoose(v, m2))
-                + (logChoose(v, m2 - 2) - logChoose(v, m1 - 2)));
-
-        double alpha5 = (exp(log(alpha) + logChoose(v, m1 - 2) - logChoose(v, m2 - 2)));
-        cutoff = getZForAlpha(alpha5);
-
-
-        System.out.println("alpha = " + alpha + " alpha2 = " + alpha2 + " alpha3  " + alpha3 + " alpha5 = " + alpha5);
+        double alpha2 = (exp(log(alpha) + logChoose(v - 2, d1) - logChoose(v - 2, d2)));
+        cutoff = getZForAlpha(alpha2);
 
         double[] f1 = residuals(x, z, false);
         double[] g = residuals(y, z, false);

@@ -105,6 +105,7 @@ public final class IndTestTimeSeries implements IndependenceTest {
      * @serial
      */
     private double chiSquare;
+    private boolean verbose = false;
 
     //=============================CONSRUCTORS============================//
 
@@ -1512,6 +1513,15 @@ public final class IndTestTimeSeries implements IndependenceTest {
         return getPValue();
     }
 
+    @Override
+    public boolean isVerbose() {
+        return verbose;
+    }
+
+    @Override
+    public void setVerbose(boolean verbose) {
+        this.verbose = verbose;
+    }
 }
 
 

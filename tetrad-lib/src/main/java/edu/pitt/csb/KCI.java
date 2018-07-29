@@ -22,6 +22,8 @@ import org.apache.commons.math3.random.Well44497b;
 import java.util.*;
 
 import static com.google.common.primitives.Doubles.asList;
+import static edu.cmu.tetrad.util.MathUtils.logChoose;
+import static edu.cmu.tetrad.util.StatUtils.getZForAlpha;
 import static edu.cmu.tetrad.util.StatUtils.median;
 import static java.lang.Math.*;
 
@@ -100,6 +102,8 @@ public class KCI implements IndependenceTest, ScoreForFact {
 
     // Epsilon for Propositio 5.
     private double epsilon = 0.001;
+
+    private boolean verbose = false;
 
     /**
      * Constructor.
@@ -187,13 +191,17 @@ public class KCI implements IndependenceTest, ScoreForFact {
             facts.put(fact, independent);
         }
 
-        if (independent) {
-            System.out.println(fact + " Independent");
-            TetradLogger.getInstance().log("info", fact + " Independent");
+        if (verbose) {
+            double p = getPValue();
 
-        } else {
-            System.out.println(fact);
-            TetradLogger.getInstance().log("info", fact.toString());
+            if (independent) {
+                System.out.println(fact + " INDEPENDENT p = " + p);
+                TetradLogger.getInstance().log("info", fact + " Independent");
+
+            } else {
+                System.out.println(fact + " dependent p = " + p);
+                TetradLogger.getInstance().log("info", fact.toString());
+            }
         }
 
         return independent;
@@ -457,6 +465,14 @@ public class KCI implements IndependenceTest, ScoreForFact {
         // Calculate p.
         p = sum / (double) getNumBootstraps();
         pValues.put(fact, this.p);
+
+        final int d1 = 0; // reference
+        final int d2 = 0;
+        final int v = variables.size();
+
+        double alpha2 = (exp(log(alpha) + logChoose(v - 2, d1) - logChoose(v - 2, d2)));
+//        cutoff = getZForAlpha(alpha2);
+
         return p > alpha;
     }
 
@@ -537,6 +553,14 @@ public class KCI implements IndependenceTest, ScoreForFact {
 
             this.p = sum / (double) getNumBootstraps();
             pValues.put(fact, this.p);
+
+            final int d1 = 0; // reference
+            final int d2 = 0;
+            final int v = variables.size();
+
+            double alpha2 = (exp(log(alpha) + logChoose(v - 2, d1) - logChoose(v - 2, d2)));
+//        cutoff = getZForAlpha(alpha2);
+
             return this.p > alpha;
         }
     }
@@ -666,6 +690,16 @@ public class KCI implements IndependenceTest, ScoreForFact {
         }
 
         return sqrt(sum);
+    }
+
+    @Override
+    public boolean isVerbose() {
+        return verbose;
+    }
+
+    @Override
+    public void setVerbose(boolean verbose) {
+        this.verbose = verbose;
     }
 
     private class Eigendecomposition {

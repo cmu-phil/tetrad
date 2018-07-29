@@ -21,23 +21,23 @@
 
 package edu.cmu.tetrad.search;
 
-import edu.cmu.tetrad.data.*;
+import edu.cmu.tetrad.data.ColtDataSet;
+import edu.cmu.tetrad.data.CovarianceMatrixOnTheFly;
+import edu.cmu.tetrad.data.DataSet;
+import edu.cmu.tetrad.data.ICovarianceMatrix;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.util.*;
+import edu.cmu.tetrad.util.StatUtils;
+import edu.cmu.tetrad.util.TetradMatrix;
 import org.apache.commons.math3.distribution.NormalDistribution;
 import org.apache.commons.math3.linear.SingularMatrixException;
 
-import java.io.PrintStream;
 import java.text.DecimalFormat;
-import java.text.NumberFormat;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 import static edu.cmu.tetrad.util.MathUtils.logChoose;
 import static edu.cmu.tetrad.util.StatUtils.getZForAlpha;
-import static java.lang.Math.abs;
-import static java.lang.Math.exp;
-import static java.lang.Math.log;
+import static java.lang.Math.*;
 
 /**
  * Checks conditional independence of variable in a continuous data set using Fisher's Z test. See Spirtes, Glymour, and
@@ -53,11 +53,6 @@ public final class IndTestFisherZ implements IndependenceTest {
      */
     private final ICovarianceMatrix covMatrix;
 
-//    /**
-//     * The matrix out of the cov matrix.
-//     */
-//    private final TetradMatrix _covMatrix;
-
     /**
      * The variables of the covariance matrix, in order. (Unmodifiable list.)
      */
@@ -69,27 +64,15 @@ public final class IndTestFisherZ implements IndependenceTest {
     private double alpha;
 
     /**
-     * The value of the Fisher's Z statistic associated with the las calculated partial correlation.
-     */
-    private double pValue;
-
-    /**
-     * Formats as 0.0000.
-     */
-    private static NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
-
-    /**
      * Stores a reference to the dataset being analyzed.
      */
     private DataSet dataSet;
 
-    private PrintStream pValueLogger;
     private Map<Node, Integer> indexMap;
     private Map<String, Node> nameMap;
     private boolean verbose = true;
     private double fisherZ = Double.NaN;
     private double cutoff = Double.NaN;
-    private double rho;
     private NormalDistribution normal = new NormalDistribution(0, 1);
 
     //==========================CONSTRUCTORS=============================//
@@ -199,27 +182,14 @@ public final class IndTestFisherZ implements IndependenceTest {
             return false;
         }
 
-        double fisherZ = Math.sqrt(n) * 0.5 * (Math.log(1.0 + r) - Math.log(1.0 - r));
-//        double fisherZ = Math.sqrt(n - 3 - z.size()) * 0.5 * (Math.log(1.0 + r) - Math.log(1.0 - r));
+        double fisherZ = Math.sqrt(n - 3 - z.size()) * 0.5 * (Math.log(1.0 + r) - Math.log(1.0 - r));
         this.fisherZ = fisherZ;
-        this.rho = r;
-        final int m1 = 2; // reference
-        final int m2 = 2 + z.size();
+        final int d1 = 0; // reference
+        final int d2 = z.size();
         final int v = variables.size();
 
-        double alpha2 = ((m1 - 1) / (double) (m2 - 1)) * alpha;
-        double alpha3 = exp(log(alpha) + logChoose(v, m1) - logChoose(v, m2));
-        double alpha4 = exp(log(alpha) + (logChoose(v, m1) - logChoose(v, m2))
-                + (logChoose(v, m2 - 2) - logChoose(v, m1 - 2)));
-
-        double alpha5 = (exp(log(alpha) + logChoose(v - 2, m1 - 2) - logChoose(v - 2, m2 - 2)));
-        cutoff = getZForAlpha(alpha5);
-
-
-//        if (m2 == 4) {
-//            System.out.println("alpha2 = " + alpha2 + " alpha3 = " + alpha3);
-//            System.out.println();
-//        }
+        double alpha2 = (exp(log(alpha) + logChoose(v - 2, d1) - logChoose(v - 2, d2)));
+        cutoff = getZForAlpha(alpha2);
 
         return Math.abs(fisherZ) < cutoff;
     }
@@ -344,21 +314,11 @@ public final class IndTestFisherZ implements IndependenceTest {
         return dataSet;
     }
 
-    public void shuffleVariables() {
-        ArrayList<Node> nodes = new ArrayList<>(this.variables);
-        Collections.shuffle(nodes);
-        this.variables = Collections.unmodifiableList(nodes);
-    }
-
     /**
      * @return a string representation of this test.
      */
     public String toString() {
         return "Fisher Z, alpha = " + new DecimalFormat("0.0E0").format(getAlpha());
-    }
-
-    public void setPValueLogger(PrintStream pValueLogger) {
-        this.pValueLogger = pValueLogger;
     }
 
     //==========================PRIVATE METHODS============================//
@@ -432,10 +392,6 @@ public final class IndTestFisherZ implements IndependenceTest {
 
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;
-    }
-
-    public double getRho() {
-        return rho;
     }
 }
 

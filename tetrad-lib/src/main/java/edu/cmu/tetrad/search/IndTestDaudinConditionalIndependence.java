@@ -132,8 +132,7 @@ public final class IndTestDaudinConditionalIndependence implements IndependenceT
         for (Node node : z) _z.add(node.getName());
         boolean independent = daudinConditionalCorrelation.isIndependent(_x, _y, _z);
 
-
-        if (true) {
+        if (verbose) {
             IndependenceFact fact = new IndependenceFact(x, y, z);
             double p = daudinConditionalCorrelation.getPValue();
 

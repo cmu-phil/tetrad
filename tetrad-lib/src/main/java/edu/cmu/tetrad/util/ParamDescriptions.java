@@ -297,7 +297,7 @@ public class ParamDescriptions {
 
         map.put("numBasisFunctions", new ParamDescription(
                 "Number of functions to use in (truncated) basis",
-                10, 1, Integer.MAX_VALUE));
+                4, 1, Integer.MAX_VALUE));
 
         map.put("kciCutoff", new ParamDescription(
                 "Cutoff",
@@ -343,10 +343,6 @@ public class ParamDescriptions {
 
         map.put("possibleDsepDone", new ParamDescription(
                 "Yes if the possible dsep search should be done", true));
-
-        map.put("maxOrientationP", new ParamDescription(
-                "For Max P and Conservative orientation, the maximum p value used in the collider orienation step",
-                0.01, 0.0, 1.0));
 
         map.put("selfLoopCoef", new ParamDescription(
                 "The coefficient for the self-loop (default 0.0)", 0.0, 0.0, Double.POSITIVE_INFINITY));
