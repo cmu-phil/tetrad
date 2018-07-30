@@ -60,6 +60,8 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.event.InternalFrameAdapter;
 import javax.swing.event.InternalFrameEvent;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableModel;
+import javax.swing.table.TableRowSorter;
 
 /**
  * Displays a workbench editing workbench area together with a toolbench for
@@ -218,6 +220,10 @@ public final class GraphEditor extends JPanel
 
         // Set model into the table object
         table.setModel(tableModel);
+        
+        // Sorting
+        RowSorter<TableModel> sorter = new TableRowSorter<>(tableModel);
+        table.setRowSorter(sorter);
 
         // Headers
         List<String> columnNames = new LinkedList<>();
