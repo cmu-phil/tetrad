@@ -220,6 +220,17 @@ public final class GraphEditor extends JPanel
         Box bottomBox = Box.createVerticalBox();
         bottomBox.setPreferredSize(new Dimension(750, 150));
 
+        bottomBox.add(Box.createVerticalStrut(5));
+        
+        // Put the table title label in a box so it can be centered
+        Box tableTitleBox = Box.createHorizontalBox();
+        JLabel tableTitle = new JLabel("Edges and Edge Type Probabilities");
+        tableTitleBox.add(tableTitle);
+        
+        bottomBox.add(tableTitleBox);
+        
+        bottomBox.add(Box.createVerticalStrut(5));
+        
         // Bootstrap table view
         // Create object of table and table model
         JTable table = new JTable();
@@ -291,7 +302,6 @@ public final class GraphEditor extends JPanel
         
         // To be able to see the header, we need to put the table in a JScrollPane
         JScrollPane tablePane = new JScrollPane(table);
- 
         tablePane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
 
         table.getParent().addComponentListener(new ComponentAdapter() {
