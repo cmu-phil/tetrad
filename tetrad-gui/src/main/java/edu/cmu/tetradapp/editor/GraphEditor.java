@@ -51,6 +51,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.net.URL;
 import java.util.*;
+import java.util.stream.Collectors;
 import javax.help.CSH;
 import javax.help.HelpBroker;
 import javax.help.HelpSet;
@@ -266,7 +267,7 @@ public final class GraphEditor extends JPanel
             
             List<EdgeTypeProbability> edgeTypeProbabilities = e.getEdgeTypeProbabilities();
             
-            addRow(tableModel, e.getNode1().getName(), e.getNode2().getName(), edgeType, edgeTypeProbabilities);
+            addRow(tableModel, e.getNode1().getName(), e.getNode2().getName(), edgeType, e.getProperties(), edgeTypeProbabilities);
         });
         
         
@@ -406,11 +407,20 @@ public final class GraphEditor extends JPanel
     }
 
     // Add a new row to bootstrap table
-    private void addRow(DefaultTableModel tableModel, String node1, String node2, String edgeType, List<EdgeTypeProbability> edgeTypeProbabilities) {
+    private void addRow(DefaultTableModel tableModel, String node1, String node2, String edgeType, List<Edge.Property> properties, List<EdgeTypeProbability> edgeTypeProbabilities) {
         String[] row = new String[11];
-  
+        
+        // Frpm node
         row[0] = node1;
-        row[1] = edgeType;
+        
+        // Edge interaction type with properties
+        if (!properties.isEmpty()) {
+            row[1] = edgeType + "(" + properties.stream().map(e->e.name()).collect(Collectors.joining(",")) + ")";
+        } else {
+            row[1] = edgeType;
+        }
+
+        // To node
         row[2] = node2;
         
         for (EdgeTypeProbability edgeTypeProb : edgeTypeProbabilities) {
