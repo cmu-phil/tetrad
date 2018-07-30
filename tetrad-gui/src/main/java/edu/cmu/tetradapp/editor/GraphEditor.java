@@ -179,14 +179,13 @@ public final class GraphEditor extends JPanel
         graphEditorScroll.setPreferredSize(new Dimension(750, 450));
         graphEditorScroll.setViewportView(getWorkbench());
 
-        // topBox contains the vertical graph toolbar and graph editor
-        Box topBox = Box.createHorizontalBox();
-        topBox.add(graphToolbar);
-        topBox.add(graphEditorScroll);
-
-        // bottomBox contains instructionBox and bootstrap table
-        Box bottomBox = Box.createVerticalBox();
-        bottomBox.setPreferredSize(new Dimension(750, 150));
+        // topBox contains the topGraphBox and the instructionBox underneath
+        Box topBox = Box.createVerticalBox();
+        
+        // topGraphBox contains the vertical graph toolbar and graph editor
+        Box topGraphBox = Box.createHorizontalBox();
+        topGraphBox.add(graphToolbar);
+        topGraphBox.add(graphEditorScroll);
 
         // Instruction with info button 
         Box instructionBox = Box.createHorizontalBox();
@@ -213,12 +212,14 @@ public final class GraphEditor extends JPanel
         instructionBox.add(Box.createHorizontalStrut(2));
         instructionBox.add(infoBtn);
         
-        // Add to bottomBox
-        bottomBox.add(instructionBox);
-        bottomBox.add(Box.createVerticalStrut(10));
-        
-        //bottomBox.add(Box.createHorizontalGlue());
-        
+        // Add to topBox
+        topBox.add(topGraphBox);
+        topBox.add(instructionBox);
+
+        // bottomBox contains bootstrap table
+        Box bottomBox = Box.createVerticalBox();
+        bottomBox.setPreferredSize(new Dimension(750, 150));
+
         // Bootstrap table view
         // Create object of table and table model
         JTable table = new JTable();
