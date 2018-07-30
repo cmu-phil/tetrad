@@ -221,8 +221,13 @@ public final class GraphEditor extends JPanel
         // Set model into the table object
         table.setModel(tableModel);
         
-        // Sorting
-        RowSorter<TableModel> sorter = new TableRowSorter<>(tableModel);
+        // Sorting, enable sorting on all columns except the edge type column (index = 1)
+        RowSorter<TableModel> sorter = new TableRowSorter<TableModel>(tableModel) {
+            @Override
+            public boolean isSortable(int column) {
+                return column != 1;
+            };
+        };
         table.setRowSorter(sorter);
 
         // Headers
