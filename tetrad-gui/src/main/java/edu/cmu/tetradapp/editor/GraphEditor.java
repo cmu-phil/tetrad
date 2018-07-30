@@ -239,7 +239,8 @@ public final class GraphEditor extends JPanel
 
         // Headers
         List<String> columnNames = new LinkedList<>();
-        // The very left header
+        
+        // The very left headers: from node, edge type, to node
         columnNames.add(0, "From Node");
         columnNames.add(1, "Interaction");
         columnNames.add(2, "To Node");
@@ -283,9 +284,7 @@ public final class GraphEditor extends JPanel
             // Produce a string representation of the edge
             edgeType = endpoint1Str + "-" + endpoint2Str;
             
-            List<EdgeTypeProbability> edgeTypeProbabilities = e.getEdgeTypeProbabilities();
-            
-            addRow(tableModel, e.getNode1().getName(), e.getNode2().getName(), edgeType, e.getProperties(), edgeTypeProbabilities);
+            addRow(tableModel, e.getNode1().getName(), e.getNode2().getName(), edgeType, e.getProperties(), e.getEdgeTypeProbabilities());
         });
         
         
@@ -435,13 +434,13 @@ public final class GraphEditor extends JPanel
     }
 
     // Add a new row to bootstrap table
-    private void addRow(DefaultTableModel tableModel, String node1, String node2, String edgeType, List<Edge.Property> properties, List<EdgeTypeProbability> edgeTypeProbabilities) {
+    private void addRow(DefaultTableModel tableModel, String fromNode, String toNode, String edgeType, List<Edge.Property> properties, List<EdgeTypeProbability> edgeTypeProbabilities) {
         String[] row = new String[11];
         
-        // Frpm node
-        row[0] = node1;
+        // From node
+        row[0] = fromNode;
         
-        // Edge interaction type with properties
+        // Edge interaction type with edge properties (dd, pd, nl, pl)
         if (!properties.isEmpty()) {
             row[1] = edgeType + " (" + properties.stream().map(e->e.name()).collect(Collectors.joining(",")) + ")";
         } else {
@@ -449,7 +448,7 @@ public final class GraphEditor extends JPanel
         }
 
         // To node
-        row[2] = node2;
+        row[2] = toNode;
         
         for (EdgeTypeProbability edgeTypeProb : edgeTypeProbabilities) {
             switch (edgeTypeProb.getEdgeType()) {
