@@ -167,7 +167,7 @@ public final class GraphEditor extends JPanel
         GraphToolbar toolbar = new GraphToolbar(getWorkbench());
         JMenuBar menuBar = createGraphMenuBar();
         JScrollPane scroll = new JScrollPane();
-        scroll.setPreferredSize(new Dimension(650, 450));
+        scroll.setPreferredSize(new Dimension(750, 450));
         scroll.setViewportView(getWorkbench());
 
         add(scroll, BorderLayout.CENTER);
@@ -202,7 +202,7 @@ public final class GraphEditor extends JPanel
         
         // Bottom container contains instructionBox and bootstrap table
         Box bottomBox = Box.createVerticalBox();
-        bottomBox.setPreferredSize(new Dimension(650, 150));
+        bottomBox.setPreferredSize(new Dimension(750, 150));
         
         bottomBox.add(instructionBox);
         bottomBox.add(Box.createVerticalStrut(10));
@@ -221,18 +221,19 @@ public final class GraphEditor extends JPanel
         // Headers
         List<String> columnNames = new LinkedList<>();
         // The very left header
-        columnNames.add(0, "Shared Edge Name");
-        columnNames.add(1, "Shared Interaction");
+        columnNames.add(0, "From Node");
+        columnNames.add(1, "Interaction");
+        columnNames.add(2, "To Node");
 
         // Edge Type probabilities
-        columnNames.add(2, "No edge");
-        columnNames.add(3, "-->");
-        columnNames.add(4, "<--");
-        columnNames.add(5, "o->");
-        columnNames.add(6, "<-o");
-        columnNames.add(7, "o-o");
-        columnNames.add(8, "<->");
-        columnNames.add(9, "---");
+        columnNames.add(3, "No edge");
+        columnNames.add(4, "-->");
+        columnNames.add(5, "<--");
+        columnNames.add(6, "o->");
+        columnNames.add(7, "<-o");
+        columnNames.add(8, "o-o");
+        columnNames.add(9, "<->");
+        columnNames.add(10, "---");
         
         // Table header
         tableModel.setColumnIdentifiers(columnNames.toArray());
@@ -406,55 +407,37 @@ public final class GraphEditor extends JPanel
 
     // Add a new row to bootstrap table
     private void addRow(DefaultTableModel tableModel, String node1, String node2, String edgeType, List<EdgeTypeProbability> edgeTypeProbabilities) {
-        String[] row = new String[10];
-        
-        String sharedEdgeName = node1 + " (" + edgeType + ") " + node2;
- 
-        row[0] = sharedEdgeName;
+        String[] row = new String[11];
+  
+        row[0] = node1;
         row[1] = edgeType;
+        row[2] = node2;
         
-        String edgeTypeProbabilitiesStr = "";
         for (EdgeTypeProbability edgeTypeProb : edgeTypeProbabilities) {
-            String type = "";
             switch (edgeTypeProb.getEdgeType()) {
-                case nil:
-                    type = "no edge";
-                    row[2] = "[" + type + "]:" + String.format("%.4f", edgeTypeProb.getProbability());
+                case nil: //"no edge"
+                    row[3] = String.format("%.4f", edgeTypeProb.getProbability());
                     break;
-                case ta:
-                    type = "-->";
-                    type = node1 + " " + type + " " + node2;
-                    row[3] = "[" + type + "]:" + String.format("%.4f", edgeTypeProb.getProbability());
+                case ta: //"-->";
+                    row[4] = String.format("%.4f", edgeTypeProb.getProbability());
                     break;
-                case at:
-                    type = "<--";
-                    type = node1 + " " + type + " " + node2;
-                    row[4] = "[" + type + "]:" + String.format("%.4f", edgeTypeProb.getProbability());
+                case at: //"<--";
+                    row[5] = String.format("%.4f", edgeTypeProb.getProbability());
                     break;
-                case ca:
-                    type = "o->";
-                    type = node1 + " " + type + " " + node2;
-                    row[5] = "[" + type + "]:" + String.format("%.4f", edgeTypeProb.getProbability());
+                case ca: //"o->";
+                    row[6] = String.format("%.4f", edgeTypeProb.getProbability());
                     break;
-                case ac:
-                    type = "<-o";
-                    type = node1 + " " + type + " " + node2;
-                    row[6] = "[" + type + "]:" + String.format("%.4f", edgeTypeProb.getProbability());
+                case ac: //"<-o";
+                    row[7] = String.format("%.4f", edgeTypeProb.getProbability());
                     break;
-                case cc:
-                    type = "o-o";
-                    type = node1 + " " + type + " " + node2;
-                    row[7] = "[" + type + "]:" + String.format("%.4f", edgeTypeProb.getProbability());
+                case cc: //"o-o";
+                    row[8] = String.format("%.4f", edgeTypeProb.getProbability());
                     break;
-                case aa:
-                    type = "<->";
-                    type = node1 + " " + type + " " + node2;
-                    row[8] = "[" + type + "]:" + String.format("%.4f", edgeTypeProb.getProbability());
+                case aa: //"<->";
+                    row[9] = String.format("%.4f", edgeTypeProb.getProbability());
                     break;
-                case tt:
-                    type = "---";
-                    type = node1 + " " + type + " " + node2;
-                    row[9] = "[" + type + "]:" + String.format("%.4f", edgeTypeProb.getProbability());
+                case tt: //"---";
+                    row[10] = String.format("%.4f", edgeTypeProb.getProbability());
                     break;
                 default:
                     break;
