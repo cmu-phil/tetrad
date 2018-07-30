@@ -167,15 +167,26 @@ public final class GraphEditor extends JPanel
     //===========================PRIVATE METHODS======================//
     private void editGraph(Graph graph) {
         this.workbench = new GraphWorkbench(graph);
-        GraphToolbar toolbar = new GraphToolbar(getWorkbench());
+        
+        // Graph menu at the very top of the window
         JMenuBar menuBar = createGraphMenuBar();
-        JScrollPane scroll = new JScrollPane();
-        scroll.setPreferredSize(new Dimension(750, 450));
-        scroll.setViewportView(getWorkbench());
+        
+        // topBox Left side toolbar
+        GraphToolbar graphToolbar = new GraphToolbar(getWorkbench());
 
-        add(scroll, BorderLayout.CENTER);
-        add(toolbar, BorderLayout.WEST);
-        add(menuBar, BorderLayout.NORTH);
+        // topBox right side graph editor
+        JScrollPane graphEditorScroll = new JScrollPane();
+        graphEditorScroll.setPreferredSize(new Dimension(750, 450));
+        graphEditorScroll.setViewportView(getWorkbench());
+
+        // topBox contains the vertical graph toolbar and graph editor
+        Box topBox = Box.createHorizontalBox();
+        topBox.add(graphToolbar);
+        topBox.add(graphEditorScroll);
+
+        // bottomBox contains instructionBox and bootstrap table
+        Box bottomBox = Box.createVerticalBox();
+        bottomBox.setPreferredSize(new Dimension(750, 150));
 
         // Instruction with info button 
         Box instructionBox = Box.createHorizontalBox();
@@ -202,11 +213,7 @@ public final class GraphEditor extends JPanel
         instructionBox.add(Box.createHorizontalStrut(2));
         instructionBox.add(infoBtn);
         
-        
-        // Bottom container contains instructionBox and bootstrap table
-        Box bottomBox = Box.createVerticalBox();
-        bottomBox.setPreferredSize(new Dimension(750, 150));
-        
+        // Add to bottomBox
         bottomBox.add(instructionBox);
         bottomBox.add(Box.createVerticalStrut(10));
         
@@ -300,7 +307,17 @@ public final class GraphEditor extends JPanel
         
         bottomBox.add(tablePane);
         
-        add(bottomBox, BorderLayout.SOUTH);
+        // Use JSplitPane to allow resize the bottom box - Zhou
+        JSplitPane splitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
+        
+        // Set the top and bottom split panes
+        splitPane.setTopComponent(topBox);
+        splitPane.setBottomComponent(bottomBox);
+        
+        // Add to parent
+        add(menuBar, BorderLayout.NORTH);
+        add(splitPane, BorderLayout.SOUTH);
+        
         validate();
     }
 
@@ -426,7 +443,7 @@ public final class GraphEditor extends JPanel
         
         // Edge interaction type with properties
         if (!properties.isEmpty()) {
-            row[1] = edgeType + "(" + properties.stream().map(e->e.name()).collect(Collectors.joining(",")) + ")";
+            row[1] = edgeType + " (" + properties.stream().map(e->e.name()).collect(Collectors.joining(",")) + ")";
         } else {
             row[1] = edgeType;
         }
