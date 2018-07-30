@@ -421,6 +421,18 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
                     }
                 }
             }
+            
+            // Time-series (TsFci, TsGfci, TsImages) algorithms need lagged data
+            String cmd = algoModel.getAlgorithm().getAnnotation().command();
+            if(cmd.equalsIgnoreCase("ts-fci") ||
+            		cmd.equalsIgnoreCase("ts-gfci") ||
+            		cmd.equalsIgnoreCase("ts-imgs")) {
+            	DataModel dataModel = runner.getDataModel();
+            	if(dataModel.getKnowledge() == null || dataModel.getKnowledge().isEmpty()) {
+            		paramSetFwdBtn.setEnabled(false);
+                    JOptionPane.showMessageDialog(desktop, "Time-series algorithm needs lagged data", "Please Note", JOptionPane.INFORMATION_MESSAGE);
+            	}
+            }
         }
 
         // Check dataset data type for those algorithms take mixed data?
