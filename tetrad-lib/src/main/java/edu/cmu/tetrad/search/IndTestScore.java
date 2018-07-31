@@ -46,6 +46,7 @@ public class IndTestScore implements IndependenceTest {
     private final HashMap<Node, Integer> variablesHash;
     private double bump = Double.NaN;
     private DataModel data = null;
+    private boolean verbose = false;
 
     public  IndTestScore(Score score) {
         this(score, null);
@@ -221,6 +222,16 @@ public class IndTestScore implements IndependenceTest {
 
     public Score getWrappedScore() {
         return score;
+    }
+
+    @Override
+    public boolean isVerbose() {
+        return verbose;
+    }
+
+    @Override
+    public void setVerbose(boolean verbose) {
+        this.verbose = verbose;
     }
 }
 

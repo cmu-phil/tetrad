@@ -84,7 +84,7 @@ public final class CcdMax implements GraphSearch {
         System.out.println("Max P collider orientation");
 
         if (doColliderOrientations) {
-            final OrientCollidersMaxP orientCollidersMaxP = new OrientCollidersMaxP(independenceTest, PcAll.ConflictRule.OVERWRITE);
+            final OrientCollidersMaxP orientCollidersMaxP = new OrientCollidersMaxP(independenceTest);
             orientCollidersMaxP.setUseHeuristic(useHeuristic);
             orientCollidersMaxP.setMaxPathLength(maxPathLength);
             orientCollidersMaxP.setKnowledge(knowledge);

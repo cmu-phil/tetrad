@@ -128,7 +128,7 @@ public class ParamDescriptions {
 
         map.put("useMaxPOrientationHeuristic", new ParamDescription(
                 "Yes if the heuristic for orienting unshielded colliders for max P should be used",
-                true));
+                false));
         map.put("maxPOrientationMaxPathLength", new ParamDescription("Maximum path length for the unshielded collider heuristic for max P (min = 0)", 3, 0, Integer.MAX_VALUE));
         map.put("orientTowardDConnections", new ParamDescription(
                 "Yes if Richardson's step C (orient toward d-connection) should be used",
@@ -297,7 +297,7 @@ public class ParamDescriptions {
 
         map.put("numBasisFunctions", new ParamDescription(
                 "Number of functions to use in (truncated) basis",
-                10, 1, Integer.MAX_VALUE));
+                4, 1, Integer.MAX_VALUE));
 
         map.put("kciCutoff", new ParamDescription(
                 "Cutoff",
@@ -340,6 +340,12 @@ public class ParamDescriptions {
         map.put("rcitApproxType", new ParamDescription(
                 "Approximation Type: 1 = LPD4, 2 = Gamma, 3 = HBE, 4 = PERM",
                 4, 1, 4));
+
+        map.put("possibleDsepDone", new ParamDescription(
+                "Yes if the possible dsep search should be done", true));
+
+        map.put("selfLoopCoef", new ParamDescription(
+                "The coefficient for the self-loop (default 0.0)", 0.0, 0.0, Double.POSITIVE_INFINITY));
     }
 
     public static ParamDescriptions getInstance() {

@@ -102,12 +102,12 @@ public final class IndTestDaudinConditionalIndependence implements IndependenceT
         List<Node> nodes = dataSet.getVariables();
 
         this.variables = Collections.unmodifiableList(nodes);
-        setAlpha(alpha);
 
         List<String> varNames = new ArrayList<>();
         for (int i = 0; i < variables.size(); i++) varNames.add(variables.get(i).getName());
 
         this.daudinConditionalCorrelation = new DaudinConditionalIndependence(dataSet, alpha);
+        this.alpha = alpha;
 
         indices = new HashMap<>();
 
@@ -132,17 +132,16 @@ public final class IndTestDaudinConditionalIndependence implements IndependenceT
         for (Node node : z) _z.add(node.getName());
         boolean independent = daudinConditionalCorrelation.isIndependent(_x, _y, _z);
 
-
-        if (true) {
+        if (verbose) {
             IndependenceFact fact = new IndependenceFact(x, y, z);
             double p = daudinConditionalCorrelation.getPValue();
 
             if (independent) {
-                System.out.println(fact + " Independent p = " + p);
+                System.out.println(fact + " INDEPENDENT p = " + p);
                 TetradLogger.getInstance().log("info", fact + " Independent");
 
             } else {
-                System.out.println(fact + " p = " + p);
+                System.out.println(fact + " dependent p = " + p);
                 TetradLogger.getInstance().log("info", fact.toString());
             }
         }
@@ -196,6 +195,7 @@ public final class IndTestDaudinConditionalIndependence implements IndependenceT
         }
 
         this.alpha = alpha;
+        daudinConditionalCorrelation.setAlpha(alpha);
     }
 
     /**

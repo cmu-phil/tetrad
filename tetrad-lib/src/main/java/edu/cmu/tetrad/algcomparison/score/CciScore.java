@@ -19,8 +19,8 @@ import java.util.List;
  * @author jdramsey
  */
 @edu.cmu.tetrad.annotation.Score(
-        name = "Conditional Correlation Score",
-        command = "cci-score",
+        name = "Daudin Score",
+        command = "daudin-score",
         dataType = {DataType.Continuous}
 )
 public class CciScore implements ScoreWrapper {
@@ -56,7 +56,7 @@ public class CciScore implements ScoreWrapper {
 
     @Override
     public String getDescription() {
-        return "CCI Score";
+        return "Daudin Score";
     }
 
     @Override

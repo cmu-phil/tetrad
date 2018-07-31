@@ -23,6 +23,7 @@ package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.util.MathUtils;
 import edu.cmu.tetrad.util.StatUtils;
 import org.apache.commons.math3.distribution.NormalDistribution;
 
@@ -31,23 +32,24 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static edu.cmu.tetrad.util.MathUtils.logChoose;
 import static edu.cmu.tetrad.util.StatUtils.*;
 import static java.lang.Math.*;
 import static java.lang.Math.pow;
 
 /**
  * Checks conditional independence of variable in a continuous data set using Daudin's method. See
- *
+ * <p>
  * Ramsey, J. D. (2014). A scalable conditional independence test for nonlinear, non-Gaussian data. arXiv
  * preprint arXiv:1401.5031.
- *
+ * <p>
  * This is corrected using Lemma 2, condition 4 of
- *
+ * <p>
  * Zhang, K., Peters, J., Janzing, D., & Schölkopf, B. (2012). Kernel-based conditional independence test and
  * application in causal discovery. arXiv preprint arXiv:1202.3775.
- *
+ * <p>
  * This all follows the original Daudin paper, which is this:
- *
+ * <p>
  * Daudin, J. J. (1980). Partial association measures and an application to qualitative regression.
  * Biometrika, 67(3), 581-590.
  *
@@ -122,7 +124,6 @@ public final class DaudinConditionalIndependence {
      */
     public DaudinConditionalIndependence(DataSet dataSet, double alpha) {
         if (dataSet == null) throw new NullPointerException();
-
         this.alpha = alpha;
         this.data = dataSet.getDoubleData().transpose().toArray();
 
@@ -180,28 +181,27 @@ public final class DaudinConditionalIndependence {
 
     //=================PUBLIC METHODS====================//
 
-    int c = 1;
-
     /**
      * @return true iff x is independent of y conditional on z.
      */
     public boolean isIndependent(String x, String y, List<String> z) {
+        final int d1 = 0; // reference
+        final int d2 = z.size();
+        final int v = data.length - 2;
+
+        double alpha2 = (exp(log(alpha) + logChoose(v, d1) - logChoose(v, d2)));
+        cutoff = getZForAlpha(alpha2);
+
         double[] f1 = residuals(x, z, false);
         double[] g = residuals(y, z, false);
         final boolean independent1 = independent(f1, g);
-
-        double _score = score;
 
         if (!independent1) {
             return false;
         }
 
         double[] f2 = residuals(x, z, true);
-        final boolean independent2 = independent(f2, g);
-
-        if (score < _score) score = _score;
-
-        return independent2;
+        return independent(f2, g);
     }
 
     /**
@@ -210,6 +210,10 @@ public final class DaudinConditionalIndependence {
      */
     public double getScore() {
         return score - cutoff;
+    }
+
+    public void setAlpha(double alpha) {
+        this.alpha = alpha;
     }
 
     public double getAlpha() {
@@ -235,6 +239,11 @@ public final class DaudinConditionalIndependence {
                     _x[i] = function(m, x[i]);
                     _y[i] = function(n, y[i]);
                 }
+
+//                System.out.println("m = " + m + " n = " + n + " var _x = " + StatUtils.variance(_x)
+//                        + " var _y = " + StatUtils.variance(_y));
+
+                if (variance(_x) < 1e-4 || varHat(_y) < 1e-4) continue;
 
                 final double score = abs(nonparametricFisherZ(_x, _y));
                 if (Double.isInfinite(score) || Double.isNaN(score)) continue;
@@ -275,7 +284,6 @@ public final class DaudinConditionalIndependence {
         double[] sumx = new double[N];
 
         double[] totalWeightx = new double[N];
-        double[] totalWeighty = new double[N];
 
         int[] _z = new int[z.size()];
 
@@ -283,8 +291,7 @@ public final class DaudinConditionalIndependence {
             _z[m] = indices.get(z.get(m));
         }
 
-        double hx = getH(_z);
-        double hy = getH(_z);
+        double h = getH(_z);
 
         for (int i = 0; i < N; i++) {
             double xi = xdata[i];
@@ -298,41 +305,35 @@ public final class DaudinConditionalIndependence {
                 double k;
 
                 if (getKernelMultiplier() == Kernel.Epinechnikov) {
-                    k = kernelEpinechnikov(d, hx);
+                    k = kernelEpinechnikov(d, h);
                 } else if (getKernelMultiplier() == Kernel.Gaussian) {
-                    k = kernelGaussian(d, hx);
+                    k = kernelGaussian(d, h);
                 } else {
                     throw new IllegalStateException("Unsupported kernel type: " + getKernelMultiplier());
                 }
 
                 sumx[i] += k * xj;
-
                 sumx[j] += k * xi;
 
                 totalWeightx[i] += k;
                 totalWeightx[j] += k;
-
-                totalWeighty[i] += k;
-                totalWeighty[j] += k;
             }
         }
 
         double k;
 
         if (getKernelMultiplier() == Kernel.Epinechnikov) {
-            k = kernelEpinechnikov(0, hy);
+            k = kernelEpinechnikov(0, h);
         } else if (getKernelMultiplier() == Kernel.Gaussian) {
-            k = kernelGaussian(0, hy);
+            k = kernelGaussian(0, h);
         } else {
             throw new IllegalStateException("Unsupported kernel type: " + kernelMultiplier);
         }
 
         for (int i = 0; i < N; i++) {
             double xi = xdata[i];
-
             sumx[i] += k * xi;
             totalWeightx[i] += k;
-            totalWeighty[i] += k;
         }
 
         for (int i = 0; i < N; i++) {
