@@ -258,14 +258,15 @@ public final class GraphEditor extends JPanel
         columnNames.add(2, "To Node");
 
         // Edge Type probabilities
-        columnNames.add(3, "No edge");
-        columnNames.add(4, "-->");
-        columnNames.add(5, "<--");
-        columnNames.add(6, "o->");
-        columnNames.add(7, "<-o");
-        columnNames.add(8, "o-o");
-        columnNames.add(9, "<->");
-        columnNames.add(10, "---");
+        columnNames.add(3, "Ensemble");
+        columnNames.add(4, "No edge");
+        columnNames.add(5, "-->");
+        columnNames.add(6, "<--");
+        columnNames.add(7, "o->");
+        columnNames.add(8, "<-o");
+        columnNames.add(9, "o-o");
+        columnNames.add(10, "<->");
+        columnNames.add(11, "---");
         
         // Table header
         tableModel.setColumnIdentifiers(columnNames.toArray());
@@ -446,7 +447,7 @@ public final class GraphEditor extends JPanel
 
     // Add a new row to bootstrap table
     private void addRow(DefaultTableModel tableModel, String fromNode, String toNode, String edgeType, List<Edge.Property> properties, List<EdgeTypeProbability> edgeTypeProbabilities) {
-        String[] row = new String[11];
+        String[] row = new String[12];
         
         // From node
         row[0] = fromNode;
@@ -461,31 +462,65 @@ public final class GraphEditor extends JPanel
         // To node
         row[2] = toNode;
         
+        // Ensemble, empty by default
+        row[3] = "";
+        
         for (EdgeTypeProbability edgeTypeProb : edgeTypeProbabilities) {
+            String type = "";
+            String probValue = String.format("%.4f", edgeTypeProb.getProbability());
+            
             switch (edgeTypeProb.getEdgeType()) {
                 case nil: //"no edge"
-                    row[3] = String.format("%.4f", edgeTypeProb.getProbability());
-                    break;
-                case ta: //"-->";
                     row[4] = String.format("%.4f", edgeTypeProb.getProbability());
                     break;
+                case ta: //"-->";
+                    type = "-->";
+                    if (edgeType.equals(type)) {
+                        row[3] = probValue;
+                    }
+                    row[5] = probValue;
+                    break;
                 case at: //"<--";
-                    row[5] = String.format("%.4f", edgeTypeProb.getProbability());
+                    type = "<--";
+                    if (edgeType.equals(type)) {
+                        row[3] = probValue;
+                    }
+                    row[6] = probValue;
                     break;
                 case ca: //"o->";
-                    row[6] = String.format("%.4f", edgeTypeProb.getProbability());
+                    type = "o->";
+                    if (edgeType.equals(type)) {
+                        row[3] = probValue;
+                    }
+                    row[7] = probValue;
                     break;
                 case ac: //"<-o";
-                    row[7] = String.format("%.4f", edgeTypeProb.getProbability());
+                    type = "<-o";
+                    if (edgeType.equals(type)) {
+                        row[3] = probValue;
+                    }
+                    row[8] = probValue;
                     break;
                 case cc: //"o-o";
-                    row[8] = String.format("%.4f", edgeTypeProb.getProbability());
+                    type = "o-o";
+                    if (edgeType.equals(type)) {
+                        row[3] = probValue;
+                    }
+                    row[9] = probValue;
                     break;
                 case aa: //"<->";
-                    row[9] = String.format("%.4f", edgeTypeProb.getProbability());
+                    type = "<->";
+                    if (edgeType.equals(type)) {
+                        row[3] = probValue;
+                    }
+                    row[10] = probValue;
                     break;
                 case tt: //"---";
-                    row[10] = String.format("%.4f", edgeTypeProb.getProbability());
+                    type = "---";
+                    if (edgeType.equals(type)) {
+                        row[3] = probValue;
+                    }
+                    row[11] = probValue;
                     break;
                 default:
                     break;
