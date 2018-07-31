@@ -188,8 +188,11 @@ public final class IndTestFisherZ implements IndependenceTest {
         final int d2 = z.size();
         final int v = variables.size();
 
-        double alpha2 = (exp(log(alpha) + logChoose(v - 2, d1) - logChoose(v - 2, d2)));
+//        double alpha2 = (exp(log(alpha) + logChoose(v - 2, d1) - logChoose(v - 2, d2)));
+        double alpha2 = (exp(log(alpha) - logChoose(v - 2, d2)));
+//        double alpha2 = alpha * (d1 + 3) / (double) (d2 + 3);
         cutoff = getZForAlpha(alpha2);
+
 
         return Math.abs(fisherZ) < cutoff;
     }

@@ -316,15 +316,6 @@ public class Fas implements IFas {
                     if (!getSepsets().isReturnEmptyIfNotSet()) {
                         getSepsets().set(x, y, empty);
                     }
-
-                    if (verbose) {
-                        TetradLogger.getInstance().forceLogMessage(
-                                SearchLogUtils.independenceFact(x, y, empty) + " score = " +
-                                nf.format(test.getScore()));
-                        out.println(SearchLogUtils.independenceFact(x, y, empty) + " score = " +
-                                nf.format(test.getScore()));
-                    }
-
                 } else if (!forbiddenEdge(x, y)) {
                     adjacencies.get(x).add(y);
                     adjacencies.get(y).add(x);
@@ -435,11 +426,11 @@ public class Fas implements IFas {
 
                             getSepsets().set(x, y, condSet);
 
-                            if (verbose) {
-                                TetradLogger.getInstance().forceLogMessage(SearchLogUtils.independenceFact(x, y, condSet) +
-                                        " score = " + nf.format(test.getScore()));
-                                out.println(SearchLogUtils.independenceFactMsg(x, y, condSet, test.getScore()));
-                            }
+//                            if (verbose) {
+//                                TetradLogger.getInstance().forceLogMessage(SearchLogUtils.independenceFact(x, y, condSet) +
+//                                        " score = " + nf.format(test.getScore()));
+//                                out.println(SearchLogUtils.independenceFactMsg(x, y, condSet, test.getScore()));
+//                            }
 
                             continue EDGE;
                         }

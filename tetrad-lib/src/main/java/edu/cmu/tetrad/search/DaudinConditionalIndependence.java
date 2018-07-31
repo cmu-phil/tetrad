@@ -187,9 +187,9 @@ public final class DaudinConditionalIndependence {
     public boolean isIndependent(String x, String y, List<String> z) {
         final int d1 = 0; // reference
         final int d2 = z.size();
-        final int v = data.length;
+        final int v = data.length - 2;
 
-        double alpha2 = (exp(log(alpha) + logChoose(v - 2, d1) - logChoose(v - 2, d2)));
+        double alpha2 = (exp(log(alpha) + logChoose(v, d1) - logChoose(v, d2)));
         cutoff = getZForAlpha(alpha2);
 
         double[] f1 = residuals(x, z, false);
@@ -239,6 +239,11 @@ public final class DaudinConditionalIndependence {
                     _x[i] = function(m, x[i]);
                     _y[i] = function(n, y[i]);
                 }
+
+//                System.out.println("m = " + m + " n = " + n + " var _x = " + StatUtils.variance(_x)
+//                        + " var _y = " + StatUtils.variance(_y));
+
+                if (variance(_x) < 1e-4 || varHat(_y) < 1e-4) continue;
 
                 final double score = abs(nonparametricFisherZ(_x, _y));
                 if (Double.isInfinite(score) || Double.isNaN(score)) continue;

@@ -22,8 +22,6 @@ import org.apache.commons.math3.random.Well44497b;
 import java.util.*;
 
 import static com.google.common.primitives.Doubles.asList;
-import static edu.cmu.tetrad.util.MathUtils.logChoose;
-import static edu.cmu.tetrad.util.StatUtils.getZForAlpha;
 import static edu.cmu.tetrad.util.StatUtils.median;
 import static java.lang.Math.*;
 
@@ -119,16 +117,10 @@ public class KCI implements IndependenceTest, ScoreForFact {
         this.N = this.data.getNumRows();
         this.I = TetradMatrix.identity(N);
 
-        double delta = 1.0 / N;
+        TetradMatrix Ones = new TetradMatrix(N, 1);
+        for (int j = 0; j < N; j++) Ones.set(j, 0, 1);
 
-        this.I = TetradMatrix.identity(N);
-        this.H = TetradMatrix.identity(N);
-
-        for (int i = 0; i < N; i++) {
-            for (int j = 0; j < N; j++) {
-                H.set(i, j, H.get(i, j) - delta);
-            }
-        }
+        this.H = TetradMatrix.identity(N).minus(Ones.times(Ones.transpose()).scalarMult(1.0 / N));
 
         this.alpha = alpha;
         this.p = -1;
@@ -334,7 +326,7 @@ public class KCI implements IndependenceTest, ScoreForFact {
         this.approximate = approximate;
     }
 
-    public double getWidthMultiplier() {
+    private double getWidthMultiplier() {
         return widthMultiplier;
     }
 
@@ -343,7 +335,7 @@ public class KCI implements IndependenceTest, ScoreForFact {
         this.widthMultiplier = widthMultiplier;
     }
 
-    public int getNumBootstraps() {
+    private int getNumBootstraps() {
         return numBootstraps;
     }
 
@@ -442,9 +434,6 @@ public class KCI implements IndependenceTest, ScoreForFact {
         Eigendecomposition eigendecompositiony = new Eigendecomposition(ky).invoke();
         List<Double> evy = eigendecompositiony.getTopEigenvalues();
 
-        // We're going to reuse the samples.
-        int sampleIndex = -1;
-
         // Calculate formula (9).
         int sum = 0;
 
@@ -453,7 +442,7 @@ public class KCI implements IndependenceTest, ScoreForFact {
 
             for (double lambdax : evx) {
                 for (double lambday : evy) {
-                    tui += lambdax * lambday * getChisqSample(++sampleIndex);
+                    tui += lambdax * lambday * getChisqSample();
                 }
             }
 
@@ -466,18 +455,10 @@ public class KCI implements IndependenceTest, ScoreForFact {
         p = sum / (double) getNumBootstraps();
         pValues.put(fact, this.p);
 
-        final int d1 = 0; // reference
-        final int d2 = 0;
-        final int v = variables.size();
-
-        double alpha2 = (exp(log(alpha) + logChoose(v - 2, d1) - logChoose(v - 2, d2)));
-//        cutoff = getZForAlpha(alpha2);
-
         return p > alpha;
     }
 
     private boolean proposition5(TetradMatrix kx, TetradMatrix ky, IndependenceFact fact) {
-
         double T = (1.0 / N) * kx.times(ky).trace();
 
         Eigendecomposition eigendecompositionx = new Eigendecomposition(kx).invoke();
@@ -487,14 +468,6 @@ public class KCI implements IndependenceTest, ScoreForFact {
         Eigendecomposition eigendecompositiony = new Eigendecomposition(ky).invoke();
         TetradMatrix vy = eigendecompositiony.getV();
         TetradMatrix dy = eigendecompositiony.getD();
-
-        if (vx.columns() == 0) {
-            System.out.println("vx = " + eigendecompositionx.getTopEigenvalues());
-        }
-
-        if (vy.columns() == 0) {
-            System.out.println("vy = " + eigendecompositiony.getTopEigenvalues());
-        }
 
         // VD
         TetradMatrix vdx = vx.times(dx);
@@ -513,10 +486,6 @@ public class KCI implements IndependenceTest, ScoreForFact {
         }
 
         TetradMatrix uuprod = prod > N ? UU.times(UU.transpose()) : UU.transpose().times(UU);
-
-        if (uuprod.columns() == 0 || uuprod.rows() == 0) {
-            System.out.println();
-        }
 
         if (isApproximate()) {
             double sta = kx.times(ky).trace();
@@ -543,7 +512,7 @@ public class KCI implements IndependenceTest, ScoreForFact {
                 double s = 0.0;
 
                 for (double lambdaStar : eigenu) {
-                    s += lambdaStar * getChisqSample(++sampleCount);
+                    s += lambdaStar * getChisqSample();
                 }
 
                 s *= 1.0 / N;
@@ -554,12 +523,11 @@ public class KCI implements IndependenceTest, ScoreForFact {
             this.p = sum / (double) getNumBootstraps();
             pValues.put(fact, this.p);
 
-            final int d1 = 0; // reference
-            final int d2 = 0;
-            final int v = variables.size();
-
-            double alpha2 = (exp(log(alpha) + logChoose(v - 2, d1) - logChoose(v - 2, d2)));
-//        cutoff = getZForAlpha(alpha2);
+//            final int d1 = 0; // reference
+//            final int d2 = fact.getZ().size();
+//            final int v = variables.size();
+//
+//            double alpha2 = (exp(log(alpha) + logChoose(v - 2, d1) - logChoose(v - 2, d2)));
 
             return this.p > alpha;
         }
@@ -575,13 +543,7 @@ public class KCI implements IndependenceTest, ScoreForFact {
         return H.times(K).times(H);
     }
 
-    private double getChisqSample(int sampleCount) {
-//        if (sampleCount >= samples.size()) {
-//            double z = normal.sample();
-//            samples.add(z * z);
-//        }
-//        return samples.get(sampleCount);
-
+    private double getChisqSample() {
         double z = normal.sample();
         return z * z;
     }
@@ -608,15 +570,11 @@ public class KCI implements IndependenceTest, ScoreForFact {
             }
         }
 
-        if (indices.isEmpty()) {
-            System.out.println();
-        }
-
         return indices;
     }
 
     private TetradMatrix symmetrized(TetradMatrix kx) {
-        return kx.plus(kx.transpose()).scalarMult(0.5);
+        return (kx.plus(kx.transpose())).scalarMult(0.5);
     }
 
     private TetradMatrix kernelMatrix(double[][] _data, Node x, List<Node> z, double widthMultiplier) {
@@ -730,7 +688,7 @@ public class KCI implements IndependenceTest, ScoreForFact {
         }
 
         public Eigendecomposition invoke() {
-            if (true) {
+            if (false) {
                 EigenDecomposition ed = new EigenDecomposition(k.getRealMatrix());
 
                 List<Double> evxAll = asList(ed.getRealEigenvalues());
