@@ -79,11 +79,10 @@ public class InterventionalDataFactory {
         int numOfRows = Arrays.stream(numOfDataRows).sum();
         int numOfCols = numOfDataCols + intervVars.size();
 
-        List<MixedDataBox> list = dataModels.stream()
+        List<MixedDataBox> models = dataModels.stream()
                 .filter(e -> e.isMixed())
                 .map(e -> (MixedDataBox) ((BoxDataSet) e).getDataBox())
                 .collect(Collectors.toList());
-        MixedDataBox[] models = list.toArray(new MixedDataBox[list.size()]);
 
         // merge the existing discrete data over
         int[][] discreteData = new int[numOfCols][];
@@ -150,11 +149,10 @@ public class InterventionalDataFactory {
         int numOfRows = Arrays.stream(numOfDataRows).sum();
         int numOfCols = numOfDataCols + intervVars.size();
 
-        List<MixedDataBox> list = dataModels.stream()
+        List<MixedDataBox> models = dataModels.stream()
                 .filter(e -> e.isMixed())
                 .map(e -> (MixedDataBox) ((BoxDataSet) e).getDataBox())
                 .collect(Collectors.toList());
-        MixedDataBox[] models = list.toArray(new MixedDataBox[list.size()]);
 
         // merge the existing discrete data over
         int[][] discreteData = new int[numOfCols][];
@@ -221,11 +219,10 @@ public class InterventionalDataFactory {
         int numOfRows = Arrays.stream(numOfDataRows).sum();
         int numOfCols = numOfDataCols + intervVars.size();
 
-        List<VerticalIntDataBox> list = dataModels.stream()
+        List<VerticalIntDataBox> models = dataModels.stream()
                 .filter(e -> e.isDiscrete())
                 .map(e -> (VerticalIntDataBox) ((BoxDataSet) e).getDataBox())
                 .collect(Collectors.toList());
-        VerticalIntDataBox[] models = list.toArray(new VerticalIntDataBox[list.size()]);
 
         // merge the existing data over
         int[][] discreteData = new int[numOfCols][];
@@ -268,11 +265,10 @@ public class InterventionalDataFactory {
         int numOfRows = Arrays.stream(numOfDataRows).sum();
         int numOfCols = numOfDataCols + intervVars.size();
 
-        List<VerticalIntDataBox> list = dataModels.stream()
+        List<VerticalIntDataBox> models = dataModels.stream()
                 .filter(e -> e.isDiscrete())
                 .map(e -> (VerticalIntDataBox) ((BoxDataSet) e).getDataBox())
                 .collect(Collectors.toList());
-        VerticalIntDataBox[] models = list.toArray(new VerticalIntDataBox[list.size()]);
 
         // merge the existing data over
         int[][] discreteData = new int[numOfCols][];
@@ -316,11 +312,10 @@ public class InterventionalDataFactory {
         int numOfRows = Arrays.stream(numOfDataRows).sum();
         int numOfCols = numOfDataCols + intervVars.size();
 
-        List<DoubleDataBox> list = dataModels.stream()
+        List<DoubleDataBox> models = dataModels.stream()
                 .filter(e -> e.isContinuous())
                 .map(e -> (DoubleDataBox) ((BoxDataSet) e).getDataBox())
                 .collect(Collectors.toList());
-        DoubleDataBox[] models = list.toArray(new DoubleDataBox[list.size()]);
 
         // combine and transpose original data
         double[][] continuousData = new double[numOfCols][];
