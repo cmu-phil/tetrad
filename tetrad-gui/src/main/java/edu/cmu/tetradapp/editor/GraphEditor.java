@@ -252,10 +252,10 @@ public final class GraphEditor extends JPanel
         // Headers
         List<String> columnNames = new LinkedList<>();
         
-        // The very left headers: from node, edge type, to node
-        columnNames.add(0, "From Node");
+        // The very left headers: node1, edge type, node2
+        columnNames.add(0, "Node1");
         columnNames.add(1, "Interaction");
-        columnNames.add(2, "To Node");
+        columnNames.add(2, "Node2");
 
         // Edge Type probabilities
         columnNames.add(3, "Ensemble");
@@ -446,11 +446,11 @@ public final class GraphEditor extends JPanel
     }
 
     // Add a new row to bootstrap table
-    private void addRow(DefaultTableModel tableModel, String fromNode, String toNode, String edgeType, List<Edge.Property> properties, List<EdgeTypeProbability> edgeTypeProbabilities) {
+    private void addRow(DefaultTableModel tableModel, String node1, String node2, String edgeType, List<Edge.Property> properties, List<EdgeTypeProbability> edgeTypeProbabilities) {
         String[] row = new String[12];
         
-        // From node
-        row[0] = fromNode;
+        // node1
+        row[0] = node1;
         
         // Edge interaction type with edge properties (dd, pd, nl, pl)
         if (!properties.isEmpty()) {
@@ -459,8 +459,8 @@ public final class GraphEditor extends JPanel
             row[1] = edgeType;
         }
 
-        // To node
-        row[2] = toNode;
+        // node2
+        row[2] = node2;
         
         // Ensemble, empty by default
         row[3] = "";
@@ -471,7 +471,7 @@ public final class GraphEditor extends JPanel
             
             switch (edgeTypeProb.getEdgeType()) {
                 case nil: //"no edge"
-                    row[4] = String.format("%.4f", edgeTypeProb.getProbability());
+                    row[4] = probValue;
                     break;
                 case ta: //"-->";
                     type = "-->";
