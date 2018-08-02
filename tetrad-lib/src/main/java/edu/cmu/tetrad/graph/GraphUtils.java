@@ -2619,20 +2619,32 @@ public final class GraphUtils {
                 	
                 	if(orient.equalsIgnoreCase("[no edge]")) {
                         _edge.addEdgeTypeProbability(new EdgeTypeProbability(EdgeType.nil, prob));
-                	}else if(orient.indexOf(" --> ") > -1) {
-                        _edge.addEdgeTypeProbability(new EdgeTypeProbability(EdgeType.ta, prob));
-                	}else if(orient.indexOf(" <-- ") > -1) {
-                        _edge.addEdgeTypeProbability(new EdgeTypeProbability(EdgeType.at, prob));
-                	}else if(orient.indexOf(" o-> ") > -1) {
-                        _edge.addEdgeTypeProbability(new EdgeTypeProbability(EdgeType.ca, prob));
-                	}else if(orient.indexOf(" <-o ") > -1) {
-                        _edge.addEdgeTypeProbability(new EdgeTypeProbability(EdgeType.ac, prob));
-                	}else if(orient.indexOf(" o-o ") > -1) {
-                        _edge.addEdgeTypeProbability(new EdgeTypeProbability(EdgeType.cc, prob));
-                	}else if(orient.indexOf(" <-> ") > -1) {
-                		_edge.addEdgeTypeProbability(new EdgeTypeProbability(EdgeType.aa, prob));
-                	}else {// [n1 --- n2]
-                		_edge.addEdgeTypeProbability(new EdgeTypeProbability(EdgeType.tt, prob));
+                	}else {
+                		orient = orient.replace("[", "").replace("]", "");
+                		EdgeTypeProbability etp = null;
+                		if(orient.indexOf(" --> ") > -1) {
+                			etp = new EdgeTypeProbability(EdgeType.ta, prob);
+                            _edge.addEdgeTypeProbability(new EdgeTypeProbability(EdgeType.ta, prob));
+                    	}else if(orient.indexOf(" <-- ") > -1) {
+                    		etp = new EdgeTypeProbability(EdgeType.at, prob);
+                    	}else if(orient.indexOf(" o-> ") > -1) {
+                    		etp = new EdgeTypeProbability(EdgeType.ca, prob);
+                    	}else if(orient.indexOf(" <-o ") > -1) {
+                    		etp = new EdgeTypeProbability(EdgeType.ac, prob);
+                    	}else if(orient.indexOf(" o-o ") > -1) {
+                    		etp = new EdgeTypeProbability(EdgeType.cc, prob);
+                    	}else if(orient.indexOf(" <-> ") > -1) {
+                    		etp = new EdgeTypeProbability(EdgeType.aa, prob);
+                    	}else {// [n1 --- n2]
+                    		etp = new EdgeTypeProbability(EdgeType.tt, prob);
+                    	}
+                		String[] _edge_property = orient.trim().split("\\s+");
+                		if(_edge_property != null && _edge_property.length > 3) {
+                			for(int j=3;j<_edge_property.length;j++) {
+                				etp.addProperty(Edge.Property.valueOf(_edge_property[j]));
+                			}
+                		}
+                		_edge.addEdgeTypeProbability(etp);
                 	}
                     
                 }

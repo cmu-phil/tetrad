@@ -301,6 +301,12 @@ public class Edge implements TetradSerializable, Comparable {
         			if(etp.getEdgeType() != EdgeType.nil) {
         				_type = n1 + " " + _type + " " + n2;
         			}
+        			List<Property> properties = etp.getProperties();
+        			if(properties != null && properties.size() > 0) {
+        	        	for(Property property : properties) {
+        	        		_type = _type + " " + property.toString();
+        	        	}
+        	        }
         			buf.append("[" + _type + "]:" + String.format("%.4f", etp.getProbability()) + ";");
         			
             	}
