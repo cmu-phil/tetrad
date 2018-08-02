@@ -28,16 +28,7 @@ import edu.cmu.tetrad.algcomparison.graph.RandomSingleFactorMim;
 import edu.cmu.tetrad.algcomparison.graph.RandomTwoFactorMim;
 import edu.cmu.tetrad.algcomparison.graph.ScaleFree;
 import edu.cmu.tetrad.algcomparison.graph.SingleGraph;
-import edu.cmu.tetrad.algcomparison.simulation.BayesNetSimulation;
-import edu.cmu.tetrad.algcomparison.simulation.BooleanGlassSimulation;
-import edu.cmu.tetrad.algcomparison.simulation.GeneralSemSimulation;
-import edu.cmu.tetrad.algcomparison.simulation.GeneralSemSimulationSpecial1;
-import edu.cmu.tetrad.algcomparison.simulation.LeeHastieSimulation;
-import edu.cmu.tetrad.algcomparison.simulation.LinearFisherModel;
-import edu.cmu.tetrad.algcomparison.simulation.LoadContinuousDataAndGraphs;
-import edu.cmu.tetrad.algcomparison.simulation.SemSimulation;
-import edu.cmu.tetrad.algcomparison.simulation.StandardizedSemSimulation;
-import edu.cmu.tetrad.algcomparison.simulation.TimeSeriesSemSimulation;
+import edu.cmu.tetrad.algcomparison.simulation.*;
 import edu.cmu.tetrad.data.DataModelList;
 import edu.cmu.tetrad.data.IKnowledge;
 import edu.cmu.tetrad.graph.EdgeListGraph;
@@ -433,6 +424,7 @@ public final class SimulationEditor extends JPanel implements KnowledgeEditable,
                     throw new IllegalArgumentException("Unrecognized simulation type: " + simulationItem);
                 }
 
+
             } else {
                 String simulationItem = (String) simulationsDropdown.getSelectedItem();
                 simulation.getParams().set("simulationsDropdownPreference", simulationItem);
@@ -450,15 +442,21 @@ public final class SimulationEditor extends JPanel implements KnowledgeEditable,
                     simulation.setSimulation(new LinearFisherModel(randomGraph, simulation.getInputDataModelList()),
                             simulation.getParams());
                 } else if (simulationItem.equals(simulationItems[3])) {
-                    simulation.setSimulation(new GeneralSemSimulationSpecial1(randomGraph), simulation.getParams());
-                } else if (simulationItem.equals(simulationItems[4])) {
                     simulation.setSimulation(new LeeHastieSimulation(randomGraph), simulation.getParams());
+                }
+//                else if (simulationItem.equals(simulationItems[3])) {
+//                    simulation.setSimulation(new GeneralSemSimulationSpecial1(randomGraph), simulation.getParams());
+//                }
+                else if (simulationItem.equals(simulationItems[4])) {
+                    simulation.setSimulation(new ConditionalGaussianSimulation(randomGraph), simulation.getParams());
                 } else if (simulationItem.equals(simulationItems[5])) {
-                    simulation.setSimulation(new TimeSeriesSemSimulation(randomGraph), simulation.getParams());
-                } else if (simulationItem.equals(simulationItems[6])) {
-                    simulation.setSimulation(new BooleanGlassSimulation(randomGraph), simulation.getParams());
-                    simulation.setFixedGraph(true);
-                } else {
+                        simulation.setSimulation(new TimeSeriesSemSimulation(randomGraph), simulation.getParams());
+                }
+//                else if (simulationItem.equals(simulationItems[6])) {
+//                    simulation.setSimulation(new BooleanGlassSimulation(randomGraph), simulation.getParams());
+//                    simulation.setFixedGraph(true);
+//                }
+                else {
                     throw new IllegalArgumentException("Unrecognized simulation type: " + simulationItem);
                 }
             }

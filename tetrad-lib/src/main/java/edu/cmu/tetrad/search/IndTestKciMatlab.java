@@ -21,23 +21,22 @@
 
 package edu.cmu.tetrad.search;
 
-//import com.mathworks.toolbox.javabuilder.MWException;
-//import com.mathworks.toolbox.javabuilder.MWLogicalArray;
-
+import com.mathworks.extern.java.MWStructArray;
+import com.mathworks.toolbox.javabuilder.MWApplication;
+import com.mathworks.toolbox.javabuilder.MWCellArray;
+import com.mathworks.toolbox.javabuilder.MWException;
+import com.mathworks.toolbox.javabuilder.MWNumericArray;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.ICovarianceMatrix;
-import edu.cmu.tetrad.graph.Edge;
-import edu.cmu.tetrad.graph.Edges;
+import edu.cmu.tetrad.graph.IndependenceFact;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.NumberFormatUtil;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetrad.util.TetradMatrix;
+import edu.cmu.tetrad.util.TetradVector;
 
 import java.text.NumberFormat;
 import java.util.*;
-
-import com.mathworks.toolbox.javabuilder.*;
-
 
 /**
  * Checks conditional independence of variable in a continuous data set using a conditional correlation test
@@ -100,7 +99,7 @@ public final class IndTestKciMatlab implements IndependenceTest {
         data = this.dataSet.getDoubleData();
 
 //        _data = data.transpose().toArray();
-        _data = data.toArray();
+        _data = data.transpose().toArray();
 
         nodeMap = new HashMap<>();
 
@@ -276,29 +275,46 @@ public final class IndTestKciMatlab implements IndependenceTest {
     private boolean checkIndependent(Node x, Node y, List<Node> z) {
         numTests++;
 
-        int xIndex = dataSet.getColumn(x) + 1;
-        int yIndex = dataSet.getColumn(y) + 1;
+        try {
+            indtest_new.Class1 test = new indtest_new.Class1();
 
-        int[] zIndices = new int[z.size()];
+            MWNumericArray _x = new MWNumericArray(new TetradVector(_data[nodeMap.get(x)]).toColumnMatrix().toArray());
+            MWNumericArray _y = new MWNumericArray(new TetradVector(_data[nodeMap.get(y)]).toColumnMatrix().toArray());
 
-        for (int i = 0; i < z.size(); i++) {
-            zIndices[i] = dataSet.getColumn(z.get(i)) + 1;
+            double[][] ___z = new double[z.size()][];
+
+
+            for (int c = 0; c < z.size(); c++) {
+                ___z[c] = _data[nodeMap.get(z.get(c))];
+            }
+
+            MWNumericArray _z = new MWNumericArray(new TetradMatrix(___z).transpose().toArray());
+
+            Object[] out = test.indtest_new(2, _x, _y, _z);//, new MWStructArray(new int[]{0}, new String[]{"width"}));
+
+            MWNumericArray _p = (MWNumericArray) out[0];
+
+            double p = _p.getDouble();
+
+            boolean independent = p > alpha;
+
+            IndependenceFact fact = new IndependenceFact(x, y, z);
+
+            if (verbose) {
+                if (independent) {
+                    System.out.println(fact + " INDEPENDENT p = " + p);
+                    TetradLogger.getInstance().log("info", fact + " Independent");
+
+                } else {
+                    System.out.println(fact + " dependent p = " + p);
+                    TetradLogger.getInstance().log("info", fact.toString());
+                }
+            }
+
+            return independent;
+        } catch (MWException e) {
+            throw new RuntimeException(e);
         }
-
-//        try {
-//            Kci _kci = new Kci();
-//            Object[] output = _kci.indtest(1, xIndex, yIndex, zIndices, _data);
-//
-//            MWLogicalArray arr = (MWLogicalArray) output[0];
-//            boolean out = arr.getBoolean(1);
-//
-//            return out;
-//        } catch (MWException e) {
-//            e.printStackTrace();
-//        }
-//
-//        throw new IllegalStateException();
-        return true;
     }
 
     public int getNumTests() {

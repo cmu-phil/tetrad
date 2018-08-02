@@ -23,7 +23,6 @@ package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.util.MathUtils;
 import edu.cmu.tetrad.util.StatUtils;
 import org.apache.commons.math3.distribution.NormalDistribution;
 
@@ -158,25 +157,7 @@ public final class DaudinConditionalIndependence {
             if (h[i] == 0) h[i] = avg;
         }
 
-        // Scale z and alpha.
-        final int m1 = 10; // reference
-        final int m2 = dataSet.getNumColumns();
-
-        double alpha2 = ((m1 - 1) / (double) (m2 - 1)) * alpha;
-
-        double z1 = getZForAlpha(alpha);
-        double z2 = getZForAlpha(alpha2);
-
-        final int N1 = 500;
-        final int N2 = dataSet.getNumRows();
-        double z3 = sqrt(N2 / (double) N1) * z2;
-
-        this.cutoff = z1;
-
-        double alpha3 = 2.0 * (1.0 - new NormalDistribution(0, 1).cumulativeProbability(z3));
-
-        System.out.println("z1 = " + z1 + " z2 = " + z2 + " z3 = " + z3 + " alpha = " + alpha +
-                " alpha2 for " + N1 + " = " + alpha2 + " alpha3 for " + N2 + " = " + alpha3);
+        this.cutoff = getZForAlpha(alpha);
     }
 
     //=================PUBLIC METHODS====================//
@@ -239,9 +220,6 @@ public final class DaudinConditionalIndependence {
                     _x[i] = function(m, x[i]);
                     _y[i] = function(n, y[i]);
                 }
-
-//                System.out.println("m = " + m + " n = " + n + " var _x = " + StatUtils.variance(_x)
-//                        + " var _y = " + StatUtils.variance(_y));
 
                 if (variance(_x) < 1e-4 || varHat(_y) < 1e-4) continue;
 
@@ -415,16 +393,16 @@ public final class DaudinConditionalIndependence {
 
         // Testing the hypothesis that _x and _y are uncorrelated and assuming that 4th moments of _x and _y
         // are finite and that the sample is large.
-        _x = standardize(_x);
-        _y = standardize(_y);
+        double[] __x = standardize(_x);
+        double[] __y = standardize(_y);
 
-        double r = covariance(_x, _y); // correlation
-        int N = _x.length;
+        double r = covariance(__x, __y); // correlation
+        int N = __x.length;
 
         // Non-parametric Fisher Z test.
         double z = 0.5 * sqrt(N) * (log(1.0 + r) - log(1.0 - r));
 
-        return z / (sqrt((moment22(_x, _y))));
+        return z / (sqrt((moment22(__x, __y))));
     }
 
     private double moment22(double[] x, double[] y) {

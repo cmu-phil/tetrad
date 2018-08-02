@@ -137,6 +137,16 @@ public class TetradVector implements TetradSerializable {
             data.setEntry(i, value);
         }
     }
+
+    public TetradMatrix toColumnMatrix() {
+        TetradMatrix m = new TetradMatrix(size(), 1);
+
+        for (int i = 0; i < size(); i++) {
+            m.set(i, 0, get(i));
+        }
+
+        return m;
+    }
 }
 
 
