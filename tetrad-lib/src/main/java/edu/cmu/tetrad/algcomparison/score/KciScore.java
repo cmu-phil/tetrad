@@ -1,5 +1,6 @@
 package edu.cmu.tetrad.algcomparison.score;
 
+import edu.cmu.tetrad.annotation.Experimental;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.data.DataUtils;
@@ -22,6 +23,7 @@ import java.util.List;
         command = "kci-score",
         dataType = {DataType.Continuous}
 )
+@Experimental
 public class KciScore implements ScoreWrapper {
 
     static final long serialVersionUID = 23L;
