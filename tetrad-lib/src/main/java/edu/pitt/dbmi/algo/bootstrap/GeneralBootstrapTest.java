@@ -263,7 +263,7 @@ public class GeneralBootstrapTest {
 				for(EdgeTypeProbability etp : edgeTypeProbabilities) {
 					EdgeType edgeType = etp.getEdgeType();
 					double prob = etp.getProbability();
-					out.println(edgeType + ": " + prob);
+					//out.println(edgeType + ": " + prob);
 					if(edgeType != EdgeType.nil && prob > max_edge_prob) {
 						if(prob > max_edge_prob) {
 							chosen_edge_type = etp;
