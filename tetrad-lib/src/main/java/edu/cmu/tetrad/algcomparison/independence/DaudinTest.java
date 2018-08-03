@@ -24,7 +24,7 @@ import java.util.List;
         command = "dci-test",
         dataType = DataType.Continuous
 )
-public class ConditionalCorrelation implements IndependenceWrapper {
+public class DaudinTest implements IndependenceWrapper {
 
     static final long serialVersionUID = 23L;
     private Graph initialGraph = null;
