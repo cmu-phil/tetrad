@@ -21,9 +21,6 @@
 
 package edu.cmu.tetrad.search;
 
-import com.mathworks.extern.java.MWStructArray;
-import com.mathworks.toolbox.javabuilder.MWApplication;
-import com.mathworks.toolbox.javabuilder.MWCellArray;
 import com.mathworks.toolbox.javabuilder.MWException;
 import com.mathworks.toolbox.javabuilder.MWNumericArray;
 import edu.cmu.tetrad.data.DataSet;
@@ -43,7 +40,6 @@ import java.util.*;
  * for the nonlinear nonGaussian case.
  *
  * @author Joseph Ramsey
- * @deprecated
  */
 public final class IndTestKciMatlab implements IndependenceTest {
 
@@ -86,10 +82,6 @@ public final class IndTestKciMatlab implements IndependenceTest {
             throw new IllegalArgumentException("Data set must be continuous.");
         }
 
-        if (!MWApplication.isMCRInitialized()) {
-            MWApplication.initialize();
-        }
-
         List<Node> nodes = dataSet.getVariables();
 
         this.variables = Collections.unmodifiableList(nodes);
@@ -98,7 +90,6 @@ public final class IndTestKciMatlab implements IndependenceTest {
         this.dataSet = dataSet;
         data = this.dataSet.getDoubleData();
 
-//        _data = data.transpose().toArray();
         _data = data.transpose().toArray();
 
         nodeMap = new HashMap<>();
@@ -274,9 +265,10 @@ public final class IndTestKciMatlab implements IndependenceTest {
 
     private boolean checkIndependent(Node x, Node y, List<Node> z) {
         numTests++;
+        indtest_new.Class1 test = null;
 
         try {
-            indtest_new.Class1 test = new indtest_new.Class1();
+            test = new indtest_new.Class1();
 
             MWNumericArray _x = new MWNumericArray(new TetradVector(_data[nodeMap.get(x)]).toColumnMatrix().toArray());
             MWNumericArray _y = new MWNumericArray(new TetradVector(_data[nodeMap.get(y)]).toColumnMatrix().toArray());
@@ -314,7 +306,31 @@ public final class IndTestKciMatlab implements IndependenceTest {
             return independent;
         } catch (MWException e) {
             throw new RuntimeException(e);
+        } finally {
+            if (test != null) {
+                test.dispose();
+            }
         }
+    }
+
+    private double[][] columns(double[][] data, List<Node> z) {
+        double[][] cols = new double[z.size()][];
+        for (int i = 0; i < z.size(); i++) {
+            cols[i]= data[nodeMap.get(z.get(i))];
+        }
+        return cols;
+    }
+
+    private Number[][] getNumbers(double[][] d) {
+        final Number[][] d2 = new Number[d.length][d[0].length];
+
+        for (int i = 0; i < d.length; i++) {
+            for (int j = 0; j < d[0].length; j++) {
+                d2[i][j] = d[i][j];
+            }
+        }
+
+        return d2;
     }
 
     public int getNumTests() {

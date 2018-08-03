@@ -17,7 +17,7 @@ import java.util.List;
  * @author jdramsey
  */
 @TestOfIndependence(
-        name = "Kernel Independence Test",
+        name = "Kernel Independence Test (Java)",
         command = "kci",
         dataType = DataType.Continuous
 )
@@ -40,7 +40,7 @@ public class Kci implements IndependenceWrapper {
 
     @Override
     public String getDescription() {
-        return "Kernel Independence Test";
+        return "KCI (Java)";
     }
 
     @Override

@@ -18,7 +18,7 @@ import java.util.List;
  * @author jdramsey
  */
 @TestOfIndependence(
-        name = "Kernel Independence from Matlab",
+        name = "Kernel Independence (Matlab)",
         command = "kci-matlab",
         dataType = DataType.Continuous
 )
@@ -29,19 +29,13 @@ public class KciMatlab implements IndependenceWrapper {
 
     @Override
     public IndependenceTest getTest(DataModel dataSet, Parameters parameters) {
-        final IndTestKciMatlab kci = new IndTestKciMatlab(DataUtils.getContinuousDataSet(dataSet),
+        return new IndTestKciMatlab(DataUtils.getContinuousDataSet(dataSet),
                 parameters.getDouble("alpha"));
-//        kci.setApproximate(parameters.getBoolean("kciUseAppromation"));
-//        kci.setWidthMultiplier(parameters.getDouble("kernelMultiplier"));
-//        kci.setNumBootstraps(parameters.getInt("kciNumBootstraps"));
-//        kci.setThreshold(parameters.getDouble("thresholdForNumEigenvalues"));
-//        kci.setEpsilon(parameters.getDouble("kciEpsilon"));
-        return kci;
     }
 
     @Override
     public String getDescription() {
-        return "Kernel Independence Test";
+        return "KCI (Matlab)";
     }
 
     @Override

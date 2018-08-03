@@ -58,7 +58,7 @@ public class ConditionalCorrelation implements IndependenceWrapper {
 
     @Override
     public String getDescription() {
-        return "Conditional Correlation Test";
+        return "Daudin Test";
     }
 
     @Override

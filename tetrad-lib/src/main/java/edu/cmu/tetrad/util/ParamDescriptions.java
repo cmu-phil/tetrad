@@ -346,6 +346,18 @@ public class ParamDescriptions {
 
         map.put("selfLoopCoef", new ParamDescription(
                 "The coefficient for the self-loop (default 0.0)", 0.0, 0.0, Double.POSITIVE_INFINITY));
+
+        map.put("tsbetathr", new ParamDescription(
+                "Threshold to determine whether a coefficient in the Beta matrix implies an edge int h graph",
+                0.01, 0, Double.POSITIVE_INFINITY));
+
+        map.put("tstheta", new ParamDescription(
+                "Alasso threshold",
+                1.0, 0, Double.POSITIVE_INFINITY));
+
+        map.put("tssigma", new ParamDescription(
+                "ICA threshold",
+                1.0, 0, Double.POSITIVE_INFINITY));
     }
 
     public static ParamDescriptions getInstance() {
