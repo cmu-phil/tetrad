@@ -1,5 +1,6 @@
 package edu.cmu.tetrad.algcomparison.algorithm.multi;
 
+import com.mathworks.toolbox.javabuilder.MWApplication;
 import com.mathworks.toolbox.javabuilder.MWClassID;
 import com.mathworks.toolbox.javabuilder.MWException;
 import com.mathworks.toolbox.javabuilder.MWNumericArray;
@@ -12,7 +13,9 @@ import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.search.SearchLogUtils;
 import edu.cmu.tetrad.util.Parameters;
+import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetrad.util.TetradMatrix;
 import edu.pitt.dbmi.algo.bootstrap.BootstrapEdgeEnsemble;
 import edu.pitt.dbmi.algo.bootstrap.GeneralBootstrapTest;
@@ -51,7 +54,49 @@ public class TwoStep implements Algorithm, HasKnowledge, UsesScoreWrapper {
 
     @Override
     public Graph search(DataModel dataSet, Parameters parameters) {
-        final DataSet dataSet1 = (DataSet) dataSet;
+
+        class MyRunnable implements Runnable {
+            private Graph graph = null;
+            private DataSet dataSet;
+            private Parameters parameters;
+
+            private MyRunnable(DataSet dataSet, Parameters parameters) {
+                this.dataSet = dataSet;
+                this.parameters = parameters;
+            }
+
+            @Override
+            public void run() {
+                graph = runAlgorithm(dataSet, parameters);
+            }
+
+            public Graph getGraph() {
+                return graph;
+            }
+        }
+
+        final MyRunnable target = new MyRunnable((DataSet) dataSet, parameters);
+
+        Thread thread = new Thread(target);
+        thread.start();
+
+        while (thread.isAlive()) {
+            try {
+                Thread.sleep(500);
+
+                if (Thread.currentThread().isInterrupted()) {
+//                    thread.stop();
+                    throw new InterruptedException();
+                }
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+        }
+
+        return target.getGraph();
+    }
+
+    private Graph runAlgorithm(DataModel dataSet, Parameters parameters) {
         if (parameters.getInt("bootstrapSampleSize") < 1) {
 
             two_step_CD_regu.Class1 twostep = null;
@@ -64,7 +109,7 @@ public class TwoStep implements Algorithm, HasKnowledge, UsesScoreWrapper {
 
                 twostep = new two_step_CD_regu.Class1();
 
-                final TetradMatrix doubleData = dataSet1.getDoubleData();
+                final TetradMatrix doubleData = ((DataSet) dataSet).getDoubleData();
                 final TetradMatrix transpose = doubleData.transpose();
                 final double[][] d = transpose.toArray();
 
@@ -116,7 +161,7 @@ public class TwoStep implements Algorithm, HasKnowledge, UsesScoreWrapper {
             TwoStep twostep = new TwoStep(score);
             twostep.setKnowledge(knowledge);
 
-            DataSet data = dataSet1;
+            DataSet data = (DataSet) dataSet;
             GeneralBootstrapTest search = new GeneralBootstrapTest(data, twostep, parameters.getInt("bootstrapSampleSize"));
 
             BootstrapEdgeEnsemble edgeEnsemble = BootstrapEdgeEnsemble.Highest;

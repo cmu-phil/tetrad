@@ -23,7 +23,7 @@ import java.util.List;
         command = "daudin-score",
         dataType = {DataType.Continuous}
 )
-public class CciScore implements ScoreWrapper {
+public class DaudinScore implements ScoreWrapper {
 
     static final long serialVersionUID = 23L;
     private DataModel dataSet;

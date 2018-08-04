@@ -21,6 +21,7 @@
 
 package edu.cmu.tetrad.search;
 
+import com.mathworks.toolbox.javabuilder.MWApplication;
 import com.mathworks.toolbox.javabuilder.MWException;
 import com.mathworks.toolbox.javabuilder.MWNumericArray;
 import edu.cmu.tetrad.data.DataSet;
@@ -111,23 +112,63 @@ public final class IndTestKciMatlab implements IndependenceTest {
     }
 
     public boolean isIndependent(Node x, Node y, List<Node> z) {
-        boolean independent = checkIndependent(x, y, z);
 
-        if (verbose) {
-            if (independent) {
-                TetradLogger.getInstance().log("independencies",
-                        SearchLogUtils.independenceFactMsg(x, y, z, getPValue()));
-            } else {
-                TetradLogger.getInstance().log("dependencies",
-                        SearchLogUtils.dependenceFactMsg(x, y, z, getPValue()));
+        class MyRunnable implements Runnable {
+            private boolean verbose;
+            private boolean independent;
+
+            public MyRunnable(boolean verbaose) {
+                this.verbose = verbaose;
+            }
+
+            @Override
+            public void run() {
+                boolean independent = checkIndependent(x, y, z);
+
+                if (verbose) {
+                    if (independent) {
+                        TetradLogger.getInstance().log("independencies",
+                                SearchLogUtils.independenceFactMsg(x, y, z, getPValue()));
+                    } else {
+                        TetradLogger.getInstance().log("dependencies",
+                                SearchLogUtils.dependenceFactMsg(x, y, z, getPValue()));
+                    }
+                }
+
+                if (verbose) {
+                    SearchLogUtils.independenceFactMsg(x, y, z, getPValue());
+                }
+
+                this.independent = independent;
+            }
+
+            public boolean isIndependent() {
+                return independent;
             }
         }
 
-        if (verbose) {
-            SearchLogUtils.independenceFactMsg(x, y, z, getPValue());
+        final MyRunnable target = new MyRunnable(verbose);
+
+        Thread thread = new Thread(target);
+        thread.start();
+
+        while (thread.isAlive()) {
+            try {
+                Thread.sleep(500);
+
+                if (Thread.currentThread().isInterrupted()) {
+//                    Thread.currentThread().stop();
+                    MWApplication.terminate();
+                    throw new InterruptedException();
+                }
+            } catch (InterruptedException e) {
+//                Thread.currentThread().stop();
+                MWApplication.terminate();
+                throw new RuntimeException(e);
+            }
         }
 
-        return independent;
+        return target.isIndependent();
     }
 
     public boolean isIndependent(Node x, Node y, Node... z) {
@@ -282,7 +323,7 @@ public final class IndTestKciMatlab implements IndependenceTest {
 
             MWNumericArray _z = new MWNumericArray(new TetradMatrix(___z).transpose().toArray());
 
-            Object[] out = test.indtest_new(2, _x, _y, _z);//, new MWStructArray(new int[]{0}, new String[]{"width"}));
+            Object[] out = test.indtest_new(2, _x, _y, _z);
 
             MWNumericArray _p = (MWNumericArray) out[0];
 
