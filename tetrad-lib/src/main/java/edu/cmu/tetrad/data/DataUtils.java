@@ -25,7 +25,7 @@ import cern.colt.list.DoubleArrayList;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.regression.RegressionDataset;
 import edu.cmu.tetrad.regression.RegressionResult;
-import edu.cmu.tetrad.search.IndTestDaudinConditionalIndependence;
+import edu.cmu.tetrad.search.IndTestConditionalCorrelation;
 import edu.cmu.tetrad.search.IndTestFisherZ;
 import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.util.*;
@@ -2061,7 +2061,7 @@ public final class DataUtils {
 
             DataSet dataSet2 = new BoxDataSet(new VerticalDoubleDataBox(all2), nodes2);
 
-            IndependenceTest test = new IndTestDaudinConditionalIndependence(dataSet2, .2);
+            IndependenceTest test = new IndTestConditionalCorrelation(dataSet2, .2);
 
             return !test.isIndependent(X, Y);
         } catch (SingularMatrixException e) {

@@ -8,10 +8,12 @@ import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.data.DataUtils;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.graph.NodeType;
 import edu.cmu.tetrad.graph.SemGraph;
-import edu.cmu.tetrad.sem.*;
+import edu.cmu.tetrad.sem.GeneralizedSemIm;
+import edu.cmu.tetrad.sem.GeneralizedSemPm;
+import edu.cmu.tetrad.sem.TemplateExpander;
 import edu.cmu.tetrad.util.Parameters;
+import edu.cmu.tetrad.util.RandomUtil;
 
 import java.text.ParseException;
 import java.util.ArrayList;
@@ -23,12 +25,12 @@ import java.util.List;
 public class GeneralSemSimulation implements Simulation {
     static final long serialVersionUID = 23L;
     private RandomGraph randomGraph;
-    private List<DataSet> dataSets = new ArrayList<>();
-    private List<DataSet> dataSetsWithLatents = new ArrayList<>();
-    private List<Graph> graphs = new ArrayList<>();
     private GeneralizedSemPm pm;
-    private List<GeneralizedSemIm> ims;
-    private GeneralizedSemIm im = null;
+    private GeneralizedSemIm im;
+    private List<DataSet> dataSets = new ArrayList<>();
+    private List<DataSet> dataWithLatents = new ArrayList<>();
+    private List<Graph> graphs = new ArrayList<>();
+    private List<GeneralizedSemIm> ims = new ArrayList<>();
 
     public GeneralSemSimulation(RandomGraph graph) {
         this.randomGraph = graph;
@@ -54,10 +56,10 @@ public class GeneralSemSimulation implements Simulation {
     @Override
     public void createData(Parameters parameters) {
         Graph graph = randomGraph.createGraph(parameters);
-        ims = new ArrayList<>();
 
         dataSets = new ArrayList<>();
         graphs = new ArrayList<>();
+        ims = new ArrayList<>();
 
         for (int i = 0; i < parameters.getInt("numRuns"); i++) {
             System.out.println("Simulating dataset #" + (i + 1));
@@ -69,37 +71,54 @@ public class GeneralSemSimulation implements Simulation {
             graphs.add(graph);
 
             DataSet dataSet = simulate(graph, parameters);
+
+            if (parameters.getBoolean("standardize")) {
+                dataSet = DataUtils.standardizeData(dataSet);
+            }
+
+            double variance = parameters.getDouble("measurementVariance");
+
+            if (variance > 0) {
+                for (int k = 0; k < dataSet.getNumRows(); k++) {
+                    for (int j = 0; j < dataSet.getNumColumns(); j++) {
+                        double d = dataSet.getDouble(k, j);
+                        double norm = RandomUtil.getInstance().nextNormal(0, Math.sqrt(variance));
+                        dataSet.setDouble(k, j, d + norm);
+                    }
+                }
+            }
+
+            if (parameters.getBoolean("randomizeColumns")) {
+                dataSet = DataUtils.reorderColumns(dataSet);
+            }
+
             dataSet.setName("" + (i + 1));
             dataSets.add(DataUtils.restrictToMeasured(dataSet));
-            dataSetsWithLatents.add(dataSet);
+            dataWithLatents.add(dataSet);
         }
     }
 
     private synchronized DataSet simulate(Graph graph, Parameters parameters) {
-        if (im == null) {
-            if (pm == null) {
-                pm = getPm(graph, parameters);// new GeneralizedSemPm(graph);
+        pm = getPm(graph, parameters);
+        im = new GeneralizedSemIm(pm);
+        ims.add(im);
+        return im.simulateData(parameters.getInt("sampleSize"), true);
 
-                System.out.println(pm);
-
-                im = new GeneralizedSemIm(pm);
-
-                System.out.println(im);
-
-                ims.add(im);
-                return im.simulateData(parameters.getInt("sampleSize"), true);
-            } else {
-                im = new GeneralizedSemIm(pm);
-
-                System.out.println(im);
-
-                ims.add(im);
-                return im.simulateData(parameters.getInt("sampleSize"), true);
-            }
-        } else {
-            ims.add(im);
-            return im.simulateData(parameters.getInt("sampleSize"), true);
-        }
+//        if (im == null) {
+//            if (pm == null) {
+//                pm = getPm(graph, parameters);// new GeneralizedSemPm(graph);
+//                im = new GeneralizedSemIm(pm);
+//                ims.add(im);
+//                return im.simulateData(parameters.getInt("sampleSize"), true);
+//            } else {
+//                im = new GeneralizedSemIm(pm);
+//                ims.add(im);
+//                return im.simulateData(parameters.getInt("sampleSize"), true);
+//            }
+//        } else {
+//            ims.add(im);
+//            return im.simulateData(parameters.getInt("sampleSize"), true);
+//        }
     }
 
     @Override

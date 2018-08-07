@@ -52,7 +52,7 @@ import static org.junit.Assert.assertTrue;
  * @author Joseph Ramsey
  */
 @Ignore
-public class TestDaudinConditionalIndependence {
+public class TestConditionalCorrelationIndependence {
 
     private boolean printStuff = false;
 

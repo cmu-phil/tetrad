@@ -4,8 +4,8 @@ import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.data.DataUtils;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.search.DaudinConditionalIndependence;
-import edu.cmu.tetrad.search.IndTestDaudinConditionalIndependence;
+import edu.cmu.tetrad.search.ConditionalCorrelationIndependence;
+import edu.cmu.tetrad.search.IndTestConditionalCorrelation;
 import edu.cmu.tetrad.search.Score;
 import edu.cmu.tetrad.search.ScoredIndTest;
 import edu.cmu.tetrad.util.Parameters;
@@ -19,11 +19,11 @@ import java.util.List;
  * @author jdramsey
  */
 @edu.cmu.tetrad.annotation.Score(
-        name = "Daudin Score",
-        command = "daudin-score",
+        name = "CCI Score",
+        command = "cci-score",
         dataType = {DataType.Continuous}
 )
-public class DaudinScore implements ScoreWrapper {
+public class CciScore implements ScoreWrapper {
 
     static final long serialVersionUID = 23L;
     private DataModel dataSet;
@@ -31,12 +31,12 @@ public class DaudinScore implements ScoreWrapper {
     @Override
     public Score getScore(DataModel dataSet, Parameters parameters) {
         this.dataSet = dataSet;
-        final IndTestDaudinConditionalIndependence cci = new IndTestDaudinConditionalIndependence(DataUtils.getContinuousDataSet(dataSet),
+        final IndTestConditionalCorrelation cci = new IndTestConditionalCorrelation(DataUtils.getContinuousDataSet(dataSet),
                 parameters.getDouble("alpha"));
         if (parameters.getInt("kernelType") == 1) {
-            cci.setKernel(DaudinConditionalIndependence.Kernel.Gaussian);
+            cci.setKernel(ConditionalCorrelationIndependence.Kernel.Gaussian);
         } else if (parameters.getInt("kernelType") == 2) {
-            cci.setKernel(DaudinConditionalIndependence.Kernel.Epinechnikov);
+            cci.setKernel(ConditionalCorrelationIndependence.Kernel.Epinechnikov);
         } else {
             throw new IllegalStateException("Kernel not configured.");
         }
@@ -44,9 +44,9 @@ public class DaudinScore implements ScoreWrapper {
         cci.setKernelMultiplier(parameters.getDouble("kernelMultiplier"));
 
         if (parameters.getInt("basisType") == 1) {
-            cci.setBasis(DaudinConditionalIndependence.Basis.Polynomial);
+            cci.setBasis(ConditionalCorrelationIndependence.Basis.Polynomial);
         } else if (parameters.getInt("basisType") == 2) {
-            cci.setBasis(DaudinConditionalIndependence.Basis.Cosine);
+            cci.setBasis(ConditionalCorrelationIndependence.Basis.Cosine);
         } else {
             throw new IllegalStateException("Basis not configured.");
         }
@@ -56,7 +56,7 @@ public class DaudinScore implements ScoreWrapper {
 
     @Override
     public String getDescription() {
-        return "Daudin Score";
+        return "CCI Score";
     }
 
     @Override

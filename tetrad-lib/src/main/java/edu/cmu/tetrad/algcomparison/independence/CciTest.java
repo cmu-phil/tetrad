@@ -5,8 +5,8 @@ import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.data.DataUtils;
 import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.search.DaudinConditionalIndependence;
-import edu.cmu.tetrad.search.IndTestDaudinConditionalIndependence;
+import edu.cmu.tetrad.search.ConditionalCorrelationIndependence;
+import edu.cmu.tetrad.search.IndTestConditionalCorrelation;
 import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.util.Parameters;
 import java.util.ArrayList;
@@ -20,32 +20,32 @@ import java.util.List;
  * @author jdramsey
  */
 @TestOfIndependence(
-        name = "Daudin Independence Test",
-        command = "dci-test",
+        name = "Conditional Correlation Independence Test",
+        command = "cci-test",
         dataType = DataType.Continuous
 )
-public class DaudinTest implements IndependenceWrapper {
+public class CciTest implements IndependenceWrapper {
 
     static final long serialVersionUID = 23L;
     private Graph initialGraph = null;
 
     @Override
     public IndependenceTest getTest(DataModel dataSet, Parameters parameters) {
-        final IndTestDaudinConditionalIndependence cci = new IndTestDaudinConditionalIndependence(DataUtils.getContinuousDataSet(dataSet),
+        final IndTestConditionalCorrelation cci = new IndTestConditionalCorrelation(DataUtils.getContinuousDataSet(dataSet),
                 parameters.getDouble("alpha"));
         if (parameters.getInt("kernelType") == 1) {
-            cci.setKernel(DaudinConditionalIndependence.Kernel.Gaussian);
+            cci.setKernel(ConditionalCorrelationIndependence.Kernel.Gaussian);
 
         } else if (parameters.getInt("kernelType") == 2) {
-            cci.setKernel(DaudinConditionalIndependence.Kernel.Epinechnikov);
+            cci.setKernel(ConditionalCorrelationIndependence.Kernel.Epinechnikov);
         } else {
             throw new IllegalStateException("Kernel not configured.");
         }
 
         if (parameters.getInt("basisType") == 1) {
-            cci.setBasis(DaudinConditionalIndependence.Basis.Polynomial);
+            cci.setBasis(ConditionalCorrelationIndependence.Basis.Polynomial);
         } else if (parameters.getInt("basisType") == 2) {
-            cci.setBasis(DaudinConditionalIndependence.Basis.Cosine);
+            cci.setBasis(ConditionalCorrelationIndependence.Basis.Cosine);
         } else {
             throw new IllegalStateException("Basis not configured.");
         }
@@ -58,7 +58,7 @@ public class DaudinTest implements IndependenceWrapper {
 
     @Override
     public String getDescription() {
-        return "Daudin Test";
+        return "CCI Test";
     }
 
     @Override

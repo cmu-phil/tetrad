@@ -58,7 +58,7 @@ public final class OrientCollidersMaxP {
      * Searches for a PAG satisfying the description in Thomas Richardson (1997), dissertation,
      * Carnegie Mellon University. Uses a simplification of that algorithm.
      */
-    public void orient(Graph graph) {
+    public synchronized void orient(Graph graph) {
         addColliders(graph);
     }
 
@@ -90,50 +90,54 @@ public final class OrientCollidersMaxP {
 
         List<Node> nodes = graph.getNodes();
 
-        class Task extends RecursiveTask<Boolean> {
-            int from;
-            int to;
-            int chunk = 20;
-            List<Node> nodes;
-            Graph graph;
+//        class Task extends RecursiveTask<Boolean> {
+//            int from;
+//            int to;
+//            int chunk = 20;
+//            List<Node> nodes;
+//            Graph graph;
+//
+//            public Task(List<Node> nodes, Graph graph, Map<Triple, Double> scores, int from, int to) {
+//                this.nodes = nodes;
+//                this.graph = graph;
+//                this.from = from;
+//                this.to = to;
+//            }
+//
+//            @Override
+//            protected Boolean compute() {
+//                if (to - from <= chunk) {
+//                    for (int i = from; i < to; i++) {
+//                        if (Thread.currentThread().isInterrupted()) {
+//                            break;
+//                        }
+//
+//                        doNode(graph, scores, nodes.get(i));
+//                    }
+//
+//                    return true;
+//                } else {
+//                    int mid = (to + from) / 2;
+//
+//                    Task left = new Task(nodes, graph, scores, from, mid);
+//                    Task right = new Task(nodes, graph, scores, mid, to);
+//
+//                    left.fork();
+//                    right.compute();
+//                    left.join();
+//
+//                    return true;
+//                }
+//            }
+//        }
 
-            public Task(List<Node> nodes, Graph graph, Map<Triple, Double> scores, int from, int to) {
-                this.nodes = nodes;
-                this.graph = graph;
-                this.from = from;
-                this.to = to;
-            }
-
-            @Override
-            protected Boolean compute() {
-                if (to - from <= chunk) {
-                    for (int i = from; i < to; i++) {
-                        if (Thread.currentThread().isInterrupted()) {
-                            break;
-                        }
-
-                        doNode(graph, scores, nodes.get(i));
-                    }
-
-                    return true;
-                } else {
-                    int mid = (to + from) / 2;
-
-                    Task left = new Task(nodes, graph, scores, from, mid);
-                    Task right = new Task(nodes, graph, scores, mid, to);
-
-                    left.fork();
-                    right.compute();
-                    left.join();
-
-                    return true;
-                }
-            }
+//        Task task = new Task(nodes, graph, scores, 0, nodes.size());
+//
+//        ForkJoinPoolInstance.getInstance().getPool().invoke(task);
+//
+        for (int i = 0; i < nodes.size(); i++) {
+            doNode(graph, scores, nodes.get(i));
         }
-
-        Task task = new Task(nodes, graph, scores, 0, nodes.size());
-
-        ForkJoinPoolInstance.getInstance().getPool().invoke(task);
 
         List<Triple> tripleList = new ArrayList<>(scores.keySet());
 

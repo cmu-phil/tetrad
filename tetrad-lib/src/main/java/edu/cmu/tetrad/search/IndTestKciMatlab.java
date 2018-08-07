@@ -21,9 +21,10 @@
 
 package edu.cmu.tetrad.search;
 
-import com.mathworks.toolbox.javabuilder.MWApplication;
-import com.mathworks.toolbox.javabuilder.MWException;
-import com.mathworks.toolbox.javabuilder.MWNumericArray;
+//import com.mathworks.toolbox.javabuilder.MWApplication;
+//import com.mathworks.toolbox.javabuilder.MWException;
+//import com.mathworks.toolbox.javabuilder.MWNumericArray;
+
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.ICovarianceMatrix;
 import edu.cmu.tetrad.graph.IndependenceFact;
@@ -158,12 +159,12 @@ public final class IndTestKciMatlab implements IndependenceTest {
 
                 if (Thread.currentThread().isInterrupted()) {
 //                    Thread.currentThread().stop();
-                    MWApplication.terminate();
+//                    MWApplication.terminate();
                     throw new InterruptedException();
                 }
             } catch (InterruptedException e) {
 //                Thread.currentThread().stop();
-                MWApplication.terminate();
+//                MWApplication.terminate();
                 throw new RuntimeException(e);
             }
         }
@@ -308,56 +309,57 @@ public final class IndTestKciMatlab implements IndependenceTest {
         numTests++;
         indtest_new.Class1 test = null;
 
-        try {
-            test = new indtest_new.Class1();
+//        try {
+//            test = new indtest_new.Class1();
 
-            MWNumericArray _x = new MWNumericArray(new TetradVector(_data[nodeMap.get(x)]).toColumnMatrix().toArray());
-            MWNumericArray _y = new MWNumericArray(new TetradVector(_data[nodeMap.get(y)]).toColumnMatrix().toArray());
+//            MWNumericArray _x = new MWNumericArray(new TetradVector(_data[nodeMap.get(x)]).toColumnMatrix().toArray());
+//            MWNumericArray _y = new MWNumericArray(new TetradVector(_data[nodeMap.get(y)]).toColumnMatrix().toArray());
 
-            double[][] ___z = new double[z.size()][];
+        double[][] ___z = new double[z.size()][];
 
 
-            for (int c = 0; c < z.size(); c++) {
-                ___z[c] = _data[nodeMap.get(z.get(c))];
-            }
+        for (int c = 0; c < z.size(); c++) {
+            ___z[c] = _data[nodeMap.get(z.get(c))];
+        }
 
-            MWNumericArray _z = new MWNumericArray(new TetradMatrix(___z).transpose().toArray());
+//            MWNumericArray _z = new MWNumericArray(new TetradMatrix(___z).transpose().toArray());
 
-            Object[] out = test.indtest_new(2, _x, _y, _z);
+//            Object[] out = test.indtest_new(2, _x, _y, _z);
 
-            MWNumericArray _p = (MWNumericArray) out[0];
+//            MWNumericArray _p = (MWNumericArray) out[0];
 
-            double p = _p.getDouble();
+        double p = 1.0;//_p.getDouble();
 
-            boolean independent = p > alpha;
+        boolean independent = p > alpha;
 
-            IndependenceFact fact = new IndependenceFact(x, y, z);
+        IndependenceFact fact = new IndependenceFact(x, y, z);
 
-            if (verbose) {
-                if (independent) {
-                    System.out.println(fact + " INDEPENDENT p = " + p);
-                    TetradLogger.getInstance().log("info", fact + " Independent");
+        if (verbose) {
+            if (independent) {
+                System.out.println(fact + " INDEPENDENT p = " + p);
+                TetradLogger.getInstance().log("info", fact + " Independent");
 
-                } else {
-                    System.out.println(fact + " dependent p = " + p);
-                    TetradLogger.getInstance().log("info", fact.toString());
-                }
-            }
-
-            return independent;
-        } catch (MWException e) {
-            throw new RuntimeException(e);
-        } finally {
-            if (test != null) {
-                test.dispose();
+            } else {
+                System.out.println(fact + " dependent p = " + p);
+                TetradLogger.getInstance().log("info", fact.toString());
             }
         }
+
+        return independent;
+//        }
+//        catch (MWException e) {
+//            throw new RuntimeException(e);
+//        } finally {
+//            if (test != null) {
+//                test.dispose();
     }
+//        }
+//}
 
     private double[][] columns(double[][] data, List<Node> z) {
         double[][] cols = new double[z.size()][];
         for (int i = 0; i < z.size(); i++) {
-            cols[i]= data[nodeMap.get(z.get(i))];
+            cols[i] = data[nodeMap.get(z.get(i))];
         }
         return cols;
     }
