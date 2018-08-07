@@ -67,6 +67,7 @@ public class ParamDescriptions {
         map.put("generalSemFunctionTemplateMeasured", new ParamDescription("General function template for measured variables", "TSUM(NEW(B)*$)"));
         map.put("generalSemFunctionTemplateLatent", new ParamDescription("General function template for latent variables", "TSUM(NEW(B)*$)"));
         map.put("generalSemErrorTemplate", new ParamDescription("General function for error terms", "Beta(2, 5)"));
+        map.put("generalSemParameterTemplate", new ParamDescription("General function for parameters", "U(-1, 1)"));
         map.put("coefSymmetric", new ParamDescription("Yes if negative coefficient values should be considered", true));
         map.put("covSymmetric", new ParamDescription("Yes if negative covariance values should be considered", true));
 

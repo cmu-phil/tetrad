@@ -154,6 +154,13 @@
             <version>1.11.2</version>
         </dependency>
 
+        <!--&lt;!&ndash; https://mvnrepository.com/artifact/org.nuiton.thirdparty/JRI &ndash;&gt;-->
+        <!--<dependency>-->
+            <!--<groupId>org.nuiton.thirdparty</groupId>-->
+            <!--<artifactId>JRI</artifactId>-->
+            <!--<version>0.9-9</version>-->
+        <!--</dependency>-->
+
     </dependencies>
 
     <!--<distributionManagement> -->

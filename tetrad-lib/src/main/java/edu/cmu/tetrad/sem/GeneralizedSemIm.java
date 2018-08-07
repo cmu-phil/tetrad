@@ -285,7 +285,7 @@ public class GeneralizedSemIm implements IM, Simulator, TetradSerializable {
         return buf.toString();
     }
 
-    public DataSet simulateData(int sampleSize, boolean latentDataSaved) {
+    public synchronized DataSet simulateData(int sampleSize, boolean latentDataSaved) {
         long seed = RandomUtil.getInstance().getSeed();
         TetradLogger.getInstance().log("info", "Seed = " + seed);
 
@@ -834,7 +834,7 @@ public class GeneralizedSemIm implements IM, Simulator, TetradSerializable {
      * @param sampleSize The number of samples to be drawn. Must be a positive
      *                   integer.
      */
-    public DataSet simulateDataFisher(int sampleSize) {
+    public synchronized DataSet simulateDataFisher(int sampleSize) {
         return simulateDataFisher(sampleSize, 50, 1e-5);
     }
 
@@ -851,7 +851,7 @@ public class GeneralizedSemIm implements IM, Simulator, TetradSerializable {
      *                              Must be positive integer.
      * @param epsilon               The convergence criterion; |xi.t - xi.t-1| < epsilon.
      */
-    public DataSet simulateDataFisher(int sampleSize, int intervalBetweenShocks,
+    public synchronized DataSet simulateDataFisher(int sampleSize, int intervalBetweenShocks,
                                       double epsilon) {
         boolean printedUndefined = false;
         boolean printedInfinite = false;

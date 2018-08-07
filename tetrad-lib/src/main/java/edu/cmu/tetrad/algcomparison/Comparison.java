@@ -457,13 +457,14 @@ public class Comparison {
      * @param parameters The parameters to be used in the simulationWrapper.
      */
     public void saveToFiles(String dataPath, Simulation simulation, Parameters parameters) {
+        simulation.createData(parameters);
 
         File dir0 = new File(dataPath);
         File dir;
         //int i = 0;
 
         dir = new File(dir0, "save");
-        
+
 //
 //        do {
 //            dir = new File(dir0, "Simulation" + (++i));
@@ -480,25 +481,25 @@ public class Comparison {
         //if(!dir.exists()){
         //	dir.mkdirs();
         //}
-        
+
         try {
-	    	int numDataSets = simulation.getNumDataModels();
-	    	if(numDataSets <= 0){
-	    		
-	    		File dir1 = new File(dir, "graph");
-	            File dir2 = new File(dir, "data");
-	
-	            dir1.mkdirs();
-	            dir2.mkdirs();
-	            
-	    		PrintStream out = new PrintStream(new FileOutputStream(new File(dir, "parameters.txt")));
-	            out.println(simulation.getDescription());
-	            out.println(parameters);
-	            out.close();
-	            
-	    		return;
-	    	}
-	        List<SimulationWrapper> simulationWrappers = getSimulationWrappers(simulation, parameters);
+            int numDataSets = simulation.getNumDataModels();
+            if (numDataSets <= 0) {
+
+                File dir1 = new File(dir, "graph");
+                File dir2 = new File(dir, "data");
+
+                dir1.mkdirs();
+                dir2.mkdirs();
+
+                PrintStream out = new PrintStream(new FileOutputStream(new File(dir, "parameters.txt")));
+                out.println(simulation.getDescription());
+                out.println(parameters);
+                out.close();
+
+                return;
+            }
+            List<SimulationWrapper> simulationWrappers = getSimulationWrappers(simulation, parameters);
 
             int index = 0;
 
@@ -510,14 +511,14 @@ public class Comparison {
                 simulationWrapper.createData(simulationWrapper.getSimulationSpecificParameters());
 
                 File subdir = dir;
-                if(simulationWrappers.size() > 1){
+                if (simulationWrappers.size() > 1) {
                     index++;
 
                     subdir = new File(dir, "" + index);
                     subdir.mkdirs();
                 }
 
-            	File dir1 = new File(subdir, "graph");
+                File dir1 = new File(subdir, "graph");
                 File dir2 = new File(subdir, "data");
                 File dir2a = new File(subdir, "data.with.latents");
 
@@ -1111,7 +1112,7 @@ public class Comparison {
     }
 
     private void printParameters(List<String> names, Parameters parameters, PrintStream out) {
-    	out.println("Comparison.printParameters");
+        out.println("Comparison.printParameters");
         ParamDescriptions descriptions = ParamDescriptions.getInstance();
 
         for (String name : names) {
@@ -1557,9 +1558,10 @@ public class Comparison {
 
                     double stat = statTables[u][newOrder[t]][statIndex];
 
-                    if (stat == 0.0) {
-                        table.setToken(t + 1, initialColumn + statIndex, "-");
-                    } else if (stat == Double.POSITIVE_INFINITY) {
+//                    if (stat == 0.0) {
+//                        table.setToken(t + 1, initialColumn + statIndex, "-");
+//                    } else
+                    if (stat == Double.POSITIVE_INFINITY) {
                         table.setToken(t + 1, initialColumn + statIndex, "Yes");
                     } else if (stat == Double.NEGATIVE_INFINITY) {
                         table.setToken(t + 1, initialColumn + statIndex, "No");

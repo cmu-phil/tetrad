@@ -75,15 +75,24 @@ public class GeneralSemSimulation implements Simulation {
         }
     }
 
-    private DataSet simulate(Graph graph, Parameters parameters) {
+    private synchronized DataSet simulate(Graph graph, Parameters parameters) {
         if (im == null) {
             if (pm == null) {
-                pm = new GeneralizedSemPm(graph);
+                pm = getPm(graph, parameters);// new GeneralizedSemPm(graph);
+
+                System.out.println(pm);
+
                 im = new GeneralizedSemIm(pm);
+
+                System.out.println(im);
+
                 ims.add(im);
                 return im.simulateData(parameters.getInt("sampleSize"), true);
             } else {
                 im = new GeneralizedSemIm(pm);
+
+                System.out.println(im);
+
                 ims.add(im);
                 return im.simulateData(parameters.getInt("sampleSize"), true);
             }
@@ -147,27 +156,28 @@ public class GeneralSemSimulation implements Simulation {
         List<Node> variablesNodes = pm.getVariableNodes();
         List<Node> errorNodes = pm.getErrorNodes();
 
-        String measuredFunction = parameters.getString("generalSemFunctionTemplateMeasured");
-        String latentFunction = parameters.getString("generalSemFunctionTemplateLatent");
-        String error = parameters.getString("generalSemErrorTemplate");
-
         try {
+
             for (Node node : variablesNodes) {
-                if (node.getNodeType() == NodeType.LATENT) {
-                    String _template = TemplateExpander.getInstance().expandTemplate(
-                            latentFunction, pm, node);
-                    pm.setNodeExpression(node, _template);
-                } else {
-                    String _template = TemplateExpander.getInstance().expandTemplate(
-                            measuredFunction, pm, node);
-                    pm.setNodeExpression(node, _template);
-                }
+                String _template = TemplateExpander.getInstance().expandTemplate(
+                        parameters.getString("generalSemFunctionTemplateMeasured"), pm, node);
+                pm.setNodeExpression(node, _template);
             }
 
             for (Node node : errorNodes) {
-                String _template = TemplateExpander.getInstance().expandTemplate(error, pm, node);
+                String _template = TemplateExpander.getInstance().expandTemplate(
+                        parameters.getString("generalSemErrorTemplate"), pm, node);
                 pm.setNodeExpression(node, _template);
             }
+
+            for (String parameter : pm.getParameters()) {
+                pm.setParameterExpression(parameter, parameters.getString("generalSemParameterTemplate"));
+            }
+
+            pm.setVariablesTemplate(parameters.getString("generalSemFunctionTemplateMeasured"));
+            pm.setErrorsTemplate(parameters.getString("generalSemErrorTemplate"));
+            pm.setParametersTemplate(parameters.getString("generalSemParameterTemplate"));
+
         } catch (ParseException e) {
             System.out.println(e);
         }

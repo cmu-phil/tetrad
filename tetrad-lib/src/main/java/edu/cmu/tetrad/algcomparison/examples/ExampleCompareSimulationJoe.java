@@ -21,13 +21,13 @@
 
 package edu.cmu.tetrad.algcomparison.examples;
 
+import com.mathworks.engine.MatlabEngine;
 import edu.cmu.tetrad.algcomparison.Comparison;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithms;
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern.*;
 import edu.cmu.tetrad.algcomparison.graph.RandomForward;
-import edu.cmu.tetrad.algcomparison.independence.DaudinTest;
-import edu.cmu.tetrad.algcomparison.simulation.SemSimulation;
-import edu.cmu.tetrad.algcomparison.simulation.Simulations;
+import edu.cmu.tetrad.algcomparison.independence.*;
+import edu.cmu.tetrad.algcomparison.simulation.*;
 import edu.cmu.tetrad.algcomparison.statistic.*;
 import edu.cmu.tetrad.util.Parameters;
 
@@ -39,24 +39,34 @@ import edu.cmu.tetrad.util.Parameters;
 public class ExampleCompareSimulationJoe {
     public static void main(String... args) {
         Parameters parameters = new Parameters();
-        parameters.set("numRuns", 5);
-        parameters.set("numMeasures", 5);
+        parameters.set("numRuns", 3);
+        parameters.set("numMeasures", 10);
         parameters.set("avgDegree", 2);
-        parameters.set("sampleSize", 100, 200, 500);
-        parameters.set("differentGraphs", true);
+        parameters.set("sampleSize", 500);
+        parameters.set("differentGraphs", false);
 
         parameters.set("fasRule", 1);
-        parameters.set("colliderDiscoveryRule", 1);
+        parameters.set("colliderDiscoveryRule", 3);
         parameters.set("conflictRule", 3);
         parameters.set("depth", -1);
         parameters.set("useMaxPOrientationHeuristic", false);
         parameters.set("maxPOrientationMaxPathLength", 3);
 
-        parameters.set("alpha", 0.001, 0.01, 0.05);
+        parameters.set("alpha", 0.001);
         parameters.set("numBasisFunctions", 6);
-        parameters.set("kernelType", 1, 2);
-        parameters.set("kernelMultiplier", 0.5, 1.0, 1.5);
-        parameters.set("basisType", 1, 2);
+        parameters.set("kernelType", 1);
+        parameters.set("kernelMultiplier", 1);
+        parameters.set("basisType", 2);
+
+        parameters.set("penaltyDiscount", 1);
+
+        final String function = "TSUM(cos($))";
+//        final String function = "1 - TSUM(4 * exp(-$)^2 / 2) * $))";
+//        final String function = "1 - 4 * exp(-(TSUM($))^2 / 2) * $ * $ * $";
+        parameters.set("generalSemFunctionTemplateMeasured", function);
+        parameters.set("generalSemFunctionTemplateLatent", function);
+        parameters.set("generalSemErrorTemplate", "N(0, 0.5)");
+        parameters.set("generalSemParameterTemplate", "U(.4, .4001)");
 
         parameters.set("verbose", true);
 
@@ -77,32 +87,41 @@ public class ExampleCompareSimulationJoe {
         statistics.add(new SHD());
         statistics.add(new ElapsedTime());
 
-//        statistics.setWeight("AP", 1.0);
-//        statistics.setWeight("AR", 0.5);
-//        statistics.setWeight("AHP", 0.5);
-//        statistics.setWeight("AHR", 0.5);
-        statistics.setWeight("SHD", 1.0);
+        statistics.setWeight("AP", 1.0);
+        statistics.setWeight("AR", 0.5);
+        statistics.setWeight("AHP", 1.0);
+        statistics.setWeight("AHR", 0.5);
+//        statistics.setWeight("SHD", 1.0);
 
         Algorithms algorithms = new Algorithms();
 
 //        algorithms.add(new PcAll(new Kci()));
 //        algorithms.add(new PcAll(new KciMatlab()));
+        algorithms.add(new PcAll(new RcitJRI()));
         algorithms.add(new PcAll(new DaudinTest()));
+        algorithms.add(new PcAll(new ConditionalGaussianLRT()));
+        algorithms.add(new PcAll(new FisherZ()));
+        algorithms.add(new PcAll(new SemBicTest()));
 
         Simulations simulations = new Simulations();
 
-        simulations.add(new SemSimulation(new RandomForward()));
+        final GeneralSemSimulation simulation = new GeneralSemSimulation(new RandomForward());
+        simulations.add(simulation);
+//        Simulation simulation = new LoadDataAndGraphs("comparison10vars");
 
         Comparison comparison = new Comparison();
 
         comparison.setShowAlgorithmIndices(true);
         comparison.setShowSimulationIndices(true);
-        comparison.setSortByUtility(true);
+        comparison.setSortByUtility(false);
         comparison.setShowUtilities(true);
         comparison.setParallelized(false);
         comparison.setComparisonGraph(Comparison.ComparisonGraph.Pattern_of_the_true_DAG);
 
-        comparison.compareFromSimulations("comparisonJoe", simulations, algorithms, statistics, parameters);
+//        comparison.saveToFiles("comparison10vars", simulation, parameters);
+//        comparison.compareFromFiles("comparison10vars", "comparison10vars", algorithms, statistics, parameters);
+//
+        comparison.compareFromSimulations("comparison10vars", simulations, algorithms, statistics, parameters);
     }
 }
 

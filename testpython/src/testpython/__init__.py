@@ -1,11 +1,13 @@
 import numpy as np
+import fcit
 
-N = 500
-x = np.random.random((1, N))
-y = np.random.random((1, N))
+print(np.version.version)
 
-print(x)
+N = 1000
+x = np.random.random((N, 1))
+y = np.random.random((N, 1))
+z = np.random.random((N, 2))
 
-print(3+4)
-
-print(5)
+for i in range(1, 10):
+    p = fcit.test(x, x)
+    print(p)
