@@ -82,6 +82,8 @@ public final class IndTestChiSquare implements IndependenceTest {
     private double determinationP = 0.99;
     private HashSet<IndependenceFact> facts;
 
+    private boolean verbose = false;
+
     /**
      * Constructs a new independence checker to check conditional independence facts for discrete data using a g square
      * test.
@@ -408,6 +410,16 @@ public final class IndTestChiSquare implements IndependenceTest {
 
     public HashSet<IndependenceFact> getFacts() {
         return facts;
+    }
+
+    @Override
+    public boolean isVerbose() {
+        return verbose;
+    }
+
+    @Override
+    public void setVerbose(boolean verbose) {
+        this.verbose = verbose;
     }
 }
 

@@ -57,6 +57,7 @@ public class TextTable {
      */
     private int columnSpacing = 2;
     private boolean tabDelimited;
+    private boolean latex = false;
 
     /**
      * Construct the text table; the table has a fixed number of rows and
@@ -158,6 +159,19 @@ public class TextTable {
 
         int[] colWidths = new int[tokens[0].length];
 
+        if (latex) {
+            String f = "c";
+
+            if (justification == LEFT_JUSTIFIED) f = "l";
+            else if (justification == RIGHT_JUSTIFIED) f = "r";
+
+            buffer.append("\\begin{tabular}{|");
+            for (int c = 0; c < getNumColumns(); c++) {
+                buffer.append(" ").append(f).append(" |");
+            }
+            buffer.append("}\n");
+        }
+
         for (int j = 0; j < tokens[0].length; j++) {
             for (String[] token : tokens) {
                 if (token[j].length() > colWidths[j]) {
@@ -169,7 +183,13 @@ public class TextTable {
         for (String[] token1 : tokens) {
             for (int j = 0; j < tokens[0].length; j++) {
 
-                if (tabDelimited) {
+                if (isLatex()) {
+                    buffer.append(token1[j]);
+
+                    if (j < tokens[0].length - 1) {
+                        buffer.append(" & ");
+                    }
+                } else if (tabDelimited) {
                     buffer.append(token1[j]);
 
                     if (j < tokens[0].length - 1) {
@@ -198,14 +218,32 @@ public class TextTable {
                 }
             }
 
-            buffer.append("\n");
+            if (latex) {
+                buffer.append(" \\\\\n");
+            } else {
+                buffer.append("\n");
+            }
         }
+
+        if (latex) {
+            buffer.append("\\end{tabular}");
+        }
+
+        buffer.append(("\n"));
 
         return buffer.toString();
     }
 
     public void setTabDelimited(boolean tabDelimited) {
         this.tabDelimited = tabDelimited;
+    }
+
+    public boolean isLatex() {
+        return latex;
+    }
+
+    public void setLatex(boolean latex) {
+        this.latex = latex;
     }
 }
 

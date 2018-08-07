@@ -1163,7 +1163,7 @@ public final class ColtDataSet implements DataSet, TetradSerializable {
      * all of the tetradMatrix in this dataset, discrete tetradMatrix included. Discrete tetradMatrix
      * will be represented by ints cast to doubles. Rows in this matrix are
      * cases, and columns are variables. The list of variable, in the order in
-     * which they occur in the matrix, is given by getVariable().
+     * which they occur in the matrix, is given by getCauseNode().
      * <p>
      * If isMultipliersCollapsed() returns false, multipliers in the dataset are
      * first expanded before returning the matrix, so the number of rows in the
@@ -1174,13 +1174,13 @@ public final class ColtDataSet implements DataSet, TetradSerializable {
 //     * @see #isMulipliersCollapsed()
      */
     public final TetradMatrix getDoubleData() {
-//        return tetradMatrix.copy();
+        return tetradMatrix.copy();
 
 //        if (!isMulipliersCollapsed()) {
 //            CaseExpander expander = new CaseExpander();
 //            return ((ColtDataSet) expander.filter(this)).tetradMatrix;
 //        } else {
-        return tetradMatrix;
+//        return tetradMatrix;
 //        }
     }
 

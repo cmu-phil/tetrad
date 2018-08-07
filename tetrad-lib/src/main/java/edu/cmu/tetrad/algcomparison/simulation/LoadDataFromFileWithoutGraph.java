@@ -52,6 +52,11 @@ public class LoadDataFromFileWithoutGraph implements Simulation, SimulationPath,
     }
 
     @Override
+    public DataModel getDataModelWithLatents(int index) {
+        return dataSet;
+    }
+
+    @Override
     public String getDescription() {
         return "Load single file to run.";
     }

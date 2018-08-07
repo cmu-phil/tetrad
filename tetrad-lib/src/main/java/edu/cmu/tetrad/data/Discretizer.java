@@ -241,6 +241,16 @@ public class Discretizer {
         double[] data = new double[_data.length];
         System.arraycopy(_data, 0, data, 0, data.length);
 
+        List<Double> __data = new ArrayList<>();
+        for (double d : data) {
+            if (!Double.isNaN(d)) __data.add(d);
+        }
+
+        data = new double[__data.size()];
+        for (int i = 0; i < __data.size(); i++) {
+            data[i] = __data.get(i);
+        }
+
         // first sort the data.
         Arrays.sort(data);
 

@@ -595,7 +595,7 @@ public class StandardizedSemIm implements Simulator, TetradSerializable {
 //        TetradMatrix iMinusB = TetradAlgebra.identity(edgeCoef.rows());
 //        iMinusB.assign(edgeCoef, Functions.minus);
 
-        TetradMatrix iMinusB = TetradAlgebra.identity(edgeCoef.rows()).minus(edgeCoef);
+        TetradMatrix iMinusB = TetradMatrix.identity(edgeCoef.rows()).minus(edgeCoef);
 
         TetradMatrix inv = iMinusB.inverse();
 

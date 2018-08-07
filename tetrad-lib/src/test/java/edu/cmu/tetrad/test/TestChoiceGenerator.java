@@ -53,12 +53,12 @@ public class TestChoiceGenerator {
 
     @Test
     public void testPrintDepthChoiceGenerator() {
-        int a = 4;
+        int a = 3;
         int b = 2;
 
         int numCombinations = DepthChoiceGenerator.getNumCombinations(a, b);
 
-        assertEquals(11, numCombinations);
+        assertEquals(3, numCombinations);
     }
 
     @Test

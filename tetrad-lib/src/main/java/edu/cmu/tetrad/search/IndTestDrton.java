@@ -79,6 +79,7 @@ public final class IndTestDrton implements IndependenceTest {
     private PrintStream pValueLogger;
     private Map<Node, Integer> indexMap;
     private Map<String, Node> nameMap;
+    private boolean verbose = false;
 
     //==========================CONSTRUCTORS=============================//
 
@@ -381,6 +382,15 @@ public final class IndTestDrton implements IndependenceTest {
         return indexMap;
     }
 
+    @Override
+    public boolean isVerbose() {
+        return verbose;
+    }
+
+    @Override
+    public void setVerbose(boolean verbose) {
+        this.verbose = verbose;
+    }
 }
 
 

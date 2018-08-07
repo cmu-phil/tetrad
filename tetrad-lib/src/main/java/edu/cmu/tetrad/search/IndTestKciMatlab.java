@@ -21,29 +21,27 @@
 
 package edu.cmu.tetrad.search;
 
+//import com.mathworks.toolbox.javabuilder.MWApplication;
 //import com.mathworks.toolbox.javabuilder.MWException;
-//import com.mathworks.toolbox.javabuilder.MWLogicalArray;
+//import com.mathworks.toolbox.javabuilder.MWNumericArray;
 
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.ICovarianceMatrix;
+import edu.cmu.tetrad.graph.IndependenceFact;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.NumberFormatUtil;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetrad.util.TetradMatrix;
+import edu.cmu.tetrad.util.TetradVector;
 
 import java.text.NumberFormat;
 import java.util.*;
-
-//import kci.Kci;
-//import kci.*;
-//import com.mathworks.toolbox.javabuilder.*;
 
 /**
  * Checks conditional independence of variable in a continuous data set using a conditional correlation test
  * for the nonlinear nonGaussian case.
  *
  * @author Joseph Ramsey
- * @deprecated
  */
 public final class IndTestKciMatlab implements IndependenceTest {
 
@@ -94,8 +92,7 @@ public final class IndTestKciMatlab implements IndependenceTest {
         this.dataSet = dataSet;
         data = this.dataSet.getDoubleData();
 
-//        _data = data.transpose().toArray();
-        _data = data.toArray();
+        _data = data.transpose().toArray();
 
         nodeMap = new HashMap<>();
 
@@ -116,23 +113,63 @@ public final class IndTestKciMatlab implements IndependenceTest {
     }
 
     public boolean isIndependent(Node x, Node y, List<Node> z) {
-        boolean independent = checkIndependent(x, y, z);
 
-        if (verbose) {
-            if (independent) {
-                TetradLogger.getInstance().log("independencies",
-                        SearchLogUtils.independenceFactMsg(x, y, z, getPValue()));
-            } else {
-                TetradLogger.getInstance().log("dependencies",
-                        SearchLogUtils.dependenceFactMsg(x, y, z, getPValue()));
+        class MyRunnable implements Runnable {
+            private boolean verbose;
+            private boolean independent;
+
+            public MyRunnable(boolean verbaose) {
+                this.verbose = verbaose;
+            }
+
+            @Override
+            public void run() {
+                boolean independent = checkIndependent(x, y, z);
+
+                if (verbose) {
+                    if (independent) {
+                        TetradLogger.getInstance().log("independencies",
+                                SearchLogUtils.independenceFactMsg(x, y, z, getPValue()));
+                    } else {
+                        TetradLogger.getInstance().log("dependencies",
+                                SearchLogUtils.dependenceFactMsg(x, y, z, getPValue()));
+                    }
+                }
+
+                if (verbose) {
+                    SearchLogUtils.independenceFactMsg(x, y, z, getPValue());
+                }
+
+                this.independent = independent;
+            }
+
+            public boolean isIndependent() {
+                return independent;
             }
         }
 
-        if (verbose) {
-            SearchLogUtils.independenceFactMsg(x, y, z, getPValue());
+        final MyRunnable target = new MyRunnable(verbose);
+
+        Thread thread = new Thread(target);
+        thread.start();
+
+        while (thread.isAlive()) {
+            try {
+                Thread.sleep(500);
+
+                if (Thread.currentThread().isInterrupted()) {
+//                    Thread.currentThread().stop();
+//                    MWApplication.terminate();
+                    throw new InterruptedException();
+                }
+            } catch (InterruptedException e) {
+//                Thread.currentThread().stop();
+//                MWApplication.terminate();
+                throw new RuntimeException(e);
+            }
         }
 
-        return independent;
+        return target.isIndependent();
     }
 
     public boolean isIndependent(Node x, Node y, Node... z) {
@@ -269,31 +306,74 @@ public final class IndTestKciMatlab implements IndependenceTest {
     //==================================PRIVATE METHODS================================
 
     private boolean checkIndependent(Node x, Node y, List<Node> z) {
-//        numTests++;
-//
-//        int xIndex = dataSet.getColumn(x) + 1;
-//        int yIndex = dataSet.getColumn(y) + 1;
-//
-//        int[] zIndices = new int[z.size()];
-//
-//        for (int i = 0; i < z.size(); i++) {
-//            zIndices[i] = dataSet.getColumn(z.get(i)) + 1;
-//        }
-//
+        numTests++;
+        indtest_new.Class1 test = null;
+
 //        try {
-//            Kci _kci = new Kci();
-//            Object[] output = _kci.indtest(1, xIndex, yIndex, zIndices, _data);
-//
-//            MWLogicalArray arr = (MWLogicalArray) output[0];
-//            boolean out = arr.getBoolean(1);
-//
-//            return out;
-//        } catch (MWException e) {
-//            e.printStackTrace();
+//            test = new indtest_new.Class1();
+
+//            MWNumericArray _x = new MWNumericArray(new TetradVector(_data[nodeMap.get(x)]).toColumnMatrix().toArray());
+//            MWNumericArray _y = new MWNumericArray(new TetradVector(_data[nodeMap.get(y)]).toColumnMatrix().toArray());
+
+        double[][] ___z = new double[z.size()][];
+
+
+        for (int c = 0; c < z.size(); c++) {
+            ___z[c] = _data[nodeMap.get(z.get(c))];
+        }
+
+//            MWNumericArray _z = new MWNumericArray(new TetradMatrix(___z).transpose().toArray());
+
+//            Object[] out = test.indtest_new(2, _x, _y, _z);
+
+//            MWNumericArray _p = (MWNumericArray) out[0];
+
+        double p = 1.0;//_p.getDouble();
+
+        boolean independent = p > alpha;
+
+        IndependenceFact fact = new IndependenceFact(x, y, z);
+
+        if (verbose) {
+            if (independent) {
+                System.out.println(fact + " INDEPENDENT p = " + p);
+                TetradLogger.getInstance().log("info", fact + " Independent");
+
+            } else {
+                System.out.println(fact + " dependent p = " + p);
+                TetradLogger.getInstance().log("info", fact.toString());
+            }
+        }
+
+        return independent;
 //        }
-//
-//        throw new IllegalStateException();
-        return true;
+//        catch (MWException e) {
+//            throw new RuntimeException(e);
+//        } finally {
+//            if (test != null) {
+//                test.dispose();
+    }
+//        }
+//}
+
+    private double[][] columns(double[][] data, List<Node> z) {
+        double[][] cols = new double[z.size()][];
+        for (int i = 0; i < z.size(); i++) {
+            cols[i] = data[nodeMap.get(z.get(i))];
+        }
+        return cols;
+    }
+
+    private Number[][] getNumbers(double[][] d) {
+        final Number[][] d2 = new Number[d.length][d[0].length];
+
+        for (int i = 0; i < d.length; i++) {
+            for (int j = 0; j < d[0].length; j++) {
+                d2[i][j] = d[i][j];
+            }
+        }
+
+        return d2;
     }
 
     public int getNumTests() {

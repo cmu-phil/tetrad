@@ -51,14 +51,12 @@ public class TestSimulatedFmri {
 
     private void task(boolean testing) {
         Parameters parameters = new Parameters();
-        parameters.set("penaltyDiscount", 4);
+        parameters.set("penaltyDiscount", 2);
         parameters.set("depth", -1);
-        parameters.set("twoCycleAlpha", 1e-10);
-        parameters.set("faskDelta", -.2);
-        parameters.set("reverseOrientationsBySignOfCorrelation", false);
-        parameters.set("reverseOrientationsBySkewnessOfVariables", false);
+        parameters.set("twoCycleAlpha", 1e-6);
+        parameters.set("faskDelta", -0.2);
 
-        parameters.set("numRuns", 10);
+        parameters.set("numRuns", 60);
         parameters.set("randomSelectionSize", 10);
 
         parameters.set("Structure", "Placeholder");
@@ -204,7 +202,7 @@ public class TestSimulatedFmri {
         comparison.compareFromSimulations(directory, simulations, algorithms, statistics, parameters);
     }
 
-    //    @Test
+//    @Test
     public void task2() {
         Parameters parameters = new Parameters();
         parameters.set("penaltyDiscount", 1);
@@ -357,149 +355,6 @@ public class TestSimulatedFmri {
         comparison.compareFromSimulations("comparison", simulations, algorithms, statistics, parameters);
     }
 
-//    @Test
-    public void testClark() {
-
-        double f = .1;
-        int N = 512;
-        double alpha = 1.0;
-        double penaltyDiscount = 1.0;
-
-        for (int i = 0; i < 100; i++) {
-            {
-                Node x = new ContinuousVariable("X");
-                Node y = new ContinuousVariable("Y");
-                Node z = new ContinuousVariable("Z");
-
-                Graph g = new EdgeListGraph();
-                g.addNode(x);
-                g.addNode(y);
-                g.addNode(z);
-
-                g.addDirectedEdge(x, y);
-                g.addDirectedEdge(z, x);
-                g.addDirectedEdge(z, y);
-
-                GeneralizedSemPm pm = new GeneralizedSemPm(g);
-
-                try {
-                    pm.setNodeExpression(g.getNode("X"), "0.5 * Z + E_X");
-                    pm.setNodeExpression(g.getNode("Y"), "0.5 * X + 0.5 * Z + E_Y");
-                    pm.setNodeExpression(g.getNode("Z"), "E_Z");
-
-                    String error = "pow(Uniform(0, 1), " + f + ")";
-                    pm.setNodeExpression(pm.getErrorNode(g.getNode("X")), error);
-                    pm.setNodeExpression(pm.getErrorNode(g.getNode("Y")), error);
-                    pm.setNodeExpression(pm.getErrorNode(g.getNode("Z")), error);
-                } catch (ParseException e) {
-                    System.out.println(e);
-                }
-
-                GeneralizedSemIm im = new GeneralizedSemIm(pm);
-                DataSet data = im.simulateData(N, false);
-
-                edu.cmu.tetrad.search.SemBicScore score = new edu.cmu.tetrad.search.SemBicScore(new CovarianceMatrixOnTheFly(data, false));
-                score.setPenaltyDiscount(penaltyDiscount);
-
-                Fask fask = new Fask(data, score);
-                fask.setPenaltyDiscount(penaltyDiscount);
-                fask.setAlpha(alpha);
-                Graph out = fask.search();
-
-                System.out.println(out);
-            }
-
-            {
-                Node x = new ContinuousVariable("X");
-                Node y = new ContinuousVariable("Y");
-                Node z = new ContinuousVariable("Z");
-
-                Graph g = new EdgeListGraph();
-                g.addNode(x);
-                g.addNode(y);
-                g.addNode(z);
-
-                g.addDirectedEdge(x, y);
-                g.addDirectedEdge(x, z);
-                g.addDirectedEdge(y, z);
-
-                GeneralizedSemPm pm = new GeneralizedSemPm(g);
-
-                try {
-                    pm.setNodeExpression(g.getNode("X"), "E_X");
-                    pm.setNodeExpression(g.getNode("Y"), "0.4 * X + E_Y");
-                    pm.setNodeExpression(g.getNode("Z"), "0.4 * X + 0.4 * Y + E_Z");
-
-                    String error = "pow(Uniform(0, 1), " + f + ")";
-                    pm.setNodeExpression(pm.getErrorNode(g.getNode("X")), error);
-                    pm.setNodeExpression(pm.getErrorNode(g.getNode("Y")), error);
-                    pm.setNodeExpression(pm.getErrorNode(g.getNode("Z")), error);
-                } catch (ParseException e) {
-                    System.out.println(e);
-                }
-
-                GeneralizedSemIm im = new GeneralizedSemIm(pm);
-                DataSet data = im.simulateData(N, false);
-
-                edu.cmu.tetrad.search.SemBicScore score = new edu.cmu.tetrad.search.SemBicScore(new CovarianceMatrixOnTheFly(data, false));
-                score.setPenaltyDiscount(penaltyDiscount);
-
-                Fask fask = new Fask(data, score);
-                fask.setPenaltyDiscount(penaltyDiscount);
-                fask.setAlpha(alpha);
-                Graph out = fask.search();
-
-                System.out.println(out);
-
-            }
-        }
-    }
-
-
-//    @Test
-    public void testClark2() {
-
-        Node x = new ContinuousVariable("X");
-        Node y = new ContinuousVariable("Y");
-        Node z = new ContinuousVariable("Z");
-
-        Graph g = new EdgeListGraph();
-        g.addNode(x);
-        g.addNode(y);
-        g.addNode(z);
-
-        g.addDirectedEdge(x, y);
-        g.addDirectedEdge(x, z);
-        g.addDirectedEdge(y, z);
-
-        GeneralizedSemPm pm = new GeneralizedSemPm(g);
-
-        try {
-            pm.setNodeExpression(g.getNode("X"), "E_X");
-            pm.setNodeExpression(g.getNode("Y"), "0.4 * X + E_Y");
-            pm.setNodeExpression(g.getNode("Z"), "0.4 * X + 0.4 * Y + E_Z");
-
-            String error = "pow(Uniform(0, 1), 1.5)";
-            pm.setNodeExpression(pm.getErrorNode(g.getNode("X")), error);
-            pm.setNodeExpression(pm.getErrorNode(g.getNode("Y")), error);
-            pm.setNodeExpression(pm.getErrorNode(g.getNode("Z")), error);
-        } catch (ParseException e) {
-            System.out.println(e);
-        }
-
-
-        GeneralizedSemIm im = new GeneralizedSemIm(pm);
-        DataSet data = im.simulateData(1000, false);
-
-        edu.cmu.tetrad.search.SemBicScore score = new edu.cmu.tetrad.search.SemBicScore(new CovarianceMatrixOnTheFly(data, false));
-
-        Fask fask = new Fask(data, score);
-        fask.setPenaltyDiscount(1);
-        fask.setAlpha(0.5);
-        Graph out = fask.search();
-
-        System.out.println(out);
-    }
 
     public static void main(String... args) {
         new TestSimulatedFmri().task(false);

@@ -70,6 +70,11 @@ public class SpecialDataClark implements Simulation {
         return dataSets.get(index);
     }
 
+    @Override
+    public DataModel getDataModelWithLatents(int index) {
+        return dataSets.get(index);
+    }
+
 
     @Override
     public Graph getTrueGraph(int index) {

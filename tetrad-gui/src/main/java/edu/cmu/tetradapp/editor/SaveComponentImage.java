@@ -48,7 +48,8 @@ public class SaveComponentImage extends AbstractAction {
      */
     private String actionName = "Save";
 
-    public SaveComponentImage(JComponent comp, String actionName) {
+    public
+    SaveComponentImage(JComponent comp, String actionName) {
         super(actionName);
         this.actionName = actionName;
 

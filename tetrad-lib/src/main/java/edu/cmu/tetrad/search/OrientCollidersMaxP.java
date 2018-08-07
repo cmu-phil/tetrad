@@ -43,11 +43,11 @@ public final class OrientCollidersMaxP {
     private int depth = -1;
     private long elapsed = 0;
     private IKnowledge knowledge = new Knowledge2();
-    private boolean useHeuristic = true;
+    private boolean useHeuristic = false;
     private int maxPathLength = 3;
     private PcAll.ConflictRule conflictRule = PcAll.ConflictRule.OVERWRITE;
 
-    public OrientCollidersMaxP(IndependenceTest test, PcAll.ConflictRule conflictRule) {
+    public OrientCollidersMaxP(IndependenceTest test) {
         if (test == null) throw new NullPointerException();
         this.independenceTest = test;
     }
@@ -58,7 +58,7 @@ public final class OrientCollidersMaxP {
      * Searches for a PAG satisfying the description in Thomas Richardson (1997), dissertation,
      * Carnegie Mellon University. Uses a simplification of that algorithm.
      */
-    public void orient(Graph graph) {
+    public synchronized void orient(Graph graph) {
         addColliders(graph);
     }
 
@@ -90,72 +90,70 @@ public final class OrientCollidersMaxP {
 
         List<Node> nodes = graph.getNodes();
 
-        class Task extends RecursiveTask<Boolean> {
-            int from;
-            int to;
-            int chunk = 20;
-            List<Node> nodes;
-            Graph graph;
+//        class Task extends RecursiveTask<Boolean> {
+//            int from;
+//            int to;
+//            int chunk = 20;
+//            List<Node> nodes;
+//            Graph graph;
+//
+//            public Task(List<Node> nodes, Graph graph, Map<Triple, Double> scores, int from, int to) {
+//                this.nodes = nodes;
+//                this.graph = graph;
+//                this.from = from;
+//                this.to = to;
+//            }
+//
+//            @Override
+//            protected Boolean compute() {
+//                if (to - from <= chunk) {
+//                    for (int i = from; i < to; i++) {
+//                        if (Thread.currentThread().isInterrupted()) {
+//                            break;
+//                        }
+//
+//                        doNode(graph, scores, nodes.get(i));
+//                    }
+//
+//                    return true;
+//                } else {
+//                    int mid = (to + from) / 2;
+//
+//                    Task left = new Task(nodes, graph, scores, from, mid);
+//                    Task right = new Task(nodes, graph, scores, mid, to);
+//
+//                    left.fork();
+//                    right.compute();
+//                    left.join();
+//
+//                    return true;
+//                }
+//            }
+//        }
 
-            public Task(List<Node> nodes, Graph graph, Map<Triple, Double> scores, int from, int to) {
-                this.nodes = nodes;
-                this.graph = graph;
-                this.from = from;
-                this.to = to;
-            }
-
-            @Override
-            protected Boolean compute() {
-                if (to - from <= chunk) {
-                    for (int i = from; i < to; i++) {
-                        if (Thread.currentThread().isInterrupted()) {
-                            break;
-                        }
-
-                        doNode(graph, scores, nodes.get(i));
-                    }
-
-                    return true;
-                } else {
-                    int mid = (to + from) / 2;
-
-                    Task left = new Task(nodes, graph, scores, from, mid);
-                    Task right = new Task(nodes, graph, scores, mid, to);
-
-                    left.fork();
-                    right.compute();
-                    left.join();
-
-                    return true;
-                }
-            }
+//        Task task = new Task(nodes, graph, scores, 0, nodes.size());
+//
+//        ForkJoinPoolInstance.getInstance().getPool().invoke(task);
+//
+        for (int i = 0; i < nodes.size(); i++) {
+            doNode(graph, scores, nodes.get(i));
         }
-
-        Task task = new Task(nodes, graph, scores, 0, nodes.size());
-
-        ForkJoinPoolInstance.getInstance().getPool().invoke(task);
 
         List<Triple> tripleList = new ArrayList<>(scores.keySet());
 
         // Most independent ones first.
-        Collections.sort(tripleList, new Comparator<Triple>() {
+        tripleList.sort(Comparator.comparingDouble(scores::get));
 
-            @Override
-            public int compare(Triple o1, Triple o2) {
-                return Double.compare(scores.get(o2), scores.get(o1));
-            }
-        });
+        for (Triple triple : tripleList) {
+           System.out.println(triple + " score = " + scores.get(triple));
+        }
 
         for (Triple triple : tripleList) {
             Node a = triple.getX();
             Node b = triple.getY();
             Node c = triple.getZ();
 
-//            if (!(graph.getEndpoint(b, a) == Endpoint.ARROW || graph.getEndpoint(b, c) == Endpoint.ARROW)) {
-//                graph.setEndpoint(a, b, Endpoint.ARROW);
-//                graph.setEndpoint(c, b, Endpoint.ARROW);
             orientCollider(graph, a, b, c, getConflictRule());
-//            }
         }
     }
 
@@ -212,12 +210,14 @@ public final class OrientCollidersMaxP {
             }
 
             List<Node> s = GraphUtils.asList(comb2, adja);
-            independenceTest.isIndependent(a, c, s);
-            double _score = independenceTest.getScore();
 
-            if (_score < score) {
-                score = _score;
-                S = s;
+            if (independenceTest.isIndependent(a, c, s)) {
+                double _score = independenceTest.getScore();
+
+                if (_score < score) {
+                    score = _score;
+                    S = s;
+                }
             }
         }
 
@@ -230,16 +230,17 @@ public final class OrientCollidersMaxP {
             }
 
             List<Node> s = GraphUtils.asList(comb3, adjc);
-            independenceTest.isIndependent(c, a, s);
-            double _score = independenceTest.getScore();
 
-            if (_score < score) {
-                score = _score;
-                S = s;
+            if (independenceTest.isIndependent(c, a, s)) {
+                double _score = independenceTest.getScore();
+
+                if (_score < score) {
+                    score = _score;
+                    S = s;
+                }
             }
         }
 
-        // S actually has to be non-null here, but the compiler doesn't know that.
         if (S != null && !S.contains(b)) {
             scores.put(new Triple(a, b, c), score);
         }

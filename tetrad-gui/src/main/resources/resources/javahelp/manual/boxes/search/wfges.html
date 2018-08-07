@@ -15,11 +15,11 @@
     </tr>
   </tbody>
 </table>
-<p> WFGES ("Whimsical Fast Greedy Equivalence Search") is an experimental algorithm for the mixed variable case.
-    Each discrete variable is rewritten as a set of indicator variables, and then FGES (see) is run
+<p> WFGES ("Whimsical Fast Greedy Equivalence Search") is an experimental algorithm for the mixed predictor case.
+    Each discrete predictor is rewritten as a set of indicator variables, and then FGES (see) is run
     over the indicators and continuous variables. A causal connection is inferred between X and Y if
     X and Y are connected and continuous, or if there is a connection between one of the indicators
-    of the X or of Y to an indicator of the other, or to a continuous variable, if X or Y is
+    of the X or of Y to an indicator of the other, or to a continuous predictor, if X or Y is
     continuous. Unanimous directions are inferred.
 </p>
 <p><em>Note: Zhang (2006) supplies an orientation rule set for FCI that is both arrow-complete and tail-complete; this is not currently implemented</em>. </p>

@@ -4,9 +4,11 @@ import edu.cmu.tetrad.annotation.TestOfIndependence;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.data.DataUtils;
-import edu.cmu.tetrad.search.IndTestConditionalCorrelation;
+import edu.cmu.tetrad.search.IndTestKciMatlab;
 import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.util.Parameters;
+import edu.pitt.csb.KCI;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -16,23 +18,24 @@ import java.util.List;
  * @author jdramsey
  */
 @TestOfIndependence(
-        name = "Conditional Correlation Test",
-        command = "cond-correlation",
+        name = "Kernel Independence (Matlab)",
+        command = "kci-matlab",
         dataType = DataType.Continuous
 )
-public class ConditionalCorrelation implements IndependenceWrapper {
+public class KciMatlab implements IndependenceWrapper {
 
     static final long serialVersionUID = 23L;
 
+
     @Override
     public IndependenceTest getTest(DataModel dataSet, Parameters parameters) {
-        return new IndTestConditionalCorrelation(DataUtils.getContinuousDataSet(dataSet),
+        return new IndTestKciMatlab(DataUtils.getContinuousDataSet(dataSet),
                 parameters.getDouble("alpha"));
     }
 
     @Override
     public String getDescription() {
-        return "Conditional Correlation Test";
+        return "KCI (Matlab)";
     }
 
     @Override
@@ -43,8 +46,12 @@ public class ConditionalCorrelation implements IndependenceWrapper {
     @Override
     public List<String> getParameters() {
         List<String> params = new ArrayList<>();
+        params.add("kciUseAppromation");
         params.add("alpha");
+        params.add("kernelMultiplier");
+        params.add("kciNumBootstraps");
+        params.add("thresholdForNumEigenvalues");
+        params.add("kciEpsilon");
         return params;
     }
-
 }

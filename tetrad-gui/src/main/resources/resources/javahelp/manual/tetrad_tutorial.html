@@ -410,9 +410,9 @@ sup {
 
 <ul>
 <li>You want to learn the <strong>causal graph</strong> that describes what causes what (&quot;search&quot;)</li>
-<li>You want to test whether <strong>a specific variable</strong> causes a target variable, and if so, what is the size of the effect</li>
+<li>You want to test whether <strong>a specific predictor</strong> causes a target predictor, and if so, what is the size of the effect</li>
 <li>You want to find the <strong>set of variables</strong> that affects some target of interest (&quot;feature selection&quot;)</li>
-<li>You want to <strong>predict what will happen if you intervene</strong> on some variable</li>
+<li>You want to <strong>predict what will happen if you intervene</strong> on some predictor</li>
 <li>You want to find <strong>a set of experiments</strong> that are likely to produce large effects (on one or more targets)</li>
 </ul></li>
 <li>You have <strong>a dataset and a known causal graph</strong>, and:
@@ -656,12 +656,12 @@ sup {
 <p><strong>How they&#39;re made:</strong> A search algorithm is a function: it takes input and produces output. The inputs are:</p>
 
 <ul>
-<li>A dataset (required)<sup id="fnref4"><a href="#fn4" rel="footnote">4</a></sup>; note that this includes the variable set</li>
+<li>A dataset (required)<sup id="fnref4"><a href="#fn4" rel="footnote">4</a></sup>; note that this includes the predictor set</li>
 <li>Background knowledge about the causal relationships (optional)</li>
 <li>Other settings, like tuning parameters, which depend on the specific algorithm</li>
 </ul>
 
-<p>The output is a graph, or a set of graphs that are equally compatible with the data (a.k.a. an &quot;equivalence class&quot; of graphs). The type of graph you get depends on the type of algorithm you use.</p>
+<p>The output is a graph, or a set of graphs that are equally compatible with the data (a.perm.a. an &quot;equivalence class&quot; of graphs). The type of graph you get depends on the type of algorithm you use.</p>
 
 <h4 id="toc_10">Example</h4>
 
@@ -752,7 +752,7 @@ sup {
 </tr>
 <tr>
 <td style="text-align: center"><strong>Instantiated model</strong></td>
-<td style="text-align: left"><strong>Probabilities assigned</strong> to the possible values of each variable, conditional on its parents in the graph</td>
+<td style="text-align: left"><strong>Probabilities assigned</strong> to the possible values of each predictor, conditional on its parents in the graph</td>
 <td style="text-align: left"><strong>Values assigned</strong> to all parameters of linear structural equation model (means, variances, and edge coefficients)</td>
 </tr>
 </tbody>
@@ -766,9 +766,9 @@ sup {
 
 <p>&quot;<strong>Bayes model</strong>&quot; just means the model fits <em>discrete-valued data</em>. It has no special relationship to Bayesian inference<sup id="fnref6"><a href="#fn6" rel="footnote">6</a></sup>. Tetrad uses the term &quot;Bayes model&quot; only because DAGs for discrete data have been called &quot;Bayes nets&quot; (again, not because they have a special relationship to Bayesian inference).</p>
 
-<p>A Bayes Parametric Model (Bayes PM) object includes a graph, and a set of possible values for every variable in that graph. The graph must be a DAG.</p>
+<p>A Bayes Parametric Model (Bayes PM) object includes a graph, and a set of possible values for every predictor in that graph. The graph must be a DAG.</p>
 
-<p><strong>How Bayes PMs are made</strong>: You can start with a DAG and a dataset. Tetrad will automatically pull the lists of possible values from the <em>actual</em> values in your data. If you want to generate synthetic data, you can start with just a DAG. Tetrad will ask for a set of possible values for each variable (the default is {0,1}).</p>
+<p><strong>How Bayes PMs are made</strong>: You can start with a DAG and a dataset. Tetrad will automatically pull the lists of possible values from the <em>actual</em> values in your data. If you want to generate synthetic data, you can start with just a DAG. Tetrad will ask for a set of possible values for each predictor (the default is {0,1}).</p>
 
 <p><img src="images/bayes_im_schema.png" alt="bayes im"></p>
 
@@ -792,7 +792,7 @@ Y = \alpha X + \beta Z + \varepsilon_3\)</p>
 
 <p>A SEM Parametric Model (SEM PM) includes the graph, plus a list of all parameters needed to specify the probability distribution. In this example, the parameters are \(\alpha, \beta, \mu_{\varepsilon_1}, \mu_{\varepsilon_2}, \mu_{\varepsilon_3}, \sigma_{\varepsilon_1}, \sigma_{\varepsilon_2}\), and \(\sigma_{\varepsilon_3}\). However, in the SEM PM object the <em>values</em> of those parameters are undetermined; the values are specified in the instantiated model (see below).</p>
 
-<p>If you choose a <strong>generalized</strong> SEM PM, you have the freedon to specify non-linear relationships between parent and child variables, and a non-Gaussian distribution for each node. For example, you might say one variable is related to its parent by a quadratic equation: \(Y = \alpha X + \beta X^2 + \varepsilon\). You could specify that the error term \(\varepsilon\) had, say, a Uniform(0,1) distribution.</p>
+<p>If you choose a <strong>generalized</strong> SEM PM, you have the freedon to specify non-linear relationships between parent and child variables, and a non-Gaussian distribution for each node. For example, you might say one predictor is related to its parent by a quadratic equation: \(Y = \alpha X + \beta X^2 + \varepsilon\). You could specify that the error term \(\varepsilon\) had, say, a Uniform(0,1) distribution.</p>
 
 <p><strong>Note</strong>: Although generalized SEM PMs give you more freedom than standard SEM PMs, they require you to make more decisions. You must specify the parametric form of the distribution. If you don&#39;t, Tetrad cannot learn the model from data. Right now there are no nonparametric model fitting methods in Tetrad. </p>
 

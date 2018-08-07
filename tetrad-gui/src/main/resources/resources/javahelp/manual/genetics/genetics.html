@@ -57,9 +57,9 @@
                                                                              style="color:#996633; text-decoration:none">Lag
     graph</a> and then interpret it as a parametric model. There are 4 choices of
     <a href="#PN">parametric models</a>,
-    where in each either i) the value of each variable at the current time is a
+    where in each either i) the value of each predictor at the current time is a
     function of its causal parents and an error term, or ii) the probability distribution
-    of the variable is a function of its causal parents. </font></p>
+    of the predictor is a function of its causal parents. </font></p>
 <p><font color="#000000"><b>Understanding the General Model</b></font></p>
 <p><font color="#000000">Consider a discrete time series involving N individuals,
     each with M variables G1 through Gm. For example, Figure 11 represents a time
@@ -82,9 +82,9 @@
 <p><font color="#000000"><b><a name="Lag"> </a><br>
     Understanding Lag Graphs</b></font></p>
 <p><font color="#000000">In order to simulate data from this class of models,
-    we need to express each variable (or its probability distribution) at an arbitrary
+    we need to express each predictor (or its probability distribution) at an arbitrary
     "current time" as a function of its direct causes. To represent only the set
-    of direct causes for each variable, we construct a <a href="#Lag_Graph" style="color:#996633; text-decoration:none">Lag
+    of direct causes for each predictor, we construct a <a href="#Lag_Graph" style="color:#996633; text-decoration:none">Lag
         graph</a>. For example, the <a href="#Lag_Graph" style="color:#996633; text-decoration:none">Lag
         graph</a> in Figure 55 expresses the causal information needed to simulate the
     time series represented in Figure 11 and Figure 33. The <a href="#Lag_Graph"
@@ -99,11 +99,11 @@
     beginning of the repeating sequence with a double-headed arrow to represent
     an unconstrained causal connection, so that d-separation applied to this graph
     does not entail that these variables are independent, contrary to the fact that
-    later versions of the same variable are causally connected in the time series
+    later versions of the same predictor are causally connected in the time series
     graph </font></p>
 <p><font color="#000000">The time lag i in a <a href="#Lag_Graph" style="color:#996633; text-decoration:none">Lag
-    graph</a> is indexed by ":Li". Thus, variable G1 at the current time (lag of
-    0) in an Lag graph is G1:L0, and the same variable two time slices in the past
+    graph</a> is indexed by ":Li". Thus, predictor G1 at the current time (lag of
+    0) in an Lag graph is G1:L0, and the same predictor two time slices in the past
     G1:L2. The constant mlag is the maximum lag of direct influence. </font></p>
 <p>&nbsp;</p>
 <p><font color="#000000"><b><a name="Sim"> </a><br>
@@ -111,9 +111,9 @@
 <p><font color="#000000">To simulate data in Tetrad 4, you must specify a <a href="#Lag_Graph"
                                                                              style="color:#996633; text-decoration:none">Lag
     graph</a> and then interpret it as a parametric model. There are 4 choices of
-    parametric models, where in each either i) the value of each variable at the
+    parametric models, where in each either i) the value of each predictor at the
     current time is a function of its causal parents and an error term, or ii) the
-    probability distribution of the variable is a function of its causal parents.
+    probability distribution of the predictor is a function of its causal parents.
     Given an instantiation of the chosen parametric model, and the assumption that
     the causal relations remain constant over time for each individual, values for
     N individuals (cells) over T times can be simulated to produce a data cube that
@@ -219,11 +219,11 @@
         a) constant indegree - choose parents(Gi) by putting a uniform distribution
         over the possible parents of Gi (that is, all variables earlier in time) and
         drawing without replacement until |parents(Gi)| = ci <br>
-        b) max indegree - for each variable in the set of possible parents of Gi ,include
+        b) max indegree - for each predictor in the set of possible parents of Gi ,include
         it in parents(Gi) if a random draw from a uniform [0,1] is greater than cutoff
         = 1/|possible parents of Gi|, until either the possible parents of Gi are
         exhaused, or |parents(Gi)| = mxi whichever is first. <br>
-        c) mean indegree - for each variable Gi, decide for each variable in the set
+        c) mean indegree - for each predictor Gi, decide for each predictor in the set
         of possible parents of Gi to include it in parents(Gi) if a random draw from
         a uniform [0,1] is greater than cutoff = 1/|possible parents of Gi|, until
         the possible parents of Gi are exhaused. <br>
@@ -326,7 +326,7 @@
 </font> <font color="#000000"><img src="images/genetics/functionTable1.gif" height=98 width=188>
 </font></p>
 <p><font color="#000000">Filling in the Fi column in this function table specifies
-    the particular instantiation of Fi used in the update function for variable
+    the particular instantiation of Fi used in the update function for predictor
     Gi, thus this step is left to the Instantiated Model specification below.<bR>
     <br>
     By picking the Glass Updating parametric family, you are committing yourself
@@ -338,7 +338,7 @@
         Updating</a></em></b><em> - Unimplemented.<br>
         <br>
         Again, in both Glass and General Updating parametric models, the current value
-        of each variable Gi:0 is set by a function with the following general form.<br>
+        of each predictor Gi:0 is set by a function with the following general form.<br>
         <img src="images/genetics/updateForm2.gif" height=38 width=591><br>
         <Br>
         where: <img valign="center" src="images/genetics/genError1.gif" height=22 width=165>is
@@ -373,7 +373,7 @@
         <img src="images/genetics/updateForm4.gif" height=32 width=344> <br>
         <Br>
         At the parametric level, you need to specify the number of categories for each
-        variable, as well as the value of each category. This is identical to the Bayes
+        predictor, as well as the value of each category. This is identical to the Bayes
         Net parametric model in general Tetrad 4 models. </em></font></p>
 <p><font color="#000000"><b><a name="SpecInst"> </a><br>
     Specifying the Instantiated Model</b><br>
@@ -462,8 +462,8 @@
     phase. The initialization phase must assign values for all the genes in each
     individual for time step 1. After this, the update function specified above
     can be used to assign values to variables for a given individual, with the caveat
-    that if mlag > 1, then not all the "parents" of a variable in time 2 will exist.
-    In that case the update function will simply use the latest value of that variable
+    that if mlag > 1, then not all the "parents" of a predictor in time 2 will exist.
+    In that case the update function will simply use the latest value of that predictor
     that does exist as input.<br>
     <br>
     Biologically, cells from the same tissue can be starved of nutrients, or manipulated

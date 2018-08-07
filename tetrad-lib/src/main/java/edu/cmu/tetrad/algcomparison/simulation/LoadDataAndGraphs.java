@@ -4,6 +4,7 @@ import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.graph.NodeType;
 import edu.cmu.tetrad.util.Parameters;
 import edu.pitt.dbmi.data.ContinuousTabularDataset;
 import edu.pitt.dbmi.data.Dataset;
@@ -67,6 +68,12 @@ public class LoadDataAndGraphs implements Simulation {
 
                     DataSet ds = dataReader.parseTabular(file1);
 
+//                    for (Node v : graphs.get(i).getNodes()) {
+//                        if (ds.getVariable(v.getName()) == null) {
+//                            v.setNodeType(NodeType.LATENT);
+//                        }
+//                    }
+
 //                    DataReader reader = new DataReader();
 //                    reader.setVariablesSupplied(true);
 //                    reader.setMaxIntegralDiscrete(parameters.getInt("maxDistinctValuesDiscrete"));
@@ -121,6 +128,11 @@ public class LoadDataAndGraphs implements Simulation {
 
     @Override
     public DataModel getDataModel(int index) {
+        return dataSets.get(index);
+    }
+
+    @Override
+    public DataModel getDataModelWithLatents(int index) {
         return dataSets.get(index);
     }
 

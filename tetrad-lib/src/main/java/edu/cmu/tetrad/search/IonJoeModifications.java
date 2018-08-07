@@ -713,7 +713,29 @@ public class IonJoeModifications {
                     definiteNoncolliders.add(graphTriple);
                 }
             }
+
+            for (Node z : pag.getNodes()) {
+                List<Node> nodes = pag.getNodesInTo(z, Endpoint.CIRCLE);
+
+                if (nodes.size() < 2) continue;
+
+                ChoiceGenerator generator = new ChoiceGenerator(nodes.size(), 2);
+                int[] choice;
+
+                while ((choice = generator.next()) != null) {
+                    List<Node> adj = GraphUtils.asList(choice, nodes);
+
+                    Node x = adj.get(0);
+                    Node y = adj.get(1);
+
+                    if (pag.isAdjacentTo(x, y)) continue;
+
+                    definiteNoncolliders.add(new Triple(x, z, y));
+                }
+            }
         }
+
+        System.out.println("Definite noncolliders: " + definiteNoncolliders);
     }
 
     /*

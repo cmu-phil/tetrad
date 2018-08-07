@@ -50,6 +50,8 @@ public class IndTestConditionalGaussianLRT implements IndependenceTest {
     private double pValue = Double.NaN;
     private int numCategoriesToDiscretize = 3;
 
+    private boolean verbose = false;
+
     public IndTestConditionalGaussianLRT(DataSet data, double alpha, boolean discretize) {
         this.data = data;
         this.likelihood = new ConditionalGaussianLikelihood(data);
@@ -254,5 +256,15 @@ public class IndTestConditionalGaussianLRT implements IndependenceTest {
 
     public void setNumCategoriesToDiscretize(int numCategoriesToDiscretize) {
         this.numCategoriesToDiscretize = numCategoriesToDiscretize;
+    }
+
+    @Override
+    public boolean isVerbose() {
+        return verbose;
+    }
+
+    @Override
+    public void setVerbose(boolean verbose) {
+        this.verbose = verbose;
     }
 }

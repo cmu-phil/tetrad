@@ -299,7 +299,6 @@ public class LofsRunner extends AbstractAlgorithmRunner implements
         }
 
         Lofs2 lofs = new Lofs2(pattern, _dataSets);
-        lofs.setAlpha(getParams().getDouble("alpha", 0.001));
         lofs.setRule((Lofs2.Rule) params.get("rule", Lofs2.Rule.R3));
         lofs.setOrientStrongerDirection(params.getBoolean("orientStrongerDirection", true));
         lofs.setEdgeCorrected(params.getBoolean("meanCenterResiduals", false));

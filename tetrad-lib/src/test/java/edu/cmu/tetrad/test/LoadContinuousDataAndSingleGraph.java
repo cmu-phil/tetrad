@@ -101,6 +101,11 @@ public class LoadContinuousDataAndSingleGraph implements Simulation, HasParamete
         return dataSets.get(index);
     }
 
+    @Override
+    public DataModel getDataModelWithLatents(int index) {
+        return dataSets.get(index);
+    }
+
     public String getDescription() {
         try {
             StringBuilder b = new StringBuilder();

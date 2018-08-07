@@ -101,7 +101,7 @@ public class Simulation extends DataWrapper implements SessionModel,
     public Simulation(BayesImWrapper wrapper, Parameters parameters) {
         simulation = new BayesNetSimulation(wrapper.getBayesIm());
         this.parameters = parameters;
-        createSimulation();
+//        createSimulation();
     }
 
     public Simulation(BayesImWrapperObs wrapper, Parameters parameters) {
@@ -183,7 +183,7 @@ public class Simulation extends DataWrapper implements SessionModel,
 
         simulation = new GeneralSemSimulation(wrapper.getSemIms().get(0));
         this.parameters = parameters;
-        createSimulation();
+//        createSimulation();
     }
 
     public Simulation(DataWrapper dataWrapper, Parameters parameters) {

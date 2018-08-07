@@ -4,6 +4,7 @@ import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
 import edu.cmu.tetrad.algcomparison.score.SemBicScoreDeterministic;
 import edu.cmu.tetrad.algcomparison.utils.TakesInitialGraph;
+import edu.cmu.tetrad.annotation.Experimental;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
@@ -29,6 +30,7 @@ import static java.lang.Math.sqrt;
  *
  * @author jdramsey
  */
+@Experimental
 public class GesMe implements Algorithm, TakesInitialGraph/*, HasKnowledge*/ {
 
     static final long serialVersionUID = 23L;
@@ -140,7 +142,7 @@ public class GesMe implements Algorithm, TakesInitialGraph/*, HasKnowledge*/ {
 
             Score score = this.score.getScore(covFa, parameters);
 
-            edu.cmu.tetrad.search.Fges2 search = new edu.cmu.tetrad.search.Fges2(score);
+            edu.cmu.tetrad.search.Fges search = new edu.cmu.tetrad.search.Fges(score);
             search.setFaithfulnessAssumed(parameters.getBoolean("faithfulnessAssumed"));
 
             if (parameters.getBoolean("enforceMinimumLeafNodes")) {

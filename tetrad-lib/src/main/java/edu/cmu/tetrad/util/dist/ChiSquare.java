@@ -45,7 +45,7 @@ public class ChiSquare implements Distribution {
     /**
      * Constructs a new Chi Square distribution.
      */
-    private ChiSquare() {
+    public ChiSquare() {
         this.df = 5.0;
     }
 

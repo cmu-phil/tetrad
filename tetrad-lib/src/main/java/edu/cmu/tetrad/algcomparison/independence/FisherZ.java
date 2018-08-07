@@ -38,7 +38,7 @@ public class FisherZ implements IndependenceWrapper {
             return new IndTestFisherZ((DataSet) dataSet, alpha);
         }
 
-        throw new IllegalArgumentException("Expecting eithet a data set or a covariance matrix.");
+        throw new IllegalArgumentException("Expecting either a data set or a covariance matrix.");
     }
 
     @Override

@@ -21,7 +21,6 @@
 
 package edu.cmu.tetrad.data;
 
-import EDU.oswego.cs.dl.util.concurrent.SyncMap;
 import cern.colt.matrix.DoubleMatrix2D;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.*;
@@ -31,7 +30,7 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.text.NumberFormat;
 import java.util.*;
-import java.util.concurrent.RecursiveTask;
+import java.util.concurrent.*;
 
 /**
  * Stores a covariance matrix together with variable names and sample size,
@@ -47,6 +46,7 @@ import java.util.concurrent.RecursiveTask;
  */
 public class CovarianceMatrixOnTheFly implements ICovarianceMatrix {
     static final long serialVersionUID = 23L;
+    private final int parallelism;
     private boolean verbose = false;
 
     /**
@@ -101,7 +101,6 @@ public class CovarianceMatrixOnTheFly implements ICovarianceMatrix {
 
     private double[] variances;
 
-
     //=============================CONSTRUCTORS=========================//
 
     /**
@@ -113,16 +112,25 @@ public class CovarianceMatrixOnTheFly implements ICovarianceMatrix {
      * @throws IllegalArgumentException if this is not a continuous data set.
      */
     public CovarianceMatrixOnTheFly(DataSet dataSet) {
-        this(dataSet, false);
+        this(dataSet, false, Runtime.getRuntime().availableProcessors());
+    }
+
+    public CovarianceMatrixOnTheFly(DataSet dataSet, int parallelism) {
+        this(dataSet, false, parallelism);
     }
 
     public CovarianceMatrixOnTheFly(DataSet dataSet, boolean verbose) {
+        this(dataSet, verbose, Runtime.getRuntime().availableProcessors());
+    }
+
+    public CovarianceMatrixOnTheFly(DataSet dataSet, boolean verbose, int parallelism) {
         if (!dataSet.isContinuous()) {
             throw new IllegalArgumentException("Not a continuous data set.");
         }
 
         this.variables = Collections.unmodifiableList(dataSet.getVariables());
         this.sampleSize = dataSet.getNumRows();
+        this.parallelism = parallelism;
 
         if (verbose) {
             System.out.println("Calculating variable vectors");
@@ -216,80 +224,78 @@ public class CovarianceMatrixOnTheFly implements ICovarianceMatrix {
 
         this.variances = new double[variables.size()];
 
-        class VarianceTask extends RecursiveTask<Boolean> {
-            private int chunk;
+        class VarianceTask implements Callable<Boolean> {
             private int from;
             private int to;
 
-            public VarianceTask(int chunk, int from, int to) {
-                this.chunk = chunk;
+            public VarianceTask(int from, int to) {
                 this.from = from;
                 this.to = to;
             }
 
             @Override
-            protected Boolean compute() {
-                if (to - from <= chunk) {
-                    for (int i = from; i < to; i++) {
-                        double d = 0.0D;
+            public Boolean call() {
+                for (int i = from; i < to; i++) {
+                    double d = 0.0D;
 
-                        int count = 0;
+                    int count = 0;
 
-                        double[] v1 = vectors[i];
+                    double[] v1 = vectors[i];
 
-                        for (int k = 0; k < sampleSize; ++k) {
-                            if (Double.isNaN(v1[k])) {
-                                continue;
-                            }
-
-                            d += v1[k] * v1[k];
-                            count++;
+                    for (int k = 0; k < sampleSize; ++k) {
+                        if (Double.isNaN(v1[k])) {
+                            continue;
                         }
 
-                        double v = d;
+                        d += v1[k] * v1[k];
+                        count++;
+                    }
+
+                    double v = d;
 //                        v /= (sampleSize - 1);
-                        v /= (count - 1);
+                    v /= (count - 1);
 
-                        variances[i] = v;
+                    variances[i] = v;
 
-                        if (v == 0) {
-                            System.out.println("Zero variance! " + variables.get(i));
-                        }
+                    if (v == 0) {
+                        System.out.println("Zero variance! " + variables.get(i));
                     }
-
-                    return true;
-                } else {
-                    final int numIntervals = 4;
-
-                    int step = (to - from) / numIntervals + 1;
-
-                    List<VarianceTask> tasks = new ArrayList<>();
-
-                    for (int i = 0; i < numIntervals; i++) {
-                        VarianceTask task = new VarianceTask(chunk, from + i * step, Math.min(from + (i + 1) * step, to));
-                        tasks.add(task);
-                    }
-
-                    invokeAll(tasks);
-
-                    return true;
                 }
+
+                return true;
             }
         }
 
+        List<Callable<Boolean>> tasks = new ArrayList<>();
         int NTHREADS = Runtime.getRuntime().availableProcessors() * 10;
-        int _chunk = variables.size() / NTHREADS + 1;
-        int minChunk = 100;
-        final int chunk = _chunk < minChunk ? minChunk : _chunk;
+        int chunk = variables.size() / NTHREADS + 1;
 
-        VarianceTask task = new VarianceTask(chunk, 0, variables.size());
-        ForkJoinPoolInstance.getInstance().getPool().invoke(task);
+        for (int from = 0; from < variables.size(); from += chunk) {
+            final int to = Math.min(variables.size(), from + chunk);
+            tasks.add(new VarianceTask(from, to));
+        }
+
+        runCallables(tasks);
 
         if (verbose) {
             System.out.println("Done with variances.");
         }
+    }
 
+    private void runCallables(List<Callable<Boolean>> tasks) {
+        if (tasks.isEmpty()) return;
 
+        ExecutorService executorService =
+                new ThreadPoolExecutor(parallelism, parallelism, 0L, TimeUnit.MILLISECONDS,
+                        new LinkedBlockingQueue<>());
+
+        try {
+            List<Future<Boolean>> futures = executorService.invokeAll(tasks);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        executorService.shutdown();
     }
 
     /**
@@ -464,6 +470,8 @@ public class CovarianceMatrixOnTheFly implements ICovarianceMatrix {
             count++;
         }
 
+        if (count == 0) return Double.NaN;
+
         double v = d;
 //        v /= (sampleSize - 1);
         v /= (count - 1);
@@ -598,7 +606,7 @@ public class CovarianceMatrixOnTheFly implements ICovarianceMatrix {
 
 
 //        buf.append("\nCovariance matrix:");
-//        buf.append("\n\tVariables = ").append(getVariable());
+//        buf.append("\n\tVariables = ").append(getCauseNode());
 //        buf.append("\n\tSample size = ").append(getSampleSize());
 //        buf.append("\n");
 //        buf.append(MatrixUtils.toString(matrixC.toArray()));
@@ -818,6 +826,24 @@ public class CovarianceMatrixOnTheFly implements ICovarianceMatrix {
 
         if (selectedVariables == null) {
             selectedVariables = new HashSet<>();
+        }
+    }
+
+    private void shutdownAndAwaitTermination(ForkJoinPool pool) {
+        pool.shutdown(); // Disable new tasks from being submitted
+        try {
+            // Wait a while for existing tasks to terminate
+            if (!pool.awaitTermination(60, TimeUnit.SECONDS)) {
+                pool.shutdownNow(); // Cancel currently executing tasks
+                // Wait a while for tasks to respond to being cancelled
+                if (!pool.awaitTermination(60, TimeUnit.SECONDS))
+                    System.err.println("Pool did not terminate");
+            }
+        } catch (InterruptedException ie) {
+            // (Re-)Cancel if current thread also interrupted
+            pool.shutdownNow();
+            // Preserve interrupt status
+            Thread.currentThread().interrupt();
         }
     }
 }

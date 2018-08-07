@@ -88,6 +88,9 @@ public final class IndTestGSquare implements IndependenceTest {
      */
     private static NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
 
+
+    private boolean verbose = false;
+
     /**
      * Constructs a new independence checker to check conditional independence facts for discrete data using a g square
      * test.
@@ -397,6 +400,15 @@ public final class IndTestGSquare implements IndependenceTest {
         return getPValue();
     }
 
+    @Override
+    public boolean isVerbose() {
+        return verbose;
+    }
+
+    @Override
+    public void setVerbose(boolean verbose) {
+        this.verbose = verbose;
+    }
 }
 
 

@@ -85,6 +85,11 @@ public class LinearSineSimulation implements Simulation {
     }
 
     @Override
+    public DataModel getDataModelWithLatents(int index) {
+        return dataSets.get(index);
+    }
+
+    @Override
     public String getDescription() {
         return "Linear-sine simulation using " + randomGraph.getDescription();
     }

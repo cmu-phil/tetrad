@@ -85,9 +85,7 @@ public class SepsetsPossibleDsep implements SepsetProducer {
 
         List<Node> possParents = possibleParents(node1, possibleDsep, knowledge);
 
-        int _depth = depth == -1 ? 1000 : depth;
-
-        for (int d = 0; d <= Math.min(_depth, possParents.size()); d++) {
+        for (int d = 0; d <= possParents.size(); d++) {
             ChoiceGenerator cg = new ChoiceGenerator(possParents.size(), d);
             int[] choice;
 

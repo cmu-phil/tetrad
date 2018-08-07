@@ -40,7 +40,7 @@ public class TetradVector implements TetradSerializable {
         this.data = new ArrayRealVector(size);
     }
 
-    private TetradVector(RealVector data) {
+    public TetradVector(RealVector data) {
         this.data = data;
     }
 
@@ -49,6 +49,12 @@ public class TetradVector implements TetradSerializable {
      */
     public static TetradVector serializableInstance() {
         return new TetradVector(0);
+    }
+
+    public static TetradVector ones(int t) {
+        TetradVector v = new TetradVector(t);
+        for (int i = 0; i < v.size(); i++) v.set(i, 1);
+        return v;
     }
 
     public double[] toArray() {
@@ -131,7 +137,16 @@ public class TetradVector implements TetradSerializable {
             data.setEntry(i, value);
         }
     }
-}
 
+    public TetradMatrix toColumnMatrix() {
+        TetradMatrix m = new TetradMatrix(size(), 1);
+
+        for (int i = 0; i < size(); i++) {
+            m.set(i, 0, get(i));
+        }
+
+        return m;
+    }
+}
 
 

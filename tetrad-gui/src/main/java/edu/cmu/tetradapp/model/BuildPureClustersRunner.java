@@ -403,7 +403,7 @@ public class BuildPureClustersRunner extends AbstractMimRunner
 //        List<Node> searchLatents = new ArrayList<Node>();
 //
 //        for (Node node : searchGraph.getNodes()) {
-//            if (!getContinuousData().getVariable().contains(node)) {
+//            if (!getContinuousData().getCauseNode().contains(node)) {
 ////                if (node.getNodeType() == NodeType.LATENT) {
 //                searchLatents.add(node);
 //            }

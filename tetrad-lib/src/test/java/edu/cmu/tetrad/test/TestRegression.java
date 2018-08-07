@@ -119,7 +119,7 @@ public class TestRegression {
 
         double[] coeffs = result.getCoef();
         assertEquals(0.00, coeffs[0], 0.01);
-        assertEquals(-.053, coeffs[1], 0.01);
+        assertEquals(-.068, coeffs[1], 0.01);
         assertEquals(0.036, coeffs[2], 0.01);
         assertEquals(.019, coeffs[3], 0.01);
         assertEquals(.007, coeffs[4], 0.01);

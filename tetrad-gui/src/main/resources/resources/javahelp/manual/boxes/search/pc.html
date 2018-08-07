@@ -37,8 +37,8 @@ independence test. </p>
 
 <p>In the case where a continuous dataset is used as input, the
 available conditional independence tests assume that the direct causal
-influence of any variable on any other is linear and that the
-distribution of each variable is Normal. </p> 
+influence of any predictor on any other is linear and that the
+distribution of each predictor is Normal. </p>
 
 <p><font color="#000000">Some of the above assumptions are not
 testable using observational data. They should come from prior
@@ -108,7 +108,7 @@ appear in PC output:</p>
  style="height: 53px; width: 236px;"></font></p>
     <p><font color="#000000">In this case, the PC algorithm deduced
 that A is a direct cause of B, i.e., the causal effect goes from A to B
-and it is not intermediated by any of the other observed variable</font></p>
+and it is not intermediated by any of the other observed predictor</font></p>
   </li>
   <li><font color="#000000"><strong>a undirected edge:</strong></font>
     <p><font color="#000000"><img src="../../images/undirected_edge.png" alt="" width="236" height="53"
@@ -161,7 +161,7 @@ Form the complete undirected graph G over v1,...,vn.
 Step B (Fast Adjacency Search):
 
 For each depth d = 0, 1, ...:
-   For for each variable x:
+   For for each predictor x:
 
       "next_y":
       For each adjacent modelNode y to v:

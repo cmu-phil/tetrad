@@ -17,8 +17,8 @@ Description of Model <span
  style="font-family: mon;">    </span></h3>
 <p>Bayes Parametric Model (Bayes PM) takes a DAG and adds to it two bits of information:</p>
 <ol>
-  <li>For each named node in the graph, the <em>number of categories</em> for the variable by that name.</li>
-  <li>For each variable, with a given number of categories, the <em>list of category names</em> for that variable.</li>
+  <li>For each named node in the graph, the <em>number of categories</em> for the predictor by that name.</li>
+  <li>For each predictor, with a given number of categories, the <em>list of category names</em> for that predictor.</li>
 </ol>
 <p>Given the graph and the additional information in (1) and (2), a Bayes net can be formally specified; it is determined what all the parameters of the Bayes net are, although no values for parameters are yet known. To specify a Bayes net up to parameter values, a Bayes Instantiated Model must be constructed, based on a Bayes PM. For details on the parameters of a Bayes IM, see <a href="../im/bayes_im.html">Bayes Instantiated Model</a>.</p>
 <p>It is assumed in the current version of Tetrad that all discrete variables are nominal--that is, that the order of their categories is not important. See <a href="../../common_tasks/defining_discrete_variables.html">Defining Discrete Variables</a> for more details. </p>
@@ -32,7 +32,7 @@ Description of Model <span
 <p><img src="../../images/bayespm3.gif" width="300" height="138"> </p>
 <p>Once you click OK, the following dialog appears:</p>
 <p><img src="../../images/bayespm4.gif" width="921" height="561"></p>
-<p>In this dialog, you can click on a variable and edit its number of nodes and category names. For instance, we can change the number of categories for X1 to 3 and set its categories to &lt;Low, Medium, High&gt;.</p>
+<p>In this dialog, you can click on a predictor and edit its number of nodes and category names. For instance, we can change the number of categories for X1 to 3 and set its categories to &lt;Low, Medium, High&gt;.</p>
 <p><img src="../../images/bayespm5.gif" width="920" height="560"> </p>
 <p>When you're finished editing categories for variables, click &quot;Save.&quot; <br>
 </p>

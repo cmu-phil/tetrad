@@ -393,8 +393,8 @@ public class TestMarkovBlanketSearches {
 //                    continue;
 //                }
 //
-//                fpSum += stats.getFp();
-//                fnSum += stats.getFn();
+//                fpSum += stats.getAfp();
+//                fnSum += stats.getAfn();
 //                errorsSum += stats.getErrors();
 //                truthSum += stats.getTrueDag();
 //                timeSum += stats.getTime();
@@ -582,7 +582,7 @@ public class TestMarkovBlanketSearches {
 //            List<Node> _nodes = new ArrayList<Node>();
 //
 //            for (Node node : nodes) {
-//                _nodes.add(dataSet.getVariable(node.getNode()));
+//                _nodes.add(dataSet.getCauseNode(node.getNode()));
 //            }
 //
 //            DataSet _dataSet = dataSet.subsetColumns(_nodes);
@@ -749,11 +749,11 @@ public class TestMarkovBlanketSearches {
 //            return algorithm;
 //        }
 //
-//        public int getFp() {
+//        public int getAfp() {
 //            return fp;
 //        }
 //
-//        public int getFn() {
+//        public int getAfn() {
 //            return fn;
 //        }
 //
@@ -898,7 +898,7 @@ public class TestMarkovBlanketSearches {
 //        }
 //    }
 
-//    public void test3() {
+//    public void test2() {
 //        Graph graph = new EdgeListGraph();
 //
 //        Node t = new GraphNode("t");

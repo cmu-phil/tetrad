@@ -96,6 +96,11 @@ public class LoadContinuousDataAndGraphs implements Simulation {
     }
 
     @Override
+    public DataModel getDataModelWithLatents(int index) {
+        return dataSets.get(index);
+    }
+
+    @Override
     public String getDescription() {
         try {
             File file = new File(path, "parameters.txt");

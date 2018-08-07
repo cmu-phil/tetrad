@@ -131,7 +131,7 @@
                     sequence with a double-headed arrow to represent an unconstrained causal
                     connection, so that d-separation applied to this graph does not entail
                     that these variables are independent, contrary to the fact that later
-                    versions of the same variable are causally connected in the repeating
+                    versions of the same predictor are causally connected in the repeating
                     graph.</p>
             </blockquote>
         </td>
@@ -148,9 +148,9 @@
     </tr>
     <tr>
         <td colspan="3">In order to simulate data from this class of models, we need
-            to express each variable (or its probability distribution) at an arbitrary
+            to express each predictor (or its probability distribution) at an arbitrary
             &quot;current time&quot; as a function of its direct causes. To represent
-            the set of direct causes for each variable, we construct an <b>update graph</b>.
+            the set of direct causes for each predictor, we construct an <b>update graph</b>.
             For example, the update graph in Figure 5 expresses the causal information
             needed to simulate the time series represented in Figure 1 and Figure 3.
             The update graph consists of the M variables repeated in temporal slices
@@ -171,17 +171,17 @@
     </tr>
     <tr>
         <td colspan="3">The time lag i in an update graph is indexed by &quot;:Li&quot;.
-            Thus, variable V1 at the current time (lag of 0) in an update graph is V1:L0,
-            and the same variable two time slices in the past V1:L2. The constant mlag
+            Thus, predictor V1 at the current time (lag of 0) in an update graph is V1:L0,
+            and the same predictor two time slices in the past V1:L2. The constant mlag
             is the maximum lag of direct influence.
         </td>
     </tr>
     <tr>
         <td colspan="3">To simulate data in Tetrad 4, you must specify an update graph
             and then interpret it as a parametric model. There are 4 choices of parametric
-            models, where in each either i) the value of each variable at the current
+            models, where in each either i) the value of each predictor at the current
             time is a function of its causal parents and an error term, or ii) the probability
-            distribution of the variable is a function of its causal parents. Given
+            distribution of the predictor is a function of its causal parents. Given
             an instantiation of the chosen parametric model, and the assumption that
             the causal relations remain constant over time for each individual, values
             for N individuals (cells) over T times can be simulated to produce a data
@@ -413,7 +413,7 @@
     <tr>
         <td colspan="3">
             <blockquote>
-                <p>b) max indegree - for each variable in the set of possible parents
+                <p>b) max indegree - for each predictor in the set of possible parents
                     of Vi ,include it in parents(Vi) if a random draw from a uniform [0,1]
                     is greater than cutoff = 1/|possible parents of V-i|, until either the
                     possible parents of Vi are exhaused, or |parents(Vi)| = mxi whichever
@@ -424,7 +424,7 @@
     <tr>
         <td colspan="3">
             <blockquote>
-                <p>c) mean indegree - for each variable Vi, decide for each variable in
+                <p>c) mean indegree - for each predictor Vi, decide for each predictor in
                     the set of possible parents of Vi to include it in parents(Vi) if a
                     random draw from a uniform [0,1] is greater than cutoff = 1/|possible
                     parents of V-i|, until the possible parents of Vi are exhaused. </p>
@@ -472,7 +472,7 @@
     </tr>
     <tr>
         <td colspan="3">In both Glass and General Updating parametric models, the
-            current value of each variable Vi:L0 is set by a function with the following
+            current value of each predictor Vi:L0 is set by a function with the following
             general form.
         </td>
     </tr>
@@ -605,7 +605,7 @@
     </tr>
     <tr>
         <td colspan="3">Filling in the Fi column in this function table specifies
-            the particular instantiation of Fi used in the update function for variable
+            the particular instantiation of Fi used in the update function for predictor
             Vi, thus this step is left to the Instantiated Model specification below.
         </td>
     </tr>
@@ -623,7 +623,7 @@
     </tr>
     <tr>
         <td colspan="3">Again, in both Glass and General Updating parametric models,
-            the current value of each variable Vi:0 is set by a function with the following
+            the current value of each predictor Vi:0 is set by a function with the following
             general form.
         </td>
     </tr>
@@ -692,7 +692,7 @@
     </tr>
     <tr>
         <td colspan="3">At the parametric level, you need to specify the number of
-            categories for each variable, as well as the value of each category. This
+            categories for each predictor, as well as the value of each category. This
             is identical to the Bayes Net parametric model in general Tetrad 4 models.
         </td>
     </tr>
@@ -904,9 +904,9 @@
             values for all the variables (genes) in each individual for time step 1.
             After this, the update function specified above can be used to assign values
             to variables for a given individual, with the caveat that if mlag &gt; 1,
-            then not all the &#147;parents&#148; of a variable in time 2 will exist.
+            then not all the &#147;parents&#148; of a predictor in time 2 will exist.
             In that case the update function will simply use the latest value of that
-            variable that does exist as input.
+            predictor that does exist as input.
         </td>
     </tr>
     <tr>

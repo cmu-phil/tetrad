@@ -32,6 +32,8 @@ import edu.cmu.tetrad.util.DelimiterUtils;
 import edu.cmu.tetrad.util.RandomUtil;
 import edu.pitt.dbmi.data.reader.tabular.TabularDataReader;
 import edu.pitt.dbmi.data.reader.tabular.VerticalDiscreteTabularDataReader;
+
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -285,5 +287,41 @@ public class TestGFci {
         long stop = System.currentTimeMillis();
 
         System.out.println("Elapsed " + (stop - start) + " ms");
+    }
+
+//    @Test
+    public void testDan() {
+
+        Graph graph = null;
+        IKnowledge knowledge = null;
+        DataSet data = null;
+        try {
+            File file1 = new File("/Users/user/Downloads/resimulationproblem/data.1.txt");
+            File file2 = new File("/Users/user/Downloads/resimulationproblem/graph.1.txt");
+            graph = GraphUtils.loadGraphTxt(file2);
+            File file = new File("/Users/user/Downloads/resimulationproblem/CVARknowledge.txt");
+            DataReader reader = new DataReader();
+            knowledge = reader.parseKnowledge(file);
+            data = reader.parseTabular(file1);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+
+        DataSet lagData = TimeSeriesUtils.createLagData(data,1);
+        for (Node v : graph.getNodes()) {
+            if (lagData.getVariable(v.getName()) == null) {
+                v.setNodeType(NodeType.LATENT);
+            }
+        }
+        IndTestDSep Test = new IndTestDSep(graph, false);
+
+        TsFci tsFci = new TsFci(Test);
+        tsFci.setKnowledge(knowledge);
+        Graph pag = tsFci.search();
+        System.out.println(graph);
+        System.out.println(knowledge);
+        System.out.println(pag);
+
     }
 }

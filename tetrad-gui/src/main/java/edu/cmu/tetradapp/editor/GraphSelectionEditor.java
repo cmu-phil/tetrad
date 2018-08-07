@@ -344,6 +344,22 @@ public class GraphSelectionEditor extends JPanel implements GraphEditable, Tripl
         if (type == GraphSelectionWrapper.Type.Degree) {
             editorPanel.setNLabel("");
         }
+
+        if (type == GraphSelectionWrapper.Type.Ancestors) {
+            editorPanel.setNLabel("");
+        }
+
+        if (type == GraphSelectionWrapper.Type.Descendants) {
+            editorPanel.setNLabel("");
+        }
+
+        if (type == GraphSelectionWrapper.Type.Parents) {
+            editorPanel.setNLabel("");
+        }
+
+        if (type == GraphSelectionWrapper.Type.Children) {
+            editorPanel.setNLabel("");
+        }
     }
 
     private void initSelection(GraphSelectionWrapper wrapper) {
@@ -475,7 +491,7 @@ public class GraphSelectionEditor extends JPanel implements GraphEditable, Tripl
     private JMenu createGraphMenu() {
         JMenu graph = new JMenu("Graph");
 
-        graphAction = new GraphPropertiesAction(wrapper.getGraphs().get(0), getWorkbench());
+        graphAction = new GraphPropertiesAction(getWorkbench());
         graph.add(graphAction);
         graph.add(new PathsAction(getWorkbench()));
 //        graph.add(new DirectedPathsAction(getWorkbench()));

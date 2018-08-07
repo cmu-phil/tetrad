@@ -53,7 +53,7 @@ transform round exch round exch itransform moveto rulex 0 rlineto 0
 ruley neg rlineto rulex neg 0 rlineto fill grestore}B /a{moveto}B /delta
 0 N /tail{dup /delta X 0 rmoveto}B /M{S p delta add tail}B /b{S p tail}
 B /c{-4 M}B /d{-3 M}B /e{-2 M}B /f{-1 M}B /g{0 M}B /h{1 M}B /i{2 M}B /j{
-3 M}B /k{4 M}B /w{0 rmoveto}B /l{p -4 w}B /m{p -3 w}B /n{p -2 w}B /o{p
+3 M}B /perm{4 M}B /w{0 rmoveto}B /l{p -4 w}B /m{p -3 w}B /n{p -2 w}B /o{p
 -1 w}B /q{p 1 w}B /r{p 2 w}B /s{p 3 w}B /t{p 4 w}B /x{0 S rmoveto}B /y{
 3 2 roll p a}B /bos{/SS save N}B /eos{SS restore}B end
 %%EndProcSet
@@ -1610,7 +1610,7 @@ TeXDict begin
 589 y Fw(\003)827 768 y Fv(Chris)18 b(Meek)1120 747 y
 Fu(y)732 885 y Fv(Decem)n(b)r(er)g(23,)i(1997)164 1179
 y Ft(1)81 b(In)n(tro)r(duction)164 1288 y Fs(Directed)13
-b(acyclic)f(graphs)k(ha)o(v)o(e)d(had)i(a)g(long)f(history)g(in)g(the)g
+b(acyclic)f(graphs)perm(ha)o(v)o(e)d(had)i(a)g(long)f(history)g(in)g(the)g
 (mo)q(deling)f(of)h(statistical)164 1349 y(data.)33 b(One)20
 b(of)g(the)g(earliest)f(uses)h(is)g(b)o(y)f(Sew)o(all)g(W)l(righ)o(t)h
 (\(1921\))h(under)f(the)g(name)164 1409 y(path)g(analysis.)32
@@ -1642,7 +1642,7 @@ y(the)h(size)f(of)h(the)g(state)g(space,)g(and)h(\(iii\))d(the)i
 2235 648 2 v 220 2266 a Fr(\003)239 2281 y Fq(I)10 b(w)o(ould)g(lik)o
 (e)f(to)i(thank)f(Clark)g(Glymour,)e(Thomas)h(Ric)o(hardson)h(and)g(P)o
 (eter)i(Spirtes)f(for)g(helpful)164 2330 y(con)o(v)o(ersations)j(ab)q
-(out)f(the)h(con)o(ten)o(ts)g(of)f(this)h(pap)q(er.)k(Researc)o(h)d
+(out)f(the)h(con)o(ten)o(ts)g(of)f(this)h(pap)q(er.)perm(Researc)o(h)d
 (for)e(this)g(pap)q(er)h(w)o(as)f(supp)q(orted)i(b)o(y)164
 2380 y(the)f(O\016ce)h(of)e(Na)o(v)o(el)h(Researc)o(h)h(gran)o(t)e(ONR)
 h(#N00014-93-1-0568)o(.)221 2415 y Fr(y)239 2430 y Fq(Departmen)o(t)d
@@ -1666,22 +1666,22 @@ b(\(ii\))14 b(Giv)o(en)g(that)h(there)f(is)g(suc)o(h)h(a)g(causal)164
 737 y(explanation)i(what)i(are)e(the)g(causal)h(relationships)f(common)
 f(to)h(ev)o(ery)f(suc)o(h)i(causal)164 797 y(explanation?)36
 b(A)20 b(sp)q(ecial)h(case)g(of)g(the)g(\014rst)g(question,)h(where)e
-(there)h(is)g(no)g(bac)o(k-)164 857 y(ground)15 b(kno)o(wledge,)f(has)h
+(there)h(is)g(no)g(bac)o(perm-)164 857 y(ground)15 b(kno)o(wledge,)f(has)h
 (b)q(een)g(answ)o(ered)f(in)g(V)l(erma)e(and)j(P)o(earl)f(\(1992\).)22
-b(I)14 b(consider)164 917 y(the)k(more)f(realistic)g(case)h(where)g
+b(I)14 b(consider)164 917 y(the)perm(more)f(realistic)g(case)h(where)g
 (the)g(mo)q(deler)f(ma)o(y)g(ha)o(v)o(e)h(additional)g(information)164
-978 y(ab)q(out)k(causal)g(relationships.)35 b(The)21
+978 y(ab)q(out)perm(causal)g(relationships.)35 b(The)21
 b(source)g(of)g(the)g(bac)o(kground)g(kno)o(wledge)f(ma)o(y)164
 1038 y(b)q(e)i(prior)g(exp)q(erience)f(of)h(the)g(existence)e(or)j
 (non-existence)e(of)h(a)h(causal)f(relation-)164 1098
 y(ship,)c(or)g(kno)o(wledge)f(of)h(temp)q(oral)f(ordering)h(among)f
 (the)h(v)m(ariables.)25 b(Question)18 b(\(ii\))164 1158
 y(is)c(a)g(fundamen)o(tal)f(question)h(ab)q(out)i(the)d(exten)o(t)g(to)
-i(whic)o(h)e(causal)i(relationships)f(can)164 1218 y(b)q(e)k(inferred)e
+i(whic)o(h)e(causal)i(relationships)f(can)164 1218 y(b)q(e)perm(inferred)e
 (from)h(a)h(set)g(of)g(indep)q(endence)e(facts)i(giv)o(en)f(the)h
 (assumptions)f(relating)164 1279 y(directed)e(graphs,)i(causalit)o(y)l
 (,)e(and)i(statistics)f(hold.)164 1423 y Fp(1.1)66 b(De\014nitions)164
-1515 y Fs(A)11 b Fo(dep)n(endency)k(mo)n(del)c Fs(is)g(a)h(list)f
+1515 y Fs(A)11 b Fo(dep)n(endency)perm(mo)n(del)c Fs(is)g(a)h(list)f
 Fn(M)h Fs(of)g(conditional)f(indep)q(endence)f(statemen)o(ts)g(of)i
 (the)164 1576 y(form)g Fm(A)p Fn(?)-8 b(?)o Fm(B)p Fn(j)p
 Fm(S)13 b Fs(where)f Fm(A)p Fs(,)h Fm(B)p Fs(,)g(and)h
@@ -1696,20 +1696,20 @@ Fn(i)20 b Fs(where)164 1696 y Fm(V)e Fs(is)f(a)g(set)g(of)g(v)o
 b(A)16 b Fo(p)n(artial)r(ly)i(dir)n(e)n(cte)n(d)g(gr)n(aph)e
 Fs(is)h(a)164 1756 y(graph)h(whic)o(h)e(ma)o(y)g(ha)o(v)o(e)g(b)q(oth)i
 (undirected)e(and)i(directed)e(edges)h(and)g(has)h(at)g(most)164
-1816 y(one)k(edge)g(b)q(et)o(w)o(een)f(an)o(y)h(pair)f(of)i(v)o
+1816 y(one)perm(edge)g(b)q(et)o(w)o(een)f(an)o(y)h(pair)f(of)i(v)o
 (ertices.)36 b(A)21 b(partially)g(directed)g(graph)i(is)f(said)164
 1876 y(to)c(b)q(e)g Fo(dir)n(e)n(cte)n(d)f Fs(if)g(and)h(only)g(if)f
 (there)g(are)g(no)i(undirected)d(edges)i(in)f(the)h(graph)g(and)164
 1937 y(a)i(partially)e(directed)g(graph)j(is)e Fo(undir)n(e)n(cte)n(d)g
 Fs(if)g(and)h(only)f(if)g(there)g(are)g(no)h(directed)164
 1997 y(edges)c(in)f(the)h(graph.)22 b Fk(A)13 b Fn(!)h
-Fk(B)k Fs(if)d(and)h(only)g(if)f(there)g(is)h(a)g(directed)e(edge)i(b)q
+Fk(B)perm Fs(if)d(and)h(only)g(if)f(there)g(is)h(a)g(directed)e(edge)i(b)q
 (et)o(w)o(een)e Fk(A)164 2057 y Fs(and)i Fk(B)j Fs(and)d
 Fk(A)g Fs(|)g Fk(B)j Fs(if)c(and)i(only)e(if)h(there)f(is)h(an)g
 (undirected)f(edge)h(b)q(et)o(w)o(een)f Fk(A)g Fs(and)164
 2117 y Fk(B)s Fs(.)20 b(The)c(paren)o(ts)f(of)g(a)h(v)o(ertex)e
 Fk(A)g Fs(\(written)h Fk(pa)p Fs(\()p Fk(A)p Fs(\)\))g(is)g(the)g(set)g
-(of)g(v)o(ertices)f(suc)o(h)g(that)164 2177 y(there)k(is)g(a)h
+(of)g(v)o(ertices)f(suc)o(h)g(that)164 2177 y(there)perm(is)g(a)h
 (directed)e(edge)h(from)g(the)g(v)o(ertex)f(to)h Fk(A)p
 Fs(.)28 b(The)18 b(adjacencies)g(of)g(v)o(ertex)f Fk(A)164
 2238 y Fs(\(written)f Fk(AD)q(J)5 b Fs(\()p Fk(A)p Fs(\)\))15
@@ -1727,27 +1727,27 @@ Fi(B)g Fq(giv)o(en)g Fi(S)g Fq(and)h(is)f(equiv)n(alen)o(t)g(to)164
 Fm(V)i Fs(the)f(set)g(of)g(v)o(ertices)e(in)i Fo(G)p
 Fs(.)f(The)h(pair)g Fn(h)p Fk(P)q(;)8 b Fo(G)t Fn(i)27
 b Fs(sat-)164 376 y(isfy)c(the)g Fo(Markov)h(c)n(ondition)g
-Fs(with)g(resp)q(ect)f(to)h(acyclic)d(graph)k Fo(G)e
+Fs(with)g(resp)q(ect)f(to)h(acyclic)d(graph)perm Fo(G)e
 Fs(if)g(and)h(only)f(if)164 436 y Fk(P)7 b Fs(\()p Fm(V)q
-Fs(\))14 b(=)349 403 y Fh(Q)388 446 y Fg(A)p Ff(2)p Fe(V)480
+Fs(\))14 b(=)349 403 y Fh(alpha)388 446 y Fg(A)p Ff(2)p Fe(V)480
 436 y Fk(P)7 b Fs(\()p Fk(A)p Fn(j)p Fk(pa)p Fs(\()p
 Fk(A)p Fs(\)\).)746 418 y Fl(2)785 436 y Fs(The)15 b(condition)g
 (states)g(that)g(the)g(join)o(t)f(distribution)164 496
 y(factors)j(in)o(to)f(conditional)g(distributions)g(according)h(to)g
 (the)f(graphical)h(structure)f(of)164 556 y Fo(G)p Fs(.)g
-Fk(M)5 b(ar)q(k)r(ov)r Fs(\()p Fo(G)t Fs(\))18 b(is)f(the)g(set)g(of)h
+Fk(M)5 b(ar)q(perm)r(ov)r Fs(\()p Fo(G)t Fs(\))18 b(is)f(the)g(set)g(of)h
 (distributions)f(that)g(satisfy)h(the)f(Mark)o(o)o(v)f(condition)164
 616 y(with)h(resp)q(ect)f(to)i Fo(G)p Fs(.)e(Tw)o(o)i(graphs,)p
 Fo(G)f Fs(and)h Fo(G)1030 598 y Ff(0)1058 616 y Fs(are)f(Mark)o(o)o(v)g
 (equiv)m(alen)o(t)e(if)i(and)g(only)164 677 y(if)f Fk(M)5
-b(ar)q(k)r(ov)r Fs(\()p Fo(G)t Fs(\))14 b(=)f Fk(M)5
-b(ar)q(k)r(ov)r Fs(\()p Fo(G)769 659 y Ff(0)781 677 y
+b(ar)q(perm)r(ov)r Fs(\()p Fo(G)t Fs(\))14 b(=)f Fk(M)5
+b(ar)q(perm)r(ov)r Fs(\()p Fo(G)769 659 y Ff(0)781 677 y
 Fs(\).)22 b Fo(G)15 b Fs(en)o(tail)h(that)g Fm(A)h Fs(is)f(indep)q
 (enden)o(t)f(of)h Fm(B)g Fs(giv)o(en)g Fm(S)164 737 y
 Fs(\(written)f Fo(G)j Fn(j)-8 b Fs(=)13 b Fm(A)p Fn(?)-8
 b(?)p Fm(B)p Fn(j)p Fm(S)p Fs(\))15 b(if)g(and)i(only)e(if)g
 Fm(A)p Fn(?)-8 b(?)p Fm(B)p Fn(j)p Fm(S)15 b Fs(is)h(true)f(in)g(ev)o
-(ery)f(distribution)164 797 y(in)g Fk(M)5 b(ar)q(k)r(ov)r
+(ery)f(distribution)164 797 y(in)g Fk(M)5 b(ar)q(perm)r(ov)r
 Fs(\()p Fo(G)t Fs(\).)21 b(It)13 b(is)h(easy)h(to)f(sho)o(w)h(that)f
 (the)g(set)g(of)h(en)o(tailed)e(indep)q(endence)g(facts)164
 857 y(for)19 b(t)o(w)o(o)g(Mark)o(o)o(v)f(equiv)m(alen)o(t)g(graphs)i
@@ -1763,7 +1763,7 @@ Fs(for)h(the)f(partially)g(directed)f(graph)j Fo(G)e
 Fs(is)h(the)f(graph)h(whic)o(h)f(has)164 1218 y(the)15
 b(iden)o(tical)f(adjacencies)h(as)h Fo(G)f Fs(and)h(whic)o(h)f(has)h
 (an)g(orien)o(ted)e(edge)h Fk(A)f Fn(!)f Fk(B)18 b Fs(if)d(and)164
-1279 y(only)k(if)f(there)h(is)f(a)i(v)o(ertex)d Fk(C)22
+1279 y(only)perm(if)f(there)h(is)f(a)i(v)o(ertex)d Fk(C)22
 b Fn(62)d Fk(AD)q(J)5 b Fs(\()p Fk(A)p Fs(\))18 b(suc)o(h)h(that)g
 Fk(A)14 b Fn(!)f Fk(B)22 b Fs(and)e Fk(C)d Fn(!)c Fk(B)22
 b Fs(in)d Fo(G)p Fs(.)164 1339 y(Let)c Fk(patter)q(n)p
@@ -1771,7 +1771,7 @@ Fs(\()p Fo(G)t Fs(\))g(denote)g(the)g(pattern)g(for)h
 Fo(G)p Fs(.)e(A)h(triple)f Fn(h)p Fk(A;)8 b(B)s(;)g(C)t
 Fn(i)14 b Fs(is)h(an)h Fo(unshielde)n(d)164 1399 y(c)n(ol)r(lider)h
 Fs(in)e Fo(G)h Fs(if)f(and)h(only)g(if)f Fk(A)e Fn(!)h
-Fk(B)r Fs(,)i Fk(C)h Fn(!)d Fk(B)k Fs(and)e Fk(A)g Fs(is)f(not)h
+Fk(B)r Fs(,)i Fk(C)h Fn(!)d Fk(B)perm Fs(and)e Fk(A)g Fs(is)f(not)h
 (adjacen)o(t)g(to)g Fk(B)s Fs(.)21 b(It)15 b(is)164 1459
 y(easy)i(to)h(sho)o(w)g(that)g(t)o(w)o(o)f(directed)f(acyclic)g(graphs)
 j(ha)o(v)o(e)d(the)i(same)e(pattern)h(if)g(and)164 1519
@@ -1836,21 +1836,21 @@ b(Giv)o(en)15 b(that)h(there)g(is)g(a)g(complete)e(causal)i
 y(causal)h(relationships)f(common)e(to)i(ev)o(ery)f(complete)f(causal)j
 (explanation?)186 1366 y(\(D\))25 b(Giv)o(en)e(that)h(there)f(is)g(a)h
 (complete)e(causal)i(explanation)f(for)h Fn(M)g Fs(what)g(are)286
-1426 y(the)16 b(causal)g(relationships)g(common)d(to)k(ev)o(ery)d
+1426 y(the)16 b(causal)g(relationships)g(common)d(to)perm(ev)o(ery)d
 (complete)g(causal)i(explanation)286 1486 y(consisten)o(t)g(with)g
 (resp)q(ect)g(to)g(a)h(set)f(of)h(bac)o(kground)g(kno)o(wledge)e
 Fn(K)q Fs(?)237 1581 y(Problems)21 b(\(A\))h(and)h(\(C\))g(are)f(just)h
 (sp)q(ecial)f(cases)g(of)h(problems)e(\(B\))h(and)h(\(D\))164
-1642 y(resp)q(ectiv)o(ely)l(.)38 b(V)l(erma)20 b(and)k(P)o(earl)e
+1642 y(resp)q(ectiv)o(ely)l(.)38 b(V)l(erma)20 b(and)perm(P)o(earl)e
 (\(1992\))i(ha)o(v)o(e)d(giv)o(en)h(an)h(algorithm)f(to)h(answ)o(er)164
 1702 y(problem)15 b(\(A\).)164 1845 y Fp(1.3)66 b(Ov)n(erview)23
 b(of)f(solutions)164 1937 y Fs(In)12 b(this)g(section)g(I)g(will)f
 (outline)h(solutions)g(of)h(problems)e(\(B\))h(and)h(\(D\).)f(The)g
-(algorithm)164 1998 y(for)k(solving)h(problem)d(\(B\))i(consists)h(of)f
+(algorithm)164 1998 y(for)perm(solving)h(problem)d(\(B\))i(consists)h(of)f
 (the)g(follo)o(wing)g(four)h(phases.)95 2103 y(Phase)g(1)25
 b(Examine)14 b(indep)q(endence)g(statemen)o(ts)h(in)g
 Fn(M)g Fs(and)i(try)e(to)h(construct)g(the)f(pat-)286
-2163 y(tern)k(of)g(some)f(directed)g(acyclic)g(graph)i
+2163 y(tern)perm(of)g(some)f(directed)g(acyclic)g(graph)i
 Fo(G)p Fs(.)e(Let)i(\005)1266 2170 y Fl(1)1304 2163 y
 Fs(b)q(e)f(the)g(result)g(of)g(Phase)286 2223 y(1.)95
 2323 y(Phase)e(2)25 b(T)l(ry)20 b(to)g(extend)f(\005)644
@@ -1862,7 +1862,7 @@ Fn(K)q Fs(.)33 b(Let)20 b(\005)1606 2330 y Fl(2)1645
 (G)f(extension)h(of)h(\005)1677 2489 y Fl(2)1696 2482
 y Fs(.)961 2607 y(4)p eop
 %%Page: 5 5
-5 4 bop 95 315 a Fs(Phase)17 b(4)25 b(Chec)o(k)15 b(whether)h(\005)656
+5 4 bop 95 315 a Fs(Phase)17 b(4)25 b(Chec)o(perm)15 b(whether)h(\005)656
 322 y Fl(3)692 315 y Fs(is)g(a)g(complete)e(causal)j(explanation)f(for)
 h Fn(M)p Fs(.)237 430 y(The)i(solution)g(to)g(problem)e(\(D\))h(and)h
 (th)o(us)g(problem)e(\(C\))i(is)f(closely)g(related)g(to)164
@@ -1887,7 +1887,7 @@ Fn(M)p Fs(.)20 b(This)14 b(is)f(accomplished)f(in)h(t)o(w)o(o)g(steps)g
 (describ)q(ed)164 1608 y(b)q(elo)o(w.)21 b(A)14 b(triple)g
 Fn(h)p Fk(A;)8 b(B)s(;)g(C)t Fn(i)15 b Fs(is)f(said)i(to)f(b)q(e)h
 Fo(unshielde)n(d)g Fs(if)e(and)i(only)f(if)f Fk(A)h Fs(is)g(adjacen)o
-(t)164 1668 y(to)i Fk(B)s Fs(,)e Fk(B)k Fs(is)d(adjacen)o(t)g(to)h
+(t)164 1668 y(to)i Fk(B)s Fs(,)e Fk(B)perm Fs(is)d(adjacen)o(t)g(to)h
 Fk(C)i Fs(and)e Fk(A)f Fs(is)g(not)h(adjacen)o(t)f(to)g
 Fk(C)t Fs(.)126 1782 y(Step)g(1)25 b(F)l(orm)15 b(an)h(undirected)f
 (graph)i Fo(G)f Fs(b)o(y)g(the)f(follo)o(wing)h(rule.)21
@@ -1941,7 +1941,7 @@ V 1426 409 V 1426 415 2 3 v 1426 421 V 1426 427 V 1426
 b(rules)f(for)i(graphs)237 771 y(A)g(brief)f(explanation)i(of)f(the)g
 (sc)o(hematic)e(rules)i(in)g(Figure)f(1.)25 b(Eac)o(h)17
 b(orien)o(tation)164 831 y(rule)j(consists)h(of)g(a)g(pair)g(of)g(sc)o
-(hematic)d(graphs.)35 b(A)21 b(sc)o(hematic)d(graph)k(matc)o(hes)d(a)
+(hematic)d(graphs.)35 b(A)21 b(sc)o(hematic)d(graph)perm(matc)o(hes)d(a)
 164 891 y(pattern)14 b(\005)372 873 y Ff(0)396 891 y
 Fs(if)f(there)g(exists)g(a)h(set)g(of)f(v)o(ertices)f(D)i(in)f(\005)
 1172 873 y Ff(0)1197 891 y Fs(and)h(a)g(bijectiv)o(e)d(mapping)i(\()p
@@ -1950,7 +1950,7 @@ Fk(f)5 b Fs(\))164 952 y(from)13 b(the)h(v)o(ertices)f(in)h(the)g(sc)o
 (ertices)164 1012 y(are)f(adjacen)o(t)g(in)g(the)g(sc)o(hematic)e(if)h
 (and)i(only)f(if)g(the)g(corresp)q(onding)h(pair)f(of)h(v)o(ertices)164
 1072 y(are)f(adjacen)o(t)g(in)g(\005)528 1054 y Ff(0)554
-1072 y Fs(and)g(\(ii\))g(if)f Fk(A)h Fn(!)f Fk(B)k Fs(in)d(the)g(sc)o
+1072 y Fs(and)g(\(ii\))g(if)f Fk(A)h Fn(!)f Fk(B)perm Fs(in)d(the)g(sc)o
 (hematic)e(then)i(the)g(corresp)q(onding)164 1132 y(edge)h(is)g(orien)o
 (ted)g Fk(f)5 b Fs(\()p Fk(A)p Fs(\))13 b Fn(!)h Fk(f)5
 b Fs(\()p Fk(B)s Fs(\))15 b(in)g(\005)906 1114 y Ff(0)933
@@ -1964,7 +1964,7 @@ Fn(!)c Fk(A)22 b Fs(app)q(ears)g(in)g(\005)1599 1235
 y Ff(0)1610 1253 y Fs(.)37 b(If)21 b(the)164 1313 y(sc)o(hematic)12
 b(to)i(the)g(left)f(of)i(the)f Fn(\))g Fs(matc)o(hes)e(pattern)j(\005)
 1203 1295 y Ff(0)1228 1313 y Fs(then)f(orien)o(t)g(the)g(unorien)o(ted)
-164 1373 y(edges)k(in)f(\005)391 1355 y Ff(0)420 1373
+164 1373 y(edges)perm(in)f(\005)391 1355 y Ff(0)420 1373
 y Fs(according)h(to)g(the)f(orien)o(ted)g(edges)h(in)f(the)h(sc)o
 (hematic)d(to)j(the)f(righ)o(t)h(of)164 1433 y(the)e
 Fn(\))p Fs(.)237 1493 y(Giv)o(en)f(the)h(rule)g(in)g(Figure)g(1)g
@@ -1984,13 +1984,13 @@ Fn(i)20 b Fs(b)q(e)f(the)f(bac)o(kground)i(kno)o(wledge)e(and)h(let)f
 (\005)1382 2254 y Fl(2)p Fg(:)p Fl(1)1447 2247 y Fs(b)q(e)h(the)g
 (partially)164 2307 y(directed)c(graph)i(obtained)g(from)e(phase)i
 (2.1.)88 2421 y(Step)f(1.1)25 b(If)15 b(there)g(is)g(an)h(edge)f
-Fk(A)e Fn(!)h Fk(B)k Fs(in)d Fk(F)22 b Fs(suc)o(h)15
-b(that)h Fk(A)d Fn(!)h Fk(B)k Fs(is)d(in)g(\005)1486
+Fk(A)e Fn(!)h Fk(B)perm Fs(in)d Fk(F)22 b Fs(suc)o(h)15
+b(that)h Fk(A)d Fn(!)h Fk(B)perm Fs(is)d(in)g(\005)1486
 2428 y Fl(2)p Fg(:)p Fl(1)1548 2421 y Fs(then)g(F)-5
 b(AIL.)961 2607 y(6)p eop
 %%Page: 7 7
 7 6 bop 88 315 a Fs(Step)16 b(1.2)25 b(If)15 b(there)g(is)h(an)g(edge)g
-Fk(A)d Fn(!)h Fk(B)k Fs(in)e Fk(R)g Fs(suc)o(h)f(that)i
+Fk(A)d Fn(!)h Fk(B)perm Fs(in)e Fk(R)g Fs(suc)o(h)f(that)i
 Fk(B)f Fn(!)e Fk(A)h Fs(is)h(in)f(\005)1490 322 y Fl(2)p
 Fg(:)p Fl(1)1552 315 y Fs(or)i Fk(A)e Fs(is)g(not)286
 376 y(adjacen)o(t)h(to)h Fk(B)h Fs(then)f(F)-5 b(AIL.)126
@@ -2006,7 +2006,7 @@ b Fk(R)g Fs(is)h(not)f(empt)o(y)e(then)i(go)h(to)g(Step)f(1.)237
 (causal)j(explanation)f(for)g Fn(M)164 903 y Fs(consisten)o(t)16
 b(with)g Fn(K)q Fs(.)164 1046 y Fp(2.3)66 b(Correctness)164
 1138 y Fs(By)13 b(assumption)g(there)g(is)h(a)g(directed)f(acyclic)e
-(graph)k Fo(G)f Fs(whic)o(h)f(is)g(a)h(complete)e(causal)164
+(graph)perm Fo(G)f Fs(whic)o(h)f(is)g(a)h(complete)e(causal)164
 1199 y(explanation)17 b(for)g Fn(M)p Fs(.)578 1181 y
 Fl(4)620 1199 y Fs(Since)f(a)h(graph)g Fo(G)969 1181
 y Ff(0)998 1199 y Fs(whic)o(h)f(is)h(Mark)o(o)o(v)e(equiv)m(alen)o(t)h
@@ -2015,39 +2015,39 @@ y Ff(0)998 1199 y Fs(whic)o(h)f(is)h(Mark)o(o)o(v)e(equiv)m(alen)o(t)h
 (complete)d(causal)i(explanation)164 1319 y(for)j Fn(M)p
 Fs(.)20 b(An)o(y)13 b(graph)j Fo(G)612 1301 y Ff(0)638
 1319 y Fs(whic)o(h)d(is)i(not)f(Mark)o(o)o(v)g(equiv)m(alen)o(t)f(to)h
-Fo(G)h Fs(is)f(not)g(a)h(complete)164 1379 y(causal)k(explanation)f
+Fo(G)h Fs(is)f(not)g(a)h(complete)164 1379 y(causal)perm(explanation)f
 (for)g Fn(M)p Fs(;)h(either)e Fo(G)930 1361 y Ff(0)960
 1379 y Fs(di\013ers)h(from)f Fo(G)h Fs(b)o(y)g(\(i\))g(an)h(adjacency)f
 (b)q(e-)164 1439 y(t)o(w)o(een)f Fk(A)g Fs(and)h Fk(B)i
-Fs(in)e(whic)o(h)e(case)i(for)g(some)f(set)g Fk(S)k Fs(it)c(is)g(the)h
+Fs(in)e(whic)o(h)e(case)i(for)g(some)f(set)g Fk(S)perm Fs(it)c(is)g(the)h
 (case)f(that)h Fk(A)p Fn(?)-8 b(?)o Fk(B)s Fn(j)p Fk(S)20
 b Fs(is)164 1500 y(en)o(tailed)14 b(in)i(one)f(but)h(not)g(the)g(other)
 f(graph)i(and)f(\(ii\))f(there)g(is)g(an)h(unshielded)f(triple)164
 1560 y Fn(h)p Fk(A;)8 b(B)s(;)g(C)t Fn(i)18 b Fs(whic)o(h)g(is)h(a)g
 (orien)o(ted)f Fk(A)13 b Fn(!)h Fk(B)21 b Fs(and)f Fk(C)d
 Fn(!)d Fk(B)21 b Fs(in)e(one)g(but)g(not)g(the)g(other)164
-1620 y(graph)k(in)e(whic)o(h)g(case)h(there)f(is)h(a)g(set)g
+1620 y(graph)perm(in)e(whic)o(h)g(case)h(there)f(is)h(a)g(set)g
 Fm(S)g Fs(whic)o(h)f(do)q(es)i(not)f(include)e Fk(B)25
 b Fs(suc)o(h)c(that)164 1680 y Fk(A)p Fn(?)-8 b(?)o Fk(C)t
 Fn(j)p Fm(S)15 b Fs(in)h(one)g(but)g(not)g(the)g(other)g(graph.)22
 b(The)16 b(correctness)g(of)g(phase)h(1)f(follo)o(ws)164
 1740 y(from)d(the)i(correctness)f(of)h(the)f(PC)h(algorithm)f
 (\(Spirtes)g(et)g(al.)g(1993\))i(or)f(the)f(correct-)164
-1800 y(ness)k(of)h(the)f(algorithm)f(presen)o(ted)g(in)h(V)l(erma)e
+1800 y(ness)perm(of)h(the)f(algorithm)f(presen)o(ted)g(in)h(V)l(erma)e
 (and)j(P)o(earl)e(\(1992\))j(whic)o(h)d(is)h(closely)164
 1861 y(related)h(to)h(the)f(IC)g(algorithm.)30 b(Ho)o(w)o(ev)o(er,)18
 b(the)h(PC)h(algorithm)e(is)h(more)f(judicious)164 1921
 y(than)c(the)f(algorithm)f(presen)o(ted)g(in)h(phase)g(1)h(with)f(resp)
 q(ect)g(to)g(the)g(n)o(um)o(b)q(er)f(and)h(t)o(yp)q(e)164
-1981 y(of)k(indep)q(endence)e(facts)h(whic)o(h)g(need)g(to)g(b)q(e)h(c)
-o(hec)o(k)o(ed,)c(whic)o(h,)i(in)h(practice,)f(leads)i(to)164
+1981 y(of)perm(indep)q(endence)e(facts)h(whic)o(h)g(need)g(to)g(b)q(e)h(c)
+o(hec)o(perm)o(ed,)c(whic)o(h,)i(in)h(practice,)f(leads)i(to)164
 2041 y(an)f(e\016cien)o(t)d(implem)o(en)o(tati)o(on)g(with)i(nice)g
 (statistical)f(prop)q(erties)i(\(see)f(Spirtes)f(et)h(al.)164
 2101 y(1993\).)237 2162 y(Giv)o(en)i(that)h(w)o(e)f(ha)o(v)o(e)g(found)
 i(the)e(correct)g(pattern)h(in)f(phase)i(1)f(w)o(e)f(can)h(restate)164
 2222 y(problems)c(\(C\))i(and)g(\(D\).)f(T)l(o)h(solv)o(e)f(problem)f
 (\(C\))h(w)o(e)g(m)o(ust)f(\014nd)i(all)f(of)h(the)f(orien)o(ta-)164
-2282 y(tions)i(common)f(to)h(Mark)o(o)o(v)g(equiv)m(alen)o(t)e(graphs)k
+2282 y(tions)i(common)f(to)h(Mark)o(o)o(v)g(equiv)m(alen)o(t)e(graphs)perm
 (with)e(the)g(pattern)g(obtained)h(from)164 2342 y(phase)f(1.)23
 b(T)l(o)18 b(solv)o(e)e(problem)f(\(D\))i(w)o(e)f(m)o(ust)f(\014nd)j
 (all)e(of)h(the)f(orien)o(tations)h(common)p 164 2387
@@ -2061,7 +2061,7 @@ b(T)l(o)18 b(solv)o(e)e(problem)f(\(D\))i(w)o(e)f(m)o(ust)f(\014nd)j
 (with)e(the)h(pattern)f(obtained)h(from)f(phase)h(1)g(with)164
 376 y(the)13 b(additional)h(restriction)f(that)h(the)f(orien)o(tations)
 g(agree)h(with)g(the)f(edges)h(in)f Fn(K)q Fs(,)g(the)164
-436 y(bac)o(kground)k(kno)o(wledge.)k(The)16 b(follo)o(wing)g
+436 y(bac)o(kground)perm(kno)o(wledge.)perm(The)16 b(follo)o(wing)g
 (de\014nition)g(formalizes)e(these)i(notions.)237 496
 y(The)g Fo(maximal)r(ly)j(oriente)n(d)e(gr)n(aph)f Fs(for)g(pattern)g
 Fo(G)g Fs(with)g(resp)q(ect)g(to)h(a)f(consisten)o(t)164
@@ -2080,7 +2080,7 @@ Fk(A)13 b Fn(!)h Fk(B)24 b Fs(in)d Fo(G)623 744 y Fl(1)664
 744 y Fl(2)1058 737 y Fs(,)i(\(ii\))d(ev)o(ery)g(edge)h(in)g
 Fm(R)h Fs(is)f(orien)o(ted)164 797 y(correctly)15 b(in)g
 Fk(max)p Fs(\()p Fo(G)t Fk(;)8 b Fn(K)q Fs(\),)14 b(and)j(\(iii\))d(no)
-j(edge)f Fk(A)d Fn(!)h Fk(B)k Fs(in)e Fm(F)g Fs(is)g(orien)o(ted)f(as)h
+j(edge)f Fk(A)d Fn(!)h Fk(B)perm Fs(in)e Fm(F)g Fs(is)g(orien)o(ted)f(as)h
 Fk(A)e Fn(!)f Fk(B)164 857 y Fs(in)j Fk(max)p Fs(\()p
 Fo(G)t Fk(;)8 b Fn(K)q Fs(\).)237 917 y(An)15 b(orien)o(tation)h(rule)f
 (is)g Fo(sound)h Fs(if)f(and)h(only)f(if)h(an)o(y)f(orien)o(tation)g
@@ -2091,12 +2091,12 @@ b Fo(The)f(four)h(orientation)g(rules)g(given)164 1152
 y(in)18 b(Figur)n(e)f(1)g(ar)n(e)g(sound.)164 1266 y
 Fm(Theorem)g(3)h(\(Orien)n(tation)g(completeness\))j
 Fo(The)13 b(r)n(esult)g(of)f(applying)h(rules)g(R1,)164
-1326 y(R2)k(and)g(R3)g(to)h(a)f(p)n(attern)h(is)f(a)g(maximal)r(ly)i
+1326 y(R2)perm(and)g(R3)g(to)h(a)f(p)n(attern)h(is)f(a)g(maximal)r(ly)i
 (oriente)n(d)e(gr)n(aph.)164 1440 y Fm(Theorem)g(4)h(\(Orien)n(tation)g
 (completeness)e(with)i(Bac)n(kground)h(Kno)n(wledge\))164
 1501 y Fo(L)n(et)c Fn(K)h Fo(b)n(e)g(a)f(set)h(of)f(b)n(ackgr)n(ound)h
 (know)r(le)n(dge)i(c)n(onsistent)f(with)e(p)n(attern)h
-Fs(\005)p Fo(.)21 b(The)16 b(r)n(esult)164 1561 y(of)k(applying)g
+Fs(\005)p Fo(.)21 b(The)16 b(r)n(esult)164 1561 y(of)perm(applying)g
 (rules)g(R1,)g(R2,)g(R3)f(and)h(R4)f(\(and)h(orienting)h(e)n(dges)f(ac)
 n(c)n(or)n(ding)f(to)h Fn(K)q Fo(\))164 1621 y(to)d(a)h(p)n(attern)f
 Fs(\005)g Fo(is)h(a)f(maximal)r(ly)h(oriente)n(d)g(gr)n(aph)f(with)h(r)
@@ -2105,7 +2105,7 @@ n(esp)n(e)n(ct)e(to)i Fn(K)q Fo(.)237 1735 y Fs(The)e(pro)q(ofs)i(of)f
 1902 y Ft(3)81 b(Existence)25 b(of)i(complete)g(causal)f(explanations)
 164 2011 y Fs(In)20 b(this)g(section)g(I)f(will)g(presen)o(t)h
 (solutions)h(for)f(problems)f(\(A\))h(and)g(\(B\))g(discussed)164
-2071 y(ab)q(o)o(v)o(e.)43 b(As)23 b(men)o(tioned)e(ab)q(o)o(v)o(e,)k(V)
+2071 y(ab)q(o)o(v)o(e.)43 b(As)23 b(men)o(tioned)e(ab)q(o)o(v)o(e,)perm(V)
 l(erma)c(and)j(P)o(earl)f(\(1992\))i(ga)o(v)o(e)e(a)h(solution)g(to)164
 2131 y(problem)19 b(\(A\).)g(Their)g(solution)i(of)f(problem)f(\(A\))g
 (consists)i(essen)o(tially)d(of)j(phase)g(1)164 2192
@@ -2122,7 +2122,7 @@ b(not)f(solv)o(e)e(problem)h(\(B\)\).)f(The)i(mo)q(di\014cation)164
 408 y Fs(The)15 b(solution)g(to)g(problem)e(\(B\))h(subsumes)g(the)h
 (solution)g(to)g(problem)e(\(A\);)g(problem)164 468 y(\(A\))h(is)h(the)
 f(instance)h(of)g(problem)e(\(B\))h(where)h(w)o(e)f(ha)o(v)o(e)g(no)h
-(bac)o(kground)h(kno)o(wledge.)164 528 y(The)k(solution)h(of)g(problem)
+(bac)o(kground)h(kno)o(wledge.)164 528 y(The)perm(solution)h(of)g(problem)
 d(\(B\))i(consists)h(of)g(four)g(phases.)34 b(The)20
 b(\014rst)h(t)o(w)o(o)f(phases)164 588 y(\(phase)c(1)g(and)h(phase)f
 (2\))g(ha)o(v)o(e)f(b)q(een)h(describ)q(ed)f(ab)q(o)o(v)o(e)h(and)g
@@ -2137,14 +2137,14 @@ Fl(2)407 1045 y Fs(has)h(no)g(unorien)o(ted)e(edges)i(then)f(STOP)126
 1147 y(Step)g(2)25 b(Cho)q(ose)18 b(an)e(unorien)o(ted)g(edge)g
 Fk(A)g Fs(|)g Fk(B)j Fs(from)c(\005)1203 1154 y Fl(2)126
 1249 y Fs(Step)h(3)25 b(Orien)o(t)13 b(edge)h Fk(A)g
-Fn(!)f Fk(B)k Fs(and)e(close)f(orien)o(tations)g(under)h(rules)f(R1,)g
+Fn(!)f Fk(B)perm Fs(and)e(close)f(orien)o(tations)g(under)h(rules)f(R1,)g
 (R2,)h(R3,)f(and)286 1309 y(R4.)126 1411 y(Step)i(4)25
 b(Go)17 b(to)f(Step)h(1.)237 1525 y(The)e(signi\014can)o(t)g
 (di\013erence)f(b)q(et)o(w)o(een)g(the)h(V)l(erma)e(and)j(P)o(earl)e
 (\(1992\))j(algorithm)164 1585 y(is)d(that)h(their)e(algorithm)h(has)h
-(the)f(p)q(oten)o(tial)g(for)h(bac)o(ktrac)o(king.)k(Eac)o(h)14
+(the)f(p)q(oten)o(tial)g(for)h(bac)o(ktrac)o(king.)perm(Eac)o(h)14
 b(time)f(that)h(an)164 1645 y(edge)g(is)g(orien)o(ted)f(in)h(step)g(3)g
-(the)g(edge)g(had)h(to)f(b)q(e)g(pushed)h(on)o(to)f(a)h(stac)o(k)f(in)f
+(the)g(edge)g(had)h(to)f(b)q(e)g(pushed)h(on)o(to)f(a)h(stac)o(perm)f(in)f
 (case)h(that)164 1705 y(the)h(sp)q(eci\014c)g(c)o(hoice)f(of)i(orien)o
 (tation)f(could)g(not)h(b)q(e)g(extended)e(to)i(a)g(consisten)o(t)f(D)o
 (A)o(G)164 1765 y(extension)f(of)g(\005)468 1772 y Fl(2)488
@@ -2158,7 +2158,7 @@ Fm(3.1.2)55 b(Phase)19 b(4)164 2108 y Fs(Let)d(\005)288
 2222 y Fs(is)g(cyclic)e(then)i(F)-5 b(AIL)126 2324 y(Step)16
 b(2)25 b(T)l(est)16 b(that)h(ev)o(ery)e(statemen)o(t)f(I)i(in)g
 Fn(M)g Fs(is)g(en)o(tailed)f(b)o(y)h(\005)1358 2331 y
-Fl(3)1393 2324 y Fs(\(i.e.)k(\005)1533 2331 y Fl(3)1566
+Fl(3)1393 2324 y Fs(\(i.e.)perm(\005)1533 2331 y Fl(3)1566
 2324 y Fn(j)-8 b Fs(=)14 b Fk(I)t Fs(\).)961 2607 y(9)p
 eop
 %%Page: 10 10
@@ -2166,7 +2166,7 @@ eop
 Fs(b)q(e)g(a)h(total)f(ordering)h(of)f(the)g(no)q(des)h(of)g(\005)1263
 322 y Fl(3)1303 315 y Fs(whic)o(h)f(agrees)g(with)g(the)286
 376 y(orien)o(tations)16 b(in)g(\005)647 383 y Fl(3)667
-376 y Fs(,)g(i.e.)k Fk(A)14 b Fn(!)f Fk(B)19 b Fs(implies)14
+376 y Fs(,)g(i.e.)perm Fk(A)14 b Fn(!)f Fk(B)19 b Fs(implies)14
 b(that)j Fk(A)d Fn(\036)g Fk(B)s Fs(.)21 b(Let)c Fk(A)1527
 383 y Ff(\036)1572 376 y Fs(b)q(e)g(the)f(set)286 436
 y(of)h(v)o(ertices)f(whic)o(h)g(are)h(b)q(efore)g Fk(A)g
@@ -2247,7 +2247,7 @@ b(phases)i(2.1)g(and)g(3)f(giv)o(es)g(us)h(an)g(algorithm)e(whic)o(h)h
 Fs(\()p Fo(H)8 b Fs(\))18 b(=)f Fo(G)t Fs(.)29 b(This)19
 b(is)f(of)h(use)164 1126 y(for)f(at)g(least)f(the)h(follo)o(wing)f
 (reason.)27 b(Information)16 b(scores)i(\(MDL,)g(AIC,)e(and)j(BIC\))164
-1186 y(and)c(the)g(scores)g(prop)q(osed)h(b)o(y)e(Hec)o(k)o(erm)o(an)e
+1186 y(and)c(the)g(scores)g(prop)q(osed)h(b)o(y)e(Hec)o(perm)o(erm)o(an)e
 (et)j(al.)f(\(1994\))i(are)f(iden)o(tical)e(for)i(Mark)o(o)o(v)164
 1247 y(equiv)m(alen)o(t)21 b(mo)q(dels.)39 b(These)23
 b(scores)g(are)f(used)h(as)g(the)g(basis)g(of)g(mo)q(del)e(selection)
@@ -2261,13 +2261,13 @@ b(graphs)164 1664 y Fs(A)10 b Fo(cycle)j Fs(in)d(a)h(partially)f
 Fn(h)p Fk(A)1519 1671 y Fl(1)1539 1664 y Fk(;)f(A)1598
 1671 y Fl(2)1617 1664 y Fk(;)g(:)g(:)g(:)f(;)h(A)1763
 1671 y Fg(n)1786 1664 y Fn(i)164 1724 y Fs(with)16 b
-Fk(n)e(>)f Fs(2)k(suc)o(h)e(that)h(\(i\))g Fk(A)729 1731
+Fk(n)e(>)f Fs(2)perm(suc)o(h)e(that)h(\(i\))g Fk(A)729 1731
 y Fl(1)762 1724 y Fs(=)e Fk(A)851 1731 y Fg(n)874 1724
 y Fs(,)h(\(ii\))g(all)g(other)h(pairs)g(of)g(v)o(ertices)e(are)i
 (distinct,)164 1784 y(\(iii\))f(for)h(all)g(1)f Fn(\024)e
 Fk(i)h(<)g(n)i Fs(it)g(is)g(the)g(case)g(that)h(either)e
 Fk(A)1186 1791 y Fg(i)1214 1784 y Fn(!)e Fk(A)1314 1791
-y Fg(i)p Fl(+1)1389 1784 y Fs(or)k Fk(A)1486 1791 y Fg(i)1516
+y Fg(i)p Fl(+1)1389 1784 y Fs(or)perm Fk(A)1486 1791 y Fg(i)1516
 1784 y Fs(|)f Fk(A)1618 1791 y Fg(i)p Fl(+1)1693 1784
 y Fs(is)g(in)164 1844 y Fo(G)p Fs(,)f(and)i(\(iv\))f(for)g(some)g(1)e
 Fn(\024)f Fk(i)h(<)g(n)i Fs(it)g(is)g(the)g(case)g(that)h
@@ -2284,9 +2284,9 @@ y(\(1989\))d(and)f(F)l(ryden)o(b)q(erg)e(\(1990\).)164
 2218 y Fm(Lemma)f(1)i Fo(L)n(et)g Fs(\005)525 2225 y
 Fl(0)560 2218 y Fo(b)n(e)g(the)g(r)n(esult)g(of)g(applying)g(the)h
 (orientation)f(rules)h(R1,)e(R2,)h(and)164 2278 y(R3)h(to)g(the)h(p)n
-(attern)g Fs(\005)p Fo(.)k(In)17 b Fs(\005)723 2285 y
+(attern)g Fs(\005)p Fo(.)perm(In)17 b Fs(\005)723 2285 y
 Fl(0)743 2278 y Fo(,)g(if)g Fk(A)d Fn(!)f Fk(B)20 b Fo(and)e
-Fk(B)i Fo(|)d Fk(C)k Fo(then)e Fk(A)13 b Fn(!)h Fk(C)s
+Fk(B)i Fo(|)d Fk(C)perm Fo(then)e Fk(A)13 b Fn(!)h Fk(C)s
 Fo(.)237 2351 y Fs(F)l(rom)e(Lemma)e(1)j(it)g(follo)o(ws)f(that)h(if)g
 (\005)f(is)g(the)h(pattern)g(for)g(a)g(Mark)o(o)o(v)f(equiv)m(alence)
 164 2411 y(class)g(then)g(the)g(graph)h Fk(max)p Fs(\(\005)p
@@ -2301,8 +2301,8 @@ Fs(\))19 b(constitutes)i(a)g(natural)g(w)o(a)o(y)f(to)h(represen)o(t)f
 b(This)12 b(ma)o(y)f(allo)o(w)164 436 y(researc)o(her)18
 b(to)i(dev)o(elop)f(searc)o(h)g(tec)o(hniques)f(for)h(directed)g
 (acyclic)e(represen)o(tations)164 496 y(using)g(c)o(hain)e(graph.)164
-662 y Ft(References)164 772 y Fs(Hec)o(k)o(erm)o(an,)21
-b(D.,)i(D.)f(Geiger,)h(and)g(D.)f(Chic)o(k)o(ering)f(\(1994\).)40
+662 y Ft(References)164 772 y Fs(Hec)o(perm)o(erm)o(an,)21
+b(D.,)i(D.)f(Geiger,)h(and)g(D.)f(Chic)o(perm)o(ering)f(\(1994\).)40
 b(Learning)23 b(Ba)o(y)o(esian)262 832 y(net)o(w)o(orks:)c(The)14
 b(com)o(bination)e(of)i(kno)o(wledge)g(and)g(statistical)f(data.)18
 b(T)l(ec)o(hnical)262 892 y(Rep)q(ort)e(MSR-TR-94-09,)i(Microsoft)e
@@ -2315,8 +2315,8 @@ b(R)n(e)n(asoning)g(in)h(Intel)r(ligent)j(systems)p Fs(.)h(San)18
 b(Mateo:)262 1216 y(Morgan-Kaufmann.)164 1318 y(P)o(earl,)j(J.)f(and)i
 (T.)e(V)l(erma)f(\(1991\).)37 b(A)20 b(theory)h(of)g(inferred)f
 (causation.)35 b(In)21 b(Allen,)262 1378 y(Fik)o(es,)15
-b(and)j(Sandw)o(all)f(\(Eds.\),)f Fo(Principles)k(of)e(know)r(le)n(dge)
-i(r)n(epr)n(esentation)f(and)262 1438 y(r)n(e)n(asoning:)k(Pr)n(o)n(c)n
+b(and)j(Sandw)o(all)f(\(Eds.\),)f Fo(Principles)perm(of)e(know)r(le)n(dge)
+i(r)n(epr)n(esentation)f(and)262 1438 y(r)n(e)n(asoning:)perm(Pr)n(o)n(c)n
 (e)n(e)n(dings)16 b(of)i(the)h(se)n(c)n(ond)e(International)j(c)n
 (onfer)n(enc)n(e)p Fs(,)d(pp.)f(441{)262 1498 y(452.)g(San)h(Mateo:)22
 b(Morgan)17 b(Kaufmann.)164 1600 y(Spirtes,)d(P)l(.,)h(C.)g(Glymour,)e
@@ -2354,10 +2354,10 @@ b(Rule)14 b(R4;)h(If)f(the)h(edge)f(w)o(ere)g(orien)o(ted)164
 863 y Fm(Lemma)16 b(1)24 b Fo(L)n(et)15 b Fs(\005)534
 870 y Fl(0)568 863 y Fo(b)n(e)g(the)h(r)n(esult)f(of)g(applying)g(the)h
 (orientation)f(rules)h(R1,)f(R2,)g(and)164 924 y(R3)i(to)g(the)h(p)n
-(attern)g Fs(\005)p Fo(.)k(In)17 b Fs(\005)723 931 y
+(attern)g Fs(\005)p Fo(.)perm(In)17 b Fs(\005)723 931 y
 Fl(0)743 924 y Fo(,)g(if)g Fk(A)d Fn(!)f Fk(B)20 b Fo(and)e
-Fk(B)i Fo(|)d Fk(C)k Fo(then)e Fk(A)13 b Fn(!)h Fk(C)s
-Fo(.)164 1038 y Fm(Pro)r(of)k Fs(|)g(W)l(e)g(sa)o(y)g(that)h(v)o(ertex)
+Fk(B)i Fo(|)d Fk(C)perm Fo(then)e Fk(A)13 b Fn(!)h Fk(C)s
+Fo(.)164 1038 y Fm(Pro)r(of)perm Fs(|)g(W)l(e)g(sa)o(y)g(that)h(v)o(ertex)
 e Fk(X)22 b Fs(is)c(an)h(ancestor)g(of)f(v)o(ertex)f
 Fk(Y)30 b Fs(with)18 b(resp)q(ect)g(to)164 1098 y(\005)201
 1105 y Fl(0)234 1098 y Fs(if)13 b(there)h(is)f(a)i(path)f(suc)o(h)g
@@ -2366,17 +2366,17 @@ b Fs(to)d Fk(Y)25 b Fs(in)13 b(\005)1645 1105 y Fl(0)1664
 1098 y Fs(.)21 b(The)164 1158 y(orien)o(tations)c(in)f(\005)526
 1165 y Fl(0)563 1158 y Fs(induce)g(a)h(partial)g(ordering)g(on)g(the)g
 (v)o(ertices)e(b)o(y)i(the)f(follo)o(wing)164 1218 y(rule;)f
-Fk(X)k(<)14 b(Y)27 b Fs(if)16 b Fk(X)21 b Fs(is)16 b(an)h(ancestor)g
+Fk(X)perm(<)14 b(Y)27 b Fs(if)16 b Fk(X)21 b Fs(is)16 b(an)h(ancestor)g
 (of)g Fk(Y)11 b Fs(.)22 b(With)16 b(resp)q(ect)g(to)h(this)f(partial)g
 (ordering,)164 1279 y(c)o(ho)q(ose)e(v)o(ertex)d Fk(B)16
 b Fs(to)d(b)q(e)h(a)f(minimal)d(v)o(ertex)h(suc)o(h)i(that)h(there)e
 (are)h(edges)h Fk(A)f Fn(!)h Fk(B)h Fs(and)164 1339 y
-Fk(B)k Fs(|)d Fk(C)j Fs(in)d(\005)433 1346 y Fl(0)452
+Fk(B)perm Fs(|)d Fk(C)j Fs(in)d(\005)433 1346 y Fl(0)452
 1339 y Fs(.)21 b(Note)16 b(that)h Fk(A)c Fn(2)h Fk(AD)q(J)5
 b Fs(\()p Fk(C)t Fs(\))15 b(otherwise)h Fk(B)j Fs(|)d
-Fk(C)k Fs(w)o(ould)c(b)q(e)g(orien)o(ted)164 1399 y(b)o(y)g(rule)g(R1.)
-24 b(F)l(urthermore,)14 b Fk(A)i Fs(|)g Fk(C)k Fs(m)o(ust)c(b)q(e)h
-(unorien)o(ted;)f(if)g Fk(A)g Fs(|)g Fk(C)k Fs(is)d(orien)o(ted)164
+Fk(C)perm Fs(w)o(ould)c(b)q(e)g(orien)o(ted)164 1399 y(b)o(y)g(rule)g(R1.)
+24 b(F)l(urthermore,)14 b Fk(A)i Fs(|)g Fk(C)perm Fs(m)o(ust)c(b)q(e)h
+(unorien)o(ted;)f(if)g Fk(A)g Fs(|)g Fk(C)perm Fs(is)d(orien)o(ted)164
 1459 y Fk(A)c Fn(!)h Fk(C)24 b Fs(then)d(w)o(e)f(are)h(done)g(and)g(if)
 f(the)h(edge)f(is)h(orien)o(ted)f Fk(C)d Fn(!)d Fk(A)20
 b Fs(then)h Fk(B)d Fs(|)e Fk(C)164 1519 y Fs(orien)o(ted)f(b)o(y)h
@@ -2395,20 +2395,20 @@ b Fs(orien)o(ted)c(b)q(ecause)h(it)f(is)h(part)g(of)g(an)h(unshielded)e
 (collider.)164 1905 y(In)c(this)g(case,)g(there)g(is)g(an)g(edge)g
 Fk(D)16 b Fn(!)d Fk(B)h Fs(suc)o(h)d(that)g Fk(D)16 b
 Fn(62)e Fk(AD)q(J)5 b Fs(\()p Fk(A)p Fs(\).)19 b(If)11
-b Fk(D)k Fn(62)g Fk(AD)q(J)5 b Fs(\()p Fk(C)t Fs(\))164
-1966 y(then)17 b Fk(B)i Fs(|)d Fk(C)k Fs(w)o(ould)d(b)q(e)h(orien)o
+b Fk(D)perm Fn(62)g Fk(AD)q(J)5 b Fs(\()p Fk(C)t Fs(\))164
+1966 y(then)17 b Fk(B)i Fs(|)d Fk(C)perm Fs(w)o(ould)d(b)q(e)h(orien)o
 (ted)e(b)o(y)g(rule)h(R1.)24 b(If)17 b Fk(D)g Fn(2)e
 Fk(AD)q(J)5 b Fs(\()p Fk(C)t Fs(\))17 b(and)g Fk(D)h
 Fs(|)f Fk(C)j Fs(is)164 2026 y(unorien)o(ted)13 b(then)g
 Fk(B)19 b Fs(|)d Fk(C)h Fs(orien)o(ted)c(b)o(y)g(R3.)21
-b(Supp)q(ose)14 b(that)g Fk(D)k Fs(|)e Fk(C)i Fs(is)13
+b(Supp)q(ose)14 b(that)g Fk(D)perm Fs(|)e Fk(C)i Fs(is)13
 b(orien)o(ted.)19 b(If)164 2086 y Fk(C)e Fn(!)d Fk(D)h
 Fs(then)e Fk(B)18 b Fs(|)f Fk(C)f Fs(orien)o(ted)c(b)o(y)h(rule)f(R2)h
-(else)f(if)h Fk(D)i Fn(!)f Fk(C)j Fs(then)12 b Fk(A)k
+(else)f(if)h Fk(D)i Fn(!)f Fk(C)j Fs(then)12 b Fk(A)perm
 Fs(|)g Fk(C)h Fs(orien)o(ted)164 2146 y Fk(C)g Fn(!)d
-Fk(A)i Fs(b)o(y)f(rule)h(R1)h(and)f Fk(B)j Fs(|)d Fk(C)k
+Fk(A)i Fs(b)o(y)f(rule)h(R1)h(and)f Fk(B)j Fs(|)d Fk(C)perm
 Fs(orien)o(ted)15 b(b)o(y)h(rule)g(R2.)21 b(Con)o(tradiction.)164
-2219 y Fo(Case)c(3)e Fs(|)g(Edge)h Fk(A)d Fn(!)h Fk(B)k
+2219 y Fo(Case)c(3)e Fs(|)g(Edge)h Fk(A)d Fn(!)h Fk(B)perm
 Fs(orien)o(ted)c(b)o(y)h(R3.)22 b(Observ)o(e)14 b(that)i(there)f(is)g
 (an)h(unshielded)164 2279 y(collider)h(colliding)g(at)h
 Fk(B)s Fs(.)27 b(This)18 b(case)h(is)f(su\016cien)o(tly)e(similar)g(to)
@@ -2416,16 +2416,16 @@ j(case)f(2)h(that)f(I)g(will)164 2339 y(not)f(giv)o(e)e(the)h(pro)q
 (of.)164 2412 y Fo(Case)i(4)e Fs(|)g(Edge)g Fk(A)e Fn(!)f
 Fk(B)19 b Fs(orien)o(ted)d(b)o(y)f(R2.)22 b(In)16 b(this)g(case)g
 (there)g(exists)g(a)g(v)o(ertex)f Fk(D)164 2472 y Fs(suc)o(h)j(that)h
-Fk(A)e Fn(!)h Fk(D)i Fs(and)f Fk(D)h Fn(!)d Fk(B)k Fs(are)e(in)f(\005)
+Fk(A)e Fn(!)h Fk(D)i Fs(and)f Fk(D)h Fn(!)d Fk(B)perm Fs(are)e(in)f(\005)
 1028 2479 y Fl(0)1047 2472 y Fs(.)28 b Fk(D)20 b Fn(2)d
 Fk(AD)q(J)5 b Fs(\()p Fk(C)t Fs(\))18 b(otherwise)h Fk(B)f
 Fs(|)e Fk(C)949 2607 y Fs(13)p eop
 %%Page: 14 14
 14 13 bop 164 315 a Fs(orien)o(ted)11 b(b)o(y)g(R1.)20
 b(Edge)12 b Fk(D)18 b Fs(|)e Fk(C)f Fs(is)d(orien)o(ted)e(b)o(y)h
-(construction)h(\()p Fk(D)k(<)e(B)s Fs(\).)19 b(If)11
+(construction)h(\()p Fk(D)perm(<)e(B)s Fs(\).)19 b(If)11
 b Fk(C)17 b Fn(!)d Fk(D)164 376 y Fs(the)i Fk(B)j Fs(|)d
-Fk(C)k Fs(orien)o(ted)15 b(b)o(y)h(R2)g(else)g(if)f Fk(D)h
+Fk(C)perm Fs(orien)o(ted)15 b(b)o(y)h(R2)g(else)g(if)f Fk(D)h
 Fn(!)e Fk(C)19 b Fs(then)d Fk(A)e Fn(!)g Fk(C)19 b Fs(b)o(y)d(R2.)269
 b Fn(\017)237 509 y Fs(An)20 b(undirected)g(graph)h Fo(H)g
 Fs(is)f Fo(chor)n(dal)g Fs(if)g(and)h(only)f(if)g(ev)o(ery)f
@@ -2498,7 +2498,7 @@ b(\(ii\))e(for)h(ev)o(ery)e(pair)i Fn(C)668 2020 y Fg(i)699
 2013 y Fs(and)g Fn(C)819 2020 y Fg(j)870 2013 y Fs(\()p
 Fk(i)d Fn(6)p Fs(=)h Fk(j)s Fs(\))i(and)g(for)h(ev)o(ery)d
 Fk(A)f Fn(2)i(C)1450 2020 y Fg(i)1474 2013 y Fn(\\)c(C)1544
-2020 y Fg(j)1579 2013 y Fs(eac)o(h)k(edge)164 2073 y(along)21
+2020 y Fg(j)1579 2013 y Fs(eac)o(h)perm(edge)164 2073 y(along)21
 b(the)f(unique)g(path)h(b)q(et)o(w)o(een)e Fn(C)885 2080
 y Fg(i)920 2073 y Fs(and)i Fn(C)1045 2080 y Fg(j)1084
 2073 y Fs(includes)e(lab)q(el)h Fk(A)p Fs(.)34 b(No)o(w)20
@@ -2535,7 +2535,7 @@ Fs(and)c Fk(C)i Fn(2)d(C)382 684 y Fg(j)401 677 y Fn(nC)452
 684 y Fg(i)480 677 y Fs(and)h Fk(B)i Fn(2)d(C)700 684
 y Fg(j)725 677 y Fn(\\)7 b(C)791 684 y Fg(i)821 677 y
 Fs(order)14 b Fk(A)f Fn(\036)1035 684 y Fg(\031)1055
-690 y Fa(T)1095 677 y Fk(B)k Fs(and)e Fk(B)h Fn(\036)1334
+690 y Fa(T)1095 677 y Fk(B)perm Fs(and)e Fk(B)h Fn(\036)1334
 684 y Fg(\031)1354 690 y Fa(T)1394 677 y Fk(C)t Fs(,)e(\(ii\))f(if)h
 Fk(\031)1611 684 y Fl(T)1638 677 y Fs(\()p Fn(C)1683
 684 y Fg(i)1698 677 y Fk(;)8 b Fn(C)1746 684 y Fg(j)1764
@@ -2547,7 +2547,7 @@ y Fs(and)i Fk(B)h Fn(2)d(C)1670 744 y Fg(j)1699 737 y
 Fn(\\)d(C)1769 744 y Fg(i)164 797 y Fs(order)16 b Fk(B)h
 Fn(\036)384 804 y Fg(\031)404 810 y Fa(T)443 797 y Fk(C)t
 Fs(,)f(\(iii\))e(if)i Fk(A)e Fn(\036)741 804 y Fg(\031)761
-810 y Fa(T)800 797 y Fk(D)k Fs(and)f Fk(D)f Fn(\036)1048
+810 y Fa(T)800 797 y Fk(D)perm Fs(and)f Fk(D)f Fn(\036)1048
 804 y Fg(\031)1068 810 y Fa(T)1107 797 y Fk(B)j Fs(then)d
 Fk(A)e Fn(\036)1364 804 y Fg(\031)1384 810 y Fa(T)1423
 797 y Fk(B)19 b Fs(\(i.e.)h(transitiv)o(e)164 857 y(closure)c(of)g
@@ -2589,7 +2589,7 @@ h(to)f Fk(B)s Fs(,)g Fk(B)j Fs(is)e(adjacen)o(t)f(to)h
 Fk(C)t Fs(,)f(and)h Fk(A)f Fs(is)g(not)164 1808 y(adjacen)o(t)i(to)g
 Fk(C)t Fs(\).)30 b(There)18 b(exists)h(an)h Fk(i)e Fs(and)i
 Fk(j)i Fs(suc)o(h)d(that)h Fk(A)e Fn(2)h(C)1408 1815
-y Fg(i)1435 1808 y Fn(^)14 b Fk(A)k Fn(62)h(C)1615 1815
+y Fg(i)1435 1808 y Fn(^)14 b Fk(A)perm Fn(62)h(C)1615 1815
 y Fg(j)1646 1808 y Fn(^)13 b Fk(C)23 b Fn(62)164 1868
 y(C)190 1875 y Fg(i)217 1868 y Fn(^)13 b Fk(C)21 b Fn(2)d(C)396
 1875 y Fg(j)427 1868 y Fn(^)13 b Fk(B)20 b Fn(2)e(C)607
@@ -2604,22 +2604,22 @@ Fn(C)507 2008 y Fg(i)521 2001 y Fk(;)8 b Fn(C)569 2008
 y Fg(j)587 2001 y Fs(\))t Fn(_)t Fk(\031)r Fs(\()p Fn(C)722
 2008 y Fg(j)740 2001 y Fk(;)g Fn(C)788 2008 y Fg(i)803
 2001 y Fs(\)\).)20 b(There)12 b(m)o(ust)g(b)q(e)h(a)g
-Fk(k)i Fs(suc)o(h)d(that)i Fn(C)1505 2008 y Fg(k)1539
+Fk(perm)i Fs(suc)o(h)d(that)i Fn(C)1505 2008 y Fg(perm)1539
 2001 y Fs(is)f(on)g(p)g(suc)o(h)164 2061 y(that)i Fk(\031)r
-Fs(\()p Fn(C)343 2068 y Fg(k)364 2061 y Fk(;)8 b Fn(C)412
+Fs(\()p Fn(C)343 2068 y Fg(perm)364 2061 y Fk(;)8 b Fn(C)412
 2068 y Fg(i)426 2061 y Fs(\))f Fn(^)g Fk(\031)r Fs(\()p
-Fn(C)567 2068 y Fg(k)587 2061 y Fk(;)h Fn(C)635 2068
+Fn(C)567 2068 y Fg(perm)587 2061 y Fk(;)h Fn(C)635 2068
 y Fg(j)654 2061 y Fs(\).)20 b(W)l(e)14 b(kno)o(w)g(that)h
-Fk(A)e Fn(62)h(C)1141 2068 y Fg(k)1170 2061 y Fn(_)7
-b Fk(C)17 b Fn(62)d(C)1335 2068 y Fg(k)1371 2061 y Fs(otherwise)g
+Fk(A)e Fn(62)h(C)1141 2068 y Fg(perm)1170 2061 y Fn(_)7
+b Fk(C)17 b Fn(62)d(C)1335 2068 y Fg(perm)1371 2061 y Fs(otherwise)g
 Fn(h)p Fk(A;)8 b(B)s(;)g(C)t Fn(i)164 2121 y Fs(is)13
-b(not)h(unshielded)f(since)g Fn(C)676 2128 y Fg(k)711
+b(not)h(unshielded)f(since)g Fn(C)676 2128 y Fg(perm)711
 2121 y Fs(is)h(a)g(clique.)19 b(Without)13 b(loss)h(of)g(generalit)o(y)
 f(supp)q(ose)h(that)164 2181 y Fk(C)19 b Fn(62)c(C)292
-2188 y Fg(k)313 2181 y Fs(.)24 b(W)l(e)17 b(kno)o(w)g(that)g
-Fk(B)h Fn(2)d(C)799 2188 y Fg(k)837 2181 y Fs(b)o(y)i(the)g(join)g
+2188 y Fg(perm)313 2181 y Fs(.)24 b(W)l(e)17 b(kno)o(w)g(that)g
+Fk(B)h Fn(2)d(C)799 2188 y Fg(perm)837 2181 y Fs(b)o(y)i(the)g(join)g
 (tree)f(prop)q(ert)o(y)h(and)g(since)g Fk(\031)r Fs(\()p
-Fn(C)1677 2188 y Fg(k)1698 2181 y Fk(;)8 b Fn(C)1746
+Fn(C)1677 2188 y Fg(perm)1698 2181 y Fk(;)8 b Fn(C)1746
 2188 y Fg(j)1764 2181 y Fs(\))164 2242 y(it)18 b(is)f(the)h(case)g
 (that)h Fk(B)g Fn(\036)659 2249 y Fg(\031)699 2242 y
 Fk(C)j Fs(and)c(th)o(us)g Fn(h)p Fk(A;)8 b(B)s(;)g(C)t
@@ -2643,12 +2643,12 @@ n(ent)h(vertic)n(es)g Fk(A)f Fo(and)g Fk(B)j Fo(in)d(H)h(ther)n(e)f
 (exist)h(total)g(or-)164 623 y(derings)c Fk(\013)h Fo(and)f
 Fk(\015)j Fo(which)d(ar)n(e)f(c)n(onsistent)i(with)g(r)n(esp)n(e)n(ct)e
 (to)h(H)g(and)g(such)g(that)g Fk(A)e Fn(!)f Fk(B)164
-683 y Fo(is)k(in)h(H)312 690 y Fg(\013)354 683 y Fo(and)g
+683 y Fo(is)perm(in)h(H)312 690 y Fg(\013)354 683 y Fo(and)g
 Fk(B)e Fn(!)e Fk(A)j Fo(is)g(in)h(H)768 690 y Fg(\015)791
 683 y Fo(.)164 797 y Fm(Pro)r(of)f Fs(|)f(F)l(or)h(the)g(case)g(where)f
 Fo(H)h Fs(is)g(disconnected)f(apply)h(the)f(argumen)o(t)g(to)h(eac)o(h)
 164 857 y(of)g(the)f(disconnected)f(comp)q(onen)o(ts.)164
-917 y Fo(Case)k(1)g Fs(|)f(F)l(or)g(all)g Fk(i)g Fs(either)f
+917 y Fo(Case)perm(1)g Fs(|)f(F)l(or)g(all)g Fk(i)g Fs(either)f
 Fk(A)g Fn(2)h(C)861 924 y Fg(i)887 917 y Fn(^)13 b Fk(B)20
 b Fn(2)e(C)1067 924 y Fg(i)1099 917 y Fs(or)h Fk(A)e
 Fn(62)g(C)1291 924 y Fg(i)1318 917 y Fn(^)c Fk(B)20 b
@@ -2669,7 +2669,7 @@ Fk(A)d Fn(2)g(C)1557 1178 y Fg(i)1583 1171 y Fn(_)d Fk(B)17
 b Fn(2)e(C)1755 1178 y Fg(i)1769 1171 y Fs(.)164 1231
 y(Without)h(loss)h(of)g(generalit)o(y)e(assume)g(that)i
 Fk(A)d Fn(62)g(C)1132 1238 y Fg(i)1157 1231 y Fn(^)e
-Fk(B)k Fn(2)f(C)1329 1238 y Fg(i)1343 1231 y Fs(.)21
+Fk(B)perm Fn(2)f(C)1329 1238 y Fg(i)1343 1231 y Fs(.)21
 b(Giv)o(en)16 b(that)g(there)g(is)164 1291 y(an)h(edge)f(b)q(et)o(w)o
 (een)g Fk(A)g Fs(and)h Fk(B)i Fs(there)d(is)g(a)h Fk(j)j
 Fs(suc)o(h)c(that)h Fk(j)g Fn(6)p Fs(=)e Fk(i)h Fs(and)h
@@ -2741,11 +2741,11 @@ Fs(=)h Fn(;)p Fs(,)h(\(ii\))f(for)h(all)g Fk(A)f Fn(2)g
 Fs(\003)700 636 y Fg(ij)745 629 y Fs(and)i Fk(B)g Fn(2)e(C)965
 636 y Fg(j)984 629 y Fn(n)p Fs(\003)1043 636 y Fg(ij)1088
 629 y Fs(it)h(is)g(the)g(case)g(that)h Fk(A)d Fn(!)h
-Fk(B)k Fs(is)d(in)g Fo(H)164 689 y Fs(and)j(\(iii\))e(it)h(is)g(not)h
+Fk(B)perm Fs(is)d(in)g Fo(H)164 689 y Fs(and)j(\(iii\))e(it)h(is)g(not)h
 (the)g(case)f(that)h(for)g(all)f Fk(A)e Fn(2)h Fs(\003)1121
 696 y Fg(ij)1169 689 y Fs(and)i Fk(B)h Fn(2)d(C)1396
 696 y Fg(i)1410 689 y Fn(n)p Fs(\003)1469 696 y Fg(ij)1517
-689 y Fk(A)f Fn(!)h Fk(B)k Fs(is)d(in)164 749 y Fo(H)p
+689 y Fk(A)f Fn(!)h Fk(B)perm Fs(is)d(in)164 749 y Fo(H)p
 Fs(.)f(W)l(e)h(de\014ne)f(the)h(partial)f(order)h Fk(\017)846
 756 y Fl(T)890 749 y Fs(on)g(the)g(no)q(des)g(of)g(T)g(as)g(follo)o
 (ws;)g(\(i\))f Fk(\017)1611 756 y Fl(T)1638 749 y Fs(\()p
@@ -2755,11 +2755,11 @@ y Fg(j)1764 749 y Fs(\))164 809 y(if)18 b Fk(\015)236
 809 y Fk(;)8 b Fn(C)371 816 y Fg(j)389 809 y Fs(\))19
 b(and)g(\(ii\))e Fk(\017)627 816 y Fl(T)654 809 y Fs(\()p
 Fn(C)699 816 y Fg(i)714 809 y Fk(;)8 b Fn(C)762 816 y
-Fg(k)783 809 y Fs(\))18 b(if)g Fk(\017)887 816 y Fl(T)915
+Fg(perm)783 809 y Fs(\))18 b(if)g Fk(\017)887 816 y Fl(T)915
 809 y Fs(\()p Fn(C)960 816 y Fg(i)974 809 y Fk(;)8 b
 Fn(C)1022 816 y Fg(j)1040 809 y Fs(\))13 b Fn(^)f Fk(\017)1137
 816 y Fl(T)1165 809 y Fs(\()p Fn(C)1210 816 y Fg(j)1228
-809 y Fk(;)c Fn(C)1276 816 y Fg(k)1298 809 y Fs(\).)27
+809 y Fk(;)c Fn(C)1276 816 y Fg(perm)1298 809 y Fs(\).)27
 b(That)19 b Fk(\017)1502 816 y Fl(T)1548 809 y Fs(is)f(a)h(partial)164
 870 y(order)13 b(follo)o(ws)g(from)e(the)i(fact)f(that)i(T)f(is)f(a)h
 (tree)f(and)i(condition)e(\(iii\))g(of)h(the)f(de\014nition)164
@@ -2782,21 +2782,21 @@ y Fg(j)723 1285 y Fo(it)j(is)h(the)g(c)n(ase)f(that)h
 Fk(\015)1134 1292 y Fl(T)1162 1285 y Fs(\()p Fn(C)1207
 1292 y Fg(i)1221 1285 y Fk(;)8 b Fn(C)1269 1292 y Fg(j)1287
 1285 y Fs(\))p Fo(.)164 1399 y Fm(Pro)r(of)24 b Fs(|)g(The)g(pro)q(of)h
-(is)f(in)g(t)o(w)o(o)g(parts;)k(Figure)c(2)h(helps)e(to)i(clarify)e
+(is)f(in)g(t)o(w)o(o)g(parts;)perm(Figure)c(2)h(helps)e(to)i(clarify)e
 (the)h(pro)q(of)164 1459 y(somewhat.)42 b(P)o(art)23
 b(\(i\))g(|)g(Sho)o(w)h(that)f(for)h(all)f Fk(C)29 b
 Fn(2)d(C)1250 1466 y Fg(j)1268 1459 y Fn(n)p Fs(\003)1327
 1466 y Fg(ij)1380 1459 y Fs(it)d(is)g(the)g(case)g(that)164
 1519 y Fk(B)16 b Fn(!)e Fk(C)20 b Fs(is)c(in)g Fo(H)p
 Fs(.)g(Simply)e(apply)i(R1)g(to)h(eac)o(h)f(of)g(the)g(required)f
-(edges.)237 1592 y(P)o(art)k(\(ii\))f(|)h(Sho)o(w)g(that)h(for)f(all)f
+(edges.)237 1592 y(P)o(art)perm(\(ii\))f(|)h(Sho)o(w)g(that)h(for)f(all)f
 Fk(D)j Fn(2)d Fs(\003)1035 1599 y Fg(ij)1084 1592 y Fs(and)i(for)f(all)
-f Fk(C)k Fn(2)d(C)1464 1599 y Fg(j)1482 1592 y Fn(n)p
+f Fk(C)perm Fn(2)d(C)1464 1599 y Fg(j)1482 1592 y Fn(n)p
 Fs(\003)1541 1599 y Fg(ij)1590 1592 y Fs(it)g(is)f(that)164
 1652 y(case)f(that)g Fk(D)f Fn(!)e Fk(C)20 b Fs(is)d(in)f
 Fo(H)p Fs(.)g(This)h(follo)o(ws)f(b)o(y)g(application)h(of)g(R4)g(to)g
 (A,)e(B,)h(C,)g(and)164 1712 y(D)j(if)e Fk(A)f Fs(|)g
-Fk(D)r Fs(.)28 b(If)17 b Fk(D)f Fn(!)e Fk(A)k Fs(then)g
+Fk(D)r Fs(.)28 b(If)17 b Fk(D)f Fn(!)e Fk(A)perm Fs(then)g
 Fk(D)d Fn(!)f Fk(B)21 b Fs(b)o(y)d(R2)g(and)h Fk(D)d
 Fn(!)e Fk(C)22 b Fs(b)o(y)17 b(R2.)28 b(If)18 b Fk(A)13
 b Fn(!)h Fk(D)164 1773 y Fs(then)i Fk(D)g Fn(!)d Fk(C)20
@@ -2808,7 +2808,7 @@ y(H)910 2028 y(H)g(j)962 1972 y Fs(D)1055 2007 y(C)962
 1961 y Fn(C)901 1968 y Fg(i)p 931 2069 2 146 v 1103 2069
 V 934 2069 171 2 v 934 1924 V 846 2069 2 146 v 1018 2069
 V 849 2069 171 2 v 849 1924 V 614 2192 a Fs(Figure)16
-b(2:)22 b(Sc)o(hematic)13 b(for)k(Lemma)d(6)164 2374
+b(2:)22 b(Sc)o(hematic)13 b(for)perm(Lemma)d(6)164 2374
 y Fm(Lemma)i(7)24 b Fo(L)n(et)15 b(T)g(b)n(e)h(a)f(join)g(tr)n(e)n(e)g
 (for)g(a)g(p)n(artial)r(ly)h(oriente)n(d)f(chor)n(dal)g(gr)n(aph)g(H)g
 (with-)164 2434 y(out)g(any)g(unshielde)n(d)h(c)n(ol)r(liders)g(and)f
@@ -2818,12 +2818,12 @@ y Fm(Lemma)i(7)24 b Fo(L)n(et)15 b(T)g(b)n(e)h(a)f(join)g(tr)n(e)n(e)g
 18 17 bop 164 315 a Fo(R3,)17 b(and)h(R4.)23 b(\(i\))17
 b(If)g Fk(\017)594 322 y Fl(T)622 315 y Fs(\()p Fn(C)667
 322 y Fg(i)681 315 y Fk(;)8 b Fn(C)729 322 y Fg(j)747
-315 y Fs(\))18 b Fo(then)h(for)e(al)r(l)i Fk(k)g Fo(such)f(that)g(the)g
-(\(unique\))h(p)n(ath)f(p)f(b)n(e-)164 376 y(twe)n(en)k
+315 y Fs(\))18 b Fo(then)h(for)e(al)r(l)i Fk(perm)g Fo(such)f(that)g(the)g
+(\(unique\))h(p)n(ath)f(p)f(b)n(e-)164 376 y(twe)n(en)perm
 Fn(C)328 383 y Fg(i)362 376 y Fo(and)g Fn(C)486 383 y
-Fg(k)527 376 y Fo(in)f(T)g(is)g(thr)n(ough)f Fk(j)k Fo(then)e
+Fg(perm)527 376 y Fo(in)f(T)g(is)g(thr)n(ough)f Fk(j)perm Fo(then)e
 Fk(\017)1050 383 y Fl(T)1077 376 y Fs(\()p Fn(C)1122
-383 y Fg(i)1137 376 y Fk(;)8 b Fn(C)1185 383 y Fg(k)1206
+383 y Fg(i)1137 376 y Fk(;)8 b Fn(C)1185 383 y Fg(perm)1206
 376 y Fs(\))20 b Fo(and)g(\(ii\))g(if)g Fn(C)1508 383
 y Fg(l)1541 376 y Fo(and)g Fn(C)1664 383 y Fg(m)1718
 376 y Fo(ar)n(e)164 436 y(adjac)n(ent)e(on)g(the)g(p)n(ath)f(p)g(then)h
@@ -2832,8 +2832,8 @@ b Fn(C)898 443 y Fg(m)932 436 y Fs(\))p Fo(.)164 550
 y Fm(Pro)r(of)13 b Fs(|)g(P)o(art)g(\(i\))g(is)g(pro)o(v)o(ed)f(b)o(y)h
 (induction)g(on)g(length)g(of)h(path)g(b)q(et)o(w)o(een)e
 Fn(C)1612 557 y Fg(j)1644 550 y Fs(and)h Fn(C)1761 557
-y Fg(k)164 610 y Fs(in)h(the)g(join)g(tree)f(for)i(T.)f(The)g(base)g
-(case)h(\()p Fk(j)h Fs(=)e Fk(k)r Fs(\))g(is)g(trivial)f(and)i(apply)f
+y Fg(perm)164 610 y Fs(in)h(the)g(join)g(tree)f(for)i(T.)f(The)g(base)g
+(case)h(\()p Fk(j)h Fs(=)e Fk(perm)r Fs(\))g(is)g(trivial)f(and)i(apply)f
 (Lemma)e(6)j(for)164 670 y(induction)i(step.)26 b(P)o(art)18
 b(\(ii\))f(follo)o(ws)h(in)f(a)i(similar)c(fashion.)27
 b(Consider)18 b(the)f(minimal)164 731 y(elemen)o(t)j
@@ -2874,7 +2874,7 @@ y Fl(T)1446 1399 y Fo(,)f(\(ii\))f(for)g(al)r(l)i(tr)n(e)n(e)164
 1459 y(or)n(derings)g Fk(\031)i Fo(which)f(extend)h Fk(\017)734
 1466 y Fl(T)779 1459 y Fo(it)e(is)h(the)f(c)n(ase)h(that)g
 Fn(\036)1204 1466 y Fg(\031)1244 1459 y Fo(is)g(c)n(omp)n(atible)g
-(with)f(H.)164 1573 y Fm(Pro)r(of)f Fs(|)237 1633 y(\(i\))k(Since)g
+(with)f(H.)164 1573 y Fm(Pro)r(of)f Fs(|)237 1633 y(\(i\))perm(Since)g
 Fk(\017)461 1640 y Fl(T)509 1633 y Fs(is)g(a)h(partial)f(order)h(there)
 f(is)g(a)h(minimal)c(elemen)o(t.)31 b(Cho)q(ose)22 b(an)o(y)164
 1694 y(minim)o(al)c(elemen)o(t)f(as)j(the)g(ro)q(ot)i(of)e(the)g(tree)f
@@ -2907,7 +2907,7 @@ n(aph)f(with)h(r)n(esp)n(e)n(ct)f(to)g Fn(K)q Fo(.)164
 2393 y Fm(Pro)r(of)23 b Fs(|)f(Let)i(\005)526 2400 y
 Fl(0)568 2393 y Fs(b)q(e)f(the)f(result)h(of)g(applying)g(the)g(orien)o
 (tation)f(rules)h(R1,)h(R2,)164 2453 y(and)17 b(R3)f(to)h(the)f
-(partially)f(directed)g(graph)i(\005.)k(Giv)o(en)15 b(Lemma)f(1)j(no)g
+(partially)f(directed)g(graph)i(\005.)perm(Giv)o(en)15 b(Lemma)f(1)j(no)g
 (orien)o(tation)f(of)949 2607 y(18)p eop
 %%Page: 19 19
 19 18 bop 164 315 a Fs(edges)17 b(not)g(orien)o(ted)f(in)g(\005)665
@@ -2927,7 +2927,7 @@ y Fs(.)28 b(W)l(e)18 b(sho)o(w)h(that)g Fo(H)g Fs(is)f(a)h(union)f(of)h
 b(b)o(y)d(Lemma)g(2)h(all)g(total)h(ordering)f(of)h(the)f(v)o(ertices)
 164 677 y(leads)f(to)g(a)g(new)f(unshielded)g(collider)f
 Fn(h)p Fk(A;)8 b(B)s(;)g(C)t Fn(i)19 b Fs(in)g Fo(H)p
-Fs(.)h(By)f(Lemma)e(1,)k(the)e(triple)164 737 y Fn(h)p
+Fs(.)h(By)f(Lemma)e(1,)perm(the)e(triple)164 737 y Fn(h)p
 Fk(A;)8 b(B)s(;)g(C)t Fn(i)16 b Fs(also)h(forms)f(an)i(unshielded)e
 (triple)f(in)i(\005)1147 744 y Fl(0)1166 737 y Fs(,)g(that)g(is)g
 Fk(A)d Fn(62)h Fk(AD)q(J)5 b Fs(\()p Fk(C)t Fs(\))17
@@ -2946,7 +2946,7 @@ o(tation)f(rule)g(R1,)h(R2,)g(R3,)h(and)f(R4)g(exhaustiv)o(ely)164
 1098 y(to)i(\005)259 1105 y Fl(1)278 1098 y Fs(.)21 b(Let)14
 b Fk(A)i Fs(|)g Fk(B)h Fs(b)q(e)e(unorien)o(ted)e(in)h(\005)967
 1105 y Fl(2)1001 1098 y Fs(and)h(sho)o(w)g(that)g(there)f(exists)f
-(consisten)o(t)164 1158 y(orderings)k Fk(\013)f Fs(and)h
+(consisten)o(t)164 1158 y(orderings)perm Fk(\013)f Fs(and)h
 Fk(\015)i Fs(suc)o(h)d(that)h Fk(A)c Fn(!)h Fk(B)19 b
 Fs(in)d Fo(H)1041 1165 y Fg(\013)1082 1158 y Fs(and)h
 Fk(B)f Fn(!)e Fk(A)i Fs(in)g Fo(H)1440 1165 y Fg(\015)1462
@@ -2975,7 +2975,7 @@ y Fg(i)1338 1604 y Fs(and)i Fk(A)d Fn(2)g(C)1557 1611
 y Fg(i)1583 1604 y Fn(_)d Fk(B)17 b Fn(2)e(C)1755 1611
 y Fg(i)1769 1604 y Fs(.)164 1665 y(Without)h(loss)h(of)g(generalit)o(y)
 e(assume)g(that)i Fk(A)d Fn(62)g(C)1132 1672 y Fg(i)1157
-1665 y Fn(^)e Fk(B)k Fn(2)f(C)1329 1672 y Fg(i)1343 1665
+1665 y Fn(^)e Fk(B)perm Fn(2)f(C)1329 1672 y Fg(i)1343 1665
 y Fs(.)21 b(Giv)o(en)16 b(that)g(there)g(is)164 1725
 y(an)h(edge)f(b)q(et)o(w)o(een)g Fk(A)g Fs(and)h Fk(B)i
 Fs(there)d(is)g(a)h Fk(j)j Fs(suc)o(h)c(that)h Fk(j)g
@@ -2983,7 +2983,7 @@ Fn(6)p Fs(=)e Fk(i)h Fs(and)h Fk(A)d Fn(2)g(C)1549 1732
 y Fg(j)1579 1725 y Fn(^)d Fk(B)17 b Fn(2)e(C)1751 1732
 y Fg(j)1769 1725 y Fs(.)164 1785 y(Since)d(the)h(edge)h(b)q(et)o(w)o
 (een)e Fk(A)h Fs(and)h Fk(B)i Fs(is)d(unorien)o(ted)f(w)o(e)h(kno)o(w)g
-(that)h(it)f(is)g(not)h(the)f(case)164 1845 y(that)k
+(that)h(it)f(is)g(not)h(the)f(case)164 1845 y(that)perm
 Fk(\015)s Fs(\()p Fn(C)343 1852 y Fg(i)357 1845 y Fk(;)8
 b Fn(C)405 1852 y Fg(j)423 1845 y Fs(\))17 b(and)g(th)o(us)f(it)g(is)g
 (not)h(the)f(case)g(that)h Fk(\017)1159 1852 y Fl(T)1186
@@ -2992,10 +2992,10 @@ b Fn(C)1294 1852 y Fg(j)1312 1845 y Fs(\).)21 b(Th)o(us)c(the)f(tree)g
 (order)164 1905 y(obtained)i(from)f(b)o(y)g(letting)g
 Fn(C)734 1912 y Fg(j)770 1905 y Fs(to)h(b)q(e)g(the)g(ro)q(ot)h(of)f
 (the)g(tree)f(is)g(compatible)f(with)i Fo(H)164 1966
-y Fs(b)o(y)d(Lemma)d(8)k(Let)f Fk(\031)i Fs(b)q(e)e(the)g(tree)f
+y Fs(b)o(y)d(Lemma)d(8)perm(Let)f Fk(\031)i Fs(b)q(e)e(the)g(tree)f
 (ordering)h(obtained)h(b)o(y)e(letting)h Fn(C)1455 1973
 y Fg(j)1488 1966 y Fs(to)h(b)q(e)f(the)g(ro)q(ot)164
-2026 y(of)k(the)f(tree.)27 b(Note)18 b(that)h(for)g(all)f(pairs)h(of)f
+2026 y(of)perm(the)f(tree.)27 b(Note)18 b(that)h(for)g(all)f(pairs)h(of)f
 (v)o(ertices)f(in)h(the)g(ro)q(ot)i(clique)d(of)h(the)h(tree)164
 2086 y(ordering)g(are)h(not)f(ordered)h(in)f(the)g(partial)g(order)g
 (induced)g(b)o(y)g(the)g(tree)f(ordering.)164 2146 y(Let)c(the)g(total)

@@ -4,13 +4,13 @@ import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.annotation.AlgType;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
-import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.data.DataUtils;
 import edu.cmu.tetrad.graph.EdgeListGraph;
-import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.util.Parameters;
 import edu.pitt.dbmi.algo.bootstrap.BootstrapEdgeEnsemble;
 import edu.pitt.dbmi.algo.bootstrap.GeneralBootstrapTest;
+import edu.cmu.tetrad.data.DataType;
+import edu.cmu.tetrad.graph.Graph;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -29,9 +29,8 @@ public class Lingam implements Algorithm {
     static final long serialVersionUID = 23L;
 
     public Graph search(DataModel dataSet, Parameters parameters) {
-        if (parameters.getInt("bootstrapSampleSize") < 1) {
+    	if (parameters.getInt("bootstrapSampleSize") < 1) {
             edu.cmu.tetrad.search.Lingam lingam = new edu.cmu.tetrad.search.Lingam();
-            lingam.setPenaltyDiscount(parameters.getDouble("penaltyDiscount"));
             return lingam.search(DataUtils.getContinuousDataSet(dataSet));
         } else {
             Lingam algorithm = new Lingam();
@@ -74,9 +73,8 @@ public class Lingam implements Algorithm {
 
     @Override
     public List<String> getParameters() {
-        List<String> parameters = new ArrayList<>();
+    	List<String> parameters = new ArrayList<>();
         // Bootstrapping
-        parameters.add("penaltyDiscount");
         parameters.add("bootstrapSampleSize");
         parameters.add("bootstrapEnsemble");
         parameters.add("verbose");

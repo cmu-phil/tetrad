@@ -47,6 +47,8 @@ public final class IndTestTrekSep implements IndependenceTest {
     private final ICovarianceMatrix covMatrix;
     private List<Node> latents;
 
+    private boolean verbose = false;
+
 
     /**
      * The variables of the covariance matrix, in order. (Unmodifiable list.)
@@ -451,6 +453,16 @@ public final class IndTestTrekSep implements IndependenceTest {
 
     public TDistribution gettDistribution() {
         return tDistribution;
+    }
+
+    @Override
+    public boolean isVerbose() {
+        return verbose;
+    }
+
+    @Override
+    public void setVerbose(boolean verbose) {
+        this.verbose = verbose;
     }
 }
 

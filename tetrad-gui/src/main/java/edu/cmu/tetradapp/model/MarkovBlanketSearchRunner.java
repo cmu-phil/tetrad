@@ -43,7 +43,7 @@ public interface MarkovBlanketSearchRunner extends Executable {
 
 
     /**
-     * Return the source for the search.
+     * NodeEffects the source for the search.
      */
     DataSet getSource();
     

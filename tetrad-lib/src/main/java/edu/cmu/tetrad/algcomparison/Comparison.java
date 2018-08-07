@@ -25,6 +25,7 @@ import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithms;
 import edu.cmu.tetrad.algcomparison.algorithm.ExternalAlgorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.MultiDataSetAlgorithm;
+import edu.cmu.tetrad.algcomparison.utils.PassesInGraph;
 import edu.cmu.tetrad.algcomparison.independence.FisherZ;
 import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.score.BdeuScore;
@@ -65,7 +66,9 @@ import java.util.concurrent.RecursiveTask;
 public class Comparison {
 
 
-        public enum ComparisonGraph {true_DAG, Pattern_of_the_true_DAG, PAG_of_the_true_DAG}
+    public enum ComparisonGraph {
+        true_DAG, Pattern_of_the_true_DAG, PAG_of_the_true_DAG
+    }
 
     private boolean[] graphTypeUsed;
     private PrintStream out;
@@ -83,6 +86,8 @@ public class Comparison {
     private boolean savePags = false;
     private ArrayList<String> dirs = null;
     private ComparisonGraph comparisonGraph = ComparisonGraph.true_DAG;
+    private boolean replacePartialOrientedWithDirected = false;
+
 
     public void compareFromFiles(String filePath, Algorithms algorithms,
                                  Statistics statistics, Parameters parameters) {
@@ -452,13 +457,14 @@ public class Comparison {
      * @param parameters The parameters to be used in the simulationWrapper.
      */
     public void saveToFiles(String dataPath, Simulation simulation, Parameters parameters) {
+        simulation.createData(parameters);
 
         File dir0 = new File(dataPath);
         File dir;
         //int i = 0;
 
         dir = new File(dir0, "save");
-        
+
 //
 //        do {
 //            dir = new File(dir0, "Simulation" + (++i));
@@ -475,25 +481,25 @@ public class Comparison {
         //if(!dir.exists()){
         //	dir.mkdirs();
         //}
-        
+
         try {
-	    	int numDataSets = simulation.getNumDataModels();
-	    	if(numDataSets <= 0){
-	    		
-	    		File dir1 = new File(dir, "graph");
-	            File dir2 = new File(dir, "data");
-	
-	            dir1.mkdirs();
-	            dir2.mkdirs();
-	            
-	    		PrintStream out = new PrintStream(new FileOutputStream(new File(dir, "parameters.txt")));
-	            out.println(simulation.getDescription());
-	            out.println(parameters);
-	            out.close();
-	            
-	    		return;
-	    	}
-	        List<SimulationWrapper> simulationWrappers = getSimulationWrappers(simulation, parameters);
+            int numDataSets = simulation.getNumDataModels();
+            if (numDataSets <= 0) {
+
+                File dir1 = new File(dir, "graph");
+                File dir2 = new File(dir, "data");
+
+                dir1.mkdirs();
+                dir2.mkdirs();
+
+                PrintStream out = new PrintStream(new FileOutputStream(new File(dir, "parameters.txt")));
+                out.println(simulation.getDescription());
+                out.println(parameters);
+                out.close();
+
+                return;
+            }
+            List<SimulationWrapper> simulationWrappers = getSimulationWrappers(simulation, parameters);
 
             int index = 0;
 
@@ -505,18 +511,20 @@ public class Comparison {
                 simulationWrapper.createData(simulationWrapper.getSimulationSpecificParameters());
 
                 File subdir = dir;
-                if(simulationWrappers.size() > 1){
+                if (simulationWrappers.size() > 1) {
                     index++;
 
                     subdir = new File(dir, "" + index);
                     subdir.mkdirs();
                 }
 
-            	File dir1 = new File(subdir, "graph");
+                File dir1 = new File(subdir, "graph");
                 File dir2 = new File(subdir, "data");
+                File dir2a = new File(subdir, "data.with.latents");
 
                 dir1.mkdirs();
                 dir2.mkdirs();
+                dir2a.mkdirs();
 
                 File dir3 = null;
 
@@ -544,6 +552,12 @@ public class Comparison {
                     DataModel dataModel = (DataModel) simulationWrapper.getDataModel(j);
                     DataWriter.writeRectangularData((DataSet) dataModel, out, '\t');
                     out.close();
+
+                    File filea = new File(dir2a, "data.with.latents" + (j + 1) + ".txt");
+                    Writer outa = new FileWriter(filea);
+                    DataModel dataModelWithLatents = (DataModel) simulationWrapper.getDataModelWithLatents(j);
+                    DataWriter.writeRectangularData((DataSet) dataModelWithLatents, outa, '\t');
+                    outa.close();
 
                     if (isSavePatterns()) {
                         File file3 = new File(dir3, "pattern." + (j + 1) + ".txt");
@@ -1064,6 +1078,9 @@ public class Comparison {
         this.comparisonGraph = comparisonGraph;
     }
 
+    public void setReplacePartialOrientedWithDirected(boolean replacePartialOrientedWithDirected) {
+        this.replacePartialOrientedWithDirected = replacePartialOrientedWithDirected;
+    }
 
     private class AlgorithmTask extends RecursiveTask<Boolean> {
         private List<AlgorithmSimulationWrapper> algorithmSimulationWrappers;
@@ -1095,7 +1112,7 @@ public class Comparison {
     }
 
     private void printParameters(List<String> names, Parameters parameters, PrintStream out) {
-    	out.println("Comparison.printParameters");
+        out.println("Comparison.printParameters");
         ParamDescriptions descriptions = ParamDescriptions.getInstance();
 
         for (String name : names) {
@@ -1173,6 +1190,7 @@ public class Comparison {
             }
 
             if (algorithm instanceof MultiDataSetAlgorithm) {
+
                 List<Integer> indices = new ArrayList<>();
                 int numDataModels = simulationWrapper.getSimulation().getNumDataModels();
                 for (int i = 0; i < numDataModels; i++) indices.add(i);
@@ -1186,7 +1204,12 @@ public class Comparison {
                 }
 
                 Parameters _params = algorithmWrapper.getAlgorithmSpecificParameters();
-                out = ((MultiDataSetAlgorithm) algorithm).search(dataModels, _params);
+
+                if (algorithm instanceof PassesInGraph) {
+                    out = ((PassesInGraph) algorithm).search(dataModels, _params, simulation.getTrueGraph(0));
+                } else {
+                    out = ((MultiDataSetAlgorithm) algorithm).search(dataModels, _params);
+                }
             } else {
                 DataModel dataModel = copyData ? data.copy() : data;
                 Parameters _params = algorithmWrapper.getAlgorithmSpecificParameters();
@@ -1196,6 +1219,11 @@ public class Comparison {
             System.out.println("Could not run " + algorithmWrapper.getDescription());
             e.printStackTrace();
             return;
+        }
+
+
+        if (replacePartialOrientedWithDirected) {
+            out = replaceHalfDirectedWithDirected(out);
         }
 
         int simIndex = simulationWrappers.indexOf(simulationWrapper) + 1;
@@ -1282,6 +1310,26 @@ public class Comparison {
                 }
             }
         }
+    }
+
+    private Graph replaceHalfDirectedWithDirected(Graph graph) {
+        EdgeListGraph graph2 = new EdgeListGraph(graph);
+
+        for (Edge edge : graph2.getEdges()) {
+            if (Edges.isPartiallyOrientedEdge(edge)) {
+                graph2.removeEdge(edge);
+
+                if (edge.pointsTowards(edge.getNode1())) {
+                    graph2.addDirectedEdge(edge.getNode2(), edge.getNode1());
+                }
+
+                if (edge.pointsTowards(edge.getNode2())) {
+                    graph2.addDirectedEdge(edge.getNode1(), edge.getNode2());
+                }
+            }
+        }
+
+        return graph2;
     }
 
     private void saveGraph(String resultsPath, Graph graph, int i, int simIndex, int algIndex,
@@ -1510,9 +1558,10 @@ public class Comparison {
 
                     double stat = statTables[u][newOrder[t]][statIndex];
 
-                    if (stat == 0.0) {
-                        table.setToken(t + 1, initialColumn + statIndex, "-");
-                    } else if (stat == Double.POSITIVE_INFINITY) {
+//                    if (stat == 0.0) {
+//                        table.setToken(t + 1, initialColumn + statIndex, "-");
+//                    } else
+                    if (stat == Double.POSITIVE_INFINITY) {
                         table.setToken(t + 1, initialColumn + statIndex, "Yes");
                     } else if (stat == Double.NEGATIVE_INFINITY) {
                         table.setToken(t + 1, initialColumn + statIndex, "No");
@@ -1720,8 +1769,8 @@ public class Comparison {
         }
 
         @Override
-        public Graph search(DataModel DataModel, Parameters parameters) {
-            return algorithmWrapper.getAlgorithm().search(DataModel, parameters);
+        public Graph search(DataModel dataModel, Parameters parameters) {
+            return algorithmWrapper.getAlgorithm().search(dataModel, parameters);
         }
 
         @Override
@@ -1798,6 +1847,11 @@ public class Comparison {
         }
 
         @Override
+        public DataModel getDataModelWithLatents(int index) {
+            return dataModels.get(index);
+        }
+
+        @Override
         public DataType getDataType() {
             return simulation.getDataType();
         }
@@ -1813,9 +1867,9 @@ public class Comparison {
         }
 
         public void setValue(String name, Object value) {
-            if (!(value instanceof Number)) {
-                throw new IllegalArgumentException();
-            }
+//            if (!(value instanceof Number)) {
+//                throw new IllegalArgumentException();
+//            }
 
             parameters.set(name, value);
         }

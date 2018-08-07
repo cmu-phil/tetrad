@@ -417,7 +417,7 @@ public final class Knowledge2 implements TetradSerializable, IKnowledge {
         }
 
         if (isForbiddenByTiers(var1, var2)) {
-            return false;
+            return true;
         }
 
         return false;

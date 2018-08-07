@@ -23,11 +23,11 @@ package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.ICovarianceMatrix;
+import edu.cmu.tetrad.graph.IndependenceFact;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.NumberFormatUtil;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetrad.util.TetradMatrix;
-import org.apache.commons.math3.linear.RealMatrix;
 
 import java.text.NumberFormat;
 import java.util.*;
@@ -43,7 +43,8 @@ public final class IndTestConditionalCorrelation implements IndependenceTest {
     /**
      * The instance of CCI that is wrapped.
      */
-    private final Cci cci;
+    private final ConditionalCorrelationIndependence cci;
+//    private double weight = 0.8;
 
     /**
      * The variables of the covariance data, in order. (Unmodifiable list.)
@@ -66,14 +67,18 @@ public final class IndTestConditionalCorrelation implements IndependenceTest {
     private DataSet dataSet;
 
     /**
-     * The matrix of data, N x M, where N is the number of samples, M the number of variables, gotten from dataSet.
-     */
-    private RealMatrix data;
-
-    /**
      * Map from nodes to the indices.
      */
     private Map<Node, Integer> indices;
+
+//    /**
+//     * The number of functions to use in the basis.
+//     */
+//    private int numFunctions = 10;
+
+    /**
+     * True if verbose output should be printed.
+     */
     private boolean verbose = false;
 
     //==========================CONSTRUCTORS=============================//
@@ -83,7 +88,7 @@ public final class IndTestConditionalCorrelation implements IndependenceTest {
      * given data set (must be continuous). The given significance level is used.
      *
      * @param dataSet A data set containing only continuous columns.
-     * @param alpha   The alpha level of the test.
+     * @param alpha   The q level of the test.
      */
     public IndTestConditionalCorrelation(DataSet dataSet, double alpha) {
         if (!(dataSet.isContinuous())) {
@@ -91,21 +96,18 @@ public final class IndTestConditionalCorrelation implements IndependenceTest {
         }
 
         if (!(alpha >= 0 && alpha <= 1)) {
-                throw new IllegalArgumentException("Alpha mut be in [0, 1]");
+            throw new IllegalArgumentException("Q mut be in [0, 1]");
         }
 
         List<Node> nodes = dataSet.getVariables();
 
         this.variables = Collections.unmodifiableList(nodes);
-        setAlpha(alpha);
-
-        this.dataSet = dataSet;
-        data = this.dataSet.getDoubleData().getRealMatrix();
 
         List<String> varNames = new ArrayList<>();
         for (int i = 0; i < variables.size(); i++) varNames.add(variables.get(i).getName());
 
-        this.cci = new Cci(data, varNames, alpha);
+        this.cci = new ConditionalCorrelationIndependence(dataSet, alpha);
+        this.alpha = alpha;
 
         indices = new HashMap<>();
 
@@ -130,15 +132,17 @@ public final class IndTestConditionalCorrelation implements IndependenceTest {
         for (Node node : z) _z.add(node.getName());
         boolean independent = cci.isIndependent(_x, _y, _z);
 
-//        System.out.println(Runtime.getRuntime().freeMemory());
-
         if (verbose) {
+            IndependenceFact fact = new IndependenceFact(x, y, z);
+            double p = cci.getPValue();
+
             if (independent) {
-                TetradLogger.getInstance().log("independencies",
-                        SearchLogUtils.independenceFactMsg(x, y, z, getPValue()));
+                System.out.println(fact + " INDEPENDENT p = " + p);
+                TetradLogger.getInstance().log("info", fact + " Independent");
+
             } else {
-                TetradLogger.getInstance().log("dependencies",
-                        SearchLogUtils.dependenceFactMsg(x, y, z, getPValue()));
+                System.out.println(fact + " dependent p = " + p);
+                TetradLogger.getInstance().log("info", fact.toString());
             }
         }
 
@@ -178,7 +182,7 @@ public final class IndTestConditionalCorrelation implements IndependenceTest {
      * @return the probability associated with the most recently computed independence test.
      */
     public double getPValue() {
-        return cci.getQ();
+        return cci.getScore();
     }
 
     /**
@@ -191,6 +195,7 @@ public final class IndTestConditionalCorrelation implements IndependenceTest {
         }
 
         this.alpha = alpha;
+        cci.setAlpha(alpha);
     }
 
     /**
@@ -275,7 +280,7 @@ public final class IndTestConditionalCorrelation implements IndependenceTest {
      * @return a string representation of this test.
      */
     public String toString() {
-        return "Conditional Correlation, alpha = " + nf.format(getAlpha());
+        return "Conditional Correlation, q = " + nf.format(getAlpha());
     }
 
     public boolean isVerbose() {
@@ -286,8 +291,32 @@ public final class IndTestConditionalCorrelation implements IndependenceTest {
         this.verbose = verbose;
     }
 
-    //==================================PRIVATE METHODS================================
+    /**
+     * Number of functions to use in (truncated) basis.
+     */
+    public int getNumFunctions() {
+        return this.cci.getNumFunctions();
+    }
 
+    public void setNumFunctions(int numFunctions) {
+        this.cci.setNumFunctions(numFunctions);
+    }
+
+    public double getWeight() {
+        return this.cci.getWidth();
+    }
+
+    public void setKernelMultiplier(double multiplier) {
+        this.cci.setWidth(multiplier);
+    }
+
+    public void setKernel(ConditionalCorrelationIndependence.Kernel kernel) {
+        cci.setKernelMultiplier(kernel);
+    }
+
+    public void setBasis(ConditionalCorrelationIndependence.Basis basis) {
+        cci.setBasis(basis);
+    }
 }
 
 

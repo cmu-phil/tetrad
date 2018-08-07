@@ -520,7 +520,7 @@
                     edu.cmu.tetradapp.editor.datamanip.TimeSeriesParamsEditor
                 </params-editor-class>
             </model>
-            <model name="Add an index variable" acronym="Add Index"
+            <model name="Add an index predictor" acronym="Add Index"
                    help="data" category="Conversion of Data">
                 <logger>
                     <event id="info" description="Information" default="on"/>
@@ -1507,14 +1507,14 @@
             <!--</model>-->
             <!--Heuristic Best Significant Model Search-->
             <!--<model name="BFF" acronym="BFF" help="bff"-->
-            <!--category="forbid_latent_common_causes Searches">-->
-            <!--<logger>-->
-            <!--<event id="info" description="Information" default="on"/>-->
-            <!--<event id="details" description="Misc Fine Details" default="on"/>-->
-            <!--</logger>-->
-            <!--<model-class>edu.cmu.tetradapp.model.PValueImproverWrapper</model-class>-->
-            <!--<editor-class>edu.cmu.tetradapp.editor.PValueImproverEditor-->
-            <!--</editor-class>-->
+                   <!--category="forbid_latent_common_causes Searches">-->
+                <!--<logger>-->
+                    <!--<event id="info" description="Information" default="on"/>-->
+                    <!--<event id="details" description="Misc Fine Details" default="on"/>-->
+                <!--</logger>-->
+                <!--<model-class>edu.cmu.tetradapp.model.PValueImproverWrapper</model-class>-->
+                <!--<editor-class>edu.cmu.tetradapp.editor.PValueImproverEditor-->
+                <!--</editor-class>-->
             <!--</model>-->
 
             <!--Restored Mimbuild on 6/20/2017 -->          

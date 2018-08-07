@@ -274,7 +274,11 @@ public class ConditionalGaussianLikelihood {
             if (a == 0) continue;
 
             if (A.size() > 0) {
-                c1 += a * multinomialLikelihood(a, N);
+                final double l = a * multinomialLikelihood(a, N);
+
+                if (!Double.isNaN(l)) {
+                    c1 += l;
+                }
             }
 
             if (X.size() > 0) {
@@ -283,10 +287,18 @@ public class ConditionalGaussianLikelihood {
                     // Determinant will be zero if data are linearly dependent.
                     if (a > continuousCols.length + 5) {
                         TetradMatrix cov = cov(getSubsample(continuousCols, cell));
-                        c2 += a * gaussianLikelihood(k, cov);
+                        final double l = a * gaussianLikelihood(k, cov);
+
+                        if (!Double.isNaN(a)) {
+                            c2 += l;
+                        }
                     } else {
                         TetradMatrix cov = cov(getSubsample(continuousCols, all));
-                        c2 += a * gaussianLikelihood(k, cov);
+                        final double l = a * gaussianLikelihood(k, cov);
+
+                        if (!Double.isNaN(l)) {
+                            c2 += l;
+                        }
                     }
                 } catch (Exception e) {
                     // No contribution.

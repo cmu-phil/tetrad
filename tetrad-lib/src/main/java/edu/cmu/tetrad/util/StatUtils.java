@@ -79,7 +79,7 @@ public final class StatUtils {
         int count = 0;
 
         for (int i = 0; i < N; i++) {
-            if (!Double.isNaN(array[i])) {
+            if (!Double.isNaN(array[i]) || array[i] == 0) {
                 sum += array[i];
                 count++;
             }
