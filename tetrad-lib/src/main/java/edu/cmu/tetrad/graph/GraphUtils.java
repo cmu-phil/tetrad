@@ -2141,6 +2141,45 @@ public final class GraphUtils {
             } else if (edge.getEndpoint2() == Endpoint.CIRCLE) {
                 builder.append("odot");
             }
+            
+            // Bootstrapping
+            List<EdgeTypeProbability> edgeTypeProbabilities = edge.getEdgeTypeProbabilities();
+            if(edgeTypeProbabilities != null && !edgeTypeProbabilities.isEmpty()) {
+            	String label = edge.getNode1().getName() + " - " + edge.getNode2().getName();
+            	for(EdgeTypeProbability edgeTypeProbability : edgeTypeProbabilities) {
+            		EdgeType edgeType = edgeTypeProbability.getEdgeType();
+            		String edgeTypeString = "";
+            		switch(edgeType) {
+            		case nil:
+            			edgeTypeString = "[no edge]";
+            			break;
+            		case ta:
+            			edgeTypeString = "[-->]";
+            			break;
+            		case at:
+            			edgeTypeString = "[<--]";
+            			break;
+            		case ca:
+            			edgeTypeString = "[o->]";
+            			break;
+            		case ac:
+            			edgeTypeString = "[<-o]";
+            			break;
+            		case cc:
+            			edgeTypeString = "[o-o]";
+            			break;
+            		case aa:
+            			edgeTypeString = "[<->]";
+            			break;
+            		case tt:
+            			edgeTypeString = "[---]";
+            			break;
+            		}
+            		label += "\\n" + edgeTypeString + ":" + edgeTypeProbability.getProbability();
+            	}
+            	builder.append(", label=\"" + label + "\", fontname=courier");
+            }
+            
             builder.append("]; \n");
         }
         builder.append("}");
