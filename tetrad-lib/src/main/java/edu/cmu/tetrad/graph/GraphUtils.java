@@ -21,6 +21,7 @@
 package edu.cmu.tetrad.graph;
 
 import edu.cmu.tetrad.data.DataSet;
+import edu.cmu.tetrad.graph.Edge.Property;
 import edu.cmu.tetrad.graph.EdgeTypeProbability.EdgeType;
 import edu.cmu.tetrad.util.ChoiceGenerator;
 import edu.cmu.tetrad.util.ForkJoinPoolInstance;
@@ -2172,31 +2173,39 @@ public final class GraphUtils {
             		String edgeTypeString = "";
             		switch(edgeType) {
             		case nil:
-            			edgeTypeString = "[no edge]";
+            			edgeTypeString = "no edge";
             			break;
             		case ta:
-            			edgeTypeString = "[-->]";
+            			edgeTypeString = "-->";
             			break;
             		case at:
-            			edgeTypeString = "[<--]";
+            			edgeTypeString = "<--";
             			break;
             		case ca:
-            			edgeTypeString = "[o->]";
+            			edgeTypeString = "o->";
             			break;
             		case ac:
-            			edgeTypeString = "[<-o]";
+            			edgeTypeString = "<-o";
             			break;
             		case cc:
-            			edgeTypeString = "[o-o]";
+            			edgeTypeString = "o-o";
             			break;
             		case aa:
-            			edgeTypeString = "[<->]";
+            			edgeTypeString = "<->";
             			break;
             		case tt:
-            			edgeTypeString = "[---]";
+            			edgeTypeString = "---";
             			break;
             		}
-            		label += "\\n" + edgeTypeString + ":" + edgeTypeProbability.getProbability();
+            		
+            		List<Property> properties = edgeTypeProbability.getProperties();
+        			if(properties != null && properties.size() > 0) {
+        	        	for(Property property : properties) {
+        	        		edgeTypeString += " " + property.toString();
+        	        	}
+        	        }
+            		
+            		label += "\\n[" + edgeTypeString + "]:" + edgeTypeProbability.getProbability();
             	}
             	builder.append(", label=\"" + label + "\", fontname=courier");
             }
@@ -2684,7 +2693,6 @@ public final class GraphUtils {
                 		EdgeTypeProbability etp = null;
                 		if(orient.indexOf(" --> ") > -1) {
                 			etp = new EdgeTypeProbability(EdgeType.ta, prob);
-                            _edge.addEdgeTypeProbability(new EdgeTypeProbability(EdgeType.ta, prob));
                     	}else if(orient.indexOf(" <-- ") > -1) {
                     		etp = new EdgeTypeProbability(EdgeType.at, prob);
                     	}else if(orient.indexOf(" o-> ") > -1) {
