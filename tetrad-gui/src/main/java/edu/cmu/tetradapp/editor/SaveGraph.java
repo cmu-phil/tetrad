@@ -59,7 +59,7 @@ public class SaveGraph extends AbstractAction {
      */
     private Type type = Type.xml;
     
-    public enum Type{text, xml, json, r}
+    public enum Type{text, xml, json, r, dot}
 
     public SaveGraph(GraphEditable graphEditable, String title, Type type) {
         super(title);
@@ -115,8 +115,26 @@ public class SaveGraph extends AbstractAction {
         else if (type == Type.json) {
             File file = EditorUtils.getSaveFile("graph", "json", parent, false, title);
             try {
-        	Gson gson = new GsonBuilder().setPrettyPrinting().create();
+            	Gson gson = new GsonBuilder().setPrettyPrinting().create();
                 String text = gson.toJson(graph);
+
+                PrintWriter out = new PrintWriter(file);
+                out.println(text);
+                Preferences.userRoot().put("fileSaveLocation", file.getParent());
+                out.close();
+            } catch (FileNotFoundException e1) {
+                e1.printStackTrace();
+                throw new RuntimeException("Not a directed graph.", e1);
+            } catch (IllegalArgumentException e1) {
+
+                // Probably not a directed graph.
+                JOptionPane.showMessageDialog(getGraphEditable().getWorkbench(), e1.getMessage());
+            }
+        }
+        else if (type == Type.dot) {
+            File file = EditorUtils.getSaveFile("graph", "dot", parent, false, title);
+            try {
+                String text = GraphUtils.graphToDot(graph);
 
                 PrintWriter out = new PrintWriter(file);
                 out.println(text);
