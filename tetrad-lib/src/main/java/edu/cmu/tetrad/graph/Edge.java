@@ -21,6 +21,7 @@
 
 package edu.cmu.tetrad.graph;
 
+import edu.cmu.tetrad.graph.EdgeTypeProbability.EdgeType;
 import edu.cmu.tetrad.util.TetradSerializable;
 
 import java.awt.*;
@@ -255,40 +256,69 @@ public class Edge implements TetradSerializable, Comparable {
         List<EdgeTypeProbability> edgeTypeDist = getEdgeTypeProbabilities();
         if(edgeTypeDist.size() > 0){
             buf.append(" ");
+
+            String n1 = getNode1().getName();
+			String n2 = getNode2().getName();
+			if(n1.compareTo(n2) > 0) {// Sort node's names
+				n1 = getNode2().getName();
+				n2 = getNode1().getName();
+			}
+			
             for (int i = 0; i < edgeTypeDist.size(); i++) {
             	EdgeTypeProbability etp = edgeTypeDist.get(i);
-    			String _type = "" + etp.getEdgeType();
-    			switch (etp.getEdgeType()) {
-    			case nil:
-    				_type = "no edge";
-    				break;
-    			case ta:
-    				_type = "-->";
-    				break;
-    			case at:
-    				_type = "<--";
-    				break;
-    			case ca:
-    				_type = "o->";
-    				break;
-    			case ac:
-    				_type = "<-o";
-    				break;
-    			case cc:
-    				_type = "o-o";
-    				break;
-    			case aa:
-    				_type = "<->";
-    				break;
-    			case tt:
-    				_type = "---";
-    				break;
-    			default:
-    				break;
-    			}
-    			
-    			buf.append("[" + _type + "]:" + String.format("%.4f", etp.getProbability()));
+            	double prob = etp.getProbability();
+            	if(prob > 0) {
+        			String _type = "" + etp.getEdgeType();
+        			switch (etp.getEdgeType()) {
+        			case nil:
+        				_type = "no edge";
+        				break;
+        			case ta:
+        				_type = "-->";
+        				break;
+        			case at:
+        				_type = "<--";
+        				break;
+        			case ca:
+        				_type = "o->";
+        				break;
+        			case ac:
+        				_type = "<-o";
+        				break;
+        			case cc:
+        				_type = "o-o";
+        				break;
+        			case aa:
+        				_type = "<->";
+        				break;
+        			case tt:
+        				_type = "---";
+        				break;
+        			default:
+        				break;
+        			}
+        			
+        			if(etp.getEdgeType() != EdgeType.nil) {
+        				_type = n1 + " " + _type + " " + n2;
+        			}
+        			List<Property> properties = etp.getProperties();
+        			if(properties != null && properties.size() > 0) {
+        	        	for(Property property : properties) {
+        	        		_type = _type + " " + property.toString();
+        	        	}
+        	        }
+        			buf.append("[" + _type + "]:" + String.format("%.4f", etp.getProbability()) + ";");
+        			
+            	}
             }
+        }
+        
+        List<Property> properties = getProperties();
+        if(properties != null && properties.size() > 0) {
+        	for(Property property : properties) {
+        		buf.append(" ");
+        		buf.append(property.toString());
+        	}
         }
         
 		return buf.toString();
