@@ -2170,42 +2170,45 @@ public final class GraphUtils {
             	String label = n1 + " - " + n2;
             	for(EdgeTypeProbability edgeTypeProbability : edgeTypeProbabilities) {
             		EdgeType edgeType = edgeTypeProbability.getEdgeType();
-            		String edgeTypeString = "";
-            		switch(edgeType) {
-            		case nil:
-            			edgeTypeString = "no edge";
-            			break;
-            		case ta:
-            			edgeTypeString = "-->";
-            			break;
-            		case at:
-            			edgeTypeString = "<--";
-            			break;
-            		case ca:
-            			edgeTypeString = "o->";
-            			break;
-            		case ac:
-            			edgeTypeString = "<-o";
-            			break;
-            		case cc:
-            			edgeTypeString = "o-o";
-            			break;
-            		case aa:
-            			edgeTypeString = "<->";
-            			break;
-            		case tt:
-            			edgeTypeString = "---";
-            			break;
+            		double probability = edgeTypeProbability.getProbability();
+            		if(probability > 0) {
+                		String edgeTypeString = "";
+                		switch(edgeType) {
+                		case nil:
+                			edgeTypeString = "no edge";
+                			break;
+                		case ta:
+                			edgeTypeString = "-->";
+                			break;
+                		case at:
+                			edgeTypeString = "<--";
+                			break;
+                		case ca:
+                			edgeTypeString = "o->";
+                			break;
+                		case ac:
+                			edgeTypeString = "<-o";
+                			break;
+                		case cc:
+                			edgeTypeString = "o-o";
+                			break;
+                		case aa:
+                			edgeTypeString = "<->";
+                			break;
+                		case tt:
+                			edgeTypeString = "---";
+                			break;
+                		}
+                		
+                		List<Property> properties = edgeTypeProbability.getProperties();
+            			if(properties != null && properties.size() > 0) {
+            	        	for(Property property : properties) {
+            	        		edgeTypeString += " " + property.toString();
+            	        	}
+            	        }
+                		
+                		label += "\\n[" + edgeTypeString + "]:" + edgeTypeProbability.getProbability();
             		}
-            		
-            		List<Property> properties = edgeTypeProbability.getProperties();
-        			if(properties != null && properties.size() > 0) {
-        	        	for(Property property : properties) {
-        	        		edgeTypeString += " " + property.toString();
-        	        	}
-        	        }
-            		
-            		label += "\\n[" + edgeTypeString + "]:" + edgeTypeProbability.getProbability();
             	}
             	builder.append(", label=\"" + label + "\", fontname=courier");
             }
