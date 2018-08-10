@@ -8,11 +8,11 @@ package edu.cmu.tetradapp.editor.datamanip;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataModelList;
 import edu.cmu.tetrad.data.DataSet;
+import edu.cmu.tetrad.data.InterventionalDataFactory;
 import edu.cmu.tetrad.util.JOptionUtils;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetradapp.editor.FinalizingParameterEditor;
 import edu.cmu.tetradapp.model.DataWrapper;
-import edu.cmu.tetradapp.util.InterventionalDataFactory;
 import edu.cmu.tetradapp.util.StringTextField;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
@@ -46,7 +46,7 @@ public class InterventionalVariablesEditor extends JPanel implements FinalizingP
     private static final long serialVersionUID = 6513664419620810219L;
 
     private DataSet sourceDataSet;
-    
+
     private Parameters parameters;
 
     private DataModelList dataSets = null;
@@ -109,12 +109,12 @@ public class InterventionalVariablesEditor extends JPanel implements FinalizingP
             } else {
                 // Prevent duplicate
                 List<String> datasetVariables = this.sourceDataSet.getVariableNames();
-                
+
                 if (datasetVariables.stream().anyMatch(str -> str.trim().equalsIgnoreCase(varName))) {
                     JOptionPane.showMessageDialog(JOptionUtils.centeringComp(), "This variable name has been already taken in the source dataset, use a different one!");
                     return;
                 }
-                
+
                 if (interventionalVariables.stream().anyMatch(str -> str.trim().equalsIgnoreCase(varName))) {
                     JOptionPane.showMessageDialog(JOptionUtils.centeringComp(), "You've already added this interventional variable!");
                     return;
@@ -146,9 +146,7 @@ public class InterventionalVariablesEditor extends JPanel implements FinalizingP
 
         // Create object of table and table model
         table = new JTable();
-        
-        
-        
+
         tableModel = new DefaultTableModel();
 
         // Set model into the table object
@@ -167,11 +165,9 @@ public class InterventionalVariablesEditor extends JPanel implements FinalizingP
         // Table header
         tableModel.setColumnIdentifiers(columnNames.toArray());
 
-        
-        
         // To be able to see the header, we need to put the table in a JScrollPane
         JScrollPane tablePane = new JScrollPane(table);
- 
+
         tablePane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
 
         table.getParent().addComponentListener(new ComponentAdapter() {
@@ -184,7 +180,7 @@ public class InterventionalVariablesEditor extends JPanel implements FinalizingP
                 }
             }
         });
-        
+
         // Show checkboxes in table cells
         for (int i = 0; i < dataSets.size(); i++) {
             TableColumn tc = table.getColumnModel().getColumn(1 + i);
@@ -300,7 +296,7 @@ public class InterventionalVariablesEditor extends JPanel implements FinalizingP
         }
 
         this.sourceDataSet = (DataSet) model;
-        
+
         // All loaded datasets
         this.dataSets = dataWrapper.getDataModelList();
     }
