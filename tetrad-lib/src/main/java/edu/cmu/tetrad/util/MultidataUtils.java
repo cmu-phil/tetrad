@@ -210,21 +210,6 @@ public final class MultidataUtils {
         }
     }
 
-//    public static void combineContinuousData(List<DataModel> dataModels, double[][] combinedData) {
-//        int row = 0;
-//        for (DataModel dataModel : dataModels) {
-//            if (dataModel.isContinuous() && dataModel instanceof BoxDataSet) {
-//                BoxDataSet boxDataSet = (BoxDataSet) dataModel;
-//                DataBox dataBox = boxDataSet.getDataBox();
-//                if (dataBox instanceof DoubleDataBox) {
-//                    double[][] data = ((DoubleDataBox) dataBox).getData();
-//                    for (double[] rowData : data) {
-//                        System.arraycopy(rowData, 0, combinedData[row++], 0, rowData.length);
-//                    }
-//                }
-//            }
-//        }
-//    }
     private static void combineMixedVariables(List<DataModel> dataModels, List<Node> variables) {
         List<Node> dataVars = dataModels.get(0).getVariables();
         if (dataModels.size() == 1) {
