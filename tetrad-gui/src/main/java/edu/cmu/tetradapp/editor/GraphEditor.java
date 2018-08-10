@@ -22,6 +22,7 @@ package edu.cmu.tetradapp.editor;
 
 import edu.cmu.tetrad.data.IKnowledge;
 import edu.cmu.tetrad.graph.*;
+import edu.cmu.tetrad.graph.Edge.Property;
 import edu.cmu.tetrad.search.IndTestDSep;
 import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.util.JOptionUtils;
@@ -267,6 +268,7 @@ public final class GraphEditor extends JPanel
         columnNames.add(9, "o-o");
         columnNames.add(10, "<->");
         columnNames.add(11, "---");
+        columnNames.add(12, "Additional information");
         
         // Table header
         tableModel.setColumnIdentifiers(columnNames.toArray());
@@ -447,7 +449,7 @@ public final class GraphEditor extends JPanel
 
     // Add a new row to bootstrap table
     private void addRow(DefaultTableModel tableModel, String node1, String node2, String edgeType, List<Edge.Property> properties, List<EdgeTypeProbability> edgeTypeProbabilities) {
-        String[] row = new String[12];
+        String[] row = new String[13];
         
         // node1
         row[0] = node1;
@@ -468,6 +470,7 @@ public final class GraphEditor extends JPanel
         for (EdgeTypeProbability edgeTypeProb : edgeTypeProbabilities) {
             String type = "";
             String probValue = String.format("%.4f", edgeTypeProb.getProbability());
+            List<String> additionalInfoList = new LinkedList<>();
             
             switch (edgeTypeProb.getEdgeType()) {
                 case nil: //"no edge"
@@ -524,6 +527,18 @@ public final class GraphEditor extends JPanel
                     break;
                 default:
                     break;
+            }
+
+            // Additional info
+            if (!edgeTypeProb.getProperties().isEmpty()) {
+                type = node1 + " " + type + " " + node2;
+                for (Property property : edgeTypeProb.getProperties()) {
+                    type = type + " " + property.name();
+                }
+                additionalInfoList.add("[" + type + "]: " + probValue);
+                
+                String additionalInfo = additionalInfoList.stream().collect(Collectors.joining("; "));
+                row[12] = additionalInfo;
             }
 
         }
