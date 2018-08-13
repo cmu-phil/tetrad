@@ -75,13 +75,12 @@ public final class GraphEditor extends JPanel
         implements GraphEditable, LayoutEditable, IndTestProducer {
 
     private GraphWorkbench workbench;
-    private GraphSettable graphEditable;
     private Parameters parameters;
 
     private final HelpSet helpSet;
 
     //===========================PUBLIC METHODS========================//
-    public GraphEditor(GraphSettable graphWrapper) {
+    public GraphEditor(GraphWrapper graphWrapper) {
         // Initialize helpSet - Zhou
         String helpHS = "/resources/javahelp/TetradHelp.hs";
 
@@ -95,7 +94,7 @@ public final class GraphEditor extends JPanel
         }
 
         setLayout(new BorderLayout());
-        this.graphEditable = graphWrapper;
+        
         this.parameters = graphWrapper.getParameters();
 
         editGraph(graphWrapper.getGraph());
@@ -103,18 +102,19 @@ public final class GraphEditor extends JPanel
         this.getWorkbench().addPropertyChangeListener(new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent evt) {
                 String propertyName = evt.getPropertyName();
-
                 if ("graph".equals(propertyName)) {
                     Graph _graph = (Graph) evt.getNewValue();
 
-                    if (getWorkbench() != null && getGraphWrapper() != null) {
-                        getGraphWrapper().setGraph(_graph);
+                    if (getWorkbench() != null && graphWrapper != null) {
+                        graphWrapper.setGraph(_graph);
+                        // Also need to update the UI - Zhou
+                        editGraph(graphWrapper.getGraph());
                     }
                 }
             }
         });
 
-        int numModels = graphEditable.getNumModels();
+        int numModels = graphWrapper.getNumModels();
 
         if (numModels > 1) {
             final JComboBox<Integer> comp = new JComboBox<>();
@@ -126,8 +126,8 @@ public final class GraphEditor extends JPanel
             comp.addActionListener(new ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent e) {
-                    graphEditable.setModelIndex(((Integer) comp.getSelectedItem()).intValue() - 1);
-                    editGraph(graphEditable.getGraph());
+                    graphWrapper.setModelIndex(((Integer) comp.getSelectedItem()).intValue() - 1);
+                    editGraph(graphWrapper.getGraph());
                     validate();
                 }
             });
@@ -138,7 +138,7 @@ public final class GraphEditor extends JPanel
             b.add(new JLabel("Using model"));
             b.add(comp);
             b.add(new JLabel("from "));
-            b.add(new JLabel(graphEditable.getModelSourceName()));
+            b.add(new JLabel(graphWrapper.getModelSourceName()));
             b.add(Box.createHorizontalGlue());
 
             add(b, BorderLayout.NORTH);
@@ -147,7 +147,9 @@ public final class GraphEditor extends JPanel
         getWorkbench().addPropertyChangeListener(new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent evt) {
                 if ("graph".equals(evt.getPropertyName())) {
-                    getGraphWrapper().setGraph((Graph) evt.getNewValue());
+                    graphWrapper.setGraph((Graph) evt.getNewValue());
+                    // Also need to update the UI - Zhou
+                    editGraph(graphWrapper.getGraph());
                 } else if ("modelChanged".equals(evt.getPropertyName())) {
                     firePropertyChange("modelChanged", null, null);
                 }
@@ -425,10 +427,6 @@ public final class GraphEditor extends JPanel
 
     public Rectangle getVisibleRect() {
         return getWorkbench().getVisibleRect();
-    }
-
-    private GraphSettable getGraphWrapper() {
-        return graphEditable;
     }
 
     //===========================PRIVATE METHODS========================//
