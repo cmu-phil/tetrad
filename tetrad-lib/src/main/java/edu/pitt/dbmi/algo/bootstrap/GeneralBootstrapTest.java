@@ -7,6 +7,7 @@ import edu.cmu.tetrad.data.IKnowledge;
 import edu.cmu.tetrad.data.Knowledge2;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.graph.Edge.Property;
+import edu.cmu.tetrad.graph.EdgeTypeProbability.EdgeType;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.RandomUtil;
 
@@ -249,204 +250,204 @@ public class GeneralBootstrapTest {
 		addNodeToGraph(graph, complete.getNodes(), 0, complete.getNodes().size() - 1);
 
 		for (Edge e : complete.getEdges()) {
-			double AnilB = 0.0;
-			double AtoB = 0.0;
-			double BtoA = 0.0;
-			double ACtoB = 0.0;
-			double BCtoA = 0.0;
-			double AccB = 0.0;
-			double AbB = 0.0;
-			double AuB = 0.0;
 
-			// dd, nl, pd, pl
-			double dd = 0.0;
-			double nl = 0.0;
-			double pd = 0.0;
-			double pl = 0.0;
-			
 			Node n1 = e.getNode1();
 			Node n2 = e.getNode2();
-
-			// if(!graph.containsNode(n1))graph.addNode(n1);
-			// if(!graph.containsNode(n2))graph.addNode(n2);
-
-			Edge edge = null;
-			double maxEdgeProb = 0;
-
-			// compute probability for each edge type
-			Edge eNil = new Edge(n1, n2, Endpoint.NULL, Endpoint.NULL);
-			AnilB = getProbability(eNil);
-			out.println(n1 + " [no edge] " + n2 + " : " + AnilB);
-
-			Edge eTA = new Edge(n1, n2, Endpoint.TAIL, Endpoint.ARROW);
-			AtoB = getProbability(eTA);
-			out.println(eTA + " : " + AtoB);
-			if (AtoB > maxEdgeProb) {
-				edge = eTA;
-				maxEdgeProb = AtoB;
-			}
-
-			Edge eAT = new Edge(n1, n2, Endpoint.ARROW, Endpoint.TAIL);
-			BtoA = getProbability(eAT);
-			out.println(eAT + " : " + BtoA);
-			if (BtoA > maxEdgeProb) {
-				edge = eAT;
-				maxEdgeProb = BtoA;
-			}
-
-			Edge eCA = new Edge(n1, n2, Endpoint.CIRCLE, Endpoint.ARROW);
-			ACtoB = getProbability(eCA);
-			out.println(eCA + " : " + ACtoB);
-			if (ACtoB > maxEdgeProb) {
-				edge = eCA;
-				maxEdgeProb = ACtoB;
-			}
-
-			Edge eAC = new Edge(n1, n2, Endpoint.ARROW, Endpoint.CIRCLE);
-			BCtoA = getProbability(eAC);
-			out.println(eAC + " : " + BCtoA);
-			if (BCtoA > maxEdgeProb) {
-				edge = eAC;
-				maxEdgeProb = BCtoA;
-			}
-
-			Edge eCC = new Edge(n1, n2, Endpoint.CIRCLE, Endpoint.CIRCLE);
-			AccB = getProbability(eCC);
-			out.println(eCC + " : " + AccB);
-			if (AccB > maxEdgeProb) {
-				edge = eCC;
-				maxEdgeProb = AccB;
-			}
-
-			Edge eAA = new Edge(n1, n2, Endpoint.ARROW, Endpoint.ARROW);
-			AbB = getProbability(eAA);
-			out.println(eAA + " : " + AbB);
-			if (AbB > maxEdgeProb) {
-				edge = eAA;
-				maxEdgeProb = AbB;
-			}
-
-			Edge eTT = new Edge(n1, n2, Endpoint.TAIL, Endpoint.TAIL);
-			AuB = getProbability(eTT);
-			out.println(eTT + " : " + AuB);
-			if (AuB > maxEdgeProb) {
-				edge = eTT;
-				maxEdgeProb = AuB;
-			}
-
-			switch (edgeEnsemble) {
-			case Highest:
-				if (AnilB > maxEdgeProb) {
-					edge = null;
-				}
-				break;
-			case Majority:
-				if (AnilB > maxEdgeProb || maxEdgeProb < .5) {
-					edge = null;
-				}
-				break;
-			default:
-				// Do nothing
-			}
-
-			if (edge != null) {
-				out.println("Final result: " + edge + " : " + maxEdgeProb);
-				
-				edge.addEdgeTypeProbability(new EdgeTypeProbability(EdgeTypeProbability.EdgeType.nil, AnilB));
-				edge.addEdgeTypeProbability(new EdgeTypeProbability(EdgeTypeProbability.EdgeType.ta, AtoB));
-				edge.addEdgeTypeProbability(new EdgeTypeProbability(EdgeTypeProbability.EdgeType.at, BtoA));
-				edge.addEdgeTypeProbability(new EdgeTypeProbability(EdgeTypeProbability.EdgeType.ca, ACtoB));
-				edge.addEdgeTypeProbability(new EdgeTypeProbability(EdgeTypeProbability.EdgeType.ac, BCtoA));
-				edge.addEdgeTypeProbability(new EdgeTypeProbability(EdgeTypeProbability.EdgeType.cc, AccB));
-				edge.addEdgeTypeProbability(new EdgeTypeProbability(EdgeTypeProbability.EdgeType.aa, AbB));
-				edge.addEdgeTypeProbability(new EdgeTypeProbability(EdgeTypeProbability.EdgeType.tt, AuB));
-
-				Map<Property, Double> properties = getPropertyProbability(n1, n2);
-				if(properties != null && properties.size() > 0){
-					for(Property property : properties.keySet()){
-						double prob = properties.get(property);
-						if(edgeEnsemble == BootstrapEdgeEnsemble.Majority){
-							if(prob > .5){
-								edge.addProperty(property);
-							}
-						}else{
-							edge.addProperty(property);
+			
+			// Test new probability method
+			List<EdgeTypeProbability> edgeTypeProbabilities = getProbability(n1, n2);
+			EdgeTypeProbability chosen_edge_type = null;
+			double max_edge_prob = 0;
+			double no_edge_prob = 0;
+			if(edgeTypeProbabilities != null) {
+				for(EdgeTypeProbability etp : edgeTypeProbabilities) {
+					EdgeType edgeType = etp.getEdgeType();
+					double prob = etp.getProbability();
+					//out.println(edgeType + ": " + prob);
+					if(edgeType != EdgeType.nil && prob > max_edge_prob) {
+						if(prob > max_edge_prob) {
+							chosen_edge_type = etp;
+							max_edge_prob = prob;
 						}
+					}else {
+						no_edge_prob = prob;
 					}
+				}			
+			}
+			
+			if(chosen_edge_type != null) {
+				Edge edge = null;
+				EdgeType edgeType = chosen_edge_type.getEdgeType();
+				switch (edgeType) {
+				case ta:
+					edge = new Edge(n1, n2, Endpoint.TAIL, Endpoint.ARROW);
+					break;
+				case at:
+					edge = new Edge(n1, n2, Endpoint.ARROW, Endpoint.TAIL);
+					break;
+				case ca:
+					edge = new Edge(n1, n2, Endpoint.CIRCLE, Endpoint.ARROW);
+					break;
+				case ac:
+					edge = new Edge(n1, n2, Endpoint.ARROW, Endpoint.CIRCLE);
+					break;
+				case cc:
+					edge = new Edge(n1, n2, Endpoint.CIRCLE, Endpoint.CIRCLE);
+					break;
+				case aa:
+					edge = new Edge(n1, n2, Endpoint.ARROW, Endpoint.ARROW);
+					break;
+				case tt:
+					edge = new Edge(n1, n2, Endpoint.TAIL, Endpoint.TAIL);
+					break;
+				default:
+					// Do nothing
 				}
 				
-				graph.addEdge(edge);
+				for(Property property : chosen_edge_type.getProperties()) {
+					edge.addProperty(property);
+				}
+				
+				switch (edgeEnsemble) {
+				case Highest:
+					if (no_edge_prob > max_edge_prob) {
+						edge = null;
+					}
+					break;
+				case Majority:
+					if (no_edge_prob > max_edge_prob || max_edge_prob < .5) {
+						edge = null;
+					}
+					break;
+				default:
+					// Do nothing
+				}
+				
+				if (edge != null) {
+					out.println("Final result: " + edge + " : " + max_edge_prob);
+					
+					for(EdgeTypeProbability etp : edgeTypeProbabilities) {
+						edge.addEdgeTypeProbability(etp);
+					}
+					
+					graph.addEdge(edge);
+				}
 			}
-			out.println();
+			
 		}
 
 		return graph;
 	}
 
-	private Map<Property, Double> getPropertyProbability(Node node1, Node node2) {
-		Map<Property, Double> count = null;
-		int n = PAGs.size();
+	private List<EdgeTypeProbability> getProbability(Node node1, Node node2){
+		Map<String, Integer> edgeDist = new HashMap<>();
+		int no_edge_num = 0;
 		for (Graph g : PAGs) {
-			if (!g.containsNode(node1)) {
-				throw new IllegalArgumentException();
-			}
-			if (!g.containsNode(node2)) {
-				throw new IllegalArgumentException();
-			}
-
-			if (g.isAdjacentTo(node1, node2)) {
-				Edge edge = g.getEdge(node1, node2);
-				List<Property> properties = edge.getProperties();
-				if(properties != null && properties.size() > 0){
-					if(count == null){
-						count = new HashMap<>();
+			Edge e = g.getEdge(node1, node2);
+			if(e != null) {				
+				String edgeString = e.toString();
+				if(e.getEndpoint1() == e.getEndpoint2() && node1.compareTo(e.getNode1()) != 0) {
+					Edge edge = new Edge(node1, node2, e.getEndpoint1(), e.getEndpoint2());
+					for(Property property : e.getProperties()) {
+						edge.addProperty(property);
 					}
-					for(Property property : properties){
-						Double _no = count.get(property);
-						if(_no == null){
-							_no = 0.0;
-						}
-						_no++;
-						count.put(property, _no);
-					}
+					edgeString = edge.toString();
 				}
+				Integer num_edge = edgeDist.get(edgeString);
+				if(num_edge == null) {
+					num_edge = 0;
+				}
+				num_edge = num_edge.intValue() + 1;
+				edgeDist.put(edgeString, num_edge);	
+			}else {
+				no_edge_num++;
 			}
+		}
+		int n = PAGs.size();
+		// Normalization
+		List<EdgeTypeProbability> edgeTypeProbabilities = edgeDist.size()==0?null:new ArrayList<>();
+		for(String edgeString : edgeDist.keySet()) {
+			int edge_num = edgeDist.get(edgeString);
+			double probability = (double) edge_num/n;
+			
+			String[] token = edgeString.split("\\s+");
+			String n1 = token[0];
+			String arc = token[1];
+			String n2 = token[2];
+			
+			char end1 = arc.charAt(0);
+            char end2 = arc.charAt(2);
+
+            Endpoint _end1, _end2;
+
+            if (end1 == '<') {
+                _end1 = Endpoint.ARROW;
+            } else if (end1 == 'o') {
+                _end1 = Endpoint.CIRCLE;
+            } else if (end1 == '-') {
+                _end1 = Endpoint.TAIL;
+            } else {
+                throw new IllegalArgumentException();
+            }
+
+            if (end2 == '>') {
+                _end2 = Endpoint.ARROW;
+            } else if (end2 == 'o') {
+                _end2 = Endpoint.CIRCLE;
+            } else if (end2 == '-') {
+                _end2 = Endpoint.TAIL;
+            } else {
+                throw new IllegalArgumentException();
+            }
+            
+            if(node1.getName().equalsIgnoreCase(n2) && node2.getName().equalsIgnoreCase(n1)) {
+            	Endpoint tmp = _end1;
+            	_end1 = _end2;
+            	_end2 = tmp;
+            }
+            
+            EdgeType edgeType = EdgeType.nil;
+            
+            if(_end1 == Endpoint.TAIL && _end2 == Endpoint.ARROW) {
+            	edgeType = EdgeType.ta;
+            }
+            if(_end1 == Endpoint.ARROW && _end2 == Endpoint.TAIL) {
+            	edgeType = EdgeType.at;
+            }
+            if(_end1 == Endpoint.CIRCLE && _end2 == Endpoint.ARROW) {
+            	edgeType = EdgeType.ca;
+            }
+            if(_end1 == Endpoint.ARROW && _end2 == Endpoint.CIRCLE) {
+            	edgeType = EdgeType.ac;
+            }
+            if(_end1 == Endpoint.CIRCLE && _end2 == Endpoint.CIRCLE) {
+            	edgeType = EdgeType.cc;
+            }
+            if(_end1 == Endpoint.ARROW && _end2 == Endpoint.ARROW) {
+            	edgeType = EdgeType.aa;
+            }
+            if(_end1 == Endpoint.TAIL && _end2 == Endpoint.TAIL) {
+            	edgeType = EdgeType.tt;
+            }
+            
+            EdgeTypeProbability etp = new EdgeTypeProbability(edgeType, probability);
+            
+            // Edge's properties
+            if(token.length > 3) {
+            	for(int i=3;i<token.length;i++) {
+            		etp.addProperty(Edge.Property.valueOf(token[i]));
+            	}
+            }
+            edgeTypeProbabilities.add(etp);
 		}
 		
-		if(count != null && count.size() > 0){
-			for(Property property : count.keySet()){
-				Double _no = count.get(property);
-				_no = _no/(double)n;
-				count.put(property, _no);
-			}
+		if(no_edge_num < n && edgeTypeProbabilities != null) {
+			edgeTypeProbabilities.add(new EdgeTypeProbability(EdgeType.nil, (double)no_edge_num/n));
 		}
-
-		return count;
+		
+		return edgeTypeProbabilities;
 	}
-
-	private double getProbability(Edge e) {
-		int count = 0;
-		int n = PAGs.size();
-		for (Graph g : PAGs) {
-			if (!g.containsNode(e.getNode1())) {
-				throw new IllegalArgumentException();
-			}
-			if (!g.containsNode(e.getNode2())) {
-				throw new IllegalArgumentException();
-			}
-
-			if (e.getEndpoint1() == Endpoint.NULL || e.getEndpoint2() == Endpoint.NULL) {
-				if (!g.isAdjacentTo(e.getNode1(), e.getNode2()))
-					count++;
-			} else {
-				if (g.containsEdge(e))
-					count++;
-			}
-		}
-
-		return count / (double) n;
-	}
-
+	
 	public static int[][] getAdjConfusionMatrix(Graph truth, Graph estimate) {
 		Graph complete = new EdgeListGraph(estimate.getNodes());
 		complete.fullyConnect(Endpoint.TAIL);
