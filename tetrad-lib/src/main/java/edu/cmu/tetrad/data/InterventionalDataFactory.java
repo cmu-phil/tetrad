@@ -60,8 +60,8 @@ public final class InterventionalDataFactory {
     }
 
     private static DataModel createMixedDataWithDiscreteIntervention(List<DataModel> dataModels, List<String> intervVars, boolean[][] interventions) {
-        int[] rowCounts = getRowCounts(dataModels);
-        int numOfDataCols = getNumberOfColumns(dataModels.get(0));
+        int[] rowCounts = MultidataUtils.getRowCounts(dataModels);
+        int numOfDataCols = MultidataUtils.getNumberOfColumns(dataModels.get(0));
 
         int numOfRows = Arrays.stream(rowCounts).sum();
         int numOfCols = numOfDataCols + intervVars.size();
@@ -96,8 +96,8 @@ public final class InterventionalDataFactory {
     }
 
     private static DataModel createMixedDataWithContinuousIntervention(List<DataModel> dataModels, List<String> intervVars, boolean[][] interventions) {
-        int[] rowCounts = getRowCounts(dataModels);
-        int numOfDataCols = getNumberOfColumns(dataModels.get(0));
+        int[] rowCounts = MultidataUtils.getRowCounts(dataModels);
+        int numOfDataCols = MultidataUtils.getNumberOfColumns(dataModels.get(0));
 
         int numOfRows = Arrays.stream(rowCounts).sum();
         int numOfCols = numOfDataCols + intervVars.size();
@@ -132,8 +132,8 @@ public final class InterventionalDataFactory {
     }
 
     private static DataModel createDiscreteDataWithDiscreteIntervention(List<DataModel> dataModels, List<String> intervVars, boolean[][] interventions) {
-        int[] rowCounts = getRowCounts(dataModels);
-        int numOfDataCols = getNumberOfColumns(dataModels.get(0));
+        int[] rowCounts = MultidataUtils.getRowCounts(dataModels);
+        int numOfDataCols = MultidataUtils.getNumberOfColumns(dataModels.get(0));
 
         int numOfRows = Arrays.stream(rowCounts).sum();
         int numOfCols = numOfDataCols + intervVars.size();
@@ -166,8 +166,8 @@ public final class InterventionalDataFactory {
     }
 
     private static DataModel createDiscreteDataWithContinuousIntervention(List<DataModel> dataModels, List<String> intervVars, boolean[][] interventions) {
-        int[] rowCounts = getRowCounts(dataModels);
-        int numOfDataCols = getNumberOfColumns(dataModels.get(0));
+        int[] rowCounts = MultidataUtils.getRowCounts(dataModels);
+        int numOfDataCols = MultidataUtils.getNumberOfColumns(dataModels.get(0));
 
         int numOfRows = Arrays.stream(rowCounts).sum();
         int numOfCols = numOfDataCols + intervVars.size();
@@ -201,8 +201,8 @@ public final class InterventionalDataFactory {
     }
 
     private static DataModel createContinuousDataWithDiscreteIntervention(List<DataModel> dataModels, List<String> intervVars, boolean[][] interventions) {
-        int[] rowCounts = getRowCounts(dataModels);
-        int numOfDataCols = getNumberOfColumns(dataModels.get(0));
+        int[] rowCounts = MultidataUtils.getRowCounts(dataModels);
+        int numOfDataCols = MultidataUtils.getNumberOfColumns(dataModels.get(0));
 
         int numOfRows = Arrays.stream(rowCounts).sum();
         int numOfCols = numOfDataCols + intervVars.size();
@@ -239,8 +239,8 @@ public final class InterventionalDataFactory {
     }
 
     private static DataModel createContinuousDataWithContinuousIntervention(List<DataModel> dataModels, List<String> intervVars, boolean[][] interventions) {
-        int[] rowCounts = getRowCounts(dataModels);
-        int numOfDataCols = getNumberOfColumns(dataModels.get(0));
+        int[] rowCounts = MultidataUtils.getRowCounts(dataModels);
+        int numOfDataCols = MultidataUtils.getNumberOfColumns(dataModels.get(0));
 
         int numOfRows = Arrays.stream(rowCounts).sum();
         int numOfCols = numOfDataCols + intervVars.size();
@@ -279,25 +279,6 @@ public final class InterventionalDataFactory {
         intervVars.stream()
                 .map(e -> isDiscreteIntervVars ? new DiscreteVariable(e, 2, true) : new ContinuousVariable(e, true))
                 .collect(Collectors.toCollection(() -> variables));
-    }
-
-    private static int[] getRowCounts(List<DataModel> dataModels) {
-        int[] counts = new int[dataModels.size()];
-
-        int index = 0;
-        for (DataModel dataModel : dataModels) {
-            if (dataModel instanceof BoxDataSet) {
-                counts[index++] = ((BoxDataSet) dataModel).getNumRows();
-            }
-        }
-
-        return counts;
-    }
-
-    private static int getNumberOfColumns(DataModel dataModel) {
-        return (dataModel instanceof BoxDataSet)
-                ? ((BoxDataSet) dataModel).getDataBox().numCols()
-                : 0;
     }
 
 }
