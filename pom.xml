@@ -84,6 +84,14 @@
     <!--</plugins>-->
     <!--</reporting>-->
 
+    <repositories>
+        <repository>
+            <id>ccd-releases</id>
+            <url>https://cloud.ccd.pitt.edu/nexus/content/repositories/releases/</url>
+        </repository>
+    </repositories>
+
+
     <distributionManagement>
         <!--<repository>-->
         <!--<id>www.phil.cmu.edu_tetrad</id>-->
