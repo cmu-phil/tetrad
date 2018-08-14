@@ -29,31 +29,22 @@ import edu.cmu.tetrad.util.*;
 import edu.cmu.tetradapp.model.IndTestProducer;
 import edu.cmu.tetradapp.model.SemGraphWrapper;
 import edu.cmu.tetradapp.util.DesktopController;
-import edu.cmu.tetradapp.util.ImageUtils;
+import edu.cmu.tetradapp.util.GraphEditorBootstrapTable;
 import edu.cmu.tetradapp.util.LayoutEditable;
 import edu.cmu.tetradapp.workbench.DisplayEdge;
 import edu.cmu.tetradapp.workbench.DisplayNode;
 import edu.cmu.tetradapp.workbench.GraphWorkbench;
 import edu.cmu.tetradapp.workbench.LayoutMenu;
 import java.awt.BorderLayout;
-import java.awt.Color;
 import java.awt.Component;
-import java.awt.Dimension;
-import java.awt.Font;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.net.URL;
 import java.util.*;
-import javax.help.CSH;
-import javax.help.HelpBroker;
-import javax.help.HelpSet;
 import javax.swing.*;
-import javax.swing.border.EmptyBorder;
-import javax.swing.border.MatteBorder;
 import javax.swing.event.InternalFrameAdapter;
 import javax.swing.event.InternalFrameEvent;
 
@@ -72,24 +63,10 @@ public final class SemGraphEditor extends JPanel
     private JMenuItem errorTerms;
     private Parameters parameters;
 
-    private final HelpSet helpSet;
-
     //===========================PUBLIC METHODS========================//
     public SemGraphEditor(final SemGraphWrapper semGraphWrapper) {
         if (semGraphWrapper == null) {
             throw new NullPointerException();
-        }
-
-        // Initialize helpSet - Zhou
-        String helpHS = "/resources/javahelp/TetradHelp.hs";
-
-        try {
-            URL url = this.getClass().getResource(helpHS);
-            this.helpSet = new HelpSet(null, url);
-        } catch (Exception ee) {
-            System.out.println("HelpSet " + ee.getMessage());
-            System.out.println("HelpSet " + helpHS + " not found");
-            throw new IllegalArgumentException();
         }
 
 //        setLayout(new BorderLayout());
@@ -162,7 +139,6 @@ public final class SemGraphEditor extends JPanel
         });
 
         validate();
-
     }
 
     private void setEditor(SemGraphWrapper semGraphWrapper) {
@@ -171,66 +147,16 @@ public final class SemGraphEditor extends JPanel
         this.semGraphWrapper = semGraphWrapper;
         this.workbench = new GraphWorkbench(semGraphWrapper.getGraph());
 
-        SemGraphToolbar toolbar = new SemGraphToolbar(getWorkbench());
+        SemGraphToolbar graphToolbar = new SemGraphToolbar(getWorkbench());
         JMenuBar menuBar = createMenuBar();
-        JScrollPane scroll = new JScrollPane(getWorkbench());
-        scroll.setPreferredSize(new Dimension(450, 450));
-
-        add(scroll, BorderLayout.CENTER);
-        add(toolbar, BorderLayout.WEST);
+        
+        JSplitPane splitPane = GraphEditorBootstrapTable.getEditor(this, graphToolbar, workbench, semGraphWrapper.getGraph());
+        
+        // Add to parent
         add(menuBar, BorderLayout.NORTH);
-
-        JLabel label = new JLabel("Double click variable to change name. More information on graph edge types");
-        label.setFont(new Font("SansSerif", Font.PLAIN, 12));
-
-        // Info button added by Zhou to show edge types
-        JButton infoBtn = new JButton(new ImageIcon(ImageUtils.getImage(this, "info.png")));
-        infoBtn.setBorder(new EmptyBorder(0, 0, 0, 0));
-
-        // Clock info button to show edge types instructions - Zhou
-        infoBtn.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                helpSet.setHomeID("graph_edge_types");
-                HelpBroker broker = helpSet.createHelpBroker();
-                ActionListener listener = new CSH.DisplayHelpFromSource(broker);
-                listener.actionPerformed(e);
-            }
-        });
-
-        Box b = Box.createHorizontalBox();
-        b.add(Box.createHorizontalStrut(2));
-        b.add(label);
-        b.add(infoBtn);
-        b.add(Box.createHorizontalGlue());
-        b.setBorder(new MatteBorder(0, 0, 1, 0, Color.GRAY));
-
-        add(b, BorderLayout.SOUTH);
-
-        this.workbench.addPropertyChangeListener(new PropertyChangeListener() {
-            public void propertyChange(PropertyChangeEvent evt) {
-                String propertyName = evt.getPropertyName();
-
-                if ("graph".equals(propertyName)) {
-                    Graph _graph = (Graph) evt.getNewValue();
-
-                    if (getWorkbench() != null) {
-                        getSemGraphWrapper().setGraph(_graph);
-                    }
-                }
-            }
-        });
-
-        this.workbench.addPropertyChangeListener(new PropertyChangeListener() {
-            public void propertyChange(PropertyChangeEvent evt) {
-                String propertyName = evt.getPropertyName();
-
-                if ("modelChanged".equals(propertyName)) {
-                    firePropertyChange("modelChanged", evt.getOldValue(),
-                            evt.getNewValue());
-                }
-            }
-        });
+        add(splitPane, BorderLayout.SOUTH);
+        
+        validate();
     }
 
     //===========================PRIVATE METHODS======================//

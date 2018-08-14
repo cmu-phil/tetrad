@@ -34,24 +34,21 @@ import edu.cmu.tetradapp.model.IndTestProducer;
 import edu.cmu.tetradapp.model.TimeLagGraphWrapper;
 import edu.cmu.tetradapp.util.CopyLayoutAction;
 import edu.cmu.tetradapp.util.DesktopController;
-import edu.cmu.tetradapp.util.ImageUtils;
+import edu.cmu.tetradapp.util.GraphEditorBootstrapTable;
 import edu.cmu.tetradapp.util.LayoutEditable;
 import edu.cmu.tetradapp.workbench.*;
-import java.awt.*;
+import java.awt.BorderLayout;
+import java.awt.Component;
+import java.awt.Point;
+import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.net.URL;
 import java.util.*;
-import java.util.List;
 import java.util.prefs.Preferences;
-import javax.help.CSH;
-import javax.help.HelpBroker;
-import javax.help.HelpSet;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
-import javax.swing.border.MatteBorder;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.InternalFrameAdapter;
@@ -72,8 +69,6 @@ public final class TimeLagGraphEditor extends JPanel
     private LayoutEditable layoutEditable;
     private CopyLayoutAction copyLayoutAction;
     private Parameters parameters;
-
-    private final HelpSet helpSet;
 
     //===========================PUBLIC METHODS========================//
     public TimeLagGraphEditor(TimeLagGraphWrapper graphWrapper) {
@@ -98,70 +93,20 @@ public final class TimeLagGraphEditor extends JPanel
      * Constructs a new GraphEditor for the given EdgeListGraph.
      */
     public TimeLagGraphEditor(TimeLagGraph graph) {
-        // Initialize helpSet - Zhou
-        String helpHS = "/resources/javahelp/TetradHelp.hs";
-
-        try {
-            URL url = this.getClass().getResource(helpHS);
-            this.helpSet = new HelpSet(null, url);
-        } catch (Exception ee) {
-            System.out.println("HelpSet " + ee.getMessage());
-            System.out.println("HelpSet " + helpHS + " not found");
-            throw new IllegalArgumentException();
-        }
-
         setLayout(new BorderLayout());
 
         this.workbench = new TimeLagGraphWorkbench(graph);
-        DagGraphToolbar toolbar = new DagGraphToolbar(getWorkbench());
+        DagGraphToolbar graphToolbar = new DagGraphToolbar(getWorkbench());
         JMenuBar menuBar = createGraphMenuBar();
-        JScrollPane scroll = new JScrollPane(getWorkbench());
-        scroll.setPreferredSize(new Dimension(450, 450));
+        
+        
+        JSplitPane splitPane = GraphEditorBootstrapTable.getEditor(this, graphToolbar, workbench, graph);
 
-        add(scroll, BorderLayout.CENTER);
-        add(toolbar, BorderLayout.WEST);
+        // Add to parent
         add(menuBar, BorderLayout.NORTH);
-
-        JLabel label = new JLabel("Double click variable to change name. More information on graph edge types");
-        label.setFont(new Font("SansSerif", Font.PLAIN, 12));
-
-        // Info button added by Zhou to show edge types
-        JButton infoBtn = new JButton(new ImageIcon(ImageUtils.getImage(this, "info.png")));
-        infoBtn.setBorder(new EmptyBorder(0, 0, 0, 0));
-
-        // Clock info button to show edge types instructions - Zhou
-        infoBtn.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                helpSet.setHomeID("graph_edge_types");
-                HelpBroker broker = helpSet.createHelpBroker();
-                ActionListener listener = new CSH.DisplayHelpFromSource(broker);
-                listener.actionPerformed(e);
-            }
-        });
-
-        Box b = Box.createHorizontalBox();
-        b.add(Box.createHorizontalStrut(2));
-        b.add(label);
-        b.add(infoBtn);
-        b.add(Box.createHorizontalGlue());
-        b.setBorder(new MatteBorder(0, 0, 1, 0, Color.GRAY));
-
-        add(b, BorderLayout.SOUTH);
-
-        this.getWorkbench().addPropertyChangeListener(new PropertyChangeListener() {
-            public void propertyChange(PropertyChangeEvent evt) {
-                String propertyName = evt.getPropertyName();
-
-                if ("graph".equals(propertyName)) {
-                    TimeLagGraph _graph = (TimeLagGraph) evt.getNewValue();
-
-                    if (getWorkbench() != null) {
-                        getGraphWrapper().setGraph(_graph);
-                    }
-                }
-            }
-        });
+        add(splitPane, BorderLayout.SOUTH);
+        
+        validate();
     }
 
     /**
@@ -824,4 +769,5 @@ public final class TimeLagGraphEditor extends JPanel
     private CopyLayoutAction getCopyLayoutAction() {
         return copyLayoutAction;
     }
+
 }
