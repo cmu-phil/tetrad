@@ -53,27 +53,27 @@ public final class MultidataUtils {
         int[] rowCounts = getRowCounts(dataModels);
 
         List<Node> variables = new ArrayList<>(dataModel.getVariables().size());
-        MultidataUtils.combineVariables(dataModels, variables);
+        combineVariables(dataModels, variables);
 
         int numOfRows = Arrays.stream(rowCounts).sum();
         int numOfCols = getNumberOfColumns(dataModel);
 
         if (dataModel.isContinuous()) {
             double[][] continuousData = new double[numOfRows][numOfCols];
-            MultidataUtils.combineContinuousData(dataModels, continuousData);
+            combineContinuousData(dataModels, continuousData);
 
             return new BoxDataSet(new DoubleDataBox(continuousData), variables);
         } else if (dataModel.isDiscrete()) {
             int[][] discreteData = new int[numOfCols][];
-            MultidataUtils.combineDiscreteDataToDiscreteVerticalData(dataModels, variables, discreteData, numOfRows, numOfCols);
+            combineDiscreteDataToDiscreteVerticalData(dataModels, variables, discreteData, numOfRows, numOfCols);
 
             return new BoxDataSet(new VerticalIntDataBox(discreteData), variables);
         } else if (dataModel.isMixed()) {
             double[][] continuousData = new double[numOfCols][];
-            MultidataUtils.combineMixedContinuousData(dataModels, variables, continuousData, numOfRows, numOfCols);
+            combineMixedContinuousData(dataModels, variables, continuousData, numOfRows, numOfCols);
 
             int[][] discreteData = new int[numOfCols][];
-            MultidataUtils.combineMixedDiscreteData(dataModels, variables, discreteData, numOfRows, numOfCols);
+            combineMixedDiscreteData(dataModels, variables, discreteData, numOfRows, numOfCols);
 
             return new BoxDataSet(new MixedDataBox(variables, numOfRows, continuousData, discreteData), variables);
         } else {
