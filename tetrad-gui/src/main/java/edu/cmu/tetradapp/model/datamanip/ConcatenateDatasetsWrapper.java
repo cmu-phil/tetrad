@@ -18,19 +18,17 @@
 // along with this program; if not, write to the Free Software               //
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA //
 ///////////////////////////////////////////////////////////////////////////////
-
 package edu.cmu.tetradapp.model.datamanip;
 
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
-import edu.cmu.tetrad.data.DataUtils;
 import edu.cmu.tetrad.data.LogDataUtils;
+import edu.cmu.tetrad.util.MultidataUtils;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 import edu.cmu.tetradapp.model.DataWrapper;
 import edu.cmu.tetradapp.model.PcRunner;
-
-import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 
 /**
@@ -39,34 +37,34 @@ import java.util.List;
  * @author Tyler Gibson
  */
 public class ConcatenateDatasetsWrapper extends DataWrapper {
-       static final long serialVersionUID = 23L;
+
+    static final long serialVersionUID = 23L;
 
     public ConcatenateDatasetsWrapper(DataWrapper[] data, Parameters params) {
         construct(data);
     }
-    private void construct(DataWrapper...dataWrappers) {
+
+    private void construct(DataWrapper... dataWrappers) {
         for (DataWrapper wrapper : dataWrappers) {
             if (wrapper == null) {
                 throw new NullPointerException("The given data must not be null");
             }
         }
 
-        List<DataSet> dataSets = new ArrayList<>();
-
+        List<DataModel> dataModels = new LinkedList<>();
         for (DataWrapper wrapper : dataWrappers) {
-            for (DataModel model : wrapper.getDataModelList()) {
-                if (!(model instanceof DataSet)) {
+            wrapper.getDataModelList().forEach(dataModel -> {
+                if (dataModel instanceof DataSet) {
+                    dataModels.add(dataModel);
+                } else {
                     throw new IllegalArgumentException("Sorry, I am only willing to concatenate tabular datasets.");
                 }
-                DataSet dataSet = (DataSet) model;
-                dataSets.add(dataSet);
-            }
+            });
         }
 
-        DataSet concatenated = DataUtils.concatenate(dataSets);
-        concatenated.setName("Concatenated");
-
-        this.setDataModel(concatenated);
+        DataModel dataModel = MultidataUtils.combineDataset(dataModels);
+        dataModel.setName("Concatenated");
+        this.setDataModel(dataModel);
 
         LogDataUtils.logDataModelList("Parent data in which constant columns have been removed.", getDataModelList());
 
@@ -81,4 +79,3 @@ public class ConcatenateDatasetsWrapper extends DataWrapper {
         return PcRunner.serializableInstance();
     }
 }
-
