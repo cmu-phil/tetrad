@@ -26,6 +26,8 @@ import edu.cmu.tetrad.data.DoubleDataBox;
 import edu.cmu.tetrad.data.MixedDataBox;
 import edu.cmu.tetrad.data.VerticalIntDataBox;
 import edu.cmu.tetrad.graph.Node;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -40,6 +42,43 @@ import java.util.stream.Collectors;
 public final class MultidataUtils {
 
     private MultidataUtils() {
+    }
+
+    public static DataModel combineDataset(List<DataModel> dataModels) {
+        if (dataModels == null || dataModels.isEmpty()) {
+            return null;
+        }
+
+        DataModel dataModel = dataModels.get(0);
+        int[] rowCounts = getRowCounts(dataModels);
+
+        List<Node> variables = new ArrayList<>(dataModel.getVariables().size());
+        MultidataUtils.combineVariables(dataModels, variables);
+
+        int numOfRows = Arrays.stream(rowCounts).sum();
+        int numOfCols = getNumberOfColumns(dataModel);
+
+        if (dataModel.isContinuous()) {
+            double[][] continuousData = new double[numOfRows][numOfCols];
+            MultidataUtils.combineContinuousData(dataModels, continuousData);
+
+            return new BoxDataSet(new DoubleDataBox(continuousData), variables);
+        } else if (dataModel.isDiscrete()) {
+            int[][] discreteData = new int[numOfCols][];
+            MultidataUtils.combineDiscreteDataToDiscreteVerticalData(dataModels, variables, discreteData, numOfRows, numOfCols);
+
+            return new BoxDataSet(new VerticalIntDataBox(discreteData), variables);
+        } else if (dataModel.isMixed()) {
+            double[][] continuousData = new double[numOfCols][];
+            MultidataUtils.combineMixedContinuousData(dataModels, variables, continuousData, numOfRows, numOfCols);
+
+            int[][] discreteData = new int[numOfCols][];
+            MultidataUtils.combineMixedDiscreteData(dataModels, variables, discreteData, numOfRows, numOfCols);
+
+            return new BoxDataSet(new MixedDataBox(variables, numOfRows, continuousData, discreteData), variables);
+        } else {
+            throw new UnsupportedOperationException("This method only supports data with continuous, discrete, or mixed variables.");
+        }
     }
 
     private static void combineSingleMixedDiscreteData(List<DataModel> dataModels, int[][] combinedData, int numOfColumns) {
@@ -318,6 +357,25 @@ public final class MultidataUtils {
         } else {
             throw new UnsupportedOperationException("This method only supports data with continuous, discrete, or mixed variables.");
         }
+    }
+
+    private static int[] getRowCounts(List<DataModel> dataModels) {
+        int[] counts = new int[dataModels.size()];
+
+        int index = 0;
+        for (DataModel dataModel : dataModels) {
+            if (dataModel instanceof BoxDataSet) {
+                counts[index++] = ((BoxDataSet) dataModel).getNumRows();
+            }
+        }
+
+        return counts;
+    }
+
+    private static int getNumberOfColumns(DataModel dataModel) {
+        return (dataModel instanceof BoxDataSet)
+                ? ((BoxDataSet) dataModel).getDataBox().numCols()
+                : 0;
     }
 
 }
