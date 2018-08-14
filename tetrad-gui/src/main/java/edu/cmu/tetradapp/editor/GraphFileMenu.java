@@ -57,6 +57,7 @@ final class GraphFileMenu extends JMenu {
         save.add(new SaveGraph(editable, "Text...", SaveGraph.Type.text));
         save.add(new SaveGraph(editable, "Json...", SaveGraph.Type.json));
         save.add(new SaveGraph(editable, "R...", SaveGraph.Type.r));
+        save.add(new SaveGraph(editable, "Dot...", SaveGraph.Type.dot));
 
 //        add(new SaveGraph(editable, "Save Graph..."));
 //        file.add(new SaveScreenshot(this, true, "Save Screenshot..."));
