@@ -39,7 +39,9 @@ import javax.swing.table.TableModel;
 import javax.swing.table.TableRowSorter;
 
 /**
- *
+ * Creates the shared graph editor panel (left-side toolbar, right graph panel, and bottom bootstrap table)
+ * Currently being used by GraphEditor, SemGraphEditor, DagEditor, and TimeLagGraphEditor.
+ * 
  * @author Zhou Yuan <zhy19@pitt.edu>
  */
 public final class GraphEditorBootstrapTable {
