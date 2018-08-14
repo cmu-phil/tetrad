@@ -84,14 +84,6 @@
     <!--</plugins>-->
     <!--</reporting>-->
 
-    <repositories>
-        <repository>
-            <id>ccd-releases</id>
-            <url>https://cloud.ccd.pitt.edu/nexus/content/repositories/releases/</url>
-        </repository>
-    </repositories>
-
-
     <distributionManagement>
         <!--<repository>-->
         <!--<id>www.phil.cmu.edu_tetrad</id>-->
@@ -110,6 +102,7 @@
             <url>https://cloud.ccd.pitt.edu/nexus/content/repositories/snapshots/</url>
         </snapshotRepository>
     </distributionManagement>
+
     <repositories>
         <repository>
             <id>ccd-releases</id>
