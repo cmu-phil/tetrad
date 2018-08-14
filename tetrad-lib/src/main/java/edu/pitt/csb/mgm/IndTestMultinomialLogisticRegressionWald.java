@@ -59,6 +59,7 @@ public class IndTestMultinomialLogisticRegressionWald implements IndependenceTes
     private LogisticRegression logisticRegression;
     private RegressionDataset regression;
     private boolean preferLinear;
+    private boolean verbose = false;
 
     public IndTestMultinomialLogisticRegressionWald(DataSet data, double alpha, boolean preferLinear) {
         if (!(alpha >= 0 && alpha <= 1)) {
@@ -496,6 +497,16 @@ public class IndTestMultinomialLogisticRegressionWald implements IndependenceTes
     public String toString() {
         NumberFormat nf = new DecimalFormat("0.0000");
         return "Multinomial Logistic Regression, alpha = " + nf.format(getAlpha());
+    }
+
+    @Override
+    public boolean isVerbose() {
+        return verbose;
+    }
+
+    @Override
+    public void setVerbose(boolean verbose) {
+        this.verbose = verbose;
     }
 }
 

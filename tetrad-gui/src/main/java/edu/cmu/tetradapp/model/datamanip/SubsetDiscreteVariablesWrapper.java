@@ -22,14 +22,10 @@
 package edu.cmu.tetradapp.model.datamanip;
 
 import edu.cmu.tetrad.data.*;
-import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 import edu.cmu.tetradapp.model.DataWrapper;
 import edu.cmu.tetradapp.model.PcRunner;
-
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Add description
@@ -48,7 +44,7 @@ public class SubsetDiscreteVariablesWrapper extends DataWrapper {
         if (!(model instanceof DataSet)) {
             throw new IllegalArgumentException("The given dataset must be tabular");
         }
-        this.setDataModel(createModel((DataSet) model));
+        this.setDataModel(DataUtils.copyDiscreteVariables((DataSet) model));
         this.setSourceGraph(data.getSourceGraph());
 
         LogDataUtils.logDataModelList("Parent data restricted to discrete variables only.", getDataModelList());
@@ -66,38 +62,6 @@ public class SubsetDiscreteVariablesWrapper extends DataWrapper {
     }
 
     //=========================== Private Methods =================================//
-
-
-    private static DataModel createModel(DataSet data) {
-//        for (int i = data.getNumColumns() -1; i >= 0; i--) {
-//            if (!(data.getVariable(i) instanceof DiscreteVariable)) {
-//                data.removeColumn(i);
-//            }
-//        }
-//        return data;
-
-        List<Node> variables = data.getVariables();
-
-        int n = 0;
-        for (Node variable : variables) {
-            if (variable instanceof DiscreteVariable) {
-                n++;
-            }
-        }
-        if (n == 0) {
-            return new ColtDataSet(0, new ArrayList<Node>());
-        }
-
-        int[] indices = new int[n];
-        int m = 0;
-        for (int i = 0; i < variables.size(); i++) {
-            if (variables.get(i) instanceof DiscreteVariable) {
-                indices[m++] = i;
-            }
-        }
-
-        return data.subsetColumns(indices);
-    }
 
 
 }

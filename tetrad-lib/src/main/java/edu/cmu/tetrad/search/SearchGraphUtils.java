@@ -1454,9 +1454,9 @@ public final class SearchGraphUtils {
                     Node node1 = edge.getNode1();
                     Node node2 = edge.getNode2();
 
-                    if (!(dag.isAncestorOf(node2, node1)) && !dag.getParents(node2).isEmpty()) {
+                    if (!(dag.isAncestorOf(node2, node1))) {// && !dag.getParents(node2).isEmpty()) {
                         edge.setEndpoint2(Endpoint.ARROW);
-                    } else if (!dag.getParents(node1).isEmpty()) {
+                    } else if ((dag.isAncestorOf(node2, node1))) {//!dag.getParents(node1).isEmpty()) {
                         edge.setEndpoint1(Endpoint.ARROW);
                     } else {
                         throw new IllegalArgumentException("Can't orient " + edge);
@@ -2854,7 +2854,7 @@ public final class SearchGraphUtils {
     /**
      * Just counts arrowpoint errors--for cyclic edges counts an arrowpoint at each node.
      */
-    public static GraphUtils.GraphComparison getGraphComparison3(Graph graph, Graph trueGraph, PrintStream out) {
+    public static GraphUtils.GraphComparison getGraphComparison3(Graph graph, Graph trueGraph) {
         graph = GraphUtils.replaceNodes(graph, trueGraph.getNodes());
         GraphUtils.TwoCycleErrors twoCycleErrors = GraphUtils.getTwoCycleErrors(trueGraph, graph);
 
@@ -3077,6 +3077,7 @@ public final class SearchGraphUtils {
     public static String graphComparisonString(String name1, Graph graph1, String name2, Graph graph2, boolean printStars) {
         StringBuilder builder = new StringBuilder();
         graph2 = GraphUtils.replaceNodes(graph2, graph1.getNodes());
+        graph1 = new EdgeListGraph(graph1);
 
         String trueGraphAndTarget = "Target graph from " + name1 + "\nTrue graph from " + name2;
         builder.append(trueGraphAndTarget + "\n");
@@ -3096,25 +3097,11 @@ public final class SearchGraphUtils {
                 Node node1 = graph1.getNode(edge.getNode1().getName());
                 Node node2 = graph1.getNode(edge.getNode2().getName());
 
+                List<Edge> graph1Edges = graph1.getEdges(node1, node2);
 
-                builder.append("\n").append(i + 1).append(". ").append(edge);
-
-                if (printStars) {
-                    boolean directedInGraph2 = false;
-
-                    if (Edges.isDirectedEdge(edge) && GraphUtils.existsSemidirectedPathFromTo(node1, node2, graph2)) {
-                        directedInGraph2 = true;
-                    } else if ((Edges.isUndirectedEdge(edge) || Edges.isBidirectedEdge(edge)) &&
-                            (GraphUtils.existsSemidirectedPathFromTo(node1, node2, graph2) ||
-                                    GraphUtils.existsSemidirectedPathFromTo(node2, node1, graph2))) {
-                        directedInGraph2 = true;
-                    }
-
-                    if (directedInGraph2) {
-                        builder.append(" *");
-                    }
+                for (Edge _edge : graph1Edges) {
+                    builder.append("\n").append(i + 1).append(". ").append(_edge);
                 }
-
             }
         }
 
@@ -3130,23 +3117,10 @@ public final class SearchGraphUtils {
                 Node node1 = graph2.getNode(edge.getNode1().getName());
                 Node node2 = graph2.getNode(edge.getNode2().getName());
 
+                List<Edge> graph2Edges = graph2.getEdges(node1, node2);
 
-                builder.append("\n").append(i + 1).append(". ").append(edge);
-
-                if (printStars) {
-                    boolean directedInGraph1 = false;
-
-                    if (Edges.isDirectedEdge(edge) && GraphUtils.existsSemidirectedPathFromTo(node1, node2, graph1)) {
-                        directedInGraph1 = true;
-                    } else if ((Edges.isUndirectedEdge(edge) || Edges.isBidirectedEdge(edge)) &&
-                            (GraphUtils.existsSemidirectedPathFromTo(node1, node2, graph1) ||
-                                    GraphUtils.existsSemidirectedPathFromTo(node2, node1, graph1))) {
-                        directedInGraph1 = true;
-                    }
-
-                    if (directedInGraph1) {
-                        builder.append(" *");
-                    }
+                for (Edge _edge : graph2Edges) {
+                    builder.append("\n").append(i + 1).append(". ").append(_edge);
                 }
             }
         }

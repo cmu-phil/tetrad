@@ -51,11 +51,7 @@ public class PcAll implements Algorithm, TakesInitialGraph, HasKnowledge, TakesI
 
     @Override
     public Graph search(DataModel dataSet, Parameters parameters) {
-    	if (parameters.getInt("bootstrapSampleSize") < 1) {
-
-            if (algorithm != null) {
-//                initialGraph = algorithm.search(dataSet, parameters);
-            }
+        if (parameters.getInt("bootstrapSampleSize") < 1) {
 
             edu.cmu.tetrad.search.PcAll.FasRule fasRule;
 
@@ -155,7 +151,7 @@ public class PcAll implements Algorithm, TakesInitialGraph, HasKnowledge, TakesI
 
     @Override
     public String getDescription() {
-        return "CPC (Conservative \"Peter and Clark\") using " + test.getDescription() + (algorithm != null ? " with initial graph from "
+        return "PC using " + test.getDescription() + (algorithm != null ? " with initial graph from "
                 + algorithm.getDescription() : "");
     }
 
@@ -167,10 +163,6 @@ public class PcAll implements Algorithm, TakesInitialGraph, HasKnowledge, TakesI
     @Override
     public List<String> getParameters() {
         List<String> parameters = test.getParameters();
-
-//        public enum FasRule {FAS, FAS_STABLE, FAS_STABLE_CONCURRENT}
-//        public enum ColliderDiscovery {FAS_SEPSETS, CONSERVATIVE, MAX_P}
-//        public enum ConflictRule {PRIORITY, BIDIRECTED, OVERWRITE}
         parameters.add("fasRule");
         parameters.add("colliderDiscoveryRule");
         parameters.add("conflictRule");

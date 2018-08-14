@@ -136,7 +136,7 @@ final class IndTestChooser {
     private IndependenceTest getContinuousTest(DataSet dataSet,
                                                Parameters params, IndTestType testType) {
         if (IndTestType.CONDITIONAL_CORRELATION == testType) {
-            return new IndTestConditionalCorrelation(dataSet, params.getDouble("alpha", 0.001));
+            return new IndTestDaudinConditionalIndependence(dataSet, params.getDouble("alpha", 0.001));
         }
         if (IndTestType.FISHER_Z == testType) {
             return new IndTestFisherZ(dataSet, params.getDouble("alpha", 0.001));

@@ -104,12 +104,16 @@ public class DoubleDataBox implements DataBox {
      * is missing (-99), null, is returned.
      */
     public Number get(int row, int col) {
-        double datum = data[row][col];
+        if (row < numRows() && col < numCols()) {
+            double datum = data[row][col];
 
-        if (Double.isNaN(datum)) {
-            return null;
+            if (Double.isNaN(datum)) {
+                return null;
+            } else {
+                return datum;
+            }
         } else {
-            return datum;
+            return null;
         }
     }
 
@@ -147,7 +151,9 @@ public class DoubleDataBox implements DataBox {
 
         for (int i = 0; i < rows.length; i++) {
             for (int j = 0; j < cols.length; j++) {
-                _dataBox.set(i, j, get(rows[i], cols[j]));
+                if (i < _dataBox.numRows() && rows[i] < numRows() && j < _dataBox.numCols() && cols[j] < numCols()) {
+                    _dataBox.set(i, j, get(rows[i], cols[j]));
+                }
             }
         }
 

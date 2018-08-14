@@ -127,6 +127,10 @@ public interface IndependenceTest {
      */
     double getScore();
 
+    void setVerbose(boolean verbose);
+
+    boolean isVerbose();
+
 }
 
 

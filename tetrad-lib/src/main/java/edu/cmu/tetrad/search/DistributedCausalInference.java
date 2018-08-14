@@ -38,7 +38,7 @@ import java.util.concurrent.locks.ReentrantLock;
  * @author Robert Tillman
  */
 
-public class Dci {
+public class DistributedCausalInference {
 
     /**
      * The resulting class of graphs constructed using the datasets.
@@ -147,7 +147,7 @@ public class Dci {
 
     //=============================CONSTRUCTORS==========================//
 
-    public Dci(List<IndependenceTest> tests) {
+    public DistributedCausalInference(List<IndependenceTest> tests) {
         Set<Node> variables = new HashSet<>();
         for (IndependenceTest test : tests) {
             if (test == null) {
@@ -160,7 +160,7 @@ public class Dci {
         this.variables.addAll(variables);
     }
 
-    public Dci(List<IndependenceTest> tests, ResolveSepsets.Method method) {
+    public DistributedCausalInference(List<IndependenceTest> tests, ResolveSepsets.Method method) {
         Set<Node> variables = new HashSet<>();
         for (IndependenceTest test : tests) {
             if (test == null) {

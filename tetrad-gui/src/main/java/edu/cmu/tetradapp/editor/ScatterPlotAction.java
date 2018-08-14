@@ -32,7 +32,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 
 /**
- * Displays a Q-Q plot for a random variable.
+ * Displays a QStyle-QStyle plot for a random variable.
  *
  * A lot of the code borrows heavily from HistogramAction
  *

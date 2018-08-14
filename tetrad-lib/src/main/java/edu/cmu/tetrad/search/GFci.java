@@ -79,6 +79,7 @@ public final class GFci implements GraphSearch {
 
     private SepsetProducer sepsets;
     private long elapsedTime;
+    private boolean replacePartiallyOrientedByDirected = false;
 
     //============================CONSTRUCTORS============================//
     public GFci(IndependenceTest test, Score score) {
@@ -112,6 +113,7 @@ public final class GFci implements GraphSearch {
         Graph fgesGraph = new EdgeListGraphSingleConnections(graph);
 
         sepsets = new SepsetsGreedy(fgesGraph, independenceTest, null, maxDegree);
+        ((SepsetsGreedy) sepsets).setKnowledge(knowledge);
 
         for (Node b : nodes) {
             if (Thread.currentThread().isInterrupted()) {
@@ -161,7 +163,11 @@ public final class GFci implements GraphSearch {
 
         graph.setPag(true);
 
-        return graph;
+        if (isReplacePartiallyOrientedByDirected()) {
+            return replacePartiallyOrientedByDirected(graph);
+        } else {
+            return graph;
+        }
     }
 
     @Override
@@ -371,4 +377,31 @@ public final class GFci implements GraphSearch {
         logger.log("info", "Finishing BK Orientation.");
     }
 
+    // Replaces xo->y by {_Q1, _Q2}->x->Y, where _Q1 and _Q2 are fixed.
+    private Graph replacePartiallyOrientedByDirected(Graph graph) {
+        Graph graph2 = new EdgeListGraph(graph.getNodes());
+
+        Node _Q1 = new ContinuousVariable("_Q1");
+        Node _Q2 = new ContinuousVariable("_Q2");
+
+        for (Edge edge : graph.getEdges()) {
+            if (Edges.isPartiallyOrientedEdge(edge)) {
+                graph2.addDirectedEdge(edge.getNode1(), edge.getNode2());
+                graph2.addDirectedEdge(_Q1, edge.getNode1());
+                graph2.addDirectedEdge(_Q2, edge.getNode2());
+            } else {
+                graph2.addEdge(edge);
+            }
+        }
+
+        return graph2;
+    }
+
+    public boolean isReplacePartiallyOrientedByDirected() {
+        return replacePartiallyOrientedByDirected;
+    }
+
+    public void setReplacePartiallyOrientedByDirected(boolean replacePartiallyOrientedByDirected) {
+        this.replacePartiallyOrientedByDirected = replacePartiallyOrientedByDirected;
+    }
 }

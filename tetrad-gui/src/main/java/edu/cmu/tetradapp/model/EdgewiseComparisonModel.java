@@ -105,9 +105,11 @@ public final class EdgewiseComparisonModel implements SessionModel, DoNotAddOldM
         String referenceName = this.params.getString("referenceGraphName", null);
 
         if (referenceName.equals(model1.getName())) {
-            if (model1 instanceof Simulation && model2 instanceof GeneralAlgorithmRunner) {
-                this.referenceGraphs = ((GeneralAlgorithmRunner) model2).getCompareGraphs(((Simulation) model1).getGraphs());
-            } else if (model1 instanceof MultipleGraphSource) {
+//            if (model1 instanceof Simulation && model2 instanceof GeneralAlgorithmRunner) {
+//                this.referenceGraphs = ((GeneralAlgorithmRunner) model2).getCompareGraphs(((Simulation) model1).getGraphs());
+//            }
+//            else
+            if (model1 instanceof MultipleGraphSource) {
                 this.referenceGraphs = ((MultipleGraphSource) model1).getGraphs();
             }
 
@@ -139,9 +141,10 @@ public final class EdgewiseComparisonModel implements SessionModel, DoNotAddOldM
                 this.targetGraphs = Collections.singletonList(((GraphSource) model2).getGraph());
             }
         } else if (referenceName.equals(model2.getName())) {
-            if (model2 instanceof Simulation && model1 instanceof GeneralAlgorithmRunner) {
-                this.referenceGraphs = ((GeneralAlgorithmRunner) model1).getCompareGraphs(((Simulation) model2).getGraphs());
-            } else if (model1 instanceof MultipleGraphSource) {
+//            if (model2 instanceof Simulation && model1 instanceof GeneralAlgorithmRunner) {
+//                this.referenceGraphs = ((GeneralAlgorithmRunner) model1).getCompareGraphs(((Simulation) model2).getGraphs());
+//            } else
+            if (model1 instanceof MultipleGraphSource) {
                 this.referenceGraphs = ((MultipleGraphSource) model2).getGraphs();
             }
 
@@ -280,6 +283,7 @@ public final class EdgewiseComparisonModel implements SessionModel, DoNotAddOldM
     public List<Graph> getTargetGraphs() {
         return targetGraphs;
     }
+
     public List<Graph> getReferenceGraphs() {
         return referenceGraphs;
     }

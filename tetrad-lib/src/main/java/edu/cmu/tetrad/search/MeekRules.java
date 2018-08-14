@@ -368,6 +368,10 @@ public class MeekRules implements ImpliedOrientation {
     private void direct(Node a, Node c, Graph graph) {
         Edge before = graph.getEdge(a, c);
 
+        if (aggressivelyPreventCycles && graph.isAncestorOf(c, a)) {
+            return;
+        }
+
         if (knowledge != null && knowledge.isForbidden(a.getName(), c.getName())) {
             return;
         }

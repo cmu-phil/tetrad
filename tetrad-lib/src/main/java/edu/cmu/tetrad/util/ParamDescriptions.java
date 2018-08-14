@@ -128,7 +128,7 @@ public class ParamDescriptions {
 
         map.put("useMaxPOrientationHeuristic", new ParamDescription(
                 "Yes if the heuristic for orienting unshielded colliders for max P should be used",
-                true));
+                false));
         map.put("maxPOrientationMaxPathLength", new ParamDescription("Maximum path length for the unshielded collider heuristic for max P (min = 0)", 3, 0, Integer.MAX_VALUE));
         map.put("orientTowardDConnections", new ParamDescription(
                 "Yes if Richardson's step C (orient toward d-connection) should be used",
@@ -184,7 +184,7 @@ public class ParamDescriptions {
 
         map.put("conflictRule", new ParamDescription(
                 "Collider conflicts: 1 = Overwrite, 2 = Orient bidirected, 3 = Prioritize existing colliders",
-                1, 1, 3));
+                3, 1, 3));
 
         map.put("randomizeColumns", new ParamDescription(
                 "Yes if the order of the columns in each datasets should be randomized",
@@ -207,8 +207,8 @@ public class ParamDescriptions {
                 0.01, 0.0, 1.0));
 
         map.put("numSubsamples", new ParamDescription(
-                "The number of subsamples to take for the StARZ procedure",
-                8, 1, Integer.MAX_VALUE));
+                "The number of subsamples",
+                30, 1, Integer.MAX_VALUE));
 
         map.put("percentSubsampleSize", new ParamDescription(
                 "Percentage of records to include in a random subsample",
@@ -256,13 +256,96 @@ public class ParamDescriptions {
 
         map.put("numLags", new ParamDescription(
                 "The number of lags in the time lag model",
-                1, 1, Double.POSITIVE_INFINITY));
+                1, 1, Integer.MAX_VALUE));
 
         map.put("saveLatentVars", new ParamDescription("Save latent variables.", false));
 
         map.put("probTwoCycle", new ParamDescription(
                 "The probability of creating a 2-cycles in the graph (0 - 1)",
                 0.0, 0.0, 1.0));
+
+        map.put("selectionAlpha", new ParamDescription(
+                "The alpha used for a Fisher Z test to select variables associated with the target",
+                0.05, 0.0, 1));
+
+        map.put("maxEr", new ParamDescription(
+                "Bound on the expected false positive error rate",
+                5.0, 0.0, Double.POSITIVE_INFINITY));
+
+        map.put("parallelism", new ParamDescription(
+                "The number of threads to use in the parallel calculation",
+                Runtime.getRuntime().availableProcessors() * 10, 1, Integer.MAX_VALUE));
+
+        map.put("q", new ParamDescription(
+                "Examine this q",
+                10, 1, Integer.MAX_VALUE));
+
+
+        map.put("qFrom", new ParamDescription(
+                "Examine qs from this integer",
+                10, 1, Integer.MAX_VALUE));
+
+        map.put("qTo", new ParamDescription(
+                "Examine qs to this integer",
+                1, 1, Integer.MAX_VALUE));
+
+        map.put("qIncrement", new ParamDescription(
+                "Examine qs in incrementing by this each time",
+                1, 1, Integer.MAX_VALUE));
+
+        map.put("targetNames", new ParamDescription("Target variable names (comnma separated list)", ""));
+
+        map.put("numBasisFunctions", new ParamDescription(
+                "Number of functions to use in (truncated) basis",
+                4, 1, Integer.MAX_VALUE));
+
+        map.put("kciCutoff", new ParamDescription(
+                "Cutoff",
+                6, 1, Integer.MAX_VALUE));
+
+        map.put("kernelWidth", new ParamDescription(
+                "Kernel width",
+                1.0, Double.MIN_VALUE, Double.POSITIVE_INFINITY));
+
+        map.put("kernelMultiplier", new ParamDescription(
+                "Bowman and Azzalini (1997) default kernel bandwidhts should be multiplied by...",
+                1.0, Double.MIN_VALUE, Double.POSITIVE_INFINITY));
+
+        map.put("kernelType", new ParamDescription(
+                "Kernel type (1 = Gaussian, 2 = Epinechnikov)",
+                1, 1, 2));
+
+        map.put("basisType", new ParamDescription(
+                "Basis type (1 = Polynomial, 2 = Cosine)",
+                1, 1, 2));
+
+        map.put("kciNumBootstraps", new ParamDescription(
+                "Number of bootstraps for Theorems 4 and Proposition 5 for KCI",
+                5000, 1, Integer.MAX_VALUE));
+
+        map.put("thresholdForNumEigenvalues", new ParamDescription(
+                "Threshold to determine how many eigenvalues to use--the lower the more (0 to 1)",
+                0.001, 0, Double.POSITIVE_INFINITY));
+
+        map.put("rcitNumFeatures", new ParamDescription(
+                "The number of random features to use",
+                10, 1, Integer.MAX_VALUE));
+
+        map.put("kciUseAppromation", new ParamDescription(
+                "Use the approximate Gamma approximation algorithm", true));
+
+        map.put("kciEpsilon", new ParamDescription(
+                "Epsilon for Proposition 5, a small positive number", 0.001, 0, Double.POSITIVE_INFINITY));
+
+        map.put("rcitApproxType", new ParamDescription(
+                "Approximation Type: 1 = LPD4, 2 = Gamma, 3 = HBE, 4 = PERM",
+                4, 1, 4));
+
+        map.put("possibleDsepDone", new ParamDescription(
+                "Yes if the possible dsep search should be done", true));
+
+        map.put("selfLoopCoef", new ParamDescription(
+                "The coefficient for the self-loop (default 0.0)", 0.0, 0.0, Double.POSITIVE_INFINITY));
     }
 
     public static ParamDescriptions getInstance() {

@@ -695,9 +695,9 @@ public final class EmBayesEstimator {
 
         // Make sure all of the variables in the PM are in the data set;
         // otherwise, estimation is impossible.
-//        List pmvars = bayesPm.getVariable();
-//        List dsvars = dataSet.getVariable();
-//        List obsVars = observedIm.getBayesPm().getVariable();
+//        List pmvars = bayesPm.getCauseNode();
+//        List dsvars = dataSet.getCauseNode();
+//        List obsVars = observedIm.getBayesPm().getCauseNode();
 
         //System.out.println("Bayes PM as received by estimateMixedIM:  ");
         //System.out.println(bayesPm);

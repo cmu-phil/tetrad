@@ -57,7 +57,7 @@ public class GeneralSemSimulationSpecial1 implements Simulation {
     private DataSet simulate(Graph graph, Parameters parameters) {
         GeneralizedSemPm pm = getPm(graph);
         GeneralizedSemIm im = new GeneralizedSemIm(pm);
-        return im.simulateData(parameters.getInt("sampleSize"), false);
+        return im.simulateData(parameters.getInt("sampleSize"), true);
     }
 
     @Override
@@ -72,6 +72,11 @@ public class GeneralSemSimulationSpecial1 implements Simulation {
 
     @Override
     public DataModel getDataModel(int index) {
+        return dataSets.get(index);
+    }
+
+    @Override
+    public DataModel getDataModelWithLatents(int index) {
         return dataSets.get(index);
     }
 

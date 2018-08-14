@@ -86,7 +86,7 @@ public class CovMatrixDifferenceWrapper extends DataWrapper {
 //
 //        TetradMatrix corr3 = calcDifference(corr1, corr2);
 //
-//        ICovarianceMatrix corrWrapper = new CovarianceMatrix(model2.getVariable(), corr3,
+//        ICovarianceMatrix corrWrapper = new CovarianceMatrix(model2.getCauseNode(), corr3,
 //                ((ICovarianceMatrix) model2).getSampleSize());
 //
 //        setDataModel(corrWrapper);
@@ -112,7 +112,7 @@ public class CovMatrixDifferenceWrapper extends DataWrapper {
 //
 //            TetradMatrix corr3 = calcDifference(corr1, corr2);
 //
-//            ICovarianceMatrix corrWrapper = new CovarianceMatrix(model2.getVariable(), corr3,
+//            ICovarianceMatrix corrWrapper = new CovarianceMatrix(model2.getCauseNode(), corr3,
 //                    ((ICovarianceMatrix) model2).getSampleSize());
 //
 //            setDataModel(corrWrapper);

@@ -119,7 +119,7 @@
 <ul>
     <li><i>DAG (Directed Acyclic Graph)</i> - Produces a graph consisting
         entirely of directed edges, where no cycles are formed--that is,
-        where there is no path X1->X1->...X1 of a variable back to
+        where there is no path X1->X1->...X1 of a predictor back to
         itself.<br>
     </li>
     <li><i>General Graph</i> - A set of variables over which a set of
@@ -144,7 +144,7 @@
     alternative, for example, is "Bayes net." If you choose that, the graph
     you have specified as input to the PM box will be parametrized as a
     categorical model in which the parameters are the (unspecified)
-    conditional probabilities of values of each variable on the values
+    conditional probabilities of values of each predictor on the values
     of&nbsp; its parent variables in the graph. If you specify "SEM," the
     graph will be parametrized as a linear Gaussian model, with variances
     and linear coefficients. The values for the parameters in the
@@ -174,7 +174,7 @@
 <h3>Updater Button</h3>
 <p><img src="../images/updater_button.gif" width="113" height="44"></p>
 <p>Creates an Update box. The Update box requires input from an IM box that is a Bayes net--i.e., is for discrete
-    variables. It will compute the conditional probability of any variable in the Bayes net given values for any other
+    variables. It will compute the conditional probability of any predictor in the Bayes net given values for any other
     variables in the model. It will also compute such probabilities condiitonal on an <span style="font-style: italic;">intervention </span>the
     fixes or randomizes other variables. </p>
 
@@ -182,7 +182,7 @@
 <p><img src="../images/classify_button.gif" width="114" height="45"></p>
 <p>Classify creates a Classifier box, which requires input from Data and from an IM box. It is used to classify new
     cases with the Bayes net in the IM box.. The variables in the IM box must match some of the variables in the Data.
-    The user specifies a target variable in the IM and the classifier uses the Bayes net structure of the IM to predict
+    The user specifies a target predictor in the IM and the classifier uses the Bayes net structure of the IM to predict
     the values of the target&nbsp; in the data set. Statistics on classification accuracy are provided (as ROC curves
     and confusion matrices.) </p>
 <h3>Regression Button</h3>

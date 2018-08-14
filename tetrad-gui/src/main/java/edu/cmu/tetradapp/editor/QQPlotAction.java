@@ -32,7 +32,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 
 /**
- * Displays a Q-Q plot for a random variable.
+ * Displays a QStyle-QStyle plot for a random variable.
  *
  * A lot of the code borrows heavily from HistogramAction
  *
@@ -53,7 +53,7 @@ class QQPlotAction extends AbstractAction {
      * that its attached to.
      */
     public QQPlotAction(DataEditor editor) {
-        super("Q-Q Plots...");
+        super("QStyle-QStyle Plots...");
         this.dataEditor = editor;
     }
 
@@ -65,14 +65,14 @@ class QQPlotAction extends AbstractAction {
     public void actionPerformed(ActionEvent e) {
         DataSet dataSet = (DataSet) dataEditor.getSelectedDataModel();
         if(dataSet == null || dataSet.getNumColumns() == 0){
-            JOptionPane.showMessageDialog(findOwner(), "Cannot display a Q-Q plot for an empty data set.");
+            JOptionPane.showMessageDialog(findOwner(), "Cannot display a QStyle-QStyle plot for an empty data set.");
             return;
         }
         // if there are missing values warn and don't display q-q plot.
 //        if(DataUtils.containsMissingValue(dataSet)){
 //            JOptionPane.showMessageDialog(findOwner(), new JLabel("<html>Data has missing values, " +
 //                    "remove all missing values before<br>" +
-//                    "displaying data in a Q-Q plot.</html>"));
+//                    "displaying data in a QStyle-QStyle plot.</html>"));
 //            return;
 //        }
 
@@ -82,7 +82,7 @@ class QQPlotAction extends AbstractAction {
             // warn user if they selected more than 10
             if(10 < selected.length){
                 int option = JOptionPane.showConfirmDialog(findOwner(), "You are about to open " + selected.length +
-                " Q-Q plots, are you sure you want to proceed?", "Q-Q Plot Warning", JOptionPane.YES_NO_OPTION);
+                " QStyle-QStyle plots, are you sure you want to proceed?", "QStyle-QStyle Plot Warning", JOptionPane.YES_NO_OPTION);
                 // if selected no, return
                 if(option == JOptionPane.NO_OPTION){
                     return;
@@ -154,7 +154,7 @@ class QQPlotAction extends AbstractAction {
      * one is selected for you)
      */
     private JPanel createQQPlotDialog(Node selected) {
-        String dialogTitle = "Q-Q Plots";
+        String dialogTitle = "QStyle-QStyle Plots";
         JPanel panel = new JPanel(); //new JPanel(findOwner(), dialogTitle, false);
         panel.setLayout(new BorderLayout());
 
@@ -169,7 +169,7 @@ class QQPlotAction extends AbstractAction {
 
         JMenuBar bar = new JMenuBar();
         JMenu menu = new JMenu("File");
-        menu.add(new JMenuItem(new SaveComponentImage(display, "Save Q-Q Plot")));
+        menu.add(new JMenuItem(new SaveComponentImage(display, "Save QStyle-QStyle Plot")));
         bar.add(menu);
 
         Box box = Box.createHorizontalBox();

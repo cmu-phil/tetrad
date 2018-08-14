@@ -1,9 +1,6 @@
 package edu.cmu.tetrad.algcomparison.statistic.utils;
 
-import edu.cmu.tetrad.graph.Edge;
-import edu.cmu.tetrad.graph.Endpoint;
-import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.graph.GraphUtils;
+import edu.cmu.tetrad.graph.*;
 
 import java.util.List;
 
@@ -79,6 +76,7 @@ public class ArrowConfusion {
 
             if (edges2.size() == 1) {
                 edge2 = edges2.get(0);
+                if (Edges.isUndirectedEdge(edge2)) continue;
             } else {
                 edge2 = this.truth.getDirectedEdge(edge.getNode1(), edge.getNode2());
             }
@@ -176,6 +174,7 @@ public class ArrowConfusion {
 
             if (edges2.size() == 1) {
                 edge2 = edges2.get(0);
+                if (Edges.isUndirectedEdge(edge2)) continue;
             } else {
                 edge2 = this.truth.getDirectedEdge(edge.getNode1(), edge.getNode2());
             }

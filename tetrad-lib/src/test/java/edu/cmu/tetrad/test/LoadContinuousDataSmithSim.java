@@ -75,7 +75,7 @@ public class LoadContinuousDataSmithSim implements Simulation, HasParameterValue
 //                    reader.setDelimiter(DelimiterType.COMMA);
                     DataSet dataSet;// = reader.parseTabular(file);
 
-//                    if (dataSet.getVariable().size() == 1) {
+//                    if (dataSet.getCauseNode().size() == 1) {
                     DataReader reader2 = new DataReader();
                     reader2.setVariablesSupplied(false);
                     reader2.setDelimiter(DelimiterType.WHITESPACE);
@@ -115,6 +115,11 @@ public class LoadContinuousDataSmithSim implements Simulation, HasParameterValue
 
     @Override
     public DataModel getDataModel(int index) {
+        return dataSets.get(index);
+    }
+
+    @Override
+    public DataModel getDataModelWithLatents(int index) {
         return dataSets.get(index);
     }
 

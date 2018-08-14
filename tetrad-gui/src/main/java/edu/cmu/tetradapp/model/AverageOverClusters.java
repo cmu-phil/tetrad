@@ -148,7 +148,7 @@ public class AverageOverClusters extends DataWrapper {
 //                        m++;
 //                        if (m > 4) continue;
 //
-//                        Node node = data.getVariable(_node);
+//                        Node node = data.getCauseNode(_node);
 //                        avgData.setDouble(k + m, j, data.getDouble(i, data.getColumn(node)));
 //                    }
 //                }

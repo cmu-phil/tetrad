@@ -374,7 +374,7 @@ public final class Identifiability implements ManipulatingBayesUpdater {
         QList[] cFactors = new QList[nCComponents];
 
         for (int i = 0; i < nCComponents; i++) {
-            // Q[V]: allowUnfaithfulness joint probTermV
+            // QStyle[V]: allowUnfaithfulness joint probTermV
             QList qV = new QList(nNodes, probTermV);
 
             if (debug) {
@@ -447,7 +447,7 @@ public final class Identifiability implements ManipulatingBayesUpdater {
         int[] cComponentsD = getCComponents(bayesImD);
         int nCComponentsD = nCComponents(cComponentsD);
 
-        // Q[Di]
+        // QStyle[Di]
         QList[] qD = new QList[nCComponentsD];
 
         for (int i = 0; i < nCComponentsD; i++) {
@@ -504,7 +504,7 @@ public final class Identifiability implements ManipulatingBayesUpdater {
 
         //////////////////////////////////////
 
-        // multiply the Q[Di]'s
+        // multiply the QStyle[Di]'s
         QList qDProducts = new QList(nNodes);
 
         int[] sumOverVariables = new int[nNodes];
@@ -592,7 +592,7 @@ public final class Identifiability implements ManipulatingBayesUpdater {
             throw new NullPointerException();
         }
 
-		if (!targetProp.getVariableSource().getVariable().equals(bayesIm.getVariable())) {
+		if (!targetProp.getVariableSource().getCauseNode().equals(bayesIm.getCauseNode())) {
             throw new IllegalArgumentException("The variable list for the " +
 				"given bayesIm must be compatible with the variable list " +
 				"for the targetProp.");
@@ -668,7 +668,7 @@ public final class Identifiability implements ManipulatingBayesUpdater {
     }
 
     /////////////////////////////////////////////////////////////////
-    // Return the number of c-components
+    // NodeEffects the number of c-components
     //
     private int nCComponents(int[] cComponents) {
         int currentMax = -1;
@@ -682,7 +682,7 @@ public final class Identifiability implements ManipulatingBayesUpdater {
     }
 
     /////////////////////////////////////////////////////////////////
-    //  Return the index-th c-component as a list of nodes
+    //  NodeEffects the index-th c-component as a list of nodes
     //
     private List<Node> getCComponentNodes(
             BayesIm bayesIm,
@@ -712,7 +712,7 @@ public final class Identifiability implements ManipulatingBayesUpdater {
     }
 
     /////////////////////////////////////////////////////////////////
-    // Compute generalized Q-decomposition (Tian and Pearl 2002, Lemma 4)
+    // Compute generalized QStyle-decomposition (Tian and Pearl 2002, Lemma 4)
     //
     // hj is a c-component in subgraph graphWhole_h
     // qH is the q-factor for h
@@ -776,7 +776,7 @@ public final class Identifiability implements ManipulatingBayesUpdater {
                             new RuntimeException("qDecomposition: index out of bound");
                 }
 
-                // Q[H^i]
+                // QStyle[H^i]
                 int[] sumOverVariables = new int[nNodes];
                 for (int i = 0; i < nNodes; i++) {
                     sumOverVariables[i] = 0;
@@ -792,19 +792,19 @@ public final class Identifiability implements ManipulatingBayesUpdater {
                 qHj.add(qH, sumOverVariables, true);
 
                 if (debug) {
-                    System.out.println("************* QDecomposition: Q[H^i], sumOverVariables: ");
+                    System.out.println("************* QDecomposition: QStyle[H^i], sumOverVariables: ");
                     for (int i = 0; i < nNodes; i++) {
                         System.out.print(sumOverVariables[i] + "   ");
                     }
                     System.out.println();
                 }
 
-                // Q[H^{i-1}]
+                // QStyle[H^{i-1}]
                 sumOverVariables[tiers[nodeHjTierIndex]] = 1;
                 qHj.add(qH, sumOverVariables, false);
 
                 if (debug) {
-                    System.out.println("************* QDecomposition: Q[H^{i-1}], sumOverVariables: ");
+                    System.out.println("************* QDecomposition: QStyle[H^{i-1}], sumOverVariables: ");
                     for (int i = 0; i < nNodes; i++) {
                         System.out.print(sumOverVariables[i] + "   ");
                     }
@@ -817,7 +817,7 @@ public final class Identifiability implements ManipulatingBayesUpdater {
     }
 
     /////////////////////////////////////////////////////////////////
-    // construct the variables to be summed over in the Q-factor
+    // construct the variables to be summed over in the QStyle-factor
     // (bigSet minus smallSet)
     //
     private int[] sumList(int nNodes, List<Node> bigSet, List<Node> smallSet) {
@@ -910,7 +910,7 @@ public final class Identifiability implements ManipulatingBayesUpdater {
         int[] cComponentsA = getCComponents(bayesImA);
         int nCComponentsA = nCComponents(cComponentsA);
 
-        // get Q[A]
+        // get QStyle[A]
         QList qA = new QList(nNodes);
         qA.add(qT, sumList(nNodes, nodesT, nodesA), true);
 
@@ -926,7 +926,7 @@ public final class Identifiability implements ManipulatingBayesUpdater {
                     getCComponentNodes(bayesImA, cComponentsA, i);
 
             if (debug) {
-                System.out.println("identify Q[A]: i: " + i);
+                System.out.println("identify QStyle[A]: i: " + i);
                 System.out.println("cComponentNodesT2: " + cComponentNodesT2);
                 System.out.println("cComponentNodesT2.containsAll(nodesC): " +
                         cComponentNodesT2.containsAll(nodesC));
@@ -934,7 +934,7 @@ public final class Identifiability implements ManipulatingBayesUpdater {
 
             if (cComponentNodesT2.containsAll(nodesC)) {
 
-                // get Q[T2]
+                // get QStyle[T2]
                 QList qT2 =
                         qDecomposition(bayesIm, nodesA, cComponentNodesT2, qA);
 

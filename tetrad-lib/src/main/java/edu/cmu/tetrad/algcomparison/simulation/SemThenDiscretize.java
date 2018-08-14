@@ -1,11 +1,8 @@
 package edu.cmu.tetrad.algcomparison.simulation;
 
 import edu.cmu.tetrad.algcomparison.graph.RandomGraph;
-import edu.cmu.tetrad.data.DataModel;
+import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.util.Parameters;
-import edu.cmu.tetrad.data.DataSet;
-import edu.cmu.tetrad.data.DataType;
-import edu.cmu.tetrad.data.Discretizer;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.sem.SemIm;
@@ -23,6 +20,7 @@ public class SemThenDiscretize implements Simulation {
     private final RandomGraph randomGraph;
     private List<Graph> graphs = new ArrayList<>();
     private List<DataSet> dataSets = new ArrayList<>();
+    private List<DataSet> dataSetsWithLatents = new ArrayList<>();
     private DataType dataType;
     private List<Node> shuffledOrder;
 
@@ -71,7 +69,8 @@ public class SemThenDiscretize implements Simulation {
 
             DataSet dataSet = simulate(graph, parameters);
             dataSet.setName("" + (i + 1));
-            dataSets.add(dataSet);
+            dataSets.add(DataUtils.restrictToMeasured(dataSet));
+            dataSetsWithLatents.add(dataSet);
         }
     }
 
@@ -108,6 +107,11 @@ public class SemThenDiscretize implements Simulation {
     }
 
     @Override
+    public DataModel getDataModelWithLatents(int index) {
+        return dataSets.get(index);
+    }
+
+    @Override
     public DataType getDataType() {
         return dataType;
     }
@@ -115,7 +119,7 @@ public class SemThenDiscretize implements Simulation {
     private DataSet simulate(Graph graph, Parameters parameters) {
         SemPm pm = new SemPm(graph);
         SemIm im = new SemIm(pm);
-        DataSet continuousData = im.simulateData(parameters.getInt("sampleSize"), false);
+        DataSet continuousData = im.simulateData(parameters.getInt("sampleSize"), true);
 
         if (this.shuffledOrder == null) {
             List<Node> shuffledNodes = new ArrayList<>(continuousData.getVariables());

@@ -131,6 +131,11 @@ public class BooleanGlassSimulation implements Simulation {
     }
 
     @Override
+    public DataModel getDataModelWithLatents(int index) {
+        return dataSets.get(index);
+    }
+
+    @Override
     public String getDescription() {
         return "Boolean Glass Simulation " + randomGraph.getDescription();
     }

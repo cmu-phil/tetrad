@@ -31,6 +31,7 @@ import java.io.PrintStream;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Implements the "fast adjacency search" used in several causal algorithm in this package. In the fast adjacency
@@ -160,7 +161,7 @@ public class FasStable implements IFas {
             _depth = 1000;
         }
 
-        Map<Node, Set<Node>> adjacencies = new HashMap<>();
+        Map<Node, Set<Node>> adjacencies = new ConcurrentHashMap<>();
         List<Node> nodes = graph.getNodes();
 
         for (Node node : nodes) {
@@ -186,7 +187,7 @@ public class FasStable implements IFas {
                 Node x = nodes.get(i);
                 Node y = nodes.get(j);
 
-                if (adjacencies.get(x).contains(y)) {
+                if (adjacencies.get(x).contains(y) && !graph.isAdjacentTo(x, y)) {
                     graph.addUndirectedEdge(x, y);
                 }
             }
@@ -212,7 +213,7 @@ public class FasStable implements IFas {
         }
 
 
-        Map<Node, Set<Node>> adjacencies = new HashMap<>();
+        Map<Node, Set<Node>> adjacencies = new ConcurrentHashMap<>();
         List<Node> nodes = graph.getNodes();
 
         for (Node node : nodes) {
@@ -372,7 +373,7 @@ public class FasStable implements IFas {
     private boolean searchAtDepth(List<Node> nodes, final IndependenceTest test, Map<Node, Set<Node>> adjacencies, int depth) {
         int count = 0;
 
-        final Map<Node, Set<Node>> adjacenciesCopy = new HashMap<>();
+        final Map<Node, Set<Node>> adjacenciesCopy = new ConcurrentHashMap<>();
 
         for (Node node : adjacencies.keySet()) {
             adjacenciesCopy.put(node, new HashSet<>(adjacencies.get(node)));

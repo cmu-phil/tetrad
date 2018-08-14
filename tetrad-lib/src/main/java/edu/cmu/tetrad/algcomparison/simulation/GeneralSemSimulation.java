@@ -5,6 +5,7 @@ import edu.cmu.tetrad.algcomparison.graph.SingleGraph;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
+import edu.cmu.tetrad.data.DataUtils;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.NodeType;
@@ -23,6 +24,7 @@ public class GeneralSemSimulation implements Simulation {
     static final long serialVersionUID = 23L;
     private RandomGraph randomGraph;
     private List<DataSet> dataSets = new ArrayList<>();
+    private List<DataSet> dataSetsWithLatents = new ArrayList<>();
     private List<Graph> graphs = new ArrayList<>();
     private GeneralizedSemPm pm;
     private List<GeneralizedSemIm> ims;
@@ -68,7 +70,8 @@ public class GeneralSemSimulation implements Simulation {
 
             DataSet dataSet = simulate(graph, parameters);
             dataSet.setName("" + (i + 1));
-            dataSets.add(dataSet);
+            dataSets.add(DataUtils.restrictToMeasured(dataSet));
+            dataSetsWithLatents.add(dataSet);
         }
     }
 
@@ -78,15 +81,15 @@ public class GeneralSemSimulation implements Simulation {
                 pm = new GeneralizedSemPm(graph);
                 im = new GeneralizedSemIm(pm);
                 ims.add(im);
-                return im.simulateData(parameters.getInt("sampleSize"), false);
+                return im.simulateData(parameters.getInt("sampleSize"), true);
             } else {
                 im = new GeneralizedSemIm(pm);
                 ims.add(im);
-                return im.simulateData(parameters.getInt("sampleSize"), false);
+                return im.simulateData(parameters.getInt("sampleSize"), true);
             }
         } else {
             ims.add(im);
-            return im.simulateData(parameters.getInt("sampleSize"), false);
+            return im.simulateData(parameters.getInt("sampleSize"), true);
         }
     }
 
@@ -103,6 +106,11 @@ public class GeneralSemSimulation implements Simulation {
     @Override
     public DataModel getDataModel(int index) {
         return dataSets.get(index);
+    }
+
+    @Override
+    public DataModel getDataModelWithLatents(int index) {
+        return null;
     }
 
     @Override

@@ -337,7 +337,7 @@ public class HistogramView extends JPanel {
 //            if (this.displayString == null) {
 //                StringBuilder builder = new StringBuilder();
 //                builder.append("Showing: ");
-//                builder.append(getHistogram().getTarget());
+//                builder.append(getHistogram().getMinBeta());
 //                this.displayString = builder.toString();
 //            }
 //

@@ -38,11 +38,11 @@ Tabular Data</h3>
   <p>1.2\t * \t 1.4 \t * \t * \t 1.5</p>
 </blockquote>
 <p>but allowing them to be specified by consecutive tabs or commas makes it easier to read some data sets.</p>
-<p>When reading tabular data, Tetrad expects either rectangular continuous data sets or rectangular discrete data sets. Since data sets may in some cases be quite large, Tetrad does not try to guess as to which type of data set you are trying to load, unless you explicitly tell it which type it is by including &quot;/continuousdata&quot; or &quot;/discretedata&quot; at the top of the file, before the list of variable names.</p>
-<p>Reading continuous data from a file is fairly straightforward. Reading discrete data, by contrast, can be a bit tricky. The difficulty is getting the details of the discrete variables right. Tetrad currently assumes that all discrete variables are nominal, sidestepping the problem of distinguishing between nominal and ordinal variables. Also, most of the time the categories for a variable can simply be read off of the column of values itself. Tetrad assumes that if the values in a column are non-negative integers, the categories for the variable for that column should be &quot;0&quot;, &quot;1&quot;, ..., &quot;m&quot;, where &quot;m&quot; is the literal for the maximum integer in the column. So most of the time if you reading in integral data, Tetrad will get the categories for your variables correct for those variables as well. However, once in a while data needs to be read in whose variables don't satisfy these constraints. There are two basic problems:</p>
+<p>When reading tabular data, Tetrad expects either rectangular continuous data sets or rectangular discrete data sets. Since data sets may in some cases be quite large, Tetrad does not try to guess as to which type of data set you are trying to load, unless you explicitly tell it which type it is by including &quot;/continuousdata&quot; or &quot;/discretedata&quot; at the top of the file, before the list of predictor names.</p>
+<p>Reading continuous data from a file is fairly straightforward. Reading discrete data, by contrast, can be a bit tricky. The difficulty is getting the details of the discrete variables right. Tetrad currently assumes that all discrete variables are nominal, sidestepping the problem of distinguishing between nominal and ordinal variables. Also, most of the time the categories for a predictor can simply be read off of the column of values itself. Tetrad assumes that if the values in a column are non-negative integers, the categories for the predictor for that column should be &quot;0&quot;, &quot;1&quot;, ..., &quot;m&quot;, where &quot;m&quot; is the literal for the maximum integer in the column. So most of the time if you reading in integral data, Tetrad will get the categories for your variables correct for those variables as well. However, once in a while data needs to be read in whose variables don't satisfy these constraints. There are two basic problems:</p>
 <ol>
-  <li>The variable for a column might be integral even if it shouldn't be interpreted as having categories 0, 1, ..., m for maximal m in the column. Or, </li>
-  <li> The variable for a column might have categories that aren't attested anywhere in the column.</li>
+  <li>The predictor for a column might be integral even if it shouldn't be interpreted as having categories 0, 1, ..., m for maximal m in the column. Or, </li>
+  <li> The predictor for a column might have categories that aren't attested anywhere in the column.</li>
 </ol>
 <p>To solve these problems, for discrete data, a header section is allows in which variables are defined.</p>
 <p><br>
@@ -79,7 +79,7 @@ and in the File menu above the Tetrad data sheet click ":Load." Any previous dat
 </p>
 <table width="100%" border="1" cellspacing="0" cellpadding="0">
   <tr>
-    <td>Note that the variable names occur in the correct place at the top of each column. <span style="font-weight: bold;">It is essential that the first row of the data file you wish to import</span> <span style="font-weight: bold;">contain the variable names, tab delimited. Also, do not include empty spaces between rows. <br>
+    <td>Note that the predictor names occur in the correct place at the top of each column. <span style="font-weight: bold;">It is essential that the first row of the data file you wish to import</span> <span style="font-weight: bold;">contain the predictor names, tab delimited. Also, do not include empty spaces between rows. <br>
             <br>
             </span>A data file does not require that any other boxes have flowgraph edges directed into it. A standalone Data box can be used to import an external data file. <br>
             <br>

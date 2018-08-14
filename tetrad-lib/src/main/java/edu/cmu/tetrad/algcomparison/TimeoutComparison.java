@@ -1827,6 +1827,11 @@ public class TimeoutComparison {
         }
 
         @Override
+        public DataModel getDataModelWithLatents(int index) {
+            return dataModels.get(index);
+        }
+
+        @Override
         public DataType getDataType() {
             return simulation.getDataType();
         }

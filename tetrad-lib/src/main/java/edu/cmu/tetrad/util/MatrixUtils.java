@@ -680,13 +680,13 @@ public final class MatrixUtils {
      * matrix is returned for convenience, but m is modified in the process.
      */
     public static TetradMatrix convertCovToCorr(TetradMatrix m) {
-        for (int i = 0; i < m.rows(); i++) {
-            for (int j = 0; j < m.columns(); j++) {
-                if (Double.isNaN(m.get(i, j))) {
-                    throw new IllegalArgumentException("Please remove or impute missing values.");
-                }
-            }
-        }
+//        for (int i = 0; i < m.rows(); i++) {
+//            for (int j = 0; j < m.columns(); j++) {
+//                if (Double.isNaN(m.get(i, j))) {
+//                    throw new IllegalArgumentException("Please remove or impute missing values.");
+//                }
+//            }
+//        }
 
         return correlation(m);
     }
@@ -761,7 +761,7 @@ public final class MatrixUtils {
         return toString(m, nf, variables);
     }
 
-    private static String toString(double[][] m, NumberFormat nf) {
+    public static String toString(double[][] m, NumberFormat nf) {
         return toString(m, nf, null);
     }
 

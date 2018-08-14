@@ -252,7 +252,7 @@ public class FgesMbRunner extends AbstractAlgorithmRunner implements
 //
 //            if (dataModel instanceof DataSet) {
 //                DataSet dataSet = (DataSet) dataModel;
-//                target = dataSet.getVariable(targetName);
+//                target = dataSet.getCauseNode(targetName);
 //
 //                if (dataSet.isContinuous()) {
 //                    SemBicScore gesScore = new SemBicScore(new CovarianceMatrixOnTheFly((DataSet) dataModel),
@@ -272,7 +272,7 @@ public class FgesMbRunner extends AbstractAlgorithmRunner implements
 //                cov = (ICovarianceMatrix) dataModel;
 //                SemBicScore score = new SemBicScore(cov,
 //                        getParameters().getDepErrorsAlpha());
-//                target = cov.getVariable(targetName);
+//                target = cov.getCauseNode(targetName);
 //                fges = new FgesMb(score, target);
 //            } else {
 //                throw new IllegalArgumentException("Expecting a data set or a covariance matrix.");
@@ -282,7 +282,7 @@ public class FgesMbRunner extends AbstractAlgorithmRunner implements
 //            fges.setHeuristicSpeedup(true);
 //            searchGraph = fges.search();
 //        } else {
-//            Node target = getIndependenceTest().getVariable(targetName);
+//            Node target = getIndependenceTest().getCauseNode(targetName);
 //            System.out.println("Target = " + target);
 //
 //            int depth = getParameters().getMaxDegree();

@@ -26,6 +26,8 @@ package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.ICovarianceMatrix;
+import edu.cmu.tetrad.graph.Edge;
+import edu.cmu.tetrad.graph.Edges;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.NumberFormatUtil;
 import edu.cmu.tetrad.util.TetradLogger;
@@ -34,9 +36,8 @@ import edu.cmu.tetrad.util.TetradMatrix;
 import java.text.NumberFormat;
 import java.util.*;
 
-//import kci.Kci;
-//import kci.*;
-//import com.mathworks.toolbox.javabuilder.*;
+import com.mathworks.toolbox.javabuilder.*;
+
 
 /**
  * Checks conditional independence of variable in a continuous data set using a conditional correlation test
@@ -84,6 +85,10 @@ public final class IndTestKciMatlab implements IndependenceTest {
     public IndTestKciMatlab(DataSet dataSet, double alpha) {
         if (!(dataSet.isContinuous())) {
             throw new IllegalArgumentException("Data set must be continuous.");
+        }
+
+        if (!MWApplication.isMCRInitialized()) {
+            MWApplication.initialize();
         }
 
         List<Node> nodes = dataSet.getVariables();
@@ -269,17 +274,17 @@ public final class IndTestKciMatlab implements IndependenceTest {
     //==================================PRIVATE METHODS================================
 
     private boolean checkIndependent(Node x, Node y, List<Node> z) {
-//        numTests++;
-//
-//        int xIndex = dataSet.getColumn(x) + 1;
-//        int yIndex = dataSet.getColumn(y) + 1;
-//
-//        int[] zIndices = new int[z.size()];
-//
-//        for (int i = 0; i < z.size(); i++) {
-//            zIndices[i] = dataSet.getColumn(z.get(i)) + 1;
-//        }
-//
+        numTests++;
+
+        int xIndex = dataSet.getColumn(x) + 1;
+        int yIndex = dataSet.getColumn(y) + 1;
+
+        int[] zIndices = new int[z.size()];
+
+        for (int i = 0; i < z.size(); i++) {
+            zIndices[i] = dataSet.getColumn(z.get(i)) + 1;
+        }
+
 //        try {
 //            Kci _kci = new Kci();
 //            Object[] output = _kci.indtest(1, xIndex, yIndex, zIndices, _data);

@@ -142,6 +142,7 @@ public class ExpressionManager {
         descriptors.add(new MaxExpressionDescriptor());
         descriptors.add(new MinExpressionDescriptor());
         descriptors.add(new SignumExpressionDescriptor());
+        descriptors.add(new BoundExpressionDescriptor());
 
         descriptors.add(new AndExpressionDescriptor());
         descriptors.add(new OrExpressionDescriptor());
@@ -316,6 +317,36 @@ public class ExpressionManager {
 
                 public double evaluate(Context context) {
                     return Math.signum(getExpressions().get(0).evaluate(context));
+                }
+            };
+        }
+    }
+
+    private static class BoundExpressionDescriptor extends AbstractExpressionDescriptor {
+        static final long serialVersionUID = 23L;
+
+
+        public BoundExpressionDescriptor() {
+            super("Bound", "bound", Position.PREFIX, false);
+        }
+
+
+        public Expression createExpression(Expression... expressions) throws ExpressionInitializationException {
+            if (expressions.length != 3) {
+                throw new ExpressionInitializationException("Bound must have three arguments.");
+            }
+            return new AbstractExpression("signum", Position.PREFIX, expressions) {
+                static final long serialVersionUID = 23L;
+
+                public double evaluate(Context context) {
+                    List<Expression> expressions = getExpressions();
+                    final double x = expressions.get(0).evaluate(context);
+                    final double low = expressions.get(1).evaluate(context);
+                    final double high = expressions.get(2).evaluate(context);
+
+                    if (x < low) return low;
+                    else if (x > high) return high;
+                    else return x;
                 }
             };
         }

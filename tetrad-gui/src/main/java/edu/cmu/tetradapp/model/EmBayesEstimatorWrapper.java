@@ -146,7 +146,7 @@ public class EmBayesEstimatorWrapper implements SessionModel, GraphSource {
 //        EmBayesEstimator estimator = new EmBayesEstimator(bayesPm, dataSet);
 //        this.dataSet = estimator.getMixedDataSet();
 //
-//        System.out.println("B" + dataSet.getVariable());
+//        System.out.println("B" + dataSet.getCauseNode());
 //
 //        try {
 //            estimator.maximization(params.getDouble("tolerance", 0.0001));

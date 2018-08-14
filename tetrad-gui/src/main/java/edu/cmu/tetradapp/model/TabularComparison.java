@@ -18,6 +18,7 @@
 // along with this program; if not, write to the Free Software               //
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA //
 ///////////////////////////////////////////////////////////////////////////////
+
 package edu.cmu.tetradapp.model;
 
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
@@ -34,23 +35,24 @@ import edu.cmu.tetrad.session.SimulationParamsSource;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
+
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.text.DecimalFormat;
 import java.util.*;
 
+
 /**
  * Compares a target workbench with a reference workbench by counting errors of
- * omission and commission. (for edge presence only, not orientation).
+ * omission and commission.  (for edge presence only, not orientation).
  *
  * @author Joseph Ramsey
  * @author Erin Korber (added remove latents functionality July 2004)
  */
 public final class TabularComparison implements SessionModel, SimulationParamsSource,
         DoNotAddOldModel {
-
     static final long serialVersionUID = 23L;
-    private Algorithm algorithm;
+//    private Algorithm algorithm;
 
     private String name;
     private List<Graph> targetGraphs;
@@ -63,16 +65,18 @@ public final class TabularComparison implements SessionModel, SimulationParamsSo
     private String referenceName;
 
     //=============================CONSTRUCTORS==========================//
+
 //    public TabularComparison(GeneralAlgorithmRunner model, Parameters params) {
 //        this(model, model.getDataWrapper(), params);
 //    }
+
     /**
      * Compares the results of a PC to a reference workbench by counting errors
      * of omission and commission. The counts can be retrieved using the methods
      * <code>countOmissionErrors</code> and <code>countCommissionErrors</code>.
      */
     public TabularComparison(MultipleGraphSource model1, MultipleGraphSource model2,
-            Parameters params) {
+                             Parameters params) {
         if (params == null) {
             throw new NullPointerException("Parameters must not be null");
         }
@@ -81,21 +85,21 @@ public final class TabularComparison implements SessionModel, SimulationParamsSo
             throw new IllegalArgumentException("Both parents can't be general algorithm runners.");
         }
 
-        if (model1 instanceof GeneralAlgorithmRunner && model2 instanceof Simulation) {
-            GeneralAlgorithmRunner generalAlgorithmRunner = (GeneralAlgorithmRunner) model1;
-            this.algorithm = generalAlgorithmRunner.getAlgorithm();
-        } else if (model2 instanceof GeneralAlgorithmRunner && model1 instanceof Simulation) {
-            GeneralAlgorithmRunner generalAlgorithmRunner = (GeneralAlgorithmRunner) model2;
-            this.algorithm = generalAlgorithmRunner.getAlgorithm();
-        }
+//        if (model1 instanceof GeneralAlgorithmRunner && model2 instanceof Simulation) {
+//            GeneralAlgorithmRunner generalAlgorithmRunner = (GeneralAlgorithmRunner) model1;
+////            this.algorithm = generalAlgorithmRunner.getAlgorithm();
+//        } else if (model2 instanceof GeneralAlgorithmRunner && model1 instanceof Simulation) {
+//            GeneralAlgorithmRunner generalAlgorithmRunner = (GeneralAlgorithmRunner) model2;
+////            this.algorithm = generalAlgorithmRunner.getAlgorithm();
+//        }
 
-        this.referenceName = params.getString("referenceGraphName", null);
-        this.targetName = params.getString("targetGraphName", null);
+        String referenceName = params.getString("referenceGraphName", null);
 
         if (referenceName.equals(model1.getName())) {
-            if (model1 instanceof Simulation && model2 instanceof GeneralAlgorithmRunner) {
-                this.referenceGraphs = ((GeneralAlgorithmRunner) model2).getCompareGraphs(((Simulation) model1).getGraphs());
-            } else if (model1 instanceof MultipleGraphSource) {
+//            if (model1 instanceof Simulation && model2 instanceof GeneralAlgorithmRunner) {
+//                this.referenceGraphs = ((GeneralAlgorithmRunner) model2).getCompareGraphs(((Simulation) model1).getGraphs());
+//            } else
+            if (model1 instanceof MultipleGraphSource) {
                 this.referenceGraphs = ((MultipleGraphSource) model1).getGraphs();
             }
 
@@ -107,7 +111,7 @@ public final class TabularComparison implements SessionModel, SimulationParamsSo
                 Graph graph = referenceGraphs.get(0);
                 referenceGraphs = new ArrayList<>();
                 for (Graph _graph : targetGraphs) {
-                    referenceGraphs.add(_graph);
+                    referenceGraphs.add(graph);
                 }
             }
 
@@ -127,9 +131,10 @@ public final class TabularComparison implements SessionModel, SimulationParamsSo
                 this.targetGraphs = Collections.singletonList(((GraphSource) model2).getGraph());
             }
         } else if (referenceName.equals(model2.getName())) {
-            if (model2 instanceof Simulation && model1 instanceof GeneralAlgorithmRunner) {
-                this.referenceGraphs = ((GeneralAlgorithmRunner) model1).getCompareGraphs(((Simulation) model2).getGraphs());
-            } else if (model1 instanceof MultipleGraphSource) {
+//            if (model2 instanceof Simulation && model1 instanceof GeneralAlgorithmRunner) {
+//                this.referenceGraphs = ((GeneralAlgorithmRunner) model1).getCompareGraphs(((Simulation) model2).getGraphs());
+//            } else
+            if (model1 instanceof MultipleGraphSource) {
                 this.referenceGraphs = ((MultipleGraphSource) model2).getGraphs();
             }
 
@@ -162,8 +167,8 @@ public final class TabularComparison implements SessionModel, SimulationParamsSo
             }
         } else {
             throw new IllegalArgumentException(
-                    "Neither of the supplied session models is named '"
-                    + referenceName + "'.");
+                    "Neither of the supplied session models is named '" +
+                            referenceName + "'.");
         }
 
         for (int i = 0; i < targetGraphs.size(); i++) {
@@ -175,7 +180,9 @@ public final class TabularComparison implements SessionModel, SimulationParamsSo
         }
 //        if (algorithm != null) {
 //            for (int i = 0; i < referenceGraphs.size(); i++) {
-//                referenceGraphs.set(i, algorithm.getComparisonGraph(referenceGraphs.get(i)));
+//                Graph comparisonGraph = algorithm.getComparisonGraph(referenceGraphs.get(i));
+//                comparisonGraph = GraphUtils.replaceNodes(comparisonGraph, getTrueGraph().getNodes());
+//                referenceGraphs.set(i, comparisonGraph);
 //            }
 //        }
 
@@ -201,12 +208,29 @@ public final class TabularComparison implements SessionModel, SimulationParamsSo
         statistics.add(new TwoCyclePrecision());
         statistics.add(new TwoCycleRecall());
         statistics.add(new TwoCycleFalsePositive());
+
 //        statistics.add(new ElapsedTime());
 //        statistics.add(new F1Adj());
 //        statistics.add(new F1Arrow());
 //        statistics.add(new MathewsCorrAdj());
 //        statistics.add(new MathewsCorrArrow());
 //        statistics.add(new SHD());
+
+//        statistics.add(new AdjacencyPrecision());
+//        statistics.add(new AdjacencyRecall());
+//        statistics.add(new ArrowheadPrecisionIgnore2c());
+//        statistics.add(new ArrowheadRecall());
+
+//        statistics.add(new AncestorPrecision());
+//        statistics.add(new AncestorRecall());
+//        statistics.add(new TwoCycleFalsePositive());
+//        statistics.add(new TwoCycleFalseNegative());
+////        statistics.add(new MathewsCorrAdj());
+//        statistics.add(new MathewsCorrArrow());
+////        statistics.add(new F1Adj());
+////        statistics.add(new F1Arrow());
+////        statistics.add(new SHD());
+////        statistics.add(new ElapsedTime());
 
         List<Node> variables = new ArrayList<>();
 
@@ -238,6 +262,7 @@ public final class TabularComparison implements SessionModel, SimulationParamsSo
 //                DagWrapper.serializableInstance(),
 //                new Parameters());
 //    }
+
     //==============================PUBLIC METHODS========================//
     public DataSet getDataSet() {
         return this.dataSet;
@@ -252,6 +277,7 @@ public final class TabularComparison implements SessionModel, SimulationParamsSo
     }
 
     //============================PRIVATE METHODS=========================//
+
     /**
      * Adds semantic checks to the default deserialization method. This method
      * must have the standard signature for a readObject method, and the body of
@@ -277,6 +303,7 @@ public final class TabularComparison implements SessionModel, SimulationParamsSo
 //    public void setTrueGraph(Graph trueGraph) {
 //        this.trueGraph = trueGraph;
 //    }
+
     @Override
     public Map<String, String> getParamSettings() {
         return new HashMap<>();
@@ -316,3 +343,5 @@ public final class TabularComparison implements SessionModel, SimulationParamsSo
         this.referenceName = referenceName;
     }
 }
+
+

@@ -1593,7 +1593,7 @@ public final class GraphUtils {
     }
 
     private static void treks(Graph graph, Node node1, Node node2,
-            LinkedList<Node> path, List<List<Node>> paths, int maxLength) {
+                              LinkedList<Node> path, List<List<Node>> paths, int maxLength) {
         if (path.size() > (maxLength == -1 ? 1000 : maxLength - 2)) {
             return;
         }
@@ -1655,7 +1655,7 @@ public final class GraphUtils {
     }
 
     private static void treksIncludingBidirected(SemGraph graph, Node node1, Node node2,
-            LinkedList<Node> path, List<List<Node>> paths) {
+                                                 LinkedList<Node> path, List<List<Node>> paths) {
         if (!graph.isShowErrorTerms()) {
             throw new IllegalArgumentException("The SEM Graph must be showing its error terms; this method "
                     + "doesn't traverse two edges between the same nodes well.");
@@ -1706,6 +1706,72 @@ public final class GraphUtils {
             }
 
             treksIncludingBidirected(graph, next, node2, path, paths);
+        }
+
+        path.removeLast();
+    }
+
+    public static List<List<Node>> semidirectedTreks(Graph graph, Node node1, Node node2, int maxLength) {
+        List<List<Node>> paths = new LinkedList<>();
+        semidirectedTreks(graph, node1, node2, new LinkedList<Node>(), paths, maxLength, false);
+        return paths;
+    }
+
+    private static void semidirectedTreks(Graph graph, Node node1, Node node2, LinkedList<Node> path, List<List<Node>> paths,
+                                          int maxLength, boolean directedRight) {
+        if (path.size() > (maxLength == -1 ? 1000 : maxLength - 2)) {
+            return;
+        }
+
+        if (path.contains(node1)) {
+            return;
+        }
+
+        if (node1 == node2) {
+            return;
+        }
+
+        path.addLast(node1);
+
+        for (Edge edge : graph.getEdges(node1)) {
+            Node next = Edges.traverse(node1, edge);
+
+            // Must be a directed edge.
+            if (!(edge.isDirected() || Edges.isUndirectedEdge(edge))) {
+                continue;
+            }
+
+            // Can't have any colliders on the path.
+            if (path.size() > 1) {
+                Node node0 = path.get(path.size() - 2);
+
+                if (next == node0) {
+                    continue;
+                }
+
+                if (directedRight && edge.pointsTowards(node1)) continue;
+
+//                if (graph.isDefCollider(node0, node1, next)) {
+//                    continue;
+//                }
+            }
+
+            // Found a path.
+            if (next == node2) {
+                LinkedList<Node> _path = new LinkedList<>(path);
+                _path.add(next);
+                paths.add(_path);
+                continue;
+            }
+
+            // Nodes may only appear on the path once.
+            if (path.contains(next)) {
+                continue;
+            }
+
+            directedRight = directedRight || edge.pointsTowards(edge.getDistalNode(node1));
+
+            semidirectedTreks(graph, next, node2, path, paths, maxLength, directedRight);
         }
 
         path.removeLast();
@@ -1866,24 +1932,16 @@ public final class GraphUtils {
 
             if (node1 == null) {
                 node1 = edge.getNode1();
-                if (!convertedGraph.containsNode(node1)) {
-                    convertedGraph.addNode(node1);
-                }
+                convertedGraph.addNode(node1);
             }
             if (node2 == null) {
                 node2 = edge.getNode2();
-                if (!convertedGraph.containsNode(node2)) {
-                    convertedGraph.addNode(node2);
-                }
-            }
-
-            if (!convertedGraph.containsNode(node1)) {
-                convertedGraph.addNode(node1);
-            }
-
-            if (!convertedGraph.containsNode(node2)) {
                 convertedGraph.addNode(node2);
             }
+
+            convertedGraph.addNode(node1);
+
+            convertedGraph.addNode(node2);
 
             if (node1 == null) {
                 throw new IllegalArgumentException("Couldn't find a node by the name " + edge.getNode1().getName()
@@ -2541,7 +2599,7 @@ public final class GraphUtils {
                 break;
             }
 
-            System.out.println(line);
+//            System.out.println(line);
 
             String[] tokens = line.split("\\s+");
 
@@ -3218,7 +3276,7 @@ public final class GraphUtils {
         List<Node> allNodes = new ArrayList<>(notFound);
 
         while (!notFound.isEmpty()) {
-            for (Iterator<Node> it = notFound.iterator(); it.hasNext();) {
+            for (Iterator<Node> it = notFound.iterator(); it.hasNext(); ) {
                 Node node = it.next();
 
                 List<Node> parents = graph.getParents(node);
@@ -3741,9 +3799,9 @@ public final class GraphUtils {
                 if (range <= chunk) {
                     for (int i = from; i < to; i++) {
                         int j = ++count[0];
-                        if (j % 1000 == 0) {
-                            System.out.println("Counted " + (count[0]));
-                        }
+//                        if (j % 1000 == 0) {
+//                            System.out.println("Counted " + (count[0]));
+//                        }
 
                         Edge edge = edges.get(i);
 
