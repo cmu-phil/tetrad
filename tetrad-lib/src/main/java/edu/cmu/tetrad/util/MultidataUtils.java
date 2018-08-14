@@ -359,7 +359,7 @@ public final class MultidataUtils {
         }
     }
 
-    private static int[] getRowCounts(List<DataModel> dataModels) {
+    public static int[] getRowCounts(List<DataModel> dataModels) {
         int[] counts = new int[dataModels.size()];
 
         int index = 0;
@@ -372,7 +372,7 @@ public final class MultidataUtils {
         return counts;
     }
 
-    private static int getNumberOfColumns(DataModel dataModel) {
+    public static int getNumberOfColumns(DataModel dataModel) {
         return (dataModel instanceof BoxDataSet)
                 ? ((BoxDataSet) dataModel).getDataBox().numCols()
                 : 0;
