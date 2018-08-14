@@ -21,6 +21,7 @@
 
 package edu.cmu.tetrad.graph;
 
+import edu.cmu.tetrad.graph.EdgeTypeProbability.EdgeType;
 import edu.cmu.tetrad.util.TetradSerializable;
 
 import java.awt.*;
@@ -255,6 +256,14 @@ public class Edge implements TetradSerializable, Comparable {
         List<EdgeTypeProbability> edgeTypeDist = getEdgeTypeProbabilities();
         if(edgeTypeDist.size() > 0){
             buf.append(" ");
+
+            String n1 = getNode1().getName();
+			String n2 = getNode2().getName();
+			if(n1.compareTo(n2) > 0) {// Sort node's names
+				n1 = getNode2().getName();
+				n2 = getNode1().getName();
+			}
+			
             for (int i = 0; i < edgeTypeDist.size(); i++) {
             	EdgeTypeProbability etp = edgeTypeDist.get(i);
             	double prob = etp.getProbability();
@@ -289,6 +298,15 @@ public class Edge implements TetradSerializable, Comparable {
         				break;
         			}
         			
+        			if(etp.getEdgeType() != EdgeType.nil) {
+        				_type = n1 + " " + _type + " " + n2;
+        			}
+        			List<Property> properties = etp.getProperties();
+        			if(properties != null && properties.size() > 0) {
+        	        	for(Property property : properties) {
+        	        		_type = _type + " " + property.toString();
+        	        	}
+        	        }
         			buf.append("[" + _type + "]:" + String.format("%.4f", etp.getProbability()) + ";");
         			
             	}

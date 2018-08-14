@@ -31,6 +31,7 @@ import edu.cmu.tetrad.graph.GraphNode;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.NodeType;
+import edu.cmu.tetrad.graph.Edge.Property;
 import edu.cmu.tetrad.util.JOptionUtils;
 import edu.cmu.tetradapp.model.SessionWrapper;
 import edu.cmu.tetradapp.util.LayoutEditable;
@@ -69,6 +70,8 @@ import javax.swing.JOptionPane;
 import javax.swing.JPopupMenu;
 import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
+
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * The functionality of the workbench which is shared between the workbench
@@ -2127,10 +2130,19 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
                             endpoint2 = "Null";
                             break;
                     }
-
+                    
+                    String properties = "";
+        			if(edge.getProperties() != null && edge.getProperties().size() > 0) {
+        	        	for(Property property : edge.getProperties()) {
+        	        		properties += " " + property.toString();
+        	        	}
+        	        }
+        			
                     String text = "<html>" + edge.getNode1().getName()
                             + " " + endpoint1 + "-" + endpoint2 + " "
-                            + edge.getNode2().getName() + "<br>";
+                            + edge.getNode2().getName() 
+                            + properties 
+                            + "<br>";
                     String n1 = edge.getNode1().getName();
                     String n2 = edge.getNode2().getName();
                     List<String> nodes = new ArrayList<>();
@@ -2175,7 +2187,13 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
                                 break;
                         }
                         if (edgeTypeProb.getProbability() > 0) {
-                            text += "[" + _type + "]:" + String.format("%.4f", edgeTypeProb.getProbability());
+                        	properties = "";
+                			if(edgeTypeProb.getProperties() != null && edgeTypeProb.getProperties().size() > 0) {
+                	        	for(Property property : edgeTypeProb.getProperties()) {
+                	        		properties += " " + property.toString();
+                	        	}
+                	        }
+                            text += "[" + _type + properties + "]:" + String.format("%.4f", edgeTypeProb.getProbability());
                             text += "<br>";
                         }
                     }
