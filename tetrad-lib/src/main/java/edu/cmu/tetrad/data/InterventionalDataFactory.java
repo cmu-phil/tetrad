@@ -42,15 +42,17 @@ public final class InterventionalDataFactory {
         }
 
         DataModel dataModel = dataModels.get(0);
-        if (dataModel.isContinuous()) {
+        DataBox dataBox = ((BoxDataSet) dataModel).getDataBox();
+
+        if (dataBox instanceof DoubleDataBox) {
             return isDiscreteIntervVars
                     ? createContinuousDataWithDiscreteIntervention(dataModels, intervVars, interventions)
                     : createContinuousDataWithContinuousIntervention(dataModels, intervVars, interventions);
-        } else if (dataModel.isDiscrete()) {
+        } else if (dataBox instanceof VerticalIntDataBox) {
             return isDiscreteIntervVars
                     ? createDiscreteDataWithDiscreteIntervention(dataModels, intervVars, interventions)
                     : createDiscreteDataWithContinuousIntervention(dataModels, intervVars, interventions);
-        } else if (dataModel.isMixed()) {
+        } else if (dataBox instanceof MixedDataBox) {
             return isDiscreteIntervVars
                     ? createMixedDataWithDiscreteIntervention(dataModels, intervVars, interventions)
                     : createMixedDataWithContinuousIntervention(dataModels, intervVars, interventions);
