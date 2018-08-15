@@ -71,21 +71,7 @@ public final class DagEditor extends JPanel
         this.parameters = graphWrapper.getParameters();
 
         editGraph(graphWrapper.getGraph());
-
-        this.getWorkbench().addPropertyChangeListener(new PropertyChangeListener() {
-            public void propertyChange(PropertyChangeEvent evt) {
-                String propertyName = evt.getPropertyName();
-
-                if ("graph".equals(propertyName)) {
-                    Graph _graph = (Graph) evt.getNewValue();
-
-                    if (getWorkbench() != null && getDagWrapper() != null) {
-                        getDagWrapper().setGraph(_graph);
-                    }
-                }
-            }
-        });
-
+      
         int numModels = dagWrapper.getNumModels();
 
         if (numModels > 1) {
@@ -116,11 +102,19 @@ public final class DagEditor extends JPanel
             add(b, BorderLayout.NORTH);
         }
 
-        getWorkbench().addPropertyChangeListener(new PropertyChangeListener() {
+        this.getWorkbench().addPropertyChangeListener(new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent evt) {
-                if ("graph".equals(evt.getPropertyName())) {
-                    dagWrapper.setGraph((Graph) evt.getNewValue());
-                } else if ("modelChanged".equals(evt.getPropertyName())) {
+                String propertyName = evt.getPropertyName();
+
+                if ("graph".equals(propertyName)) {
+                    Graph _graph = (Graph) evt.getNewValue();
+
+                    if (getWorkbench() != null && getDagWrapper() != null) {
+                        dagWrapper.setGraph(_graph);
+                        // Also need to update the UI - Zhou
+                        editGraph(_graph);
+                    }
+                } else if ("modelChanged".equals(propertyName)) {
                     firePropertyChange("modelChanged", null, null);
                 }
             }

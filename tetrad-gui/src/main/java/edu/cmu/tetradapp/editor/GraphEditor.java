@@ -71,21 +71,6 @@ public final class GraphEditor extends JPanel
 
         editGraph(graphWrapper.getGraph());
 
-        this.getWorkbench().addPropertyChangeListener(new PropertyChangeListener() {
-            public void propertyChange(PropertyChangeEvent evt) {
-                String propertyName = evt.getPropertyName();
-                if ("graph".equals(propertyName)) {
-                    Graph _graph = (Graph) evt.getNewValue();
-
-                    if (getWorkbench() != null && graphWrapper != null) {
-                        graphWrapper.setGraph(_graph);
-                        // Also need to update the UI - Zhou
-                        editGraph(graphWrapper.getGraph());
-                    }
-                }
-            }
-        });
-
         int numModels = graphWrapper.getNumModels();
 
         if (numModels > 1) {
@@ -116,13 +101,19 @@ public final class GraphEditor extends JPanel
             add(b, BorderLayout.NORTH);
         }
 
-        getWorkbench().addPropertyChangeListener(new PropertyChangeListener() {
+        this.getWorkbench().addPropertyChangeListener(new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent evt) {
-                if ("graph".equals(evt.getPropertyName())) {
-                    graphWrapper.setGraph((Graph) evt.getNewValue());
-                    // Also need to update the UI - Zhou
-                    editGraph(graphWrapper.getGraph());
-                } else if ("modelChanged".equals(evt.getPropertyName())) {
+                String propertyName = evt.getPropertyName();
+
+                if ("graph".equals(propertyName)) {
+                    Graph _graph = (Graph) evt.getNewValue();
+
+                    if (getWorkbench() != null && graphWrapper != null) {
+                        graphWrapper.setGraph(_graph);
+                        // Also need to update the UI - Zhou
+                        editGraph(_graph);
+                    }
+                } else if ("modelChanged".equals(propertyName)) {
                     firePropertyChange("modelChanged", null, null);
                 }
             }

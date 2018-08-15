@@ -76,22 +76,7 @@ public final class SemGraphEditor extends JPanel
         this.semGraphWrapper = semGraphWrapper;
         this.parameters = semGraphWrapper.getParameters();
 
-        setEditor(semGraphWrapper);
-
-//        editGraph(graphWrapper.getGraph());
-        this.getWorkbench().addPropertyChangeListener(new PropertyChangeListener() {
-            public void propertyChange(PropertyChangeEvent evt) {
-                String propertyName = evt.getPropertyName();
-
-                if ("graph".equals(propertyName)) {
-                    Graph _graph = (Graph) evt.getNewValue();
-
-                    if (getWorkbench() != null && getSemGraphWrapper() != null) {
-                        getSemGraphWrapper().setGraph(_graph);
-                    }
-                }
-            }
-        });
+        editGraph(semGraphWrapper.getGraph());
 
         int numModels = getSemGraphWrapper().getNumModels();
 
@@ -106,7 +91,7 @@ public final class SemGraphEditor extends JPanel
                 @Override
                 public void actionPerformed(ActionEvent e) {
                     getSemGraphWrapper().setModelIndex(((Integer) comp.getSelectedItem()).intValue() - 1);
-                    setEditor(semGraphWrapper);
+                    editGraph(semGraphWrapper.getGraph());
 //                    editGraph(getSemGraphWrapper().getGraph());
                     validate();
                 }
@@ -132,8 +117,12 @@ public final class SemGraphEditor extends JPanel
                     Graph _graph = (Graph) evt.getNewValue();
 
                     if (getWorkbench() != null && getSemGraphWrapper() != null) {
-                        getSemGraphWrapper().setGraph(_graph);
+                        semGraphWrapper.setGraph(_graph);
+                        // Also need to update the UI - Zhou
+                        editGraph(_graph);
                     }
+                } else if ("modelChanged".equals(propertyName)) {
+                    firePropertyChange("modelChanged", null, null);
                 }
             }
         });
@@ -141,11 +130,8 @@ public final class SemGraphEditor extends JPanel
         validate();
     }
 
-    private void setEditor(SemGraphWrapper semGraphWrapper) {
-        this.parameters = new Parameters(semGraphWrapper.getParameters());
-
-        this.semGraphWrapper = semGraphWrapper;
-        this.workbench = new GraphWorkbench(semGraphWrapper.getGraph());
+    private void editGraph(Graph graph) {
+        this.workbench = new GraphWorkbench(graph);
 
         SemGraphToolbar graphToolbar = new SemGraphToolbar(getWorkbench());
         JMenuBar menuBar = createMenuBar();

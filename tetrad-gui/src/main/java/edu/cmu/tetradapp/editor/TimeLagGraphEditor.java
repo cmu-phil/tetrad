@@ -64,7 +64,7 @@ import javax.swing.event.InternalFrameEvent;
 public final class TimeLagGraphEditor extends JPanel
         implements GraphEditable, LayoutEditable, IndTestProducer {
 
-    private final TimeLagGraphWorkbench workbench;
+    private TimeLagGraphWorkbench workbench;
     private TimeLagGraphWrapper graphWrapper;
     private LayoutEditable layoutEditable;
     private CopyLayoutAction copyLayoutAction;
@@ -72,16 +72,27 @@ public final class TimeLagGraphEditor extends JPanel
 
     //===========================PUBLIC METHODS========================//
     public TimeLagGraphEditor(TimeLagGraphWrapper graphWrapper) {
-        this((TimeLagGraph) graphWrapper.getGraph());
+        setLayout(new BorderLayout());
+        
         this.graphWrapper = graphWrapper;
         this.layoutEditable = this;
         this.parameters = graphWrapper.getParameters();
 
-        getWorkbench().addPropertyChangeListener(new PropertyChangeListener() {
+        editGraph((TimeLagGraph) graphWrapper.getGraph());
+                
+        this.getWorkbench().addPropertyChangeListener(new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent evt) {
-                if ("graph".equals(evt.getPropertyName())) {
-                    getGraphWrapper().setGraph((TimeLagGraph) evt.getNewValue());
-                } else if ("modelChanged".equals(evt.getPropertyName())) {
+                String propertyName = evt.getPropertyName();
+
+                if ("graph".equals(propertyName)) {
+                    TimeLagGraph _graph = (TimeLagGraph) evt.getNewValue();
+
+                    if (getWorkbench() != null && getGraphWrapper() != null) {
+                        graphWrapper.setGraph(_graph);
+                        // Also need to update the UI - Zhou
+                        editGraph(_graph);
+                    }
+                } else if ("modelChanged".equals(propertyName)) {
                     firePropertyChange("modelChanged", null, null);
                 }
             }
@@ -92,9 +103,7 @@ public final class TimeLagGraphEditor extends JPanel
     /**
      * Constructs a new GraphEditor for the given EdgeListGraph.
      */
-    public TimeLagGraphEditor(TimeLagGraph graph) {
-        setLayout(new BorderLayout());
-
+    public void editGraph(TimeLagGraph graph) {
         this.workbench = new TimeLagGraphWorkbench(graph);
         DagGraphToolbar graphToolbar = new DagGraphToolbar(getWorkbench());
         JMenuBar menuBar = createGraphMenuBar();
