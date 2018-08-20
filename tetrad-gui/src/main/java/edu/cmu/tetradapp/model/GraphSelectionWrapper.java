@@ -29,10 +29,8 @@ import edu.cmu.tetrad.session.SessionModel;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
+import edu.cmu.tetradapp.editor.GraphSelectionEditor;
 import edu.cmu.tetradapp.util.IonInput;
-
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.util.*;
@@ -69,6 +67,9 @@ public class GraphSelectionWrapper implements SessionModel, GraphSource, Knowled
         }
 
         this.params = params;
+        
+        
+        
         init(params, graphs);
     }
 
@@ -656,6 +657,16 @@ public class GraphSelectionWrapper implements SessionModel, GraphSource, Knowled
         params.set("graphSelectionType", type.toString());
     }
 
+    // Added by Zhou
+    public GraphSelectionEditor.GraphEditorOptionsPanel getGraphEditorOptionsPanel() {
+        return (GraphSelectionEditor.GraphEditorOptionsPanel) params.get("graphEditorOptionsPanel");
+    }
+    
+    // Added by Zhou
+    public void setGraphEditorOptionsPanel(GraphSelectionEditor.GraphEditorOptionsPanel graphEditorOptionsPanel) {
+        params.set("graphEditorOptionsPanel", graphEditorOptionsPanel);
+    }
+    
     public String getName() {
         return params.getString("name", null);
     }
