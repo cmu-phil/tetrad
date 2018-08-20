@@ -49,7 +49,7 @@ import edu.cmu.tetradapp.app.hpc.manager.HpcAccountManager;
 import edu.cmu.tetradapp.app.hpc.manager.HpcJobManager;
 import edu.cmu.tetradapp.app.hpc.util.HpcAccountUtils;
 import edu.cmu.tetradapp.model.GeneralAlgorithmRunner;
-import edu.cmu.tetradapp.model.GraphSelectionWrapper;
+import edu.cmu.tetradapp.model.GraphWrapper;
 import edu.cmu.tetradapp.ui.PaddingPanel;
 import edu.cmu.tetradapp.ui.model.AlgorithmModel;
 import edu.cmu.tetradapp.ui.model.AlgorithmModels;
@@ -169,13 +169,12 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
     private final GeneralAlgorithmRunner runner;
     private final TetradDesktop desktop;
     private final DataType dataType;
-    private final GraphSelectionEditor graphEditor;
+    private GraphEditor graphEditor = null;
 
     public GeneralAlgorithmEditor(GeneralAlgorithmRunner runner) {
         this.runner = runner;
         this.desktop = (TetradDesktop) DesktopController.getInstance();
         this.dataType = getDataType();
-        this.graphEditor = new GraphSelectionEditor(new GraphSelectionWrapper(runner.getGraphs(), new Parameters()));
         this.parametersPanel = new AlgorithmParameterPanel();
 
         if (dataType == null) {
@@ -190,9 +189,9 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         // Repopulate all the previous selections if reopen the search box
         if (runner.getGraphs() != null && runner.getGraphs().size() > 0) {
             parametersPanel.addToPanel(runner);
-
+            
             // show the generated graph if reopen the search box
-            graphContainer.add(graphEditor);  // use the already generated graphEditor
+            graphContainer.add(new GraphEditor(new GraphWrapper(runner.getGraph())));
             changeCard(GRAPH_CARD);
         }
     }
@@ -683,12 +682,14 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         }
         runner.getGraphs().add(graph);
         // Show graph
-        graphEditor.replace(graphs);
+        graphEditor = new GraphEditor(new GraphWrapper(graph));
+        graphEditor.setGraph(graph);
         graphEditor.validate();
         LOGGER.info("Remote graph result assigned to runner!");
         firePropertyChange("modelChanged", null, null);
 
         // Update the graphContainer
+        graphContainer.removeAll();
         graphContainer.add(graphEditor);
 
         changeCard(GRAPH_CARD);
@@ -1052,16 +1053,16 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
                     }
 
                     if (hpcAccount == null) {
-                        graphEditor.saveLayout();
-
                         runner.execute();
 
                         // Show graph
-                        graphEditor.replace(runner.getGraphs());
+                        graphEditor = new GraphEditor(new GraphWrapper(runner.getGraph()));
+                        graphEditor.setGraph(runner.getGraph());
                         graphEditor.validate();
                         firePropertyChange("modelChanged", null, null);
 
                         // Update the graphContainer
+                        graphContainer.removeAll();
                         graphContainer.add(graphEditor);
 
                         changeCard(GRAPH_CARD);

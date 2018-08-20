@@ -33,6 +33,7 @@ import edu.cmu.tetradapp.ui.PaddingPanel;
 import edu.cmu.tetradapp.util.DesktopController;
 import edu.cmu.tetradapp.util.ImageUtils;
 import edu.cmu.tetradapp.util.IntTextField;
+import edu.cmu.tetradapp.util.WatchedProcess;
 import edu.cmu.tetradapp.workbench.DisplayEdge;
 import edu.cmu.tetradapp.workbench.DisplayNode;
 import edu.cmu.tetradapp.workbench.GraphWorkbench;
@@ -44,6 +45,7 @@ import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.Insets;
 import java.awt.Point;
+import java.awt.Window;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.ClipboardOwner;
 import java.awt.datatransfer.DataFlavor;
@@ -193,9 +195,9 @@ public class GraphSelectionEditor extends JPanel implements GraphEditable, Tripl
 //        bar.add(createEditMenu());
 
         // Add the save options - Zhou
-        JMenu saveMenu = createSaveMenu(this, getWorkbench());
+        JMenu saveMenu = createSaveMenu(this);
         bar.add(saveMenu);
-
+        
         JMenu graphMenu = createGraphMenu();
         bar.add(graphMenu);
 
@@ -407,42 +409,24 @@ public class GraphSelectionEditor extends JPanel implements GraphEditable, Tripl
 
         executeButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                
-                GraphWorkbench workbench = getWorkbench();
-                List<DisplayNode> displayNodes = workbench.getSelectedNodes();
-                List<Node> newSelected = new ArrayList<>();
-                for (DisplayNode node : displayNodes) {
-                    System.out.println("Selected node === " + node.getName());
-                    newSelected.add(node.getModelNode());
-                }
+                Window owner = (Window) getTopLevelAncestor();
 
-                if (!newSelected.isEmpty()) {
-                    editorPanel.setSelected(newSelected);
-                }
+                new WatchedProcess(owner) {
+                    public void watch() {
+                        GraphWorkbench workbench = getWorkbench();
+                        List<DisplayNode> displayNodes = workbench.getSelectedNodes();
+                        List<Node> newSelected = new ArrayList<>();
+                        for (DisplayNode node : displayNodes) {
+                            newSelected.add(node.getModelNode());
+                        }
 
-                resetGraphs(wrapper);
-                
-//                Window owner = (Window) getTopLevelAncestor();
-//
-//                new WatchedProcess(owner) {
-//                    public void watch() {
-//                        GraphWorkbench workbench = getWorkbench();
-//                        List<DisplayNode> displayNodes = workbench.getSelectedNodes();
-//                        List<Node> newSelected = new ArrayList<>();
-//                        for (DisplayNode node : displayNodes) {
-//                            System.out.println("Selected node === " + node.getName());
-//                            newSelected.add(node.getModelNode());
-//                        }
-//
-//                        if (!newSelected.isEmpty()) {
-//                            editorPanel.setSelected(newSelected);
-//                        }
-//
-//                        wrapper.setSelectedVariables(newSelected); // Added by Zhou
-//                        
-//                        resetGraphs(wrapper);
-//                    }
-//                };
+                        if (!newSelected.isEmpty()) {
+                            editorPanel.setSelected(newSelected);
+                        }
+
+                        resetGraphs(wrapper);
+                    }
+                };
             }
         });
 
@@ -493,27 +477,13 @@ public class GraphSelectionEditor extends JPanel implements GraphEditable, Tripl
         }
     }
 
-    private JMenu createGraphMenu() {
-        JMenu graph = new JMenu("Graph");
-
-        graph.add(new GraphPropertiesAction(wrapper.getGraphs().get(0), getWorkbench()));
-        graph.add(new PathsAction(getWorkbench()));
-//        graph.add(new DirectedPathsAction(getWorkbench()));
-//        graph.add(new TreksAction(getWorkbench()));
-//        graph.add(new AllPathsAction(getWorkbench()));
-//        graph.add(new NeighborhoodsAction(getWorkbench()));
-        graph.add(new TriplesAction(wrapper.getGraphs().get(0), getWorkbench()));
-
-        return graph;
-    }
-
     /**
      * File save menu - Zhou
      * @param editable
      * @param comp
      * @return 
      */
-    private JMenu createSaveMenu(GraphEditable editable, JComponent comp) { 
+    private JMenu createSaveMenu(GraphEditable editable) { 
         JMenu save = new JMenu("Save As");
 
         save.add(new SaveGraph(editable, "Graph XML...", SaveGraph.Type.xml));
@@ -521,11 +491,26 @@ public class GraphSelectionEditor extends JPanel implements GraphEditable, Tripl
         save.add(new SaveGraph(editable, "Graph Json...", SaveGraph.Type.json));
         save.add(new SaveGraph(editable, "R...", SaveGraph.Type.r));
         save.add(new SaveGraph(editable, "Dot...", SaveGraph.Type.dot));
-        save.add(new SaveComponentImage(comp, "Graph PNG Image..."));
 
         return save;
     }
     
+    private JMenu createGraphMenu() {
+        JMenu graph = new JMenu("Graph");
+
+        graphAction = new GraphPropertiesAction(wrapper.getGraphs().get(0), getWorkbench());
+        graph.add(graphAction);
+        graph.add(new PathsAction(getWorkbench()));
+//        graph.add(new DirectedPathsAction(getWorkbench()));
+//        graph.add(new TreksAction(getWorkbench()));
+//        graph.add(new AllPathsAction(getWorkbench()));
+//        graph.add(new NeighborhoodsAction(getWorkbench()));
+        triplesAction = new TriplesAction(wrapper.getGraphs().get(0), getWorkbench());
+        graph.add(triplesAction);
+
+        return graph;
+    }
+
     /**
      * Creates the "file" menu, which allows the user to load, save, and post
      * workbench models.
