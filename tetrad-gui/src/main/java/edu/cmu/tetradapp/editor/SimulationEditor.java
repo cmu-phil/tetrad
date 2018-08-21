@@ -110,9 +110,7 @@ public final class SimulationEditor extends JPanel implements KnowledgeEditable,
         "Time Series"
     };
 
-    // For true graphs
-    private JPanel tabbedGraphPanel;
-    
+ 
     /**
      * Constructs the data editor with an empty list of data displays.
      *

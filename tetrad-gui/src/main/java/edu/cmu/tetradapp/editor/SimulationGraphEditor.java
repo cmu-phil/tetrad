@@ -52,6 +52,7 @@ final class SimulationGraphEditor extends JPanel {
 
     /**
      * Constructs the editor.
+     * Edited by Zhou on 8/20/18
      */
     public SimulationGraphEditor(List<Graph> graphs) {
         this.tabbedPane = new JTabbedPane(JTabbedPane.LEFT);
