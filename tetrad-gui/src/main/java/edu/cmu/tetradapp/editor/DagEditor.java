@@ -31,7 +31,8 @@ import edu.cmu.tetrad.util.TetradSerializable;
 import edu.cmu.tetradapp.model.DagWrapper;
 import edu.cmu.tetradapp.model.IndTestProducer;
 import edu.cmu.tetradapp.util.DesktopController;
-import edu.cmu.tetradapp.util.GraphEditorBootstrapTable;
+import edu.cmu.tetradapp.util.BootstrapTable;
+import edu.cmu.tetradapp.util.ImageUtils;
 import edu.cmu.tetradapp.util.LayoutEditable;
 import edu.cmu.tetradapp.workbench.DisplayEdge;
 import edu.cmu.tetradapp.workbench.DisplayNode;
@@ -43,11 +44,16 @@ import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import javax.help.CSH;
+import javax.help.HelpBroker;
+import javax.help.HelpSet;
 import javax.swing.*;
+import javax.swing.border.EmptyBorder;
 import javax.swing.event.InternalFrameAdapter;
 import javax.swing.event.InternalFrameEvent;
 
@@ -131,8 +137,85 @@ public final class DagEditor extends JPanel
         // topBox Left side toolbar
         DagGraphToolbar graphToolbar = new DagGraphToolbar(getWorkbench());
 
+        // topBox right side graph editor
+        JScrollPane graphEditorScroll = new JScrollPane();
+        graphEditorScroll.setPreferredSize(new Dimension(750, 450));
+        graphEditorScroll.setViewportView(workbench);
+
+        // topBox contains the topGraphBox and the instructionBox underneath
+        Box topBox = Box.createVerticalBox();
+        
+        // topGraphBox contains the vertical graph toolbar and graph editor
+        Box topGraphBox = Box.createHorizontalBox();
+        topGraphBox.add(graphToolbar);
+        topGraphBox.add(graphEditorScroll);
+
+        // Instruction with info button 
+        Box instructionBox = Box.createHorizontalBox();
+        
+        JLabel label = new JLabel("Double click variable/node rectangle to change name. More information on graph edge types");
+        label.setFont(new Font("SansSerif", Font.PLAIN, 12));
+
+        // Info button added by Zhou to show edge types
+        JButton infoBtn = new JButton(new ImageIcon(ImageUtils.getImage(this, "info.png")));
+        infoBtn.setBorder(new EmptyBorder(0, 0, 0, 0));
+
+        // Clock info button to show edge types instructions - Zhou
+        infoBtn.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                // Initialize helpSet
+                String helpHS = "/resources/javahelp/TetradHelp.hs";
+
+                try {
+                    URL url = this.getClass().getResource(helpHS);
+                    HelpSet helpSet = new HelpSet(null, url);
+
+                    helpSet.setHomeID("graph_edge_types");
+                    HelpBroker broker = helpSet.createHelpBroker();
+                    ActionListener listener = new CSH.DisplayHelpFromSource(broker);
+                    listener.actionPerformed(e);
+                } catch (Exception ee) {
+                    System.out.println("HelpSet " + ee.getMessage());
+                    System.out.println("HelpSet " + helpHS + " not found");
+                    throw new IllegalArgumentException();
+                }
+            }
+        });
+
+        instructionBox.add(label);
+        instructionBox.add(Box.createHorizontalStrut(2));
+        instructionBox.add(infoBtn);
+        
+        // Add to topBox
+        topBox.add(topGraphBox);
+        topBox.add(instructionBox);
+
+        // bottomBox contains bootstrap table
+        Box bottomBox = Box.createVerticalBox();
+        bottomBox.setPreferredSize(new Dimension(750, 150));
+
+        bottomBox.add(Box.createVerticalStrut(5));
+        
+        // Put the table title label in a box so it can be centered
+        Box tableTitleBox = Box.createHorizontalBox();
+        JLabel tableTitle = new JLabel("Edges and Edge Type Probabilities");
+        tableTitleBox.add(tableTitle);
+        
+        bottomBox.add(tableTitleBox);
+        
+        bottomBox.add(Box.createVerticalStrut(5));
+        
+        JScrollPane tablePane = BootstrapTable.renderBootstrapTable(graph);
+        
+        bottomBox.add(tablePane);
+        
         // Use JSplitPane to allow resize the bottom box - Zhou
-        JSplitPane splitPane = GraphEditorBootstrapTable.getEditor(this, graphToolbar, workbench, graph);
+        JSplitPane splitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
+        
+        // Set the top and bottom split panes
+        splitPane.setTopComponent(topBox);
+        splitPane.setBottomComponent(bottomBox);
 
         // Add to parent
         add(menuBar, BorderLayout.NORTH);

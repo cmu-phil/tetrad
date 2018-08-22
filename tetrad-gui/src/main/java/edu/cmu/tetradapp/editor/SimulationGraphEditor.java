@@ -37,6 +37,8 @@ import javax.swing.*;
  */
 final class SimulationGraphEditor extends JPanel {
 
+    private static final long serialVersionUID = -8394516826928341168L;
+
     /**
      * The data wrapper being displayed.
      */
@@ -110,8 +112,7 @@ final class SimulationGraphEditor extends JPanel {
 
         for (int i = 0; i < graphs.size(); i++) {
             Graph graph = graphs.get(i);
-            tabbedPane().addTab(tabName(i + 1),
-                    graphDisplay(graph));
+            tabbedPane().addTab(tabName(i + 1), graphDisplay(graph));
         }
 
         tabbedPane().setSelectedIndex(selectedIndex);
@@ -134,7 +135,6 @@ final class SimulationGraphEditor extends JPanel {
     }
 
     public void selectFirstTab() {
-//        tabbedPane().setSelectedIndex(tabbedPane().getTabCount() - 1);
         tabbedPane().setSelectedIndex(0);
     }
 
