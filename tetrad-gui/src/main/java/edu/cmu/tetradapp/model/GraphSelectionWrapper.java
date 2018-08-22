@@ -29,7 +29,6 @@ import edu.cmu.tetrad.session.SessionModel;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
-import edu.cmu.tetradapp.editor.GraphSelectionEditor;
 import edu.cmu.tetradapp.util.IonInput;
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -44,7 +43,7 @@ import java.util.*;
 public class GraphSelectionWrapper implements SessionModel, GraphSource, KnowledgeBoxInput, IonInput, IndTestProducer {
     static final long serialVersionUID = 23L;
     private final Parameters params;
-    private List<Node> selectedVariables;
+    private List<Node> selectedNodes;
     private List<Graph> graphs = new ArrayList<>();
 
     public enum Type {
@@ -118,7 +117,7 @@ public class GraphSelectionWrapper implements SessionModel, GraphSource, Knowled
 
 
     public List<Node> getSelectedVariables() {
-        return selectedVariables;
+        return selectedNodes;
     }
 
     private List<Graph> getSelectionGraphs(Parameters params) {
@@ -656,16 +655,6 @@ public class GraphSelectionWrapper implements SessionModel, GraphSource, Knowled
     public void setType(Type type) {
         params.set("graphSelectionType", type.toString());
     }
-
-    // Added by Zhou
-    public GraphSelectionEditor.GraphEditorOptionsPanel getGraphEditorOptionsPanel() {
-        return (GraphSelectionEditor.GraphEditorOptionsPanel) params.get("graphEditorOptionsPanel");
-    }
-    
-    // Added by Zhou
-    public void setGraphEditorOptionsPanel(GraphSelectionEditor.GraphEditorOptionsPanel graphEditorOptionsPanel) {
-        params.set("graphEditorOptionsPanel", graphEditorOptionsPanel);
-    }
     
     public String getName() {
         return params.getString("name", null);
@@ -688,7 +677,7 @@ public class GraphSelectionWrapper implements SessionModel, GraphSource, Knowled
     }
 
     public void setSelectedVariables(List<Node> variables) {
-        this.selectedVariables = variables;
+        this.selectedNodes = variables;
     }
 
 

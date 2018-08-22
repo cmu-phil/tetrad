@@ -119,7 +119,7 @@ public class GraphSelectionEditor extends JPanel implements GraphEditable, Tripl
     private final JComboBox<GraphSelectionWrapper.Type> graphTypeCombo = new JComboBox<>();;
 
     private final HelpSet helpSet;
-
+ 
     /**
      * Holds the graphs.
      */
@@ -165,12 +165,15 @@ public class GraphSelectionEditor extends JPanel implements GraphEditable, Tripl
 
         setLayout(new BorderLayout());
 
-        // Graph setting options on left
-        if (wrapper.getGraphEditorOptionsPanel() != null) {
-            graphEditorOptionsPanel = wrapper.getGraphEditorOptionsPanel();
-        } else {
-            graphEditorOptionsPanel = new GraphEditorOptionsPanel(wrapper);
-        }
+        // Use selected nodes to render graph - Zhou
+        List<Node> selectedNodes = wrapper.getSelectedVariables();
+        System.out.println("selectedNodes=================");
+        selectedNodes.forEach(e->{
+            System.out.println("selectedNode " + e.getName());
+        });
+        
+        // Must before calling setSelectedGraphType()
+        graphEditorOptionsPanel = new GraphEditorOptionsPanel(wrapper);
         
         // Select the graph type if graph wrapper has the type info
         setSelectedGraphType(wrapper.getType());
@@ -179,6 +182,7 @@ public class GraphSelectionEditor extends JPanel implements GraphEditable, Tripl
         workbenchScrollsPanel = workbenchScrollsPanel(wrapper);
    
         // splitPane contains subgraph setting options on left and graph on right
+        
         JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, true, new PaddingPanel(graphEditorOptionsPanel), workbenchScrollsPanel);
         splitPane.setDividerLocation(383);
 
@@ -209,10 +213,14 @@ public class GraphSelectionEditor extends JPanel implements GraphEditable, Tripl
                             graphEditorOptionsPanel.setSelected(newSelected);
                         }
 
-                        tabbedPaneGraphs(wrapper);
+                        // Remember the selected variables - Zhou
+                        newSelected.forEach(e->{
+                            System.out.println("Selected variable = " + e.getName());
+                        });
+                        wrapper.setSelectedVariables(newSelected);
                         
-                        // Remember the editor panel settings - Zhou
-                        wrapper.setGraphEditorOptionsPanel(graphEditorOptionsPanel);
+                        
+                        tabbedPaneGraphs(wrapper);
                     }
                 };
             }
@@ -521,7 +529,7 @@ public class GraphSelectionEditor extends JPanel implements GraphEditable, Tripl
 
         return save;
     }
-    
+
     private JMenu createGraphMenu() {
         JMenu graph = new JMenu("Graph");
 
