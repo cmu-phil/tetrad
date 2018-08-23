@@ -263,6 +263,26 @@ public class ParamDescriptions {
         map.put("probTwoCycle", new ParamDescription(
                 "The probability of creating a 2-cycles in the graph (0 - 1)",
                 0.0, 0.0, 1.0));
+
+        map.put("numBasisFunctions", new ParamDescription(
+                "Number of functions to use in (truncated) basis",
+                4, 1, Integer.MAX_VALUE));
+
+        map.put("kernelType", new ParamDescription(
+                "Kernel type (1 = Gaussian, 2 = Epinechnikov)",
+                1, 1, 2));
+
+        map.put("kernelMultiplier", new ParamDescription(
+                "Bowman and Azzalini (1997) default kernel bandwidhts should be multiplied by...",
+                1.0, Double.MIN_VALUE, Double.POSITIVE_INFINITY));
+        
+        map.put("basisType", new ParamDescription(
+                "Basis type (1 = Polynomial, 2 = Cosine)",
+                1, 1, 2));
+
+        map.put("fastFDR", new ParamDescription(
+                "Yes if the possible fastFDR adjustment to alpha levels should be done", false));
+
     }
 
     public static ParamDescriptions getInstance() {
