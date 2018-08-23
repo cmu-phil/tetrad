@@ -245,6 +245,9 @@ public final class SemGraphEditor extends JPanel
                 comp.addItem(i + 1);
             }
 
+            // Remember the selected model on reopen
+            comp.setSelectedIndex(semGraphWrapper.getModelIndex());
+            
             comp.addActionListener(new ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent e) {

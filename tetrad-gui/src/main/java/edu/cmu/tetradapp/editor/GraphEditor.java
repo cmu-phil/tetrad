@@ -249,6 +249,9 @@ public final class GraphEditor extends JPanel
                 comp.addItem(i + 1);
             }
 
+            // Remember the selected model on reopen
+            comp.setSelectedIndex(graphWrapper.getModelIndex());
+            
             comp.addActionListener(new ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent e) {
