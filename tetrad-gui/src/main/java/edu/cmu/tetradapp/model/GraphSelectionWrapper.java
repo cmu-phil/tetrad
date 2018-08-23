@@ -90,6 +90,22 @@ public class GraphSelectionWrapper implements SessionModel, GraphSource, Knowled
         init(params, graphs);
     }
 
+    public GraphSelectionWrapper(Graph graphs, Parameters params, String message) {
+        this(graphs, params);
+        TetradLogger.getInstance().log("info", message);
+    }
+
+    /**
+     * Generates a simple exemplar of this class to test serialization.
+     *
+     * @see TetradSerializableUtils
+     */
+    public static GraphSelectionWrapper serializableInstance() {
+        return new GraphSelectionWrapper(Dag.serializableInstance(), new Parameters());
+    }
+
+    //===============================================METHODS================================//
+
     private void init(Parameters params, List<Graph> graphs) {
         setGraphs(graphs);
 
@@ -103,6 +119,7 @@ public class GraphSelectionWrapper implements SessionModel, GraphSource, Knowled
 
         List<Node> nodes = getVariables();
 
+        // Default to select the first 50 variables to render graph
         List<Node> first50 = new ArrayList<>();
 
         for (int i = 0; i < 50; i++) {
@@ -124,23 +141,7 @@ public class GraphSelectionWrapper implements SessionModel, GraphSource, Knowled
         return (List<Graph>) params.get("selectionGraphs",
                 Collections.singletonList(new EdgeListGraph()));
     }
-
-    public GraphSelectionWrapper(Graph graphs, Parameters params, String message) {
-        this(graphs, params);
-        TetradLogger.getInstance().log("info", message);
-    }
-
-    /**
-     * Generates a simple exemplar of this class to test serialization.
-     *
-     * @see TetradSerializableUtils
-     */
-    public static GraphSelectionWrapper serializableInstance() {
-        return new GraphSelectionWrapper(Dag.serializableInstance(), new Parameters());
-    }
-
-    //===============================================PUBLIC METHODS================================//
-
+    
     public void calculateSelection() {
         List<Graph> selectedGraphs = new ArrayList<>();
 

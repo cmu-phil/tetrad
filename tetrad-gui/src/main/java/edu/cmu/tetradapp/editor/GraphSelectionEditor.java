@@ -141,12 +141,9 @@ public class GraphSelectionEditor extends JPanel implements GraphEditable, Tripl
         if (wrapper == null) {
             throw new NullPointerException("The regression wrapper is required.");
         }
-        
+ 
         this.wrapper = wrapper;
 
-        // Only show the first 500 variables
-        first500Variables(wrapper);
-        
         if (layoutGraph == null) {
             layoutGraph = new HashMap<>();
         }
@@ -165,13 +162,7 @@ public class GraphSelectionEditor extends JPanel implements GraphEditable, Tripl
 
         setLayout(new BorderLayout());
 
-        // Use selected nodes to render graph - Zhou
-        List<Node> selectedNodes = wrapper.getSelectedVariables();
-        System.out.println("selectedNodes=================");
-        selectedNodes.forEach(e->{
-            System.out.println("selectedNode " + e.getName());
-        });
-        
+       
         // Must before calling setSelectedGraphType()
         graphEditorOptionsPanel = new GraphEditorOptionsPanel(wrapper);
         
@@ -190,9 +181,6 @@ public class GraphSelectionEditor extends JPanel implements GraphEditable, Tripl
         JPanel buttonPanel = new JPanel();
         buttonPanel.setLayout(new FlowLayout());
 
-        //final JButton executeButton = resetWorkbenches(wrapper);
-        
-        
         // "Graph It" button
         JButton executeButton = new JButton("Graph It!");
 
@@ -213,13 +201,6 @@ public class GraphSelectionEditor extends JPanel implements GraphEditable, Tripl
                             graphEditorOptionsPanel.setSelected(newSelected);
                         }
 
-                        // Remember the selected variables - Zhou
-                        newSelected.forEach(e->{
-                            System.out.println("Selected variable = " + e.getName());
-                        });
-                        wrapper.setSelectedVariables(newSelected);
-                        
-                        
                         tabbedPaneGraphs(wrapper);
                     }
                 };
@@ -227,11 +208,6 @@ public class GraphSelectionEditor extends JPanel implements GraphEditable, Tripl
         });
 
         workbenchScrollsPanel.validate();
-        
-        
-        
-        
-        
         
         // Add to buttonPanel
         buttonPanel.add(executeButton);
@@ -262,9 +238,7 @@ public class GraphSelectionEditor extends JPanel implements GraphEditable, Tripl
         add(splitPane, BorderLayout.CENTER);
         add(buttonPanel, BorderLayout.SOUTH);
 
-        //graphEditorOptionsPanel.reset();
-
-        
+        graphEditorOptionsPanel.reset();
     }
 
     // Top menu bar, contains "Save As" and "Graph"
@@ -367,21 +341,6 @@ public class GraphSelectionEditor extends JPanel implements GraphEditable, Tripl
         }
     }
 
-    private void first500Variables(GraphSelectionWrapper wrapper) {
-        List<Node> nodes = wrapper.getVariables();
-
-        List<Node> first500 = new ArrayList<>();
-
-        for (int i = 0; i < 500; i++) {
-            if (i >= nodes.size()) {
-                continue;
-            }
-            first500.add(nodes.get(i));
-        }
-
-        wrapper.setSelectedVariables(first500);
-    }
-
     // Create scroll pane for each graph
     private JPanel workbenchScrollsPanel(GraphSelectionWrapper wrapper) {
         //tabbedPane.removeAll();
@@ -411,7 +370,6 @@ public class GraphSelectionEditor extends JPanel implements GraphEditable, Tripl
         }
 
 //        wrapper.setSelectionGraphs(selectionGraphs);
-        //resetGraphs(wrapper);
 
         for (int i = 0; i < workbenchScrolls.size(); i++) {
             tabbedPane.add("" + (i + 1), workbenchScrolls.get(i));
@@ -438,44 +396,13 @@ public class GraphSelectionEditor extends JPanel implements GraphEditable, Tripl
         return workbenchScrollsPanel;
     }
 
-//    private JButton resetWorkbenches(GraphSelectionWrapper wrapper) {
-//        final JButton executeButton = new JButton("Graph It!");
-//
-//        executeButton.addActionListener(new ActionListener() {
-//            public void actionPerformed(ActionEvent e) {
-//                Window owner = (Window) getTopLevelAncestor();
-//
-//                new WatchedProcess(owner) {
-//                    public void watch() {
-//                        GraphWorkbench workbench = getWorkbench();
-//                        List<DisplayNode> displayNodes = workbench.getSelectedNodes();
-//                        List<Node> newSelected = new ArrayList<>();
-//                        for (DisplayNode node : displayNodes) {
-//                            newSelected.add(node.getModelNode());
-//                        }
-//
-//                        if (!newSelected.isEmpty()) {
-//                            graphEditorOptionsPanel.setSelected(newSelected);
-//                        }
-//
-//                        tabbedPaneGraphs(wrapper);
-//
-//                    }
-//                };
-//            }
-//        });
-//
-//        workbenchScrollsPanel.validate();
-//
-//        return executeButton;
-//    }
 
     private void tabbedPaneGraphs(GraphSelectionWrapper wrapper) {
         wrapper.calculateSelection();
 
-        if (wrapper.getSelectedVariables() == null || wrapper.getSelectedVariables().isEmpty()) {
-            first500Variables(wrapper);
-        }
+//        if (wrapper.getSelectedVariables() == null || wrapper.getSelectedVariables().isEmpty()) {
+//            first500Variables(wrapper);
+//        }
 
         for (int i = 0; i < tabbedPane.getTabCount(); i++) {
             Graph selection = wrapper.getSelectionGraph(i);
