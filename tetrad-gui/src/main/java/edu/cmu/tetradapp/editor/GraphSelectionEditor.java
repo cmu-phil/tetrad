@@ -109,6 +109,7 @@ import javax.swing.border.LineBorder;
  * Lets the user select a subgraph of a possible large graph and display it.
  *
  * @author jdramsey
+ * @author Zhou Yuan
  */
 public class GraphSelectionEditor extends JPanel implements GraphEditable, TripleClassifier {
 

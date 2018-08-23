@@ -30,8 +30,8 @@ import edu.cmu.tetrad.util.RandomUtil;
 import edu.cmu.tetrad.util.TetradSerializable;
 import edu.cmu.tetradapp.model.DagWrapper;
 import edu.cmu.tetradapp.model.IndTestProducer;
-import edu.cmu.tetradapp.util.DesktopController;
 import edu.cmu.tetradapp.util.BootstrapTable;
+import edu.cmu.tetradapp.util.DesktopController;
 import edu.cmu.tetradapp.util.ImageUtils;
 import edu.cmu.tetradapp.util.LayoutEditable;
 import edu.cmu.tetradapp.workbench.DisplayEdge;
@@ -46,6 +46,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -63,82 +64,67 @@ import javax.swing.event.InternalFrameEvent;
  *
  * @author Aaron Powers
  * @author Joseph Ramsey
+ * @author Zhou Yuan
  */
 public final class DagEditor extends JPanel
         implements GraphEditable, LayoutEditable, DelegatesEditing, IndTestProducer {
 
+    private static final long serialVersionUID = -6082746735835257666L;
+
     private GraphWorkbench workbench;
     private DagWrapper dagWrapper;
     private Parameters parameters;
+    
+    private JScrollPane graphEditorScroll = new JScrollPane();
+    private Box tablePaneBox;
 
-    public DagEditor(DagWrapper graphWrapper) {
+    public DagEditor(DagWrapper dagWrapper) {
         setLayout(new BorderLayout());
-        this.dagWrapper = graphWrapper;
-        this.parameters = graphWrapper.getParameters();
+        this.dagWrapper = dagWrapper;
+        this.parameters = dagWrapper.getParameters();
 
-        editGraph(graphWrapper.getGraph());
-      
-        int numModels = dagWrapper.getNumModels();
+        
+        initUI(dagWrapper);
 
-        if (numModels > 1) {
-            final JComboBox<Integer> comp = new JComboBox<>();
-
-            for (int i = 0; i < numModels; i++) {
-                comp.addItem(i + 1);
-            }
-
-            comp.addActionListener(new ActionListener() {
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    dagWrapper.setModelIndex(((Integer) comp.getSelectedItem()).intValue() - 1);
-                    editGraph(dagWrapper.getGraph());
-                    validate();
-                }
-            });
-
-            comp.setMaximumSize(comp.getPreferredSize());
-
-            Box b = Box.createHorizontalBox();
-            b.add(new JLabel("Using model"));
-            b.add(comp);
-            b.add(new JLabel("from "));
-            b.add(new JLabel(dagWrapper.getModelSourceName()));
-            b.add(Box.createHorizontalGlue());
-
-            add(b, BorderLayout.NORTH);
-        }
-
-        this.getWorkbench().addPropertyChangeListener(new PropertyChangeListener() {
+        getWorkbench().addPropertyChangeListener(new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent evt) {
                 String propertyName = evt.getPropertyName();
 
-                if ("graph".equals(propertyName)) {
-                    Graph _graph = (Graph) evt.getNewValue();
+                // Update the bootstrap table if there's changes to the edges or node renaming
+                String[] events = { "graph", "edgeAdded", "edgeRemoved" };
+                
+                if (Arrays.asList(events).contains(propertyName)) {
+                    Graph graph = (Graph) getWorkbench().getGraph();
 
-                    if (getWorkbench() != null && getDagWrapper() != null) {
-                        dagWrapper.setGraph(_graph);
-                        // Also need to update the UI - Zhou
-                        editGraph(_graph);
+                    if (getWorkbench() != null && dagWrapper != null) {
+                        // Update the graphWrapper
+                        dagWrapper.setGraph(graph);
+                        // Also need to update the UI
+                        updateBootstrapTable(graph);
                     }
                 } else if ("modelChanged".equals(propertyName)) {
                     firePropertyChange("modelChanged", null, null);
                 }
             }
         });
-
-        validate();
     }
 
-    private void editGraph(Graph graph) {
-        this.workbench = new GraphWorkbench(graph);
+    private void initUI(DagWrapper dagWrapper) {
+        Graph graph = dagWrapper.getGraph();
         
+        workbench = new GraphWorkbench(graph);
+        
+        // Graph menu at the very top of the window
         JMenuBar menuBar = createGraphMenuBar();
+        
+        // Add the model selection to top if multiple models
+        modelSelectin(dagWrapper);
         
         // topBox Left side toolbar
         DagGraphToolbar graphToolbar = new DagGraphToolbar(getWorkbench());
-
+        
         // topBox right side graph editor
-        JScrollPane graphEditorScroll = new JScrollPane();
+        
         graphEditorScroll.setPreferredSize(new Dimension(750, 450));
         graphEditorScroll.setViewportView(workbench);
 
@@ -206,9 +192,12 @@ public final class DagEditor extends JPanel
         
         bottomBox.add(Box.createVerticalStrut(5));
         
+        // Table box contains the table pane
+        tablePaneBox = Box.createHorizontalBox();
         JScrollPane tablePane = BootstrapTable.renderBootstrapTable(graph);
+        tablePaneBox.add(tablePane);
         
-        bottomBox.add(tablePane);
+        bottomBox.add(tablePaneBox);
         
         // Use JSplitPane to allow resize the bottom box - Zhou
         JSplitPane splitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
@@ -216,13 +205,69 @@ public final class DagEditor extends JPanel
         // Set the top and bottom split panes
         splitPane.setTopComponent(topBox);
         splitPane.setBottomComponent(bottomBox);
-
-        // Add to parent
+        
+        
+        // Add to parent container
         add(menuBar, BorderLayout.NORTH);
         add(splitPane, BorderLayout.SOUTH);
         
+        // Performs relayout. 
+        // It means invalid content is asked for all the sizes and 
+        // all the subcomponents' sizes are set to proper values by LayoutManager.
         validate();
     }
+    
+    private void updateGraphWorkbench(Graph graph) {
+        workbench = new GraphWorkbench(graph);
+        graphEditorScroll.setViewportView(workbench);
+        
+        validate();
+    }
+    
+    private void updateBootstrapTable(Graph graph) {
+        tablePaneBox.removeAll();
+        JScrollPane tablePane = BootstrapTable.renderBootstrapTable(graph);
+        tablePaneBox.add(tablePane);
+        
+        validate();
+    }
+    
+    private void modelSelectin(DagWrapper dagWrapper) {
+        int numModels = dagWrapper.getNumModels();
+
+        if (numModels > 1) {
+            final JComboBox<Integer> comp = new JComboBox<>();
+
+            for (int i = 0; i < numModels; i++) {
+                comp.addItem(i + 1);
+            }
+
+            comp.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    dagWrapper.setModelIndex(((Integer) comp.getSelectedItem()).intValue() - 1);
+                    
+                    // Update the graph workbench
+                    updateGraphWorkbench(dagWrapper.getGraph());
+  
+                    // Update the bootstrap table
+                    updateBootstrapTable(dagWrapper.getGraph());
+                }
+            });
+
+            comp.setMaximumSize(comp.getPreferredSize());
+
+            Box b = Box.createHorizontalBox();
+            b.add(new JLabel("Using model "));
+            b.add(comp);
+            b.add(new JLabel(" from "));
+            b.add(new JLabel(dagWrapper.getModelSourceName()));
+            b.add(Box.createHorizontalGlue());
+
+            add(b, BorderLayout.EAST);
+        }
+    }
+    
 
     /**
      * Sets the name of this editor.

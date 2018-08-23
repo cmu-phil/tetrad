@@ -64,12 +64,18 @@ import javax.swing.event.InternalFrameEvent;
  *
  * @author Aaron Powers
  * @author Joseph Ramsey
+ * @author Zhou Yuan
  */
 public final class GraphEditor extends JPanel
         implements GraphEditable, LayoutEditable, IndTestProducer {
 
+    private static final long serialVersionUID = 5123725895449927539L;
+
     private GraphWorkbench workbench;
     private Parameters parameters;
+    
+    private JScrollPane graphEditorScroll = new JScrollPane();
+    private Box tablePaneBox;
 
     //===========================PUBLIC METHODS========================//
     public GraphEditor(GraphWrapper graphWrapper) {
@@ -77,58 +83,29 @@ public final class GraphEditor extends JPanel
         
         this.parameters = graphWrapper.getParameters();
 
-        editGraph(graphWrapper.getGraph());
+        initUI(graphWrapper);
 
-        int numModels = graphWrapper.getNumModels();
-
-        if (numModels > 1) {
-            final JComboBox<Integer> comp = new JComboBox<>();
-
-            for (int i = 0; i < numModels; i++) {
-                comp.addItem(i + 1);
-            }
-
-            comp.addActionListener(new ActionListener() {
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    graphWrapper.setModelIndex(((Integer) comp.getSelectedItem()).intValue() - 1);
-                    editGraph(graphWrapper.getGraph());
-                    validate();
-                }
-            });
-
-            comp.setMaximumSize(comp.getPreferredSize());
-
-            Box b = Box.createHorizontalBox();
-            b.add(new JLabel("Using model"));
-            b.add(comp);
-            b.add(new JLabel("from "));
-            b.add(new JLabel(graphWrapper.getModelSourceName()));
-            b.add(Box.createHorizontalGlue());
-
-            add(b, BorderLayout.EAST);
-        }
-
-        this.getWorkbench().addPropertyChangeListener(new PropertyChangeListener() {
+        getWorkbench().addPropertyChangeListener(new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent evt) {
                 String propertyName = evt.getPropertyName();
 
-                if ("graph".equals(propertyName)) {
-                    Graph _graph = (Graph) evt.getNewValue();
+                // Update the bootstrap table if there's changes to the edges or node renaming
+                String[] events = { "graph", "edgeAdded", "edgeRemoved" };
+                System.out.println("propertyName === " + propertyName);
+                if (Arrays.asList(events).contains(propertyName)) {
+                    Graph graph = (Graph) getWorkbench().getGraph();
 
                     if (getWorkbench() != null && graphWrapper != null) {
-                        graphWrapper.setGraph(_graph);
-                        // Also need to update the UI - Zhou
-                        editGraph(_graph);
+                        // Update the graphWrapper
+                        graphWrapper.setGraph(graph);
+                        // Also need to update the UI
+                        updateBootstrapTable(graph);
                     }
                 } else if ("modelChanged".equals(propertyName)) {
                     firePropertyChange("modelChanged", null, null);
                 }
             }
         });
-
-        validate();
-
     }
 
 //    public GraphEditor(DagInPatternWrapper wrapper) {
@@ -139,17 +116,22 @@ public final class GraphEditor extends JPanel
 //        this(wrapper.getGraph());
 //    }
     //===========================PRIVATE METHODS======================//
-    private void editGraph(Graph graph) {
-        this.workbench = new GraphWorkbench(graph);
+    private void initUI(GraphWrapper graphWrapper) {
+        Graph graph = graphWrapper.getGraph();
+        
+        workbench = new GraphWorkbench(graph);
         
         // Graph menu at the very top of the window
         JMenuBar menuBar = createGraphMenuBar();
+        
+        // Add the model selection to top if multiple models
+        modelSelectin(graphWrapper);
         
         // topBox Left side toolbar
         GraphToolbar graphToolbar = new GraphToolbar(getWorkbench());
         
         // topBox right side graph editor
-        JScrollPane graphEditorScroll = new JScrollPane();
+        
         graphEditorScroll.setPreferredSize(new Dimension(750, 450));
         graphEditorScroll.setViewportView(workbench);
 
@@ -217,9 +199,12 @@ public final class GraphEditor extends JPanel
         
         bottomBox.add(Box.createVerticalStrut(5));
         
+        // Table box contains the table pane
+        tablePaneBox = Box.createHorizontalBox();
         JScrollPane tablePane = BootstrapTable.renderBootstrapTable(graph);
+        tablePaneBox.add(tablePane);
         
-        bottomBox.add(tablePane);
+        bottomBox.add(tablePaneBox);
         
         // Use JSplitPane to allow resize the bottom box - Zhou
         JSplitPane splitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
@@ -233,9 +218,63 @@ public final class GraphEditor extends JPanel
         add(menuBar, BorderLayout.NORTH);
         add(splitPane, BorderLayout.SOUTH);
         
+        // Performs relayout. 
+        // It means invalid content is asked for all the sizes and 
+        // all the subcomponents' sizes are set to proper values by LayoutManager.
         validate();
     }
+    
+    private void updateGraphWorkbench(Graph graph) {
+        workbench = new GraphWorkbench(graph);
+        graphEditorScroll.setViewportView(workbench);
+        
+        validate();
+    }
+    
+    private void updateBootstrapTable(Graph graph) {
+        tablePaneBox.removeAll();
+        JScrollPane tablePane = BootstrapTable.renderBootstrapTable(graph);
+        tablePaneBox.add(tablePane);
+        
+        validate();
+    }
+    
+    private void modelSelectin(GraphWrapper graphWrapper) {
+        int numModels = graphWrapper.getNumModels();
 
+        if (numModels > 1) {
+            final JComboBox<Integer> comp = new JComboBox<>();
+
+            for (int i = 0; i < numModels; i++) {
+                comp.addItem(i + 1);
+            }
+
+            comp.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    graphWrapper.setModelIndex(((Integer) comp.getSelectedItem()).intValue() - 1);
+                    
+                    // Update the graph workbench
+                    updateGraphWorkbench(graphWrapper.getGraph());
+  
+                    // Update the bootstrap table
+                    updateBootstrapTable(graphWrapper.getGraph());
+                }
+            });
+
+            comp.setMaximumSize(comp.getPreferredSize());
+
+            Box b = Box.createHorizontalBox();
+            b.add(new JLabel("Using model "));
+            b.add(comp);
+            b.add(new JLabel(" from "));
+            b.add(new JLabel(graphWrapper.getModelSourceName()));
+            b.add(Box.createHorizontalGlue());
+
+            add(b, BorderLayout.EAST);
+        }
+    }
+    
     /**
      * Sets the name of this editor.
      */

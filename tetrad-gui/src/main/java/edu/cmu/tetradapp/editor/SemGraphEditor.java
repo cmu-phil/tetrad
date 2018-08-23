@@ -28,8 +28,8 @@ import edu.cmu.tetrad.session.DelegatesEditing;
 import edu.cmu.tetrad.util.*;
 import edu.cmu.tetradapp.model.IndTestProducer;
 import edu.cmu.tetradapp.model.SemGraphWrapper;
-import edu.cmu.tetradapp.util.DesktopController;
 import edu.cmu.tetradapp.util.BootstrapTable;
+import edu.cmu.tetradapp.util.DesktopController;
 import edu.cmu.tetradapp.util.ImageUtils;
 import edu.cmu.tetradapp.util.LayoutEditable;
 import edu.cmu.tetradapp.workbench.DisplayEdge;
@@ -62,91 +62,72 @@ import javax.swing.event.InternalFrameEvent;
  *
  * @author Aaron Powers
  * @author Joseph Ramsey
+ * @author Zhou Yuan
  */
 public final class SemGraphEditor extends JPanel
         implements GraphEditable, LayoutEditable, DelegatesEditing, IndTestProducer {
+
+    private static final long serialVersionUID = 6837233499169689575L;
 
     private GraphWorkbench workbench;
     private SemGraphWrapper semGraphWrapper;
     private JMenuItem errorTerms;
     private Parameters parameters;
 
+    private JScrollPane graphEditorScroll = new JScrollPane();
+    private Box tablePaneBox;
+    
     //===========================PUBLIC METHODS========================//
     public SemGraphEditor(final SemGraphWrapper semGraphWrapper) {
         if (semGraphWrapper == null) {
             throw new NullPointerException();
         }
 
-//        setLayout(new BorderLayout());
-//
-//        setEditor(semGraphWrapper);
         setLayout(new BorderLayout());
         this.semGraphWrapper = semGraphWrapper;
         this.parameters = semGraphWrapper.getParameters();
 
-        editGraph(semGraphWrapper.getGraph());
+        initUI(semGraphWrapper);
 
-        int numModels = getSemGraphWrapper().getNumModels();
-
-        if (numModels > 1) {
-            final JComboBox<Integer> comp = new JComboBox<>();
-
-            for (int i = 0; i < numModels; i++) {
-                comp.addItem(i + 1);
-            }
-
-            comp.addActionListener(new ActionListener() {
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    getSemGraphWrapper().setModelIndex(((Integer) comp.getSelectedItem()).intValue() - 1);
-                    editGraph(semGraphWrapper.getGraph());
-//                    editGraph(getSemGraphWrapper().getGraph());
-                    validate();
-                }
-            });
-
-            comp.setMaximumSize(comp.getPreferredSize());
-
-            Box b = Box.createHorizontalBox();
-            b.add(new JLabel("Using model"));
-            b.add(comp);
-            b.add(new JLabel("from "));
-            b.add(new JLabel(semGraphWrapper.getModelSourceName()));
-            b.add(Box.createHorizontalGlue());
-
-            add(b, BorderLayout.NORTH);
-        }
-
-        this.getWorkbench().addPropertyChangeListener(new PropertyChangeListener() {
+        getWorkbench().addPropertyChangeListener(new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent evt) {
                 String propertyName = evt.getPropertyName();
 
-                if ("graph".equals(propertyName)) {
-                    Graph _graph = (Graph) evt.getNewValue();
+                // Update the bootstrap table if there's changes to the edges or node renaming
+                String[] events = { "graph", "edgeAdded", "edgeRemoved" };
+                
+                if (Arrays.asList(events).contains(propertyName)) {
+                    Graph graph = (Graph) getWorkbench().getGraph();
 
-                    if (getWorkbench() != null && getSemGraphWrapper() != null) {
-                        semGraphWrapper.setGraph(_graph);
-                        // Also need to update the UI - Zhou
-                        editGraph(_graph);
+                    if (getWorkbench() != null && semGraphWrapper != null) {
+                        // Update the graphWrapper
+                        semGraphWrapper.setGraph(graph);
+                        // Also need to update the UI
+                        updateBootstrapTable(graph);
                     }
                 } else if ("modelChanged".equals(propertyName)) {
                     firePropertyChange("modelChanged", null, null);
                 }
             }
         });
-
-        validate();
     }
 
-    private void editGraph(Graph graph) {
-        this.workbench = new GraphWorkbench(graph);
-
-        JMenuBar menuBar = createMenuBar();
+    private void initUI(SemGraphWrapper semGraphWrapper) {
+        Graph graph = semGraphWrapper.getGraph();
         
+        workbench = new GraphWorkbench(graph);
+        
+        // Graph menu at the very top of the window
+        JMenuBar menuBar = createGraphMenuBar();
+        
+        // Add the model selection to top if multiple models
+        modelSelectin(semGraphWrapper);
+        
+        // topBox Left side toolbar
         SemGraphToolbar graphToolbar = new SemGraphToolbar(getWorkbench());
         
         // topBox right side graph editor
-        JScrollPane graphEditorScroll = new JScrollPane();
+        
         graphEditorScroll.setPreferredSize(new Dimension(750, 450));
         graphEditorScroll.setViewportView(workbench);
 
@@ -214,9 +195,12 @@ public final class SemGraphEditor extends JPanel
         
         bottomBox.add(Box.createVerticalStrut(5));
         
+        // Table box contains the table pane
+        tablePaneBox = Box.createHorizontalBox();
         JScrollPane tablePane = BootstrapTable.renderBootstrapTable(graph);
+        tablePaneBox.add(tablePane);
         
-        bottomBox.add(tablePane);
+        bottomBox.add(tablePaneBox);
         
         // Use JSplitPane to allow resize the bottom box - Zhou
         JSplitPane splitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
@@ -225,14 +209,83 @@ public final class SemGraphEditor extends JPanel
         splitPane.setTopComponent(topBox);
         splitPane.setBottomComponent(bottomBox);
         
-        // Add to parent
+        
+        // Add to parent container
         add(menuBar, BorderLayout.NORTH);
         add(splitPane, BorderLayout.SOUTH);
         
+        // Performs relayout. 
+        // It means invalid content is asked for all the sizes and 
+        // all the subcomponents' sizes are set to proper values by LayoutManager.
         validate();
     }
+    
+    private void updateGraphWorkbench(Graph graph) {
+        workbench = new GraphWorkbench(graph);
+        graphEditorScroll.setViewportView(workbench);
+        
+        validate();
+    }
+    
+    private void updateBootstrapTable(Graph graph) {
+        tablePaneBox.removeAll();
+        JScrollPane tablePane = BootstrapTable.renderBootstrapTable(graph);
+        tablePaneBox.add(tablePane);
+        
+        validate();
+    }
+    
+    private void modelSelectin(SemGraphWrapper semGraphWrapper) {
+        int numModels = semGraphWrapper.getNumModels();
 
-    //===========================PRIVATE METHODS======================//
+        if (numModels > 1) {
+            final JComboBox<Integer> comp = new JComboBox<>();
+
+            for (int i = 0; i < numModels; i++) {
+                comp.addItem(i + 1);
+            }
+
+            comp.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    semGraphWrapper.setModelIndex(((Integer) comp.getSelectedItem()).intValue() - 1);
+
+                    // Update the graph workbench
+                    updateGraphWorkbench(semGraphWrapper.getGraph());
+  
+                    // Update the bootstrap table
+                    updateBootstrapTable(semGraphWrapper.getGraph());
+                }
+            });
+
+            comp.setMaximumSize(comp.getPreferredSize());
+
+            Box b = Box.createHorizontalBox();
+            b.add(new JLabel("Using model "));
+            b.add(comp);
+            b.add(new JLabel(" from "));
+            b.add(new JLabel(semGraphWrapper.getModelSourceName()));
+            b.add(Box.createHorizontalGlue());
+
+            add(b, BorderLayout.EAST);
+        }
+    }
+    
+    private JMenuBar createGraphMenuBar() {
+        JMenuBar menuBar = new JMenuBar();
+
+        JMenu fileMenu = new GraphFileMenu(this, getWorkbench());
+        JMenu editMenu = createEditMenu();
+        JMenu graphMenu = createGraphMenu();
+
+        menuBar.add(fileMenu);
+        menuBar.add(editMenu);
+        menuBar.add(graphMenu);
+        menuBar.add(new LayoutMenu(this));
+
+        return menuBar;
+    }
+
     /**
      * Sets the name of this editor.
      */
