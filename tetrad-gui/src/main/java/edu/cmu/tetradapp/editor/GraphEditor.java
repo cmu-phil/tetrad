@@ -29,8 +29,8 @@ import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.RandomUtil;
 import edu.cmu.tetrad.util.TetradSerializable;
 import edu.cmu.tetradapp.model.*;
-import edu.cmu.tetradapp.util.DesktopController;
 import edu.cmu.tetradapp.util.BootstrapTable;
+import edu.cmu.tetradapp.util.DesktopController;
 import edu.cmu.tetradapp.util.ImageUtils;
 import edu.cmu.tetradapp.util.LayoutEditable;
 import edu.cmu.tetradapp.workbench.DisplayEdge;
@@ -106,7 +106,7 @@ public final class GraphEditor extends JPanel
             b.add(new JLabel(graphWrapper.getModelSourceName()));
             b.add(Box.createHorizontalGlue());
 
-            add(b, BorderLayout.NORTH);
+            add(b, BorderLayout.EAST);
         }
 
         this.getWorkbench().addPropertyChangeListener(new PropertyChangeListener() {
