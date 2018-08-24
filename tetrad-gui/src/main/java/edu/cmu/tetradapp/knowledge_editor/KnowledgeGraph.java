@@ -22,7 +22,7 @@
 package edu.cmu.tetradapp.knowledge_editor;
 
 import edu.cmu.tetrad.data.IKnowledge;
-import edu.cmu.tetrad.data.Knowledge;
+import edu.cmu.tetrad.data.Knowledge2;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.TetradSerializableExcluded;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
@@ -75,7 +75,7 @@ public class KnowledgeGraph implements Graph, TetradSerializableExcluded {
      * @see TetradSerializableUtils
      */
     public static KnowledgeGraph serializableInstance() {
-        return new KnowledgeGraph(Knowledge.serializableInstance());
+        return new KnowledgeGraph(Knowledge2.serializableInstance());
     }
 
     //=============================PUBLIC METHODS==========================//

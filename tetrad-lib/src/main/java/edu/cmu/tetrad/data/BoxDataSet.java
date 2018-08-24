@@ -60,7 +60,7 @@ import java.util.*;
  *
  * @author Joseph Ramsey
  * @see edu.cmu.tetrad.data.Variable
- * @see edu.cmu.tetrad.data.Knowledge
+ * @see edu.cmu.tetrad.data.Knowledge2
  */
 public final class BoxDataSet implements DataSet, TetradSerializable {
 

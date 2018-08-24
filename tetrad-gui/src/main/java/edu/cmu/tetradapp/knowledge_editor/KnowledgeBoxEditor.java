@@ -20,10 +20,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 package edu.cmu.tetradapp.knowledge_editor;
 
-import edu.cmu.tetrad.data.DataReader;
-import edu.cmu.tetrad.data.IKnowledge;
-import edu.cmu.tetrad.data.Knowledge;
-import edu.cmu.tetrad.data.KnowledgeEdge;
+import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.util.JOptionUtils;
@@ -243,7 +240,7 @@ public class KnowledgeBoxEditor extends JPanel {
             Preferences.userRoot().put("fileSaveLocation", selectedFile.getParent());
 
             try {
-                Knowledge.saveKnowledge(knowledgeBoxModel.getKnowledge(), new FileWriter(selectedFile));
+                DataWriter.saveKnowledge(knowledgeBoxModel.getKnowledge(), new FileWriter(selectedFile));
             } catch (Exception e1) {
                 JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
                         e1.getMessage());
@@ -378,6 +375,10 @@ public class KnowledgeBoxEditor extends JPanel {
 
             JCheckBox forbiddenCheckbox = new JCheckBox("Forbid Within Tier",
                     getKnowledge().isTierForbiddenWithin(_tier));
+
+            JCheckBox causesOnlyNextTierCheckbox =  new JCheckBox("Can Cause Only Next Tier",
+                                getKnowledge().isOnlyCanCauseNextTier(_tier));
+
             final JComponent upReference = this;
 
             forbiddenCheckbox.addActionListener((e) -> {
@@ -394,6 +395,21 @@ public class KnowledgeBoxEditor extends JPanel {
             });
 
             textRow.add(forbiddenCheckbox);
+
+            causesOnlyNextTierCheckbox.addActionListener((e) -> {
+                JCheckBox checkbox = (JCheckBox) e.getSource();
+                try {
+                    getKnowledge().setOnlyCanCauseNextTier(_tier,
+                            checkbox.isSelected());
+                } catch (Exception e1) {
+                    checkbox.setSelected(false);
+                    JOptionPane.showMessageDialog(upReference, e1.getMessage());
+                }
+
+                notifyKnowledge();
+            });
+
+            if (tier + 2 < numTiers) textRow.add(causesOnlyNextTierCheckbox);
 
             d.add(textRow);
 
@@ -910,7 +926,7 @@ public class KnowledgeBoxEditor extends JPanel {
         try {
             IKnowledge knowledge = getKnowledge();
             CharArrayWriter out = new CharArrayWriter();
-            Knowledge.saveKnowledge(knowledge, out);
+            DataWriter.saveKnowledge(knowledge, out);
 
             getTextArea().setText(out.toString());
         } catch (IOException e) {
