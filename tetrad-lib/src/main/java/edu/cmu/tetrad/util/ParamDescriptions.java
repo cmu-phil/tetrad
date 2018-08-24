@@ -281,7 +281,7 @@ public class ParamDescriptions {
                 1, 1, 2));
 
         map.put("fastFDR", new ParamDescription(
-                "Yes if the possible fastFDR adjustment to alpha levels should be done", false));
+                "Yes if the  possible fastFDR adjustment to alpha levels should be done", false));
 
     }
 
