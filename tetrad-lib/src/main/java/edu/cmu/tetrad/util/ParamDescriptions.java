@@ -275,7 +275,7 @@ public class ParamDescriptions {
         map.put("kernelMultiplier", new ParamDescription(
                 "Bowman and Azzalini (1997) default kernel bandwidhts should be multiplied by...",
                 1.0, Double.MIN_VALUE, Double.POSITIVE_INFINITY));
-        
+
         map.put("basisType", new ParamDescription(
                 "Basis type (1 = Polynomial, 2 = Cosine)",
                 1, 1, 2));
