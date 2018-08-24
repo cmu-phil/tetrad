@@ -131,7 +131,7 @@ public class Lofs2 {
     // orientStrongerDirection list of past and present rules.
     public enum Rule {
         IGCI, R1TimeLag, R1, R2, R3, R4, Tanh, EB, Skew, SkewE, RSkew, RSkewE,
-        Patel, Patel25, Patel50, Patel75, Patel90, FastICA, RC, Nlo
+        Patel, Patel25, Patel50, Patel75, Patel90, FastICA, RC
     }
 
     public Graph orient() {
@@ -199,13 +199,6 @@ public class Lofs2 {
             FastIca.IcaResult result = fastIca.findComponents();
             System.out.println(result.getW());
             return new EdgeListGraph();
-        } else if (this.rule == Rule.Nlo) {
-            Nlo nlo = new Nlo(dataSets.get(0), alpha);
-            Graph _graph = new EdgeListGraph(skeleton);
-            _graph = GraphUtils.replaceNodes(_graph, dataSets.get(0).getVariables());
-            return nlo.fullOrient4(_graph);
-//            return nlo.fullOrient5(_graph);
-//            return nlo.pairwiseOrient3(_graph);
         }
 
         return graph;

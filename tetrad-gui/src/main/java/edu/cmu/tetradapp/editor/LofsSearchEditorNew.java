@@ -79,6 +79,7 @@ public class LofsSearchEditorNew extends AbstractSearchEditor
     public Map getModelEdgesToDisplay() {
         return getWorkbench().getModelEdgesToDisplay();
     }
+
     public Map getModelNodesToDisplay() {
         return getWorkbench().getModelNodesToDisplay();
     }
@@ -206,7 +207,6 @@ public class LofsSearchEditorNew extends AbstractSearchEditor
         rulebox.addItem("Patel");
 //        rulebox.addItem("IGCI");
 //        rulebox.addItem("RC");
-//        rulebox.addItem("Nlo");
 
         Lofs2.Rule _rule = (Lofs2.Rule) searchParams.get("rule", Lofs2.Rule.R3);
         disableR4Items();
@@ -236,12 +236,6 @@ public class LofsSearchEditorNew extends AbstractSearchEditor
             rulebox.setSelectedItem("Patel");
         } else if (_rule == Lofs2.Rule.FastICA) {
             rulebox.setSelectedItem("FastICA (see console)");
-        } else if (_rule == Lofs2.Rule.Nlo) {
-            rulebox.setSelectedItem("Nlo");
-//        } else if (_rule == Lofs2.Rule.IGCI) {
-//            rulebox.setSelectedItem("IGCI");
-//        } else if (_rule == Lofs2.Rule.RC) {
-//            rulebox.setSelectedItem("RC");
         }
 
         rulebox.addActionListener(new ActionListener() {
@@ -252,8 +246,7 @@ public class LofsSearchEditorNew extends AbstractSearchEditor
 
                 if ("R4".equals(item)) {
                     enableR4Items();
-                }
-                else {
+                } else {
                     disableR4Items();
                 }
 
@@ -283,12 +276,6 @@ public class LofsSearchEditorNew extends AbstractSearchEditor
                     searchParams.set("rule", Lofs2.Rule.Patel);
                 } else if ("FastICA (see console)".equals(item)) {
                     searchParams.set("rule", Lofs2.Rule.FastICA);
-                } else if ("Nlo".equals(item)) {
-                    searchParams.set("rule", Lofs2.Rule.Nlo);
-                    //                } else if ("IGCI".equals(item)) {
-//                    searchParams.setRule(Lofs2.Rule.IGCI);
-//                } else if ("RC".equals(item)) {
-//                    searchParams.setRule(Lofs2.Rule.RC);
                 } else {
                     throw new IllegalStateException();
                 }
