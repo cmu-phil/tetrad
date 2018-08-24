@@ -47,7 +47,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.net.URL;
 import java.util.*;
 import javax.help.CSH;
@@ -64,7 +63,7 @@ import javax.swing.event.InternalFrameEvent;
  *
  * @author Aaron Powers
  * @author Joseph Ramsey
- * @author Zhou Yuan
+ * @author Zhou Yuan 8/22/2018
  */
 public final class GraphEditor extends JPanel
         implements GraphEditable, LayoutEditable, IndTestProducer {
@@ -77,49 +76,146 @@ public final class GraphEditor extends JPanel
     private JScrollPane graphEditorScroll = new JScrollPane();
     private Box tablePaneBox;
 
-    //===========================PUBLIC METHODS========================//
+    //===========================CONSTRUCTOR========================//
     public GraphEditor(GraphWrapper graphWrapper) {
         setLayout(new BorderLayout());
         
         this.parameters = graphWrapper.getParameters();
 
         initUI(graphWrapper);
-
-        getWorkbench().addPropertyChangeListener(new PropertyChangeListener() {
-            public void propertyChange(PropertyChangeEvent evt) {
-                String propertyName = evt.getPropertyName();
-
-                // Update the bootstrap table if there's changes to the edges or node renaming
-                String[] events = { "graph", "edgeAdded", "edgeRemoved" };
-                System.out.println("propertyName === " + propertyName);
-                if (Arrays.asList(events).contains(propertyName)) {
-                    Graph graph = (Graph) getWorkbench().getGraph();
-
-                    if (getWorkbench() != null && graphWrapper != null) {
-                        // Update the graphWrapper
-                        graphWrapper.setGraph(graph);
-                        // Also need to update the UI
-                        updateBootstrapTable(graph);
-                    }
-                } else if ("modelChanged".equals(propertyName)) {
-                    firePropertyChange("modelChanged", null, null);
-                }
-            }
-        });
     }
 
-//    public GraphEditor(DagInPatternWrapper wrapper) {
-//        this(wrapper.getGraph());
-//    }
-//
-//    public GraphEditor(CompletedPatternWrapper wrapper) {
-//        this(wrapper.getGraph());
-//    }
-    //===========================PRIVATE METHODS======================//
+    //===========================PUBLIC METHODS======================//
+    /**
+     * Sets the name of this editor.
+     */
+    @Override
+    public final void setName(String name) {
+        String oldName = getName();
+        super.setName(name);
+        firePropertyChange("name", oldName, getName());
+    }
+
+    /**
+     * @return a list of all the SessionNodeWrappers (TetradNodes) and
+     * SessionNodeEdges that are model components for the respective
+     * SessionNodes and SessionEdges selected in the workbench. Note that the
+     * workbench, not the SessionEditorNodes themselves, keeps track of the
+     * selection.
+     */
+    @Override
+    public List getSelectedModelComponents() {
+        List<Component> selectedComponents
+                = getWorkbench().getSelectedComponents();
+        List<TetradSerializable> selectedModelComponents
+                = new ArrayList<>();
+
+        for (Component comp : selectedComponents) {
+            if (comp instanceof DisplayNode) {
+                selectedModelComponents.add(
+                        ((DisplayNode) comp).getModelNode());
+            } else if (comp instanceof DisplayEdge) {
+                selectedModelComponents.add(
+                        ((DisplayEdge) comp).getModelEdge());
+            }
+        }
+
+        return selectedModelComponents;
+    }
+
+    /**
+     * Pastes list of session elements into the workbench.
+     */
+    @Override
+    public void pasteSubsession(List sessionElements, Point upperLeft) {
+        getWorkbench().pasteSubgraph(sessionElements, upperLeft);
+        getWorkbench().deselectAll();
+
+        for (Object o : sessionElements) {
+            if (o instanceof GraphNode) {
+                Node modelNode = (Node) o;
+                getWorkbench().selectNode(modelNode);
+            }
+        }
+
+        getWorkbench().selectConnectingEdges();
+    }
+
+    @Override
+    public GraphWorkbench getWorkbench() {
+        return workbench;
+    }
+
+    @Override
+    public Graph getGraph() {
+        return getWorkbench().getGraph();
+    }
+
+    @Override
+    public Map getModelEdgesToDisplay() {
+        return getWorkbench().getModelEdgesToDisplay();
+    }
+
+    @Override
+    public Map getModelNodesToDisplay() {
+        return getWorkbench().getModelNodesToDisplay();
+    }
+
+    @Override
+    public void setGraph(Graph graph) {
+        getWorkbench().setGraph(graph);
+    }
+
+    @Override
+    public IKnowledge getKnowledge() {
+        return null;
+    }
+
+    @Override
+    public Graph getSourceGraph() {
+        return getWorkbench().getGraph();
+    }
+
+    @Override
+    public void layoutByGraph(Graph graph) {
+        getWorkbench().layoutByGraph(graph);
+    }
+
+    @Override
+    public void layoutByKnowledge() {
+        // Does nothing.
+    }
+
+    @Override
+    public Rectangle getVisibleRect() {
+        return getWorkbench().getVisibleRect();
+    }
+
+    //===========================PRIVATE METHODS========================//
     private void initUI(GraphWrapper graphWrapper) {
         Graph graph = graphWrapper.getGraph();
         
         workbench = new GraphWorkbench(graph);
+        
+        workbench.addPropertyChangeListener((PropertyChangeEvent evt) -> {
+            String propertyName = evt.getPropertyName();
+            
+            // Update the bootstrap table if there's changes to the edges or node renaming
+            String[] events = { "graph", "edgeAdded", "edgeRemoved" };
+            System.out.println("propertyName === " + propertyName);
+            if (Arrays.asList(events).contains(propertyName)) {
+                if (getWorkbench() != null) {
+                    Graph targetGraph = (Graph) getWorkbench().getGraph();
+                    
+                    // Update the graphWrapper
+                    graphWrapper.setGraph(targetGraph);
+                    // Also need to update the UI
+                    updateBootstrapTable(targetGraph);
+                }
+            } else if ("modelChanged".equals(propertyName)) {
+                firePropertyChange("modelChanged", null, null);
+            }
+        });
         
         // Graph menu at the very top of the window
         JMenuBar menuBar = createGraphMenuBar();
@@ -224,6 +320,11 @@ public final class GraphEditor extends JPanel
         validate();
     }
     
+    /**
+     * Updates the graph in workbench when changing graph model
+     * 
+     * @param graph 
+     */
     private void updateGraphWorkbench(Graph graph) {
         workbench = new GraphWorkbench(graph);
         graphEditorScroll.setViewportView(workbench);
@@ -231,6 +332,11 @@ public final class GraphEditor extends JPanel
         validate();
     }
     
+    /**
+     * Updates bootstrap table on adding/removing edges or graph changes
+     * 
+     * @param graph 
+     */
     private void updateBootstrapTable(Graph graph) {
         tablePaneBox.removeAll();
         JScrollPane tablePane = BootstrapTable.renderBootstrapTable(graph);
@@ -239,139 +345,49 @@ public final class GraphEditor extends JPanel
         validate();
     }
     
+    /**
+     * Creates the UI component for choosing from multiple graph models
+     * 
+     * @param graphWrapper 
+     */
     private void modelSelectin(GraphWrapper graphWrapper) {
         int numModels = graphWrapper.getNumModels();
 
         if (numModels > 1) {
-            final JComboBox<Integer> comp = new JComboBox<>();
-
+            List<Integer> models = new ArrayList<>();
             for (int i = 0; i < numModels; i++) {
-                comp.addItem(i + 1);
+                models.add(i + 1);
             }
+            
+            final JComboBox<Integer> comboBox = new JComboBox(models.toArray());
 
             // Remember the selected model on reopen
-            comp.setSelectedIndex(graphWrapper.getModelIndex());
+            comboBox.setSelectedIndex(graphWrapper.getModelIndex());
             
-            comp.addActionListener(new ActionListener() {
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    graphWrapper.setModelIndex(((Integer) comp.getSelectedItem()).intValue() - 1);
-                    
-                    // Update the graph workbench
-                    updateGraphWorkbench(graphWrapper.getGraph());
-  
-                    // Update the bootstrap table
-                    updateBootstrapTable(graphWrapper.getGraph());
-                }
+            comboBox.addActionListener((ActionEvent e) -> {
+                graphWrapper.setModelIndex(comboBox.getSelectedIndex());
+                
+                // Update the graph workbench
+                updateGraphWorkbench(graphWrapper.getGraph());
+                
+                // Update the bootstrap table
+                updateBootstrapTable(graphWrapper.getGraph());
             });
 
-            comp.setMaximumSize(comp.getPreferredSize());
+            // Put together
+            Box modelSelectionBox = Box.createHorizontalBox();
+            modelSelectionBox.add(new JLabel("Using model "));
+            modelSelectionBox.add(comboBox);
+            modelSelectionBox.add(new JLabel(" from "));
+            modelSelectionBox.add(new JLabel(graphWrapper.getModelSourceName()));
+            modelSelectionBox.add(Box.createHorizontalStrut(20));
+            modelSelectionBox.add(Box.createHorizontalGlue());
 
-            Box b = Box.createHorizontalBox();
-            b.add(new JLabel("Using model "));
-            b.add(comp);
-            b.add(new JLabel(" from "));
-            b.add(new JLabel(graphWrapper.getModelSourceName()));
-            b.add(Box.createHorizontalGlue());
-
-            add(b, BorderLayout.EAST);
+            // Add to upper right
+            add(modelSelectionBox, BorderLayout.EAST);
         }
     }
     
-    /**
-     * Sets the name of this editor.
-     */
-    public final void setName(String name) {
-        String oldName = getName();
-        super.setName(name);
-        firePropertyChange("name", oldName, getName());
-    }
-
-    /**
-     * @return a list of all the SessionNodeWrappers (TetradNodes) and
-     * SessionNodeEdges that are model components for the respective
-     * SessionNodes and SessionEdges selected in the workbench. Note that the
-     * workbench, not the SessionEditorNodes themselves, keeps track of the
-     * selection.
-     */
-    public List getSelectedModelComponents() {
-        List<Component> selectedComponents
-                = getWorkbench().getSelectedComponents();
-        List<TetradSerializable> selectedModelComponents
-                = new ArrayList<>();
-
-        for (Component comp : selectedComponents) {
-            if (comp instanceof DisplayNode) {
-                selectedModelComponents.add(
-                        ((DisplayNode) comp).getModelNode());
-            } else if (comp instanceof DisplayEdge) {
-                selectedModelComponents.add(
-                        ((DisplayEdge) comp).getModelEdge());
-            }
-        }
-
-        return selectedModelComponents;
-    }
-
-    /**
-     * Pastes list of session elements into the workbench.
-     */
-    public void pasteSubsession(List sessionElements, Point upperLeft) {
-        getWorkbench().pasteSubgraph(sessionElements, upperLeft);
-        getWorkbench().deselectAll();
-
-        for (Object o : sessionElements) {
-            if (o instanceof GraphNode) {
-                Node modelNode = (Node) o;
-                getWorkbench().selectNode(modelNode);
-            }
-        }
-
-        getWorkbench().selectConnectingEdges();
-    }
-
-    public GraphWorkbench getWorkbench() {
-        return workbench;
-    }
-
-    public Graph getGraph() {
-        return getWorkbench().getGraph();
-    }
-
-    @Override
-    public Map getModelEdgesToDisplay() {
-        return getWorkbench().getModelEdgesToDisplay();
-    }
-
-    public Map getModelNodesToDisplay() {
-        return getWorkbench().getModelNodesToDisplay();
-    }
-
-    public void setGraph(Graph graph) {
-        getWorkbench().setGraph(graph);
-    }
-
-    public IKnowledge getKnowledge() {
-        return null;
-    }
-
-    public Graph getSourceGraph() {
-        return getWorkbench().getGraph();
-    }
-
-    public void layoutByGraph(Graph graph) {
-        getWorkbench().layoutByGraph(graph);
-    }
-
-    public void layoutByKnowledge() {
-        // Does nothing.
-    }
-
-    public Rectangle getVisibleRect() {
-        return getWorkbench().getVisibleRect();
-    }
-
-    //===========================PRIVATE METHODS========================//
     private JMenuBar createGraphMenuBar() {
         JMenuBar menuBar = new JMenuBar();
 
@@ -583,6 +599,7 @@ public final class GraphEditor extends JPanel
         }
     }
 
+    @Override
     public IndependenceTest getIndependenceTest() {
         Graph graph = getWorkbench().getGraph();
         EdgeListGraph listGraph = new EdgeListGraph(graph);

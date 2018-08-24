@@ -45,7 +45,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.net.URL;
 import java.util.*;
 import javax.help.CSH;
@@ -77,7 +76,7 @@ public final class SemGraphEditor extends JPanel
     private JScrollPane graphEditorScroll = new JScrollPane();
     private Box tablePaneBox;
     
-    //===========================PUBLIC METHODS========================//
+    //===========================CONSTRUCTOR========================//
     public SemGraphEditor(final SemGraphWrapper semGraphWrapper) {
         if (semGraphWrapper == null) {
             throw new NullPointerException();
@@ -88,34 +87,155 @@ public final class SemGraphEditor extends JPanel
         this.parameters = semGraphWrapper.getParameters();
 
         initUI(semGraphWrapper);
-
-        getWorkbench().addPropertyChangeListener(new PropertyChangeListener() {
-            public void propertyChange(PropertyChangeEvent evt) {
-                String propertyName = evt.getPropertyName();
-
-                // Update the bootstrap table if there's changes to the edges or node renaming
-                String[] events = { "graph", "edgeAdded", "edgeRemoved" };
-                
-                if (Arrays.asList(events).contains(propertyName)) {
-                    Graph graph = (Graph) getWorkbench().getGraph();
-
-                    if (getWorkbench() != null && semGraphWrapper != null) {
-                        // Update the graphWrapper
-                        semGraphWrapper.setGraph(graph);
-                        // Also need to update the UI
-                        updateBootstrapTable(graph);
-                    }
-                } else if ("modelChanged".equals(propertyName)) {
-                    firePropertyChange("modelChanged", null, null);
-                }
-            }
-        });
     }
 
+    //===========================PUBLIC METHODS======================//
+    /**
+     * Sets the name of this editor.
+     */
+    @Override
+    public final void setName(String name) {
+        String oldName = getName();
+        super.setName(name);
+        firePropertyChange("name", oldName, getName());
+    }
+
+    /**
+     * @return a list of all the SessionNodeWrappers (TetradNodes) and
+     * SessionNodeEdges that are model components for the respective
+     * SessionNodes and SessionEdges selected in the workbench. Note that the
+     * workbench, not the SessionEditorNodes themselves, keeps track of the
+     * selection.
+     */
+    @Override
+    public List getSelectedModelComponents() {
+        List<Component> selectedComponents = getWorkbench().getSelectedComponents();
+        List<TetradSerializable> selectedModelComponents = new ArrayList<>();
+
+        for (Object comp : selectedComponents) {
+            if (comp instanceof DisplayNode) {
+                selectedModelComponents.add(
+                        ((DisplayNode) comp).getModelNode());
+            } else if (comp instanceof DisplayEdge) {
+                selectedModelComponents.add(
+                        ((DisplayEdge) comp).getModelEdge());
+            }
+        }
+
+        return selectedModelComponents;
+    }
+
+    /**
+     * Pastes list of session elements into the workbench.
+     */
+    public void pasteSubsession(List sessionElements, Point upperLeft) {
+        getWorkbench().pasteSubgraph(sessionElements, upperLeft);
+        getWorkbench().deselectAll();
+
+        for (int i = 0; i < sessionElements.size(); i++) {
+
+            Object o = sessionElements.get(i);
+
+            if (o instanceof GraphNode) {
+                Node modelNode = (Node) o;
+                getWorkbench().selectNode(modelNode);
+            }
+        }
+
+        getWorkbench().selectConnectingEdges();
+    }
+
+    @Override
+    public JComponent getEditDelegate() {
+        return getWorkbench();
+    }
+
+    @Override
+    public GraphWorkbench getWorkbench() {
+        return workbench;
+    }
+
+    @Override
+    public Graph getGraph() {
+        return workbench.getGraph();
+    }
+
+    @Override
+    public Map getModelEdgesToDisplay() {
+        return workbench.getModelEdgesToDisplay();
+    }
+
+    @Override
+    public Map getModelNodesToDisplay() {
+        return workbench.getModelNodesToDisplay();
+    }
+
+    @Override
+    public void setGraph(Graph graph) {
+        try {
+            SemGraph semGraph = new SemGraph(graph);
+            workbench.setGraph(semGraph);
+        } catch (Exception e) {
+            throw new RuntimeException("Not a SEM graph.", e);
+        }
+    }
+
+    private SemGraphWrapper getSemGraphWrapper() {
+        return semGraphWrapper;
+    }
+
+    @Override
+    public IKnowledge getKnowledge() {
+        return null;
+    }
+
+    @Override
+    public Graph getSourceGraph() {
+        return getWorkbench().getGraph();
+    }
+
+    @Override
+    public void layoutByGraph(Graph graph) {
+        ((SemGraph) graph).setShowErrorTerms(false);
+        getWorkbench().layoutByGraph(graph);
+        ((SemGraph) graph).resetErrorPositions();
+    }
+
+    @Override
+    public void layoutByKnowledge() {
+        // Does nothing.
+    }
+
+    @Override
+    public Rectangle getVisibleRect() {
+        return getWorkbench().getVisibleRect();
+    }
+
+    //===========================PRIVATE METHODS========================//
     private void initUI(SemGraphWrapper semGraphWrapper) {
         Graph graph = semGraphWrapper.getGraph();
         
         workbench = new GraphWorkbench(graph);
+        
+        workbench.addPropertyChangeListener((PropertyChangeEvent evt) -> {
+            String propertyName = evt.getPropertyName();
+            
+            // Update the bootstrap table if there's changes to the edges or node renaming
+            String[] events = { "graph", "edgeAdded", "edgeRemoved" };
+            
+            if (Arrays.asList(events).contains(propertyName)) {
+                if (getWorkbench() != null) {
+                    Graph targetGraph = (Graph) getWorkbench().getGraph();
+                    
+                    // Update the semGraphWrapper
+                    semGraphWrapper.setGraph(targetGraph);
+                    // Also need to update the UI
+                    updateBootstrapTable(targetGraph);
+                }
+            } else if ("modelChanged".equals(propertyName)) {
+                firePropertyChange("modelChanged", null, null);
+            }
+        });
         
         // Graph menu at the very top of the window
         JMenuBar menuBar = createGraphMenuBar();
@@ -220,6 +340,11 @@ public final class SemGraphEditor extends JPanel
         validate();
     }
     
+    /**
+     * Updates the graph in workbench when changing graph model
+     * 
+     * @param graph 
+     */
     private void updateGraphWorkbench(Graph graph) {
         workbench = new GraphWorkbench(graph);
         graphEditorScroll.setViewportView(workbench);
@@ -227,6 +352,11 @@ public final class SemGraphEditor extends JPanel
         validate();
     }
     
+    /**
+     * Updates bootstrap table on adding/removing edges or graph changes
+     * 
+     * @param graph 
+     */
     private void updateBootstrapTable(Graph graph) {
         tablePaneBox.removeAll();
         JScrollPane tablePane = BootstrapTable.renderBootstrapTable(graph);
@@ -235,42 +365,46 @@ public final class SemGraphEditor extends JPanel
         validate();
     }
     
+    /**
+     * Creates the UI component for choosing from multiple graph models
+     * 
+     * @param semGraphWrapper 
+     */
     private void modelSelectin(SemGraphWrapper semGraphWrapper) {
         int numModels = semGraphWrapper.getNumModels();
 
         if (numModels > 1) {
-            final JComboBox<Integer> comp = new JComboBox<>();
-
+            List<Integer> models = new ArrayList<>();
             for (int i = 0; i < numModels; i++) {
-                comp.addItem(i + 1);
+                models.add(i + 1);
             }
+            
+            final JComboBox<Integer> comboBox = new JComboBox(models.toArray());
 
             // Remember the selected model on reopen
-            comp.setSelectedIndex(semGraphWrapper.getModelIndex());
+            comboBox.setSelectedIndex(semGraphWrapper.getModelIndex());
             
-            comp.addActionListener(new ActionListener() {
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    semGraphWrapper.setModelIndex(((Integer) comp.getSelectedItem()).intValue() - 1);
-
-                    // Update the graph workbench
-                    updateGraphWorkbench(semGraphWrapper.getGraph());
-  
-                    // Update the bootstrap table
-                    updateBootstrapTable(semGraphWrapper.getGraph());
-                }
+            comboBox.addActionListener((ActionEvent e) -> {
+                semGraphWrapper.setModelIndex(comboBox.getSelectedIndex());
+                
+                // Update the graph workbench
+                updateGraphWorkbench(semGraphWrapper.getGraph());
+                
+                // Update the bootstrap table
+                updateBootstrapTable(semGraphWrapper.getGraph());
             });
 
-            comp.setMaximumSize(comp.getPreferredSize());
+            // Put together
+            Box modelSelectionBox = Box.createHorizontalBox();
+            modelSelectionBox.add(new JLabel("Using model "));
+            modelSelectionBox.add(comboBox);
+            modelSelectionBox.add(new JLabel(" from "));
+            modelSelectionBox.add(new JLabel(semGraphWrapper.getModelSourceName()));
+            modelSelectionBox.add(Box.createHorizontalStrut(20));
+            modelSelectionBox.add(Box.createHorizontalGlue());
 
-            Box b = Box.createHorizontalBox();
-            b.add(new JLabel("Using model "));
-            b.add(comp);
-            b.add(new JLabel(" from "));
-            b.add(new JLabel(semGraphWrapper.getModelSourceName()));
-            b.add(Box.createHorizontalGlue());
-
-            add(b, BorderLayout.EAST);
+            // Add to upper right
+            add(modelSelectionBox, BorderLayout.EAST);
         }
     }
     
@@ -288,149 +422,8 @@ public final class SemGraphEditor extends JPanel
 
         return menuBar;
     }
+    
 
-    /**
-     * Sets the name of this editor.
-     */
-    public final void setName(String name) {
-        String oldName = getName();
-        super.setName(name);
-        firePropertyChange("name", oldName, getName());
-    }
-
-    /**
-     * @return a list of all the SessionNodeWrappers (TetradNodes) and
-     * SessionNodeEdges that are model components for the respective
-     * SessionNodes and SessionEdges selected in the workbench. Note that the
-     * workbench, not the SessionEditorNodes themselves, keeps track of the
-     * selection.
-     */
-    public List getSelectedModelComponents() {
-        List<Component> selectedComponents = getWorkbench().getSelectedComponents();
-        List<TetradSerializable> selectedModelComponents = new ArrayList<>();
-
-        for (Object comp : selectedComponents) {
-            if (comp instanceof DisplayNode) {
-                selectedModelComponents.add(
-                        ((DisplayNode) comp).getModelNode());
-            } else if (comp instanceof DisplayEdge) {
-                selectedModelComponents.add(
-                        ((DisplayEdge) comp).getModelEdge());
-            }
-        }
-
-        return selectedModelComponents;
-    }
-
-    /**
-     * Pastes list of session elements into the workbench.
-     */
-    public void pasteSubsession(List sessionElements, Point upperLeft) {
-        getWorkbench().pasteSubgraph(sessionElements, upperLeft);
-        getWorkbench().deselectAll();
-
-        for (int i = 0; i < sessionElements.size(); i++) {
-
-            Object o = sessionElements.get(i);
-
-            if (o instanceof GraphNode) {
-                Node modelNode = (Node) o;
-                getWorkbench().selectNode(modelNode);
-            }
-        }
-
-        getWorkbench().selectConnectingEdges();
-    }
-
-    public JComponent getEditDelegate() {
-        return getWorkbench();
-    }
-
-    public GraphWorkbench getWorkbench() {
-        return workbench;
-    }
-
-    public Graph getGraph() {
-        return workbench.getGraph();
-    }
-
-    @Override
-    public Map getModelEdgesToDisplay() {
-        return workbench.getModelEdgesToDisplay();
-    }
-
-    public Map getModelNodesToDisplay() {
-        return workbench.getModelNodesToDisplay();
-    }
-
-    public void setGraph(Graph graph) {
-        try {
-            SemGraph semGraph = new SemGraph(graph);
-            workbench.setGraph(semGraph);
-        } catch (Exception e) {
-            throw new RuntimeException("Not a SEM graph.", e);
-        }
-    }
-
-    private SemGraphWrapper getSemGraphWrapper() {
-        return semGraphWrapper;
-    }
-
-    public IKnowledge getKnowledge() {
-        return null;
-    }
-
-    public Graph getSourceGraph() {
-        return getWorkbench().getGraph();
-    }
-
-    public void layoutByGraph(Graph graph) {
-        ((SemGraph) graph).setShowErrorTerms(false);
-        getWorkbench().layoutByGraph(graph);
-        ((SemGraph) graph).resetErrorPositions();
-    }
-
-    public void layoutByKnowledge() {
-        // Does nothing.
-    }
-
-    public Rectangle getVisibleRect() {
-        return getWorkbench().getVisibleRect();
-    }
-
-    //===========================PRIVATE METHODS========================//
-    private JMenuBar createMenuBar() {
-        JMenuBar menuBar = new JMenuBar();
-
-        JMenu fileMenu = new GraphFileMenu(this, getWorkbench());
-//        JMenu fileMenu = createFileMenu();
-        JMenu editMenu = createEditMenu();
-        JMenu graphMenu = createGraphMenu();
-
-        menuBar.add(fileMenu);
-        menuBar.add(editMenu);
-        menuBar.add(graphMenu);
-        menuBar.add(new LayoutMenu(this));
-
-        return menuBar;
-    }
-
-//    /**
-//     * Creates the "file" menu, which allows the user to load, save, and post
-//     * workbench models.
-//     *
-//     * @return this menu.
-//     */
-//    private JMenu createFileMenu() {
-//        JMenu file = new JMenu("File");
-//
-//        file.add(new LoadGraph(this, "Load Graph..."));
-//        file.add(new SaveGraph(this, "Save Graph..."));
-////        file.add(new SaveScreenshot(this, true, "Save Screenshot..."));
-//        file.add(new SaveComponentImage(workbench, "Save Graph Image..."));
-//
-//        return file;
-//    }
     /**
      * Creates the "file" menu, which allows the user to load, save, and post
      * workbench models.
@@ -624,6 +617,7 @@ public final class SemGraphEditor extends JPanel
         }
     }
 
+    @Override
     public IndependenceTest getIndependenceTest() {
         return new IndTestDSep(workbench.getGraph());
     }

@@ -47,7 +47,6 @@ import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.net.URL;
 import java.util.*;
 import java.util.prefs.Preferences;
@@ -83,7 +82,7 @@ public final class TimeLagGraphEditor extends JPanel
     private JScrollPane graphEditorScroll = new JScrollPane();
     private Box tablePaneBox;
 
-    //===========================PUBLIC METHODS========================//
+    //===========================CONSTRUCTOR========================//
     public TimeLagGraphEditor(TimeLagGraphWrapper timeLagGraphWrapper) {
         setLayout(new BorderLayout());
         
@@ -92,28 +91,119 @@ public final class TimeLagGraphEditor extends JPanel
         this.parameters = timeLagGraphWrapper.getParameters();
 
         initUI(timeLagGraphWrapper);
+    }
 
-        getWorkbench().addPropertyChangeListener(new PropertyChangeListener() {
-            public void propertyChange(PropertyChangeEvent evt) {
-                String propertyName = evt.getPropertyName();
+    
+    //===========================PUBLIC METHODS========================//
+    /**
+     * Sets the name of this editor.
+     */
+    @Override
+    public final void setName(String name) {
+        String oldName = getName();
+        super.setName(name);
+        firePropertyChange("name", oldName, getName());
+    }
 
-                // Update the bootstrap table if there's changes to the edges or node renaming
-                String[] events = { "graph", "edgeAdded", "edgeRemoved" };
-                
-                if (Arrays.asList(events).contains(propertyName)) {
-                    TimeLagGraph graph = (TimeLagGraph) getWorkbench().getGraph();
+    /**
+     * @return a list of all the SessionNodeWrappers (TetradNodes) and
+     * SessionNodeEdges that are model components for the respective
+     * SessionNodes and SessionEdges selected in the workbench. Note that the
+     * workbench, not the SessionEditorNodes themselves, keeps track of the
+     * selection.
+     */
+    @Override
+    public List getSelectedModelComponents() {
+        List<Component> selectedComponents
+                = getWorkbench().getSelectedComponents();
+        List<TetradSerializable> selectedModelComponents
+                = new ArrayList<>();
 
-                    if (getWorkbench() != null && timeLagGraphWrapper != null) {
-                        // Update the graphWrapper
-                        timeLagGraphWrapper.setGraph(graph);
-                        // Also need to update the UI
-                        updateBootstrapTable(graph);
-                    }
-                } else if ("modelChanged".equals(propertyName)) {
-                    firePropertyChange("modelChanged", null, null);
-                }
+        for (Iterator<Component> it
+                = selectedComponents.iterator(); it.hasNext();) {
+            Object comp = it.next();
+
+            if (comp instanceof DisplayNode) {
+                selectedModelComponents.add(
+                        ((DisplayNode) comp).getModelNode());
+            } else if (comp instanceof DisplayEdge) {
+                selectedModelComponents.add(
+                        ((DisplayEdge) comp).getModelEdge());
             }
-        });
+        }
+
+        return selectedModelComponents;
+    }
+
+    /**
+     * Pastes list of session elements into the workbench.
+     */
+    @Override
+    public void pasteSubsession(List sessionElements, Point upperLeft) {
+        getWorkbench().pasteSubgraph(sessionElements, upperLeft);
+        getWorkbench().deselectAll();
+
+        for (int i = 0; i < sessionElements.size(); i++) {
+
+            Object o = sessionElements.get(i);
+
+            if (o instanceof GraphNode) {
+                Node modelNode = (Node) o;
+                getWorkbench().selectNode(modelNode);
+            }
+        }
+
+        getWorkbench().selectConnectingEdges();
+    }
+
+    @Override
+    public GraphWorkbench getWorkbench() {
+        return workbench;
+    }
+
+    @Override
+    public Graph getGraph() {
+        return getWorkbench().getGraph();
+    }
+
+    @Override
+    public Map getModelEdgesToDisplay() {
+        return getWorkbench().getModelEdgesToDisplay();
+    }
+
+    @Override
+    public Map getModelNodesToDisplay() {
+        return getWorkbench().getModelNodesToDisplay();
+    }
+
+    @Override
+    public void setGraph(Graph graph) {
+        getWorkbench().setGraph(graph);
+    }
+
+    @Override
+    public IKnowledge getKnowledge() {
+        return null;
+    }
+
+    @Override
+    public Graph getSourceGraph() {
+        return getWorkbench().getGraph();
+    }
+
+    @Override
+    public void layoutByGraph(Graph graph) {
+        getWorkbench().layoutByGraph(graph);
+    }
+
+    @Override
+    public void layoutByKnowledge() {
+        // Does nothing.
+    }
+
+    @Override
+    public Rectangle getVisibleRect() {
+        return getWorkbench().getVisibleRect();
     }
 
     //===========================PRIVATE METHODS======================//
@@ -121,6 +211,26 @@ public final class TimeLagGraphEditor extends JPanel
         TimeLagGraph graph = (TimeLagGraph) timeLagGraphWrapper.getGraph();
         
         workbench = new TimeLagGraphWorkbench(graph);
+        
+        workbench.addPropertyChangeListener((PropertyChangeEvent evt) -> {
+            String propertyName = evt.getPropertyName();
+            
+            // Update the bootstrap table if there's changes to the edges or node renaming
+            String[] events = { "graph", "edgeAdded", "edgeRemoved" };
+            
+            if (Arrays.asList(events).contains(propertyName)) {
+                if (getWorkbench() != null) {
+                    TimeLagGraph targetGraph = (TimeLagGraph) getWorkbench().getGraph();
+                    
+                    // Update the timeLagGraphWrapper
+                    timeLagGraphWrapper.setGraph(targetGraph);
+                    // Also need to update the UI
+                    updateBootstrapTable(targetGraph);
+                }
+            } else if ("modelChanged".equals(propertyName)) {
+                firePropertyChange("modelChanged", null, null);
+            }
+        });
         
         // Graph menu at the very top of the window
         JMenuBar menuBar = createGraphMenuBar();
@@ -222,6 +332,11 @@ public final class TimeLagGraphEditor extends JPanel
         validate();
     }
     
+    /**
+     * Updates bootstrap table on adding/removing edges or graph changes
+     * 
+     * @param graph 
+     */
     private void updateBootstrapTable(Graph graph) {
         tablePaneBox.removeAll();
         JScrollPane tablePane = BootstrapTable.renderBootstrapTable(graph);
@@ -229,111 +344,7 @@ public final class TimeLagGraphEditor extends JPanel
         
         validate();
     }
-    
-    /**
-     * Sets the name of this editor.
-     */
-    public final void setName(String name) {
-        String oldName = getName();
-        super.setName(name);
-        firePropertyChange("name", oldName, getName());
-    }
 
-    /**
-     * @return a list of all the SessionNodeWrappers (TetradNodes) and
-     * SessionNodeEdges that are model components for the respective
-     * SessionNodes and SessionEdges selected in the workbench. Note that the
-     * workbench, not the SessionEditorNodes themselves, keeps track of the
-     * selection.
-     */
-    public List getSelectedModelComponents() {
-        List<Component> selectedComponents
-                = getWorkbench().getSelectedComponents();
-        List<TetradSerializable> selectedModelComponents
-                = new ArrayList<>();
-
-        for (Iterator<Component> it
-                = selectedComponents.iterator(); it.hasNext();) {
-            Object comp = it.next();
-
-            if (comp instanceof DisplayNode) {
-                selectedModelComponents.add(
-                        ((DisplayNode) comp).getModelNode());
-            } else if (comp instanceof DisplayEdge) {
-                selectedModelComponents.add(
-                        ((DisplayEdge) comp).getModelEdge());
-            }
-        }
-
-        return selectedModelComponents;
-    }
-
-    /**
-     * Pastes list of session elements into the workbench.
-     */
-    public void pasteSubsession(List sessionElements, Point upperLeft) {
-        getWorkbench().pasteSubgraph(sessionElements, upperLeft);
-        getWorkbench().deselectAll();
-
-        for (int i = 0; i < sessionElements.size(); i++) {
-
-            Object o = sessionElements.get(i);
-
-            if (o instanceof GraphNode) {
-                Node modelNode = (Node) o;
-                getWorkbench().selectNode(modelNode);
-            }
-        }
-
-        getWorkbench().selectConnectingEdges();
-    }
-
-    public GraphWorkbench getWorkbench() {
-        return workbench;
-    }
-
-    public Graph getGraph() {
-        return getWorkbench().getGraph();
-    }
-
-    @Override
-    public Map getModelEdgesToDisplay() {
-        return getWorkbench().getModelEdgesToDisplay();
-    }
-
-    public Map getModelNodesToDisplay() {
-        return getWorkbench().getModelNodesToDisplay();
-    }
-
-    public void setGraph(Graph graph) {
-        getWorkbench().setGraph(graph);
-    }
-
-    public IKnowledge getKnowledge() {
-        return null;
-    }
-
-    public Graph getSourceGraph() {
-        return getWorkbench().getGraph();
-    }
-
-    public void layoutByGraph(Graph graph) {
-        getWorkbench().layoutByGraph(graph);
-    }
-
-    public void layoutByKnowledge() {
-        // Does nothing.
-    }
-
-    public Rectangle getVisibleRect() {
-        return getWorkbench().getVisibleRect();
-    }
-
-    private TimeLagGraphWrapper getGraphWrapper() {
-        return timeLagGraphWrapper;
-    }
-
-    //===========================PRIVATE METHODS========================//
     private JMenuBar createGraphMenuBar() {
         JMenuBar menuBar = new JMenuBar();
 
@@ -349,22 +360,6 @@ public final class TimeLagGraphEditor extends JPanel
         return menuBar;
     }
 
-//    /**
-//     * Creates the "file" menu, which allows the user to load, save, and post
-//     * workbench models.
-//     *
-//     * @return this menu.
-//     */
-//    private JMenu createFileMenu() {
-//        JMenu file = new JMenu("File");
-//
-//        file.add(new LoadGraph(this, "Load Graph..."));
-//        file.add(new SaveGraph(this, "Save Graph..."));
-////        file.add(new SaveScreenshot(this, true, "Save Screenshot..."));
-//        file.add(new SaveComponentImage(getWorkbench(), "Save Graph Image..."));
-//
-//        return file;
-//    }
     /**
      * Creates the "file" menu, which allows the user to load, save, and post
      * workbench models.
@@ -753,6 +748,7 @@ public final class TimeLagGraphEditor extends JPanel
         }
     }
 
+    @Override
     public IndependenceTest getIndependenceTest() {
         Graph graph = getWorkbench().getGraph();
         EdgeListGraph listGraph = new EdgeListGraph(graph);

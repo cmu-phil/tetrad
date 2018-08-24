@@ -43,7 +43,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -83,36 +82,153 @@ public final class DagEditor extends JPanel
         this.dagWrapper = dagWrapper;
         this.parameters = dagWrapper.getParameters();
 
-        
         initUI(dagWrapper);
-
-        getWorkbench().addPropertyChangeListener(new PropertyChangeListener() {
-            public void propertyChange(PropertyChangeEvent evt) {
-                String propertyName = evt.getPropertyName();
-
-                // Update the bootstrap table if there's changes to the edges or node renaming
-                String[] events = { "graph", "edgeAdded", "edgeRemoved" };
-                
-                if (Arrays.asList(events).contains(propertyName)) {
-                    Graph graph = (Graph) getWorkbench().getGraph();
-
-                    if (getWorkbench() != null && dagWrapper != null) {
-                        // Update the graphWrapper
-                        dagWrapper.setGraph(graph);
-                        // Also need to update the UI
-                        updateBootstrapTable(graph);
-                    }
-                } else if ("modelChanged".equals(propertyName)) {
-                    firePropertyChange("modelChanged", null, null);
-                }
-            }
-        });
     }
 
+    //===========================PUBLIC METHODS======================//
+    
+    /**
+     * Sets the name of this editor.
+     */
+    @Override
+    public final void setName(String name) {
+        String oldName = getName();
+        super.setName(name);
+        firePropertyChange("name", oldName, getName());
+    }
+
+    @Override
+    public JComponent getEditDelegate() {
+        return getWorkbench();
+    }
+
+    @Override
+    public GraphWorkbench getWorkbench() {
+        return workbench;
+    }
+
+    /**
+     * Returns a list of all the SessionNodeWrappers (TetradNodes) and
+     * SessionNodeEdges that are model components for the respective
+     * SessionNodes and SessionEdges selected in the workbench. Note that the
+     * workbench, not the SessionEditorNodes themselves, keeps track of the
+     * selection.
+     *
+     * @return the set of selected model nodes.
+     */
+    @Override
+    public List getSelectedModelComponents() {
+        List<Component> selectedComponents
+                = getWorkbench().getSelectedComponents();
+        List<TetradSerializable> selectedModelComponents
+                = new ArrayList<>();
+
+        for (Object comp : selectedComponents) {
+            if (comp instanceof DisplayNode) {
+                selectedModelComponents.add(
+                        ((DisplayNode) comp).getModelNode());
+            } else if (comp instanceof DisplayEdge) {
+                selectedModelComponents.add(
+                        ((DisplayEdge) comp).getModelEdge());
+            }
+        }
+
+        return selectedModelComponents;
+    }
+
+    /**
+     * Pastes list of session elements into the workbench.
+     */
+    @Override
+    public void pasteSubsession(List sessionElements, Point upperLeft) {
+        getWorkbench().pasteSubgraph(sessionElements, upperLeft);
+        getWorkbench().deselectAll();
+
+        for (Object sessionElement : sessionElements) {
+            if (sessionElement instanceof GraphNode) {
+                Node modelNode = (Node) sessionElement;
+                getWorkbench().selectNode(modelNode);
+            }
+        }
+
+        getWorkbench().selectConnectingEdges();
+    }
+
+    @Override
+    public Graph getGraph() {
+        return workbench.getGraph();
+    }
+
+    @Override
+    public Map getModelEdgesToDisplay() {
+        return workbench.getModelEdgesToDisplay();
+    }
+
+    @Override
+    public Map getModelNodesToDisplay() {
+        return workbench.getModelNodesToDisplay();
+    }
+
+    @Override
+    public void setGraph(Graph graph) {
+        try {
+            Dag dag = new Dag(graph);
+            workbench.setGraph(dag);
+        } catch (Exception e) {
+            throw new RuntimeException("Not a DAG", e);
+        }
+    }
+
+    @Override
+    public IKnowledge getKnowledge() {
+        return null;
+    }
+
+    @Override
+    public Graph getSourceGraph() {
+        return getWorkbench().getGraph();
+    }
+
+    @Override
+    public void layoutByGraph(Graph graph) {
+        getWorkbench().layoutByGraph(graph);
+    }
+
+    @Override
+    public void layoutByKnowledge() {
+        // Does nothing.
+    }
+
+    @Override
+    public Rectangle getVisibleRect() {
+        return getWorkbench().getVisibleRect();
+    }
+
+    //===========================PRIVATE METHODS========================//
     private void initUI(DagWrapper dagWrapper) {
         Graph graph = dagWrapper.getGraph();
         
         workbench = new GraphWorkbench(graph);
+        
+        workbench.addPropertyChangeListener((PropertyChangeEvent evt) -> {
+            String propertyName = evt.getPropertyName();
+            
+            // Update the bootstrap table if there's changes to the edges or node renaming
+            String[] events = { "graph", "edgeAdded", "edgeRemoved" };
+            
+            if (Arrays.asList(events).contains(propertyName)) {
+                if (getWorkbench() != null) {
+                    Graph targetGraph = (Graph) getWorkbench().getGraph();
+                    
+                    // Update the dagWrapper
+                    dagWrapper.setGraph(targetGraph);
+                    // Also need to update the UI
+                    updateBootstrapTable(targetGraph);
+                }
+            } else if ("modelChanged".equals(propertyName)) {
+                firePropertyChange("modelChanged", null, null);
+            }
+        });
         
         // Graph menu at the very top of the window
         JMenuBar menuBar = createGraphMenuBar();
@@ -217,6 +333,11 @@ public final class DagEditor extends JPanel
         validate();
     }
     
+    /**
+     * Updates the graph in workbench when changing graph model
+     * 
+     * @param graph 
+     */
     private void updateGraphWorkbench(Graph graph) {
         workbench = new GraphWorkbench(graph);
         graphEditorScroll.setViewportView(workbench);
@@ -224,6 +345,11 @@ public final class DagEditor extends JPanel
         validate();
     }
     
+    /**
+     * Updates bootstrap table on adding/removing edges or graph changes
+     * 
+     * @param graph 
+     */
     private void updateBootstrapTable(Graph graph) {
         tablePaneBox.removeAll();
         JScrollPane tablePane = BootstrapTable.renderBootstrapTable(graph);
@@ -232,154 +358,49 @@ public final class DagEditor extends JPanel
         validate();
     }
     
+    /**
+     * Creates the UI component for choosing from multiple graph models
+     * 
+     * @param dagWrapper 
+     */
     private void modelSelectin(DagWrapper dagWrapper) {
         int numModels = dagWrapper.getNumModels();
 
         if (numModels > 1) {
-            final JComboBox<Integer> comp = new JComboBox<>();
-
+            List<Integer> models = new ArrayList<>();
             for (int i = 0; i < numModels; i++) {
-                comp.addItem(i + 1);
+                models.add(i + 1);
             }
+            
+            final JComboBox<Integer> comboBox = new JComboBox(models.toArray());
 
             // Remember the selected model on reopen
-            comp.setSelectedIndex(dagWrapper.getModelIndex());
+            comboBox.setSelectedIndex(dagWrapper.getModelIndex());
             
-            comp.addActionListener(new ActionListener() {
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    dagWrapper.setModelIndex(((Integer) comp.getSelectedItem()).intValue() - 1);
-                    
-                    // Update the graph workbench
-                    updateGraphWorkbench(dagWrapper.getGraph());
-  
-                    // Update the bootstrap table
-                    updateBootstrapTable(dagWrapper.getGraph());
-                }
+            comboBox.addActionListener((ActionEvent e) -> {
+                dagWrapper.setModelIndex(comboBox.getSelectedIndex());
+                
+                // Update the graph workbench
+                updateGraphWorkbench(dagWrapper.getGraph());
+                
+                // Update the bootstrap table
+                updateBootstrapTable(dagWrapper.getGraph());
             });
 
-            comp.setMaximumSize(comp.getPreferredSize());
+            // Put together
+            Box modelSelectionBox = Box.createHorizontalBox();
+            modelSelectionBox.add(new JLabel("Using model "));
+            modelSelectionBox.add(comboBox);
+            modelSelectionBox.add(new JLabel(" from "));
+            modelSelectionBox.add(new JLabel(dagWrapper.getModelSourceName()));
+            modelSelectionBox.add(Box.createHorizontalStrut(20));
+            modelSelectionBox.add(Box.createHorizontalGlue());
 
-            Box b = Box.createHorizontalBox();
-            b.add(new JLabel("Using model "));
-            b.add(comp);
-            b.add(new JLabel(" from "));
-            b.add(new JLabel(dagWrapper.getModelSourceName()));
-            b.add(Box.createHorizontalGlue());
-
-            add(b, BorderLayout.EAST);
+            // Add to upper right
+            add(modelSelectionBox, BorderLayout.EAST);
         }
     }
-    
-
-    /**
-     * Sets the name of this editor.
-     */
-    public final void setName(String name) {
-        String oldName = getName();
-        super.setName(name);
-        firePropertyChange("name", oldName, getName());
-    }
-
-    public JComponent getEditDelegate() {
-        return getWorkbench();
-    }
-
-    public GraphWorkbench getWorkbench() {
-        return workbench;
-    }
-
-    /**
-     * Returns a list of all the SessionNodeWrappers (TetradNodes) and
-     * SessionNodeEdges that are model components for the respective
-     * SessionNodes and SessionEdges selected in the workbench. Note that the
-     * workbench, not the SessionEditorNodes themselves, keeps track of the
-     * selection.
-     *
-     * @return the set of selected model nodes.
-     */
-    public List getSelectedModelComponents() {
-        List<Component> selectedComponents
-                = getWorkbench().getSelectedComponents();
-        List<TetradSerializable> selectedModelComponents
-                = new ArrayList<>();
-
-        for (Object comp : selectedComponents) {
-            if (comp instanceof DisplayNode) {
-                selectedModelComponents.add(
-                        ((DisplayNode) comp).getModelNode());
-            } else if (comp instanceof DisplayEdge) {
-                selectedModelComponents.add(
-                        ((DisplayEdge) comp).getModelEdge());
-            }
-        }
-
-        return selectedModelComponents;
-    }
-
-    /**
-     * Pastes list of session elements into the workbench.
-     */
-    public void pasteSubsession(List sessionElements, Point upperLeft) {
-        getWorkbench().pasteSubgraph(sessionElements, upperLeft);
-        getWorkbench().deselectAll();
-
-        for (Object sessionElement : sessionElements) {
-            if (sessionElement instanceof GraphNode) {
-                Node modelNode = (Node) sessionElement;
-                getWorkbench().selectNode(modelNode);
-            }
-        }
-
-        getWorkbench().selectConnectingEdges();
-    }
-
-    public Graph getGraph() {
-        return workbench.getGraph();
-    }
-
-    @Override
-    public Map getModelEdgesToDisplay() {
-        return workbench.getModelEdgesToDisplay();
-    }
-
-    public Map getModelNodesToDisplay() {
-        return workbench.getModelNodesToDisplay();
-    }
-
-    public void setGraph(Graph graph) {
-        try {
-            Dag dag = new Dag(graph);
-            workbench.setGraph(dag);
-        } catch (Exception e) {
-            throw new RuntimeException("Not a DAG", e);
-        }
-    }
-
-    public IKnowledge getKnowledge() {
-        return null;
-    }
-
-    public Graph getSourceGraph() {
-        return getWorkbench().getGraph();
-    }
-
-    public void layoutByGraph(Graph graph) {
-        getWorkbench().layoutByGraph(graph);
-    }
-
-    public void layoutByKnowledge() {
-        // Does nothing.
-    }
-
-    public Rectangle getVisibleRect() {
-        return getWorkbench().getVisibleRect();
-    }
-
-    private DagWrapper getDagWrapper() {
-        return dagWrapper;
-    }
-
+ 
     private JMenuBar createGraphMenuBar() {
         JMenuBar menuBar = new JMenuBar();
 
@@ -474,6 +495,7 @@ public final class DagEditor extends JPanel
         return graph;
     }
 
+    @Override
     public IndependenceTest getIndependenceTest() {
         return new IndTestDSep(workbench.getGraph());
     }
