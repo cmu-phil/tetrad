@@ -202,7 +202,7 @@ public final class GraphEditor extends JPanel
             
             // Update the bootstrap table if there's changes to the edges or node renaming
             String[] events = { "graph", "edgeAdded", "edgeRemoved" };
-            System.out.println("propertyName === " + propertyName);
+
             if (Arrays.asList(events).contains(propertyName)) {
                 if (getWorkbench() != null) {
                     Graph targetGraph = (Graph) getWorkbench().getGraph();
