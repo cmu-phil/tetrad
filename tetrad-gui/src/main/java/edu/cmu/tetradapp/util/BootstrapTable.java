@@ -7,12 +7,17 @@ package edu.cmu.tetradapp.util;
 
 import edu.cmu.tetrad.graph.Edge;
 import edu.cmu.tetrad.graph.EdgeTypeProbability;
+import edu.cmu.tetrad.graph.Edges;
 import edu.cmu.tetrad.graph.Endpoint;
 import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.graph.Node;
+
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
@@ -70,10 +75,27 @@ public final class BootstrapTable {
         tableModel.setColumnIdentifiers(columnNames.toArray());
 
         // Add new row to table
-        graph.getEdges().forEach(e->{
+        Set<Edge> edges = graph.getEdges();
+        List<Edge> edgeList = new ArrayList<>(edges);
+        Edges.sortEdges(edgeList);
+        
+        edgeList.forEach(e->{
             String edgeType = "";
             Endpoint endpoint1 = e.getEndpoint1();
             Endpoint endpoint2 = e.getEndpoint2();
+
+            Node n1 = e.getNode1();
+        	Node n2 = e.getNode2();
+        	
+        	if(n1.getName().compareTo(n2.getName()) > 0) {
+        		Endpoint tmp = endpoint1;
+        		endpoint1 = endpoint2;
+        		endpoint2 = tmp;
+        		
+        		Node temp = n1;
+        		n1 = n2;
+        		n2 = temp;
+        	}
 
             String endpoint1Str = "";
             if (endpoint1 == Endpoint.TAIL) {
@@ -95,7 +117,7 @@ public final class BootstrapTable {
             // Produce a string representation of the edge
             edgeType = endpoint1Str + "-" + endpoint2Str;
             
-            addRow(tableModel, e.getNode1().getName(), e.getNode2().getName(), edgeType, e.getProperties(), e.getEdgeTypeProbabilities());
+            addRow(tableModel, n1.getName(), n2.getName(), edgeType, e.getProperties(), e.getEdgeTypeProbabilities());
         });
         
         
