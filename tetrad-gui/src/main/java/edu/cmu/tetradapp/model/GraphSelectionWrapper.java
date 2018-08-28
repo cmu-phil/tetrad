@@ -30,9 +30,6 @@ import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 import edu.cmu.tetradapp.util.IonInput;
-
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.util.*;
@@ -46,7 +43,7 @@ import java.util.*;
 public class GraphSelectionWrapper implements SessionModel, GraphSource, KnowledgeBoxInput, IonInput, IndTestProducer {
     static final long serialVersionUID = 23L;
     private final Parameters params;
-    private List<Node> selectedVariables;
+    private List<Node> selectedNodes;
     private List<Graph> graphs = new ArrayList<>();
 
     public enum Type {
@@ -69,6 +66,9 @@ public class GraphSelectionWrapper implements SessionModel, GraphSource, Knowled
         }
 
         this.params = params;
+        
+        
+        
         init(params, graphs);
     }
 
@@ -90,41 +90,6 @@ public class GraphSelectionWrapper implements SessionModel, GraphSource, Knowled
         init(params, graphs);
     }
 
-    private void init(Parameters params, List<Graph> graphs) {
-        setGraphs(graphs);
-
-        calculateSelection();
-        List<Graph> selectionGraphs = getSelectionGraphs(params);
-
-        for (int i = 0; i < graphs.size(); i++) {
-            Graph graph = selectionGraphs.get(i);
-            GraphUtils.fruchtermanReingoldLayout(graph);
-        }
-
-        List<Node> nodes = getVariables();
-
-        List<Node> first50 = new ArrayList<>();
-
-        for (int i = 0; i < 50; i++) {
-            if (i >= nodes.size()) continue;
-            first50.add(nodes.get(i));
-        }
-
-        setSelectedVariables(first50);
-
-        log();
-    }
-
-
-    public List<Node> getSelectedVariables() {
-        return selectedVariables;
-    }
-
-    private List<Graph> getSelectionGraphs(Parameters params) {
-        return (List<Graph>) params.get("selectionGraphs",
-                Collections.singletonList(new EdgeListGraph()));
-    }
-
     public GraphSelectionWrapper(Graph graphs, Parameters params, String message) {
         this(graphs, params);
         TetradLogger.getInstance().log("info", message);
@@ -139,8 +104,44 @@ public class GraphSelectionWrapper implements SessionModel, GraphSource, Knowled
         return new GraphSelectionWrapper(Dag.serializableInstance(), new Parameters());
     }
 
-    //===============================================PUBLIC METHODS================================//
+    //===============================================METHODS================================//
 
+    private void init(Parameters params, List<Graph> graphs) {
+        setGraphs(graphs);
+
+        calculateSelection();
+        List<Graph> selectionGraphs = getSelectionGraphs(params);
+
+        for (int i = 0; i < graphs.size(); i++) {
+            Graph graph = selectionGraphs.get(i);
+            GraphUtils.fruchtermanReingoldLayout(graph);
+        }
+
+        List<Node> nodes = getVariables();
+
+        // Default to select the first 50 variables to render graph
+        List<Node> first50 = new ArrayList<>();
+
+        for (int i = 0; i < 50; i++) {
+            if (i >= nodes.size()) continue;
+            first50.add(nodes.get(i));
+        }
+
+        setSelectedVariables(first50);
+
+        log();
+    }
+
+
+    public List<Node> getSelectedVariables() {
+        return selectedNodes;
+    }
+
+    private List<Graph> getSelectionGraphs(Parameters params) {
+        return (List<Graph>) params.get("selectionGraphs",
+                Collections.singletonList(new EdgeListGraph()));
+    }
+    
     public void calculateSelection() {
         List<Graph> selectedGraphs = new ArrayList<>();
 
@@ -655,7 +656,7 @@ public class GraphSelectionWrapper implements SessionModel, GraphSource, Knowled
     public void setType(Type type) {
         params.set("graphSelectionType", type.toString());
     }
-
+    
     public String getName() {
         return params.getString("name", null);
     }
@@ -677,7 +678,7 @@ public class GraphSelectionWrapper implements SessionModel, GraphSource, Knowled
     }
 
     public void setSelectedVariables(List<Node> variables) {
-        this.selectedVariables = variables;
+        this.selectedNodes = variables;
     }
 
 
