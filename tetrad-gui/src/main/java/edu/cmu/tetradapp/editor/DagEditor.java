@@ -241,7 +241,7 @@ public final class DagEditor extends JPanel
         
         // topBox right side graph editor
         
-        graphEditorScroll.setPreferredSize(new Dimension(750, 450));
+        graphEditorScroll.setPreferredSize(new Dimension(760, 450));
         graphEditorScroll.setViewportView(workbench);
 
         // topBox contains the topGraphBox and the instructionBox underneath
@@ -325,7 +325,7 @@ public final class DagEditor extends JPanel
         
         // Add to parent container
         add(menuBar, BorderLayout.NORTH);
-        add(splitPane, BorderLayout.SOUTH);
+        add(splitPane, BorderLayout.CENTER);
         
         // Performs relayout. 
         // It means invalid content is asked for all the sizes and 
