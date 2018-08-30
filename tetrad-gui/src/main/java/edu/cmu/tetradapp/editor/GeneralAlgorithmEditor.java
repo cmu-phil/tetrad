@@ -37,6 +37,7 @@ import edu.cmu.tetrad.data.DataModelList;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.data.ICovarianceMatrix;
+import edu.cmu.tetrad.data.IKnowledge;
 import edu.cmu.tetrad.data.Knowledge2;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
@@ -437,7 +438,9 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
             		cmd.equalsIgnoreCase("ts-gfci") ||
             		cmd.equalsIgnoreCase("ts-imgs")) {
             	DataModel dataModel = runner.getDataModel();
-            	if(dataModel.getKnowledge() == null || dataModel.getKnowledge().isEmpty()) {
+            	IKnowledge knowledge = runner.getKnowledge();
+            	if((knowledge == null || knowledge.isEmpty()) &&
+            			(dataModel.getKnowledge() == null || dataModel.getKnowledge().isEmpty())) {
             		paramSetFwdBtn.setEnabled(false);
                     JOptionPane.showMessageDialog(desktop, "Time-series algorithm needs lagged data", "Please Note", JOptionPane.INFORMATION_MESSAGE);
             	}
@@ -1262,7 +1265,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         Box topBox = Box.createVerticalBox();       
         //topBox.setPreferredSize(new Dimension(820, 450));
         topBox.setMinimumSize(new Dimension(820, 400));
-        topBox.setMaximumSize(new Dimension(820, 400));
+        //topBox.setMaximumSize(new Dimension(820, 400));
  
         // topBox graph editor
         JScrollPane graphEditorScroll = new JScrollPane();
@@ -1271,6 +1274,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
 
         // Instruction with info button 
         Box instructionBox = Box.createHorizontalBox();
+        instructionBox.setMaximumSize(new Dimension(820, 40));
         
         JLabel label = new JLabel("More information on graph edge types");
         label.setFont(new Font("SansSerif", Font.PLAIN, 12));
