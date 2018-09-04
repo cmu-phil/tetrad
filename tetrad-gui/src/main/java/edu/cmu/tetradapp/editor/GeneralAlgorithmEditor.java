@@ -1263,9 +1263,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
     private JSplitPane createSearchResultPane(Graph graph) {
         // topBox contains the graphEditorScroll and the instructionBox underneath
         Box topBox = Box.createVerticalBox();       
-        //topBox.setPreferredSize(new Dimension(820, 450));
-        topBox.setMinimumSize(new Dimension(820, 400));
-        //topBox.setMaximumSize(new Dimension(820, 400));
+        topBox.setPreferredSize(new Dimension(820, 400));
  
         // topBox graph editor
         JScrollPane graphEditorScroll = new JScrollPane();
