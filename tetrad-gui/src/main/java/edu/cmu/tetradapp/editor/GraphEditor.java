@@ -225,6 +225,7 @@ public final class GraphEditor extends JPanel
         
         // topBox Left side toolbar
         GraphToolbar graphToolbar = new GraphToolbar(getWorkbench());
+        graphToolbar.setMaximumSize(new Dimension(140, 450));
         
         // topBox right side graph editor
         graphEditorScroll.setPreferredSize(new Dimension(760, 450));
@@ -232,6 +233,7 @@ public final class GraphEditor extends JPanel
 
         // topBox contains the topGraphBox and the instructionBox underneath
         Box topBox = Box.createVerticalBox();
+        topBox.setPreferredSize(new Dimension(820, 400));
         
         // topGraphBox contains the vertical graph toolbar and graph editor
         Box topGraphBox = Box.createHorizontalBox();
@@ -240,6 +242,7 @@ public final class GraphEditor extends JPanel
 
         // Instruction with info button 
         Box instructionBox = Box.createHorizontalBox();
+        instructionBox.setMaximumSize(new Dimension(820, 40));
         
         JLabel label = new JLabel("Double click variable/node rectangle to change name. More information on graph edge types");
         label.setFont(new Font("SansSerif", Font.PLAIN, 12));
