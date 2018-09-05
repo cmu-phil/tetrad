@@ -52,6 +52,9 @@ public class TsGfci implements Algorithm, TakesInitialGraph, HasKnowledge, Takes
 //        }
         
         if (parameters.getInt("bootstrapSampleSize") < 1) {
+        	if(knowledge != null) {
+        		dataSet.setKnowledge(knowledge);
+        	}
             edu.cmu.tetrad.search.TsGFci search = new edu.cmu.tetrad.search.TsGFci(test.getTest(dataSet, parameters),
                     score.getScore(dataSet, parameters));
             IKnowledge _knowledge = dataSet.getKnowledge() != null ? dataSet.getKnowledge() : new Knowledge2();

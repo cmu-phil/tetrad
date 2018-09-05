@@ -56,6 +56,9 @@ public class TsFci implements Algorithm, TakesInitialGraph, HasKnowledge, TakesI
 //        }
         
         if (parameters.getInt("bootstrapSampleSize") < 1) {
+        	if(knowledge != null) {
+        		dataSet.setKnowledge(knowledge);
+        	}
             edu.cmu.tetrad.search.TsFci search = new edu.cmu.tetrad.search.TsFci(test.getTest(dataSet, parameters));
             search.setDepth(parameters.getInt("depth"));
             search.setKnowledge(dataSet.getKnowledge());

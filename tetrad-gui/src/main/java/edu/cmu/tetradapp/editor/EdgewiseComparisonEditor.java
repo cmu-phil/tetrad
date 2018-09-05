@@ -27,6 +27,7 @@ import edu.cmu.tetradapp.model.GraphWrapper;
 
 import javax.swing.*;
 import java.awt.*;
+import java.util.List;
 
 /**
  * Provides a little display/editor for notes in the session workbench. This
@@ -36,7 +37,9 @@ import java.awt.*;
  */
 public class EdgewiseComparisonEditor extends JPanel {
 
-    /**
+	private static final long serialVersionUID = 7921819261142670181L;
+	
+	/**
      * The model for the note.
      */
     private final EdgewiseComparisonModel comparison;
@@ -53,47 +56,39 @@ public class EdgewiseComparisonEditor extends JPanel {
     //============================ Private Methods =========================//
 
     private void setup() {
-        java.util.List<Graph> referenceGraphs = comparison.getReferenceGraphs();
+        setLayout(new BorderLayout());
+
+        List<Graph> referenceGraphs = comparison.getReferenceGraphs();
         JTabbedPane pane = new JTabbedPane(JTabbedPane.LEFT);
 
         for (int i = 0; i < referenceGraphs.size(); i++) {
             JTabbedPane pane2 = new JTabbedPane(JTabbedPane.TOP);
             String compareString = comparison.getComparisonString(i);
-
-            JPanel panel = new JPanel();
-
+ 
             Font font = new Font("Monospaced", Font.PLAIN, 14);
             final JTextArea textPane = new JTextArea();
             textPane.setText(compareString);
 
             textPane.setFont(font);
 
-            JScrollPane scroll = new JScrollPane(textPane);
-            scroll.setPreferredSize(new Dimension(400, 400));
+            JScrollPane scrollTextPane = new JScrollPane(textPane);
+            scrollTextPane.setPreferredSize(new Dimension(400, 400));
+            
+            pane2.add("Comparison", scrollTextPane);
+            
+            JScrollPane scrollTargetGraph = new JScrollPane(new GraphEditor(new GraphWrapper(comparison.getTargetGraphs().get(i))).getWorkbench());
+            scrollTargetGraph.setPreferredSize(new Dimension(400, 400));
+            
+            pane2.add("Target Graph", scrollTargetGraph);
 
-            panel.add(Box.createVerticalStrut(10));
-
-            Box box = Box.createHorizontalBox();
-            panel.add(box);
-            panel.add(Box.createVerticalStrut(10));
-
-            Box box1 = Box.createHorizontalBox();
-            box1.add(new JLabel("Graph Comparison: "));
-            box1.add(Box.createHorizontalGlue());
-
-            add(box1);
-            setLayout(new BorderLayout());
-
-            pane2.add("Comparison", scroll);
-
-            pane2.add("Target Graph", new GraphEditor(new GraphWrapper(comparison.getTargetGraphs().get(i))).getWorkbench());
-            pane2.add("True Graph", new GraphEditor(new GraphWrapper(comparison.getReferenceGraphs().get(i))).getWorkbench());
+            JScrollPane scrollTrueGraph = new JScrollPane(new GraphEditor(new GraphWrapper(comparison.getReferenceGraphs().get(i))).getWorkbench());
+            scrollTrueGraph.setPreferredSize(new Dimension(400, 400));
+            
+            pane2.add("True Graph", scrollTrueGraph);
 
             pane.add("" + (i + 1), pane2);
-
-
         }
-
+        
         add(pane);
     }
 

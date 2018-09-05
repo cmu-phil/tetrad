@@ -22,9 +22,7 @@
 package edu.cmu.tetradapp.workbench;
 
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.graph.TripleClassifier;
 import edu.cmu.tetradapp.model.EditorUtils;
-
 import java.awt.*;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -417,6 +415,10 @@ public class GraphWorkbench extends AbstractWorkbench implements TripleClassifie
         triplesList.add(GraphUtils.getUnderlinedTriplesFromGraph(node, graph));
         triplesList.add(GraphUtils.getDottedUnderlinedTriplesFromGraph(node, graph));
         return triplesList;
+    }
+
+    public void pasteSubgraph(List sessionElements, edu.cmu.tetrad.util.Point upperLeft) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }
 

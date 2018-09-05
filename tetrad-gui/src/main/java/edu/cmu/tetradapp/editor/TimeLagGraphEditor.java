@@ -32,26 +32,29 @@ import edu.cmu.tetrad.util.PointXy;
 import edu.cmu.tetrad.util.TetradSerializable;
 import edu.cmu.tetradapp.model.IndTestProducer;
 import edu.cmu.tetradapp.model.TimeLagGraphWrapper;
+import edu.cmu.tetradapp.util.BootstrapTable;
 import edu.cmu.tetradapp.util.CopyLayoutAction;
 import edu.cmu.tetradapp.util.DesktopController;
 import edu.cmu.tetradapp.util.ImageUtils;
 import edu.cmu.tetradapp.util.LayoutEditable;
 import edu.cmu.tetradapp.workbench.*;
-import java.awt.*;
+import java.awt.BorderLayout;
+import java.awt.Component;
+import java.awt.Dimension;
+import java.awt.Font;
+import java.awt.Point;
+import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.net.URL;
 import java.util.*;
-import java.util.List;
 import java.util.prefs.Preferences;
 import javax.help.CSH;
 import javax.help.HelpBroker;
 import javax.help.HelpSet;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
-import javax.swing.border.MatteBorder;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.InternalFrameAdapter;
@@ -63,110 +66,39 @@ import javax.swing.event.InternalFrameEvent;
  *
  * @author Aaron Powers
  * @author Joseph Ramsey
+ * @author Zhou Yuan
  */
 public final class TimeLagGraphEditor extends JPanel
         implements GraphEditable, LayoutEditable, IndTestProducer {
 
-    private final TimeLagGraphWorkbench workbench;
-    private TimeLagGraphWrapper graphWrapper;
+    private static final long serialVersionUID = -2425361202348129265L;
+
+    private TimeLagGraphWorkbench workbench;
+    private TimeLagGraphWrapper timeLagGraphWrapper;
     private LayoutEditable layoutEditable;
     private CopyLayoutAction copyLayoutAction;
     private Parameters parameters;
+    
+    private JScrollPane graphEditorScroll = new JScrollPane();
+    private Box tablePaneBox;
 
-    private final HelpSet helpSet;
-
-    //===========================PUBLIC METHODS========================//
-    public TimeLagGraphEditor(TimeLagGraphWrapper graphWrapper) {
-        this((TimeLagGraph) graphWrapper.getGraph());
-        this.graphWrapper = graphWrapper;
-        this.layoutEditable = this;
-        this.parameters = graphWrapper.getParameters();
-
-        getWorkbench().addPropertyChangeListener(new PropertyChangeListener() {
-            public void propertyChange(PropertyChangeEvent evt) {
-                if ("graph".equals(evt.getPropertyName())) {
-                    getGraphWrapper().setGraph((TimeLagGraph) evt.getNewValue());
-                } else if ("modelChanged".equals(evt.getPropertyName())) {
-                    firePropertyChange("modelChanged", null, null);
-                }
-            }
-        });
-    }
-
-    //===========================PRIVATE METHODS======================//
-    /**
-     * Constructs a new GraphEditor for the given EdgeListGraph.
-     */
-    public TimeLagGraphEditor(TimeLagGraph graph) {
-        // Initialize helpSet - Zhou
-        String helpHS = "/resources/javahelp/TetradHelp.hs";
-
-        try {
-            URL url = this.getClass().getResource(helpHS);
-            this.helpSet = new HelpSet(null, url);
-        } catch (Exception ee) {
-            System.out.println("HelpSet " + ee.getMessage());
-            System.out.println("HelpSet " + helpHS + " not found");
-            throw new IllegalArgumentException();
-        }
-
+    //===========================CONSTRUCTOR========================//
+    public TimeLagGraphEditor(TimeLagGraphWrapper timeLagGraphWrapper) {
         setLayout(new BorderLayout());
+        
+        this.timeLagGraphWrapper = timeLagGraphWrapper;
+        this.layoutEditable = this;
+        this.parameters = timeLagGraphWrapper.getParameters();
 
-        this.workbench = new TimeLagGraphWorkbench(graph);
-        DagGraphToolbar toolbar = new DagGraphToolbar(getWorkbench());
-        JMenuBar menuBar = createGraphMenuBar();
-        JScrollPane scroll = new JScrollPane(getWorkbench());
-        scroll.setPreferredSize(new Dimension(450, 450));
-
-        add(scroll, BorderLayout.CENTER);
-        add(toolbar, BorderLayout.WEST);
-        add(menuBar, BorderLayout.NORTH);
-
-        JLabel label = new JLabel("Double click variable to change name. More information on graph edge types");
-        label.setFont(new Font("SansSerif", Font.PLAIN, 12));
-
-        // Info button added by Zhou to show edge types
-        JButton infoBtn = new JButton(new ImageIcon(ImageUtils.getImage(this, "info.png")));
-        infoBtn.setBorder(new EmptyBorder(0, 0, 0, 0));
-
-        // Clock info button to show edge types instructions - Zhou
-        infoBtn.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                helpSet.setHomeID("graph_edge_types");
-                HelpBroker broker = helpSet.createHelpBroker();
-                ActionListener listener = new CSH.DisplayHelpFromSource(broker);
-                listener.actionPerformed(e);
-            }
-        });
-
-        Box b = Box.createHorizontalBox();
-        b.add(Box.createHorizontalStrut(2));
-        b.add(label);
-        b.add(infoBtn);
-        b.add(Box.createHorizontalGlue());
-        b.setBorder(new MatteBorder(0, 0, 1, 0, Color.GRAY));
-
-        add(b, BorderLayout.SOUTH);
-
-        this.getWorkbench().addPropertyChangeListener(new PropertyChangeListener() {
-            public void propertyChange(PropertyChangeEvent evt) {
-                String propertyName = evt.getPropertyName();
-
-                if ("graph".equals(propertyName)) {
-                    TimeLagGraph _graph = (TimeLagGraph) evt.getNewValue();
-
-                    if (getWorkbench() != null) {
-                        getGraphWrapper().setGraph(_graph);
-                    }
-                }
-            }
-        });
+        initUI(timeLagGraphWrapper);
     }
 
+    
+    //===========================PUBLIC METHODS========================//
     /**
      * Sets the name of this editor.
      */
+    @Override
     public final void setName(String name) {
         String oldName = getName();
         super.setName(name);
@@ -180,6 +112,7 @@ public final class TimeLagGraphEditor extends JPanel
      * workbench, not the SessionEditorNodes themselves, keeps track of the
      * selection.
      */
+    @Override
     public List getSelectedModelComponents() {
         List<Component> selectedComponents
                 = getWorkbench().getSelectedComponents();
@@ -205,6 +138,7 @@ public final class TimeLagGraphEditor extends JPanel
     /**
      * Pastes list of session elements into the workbench.
      */
+    @Override
     public void pasteSubsession(List sessionElements, Point upperLeft) {
         getWorkbench().pasteSubgraph(sessionElements, upperLeft);
         getWorkbench().deselectAll();
@@ -222,10 +156,12 @@ public final class TimeLagGraphEditor extends JPanel
         getWorkbench().selectConnectingEdges();
     }
 
+    @Override
     public GraphWorkbench getWorkbench() {
         return workbench;
     }
 
+    @Override
     public Graph getGraph() {
         return getWorkbench().getGraph();
     }
@@ -235,39 +171,182 @@ public final class TimeLagGraphEditor extends JPanel
         return getWorkbench().getModelEdgesToDisplay();
     }
 
+    @Override
     public Map getModelNodesToDisplay() {
         return getWorkbench().getModelNodesToDisplay();
     }
 
+    @Override
     public void setGraph(Graph graph) {
         getWorkbench().setGraph(graph);
     }
 
+    @Override
     public IKnowledge getKnowledge() {
         return null;
     }
 
+    @Override
     public Graph getSourceGraph() {
         return getWorkbench().getGraph();
     }
 
+    @Override
     public void layoutByGraph(Graph graph) {
         getWorkbench().layoutByGraph(graph);
     }
 
+    @Override
     public void layoutByKnowledge() {
         // Does nothing.
     }
 
+    @Override
     public Rectangle getVisibleRect() {
         return getWorkbench().getVisibleRect();
     }
 
-    private TimeLagGraphWrapper getGraphWrapper() {
-        return graphWrapper;
+    //===========================PRIVATE METHODS======================//
+    private void initUI(TimeLagGraphWrapper timeLagGraphWrapper) {
+        TimeLagGraph graph = (TimeLagGraph) timeLagGraphWrapper.getGraph();
+        
+        workbench = new TimeLagGraphWorkbench(graph);
+        
+        workbench.addPropertyChangeListener((PropertyChangeEvent evt) -> {
+            String propertyName = evt.getPropertyName();
+            
+            // Update the bootstrap table if there's changes to the edges or node renaming
+            String[] events = { "graph", "edgeAdded", "edgeRemoved" };
+            
+            if (Arrays.asList(events).contains(propertyName)) {
+                if (getWorkbench() != null) {
+                    TimeLagGraph targetGraph = (TimeLagGraph) getWorkbench().getGraph();
+                    
+                    // Update the timeLagGraphWrapper
+                    timeLagGraphWrapper.setGraph(targetGraph);
+                    // Also need to update the UI
+                    updateBootstrapTable(targetGraph);
+                }
+            } else if ("modelChanged".equals(propertyName)) {
+                firePropertyChange("modelChanged", null, null);
+            }
+        });
+        
+        // Graph menu at the very top of the window
+        JMenuBar menuBar = createGraphMenuBar();
+   
+        // topBox Left side toolbar
+        DagGraphToolbar graphToolbar = new DagGraphToolbar(getWorkbench());
+        graphToolbar.setMaximumSize(new Dimension(140, 450));
+        
+        // topBox right side graph editor
+        graphEditorScroll.setPreferredSize(new Dimension(760, 450));
+        graphEditorScroll.setViewportView(workbench);
+
+        // topBox contains the topGraphBox and the instructionBox underneath
+        Box topBox = Box.createVerticalBox();
+        topBox.setPreferredSize(new Dimension(820, 400));
+        
+        // topGraphBox contains the vertical graph toolbar and graph editor
+        Box topGraphBox = Box.createHorizontalBox();
+        topGraphBox.add(graphToolbar);
+        topGraphBox.add(graphEditorScroll);
+
+        // Instruction with info button 
+        Box instructionBox = Box.createHorizontalBox();
+        instructionBox.setMaximumSize(new Dimension(820, 40));
+        
+        JLabel label = new JLabel("Double click variable/node rectangle to change name. More information on graph edge types");
+        label.setFont(new Font("SansSerif", Font.PLAIN, 12));
+
+        // Info button added by Zhou to show edge types
+        JButton infoBtn = new JButton(new ImageIcon(ImageUtils.getImage(this, "info.png")));
+        infoBtn.setBorder(new EmptyBorder(0, 0, 0, 0));
+
+        // Clock info button to show edge types instructions - Zhou
+        infoBtn.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                // Initialize helpSet
+                String helpHS = "/resources/javahelp/TetradHelp.hs";
+
+                try {
+                    URL url = this.getClass().getResource(helpHS);
+                    HelpSet helpSet = new HelpSet(null, url);
+
+                    helpSet.setHomeID("graph_edge_types");
+                    HelpBroker broker = helpSet.createHelpBroker();
+                    ActionListener listener = new CSH.DisplayHelpFromSource(broker);
+                    listener.actionPerformed(e);
+                } catch (Exception ee) {
+                    System.out.println("HelpSet " + ee.getMessage());
+                    System.out.println("HelpSet " + helpHS + " not found");
+                    throw new IllegalArgumentException();
+                }
+            }
+        });
+
+        instructionBox.add(label);
+        instructionBox.add(Box.createHorizontalStrut(2));
+        instructionBox.add(infoBtn);
+        
+        // Add to topBox
+        topBox.add(topGraphBox);
+        topBox.add(instructionBox);
+
+        // bottomBox contains bootstrap table
+        Box bottomBox = Box.createVerticalBox();
+        bottomBox.setPreferredSize(new Dimension(750, 150));
+
+        bottomBox.add(Box.createVerticalStrut(5));
+        
+        // Put the table title label in a box so it can be centered
+        Box tableTitleBox = Box.createHorizontalBox();
+        JLabel tableTitle = new JLabel("Edges and Edge Type Probabilities");
+        tableTitleBox.add(tableTitle);
+        
+        bottomBox.add(tableTitleBox);
+        
+        bottomBox.add(Box.createVerticalStrut(5));
+        
+        // Table box contains the table pane
+        tablePaneBox = Box.createHorizontalBox();
+        JScrollPane tablePane = BootstrapTable.renderBootstrapTable(graph);
+        tablePaneBox.add(tablePane);
+        
+        bottomBox.add(tablePaneBox);
+        
+        // Use JSplitPane to allow resize the bottom box - Zhou
+        JSplitPane splitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
+        
+        // Set the top and bottom split panes
+        splitPane.setTopComponent(topBox);
+        splitPane.setBottomComponent(bottomBox);
+        
+        
+        // Add to parent container
+        add(menuBar, BorderLayout.NORTH);
+        add(splitPane, BorderLayout.CENTER);
+        
+        // Performs relayout. 
+        // It means invalid content is asked for all the sizes and 
+        // all the subcomponents' sizes are set to proper values by LayoutManager.
+        validate();
+    }
+    
+    /**
+     * Updates bootstrap table on adding/removing edges or graph changes
+     * 
+     * @param graph 
+     */
+    private void updateBootstrapTable(Graph graph) {
+        tablePaneBox.removeAll();
+        JScrollPane tablePane = BootstrapTable.renderBootstrapTable(graph);
+        tablePaneBox.add(tablePane);
+        
+        validate();
     }
 
-    //===========================PRIVATE METHODS========================//
     private JMenuBar createGraphMenuBar() {
         JMenuBar menuBar = new JMenuBar();
 
@@ -283,22 +362,6 @@ public final class TimeLagGraphEditor extends JPanel
         return menuBar;
     }
 
-//    /**
-//     * Creates the "file" menu, which allows the user to load, save, and post
-//     * workbench models.
-//     *
-//     * @return this menu.
-//     */
-//    private JMenu createFileMenu() {
-//        JMenu file = new JMenu("File");
-//
-//        file.add(new LoadGraph(this, "Load Graph..."));
-//        file.add(new SaveGraph(this, "Save Graph..."));
-////        file.add(new SaveScreenshot(this, true, "Save Screenshot..."));
-//        file.add(new SaveComponentImage(getWorkbench(), "Save Graph Image..."));
-//
-//        return file;
-//    }
     /**
      * Creates the "file" menu, which allows the user to load, save, and post
      * workbench models.
@@ -687,6 +750,7 @@ public final class TimeLagGraphEditor extends JPanel
         }
     }
 
+    @Override
     public IndependenceTest getIndependenceTest() {
         Graph graph = getWorkbench().getGraph();
         EdgeListGraph listGraph = new EdgeListGraph(graph);
@@ -824,4 +888,5 @@ public final class TimeLagGraphEditor extends JPanel
     private CopyLayoutAction getCopyLayoutAction() {
         return copyLayoutAction;
     }
+
 }
