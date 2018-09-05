@@ -42,7 +42,6 @@ import java.util.concurrent.RecursiveTask;
  */
 public final class OrientCollidersMaxP {
     private final IndependenceTest independenceTest;
-    private final IndTestScore score;
     private int depth = -1;
     private long elapsed = 0;
     private IKnowledge knowledge = new Knowledge2();
@@ -53,7 +52,6 @@ public final class OrientCollidersMaxP {
     public OrientCollidersMaxP(IndependenceTest test) {
         if (test == null) throw new NullPointerException();
         this.independenceTest = test;
-        this.score = new IndTestScore(new SemBicScore(new CovarianceMatrixOnTheFly((DataSet) test.getData())));
     }
 
     //======================================== PUBLIC METHODS ====================================//
