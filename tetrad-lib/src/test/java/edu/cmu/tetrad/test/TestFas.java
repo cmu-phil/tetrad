@@ -53,7 +53,7 @@ public class TestFas {
 
         IndependenceTest test = new IndTestDSep(graph);
 
-        Graph fasGraph = new FasStableConcurrent(test).search();
+        Graph fasGraph = new FasConcurrent(test).search();
         Graph pcGraph = new Pc(test).search();
 
         assertEquals(fasGraph, GraphUtils.undirectedGraph(pcGraph));

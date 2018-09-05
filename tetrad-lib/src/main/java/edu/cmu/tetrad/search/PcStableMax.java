@@ -23,15 +23,10 @@ package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.IKnowledge;
 import edu.cmu.tetrad.data.Knowledge2;
-import edu.cmu.tetrad.graph.Edge;
-import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.graph.GraphUtils;
-import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.TetradLogger;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Implements a modification of the the PC ("Peter/Clark") algorithm, as specified in Chapter 6 of
@@ -185,7 +180,7 @@ public class PcStableMax implements GraphSearch {
         }
 
 //        FasStableConcurrent fas = new FasStableConcurrent(initialGraph, getIndependenceTest());
-        Fas fas = new Fas(initialGraph, getIndependenceTest());
+        FasStable fas = new FasStable(initialGraph, getIndependenceTest());
         fas.setKnowledge(getKnowledge());
         fas.setDepth(getDepth());
         fas.setVerbose(verbose);
@@ -194,7 +189,7 @@ public class PcStableMax implements GraphSearch {
 
         SearchGraphUtils.pcOrientbk(knowledge, graph, nodes);
 
-        final OrientCollidersMaxP orientCollidersMaxP = new OrientCollidersMaxP(independenceTest, PcAll.ConflictRule.OVERWRITE);
+        final OrientCollidersMaxP orientCollidersMaxP = new OrientCollidersMaxP(independenceTest);
         orientCollidersMaxP.setKnowledge(knowledge);
         orientCollidersMaxP.setUseHeuristic(useHeuristic);
         orientCollidersMaxP.setMaxPathLength(maxPathLength);
@@ -270,7 +265,6 @@ public class PcStableMax implements GraphSearch {
         return maxPathLength;
     }
 }
-
 
 
 

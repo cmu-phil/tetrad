@@ -79,6 +79,7 @@ public final class IndTestDrton implements IndependenceTest {
     private PrintStream pValueLogger;
     private Map<Node, Integer> indexMap;
     private Map<String, Node> nameMap;
+    private boolean verbose = false;
 
     //==========================CONSTRUCTORS=============================//
 
@@ -154,9 +155,9 @@ public final class IndTestDrton implements IndependenceTest {
 
         // Either dividing by a zero standard deviation (in which case it's dependent) or doing a regression
 //        // (effectively) with a multicolliarity.. or missing values in the data!
-//        if (Double.isNaN(r)) {
+//        if (Double.isNaN(engine)) {
 //
-//            // Maybe it's missing values. Try calculating r using just the rows in the data set
+//            // Maybe it's missing values. Try calculating engine using just the rows in the data set
 //            // (if it exists) with defined values for all compared variables.
 //            if (dataSet != null) {
 //                int[] vars = new int[2 + z.size()];
@@ -172,10 +173,10 @@ public final class IndTestDrton implements IndependenceTest {
 //
 //                TetradMatrix submatrix = DataUtils.covMatrixForDefinedRows(dataSet, vars, _n);
 //
-//                r = StatUtils.partialCorrelation(submatrix);
+//                engine = StatUtils.partialCorrelation(submatrix);
 //            }
 //
-//            if (Double.isNaN(r)) {
+//            if (Double.isNaN(engine)) {
 //                return false;
 //            }
 //        }
@@ -381,8 +382,16 @@ public final class IndTestDrton implements IndependenceTest {
         return indexMap;
     }
 
-}
+    @Override
+    public boolean isVerbose() {
+        return verbose;
+    }
 
+    @Override
+    public void setVerbose(boolean verbose) {
+        this.verbose = verbose;
+    }
+}
 
 
 

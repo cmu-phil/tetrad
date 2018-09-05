@@ -68,6 +68,8 @@ public class ProbabilisticMAPIndependence implements IndependenceTest {
     private Map<IndependenceFact, Double> H;
     private double posterior;
 
+    private boolean verbose = false;
+
     /**
      * Initializes the test using a discrete data sets.
      */
@@ -258,7 +260,16 @@ public class ProbabilisticMAPIndependence implements IndependenceTest {
     public double getPosterior() {
         return posterior;
     }
-}
 
+    @Override
+    public boolean isVerbose() {
+        return verbose;
+    }
+
+    @Override
+    public void setVerbose(boolean verbose) {
+        this.verbose = verbose;
+    }
+}
 
 

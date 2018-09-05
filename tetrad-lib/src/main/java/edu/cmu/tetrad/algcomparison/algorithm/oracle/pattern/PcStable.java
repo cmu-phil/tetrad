@@ -47,46 +47,47 @@ public class PcStable implements Algorithm, TakesInitialGraph, HasKnowledge, Tak
 
     @Override
     public Graph search(DataModel dataSet, Parameters parameters) {
-    	if (parameters.getInt("bootstrapSampleSize") < 1) {
+        if (parameters.getInt("bootstrapSampleSize") < 1) {
             if (algorithm != null) {
 //            	initialGraph = algorithm.search(dataSet, parameters);
             }
             edu.cmu.tetrad.search.PcAll search = new edu.cmu.tetrad.search.PcAll(test.getTest(dataSet, parameters), initialGraph);
             search.setDepth(parameters.getInt("depth"));
             search.setKnowledge(knowledge);
-            search.setFasRule(PcAll.FasRule.FAS_STABLE);
+            search.setFasType(edu.cmu.tetrad.search.PcAll.FasType.STABLE);
+            search.setConcurrent(edu.cmu.tetrad.search.PcAll.Concurrent.NO);
             search.setColliderDiscovery(edu.cmu.tetrad.search.PcAll.ColliderDiscovery.FAS_SEPSETS);
             search.setConflictRule(PcAll.ConflictRule.PRIORITY);
             search.setVerbose(parameters.getBoolean("verbose"));
             return search.search();
-    	}else{
-    		PcStable pcStable = new PcStable(test, algorithm);
-    		
-    		//pcStable.setKnowledge(knowledge);
-			if (initialGraph != null) {
-				pcStable.setInitialGraph(initialGraph);
-			}
-			DataSet data = (DataSet) dataSet;
-			GeneralBootstrapTest search = new GeneralBootstrapTest(data, pcStable,
-					parameters.getInt("bootstrapSampleSize"));
+        } else {
+            PcStable pcStable = new PcStable(test, algorithm);
+
+            //pcStable.setKnowledge(knowledge);
+            if (initialGraph != null) {
+                pcStable.setInitialGraph(initialGraph);
+            }
+            DataSet data = (DataSet) dataSet;
+            GeneralBootstrapTest search = new GeneralBootstrapTest(data, pcStable,
+                    parameters.getInt("bootstrapSampleSize"));
             search.setKnowledge(knowledge);
 
-			BootstrapEdgeEnsemble edgeEnsemble = BootstrapEdgeEnsemble.Highest;
-			switch (parameters.getInt("bootstrapEnsemble", 1)) {
-			case 0:
-				edgeEnsemble = BootstrapEdgeEnsemble.Preserved;
-				break;
-			case 1:
-				edgeEnsemble = BootstrapEdgeEnsemble.Highest;
-				break;
-			case 2:
-				edgeEnsemble = BootstrapEdgeEnsemble.Majority;
-			}
-			search.setEdgeEnsemble(edgeEnsemble);
-			search.setParameters(parameters);
-			search.setVerbose(parameters.getBoolean("verbose"));
-			return search.search();
-    	}
+            BootstrapEdgeEnsemble edgeEnsemble = BootstrapEdgeEnsemble.Highest;
+            switch (parameters.getInt("bootstrapEnsemble", 1)) {
+                case 0:
+                    edgeEnsemble = BootstrapEdgeEnsemble.Preserved;
+                    break;
+                case 1:
+                    edgeEnsemble = BootstrapEdgeEnsemble.Highest;
+                    break;
+                case 2:
+                    edgeEnsemble = BootstrapEdgeEnsemble.Majority;
+            }
+            search.setEdgeEnsemble(edgeEnsemble);
+            search.setParameters(parameters);
+            search.setVerbose(parameters.getBoolean("verbose"));
+            return search.search();
+        }
     }
 
     @Override
@@ -97,7 +98,7 @@ public class PcStable implements Algorithm, TakesInitialGraph, HasKnowledge, Tak
     @Override
     public String getDescription() {
         return "PC-Stable (\"Peter and Clark\" Stable), Priority Rule, using " + test.getDescription() + (algorithm != null ? " with initial graph from " +
-        		algorithm.getDescription() : "");
+                algorithm.getDescription() : "");
     }
 
     @Override
@@ -126,15 +127,15 @@ public class PcStable implements Algorithm, TakesInitialGraph, HasKnowledge, Tak
         this.knowledge = knowledge;
     }
 
-	@Override
-	public Graph getInitialGraph() {
-		return initialGraph;
-	}
+    @Override
+    public Graph getInitialGraph() {
+        return initialGraph;
+    }
 
-	@Override
-	public void setInitialGraph(Graph initialGraph) {
-		this.initialGraph = initialGraph;
-	}
+    @Override
+    public void setInitialGraph(Graph initialGraph) {
+        this.initialGraph = initialGraph;
+    }
 
     @Override
     public void setInitialGraph(Algorithm algorithm) {
