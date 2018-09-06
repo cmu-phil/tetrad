@@ -50,6 +50,7 @@ public class IndTestMVPLRT implements IndependenceTest {
 
     // Likelihood function
     private MVPLikelihood likelihood;
+    private boolean verbose = false;
 
 
     // P Values
@@ -237,5 +238,15 @@ public class IndTestMVPLRT implements IndependenceTest {
 
     public double getScore() {
         return getAlpha() - getPValue();
+    }
+
+    @Override
+    public boolean isVerbose() {
+        return verbose;
+    }
+
+    @Override
+    public void setVerbose(boolean verbose) {
+        this.verbose = verbose;
     }
 }

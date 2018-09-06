@@ -154,7 +154,7 @@ public class TestPc {
 
         // Run search
 //        Graph resultGraph = pc.search();
-        Graph resultGraph = pc.search(new FasStableConcurrent(independence), independence.getVariables());
+        Graph resultGraph = pc.search(new Fas(independence), independence.getVariables());
 
         // Build comparison graph.
         Graph trueGraph = GraphConverter.convert(outputGraph);

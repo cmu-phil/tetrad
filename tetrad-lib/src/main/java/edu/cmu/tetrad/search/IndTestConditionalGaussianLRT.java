@@ -32,6 +32,10 @@ import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.*;
 
+import static edu.cmu.tetrad.util.MathUtils.logChoose;
+import static java.lang.Math.exp;
+import static java.lang.Math.log;
+
 /**
  * Performs a test of conditional independence X _||_ Y | Z1...Zn where all searchVariables are either continuous or discrete.
  * This test is valid for both ordinal and non-ordinal discrete searchVariables.
@@ -49,6 +53,9 @@ public class IndTestConditionalGaussianLRT implements IndependenceTest {
     private ConditionalGaussianLikelihood likelihood;
     private double pValue = Double.NaN;
     private int numCategoriesToDiscretize = 3;
+
+    private boolean verbose = false;
+    private boolean fastFDR = false;
 
     public IndTestConditionalGaussianLRT(DataSet data, double alpha, boolean discretize) {
         this.data = data;
@@ -131,7 +138,18 @@ public class IndTestConditionalGaussianLRT implements IndependenceTest {
 
         this.pValue = Math.min(p0, p1);
 
-        return this.pValue > alpha;
+//        return this.pValue > alpha;
+
+        if(fastFDR) {
+            final int d1 = 0; // reference
+            final int d2 = z.size();
+            final int v = data.getNumColumns() - 2;
+
+            double alpha2 = (exp(log(alpha) + logChoose(v, d1) - logChoose(v, d2)));
+            return this.pValue > alpha2;
+        } else {
+            return this.pValue > alpha;
+        }
     }
 
     public boolean isIndependent(Node x, Node y, Node... z) {
@@ -254,5 +272,19 @@ public class IndTestConditionalGaussianLRT implements IndependenceTest {
 
     public void setNumCategoriesToDiscretize(int numCategoriesToDiscretize) {
         this.numCategoriesToDiscretize = numCategoriesToDiscretize;
+    }
+
+    @Override
+    public boolean isVerbose() {
+        return verbose;
+    }
+
+    @Override
+    public void setVerbose(boolean verbose) {
+        this.verbose = verbose;
+    }
+
+    public void setFastFDR(boolean fastFDR) {
+        this.fastFDR = fastFDR;
     }
 }

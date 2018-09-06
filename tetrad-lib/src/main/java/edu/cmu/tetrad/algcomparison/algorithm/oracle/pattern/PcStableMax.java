@@ -17,6 +17,7 @@ import edu.cmu.tetrad.search.PcAll;
 import edu.cmu.tetrad.util.Parameters;
 import edu.pitt.dbmi.algo.bootstrap.BootstrapEdgeEnsemble;
 import edu.pitt.dbmi.algo.bootstrap.GeneralBootstrapTest;
+
 import java.util.List;
 
 /**
@@ -48,7 +49,7 @@ public class PcStableMax implements Algorithm, TakesInitialGraph, HasKnowledge, 
 
     @Override
     public Graph search(DataModel dataSet, Parameters parameters) {
-    	if (parameters.getInt("bootstrapSampleSize") < 1) {
+        if (parameters.getInt("bootstrapSampleSize") < 1) {
 
             if (algorithm != null) {
 //                initialGraph = algorithm.search(dataSet, parameters);
@@ -57,7 +58,8 @@ public class PcStableMax implements Algorithm, TakesInitialGraph, HasKnowledge, 
             edu.cmu.tetrad.search.PcAll search = new edu.cmu.tetrad.search.PcAll(test.getTest(dataSet, parameters), initialGraph);
             search.setDepth(parameters.getInt("depth"));
             search.setKnowledge(knowledge);
-            search.setFasRule(edu.cmu.tetrad.search.PcAll.FasRule.FAS_STABLE);
+            search.setFasType(edu.cmu.tetrad.search.PcAll.FasType.STABLE);
+            search.setConcurrent(edu.cmu.tetrad.search.PcAll.Concurrent.NO);
             search.setColliderDiscovery(PcAll.ColliderDiscovery.MAX_P);
             search.setConflictRule(edu.cmu.tetrad.search.PcAll.ConflictRule.PRIORITY);
             search.setVerbose(parameters.getBoolean("verbose"));
@@ -107,7 +109,7 @@ public class PcStableMax implements Algorithm, TakesInitialGraph, HasKnowledge, 
     public String getDescription() {
         return "PC-Stable-Max (\"Peter and Clark\"), Priority Rule, using " + test.getDescription()
                 + (algorithm != null ? " with initial graph from "
-                        + algorithm.getDescription() : "");
+                + algorithm.getDescription() : "");
     }
 
     @Override

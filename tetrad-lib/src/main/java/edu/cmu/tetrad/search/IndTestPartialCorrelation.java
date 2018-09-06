@@ -73,6 +73,8 @@ public final class IndTestPartialCorrelation implements IndependenceTest {
 
     CovarianceMatrix cov;
 
+    private boolean verbose = false;
+
 
     //==========================CONSTRUCTORS=============================//
 
@@ -310,8 +312,16 @@ public final class IndTestPartialCorrelation implements IndependenceTest {
     }
 
 
-}
+    @Override
+    public boolean isVerbose() {
+        return verbose;
+    }
 
+    @Override
+    public void setVerbose(boolean verbose) {
+        this.verbose = verbose;
+    }
+}
 
 
 

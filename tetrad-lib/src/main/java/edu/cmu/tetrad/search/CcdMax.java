@@ -84,7 +84,7 @@ public final class CcdMax implements GraphSearch {
         System.out.println("Max P collider orientation");
 
         if (doColliderOrientations) {
-            final OrientCollidersMaxP orientCollidersMaxP = new OrientCollidersMaxP(independenceTest, PcAll.ConflictRule.OVERWRITE);
+            final OrientCollidersMaxP orientCollidersMaxP = new OrientCollidersMaxP(independenceTest);
             orientCollidersMaxP.setUseHeuristic(useHeuristic);
             orientCollidersMaxP.setMaxPathLength(maxPathLength);
             orientCollidersMaxP.setKnowledge(knowledge);
@@ -199,12 +199,11 @@ public final class CcdMax implements GraphSearch {
     private Graph fastAdjacencySearch() {
         long start = System.currentTimeMillis();
 
-        FasStableConcurrent fas = new FasStableConcurrent(null, independenceTest);
+        FasConcurrent fas = new FasConcurrent(null, independenceTest);
         fas.setDepth(getDepth());
         fas.setKnowledge(knowledge);
         fas.setVerbose(false);
 
-        fas.setRecordSepsets(orientConcurrentFeedbackLoops);
         Graph graph = fas.search();
 
         if (useOrientTowardDConnections) {
@@ -243,10 +242,10 @@ public final class CcdMax implements GraphSearch {
 
                                 if (
                                         graph.getEdge(a, c).pointsTowards(a)
-                                        || graph.getEdge(a, d).pointsTowards(a)
-                                        || graph.getEdge(b, c).pointsTowards(b)
-                                        || graph.getEdge(b, d).pointsTowards(b)
-                                        ) {
+                                                || graph.getEdge(a, d).pointsTowards(a)
+                                                || graph.getEdge(b, c).pointsTowards(b)
+                                                || graph.getEdge(b, d).pointsTowards(b)
+                                ) {
                                     continue;
                                 }
 
@@ -647,7 +646,6 @@ public final class CcdMax implements GraphSearch {
 //        }
     }
 }
-
 
 
 

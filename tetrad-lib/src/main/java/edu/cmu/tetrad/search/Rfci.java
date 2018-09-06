@@ -176,7 +176,7 @@ public final class Rfci implements GraphSearch {
     }
 
     public Graph search(List<Node> nodes) {
-        return search(new FasStableConcurrent(getIndependenceTest()), nodes);
+        return search(new FasConcurrent(getIndependenceTest()), nodes);
     }
 
     public Graph search(IFas fas, List<Node> nodes) {

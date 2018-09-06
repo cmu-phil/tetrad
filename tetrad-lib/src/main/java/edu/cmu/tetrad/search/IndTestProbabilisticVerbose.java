@@ -67,6 +67,7 @@ public class IndTestProbabilisticVerbose implements IndependenceTest {
      */
     private Map<IndependenceFact, Double> H;
     private double posterior;
+    private boolean verbose = false;
 
     /**
      * Initializes the test using a discrete data sets.
@@ -293,7 +294,16 @@ public class IndTestProbabilisticVerbose implements IndependenceTest {
     public List<Node> getNodes() {
         return nodes;
     }
-}
 
+    @Override
+    public boolean isVerbose() {
+        return verbose;
+    }
+
+    @Override
+    public void setVerbose(boolean verbose) {
+        this.verbose = verbose;
+    }
+}
 
 

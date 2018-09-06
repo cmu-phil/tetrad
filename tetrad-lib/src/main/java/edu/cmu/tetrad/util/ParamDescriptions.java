@@ -180,11 +180,11 @@ public class ParamDescriptions {
 
         map.put("colliderDiscoveryRule", new ParamDescription(
                 "Collider discovery: 1 = Lookup from adjacency sepsets, 2 = Conservative (CPC), 3 = Max-P",
-                1, 1, 3));
+                1, 1, 1));
 
         map.put("conflictRule", new ParamDescription(
                 "Collider conflicts: 1 = Overwrite, 2 = Orient bidirected, 3 = Prioritize existing colliders",
-                1, 1, 3));
+                1, 1, 1));
 
         map.put("randomizeColumns", new ParamDescription(
                 "Yes if the order of the columns in each datasets should be randomized",
@@ -263,7 +263,41 @@ public class ParamDescriptions {
         map.put("probTwoCycle", new ParamDescription(
                 "The probability of creating a 2-cycles in the graph (0 - 1)",
                 0.0, 0.0, 1.0));
-    }
+
+        map.put("numBasisFunctions", new ParamDescription(
+                "Number of functions to use in (truncated) basis",
+                30, 1, Integer.MAX_VALUE));
+
+        map.put("kernelType", new ParamDescription(
+                "Kernel type (1 = Gaussian, 2 = Epinechnikov)",
+                2, 1, 2));
+
+        map.put("kernelMultiplier", new ParamDescription(
+                "Bowman and Azzalini (1997) default kernel bandwidhts should be multiplied by...",
+                1.0, Double.MIN_VALUE, Double.POSITIVE_INFINITY));
+
+        map.put("basisType", new ParamDescription(
+                "Basis type (1 = Polynomial, 2 = Cosine)",
+                2, 1, 2));
+
+        map.put("fastFDR", new ParamDescription(
+                "Yes if the  possible fastFDR adjustment to alpha levels should be done", false));
+
+        map.put("kernelRegressionSampleSize", new ParamDescription(
+                "Minimum sample size to use per conditioning for kernel regression",
+                100, 1, Double.POSITIVE_INFINITY));
+
+        map.put("cciScoreAlpha", new ParamDescription("Cutoff for p values (alpha) (min = 0.0)", 0.01, 0.0, 1.0));
+
+        map.put("numDependenceSpotChecks", new ParamDescription(
+                "The number of specific <z1,...,zn> values for which to check X _||_ Y | Z = <z1,...,zn>",
+                0, 0,Integer.MAX_VALUE));
+
+        map.put("stableFAS", new ParamDescription(
+                "Yes if the 'stable' FAS should be done", false));
+
+        map.put("concurrentFAS", new ParamDescription(
+                "Yes if a concurrent FAS should be done", true));    }
 
     public static ParamDescriptions getInstance() {
         return INSTANCE;

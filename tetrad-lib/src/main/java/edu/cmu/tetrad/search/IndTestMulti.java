@@ -53,6 +53,7 @@ public final class IndTestMulti implements IndependenceTest {
      */
     private ResolveSepsets.Method method;
     private double p = Double.NaN;
+    private boolean verbose = false;
 
 //    private DataSet concatenatedData;
 
@@ -262,6 +263,15 @@ public final class IndTestMulti implements IndependenceTest {
     public String toString() {
         return "Pooled Independence Test:  alpha = " + independenceTests.get(0).getAlpha();
     }
-}
 
+    @Override
+    public boolean isVerbose() {
+        return verbose;
+    }
+
+    @Override
+    public void setVerbose(boolean verbose) {
+        this.verbose = verbose;
+    }
+}
 

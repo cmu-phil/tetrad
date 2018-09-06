@@ -105,6 +105,7 @@ public final class IndTestTimeSeries implements IndependenceTest {
      * @serial
      */
     private double chiSquare;
+    private boolean verbose = false;
 
     //=============================CONSRUCTORS============================//
 
@@ -600,7 +601,7 @@ public final class IndTestTimeSeries implements IndependenceTest {
 //        return MatrixUtils.subtract(iT, prod3);
 //    }
 
-//    private double[][] r(int i) {
+//    private double[][] engine(int i) {
 //        switch (i) {
 //            case 0:
 //                return MatrixUtils.product(deltaY(), m());
@@ -612,7 +613,7 @@ public final class IndTestTimeSeries implements IndependenceTest {
 //    }
 
     //    private double[][] s2(int i, int j) {
-    //        double[][] m = MatrixUtils.outerProduct(r(i), r(j));
+    //        double[][] m = MatrixUtils.outerProduct(engine(i), engine(j));
     //        return MatrixUtils.scalarProduct(1.0 / numLags, m);
     //    }
 
@@ -1512,8 +1513,16 @@ public final class IndTestTimeSeries implements IndependenceTest {
         return getPValue();
     }
 
-}
+    @Override
+    public boolean isVerbose() {
+        return verbose;
+    }
 
+    @Override
+    public void setVerbose(boolean verbose) {
+        this.verbose = verbose;
+    }
+}
 
 
 
