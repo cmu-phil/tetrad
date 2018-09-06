@@ -124,4 +124,7 @@ public interface IKnowledge extends TetradSerializable {
 
     public List<KnowledgeEdge> getListOfExplicitlyForbiddenEdges();
 
+    boolean isOnlyCanCauseNextTier(int tier);
+
+    void setOnlyCanCauseNextTier(int tier, boolean onlyCausesNext);
 }
