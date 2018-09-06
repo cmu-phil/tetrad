@@ -21,8 +21,8 @@
 
 package edu.cmu.tetradapp.editor;
 
+import edu.cmu.tetrad.data.DataWriter;
 import edu.cmu.tetrad.data.IKnowledge;
-import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.util.JOptionUtils;
 import edu.cmu.tetradapp.model.EditorUtils;
 import edu.cmu.tetradapp.model.KnowledgeEditable;
@@ -73,7 +73,7 @@ final class SaveKnowledgeAction extends AbstractAction {
             try {
                 FileWriter writer = new FileWriter(file);
                 IKnowledge knowledge = this.knowledgeEditable.getKnowledge();
-                Knowledge.saveKnowledge(knowledge, writer);
+                DataWriter.saveKnowledge(knowledge, writer);
                 writer.close();
                 JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
                         "Saved knowledge as " + file.getAbsoluteFile() + ".");

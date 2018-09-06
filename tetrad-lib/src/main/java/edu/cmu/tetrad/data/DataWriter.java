@@ -28,7 +28,9 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.Writer;
 import java.text.NumberFormat;
+import java.util.Iterator;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Provides static methods for saving data to files.
@@ -218,6 +220,55 @@ public final class DataWriter {
         }
         out.flush();
         out.close();
+    }
+
+    public static void saveKnowledge(IKnowledge knowledge, Writer out) throws IOException {
+        StringBuilder buf = new StringBuilder();
+        buf.append("/knowledge");
+
+        buf.append("\naddtemporal\n");
+
+        for (int i = 0; i < knowledge.getNumTiers(); i++) {
+
+            String forbiddenWithin = knowledge.isTierForbiddenWithin(i) ? "*" : "";
+            String onlyCanCauseNextTier = knowledge.isOnlyCanCauseNextTier(i) ? "-" : "";
+            buf.append("\n").append(i+1).append(forbiddenWithin).append(onlyCanCauseNextTier).append(" ");
+
+
+            List<String> tier = knowledge.getTier(i);
+            if (!(tier == null || tier.isEmpty())) {
+                buf.append(" ");
+                buf.append(tier.stream().collect(Collectors.joining(" ")));
+            }
+        }
+
+        buf.append("\n\nforbiddirect");
+
+        for (Iterator<KnowledgeEdge> i
+             = knowledge.forbiddenEdgesIterator(); i.hasNext();) {
+            KnowledgeEdge pair = i.next();
+            String from = pair.getFrom();
+            String to = pair.getTo();
+
+            if (knowledge.isForbiddenByTiers(from, to)) {
+                continue;
+            }
+
+            buf.append("\n").append(from).append(" ").append(to);
+        }
+
+        buf.append("\n\nrequiredirect");
+
+        for (Iterator<KnowledgeEdge> i
+                = knowledge.requiredEdgesIterator(); i.hasNext();) {
+            KnowledgeEdge pair = i.next();
+            String from = pair.getFrom();
+            String to = pair.getTo();
+            buf.append("\n").append(from).append(" ").append(to);
+        }
+
+        out.write(buf.toString());
+        out.flush();
     }
 }
 

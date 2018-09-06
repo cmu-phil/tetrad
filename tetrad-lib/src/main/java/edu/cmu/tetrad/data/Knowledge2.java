@@ -22,9 +22,9 @@ package edu.cmu.tetrad.data;
 
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.TetradSerializable;
+
 import java.io.CharArrayWriter;
 import java.io.IOException;
-import java.io.Writer;
 import java.util.*;
 import java.util.regex.Matcher;
 
@@ -358,6 +358,49 @@ public final class Knowledge2 implements TetradSerializable, IKnowledge {
         return edges;
     }
 
+    @Override
+    public boolean isOnlyCanCauseNextTier(int tier) {
+        ensureTiers(tier);
+
+        Set<MyNode> _tier = tierSpecs.get(tier);
+
+        if (tierSpecs.get(tier).isEmpty()) {
+            return false;
+        }
+
+        if (tier + 2 >= tierSpecs.size()) return false;
+
+        // all successive tiers > tier + 2 must be forbidden
+        for (int tierN = tier + 2; tierN < tierSpecs.size(); tierN++) {
+            Set<MyNode> _tierN = tierSpecs.get(tierN);
+            OrderedPair<Set<MyNode>> o = new OrderedPair<>(_tier, _tierN);
+
+            if (! forbiddenRulesSpecs.contains(o)) return false;
+        }
+
+        return true;
+
+    }
+
+    @Override
+    public void setOnlyCanCauseNextTier(int tier, boolean onlyCausesNext) {
+        ensureTiers(tier);
+
+        Set<MyNode> _tier = tierSpecs.get(tier);
+
+        for (int tierN = tier + 2; tierN < tierSpecs.size(); tierN++) {
+            Set<MyNode> _tierN = tierSpecs.get(tierN);
+            OrderedPair<Set<MyNode>> o = new OrderedPair<>(_tier, _tierN);
+
+            if (onlyCausesNext) {
+                forbiddenRulesSpecs.add(o);
+            } else {
+                forbiddenRulesSpecs.remove(o);
+            }
+        }
+
+    }
+
     /**
      * @return the list of edges not in any tier.
      */
@@ -518,140 +561,7 @@ public final class Knowledge2 implements TetradSerializable, IKnowledge {
         return forbiddenRulesSpecs.isEmpty() && requiredRulesSpecs.isEmpty() && tierSpecs.isEmpty();
     }
 
-    public void saveKnowledge(Writer out)
-            throws IOException {
-        StringBuilder buf = new StringBuilder();
-        buf.append("/knowledge");
 
-        buf.append("\naddtemporal\n");
-
-        for (int i = 0; i < tierSpecs.size(); i++) {
-            String forbiddenWithin = isTierForbiddenWithin(i) ? "*" : "";
-
-            buf.append("\n").append(i).append(forbiddenWithin).append(" ");
-
-            List<String> tier = getTier(i);
-//            Collections.sort(tier); // Do not sort!
-
-            for (Object aTier : tier) {
-                String name = (String) aTier;
-                buf.append(name).append(" ");
-            }
-        }
-
-        buf.append("\n");
-
-        buf.append("\nforbiddirect\n\n");
-
-        Set<OrderedPair<Set<MyNode>>> copy = new HashSet<>(forbiddenRulesSpecs);
-        copy.removeAll(forbiddenTierRules());
-
-        for (OrderedPair<Set<MyNode>> o : copy) {
-            Set<MyNode> first = o.getFirst();
-            Set<MyNode> second = o.getSecond();
-
-            for (MyNode s : first) {
-                buf.append(s).append(" ");
-            }
-
-            buf.append("==> ");
-
-            for (MyNode s : second) {
-                buf.append(s).append(" ");
-            }
-
-            buf.append("\n");
-        }
-
-        buf.append("requiredirect\n\n");
-
-        for (OrderedPair<Set<MyNode>> o : requiredRulesSpecs) {
-            Set<MyNode> first = o.getFirst();
-            Set<MyNode> second = o.getSecond();
-
-            for (MyNode s : first) {
-                buf.append(s).append(" ");
-            }
-
-            buf.append("==> ");
-
-            for (MyNode s : second) {
-                buf.append(s).append(" ");
-            }
-
-            buf.append("\n");
-        }
-
-        out.write(buf.toString());
-        out.flush();
-    }
-
-//    private void saveKnowledge(Writer out)
-//            throws IOException {
-//        StringBuilder buf = new StringBuilder();
-//        buf.append("/knowledge");
-//
-//        buf.append("\naddtemporal\n");
-//
-//        for (int i = 0; i < tierSpecs.size(); i++) {
-//            String forbiddenWithin = isTierForbiddenWithin(i) ? "*" : "";
-//
-//            buf.append("\n").append(i).append(forbiddenWithin).append(" ");
-//
-//            List<String> tier = getTier(i);
-//
-//            for (Object aTier : tier) {
-//                String name = (String) aTier;
-//                buf.append(name).append(" ");
-//            }
-//        }
-//
-//        buf.append("\n");
-//
-//        buf.append("\nforbiddirect\n\n");
-//
-//        Set<OrderedPair<Set<MyNode>>> copy = new HashSet<>(forbiddenRulesSpecs);
-//        copy.removeAll(forbiddenTierRules());
-//
-//        for (OrderedPair<Set<MyNode>> o : copy) {
-//            Set<MyNode> first = o.getFirst();
-//            Set<MyNode> second = o.getSecond();
-//
-//            for (MyNode s : first) {
-//                buf.append(s).append(" ");
-//            }
-//
-//            buf.append("==> ");
-//
-//            for (MyNode s : second) {
-//                buf.append(s).append(" ");
-//            }
-//
-//            buf.append("\n");
-//        }
-//
-//        buf.append("requiredirect\n\n");
-//
-//        for (OrderedPair<Set<MyNode>> o : requiredRulesSpecs) {
-//            Set<MyNode> first = o.getFirst();
-//            Set<MyNode> second = o.getSecond();
-//
-//            for (MyNode s : first) {
-//                buf.append(s).append(" ");
-//            }
-//
-//            buf.append("==> ");
-//
-//            for (MyNode s : second) {
-//                buf.append(s).append(" ");
-//            }
-//
-//            buf.append("\n");
-//        }
-//
-//        out.write(buf.toString());
-//        out.flush();
-//    }
     /**
      * Iterator over the KnowledgeEdge's representing required edges.
      */
@@ -796,12 +706,24 @@ public final class Knowledge2 implements TetradSerializable, IKnowledge {
     }
 
     /**
-     * Removes the given variable from all tiers.
+     * Removes the given variable by name or search string from all tiers.
      */
     public final void removeFromTiers(String spec) {
-        for (Set<MyNode> tier : tierSpecs) {
-            tier.remove(getVar(spec));
+
+        if (spec == null) {
+            throw new NullPointerException();
         }
+
+        spec = checkSpec(spec);
+        final Set<MyNode> vars = getExtent(spec);
+
+        for (MyNode s : vars) {
+            for (Set<MyNode> tier : tierSpecs) {
+                tier.remove(s);
+            }
+        }
+
+
     }
 
     /**
@@ -913,7 +835,7 @@ public final class Knowledge2 implements TetradSerializable, IKnowledge {
     public final String toString() {
         try {
             CharArrayWriter out = new CharArrayWriter();
-            saveKnowledge(out);
+            DataWriter.saveKnowledge(this, out);
             return out.toString();
         } catch (IOException e) {
             throw new IllegalStateException("Could not render knowledge.");
@@ -1092,6 +1014,14 @@ public final class Knowledge2 implements TetradSerializable, IKnowledge {
         }
 
         for (int i = 0; i < tierSpecs.size(); i++) {
+            if (isOnlyCanCauseNextTier(i)) {
+                for (int j = i + 2; j < tierSpecs.size(); j++) {
+                    rules.add(new OrderedPair<>(tierSpecs.get(i), tierSpecs.get(j)));
+                }
+            }
+        }
+
+        for (int i = 0; i < tierSpecs.size(); i++) {
             for (int j = i + 1; j < tierSpecs.size(); j++) {
                 rules.add(new OrderedPair<>(tierSpecs.get(j), tierSpecs.get(i)));
             }
@@ -1117,5 +1047,6 @@ public final class Knowledge2 implements TetradSerializable, IKnowledge {
 
         return -1;
     } // added by DMalinsky for tsFCI on 4/20/16
+
 
 }
