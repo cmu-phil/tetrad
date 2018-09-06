@@ -235,7 +235,6 @@ public class FasConcurrent implements IFas {
         }
 
         shutdownAndAwaitTermination(pool);
-        shutdownAndAwaitTermination(pool);
 
         return freeDegree(nodes, adjacencies) > depth;
     }
