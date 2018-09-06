@@ -158,10 +158,16 @@ public final class BootstrapTable {
         
         // Ensemble, empty by default
         row[3] = "";
-        
+        double maxProb = -1;
+        String maxProbString = "";
         for (EdgeTypeProbability edgeTypeProb : edgeTypeProbabilities) {
             String type = "";
-            String probValue = String.format("%.4f", edgeTypeProb.getProbability());
+            double prob = edgeTypeProb.getProbability();
+            String probValue = String.format("%.4f", prob);
+            if(prob > maxProb) {
+            	maxProb = prob;
+            	maxProbString = probValue;
+            }
             List<String> additionalInfoList = new LinkedList<>();
             
             switch (edgeTypeProb.getEdgeType()) {
@@ -170,52 +176,45 @@ public final class BootstrapTable {
                     break;
                 case ta: //"-->";
                     type = "-->";
-                    if (edgeType.equals(type)) {
-                        row[3] = probValue;
+                    if (edgeType.equals(type)  && edgeTypeProb.getProperties().isEmpty()) {
+                        row[5] = probValue;
                     }
-                    row[5] = probValue;
                     break;
                 case at: //"<--";
                     type = "<--";
-                    if (edgeType.equals(type)) {
-                        row[3] = probValue;
+                    if (edgeType.equals(type)  && edgeTypeProb.getProperties().isEmpty()) {
+                        row[6] = probValue;
                     }
-                    row[6] = probValue;
                     break;
                 case ca: //"o->";
                     type = "o->";
-                    if (edgeType.equals(type)) {
-                        row[3] = probValue;
+                    if (edgeType.equals(type) && edgeTypeProb.getProperties().isEmpty()) {
+                        row[7] = probValue;
                     }
-                    row[7] = probValue;
                     break;
                 case ac: //"<-o";
                     type = "<-o";
-                    if (edgeType.equals(type)) {
-                        row[3] = probValue;
+                    if (edgeType.equals(type) && edgeTypeProb.getProperties().isEmpty()) {
+                        row[8] = probValue;
                     }
-                    row[8] = probValue;
                     break;
                 case cc: //"o-o";
                     type = "o-o";
-                    if (edgeType.equals(type)) {
-                        row[3] = probValue;
+                    if (edgeType.equals(type) && edgeTypeProb.getProperties().isEmpty()) {
+                        row[9] = probValue;
                     }
-                    row[9] = probValue;
                     break;
                 case aa: //"<->";
                     type = "<->";
-                    if (edgeType.equals(type)) {
-                        row[3] = probValue;
+                    if (edgeType.equals(type) && edgeTypeProb.getProperties().isEmpty()) {
+                        row[10] = probValue;
                     }
-                    row[10] = probValue;
                     break;
                 case tt: //"---";
                     type = "---";
-                    if (edgeType.equals(type)) {
-                        row[3] = probValue;
+                    if (edgeType.equals(type) && edgeTypeProb.getProperties().isEmpty()) {
+                        row[11] = probValue;
                     }
-                    row[11] = probValue;
                     break;
                 default:
                     break;
@@ -230,10 +229,16 @@ public final class BootstrapTable {
                 additionalInfoList.add("[" + type + "]: " + probValue);
                 
                 String additionalInfo = additionalInfoList.stream().collect(Collectors.joining("; "));
-                row[12] = additionalInfo;
+                if(row[12] != null) {
+                	row[12] += ";";
+                }else {
+                	row[12] = "";
+                }
+                row[12] = row[12] + additionalInfo;
             }
 
         }
+        row[3] = maxProbString;
 
         tableModel.addRow(row);
     }
