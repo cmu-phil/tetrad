@@ -11,7 +11,6 @@ import edu.cmu.tetrad.graph.Edges;
 import edu.cmu.tetrad.graph.Endpoint;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
-
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.util.ArrayList;
@@ -164,53 +163,55 @@ public final class BootstrapTable {
             String type = "";
             double prob = edgeTypeProb.getProbability();
             String probValue = String.format("%.4f", prob);
+            
+            // FInd the max value of edge type probability
             if(prob > maxProb) {
             	maxProb = prob;
             	maxProbString = probValue;
             }
-            List<String> additionalInfoList = new LinkedList<>();
-            
+   
+            // Handle edge types with additional properties here
             switch (edgeTypeProb.getEdgeType()) {
                 case nil: //"no edge"
                     row[4] = probValue;
                     break;
-                case ta: //"-->";
+                case ta:
                     type = "-->";
                     if (edgeType.equals(type)  && edgeTypeProb.getProperties().isEmpty()) {
                         row[5] = probValue;
                     }
                     break;
-                case at: //"<--";
+                case at:
                     type = "<--";
                     if (edgeType.equals(type)  && edgeTypeProb.getProperties().isEmpty()) {
                         row[6] = probValue;
                     }
                     break;
-                case ca: //"o->";
+                case ca:
                     type = "o->";
                     if (edgeType.equals(type) && edgeTypeProb.getProperties().isEmpty()) {
                         row[7] = probValue;
                     }
                     break;
-                case ac: //"<-o";
+                case ac:
                     type = "<-o";
                     if (edgeType.equals(type) && edgeTypeProb.getProperties().isEmpty()) {
                         row[8] = probValue;
                     }
                     break;
-                case cc: //"o-o";
+                case cc:
                     type = "o-o";
                     if (edgeType.equals(type) && edgeTypeProb.getProperties().isEmpty()) {
                         row[9] = probValue;
                     }
                     break;
-                case aa: //"<->";
+                case aa:
                     type = "<->";
                     if (edgeType.equals(type) && edgeTypeProb.getProperties().isEmpty()) {
                         row[10] = probValue;
                     }
                     break;
-                case tt: //"---";
+                case tt:
                     type = "---";
                     if (edgeType.equals(type) && edgeTypeProb.getProperties().isEmpty()) {
                         row[11] = probValue;
@@ -221,23 +222,26 @@ public final class BootstrapTable {
             }
 
             // Additional info
+            // Put all edge type probablities with some of properties (nl, dd, pl, pd) here
             if (!edgeTypeProb.getProperties().isEmpty()) {
                 type = node1 + " " + type + " " + node2;
                 for (Edge.Property property : edgeTypeProb.getProperties()) {
                     type = type + " " + property.name();
                 }
-                additionalInfoList.add("[" + type + "]: " + probValue);
+
+                String additionalInfo = "[" + type + "]: " + probValue;
                 
-                String additionalInfo = additionalInfoList.stream().collect(Collectors.joining("; "));
                 if(row[12] != null) {
-                	row[12] += ";";
-                }else {
-                	row[12] = "";
+                    row[12] = row[12] +  "; " + additionalInfo;
+                } else {
+                    row[12] = additionalInfo;
                 }
-                row[12] = row[12] + additionalInfo;
+ 
             }
 
         }
+        
+        // Use the max probability value for Ensemble
         row[3] = maxProbString;
 
         tableModel.addRow(row);
