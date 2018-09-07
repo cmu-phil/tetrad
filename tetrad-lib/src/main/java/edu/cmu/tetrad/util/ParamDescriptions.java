@@ -103,7 +103,7 @@ public class ParamDescriptions {
         map.put("thr", new ParamDescription("THR parameter (GLASSO) (min = 0.0)", 1e-4, 0.0, Double.MAX_VALUE));
 
         map.put("targetName", new ParamDescription("Target variable name", ""));
-        map.put("verbose", new ParamDescription("Yes if verbose output should be printed or logged", false));
+        map.put("verbose", new ParamDescription("Yes if verbose output should be printed or logged", true));
         map.put("faithfulnessAssumed", new ParamDescription("Yes if (one edge) faithfulness should be assumed", true));
 
         map.put("useWishart", new ParamDescription("Yes if the Wishart test shoud be used. No if the Delta test should be used", false));
@@ -297,7 +297,23 @@ public class ParamDescriptions {
                 "Yes if the 'stable' FAS should be done", false));
 
         map.put("concurrentFAS", new ParamDescription(
-                "Yes if a concurrent FAS should be done", true));    }
+                "Yes if a concurrent FAS should be done", true));
+
+        map.put("kciNumBootstraps", new ParamDescription(
+                "Number of bootstraps for Theorems 4 and Proposition 5 for KCI",
+                5000, 1, Integer.MAX_VALUE));
+
+        map.put("thresholdForNumEigenvalues", new ParamDescription(
+                "Threshold to determine how many eigenvalues to use--the lower the more (0 to 1)",
+                0.001, 0, Double.POSITIVE_INFINITY));
+
+        map.put("kciEpsilon", new ParamDescription(
+                "Epsilon for Proposition 5, a small positive number", 0.001, 0, Double.POSITIVE_INFINITY));
+
+        map.put("kciUseAppromation", new ParamDescription(
+                "Use the approximate Gamma approximation algorithm", true));
+
+    }
 
     public static ParamDescriptions getInstance() {
         return INSTANCE;
