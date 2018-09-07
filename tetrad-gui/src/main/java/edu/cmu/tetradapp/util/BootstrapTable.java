@@ -11,8 +11,7 @@ import edu.cmu.tetrad.graph.Edges;
 import edu.cmu.tetrad.graph.Endpoint;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
-import java.awt.event.ComponentAdapter;
-import java.awt.event.ComponentEvent;
+import java.awt.Component;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
@@ -22,6 +21,8 @@ import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.RowSorter;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableCellRenderer;
+import javax.swing.table.TableColumn;
 import javax.swing.table.TableModel;
 import javax.swing.table.TableRowSorter;
 
@@ -34,18 +35,35 @@ public final class BootstrapTable {
     public static JScrollPane renderBootstrapTable(Graph graph) {
         // Bootstrap table view
         // Create object of table and table model
-        JTable table = new JTable();
- 
+        JTable table = new JTable(){
+            @Override
+            // The table will adjust each column width automatically to fit the content
+            public Component prepareRenderer(TableCellRenderer renderer, int row, int column) {
+                Component component = super.prepareRenderer(renderer, row, column);
+                int rendererWidth = component.getPreferredSize().width;
+                TableColumn tableColumn = getColumnModel().getColumn(column);
+                tableColumn.setPreferredWidth(Math.max(rendererWidth + getIntercellSpacing().width, tableColumn.getPreferredWidth()));
+                return component;
+             }
+        };
+        
+        table.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
+    
+        // To be able to see the header, we need to put the table in a JScrollPane
+        JScrollPane tablePane = new JScrollPane(table);
+        tablePane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+
         DefaultTableModel tableModel = new DefaultTableModel();
 
         // Set model into the table object
         table.setModel(tableModel);
         
         // Sorting, enable sorting on all columns except the edge type column (index = 1)
+        // and the additional info column (index = 12)
         RowSorter<TableModel> sorter = new TableRowSorter<TableModel>(tableModel) {
             @Override
             public boolean isSortable(int column) {
-                return column != 1;
+                return (column != 1 && column != 12);
             };
         };
         table.setRowSorter(sorter);
@@ -68,7 +86,7 @@ public final class BootstrapTable {
         columnNames.add(9, "o-o");
         columnNames.add(10, "<->");
         columnNames.add(11, "---");
-        columnNames.add(12, "Additional information");
+        columnNames.add(12, "Additional");
         
         // Table header
         tableModel.setColumnIdentifiers(columnNames.toArray());
@@ -84,17 +102,17 @@ public final class BootstrapTable {
             Endpoint endpoint2 = e.getEndpoint2();
 
             Node n1 = e.getNode1();
-        	Node n2 = e.getNode2();
-        	
-        	if(n1.getName().compareTo(n2.getName()) > 0) {
-        		Endpoint tmp = endpoint1;
-        		endpoint1 = endpoint2;
-        		endpoint2 = tmp;
-        		
-        		Node temp = n1;
-        		n1 = n2;
-        		n2 = temp;
-        	}
+            Node n2 = e.getNode2();
+
+            if(n1.getName().compareTo(n2.getName()) > 0) {
+                    Endpoint tmp = endpoint1;
+                    endpoint1 = endpoint2;
+                    endpoint2 = tmp;
+
+                    Node temp = n1;
+                    n1 = n2;
+                    n2 = temp;
+            }
 
             String endpoint1Str = "";
             if (endpoint1 == Endpoint.TAIL) {
@@ -118,23 +136,7 @@ public final class BootstrapTable {
             
             addRow(tableModel, n1.getName(), n2.getName(), edgeType, e.getProperties(), e.getEdgeTypeProbabilities());
         });
-        
-        
-        // To be able to see the header, we need to put the table in a JScrollPane
-        JScrollPane tablePane = new JScrollPane(table);
-        tablePane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
 
-        table.getParent().addComponentListener(new ComponentAdapter() {
-            @Override
-            public void componentResized(final ComponentEvent e) {
-                if (table.getPreferredSize().width < table.getParent().getWidth()) {
-                    table.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
-                } else {
-                    table.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
-                }
-            }
-        });
- 
         return tablePane;
     }
     
