@@ -79,14 +79,6 @@ public class GeneralBootstrapSearch {
 		PAGs.add(pag);
 	}
 
-	/*public DataSet getBootstrapDataset(int id) {
-		return bootstrapDatasets.get(id);
-	}
-
-	public void addBootstrapDataset(DataSet dataSet) {
-		bootstrapDatasets.add(dataSet);
-	}*/
-
 	public void setAlgorithm(Algorithm algorithm) {
 		this.algorithm = algorithm;
 		this.multiDataSetAlgorithm = null;

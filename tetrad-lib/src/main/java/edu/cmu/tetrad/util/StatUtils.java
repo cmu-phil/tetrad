@@ -1947,7 +1947,7 @@ public final class StatUtils {
 
         return data2;
     }
-
+    
     public static double factorial(int c) {
         if (c < 0) throw new IllegalArgumentException("Can't take the factorial of a negative number: " + c);
         if (c == 0) return 1;

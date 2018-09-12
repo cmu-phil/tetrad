@@ -1425,6 +1425,14 @@ public final class DataUtils {
         return data.getSelection(rows, cols);
     }
 
+    /**
+     * @return a sample without replacement with the given sample size from the
+     * given dataset.
+     */
+    public static DataSet getSamplingDataset(DataSet data, int sampleSize) {
+    	
+    	return null;
+    }
 
     /**
      * @return a sample with replacement with the given sample size from the
