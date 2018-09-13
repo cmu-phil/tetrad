@@ -10,8 +10,8 @@ import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.search.PcStableMax;
 import edu.cmu.tetrad.search.SemBicScoreImages3;
 import edu.cmu.tetrad.util.Parameters;
-import edu.pitt.dbmi.algo.bootstrap.BootstrapEdgeEnsemble;
-import edu.pitt.dbmi.algo.bootstrap.GeneralBootstrapTest;
+import edu.pitt.dbmi.algo.subsampling.GeneralSubSamplingTest;
+import edu.pitt.dbmi.algo.subsampling.SubSamplingEdgeEnsemble;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -34,7 +34,7 @@ public class ImagesPcStableMax implements MultiDataSetAlgorithm, HasKnowledge {
 
     @Override
     public Graph search(List<DataModel> dataModels, Parameters parameters) {
-    	if (parameters.getInt("bootstrapSampleSize") < 1) {
+    	if (parameters.getInt("numberSubSampling") < 1) {
             List<DataSet> dataSets = new ArrayList<>();
 
             for (DataModel dataModel : dataModels) {
@@ -59,21 +59,23 @@ public class ImagesPcStableMax implements MultiDataSetAlgorithm, HasKnowledge {
 			for (DataModel dataModel : dataModels) {
 				datasets.add((DataSet) dataModel);
 			}
-			GeneralBootstrapTest search = new GeneralBootstrapTest(datasets, imagesPcStableMax,
-					parameters.getInt("bootstrapSampleSize"));
-            search.setKnowledge(knowledge);
-
-			BootstrapEdgeEnsemble edgeEnsemble = BootstrapEdgeEnsemble.Highest;
-			switch (parameters.getInt("bootstrapEnsemble", 1)) {
-			case 0:
-				edgeEnsemble = BootstrapEdgeEnsemble.Preserved;
-				break;
-			case 1:
-				edgeEnsemble = BootstrapEdgeEnsemble.Highest;
-				break;
-			case 2:
-				edgeEnsemble = BootstrapEdgeEnsemble.Majority;
-			}
+			GeneralSubSamplingTest search = new GeneralSubSamplingTest(datasets, imagesPcStableMax, parameters.getInt("numberSubSampling"));
+			search.setKnowledge(knowledge);
+            
+            search.setSubSampleSize(parameters.getInt("subSampleSize"));
+            search.setSubSamplingWithReplacement(parameters.getBoolean("subSamplingWithReplacement"));
+            
+            SubSamplingEdgeEnsemble edgeEnsemble = SubSamplingEdgeEnsemble.Highest;
+            switch (parameters.getInt("subSamplingEnsemble", 1)) {
+                case 0:
+                    edgeEnsemble = SubSamplingEdgeEnsemble.Preserved;
+                    break;
+                case 1:
+                    edgeEnsemble = SubSamplingEdgeEnsemble.Highest;
+                    break;
+                case 2:
+                    edgeEnsemble = SubSamplingEdgeEnsemble.Majority;
+            }
 			search.setEdgeEnsemble(edgeEnsemble);
 			search.setParameters(parameters);
 			search.setVerbose(parameters.getBoolean("verbose"));
@@ -83,27 +85,29 @@ public class ImagesPcStableMax implements MultiDataSetAlgorithm, HasKnowledge {
 
     @Override
     public Graph search(DataModel dataSet, Parameters parameters) {
-    	if (!parameters.getBoolean("bootstrapping")) {
+    	if (parameters.getInt("numberSubSampling") < 1) {
             return search(Collections.singletonList((DataModel) DataUtils.getContinuousDataSet(dataSet)), parameters);
     	}else{
     		ImagesPcStableMax imagesPcStableMax = new ImagesPcStableMax();
     		imagesPcStableMax.setKnowledge(knowledge);
     		
     		List<DataSet> dataSets = Collections.singletonList(DataUtils.getContinuousDataSet(dataSet));
-			GeneralBootstrapTest search = new GeneralBootstrapTest(dataSets, imagesPcStableMax,
-					parameters.getInt("bootstrapSampleSize"));
+    		GeneralSubSamplingTest search = new GeneralSubSamplingTest(dataSets, imagesPcStableMax, parameters.getInt("numberSubSampling"));
 
-			BootstrapEdgeEnsemble edgeEnsemble = BootstrapEdgeEnsemble.Highest;
-			switch (parameters.getInt("bootstrapEnsemble", 1)) {
-			case 0:
-				edgeEnsemble = BootstrapEdgeEnsemble.Preserved;
-				break;
-			case 1:
-				edgeEnsemble = BootstrapEdgeEnsemble.Highest;
-				break;
-			case 2:
-				edgeEnsemble = BootstrapEdgeEnsemble.Majority;
-			}
+    		search.setSubSampleSize(parameters.getInt("subSampleSize"));
+            search.setSubSamplingWithReplacement(parameters.getBoolean("subSamplingWithReplacement"));
+            
+            SubSamplingEdgeEnsemble edgeEnsemble = SubSamplingEdgeEnsemble.Highest;
+            switch (parameters.getInt("subSamplingEnsemble", 1)) {
+                case 0:
+                    edgeEnsemble = SubSamplingEdgeEnsemble.Preserved;
+                    break;
+                case 1:
+                    edgeEnsemble = SubSamplingEdgeEnsemble.Highest;
+                    break;
+                case 2:
+                    edgeEnsemble = SubSamplingEdgeEnsemble.Majority;
+            }
 			search.setEdgeEnsemble(edgeEnsemble);
 			search.setParameters(parameters);
 			search.setVerbose(parameters.getBoolean("verbose"));
@@ -140,9 +144,11 @@ public class ImagesPcStableMax implements MultiDataSetAlgorithm, HasKnowledge {
 
         parameters.add("numRuns");
         parameters.add("randomSelectionSize");
-        // Bootstrapping
-  		parameters.add("bootstrapSampleSize");
-  		parameters.add("bootstrapEnsemble");
+        // Subsampling
+        parameters.add("numberSubSampling");
+        parameters.add("subSampleSize");
+        parameters.add("subSamplingWithReplacement");
+        parameters.add("subSamplingEnsemble");
   		parameters.add("verbose");
   		
         return parameters;

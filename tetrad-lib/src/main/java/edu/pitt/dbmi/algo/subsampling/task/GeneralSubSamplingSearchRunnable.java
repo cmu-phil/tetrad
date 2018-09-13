@@ -1,4 +1,4 @@
-package edu.pitt.dbmi.algo.bootstrap.task;
+package edu.pitt.dbmi.algo.subsampling.task;
 
 import java.io.PrintStream;
 import java.util.List;
@@ -11,9 +11,8 @@ import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.IKnowledge;
 import edu.cmu.tetrad.data.Knowledge2;
 import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.util.Parameters;
-import edu.pitt.dbmi.algo.bootstrap.GeneralBootstrapSearch;
+import edu.pitt.dbmi.algo.subsampling.GeneralSubSamplingSearch;
 
 /**
  * 
@@ -22,7 +21,7 @@ import edu.pitt.dbmi.algo.bootstrap.GeneralBootstrapSearch;
  * @author Chirayu (Kong) Wongchokprasitti, PhD
  * 
  */
-public class GeneralBootstrapSearchRunnable implements Runnable {
+public class GeneralSubSamplingSearchRunnable implements Runnable {
 
 	private DataSet dataSet = null;
 
@@ -34,7 +33,7 @@ public class GeneralBootstrapSearchRunnable implements Runnable {
 	
 	private Parameters parameters;
 
-	private final GeneralBootstrapSearch bootstrapAlgorithmSearch;
+	private final GeneralSubSamplingSearch samplingAlgorithmSearch;
 
 	private boolean verbose;
 
@@ -50,21 +49,21 @@ public class GeneralBootstrapSearchRunnable implements Runnable {
 
 	private PrintStream out = System.out;
 
-	public GeneralBootstrapSearchRunnable(DataSet dataSet, Algorithm algorithm, Parameters parameters,
-			GeneralBootstrapSearch bootstrapAlgorithmSearch, boolean verbose){
+	public GeneralSubSamplingSearchRunnable(DataSet dataSet, Algorithm algorithm, Parameters parameters,
+			GeneralSubSamplingSearch samplingAlgorithmSearch, boolean verbose){
 		this.dataSet = dataSet;
 		this.algorithm = algorithm;
 		this.parameters = parameters;
-		this.bootstrapAlgorithmSearch = bootstrapAlgorithmSearch;
+		this.samplingAlgorithmSearch = samplingAlgorithmSearch;
 		this.verbose = verbose;
 	}
 	
-	public GeneralBootstrapSearchRunnable(List<DataModel> dataSets, MultiDataSetAlgorithm multiDataSetAlgorithm, Parameters parameters,
-			GeneralBootstrapSearch bootstrapAlgorithmSearch, boolean verbose){
+	public GeneralSubSamplingSearchRunnable(List<DataModel> dataSets, MultiDataSetAlgorithm multiDataSetAlgorithm, Parameters parameters,
+			GeneralSubSamplingSearch samplingAlgorithmSearch, boolean verbose){
 		this.dataSets = dataSets;
 		this.multiDataSetAlgorithm = multiDataSetAlgorithm;
 		this.parameters = parameters;
-		this.bootstrapAlgorithmSearch = bootstrapAlgorithmSearch;
+		this.samplingAlgorithmSearch = samplingAlgorithmSearch;
 		this.verbose = verbose;
 	}
 	
@@ -149,7 +148,7 @@ public class GeneralBootstrapSearchRunnable implements Runnable {
 			out.println("processing time of bootstrap for a thread was: "
 					+ (stop - start) / 1000.0 + " sec");
 		}
-		bootstrapAlgorithmSearch.addPAG(graph);
+		samplingAlgorithmSearch.addPAG(graph);
 	}
 
 }

@@ -1429,9 +1429,38 @@ public final class DataUtils {
      * @return a sample without replacement with the given sample size from the
      * given dataset.
      */
-    public static DataSet getSamplingDataset(DataSet data, int sampleSize) {
+    public static DataSet getSubSamplingDataset(DataSet data, int sampleSize) {
+    	int actualSampleSize = data.getNumRows();
+    	int _size = sampleSize;
+    	if(actualSampleSize < _size) {
+    		_size = actualSampleSize;
+    	}
     	
-    	return null;
+    	List<Integer> availRows = new ArrayList<>();
+    	for (int i = 0; i < _size; i++) {
+    		availRows.add(i);
+    	}
+    	
+    	Collections.shuffle(availRows);
+    	
+    	List<Integer> addedRows = new ArrayList<>();
+        int[] rows = new int[_size];
+    	for (int i = 0; i < _size; i++) {
+            int row = -1;
+            int index = -1;
+            while(row == -1 || addedRows.contains(row)) {
+            	index = RandomUtil.getInstance().nextInt(availRows.size());
+            	row = availRows.get(index);
+            }
+            rows[i] = row;
+            addedRows.add(row);
+            availRows.remove(index);
+        }
+
+        int[] cols = new int[data.getNumColumns()];
+        for (int i = 0; i < cols.length; i++) cols[i] = i;
+
+        return ColtDataSet.makeData(data.getVariables(), data.getDoubleData().getSelection(rows, cols));
     }
 
     /**
