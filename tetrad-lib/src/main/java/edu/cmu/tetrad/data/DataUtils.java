@@ -1437,7 +1437,7 @@ public final class DataUtils {
     	}
     	
     	List<Integer> availRows = new ArrayList<>();
-    	for (int i = 0; i < _size; i++) {
+    	for (int i = 0; i < actualSampleSize; i++) {
     		availRows.add(i);
     	}
     	
