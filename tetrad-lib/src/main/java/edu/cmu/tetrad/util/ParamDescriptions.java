@@ -172,7 +172,7 @@ public class ParamDescriptions {
         // Subsampling
         map.put("numberSubSampling", new ParamDescription("The number of subsampling times (min = 0)", 0, 0, Integer.MAX_VALUE));
         map.put("subSampleSize", new ParamDescription("The subsample size (min = 1)", 1, 1, Integer.MAX_VALUE));
-        map.put("subSamplingWithReplacement", new ParamDescription("Yes if subsampling with replacement", true));
+        map.put("subSamplingWithReplacement", new ParamDescription("Yes if subsampling with replacement (bootstrapping)", true));
         map.put("subSamplingEnsemble", new ParamDescription("Ensemble method: Preserved (0), Highest (1), Majority (2)", 1, 0, 2));
         //~Subsampling
 
