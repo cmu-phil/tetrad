@@ -58,7 +58,6 @@ public class PcStableMaxConcatenated implements MultiDataSetAlgorithm, HasKnowle
             return search.search();
     	}else{
     		PcStableMaxConcatenated pcStableMaxConcatenated = new PcStableMaxConcatenated(test, compareToTrue);
-    		//pcStableMaxConcatenated.setKnowledge(knowledge);
     		
     		List<DataSet> datasets = new ArrayList<>();
 
@@ -95,11 +94,11 @@ public class PcStableMaxConcatenated implements MultiDataSetAlgorithm, HasKnowle
             return search(Collections.singletonList((DataModel) DataUtils.getContinuousDataSet(dataSet)), parameters);
     	}else{
     		PcStableMaxConcatenated pcStableMaxConcatenated = new PcStableMaxConcatenated(test, compareToTrue);
-    		pcStableMaxConcatenated.setKnowledge(knowledge);
     		
     		List<DataSet> dataSets = Collections.singletonList(DataUtils.getContinuousDataSet(dataSet));
     		GeneralSubSamplingTest search = new GeneralSubSamplingTest(dataSets, pcStableMaxConcatenated, parameters.getInt("numberSubSampling"));
-			
+    		search.setKnowledge(knowledge);
+    		
     		search.setSubSampleSize(parameters.getInt("subSampleSize"));
             search.setSubSamplingWithReplacement(parameters.getBoolean("subSamplingWithReplacement"));
             

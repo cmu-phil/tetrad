@@ -51,7 +51,6 @@ public class TsImagesSemBic implements MultiDataSetAlgorithm, HasKnowledge {
             return search.search();
     	}else{
     		TsImagesSemBic tsImagesSemBic = new TsImagesSemBic();
-    		//tsImagesSemBic.setKnowledge(knowledge);
     		
     		List<DataSet> datasets = new ArrayList<>();
 
@@ -88,10 +87,10 @@ public class TsImagesSemBic implements MultiDataSetAlgorithm, HasKnowledge {
             return search(Collections.singletonList((DataModel) DataUtils.getContinuousDataSet(dataSet)), parameters);
     	}else{
     		TsImagesSemBic tsImagesSemBic = new TsImagesSemBic();
-    		tsImagesSemBic.setKnowledge(knowledge);
     		
     		List<DataSet> dataSets = Collections.singletonList(DataUtils.getContinuousDataSet(dataSet));
     		GeneralSubSamplingTest search = new GeneralSubSamplingTest(dataSets, tsImagesSemBic, parameters.getInt("numberSubSampling"));
+    		search.setKnowledge(knowledge);
 			
     		search.setSubSampleSize(parameters.getInt("subSampleSize"));
             search.setSubSamplingWithReplacement(parameters.getBoolean("subSamplingWithReplacement"));

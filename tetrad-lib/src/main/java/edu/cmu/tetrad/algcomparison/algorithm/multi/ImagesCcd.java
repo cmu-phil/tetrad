@@ -57,7 +57,6 @@ public class ImagesCcd implements MultiDataSetAlgorithm, HasKnowledge {
             return search.search();
         } else {
             ImagesCcd imagesCcd = new ImagesCcd();
-            //imagesCcd.setKnowledge(knowledge);
 
             List<DataSet> datasets = new ArrayList<>();
 
@@ -94,10 +93,10 @@ public class ImagesCcd implements MultiDataSetAlgorithm, HasKnowledge {
             return search(Collections.singletonList((DataModel) DataUtils.getContinuousDataSet(dataSet)), parameters);
         } else {
             ImagesCcd imagesCcd = new ImagesCcd();
-            imagesCcd.setKnowledge(knowledge);
 
             List<DataSet> dataSets = Collections.singletonList(DataUtils.getContinuousDataSet(dataSet));
             GeneralSubSamplingTest search = new GeneralSubSamplingTest(dataSets, imagesCcd, parameters.getInt("numberSubSampling"));
+            search.setKnowledge(knowledge);
             
             search.setSubSampleSize(parameters.getInt("subSampleSize"));
             search.setSubSamplingWithReplacement(parameters.getBoolean("subSamplingWithReplacement"));

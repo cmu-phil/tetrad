@@ -11,8 +11,9 @@ import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradMatrix;
-import edu.pitt.dbmi.algo.bootstrap.BootstrapEdgeEnsemble;
-import edu.pitt.dbmi.algo.bootstrap.GeneralBootstrapTest;
+import edu.pitt.dbmi.algo.subsampling.GeneralSubSamplingTest;
+import edu.pitt.dbmi.algo.subsampling.SubSamplingEdgeEnsemble;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -29,7 +30,7 @@ public class Glasso implements Algorithm {
     static final long serialVersionUID = 23L;
 
     public Graph search(DataModel ds, Parameters parameters) {
-    	if (parameters.getInt("bootstrapSampleSize") < 1) {
+    	if (parameters.getInt("numberSubSampling") < 1) {
             DoubleMatrix2D cov = new DenseDoubleMatrix2D(DataUtils.getContinuousDataSet(ds)
                     .getCovarianceMatrix().toArray());
 
@@ -61,19 +62,21 @@ public class Glasso implements Algorithm {
             Glasso algorithm = new Glasso();
 
             DataSet data = (DataSet) ds;
-            GeneralBootstrapTest search = new GeneralBootstrapTest(data, algorithm,
-                    parameters.getInt("bootstrapSampleSize"));
+            GeneralSubSamplingTest search = new GeneralSubSamplingTest(data, algorithm, parameters.getInt("numberSubSampling"));
 
-            BootstrapEdgeEnsemble edgeEnsemble = BootstrapEdgeEnsemble.Highest;
-            switch (parameters.getInt("bootstrapEnsemble", 1)) {
+            search.setSubSampleSize(parameters.getInt("subSampleSize"));
+            search.setSubSamplingWithReplacement(parameters.getBoolean("subSamplingWithReplacement"));
+            
+            SubSamplingEdgeEnsemble edgeEnsemble = SubSamplingEdgeEnsemble.Highest;
+            switch (parameters.getInt("subSamplingEnsemble", 1)) {
                 case 0:
-                    edgeEnsemble = BootstrapEdgeEnsemble.Preserved;
+                    edgeEnsemble = SubSamplingEdgeEnsemble.Preserved;
                     break;
                 case 1:
-                    edgeEnsemble = BootstrapEdgeEnsemble.Highest;
+                    edgeEnsemble = SubSamplingEdgeEnsemble.Highest;
                     break;
                 case 2:
-                    edgeEnsemble = BootstrapEdgeEnsemble.Majority;
+                    edgeEnsemble = SubSamplingEdgeEnsemble.Majority;
             }
             search.setEdgeEnsemble(edgeEnsemble);
             search.setParameters(parameters);
@@ -104,9 +107,11 @@ public class Glasso implements Algorithm {
         params.add("itr");
         params.add("ipen");
         params.add("thr");
-        // Bootstrapping
-        params.add("bootstrapSampleSize");
-        params.add("bootstrapEnsemble");
+        // Subsampling
+        params.add("numberSubSampling");
+        params.add("subSampleSize");
+        params.add("subSamplingWithReplacement");
+        params.add("subSamplingEnsemble");
         params.add("verbose");
         return params;
     }

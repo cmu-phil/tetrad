@@ -51,7 +51,6 @@ public class FasLofsConcatenated implements MultiDataSetAlgorithm, HasKnowledge 
 			return getGraph(search);
 		} else {
 			FasLofsConcatenated algorithm = new FasLofsConcatenated(rule);
-			//algorithm.setKnowledge(knowledge);
 
 			List<DataSet> datasets = new ArrayList<>();
 
@@ -92,10 +91,10 @@ public class FasLofsConcatenated implements MultiDataSetAlgorithm, HasKnowledge 
 			return search(Collections.singletonList((DataModel) DataUtils.getContinuousDataSet(dataSet)), parameters);
 		} else {
 			FasLofsConcatenated algorithm = new FasLofsConcatenated(rule);
-			algorithm.setKnowledge(knowledge);
 
 			List<DataSet> dataSets = Collections.singletonList(DataUtils.getContinuousDataSet(dataSet));
 			GeneralSubSamplingTest search = new GeneralSubSamplingTest(dataSets, algorithm, parameters.getInt("numberSubSampling"));
+            search.setKnowledge(knowledge);
 
 			search.setSubSampleSize(parameters.getInt("subSampleSize"));
             search.setSubSamplingWithReplacement(parameters.getBoolean("subSamplingWithReplacement"));

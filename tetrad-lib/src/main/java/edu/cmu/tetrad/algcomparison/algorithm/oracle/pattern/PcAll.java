@@ -15,8 +15,8 @@ import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.SearchGraphUtils;
 import edu.cmu.tetrad.util.Parameters;
-import edu.pitt.dbmi.algo.bootstrap.BootstrapEdgeEnsemble;
-import edu.pitt.dbmi.algo.bootstrap.GeneralBootstrapTest;
+import edu.pitt.dbmi.algo.subsampling.GeneralSubSamplingTest;
+import edu.pitt.dbmi.algo.subsampling.SubSamplingEdgeEnsemble;
 
 import java.util.List;
 
@@ -52,7 +52,7 @@ public class PcAll implements Algorithm, TakesInitialGraph, HasKnowledge, TakesI
 
     @Override
     public Graph search(DataModel dataSet, Parameters parameters) {
-        if (parameters.getInt("bootstrapSampleSize") < 1) {
+        if (parameters.getInt("numberSubSampling") < 1) {
             edu.cmu.tetrad.search.PcAll.ColliderDiscovery colliderDiscovery;
 
             switch (parameters.getInt("colliderDiscoveryRule")) {
@@ -111,28 +111,28 @@ public class PcAll implements Algorithm, TakesInitialGraph, HasKnowledge, TakesI
         } else {
             PcAll pcAll = new PcAll(test, algorithm);
 
-            //pcAll.setKnowledge(knowledge);
             if (initialGraph != null) {
                 pcAll.setInitialGraph(initialGraph);
             }
 
             DataSet data = (DataSet) dataSet;
-
-            GeneralBootstrapTest search = new GeneralBootstrapTest(data, pcAll, parameters.getInt("bootstrapSampleSize"));
+            GeneralSubSamplingTest search = new GeneralSubSamplingTest(data, pcAll, parameters.getInt("numberSubSampling"));
             search.setKnowledge(knowledge);
 
-            BootstrapEdgeEnsemble edgeEnsemble = BootstrapEdgeEnsemble.Highest;
-            switch (parameters.getInt("bootstrapEnsemble", 1)) {
+            search.setSubSampleSize(parameters.getInt("subSampleSize"));
+            search.setSubSamplingWithReplacement(parameters.getBoolean("subSamplingWithReplacement"));
+            
+            SubSamplingEdgeEnsemble edgeEnsemble = SubSamplingEdgeEnsemble.Highest;
+            switch (parameters.getInt("subSamplingEnsemble", 1)) {
                 case 0:
-                    edgeEnsemble = BootstrapEdgeEnsemble.Preserved;
+                    edgeEnsemble = SubSamplingEdgeEnsemble.Preserved;
                     break;
                 case 1:
-                    edgeEnsemble = BootstrapEdgeEnsemble.Highest;
+                    edgeEnsemble = SubSamplingEdgeEnsemble.Highest;
                     break;
                 case 2:
-                    edgeEnsemble = BootstrapEdgeEnsemble.Majority;
+                    edgeEnsemble = SubSamplingEdgeEnsemble.Majority;
             }
-
             search.setEdgeEnsemble(edgeEnsemble);
             search.setParameters(parameters);
             search.setVerbose(parameters.getBoolean("verbose"));
@@ -166,9 +166,11 @@ public class PcAll implements Algorithm, TakesInitialGraph, HasKnowledge, TakesI
         parameters.add("depth");
         parameters.add("useMaxPOrientationHeuristic");
         parameters.add("maxPOrientationMaxPathLength");
-        // Bootstrapping
-        parameters.add("bootstrapSampleSize");
-        parameters.add("bootstrapEnsemble");
+        // Subsampling
+        parameters.add("numberSubSampling");
+        parameters.add("subSampleSize");
+        parameters.add("subSamplingWithReplacement");
+        parameters.add("subSamplingEnsemble");
         parameters.add("verbose");
         return parameters;
     }

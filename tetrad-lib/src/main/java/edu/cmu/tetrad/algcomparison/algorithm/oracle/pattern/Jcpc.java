@@ -10,8 +10,8 @@ import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.SearchGraphUtils;
 import edu.cmu.tetrad.util.Parameters;
-import edu.pitt.dbmi.algo.bootstrap.BootstrapEdgeEnsemble;
-import edu.pitt.dbmi.algo.bootstrap.GeneralBootstrapTest;
+import edu.pitt.dbmi.algo.subsampling.GeneralSubSamplingTest;
+import edu.pitt.dbmi.algo.subsampling.SubSamplingEdgeEnsemble;
 
 import java.util.List;
 
@@ -41,7 +41,7 @@ public class Jcpc implements Algorithm, TakesInitialGraph, HasKnowledge {
 
     @Override
     public Graph search(DataModel dataSet, Parameters parameters) {
-    	if (parameters.getInt("bootstrapSampleSize") < 1) {
+    	if (parameters.getInt("numberSubSampling") < 1) {
             DataSet continuousDataSet = DataUtils.getContinuousDataSet(dataSet);
             edu.cmu.tetrad.search.Jcpc search = new edu.cmu.tetrad.search.Jcpc(
                     test.getTest(continuousDataSet, parameters),
@@ -52,26 +52,27 @@ public class Jcpc implements Algorithm, TakesInitialGraph, HasKnowledge {
     	}else{
     		Jcpc jcpc = new Jcpc(test, score);
     		
-    		//jcpc.setKnowledge(knowledge);
 			if (initialGraph != null) {
 				jcpc.setInitialGraph(initialGraph);
 			}
 			DataSet data = (DataSet) dataSet;
-			GeneralBootstrapTest search = new GeneralBootstrapTest(data, jcpc,
-					parameters.getInt("bootstrapSampleSize"));
+			GeneralSubSamplingTest search = new GeneralSubSamplingTest(data, jcpc, parameters.getInt("numberSubSampling"));
             search.setKnowledge(knowledge);
 
-			BootstrapEdgeEnsemble edgeEnsemble = BootstrapEdgeEnsemble.Highest;
-			switch (parameters.getInt("bootstrapEnsemble", 1)) {
-			case 0:
-				edgeEnsemble = BootstrapEdgeEnsemble.Preserved;
-				break;
-			case 1:
-				edgeEnsemble = BootstrapEdgeEnsemble.Highest;
-				break;
-			case 2:
-				edgeEnsemble = BootstrapEdgeEnsemble.Majority;
-			}
+            search.setSubSampleSize(parameters.getInt("subSampleSize"));
+            search.setSubSamplingWithReplacement(parameters.getBoolean("subSamplingWithReplacement"));
+            
+            SubSamplingEdgeEnsemble edgeEnsemble = SubSamplingEdgeEnsemble.Highest;
+            switch (parameters.getInt("subSamplingEnsemble", 1)) {
+                case 0:
+                    edgeEnsemble = SubSamplingEdgeEnsemble.Preserved;
+                    break;
+                case 1:
+                    edgeEnsemble = SubSamplingEdgeEnsemble.Highest;
+                    break;
+                case 2:
+                    edgeEnsemble = SubSamplingEdgeEnsemble.Majority;
+            }
 			search.setEdgeEnsemble(edgeEnsemble);
 			search.setParameters(parameters);
 			search.setVerbose(parameters.getBoolean("verbose"));
@@ -100,9 +101,11 @@ public class Jcpc implements Algorithm, TakesInitialGraph, HasKnowledge {
     public List<String> getParameters() {
         List<String> parameters = test.getParameters();
         parameters.add("depth");
-        // Bootstrapping
-        parameters.add("bootstrapSampleSize");
-        parameters.add("bootstrapEnsemble");
+        // Subsampling
+        parameters.add("numberSubSampling");
+        parameters.add("subSampleSize");
+        parameters.add("subSamplingWithReplacement");
+        parameters.add("subSamplingEnsemble");
         parameters.add("verbose");
         return parameters;
     }

@@ -64,10 +64,10 @@ public class Fask implements Algorithm, HasKnowledge, UsesScoreWrapper {
             return getGraph(search);
         } else {
             Fask fask = new Fask(score);
-            fask.setKnowledge(knowledge);
 
             DataSet data = (DataSet) dataSet;
             GeneralSubSamplingTest search = new GeneralSubSamplingTest(data, fask, parameters.getInt("numberSubSampling"));
+            search.setKnowledge(knowledge);
             
             search.setSubSampleSize(parameters.getInt("subSampleSize"));
             search.setSubSamplingWithReplacement(parameters.getBoolean("subSamplingWithReplacement"));

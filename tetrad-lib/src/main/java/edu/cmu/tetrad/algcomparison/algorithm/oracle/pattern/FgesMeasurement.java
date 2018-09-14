@@ -11,8 +11,8 @@ import edu.cmu.tetrad.search.Fges;
 import edu.cmu.tetrad.search.SearchGraphUtils;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.RandomUtil;
-import edu.pitt.dbmi.algo.bootstrap.BootstrapEdgeEnsemble;
-import edu.pitt.dbmi.algo.bootstrap.GeneralBootstrapTest;
+import edu.pitt.dbmi.algo.subsampling.GeneralSubSamplingTest;
+import edu.pitt.dbmi.algo.subsampling.SubSamplingEdgeEnsemble;
 
 import java.util.List;
 
@@ -40,7 +40,7 @@ public class FgesMeasurement implements Algorithm, TakesInitialGraph, HasKnowled
 
     @Override
     public Graph search(DataModel dataModel, Parameters parameters) {
-    	if (parameters.getInt("bootstrapSampleSize") < 1) {
+    	if (parameters.getInt("numberSubSampling") < 1) {
             DataSet dataSet = DataUtils.getContinuousDataSet(dataModel);
             dataSet = dataSet.copy();
 
@@ -66,26 +66,27 @@ public class FgesMeasurement implements Algorithm, TakesInitialGraph, HasKnowled
     	}else{
     		FgesMeasurement fgesMeasurement = new FgesMeasurement(score, algorithm);
     		
-    		//fgesMeasurement.setKnowledge(knowledge);
-			if (initialGraph != null) {
+ 			if (initialGraph != null) {
 				fgesMeasurement.setInitialGraph(initialGraph);
 			}
 			DataSet data = (DataSet) dataModel;
-			GeneralBootstrapTest search = new GeneralBootstrapTest(data, fgesMeasurement,
-					parameters.getInt("bootstrapSampleSize"));
+			GeneralSubSamplingTest search = new GeneralSubSamplingTest(data, fgesMeasurement, parameters.getInt("numberSubSampling"));
             search.setKnowledge(knowledge);
 
-			BootstrapEdgeEnsemble edgeEnsemble = BootstrapEdgeEnsemble.Highest;
-			switch (parameters.getInt("bootstrapEnsemble", 1)) {
-			case 0:
-				edgeEnsemble = BootstrapEdgeEnsemble.Preserved;
-				break;
-			case 1:
-				edgeEnsemble = BootstrapEdgeEnsemble.Highest;
-				break;
-			case 2:
-				edgeEnsemble = BootstrapEdgeEnsemble.Majority;
-			}
+            search.setSubSampleSize(parameters.getInt("subSampleSize"));
+            search.setSubSamplingWithReplacement(parameters.getBoolean("subSamplingWithReplacement"));
+            
+            SubSamplingEdgeEnsemble edgeEnsemble = SubSamplingEdgeEnsemble.Highest;
+            switch (parameters.getInt("subSamplingEnsemble", 1)) {
+                case 0:
+                    edgeEnsemble = SubSamplingEdgeEnsemble.Preserved;
+                    break;
+                case 1:
+                    edgeEnsemble = SubSamplingEdgeEnsemble.Highest;
+                    break;
+                case 2:
+                    edgeEnsemble = SubSamplingEdgeEnsemble.Majority;
+            }
 			search.setEdgeEnsemble(edgeEnsemble);
 			search.setParameters(parameters);
 			search.setVerbose(parameters.getBoolean("verbose"));
@@ -114,9 +115,11 @@ public class FgesMeasurement implements Algorithm, TakesInitialGraph, HasKnowled
         parameters.add("faithfulnessAssumed");
         parameters.add("verbose");
         parameters.add("measurementVariance");
-		// Bootstrapping
-        parameters.add("bootstrapSampleSize");
-        parameters.add("bootstrapEnsemble");
+        // Subsampling
+        parameters.add("numberSubSampling");
+        parameters.add("subSampleSize");
+        parameters.add("subSamplingWithReplacement");
+        parameters.add("subSamplingEnsemble");
 
         return parameters;
     }

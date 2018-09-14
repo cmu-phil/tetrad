@@ -10,8 +10,8 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.IndTestFisherZ;
 import edu.cmu.tetrad.search.SearchGraphUtils;
 import edu.cmu.tetrad.util.Parameters;
-import edu.pitt.dbmi.algo.bootstrap.BootstrapEdgeEnsemble;
-import edu.pitt.dbmi.algo.bootstrap.GeneralBootstrapTest;
+import edu.pitt.dbmi.algo.subsampling.GeneralSubSamplingTest;
+import edu.pitt.dbmi.algo.subsampling.SubSamplingEdgeEnsemble;
 
 import java.io.PrintStream;
 import java.util.List;
@@ -36,7 +36,7 @@ public class PcFges implements Algorithm, TakesInitialGraph, HasKnowledge {
 
     @Override
     public Graph search(DataModel dataSet, Parameters parameters) {
-    	if (parameters.getInt("bootstrapSampleSize") < 1) {
+    	if (parameters.getInt("numberSubSampling") < 1) {
             DataSet _dataSet = (DataSet) dataSet;
             ICovarianceMatrix cov = new CovarianceMatrix(_dataSet);
 
@@ -62,26 +62,27 @@ public class PcFges implements Algorithm, TakesInitialGraph, HasKnowledge {
     	}else{
     		PcFges algorithm = new PcFges(score, compareToTrue);
     		
-    		//algorithm.setKnowledge(knowledge);
 			if (initialGraph != null) {
 				algorithm.setInitialGraph(initialGraph);
 			}
 			DataSet data = (DataSet) dataSet;
-			GeneralBootstrapTest search = new GeneralBootstrapTest(data, algorithm,
-					parameters.getInt("bootstrapSampleSize"));
+			GeneralSubSamplingTest search = new GeneralSubSamplingTest(data, algorithm, parameters.getInt("numberSubSampling"));
             search.setKnowledge(knowledge);
 
-			BootstrapEdgeEnsemble edgeEnsemble = BootstrapEdgeEnsemble.Highest;
-			switch (parameters.getInt("bootstrapEnsemble", 1)) {
-			case 0:
-				edgeEnsemble = BootstrapEdgeEnsemble.Preserved;
-				break;
-			case 1:
-				edgeEnsemble = BootstrapEdgeEnsemble.Highest;
-				break;
-			case 2:
-				edgeEnsemble = BootstrapEdgeEnsemble.Majority;
-			}
+            search.setSubSampleSize(parameters.getInt("subSampleSize"));
+            search.setSubSamplingWithReplacement(parameters.getBoolean("subSamplingWithReplacement"));
+            
+            SubSamplingEdgeEnsemble edgeEnsemble = SubSamplingEdgeEnsemble.Highest;
+            switch (parameters.getInt("subSamplingEnsemble", 1)) {
+                case 0:
+                    edgeEnsemble = SubSamplingEdgeEnsemble.Preserved;
+                    break;
+                case 1:
+                    edgeEnsemble = SubSamplingEdgeEnsemble.Highest;
+                    break;
+                case 2:
+                    edgeEnsemble = SubSamplingEdgeEnsemble.Majority;
+            }
 			search.setEdgeEnsemble(edgeEnsemble);
 			search.setParameters(parameters);
 			search.setVerbose(parameters.getBoolean("verbose"));
@@ -116,9 +117,11 @@ public class PcFges implements Algorithm, TakesInitialGraph, HasKnowledge {
         parameters.add("symmetricFirstStep");
         parameters.add("maxDegree");
         parameters.add("verbose");
-        // Bootstrapping
-        parameters.add("bootstrapSampleSize");
-        parameters.add("bootstrapEnsemble");
+        // Subsampling
+        parameters.add("numberSubSampling");
+        parameters.add("subSampleSize");
+        parameters.add("subSamplingWithReplacement");
+        parameters.add("subSamplingEnsemble");
         return parameters;
     }
 

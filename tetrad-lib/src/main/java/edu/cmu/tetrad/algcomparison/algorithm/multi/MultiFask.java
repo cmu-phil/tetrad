@@ -41,7 +41,7 @@ public class MultiFask implements MultiDataSetAlgorithm, HasKnowledge {
 
     @Override
     public Graph search(List<DataModel> dataSets, Parameters parameters) {
-    	if (parameters.getInt("bootstrapSampleSize") < 1) {
+    	if (parameters.getInt("numberSubSampling") < 1) {
     	    List<DataSet> _dataSets = new ArrayList<>();
     	    for (DataModel d : dataSets) _dataSets.add((DataSet) d);
             final SemBicScoreMultiFas score = new SemBicScoreMultiFas(dataSets);
@@ -51,7 +51,6 @@ public class MultiFask implements MultiDataSetAlgorithm, HasKnowledge {
             return search.search();
         } else {
             MultiFask imagesSemBic = new MultiFask();
-            //imagesSemBic.setKnowledge(knowledge);
 
             List<DataSet> datasets = new ArrayList<>();
 
@@ -88,10 +87,10 @@ public class MultiFask implements MultiDataSetAlgorithm, HasKnowledge {
             return search(Collections.singletonList((DataModel) DataUtils.getContinuousDataSet(dataSet)), parameters);
         } else {
             MultiFask imagesSemBic = new MultiFask();
-            imagesSemBic.setKnowledge(knowledge);
 
             List<DataSet> dataSets = Collections.singletonList(DataUtils.getContinuousDataSet(dataSet));
             GeneralSubSamplingTest search = new GeneralSubSamplingTest(dataSets, imagesSemBic, parameters.getInt("numberSubSampling"));
+            search.setKnowledge(knowledge);
             
             search.setSubSampleSize(parameters.getInt("subSampleSize"));
             search.setSubSamplingWithReplacement(parameters.getBoolean("subSamplingWithReplacement"));

@@ -52,7 +52,6 @@ public class ImagesPcStableMax implements MultiDataSetAlgorithm, HasKnowledge {
             return search.search();
     	}else{
     		ImagesPcStableMax imagesPcStableMax = new ImagesPcStableMax();
-    		//imagesPcStableMax.setKnowledge(knowledge);
     		
     		List<DataSet> datasets = new ArrayList<>();
 
@@ -89,10 +88,10 @@ public class ImagesPcStableMax implements MultiDataSetAlgorithm, HasKnowledge {
             return search(Collections.singletonList((DataModel) DataUtils.getContinuousDataSet(dataSet)), parameters);
     	}else{
     		ImagesPcStableMax imagesPcStableMax = new ImagesPcStableMax();
-    		imagesPcStableMax.setKnowledge(knowledge);
     		
     		List<DataSet> dataSets = Collections.singletonList(DataUtils.getContinuousDataSet(dataSet));
     		GeneralSubSamplingTest search = new GeneralSubSamplingTest(dataSets, imagesPcStableMax, parameters.getInt("numberSubSampling"));
+    		search.setKnowledge(knowledge);
 
     		search.setSubSampleSize(parameters.getInt("subSampleSize"));
             search.setSubSamplingWithReplacement(parameters.getBoolean("subSamplingWithReplacement"));

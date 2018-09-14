@@ -70,7 +70,6 @@ public class FaskConcatenated implements MultiDataSetAlgorithm, HasKnowledge, Us
             return search.search();
         } else {
             FaskConcatenated algorithm = new FaskConcatenated(score);
-            algorithm.setKnowledge(knowledge);
 
             List<DataSet> datasets = new ArrayList<>();
 
@@ -78,6 +77,7 @@ public class FaskConcatenated implements MultiDataSetAlgorithm, HasKnowledge, Us
                 datasets.add((DataSet) dataModel);
             }
             GeneralSubSamplingTest search = new GeneralSubSamplingTest(datasets, algorithm, parameters.getInt("numberSubSampling"));
+            search.setKnowledge(knowledge);
             
             search.setSubSampleSize(parameters.getInt("subSampleSize"));
             search.setSubSamplingWithReplacement(parameters.getBoolean("subSamplingWithReplacement"));
@@ -106,10 +106,10 @@ public class FaskConcatenated implements MultiDataSetAlgorithm, HasKnowledge, Us
             return search(Collections.singletonList((DataModel) DataUtils.getContinuousDataSet(dataSet)), parameters);
         } else {
             FaskConcatenated algorithm = new FaskConcatenated(score);
-            algorithm.setKnowledge(knowledge);
 
             List<DataSet> dataSets = Collections.singletonList(DataUtils.getContinuousDataSet(dataSet));
             GeneralSubSamplingTest search = new GeneralSubSamplingTest(dataSets, algorithm, parameters.getInt("numberSubSampling"));
+            search.setKnowledge(knowledge);
 
             search.setSubSampleSize(parameters.getInt("subSampleSize"));
             search.setSubSamplingWithReplacement(parameters.getBoolean("subSamplingWithReplacement"));

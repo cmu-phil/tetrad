@@ -13,8 +13,8 @@ import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.search.SearchGraphUtils;
 import edu.cmu.tetrad.search.PcAll;
 import edu.cmu.tetrad.util.Parameters;
-import edu.pitt.dbmi.algo.bootstrap.BootstrapEdgeEnsemble;
-import edu.pitt.dbmi.algo.bootstrap.GeneralBootstrapTest;
+import edu.pitt.dbmi.algo.subsampling.GeneralSubSamplingTest;
+import edu.pitt.dbmi.algo.subsampling.SubSamplingEdgeEnsemble;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.graph.Graph;
 
@@ -46,12 +46,12 @@ public class CpcStable implements Algorithm, HasKnowledge, TakesIndependenceWrap
 
     @Override
     public Graph search(DataModel dataSet, Parameters parameters) {
-        if (parameters.getInt("bootstrapSampleSize") < 1) {
+        if (parameters.getInt("numberSubSampling") < 1) {
             Graph init = null;
             if (algorithm != null) {
 //                init = algorithm.search(dataSet, parameters);
             }
-            edu.cmu.tetrad.search.PcAll search = new edu.cmu.tetrad.search.PcAll(test.getTest(dataSet, parameters), init);
+            PcAll search = new PcAll(test.getTest(dataSet, parameters), init);
             search.setDepth(parameters.getInt("depth"));
             search.setKnowledge(knowledge);
             search.setFasType(edu.cmu.tetrad.search.PcAll.FasType.STABLE);
@@ -62,23 +62,24 @@ public class CpcStable implements Algorithm, HasKnowledge, TakesIndependenceWrap
             return search.search();
         } else {
             CpcStable cpcStable = new CpcStable(test, algorithm);
-            //cpcStable.setKnowledge(knowledge);
 
             DataSet data = (DataSet) dataSet;
-
-            GeneralBootstrapTest search = new GeneralBootstrapTest(data, algorithm, parameters.getInt("bootstrapSampleSize"));
+            GeneralSubSamplingTest search = new GeneralSubSamplingTest(data, cpcStable, parameters.getInt("numberSubSampling"));
             search.setKnowledge(knowledge);
 
-            BootstrapEdgeEnsemble edgeEnsemble = BootstrapEdgeEnsemble.Highest;
-            switch (parameters.getInt("bootstrapEnsemble", 1)) {
+            search.setSubSampleSize(parameters.getInt("subSampleSize"));
+            search.setSubSamplingWithReplacement(parameters.getBoolean("subSamplingWithReplacement"));
+            
+            SubSamplingEdgeEnsemble edgeEnsemble = SubSamplingEdgeEnsemble.Highest;
+            switch (parameters.getInt("subSamplingEnsemble", 1)) {
                 case 0:
-                    edgeEnsemble = BootstrapEdgeEnsemble.Preserved;
+                    edgeEnsemble = SubSamplingEdgeEnsemble.Preserved;
                     break;
                 case 1:
-                    edgeEnsemble = BootstrapEdgeEnsemble.Highest;
+                    edgeEnsemble = SubSamplingEdgeEnsemble.Highest;
                     break;
                 case 2:
-                    edgeEnsemble = BootstrapEdgeEnsemble.Majority;
+                    edgeEnsemble = SubSamplingEdgeEnsemble.Majority;
             }
             search.setEdgeEnsemble(edgeEnsemble);
             search.setParameters(parameters);
@@ -106,9 +107,11 @@ public class CpcStable implements Algorithm, HasKnowledge, TakesIndependenceWrap
     public List<String> getParameters() {
         List<String> parameters = test.getParameters();
         parameters.add("depth");
-        // Bootstrapping
-        parameters.add("bootstrapSampleSize");
-        parameters.add("bootstrapEnsemble");
+        // Subsampling
+        parameters.add("numberSubSampling");
+        parameters.add("subSampleSize");
+        parameters.add("subSamplingWithReplacement");
+        parameters.add("subSamplingEnsemble");
         parameters.add("verbose");
         return parameters;
     }

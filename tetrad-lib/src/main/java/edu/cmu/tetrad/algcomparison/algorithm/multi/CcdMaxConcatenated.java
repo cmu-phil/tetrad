@@ -54,7 +54,6 @@ public class CcdMaxConcatenated implements MultiDataSetAlgorithm, HasKnowledge {
 			return search.search();
 		} else {
 			CcdMaxConcatenated algorithm = new CcdMaxConcatenated(test);
-			//algorithm.setKnowledge(knowledge);
 
 			List<DataSet> dataSets = new ArrayList<>();
 
@@ -91,10 +90,10 @@ public class CcdMaxConcatenated implements MultiDataSetAlgorithm, HasKnowledge {
 			return search(Collections.singletonList((DataModel) DataUtils.getContinuousDataSet(dataSet)), parameters);
 		}else{
 			CcdMaxConcatenated algorithm = new CcdMaxConcatenated(test);
-			algorithm.setKnowledge(knowledge);
 
 			List<DataSet> dataSets = Collections.singletonList(DataUtils.getContinuousDataSet(dataSet));
 			GeneralSubSamplingTest search = new GeneralSubSamplingTest(dataSets, algorithm, parameters.getInt("numberSubSampling"));
+            search.setKnowledge(knowledge);
 
 			search.setSubSampleSize(parameters.getInt("subSampleSize"));
             search.setSubSamplingWithReplacement(parameters.getBoolean("subSamplingWithReplacement"));

@@ -53,7 +53,6 @@ public class ImagesBDeu implements MultiDataSetAlgorithm, HasKnowledge {
             return search.search();
         } else {
             ImagesBDeu imagesBDeu = new ImagesBDeu();
-            //imagesBDeu.setKnowledge(knowledge);
 
             List<DataSet> datasets = new ArrayList<>();
 
@@ -90,10 +89,10 @@ public class ImagesBDeu implements MultiDataSetAlgorithm, HasKnowledge {
             return search(Collections.singletonList((DataModel) DataUtils.getDiscreteDataSet(dataSet)), parameters);
         } else {
             ImagesBDeu imagesBDeu = new ImagesBDeu();
-            imagesBDeu.setKnowledge(knowledge);
 
             List<DataSet> dataSets = Collections.singletonList(DataUtils.getContinuousDataSet(dataSet));
             GeneralSubSamplingTest search = new GeneralSubSamplingTest(dataSets, imagesBDeu, parameters.getInt("numberSubSampling"));
+            search.setKnowledge(knowledge);
 
             search.setSubSampleSize(parameters.getInt("subSampleSize"));
             search.setSubSamplingWithReplacement(parameters.getBoolean("subSamplingWithReplacement"));

@@ -115,7 +115,7 @@ public class MixedFgesDiscretingContinuousVariables implements Algorithm {
     public List<String> getParameters() {
         List<String> parameters = score.getParameters();
         parameters.add("numCategories");
-     // Subsampling
+        // Subsampling
         parameters.add("numberSubSampling");
         parameters.add("subSampleSize");
         parameters.add("subSamplingWithReplacement");

@@ -2,7 +2,6 @@ package edu.cmu.tetrad.algcomparison.algorithm.multi;
 
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.MultiDataSetAlgorithm;
-import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.data.*;
@@ -29,7 +28,6 @@ public class FgesConcatenated implements MultiDataSetAlgorithm, HasKnowledge {
 	static final long serialVersionUID = 23L;
 	private ScoreWrapper score;
 	private IKnowledge knowledge = new Knowledge2();
-	private IndependenceWrapper test;
 	private Algorithm initialGraph = null;
 	private boolean compareToTrue = false;
 
@@ -83,7 +81,6 @@ public class FgesConcatenated implements MultiDataSetAlgorithm, HasKnowledge {
 		} else {
 			FgesConcatenated fgesConcatenated = new FgesConcatenated(score, initialGraph);
 			fgesConcatenated.setCompareToTrue(compareToTrue);
-			//fgesConcatenated.setKnowledge(knowledge);
 
 			List<DataSet> datasets = new ArrayList<>();
 
@@ -91,7 +88,7 @@ public class FgesConcatenated implements MultiDataSetAlgorithm, HasKnowledge {
 				datasets.add((DataSet) dataModel);
 			}
 			GeneralSubSamplingTest search = new GeneralSubSamplingTest(datasets, fgesConcatenated, parameters.getInt("numberSubSampling"));
-search.setKnowledge(knowledge);
+			search.setKnowledge(knowledge);
             
             search.setSubSampleSize(parameters.getInt("subSampleSize"));
             search.setSubSamplingWithReplacement(parameters.getBoolean("subSamplingWithReplacement"));
@@ -121,10 +118,10 @@ search.setKnowledge(knowledge);
 		} else {
 			FgesConcatenated fgesConcatenated = new FgesConcatenated(score, initialGraph);
 			fgesConcatenated.setCompareToTrue(compareToTrue);
-			fgesConcatenated.setKnowledge(knowledge);
 
 			List<DataSet> dataSets = Collections.singletonList(DataUtils.getContinuousDataSet(dataSet));
 			GeneralSubSamplingTest search = new GeneralSubSamplingTest(dataSets, fgesConcatenated, parameters.getInt("numberSubSampling"));
+			search.setKnowledge(knowledge);
 			
 			search.setSubSampleSize(parameters.getInt("subSampleSize"));
             search.setSubSamplingWithReplacement(parameters.getBoolean("subSamplingWithReplacement"));
