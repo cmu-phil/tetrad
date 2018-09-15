@@ -1,4 +1,4 @@
-package edu.pitt.dbmi.algo.subsampling;
+package edu.pitt.dbmi.algo.resampling;
 
 /**
  * 
@@ -7,7 +7,7 @@ package edu.pitt.dbmi.algo.subsampling;
  * @author Chirayu (Kong) Wongchokprasitti, PhD
  * 
  */
-public enum SubSamplingEdgeEnsemble {
+public enum ResamplingEdgeEnsemble {
     // Choose an edge iff its prob. is the highest (even it's nil, which means
     // that there is no edge).
     Highest,

@@ -11,8 +11,8 @@ import edu.cmu.tetrad.search.Fges;
 import edu.cmu.tetrad.search.SearchGraphUtils;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.RandomUtil;
-import edu.pitt.dbmi.algo.subsampling.GeneralSubSamplingTest;
-import edu.pitt.dbmi.algo.subsampling.SubSamplingEdgeEnsemble;
+import edu.pitt.dbmi.algo.resampling.GeneralResamplingTest;
+import edu.pitt.dbmi.algo.resampling.ResamplingEdgeEnsemble;
 
 import java.util.List;
 
@@ -40,7 +40,7 @@ public class FgesMeasurement implements Algorithm, TakesInitialGraph, HasKnowled
 
     @Override
     public Graph search(DataModel dataModel, Parameters parameters) {
-    	if (parameters.getInt("numberSubSampling") < 1) {
+    	if (parameters.getInt("numberResampling") < 1) {
             DataSet dataSet = DataUtils.getContinuousDataSet(dataModel);
             dataSet = dataSet.copy();
 
@@ -70,22 +70,22 @@ public class FgesMeasurement implements Algorithm, TakesInitialGraph, HasKnowled
 				fgesMeasurement.setInitialGraph(initialGraph);
 			}
 			DataSet data = (DataSet) dataModel;
-			GeneralSubSamplingTest search = new GeneralSubSamplingTest(data, fgesMeasurement, parameters.getInt("numberSubSampling"));
+			GeneralResamplingTest search = new GeneralResamplingTest(data, fgesMeasurement, parameters.getInt("numberResampling"));
             search.setKnowledge(knowledge);
 
-            search.setSubSampleSize(parameters.getInt("subSampleSize"));
-            search.setSubSamplingWithReplacement(parameters.getBoolean("subSamplingWithReplacement"));
+            search.setResampleSize(parameters.getInt("resampleSize"));
+            search.setResamplingWithReplacement(parameters.getBoolean("resamplingWithReplacement"));
             
-            SubSamplingEdgeEnsemble edgeEnsemble = SubSamplingEdgeEnsemble.Highest;
-            switch (parameters.getInt("subSamplingEnsemble", 1)) {
+            ResamplingEdgeEnsemble edgeEnsemble = ResamplingEdgeEnsemble.Highest;
+            switch (parameters.getInt("resamplingEnsemble", 1)) {
                 case 0:
-                    edgeEnsemble = SubSamplingEdgeEnsemble.Preserved;
+                    edgeEnsemble = ResamplingEdgeEnsemble.Preserved;
                     break;
                 case 1:
-                    edgeEnsemble = SubSamplingEdgeEnsemble.Highest;
+                    edgeEnsemble = ResamplingEdgeEnsemble.Highest;
                     break;
                 case 2:
-                    edgeEnsemble = SubSamplingEdgeEnsemble.Majority;
+                    edgeEnsemble = ResamplingEdgeEnsemble.Majority;
             }
 			search.setEdgeEnsemble(edgeEnsemble);
 			search.setParameters(parameters);
@@ -115,11 +115,11 @@ public class FgesMeasurement implements Algorithm, TakesInitialGraph, HasKnowled
         parameters.add("faithfulnessAssumed");
         parameters.add("verbose");
         parameters.add("measurementVariance");
-        // Subsampling
-        parameters.add("numberSubSampling");
-        parameters.add("subSampleSize");
-        parameters.add("subSamplingWithReplacement");
-        parameters.add("subSamplingEnsemble");
+        // Resampling
+        parameters.add("numberResampling");
+        parameters.add("resampleSize");
+        parameters.add("resamplingWithReplacement");
+        parameters.add("resamplingEnsemble");
 
         return parameters;
     }

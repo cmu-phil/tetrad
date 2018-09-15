@@ -22,8 +22,8 @@ import edu.cmu.tetrad.search.SemBicScoreImages;
 import edu.cmu.tetrad.search.TsDagToPag;
 import edu.cmu.tetrad.search.TsGFci;
 import edu.cmu.tetrad.util.Parameters;
-import edu.pitt.dbmi.algo.subsampling.GeneralSubSamplingTest;
-import edu.pitt.dbmi.algo.subsampling.SubSamplingEdgeEnsemble;
+import edu.pitt.dbmi.algo.resampling.GeneralResamplingTest;
+import edu.pitt.dbmi.algo.resampling.ResamplingEdgeEnsemble;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -76,22 +76,22 @@ public class TsImages implements Algorithm, HasKnowledge, MultiDataSetAlgorithm,
             TsImages algorithm = new TsImages(score);
 
             DataSet data = (DataSet) dataModel;
-            GeneralSubSamplingTest search = new GeneralSubSamplingTest(data, algorithm, parameters.getInt("numberSubSampling"));
+            GeneralResamplingTest search = new GeneralResamplingTest(data, algorithm, parameters.getInt("numberSubSampling"));
             search.setKnowledge(knowledge);
 
-            search.setSubSampleSize(parameters.getInt("subSampleSize"));
-            search.setSubSamplingWithReplacement(parameters.getBoolean("subSamplingWithReplacement"));
+            search.setResampleSize(parameters.getInt("subSampleSize"));
+            search.setResamplingWithReplacement(parameters.getBoolean("subSamplingWithReplacement"));
             
-            SubSamplingEdgeEnsemble edgeEnsemble = SubSamplingEdgeEnsemble.Highest;
+            ResamplingEdgeEnsemble edgeEnsemble = ResamplingEdgeEnsemble.Highest;
             switch (parameters.getInt("subSamplingEnsemble", 1)) {
                 case 0:
-                    edgeEnsemble = SubSamplingEdgeEnsemble.Preserved;
+                    edgeEnsemble = ResamplingEdgeEnsemble.Preserved;
                     break;
                 case 1:
-                    edgeEnsemble = SubSamplingEdgeEnsemble.Highest;
+                    edgeEnsemble = ResamplingEdgeEnsemble.Highest;
                     break;
                 case 2:
-                    edgeEnsemble = SubSamplingEdgeEnsemble.Majority;
+                    edgeEnsemble = ResamplingEdgeEnsemble.Majority;
             }
             search.setEdgeEnsemble(edgeEnsemble);
             search.setParameters(parameters);

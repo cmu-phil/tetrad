@@ -6,8 +6,8 @@ import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.util.Parameters;
-import edu.pitt.dbmi.algo.subsampling.GeneralSubSamplingTest;
-import edu.pitt.dbmi.algo.subsampling.SubSamplingEdgeEnsemble;
+import edu.pitt.dbmi.algo.resampling.GeneralResamplingTest;
+import edu.pitt.dbmi.algo.resampling.ResamplingEdgeEnsemble;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.graph.Graph;
 import java.util.List;
@@ -28,7 +28,7 @@ public class Ccd implements Algorithm {
 
     @Override
     public Graph search(DataModel dataSet, Parameters parameters) {
-    	if (parameters.getInt("numberSubSampling") < 1) {
+    	if (parameters.getInt("numberResampling") < 1) {
             edu.cmu.tetrad.search.Ccd search = new edu.cmu.tetrad.search.Ccd(
                     test.getTest(dataSet, parameters));
             search.setDepth(parameters.getInt("depth"));
@@ -39,21 +39,21 @@ public class Ccd implements Algorithm {
     		Ccd algorithm = new Ccd(test);
     		
     		DataSet data = (DataSet) dataSet;
-    		GeneralSubSamplingTest search = new GeneralSubSamplingTest(data, algorithm, parameters.getInt("numberSubSampling"));
+    		GeneralResamplingTest search = new GeneralResamplingTest(data, algorithm, parameters.getInt("numberResampling"));
     		
-    		search.setSubSampleSize(parameters.getInt("subSampleSize"));
-            search.setSubSamplingWithReplacement(parameters.getBoolean("subSamplingWithReplacement"));
+    		search.setResampleSize(parameters.getInt("resampleSize"));
+            search.setResamplingWithReplacement(parameters.getBoolean("resamplingWithReplacement"));
             
-            SubSamplingEdgeEnsemble edgeEnsemble = SubSamplingEdgeEnsemble.Highest;
-            switch (parameters.getInt("subSamplingEnsemble", 1)) {
+            ResamplingEdgeEnsemble edgeEnsemble = ResamplingEdgeEnsemble.Highest;
+            switch (parameters.getInt("resamplingEnsemble", 1)) {
                 case 0:
-                    edgeEnsemble = SubSamplingEdgeEnsemble.Preserved;
+                    edgeEnsemble = ResamplingEdgeEnsemble.Preserved;
                     break;
                 case 1:
-                    edgeEnsemble = SubSamplingEdgeEnsemble.Highest;
+                    edgeEnsemble = ResamplingEdgeEnsemble.Highest;
                     break;
                 case 2:
-                    edgeEnsemble = SubSamplingEdgeEnsemble.Majority;
+                    edgeEnsemble = ResamplingEdgeEnsemble.Majority;
             }
     		search.setEdgeEnsemble(edgeEnsemble);
     		search.setParameters(parameters);    		
@@ -82,11 +82,11 @@ public class Ccd implements Algorithm {
         List<String> parameters = test.getParameters();
         parameters.add("depth");
         parameters.add("applyR1");
-        // Subsampling
-        parameters.add("numberSubSampling");
-        parameters.add("subSampleSize");
-        parameters.add("subSamplingWithReplacement");
-        parameters.add("subSamplingEnsemble");
+        // Resampling
+        parameters.add("numberResampling");
+        parameters.add("resampleSize");
+        parameters.add("resamplingWithReplacement");
+        parameters.add("resamplingEnsemble");
         parameters.add("verbose");
         return parameters;
     }

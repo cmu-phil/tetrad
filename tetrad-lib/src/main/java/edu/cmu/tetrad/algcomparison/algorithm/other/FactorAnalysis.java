@@ -4,8 +4,8 @@ import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.*;
-import edu.pitt.dbmi.algo.subsampling.GeneralSubSamplingTest;
-import edu.pitt.dbmi.algo.subsampling.SubSamplingEdgeEnsemble;
+import edu.pitt.dbmi.algo.resampling.GeneralResamplingTest;
+import edu.pitt.dbmi.algo.resampling.ResamplingEdgeEnsemble;
 
 import java.text.NumberFormat;
 import java.util.ArrayList;
@@ -19,7 +19,7 @@ public class FactorAnalysis implements Algorithm {
     static final long serialVersionUID = 23L;
 
     public Graph search(DataModel ds, Parameters parameters) {
-    	if (parameters.getInt("numberSubSampling") < 1) {
+    	if (parameters.getInt("numberResampling") < 1) {
 
             DataSet selectedModel = (DataSet) ds;
 
@@ -100,21 +100,21 @@ public class FactorAnalysis implements Algorithm {
     		FactorAnalysis algorithm = new FactorAnalysis();
     		
 			DataSet data = (DataSet) ds;
-			GeneralSubSamplingTest search = new GeneralSubSamplingTest(data, algorithm, parameters.getInt("numberSubSampling"));
+			GeneralResamplingTest search = new GeneralResamplingTest(data, algorithm, parameters.getInt("numberResampling"));
 
-			search.setSubSampleSize(parameters.getInt("subSampleSize"));
-            search.setSubSamplingWithReplacement(parameters.getBoolean("subSamplingWithReplacement"));
+			search.setResampleSize(parameters.getInt("resampleSize"));
+            search.setResamplingWithReplacement(parameters.getBoolean("resamplingWithReplacement"));
             
-            SubSamplingEdgeEnsemble edgeEnsemble = SubSamplingEdgeEnsemble.Highest;
-            switch (parameters.getInt("subSamplingEnsemble", 1)) {
+            ResamplingEdgeEnsemble edgeEnsemble = ResamplingEdgeEnsemble.Highest;
+            switch (parameters.getInt("resamplingEnsemble", 1)) {
                 case 0:
-                    edgeEnsemble = SubSamplingEdgeEnsemble.Preserved;
+                    edgeEnsemble = ResamplingEdgeEnsemble.Preserved;
                     break;
                 case 1:
-                    edgeEnsemble = SubSamplingEdgeEnsemble.Highest;
+                    edgeEnsemble = ResamplingEdgeEnsemble.Highest;
                     break;
                 case 2:
-                    edgeEnsemble = SubSamplingEdgeEnsemble.Majority;
+                    edgeEnsemble = ResamplingEdgeEnsemble.Majority;
             }
 			search.setEdgeEnsemble(edgeEnsemble);
 			search.setParameters(parameters);
@@ -166,11 +166,11 @@ public class FactorAnalysis implements Algorithm {
         params.add("useVarimax");
         params.add("convergenceThreshold");
         params.add("verbose");
-        // Subsampling
-        params.add("numberSubSampling");
-        params.add("subSampleSize");
-        params.add("subSamplingWithReplacement");
-        params.add("subSamplingEnsemble");
+        // Resampling
+        params.add("numberResampling");
+        params.add("resampleSize");
+        params.add("resamplingWithReplacement");
+        params.add("resamplingEnsemble");
         return params;
     }
 }

@@ -1429,7 +1429,7 @@ public final class DataUtils {
      * @return a sample without replacement with the given sample size from the
      * given dataset.
      */
-    public static DataSet getSubSamplingDataset(DataSet data, int sampleSize) {
+    public static DataSet getResamplingDataset(DataSet data, int sampleSize) {
     	int actualSampleSize = data.getNumRows();
     	int _size = sampleSize;
     	if(actualSampleSize < _size) {

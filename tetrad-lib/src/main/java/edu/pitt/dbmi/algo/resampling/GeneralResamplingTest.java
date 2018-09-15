@@ -1,4 +1,4 @@
-package edu.pitt.dbmi.algo.subsampling;
+package edu.pitt.dbmi.algo.resampling;
 
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.MultiDataSetAlgorithm;
@@ -24,11 +24,11 @@ import java.util.Map;
  * Updated: Chirayu Kong Wongchokprasitti, PhD on 9/13/2018
  * 
  */
-public class GeneralSubSamplingTest {
+public class GeneralResamplingTest {
 
 	private PrintStream out = System.out;
 
-	private final GeneralSubSamplingSearch subSamplingSearch;
+	private final GeneralResamplingSearch resamplingSearch;
 
 	private Parameters parameters;
 
@@ -47,7 +47,7 @@ public class GeneralSubSamplingTest {
 	 */
 	private IKnowledge knowledge = new Knowledge2();
 
-	private SubSamplingEdgeEnsemble edgeEnsemble = SubSamplingEdgeEnsemble.Preserved;
+	private ResamplingEdgeEnsemble edgeEnsemble = ResamplingEdgeEnsemble.Preserved;
 
 	/**
 	 * An initial graph to start from.
@@ -89,16 +89,16 @@ public class GeneralSubSamplingTest {
         }
 	}
 
-	public void setSubSampleSize(int subSampleSize) {
-		this.subSamplingSearch.setSubSampleSize(subSampleSize);
+	public void setResampleSize(int resampleSize) {
+		this.resamplingSearch.setResampleSize(resampleSize);
 	}
 
-	public void setSubSamplingWithReplacement(boolean subSamplingWithReplacement) {
-		this.subSamplingSearch.setSubSamplingWithReplacement(subSamplingWithReplacement);
+	public void setResamplingWithReplacement(boolean ResamplingWithReplacement) {
+		this.resamplingSearch.setResamplingWithReplacement(ResamplingWithReplacement);
 	}
 
-	public void setNumberSubSampling(int numberSubSampling) {
-		this.subSamplingSearch.setNumberSubSampling(numberSubSampling);
+	public void setNumberResampling(int numberResampling) {
+		this.resamplingSearch.setNumberResampling(numberResampling);
 	}
 
 	/**
@@ -113,19 +113,19 @@ public class GeneralSubSamplingTest {
 		this.knowledge = knowledge;
 	}
 
-	public SubSamplingEdgeEnsemble getEdgeEnsemble() {
+	public ResamplingEdgeEnsemble getEdgeEnsemble() {
 		return edgeEnsemble;
 	}
 
-	public void setEdgeEnsemble(SubSamplingEdgeEnsemble edgeEnsemble) {
+	public void setEdgeEnsemble(ResamplingEdgeEnsemble edgeEnsemble) {
 		this.edgeEnsemble = edgeEnsemble;
 	}
 
 	public void setEdgeEnsemble(String edgeEnsemble) {
 		if(edgeEnsemble.equalsIgnoreCase("Highest")){
-			this.edgeEnsemble = SubSamplingEdgeEnsemble.Highest;
+			this.edgeEnsemble = ResamplingEdgeEnsemble.Highest;
 		}else if(edgeEnsemble.equalsIgnoreCase("Majority")){
-			this.edgeEnsemble = SubSamplingEdgeEnsemble.Majority;
+			this.edgeEnsemble = ResamplingEdgeEnsemble.Majority;
 		}
 	}
 
@@ -140,26 +140,26 @@ public class GeneralSubSamplingTest {
 		RandomUtil.getInstance().setSeed(seed);
 	}
 
-	public GeneralSubSamplingTest(DataSet data, Algorithm algorithm) {
+	public GeneralResamplingTest(DataSet data, Algorithm algorithm) {
 		this.algorithm = algorithm;
-		subSamplingSearch = new GeneralSubSamplingSearch(data);
+		resamplingSearch = new GeneralResamplingSearch(data);
 	}
 
-	public GeneralSubSamplingTest(DataSet data, Algorithm algorithm, int numberSubSampling) {
+	public GeneralResamplingTest(DataSet data, Algorithm algorithm, int numberResampling) {
 		this.algorithm = algorithm;
-		subSamplingSearch = new GeneralSubSamplingSearch(data);
-		subSamplingSearch.setNumberSubSampling(numberSubSampling);
+		resamplingSearch = new GeneralResamplingSearch(data);
+		resamplingSearch.setNumberResampling(numberResampling);
 	}
 
-	public GeneralSubSamplingTest(List<DataSet> dataSets, MultiDataSetAlgorithm multiDataSetAlgorithm) {
+	public GeneralResamplingTest(List<DataSet> dataSets, MultiDataSetAlgorithm multiDataSetAlgorithm) {
 		this.multiDataSetAlgorithm = multiDataSetAlgorithm;
-		subSamplingSearch = new GeneralSubSamplingSearch(dataSets);
+		resamplingSearch = new GeneralResamplingSearch(dataSets);
 	}
 
-	public GeneralSubSamplingTest(List<DataSet> dataSets, MultiDataSetAlgorithm multiDataSetAlgorithm, int numberSubSampling) {
+	public GeneralResamplingTest(List<DataSet> dataSets, MultiDataSetAlgorithm multiDataSetAlgorithm, int numberResampling) {
 		this.multiDataSetAlgorithm = multiDataSetAlgorithm;
-		subSamplingSearch = new GeneralSubSamplingSearch(dataSets);
-		subSamplingSearch.setNumberSubSampling(numberSubSampling);
+		resamplingSearch = new GeneralResamplingSearch(dataSets);
+		resamplingSearch.setNumberResampling(numberResampling);
 	}
 
 	public Graph search() {
@@ -168,41 +168,41 @@ public class GeneralSubSamplingTest {
 		start = System.currentTimeMillis();
 
 		if(algorithm != null){
-			subSamplingSearch.setAlgorithm(algorithm);
+			resamplingSearch.setAlgorithm(algorithm);
 		}else{
-			subSamplingSearch.setMultiDataSetAlgorithm(multiDataSetAlgorithm);
+			resamplingSearch.setMultiDataSetAlgorithm(multiDataSetAlgorithm);
 		}
-		subSamplingSearch.setRunParallel(runParallel);
-		subSamplingSearch.setVerbose(verbose);
-		subSamplingSearch.setParameters(parameters);
+		resamplingSearch.setRunParallel(runParallel);
+		resamplingSearch.setVerbose(verbose);
+		resamplingSearch.setParameters(parameters);
 		
 		if(!knowledge.isEmpty()){
-			subSamplingSearch.setKnowledge(knowledge);
+			resamplingSearch.setKnowledge(knowledge);
 		}
 		
 		if(initialGraph != null){
-			subSamplingSearch.setInitialGraph(initialGraph);
+			resamplingSearch.setInitialGraph(initialGraph);
 		}
 
 		if (verbose) {
-			out.println("Subsampling on the " + algorithm.getDescription());
+			out.println("Resampling on the " + algorithm.getDescription());
 		}
 
-		PAGs = subSamplingSearch.search();
+		PAGs = resamplingSearch.search();
 
 		if (verbose) {
-			out.println("Subsampling number is : " + PAGs.size());
+			out.println("Resampling number is : " + PAGs.size());
 		}
 		stop = System.currentTimeMillis();
 		if (verbose) {
-			out.println("Processing time of total subsamplings : " + (stop - start) / 1000.0 + " sec");
+			out.println("Processing time of total resamplings : " + (stop - start) / 1000.0 + " sec");
 		}
 
 		start = System.currentTimeMillis();
 		Graph graph = generateSamplingGraph();
 		stop = System.currentTimeMillis();
 		if (verbose) {
-			out.println("Final Bootstrapping Search Result:");
+			out.println("Final Resampling Search Result:");
 			out.println(GraphUtils.graphToText(graph));
 			out.println();
 			out.println("probDistribution finished in " + (stop - start) + " ms");
@@ -235,7 +235,7 @@ public class GeneralSubSamplingTest {
 					pag = g;
 				}
 				if(verbose){
-					out.println("Subsampling Search Result (" + i + "):");
+					out.println("Resampling Search Result (" + i + "):");
 					out.println(GraphUtils.graphToText(g));
 					out.println();
 					i++;
