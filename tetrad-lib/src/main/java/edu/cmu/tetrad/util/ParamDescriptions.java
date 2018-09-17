@@ -169,10 +169,12 @@ public class ParamDescriptions {
 
         map.put("thresholdForReversing", new ParamDescription("Variables with skewnesses less than this value will be reversed in sign (min = 0)", 0.0, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY));
 
-        // Bootstrapping
-        map.put("bootstrapSampleSize", new ParamDescription("The number of bootstraps (min = 0)", 0, 0, Integer.MAX_VALUE));
-        map.put("bootstrapEnsemble", new ParamDescription("Ensemble method: Preserved (0), Highest (1), Majority (2)", 1, 0, 2));
-        //~Bootstrapping
+        // Resampling
+        map.put("numberResampling", new ParamDescription("The number of resampling iterations (min = 0)", 0, 0, Integer.MAX_VALUE));
+        map.put("resampleSize", new ParamDescription("The resample size (min = 1)", 1, 1, Integer.MAX_VALUE));
+        map.put("resamplingWithReplacement", new ParamDescription("Yes, if resampling with replacement (bootstrapping)", true));
+        map.put("resamplingEnsemble", new ParamDescription("Ensemble method: Preserved (0), Highest (1), Majority (2)", 1, 0, 2));
+        //~Resampling
 
         map.put("fasRule", new ParamDescription(
                 "Adjacency search: 1 = PC, 2 = PC-Stable, 3 = Concurrent PC-Stable",

@@ -1,4 +1,4 @@
-package edu.pitt.dbmi.algo.bootstrap.task;
+package edu.pitt.dbmi.algo.resampling.task;
 
 import java.io.PrintStream;
 import java.util.List;
@@ -11,9 +11,8 @@ import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.IKnowledge;
 import edu.cmu.tetrad.data.Knowledge2;
 import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.util.Parameters;
-import edu.pitt.dbmi.algo.bootstrap.GeneralBootstrapSearch;
+import edu.pitt.dbmi.algo.resampling.GeneralResamplingSearch;
 
 /**
  * 
@@ -22,7 +21,7 @@ import edu.pitt.dbmi.algo.bootstrap.GeneralBootstrapSearch;
  * @author Chirayu (Kong) Wongchokprasitti, PhD
  * 
  */
-public class GeneralBootstrapSearchRunnable implements Runnable {
+public class GeneralResamplingSearchRunnable implements Runnable {
 
 	private DataSet dataSet = null;
 
@@ -34,7 +33,7 @@ public class GeneralBootstrapSearchRunnable implements Runnable {
 	
 	private Parameters parameters;
 
-	private final GeneralBootstrapSearch bootstrapAlgorithmSearch;
+	private final GeneralResamplingSearch resamplingAlgorithmSearch;
 
 	private boolean verbose;
 
@@ -50,21 +49,21 @@ public class GeneralBootstrapSearchRunnable implements Runnable {
 
 	private PrintStream out = System.out;
 
-	public GeneralBootstrapSearchRunnable(DataSet dataSet, Algorithm algorithm, Parameters parameters,
-			GeneralBootstrapSearch bootstrapAlgorithmSearch, boolean verbose){
+	public GeneralResamplingSearchRunnable(DataSet dataSet, Algorithm algorithm, Parameters parameters,
+			GeneralResamplingSearch resamplingAlgorithmSearch, boolean verbose){
 		this.dataSet = dataSet;
 		this.algorithm = algorithm;
 		this.parameters = parameters;
-		this.bootstrapAlgorithmSearch = bootstrapAlgorithmSearch;
+		this.resamplingAlgorithmSearch = resamplingAlgorithmSearch;
 		this.verbose = verbose;
 	}
 	
-	public GeneralBootstrapSearchRunnable(List<DataModel> dataSets, MultiDataSetAlgorithm multiDataSetAlgorithm, Parameters parameters,
-			GeneralBootstrapSearch bootstrapAlgorithmSearch, boolean verbose){
+	public GeneralResamplingSearchRunnable(List<DataModel> dataSets, MultiDataSetAlgorithm multiDataSetAlgorithm, Parameters parameters,
+			GeneralResamplingSearch resamplingAlgorithmSearch, boolean verbose){
 		this.dataSets = dataSets;
 		this.multiDataSetAlgorithm = multiDataSetAlgorithm;
 		this.parameters = parameters;
-		this.bootstrapAlgorithmSearch = bootstrapAlgorithmSearch;
+		this.resamplingAlgorithmSearch = resamplingAlgorithmSearch;
 		this.verbose = verbose;
 	}
 	
@@ -146,10 +145,10 @@ public class GeneralBootstrapSearchRunnable implements Runnable {
 		
 		stop = System.currentTimeMillis();
 		if (verbose) {
-			out.println("processing time of bootstrap for a thread was: "
+			out.println("processing time of resampling for a thread was: "
 					+ (stop - start) / 1000.0 + " sec");
 		}
-		bootstrapAlgorithmSearch.addPAG(graph);
+		resamplingAlgorithmSearch.addPAG(graph);
 	}
 
 }

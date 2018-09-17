@@ -22,8 +22,9 @@ import edu.cmu.tetrad.search.SemBicScoreImages;
 import edu.cmu.tetrad.search.TsDagToPag;
 import edu.cmu.tetrad.search.TsGFci;
 import edu.cmu.tetrad.util.Parameters;
-import edu.pitt.dbmi.algo.bootstrap.BootstrapEdgeEnsemble;
-import edu.pitt.dbmi.algo.bootstrap.GeneralBootstrapTest;
+import edu.pitt.dbmi.algo.resampling.GeneralResamplingTest;
+import edu.pitt.dbmi.algo.resampling.ResamplingEdgeEnsemble;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -58,7 +59,7 @@ public class TsImages implements Algorithm, HasKnowledge, MultiDataSetAlgorithm,
 
     @Override
     public Graph search(DataModel dataModel, Parameters parameters) {
-        if (parameters.getInt("bootstrapSampleSize") < 1) {
+        if (parameters.getInt("numberSubSampling") < 1) {
             DataSet dataSet = (DataSet) dataModel;
             TsGFci search;
             if(knowledge != null) {
@@ -75,19 +76,22 @@ public class TsImages implements Algorithm, HasKnowledge, MultiDataSetAlgorithm,
             TsImages algorithm = new TsImages(score);
 
             DataSet data = (DataSet) dataModel;
-            GeneralBootstrapTest search = new GeneralBootstrapTest(data, algorithm, parameters.getInt("bootstrapSampleSize"));
+            GeneralResamplingTest search = new GeneralResamplingTest(data, algorithm, parameters.getInt("numberSubSampling"));
             search.setKnowledge(knowledge);
 
-            BootstrapEdgeEnsemble edgeEnsemble = BootstrapEdgeEnsemble.Highest;
-            switch (parameters.getInt("bootstrapEnsemble", 1)) {
+            search.setResampleSize(parameters.getInt("subSampleSize"));
+            search.setResamplingWithReplacement(parameters.getBoolean("subSamplingWithReplacement"));
+            
+            ResamplingEdgeEnsemble edgeEnsemble = ResamplingEdgeEnsemble.Highest;
+            switch (parameters.getInt("subSamplingEnsemble", 1)) {
                 case 0:
-                    edgeEnsemble = BootstrapEdgeEnsemble.Preserved;
+                    edgeEnsemble = ResamplingEdgeEnsemble.Preserved;
                     break;
                 case 1:
-                    edgeEnsemble = BootstrapEdgeEnsemble.Highest;
+                    edgeEnsemble = ResamplingEdgeEnsemble.Highest;
                     break;
                 case 2:
-                    edgeEnsemble = BootstrapEdgeEnsemble.Majority;
+                    edgeEnsemble = ResamplingEdgeEnsemble.Majority;
             }
             search.setEdgeEnsemble(edgeEnsemble);
             search.setParameters(parameters);
@@ -117,9 +121,11 @@ public class TsImages implements Algorithm, HasKnowledge, MultiDataSetAlgorithm,
         List<String> parameters = score.getParameters();
         parameters.add("numRuns");
         parameters.add("randomSelectionSize");
-        // Bootstrapping
-        parameters.add("bootstrapSampleSize");
-        parameters.add("bootstrapEnsemble");
+        // Subsampling
+        parameters.add("numberSubSampling");
+        parameters.add("subSampleSize");
+        parameters.add("subSamplingWithReplacement");
+        parameters.add("subSamplingEnsemble");
         parameters.add("verbose");
         return parameters;
     }

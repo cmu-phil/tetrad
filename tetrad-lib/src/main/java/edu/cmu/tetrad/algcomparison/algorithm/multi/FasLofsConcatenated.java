@@ -8,8 +8,8 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.*;
 import edu.cmu.tetrad.search.FasLofs;
 import edu.cmu.tetrad.util.Parameters;
-import edu.pitt.dbmi.algo.bootstrap.BootstrapEdgeEnsemble;
-import edu.pitt.dbmi.algo.bootstrap.GeneralBootstrapTest;
+import edu.pitt.dbmi.algo.resampling.GeneralResamplingTest;
+import edu.pitt.dbmi.algo.resampling.ResamplingEdgeEnsemble;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -35,7 +35,7 @@ public class FasLofsConcatenated implements MultiDataSetAlgorithm, HasKnowledge 
 
 	@Override
 	public Graph search(List<DataModel> dataModels, Parameters parameters) {
-		if (parameters.getInt("bootstrapSampleSize") < 1) {
+		if (parameters.getInt("numberResampling") < 1) {
 			List<DataSet> dataSets = new ArrayList<>();
 
 			for (DataModel dataModel : dataModels) {
@@ -51,28 +51,29 @@ public class FasLofsConcatenated implements MultiDataSetAlgorithm, HasKnowledge 
 			return getGraph(search);
 		} else {
 			FasLofsConcatenated algorithm = new FasLofsConcatenated(rule);
-			//algorithm.setKnowledge(knowledge);
 
 			List<DataSet> datasets = new ArrayList<>();
 
 			for (DataModel dataModel : dataModels) {
 				datasets.add((DataSet) dataModel);
 			}
-			GeneralBootstrapTest search = new GeneralBootstrapTest(datasets, algorithm,
-					parameters.getInt("bootstrapSampleSize"));
+			GeneralResamplingTest search = new GeneralResamplingTest(datasets, algorithm, parameters.getInt("numberResampling"));
             search.setKnowledge(knowledge);
 
-			BootstrapEdgeEnsemble edgeEnsemble = BootstrapEdgeEnsemble.Highest;
-			switch (parameters.getInt("bootstrapEnsemble", 1)) {
-			case 0:
-				edgeEnsemble = BootstrapEdgeEnsemble.Preserved;
-				break;
-			case 1:
-				edgeEnsemble = BootstrapEdgeEnsemble.Highest;
-				break;
-			case 2:
-				edgeEnsemble = BootstrapEdgeEnsemble.Majority;
-			}
+            search.setResampleSize(parameters.getInt("resampleSize"));
+            search.setResamplingWithReplacement(parameters.getBoolean("resamplingWithReplacement"));
+            
+            ResamplingEdgeEnsemble edgeEnsemble = ResamplingEdgeEnsemble.Highest;
+            switch (parameters.getInt("resamplingEnsemble", 1)) {
+                case 0:
+                    edgeEnsemble = ResamplingEdgeEnsemble.Preserved;
+                    break;
+                case 1:
+                    edgeEnsemble = ResamplingEdgeEnsemble.Highest;
+                    break;
+                case 2:
+                    edgeEnsemble = ResamplingEdgeEnsemble.Majority;
+            }
 			search.setEdgeEnsemble(edgeEnsemble);
 			search.setParameters(parameters);
 			search.setVerbose(parameters.getBoolean("verbose"));
@@ -86,27 +87,29 @@ public class FasLofsConcatenated implements MultiDataSetAlgorithm, HasKnowledge 
 
 	@Override
 	public Graph search(DataModel dataSet, Parameters parameters) {
-		if (!parameters.getBoolean("bootstrapping")) {
+		if (parameters.getInt("numberResampling") < 1) {
 			return search(Collections.singletonList((DataModel) DataUtils.getContinuousDataSet(dataSet)), parameters);
 		} else {
 			FasLofsConcatenated algorithm = new FasLofsConcatenated(rule);
-			algorithm.setKnowledge(knowledge);
 
 			List<DataSet> dataSets = Collections.singletonList(DataUtils.getContinuousDataSet(dataSet));
-			GeneralBootstrapTest search = new GeneralBootstrapTest(dataSets, algorithm,
-					parameters.getInt("bootstrapSampleSize"));
+			GeneralResamplingTest search = new GeneralResamplingTest(dataSets, algorithm, parameters.getInt("numberResampling"));
+            search.setKnowledge(knowledge);
 
-			BootstrapEdgeEnsemble edgeEnsemble = BootstrapEdgeEnsemble.Highest;
-			switch (parameters.getInt("bootstrapEnsemble", 1)) {
-			case 0:
-				edgeEnsemble = BootstrapEdgeEnsemble.Preserved;
-				break;
-			case 1:
-				edgeEnsemble = BootstrapEdgeEnsemble.Highest;
-				break;
-			case 2:
-				edgeEnsemble = BootstrapEdgeEnsemble.Majority;
-			}
+			search.setResampleSize(parameters.getInt("resampleSize"));
+            search.setResamplingWithReplacement(parameters.getBoolean("resamplingWithReplacement"));
+            
+            ResamplingEdgeEnsemble edgeEnsemble = ResamplingEdgeEnsemble.Highest;
+            switch (parameters.getInt("resamplingEnsemble", 1)) {
+                case 0:
+                    edgeEnsemble = ResamplingEdgeEnsemble.Preserved;
+                    break;
+                case 1:
+                    edgeEnsemble = ResamplingEdgeEnsemble.Highest;
+                    break;
+                case 2:
+                    edgeEnsemble = ResamplingEdgeEnsemble.Majority;
+            }
 			search.setEdgeEnsemble(edgeEnsemble);
 			search.setParameters(parameters);
 			search.setVerbose(parameters.getBoolean("verbose"));
@@ -137,9 +140,11 @@ public class FasLofsConcatenated implements MultiDataSetAlgorithm, HasKnowledge 
 
 		parameters.add("numRuns");
 		parameters.add("randomSelectionSize");
-		// Bootstrapping
-		parameters.add("bootstrapSampleSize");
-		parameters.add("bootstrapEnsemble");
+		// Resampling
+        parameters.add("numberResampling");
+        parameters.add("resampleSize");
+        parameters.add("resamplingWithReplacement");
+        parameters.add("resamplingEnsemble");
 		parameters.add("verbose");
 
 		return parameters;

@@ -11,8 +11,9 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.BdeuScoreImages;
 import edu.cmu.tetrad.search.SearchGraphUtils;
 import edu.cmu.tetrad.util.Parameters;
-import edu.pitt.dbmi.algo.bootstrap.BootstrapEdgeEnsemble;
-import edu.pitt.dbmi.algo.bootstrap.GeneralBootstrapTest;
+import edu.pitt.dbmi.algo.resampling.GeneralResamplingTest;
+import edu.pitt.dbmi.algo.resampling.ResamplingEdgeEnsemble;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -41,7 +42,7 @@ public class ImagesBDeu implements MultiDataSetAlgorithm, HasKnowledge {
 
     @Override
     public Graph search(List<DataModel> dataSets, Parameters parameters) {
-    	if (parameters.getInt("bootstrapSampleSize") < 1) {
+    	if (parameters.getInt("numberResampling") < 1) {
             BdeuScoreImages score = new BdeuScoreImages(dataSets);
             score.setSamplePrior(parameters.getDouble("samplePrior"));
             score.setStructurePrior(parameters.getDouble("structurePrior"));
@@ -52,27 +53,28 @@ public class ImagesBDeu implements MultiDataSetAlgorithm, HasKnowledge {
             return search.search();
         } else {
             ImagesBDeu imagesBDeu = new ImagesBDeu();
-            //imagesBDeu.setKnowledge(knowledge);
 
             List<DataSet> datasets = new ArrayList<>();
 
             for (DataModel dataModel : dataSets) {
                 datasets.add((DataSet) dataModel);
             }
-            GeneralBootstrapTest search = new GeneralBootstrapTest(datasets, imagesBDeu,
-                    parameters.getInt("bootstrapSampleSize"));
+            GeneralResamplingTest search = new GeneralResamplingTest(datasets, imagesBDeu, parameters.getInt("numberResampling"));
             search.setKnowledge(knowledge);
 
-            BootstrapEdgeEnsemble edgeEnsemble = BootstrapEdgeEnsemble.Highest;
-            switch (parameters.getInt("bootstrapEnsemble", 1)) {
+            search.setResampleSize(parameters.getInt("resampleSize"));
+            search.setResamplingWithReplacement(parameters.getBoolean("resamplingWithReplacement"));
+            
+            ResamplingEdgeEnsemble edgeEnsemble = ResamplingEdgeEnsemble.Highest;
+            switch (parameters.getInt("resamplingEnsemble", 1)) {
                 case 0:
-                    edgeEnsemble = BootstrapEdgeEnsemble.Preserved;
+                    edgeEnsemble = ResamplingEdgeEnsemble.Preserved;
                     break;
                 case 1:
-                    edgeEnsemble = BootstrapEdgeEnsemble.Highest;
+                    edgeEnsemble = ResamplingEdgeEnsemble.Highest;
                     break;
                 case 2:
-                    edgeEnsemble = BootstrapEdgeEnsemble.Majority;
+                    edgeEnsemble = ResamplingEdgeEnsemble.Majority;
             }
             search.setEdgeEnsemble(edgeEnsemble);
             search.setParameters(parameters);
@@ -83,26 +85,28 @@ public class ImagesBDeu implements MultiDataSetAlgorithm, HasKnowledge {
 
     @Override
     public Graph search(DataModel dataSet, Parameters parameters) {
-        if (!parameters.getBoolean("bootstrapping")) {
+        if (parameters.getInt("numberResampling") < 1) {
             return search(Collections.singletonList((DataModel) DataUtils.getDiscreteDataSet(dataSet)), parameters);
         } else {
             ImagesBDeu imagesBDeu = new ImagesBDeu();
-            imagesBDeu.setKnowledge(knowledge);
 
             List<DataSet> dataSets = Collections.singletonList(DataUtils.getContinuousDataSet(dataSet));
-            GeneralBootstrapTest search = new GeneralBootstrapTest(dataSets, imagesBDeu,
-                    parameters.getInt("bootstrapSampleSize"));
+            GeneralResamplingTest search = new GeneralResamplingTest(dataSets, imagesBDeu, parameters.getInt("numberResampling"));
+            search.setKnowledge(knowledge);
 
-            BootstrapEdgeEnsemble edgeEnsemble = BootstrapEdgeEnsemble.Highest;
-            switch (parameters.getInt("bootstrapEnsemble", 1)) {
+            search.setResampleSize(parameters.getInt("resampleSize"));
+            search.setResamplingWithReplacement(parameters.getBoolean("resamplingWithReplacement"));
+            
+            ResamplingEdgeEnsemble edgeEnsemble = ResamplingEdgeEnsemble.Highest;
+            switch (parameters.getInt("resamplingEnsemble", 1)) {
                 case 0:
-                    edgeEnsemble = BootstrapEdgeEnsemble.Preserved;
+                    edgeEnsemble = ResamplingEdgeEnsemble.Preserved;
                     break;
                 case 1:
-                    edgeEnsemble = BootstrapEdgeEnsemble.Highest;
+                    edgeEnsemble = ResamplingEdgeEnsemble.Highest;
                     break;
                 case 2:
-                    edgeEnsemble = BootstrapEdgeEnsemble.Majority;
+                    edgeEnsemble = ResamplingEdgeEnsemble.Majority;
             }
             search.setEdgeEnsemble(edgeEnsemble);
             search.setParameters(parameters);
@@ -131,9 +135,11 @@ public class ImagesBDeu implements MultiDataSetAlgorithm, HasKnowledge {
         List<String> parameters = new Fges(new BdeuScore(), false).getParameters();
         parameters.add("numRuns");
         parameters.add("randomSelectionSize");
-        // Bootstrapping
-        parameters.add("bootstrapSampleSize");
-        parameters.add("bootstrapEnsemble");
+        // Resampling
+        parameters.add("numberResampling");
+        parameters.add("resampleSize");
+        parameters.add("resamplingWithReplacement");
+        parameters.add("resamplingEnsemble");
         parameters.add("verbose");
 
         return parameters;

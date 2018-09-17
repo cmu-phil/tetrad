@@ -8,8 +8,8 @@ import edu.cmu.tetrad.search.IndTestScore;
 import edu.cmu.tetrad.search.SearchGraphUtils;
 import edu.cmu.tetrad.search.SemBicScoreDeterministic;
 import edu.cmu.tetrad.util.Parameters;
-import edu.pitt.dbmi.algo.bootstrap.BootstrapEdgeEnsemble;
-import edu.pitt.dbmi.algo.bootstrap.GeneralBootstrapTest;
+import edu.pitt.dbmi.algo.resampling.GeneralResamplingTest;
+import edu.pitt.dbmi.algo.resampling.ResamplingEdgeEnsemble;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -21,27 +21,14 @@ import java.util.List;
  */
 public class Pcd implements Algorithm, HasKnowledge {
     static final long serialVersionUID = 23L;
-//    private IndependenceWrapper test;
-    private Algorithm initialGraph = null;
     private IKnowledge knowledge = new Knowledge2();
 
-//    public Pcd(IndependenceWrapper test) {
-//        this.test = test;
-//    }
-
-//    public Pcd(IndependenceWrapper test, Algorithm initialGraph) {
-////        this.test = test;
-//        this.initialGraph = initialGraph;
-//    }
-
     public Pcd() {
-//        this.test = test;
-//        this.initialGraph = initialGraph;
     }
 
     @Override
     public Graph search(DataModel dataSet, Parameters parameters) {
-    	if (parameters.getInt("bootstrapSampleSize") < 1) {
+    	if (parameters.getInt("numberResampling") < 1) {
             IndTestScore test;
 
             if (dataSet instanceof ICovarianceMatrix) {
@@ -65,25 +52,25 @@ public class Pcd implements Algorithm, HasKnowledge {
             return search.search();
     	}else{
     		Pcd algorithm = new Pcd();
-    		
-    		//algorithm.setKnowledge(knowledge);
-			
-			DataSet data = (DataSet) dataSet;
-			GeneralBootstrapTest search = new GeneralBootstrapTest(data, algorithm,
-					parameters.getInt("bootstrapSampleSize"));
+   		
+ 			DataSet data = (DataSet) dataSet;
+			GeneralResamplingTest search = new GeneralResamplingTest(data, algorithm, parameters.getInt("numberResampling"));
             search.setKnowledge(knowledge);
 
-			BootstrapEdgeEnsemble edgeEnsemble = BootstrapEdgeEnsemble.Highest;
-			switch (parameters.getInt("bootstrapEnsemble", 1)) {
-			case 0:
-				edgeEnsemble = BootstrapEdgeEnsemble.Preserved;
-				break;
-			case 1:
-				edgeEnsemble = BootstrapEdgeEnsemble.Highest;
-				break;
-			case 2:
-				edgeEnsemble = BootstrapEdgeEnsemble.Majority;
-			}
+            search.setResampleSize(parameters.getInt("resampleSize"));
+            search.setResamplingWithReplacement(parameters.getBoolean("resamplingWithReplacement"));
+            
+            ResamplingEdgeEnsemble edgeEnsemble = ResamplingEdgeEnsemble.Highest;
+            switch (parameters.getInt("resamplingEnsemble", 1)) {
+                case 0:
+                    edgeEnsemble = ResamplingEdgeEnsemble.Preserved;
+                    break;
+                case 1:
+                    edgeEnsemble = ResamplingEdgeEnsemble.Highest;
+                    break;
+                case 2:
+                    edgeEnsemble = ResamplingEdgeEnsemble.Majority;
+            }
 			search.setEdgeEnsemble(edgeEnsemble);
 			search.setParameters(parameters);
 			search.setVerbose(parameters.getBoolean("verbose"));
@@ -113,9 +100,11 @@ public class Pcd implements Algorithm, HasKnowledge {
         parameters.add("depth");
         parameters.add("determinismThreshold");
         parameters.add("verbose");
-        // Bootstrapping
-        parameters.add("bootstrapSampleSize");
-        parameters.add("bootstrapEnsemble");
+        // Resampling
+        parameters.add("numberResampling");
+        parameters.add("resampleSize");
+        parameters.add("resamplingWithReplacement");
+        parameters.add("resamplingEnsemble");
         return parameters;
     }
 

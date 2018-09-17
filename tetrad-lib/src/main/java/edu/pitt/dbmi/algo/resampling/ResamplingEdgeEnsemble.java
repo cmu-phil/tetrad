@@ -1,13 +1,13 @@
-package edu.pitt.dbmi.algo.bootstrap;
+package edu.pitt.dbmi.algo.resampling;
 
 /**
  * 
- * Apr 20, 2017 11:44:46 AM
+ * Sep 12, 2018 4:07:46 PM
  * 
  * @author Chirayu (Kong) Wongchokprasitti, PhD
  * 
  */
-public enum BootstrapEdgeEnsemble {
+public enum ResamplingEdgeEnsemble {
     // Choose an edge iff its prob. is the highest (even it's nil, which means
     // that there is no edge).
     Highest,

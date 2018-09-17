@@ -9,8 +9,8 @@ import edu.cmu.tetrad.data.IKnowledge;
 import edu.cmu.tetrad.data.Knowledge2;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.util.Parameters;
-import edu.pitt.dbmi.algo.bootstrap.BootstrapEdgeEnsemble;
-import edu.pitt.dbmi.algo.bootstrap.GeneralBootstrapTest;
+import edu.pitt.dbmi.algo.resampling.GeneralResamplingTest;
+import edu.pitt.dbmi.algo.resampling.ResamplingEdgeEnsemble;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.DagToPag;
@@ -33,7 +33,7 @@ public class Cfci implements Algorithm, HasKnowledge {
 
     @Override
     public Graph search(DataModel dataSet, Parameters parameters) {
-    	if (parameters.getInt("bootstrapSampleSize") < 1) {
+    	if (parameters.getInt("numberResampling") < 1) {
             edu.cmu.tetrad.search.Cfci search = new edu.cmu.tetrad.search.Cfci(test.getTest(dataSet, parameters));
             search.setKnowledge(knowledge);
             search.setCompleteRuleSetUsed(parameters.getBoolean("completeRuleSetUsed"));
@@ -43,20 +43,23 @@ public class Cfci implements Algorithm, HasKnowledge {
     		Cfci algorithm = new Cfci(test);
     		
     		DataSet data = (DataSet) dataSet;
-    		GeneralBootstrapTest search = new GeneralBootstrapTest(data, algorithm, parameters.getInt("bootstrapSampleSize"));
+    		GeneralResamplingTest search = new GeneralResamplingTest(data, algorithm, parameters.getInt("numberResampling"));
             search.setKnowledge(knowledge);
     		
-    		BootstrapEdgeEnsemble edgeEnsemble = BootstrapEdgeEnsemble.Highest;
-    		switch (parameters.getInt("bootstrapEnsemble", 1)) {
-    		case 0:
-    			edgeEnsemble = BootstrapEdgeEnsemble.Preserved;
-    			break;
-    		case 1:
-    			edgeEnsemble = BootstrapEdgeEnsemble.Highest;
-    			break;
-    		case 2:
-    			edgeEnsemble = BootstrapEdgeEnsemble.Majority;
-    		}
+            search.setResampleSize(parameters.getInt("resampleSize"));
+            search.setResamplingWithReplacement(parameters.getBoolean("resamplingWithReplacement"));
+            
+            ResamplingEdgeEnsemble edgeEnsemble = ResamplingEdgeEnsemble.Highest;
+            switch (parameters.getInt("resamplingEnsemble", 1)) {
+                case 0:
+                    edgeEnsemble = ResamplingEdgeEnsemble.Preserved;
+                    break;
+                case 1:
+                    edgeEnsemble = ResamplingEdgeEnsemble.Highest;
+                    break;
+                case 2:
+                    edgeEnsemble = ResamplingEdgeEnsemble.Majority;
+            }
     		search.setEdgeEnsemble(edgeEnsemble);
     		search.setParameters(parameters);    		
     		search.setVerbose(parameters.getBoolean("verbose"));
@@ -84,9 +87,11 @@ public class Cfci implements Algorithm, HasKnowledge {
         List<String> parameters = test.getParameters();
         parameters.add("depth");
         parameters.add("completeRuleSetUsed");
-        // Bootstrapping
-        parameters.add("bootstrapSampleSize");
-        parameters.add("bootstrapEnsemble");
+        // Resampling
+        parameters.add("numberResampling");
+        parameters.add("resampleSize");
+        parameters.add("resamplingWithReplacement");
+        parameters.add("resamplingEnsemble");
         parameters.add("verbose");
         return parameters;
     }

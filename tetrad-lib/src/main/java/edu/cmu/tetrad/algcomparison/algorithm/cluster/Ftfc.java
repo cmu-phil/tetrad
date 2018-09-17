@@ -9,8 +9,9 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.FindTwoFactorClusters;
 import edu.cmu.tetrad.search.SearchGraphUtils;
 import edu.cmu.tetrad.util.Parameters;
-import edu.pitt.dbmi.algo.bootstrap.BootstrapEdgeEnsemble;
-import edu.pitt.dbmi.algo.bootstrap.GeneralBootstrapTest;
+import edu.pitt.dbmi.algo.resampling.GeneralResamplingTest;
+import edu.pitt.dbmi.algo.resampling.ResamplingEdgeEnsemble;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -34,7 +35,7 @@ public class Ftfc implements Algorithm, HasKnowledge, ClusterAlgorithm {
 
     @Override
     public Graph search(DataModel dataSet, Parameters parameters) {
-        if (parameters.getInt("bootstrapSampleSize") < 1) {
+        if (parameters.getInt("numberResampling") < 1) {
             ICovarianceMatrix cov = null;
 
             if (dataSet instanceof DataSet) {
@@ -69,20 +70,22 @@ public class Ftfc implements Algorithm, HasKnowledge, ClusterAlgorithm {
 //      		algorithm.setInitialGraph(initialGraph);
 //  		}
             DataSet data = (DataSet) dataSet;
-
-            GeneralBootstrapTest search = new GeneralBootstrapTest(data, algorithm, parameters.getInt("bootstrapSampleSize"));
+            GeneralResamplingTest search = new GeneralResamplingTest(data, algorithm, parameters.getInt("numberResampling"));
             search.setKnowledge(knowledge);
+            
+            search.setResampleSize(parameters.getInt("resampleSize"));
+            search.setResamplingWithReplacement(parameters.getBoolean("resamplingWithReplacement"));
 
-            BootstrapEdgeEnsemble edgeEnsemble = BootstrapEdgeEnsemble.Highest;
-            switch (parameters.getInt("bootstrapEnsemble", 1)) {
+            ResamplingEdgeEnsemble edgeEnsemble = ResamplingEdgeEnsemble.Highest;
+            switch (parameters.getInt("resamplingEnsemble", 1)) {
                 case 0:
-                    edgeEnsemble = BootstrapEdgeEnsemble.Preserved;
+                    edgeEnsemble = ResamplingEdgeEnsemble.Preserved;
                     break;
                 case 1:
-                    edgeEnsemble = BootstrapEdgeEnsemble.Highest;
+                    edgeEnsemble = ResamplingEdgeEnsemble.Highest;
                     break;
                 case 2:
-                    edgeEnsemble = BootstrapEdgeEnsemble.Majority;
+                    edgeEnsemble = ResamplingEdgeEnsemble.Majority;
             }
             search.setEdgeEnsemble(edgeEnsemble);
             search.setParameters(parameters);
@@ -113,9 +116,11 @@ public class Ftfc implements Algorithm, HasKnowledge, ClusterAlgorithm {
         parameters.add("useWishart");
         parameters.add("useGap");
         parameters.add("verbose");
-        // Bootstrapping
-        parameters.add("bootstrapSampleSize");
-        parameters.add("bootstrapEnsemble");
+        // Resampling
+        parameters.add("numberResampling");
+        parameters.add("resampleSize");
+        parameters.add("resamplingWithReplacement");
+        parameters.add("resamplingEnsemble");
         return parameters;
     }
 

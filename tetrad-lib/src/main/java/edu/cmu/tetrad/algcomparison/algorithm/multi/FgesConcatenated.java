@@ -2,19 +2,15 @@ package edu.cmu.tetrad.algcomparison.algorithm.multi;
 
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.MultiDataSetAlgorithm;
-import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.data.*;
-import edu.cmu.tetrad.graph.Edge;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.search.CcdMax;
-import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.search.SearchGraphUtils;
 import edu.cmu.tetrad.util.Parameters;
-import edu.pitt.dbmi.algo.bootstrap.BootstrapEdgeEnsemble;
-import edu.pitt.dbmi.algo.bootstrap.GeneralBootstrapTest;
+import edu.pitt.dbmi.algo.resampling.GeneralResamplingTest;
+import edu.pitt.dbmi.algo.resampling.ResamplingEdgeEnsemble;
 
 import java.io.PrintStream;
 import java.util.ArrayList;
@@ -32,7 +28,6 @@ public class FgesConcatenated implements MultiDataSetAlgorithm, HasKnowledge {
 	static final long serialVersionUID = 23L;
 	private ScoreWrapper score;
 	private IKnowledge knowledge = new Knowledge2();
-	private IndependenceWrapper test;
 	private Algorithm initialGraph = null;
 	private boolean compareToTrue = false;
 
@@ -52,7 +47,7 @@ public class FgesConcatenated implements MultiDataSetAlgorithm, HasKnowledge {
 
 	@Override
 	public Graph search(List<DataModel> dataModels, Parameters parameters) {
-		if (parameters.getInt("bootstrapSampleSize") < 1) {
+		if (parameters.getInt("numberResampling") < 1) {
 			List<DataSet> dataSets = new ArrayList<>();
 
 			for (DataModel dataModel : dataModels) {
@@ -86,28 +81,29 @@ public class FgesConcatenated implements MultiDataSetAlgorithm, HasKnowledge {
 		} else {
 			FgesConcatenated fgesConcatenated = new FgesConcatenated(score, initialGraph);
 			fgesConcatenated.setCompareToTrue(compareToTrue);
-			//fgesConcatenated.setKnowledge(knowledge);
 
 			List<DataSet> datasets = new ArrayList<>();
 
 			for (DataModel dataModel : dataModels) {
 				datasets.add((DataSet) dataModel);
 			}
-			GeneralBootstrapTest search = new GeneralBootstrapTest(datasets, fgesConcatenated,
-					parameters.getInt("bootstrapSampleSize"));
-            search.setKnowledge(knowledge);
-
-			BootstrapEdgeEnsemble edgeEnsemble = BootstrapEdgeEnsemble.Highest;
-			switch (parameters.getInt("bootstrapEnsemble", 1)) {
-			case 0:
-				edgeEnsemble = BootstrapEdgeEnsemble.Preserved;
-				break;
-			case 1:
-				edgeEnsemble = BootstrapEdgeEnsemble.Highest;
-				break;
-			case 2:
-				edgeEnsemble = BootstrapEdgeEnsemble.Majority;
-			}
+			GeneralResamplingTest search = new GeneralResamplingTest(datasets, fgesConcatenated, parameters.getInt("numberResampling"));
+			search.setKnowledge(knowledge);
+            
+            search.setResampleSize(parameters.getInt("resampleSize"));
+            search.setResamplingWithReplacement(parameters.getBoolean("resamplingWithReplacement"));
+            
+            ResamplingEdgeEnsemble edgeEnsemble = ResamplingEdgeEnsemble.Highest;
+            switch (parameters.getInt("resamplingEnsemble", 1)) {
+                case 0:
+                    edgeEnsemble = ResamplingEdgeEnsemble.Preserved;
+                    break;
+                case 1:
+                    edgeEnsemble = ResamplingEdgeEnsemble.Highest;
+                    break;
+                case 2:
+                    edgeEnsemble = ResamplingEdgeEnsemble.Majority;
+            }
 			search.setEdgeEnsemble(edgeEnsemble);
 			search.setParameters(parameters);
 			search.setVerbose(parameters.getBoolean("verbose"));
@@ -117,28 +113,30 @@ public class FgesConcatenated implements MultiDataSetAlgorithm, HasKnowledge {
 
 	@Override
 	public Graph search(DataModel dataSet, Parameters parameters) {
-		if (!parameters.getBoolean("bootstrapping")) {
+		if (parameters.getInt("numberResampling") < 1) {
 			return search(Collections.singletonList((DataModel) DataUtils.getContinuousDataSet(dataSet)), parameters);
 		} else {
 			FgesConcatenated fgesConcatenated = new FgesConcatenated(score, initialGraph);
 			fgesConcatenated.setCompareToTrue(compareToTrue);
-			fgesConcatenated.setKnowledge(knowledge);
 
 			List<DataSet> dataSets = Collections.singletonList(DataUtils.getContinuousDataSet(dataSet));
-			GeneralBootstrapTest search = new GeneralBootstrapTest(dataSets, fgesConcatenated,
-					parameters.getInt("bootstrapSampleSize"));
-
-			BootstrapEdgeEnsemble edgeEnsemble = BootstrapEdgeEnsemble.Highest;
-			switch (parameters.getInt("bootstrapEnsemble", 1)) {
-			case 0:
-				edgeEnsemble = BootstrapEdgeEnsemble.Preserved;
-				break;
-			case 1:
-				edgeEnsemble = BootstrapEdgeEnsemble.Highest;
-				break;
-			case 2:
-				edgeEnsemble = BootstrapEdgeEnsemble.Majority;
-			}
+			GeneralResamplingTest search = new GeneralResamplingTest(dataSets, fgesConcatenated, parameters.getInt("numberResampling"));
+			search.setKnowledge(knowledge);
+			
+			search.setResampleSize(parameters.getInt("resampleSize"));
+            search.setResamplingWithReplacement(parameters.getBoolean("resamplingWithReplacement"));
+            
+            ResamplingEdgeEnsemble edgeEnsemble = ResamplingEdgeEnsemble.Highest;
+            switch (parameters.getInt("resamplingEnsemble", 1)) {
+                case 0:
+                    edgeEnsemble = ResamplingEdgeEnsemble.Preserved;
+                    break;
+                case 1:
+                    edgeEnsemble = ResamplingEdgeEnsemble.Highest;
+                    break;
+                case 2:
+                    edgeEnsemble = ResamplingEdgeEnsemble.Majority;
+            }
 			search.setEdgeEnsemble(edgeEnsemble);
 			search.setParameters(parameters);
 			search.setVerbose(parameters.getBoolean("verbose"));
@@ -174,9 +172,11 @@ public class FgesConcatenated implements MultiDataSetAlgorithm, HasKnowledge {
 
 		parameters.add("numRuns");
 		parameters.add("randomSelectionSize");
-		// Bootstrapping
-		parameters.add("bootstrapSampleSize");
-		parameters.add("bootstrapEnsemble");
+		// Resampling
+        parameters.add("numberResampling");
+        parameters.add("resampleSize");
+        parameters.add("resamplingWithReplacement");
+        parameters.add("resamplingEnsemble");
 		parameters.add("verbose");
 
 		return parameters;

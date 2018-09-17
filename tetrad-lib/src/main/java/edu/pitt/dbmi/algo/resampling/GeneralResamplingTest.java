@@ -1,4 +1,4 @@
-package edu.pitt.dbmi.algo.bootstrap;
+package edu.pitt.dbmi.algo.resampling;
 
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.MultiDataSetAlgorithm;
@@ -21,14 +21,14 @@ import java.util.Map;
 /**
  * Created by mahdi on 1/16/17.
  * 
- * Updated: Chirayu Kong Wongchokprasitti, PhD on 4/5/2017
+ * Updated: Chirayu Kong Wongchokprasitti, PhD on 9/13/2018
  * 
  */
-public class GeneralBootstrapTest {
+public class GeneralResamplingTest {
 
 	private PrintStream out = System.out;
 
-	private final GeneralBootstrapSearch bootstrapSearch;
+	private final GeneralResamplingSearch resamplingSearch;
 
 	private Parameters parameters;
 
@@ -38,8 +38,6 @@ public class GeneralBootstrapTest {
 	
 	private MultiDataSetAlgorithm multiDataSetAlgorithm = null;
 	
-	private long seed = -1;
-
 	private List<Graph> PAGs;
 
 	private boolean verbose = false;
@@ -49,7 +47,7 @@ public class GeneralBootstrapTest {
 	 */
 	private IKnowledge knowledge = new Knowledge2();
 
-	private BootstrapEdgeEnsemble edgeEnsemble = BootstrapEdgeEnsemble.Preserved;
+	private ResamplingEdgeEnsemble edgeEnsemble = ResamplingEdgeEnsemble.Preserved;
 
 	/**
 	 * An initial graph to start from.
@@ -91,8 +89,16 @@ public class GeneralBootstrapTest {
         }
 	}
 
-	public void setNumBootstrapSamples(int numBootstrapSamples) {
-		this.bootstrapSearch.setNumOfBootstrap(numBootstrapSamples);
+	public void setResampleSize(int resampleSize) {
+		this.resamplingSearch.setResampleSize(resampleSize);
+	}
+
+	public void setResamplingWithReplacement(boolean ResamplingWithReplacement) {
+		this.resamplingSearch.setResamplingWithReplacement(ResamplingWithReplacement);
+	}
+
+	public void setNumberResampling(int numberResampling) {
+		this.resamplingSearch.setNumberResampling(numberResampling);
 	}
 
 	/**
@@ -107,19 +113,19 @@ public class GeneralBootstrapTest {
 		this.knowledge = knowledge;
 	}
 
-	public BootstrapEdgeEnsemble getEdgeEnsemble() {
+	public ResamplingEdgeEnsemble getEdgeEnsemble() {
 		return edgeEnsemble;
 	}
 
-	public void setEdgeEnsemble(BootstrapEdgeEnsemble edgeEnsemble) {
+	public void setEdgeEnsemble(ResamplingEdgeEnsemble edgeEnsemble) {
 		this.edgeEnsemble = edgeEnsemble;
 	}
 
 	public void setEdgeEnsemble(String edgeEnsemble) {
 		if(edgeEnsemble.equalsIgnoreCase("Highest")){
-			this.edgeEnsemble = BootstrapEdgeEnsemble.Highest;
+			this.edgeEnsemble = ResamplingEdgeEnsemble.Highest;
 		}else if(edgeEnsemble.equalsIgnoreCase("Majority")){
-			this.edgeEnsemble = BootstrapEdgeEnsemble.Majority;
+			this.edgeEnsemble = ResamplingEdgeEnsemble.Majority;
 		}
 	}
 
@@ -131,30 +137,29 @@ public class GeneralBootstrapTest {
 	}
 
 	public void setSeed(long seed) {
-		this.seed = seed;
 		RandomUtil.getInstance().setSeed(seed);
 	}
 
-	public GeneralBootstrapTest(DataSet data, Algorithm algorithm) {
+	public GeneralResamplingTest(DataSet data, Algorithm algorithm) {
 		this.algorithm = algorithm;
-		bootstrapSearch = new GeneralBootstrapSearch(data);
+		resamplingSearch = new GeneralResamplingSearch(data);
 	}
 
-	public GeneralBootstrapTest(DataSet data, Algorithm algorithm, int numBootstrapSamples) {
+	public GeneralResamplingTest(DataSet data, Algorithm algorithm, int numberResampling) {
 		this.algorithm = algorithm;
-		bootstrapSearch = new GeneralBootstrapSearch(data);
-		bootstrapSearch.setNumOfBootstrap(numBootstrapSamples);
+		resamplingSearch = new GeneralResamplingSearch(data);
+		resamplingSearch.setNumberResampling(numberResampling);
 	}
 
-	public GeneralBootstrapTest(List<DataSet> dataSets, MultiDataSetAlgorithm multiDataSetAlgorithm) {
+	public GeneralResamplingTest(List<DataSet> dataSets, MultiDataSetAlgorithm multiDataSetAlgorithm) {
 		this.multiDataSetAlgorithm = multiDataSetAlgorithm;
-		bootstrapSearch = new GeneralBootstrapSearch(dataSets);
+		resamplingSearch = new GeneralResamplingSearch(dataSets);
 	}
 
-	public GeneralBootstrapTest(List<DataSet> dataSets, MultiDataSetAlgorithm multiDataSetAlgorithm, int numBootstrapSamples) {
+	public GeneralResamplingTest(List<DataSet> dataSets, MultiDataSetAlgorithm multiDataSetAlgorithm, int numberResampling) {
 		this.multiDataSetAlgorithm = multiDataSetAlgorithm;
-		bootstrapSearch = new GeneralBootstrapSearch(dataSets);
-		bootstrapSearch.setNumOfBootstrap(numBootstrapSamples);
+		resamplingSearch = new GeneralResamplingSearch(dataSets);
+		resamplingSearch.setNumberResampling(numberResampling);
 	}
 
 	public Graph search() {
@@ -163,41 +168,41 @@ public class GeneralBootstrapTest {
 		start = System.currentTimeMillis();
 
 		if(algorithm != null){
-			bootstrapSearch.setAlgorithm(algorithm);
+			resamplingSearch.setAlgorithm(algorithm);
 		}else{
-			bootstrapSearch.setMultiDataSetAlgorithm(multiDataSetAlgorithm);
+			resamplingSearch.setMultiDataSetAlgorithm(multiDataSetAlgorithm);
 		}
-		bootstrapSearch.setRunningMode(runParallel);
-		bootstrapSearch.setVerbose(verbose);
-		bootstrapSearch.setParameters(parameters);
+		resamplingSearch.setRunParallel(runParallel);
+		resamplingSearch.setVerbose(verbose);
+		resamplingSearch.setParameters(parameters);
 		
 		if(!knowledge.isEmpty()){
-			bootstrapSearch.setKnowledge(knowledge);
+			resamplingSearch.setKnowledge(knowledge);
 		}
 		
 		if(initialGraph != null){
-			bootstrapSearch.setInitialGraph(initialGraph);
+			resamplingSearch.setInitialGraph(initialGraph);
 		}
 
 		if (verbose) {
-			out.println("Bootstrapping on the " + algorithm.getDescription());
+			out.println("Resampling on the " + algorithm.getDescription());
 		}
 
-		PAGs = bootstrapSearch.search();
+		PAGs = resamplingSearch.search();
 
 		if (verbose) {
-			out.println("Bootstrap size is : " + PAGs.size());
+			out.println("Resampling number is : " + PAGs.size());
 		}
 		stop = System.currentTimeMillis();
 		if (verbose) {
-			out.println("Processing time of total bootstrapping : " + (stop - start) / 1000.0 + " sec");
+			out.println("Processing time of total resamplings : " + (stop - start) / 1000.0 + " sec");
 		}
 
 		start = System.currentTimeMillis();
-		Graph graph = generateBootstrapGraph();
+		Graph graph = generateSamplingGraph();
 		stop = System.currentTimeMillis();
 		if (verbose) {
-			out.println("Final Bootstrapping Search Result:");
+			out.println("Final Resampling Search Result:");
 			out.println(GraphUtils.graphToText(graph));
 			out.println();
 			out.println("probDistribution finished in " + (stop - start) + " ms");
@@ -216,7 +221,7 @@ public class GeneralBootstrapTest {
 		}
 	}
 
-	private Graph generateBootstrapGraph() {
+	private Graph generateSamplingGraph() {
 		Graph pag = null;
 		out.println("PAGs: " + PAGs.size());
 		out.println("Ensemble: " + edgeEnsemble);
@@ -230,7 +235,7 @@ public class GeneralBootstrapTest {
 					pag = g;
 				}
 				if(verbose){
-					out.println("Sampling Search Result (" + i + "):");
+					out.println("Resampling Search Result (" + i + "):");
 					out.println(GraphUtils.graphToText(g));
 					out.println();
 					i++;
