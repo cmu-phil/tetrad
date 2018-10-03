@@ -16,7 +16,7 @@ import edu.cmu.tetrad.search.SearchGraphUtils;
 import edu.cmu.tetrad.util.Parameters;
 import edu.pitt.dbmi.algo.resampling.GeneralResamplingTest;
 import edu.pitt.dbmi.algo.resampling.ResamplingEdgeEnsemble;
-
+import java.io.PrintStream;
 import java.util.List;
 
 /**
@@ -49,7 +49,12 @@ public class FAS implements Algorithm, HasKnowledge, TakesIndependenceWrapper {
             search.setDepth(parameters.getInt("depth"));
             search.setKnowledge(knowledge);
             search.setVerbose(parameters.getBoolean("verbose"));
-            
+
+            Object obj = parameters.get("printStream");
+            if (obj instanceof PrintStream) {
+                search.setOut((PrintStream) obj);
+            }
+
             return search.search();
         } else {
             FAS algorithm = new FAS(test);
@@ -60,7 +65,7 @@ public class FAS implements Algorithm, HasKnowledge, TakesIndependenceWrapper {
 
             search.setResampleSize(parameters.getInt("resampleSize"));
             search.setResamplingWithReplacement(parameters.getBoolean("resamplingWithReplacement"));
-            
+
             ResamplingEdgeEnsemble edgeEnsemble = ResamplingEdgeEnsemble.Highest;
             switch (parameters.getInt("resamplingEnsemble", 1)) {
                 case 0:
