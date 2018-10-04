@@ -166,16 +166,17 @@ public class GraphSelectionEditor extends JPanel implements GraphEditable, Tripl
        
         // Must before calling setSelectedGraphType()
         graphEditorOptionsPanel = new GraphEditorOptionsPanel(wrapper);
-        
+
         // Select the graph type if graph wrapper has the type info
         setSelectedGraphType(wrapper.getType());
         
         // Graph panel on right
         workbenchScrollsPanel = workbenchScrollsPanel(wrapper);
-   
+
         // splitPane contains subgraph setting options on left and graph on right
-        
-        JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, true, new PaddingPanel(graphEditorOptionsPanel), workbenchScrollsPanel);
+        JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
+        splitPane.setLeftComponent(new PaddingPanel(graphEditorOptionsPanel));
+        splitPane.setRightComponent(new PaddingPanel(workbenchScrollsPanel));
         splitPane.setDividerLocation(383);
 
         // Bottom panel contains "Graph It" button and info on edge types
@@ -232,7 +233,6 @@ public class GraphSelectionEditor extends JPanel implements GraphEditable, Tripl
         // Add to buttonPanel
         buttonPanel.add(infoLabel);
         buttonPanel.add(infoBtn);
-
 
         // Add top level componments to container
         add(createTopMenuBar(), BorderLayout.NORTH);
@@ -365,7 +365,7 @@ public class GraphSelectionEditor extends JPanel implements GraphEditable, Tripl
             });
 
             JScrollPane workbenchScroll = new JScrollPane(workbench);
-            workbenchScroll.setPreferredSize(new Dimension(450, 450));
+            workbenchScroll.setPreferredSize(new Dimension(520, 560));
 
             workbenchScrolls.add(workbenchScroll);
         }
@@ -389,10 +389,11 @@ public class GraphSelectionEditor extends JPanel implements GraphEditable, Tripl
         // Show graph in each tabbed pane
         tabbedPaneGraphs(wrapper);
         
-        workbenchScrollsPanel.add(tabbedPane);
+        // Make the tabbedPane auto resize - Zhou
+        workbenchScrollsPanel.setLayout(new BorderLayout());
+        workbenchScrollsPanel.add(tabbedPane, BorderLayout.CENTER);
+        
         workbenchScrollsPanel.validate();
-        
-        
         
         return workbenchScrollsPanel;
     }
