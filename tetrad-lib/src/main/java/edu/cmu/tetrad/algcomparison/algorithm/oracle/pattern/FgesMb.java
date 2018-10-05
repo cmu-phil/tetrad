@@ -15,6 +15,7 @@ import edu.cmu.tetrad.search.Score;
 import edu.cmu.tetrad.util.Parameters;
 import edu.pitt.dbmi.algo.resampling.GeneralResamplingTest;
 import edu.pitt.dbmi.algo.resampling.ResamplingEdgeEnsemble;
+import java.io.PrintStream;
 import java.util.Collections;
 import java.util.List;
 
@@ -62,6 +63,11 @@ public class FgesMb implements Algorithm, TakesInitialGraph, HasKnowledge, UsesS
             search.setKnowledge(knowledge);
             search.setVerbose(parameters.getBoolean("verbose"));
             search.setMaxDegree(parameters.getInt("maxDegree"));
+
+            Object obj = parameters.get("printStream");
+            if (obj instanceof PrintStream) {
+                search.setOut((PrintStream) obj);
+            }
 
             if (initialGraph != null) {
                 search.setInitialGraph(initialGraph);

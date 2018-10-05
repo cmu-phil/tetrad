@@ -156,6 +156,19 @@ public class JsonUtils {
 		}
 		double probability = jObj.getDouble("probability");
 		EdgeTypeProbability edgeTypeProbability = new EdgeTypeProbability(edgeType, probability);
+		
+		try {
+		    // properties
+		    JSONArray jArray = jObj.getJSONArray("properties");
+		    if(jArray != null){
+		    	for (int i = 0; i < jArray.length(); i++) {
+		    		edgeTypeProbability.addProperty(parseJSONObjectToEdgeProperty(jArray.getString(i)));
+		    	}
+		    }
+		} catch (JSONException e) {
+		    // TODO Auto-generated catch block
+		    //e.printStackTrace();
+		}
 		return edgeTypeProbability;
 	}
 

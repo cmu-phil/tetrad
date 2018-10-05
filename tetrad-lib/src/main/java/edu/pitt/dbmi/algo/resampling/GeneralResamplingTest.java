@@ -223,9 +223,11 @@ public class GeneralResamplingTest {
 
 	private Graph generateSamplingGraph() {
 		Graph pag = null;
-		out.println("PAGs: " + PAGs.size());
-		out.println("Ensemble: " + edgeEnsemble);
-		out.println();
+		if(verbose){
+			out.println("PAGs: " + PAGs.size());
+			out.println("Ensemble: " + edgeEnsemble);
+			out.println();
+		}
 		if(PAGs == null || PAGs.size() == 0)return new EdgeListGraph();
 		
 		int i=0;
@@ -329,7 +331,9 @@ public class GeneralResamplingTest {
 				}
 				
 				if (edge != null) {
-					out.println("Final result: " + edge + " : " + max_edge_prob);
+					if(verbose){
+						out.println("Final result: " + edge + " : " + max_edge_prob);
+					}
 					
 					for(EdgeTypeProbability etp : edgeTypeProbabilities) {
 						edge.addEdgeTypeProbability(etp);
