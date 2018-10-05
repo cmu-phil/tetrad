@@ -15,7 +15,6 @@ import edu.cmu.tetrad.search.Score;
 import edu.cmu.tetrad.util.Parameters;
 import edu.pitt.dbmi.algo.resampling.GeneralResamplingTest;
 import edu.pitt.dbmi.algo.resampling.ResamplingEdgeEnsemble;
-
 import java.util.Collections;
 import java.util.List;
 
@@ -52,7 +51,7 @@ public class FgesMb implements Algorithm, TakesInitialGraph, HasKnowledge, UsesS
 
     @Override
     public Graph search(DataModel dataSet, Parameters parameters) {
-    	if (parameters.getInt("numberResampling") < 1) {
+        if (parameters.getInt("numberResampling") < 1) {
             if (algorithm != null) {
 //                initialGraph = algorithm.search(dataSet, parameters);
             }
@@ -62,6 +61,7 @@ public class FgesMb implements Algorithm, TakesInitialGraph, HasKnowledge, UsesS
             search.setFaithfulnessAssumed(parameters.getBoolean("faithfulnessAssumed"));
             search.setKnowledge(knowledge);
             search.setVerbose(parameters.getBoolean("verbose"));
+            search.setMaxDegree(parameters.getInt("maxDegree"));
 
             if (initialGraph != null) {
                 search.setInitialGraph(initialGraph);
@@ -83,7 +83,7 @@ public class FgesMb implements Algorithm, TakesInitialGraph, HasKnowledge, UsesS
 
             search.setResampleSize(parameters.getInt("resampleSize"));
             search.setResamplingWithReplacement(parameters.getBoolean("resamplingWithReplacement"));
-            
+
             ResamplingEdgeEnsemble edgeEnsemble = ResamplingEdgeEnsemble.Highest;
             switch (parameters.getInt("resamplingEnsemble", 1)) {
                 case 0:
@@ -123,12 +123,15 @@ public class FgesMb implements Algorithm, TakesInitialGraph, HasKnowledge, UsesS
         List<String> parameters = score.getParameters();
         parameters.add("targetName");
         parameters.add("faithfulnessAssumed");
+        parameters.add("maxDegree");
+        parameters.add("verbose");
+
         // Resampling
         parameters.add("numberResampling");
         parameters.add("resampleSize");
         parameters.add("resamplingWithReplacement");
         parameters.add("resamplingEnsemble");
-        parameters.add("verbose");
+
         return parameters;
     }
 
