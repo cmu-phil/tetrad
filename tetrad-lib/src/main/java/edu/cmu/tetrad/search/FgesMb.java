@@ -1143,7 +1143,7 @@ public final class FgesMb {
     private void fes() {
         TetradLogger.getInstance().log("info", "** FORWARD EQUIVALENCE SEARCH");
 
-        int maxDegree = this.maxDegree == -1 ? 1000 : this.maxDegree;
+        int maxDeg = this.maxDegree == -1 ? 1000 : this.maxDegree;
 
         while (!sortedArrows.isEmpty()) {
             if (Thread.currentThread().isInterrupted()) {
@@ -1160,10 +1160,10 @@ public final class FgesMb {
                 continue;
             }
 
-            if (graph.getDegree(x) > maxDegree - 1) {
+            if (graph.getDegree(x) > maxDeg - 1) {
                 continue;
             }
-            if (graph.getDegree(y) > maxDegree - 1) {
+            if (graph.getDegree(y) > maxDeg - 1) {
                 continue;
             }
 
