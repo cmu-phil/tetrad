@@ -54,7 +54,7 @@ import org.junit.Test;
  * @author Chirayu Kong Wongchokprasitti, PhD (chw20@pitt.edu)
  *
  */
-public class TestGeneralSubSamplingTest {
+public class TestGeneralResamplingTest {
 
 	/**
 	 * @param args
@@ -127,7 +127,7 @@ public class TestGeneralSubSamplingTest {
 		printEdgeTypeConfusionMatrix(edgeAr);
 	}
 
-	@Test
+	//@Test
 	public void testFGESd(){
 		double structurePrior = 1, samplePrior = 1;
 		boolean faithfulnessAssumed = false;
@@ -246,7 +246,7 @@ public class TestGeneralSubSamplingTest {
 		printEdgeTypeConfusionMatrix(edgeAr);
 	}
 	
-	@Test
+	//@Test
 	public void testGFCId(){
 		double structurePrior = 1, samplePrior = 1;
 		boolean faithfulnessAssumed = false;
@@ -306,7 +306,7 @@ public class TestGeneralSubSamplingTest {
 		printEdgeTypeConfusionMatrix(edgeAr);
 	}
 	
-	@Test
+	//@Test
 	public void testFCIc(){
 		int penaltyDiscount = 2;
 		int depth = 3;
@@ -369,7 +369,7 @@ public class TestGeneralSubSamplingTest {
 		printEdgeTypeConfusionMatrix(edgeAr);
 	}
 	
-	@Test
+	//@Test
 	public void testFCId(){
 		double structurePrior = 1, samplePrior = 1;
 		int depth = -1;
