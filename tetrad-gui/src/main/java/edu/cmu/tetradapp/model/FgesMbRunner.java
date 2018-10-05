@@ -310,7 +310,7 @@ public class FgesMbRunner extends AbstractAlgorithmRunner implements
         fges.setNumPatternsToStore(params.getInt("numPatternsToSave", 1));
         fges.setVerbose(true);
 //        fges.setHeuristicSpeedup(((Parameters) params.getIndTestParams()).isFaithfulnessAssumed());
-        fges.setMaxIndegree(params.getInt("depth", -1));
+        fges.setMaxDegree(params.getInt("depth", -1));
         Graph graph = fges.search(target);
 
         if (getSourceGraph() != null) {
