@@ -58,7 +58,7 @@ public class Edge implements TetradSerializable, Comparable {
 
 	private List<Property> properties = new ArrayList<>();
 
-    private List<EdgeTypeProbability> edgeTypeProbabilities = new ArrayList<>();
+	private List<EdgeTypeProbability> edgeTypeProbabilities = new ArrayList<>();
 
 	// =========================CONSTRUCTORS============================//
 
@@ -252,75 +252,75 @@ public class Edge implements TetradSerializable, Comparable {
 		buf.append(" ");
 		buf.append(getNode2());
 
-        // Bootstrapping edge type distribution
-        List<EdgeTypeProbability> edgeTypeDist = getEdgeTypeProbabilities();
-        if(edgeTypeDist.size() > 0){
-            buf.append(" ");
+		// Bootstrapping edge type distribution
+		List<EdgeTypeProbability> edgeTypeDist = getEdgeTypeProbabilities();
+		if(edgeTypeDist.size() > 0){
+			buf.append(" ");
 
-            String n1 = getNode1().getName();
+			String n1 = getNode1().getName();
 			String n2 = getNode2().getName();
 			if(n1.compareTo(n2) > 0) {// Sort node's names
 				n1 = getNode2().getName();
 				n2 = getNode1().getName();
 			}
-			
-            for (int i = 0; i < edgeTypeDist.size(); i++) {
-            	EdgeTypeProbability etp = edgeTypeDist.get(i);
-            	double prob = etp.getProbability();
-            	if(prob > 0) {
-        			String _type = "" + etp.getEdgeType();
-        			switch (etp.getEdgeType()) {
-        			case nil:
-        				_type = "no edge";
-        				break;
-        			case ta:
-        				_type = "-->";
-        				break;
-        			case at:
-        				_type = "<--";
-        				break;
-        			case ca:
-        				_type = "o->";
-        				break;
-        			case ac:
-        				_type = "<-o";
-        				break;
-        			case cc:
-        				_type = "o-o";
-        				break;
-        			case aa:
-        				_type = "<->";
-        				break;
-        			case tt:
-        				_type = "---";
-        				break;
-        			default:
-        				break;
-        			}
-        			
-        			if(etp.getEdgeType() != EdgeType.nil) {
-        				_type = n1 + " " + _type + " " + n2;
-        			}
-        			List<Property> properties = etp.getProperties();
-        			if(properties != null && properties.size() > 0) {
-        	        	for(Property property : properties) {
-        	        		_type = _type + " " + property.toString();
-        	        	}
-        	        }
-        			buf.append("[" + _type + "]:" + String.format("%.4f", etp.getProbability()) + ";");
-        			
-            	}
-            }
-        }
-        
-        List<Property> properties = getProperties();
-        if(properties != null && properties.size() > 0) {
-        	for(Property property : properties) {
-        		buf.append(" ");
-        		buf.append(property.toString());
-        	}
-        }
-        
+
+			for (int i = 0; i < edgeTypeDist.size(); i++) {
+				EdgeTypeProbability etp = edgeTypeDist.get(i);
+				double prob = etp.getProbability();
+				if(prob > 0) {
+					String _type = "" + etp.getEdgeType();
+					switch (etp.getEdgeType()) {
+						case nil:
+							_type = "no edge";
+							break;
+						case ta:
+							_type = "-->";
+							break;
+						case at:
+							_type = "<--";
+							break;
+						case ca:
+							_type = "o->";
+							break;
+						case ac:
+							_type = "<-o";
+							break;
+						case cc:
+							_type = "o-o";
+							break;
+						case aa:
+							_type = "<->";
+							break;
+						case tt:
+							_type = "---";
+							break;
+						default:
+							break;
+					}
+
+					if(etp.getEdgeType() != EdgeType.nil) {
+						_type = n1 + " " + _type + " " + n2;
+					}
+					List<Property> properties = etp.getProperties();
+					if(properties != null && properties.size() > 0) {
+						for(Property property : properties) {
+							_type = _type + " " + property.toString();
+						}
+					}
+					buf.append("[" + _type + "]:" + String.format("%.4f", etp.getProbability()) + ";");
+
+				}
+			}
+		}
+
+		List<Property> properties = getProperties();
+		if(properties != null && properties.size() > 0) {
+			for(Property property : properties) {
+				buf.append(" ");
+				buf.append(property.toString());
+			}
+		}
+
 		return buf.toString();
 	}
 
@@ -483,5 +483,21 @@ public class Edge implements TetradSerializable, Comparable {
 
 	public List<EdgeTypeProbability> getEdgeTypeProbabilities() {
 		return edgeTypeProbabilities;
+	}
+
+	public void setProximalEndpoint(Node node, Endpoint endpoint) {
+		if (node == node1) {
+			setEndpoint1(endpoint);
+		} else if (node == node2) {
+			setEndpoint2(endpoint);
+		}
+	}
+
+	public void setDistalEndpoint(Node node, Endpoint endpoint) {
+		if (node == node1) {
+			setEndpoint2(endpoint);
+		} else if (node == node2) {
+			setEndpoint1(endpoint);
+		}
 	}
 }
