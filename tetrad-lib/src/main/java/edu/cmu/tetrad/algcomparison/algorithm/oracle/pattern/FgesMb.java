@@ -62,6 +62,7 @@ public class FgesMb implements Algorithm, TakesInitialGraph, HasKnowledge, UsesS
             search.setFaithfulnessAssumed(parameters.getBoolean("faithfulnessAssumed"));
             search.setKnowledge(knowledge);
             search.setVerbose(parameters.getBoolean("verbose"));
+            search.setMaxDegree(parameters.getInt("maxDegree"));
 
             Object obj = parameters.get("printStream");
             if (obj instanceof PrintStream) {
@@ -128,12 +129,15 @@ public class FgesMb implements Algorithm, TakesInitialGraph, HasKnowledge, UsesS
         List<String> parameters = score.getParameters();
         parameters.add("targetName");
         parameters.add("faithfulnessAssumed");
+        parameters.add("maxDegree");
+        parameters.add("verbose");
+
         // Resampling
         parameters.add("numberResampling");
         parameters.add("resampleSize");
         parameters.add("resamplingWithReplacement");
         parameters.add("resamplingEnsemble");
-        parameters.add("verbose");
+
         return parameters;
     }
 

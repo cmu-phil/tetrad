@@ -176,13 +176,13 @@ public final class FgesMb {
     // Internal.
     private Mode mode = Mode.heuristicSpeedup;
 
+    // Bounds the degree of the graph.
+    private int maxDegree = -1;
+
     /**
      * True if one-edge faithfulness is assumed. Speeds the algorithm up.
      */
     private boolean faithfulnessAssumed = true;
-
-    // Bounds the indegree of the graph.
-    private int maxIndegree;
 
     final int maxThreads = ForkJoinPoolInstance.getInstance().getPool().getParallelism();
 
@@ -727,20 +727,20 @@ public final class FgesMb {
      *
      * @return -1 for unlimited.
      */
-    public int getMaxIndegree() {
-        return maxIndegree;
+    public int getMaxDegree() {
+        return maxDegree;
     }
 
     /**
      * The maximum of parents any nodes can have in output pattern.
      *
-     * @param maxIndegree -1 for unlimited.
+     * @param maxDegree -1 for unlimited.
      */
-    public void setMaxIndegree(int maxIndegree) {
-        if (maxIndegree < -1) {
+    public void setMaxDegree(int maxDegree) {
+        if (maxDegree < -1) {
             throw new IllegalArgumentException();
         }
-        this.maxIndegree = maxIndegree;
+        this.maxDegree = maxDegree;
     }
 
     //===========================PRIVATE METHODS========================//
@@ -757,8 +757,6 @@ public final class FgesMb {
         }
 
         buildIndexing(totalScore.getVariables());
-
-        this.maxIndegree = fgesScore.getMaxDegree();
     }
 
     final int[] count = new int[1];
@@ -1145,6 +1143,8 @@ public final class FgesMb {
     private void fes() {
         TetradLogger.getInstance().log("info", "** FORWARD EQUIVALENCE SEARCH");
 
+        int maxDeg = this.maxDegree == -1 ? 1000 : this.maxDegree;
+
         while (!sortedArrows.isEmpty()) {
             if (Thread.currentThread().isInterrupted()) {
                 break;
@@ -1157,6 +1157,13 @@ public final class FgesMb {
             Node y = arrow.getB();
 
             if (graph.isAdjacentTo(x, y)) {
+                continue;
+            }
+
+            if (graph.getDegree(x) > maxDeg - 1) {
+                continue;
+            }
+            if (graph.getDegree(y) > maxDeg - 1) {
                 continue;
             }
 
@@ -1441,9 +1448,9 @@ public final class FgesMb {
         }
 
         List<Node> TNeighbors = getTNeighbors(a, b);
-        int _maxIndegree = maxIndegree == -1 ? 1000 : maxIndegree;
+        int _maxDegree = maxDegree == -1 ? 1000 : maxDegree;
 
-        final int _max = Math.min(TNeighbors.size(), _maxIndegree - graph.getIndegree(b));
+        final int _max = Math.min(TNeighbors.size(), _maxDegree - graph.getIndegree(b));
 
         Set<Set<Node>> previousCliques = new HashSet<>();
         previousCliques.add(new HashSet<Node>());

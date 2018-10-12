@@ -1125,7 +1125,7 @@ public class PerformanceTests {
             fges.setNumPatternsToStore(0);
             fges.setOut(System.out);
 //            fges.setHeuristicSpeedup(faithfulness);
-            fges.setMaxIndegree(maxIndegree);
+            fges.setMaxDegree(maxIndegree);
             fges.setCycleBound(-1);
         } else {
             init(new File("FgesMb.comparison.discrete" + numVars + "." + (int) (edgeFactor * numVars) +
@@ -1170,7 +1170,7 @@ public class PerformanceTests {
             fges.setNumPatternsToStore(0);
             fges.setOut(System.out);
 //            fges.setHeuristicSpeedup(faithfulness);
-            fges.setMaxIndegree(maxIndegree);
+            fges.setMaxDegree(maxIndegree);
             fges.setCycleBound(-1);
 
             long timeb = System.currentTimeMillis();
