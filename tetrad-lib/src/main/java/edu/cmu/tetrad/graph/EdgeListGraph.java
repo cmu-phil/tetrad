@@ -317,21 +317,76 @@ public class EdgeListGraph implements Graph, TripleClassifier {
 
             Node A = Edges.getDirectedEdgeTail(edge);
             Node B = Edges.getDirectedEdgeHead(edge);
-            List<Node> adjToA = getAdjacentNodes(A);
 
-            while (!adjToA.isEmpty()) {
-                Node Curr = adjToA.remove(0);
-                if (!((getAdjacentNodes(Curr)).contains(B)) &&
-                        ((getEdge(Curr, A)).getProximalEndpoint(A) == Endpoint
-                                .ARROW)) {
-                    return true;
-                }
+            if (isParentOf(A, B)) {
+                return true;
+            } else {
+                return visibleEdgeHelper(A, B, this);
             }
-            return false;
         } else {
             throw new IllegalArgumentException(
                     "Given edge is not in the graph.");
         }
+    }
+
+    private static boolean visibleEdgeHelper(Node A, Node B, Graph graph) {
+        if (A.getNodeType() != NodeType.MEASURED) {
+            throw new IllegalArgumentException();
+        }
+        if (B.getNodeType() != NodeType.MEASURED) {
+            throw new IllegalArgumentException();
+        }
+
+        final LinkedList<Node> path = new LinkedList<>();
+        path.add(A);
+
+        for (Node C : graph.getNodesInTo(A, Endpoint.ARROW)) {
+            if (graph.isParentOf(C, A)) return true;
+
+            if (visibleEdgeHelperVisit(graph, C, A, B, path)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private static boolean visibleEdgeHelperVisit(Graph graph, Node c, Node a, Node b,
+                                                 LinkedList<Node> path) {
+        if (path.contains(a)) {
+            return false;
+        }
+
+        path.addLast(a);
+
+        if (a == b) {
+            return true;
+        }
+
+        for (Node D : graph.getNodesInTo(a, Endpoint.ARROW)) {
+            if (graph.isParentOf(D, c)) {
+                return true;
+            }
+
+            if (a.getNodeType() == NodeType.MEASURED) {
+                if (!graph.isDefCollider(D, c, a)) {
+                    continue;
+                }
+            }
+
+            if (graph.isDefCollider(D, c, a)) {
+                if (!graph.isParentOf(c, b)) {
+                    continue;
+                }
+            }
+
+            if (visibleEdgeHelperVisit(graph, D, c, b, path)) {
+                return true;
+            }
+        }
+
+        path.removeLast();
+        return false;
     }
 
     /**
