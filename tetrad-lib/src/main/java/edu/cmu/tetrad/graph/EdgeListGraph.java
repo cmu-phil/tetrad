@@ -318,11 +318,17 @@ public class EdgeListGraph implements Graph, TripleClassifier {
             Node A = Edges.getDirectedEdgeTail(edge);
             Node B = Edges.getDirectedEdgeHead(edge);
 
-            if (isParentOf(A, B)) {
-                return true;
-            } else {
-                return visibleEdgeHelper(A, B, this);
+            for (Node C : getAdjacentNodes(A)) {
+                if (C != B && !isAdjacentTo(C, B)) {
+                    Edge e = getEdge(C, A);
+
+                    if (e.getProximalEndpoint(A) == Endpoint.ARROW) {
+                        return true;
+                    }
+                }
             }
+
+            return visibleEdgeHelper(A, B, this);
         } else {
             throw new IllegalArgumentException(
                     "Given edge is not in the graph.");
@@ -352,7 +358,7 @@ public class EdgeListGraph implements Graph, TripleClassifier {
     }
 
     private static boolean visibleEdgeHelperVisit(Graph graph, Node c, Node a, Node b,
-                                                 LinkedList<Node> path) {
+                                                  LinkedList<Node> path) {
         if (path.contains(a)) {
             return false;
         }
@@ -2067,8 +2073,8 @@ public class EdgeListGraph implements Graph, TripleClassifier {
     }
 
     public void setStuffRemovedSinceLastTripleAccess(
-	boolean stuffRemovedSinceLastTripleAccess) {
-	this.stuffRemovedSinceLastTripleAccess = stuffRemovedSinceLastTripleAccess;
+            boolean stuffRemovedSinceLastTripleAccess) {
+        this.stuffRemovedSinceLastTripleAccess = stuffRemovedSinceLastTripleAccess;
     }
 
 }
