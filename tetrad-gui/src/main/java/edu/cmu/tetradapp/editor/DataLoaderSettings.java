@@ -51,9 +51,11 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
+import java.util.prefs.Preferences;
 import javax.swing.*;
 import javax.swing.border.CompoundBorder;
 import javax.swing.border.EmptyBorder;
+import javax.swing.filechooser.FileNameExtensionFilter;
 
 /**
  * Panel (to be put in a dialog) for letting the user choose how a data file
@@ -120,6 +122,68 @@ final class DataLoaderSettings extends JPanel {
         // Data loading params layout
         Box basicSettingsBox = Box.createVerticalBox();
 
+        // Metadata to interventional dataset
+        Box metadataFileBox = Box.createHorizontalBox();
+        
+        // Add label into this label box to size
+        Box metadataFileLabelBox = Box.createHorizontalBox();
+        metadataFileLabelBox.setPreferredSize(labelSize);
+        metadataFileLabelBox.add(new JLabel("Metadata JSON file:"));
+        
+        // Metadata file load button
+        JButton metadataFileButton = new JButton("Load...");
+        
+        JLabel selectedMetadataFileName = new JLabel("No metadata file slected");
+
+        // Add file button listener
+        metadataFileButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                // Show file chooser
+                JFileChooser fileChooser = new JFileChooser();
+                String sessionSaveLocation = Preferences.userRoot().get("fileSaveLocation", "");
+                fileChooser.setCurrentDirectory(new File(sessionSaveLocation));
+                fileChooser.setFileFilter(new FileNameExtensionFilter("*.json", "json"));
+                fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
+                // Only allow to add one file at a time
+                fileChooser.setMultiSelectionEnabled(true);
+                // Customize dialog title bar text
+                fileChooser.setDialogTitle("Load metadata JSON file");
+                // The second argument sets both the title for the dialog window and the label for the approve button
+                int _ret = fileChooser.showDialog(SwingUtilities.getWindowAncestor(metadataFileButton), "Choose");
+
+                if (_ret == JFileChooser.CANCEL_OPTION) {
+                    return;
+                }
+                
+                // Show the selected file name
+                selectedMetadataFileName.setText(fileChooser.getSelectedFile().getName());
+            }
+        });
+
+        
+                
+        // File choose button box 
+        Box metadataFileButtonBox = Box.createHorizontalBox();
+        metadataFileButtonBox.setPreferredSize(new Dimension(680, 30));
+        metadataFileButtonBox.add(metadataFileButton);
+        metadataFileButtonBox.add(Box.createHorizontalStrut(10));
+        metadataFileButtonBox.add(selectedMetadataFileName);
+        
+        // Put together
+        metadataFileBox.add(metadataFileLabelBox);
+        metadataFileBox.add(Box.createRigidArea(new Dimension(10, 1)));
+        metadataFileBox.add(metadataFileButtonBox);
+        metadataFileBox.add(Box.createHorizontalGlue());
+        
+        basicSettingsBox.add(metadataFileBox);
+
+        // Add seperator line
+        JSeparator separator = new JSeparator(SwingConstants.HORIZONTAL);
+        separator.setForeground(separatorColor);
+        basicSettingsBox.add(separator);
+        
+        
         // File type: Tabular/covariance
         Box fileTypeBox = Box.createHorizontalBox();
 
@@ -206,7 +270,7 @@ final class DataLoaderSettings extends JPanel {
         // Add label into this label box to size
         Box fileTypeLabelBox = Box.createHorizontalBox();
         fileTypeLabelBox.setPreferredSize(labelSize);
-        fileTypeLabelBox.add(new JLabel("File type:"));
+        fileTypeLabelBox.add(new JLabel("Data file type:"));
 
         // Option 1
         Box fileTypeOption1Box = Box.createHorizontalBox();

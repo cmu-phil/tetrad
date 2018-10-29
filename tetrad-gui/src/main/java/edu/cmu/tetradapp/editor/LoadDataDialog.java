@@ -176,7 +176,7 @@ final class LoadDataDialog extends JPanel {
         // contains data preview panel, loading params panel, and load button
         container = Box.createVerticalBox();
         // Must set the size of container, otherwise validationResultsContainer gets shrinked
-        container.setPreferredSize(new Dimension(900, 590));
+        container.setPreferredSize(new Dimension(900, 620));
 
         // Data loading params
         // The data loading params apply to all slected files
@@ -822,7 +822,7 @@ final class LoadDataDialog extends JPanel {
                 } else {
                     strBuilder.append(errorCount);
                     strBuilder.append(errorCountString);
-                    strBuilder.append(") and validate again:</b><br />");
+                    strBuilder.append(" and validate again:</b><br />");
 
                     errors.forEach(e -> {
                         // Remember to excape the html tags if the data file contains any
