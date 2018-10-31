@@ -35,6 +35,10 @@ public class JsonUtils {
 	}
 
 	public static Graph parseJSONObjectToTetradGraph(JSONObject jObj) {
+		if(!jObj.isNull("graph")) {
+			return parseJSONObjectToTetradGraph(jObj.getJSONObject("graph"));
+		}
+		
 		// Node
 		List<Node> nodes = parseJSONArrayToTetradNodes(jObj.getJSONArray("nodes"));
 		EdgeListGraphSingleConnections graph = new EdgeListGraphSingleConnections(nodes);
