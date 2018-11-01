@@ -1292,10 +1292,10 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
 			displayEdge.setHighlighted(true);
 		}
 
-		boolean bold = modelEdge.getProperties().contains(Edge.Property.nl) || modelEdge.isBold();
+        boolean bold = modelEdge.getProperties().contains(Edge.Property.dd) || modelEdge.isBold();
 
-		Color lineColor = modelEdge.getProperties().contains(Edge.Property.dd) ? Color.green
-				: graph.isHighlighted(modelEdge) ? displayEdge.getHighlightedColor() : modelEdge.getLineColor();
+        Color lineColor = modelEdge.getProperties().contains(Edge.Property.nl) ? Color.green
+                : graph.isHighlighted(modelEdge) ? displayEdge.getHighlightedColor() : modelEdge.getLineColor();
 
 		displayEdge.setLineColor(lineColor);
 		displayEdge.setBold(bold);
