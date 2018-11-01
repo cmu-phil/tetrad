@@ -3688,16 +3688,21 @@ public final class GraphUtils {
             graph.removeEdge(edge);
             graph.addEdge(edge);
 
-            if (existsSemiDirectedPath(x, y, -1, graph)) {
-                edge.addProperty(Edge.Property.nl); // bold.
-            } else {
-                edge.addProperty(Edge.Property.pl);
-            }
+            Edge xyEdge = graph.getEdge(x, y);
+            graph.removeEdge(xyEdge);
 
-            if (graph.defVisible(edge)) {
+            if (!existsSemiDirectedPath(x, y, -1, graph)) {
                 edge.addProperty(Edge.Property.dd); // green.
             } else {
                 edge.addProperty(Edge.Property.pd);
+            }
+
+            graph.addEdge(xyEdge);
+
+            if (graph.defVisible(edge)) {
+                edge.addProperty(Edge.Property.nl); // bold.
+            } else {
+                edge.addProperty(Edge.Property.pl);
             }
         }
     }

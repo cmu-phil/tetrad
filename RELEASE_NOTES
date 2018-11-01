@@ -1,3 +1,14 @@
+6.6.0
+
+Changed edge coloration behavior and docs to match original specification
+Added sortable table view of edges in graph
+Generalized bootstrapping to sampling with flexible options
+Layout fixes in UI
+Added .dot output for graphs
+Added KCI
+Added MultiFASK
+Updated CCI algorithm
+
 6.5.0
 
 Added html manual
