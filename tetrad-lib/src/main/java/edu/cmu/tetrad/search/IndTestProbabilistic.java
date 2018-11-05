@@ -47,6 +47,7 @@ public class IndTestProbabilistic implements IndependenceTest {
      * Calculates probabilities of independence for conditional independence facts.
      */
     private final BCInference bci;
+    boolean threshold = false;
 
     /**
      * The data set for which conditional  independence judgments are requested.
@@ -68,9 +69,9 @@ public class IndTestProbabilistic implements IndependenceTest {
      */
     private Map<IndependenceFact, Double> H;
     private double posterior;
-
     private boolean verbose = false;
 
+    //==========================CONSTRUCTORS=============================//
     /**
      * Initializes the test using a discrete data sets.
      */
@@ -87,7 +88,7 @@ public class IndTestProbabilistic implements IndependenceTest {
         for (int j = 0; j < dataSet.getNumColumns(); j++) {
             DiscreteVariable variable = (DiscreteVariable) (dataSet.getVariable(j));
             int numCategories = variable.getNumCategories();
-            System.out.println("Variable " + variable + " # cat = " + numCategories);
+//            System.out.println("Variable " + variable + " # cat = " + numCategories);
             nodeDimensions[j + 1] = numCategories;
         }
 
@@ -127,6 +128,9 @@ public class IndTestProbabilistic implements IndependenceTest {
     public boolean isIndependent(Node x, Node y, Node... z) {
         IndependenceFact key = new IndependenceFact(x, y, z);
 
+//        if (y.getName().equals("HREKG")){
+//        	System.out.println("helloooo");
+//        }
         if (!H.containsKey(key)) {
             double pInd = probConstraint(BCInference.OP.independent, x, y, z);
             H.put(key, pInd);
@@ -138,24 +142,28 @@ public class IndTestProbabilistic implements IndependenceTest {
 
         this.posterior = p;
 
-        boolean ind = RandomUtil.getInstance().nextDouble() < p;
-
-        System.out.print((nodes.indexOf(x) + 1) + " ");
-        System.out.print((nodes.indexOf(y) + 1) + (z.length > 0 ? " " : ""));
-
-        for (int i = 0; i < z.length; i++) {
-            System.out.print(nodes.indexOf(z[i]) + 1);
-
-            if (i < z.length - 1) {
-                System.out.print(" ");
-            }
+        boolean ind ;//= RandomUtil.getInstance().nextDouble() < p;
+        if (this.threshold){
+        	ind = (p >= 0.5);
         }
-
-        System.out.print(",");
-        System.out.print(ind ? 1 : 0 + ",");
-        System.out.print(p);
-
-        System.out.println();
+        else{
+        	ind = RandomUtil.getInstance().nextDouble() < p;
+        }
+//        System.out.print((nodes.indexOf(x) + 1) + " ");
+//        System.out.print((nodes.indexOf(y) + 1) + (z.length > 0 ? " " : ""));
+//        for (int i = 0; i < z.length; i++) {
+//            System.out.print(nodes.indexOf(z[i]) + 1);
+//
+//            if (i < z.length - 1) {
+//                System.out.print(" ");
+//            }
+//        }
+//
+//        System.out.print(",");
+//        System.out.print(ind ? 1 : 0);
+//        System.out.print( "," + p);
+//
+//        System.out.println();
 
         if (ind) {
             return true;
@@ -164,6 +172,7 @@ public class IndTestProbabilistic implements IndependenceTest {
         }
     }
 
+   
     public double probConstraint(BCInference.OP op, Node x, Node y, Node[] z) {
 
         int _x = indices.get(x) + 1;
@@ -175,8 +184,9 @@ public class IndTestProbabilistic implements IndependenceTest {
             _z[i + 1] = indices.get(z[i]) + 1;
         }
 
-//        System.out.println("test " + _x + " _||_ " + _y + " | " + Arrays.toString(_z));
-
+//        System.out.println("test " + x.getName() + " _||_ " + y.getName() + " | " + Arrays.toString(z));
+//        System.out.println(x.getName());
+//        System.out.println(y.getName());
         return bci.probConstraint(op, _x, _y, _z);
     }
 
@@ -295,5 +305,6 @@ public class IndTestProbabilistic implements IndependenceTest {
         this.verbose = verbose;
     }
 }
+
 
 

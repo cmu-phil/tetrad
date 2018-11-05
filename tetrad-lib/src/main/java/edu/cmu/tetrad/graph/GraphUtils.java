@@ -692,7 +692,7 @@ public final class GraphUtils {
     }
 
     // JMO's method for fixing latents
-    private static void fixLatents4(int numLatentConfounders, Graph graph) {
+    public static void fixLatents4(int numLatentConfounders, Graph graph) {
         if (numLatentConfounders == 0) {
             return;
         }
