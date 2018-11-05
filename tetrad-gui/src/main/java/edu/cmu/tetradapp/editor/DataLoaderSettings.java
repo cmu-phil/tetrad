@@ -129,6 +129,11 @@ final class DataLoaderSettings extends JPanel {
         Box metadataFileLabelBox = Box.createHorizontalBox();
         metadataFileLabelBox.setPreferredSize(labelSize);
         metadataFileLabelBox.add(new JLabel("Metadata JSON file:"));
+        // Add info icon next to label to show tooltip on mouseover
+        JLabel metadataFileLabelInfoIcon = new JLabel(new ImageIcon(ImageUtils.getImage(this, "information_small_white.png")));
+        // Add tooltip on mouseover the info icon
+        metadataFileLabelInfoIcon.setToolTipText("Metadata file is REQUIRED for observational and interventional data");
+        metadataFileLabelBox.add(metadataFileLabelInfoIcon);
         
         // Metadata file load button
         JButton metadataFileButton = new JButton("Load...");
