@@ -93,7 +93,7 @@ public class Fges implements Algorithm, TakesInitialGraph, HasKnowledge, UsesSco
             GeneralResamplingTest search = new GeneralResamplingTest(data, fges, parameters.getInt("numberResampling"));
             search.setKnowledge(knowledge);
             
-            search.setResampleSize(parameters.getInt("resampleSize"));
+            search.setPercentResampleSize(parameters.getDouble("percentResampleSize"));
             search.setResamplingWithReplacement(parameters.getBoolean("resamplingWithReplacement"));
             
             ResamplingEdgeEnsemble edgeEnsemble = ResamplingEdgeEnsemble.Highest;
@@ -143,7 +143,7 @@ public class Fges implements Algorithm, TakesInitialGraph, HasKnowledge, UsesSco
         parameters.add("verbose");
         // Resampling
         parameters.add("numberResampling");
-        parameters.add("resampleSize");
+        parameters.add("percentResampleSize");
         parameters.add("resamplingWithReplacement");
         parameters.add("resamplingEnsemble");
         return parameters;

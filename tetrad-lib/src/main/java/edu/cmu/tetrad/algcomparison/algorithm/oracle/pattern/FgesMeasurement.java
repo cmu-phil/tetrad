@@ -78,7 +78,7 @@ public class FgesMeasurement implements Algorithm, TakesInitialGraph, HasKnowled
             GeneralResamplingTest search = new GeneralResamplingTest(data, fgesMeasurement, parameters.getInt("numberResampling"));
             search.setKnowledge(knowledge);
 
-            search.setResampleSize(parameters.getInt("resampleSize"));
+            search.setPercentResampleSize(parameters.getDouble("percentResampleSize"));
             search.setResamplingWithReplacement(parameters.getBoolean("resamplingWithReplacement"));
 
             ResamplingEdgeEnsemble edgeEnsemble = ResamplingEdgeEnsemble.Highest;
@@ -122,7 +122,7 @@ public class FgesMeasurement implements Algorithm, TakesInitialGraph, HasKnowled
         parameters.add("measurementVariance");
         // Resampling
         parameters.add("numberResampling");
-        parameters.add("resampleSize");
+        parameters.add("percentResampleSize");
         parameters.add("resamplingWithReplacement");
         parameters.add("resamplingEnsemble");
 

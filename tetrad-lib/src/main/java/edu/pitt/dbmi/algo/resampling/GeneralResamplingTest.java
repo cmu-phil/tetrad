@@ -89,8 +89,8 @@ public class GeneralResamplingTest {
         }
 	}
 
-	public void setResampleSize(int resampleSize) {
-		this.resamplingSearch.setResampleSize(resampleSize);
+	public void setPercentResampleSize(double percentResampleSize) {
+		this.resamplingSearch.setPercentResampleSize(percentResampleSize);
 	}
 
 	public void setResamplingWithReplacement(boolean ResamplingWithReplacement) {

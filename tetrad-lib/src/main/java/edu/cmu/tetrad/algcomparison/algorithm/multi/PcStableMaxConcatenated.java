@@ -67,7 +67,7 @@ public class PcStableMaxConcatenated implements MultiDataSetAlgorithm, HasKnowle
 			GeneralResamplingTest search = new GeneralResamplingTest(datasets, pcStableMaxConcatenated, parameters.getInt("numberResampling"));
 			search.setKnowledge(knowledge);
 
-			search.setResampleSize(parameters.getInt("resampleSize"));
+			search.setPercentResampleSize(parameters.getDouble("percentResampleSize"));
             search.setResamplingWithReplacement(parameters.getBoolean("resamplingWithReplacement"));
             
             ResamplingEdgeEnsemble edgeEnsemble = ResamplingEdgeEnsemble.Highest;
@@ -99,7 +99,7 @@ public class PcStableMaxConcatenated implements MultiDataSetAlgorithm, HasKnowle
     		GeneralResamplingTest search = new GeneralResamplingTest(dataSets, pcStableMaxConcatenated, parameters.getInt("numberResampling"));
     		search.setKnowledge(knowledge);
     		
-    		search.setResampleSize(parameters.getInt("resampleSize"));
+    		search.setPercentResampleSize(parameters.getDouble("percentResampleSize"));
             search.setResamplingWithReplacement(parameters.getBoolean("resamplingWithReplacement"));
             
             ResamplingEdgeEnsemble edgeEnsemble = ResamplingEdgeEnsemble.Highest;
@@ -152,7 +152,7 @@ public class PcStableMaxConcatenated implements MultiDataSetAlgorithm, HasKnowle
         parameters.add("randomSelectionSize");
         // Resampling
         parameters.add("numberResampling");
-        parameters.add("resampleSize");
+        parameters.add("percentResampleSize");
         parameters.add("resamplingWithReplacement");
         parameters.add("resamplingEnsemble");
   		parameters.add("verbose");

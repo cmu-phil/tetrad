@@ -32,7 +32,7 @@ public class GeneralResamplingSearch {
 
 	private MultiDataSetAlgorithm multiDataSetAlgorithm = null;
 
-	private int resampleSize = 0;
+	private double percentResampleSize = 100;
 
 	private boolean resamplingWithReplacement = true;
 
@@ -92,8 +92,8 @@ public class GeneralResamplingSearch {
 		this.algorithm = null;
 	}
 
-	public void setResampleSize(int resampleSize) {
-		this.resampleSize = resampleSize;
+	public void setPercentResampleSize(double percentResampleSize) {
+		this.percentResampleSize = percentResampleSize;
 	}
 
 	public void setResamplingWithReplacement(boolean resamplingWithReplacement) {
@@ -176,12 +176,12 @@ public class GeneralResamplingSearch {
 				// Bootstrapping
 				if (resamplingWithReplacement) {
 					if (data != null) {
-						DataSet dataSet = DataUtils.getBootstrapSample(data, resampleSize);
+						DataSet dataSet = DataUtils.getBootstrapSample(data, (int)(data.getNumRows()*percentResampleSize/100.0));
 						task = new GeneralResamplingSearchRunnable(dataSet, algorithm, parameters, this, verbose);
 					} else {
 						List<DataModel> dataModels = new ArrayList<>();
 						for (DataSet data : dataSets) {
-							DataSet dataSet = DataUtils.getBootstrapSample(data, resampleSize);
+							DataSet dataSet = DataUtils.getBootstrapSample(data, (int)(data.getNumRows()*percentResampleSize/100.0));
 							dataModels.add(dataSet);
 						}
 						task = new GeneralResamplingSearchRunnable(dataModels, multiDataSetAlgorithm, parameters, this,
@@ -190,12 +190,12 @@ public class GeneralResamplingSearch {
 				// Resampling
 				} else {
 					if (data != null) {
-						DataSet dataSet = DataUtils.getResamplingDataset(data, resampleSize);
+						DataSet dataSet = DataUtils.getResamplingDataset(data, (int)(data.getNumRows()*percentResampleSize/100.0));
 						task = new GeneralResamplingSearchRunnable(dataSet, algorithm, parameters, this, verbose);
 					} else {
 						List<DataModel> dataModels = new ArrayList<>();
 						for (DataSet data : dataSets) {
-							DataSet dataSet = DataUtils.getResamplingDataset(data, resampleSize);
+							DataSet dataSet = DataUtils.getResamplingDataset(data, (int)(data.getNumRows()*percentResampleSize/100.0));
 							dataModels.add(dataSet);
 						}
 						task = new GeneralResamplingSearchRunnable(dataModels, multiDataSetAlgorithm, parameters, this,
@@ -227,12 +227,12 @@ public class GeneralResamplingSearch {
 				// Bootstrapping
 				if (resamplingWithReplacement) {
 					if (data != null) {
-						DataSet dataSet = DataUtils.getBootstrapSample(data, resampleSize);
+						DataSet dataSet = DataUtils.getBootstrapSample(data, (int)(data.getNumRows()*percentResampleSize/100.0));
 						task = new GeneralResamplingSearchRunnable(dataSet, algorithm, parameters, this, verbose);
 					} else {
 						List<DataModel> dataModels = new ArrayList<>();
 						for (DataSet data : dataSets) {
-							DataSet dataSet = DataUtils.getBootstrapSample(data, resampleSize);
+							DataSet dataSet = DataUtils.getBootstrapSample(data, (int)(data.getNumRows()*percentResampleSize/100.0));
 							dataModels.add(dataSet);
 						}
 						task = new GeneralResamplingSearchRunnable(dataModels, multiDataSetAlgorithm, parameters, this,
@@ -241,12 +241,12 @@ public class GeneralResamplingSearch {
 				// Resampling
 				} else {
 					if (data != null) {
-						DataSet dataSet = DataUtils.getResamplingDataset(data, resampleSize);
+						DataSet dataSet = DataUtils.getResamplingDataset(data, (int)(data.getNumRows()*percentResampleSize/100.0));
 						task = new GeneralResamplingSearchRunnable(dataSet, algorithm, parameters, this, verbose);
 					} else {
 						List<DataModel> dataModels = new ArrayList<>();
 						for (DataSet data : dataSets) {
-							DataSet dataSet = DataUtils.getResamplingDataset(data, resampleSize);
+							DataSet dataSet = DataUtils.getResamplingDataset(data, (int)(data.getNumRows()*percentResampleSize/100.0));
 							dataModels.add(dataSet);
 						}
 						task = new GeneralResamplingSearchRunnable(dataModels, multiDataSetAlgorithm, parameters, this,
@@ -285,12 +285,12 @@ public class GeneralResamplingSearch {
 				// Bootstrapping
 				if (resamplingWithReplacement) {
 					if (data != null) {
-						DataSet dataSet = DataUtils.getBootstrapSample(data, resampleSize);
+						DataSet dataSet = DataUtils.getBootstrapSample(data, (int)(data.getNumRows()*percentResampleSize/100.0));
 						task = new GeneralResamplingSearchRunnable(dataSet, algorithm, parameters, this, verbose);
 					} else {
 						List<DataModel> dataModels = new ArrayList<>();
 						for (DataSet data : dataSets) {
-							DataSet dataSet = DataUtils.getBootstrapSample(data, resampleSize);
+							DataSet dataSet = DataUtils.getBootstrapSample(data, (int)(data.getNumRows()*percentResampleSize/100.0));
 							dataModels.add(dataSet);
 						}
 						task = new GeneralResamplingSearchRunnable(dataModels, multiDataSetAlgorithm, parameters, this,
@@ -299,12 +299,12 @@ public class GeneralResamplingSearch {
 				// Resampling
 				} else {
 					if (data != null) {
-						DataSet dataSet = DataUtils.getResamplingDataset(data, resampleSize);
+						DataSet dataSet = DataUtils.getResamplingDataset(data, (int)(data.getNumRows()*percentResampleSize/100.0));
 						task = new GeneralResamplingSearchRunnable(dataSet, algorithm, parameters, this, verbose);
 					} else {
 						List<DataModel> dataModels = new ArrayList<>();
 						for (DataSet data : dataSets) {
-							DataSet dataSet = DataUtils.getResamplingDataset(data, resampleSize);
+							DataSet dataSet = DataUtils.getResamplingDataset(data, (int)(data.getNumRows()*percentResampleSize/100.0));
 							dataModels.add(dataSet);
 						}
 						task = new GeneralResamplingSearchRunnable(dataModels, multiDataSetAlgorithm, parameters, this,

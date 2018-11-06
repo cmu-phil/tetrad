@@ -71,7 +71,7 @@ public class Cpc implements Algorithm, TakesInitialGraph, HasKnowledge, TakesInd
             GeneralResamplingTest search = new GeneralResamplingTest(data, cpc, parameters.getInt("numberResampling"));
             search.setKnowledge(knowledge);
 
-            search.setResampleSize(parameters.getInt("resampleSize"));
+            search.setPercentResampleSize(parameters.getDouble("percentResampleSize"));
             search.setResamplingWithReplacement(parameters.getBoolean("resamplingWithReplacement"));
             
             ResamplingEdgeEnsemble edgeEnsemble = ResamplingEdgeEnsemble.Highest;
@@ -114,7 +114,7 @@ public class Cpc implements Algorithm, TakesInitialGraph, HasKnowledge, TakesInd
         parameters.add("depth");
         // Resampling
         parameters.add("numberResampling");
-        parameters.add("resampleSize");
+        parameters.add("percentResampleSize");
         parameters.add("resamplingWithReplacement");
         parameters.add("resamplingEnsemble");
         parameters.add("verbose");
