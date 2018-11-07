@@ -171,7 +171,7 @@ public class ParamDescriptions {
 
         // Resampling
         map.put("numberResampling", new ParamDescription("The number of resampling iterations (min = 0)", 0, 0, Integer.MAX_VALUE));
-        map.put("resampleSize", new ParamDescription("The resample size (min = 1)", 1, 1, Integer.MAX_VALUE));
+        map.put("percentResampleSize", new ParamDescription("The percentage of resample size (min = 0.1)", 100, 0.1, Double.MAX_VALUE));
         map.put("resamplingWithReplacement", new ParamDescription("Yes, if resampling with replacement (bootstrapping)", true));
         map.put("resamplingEnsemble", new ParamDescription("Ensemble method: Preserved (0), Highest (1), Majority (2)", 1, 0, 2));
         //~Resampling

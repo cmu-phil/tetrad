@@ -87,7 +87,7 @@ public class FgesMb implements Algorithm, TakesInitialGraph, HasKnowledge, UsesS
             GeneralResamplingTest search = new GeneralResamplingTest(data, fgesMb, parameters.getInt("numberResampling"));
             search.setKnowledge(knowledge);
 
-            search.setResampleSize(parameters.getInt("resampleSize"));
+            search.setPercentResampleSize(parameters.getDouble("percentResampleSize"));
             search.setResamplingWithReplacement(parameters.getBoolean("resamplingWithReplacement"));
 
             ResamplingEdgeEnsemble edgeEnsemble = ResamplingEdgeEnsemble.Highest;
@@ -134,7 +134,7 @@ public class FgesMb implements Algorithm, TakesInitialGraph, HasKnowledge, UsesS
 
         // Resampling
         parameters.add("numberResampling");
-        parameters.add("resampleSize");
+        parameters.add("percentResampleSize");
         parameters.add("resamplingWithReplacement");
         parameters.add("resamplingEnsemble");
 

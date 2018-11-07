@@ -36,7 +36,7 @@ public class MixedFgesTreatingDiscreteAsContinuous implements Algorithm {
     		DataSet data = (DataSet) Dk;
     		GeneralResamplingTest search = new GeneralResamplingTest(data, algorithm, parameters.getInt("numberResampling"));
     		
-    		search.setResampleSize(parameters.getInt("resampleSize"));
+    		search.setPercentResampleSize(parameters.getDouble("percentResampleSize"));
             search.setResamplingWithReplacement(parameters.getBoolean("resamplingWithReplacement"));
             
             ResamplingEdgeEnsemble edgeEnsemble = ResamplingEdgeEnsemble.Highest;
@@ -100,7 +100,7 @@ public class MixedFgesTreatingDiscreteAsContinuous implements Algorithm {
         parameters.add("penaltyDiscount");
         // Resampling
         parameters.add("numberResampling");
-        parameters.add("resampleSize");
+        parameters.add("percentResampleSize");
         parameters.add("resamplingWithReplacement");
         parameters.add("resamplingEnsemble");
         parameters.add("verbose");

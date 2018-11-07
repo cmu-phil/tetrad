@@ -78,7 +78,7 @@ public class Fci implements Algorithm, TakesInitialGraph, HasKnowledge, TakesInd
             GeneralResamplingTest search = new GeneralResamplingTest(data, algorithm, parameters.getInt("numberResampling"));
             search.setKnowledge(knowledge);
             
-            search.setResampleSize(parameters.getInt("resampleSize"));
+            search.setPercentResampleSize(parameters.getDouble("percentResampleSize"));
             search.setResamplingWithReplacement(parameters.getBoolean("resamplingWithReplacement"));
             
             ResamplingEdgeEnsemble edgeEnsemble = ResamplingEdgeEnsemble.Highest;
@@ -123,7 +123,7 @@ public class Fci implements Algorithm, TakesInitialGraph, HasKnowledge, TakesInd
         parameters.add("completeRuleSetUsed");
         // Resampling
         parameters.add("numberResampling");
-        parameters.add("resampleSize");
+        parameters.add("percentResampleSize");
         parameters.add("resamplingWithReplacement");
         parameters.add("resamplingEnsemble");
         parameters.add("verbose");
