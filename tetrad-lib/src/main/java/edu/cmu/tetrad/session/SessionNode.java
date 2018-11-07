@@ -21,12 +21,10 @@
 
 package edu.cmu.tetrad.session;
 
+import edu.cmu.tetrad.graph.InterventionType;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.NodeType;
-import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.*;
-
-import javax.swing.*;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -35,6 +33,7 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.rmi.MarshalledObject;
 import java.util.*;
+import javax.swing.*;
 
 /**
  * <p>Represents a node in a session for a model in a particular class. The sets
@@ -1834,6 +1833,16 @@ public class SessionNode implements Node, TetradSerializable {
 
     public Parameters getParameters() {
         return parameters;
+    }
+
+    @Override
+    public InterventionType getInterventionType() {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public void setInterventionType(InterventionType interventionType) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     /**

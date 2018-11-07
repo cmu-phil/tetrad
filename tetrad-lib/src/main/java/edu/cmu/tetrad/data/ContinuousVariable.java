@@ -21,11 +21,11 @@
 
 package edu.cmu.tetrad.data;
 
+import edu.cmu.tetrad.graph.InterventionType;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.NodeEqualityMode;
 import edu.cmu.tetrad.graph.NodeType;
 import edu.cmu.tetrad.util.TetradSerializable;
-
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.IOException;
@@ -285,6 +285,16 @@ public final class ContinuousVariable extends AbstractVariable
         if (nodeType == null) {
             throw new NullPointerException();
         }
+    }
+
+    @Override
+    public InterventionType getInterventionType() {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public void setInterventionType(InterventionType interventionType) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
 }
