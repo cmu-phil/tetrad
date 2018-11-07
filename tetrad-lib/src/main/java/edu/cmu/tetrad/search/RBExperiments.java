@@ -26,8 +26,6 @@ import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataUtils;
 import edu.cmu.tetrad.data.DiscreteVariable;
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.io.DataReader;
-import edu.cmu.tetrad.io.VerticalTabularDiscreteDataReader;
 import edu.cmu.tetrad.performance.Comparison;
 import edu.cmu.tetrad.performance.Comparison.*;
 import edu.cmu.tetrad.util.RandomUtil;
@@ -120,20 +118,20 @@ public class RBExperiments {
 		return im;
 	}
 
-	private static DataSet readInDataSet(Path dataFile) {
-		DataSet dataSet = null;
-		DataReader dataReader = new VerticalTabularDiscreteDataReader(dataFile, ',');
-
-		try {
-			dataSet = dataReader.readInData();
-		} catch (IOException exception) {
-			String errMsg = String.format("Failed when reading data file '%s'.", dataFile.getFileName());
-			System.err.println(errMsg);
-			System.exit(-128);
-		}
-
-		return dataSet;
-	}
+//	private static DataSet readInDataSet(Path dataFile) {
+//		DataSet dataSet = null;
+//		DataReader dataReader = new VerticalTabularDiscreteDataReader(dataFile, ',');
+//
+//		try {
+//			dataSet = dataReader.readInData();
+//		} catch (IOException exception) {
+//			String errMsg = String.format("Failed when reading data file '%s'.", dataFile.getFileName());
+//			System.err.println(errMsg);
+//			System.exit(-128);
+//		}
+//
+//		return dataSet;
+//	}
 
 
 	public static void main(String[] args) throws IOException {
