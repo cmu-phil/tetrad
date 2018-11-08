@@ -1191,7 +1191,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
             testLabel = new JLabel();
             scoreLabel = new JLabel();
 
-            setBorder(BorderFactory.createTitledBorder("Choose Independence Test and Score"));
+            setBorder(BorderFactory.createTitledBorder("Choose Statistical Test and Score"));
             setPreferredSize(new Dimension(330, 200));
 
             assumptionsLabel.setText("Filter by dataset properties:");
