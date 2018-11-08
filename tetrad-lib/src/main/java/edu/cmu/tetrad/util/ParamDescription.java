@@ -10,6 +10,7 @@ import java.io.Serializable;
 public class ParamDescription {
 
     private String description;
+    private String longDescription;
     private Serializable defaultValue;
     private double lowerBoundDouble = Double.NEGATIVE_INFINITY;
     private double upperBoundDouble = Double.POSITIVE_INFINITY;
@@ -81,5 +82,13 @@ public class ParamDescription {
 
     public int getUpperBoundInt() {
         return upperBoundInt;
+    }
+
+    public String getLongDescription() {
+        return longDescription;
+    }
+
+    public void setLongDescription(String longDescription) {
+        this.longDescription = longDescription;
     }
 }

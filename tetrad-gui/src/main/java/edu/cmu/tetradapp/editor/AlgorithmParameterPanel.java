@@ -111,6 +111,8 @@ public class AlgorithmParameterPanel extends JPanel {
                 Box paramRow = Box.createHorizontalBox();
 
                 JLabel paramLabel = new JLabel(ParamDescriptions.getInstance().get(parameter).getDescription());
+                String longDescription = ParamDescriptions.getInstance().get(parameter).getLongDescription();
+                if (longDescription != null) paramLabel.setToolTipText(longDescription);
                 paramRow.add(paramLabel);
                 paramRow.add(Box.createHorizontalGlue());
                 paramRow.add(parameterSelection);
