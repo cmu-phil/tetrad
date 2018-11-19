@@ -238,6 +238,8 @@ public final class Fges implements GraphSearch, GraphScorer {
 
         addRequiredEdges(graph);
 
+        totalScore = getScore(graph);
+
         if (faithfulnessAssumed) {
             initializeForwardEdgesFromEmptyGraph(getVariables());
 
@@ -265,7 +267,7 @@ public final class Fges implements GraphSearch, GraphScorer {
         }
 
         long start = System.currentTimeMillis();
-        totalScore = 0.0;
+//        totalScore = 0.0;
 
         long endTime = System.currentTimeMillis();
         this.elapsedTime = endTime - start;
@@ -278,6 +280,8 @@ public final class Fges implements GraphSearch, GraphScorer {
         }
 
         this.modelScore = totalScore;
+
+        System.out.println("BIC score = " + getModelScore());
 
         return graph;
     }
