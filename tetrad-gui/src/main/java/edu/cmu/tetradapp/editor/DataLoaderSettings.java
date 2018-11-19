@@ -26,13 +26,12 @@ import edu.cmu.tetradapp.util.ImageUtils;
 import edu.cmu.tetradapp.util.IntTextField;
 import edu.cmu.tetradapp.util.StringTextField;
 import edu.pitt.dbmi.data.Dataset;
-import edu.pitt.dbmi.data.Delimiter;
+import edu.pitt.dbmi.data.reader.Delimiter;
 import edu.pitt.dbmi.data.reader.covariance.CovarianceDataReader;
 import edu.pitt.dbmi.data.reader.covariance.LowerCovarianceDataReader;
 import edu.pitt.dbmi.data.reader.tabular.ContinuousTabularDataFileReader;
 import edu.pitt.dbmi.data.reader.tabular.MixedTabularDataFileReader;
 import edu.pitt.dbmi.data.reader.tabular.TabularDataReader;
-import edu.pitt.dbmi.data.reader.tabular.VerticalDiscreteTabularDataReader;
 import edu.pitt.dbmi.data.util.TextFileUtils;
 import edu.pitt.dbmi.data.validation.DataValidation;
 import edu.pitt.dbmi.data.validation.covariance.CovarianceDataFileValidation;
@@ -1073,7 +1072,7 @@ final class DataLoaderSettings extends JPanel {
             if (contRadioButton.isSelected()) {
                 dataReader = new ContinuousTabularDataFileReader(file, delimiter);
             } else if (discRadioButton.isSelected()) {
-                dataReader = new VerticalDiscreteTabularDataReader(file, delimiter);
+                dataReader = new VerticalDiscreteTabularDataFileReader(file, delimiter);
             } else if (mixedRadioButton.isSelected()) {
                 dataReader = new MixedTabularDataFileReader(getMaxNumOfDiscCategories(), file, delimiter);
             } else {

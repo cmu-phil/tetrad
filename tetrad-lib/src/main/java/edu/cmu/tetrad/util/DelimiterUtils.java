@@ -18,7 +18,7 @@
  */
 package edu.cmu.tetrad.util;
 
-import edu.pitt.dbmi.data.Delimiter;
+import edu.pitt.dbmi.data.reader.Delimiter;
 
 /**
  *
