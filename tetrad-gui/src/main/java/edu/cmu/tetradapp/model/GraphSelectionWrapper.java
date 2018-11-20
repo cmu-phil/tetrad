@@ -117,17 +117,18 @@ public class GraphSelectionWrapper implements SessionModel, GraphSource, Knowled
             GraphUtils.fruchtermanReingoldLayout(graph);
         }
 
-        List<Node> nodes = getVariables();
-
-        // Default to select the first 50 variables to render graph
-        List<Node> first50 = new ArrayList<>();
-
-        for (int i = 0; i < 50; i++) {
-            if (i >= nodes.size()) continue;
-            first50.add(nodes.get(i));
-        }
-
-        setSelectedVariables(first50);
+        // No variable is selected by default - Updated 11/19/2018 by Zhou
+//        List<Node> nodes = getVariables();
+//
+//        // Default to select the first 50 variables to render graph
+//        List<Node> first50 = new ArrayList<>();
+//
+//        for (int i = 0; i < 50; i++) {
+//            if (i >= nodes.size()) continue;
+//            first50.add(nodes.get(i));
+//        }
+//
+//        setSelectedVariables(first50);
 
         log();
     }
