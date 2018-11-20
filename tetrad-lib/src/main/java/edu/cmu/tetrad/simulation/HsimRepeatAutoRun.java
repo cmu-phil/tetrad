@@ -5,8 +5,7 @@ import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.VerticalIntDataBox;
 import edu.cmu.tetrad.util.DataConvertUtils;
 import edu.cmu.tetrad.util.DelimiterUtils;
-import edu.pitt.dbmi.data.reader.tabular.TabularDataReader;
-import edu.pitt.dbmi.data.reader.tabular.VerticalDiscreteTabularDataReader;
+import edu.pitt.dbmi.data.reader.tabular.VerticalDiscreteTabularDataFileReader;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -44,7 +43,7 @@ public class HsimRepeatAutoRun {
         eVars.add("MULT");
         Path dataFile = Paths.get(readfilename);
 
-        TabularDataReader dataReader = new VerticalDiscreteTabularDataReader(dataFile.toFile(), DelimiterUtils.toDelimiter(delim));
+        VerticalDiscreteTabularDataFileReader dataReader = new VerticalDiscreteTabularDataFileReader(dataFile.toFile(), DelimiterUtils.toDelimiter(delim));
         try {
             data = (DataSet) DataConvertUtils.toDataModel(dataReader.readInData(eVars));
         } catch (Exception IOException) {

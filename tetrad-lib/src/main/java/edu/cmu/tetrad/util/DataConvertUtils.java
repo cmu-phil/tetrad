@@ -28,13 +28,6 @@ import edu.cmu.tetrad.data.DoubleDataBox;
 import edu.cmu.tetrad.data.MixedDataBox;
 import edu.cmu.tetrad.data.VerticalIntDataBox;
 import edu.cmu.tetrad.graph.Node;
-import edu.pitt.dbmi.data.ContinuousTabularDataset;
-import edu.pitt.dbmi.data.CovarianceDataset;
-import edu.pitt.dbmi.data.Dataset;
-import edu.pitt.dbmi.data.MixedTabularDataset;
-import edu.pitt.dbmi.data.VerticalDiscreteTabularDataset;
-import edu.pitt.dbmi.data.reader.tabular.DiscreteVarInfo;
-import edu.pitt.dbmi.data.reader.tabular.MixedVarInfo;
 import java.util.LinkedList;
 import java.util.List;
 

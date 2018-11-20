@@ -25,21 +25,15 @@ import edu.cmu.tetrad.util.DataConvertUtils;
 import edu.cmu.tetradapp.util.ImageUtils;
 import edu.cmu.tetradapp.util.IntTextField;
 import edu.cmu.tetradapp.util.StringTextField;
-import edu.pitt.dbmi.data.Dataset;
 import edu.pitt.dbmi.data.reader.Delimiter;
+import edu.pitt.dbmi.data.reader.covariance.CovarianceData;
 import edu.pitt.dbmi.data.reader.covariance.CovarianceDataReader;
-import edu.pitt.dbmi.data.reader.covariance.LowerCovarianceDataReader;
-import edu.pitt.dbmi.data.reader.tabular.ContinuousTabularDataFileReader;
-import edu.pitt.dbmi.data.reader.tabular.MixedTabularDataFileReader;
-import edu.pitt.dbmi.data.reader.tabular.TabularDataReader;
+import edu.pitt.dbmi.data.reader.covariance.LowerCovarianceDataFileReader;
+import edu.pitt.dbmi.data.reader.tabular.TabularColumnFileReader;
+import edu.pitt.dbmi.data.reader.tabular.TabularColumnFileReader.TabularDataColumn;
+import edu.pitt.dbmi.data.reader.tabular.TabularData;
+import edu.pitt.dbmi.data.reader.tabular.TabularDataFileReader;
 import edu.pitt.dbmi.data.util.TextFileUtils;
-import edu.pitt.dbmi.data.validation.DataValidation;
-import edu.pitt.dbmi.data.validation.covariance.CovarianceDataFileValidation;
-import edu.pitt.dbmi.data.validation.tabular.ContinuousTabularDataFileValidation;
-import edu.pitt.dbmi.data.validation.tabular.DataFileValidation;
-import edu.pitt.dbmi.data.validation.tabular.MixedTabularDataFileValidation;
-import edu.pitt.dbmi.data.validation.tabular.TabularDataValidation;
-import edu.pitt.dbmi.data.validation.tabular.VerticalDiscreteTabularDataFileValidation;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -968,88 +962,91 @@ final class DataLoaderSettings extends JPanel {
         return maxNumOfDiscCategoriesField.getValue();
     }
 
+    
+    // Disabled data validation for now, until Kevin's work is done - 11/20/2018 by Zhou
+    
     /**
      * Validate each file based on the specified settings
      *
      * @param file
      * @return
      */
-    public DataValidation validateDataWithSettings(File file) {
-        Delimiter delimiter = getDelimiterType();
-        boolean hasHeader = isVarNamesFirstRow();
-        String commentMarker = getCommentMarker();
-        String missingValueMarker = getMissingValueMarker();
-
-        if (tabularRadioButton.isSelected()) {
-            TabularDataValidation validation = null;
-
-            if (contRadioButton.isSelected()) {
-                validation = new ContinuousTabularDataFileValidation(file, delimiter);
-            } else if (discRadioButton.isSelected()) {
-                validation = new VerticalDiscreteTabularDataFileValidation(file, delimiter);
-            } else if (mixedRadioButton.isSelected()) {
-                validation = new MixedTabularDataFileValidation(getMaxNumOfDiscCategories(), file, delimiter);
-            } else {
-                throw new UnsupportedOperationException("Unsupported selection of Data Type!");
-            }
-
-            // Header in first row or not
-            validation.setHasHeader(hasHeader);
-
-            // Set comment marker
-            validation.setCommentMarker(commentMarker);
-
-            validation.setMissingValueMarker(missingValueMarker);
-
-            // Set the quote character
-            if (doubleQuoteRadioButton.isSelected()) {
-                validation.setQuoteCharacter('"');
-            }
-
-            if (singleQuoteRadioButton.isSelected()) {
-                validation.setQuoteCharacter('\'');
-            }
-
-            // Handle case ID column based on different selections
-            if (idNoneRadioButton.isSelected()) {
-                // No column exclusion
-                validation.validate();
-            } else if (idUnlabeledFirstColRadioButton.isSelected()) {
-                // Exclude the first column
-                validation.validate(new int[]{1});
-            } else if (idLabeledColRadioButton.isSelected() && !idStringField.getText().isEmpty()) {
-                // Exclude the specified labled column
-                validation.validate(new HashSet<>(Arrays.asList(new String[]{idStringField.getText()})));
-            } else {
-                throw new UnsupportedOperationException("Unexpected 'Case ID column to ignore' selection.");
-            }
-
-            return validation;
-        } else if (covarianceRadioButton.isSelected()) {
-            DataFileValidation validation = new CovarianceDataFileValidation(file, delimiter);
-
-            // Header in first row is required
-            // Cpvariance never has missing value marker
-            // Set comment marker
-            validation.setCommentMarker(commentMarker);
-
-            // Set the quote character
-            if (doubleQuoteRadioButton.isSelected()) {
-                validation.setQuoteCharacter('"');
-            }
-
-            if (singleQuoteRadioButton.isSelected()) {
-                validation.setQuoteCharacter('\'');
-            }
-
-            // No case ID on covarianced data
-            validation.validate();
-
-            return validation;
-        } else {
-            throw new UnsupportedOperationException("Not yet supported!");
-        }
-    }
+//    public DataValidation validateDataWithSettings(File file) {
+//        Delimiter delimiter = getDelimiterType();
+//        boolean hasHeader = isVarNamesFirstRow();
+//        String commentMarker = getCommentMarker();
+//        String missingValueMarker = getMissingValueMarker();
+//
+//        if (tabularRadioButton.isSelected()) {
+//            TabularDataValidation validation = null;
+//
+//            if (contRadioButton.isSelected()) {
+//                validation = new ContinuousTabularDataFileValidation(file, delimiter);
+//            } else if (discRadioButton.isSelected()) {
+//                validation = new VerticalDiscreteTabularDataFileValidation(file, delimiter);
+//            } else if (mixedRadioButton.isSelected()) {
+//                validation = new MixedTabularDataFileValidation(getMaxNumOfDiscCategories(), file, delimiter);
+//            } else {
+//                throw new UnsupportedOperationException("Unsupported selection of Data Type!");
+//            }
+//
+//            // Header in first row or not
+//            validation.setHasHeader(hasHeader);
+//
+//            // Set comment marker
+//            validation.setCommentMarker(commentMarker);
+//
+//            validation.setMissingValueMarker(missingValueMarker);
+//
+//            // Set the quote character
+//            if (doubleQuoteRadioButton.isSelected()) {
+//                validation.setQuoteCharacter('"');
+//            }
+//
+//            if (singleQuoteRadioButton.isSelected()) {
+//                validation.setQuoteCharacter('\'');
+//            }
+//
+//            // Handle case ID column based on different selections
+//            if (idNoneRadioButton.isSelected()) {
+//                // No column exclusion
+//                validation.validate();
+//            } else if (idUnlabeledFirstColRadioButton.isSelected()) {
+//                // Exclude the first column
+//                validation.validate(new int[]{1});
+//            } else if (idLabeledColRadioButton.isSelected() && !idStringField.getText().isEmpty()) {
+//                // Exclude the specified labled column
+//                validation.validate(new HashSet<>(Arrays.asList(new String[]{idStringField.getText()})));
+//            } else {
+//                throw new UnsupportedOperationException("Unexpected 'Case ID column to ignore' selection.");
+//            }
+//
+//            return validation;
+//        } else if (covarianceRadioButton.isSelected()) {
+//            DataFileValidation validation = new CovarianceDataFileValidation(file, delimiter);
+//
+//            // Header in first row is required
+//            // Cpvariance never has missing value marker
+//            // Set comment marker
+//            validation.setCommentMarker(commentMarker);
+//
+//            // Set the quote character
+//            if (doubleQuoteRadioButton.isSelected()) {
+//                validation.setQuoteCharacter('"');
+//            }
+//
+//            if (singleQuoteRadioButton.isSelected()) {
+//                validation.setQuoteCharacter('\'');
+//            }
+//
+//            // No case ID on covarianced data
+//            validation.validate();
+//
+//            return validation;
+//        } else {
+//            throw new UnsupportedOperationException("Not yet supported!");
+//        }
+//    }
 
     /**
      * Kevin's fast data reader
@@ -1066,74 +1063,87 @@ final class DataLoaderSettings extends JPanel {
         String missingValueMarker = getMissingValueMarker();
 
         if (tabularRadioButton.isSelected()) {
-            TabularDataReader dataReader = null;
+            TabularColumnFileReader columnFileReader = new TabularColumnFileReader(file, delimiter);
+            
+            columnFileReader.setHasHeader(hasHeader);
+            columnFileReader.setCommentMarker(commentMarker);
+            columnFileReader.setMissingValueMarker(missingValueMarker);
 
-            // Continuous, discrete, mixed
+            if (doubleQuoteRadioButton.isSelected()) {
+                columnFileReader.setQuoteCharacter('"');
+            }
+
+            if (singleQuoteRadioButton.isSelected()) {
+                columnFileReader.setQuoteCharacter('\'');
+            }
+            
+            TabularDataColumn[] columns;
+            
+            // Handle case ID column based on different selections
+            if (idNoneRadioButton.isSelected()) {
+                // No column exclusion
+            } else if (idUnlabeledFirstColRadioButton.isSelected()) {
+                // Exclude the first column
+                columns = columnFileReader.readInDataColumns(new int[]{1}, false);
+            } else if (idLabeledColRadioButton.isSelected() && !idStringField.getText().isEmpty()) {
+                // Exclude the specified labled column
+                columns = columnFileReader.readInDataColumns(new HashSet<>(Arrays.asList(new String[]{idStringField.getText()})), false);
+            } else {
+                throw new UnsupportedOperationException("Unexpected 'Case ID column to ignore' selection.");
+            }
+            
+            // Set data type for each column
             if (contRadioButton.isSelected()) {
-                dataReader = new ContinuousTabularDataFileReader(file, delimiter);
+                columns = columnFileReader.readInDataColumns(false);
             } else if (discRadioButton.isSelected()) {
-                dataReader = new VerticalDiscreteTabularDataFileReader(file, delimiter);
+                columns = columnFileReader.readInDataColumns(true);
             } else if (mixedRadioButton.isSelected()) {
-                dataReader = new MixedTabularDataFileReader(getMaxNumOfDiscCategories(), file, delimiter);
+                columns = columnFileReader.readInDataColumns(false);
+                // For mixed data, also need to determine num of discrete categories
+                columnFileReader.determineDiscreteDataColumns(columns, getMaxNumOfDiscCategories());
             } else {
                 throw new UnsupportedOperationException("Unsupported data type!");
             }
 
-            // Header in first row or not
-            dataReader.setHasHeader(hasHeader);
+            // Now read in the data rows
+            TabularDataFileReader dataFileReader = new TabularDataFileReader(file, delimiter);
+            
+            // Need to specify hasHeader, commentMarker, .... again to the TabularDataFileReader
+            dataFileReader.setHasHeader(hasHeader);
+            dataFileReader.setCommentMarker(commentMarker);
+            dataFileReader.setMissingValueMarker(missingValueMarker);
 
-            // Set comment marker
-            dataReader.setCommentMarker(commentMarker);
-
-            dataReader.setMissingValueMarker(missingValueMarker);
-
-            // Set the quote character
             if (doubleQuoteRadioButton.isSelected()) {
-                dataReader.setQuoteCharacter('"');
+                dataFileReader.setQuoteCharacter('"');
             }
 
             if (singleQuoteRadioButton.isSelected()) {
-                dataReader.setQuoteCharacter('\'');
+                dataFileReader.setQuoteCharacter('\'');
             }
-
-            Dataset dataset;
-
-            // Handle case ID column based on different selections
-            if (idNoneRadioButton.isSelected()) {
-                // No column exclusion
-                dataset = dataReader.readInData();
-            } else if (idUnlabeledFirstColRadioButton.isSelected()) {
-                // Exclude the first column
-                dataset = dataReader.readInData(new int[]{1});
-            } else if (idLabeledColRadioButton.isSelected() && !idStringField.getText().isEmpty()) {
-                // Exclude the specified labled column
-                dataset = dataReader.readInData(new HashSet<>(Arrays.asList(new String[]{idStringField.getText()})));
-            } else {
-                throw new UnsupportedOperationException("Unexpected 'Case ID column to ignore' selection.");
-            }
+            
+            // Now we have the tabular data
+            TabularData tabularData = dataFileReader.readInData(columns);
 
             // Box Dataset to DataModel
-            dataModel = DataConvertUtils.toDataModel(dataset);
+            dataModel = DataConvertUtils.toDataModel(tabularData);
         } else if (covarianceRadioButton.isSelected()) {
             // Covariance data can only be continuous
-            CovarianceDataReader dataReader = new LowerCovarianceDataReader(file, delimiter);
+            CovarianceDataReader dataFileReader = new LowerCovarianceDataFileReader(file, delimiter);
 
-            // Set comment marker
-            dataReader.setCommentMarker(commentMarker);
+            dataFileReader.setCommentMarker(commentMarker);
 
-            // Set the quote character
             if (doubleQuoteRadioButton.isSelected()) {
-                dataReader.setQuoteCharacter('"');
+                dataFileReader.setQuoteCharacter('"');
             }
 
             if (singleQuoteRadioButton.isSelected()) {
-                dataReader.setQuoteCharacter('\'');
+                dataFileReader.setQuoteCharacter('\'');
             }
 
-            Dataset dataset = dataReader.readInData();
+            CovarianceData covarianceData = dataFileReader.readInData();
 
             // Box Dataset to DataModel
-            dataModel = DataConvertUtils.toDataModel(dataset);
+            dataModel = DataConvertUtils.toDataModel(covarianceData);
         } else {
             throw new UnsupportedOperationException("Unsupported selection of File Type!");
         }
