@@ -37,6 +37,8 @@ import javax.swing.table.AbstractTableModel;
  */
 class TabularDataTable extends AbstractTableModel {
 
+    private static final long serialVersionUID = 8832459230421410126L;
+
     /**
      * The DataSet being displayed.
      */
@@ -52,6 +54,13 @@ class TabularDataTable extends AbstractTableModel {
      */
     private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
 
+    /**
+     * Table header notations
+     */
+    private final String columnHeaderNotationDefault = "C";
+    private final String columnHeaderNotationContinuous = "-C";
+    private final String columnHeaderNotationDiscrete = "-D";
+    
     /**
      * Constructs a new DisplayTableModel to wrap the given dataSet.
      *
@@ -113,9 +122,19 @@ class TabularDataTable extends AbstractTableModel {
             Node variable = dataSet.getVariable(columnIndex);
 
             if (row == 0) {
-                boolean discrete = variable instanceof DiscreteVariable;
-                return "C" + Integer.toString(columnIndex + 1)
-                        + (discrete ? "-T" : "");
+                // Append "-D" notation to discrete variables, "-C" for continuous
+                // and append additional "-I" for those added interventional variables - Zhou
+                String columnHeader = columnHeaderNotationDefault + Integer.toString(columnIndex + 1);
+                
+                if (variable instanceof DiscreteVariable) {
+                    columnHeader += columnHeaderNotationDiscrete;
+                } else if (variable instanceof ContinuousVariable) {
+                    columnHeader += columnHeaderNotationContinuous;
+                }
+
+                // Need to add header notations for interventional status and value later - Zhou
+                
+                return columnHeader;
             } else if (row == 1) {
                 return dataSet.getVariable(columnIndex).getName();
             } else if (rowIndex >= dataSet.getNumRows()) {
