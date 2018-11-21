@@ -20,6 +20,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 package edu.cmu.tetradapp.editor;
 
+import com.google.gson.Gson;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.util.DataConvertUtils;
 import edu.cmu.tetradapp.util.ImageUtils;
@@ -39,11 +40,16 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileReader;
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.prefs.Preferences;
 import javax.swing.*;
 import javax.swing.border.CompoundBorder;
@@ -61,6 +67,10 @@ final class DataLoaderSettings extends JPanel {
     private static final long serialVersionUID = -7597768949622586036L;
 
     private final List<File> files;
+    
+    private File metadataFile;
+    private List<String> interventionStatusVarsList;
+    private Map<String, InterventionValue> interventionValueVarsMap;
 
     private JRadioButton tabularRadioButton;
     private JRadioButton covarianceRadioButton;
@@ -103,6 +113,12 @@ final class DataLoaderSettings extends JPanel {
     //================================CONSTRUCTOR=======================//
     public DataLoaderSettings(List<File> files) {
         this.files = files;
+        
+        this.metadataFile = null;
+        
+        this.interventionStatusVarsList = new LinkedList<>();
+        
+        this.interventionValueVarsMap = new HashMap<>(); 
 
         // All labels should share the save size - Zhou
         this.labelSize = new Dimension(200, 30);
@@ -154,8 +170,13 @@ final class DataLoaderSettings extends JPanel {
                     return;
                 }
                 
+                // Now we have the interventional metadata file
+                metadataFile = fileChooser.getSelectedFile();
+                
+                parseMetadataFile(metadataFile);
+                
                 // Show the selected file name
-                selectedMetadataFileName.setText(fileChooser.getSelectedFile().getName());
+                selectedMetadataFileName.setText(metadataFile.getName());
             }
         });
 
@@ -1048,6 +1069,41 @@ final class DataLoaderSettings extends JPanel {
 //        }
 //    }
 
+    private void parseMetadataFile(File metadataFile) {
+        // First read in the metadata file and get the string content
+        String metadataStr = "";
+        try {
+            BufferedReader br = new BufferedReader(new FileReader(metadataFile));
+            StringBuilder sb = new StringBuilder();
+            String line = br.readLine();
+            while (line != null) {
+                sb.append(line);
+                line = br.readLine();
+            }
+            metadataStr = sb.toString();
+        } catch(Exception e) {
+            e.printStackTrace();
+        }
+        
+        Gson gson = new Gson();  
+        
+        InterventionMetadata metadata = gson.fromJson(metadataStr, InterventionMetadata.class);
+        
+        List<Intervention> interventions = metadata.getInterventions();
+        List<Domain> domains = metadata.getDomains();
+        
+        interventions.forEach(e->{
+            if (e.status != null) {
+                interventionStatusVarsList.add(e.status.name);
+            }
+            
+            if (e.value != null) {
+                interventionValueVarsMap.put(e.value.name, e.value);
+            }
+        });
+        
+    }
+    
     /**
      * Kevin's fast data reader
      *
@@ -1057,6 +1113,10 @@ final class DataLoaderSettings extends JPanel {
     public DataModel loadDataWithSettings(File file) throws IOException {
         DataModel dataModel = null;
 
+        // Will need to use the metadata here
+        
+        
+        
         Delimiter delimiter = getDelimiterType();
         boolean hasHeader = isVarNamesFirstRow();
         String commentMarker = getCommentMarker();
@@ -1105,6 +1165,23 @@ final class DataLoaderSettings extends JPanel {
                 throw new UnsupportedOperationException("Unsupported data type!");
             }
 
+            // Overwrite the colun type based on metadata     
+            Arrays.stream(columns).forEach(e->{
+                // Set the intervention status variable column as discrete
+                if (interventionStatusVarsList.contains(e.getName())) {
+                    e.setDiscrete(true);
+                }
+                
+                // Overwrite the value variable type based on metadata
+                if (interventionValueVarsMap.keySet().contains(e.getName())) {
+                    if (interventionValueVarsMap.get(e.getName()).type.equals("continuous")) {
+                        e.setDiscrete(false);
+                    } else if (interventionValueVarsMap.get(e.getName()).type.equals("discrete")) {
+                        e.setDiscrete(true);
+                    }
+                }
+            });
+            
             // Now read in the data rows
             TabularDataFileReader dataFileReader = new TabularDataFileReader(file, delimiter);
             
@@ -1150,5 +1227,123 @@ final class DataLoaderSettings extends JPanel {
 
         return dataModel;
     }
+
+    private static class InterventionMetadata {
+
+        public InterventionMetadata() {
+        }
+        
+        private List<Intervention> interventions;
+        private List<Domain> domains;
+
+        public List<Intervention> getInterventions() {
+            return interventions;
+        }
+
+        public void setInterventions(List<Intervention> interventions) {
+            this.interventions = interventions;
+        }
+
+        public List<Domain> getDomains() {
+            return domains;
+        }
+
+        public void setDomains(List<Domain> domains) {
+            this.domains = domains;
+        }
+        
+    }
+
+    private static class Intervention {
+
+        public Intervention() {
+        }
+        
+        InterventionStatus status;
+        InterventionValue value;
+    }
+
+    private static class Domain {
+
+        public Domain() {
+        }
+    }
+
+    private static class InterventionStatus {
+
+        public InterventionStatus() {
+        }
+        
+        private String name;
+
+        /**
+         * Get the value of name
+         *
+         * @return the value of name
+         */
+        public String getName() {
+            return name;
+        }
+
+        /**
+         * Set the value of name
+         *
+         * @param name new value of name
+         */
+        public void setName(String name) {
+            this.name = name;
+        }
+
+        
+    }
+
+    private static class InterventionValue {
+
+        public InterventionValue() {
+        }
+        
+        private String name;
+
+        /**
+         * Get the value of name
+         *
+         * @return the value of name
+         */
+        public String getName() {
+            return name;
+        }
+
+        /**
+         * Set the value of name
+         *
+         * @param name new value of name
+         */
+        public void setName(String name) {
+            this.name = name;
+        }
+
+        private String type;
+
+        /**
+         * Get the value of type
+         *
+         * @return the value of type
+         */
+        public String getType() {
+            return type;
+        }
+
+        /**
+         * Set the value of type
+         *
+         * @param type new value of type
+         */
+        public void setType(String type) {
+            this.type = type;
+        }
+
+    }
+    
+    
 
 }
