@@ -70,7 +70,7 @@ final class DataLoaderSettings extends JPanel {
     
     private File metadataFile;
     private List<String> interventionStatusVarsList;
-    private Map<String, InterventionValue> interventionValueVarsMap;
+    private Map<String, ColumnVariable> interventionValueVarsMap;
 
     private JRadioButton tabularRadioButton;
     private JRadioButton covarianceRadioButton;
@@ -1090,15 +1090,15 @@ final class DataLoaderSettings extends JPanel {
         InterventionMetadata metadata = gson.fromJson(metadataStr, InterventionMetadata.class);
         
         List<Intervention> interventions = metadata.getInterventions();
-        List<Domain> domains = metadata.getDomains();
+        List<ColumnVariable> others = metadata.getOthers();
         
         interventions.forEach(e->{
             if (e.status != null) {
-                interventionStatusVarsList.add(e.status.name);
+                interventionStatusVarsList.add(e.status.getName());
             }
             
             if (e.value != null) {
-                interventionValueVarsMap.put(e.value.name, e.value);
+                interventionValueVarsMap.put(e.value.getName(), e.value);
             }
         });
         
@@ -1174,10 +1174,10 @@ final class DataLoaderSettings extends JPanel {
                 
                 // Overwrite the value variable type based on metadata
                 if (interventionValueVarsMap.keySet().contains(e.getName())) {
-                    if (interventionValueVarsMap.get(e.getName()).type.equals("continuous")) {
-                        e.setDiscrete(false);
-                    } else if (interventionValueVarsMap.get(e.getName()).type.equals("discrete")) {
+                    if (interventionValueVarsMap.get(e.getName()).isDiscrete()) {
                         e.setDiscrete(true);
+                    } else {
+                        e.setDiscrete(false);
                     }
                 }
             });
@@ -1234,7 +1234,7 @@ final class DataLoaderSettings extends JPanel {
         }
         
         private List<Intervention> interventions;
-        private List<Domain> domains;
+        private List<ColumnVariable> others;
 
         public List<Intervention> getInterventions() {
             return interventions;
@@ -1244,12 +1244,12 @@ final class DataLoaderSettings extends JPanel {
             this.interventions = interventions;
         }
 
-        public List<Domain> getDomains() {
-            return domains;
+        public List<ColumnVariable> getOthers() {
+            return others;
         }
 
-        public void setDomains(List<Domain> domains) {
-            this.domains = domains;
+        public void setOthers(List<ColumnVariable> others) {
+            this.others = others;
         }
         
     }
@@ -1259,22 +1259,17 @@ final class DataLoaderSettings extends JPanel {
         public Intervention() {
         }
         
-        InterventionStatus status;
-        InterventionValue value;
+        ColumnVariable status;
+        ColumnVariable value;
     }
 
-    private static class Domain {
+    private static class ColumnVariable {
 
-        public Domain() {
-        }
-    }
-
-    private static class InterventionStatus {
-
-        public InterventionStatus() {
+        public ColumnVariable() {
         }
         
         private String name;
+        private boolean discrete;
 
         /**
          * Get the value of name
@@ -1294,54 +1289,14 @@ final class DataLoaderSettings extends JPanel {
             this.name = name;
         }
 
-        
-    }
-
-    private static class InterventionValue {
-
-        public InterventionValue() {
-        }
-        
-        private String name;
-
-        /**
-         * Get the value of name
-         *
-         * @return the value of name
-         */
-        public String getName() {
-            return name;
+        public boolean isDiscrete() {
+            return discrete;
         }
 
-        /**
-         * Set the value of name
-         *
-         * @param name new value of name
-         */
-        public void setName(String name) {
-            this.name = name;
+        public void setDiscrete(boolean discrete) {
+            this.discrete = discrete;
         }
-
-        private String type;
-
-        /**
-         * Get the value of type
-         *
-         * @return the value of type
-         */
-        public String getType() {
-            return type;
-        }
-
-        /**
-         * Set the value of type
-         *
-         * @param type new value of type
-         */
-        public void setType(String type) {
-            this.type = type;
-        }
-
+       
     }
     
     
