@@ -70,7 +70,7 @@ final class DataLoaderSettings extends JPanel {
     
     private File metadataFile;
     private List<String> interventionStatusVarsList;
-    private Map<String, ColumnVariable> interventionValueVarsMap;
+    private Map<String, DatasetVariable> interventionValueVarsMap;
 
     private JRadioButton tabularRadioButton;
     private JRadioButton covarianceRadioButton;
@@ -1090,22 +1090,22 @@ final class DataLoaderSettings extends JPanel {
         InterventionMetadata metadata = gson.fromJson(metadataStr, InterventionMetadata.class);
         
         List<Intervention> interventions = metadata.getInterventions();
-        List<ColumnVariable> others = metadata.getOthers();
+        List<DatasetVariable> others = metadata.getOthers();
         
         interventions.forEach(e->{
-            if (e.status != null) {
-                interventionStatusVarsList.add(e.status.getName());
+            if (e.getStatus() != null) {
+                interventionStatusVarsList.add(e.getStatus().getName());
             }
             
-            if (e.value != null) {
-                interventionValueVarsMap.put(e.value.getName(), e.value);
+            if (e.getValue() != null) {
+                interventionValueVarsMap.put(e.getValue().getName(), e.getValue());
             }
         });
         
     }
     
     /**
-     * Kevin's fast data reader
+     * Kevin's data reader
      *
      * @param file
      * @return DataModel on success
@@ -1167,7 +1167,7 @@ final class DataLoaderSettings extends JPanel {
 
             // Overwrite the colun type based on metadata     
             Arrays.stream(columns).forEach(e->{
-                // Set the intervention status variable column as discrete
+                // Set the intervention status variable column as discrete (0 or 1)
                 if (interventionStatusVarsList.contains(e.getName())) {
                     e.setDiscrete(true);
                 }
@@ -1234,7 +1234,7 @@ final class DataLoaderSettings extends JPanel {
         }
         
         private List<Intervention> interventions;
-        private List<ColumnVariable> others;
+        private List<DatasetVariable> others;
 
         public List<Intervention> getInterventions() {
             return interventions;
@@ -1244,11 +1244,11 @@ final class DataLoaderSettings extends JPanel {
             this.interventions = interventions;
         }
 
-        public List<ColumnVariable> getOthers() {
+        public List<DatasetVariable> getOthers() {
             return others;
         }
 
-        public void setOthers(List<ColumnVariable> others) {
+        public void setOthers(List<DatasetVariable> others) {
             this.others = others;
         }
         
@@ -1259,13 +1259,31 @@ final class DataLoaderSettings extends JPanel {
         public Intervention() {
         }
         
-        ColumnVariable status;
-        ColumnVariable value;
+        private DatasetVariable status;
+        private DatasetVariable value;
+
+        public DatasetVariable getStatus() {
+            return status;
+        }
+
+        public void setStatus(DatasetVariable status) {
+            this.status = status;
+        }
+
+        public DatasetVariable getValue() {
+            return value;
+        }
+
+        public void setValue(DatasetVariable value) {
+            this.value = value;
+        }
+        
+        
     }
 
-    private static class ColumnVariable {
+    private static class DatasetVariable {
 
-        public ColumnVariable() {
+        public DatasetVariable() {
         }
         
         private String name;
