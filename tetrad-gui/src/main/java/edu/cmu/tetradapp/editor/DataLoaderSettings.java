@@ -70,7 +70,9 @@ final class DataLoaderSettings extends JPanel {
     
     private File metadataFile;
     private List<String> interventionStatusVarsList;
+    private List<String> interventionCombinedVarsList;
     private Map<String, DatasetVariable> interventionValueVarsMap;
+    private Map<String, DatasetVariable> domainVarsMap;
 
     private JRadioButton tabularRadioButton;
     private JRadioButton covarianceRadioButton;
@@ -117,8 +119,9 @@ final class DataLoaderSettings extends JPanel {
         this.metadataFile = null;
         
         this.interventionStatusVarsList = new LinkedList<>();
-        
+        this.interventionCombinedVarsList = new LinkedList<>();
         this.interventionValueVarsMap = new HashMap<>(); 
+        this.domainVarsMap = new HashMap<>(); 
 
         // All labels should share the save size - Zhou
         this.labelSize = new Dimension(200, 30);
@@ -1084,24 +1087,39 @@ final class DataLoaderSettings extends JPanel {
         } catch(Exception e) {
             e.printStackTrace();
         }
-        
+
+        // Parse the metadata json string with Gson
         Gson gson = new Gson();  
         
+        // Convert the json string to java object
         InterventionMetadata metadata = gson.fromJson(metadataStr, InterventionMetadata.class);
         
         List<Intervention> interventions = metadata.getInterventions();
-        List<DatasetVariable> others = metadata.getOthers();
+        List<DatasetVariable> domainVariables = metadata.getDomainVariables();
         
         interventions.forEach(e->{
+            // The value is REQUIRED regardless if status is null or not
+            if (e.getValue() == null) {
+                throw new UnsupportedOperationException("The value property MUST be specified in each intervention in your metadata file!");
+            }
+
+            // The status property can be null if the value is combined column with asterisk
             if (e.getStatus() != null) {
                 interventionStatusVarsList.add(e.getStatus().getName());
-            }
-            
-            if (e.getValue() != null) {
+                interventionValueVarsMap.put(e.getValue().getName(), e.getValue());
+                // Is it possible that the value column still contains asterisk given the status column?
+            } else {
+                // Make this as combined column
+                interventionCombinedVarsList.add(e.getValue().getName());
                 interventionValueVarsMap.put(e.getValue().getName(), e.getValue());
             }
         });
         
+        // Domain variable name and type (discrete or not)
+        // We only use this to overwrite the variable data type
+        domainVariables.forEach(e->{
+            domainVarsMap.put(e.getName(), e);
+        });
     }
     
     /**
@@ -1112,11 +1130,7 @@ final class DataLoaderSettings extends JPanel {
      */
     public DataModel loadDataWithSettings(File file) throws IOException {
         DataModel dataModel = null;
-
-        // Will need to use the metadata here
-        
-        
-        
+ 
         Delimiter delimiter = getDelimiterType();
         boolean hasHeader = isVarNamesFirstRow();
         String commentMarker = getCommentMarker();
@@ -1165,7 +1179,7 @@ final class DataLoaderSettings extends JPanel {
                 throw new UnsupportedOperationException("Unsupported data type!");
             }
 
-            // Overwrite the colun type based on metadata     
+            // Overwrite the column type based on metadata     
             Arrays.stream(columns).forEach(e->{
                 // Set the intervention status variable column as discrete (0 or 1)
                 if (interventionStatusVarsList.contains(e.getName())) {
@@ -1179,6 +1193,11 @@ final class DataLoaderSettings extends JPanel {
                     } else {
                         e.setDiscrete(false);
                     }
+                }
+                
+                // Handle domain variables
+                if (domainVarsMap.keySet().contains(e.getName())) {
+                    e.setDiscrete(domainVarsMap.get(e.getName()).isDiscrete());
                 }
             });
             
@@ -1201,6 +1220,12 @@ final class DataLoaderSettings extends JPanel {
             // Now we have the tabular data
             TabularData tabularData = dataFileReader.readInData(columns);
 
+            // Spilit the combined intervention value column into individual status and value columns
+            // before converting into Tetrad data model
+            interventionCombinedVarsList.forEach(e->{
+
+            });
+            
             // Box Dataset to DataModel
             dataModel = DataConvertUtils.toDataModel(tabularData);
         } else if (covarianceRadioButton.isSelected()) {
@@ -1233,8 +1258,9 @@ final class DataLoaderSettings extends JPanel {
         public InterventionMetadata() {
         }
         
+        // The variable names below must mathc the json property names
         private List<Intervention> interventions;
-        private List<DatasetVariable> others;
+        private List<DatasetVariable> domainVariables;
 
         public List<Intervention> getInterventions() {
             return interventions;
@@ -1244,14 +1270,14 @@ final class DataLoaderSettings extends JPanel {
             this.interventions = interventions;
         }
 
-        public List<DatasetVariable> getOthers() {
-            return others;
+        public List<DatasetVariable> getDomainVariables() {
+            return domainVariables;
         }
 
-        public void setOthers(List<DatasetVariable> others) {
-            this.others = others;
+        public void setDomainVariables(List<DatasetVariable> domainVariables) {
+            this.domainVariables = domainVariables;
         }
-        
+
     }
 
     private static class Intervention {
