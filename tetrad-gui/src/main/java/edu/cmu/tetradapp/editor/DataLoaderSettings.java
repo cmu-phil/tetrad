@@ -34,6 +34,9 @@ import edu.pitt.dbmi.data.reader.tabular.TabularColumnFileReader;
 import edu.pitt.dbmi.data.reader.tabular.TabularColumnFileReader.TabularDataColumn;
 import edu.pitt.dbmi.data.reader.tabular.TabularData;
 import edu.pitt.dbmi.data.reader.tabular.TabularDataFileReader;
+import edu.pitt.dbmi.data.reader.tabular.TabularDataFileReader.MixedDataColumn;
+import edu.pitt.dbmi.data.reader.tabular.TabularDataFileReader.MixedTabularDataset;
+import edu.pitt.dbmi.data.reader.tabular.TabularDataFileReader.VerticalDiscreteTabularDataset;
 import edu.pitt.dbmi.data.util.TextFileUtils;
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -70,7 +73,7 @@ final class DataLoaderSettings extends JPanel {
     
     private File metadataFile;
     private List<String> interventionStatusVarsList;
-    private List<String> interventionCombinedVarsList;
+    private List<String> combinedInterventionalVarsList;
     private Map<String, DatasetVariable> interventionValueVarsMap;
     private Map<String, DatasetVariable> domainVarsMap;
 
@@ -119,7 +122,7 @@ final class DataLoaderSettings extends JPanel {
         this.metadataFile = null;
         
         this.interventionStatusVarsList = new LinkedList<>();
-        this.interventionCombinedVarsList = new LinkedList<>();
+        this.combinedInterventionalVarsList = new LinkedList<>();
         this.interventionValueVarsMap = new HashMap<>(); 
         this.domainVarsMap = new HashMap<>(); 
 
@@ -1110,7 +1113,7 @@ final class DataLoaderSettings extends JPanel {
                 // Is it possible that the value column still contains asterisk given the status column?
             } else {
                 // Make this as combined column
-                interventionCombinedVarsList.add(e.getValue().getName());
+                combinedInterventionalVarsList.add(e.getValue().getName());
                 interventionValueVarsMap.put(e.getValue().getName(), e.getValue());
             }
         });
@@ -1220,12 +1223,57 @@ final class DataLoaderSettings extends JPanel {
             // Now we have the tabular data
             TabularData tabularData = dataFileReader.readInData(columns);
 
-            // Spilit the combined intervention value column into individual status and value columns
-            // before converting into Tetrad data model
-            interventionCombinedVarsList.forEach(e->{
+            // The tabularData can only either be discrete or mixed due to the discrete column of interventional status
+            if (tabularData instanceof VerticalDiscreteTabularDataset) {
+                VerticalDiscreteTabularDataset tabularDataset = (VerticalDiscreteTabularDataset) tabularData;
+                System.out.println("===================================Discrete=============================================");
+                Arrays.stream(tabularDataset.getColumns()).forEach(System.out::println);
+                System.out.println("--------------------------------------------------------------------------------");
+                int[][] data = tabularDataset.getData();
+                int numOfCols = data.length;
+                int numOfRows = data[0].length;
+                for (int row = 0; row < numOfRows; row++) {
+                    for (int col = 0; col < numOfCols; col++) {
+                        System.out.printf("%d\t", data[col][row]);
+                    }
+                    System.out.println();
+                }
+                System.out.println("================================================================================");
+            } else if (tabularData instanceof MixedTabularDataset) {
+                MixedTabularDataset tabularDataset = (MixedTabularDataset) tabularData;
 
-            });
+                MixedDataColumn[] mixedCols = tabularDataset.getColumns();
+                System.out.println("======================================Mixed==========================================");
+                Arrays.stream(tabularDataset.getColumns()).forEach(System.out::println);
+                System.out.println("--------------------------------------------------------------------------------");
+                double[][] continuousData = tabularDataset.getContinuousData();
+                int[][] discreteData = tabularDataset.getDiscreteData();
+                int numOfRows = tabularDataset.getNumOfRows();
+                int numOfCols = mixedCols.length;
+                for (int row = 0; row < numOfRows; row++) {
+                    for (int col = 0; col < numOfCols; col++) {
+                        if (continuousData[col] != null) {
+                            System.out.printf("%f\t", continuousData[col][row]);
+                        }
+                        if (discreteData[col] != null) {
+                            System.out.printf("%d\t", discreteData[col][row]);
+                        }
+                    }
+                    System.out.println();
+                }
+                System.out.println("================================================================================");
+            }
             
+            
+            // TO-DO
+            // Split the combined intervention value column into individual status and value columns
+            // before converting into Tetrad data model
+//            Arrays.stream(columns).forEach(e->{
+//                if (combinedInterventionalVarsList.contains(e.getName())) {
+//
+//                }
+//            });
+
             // Box Dataset to DataModel
             dataModel = DataConvertUtils.toDataModel(tabularData);
         } else if (covarianceRadioButton.isSelected()) {
