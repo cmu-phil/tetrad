@@ -275,7 +275,7 @@ public final class Fges implements GraphSearch, GraphScorer {
 
         this.modelScore = totalScore;
 
-        System.out.println("BIC score = " + modelScore);
+        this.out.println("Model Score = " + modelScore);
 
         long endTime = System.currentTimeMillis();
         this.elapsedTime = endTime - start;
