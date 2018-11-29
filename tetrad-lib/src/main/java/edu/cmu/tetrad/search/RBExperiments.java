@@ -187,7 +187,7 @@ public class RBExperiments {
 			}
 		}
 
-		// create an instance of class and run an experimet on it
+		// create an instance of class and run an experiment on it
 		RBExperiments DFC = new RBExperiments();
 		DFC.directory = dataPath;
 		double[] lv = new double[]{0.0, 0.1, 0.2};
