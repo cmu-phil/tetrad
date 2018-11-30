@@ -189,12 +189,13 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
 
         initComponents();
         resetAllSettings();
+
         restorePreviousState(runner.getModels());
 
         // Repopulate all the previous selections if reopen the search box
         if (runner.getGraphs() != null && runner.getGraphs().size() > 0) {
             parametersPanel.addToPanel(runner);
-            
+   
             // show the generated graph with bootstrap table if reopen the search box
             graphContainer.add(createSearchResultPane(runner.getGraph()));
             changeCard(GRAPH_CARD);
@@ -202,15 +203,38 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
     }
 
     private void storeStates(Map<String, Object> models) {
-        models.put(ALGO_PARAM, algorithmList.getSelectedValue());
         models.put(IND_TEST_PARAM, indTestComboBox.getSelectedItem());
         models.put(SCORE_PARAM, scoreComboBox.getSelectedItem());
         models.put(ALGO_TYPE_PARAM, algoFilterBtnGrp.getSelection().getActionCommand());
         models.put(LINEAR_PARAM, linearVarChkBox.isSelected());
         models.put(GAUSSIAN_PARAM, gaussianVarChkBox.isSelected());
         models.put(KNOWLEDGE_PARAM, knowledgeChkBox.isSelected());
+        
+        if (runner.getGraphs() != null && runner.getGraphs().size() > 0) {
+            models.put(ALGO_PARAM, runner.getAlgorithm().getClass().getAnnotation(edu.cmu.tetrad.annotation.Algorithm.class).name());
+        } else {
+            models.put(ALGO_PARAM, algorithmList.getSelectedValue().toString());
+        }
     }
 
+    private void restoreSelectedAlgoFromSearch() {
+        // Restore the selected algo name using runner instead of models
+        String selectedAlgoName = runner.getAlgorithm().getClass().getAnnotation(edu.cmu.tetrad.annotation.Algorithm.class).name();
+        Enumeration<AlgorithmModel> enums = algoModels.elements();
+        while (enums.hasMoreElements()) {
+            AlgorithmModel model = enums.nextElement();
+            if (model.toString().equals(selectedAlgoName)) {
+                algorithmList.setSelectedValue(model, true);
+
+                String title = String.format("Algorithm: %s", selectedAlgoName);
+                algorithmGraphTitle.setText(title);
+                break;
+            }
+        }
+    }
+    
+    // This restore mechanism won't restore user selections other than selected algo name
+    // when user changes the upstream, because a new runner is created and we lose the stored models fromt he old runner - Zhou
     private void restorePreviousState(Map<String, Object> models) {
         Object obj = models.get(LINEAR_PARAM);
         if ((obj != null) && (obj instanceof Boolean)) {
@@ -239,8 +263,8 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         refreshTestAndScoreList();
 
         obj = models.get(ALGO_PARAM);
-        if ((obj != null) && (obj instanceof AlgorithmModel)) {
-            String value = ((AlgorithmModel) obj).toString();
+        if ((obj != null) && (obj instanceof String)) {
+            String value = (String) obj;
             Enumeration<AlgorithmModel> enums = algoModels.elements();
             while (enums.hasMoreElements()) {
                 AlgorithmModel model = enums.nextElement();
@@ -253,7 +277,10 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
                     break;
                 }
             }
+        } else if (runner.getGraphs() != null && runner.getGraphs().size() > 0) {
+            restoreSelectedAlgoFromSearch();
         }
+        
         obj = models.get(IND_TEST_PARAM);
         if ((obj != null) && (obj instanceof IndependenceTestModel)) {
             String value = ((IndependenceTestModel) obj).toString();
@@ -268,6 +295,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
                 }
             }
         }
+        
         obj = models.get(SCORE_PARAM);
         if ((obj != null) && (obj instanceof ScoreModel)) {
             String value = ((ScoreModel) obj).toString();

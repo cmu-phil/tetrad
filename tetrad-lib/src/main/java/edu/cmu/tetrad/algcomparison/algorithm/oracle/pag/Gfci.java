@@ -14,7 +14,6 @@ import edu.cmu.tetrad.search.GFci;
 import edu.cmu.tetrad.util.Parameters;
 import edu.pitt.dbmi.algo.resampling.GeneralResamplingTest;
 import edu.pitt.dbmi.algo.resampling.ResamplingEdgeEnsemble;
-
 import java.io.PrintStream;
 import java.util.List;
 
@@ -46,7 +45,7 @@ public class Gfci implements Algorithm, HasKnowledge, UsesScoreWrapper, TakesInd
     @Override
     public Graph search(DataModel dataSet, Parameters parameters) {
     	if (parameters.getInt("numberResampling") < 1) {
-            GFci search = new GFci(test.getTest(dataSet, parameters), score.getScore(dataSet, parameters));
+            GFci search = new GFci(test.getTest(dataSet, parameters), score.getScore(dataSet, parameters));  
             search.setMaxDegree(parameters.getInt("maxDegree"));
             search.setKnowledge(knowledge);
             search.setVerbose(parameters.getBoolean("verbose"));
