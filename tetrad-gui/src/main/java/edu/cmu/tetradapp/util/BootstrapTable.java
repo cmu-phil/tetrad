@@ -11,7 +11,10 @@ import edu.cmu.tetrad.graph.Edges;
 import edu.cmu.tetrad.graph.Endpoint;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
+
+import java.awt.Color;
 import java.awt.Component;
+import java.awt.Font;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
@@ -21,6 +24,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.RowSorter;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.table.JTableHeader;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableModel;
@@ -81,15 +85,38 @@ public final class BootstrapTable {
         columnNames.add(4, "No edge");
         columnNames.add(5, "-->");
         columnNames.add(6, "<--");
-        columnNames.add(7, "o->");
-        columnNames.add(8, "<-o");
-        columnNames.add(9, "o-o");
-        columnNames.add(10, "<->");
-        columnNames.add(11, "---");
-        columnNames.add(12, "Additional");
+        columnNames.add(7, "-->"); // -G> pd nl
+        columnNames.add(8, "<--"); // <G- pd nl
+        columnNames.add(9, "-->"); // =G> dd nl
+        columnNames.add(10, "<--"); // <G= dd nl
+        columnNames.add(11, "o->");
+        columnNames.add(12, "<-o");
+        columnNames.add(13, "o-o");
+        columnNames.add(14, "<->");
+        columnNames.add(15, "---");
         
         // Table header
         tableModel.setColumnIdentifiers(columnNames.toArray());
+        
+        // Set custom header renderer
+        final JTableHeader header = table.getTableHeader();
+        final Font boldFont = new Font(header.getFont().getFontName(), Font.BOLD, 18);
+        final TableCellRenderer headerRenderer = header.getDefaultRenderer();
+        header.setDefaultRenderer(new TableCellRenderer() {
+			
+			@Override
+			public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus,
+					int row, int column) {
+				Component comp = headerRenderer.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+				if(column > 6 && column < 11) {
+					comp.setForeground(Color.GREEN);
+				}
+				if(column > 8 && column < 11) {
+					comp.setFont(boldFont);
+				}
+				return comp;
+			}
+		});
 
         // Add new row to table
         Set<Edge> edges = graph.getEdges();
@@ -142,7 +169,7 @@ public final class BootstrapTable {
     
     // Add a new row to bootstrap table
     private static void addRow(DefaultTableModel tableModel, String node1, String node2, String edgeType, List<Edge.Property> properties, List<EdgeTypeProbability> edgeTypeProbabilities) {
-        String[] row = new String[13];
+        String[] row = new String[tableModel.getColumnCount()];
         
         // node1
         row[0] = node1;
@@ -162,8 +189,10 @@ public final class BootstrapTable {
         double maxProb = -1;
         String maxProbString = "";
         for (EdgeTypeProbability edgeTypeProb : edgeTypeProbabilities) {
-            String type = "";
             double prob = edgeTypeProb.getProbability();
+            if(prob == 0.0) {
+            	continue;
+            }
             String probValue = String.format("%.4f", prob);
             
             // FInd the max value of edge type probability
@@ -178,54 +207,86 @@ public final class BootstrapTable {
                     row[4] = probValue;
                     break;
                 case ta:
-                    type = "-->";
-                    if (edgeType.equals(type)  && edgeTypeProb.getProperties().isEmpty()) {
-                        row[5] = probValue;
-                    }
+                	if(edgeTypeProb.getProperties().isEmpty()) {
+                        row[5] = probValue;               		
+                	}else {
+                		boolean _pd = false;
+                		boolean _dd = false;
+                		boolean _nl = false;
+                		for (Edge.Property property : edgeTypeProb.getProperties()) {
+                            if(property == Edge.Property.pd) {
+                            	_pd = true;
+                            }
+                            if(property == Edge.Property.dd) {
+                            	_dd = true;
+                            }
+                            if(property == Edge.Property.nl) {
+                            	_nl = true;
+                            }
+                        }
+                		if(_pd && _nl) {
+                			// row 7: pd nl
+                			row[7] = probValue;
+                		}else if(_dd && _nl) {
+                			// row 9: dd nl
+                			row[9] = probValue;
+                		}else {
+                			row[5] = probValue;   
+                		}
+                	}
                     break;
                 case at:
-                    type = "<--";
-                    if (edgeType.equals(type)  && edgeTypeProb.getProperties().isEmpty()) {
+                	if(edgeTypeProb.getProperties().isEmpty()) {
                         row[6] = probValue;
-                    }
+                	}else {
+                		boolean _pd = false;
+                		boolean _dd = false;
+                		boolean _nl = false;
+                		for (Edge.Property property : edgeTypeProb.getProperties()) {
+                            if(property == Edge.Property.pd) {
+                            	_pd = true;
+                            }
+                            if(property == Edge.Property.dd) {
+                            	_dd = true;
+                            }
+                            if(property == Edge.Property.nl) {
+                            	_nl = true;
+                            }
+                        }
+                		if(_pd && _nl) {
+                			// row 8: pd nl
+                			row[8] = probValue;
+                		}else if(_dd && _nl) {
+                			// row 10: dd nl
+                			row[10] = probValue;
+                		}else {
+                			row[6] = probValue;   
+                		}
+                	}
                     break;
                 case ca:
-                    type = "o->";
-                    if (edgeType.equals(type) && edgeTypeProb.getProperties().isEmpty()) {
-                        row[7] = probValue;
-                    }
+                    row[11] = probValue;
                     break;
                 case ac:
-                    type = "<-o";
-                    if (edgeType.equals(type) && edgeTypeProb.getProperties().isEmpty()) {
-                        row[8] = probValue;
-                    }
+                    row[12] = probValue;
                     break;
                 case cc:
-                    type = "o-o";
-                    if (edgeType.equals(type) && edgeTypeProb.getProperties().isEmpty()) {
-                        row[9] = probValue;
-                    }
+                    row[13] = probValue;
                     break;
                 case aa:
-                    type = "<->";
-                    if (edgeType.equals(type) && edgeTypeProb.getProperties().isEmpty()) {
-                        row[10] = probValue;
-                    }
+                    row[14] = probValue;
                     break;
                 case tt:
-                    type = "---";
-                    if (edgeType.equals(type) && edgeTypeProb.getProperties().isEmpty()) {
-                        row[11] = probValue;
-                    }
+                    row[15] = probValue;
                     break;
                 default:
+                	System.out.println("No filling edgeType: " + edgeType);
                     break;
             }
 
             // Additional info
             // Put all edge type probablities with some of properties (nl, dd, pl, pd) here
-            if (!edgeTypeProb.getProperties().isEmpty()) {
+            /*if (!edgeTypeProb.getProperties().isEmpty()) {
                 type = node1 + " " + type + " " + node2;
                 for (Edge.Property property : edgeTypeProb.getProperties()) {
                     type = type + " " + property.name();
@@ -239,7 +300,7 @@ public final class BootstrapTable {
                     row[12] = additionalInfo;
                 }
  
-            }
+            }*/
 
         }
         
