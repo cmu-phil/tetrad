@@ -190,7 +190,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         initComponents();
         resetAllSettings();
 
-        restorePreviousState(runner.getModels());
+        restoreUserAlgoSelections(runner.getUserAlgoSelections());
 
         // Repopulate all the previous selections if reopen the search box
         if (runner.getGraphs() != null && runner.getGraphs().size() > 0) {
@@ -202,53 +202,44 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         }
     }
 
-    private void storeStates(Map<String, Object> models) {
-        models.put(IND_TEST_PARAM, indTestComboBox.getSelectedItem());
-        models.put(SCORE_PARAM, scoreComboBox.getSelectedItem());
-        models.put(ALGO_TYPE_PARAM, algoFilterBtnGrp.getSelection().getActionCommand());
-        models.put(LINEAR_PARAM, linearVarChkBox.isSelected());
-        models.put(GAUSSIAN_PARAM, gaussianVarChkBox.isSelected());
-        models.put(KNOWLEDGE_PARAM, knowledgeChkBox.isSelected());
+    private void rememberUserAlgoSelections(Map<String, Object> userAlgoSelections) {
+        userAlgoSelections.put(IND_TEST_PARAM, indTestComboBox.getSelectedItem());
+        userAlgoSelections.put(SCORE_PARAM, scoreComboBox.getSelectedItem());
+        userAlgoSelections.put(ALGO_TYPE_PARAM, algoFilterBtnGrp.getSelection().getActionCommand());
+        userAlgoSelections.put(LINEAR_PARAM, linearVarChkBox.isSelected());
+        userAlgoSelections.put(GAUSSIAN_PARAM, gaussianVarChkBox.isSelected());
+        userAlgoSelections.put(KNOWLEDGE_PARAM, knowledgeChkBox.isSelected());
         
+        // When there's a search result, we store the algo string name from the search so we wont' lose it
+        // when the upstream nodes change.
+        // Otherwise, we use the one that users selcted on the UI - Zhou
         if (runner.getGraphs() != null && runner.getGraphs().size() > 0) {
-            models.put(ALGO_PARAM, runner.getAlgorithm().getClass().getAnnotation(edu.cmu.tetrad.annotation.Algorithm.class).name());
+            userAlgoSelections.put(ALGO_PARAM, runner.getAlgorithm().getClass().getAnnotation(edu.cmu.tetrad.annotation.Algorithm.class).name());
         } else {
-            models.put(ALGO_PARAM, algorithmList.getSelectedValue().toString());
-        }
-    }
-
-    private void restoreSelectedAlgoFromSearch() {
-        // Restore the selected algo name using runner instead of models
-        String selectedAlgoName = runner.getAlgorithm().getClass().getAnnotation(edu.cmu.tetrad.annotation.Algorithm.class).name();
-        Enumeration<AlgorithmModel> enums = algoModels.elements();
-        while (enums.hasMoreElements()) {
-            AlgorithmModel model = enums.nextElement();
-            if (model.toString().equals(selectedAlgoName)) {
-                algorithmList.setSelectedValue(model, true);
-
-                String title = String.format("Algorithm: %s", selectedAlgoName);
-                algorithmGraphTitle.setText(title);
-                break;
-            }
+            userAlgoSelections.put(ALGO_PARAM, algorithmList.getSelectedValue().toString());
         }
     }
     
-    // This restore mechanism won't restore user selections other than selected algo name
-    // when user changes the upstream, because a new runner is created and we lose the stored models fromt he old runner - Zhou
-    private void restorePreviousState(Map<String, Object> models) {
-        Object obj = models.get(LINEAR_PARAM);
+    /**
+     * This restore mechanism won't restore user selections other than selected algo name
+     * when user changes the upstream (after clicking the "Execute" button), 
+     * because a new algo runner is created and we lose the stored models from the old runner - Zhou
+     * @param models 
+     */
+    private void restoreUserAlgoSelections(Map<String, Object> userAlgoSelections) {
+        Object obj = userAlgoSelections.get(LINEAR_PARAM);
         if ((obj != null) && (obj instanceof Boolean)) {
             linearVarChkBox.setSelected((Boolean) obj);
         }
-        obj = models.get(GAUSSIAN_PARAM);
+        obj = userAlgoSelections.get(GAUSSIAN_PARAM);
         if ((obj != null) && (obj instanceof Boolean)) {
             gaussianVarChkBox.setSelected((Boolean) obj);
         }
-        obj = models.get(KNOWLEDGE_PARAM);
+        obj = userAlgoSelections.get(KNOWLEDGE_PARAM);
         if ((obj != null) && (obj instanceof Boolean)) {
             knowledgeChkBox.setSelected((Boolean) obj);
         }
-        obj = models.get(ALGO_TYPE_PARAM);
+        obj = userAlgoSelections.get(ALGO_TYPE_PARAM);
         if ((obj != null) && (obj instanceof String)) {
             String actCmd = String.valueOf(obj);
             Optional<JRadioButton> opt = algoTypeOpts.stream()
@@ -262,26 +253,29 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         refreshAlgorithmList();
         refreshTestAndScoreList();
 
-        obj = models.get(ALGO_PARAM);
-        if ((obj != null) && (obj instanceof String)) {
-            String value = (String) obj;
-            Enumeration<AlgorithmModel> enums = algoModels.elements();
-            while (enums.hasMoreElements()) {
-                AlgorithmModel model = enums.nextElement();
-                if (model.toString().equals(value)) {
-                    models.put(ALGO_PARAM, model);
-                    algorithmList.setSelectedValue(model, true);
-
-                    String title = String.format("Algorithm: %s", model.getAlgorithm().getAnnotation().name());
-                    algorithmGraphTitle.setText(title);
-                    break;
-                }
+        // Restore the algo name from search when there's a search result.
+        // Otherwise use the stored name form runner.getModels(), which will be lost when the upstream nodes change - Zhou
+        String selectedAlgoName = null;
+        if (runner.getGraphs() != null && runner.getGraphs().size() > 0) {
+            selectedAlgoName = runner.getAlgorithm().getClass().getAnnotation(edu.cmu.tetrad.annotation.Algorithm.class).name();
+        } else {
+            obj = userAlgoSelections.get(ALGO_PARAM);
+            if ((obj != null) && (obj instanceof String)) {
+                selectedAlgoName = (String) obj;
             }
-        } else if (runner.getGraphs() != null && runner.getGraphs().size() > 0) {
-            restoreSelectedAlgoFromSearch();
+        }
+        Enumeration<AlgorithmModel> enums = algoModels.elements();
+        while (enums.hasMoreElements()) {
+            AlgorithmModel model = enums.nextElement();
+            if (model.toString().equals(selectedAlgoName)) {
+                algorithmList.setSelectedValue(model, true);
+                String title = String.format("Algorithm: %s", model.getAlgorithm().getAnnotation().name());
+                algorithmGraphTitle.setText(title);
+                break;
+            }
         }
         
-        obj = models.get(IND_TEST_PARAM);
+        obj = userAlgoSelections.get(IND_TEST_PARAM);
         if ((obj != null) && (obj instanceof IndependenceTestModel)) {
             String value = ((IndependenceTestModel) obj).toString();
             ComboBoxModel<IndependenceTestModel> comboBoxModels = indTestComboBox.getModel();
@@ -289,14 +283,14 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
             for (int i = 0; i < size; i++) {
                 IndependenceTestModel model = comboBoxModels.getElementAt(i);
                 if (model.toString().equals(value)) {
-                    models.put(IND_TEST_PARAM, model);
+                    userAlgoSelections.put(IND_TEST_PARAM, model);
                     indTestComboBox.getModel().setSelectedItem(model);
                     break;
                 }
             }
         }
         
-        obj = models.get(SCORE_PARAM);
+        obj = userAlgoSelections.get(SCORE_PARAM);
         if ((obj != null) && (obj instanceof ScoreModel)) {
             String value = ((ScoreModel) obj).toString();
             ComboBoxModel<ScoreModel> comboBoxModels = scoreComboBox.getModel();
@@ -304,7 +298,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
             for (int i = 0; i < size; i++) {
                 ScoreModel model = comboBoxModels.getElementAt(i);
                 if (model.toString().equals(value)) {
-                    models.put(SCORE_PARAM, model);
+                    userAlgoSelections.put(SCORE_PARAM, model);
                     scoreComboBox.getModel().setSelectedItem(model);
                     break;
                 }
@@ -1109,7 +1103,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
 
     @Override
     public boolean finalizeEditor() {
-        storeStates(runner.getModels());
+        rememberUserAlgoSelections(runner.getUserAlgoSelections());
 
         List<Graph> graphs = runner.getGraphs();
         if (hpcJobInfo == null && (graphs == null || graphs.isEmpty())) {
