@@ -43,12 +43,12 @@
 </div>
 
 <!-- Assign id with the section name, this will be linked in the table of contents -->
-<h2 id="graph_box"><span  class="section_heading">Graph Box</span></h2>
+<h1 id="graph_box"><span  class="section_heading">Graph Box</span></h1>
 
 <p>The graph box can be used to create a new graph, or to copy or edit a graph from another box.</p>
 
 <!-- Follow this example to create a list of items -->
-<h3>Possible Parent Boxes of the Graph Box</h3>
+<h2>Possible Parent Boxes of the Graph Box</h2>
 
 <!-- Assign a class="ul" for pretty look -->
 <ul class="ul">
@@ -64,7 +64,7 @@
 </ul>
 
 <!-- Follow this example to create a list of items -->
-<h3>Possible Child Boxes of the Graph Box</h3>
+<h2>Possible Child Boxes of the Graph Box</h2>
 
 <!-- Assign a class="ul" for pretty look -->
 <ul class="ul">
@@ -77,7 +77,7 @@
 <li>A knowledge box</li>
 </ul>
 
-<h3>Creating a New Graph</h3>
+<h2>Creating a New Graph</h2>
 
 <p>When you first open a graph box with no parent, you will be presented with several options for which kind of graph you would like to create: a directed acyclic graph (DAG), a structural equation model (SEM)graph, a general graph, or a time lag graph. Once you have selected the type of graph you want to create, an empty graph box will open.</p>
 
@@ -93,7 +93,7 @@
 <p>The general <i>graph</i> option allows all edge types and configurations.</p>
 
 
-<h3>Creating a Random Graph </h3>
+<h2>Creating a Random Graph </h2>
 
 <p>Instead of manually creating a new graph, you can randomly create one. To do so, open up a new empty graph box and click on “Graph—Random Graph.” This will open up a dialog box from which you can choose the type of random graph you would like to create by clicking through the tabs at the top of the window. Tetrad will randomly generate a DAG, a multiple indicator model (MIM) graph, or a scale-free graph. Each type of graph is associated with a number of parameters (including but not limited to the number of nodes and the maximum degree) which you can set.</p>
 
@@ -102,7 +102,7 @@
 <p>Random graph generation is not available for time lag graphs. </p>
 
 
-<h3>Loading a Saved Graph</h3>
+<h2>Loading a Saved Graph</h2>
 
 <p>If you have previously saved a graph from Tetrad, you can load it into a new graph box by clicking “File—Load…,” and then clicking on the file type of the saved graph. Tetrad can load graphs from XML, from text, and from JSON files.</p>
 
@@ -111,7 +111,7 @@
 <p>You can also save an image of your graph by clicking “File—Save Graph Image…” Tetrad cannot load graphs from saved image files.</p>
 
 
-<h3>Copying a Graph</h3>
+<h2>Copying a Graph</h2>
 
 <p>There are two ways to copy a graph. </p>
 
@@ -120,13 +120,13 @@
 <p>The second method allows you to copy a graph directly from most types of graph box. First, highlight the graph in the old graph box and click “Edit—Copy Selected Graph.” Then open up your new graph box and click “Edit—Paste Selected Graph.” (Some types of graph box do not have this functionality; see “Manipulating a Graph.”)</p>
 
 
-<h3>Manipulating a Graph</h3>
+<h2>Manipulating a Graph</h2>
 
 <p>If you create a graph box as a child of another box, you can also choose to perform a graph manipulation on the parent graph. Your graph box will then contain the manipulated version of the parent graph.</p>
 
 <p>The available graph manipulations are:</p>
 
-<h4>Display Subgraphs</h4>
+<h3>Display Subgraphs</h3>
 
 <p>This option allows you to isolate a subgraph from the parent graph. Add variables to the subgraph by highlighting the variable name in the “Unselected” pane and clicking on the right arrow. The hiighlighted variable will then show up in the “Selected” pane. (You may also define which variables go in the “Selected” pane by clicking on the “Text Input…” button and typing the variable names directly into the window.) Choose the type of subgraph you want to display from the drop-down panel below. Then click “Graph It!” and the resulting subgraph of the selected variables will appear in the pane on the right. (Some types of subgraph, such as “Markov Blanket,” will include unselected variables if they are part of the subgraph as defined on the selected variables. So, for instance, an unselected variable that is in the Markov blanket of a selected variable will appear in the Markov Blanket subgraph. Edges between unselected variables will not be shown.) For large or very dense graphs, it may take a long time to isolate and display subgraphs.</p>
 
@@ -152,54 +152,54 @@
 
 <p>The “Graph Properties” and “Paths” functions are available in this type of graph box, but they will display information about the full graph, not the currently displayed subgraph. To see graph properties for the subgraph, first copy it into a new graph box.</p>
 
-<h4>Choose DAG in Pattern</h4>
+<h3>Choose DAG in Pattern</h3>
 
 <p>If given a pattern as input, this chooses a random DAG from the Markov equivalence class of the pattern to display. The resulting DAG functions as a normal graph box.</p>
 
-<h4>Choose MAG in PAG</h4>
+<h3>Choose MAG in PAG</h3>
 
 <p>If given a partial ancestral graph (PAG) as input, this chooses a random mixed ancestral graph (MAG) from the equivalence class of the PAG to display. The resulting MAG functions as a normal graph box.</p>
 
-<h4>Show DAGs in Pattern</h4>
+<h3>Show DAGs in Pattern</h3>
 
 <p>If given a pattern as input, this displays all DAGs in the pattern’s Markov equivalence class. Each DAG is displayed in its own tab. Most graph box functionality is not available in this type of graph box, but the DAG currently on display can be copied by clicking “Copy Selected Graph.”</p>
 
-<h4>Generate Pattern from DAG</h4>
+<h3>Generate Pattern from DAG</h3>
 
 <p>If given a DAG as input, this displays the pattern of the Markov equivalence class to which the parent graph belongs. The resulting pattern functions as a normal graph box.</p>
 
-<h4>Generate PAG from DAG</h4>
+<h3>Generate PAG from DAG</h3>
 
 <p>Converts an input graph from partial ancestral to directed acyclic format. The resulting DAG functions as a normal graph box.</p>
 
-<h4>Generate PAG from tsDAG</h4>
+<h3>Generate PAG from tsDAG</h3>
 
 <p>Converts an input graph from partial ancestral to time series DAG format. The resulting DAG functions as a normal graph box.</p>
 
-<h4>Make Bidirected Edges Undirected</h4>
+<h3>Make Bidirected Edges Undirected</h3>
 
 <p>Replaces all bidirected edges in the input graph with undirected edges.</p>
 
-<h4>Make Undirected Edges Bidirected</h4>
+<h3>Make Undirected Edges Bidirected</h3>
 
 <p>Replaces all undirected edges in the input graph with bidirected edges.</p>
 
-<h4>Make All Edges Undirected</h4>
+<h3>Make All Edges Undirected</h3>
 
 <p>Replaces all edges in the input graph with undirected edges.</p>
 
-<h4>Generate Complete Graph</h4>
+<h3>Generate Complete Graph</h3>
 
-<h4>Extract Structure Model</h4>
+<h3>Extract Structure Model</h3>
 
 
-<h3>Other Graph Box Functions</h3>
+<h2>Other Graph Box Functions</h2>
 
-<h4>Layout</h4>
+<h3>Layout</h3>
 
 <p>You can change the layout of your graph by clicking on the “Layout” tab and choosing between several common layouts. You can also rearrange the layout of one graph box to match the layout of another graph box (so long as the two graphs have identical variables) by clicking “Layout—Copy Layout” and “Layout—Paste Layout.” You do not need to a highlight the graph in order to copy the layout.</p>
 
-<h4>Graph Properties</h4>
+<h3>Graph Properties</h3>
 
 <p>Clicking on “Graph—Graph Properties” will give you a text box containing the following properties of your graph:</p>
 
@@ -216,30 +216,30 @@
 <li>Cyclicity</li>
 </ul>
 
-<h4>Paths</h4>
+<h3>Paths</h3>
 
 <p>Clicking on “Graph—Paths” opens a dialog box that allows you to see all the paths between any two variables. You can specify whether you want to see only adjacencies, only directed paths, only semidirected paths, or all treks between the two variables of interest, and the maximum length of the paths you are interested in using drop boxes at the top of the pane. To apply those settings, click “update.”</p>
 
-<h4>Meek Orientation</h4>
+<h3>Meek Orientation</h3>
 
 <p>Clicking “Meek Orientation” will orient a pattern according to the Meek orientation rules.</p>
 
-<h4>Correlation</h4>
+<h3>Correlation</h3>
 
 <p>You can automatically correlate or uncorrelated exogenous variables under the Graph tab.</p>
 
-<h4>Highlighting</h4>
+<h3>Highlighting</h3>
 
 <p>You can highlight bidirected edges, undirected edges, and latent nodes under the Graph tab.</p>
 
 
 
 
-<h2 id="compare_box"><span  class="section_heading">Compare Box</span></h2>
+<h1 id="compare_box"><span  class="section_heading">Compare Box</span></h1>
 
 <p>The compare box compares two or more graphs.</p>
 
-<h3>Possible Parent Boxes of the Compare box:</h3>
+<h2>Possible Parent Boxes of the Compare box:</h2>
 
 <ul class="ul">
 <li>A graph box</li>
@@ -250,13 +250,13 @@
 <li>A regression box</li>
 </ul>
 
-<h3>Possible Child Boxes of the Compare box:</h3>
+<h2>Possible Child Boxes of the Compare box:</h2>
 
 <ul class="ul">
 <li>None</li>
 </ul>
 
-<h3>Edgewise Comparisons</h3>
+<h2>Edgewise Comparisons</h2>
 
 <p>An edgewise comparison compares two graphs, and gives a textual list of the edges which must be added to or taken away from one to make it identical to the other.</p>
 
@@ -276,7 +276,7 @@
 
 <p>If one of the parent boxes contains multiple graphs, each graph will be compared separately to the reference graph (or the estimated graph will be compared separately to each reference graph, depending on which parent box is selected as the reference), and each comparison will be housed in its own tab, located on the left side of the window.</p>
 
-<h3>Tabular Graph Comparisons</h3>
+<h2>Tabular Graph Comparisons</h2>
 
 <p>A tabular graph comparison tallies up and presents counts of the differences and similarities between a true graph and a reference graph. Consider the example used in the above section; once again, we’ll let graph one be the true graph. Just as above, when the graphs are input to the tabular graph compare box, we must specify which of the graphs is the reference graph, and whether it contains latent variables. When the comparison is complete, the following window results:</p>
 
@@ -287,7 +287,7 @@
 
 <p>If one of the parent boxes contains multiple graphs, each graph will be compared separately to the reference graph (or the estimated graph will be compared separately to each reference graph, depending on which parent box is selected as the reference), and the results listed in a separate row of the table.</p>
 
-<h3>Misclassifications</h3>
+<h2>Misclassifications</h2>
 
 <p>A misclassification procedure organizes a graph comparison by edge type. The edge types (undirected, directed, uncertain, partially uncertain, bidirected, and null) are listed as the rows and columns of a matrix, with the reference graph edges as the row headers and the estimate graph edges as the column headers. If, for example, there are three pairs of variables that are connected by undirected edges in the reference graph, but are connected by directed edges in the estimated graph, then there will be a 3 in the (undirected, directed) cell of the matrix. An analogous method is used to represent endpoint errors. For example:</p>
 
@@ -295,7 +295,7 @@
 
 <p>If one of the parent boxes contains multiple graphs, then each estimated graph will be individually compared to the reference graph (or vice versa), and the results housed in their own tab, found on the left.</p>
 
-<h3>Graph Intersections</h3>
+<h2>Graph Intersections</h2>
 
 <p>A graph intersection compares two or more graphs in the same comparison. It does so by ranking adjacencies (edges without regard to direction) and orientations based on how many of the graphs they appear in. In an n-graph comparison, it first lists any adjacencies found in all n graphs. Then it lists all adjacencies found in n – 1 graphs, then adjacencies found in n – 2 graphs, and so on. </p>
 
@@ -303,7 +303,7 @@
 
 <p>Finally, any contradicted orientations (orientations that the graphs disagree on) are listed.</p>
 
-<h3>Independence Facts Comparison</h3>
+<h2>Independence Facts Comparison</h2>
 
 <p>Rather than comparing edges or orientation, this option directly compares the implied dependencies in two graphs. When you initially open the box, you will see the following window:</p>
 
@@ -313,7 +313,7 @@
 
 <img src="images/compare_box_7.png" alt="" width="650">
 
-<h3>Edge Weight Similarity Comparisons</h3>
+<h2>Edge Weight Similarity Comparisons</h2>
 
 <p>Edge weight (linear coefficient) similarity comparisons compare two linear SEM instantiated models. The output is a score equal to the sum of the squares of the differences between each corresponding edge weight in each model. Therefore, the lower the score, the more similar the two graphs are. The score has peculiarities: it does not take account of the variances of the variables, and may therefore best be used with standardized models; the complete absence of an edge is scored as 0—so a negative coefficient compares less well with a positive coefficient than does no edge at all.</p>
 
@@ -330,18 +330,18 @@
 
 <p>This is, unsurprisingly, a high score; the input models have few adjacencies in common, let alone similar parameters.</p>
 
-<h3>Model Fit</h3>
+<h2>Model Fit</h2>
 
 <p>A model fit comparison takes a simulation box and a search box (ideally, a search that has been run on the simulated data in the simulation box), and provides goodness-of-fit statistics for the output graph and the data, as well as estimating the values of any parameters. It looks and functions identically to the estimator box, but unlike the estimator box, it takes the search box directly as a parent, without needing to isolate and parameterize the graph output by the search.</p>
 
 
 
 
-<h2 id="parametric_model_box"><span  class="section_heading">Parametric Model Box</span></h2>
+<h1 id="parametric_model_box"><span  class="section_heading">Parametric Model Box</span></h1>
 
 <p>The parametric model box takes a nonparameterized input graph and creates a causal model.</p>
 
-<h3>Possible Parent Boxes of the Parametric Model Box:</h3>
+<h2>Possible Parent Boxes of the Parametric Model Box:</h2>
 
 <ul class="ul">
 <li>A graph box</li>
@@ -355,7 +355,7 @@
 </ul>
 
 
-<h3>Possible Child Boxes of the Parametric Model Box:</h3>
+<h2>Possible Child Boxes of the Parametric Model Box:</h2>
 
 <ul class="ul">
 <li>A graph box</li>
@@ -368,7 +368,7 @@
 <li>A knowledge box</li>
 </ul>
 
-<h3>Bayes Parametric Models</h3>
+<h2>Bayes Parametric Models</h2>
 
 <p>A Bayes parametric model takes as input a DAG. Bayes PMs represent causal structures in which all of the variables are categorical.</p>
 
@@ -392,7 +392,7 @@
 
 <p>You can also copy category names between variables in the same Bayes PM by clicking on “Transfer—Copy categories” and “Transfer—Paste categories.”</p>
 
-<h3>SEM Parametric Models</h3>
+<h2>SEM Parametric Models</h2>
 
 <p>The parametric model of a structural equation model (SEM) will take any type of graph as input, as long as the graph contains only directed and bidirected edges. SEM PMs represent causal structures in which all variables are continuous. </p>
 
@@ -408,7 +408,7 @@
 
 <p>To change a parameter’s name or starting value for estimation, double click on the parameter in the window.</p>
 
-<h3>Generalized SEM Parametric Models</h3>
+<h2>Generalized SEM Parametric Models</h2>
 
 <p>A generalized SEM parametric model takes as input any type of graph, as long as the graph contains only directed edges. (The generalized SEM PM cannot currently interpret bidirected edges.) Like a SEM PM, it represents causal structures in which all variables are continuous. Also like a SEM PM, a generalized SEM PM contains two components: the graphical causal structure of the model, and a set of equations representing the causal structure of the model. Each variable in a generalized SEM PM is a function of a subset of the other variables and an error term. By default, the functions are linear and the error terms are drawn from a Normal distribution (as in a SEM PM), but the purpose of a generalized SEM PM is to allow editing of these features.</p>
 
@@ -444,11 +444,11 @@
 <p>The “Type Template” box itself works in the same way that the “Type Expression” box works in the “Edit Expression” window, with a few additions. If you scroll through the drop-down menu at the top of the window, you will see the options NEW, TSUM, and TPROD. Adding NEW to a template creates a new parameter for every variable the template is applied to. TSUM means “sum of the values of this variable’s parents,” and TPROD means “product of the values of this variable’s parents.” The contents of the parentheses following TSUM and TPROD indicate any operations which should be performed upon each variable in the sum or product, with the dollar sign ($) functioning as a wild card. For example, in the image above, TSUM(NEW(b)*$) means that, for each parent variable of the variable in question, a new “b” will be created and multiplied by the parent variable’s value, and then all of the products will be added together.</p> 
 
 
-<h2 id="instantiated_model_box"><span  class="section_heading">Instantiated Model Box</span></h2>
+<h1 id="instantiated_model_box"><span  class="section_heading">Instantiated Model Box</span></h1>
 
 <p>The instantiated model (IM) box takes a parametric model and assigns values to the parameters.</p>
 
-<h3>Possible Parent Boxes of the Instantiated Model Box:</h3>
+<h2>Possible Parent Boxes of the Instantiated Model Box:</h2>
 
 <ul class="ul">
 <li>A parametric model box</li>
@@ -458,7 +458,7 @@
 <li>An updater box</li>
 </ul>
 
-<h3>Possible Child Boxes of the Instantiated Model Box:</h3>
+<h2>Possible Child Boxes of the Instantiated Model Box:</h2>
 
 <ul class="ul">
 <li>A graph box</li>
@@ -474,7 +474,7 @@
 </ul>
 
 
-<h3>Bayes Instantiated Models</h3>
+<h2>Bayes Instantiated Models</h2>
 
 <p>A Bayes IM consists of a Bayes parametric model with defined probability values for all variables. This means that, conditional on the values of each of its parent variables, there is a defined probability that a variable will take on each of its possible values. For each assignment of a value to each of the parents of a variable X, the probabilities of the several values of X must sum to 1.</p>
 
@@ -493,11 +493,11 @@
 <p>If you right click on a cell in the table (or two-finger click on Macs), you can choose to randomize the probabilities in the row containing that cell, randomize the values in all incomplete rows in the table, randomize the entire table, or randomize the table of every variable in the model. You can also choose to clear the row or table.</p>
 
 
-<h3>Bayes Instantiated Models: Observed Variables Only</h3>
+<h2>Bayes Instantiated Models: Observed Variables Only</h2>
 
 <p>This box functions in the same way as a Bayes IM box, but represents only measured variables in the model.</p>
 
-<h3>Dirichlet Instantiated Models</h3>
+<h2>Dirichlet Instantiated Models</h2>
 
 <p>A Dirichlet instantiated model is a specialized form of a Bayes instantiated model. Like a Bayes IM, a Dirichlet IM consists of a Bayes parametric model with defined probability values. Unlike a Bayes IM, these probability values are not manually set or assigned randomly. Instead, the pseudocount is manually set or assigned uniformly, and the probability values are derived from it.  The pseudocount of a given value of a variable is the number of data points for which the variable takes on that value, conditional on the values of the variable’s parents, where these numbers are permitted to take on non-negative real values. Since we are creating models without data, we can set the pseudocount to be any number we want. If you choose to create a Dirichlet IM, a window will open allowing you to either manually set the pseudocounts, or have Tetrad set all the pseudocounts in the model to one number, which you specify.</p>
 
@@ -515,7 +515,7 @@
 
 <img src="images/instantiated_model_box_5.png" alt="" width="650">
 
-<h3>SEM Instantiated Models</h3>
+<h2>SEM Instantiated Models</h2>
 
 <p>A SEM instantiated model is a SEM parametric model in which the parameters and error terms have defined values.  If you choose to create a SEM IM, the following window will open:</p>
 
@@ -545,7 +545,7 @@
 <p>In an estimator box, the Model Statistics tab provides goodness of fit statistics for the SEM IM which has been estimated. Our SEM IM, however, is in an instantiated model box, so no estimation has occurred, and the Model Statistics tab is empty.</p>
 
 
-<h3>Standardized SEM Instantiated Models </h3>
+<h2>Standardized SEM Instantiated Models </h2>
 
 <p>A standardized SEM instantiated model consists of a SEM parametric model with defined values for its parameters.  In a standardized SEM IM, each variable (not error terms) has a Normal distribution with 0 mean and unit variance. The input PM to a standardized SEM IM must be acyclic.</p>
 
@@ -561,7 +561,7 @@
 <p>The Implied Matrices tab works in the same way that it does in a normal SEM IM.</p>
 
 
-<h3>Generalized SEM Instantiated Models</h3>
+<h2>Generalized SEM Instantiated Models</h2>
 
 <p>A generalized SEM instantiated model consists of a a generalized SEM parametric model with defined values for its parameters. Since the distributions of the parameters were specified in the SEM PM, Tetrad does not give you the option of specifying these before it creates the instantiated model.</p>
 
@@ -576,11 +576,11 @@
 <p>If you double click on a formula in either the graph or the Variables tab, you can change the value of the parameters in that formula. </p>
 
 
-<h2 id="data_box"><span  class="section_heading">Data Box</span></h2>
+<h1 id="data_box"><span  class="section_heading">Data Box</span></h1>
 
 <p>The data box stores or manipulates data sets.</p>
 
-<h3>Possible Parent Boxes of the Data Box</h3>
+<h2>Possible Parent Boxes of the Data Box</h2>
 
 <ul class="ul">
 <li>A graph box</li>
@@ -591,7 +591,7 @@
 </ul>
 
 
-<h3>Possible Child Boxes of the Data Box</h3>
+<h2>Possible Child Boxes of the Data Box</h2>
 
 <ul class="ul">
 <li>A graph box</li>
@@ -605,11 +605,11 @@
 <li>A knowledge box</li>
 </ul>
 
-<h3>Using the Data Box:</h3>
+<h2>Using the Data Box:</h2>
 
 <p>The data box stores the actual data sets from which causal structures are determined. Data can be loaded into the data box from a preexisting source, manually filled in Tetrad, or simulated from an instantiated model.</p>
 
-<h3>Loading Data</h3>
+<h2>Loading Data</h2>
 
 <p>Data sets loaded into Tetrad may be categorical, continuous, mixed, or covariance data.</p>
 
@@ -667,11 +667,11 @@ X1	X2	X3	X4	X5
 
 <p>In addition to loading data from a file, you can manually enter data values and variable names by overwriting cells in the data table.</p>
 
-<h3>Manipulating Data</h3>
+<h2>Manipulating Data</h2>
 
 <p>The data box can also be used to manipulate data sets that have already been loaded or simulated. If you create a data box as the child of another box containing a data set, you will be presented with a list of operations that can be performed on the data. The available data manipulations are:</p>
 
-<h4>Discretize Dataset:</h4>
+<h3>Discretize Dataset:</h3>
 
 <p>This operation allows you to make some or all variables in a data set discrete. If you choose it, a window will open. </p>
 
@@ -681,11 +681,11 @@ X1	X2	X3	X4	X5
 
 <p>You may discretize multiple variables at once by selecting multiple variables. In this case, the ranges are not shown, as they will be different from variable to variable.</p>
 
-<h4>Discretize Dataset</h4>
+<h3>Discretize Dataset</h3>
 
 <p><i>Convert Numerical Discrete to Continuous:</i> If you choose this option, any discrete variables with numerical category values will be treated as continuous variables with real values. For example, “1” will be converted to “1.0.”</p>
 
-<h4>Discretize Dataset:</h4>
+<h3>Discretize Dataset:</h3>
 
 <p><i>Calculate:</i> The Calculate option allows you to add and edit relationships between variables in your data set, and to add new variables to the data set. </p>
 
@@ -696,96 +696,96 @@ X1	X2	X3	X4	X5
 
 <p>When you click “Save” a table will appear listing the data. Values of variables whose formulae you changed will be changed, and any new variables you created will appear with defined values.</p>
 
-<h4>Merge Datasets</h4>
+<h3>Merge Datasets</h3>
 
 <p>This operation takes two or more data boxes as parents and creates a data box containing all data sets in the parent boxes. Individual data sets will be contained in their own tabs in the resulting box.</p>
 
-<h4>Convert to Correlation Matrix</h4>
+<h3>Convert to Correlation Matrix</h3>
 
 <p>This operation takes a tabular data set and outputs the lower half of the correlation matrix of that data set.</p>
 
-<h4>Convert to Covariance Matrix</h4>
+<h3>Convert to Covariance Matrix</h3>
 
 <p>This operation takes a tabular data set and outputs the lower half of the covariance matrix of that data set.</p>
 
-<h4>Inverse Matrix</h4>
+<h3>Inverse Matrix</h3>
 
 <p>This operation takes a covariance or correlation matrix and outputs its inverse. (Note: The output will not be acceptable in Tetrad as a covariance or correlation matrix, as it is not lower triangular.)</p>
 
-<h4>Simulate Tabular from Covariance</h4>
+<h3>Simulate Tabular from Covariance</h3>
 
 <p>This operation takes a covariance matrix and outputs a tabular data set whose covariances comply with the matrix.</p>
 
-<h4>Difference of Covariance Matrices</h4>
+<h3>Difference of Covariance Matrices</h3>
 
 <p>This operation takes two covariance matrices and outputs their difference. The resulting matrix will be a well-formatted Tetrad covariance matrix data set.</p>
 
-<h4>Sum of Covariance Matrices</h4>
+<h3>Sum of Covariance Matrices</h3>
 
 <p>This operation takes two covariance matrices and outputs their sum. The resulting matrix will be a well-formatted Tetrad covariance matrix data set.</p>
 
-<h4>Average of Covariance Matrices</h4>
+<h3>Average of Covariance Matrices</h3>
 
 <p>This operation takes two or more covariance matrices and outputs their average. The resulting matrix will be a well-formatted Tetrad covariance matrix data set.</p>
 
-<h4>Convert to Time Lag Data</h4>
+<h3>Convert to Time Lag Data</h3>
 
 <p>This operation takes a tabular data set and outputs a time lag data set, in which each variable is recorded several times over the course of an experiment. You can specify the number of lags in the data. Each contains the same data, shifted by one “time unit.” For instance, if the original data set had 1000 cases, and you specify that the time lag data set should contain two lags, then the third stage variable values will be those of cases 1 to 998, the second stage variable values will be those of cases 2 to 999, and the first stage variable values will be those of cases 3 to 1000.</p>
 
-<h4>Convert to Time Lag Data with Index</h4>
+<h3>Convert to Time Lag Data with Index</h3>
 
 <p>This operation takes a tabular data set and outputs a time lag data set in the same manner as “Convert to Time Lag Data,” then adds an index variable.</p>
 
-<h4>Convert to AR Residuals</h4>
+<h3>Convert to AR Residuals</h3>
 
 <p>This operation is performed on a time lag data set. Tetrad performs a linear regression on each variable in each lag with respect to each of the variables in the previous lag, and derives the error terms.  The output data set contains only the error terms.</p>
 
-<h4>Whiten</h4>
+<h3>Whiten</h3>
 
 <p>Takes a continuous tabular data set and converts it to a data set whose covariance matrix is the identity matrix.</p>
 
-<h4>Nonparanormal Transform</h4>
+<h3>Nonparanormal Transform</h3>
 
 <p>Takes a continuous tabular data set and increases its Gaussianity, using a nonparanormal transformation to smooth the variables. (Note: This operation increases only marginal Gaussanity, not the joint, and in linear systems may eliminate information about higher moments that can aid in non-Gaussian orientation procedures.) </p>
 
-<h4>Convert to Residuals</h4>
+<h3>Convert to Residuals</h3>
 
 <p>The input for this operation is a directed acyclic graph (DAG) and a data set. Tetrad performs a linear regression on each variable in the data set with respect to all of the variables that the graph shows to be its parents, and derives the error terms. The output data set contains only the error terms.</p>
 
-<h4>Standardize Data</h4>
+<h3>Standardize Data</h3>
 
 <p>This operation manipulates the data in your data set such that each variable has 0 mean and unit variance.</p>
 
-<h4>Remove Cases with Missing Values</h4>
+<h3>Remove Cases with Missing Values</h3>
 
 <p>If you choose this operation, Tetrad will remove any row in which one or more of the values is missing.</p>
 
-<h4>Replace Missing Values with Column Mode</h4>
+<h3>Replace Missing Values with Column Mode</h3>
 
 <p>If you choose this operation, Tetrad will replace any missing value markers with the most commonly used value in the column.</p>
 
-<h4>Replace Missing Values with Column Mean</h4>
+<h3>Replace Missing Values with Column Mean</h3>
 
 <p>If you choose this operation, Tetrad will replace any missing value markers with the average of all of the values in the column.
 Replace Missing Values with Regression Predictions: If you choose this operation, Tetrad will perform a linear regression on the data in order to estimate the most likely value of any missing value.</p>
 
-<h4>Replace Missing Values by Extra Category</h4>
+<h3>Replace Missing Values by Extra Category</h3>
 
 <p>This operation takes as input a discrete data set. For every variable which has missing values, Tetrad will create an extra category for that variable (named by default “Missing”) and replace any missing data markers with that category.</p>
 
-<h4>Replace Missing with Random</h4>
+<h3>Replace Missing with Random</h3>
 
 <p>For discrete data, replaces missing values at random from the list of categories the variable takes in other cases. For continuous data, finds the minimum and maximum values of the column (ignoring the missing values) and picks a random number from U(min, max)</p>
 
-<h4>Inject Missing Data Randomly</h4>
+<h3>Inject Missing Data Randomly</h3>
 
 <p>If you choose this operation, Tetrad will replace randomly selected data values with a missing data marker.  You can set the probability with which any particular value will be replaced (that is, approximately the percentage of values for each variable which will be replaced with missing data markers).</p>
 
-<h4>Bootstrap Sample</h4>
+<h3>Bootstrap Sample</h3>
 
 <p>This operation draws a random subset of the input data set (you specify the size of the subset) with replacement (that is, cases which appear once in the original data set can appear multiple times in the subset). The resulting data set can be used along with similar subsets to achieve more accurate estimates of parameters.</p>
 
-<h4>Split by Cases</h4>
+<h3>Split by Cases</h3>
 
 <p>This operation allows you to split a data set into several smaller data sets. When you choose it, a window opens. </p>
 
@@ -794,47 +794,47 @@ Replace Missing Values with Regression Predictions: If you choose this operation
 
 <p>If you would like the subsets to retain the ordering they had in the original set, click “Original Order.” Otherwise, the ordering of the subsets will be assigned at random. You can also increase and decrease the number of subsets created, and specify the range of each subset.</p>
 
-<h4>Permute Rows</h4>
+<h3>Permute Rows</h3>
 
 <p>This operation randomly reassigns the ordering of a data set’s cases.</p>
 
-<h4>First Differences</h4>
+<h3>First Differences</h3>
 
 <p>This operation takes a tabular data set and outputs the first differences of the data (i.e., if X is a variable in the original data set and X’ is its equivalent in the first differences data set, X’1 = X2 – X1). The resulting data set will have one fewer row than the original.</p>
 
-<h4>Concatenate Datasets</h4>
+<h3>Concatenate Datasets</h3>
 
 <p>This operation takes two or more datasets and concatenates. The parent datasets must have the same number of variables.</p>
 
-<h4>Copy Continuous Variables</h4>
+<h3>Copy Continuous Variables</h3>
 
 <p>This operation takes as input a data set and creates a new data set containing only the continuous variables present in the original.</p>
 
-<h4>Copy Discrete Variables</h4>
+<h3>Copy Discrete Variables</h3>
 
 <p>This operation takes as input a data set and creates a new data set containing only the discrete variables present in the original.</p>
 
-<h4>Remove Selected Variables</h4>
+<h3>Remove Selected Variables</h3>
 
-<h4>Copy Selected Variables</h4>
+<h3>Copy Selected Variables</h3>
 
 <p>As explained above, you can select an entire column in a data set by clicking on the C1, C2, C3, etc… cell above the column. To select multiple columns, press and hold the “control” key while clicking on the cells. Once you have done so, you can use the Copy Selected Variables tool to create a data set in which only those columns appear.</p>
 
-<h4>Remove Constant Columns</h4>
+<h3>Remove Constant Columns</h3>
 
 <p>This operation takes a data set as input, and creates a data set which contains all columns in the original data set except for those with constant values (such as, for example, a column containing nothing but 2’s).</p>
 
-<h4>Randomly Reorder Columns</h4>
+<h3>Randomly Reorder Columns</h3>
 
 <p>This operation randomly reassigns the ordering of a data set’s variables.</p>
 
-<h3>Manually Editing Data</h3>
+<h2>Manually Editing Data</h2>
 
 <p>Under the Edit tab, there are several options to manipulate data. If you select a number of cells and click “Clear Cells,” Tetrad will replace the data values in the selected cells with a missing data marker.  If you select an entire row or column and click “Delete selected rows or columns,” Tetrad will delete all data values in the row or column, and the name of the row or column. (To select an entire column, click on the category number above it, labeled C1, C2, C3, and so on.  To select an entire row, click on the row number to the left of it, labeled 1, 2, 3, and so on.) You can also copy, cut, and paste data values to and from selected cells. You can choose to show or hide category names, and if you click on “Set Constants Col to Missing,” then in any column in which the variable takes on only one value (for example, a column in which every cell contains the number 2) Tetrad will set every cell to the missing data marker.</p>
 
 <p>Under the Tools tab, the Calculator tool allows you add and edit relationships between variables in the graph. For more information on how the Calculator tool works, see “Manipulating Data” section above.</p>
 
-<h3>Data Information</h3>
+<h2>Data Information</h2>
 
 <p>Under the Tools tab, there are options to view information about your data in several different formats.</p>
 
@@ -865,11 +865,11 @@ Replace Missing Values with Regression Predictions: If you choose this operation
 <p>The Normality Tests tool gives a text box with the results of the Kolmogorov and Anderson Darling Tests for normality for each variable. The Descriptive Statistics tool gives a text box with statistical information such as the mean, median, and variance of each variable.</p>
 
 
-<h2 id="estimator_box"><span  class="section_heading">Estimator Box</span></h2>
+<h1 id="estimator_box"><span  class="section_heading">Estimator Box</span></h1>
 
 <p>The estimator box takes as input a data box (or simulation box) and a parametric model box and estimates, tests, and outputs an instantiated model for the data. With the exception of the EM Bayes estimator, Tetrad estimators do not accept missing values. If your data set contains missing values, the missing values can interpolated or removed using the data box. (Note that missing values are allowed in various Tetrad search procedures; see the section on the search box.)</p>
 
-<h3>Possible Parent Boxes of the Estimator Box:</h3>
+<h2>Possible Parent Boxes of the Estimator Box:</h2>
 
 <ul class="ul">
 <li>A parametric model box</li>
@@ -879,7 +879,7 @@ Replace Missing Values with Regression Predictions: If you choose this operation
 </ul>
 
 
-<h3>Possible Child Boxes of the Estimator Box:</h3>
+<h2>Possible Child Boxes of the Estimator Box:</h2>
 
 <ul class="ul">
 <li>A graph box</li>
@@ -892,7 +892,7 @@ Replace Missing Values with Regression Predictions: If you choose this operation
 <li>An updater box</li>
 </ul>
 
-<h3>ML Bayes Estimations</h3>
+<h2>ML Bayes Estimations</h2>
 
 <p>Bayes nets are acyclic graphical models parameterized by the conditional probability distribution of each variable on its parents’ values, as in the instantiated model box. When the model contains no latent variables, the maximum likelihood (ML) estimate of each model parameter is just the corresponding conditional frequency from the data. </p>
 
@@ -902,17 +902,17 @@ Replace Missing Values with Regression Predictions: If you choose this operation
 
 <p>The Model tab works exactly as it does in a Bayes instantiated model. The Model Statistics tab provides the p-value for a chi square test of the model, degrees of freedom, the chi square value, and the Bayes Information Criterion (BIC) score of the model.</p>
 
-<h3>Dirichlet Estimations</h3>
+<h2>Dirichlet Estimations</h2>
 
 <p>A Dirichlet estimate estimates a Bayes instantiated model using a Dirichlet distribution for each category. In a Dirichlet estimate, the probability of each value of a variable (conditional on the values of the variable’s parents) is estimated by adding together a prior pseudo count (which is 1, by default) of cases and the number of cases in which the variable takes that value in the data, and then dividing by the total number of cases in the prior and in the data with that configuration of parent variables. The default prior pseudo-count can be changed inside the box. (For a full explanation of pseudocounts and Dirichlet estimate, see the section on Dirichlet instantiated models.) </p>
 
 <p>Dirichlet estimates do not work if the input data set contains missing data values.</p>
 
-<h3>EM Bayes Estimations</h3>
+<h2>EM Bayes Estimations</h2>
 
 <p>The EM Bayes estimator takes the same input and gives the same output as the ML Bayes estimator, but is designed to handle data sets with missing data values, and input models with latent variables.</p>
 
-<h3>SEM Estimates</h3>
+<h2>SEM Estimates</h2>
 
 <p>A SEM estimator estimates the values of parameters for a SEM parametric model. SEM estimates do not work if the input data set contains missing data values. A sample output looks like this: </p>
 
@@ -934,13 +934,13 @@ Replace Missing Values with Regression Predictions: If you choose this operation
 
 
 
-<h2 id="updater_box"><span  class="section_heading">Updater Box</span></h2>
+<h1 id="updater_box"><span  class="section_heading">Updater Box</span></h1>
 
 <p>The updater box takes an instantiated model as input, and, given information about the values of parameters in that model, updates the information about the values and relationships of other parameters.</p>
 
 <p>There are four available updater algorithms in Tetrad: the approximate updater, the row summing exact updater, the CPT invariant updater, and the SEM updater. All except for the SEM updater function only when given Bayes instantiated models as input; the SEM updater functions when given a SEM instantiated model as input. None of the updaters work on cyclic models.</p>
 
-<h3>Possible Parent Boxes of the Updater Box:</h3>
+<h2>Possible Parent Boxes of the Updater Box:</h2>
 
 <ul class="ul">
 <li>An instantiated model box</li>
@@ -948,7 +948,7 @@ Replace Missing Values with Regression Predictions: If you choose this operation
 </ul>
 
 
-<h3>Possible Child Boxes of the Updater Box:</h3>
+<h2>Possible Child Boxes of the Updater Box:</h2>
 
 <ul class="ul">
 <li>A graph box</li>
@@ -956,7 +956,7 @@ Replace Missing Values with Regression Predictions: If you choose this operation
 <li>An estimator box</li>
 </ul>
 
-<h3>Approximate Updater</h3>
+<h2>Approximate Updater</h2>
 
 <p>The approximated updater is a fast but inexact algorithm. It randomly draws a sample data set from the instantiated model and calculates the conditional frequency of the variable to be estimated.</p>
 
@@ -1004,15 +1004,15 @@ Replace Missing Values with Regression Predictions: If you choose this operation
 
 <p>Finally, if we are arbitrarily setting the value of a variable—that is, the values of its parents have no effect on its value—we can check the “Manipulated” box next to it while we are we editing evidence, and the update will reflect this information.</p>
 
-<h3>Row Summing Exact Updater</h3>
+<h2>Row Summing Exact Updater</h2>
 
 <p>The row summing exact updater is a slower but more accurate updater than the approximate updater. The complexity of the algorithm depends on the number of variables and the number of categories each variable has. It creates a full exact conditional probability table and updates from that. Its window functions exactly as the approximate updater does, with two exceptions: in “Multiple Variables” mode, you can see conditional as well as marginal probabilities, and in “Single Variable” mode, you can see joint values. </p>
 
-<h3>CPT Invariant Exact Updater</h3>
+<h2>CPT Invariant Exact Updater</h2>
 
 <p>The CPT invariant exact updater is more accurate than the approximate updater, but slightly faster than the row summing exact updater. Ifs window functions exactly as the approximate updater down, with one exception: in “Multiple Variables” mode, you can see conditional as well as marginal probabilities.</p>
 
-<h3>SEM Updater</h3>
+<h2>SEM Updater</h2>
 
 <p>The SEM updater does not deal with marginal probabilities; instead, it deals with means.</p>
 
@@ -1029,11 +1029,11 @@ Replace Missing Values with Regression Predictions: If you choose this operation
 
 
 
-<h2 id="classify_box"><span  class="section_heading">Classify Box</span></h2>
+<h1 id="classify_box"><span  class="section_heading">Classify Box</span></h1>
 
 <p>The classify box takes as input a categorical data set and a Bayes instantiated model and, for a given variable, tries to predict that variable’s value in each case based on the other variables’ values in that case.</p>
 
-<h3>Possible Parents Boxes of the Classify Box: </h3>
+<h2>Possible Parents Boxes of the Classify Box: </h2>
 
 <ul class="ul">
 <li>An instantiated model box</li>
@@ -1041,14 +1041,14 @@ Replace Missing Values with Regression Predictions: If you choose this operation
 <li>A simulation box</li>
 </ul>
 
-<h3>Possible Child Boxes of the Classify Box: </h3>
+<h2>Possible Child Boxes of the Classify Box: </h2>
 
 <ul class="ul">
 <li>None</li>
 </ul>
 
 
-<h3>Using the Classify Box:</h3>
+<h2>Using the Classify Box:</h2>
 
 <p>Consider the following instantiated model, and a data set derived from it:</p>
 
@@ -1073,11 +1073,11 @@ Replace Missing Values with Regression Predictions: If you choose this operation
 
 
 
-<h2 id="knowledge_box"><span  class="section_heading">Knowledge Box</span></h2>
+<h1 id="knowledge_box"><span  class="section_heading">Knowledge Box</span></h1>
 
 <p>The knowledge box takes as input a graph or a data set and imposes additional constraints onto it, to aid with search.</p>
 
-<h3>Possible Parent Boxes of the Knowledge Box:</h3>
+<h2>Possible Parent Boxes of the Knowledge Box:</h2>
 
 <ul class="ul">
 <li>A graph box</li>
@@ -1089,18 +1089,18 @@ Replace Missing Values with Regression Predictions: If you choose this operation
 <li>Another knowledge box</li>
 </ul>
 
-<h3>Possible Child Boxes of the Knowledge Box:</h3>
+<h2>Possible Child Boxes of the Knowledge Box:</h2>
 
 <ul class="ul">
 <li>A search box</li>
 <li>Another knowledge box</li>
 </ul>
 
-<h3>Tiers and Edges</h3>
+<h2>Tiers and Edges</h2>
 
 <p>The tiers and edges option allows you to sort variables into groupings that can or cannot affect each other. It also allows you to manually add forbidden and required edges one at a time.</p>
 
-<h4>Tiers</h4>
+<h3>Tiers</h3>
 
 <p>The tiers tab for a graph with four variables looks like this: </p>
 
@@ -1110,7 +1110,7 @@ Replace Missing Values with Regression Predictions: If you choose this operation
 
 <p>To place a variable in a tier, click on the variable in the “Not in tier” box, and then click on the box of the tier. If you check the “Forbid Within Tier” box for a tier, variables in that tier will not be allowed to be causes of each other. To increase or decrease the number of tiers, use the scrolling box in the upper right corner of the window.</p>
 
-<h4>Groups</h4>
+<h3>Groups</h3>
 
 <p>The groups tab for a graph with four variables looks like this: </p>
 
@@ -1118,7 +1118,7 @@ Replace Missing Values with Regression Predictions: If you choose this operation
 
 <p>In the groups tab, you can specify certain groups of variables which are forbidden or required to cause other groups of variables. To add a variable to the “cause” section of a group, click on the variable in the box at the top, and then click on the box to the left of the group’s arrow. To add a variable to the “effect” section of a group, click on the variable in the box at the top, and then click on the box to the right of the group’s arrow. You can add a group by clicking on one of the buttons at the top of the window, and remove one by clicking the “remove” button above the group’s boxes.</p>
 
-<h4>Edges</h4>
+<h3>Edges</h3>
 
 <p>The edges tab for a graph with four variables looks like this: </p>
 
@@ -1128,15 +1128,15 @@ Replace Missing Values with Regression Predictions: If you choose this operation
 
 <p>You can also use this tab to see the effects of the knowledge you created in the other tabs by checking and unchecking the boxes at the bottom of the window.  You can adjust the layout to mimic the layout of the source (by clicking “source layout”) or to see the variables in their timeline tiers (by clicking “knowledge layout”).</p>
 
-<h3>Forbidden Graph</h3>
+<h2>Forbidden Graph</h2>
 
 <p>If you use a graph as input to a knowledge box with the “Forbidden Graph” operation, the box will immediately add all edges in the parent graph as forbidden edges. It will otherwise work like a Tiers and Edges box.</p>
 
-<h3>Required Graph</h3>
+<h2>Required Graph</h2>
 
 <p>If you use a graph as input to a knowledge box with the “Required Graph” operation, the box will immediately add all edges in the parent graph as required edges. It will otherwise work like a Tiers and Edges box.</p>
 
-<h3>Measurement Model</h3>
+<h2>Measurement Model</h2>
 
 <p>This option allows you to build clusters for a measurement model. When first opened, the window looks like this:</p>
 
@@ -1145,11 +1145,11 @@ Replace Missing Values with Regression Predictions: If you choose this operation
 <p>You can change the number of clusters using the text box in the upper right hand corner. To place a variable in a cluster, click and drag the box with its name into the cluster pane. To move multiple variables at once, shift- or command-click on the variables, and (without releasing the shift/command button or the mouse after the final click) drag. In the search boxes, these variables will be assumed to be children of a common latent cause.</p>
 
 
-<h2 id="simulation_box"><span  class="section_heading">Simulation Box</span></h2>
+<h1 id="simulation_box"><span  class="section_heading">Simulation Box</span></h1>
 
 <p>The simulation box takes a graph, parametric model, or instantiated model and uses it to simulate a data set.</p>
 
-<h3>Possible Parent Boxes of the Simulation Box</h3>
+<h2>Possible Parent Boxes of the Simulation Box</h2>
 
 <ul class="ul">
 <li>A graph box</li>
@@ -1164,7 +1164,7 @@ Replace Missing Values with Regression Predictions: If you choose this operation
 </ul>
 
 
-<h3>Possible Child Boxes of the Simulation Box</h3>
+<h2>Possible Child Boxes of the Simulation Box</h2>
 
 <ul class="ul">
 <li>A graph box</li>
@@ -1181,7 +1181,7 @@ Replace Missing Values with Regression Predictions: If you choose this operation
 </ul>
 
 
-<h3>Using the Simulator Box</h3>
+<h2>Using the Simulator Box</h2>
 
 <p>When you first open the simulation box, you will see some variation on this window:</p>
 
@@ -1192,7 +1192,7 @@ Replace Missing Values with Regression Predictions: If you choose this operation
 <p>Exactly what you see and can do in the simulation box is determined by what kind of box you input into it. </p>
 
 
-<h4>The Simulation Box with no Input</h4>
+<h3>The Simulation Box with no Input</h3>
 
 <p>Because it has no input box to create constraints, a parentless simulation box offers the greatest freedom for setting the graph type, model type, and parameters of your simulated data. In particular, it is the only way that the simulation box will allow you to create a random graph or graphs within the box. (If you are simulating multiple data sets, and want to use a different random graph for each one, you can select “Yes” under “Yes if a different graph should be used for each run.”) You can choose the type of graph you want Tetrad to create from the “Type of Graph” drop-down list.</p>
 
@@ -1264,16 +1264,16 @@ Replace Missing Values with Regression Predictions: If you choose this operation
 <p> The instantiated model used to simulate the data will be re-parameterized for each run of the simulation.</p>
 
 
-<h4>The Simulation Box with a Graph Input</h4>
+<h3>The Simulation Box with a Graph Input</h3>
 
 <p>If you input a graph, you will be able to simulate any kind of model, with any parameters. But the model will be constrained by the graph you have input (or the subgraph you choose in the “True Graph” tab.) Because of this, if you create a simulation box with a graph as a parent, you will not see the “Type of Graph” option.</p>
 
-<h4>The Simulation Box with a Parametric Model Input</h4>
+<h3>The Simulation Box with a Parametric Model Input</h3>
 
 <p>At the time of writing, a simulation box with a parametric model input acts as though the PM’s underlying graph had been input into the box.</p>
 
 
-<h4>The Simulation Box with an Instantiated Model Input</h4>
+<h3>The Simulation Box with an Instantiated Model Input</h3>
 
 <p>If you input an instantiated model, your only options will be the sample size of your simulation and the number of data sets you want to simulate; Tetrad will simulate every one of them based on the parameters of the IM. The model will not be re-parameterized for each run of the simulation.</p>
 
@@ -1281,11 +1281,11 @@ Replace Missing Values with Regression Predictions: If you choose this operation
 
 
 
-<h2 id="search_box"><span  class="section_heading">Search Box</span></h2>
+<h1 id="search_box"><span  class="section_heading">Search Box</span></h1>
 
 <p>The search box takes as input a data set (in either a data or simulation box) and optionally a knowledge box, and searches for causal explanations represented by directed graphs. The result of a search is not necessarily—and not usually—a unique graph, but an object such as a pattern that represents a set of graphs, usually a Markov Equivalence class. More alternatives can be found by varying the parameters of search algorithms.</p>
 
-<h3>Possible Parent Boxes of the Search Box</h3>
+<h2>Possible Parent Boxes of the Search Box</h2>
 
 <ul class="ul">
 <li>A graph box</li>
@@ -1300,7 +1300,7 @@ Replace Missing Values with Regression Predictions: If you choose this operation
 </ul>
 
 
-<h3>Possible Child Boxes of the Simulation Box</h3>
+<h2>Possible Child Boxes of the Simulation Box</h2>
 
 <ul class="ul">
 <li>A graph box</li>
@@ -1311,12 +1311,11 @@ Replace Missing Values with Regression Predictions: If you choose this operation
 <li>A knowledge box</li>
 </ul>
 
-<h3>Using the Search Box</h3>
+<h2>Using the Search Box</h2>
 
 <p>When you first open the search box, you will be presented with a number of options for the kind of search you would like to perform:</p>
 
 <img src="images/search_box_1.png" alt="" width="650">
-
 
 <p>The “Output Graphs” tab is where the results of your search will be stored after it has been performed. The “Knowledge” tab contains a copy of the “Tiers and Edges” knowledge box, which you can use to add knowledge directly in the search box. (See the Knowledge Box section for more information.)</p>
 
@@ -1325,6 +1324,8 @@ Replace Missing Values with Regression Predictions: If you choose this operation
 <p>Choosing the correct algorithm for your needs is an important consideration. Tetrad provides over 30 search algorithms (and more are added all of the time) each of which makes different assumptions about the input data, uses different parameters, and produces different kinds of output. For instance, some algorithms produce Markov blankets or patterns, and some produce full graphs; some algorithms work best with Gaussian or non-Gaussian data; some algorithms require an alpha value, some require a penalty discount, and some require both or neither. You can narrow down the list using the “List algorithms that” dropdown box, which allows you to limit the provided algorithms according to whichever factor is important to you.</p>
 
 <p>Once you have selected an algorithm, click “Search” to have Tetrad perform the search or searches.</p>
+
+<h2>Search Algorithms</h2>
 
 <h3>The PC Algorithm</h3>
 
@@ -2357,18 +2358,41 @@ same qualitative causal structure. As with IMAGES, the user can specify a “pen
 
 
 
-<h2 id="regression_box"><span  class="section_heading">Regression Box</span></h2>
+<h2>Statistical Tests</h2>
+
+<h3>CCI</h3>
+
+<p>CCI (“Conditional Correlation Independence”) is a fairly general independence test—not completely general, but general for additive noise models—that is, model in which each variable is equal to a (possibly nonlinear) function of its parents, plus additive noise, where the noise may be arbitrarily distributed. That is, X = f(parent(X)) + E, where f is any function and E is noise however distributed; the only requirement is that there be the “+” in the formula separating the function from the noise. The noise can’t for instance, be multiplicative, e.g., X = f(parent(X)) x E. The goal of the method is to estimate whether X is independent of Y given variables Z, for some X, Y, and Z. It works by calculating the residual of X given Z and the residual of Y given Z and looking to see whether those two residuals are independent. This test may be used with any constraint-based algorithm (PC, FCI, etc.)</p>
+
+<h3>KCI</h3>
+
+<p>KCI (“Kernel Conditional Independence”) is a general independence test for model in which X = f(parents(X), eY); here, eY does not need to be additive; it can stand in any functional relationships to the other variables. The variables may even be discrete. The goal of the method is to estimate whether X is independent of Y given Z, completely generally. It uses the kernel trick to estimate this. As a result of using the kernel trick, the method is complex in the direction of sample size, meaning that it may be very slow for large samples. Since it’s slow, individual independence results are always printed to the console so the user knows how far a procedure has gotten. This test may be used with any constraint-based algorithm (PC, FCI, etc.)</p>
+
+<h3>FASK</h3>
+
+<p>FASK (“Fast Adjacency Skewness”) assumes that variables are skewed and linearly related, though the linearity may be relaxed to monotonicity more generally. It assume each variable, specifically, in the base case, is equal to a linear combination of its parents plus skewed noise. It operates by first estimating an undirected skeleton using both correlational reasoning and reasoning about skewnesses, then orienting 2-cycles (X->Y and Y->X) in the model, then orienting the rest of the edges in the model left or right. It scales well and is applicable wherever one has skewed variables and additive noise.</p>
+
+<h3>Conditional Gaussian Test</h3>
+
+<p>Conditional Gaussian Test is a likelihood ratio test based on the conditional Gaussian likelihood function. This is intended for use with datasets where there is a mixture of continuous and discrete variables. It is assumed that the continuous variables are Gaussian conditional on each combination of values for the discrete variables, though it will work fairly well even if that assumption does not hold strictly. This test may be used with any constraint-based algorithm (PC, FCI, etc.)</p>
+
+<h2>Scoring Functions</h2>
+
+<h2>Search Parameters</h2>
+
+
+<h1 id="regression_box"><span  class="section_heading">Regression Box</span></h1>
 
 <p>The regression box performs regression on variables in a data set, in an attempt to discover causal correlations between them. Both linear and logistic regression are available.</p>
 
-<h3>Possible Parent Boxes of the Regression Box</h3>
+<h2>Possible Parent Boxes of the Regression Box</h2>
 
 <ul class="ul">
 <li>A data box</li>
 <li>A simulation box</li>
 </ul>
 
-<h3>Possible Child Boxes of the Instantiated Model Box:</h3>
+<h2>Possible Child Boxes of the Instantiated Model Box:</h2>
 
 <ul class="ul">
 <li>A graph box</li>
@@ -2379,7 +2403,7 @@ same qualitative causal structure. As with IMAGES, the user can specify a “pen
 <li>A search box</li>
 </ul>
 
-<h3>Multiple Linear Regression</h3>
+<h2>Multiple Linear Regression</h2>
 
 <p>Linear regression is performed upon continuous data sets. If you have a categorical data set upon which you would like to perform linear regression, you can make it continuous using the data manipulation box.</p>
 
@@ -2405,7 +2429,7 @@ same qualitative causal structure. As with IMAGES, the user can specify a “pen
 
 <p>Comparison to the true causal model shows that this correlation does exist, but that it runs in the opposite direction.</p>
 
-<h3>Logistic Regression</h3>
+<h2>Logistic Regression</h2>
 
 <p>Logistic regression may be run on discrete, continuous, or mixed data sets; however, the response variable must be binary. In all other ways, the logistic regression box functions like the linear regression box.</p>
 
@@ -2424,4 +2448,3 @@ ga('create','UA-XXXXX-Y','auto');ga('send','pageview')
 </body>
 
 </html>
-
