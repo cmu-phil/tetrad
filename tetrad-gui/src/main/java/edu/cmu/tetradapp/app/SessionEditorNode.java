@@ -974,7 +974,7 @@ public final class SessionEditorNode extends DisplayNode {
                 SessionEditorWorkbench workbench
                         = (SessionEditorWorkbench) container;
 
-                System.out.println("Executing" + sessionNode);
+                System.out.println("Executing " + sessionNode);
 
                 workbench.getSimulationStudy().execute(sessionNode, overwrite);
             }

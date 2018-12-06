@@ -74,7 +74,7 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
     private Graph initialGraph;
     private List<Graph> graphList = new ArrayList<>();
     private IKnowledge knowledge = new Knowledge2();
-    private final Map<String, Object> models = new HashMap<>();
+    private final Map<String, Object> userAlgoSelections = new HashMap<>();
     private transient List<IndependenceTest> independenceTests = null;
 
     //===========================CONSTRUCTORS===========================//
@@ -302,8 +302,7 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
                     } else if (data.isMixed() && algDataType == DataType.Mixed) {
                         graphList.add(algo.search(data, parameters));
                     } else {
-                        throw new IllegalArgumentException("The type of data changed; try opening up the search editor and "
-                                + "running the algorithm there.");
+                        throw new IllegalArgumentException("The type of data has changed; open up the search editor and run the algorithm again.");
                     }
                 });
             }
@@ -529,8 +528,8 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
         return compareGraphs;
     }
 
-    public Map<String, Object> getModels() {
-        return models;
+    public Map<String, Object> getUserAlgoSelections() {
+        return userAlgoSelections;
     }
 
 }
