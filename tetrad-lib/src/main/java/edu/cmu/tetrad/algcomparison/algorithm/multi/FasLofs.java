@@ -65,6 +65,8 @@ public class FasLofs implements Algorithm, HasKnowledge {
                     edgeEnsemble = ResamplingEdgeEnsemble.Majority;
             }
     		search.setEdgeEnsemble(edgeEnsemble);
+    		search.setAddOriginalDataset(parameters.getBoolean("addOriginalDataset"));
+    		
     		search.setParameters(parameters);    		
     		search.setVerbose(parameters.getBoolean("verbose"));
     		return search.search();
@@ -96,6 +98,7 @@ public class FasLofs implements Algorithm, HasKnowledge {
         parameters.add("percentResampleSize");
         parameters.add("resamplingWithReplacement");
         parameters.add("resamplingEnsemble");
+        parameters.add("addOriginalDataset");
         parameters.add("verbose");
         
         return parameters;

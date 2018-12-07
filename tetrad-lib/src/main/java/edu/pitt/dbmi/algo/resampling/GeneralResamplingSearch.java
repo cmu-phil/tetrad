@@ -39,6 +39,8 @@ public class GeneralResamplingSearch {
 	private int numberResampling = 0;
 
 	private boolean runParallel = false;
+	
+	private boolean addOriginalDataset = false;
 
 	private boolean verbose = false;
 
@@ -106,6 +108,10 @@ public class GeneralResamplingSearch {
 
 	public void setRunParallel(boolean runParallel) {
 		this.runParallel = runParallel;
+	}
+
+	public void setAddOriginalDataset(boolean addOriginalDataset) {
+		this.addOriginalDataset = addOriginalDataset;
 	}
 
 	public void setVerbose(boolean verbose) {
@@ -207,7 +213,7 @@ public class GeneralResamplingSearch {
 			}
 			
 			// Search again with original dataset
-			if (resamplingWithReplacement) {
+			if (resamplingWithReplacement && addOriginalDataset) {
 				GeneralResamplingSearchRunnable task = null;
 				
 				if (data != null) {
@@ -276,7 +282,7 @@ public class GeneralResamplingSearch {
 			}
 			
 			// Search again with original dataset
-			if (resamplingWithReplacement) {
+			if (resamplingWithReplacement && addOriginalDataset) {
 				GeneralResamplingSearchRunnable task = null;
 				
 				if (data != null) {
@@ -354,7 +360,7 @@ public class GeneralResamplingSearch {
 			}
 			
 			// Search again with original dataset
-			if (resamplingWithReplacement) {
+			if (resamplingWithReplacement && addOriginalDataset) {
 				GeneralResamplingSearchRunnable task = null;
 				
 				if (data != null) {
