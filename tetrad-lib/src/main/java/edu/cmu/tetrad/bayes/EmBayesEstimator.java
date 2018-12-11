@@ -137,7 +137,7 @@ public final class EmBayesEstimator {
         }
 
         //Make sure variables in dataset are measured variables in the BayesPM
-//        for (Node dataSetVariable : this.dataSet.getVariable()) {
+//        for (Node dataSetVariable : this.dataSet.getVariables()) {
 //            if (!observedVars.contains(dataSetVariable)) {
 //                throw new IllegalArgumentException(
 //                        "Some ar in the dataset is not a " +
@@ -695,9 +695,9 @@ public final class EmBayesEstimator {
 
         // Make sure all of the variables in the PM are in the data set;
         // otherwise, estimation is impossible.
-//        List pmvars = bayesPm.getVariable();
-//        List dsvars = dataSet.getVariable();
-//        List obsVars = observedIm.getBayesPm().getVariable();
+//        List pmvars = bayesPm.getVariables();
+//        List dsvars = dataSet.getVariables();
+//        List obsVars = observedIm.getBayesPm().getVariables();
 
         //System.out.println("Bayes PM as received by estimateMixedIM:  ");
         //System.out.println(bayesPm);

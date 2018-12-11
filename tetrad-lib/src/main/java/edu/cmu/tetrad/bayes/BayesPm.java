@@ -403,7 +403,6 @@ public final class BayesPm implements PM, VariableSource, TetradSerializable {
                 Node _node2 = dag.getNode(node2.getName());
                 DiscreteVariable oldNode2 = oldbayesPm.nodesToVariables.get(_node2);
                 oldNode2.setNodeType(node2.getNodeType());
-                oldNode2.setName(node2.getName());
                 this.nodesToVariables.put(_node2, oldNode2);
             } else {
                 setNewValues(node2, lowerBound, upperBound);

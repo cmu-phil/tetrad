@@ -1167,7 +1167,7 @@ public final class MlBayesImObs implements BayesIm {
         }
         // this does not work: different ordering of nodes
         // graph is the DAG restricted to only observed variables
-        //List<Node> obsNodes = bayesPmObs.getVariable();
+        //List<Node> obsNodes = bayesPmObs.getVariables();
 
         this.jpd = new StoredCellProbsObs(obsNodes);
         // this does not work: different ordering of nodes
