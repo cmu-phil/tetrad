@@ -175,6 +175,7 @@ public class ParamDescriptions {
         map.put("percentResampleSize", new ParamDescription("The percentage of resample size (min = 0.1)", 100, 0.1, Double.MAX_VALUE));
         map.put("resamplingWithReplacement", new ParamDescription("Yes, if sampling with replacement (bootstrapping)", true));
         map.put("resamplingEnsemble", new ParamDescription("Ensemble method: Preserved (0), Highest (1), Majority (2)", 1, 0, 2));
+        map.put("addOriginalDataset", new ParamDescription("Yes, if adding an original dataset as another bootstrapping", false));
         //~Resampling
 
         map.put("fasRule", new ParamDescription(

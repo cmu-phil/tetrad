@@ -79,6 +79,8 @@ public class Glasso implements Algorithm {
                     edgeEnsemble = ResamplingEdgeEnsemble.Majority;
             }
             search.setEdgeEnsemble(edgeEnsemble);
+            search.setAddOriginalDataset(parameters.getBoolean("addOriginalDataset"));
+            
             search.setParameters(parameters);
             search.setVerbose(parameters.getBoolean("verbose"));
             return search.search();
@@ -112,6 +114,7 @@ public class Glasso implements Algorithm {
         params.add("percentResampleSize");
         params.add("resamplingWithReplacement");
         params.add("resamplingEnsemble");
+        params.add("addOriginalDataset");
         params.add("verbose");
         return params;
     }
