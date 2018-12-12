@@ -190,8 +190,8 @@ public class RBExperiments {
 		// create an instance of class and run an experiment on it
 		RBExperiments DFC = new RBExperiments();
 		DFC.directory = dataPath;
-		double[] lv = new double[]{0.0, 0.1, 0.2};
-		int[] cases = new int[]{200, 2000};
+		double[] lv = new double[]{0.0};//, 0.1, 0.2};
+		int[] cases = new int[]{200};//, 2000};
 		for (int numCase: cases){
 			for (double numLatentConfounder: lv){
 				for (int i = 0; i < 10; i++){

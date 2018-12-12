@@ -149,7 +149,7 @@ public final class CptInvariantUpdater implements ManipulatingBayesUpdater {
 
         // Create the updated BayesIm from the manipulated Bayes Im.
         Evidence evidence2 = new Evidence(evidence, manipulatedBayesIm);
-        this.updatedBayesIm = new UpdatedBayesIm(bayesIm, evidence2);
+        this.updatedBayesIm = new UpdatedBayesIm(manipulatedBayesIm, evidence2);
 
         // Create the marginal calculator from the updated Bayes Im.
         this.cptInvariantMarginalCalculator =
@@ -205,23 +205,42 @@ public final class CptInvariantUpdater implements ManipulatingBayesUpdater {
     //==============================PRIVATE METHODS=======================//
 
     private BayesIm createdManipulatedBayesIm(BayesPm updatedBayesPm) {
-        return new MlBayesIm(updatedBayesPm, bayesIm, MlBayesIm.RANDOM);
+        return new MlBayesIm(updatedBayesPm, bayesIm, MlBayesIm.MANUAL);
     }
 
     private BayesPm createManipulatedBayesPm(Dag updatedGraph) {
         return new BayesPm(updatedGraph, bayesIm.getBayesPm());
     }
 
+//    private Dag createManipulatedGraph(Graph graph) {
+//        Dag updatedGraph = new Dag(graph);
+//
+//        for (int i = 0; i < bayesIm.getNumNodes(); ++i) {
+//            if (evidence.isManipulated(i)) {
+//                Node node = evidence.getNode(i);
+//                List<Node> parents = updatedGraph.getParents(node);
+//
+//                for (Node parent1 : parents) {
+//                    updatedGraph.removeEdge(node, parent1);
+//                }
+//            }
+//        }
+//
+//        return updatedGraph;
+//    }
+
     private Dag createManipulatedGraph(Graph graph) {
         Dag updatedGraph = new Dag(graph);
 
-        for (int i = 0; i < bayesIm.getNumNodes(); ++i) {
+        // alters graph for manipulated evidenceItems
+        for (int i = 0; i < evidence.getNumNodes(); ++i) {
             if (evidence.isManipulated(i)) {
-                Node node = evidence.getNode(i);
+                Node node = updatedGraph.getNode(evidence.getNode(i).getName());
                 List<Node> parents = updatedGraph.getParents(node);
 
-                for (Node parent1 : parents) {
-                    updatedGraph.removeEdge(node, parent1);
+                for (Object parent1 : parents) {
+                    Node parent = (Node) parent1;
+                    updatedGraph.removeEdge(node, parent);
                 }
             }
         }
