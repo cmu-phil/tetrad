@@ -40,6 +40,13 @@ import edu.pitt.dbmi.data.reader.tabular.TabularColumnReader;
 import edu.pitt.dbmi.data.reader.tabular.TabularDataFileReader;
 import edu.pitt.dbmi.data.reader.tabular.TabularDataReader;
 import edu.pitt.dbmi.data.reader.utils.TextFileUtils;
+import edu.pitt.dbmi.data.reader.validation.ValidationResult;
+import edu.pitt.dbmi.data.reader.validation.covariance.CovarianceValidation;
+import edu.pitt.dbmi.data.reader.validation.covariance.LowerCovarianceDataFileValidation;
+import edu.pitt.dbmi.data.reader.validation.tabular.TabularColumnFileValidation;
+import edu.pitt.dbmi.data.reader.validation.tabular.TabularColumnValidation;
+import edu.pitt.dbmi.data.reader.validation.tabular.TabularDataFileValidation;
+import edu.pitt.dbmi.data.reader.validation.tabular.TabularDataValidation;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -812,16 +819,16 @@ final class DataLoaderSettings extends JPanel {
         advancedSettingsBox.add(separator3);
 
         //  Missing value marker
-        Box missingValueMarkerBox = Box.createHorizontalBox();
+        Box missingDataMarkerBox = Box.createHorizontalBox();
 
         missingValueStarRadioButton = new JRadioButton("*");
         missingValueQuestionRadioButton = new JRadioButton("?");
         missingValueOtherRadioButton = new JRadioButton("Other: ");
 
-        ButtonGroup missingValueMarkerBtnGrp = new ButtonGroup();
-        missingValueMarkerBtnGrp.add(missingValueStarRadioButton);
-        missingValueMarkerBtnGrp.add(missingValueQuestionRadioButton);
-        missingValueMarkerBtnGrp.add(missingValueOtherRadioButton);
+        ButtonGroup missingDataMarkerBtnGrp = new ButtonGroup();
+        missingDataMarkerBtnGrp.add(missingValueStarRadioButton);
+        missingDataMarkerBtnGrp.add(missingValueQuestionRadioButton);
+        missingDataMarkerBtnGrp.add(missingValueOtherRadioButton);
 
         // Missing string field: other
         missingStringField = new StringTextField("", 6);
@@ -831,34 +838,34 @@ final class DataLoaderSettings extends JPanel {
         missingValueStarRadioButton.setSelected(true);
 
         // Option 1
-        Box missingValueMarkerOption1Box = Box.createHorizontalBox();
-        missingValueMarkerOption1Box.setPreferredSize(new Dimension(160, 30));
-        missingValueMarkerOption1Box.add(missingValueStarRadioButton);
+        Box missingDataMarkerOption1Box = Box.createHorizontalBox();
+        missingDataMarkerOption1Box.setPreferredSize(new Dimension(160, 30));
+        missingDataMarkerOption1Box.add(missingValueStarRadioButton);
 
         // Option 2
-        Box missingValueMarkerOption2Box = Box.createHorizontalBox();
-        missingValueMarkerOption2Box.setPreferredSize(new Dimension(160, 30));
-        missingValueMarkerOption2Box.add(missingValueQuestionRadioButton);
+        Box missingDataMarkerOption2Box = Box.createHorizontalBox();
+        missingDataMarkerOption2Box.setPreferredSize(new Dimension(160, 30));
+        missingDataMarkerOption2Box.add(missingValueQuestionRadioButton);
 
         // Option 3
-        Box missingValueMarkerOption3Box = Box.createHorizontalBox();
-        missingValueMarkerOption3Box.setPreferredSize(new Dimension(260, 30));
-        missingValueMarkerOption3Box.add(missingValueOtherRadioButton);
-        missingValueMarkerOption3Box.add(missingStringField);
+        Box missingDataMarkerOption3Box = Box.createHorizontalBox();
+        missingDataMarkerOption3Box.setPreferredSize(new Dimension(260, 30));
+        missingDataMarkerOption3Box.add(missingValueOtherRadioButton);
+        missingDataMarkerOption3Box.add(missingStringField);
 
         // Add label into this label box to size
-        Box missingValueMarkerLabelBox = Box.createHorizontalBox();
-        missingValueMarkerLabelBox.setPreferredSize(labelSize);
-        missingValueMarkerLabelBox.add(new JLabel("Missing value marker:"));
+        Box missingDataMarkerLabelBox = Box.createHorizontalBox();
+        missingDataMarkerLabelBox.setPreferredSize(labelSize);
+        missingDataMarkerLabelBox.add(new JLabel("Missing value marker:"));
 
-        missingValueMarkerBox.add(missingValueMarkerLabelBox);
-        missingValueMarkerBox.add(Box.createRigidArea(new Dimension(10, 1)));
-        missingValueMarkerBox.add(missingValueMarkerOption1Box);
-        missingValueMarkerBox.add(missingValueMarkerOption2Box);
-        missingValueMarkerBox.add(missingValueMarkerOption3Box);
-        missingValueMarkerBox.add(Box.createHorizontalGlue());
+        missingDataMarkerBox.add(missingDataMarkerLabelBox);
+        missingDataMarkerBox.add(Box.createRigidArea(new Dimension(10, 1)));
+        missingDataMarkerBox.add(missingDataMarkerOption1Box);
+        missingDataMarkerBox.add(missingDataMarkerOption2Box);
+        missingDataMarkerBox.add(missingDataMarkerOption3Box);
+        missingDataMarkerBox.add(Box.createHorizontalGlue());
 
-        advancedSettingsBox.add(missingValueMarkerBox);
+        advancedSettingsBox.add(missingDataMarkerBox);
 
         advancedSettingsBox.add(Box.createVerticalStrut(5));
 
@@ -977,7 +984,7 @@ final class DataLoaderSettings extends JPanel {
         }
     }
 
-    private String getMissingValueMarker() {
+    private String getMissingDataMarker() {
         if (missingValueStarRadioButton.isSelected()) {
             return "*";
         } else if (missingValueQuestionRadioButton.isSelected()) {
@@ -991,91 +998,134 @@ final class DataLoaderSettings extends JPanel {
         return maxNumOfDiscCategoriesField.getValue();
     }
 
-    
-    // Disabled data validation for now, until Kevin's work is done - 11/20/2018 by Zhou
-    
+
     /**
      * Validate each file based on the specified settings
      *
      * @param file
      * @return
      */
-//    public DataValidation validateDataWithSettings(File file) {
-//        Delimiter delimiter = getDelimiterType();
-//        boolean hasHeader = isVarNamesFirstRow();
-//        String commentMarker = getCommentMarker();
-//        String missingValueMarker = getMissingValueMarker();
-//
-//        if (tabularRadioButton.isSelected()) {
-//            TabularDataValidation validation = null;
-//
-//            if (contRadioButton.isSelected()) {
-//                validation = new ContinuousTabularDataFileValidation(file, delimiter);
-//            } else if (discRadioButton.isSelected()) {
-//                validation = new VerticalDiscreteTabularDataFileValidation(file, delimiter);
-//            } else if (mixedRadioButton.isSelected()) {
-//                validation = new MixedTabularDataFileValidation(getMaxNumOfDiscCategories(), file, delimiter);
-//            } else {
-//                throw new UnsupportedOperationException("Unsupported selection of Data Type!");
-//            }
-//
-//            // Header in first row or not
-//            validation.setHasHeader(hasHeader);
-//
-//            // Set comment marker
-//            validation.setCommentMarker(commentMarker);
-//
-//            validation.setMissingValueMarker(missingValueMarker);
-//
-//            // Set the quote character
-//            if (doubleQuoteRadioButton.isSelected()) {
-//                validation.setQuoteCharacter('"');
-//            }
-//
-//            if (singleQuoteRadioButton.isSelected()) {
-//                validation.setQuoteCharacter('\'');
-//            }
-//
-//            // Handle case ID column based on different selections
-//            if (idNoneRadioButton.isSelected()) {
-//                // No column exclusion
-//                validation.validate();
-//            } else if (idUnlabeledFirstColRadioButton.isSelected()) {
-//                // Exclude the first column
-//                validation.validate(new int[]{1});
-//            } else if (idLabeledColRadioButton.isSelected() && !idStringField.getText().isEmpty()) {
-//                // Exclude the specified labled column
-//                validation.validate(new HashSet<>(Arrays.asList(new String[]{idStringField.getText()})));
-//            } else {
-//                throw new UnsupportedOperationException("Unexpected 'Case ID column to ignore' selection.");
-//            }
-//
-//            return validation;
-//        } else if (covarianceRadioButton.isSelected()) {
-//            DataFileValidation validation = new CovarianceDataFileValidation(file, delimiter);
-//
-//            // Header in first row is required
-//            // Cpvariance never has missing value marker
-//            // Set comment marker
-//            validation.setCommentMarker(commentMarker);
-//
-//            // Set the quote character
-//            if (doubleQuoteRadioButton.isSelected()) {
-//                validation.setQuoteCharacter('"');
-//            }
-//
-//            if (singleQuoteRadioButton.isSelected()) {
-//                validation.setQuoteCharacter('\'');
-//            }
-//
-//            // No case ID on covarianced data
-//            validation.validate();
-//
-//            return validation;
-//        } else {
-//            throw new UnsupportedOperationException("Not yet supported!");
-//        }
-//    }
+    public List<ValidationResult> validateDataWithSettings(File file) throws IOException {
+        Delimiter delimiter = getDelimiterType();
+        boolean hasHeader = isVarNamesFirstRow();
+        String commentMarker = getCommentMarker();
+        String missingDataMarker = getMissingDataMarker();
+
+        if (tabularRadioButton.isSelected()) {
+            List<ValidationResult> tabularColumnValidationResults = new LinkedList<>();
+
+            // Step 1: validate the columns
+            TabularColumnValidation tabularColumnValidation = new TabularColumnFileValidation(file.toPath(), delimiter);
+            
+            tabularColumnValidation.setCommentMarker(commentMarker);
+            
+            // Set the quote character
+            if (doubleQuoteRadioButton.isSelected()) {
+                tabularColumnValidation.setQuoteCharacter('"');
+            }
+
+            if (singleQuoteRadioButton.isSelected()) {
+                tabularColumnValidation.setQuoteCharacter('\'');
+            }
+    
+            // Handle case ID column based on different selections
+            if (idNoneRadioButton.isSelected()) {
+                // No column exclusion
+                tabularColumnValidationResults = tabularColumnValidation.validate();
+            } else if (idUnlabeledFirstColRadioButton.isSelected()) {
+                // Exclude the first column
+                tabularColumnValidationResults = tabularColumnValidation.validate(new int[]{1});
+            } else if (idLabeledColRadioButton.isSelected() && !idStringField.getText().isEmpty()) {
+                // Exclude the specified labled column
+                tabularColumnValidationResults = tabularColumnValidation.validate(new HashSet<>(Arrays.asList(new String[]{idStringField.getText()})));
+            } else {
+                throw new UnsupportedOperationException("Unexpected 'Case ID column to ignore' selection.");
+            }
+            
+            List<ValidationResult> tabularColumnValidationInfos = new LinkedList<>();
+            List<ValidationResult> tabularColumnValidationWarnings = new LinkedList<>();
+            List<ValidationResult> tabularColumnValidationErrors = new LinkedList<>();
+            
+            for (ValidationResult result : tabularColumnValidationResults) {
+                switch (result.getCode()) {
+                    case INFO:
+                        tabularColumnValidationInfos.add(result);
+                        break;
+                    case WARNING:
+                        tabularColumnValidationWarnings.add(result);
+                        break;
+                    default:
+                        tabularColumnValidationErrors.add(result);
+                }
+            }
+            
+            // Stop here and return the column validation results if there's an error
+            if (tabularColumnValidationErrors.size() > 0) {
+                return tabularColumnValidationResults;
+            }
+            
+            // Step 2: Read in columns if nothing wrong with the columns validation
+            DataColumn[] dataColumns = readInTabularColumns(file);
+            
+            // Step 3: data validation
+            TabularDataValidation tabularDataValidation = new TabularDataFileValidation(file.toPath(), delimiter);
+            tabularDataValidation.setCommentMarker(commentMarker);
+
+            // Set the quote character
+            if (doubleQuoteRadioButton.isSelected()) {
+                tabularDataValidation.setQuoteCharacter('"');
+            }
+
+            if (singleQuoteRadioButton.isSelected()) {
+                tabularDataValidation.setQuoteCharacter('\'');
+            }
+            
+            tabularDataValidation.setMissingDataMarker(missingDataMarker);
+
+            List<ValidationResult> tabularDataValidationResults = tabularDataValidation.validate(dataColumns, hasHeader);
+            
+            List<ValidationResult> tabularDataValidationInfos = new LinkedList<>();
+            List<ValidationResult> tabularDataValidationWarnings = new LinkedList<>();
+            List<ValidationResult> tabularDataValidationErrors = new LinkedList<>();
+            
+            for (ValidationResult result : tabularDataValidationResults) {
+                switch (result.getCode()) {
+                    case INFO:
+                        tabularDataValidationInfos.add(result);
+                        break;
+                    case WARNING:
+                        tabularDataValidationWarnings.add(result);
+                        break;
+                    default:
+                        tabularDataValidationErrors.add(result);
+                }
+            }
+            
+            // Here only return the data validation results, no need to return the column validation results - Zhou
+            return tabularDataValidationResults;
+        } else if (covarianceRadioButton.isSelected()) {
+            CovarianceValidation validation = new LowerCovarianceDataFileValidation(file.toPath(), delimiter);
+            
+            // Header in first row is required
+            // Cpvariance never has missing value marker
+            // Set comment marker
+            validation.setCommentMarker(commentMarker);
+            
+            // Set the quote character
+            if (doubleQuoteRadioButton.isSelected()) {
+                validation.setQuoteCharacter('"');
+            }
+
+            if (singleQuoteRadioButton.isSelected()) {
+                validation.setQuoteCharacter('\'');
+            }
+
+            // No case ID on covarianced data
+            return validation.validate();
+        } else {
+            throw new UnsupportedOperationException("Not yet supported!");
+        }
+    }
 
     private void parseMetadataFile(File metadataFile) {
         // First read in the metadata file and get the string content
@@ -1127,6 +1177,74 @@ final class DataLoaderSettings extends JPanel {
         });
     }
     
+    private DataColumn[] readInTabularColumns(File file) throws IOException {
+        DataColumn[] dataColumns;
+        
+        Delimiter delimiter = getDelimiterType();
+        String commentMarker = getCommentMarker();
+        
+        TabularColumnReader columnReader = new TabularColumnFileReader(file.toPath(), delimiter);
+
+        columnReader.setCommentMarker(commentMarker);
+
+        if (doubleQuoteRadioButton.isSelected()) {
+            columnReader.setQuoteCharacter('"');
+        }
+
+        if (singleQuoteRadioButton.isSelected()) {
+            columnReader.setQuoteCharacter('\'');
+        }
+
+        // Handle case ID column based on different selections
+        if (idNoneRadioButton.isSelected()) {
+            // No column exclusion
+        } else if (idUnlabeledFirstColRadioButton.isSelected()) {
+            // Exclude the first column
+            dataColumns = columnReader.readInDataColumns(new int[]{1}, false);
+        } else if (idLabeledColRadioButton.isSelected() && !idStringField.getText().isEmpty()) {
+            // Exclude the specified labled column
+            dataColumns = columnReader.readInDataColumns(new HashSet<>(Arrays.asList(new String[]{idStringField.getText()})), false);
+        } else {
+            throw new UnsupportedOperationException("Unexpected 'Case ID column to ignore' selection.");
+        }
+
+        // Set data type for each column
+        if (contRadioButton.isSelected()) {
+            dataColumns = columnReader.readInDataColumns(false);
+        } else if (discRadioButton.isSelected()) {
+            dataColumns = columnReader.readInDataColumns(true);
+        } else if (mixedRadioButton.isSelected()) {
+            // It really doesn't matter for mixed data
+            dataColumns = columnReader.readInDataColumns(false);
+        } else {
+            throw new UnsupportedOperationException("Unsupported data type!");
+        }
+
+        // Overwrite the column type based on metadata     
+        Arrays.stream(dataColumns).forEach(e->{
+            // Set the intervention status variable column as discrete (0 or 1)
+            if (interventionStatusVarsList.contains(e.getName())) {
+                e.setDiscrete(true);
+            }
+
+            // Overwrite the value variable type based on metadata
+            if (interventionValueVarsMap.keySet().contains(e.getName())) {
+                if (interventionValueVarsMap.get(e.getName()).isDiscrete()) {
+                    e.setDiscrete(true);
+                } else {
+                    e.setDiscrete(false);
+                }
+            }
+
+            // Handle domain variables
+            if (domainVarsMap.keySet().contains(e.getName())) {
+                e.setDiscrete(domainVarsMap.get(e.getName()).isDiscrete());
+            }
+        });
+        
+        return dataColumns;
+    }
+    
     /**
      * Kevin's data reader
      *
@@ -1139,76 +1257,17 @@ final class DataLoaderSettings extends JPanel {
         Delimiter delimiter = getDelimiterType();
         boolean hasHeader = isVarNamesFirstRow();
         String commentMarker = getCommentMarker();
-        String missingValueMarker = getMissingValueMarker();
+        String missingDataMarker = getMissingDataMarker();
 
         if (tabularRadioButton.isSelected()) {
-            TabularColumnReader columnReader = new TabularColumnFileReader(file.toPath(), delimiter);
-            
-            columnReader.setCommentMarker(commentMarker);
-            
-            if (doubleQuoteRadioButton.isSelected()) {
-                columnReader.setQuoteCharacter('"');
-            }
-
-            if (singleQuoteRadioButton.isSelected()) {
-                columnReader.setQuoteCharacter('\'');
-            }
-            
-            DataColumn[] dataColumns;
-            
-            // Handle case ID column based on different selections
-            if (idNoneRadioButton.isSelected()) {
-                // No column exclusion
-            } else if (idUnlabeledFirstColRadioButton.isSelected()) {
-                // Exclude the first column
-                dataColumns = columnReader.readInDataColumns(new int[]{1}, false);
-            } else if (idLabeledColRadioButton.isSelected() && !idStringField.getText().isEmpty()) {
-                // Exclude the specified labled column
-                dataColumns = columnReader.readInDataColumns(new HashSet<>(Arrays.asList(new String[]{idStringField.getText()})), false);
-            } else {
-                throw new UnsupportedOperationException("Unexpected 'Case ID column to ignore' selection.");
-            }
-            
-            // Set data type for each column
-            if (contRadioButton.isSelected()) {
-                dataColumns = columnReader.readInDataColumns(false);
-            } else if (discRadioButton.isSelected()) {
-                dataColumns = columnReader.readInDataColumns(true);
-            } else if (mixedRadioButton.isSelected()) {
-                // It really doesn't matter for mixed data
-                dataColumns = columnReader.readInDataColumns(false);
-            } else {
-                throw new UnsupportedOperationException("Unsupported data type!");
-            }
-
-            // Overwrite the column type based on metadata     
-            Arrays.stream(dataColumns).forEach(e->{
-                // Set the intervention status variable column as discrete (0 or 1)
-                if (interventionStatusVarsList.contains(e.getName())) {
-                    e.setDiscrete(true);
-                }
-                
-                // Overwrite the value variable type based on metadata
-                if (interventionValueVarsMap.keySet().contains(e.getName())) {
-                    if (interventionValueVarsMap.get(e.getName()).isDiscrete()) {
-                        e.setDiscrete(true);
-                    } else {
-                        e.setDiscrete(false);
-                    }
-                }
-                
-                // Handle domain variables
-                if (domainVarsMap.keySet().contains(e.getName())) {
-                    e.setDiscrete(domainVarsMap.get(e.getName()).isDiscrete());
-                }
-            });
-            
+            DataColumn[] dataColumns = readInTabularColumns(file);
+          
             // Now read in the data rows
             TabularDataReader dataReader = new TabularDataFileReader(file.toPath(), delimiter);
             
             // Need to specify commentMarker, .... again to the TabularDataFileReader
             dataReader.setCommentMarker(commentMarker);
-            dataReader.setMissingDataMarker(missingValueMarker);
+            dataReader.setMissingDataMarker(missingDataMarker);
 
             if (doubleQuoteRadioButton.isSelected()) {
                 dataReader.setQuoteCharacter('"');
@@ -1222,7 +1281,6 @@ final class DataLoaderSettings extends JPanel {
             // It's possible that the users select mixed, but excluded either all continuous or discrete columns,
             // and as a result, the final data is either discrete or continuous instead of mixed - Zhou
             if (mixedRadioButton.isSelected()) {
-                dataColumns = columnReader.readInDataColumns(false);
                 dataReader.determineDiscreteDataColumns(dataColumns, getMaxNumOfDiscCategories(), hasHeader);
             } 
             
