@@ -22,22 +22,22 @@ package edu.cmu.tetradapp.editor;
 
 import com.google.gson.Gson;
 import edu.cmu.tetrad.data.DataModel;
-import edu.cmu.tetrad.util.DataConvertUtils;
 import edu.cmu.tetradapp.util.ImageUtils;
 import edu.cmu.tetradapp.util.IntTextField;
 import edu.cmu.tetradapp.util.StringTextField;
+import edu.pitt.dbmi.data.reader.Data;
+import edu.pitt.dbmi.data.reader.DataColumn;
 import edu.pitt.dbmi.data.reader.Delimiter;
+import edu.pitt.dbmi.data.reader.DiscreteDataColumn;
+import edu.pitt.dbmi.data.reader.MixedTabularData;
+import edu.pitt.dbmi.data.reader.VerticalDiscreteData;
 import edu.pitt.dbmi.data.reader.covariance.CovarianceData;
 import edu.pitt.dbmi.data.reader.covariance.CovarianceDataReader;
 import edu.pitt.dbmi.data.reader.covariance.LowerCovarianceDataFileReader;
 import edu.pitt.dbmi.data.reader.tabular.TabularColumnFileReader;
-import edu.pitt.dbmi.data.reader.tabular.TabularColumnFileReader.TabularDataColumn;
-import edu.pitt.dbmi.data.reader.tabular.TabularData;
+import edu.pitt.dbmi.data.reader.tabular.TabularColumnReader;
 import edu.pitt.dbmi.data.reader.tabular.TabularDataFileReader;
-import edu.pitt.dbmi.data.reader.tabular.TabularDataFileReader.MixedDataColumn;
-import edu.pitt.dbmi.data.reader.tabular.TabularDataFileReader.MixedTabularDataset;
-import edu.pitt.dbmi.data.reader.tabular.TabularDataFileReader.VerticalDiscreteTabularDataset;
-import edu.pitt.dbmi.data.util.TextFileUtils;
+import edu.pitt.dbmi.data.reader.tabular.TabularDataReader;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -1140,50 +1140,47 @@ final class DataLoaderSettings extends JPanel {
         String missingValueMarker = getMissingValueMarker();
 
         if (tabularRadioButton.isSelected()) {
-            TabularColumnFileReader columnFileReader = new TabularColumnFileReader(file, delimiter);
+            TabularColumnReader columnReader = new TabularColumnFileReader(file.toPath(), delimiter);
             
-            columnFileReader.setHasHeader(hasHeader);
-            columnFileReader.setCommentMarker(commentMarker);
-            columnFileReader.setMissingValueMarker(missingValueMarker);
-
+            columnReader.setCommentMarker(commentMarker);
+            
             if (doubleQuoteRadioButton.isSelected()) {
-                columnFileReader.setQuoteCharacter('"');
+                columnReader.setQuoteCharacter('"');
             }
 
             if (singleQuoteRadioButton.isSelected()) {
-                columnFileReader.setQuoteCharacter('\'');
+                columnReader.setQuoteCharacter('\'');
             }
             
-            TabularDataColumn[] columns;
+            DataColumn[] dataColumns;
             
             // Handle case ID column based on different selections
             if (idNoneRadioButton.isSelected()) {
                 // No column exclusion
             } else if (idUnlabeledFirstColRadioButton.isSelected()) {
                 // Exclude the first column
-                columns = columnFileReader.readInDataColumns(new int[]{1}, false);
+                dataColumns = columnReader.readInDataColumns(new int[]{1}, false);
             } else if (idLabeledColRadioButton.isSelected() && !idStringField.getText().isEmpty()) {
                 // Exclude the specified labled column
-                columns = columnFileReader.readInDataColumns(new HashSet<>(Arrays.asList(new String[]{idStringField.getText()})), false);
+                dataColumns = columnReader.readInDataColumns(new HashSet<>(Arrays.asList(new String[]{idStringField.getText()})), false);
             } else {
                 throw new UnsupportedOperationException("Unexpected 'Case ID column to ignore' selection.");
             }
             
             // Set data type for each column
             if (contRadioButton.isSelected()) {
-                columns = columnFileReader.readInDataColumns(false);
+                dataColumns = columnReader.readInDataColumns(false);
             } else if (discRadioButton.isSelected()) {
-                columns = columnFileReader.readInDataColumns(true);
+                dataColumns = columnReader.readInDataColumns(true);
             } else if (mixedRadioButton.isSelected()) {
-                columns = columnFileReader.readInDataColumns(false);
-                // For mixed data, also need to determine num of discrete categories
-                columnFileReader.determineDiscreteDataColumns(columns, getMaxNumOfDiscCategories());
+                // It really doesn't matter for mixed data
+                dataColumns = columnReader.readInDataColumns(false);
             } else {
                 throw new UnsupportedOperationException("Unsupported data type!");
             }
 
             // Overwrite the column type based on metadata     
-            Arrays.stream(columns).forEach(e->{
+            Arrays.stream(dataColumns).forEach(e->{
                 // Set the intervention status variable column as discrete (0 or 1)
                 if (interventionStatusVarsList.contains(e.getName())) {
                     e.setDiscrete(true);
@@ -1205,50 +1202,57 @@ final class DataLoaderSettings extends JPanel {
             });
             
             // Now read in the data rows
-            TabularDataFileReader dataFileReader = new TabularDataFileReader(file, delimiter);
+            TabularDataReader dataReader = new TabularDataFileReader(file.toPath(), delimiter);
             
-            // Need to specify hasHeader, commentMarker, .... again to the TabularDataFileReader
-            dataFileReader.setHasHeader(hasHeader);
-            dataFileReader.setCommentMarker(commentMarker);
-            dataFileReader.setMissingValueMarker(missingValueMarker);
+            // Need to specify commentMarker, .... again to the TabularDataFileReader
+            dataReader.setCommentMarker(commentMarker);
+            dataReader.setMissingDataMarker(missingValueMarker);
 
             if (doubleQuoteRadioButton.isSelected()) {
-                dataFileReader.setQuoteCharacter('"');
+                dataReader.setQuoteCharacter('"');
             }
 
             if (singleQuoteRadioButton.isSelected()) {
-                dataFileReader.setQuoteCharacter('\'');
+                dataReader.setQuoteCharacter('\'');
             }
             
-            // Now we have the tabular data
-            TabularData tabularData = dataFileReader.readInData(columns);
+            // When users select mixed data, we need to determine num of discrete categories
+            // It's possible that the users select mixed, but excluded either all continuous or discrete columns,
+            // and as a result, the final data is either discrete or continuous instead of mixed - Zhou
+            if (mixedRadioButton.isSelected()) {
+                dataColumns = columnReader.readInDataColumns(false);
+                dataReader.determineDiscreteDataColumns(dataColumns, getMaxNumOfDiscCategories(), hasHeader);
+            } 
+            
+            // Now we have the data
+            Data data = dataReader.readInData(dataColumns, hasHeader);
 
-            // The tabularData can only either be discrete or mixed due to the discrete column of interventional status
-            if (tabularData instanceof VerticalDiscreteTabularDataset) {
-                VerticalDiscreteTabularDataset tabularDataset = (VerticalDiscreteTabularDataset) tabularData;
+            // The data can only either be discrete or mixed due to the discrete column of interventional status
+            if (data instanceof VerticalDiscreteData) {
+                VerticalDiscreteData verticalDiscreteData = (VerticalDiscreteData) data;
                 System.out.println("===================================Discrete=============================================");
-                Arrays.stream(tabularDataset.getColumns()).forEach(System.out::println);
+                Arrays.stream(verticalDiscreteData.getDataColumns()).forEach(System.out::println);
                 System.out.println("--------------------------------------------------------------------------------");
-                int[][] data = tabularDataset.getData();
-                int numOfCols = data.length;
-                int numOfRows = data[0].length;
+                int[][] dataArr = verticalDiscreteData.getData();
+                int numOfCols = dataArr.length;
+                int numOfRows = dataArr[0].length;
                 for (int row = 0; row < numOfRows; row++) {
                     for (int col = 0; col < numOfCols; col++) {
-                        System.out.printf("%d\t", data[col][row]);
+                        System.out.printf("%d\t", dataArr[col][row]);
                     }
                     System.out.println();
                 }
                 System.out.println("================================================================================");
-            } else if (tabularData instanceof MixedTabularDataset) {
-                MixedTabularDataset tabularDataset = (MixedTabularDataset) tabularData;
+            } else if (data instanceof MixedTabularData) {
+                MixedTabularData mixedTabularData = (MixedTabularData) data;
 
-                MixedDataColumn[] mixedCols = tabularDataset.getColumns();
+                DiscreteDataColumn[] mixedCols = mixedTabularData.getDataColumns();
                 System.out.println("======================================Mixed==========================================");
-                Arrays.stream(tabularDataset.getColumns()).forEach(System.out::println);
+                Arrays.stream(mixedTabularData.getDataColumns()).forEach(System.out::println);
                 System.out.println("--------------------------------------------------------------------------------");
-                double[][] continuousData = tabularDataset.getContinuousData();
-                int[][] discreteData = tabularDataset.getDiscreteData();
-                int numOfRows = tabularDataset.getNumOfRows();
+                double[][] continuousData = mixedTabularData.getContinuousData();
+                int[][] discreteData = mixedTabularData.getDiscreteData();
+                int numOfRows = mixedTabularData.getNumOfRows();
                 int numOfCols = mixedCols.length;
                 for (int row = 0; row < numOfRows; row++) {
                     for (int col = 0; col < numOfCols; col++) {
@@ -1275,10 +1279,10 @@ final class DataLoaderSettings extends JPanel {
 //            });
 
             // Box Dataset to DataModel
-            dataModel = DataConvertUtils.toDataModel(tabularData);
+            dataModel = DataConvertUtils.toDataModel(data);
         } else if (covarianceRadioButton.isSelected()) {
             // Covariance data can only be continuous
-            CovarianceDataReader dataFileReader = new LowerCovarianceDataFileReader(file, delimiter);
+            CovarianceDataReader dataFileReader = new LowerCovarianceDataFileReader(file.toPath(), delimiter);
 
             dataFileReader.setCommentMarker(commentMarker);
 
