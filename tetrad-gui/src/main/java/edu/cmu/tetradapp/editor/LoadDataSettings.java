@@ -41,8 +41,6 @@ import edu.pitt.dbmi.data.reader.tabular.TabularColumnReader;
 import edu.pitt.dbmi.data.reader.tabular.TabularDataFileReader;
 import edu.pitt.dbmi.data.reader.tabular.TabularDataReader;
 import edu.pitt.dbmi.data.reader.utils.TextFileUtils;
-import edu.pitt.dbmi.data.reader.validation.MessageType;
-import edu.pitt.dbmi.data.reader.validation.ValidationCode;
 import edu.pitt.dbmi.data.reader.validation.ValidationResult;
 import edu.pitt.dbmi.data.reader.validation.covariance.CovarianceValidation;
 import edu.pitt.dbmi.data.reader.validation.covariance.LowerCovarianceDataFileValidation;
@@ -451,37 +449,30 @@ final class LoadDataSettings extends JPanel {
             case ',':
                 singleCharDelimiterRadioButton.setSelected(true);
                 singleCharDelimiterComboBox.setSelectedItem("Comma");
-                System.out.println("Inferred delimiter: Comma");
                 break;
             case '\t':
                 singleCharDelimiterRadioButton.setSelected(true);
                 singleCharDelimiterComboBox.setSelectedItem("Tab");
-                System.out.println("Inferred delimiter: Tab");
                 break;
             case ' ':
                 // Whitespace covers space, so we use whitespace instead of space here
                 whitespaceDelimiterRadioButton.setSelected(true);
-                System.out.println("Inferred delimiter defaults: Whitespace");
                 break;
             case ':':
                 singleCharDelimiterRadioButton.setSelected(true);
                 singleCharDelimiterComboBox.setSelectedItem("Colon");
-                System.out.println("Inferred delimiter: Colon");
                 break;
             case ';':
                 singleCharDelimiterRadioButton.setSelected(true);
                 singleCharDelimiterComboBox.setSelectedItem("Semicolon");
-                System.out.println("Inferred delimiter: Semicolon");
                 break;
             case '|':
                 singleCharDelimiterRadioButton.setSelected(true);
                 singleCharDelimiterComboBox.setSelectedItem("Pipe");
-                System.out.println("Inferred delimiter: Pipe");
                 break;
             default:
                 // Just use whitespace as default if can't infer
                 whitespaceDelimiterRadioButton.setSelected(true);
-                System.out.println("Inferred delimiter defaults: Whitespace");
                 break;
         }
 
@@ -862,6 +853,11 @@ final class LoadDataSettings extends JPanel {
         return advancedSettingsBox;
     }
 
+    /**
+     * This works for both validation(column and data) and data reading(column reader and data reader)
+     * 
+     * @param datasetReader 
+     */
     private void setQuoteChar(DatasetReader datasetReader) {
         if (doubleQuoteRadioButton.isSelected()) {
             datasetReader.setQuoteCharacter('"');
@@ -954,6 +950,19 @@ final class LoadDataSettings extends JPanel {
     }
 
     /**
+     * Can't use metadata file when there's no column header
+     * 
+     * @return 
+     */
+    public boolean isMetadataUsedWhenNoHeader() {
+        if (metadataFile != null && firstRowVarNamesNoRadioButton.isSelected()) {
+            return false;
+        } else {
+            return true;
+        }
+    }
+    
+    /**
      * To check if the label is specified while that radio button is selected
      *
      * @return
@@ -966,6 +975,19 @@ final class LoadDataSettings extends JPanel {
         }
     }
 
+    /**
+     * Can't exclude columns when there's no header in the data
+     * 
+     * @return 
+     */
+    public boolean isColumnExcludedWhenNoHeader() {
+        if (idLabeledColRadioButton.isSelected() && firstRowVarNamesNoRadioButton.isSelected()) {
+            return false;
+        } else {
+            return true;
+        }
+    }
+    
     /**
      * To check if comment marker is supplied while Other radio button is
      * selected
@@ -994,6 +1016,14 @@ final class LoadDataSettings extends JPanel {
         return maxNumOfDiscCategoriesField.getValue();
     }
 
+    /**
+     * Genearate the column header when not provided
+     * 
+     * @param file
+     * @param delimiter
+     * @return
+     * @throws IOException 
+     */
     private DataColumn[] generateTabularColumns(File file, Delimiter delimiter) throws IOException {
         DataColumn[] dataColumns = null;
         
@@ -1005,17 +1035,13 @@ final class LoadDataSettings extends JPanel {
         setQuoteChar(columnFileReader);
 
         // Set data type for each column
-        boolean isDiscrete;
+        // It really doesn't matter for mixed data
+        boolean isDiscrete = false;
         if (contRadioButton.isSelected()) {
             isDiscrete = false;
         } else if (discRadioButton.isSelected()) {
             isDiscrete = true;
-        } else if (mixedRadioButton.isSelected()) {
-            // It really doesn't matter for mixed data
-            isDiscrete = false;
-        } else {
-            throw new UnsupportedOperationException("Unsupported data type!");
-        }
+        } 
 
         // Generate data columns with exclusions
         // Handle case ID column based on different selections
@@ -1024,11 +1050,7 @@ final class LoadDataSettings extends JPanel {
         } else if (idUnlabeledFirstColRadioButton.isSelected()) {
             // Exclude the first column
             dataColumns = columnFileReader.generateColumns(new int[]{1}, isDiscrete);
-        } else if (idLabeledColRadioButton.isSelected()) {
-            throw new UnsupportedOperationException("Your dataset has no header, so you can't specify the column labels!");
-        } else {
-            throw new UnsupportedOperationException("Unexpected 'Case ID column to ignore' selection.");
-        }
+        } 
         
         return dataColumns;
     }
@@ -1046,24 +1068,12 @@ final class LoadDataSettings extends JPanel {
         String missingDataMarker = getMissingDataMarker();
 
         if (tabularRadioButton.isSelected()) {
-            List<ValidationResult> validationInfos = new LinkedList<>();
-            List<ValidationResult> validationWarnings = new LinkedList<>();
-            List<ValidationResult> validationErrors = new LinkedList<>();
-            
             DataColumn[] dataColumns;
             
             List<ValidationResult> tabularColumnValidationResults = new LinkedList<>();
     
             // Generate the columns if not present and skip the column validation
             if (!hasHeader) {
-                // We first notify the users that metadata file can not be used if the data doesn't have column header
-                if (metadataFile == null) {
-                    String noHeaderWarning = "Your metadata can not be used because your data has no column header!";
-                    ValidationResult noHeaderWarningResult = new ValidationResult(ValidationCode.WARNING, MessageType.FILE_SUMMARY, noHeaderWarning);
-                    tabularColumnValidationResults.add(noHeaderWarningResult);
-                }
-                
-                // Then generate the columns for later use
                 dataColumns = generateTabularColumns(file, delimiter);
             } else {
                 // Step 1: validate the columns
@@ -1080,15 +1090,15 @@ final class LoadDataSettings extends JPanel {
                 } else if (idUnlabeledFirstColRadioButton.isSelected()) {
                     // Exclude the first column
                     tabularColumnValidationResults = tabularColumnValidation.validate(new int[]{1});
-                } else if (idLabeledColRadioButton.isSelected()) {
-                    throw new UnsupportedOperationException("You can't exclude labeled columns when there's no column header provided in your data.");
-                } else {
-                    throw new UnsupportedOperationException("Unexpected 'Case ID column to ignore' selection.");
-                }
+                } 
                 
                 // Step 2: Read in columns for later use if nothing wrong with the columns validation
                 dataColumns = readInTabularColumns(file);
             }
+            
+            List<ValidationResult> validationInfos = new LinkedList<>();
+            List<ValidationResult> validationWarnings = new LinkedList<>();
+            List<ValidationResult> validationErrors = new LinkedList<>();
             
             for (ValidationResult result : tabularColumnValidationResults) {
                 switch (result.getCode()) {
@@ -1108,6 +1118,7 @@ final class LoadDataSettings extends JPanel {
                 return tabularColumnValidationResults;
             } else {
                 // Step 3: Data validation
+                // when we at this step, it means the column validation is all good without any errors
                 TabularDataValidation tabularDataValidation = new TabularDataFileValidation(file.toPath(), delimiter);
 
                 // Specify the setting again for data validation
@@ -1118,13 +1129,9 @@ final class LoadDataSettings extends JPanel {
                 tabularDataValidation.setMissingDataMarker(missingDataMarker);
 
                 List<ValidationResult> tabularDataValidationResults = tabularDataValidation.validate(dataColumns, hasHeader);
-
-                // Merge the column validation result and data vlidation result
-                // because the column validation may have addition info and warnings (no column error at this point)
-                List<ValidationResult> finalValidationResults = new LinkedList<>(tabularColumnValidationResults);
-                finalValidationResults.addAll(tabularDataValidationResults);
                 
-                return finalValidationResults;
+                // At this point, no need to use the column validation results at all
+                return tabularDataValidationResults;
             }
         } else if (covarianceRadioButton.isSelected()) {
             CovarianceValidation covarianceValidation = new LowerCovarianceDataFileValidation(file.toPath(), delimiter);
@@ -1153,8 +1160,7 @@ final class LoadDataSettings extends JPanel {
                 line = br.readLine();
             }
             metadataStr = sb.toString();
-        } catch(Exception e) {
-            e.printStackTrace();
+        } catch(IOException e) {
         }
 
         // Parse the metadata json string with Gson
@@ -1203,17 +1209,13 @@ final class LoadDataSettings extends JPanel {
         setQuoteChar(columnReader);
 
         // Set data type for each column
-        boolean isDiscrete;
+        // It really doesn't matter for mixed data
+        boolean isDiscrete = false;
         if (contRadioButton.isSelected()) {
             isDiscrete = false;
         } else if (discRadioButton.isSelected()) {
             isDiscrete = true;
-        } else if (mixedRadioButton.isSelected()) {
-            // It really doesn't matter for mixed data
-            isDiscrete = false;
-        } else {
-            throw new UnsupportedOperationException("Unsupported data type!");
-        }
+        } 
 
         // Handle case ID column based on different selections
         if (idNoneRadioButton.isSelected()) {
@@ -1225,26 +1227,18 @@ final class LoadDataSettings extends JPanel {
         } else if (idLabeledColRadioButton.isSelected() && !idStringField.getText().isEmpty()) {
             // Exclude the specified labled columns
             dataColumns = columnReader.readInDataColumns(new HashSet<>(Arrays.asList(new String[]{idStringField.getText()})), isDiscrete);
-        } else {
-            throw new UnsupportedOperationException("Unexpected 'Case ID column to ignore' selection.");
-        }
+        } 
                 
         // Overwrite the column type based on metadata   
         // only do this for data with column header, not for the generated header
         if (isVarNamesFirstRow()) {
             Arrays.stream(dataColumns).forEach(e->{
                 // Set the intervention status variable column as discrete (0 or 1)
-                if (interventionStatusVarsList.contains(e.getName())) {
-                    e.setDiscrete(true);
-                }
+                e.setDiscrete(interventionStatusVarsList.contains(e.getName()));
 
                 // Overwrite the value variable type based on metadata
                 if (interventionValueVarsMap.keySet().contains(e.getName())) {
-                    if (interventionValueVarsMap.get(e.getName()).isDiscrete()) {
-                        e.setDiscrete(true);
-                    } else {
-                        e.setDiscrete(false);
-                    }
+                    e.setDiscrete(interventionValueVarsMap.get(e.getName()).isDiscrete());
                 }
 
                 // Handle domain variables

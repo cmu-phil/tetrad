@@ -61,7 +61,7 @@ final class LoadDataDialog extends JPanel {
 
     private List<String> failedFiles;
 
-    private LoadDataSettings dataLoaderSettings;
+    private LoadDataSettings loadDataSettings;
 
     private DataModelList dataModelList;
 
@@ -180,13 +180,13 @@ final class LoadDataDialog extends JPanel {
         // Data loading params
         // The data loading params apply to all slected files
         // the users should know that the selected files should share these settings - Zhou
-        dataLoaderSettings = new LoadDataSettings(loadedFiles);
+        loadDataSettings = new LoadDataSettings(loadedFiles);
 
         // Basic settings
-        basicSettingsBox = dataLoaderSettings.basicSettings();
+        basicSettingsBox = loadDataSettings.basicSettings();
 
         // Advanced settings
-        advancedSettingsBox = dataLoaderSettings.advancedSettings();
+        advancedSettingsBox = loadDataSettings.advancedSettings();
 
         // Contains file list and format/options
         settingsContainer = Box.createVerticalBox();
@@ -513,11 +513,19 @@ final class LoadDataDialog extends JPanel {
                 // to eliminate user errors
                 List<String> inputErrors = new ArrayList();
 
-                if (!dataLoaderSettings.isColumnLabelSpecified()) {
+                if (!loadDataSettings.isMetadataUsedWhenNoHeader()) {
+                    inputErrors.add("- Can not use metadata file when column header not provided");
+                }
+                
+                if (!loadDataSettings.isColumnLabelSpecified()) {
                     inputErrors.add("- Please specify the case ID column label.");
                 }
 
-                if (!dataLoaderSettings.isOtherCommentMarkerSpecified()) {
+                if (!loadDataSettings.isColumnExcludedWhenNoHeader()) {
+                    inputErrors.add("- Can not exclude column when column header not provided.");
+                }
+                
+                if (!loadDataSettings.isOtherCommentMarkerSpecified()) {
                     inputErrors.add("- Please specify the comment marker.");
                 }
 
@@ -740,7 +748,7 @@ final class LoadDataDialog extends JPanel {
                 strBuilder.append(loadedFiles.get(i).getName());
                 strBuilder.append(":</p>");
                 
-                List<ValidationResult> results = dataLoaderSettings.validateDataWithSettings(loadedFiles.get(i));
+                List<ValidationResult> results = loadDataSettings.validateDataWithSettings(loadedFiles.get(i));
                 
                 List<ValidationResult> infos = new LinkedList<>();
                 List<ValidationResult> warnings = new LinkedList<>();
@@ -881,7 +889,7 @@ final class LoadDataDialog extends JPanel {
     private void loadAllFiles() throws IOException {
         // Try to load each file and store the file name for failed loading
         for (int i = 0; i < loadedFiles.size(); i++) {
-            DataModel dataModel = dataLoaderSettings.loadDataWithSettings(loadedFiles.get(i));
+            DataModel dataModel = loadDataSettings.loadDataWithSettings(loadedFiles.get(i));
 
             // Add to dataModelList for further use
             if (dataModel != null) {
