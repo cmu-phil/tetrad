@@ -743,7 +743,6 @@ final class LoadDataDialog extends JPanel {
                 List<ValidationResult> results = dataLoaderSettings.validateDataWithSettings(loadedFiles.get(i));
                 
                 List<ValidationResult> infos = new LinkedList<>();
-                // Just leave the warnings here to future use - Zhou
                 List<ValidationResult> warnings = new LinkedList<>();
                 List<ValidationResult> errors = new LinkedList<>();
                 for (ValidationResult result : results) {

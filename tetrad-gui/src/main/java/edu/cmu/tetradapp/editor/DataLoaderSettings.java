@@ -1148,7 +1148,7 @@ final class DataLoaderSettings extends JPanel {
 
                 // Merge the column validation result and data vlidation result
                 // because the column validation may have addition info and warnings (no column error at this point)
-                List<ValidationResult> finalValidationResults = new LinkedList<ValidationResult>(tabularColumnValidationResults);
+                List<ValidationResult> finalValidationResults = new LinkedList<>(tabularColumnValidationResults);
                 finalValidationResults.addAll(tabularDataValidationResults);
                 
                 return finalValidationResults;
@@ -1271,28 +1271,31 @@ final class DataLoaderSettings extends JPanel {
             throw new UnsupportedOperationException("Unexpected 'Case ID column to ignore' selection.");
         }
                 
-        // Overwrite the column type based on metadata     
-        Arrays.stream(dataColumns).forEach(e->{
-            // Set the intervention status variable column as discrete (0 or 1)
-            if (interventionStatusVarsList.contains(e.getName())) {
-                e.setDiscrete(true);
-            }
-
-            // Overwrite the value variable type based on metadata
-            if (interventionValueVarsMap.keySet().contains(e.getName())) {
-                if (interventionValueVarsMap.get(e.getName()).isDiscrete()) {
+        // Overwrite the column type based on metadata   
+        // only do this for data with column header, not for the generated header
+        if (isVarNamesFirstRow()) {
+                Arrays.stream(dataColumns).forEach(e->{
+                // Set the intervention status variable column as discrete (0 or 1)
+                if (interventionStatusVarsList.contains(e.getName())) {
                     e.setDiscrete(true);
-                } else {
-                    e.setDiscrete(false);
                 }
-            }
 
-            // Handle domain variables
-            if (domainVarsMap.keySet().contains(e.getName())) {
-                e.setDiscrete(domainVarsMap.get(e.getName()).isDiscrete());
-            }
-        });
-        
+                // Overwrite the value variable type based on metadata
+                if (interventionValueVarsMap.keySet().contains(e.getName())) {
+                    if (interventionValueVarsMap.get(e.getName()).isDiscrete()) {
+                        e.setDiscrete(true);
+                    } else {
+                        e.setDiscrete(false);
+                    }
+                }
+
+                // Handle domain variables
+                if (domainVarsMap.keySet().contains(e.getName())) {
+                    e.setDiscrete(domainVarsMap.get(e.getName()).isDiscrete());
+                }
+            });
+        }
+
         return dataColumns;
     }
     
@@ -1421,7 +1424,7 @@ final class DataLoaderSettings extends JPanel {
 
         return dataModel;
     }
-
+    
     private static class InterventionMetadata {
 
         public InterventionMetadata() {
