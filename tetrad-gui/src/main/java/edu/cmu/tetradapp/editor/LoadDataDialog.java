@@ -23,6 +23,8 @@ package edu.cmu.tetradapp.editor;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataModelList;
 import edu.cmu.tetrad.util.JOptionUtils;
+import edu.pitt.dbmi.data.reader.preview.BasicDataPreviewer;
+import edu.pitt.dbmi.data.reader.preview.DataPreviewer;
 import edu.pitt.dbmi.data.reader.validation.ValidationResult;
 import java.awt.*;
 import java.awt.event.ActionEvent;
