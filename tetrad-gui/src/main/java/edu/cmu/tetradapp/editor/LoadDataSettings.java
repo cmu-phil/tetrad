@@ -28,6 +28,7 @@ import edu.cmu.tetradapp.util.IntTextField;
 import edu.cmu.tetradapp.util.StringTextField;
 import edu.pitt.dbmi.data.reader.Data;
 import edu.pitt.dbmi.data.reader.DataColumn;
+import edu.pitt.dbmi.data.reader.DatasetReader;
 import edu.pitt.dbmi.data.reader.Delimiter;
 import edu.pitt.dbmi.data.reader.DiscreteDataColumn;
 import edu.pitt.dbmi.data.reader.MixedTabularData;
@@ -197,8 +198,6 @@ final class LoadDataSettings extends JPanel {
             }
         });
 
-        
-                
         // File choose button box 
         Box metadataFileButtonBox = Box.createHorizontalBox();
         metadataFileButtonBox.setPreferredSize(new Dimension(680, 30));
@@ -220,7 +219,7 @@ final class LoadDataSettings extends JPanel {
         basicSettingsBox.add(separator);
         
         
-        // File type: Tabular/covariance
+        // File type: Tabular/Covariance
         Box fileTypeBox = Box.createHorizontalBox();
 
         tabularRadioButton = new JRadioButton("Tabular data");
@@ -276,30 +275,27 @@ final class LoadDataSettings extends JPanel {
         });
 
         // Event listener
-        covarianceRadioButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent actionEvent) {
-                JRadioButton button = (JRadioButton) actionEvent.getSource();
-                if (button.isSelected()) {
-                    // When Covariance data is selected, data type can only be Continuous,
-                    contRadioButton.setSelected(true);
-
-                    //will disallow the users to choose Discrete and mixed data
-                    discRadioButton.setEnabled(false);
-                    mixedRadioButton.setEnabled(false);
-
-                    // Both Yes and No of Variable names in first row need to be disabled
-                    // Because the first row should be number of cases
-                    firstRowVarNamesYesRadioButton.setEnabled(false);
-                    firstRowVarNamesNoRadioButton.setEnabled(false);
-
-                    // select None for Case IDs, disable other options,
-                    // since no Case ID should be in covariance data
-                    idNoneRadioButton.setSelected(true);
-                    idUnlabeledFirstColRadioButton.setEnabled(false);
-                    idLabeledColRadioButton.setEnabled(false);
-                    idStringField.setEnabled(false);
-                }
+        covarianceRadioButton.addActionListener((ActionEvent actionEvent) -> {
+            JRadioButton button = (JRadioButton) actionEvent.getSource();
+            if (button.isSelected()) {
+                // When Covariance data is selected, data type can only be Continuous,
+                contRadioButton.setSelected(true);
+                
+                //will disallow the users to choose Discrete and mixed data
+                discRadioButton.setEnabled(false);
+                mixedRadioButton.setEnabled(false);
+                
+                // Both Yes and No of Variable names in first row need to be disabled
+                // Because the first row should be number of cases
+                firstRowVarNamesYesRadioButton.setEnabled(false);
+                firstRowVarNamesNoRadioButton.setEnabled(false);
+                
+                // select None for Case IDs, disable other options,
+                // since no Case ID should be in covariance data
+                idNoneRadioButton.setSelected(true);
+                idUnlabeledFirstColRadioButton.setEnabled(false);
+                idLabeledColRadioButton.setEnabled(false);
+                idStringField.setEnabled(false);
             }
         });
 
@@ -384,14 +380,11 @@ final class LoadDataSettings extends JPanel {
         // 0 by default
         maxNumOfDiscCategoriesField.setValue(0);
 
-        maxNumOfDiscCategoriesField.setFilter(new IntTextField.Filter() {
-            @Override
-            public int filter(int value, int oldValue) {
-                if (value >= 0) {
-                    return value;
-                } else {
-                    return oldValue;
-                }
+        maxNumOfDiscCategoriesField.setFilter((int value, int oldValue) -> {
+            if (value >= 0) {
+                return value;
+            } else {
+                return oldValue;
             }
         });
 
@@ -494,13 +487,10 @@ final class LoadDataSettings extends JPanel {
 
         // Event listener
         // ComboBox is actually a container
-        singleCharDelimiterComboBox.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent actionEvent) {
-                // Select the "Single character:" radio button when users click the combo box
-                if (!singleCharDelimiterRadioButton.isSelected()) {
-                    singleCharDelimiterRadioButton.setSelected(true);
-                }
+        singleCharDelimiterComboBox.addActionListener((ActionEvent actionEvent) -> {
+            // Select the "Single character:" radio button when users click the combo box
+            if (!singleCharDelimiterRadioButton.isSelected()) {
+                singleCharDelimiterRadioButton.setSelected(true);
             }
         });
 
@@ -556,33 +546,27 @@ final class LoadDataSettings extends JPanel {
         firstRowVarNamesYesRadioButton.setSelected(true);
 
         // Event listener
-        firstRowVarNamesYesRadioButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent actionEvent) {
-                JRadioButton button = (JRadioButton) actionEvent.getSource();
-                if (button.isSelected()) {
-                    // Enable specifying column labeled option
-                    if (!idLabeledColRadioButton.isEnabled()) {
-                        idLabeledColRadioButton.setEnabled(true);
-                    }
-
-                    if (!idStringField.isEnabled()) {
-                        idStringField.setEnabled(true);
-                    }
+        firstRowVarNamesYesRadioButton.addActionListener((ActionEvent actionEvent) -> {
+            JRadioButton button = (JRadioButton) actionEvent.getSource();
+            if (button.isSelected()) {
+                // Enable specifying column labeled option
+                if (!idLabeledColRadioButton.isEnabled()) {
+                    idLabeledColRadioButton.setEnabled(true);
+                }
+                
+                if (!idStringField.isEnabled()) {
+                    idStringField.setEnabled(true);
                 }
             }
         });
 
         // Event listener
-        firstRowVarNamesNoRadioButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent actionEvent) {
-                JRadioButton button = (JRadioButton) actionEvent.getSource();
-                if (button.isSelected()) {
-                    // Disable the "Column labeled" option of ignoring case id column
-                    idLabeledColRadioButton.setEnabled(false);
-                    idStringField.setEnabled(false);
-                }
+        firstRowVarNamesNoRadioButton.addActionListener((ActionEvent actionEvent) -> {
+            JRadioButton button = (JRadioButton) actionEvent.getSource();
+            if (button.isSelected()) {
+                // Disable the "Column labeled" option of ignoring case id column
+                idLabeledColRadioButton.setEnabled(false);
+                idStringField.setEnabled(false);
             }
         });
 
@@ -878,6 +862,16 @@ final class LoadDataSettings extends JPanel {
         return advancedSettingsBox;
     }
 
+    private void setQuoteChar(DatasetReader datasetReader) {
+        if (doubleQuoteRadioButton.isSelected()) {
+            datasetReader.setQuoteCharacter('"');
+        }
+
+        if (singleQuoteRadioButton.isSelected()) {
+            datasetReader.setQuoteCharacter('\'');
+        }
+    }
+    
     private String getCommentMarker() {
         if (commentDoubleSlashRadioButton.isSelected()) {
             return "//";
@@ -1006,15 +1000,9 @@ final class LoadDataSettings extends JPanel {
         String commentMarker = getCommentMarker();
         
         TabularColumnReader columnFileReader = new TabularColumnFileReader(file.toPath(), delimiter);
+        
         columnFileReader.setCommentMarker(commentMarker);
-        // Set the quote character
-        if (doubleQuoteRadioButton.isSelected()) {
-            columnFileReader.setQuoteCharacter('"');
-        }
-
-        if (singleQuoteRadioButton.isSelected()) {
-            columnFileReader.setQuoteCharacter('\'');
-        }
+        setQuoteChar(columnFileReader);
 
         // Set data type for each column
         boolean isDiscrete;
@@ -1083,15 +1071,8 @@ final class LoadDataSettings extends JPanel {
 
                 // Specify settings for column validation
                 tabularColumnValidation.setCommentMarker(commentMarker);
-                // Set the quote character
-                if (doubleQuoteRadioButton.isSelected()) {
-                    tabularColumnValidation.setQuoteCharacter('"');
-                }
-
-                if (singleQuoteRadioButton.isSelected()) {
-                    tabularColumnValidation.setQuoteCharacter('\'');
-                }
-
+                setQuoteChar(tabularColumnValidation);
+                
                 // Handle case ID column based on different selections
                 if (idNoneRadioButton.isSelected()) {
                     // No column exclusion
@@ -1131,15 +1112,8 @@ final class LoadDataSettings extends JPanel {
 
                 // Specify the setting again for data validation
                 tabularDataValidation.setCommentMarker(commentMarker);
-                // Set the quote character
-                if (doubleQuoteRadioButton.isSelected()) {
-                    tabularDataValidation.setQuoteCharacter('"');
-                }
-
-                if (singleQuoteRadioButton.isSelected()) {
-                    tabularDataValidation.setQuoteCharacter('\'');
-                }
-
+                setQuoteChar(tabularDataValidation);
+                
                 // Missing data marker setting for data validaiton only, not for column validation
                 tabularDataValidation.setMissingDataMarker(missingDataMarker);
 
@@ -1153,24 +1127,15 @@ final class LoadDataSettings extends JPanel {
                 return finalValidationResults;
             }
         } else if (covarianceRadioButton.isSelected()) {
-            CovarianceValidation validation = new LowerCovarianceDataFileValidation(file.toPath(), delimiter);
+            CovarianceValidation covarianceValidation = new LowerCovarianceDataFileValidation(file.toPath(), delimiter);
             
             // Header in first row is required
             // Cpvariance never has missing value marker
-            // Set comment marker
-            validation.setCommentMarker(commentMarker);
-            
-            // Set the quote character
-            if (doubleQuoteRadioButton.isSelected()) {
-                validation.setQuoteCharacter('"');
-            }
-
-            if (singleQuoteRadioButton.isSelected()) {
-                validation.setQuoteCharacter('\'');
-            }
-
+            covarianceValidation.setCommentMarker(commentMarker);
+            setQuoteChar(covarianceValidation);
+   
             // No case ID on covarianced data
-            return validation.validate();
+            return covarianceValidation.validate();
         } else {
             throw new UnsupportedOperationException("You can only choose either tabular data or covariance data!");
         }
@@ -1235,14 +1200,7 @@ final class LoadDataSettings extends JPanel {
         TabularColumnReader columnReader = new TabularColumnFileReader(file.toPath(), delimiter);
 
         columnReader.setCommentMarker(commentMarker);
-
-        if (doubleQuoteRadioButton.isSelected()) {
-            columnReader.setQuoteCharacter('"');
-        }
-
-        if (singleQuoteRadioButton.isSelected()) {
-            columnReader.setQuoteCharacter('\'');
-        }
+        setQuoteChar(columnReader);
 
         // Set data type for each column
         boolean isDiscrete;
@@ -1328,15 +1286,8 @@ final class LoadDataSettings extends JPanel {
             // Need to specify commentMarker, .... again to the TabularDataFileReader
             dataReader.setCommentMarker(commentMarker);
             dataReader.setMissingDataMarker(missingDataMarker);
+            setQuoteChar(dataReader);
 
-            if (doubleQuoteRadioButton.isSelected()) {
-                dataReader.setQuoteCharacter('"');
-            }
-
-            if (singleQuoteRadioButton.isSelected()) {
-                dataReader.setQuoteCharacter('\'');
-            }
-            
             // When users select mixed data, we need to determine num of discrete categories
             // It's possible that the users select mixed, but excluded either all continuous or discrete columns,
             // and as a result, the final data is either discrete or continuous instead of mixed - Zhou
@@ -1405,14 +1356,7 @@ final class LoadDataSettings extends JPanel {
             CovarianceDataReader dataFileReader = new LowerCovarianceDataFileReader(file.toPath(), delimiter);
 
             dataFileReader.setCommentMarker(commentMarker);
-
-            if (doubleQuoteRadioButton.isSelected()) {
-                dataFileReader.setQuoteCharacter('"');
-            }
-
-            if (singleQuoteRadioButton.isSelected()) {
-                dataFileReader.setQuoteCharacter('\'');
-            }
+            setQuoteChar(dataFileReader);
 
             CovarianceData covarianceData = dataFileReader.readInData();
 
