@@ -43,7 +43,7 @@ public class HsimAutoRun {
         eVars.add("MULT");
         Path dataFile = Paths.get(readfilename);
 
-        VerticalDiscreteTabularDataFileReader dataReader = new VerticalDiscreteTabularDataFileReader(dataFile.toFile(), DelimiterUtils.toDelimiter(delim));
+        VerticalDiscreteTabularDataFileReader dataReader = new VerticalDiscreteTabularDataFileReader(dataFile, DelimiterUtils.toDelimiter(delim));
         try {
             data = (DataSet) DataConvertUtils.toDataModel(dataReader.readInData(eVars));
         } catch (Exception IOException) {

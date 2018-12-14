@@ -1119,7 +1119,7 @@ public class TestDM {
         DataSet data = null;
 
         try {
-            ContinuousTabularDataFileReader dataReader = new ContinuousTabularDataFileReader(file, Delimiter.SPACE);
+            ContinuousTabularDataFileReader dataReader = new ContinuousTabularDataFileReader(file.toPath(), Delimiter.SPACE);
             data = (DataSet) DataConvertUtils.toDataModel(dataReader.readInData());
         } catch (IOException e) {
             print("Failed to read in data.");

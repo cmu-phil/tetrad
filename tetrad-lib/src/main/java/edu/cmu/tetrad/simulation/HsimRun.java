@@ -25,7 +25,7 @@ public class HsimRun {
         try {
             Path dataFile = Paths.get(readfilename);
 
-            VerticalDiscreteTabularDataFileReader dataReader = new VerticalDiscreteTabularDataFileReader(dataFile.toFile(), DelimiterUtils.toDelimiter(delimiter));
+            VerticalDiscreteTabularDataFileReader dataReader = new VerticalDiscreteTabularDataFileReader(dataFile, DelimiterUtils.toDelimiter(delimiter));
             DataSet dataSet = (DataSet) DataConvertUtils.toDataModel(dataReader.readInData());
             System.out.println("cols: " + dataSet.getNumColumns() + " rows: " + dataSet.getNumRows());
 
@@ -83,7 +83,7 @@ public class HsimRun {
 
             //=======Run FGES on the output data, and compare it to the original learned graph
             Path dataFileOut = Paths.get(filenameOut);
-            VerticalDiscreteTabularDataFileReader dataReaderOut = new VerticalDiscreteTabularDataFileReader(dataFileOut.toFile(), DelimiterUtils.toDelimiter(delimiter));
+            VerticalDiscreteTabularDataFileReader dataReaderOut = new VerticalDiscreteTabularDataFileReader(dataFileOut, DelimiterUtils.toDelimiter(delimiter));
 
             DataSet dataSetOut = (DataSet) DataConvertUtils.toDataModel(dataReaderOut.readInData());
 

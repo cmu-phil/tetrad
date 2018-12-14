@@ -36,7 +36,7 @@ public class GdistanceTest {
         System.out.println(workingDirectory);
         Path mapPath = Paths.get("locationMap.txt");
         System.out.println(mapPath);
-        ContinuousTabularDataFileReader dataReaderMap = new ContinuousTabularDataFileReader(mapPath.toFile(), Delimiter.COMMA);
+        ContinuousTabularDataFileReader dataReaderMap = new ContinuousTabularDataFileReader(mapPath, Delimiter.COMMA);
         try {
             DataSet locationMap = (DataSet) DataConvertUtils.toDataModel(dataReaderMap.readInData());
             // System.out.println(locationMap);

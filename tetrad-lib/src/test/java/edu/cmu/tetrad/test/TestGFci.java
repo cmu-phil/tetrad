@@ -261,7 +261,7 @@ public class TestGFci {
         char delimiter = '\t';
         Path dataFile = Paths.get("./src/test/resources/sim_discrete_data_20vars_100cases.txt");
 
-        VerticalDiscreteTabularDataFileReader dataReader = new VerticalDiscreteTabularDataFileReader(dataFile.toFile(), DelimiterUtils.toDelimiter(delimiter));
+        VerticalDiscreteTabularDataFileReader dataReader = new VerticalDiscreteTabularDataFileReader(dataFile, DelimiterUtils.toDelimiter(delimiter));
         DataSet dataSet = (DataSet) DataConvertUtils.toDataModel(dataReader.readInData());
 
         IndependenceTest indTest = new IndTestChiSquare(dataSet, alpha);
