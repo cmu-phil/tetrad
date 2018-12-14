@@ -261,7 +261,7 @@ public class RBExperiments {
 		// are queried during the search
 		List<Graph> bscPags = new ArrayList<Graph>();
 		start = System.currentTimeMillis();
-		IndTestProbabilistic testBSC = runRB(data, dag, bscPags, numModels, threshold1);
+		IndTestProbabilistic testBSC = runRB(data, bscPags, numModels, threshold1);
 		long BscRfciTime = System.currentTimeMillis() - start;
 		Map<IndependenceFact, Double> H = testBSC.getH();
 		//		out.println("H Size:" + H.size());
@@ -404,7 +404,7 @@ public class RBExperiments {
 		// are queried during the search
 		List<Graph> bscPags = new ArrayList<Graph>();
 		start = System.currentTimeMillis();
-		IndTestProbabilistic testBSC = runRB(data, dag, bscPags, numModels, threshold1);
+		IndTestProbabilistic testBSC = runRB(data, bscPags, numModels, threshold1);
 		long BscRfciTime = System.currentTimeMillis() - start;
 		Map<IndependenceFact, Double> H = testBSC.getH();
 		//		out.println("H Size:" + H.size());
@@ -416,7 +416,7 @@ public class RBExperiments {
 		//		out.println("DepData(row,col):" + depData.getNumRows() + "," + depData.getNumColumns());
 		System.out.println("Dep data creation done!");
 
-		// learn structure of constraints using empirical data
+		// learn structure of constraints using empirical data => constraint meta data
 		Graph depPattern = runFGS(depData);
 		Graph estDepBN = SearchGraphUtils.dagFromPattern(depPattern);
 		System.out.println("estDepBN: " + estDepBN.getEdges());
@@ -855,7 +855,7 @@ public class RBExperiments {
 
 	}
 
-	private IndTestProbabilistic runRB(DataSet data, Graph dag, List<Graph> pags, int numModels, boolean threshold) {
+	private IndTestProbabilistic runRB(DataSet data, List<Graph> pags, int numModels, boolean threshold) {
 		IndTestProbabilistic BSCtest = new IndTestProbabilistic(data);
 
 		BSCtest.threshold = threshold;
