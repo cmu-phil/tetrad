@@ -1099,9 +1099,8 @@ final class DataLoaderSettings extends JPanel {
                 } else if (idUnlabeledFirstColRadioButton.isSelected()) {
                     // Exclude the first column
                     tabularColumnValidationResults = tabularColumnValidation.validate(new int[]{1});
-                } else if (idLabeledColRadioButton.isSelected() && !idStringField.getText().isEmpty()) {
-                    // Exclude the specified labled column
-                    tabularColumnValidationResults = tabularColumnValidation.validate(new HashSet<>(Arrays.asList(new String[]{idStringField.getText()})));
+                } else if (idLabeledColRadioButton.isSelected()) {
+                    throw new UnsupportedOperationException("You can't exclude labeled columns when there's no column header provided in your data.");
                 } else {
                     throw new UnsupportedOperationException("Unexpected 'Case ID column to ignore' selection.");
                 }
@@ -1261,11 +1260,12 @@ final class DataLoaderSettings extends JPanel {
         // Handle case ID column based on different selections
         if (idNoneRadioButton.isSelected()) {
             // No column exclusion
+            dataColumns = columnReader.readInDataColumns(new int[0], isDiscrete);
         } else if (idUnlabeledFirstColRadioButton.isSelected()) {
             // Exclude the first column
             dataColumns = columnReader.readInDataColumns(new int[]{1}, isDiscrete);
         } else if (idLabeledColRadioButton.isSelected() && !idStringField.getText().isEmpty()) {
-            // Exclude the specified labled column
+            // Exclude the specified labled columns
             dataColumns = columnReader.readInDataColumns(new HashSet<>(Arrays.asList(new String[]{idStringField.getText()})), isDiscrete);
         } else {
             throw new UnsupportedOperationException("Unexpected 'Case ID column to ignore' selection.");
@@ -1274,7 +1274,7 @@ final class DataLoaderSettings extends JPanel {
         // Overwrite the column type based on metadata   
         // only do this for data with column header, not for the generated header
         if (isVarNamesFirstRow()) {
-                Arrays.stream(dataColumns).forEach(e->{
+            Arrays.stream(dataColumns).forEach(e->{
                 // Set the intervention status variable column as discrete (0 or 1)
                 if (interventionStatusVarsList.contains(e.getName())) {
                     e.setDiscrete(true);
