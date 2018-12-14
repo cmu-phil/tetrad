@@ -61,7 +61,7 @@ final class LoadDataDialog extends JPanel {
 
     private List<String> failedFiles;
 
-    private DataLoaderSettings dataLoaderSettings;
+    private LoadDataSettings dataLoaderSettings;
 
     private DataModelList dataModelList;
 
@@ -180,7 +180,7 @@ final class LoadDataDialog extends JPanel {
         // Data loading params
         // The data loading params apply to all slected files
         // the users should know that the selected files should share these settings - Zhou
-        dataLoaderSettings = new DataLoaderSettings(loadedFiles);
+        dataLoaderSettings = new LoadDataSettings(loadedFiles);
 
         // Basic settings
         basicSettingsBox = dataLoaderSettings.basicSettings();

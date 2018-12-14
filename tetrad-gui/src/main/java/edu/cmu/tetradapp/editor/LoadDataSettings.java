@@ -76,7 +76,7 @@ import javax.swing.filechooser.FileNameExtensionFilter;
  *
  * @author Joseph Ramsey
  */
-final class DataLoaderSettings extends JPanel {
+final class LoadDataSettings extends JPanel {
 
     private static final long serialVersionUID = -7597768949622586036L;
 
@@ -127,7 +127,7 @@ final class DataLoaderSettings extends JPanel {
     private final Dimension labelSize;
 
     //================================CONSTRUCTOR=======================//
-    public DataLoaderSettings(List<File> files) {
+    public LoadDataSettings(List<File> files) {
         this.files = files;
         
         this.metadataFile = null;
