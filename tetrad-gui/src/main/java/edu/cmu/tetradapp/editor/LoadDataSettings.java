@@ -82,7 +82,8 @@ final class LoadDataSettings extends JPanel {
     private final List<File> files;
     
     private File metadataFile;
-    private List<String> interventionStatusVarsList;
+
+    private Map<String, InterventionStatus> interventionStatusVarsMap;
     private List<String> combinedInterventionalVarsList;
     private Map<String, DatasetVariable> interventionValueVarsMap;
     private Map<String, DatasetVariable> domainVarsMap;
@@ -132,8 +133,8 @@ final class LoadDataSettings extends JPanel {
         this.files = files;
         
         this.metadataFile = null;
-        
-        this.interventionStatusVarsList = new LinkedList<>();
+
+        this.interventionStatusVarsMap = new HashMap<>(); 
         this.combinedInterventionalVarsList = new LinkedList<>();
         this.interventionValueVarsMap = new HashMap<>(); 
         this.domainVarsMap = new HashMap<>(); 
@@ -1172,9 +1173,14 @@ final class LoadDataSettings extends JPanel {
 
             // The status property can be null if the value is combined column with asterisk
             if (e.getStatus() != null) {
-                interventionStatusVarsList.add(e.getStatus().getName());
+                // It's possible that the status object doesn't have `discrete` specified or user can overwrite it
+                // Set to discrete by default when not specified
+                if (e.getStatus().getDiscrete() == null) {
+                    e.getStatus().setDiscrete(Boolean.TRUE);
+                }
+                
+                interventionStatusVarsMap.put(e.getValue().getName(), e.getStatus());
                 interventionValueVarsMap.put(e.getValue().getName(), e.getValue());
-                // Is it possible that the value column still contains asterisk given the status column?
             } else {
                 // Make this as combined column
                 combinedInterventionalVarsList.add(e.getValue().getName());
@@ -1225,8 +1231,11 @@ final class LoadDataSettings extends JPanel {
         // only do this for data with column header, not for the generated header
         if (isVarNamesFirstRow()) {
             Arrays.stream(dataColumns).forEach(e->{
-                // Set the intervention status variable column as discrete (0 or 1)
-                e.setDiscrete(interventionStatusVarsList.contains(e.getName()));
+                // Set the intervention status variable column as whatever the users specified
+                // otherwise use discrete as default - Zhou
+                if (interventionStatusVarsMap.keySet().contains(e.getName())) {
+                    e.setDiscrete(interventionStatusVarsMap.get(e.getName()).getDiscrete());
+                }
 
                 // Overwrite the value variable type based on metadata
                 if (interventionValueVarsMap.keySet().contains(e.getName())) {
@@ -1387,14 +1396,14 @@ final class LoadDataSettings extends JPanel {
         public Intervention() {
         }
         
-        private DatasetVariable status;
+        private InterventionStatus status;
         private DatasetVariable value;
 
-        public DatasetVariable getStatus() {
+        public InterventionStatus getStatus() {
             return status;
         }
 
-        public void setStatus(DatasetVariable status) {
+        public void setStatus(InterventionStatus status) {
             this.status = status;
         }
 
@@ -1443,6 +1452,33 @@ final class LoadDataSettings extends JPanel {
             this.discrete = discrete;
         }
        
+    }
+
+    private static class InterventionStatus {
+
+        public InterventionStatus() {
+        }
+        
+        private String name;
+        private Boolean discrete;
+
+        public String getName() {
+            return name;
+        }
+
+        public void setName(String name) {
+            this.name = name;
+        }
+
+        public Boolean getDiscrete() {
+            return discrete;
+        }
+
+        public void setDiscrete(Boolean discrete) {
+            this.discrete = discrete;
+        }
+        
+        
     }
     
     
