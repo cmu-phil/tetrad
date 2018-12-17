@@ -35,7 +35,7 @@ public class HsimRepeatAC {
         eVars.add("MULT");
         Path dataFile = Paths.get(readfilename);
 
-        ContinuousTabularDataFileReader dataReader = new ContinuousTabularDataFileReader(dataFile.toFile(), DelimiterUtils.toDelimiter(delim));
+        ContinuousTabularDataFileReader dataReader = new ContinuousTabularDataFileReader(dataFile, DelimiterUtils.toDelimiter(delim));
         try {
             data = (DataSet) DataConvertUtils.toDataModel(dataReader.readInData(eVars));
         } catch (Exception IOException) {

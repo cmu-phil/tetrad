@@ -83,7 +83,7 @@ public class Comparison2 {
 
                     if (params.getDataType() == ComparisonParameters.DataType.Continuous) {
                         try {
-                            ContinuousTabularDataFileReader dataReader = new ContinuousTabularDataFileReader(dataFile.toFile(), delimiter);
+                            ContinuousTabularDataFileReader dataReader = new ContinuousTabularDataFileReader(dataFile, delimiter);
                             dataSet = (DataSet) DataConvertUtils.toDataModel(dataReader.readInData());
                         } catch (IOException e) {
                             e.printStackTrace();
@@ -94,7 +94,7 @@ public class Comparison2 {
 
                     } else {
                         try {
-                            VerticalDiscreteTabularDataFileReader dataReader = new VerticalDiscreteTabularDataFileReader(dataFile.toFile(), delimiter);
+                            VerticalDiscreteTabularDataFileReader dataReader = new VerticalDiscreteTabularDataFileReader(dataFile, delimiter);
                             dataSet = (DataSet) DataConvertUtils.toDataModel(dataReader.readInData());
                         } catch (IOException e) {
                             e.printStackTrace();

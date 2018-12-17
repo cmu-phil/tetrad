@@ -69,7 +69,7 @@ public class HsimEvalFromData {
                 eVars.add("MULT");
                 Path dataFile = Paths.get("data/data.1.txt");
 
-                ContinuousTabularDataFileReader dataReader = new ContinuousTabularDataFileReader(dataFile.toFile(), Delimiter.TAB);
+                ContinuousTabularDataFileReader dataReader = new ContinuousTabularDataFileReader(dataFile, Delimiter.TAB);
 
                 data1 = (DataSet) DataConvertUtils.toDataModel(dataReader.readInData(eVars));
                 vars = data1.getNumColumns();
