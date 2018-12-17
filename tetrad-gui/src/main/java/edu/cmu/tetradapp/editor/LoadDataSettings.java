@@ -1090,6 +1090,9 @@ final class LoadDataSettings extends JPanel {
                 } else if (idUnlabeledFirstColRadioButton.isSelected()) {
                     // Exclude the first column
                     tabularColumnValidationResults = tabularColumnValidation.validate(new int[]{1});
+                } else if (idLabeledColRadioButton.isSelected() && !idStringField.getText().isEmpty()) {
+                    // Exclude the specified labled columns
+                    tabularColumnValidationResults = tabularColumnValidation.validate(new HashSet<>(Arrays.asList(new String[]{idStringField.getText()})));
                 } 
                 
                 // Step 2: Read in columns for later use if nothing wrong with the columns validation
