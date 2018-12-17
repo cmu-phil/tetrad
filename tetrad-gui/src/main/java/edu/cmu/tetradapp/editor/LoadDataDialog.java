@@ -513,18 +513,10 @@ final class LoadDataDialog extends JPanel {
                 // to eliminate user errors
                 List<String> inputErrors = new ArrayList();
 
-                if (!loadDataSettings.isMetadataUsedWhenNoHeader()) {
-                    inputErrors.add("- Can not use metadata file when column header not provided");
-                }
-                
                 if (!loadDataSettings.isColumnLabelSpecified()) {
-                    inputErrors.add("- Please specify the case ID column label.");
+                    inputErrors.add("- Please specify the column labels to ignore.");
                 }
 
-                if (!loadDataSettings.isColumnExcludedWhenNoHeader()) {
-                    inputErrors.add("- Can not exclude column when column header not provided.");
-                }
-                
                 if (!loadDataSettings.isOtherCommentMarkerSpecified()) {
                     inputErrors.add("- Please specify the comment marker.");
                 }

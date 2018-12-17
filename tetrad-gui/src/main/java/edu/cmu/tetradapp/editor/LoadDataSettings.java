@@ -87,6 +87,9 @@ final class LoadDataSettings extends JPanel {
     private Map<String, DatasetVariable> interventionValueVarsMap;
     private Map<String, DatasetVariable> domainVarsMap;
 
+    private JRadioButton firstRowVarNamesYesRadioButton;
+    private JRadioButton firstRowVarNamesNoRadioButton;
+    
     private JRadioButton tabularRadioButton;
     private JRadioButton covarianceRadioButton;
 
@@ -107,9 +110,8 @@ final class LoadDataSettings extends JPanel {
     private JRadioButton noneQuoteRadioButton;
     private JRadioButton doubleQuoteRadioButton;
     private JRadioButton singleQuoteRadioButton;
-
-    private JRadioButton firstRowVarNamesYesRadioButton;
-    private JRadioButton firstRowVarNamesNoRadioButton;
+    
+    private JButton metadataFileButton;
 
     private JRadioButton idNoneRadioButton;
     private JRadioButton idUnlabeledFirstColRadioButton;
@@ -147,6 +149,201 @@ final class LoadDataSettings extends JPanel {
         // Data loading params layout
         Box basicSettingsBox = Box.createVerticalBox();
 
+        // Variable names in first row of data?
+        Box firstRowVarNamesBox = Box.createHorizontalBox();
+
+        // Yes/No buttons
+        firstRowVarNamesYesRadioButton = new JRadioButton("Yes");
+        firstRowVarNamesNoRadioButton = new JRadioButton("No");
+
+        // Button group
+        ButtonGroup firstRowVarNamesBtnGrp = new ButtonGroup();
+        firstRowVarNamesBtnGrp.add(firstRowVarNamesYesRadioButton);
+        firstRowVarNamesBtnGrp.add(firstRowVarNamesNoRadioButton);
+
+        // Make Yes button selected by default
+        firstRowVarNamesYesRadioButton.setSelected(true);
+
+        // Event listener
+        firstRowVarNamesYesRadioButton.addActionListener((ActionEvent actionEvent) -> {
+            JRadioButton button = (JRadioButton) actionEvent.getSource();
+            if (button.isSelected()) {
+                // Enable metadata file upload
+                metadataFileButton.setEnabled(true);
+                
+                // Enable specifying column labeled option
+                if (!idLabeledColRadioButton.isEnabled()) {
+                    idLabeledColRadioButton.setEnabled(true);
+                }
+                
+                if (!idStringField.isEnabled()) {
+                    idStringField.setEnabled(true);
+                }
+            }
+        });
+
+        // When there's no header, disable the metadata button and column exculsions
+        firstRowVarNamesNoRadioButton.addActionListener((ActionEvent actionEvent) -> {
+            JRadioButton button = (JRadioButton) actionEvent.getSource();
+            if (button.isSelected()) {
+                // No need to use metadata file when no header
+                metadataFileButton.setEnabled(false);
+                
+                // Disable the "Column labeled" option of ignoring column
+                idLabeledColRadioButton.setEnabled(false);
+                idStringField.setEnabled(false);
+            }
+        });
+
+        // Add label into this label box to size
+        Box firstRowVarNamesLabelBox = Box.createHorizontalBox();
+        firstRowVarNamesLabelBox.setPreferredSize(labelSize);
+        firstRowVarNamesLabelBox.add(new JLabel("First row variable names:"));
+        // Add info icon next to label to show tooltip on mouseover
+        JLabel firstRowVarNamesLabelInfoIcon = new JLabel(new ImageIcon(ImageUtils.getImage(this, "information_small_white.png")));
+        // Add tooltip on mouseover the info icon
+        firstRowVarNamesLabelInfoIcon.setToolTipText("Whether the column variable names are presented in the first row of data");
+        firstRowVarNamesLabelBox.add(firstRowVarNamesLabelInfoIcon);
+
+        // Option 1
+        Box firstRowVarNamesOption1Box = Box.createHorizontalBox();
+        firstRowVarNamesOption1Box.setPreferredSize(new Dimension(160, 30));
+        firstRowVarNamesOption1Box.add(firstRowVarNamesYesRadioButton);
+
+        // Option 2
+        Box firstRowVarNamesOption2Box = Box.createHorizontalBox();
+        firstRowVarNamesOption2Box.setPreferredSize(new Dimension(160, 30));
+        firstRowVarNamesOption2Box.add(firstRowVarNamesNoRadioButton);
+
+        // Add to firstRowVarNamesBox
+        firstRowVarNamesBox.add(firstRowVarNamesLabelBox);
+        firstRowVarNamesBox.add(Box.createRigidArea(new Dimension(10, 1)));
+        firstRowVarNamesBox.add(firstRowVarNamesOption1Box);
+        firstRowVarNamesBox.add(firstRowVarNamesOption2Box);
+        firstRowVarNamesBox.add(Box.createHorizontalGlue());
+
+        basicSettingsBox.add(firstRowVarNamesBox);
+        
+        
+        // File type: Tabular/Covariance
+        Box fileTypeBox = Box.createHorizontalBox();
+
+        tabularRadioButton = new JRadioButton("Tabular data");
+        covarianceRadioButton = new JRadioButton("Covariance data (lower triangle)");
+
+        // We need to group the radio buttons, otherwise all can be selected
+        ButtonGroup fileTypeBtnGrp = new ButtonGroup();
+        fileTypeBtnGrp.add(tabularRadioButton);
+        fileTypeBtnGrp.add(covarianceRadioButton);
+
+        // Tabular data is selected by default
+        tabularRadioButton.setSelected(true);
+
+        // Event listener
+        tabularRadioButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent actionEvent) {
+                JRadioButton button = (JRadioButton) actionEvent.getSource();
+                // Just enable disabled buttons, do not change the previous selections - Zhou
+                if (button.isSelected()) {
+                    // Enable metadata file upload when there's also column header
+                    if (firstRowVarNamesYesRadioButton.isSelected()) {
+                        metadataFileButton.setEnabled(true);
+                    }
+                    
+                    // Enable the discrete/mixed radio button if it's disabled by clicking covariance data
+                    if (!discRadioButton.isEnabled()) {
+                        discRadioButton.setEnabled(true);
+                    }
+
+                    if (!mixedRadioButton.isEnabled()) {
+                        mixedRadioButton.setEnabled(true);
+                    }
+
+                    // Enable variable names in first row
+                    if (!firstRowVarNamesYesRadioButton.isEnabled()) {
+                        firstRowVarNamesYesRadioButton.setEnabled(true);
+                    }
+
+                    if (!firstRowVarNamesNoRadioButton.isEnabled()) {
+                        firstRowVarNamesNoRadioButton.setEnabled(true);
+                    }
+
+                    // Enable case Id options
+                    if (!idUnlabeledFirstColRadioButton.isEnabled()) {
+                        idUnlabeledFirstColRadioButton.setEnabled(true);
+                    }
+
+                    if (!idLabeledColRadioButton.isEnabled()) {
+                        idLabeledColRadioButton.setEnabled(true);
+                    }
+
+                    if (!idStringField.isEnabled()) {
+                        idStringField.setEnabled(true);
+                    }
+                }
+            }
+        });
+
+        // Event listener
+        covarianceRadioButton.addActionListener((ActionEvent actionEvent) -> {
+            JRadioButton button = (JRadioButton) actionEvent.getSource();
+            if (button.isSelected()) {
+                // No need metadata file
+                metadataFileButton.setEnabled(false);
+                
+                // When Covariance data is selected, data type can only be Continuous,
+                contRadioButton.setSelected(true);
+                
+                //will disallow the users to choose Discrete and mixed data
+                discRadioButton.setEnabled(false);
+                mixedRadioButton.setEnabled(false);
+                
+                // Both Yes and No of Variable names in first row need to be disabled
+                // Because the first row should be number of cases
+                firstRowVarNamesYesRadioButton.setEnabled(false);
+                firstRowVarNamesNoRadioButton.setEnabled(false);
+                
+                // select None for Case IDs, disable other options,
+                // since no Case column should be in covariance data
+                idNoneRadioButton.setSelected(true);
+                idUnlabeledFirstColRadioButton.setEnabled(false);
+                idLabeledColRadioButton.setEnabled(false);
+                idStringField.setEnabled(false);
+            }
+        });
+
+        // Add label into this label box to size
+        Box fileTypeLabelBox = Box.createHorizontalBox();
+        fileTypeLabelBox.setPreferredSize(labelSize);
+        fileTypeLabelBox.add(new JLabel("Data file type:"));
+
+        // Option 1
+        Box fileTypeOption1Box = Box.createHorizontalBox();
+        fileTypeOption1Box.setPreferredSize(new Dimension(160, 30));
+        fileTypeOption1Box.add(tabularRadioButton);
+
+        // Option 2
+        Box fileTypeOption2Box = Box.createHorizontalBox();
+        // Make this longer since the text is long - Zhou
+        fileTypeOption2Box.setPreferredSize(new Dimension(300, 30));
+        fileTypeOption2Box.add(covarianceRadioButton);
+
+        // Add to file type box
+        fileTypeBox.add(fileTypeLabelBox);
+        fileTypeBox.add(Box.createRigidArea(new Dimension(10, 1)));
+        fileTypeBox.add(fileTypeOption1Box);
+        fileTypeBox.add(fileTypeOption2Box);
+        fileTypeBox.add(Box.createHorizontalGlue());
+
+        // Add to format container
+        basicSettingsBox.add(fileTypeBox);
+
+        // Add seperator line
+        JSeparator separator1 = new JSeparator(SwingConstants.HORIZONTAL);
+        separator1.setForeground(separatorColor);
+        basicSettingsBox.add(separator1);
+        
         // Metadata to interventional dataset
         Box metadataFileBox = Box.createHorizontalBox();
         
@@ -161,7 +358,7 @@ final class LoadDataSettings extends JPanel {
         metadataFileLabelBox.add(metadataFileLabelInfoIcon);
         
         // Metadata file load button
-        JButton metadataFileButton = new JButton("Load...");
+        metadataFileButton = new JButton("Load...");
         
         JLabel selectedMetadataFileName = new JLabel("No metadata file slected");
 
@@ -216,118 +413,6 @@ final class LoadDataSettings extends JPanel {
         separator.setForeground(separatorColor);
         basicSettingsBox.add(separator);
         
-        
-        // File type: Tabular/Covariance
-        Box fileTypeBox = Box.createHorizontalBox();
-
-        tabularRadioButton = new JRadioButton("Tabular data");
-        covarianceRadioButton = new JRadioButton("Covariance data (lower triangle)");
-
-        // We need to group the radio buttons, otherwise all can be selected
-        ButtonGroup fileTypeBtnGrp = new ButtonGroup();
-        fileTypeBtnGrp.add(tabularRadioButton);
-        fileTypeBtnGrp.add(covarianceRadioButton);
-
-        // Tabular data is selected by default
-        tabularRadioButton.setSelected(true);
-
-        // Event listener
-        tabularRadioButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent actionEvent) {
-                JRadioButton button = (JRadioButton) actionEvent.getSource();
-                // Just enable disabled buttons, do not change the previous selections - Zhou
-                if (button.isSelected()) {
-                    // Enable the discrete/mixed radio button if it's disabled by clicking covariance data
-                    if (!discRadioButton.isEnabled()) {
-                        discRadioButton.setEnabled(true);
-                    }
-
-                    if (!mixedRadioButton.isEnabled()) {
-                        mixedRadioButton.setEnabled(true);
-                    }
-
-                    // Enable variable names in first row
-                    if (!firstRowVarNamesYesRadioButton.isEnabled()) {
-                        firstRowVarNamesYesRadioButton.setEnabled(true);
-                    }
-
-                    if (!firstRowVarNamesNoRadioButton.isEnabled()) {
-                        firstRowVarNamesNoRadioButton.setEnabled(true);
-                    }
-
-                    // Enable case Id options
-                    if (!idUnlabeledFirstColRadioButton.isEnabled()) {
-                        idUnlabeledFirstColRadioButton.setEnabled(true);
-                    }
-
-                    if (!idLabeledColRadioButton.isEnabled()) {
-                        idLabeledColRadioButton.setEnabled(true);
-                    }
-
-                    if (!idStringField.isEnabled()) {
-                        idStringField.setEnabled(true);
-                    }
-                }
-            }
-        });
-
-        // Event listener
-        covarianceRadioButton.addActionListener((ActionEvent actionEvent) -> {
-            JRadioButton button = (JRadioButton) actionEvent.getSource();
-            if (button.isSelected()) {
-                // When Covariance data is selected, data type can only be Continuous,
-                contRadioButton.setSelected(true);
-                
-                //will disallow the users to choose Discrete and mixed data
-                discRadioButton.setEnabled(false);
-                mixedRadioButton.setEnabled(false);
-                
-                // Both Yes and No of Variable names in first row need to be disabled
-                // Because the first row should be number of cases
-                firstRowVarNamesYesRadioButton.setEnabled(false);
-                firstRowVarNamesNoRadioButton.setEnabled(false);
-                
-                // select None for Case IDs, disable other options,
-                // since no Case ID should be in covariance data
-                idNoneRadioButton.setSelected(true);
-                idUnlabeledFirstColRadioButton.setEnabled(false);
-                idLabeledColRadioButton.setEnabled(false);
-                idStringField.setEnabled(false);
-            }
-        });
-
-        // Add label into this label box to size
-        Box fileTypeLabelBox = Box.createHorizontalBox();
-        fileTypeLabelBox.setPreferredSize(labelSize);
-        fileTypeLabelBox.add(new JLabel("Data file type:"));
-
-        // Option 1
-        Box fileTypeOption1Box = Box.createHorizontalBox();
-        fileTypeOption1Box.setPreferredSize(new Dimension(160, 30));
-        fileTypeOption1Box.add(tabularRadioButton);
-
-        // Option 2
-        Box fileTypeOption2Box = Box.createHorizontalBox();
-        // Make this longer since the text is long - Zhou
-        fileTypeOption2Box.setPreferredSize(new Dimension(300, 30));
-        fileTypeOption2Box.add(covarianceRadioButton);
-
-        // Add to file type box
-        fileTypeBox.add(fileTypeLabelBox);
-        fileTypeBox.add(Box.createRigidArea(new Dimension(10, 1)));
-        fileTypeBox.add(fileTypeOption1Box);
-        fileTypeBox.add(fileTypeOption2Box);
-        fileTypeBox.add(Box.createHorizontalGlue());
-
-        // Add to format container
-        basicSettingsBox.add(fileTypeBox);
-
-        // Add seperator line
-        JSeparator separator1 = new JSeparator(SwingConstants.HORIZONTAL);
-        separator1.setForeground(separatorColor);
-        basicSettingsBox.add(separator1);
-
         // Vertical gap
         //basicSettingsBox.add(Box.createVerticalStrut(5));
         // Data type - moved from the old Fast tab - Zhou
@@ -520,76 +605,6 @@ final class LoadDataSettings extends JPanel {
         separator3.setForeground(separatorColor);
         basicSettingsBox.add(separator3);
 
-        //basicSettingsBox.add(Box.createVerticalStrut(5));
-        // Var names in first row of data
-        Box firstRowVarNamesBox = Box.createHorizontalBox();
-
-        // Yes/No buttons
-        firstRowVarNamesYesRadioButton = new JRadioButton("Yes");
-        firstRowVarNamesNoRadioButton = new JRadioButton("No");
-
-        // Button group
-        ButtonGroup firstRowVarNamesBtnGrp = new ButtonGroup();
-        firstRowVarNamesBtnGrp.add(firstRowVarNamesYesRadioButton);
-        firstRowVarNamesBtnGrp.add(firstRowVarNamesNoRadioButton);
-
-        // Make Yes button selected by default
-        firstRowVarNamesYesRadioButton.setSelected(true);
-
-        // Event listener
-        firstRowVarNamesYesRadioButton.addActionListener((ActionEvent actionEvent) -> {
-            JRadioButton button = (JRadioButton) actionEvent.getSource();
-            if (button.isSelected()) {
-                // Enable specifying column labeled option
-                if (!idLabeledColRadioButton.isEnabled()) {
-                    idLabeledColRadioButton.setEnabled(true);
-                }
-                
-                if (!idStringField.isEnabled()) {
-                    idStringField.setEnabled(true);
-                }
-            }
-        });
-
-        // Event listener
-        firstRowVarNamesNoRadioButton.addActionListener((ActionEvent actionEvent) -> {
-            JRadioButton button = (JRadioButton) actionEvent.getSource();
-            if (button.isSelected()) {
-                // Disable the "Column labeled" option of ignoring case id column
-                idLabeledColRadioButton.setEnabled(false);
-                idStringField.setEnabled(false);
-            }
-        });
-
-        // Add label into this label box to size
-        Box firstRowVarNamesLabelBox = Box.createHorizontalBox();
-        firstRowVarNamesLabelBox.setPreferredSize(labelSize);
-        firstRowVarNamesLabelBox.add(new JLabel("First row variable names:"));
-        // Add info icon next to label to show tooltip on mouseover
-        JLabel firstRowVarNamesLabelInfoIcon = new JLabel(new ImageIcon(ImageUtils.getImage(this, "information_small_white.png")));
-        // Add tooltip on mouseover the info icon
-        firstRowVarNamesLabelInfoIcon.setToolTipText("Whether the column variable names are presented in the first row of data");
-        firstRowVarNamesLabelBox.add(firstRowVarNamesLabelInfoIcon);
-
-        // Option 1
-        Box firstRowVarNamesOption1Box = Box.createHorizontalBox();
-        firstRowVarNamesOption1Box.setPreferredSize(new Dimension(160, 30));
-        firstRowVarNamesOption1Box.add(firstRowVarNamesYesRadioButton);
-
-        // Option 2
-        Box firstRowVarNamesOption2Box = Box.createHorizontalBox();
-        firstRowVarNamesOption2Box.setPreferredSize(new Dimension(160, 30));
-        firstRowVarNamesOption2Box.add(firstRowVarNamesNoRadioButton);
-
-        // Add to firstRowVarNamesBox
-        firstRowVarNamesBox.add(firstRowVarNamesLabelBox);
-        firstRowVarNamesBox.add(Box.createRigidArea(new Dimension(10, 1)));
-        firstRowVarNamesBox.add(firstRowVarNamesOption1Box);
-        firstRowVarNamesBox.add(firstRowVarNamesOption2Box);
-        firstRowVarNamesBox.add(Box.createHorizontalGlue());
-
-        basicSettingsBox.add(firstRowVarNamesBox);
-
         // Use a titled border with 5 px inside padding - Zhou
         String borderTitle = "Basic Settings (apply to all files)";
         basicSettingsBox.setBorder(new CompoundBorder(BorderFactory.createTitledBorder(borderTitle), new EmptyBorder(5, 5, 5, 5)));
@@ -602,7 +617,7 @@ final class LoadDataSettings extends JPanel {
         // Data loading params layout
         Box advancedSettingsBox = Box.createVerticalBox();
 
-        // Case ID's provided
+        // Columns to exclude/ignore
         Box caseIdProvidedBox = Box.createHorizontalBox();
 
         // ID radio buttons
@@ -635,7 +650,7 @@ final class LoadDataSettings extends JPanel {
         // Add label into this label box to size
         Box caseIdProvidedLabelBox = Box.createHorizontalBox();
         caseIdProvidedLabelBox.setPreferredSize(labelSize);
-        caseIdProvidedLabelBox.add(new JLabel("Case ID column to ignore:"));
+        caseIdProvidedLabelBox.add(new JLabel("Case column to exclude/ignore:"));
 
         // Option 1
         Box caseIdProvidedOption1Box = Box.createHorizontalBox();
@@ -950,19 +965,6 @@ final class LoadDataSettings extends JPanel {
     }
 
     /**
-     * Can't use metadata file when there's no column header
-     * 
-     * @return 
-     */
-    public boolean isMetadataUsedWhenNoHeader() {
-        if (metadataFile != null && firstRowVarNamesNoRadioButton.isSelected()) {
-            return false;
-        } else {
-            return true;
-        }
-    }
-    
-    /**
      * To check if the label is specified while that radio button is selected
      *
      * @return
@@ -975,19 +977,6 @@ final class LoadDataSettings extends JPanel {
         }
     }
 
-    /**
-     * Can't exclude columns when there's no header in the data
-     * 
-     * @return 
-     */
-    public boolean isColumnExcludedWhenNoHeader() {
-        if (idLabeledColRadioButton.isSelected() && firstRowVarNamesNoRadioButton.isSelected()) {
-            return false;
-        } else {
-            return true;
-        }
-    }
-    
     /**
      * To check if comment marker is supplied while Other radio button is
      * selected
