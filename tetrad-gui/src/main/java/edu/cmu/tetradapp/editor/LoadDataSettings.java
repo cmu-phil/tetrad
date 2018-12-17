@@ -641,7 +641,7 @@ final class LoadDataSettings extends JPanel {
                 super.mouseClicked(e);
 
                 // Select the "Column labeled:" radio button when users click the text field
-                if (!idLabeledColRadioButton.isSelected()) {
+                if (idStringField.isEnabled() && !idLabeledColRadioButton.isSelected()) {
                     idLabeledColRadioButton.setSelected(true);
                 }
             }
