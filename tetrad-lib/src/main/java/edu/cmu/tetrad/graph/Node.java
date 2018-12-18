@@ -58,13 +58,13 @@ public interface Node extends TetradSerializable, Comparable {
      * 
      * @return the intervention type
      */
-    InterventionType getInterventionType();
+    NodeVariableType getNodeVariableType();
 
     /**
-     * Sets the intervention type for this ndoe
-     * @param interventionType 
+     * Sets the type (domain, interventional status, interventional value..) for this node variable
+     * @param nodeVariableType 
      */
-    void setInterventionType(InterventionType interventionType);
+    void setInterventionType(NodeVariableType nodeVariableType);
     
     /**
      * @return a string representation of the node.

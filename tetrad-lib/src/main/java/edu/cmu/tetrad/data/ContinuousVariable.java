@@ -21,7 +21,7 @@
 
 package edu.cmu.tetrad.data;
 
-import edu.cmu.tetrad.graph.InterventionType;
+import edu.cmu.tetrad.graph.NodeVariableType;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.NodeEqualityMode;
 import edu.cmu.tetrad.graph.NodeType;
@@ -288,12 +288,12 @@ public final class ContinuousVariable extends AbstractVariable
     }
 
     @Override
-    public InterventionType getInterventionType() {
+    public NodeVariableType getNodeVariableType() {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
-    public void setInterventionType(InterventionType interventionType) {
+    public void setInterventionType(NodeVariableType interventionType) {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 

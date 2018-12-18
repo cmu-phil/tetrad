@@ -9,6 +9,6 @@ package edu.cmu.tetrad.graph;
  *
  * @author Zhou Yuan <zhy19@pitt.edu>
  */
-public enum InterventionType {
-    NOT_INTERVENTION, INTERVENTION_STATUS, INTERVENTION_VALUE, INTERVENTION_MERGED
+public enum NodeVariableType {
+    DOMAIN, INTERVENTION_STATUS, INTERVENTION_VALUE
 }

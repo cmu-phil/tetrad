@@ -23,7 +23,7 @@ package edu.cmu.tetradapp.workbench;
 
 import edu.cmu.tetrad.data.AbstractVariable;
 import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.graph.InterventionType;
+import edu.cmu.tetrad.graph.NodeVariableType;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.NodeType;
 import edu.cmu.tetrad.util.TetradSerializableExcluded;
@@ -234,12 +234,12 @@ public class DisplayNode extends JComponent implements Node, TetradSerializableE
     }
 
     @Override
-    public InterventionType getInterventionType() {
+    public NodeVariableType getNodeVariableType() {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
-    public void setInterventionType(InterventionType interventionType) {
+    public void setInterventionType(NodeVariableType interventionType) {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 

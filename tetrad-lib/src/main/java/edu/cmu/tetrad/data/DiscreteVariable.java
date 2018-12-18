@@ -21,7 +21,7 @@
 
 package edu.cmu.tetrad.data;
 
-import edu.cmu.tetrad.graph.InterventionType;
+import edu.cmu.tetrad.graph.NodeVariableType;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.NodeType;
 import edu.cmu.tetrad.util.TetradSerializable;
@@ -587,12 +587,12 @@ public final class DiscreteVariable extends AbstractVariable
     }
 
     @Override
-    public InterventionType getInterventionType() {
+    public NodeVariableType getNodeVariableType() {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
-    public void setInterventionType(InterventionType interventionType) {
+    public void setInterventionType(NodeVariableType interventionType) {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }

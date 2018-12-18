@@ -21,7 +21,7 @@
 
 package edu.cmu.tetrad.session;
 
-import edu.cmu.tetrad.graph.InterventionType;
+import edu.cmu.tetrad.graph.NodeVariableType;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.NodeType;
 import edu.cmu.tetrad.util.*;
@@ -1836,12 +1836,12 @@ public class SessionNode implements Node, TetradSerializable {
     }
 
     @Override
-    public InterventionType getInterventionType() {
+    public NodeVariableType getNodeVariableType() {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
-    public void setInterventionType(InterventionType interventionType) {
+    public void setInterventionType(NodeVariableType interventionType) {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
