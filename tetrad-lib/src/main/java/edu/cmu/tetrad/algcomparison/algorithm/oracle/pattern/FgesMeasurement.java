@@ -93,6 +93,8 @@ public class FgesMeasurement implements Algorithm, TakesInitialGraph, HasKnowled
                     edgeEnsemble = ResamplingEdgeEnsemble.Majority;
             }
             search.setEdgeEnsemble(edgeEnsemble);
+            search.setAddOriginalDataset(parameters.getBoolean("addOriginalDataset"));
+            
             search.setParameters(parameters);
             search.setVerbose(parameters.getBoolean("verbose"));
             return search.search();
@@ -125,6 +127,7 @@ public class FgesMeasurement implements Algorithm, TakesInitialGraph, HasKnowled
         parameters.add("percentResampleSize");
         parameters.add("resamplingWithReplacement");
         parameters.add("resamplingEnsemble");
+        parameters.add("addOriginalDataset");
 
         return parameters;
     }

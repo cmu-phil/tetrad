@@ -87,6 +87,8 @@ public class Pc implements Algorithm, TakesInitialGraph, HasKnowledge, TakesInde
                     edgeEnsemble = ResamplingEdgeEnsemble.Majority;
             }
             search.setEdgeEnsemble(edgeEnsemble);
+            search.setAddOriginalDataset(parameters.getBoolean("addOriginalDataset"));
+            
             search.setParameters(parameters);
             search.setVerbose(parameters.getBoolean("verbose"));
             return search.search();
@@ -120,6 +122,7 @@ public class Pc implements Algorithm, TakesInitialGraph, HasKnowledge, TakesInde
         parameters.add("percentResampleSize");
         parameters.add("resamplingWithReplacement");
         parameters.add("resamplingEnsemble");
+        parameters.add("addOriginalDataset");
         return parameters;
     }
 
