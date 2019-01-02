@@ -44,6 +44,10 @@ public class RbBsc implements GraphSearch {
 
     private final Rfci rfci;
 
+    private Graph graphBND = null,graphBNI = null;
+    
+    private double normalizedlnQBSCD = 0.0,normalizedlnQBSCI = 0.0;
+    
     private List<Graph> pags = new ArrayList<>();
     
     private int numModels = 5;
@@ -58,6 +62,8 @@ public class RbBsc implements GraphSearch {
     
 	private static final int MININUM_EXPONENT = -1022;
 
+	private boolean outputBND = true;
+	
     public RbBsc(Rfci rfci) {
     	this.rfci = rfci;
     }
@@ -71,6 +77,9 @@ public class RbBsc implements GraphSearch {
 		
 		// run RFCI-BSC (RB) search using BSC test and obtain constraints that
 		// are queried during the search
+		// ***************
+		// can be parallel
+		// ***************
 		for (int i=0;i<numModels;i++) {
 			Graph pag = rfci.search();
 			pag = GraphUtils.replaceNodes(pag, test.getVariables());
@@ -130,7 +139,6 @@ public class RbBsc implements GraphSearch {
 		Map<Graph, Double> pagLnBSCD = new HashMap<>();
 		Map<Graph, Double> pagLnBSCI = new HashMap<>();
 		
-		Graph maxBND = null,maxBNI = null;
 		double maxLnDep = 0.0,maxLnInd = 0.0;
 		
 		for (int i = 0; i < pags.size(); i++) {
@@ -140,7 +148,7 @@ public class RbBsc implements GraphSearch {
 				
 				if(lnInd > maxLnInd) {
 					maxLnInd = lnInd;
-					maxBNI = pagOrig;
+					graphBNI = pagOrig;
 				}
 				
 				// Filtering
@@ -148,7 +156,7 @@ public class RbBsc implements GraphSearch {
 				
 				if(lnDep > maxLnDep) {
 					maxLnDep = lnDep;
-					maxBND = pagOrig;
+					graphBND = pagOrig;
 				}
 				
 				pagLnBSCD.put(pagOrig, lnDep);
@@ -160,13 +168,17 @@ public class RbBsc implements GraphSearch {
 		double lnQBSCITotal = lnQTotal(pagLnBSCI);
 		
 		// normalize the scores
-		double normalizedlnQBSCD = maxLnDep - lnQBSCDTotal;
+		normalizedlnQBSCD = maxLnDep - lnQBSCDTotal;
 		normalizedlnQBSCD = Math.exp(normalizedlnQBSCD);
 
-		double normalizedlnQBSCI = maxLnInd - lnQBSCITotal;
+		normalizedlnQBSCI = maxLnInd - lnQBSCITotal;
 		normalizedlnQBSCI = Math.exp(normalizedlnQBSCI);
 		
-		return maxBND;//maxBNI
+		if(!outputBND) {
+			return graphBNI;
+		}
+		
+		return graphBND;//graphBNI
 	}
 
 	protected double lnXplusY(double lnX, double lnY) {
@@ -342,6 +354,26 @@ public class RbBsc implements GraphSearch {
 
 	public void setRandomizedGeneratingConstraints(boolean randomizedGeneratingConstraints) {
 		this.randomizedGeneratingConstraints = randomizedGeneratingConstraints;
+	}
+
+	public void setOutputBND(boolean outputBND) {
+		this.outputBND = outputBND;
+	}
+
+	public Graph getGraphBND() {
+		return graphBND;
+	}
+
+	public Graph getGraphBNI() {
+		return graphBNI;
+	}
+
+	public double getNormalizedlnQBSCD() {
+		return normalizedlnQBSCD;
+	}
+
+	public double getNormalizedlnQBSCI() {
+		return normalizedlnQBSCI;
 	}
 
 }
