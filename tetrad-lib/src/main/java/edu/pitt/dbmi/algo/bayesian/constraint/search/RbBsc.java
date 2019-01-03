@@ -54,7 +54,7 @@ public class RbBsc implements GraphSearch {
     
     private int numBscBootstrapSamples = 10;
     
-    private boolean randomizedGeneratingConstraints = true;
+    private boolean randomlyGeneratingConstraints = true;
     
     private double lowerBound = 0.3;
     
@@ -107,7 +107,7 @@ public class RbBsc implements GraphSearch {
 		for (int b = 0; b < numBscBootstrapSamples; b++) {
 			DataSet bsData = DataUtils.getBootstrapSample(data, data.getNumRows());
 			IndTestProbabilistic bsTest = new IndTestProbabilistic(bsData);
-			test.setThreshold(randomizedGeneratingConstraints);
+			test.setThreshold(randomlyGeneratingConstraints);
 			for (IndependenceFact f : hCopy.keySet()) {
 				boolean ind = bsTest.isIndependent(f.getX(), f.getY(), f.getZ());
 				int value = ind ? 1 : 0;
@@ -352,8 +352,8 @@ public class RbBsc implements GraphSearch {
 		this.numBscBootstrapSamples = numBscBootstrapSamples;
 	}
 
-	public void setRandomizedGeneratingConstraints(boolean randomizedGeneratingConstraints) {
-		this.randomizedGeneratingConstraints = randomizedGeneratingConstraints;
+	public void setRandomlyGeneratingConstraints(boolean randomlyGeneratingConstraints) {
+		this.randomlyGeneratingConstraints = randomlyGeneratingConstraints;
 	}
 
 	public void setOutputBND(boolean outputBND) {
