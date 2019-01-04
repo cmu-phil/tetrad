@@ -7,7 +7,7 @@ import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.DataConvertUtils;
 import edu.pitt.dbmi.data.reader.Delimiter;
-import edu.pitt.dbmi.data.reader.tabular.ContinuousTabularDataFileReader;
+import edu.pitt.dbmi.data.reader.tabular.ContinuousTabularDatasetFileReader;
 import java.io.PrintWriter;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -36,7 +36,7 @@ public class GdistanceTest {
         System.out.println(workingDirectory);
         Path mapPath = Paths.get("locationMap.txt");
         System.out.println(mapPath);
-        ContinuousTabularDataFileReader dataReaderMap = new ContinuousTabularDataFileReader(mapPath, Delimiter.COMMA);
+        ContinuousTabularDatasetFileReader dataReaderMap = new ContinuousTabularDatasetFileReader(mapPath, Delimiter.COMMA);
         try {
             DataSet locationMap = (DataSet) DataConvertUtils.toDataModel(dataReaderMap.readInData());
             // System.out.println(locationMap);

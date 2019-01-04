@@ -5,7 +5,7 @@ import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.*;
 import edu.cmu.tetrad.util.DataConvertUtils;
 import edu.cmu.tetrad.util.DelimiterUtils;
-import edu.pitt.dbmi.data.reader.tabular.VerticalDiscreteTabularDataFileReader;
+import edu.pitt.dbmi.data.reader.tabular.VerticalDiscreteTabularDatasetFileReader;
 import java.io.FileWriter;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -25,7 +25,7 @@ public class HsimRun {
         try {
             Path dataFile = Paths.get(readfilename);
 
-            VerticalDiscreteTabularDataFileReader dataReader = new VerticalDiscreteTabularDataFileReader(dataFile, DelimiterUtils.toDelimiter(delimiter));
+            VerticalDiscreteTabularDatasetFileReader dataReader = new VerticalDiscreteTabularDatasetFileReader(dataFile, DelimiterUtils.toDelimiter(delimiter));
             DataSet dataSet = (DataSet) DataConvertUtils.toDataModel(dataReader.readInData());
             System.out.println("cols: " + dataSet.getNumColumns() + " rows: " + dataSet.getNumRows());
 
@@ -83,7 +83,7 @@ public class HsimRun {
 
             //=======Run FGES on the output data, and compare it to the original learned graph
             Path dataFileOut = Paths.get(filenameOut);
-            VerticalDiscreteTabularDataFileReader dataReaderOut = new VerticalDiscreteTabularDataFileReader(dataFileOut, DelimiterUtils.toDelimiter(delimiter));
+            VerticalDiscreteTabularDatasetFileReader dataReaderOut = new VerticalDiscreteTabularDatasetFileReader(dataFileOut, DelimiterUtils.toDelimiter(delimiter));
 
             DataSet dataSetOut = (DataSet) DataConvertUtils.toDataModel(dataReaderOut.readInData());
 

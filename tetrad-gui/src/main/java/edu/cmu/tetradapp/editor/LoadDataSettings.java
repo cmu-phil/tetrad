@@ -20,7 +20,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 package edu.cmu.tetradapp.editor;
 
-import com.google.gson.Gson;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.util.DataConvertUtils;
 import edu.cmu.tetradapp.util.ImageUtils;
@@ -28,19 +27,23 @@ import edu.cmu.tetradapp.util.IntTextField;
 import edu.cmu.tetradapp.util.StringTextField;
 import edu.pitt.dbmi.data.reader.Data;
 import edu.pitt.dbmi.data.reader.DataColumn;
-import edu.pitt.dbmi.data.reader.DatasetReader;
+import edu.pitt.dbmi.data.reader.DataColumns;
+import edu.pitt.dbmi.data.reader.DataReader;
 import edu.pitt.dbmi.data.reader.Delimiter;
 import edu.pitt.dbmi.data.reader.DiscreteDataColumn;
-import edu.pitt.dbmi.data.reader.MixedTabularData;
-import edu.pitt.dbmi.data.reader.VerticalDiscreteData;
 import edu.pitt.dbmi.data.reader.covariance.CovarianceData;
 import edu.pitt.dbmi.data.reader.covariance.CovarianceDataReader;
 import edu.pitt.dbmi.data.reader.covariance.LowerCovarianceDataFileReader;
+import edu.pitt.dbmi.data.reader.metadata.Metadata;
+import edu.pitt.dbmi.data.reader.metadata.MetadataFileReader;
+import edu.pitt.dbmi.data.reader.metadata.MetadataReader;
+import edu.pitt.dbmi.data.reader.tabular.MixedTabularData;
 import edu.pitt.dbmi.data.reader.tabular.TabularColumnFileReader;
 import edu.pitt.dbmi.data.reader.tabular.TabularColumnReader;
 import edu.pitt.dbmi.data.reader.tabular.TabularDataFileReader;
 import edu.pitt.dbmi.data.reader.tabular.TabularDataReader;
-import edu.pitt.dbmi.data.reader.utils.TextFileUtils;
+import edu.pitt.dbmi.data.reader.tabular.VerticalDiscreteTabularData;
+import edu.pitt.dbmi.data.reader.util.TextFileUtils;
 import edu.pitt.dbmi.data.reader.validation.ValidationResult;
 import edu.pitt.dbmi.data.reader.validation.covariance.CovarianceValidation;
 import edu.pitt.dbmi.data.reader.validation.covariance.LowerCovarianceDataFileValidation;
@@ -53,16 +56,12 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileReader;
 import java.io.IOException;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 import java.util.prefs.Preferences;
 import javax.swing.*;
 import javax.swing.border.CompoundBorder;
@@ -82,11 +81,6 @@ final class LoadDataSettings extends JPanel {
     private final List<File> files;
     
     private File metadataFile;
-
-    private Map<String, InterventionStatus> interventionStatusVarsMap;
-    private List<String> combinedInterventionalVarsList;
-    private Map<String, DatasetVariable> interventionValueVarsMap;
-    private Map<String, DatasetVariable> domainVarsMap;
 
     private JRadioButton firstRowVarNamesYesRadioButton;
     private JRadioButton firstRowVarNamesNoRadioButton;
@@ -134,11 +128,6 @@ final class LoadDataSettings extends JPanel {
         
         this.metadataFile = null;
 
-        this.interventionStatusVarsMap = new HashMap<>(); 
-        this.combinedInterventionalVarsList = new LinkedList<>();
-        this.interventionValueVarsMap = new HashMap<>(); 
-        this.domainVarsMap = new HashMap<>(); 
-
         // All labels should share the save size - Zhou
         this.labelSize = new Dimension(200, 30);
 
@@ -146,7 +135,7 @@ final class LoadDataSettings extends JPanel {
     }
 
     // Step 1 items
-    public final Box basicSettings() {
+    public final Box basicSettings() throws IOException {
         // Data loading params layout
         Box basicSettingsBox = Box.createVerticalBox();
 
@@ -386,9 +375,7 @@ final class LoadDataSettings extends JPanel {
                 
                 // Now we have the interventional metadata file
                 metadataFile = fileChooser.getSelectedFile();
-                
-                parseMetadataFile(metadataFile);
-                
+  
                 // Show the selected file name
                 selectedMetadataFileName.setText(metadataFile.getName());
             }
@@ -874,13 +861,13 @@ final class LoadDataSettings extends JPanel {
      * 
      * @param datasetReader 
      */
-    private void setQuoteChar(DatasetReader datasetReader) {
+    private void setQuoteChar(DataReader dataReader) {
         if (doubleQuoteRadioButton.isSelected()) {
-            datasetReader.setQuoteCharacter('"');
+            dataReader.setQuoteCharacter('"');
         }
 
         if (singleQuoteRadioButton.isSelected()) {
-            datasetReader.setQuoteCharacter('\'');
+            dataReader.setQuoteCharacter('\'');
         }
     }
     
@@ -902,7 +889,7 @@ final class LoadDataSettings extends JPanel {
      * @param file
      * @return
      */
-    private char getInferredDelimiter(File file) {
+    private char getInferredDelimiter(File file) throws IOException {
         System.out.println("Infer demiliter for file: " + file.getName());
 
         // The number of lines to read to make the inference
@@ -915,12 +902,8 @@ final class LoadDataSettings extends JPanel {
         char quoteCharacter = '"';
         char[] delims = {'\t', ' ', ',', ':', ';', '|'};
 
-        try {
-            // https://rdrr.io/cran/reader/man/get.delim.html
-            return TextFileUtils.inferDelimiter(file, n, skip, comment, quoteCharacter, delims);
-        } catch (IOException ex) {
-            throw new IllegalArgumentException("Can't infer delimiter due to default file not found.");
-        }
+        // https://rdrr.io/cran/reader/man/get.delim.html
+        return TextFileUtils.inferDelimiter(file, n, skip, comment, quoteCharacter, delims);
     }
 
     /**
@@ -1141,60 +1124,6 @@ final class LoadDataSettings extends JPanel {
         }
     }
 
-    private void parseMetadataFile(File metadataFile) {
-        // First read in the metadata file and get the string content
-        String metadataStr = "";
-        try {
-            BufferedReader br = new BufferedReader(new FileReader(metadataFile));
-            StringBuilder sb = new StringBuilder();
-            String line = br.readLine();
-            while (line != null) {
-                sb.append(line);
-                line = br.readLine();
-            }
-            metadataStr = sb.toString();
-        } catch(IOException e) {
-        }
-
-        // Parse the metadata json string with Gson
-        Gson gson = new Gson();  
-        
-        // Convert the json string to java object
-        InterventionMetadata metadata = gson.fromJson(metadataStr, InterventionMetadata.class);
-        
-        List<Intervention> interventions = metadata.getInterventions();
-        List<DatasetVariable> domainVariables = metadata.getDomainVariables();
-        
-        interventions.forEach(e->{
-            // The value is REQUIRED regardless if status is null or not
-            if (e.getValue() == null) {
-                throw new UnsupportedOperationException("The value property MUST be specified in each intervention in your metadata file!");
-            }
-
-            // The status property can be null if the value is combined column with asterisk
-            if (e.getStatus() != null) {
-                // It's possible that the status object doesn't have `discrete` specified or user can overwrite it
-                // Set to discrete by default when not specified
-                if (e.getStatus().getDiscrete() == null) {
-                    e.getStatus().setDiscrete(Boolean.TRUE);
-                }
-                
-                interventionStatusVarsMap.put(e.getValue().getName(), e.getStatus());
-                interventionValueVarsMap.put(e.getValue().getName(), e.getValue());
-            } else {
-                // Make this as combined column
-                combinedInterventionalVarsList.add(e.getValue().getName());
-                interventionValueVarsMap.put(e.getValue().getName(), e.getValue());
-            }
-        });
-        
-        // Domain variable name and type (discrete or not)
-        // We only use this to overwrite the variable data type
-        domainVariables.forEach(e->{
-            domainVarsMap.put(e.getName(), e);
-        });
-    }
-    
     private DataColumn[] readInTabularColumns(File file) throws IOException {
         DataColumn[] dataColumns = null;
         
@@ -1226,28 +1155,6 @@ final class LoadDataSettings extends JPanel {
             // Exclude the specified labled columns
             dataColumns = columnReader.readInDataColumns(new HashSet<>(Arrays.asList(new String[]{idStringField.getText()})), isDiscrete);
         } 
-                
-        // Overwrite the column type based on metadata   
-        // only do this for data with column header, not for the generated header
-        if (isVarNamesFirstRow()) {
-            Arrays.stream(dataColumns).forEach(e->{
-                // Set the intervention status variable column as whatever the users specified
-                // otherwise use discrete as default - Zhou
-                if (interventionStatusVarsMap.keySet().contains(e.getName())) {
-                    e.setDiscrete(interventionStatusVarsMap.get(e.getName()).getDiscrete());
-                }
-
-                // Overwrite the value variable type based on metadata
-                if (interventionValueVarsMap.keySet().contains(e.getName())) {
-                    e.setDiscrete(interventionValueVarsMap.get(e.getName()).isDiscrete());
-                }
-
-                // Handle domain variables
-                if (domainVarsMap.keySet().contains(e.getName())) {
-                    e.setDiscrete(domainVarsMap.get(e.getName()).isDiscrete());
-                }
-            });
-        }
 
         return dataColumns;
     }
@@ -1271,9 +1178,15 @@ final class LoadDataSettings extends JPanel {
             // Generate columns if no header present
             if (!hasHeader) {
                 dataColumns = generateTabularColumns(file, delimiter);
+                // When no header, no metadata
             } else {
                 dataColumns = readInTabularColumns(file);
             }
+
+            // Read metadata file and update the dataColumns
+            MetadataReader metadataReader = new MetadataFileReader(metadataFile.toPath());
+            Metadata metadata = metadataReader.read();
+            dataColumns = DataColumns.update(dataColumns, metadata);
 
             // Now read in the data rows
             TabularDataReader dataReader = new TabularDataFileReader(file.toPath(), delimiter);
@@ -1291,15 +1204,15 @@ final class LoadDataSettings extends JPanel {
             } 
             
             // Now we have the data
-            Data data = dataReader.readInData(dataColumns, hasHeader);
+            Data data = dataReader.read(dataColumns, hasHeader, metadata);
 
             // The data can only either be discrete or mixed due to the discrete column of interventional status
-            if (data instanceof VerticalDiscreteData) {
-                VerticalDiscreteData verticalDiscreteData = (VerticalDiscreteData) data;
+            if (data instanceof VerticalDiscreteTabularData) {
+                VerticalDiscreteTabularData verticalDiscreteTabularData = (VerticalDiscreteTabularData) data;
                 System.out.println("===================================Discrete=============================================");
-                Arrays.stream(verticalDiscreteData.getDataColumns()).forEach(System.out::println);
+                Arrays.stream(verticalDiscreteTabularData.getDataColumns()).forEach(System.out::println);
                 System.out.println("--------------------------------------------------------------------------------");
-                int[][] dataArr = verticalDiscreteData.getData();
+                int[][] dataArr = verticalDiscreteTabularData.getData();
                 int numOfCols = dataArr.length;
                 int numOfRows = dataArr[0].length;
                 for (int row = 0; row < numOfRows; row++) {
@@ -1333,16 +1246,6 @@ final class LoadDataSettings extends JPanel {
                 }
                 System.out.println("================================================================================");
             }
-            
-            
-            // TO-DO
-            // Split the combined intervention value column into individual status and value columns
-            // before converting into Tetrad data model
-//            Arrays.stream(columns).forEach(e->{
-//                if (combinedInterventionalVarsList.contains(e.getName())) {
-//
-//                }
-//            });
 
             // Box Dataset to DataModel
             dataModel = DataConvertUtils.toDataModel(data);
@@ -1363,124 +1266,6 @@ final class LoadDataSettings extends JPanel {
 
         return dataModel;
     }
-    
-    private static class InterventionMetadata {
-
-        public InterventionMetadata() {
-        }
-        
-        // The variable names below must mathc the json property names
-        private List<Intervention> interventions;
-        private List<DatasetVariable> domainVariables;
-
-        public List<Intervention> getInterventions() {
-            return interventions;
-        }
-
-        public void setInterventions(List<Intervention> interventions) {
-            this.interventions = interventions;
-        }
-
-        public List<DatasetVariable> getDomainVariables() {
-            return domainVariables;
-        }
-
-        public void setDomainVariables(List<DatasetVariable> domainVariables) {
-            this.domainVariables = domainVariables;
-        }
-
-    }
-
-    private static class Intervention {
-
-        public Intervention() {
-        }
-        
-        private InterventionStatus status;
-        private DatasetVariable value;
-
-        public InterventionStatus getStatus() {
-            return status;
-        }
-
-        public void setStatus(InterventionStatus status) {
-            this.status = status;
-        }
-
-        public DatasetVariable getValue() {
-            return value;
-        }
-
-        public void setValue(DatasetVariable value) {
-            this.value = value;
-        }
-        
-        
-    }
-
-    private static class DatasetVariable {
-
-        public DatasetVariable() {
-        }
-        
-        private String name;
-        private boolean discrete;
-
-        /**
-         * Get the value of name
-         *
-         * @return the value of name
-         */
-        public String getName() {
-            return name;
-        }
-
-        /**
-         * Set the value of name
-         *
-         * @param name new value of name
-         */
-        public void setName(String name) {
-            this.name = name;
-        }
-
-        public boolean isDiscrete() {
-            return discrete;
-        }
-
-        public void setDiscrete(boolean discrete) {
-            this.discrete = discrete;
-        }
-       
-    }
-
-    private static class InterventionStatus {
-
-        public InterventionStatus() {
-        }
-        
-        private String name;
-        private Boolean discrete;
-
-        public String getName() {
-            return name;
-        }
-
-        public void setName(String name) {
-            this.name = name;
-        }
-
-        public Boolean getDiscrete() {
-            return discrete;
-        }
-
-        public void setDiscrete(Boolean discrete) {
-            this.discrete = discrete;
-        }
-        
-        
-    }
-    
-    
+   
 
 }

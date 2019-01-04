@@ -30,7 +30,7 @@ import edu.cmu.tetrad.sem.LargeScaleSimulation;
 import edu.cmu.tetrad.util.DataConvertUtils;
 import edu.cmu.tetrad.util.DelimiterUtils;
 import edu.cmu.tetrad.util.RandomUtil;
-import edu.pitt.dbmi.data.reader.tabular.VerticalDiscreteTabularDataFileReader;
+import edu.pitt.dbmi.data.reader.tabular.VerticalDiscreteTabularDatasetFileReader;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -261,7 +261,7 @@ public class TestGFci {
         char delimiter = '\t';
         Path dataFile = Paths.get("./src/test/resources/sim_discrete_data_20vars_100cases.txt");
 
-        VerticalDiscreteTabularDataFileReader dataReader = new VerticalDiscreteTabularDataFileReader(dataFile, DelimiterUtils.toDelimiter(delimiter));
+        VerticalDiscreteTabularDatasetFileReader dataReader = new VerticalDiscreteTabularDatasetFileReader(dataFile, DelimiterUtils.toDelimiter(delimiter));
         DataSet dataSet = (DataSet) DataConvertUtils.toDataModel(dataReader.readInData());
 
         IndependenceTest indTest = new IndTestChiSquare(dataSet, alpha);

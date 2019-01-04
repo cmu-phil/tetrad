@@ -170,7 +170,7 @@ final class LoadDataDialog extends JPanel {
     }
 
     //==============================PUBLIC METHODS=========================//
-    public void showDataLoaderDialog() {
+    public void showDataLoaderDialog() throws IOException {
         // Overall container
         // contains data preview panel, loading params panel, and load button
         container = Box.createVerticalBox();
@@ -924,7 +924,7 @@ final class LoadDataDialog extends JPanel {
     private void setPreview(File file, JTextArea textArea) {
         try {
             textArea.setText("");
-            DataPreviewer dataPreviewer = new BasicDataPreviewer(file);
+            DataPreviewer dataPreviewer = new BasicDataPreviewer(file.toPath());
             List<String> linePreviews = dataPreviewer.getPreviews(previewFromLine, previewToLine, previewNumOfCharactersPerLine);
             for (String line : linePreviews) {
                 textArea.append(line + "\n");

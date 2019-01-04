@@ -32,9 +32,9 @@ import edu.pitt.dbmi.data.reader.ContinuousData;
 import edu.pitt.dbmi.data.reader.Data;
 import edu.pitt.dbmi.data.reader.DataColumn;
 import edu.pitt.dbmi.data.reader.DiscreteDataColumn;
-import edu.pitt.dbmi.data.reader.MixedTabularData;
-import edu.pitt.dbmi.data.reader.VerticalDiscreteData;
 import edu.pitt.dbmi.data.reader.covariance.CovarianceData;
+import edu.pitt.dbmi.data.reader.tabular.MixedTabularData;
+import edu.pitt.dbmi.data.reader.tabular.VerticalDiscreteTabularData;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -53,8 +53,8 @@ public class DataConvertUtils {
     public static DataModel toDataModel(Data data) {
         if (data instanceof ContinuousData) {
             return toContinuousDataModel((ContinuousData) data);
-        } else if (data instanceof VerticalDiscreteData) {
-            return toVerticalDiscreteDataModel((VerticalDiscreteData) data);
+        } else if (data instanceof VerticalDiscreteTabularData) {
+            return toVerticalDiscreteDataModel((VerticalDiscreteTabularData) data);
         } else if (data instanceof MixedTabularData) {
             return toMixedDataBox((MixedTabularData) data);
         } else if (data instanceof CovarianceData) {
@@ -87,7 +87,7 @@ public class DataConvertUtils {
         return new BoxDataSet(new MixedDataBox(nodes, numOfRows, continuousData, discreteData), nodes);
     }
 
-    public static DataModel toVerticalDiscreteDataModel(VerticalDiscreteData dataset) {
+    public static DataModel toVerticalDiscreteDataModel(VerticalDiscreteTabularData dataset) {
         DataBox dataBox = new VerticalIntDataBox(dataset.getData());
         List<Node> variables = toNodes(dataset.getDataColumns());
 

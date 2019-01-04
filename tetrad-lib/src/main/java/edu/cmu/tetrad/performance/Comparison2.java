@@ -14,8 +14,8 @@ import edu.cmu.tetrad.util.DataConvertUtils;
 import edu.cmu.tetrad.util.TetradMatrix;
 import edu.cmu.tetrad.util.TextTable;
 import edu.pitt.dbmi.data.reader.Delimiter;
-import edu.pitt.dbmi.data.reader.tabular.ContinuousTabularDataFileReader;
-import edu.pitt.dbmi.data.reader.tabular.VerticalDiscreteTabularDataFileReader;
+import edu.pitt.dbmi.data.reader.tabular.ContinuousTabularDatasetFileReader;
+import edu.pitt.dbmi.data.reader.tabular.VerticalDiscreteTabularDatasetFileReader;
 import java.io.*;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -83,7 +83,7 @@ public class Comparison2 {
 
                     if (params.getDataType() == ComparisonParameters.DataType.Continuous) {
                         try {
-                            ContinuousTabularDataFileReader dataReader = new ContinuousTabularDataFileReader(dataFile, delimiter);
+                            ContinuousTabularDatasetFileReader dataReader = new ContinuousTabularDatasetFileReader(dataFile, delimiter);
                             dataSet = (DataSet) DataConvertUtils.toDataModel(dataReader.readInData());
                         } catch (IOException e) {
                             e.printStackTrace();
@@ -94,7 +94,7 @@ public class Comparison2 {
 
                     } else {
                         try {
-                            VerticalDiscreteTabularDataFileReader dataReader = new VerticalDiscreteTabularDataFileReader(dataFile, delimiter);
+                            VerticalDiscreteTabularDatasetFileReader dataReader = new VerticalDiscreteTabularDatasetFileReader(dataFile, delimiter);
                             dataSet = (DataSet) DataConvertUtils.toDataModel(dataReader.readInData());
                         } catch (IOException e) {
                             e.printStackTrace();
