@@ -43,7 +43,7 @@ import edu.pitt.dbmi.algo.bayesian.constraint.inference.BCInference;
 public class RbBsc implements GraphSearch {
 
     private final Rfci rfci;
-
+    
     private Graph graphBND = null,graphBNI = null;
     
     private double normalizedlnQBSCD = 0.0,normalizedlnQBSCI = 0.0;
@@ -104,6 +104,9 @@ public class RbBsc implements GraphSearch {
 		
 		DataSet depData = new ColtDataSet(numBscBootstrapSamples, vars);
 		
+		// ***************
+		// can be parallel
+		// ***************
 		for (int b = 0; b < numBscBootstrapSamples; b++) {
 			DataSet bsData = DataUtils.getBootstrapSample(data, data.getNumRows());
 			IndTestProbabilistic bsTest = new IndTestProbabilistic(bsData);
@@ -116,16 +119,16 @@ public class RbBsc implements GraphSearch {
 		}
 		
 		// learn structure of constraints using empirical data => constraint meta data
-		BDeuScore sd = new BDeuScore(data);
+		BDeuScore sd = new BDeuScore(depData);
 		sd.setSamplePrior(1.0);
 		sd.setStructurePrior(1.0);
 
-		Fges fgs = new Fges(sd);
-		fgs.setVerbose(false);
-		fgs.setNumPatternsToStore(0);
-		fgs.setFaithfulnessAssumed(true);
+		Fges fges = new Fges(sd);
+		fges.setVerbose(false);
+		fges.setNumPatternsToStore(0);
+		fges.setFaithfulnessAssumed(true);
 		
-		Graph depPattern = fgs.search();
+		Graph depPattern = fges.search();
 		depPattern = GraphUtils.replaceNodes(depPattern, data.getVariables());
 		Graph estDepBN = SearchGraphUtils.dagFromPattern(depPattern);
 		
@@ -375,5 +378,5 @@ public class RbBsc implements GraphSearch {
 	public double getNormalizedlnQBSCI() {
 		return normalizedlnQBSCI;
 	}
-
+	
 }
