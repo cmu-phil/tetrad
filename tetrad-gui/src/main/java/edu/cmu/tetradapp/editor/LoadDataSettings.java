@@ -1185,13 +1185,6 @@ final class LoadDataSettings extends JPanel {
                 dataColumns = readInTabularColumns(file);
             }
 
-            // Read metadata file when provided and update the dataColumns
-            if (metadataFile != null) {
-                MetadataReader metadataReader = new MetadataFileReader(metadataFile.toPath());
-                metadata = metadataReader.read();
-                dataColumns = DataColumns.update(dataColumns, metadata);
-            }
-
             // Now read in the data rows
             TabularDataReader dataReader = new TabularDataFileReader(file.toPath(), delimiter);
 
@@ -1200,21 +1193,22 @@ final class LoadDataSettings extends JPanel {
             dataReader.setMissingDataMarker(missingDataMarker);
             setQuoteChar(dataReader);
 
-            // When users select mixed data, we need to determine num of discrete categories
+            // When users select mixed data, we need to determine num of discrete categories before the metadata kicks in
             // It's possible that the users select mixed, but excluded either all continuous or discrete columns,
             // and as a result, the final data is either discrete or continuous instead of mixed - Zhou
             if (mixedRadioButton.isSelected()) {
                 dataReader.determineDiscreteDataColumns(dataColumns, getMaxNumOfDiscCategories(), hasHeader);
             }
 
-            // Now we read in the actual data with metadata object (if provided)
-            Data data;
-            if (metadata != null) {
-                data = dataReader.read(dataColumns, hasHeader, metadata);
-            } else {
-                data = dataReader.read(dataColumns, hasHeader);
+            // Read metadata file when provided and update the dataColumns
+            if (metadataFile != null) {
+                MetadataReader metadataReader = new MetadataFileReader(metadataFile.toPath());
+                metadata = metadataReader.read();
+                dataColumns = DataColumns.update(dataColumns, metadata);
             }
             
+            // Now we read in the actual data with metadata object (if provided)
+            Data data = dataReader.read(dataColumns, hasHeader, metadata);
 
             // The data can only either be discrete or mixed due to the discrete column of interventional status
             if (data instanceof VerticalDiscreteTabularData) {
