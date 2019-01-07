@@ -25,6 +25,7 @@ import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DiscreteVariable;
 import edu.cmu.tetrad.data.Variable;
 import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.graph.NodeVariableType;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import javax.swing.table.AbstractTableModel;
@@ -60,6 +61,8 @@ class TabularDataTable extends AbstractTableModel {
     private final String columnHeaderNotationDefault = "C";
     private final String columnHeaderNotationContinuous = "-C";
     private final String columnHeaderNotationDiscrete = "-D";
+    private final String columnHeaderNotationInterventionStatus = "-I_S";
+    private final String columnHeaderNotationInterventionValue = "-I_V";
     
     /**
      * Constructs a new DisplayTableModel to wrap the given dataSet.
@@ -132,7 +135,14 @@ class TabularDataTable extends AbstractTableModel {
                     columnHeader += columnHeaderNotationContinuous;
                 }
 
-                // Need to add header notations for interventional status and value later - Zhou
+                // Add header notations for interventional status and value
+                if (variable.getNodeVariableType() == NodeVariableType.INTERVENTION_STATUS) {
+                    columnHeader += columnHeaderNotationInterventionStatus;
+                } else  if (variable.getNodeVariableType() == NodeVariableType.INTERVENTION_VALUE) {
+                    columnHeader += columnHeaderNotationInterventionValue;
+                }
+                
+                System.out.println(variable.getName() + ": " + columnHeader);
                 
                 return columnHeader;
             } else if (row == 1) {

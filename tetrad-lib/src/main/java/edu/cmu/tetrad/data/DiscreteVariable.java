@@ -109,6 +109,11 @@ public final class DiscreteVariable extends AbstractVariable
      * @serial
      */
     private NodeType nodeType = NodeType.MEASURED;
+    
+    /**
+     * Node variable type (domain, interventional status, interventional value..) of this node variable
+     */
+    private NodeVariableType nodeVariableType = NodeVariableType.DOMAIN;
 
     /**
      * True iff new variables should be allowed to be constructed to replace
@@ -588,12 +593,12 @@ public final class DiscreteVariable extends AbstractVariable
 
     @Override
     public NodeVariableType getNodeVariableType() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        return this.nodeVariableType;
     }
 
     @Override
     public void setNodeVariableType(NodeVariableType nodeVariableType) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        this.nodeVariableType = nodeVariableType;
     }
 
 }

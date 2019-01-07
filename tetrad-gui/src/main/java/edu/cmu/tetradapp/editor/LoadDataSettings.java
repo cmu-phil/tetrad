@@ -1205,19 +1205,24 @@ final class LoadDataSettings extends JPanel {
                 MetadataReader metadataReader = new MetadataFileReader(metadataFile.toPath());
                 metadata = metadataReader.read();
                 dataColumns = DataColumns.update(dataColumns, metadata);
-                
-                metadata.getInterventionalColumns().forEach(e->{
-                    System.out.println("Status === " + e.getStatusColumn().getName());
-                    System.out.println("Value === " + e.getValueColumn().getName());
-                });
             }
-            
+
             System.out.println("===================================dataColumns=============================================");
             System.out.println(Arrays.toString(dataColumns));
-            
-            // Now we read in the actual data with metadata object (if provided)
-            Data data = dataReader.read(dataColumns, hasHeader, metadata);
 
+            // Now we read in the actual data with metadata object (if provided)
+            Data data;
+            if (metadata != null) {
+                data = dataReader.read(dataColumns, hasHeader, metadata);
+                // Box Data to DataModel to display in spreadsheet
+                dataModel = DataConvertUtils.toDataModel(data, metadata);
+            } else {
+                data = dataReader.read(dataColumns, hasHeader);
+                // Box Data to DataModel to display in spreadsheet
+                dataModel = DataConvertUtils.toDataModel(data);
+            }
+
+            // Debugging
             // The data can only either be discrete or mixed due to the discrete column of interventional status
             if (data instanceof VerticalDiscreteTabularData) {
                 VerticalDiscreteTabularData verticalDiscreteTabularData = (VerticalDiscreteTabularData) data;
@@ -1234,13 +1239,6 @@ final class LoadDataSettings extends JPanel {
                     System.out.println();
                 }
                 System.out.println("================================================================================");
-                
-                System.out.println("======================================verticalDiscreteTabularData.getDataColumns()==========================================");
-                
-                
-                System.out.println(Arrays.toString(verticalDiscreteTabularData.getDataColumns()));
-                
-                
             } else if (data instanceof MixedTabularData) {
                 MixedTabularData mixedTabularData = (MixedTabularData) data;
 
@@ -1264,16 +1262,8 @@ final class LoadDataSettings extends JPanel {
                     System.out.println();
                 }
                 System.out.println("================================================================================");
-                
-                
-                System.out.println("======================================verticalDiscreteTabularData.getDataColumns()==========================================");
-                
-                
-                System.out.println(Arrays.toString(mixedTabularData.getDataColumns()));
             }
-            
-            // Box Data to DataModel to display in spreadsheet
-            dataModel = DataConvertUtils.toDataModel(data);
+
         } else if (covarianceRadioButton.isSelected()) {
             // Covariance data can only be continuous
             CovarianceDataReader dataFileReader = new LowerCovarianceDataFileReader(file.toPath(), delimiter);

@@ -54,6 +54,11 @@ public final class ContinuousVariable extends AbstractVariable
      * @serial
      */
     private NodeType nodeType = NodeType.MEASURED;
+    
+    /**
+     * Node variable type (domain, interventional status, interventional value..) of this node variable
+     */
+    private NodeVariableType nodeVariableType = NodeVariableType.DOMAIN;
 
     /**
      * The x coordinate of the center of the node.
@@ -289,12 +294,12 @@ public final class ContinuousVariable extends AbstractVariable
 
     @Override
     public NodeVariableType getNodeVariableType() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        return this.nodeVariableType;
     }
 
     @Override
-    public void setNodeVariableType(NodeVariableType interventionType) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    public void setNodeVariableType(NodeVariableType nodeVariableType) {
+        this.nodeVariableType = nodeVariableType;
     }
 
 }

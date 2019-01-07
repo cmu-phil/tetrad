@@ -91,10 +91,10 @@ public class DataConvertUtils {
 
     /**
      * Converting using metadata
-     * 
+     *
      * @param dataset
      * @param metadata
-     * @return 
+     * @return
      */
     public static DataModel toMixedDataBox(MixedTabularData dataset, Metadata metadata) {
         int numOfRows = dataset.getNumOfRows();
@@ -103,24 +103,18 @@ public class DataConvertUtils {
         int[][] discreteData = dataset.getDiscreteData();
 
         Node[] nodes = Arrays.stream(columns)
-                .map(e -> {
-                    Node n = e.getDataColumn().isDiscrete()
-                            ? new DiscreteVariable(e.getDataColumn().getName(), e.getCategories())
-                            : new ContinuousVariable(e.getDataColumn().getName());
-                    
-                    // Default NodeVariableType.DOMAIN for all variables
-                    n.setNodeVariableType(NodeVariableType.DOMAIN);
-                    
-                    return n;
-                })
+                .map(e -> e.getDataColumn().isDiscrete()
+                ? new DiscreteVariable(e.getDataColumn().getName(), e.getCategories())
+                : new ContinuousVariable(e.getDataColumn().getName()))
                 .toArray(Node[]::new);
-        
+
         metadata.getInterventionalColumns().forEach(e -> {
             ColumnMetadata valueColumn = e.getValueColumn();
             ColumnMetadata statusColumn = e.getStatusColumn();
             int valColNum = valueColumn.getColumnNumber() - 1;
             int statColNum = statusColumn.getColumnNumber() - 1;
-            
+
+            // Default NodeVariableType.DOMAIN for all variables
             // Overwrite NodeVariableType to NodeVariableType.INTERVENTION_VALUE or NodeVariableType.INTERVENTION_STATUS
             nodes[valColNum].setNodeVariableType(NodeVariableType.INTERVENTION_VALUE);
             nodes[statColNum].setNodeVariableType(NodeVariableType.INTERVENTION_STATUS);
@@ -147,33 +141,22 @@ public class DataConvertUtils {
 
     /**
      * Converting using metadata
-     * 
+     *
      * @param dataset
      * @param metatdata
-     * @return 
+     * @return
      */
     public static DataModel toVerticalDiscreteDataModel(VerticalDiscreteTabularData dataset, Metadata metatdata) {
-        DiscreteDataColumn[] columns = dataset.getDataColumns();
-        
-        Node[] nodes = Arrays.stream(columns)
-                .map(e -> {
-                    Node n = e.getDataColumn().isDiscrete()
-                            ? new DiscreteVariable(e.getDataColumn().getName(), e.getCategories())
-                            : new ContinuousVariable(e.getDataColumn().getName());
-                    
-                    // Default NodeVariableType.DOMAIN for all variables
-                    n.setNodeVariableType(NodeVariableType.DOMAIN);
-                    
-                    return n;
-                })
+        Node[] nodes = toNodes(dataset.getDataColumns()).stream()
                 .toArray(Node[]::new);
-        
+
         metatdata.getInterventionalColumns().forEach(e -> {
             ColumnMetadata valueColumn = e.getValueColumn();
             ColumnMetadata statusColumn = e.getStatusColumn();
             int valColNum = valueColumn.getColumnNumber() - 1;
             int statColNum = statusColumn.getColumnNumber() - 1;
-            
+
+            // Default NodeVariableType.DOMAIN for all variables
             // Overwrite NodeVariableType to NodeVariableType.INTERVENTION_VALUE or NodeVariableType.INTERVENTION_STATUS
             nodes[valColNum].setNodeVariableType(NodeVariableType.INTERVENTION_VALUE);
             nodes[statColNum].setNodeVariableType(NodeVariableType.INTERVENTION_STATUS);
@@ -181,10 +164,10 @@ public class DataConvertUtils {
 
         DataBox dataBox = new VerticalIntDataBox(dataset.getData());
         List<Node> nodeList = Arrays.asList(nodes);
-        
+
         return new BoxDataSet(dataBox, nodeList);
     }
-    
+
     public static DataModel toVerticalDiscreteDataModel(VerticalDiscreteTabularData dataset) {
         DataBox dataBox = new VerticalIntDataBox(dataset.getData());
         List<Node> variables = toNodes(dataset.getDataColumns());
