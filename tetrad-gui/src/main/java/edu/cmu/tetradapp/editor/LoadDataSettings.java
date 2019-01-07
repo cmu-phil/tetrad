@@ -79,12 +79,13 @@ final class LoadDataSettings extends JPanel {
     private static final long serialVersionUID = -7597768949622586036L;
 
     private final List<File> files;
-    
+
     private File metadataFile;
+    private Metadata metadata;
 
     private JRadioButton firstRowVarNamesYesRadioButton;
     private JRadioButton firstRowVarNamesNoRadioButton;
-    
+
     private JRadioButton tabularRadioButton;
     private JRadioButton covarianceRadioButton;
 
@@ -105,7 +106,7 @@ final class LoadDataSettings extends JPanel {
     private JRadioButton noneQuoteRadioButton;
     private JRadioButton doubleQuoteRadioButton;
     private JRadioButton singleQuoteRadioButton;
-    
+
     private JButton metadataFileButton;
 
     private JRadioButton idNoneRadioButton;
@@ -125,8 +126,9 @@ final class LoadDataSettings extends JPanel {
     //================================CONSTRUCTOR=======================//
     public LoadDataSettings(List<File> files) {
         this.files = files;
-        
+
         this.metadataFile = null;
+        this.metadata = null;
 
         // All labels should share the save size - Zhou
         this.labelSize = new Dimension(200, 30);
@@ -160,12 +162,12 @@ final class LoadDataSettings extends JPanel {
             if (button.isSelected()) {
                 // Enable metadata file upload
                 metadataFileButton.setEnabled(true);
-                
+
                 // Enable specifying column labeled option
                 if (!idLabeledColRadioButton.isEnabled()) {
                     idLabeledColRadioButton.setEnabled(true);
                 }
-                
+
                 if (!idStringField.isEnabled()) {
                     idStringField.setEnabled(true);
                 }
@@ -178,7 +180,7 @@ final class LoadDataSettings extends JPanel {
             if (button.isSelected()) {
                 // No need to use metadata file when no header
                 metadataFileButton.setEnabled(false);
-                
+
                 // Disable the "Column labeled" option of ignoring column
                 idLabeledColRadioButton.setEnabled(false);
                 idStringField.setEnabled(false);
@@ -213,8 +215,7 @@ final class LoadDataSettings extends JPanel {
         firstRowVarNamesBox.add(Box.createHorizontalGlue());
 
         basicSettingsBox.add(firstRowVarNamesBox);
-        
-        
+
         // File type: Tabular/Covariance
         Box fileTypeBox = Box.createHorizontalBox();
 
@@ -240,7 +241,7 @@ final class LoadDataSettings extends JPanel {
                     if (firstRowVarNamesYesRadioButton.isSelected()) {
                         metadataFileButton.setEnabled(true);
                     }
-                    
+
                     // Enable the discrete/mixed radio button if it's disabled by clicking covariance data
                     if (!discRadioButton.isEnabled()) {
                         discRadioButton.setEnabled(true);
@@ -281,19 +282,19 @@ final class LoadDataSettings extends JPanel {
             if (button.isSelected()) {
                 // No need metadata file
                 metadataFileButton.setEnabled(false);
-                
+
                 // When Covariance data is selected, data type can only be Continuous,
                 contRadioButton.setSelected(true);
-                
+
                 //will disallow the users to choose Discrete and mixed data
                 discRadioButton.setEnabled(false);
                 mixedRadioButton.setEnabled(false);
-                
+
                 // Both Yes and No of Variable names in first row need to be disabled
                 // Because the first row should be number of cases
                 firstRowVarNamesYesRadioButton.setEnabled(false);
                 firstRowVarNamesNoRadioButton.setEnabled(false);
-                
+
                 // select None for Case IDs, disable other options,
                 // since no Case column should be in covariance data
                 idNoneRadioButton.setSelected(true);
@@ -333,10 +334,10 @@ final class LoadDataSettings extends JPanel {
         JSeparator separator1 = new JSeparator(SwingConstants.HORIZONTAL);
         separator1.setForeground(separatorColor);
         basicSettingsBox.add(separator1);
-        
+
         // Metadata to interventional dataset
         Box metadataFileBox = Box.createHorizontalBox();
-        
+
         // Add label into this label box to size
         Box metadataFileLabelBox = Box.createHorizontalBox();
         metadataFileLabelBox.setPreferredSize(labelSize);
@@ -346,10 +347,10 @@ final class LoadDataSettings extends JPanel {
         // Add tooltip on mouseover the info icon
         metadataFileLabelInfoIcon.setToolTipText("Metadata file is REQUIRED for observational and interventional data");
         metadataFileLabelBox.add(metadataFileLabelInfoIcon);
-        
+
         // Metadata file load button
         metadataFileButton = new JButton("Load...");
-        
+
         JLabel selectedMetadataFileName = new JLabel("No metadata file slected");
 
         // Add file button listener
@@ -372,10 +373,10 @@ final class LoadDataSettings extends JPanel {
                 if (_ret == JFileChooser.CANCEL_OPTION) {
                     return;
                 }
-                
+
                 // Now we have the interventional metadata file
                 metadataFile = fileChooser.getSelectedFile();
-  
+
                 // Show the selected file name
                 selectedMetadataFileName.setText(metadataFile.getName());
             }
@@ -387,20 +388,20 @@ final class LoadDataSettings extends JPanel {
         metadataFileButtonBox.add(metadataFileButton);
         metadataFileButtonBox.add(Box.createHorizontalStrut(10));
         metadataFileButtonBox.add(selectedMetadataFileName);
-        
+
         // Put together
         metadataFileBox.add(metadataFileLabelBox);
         metadataFileBox.add(Box.createRigidArea(new Dimension(10, 1)));
         metadataFileBox.add(metadataFileButtonBox);
         metadataFileBox.add(Box.createHorizontalGlue());
-        
+
         basicSettingsBox.add(metadataFileBox);
 
         // Add seperator line
         JSeparator separator = new JSeparator(SwingConstants.HORIZONTAL);
         separator.setForeground(separatorColor);
         basicSettingsBox.add(separator);
-        
+
         // Vertical gap
         //basicSettingsBox.add(Box.createVerticalStrut(5));
         // Data type - moved from the old Fast tab - Zhou
@@ -857,9 +858,10 @@ final class LoadDataSettings extends JPanel {
     }
 
     /**
-     * This works for both validation(column and data) and data reading(column reader and data reader)
-     * 
-     * @param datasetReader 
+     * This works for both validation(column and data) and data reading(column
+     * reader and data reader)
+     *
+     * @param datasetReader
      */
     private void setQuoteChar(DataReader dataReader) {
         if (doubleQuoteRadioButton.isSelected()) {
@@ -870,7 +872,7 @@ final class LoadDataSettings extends JPanel {
             dataReader.setQuoteCharacter('\'');
         }
     }
-    
+
     private String getCommentMarker() {
         if (commentDoubleSlashRadioButton.isSelected()) {
             return "//";
@@ -991,19 +993,19 @@ final class LoadDataSettings extends JPanel {
 
     /**
      * Genearate the column header when not provided
-     * 
+     *
      * @param file
      * @param delimiter
      * @return
-     * @throws IOException 
+     * @throws IOException
      */
     private DataColumn[] generateTabularColumns(File file, Delimiter delimiter) throws IOException {
         DataColumn[] dataColumns = null;
-        
+
         String commentMarker = getCommentMarker();
-        
+
         TabularColumnReader columnFileReader = new TabularColumnFileReader(file.toPath(), delimiter);
-        
+
         columnFileReader.setCommentMarker(commentMarker);
         setQuoteChar(columnFileReader);
 
@@ -1014,7 +1016,7 @@ final class LoadDataSettings extends JPanel {
             isDiscrete = false;
         } else if (discRadioButton.isSelected()) {
             isDiscrete = true;
-        } 
+        }
 
         // Generate data columns with exclusions
         // Handle case ID column based on different selections
@@ -1023,11 +1025,11 @@ final class LoadDataSettings extends JPanel {
         } else if (idUnlabeledFirstColRadioButton.isSelected()) {
             // Exclude the first column
             dataColumns = columnFileReader.generateColumns(new int[]{1}, isDiscrete);
-        } 
-        
+        }
+
         return dataColumns;
     }
-    
+
     /**
      * Validate each file based on the specified settings
      *
@@ -1042,9 +1044,9 @@ final class LoadDataSettings extends JPanel {
 
         if (tabularRadioButton.isSelected()) {
             DataColumn[] dataColumns;
-            
+
             List<ValidationResult> tabularColumnValidationResults = new LinkedList<>();
-    
+
             // Generate the columns if not present and skip the column validation
             if (!hasHeader) {
                 dataColumns = generateTabularColumns(file, delimiter);
@@ -1055,7 +1057,7 @@ final class LoadDataSettings extends JPanel {
                 // Specify settings for column validation
                 tabularColumnValidation.setCommentMarker(commentMarker);
                 setQuoteChar(tabularColumnValidation);
-                
+
                 // Handle case ID column based on different selections
                 if (idNoneRadioButton.isSelected()) {
                     // No column exclusion
@@ -1066,16 +1068,16 @@ final class LoadDataSettings extends JPanel {
                 } else if (idLabeledColRadioButton.isSelected() && !idStringField.getText().isEmpty()) {
                     // Exclude the specified labled columns
                     tabularColumnValidationResults = tabularColumnValidation.validate(new HashSet<>(Arrays.asList(new String[]{idStringField.getText()})));
-                } 
-                
+                }
+
                 // Step 2: Read in columns for later use if nothing wrong with the columns validation
                 dataColumns = readInTabularColumns(file);
             }
-            
+
             List<ValidationResult> validationInfos = new LinkedList<>();
             List<ValidationResult> validationWarnings = new LinkedList<>();
             List<ValidationResult> validationErrors = new LinkedList<>();
-            
+
             for (ValidationResult result : tabularColumnValidationResults) {
                 switch (result.getCode()) {
                     case INFO:
@@ -1100,23 +1102,23 @@ final class LoadDataSettings extends JPanel {
                 // Specify the setting again for data validation
                 tabularDataValidation.setCommentMarker(commentMarker);
                 setQuoteChar(tabularDataValidation);
-                
+
                 // Missing data marker setting for data validaiton only, not for column validation
                 tabularDataValidation.setMissingDataMarker(missingDataMarker);
 
                 List<ValidationResult> tabularDataValidationResults = tabularDataValidation.validate(dataColumns, hasHeader);
-                
+
                 // At this point, no need to use the column validation results at all
                 return tabularDataValidationResults;
             }
         } else if (covarianceRadioButton.isSelected()) {
             CovarianceValidation covarianceValidation = new LowerCovarianceDataFileValidation(file.toPath(), delimiter);
-            
+
             // Header in first row is required
             // Cpvariance never has missing value marker
             covarianceValidation.setCommentMarker(commentMarker);
             setQuoteChar(covarianceValidation);
-   
+
             // No case ID on covarianced data
             return covarianceValidation.validate();
         } else {
@@ -1126,10 +1128,10 @@ final class LoadDataSettings extends JPanel {
 
     private DataColumn[] readInTabularColumns(File file) throws IOException {
         DataColumn[] dataColumns = null;
-        
+
         Delimiter delimiter = getDelimiterType();
         String commentMarker = getCommentMarker();
-        
+
         TabularColumnReader columnReader = new TabularColumnFileReader(file.toPath(), delimiter);
 
         columnReader.setCommentMarker(commentMarker);
@@ -1142,7 +1144,7 @@ final class LoadDataSettings extends JPanel {
             isDiscrete = false;
         } else if (discRadioButton.isSelected()) {
             isDiscrete = true;
-        } 
+        }
 
         // Handle case ID column based on different selections
         if (idNoneRadioButton.isSelected()) {
@@ -1154,11 +1156,11 @@ final class LoadDataSettings extends JPanel {
         } else if (idLabeledColRadioButton.isSelected() && !idStringField.getText().isEmpty()) {
             // Exclude the specified labled columns
             dataColumns = columnReader.readInDataColumns(new HashSet<>(Arrays.asList(new String[]{idStringField.getText()})), isDiscrete);
-        } 
+        }
 
         return dataColumns;
     }
-    
+
     /**
      * Kevin's data reader
      *
@@ -1167,7 +1169,7 @@ final class LoadDataSettings extends JPanel {
      */
     public DataModel loadDataWithSettings(File file) throws IOException {
         DataModel dataModel = null;
- 
+
         Delimiter delimiter = getDelimiterType();
         boolean hasHeader = isVarNamesFirstRow();
         String commentMarker = getCommentMarker();
@@ -1183,14 +1185,16 @@ final class LoadDataSettings extends JPanel {
                 dataColumns = readInTabularColumns(file);
             }
 
-            // Read metadata file and update the dataColumns
-            MetadataReader metadataReader = new MetadataFileReader(metadataFile.toPath());
-            Metadata metadata = metadataReader.read();
-            dataColumns = DataColumns.update(dataColumns, metadata);
+            // Read metadata file when provided and update the dataColumns
+            if (metadataFile != null) {
+                MetadataReader metadataReader = new MetadataFileReader(metadataFile.toPath());
+                metadata = metadataReader.read();
+                dataColumns = DataColumns.update(dataColumns, metadata);
+            }
 
             // Now read in the data rows
             TabularDataReader dataReader = new TabularDataFileReader(file.toPath(), delimiter);
-            
+
             // Need to specify commentMarker, .... again to the TabularDataFileReader
             dataReader.setCommentMarker(commentMarker);
             dataReader.setMissingDataMarker(missingDataMarker);
@@ -1201,10 +1205,16 @@ final class LoadDataSettings extends JPanel {
             // and as a result, the final data is either discrete or continuous instead of mixed - Zhou
             if (mixedRadioButton.isSelected()) {
                 dataReader.determineDiscreteDataColumns(dataColumns, getMaxNumOfDiscCategories(), hasHeader);
-            } 
+            }
+
+            // Now we read in the actual data with metadata object (if provided)
+            Data data;
+            if (metadata != null) {
+                data = dataReader.read(dataColumns, hasHeader, metadata);
+            } else {
+                data = dataReader.read(dataColumns, hasHeader);
+            }
             
-            // Now we have the data
-            Data data = dataReader.read(dataColumns, hasHeader, metadata);
 
             // The data can only either be discrete or mixed due to the discrete column of interventional status
             if (data instanceof VerticalDiscreteTabularData) {
@@ -1266,6 +1276,5 @@ final class LoadDataSettings extends JPanel {
 
         return dataModel;
     }
-   
 
 }
