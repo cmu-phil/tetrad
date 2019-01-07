@@ -21,9 +21,9 @@
 
 package edu.cmu.tetrad.session;
 
-import edu.cmu.tetrad.graph.NodeVariableType;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.NodeType;
+import edu.cmu.tetrad.graph.NodeVariableType;
 import edu.cmu.tetrad.util.*;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
@@ -1841,7 +1841,7 @@ public class SessionNode implements Node, TetradSerializable {
     }
 
     @Override
-    public void setInterventionType(NodeVariableType interventionType) {
+    public void setNodeVariableType(NodeVariableType interventionType) {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 

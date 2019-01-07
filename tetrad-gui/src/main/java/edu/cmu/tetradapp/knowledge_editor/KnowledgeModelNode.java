@@ -22,9 +22,9 @@
 package edu.cmu.tetradapp.knowledge_editor;
 
 import edu.cmu.tetrad.data.AbstractVariable;
-import edu.cmu.tetrad.graph.NodeVariableType;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.NodeType;
+import edu.cmu.tetrad.graph.NodeVariableType;
 import edu.cmu.tetrad.util.NamingProtocol;
 import edu.cmu.tetrad.util.TetradSerializableExcluded;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
@@ -171,7 +171,7 @@ public class KnowledgeModelNode implements Node, TetradSerializableExcluded {
     }
 
     @Override
-    public void setInterventionType(NodeVariableType interventionType) {
+    public void setNodeVariableType(NodeVariableType interventionType) {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 

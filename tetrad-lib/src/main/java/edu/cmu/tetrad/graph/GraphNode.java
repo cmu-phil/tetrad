@@ -296,7 +296,7 @@ public class GraphNode implements Node, TetradSerializable {
     }
 
     @Override
-    public void setInterventionType(NodeVariableType interventionType) {
+    public void setNodeVariableType(NodeVariableType interventionType) {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }
