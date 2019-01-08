@@ -58,7 +58,7 @@ public class RBExperiments {
 	}
 
 	private List<Node> getLatents(Graph dag) {
-		List<Node> latents = new ArrayList<Node>();
+		List<Node> latents = new ArrayList<>();
 		for (Node n : dag.getNodes()) {
 			if (n.getNodeType() == NodeType.LATENT) {
 				latents.add(n);
@@ -67,7 +67,7 @@ public class RBExperiments {
 		return latents;
 	}
 	public Graph makeSimpleDAG(int numLatentConfounders){
-		List<Node> nodes = new ArrayList<Node>();
+		List<Node> nodes = new ArrayList<>();
 		for (int i=0; i<5; i++){
 			nodes.add(new DiscreteVariable(Integer.toString(i+1)));
 		}
@@ -139,7 +139,7 @@ public class RBExperiments {
 
 		// read and process input arguments
 		double alpha = 0.05, numLatentConfounders = 0, lower = 0.3, upper = 0.7;
-		int numCases = 100, numModels = 100, numBootstrapSamples = 500, round = 0;
+		int numCases = 100, numModels = 5, numBootstrapSamples = 10, round = 0;
 		String modelName = "Alarm", filePath = "/Users/chw20/Documents/DBMI/bsc-results",
 				dataPath = System.getProperty("user.dir");
 		boolean threshold1 = false, threshold2 = true;
@@ -340,7 +340,7 @@ public class RBExperiments {
 
 	}
 
-	public void experiment2(String modelName, int numCases, int numModels, int numBootstrapSamples, double alpha,
+	/*public void experiment2(String modelName, int numCases, int numModels, int numBootstrapSamples, double alpha,
 			double numLatentConfounders, boolean threshold1, boolean threshold2, double lower, double upper,
 			String filePath, int round) {
 		// 32827167123L
@@ -480,6 +480,7 @@ public class RBExperiments {
 		out.close();
 
 	}
+*/
 
 	private DataSet refineData(DataSet fullData) {
 		for (int c = 0; c < fullData.getNumColumns(); c++) {
@@ -780,8 +781,8 @@ public class RBExperiments {
 
 	private DataSet createDepDataFiltering(Map<IndependenceFact, Double> H, DataSet data, int numBootstrapSamples,
 			boolean threshold, double lower, double upper) {
-		List<Node> vars = new ArrayList<Node>();
-		Map<IndependenceFact, Double> HCopy = new HashMap<IndependenceFact, Double>();
+		List<Node> vars = new ArrayList<>();
+		Map<IndependenceFact, Double> HCopy = new HashMap<>();
 		for (IndependenceFact f : H.keySet()) {
 			if (H.get(f) > lower && H.get(f) < upper) {
 				HCopy.put(f, H.get(f));
@@ -858,7 +859,7 @@ public class RBExperiments {
 	private IndTestProbabilistic runRB(DataSet data, List<Graph> pags, int numModels, boolean threshold) {
 		IndTestProbabilistic BSCtest = new IndTestProbabilistic(data);
 
-		BSCtest.threshold = threshold;
+		BSCtest.setThreshold(threshold);
 		Rfci BSCrfci = new Rfci(BSCtest);
 
 		BSCrfci.setVerbose(false);

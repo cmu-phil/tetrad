@@ -32,6 +32,7 @@ import edu.cmu.tetrad.util.TetradMatrix;
 import edu.pitt.dbmi.algo.bayesian.constraint.inference.BCInference;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -184,9 +185,9 @@ public class IndTestProbabilistic implements IndependenceTest {
             _z[i + 1] = indices.get(z[i]) + 1;
         }
 
-//        System.out.println("test " + x.getName() + " _||_ " + y.getName() + " | " + Arrays.toString(z));
-//        System.out.println(x.getName());
-//        System.out.println(y.getName());
+        //System.out.println("test " + x.getName() + " _||_ " + y.getName() + " | " + Arrays.toString(z));
+        //System.out.println(x.getName());
+        //System.out.println(y.getName());
         return bci.probConstraint(op, _x, _y, _z);
     }
 
