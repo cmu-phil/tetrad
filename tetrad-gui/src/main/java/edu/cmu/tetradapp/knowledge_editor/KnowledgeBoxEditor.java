@@ -23,12 +23,16 @@ package edu.cmu.tetradapp.knowledge_editor;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
+import edu.cmu.tetrad.graph.NodeVariableType;
 import edu.cmu.tetrad.util.JOptionUtils;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetradapp.model.ForbiddenGraphModel;
 import edu.cmu.tetradapp.model.KnowledgeBoxModel;
-
-import java.awt.*;
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Component;
+import java.awt.Dimension;
+import java.awt.Font;
 import java.awt.datatransfer.Transferable;
 import java.awt.datatransfer.UnsupportedFlavorException;
 import java.awt.event.ComponentAdapter;
@@ -38,8 +42,14 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.prefs.Preferences;
 import javax.swing.*;
 import javax.swing.border.CompoundBorder;
@@ -79,6 +89,11 @@ public class KnowledgeBoxEditor extends JPanel {
     private JTabbedPane tabbedPane = null;
     private Graph sourceGraph;
 
+    
+    private final List<String> interventionalVars = new LinkedList<>();
+    private final List<String> nonInterventionalVars = new LinkedList<>();
+    
+    
     public KnowledgeBoxEditor(final KnowledgeBoxModel knowledgeBoxModel) {
         this(knowledgeBoxModel, knowledgeBoxModel.getVarNames());
     }
@@ -317,7 +332,33 @@ public class KnowledgeBoxEditor extends JPanel {
         tiersPanel.repaint();
     }
 
+    /**
+     * If the knowledge box sees interventional variables 
+     * it automatically places those variables in the first tier 
+     * and the rest of domain variables in second tier - Zhou
+     */
+    private void checkInterventionalVariables() {
+        knowledgeBoxModel.getVariables().forEach(e->{
+            if (e.getNodeVariableType() == NodeVariableType.INTERVENTION_STATUS || e.getNodeVariableType() == NodeVariableType.INTERVENTION_VALUE) {
+                interventionalVars.add(e.getName());
+            } else {
+                nonInterventionalVars.add(e.getName());
+            }
+        });
+    }
+    
     private Box getTierBoxes(int numTiers) {
+        checkInterventionalVariables();
+        
+        // Only for dataset with interventional variables and the first time
+        // we open the knowledge box - Zhou
+        if (getKnowledge().isEmpty() && !interventionalVars.isEmpty()) {
+            // Display interventional variables in first tier and the rest in second tier
+            getKnowledge().setTier(0, interventionalVars);
+            getKnowledge().setTier(1, nonInterventionalVars);
+        }
+        
+        
         Box c = Box.createVerticalBox();
 
         for (String var : varNames) {
