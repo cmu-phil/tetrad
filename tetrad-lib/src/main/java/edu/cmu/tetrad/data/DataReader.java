@@ -24,6 +24,7 @@ import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.NamingProtocol;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetrad.util.TetradMatrix;
+
 import java.io.CharArrayReader;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -46,8 +47,8 @@ import java.util.regex.Pattern;
  * (The /data section is required.) Without sectioning, it is assumed that no
  * variables will be defined in advance and that there will be no knowledge.
  *
- * @deprecated replaced by readers in edu.pitt.dbmi.data.reader.tabular package
  * @author Joseph Ramsey
+ * @deprecated replaced by readers in edu.pitt.dbmi.data.reader.tabular package
  */
 @Deprecated
 public final class DataReader implements IDataReader {
@@ -120,6 +121,7 @@ public final class DataReader implements IDataReader {
     }
 
     //============================PUBLIC METHODS========================//
+
     /**
      * Lines beginning with blanks or this marker will be skipped.
      */
@@ -223,7 +225,7 @@ public final class DataReader implements IDataReader {
      * RectangularDataSet if successful.
      *
      * @throws IOException if the file cannot be read. // * @deprecated use the
-     * data readers from edu.cmu.tetrad.io package // Can't deprecate this yet.
+     *                     data readers from edu.cmu.tetrad.io package // Can't deprecate this yet.
      */
     @Override
     public DataSet parseTabular(File file) throws IOException {
@@ -878,7 +880,17 @@ public final class DataReader implements IDataReader {
                         continue SECTIONS;
                     }
 
-                    if (line.startsWith("requiredirect")) {
+                    if (line.startsWith("forbiddirect")) {
+                        firstLine = line;
+                        continue SECTIONS;
+                    }
+
+                    if (line.startsWith("forbiddengroup")) {
+                        firstLine = line;
+                        continue SECTIONS;
+                    }
+
+                    if (line.startsWith("requiredgroup")) {
                         firstLine = line;
                         continue SECTIONS;
                     }
@@ -918,6 +930,108 @@ public final class DataReader implements IDataReader {
                         this.logger.log("info", "Adding to tier " + (tier - 1) + " " + name);
                     }
                 }
+            } else if ("forbiddengroup".equalsIgnoreCase(line.trim())) {
+                while (lineizer.hasMoreLines()) {
+                    line = lineizer.nextLine();
+
+                    if (line.startsWith("forbiddirect")) {
+                        firstLine = line;
+                        continue SECTIONS;
+                    }
+
+                    if (line.startsWith("requiredirect")) {
+                        firstLine = line;
+                        continue SECTIONS;
+                    }
+
+                    if (line.startsWith("addtemporal")) {
+                        firstLine = line;
+                        continue SECTIONS;
+                    }
+
+                    if (line.startsWith("requiredgroup")) {
+                        firstLine = line;
+                        continue SECTIONS;
+                    }
+
+                    Set<String> from = new HashSet<>();
+                    Set<String> to = new HashSet<>();
+
+                    RegexTokenizer st = new RegexTokenizer(line, delimiter, quoteChar);
+
+                    while (st.hasMoreTokens()) {
+                        String token = st.nextToken();
+                        token = token.trim();
+                        String name = substitutePeriodsForSpaces(token);
+                        from.add(name);
+                    }
+
+                    line = lineizer.nextLine();
+
+                    st = new RegexTokenizer(line, delimiter, quoteChar);
+
+                    while (st.hasMoreTokens()) {
+                        String token = st.nextToken();
+                        token = token.trim();
+                        String name = substitutePeriodsForSpaces(token);
+                        to.add(name);
+                    }
+
+                    KnowledgeGroup group = new KnowledgeGroup(KnowledgeGroup.FORBIDDEN, from, to);
+
+                    knowledge.addKnowledgeGroup(group);
+                }
+            } else if ("requiredgroup".equalsIgnoreCase(line.trim())) {
+                while (lineizer.hasMoreLines()) {
+                    line = lineizer.nextLine();
+
+                    if (line.startsWith("forbiddirect")) {
+                        firstLine = line;
+                        continue SECTIONS;
+                    }
+
+                    if (line.startsWith("requiredirect")) {
+                        firstLine = line;
+                        continue SECTIONS;
+                    }
+
+                    if (line.startsWith("forbiddengroup")) {
+                        firstLine = line;
+                        continue SECTIONS;
+                    }
+
+                    if (line.startsWith("addtemporal")) {
+                        firstLine = line;
+                        continue SECTIONS;
+                    }
+
+                    Set<String> from = new HashSet<>();
+                    Set<String> to = new HashSet<>();
+
+                    RegexTokenizer st = new RegexTokenizer(line, delimiter, quoteChar);
+
+                    while (st.hasMoreTokens()) {
+                        String token = st.nextToken();
+                        token = token.trim();
+                        String name = substitutePeriodsForSpaces(token);
+                        from.add(name);
+                    }
+
+                    line = lineizer.nextLine();
+
+                    st = new RegexTokenizer(line, delimiter, quoteChar);
+
+                    while (st.hasMoreTokens()) {
+                        String token = st.nextToken();
+                        token = token.trim();
+                        String name = substitutePeriodsForSpaces(token);
+                        to.add(name);
+                    }
+
+                    KnowledgeGroup group = new KnowledgeGroup(KnowledgeGroup.REQUIRED, from, to);
+
+                    knowledge.addKnowledgeGroup(group);
+                }
             } else if ("forbiddirect".equalsIgnoreCase(line.trim())) {
                 while (lineizer.hasMoreLines()) {
                     line = lineizer.nextLine();
@@ -928,6 +1042,16 @@ public final class DataReader implements IDataReader {
                     }
 
                     if (line.startsWith("requiredirect")) {
+                        firstLine = line;
+                        continue SECTIONS;
+                    }
+
+                    if (line.startsWith("forbiddengroup")) {
+                        firstLine = line;
+                        continue SECTIONS;
+                    }
+
+                    if (line.startsWith("requiredgroup")) {
                         firstLine = line;
                         continue SECTIONS;
                     }
@@ -969,6 +1093,16 @@ public final class DataReader implements IDataReader {
                         continue SECTIONS;
                     }
 
+                    if (line.startsWith("forbiddengroup")) {
+                        firstLine = line;
+                        continue SECTIONS;
+                    }
+
+                    if (line.startsWith("requiredgroup")) {
+                        firstLine = line;
+                        continue SECTIONS;
+                    }
+
                     RegexTokenizer st = new RegexTokenizer(line, delimiter, quoteChar);
                     String from = null, to = null;
 
@@ -990,6 +1124,7 @@ public final class DataReader implements IDataReader {
                                 + ": Line contains fewer than two elements.");
                     }
 
+                    knowledge.removeForbidden(from, to);
                     knowledge.setRequired(from, to);
                 }
             } else {
@@ -1023,8 +1158,8 @@ public final class DataReader implements IDataReader {
 //        private final boolean multColumnIncluded;
 
         public DataSetDescription(List<Node> variables, int numRows, int idIndex,
-                boolean variablesSectionIncluded, Pattern delimiter
-        //                , boolean multColumnIncluded
+                                  boolean variablesSectionIncluded, Pattern delimiter
+                                  //                , boolean multColumnIncluded
         ) {
             this.variables = variables;
             this.numRows = numRows;
@@ -1062,18 +1197,18 @@ public final class DataReader implements IDataReader {
     /**
      * Scans the file for variable definitions and number of cases.
      *
-     * @param varNames Names of variables, if known. Otherwise, if null,
-     * variables in the series X1, X2, ..., Xn will be made up, one for each
-     * token in the first row.
-     * @param lineizer Parses lines, skipping comments.
+     * @param varNames  Names of variables, if known. Otherwise, if null,
+     *                  variables in the series X1, X2, ..., Xn will be made up, one for each
+     *                  token in the first row.
+     * @param lineizer  Parses lines, skipping comments.
      * @param delimiter Delimiter to tokenize tokens in each row.
      * @param firstLine Non-null if a non-variable first line had to be lineized
-     * @param idIndex The index of the ID column.
+     * @param idIndex   The index of the ID column.
      */
     private DataSetDescription scanForDescription(List<String> varNames,
-            Lineizer lineizer, Pattern delimiter,
-            String firstLine, int idIndex,
-            boolean variableSectionIncluded) {
+                                                  Lineizer lineizer, Pattern delimiter,
+                                                  String firstLine, int idIndex,
+                                                  boolean variableSectionIncluded) {
 
         // Scan file, collecting up the set of range values for each variables.
         List<Set<String>> dataStrings = new ArrayList<>();
