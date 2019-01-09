@@ -184,11 +184,11 @@ public class ParamDescriptions {
 
         map.put("colliderDiscoveryRule", new ParamDescription(
                 "Collider discovery: 1 = Lookup from adjacency sepsets, 2 = Conservative (CPC), 3 = Max-P",
-                1, 1, 1));
+                1, 1, 3));
 
         map.put("conflictRule", new ParamDescription(
                 "Collider conflicts: 1 = Overwrite, 2 = Orient bidirected, 3 = Prioritize existing colliders",
-                1, 1, 1));
+                1, 1, 3));
 
         map.put("randomizeColumns", new ParamDescription(
                 "Yes if the order of the columns in each datasets should be randomized",
