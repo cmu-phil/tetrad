@@ -1,0 +1,624 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<smile version="1.0" id="Aa" numsamples="1000">
+	<nodes>
+		<cpt id="node_5">
+			<state id="value0" />
+			<state id="value1" />
+			<probabilities>0.05 0.95</probabilities>
+		</cpt>
+		<cpt id="node_0">
+			<state id="value0" />
+			<state id="value1" />
+			<parents>node_5</parents>
+			<probabilities>0.9 0.1 0.01 0.99</probabilities>
+		</cpt>
+		<cpt id="node_3">
+			<state id="value0" />
+			<state id="value1" />
+			<probabilities>0.2 0.8</probabilities>
+		</cpt>
+		<cpt id="node_4">
+			<state id="value0" />
+			<state id="value1" />
+			<state id="value2" />
+			<parents>node_3 node_5</parents>
+			<probabilities>0.95 0.04 0.01 0.98 0.01 0.01 0.01 0.09 0.9 0.05 0.9 0.05</probabilities>
+		</cpt>
+		<cpt id="node_1">
+			<state id="value0" />
+			<state id="value1" />
+			<state id="value2" />
+			<parents>node_4</parents>
+			<probabilities>0.95 0.04 0.01 0.04 0.95 0.01 0.01 0.29 0.7</probabilities>
+		</cpt>
+		<cpt id="node_2">
+			<state id="value0" />
+			<state id="value1" />
+			<state id="value2" />
+			<parents>node_4</parents>
+			<probabilities>0.95 0.04 0.01 0.04 0.95 0.01 0.01 0.04 0.95</probabilities>
+		</cpt>
+		<cpt id="node_6">
+			<state id="value0" />
+			<state id="value1" />
+			<state id="value2" />
+			<parents>node_3 node_5</parents>
+			<probabilities>0.98 0.01 0.01 0.95 0.04 0.01 0.5 0.49 0.01 0.05 0.9 0.05</probabilities>
+		</cpt>
+		<cpt id="node_7">
+			<state id="value0" />
+			<state id="value1" />
+			<probabilities>0.05 0.95</probabilities>
+		</cpt>
+		<cpt id="node_12">
+			<state id="value0" />
+			<state id="value1" />
+			<probabilities>0.1 0.9</probabilities>
+		</cpt>
+		<cpt id="node_13">
+			<state id="value0" />
+			<state id="value1" />
+			<probabilities>0.01 0.99</probabilities>
+		</cpt>
+		<cpt id="node_14">
+			<state id="value0" />
+			<state id="value1" />
+			<state id="value2" />
+			<parents>node_13</parents>
+			<probabilities>0.98 0.01 0.01 0.3 0.4 0.3</probabilities>
+		</cpt>
+		<cpt id="node_18">
+			<state id="value0" />
+			<state id="value1" />
+			<probabilities>0.05 0.95</probabilities>
+		</cpt>
+		<cpt id="node_24">
+			<state id="value0" />
+			<state id="value1" />
+			<state id="value2" />
+			<probabilities>0.92 0.03 0.05</probabilities>
+		</cpt>
+		<cpt id="node_16">
+			<state id="value0" />
+			<state id="value1" />
+			<probabilities>0.04 0.96</probabilities>
+		</cpt>
+		<cpt id="node_26">
+			<state id="value0" />
+			<state id="value1" />
+			<probabilities>0.1 0.9</probabilities>
+		</cpt>
+		<cpt id="node_27">
+			<state id="value0" />
+			<state id="value1" />
+			<state id="value2" />
+			<probabilities>0.05 0.9 0.05</probabilities>
+		</cpt>
+		<cpt id="node_28">
+			<state id="value0" />
+			<state id="value1" />
+			<state id="value2" />
+			<state id="value3" />
+			<parents>node_27</parents>
+			<probabilities>0.05 0.9300000000000001 0.01 0.01 0.05 0.01 0.9300000000000001 0.01 0.05 0.01 0.01 0.9300000000000001</probabilities>
+		</cpt>
+		<cpt id="node_29">
+			<state id="value0" />
+			<state id="value1" />
+			<state id="value2" />
+			<state id="value3" />
+			<parents>node_26 node_28</parents>
+			<probabilities>0.97 0.01 0.01 0.01 0.97 0.01 0.01 0.01 0.97 0.01 0.01 0.01 0.97 0.01 0.01 0.01 0.97 0.01 0.01 0.01 0.01 0.97 0.01 0.01 0.01 0.01 0.97 0.01 0.01 0.01 0.01 0.97</probabilities>
+		</cpt>
+		<cpt id="node_30">
+			<state id="value0" />
+			<state id="value1" />
+			<state id="value2" />
+			<state id="value3" />
+			<parents>node_16 node_24 node_29</parents>
+			<probabilities>0.97 0.01 0.01 0.01 0.95 0.03 0.01 0.01 0.4 0.58 0.01 0.01 0.3 0.6800000000000001 0.01 0.01 0.97 0.01 0.01 0.01 0.97 0.01 0.01 0.01 0.97 0.01 0.01 0.01 0.97 0.01 0.01 0.01 0.97 0.01 0.01 0.01 0.95 0.03 0.01 0.01 0.5 0.48 0.01 0.01 0.3 0.6800000000000001 0.01 0.01 0.97 0.01 0.01 0.01 0.01 0.97 0.01 0.01 0.01 0.01 0.97 0.01 0.01 0.01 0.01 0.97 0.97 0.01 0.01 0.01 0.97 0.01 0.01 0.01 0.97 0.01 0.01 0.01 0.97 0.01 0.01 0.01 0.97 0.01 0.01 0.01 0.01 0.97 0.01 0.01 0.01 0.01 0.97 0.01 0.01 0.01 0.01 0.97</probabilities>
+		</cpt>
+		<cpt id="node_31">
+			<state id="value0" />
+			<state id="value1" />
+			<state id="value2" />
+			<state id="value3" />
+			<parents>node_24 node_30</parents>
+			<probabilities>0.97 0.01 0.01 0.01 0.01 0.97 0.01 0.01 0.01 0.01 0.97 0.01 0.01 0.01 0.01 0.97 0.97 0.01 0.01 0.01 0.01 0.97 0.01 0.01 0.01 0.01 0.97 0.01 0.01 0.01 0.01 0.97 0.97 0.01 0.01 0.01 0.03 0.95 0.01 0.01 0.01 0.94 0.04 0.01 0.01 0.88 0.1 0.01</probabilities>
+		</cpt>
+		<cpt id="node_19">
+			<state id="value0" />
+			<state id="value1" />
+			<state id="value2" />
+			<parents>node_18 node_31</parents>
+			<probabilities>1 0 0 0.99 0.01 0 0.95 0.04 0.01 0.95 0.04 0.01 1 0 0 0.95 0.04 0.01 0.01 0.95 0.04 0.01 0.01 0.98</probabilities>
+		</cpt>
+		<cpt id="node_22">
+			<state id="value0" />
+			<state id="value1" />
+			<probabilities>0.01 0.99</probabilities>
+		</cpt>
+		<cpt id="node_23">
+			<state id="value0" />
+			<state id="value1" />
+			<parents>node_22 node_24</parents>
+			<probabilities>0.1 0.9 0.1 0.9 0.01 0.99 0.95 0.05 0.95 0.05 0.05 0.95</probabilities>
+		</cpt>
+		<cpt id="node_20">
+			<state id="value0" />
+			<state id="value1" />
+			<state id="value2" />
+			<parents>node_19 node_23</parents>
+			<probabilities>0.98 0.01 0.01 0.01 0.98 0.01 0.01 0.01 0.98 0.98 0.01 0.01 0.98 0.01 0.01 0.69 0.3 0.01</probabilities>
+		</cpt>
+		<cpt id="node_32">
+			<state id="value0" />
+			<state id="value1" />
+			<state id="value2" />
+			<parents>node_31</parents>
+			<probabilities>0.01 0.01 0.98 0.01 0.01 0.98 0.04 0.92 0.04 0.9 0.09 0.01</probabilities>
+		</cpt>
+		<cpt id="node_33">
+			<state id="value0" />
+			<state id="value1" />
+			<parents>node_12 node_14 node_20 node_32</parents>
+			<probabilities>0.01 0.99 0.01 0.99 0.01 0.99 0.01 0.99 0.01 0.99 0.01 0.99 0.01 0.99 0.01 0.99 0.01 0.99 0.01 0.99 0.01 0.99 0.01 0.99 0.01 0.99 0.01 0.99 0.01 0.99 0.05 0.95 0.05 0.95 0.01 0.99 0.01 0.99 0.01 0.99 0.01 0.99 0.05 0.95 0.05 0.95 0.01 0.99 0.05 0.95 0.05 0.95 0.01 0.99 0.05 0.95 0.05 0.95 0.01 0.99 0.05 0.95 0.05 0.95 0.01 0.99 0.05 0.95 0.05 0.95 0.01 0.99 0.7 0.3 0.7 0.3 0.1 0.9 0.7 0.3 0.7 0.3 0.1 0.9 0.7 0.3 0.7 0.3 0.1 0.9 0.95 0.05 0.99 0.01 0.3 0.7 0.95 0.05 0.99 0.01 0.3 0.7 0.95 0.05 0.99 0.01 0.3 0.7</probabilities>
+		</cpt>
+		<cpt id="node_34">
+			<state id="value0" />
+			<state id="value1" />
+			<state id="value2" />
+			<parents>node_33</parents>
+			<probabilities>0.05 0.9 0.05 0.01 0.09 0.9</probabilities>
+		</cpt>
+		<cpt id="node_8">
+			<state id="value0" />
+			<state id="value1" />
+			<state id="value2" />
+			<parents>node_7 node_34</parents>
+			<probabilities>0.98 0.01 0.01 0.4 0.59 0.01 0.3 0.4 0.3 0.98 0.01 0.01 0.01 0.98 0.01 0.01 0.01 0.98</probabilities>
+		</cpt>
+		<cpt id="node_10">
+			<state id="value0" />
+			<state id="value1" />
+			<probabilities>0.1 0.9</probabilities>
+		</cpt>
+		<cpt id="node_9">
+			<state id="value0" />
+			<state id="value1" />
+			<state id="value2" />
+			<parents>node_10 node_34</parents>
+			<probabilities>0.333 0.333 0.333 0.333 0.333 0.333 0.333 0.333 0.333 0.98 0.01 0.01 0.01 0.98 0.01 0.01 0.01 0.98</probabilities>
+		</cpt>
+		<cpt id="node_11">
+			<state id="value0" />
+			<state id="value1" />
+			<state id="value2" />
+			<parents>node_10 node_34</parents>
+			<probabilities>0.333 0.333 0.333 0.333 0.333 0.333 0.333 0.333 0.333 0.98 0.01 0.01 0.01 0.98 0.01 0.01 0.01 0.98</probabilities>
+		</cpt>
+		<cpt id="node_15">
+			<state id="value0" />
+			<state id="value1" />
+			<state id="value2" />
+			<state id="value3" />
+			<parents>node_30 node_32</parents>
+			<probabilities>0.97 0.01 0.01 0.01 0.01 0.97 0.01 0.01 0.01 0.97 0.01 0.01 0.01 0.97 0.01 0.01 0.97 0.01 0.01 0.01 0.01 0.01 0.97 0.01 0.01 0.01 0.97 0.01 0.01 0.01 0.97 0.01 0.97 0.01 0.01 0.01 0.01 0.01 0.01 0.97 0.01 0.01 0.01 0.97 0.01 0.01 0.01 0.97</probabilities>
+		</cpt>
+		<cpt id="node_17">
+			<state id="value0" />
+			<state id="value1" />
+			<state id="value2" />
+			<state id="value3" />
+			<parents>node_24 node_30</parents>
+			<probabilities>0.97 0.01 0.01 0.01 0.01 0.97 0.01 0.01 0.01 0.01 0.97 0.01 0.01 0.01 0.01 0.97 0.97 0.01 0.01 0.01 0.6 0.38 0.01 0.01 0.5 0.48 0.01 0.01 0.5 0.48 0.01 0.01 0.97 0.01 0.01 0.01 0.01 0.97 0.01 0.01 0.01 0.01 0.97 0.01 0.01 0.01 0.01 0.97</probabilities>
+		</cpt>
+		<cpt id="node_21">
+			<state id="value0" />
+			<state id="value1" />
+			<state id="value2" />
+			<parents>node_22</parents>
+			<probabilities>0.01 0.19 0.8 0.05 0.9 0.05</probabilities>
+		</cpt>
+		<cpt id="node_25">
+			<state id="value0" />
+			<state id="value1" />
+			<state id="value2" />
+			<state id="value3" />
+			<parents>node_16 node_24 node_29</parents>
+			<probabilities>0.97 0.01 0.01 0.01 0.01 0.3 0.49 0.2 0.01 0.01 0.08 0.9 0.01 0.01 0.01 0.97 0.97 0.01 0.01 0.01 0.1 0.84 0.05 0.01 0.05 0.25 0.25 0.45 0.01 0.15 0.25 0.59 0.97 0.01 0.01 0.01 0.01 0.29 0.3 0.4 0.01 0.01 0.08 0.9 0.01 0.01 0.01 0.97 0.97 0.01 0.01 0.01 0.01 0.97 0.01 0.01 0.01 0.01 0.97 0.01 0.01 0.01 0.01 0.97 0.97 0.01 0.01 0.01 0.4 0.58 0.01 0.01 0.2 0.75 0.04 0.01 0.2 0.7 0.09 0.01 0.97 0.01 0.01 0.01 0.01 0.9 0.08 0.01 0.01 0.01 0.38 0.6 0.01 0.01 0.01 0.97</probabilities>
+		</cpt>
+		<cpt id="node_35">
+			<state id="value0" />
+			<state id="value1" />
+			<state id="value2" />
+			<parents>node_6 node_34</parents>
+			<probabilities>0.98 0.01 0.01 0.95 0.04 0.01 0.8 0.19 0.01 0.95 0.04 0.01 0.04 0.95 0.01 0.01 0.04 0.95 0.3 0.69 0.01 0.01 0.3 0.69 0.01 0.01 0.98</probabilities>
+		</cpt>
+		<cpt id="node_36">
+			<state id="value0" />
+			<state id="value1" />
+			<state id="value2" />
+			<parents>node_14 node_35</parents>
+			<probabilities>0.98 0.01 0.01 0.98 0.01 0.01 0.9 0.09 0.01 0.98 0.01 0.01 0.1 0.85 0.05 0.05 0.2 0.75 0.3 0.6 0.1 0.05 0.4 0.55 0.01 0.09 0.9</probabilities>
+		</cpt>
+	</nodes>
+	<extensions>
+		<genie version="1.0" name="Alarm" faultnameformat="nodestate">
+			<node id="node_0">
+				<name>HISTORY</name>
+				<interior color="e5f6f7" />
+				<outline color="0000bb" />
+				<font color="000000" name="Arial" size="8" />
+				<position>30 543 106 579</position>
+				<state id="value0" globalid="F3" />
+				<state id="value1" globalid="F4" />
+			</node>
+			<node id="node_1">
+				<name>CVP</name>
+				<interior color="e5f6f7" />
+				<outline color="0000bb" />
+				<font color="000000" name="Arial" size="8" />
+				<position>57 470 133 506</position>
+				<state id="value0" globalid="F6" />
+				<state id="value1" globalid="F7" />
+				<state id="value2" globalid="F8" />
+			</node>
+			<node id="node_2">
+				<name>PCWP</name>
+				<interior color="e5f6f7" />
+				<outline color="0000bb" />
+				<font color="000000" name="Arial" size="8" />
+				<position>357 603 433 639</position>
+				<state id="value0" globalid="F9" />
+				<state id="value1" globalid="F10" />
+				<state id="value2" globalid="F11" />
+			</node>
+			<node id="node_3">
+				<name>HYPOVOLEMIA</name>
+				<interior color="e5f6f7" />
+				<outline color="0000bb" />
+				<font color="000000" name="Arial" size="8" />
+				<position>224 627 300 663</position>
+				<state id="value0" globalid="F12" />
+				<state id="value1" globalid="F13" />
+			</node>
+			<node id="node_4">
+				<name>LVEDVOLUME</name>
+				<interior color="e5f6f7" />
+				<outline color="0000bb" />
+				<font color="000000" name="Arial" size="8" />
+				<position>270 543 346 579</position>
+				<state id="value0" globalid="F14" />
+				<state id="value1" globalid="F15" />
+				<state id="value2" globalid="F16" />
+			</node>
+			<node id="node_5">
+				<name>LVFAILURE</name>
+				<interior color="e5f6f7" />
+				<outline color="0000bb" />
+				<font color="000000" name="Arial" size="8" />
+				<position>146 543 222 579</position>
+				<state id="value0" globalid="F17" />
+				<state id="value1" globalid="F18" />
+			</node>
+			<node id="node_6">
+				<name>STROKEVOLUME</name>
+				<interior color="e5f6f7" />
+				<outline color="0000bb" />
+				<font color="000000" name="Arial" size="8" />
+				<position>432 695 508 731</position>
+				<state id="value0" globalid="F19" />
+				<state id="value1" globalid="F20" />
+				<state id="value2" globalid="F21" />
+			</node>
+			<node id="node_7">
+				<name>ERRLOWOUTPUT</name>
+				<interior color="e5f6f7" />
+				<outline color="0000bb" />
+				<font color="000000" name="Arial" size="8" />
+				<position>21 692 97 728</position>
+				<state id="value0" globalid="F22" />
+				<state id="value1" globalid="F23" />
+			</node>
+			<node id="node_8">
+				<name>HRBP</name>
+				<interior color="e5f6f7" />
+				<outline color="0000bb" />
+				<font color="000000" name="Arial" size="8" />
+				<position>145 692 221 728</position>
+				<state id="value0" globalid="F24" />
+				<state id="value1" globalid="F25" />
+				<state id="value2" globalid="F26" />
+			</node>
+			<node id="node_9">
+				<name>HREKG</name>
+				<interior color="e5f6f7" />
+				<outline color="0000bb" />
+				<font color="000000" name="Arial" size="8" />
+				<position>193 764 269 800</position>
+				<state id="value0" globalid="F27" />
+				<state id="value1" globalid="F28" />
+				<state id="value2" globalid="F29" />
+			</node>
+			<node id="node_10">
+				<name>ERRCAUTER</name>
+				<interior color="e5f6f7" />
+				<outline color="0000bb" />
+				<font color="000000" name="Arial" size="8" />
+				<position>264 841 340 877</position>
+				<state id="value0" globalid="F30" />
+				<state id="value1" globalid="F31" />
+			</node>
+			<node id="node_11">
+				<name>HRSAT</name>
+				<interior color="e5f6f7" />
+				<outline color="0000bb" />
+				<font color="000000" name="Arial" size="8" />
+				<position>320 768 396 804</position>
+				<state id="value0" globalid="F32" />
+				<state id="value1" globalid="F33" />
+				<state id="value2" globalid="F34" />
+			</node>
+			<node id="node_12">
+				<name>INSUFFANESTH</name>
+				<interior color="e5f6f7" />
+				<outline color="0000bb" />
+				<font color="000000" name="Arial" size="8" />
+				<position>586 607 662 643</position>
+				<state id="value0" globalid="F35" />
+				<state id="value1" globalid="F36" />
+			</node>
+			<node id="node_13">
+				<name>ANAPHYLAXIS</name>
+				<interior color="e5f6f7" />
+				<outline color="0000bb" />
+				<font color="000000" name="Arial" size="8" />
+				<position>707 681 783 717</position>
+				<state id="value0" globalid="F37" />
+				<state id="value1" globalid="F38" />
+			</node>
+			<node id="node_14">
+				<name>TPR</name>
+				<interior color="e5f6f7" />
+				<outline color="0000bb" />
+				<font color="000000" name="Arial" size="8" />
+				<position>587 681 663 717</position>
+				<state id="value0" globalid="F39" />
+				<state id="value1" globalid="F40" />
+				<state id="value2" globalid="F41" />
+			</node>
+			<node id="node_15">
+				<name>EXPCO2</name>
+				<interior color="e5f6f7" />
+				<outline color="0000bb" />
+				<font color="000000" name="Arial" size="8" />
+				<position>195 472 271 508</position>
+				<state id="value0" globalid="F43" />
+				<state id="value1" globalid="F44" />
+				<state id="value2" globalid="F45" />
+				<state id="value3" globalid="F46" />
+			</node>
+			<node id="node_16">
+				<name>KINKEDTUBE</name>
+				<interior color="e5f6f7" />
+				<outline color="0000bb" />
+				<font color="000000" name="Arial" size="8" />
+				<position>444 437 520 473</position>
+				<state id="value0" globalid="F47" />
+				<state id="value1" globalid="F48" />
+			</node>
+			<node id="node_17">
+				<name>MINVOL</name>
+				<interior color="e5f6f7" />
+				<outline color="0000bb" />
+				<font color="000000" name="Arial" size="8" />
+				<position>433 237 509 273</position>
+				<state id="value0" globalid="F49" />
+				<state id="value1" globalid="F50" />
+				<state id="value2" globalid="F51" />
+				<state id="value3" globalid="F52" />
+			</node>
+			<node id="node_18">
+				<name>FIO2</name>
+				<interior color="e5f6f7" />
+				<outline color="0000bb" />
+				<font color="000000" name="Arial" size="8" />
+				<position>453 483 529 519</position>
+				<state id="value0" globalid="F53" />
+				<state id="value1" globalid="F54" />
+			</node>
+			<node id="node_19">
+				<name>PVSAT</name>
+				<interior color="e5f6f7" />
+				<outline color="0000bb" />
+				<font color="000000" name="Arial" size="8" />
+				<position>453 548 529 584</position>
+				<state id="value0" globalid="F55" />
+				<state id="value1" globalid="F56" />
+				<state id="value2" globalid="F57" />
+			</node>
+			<node id="node_20">
+				<name>SAO2</name>
+				<interior color="e5f6f7" />
+				<outline color="0000bb" />
+				<font color="000000" name="Arial" size="8" />
+				<position>682 317 758 353</position>
+				<state id="value0" globalid="F58" />
+				<state id="value1" globalid="F59" />
+				<state id="value2" globalid="F60" />
+			</node>
+			<node id="node_21">
+				<name>PAP</name>
+				<interior color="e5f6f7" />
+				<outline color="0000bb" />
+				<font color="000000" name="Arial" size="8" />
+				<position>820 235 896 271</position>
+				<state id="value0" globalid="F61" />
+				<state id="value1" globalid="F62" />
+				<state id="value2" globalid="F63" />
+			</node>
+			<node id="node_22">
+				<name>PULMEMBOLUS</name>
+				<interior color="e5f6f7" />
+				<outline color="0000bb" />
+				<font color="000000" name="Arial" size="8" />
+				<position>750 146 826 182</position>
+				<state id="value0" globalid="F64" />
+				<state id="value1" globalid="F65" />
+			</node>
+			<node id="node_23">
+				<name>SHUNT</name>
+				<interior color="e5f6f7" />
+				<outline color="0000bb" />
+				<font color="000000" name="Arial" size="8" />
+				<position>682 240 758 276</position>
+				<state id="value0" globalid="F66" />
+				<state id="value1" globalid="F67" />
+			</node>
+			<node id="node_24">
+				<name>INTUBATION</name>
+				<interior color="e5f6f7" />
+				<outline color="0000bb" />
+				<font color="000000" name="Arial" size="8" />
+				<position>336 148 412 184</position>
+				<state id="value0" globalid="F68" />
+				<state id="value1" globalid="F69" />
+				<state id="value2" globalid="F70" />
+			</node>
+			<node id="node_25">
+				<name>PRESS</name>
+				<interior color="e5f6f7" />
+				<outline color="0000bb" />
+				<font color="000000" name="Arial" size="8" />
+				<position>553 240 629 276</position>
+				<state id="value0" globalid="F71" />
+				<state id="value1" globalid="F72" />
+				<state id="value2" globalid="F73" />
+				<state id="value3" globalid="F74" />
+			</node>
+			<node id="node_26">
+				<name>DISCONNECT</name>
+				<interior color="e5f6f7" />
+				<outline color="0000bb" />
+				<font color="000000" name="Arial" size="8" />
+				<position>561 315 637 351</position>
+				<state id="value0" globalid="F75" />
+				<state id="value1" globalid="F76" />
+			</node>
+			<node id="node_27">
+				<name>MINVOLSET</name>
+				<interior color="e5f6f7" />
+				<outline color="0000bb" />
+				<font color="000000" name="Arial" size="8" />
+				<position>567 370 643 406</position>
+				<state id="value0" globalid="F77" />
+				<state id="value1" globalid="F78" />
+				<state id="value2" globalid="F79" />
+			</node>
+			<node id="node_28">
+				<name>VENTMACH</name>
+				<interior color="e5f6f7" />
+				<outline color="0000bb" />
+				<font color="000000" name="Arial" size="8" />
+				<position>435 370 511 406</position>
+				<state id="value0" globalid="F80" />
+				<state id="value1" globalid="F81" />
+				<state id="value2" globalid="F82" />
+				<state id="value3" globalid="F83" />
+			</node>
+			<node id="node_29">
+				<name>VENTTUBE</name>
+				<interior color="e5f6f7" />
+				<outline color="0000bb" />
+				<font color="000000" name="Arial" size="8" />
+				<position>434 315 510 351</position>
+				<state id="value0" globalid="F84" />
+				<state id="value1" globalid="F85" />
+				<state id="value2" globalid="F86" />
+				<state id="value3" globalid="F87" />
+			</node>
+			<node id="node_30">
+				<name>VENTLUNG</name>
+				<interior color="e5f6f7" />
+				<outline color="0000bb" />
+				<font color="000000" name="Arial" size="8" />
+				<position>287 237 363 273</position>
+				<state id="value0" globalid="F88" />
+				<state id="value1" globalid="F89" />
+				<state id="value2" globalid="F90" />
+				<state id="value3" globalid="F91" />
+			</node>
+			<node id="node_31">
+				<name>VENTALV</name>
+				<interior color="e5f6f7" />
+				<outline color="0000bb" />
+				<font color="000000" name="Arial" size="8" />
+				<position>139 237 215 273</position>
+				<state id="value0" globalid="F92" />
+				<state id="value1" globalid="F93" />
+				<state id="value2" globalid="F94" />
+				<state id="value3" globalid="F95" />
+			</node>
+			<node id="node_32">
+				<name>ARTCO2</name>
+				<interior color="e5f6f7" />
+				<outline color="0000bb" />
+				<font color="000000" name="Arial" size="8" />
+				<position>40 299 116 335</position>
+				<state id="value0" globalid="F96" />
+				<state id="value1" globalid="F97" />
+				<state id="value2" globalid="F98" />
+			</node>
+			<node id="node_33">
+				<name>CATECHOL</name>
+				<interior color="e5f6f7" />
+				<outline color="0000bb" />
+				<font color="000000" name="Arial" size="8" />
+				<position>465 605 541 641</position>
+				<state id="value0" globalid="F99" />
+				<state id="value1" globalid="F100" />
+			</node>
+			<node id="node_34">
+				<name>HR</name>
+				<interior color="e5f6f7" />
+				<outline color="0000bb" />
+				<font color="000000" name="Arial" size="8" />
+				<position>320 692 396 728</position>
+				<state id="value0" globalid="F101" />
+				<state id="value1" globalid="F102" />
+				<state id="value2" globalid="F103" />
+			</node>
+			<node id="node_35">
+				<name>CO</name>
+				<interior color="e5f6f7" />
+				<outline color="0000bb" />
+				<font color="000000" name="Arial" size="8" />
+				<position>432 769 508 805</position>
+				<state id="value0" globalid="F104" />
+				<state id="value1" globalid="F105" />
+				<state id="value2" globalid="F106" />
+			</node>
+			<node id="node_36">
+				<name>BP</name>
+				<interior color="e5f6f7" />
+				<outline color="0000bb" />
+				<font color="000000" name="Arial" size="8" />
+				<position>539 769 615 805</position>
+				<state id="value0" globalid="F107" />
+				<state id="value1" globalid="F108" />
+				<state id="value2" globalid="F109" />
+			</node>
+			<textbox>
+				<caption>Reference: I. Beinlich and G. Suermondt and R. Chavez and G. Cooper, The ALARM monitoring system: A case study with two probabilistic inference techniques for belief networks, Proc.~2&apos;nd European Conf.~on AI and Medicine, Springer-Verlag, Berlin, 1989.</caption>
+				<font color="000000" name="Arial" size="8" bold="true" align="center" />
+				<position>51 48 862 76</position>
+			</textbox>
+			<textbox>
+				<caption>A network by medical experts for monitoring patients in intensive care.</caption>
+				<font color="3366ff" name="Arial" size="14" bold="true" />
+				<position>160 17 811 39</position>
+			</textbox>
+		</genie>
+	</extensions>
+</smile>

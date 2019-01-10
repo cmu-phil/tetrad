@@ -185,7 +185,7 @@ public class ParamDescriptions {
         map.put("numBscBootstrapSamples", new ParamDescription("The number of bootstrappings drawing from posterior dist. (min = 1)", 10, 1, Integer.MAX_VALUE));
         map.put("lowerBound", new ParamDescription("Lower bound cutoff threshold", 0.3, 0.0, 1.0));
         map.put("upperBound", new ParamDescription("Upper bound cutoff threshold", 0.7, 0.0, 1.0));
-        map.put("outputBND", new ParamDescription("Yes if the search model based on the maximized probability of dependent Bayesian network.", true));
+        map.put("outputRBD", new ParamDescription("Output graph: Yes: dependent-constraint RB, No: independent-constraint RB.", true));
         // ~RB-BSC
         
         map.put("fasRule", new ParamDescription(

@@ -39,7 +39,7 @@ public class BCInference {
     }
     private static final int MININUM_EXPONENT = -1022;
 
-    private static final double PESS_VALUE = 10;
+    private static final double PESS_VALUE = 1;
 
     private int[] countsTree;
 
@@ -161,110 +161,7 @@ public class BCInference {
      * @return P&lpar; x dependent y given z &vert; data &rpar; or P&lpar;x independent y given z &vert;
      * data&rpar;
      */
-    public double probConstraint2(OP constraint, int x, int y, int[] z) {
-//      if (true) return 0.5;
-
-      double p = 0;
-
-      logfact[0] = 0;
-      for (int i = 1; i < logfact.length; i++) {
-          logfact[i] = log(i) + logfact[i - 1];
-      }
-      logfact[0] = 0;
-
-      if (z.length > maxParents) {
-          int maxConditioningNodes = z.length;  // max size of set Z in ind(X, Y, | Z)
-          maxParents = maxConditioningNodes;
-
-          int[] _nodeDimension = Arrays.copyOf(nodeDimension, nodeDimension.length);
-          Arrays.sort(_nodeDimension);
-          int g1 = _nodeDimension[_nodeDimension.length - 1];
-          int g2 = _nodeDimension[_nodeDimension.length - 2];
-
-
-//          maxCells = maxParents * maxValues * maxCases ;
-          maxCells = maxParents * g1*g2 * maxCases ;
-
-          parents = new int[maxNodes + 2][maxParents + 1];
-          countsTree = new int[maxCells + 1];
-          counts = new int[maxCells + 1];
-      }
-
-      int n = z[0];
-      parents[x][0] = n;
-      for (int i = 1; i <= n; i++) {
-          parents[x][i] = z[i];
-      }
-      double lnMarginalLikelihood_X = scoreNode(x, 1);  // the 1 indicates the scoring of X
-      parents[y][0] = n;
-      for (int i = 1; i <= n; i++) {
-          parents[y][i] = z[i];
-      }
-      double lnMarginalLikelihood_Y = scoreNode(y, 2);  // the 2 indicates the scoring of Y
-      double lnMarginalLikelihood_X_Y = lnMarginalLikelihood_X + lnMarginalLikelihood_Y;  // lnMarginalLikelihood_X_Y is the ln of the marginal likelihood, assuming X and Y are conditionally independence given Z.
-      p = priorIndependent(x, y, z); // p should be in (0, 1), and thus, not 0 or 1.
-      double lnPrior_X_Y = Math.log(p);
-      double score_X_Y = lnMarginalLikelihood_X_Y + lnPrior_X_Y;
-
-      numberOfNodes++;
-      int xy = numberOfNodes;  // this is a constructed variable that represents the Cartesian product of X and Y.
-      for (int casei = 1; casei <= numberOfCases; casei++) {  // derive and store values for the new variable XY.
-          int xValue = cases[casei][x];
-          int yValue = cases[casei][y];
-//          cases[casei][xy] = (xValue - 1) * nodeDimension[x] + yValue;  // a value in the Cartesian product of X and Y
-          cases[casei][xy] = (xValue - 1) * nodeDimension[y] + yValue;  // a value in the Cartesian product of X and Y
-      }
-      nodeDimension[xy] = nodeDimension[x] * nodeDimension[y];
-      parents[xy][0] = n;
-      for (int i = 1; i <= n; i++) {
-          parents[xy][i] = z[i];
-      }
-      double lnMarginalLikelihood_XY = scoreNode(xy, 3);  // the 3 indicates the scoring of XY, which assumes X and Y are dependent given Z;
-      //Note: lnMarginalLikelihood_XY is not used, but the above call to ScoreNode creates scores^[*, 3], which is used below
-      numberOfNodes--;
-      
-      double scoreAll = 0;  // will contain the sum over the scores of all hypotheses
-      for (int i = 1; i <= numberOfScores; i++) {
-          scoreAll += lnXpluslnY((scores[i][1] + scores[i][2]),  scores[i][3]);
-      }
-
-      double score_XY = lnXminusY(scoreAll, lnMarginalLikelihood_X_Y) - Math.log(Math.pow(2,numberOfScores)-1);
-      double probInd = Math.exp(score_X_Y - lnXpluslnY(score_X_Y, (lnPrior_X_Y+score_XY)));
-
-      if (constraint == OP.independent) {
-          p = probInd;  // return P(X independent Y given Z | data)
-      } else {
-          p = 1.0 - probInd;  // return P(X dependent Y given Z | data)
-      }
-
-      return p;
-//      double lnTermPrior_X_Y = Math.log(p) / numberOfScores;  // this is equal to ln(p^(1/numberOfScores))
-//      double lnTermPrior_XY = Math.log(1 - Math.exp(lnTermPrior_X_Y));  // this is equal to ln(1 - p^(1/numberOfScores))
-//      double scoreAll = 0;  // will contain the sum over the scores of all hypotheses
-//      for (int i = 1; i <= numberOfScores; i++) {
-//          scoreAll += lnXpluslnY(lnTermPrior_X_Y + (scores[i][1] + scores[i][2]), lnTermPrior_X_Y + scores[i][3]);
-//      }
-//      double probInd = Math.exp(score_X_Y - scoreAll);
-//
-//      if (constraint == OP.independent) {
-//          p = probInd;  // return P(X independent Y given Z | data)
-//      } else {
-//          p = 1.0 - probInd;  // return P(X dependent Y given Z | data)
-//      }
-//
-//      return p;
-  }
-
-    public static double lnXminusY(double lnX, double lnY) {
-        if( ! ( lnX >= lnY ) ) return Double.NaN; // This way also catches NaNs in parameters
-        if( lnY == Double.NEGATIVE_INFINITY ) return lnX;
-        if( lnX == Double.POSITIVE_INFINITY ) return lnY == Double.POSITIVE_INFINITY ? Double.NaN : Double.POSITIVE_INFINITY;
-        if( lnX == lnY ) return Double.NEGATIVE_INFINITY;
-        // ln( x - y ) = ln(x) + ln( 1 - exp( ln(y) -  ln(x) ) )
-        return lnX + Math.log1p( -Math.exp( lnY - lnX ) );
-    }
-    
-    public double probConstraint(OP constraint, int x, int y, int[] z) {
+    public synchronized double probConstraint(OP constraint, int x, int y, int[] z) {
 //        if (true) return 0.5;
 
         double p = 0;
@@ -315,6 +212,15 @@ public class BCInference {
             int xValue = cases[casei][x];
             int yValue = cases[casei][y];
 //            cases[casei][xy] = (xValue - 1) * nodeDimension[x] + yValue;  // a value in the Cartesian product of X and Y
+            if(y >= nodeDimension.length) {
+                System.out.println("y:" + y + " nodeDimension:" + nodeDimension.length);
+            }
+            if(casei >= cases.length) {
+                System.out.println("casei:" + casei + " cases:" + cases.length);
+            }
+            if(xy >= cases[casei].length) {
+                System.out.println("xy:" + xy + " cases[casei]:" + cases[casei].length);
+            }
             cases[casei][xy] = (xValue - 1) * nodeDimension[y] + yValue;  // a value in the Cartesian product of X and Y
         }
         nodeDimension[xy] = nodeDimension[x] * nodeDimension[y];

@@ -13,14 +13,11 @@ import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.annotation.AlgType;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataType;
-import edu.cmu.tetrad.data.DataUtils;
 import edu.cmu.tetrad.data.IKnowledge;
 import edu.cmu.tetrad.data.Knowledge2;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.DagToPag;
-import edu.cmu.tetrad.search.IndTestProbabilistic;
-import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.util.Parameters;
 
 /**
@@ -57,14 +54,16 @@ public class RfciBsc implements Algorithm, HasKnowledge {
         search.setDepth(parameters.getInt("depth"));
         search.setMaxPathLength(parameters.getInt("maxPathLength"));
         search.setCompleteRuleSetUsed(parameters.getBoolean("completeRuleSetUsed"));
+        search.setVerbose(parameters.getBoolean("verbose"));
         
-        edu.pitt.dbmi.algo.bayesian.constraint.search.RfciBsc rbBsc = new edu.pitt.dbmi.algo.bayesian.constraint.search.RfciBsc(search);
-        rbBsc.setNumBscBootstrapSamples(parameters.getInt("numBscBootstrapSamples"));
-        rbBsc.setNumRandomizedSearchModels(parameters.getInt("numRandomizedSearchModels"));
-        rbBsc.setLowerBound(parameters.getDouble("lowerBound"));
-        rbBsc.setUpperBound(parameters.getDouble("upperBound"));
-        rbBsc.setOutputBND(parameters.getBoolean("outputBND"));
-		return rbBsc.search();
+        edu.pitt.dbmi.algo.bayesian.constraint.search.RfciBsc RfciBsc = new edu.pitt.dbmi.algo.bayesian.constraint.search.RfciBsc(search);
+        RfciBsc.setNumBscBootstrapSamples(parameters.getInt("numBscBootstrapSamples"));
+        RfciBsc.setNumRandomizedSearchModels(parameters.getInt("numRandomizedSearchModels"));
+        RfciBsc.setLowerBound(parameters.getDouble("lowerBound"));
+        RfciBsc.setUpperBound(parameters.getDouble("upperBound"));
+        RfciBsc.setOutputRBD(parameters.getBoolean("outputRBD"));
+        RfciBsc.setVerbose(parameters.getBoolean("verbose"));
+		return RfciBsc.search();
 	}
 
 	@Override
@@ -74,7 +73,7 @@ public class RfciBsc implements Algorithm, HasKnowledge {
 
 	@Override
 	public String getDescription() {
-		return "RB-BSC using " + test.getDescription();
+		return "RFCI-BSC using " + test.getDescription();
 	}
 
 	@Override
@@ -92,12 +91,13 @@ public class RfciBsc implements Algorithm, HasKnowledge {
         parameters.add("depth");
         parameters.add("maxPathLength");
         parameters.add("completeRuleSetUsed");
+        parameters.add("verbose");
         // RB-BSC
         parameters.add("numRandomizedSearchModels");
         parameters.add("numBscBootstrapSamples");
         parameters.add("lowerBound");
         parameters.add("upperBound");
-        parameters.add("outputBND");
+        parameters.add("outputRBD");
 		return parameters;
 	}
 

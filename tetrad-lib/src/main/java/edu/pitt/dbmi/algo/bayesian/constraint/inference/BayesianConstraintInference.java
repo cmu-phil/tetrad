@@ -69,13 +69,11 @@ public class BayesianConstraintInference {
             BCInference bci = new BCInference(dataset, nodeDimension);
 
             BCInference.OP constraint = BCInference.OP.dependent;
-            int x = 5;
-            int y = 4;
+            int x = 3;
+            int y = 5;
             int[] z = {0};  // empty set
             double pc = bci.probConstraint(constraint, x, y, z);  // returns P(node3 dependent node5 given {} | data)
             System.out.printf("Probability constraint: %7.5f\n", pc);  // if fn = 1 then 0.76510; if fn = 2 then 0.91311
-            pc = bci.probConstraint2(constraint, x, y, z);  // returns P(node3 dependent node5 given {} | data)
-            System.out.printf("Probability constraint2: %7.5f\n", pc);  // if fn = 1 then 0.76510; if fn = 2 then 0.91311
 
             constraint = BCInference.OP.independent;
             x = 1;
@@ -86,19 +84,15 @@ public class BayesianConstraintInference {
             z[0] = 2;
             pc = bci.probConstraint(constraint, x, y, z);  // returns P(node1 independent node4 given {node2, node3} | data)
             System.out.printf("Probability constraint: %7.5f\n", pc);  // if fn = 1 then 0.34093; if fn = 2 then 0.35806
-            pc = bci.probConstraint2(constraint, x, y, z);
-            System.out.printf("Probability constraint2: %7.5f\n", pc);  // if fn = 1 then 0.34093; if fn = 2 then 0.35806
 
-            constraint = BCInference.OP.dependent;
-            x = 2;
-            y = 3;
+            constraint = BCInference.OP.independent;
+            x = 1;
+            y = 5;
             z = new int[2];
-            z[1] = 4;
+            z[1] = 3;
             z[0] = 1; //this is the length of the set represented by array Z.
             pc = bci.probConstraint(constraint, x, y, z);  // returns P(node1 independent node5 given {node3} | data)
             System.out.printf("Probability constraint: %7.5f\n", pc);  // if fn = 1 then 0.93535; if fn = 2 then 0.70853
-            pc = bci.probConstraint2(constraint, x, y, z);  // returns P(node1 independent node5 given {node3} | data)
-            System.out.printf("Probability constraint2: %7.5f\n", pc);  // if fn = 1 then 0.93535; if fn = 2 then 0.70853
 
 //            BCInference.OP constraint = BCInference.OP.independent;
 //            int x = 1;
