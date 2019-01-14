@@ -228,7 +228,6 @@ public class RfciBsc implements GraphSearch {
 			Graph pagOrig = pags.get(i);
 			if (!pagLnBSCD.containsKey(pagOrig)) {
 				double lnInd = getLnProb(pagOrig, h);
-				graphRBD.addAttribute("p(bscD)", String.format("%.4f", bscD));
 
 				// Filtering
 				double lnDep = getLnProbUsingDepFiltering(pagOrig, h, imHat, estDepBN);
