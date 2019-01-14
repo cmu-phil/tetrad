@@ -92,7 +92,7 @@ public class RfciBsc implements Algorithm, HasKnowledge {
         parameters.add("maxPathLength");
         parameters.add("completeRuleSetUsed");
         parameters.add("verbose");
-        // RB-BSC
+        // RFCI-BSC
         parameters.add("numRandomizedSearchModels");
         parameters.add("numBscBootstrapSamples");
         parameters.add("lowerBound");
