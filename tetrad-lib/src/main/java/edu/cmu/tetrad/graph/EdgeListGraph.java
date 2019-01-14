@@ -109,6 +109,8 @@ public class EdgeListGraph implements Graph, TripleClassifier {
 
     private boolean pag = false;
 
+    private Map<String, String> attributes = new HashMap<>();
+    
     //==============================CONSTUCTORS===========================//
 
     /**
@@ -2076,6 +2078,26 @@ public class EdgeListGraph implements Graph, TripleClassifier {
             boolean stuffRemovedSinceLastTripleAccess) {
         this.stuffRemovedSinceLastTripleAccess = stuffRemovedSinceLastTripleAccess;
     }
+    
+	@Override
+	public Map<String, String> getAllAttributes() {
+		return attributes;
+	}
+
+	@Override
+	public String getAttribute(String key) {
+		return attributes.get(key);
+	}
+
+	@Override
+	public void removeAttribute(String key) {
+		attributes.remove(key);
+	}
+
+	@Override
+	public void addAttribute(String key, String value) {
+		attributes.put(key, value);
+	}
 
 }
 

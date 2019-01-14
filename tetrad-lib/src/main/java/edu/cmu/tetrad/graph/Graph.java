@@ -26,6 +26,7 @@ import edu.cmu.tetrad.util.TetradSerializable;
 import java.beans.PropertyChangeListener;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -650,6 +651,14 @@ public interface Graph extends TetradSerializable, TripleClassifier {
     List<Node> getSepset(Node n1, Node n2);
 
     void setNodes(List<Node> nodes);
+    
+    Map<String, String> getAllAttributes();
+    
+    String getAttribute(String key);
+    
+    void removeAttribute(String key);
+    
+    void addAttribute(String key, String value);
 }
 
 

@@ -82,6 +82,8 @@ public final class SemGraph implements Graph, TetradSerializable {
 
     private boolean pag;
     private boolean pattern;
+    
+    private Map<String,String> attributes = new HashMap<>();
 
     //=========================CONSTRUCTORS============================//
 
@@ -996,6 +998,27 @@ public final class SemGraph implements Graph, TetradSerializable {
     public void setPattern(boolean pattern) {
         this.pattern = pattern;
     }
+    
+	@Override
+	public Map<String, String> getAllAttributes() {
+		return attributes;
+	}
+
+	@Override
+	public String getAttribute(String key) {
+		return attributes.get(key);
+	}
+
+	@Override
+	public void removeAttribute(String key) {
+		attributes.remove(key);
+	}
+
+	@Override
+	public void addAttribute(String key, String value) {
+		attributes.put(key, value);
+	}
+
 }
 
 

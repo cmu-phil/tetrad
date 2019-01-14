@@ -90,6 +90,8 @@ public class EndpointMatrixGraph implements Graph {
 
     private boolean pag;
     private boolean pattern;
+    
+    private Map<String,String> attributes = new HashMap<>();
 
     //==============================CONSTUCTORS===========================//
 
@@ -2007,6 +2009,27 @@ public class EndpointMatrixGraph implements Graph {
             dottedUnderLineTriples = new HashSet<>();
         }
     }
+    
+	@Override
+	public Map<String, String> getAllAttributes() {
+		return attributes;
+	}
+
+	@Override
+	public String getAttribute(String key) {
+		return attributes.get(key);
+	}
+
+	@Override
+	public void removeAttribute(String key) {
+		attributes.remove(key);
+	}
+
+	@Override
+	public void addAttribute(String key, String value) {
+		attributes.put(key, value);
+	}
+
 }
 
 
