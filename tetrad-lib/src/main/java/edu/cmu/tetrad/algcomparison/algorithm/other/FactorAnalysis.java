@@ -102,7 +102,7 @@ public class FactorAnalysis implements Algorithm {
 			DataSet data = (DataSet) ds;
 			GeneralResamplingTest search = new GeneralResamplingTest(data, algorithm, parameters.getInt("numberResampling"));
 
-			search.setResampleSize(parameters.getInt("resampleSize"));
+			search.setPercentResampleSize(parameters.getDouble("percentResampleSize"));
             search.setResamplingWithReplacement(parameters.getBoolean("resamplingWithReplacement"));
             
             ResamplingEdgeEnsemble edgeEnsemble = ResamplingEdgeEnsemble.Highest;
@@ -117,6 +117,8 @@ public class FactorAnalysis implements Algorithm {
                     edgeEnsemble = ResamplingEdgeEnsemble.Majority;
             }
 			search.setEdgeEnsemble(edgeEnsemble);
+			search.setAddOriginalDataset(parameters.getBoolean("addOriginalDataset"));
+			
 			search.setParameters(parameters);
 			search.setVerbose(parameters.getBoolean("verbose"));
 			return search.search();
@@ -168,9 +170,10 @@ public class FactorAnalysis implements Algorithm {
         params.add("verbose");
         // Resampling
         params.add("numberResampling");
-        params.add("resampleSize");
+        params.add("percentResampleSize");
         params.add("resamplingWithReplacement");
         params.add("resamplingEnsemble");
+        params.add("addOriginalDataset");
         return params;
     }
 }

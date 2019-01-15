@@ -89,6 +89,7 @@ final class  SaveSessionAction extends AbstractAction {
             sessionWrapper.setNewSession(false);
             objOut.writeObject(metadata);
             objOut.writeObject(sessionWrapper);
+            out.flush();
             out.close();
 //            JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
 //                    "Session saved.");

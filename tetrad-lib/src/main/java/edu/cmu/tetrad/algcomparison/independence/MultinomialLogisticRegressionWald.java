@@ -38,7 +38,7 @@ public class MultinomialLogisticRegressionWald implements IndependenceWrapper {
 
     @Override
     public DataType getDataType() {
-        return DataType.Continuous;
+        return DataType.Mixed;
     }
 
     @Override

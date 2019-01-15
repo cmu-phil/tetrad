@@ -20,7 +20,8 @@ public class ParamDescriptions {
         map.put("numMeasures", new ParamDescription("Number of measured variables (min = 1)", 10, 1, Integer.MAX_VALUE));
         map.put("numLatents", new ParamDescription("Number of latent variables (min = 0)", 0, 0, Integer.MAX_VALUE));
         map.put("avgDegree", new ParamDescription("Average degree of graph (min = 1)", 2, 1, Integer.MAX_VALUE));
-        map.put("maxDegree", new ParamDescription("The maximum degree of the graph (min = -1)", 100, -1, Integer.MAX_VALUE));
+        map.put("maxDegree", new ParamDescription("The maximum degree of the graph (min = -1)", 4, -1, Integer.MAX_VALUE));
+        map.get("maxDegree").setLongDescription("During the search if a node reaches the max degree value additional edges will not be added to that node.");
         map.put("maxIndegree", new ParamDescription("Maximum indegree of graph (min = 1)", 100, 1, Integer.MAX_VALUE));
         map.put("maxOutdegree", new ParamDescription("Maximum outdegree of graph (min = 1)", 100, 1, Integer.MAX_VALUE));
 
@@ -170,10 +171,11 @@ public class ParamDescriptions {
         map.put("thresholdForReversing", new ParamDescription("Variables with skewnesses less than this value will be reversed in sign (min = 0)", 0.0, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY));
 
         // Resampling
-        map.put("numberResampling", new ParamDescription("The number of resampling iterations (min = 0)", 0, 0, Integer.MAX_VALUE));
-        map.put("resampleSize", new ParamDescription("The resample size (min = 1)", 1, 1, Integer.MAX_VALUE));
-        map.put("resamplingWithReplacement", new ParamDescription("Yes, if resampling with replacement (bootstrapping)", true));
+        map.put("numberResampling", new ParamDescription("The number of bootstraps/resampling iterations (min = 0)", 0, 0, Integer.MAX_VALUE));
+        map.put("percentResampleSize", new ParamDescription("The percentage of resample size (min = 0.1)", 100, 0.1, Double.MAX_VALUE));
+        map.put("resamplingWithReplacement", new ParamDescription("Yes, if sampling with replacement (bootstrapping)", true));
         map.put("resamplingEnsemble", new ParamDescription("Ensemble method: Preserved (0), Highest (1), Majority (2)", 1, 0, 2));
+        map.put("addOriginalDataset", new ParamDescription("Yes, if adding an original dataset as another bootstrapping", false));
         //~Resampling
 
         map.put("fasRule", new ParamDescription(

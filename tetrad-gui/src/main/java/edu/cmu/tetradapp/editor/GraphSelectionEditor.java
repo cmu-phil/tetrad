@@ -409,11 +409,11 @@ public class GraphSelectionEditor extends JPanel implements GraphEditable, Tripl
         for (int i = 0; i < tabbedPane.getTabCount(); i++) {
             Graph selection = wrapper.getSelectionGraph(i);
 
-            if (selection.getNumNodes() > 500) {
-                throw new IllegalArgumentException("That is too many nodes for me to display ("
-                        + selection.getNumNodes() + ") I can only go up to 500 nodes.\n"
-                        + "Try a smaller selection.");
-            }
+//            if (selection.getNumNodes() > 500) {
+//                throw new IllegalArgumentException("That is too many nodes for me to display ("
+//                        + selection.getNumNodes() + ") I can only go up to 500 nodes.\n"
+//                        + "Try a smaller selection.");
+//            }
 
             if (!layoutGraph.isEmpty()) {
                 for (Node node : selection.getNodes()) {

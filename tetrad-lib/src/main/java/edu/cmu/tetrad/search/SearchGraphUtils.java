@@ -1454,7 +1454,7 @@ public final class SearchGraphUtils {
                     Node node1 = edge.getNode1();
                     Node node2 = edge.getNode2();
 
-                    if (!(dag.isAncestorOf(node2, node1)) && !dag.getParents(node2).isEmpty()) {
+                    if (!(dag.isAncestorOf(node2, node1))) {
                         edge.setEndpoint2(Endpoint.ARROW);
                     } else if (!dag.getParents(node1).isEmpty()) {
                         edge.setEndpoint1(Endpoint.ARROW);

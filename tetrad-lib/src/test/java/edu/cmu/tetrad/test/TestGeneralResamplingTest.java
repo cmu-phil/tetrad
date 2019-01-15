@@ -45,6 +45,8 @@ import edu.pitt.dbmi.algo.resampling.ResamplingEdgeEnsemble;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import org.junit.Ignore;
 import org.junit.Test;
 
 /**
@@ -108,7 +110,7 @@ public class TestGeneralResamplingTest {
 
 		GeneralResamplingTest bootstrapTest = new GeneralResamplingTest(data, algorithm, numBootstrapSamples);
 		bootstrapTest.setResamplingWithReplacement(true);
-		bootstrapTest.setResampleSize(data.getNumRows());
+		bootstrapTest.setPercentResampleSize(100.00);
 		bootstrapTest.setVerbose(verbose);
 		bootstrapTest.setParameters(parameters);
 		bootstrapTest.setEdgeEnsemble(ResamplingEdgeEnsemble.Highest);
@@ -127,7 +129,8 @@ public class TestGeneralResamplingTest {
 		printEdgeTypeConfusionMatrix(edgeAr);
 	}
 
-	//@Test
+	@Ignore
+	@Test
 	public void testFGESd(){
 		double structurePrior = 1, samplePrior = 1;
 		boolean faithfulnessAssumed = false;
@@ -164,7 +167,7 @@ public class TestGeneralResamplingTest {
 		
 		GeneralResamplingTest bootstrapTest = new GeneralResamplingTest(data, algorithm, numBootstrapSamples);
 		bootstrapTest.setResamplingWithReplacement(true);
-		bootstrapTest.setResampleSize(data.getNumRows());
+		bootstrapTest.setPercentResampleSize(100.00);
 		bootstrapTest.setVerbose(verbose);
 		bootstrapTest.setParameters(parameters);
 		bootstrapTest.setEdgeEnsemble(ResamplingEdgeEnsemble.Highest);
@@ -227,7 +230,7 @@ public class TestGeneralResamplingTest {
 		
 		GeneralResamplingTest bootstrapTest = new GeneralResamplingTest(data, algorithm, numBootstrapSamples);
 		bootstrapTest.setResamplingWithReplacement(true);
-		bootstrapTest.setResampleSize(data.getNumRows());
+		bootstrapTest.setPercentResampleSize(100.00);
 		bootstrapTest.setVerbose(verbose);
 		bootstrapTest.setParameters(parameters);
 		bootstrapTest.setEdgeEnsemble(ResamplingEdgeEnsemble.Highest);
@@ -246,7 +249,8 @@ public class TestGeneralResamplingTest {
 		printEdgeTypeConfusionMatrix(edgeAr);
 	}
 	
-	//@Test
+	@Ignore
+	@Test
 	public void testGFCId(){
 		double structurePrior = 1, samplePrior = 1;
 		boolean faithfulnessAssumed = false;
@@ -287,7 +291,7 @@ public class TestGeneralResamplingTest {
 		
 		GeneralResamplingTest bootstrapTest = new GeneralResamplingTest(data, algorithm, numBootstrapSamples);
 		bootstrapTest.setResamplingWithReplacement(true);
-		bootstrapTest.setResampleSize(data.getNumRows());
+		bootstrapTest.setPercentResampleSize(100.00);
 		bootstrapTest.setVerbose(verbose);
 		bootstrapTest.setParameters(parameters);
 		bootstrapTest.setEdgeEnsemble(ResamplingEdgeEnsemble.Highest);
@@ -306,7 +310,8 @@ public class TestGeneralResamplingTest {
 		printEdgeTypeConfusionMatrix(edgeAr);
 	}
 	
-	//@Test
+	@Ignore
+	@Test
 	public void testFCIc(){
 		int penaltyDiscount = 2;
 		int depth = 3;
@@ -349,7 +354,7 @@ public class TestGeneralResamplingTest {
 		
 		GeneralResamplingTest bootstrapTest = new GeneralResamplingTest(data, algorithm, numBootstrapSamples);
 		bootstrapTest.setResamplingWithReplacement(true);
-		bootstrapTest.setResampleSize(data.getNumRows());
+		bootstrapTest.setPercentResampleSize(100.00);
 		bootstrapTest.setVerbose(verbose);
 		bootstrapTest.setParameters(parameters);
 		bootstrapTest.setEdgeEnsemble(ResamplingEdgeEnsemble.Preserved);
@@ -369,7 +374,8 @@ public class TestGeneralResamplingTest {
 		printEdgeTypeConfusionMatrix(edgeAr);
 	}
 	
-	//@Test
+	@Ignore
+	@Test
 	public void testFCId(){
 		double structurePrior = 1, samplePrior = 1;
 		int depth = -1;
@@ -409,7 +415,7 @@ public class TestGeneralResamplingTest {
 		
 		GeneralResamplingTest bootstrapTest = new GeneralResamplingTest(data, algorithm, numBootstrapSamples);
 		bootstrapTest.setResamplingWithReplacement(true);
-		bootstrapTest.setResampleSize(data.getNumRows());
+		bootstrapTest.setPercentResampleSize(100.00);
 		bootstrapTest.setVerbose(verbose);
 		bootstrapTest.setParameters(parameters);
 		bootstrapTest.setEdgeEnsemble(ResamplingEdgeEnsemble.Highest);

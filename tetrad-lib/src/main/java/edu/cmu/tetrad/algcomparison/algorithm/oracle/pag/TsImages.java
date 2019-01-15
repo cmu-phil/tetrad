@@ -79,7 +79,7 @@ public class TsImages implements Algorithm, HasKnowledge, MultiDataSetAlgorithm,
             GeneralResamplingTest search = new GeneralResamplingTest(data, algorithm, parameters.getInt("numberSubSampling"));
             search.setKnowledge(knowledge);
 
-            search.setResampleSize(parameters.getInt("subSampleSize"));
+            search.setPercentResampleSize(parameters.getDouble("percentResampleSize"));
             search.setResamplingWithReplacement(parameters.getBoolean("subSamplingWithReplacement"));
             
             ResamplingEdgeEnsemble edgeEnsemble = ResamplingEdgeEnsemble.Highest;
@@ -94,6 +94,8 @@ public class TsImages implements Algorithm, HasKnowledge, MultiDataSetAlgorithm,
                     edgeEnsemble = ResamplingEdgeEnsemble.Majority;
             }
             search.setEdgeEnsemble(edgeEnsemble);
+            search.setAddOriginalDataset(parameters.getBoolean("addOriginalDataset"));
+            
             search.setParameters(parameters);
             search.setVerbose(parameters.getBoolean("verbose"));
             return search.search();
@@ -122,10 +124,11 @@ public class TsImages implements Algorithm, HasKnowledge, MultiDataSetAlgorithm,
         parameters.add("numRuns");
         parameters.add("randomSelectionSize");
         // Subsampling
-        parameters.add("numberSubSampling");
-        parameters.add("subSampleSize");
-        parameters.add("subSamplingWithReplacement");
-        parameters.add("subSamplingEnsemble");
+        parameters.add("numberResampling");
+        parameters.add("percentResampleSize");
+        parameters.add("resamplingWithReplacement");
+        parameters.add("resamplingEnsemble");
+        parameters.add("addOriginalDataset");
         parameters.add("verbose");
         return parameters;
     }

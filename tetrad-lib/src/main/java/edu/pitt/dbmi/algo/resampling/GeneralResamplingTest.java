@@ -48,6 +48,8 @@ public class GeneralResamplingTest {
 	private IKnowledge knowledge = new Knowledge2();
 
 	private ResamplingEdgeEnsemble edgeEnsemble = ResamplingEdgeEnsemble.Preserved;
+	
+	private boolean addOriginalDataset = false;
 
 	/**
 	 * An initial graph to start from.
@@ -89,8 +91,8 @@ public class GeneralResamplingTest {
         }
 	}
 
-	public void setResampleSize(int resampleSize) {
-		this.resamplingSearch.setResampleSize(resampleSize);
+	public void setPercentResampleSize(double percentResampleSize) {
+		this.resamplingSearch.setPercentResampleSize(percentResampleSize);
 	}
 
 	public void setResamplingWithReplacement(boolean ResamplingWithReplacement) {
@@ -127,6 +129,10 @@ public class GeneralResamplingTest {
 		}else if(edgeEnsemble.equalsIgnoreCase("Majority")){
 			this.edgeEnsemble = ResamplingEdgeEnsemble.Majority;
 		}
+	}
+
+	public void setAddOriginalDataset(boolean addOriginalDataset) {
+		this.addOriginalDataset = addOriginalDataset;
 	}
 
 	/**
@@ -179,6 +185,8 @@ public class GeneralResamplingTest {
 		if(!knowledge.isEmpty()){
 			resamplingSearch.setKnowledge(knowledge);
 		}
+		
+		resamplingSearch.setAddOriginalDataset(addOriginalDataset);
 		
 		if(initialGraph != null){
 			resamplingSearch.setInitialGraph(initialGraph);

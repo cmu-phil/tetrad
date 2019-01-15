@@ -69,7 +69,7 @@ public class DualListPanel extends JPanel {
 
         setOpaque(false);
 
-        unselectedScrollPane.setBorder(BorderFactory.createTitledBorder("Unselected"));
+        unselectedScrollPane.setBorder(BorderFactory.createTitledBorder("Not selected"));
 
         unselectedScrollPane.setViewportView(sourceList);
 
