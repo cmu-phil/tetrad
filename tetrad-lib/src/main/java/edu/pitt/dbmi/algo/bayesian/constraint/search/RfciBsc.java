@@ -85,6 +85,12 @@ public class RfciBsc implements GraphSearch {
     
     private long stop = 0;
     
+    private boolean thresholdNoRandomDataSearch = false;
+    private double cutoffDataSearch = 0.5;
+    
+    private boolean thresholdNoRandomConstrainSearch = true;
+    private double cutoffConstrainSearch = 0.5;
+    
     public RfciBsc(Rfci rfci) {
 		this.rfci = rfci;
 	}
@@ -95,7 +101,10 @@ public class RfciBsc implements GraphSearch {
 		start = System.currentTimeMillis();
 		
 		IndTestProbabilistic test = (IndTestProbabilistic) rfci.getIndependenceTest();
-		test.setThreshold(false);
+		test.setThreshold(thresholdNoRandomDataSearch);
+		if(thresholdNoRandomDataSearch) {
+			test.setCutoff(cutoffDataSearch);
+		}
 
 		// create empirical data for constraints
 		DataSet dataSet = DataUtils.getDiscreteDataSet(test.getData());
@@ -166,8 +175,13 @@ public class RfciBsc implements GraphSearch {
 			@Override
 			public Boolean call() throws Exception {
 				DataSet bsData = DataUtils.getBootstrapSample(dataSet, rows);
+
 				IndTestProbabilistic bsTest = new IndTestProbabilistic(bsData);
-				bsTest.setThreshold(true);
+				bsTest.setThreshold(thresholdNoRandomConstrainSearch);
+				if(thresholdNoRandomConstrainSearch) {
+					test.setCutoff(cutoffConstrainSearch);
+				}
+				
 				for (IndependenceFact f : hCopy.keySet()) {
 					boolean ind = bsTest.isIndependent(f.getX(), f.getY(), f.getZ());
 					int value = ind ? 1 : 0;
@@ -524,5 +538,21 @@ public class RfciBsc implements GraphSearch {
     public PrintStream getOut() {
         return out;
     }
+
+	public void setThresholdNoRandomDataSearch(boolean thresholdNoRandomDataSearch) {
+		this.thresholdNoRandomDataSearch = thresholdNoRandomDataSearch;
+	}
+
+	public void setCutoffDataSearch(double cutoffDataSearch) {
+		this.cutoffDataSearch = cutoffDataSearch;
+	}
+
+	public void setThresholdNoRandomConstrainSearch(boolean thresholdNoRandomConstrainSearch) {
+		this.thresholdNoRandomConstrainSearch = thresholdNoRandomConstrainSearch;
+	}
+
+	public void setCutoffConstrainSearch(double cutoffConstrainSearch) {
+		this.cutoffConstrainSearch = cutoffConstrainSearch;
+	}
     
 }

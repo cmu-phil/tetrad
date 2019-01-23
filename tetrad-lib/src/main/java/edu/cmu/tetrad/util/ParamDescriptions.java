@@ -178,9 +178,14 @@ public class ParamDescriptions {
         //~Resampling
 
         // Probabilistic Test
-        map.put("randomlyGeneratingConstraints", new ParamDescription("Yes, if ramdomly generating constraints.", false));
+        map.put("noRandomlyDeterminedIndependence", new ParamDescription("Yes, if no randomly determined independent constraints.", false));
         
         // RB-BSC
+        map.put("thresholdNoRandomDataSearch", new ParamDescription("Yes, if no randomly determined independent constraints.", false));
+        map.put("cutoffDataSearch", new ParamDescription("Random independence cutoff threshold", 0.5, 0.0, 1.0));
+        map.put("thresholdNoRandomConstrainSearch", new ParamDescription("Yes, if no radomly determined independent meta-constraints.", true));
+        map.put("cutoffConstrainSearch", new ParamDescription("Random constraint-independence cutoff threshold", 0.5, 0.0, 1.0));
+        
         map.put("numRandomizedSearchModels", new ParamDescription("The number of search probabilistic model (min = 1)", 10, 1, Integer.MAX_VALUE));
         map.put("numBscBootstrapSamples", new ParamDescription("The number of bootstrappings drawing from posterior dist. (min = 1)", 50, 1, Integer.MAX_VALUE));
         map.put("lowerBound", new ParamDescription("Lower bound cutoff threshold", 0.3, 0.0, 1.0));

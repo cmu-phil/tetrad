@@ -798,7 +798,7 @@ public class RBExperiments {
 		for (int b = 0; b < numBootstrapSamples; b++) {
 			DataSet bsData = DataUtils.getBootstrapSample(data, data.getNumRows());
 			IndTestProbabilistic bsTest = new IndTestProbabilistic(bsData);
-			bsTest.threshold = threshold;
+			bsTest.setThreshold(threshold);
 			for (IndependenceFact f : HCopy.keySet()) {
 				boolean ind = bsTest.isIndependent(f.getX(), f.getY(), f.getZ());
 				int value = ind ? 1 : 0;

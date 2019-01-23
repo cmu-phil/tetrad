@@ -57,8 +57,14 @@ public class RfciBsc implements Algorithm, HasKnowledge {
         search.setVerbose(parameters.getBoolean("verbose"));
         
         edu.pitt.dbmi.algo.bayesian.constraint.search.RfciBsc RfciBsc = new edu.pitt.dbmi.algo.bayesian.constraint.search.RfciBsc(search);
-        RfciBsc.setNumBscBootstrapSamples(parameters.getInt("numBscBootstrapSamples"));
         RfciBsc.setNumRandomizedSearchModels(parameters.getInt("numRandomizedSearchModels"));
+        RfciBsc.setThresholdNoRandomDataSearch(parameters.getBoolean("thresholdNoRandomDataSearch"));
+        RfciBsc.setCutoffDataSearch(parameters.getDouble("cutoffDataSearch"));
+        
+        RfciBsc.setNumBscBootstrapSamples(parameters.getInt("numBscBootstrapSamples"));
+        RfciBsc.setThresholdNoRandomConstrainSearch(parameters.getBoolean("thresholdNoRandomConstrainSearch"));
+        RfciBsc.setCutoffConstrainSearch(parameters.getDouble("cutoffConstrainSearch"));
+        
         RfciBsc.setLowerBound(parameters.getDouble("lowerBound"));
         RfciBsc.setUpperBound(parameters.getDouble("upperBound"));
         RfciBsc.setOutputRBD(parameters.getBoolean("outputRBD"));
@@ -94,8 +100,12 @@ public class RfciBsc implements Algorithm, HasKnowledge {
         parameters.add("verbose");
         // RFCI-BSC
         parameters.add("numRandomizedSearchModels");
-        parameters.add("numBscBootstrapSamples");
-        parameters.add("lowerBound");
+        parameters.add("thresholdNoRandomDataSearch");
+        parameters.add("cutoffDataSearch");
+		parameters.add("numBscBootstrapSamples");
+		parameters.add("thresholdNoRandomConstrainSearch");
+		parameters.add("cutoffConstrainSearch");
+		parameters.add("lowerBound");
         parameters.add("upperBound");
         parameters.add("outputRBD");
 		return parameters;

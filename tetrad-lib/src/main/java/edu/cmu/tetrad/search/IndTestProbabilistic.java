@@ -48,7 +48,8 @@ public class IndTestProbabilistic implements IndependenceTest {
      * Calculates probabilities of independence for conditional independence facts.
      */
     private final BCInference bci;
-    boolean threshold = false;
+    // Not
+    private boolean threshold = false;
 
     /**
      * The data set for which conditional  independence judgments are requested.
@@ -71,6 +72,8 @@ public class IndTestProbabilistic implements IndependenceTest {
     private Map<IndependenceFact, Double> H;
     private double posterior;
     private boolean verbose = false;
+    
+    private double cutoff = 0.5;
 
     //==========================CONSTRUCTORS=============================//
     /**
@@ -145,7 +148,7 @@ public class IndTestProbabilistic implements IndependenceTest {
 
         boolean ind ;//= RandomUtil.getInstance().nextDouble() < p;
         if (this.threshold){
-        	ind = (p >= 0.5);
+        	ind = (p >= cutoff);
         }
         else{
         	ind = RandomUtil.getInstance().nextDouble() < p;
@@ -307,10 +310,14 @@ public class IndTestProbabilistic implements IndependenceTest {
     }
 
 	/**
-	 * @param randomizedGeneratingConstraints
+	 * @param noRandomizedGeneratingConstraints
 	 */
-	public void setThreshold(boolean randomizedGeneratingConstraints) {
-		this.threshold = randomizedGeneratingConstraints;
+	public void setThreshold(boolean noRandomizedGeneratingConstraints) {
+		this.threshold = noRandomizedGeneratingConstraints;
+	}
+
+	public void setCutoff(double cutoff) {
+		this.cutoff = cutoff;
 	}
 }
 
