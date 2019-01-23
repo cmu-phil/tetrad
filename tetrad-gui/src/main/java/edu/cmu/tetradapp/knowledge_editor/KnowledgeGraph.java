@@ -58,7 +58,7 @@ public class KnowledgeGraph implements Graph, TetradSerializableExcluded {
     private boolean pag;
     private boolean pattern;
     
-    private Map<String,String> attributes = new HashMap<>();
+    private Map<String,Object> attributes = new HashMap<>();
 
     //============================CONSTRUCTORS=============================//
 
@@ -592,12 +592,12 @@ public class KnowledgeGraph implements Graph, TetradSerializableExcluded {
     }
     
 	@Override
-	public Map<String, String> getAllAttributes() {
+	public Map<String, Object> getAllAttributes() {
 		return attributes;
 	}
 
 	@Override
-	public String getAttribute(String key) {
+	public Object getAttribute(String key) {
 		return attributes.get(key);
 	}
 
@@ -607,7 +607,7 @@ public class KnowledgeGraph implements Graph, TetradSerializableExcluded {
 	}
 
 	@Override
-	public void addAttribute(String key, String value) {
+	public void addAttribute(String key, Object value) {
 		attributes.put(key, value);
 	}
 

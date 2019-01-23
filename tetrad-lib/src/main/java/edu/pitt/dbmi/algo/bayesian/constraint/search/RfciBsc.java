@@ -256,7 +256,16 @@ public class RfciBsc implements GraphSearch {
 		bscD = maxLnDep - lnQBSCDTotal;
 		bscD = Math.exp(bscD);
 		graphRBD.addAttribute("p(bscD)", String.format("%.4f", bscD));
-
+		
+		double _bscI = pagLnBSCI.get(graphRBD) - lnQBSCITotal;
+		_bscI = Math.exp(_bscI);
+		graphRBD.addAttribute("p(bscI)", String.format("%.4f", _bscI));
+		
+		
+		double _bscD = pagLnBSCD.get(graphRBI) - lnQBSCDTotal;
+		_bscD = Math.exp(_bscD);
+		graphRBI.addAttribute("p(bscD)", String.format("%.4f", _bscD));
+		
 		bscI = maxLnInd - lnQBSCITotal;
 		bscI = Math.exp(bscI);
 		graphRBI.addAttribute("p(bscI)", String.format("%.4f", bscI));

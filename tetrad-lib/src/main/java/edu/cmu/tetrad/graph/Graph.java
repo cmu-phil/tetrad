@@ -652,13 +652,13 @@ public interface Graph extends TetradSerializable, TripleClassifier {
 
     void setNodes(List<Node> nodes);
     
-    Map<String, String> getAllAttributes();
+    Map<String, Object> getAllAttributes();
     
-    String getAttribute(String key);
+    Object getAttribute(String key);
     
     void removeAttribute(String key);
     
-    void addAttribute(String key, String value);
+    void addAttribute(String key, Object value);
 }
 
 

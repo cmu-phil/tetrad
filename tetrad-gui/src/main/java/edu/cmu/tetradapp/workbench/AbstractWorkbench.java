@@ -1051,6 +1051,26 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
             setMaxY((int) getPreferredSize().getHeight());
         }
 
+        // Create a graph's legend
+        if(graph.getAllAttributes().size() > 0) {
+        	int maxX = getMaxX();
+        	int maxY = getMaxY();
+        	
+        	int padding = 5;
+        	
+        	DisplayLegend legend = new DisplayLegend(graph.getAllAttributes());
+        	
+            // Set the bounds of the display node.
+            //Dimension dim = new Dimension(100, 100);
+            //legend.setSize(dim);
+            
+            legend.setLocation(padding, padding);
+
+            // add the display node
+            add(legend, 0);
+
+        }
+        
         revalidate();
         repaint();
     }

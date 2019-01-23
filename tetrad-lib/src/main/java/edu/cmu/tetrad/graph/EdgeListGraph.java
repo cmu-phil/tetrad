@@ -109,7 +109,7 @@ public class EdgeListGraph implements Graph, TripleClassifier {
 
     private boolean pag = false;
 
-    private Map<String, String> attributes = new HashMap<>();
+    private Map<String, Object> attributes = new HashMap<>();
     
     //==============================CONSTUCTORS===========================//
 
@@ -2080,12 +2080,12 @@ public class EdgeListGraph implements Graph, TripleClassifier {
     }
     
 	@Override
-	public Map<String, String> getAllAttributes() {
+	public Map<String, Object> getAllAttributes() {
 		return attributes;
 	}
 
 	@Override
-	public String getAttribute(String key) {
+	public Object getAttribute(String key) {
 		return attributes.get(key);
 	}
 
@@ -2095,7 +2095,7 @@ public class EdgeListGraph implements Graph, TripleClassifier {
 	}
 
 	@Override
-	public void addAttribute(String key, String value) {
+	public void addAttribute(String key, Object value) {
 		attributes.put(key, value);
 	}
 
