@@ -269,20 +269,20 @@ public class RfciBsc implements GraphSearch {
 		// normalize the scores
 		bscD = maxLnDep - lnQBSCDTotal;
 		bscD = Math.exp(bscD);
-		graphRBD.addAttribute("p(bscD)", String.format("%.4f", bscD));
+		graphRBD.addAttribute("bscD", String.format("%.4f", bscD));
 		
 		double _bscI = pagLnBSCI.get(graphRBD) - lnQBSCITotal;
 		_bscI = Math.exp(_bscI);
-		graphRBD.addAttribute("p(bscI)", String.format("%.4f", _bscI));
+		graphRBD.addAttribute("bscI", String.format("%.4f", _bscI));
 		
 		
 		double _bscD = pagLnBSCD.get(graphRBI) - lnQBSCDTotal;
 		_bscD = Math.exp(_bscD);
-		graphRBI.addAttribute("p(bscD)", String.format("%.4f", _bscD));
+		graphRBI.addAttribute("bscD", String.format("%.4f", _bscD));
 		
 		bscI = maxLnInd - lnQBSCITotal;
 		bscI = Math.exp(bscI);
-		graphRBI.addAttribute("p(bscI)", String.format("%.4f", bscI));
+		graphRBI.addAttribute("bscI", String.format("%.4f", bscI));
 
 		out.println("bscD: " + bscD + " bscI: " + bscI);
 
@@ -356,19 +356,19 @@ public class RfciBsc implements GraphSearch {
 					for (int parentIndex = 0; parentIndex < parentValues.length; parentIndex++) {
 						String parentName = im.getNode(parents[parentIndex]).getName();
 						String[] splitParent = parentName.split(Pattern.quote("_||_"));
-						Node X = pag.getNode(splitParent[0].trim());
+						Node _X = pag.getNode(splitParent[0].trim());
 
 						String[] splitParent2 = splitParent[1].trim().split(Pattern.quote("|"));
-						Node Y = pag.getNode(splitParent2[0].trim());
+						Node _Y = pag.getNode(splitParent2[0].trim());
 
-						List<Node> Z = new ArrayList<>();
+						List<Node> _Z = new ArrayList<>();
 						if (splitParent2.length > 1) {
 							String[] splitParent3 = splitParent2[1].trim().split(Pattern.quote(","));
 							for (String s : splitParent3) {
-								Z.add(pag.getNode(s.trim()));
+								_Z.add(pag.getNode(s.trim()));
 							}
 						}
-						IndependenceFact parentFact = new IndependenceFact(X, Y, Z);
+						IndependenceFact parentFact = new IndependenceFact(_X, _Y, _Z);
 						if (pag.isDSeparatedFrom(parentFact.getX(), parentFact.getY(), parentFact.getZ())) {
 							parentValues[parentIndex] = 1;
 						} else {
