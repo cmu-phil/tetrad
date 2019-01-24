@@ -449,6 +449,8 @@ public final class Knowledge2 implements TetradSerializable, IKnowledge {
      * Determines whether the edge var1 --> var2 is forbidden.
      */
     public final boolean isForbidden(String var1, String var2) {
+        if (isRequired(var1, var2)) return false;
+
         for (OrderedPair<Set<MyNode>> rule : forbiddenRulesSpecs) {
             if (rule.getFirst().contains(getVar(var1))) {
                 if (rule.getSecond().contains(getVar(var2))) {
@@ -460,7 +462,7 @@ public final class Knowledge2 implements TetradSerializable, IKnowledge {
         }
 
         if (isForbiddenByTiers(var1, var2)) {
-            return false;
+            return true;
         }
 
         return false;
