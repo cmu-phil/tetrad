@@ -45,15 +45,15 @@ public class TestRfciBsc {
 		boolean completeRuleSetUsed = false;
 		// BSC
 		int numModels = 10;
-		int numBootstrapSamples = 10;
-		int sampleSize = 1000;
+		int numBootstrapSamples = 20;
+		int sampleSize = 10000;
 		double lower = 0.3;
 		double upper = 0.7;
 		
 		Long seed = 878376L;
 		RandomUtil.getInstance().setSeed(seed);
 		
-        Graph g = GraphConverter.convert("X1-->X2,X1-->X3,X1-->X4,X2-->X3,X2-->X4,X3-->X4");
+        Graph g = GraphConverter.convert("X1-->X2,X1-->X3,X1-->X4,X1-->X5,X2-->X3,X2-->X4,X2-->X6,X3-->X4,X4-->X5,X5-->X6");
         Dag dag = new Dag(g);
         
 		// set a number of latent variables
@@ -116,7 +116,7 @@ public class TestRfciBsc {
 		boolean completeRuleSetUsed = false;
 		// BSC
 		int numModels = 10;
-		int numBootstrapSamples = 10;
+		int numBootstrapSamples = 20;
 		int sampleSize = 1000;
 		double lower = 0.3;
 		double upper = 0.7;

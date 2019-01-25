@@ -100,17 +100,18 @@ public class RfciBsc implements GraphSearch {
 		stop = 0;
 		start = System.currentTimeMillis();
 		
-		IndTestProbabilistic test = (IndTestProbabilistic) rfci.getIndependenceTest();
-		test.setThreshold(thresholdNoRandomDataSearch);
-		if(thresholdNoRandomDataSearch) {
-			test.setCutoff(cutoffDataSearch);
-		}
+		IndTestProbabilistic _test = (IndTestProbabilistic) rfci.getIndependenceTest();
 
 		// create empirical data for constraints
-		DataSet dataSet = DataUtils.getDiscreteDataSet(test.getData());
-		
+		DataSet dataSet = DataUtils.getDiscreteDataSet(_test.getData());
+
 		pags.clear();
 
+		// A map from independence facts to their probabilities of independence.
+		List<Node> vars = new ArrayList<>();
+		Map<IndependenceFact, Double> h = new HashMap<>();
+		Map<IndependenceFact, Double> hCopy = new HashMap<>();
+		
 		// run RFCI-BSC (RB) search using BSC test and obtain constraints that
 		// are queried during the search
 		class SearchPagTask implements Callable<Boolean> {
@@ -118,11 +119,33 @@ public class RfciBsc implements GraphSearch {
 			@Override
 			public Boolean call() throws Exception {
 				IndTestProbabilistic test = new IndTestProbabilistic(dataSet);
-				test.setThreshold(false);
+				test.setThreshold(thresholdNoRandomDataSearch);
+				if(thresholdNoRandomDataSearch) {
+					test.setCutoff(cutoffDataSearch);
+				}
+				
 				Rfci rfci = new Rfci(test);
 				Graph pag = rfci.search();
 				pag = GraphUtils.replaceNodes(pag, test.getVariables());
 				pags.add(pag);
+				
+				Map<IndependenceFact, Double> _h = test.getH();
+
+				for (IndependenceFact f : _h.keySet()) {
+					if (!hCopy.containsKey(f)) {
+						h.put(f, _h.get(f));
+						
+						if (_h.get(f) > lowerBound && _h.get(f) < upperBound) {
+							hCopy.put(f, _h.get(f));
+							DiscreteVariable var = new DiscreteVariable(f.toString());
+							if(!vars.contains(var)) {
+								vars.add(var);
+							}
+						}
+						
+					}
+				}
+
 				return true;
 			}
 			
@@ -146,20 +169,7 @@ public class RfciBsc implements GraphSearch {
         }
 
         shutdownAndAwaitTermination(pool);
-
-        // A map from independence facts to their probabilities of independence.
-		Map<IndependenceFact, Double> h = test.getH();
-
-		List<Node> vars = new ArrayList<>();
-		Map<IndependenceFact, Double> hCopy = new HashMap<>();
-		for (IndependenceFact f : h.keySet()) {
-			if (h.get(f) > lowerBound && h.get(f) < upperBound) {
-				hCopy.put(f, h.get(f));
-				DiscreteVariable var = new DiscreteVariable(f.toString());
-				vars.add(var);
-			}
-		}
-
+		
 		DataSet depData = new ColtDataSet(numBscBootstrapSamples, vars);
 
 		class BootstrapDepDataTask implements Callable<Boolean> {
@@ -179,7 +189,7 @@ public class RfciBsc implements GraphSearch {
 				IndTestProbabilistic bsTest = new IndTestProbabilistic(bsData);
 				bsTest.setThreshold(thresholdNoRandomConstrainSearch);
 				if(thresholdNoRandomConstrainSearch) {
-					test.setCutoff(cutoffConstrainSearch);
+					bsTest.setCutoff(cutoffConstrainSearch);
 				}
 				
 				for (IndependenceFact f : hCopy.keySet()) {
@@ -225,6 +235,9 @@ public class RfciBsc implements GraphSearch {
 		Graph depPattern = fges.search();
 		depPattern = GraphUtils.replaceNodes(depPattern, depData.getVariables());
 		Graph estDepBN = SearchGraphUtils.dagFromPattern(depPattern);
+		
+		out.println("estDepBN:");
+		out.println(estDepBN);
 
 		// estimate parameters of the graph learned for constraints
 		BayesPm pmHat = new BayesPm(estDepBN, 2, 2);
@@ -269,20 +282,20 @@ public class RfciBsc implements GraphSearch {
 		// normalize the scores
 		bscD = maxLnDep - lnQBSCDTotal;
 		bscD = Math.exp(bscD);
-		graphRBD.addAttribute("bscD", String.format("%.4f", bscD));
+		graphRBD.addAttribute("bscD", String.format("%.8f", bscD));
 		
 		double _bscI = pagLnBSCI.get(graphRBD) - lnQBSCITotal;
 		_bscI = Math.exp(_bscI);
-		graphRBD.addAttribute("bscI", String.format("%.4f", _bscI));
+		graphRBD.addAttribute("bscI", String.format("%.8f", _bscI));
 		
 		
 		double _bscD = pagLnBSCD.get(graphRBI) - lnQBSCDTotal;
 		_bscD = Math.exp(_bscD);
-		graphRBI.addAttribute("bscD", String.format("%.4f", _bscD));
+		graphRBI.addAttribute("bscD", String.format("%.8f", _bscD));
 		
 		bscI = maxLnInd - lnQBSCITotal;
 		bscI = Math.exp(bscI);
-		graphRBI.addAttribute("bscI", String.format("%.4f", bscI));
+		graphRBI.addAttribute("bscI", String.format("%.8f", bscI));
 
 		out.println("bscD: " + bscD + " bscI: " + bscI);
 
