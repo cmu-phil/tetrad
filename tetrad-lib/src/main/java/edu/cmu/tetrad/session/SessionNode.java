@@ -175,6 +175,17 @@ public class SessionNode implements Node, TetradSerializable {
     private transient SessionHandler sessionHandler;
     private TetradLoggerConfig loggerConfig = null;
     private Parameters parameters = new Parameters();
+    
+    /**
+     * Node variable type (domain, interventional status, interventional value..) of this node variable
+     */
+    private NodeVariableType nodeVariableType = NodeVariableType.DOMAIN;
+    
+    /**
+     * The corresponding paired interventional node, domain node doesn't need this - Zhou
+     */
+    private Node pairedNode;
+    
 
     //==========================CONSTRUCTORS===========================//
 
@@ -1837,12 +1848,22 @@ public class SessionNode implements Node, TetradSerializable {
 
     @Override
     public NodeVariableType getNodeVariableType() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        return this.nodeVariableType;
     }
 
     @Override
-    public void setNodeVariableType(NodeVariableType interventionType) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    public void setNodeVariableType(NodeVariableType nodeVariableType) {
+        this.nodeVariableType = nodeVariableType;
+    }
+    
+    @Override
+    public void setPairedNode(Node pairedNode) {
+        this.pairedNode = pairedNode;
+    }
+
+    @Override
+    public Node getPairedNode() {
+        return this.pairedNode;
     }
 
     /**

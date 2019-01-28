@@ -24,20 +24,22 @@ package edu.cmu.tetradapp.knowledge_editor;
 import edu.cmu.tetrad.data.IKnowledge;
 import edu.cmu.tetrad.data.KnowledgeGroup;
 import edu.cmu.tetradapp.workbench.LayoutUtils;
-
-import javax.swing.*;
-import javax.swing.border.CompoundBorder;
-import javax.swing.border.EmptyBorder;
-import javax.swing.border.LineBorder;
-import javax.swing.border.MatteBorder;
-import java.awt.*;
+import java.awt.Color;
+import java.awt.Component;
+import java.awt.Dimension;
+import java.awt.Graphics;
+import java.awt.Insets;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
 import java.awt.dnd.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.*;
-import java.util.List;
+import javax.swing.*;
+import javax.swing.border.CompoundBorder;
+import javax.swing.border.EmptyBorder;
+import javax.swing.border.LineBorder;
+import javax.swing.border.MatteBorder;
 
 /**
  * Edits fobiddings or requirings of groups of node to other groups of nodes.
@@ -56,9 +58,14 @@ class OtherGroupsEditor extends JPanel {
      * The variables in the graph.
      */
     private List<String> variables;
+    
+    /**
+     * All the interventional variable pairs
+     */
+    private List<Map> interventionalVarPairs;
 
 
-    public OtherGroupsEditor(IKnowledge knowledge, List<String> vars) {
+    public OtherGroupsEditor(IKnowledge knowledge, List<String> vars, List<Map> interventionalVarPairs) {
         if (knowledge == null) {
             throw new NullPointerException("The given knowledge must not be null");
         }
@@ -67,6 +74,21 @@ class OtherGroupsEditor extends JPanel {
         }
         this.knowledge = knowledge;
         this.variables = new ArrayList<>(vars);
+        this.interventionalVarPairs = interventionalVarPairs;
+        
+        
+        // First build the knowledge groups based on the interventionalVarPairs
+        // And put each paired interventional variables in the fromGroup as default - Zhou
+        this.interventionalVarPairs.forEach(e->{
+            Set<String> fromGroup = new HashSet<>(e.values());
+            Set<String> toGroup = new HashSet<>();
+            knowledge.addKnowledgeGroup(new KnowledgeGroup(KnowledgeGroup.REQUIRED, fromGroup, toGroup));
+            System.out.println("=======================");
+            System.out.println(e.get("status"));
+            System.out.println(e.get("value"));
+        });
+        
+        
         this.setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
         setBorder(new EmptyBorder(5, 5, 5, 5));
 

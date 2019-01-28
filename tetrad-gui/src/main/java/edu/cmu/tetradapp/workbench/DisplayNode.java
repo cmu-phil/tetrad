@@ -56,6 +56,11 @@ public class DisplayNode extends JComponent implements Node, TetradSerializableE
     private NodeVariableType nodeVariableType = NodeVariableType.DOMAIN;
     
     /**
+     * The corresponding paired interventional node, domain node doesn't need this - Zhou
+     */
+    private Node pairedNode;
+    
+    /**
      * The component that displays.
      */
     private DisplayComp displayComp;
@@ -248,6 +253,15 @@ public class DisplayNode extends JComponent implements Node, TetradSerializableE
         this.nodeVariableType = nodeVariableType;
     }
 
+    @Override
+    public void setPairedNode(Node pairedNode) {
+        this.pairedNode = pairedNode;
+    }
+
+    @Override
+    public Node getPairedNode() {
+        return this.pairedNode;
+    }
 }
 
 

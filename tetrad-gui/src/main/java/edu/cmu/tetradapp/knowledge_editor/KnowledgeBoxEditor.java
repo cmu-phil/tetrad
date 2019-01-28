@@ -89,7 +89,7 @@ public class KnowledgeBoxEditor extends JPanel {
     private JTabbedPane tabbedPane = null;
     private Graph sourceGraph;
 
-    
+    private final List<Map> interventionalVarPairs = new LinkedList<>();
     private final List<String> interventionalVars = new LinkedList<>();
     private final List<String> nonInterventionalVars = new LinkedList<>();
     
@@ -240,7 +240,7 @@ public class KnowledgeBoxEditor extends JPanel {
     private void resetTabbedPane(JTabbedPane tabbedPane) {
         tabbedPane.removeAll();
         tabbedPane.add("Tiers", tierDisplay());
-        tabbedPane.add("Other Groups", new OtherGroupsEditor(knowledgeBoxModel.getKnowledge(), this.varNames));
+        tabbedPane.add("Other Groups", new OtherGroupsEditor(knowledgeBoxModel.getKnowledge(), this.varNames, interventionalVarPairs));
         tabbedPane.add("Edges", edgeDisplay());
 
         tabbedPane.addChangeListener((e) -> {
@@ -338,8 +338,21 @@ public class KnowledgeBoxEditor extends JPanel {
      * and the rest of domain variables in second tier - Zhou
      */
     private void checkInterventionalVariables() {
-        knowledgeBoxModel.getVariables().forEach(e->{
-            if (e.getNodeVariableType() == NodeVariableType.INTERVENTION_STATUS || e.getNodeVariableType() == NodeVariableType.INTERVENTION_VALUE) {
+        knowledgeBoxModel.getVariables().forEach(e->{ 
+            // For tiers
+            if (e.getNodeVariableType() == NodeVariableType.INTERVENTION_STATUS) {
+                interventionalVars.add(e.getName());
+                
+                // Get the interventional variable pairs for required groups
+                Map<String, String> interventionalVarPair = new HashMap<>();
+                
+                // Keep the pair info
+                interventionalVarPair.put("status", e.getName());
+                interventionalVarPair.put("value", e.getPairedNode().getName());
+
+                // Add to the list
+                interventionalVarPairs.add(interventionalVarPair);
+            } else if (e.getNodeVariableType() == NodeVariableType.INTERVENTION_VALUE) {
                 interventionalVars.add(e.getName());
             } else {
                 nonInterventionalVars.add(e.getName());

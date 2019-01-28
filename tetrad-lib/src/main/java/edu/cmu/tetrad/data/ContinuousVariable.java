@@ -61,6 +61,11 @@ public final class ContinuousVariable extends AbstractVariable
     private NodeVariableType nodeVariableType = NodeVariableType.DOMAIN;
 
     /**
+     * The corresponding paired interventional node, domain node doesn't need this - Zhou
+     */
+    private Node pairedNode;
+    
+    /**
      * The x coordinate of the center of the node.
      *
      * @serial
@@ -301,6 +306,17 @@ public final class ContinuousVariable extends AbstractVariable
     public void setNodeVariableType(NodeVariableType nodeVariableType) {
         this.nodeVariableType = nodeVariableType;
     }
+
+    @Override
+    public void setPairedNode(Node pairedNode) {
+        this.pairedNode = pairedNode;
+    }
+
+    @Override
+    public Node getPairedNode() {
+        return this.pairedNode;
+    }
+
 
 }
 
