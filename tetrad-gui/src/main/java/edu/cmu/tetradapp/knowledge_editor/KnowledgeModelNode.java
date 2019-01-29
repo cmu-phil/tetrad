@@ -186,12 +186,12 @@ public class KnowledgeModelNode implements Node, TetradSerializableExcluded {
     }
 
     @Override
-    public void setPairedNode(Node pairedNode) {
+    public void setPairedInterventionalNode(Node pairedNode) {
         this.pairedNode = pairedNode;
     }
 
     @Override
-    public Node getPairedNode() {
+    public Node getPairedInterventionalNode() {
         return this.pairedNode;
     }
 }

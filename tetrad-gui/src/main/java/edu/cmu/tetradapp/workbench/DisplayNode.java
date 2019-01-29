@@ -58,7 +58,7 @@ public class DisplayNode extends JComponent implements Node, TetradSerializableE
     /**
      * The corresponding paired interventional node, domain node doesn't need this - Zhou
      */
-    private Node pairedNode;
+    private Node pairedInterventionalNode;
     
     /**
      * The component that displays.
@@ -254,13 +254,13 @@ public class DisplayNode extends JComponent implements Node, TetradSerializableE
     }
 
     @Override
-    public void setPairedNode(Node pairedNode) {
-        this.pairedNode = pairedNode;
+    public void setPairedInterventionalNode(Node pairedInterventionalNode) {
+        this.pairedInterventionalNode = pairedInterventionalNode;
     }
 
     @Override
-    public Node getPairedNode() {
-        return this.pairedNode;
+    public Node getPairedInterventionalNode() {
+        return this.pairedInterventionalNode;
     }
 }
 

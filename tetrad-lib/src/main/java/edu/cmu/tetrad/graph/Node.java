@@ -70,13 +70,13 @@ public interface Node extends TetradSerializable, Comparable {
      * Sets the paired interventional node. Domain node doesn't need this - Zhou
      * @param pairedNode 
      */
-    void setPairedNode(Node pairedNode);
+    void setPairedInterventionalNode(Node pairedInterventionalNode);
     
     /**
      * The corresponding interventional node, status or value node
      * @return 
      */
-    Node getPairedNode();
+    Node getPairedInterventionalNode();
     
     /**
      * @return a string representation of the node.

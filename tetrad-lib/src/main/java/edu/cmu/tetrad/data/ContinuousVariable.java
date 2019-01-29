@@ -63,7 +63,7 @@ public final class ContinuousVariable extends AbstractVariable
     /**
      * The corresponding paired interventional node, domain node doesn't need this - Zhou
      */
-    private Node pairedNode;
+    private Node pairedInterventionalNode;
     
     /**
      * The x coordinate of the center of the node.
@@ -308,13 +308,13 @@ public final class ContinuousVariable extends AbstractVariable
     }
 
     @Override
-    public void setPairedNode(Node pairedNode) {
-        this.pairedNode = pairedNode;
+    public void setPairedInterventionalNode(Node pairedInterventionalNode) {
+        this.pairedInterventionalNode = pairedInterventionalNode;
     }
 
     @Override
-    public Node getPairedNode() {
-        return this.pairedNode;
+    public Node getPairedInterventionalNode() {
+        return this.pairedInterventionalNode;
     }
 
 

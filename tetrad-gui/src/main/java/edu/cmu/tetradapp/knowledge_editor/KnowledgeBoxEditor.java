@@ -348,7 +348,7 @@ public class KnowledgeBoxEditor extends JPanel {
                 
                 // Keep the pair info
                 interventionalVarPair.put("status", e.getName());
-                interventionalVarPair.put("value", e.getPairedNode().getName());
+                interventionalVarPair.put("value", e.getPairedInterventionalNode().getName());
 
                 // Add to the list
                 interventionalVarPairs.add(interventionalVarPair);

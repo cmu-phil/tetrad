@@ -118,7 +118,7 @@ public final class DiscreteVariable extends AbstractVariable
     /**
      * The corresponding paired interventional node, domain node doesn't need this - Zhou
      */
-    private Node pairedNode;
+    private Node pairedInterventionalNode;
     
     /**
      * True iff new variables should be allowed to be constructed to replace
@@ -607,13 +607,13 @@ public final class DiscreteVariable extends AbstractVariable
     }
     
     @Override
-    public void setPairedNode(Node pairedNode) {
-        this.pairedNode = pairedNode;
+    public void setPairedInterventionalNode(Node pairedInterventionalNode) {
+        this.pairedInterventionalNode = pairedInterventionalNode;
     }
 
     @Override
-    public Node getPairedNode() {
-        return this.pairedNode;
+    public Node getPairedInterventionalNode() {
+        return this.pairedInterventionalNode;
     }
 
 }
