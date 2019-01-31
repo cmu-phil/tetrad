@@ -57,7 +57,7 @@ final class SessionEditorEdge extends DisplayEdge {
     public SessionEditorEdge(SessionEditorNode node1, SessionEditorNode node2,
             int sessionEdgeMode) {
 
-        super(node1, node2, DisplayEdge.DIRECTED);
+        super(node1, node2, DisplayEdge.SESSION);
 
         if ((sessionEdgeMode >= 0) && (sessionEdgeMode <= 1)) {
             this.sessionEdgeMode = sessionEdgeMode;
@@ -81,7 +81,7 @@ final class SessionEditorEdge extends DisplayEdge {
      * @see #updateTrackPoint
      */
     public SessionEditorEdge(SessionEditorNode node1, Point mouseTrackPoint) {
-        super(node1, mouseTrackPoint, DisplayEdge.DIRECTED);
+        super(node1, mouseTrackPoint, DisplayEdge.SESSION);
     }
 
     /**
@@ -100,7 +100,7 @@ final class SessionEditorEdge extends DisplayEdge {
      */
     public SessionEditorEdge(SessionEditorNode node1, Point mouseTrackPoint,
             int mode) {
-        super(node1, mouseTrackPoint, DisplayEdge.DIRECTED);
+        super(node1, mouseTrackPoint, DisplayEdge.SESSION);
         this.sessionEdgeMode = mode;
     }
 

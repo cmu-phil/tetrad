@@ -815,6 +815,12 @@ public class ScatterPlotView extends JPanel {
          * Renders the view.
          */
         public void paintComponent(Graphics graphics) {
+            final double xmin = scatterPlot.getXmin();
+            final double xmax = scatterPlot.getXmax();
+            final double ymin = scatterPlot.getYmin();
+            final double ymax = scatterPlot.getYmax();
+
+
             Graphics2D g = (Graphics2D) graphics;
 
             g.setColor(Color.white);
@@ -849,10 +855,10 @@ public class ScatterPlotView extends JPanel {
             }
 
             /* draws axis labels and scale */
-            g.drawString(nf.format(scatterPlot.getYmax()), 2 + xStringMin, yMin + 7);
-            g.drawString(nf.format(scatterPlot.getYmin()), 2 + xStringMin, yMax);
-            g.drawString(nf.format(scatterPlot.getXmax()), xMax - 20, yMax + 14);
-            g.drawString(nf.format(scatterPlot.getXmin()), 20 + 30, yMax + 14);
+            g.drawString(nf.format(ymax), 2 + xStringMin, yMin + 7);
+            g.drawString(nf.format(ymin), 2 + xStringMin, yMax);
+            g.drawString(nf.format(xmax), xMax - 20, yMax + 14);
+            g.drawString(nf.format(xmin), 20 + 30, yMax + 14);
             g.drawString(scatterPlot.getXvar(), xMin + (xRange / 2) - 10, yMax + 14);
             g.translate(xMin - 7, yMin + (yRange / 2) + 10);
             g.rotate(-Math.PI / 2.0);
@@ -862,18 +868,14 @@ public class ScatterPlotView extends JPanel {
 
             /* draws ScatterPlot of the values */
             Vector<Point2D.Double> pts = scatterPlot.getSievedValues();
-            double _xRange = scatterPlot.getXmax() - scatterPlot.getXmin();
-            double _yRange = scatterPlot.getYmax() - scatterPlot.getYmin();
+            double _xRange = xmax - xmin;
+            double _yRange = ymax - ymin;
             int x, y;
 
             g.setColor(Color.red);
-            for (
-                    Point2D.Double _pt
-                    : pts)
-
-            {
-                x = (int) (((_pt.getX() - scatterPlot.getXmin()) / _xRange) * xRange + xMin);
-                y = (int) (((scatterPlot.getYmax() - _pt.getY()) / _yRange) * yRange + yMin);
+            for (Point2D.Double _pt : pts) {
+                x = (int) (((_pt.getX() - xmin) / _xRange) * xRange + xMin);
+                y = (int) (((ymax - _pt.getY()) / _yRange) * yRange + yMin);
                 g.fillOval(x - 2, y - 2, 5, 5);
             }
 
@@ -883,11 +885,6 @@ public class ScatterPlotView extends JPanel {
             {
                 double a = scatterPlot.getRegressionCoeff();
                 double b = scatterPlot.getRegressionIntercept();
-
-                double xmin = scatterPlot.getXmin();
-                double xmax = scatterPlot.getXmax();
-                double ymin = scatterPlot.getYmin();
-                double ymax = scatterPlot.getYmax();
 
                 double x1, y1 = 0;
 

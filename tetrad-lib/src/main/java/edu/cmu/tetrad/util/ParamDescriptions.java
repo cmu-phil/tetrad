@@ -175,6 +175,7 @@ public class ParamDescriptions {
         map.put("percentResampleSize", new ParamDescription("The percentage of resample size (min = 0.1)", 100, 0.1, Double.MAX_VALUE));
         map.put("resamplingWithReplacement", new ParamDescription("Yes, if sampling with replacement (bootstrapping)", true));
         map.put("resamplingEnsemble", new ParamDescription("Ensemble method: Preserved (0), Highest (1), Majority (2)", 1, 0, 2));
+        map.put("addOriginalDataset", new ParamDescription("Yes, if adding an original dataset as another bootstrapping", false));
         //~Resampling
 
         // Probabilistic Test
@@ -199,11 +200,11 @@ public class ParamDescriptions {
 
         map.put("colliderDiscoveryRule", new ParamDescription(
                 "Collider discovery: 1 = Lookup from adjacency sepsets, 2 = Conservative (CPC), 3 = Max-P",
-                1, 1, 1));
+                1, 1, 3));
 
         map.put("conflictRule", new ParamDescription(
                 "Collider conflicts: 1 = Overwrite, 2 = Orient bidirected, 3 = Prioritize existing colliders",
-                1, 1, 1));
+                1, 1, 3));
 
         map.put("randomizeColumns", new ParamDescription(
                 "Yes if the order of the columns in each datasets should be randomized",
