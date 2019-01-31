@@ -18,7 +18,6 @@
 // along with this program; if not, write to the Free Software               //
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA //
 ///////////////////////////////////////////////////////////////////////////////
-
 package edu.cmu.tetradapp.knowledge_editor;
 
 import edu.cmu.tetrad.data.IKnowledge;
@@ -53,17 +52,15 @@ class OtherGroupsEditor extends JPanel {
      */
     private IKnowledge knowledge;
 
-
     /**
      * The variables in the graph.
      */
     private List<String> variables;
-    
+
     /**
      * All the interventional variable pairs
      */
     private List<Map> interventionalVarPairs;
-
 
     public OtherGroupsEditor(IKnowledge knowledge, List<String> vars, List<Map> interventionalVarPairs) {
         if (knowledge == null) {
@@ -75,20 +72,21 @@ class OtherGroupsEditor extends JPanel {
         this.knowledge = knowledge;
         this.variables = new ArrayList<>(vars);
         this.interventionalVarPairs = interventionalVarPairs;
-        
-        
-        // First build the knowledge groups based on the interventionalVarPairs
-        // And put each paired interventional variables in the fromGroup as default - Zhou
-        this.interventionalVarPairs.forEach(e->{
-            Set<String> fromGroup = new HashSet<>(e.values());
-            Set<String> toGroup = new HashSet<>();
-            knowledge.addKnowledgeGroup(new KnowledgeGroup(KnowledgeGroup.REQUIRED, fromGroup, toGroup));
-            System.out.println("=======================");
-            System.out.println(e.get("status"));
-            System.out.println(e.get("value"));
-        });
-        
-        
+
+        // Only add the required groups for interventionalVarPairs for the first time - Zhou
+        if (knowledge.getKnowledgeGroups().isEmpty() && !interventionalVarPairs.isEmpty()) {
+            // First build the knowledge groups based on the interventionalVarPairs
+            // And put each paired interventional variables in the fromGroup as default - Zhou
+            this.interventionalVarPairs.forEach(e -> {
+                Set<String> fromGroup = new HashSet<>(e.values());
+                Set<String> toGroup = new HashSet<>();
+                knowledge.addKnowledgeGroup(new KnowledgeGroup(KnowledgeGroup.REQUIRED, fromGroup, toGroup));
+                System.out.println("=======================");
+                System.out.println(e.get("status"));
+                System.out.println(e.get("value"));
+            });
+        }
+
         this.setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
         setBorder(new EmptyBorder(5, 5, 5, 5));
 
@@ -97,8 +95,6 @@ class OtherGroupsEditor extends JPanel {
     }
 
     //===================== Private Methods ============================//
-
-
     private Box buildComponent() {
         Box vBox = Box.createVerticalBox();
 
@@ -117,7 +113,6 @@ class OtherGroupsEditor extends JPanel {
             }
         });
 
-
         JButton addRequired = new JButton("Add Required Group");
         addRequired.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
@@ -125,7 +120,6 @@ class OtherGroupsEditor extends JPanel {
                 rebuild();
             }
         });
-
 
         Box buttons = Box.createHorizontalBox();
         buttons.add(addForbidden);
@@ -146,15 +140,14 @@ class OtherGroupsEditor extends JPanel {
         JScrollPane pane2 = new JScrollPane(groupBoxes);
         pane2.setPreferredSize(new Dimension(500, 400));
 
-        vBox.add(pane2);        
+        vBox.add(pane2);
         vBox.add(LayoutUtils.leftAlignJLabel(new JLabel("Use shift key to select multiple items.")));
         return vBox;
     }
 
-
     /**
-     * Builds a group box using the given knowledge group (if null a default instance
-     * is returned).
+     * Builds a group box using the given knowledge group (if null a default
+     * instance is returned).
      *
      * @return - A required/forbidden work area.
      */
@@ -178,7 +171,6 @@ class OtherGroupsEditor extends JPanel {
                 rebuild();
             }
         });
-
 
         labelBox.add(new JLabel(title));
         labelBox.add(Box.createHorizontalGlue());
@@ -216,7 +208,6 @@ class OtherGroupsEditor extends JPanel {
         repaint();
     }
 
-
     /**
      * Sorts the elemenets of a default list model
      */
@@ -231,7 +222,6 @@ class OtherGroupsEditor extends JPanel {
         }
     }
 
-
     private static Set<String> getElementsInModel(DefaultListModel model) {
         Set<String> elements = new HashSet<>();
         for (int i = 0; i < model.getSize(); i++) {
@@ -239,7 +229,6 @@ class OtherGroupsEditor extends JPanel {
         }
         return elements;
     }
-
 
     private static boolean modelContains(Object o, DefaultListModel model) {
         for (int i = 0; i < model.getSize(); i++) {
@@ -251,8 +240,6 @@ class OtherGroupsEditor extends JPanel {
     }
 
     //========================== Inner classes =====================================//
-
-
     /**
      * Renders an arrow from the left to right.
      */
@@ -280,7 +267,6 @@ class OtherGroupsEditor extends JPanel {
         }
     }
 
-
     /**
      * Renderer for variables.
      */
@@ -297,9 +283,8 @@ class OtherGroupsEditor extends JPanel {
                     new LineBorder(Color.BLACK)));
         }
 
-
         public Component getListCellRendererComponent(JList list, Object value, int index,
-                                                      boolean isSelected, boolean cellHasFocus) {
+                boolean isSelected, boolean cellHasFocus) {
 
             setText(" " + value + " ");
             if (isSelected) {
@@ -314,7 +299,6 @@ class OtherGroupsEditor extends JPanel {
         }
     }
 
-
     private class GroupVariableDragList extends JList implements DropTargetListener, DragSourceListener, DragGestureListener {
 
         /**
@@ -323,10 +307,10 @@ class OtherGroupsEditor extends JPanel {
         private final int index;
 
         /**
-         * States that whether this if the "from" side or the "to" side (true=from, false=to).
+         * States that whether this if the "from" side or the "to" side
+         * (true=from, false=to).
          */
         private final boolean from;
-
 
         public GroupVariableDragList(int index, boolean from) {
             this.index = index;
@@ -385,12 +369,10 @@ class OtherGroupsEditor extends JPanel {
                     dtde.getDropTargetContext().dropComplete(false);
                 }
 
-
             } catch (Exception ex) {
                 ex.printStackTrace();
             }
         }
-
 
         public void dragDropEnd(DragSourceDropEvent dsde) {
             if (dsde.getDropSuccess()) {
@@ -421,7 +403,6 @@ class OtherGroupsEditor extends JPanel {
             }
         }
 
-
         public void dragGestureRecognized(DragGestureEvent dge) {
             if (getSelectedIndex() == -1) {
                 return;
@@ -437,7 +418,6 @@ class OtherGroupsEditor extends JPanel {
             }
         }
 
-
         private boolean opposingContains(String o) {
             KnowledgeGroup group = knowledge.getKnowledgeGroups().get(index);
             Set<String> opposite = from ? group.getToVariables() : group.getFromVariables();
@@ -445,7 +425,6 @@ class OtherGroupsEditor extends JPanel {
         }
 
         // ===================== Not implemented ====================//
-
         public void dragEnter(DropTargetDragEvent dtde) {
 
         }
@@ -478,13 +457,11 @@ class OtherGroupsEditor extends JPanel {
 
         }
 
-
     }
 
-
     /**
-     * A list that allows the user to move variables from it to others. The variables are not deleted when
-     * moved.
+     * A list that allows the user to move variables from it to others. The
+     * variables are not deleted when moved.
      */
     private static class VariableDragList extends JList implements DragGestureListener, DropTargetListener {
 
@@ -542,9 +519,4 @@ class OtherGroupsEditor extends JPanel {
 
     }
 
-
 }
-
-
-
-
