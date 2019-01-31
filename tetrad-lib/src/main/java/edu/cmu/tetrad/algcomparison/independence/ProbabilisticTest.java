@@ -32,7 +32,8 @@ public class ProbabilisticTest implements IndependenceWrapper {
 	@Override
 	public IndependenceTest getTest(DataModel dataSet, Parameters parameters) {
 		IndTestProbabilistic test = new IndTestProbabilistic(DataUtils.getDiscreteDataSet(dataSet));
-		test.setThreshold(parameters.getBoolean("noRandomlyDeterminedIndependence", false));
+		test.setThreshold(parameters.getBoolean("noRandomlyDeterminedIndependence"));
+		test.setCutoff(parameters.getDouble("cutoffIndTest"));
 		return test;
 	}
 
@@ -50,6 +51,7 @@ public class ProbabilisticTest implements IndependenceWrapper {
 	public List<String> getParameters() {
 		List<String> parameters = new ArrayList<>();
         parameters.add("noRandomlyDeterminedIndependence");
+        parameters.add("cutoffIndTest");
         return parameters;
 	}
 

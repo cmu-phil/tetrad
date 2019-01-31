@@ -132,42 +132,26 @@ public class IndTestProbabilistic implements IndependenceTest {
     public boolean isIndependent(Node x, Node y, Node... z) {
         IndependenceFact key = new IndependenceFact(x, y, z);
 
-//        if (y.getName().equals("HREKG")){
-//        	System.out.println("helloooo");
-//        }
+        double pInd = Double.NaN;
+        
         if (!H.containsKey(key)) {
-            double pInd = probConstraint(BCInference.OP.independent, x, y, z);
+            pInd = probConstraint(BCInference.OP.independent, x, y, z);
             H.put(key, pInd);
+        }else {
+        	pInd = H.get(key);
         }
-
-        double pInd = H.get(key);
 
         double p = probOp(BCInference.OP.independent, pInd);
 
         this.posterior = p;
 
-        boolean ind ;//= RandomUtil.getInstance().nextDouble() < p;
+        boolean ind ;
         if (this.threshold){
         	ind = (p >= cutoff);
         }
         else{
         	ind = RandomUtil.getInstance().nextDouble() < p;
         }
-//        System.out.print((nodes.indexOf(x) + 1) + " ");
-//        System.out.print((nodes.indexOf(y) + 1) + (z.length > 0 ? " " : ""));
-//        for (int i = 0; i < z.length; i++) {
-//            System.out.print(nodes.indexOf(z[i]) + 1);
-//
-//            if (i < z.length - 1) {
-//                System.out.print(" ");
-//            }
-//        }
-//
-//        System.out.print(",");
-//        System.out.print(ind ? 1 : 0);
-//        System.out.print( "," + p);
-//
-//        System.out.println();
 
         if (ind) {
             return true;
@@ -188,9 +172,6 @@ public class IndTestProbabilistic implements IndependenceTest {
             _z[i + 1] = indices.get(z[i]) + 1;
         }
 
-        //System.out.println("test " + x.getName() + " _||_ " + y.getName() + " | " + Arrays.toString(z));
-        //System.out.println(x.getName());
-        //System.out.println(y.getName());
         return bci.probConstraint(op, _x, _y, _z);
     }
 
