@@ -125,7 +125,7 @@ public class KnowledgeBoxEditor extends JPanel {
         resetTabbedPane(tabbedPane);
 
         add(tabbedPane, BorderLayout.CENTER);
-        setPreferredSize(new Dimension(550, 500));
+        setPreferredSize(new Dimension(640, 500));
 
         add(menuBar(), BorderLayout.NORTH);
 
@@ -384,7 +384,7 @@ public class KnowledgeBoxEditor extends JPanel {
 
         Box b2 = Box.createHorizontalBox();
         JScrollPane jScrollPane1 = new JScrollPane(l1);
-        jScrollPane1.setPreferredSize(new Dimension(500, 50));
+        jScrollPane1.setPreferredSize(new Dimension(640, 50));
         b2.add(jScrollPane1);
         c.add(b2);
 
@@ -469,13 +469,13 @@ public class KnowledgeBoxEditor extends JPanel {
 
             Box tierRow = Box.createHorizontalBox();
             JScrollPane jScrollPane = new JScrollPane(tierList);
-            jScrollPane.setPreferredSize(new Dimension(500, 50));
+            jScrollPane.setPreferredSize(new Dimension(600, 50));
             tierRow.add(jScrollPane);
             d.add(tierRow);
         }
 
         JScrollPane scroll = new JScrollPane(d);
-        scroll.setPreferredSize(new Dimension(550, 400));
+        scroll.setPreferredSize(new Dimension(640, 400));
         c.add(scroll);
         return c;
     }
@@ -492,16 +492,14 @@ public class KnowledgeBoxEditor extends JPanel {
         edgeWorkbench = new KnowledgeWorkbench(graph);
         resetEdgeDisplay(null);
 
-        JCheckBox showForbiddenByTiersCheckbox = new JCheckBox(
-                "Show Forbidden By Tiers", showForbiddenByTiers);
-        JCheckBox showForbiddenExplicitlyCheckbox = new JCheckBox(
-                "Show Forbidden Explicitly", showForbiddenExplicitly);
-        JCheckBox showRequiredCheckbox = new JCheckBox(
-                "Show Required Explicitly", showRequired);
-        JCheckBox showRequiredGroupsCheckBox = new JCheckBox(
-                "Show Required by Groups", this.showRequiredByGroups);
-        JCheckBox showForbiddenGroupsCheckBox = new JCheckBox(
-                "Show Forbidden by Groups", this.showForbiddenByGroups);
+        JCheckBox showForbiddenByTiersCheckbox = new JCheckBox("Show Forbidden By Tiers", showForbiddenByTiers);
+        JCheckBox showForbiddenGroupsCheckBox = new JCheckBox("Show Forbidden by Groups", this.showForbiddenByGroups);
+        JCheckBox showForbiddenExplicitlyCheckbox = new JCheckBox("Show Forbidden Explicitly", showForbiddenExplicitly);
+        
+        
+        JCheckBox showRequiredGroupsCheckBox = new JCheckBox("Show Required by Groups", this.showRequiredByGroups);
+        JCheckBox showRequiredExplicitlyCheckbox = new JCheckBox("Show Required Explicitly", showRequired);
+        
 
         showRequiredGroupsCheckBox.addActionListener((e) -> {
             JCheckBox box = (JCheckBox) e.getSource();
@@ -527,43 +525,42 @@ public class KnowledgeBoxEditor extends JPanel {
             resetEdgeDisplay(showForbiddenExplicitlyCheckbox);
         });
 
-        showRequiredCheckbox.addActionListener((e) -> {
+        showRequiredExplicitlyCheckbox.addActionListener((e) -> {
             JCheckBox checkBox = (JCheckBox) e.getSource();
             setShowRequired(checkBox.isSelected());
-            resetEdgeDisplay(showRequiredCheckbox);
+            resetEdgeDisplay(showRequiredExplicitlyCheckbox);
         });
 
         JPanel workbenchPanel = new JPanel();
         workbenchPanel.setLayout(new BorderLayout());
         workbenchPanel.add(new JScrollPane(edgeWorkbench), BorderLayout.CENTER);
-        workbenchPanel.setBorder(new TitledBorder(
-                "Forbidden and Required Edges"));
+        workbenchPanel.setBorder(new TitledBorder("Forbidden and Required Edges"));
 
         JPanel display = new JPanel();
-        display.setPreferredSize(new Dimension(550, 450));
+        display.setPreferredSize(new Dimension(640, 450));
         display.setLayout(new BorderLayout());
 
         JPanel b2 = new KnowledgeEditorToolbar(edgeWorkbench, getSourceGraph());
         display.add(b2, BorderLayout.WEST);
         display.add(workbenchPanel, BorderLayout.CENTER);
 
-        Box vBox = Box.createVerticalBox();
+        Box showOptionsBox = Box.createVerticalBox();
 
-        Box b4 = Box.createHorizontalBox();
-        b4.add(Box.createHorizontalGlue());
-        b4.add(showForbiddenByTiersCheckbox);
-        b4.add(showForbiddenExplicitlyCheckbox);
-        b4.add(showRequiredCheckbox);
+        Box forbiddenOptionsBox = Box.createHorizontalBox();
+        forbiddenOptionsBox.add(showForbiddenByTiersCheckbox);
+        forbiddenOptionsBox.add(showForbiddenGroupsCheckBox);
+        forbiddenOptionsBox.add(showForbiddenExplicitlyCheckbox);
+        forbiddenOptionsBox.add(Box.createHorizontalGlue());
+        
+        Box requiredOptionsBox = Box.createHorizontalBox();
+        requiredOptionsBox.add(showRequiredGroupsCheckBox);
+        requiredOptionsBox.add(showRequiredExplicitlyCheckbox);
+        requiredOptionsBox.add(Box.createHorizontalGlue());
 
-        Box hBox = Box.createHorizontalBox();
-        hBox.add(Box.createHorizontalGlue());
-        hBox.add(showRequiredGroupsCheckBox);
-        hBox.add(showForbiddenGroupsCheckBox);
+        showOptionsBox.add(forbiddenOptionsBox);
+        showOptionsBox.add(requiredOptionsBox);
 
-        vBox.add(b4);
-        vBox.add(hBox);
-
-        display.add(vBox, BorderLayout.SOUTH);
+        display.add(showOptionsBox, BorderLayout.SOUTH);
 
         return display;
     }
