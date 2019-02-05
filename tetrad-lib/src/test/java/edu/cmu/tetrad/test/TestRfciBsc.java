@@ -21,7 +21,7 @@ import edu.cmu.tetrad.graph.GraphConverter;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.NodeType;
-import edu.cmu.tetrad.search.DagToPag;
+import edu.cmu.tetrad.search.DagToPag2;
 import edu.cmu.tetrad.search.IndTestProbabilistic;
 import edu.cmu.tetrad.search.XdslXmlParser;
 import edu.cmu.tetrad.util.RandomUtil;
@@ -70,7 +70,7 @@ public class TestRfciBsc {
 		DataSet dataSet = DataUtils.restrictToMeasured(fullData);
 
 		// get the true underlying PAG
-		final DagToPag dagToPag = new DagToPag(dag);
+		final DagToPag2 dagToPag = new DagToPag2(dag);
 		dagToPag.setCompleteRuleSetUsed(false);
 		Graph PAG_True = dagToPag.convert();
 		PAG_True = GraphUtils.replaceNodes(PAG_True, dataSet.getVariables());
@@ -140,7 +140,7 @@ public class TestRfciBsc {
 		DataSet dataSet = DataUtils.restrictToMeasured(fullData);
 		
 		// get the true underlying PAG
-		final DagToPag dagToPag = new DagToPag(dag);
+		final DagToPag2 dagToPag = new DagToPag2(dag);
 		dagToPag.setCompleteRuleSetUsed(false);
 		Graph PAG_True = dagToPag.convert();
 		PAG_True = GraphUtils.replaceNodes(PAG_True, dataSet.getVariables());
