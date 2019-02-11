@@ -27,6 +27,7 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.ChoiceGenerator;
+import edu.cmu.tetrad.util.MathUtils;
 
 import java.util.ArrayList;
 import java.util.LinkedList;
@@ -83,12 +84,12 @@ public class SepsetsPossibleDsep implements SepsetProducer {
         List<Node> possibleDsep = new ArrayList<>(possibleDsepSet);
         boolean noEdgeRequired = knowledge.noEdgeRequired(node1.getName(), node2.getName());
 
-        List<Node> possParents = possibleParents(node1, possibleDsep, knowledge);
+//        List<Node> possParents = possibleParents(node1, possibleDsep, knowledge);
 
         int _depth = depth == -1 ? 1000 : depth;
 
-        for (int d = 0; d <= Math.min(_depth, possParents.size()); d++) {
-            ChoiceGenerator cg = new ChoiceGenerator(possParents.size(), d);
+        for (int d = 0; d <= Math.min(_depth, possibleDsep.size()); d++) {
+            ChoiceGenerator cg = new ChoiceGenerator(possibleDsep.size(), d);
             int[] choice;
 
             while ((choice = cg.next()) != null) {
@@ -96,7 +97,20 @@ public class SepsetsPossibleDsep implements SepsetProducer {
                     break;
                 }
 
-                List<Node> condSet = GraphUtils.asList(choice, possParents);
+                List<Node> condSet = GraphUtils.asList(choice, possibleDsep);
+                /** check against bk knowledge added by DMalinsky 07/24/17 **/
+                if (!(knowledge == null)) {
+//                    if (knowledge.isForbidden(node1.getName(), node2.getName())) continue;
+                    boolean flagForbid = false;
+                    for (Node j : condSet) {
+                        if (knowledge.isInWhichTier(j) > Math.max(knowledge.isInWhichTier(node1), knowledge.isInWhichTier(node2))) { // condSet cannot be in the future of both endpoints
+//                        if (knowledge.isForbidden(j.getName(), node1.getName()) && knowledge.isForbidden(j.getName(), node2.getName())) {
+                            flagForbid = true;
+                            break;
+                        }
+                    }
+                    if (flagForbid) continue;
+                }
                 boolean independent = independenceTest.isIndependent(node1, node2, condSet);
 
                 if (independent && noEdgeRequired) {

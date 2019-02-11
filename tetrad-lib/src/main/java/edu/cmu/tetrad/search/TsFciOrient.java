@@ -192,7 +192,10 @@ public final class TsFciOrient {
             while ((combination = cg.next()) != null) {
                 Node a = adjacentNodes.get(combination[0]);
                 Node c = adjacentNodes.get(combination[1]);
-
+                if(knowledge.isInWhichTier(a)==0 && knowledge.isInWhichTier(b)==0 && knowledge.isInWhichTier(c)==0){
+                    System.out.println("Skipping triple a,b,c : " + a + " , " + b + " , " + c);
+                    continue; // This is added as a temporary measure. Sepsets for lagged vars may be out of window, leading to incorrect collider orientations
+                }
                 // Skip triples that are shielded.
                 if (graph.isAdjacentTo(a, c)) {
                     continue;
@@ -1289,8 +1292,8 @@ public final class TsFciOrient {
         }
 
         if (graph.getEndpoint(y, x) == Endpoint.ARROW) {
-//            return true;
-            if (!knowledge.isForbidden(x.getName(), y.getName())) return true;
+            return true; // changed by DMalinsky 02/11/2019, if already an arrowhead at x, arrowpoint is allowed at y
+//            if (!knowledge.isForbidden(x.getName(), y.getName())) return true;
         }
 
         if (graph.getEndpoint(y, x) == Endpoint.TAIL) {
