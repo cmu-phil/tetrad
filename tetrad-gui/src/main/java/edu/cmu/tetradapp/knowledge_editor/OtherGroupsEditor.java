@@ -82,10 +82,6 @@ class OtherGroupsEditor extends JPanel {
                 Set<String> toGroup = new HashSet<>();
                 KnowledgeGroup targetKnowledgeGroup = new KnowledgeGroup(KnowledgeGroup.REQUIRED, fromGroup, toGroup);
                 knowledge.addKnowledgeGroup(targetKnowledgeGroup);
-
-                System.out.println("=======================");
-                System.out.println(e.get("status"));
-                System.out.println(e.get("value"));
             });
         }
 
@@ -168,15 +164,24 @@ class OtherGroupsEditor extends JPanel {
         forbiddenButton.setFont(forbiddenButton.getFont().deriveFont(11f));
         forbiddenButton.setMargin(new Insets(3, 4, 3, 4));
 
+        // Enable/disable the button
+        Set<String> fromGroup = group.getFromVariables();
+        Set<String> toGroup = group.getToVariables();
+
+        // Don't allow to create forbidden group from this required group if 
+        // no variables in the from or to boxes - Zhou
+        if (fromGroup.isEmpty() || toGroup.isEmpty()) {
+            forbiddenButton.setEnabled(false);
+        } else {
+            forbiddenButton.setEnabled(true);
+        }
+        
         // Add skinny hand
         forbiddenButton.addActionListener((e) -> {
-            Set<String> fromGroup = group.getFromVariables();
             Set<String> toForbiddenGroup = new HashSet<>();
 
-            Set<String> toRequiredGroup = group.getToVariables();
-
             this.variables.forEach(var -> {
-                if (!fromGroup.contains(var) && !toRequiredGroup.contains(var)) {
+                if (!fromGroup.contains(var) && !toGroup.contains(var)) {
                     toForbiddenGroup.add(var);
                 }
             });
