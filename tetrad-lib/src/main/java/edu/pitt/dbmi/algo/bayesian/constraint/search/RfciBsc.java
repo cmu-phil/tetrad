@@ -132,17 +132,23 @@ public class RfciBsc implements GraphSearch {
 				Map<IndependenceFact, Double> _h = test.getH();
 
 				for (IndependenceFact f : _h.keySet()) {
-					if (!hCopy.containsKey(f)) {
-						h.put(f, _h.get(f));
-						
-						if (_h.get(f) > lowerBound && _h.get(f) < upperBound) {
-							hCopy.put(f, _h.get(f));
-							DiscreteVariable var = new DiscreteVariable(f.toString());
-							if(!vars.contains(var)) {
-								vars.add(var);
+					synchronized (hCopy) {
+						if (!hCopy.containsKey(f)) {
+							synchronized (h) {
+								h.put(f, _h.get(f));
 							}
+							
+							if (_h.get(f) > lowerBound && _h.get(f) < upperBound) {
+								hCopy.put(f, _h.get(f));
+								DiscreteVariable var = new DiscreteVariable(f.toString());
+								synchronized (vars) {
+									if(!vars.contains(var)) {
+										vars.add(var);
+									}
+								}
+							}
+							
 						}
-						
 					}
 				}
 
@@ -170,7 +176,7 @@ public class RfciBsc implements GraphSearch {
 
         shutdownAndAwaitTermination(pool);
 		
-		DataSet depData = new ColtDataSet(numBscBootstrapSamples, vars);
+        DataSet depData = new ColtDataSet(numBscBootstrapSamples, vars);
 
 		class BootstrapDepDataTask implements Callable<Boolean> {
 			
@@ -195,7 +201,13 @@ public class RfciBsc implements GraphSearch {
 				for (IndependenceFact f : hCopy.keySet()) {
 					boolean ind = bsTest.isIndependent(f.getX(), f.getY(), f.getZ());
 					int value = ind ? 1 : 0;
-					depData.setInt(b, depData.getColumn(depData.getVariable(f.toString())), value);
+					
+					synchronized (depData) {
+						Node node = depData.getVariable(f.toString());
+						int col = depData.getColumn(node);
+						depData.setInt(b, col, value);
+					}
+					
 				}
 				return true;
 			}
