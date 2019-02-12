@@ -31,7 +31,7 @@ import java.text.NumberFormat;
 import java.util.*;
 
 /**
- * Wraps a DataBox in such a way that mixed data sets can be storeds. The type
+ * Wraps a DataBox in such a way that mixed data sets can be stored. The type
  * of each column must be specified by a Variable object, which must be either a
  * <code>ContinuousVariable</code> or a <code>DiscreteVariable</code>. This
  * class violates object orientation in that the underlying data matrix is

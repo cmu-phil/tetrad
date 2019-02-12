@@ -8,12 +8,13 @@ import static java.lang.Math.log;
 
 import java.io.PrintStream;
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Callable;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -23,10 +24,12 @@ import edu.cmu.tetrad.bayes.BayesIm;
 import edu.cmu.tetrad.bayes.BayesPm;
 import edu.cmu.tetrad.bayes.DirichletBayesIm;
 import edu.cmu.tetrad.bayes.DirichletEstimator;
-import edu.cmu.tetrad.data.ColtDataSet;
+import edu.cmu.tetrad.data.BoxDataSet;
+import edu.cmu.tetrad.data.DataBox;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataUtils;
 import edu.cmu.tetrad.data.DiscreteVariable;
+import edu.cmu.tetrad.data.VerticalIntDataBox;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.IndependenceFact;
@@ -108,9 +111,11 @@ public class RfciBsc implements GraphSearch {
 		pags.clear();
 
 		// A map from independence facts to their probabilities of independence.
-		List<Node> vars = new ArrayList<>();
-		Map<IndependenceFact, Double> h = new HashMap<>();
-		Map<IndependenceFact, Double> hCopy = new HashMap<>();
+		List<Node> vars = Collections.synchronizedList(new ArrayList<>());
+        List<String> var_lookup = Collections.synchronizedList(new ArrayList<>());
+
+		Map<IndependenceFact, Double> h = new ConcurrentHashMap<>();
+		Map<IndependenceFact, Double> hCopy = new ConcurrentHashMap<>();
 		
 		// run RFCI-BSC (RB) search using BSC test and obtain constraints that
 		// are queried during the search
@@ -132,24 +137,22 @@ public class RfciBsc implements GraphSearch {
 				Map<IndependenceFact, Double> _h = test.getH();
 
 				for (IndependenceFact f : _h.keySet()) {
-					synchronized (hCopy) {
-						if (!hCopy.containsKey(f)) {
-							synchronized (h) {
-								h.put(f, _h.get(f));
+					String indFact = f.toString();
+					
+					if (!hCopy.containsKey(f)) {
+						h.put(f, _h.get(f));
+						
+						if (_h.get(f) > lowerBound && _h.get(f) < upperBound) {
+							hCopy.put(f, _h.get(f));
+							DiscreteVariable var = new DiscreteVariable(indFact);
+							if(!vars.contains(var)) {
+								vars.add(var);
+								var_lookup.add(indFact);
 							}
-							
-							if (_h.get(f) > lowerBound && _h.get(f) < upperBound) {
-								hCopy.put(f, _h.get(f));
-								DiscreteVariable var = new DiscreteVariable(f.toString());
-								synchronized (vars) {
-									if(!vars.contains(var)) {
-										vars.add(var);
-									}
-								}
-							}
-							
 						}
+						
 					}
+					
 				}
 
 				return true;
@@ -176,15 +179,16 @@ public class RfciBsc implements GraphSearch {
 
         shutdownAndAwaitTermination(pool);
 		
-        DataSet depData = new ColtDataSet(numBscBootstrapSamples, vars);
-
+        DataBox dataBox = new VerticalIntDataBox(numBscBootstrapSamples,vars.size());
+        DataSet depData = new BoxDataSet(dataBox, vars);
+                
 		class BootstrapDepDataTask implements Callable<Boolean> {
 			
-			private final int b;
+			private final int row_index;
 			private final int rows;
 			
-			public BootstrapDepDataTask(int b, int rows) {
-				this.b = b;
+			public BootstrapDepDataTask(int row_index, int rows) {
+				this.row_index = row_index;
 				this.rows = rows;
 			}
 			
@@ -202,10 +206,11 @@ public class RfciBsc implements GraphSearch {
 					boolean ind = bsTest.isIndependent(f.getX(), f.getY(), f.getZ());
 					int value = ind ? 1 : 0;
 					
+					String indFact = f.toString();
+					
+					int col = var_lookup.indexOf(indFact);
 					synchronized (depData) {
-						Node node = depData.getVariable(f.toString());
-						int col = depData.getColumn(node);
-						depData.setInt(b, col, value);
+						depData.setInt(row_index, col, value);
 					}
 					
 				}
@@ -216,7 +221,7 @@ public class RfciBsc implements GraphSearch {
 		
 		tasks.clear();
 		
-		int rows = dataSet.getNumRows();
+		final int rows = dataSet.getNumRows();
 		for (int b = 0; b < numBscBootstrapSamples; b++) {
 			tasks.add(new BootstrapDepDataTask(b,rows));
 		}
@@ -233,7 +238,7 @@ public class RfciBsc implements GraphSearch {
         }
 
         shutdownAndAwaitTermination(pool);
-		
+
 		// learn structure of constraints using empirical data => constraint data
 		BDeuScore sd = new BDeuScore(depData);
 		sd.setSamplePrior(1.0);
@@ -258,32 +263,71 @@ public class RfciBsc implements GraphSearch {
 
 		// compute scores of graphs that are output by RB search using
 		// BSC-I and BSC-D methods
-		Map<Graph, Double> pagLnBSCD = new HashMap<>();
-		Map<Graph, Double> pagLnBSCI = new HashMap<>();
+		Map<Graph, Double> pagLnBSCD = new ConcurrentHashMap<>();
+		Map<Graph, Double> pagLnBSCI = new ConcurrentHashMap<>();
 
 		double maxLnDep = -1, maxLnInd = -1;
 
+		class CalculateBscScoreTask implements Callable<Boolean> {
+
+			final Graph pagOrig;
+			
+			public CalculateBscScoreTask(final Graph pagOrig) {
+				this.pagOrig = pagOrig;
+			}
+			
+			@Override
+			public Boolean call() throws Exception {
+				if (!pagLnBSCD.containsKey(pagOrig)) {
+					double lnInd = getLnProb(pagOrig, h);
+
+					// Filtering
+					double lnDep = getLnProbUsingDepFiltering(pagOrig, h, imHat, estDepBN);
+					
+					pagLnBSCD.put(pagOrig, lnDep);
+					pagLnBSCI.put(pagOrig, lnInd);
+				}
+				return true;
+			}
+			
+		}
+		
+		tasks.clear();
+		
 		for (int i = 0; i < pags.size(); i++) {
 			Graph pagOrig = pags.get(i);
-			if (!pagLnBSCD.containsKey(pagOrig)) {
-				double lnInd = getLnProb(pagOrig, h);
+			tasks.add(new CalculateBscScoreTask(pagOrig));
+		}
+		
+		pool = Executors.newWorkStealingPool(Runtime.getRuntime().availableProcessors());
 
-				// Filtering
-				double lnDep = getLnProbUsingDepFiltering(pagOrig, h, imHat, estDepBN);
-				
-				if (lnInd > maxLnInd || pagLnBSCI.size() == 0) {
-					maxLnInd = lnInd;
-					graphRBI = pagOrig;
-				}
+        try {
+            pool.invokeAll(tasks);
+        } catch (InterruptedException exception) {
+        	if(verbose) {
+                logger.log("error","Task has been interrupted");
+        	}
+            Thread.currentThread().interrupt();
+        }
 
-				if (lnDep > maxLnDep || pagLnBSCD.size() == 0) {
-					maxLnDep = lnDep;
-					graphRBD = pagOrig;
-				}
-
-				pagLnBSCD.put(pagOrig, lnDep);
-				pagLnBSCI.put(pagOrig, lnInd);
+        shutdownAndAwaitTermination(pool);
+		
+		for (int i = 0; i < pags.size(); i++) {
+			Graph pagOrig = pags.get(i);
+			
+			double lnDep = pagLnBSCD.get(pagOrig);
+			double lnInd = pagLnBSCI.get(pagOrig);
+			
+			if (lnInd > maxLnInd || i == 0) {
+				maxLnInd = lnInd;
+				graphRBI = pagOrig;
 			}
+
+			if (lnDep > maxLnDep || i == 0) {
+				maxLnDep = lnDep;
+				graphRBD = pagOrig;
+			}
+			
 		}
 
 		out.println("maxLnDep: " + maxLnDep + " maxLnInd: " + maxLnInd);
@@ -315,6 +359,8 @@ public class RfciBsc implements GraphSearch {
 		out.println("graphRBI:\n" + graphRBI);
 		
 		stop = System.currentTimeMillis();
+		
+		out.println("Elapsed " + (stop - start) + " ms");
 		
 		if (!outputRBD) {
 			return graphRBI;
