@@ -1864,7 +1864,7 @@ public class EdgeListGraph implements Graph, TripleClassifier {
      * @param closure the closure of the conditioning set uner the parent
      *                relation (to be calculated recursively).
      */
-    private void doParentClosureVisit(Node node, Set<Node> closure) {
+    /*private void doParentClosureVisit(Node node, Set<Node> closure) {
         if (closure.contains(node)) return;
         closure.add(node);
 
@@ -1874,7 +1874,7 @@ public class EdgeListGraph implements Graph, TripleClassifier {
                 doParentClosureVisit(sub, closure);
             }
         }
-    }
+    }*/
 
     /**
      * @return this object.

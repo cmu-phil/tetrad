@@ -22,7 +22,6 @@
 package edu.cmu.tetrad.data;
 
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.graph.NodeEqualityMode;
 import edu.cmu.tetrad.graph.NodeType;
 import edu.cmu.tetrad.util.TetradSerializable;
 
@@ -135,6 +134,8 @@ public final class DiscreteVariable extends AbstractVariable
      * Fires property change events.
      */
     private transient PropertyChangeSupport pcs;
+
+    private Map<String, Object> attributes = new HashMap<>();
 
     //=========================CONSTRUCTORS=============================//
 
@@ -586,6 +587,27 @@ public final class DiscreteVariable extends AbstractVariable
             throw new NullPointerException();
         }
     }
+
+	@Override
+	public Map<String, Object> getAllAttributes() {
+		return attributes;
+	}
+
+	@Override
+	public Object getAttribute(String key) {
+		return attributes.get(key);
+	}
+
+	@Override
+	public void removeAttribute(String key) {
+		attributes.remove(key);
+	}
+
+	@Override
+	public void addAttribute(String key, Object value) {
+		attributes.put(key, value);
+	}
+
 }
 
 

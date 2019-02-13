@@ -277,6 +277,8 @@ public final class Fges implements GraphSearch, GraphScorer {
 
         this.out.println("Model Score = " + modelScore);
 
+        graph.addAttribute("BIC", modelScore);
+        
         long endTime = System.currentTimeMillis();
         this.elapsedTime = endTime - start;
 
@@ -1395,7 +1397,7 @@ public final class Fges implements GraphSearch, GraphScorer {
         return modelScore;
     }
 
-    // Basic data structure for an arrow a->b considered for additiom or removal from the graph, together with
+    // Basic data structure for an arrow a->b considered for addition or removal from the graph, together with
     // associated sets needed to make this determination. For both forward and backward direction, NaYX is needed.
     // For the forward direction, T neighbors are needed; for the backward direction, H neighbors are needed.
     // See Chickering (2002). The totalScore difference resulting from added in the edge (hypothetically) is recorded
@@ -1989,7 +1991,8 @@ public final class Fges implements GraphSearch, GraphScorer {
             }
 
             int yIndex = hashIndices.get(y);
-            _score += score.localScore(yIndex, parentIndices);
+            double node_score = score.localScore(yIndex, parentIndices);
+            _score += node_score;
         }
 
         return _score;

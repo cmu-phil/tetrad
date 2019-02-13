@@ -177,6 +177,8 @@ public class SessionNode implements Node, TetradSerializable {
     private TetradLoggerConfig loggerConfig = null;
     private Parameters parameters = new Parameters();
 
+    private Map<String, Object> attributes = new HashMap<>();
+
     //==========================CONSTRUCTORS===========================//
 
     /**
@@ -1929,6 +1931,27 @@ public class SessionNode implements Node, TetradSerializable {
             throw new IllegalStateException();
         }
     }
+
+	@Override
+	public Map<String, Object> getAllAttributes() {
+		return attributes;
+	}
+
+	@Override
+	public Object getAttribute(String key) {
+		return attributes.get(key);
+	}
+
+	@Override
+	public void removeAttribute(String key) {
+		attributes.remove(key);
+	}
+
+	@Override
+	public void addAttribute(String key, Object value) {
+		attributes.put(key, value);
+	}
+
 }
 
 
