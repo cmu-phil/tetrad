@@ -124,14 +124,14 @@ abstract class AbstractExpressionDescriptor implements ExpressionDescriptor {
             // create signature string.
             if (!commulative) {
                 this.signature += "(";
-                for (int i = 1; i < arguments.length; i++) {
-                    if (i != 1) {
+                for (int i = 0; i < arguments.length; i++) {
+                    if (i != 0) {
                         this.signature += ", ";
                     }
                     this.signature += arguments[i];
                 }
                 if (unlimited) {
-                    if (arguments.length != 1) {
+                    if (arguments.length != 0) {
                         this.signature += ", ";
                     }
                     this.signature += "...";

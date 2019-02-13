@@ -347,10 +347,6 @@ public final class Rfci implements GraphSearch {
                 // or (if independent2) <j, k> from rTuples
                 Iterator<Node[]> iter = rTuples.iterator();
                 while (iter.hasNext()) {
-                    if (Thread.currentThread().isInterrupted()) {
-                        break;
-                    }
-
                     Node[] curTuple = iter.next();
                     if ((independent1 && (curTuple[1] == i) &&
                             ((curTuple[0] == j) || (curTuple[2] == j)))
@@ -371,10 +367,6 @@ public final class Rfci implements GraphSearch {
                 // or (if independent2) <j, k> from lTuples
                 iter = lTuples.iterator();
                 while (iter.hasNext()) {
-                    if (Thread.currentThread().isInterrupted()) {
-                        break;
-                    }
-
                     Node[] curTuple = iter.next();
                     if ((independent1 && (curTuple[1] == i) &&
                             ((curTuple[0] == j) || (curTuple[2] == j)))
@@ -444,10 +436,6 @@ public final class Rfci implements GraphSearch {
             int[] combination;
 
             while ((combination = cg.next()) != null) {
-                if (Thread.currentThread().isInterrupted()) {
-                    break;
-                }
-
                 Node i = adjacentNodes.get(combination[0]);
                 Node k = adjacentNodes.get(combination[1]);
 
@@ -499,10 +487,6 @@ public final class Rfci implements GraphSearch {
             int[] combination;
 
             while ((combination = cg.next()) != null) {
-                if (Thread.currentThread().isInterrupted()) {
-                    break;
-                }
-
                 List<Node> condSet = GraphUtils.asList(combination, sepSet);
 
                 try {
@@ -575,10 +559,6 @@ public final class Rfci implements GraphSearch {
 
         for (Iterator<KnowledgeEdge> it =
              bk.forbiddenEdgesIterator(); it.hasNext(); ) {
-            if (Thread.currentThread().isInterrupted()) {
-                break;
-            }
-
             KnowledgeEdge edge = it.next();
 
             //match strings to variables in the graph.
@@ -603,10 +583,6 @@ public final class Rfci implements GraphSearch {
 
         for (Iterator<KnowledgeEdge> it =
              bk.requiredEdgesIterator(); it.hasNext(); ) {
-            if (Thread.currentThread().isInterrupted()) {
-                break;
-            }
-
             KnowledgeEdge edge = it.next();
 
             //match strings to variables in this graph

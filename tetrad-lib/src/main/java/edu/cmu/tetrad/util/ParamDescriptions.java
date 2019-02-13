@@ -178,6 +178,23 @@ public class ParamDescriptions {
         map.put("addOriginalDataset", new ParamDescription("Yes, if adding an original dataset as another bootstrapping", false));
         //~Resampling
 
+        // Probabilistic Test
+        map.put("noRandomlyDeterminedIndependence", new ParamDescription("Yes, if use the cutoff threshold for the independence test.", false));
+        map.put("cutoffIndTest", new ParamDescription("Independence cutoff threshold", 0.5, 0.0, 1.0));
+        
+        // RB-BSC
+        map.put("thresholdNoRandomDataSearch", new ParamDescription("Yes, if use the cutoff threshold for the constraints independence test (stage 1).", false));
+        map.put("cutoffDataSearch", new ParamDescription("Independence cutoff threshold", 0.5, 0.0, 1.0));
+        map.put("thresholdNoRandomConstrainSearch", new ParamDescription("Yes, if use the cutoff threshold for the meta-constraints independence test (stage 2).", true));
+        map.put("cutoffConstrainSearch", new ParamDescription("Constraint-independence cutoff threshold", 0.5, 0.0, 1.0));
+        
+        map.put("numRandomizedSearchModels", new ParamDescription("The number of search probabilistic model (min = 1)", 10, 1, Integer.MAX_VALUE));
+        map.put("numBscBootstrapSamples", new ParamDescription("The number of bootstrappings drawing from posterior dist. (min = 1)", 50, 1, Integer.MAX_VALUE));
+        map.put("lowerBound", new ParamDescription("Lower bound cutoff threshold", 0.3, 0.0, 1.0));
+        map.put("upperBound", new ParamDescription("Upper bound cutoff threshold", 0.7, 0.0, 1.0));
+        map.put("outputRBD", new ParamDescription("Output graph: Yes: dependent-constraint RB, No: independent-constraint RB.", true));
+        // ~RB-BSC
+        
         map.put("fasRule", new ParamDescription(
                 "Adjacency search: 1 = PC, 2 = PC-Stable, 3 = Concurrent PC-Stable",
                 1, 1, 3));

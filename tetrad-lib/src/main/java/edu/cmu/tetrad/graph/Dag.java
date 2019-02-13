@@ -64,6 +64,8 @@ public final class Dag implements Graph {
 
     private boolean pag;
     private boolean pattern;
+    
+    private Map<String, Object> attributes = new HashMap<>();
 
     //===============================CONSTRUCTORS=======================//
 
@@ -716,6 +718,26 @@ public final class Dag implements Graph {
     public void setPattern(boolean pattern) {
         this.pattern = pattern;
     }
+
+	@Override
+	public Map<String, Object> getAllAttributes() {
+		return attributes;
+	}
+
+	@Override
+	public Object getAttribute(String key) {
+		return attributes.get(key);
+	}
+
+	@Override
+	public void removeAttribute(String key) {
+		attributes.remove(key);
+	}
+
+	@Override
+	public void addAttribute(String key, Object value) {
+		attributes.put(key, value);
+	}
 }
 
 
