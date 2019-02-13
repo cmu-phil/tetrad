@@ -31,6 +31,8 @@ import javax.swing.*;
 import java.awt.*;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * This class represents a node in a workbench; it is an abstract class, but
@@ -56,6 +58,8 @@ public class DisplayNode extends JComponent implements Node, TetradSerializableE
     private DisplayComp displayComp;
     private int uniqueId = AbstractVariable.LAST_ID++;
 
+    private Map<String, Object> attributes = new HashMap<>();
+    
     //===========================CONSTRUCTORS==============================//
 
     protected DisplayNode() {
@@ -232,6 +236,27 @@ public class DisplayNode extends JComponent implements Node, TetradSerializableE
             return i1;
         }
     }
+
+	@Override
+	public Map<String, Object> getAllAttributes() {
+		return attributes;
+	}
+
+	@Override
+	public Object getAttribute(String key) {
+		return attributes.get(key);
+	}
+
+	@Override
+	public void removeAttribute(String key) {
+		attributes.remove(key);
+	}
+
+	@Override
+	public void addAttribute(String key, Object value) {
+		attributes.put(key, value);
+	}
+
 }
 
 

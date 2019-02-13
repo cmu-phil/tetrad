@@ -1990,8 +1990,10 @@ public final class Fges implements GraphSearch, GraphScorer {
                 parentIndices[count++] = hashIndices.get(nextParent);
             }
 
+            // Calculate BIC score for this node
             int yIndex = hashIndices.get(y);
             double node_score = score.localScore(yIndex, parentIndices);
+            y.addAttribute("BIC", node_score);
             _score += node_score;
         }
 
