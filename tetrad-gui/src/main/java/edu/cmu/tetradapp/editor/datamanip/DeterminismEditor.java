@@ -17,11 +17,13 @@ import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import javax.swing.Box;
 import javax.swing.JButton;
 import javax.swing.JLabel;
@@ -84,28 +86,60 @@ public class DeterminismEditor extends JPanel implements FinalizingParameterEdit
         JButton detectBtn = new JButton("Detect deterministic variables");
         detectBtn.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                sourceDataSet.getVariables().forEach(var -> {
+                List<Set<Integer>> deterministicList = new ArrayList<>();
 
-                });
+                // Double for loop to build the initial deterministicList
+                for (int i = 0; i < sourceDataSet.getVariables().size(); i++) {
+                    Set<Integer> set = new HashSet<>();
 
-                List<Map> deterministicPairs = new LinkedList<>();
+                    for (int j = i + 1; j < sourceDataSet.getVariables().size(); j++) {
+                        Node outerVar = sourceDataSet.getVariable(i);
+                        Node innerVar = sourceDataSet.getVariable(j);
 
-                for (Node outerVar : sourceDataSet.getVariables()) {
-                    for (Node innerVar : sourceDataSet.getVariables()) {
-                        if (outerVar != innerVar) {
-                            if (isDeterministic(outerVar, innerVar)) {
-                                Map<Node, Node> varPair = new LinkedHashMap<>();
-                                varPair.put(outerVar, innerVar);
-
-                                // Add to list
-                                deterministicPairs.add(varPair);
-                            }
+                        System.out.println("=====Checking============" + outerVar.getName() + " and " + innerVar.getName() + " =====Deterministic=======" + isDeterministic(outerVar, innerVar));
+                        
+                        if (isDeterministic(outerVar, innerVar)) {
+                            set.add(j);
                         }
+                    }
+
+                    // Add to list
+                    deterministicList.add(set);
+                }
+
+                System.out.println("===========deterministicList============");
+                System.out.println(deterministicList);
+                
+                List<Set<Integer>> mergedList = new ArrayList<>();
+                
+                for (int k = 0; k < deterministicList.size(); k++) {
+//                    // Add the set index to the set
+//                    deterministicList.get(k).add(k);
+                      
+                    // Create a new set for non-empty set and add all the elements of the sets whose index is in this set
+                    if (!deterministicList.get(k).isEmpty()) {
+                        Set<Integer> mergedSet = new HashSet<>();
+                        
+                        // Add the index of this set to the merged set
+                        mergedSet.add(k);
+                        
+                        mergedSet.addAll(deterministicList.get(k));
+                                
+                        for (Integer index : deterministicList.get(k)) {
+                            mergedSet.addAll(deterministicList.get(index));
+                            
+                            // Then empty that set
+                            deterministicList.get(index).clear();
+                        }
+                        
+                        // Finally add to the mergedList
+                        mergedList.add(mergedSet);
                     }
                 }
 
-                // By now we have a list of deterministic variable pairs that can be merged
-
+                // By now we have a sorted list of non-duplicated deterministic variable set
+                System.out.println("===========mergedList============");
+                System.out.println(mergedList);
             }
         });
 
@@ -115,6 +149,8 @@ public class DeterminismEditor extends JPanel implements FinalizingParameterEdit
         container.add(domainVarsBox);
 
         container.add(interventionVarsBox);
+
+        container.add(detectBtn);
 
         // Adds the specified component to the end of this container.
         add(container, BorderLayout.CENTER);
@@ -140,7 +176,7 @@ public class DeterminismEditor extends JPanel implements FinalizingParameterEdit
             Object objY = sourceDataSet.getObject(i, yColumnIndex);
 
             if (map.containsKey(objX)) {
-                if (map.get(objX) != objY) {
+                if (!map.get(objX).equals(objY)) {
                     return false;
                 }
             } else {
