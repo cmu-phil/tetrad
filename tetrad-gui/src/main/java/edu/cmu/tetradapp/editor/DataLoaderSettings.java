@@ -61,7 +61,7 @@ import javax.swing.border.EmptyBorder;
  *
  * @author Joseph Ramsey
  */
-final class DataLoaderSettings extends JPanel {
+public final class DataLoaderSettings extends JPanel {
 
     private static final long serialVersionUID = -7597768949622586036L;
 

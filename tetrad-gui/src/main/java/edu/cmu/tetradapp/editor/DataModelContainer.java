@@ -18,7 +18,6 @@
 // along with this program; if not, write to the Free Software               //
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA //
 ///////////////////////////////////////////////////////////////////////////////
-
 package edu.cmu.tetradapp.editor;
 
 import edu.cmu.tetrad.data.DataModel;
@@ -26,12 +25,8 @@ import edu.cmu.tetrad.data.DataModel;
 /**
  * Tags a class that can return a data model.
  */
-interface DataModelContainer {
+public interface DataModelContainer {
 
-    
     DataModel getDataModel();
+
 }
-
-
-
-
