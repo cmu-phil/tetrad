@@ -34,6 +34,7 @@ import java.awt.Font;
 import java.awt.Frame;
 import java.awt.Point;
 import java.awt.Window;
+import java.awt.event.ActionEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.File;
@@ -592,7 +593,7 @@ public final class LoadDataDialog extends JPanel {
             }).start();
 
             // Create the loading indicator dialog and show
-            showLoadingIndicator("Validating...");
+            showLoadingIndicator("Validating...", e);
         });
 
         // Load button
@@ -630,7 +631,7 @@ public final class LoadDataDialog extends JPanel {
             }).start();
 
             // Create the loading indicator dialog and show
-            showLoadingIndicator("Loading...");
+            showLoadingIndicator("Loading...", e);
         });
 
         // Buttons container
@@ -675,7 +676,7 @@ public final class LoadDataDialog extends JPanel {
     /**
      * Create the loading indicator dialog and show
      */
-    private void showLoadingIndicator(String message) {
+    private void showLoadingIndicator(String message, ActionEvent evt) {
         JProgressBar progressBar = new JProgressBar(0, 100);
         // An indeterminate progress bar continuously displays animation
         progressBar.setIndeterminate(true);
@@ -698,7 +699,8 @@ public final class LoadDataDialog extends JPanel {
         dataLoadingIndicatorBox.add(Box.createVerticalStrut(10));
         dataLoadingIndicatorBox.add(progressBarBox);
 
-        Frame ancestor = (Frame) JOptionUtils.centeringComp().getTopLevelAncestor();
+        Frame ancestor = (Frame) SwingUtilities.getAncestorOfClass(Frame.class, (Component) evt.getSource());
+
         // Set modal true to block user input to other top-level windows when shown
         loadingIndicatorDialog = new JDialog(ancestor, true);
         // Remove the whole dialog title bar
