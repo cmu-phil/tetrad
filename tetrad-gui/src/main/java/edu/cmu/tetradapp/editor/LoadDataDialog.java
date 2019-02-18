@@ -27,7 +27,13 @@ import edu.pitt.dbmi.data.preview.BasicDataPreviewer;
 import edu.pitt.dbmi.data.preview.DataPreviewer;
 import edu.pitt.dbmi.data.validation.DataValidation;
 import edu.pitt.dbmi.data.validation.ValidationResult;
-import java.awt.*;
+import java.awt.BorderLayout;
+import java.awt.Component;
+import java.awt.Dimension;
+import java.awt.Font;
+import java.awt.Frame;
+import java.awt.Point;
+import java.awt.Window;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.File;
@@ -39,7 +45,24 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
-import javax.swing.*;
+import javax.swing.BorderFactory;
+import javax.swing.Box;
+import javax.swing.DefaultListModel;
+import javax.swing.JButton;
+import javax.swing.JDialog;
+import javax.swing.JFileChooser;
+import javax.swing.JLabel;
+import javax.swing.JList;
+import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
+import javax.swing.JProgressBar;
+import javax.swing.JScrollPane;
+import javax.swing.JTextArea;
+import javax.swing.JTextPane;
+import javax.swing.ListSelectionModel;
+import javax.swing.SwingUtilities;
 import javax.swing.border.CompoundBorder;
 import javax.swing.border.EmptyBorder;
 import static org.apache.commons.lang3.StringEscapeUtils.escapeHtml4;
@@ -52,19 +75,21 @@ import static org.apache.commons.lang3.StringEscapeUtils.escapeHtml4;
  */
 final class LoadDataDialog extends JPanel {
 
-    private List<File> loadedFiles;
+    private static final long serialVersionUID = 2299304318793152418L;
 
-    private List<String> validationResults;
+    private final List<File> loadedFiles;
 
-    private List<String> failedFiles;
+    private final List<String> validationResults;
+
+    private final List<String> failedFiles;
 
     private DataLoaderSettings dataLoaderSettings;
 
-    private DataModelList dataModelList;
+    private final DataModelList dataModelList;
 
-    private JTextPane validationResultTextPane;
+    private final JTextPane validationResultTextPane;
 
-    private JTextArea filePreviewTextArea;
+    private final JTextArea filePreviewTextArea;
 
     private final int previewFromLine;
 
@@ -80,9 +105,9 @@ final class LoadDataDialog extends JPanel {
 
     private JScrollPane filesToValidateScrollPane;
 
-    private DefaultListModel fileListModel;
+    private final DefaultListModel fileListModel;
 
-    private DefaultListModel validatedFileListModel;
+    private final DefaultListModel validatedFileListModel;
 
     private Box filePreviewBox;
 
