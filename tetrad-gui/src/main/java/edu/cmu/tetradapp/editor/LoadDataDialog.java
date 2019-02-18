@@ -667,7 +667,10 @@ final class LoadDataDialog extends JPanel {
         buttonsContainer.add(buttonsBox);
 
         // Add to overall container
-        container.add(buttonsContainer);
+//        container.add(buttonsContainer);
+        JPanel mainPanel = new JPanel(new BorderLayout());
+        mainPanel.add(container, BorderLayout.CENTER);
+        mainPanel.add(buttonsContainer, BorderLayout.SOUTH);
 
         // Dialog without dialog buttons, because we use Load button to handle data loading
         // If we use the buttons come with JOptionPane.showOptionDialog(), the data loader dialog
@@ -676,7 +679,7 @@ final class LoadDataDialog extends JPanel {
         // logging info dialog and close it if all files are loaded successfully.
         // Otherwise, still keep the data loader dialog there if fail to load any files - Zhou
         // Here no need to use the returned value since we are not handling the action buttons
-        JOptionPane.showOptionDialog(JOptionUtils.centeringComp(), container,
+        JOptionPane.showOptionDialog(JOptionUtils.centeringComp(), mainPanel,
                 "Data File Loader", JOptionPane.OK_CANCEL_OPTION,
                 JOptionPane.PLAIN_MESSAGE, null, new Object[]{}, null);
     }
@@ -777,7 +780,7 @@ final class LoadDataDialog extends JPanel {
 
                 strBuilder.append("<p style=\"color: orange;\"><b>Warning (total ");
                 strBuilder.append(warnCount);
-                    
+
                 if (warnCount > validationWarnErrMsgThreshold) {
                     strBuilder.append(", showing the first ");
                     strBuilder.append(validationWarnErrMsgThreshold);
@@ -806,14 +809,14 @@ final class LoadDataDialog extends JPanel {
                 String errorCountString = (errorCount > 1) ? " errors" : " error";
 
                 strBuilder.append("<p style=\"color: red;\"><b>Validation failed!<br>Please fix the following ");
-                
+
                 if (errorCount > validationWarnErrMsgThreshold) {
                     strBuilder.append(validationWarnErrMsgThreshold);
                     strBuilder.append(errorCountString);
                     strBuilder.append(" (total ");
                     strBuilder.append(errorCount);
                     strBuilder.append(") and validate again:</b><br />");
- 
+
                     errors.subList(0, validationWarnErrMsgThreshold).forEach(e -> {
                         // Remember to excape the html tags if the data file contains any
                         strBuilder.append(escapeHtml4(e.getMessage()));
@@ -830,7 +833,7 @@ final class LoadDataDialog extends JPanel {
                         strBuilder.append("<br />");
                     });
                 }
-                
+
                 strBuilder.append("</p>");
 
                 // Also add the file name to failed list
