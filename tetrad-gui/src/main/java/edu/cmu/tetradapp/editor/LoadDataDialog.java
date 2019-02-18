@@ -73,7 +73,7 @@ import static org.apache.commons.lang3.StringEscapeUtils.escapeHtml4;
  *
  * @author Joseph Ramsey
  */
-final class LoadDataDialog extends JPanel {
+public final class LoadDataDialog extends JPanel {
 
     private static final long serialVersionUID = 2299304318793152418L;
 
