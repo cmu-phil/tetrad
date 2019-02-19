@@ -71,6 +71,8 @@ public final class Fges implements GraphSearch, GraphScorer {
      * List of variables in the data set, in order.
      */
     private List<Node> variables;
+    
+    private Map<Node, Object> nodeAttributes = new HashMap<>();
 
     /**
      * The true graph, if known. If this is provided, asterisks will be printed
@@ -276,6 +278,15 @@ public final class Fges implements GraphSearch, GraphScorer {
         this.modelScore = totalScore;
 
         this.out.println("Model Score = " + modelScore);
+        
+        for(Node _node : nodeAttributes.keySet()) {
+        	Object value = nodeAttributes.get(_node);
+        	
+        	this.out.println(_node.getName() + " Score = " + value);
+        	
+        	Node node = graph.getNode(_node.getName());
+        	node.addAttribute("BIC", value);
+        }
 
         graph.addAttribute("BIC", modelScore);
         
@@ -1993,7 +2004,9 @@ public final class Fges implements GraphSearch, GraphScorer {
             // Calculate BIC score for this node
             int yIndex = hashIndices.get(y);
             double node_score = score.localScore(yIndex, parentIndices);
-            y.addAttribute("BIC", node_score);
+            
+            nodeAttributes.put(y, node_score);
+            
             _score += node_score;
         }
 

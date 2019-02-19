@@ -298,6 +298,11 @@ public final class SemGraph implements Graph, TetradSerializable {
             throws IllegalArgumentException {
         throw new UnsupportedOperationException();
     }
+    
+    public final void transferAttributes(Graph graph)
+    		throws IllegalArgumentException {
+        throw new UnsupportedOperationException();
+    }
 
     public Set<Triple> getAmbiguousTriples() {
         return getGraph().getAmbiguousTriples();

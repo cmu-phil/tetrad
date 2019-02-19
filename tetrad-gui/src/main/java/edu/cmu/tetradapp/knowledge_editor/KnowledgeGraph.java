@@ -87,8 +87,16 @@ public class KnowledgeGraph implements Graph, TetradSerializableExcluded {
     public final void transferNodesAndEdges(Graph graph)
             throws IllegalArgumentException {
         this.getGraph().transferNodesAndEdges(graph);
+        for (Node node : this.getGraph().getNodes()) {
+        	node.getAllAttributes().clear();
+        }
     }
 
+    public final void transferAttributes(Graph graph)
+    		throws IllegalArgumentException {
+        this.getGraph().transferAttributes(graph);
+    }
+    
     public Set<Triple> getAmbiguousTriples() {
         return getGraph().getAmbiguousTriples();
     }

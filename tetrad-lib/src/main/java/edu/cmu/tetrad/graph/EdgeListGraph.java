@@ -145,6 +145,10 @@ public class EdgeListGraph implements Graph, TripleClassifier {
         }
 
         transferNodesAndEdges(graph);
+        
+        // Keep attributes from the original graph
+        transferAttributes(graph);
+        
         this.ambiguousTriples = graph.getAmbiguousTriples();
         this.underLineTriples = graph.getUnderLines();
         this.dottedUnderLineTriples = graph.getDottedUnderlines();
@@ -215,6 +219,9 @@ public class EdgeListGraph implements Graph, TripleClassifier {
         _graph.namesHash = new HashMap<>(graph.namesHash);
         _graph.pag = graph.pag;
         _graph.pattern = graph.pattern;
+        
+        _graph.getAllAttributes().putAll(graph.getAllAttributes());
+        
         return _graph;
     }
 
@@ -1041,6 +1048,15 @@ public class EdgeListGraph implements Graph, TripleClassifier {
 
         ancestors = null;
 //        System.out.println("TANSFER AFTER " + getEdges());
+    }
+    
+    public void transferAttributes(Graph graph)
+    		throws IllegalArgumentException {
+        if (graph == null) {
+            throw new NullPointerException("No graph was provided.");
+        }
+
+        this.attributes.putAll(graph.getAllAttributes());
     }
 
     /**

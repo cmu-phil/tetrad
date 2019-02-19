@@ -73,7 +73,12 @@ public class EdgeListGraphSingleConnections extends EdgeListGraph implements Tri
             nodes = new ArrayList<>(_graph.nodes);
             edgesSet = new HashSet<>(_graph.edgesSet);
             edgeLists = new ConcurrentHashMap<>();
-            for (Node node : nodes) this.edgeLists.put(node, new ArrayList<>(_graph.edgeLists.get(node)));
+            
+            for (Node node : nodes) {
+            	this.edgeLists.put(node, new ArrayList<>(_graph.edgeLists.get(node)));
+            	node.getAllAttributes().clear();
+            }
+            
             ambiguousTriples = new HashSet<>(_graph.ambiguousTriples);
             underLineTriples = new HashSet<>(_graph.underLineTriples);
             dottedUnderLineTriples = new HashSet<>(_graph.dottedUnderLineTriples);
@@ -120,6 +125,7 @@ public class EdgeListGraphSingleConnections extends EdgeListGraph implements Tri
         for (Node node : nodes) {
             edgeLists.put(node, new ArrayList<Edge>());
             namesHash.put(node.getName(), node);
+            node.getAllAttributes().clear();
         }
     }
 
@@ -131,13 +137,20 @@ public class EdgeListGraphSingleConnections extends EdgeListGraph implements Tri
         graph.nodes = new ArrayList<>(_graph.nodes);
         graph.edgesSet = new HashSet<>(_graph.edgesSet);
         graph.edgeLists = new ConcurrentHashMap<>(_graph.edgeLists);
-        for (Node node : graph.nodes) graph.edgeLists.put(node, new ArrayList<>(_graph.edgeLists.get(node)));
+        
+        for (Node node : graph.nodes) {
+        	graph.edgeLists.put(node, new ArrayList<>(_graph.edgeLists.get(node)));
+        }
+        
         graph.ambiguousTriples = new HashSet<>(_graph.ambiguousTriples);
         graph.underLineTriples = new HashSet<>(_graph.underLineTriples);
         graph.dottedUnderLineTriples = new HashSet<>(_graph.dottedUnderLineTriples);
         graph.stuffRemovedSinceLastTripleAccess = _graph.stuffRemovedSinceLastTripleAccess;
         graph.highlightedEdges = new HashSet<>(_graph.highlightedEdges);
         graph.namesHash = new HashMap<>(_graph.namesHash);
+        
+        graph.getAllAttributes().putAll(_graph.getAllAttributes());
+        
         return _graph;
     }
 

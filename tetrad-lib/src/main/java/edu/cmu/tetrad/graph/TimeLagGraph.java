@@ -579,6 +579,10 @@ public class TimeLagGraph implements Graph {
     public void transferNodesAndEdges(Graph graph) throws IllegalArgumentException {
         getGraph().transferNodesAndEdges(graph);
     }
+    
+    public void transferAttributes(Graph graph) throws IllegalArgumentException {
+    	getGraph().transferAttributes(graph);
+    }
 
     public Set<Triple> getAmbiguousTriples() {
         return getGraph().getAmbiguousTriples();

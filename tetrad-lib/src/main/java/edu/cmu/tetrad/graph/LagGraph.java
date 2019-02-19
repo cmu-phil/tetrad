@@ -359,6 +359,10 @@ public class LagGraph implements Graph {
     public void transferNodesAndEdges(Graph graph) throws IllegalArgumentException {
         this.getGraph().transferNodesAndEdges(graph);
     }
+    
+    public void transferAttributes(Graph graph) throws IllegalArgumentException {
+    	this.getGraph().transferAttributes(graph);
+    }
 
     public Set<Triple> getAmbiguousTriples() {
         return getGraph().getAmbiguousTriples();
