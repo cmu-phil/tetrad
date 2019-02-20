@@ -27,9 +27,14 @@ import edu.pitt.dbmi.data.preview.BasicDataPreviewer;
 import edu.pitt.dbmi.data.preview.DataPreviewer;
 import edu.pitt.dbmi.data.validation.DataValidation;
 import edu.pitt.dbmi.data.validation.ValidationResult;
-import java.awt.*;
+import java.awt.BorderLayout;
+import java.awt.Component;
+import java.awt.Dimension;
+import java.awt.Font;
+import java.awt.Frame;
+import java.awt.Point;
+import java.awt.Window;
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.File;
@@ -41,11 +46,26 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
-import javax.swing.*;
+import javax.swing.BorderFactory;
+import javax.swing.Box;
+import javax.swing.DefaultListModel;
+import javax.swing.JButton;
+import javax.swing.JDialog;
+import javax.swing.JFileChooser;
+import javax.swing.JLabel;
+import javax.swing.JList;
+import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
+import javax.swing.JProgressBar;
+import javax.swing.JScrollPane;
+import javax.swing.JTextArea;
+import javax.swing.JTextPane;
+import javax.swing.ListSelectionModel;
+import javax.swing.SwingUtilities;
 import javax.swing.border.CompoundBorder;
 import javax.swing.border.EmptyBorder;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
 import static org.apache.commons.lang3.StringEscapeUtils.escapeHtml4;
 
 /**
@@ -54,21 +74,23 @@ import static org.apache.commons.lang3.StringEscapeUtils.escapeHtml4;
  *
  * @author Joseph Ramsey
  */
-final class LoadDataDialog extends JPanel {
+public final class LoadDataDialog extends JPanel {
 
-    private List<File> loadedFiles;
+    private static final long serialVersionUID = 2299304318793152418L;
 
-    private List<String> validationResults;
+    private final List<File> loadedFiles;
 
-    private List<String> failedFiles;
+    private final List<String> validationResults;
+
+    private final List<String> failedFiles;
 
     private DataLoaderSettings dataLoaderSettings;
 
-    private DataModelList dataModelList;
+    private final DataModelList dataModelList;
 
-    private JTextPane validationResultTextPane;
+    private final JTextPane validationResultTextPane;
 
-    private JTextArea filePreviewTextArea;
+    private final JTextArea filePreviewTextArea;
 
     private final int previewFromLine;
 
@@ -84,9 +106,9 @@ final class LoadDataDialog extends JPanel {
 
     private JScrollPane filesToValidateScrollPane;
 
-    private DefaultListModel fileListModel;
+    private final DefaultListModel fileListModel;
 
-    private DefaultListModel validatedFileListModel;
+    private final DefaultListModel validatedFileListModel;
 
     private Box filePreviewBox;
 
@@ -221,20 +243,17 @@ final class LoadDataDialog extends JPanel {
 
         // List listener
         // use an anonymous inner class to implement the event listener interface
-        fileList.addListSelectionListener(new ListSelectionListener() {
-            @Override
-            public void valueChanged(ListSelectionEvent e) {
-                if (!e.getValueIsAdjusting()) {
-                    int fileIndex = fileList.getMinSelectionIndex();
-                    if (fileIndex < 0) {
-                        filePreviewBox.setBorder(new CompoundBorder(BorderFactory.createTitledBorder(defaulyPreviewBoxBorderTitle), new EmptyBorder(5, 5, 5, 5)));
-                        filePreviewTextArea.setText("");
-                    } else {
-                        // Update the border title and show preview
-                        previewBoxBorderTitle = defaulyPreviewBoxBorderTitle + loadedFiles.get(fileIndex).getName();
-                        filePreviewBox.setBorder(new CompoundBorder(BorderFactory.createTitledBorder(previewBoxBorderTitle), new EmptyBorder(5, 5, 5, 5)));
-                        setPreview(loadedFiles.get(fileIndex), filePreviewTextArea);
-                    }
+        fileList.addListSelectionListener((e) -> {
+            if (!e.getValueIsAdjusting()) {
+                int fileIndex = fileList.getMinSelectionIndex();
+                if (fileIndex < 0) {
+                    filePreviewBox.setBorder(new CompoundBorder(BorderFactory.createTitledBorder(defaulyPreviewBoxBorderTitle), new EmptyBorder(5, 5, 5, 5)));
+                    filePreviewTextArea.setText("");
+                } else {
+                    // Update the border title and show preview
+                    previewBoxBorderTitle = defaulyPreviewBoxBorderTitle + loadedFiles.get(fileIndex).getName();
+                    filePreviewBox.setBorder(new CompoundBorder(BorderFactory.createTitledBorder(previewBoxBorderTitle), new EmptyBorder(5, 5, 5, 5)));
+                    setPreview(loadedFiles.get(fileIndex), filePreviewTextArea);
                 }
             }
         });
@@ -255,33 +274,30 @@ final class LoadDataDialog extends JPanel {
                     Point point = e.getPoint();
                     menu.show(fileList, point.x, point.y);
 
-                    close.addActionListener(new ActionListener() {
-                        @Override
-                        public void actionPerformed(ActionEvent e) {
-                            // Can't remove if there's only one file left
-                            if (loadedFiles.size() == 1) {
-                                JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
-                                        "You can't remove when there's only one file.");
-                            } else {
-                                // Close tab to show confirmation dialog
-                                int selectedAction = JOptionPane.showConfirmDialog(JOptionUtils.centeringComp(),
-                                        "Are you sure you want to remove this data file from the data loading list?",
-                                        "Confirm", JOptionPane.OK_CANCEL_OPTION,
-                                        JOptionPane.WARNING_MESSAGE);
+                    close.addActionListener((evt) -> {
+                        // Can't remove if there's only one file left
+                        if (loadedFiles.size() == 1) {
+                            JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
+                                    "You can't remove when there's only one file.");
+                        } else {
+                            // Close tab to show confirmation dialog
+                            int selectedAction = JOptionPane.showConfirmDialog(JOptionUtils.centeringComp(),
+                                    "Are you sure you want to remove this data file from the data loading list?",
+                                    "Confirm", JOptionPane.OK_CANCEL_OPTION,
+                                    JOptionPane.WARNING_MESSAGE);
 
-                                if (selectedAction == JOptionPane.OK_OPTION) {
-                                    // Remove the file from list model
-                                    fileListModel.remove(index);
+                            if (selectedAction == JOptionPane.OK_OPTION) {
+                                // Remove the file from list model
+                                fileListModel.remove(index);
 
-                                    // Also need to remove it from data structure
-                                    // Shifts any subsequent elements to the left in the list
-                                    System.out.println("Removing file of index = " + index + " from data loading list");
-                                    loadedFiles.remove(index);
+                                // Also need to remove it from data structure
+                                // Shifts any subsequent elements to the left in the list
+                                System.out.println("Removing file of index = " + index + " from data loading list");
+                                loadedFiles.remove(index);
 
-                                    // Reset the default selection and corresponding preview content
-                                    fileList.setSelectedIndex(0);
-                                    setPreview(loadedFiles.get(0), filePreviewTextArea);
-                                }
+                                // Reset the default selection and corresponding preview content
+                                fileList.setSelectedIndex(0);
+                                setPreview(loadedFiles.get(0), filePreviewTextArea);
                             }
                         }
                     });
@@ -305,37 +321,34 @@ final class LoadDataDialog extends JPanel {
         addFileButton = new JButton("Add more files to the loading list ...");
 
         // Add file button listener
-        addFileButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                // Show file chooser
-                JFileChooser fileChooser = new JFileChooser();
-                String sessionSaveLocation = Preferences.userRoot().get("fileSaveLocation", "");
-                fileChooser.setCurrentDirectory(new File(sessionSaveLocation));
-                fileChooser.resetChoosableFileFilters();
-                fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
-                // Only allow to add one file at a time
-                fileChooser.setMultiSelectionEnabled(true);
-                // Customize dialog title bar text
-                fileChooser.setDialogTitle("Add more files");
-                // The second argument sets both the title for the dialog window and the label for the approve button
-                int _ret = fileChooser.showDialog(container, "Choose");
+        addFileButton.addActionListener((e) -> {
+            // Show file chooser
+            JFileChooser fileChooser = new JFileChooser();
+            String sessionSaveLocation = Preferences.userRoot().get("fileSaveLocation", "");
+            fileChooser.setCurrentDirectory(new File(sessionSaveLocation));
+            fileChooser.resetChoosableFileFilters();
+            fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
+            // Only allow to add one file at a time
+            fileChooser.setMultiSelectionEnabled(true);
+            // Customize dialog title bar text
+            fileChooser.setDialogTitle("Add more files");
+            // The second argument sets both the title for the dialog window and the label for the approve button
+            int _ret = fileChooser.showDialog(container, "Choose");
 
-                if (_ret == JFileChooser.CANCEL_OPTION) {
-                    return;
-                }
+            if (_ret == JFileChooser.CANCEL_OPTION) {
+                return;
+            }
 
-                // File array that contains only one file
-                final File[] newFiles = fileChooser.getSelectedFiles();
+            // File array that contains only one file
+            final File[] newFiles = fileChooser.getSelectedFiles();
 
-                // Add newly added files to the loading list
-                for (File newFile : newFiles) {
-                    // Do not add the same file twice
-                    if (!loadedFiles.contains(newFile)) {
-                        loadedFiles.add(newFile);
-                        // Also add new file name to the file list model
-                        fileListModel.addElement(newFile.getName());
-                    }
+            // Add newly added files to the loading list
+            for (File newFile : newFiles) {
+                // Do not add the same file twice
+                if (!loadedFiles.contains(newFile)) {
+                    loadedFiles.add(newFile);
+                    // Also add new file name to the file list model
+                    fileListModel.addElement(newFile.getName());
                 }
             }
         });
@@ -408,15 +421,12 @@ final class LoadDataDialog extends JPanel {
         validationFileList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 
         // List listener
-        validationFileList.addListSelectionListener(new ListSelectionListener() {
-            @Override
-            public void valueChanged(ListSelectionEvent e) {
-                if (!e.getValueIsAdjusting()) {
-                    int fileIndex = validationFileList.getSelectedIndex();
-                    // -1 means no selection
-                    if (fileIndex != -1) {
-                        setValidationResult(validationResults.get(fileIndex), validationResultTextPane);
-                    }
+        validationFileList.addListSelectionListener((e) -> {
+            if (!e.getValueIsAdjusting()) {
+                int fileIndex = validationFileList.getSelectedIndex();
+                // -1 means no selection
+                if (fileIndex != -1) {
+                    setValidationResult(validationResults.get(fileIndex), validationResultTextPane);
                 }
             }
         });
@@ -466,183 +476,162 @@ final class LoadDataDialog extends JPanel {
         settingsButton = new JButton("< Settings");
 
         // Step 2 backward button listener
-        settingsButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                // Show file list
-                fileListBox.setVisible(true);
+        settingsButton.addActionListener((e) -> {
+            // Show file list
+            fileListBox.setVisible(true);
 
-                basicSettingsBox.setVisible(true);
+            basicSettingsBox.setVisible(true);
 
-                // Show options
-                advancedSettingsBox.setVisible(true);
+            // Show options
+            advancedSettingsBox.setVisible(true);
 
-                // Show preview
-                previewContainer.setVisible(true);
+            // Show preview
+            previewContainer.setVisible(true);
 
-                // Hide summary
-                validationResultsContainer.setVisible(false);
+            // Hide summary
+            validationResultsContainer.setVisible(false);
 
-                // Hide step 1 backward button
-                settingsButton.setVisible(false);
+            // Hide step 1 backward button
+            settingsButton.setVisible(false);
 
-                // Show validate button
-                validateButton.setVisible(true);
+            // Show validate button
+            validateButton.setVisible(true);
 
-                // Hide finish button
-                loadButton.setVisible(false);
+            // Hide finish button
+            loadButton.setVisible(false);
 
-                // Reset the list model
-                validatedFileListModel.clear();
+            // Reset the list model
+            validatedFileListModel.clear();
 
-                // Removes all elements for each new validation
-                validationResults.clear();
+            // Removes all elements for each new validation
+            validationResults.clear();
 
-                // Also reset the failedFiles list
-                failedFiles.clear();
-            }
+            // Also reset the failedFiles list
+            failedFiles.clear();
         });
 
         // Validate button
         validateButton = new JButton("Validate >");
 
         // Step 3 button listener
-        validateButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                // First we want to do some basic form validation/checks
-                // to eliminate user errors
-                List<String> inputErrors = new ArrayList();
+        validateButton.addActionListener((e) -> {
+            // First we want to do some basic form validation/checks
+            // to eliminate user errors
+            List<String> inputErrors = new ArrayList();
 
-                if (!dataLoaderSettings.isColumnLabelSpecified()) {
-                    inputErrors.add("- Please specify the case ID column label.");
-                }
-
-                if (!dataLoaderSettings.isOtherCommentMarkerSpecified()) {
-                    inputErrors.add("- Please specify the comment marker.");
-                }
-
-                // Show all errors in one popup
-                if (!inputErrors.isEmpty()) {
-                    String inputErrorMessages = "";
-                    for (String error : inputErrors) {
-                        inputErrorMessages = inputErrorMessages + error + "\n";
-                    }
-                    JOptionPane.showMessageDialog(container, inputErrorMessages, "Input Error",
-                            JOptionPane.ERROR_MESSAGE);
-                    return;
-                }
-
-                // Disable the button and change the button text
-                validateButton.setEnabled(false);
-                validateButton.setText("Validating ...");
-
-                // New thread to run the validation and hides the loading indicator
-                // and shows the validation results once the validation process is done - Zhou
-                new Thread(new Runnable() {
-                    @Override
-                    public void run() {
-                        // Validate all files and set error messages
-                        validateAllFiles();
-
-                        // Schedule a Runnable which will be executed on the Event Dispatching Thread
-                        // SwingUtilities.invokeLater means that this call will return immediately
-                        // as the event is placed in Event Dispatcher Queue,
-                        // and run() method will run asynchronously
-                        SwingUtilities.invokeLater(new Runnable() {
-                            @Override
-                            public void run() {
-                                // Hide the loading indicator
-                                hideLoadingIndicator();
-
-                                // Show result summary
-                                validationResultsContainer.setVisible(true);
-
-                                // Hide all inside settingsContainer
-                                fileListBox.setVisible(false);
-                                basicSettingsBox.setVisible(false);
-                                advancedSettingsBox.setVisible(false);
-
-                                // Use previewContainer instead of previewBox
-                                // since the previewContainer also contains padding
-                                previewContainer.setVisible(false);
-
-                                // Show step 2 backward button
-                                settingsButton.setVisible(true);
-
-                                // Hide validate button
-                                validateButton.setVisible(false);
-
-                                // Show finish button
-                                loadButton.setVisible(true);
-
-                                // Determine if enable the finish button or not
-                                if (failedFiles.size() > 0) {
-                                    // Disable it
-                                    loadButton.setEnabled(false);
-                                } else {
-                                    // Enable it
-                                    loadButton.setEnabled(true);
-                                }
-
-                                // Enable the button and hange back the button text
-                                validateButton.setEnabled(true);
-                                validateButton.setText("Validate >");
-                            }
-                        });
-                    }
-                }).start();
-
-                // Create the loading indicator dialog and show
-                showLoadingIndicator("Validating...");
+            if (!dataLoaderSettings.isColumnLabelSpecified()) {
+                inputErrors.add("- Please specify the case ID column label.");
             }
+
+            if (!dataLoaderSettings.isOtherCommentMarkerSpecified()) {
+                inputErrors.add("- Please specify the comment marker.");
+            }
+
+            // Show all errors in one popup
+            if (!inputErrors.isEmpty()) {
+                String inputErrorMessages = "";
+                for (String error : inputErrors) {
+                    inputErrorMessages = inputErrorMessages + error + "\n";
+                }
+                JOptionPane.showMessageDialog(container, inputErrorMessages, "Input Error",
+                        JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+
+            // Disable the button and change the button text
+            validateButton.setEnabled(false);
+            validateButton.setText("Validating ...");
+
+            // New thread to run the validation and hides the loading indicator
+            // and shows the validation results once the validation process is done - Zhou
+            new Thread(() -> {
+                // Validate all files and set error messages
+                validateAllFiles();
+
+                // Schedule a Runnable which will be executed on the Event Dispatching Thread
+                // SwingUtilities.invokeLater means that this call will return immediately
+                // as the event is placed in Event Dispatcher Queue,
+                // and run() method will run asynchronously
+                SwingUtilities.invokeLater(() -> {
+                    // Hide the loading indicator
+                    hideLoadingIndicator();
+
+                    // Show result summary
+                    validationResultsContainer.setVisible(true);
+
+                    // Hide all inside settingsContainer
+                    fileListBox.setVisible(false);
+                    basicSettingsBox.setVisible(false);
+                    advancedSettingsBox.setVisible(false);
+
+                    // Use previewContainer instead of previewBox
+                    // since the previewContainer also contains padding
+                    previewContainer.setVisible(false);
+
+                    // Show step 2 backward button
+                    settingsButton.setVisible(true);
+
+                    // Hide validate button
+                    validateButton.setVisible(false);
+
+                    // Show finish button
+                    loadButton.setVisible(true);
+
+                    // Determine if enable the finish button or not
+                    if (failedFiles.size() > 0) {
+                        // Disable it
+                        loadButton.setEnabled(false);
+                    } else {
+                        // Enable it
+                        loadButton.setEnabled(true);
+                    }
+
+                    // Enable the button and hange back the button text
+                    validateButton.setEnabled(true);
+                    validateButton.setText("Validate >");
+                });
+            }).start();
+
+            // Create the loading indicator dialog and show
+            showLoadingIndicator("Validating...", e);
         });
 
         // Load button
         loadButton = new JButton("Load");
 
         // Load data button listener
-        loadButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                // Change button text
-                loadButton.setEnabled(false);
-                loadButton.setText("Loading ...");
+        loadButton.addActionListener((e) -> {
+            // Change button text
+            loadButton.setEnabled(false);
+            loadButton.setText("Loading ...");
 
-                // Load all data files and hide the loading indicator once done
-                new Thread(new Runnable() {
-                    @Override
-                    public void run() {
-                        try {
-                            // Load all data files via data reader
-                            loadAllFiles();
-                        } catch (IOException ex) {
-                            Logger.getLogger(LoadDataDialog.class.getName()).log(Level.SEVERE, null, ex);
-                        }
+            // Load all data files and hide the loading indicator once done
+            new Thread(() -> {
+                try {
+                    // Load all data files via data reader
+                    loadAllFiles();
+                } catch (IOException ex) {
+                    Logger.getLogger(LoadDataDialog.class.getName()).log(Level.SEVERE, null, ex);
+                }
 
-                        // Schedule a Runnable which will be executed on the Event Dispatching Thread
-                        // SwingUtilities.invokeLater means that this call will return immediately
-                        // as the event is placed in Event Dispatcher Queue,
-                        // and run() method will run asynchronously
-                        SwingUtilities.invokeLater(new Runnable() {
-                            @Override
-                            public void run() {
-                                // Hide the loading indicator
-                                hideLoadingIndicator();
+                // Schedule a Runnable which will be executed on the Event Dispatching Thread
+                // SwingUtilities.invokeLater means that this call will return immediately
+                // as the event is placed in Event Dispatcher Queue,
+                // and run() method will run asynchronously
+                SwingUtilities.invokeLater(() -> {
+                    // Hide the loading indicator
+                    hideLoadingIndicator();
 
-                                // Close the data loader dialog
-                                Window w = SwingUtilities.getWindowAncestor(loadButton);
-                                if (w != null) {
-                                    w.setVisible(false);
-                                }
-                            }
-                        });
+                    // Close the data loader dialog
+                    Window w = SwingUtilities.getWindowAncestor(loadButton);
+                    if (w != null) {
+                        w.setVisible(false);
                     }
-                }).start();
+                });
+            }).start();
 
-                // Create the loading indicator dialog and show
-                showLoadingIndicator("Loading...");
-            }
+            // Create the loading indicator dialog and show
+            showLoadingIndicator("Loading...", e);
         });
 
         // Buttons container
@@ -667,7 +656,10 @@ final class LoadDataDialog extends JPanel {
         buttonsContainer.add(buttonsBox);
 
         // Add to overall container
-        container.add(buttonsContainer);
+//        container.add(buttonsContainer);
+        JPanel mainPanel = new JPanel(new BorderLayout());
+        mainPanel.add(container, BorderLayout.CENTER);
+        mainPanel.add(buttonsContainer, BorderLayout.SOUTH);
 
         // Dialog without dialog buttons, because we use Load button to handle data loading
         // If we use the buttons come with JOptionPane.showOptionDialog(), the data loader dialog
@@ -676,7 +668,7 @@ final class LoadDataDialog extends JPanel {
         // logging info dialog and close it if all files are loaded successfully.
         // Otherwise, still keep the data loader dialog there if fail to load any files - Zhou
         // Here no need to use the returned value since we are not handling the action buttons
-        JOptionPane.showOptionDialog(JOptionUtils.centeringComp(), container,
+        JOptionPane.showOptionDialog(JOptionUtils.centeringComp(), mainPanel,
                 "Data File Loader", JOptionPane.OK_CANCEL_OPTION,
                 JOptionPane.PLAIN_MESSAGE, null, new Object[]{}, null);
     }
@@ -684,7 +676,7 @@ final class LoadDataDialog extends JPanel {
     /**
      * Create the loading indicator dialog and show
      */
-    private void showLoadingIndicator(String message) {
+    private void showLoadingIndicator(String message, ActionEvent evt) {
         JProgressBar progressBar = new JProgressBar(0, 100);
         // An indeterminate progress bar continuously displays animation
         progressBar.setIndeterminate(true);
@@ -707,7 +699,8 @@ final class LoadDataDialog extends JPanel {
         dataLoadingIndicatorBox.add(Box.createVerticalStrut(10));
         dataLoadingIndicatorBox.add(progressBarBox);
 
-        Frame ancestor = (Frame) JOptionUtils.centeringComp().getTopLevelAncestor();
+        Frame ancestor = (Frame) SwingUtilities.getAncestorOfClass(Frame.class, (Component) evt.getSource());
+
         // Set modal true to block user input to other top-level windows when shown
         loadingIndicatorDialog = new JDialog(ancestor, true);
         // Remove the whole dialog title bar
@@ -777,7 +770,7 @@ final class LoadDataDialog extends JPanel {
 
                 strBuilder.append("<p style=\"color: orange;\"><b>Warning (total ");
                 strBuilder.append(warnCount);
-                    
+
                 if (warnCount > validationWarnErrMsgThreshold) {
                     strBuilder.append(", showing the first ");
                     strBuilder.append(validationWarnErrMsgThreshold);
@@ -806,14 +799,14 @@ final class LoadDataDialog extends JPanel {
                 String errorCountString = (errorCount > 1) ? " errors" : " error";
 
                 strBuilder.append("<p style=\"color: red;\"><b>Validation failed!<br>Please fix the following ");
-                
+
                 if (errorCount > validationWarnErrMsgThreshold) {
                     strBuilder.append(validationWarnErrMsgThreshold);
                     strBuilder.append(errorCountString);
                     strBuilder.append(" (total ");
                     strBuilder.append(errorCount);
                     strBuilder.append(") and validate again:</b><br />");
- 
+
                     errors.subList(0, validationWarnErrMsgThreshold).forEach(e -> {
                         // Remember to excape the html tags if the data file contains any
                         strBuilder.append(escapeHtml4(e.getMessage()));
@@ -830,7 +823,7 @@ final class LoadDataDialog extends JPanel {
                         strBuilder.append("<br />");
                     });
                 }
-                
+
                 strBuilder.append("</p>");
 
                 // Also add the file name to failed list
