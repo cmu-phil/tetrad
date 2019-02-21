@@ -16,7 +16,6 @@ import edu.cmu.tetrad.search.DagToPag;
 import edu.cmu.tetrad.util.Parameters;
 import edu.pitt.dbmi.algo.resampling.GeneralResamplingTest;
 import edu.pitt.dbmi.algo.resampling.ResamplingEdgeEnsemble;
-
 import java.util.List;
 
 /**
@@ -127,5 +126,10 @@ public class Rfci implements Algorithm, HasKnowledge, TakesIndependenceWrapper {
     @Override
     public void setIndependenceWrapper(IndependenceWrapper test) {
         this.test = test;
+    }
+    
+    @Override
+    public IndependenceWrapper getIndependenceWrapper() {
+        return test;
     }
 }

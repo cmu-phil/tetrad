@@ -17,7 +17,6 @@ import edu.cmu.tetrad.search.SearchGraphUtils;
 import edu.cmu.tetrad.util.Parameters;
 import edu.pitt.dbmi.algo.resampling.GeneralResamplingTest;
 import edu.pitt.dbmi.algo.resampling.ResamplingEdgeEnsemble;
-
 import java.util.List;
 
 /**
@@ -153,4 +152,8 @@ public class PcStable implements Algorithm, TakesInitialGraph, HasKnowledge, Tak
         this.test = independenceWrapper;
     }
 
+    @Override
+    public IndependenceWrapper getIndependenceWrapper() {
+        return test;
+    }
 }

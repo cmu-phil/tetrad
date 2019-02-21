@@ -17,7 +17,6 @@ import edu.cmu.tetrad.search.PcAll;
 import edu.cmu.tetrad.util.Parameters;
 import edu.pitt.dbmi.algo.resampling.GeneralResamplingTest;
 import edu.pitt.dbmi.algo.resampling.ResamplingEdgeEnsemble;
-
 import java.util.List;
 
 /**
@@ -170,4 +169,8 @@ public class PcStableMax implements Algorithm, TakesInitialGraph, HasKnowledge, 
         this.test = test;
     }
 
+    @Override
+    public IndependenceWrapper getIndependenceWrapper() {
+        return test;
+    }
 }
