@@ -24,6 +24,7 @@ package edu.cmu.tetrad.graph;
 import edu.cmu.tetrad.util.TetradSerializable;
 
 import java.beans.PropertyChangeListener;
+import java.util.Map;
 
 /**
  * Represents an object with a name, node type, and position that can serve as a
@@ -109,6 +110,15 @@ public interface Node extends TetradSerializable, Comparable {
      * Alphabetical order.
      */
     int compareTo(Object o);
+    
+    Map<String, Object> getAllAttributes();
+    
+    Object getAttribute(String key);
+    
+    void removeAttribute(String key);
+    
+    void addAttribute(String key, Object value);
+
 }
 
 

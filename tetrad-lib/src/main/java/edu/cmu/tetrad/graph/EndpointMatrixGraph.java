@@ -973,7 +973,10 @@ public class EndpointMatrixGraph implements Graph {
 //        System.out.println("TANSFER BEFORE " + graph.getEdges());
 
         for (Node node : graph.getNodes()) {
-            if (!addNode(node)) {
+        	
+        	node.getAllAttributes().clear();
+            
+        	if (!addNode(node)) {
                 throw new IllegalArgumentException();
             }
         }
@@ -985,6 +988,14 @@ public class EndpointMatrixGraph implements Graph {
         }
 
 //        System.out.println("TANSFER AFTER " + getEdges());
+    }
+    
+    public void transferAttributes(Graph graph)
+    		throws IllegalArgumentException {
+        if (graph == null) {
+            throw new NullPointerException("No graph was provided.");
+        }
+        attributes.putAll(graph.getAllAttributes());
     }
 
     /**

@@ -29,6 +29,8 @@ import edu.cmu.tetrad.util.TetradSerializableExcluded;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 
 import java.beans.PropertyChangeListener;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Represents a node that's just a string name.
@@ -54,6 +56,8 @@ public class KnowledgeModelNode implements Node, TetradSerializableExcluded {
      */
     private int centerY;
 
+    private Map<String, Object> attributes = new HashMap<>();
+    
     //=============================CONSTRUCTORS=========================//
 
     public KnowledgeModelNode(String varName) {
@@ -164,6 +168,27 @@ public class KnowledgeModelNode implements Node, TetradSerializableExcluded {
             return i1;
         }
     }
+
+	@Override
+	public Map<String, Object> getAllAttributes() {
+		return attributes;
+	}
+
+	@Override
+	public Object getAttribute(String key) {
+		return attributes.get(key);
+	}
+
+	@Override
+	public void removeAttribute(String key) {
+		attributes.remove(key);
+	}
+
+	@Override
+	public void addAttribute(String key, Object value) {
+		attributes.put(key, value);
+	}
+
 }
 
 

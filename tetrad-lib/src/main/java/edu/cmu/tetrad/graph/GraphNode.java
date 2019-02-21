@@ -28,6 +28,8 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Implements a basic node in a graph--that is, a node that is not itself a
@@ -72,6 +74,8 @@ public class GraphNode implements Node, TetradSerializable {
      * Fires property change events.
      */
     private transient PropertyChangeSupport pcs;
+    
+    private Map<String, Object> attributes = new HashMap<>();
 
     //============================CONSTRUCTORS==========================//
 
@@ -290,6 +294,27 @@ public class GraphNode implements Node, TetradSerializable {
             return i1;
         }
     }
+    
+	@Override
+	public Map<String, Object> getAllAttributes() {
+		return attributes;
+	}
+
+	@Override
+	public Object getAttribute(String key) {
+		return attributes.get(key);
+	}
+
+	@Override
+	public void removeAttribute(String key) {
+		attributes.remove(key);
+	}
+
+	@Override
+	public void addAttribute(String key, Object value) {
+		attributes.put(key, value);
+	}
+
 }
 
 
