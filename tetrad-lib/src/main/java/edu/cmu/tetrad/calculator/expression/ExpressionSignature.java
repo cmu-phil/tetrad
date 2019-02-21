@@ -33,7 +33,7 @@ public interface ExpressionSignature extends TetradSerializable {
 
 
     /**
-     * @return the signature as a string.
+     * @return the sigature as a string.
      */
     String getSignature();
 

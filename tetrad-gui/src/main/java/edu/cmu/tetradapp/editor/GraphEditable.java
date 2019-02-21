@@ -28,7 +28,7 @@ import java.awt.*;
 import java.util.List;
 
 /**
- * Inteface for graph editors, useful for situations where graph editors need to
+ * Interface for graph editors, useful for situations where graph editors need to
  * be treated generally.
  *
  * @author Joseph Ramsey

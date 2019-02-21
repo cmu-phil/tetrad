@@ -161,7 +161,7 @@ public class BCInference {
      * @return P&lpar; x dependent y given z &vert; data &rpar; or P&lpar;x independent y given z &vert;
      * data&rpar;
      */
-    public double probConstraint(OP constraint, int x, int y, int[] z) {
+    public synchronized double probConstraint(OP constraint, int x, int y, int[] z) {
 //        if (true) return 0.5;
 
         double p = 0;
@@ -212,6 +212,15 @@ public class BCInference {
             int xValue = cases[casei][x];
             int yValue = cases[casei][y];
 //            cases[casei][xy] = (xValue - 1) * nodeDimension[x] + yValue;  // a value in the Cartesian product of X and Y
+            if(y >= nodeDimension.length) {
+                System.out.println("y:" + y + " nodeDimension:" + nodeDimension.length);
+            }
+            if(casei >= cases.length) {
+                System.out.println("casei:" + casei + " cases:" + cases.length);
+            }
+            if(xy >= cases[casei].length) {
+                System.out.println("xy:" + xy + " cases[casei]:" + cases[casei].length);
+            }
             cases[casei][xy] = (xValue - 1) * nodeDimension[y] + yValue;  // a value in the Cartesian product of X and Y
         }
         nodeDimension[xy] = nodeDimension[x] * nodeDimension[y];

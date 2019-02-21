@@ -30,7 +30,9 @@ import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
-import javax.swing.*;
+import javax.swing.AbstractAction;
+import javax.swing.JFileChooser;
+import javax.swing.JOptionPane;
 
 /**
  * New data loading action.
@@ -38,6 +40,8 @@ import javax.swing.*;
  * @author Joseph Ramsey
  */
 final class LoadDataAction extends AbstractAction {
+
+    private static final long serialVersionUID = 929333197876935694L;
 
     /**
      * The dataEditor into which data is loaded. -
@@ -60,6 +64,7 @@ final class LoadDataAction extends AbstractAction {
     /**
      * Performs the action of loading a session from a file.
      */
+    @Override
     public void actionPerformed(ActionEvent e) {
 
         // first warn user about other datasets being removed.
@@ -160,4 +165,5 @@ final class LoadDataAction extends AbstractAction {
         chooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
         return chooser;
     }
+
 }

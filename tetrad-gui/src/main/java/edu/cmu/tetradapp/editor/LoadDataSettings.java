@@ -74,7 +74,7 @@ import javax.swing.filechooser.FileNameExtensionFilter;
  *
  * @author Joseph Ramsey
  */
-final class LoadDataSettings extends JPanel {
+public final class LoadDataSettings extends JPanel {
 
     private static final long serialVersionUID = -7597768949622586036L;
 

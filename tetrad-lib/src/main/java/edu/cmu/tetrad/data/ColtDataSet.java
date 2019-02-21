@@ -79,6 +79,7 @@ import java.util.*;
  * @see Variable
  * @see Knowledge2
  */
+@Deprecated
 public final class ColtDataSet implements DataSet, TetradSerializable {
     static final long serialVersionUID = 23L;
     private Map<String, String> columnToTooltip;

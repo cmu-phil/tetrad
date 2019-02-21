@@ -606,6 +606,43 @@ public class TimeSeriesUtils {
 //        return laggedData;
     }
 
+    /**
+     * Creates dataset of differenced variables from a lagged dataset
+     * Input must have associated knowledge in tiers
+     * Variables must be continuous
+     */
+    public static DataSet createDifferencedData(DataSet data) {
+        IKnowledge knowledge;
+        if(data.getKnowledge().isEmpty()){
+            throw new IllegalStateException("Need to input a lagged dataset with knowledge tiers");
+        } else {
+            knowledge = data.getKnowledge();
+        }
+        List<Node> variables = data.getVariables();
+        int dataSize = variables.size();
+        int numRows = data.getNumRows();
+        // rename variables?
+
+        int numTiers = knowledge.getNumTiers();
+        int numVars = dataSize/numTiers;
+
+        DataSet differencedData = new ColtDataSet(numRows, variables.subList(0,numVars));
+//        for (int tier = 1; tier < numTiers; tier++) {
+        int tier = 1;
+        for (int col = 0; col < numVars; col++) {
+            if (!(variables.get(col) instanceof ContinuousVariable)) {
+                throw new IllegalStateException("All variables must be continuous");
+            }
+            for (int row = 0; row < numRows; row++) {
+                double value = data.getDouble(row, (tier-1)*numVars + col);
+                double lagvalue = data.getDouble(row, tier * numVars + col);
+
+                differencedData.setDouble(row, col, value - lagvalue);
+            }
+        }
+        return differencedData;
+    }
+
     public static TimeLagGraph graphToLagGraph(Graph _graph, int numLags) {
         TimeLagGraph graph = new TimeLagGraph();
         graph.setMaxLag(numLags);
