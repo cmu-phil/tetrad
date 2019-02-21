@@ -8,6 +8,7 @@ package edu.cmu.tetradapp.editor.datamanip;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataModelList;
 import edu.cmu.tetrad.data.DataSet;
+import edu.cmu.tetrad.data.DiscreteVariable;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.NodeVariableType;
 import edu.cmu.tetrad.util.Parameters;
@@ -97,7 +98,7 @@ public class DeterminismEditor extends JPanel implements FinalizingParameterEdit
                         Node innerVar = sourceDataSet.getVariable(j);
 
                         System.out.println("=====Checking============" + outerVar.getName() + " and " + innerVar.getName() + " =====Deterministic=======" + isDeterministic(outerVar, innerVar));
-                        
+
                         if (isDeterministic(outerVar, innerVar)) {
                             set.add(j);
                         }
@@ -109,29 +110,26 @@ public class DeterminismEditor extends JPanel implements FinalizingParameterEdit
 
                 System.out.println("===========deterministicList============");
                 System.out.println(deterministicList);
-                
+
                 List<Set<Integer>> mergedList = new ArrayList<>();
-                
+
                 for (int k = 0; k < deterministicList.size(); k++) {
-//                    // Add the set index to the set
-//                    deterministicList.get(k).add(k);
-                      
                     // Create a new set for non-empty set and add all the elements of the sets whose index is in this set
                     if (!deterministicList.get(k).isEmpty()) {
                         Set<Integer> mergedSet = new HashSet<>();
-                        
+
                         // Add the index of this set to the merged set
                         mergedSet.add(k);
-                        
+
                         mergedSet.addAll(deterministicList.get(k));
-                                
+
                         for (Integer index : deterministicList.get(k)) {
                             mergedSet.addAll(deterministicList.get(index));
-                            
+
                             // Then empty that set
                             deterministicList.get(index).clear();
                         }
-                        
+
                         // Finally add to the mergedList
                         mergedList.add(mergedSet);
                     }
@@ -140,6 +138,25 @@ public class DeterminismEditor extends JPanel implements FinalizingParameterEdit
                 // By now we have a sorted list of non-duplicated deterministic variable set
                 System.out.println("===========mergedList============");
                 System.out.println(mergedList);
+
+                mergedList.forEach(indexSet -> {
+                    List<Node> varList = new LinkedList<>();
+                    List<String> varNameList = new LinkedList<>();
+
+                    indexSet.forEach(i -> {
+                        varList.add(sourceDataSet.getVariable(i));
+                        varNameList.add(sourceDataSet.getVariable(i).getName());
+                    });
+
+                    String mergedVarName = String.join("_", varNameList);
+
+                    varList.forEach(var -> {
+                        var.setName(mergedVarName);
+                    });
+
+                    // Also need to update pair info
+                });
+
             }
         });
 
@@ -157,34 +174,45 @@ public class DeterminismEditor extends JPanel implements FinalizingParameterEdit
     }
 
     /**
-     * Determine if variable x and y are deterministic (can be merged)
+     * Determine if interventional variable x and y are deterministic (can be
+     * merged)
      *
      * @param x
      * @param y
      * @return
      */
     private boolean isDeterministic(Node x, Node y) {
-        Map<Object, Object> map = new HashMap<>();
+        // For now only check between interventional status and status, value and value
+        // and only work on discrete variables
+        if ((x.getNodeVariableType() != NodeVariableType.DOMAIN)
+                && (y.getNodeVariableType() != NodeVariableType.DOMAIN)
+                && (x.getNodeVariableType() == y.getNodeVariableType())
+                && (x instanceof DiscreteVariable)) {
 
-        int xColumnIndex = sourceDataSet.getColumn(x);
-        int yColumnIndex = sourceDataSet.getColumn(y);
-        int numRows = sourceDataSet.getNumRows();
+            Map<Object, Object> map = new HashMap<>();
 
-        for (int i = 0; i < numRows; i++) {
-            // objX as key, and objY as value
-            Object objX = sourceDataSet.getObject(i, xColumnIndex);
-            Object objY = sourceDataSet.getObject(i, yColumnIndex);
+            int xColumnIndex = sourceDataSet.getColumn(x);
+            int yColumnIndex = sourceDataSet.getColumn(y);
+            int numRows = sourceDataSet.getNumRows();
 
-            if (map.containsKey(objX)) {
-                if (!map.get(objX).equals(objY)) {
-                    return false;
+            for (int i = 0; i < numRows; i++) {
+                // objX as key, and objY as value
+                Object objX = sourceDataSet.getObject(i, xColumnIndex);
+                Object objY = sourceDataSet.getObject(i, yColumnIndex);
+
+                if (map.containsKey(objX)) {
+                    if (!map.get(objX).equals(objY)) {
+                        return false;
+                    }
+                } else {
+                    map.put(objX, objY);
                 }
-            } else {
-                map.put(objX, objY);
             }
+
+            return true;
         }
 
-        return true;
+        return false;
     }
 
     private void groupVariables() {

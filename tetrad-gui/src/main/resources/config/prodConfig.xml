@@ -349,8 +349,8 @@
                 <editor-class>edu.cmu.tetradapp.editor.DataEditor</editor-class>
             </model>
             
-            <!-- Merge Deterministic Variables, added by Zhou -->
-            <model name="Merge Deterministic Variables" acronym="Determinism" help="data" category="Manipulation of Data">
+            <!-- Merge Deterministic Variables for interventional data, added by Zhou -->
+            <model name="Merge Deterministic Interventional Variables" acronym="Determinism" help="data" category="Manipulation of Data">
                 <logger>
                     <event id="info" description="Information" default="on"/>
                     <event id="data" description="Data"/>
