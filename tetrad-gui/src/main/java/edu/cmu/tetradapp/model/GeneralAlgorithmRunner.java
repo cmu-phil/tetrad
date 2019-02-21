@@ -27,7 +27,7 @@ import edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern.Fges;
 import edu.cmu.tetrad.algcomparison.independence.DSeparationTest;
 import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.score.BdeuScore;
-import edu.cmu.tetrad.algcomparison.score.DseparationScore;
+import edu.cmu.tetrad.algcomparison.score.DSeparationScore;
 import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.algcomparison.utils.TakesIndependenceWrapper;
@@ -247,10 +247,10 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
                 }
 
                 if (algo instanceof UsesScoreWrapper) {
-                    // We inject the graph to the score to satisfy the tests like DseparationScore - Zhou
+                    // We inject the graph to the score to satisfy the tests like DSeparationScore - Zhou
                     ScoreWrapper scoreWrapper = ((UsesScoreWrapper) algo).getScoreWarpper();
-                    if (scoreWrapper instanceof DseparationScore) {
-                        ((DseparationScore) scoreWrapper).setGraph(getSourceGraph());
+                    if (scoreWrapper instanceof DSeparationScore) {
+                        ((DSeparationScore) scoreWrapper).setGraph(getSourceGraph());
                     }
                 }
                 

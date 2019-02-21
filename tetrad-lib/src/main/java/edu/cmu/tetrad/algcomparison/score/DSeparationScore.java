@@ -19,7 +19,7 @@ import java.util.List;
         command = "d-separation",
         dataType = DataType.Graph
 )
-public class DseparationScore implements ScoreWrapper {
+public class DSeparationScore implements ScoreWrapper {
 
     static final long serialVersionUID = 23L;
     private Graph graph;
@@ -28,11 +28,11 @@ public class DseparationScore implements ScoreWrapper {
     /**
      * Use this empty constructor to satisfy the java reflection
      */
-    public DseparationScore() {
+    public DSeparationScore() {
 
     }
     
-    public DseparationScore(Graph graph) {
+    public DSeparationScore(Graph graph) {
         this.graph = graph;
     }
 
