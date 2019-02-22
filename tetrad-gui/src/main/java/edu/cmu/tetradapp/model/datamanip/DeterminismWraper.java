@@ -6,6 +6,7 @@
 
 package edu.cmu.tetradapp.model.datamanip;
 
+import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetradapp.model.DataWrapper;
 import edu.cmu.tetradapp.model.PcRunner;
@@ -29,6 +30,18 @@ public class DeterminismWraper extends DataWrapper {
             throw new NullPointerException("The given parameters must not be null");
         }
 
+        // Put together with added interventions to get the final combined dataset
+        // Create a new class in tetrad-lib data package to handle the data processing
+        // Kepp the origional data unchanged, use copies for combinging.
+        
+        // Display the merged dataset in the data editor 
+        // when users click the "OK" button on the Interventions editor panel
+        
+        // Get the merged data through parameter set by the editor
+        // Kepp the origional data unchanged, use copies for merging.
+        DataModel mergedDataset = (DataModel) params.get("DeterminisedDataset");
+        mergedDataset.setName("Determinised_" + mergedDataset.getName());
+        setDataModel(mergedDataset); 
     }
 
 
