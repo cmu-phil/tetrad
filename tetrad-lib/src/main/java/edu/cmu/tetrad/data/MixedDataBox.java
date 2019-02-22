@@ -250,10 +250,13 @@ public class MixedDataBox implements DataBox {
             newVars.add(variables.get(c));
         }
 
-        DataBox _dataBox = new MixedDataBox(newVars, numRows);
+        int row_num = rows.length;
+        int col_num = cols.length;
+        
+        DataBox _dataBox = new MixedDataBox(newVars, row_num);
 
-        for (int i = 0; i < rows.length; i++) {
-            for (int j = 0; j < cols.length; j++) {
+        for (int i = 0; i < row_num; i++) {
+            for (int j = 0; j < col_num; j++) {
                 _dataBox.set(i, j, get(rows[i], cols[j]));
             }
         }
