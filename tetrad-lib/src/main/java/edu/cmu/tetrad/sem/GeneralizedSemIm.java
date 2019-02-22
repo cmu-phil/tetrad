@@ -40,6 +40,8 @@ import org.apache.commons.math3.optim.nonlinear.scalar.noderiv.PowellOptimizer;
 import java.text.NumberFormat;
 import java.util.*;
 
+import static edu.cmu.tetrad.util.StatUtils.sd;
+
 /**
  * Represents a generalized SEM instantiated model. The parameteric form of this
  * model allows arbitrary equations for variables. This instantiated model
@@ -285,7 +287,7 @@ public class GeneralizedSemIm implements IM, Simulator, TetradSerializable {
         return buf.toString();
     }
 
-    public DataSet simulateData(int sampleSize, boolean latentDataSaved) {
+    public synchronized DataSet simulateData(int sampleSize, boolean latentDataSaved) {
         long seed = RandomUtil.getInstance().getSeed();
         TetradLogger.getInstance().log("info", "Seed = " + seed);
 
@@ -415,6 +417,9 @@ public class GeneralizedSemIm implements IM, Simulator, TetradSerializable {
      * @return the simulated data set.
      */
     public DataSet simulateDataRecursive(int sampleSize, boolean latentDataSaved) {
+        List<Node> variables = pm.getNodes();
+        Map<String, Double> std = new HashMap<>();
+
         final Map<String, Double> variableValues = new HashMap<>();
 
         Context context = new Context() {
@@ -428,14 +433,13 @@ public class GeneralizedSemIm implements IM, Simulator, TetradSerializable {
                 value = variableValues.get(term);
 
                 if (value != null) {
-                    return value;
+                    return value * 2 / std.get(term);
                 }
 
                 throw new IllegalArgumentException("No value recorded for '" + term + "'");
             }
         };
 
-        List<Node> variables = pm.getNodes();
         List<Node> continuousVariables = new LinkedList<>();
         List<Node> nonErrorVariables = pm.getVariableNodes();
 
@@ -475,21 +479,27 @@ public class GeneralizedSemIm implements IM, Simulator, TetradSerializable {
             }
         }
 
-        // Do the simulation.
-        for (int row = 0; row < sampleSize; row++) {
-            variableValues.clear();
 
-            for (int tier = 0; tier < tierOrdering.size(); tier++) {
+        // Do the simulation.
+        for (int tier = 0; tier < variables.size(); tier++) {
+            double[] v = new double[sampleSize];
+
+            int col = tierIndices[tier];
+
+            if (col == -1) {
+                continue;
+            }
+
+            for (int row = 0; row < sampleSize; row++) {
+                variableValues.clear();
+
                 Node node = tierOrdering.get(tier);
                 Expression expression = pm.getNodeExpression(node);
                 double value = expression.evaluate(context);
+                v[row] = value;
                 variableValues.put(node.getName(), value);
 
-                int col = tierIndices[tier];
 
-                if (col == -1) {
-                    continue;
-                }
 
 //                if (isSimulatePositiveDataOnly() && value < 0) {
 //                    row--;
@@ -504,6 +514,12 @@ public class GeneralizedSemIm implements IM, Simulator, TetradSerializable {
 
                 fullDataSet.setDouble(row, col, value);
             }
+
+            std.put(tierOrdering.get(tier).getName(), sd(v));
+
+//            for (int row = 0; row < sampleSize; row++) {
+//                fullDataSet.setDouble(row, col, 2v[row] / std);
+//            }
         }
 
         if (latentDataSaved) {
@@ -834,8 +850,8 @@ public class GeneralizedSemIm implements IM, Simulator, TetradSerializable {
      * @param sampleSize The number of samples to be drawn. Must be a positive
      *                   integer.
      */
-    public DataSet simulateDataFisher(int sampleSize) {
-        return simulateDataFisher(sampleSize, 50, 1e-5);
+    public synchronized DataSet simulateDataFisher(int sampleSize) {
+        return simulateDataFisher(sampleSize, 50, 1e-10);
     }
 
     /**
@@ -851,8 +867,11 @@ public class GeneralizedSemIm implements IM, Simulator, TetradSerializable {
      *                              Must be positive integer.
      * @param epsilon               The convergence criterion; |xi.t - xi.t-1| < epsilon.
      */
-    public DataSet simulateDataFisher(int sampleSize, int intervalBetweenShocks,
-                                      double epsilon) {
+    public synchronized DataSet simulateDataFisher(int sampleSize, int intervalBetweenShocks,
+                                                   double epsilon) {
+        boolean printedUndefined = false;
+        boolean printedInfinite = false;
+
         if (intervalBetweenShocks < 1) throw new IllegalArgumentException(
                 "Interval between shocks must be >= 1: " + intervalBetweenShocks);
         if (epsilon <= 0.0) throw new IllegalArgumentException(
@@ -886,6 +905,7 @@ public class GeneralizedSemIm implements IM, Simulator, TetradSerializable {
         double[][] all = new double[variableNodes.size()][sampleSize];
 
         // Do the simulation.
+
         for (int row = 0; row < sampleSize; row++) {
             for (int j = 0; j < t1.length; j++) {
                 Node error = pm.getErrorNode(variableNodes.get(j));
@@ -903,14 +923,29 @@ public class GeneralizedSemIm implements IM, Simulator, TetradSerializable {
 
                 variableValues.put(error.getName(), value);
                 shocks[j] = value;
+                t2[j] += shocks[j];
             }
 
             for (int i = 0; i < intervalBetweenShocks; i++) {
                 for (int j = 0; j < t1.length; j++) {
-                    t2[j] = shocks[j];
                     Node node = variableNodes.get(j);
                     Expression expression = pm.getNodeExpression(node);
                     t2[j] = expression.evaluate(context);
+
+                    if (Double.isNaN(t2[j])) {
+                        if (!printedUndefined) {
+                            System.out.println("Undefined value.");
+                            printedUndefined = true;
+                        }
+                    }
+
+                    if (Double.isInfinite(t2[j])) {
+                        if (!printedInfinite) {
+                            System.out.println("Infinite value.");
+                            printedInfinite = true;
+                        }
+                    }
+
                     variableValues.put(node.getName(), t2[j]);
                 }
 
