@@ -40,6 +40,7 @@ public class DeterminismWraper extends DataWrapper {
         // Get the merged data through parameter set by the editor
         // Kepp the origional data unchanged, use copies for merging.
         DataModel mergedDataset = (DataModel) params.get("DeterminisedDataset");
+        mergedDataset.setName("Determinised");
         setDataModel(mergedDataset); 
     }
 
