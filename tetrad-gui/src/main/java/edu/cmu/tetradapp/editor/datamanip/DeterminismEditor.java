@@ -208,8 +208,6 @@ public class DeterminismEditor extends JPanel implements FinalizingParameterEdit
                 Node outerVar = sourceDataSetCopy.getVariable(i);
                 Node innerVar = sourceDataSetCopy.getVariable(j);
 
-                System.out.println("Checking [" + outerVar.getName() + "] and [" + innerVar.getName() + "] == Deterministic ==>" + isDeterministic(outerVar, innerVar));
-
                 if (isDeterministic(outerVar, innerVar)) {
                     set.add(j);
                 }

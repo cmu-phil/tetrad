@@ -30,19 +30,16 @@ import edu.pitt.dbmi.data.reader.DataColumn;
 import edu.pitt.dbmi.data.reader.DataColumns;
 import edu.pitt.dbmi.data.reader.DataReader;
 import edu.pitt.dbmi.data.reader.Delimiter;
-import edu.pitt.dbmi.data.reader.DiscreteDataColumn;
 import edu.pitt.dbmi.data.reader.covariance.CovarianceData;
 import edu.pitt.dbmi.data.reader.covariance.CovarianceDataReader;
 import edu.pitt.dbmi.data.reader.covariance.LowerCovarianceDataFileReader;
 import edu.pitt.dbmi.data.reader.metadata.Metadata;
 import edu.pitt.dbmi.data.reader.metadata.MetadataFileReader;
 import edu.pitt.dbmi.data.reader.metadata.MetadataReader;
-import edu.pitt.dbmi.data.reader.tabular.MixedTabularData;
 import edu.pitt.dbmi.data.reader.tabular.TabularColumnFileReader;
 import edu.pitt.dbmi.data.reader.tabular.TabularColumnReader;
 import edu.pitt.dbmi.data.reader.tabular.TabularDataFileReader;
 import edu.pitt.dbmi.data.reader.tabular.TabularDataReader;
-import edu.pitt.dbmi.data.reader.tabular.VerticalDiscreteTabularData;
 import edu.pitt.dbmi.data.reader.util.TextFileUtils;
 import edu.pitt.dbmi.data.reader.validation.ValidationResult;
 import edu.pitt.dbmi.data.reader.validation.covariance.CovarianceValidation;
@@ -1207,9 +1204,6 @@ public final class LoadDataSettings extends JPanel {
                 dataColumns = DataColumns.update(dataColumns, metadata);
             }
 
-            System.out.println("===================================dataColumns=============================================");
-            System.out.println(Arrays.toString(dataColumns));
-
             // Now we read in the actual data with metadata object (if provided)
             Data data;
             if (metadata != null) {
@@ -1221,49 +1215,6 @@ public final class LoadDataSettings extends JPanel {
                 // Box Data to DataModel to display in spreadsheet
                 dataModel = DataConvertUtils.toDataModel(data);
             }
-
-            // Debugging
-            // The data can only either be discrete or mixed due to the discrete column of interventional status
-            if (data instanceof VerticalDiscreteTabularData) {
-                VerticalDiscreteTabularData verticalDiscreteTabularData = (VerticalDiscreteTabularData) data;
-                System.out.println("===================================Discrete=============================================");
-                Arrays.stream(verticalDiscreteTabularData.getDataColumns()).forEach(System.out::println);
-                System.out.println("--------------------------------------------------------------------------------");
-                int[][] dataArr = verticalDiscreteTabularData.getData();
-                int numOfCols = dataArr.length;
-                int numOfRows = dataArr[0].length;
-                for (int row = 0; row < numOfRows; row++) {
-                    for (int col = 0; col < numOfCols; col++) {
-                        System.out.printf("%d\t", dataArr[col][row]);
-                    }
-                    System.out.println();
-                }
-                System.out.println("================================================================================");
-            } else if (data instanceof MixedTabularData) {
-                MixedTabularData mixedTabularData = (MixedTabularData) data;
-
-                DiscreteDataColumn[] mixedCols = mixedTabularData.getDataColumns();
-                System.out.println("======================================Mixed==========================================");
-                Arrays.stream(mixedTabularData.getDataColumns()).forEach(System.out::println);
-                System.out.println("--------------------------------------------------------------------------------");
-                double[][] continuousData = mixedTabularData.getContinuousData();
-                int[][] discreteData = mixedTabularData.getDiscreteData();
-                int numOfRows = mixedTabularData.getNumOfRows();
-                int numOfCols = mixedCols.length;
-                for (int row = 0; row < numOfRows; row++) {
-                    for (int col = 0; col < numOfCols; col++) {
-                        if (continuousData[col] != null) {
-                            System.out.printf("%f\t", continuousData[col][row]);
-                        }
-                        if (discreteData[col] != null) {
-                            System.out.printf("%d\t", discreteData[col][row]);
-                        }
-                    }
-                    System.out.println();
-                }
-                System.out.println("================================================================================");
-            }
-
         } else if (covarianceRadioButton.isSelected()) {
             // Covariance data can only be continuous
             CovarianceDataReader dataFileReader = new LowerCovarianceDataFileReader(file.toPath(), delimiter);
