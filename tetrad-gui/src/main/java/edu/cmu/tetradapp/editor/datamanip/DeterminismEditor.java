@@ -12,6 +12,7 @@ import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DiscreteVariable;
 import edu.cmu.tetrad.data.DoubleDataBox;
+import edu.cmu.tetrad.data.MixedDataBox;
 import edu.cmu.tetrad.data.VerticalIntDataBox;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.NodeVariableType;
@@ -20,8 +21,6 @@ import edu.cmu.tetradapp.editor.FinalizingParameterEditor;
 import edu.cmu.tetradapp.model.DataWrapper;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -30,9 +29,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import javax.swing.Box;
-import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JTable;
+import javax.swing.table.DefaultTableModel;
 import org.apache.commons.lang3.SerializationUtils;
 
 /**
@@ -53,7 +53,7 @@ public class DeterminismEditor extends JPanel implements FinalizingParameterEdit
 
     private Parameters parameters;
 
-    private final List<Map> interventionalVarPairs = new LinkedList<>();
+    private final List<String> interventionalVars = new LinkedList<>();
     private final List<String> nonInterventionalVars = new LinkedList<>();
 
     //==========================CONSTUCTORS===============================//
@@ -77,168 +77,59 @@ public class DeterminismEditor extends JPanel implements FinalizingParameterEdit
         // Group variables based ont their NodeVariableType
         groupVariables();
 
-        // Domain variables
-        Box domainVarsBox = Box.createVerticalBox();
-
-        domainVarsBox.add(new JLabel("Domain variables:"));
-
-        nonInterventionalVars.forEach(e -> {
-            domainVarsBox.add(new JLabel(e));
-        });
-
         // Intervention variables
         Box interventionVarsBox = Box.createVerticalBox();
 
-        interventionVarsBox.add(new JLabel("Intervention variables:"));
+        interventionVarsBox.add(new JLabel("Interventional variables:"));
 
-        interventionalVarPairs.forEach(e -> {
-            System.out.println("=======================");
-            System.out.println(e.get("status"));
-            System.out.println(e.get("value"));
-            interventionVarsBox.add(new JLabel("Status variable: " + e.get("status") + ", Value variable: " + e.get("value")));
+        interventionalVars.forEach(e -> {
+            interventionVarsBox.add(new JLabel(e));
         });
 
-        // Click button to detect deterministic variables that can be merged
-        JButton detectBtn = new JButton("Detect deterministic variables");
-        detectBtn.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                List<Set<Integer>> deterministicList = new ArrayList<>();
+        // Detect
+        List<Set<Integer>> mergedList = detectDeterministicVars();
 
-                // Double for loop to build the initial deterministicList
-                for (int i = 0; i < sourceDataSetCopy.getVariables().size(); i++) {
-                    Set<Integer> set = new HashSet<>();
+        JTable table = new JTable();
 
-                    for (int j = i + 1; j < sourceDataSetCopy.getVariables().size(); j++) {
-                        Node outerVar = sourceDataSetCopy.getVariable(i);
-                        Node innerVar = sourceDataSetCopy.getVariable(j);
+        DefaultTableModel tableModel = new DefaultTableModel();
 
-                        System.out.println("Checking [" + outerVar.getName() + "] and [" + innerVar.getName() + "] == Deterministic ==>" + isDeterministic(outerVar, innerVar));
+        table.setModel(tableModel);
+        
+        // Headers
+        List<String> columnNames = new LinkedList<>();
+        columnNames.add("Deterministic interventional variables");
+        columnNames.add("Merged variable");
 
-                        if (isDeterministic(outerVar, innerVar)) {
-                            set.add(j);
-                        }
-                    }
+        mergedList.forEach(indexSet -> {
+            List<String> varNameList = new LinkedList<>();
 
-                    // Add to list
-                    deterministicList.add(set);
-                }
+            Integer[] indexArray = indexSet.toArray(new Integer[indexSet.size()]);
 
-                List<Set<Integer>> mergedList = new ArrayList<>();
-
-                for (int k = 0; k < deterministicList.size(); k++) {
-                    // Create a new set for non-empty set and add all the elements of the sets whose index is in this set
-                    if (!deterministicList.get(k).isEmpty()) {
-                        Set<Integer> mergedSet = new HashSet<>();
-
-                        // Add the index of this set to the merged set
-                        mergedSet.add(k);
-
-                        mergedSet.addAll(deterministicList.get(k));
-
-                        for (Integer index : deterministicList.get(k)) {
-                            mergedSet.addAll(deterministicList.get(index));
-
-                            // Then empty that set
-                            deterministicList.get(index).clear();
-                        }
-
-                        // Finally add to the mergedList
-                        mergedList.add(mergedSet);
-                    }
-                }
-
-                // By now we have a sorted list of non-duplicated deterministic variable set
-                System.out.println("===========mergedList============");
-                System.out.println(mergedList);
-
-                List<Integer> toBeRemovedColumns = new LinkedList<>();
-
-                mergedList.forEach(indexSet -> {
-                    List<Node> varList = new LinkedList<>();
-                    List<String> varNameList = new LinkedList<>();
-
-                    Integer[] indexArray = indexSet.toArray(new Integer[indexSet.size()]);
-
-                    for (int i = 0; i < indexArray.length; i++) {
-                        varList.add(sourceDataSetCopy.getVariable(indexArray[i]));
-                        varNameList.add(sourceDataSetCopy.getVariable(indexArray[i]).getName());
-
-                        // Add index for removal except the first one
-                        // Remember the column to be removed after merging
-                        if (i > 0) {
-                            toBeRemovedColumns.add(indexArray[i]);
-                        }
-                    }
-
-                    String mergedVarName = String.join("_", varNameList);
-
-                    // Keep the first node as the merged node and rename
-                    Node mergedNode = varList.get(0);
-                    mergedNode.setName(mergedVarName);
-                    // Reset the paired node as null for mergedNode
-                    mergedNode.setPairedInterventionalNode(null);
-
-                    //Use this hierarchy for determining the merged variable's type: [value] > [status]
-                    NodeVariableType mergedNodeVariableType = mergedNode.getNodeVariableType();
-                    for (int i = 0; i < indexArray.length; i++) {
-                        Node node = sourceDataSetCopy.getVariable(indexArray[i]);
-                        if ((node.getNodeVariableType() == NodeVariableType.INTERVENTION_VALUE) && (node.getNodeVariableType() != mergedNodeVariableType)) {
-                            mergedNode.setNodeVariableType(NodeVariableType.INTERVENTION_VALUE);
-                            break;
-                        }
-                    }
-
-                    // Also need to update pair info
-                    sourceDataSetCopy.getVariables().forEach(var -> {
-                        if (var.getNodeVariableType() != NodeVariableType.DOMAIN) {
-                            Node pairedNode = var.getPairedInterventionalNode();
-                            if (varList.contains(pairedNode)) {
-                                if (var.getNodeVariableType() == mergedNode.getNodeVariableType()) {
-                                    var.setPairedInterventionalNode(null);
-                                } else {
-                                    var.setPairedInterventionalNode(mergedNode);
-                                }
-                            }
-                        }
-                    });
-                });
-
-                // Skip these columns when creating the new dataset
-                toBeRemovedColumns.forEach(index -> {
-                    System.out.println("===========index to remove============ " + index);
-                });
-
-                // Target variables
-                List<Node> nodeList = new LinkedList<>();
-                Map<Node, Integer> origIndexMap = new HashMap<>();
-                sourceDataSetCopy.getVariables().forEach(node -> {
-                    int columnIndex = sourceDataSetCopy.getColumn(node);
-                    // Skip these columns when creating the new dataset
-                    if (!toBeRemovedColumns.contains(columnIndex)) {
-                        nodeList.add(node);
-                        origIndexMap.put(node, columnIndex);
-                    }
-                });
-
-                // Now scan all the coloumns and create the data box
-                DataBox dataBox = createDataBoxData(nodeList, origIndexMap);
-
-                // Finally convert to data model
-                //mergedDataSet = 
+            for (int i = 0; i < indexArray.length; i++) {
+                varNameList.add(sourceDataSetCopy.getVariable(indexArray[i]).getName());
             }
+
+            String varNames = String.join(", ", varNameList);
+            String mergedVarName = String.join("_", varNameList);
+
+            List<String> rowData = new LinkedList<>();
+            rowData.add(varNames);
+            rowData.add(mergedVarName);
+            
+            tableModel.addRow(rowData.toArray());
+            
         });
 
-        // Add data type box to container
-        container.add(new JLabel("Merge deterministic variables"));
+        interventionVarsBox.add(table);
 
-        container.add(domainVarsBox);
-
+        // Add to container
         container.add(interventionVarsBox);
-
-        container.add(detectBtn);
 
         // Adds the specified component to the end of this container.
         add(container, BorderLayout.CENTER);
+        
+        // Merge
+        mergeDeterministicVars(mergedList);
     }
 
     /**
@@ -308,6 +199,115 @@ public class DeterminismEditor extends JPanel implements FinalizingParameterEdit
     }
 
     //=============================== Private Methods ================================//
+    private List<Set<Integer>> detectDeterministicVars() {
+        List<Set<Integer>> deterministicList = new ArrayList<>();
+
+        // Double for loop to build the initial deterministicList
+        for (int i = 0; i < sourceDataSetCopy.getVariables().size(); i++) {
+            Set<Integer> set = new HashSet<>();
+
+            for (int j = i + 1; j < sourceDataSetCopy.getVariables().size(); j++) {
+                Node outerVar = sourceDataSetCopy.getVariable(i);
+                Node innerVar = sourceDataSetCopy.getVariable(j);
+
+                System.out.println("Checking [" + outerVar.getName() + "] and [" + innerVar.getName() + "] == Deterministic ==>" + isDeterministic(outerVar, innerVar));
+
+                if (isDeterministic(outerVar, innerVar)) {
+                    set.add(j);
+                }
+            }
+
+            // Add to list
+            deterministicList.add(set);
+        }
+
+        List<Set<Integer>> mergedList = new ArrayList<>();
+
+        for (int k = 0; k < deterministicList.size(); k++) {
+            // Create a new set for non-empty set and add all the elements of the sets whose index is in this set
+            if (!deterministicList.get(k).isEmpty()) {
+                Set<Integer> mergedSet = new HashSet<>();
+
+                // Add the index of this set to the merged set
+                mergedSet.add(k);
+
+                mergedSet.addAll(deterministicList.get(k));
+
+                for (Integer index : deterministicList.get(k)) {
+                    mergedSet.addAll(deterministicList.get(index));
+
+                    // Then empty that set
+                    deterministicList.get(index).clear();
+                }
+
+                // Finally add to the mergedList
+                mergedList.add(mergedSet);
+            }
+        }
+
+        // By now we have a sorted list of non-duplicated deterministic variable set
+        System.out.println("===========mergedList============");
+        System.out.println(mergedList);
+
+        return mergedList;
+    }
+
+    private void mergeDeterministicVars(List<Set<Integer>> mergedList) {
+        List<Integer> toBeRemovedColumns = new LinkedList<>();
+
+        mergedList.forEach(indexSet -> {
+            List<Node> varList = new LinkedList<>();
+            List<String> varNameList = new LinkedList<>();
+
+            Integer[] indexArray = indexSet.toArray(new Integer[indexSet.size()]);
+
+            for (int i = 0; i < indexArray.length; i++) {
+                varList.add(sourceDataSetCopy.getVariable(indexArray[i]));
+                varNameList.add(sourceDataSetCopy.getVariable(indexArray[i]).getName());
+
+                // Add index for removal except the first one
+                // Remember the column to be removed after merging
+                if (i > 0) {
+                    toBeRemovedColumns.add(indexArray[i]);
+                }
+            }
+
+            String mergedVarName = String.join("_", varNameList);
+
+            // Keep the first node as the merged node and rename
+            Node mergedNode = varList.get(0);
+            mergedNode.setName(mergedVarName);
+
+            //Use this hierarchy for determining the merged variable's type: [value] > [status]
+            NodeVariableType mergedNodeVariableType = mergedNode.getNodeVariableType();
+            for (int i = 0; i < indexArray.length; i++) {
+                Node node = sourceDataSetCopy.getVariable(indexArray[i]);
+                if ((node.getNodeVariableType() == NodeVariableType.INTERVENTION_VALUE) && (node.getNodeVariableType() != mergedNodeVariableType)) {
+                    mergedNode.setNodeVariableType(NodeVariableType.INTERVENTION_VALUE);
+                    break;
+                }
+            }
+        });
+
+        // Target variables
+        List<Node> nodeList = new LinkedList<>();
+        Map<Node, Integer> origIndexMap = new HashMap<>();
+        sourceDataSetCopy.getVariables().forEach(node -> {
+            int columnIndex = sourceDataSetCopy.getColumn(node);
+            // Skip these columns when creating the new dataset
+            if (!toBeRemovedColumns.contains(columnIndex)) {
+                nodeList.add(node);
+                origIndexMap.put(node, columnIndex);
+            }
+        });
+
+        // Now scan all the coloumns and create the data box
+        DataSet dataBox = (DataSet) createDataBoxData(nodeList, origIndexMap);
+
+        // Finally convert to data model
+        mergedDataSet = dataBox;
+    }
+
     /**
      * Determine if interventional variable x and y are deterministic (can be
      * merged)
@@ -321,7 +321,8 @@ public class DeterminismEditor extends JPanel implements FinalizingParameterEdit
         // and only work on discrete variables
         if ((x.getNodeVariableType() != NodeVariableType.DOMAIN)
                 && (y.getNodeVariableType() != NodeVariableType.DOMAIN)
-                && (x instanceof DiscreteVariable)) {
+                && (x instanceof DiscreteVariable)
+                && (y instanceof DiscreteVariable)) {
 
             Map<Object, Object> map = new HashMap<>();
 
@@ -351,18 +352,10 @@ public class DeterminismEditor extends JPanel implements FinalizingParameterEdit
 
     private void groupVariables() {
         sourceDataSet.getVariables().forEach(e -> {
-            if (e.getNodeVariableType() == NodeVariableType.INTERVENTION_STATUS) {
-                // Get the interventional variable pairs for required groups
-                Map<String, String> interventionalVarPair = new HashMap<>();
-
-                // Keep the pair info
-                interventionalVarPair.put("status", e.getName());
-                interventionalVarPair.put("value", e.getPairedInterventionalNode().getName());
-
-                // Add to the list
-                interventionalVarPairs.add(interventionalVarPair);
-            } else if (e.getNodeVariableType() == NodeVariableType.DOMAIN) {
+            if (e.getNodeVariableType() == NodeVariableType.DOMAIN) {
                 nonInterventionalVars.add(e.getName());
+            } else {
+                interventionalVars.add(e.getName());
             }
         });
     }
@@ -389,58 +382,62 @@ public class DeterminismEditor extends JPanel implements FinalizingParameterEdit
             return null;
         }
     }
-    
+
     private BoxDataSet createMixedDataBox(List<Node> nodeList, Map<Node, Integer> origIndexMap) {
         int numOfCols = nodeList.size();
         int numOfRows = sourceDataSetCopy.getNumRows();
         double[][] continuousData = new double[numOfCols][];
         int[][] discreteData = new int[numOfCols][];
-        
+
         for (int i = 0; i < numOfCols; i++) {
             Node node = nodeList.get(i);
 
             // initialize data
             if (node instanceof DiscreteVariable) {
                 discreteData[i] = new int[numOfRows];
+                for (int j = 0; j < numOfRows; j++) {
+                    discreteData[i][j] = sourceDataSetCopy.getInt(j, origIndexMap.get(node));
+                }
             } else {
                 continuousData[i] = new double[numOfRows];
+                for (int j = 0; j < numOfRows; j++) {
+                    continuousData[i][j] = sourceDataSetCopy.getDouble(j, origIndexMap.get(node));
+                }
             }
-
-            // initialize columns
-            discreteDataColumns[i] = new MixedTabularDataColumn(dataColumn);
         }
-        
+
+        return new BoxDataSet(new MixedDataBox(nodeList, numOfRows, continuousData, discreteData), nodeList);
     }
-    
+
     private BoxDataSet createContinuousDataBox(List<Node> nodeList, Map<Node, Integer> origIndexMap) {
         int numOfCols = nodeList.size();
         int numOfRows = sourceDataSetCopy.getNumRows();
         double[][] data = new double[numOfRows][numOfCols];
- 
+
         for (int i = 0; i < numOfRows; i++) {
             for (int j = 0; j < numOfCols; j++) {
                 Node node = nodeList.get(j);
                 data[i][j] = sourceDataSetCopy.getDouble(i, origIndexMap.get(node));
             }
         }
-        
+
         DataBox dataBox = new DoubleDataBox(data);
 
         return new BoxDataSet(dataBox, nodeList);
     }
-    
+
     private BoxDataSet createDiscreteDataBox(List<Node> nodeList, Map<Node, Integer> origIndexMap) {
         int numOfCols = nodeList.size();
         int numOfRows = sourceDataSetCopy.getNumRows();
         int[][] data = new int[numOfCols][numOfRows];
-        
+
         for (int i = 0; i < numOfRows; i++) {
             for (int j = 0; j < numOfCols; j++) {
                 Node node = nodeList.get(j);
                 data[i][j] = sourceDataSetCopy.getInt(i, origIndexMap.get(node));
             }
         }
-        
+
         DataBox dataBox = new VerticalIntDataBox(data);
 
         return new BoxDataSet(dataBox, nodeList);

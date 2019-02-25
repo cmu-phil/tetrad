@@ -62,7 +62,7 @@ class OtherGroupsEditor extends JPanel {
      */
     private List<Map> interventionalVarPairs;
 
-    public OtherGroupsEditor(IKnowledge knowledge, List<String> vars, List<Map> interventionalVarPairs) {
+    public OtherGroupsEditor(IKnowledge knowledge, List<String> vars) {
         if (knowledge == null) {
             throw new NullPointerException("The given knowledge must not be null");
         }
@@ -71,19 +71,6 @@ class OtherGroupsEditor extends JPanel {
         }
         this.knowledge = knowledge;
         this.variables = new ArrayList<>(vars);
-        this.interventionalVarPairs = interventionalVarPairs;
-
-        // Only add the required groups for interventionalVarPairs for the first time - Zhou
-        if (knowledge.getKnowledgeGroups().isEmpty() && !interventionalVarPairs.isEmpty()) {
-            // First build the knowledge groups based on the interventionalVarPairs
-            // And put each paired interventional variables in the fromGroup as default - Zhou
-            this.interventionalVarPairs.forEach(e -> {
-                Set<String> fromGroup = new HashSet<>(e.values());
-                Set<String> toGroup = new HashSet<>();
-                KnowledgeGroup targetKnowledgeGroup = new KnowledgeGroup(KnowledgeGroup.REQUIRED, fromGroup, toGroup);
-                knowledge.addKnowledgeGroup(targetKnowledgeGroup);
-            });
-        }
 
         this.setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
         setBorder(new EmptyBorder(5, 5, 5, 5));

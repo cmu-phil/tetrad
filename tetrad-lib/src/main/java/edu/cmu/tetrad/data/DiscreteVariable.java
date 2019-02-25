@@ -116,11 +116,6 @@ public final class DiscreteVariable extends AbstractVariable
     private NodeVariableType nodeVariableType = NodeVariableType.DOMAIN;
 
     /**
-     * The corresponding paired interventional node, domain node doesn't need this - Zhou
-     */
-    private Node pairedInterventionalNode;
-    
-    /**
      * True iff new variables should be allowed to be constructed to replace
      * this one, accommodating new categories.
      */
@@ -604,16 +599,6 @@ public final class DiscreteVariable extends AbstractVariable
     @Override
     public void setNodeVariableType(NodeVariableType nodeVariableType) {
         this.nodeVariableType = nodeVariableType;
-    }
-    
-    @Override
-    public void setPairedInterventionalNode(Node pairedInterventionalNode) {
-        this.pairedInterventionalNode = pairedInterventionalNode;
-    }
-
-    @Override
-    public Node getPairedInterventionalNode() {
-        return this.pairedInterventionalNode;
     }
 
 }

@@ -180,12 +180,6 @@ public class SessionNode implements Node, TetradSerializable {
      * Node variable type (domain, interventional status, interventional value..) of this node variable
      */
     private NodeVariableType nodeVariableType = NodeVariableType.DOMAIN;
-    
-    /**
-     * The corresponding paired interventional node, domain node doesn't need this - Zhou
-     */
-    private Node pairedInterventionalNode;
-    
 
     //==========================CONSTRUCTORS===========================//
 
@@ -1855,16 +1849,7 @@ public class SessionNode implements Node, TetradSerializable {
     public void setNodeVariableType(NodeVariableType nodeVariableType) {
         this.nodeVariableType = nodeVariableType;
     }
-    
-    @Override
-    public void setPairedInterventionalNode(Node pairedInterventionalNode) {
-        this.pairedInterventionalNode = pairedInterventionalNode;
-    }
 
-    @Override
-    public Node getPairedInterventionalNode() {
-        return this.pairedInterventionalNode;
-    }
 
     /**
      * Handles <code>SessionEvent</code>s. Hides the handling of these from the

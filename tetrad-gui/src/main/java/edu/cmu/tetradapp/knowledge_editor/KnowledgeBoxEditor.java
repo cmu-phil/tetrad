@@ -240,7 +240,7 @@ public class KnowledgeBoxEditor extends JPanel {
     private void resetTabbedPane(JTabbedPane tabbedPane) {
         tabbedPane.removeAll();
         tabbedPane.add("Tiers", tierDisplay());
-        tabbedPane.add("Other Groups", new OtherGroupsEditor(knowledgeBoxModel.getKnowledge(), this.varNames, interventionalVarPairs));
+        tabbedPane.add("Other Groups", new OtherGroupsEditor(knowledgeBoxModel.getKnowledge(), this.varNames));
         tabbedPane.add("Edges", edgeDisplay());
 
         tabbedPane.addChangeListener((e) -> {
@@ -340,22 +340,10 @@ public class KnowledgeBoxEditor extends JPanel {
     private void checkInterventionalVariables() {
         knowledgeBoxModel.getVariables().forEach(e->{ 
             // For tiers
-            if (e.getNodeVariableType() == NodeVariableType.INTERVENTION_STATUS) {
-                interventionalVars.add(e.getName());
-                
-                // Get the interventional variable pairs for required groups
-                Map<String, String> interventionalVarPair = new HashMap<>();
-                
-                // Keep the pair info
-                interventionalVarPair.put("status", e.getName());
-                interventionalVarPair.put("value", e.getPairedInterventionalNode().getName());
-
-                // Add to the list
-                interventionalVarPairs.add(interventionalVarPair);
-            } else if (e.getNodeVariableType() == NodeVariableType.INTERVENTION_VALUE) {
-                interventionalVars.add(e.getName());
-            } else {
+            if (e.getNodeVariableType() == NodeVariableType.DOMAIN) {
                 nonInterventionalVars.add(e.getName());
+            } else {
+                interventionalVars.add(e.getName());
             }
         });
     }

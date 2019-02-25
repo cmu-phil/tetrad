@@ -57,12 +57,7 @@ public class GraphNode implements Node, TetradSerializable {
      * Node variable type (domain, interventional status, interventional value..) of this node variable
      */
     private NodeVariableType nodeVariableType = NodeVariableType.DOMAIN;
-    
-    /**
-     * The corresponding paired interventional node, domain node doesn't need this - Zhou
-     */
-    private Node pairedInterventionalNode;
-    
+
     /**
      * The x coordinate of the center of the node.
      *
@@ -309,16 +304,7 @@ public class GraphNode implements Node, TetradSerializable {
     public void setNodeVariableType(NodeVariableType nodeVariableType) {
         this.nodeVariableType = nodeVariableType;
     }
-    
-    @Override
-    public void setPairedInterventionalNode(Node pairedInterventionalNode) {
-        this.pairedInterventionalNode = pairedInterventionalNode;
-    }
 
-    @Override
-    public Node getPairedInterventionalNode() {
-        return this.pairedInterventionalNode;
-    }
 }
 
 

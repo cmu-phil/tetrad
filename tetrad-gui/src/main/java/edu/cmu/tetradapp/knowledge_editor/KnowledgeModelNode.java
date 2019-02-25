@@ -48,12 +48,7 @@ public class KnowledgeModelNode implements Node, TetradSerializableExcluded {
      * Node variable type (domain, interventional status, interventional value..) of this node variable
      */
     private NodeVariableType nodeVariableType = NodeVariableType.DOMAIN;
-    
-    /**
-     * The corresponding paired interventional node, domain node doesn't need this - Zhou
-     */
-    private Node pairedNode;
-    
+
     /**
      * @serial
      */
@@ -185,15 +180,6 @@ public class KnowledgeModelNode implements Node, TetradSerializableExcluded {
         this.nodeVariableType = nodeVariableType;
     }
 
-    @Override
-    public void setPairedInterventionalNode(Node pairedNode) {
-        this.pairedNode = pairedNode;
-    }
-
-    @Override
-    public Node getPairedInterventionalNode() {
-        return this.pairedNode;
-    }
 }
 
 

@@ -117,10 +117,7 @@ public class DataConvertUtils {
             // Default NodeVariableType.DOMAIN for all variables
             // Overwrite NodeVariableType to NodeVariableType.INTERVENTION_VALUE or NodeVariableType.INTERVENTION_STATUS
             nodes[statColNum].setNodeVariableType(NodeVariableType.INTERVENTION_STATUS);
-            nodes[statColNum].setPairedInterventionalNode(nodes[valColNum]);
-            
             nodes[valColNum].setNodeVariableType(NodeVariableType.INTERVENTION_VALUE);
-            nodes[valColNum].setPairedInterventionalNode(nodes[statColNum]);
         });
 
         List<Node> nodeList = Arrays.asList(nodes);
@@ -162,10 +159,7 @@ public class DataConvertUtils {
             // Default NodeVariableType.DOMAIN for all variables
             // Overwrite NodeVariableType to NodeVariableType.INTERVENTION_VALUE or NodeVariableType.INTERVENTION_STATUS
             nodes[statColNum].setNodeVariableType(NodeVariableType.INTERVENTION_STATUS);
-            nodes[statColNum].setPairedInterventionalNode(nodes[valColNum]);
-            
             nodes[valColNum].setNodeVariableType(NodeVariableType.INTERVENTION_VALUE);
-            nodes[valColNum].setPairedInterventionalNode(nodes[statColNum]);
         });
 
         DataBox dataBox = new VerticalIntDataBox(dataset.getData());
