@@ -142,8 +142,6 @@ class TabularDataTable extends AbstractTableModel {
                     columnHeader += columnHeaderNotationInterventionValue;
                 }
                 
-                System.out.println(variable.getName() + ": " + columnHeader);
-                
                 return columnHeader;
             } else if (row == 1) {
                 return dataSet.getVariable(columnIndex).getName();

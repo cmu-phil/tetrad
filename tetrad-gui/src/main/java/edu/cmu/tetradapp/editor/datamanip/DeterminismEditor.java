@@ -22,15 +22,17 @@ import edu.cmu.tetradapp.model.DataWrapper;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import javax.swing.BorderFactory;
 import javax.swing.Box;
-import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.table.DefaultTableModel;
 import org.apache.commons.lang3.SerializationUtils;
@@ -53,9 +55,6 @@ public class DeterminismEditor extends JPanel implements FinalizingParameterEdit
 
     private Parameters parameters;
 
-    private final List<String> interventionalVars = new LinkedList<>();
-    private final List<String> nonInterventionalVars = new LinkedList<>();
-
     //==========================CONSTUCTORS===============================//
     /**
      * Constructs a new editor that will allow the user to merge determistic
@@ -72,33 +71,28 @@ public class DeterminismEditor extends JPanel implements FinalizingParameterEdit
     public void setup() {
         // Container
         Box container = Box.createVerticalBox();
-        container.setPreferredSize(new Dimension(640, 460));
-
-        // Group variables based ont their NodeVariableType
-        groupVariables();
-
-        // Intervention variables
-        Box interventionVarsBox = Box.createVerticalBox();
-
-        interventionVarsBox.add(new JLabel("Interventional variables:"));
-
-        interventionalVars.forEach(e -> {
-            interventionVarsBox.add(new JLabel(e));
-        });
+        container.setPreferredSize(new Dimension(360, 200));
 
         // Detect
         List<Set<Integer>> mergedList = detectDeterministicVars();
 
+        // Intervention variables
+        Box mergedVarsBox = Box.createVerticalBox();
+        mergedVarsBox.setPreferredSize(new Dimension(320, 160));
+        mergedVarsBox.setBorder(BorderFactory.createTitledBorder("Deterministic Interventional Variables"));
+
+        // Merged variables table
         JTable table = new JTable();
 
         DefaultTableModel tableModel = new DefaultTableModel();
 
         table.setModel(tableModel);
-        
+
         // Headers
-        List<String> columnNames = new LinkedList<>();
-        columnNames.add("Deterministic interventional variables");
-        columnNames.add("Merged variable");
+        List<String> columnNames = Arrays.asList("Deterministic variables", "Merged new variable");
+
+        // Table header
+        tableModel.setColumnIdentifiers(columnNames.toArray());
 
         mergedList.forEach(indexSet -> {
             List<String> varNameList = new LinkedList<>();
@@ -112,22 +106,21 @@ public class DeterminismEditor extends JPanel implements FinalizingParameterEdit
             String varNames = String.join(", ", varNameList);
             String mergedVarName = String.join("_", varNameList);
 
-            List<String> rowData = new LinkedList<>();
-            rowData.add(varNames);
-            rowData.add(mergedVarName);
-            
+            List<String> rowData = Arrays.asList(varNames, mergedVarName);
             tableModel.addRow(rowData.toArray());
-            
+
         });
 
-        interventionVarsBox.add(table);
+        JScrollPane scrollPane = new JScrollPane(table);
+
+        mergedVarsBox.add(scrollPane);
 
         // Add to container
-        container.add(interventionVarsBox);
+        container.add(mergedVarsBox);
 
         // Adds the specified component to the end of this container.
         add(container, BorderLayout.CENTER);
-        
+
         // Merge
         mergeDeterministicVars(mergedList);
     }
@@ -199,6 +192,11 @@ public class DeterminismEditor extends JPanel implements FinalizingParameterEdit
     }
 
     //=============================== Private Methods ================================//
+    /**
+     * Determinism detection among interventional variables
+     * 
+     * @return 
+     */
     private List<Set<Integer>> detectDeterministicVars() {
         List<Set<Integer>> deterministicList = new ArrayList<>();
 
@@ -245,13 +243,14 @@ public class DeterminismEditor extends JPanel implements FinalizingParameterEdit
             }
         }
 
-        // By now we have a sorted list of non-duplicated deterministic variable set
-        System.out.println("===========mergedList============");
-        System.out.println(mergedList);
-
         return mergedList;
     }
 
+    /**
+     * Merge the deterministic interventional variables and create new dataset
+     * 
+     * @param mergedList 
+     */
     private void mergeDeterministicVars(List<Set<Integer>> mergedList) {
         List<Integer> toBeRemovedColumns = new LinkedList<>();
 
@@ -309,8 +308,7 @@ public class DeterminismEditor extends JPanel implements FinalizingParameterEdit
     }
 
     /**
-     * Determine if interventional variable x and y are deterministic (can be
-     * merged)
+     * Determine if interventional variable x and y are deterministic
      *
      * @param x
      * @param y
@@ -319,8 +317,8 @@ public class DeterminismEditor extends JPanel implements FinalizingParameterEdit
     private boolean isDeterministic(Node x, Node y) {
         // For now only check between interventional status and status, value and value, status and value
         // and only work on discrete variables
-        if ((x.getNodeVariableType() != NodeVariableType.DOMAIN)
-                && (y.getNodeVariableType() != NodeVariableType.DOMAIN)
+        if ((x.getNodeVariableType() == NodeVariableType.INTERVENTION_STATUS || x.getNodeVariableType() == NodeVariableType.INTERVENTION_VALUE)
+                && (y.getNodeVariableType() == NodeVariableType.INTERVENTION_STATUS || x.getNodeVariableType() == NodeVariableType.INTERVENTION_VALUE)
                 && (x instanceof DiscreteVariable)
                 && (y instanceof DiscreteVariable)) {
 
@@ -350,16 +348,13 @@ public class DeterminismEditor extends JPanel implements FinalizingParameterEdit
         return false;
     }
 
-    private void groupVariables() {
-        sourceDataSet.getVariables().forEach(e -> {
-            if (e.getNodeVariableType() == NodeVariableType.DOMAIN) {
-                nonInterventionalVars.add(e.getName());
-            } else {
-                interventionalVars.add(e.getName());
-            }
-        });
-    }
-
+    /**
+     * Create BoxDataSet from the target nodes
+     * 
+     * @param nodeList
+     * @param origIndexMap
+     * @return 
+     */
     private BoxDataSet createDataBoxData(List<Node> nodeList, Map<Node, Integer> origIndexMap) {
         // Now scan all the coloumns and create the data box
         boolean isDiscrete = false;
