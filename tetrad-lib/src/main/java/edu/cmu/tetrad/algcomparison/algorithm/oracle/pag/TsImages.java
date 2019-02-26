@@ -24,7 +24,6 @@ import edu.cmu.tetrad.search.TsGFci;
 import edu.cmu.tetrad.util.Parameters;
 import edu.pitt.dbmi.algo.resampling.GeneralResamplingTest;
 import edu.pitt.dbmi.algo.resampling.ResamplingEdgeEnsemble;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -178,6 +177,11 @@ public class TsImages implements Algorithm, HasKnowledge, MultiDataSetAlgorithm,
     @Override
     public void setScoreWrapper(ScoreWrapper score) {
         this.score = score;
+    }
+    
+    @Override
+    public ScoreWrapper getScoreWarpper() {
+        return score;
     }
 
 }

@@ -17,7 +17,6 @@ import edu.cmu.tetrad.search.SearchGraphUtils;
 import edu.cmu.tetrad.util.Parameters;
 import edu.pitt.dbmi.algo.resampling.GeneralResamplingTest;
 import edu.pitt.dbmi.algo.resampling.ResamplingEdgeEnsemble;
-
 import java.io.PrintStream;
 import java.util.List;
 
@@ -185,6 +184,11 @@ public class Fges implements Algorithm, TakesInitialGraph, HasKnowledge, UsesSco
     @Override
     public void setScoreWrapper(ScoreWrapper score) {
         this.score = score;
+    }
+    
+    @Override
+    public ScoreWrapper getScoreWarpper() {
+        return score;
     }
 
 }

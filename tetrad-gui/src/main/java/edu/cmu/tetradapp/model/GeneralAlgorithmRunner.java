@@ -23,9 +23,13 @@ package edu.cmu.tetradapp.model;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.MultiDataSetAlgorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.cluster.ClusterAlgorithm;
-import edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern.Fges;
-import edu.cmu.tetrad.algcomparison.score.BdeuScore;
+import edu.cmu.tetrad.algcomparison.independence.DSeparationTest;
+import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
+import edu.cmu.tetrad.algcomparison.score.DSeparationScore;
+import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
+import edu.cmu.tetrad.algcomparison.utils.TakesIndependenceWrapper;
+import edu.cmu.tetrad.algcomparison.utils.UsesScoreWrapper;
 import edu.cmu.tetrad.data.ColtDataSet;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataModelList;
@@ -68,7 +72,7 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
 
     private DataWrapper dataWrapper;
     private String name;
-    private Algorithm algorithm = new Fges(new BdeuScore(), false);
+    private Algorithm algorithm;
     private Parameters parameters;
     private Graph sourceGraph;
     private Graph initialGraph;
@@ -232,6 +236,22 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
             if (getSourceGraph() != null) {
                 Algorithm algo = getAlgorithm();
 
+                if (algo instanceof TakesIndependenceWrapper) {
+                    // We inject the graph to the test to satisfy the tests like DSeparationTest - Zhou
+                    IndependenceWrapper indTestWrapper = ((TakesIndependenceWrapper) algo).getIndependenceWrapper();
+                    if (indTestWrapper instanceof DSeparationTest) {
+                        ((DSeparationTest) indTestWrapper).setGraph(getSourceGraph());
+                    }
+                }
+
+                if (algo instanceof UsesScoreWrapper) {
+                    // We inject the graph to the score to satisfy the tests like DSeparationScore - Zhou
+                    ScoreWrapper scoreWrapper = ((UsesScoreWrapper) algo).getScoreWarpper();
+                    if (scoreWrapper instanceof DSeparationScore) {
+                        ((DSeparationScore) scoreWrapper).setGraph(getSourceGraph());
+                    }
+                }
+                
                 if (algo instanceof HasKnowledge) {
                     ((HasKnowledge) algo).setKnowledge(getKnowledge());
                 }

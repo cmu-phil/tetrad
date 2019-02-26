@@ -175,7 +175,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
     private final GeneralAlgorithmRunner runner;
     private final TetradDesktop desktop;
     private final DataType dataType;
-    
+
     public GeneralAlgorithmEditor(GeneralAlgorithmRunner runner) {
         this.runner = runner;
         this.desktop = (TetradDesktop) DesktopController.getInstance();
@@ -195,7 +195,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         // Repopulate all the previous selections if reopen the search box
         if (runner.getGraphs() != null && runner.getGraphs().size() > 0) {
             parametersPanel.addToPanel(runner);
-   
+
             // show the generated graph with bootstrap table if reopen the search box
             graphContainer.add(createSearchResultPane(runner.getGraph()));
             changeCard(GRAPH_CARD);
@@ -209,7 +209,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         userAlgoSelections.put(LINEAR_PARAM, linearVarChkBox.isSelected());
         userAlgoSelections.put(GAUSSIAN_PARAM, gaussianVarChkBox.isSelected());
         userAlgoSelections.put(KNOWLEDGE_PARAM, knowledgeChkBox.isSelected());
-        
+
         // When there's a search result, we store the algo string name from the search so we wont' lose it
         // when the upstream nodes change.
         // Otherwise, we use the one that users selcted on the UI - Zhou
@@ -219,12 +219,14 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
             userAlgoSelections.put(ALGO_PARAM, algorithmList.getSelectedValue().toString());
         }
     }
-    
+
     /**
-     * This restore mechanism won't restore user selections other than selected algo name
-     * when user changes the upstream (after clicking the "Execute" button), 
-     * because a new algo runner is created and we lose the stored models from the old runner - Zhou
-     * @param models 
+     * This restore mechanism won't restore user selections other than selected
+     * algo name when user changes the upstream (after clicking the "Execute"
+     * button), because a new algo runner is created and we lose the stored
+     * models from the old runner - Zhou
+     *
+     * @param models
      */
     private void restoreUserAlgoSelections(Map<String, Object> userAlgoSelections) {
         Object obj = userAlgoSelections.get(LINEAR_PARAM);
@@ -274,7 +276,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
                 break;
             }
         }
-        
+
         obj = userAlgoSelections.get(IND_TEST_PARAM);
         if ((obj != null) && (obj instanceof IndependenceTestModel)) {
             String value = ((IndependenceTestModel) obj).toString();
@@ -289,7 +291,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
                 }
             }
         }
-        
+
         obj = userAlgoSelections.get(SCORE_PARAM);
         if ((obj != null) && (obj instanceof ScoreModel)) {
             String value = ((ScoreModel) obj).toString();
@@ -447,19 +449,19 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
                     }
                 }
             }
-            
+
             // Time-series (TsFci, TsGfci, TsImages) algorithms need lagged data
             String cmd = algoModel.getAlgorithm().getAnnotation().command();
-            if(cmd.equalsIgnoreCase("ts-fci") ||
-            		cmd.equalsIgnoreCase("ts-gfci") ||
-            		cmd.equalsIgnoreCase("ts-imgs")) {
-            	DataModel dataModel = runner.getDataModel();
-            	IKnowledge knowledge = runner.getKnowledge();
-            	if((knowledge == null || knowledge.isEmpty()) &&
-            			(dataModel.getKnowledge() == null || dataModel.getKnowledge().isEmpty())) {
-            		paramSetFwdBtn.setEnabled(false);
+            if (cmd.equalsIgnoreCase("ts-fci")
+                    || cmd.equalsIgnoreCase("ts-gfci")
+                    || cmd.equalsIgnoreCase("ts-imgs")) {
+                DataModel dataModel = runner.getDataModel();
+                IKnowledge knowledge = runner.getKnowledge();
+                if ((knowledge == null || knowledge.isEmpty())
+                        && (dataModel.getKnowledge() == null || dataModel.getKnowledge().isEmpty())) {
+                    paramSetFwdBtn.setEnabled(false);
                     JOptionPane.showMessageDialog(desktop, "Time-series algorithm needs lagged data", "Please Note", JOptionPane.INFORMATION_MESSAGE);
-            	}
+                }
             }
         }
 
@@ -864,7 +866,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
             Knowledge2 knowledge = (Knowledge2) dataModel.getKnowledge();
             if (knowledge != null && !knowledge.isEmpty()) {
                 prior = Files.createTempFile(file.getFileName().toString(), ".prior");
-                DataWriter.saveKnowledge(knowledge,Files.newBufferedWriter(prior));
+                DataWriter.saveKnowledge(knowledge, Files.newBufferedWriter(prior));
 
                 progressTextArea.replaceRange("Done", progressTextLength, progressTextArea.getText().length());
                 progressTextArea.append(newline);
@@ -1272,15 +1274,15 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
 
     /**
      * Resulting graph with bootstrap table - Zhou
-     * 
+     *
      * @param graph
-     * @return 
+     * @return
      */
     private JSplitPane createSearchResultPane(Graph graph) {
         // topBox contains the graphEditorScroll and the instructionBox underneath
-        Box topBox = Box.createVerticalBox();       
+        Box topBox = Box.createVerticalBox();
         topBox.setPreferredSize(new Dimension(820, 400));
- 
+
         // topBox graph editor
         JScrollPane graphEditorScroll = new JScrollPane();
         graphEditorScroll.setPreferredSize(new Dimension(820, 420));
@@ -1289,7 +1291,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         // Instruction with info button 
         Box instructionBox = Box.createHorizontalBox();
         instructionBox.setMaximumSize(new Dimension(820, 40));
-        
+
         JLabel label = new JLabel("More information on graph edge types");
         label.setFont(new Font("SansSerif", Font.PLAIN, 12));
 
@@ -1323,7 +1325,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         instructionBox.add(label);
         instructionBox.add(Box.createHorizontalStrut(2));
         instructionBox.add(infoBtn);
-        
+
         // Add to topBox
         topBox.add(graphEditorScroll);
         topBox.add(instructionBox);
@@ -1333,30 +1335,30 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         bottomBox.setPreferredSize(new Dimension(820, 150));
 
         bottomBox.add(Box.createVerticalStrut(5));
-        
+
         // Put the table title label in a box so it can be centered
         Box tableTitleBox = Box.createHorizontalBox();
         JLabel tableTitle = new JLabel("Edges and Edge Type Probabilities");
         tableTitleBox.add(tableTitle);
-        
+
         bottomBox.add(tableTitleBox);
-        
+
         bottomBox.add(Box.createVerticalStrut(5));
-        
+
         JScrollPane tablePane = BootstrapTable.renderBootstrapTable(graph);
-        
+
         bottomBox.add(tablePane);
-        
+
         // Use JSplitPane to allow resize the bottom box - Zhou
         JSplitPane splitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
-        
+
         // Set the top and bottom split panes
         splitPane.setTopComponent(topBox);
         splitPane.setBottomComponent(bottomBox);
-        
+
         return splitPane;
     }
-    
+
     private JPanel createAlgorithmPanel() {
         JButton resetSettingsBtn = new JButton("Reset All Settings");
         resetSettingsBtn.addActionListener((e) -> {

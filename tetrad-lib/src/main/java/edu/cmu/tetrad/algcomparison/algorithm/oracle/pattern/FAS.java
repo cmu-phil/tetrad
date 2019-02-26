@@ -130,4 +130,8 @@ public class FAS implements Algorithm, HasKnowledge, TakesIndependenceWrapper {
         this.test = test;
     }
 
+    @Override
+    public IndependenceWrapper getIndependenceWrapper() {
+        return test;
+    }
 }

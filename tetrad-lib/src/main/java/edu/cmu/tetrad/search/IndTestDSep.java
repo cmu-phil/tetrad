@@ -29,7 +29,6 @@ import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.NodeType;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetrad.util.TetradMatrix;
-
 import java.util.*;
 
 /**
@@ -266,6 +265,10 @@ public class IndTestDSep implements IndependenceTest {
     public Graph getGraph() {
         return this.graph;
     }
+    
+    public void setGraph(Graph graph) {
+        this.graph = graph;
+    }
 
     public String toString() {
         return "D-separation";
@@ -315,6 +318,8 @@ public class IndTestDSep implements IndependenceTest {
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;
     }
+
+    
 }
 
 
