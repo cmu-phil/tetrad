@@ -134,12 +134,12 @@ public final class GeneralizedSemPm implements PM, TetradSerializable {
     /**
      * The stored template for freeParameters.
      */
-    private String parametersTemplate = "Split(-1.5,-.5,.5,1.5)";
+    private String parametersTemplate = "Split(-1.0,-.5,.5,1.0)";
 
     /**
      * The stored template for freeParameters.
      */
-    private String parametersEstimationInitializationTemplate = "Split(-1.5,-.5,.5,1.5)";
+    private String parametersEstimationInitializationTemplate = "Split(-1.0,-.5,.5,1.0)";
 
     /**
      * The list of variable names.
@@ -281,7 +281,7 @@ public final class GeneralizedSemPm implements PM, TetradSerializable {
                         setParametersTemplate(expressionString);
                     }
                     else {
-                        String expressionString = "Split(-1.5, -.5, .5, 1.5)";
+                        String expressionString = "Split(-1.0, -.5, .5, 1.0)";
                         setParameterExpression(parameter, expressionString);
                         setParametersTemplate(expressionString);
                     }
@@ -299,11 +299,11 @@ public final class GeneralizedSemPm implements PM, TetradSerializable {
                         setParameterEstimationInitializationExpression(parameter, expressionString);
                     }
                     else {
-                        String expressionString = "Split(-1.5, -.5, .5, 1.5)";
+                        String expressionString = "Split(-1.0, -.5, .5, 1.0)";
                         setParameterEstimationInitializationExpression(parameter, expressionString);
                     }
 
-                    setStartsWithParametersTemplate("s","Split(-1.5, -.5, .5, 1.5)");
+                    setStartsWithParametersTemplate("s","Split(-105, -.5, .5, 1.0)");
                     setStartsWithParametersEstimationInitializaationTemplate("s", "Split(-1.5, -.5, .5, 1.5)");
                 }
             }
@@ -450,6 +450,7 @@ public final class GeneralizedSemPm implements PM, TetradSerializable {
         parameters.add("generalSemFunctionTemplateMeasured");
         parameters.add("generalSemFunctionTemplateLatent");
         parameters.add("generalSemErrorTemplate");
+        parameters.add("generalSemParameterTemplate");
         return parameters;
     }
 
