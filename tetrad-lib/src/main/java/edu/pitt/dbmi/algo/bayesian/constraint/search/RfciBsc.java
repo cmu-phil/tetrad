@@ -338,20 +338,20 @@ public class RfciBsc implements GraphSearch {
 		// normalize the scores
 		bscD = maxLnDep - lnQBSCDTotal;
 		bscD = Math.exp(bscD);
-		graphRBD.addAttribute("bscD", String.format("%.8f", bscD));
+		graphRBD.addAttribute("bscD", bscD);
 		
 		double _bscI = pagLnBSCI.get(graphRBD) - lnQBSCITotal;
 		_bscI = Math.exp(_bscI);
-		graphRBD.addAttribute("bscI", String.format("%.8f", _bscI));
+		graphRBD.addAttribute("bscI", _bscI);
 		
 		
 		double _bscD = pagLnBSCD.get(graphRBI) - lnQBSCDTotal;
 		_bscD = Math.exp(_bscD);
-		graphRBI.addAttribute("bscD", String.format("%.8f", _bscD));
+		graphRBI.addAttribute("bscD", _bscD);
 		
 		bscI = maxLnInd - lnQBSCITotal;
 		bscI = Math.exp(bscI);
-		graphRBI.addAttribute("bscI", String.format("%.8f", bscI));
+		graphRBI.addAttribute("bscI", bscI);
 
 		out.println("bscD: " + bscD + " bscI: " + bscI);
 

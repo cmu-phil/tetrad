@@ -6,18 +6,16 @@ import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.algcomparison.utils.TakesIndependenceWrapper;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
+import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.data.IKnowledge;
 import edu.cmu.tetrad.data.Knowledge2;
 import edu.cmu.tetrad.graph.EdgeListGraph;
-
-import edu.cmu.tetrad.search.SearchGraphUtils;
+import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.PcAll;
+import edu.cmu.tetrad.search.SearchGraphUtils;
 import edu.cmu.tetrad.util.Parameters;
 import edu.pitt.dbmi.algo.resampling.GeneralResamplingTest;
 import edu.pitt.dbmi.algo.resampling.ResamplingEdgeEnsemble;
-import edu.cmu.tetrad.data.DataType;
-import edu.cmu.tetrad.graph.Graph;
-
 import java.util.List;
 
 /**
@@ -132,5 +130,10 @@ public class CpcStable implements Algorithm, HasKnowledge, TakesIndependenceWrap
     @Override
     public void setIndependenceWrapper(IndependenceWrapper independenceWrapper) {
         this.test = independenceWrapper;
+    }
+    
+    @Override
+    public IndependenceWrapper getIndependenceWrapper() {
+        return test;
     }
 }

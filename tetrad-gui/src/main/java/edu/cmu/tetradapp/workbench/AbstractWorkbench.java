@@ -597,6 +597,24 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
     }
 
     /**
+     * Node tooltip to show the node attributes - Added by Kong
+     *
+     * @param modelNode
+     * @param toolTipText
+     */
+    public final void setNodeToolTip(Node modelNode, String toolTipText) {
+        if (modelNode == null) {
+            throw new NullPointerException("Attempt to set a label on a " + "null model node: " + modelNode);
+        } else if (!getModelNodesToDisplay().containsKey(modelNode)) {
+            throw new IllegalArgumentException("Attempt to set a label on " + "a model node that's not " + "in the editor: " + modelNode);
+        }
+
+        DisplayNode displayNode = (DisplayNode) getModelNodesToDisplay().get(modelNode);
+
+        displayNode.setToolTipText(toolTipText);
+    }
+
+    /**
      * Edge tooltip to show the edge type and probabilities - Added by Zhou
      *
      * @param modelEdge
@@ -2221,6 +2239,26 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
                     // Use tooltip instead of label - Added by Zhou
                     setEdgeToolTip(edge, text);
                 }
+            }
+        }
+        
+        if (source instanceof DisplayNode) {
+        	DisplayNode displayNode = (DisplayNode) source;
+            Node node = displayNode.getModelNode();
+            if (graph.containsNode(node)) {	
+            	Map<String, Object> attributes = node.getAllAttributes();
+            	if(!attributes.isEmpty()) {
+            		String attribute = "";
+            		for(String key: attributes.keySet()) {
+            			Object value = attributes.get(key);
+            			
+            			attribute += key + ": " + value + "<br>";
+            		}
+            		
+            		String text = "<html>Node: " + node.getName() + "<br>" + attribute;
+            		
+            		setNodeToolTip(node, text);
+            	}
             }
         }
     }

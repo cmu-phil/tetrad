@@ -16,7 +16,6 @@ import edu.cmu.tetrad.search.TsDagToPag;
 import edu.cmu.tetrad.util.Parameters;
 import edu.pitt.dbmi.algo.resampling.GeneralResamplingTest;
 import edu.pitt.dbmi.algo.resampling.ResamplingEdgeEnsemble;
-
 import java.util.List;
 
 /**
@@ -155,4 +154,8 @@ public class TsFci implements Algorithm, TakesInitialGraph, HasKnowledge, TakesI
         this.test = test;
     }
 
+    @Override
+    public IndependenceWrapper getIndependenceWrapper() {
+        return test;
+    }
 }

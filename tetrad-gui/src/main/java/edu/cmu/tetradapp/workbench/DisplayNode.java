@@ -18,7 +18,6 @@
 // along with this program; if not, write to the Free Software               //
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA //
 ///////////////////////////////////////////////////////////////////////////////
-
 package edu.cmu.tetradapp.workbench;
 
 import edu.cmu.tetrad.data.AbstractVariable;
@@ -30,6 +29,8 @@ import edu.cmu.tetrad.util.TetradSerializableExcluded;
 import java.awt.*;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.HashMap;
+import java.util.Map;
 import javax.swing.*;
 
 /**
@@ -51,7 +52,8 @@ public class DisplayNode extends JComponent implements Node, TetradSerializableE
     private boolean selected = false;
 
     /**
-     * Node variable type (domain, interventional status, interventional value..) of this node variable
+     * Node variable type (domain, interventional status, interventional
+     * value..) of this node variable
      */
     private NodeVariableType nodeVariableType = NodeVariableType.DOMAIN;
 
@@ -61,14 +63,14 @@ public class DisplayNode extends JComponent implements Node, TetradSerializableE
     private DisplayComp displayComp;
     private int uniqueId = AbstractVariable.LAST_ID++;
 
-    //===========================CONSTRUCTORS==============================//
+    private Map<String, Object> attributes = new HashMap<>();
 
+    //===========================CONSTRUCTORS==============================//
     protected DisplayNode() {
         setName("");
     }
 
     //===========================PUBLIC METHODS============================//
-
     protected final void setModelNode(Node modelNode) {
         if (modelNode == null) {
             throw new NullPointerException();
@@ -87,8 +89,7 @@ public class DisplayNode extends JComponent implements Node, TetradSerializableE
     }
 
     /**
-     * @return the model node corresponding to this workbench node. May be
-     * null.
+     * @return the model node corresponding to this workbench node. May be null.
      */
     public final Node getModelNode() {
         return modelNode;
@@ -232,8 +233,7 @@ public class DisplayNode extends JComponent implements Node, TetradSerializableE
 
         if (i1 == 0) {
             return i2;
-        }
-        else {
+        } else {
             return i1;
         }
     }
@@ -248,10 +248,24 @@ public class DisplayNode extends JComponent implements Node, TetradSerializableE
         this.nodeVariableType = nodeVariableType;
     }
 
+    @Override
+    public Map<String, Object> getAllAttributes() {
+        return attributes;
+    }
+
+    @Override
+    public Object getAttribute(String key) {
+        return attributes.get(key);
+    }
+
+    @Override
+    public void removeAttribute(String key) {
+        attributes.remove(key);
+    }
+
+    @Override
+    public void addAttribute(String key, Object value) {
+        attributes.put(key, value);
+    }
+
 }
-
-
-
-
-
-
