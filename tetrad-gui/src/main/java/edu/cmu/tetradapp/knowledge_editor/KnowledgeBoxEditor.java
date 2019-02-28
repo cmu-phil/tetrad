@@ -338,7 +338,6 @@ public class KnowledgeBoxEditor extends JPanel {
      */
     private void checkInterventionalVariables() {
         knowledgeBoxModel.getVariables().forEach(e->{ 
-            // For tiers
             if ((e.getNodeVariableType() == NodeVariableType.INTERVENTION_STATUS) || (e.getNodeVariableType() == NodeVariableType.INTERVENTION_VALUE)) {
                 firstTierVars.add(e.getName());
             } else {
@@ -355,6 +354,7 @@ public class KnowledgeBoxEditor extends JPanel {
     }
     
     private Box getTierBoxes(int numTiers) {
+        // Handling interventional variables
         checkInterventionalVariables();
         
         // Only for dataset with interventional variables and the first time
@@ -365,27 +365,28 @@ public class KnowledgeBoxEditor extends JPanel {
             getKnowledge().setTier(1, secondTierVars);
         }
         
-        
-        Box c = Box.createVerticalBox();
-
         for (String var : varNames) {
             getKnowledge().addVariable(var);
         }
 
+        // Overall container
+        Box container = Box.createVerticalBox();
+
+        // Vars not in tier
         List varsNotInTiers = getKnowledge().getVariablesNotInTiers();
-        JList l1 = new DragDropList(varsNotInTiers, -1);
-        l1.setBorder(null);
+        JList varsNotInTiersList = new DragDropList(varsNotInTiers, -1);
+        varsNotInTiersList.setBorder(null);
 
-        Box b2 = Box.createHorizontalBox();
-        JScrollPane jScrollPane1 = new JScrollPane(l1);
+        Box varsNotInTiersBox = Box.createHorizontalBox();
+        JScrollPane jScrollPane1 = new JScrollPane(varsNotInTiersList);
         jScrollPane1.setPreferredSize(new Dimension(640, 50));
-        b2.add(jScrollPane1);
-        c.add(b2);
+        varsNotInTiersBox.add(jScrollPane1);
+        
+        Box tiersBox = Box.createVerticalBox();
 
-        c.add(Box.createVerticalStrut(5));
-
-        Box d = Box.createVerticalBox();
-
+        // Use this list so we can set the first tier forbidden within tier with interventional variables handling - Zhou
+        List<JCheckBox> forbiddenCheckboxes = new LinkedList<>();
+        
         for (int tier = 0; tier < numTiers; tier++) {
             Box textRow = Box.createHorizontalBox();
             textRow.add(new JLabel("Tier " + (tier + 1)));
@@ -395,19 +396,16 @@ public class KnowledgeBoxEditor extends JPanel {
 
             JButton regexAdd = new JButton("Find");
 
-            JCheckBox forbiddenCheckbox = new JCheckBox("Forbid Within Tier",
-                    getKnowledge().isTierForbiddenWithin(_tier));
+            JCheckBox forbiddenCheckbox = new JCheckBox("Forbid Within Tier", getKnowledge().isTierForbiddenWithin(_tier));
 
-            JCheckBox causesOnlyNextTierCheckbox =  new JCheckBox("Can Cause Only Next Tier",
-                                getKnowledge().isOnlyCanCauseNextTier(_tier));
+            JCheckBox causesOnlyNextTierCheckbox =  new JCheckBox("Can Cause Only Next Tier", getKnowledge().isOnlyCanCauseNextTier(_tier));
 
             final JComponent upReference = this;
 
             forbiddenCheckbox.addActionListener((e) -> {
                 JCheckBox checkbox = (JCheckBox) e.getSource();
                 try {
-                    getKnowledge().setTierForbiddenWithin(_tier,
-                            checkbox.isSelected());
+                    getKnowledge().setTierForbiddenWithin(_tier, checkbox.isSelected());
                 } catch (Exception e1) {
                     checkbox.setSelected(false);
                     JOptionPane.showMessageDialog(upReference, e1.getMessage());
@@ -416,12 +414,13 @@ public class KnowledgeBoxEditor extends JPanel {
                 notifyKnowledge();
             });
 
+            forbiddenCheckboxes.add(forbiddenCheckbox);
+            
             textRow.add(regexAdd);
 
             regexAdd.addActionListener((e) -> {
                 String regex = JOptionPane.showInputDialog("Search Pattern");
                 try {
-
                     getKnowledge().removeFromTiers(regex);
                     getKnowledge().addToTier(_tier, regex);
                 } catch (IllegalArgumentException iae) {
@@ -434,8 +433,6 @@ public class KnowledgeBoxEditor extends JPanel {
                 tiersPanel.add(getTierBoxes(getNumTiers()), BorderLayout.CENTER);
                 tiersPanel.revalidate();
                 tiersPanel.repaint();
-
-
             });
 
             textRow.add(forbiddenCheckbox);
@@ -443,8 +440,7 @@ public class KnowledgeBoxEditor extends JPanel {
             causesOnlyNextTierCheckbox.addActionListener((e) -> {
                 JCheckBox checkbox = (JCheckBox) e.getSource();
                 try {
-                    getKnowledge().setOnlyCanCauseNextTier(_tier,
-                            checkbox.isSelected());
+                    getKnowledge().setOnlyCanCauseNextTier(_tier, checkbox.isSelected());
                 } catch (Exception e1) {
                     checkbox.setSelected(false);
                     JOptionPane.showMessageDialog(upReference, e1.getMessage());
@@ -455,23 +451,36 @@ public class KnowledgeBoxEditor extends JPanel {
 
             if (tier + 2 < numTiers) textRow.add(causesOnlyNextTierCheckbox);
 
-            d.add(textRow);
+            tiersBox.add(textRow);
 
             List tierNames = getKnowledge().getTier(tier);
 
             JList tierList = new DragDropList(tierNames, tier);
 
-            Box tierRow = Box.createHorizontalBox();
+            Box tierBox = Box.createHorizontalBox();
             JScrollPane jScrollPane = new JScrollPane(tierList);
             jScrollPane.setPreferredSize(new Dimension(600, 50));
-            tierRow.add(jScrollPane);
-            d.add(tierRow);
+            tierBox.add(jScrollPane);
+            
+            tiersBox.add(tierBox);
         }
-
-        JScrollPane scroll = new JScrollPane(d);
-        scroll.setPreferredSize(new Dimension(640, 400));
-        c.add(scroll);
-        return c;
+        
+        // Add all tiers to a scroll pane
+        JScrollPane tiersScrollPane = new JScrollPane(tiersBox);
+        tiersScrollPane.setPreferredSize(new Dimension(640, 400));
+        
+        // Also check "Forbin Within Tier" for the first tier variables
+        if (!firstTierVars.isEmpty()) {
+            forbiddenCheckboxes.get(0).setSelected(true);
+            getKnowledge().setTierForbiddenWithin(0, true);
+        }
+        
+        // Finally add to container
+        container.add(varsNotInTiersBox);
+        container.add(Box.createVerticalStrut(5));
+        container.add(tiersScrollPane);
+        
+        return container;
     }
 
     private JPanel edgeDisplay() {
