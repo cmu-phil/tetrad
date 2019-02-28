@@ -7,7 +7,6 @@ package edu.cmu.tetradapp.editor.datamanip;
 
 import edu.cmu.tetrad.data.BoxDataSet;
 import edu.cmu.tetrad.data.ContinuousVariable;
-import edu.cmu.tetrad.data.DataBox;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DiscreteVariable;
@@ -169,14 +168,20 @@ public class DeterminismEditor extends JPanel implements FinalizingParameterEdit
                 dataWrapper = (DataWrapper) parent;
             }
         }
+        
         if (dataWrapper == null) {
             throw new IllegalArgumentException("Should have have a data wrapper as a parent");
         }
+        
         DataModel model = dataWrapper.getSelectedDataModel();
         if (!(model instanceof DataSet)) {
             throw new IllegalArgumentException("The dataset must be a rectangular dataset");
         }
 
+        if (!containsInterventionalVariables(model)) {
+            throw new IllegalArgumentException("The dataset must contain interventional variables");
+        }
+        
         // Get the source dataset, keep it untouched
         DataSet dataSet = (DataSet) model;
 
@@ -306,6 +311,23 @@ public class DeterminismEditor extends JPanel implements FinalizingParameterEdit
     }
 
     /**
+     * Check to see if the dataset has interventional variables
+     * @param model
+     * @return 
+     */
+    private boolean containsInterventionalVariables(DataModel model) {
+        List<String> interventionalVars = new LinkedList<>();
+        
+        model.getVariables().forEach(e->{ 
+            if (e.getNodeVariableType() == NodeVariableType.INTERVENTION_STATUS || e.getNodeVariableType() == NodeVariableType.INTERVENTION_VALUE) {
+                interventionalVars.add(e.getName());
+            }
+        });
+        
+        return interventionalVars.size() > 0;
+    }
+    
+    /**
      * Determine if interventional variable x and y are deterministic
      *
      * @param x
@@ -402,6 +424,12 @@ public class DeterminismEditor extends JPanel implements FinalizingParameterEdit
         return new BoxDataSet(new MixedDataBox(nodeList, numOfRows, continuousData, discreteData), nodeList);
     }
 
+    /**
+     * The data can only be mixed or discrete. This won't be used for now 
+     * @param nodeList
+     * @param origIndexMap
+     * @return 
+     */
     private BoxDataSet createContinuousDataBox(List<Node> nodeList, Map<Node, Integer> origIndexMap) {
         int numOfCols = nodeList.size();
         int numOfRows = sourceDataSetCopy.getNumRows();
@@ -414,25 +442,21 @@ public class DeterminismEditor extends JPanel implements FinalizingParameterEdit
             }
         }
 
-        DataBox dataBox = new DoubleDataBox(data);
-
-        return new BoxDataSet(dataBox, nodeList);
+        return new BoxDataSet(new DoubleDataBox(data), nodeList);
     }
 
     private BoxDataSet createDiscreteDataBox(List<Node> nodeList, Map<Node, Integer> origIndexMap) {
         int numOfCols = nodeList.size();
         int numOfRows = sourceDataSetCopy.getNumRows();
         int[][] data = new int[numOfCols][numOfRows];
-
-        for (int i = 0; i < numOfRows; i++) {
-            for (int j = 0; j < numOfCols; j++) {
-                Node node = nodeList.get(j);
-                data[i][j] = sourceDataSetCopy.getInt(i, origIndexMap.get(node));
+        
+        for (int i = 0; i < numOfCols; i++) {
+            for (int j = 0; j < numOfRows; j++) {
+                Node node = nodeList.get(i);
+                data[i][j] = sourceDataSetCopy.getInt(j, origIndexMap.get(node));
             }
         }
 
-        DataBox dataBox = new VerticalIntDataBox(data);
-
-        return new BoxDataSet(dataBox, nodeList);
+        return new BoxDataSet(new VerticalIntDataBox(data), nodeList);
     }
 }
