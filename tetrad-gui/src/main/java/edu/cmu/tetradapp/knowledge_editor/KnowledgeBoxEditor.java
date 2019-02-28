@@ -89,9 +89,8 @@ public class KnowledgeBoxEditor extends JPanel {
     private JTabbedPane tabbedPane = null;
     private Graph sourceGraph;
 
-    private final List<Map> interventionalVarPairs = new LinkedList<>();
-    private final List<String> interventionalVars = new LinkedList<>();
-    private final List<String> nonInterventionalVars = new LinkedList<>();
+    private final List<String> firstTierVars = new LinkedList<>();
+    private final List<String> secondTierVars = new LinkedList<>();
     
     
     public KnowledgeBoxEditor(final KnowledgeBoxModel knowledgeBoxModel) {
@@ -340,10 +339,17 @@ public class KnowledgeBoxEditor extends JPanel {
     private void checkInterventionalVariables() {
         knowledgeBoxModel.getVariables().forEach(e->{ 
             // For tiers
-            if (e.getNodeVariableType() == NodeVariableType.DOMAIN) {
-                nonInterventionalVars.add(e.getName());
+            if ((e.getNodeVariableType() == NodeVariableType.INTERVENTION_STATUS) || (e.getNodeVariableType() == NodeVariableType.INTERVENTION_VALUE)) {
+                firstTierVars.add(e.getName());
             } else {
-                interventionalVars.add(e.getName());
+                if (e.getAttribute("fullyDeterminisedDomainVar") != null) {
+                    // Also put domain variables that have the "fullyDeterminisedDomainVar" set as true into the first tier
+                    if ((boolean) e.getAttribute("fullyDeterminisedDomainVar")) {
+                        firstTierVars.add(e.getName());
+                    }
+                } else {
+                    secondTierVars.add(e.getName());
+                }
             }
         });
     }
@@ -353,10 +359,10 @@ public class KnowledgeBoxEditor extends JPanel {
         
         // Only for dataset with interventional variables and the first time
         // we open the knowledge box - Zhou
-        if (getKnowledge().isEmpty() && !interventionalVars.isEmpty()) {
+        if (getKnowledge().isEmpty() && !firstTierVars.isEmpty()) {
             // Display interventional variables in first tier and the rest in second tier
-            getKnowledge().setTier(0, interventionalVars);
-            getKnowledge().setTier(1, nonInterventionalVars);
+            getKnowledge().setTier(0, firstTierVars);
+            getKnowledge().setTier(1, secondTierVars);
         }
         
         

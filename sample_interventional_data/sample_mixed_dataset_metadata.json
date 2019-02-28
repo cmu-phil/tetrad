@@ -21,7 +21,7 @@
   "domains": [
     {
       "name": "raf",
-      "discrete": false
+      "discrete": true
     },
     {
       "name": "mek",

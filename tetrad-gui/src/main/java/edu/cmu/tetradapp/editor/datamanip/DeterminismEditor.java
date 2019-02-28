@@ -53,6 +53,8 @@ public class DeterminismEditor extends JPanel implements FinalizingParameterEdit
     private DataSet mergedDataSet;
 
     private Parameters parameters;
+    
+    private final String fullyDeterminisedDomainVar = "fullyDeterminisedDomainVar";
 
     //==========================CONSTUCTORS===============================//
     /**
@@ -213,8 +215,23 @@ public class DeterminismEditor extends JPanel implements FinalizingParameterEdit
                 Node outerVar = sourceDataSetCopy.getVariable(i);
                 Node innerVar = sourceDataSetCopy.getVariable(j);
 
-                if (isDeterministic(outerVar, innerVar)) {
-                    set.add(j);
+                // Bidirectional check
+                if (isDeterministic(outerVar, innerVar) && isDeterministic(innerVar, outerVar)) {
+                    if (outerVar.getNodeVariableType() == innerVar.getNodeVariableType()) {
+                        set.add(j);
+                    } else {
+                        if ((outerVar.getNodeVariableType() != NodeVariableType.DOMAIN) && (innerVar.getNodeVariableType() != NodeVariableType.DOMAIN)) {
+                            set.add(j);
+                        } else {
+                            // Add new attribute to domain variables that are fully determinised
+                            // But don't merge
+                            if (outerVar.getNodeVariableType() == NodeVariableType.DOMAIN) {
+                                outerVar.addAttribute(fullyDeterminisedDomainVar, true);
+                            } else {
+                                innerVar.addAttribute(fullyDeterminisedDomainVar, true);
+                            }
+                        }
+                    }
                 }
             }
 
@@ -328,20 +345,15 @@ public class DeterminismEditor extends JPanel implements FinalizingParameterEdit
     }
     
     /**
-     * Determine if interventional variable x and y are deterministic
+     * Determine if discrete variable x and discrete variable y are deterministic
      *
      * @param x
      * @param y
      * @return
      */
     private boolean isDeterministic(Node x, Node y) {
-        // For now only check between interventional status and status, value and value, status and value
-        // and only work on discrete variables
-        if ((x.getNodeVariableType() == NodeVariableType.INTERVENTION_STATUS || x.getNodeVariableType() == NodeVariableType.INTERVENTION_VALUE)
-                && (y.getNodeVariableType() == NodeVariableType.INTERVENTION_STATUS || x.getNodeVariableType() == NodeVariableType.INTERVENTION_VALUE)
-                && (x instanceof DiscreteVariable)
-                && (y instanceof DiscreteVariable)) {
-
+        // For now only check between discrete variables
+        if ((x instanceof DiscreteVariable) && (y instanceof DiscreteVariable)) {
             Map<Object, Object> map = new HashMap<>();
 
             int xColumnIndex = sourceDataSet.getColumn(x);
