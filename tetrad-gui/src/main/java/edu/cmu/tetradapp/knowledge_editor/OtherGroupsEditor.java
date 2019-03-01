@@ -199,8 +199,6 @@ class OtherGroupsEditor extends JPanel {
 
         labelBox.add(new JLabel(title));
 
-        
-        
         // Only add this forbidden button for required group - Zhou
         if (group.getType() == KnowledgeGroup.REQUIRED) {
             labelBox.add(Box.createHorizontalGlue());
