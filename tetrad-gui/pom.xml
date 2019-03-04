@@ -140,6 +140,12 @@
             <artifactId>ccd-commons</artifactId>
             <version>0.3.1</version>
         </dependency>
+        <!-- Used for deep copy dataset during determinism - Zhou -->
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-lang3</artifactId>
+            <version>3.8.1</version>
+        </dependency>
     </dependencies>
 
 

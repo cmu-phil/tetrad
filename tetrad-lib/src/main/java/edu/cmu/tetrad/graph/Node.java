@@ -22,7 +22,6 @@
 package edu.cmu.tetrad.graph;
 
 import edu.cmu.tetrad.util.TetradSerializable;
-
 import java.beans.PropertyChangeListener;
 import java.util.Map;
 
@@ -55,7 +54,19 @@ public interface Node extends TetradSerializable, Comparable {
      * Sets the node type for this node.
      */
     void setNodeType(NodeType nodeType);
+    
+    /**
+     * 
+     * @return the intervention type
+     */
+    NodeVariableType getNodeVariableType();
 
+    /**
+     * Sets the type (domain, interventional status, interventional value..) for this node variable
+     * @param nodeVariableType 
+     */
+    void setNodeVariableType(NodeVariableType nodeVariableType);
+    
     /**
      * @return a string representation of the node.
      */

@@ -23,10 +23,8 @@ package edu.cmu.tetrad.session;
 
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.NodeType;
-import edu.cmu.tetrad.util.Parameters;
+import edu.cmu.tetrad.graph.NodeVariableType;
 import edu.cmu.tetrad.util.*;
-
-import javax.swing.*;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -35,6 +33,7 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.rmi.MarshalledObject;
 import java.util.*;
+import javax.swing.*;
 
 /**
  * <p>Represents a node in a session for a model in a particular class. The sets
@@ -176,6 +175,11 @@ public class SessionNode implements Node, TetradSerializable {
     private transient SessionHandler sessionHandler;
     private TetradLoggerConfig loggerConfig = null;
     private Parameters parameters = new Parameters();
+    
+    /**
+     * Node variable type (domain, interventional status, interventional value..) of this node variable
+     */
+    private NodeVariableType nodeVariableType = NodeVariableType.DOMAIN;
 
     private Map<String, Object> attributes = new HashMap<>();
 
@@ -1837,6 +1841,17 @@ public class SessionNode implements Node, TetradSerializable {
     public Parameters getParameters() {
         return parameters;
     }
+
+    @Override
+    public NodeVariableType getNodeVariableType() {
+        return this.nodeVariableType;
+    }
+
+    @Override
+    public void setNodeVariableType(NodeVariableType nodeVariableType) {
+        this.nodeVariableType = nodeVariableType;
+    }
+
 
     /**
      * Handles <code>SessionEvent</code>s. Hides the handling of these from the

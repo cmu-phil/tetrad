@@ -23,17 +23,10 @@ package edu.cmu.tetradapp.editor;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataModelList;
 import edu.cmu.tetrad.util.JOptionUtils;
-import edu.pitt.dbmi.data.preview.BasicDataPreviewer;
-import edu.pitt.dbmi.data.preview.DataPreviewer;
-import edu.pitt.dbmi.data.validation.DataValidation;
-import edu.pitt.dbmi.data.validation.ValidationResult;
-import java.awt.BorderLayout;
-import java.awt.Component;
-import java.awt.Dimension;
-import java.awt.Font;
-import java.awt.Frame;
-import java.awt.Point;
-import java.awt.Window;
+import edu.pitt.dbmi.data.reader.preview.BasicDataPreviewer;
+import edu.pitt.dbmi.data.reader.preview.DataPreviewer;
+import edu.pitt.dbmi.data.reader.validation.ValidationResult;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -84,7 +77,7 @@ public final class LoadDataDialog extends JPanel {
 
     private final List<String> failedFiles;
 
-    private DataLoaderSettings dataLoaderSettings;
+    private LoadDataSettings loadDataSettings;
 
     private final DataModelList dataModelList;
 
@@ -193,23 +186,23 @@ public final class LoadDataDialog extends JPanel {
     }
 
     //==============================PUBLIC METHODS=========================//
-    public void showDataLoaderDialog() {
+    public void showDataLoaderDialog() throws IOException {
         // Overall container
         // contains data preview panel, loading params panel, and load button
         container = Box.createVerticalBox();
         // Must set the size of container, otherwise validationResultsContainer gets shrinked
-        container.setPreferredSize(new Dimension(900, 590));
+        container.setPreferredSize(new Dimension(900, 620));
 
         // Data loading params
         // The data loading params apply to all slected files
         // the users should know that the selected files should share these settings - Zhou
-        dataLoaderSettings = new DataLoaderSettings(loadedFiles);
+        loadDataSettings = new LoadDataSettings(loadedFiles);
 
         // Basic settings
-        basicSettingsBox = dataLoaderSettings.basicSettings();
+        basicSettingsBox = loadDataSettings.basicSettings();
 
         // Advanced settings
-        advancedSettingsBox = dataLoaderSettings.advancedSettings();
+        advancedSettingsBox = loadDataSettings.advancedSettings();
 
         // Contains file list and format/options
         settingsContainer = Box.createVerticalBox();
@@ -519,11 +512,11 @@ public final class LoadDataDialog extends JPanel {
             // to eliminate user errors
             List<String> inputErrors = new ArrayList();
 
-            if (!dataLoaderSettings.isColumnLabelSpecified()) {
-                inputErrors.add("- Please specify the case ID column label.");
+            if (!loadDataSettings.isColumnLabelSpecified()) {
+                inputErrors.add("- Please specify the column labels to ignore.");
             }
 
-            if (!dataLoaderSettings.isOtherCommentMarkerSpecified()) {
+            if (!loadDataSettings.isOtherCommentMarkerSpecified()) {
                 inputErrors.add("- Please specify the comment marker.");
             }
 
@@ -728,118 +721,119 @@ public final class LoadDataDialog extends JPanel {
      */
     private void validateAllFiles() {
         for (int i = 0; i < loadedFiles.size(); i++) {
-            StringBuilder strBuilder = new StringBuilder();
-            strBuilder.append("<p>Validation result of ");
-            strBuilder.append(loadedFiles.get(i).getName());
-            strBuilder.append(":</p>");
-
-            DataValidation validation = dataLoaderSettings.validateDataWithSettings(loadedFiles.get(i));
-
-            List<ValidationResult> results = validation.getValidationResults();
-
-            List<ValidationResult> infos = new LinkedList<>();
-            // Just leave the warnings here to future use - Zhou
-            List<ValidationResult> warnings = new LinkedList<>();
-            List<ValidationResult> errors = new LinkedList<>();
-            for (ValidationResult result : results) {
-                switch (result.getCode()) {
-                    case INFO:
-                        infos.add(result);
-                        break;
-                    case WARNING:
-                        warnings.add(result);
-                        break;
-                    default:
-                        errors.add(result);
+            try {
+                StringBuilder strBuilder = new StringBuilder();
+                strBuilder.append("<p>Validation result of ");
+                strBuilder.append(loadedFiles.get(i).getName());
+                strBuilder.append(":</p>");
+                
+                List<ValidationResult> results = loadDataSettings.validateDataWithSettings(loadedFiles.get(i));
+                
+                List<ValidationResult> infos = new LinkedList<>();
+                List<ValidationResult> warnings = new LinkedList<>();
+                List<ValidationResult> errors = new LinkedList<>();
+                for (ValidationResult result : results) {
+                    switch (result.getCode()) {
+                        case INFO:
+                            infos.add(result);
+                            break;
+                        case WARNING:
+                            warnings.add(result);
+                            break;
+                        default:
+                            errors.add(result);
+                    }
                 }
-            }
-
-            // Show some file info
-            if (!infos.isEmpty()) {
-                strBuilder.append("<p><b>File info:</b><br />");
-                infos.forEach(e -> {
-                    strBuilder.append(e.getMessage());
-                    strBuilder.append("<br />");
-                });
-                strBuilder.append("</p>");
-            }
-
-            // Show warning messages
-            if (!warnings.isEmpty()) {
-                int warnCount = warnings.size();
-
-                strBuilder.append("<p style=\"color: orange;\"><b>Warning (total ");
-                strBuilder.append(warnCount);
-
-                if (warnCount > validationWarnErrMsgThreshold) {
-                    strBuilder.append(", showing the first ");
-                    strBuilder.append(validationWarnErrMsgThreshold);
-                    strBuilder.append("): </b><br />");
-
-                    warnings.subList(0, validationWarnErrMsgThreshold).forEach(e -> {
+                
+                // Show some file info
+                if (!infos.isEmpty()) {
+                    strBuilder.append("<p><b>File info:</b><br />");
+                    infos.forEach(e -> {
                         strBuilder.append(e.getMessage());
                         strBuilder.append("<br />");
                     });
-                } else {
-                    strBuilder.append("): </b><br />");
-
-                    warnings.forEach(e -> {
-                        strBuilder.append(e.getMessage());
-                        strBuilder.append("<br />");
-                    });
+                    strBuilder.append("</p>");
                 }
-
-                strBuilder.append("</p>");
-            }
-
-            // Show errors if found
-            if (!errors.isEmpty()) {
-                int errorCount = errors.size();
-
-                String errorCountString = (errorCount > 1) ? " errors" : " error";
-
-                strBuilder.append("<p style=\"color: red;\"><b>Validation failed!<br>Please fix the following ");
-
-                if (errorCount > validationWarnErrMsgThreshold) {
-                    strBuilder.append(validationWarnErrMsgThreshold);
-                    strBuilder.append(errorCountString);
-                    strBuilder.append(" (total ");
-                    strBuilder.append(errorCount);
-                    strBuilder.append(") and validate again:</b><br />");
-
-                    errors.subList(0, validationWarnErrMsgThreshold).forEach(e -> {
-                        // Remember to excape the html tags if the data file contains any
-                        strBuilder.append(escapeHtml4(e.getMessage()));
-                        strBuilder.append("<br />");
-                    });
-                } else {
-                    strBuilder.append(errorCount);
-                    strBuilder.append(errorCountString);
-                    strBuilder.append(") and validate again:</b><br />");
-
-                    errors.forEach(e -> {
-                        // Remember to excape the html tags if the data file contains any
-                        strBuilder.append(escapeHtml4(e.getMessage()));
-                        strBuilder.append("<br />");
-                    });
+                
+                // Show warning messages
+                if (!warnings.isEmpty()) {
+                    int warnCount = warnings.size();
+                    
+                    strBuilder.append("<p style=\"color: orange;\"><b>Warning (total ");
+                    strBuilder.append(warnCount);
+                    
+                    if (warnCount > validationWarnErrMsgThreshold) {
+                        strBuilder.append(", showing the first ");
+                        strBuilder.append(validationWarnErrMsgThreshold);
+                        strBuilder.append("): </b><br />");
+                        
+                        warnings.subList(0, validationWarnErrMsgThreshold).forEach(e -> {
+                            strBuilder.append(e.getMessage());
+                            strBuilder.append("<br />");
+                        });
+                    } else {
+                        strBuilder.append("): </b><br />");
+                        
+                        warnings.forEach(e -> {
+                            strBuilder.append(e.getMessage());
+                            strBuilder.append("<br />");
+                        });
+                    }
+                    
+                    strBuilder.append("</p>");
                 }
-
-                strBuilder.append("</p>");
-
-                // Also add the file name to failed list
-                // this determines if to show the Load button
-                failedFiles.add(loadedFiles.get(i).getName());
-            } else if (loadedFiles.get(i).length() == 0) {
-                // We don't allow users to load empty file
-                strBuilder.append("<p style=\"color: red;\"><b>This is an empty data file!</b></p>");
-                // Also add the file name to failed list
-                // this determines if to show the Load button
-                failedFiles.add(loadedFiles.get(i).getName());
-            } else {
-                strBuilder.append("<p style=\"color: green;\"><b>Validation passed with no error!</b></p>");
+                
+                // Show errors if found
+                if (!errors.isEmpty()) {
+                    int errorCount = errors.size();
+                    
+                    String errorCountString = (errorCount > 1) ? " errors" : " error";
+                    
+                    strBuilder.append("<p style=\"color: red;\"><b>Validation failed!<br>Please fix the following ");
+                    
+                    if (errorCount > validationWarnErrMsgThreshold) {
+                        strBuilder.append(validationWarnErrMsgThreshold);
+                        strBuilder.append(errorCountString);
+                        strBuilder.append(" (total ");
+                        strBuilder.append(errorCount);
+                        strBuilder.append(") and validate again:</b><br />");
+                        
+                        errors.subList(0, validationWarnErrMsgThreshold).forEach(e -> {
+                            // Remember to excape the html tags if the data file contains any
+                            strBuilder.append(escapeHtml4(e.getMessage()));
+                            strBuilder.append("<br />");
+                        });
+                    } else {
+                        strBuilder.append(errorCount);
+                        strBuilder.append(errorCountString);
+                        strBuilder.append(" and validate again:</b><br />");
+                        
+                        errors.forEach(e -> {
+                            // Remember to excape the html tags if the data file contains any
+                            strBuilder.append(escapeHtml4(e.getMessage()));
+                            strBuilder.append("<br />");
+                        });
+                    }
+                    
+                    strBuilder.append("</p>");
+                    
+                    // Also add the file name to failed list
+                    // this determines if to show the Load button
+                    failedFiles.add(loadedFiles.get(i).getName());
+                } else if (loadedFiles.get(i).length() == 0) {
+                    // We don't allow users to load empty file
+                    strBuilder.append("<p style=\"color: red;\"><b>This is an empty data file!</b></p>");
+                    // Also add the file name to failed list
+                    // this determines if to show the Load button
+                    failedFiles.add(loadedFiles.get(i).getName());
+                } else {
+                    strBuilder.append("<p style=\"color: green;\"><b>Validation passed with no error!</b></p>");
+                }
+                
+                validationResults.add(strBuilder.toString());
+            } catch (IOException ex) {
+                Logger.getLogger(LoadDataDialog.class.getName()).log(Level.SEVERE, null, ex);
             }
-
-            validationResults.add(strBuilder.toString());
         }
 
         showValidationResults();
@@ -874,7 +868,7 @@ public final class LoadDataDialog extends JPanel {
     private void loadAllFiles() throws IOException {
         // Try to load each file and store the file name for failed loading
         for (int i = 0; i < loadedFiles.size(); i++) {
-            DataModel dataModel = dataLoaderSettings.loadDataWithSettings(loadedFiles.get(i));
+            DataModel dataModel = loadDataSettings.loadDataWithSettings(loadedFiles.get(i));
 
             // Add to dataModelList for further use
             if (dataModel != null) {
@@ -917,7 +911,7 @@ public final class LoadDataDialog extends JPanel {
     private void setPreview(File file, JTextArea textArea) {
         try {
             textArea.setText("");
-            DataPreviewer dataPreviewer = new BasicDataPreviewer(file);
+            DataPreviewer dataPreviewer = new BasicDataPreviewer(file.toPath());
             List<String> linePreviews = dataPreviewer.getPreviews(previewFromLine, previewToLine, previewNumOfCharactersPerLine);
             for (String line : linePreviews) {
                 textArea.append(line + "\n");

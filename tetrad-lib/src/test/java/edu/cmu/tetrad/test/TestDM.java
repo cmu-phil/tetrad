@@ -31,9 +31,8 @@ import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemPm;
 import edu.cmu.tetrad.util.DataConvertUtils;
 import edu.cmu.tetrad.util.RandomUtil;
-import edu.pitt.dbmi.data.Delimiter;
-import edu.pitt.dbmi.data.reader.tabular.ContinuousTabularDataFileReader;
-import edu.pitt.dbmi.data.reader.tabular.TabularDataReader;
+import edu.pitt.dbmi.data.reader.Delimiter;
+import edu.pitt.dbmi.data.reader.tabular.ContinuousTabularDatasetFileReader;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -1120,7 +1119,7 @@ public class TestDM {
         DataSet data = null;
 
         try {
-            TabularDataReader dataReader = new ContinuousTabularDataFileReader(file, Delimiter.SPACE);
+            ContinuousTabularDatasetFileReader dataReader = new ContinuousTabularDatasetFileReader(file.toPath(), Delimiter.SPACE);
             data = (DataSet) DataConvertUtils.toDataModel(dataReader.readInData());
         } catch (IOException e) {
             print("Failed to read in data.");

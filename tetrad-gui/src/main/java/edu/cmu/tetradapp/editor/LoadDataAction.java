@@ -26,6 +26,9 @@ import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetradapp.model.DataWrapper;
 import java.awt.event.ActionEvent;
 import java.io.File;
+import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 import javax.swing.AbstractAction;
 import javax.swing.JFileChooser;
@@ -97,7 +100,11 @@ final class LoadDataAction extends AbstractAction {
 
         // Show the data loader dialog to preview data ata and set their parameters
         LoadDataDialog loadData = new LoadDataDialog(files);
-        loadData.showDataLoaderDialog();
+        try {
+            loadData.showDataLoaderDialog();
+        } catch (IOException ex) {
+            Logger.getLogger(LoadDataAction.class.getName()).log(Level.SEVERE, null, ex);
+        }
 
         boolean keepData = false;
 

@@ -124,7 +124,7 @@
         <dependency>
             <groupId>edu.pitt.dbmi</groupId>
             <artifactId>data-reader</artifactId>
-            <version>0.2.4</version>
+            <version>1.1.0</version>
         </dependency>
         <dependency>
             <groupId>org.slf4j</groupId>
