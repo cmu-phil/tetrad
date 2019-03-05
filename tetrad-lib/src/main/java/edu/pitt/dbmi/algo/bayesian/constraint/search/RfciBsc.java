@@ -30,6 +30,7 @@ import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataUtils;
 import edu.cmu.tetrad.data.DiscreteVariable;
 import edu.cmu.tetrad.data.VerticalIntDataBox;
+import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.IndependenceFact;
@@ -59,9 +60,9 @@ public class RfciBsc implements GraphSearch {
 
 	private List<Graph> pags = new ArrayList<>();
 
-	private int numRandomizedSearchModels = 5;
+	private int numRandomizedSearchModels = 10;
 
-	private int numBscBootstrapSamples = 10;
+	private int numBscBootstrapSamples = 100;
 
 	private double lowerBound = 0.3;
 
@@ -106,7 +107,7 @@ public class RfciBsc implements GraphSearch {
 		IndTestProbabilistic _test = (IndTestProbabilistic) rfci.getIndependenceTest();
 
 		// create empirical data for constraints
-		DataSet dataSet = DataUtils.getDiscreteDataSet(_test.getData());
+		final DataSet dataSet = DataUtils.getDiscreteDataSet(_test.getData());
 
 		pags.clear();
 
@@ -120,35 +121,50 @@ public class RfciBsc implements GraphSearch {
 		// run RFCI-BSC (RB) search using BSC test and obtain constraints that
 		// are queried during the search
 		class SearchPagTask implements Callable<Boolean> {
-
-			@Override
-			public Boolean call() throws Exception {
-				IndTestProbabilistic test = new IndTestProbabilistic(dataSet);
-				test.setThreshold(thresholdNoRandomDataSearch);
+			
+			private final IndTestProbabilistic test;
+			private final Rfci rfci;
+			
+			public SearchPagTask() {
+				this.test = new IndTestProbabilistic(dataSet);
+				this.test.setThreshold(thresholdNoRandomDataSearch);
 				if(thresholdNoRandomDataSearch) {
-					test.setCutoff(cutoffDataSearch);
+					this.test.setCutoff(cutoffDataSearch);
 				}
 				
-				Rfci rfci = new Rfci(test);
-				Graph pag = rfci.search();
-				pag = GraphUtils.replaceNodes(pag, test.getVariables());
+				this.rfci = new Rfci(test);
+			}
+			
+			@Override
+			public Boolean call() throws Exception {
+				
+				Graph pag = this.rfci.search();
+				pag = GraphUtils.replaceNodes(pag, this.test.getVariables());
 				pags.add(pag);
 				
-				Map<IndependenceFact, Double> _h = test.getH();
+				Map<IndependenceFact, Double> _h = this.test.getH();
 
 				for (IndependenceFact f : _h.keySet()) {
 					String indFact = f.toString();
 					
+					
 					if (!hCopy.containsKey(f)) {
+						
 						h.put(f, _h.get(f));
 						
 						if (_h.get(f) > lowerBound && _h.get(f) < upperBound) {
 							hCopy.put(f, _h.get(f));
 							DiscreteVariable var = new DiscreteVariable(indFact);
+							
 							if(!vars.contains(var)) {
 								vars.add(var);
-								var_lookup.add(indFact);
+								
+								if(!var_lookup.contains(indFact)) {
+									var_lookup.add(indFact);
+								}
+								
 							}
+							
 						}
 						
 					}
@@ -159,25 +175,36 @@ public class RfciBsc implements GraphSearch {
 			}
 			
 		}
-		
+
 		List<Callable<Boolean>> tasks = new ArrayList<>();
+
+		int trial = 0;
 		
-		for (int i = 0; i < numRandomizedSearchModels; i++) {
-			tasks.add(new SearchPagTask());
+		while(vars.size() == 0 && trial < 1000) {
+			tasks.clear();
+			
+			for (int i = 0; i < numRandomizedSearchModels; i++) {
+				tasks.add(new SearchPagTask());
+			}
+
+			ExecutorService pool = Executors.newWorkStealingPool(Runtime.getRuntime().availableProcessors());
+
+	        try {
+	            pool.invokeAll(tasks);
+	        } catch (InterruptedException exception) {
+	        	if(verbose) {
+	                logger.log("error","Task has been interrupted");
+	        	}
+	            Thread.currentThread().interrupt();
+	        }
+
+	        shutdownAndAwaitTermination(pool);
+	        trial++;
 		}
-
-        ExecutorService pool = Executors.newWorkStealingPool(Runtime.getRuntime().availableProcessors());
-
-        try {
-            pool.invokeAll(tasks);
-        } catch (InterruptedException exception) {
-        	if(verbose) {
-                logger.log("error","Task has been interrupted");
-        	}
-            Thread.currentThread().interrupt();
-        }
-
-        shutdownAndAwaitTermination(pool);
+		
+		if(trial == 1000) {
+			return new EdgeListGraph(dataSet.getVariables());
+		}
 		
         DataBox dataBox = new VerticalIntDataBox(numBscBootstrapSamples,vars.size());
         DataSet depData = new BoxDataSet(dataBox, vars);
@@ -185,32 +212,32 @@ public class RfciBsc implements GraphSearch {
 		class BootstrapDepDataTask implements Callable<Boolean> {
 			
 			private final int row_index;
-			private final int rows;
+			
+			private final DataSet bsData;
+			private final IndTestProbabilistic bsTest;
 			
 			public BootstrapDepDataTask(int row_index, int rows) {
 				this.row_index = row_index;
-				this.rows = rows;
+				
+				this.bsData = DataUtils.getBootstrapSample(dataSet, rows);
+				this.bsTest = new IndTestProbabilistic(bsData);
+				this.bsTest.setThreshold(thresholdNoRandomConstrainSearch);
+				if(thresholdNoRandomConstrainSearch) {
+					this.bsTest.setCutoff(cutoffConstrainSearch);
+				}
 			}
 			
 			@Override
 			public Boolean call() throws Exception {
-				DataSet bsData = DataUtils.getBootstrapSample(dataSet, rows);
-
-				IndTestProbabilistic bsTest = new IndTestProbabilistic(bsData);
-				bsTest.setThreshold(thresholdNoRandomConstrainSearch);
-				if(thresholdNoRandomConstrainSearch) {
-					bsTest.setCutoff(cutoffConstrainSearch);
-				}
-				
 				for (IndependenceFact f : hCopy.keySet()) {
-					boolean ind = bsTest.isIndependent(f.getX(), f.getY(), f.getZ());
+					boolean ind = this.bsTest.isIndependent(f.getX(), f.getY(), f.getZ());
 					int value = ind ? 1 : 0;
 					
 					String indFact = f.toString();
 					
 					int col = var_lookup.indexOf(indFact);
 					synchronized (depData) {
-						depData.setInt(row_index, col, value);
+						depData.setInt(this.row_index, col, value);
 					}
 					
 				}
@@ -226,7 +253,7 @@ public class RfciBsc implements GraphSearch {
 			tasks.add(new BootstrapDepDataTask(b,rows));
 		}
 
-		pool = Executors.newWorkStealingPool(Runtime.getRuntime().availableProcessors());
+		ExecutorService pool = Executors.newWorkStealingPool(Runtime.getRuntime().availableProcessors());
 
         try {
             pool.invokeAll(tasks);

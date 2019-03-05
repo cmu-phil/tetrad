@@ -45,7 +45,7 @@ public class TestRfciBsc {
 		boolean completeRuleSetUsed = false;
 		// BSC
 		int numModels = 10;
-		int numBootstrapSamples = 20;
+		int numBootstrapSamples = 100;
 		int sampleSize = 10000;
 		double lower = 0.3;
 		double upper = 0.7;
@@ -57,9 +57,9 @@ public class TestRfciBsc {
         Dag dag = new Dag(g);
         
 		// set a number of latent variables
-		int LV = 1;
-		GraphUtils.fixLatents4(LV, dag);
-		System.out.println("Variables set to be latent:" + getLatents(dag));
+		//int LV = 1;
+		//GraphUtils.fixLatents4(LV, dag);
+		//System.out.println("Variables set to be latent:" + getLatents(dag));
         
         BayesPm bayesPm = new BayesPm(dag);
         BayesIm bayesIm = new MlBayesIm(bayesPm, MlBayesIm.RANDOM);
@@ -116,7 +116,7 @@ public class TestRfciBsc {
 		boolean completeRuleSetUsed = false;
 		// BSC
 		int numModels = 10;
-		int numBootstrapSamples = 20;
+		int numBootstrapSamples = 100;
 		int sampleSize = 1000;
 		double lower = 0.3;
 		double upper = 0.7;
@@ -137,8 +137,9 @@ public class TestRfciBsc {
 		// simulate data from instantiated model
 		DataSet fullData = im.simulateData(sampleSize, seed, true);
 		fullData = refineData(fullData);
-		DataSet dataSet = DataUtils.restrictToMeasured(fullData);
 		
+		DataSet dataSet = DataUtils.restrictToMeasured(fullData);
+
 		// get the true underlying PAG
 		final DagToPag2 dagToPag = new DagToPag2(dag);
 		dagToPag.setCompleteRuleSetUsed(false);
