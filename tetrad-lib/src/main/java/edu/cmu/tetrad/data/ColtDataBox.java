@@ -27,6 +27,7 @@ import edu.cmu.tetrad.util.TetradMatrix;
  * Stores a 2D array of short data. Note that the missing value marker for this
  * box is -99.
  */
+@Deprecated
 public class ColtDataBox implements DataBox {
     static final long serialVersionUID = 23L;
 

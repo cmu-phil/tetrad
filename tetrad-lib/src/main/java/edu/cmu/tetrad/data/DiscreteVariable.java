@@ -18,14 +18,12 @@
 // along with this program; if not, write to the Free Software               //
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA //
 ///////////////////////////////////////////////////////////////////////////////
-
 package edu.cmu.tetrad.data;
 
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.graph.NodeEqualityMode;
 import edu.cmu.tetrad.graph.NodeType;
+import edu.cmu.tetrad.graph.NodeVariableType;
 import edu.cmu.tetrad.util.TetradSerializable;
-
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.IOException;
@@ -33,22 +31,28 @@ import java.io.ObjectInputStream;
 import java.util.*;
 
 /**
- * <p>Represents a discrete variable as a range of integer-valued categories 0,
- * 1, ..., m - 1, where m is the number of categories for the variable. These
+ * <p>
+ * Represents a discrete variable as a range of integer-valued categories 0, 1,
+ * ..., m - 1, where m is the number of categories for the variable. These
  * integer-valued categories may be associated with categories that may be
  * explicitly set. Categories that are not explicitly set take the are set to
- * DataUtils.defaultCategory(i) for category i.</p> </p> <p>Instances of this
- * class may currently be used only to represent nominal discrete variables.
- * Support for ordinal discrete variables may be added in the future.</p> </p>
- * <p>Like other variable classes, DiscreteVariable implements the Node
- * interface. The purpose of this is to allow variables to serve as nodes in
- * graphs.</p> </p> <p>The index value used to indicate missing data is
- * -99.</p>
+ * DataUtils.defaultCategory(i) for category i.</p> </p>
+ * <p>
+ * Instances of this class may currently be used only to represent nominal
+ * discrete variables. Support for ordinal discrete variables may be added in
+ * the future.</p> </p>
+ * <p>
+ * Like other variable classes, DiscreteVariable implements the Node interface.
+ * The purpose of this is to allow variables to serve as nodes in graphs.</p>
+ * </p>
+ * <p>
+ * The index value used to indicate missing data is -99.</p>
  *
  * @author Joseph Ramsey
  */
 public final class DiscreteVariable extends AbstractVariable
         implements TetradSerializable {
+
     static final long serialVersionUID = 23L;
 
     /**
@@ -93,8 +97,8 @@ public final class DiscreteVariable extends AbstractVariable
      *
      * @serial
      */
-    private final DiscreteVariableType discreteVariableType =
-            DiscreteVariableType.NOMINAL;
+    private final DiscreteVariableType discreteVariableType
+            = DiscreteVariableType.NOMINAL;
 
     /**
      * True iff the category categories for this variable should be displayed;
@@ -110,6 +114,12 @@ public final class DiscreteVariable extends AbstractVariable
      * @serial
      */
     private NodeType nodeType = NodeType.MEASURED;
+
+    /**
+     * Node variable type (domain, interventional status, interventional
+     * value..) of this node variable
+     */
+    private NodeVariableType nodeVariableType = NodeVariableType.DOMAIN;
 
     /**
      * True iff new variables should be allowed to be constructed to replace
@@ -136,8 +146,9 @@ public final class DiscreteVariable extends AbstractVariable
      */
     private transient PropertyChangeSupport pcs;
 
-    //=========================CONSTRUCTORS=============================//
+    private Map<String, Object> attributes = new HashMap<>();
 
+    //=========================CONSTRUCTORS=============================//
     /**
      * Builds a discrete variable with the given name and an empty list of
      * categories. Use this constructor if a variable is needed to represent
@@ -150,7 +161,7 @@ public final class DiscreteVariable extends AbstractVariable
 
     /**
      * Builds a qualitative variable with the given name and number of
-     * categories.  The categories have the form 'categoryi'.
+     * categories. The categories have the form 'categoryi'.
      */
     public DiscreteVariable(String name, int numCategories) {
         super(name);
@@ -162,9 +173,9 @@ public final class DiscreteVariable extends AbstractVariable
      * Builds a qualitative variable with the given name and array of possible
      * categories.
      *
-     * @param name       The name of the variable.
+     * @param name The name of the variable.
      * @param categories A String[] array of categories, where the categories[i]
-     *                   is the category for index i.
+     * is the category for index i.
      */
     public DiscreteVariable(String name, List<String> categories) {
         super(name);
@@ -189,7 +200,6 @@ public final class DiscreteVariable extends AbstractVariable
     }
 
     //=============================PUBLIC METHODS========================//
-
     /**
      * Gets the discreteVariableType, NOMINAL or ORDINAL. Default is NOMINAL.
      * (Currently only NOMINAL is supported.)
@@ -294,7 +304,7 @@ public final class DiscreteVariable extends AbstractVariable
     // of nodes and edges in graphs won't work.
     public final int hashCode() {
 //        if (NodeEqualityMode.getEqualityType() == NodeEqualityMode.Type.OBJECT) {
-            return super.hashCode();
+        return super.hashCode();
 //        } else if (NodeEqualityMode.getEqualityType() == NodeEqualityMode.Type.NAME) {
 //            int hashCode = 39;
 //            hashCode = 17 * hashCode + getName().hashCode();
@@ -310,7 +320,6 @@ public final class DiscreteVariable extends AbstractVariable
 //        throw new IllegalArgumentException();
 
 //        return getNode().hashCode();
-
 //        int hashCode = 39;
 //        hashCode = 17 * hashCode + getNode().hashCode();
 //
@@ -334,7 +343,6 @@ public final class DiscreteVariable extends AbstractVariable
         }
 
         // Updating needs the slow node equality. jdramsey 6/7/2015
-
 //        if (equalityType == NodeEqualityMode.Type.OBJECT) {
 //            return o == this;
 //        } else if (equalityType == NodeEqualityMode.Type.NAME) {
@@ -401,7 +409,6 @@ public final class DiscreteVariable extends AbstractVariable
     public final void setNodeType(NodeType nodeType) {
         this.nodeType = nodeType;
     }
-
 
     public boolean isAccommodateNewCategories() {
         return accommodateNewCategories;
@@ -484,18 +491,14 @@ public final class DiscreteVariable extends AbstractVariable
 //        buf.append(">");
 //        return buf.toString();
 //    }
-
     //==============================PRIVATE METHODS=======================//
-
     /**
      * Sets the category of the category at the given index.
      *
      * @throws IllegalArgumentException if the list of categories is longer than
-     *                                  100. Usually this happens only for index
-     *                                  columns in data sets, in which a
-     *                                  different type of variable that doesn't
-     *                                  do all of the complicated things
-     *                                  discrete variables do should be used.
+     * 100. Usually this happens only for index columns in data sets, in which a
+     * different type of variable that doesn't do all of the complicated things
+     * discrete variables do should be used.
      */
     private void setCategories(String[] categories) {
         for (String category : categories) {
@@ -586,9 +589,35 @@ public final class DiscreteVariable extends AbstractVariable
             throw new NullPointerException();
         }
     }
+
+    @Override
+    public NodeVariableType getNodeVariableType() {
+        return this.nodeVariableType;
+    }
+
+    @Override
+    public void setNodeVariableType(NodeVariableType nodeVariableType) {
+        this.nodeVariableType = nodeVariableType;
+    }
+
+    @Override
+    public Map<String, Object> getAllAttributes() {
+        return attributes;
+    }
+
+    @Override
+    public Object getAttribute(String key) {
+        return attributes.get(key);
+    }
+
+    @Override
+    public void removeAttribute(String key) {
+        attributes.remove(key);
+    }
+
+    @Override
+    public void addAttribute(String key, Object value) {
+        attributes.put(key, value);
+    }
+
 }
-
-
-
-
-

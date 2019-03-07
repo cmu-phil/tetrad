@@ -71,6 +71,8 @@ public final class Fges implements GraphSearch, GraphScorer {
      * List of variables in the data set, in order.
      */
     private List<Node> variables;
+    
+    private Map<Node, Object> nodeAttributes = new HashMap<>();
 
     /**
      * The true graph, if known. If this is provided, asterisks will be printed
@@ -276,7 +278,18 @@ public final class Fges implements GraphSearch, GraphScorer {
         this.modelScore = totalScore;
 
         this.out.println("Model Score = " + modelScore);
+        
+        for(Node _node : nodeAttributes.keySet()) {
+        	Object value = nodeAttributes.get(_node);
+        	
+        	this.out.println(_node.getName() + " Score = " + value);
+        	
+        	Node node = graph.getNode(_node.getName());
+        	node.addAttribute("BIC", value);
+        }
 
+        graph.addAttribute("BIC", modelScore);
+        
         long endTime = System.currentTimeMillis();
         this.elapsedTime = endTime - start;
 
@@ -1395,7 +1408,7 @@ public final class Fges implements GraphSearch, GraphScorer {
         return modelScore;
     }
 
-    // Basic data structure for an arrow a->b considered for additiom or removal from the graph, together with
+    // Basic data structure for an arrow a->b considered for addition or removal from the graph, together with
     // associated sets needed to make this determination. For both forward and backward direction, NaYX is needed.
     // For the forward direction, T neighbors are needed; for the backward direction, H neighbors are needed.
     // See Chickering (2002). The totalScore difference resulting from added in the edge (hypothetically) is recorded
@@ -1988,8 +2001,13 @@ public final class Fges implements GraphSearch, GraphScorer {
                 parentIndices[count++] = hashIndices.get(nextParent);
             }
 
+            // Calculate BIC score for this node
             int yIndex = hashIndices.get(y);
-            _score += score.localScore(yIndex, parentIndices);
+            double node_score = score.localScore(yIndex, parentIndices);
+            
+            nodeAttributes.put(y, node_score);
+            
+            _score += node_score;
         }
 
         return _score;

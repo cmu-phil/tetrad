@@ -18,18 +18,19 @@
 // along with this program; if not, write to the Free Software               //
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA //
 ///////////////////////////////////////////////////////////////////////////////
-
 package edu.cmu.tetrad.data;
 
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.NodeEqualityMode;
 import edu.cmu.tetrad.graph.NodeType;
+import edu.cmu.tetrad.graph.NodeVariableType;
 import edu.cmu.tetrad.util.TetradSerializable;
-
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Represents a real-valued variable. The values are doubles, and the default
@@ -40,11 +41,12 @@ import java.io.ObjectInputStream;
  */
 public final class ContinuousVariable extends AbstractVariable
         implements TetradSerializable {
+
     static final long serialVersionUID = 23L;
 
     /**
-     * This is the value which represents missing data in data columns for
-     * this variable.
+     * This is the value which represents missing data in data columns for this
+     * variable.
      */
     private static final double MISSING_VALUE = Double.NaN;
 
@@ -54,6 +56,12 @@ public final class ContinuousVariable extends AbstractVariable
      * @serial
      */
     private NodeType nodeType = NodeType.MEASURED;
+
+    /**
+     * Node variable type (domain, interventional status, interventional
+     * value..) of this node variable
+     */
+    private NodeVariableType nodeVariableType = NodeVariableType.DOMAIN;
 
     /**
      * The x coordinate of the center of the node.
@@ -74,8 +82,9 @@ public final class ContinuousVariable extends AbstractVariable
      */
     private transient PropertyChangeSupport pcs;
 
-    //============================CONSTRUCTORS=========================//
+    private Map<String, Object> attributes = new HashMap<>();
 
+    //============================CONSTRUCTORS=========================//
     /**
      * Constructs a new continuous variable with the given name.
      *
@@ -103,10 +112,8 @@ public final class ContinuousVariable extends AbstractVariable
     }
 
     //==============================PUBLIC METHODS======================//
-
     /**
-     * Checks the value to make sure it's a legitimate value for this
-     * column.
+     * Checks the value to make sure it's a legitimate value for this column.
      *
      * @param value the value to check.
      * @return true iff the value is legitimate.
@@ -150,7 +157,7 @@ public final class ContinuousVariable extends AbstractVariable
      * Determines whether the argument is equal to the missing value marker.
      *
      * @param value the Object to test--should be a wrapped version of the
-     *              missing value marker.
+     * missing value marker.
      * @return true iff it really is a wrapped version of the missing value
      * marker.
      */
@@ -162,7 +169,7 @@ public final class ContinuousVariable extends AbstractVariable
      * Determines whether the argument is equal to the missing value marker.
      *
      * @param value the Object to test--should be a wrapped version of the
-     *              missing value marker.
+     * missing value marker.
      * @return true iff it really is a wrapped version of the missing value
      * marker.
      */
@@ -191,7 +198,9 @@ public final class ContinuousVariable extends AbstractVariable
      */
     // The identity of a node can't be changed by changing its name.
     public boolean equals(Object o) {
-        if (o == null) return false;
+        if (o == null) {
+            return false;
+        }
 
         // Worried this will slow things down.
         if (!(o instanceof ContinuousVariable)) {
@@ -287,7 +296,34 @@ public final class ContinuousVariable extends AbstractVariable
         }
     }
 
+    @Override
+    public NodeVariableType getNodeVariableType() {
+        return this.nodeVariableType;
+    }
+
+    @Override
+    public void setNodeVariableType(NodeVariableType nodeVariableType) {
+        this.nodeVariableType = nodeVariableType;
+    }
+
+    @Override
+    public Map<String, Object> getAllAttributes() {
+        return attributes;
+    }
+
+    @Override
+    public Object getAttribute(String key) {
+        return attributes.get(key);
+    }
+
+    @Override
+    public void removeAttribute(String key) {
+        attributes.remove(key);
+    }
+
+    @Override
+    public void addAttribute(String key, Object value) {
+        attributes.put(key, value);
+    }
+
 }
-
-
-

@@ -13,9 +13,8 @@ import edu.cmu.tetrad.sem.SemEstimator;
 import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemPm;
 import edu.cmu.tetrad.util.DataConvertUtils;
-import edu.pitt.dbmi.data.Delimiter;
-import edu.pitt.dbmi.data.reader.tabular.ContinuousTabularDataFileReader;
-import edu.pitt.dbmi.data.reader.tabular.TabularDataReader;
+import edu.pitt.dbmi.data.reader.Delimiter;
+import edu.pitt.dbmi.data.reader.tabular.ContinuousTabularDatasetFileReader;
 import java.io.File;
 import java.io.PrintWriter;
 import java.nio.file.Path;
@@ -70,7 +69,7 @@ public class HsimEvalFromData {
                 eVars.add("MULT");
                 Path dataFile = Paths.get("data/data.1.txt");
 
-                TabularDataReader dataReader = new ContinuousTabularDataFileReader(dataFile.toFile(), Delimiter.TAB);
+                ContinuousTabularDatasetFileReader dataReader = new ContinuousTabularDatasetFileReader(dataFile, Delimiter.TAB);
 
                 data1 = (DataSet) DataConvertUtils.toDataModel(dataReader.readInData(eVars));
                 vars = data1.getNumColumns();

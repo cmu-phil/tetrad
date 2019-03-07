@@ -18,17 +18,18 @@
 // along with this program; if not, write to the Free Software               //
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA //
 ///////////////////////////////////////////////////////////////////////////////
-
 package edu.cmu.tetradapp.knowledge_editor;
 
 import edu.cmu.tetrad.data.AbstractVariable;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.NodeType;
+import edu.cmu.tetrad.graph.NodeVariableType;
 import edu.cmu.tetrad.util.NamingProtocol;
 import edu.cmu.tetrad.util.TetradSerializableExcluded;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
-
 import java.beans.PropertyChangeListener;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Represents a node that's just a string name.
@@ -36,6 +37,7 @@ import java.beans.PropertyChangeListener;
  * @author Joseph Ramsey
  */
 public class KnowledgeModelNode implements Node, TetradSerializableExcluded {
+
     static final long serialVersionUID = 23L;
     private int uniqueId = AbstractVariable.LAST_ID++;
 
@@ -43,6 +45,12 @@ public class KnowledgeModelNode implements Node, TetradSerializableExcluded {
      * @serial
      */
     private String name;
+
+    /**
+     * Node variable type (domain, interventional status, interventional
+     * value..) of this node variable
+     */
+    private NodeVariableType nodeVariableType = NodeVariableType.DOMAIN;
 
     /**
      * @serial
@@ -54,8 +62,9 @@ public class KnowledgeModelNode implements Node, TetradSerializableExcluded {
      */
     private int centerY;
 
-    //=============================CONSTRUCTORS=========================//
+    private Map<String, Object> attributes = new HashMap<>();
 
+    //=============================CONSTRUCTORS=========================//
     public KnowledgeModelNode(String varName) {
         if (varName == null) {
             throw new NullPointerException();
@@ -80,7 +89,6 @@ public class KnowledgeModelNode implements Node, TetradSerializableExcluded {
     }
 
     //=============================PUBLIC METHODS=======================//
-
     public String getName() {
         return this.name;
     }
@@ -159,14 +167,39 @@ public class KnowledgeModelNode implements Node, TetradSerializableExcluded {
 
         if (i1 == 0) {
             return i2;
-        }
-        else {
+        } else {
             return i1;
         }
     }
+
+    @Override
+    public NodeVariableType getNodeVariableType() {
+        return this.nodeVariableType;
+    }
+
+    @Override
+    public void setNodeVariableType(NodeVariableType nodeVariableType) {
+        this.nodeVariableType = nodeVariableType;
+    }
+
+    @Override
+    public Map<String, Object> getAllAttributes() {
+        return attributes;
+    }
+
+    @Override
+    public Object getAttribute(String key) {
+        return attributes.get(key);
+    }
+
+    @Override
+    public void removeAttribute(String key) {
+        attributes.remove(key);
+    }
+
+    @Override
+    public void addAttribute(String key, Object value) {
+        attributes.put(key, value);
+    }
+
 }
-
-
-
-
-

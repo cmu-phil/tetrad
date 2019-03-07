@@ -76,8 +76,18 @@ public final class GraphEditor extends JPanel
     private JScrollPane graphEditorScroll = new JScrollPane();
     private Box tablePaneBox;
 
+    /**
+     * Flag to indicate if interventional variables are in the graph - Zhou
+     */
+    private boolean hasInterventional;
+    
     //===========================CONSTRUCTOR========================//
     public GraphEditor(GraphWrapper graphWrapper) {
+        // Check if this graph has interventional nodes - Zhou
+        boolean result = graphWrapper.getGraph().getNodes().stream().anyMatch(e -> (e.getNodeVariableType() == NodeVariableType.INTERVENTION_STATUS || e.getNodeVariableType() == NodeVariableType.INTERVENTION_VALUE));
+        setHasInterventional(result);
+        
+        
         setLayout(new BorderLayout());
         
         this.parameters = graphWrapper.getParameters();
@@ -530,12 +540,15 @@ public final class GraphEditor extends JPanel
 //        }
 //        );
 
-        graph.add(new JMenuItem(new SelectBidirectedAction(getWorkbench()
-        )));
-        graph.add(new JMenuItem(new SelectUndirectedAction(getWorkbench()
-        )));
-        graph.add(new JMenuItem(new SelectLatentsAction(getWorkbench()
-        )));
+        graph.add(new JMenuItem(new SelectBidirectedAction(getWorkbench())));
+        graph.add(new JMenuItem(new SelectUndirectedAction(getWorkbench())));
+        graph.add(new JMenuItem(new SelectLatentsAction(getWorkbench())));
+        
+        // Only show these menu options for graph that has interventional nodes - Zhou
+        if (isHasInterventional()) {
+            graph.add(new JMenuItem(new SelectInterventionalAction(getWorkbench())));
+            graph.add(new JMenuItem(new HideShowInterventionalAction(getWorkbench())));
+        }
 
 //        graph.addSeparator();
 //        IndependenceFactsAction action = new IndependenceFactsAction(
@@ -608,4 +621,13 @@ public final class GraphEditor extends JPanel
         EdgeListGraph listGraph = new EdgeListGraph(graph);
         return new IndTestDSep(listGraph);
     }
+    
+    public boolean isHasInterventional() {
+        return hasInterventional;
+    }
+
+    public void setHasInterventional(boolean hasInterventional) {
+        this.hasInterventional = hasInterventional;
+    }
+    
 }

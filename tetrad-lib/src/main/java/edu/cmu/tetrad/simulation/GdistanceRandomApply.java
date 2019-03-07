@@ -2,9 +2,8 @@ package edu.cmu.tetrad.simulation;
 
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.util.DataConvertUtils;
-import edu.pitt.dbmi.data.Delimiter;
-import edu.pitt.dbmi.data.reader.tabular.ContinuousTabularDataFileReader;
-import edu.pitt.dbmi.data.reader.tabular.TabularDataReader;
+import edu.pitt.dbmi.data.reader.Delimiter;
+import edu.pitt.dbmi.data.reader.tabular.ContinuousTabularDatasetFileReader;
 import java.lang.reflect.Array;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -29,7 +28,7 @@ public class GdistanceRandomApply {
         System.out.println(workingDirectory);
         Path mapPath = Paths.get("erich_coordinates.txt");
         System.out.println(mapPath);
-        TabularDataReader dataReaderMap = new ContinuousTabularDataFileReader(mapPath.toFile(), Delimiter.COMMA);
+        ContinuousTabularDatasetFileReader dataReaderMap = new ContinuousTabularDatasetFileReader(mapPath, Delimiter.COMMA);
         try {
             DataSet locationMap = (DataSet) DataConvertUtils.toDataModel(dataReaderMap.readInData());
             System.out.println("locationMap loaded");

@@ -23,14 +23,13 @@ package edu.cmu.tetradapp.editor;
 
 import edu.cmu.tetradapp.util.ImageUtils;
 import edu.cmu.tetradapp.workbench.GraphWorkbench;
-
-import javax.swing.*;
-import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import javax.swing.*;
+import javax.swing.border.EmptyBorder;
 
 /**
  * This is the toolbar for the GraphEditor.  Its tools are as follows: <ul> <li>
@@ -47,7 +46,7 @@ import java.beans.PropertyChangeListener;
  * @author Joseph Ramsey
  * @see GraphEditor
  */
-class GraphToolbar extends JPanel implements PropertyChangeListener {
+public class GraphToolbar extends JPanel implements PropertyChangeListener {
 
     /**
      * The mutually exclusive button group for the buttons.

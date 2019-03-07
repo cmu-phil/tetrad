@@ -18,16 +18,15 @@
 // along with this program; if not, write to the Free Software               //
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA //
 ///////////////////////////////////////////////////////////////////////////////
-
 package edu.cmu.tetrad.graph;
 
-
 import edu.cmu.tetrad.util.TetradSerializable;
-
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Implements a basic node in a graph--that is, a node that is not itself a
@@ -37,6 +36,7 @@ import java.io.ObjectInputStream;
  * @author Willie Wheeler
  */
 public class GraphNode implements Node, TetradSerializable {
+
     static final long serialVersionUID = 23L;
 
     /**
@@ -53,6 +53,12 @@ public class GraphNode implements Node, TetradSerializable {
      * @see edu.cmu.tetrad.graph.NodeType
      */
     private NodeType nodeType = NodeType.MEASURED;
+
+    /**
+     * Node variable type (domain, interventional status, interventional
+     * value..) of this node variable
+     */
+    private NodeVariableType nodeVariableType = NodeVariableType.DOMAIN;
 
     /**
      * The x coordinate of the center of the node.
@@ -73,8 +79,9 @@ public class GraphNode implements Node, TetradSerializable {
      */
     private transient PropertyChangeSupport pcs;
 
-    //============================CONSTRUCTORS==========================//
+    private Map<String, Object> attributes = new HashMap<>();
 
+    //============================CONSTRUCTORS==========================//
     /**
      * Constructs a new Tetrad node with the given (non-null) string.
      */
@@ -100,7 +107,6 @@ public class GraphNode implements Node, TetradSerializable {
     }
 
     //============================PUBLIC METHODS========================//
-
     /**
      * @return the name of the variable.
      */
@@ -140,7 +146,6 @@ public class GraphNode implements Node, TetradSerializable {
 //            throw new IllegalArgumentException(
 //                    NamingProtocol.getProtocolDescription() + ": " + name);
 //        }
-
         String oldName = this.name;
         this.name = name;
         getPcs().firePropertyChange("name", oldName, this.name);
@@ -290,9 +295,35 @@ public class GraphNode implements Node, TetradSerializable {
             return i1;
         }
     }
+
+    @Override
+    public NodeVariableType getNodeVariableType() {
+        return this.nodeVariableType;
+    }
+
+    @Override
+    public void setNodeVariableType(NodeVariableType nodeVariableType) {
+        this.nodeVariableType = nodeVariableType;
+    }
+
+    @Override
+    public Map<String, Object> getAllAttributes() {
+        return attributes;
+    }
+
+    @Override
+    public Object getAttribute(String key) {
+        return attributes.get(key);
+    }
+
+    @Override
+    public void removeAttribute(String key) {
+        attributes.remove(key);
+    }
+
+    @Override
+    public void addAttribute(String key, Object value) {
+        attributes.put(key, value);
+    }
+
 }
-
-
-
-
-

@@ -24,7 +24,7 @@ package edu.cmu.tetradapp.model;
 import edu.cmu.tetrad.graph.Dag;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.search.DagToPag;
+import edu.cmu.tetrad.search.DagToPag2;
 import edu.cmu.tetrad.session.DoNotAddOldModel;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradLogger;
@@ -51,7 +51,7 @@ public class PagFromDagGraphWrapper extends GraphWrapper implements DoNotAddOldM
             throw new IllegalArgumentException("The source graph is not a DAG.");
         }
 
-        DagToPag p = new DagToPag(graph);
+        DagToPag2 p = new DagToPag2(graph);
         Graph pag = p.convert();
         setGraph(pag);
 

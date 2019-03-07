@@ -109,6 +109,8 @@ public class EdgeListGraph implements Graph, TripleClassifier {
 
     private boolean pag = false;
 
+    private Map<String, Object> attributes = new HashMap<>();
+    
     //==============================CONSTUCTORS===========================//
 
     /**
@@ -143,6 +145,10 @@ public class EdgeListGraph implements Graph, TripleClassifier {
         }
 
         transferNodesAndEdges(graph);
+        
+        // Keep attributes from the original graph
+        transferAttributes(graph);
+        
         this.ambiguousTriples = graph.getAmbiguousTriples();
         this.underLineTriples = graph.getUnderLines();
         this.dottedUnderLineTriples = graph.getDottedUnderlines();
@@ -213,6 +219,9 @@ public class EdgeListGraph implements Graph, TripleClassifier {
         _graph.namesHash = new HashMap<>(graph.namesHash);
         _graph.pag = graph.pag;
         _graph.pattern = graph.pattern;
+        
+        _graph.getAllAttributes().putAll(graph.getAllAttributes());
+        
         return _graph;
     }
 
@@ -1040,6 +1049,15 @@ public class EdgeListGraph implements Graph, TripleClassifier {
         ancestors = null;
 //        System.out.println("TANSFER AFTER " + getEdges());
     }
+    
+    public void transferAttributes(Graph graph)
+    		throws IllegalArgumentException {
+        if (graph == null) {
+            throw new NullPointerException("No graph was provided.");
+        }
+
+        this.attributes.putAll(graph.getAllAttributes());
+    }
 
     /**
      * Determines whether a node in a graph is exogenous.
@@ -1862,7 +1880,7 @@ public class EdgeListGraph implements Graph, TripleClassifier {
      * @param closure the closure of the conditioning set uner the parent
      *                relation (to be calculated recursively).
      */
-    private void doParentClosureVisit(Node node, Set<Node> closure) {
+    /*private void doParentClosureVisit(Node node, Set<Node> closure) {
         if (closure.contains(node)) return;
         closure.add(node);
 
@@ -1872,7 +1890,7 @@ public class EdgeListGraph implements Graph, TripleClassifier {
                 doParentClosureVisit(sub, closure);
             }
         }
-    }
+    }*/
 
     /**
      * @return this object.
@@ -2076,6 +2094,26 @@ public class EdgeListGraph implements Graph, TripleClassifier {
             boolean stuffRemovedSinceLastTripleAccess) {
         this.stuffRemovedSinceLastTripleAccess = stuffRemovedSinceLastTripleAccess;
     }
+    
+	@Override
+	public Map<String, Object> getAllAttributes() {
+		return attributes;
+	}
+
+	@Override
+	public Object getAttribute(String key) {
+		return attributes.get(key);
+	}
+
+	@Override
+	public void removeAttribute(String key) {
+		attributes.remove(key);
+	}
+
+	@Override
+	public void addAttribute(String key, Object value) {
+		attributes.put(key, value);
+	}
 
 }
 

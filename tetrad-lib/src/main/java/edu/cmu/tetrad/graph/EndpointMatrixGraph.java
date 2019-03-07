@@ -90,6 +90,8 @@ public class EndpointMatrixGraph implements Graph {
 
     private boolean pag;
     private boolean pattern;
+    
+    private Map<String,Object> attributes = new HashMap<>();
 
     //==============================CONSTUCTORS===========================//
 
@@ -971,7 +973,10 @@ public class EndpointMatrixGraph implements Graph {
 //        System.out.println("TANSFER BEFORE " + graph.getEdges());
 
         for (Node node : graph.getNodes()) {
-            if (!addNode(node)) {
+        	
+        	node.getAllAttributes().clear();
+            
+        	if (!addNode(node)) {
                 throw new IllegalArgumentException();
             }
         }
@@ -983,6 +988,14 @@ public class EndpointMatrixGraph implements Graph {
         }
 
 //        System.out.println("TANSFER AFTER " + getEdges());
+    }
+    
+    public void transferAttributes(Graph graph)
+    		throws IllegalArgumentException {
+        if (graph == null) {
+            throw new NullPointerException("No graph was provided.");
+        }
+        attributes.putAll(graph.getAllAttributes());
     }
 
     /**
@@ -2007,6 +2020,27 @@ public class EndpointMatrixGraph implements Graph {
             dottedUnderLineTriples = new HashSet<>();
         }
     }
+    
+	@Override
+	public Map<String, Object> getAllAttributes() {
+		return attributes;
+	}
+
+	@Override
+	public Object getAttribute(String key) {
+		return attributes.get(key);
+	}
+
+	@Override
+	public void removeAttribute(String key) {
+		attributes.remove(key);
+	}
+
+	@Override
+	public void addAttribute(String key, Object value) {
+		attributes.put(key, value);
+	}
+
 }
 
 
