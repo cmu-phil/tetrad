@@ -18,7 +18,7 @@
 
     <div class="header">
         <h1>Tetrad Manual</h1>
-        <p>Last updated: December 7th, 2018</p>
+        <p>Last updated: March 7th, 2019</p>
     </div>
 
     <!-- Table of Contents, give each section a unique id -->
@@ -614,50 +614,46 @@
 
     <p>Data sets loaded into Tetrad may be categorical, continuous, mixed, or covariance data.</p>
 
-    <p>Covariance matrices loaded into Tetrad should be ascii text files. The first row contains the sample size, the second row contains the names of the variables. The first two rows are followed by a lower triangular matrix. For example:</p>
+<h3>General Tabular Data</h3>
 
-<pre>
-1000
-X1	X2	X3	X4	X5	X6 
-1.0000
-0.0312	1.0000
--0.5746	0.4168	1.0000
--0.5996	0.4261	0.9544	1.0000
-0.8691	0.0414	-0.4372	-0.4487	1.0000	
-0.6188	0.0427	-0.1023	-0.0913	0.7172	1.0000
-</pre>
-
-
-    <p>Categorical, continuous, or mixed data should also be an ascii text file, with columns representing variables and rows representing cases. Beyond that, there is a great deal of flexibility in the layout: delimiters may be commas, colons, tabs, spaces, semicolons, pipe symbols, or whitespace; comments and missing data may be marked by any symbol you like; there may be a row of variable names or not; and case IDs may be present or not.  There should be no sample size row.  For example:</p>
-
-<pre>
-X1	X2	X3	X4	X5
--3.0133	1.0361	0.2329	2.7829	-0.2878
-0.5542	0.3661	0.2480	1.6881	0.0775
-3.5579	-0.7431	-0.5960	-2.5502	1.5641
--0.0858	1.0400	-0.8255	0.3021	0.2654
--0.9666	-0.5873	-0.6350	-0.1248	1.1684
--1.7821	1.8063	-0.9814	1.8505	-0.7537
--0.8162	-0.6715	0.3339	2.6631	0.9014
--0.3150	-0.5103	-2.2830	-1.2462	-1.2765
--4.1204	2.9980	-0.3609	4.8079	0.6005
-1.4658	-1.4069	1.7234	-1.7129	-3.8298
-</pre>
-
-    <p>To load data, create a data box with no parent. When you open it, an empty data window will appear: </p>
+    <p>To load data, create a data box with no parent. When you double click it, an empty data window will appear: </p>
 
     <img src="images/data_box_1.png" alt="" width="650">
 
-    <p>Click File: Load Data… and select the text file or files that contain your data. The following window will appear:</p>
-
-    <p>The text of the source file appears in the Data Preview window. Above, there are options to describe your file, so that Tetrad can load it correctly. If you are loading categorical, continuous, or mixed data values, select the “Tabular Data” button. If you are loading a covariance matrix, select “Covariance Data.” Note that if you are loading a covariance matrix, your text file should contain only the lower half of the matrix, as Tetrad will not accept an entire matrix.</p>
-
-    <p>Below the file type, you can specify a number of other details about your file, including information about the type of data (categorical/continuous/mixed), delimiter between data values, variable names, and more. If your data is mixed (some variables categorical, and some continuous), you must specify the maximum number of categories discrete variables in your data can take on. All columns with more than that number of values will be treated as continuous; the others will be treated as categorical. If you do not list the variable names in the file, you should uncheck “First row variable names.” If you provide case IDs, check the box for the appropriate column in the “Case ID column to ignore” area. If the case ID column is labeled, provide the name of the label; otherwise, the case ID column should be the first column, and you should check “First column.”</p>
-
-    <p>Below this, you can specify your comment markers, quote characters, and the character which marks missing data values. Tetrad will use that information to distinguish continuous from discrete variables. You may also choose more files to load (or remove files that you do not wish to load) in the “Files” panel on the lower left.</p>
+    <p>Click "File -> Load Data" and select the text file or files that contain your data. The following window will appear:</p>
 
     <img src="images/data_box_2.png" alt="" width="650">
 
+    <p>The text of the source file appears in the Data Preview window. Above, there are options to describe your file, so that Tetrad can load it correctly. If you are loading categorical, continuous, or mixed data values, select the “Tabular Data” button. If you are loading a covariance matrix, select “Covariance Data.” Note that if you are loading a covariance matrix, your text file should contain only the lower half of the matrix, as Tetrad will not accept an entire matrix.</p>
+
+    <p>Below the file type, you can specify a number of other details about your file, including information about the type of data (categorical/continuous/mixed), metadata JSON file, delimiter between data values, variable names, and more. If your data is mixed (some variables categorical, and some continuous), you must specify the maximum number of categories discrete variables in your data can take on. All columns with more than that number of values will be treated as continuous; the others will be treated as categorical. If you do not list the variable names in the file, you should uncheck “First row variable names.” If you provide case IDs, check the box for the appropriate column in the “Case ID column to ignore” area. If the case ID column is labeled, provide the name of the label; otherwise, the case ID column should be the first column, and you should check “First column.”</p>
+
+    <p>Below this, you can specify your comment markers, quote characters, and the character which marks missing data values. Tetrad will use that information to distinguish continuous from discrete variables. You may also choose more files to load (or remove files that you do not wish to load) in the “Files” panel on the lower left.</p>
+
+    <h3>Metadata JSON File</h3>
+    <p>
+    Metadata is optional in general data handling. But it can be very helpful if you want to overwrite the data type of a given variable column. And the metadata MUST be a JSON file like the following example.
+    </p>
+
+    <pre>
+    {
+      "domains": [
+        {
+          "name": "raf",
+          "discrete": false
+        },
+        {
+          "name": "mek",
+          "discrete": true
+        }
+      ]
+    }
+    </pre>
+
+    <p>
+        You can specify the name and data type for each variable. Variables that are not in the metadata file will be treated as domain variables and their data type will be the default data type when reading in columns described previously.
+    </p>
+   
     <p>When you are satisfied with your description of your data, click “Validate” at the bottom of the window. Tetrad will check that your file is correctly formatted. If it is, you will receive a screen telling you that validation has passed with no error. At this point, you can revisit the settings page, or click “Load” to load the data. </p>
 
     <img src="images/data_box_3.png" alt="" width="650">
@@ -668,11 +664,95 @@ X1	X2	X3	X4	X5
 
     <p>In addition to loading data from a file, you can manually enter data values and variable names by overwriting cells in the data table.</p>
 
+
+<h3>Covariance Data</h3>
+    <p>Covariance matrices loaded into Tetrad should be ascii text files. The first row contains the sample size, the second row contains the names of the variables. The first two rows are followed by a lower triangular matrix. For example:</p>
+
+<pre>
+1000
+X1  X2  X3  X4  X5  X6 
+1.0000
+0.0312  1.0000
+-0.5746 0.4168  1.0000
+-0.5996 0.4261  0.9544  1.0000
+0.8691  0.0414  -0.4372 -0.4487 1.0000  
+0.6188  0.0427  -0.1023 -0.0913 0.7172  1.0000
+</pre>
+
+
+    <p>Categorical, continuous, or mixed data should also be an ascii text file, with columns representing variables and rows representing cases. Beyond that, there is a great deal of flexibility in the layout: delimiters may be commas, colons, tabs, spaces, semicolons, pipe symbols, or whitespace; comments and missing data may be marked by any symbol you like; there may be a row of variable names or not; and case IDs may be present or not.  There should be no sample size row.  For example:</p>
+
+<pre>
+X1  X2  X3  X4  X5
+-3.0133 1.0361  0.2329  2.7829  -0.2878
+0.5542  0.3661  0.2480  1.6881  0.0775
+3.5579  -0.7431 -0.5960 -2.5502 1.5641
+-0.0858 1.0400  -0.8255 0.3021  0.2654
+-0.9666 -0.5873 -0.6350 -0.1248 1.1684
+-1.7821 1.8063  -0.9814 1.8505  -0.7537
+-0.8162 -0.6715 0.3339  2.6631  0.9014
+-0.3150 -0.5103 -2.2830 -1.2462 -1.2765
+-4.1204 2.9980  -0.3609 4.8079  0.6005
+1.4658  -1.4069 1.7234  -1.7129 -3.8298
+</pre>
+
+<h3>Handling Tabular Data With Interventions</h3>
+
+<p>This is advanced topic for dataset that contians interventional variables. Below is a sample dataset, in which `raf`, `mek`, `pip2`, `erk`, `atk` are the 5 domain variables, and `cd3_s` and `cd3_v` are an interventional pair (status and value variable respectively). `icam` in another intervention variable, but it's a combined variable that doesn't have status.</p>
+
+<pre>
+raf mek pip2    erk akt cd3_s   cd3_v   icam
+3.5946  3.1442  3.3429  2.81    3.2958  0   1.2223  *
+3.8265  3.2771  3.2884  3.3534  3.7495  0   2.3344  *
+4.2399  3.9908  3.0057  3.2149  3.7495  1   0   3.4423
+4.4188  4.5304  3.157   2.7619  3.0819  1   3.4533  1.0067
+3.7773  3.3945  2.9821  3.4372  4.0271  0   4.0976  *
+</pre>
+
+<p>And the sample metadata JSON file looks like this:</p>
+
+<pre>
+{
+  "interventions": [
+    {
+      "status": {
+        "name": "cd3_s",
+        "discrete": true
+      },
+      "value": {
+        "name": "cd3_v",
+        "discrete": false
+      }
+    },
+    {
+      "status": null,
+      "value": {
+        "name": "icam",
+        "discrete": false
+      }
+    }
+  ],
+  "domains": [
+    {
+      "name": "raf",
+      "discrete": false
+    },
+    {
+      "name": "mek",
+      "discrete": false
+    }
+  ]
+}
+</pre>
+
+<p>Each intervention consists of a status variable and value variable. There are cases that you may have a combined interventional variable that doesn't have the status variable. In this case, just use `null`. The data type of each variable can either be discrete or continuous. We use a boolean flag to indicate the data type. From the above example, we only specified two domain variables in the metadata JSON, any variables not specifed in the metadata will be treated as domain variables.</p>
+
+
     <h2>Manipulating Data</h2>
 
     <p>The data box can also be used to manipulate data sets that have already been loaded or simulated. If you create a data box as the child of another box containing a data set, you will be presented with a list of operations that can be performed on the data. The available data manipulations are:</p>
 
-    <h3>Discretize Dataset:</h3>
+    <h3>Discretize Dataset</h3>
 
     <p>This operation allows you to make some or all variables in a data set discrete. If you choose it, a window will open. </p>
 
@@ -682,14 +762,13 @@ X1	X2	X3	X4	X5
 
     <p>You may discretize multiple variables at once by selecting multiple variables. In this case, the ranges are not shown, as they will be different from variable to variable.</p>
 
-    <h3>Discretize Dataset</h3>
+    <h3>Convert Numerical Discrete to Continuous</h3>
 
-    <p><i>Convert Numerical Discrete to Continuous:</i> If you choose this option, any discrete variables with numerical category values will be treated as continuous variables with real values. For example, “1” will be converted to “1.0.”</p>
+    <p>If you choose this option, any discrete variables with numerical category values will be treated as continuous variables with real values. For example, “1” will be converted to “1.0.”</p>
 
-    <h3>Discretize Dataset:</h3>
+    <h3>Calculator</h3>
 
-    <p><i>Calculate:</i> The Calculate option allows you to add and edit relationships between variables in your data set, and to add new variables to the data set. </p>
-
+    <p>The Calculator option allows you to add and edit relationships between variables in your data set, and to add new variables to the data set. </p>
 
     <img src="images/data_box_6.png" alt="" width="650">
 
@@ -697,6 +776,10 @@ X1	X2	X3	X4	X5
 
     <p>When you click “Save” a table will appear listing the data. Values of variables whose formulae you changed will be changed, and any new variables you created will appear with defined values.</p>
 
+    <h3>Merge Deterministic Interventional Variables</h3>
+
+    <p>This option looks for pairs of interventional variables (currently only discrete variables) that are deterministic and merges them into one combined variable. For domain variables that are fully determinised, we'll add an attribute to them. Later in the knowledge box (Edges and Tiers), all the interventional variables (both status and value variables) and the fully-determinised domain variables will be automatically put to top tier. And all other domain variables will be placed in the second tier.</p>
+    
     <h3>Merge Datasets</h3>
 
     <p>This operation takes two or more data boxes as parents and creates a data box containing all data sets in the parent boxes. Individual data sets will be contained in their own tabs in the resulting box.</p>
