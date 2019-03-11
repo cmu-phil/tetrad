@@ -1871,7 +1871,7 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
 
     <h4>Parameters</h4>
 
-    <p>All of the parameters from FGES are available for IMaGES. Additionally:</p>
+    <p>All of the parameters from FCI are below.</p>
 
     <table class="table">
 
@@ -1880,11 +1880,6 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
         </thead>
 
         <tbody>
-        <tr>
-            <td>Cutoff for p-values (alpha)</td>
-            <td>Conditional independence tests with p-values greater than this will be judged to be independent (H0). Defualt 0.01.</td>
-        </tr>
-
         <tr>
             <td>Maximum size of conditioning set (depth)</td>
             <td>PC in the adjacency phase will consider conditioning sets for conditional independences of increasing size, up to this value. For instance, for depth 3, the maximum size of a conditioning set considered will be 3. Default -1 = unlimited.
@@ -1914,7 +1909,8 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
 
     <div id="rfci">
 
-        <p>A modification of the FCI algorithm in which some expensive steps are finessed and the output is somewhat differently interpreted. In most cases this runs faster than FCI (which can be slow in some steps) and is almost as informative. See ??.</p>
+        <p>A modification of the FCI algorithm in which some expensive steps are finessed and the output is somewhat differently interpreted. 
+        In most cases this runs faster than FCI (which can be slow in some steps) and is almost as informative. See [Colombo, 2012].</p>
 
     </div>
 
@@ -1928,7 +1924,7 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
 
     <h4>Parameters</h4>
 
-    <p>All of the parameters from FGES are available for IMaGES. Additionally:</p>
+    <p>All of the parameters from FCI are available for RFCI. Additionally:</p>
 
     <table class="table">
 
@@ -1938,14 +1934,15 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
 
         <tbody>
         <tr>
-            <td>Cutoff for p-values (alpha)</td>
-            <td>Conditional independence tests with p-values greater than this will be judged to be independent (H0). Defualt 0.01.</td>
+            <td>Maximum size of conditioning set (depth)</td>
+            <td>PC in the adjacency phase will consider conditioning sets for conditional independences of increasing size, up to this value. 
+            For instance, for depth 3, the maximum size of a conditioning set considered will be 3. Default -1 = unlimited.
+            </td>
         </tr>
 
         <tr>
-            <td>Maximum size of conditioning set (depth)</td>
-            <td>PC in the adjacency phase will consider conditioning sets for conditional independences of increasing size, up to this value. For instance, for depth 3, the maximum size of a conditioning set considered will be 3. Default -1 = unlimited.
-            </td>
+            <td>The maximum length for any discriminating path</td>
+            <td>For a description of discriminating paths, please see Spirtes et al, 2000. The idea is that one needs to search out from each variable in the orientation phase of the algorithm down all connected paths tree-like to see if there is a path of a certain sort. This can take time and for complex models can slow the algorithm down. A fix for this is to limit just how long these paths can be expected to be in maximum. The default is -1, or unlimited. Defualt -1 = unlimited.</td>
         </tr>
 
         <tr>
@@ -1957,6 +1954,92 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
 
     </table>
 
+	<h3>The RFCI-BSC Algorithm</h3>
+
+    <h4>Description</h4>
+
+    <div id="rfci-bsc">
+
+        <p>RFCI-BSC is a combination of the RFCI [Colombo, 2012] algorithm and the Bayesian Scoring of Constraints (BSC) method [Jabbari, 2017] that 
+        can generate and probabilistically score multiple models, outputting the most probable one. 
+        This search algorithm is a hybrid method that derives a Bayesian probability that 
+        the set of independence tests associated with a given causal model are jointly correct. 
+        Using this constraint-based scoring method, we are able to score multiple causal models, which possibly contain latent variables, 
+        and output the most probable one. See [Jabbari, 2017].</p>
+
+    </div>
+
+    <h4>Input Assumptions</h4>
+
+    <p>The data are discrete only.</p>
+
+    <h4>Output Format</h4>
+
+    <p>A partial ancestral graph (PAG). See Spirtes et al., 2000.</p>
+
+    <h4>Parameters</h4>
+
+    <p>All of the parameters from RFCI are available for RFCI-BSC. Additionally:</p>
+
+    <table class="table">
+
+        <thead>
+        <tr><th>Parameter</th><th>Description</th></tr>
+        </thead>
+
+        <tbody>
+        <tr>
+            <td>The number of search probabilistic model (min = 1)</td>
+            <td>The number of the PAG models in the generation stage. Default = 10.</td>
+        </tr>
+
+        <tr>
+            <td>Yes, if use the cutoff threshold for the constraints independence test (stage 1).</td>
+            <td>Determine the constraints with cutoff probability threshold or not in the PAG models generation stage. Default is no.</td>
+        </tr>
+
+        <tr>
+            <td>Independence cutoff threshold</td>
+            <td>The cutoff probability threshold in the generative stage. Default = .5</td>
+        </tr>
+
+        <tr>
+            <td>Yes, if use the cutoff threshold for the meta-constraints independence test (stage 2).</td>
+            <td>Determine the constraints (from the previous stage) with cutoff probability threshold or not based on the posterior distribution that 
+            comes from the bootstrapping original dataset. Default is yes.</td>
+        </tr>
+
+        <tr>
+            <td>Constraint-independence cutoff threshold</td>
+            <td>The cutoff probability threshold in the constraint ground-truth table generative stage. Default = .5</td>
+        </tr>
+        
+        <tr>
+            <td>The number of bootstrappings drawing from posterior dist. (min = 1)</td>
+            <td>The number of bootstrapping datasets drawing from posterior distribution. Default = 50.</td>
+        </tr>
+
+        <tr>
+            <td>Lower bound cutoff threshold</td>
+            <td>The lower bound cutoff threshold of the probability of constraints that will be ignored if below this. Default = .3. 
+            The qualified constraints will be feed to the FGES search algorithm to find the constraint pattern model.</td>
+        </tr>
+
+        <tr>
+            <td>Higher bound cutoff threshold</td>
+            <td>The higher bound cutoff threshold of the probability of constraints that will be ignored if higher this. Default = .7. 
+            The qualified constraints will be feed to the FGES search algorithm to find the constraint pattern model.</td>
+        </tr>
+
+        <tr>
+            <td>Output graph: Yes: dependent-constraint RB, No: independent-constraint RB.</td>
+            <td>The output PAG graph is determined based on the depedent-constraint BSC score or indepedent one. See [Jabbari, 2017].</td>
+        </tr>
+
+
+        </tbody>
+
+    </table>
 
     <h3>The GFCI Algorithm</h3>
 
