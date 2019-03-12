@@ -118,7 +118,10 @@
 
     <p>The first method allows you to copy a graph from any box which contains one. First, create a new graph box in the workspace, and draw an arrow from the box whose graph you want to copy to the new graph box. When opened, the new graph box will automatically contain a direct copy of the graph its parent box contains. </p>
 
-    <p>The second method allows you to copy a graph directly from most types of graph box. First, highlight the graph in the old graph box and click “Edit—Copy Selected Graph.” Then open up your new graph box and click “Edit—Paste Selected Graph.” (Some types of graph box do not have this functionality; see “Manipulating a Graph.”)</p>
+    <p>The second method allows you to copy a graph directly from most types of graph box. 
+    First, highlight the graph in the old graph box and click “Edit—Copy Selected Graph.” 
+    Then open up your new graph box and click “Edit—Paste Selected Graph.” 
+    (Some types of graph box do not have this functionality; see “Manipulating a Graph.”)</p>
 
 
     <h2>Manipulating a Graph</h2>
@@ -151,7 +154,8 @@
         <li>Degree (displays the selected nodes and their parents and children)</li>
     </ul>
 
-    <p>The “Graph Properties” and “Paths” functions are available in this type of graph box, but they will display information about the full graph, not the currently displayed subgraph. To see graph properties for the subgraph, first copy it into a new graph box.</p>
+    <p>The “Graph Properties” and “Paths” functions are available in this type of graph box, but they will display information about the full graph, not the currently displayed subgraph. 
+    To see graph properties for the subgraph, first copy it into a new graph box.</p>
 
     <h3>Choose DAG in Pattern</h3>
 
@@ -219,7 +223,10 @@
 
     <h3>Paths</h3>
 
-    <p>Clicking on “Graph—Paths” opens a dialog box that allows you to see all the paths between any two variables. You can specify whether you want to see only adjacencies, only directed paths, only semidirected paths, or all treks between the two variables of interest, and the maximum length of the paths you are interested in using drop boxes at the top of the pane. To apply those settings, click “update.”</p>
+    <p>Clicking on “Graph—Paths” opens a dialog box that allows you to see all the paths between any two variables. 
+    You can specify whether you want to see only adjacencies, only directed paths, only semidirected paths, 
+    or all treks between the two variables of interest, and the maximum length of the paths you are interested in using drop boxes at the top of the pane. 
+    To apply those settings, click “update.”</p>
 
     <h3>Meek Orientation</h3>
 
@@ -232,9 +239,6 @@
     <h3>Highlighting</h3>
 
     <p>You can highlight bidirected edges, undirected edges, and latent nodes under the Graph tab.</p>
-
-
-
 
     <h1 id="compare_box"><span  class="section_heading">Compare Box</span></h1>
 
@@ -306,7 +310,8 @@
 
     <h2>Independence Facts Comparison</h2>
 
-    <p>Rather than comparing edges or orientation, this option directly compares the implied dependencies in two graphs. When you initially open the box, you will see the following window:</p>
+    <p>Rather than comparing edges or orientation, this option directly compares the implied dependencies in two graphs. When you initially open the box, 
+    you will see the following window:</p>
 
     <img src="images/compare_box_6.png" alt="" width="650">
 
@@ -405,7 +410,9 @@
 
     <img src="images/parametric_model_box_4.png" alt="" width="450">
 
-    <p>You can see the error terms in the model by clicking “Parameters—Show Error Terms.” In a SEM model, a bidirected edge indicates that error terms are correlated, so when error terms are visible, the edge between X1 and X2 will instead run between their error terms.</p>
+    <p>You can see the error terms in the model by clicking “Parameters—Show Error Terms.” 
+    In a SEM model, a bidirected edge indicates that error terms are correlated, so when error terms are visible, 
+    the edge between X1 and X2 will instead run between their error terms.</p>
 
     <p>To change a parameter’s name or starting value for estimation, double click on the parameter in the window.</p>
 
@@ -698,7 +705,7 @@ X1  X2  X3  X4  X5
 
 <h3>Handling Tabular Data With Interventions</h3>
 
-<p>This is advanced topic for dataset that contians interventional variables. Below is a sample dataset, in which `raf`, `mek`, `pip2`, `erk`, `atk` are the 5 domain variables, and `cd3_s` and `cd3_v` are an interventional pair (status and value variable respectively). `icam` in another intervention variable, but it's a combined variable that doesn't have status.</p>
+<p>This is advanced topic for dataset that contains interventional variables. Below is a sample dataset, in which `raf`, `mek`, `pip2`, `erk`, `atk` are the 5 domain variables, and `cd3_s` and `cd3_v` are an interventional pair (status and value variable respectively). `icam` in another intervention variable, but it's a combined variable that doesn't have status.</p>
 
 <pre>
 raf mek pip2    erk akt cd3_s   cd3_v   icam
@@ -1515,7 +1522,13 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
 
     <div id="pc-stable">
 
-        <p>See Drton and Maathuis (??). The idea is to modify the adjacency search of PC so that if the order of the variables is randomized, the adjacency output is not affected. This is done as follows. The order of operations for the step where unconditional independencies are calculated is not affected; these may be done in any order. However, for the step in which one conditions on one variable, the output of that step could be affected by the order in which the operations are done. So instead of removing edges in this step, one simply records which edges one would remove, and then at the end of the step removes them all. Similarly for subsequence steps. In this way, the adjacencies of variables in the output of the adjacency step are fixed no matter the order in which the operations are visited. One them does collider orientation and applies the orientation rules in Meek (1997); there may be orientation differences from one run to the next still, if the order of the variables in the dataset is modified.</p>
+        <p>See Drton and Maathuis (2017). The idea is to modify the adjacency search of PC so that if the order of the variables is randomized, the adjacency output is not affected. 
+        This is done as follows. The order of operations for the step where unconditional independencies are calculated is not affected; these may be done in any order. 
+        However, for the step in which one conditions on one variable, the output of that step could be affected by the order in which the operations are done. 
+        So instead of removing edges in this step, one simply records which edges one would remove, and then at the end of the step removes them all. 
+        Similarly for subsequence steps. In this way, the adjacencies of variables in the output of the adjacency step are fixed no matter the order 
+        in which the operations are visited. One them does collider orientation and applies the orientation rules in Meek (1997); 
+        there may be orientation differences from one run to the next still, if the order of the variables in the dataset is modified.</p>
     </div>
 
     <h4>Input Assumptions</h4>
@@ -1667,7 +1680,10 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
             which edges are added between nodes in order to increase the Bayesian score. This process
             continues until no single edge addition increases the score. Finally, it performs a backward
             stepping search that removes edges until no single edge removal can increase the score. For more
-            information see http://www.ccd.pitt.edu/pdfs/fgesc.pdf. The reference is Ramsey et al., 2017.
+            information see 
+            https://www.ccd.pitt.edu//wp-content/uploads/2018/10/FGES1c-user-documentation-5_21_2016-sample-size.pdf and 
+            https://www.ccd.pitt.edu//wp-content/uploads/2018/10/FGES1d-user-documentation-7_20_2016-sample-size.pdf. 
+            The reference is Ramsey et al., 2017.
         </p>
 
         <p>
@@ -1739,7 +1755,7 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
             <td>Yes if (one edge) faithfulness should be assumed</td>
             <td>The algorithm will remove edges
                 X—Y in the initial step if X and Y are uncorrelated; this speeds up the algorithm
-                (See Maathuis, ??, Ramsey et al., ??). However, this may remove edges that the
+                (See Maathuis, 2010, Ramsey et al., 2017). However, this may remove edges that the
                 original GES algorithm would not remove, so an additional pass through the
                 algorithm may need to be done to pick up these additional edges and guarantee
                 correctness. This should be set to Yes if the additional pass should not be done, No
@@ -1812,7 +1828,9 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
 
     <div id="img">
 
-        <p>Adjusts the continuous variable score (SEM BIC) of FGES so allow for multiple datasets as input. The linear, Gaussian BIC scores for each data set are averaged at each step of the algorithm, producing a model for al data sets that assumes they have the same graphical structure across dataset.</p>
+        <p>Adjusts the continuous variable score (SEM BIC) of FGES so allow for multiple datasets as input. 
+        The linear, Gaussian BIC scores for each data set are averaged at each step of the algorithm, producing a model for all data sets that 
+        assumes they have the same graphical structure across dataset.</p>
 
     </div>
 
@@ -1857,7 +1875,14 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
 
     <div id="fci">
 
-        <p>The FCI algorithm is a constraint-based algorithm that takes as input sample data and optional background knowledge and in the large sample limit outputs an equivalence class of CBNs that (including those with hidden confounders) that entail the set of conditional independence relations judged to hold in the population. It is limited to several thousand variables, and on realistic sample sizes it is inaccurate in both adjacencies and orientations. FCI has two phases: an adjacency phase and an orientation phase. The adjacency phase of the algorithm starts with a complete undirected graph and then performs a sequence of conditional independence tests that lead to the removal of an edge between any two adjacent variables that are judged to be independent, conditional on some subset of the observed variables; any conditioning set that leads to the removal of an adjacency is stored. After the adjacency phase, the resulting undirected graph has the correct set of adjacencies, but all of the edges are unoriented. FCI then enters an orientation phase that uses the stored conditioning sets that led to the removal of adjacencies to orient as many of the edges as possible. </p>
+        <p>The FCI algorithm is a constraint-based algorithm that takes as input sample data and optional background knowledge and in the large sample limit outputs an equivalence class of CBNs that 
+        (including those with hidden confounders) that entail the set of conditional independence relations judged to hold in the population. 
+        It is limited to several thousand variables, and on realistic sample sizes it is inaccurate in both adjacencies and orientations. 
+        FCI has two phases: an adjacency phase and an orientation phase. The adjacency phase of the algorithm starts with a complete undirected graph and then 
+        performs a sequence of conditional independence tests that lead to the removal of an edge between any two adjacent variables that are judged to be independent, 
+        conditional on some subset of the observed variables; any conditioning set that leads to the removal of an adjacency is stored. 
+        After the adjacency phase, the resulting undirected graph has the correct set of adjacencies, but all of the edges are unoriented. 
+        FCI then enters an orientation phase that uses the stored conditioning sets that led to the removal of adjacencies to orient as many of the edges as possible. See [Spirtes, 1993].</p>
 
     </div>
 
@@ -1888,12 +1913,17 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
 
         <tr>
             <td>The maximum length for any discriminating path</td>
-            <td>For a description of discriminating paths, please see Spirtes et al, 2000. The idea is that one needs to search out from each variable in the orientation phase of the algorithm down all connected paths tree-like to see if there is a path of a certain sort. This can take time and for complex models can slow the algorithm down. A fix for this is to limit just how long these paths can be expected to be in maximum. The default is -1, or unlimited. Defualt -1 = unlimited.</td>
+            <td>For a description of discriminating paths, please see Spirtes et al, 2000. 
+            The idea is that one needs to search out from each variable in the orientation phase of the algorithm down all connected paths tree-like to see 
+            if there is a path of a certain sort. This can take time and for complex models can slow the algorithm down. 
+            A fix for this is to limit just how long these paths can be expected to be in maximum. The default is -1, or unlimited. Defualt -1 = unlimited.</td>
         </tr>
 
         <tr>
             <td>Yes if the complete FCI rule set should be used</td>
-            <td>The standard rule set used in Spirtes et al., 2000, is guaranteed to include all arrowheads that can be found in the model but not all tails. Zhang (??) provides an extended rule set that is tail complete. This can be of benefit, for instance, when investigating selection bias. Default no (i.e. the algorithm in Spirtes et al., 2000).</td>
+            <td>The standard rule set used in Spirtes et al., 2000, is guaranteed to include all arrowheads that can be found in the model but not all tails. 
+            Zhang (Zhang 2006) provides an extended rule set that is tail complete. This can be of benefit, for instance, when investigating selection bias. 
+            Default no (i.e. the algorithm in Spirtes et al., 2000).</td>
         </tr>
 
         </tbody>
@@ -1910,7 +1940,7 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
     <div id="rfci">
 
         <p>A modification of the FCI algorithm in which some expensive steps are finessed and the output is somewhat differently interpreted. 
-        In most cases this runs faster than FCI (which can be slow in some steps) and is almost as informative. See [Colombo, 2012].</p>
+        In most cases this runs faster than FCI (which can be slow in some steps) and is almost as informative. See Colombo et al., 2012.</p>
 
     </div>
 
@@ -1942,12 +1972,17 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
 
         <tr>
             <td>The maximum length for any discriminating path</td>
-            <td>For a description of discriminating paths, please see Spirtes et al, 2000. The idea is that one needs to search out from each variable in the orientation phase of the algorithm down all connected paths tree-like to see if there is a path of a certain sort. This can take time and for complex models can slow the algorithm down. A fix for this is to limit just how long these paths can be expected to be in maximum. The default is -1, or unlimited. Defualt -1 = unlimited.</td>
+            <td>For a description of discriminating paths, please see Spirtes et al, 2000. 
+            The idea is that one needs to search out from each variable in the orientation phase of the algorithm down all connected paths tree-like to see 
+            if there is a path of a certain sort. This can take time and for complex models can slow the algorithm down. 
+            A fix for this is to limit just how long these paths can be expected to be in maximum. The default is -1, or unlimited. Defualt -1 = unlimited.</td>
         </tr>
 
         <tr>
             <td>Yes if the complete FCI rule set should be used</td>
-            <td>The standard rule set used in Spirtes et al., 2000, is guaranteed to include all arrowheads that can be found in the model but not all tails. Zhang (??) provides an extended rule set that is tail complete. This can be of benefit, for instance, when investigating selection bias. Default no (i.e. the algorithm in Spirtes et al., 2000).</td>
+            <td>The standard rule set used in Spirtes et al., 2000, is guaranteed to include all arrowheads that can be found in the model but not all tails. 
+            Zhang (Zhang, 2006) provides an extended rule set that is tail complete. 
+            This can be of benefit, for instance, when investigating selection bias. Default no (i.e. the algorithm in Spirtes et al., 2000).</td>
         </tr>
 
         </tbody>
@@ -2047,7 +2082,15 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
 
     <div id="gfci">
 
-        <p>GFCI is a combination of the FGES [CCD-FGES, 2016] algorithm and the FCI algorithm [Spirtes, 1993] that improves upon the accuracy and efficiency of FCI. In order to understand the basic methodology of GFCI, it is necessary to understand some basic facts about the FGES and FCI algorithms.  The FGES algorithm is used to improve the accuracy of both the adjacency phase and the orientation phase of FCI by providing a more accurate initial graph that contains a subset of both the non-adjacencies and orientations of the final output of FCI. The initial set of nonadjacencies given by FGES is augmented by FCI performing a set of conditional independence tests that lead to the removal of some further adjacencies whenever a conditioning set is found that makes two adjacent variables independent. After the adjacency phase of FCI, some of the orientations of FGES are then used to provide an initial orientation of the undirected graph that is then augmented by the orientation phase of FCI to provide additional orientations.</p>
+        <p>GFCI is a combination of the FGES [CCD-FGES, 2016] algorithm and the FCI algorithm [Spirtes, 1993] that 
+        improves upon the accuracy and efficiency of FCI. In order to understand the basic methodology of GFCI, 
+        it is necessary to understand some basic facts about the FGES and FCI algorithms.  
+        The FGES algorithm is used to improve the accuracy of both the adjacency phase and the orientation phase of FCI by 
+        providing a more accurate initial graph that contains a subset of both the non-adjacencies and orientations of the final output of FCI. 
+        The initial set of nonadjacencies given by FGES is augmented by FCI performing a set of conditional independence tests that lead to 
+        the removal of some further adjacencies whenever a conditioning set is found that makes two adjacent variables independent. 
+        After the adjacency phase of FCI, some of the orientations of FGES are then used to provide an initial orientation of 
+        the undirected graph that is then augmented by the orientation phase of FCI to provide additional orientations.</p>
 
     </div>
 
@@ -2061,7 +2104,7 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
 
     <h4>Parameters</h4>
 
-    <p>Uses all of the parameters of FCI (see) and FGES (see).</p>
+    <p>Uses all of the parameters of FCI (see Spirtes et al., 1993) and FGES (see CCD-FGES et al., 2016).</p>
 
 
     <h3>The TsFCI Algorithm</h3>
@@ -2070,7 +2113,13 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
 
     <div id="tsfci">
 
-        <p>The tsGFCI algorithm is a version of GFCI for time series data. See the GFCI documentation for a description of the GFCI algorithm, which allows for unmeasured (hidden, latent) variables in the data-generating process and produces a PAG (partial ancestral graph). tsGFCI takes as input a “time lag data set,” i.e., a data set which includes time series observations of variables X1, X2, X3, ..., and their lags X1:1, X2:1, X3:1, ..., X1:2, X2:2,X3:2, ... and so on. X1:n is the nth-lag of the variable X1. To create a time lag data set from a standard tabular data set (i.e., a matrix of observations of X1, X2, X3, ...), use the “create time lag data” function in the data manipulation toolbox. The user will be prompted to specify the number of lags (n), and a new data set will be created with the above naming convention. The new sample size will be the old sample size minus n.</p>
+        <p>The tsGFCI algorithm is a version of GFCI for time series data. See the GFCI documentation for a description of the GFCI algorithm, 
+        which allows for unmeasured (hidden, latent) variables in the data-generating process and produces a PAG (partial ancestral graph). 
+        tsGFCI takes as input a “time lag data set,” i.e., a data set which includes time series observations of variables X1, X2, X3, ..., 
+        and their lags X1:1, X2:1, X3:1, ..., X1:2, X2:2,X3:2, ... and so on. X1:n is the nth-lag of the variable X1. 
+        To create a time lag data set from a standard tabular data set (i.e., a matrix of observations of X1, X2, X3, ...), 
+        use the “create time lag data” function in the data manipulation toolbox. The user will be prompted to specify the number of lags (n), 
+        and a new data set will be created with the above naming convention. The new sample size will be the old sample size minus n.</p>
 
     </div>
 
@@ -2109,8 +2158,14 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
 
     <div id="ts-gfci">
 
-        <p>tsGFCI uses a BIC score to search for a skeleton. Thus, the only user-specified parameter is an optional “penalty score” to bias the search in favor of more sparse models. See the description of the GES algorithm for discussion of the penalty score. For the traditional definition of the BIC score, set the penalty to 1.0. The orientation rules are the same as for FCI.
-            As is the case with tsFCI, tsGFCI will automatically respect the time order of the variables and impose a repeating structure. Firstly, it puts lagged variables in appropriate tiers so, e.g., X3:2 can cause X3:1 and X3 but X3:1 cannot cause X3:2 and X3 cannot cause either X3:1 or X3:2. Also, it will assume that the causal structure is the same across time, so that if the edge between X1 and X2 is removed because this increases the BIC score, then also the edge between X1:1 and X2:1 is removed, and so on for additional lags if they exist. When some edge is removed as the result of a score increase, all similar (or “homologous”) edges are also removed.
+        <p>tsGFCI uses a BIC score to search for a skeleton. Thus, the only user-specified parameter is an optional “penalty score” to bias the search 
+        in favor of more sparse models. See the description of the GES algorithm for discussion of the penalty score. 
+        For the traditional definition of the BIC score, set the penalty to 1.0. The orientation rules are the same as for FCI.
+            As is the case with tsFCI, tsGFCI will automatically respect the time order of the variables and impose a repeating structure. 
+            Firstly, it puts lagged variables in appropriate tiers so, e.g., X3:2 can cause X3:1 and X3 but X3:1 cannot cause X3:2 and X3 cannot cause either X3:1 or X3:2. 
+            Also, it will assume that the causal structure is the same across time, so that if the edge between X1 and X2 is removed because this increases the BIC score, 
+            then also the edge between X1:1 and X2:1 is removed, and so on for additional lags if they exist. 
+            When some edge is removed as the result of a score increase, all similar (or “homologous”) edges are also removed.
         </p>
 
     </div>
@@ -2125,7 +2180,7 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
 
     <h4>Parameters</h4>
 
-    <p>Uses the parameters of FCI (see) and FGES (see).</p>
+    <p>Uses all of the parameters of FCI (see Spirtes et al., 1993) and FGES (see CCD-FGES et al., 2016).</p>
 
 
 
@@ -2135,8 +2190,12 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
 
     <div id="ts-imgs">
 
-        <p>tsIMAGES is a version of tsGFCI which averages BIC scores across multiple data sets. Thus, it is used to search for a PAG (partial ancestral graph) from time series data from multiple units (subjects, countries, etc). tsIMAGES allows both for unmeasured (hidden, latent) variables and the possibility that different subjects have different causal parameters, though they share the
-            same qualitative causal structure. As with IMAGES, the user can specify a “penalty score” to produce more sparse models. For the traditional definition of the BIC score, set the penalty to 1.0. See the documentation for IMAGES and tsGFCI.
+        <p>tsIMAGES is a version of tsGFCI which averages BIC scores across multiple data sets. Thus, it is used to search for a PAG (partial ancestral graph) 
+        from time series data from multiple units (subjects, countries, etc). tsIMAGES allows both for unmeasured (hidden, latent) variables 
+        and the possibility that different subjects have different causal parameters, though they share the
+            same qualitative causal structure. As with IMAGES, the user can specify a “penalty score” to produce more sparse models. 
+            For the traditional definition of the BIC score, set the penalty to 1.0. 
+            See the documentation for IMAGES and tsGFCI.
 
         </p>
 
@@ -2152,7 +2211,7 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
 
     <h4>Parameters</h4>
 
-    <p>Uses the parameters of IMaGES (see).</p>
+    <p>Uses the parameters of IMaGES.</p>
 
 
     <h3>The FGES-MB Algorithm</h3>
@@ -2161,7 +2220,9 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
 
     <div id="fges-mb">
 
-        <p>This is a restriction of the FGES algorithm to union of edges over the combined Markov blankets of a set of targets, including the targets. In the interface, just one target may be specified. See Ramsey et al., 2017 for details. In the general case, finding the graph over the Markov blanket variables of a target (including the target) is far faster than finding the pattern for all of the variables.</p>
+        <p>This is a restriction of the FGES algorithm to union of edges over the combined Markov blankets of a set of targets, including the targets. 
+        In the interface, just one target may be specified. See Ramsey et al., 2017 for details. In the general case, 
+        finding the graph over the Markov blanket variables of a target (including the target) is far faster than finding the pattern for all of the variables.</p>
 
     </div>
 
@@ -2171,11 +2232,13 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
 
     <h4>Output Format</h4>
 
-    <p>A graph over a selected group of nodes that includes the target and each node in the Markov blanket of the target. This will be the same as if FGES were run and the result restricted to just these variables, so some edges may be oriented in the returned graph that may not have been oriented in a pattern over the selected nodes.</p>
+    <p>A graph over a selected group of nodes that includes the target and each node in the Markov blanket of the target. 
+    This will be the same as if FGES were run and the result restricted to just these variables, 
+    so some edges may be oriented in the returned graph that may not have been oriented in a pattern over the selected nodes.</p>
 
     <h4>Parameters</h4>
 
-    <p>Uses the parameters of FGES (see). </p>
+    <p>Uses the parameters of FGES (see CCD-FGES et al., 2016). </p>
 
     <table class="table">
 
@@ -2186,7 +2249,8 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
         <tbody>
         <tr>
             <td>Target Name</td>
-            <td>The name of the target variables for the Markov blanket one wishes to construct. Default blank (that is, unspecified.) A variable must be specified here to run the algorithm.</td>
+            <td>The name of the target variables for the Markov blanket one wishes to construct. Default blank (that is, unspecified.) 
+            A variable must be specified here to run the algorithm.</td>
         </tr>
 
         </tbody>
@@ -2200,7 +2264,9 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
 
     <div id="mbfs">
 
-        <p>Markov blanket fan search. Similar to FGES-MB (see) but using PC as the basic search instead of FGES. The rules of the PC search are restricted to just the variables in the Markov blanket of a target T, including T; the result is a graph that is a pattern over these variables.</p>
+        <p>Markov blanket fan search. Similar to FGES-MB (see CCD-FGES, 2016) but using PC as the basic search instead of FGES. 
+        The rules of the PC search are restricted to just the variables in the Markov blanket of a target T, including T; 
+        the result is a graph that is a pattern over these variables.</p>
 
     </div>
 
@@ -2225,7 +2291,8 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
         <tbody>
         <tr>
             <td>Target Name</td>
-            <td>The name of the target variables for the Markov blanket one wishes to construct. Default blank (that is, unspecified.) A variable must be specified here to run the algorithm.</td>
+            <td>The name of the target variables for the Markov blanket one wishes to construct. Default blank (that is, unspecified.) 
+            A variable must be specified here to run the algorithm.</td>
         </tr>
 
         </tbody>
@@ -2240,7 +2307,8 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
 
     <div id="fas">
 
-        <p>This is just the adjacency search of the PC algorithm, included here for times when just the adjacency search is needed, as when one is subsequently just going to orient variables pairwise.</p>
+        <p>This is just the adjacency search of the PC algorithm, included here for times when just the adjacency search is needed, 
+        as when one is subsequently just going to orient variables pairwise.</p>
 
     </div>
 
@@ -2250,7 +2318,9 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
 
     <h4>Output Format</h4>
 
-    <p>An undirected graph over the variables of the input dataset. In particular, parents of a variables are not married by FAS, so the resulting graph is not a Markov random field. For example, if X->Y<-Z, the output will be X—Y—Z with X—Z. The parents of Y will be joined by an undirected edge, morally, only if they are joined by a trek in the true graph.</p>
+    <p>An undirected graph over the variables of the input dataset. In particular, parents of a variables are not married by FAS, 
+    so the resulting graph is not a Markov random field. For example, if X->Y<-Z, the output will be X—Y—Z with X—Z. 
+    The parents of Y will be joined by an undirected edge, morally, only if they are joined by a trek in the true graph.</p>
 
     <h4>Parameters</h4>
 
@@ -2268,7 +2338,8 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
 
         <tr>
             <td>Maximum size of conditioning set (depth)</td>
-            <td>PC in the adjacency phase will consider conditioning sets for conditional independences of increasing size, up to this value. For instance, for depth 3, the maximum size of a conditioning set considered will be 3. Default -1 = unlimited.</td>
+            <td>PC in the adjacency phase will consider conditioning sets for conditional independences of increasing size, up to this value. 
+            For instance, for depth 3, the maximum size of a conditioning set considered will be 3. Default -1 = unlimited.</td>
         </tr>
         </tbody>
 
@@ -2281,7 +2352,9 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
 
     <div id="mgm">
 
-        <p>Need reference. Finds a Markov random field (with parents married) for a dataset in which continuous and discrete variables are mixed together. For example, if X->Y<-Z, the output will be X—Y—Z with X—Z. The parents of Y will be joined by an undirected edge, morally, even though this edge does not occur in the true model.</p>
+        <p>Need reference. Finds a Markov random field (with parents married) for a dataset in which continuous and discrete variables are mixed together. 
+        For example, if X->Y<-Z, the output will be X—Y—Z with X—Z. The parents of Y will be joined by an undirected edge, morally, 
+        even though this edge does not occur in the true model.</p>
 
     </div>
 
@@ -2304,7 +2377,7 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
         <tbody>
         <tr>
             <td>MGM Tuning Parameters #1, #2, #3</td>
-            <td>Defaults for these are 0.1, though they can be adjusted. See ??.</td>
+            <td>Defaults for these are 0.1, though they can be adjusted. See Lee and Hastie, 2012.</td>
         </tr>
 
         </tbody>
@@ -2319,7 +2392,8 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
 
     <div id="glasso">
 
-        <p>A translation of the Fortran code for GLASSO (Graphical LASSO—see Tibshirani anad Hastie, ??) Like MGM, this produces an undirected graph in which parents are always married.</p>
+        <p>A translation of the Fortran code for GLASSO (Graphical LASSO—see Friedman, Tibshirani anad Hastie, 2007) 
+        Like MGM, this produces an undirected graph in which parents are always married.</p>
 
     </div>
 
@@ -2342,7 +2416,7 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
         <tbody>
         <tr>
             <td>MAXIT, IA, IS,  ITR, IPEN, THR</td>
-            <td>These are parameters in the translated Fortan code (see). Defaults are given in the interface and are the same as for the Fortran code.</td>
+            <td>These are parameters in the translated Fortan code. Defaults are given in the interface and are the same as for the Fortran code.</td>
         </tr>
 
         </tbody>
@@ -2357,7 +2431,20 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
 
     <div id="bpc">
 
-        <p>Searches for causal structure over latent variables, where the true models are Multiple Indicator Models (MIM’s) as described in the Graphs section. The idea is this. There is a set of latent (unmeasured) variables over which a directed acyclic model has been defined. Then for each of these latent L there are 3 (preferably 4) or more measures of that variable—that is, measured variables that are all children of L. Under these conditions, one may define tetrad constraints (see Spirtes et al., 2000). There is a theorem to the effect that if certain patterns of these tetrad constraints hold, there must be a latent common cause of all of them (the Tetrad Representation Theorem, see Silva and Scheines, ??, where the BPC (“Build Pure Clusters”) algorithm is defined and discussed.) Moreover, once one has such a “measurement model,” once can estimate a covariance matrix over the latent variables that are parents of the measures and use some algorithm such as PC or GES to estimate a pattern over the latents. The algorithm to run PC or GES on this covariance matrix is called MimBuild (“MIM” is the the graph, Multiple Indicator Model; “Build” means build). In this way, one may recover causal structure over the latents. The more measures one has for each latent, the better the result is, generally. The larger the sample size the better. One important issue is that the algorithm is sensitive to so-called “impurities”—that is, causal edges among the measured variables, or between measured variables and unintended latent. The algorithm will in effect remove one measure in each impure pair from consideration.</p>
+        <p>Searches for causal structure over latent variables, where the true models are Multiple Indicator Models (MIM’s) as described in the Graphs section. 
+        The idea is this. There is a set of latent (unmeasured) variables over which a directed acyclic model has been defined. 
+        Then for each of these latent L there are 3 (preferably 4) or more measures of that variable—that is, 
+        measured variables that are all children of L. 
+        Under these conditions, one may define tetrad constraints (see Spirtes et al., 2000). 
+        There is a theorem to the effect that if certain patterns of these tetrad constraints hold, 
+        there must be a latent common cause of all of them (the Tetrad Representation Theorem, see Silva et al., 2003, 
+        where the BPC (“Build Pure Clusters”) algorithm is defined and discussed.) Moreover, once one has such a “measurement model,” 
+        once can estimate a covariance matrix over the latent variables that are parents of the measures and use some algorithm such as PC or GES to estimate a pattern over the latents. 
+        The algorithm to run PC or GES on this covariance matrix is called MimBuild (“MIM” is the the graph, Multiple Indicator Model; “Build” means build). 
+        In this way, one may recover causal structure over the latents. The more measures one has for each latent, the better the result is, generally. 
+        The larger the sample size the better. One important issue is that the algorithm is sensitive to so-called “impurities”—that is, 
+        causal edges among the measured variables, or between measured variables and unintended latent. 
+        The algorithm will in effect remove one measure in each impure pair from consideration.</p>
 
     </div>
 
@@ -2367,7 +2454,8 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
 
     <h4>Output Format</h4>
 
-    <p>For BPC, a measurement model, in the above sense. This is represented as a clustering of variables; it may be inferred that there is a single latent for each output cluster. For MimBuild, a pattern over the latent variables, one for each cluster.</p>
+    <p>For BPC, a measurement model, in the above sense. This is represented as a clustering of variables; it may be inferred that 
+    there is a single latent for each output cluster. For MimBuild, a pattern over the latent variables, one for each cluster.</p>
 
     <h4>Parameters</h4>
 
@@ -2385,7 +2473,9 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
 
         <tr>
             <td>Yes if the Wishart test should be used. No if the Delta test should be used.</td>
-            <td>These are two tests of whether a set of four variables constitutes a pure tetrad—that is, if all tetrads for this set of four variables vanish. For the notion of a vanishing tetrad, see Spirtes et al., 2000. For the Delta test, see ??. Default No (Delta test).</td>
+            <td>These are two tests of whether a set of four variables constitutes a pure tetrad—that is, 
+            if all tetrads for this set of four variables vanish. For the notion of a vanishing tetrad, see Spirtes et al., 2000. 
+            For the Delta test, see Silva et al., 2003. Default No (Delta test).</td>
         </tr>
         </tbody>
 
@@ -2398,7 +2488,16 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
 
     <div id="fofc">
 
-        <p>The FOFC (Find One Factor Clusters) is an alternative method that achieves the same goal as BPC; in testing, it seems to scale better with somewhat better accuracy (Kummerfeld and Ramsey, ??). The basic idea is to build up clusters one at a time by adding variables that keep them pure, in the sense that all relevant tetrad constraints still hold. There are different ways of going about this. One could try to build one cluster up as far as possible, then remove all of those variables from the set, and try to make a another cluster using the remaining variables (SAG, Seed and Grow). Or one can try in parallel to grow all possible clusters and then choose among the grown clusters using some criterion such as cluster size (GAP, Grow and Pick). In general, GAP is more accurate. The result is a clustering of variables. Similarly to BPC, MimBuild may be run on a covariance matrix estimated over the latents for the resulting clusters to find a pattern over the latents that represents the causal structure over the latents.</p>
+        <p>The FOFC (Find One Factor Clusters) is an alternative method that achieves the same goal as BPC; in testing, 
+        it seems to scale better with somewhat better accuracy (Kummerfeld and Ramsey, 2017). 
+        The basic idea is to build up clusters one at a time by adding variables that keep them pure, 
+        in the sense that all relevant tetrad constraints still hold. 
+        There are different ways of going about this. One could try to build one cluster up as far as possible, 
+        then remove all of those variables from the set, and try to make a another cluster using the remaining variables (SAG, Seed and Grow). 
+        Or one can try in parallel to grow all possible clusters and then choose among the grown clusters using some criterion such as cluster size (GAP, Grow and Pick). 
+        In general, GAP is more accurate. The result is a clustering of variables. 
+        Similarly to BPC, MimBuild may be run on a covariance matrix estimated over the latents for the resulting clusters to find a pattern over the latents that 
+        represents the causal structure over the latents.</p>
 
     </div>
 
@@ -2426,7 +2525,9 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
 
         <tr>
             <td>Yes if the Wishart test should be used. No if the Delta test should be used.</td>
-            <td>These are two tests of whether a set of four variables constitutes a pure tetrad—that is, if all tetrads for this set of four variables vanish. For the notion of a vanishing tetrad, see Spirtes et al., 2000. For the Delta test, see ??. Default No (Delta test).</td>
+            <td>These are two tests of whether a set of four variables constitutes a pure tetrad—that is, 
+            if all tetrads for this set of four variables vanish. For the notion of a vanishing tetrad, see Spirtes et al., 2000. 
+            For the Delta test, see Silva et al., 2003. Default No (Delta test).</td>
         </tr>
 
         <tr>
@@ -2445,7 +2546,10 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
 
     <div id="ftfc">
 
-        <p>FTFC (Find Two Factor Clusters) is similar to FOFC, but instead of each cluster having one latent that is the parent of all of the measure in the cluster, it instead has two such latents. So each measure has two latent parents; these are two “factors.” Similarly to FOFC, constraints are checked for, but in this case, the constraints must be sextad constraints, and more of them must be satisfied for each pure cluster (see Kummerfelt et al., ??) Thus, the number of measures in each cluster, once impure edges have been taken into account, must be at least six, preferably more.</p>
+        <p>FTFC (Find Two Factor Clusters) is similar to FOFC, but instead of each cluster having one latent that is the parent of all of the measure in the cluster, 
+        it instead has two such latents. So each measure has two latent parents; these are two “factors.” Similarly to FOFC, constraints are checked for, 
+        but in this case, the constraints must be sextad constraints, and more of them must be satisfied for each pure cluster (see Kummerfelt et al., 2014). 
+        Thus, the number of measures in each cluster, once impure edges have been taken into account, must be at least six, preferably more.</p>
 
     </div>
 
@@ -2473,7 +2577,9 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
 
         <tr>
             <td>Yes if the Wishart test should be used. No if the Delta test should be used.</td>
-            <td>These are two tests of whether a set of four variables constitutes a pure tetrad—that is, if all tetrads for this set of four variables vanish. For the notion of a vanishing tetrad, see Spirtes et al., 2000. For the Delta test, see ??. Default No (Delta test).</td>
+            <td>These are two tests of whether a set of four variables constitutes a pure tetrad—that is, 
+            if all tetrads for this set of four variables vanish. For the notion of a vanishing tetrad, see Spirtes et al., 2000. 
+            For the Delta test, see Silva et al., 2003. Default No (Delta test).</td>
         </tr>
 
         <tr>
@@ -2493,9 +2599,21 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
 
     <div id="">
 
-        <p>These are algorithms that orient edges X—Y for continuous variables pairwise based on non-Gaussian information. (If the variables are all Gaussian, one cannot orient these edges. That is, these rules will orient left or right randomly.) For EB, RSkew, RSkewE, Skew and SkewE, see Hyvarinen and Smith, ??. For R1, R2, R3 and R4, see Ramsey et al., ??.</p>
+        <p>These are algorithms that orient edges X—Y for continuous variables pairwise based on non-Gaussian information. 
+        (If the variables are all Gaussian, one cannot orient these edges. That is, these rules will orient left or right randomly.) 
+        For EB, RSkew, RSkewE, Skew and SkewE, see Hyvarinen and Smith, 2013. For R1, R2, R3 and R4, see Ramsey et al., 2012.</p>
 
-        <p>The principles governing these rules vary. R1 and R2 appeal directly to the Central Limit Theorem to judge which of various conditioning sets yields the greatest non-Gaussianity measure. (The measure for non-Gaussianity measure used is Anderson-Darling.) R4 does as well, but allows coefficients for relevant parameters to be adjusted to achieve maximum non-Gaussianity. EB works by appealing to entropy for the orientation. R3 uses the same rule as EB except using the Anderson-Darling score for a measure of non-Gaussianity. RSkew and Skew appeal to measures of skew for the variables and assume positive skewness for all variables. The rules for the two are different; please see Hyvarinen and Smith for details. SkewE and RSkewE adjust the signs of variables by the signs of their skewnesses to ensure that the assumption of positive skewness holds. A comparison of all of these methods is given in Ramsey et al., ??. In general, for fMRI data, we find that the RSkew method works the best, followed by the R3 method. Cycles can be oriented using these methods, since each edge is oriented independently of the others.</p>
+        <p>The principles governing these rules vary. 
+        R1 and R2 appeal directly to the Central Limit Theorem to judge which of various conditioning sets yields the greatest non-Gaussianity measure. 
+        (The measure for non-Gaussianity measure used is Anderson-Darling.) 
+        R4 does as well, but allows coefficients for relevant parameters to be adjusted to achieve maximum non-Gaussianity. 
+        EB works by appealing to entropy for the orientation. R3 uses the same rule as EB except using the Anderson-Darling score for a measure of non-Gaussianity. 
+        RSkew and Skew appeal to measures of skew for the variables and assume positive skewness for all variables. 
+        The rules for the two are different; please see Hyvarinen and Smith for details. 
+        SkewE and RSkewE adjust the signs of variables by the signs of their skewnesses to ensure that the assumption of positive skewness holds. 
+        A comparison of all of these methods is given in Ramsey et al., 2012. 
+        In general, for fMRI data, we find that the RSkew method works the best, followed by the R3 method. 
+        Cycles can be oriented using these methods, since each edge is oriented independently of the others.</p>
 
     </div>
 
@@ -2523,7 +2641,8 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
 
         <tr>
             <td>Maximum size of conditioning set (depth)</td>
-            <td>PC in the adjacency phase will consider conditioning sets for conditional independences of increasing size, up to this value. For instance, for depth 3, the maximum size of a conditioning set considered will be 3.</td>
+            <td>PC in the adjacency phase will consider conditioning sets for conditional independences of increasing size, up to this value. 
+            For instance, for depth 3, the maximum size of a conditioning set considered will be 3.</td>
         </tr>
         </tbody>
 
@@ -2535,19 +2654,38 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
 
     <h3>CCI</h3>
 
-    <p>CCI (“Conditional Correlation Independence”) is a fairly general independence test—not completely general, but general for additive noise models—that is, model in which each variable is equal to a (possibly nonlinear) function of its parents, plus additive noise, where the noise may be arbitrarily distributed. That is, X = f(parent(X)) + E, where f is any function and E is noise however distributed; the only requirement is that there be the “+” in the formula separating the function from the noise. The noise can’t for instance, be multiplicative, e.g., X = f(parent(X)) x E. The goal of the method is to estimate whether X is independent of Y given variables Z, for some X, Y, and Z. It works by calculating the residual of X given Z and the residual of Y given Z and looking to see whether those two residuals are independent. This test may be used with any constraint-based algorithm (PC, FCI, etc.)</p>
+    <p>CCI (“Conditional Correlation Independence”) is a fairly general independence test—not completely general, but general for additive noise models—that is, 
+    model in which each variable is equal to a (possibly nonlinear) function of its parents, plus additive noise, where the noise may be arbitrarily distributed. 
+    That is, X = f(parent(X)) + E, where f is any function and E is noise however distributed; the only requirement is that there be the “+” in the formula separating the function from the noise. 
+    The noise can’t for instance, be multiplicative, e.g., X = f(parent(X)) x E. 
+    The goal of the method is to estimate whether X is independent of Y given variables Z, for some X, Y, and Z. 
+    It works by calculating the residual of X given Z and the residual of Y given Z and looking to see whether those two residuals are independent. 
+    This test may be used with any constraint-based algorithm (PC, FCI, etc.)</p>
 
     <h3>KCI</h3>
 
-    <p>KCI (“Kernel Conditional Independence”) is a general independence test for model in which X = f(parents(X), eY); here, eY does not need to be additive; it can stand in any functional relationships to the other variables. The variables may even be discrete. The goal of the method is to estimate whether X is independent of Y given Z, completely generally. It uses the kernel trick to estimate this. As a result of using the kernel trick, the method is complex in the direction of sample size, meaning that it may be very slow for large samples. Since it’s slow, individual independence results are always printed to the console so the user knows how far a procedure has gotten. This test may be used with any constraint-based algorithm (PC, FCI, etc.)</p>
+    <p>KCI (“Kernel Conditional Independence”) is a general independence test for model in which X = f(parents(X), eY); 
+    here, eY does not need to be additive; it can stand in any functional relationships to the other variables. The variables may even be discrete. 
+    The goal of the method is to estimate whether X is independent of Y given Z, completely generally. 
+    It uses the kernel trick to estimate this. 
+    As a result of using the kernel trick, the method is complex in the direction of sample size, meaning that it may be very slow for large samples. 
+    Since it’s slow, individual independence results are always printed to the console so the user knows how far a procedure has gotten. 
+    This test may be used with any constraint-based algorithm (PC, FCI, etc.)</p>
 
     <h3>FASK</h3>
 
-    <p>FASK (“Fast Adjacency Skewness”) assumes that variables are skewed and linearly related, though the linearity may be relaxed to monotonicity more generally. It assume each variable, specifically, in the base case, is equal to a linear combination of its parents plus skewed noise. It operates by first estimating an undirected skeleton using both correlational reasoning and reasoning about skewnesses, then orienting 2-cycles (X->Y and Y->X) in the model, then orienting the rest of the edges in the model left or right. It scales well and is applicable wherever one has skewed variables and additive noise.</p>
+    <p>FASK (“Fast Adjacency Skewness”) assumes that variables are skewed and linearly related, though the linearity may be relaxed to monotonicity more generally. 
+    It assume each variable, specifically, in the base case, is equal to a linear combination of its parents plus skewed noise. 
+    It operates by first estimating an undirected skeleton using both correlational reasoning and reasoning about skewnesses, 
+    then orienting 2-cycles (X->Y and Y->X) in the model, then orienting the rest of the edges in the model left or right. 
+    It scales well and is applicable wherever one has skewed variables and additive noise.</p>
 
     <h3>Conditional Gaussian Test</h3>
 
-    <p>Conditional Gaussian Test is a likelihood ratio test based on the conditional Gaussian likelihood function. This is intended for use with datasets where there is a mixture of continuous and discrete variables. It is assumed that the continuous variables are Gaussian conditional on each combination of values for the discrete variables, though it will work fairly well even if that assumption does not hold strictly. This test may be used with any constraint-based algorithm (PC, FCI, etc.)</p>
+    <p>Conditional Gaussian Test is a likelihood ratio test based on the conditional Gaussian likelihood function. 
+    This is intended for use with datasets where there is a mixture of continuous and discrete variables. 
+    It is assumed that the continuous variables are Gaussian conditional on each combination of values for the discrete variables, 
+    though it will work fairly well even if that assumption does not hold strictly. This test may be used with any constraint-based algorithm (PC, FCI, etc.)</p>
 
     <h2>Scoring Functions</h2>
 
@@ -2556,7 +2694,8 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
 
     <h1 id="regression_box"><span  class="section_heading">Regression Box</span></h1>
 
-    <p>The regression box performs regression on variables in a data set, in an attempt to discover causal correlations between them. Both linear and logistic regression are available.</p>
+    <p>The regression box performs regression on variables in a data set, in an attempt to discover causal correlations between them. 
+    Both linear and logistic regression are available.</p>
 
     <h2>Possible Parent Boxes of the Regression Box</h2>
 
@@ -2647,9 +2786,9 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
         <thead>
         <tr><th>Edge type</th><th>Relationships that are present</th><th>Relationships that are absent</th></tr>
         <tbody>
-        <tr><td>A -> B</td><td>A is a cause of B. It may be a direct or indirect cause that may include other measured variables. Also, there may be an unmeasured confounder of A and B.</td><td>B is not a cause of A.</td></tr>
-        <tr><td>A  B</td><td>There is an unmeasured variable (call it L) that is a cause of A and B. There may be measured variables along the causal pathway from L to A or from L to B.</td><td>A is not a cause of B.  B is not a cause of A.</td></tr>
-        <tr><td>A o B</td><td>Either A is a cause of B, or there is an unmeasured variable that is a cause of A and B, or both.</td><td>B is not a cause of A.</td>	</tr>
+        <tr><td>A --> B</td><td>A is a cause of B. It may be a direct or indirect cause that may include other measured variables. Also, there may be an unmeasured confounder of A and B.</td><td>B is not a cause of A.</td></tr>
+        <tr><td>A <-> B</td><td>There is an unmeasured variable (call it L) that is a cause of A and B. There may be measured variables along the causal pathway from L to A or from L to B.</td><td>A is not a cause of B.  B is not a cause of A.</td></tr>
+        <tr><td>A o-> B</td><td>Either A is a cause of B, or there is an unmeasured variable that is a cause of A and B, or both.</td><td>B is not a cause of A.</td>	</tr>
         <tr><td>A o–o B</td><td>Exactly one of the following holds: (a) A is a cause of B, or (b) B is a cause of A, or (c) there is an unmeasured variable that is a cause of A and B, or (d) both a and c, or (e) both b and c.</td><td></td></tr>
 
         </tbody>
