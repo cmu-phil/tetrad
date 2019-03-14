@@ -46,6 +46,7 @@ public class ImagesSemBic implements MultiDataSetAlgorithm, HasKnowledge {
             score.setPenaltyDiscount(parameters.getDouble("penaltyDiscount"));
             edu.cmu.tetrad.search.Fges search = new edu.cmu.tetrad.search.Fges(score);
             search.setKnowledge(knowledge);
+            search.setVerbose(parameters.getBoolean("verbose"));
             return search.search();
         } else {
             ImagesSemBic imagesSemBic = new ImagesSemBic();

@@ -28,6 +28,7 @@ public class MixedFgesTreatingDiscreteAsContinuous implements Algorithm {
             SemBicScore score = new SemBicScore(new CovarianceMatrixOnTheFly(mixedDataSet));
             score.setPenaltyDiscount(parameters.getDouble("penaltyDiscount"));
             Fges fges = new Fges(score);
+            fges.setVerbose(parameters.getBoolean("verbose"));
             Graph p = fges.search();
             return convertBack(mixedDataSet, p);
     	}else{
