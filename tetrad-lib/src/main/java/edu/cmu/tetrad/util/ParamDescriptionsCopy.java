@@ -1,8 +1,8 @@
 package edu.cmu.tetrad.util;
 
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
 
 /**
  * Stores descriptions of the parameters for the simulation box. All parameters
@@ -14,7 +14,7 @@ public class ParamDescriptionsCopy {
 
     private static final ParamDescriptionsCopy INSTANCE = new ParamDescriptionsCopy();
 
-    private final Map<String, ParamDescription> map = new HashMap<>();
+    private final Map<String, ParamDescription> map = new TreeMap<>();
 
     private ParamDescriptionsCopy() {
         map.put("numMeasures", new ParamDescription("Number of measured variables (min = 1)", 10, 1, Integer.MAX_VALUE));
@@ -63,7 +63,7 @@ public class ParamDescriptionsCopy {
                 "feasible in most cases. Setting this flag to “Yes” generates connected graphs.");
 
         map.put("sampleSize", new ParamDescription("Sample size (min = 1)", 1000, 1, Integer.MAX_VALUE));
-        map.get("sampleSie").setLongDescription("One of the main features of a dataset is the number of records in " +
+        map.get("sampleSize").setLongDescription("One of the main features of a dataset is the number of records in " +
                 "the data, or sample size, or N. When simulating random data, this parameter determines now many " +
                 "records should be generated for the data. The minimum number of records is 1; the default is set to 1000.");
 
@@ -599,9 +599,9 @@ public class ParamDescriptionsCopy {
                 "|corr(X, Y | X > 0) – corr(X, Y | Y > 0)| > delta, where delta is this number. The default is 0.3. " +
                 "Sanchez-Romero, Ramsey et al., (2018) Network Neuroscience.");
 
-        map.get("maskThreshold").setLongDescription("For FASK, this includes an adjacency X—Y in the model if " +
-                "|corr(X, Y | X > 0) – corr(X, Y | Y > 0)| > delta, where delta is this number. The default is " +
-                "0.3. Sanchez-Romero, Ramsey et al., (2018) Network Neuroscience.");
+//        map.get("maskThreshold").setLongDescription("For FASK, this includes an adjacency X—Y in the model if " +
+//                "|corr(X, Y | X > 0) – corr(X, Y | Y > 0)| > delta, where delta is this number. The default is " +
+//                "0.3. Sanchez-Romero, Ramsey et al., (2018) Network Neuroscience.");
 
 
         map.put("useFasAdjacencies", new ParamDescription(
