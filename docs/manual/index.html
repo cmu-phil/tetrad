@@ -2785,7 +2785,10 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
     <table class="table">
         <thead>
         <tr><th>Edge type</th><th>Relationships that are present</th><th>Relationships that are absent</th></tr>
+        </thead>
+
         <tbody>
+
         <tr><td>A --> B</td><td>A is a cause of B. It may be a direct or indirect cause that may include other measured variables. Also, there may be an unmeasured confounder of A and B.</td><td>B is not a cause of A.</td></tr>
         <tr><td>A <-> B</td><td>There is an unmeasured variable (call it L) that is a cause of A and B. There may be measured variables along the causal pathway from L to A or from L to B.</td><td>A is not a cause of B.  B is not a cause of A.</td></tr>
         <tr><td>A o-> B</td><td>Either A is a cause of B, or there is an unmeasured variable that is a cause of A and B, or both.</td><td>B is not a cause of A.</td>	</tr>
@@ -2801,9 +2804,725 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
         <p>Table A1 is sufficient to understand the basic meaning of edge types in PAGs. Nonetheless, it can be helpful to know the following additional perspective on the information encoded by PAGs. Each edge has two endpoints, one on the A side, and one on the B side.  For example   A  B has a tail at the A end, and an arrowhead at the B end. Altogether, there are three kinds of edge endpoints: a tail "–", an arrowhead ">", and a "o." Note that some kinds of combinations of endpoints never occur; for example, A o– B never occurs. As a mnemonic device, the basic meaning of each kind of edge can be derived from three simple rules that explain what the meaning of each kind of endpoint is. A tail "–" at the A end of an edge between A and B means "A is a cause of B"; an arrowhead ">" at the A end of an edge between A and B means "A is not a cause of B"; and a circle "o" at the A end of an edge between A and B means "can't tell whether or not A is a cause of B". For example A  B means that A is a cause of B, and that B is not a cause of A in all of the CBNs represented by the PAG.</p>
         <p>The PAG in Figure 2 shows examples of each type of edge, and the CBNs Figure 1.  show some examples of what kinds of CBNs can be represented by that PAG.</p>
 
-        Figure 1. Two CBNs that FCI (as well as FCI+, GFCI, and RFCI) cannot distinguish.
+        <p>Figure 1. Two CBNs that FCI (as well as FCI+, GFCI, and RFCI) cannot distinguish.</p>
 
-        Figure 2. The PAG that represents the CBNs in both Figures 1a and 1b.
+        <p>Figure 2. The PAG that represents the CBNs in both Figures 1a and 1b.</p>
+
+
+</table>
+
+
+
+<div id="parameters">
+<h2>Parameters</h2>
+<table class="table">
+
+<thead>
+<tr><th>Parameter</th><th>Short Description</th><th>Long Description</th><th>Default Value</th><th>Lower Bound</th><th>Upper Bound</th></tr>
+</thead>
+
+<tbody>
+
+<tr id="numMeasures">
+    <td class="name">numMeasures</td>
+    <td class="short_desc">Number of measured variables (min = 1)</td>
+    <td class="long_desc">A measured variable is one for which values are recorded in the dataset being analyzed. " +
+                "This parameter sets the number of measured variables to be randomly simulated; this will be the number " +
+                "of columns in the dataset.</td>
+    <td class="default_value">10</td>
+    <td class="lower_bound">1</td>
+    <td class="upper_bound">Integer.MAX_VALUE</td>
+</tr>
+
+<tr id="numLatents">
+    <td class="name">numLatents</td>
+    <td class="short_desc">Number of latent variables (min = 0)</td>
+    <td class="long_desc">A latent (or ‘unmeasured’) variable is one for which values are not recorded in the dataset being analyzed. " +
+                "These are variables that affect the measured variables but which are not included in the final dataset. " +
+                "This situation comes up frequently when analyzing real data, so it is important to be able to generate " +
+                "random datasets with this feature, in order to see how the algorithms react to the existence of latent " +
+                "variables. Some algorithms, like FCI, FFCI, BPC, FOFC, FTFC, and such, are correct when some variables " +
+                "not measured affect the data.</td>
+    <td class="default_value">0</td>
+    <td class="lower_bound">0</td>
+    <td class="upper_bound">Integer.MAX_VALUE</td>
+</tr>
+
+<tr id="avgDegree">
+    <td class="name">avgDegree</td>
+    <td class="short_desc">Average degree of graph (min = 1)</td>
+    <td class="long_desc">A latent (or ‘unmeasured’) variable is one for which values are not recorded in the dataset being analyzed. " +
+                "These are variables that affect the measured variables but which are not included in the final dataset. " +
+                "This situation comes up frequently when analyzing real data, so it is important to be able to generate " +
+                "random datasets with this feature, in order to see how the algorithms react to the existence of latent " +
+                "variables. Some algorithms, like FCI, FFCI, BPC, FOFC, FTFC, and such, are correct when some variables " +
+                "not measured affect the data.</td>
+    <td class="default_value">2</td>
+    <td class="lower_bound">1</td>
+    <td class="upper_bound">Integer.MAX_VALUE</td>
+</tr>
+
+<tr id="maxDegree">
+    <td class="name">maxDegree</td>
+    <td class="short_desc">The maximum degree of the graph (min = -1)</td>
+    <td class="long_desc">It is possible for a random graph to have a single node with very high degree—i.e. " +
+                "number of adjacent edges. This parameter places an upper bound on the maximum such degree. If no limit " +
+                "is to be placed on the maximum degree, use the value -1.</td>
+    <td class="default_value">10</td>
+    <td class="lower_bound">-1</td>
+    <td class="upper_bound">Integer.MAX_VALUE</td>
+</tr>
+
+<tr id="maxIndegree">
+    <td class="name">maxIndegree</td>
+    <td class="short_desc">Maximum indegree of graph (min = 1)</td>
+    <td class="long_desc">It is possible for a random graph to have a node in which there is " +
+                "a very large “indegree”—that is, number of parents, or number of edges into that node. This parameter " +
+                "places a bound on the maximum such indegree. If no limit is to be placed on the maximum indegree, " +
+                "use the value -1.</td>
+    <td class="default_value">100</td>
+    <td class="lower_bound">1</td>
+    <td class="upper_bound">Integer.MAX_VALUE</td>
+</tr>
+
+<tr id="maxOutdegree">
+    <td class="name">maxOutdegree</td>
+    <td class="short_desc">Maximum outdegree of graph (min = 1)</td>
+    <td class="long_desc">It is possible for a random graph to have a node in which there " +
+                "is a very large “outdegree”—that is, number of children, or number of edges out of that node. This " +
+                "parameter places a bound on the maximum such outdegree. If no limit is to be placed on the max " +
+                "outdegree, use the value -1.</td>
+    <td class="default_value">100</td>
+    <td class="lower_bound">1</td>
+    <td class="upper_bound">Integer.MAX_VALUE</td>
+</tr>
+
+<tr id="connected">
+    <td class="name">connected</td>
+    <td class="short_desc">Yes if graph should be connected</td>
+    <td class="long_desc">It is possible to generate a random graph in which paths exists from " +
+                "every node to every other. This places some constraints on how the graph may be generated, but it is " +
+                "feasible in most cases. Setting this flag to “Yes” generates connected graphs.</td>
+    <td class="default_value">false</td>
+    <td class="lower_bound"></td>
+    <td class="upper_bound"></td>
+</tr>
+
+<tr id="sampleSize">
+    <td class="name">sampleSize</td>
+    <td class="short_desc">Sample size (min = 1)</td>
+    <td class="long_desc">One of the main features of a dataset is the number of records in " +
+                "the data, or sample size, or N. When simulating random data, this parameter determines now many " +
+                "records should be generated for the data. The minimum number of records is 1; the default is set to 1000.</td>
+    <td class="default_value">1000</td>
+    <td class="lower_bound">1</td>
+    <td class="upper_bound">Integer.MAX_VALUE</td>
+</tr>
+
+<tr id="numRuns">
+    <td class="name">numRuns</td>
+    <td class="short_desc">Number of runs (min = 1)</td>
+    <td class="long_desc">An analysis(randomly pick graph, randomly simulate a dataset, run an " +
+                "algorithm on it, look at the result) may be run over and over again, repeatedly, and results summarized. " +
+                "This parameter indicates the number of repetitions that should be done for the analysis. The minimum is 1.</td>
+    <td class="default_value">1</td>
+    <td class="lower_bound">1</td>
+    <td class="upper_bound">Integer.MAX_VALUE</td>
+</tr>
+
+<tr id="differentGraphs">
+    <td class="name">differentGraphs</td>
+    <td class="short_desc">Yes if a different graph should be used for each run</td>
+    <td class="long_desc">When doing an analysis where, repeatedly, a random graph is chosen, with " +
+                "some further processing downstream, one may either keep using the same graph (with different simulated " +
+                "random datasets based on that graph) or pick a new graph every time. This parameter determines that " +
+                "behavior; if ‘Yes’ a new graph is chosen every time; if ‘No’, the same graph is always used.</td>
+    <td class="default_value">false</td>
+    <td class="lower_bound"></td>
+    <td class="upper_bound"></td>
+</tr>
+
+<tr id="alpha">
+    <td class="name">alpha</td>
+    <td class="short_desc">Cutoff for p values (alpha) (min = 0.0)</td>
+    <td class="long_desc">Statistical tests often compare a test statistic to a distribution and " +
+                "make a judgment that the null hypothesis has been rejected based on whether the area in the tails " +
+                "for the distribution for that test statistic is greater than some cutoff alpha. For tests of independence, " +
+                "for instance, a lower alpha level makes it easier to judge independence, and a higher alpha makes it " +
+                "harder to judge independence. Thus, a lower alpha for a search generally results in a sparser graph.</td>
+    <td class="default_value">0.01</td>
+    <td class="lower_bound">0.0</td>
+    <td class="upper_bound">1.0</td>
+</tr>
+
+<tr id="penaltyDiscount">
+    <td class="name">penaltyDiscount</td>
+    <td class="short_desc">Penalty discount (min = 0.0)</td>
+    <td class="long_desc">A BIC score is of the form 2L – k ln N, where L is the likelihood," +
+                " k the number of degrees of freedom, and N the sample size. Tests based on this statistic can often yield " +
+                "too dense a graph; to compensate for this, we add a factor c, as follows: 2L – c k ln N, where usually " +
+                "c >= 1. If c is chosen to be greater than 1, say 2, the output graph will be sparser. We call this c " +
+                "the “penalty discount”; similar mechanisms have been proposed elsewhere.</td>
+    <td class="default_value">2.0</td>
+    <td class="lower_bound">0.0</td>
+    <td class="upper_bound">Double.MAX_VALUE</td>
+</tr>
+
+<tr id="standardize">
+    <td class="name">standardize</td>
+    <td class="short_desc">Yes if the data should be standardized</td>
+    <td class="long_desc">An operation one often wants to perform on a dataset is to standardize " +
+                "each of its variables by subtracting the mean and dividing the standard deviation. This yields a " +
+                "dataset in which each variable has mean zero and unit variance. If this parameter is set to ‘Yes’," +
+                " this operation will be performed on the simulated dataset.</td>
+    <td class="default_value">false</td>
+    <td class="lower_bound"></td>
+    <td class="upper_bound"></td>
+</tr>
+
+<tr id="measurementVariance">
+    <td class="name">measurementVariance</td>
+    <td class="short_desc">Additive measurement noise variance (min = 0.0)</td>
+    <td class="long_desc">One difficult problem one encounters for analyzing real data " +
+                "is measurement noise—that is, once the actual values V of a variable are determined, there is some " +
+                "additional noise M added on top of that, so that the effect value is V + M, not V. We will assume here " +
+                "what is often assumed, that this noise is additive and Gaussian, with some variance. If this parameter " +
+                "value is set to zero, no measurement noise is added to the dataset per variable. Otherwise, if the " +
+                "value is greater than zero, independent Gaussian noise will be added with mean zero and the given variance.</td>
+    <td class="default_value">0.0</td>
+    <td class="lower_bound">0.0</td>
+    <td class="upper_bound">Double.MAX_VALUE</td>
+</tr>
+
+<tr id="depth">
+    <td class="name">depth</td>
+    <td class="short_desc">Maximum size of conditioning set (unlimited = -1)</td>
+    <td class="long_desc">This variable is usually called “depth” for algorithms such as PC in " +
+                "which conditioning sets are considered of increasing size from zero up to some limit, called “depth”. " +
+                "For example, if depth = 3, conditioning sets will be considered of sizes 0, 1, 2, and 3. In order to " +
+                "express that no limit should be imposed, use the value -1.</td>
+    <td class="default_value">-1</td>
+    <td class="lower_bound">-1</td>
+    <td class="upper_bound">Integer.MAX_VALUE</td>
+</tr>
+
+<tr id="meanLow">
+    <td class="name">meanLow</td>
+    <td class="short_desc">Low end of mean range (min = 0.0)</td>
+    <td class="long_desc">For a linear model, means of variables may be randomly shifted. " +
+                "The default is for there to be no shift, but shifts from a minimum value to a maximum value may be " +
+                "specified. The minimum must be less than or equal to the maximum.</td>
+    <td class="default_value">0.5</td>
+    <td class="lower_bound">0.0</td>
+    <td class="upper_bound">Double.MAX_VALUE</td>
+</tr>
+
+<tr id="meanHigh">
+    <td class="name">meanHigh</td>
+    <td class="short_desc">High end of mean range (min = 0.0)</td>
+    <td class="long_desc">For a linear model, means of variables may be randomly shifted. " +
+                "The default is for there to be no shift, but shifts from a minimum value to a maximum value may " +
+                "be specified. The minimum must be less than or equal to the maximum.</td>
+    <td class="default_value">1.5</td>
+    <td class="lower_bound">0.0</td>
+    <td class="upper_bound">Double.MAX_VALUE</td>
+</tr>
+
+<tr id="coefLow">
+    <td class="name">coefLow</td>
+    <td class="short_desc">Low end of coefficient range (min = 0.0)</td>
+    <td class="long_desc">When simulating data from linear models, one needs to specify the " +
+                "distribution of the coefficient parameters. Here, we draw coefficients from U(-m2, -m1) U U(m1, m2);" +
+                " m1 is what is being called the “low end of the coefficient range” and has a minimum value of 0.</td>
+    <td class="default_value">0.2</td>
+    <td class="lower_bound">0.0</td>
+    <td class="upper_bound">Double.MAX_VALUE</td>
+</tr>
+
+<tr id="coefHigh">
+    <td class="name">coefLow</td>
+    <td class="short_desc">High end of coefficient range (min = 0.0)</td>
+    <td class="long_desc">When simulating data from linear models, one needs to specify the " +
+                "distribution of the coefficient parameters. Here, we draw coefficients from U(-m2, -m1) U U(m1, m2);" +
+                " m2 is what is being called the “high end of the coefficient range” and must be greater than m1.</td>
+    <td class="default_value">0.7</td>
+    <td class="lower_bound">0.0</td>
+    <td class="upper_bound">Double.MAX_VALUE</td>
+</tr>
+
+<tr id="covLow">
+    <td class="name">covLow</td>
+    <td class="short_desc">Low end of covariance range (min = 0.0)</td>
+    <td class="long_desc">When simulating data from linear models, one needs to specify the " +
+                "distribution of the covariance parameters. Here, we draw coefficients from U(-c2, -c1) U U(c1, c2); " +
+                "c1 is what is being called the “low end of the covariance range” and has a minimum value of 0. " +
+                "The default value is 0.5.</td>
+    <td class="default_value">0.5</td>
+    <td class="lower_bound">0.0</td>
+    <td class="upper_bound">Double.MAX_VALUE</td>
+</tr>
+
+<tr id="covHigh">
+    <td class="name">covHigh</td>
+    <td class="short_desc">High end of covariance range (min = 0.0)</td>
+    <td class="long_desc">When simulating data from linear models, one needs to specify the " +
+                "distribution of the covariance parameters. Here, we draw coefficients from U(-c2, -c1) U U(c1, c2); " +
+                "c2 is what is being called the “high end of the covariance range” and must be greater  than c1. The " +
+                "default value is 1.5.</td>
+    <td class="default_value">1.5</td>
+    <td class="lower_bound">0.0</td>
+    <td class="upper_bound">Double.MAX_VALUE</td>
+</tr>
+
+<tr id="varLow">
+    <td class="name">varLow</td>
+    <td class="short_desc">Low end of variance range (min = 0.0)</td>
+    <td class="long_desc">When simulating data from linear models, one needs to specify the " +
+                "distribution of the variance parameters. Here, we draw coefficients from U(v1, v2); v1 is what is " +
+                "being called the “low end of the variance range” and has a minimum 0. The default value is 1.0.</td>
+    <td class="default_value">1.0</td>
+    <td class="lower_bound">0.0</td>
+    <td class="upper_bound">Double.MAX_VALUE</td>
+</tr>
+
+<tr id="varHigh">
+    <td class="name">varHigh</td>
+    <td class="short_desc">High end of variance range (min = 0.0)</td>
+    <td class="long_desc">When simulating data from linear models, one needs to specify " +
+                "the distribution of the variance parameters. Here, we draw coefficients from U(v1, v2); v2 is" +
+                " what is being called the “high end of the variance range” and must be greater than v1. The " +
+                "default value is 3.0.</td>
+    <td class="default_value">3.0</td>
+    <td class="lower_bound">0.0</td>
+    <td class="upper_bound">Double.MAX_VALUE</td>
+</tr>
+
+<tr id="dataType">
+    <td class="name">dataType</td>
+    <td class="short_desc">Categorical or discrete</td>
+    <td class="long_desc">For a mixed data type simulation, if this is set to “categorical” or " +
+                "“discrete”, all variables are taken to be of that sort. Used internally to the program.</td>
+    <td class="default_value">categorical</td>
+    <td class="lower_bound"></td>
+    <td class="upper_bound"></td>
+</tr>
+
+<tr id="percentDiscrete">
+    <td class="name">percentDiscrete</td>
+    <td class="short_desc">Percentage of discrete variables (0 - 100) for mixed data</td>
+    <td class="long_desc">For a mixed data type simulation, if this is set to “categorical” or " +
+                "“discrete”, all variables are taken to be of that sort. Used internally to the program.</td>
+    <td class="default_value">0.0</td>
+    <td class="lower_bound">0.0</td>
+    <td class="upper_bound">100.0</td>
+</tr>
+
+<tr id="numCategories">
+    <td class="name">numCategories</td>
+    <td class="short_desc">Number of categories for discrete variables (min = 2)</td>
+    <td class="long_desc">The number of categories to be used for randomly generated discrete " +
+                "variables. The default is 4; the minimum is 2.</td>
+    <td class="default_value">4</td>
+    <td class="lower_bound">2</td>
+    <td class="upper_bound">Integer.MAX_VALUE</td>
+</tr>
+
+<tr id="minCategories">
+    <td class="name">minCategories</td>
+    <td class="short_desc">Minimum number of categories (min = 2)</td>
+    <td class="long_desc">The minimum number of categories to be used for randomly generated " +
+                "discrete variables. The default is 2.</td>
+    <td class="default_value">2</td>
+    <td class="lower_bound">2</td>
+    <td class="upper_bound">Integer.MAX_VALUE</td>
+</tr>
+
+<tr id="maxCategories">
+    <td class="name">maxCategories</td>
+    <td class="short_desc">Maximum number of categories (min = 2)</td>
+    <td class="long_desc">The maximum number of categories to be used for randomly generated " +
+                "discrete variables. The default is 2. This needs to be greater or equal to than the minimum number " +
+                "of categories.</td>
+    <td class="default_value">2</td>
+    <td class="lower_bound">2</td>
+    <td class="upper_bound">Integer.MAX_VALUE</td>
+</tr>
+
+<tr id="samplePrior">
+    <td class="name">samplePrior</td>
+    <td class="short_desc">Sample prior (min = 1.0)</td>
+    <td class="long_desc">The maximum number of categories to be used for randomly generated " +
+                "discrete variables. The default is 2. This needs to be greater or equal to than the minimum number " +
+                "of categories.</td>
+    <td class="default_value">1.0</td>
+    <td class="lower_bound">1.0</td>
+    <td class="upper_bound">Double.MAX_VALUE</td>
+</tr>
+
+<tr id="structurePrior">
+    <td class="name">structurePrior</td>
+    <td class="short_desc">Structure prior coefficient (min = 0.0)</td>
+    <td class="long_desc">For Tetrad, we use as a structure prior the default number of " +
+                "parents for any conditional probability table. Higher weight is accorded to tables with about that " +
+                "number of parents. The prior structure weights are distributed according to a binomial distribution.</td>
+    <td class="default_value">1.0</td>
+    <td class="lower_bound">0.0</td>
+    <td class="upper_bound">Double.MAX_VALUE</td>
+</tr>
+
+<tr id="mgmParam1">
+    <td class="name">mgmParam1</td>
+    <td class="short_desc">MGM tuning parameter #1 (min = 0.0)</td>
+    <td class="long_desc">The MGM algorithm has three internal tuning parameters, of which this is one.</td>
+    <td class="default_value">0.1</td>
+    <td class="lower_bound">0.0</td>
+    <td class="upper_bound">Double.MAX_VALUE</td>
+</tr>
+
+<tr id="mgmParam2">
+    <td class="name">mgmParam2</td>
+    <td class="short_desc">MGM tuning parameter #2 (min = 0.0)</td>
+    <td class="long_desc">The MGM algorithm has three internal tuning parameters, of which this is one.</td>
+    <td class="default_value">0.1</td>
+    <td class="lower_bound">0.0</td>
+    <td class="upper_bound">Double.MAX_VALUE</td>
+</tr>
+
+<tr id="mgmParam3">
+    <td class="name">mgmParam3</td>
+    <td class="short_desc">MGM tuning parameter #3 (min = 0.0)</td>
+    <td class="long_desc">The MGM algorithm has three internal tuning parameters, of which this is one.</td>
+    <td class="default_value">0.1</td>
+    <td class="lower_bound">0.0</td>
+    <td class="upper_bound">Double.MAX_VALUE</td>
+</tr>
+
+<tr id="scaleFreeAlpha">
+    <td class="name">scaleFreeAlpha</td>
+    <td class="short_desc">For scale-free graphs, the parameter alpha (min = 0.0)</td>
+    <td class="long_desc">We use the algorithm for generating scale free graphs described in B. " +
+                "Bollobas,C. Borgs, J. Chayes, and O. Riordan, Directed scale-free graphs, Proceedings of the " +
+                "fourteenth annual ACM-SIAM symposium on Discrete algorithms, 132--139, 2003. Please see this article " +
+                "for a description of the parameters.</td>
+    <td class="default_value">0.05</td>
+    <td class="lower_bound">0.0</td>
+    <td class="upper_bound">1.0</td>
+</tr>
+
+<tr id="scaleFreeBeta">
+    <td class="name">scaleFreeBeta</td>
+    <td class="short_desc">For scale-free graphs, the parameter beta (min = 0.0)</td>
+    <td class="long_desc">We use the algorithm for generating scale free graphs described in B. " +
+                "Bollobas,C. Borgs, J. Chayes, and O. Riordan, Directed scale-free graphs, Proceedings of the " +
+                "fourteenth annual ACM-SIAM symposium on Discrete algorithms, 132--139, 2003. Please see this article " +
+                "for a description of the parameters.</td>
+    <td class="default_value">0.9</td>
+    <td class="lower_bound">0.0</td>
+    <td class="upper_bound">1.0</td>
+</tr>
+
+<tr id="scaleFreeDeltaIn">
+    <td class="name">scaleFreeDeltaIn</td>
+    <td class="short_desc">For scale-free graphs, the parameter delta_in (min = 0.0)</td>
+    <td class="long_desc">We use the algorithm for generating scale free graphs described in B. Bollobas,C. Borgs, " +
+                "J. Chayes, and O. Riordan, Directed scale-free graphs, Proceedings of the fourteenth annual ACM-SIAM symposium on " +
+                "Discrete algorithms, 132--139, 2003. Please see this article for a description of the parameters.</td>
+    <td class="default_value">3.0</td>
+    <td class="lower_bound">0.0</td>
+    <td class="upper_bound">Double.MAX_VALUE</td>
+</tr>
+
+<tr id="scaleFreeDeltaOut">
+    <td class="name">scaleFreeDeltaOut</td>
+    <td class="short_desc">For scale-free graphs, the parameter delta_out (min = 0.0)</td>
+    <td class="long_desc">We use the algorithm for generating scale free graphs described in B. " +
+                "Bollobas,C. Borgs, J. Chayes, and O. Riordan, Directed scale-free graphs, Proceedings of the " +
+                "fourteenth annual ACM-SIAM symposium on Discrete algorithms, 132--139, 2003. Please see this article " +
+                "for a description of the parameters.</td>
+    <td class="default_value">3.0</td>
+    <td class="lower_bound">0.0</td>
+    <td class="upper_bound">Double.MAX_VALUE</td>
+</tr>
+
+<tr id="generalSemFunctionTemplateMeasured">
+    <td class="name">generalSemFunctionTemplateMeasured</td>
+    <td class="short_desc">General function template for measured variables</td>
+    <td class="long_desc">This template specifies how equations for " +
+                "measured variables are to be generated. For help in constructing such templates, see the Generalized SEM PM model.</td>
+    <td class="default_value">TSUM(NEW(B)*$)</td>
+    <td class="lower_bound"></td>
+    <td class="upper_bound"></td>
+</tr>
+
+<tr id="generalSemFunctionTemplateLatent">
+    <td class="name">generalSemFunctionTemplateLatent</td>
+    <td class="short_desc">General function template for latent variables</td>
+    <td class="long_desc">This template specifies how equations for latent " +
+                "variables are to be generated. For help in constructing such templates, see the Generalized SEM PM model.</td>
+    <td class="default_value">TSUM(NEW(B)*$)</td>
+    <td class="lower_bound"></td>
+    <td class="upper_bound"></td>
+</tr>
+
+<tr id="generalSemErrorTemplate">
+    <td class="name">generalSemErrorTemplate</td>
+    <td class="short_desc">General function for error terms</td>
+    <td class="long_desc">This template specifies how distributions for error terms " +
+                "are to be generated. For help in constructing such templates, see the Generalized SEM PM model.</td>
+    <td class="default_value">Beta(2, 5)</td>
+    <td class="lower_bound"></td>
+    <td class="upper_bound"></td>
+</tr>
+
+<tr id="generalSemParameterTemplate">
+    <td class="name">generalSemParameterTemplate</td>
+    <td class="short_desc">General function for parameters</td>
+    <td class="long_desc">This template specifies how distributions for parameter " +
+                "terms are to be generated. For help in constructing such templates, see the Generalized SEM PM model.</td>
+    <td class="default_value">Split(-1.0, -0.5, 0.5, 1.0)</td>
+    <td class="lower_bound"></td>
+    <td class="upper_bound"></td>
+</tr>
+
+<tr id="coefSymmetric">
+    <td class="name">coefSymmetric</td>
+    <td class="short_desc">Yes if negative coefficient values should be considered</td>
+    <td class="long_desc">Usually coefficient values for linear models are chosen from U(-b, -a) " +
+                "U U(a, b) for some a, b; this is called the “symmetric” model (symmetric about zero). If only positive " +
+                "values should be considered, this parameter should be set to false (“No” selected).</td>
+    <td class="default_value">true</td>
+    <td class="lower_bound"></td>
+    <td class="upper_bound"></td>
+</tr>
+
+<tr id="covSymmetric">
+    <td class="name">coefSymmetric</td>
+    <td class="short_desc">Yes if negative covariance values should be considered</td>
+    <td class="long_desc">Usually covariance values are chosen from U(-b, -a) U U(a, b) for some a, b; this is called the " +
+                "“symmetric” model (symmetric about zero). If only positive values should be considered, this " +
+                "parameter should be set to false (“No” selected).</td>
+    <td class="default_value">true</td>
+    <td class="lower_bound"></td>
+    <td class="upper_bound"></td>
+</tr>
+
+<tr id="randomSelectionSize">
+    <td class="name">randomSelectionSize</td>
+    <td class="short_desc">The number of datasets that should be taken in each random sample</td>
+    <td class="long_desc">This parameter is for algorithms that take multiple datasets " +
+                "as input, such as IMaGES. The idea is that maybe you have 100 dataset but want to take a random sample " +
+                "of 5 such datasets. This parameter, in this example, is ‘5’. It is the number of dataset that should be " +
+                "taken in each random sample of datasets.</td>
+    <td class="default_value">1</td>
+    <td class="lower_bound"></td>
+    <td class="upper_bound"></td>
+</tr>
+
+<tr id="maxit">
+    <td class="name">maxit</td>
+    <td class="short_desc">MAXIT parameter (GLASSO) (min = 1)</td>
+    <td class="long_desc">The R Fortan implementation of GLASSO (https://CRAN.R-project.org/package=glasso) " +
+                "includes a number of parameters, of which this is one. This is the maximum number of iterations " +
+                "of the optimization loop.</td>
+    <td class="default_value">10000</td>
+    <td class="lower_bound">1</td>
+    <td class="upper_bound">Integer.MAX_VALUE</td>
+</tr>
+
+<tr id="ia">
+    <td class="name">ia</td>
+    <td class="short_desc">IA parameter (GLASSO)</td>
+    <td class="long_desc">The R Fortan implementation of GLASSO (https://CRAN.R-project.org/package=glasso) " +
+                "includes a number of parameters, of which this is one. This is the maximum number of " +
+                "iterations of the optimization loop.</td>
+    <td class="default_value">false</td>
+    <td class="lower_bound"></td>
+    <td class="upper_bound"></td>
+</tr>
+
+<tr id="is">
+    <td class="name">is</td>
+    <td class="short_desc">IS parameter (GLASSO)</td>
+    <td class="long_desc">The R Fortan implementation of GLASSO (https://CRAN.R-project.org/package=glasso) " +
+                "includes a number of parameters, of which this is one. This is the maximum number of " +
+                "iterations of the optimization loop.</td>
+    <td class="default_value">false</td>
+    <td class="lower_bound"></td>
+    <td class="upper_bound"></td>
+</tr>
+
+<tr id="itr">
+    <td class="name">itr</td>
+    <td class="short_desc">ITR parameter (GLASSO)</td>
+    <td class="long_desc">The R Fortan implementation of GLASSO (https://CRAN.R-project.org/package=glasso) " +
+                "includes a number of parameters, of which this is one. This is the maximum number of " +
+                "iterations of the optimization loop.</td>
+    <td class="default_value">false</td>
+    <td class="lower_bound"></td>
+    <td class="upper_bound"></td>
+</tr>
+
+<tr id="ipen">
+    <td class="name">ipen</td>
+    <td class="short_desc">IPEN parameter (GLASSO)</td>
+    <td class="long_desc">The R Fortan implementation of GLASSO (https://CRAN.R-project.org/package=glasso) " +
+                "includes a number of parameters, of which this is one. This is the maximum number of " +
+                "iterations of the optimization loop.</td>
+    <td class="default_value">false</td>
+    <td class="lower_bound"></td>
+    <td class="upper_bound"></td>
+</tr>
+
+<tr id="thr">
+    <td class="name">thr</td>
+    <td class="short_desc">THR parameter (GLASSO) (min = 0.0)</td>
+    <td class="long_desc">The R Fortan implementation of GLASSO (https://CRAN.R-project.org/package=glasso) " +
+                "includes a number of parameters, of which this is one. This is the maximum number of " +
+                "iterations of the optimization loop.</td>
+    <td class="default_value">1e-4</td>
+    <td class="lower_bound">0.0</td>
+    <td class="upper_bound">Double.MAX_VALUE</td>
+</tr>
+
+<tr id="targetName">
+    <td class="name">targetName</td>
+    <td class="short_desc">Target variable name</td>
+    <td class="long_desc">This parameter is for searches, such as Markov blanket searches, that " +
+                "require a target variable. In the case of a Markov blanket search, one is searching the graph " +
+                "over the Markov blanket of some target variable named V—this parameter specifies the name ‘V’.</td>
+    <td class="default_value"></td>
+    <td class="lower_bound"></td>
+    <td class="upper_bound"></td>
+</tr>
+
+<tr id="verbose">
+    <td class="name">verbose</td>
+    <td class="short_desc">Yes if verbose output should be printed or logged</td>
+    <td class="long_desc">If this parameter is set to ‘Yes’, extra (“verbose”) output will be " +
+                "printed if available giving some details about the step-by-step operation of the algorithm.</td>
+    <td class="default_value">true</td>
+    <td class="lower_bound"></td>
+    <td class="upper_bound"></td>
+</tr>
+
+<tr id="faithfulnessAssumed">
+    <td class="name">faithfulnessAssumed</td>
+    <td class="short_desc">Yes if (one edge) faithfulness should be assumed</td>
+    <td class="long_desc">This is a parameter for FGES (“Fast GES”). If this is set to " +
+                "‘Yes’, it will be assumed that if X _||_ Y, by an independence test, then X _||_ Y | Z for nonempty Z. " +
+                "If the model is faithful to the data, this will necessarily be the case. However, there are some " +
+                "non-faithful examples one can propose where this is not the case. If one is worried about this kind " +
+                "of unfaithfulness, one should set this parameter to ‘No’. If one is willing to tolerate this kind of " +
+                "unfaithfulness, then setting this parameter to ‘Yes’ leads to significantly faster searches.</td>
+    <td class="default_value">true</td>
+    <td class="lower_bound"></td>
+    <td class="upper_bound"></td>
+</tr>
+
+<tr id="useWishart">
+    <td class="name">useWishart</td>
+    <td class="short_desc">Yes if the Wishart test shoud be used. No if the Delta test should be used</td>
+    <td class="long_desc">This is a parameter for the FOFC (Find One Factor Clusters) algorithm. " +
+                "There are two tests implemented there for testing for tetrads being zero, Wishart and Delta. This " +
+                "parameter picks which of these tests should be use: ‘Yes’ for Wishart and ‘No’ for Delta.</td>
+    <td class="default_value">false</td>
+    <td class="lower_bound"></td>
+    <td class="upper_bound"></td>
+</tr>
+
+<tr id="useGap">
+    <td class="name">useGap</td>
+    <td class="short_desc">Yes if the GAP algorithms should be used. No if the SAG algorithm should be used</td>
+    <td class="long_desc">This is a parameter for FOFC (Find One Factor Clusters). There are two " +
+                "procedures implemented for growing pure clusters of variables. In principle they give the same answer, " +
+                "but in practice they could give different answers. The first is GAP, “Grow and Pick”, where you specify " +
+                "all the possible initial sets, grown them all to their maximum sizes, and pick a set of non-overlapping " +
+                "such largest sets from these. The second is SAG, “Seed and Grow”, where you grow pure clusters one at a " +
+                "time, excluding variables found in earlier clusters from showing up in later ones. This parameter " +
+                "specifies which of these algorithms should be used, ‘Yes’ for GAP, ‘No’ for SAG.</td>
+    <td class="default_value">false</td>
+    <td class="lower_bound"></td>
+    <td class="upper_bound"></td>
+</tr>
+
+<tr id="numStructuralNodes">
+    <td class="name">numStructuralNodes</td>
+    <td class="short_desc">Number of structural nodes</td>
+    <td class="long_desc">This is a parameter for generating random multiple indictor " +
+                "models (MIMs). A structural node is one of the latent variables in the model; each structural node has " +
+                "a number of child measured variables.</td>
+    <td class="default_value">3</td>
+    <td class="lower_bound"></td>
+    <td class="upper_bound"></td>
+</tr>
+
+<tr id="numStructuralEdges">
+    <td class="name">numStructuralEdges</td>
+    <td class="short_desc">Number of structural edges</td>
+    <td class="long_desc">This is a parameter for generating random multiple indictor " +
+                "models (MIMs). A structural edge is an edge connecting two structural nodes.</td>
+    <td class="default_value">3</td>
+    <td class="lower_bound"></td>
+    <td class="upper_bound"></td>
+</tr>
+
+<tr id="measurementModelDegree">
+    <td class="name">measurementModelDegree</td>
+    <td class="short_desc">Number of measurements per Latent</td>
+    <td class="long_desc">Each structural node in the MIM will be created to have " +
+                "this many measured children.</td>
+    <td class="default_value">5</td>
+    <td class="lower_bound"></td>
+    <td class="upper_bound"></td>
+</tr>
+
+<tr id="latentMeasuredImpureParents">
+    <td class="name">measurementModelDegree</td>
+    <td class="short_desc">Number of Latent --> Measured impure edges</td>
+    <td class="long_desc">It is possible for structural nodes to have as " +
+                "children measured variables that are children of other structural nodes. These edges in the graph will " +
+                "be considered impure.</td>
+    <td class="default_value">0</td>
+    <td class="lower_bound"></td>
+    <td class="upper_bound"></td>
+</tr>
+
+<tr id="measuredMeasuredImpureParents">
+    <td class="name">measuredMeasuredImpureParents</td>
+    <td class="short_desc">Number of Measured --> Measured impure edges</td>
+    <td class="long_desc">It is possible for measures from two different " +
+                "structural nodes to have directed edges between them. These edges will be considered to be impure.</td>
+    <td class="default_value">0</td>
+    <td class="lower_bound"></td>
+    <td class="upper_bound"></td>
+</tr>
+
+<tr id="measuredMeasuredImpureAssociations">
+    <td class="name">measuredMeasuredImpureAssociations</td>
+    <td class="short_desc">Number of Measured <-> Measured impure edges</td>
+    <td class="long_desc">It is possible for measures from two different " +
+                "structural nodes to be confounded. These confounding (bidirected) edges will be considered to be impure.</td>
+    <td class="default_value">0</td>
+    <td class="lower_bound"></td>
+    <td class="upper_bound"></td>
+</tr>
+
+<tr id="measuredMeasuredImpureAssociations">
+    <td class="name">measuredMeasuredImpureAssociations</td>
+    <td class="short_desc">Number of Measured <-> Measured impure edges</td>
+    <td class="long_desc">It is possible for measures from two different " +
+                "structural nodes to be confounded. These confounding (bidirected) edges will be considered to be impure.</td>
+    <td class="default_value">0</td>
+    <td class="lower_bound"></td>
+    <td class="upper_bound"></td>
+</tr>
+
+</tbody>
+
+</table>
+
+</div>
+
 
 </div>
 
