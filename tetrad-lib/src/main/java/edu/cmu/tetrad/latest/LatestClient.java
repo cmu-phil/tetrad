@@ -66,7 +66,7 @@ public class LatestClient {
         for (String param : params) {
             html += "<h3 id=\"" + param + "\" class=\"parameter_description\">" + param + "</h3>\n"
                     + "<ul class=\"parameter_description_list\">\n"
-                    + "<li>Short Description: <span id=\"" + param + "_short_desc\">" + instance.get(param).getDescription() + "</span></li>\n"
+                    + "<li>Short Description: <span id=\"" + param + "_short_desc\">" + instance.get(param).getShortDescription() + "</span></li>\n"
                     + "<li>Long Description: <span id=\"" + param + "_long_desc\">" + instance.get(param).getLongDescription() + "</span></li>\n"
                     + "<li>Default Value: <span id=\"" + param + "_default_value\">" + instance.get(param).getDefaultValue() + "</span></li>\n";
 

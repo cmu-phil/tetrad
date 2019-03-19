@@ -80,10 +80,6 @@ public class ParamDescriptions {
                 map.put(paramName, paramDescription);
             }
         }
-        
-        for (String key : map.keySet()) {
-            System.out.println("=====parameter =====" + key);
-        }
     }
 
     public static ParamDescriptions getInstance() {

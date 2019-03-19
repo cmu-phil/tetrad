@@ -63,11 +63,6 @@ public class ParamDescription {
         this.lowerBoundInt = lowerBound;
         this.upperBoundInt = upperBound;
     }
-
-    public String getDescription() {
-        return shortDescription;
-    }
-    
     
     // New constructors
     public ParamDescription(String paramName, String shortDescription, String longDescription, Serializable defaultValue) {
