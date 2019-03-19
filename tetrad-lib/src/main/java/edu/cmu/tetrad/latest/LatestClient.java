@@ -91,7 +91,8 @@ public class LatestClient {
             html += "</ul>\n\n";
         }
 
-        try (PrintWriter out = new PrintWriter("parameters.html")) {
+        // Save the generated HTML in target folder so it won't get pushed to github
+        try (PrintWriter out = new PrintWriter("tetrad-gui/target/parameters.html")) {
             out.println(html);
         } catch (FileNotFoundException ex) {
             java.util.logging.Logger.getLogger(LatestClient.class.getName()).log(Level.SEVERE, null, ex);
