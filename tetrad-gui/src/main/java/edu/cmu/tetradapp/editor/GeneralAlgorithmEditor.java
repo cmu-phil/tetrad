@@ -32,7 +32,14 @@ import edu.cmu.tetrad.annotation.AlgType;
 import edu.cmu.tetrad.annotation.Gaussian;
 import edu.cmu.tetrad.annotation.Linear;
 import edu.cmu.tetrad.annotation.Nonexecutable;
-import edu.cmu.tetrad.data.*;
+import edu.cmu.tetrad.data.DataModel;
+import edu.cmu.tetrad.data.DataModelList;
+import edu.cmu.tetrad.data.DataSet;
+import edu.cmu.tetrad.data.DataType;
+import edu.cmu.tetrad.data.DataWriter;
+import edu.cmu.tetrad.data.ICovarianceMatrix;
+import edu.cmu.tetrad.data.IKnowledge;
+import edu.cmu.tetrad.data.Knowledge2;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.JOptionUtils;
@@ -1288,7 +1295,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         graphEditorScroll.setPreferredSize(new Dimension(820, 420));
         graphEditorScroll.setViewportView(new GraphWorkbench(graph));
 
-        // Instruction with info button 
+        // Instruction with info button
         Box instructionBox = Box.createHorizontalBox();
         instructionBox.setMaximumSize(new Dimension(820, 40));
 
