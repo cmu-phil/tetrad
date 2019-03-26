@@ -32,7 +32,14 @@ import edu.cmu.tetrad.annotation.AlgType;
 import edu.cmu.tetrad.annotation.Gaussian;
 import edu.cmu.tetrad.annotation.Linear;
 import edu.cmu.tetrad.annotation.Nonexecutable;
-import edu.cmu.tetrad.data.*;
+import edu.cmu.tetrad.data.DataModel;
+import edu.cmu.tetrad.data.DataModelList;
+import edu.cmu.tetrad.data.DataSet;
+import edu.cmu.tetrad.data.DataType;
+import edu.cmu.tetrad.data.DataWriter;
+import edu.cmu.tetrad.data.ICovarianceMatrix;
+import edu.cmu.tetrad.data.IKnowledge;
+import edu.cmu.tetrad.data.Knowledge2;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.JOptionUtils;
@@ -112,6 +119,7 @@ import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
+import javax.swing.JTabbedPane;
 import javax.swing.JTextArea;
 import javax.swing.LayoutStyle;
 import javax.swing.SwingConstants;
@@ -166,7 +174,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
     private final JComboBox<IndependenceTestModel> indTestComboBox = new JComboBox<>();
     private final JComboBox<ScoreModel> scoreComboBox = new JComboBox<>();
     private final JTextArea algoDescTextArea = new JTextArea();
-    private final Box graphContainer = Box.createHorizontalBox();
+    private final JTabbedPane graphContainer = new JTabbedPane();
     private final JLabel algorithmGraphTitle = new JLabel();
 
     private final AlgorithmParameterPanel parametersPanel;
@@ -197,8 +205,16 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
             parametersPanel.addToPanel(runner);
 
             // show the generated graph with bootstrap table if reopen the search box
-            graphContainer.add(createSearchResultPane(runner.getGraph()));
+            displayGraphs(runner.getGraphs());
             changeCard(GRAPH_CARD);
+        }
+    }
+
+    private void displayGraphs(List<Graph> graphs) {
+        int count = 0;
+        for (Graph graph : graphs) {
+            String title = String.format("Graph %d", ++count);
+            graphContainer.addTab(title, new PaddingPanel(createSearchResultPane(graph)));
         }
     }
 
@@ -705,12 +721,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         System.out.println("json result: " + jsonResult);
 
         final Graph graph = JsonUtils.parseJSONObjectToTetradGraph(jsonResult);
-        final List<Graph> graphs = new ArrayList<>();
-        graphs.add(graph);
-        int size = runner.getGraphs().size();
-        for (int index = 0; index < size; index++) {
-            runner.getGraphs().remove(index);
-        }
+        runner.getGraphs().clear();
         runner.getGraphs().add(graph);
 
         LOGGER.info("Remote graph result assigned to runner!");
@@ -718,7 +729,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
 
         // Update the graphContainer
         graphContainer.removeAll();
-        graphContainer.add(createSearchResultPane(graph));
+        displayGraphs(runner.getGraphs());
 
         changeCard(GRAPH_CARD);
     }
@@ -1087,7 +1098,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
 
                         // Update the graphContainer
                         graphContainer.removeAll();
-                        graphContainer.add(createSearchResultPane(runner.getGraph()));
+                        displayGraphs(runner.getGraphs());
 
                         changeCard(GRAPH_CARD);
                     } else {
@@ -1288,7 +1299,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         graphEditorScroll.setPreferredSize(new Dimension(820, 420));
         graphEditorScroll.setViewportView(new GraphWorkbench(graph));
 
-        // Instruction with info button 
+        // Instruction with info button
         Box instructionBox = Box.createHorizontalBox();
         instructionBox.setMaximumSize(new Dimension(820, 40));
 
@@ -1350,11 +1361,8 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         bottomBox.add(tablePane);
 
         // Use JSplitPane to allow resize the bottom box - Zhou
-        JSplitPane splitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
-
-        // Set the top and bottom split panes
-        splitPane.setTopComponent(topBox);
-        splitPane.setBottomComponent(bottomBox);
+        JSplitPane splitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT, topBox, bottomBox);
+        splitPane.setDividerLocation(400);
 
         return splitPane;
     }
