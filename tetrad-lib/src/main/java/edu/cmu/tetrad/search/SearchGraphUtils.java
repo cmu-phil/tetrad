@@ -2578,15 +2578,29 @@ public final class SearchGraphUtils {
         List<Edge> edgesReorientedTo = new ArrayList<>();
 
         for (Edge edge : trueGraph.getEdges()) {
-            if (!graph.isAdjacentTo(edge.getNode1(), edge.getNode2())) {
-                edgesRemoved.add(Edges.undirectedEdge(edge.getNode1(), edge.getNode2()));
+            Node n1 = edge.getNode1();
+            Node n2 = edge.getNode2();
+            if (!graph.isAdjacentTo(n1, n2)) {
+                Edge trueGraphEdge = trueGraph.getEdge(n1, n2);
+                Edge graphEdge = graph.getEdge(n1, n2);
+                edgesRemoved.add((trueGraphEdge == null) ? graphEdge : trueGraphEdge);
             }
+//            if (!graph.isAdjacentTo(edge.getNode1(), edge.getNode2())) {
+//                edgesRemoved.add(Edges.undirectedEdge(edge.getNode1(), edge.getNode2()));
+//            }
         }
 
         for (Edge edge : graph.getEdges()) {
-            if (!trueGraph.isAdjacentTo(edge.getNode1(), edge.getNode2())) {
-                edgesAdded.add(Edges.undirectedEdge(edge.getNode1(), edge.getNode2()));
+            Node n1 = edge.getNode1();
+            Node n2 = edge.getNode2();
+            if (!trueGraph.isAdjacentTo(n1, n2)) {
+                Edge trueGraphEdge = trueGraph.getEdge(n1, n2);
+                Edge graphEdge = graph.getEdge(n1, n2);
+                edgesAdded.add((trueGraphEdge == null) ? graphEdge : trueGraphEdge);
             }
+//            if (!trueGraph.isAdjacentTo(edge.getNode1(), edge.getNode2())) {
+//                edgesAdded.add(Edges.undirectedEdge(edge.getNode1(), edge.getNode2()));
+//            }
         }
 
         for (Edge edge : trueGraph.getEdges()) {
@@ -2639,15 +2653,29 @@ public final class SearchGraphUtils {
         List<Edge> edgesReorientedTo = new ArrayList<>();
 
         for (Edge edge : trueGraph.getEdges()) {
-            if (!graph.isAdjacentTo(edge.getNode1(), edge.getNode2())) {
-                edgesRemoved.add(Edges.undirectedEdge(edge.getNode1(), edge.getNode2()));
+            Node n1 = edge.getNode1();
+            Node n2 = edge.getNode2();
+            if (!graph.isAdjacentTo(n1, n2)) {
+                Edge trueGraphEdge = trueGraph.getEdge(n1, n2);
+                Edge graphEdge = graph.getEdge(n1, n2);
+                edgesRemoved.add((trueGraphEdge == null) ? graphEdge : trueGraphEdge);
             }
+//            if (!graph.isAdjacentTo(edge.getNode1(), edge.getNode2())) {
+//                edgesRemoved.add(Edges.undirectedEdge(edge.getNode1(), edge.getNode2()));
+//            }
         }
 
         for (Edge edge : graph.getEdges()) {
-            if (!trueGraph.isAdjacentTo(edge.getNode1(), edge.getNode2())) {
-                edgesAdded.add(Edges.undirectedEdge(edge.getNode1(), edge.getNode2()));
+            Node n1 = edge.getNode1();
+            Node n2 = edge.getNode2();
+            if (!trueGraph.isAdjacentTo(n1, n2)) {
+                Edge trueGraphEdge = trueGraph.getEdge(n1, n2);
+                Edge graphEdge = graph.getEdge(n1, n2);
+                edgesAdded.add((trueGraphEdge == null) ? graphEdge : trueGraphEdge);
             }
+//            if (!trueGraph.isAdjacentTo(edge.getNode1(), edge.getNode2())) {
+//                edgesAdded.add(Edges.undirectedEdge(edge.getNode1(), edge.getNode2()));
+//            }
         }
 
         List<Node> nodes = trueGraph.getNodes();
@@ -2777,15 +2805,29 @@ public final class SearchGraphUtils {
         List<Edge> edgesReorientedTo = new ArrayList<>();
 
         for (Edge edge : trueGraph.getEdges()) {
-            if (!graph.isAdjacentTo(edge.getNode1(), edge.getNode2())) {
-                edgesRemoved.add(Edges.undirectedEdge(edge.getNode1(), edge.getNode2()));
+            Node n1 = edge.getNode1();
+            Node n2 = edge.getNode2();
+            if (!graph.isAdjacentTo(n1, n2)) {
+                Edge trueGraphEdge = trueGraph.getEdge(n1, n2);
+                Edge graphEdge = graph.getEdge(n1, n2);
+                edgesRemoved.add((trueGraphEdge == null) ? graphEdge : trueGraphEdge);
             }
+//            if (!graph.isAdjacentTo(edge.getNode1(), edge.getNode2())) {
+//                edgesRemoved.add(Edges.undirectedEdge(edge.getNode1(), edge.getNode2()));
+//            }
         }
 
         for (Edge edge : graph.getEdges()) {
-            if (!trueGraph.isAdjacentTo(edge.getNode1(), edge.getNode2())) {
-                edgesAdded.add(Edges.undirectedEdge(edge.getNode1(), edge.getNode2()));
+            Node n1 = edge.getNode1();
+            Node n2 = edge.getNode2();
+            if (!trueGraph.isAdjacentTo(n1, n2)) {
+                Edge trueGraphEdge = trueGraph.getEdge(n1, n2);
+                Edge graphEdge = graph.getEdge(n1, n2);
+                edgesAdded.add((trueGraphEdge == null) ? graphEdge : trueGraphEdge);
             }
+//            if (!trueGraph.isAdjacentTo(edge.getNode1(), edge.getNode2())) {
+//                edgesAdded.add(Edges.undirectedEdge(edge.getNode1(), edge.getNode2()));
+//            }
         }
 
         List<Node> nodes = trueGraph.getNodes();
@@ -2912,15 +2954,29 @@ public final class SearchGraphUtils {
         List<Edge> edgesReorientedTo = new ArrayList<>();
 
         for (Edge edge : trueGraph.getEdges()) {
-            if (!graph.isAdjacentTo(edge.getNode1(), edge.getNode2())) {
-                edgesRemoved.add(Edges.undirectedEdge(edge.getNode1(), edge.getNode2()));
+            Node n1 = edge.getNode1();
+            Node n2 = edge.getNode2();
+            if (!graph.isAdjacentTo(n1, n2)) {
+                Edge trueGraphEdge = trueGraph.getEdge(n1, n2);
+                Edge graphEdge = graph.getEdge(n1, n2);
+                edgesRemoved.add((trueGraphEdge == null) ? graphEdge : trueGraphEdge);
             }
+//            if (!graph.isAdjacentTo(edge.getNode1(), edge.getNode2())) {
+//                edgesRemoved.add(Edges.undirectedEdge(edge.getNode1(), edge.getNode2()));
+//            }
         }
 
         for (Edge edge : graph.getEdges()) {
-            if (!trueGraph.isAdjacentTo(edge.getNode1(), edge.getNode2())) {
-                edgesAdded.add(Edges.undirectedEdge(edge.getNode1(), edge.getNode2()));
+            Node n1 = edge.getNode1();
+            Node n2 = edge.getNode2();
+            if (!trueGraph.isAdjacentTo(n1, n2)) {
+                Edge trueGraphEdge = trueGraph.getEdge(n1, n2);
+                Edge graphEdge = graph.getEdge(n1, n2);
+                edgesAdded.add((trueGraphEdge == null) ? graphEdge : trueGraphEdge);
             }
+//            if (!trueGraph.isAdjacentTo(edge.getNode1(), edge.getNode2())) {
+//                edgesAdded.add(Edges.undirectedEdge(edge.getNode1(), edge.getNode2()));
+//            }
         }
 
         List<Node> nodes = trueGraph.getNodes();
