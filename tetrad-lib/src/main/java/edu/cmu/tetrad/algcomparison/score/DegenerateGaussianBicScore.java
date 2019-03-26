@@ -5,22 +5,24 @@ import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.data.DataUtils;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.ConditionalGaussianScore;
+import edu.cmu.tetrad.search.DegenerateGaussianScore;
 import edu.cmu.tetrad.search.Score;
 import edu.cmu.tetrad.util.Parameters;
+
 import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Wrapper for Fisher Z test.
+ * Wrapper for degenerate Gaussian BIC score
  *
- * @author jdramsey
+ * @author bandrews
  */
 @edu.cmu.tetrad.annotation.Score(
-        name = "Conditional Gaussian BIC Score",
-        command = "cond-gauss-bic",
+        name = "Degenerate Gaussian BIC Score",
+        command = "degen-gauss-bic",
         dataType = DataType.Mixed
 )
-public class ConditionalGaussianBicScore implements ScoreWrapper {
+public class DegenerateGaussianBicScore implements ScoreWrapper {
 
     static final long serialVersionUID = 23L;
     private DataModel dataSet;
@@ -28,18 +30,15 @@ public class ConditionalGaussianBicScore implements ScoreWrapper {
     @Override
     public Score getScore(DataModel dataSet, Parameters parameters) {
         this.dataSet = dataSet;
-        final ConditionalGaussianScore conditionalGaussianScore =
-                new ConditionalGaussianScore(DataUtils.getMixedDataSet(dataSet),
-                        parameters.getDouble("penaltyDiscount"),
-                        parameters.getDouble("structurePrior"),
-                        parameters.getBoolean("discretize"));
-        conditionalGaussianScore.setNumCategoriesToDiscretize(parameters.getInt("numCategoriesToDiscretize"));
-        return conditionalGaussianScore;
+        final DegenerateGaussianScore degenerateGaussianScore = new DegenerateGaussianScore(DataUtils.getMixedDataSet(dataSet));
+        degenerateGaussianScore.setPenaltyDiscount(parameters.getDouble("penaltyDiscount"));
+        degenerateGaussianScore.setStructurePrior(parameters.getDouble("structurePrior"));
+        return degenerateGaussianScore;
     }
 
     @Override
     public String getDescription() {
-        return "Conditional Gaussian BIC Score";
+        return "Degenerate Gaussian BIC Score";
     }
 
     @Override
@@ -50,10 +49,8 @@ public class ConditionalGaussianBicScore implements ScoreWrapper {
     @Override
     public List<String> getParameters() {
         List<String> parameters = new ArrayList<>();
-
         parameters.add("penaltyDiscount");
         parameters.add("structurePrior");
-        parameters.add("discretize");
         return parameters;
     }
 

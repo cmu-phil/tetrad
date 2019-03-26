@@ -64,6 +64,9 @@ public class DegenerateGaussianScore implements Score {
     // The covariance matrix.
     private TetradMatrix cov;
 
+    // A constant.
+    private static double L2PE = log(2.0*Math.PI*Math.E);
+
     /**
      * Constructs the score using a covariance matrix.
      */
@@ -74,7 +77,8 @@ public class DegenerateGaussianScore implements Score {
 
         this.dataSet = dataSet;
         this.variables = dataSet.getVariables();
-        this.N = this.dataSet.getNumRows();
+        this.N = dataSet.getNumRows();
+        this.embedding = new HashMap<>();
 
         List<Node> A = new ArrayList<>();
         List<double[]> B = new ArrayList<>();
@@ -109,9 +113,7 @@ public class DegenerateGaussianScore implements Score {
                 A.remove(i);
                 B.remove(i);
 
-                List<Integer> index = new ArrayList<>();
-                index.addAll(keys.values());
-                this.embedding.put(i_, index);
+                this.embedding.put(i_, new ArrayList<>(keys.values()));
                 i_++;
 
             } else {
@@ -122,11 +124,7 @@ public class DegenerateGaussianScore implements Score {
                     b[j] = this.dataSet.getDouble(j,i_);
                 }
 
-                /*
-                 * Unclear if the continuous variables should be normalized.
-                 */
-                B.add(org.apache.commons.math3.stat.StatUtils.normalize(b));
-
+                B.add(b);
                 List<Integer> index = new ArrayList<>();
                 index.add(i);
                 this.embedding.put(i_, index);
@@ -143,8 +141,9 @@ public class DegenerateGaussianScore implements Score {
             }
         }
 
+        this.continuousVariables = A;
         RealMatrix D = new BlockRealMatrix(B_);
-        this.cov = DataUtils.center(new BoxDataSet(new DoubleDataBox(D.getData()), A)).getCovarianceMatrix();
+        this.cov = new BoxDataSet(new DoubleDataBox(D.getData()), A).getCovarianceMatrix();
 
     }
 
@@ -160,22 +159,23 @@ public class DegenerateGaussianScore implements Score {
             B.addAll(this.embedding.get(i_));
         }
 
-        int[] A_ = new int[A.size()];
-        int[] B_ = new int[A.size() + B.size()];
-        for (int i_ = 0; i < A.size(); i_++) {
+        int[] A_ = new int[A.size() + B.size()];
+        int[] B_ = new int[B.size()];
+        for (int i_ = 0; i_ < A.size(); i_++) {
             A_[i_] = A.get(i_);
-            B_[i_] = A.get(i_);
         }
-        for (int i_ = 0; i < B.size(); i_++) {
-            B_[A.size() + i_] = B.get(i_);
+        for (int i_ = 0; i_ < B.size(); i_++) {
+            A_[A.size() + i_] = B.get(i_);
+            B_[i_] = B.get(i_);
         }
 
-        log(this.cov.getSelection(A_, A_).det());
+        double dof = (A_.length*(A_.length + 1) - B_.length*(B_.length + 1)) / 2.0;
+        double ldetA = log(this.cov.getSelection(A_, A_).det());
+        double ldetB = log(this.cov.getSelection(B_, B_).det());
+        double lik = this.N *(ldetB - ldetA + L2PE*(B_.length - A_.length));
 
-        log(this.cov.getSelection(B_, B_).det());
-
-
-        return 0;
+        return lik + 2*calculateStructurePrior(parents.length) - dof*getPenaltyDiscount()*log(this.N);
+//        return lik + 2*calculateStructurePrior(B_.length) - dof*getPenaltyDiscount()*log(this.N);
     }
 
     private double calculateStructurePrior(int k) {
@@ -183,8 +183,9 @@ public class DegenerateGaussianScore implements Score {
             return 0;
         } else {
             double n = variables.size() - 1;
+//            double n = continuousVariables.size() - 1;
             double p = structurePrior / n;
-            return k * log(p) + (n - k) * log(1.0 - p);
+            return k*log(p) + (n - k)*log(1.0 - p);
         }
     }
 
