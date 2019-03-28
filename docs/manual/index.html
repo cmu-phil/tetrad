@@ -1591,11 +1591,11 @@ the mixed case will be assumed to be jointly Gaussian.</p>
 <p><a href="#samplePrior">samplePrior</a>, <a href="#structurePrior">structurePrior</a>, <a href="#penaltyDiscount">penaltyDiscount</a>, <a href="#symmetricFirstStep">symmetricFirstStep</a>, <a href="#faithfulnessAssumed">faithfulnessAssumed</a>, <a href="#maxDegree">maxDegree</a></p>
 
 
-<h3>The IMaGES Algorithm (BDeu Score)</h3>
+<h3>The IMaGES Discrete Algorithm (BDeu Score)</h3>
 
 <h4>Description</h4>
 
-<div id="img">
+<div id="imgs_disc">
 
 <p>Adjusts the discrete BDeu variable score of FGES so allow for multiple datasets as input. The BDeu scores for each data set are averaged at each step of the algorithm, producing a model for al data sets that assumes they have the same graphical structure across dataset. Note that in order to use this algorithm in a nontrivial way, one needs to have loaded or simulated multiple dataset.</p>
 
@@ -1616,11 +1616,11 @@ the mixed case will be assumed to be jointly Gaussian.</p>
 <p><a href="#numRuns">numRuns</a>, <a href="#randomSelectionSize">randomSelectionSize</a></p>
 
 
-<h3>The IMaGES Algorithm (SEM BIC Score)</h3>
+<h3>The IMaGES Continuous Algorithm (SEM BIC Score)</h3>
 
 <h4>Description</h4>
 
-<div id="img">
+<div id="imgs_cont">
 
 <p>Adjusts the continuous variable score (SEM BIC) of FGES so allow for multiple datasets as input. 
 The linear, Gaussian BIC scores for each data set are averaged at each step of the algorithm, producing a model for all data sets that 
