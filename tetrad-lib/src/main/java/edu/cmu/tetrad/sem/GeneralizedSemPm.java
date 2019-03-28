@@ -253,7 +253,7 @@ public final class GeneralizedSemPm implements PM, TetradSerializable {
                 variableNames.add(_node.getName());
             }
         }
-        
+
         try {
             List<Node> variableNodes = getVariableNodes();
 
