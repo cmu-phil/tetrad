@@ -247,7 +247,12 @@ public final class GeneralizedSemPm implements PM, TetradSerializable {
 
         this.variableNames = new ArrayList<>();
         for (Node _node : variableNodes) variableNames.add(_node.getName());
-        for (Node _node : errorNodes) variableNames.add(_node.getName());
+
+        for (Node _node : errorNodes) {
+            if (_node != null) {
+                variableNames.add(_node.getName());
+            }
+        }
 
         try {
             List<Node> variableNodes = getVariableNodes();
