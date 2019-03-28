@@ -477,22 +477,22 @@ public class Comparison {
         //}
         
         try {
-	    	int numDataSets = simulation.getNumDataModels();
-	    	if(numDataSets <= 0){
-	    		
-	    		File dir1 = new File(dir, "graph");
-	            File dir2 = new File(dir, "data");
-	
-	            dir1.mkdirs();
-	            dir2.mkdirs();
-	            
-	    		PrintStream out = new PrintStream(new FileOutputStream(new File(dir, "parameters.txt")));
-	            out.println(simulation.getDescription());
-	            out.println(parameters);
-	            out.close();
-	            
-	    		return;
-	    	}
+//	    	int numDataSets = simulation.getNumDataModels();
+//	    	if(numDataSets <= 0){
+//
+//	    		File dir1 = new File(dir, "graph");
+//	            File dir2 = new File(dir, "data");
+//
+//	            dir1.mkdirs();
+//	            dir2.mkdirs();
+//
+//	    		PrintStream out = new PrintStream(new FileOutputStream(new File(dir, "parameters.txt")));
+//	            out.println(simulation.getDescription());
+//	            out.println(parameters);
+//	            out.close();
+//
+//	    		return;
+//	    	}
 	        List<SimulationWrapper> simulationWrappers = getSimulationWrappers(simulation, parameters);
 
             int index = 0;

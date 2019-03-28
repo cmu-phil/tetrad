@@ -23,9 +23,11 @@ package edu.cmu.tetrad.algcomparison.examples;
 
 import edu.cmu.tetrad.algcomparison.Comparison;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithms;
+import edu.cmu.tetrad.algcomparison.algorithm.mixed.Mgm;
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern.*;
 import edu.cmu.tetrad.algcomparison.graph.RandomForward;
 import edu.cmu.tetrad.algcomparison.independence.FisherZ;
+import edu.cmu.tetrad.algcomparison.independence.MultinomialLogisticRegressionWald;
 import edu.cmu.tetrad.algcomparison.score.BdeuScore;
 import edu.cmu.tetrad.algcomparison.score.ConditionalGaussianBicScore;
 import edu.cmu.tetrad.algcomparison.score.DegenerateGaussianBicScore;
@@ -42,20 +44,31 @@ import edu.cmu.tetrad.util.Parameters;
 public class TestDegenerateGaussian {
     public static void main(String... args) {
         Parameters parameters = new Parameters();
-        parameters.set("numRuns", 10);
-        parameters.set("numMeasures", 100);
-        parameters.set("avgDegree", 2, 4);
+        parameters.set("numRuns", 3);
+        parameters.set("numMeasures", 500);
+        parameters.set("avgDegree", 4);
         parameters.set("maxDegree", 100);
         parameters.set("numCategories", 3);
         parameters.set("minCategories", 2);
         parameters.set("maxCategories", 4);
-        parameters.set("sampleSize", 200, 1000);
+        parameters.set("differentGraphs", true);
+
+//        parameters.set("varLow", 2.0);
+//        parameters.set("varHigh", 2.0);
+
+        parameters.set("sampleSize", 1000);
         parameters.set("percentDiscrete", 50);
+
         parameters.set("penaltyDiscount", 1);
         parameters.set("structurePrior", 1); // overloading parameters!
         parameters.set("samplePrior", 1);
         parameters.set("discretize", false);
-        parameters.set("differentGraphs", true);
+
+        parameters.set("alpha", 1e-4);
+        parameters.set("mgmParam1", 0.2);
+        parameters.set("mgmParam2", 0.2);
+        parameters.set("mgmParam3", 0.2);
+
         parameters.set("verbose", false);
 
 
@@ -71,6 +84,7 @@ public class TestDegenerateGaussian {
         Algorithms algorithms = new Algorithms();
         algorithms.add(new Fges(new ConditionalGaussianBicScore()));
         algorithms.add(new Fges(new DegenerateGaussianBicScore()));
+        algorithms.add(new CpcStable(new MultinomialLogisticRegressionWald(), new Mgm()));
 //        algorithms.add(new Fges(new BdeuScore()));
 
         Simulations simulations = new Simulations();

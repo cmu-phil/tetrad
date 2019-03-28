@@ -175,7 +175,6 @@ public class DegenerateGaussianScore implements Score {
         double lik = this.N *(ldetB - ldetA + L2PE*(B_.length - A_.length));
 
         return lik + 2*calculateStructurePrior(parents.length) - dof*getPenaltyDiscount()*log(this.N);
-//        return lik + 2*calculateStructurePrior(B_.length) - dof*getPenaltyDiscount()*log(this.N);
     }
 
     private double calculateStructurePrior(int k) {
@@ -183,7 +182,6 @@ public class DegenerateGaussianScore implements Score {
             return 0;
         } else {
             double n = variables.size() - 1;
-//            double n = continuousVariables.size() - 1;
             double p = structurePrior / n;
             return k*log(p) + (n - k)*log(1.0 - p);
         }
