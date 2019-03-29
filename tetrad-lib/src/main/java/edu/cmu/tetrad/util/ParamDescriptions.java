@@ -20,7 +20,7 @@ public class ParamDescriptions {
         map.put("numMeasures", new ParamDescription("Number of measured variables (min = 1)", 10, 1, Integer.MAX_VALUE));
         map.put("numLatents", new ParamDescription("Number of latent variables (min = 0)", 0, 0, Integer.MAX_VALUE));
         map.put("avgDegree", new ParamDescription("Average degree of graph (min = 1)", 2, 1, Integer.MAX_VALUE));
-        map.put("maxDegree", new ParamDescription("The maximum degree of the graph (min = -1)", 4, -1, Integer.MAX_VALUE));
+        map.put("maxDegree", new ParamDescription("The maximum degree of the graph (min = -1)", 100, -1, Integer.MAX_VALUE));
         map.get("maxDegree").setLongDescription("During the search if a node reaches the max degree value additional edges will not be added to that node.");
         map.put("maxIndegree", new ParamDescription("Maximum indegree of graph (min = 1)", 100, 1, Integer.MAX_VALUE));
         map.put("maxOutdegree", new ParamDescription("Maximum outdegree of graph (min = 1)", 100, 1, Integer.MAX_VALUE));
