@@ -1113,14 +1113,14 @@ public class TimeoutComparison {
             Object value = parameters.get(name);
 
             if (value instanceof Double) {
-                out.println(description.getDescription() + " = " + value.toString());
+                out.println(description.getShortDescription() + " = " + value.toString());
             } else if (value instanceof Integer) {
-                out.println(description.getDescription() + " = " + value.toString());
+                out.println(description.getShortDescription() + " = " + value.toString());
             } else if (value instanceof Boolean) {
                 boolean b = (Boolean) value;
-                out.println(description.getDescription() + " = " + (b ? "Yes" : "No"));
+                out.println(description.getShortDescription() + " = " + (b ? "Yes" : "No"));
             } else if (value instanceof String) {
-                out.println(description.getDescription() + " = " + value);
+                out.println(description.getShortDescription() + " = " + value);
             }
         }
     }

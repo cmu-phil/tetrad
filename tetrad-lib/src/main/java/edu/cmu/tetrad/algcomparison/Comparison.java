@@ -1104,14 +1104,14 @@ public class Comparison {
             Object value = parameters.get(name);
 
             if (defaultValue instanceof Double) {
-                out.println(description.getDescription() + " = " + value.toString());
+                out.println(description.getShortDescription() + " = " + value.toString());
             } else if (defaultValue instanceof Integer) {
-                out.println(description.getDescription() + " = " + value.toString());
+                out.println(description.getShortDescription() + " = " + value.toString());
             } else if (defaultValue instanceof Boolean) {
                 boolean b = (Boolean) value;
-                out.println(description.getDescription() + " = " + (b ? "Yes" : "No"));
+                out.println(description.getShortDescription() + " = " + (b ? "Yes" : "No"));
             } else if (defaultValue instanceof String) {
-                out.println(description.getDescription() + " = " + value);
+                out.println(description.getShortDescription() + " = " + value);
             }
         }
     }

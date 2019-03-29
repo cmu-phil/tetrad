@@ -4,7 +4,6 @@ import edu.cmu.tetrad.algcomparison.algorithm.MultiDataSetAlgorithm;
 import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.algcomparison.utils.UsesScoreWrapper;
-import edu.cmu.tetrad.annotation.AlgType;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
@@ -26,11 +25,11 @@ import java.util.List;
  *
  * @author jdramsey
  */
-@edu.cmu.tetrad.annotation.Algorithm(
-        name = "FASK Concatenated",
-        command = "fask-concatenated",
-        algoType = AlgType.forbid_latent_common_causes
-)
+//@edu.cmu.tetrad.annotation.Algorithm(
+//        name = "FASK Concatenated",
+//        command = "fask-concatenated",
+//        algoType = AlgType.forbid_latent_common_causes
+//)
 public class FaskConcatenated implements MultiDataSetAlgorithm, HasKnowledge, UsesScoreWrapper {
 
     static final long serialVersionUID = 23L;

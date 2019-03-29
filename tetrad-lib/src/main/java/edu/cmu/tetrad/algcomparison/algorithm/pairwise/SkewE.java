@@ -2,8 +2,6 @@ package edu.cmu.tetrad.algcomparison.algorithm.pairwise;
 
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.utils.TakesInitialGraph;
-import edu.cmu.tetrad.annotation.AlgType;
-import edu.cmu.tetrad.annotation.Experimental;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
@@ -14,7 +12,6 @@ import edu.cmu.tetrad.search.Lofs2;
 import edu.cmu.tetrad.util.Parameters;
 import edu.pitt.dbmi.algo.resampling.GeneralResamplingTest;
 import edu.pitt.dbmi.algo.resampling.ResamplingEdgeEnsemble;
-
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
@@ -24,12 +21,12 @@ import java.util.List;
  *
  * @author jdramsey
  */
-@Experimental
-@edu.cmu.tetrad.annotation.Algorithm(
-        name = "SkewE",
-        command = "skew-e",
-        algoType = AlgType.orient_pairwise
-)
+//@Experimental
+//@edu.cmu.tetrad.annotation.Algorithm(
+//        name = "SkewE",
+//        command = "skew-e",
+//        algoType = AlgType.orient_pairwise
+//)
 public class SkewE implements Algorithm, TakesInitialGraph {
 
     static final long serialVersionUID = 23L;

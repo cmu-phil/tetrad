@@ -14,8 +14,6 @@ import java.io.InputStream;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
-import org.jsoup.Connection;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -38,39 +36,15 @@ public class AlgorithmDescriptions {
     private AlgorithmDescriptions() {
         List<AnnotatedClass<Algorithm>> annotatedClasses = AlgorithmAnnotations.getInstance().getAnnotatedClasses();
         
-        // Get the html manual URL and file path from properties file
-        final Properties applicationProperties = new Properties();
-
-        try (InputStream inputStream = this.getClass().getClassLoader().getResourceAsStream("tetrad-lib.properties")) {
-            if (inputStream != null) {
-                applicationProperties.load(inputStream);
-            }
-        } catch (IOException exception) {
-            LOGGER.error("Could not read tetrad-lib.properties file", exception);
-        }
-
-        String manualUrl = applicationProperties.getProperty("manual.html.url");
-
-        Connection conn = Jsoup.connect(manualUrl);
-  
         Document doc = null;
         
-        // Always try to get the latest manual via URL, if failed, try read the local HTML file        
-        if (conn != null) {
-            try {
-                doc = conn.get();
-            } catch (IOException ex) {
-                LOGGER.error("Failed to fetch tetrad HTML manual via Github Pages URL.", ex);
+        // Read the copied maunal/index.html from within the jar
+        try (InputStream inputStream = this.getClass().getClassLoader().getResourceAsStream("manual/index.html")) {
+            if (inputStream != null) {
+                doc = Jsoup.parse(inputStream, "UTF-8", "");
             }
-        } else {
-            // Read the copied maunal/index.html from within the jar
-            try (InputStream inputStream = this.getClass().getClassLoader().getResourceAsStream("manual/index.html")) {
-                if (inputStream != null) {
-                    doc = Jsoup.parse(inputStream, "UTF-8", "");
-                }
-            } catch (IOException ex) {
-                LOGGER.error("Failed to read tetrad HTML manual 'maunal/index.html' file from within the jar.", ex);
-            }
+        } catch (IOException ex) {
+            LOGGER.error("Failed to read tetrad HTML manual 'maunal/index.html' file from within the jar.", ex);
         }
 
         // Get the description of each algorithm, use empty string if not found

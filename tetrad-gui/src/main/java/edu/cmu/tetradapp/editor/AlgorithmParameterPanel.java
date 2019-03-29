@@ -110,7 +110,7 @@ public class AlgorithmParameterPanel extends JPanel {
                 // Each parameter row contains parameter label and selection/input field
                 Box paramRow = Box.createHorizontalBox();
 
-                JLabel paramLabel = new JLabel(ParamDescriptions.getInstance().get(parameter).getDescription());
+                JLabel paramLabel = new JLabel(ParamDescriptions.getInstance().get(parameter).getShortDescription());
                 String longDescription = ParamDescriptions.getInstance().get(parameter).getLongDescription();
                 if (longDescription != null) paramLabel.setToolTipText(longDescription);
                 paramRow.add(paramLabel);

@@ -88,7 +88,7 @@ class ParameterPanel extends JPanel {
                 // Each parameter row contains parameter label and selection/input field
                 Box paramRow = Box.createHorizontalBox();
 
-                JLabel paramLabel = new JLabel(ParamDescriptions.getInstance().get(parameter).getDescription());
+                JLabel paramLabel = new JLabel(ParamDescriptions.getInstance().get(parameter).getShortDescription());
                 paramRow.add(paramLabel);
                 paramRow.add(Box.createHorizontalGlue());
                 paramRow.add(parameterSelection);
