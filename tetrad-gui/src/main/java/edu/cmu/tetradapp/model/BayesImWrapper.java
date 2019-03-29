@@ -195,11 +195,14 @@ public class BayesImWrapper implements SessionModel, Memorable {
 //        log(bayesIm);
     }
 
-//    public BayesImWrapper() {
-//        Dag graph = new Dag();
-//        BayesPm pm = new BayesPm(graph);
-//        setBayesIm(new MlBayesIm(pm));
-//    }
+    
+    public BayesImWrapper(BayesIm bayesIm) {
+        if (bayesIm == null) {
+            throw new NullPointerException("Bayes IM must not be null.");
+        }
+    	setBayesIm(new MlBayesIm(bayesIm));
+    }
+    
     /**
      * Generates a simple exemplar of this class to test serialization.
      *
@@ -225,30 +228,6 @@ public class BayesImWrapper implements SessionModel, Memorable {
 
     public void setName(String name) {
         this.name = name;
-    }
-
-    //============================== private methods ============================//
-    private void log(BayesIm im) {
-        TetradLogger.getInstance().log("info", "Maximum likelihood Bayes IM");
-        TetradLogger.getInstance().log("im", im.toString());
-    }
-
-    /**
-     * Adds semantic checks to the default deserialization method. This method
-     * must have the standard signature for a readObject method, and the body of
-     * the method must begin with "s.defaultReadObject();". Other than that, any
-     * semantic checks can be specified and do not need to stay the same from
-     * version to version. A readObject method of this form may be added to any
-     * class, even if Tetrad sessions were previously saved out using a version
-     * of the class that didn't include it. (That's what the
-     * "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for help.
-     *
-     * @throws java.io.IOException
-     * @throws ClassNotFoundException
-     */
-    private void readObject(ObjectInputStream s)
-            throws IOException, ClassNotFoundException {
-        s.defaultReadObject();
     }
 
     public Graph getSourceGraph() {
@@ -287,4 +266,29 @@ public class BayesImWrapper implements SessionModel, Memorable {
     public void setModelIndex(int modelIndex) {
         this.modelIndex = modelIndex;
     }
+    
+    //============================== private methods ============================//
+//    private void log(BayesIm im) {
+//        TetradLogger.getInstance().log("info", "Maximum likelihood Bayes IM");
+//        TetradLogger.getInstance().log("im", im.toString());
+//    }
+
+    /**
+     * Adds semantic checks to the default deserialization method. This method
+     * must have the standard signature for a readObject method, and the body of
+     * the method must begin with "s.defaultReadObject();". Other than that, any
+     * semantic checks can be specified and do not need to stay the same from
+     * version to version. A readObject method of this form may be added to any
+     * class, even if Tetrad sessions were previously saved out using a version
+     * of the class that didn't include it. (That's what the
+     * "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for help.
+     *
+     * @throws java.io.IOException
+     * @throws ClassNotFoundException
+     */
+    private void readObject(ObjectInputStream s)
+            throws IOException, ClassNotFoundException {
+        s.defaultReadObject();
+    }
+
 }

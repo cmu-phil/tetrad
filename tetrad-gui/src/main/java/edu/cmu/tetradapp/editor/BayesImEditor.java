@@ -48,7 +48,9 @@ import java.beans.PropertyChangeListener;
  */
 public class BayesImEditor extends JPanel {
 
-    private JPanel targetPanel;
+	private static final long serialVersionUID = 1L;
+	
+	private JPanel targetPanel;
     /**
      * The wizard that allows the user to modify parameter values for this IM.
      */
@@ -186,6 +188,7 @@ public class BayesImEditor extends JPanel {
         repaint();
         firePropertyChange("modelChanged", null, null);
     }
+    
 }
 
 
