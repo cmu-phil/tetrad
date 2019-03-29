@@ -20,50 +20,50 @@ public class ParamDescription {
     private int lowerBoundInt = Integer.MIN_VALUE;
     private int upperBoundInt = Integer.MAX_VALUE;
 
-    // Old constructors - to be removed
-    public ParamDescription(String shortDescription, Serializable defaultValue) {
-        if (shortDescription == null) {
-            throw new NullPointerException("Description is null.");
-        }
-
-        if (defaultValue == null) {
-            throw new NullPointerException("No default value for " + shortDescription);
-        }
-
-        this.shortDescription = shortDescription;
-        this.defaultValue = defaultValue;
-    }
-
-    public ParamDescription(String shortDescription, Serializable defaultValue, double lowerBound, double upperBound) {
-        if (shortDescription == null) {
-            throw new NullPointerException("Description is null.");
-        }
-
-        if (defaultValue == null) {
-            throw new NullPointerException("No default value for " + shortDescription);
-        }
-
-        this.shortDescription = shortDescription;
-        this.defaultValue = defaultValue;
-        this.lowerBoundDouble = lowerBound;
-        this.upperBoundDouble = upperBound;
-    }
-
-    public ParamDescription(String shortDescription, Serializable defaultValue, int lowerBound, int upperBound) {
-        if (shortDescription == null) {
-            throw new NullPointerException("Description is null.");
-        }
-
-        if (defaultValue == null) {
-            throw new NullPointerException("No default value for " + shortDescription);
-        }
-
-        this.shortDescription = shortDescription;
-        this.defaultValue = defaultValue;
-        this.lowerBoundInt = lowerBound;
-        this.upperBoundInt = upperBound;
-    }
-    
+//    // Old constructors - to be removed
+//    public ParamDescription(String shortDescription, Serializable defaultValue) {
+//        if (shortDescription == null) {
+//            throw new NullPointerException("Description is null.");
+//        }
+//
+//        if (defaultValue == null) {
+//            throw new NullPointerException("No default value for " + shortDescription);
+//        }
+//
+//        this.shortDescription = shortDescription;
+//        this.defaultValue = defaultValue;
+//    }
+//
+//    public ParamDescription(String shortDescription, Serializable defaultValue, double lowerBound, double upperBound) {
+//        if (shortDescription == null) {
+//            throw new NullPointerException("Description is null.");
+//        }
+//
+//        if (defaultValue == null) {
+//            throw new NullPointerException("No default value for " + shortDescription);
+//        }
+//
+//        this.shortDescription = shortDescription;
+//        this.defaultValue = defaultValue;
+//        this.lowerBoundDouble = lowerBound;
+//        this.upperBoundDouble = upperBound;
+//    }
+//
+//    public ParamDescription(String shortDescription, Serializable defaultValue, int lowerBound, int upperBound) {
+//        if (shortDescription == null) {
+//            throw new NullPointerException("Description is null.");
+//        }
+//
+//        if (defaultValue == null) {
+//            throw new NullPointerException("No default value for " + shortDescription);
+//        }
+//
+//        this.shortDescription = shortDescription;
+//        this.defaultValue = defaultValue;
+//        this.lowerBoundInt = lowerBound;
+//        this.upperBoundInt = upperBound;
+//    }
+//    
     // New constructors
     public ParamDescription(String paramName, String shortDescription, String longDescription, Serializable defaultValue) {
         if (paramName == null) {

@@ -1,13 +1,8 @@
 package edu.cmu.tetrad.latest;
 
-import edu.cmu.tetrad.util.ParamDescriptionsCopy;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.PrintWriter;
 import java.util.Properties;
-import java.util.Set;
-import java.util.logging.Level;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.HttpGet;
@@ -56,49 +51,6 @@ public class LatestClient {
     }
 
     public boolean checkLatest(String softwareName, String version) {
-
-        // For generating parameters HTML manual - Zhou
-        ParamDescriptionsCopy instance = ParamDescriptionsCopy.getInstance();
-
-        // generate html of parameters
-        String html = "";
-        Set<String> params = instance.getNames();
-        for (String param : params) {
-            html += "<h3 id=\"" + param + "\" class=\"parameter_description\">" + param + "</h3>\n"
-                    + "<ul class=\"parameter_description_list\">\n"
-                    + "<li>Short Description: <span id=\"" + param + "_short_desc\">" + instance.get(param).getShortDescription() + "</span></li>\n"
-                    + "<li>Long Description: <span id=\"" + param + "_long_desc\">" + instance.get(param).getLongDescription() + "</span></li>\n"
-                    + "<li>Default Value: <span id=\"" + param + "_default_value\">" + instance.get(param).getDefaultValue() + "</span></li>\n";
-
-            if (instance.get(param).getDefaultValue() instanceof Integer) {
-                html += "<li>Lower Bound: <span id=\"" + param + "_lower_bound\">" + instance.get(param).getLowerBoundInt() + "</span></li>\n"
-                        + "<li>Upper Bound: <span id=\"" + param + "_upper_bound\">" + instance.get(param).getUpperBoundInt() + "</span></li>\n"
-                        + "<li>Value Type: <span id=\"" + param + "_value_type\">Integer</span></td>\n";
-            } else if (instance.get(param).getDefaultValue() instanceof Double) {
-                html += "<li>Lower Bound: <span id=\"" + param + "_lower_bound\">" + instance.get(param).getLowerBoundDouble() + "</span></li>\n"
-                        + "<li>Upper Bound: <span id=\"" + param + "_upper_bound\">" + instance.get(param).getUpperBoundDouble() + "</span></li>\n"
-                        + "<li>Value Type: <span id=\"" + param + "_value_type\">Double</span></li>\n";
-            } else if (instance.get(param).getDefaultValue() instanceof Boolean) {
-                html += "<li>Lower Bound: <span id=\"" + param + "_lower_bound\"></span></li>\n"
-                        + "<li>Upper Bound: <span id=\"" + param + "_upper_bound\"></span></li>\n"
-                        + "<li>Value Type: <span id=\"" + param + "_value_type\">Boolean</span></li>\n";
-            } else {
-                html += "<li>Lower Bound: <span id=\"" + param + "_lower_bound\"></span></li>\n"
-                        + "<li>Upper Bound: <span id=\"" + param + "_upper_bound\"></span></li>\n"
-                        + "<li>Value Type: <span id=\"" + param + "_value_type\"></span></li>\n";
-            }
-
-            html += "</ul>\n\n";
-        }
-
-        // Save the generated HTML in target folder so it won't get pushed to github
-        try (PrintWriter out = new PrintWriter("tetrad-gui/target/parameters.html")) {
-            out.println(html);
-        } catch (FileNotFoundException ex) {
-            java.util.logging.Logger.getLogger(LatestClient.class.getName()).log(Level.SEVERE, null, ex);
-        }
-
-        // End of generating parameters HTML manual - Zhou
         LOGGER.debug("running version: " + version);
 
         final Properties applicationProperties = new Properties();
