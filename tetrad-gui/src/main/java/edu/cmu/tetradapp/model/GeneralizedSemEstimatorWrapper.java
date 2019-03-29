@@ -74,6 +74,17 @@ public class GeneralizedSemEstimatorWrapper implements SessionModel, GraphSource
         execute();
     }
 
+//    public GeneralizedSemEstimatorWrapper(GeneralizedSemImWrapper semIm, DataWrapper data) {
+//    	if (semIm == null) {
+//            throw new NullPointerException("SEM IM must not be null.");
+//        }
+//    	
+//    	this.semPm = semIm.getSemIms().get(0).getSemPm();
+//    	this.data = (DataSet) data.getSelectedDataModel();
+//
+//        execute();
+//    }
+    
     public void execute() {
         GeneralizedSemEstimator estimator = new GeneralizedSemEstimator();
         estIm = estimator.estimate(this.semPm, this.data);
