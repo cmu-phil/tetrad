@@ -19,7 +19,7 @@ import java.util.List;
  * @author jdramsey
  */
 @edu.cmu.tetrad.annotation.Score(
-        name = "CCI Score",
+        name = "Conditional Correlation (CCI) Score",
         command = "cci-score",
         dataType = {DataType.Continuous}
 )
