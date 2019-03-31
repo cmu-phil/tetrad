@@ -16,7 +16,7 @@ import java.util.List;
  * @author jdramsey
  */
 @TestOfIndependence(
-        name = "Conditional Gaussian Likelihood Ratio Test",
+        name = "Conditional Gaussian (CG) Likelihood Ratio Test",
         command = "cond-gauss-lrt",
         dataType = DataType.Mixed
 )

@@ -25,7 +25,7 @@ import java.util.List;
  * @author jdramsey
  */
 @edu.cmu.tetrad.annotation.Algorithm(
-        name = "Variants of PC",
+        name = "PC Variants",
         command = "pc-all",
         algoType = AlgType.forbid_latent_common_causes
 )

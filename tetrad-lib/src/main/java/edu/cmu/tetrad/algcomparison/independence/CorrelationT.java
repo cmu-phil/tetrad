@@ -15,11 +15,11 @@ import java.util.List;
  *
  * @author jdramsey
  */
-@TestOfIndependence(
-        name = "Correlation T Test",
-        command = "correlation-t",
-        dataType = DataType.Continuous
-)
+//@TestOfIndependence(
+//        name = "Correlation T Test",
+//        command = "correlation-t",
+//        dataType = DataType.Continuous
+//)
 public class CorrelationT implements IndependenceWrapper {
 
     static final long serialVersionUID = 23L;

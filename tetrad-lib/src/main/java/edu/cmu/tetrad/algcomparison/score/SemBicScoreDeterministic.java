@@ -14,11 +14,11 @@ import java.util.List;
  *
  * @author jdramsey
  */
-@edu.cmu.tetrad.annotation.Score(
-        name = "Sem BIC Score Deterministic",
-        command = "sem-bic-deterministic",
-        dataType = {DataType.Continuous, DataType.Covariance}
-)
+//@edu.cmu.tetrad.annotation.Score(
+//        name = "Sem BIC Score Deterministic",
+//        command = "sem-bic-deterministic",
+//        dataType = {DataType.Continuous, DataType.Covariance}
+//)
 public class SemBicScoreDeterministic implements ScoreWrapper {
 
     static final long serialVersionUID = 23L;
