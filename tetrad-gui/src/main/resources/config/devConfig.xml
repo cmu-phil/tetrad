@@ -1759,6 +1759,8 @@
             ]]>
         </node-specific-message>
     </session-node>
+    
+    <!-- Disabled on 4/2/2019
     <session-node id="Classify">
         <models>
             <model name="Bayes Updater Classifier" acronym="BayesUpClass"
@@ -1781,6 +1783,8 @@
             ]]>
         </node-specific-message>
     </session-node>
+    -->
+    
     <session-node id="Compare">
         <models>
             <model name="Edgewise Comparison" acronym="Edge Comp"
