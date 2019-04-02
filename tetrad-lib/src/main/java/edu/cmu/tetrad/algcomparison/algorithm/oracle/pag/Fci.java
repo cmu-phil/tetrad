@@ -61,6 +61,7 @@ public class Fci implements Algorithm, TakesInitialGraph, HasKnowledge, TakesInd
             search.setKnowledge(knowledge);
             search.setMaxPathLength(parameters.getInt("maxPathLength"));
             search.setCompleteRuleSetUsed(parameters.getBoolean("completeRuleSetUsed"));
+            search.setVerbose(parameters.getBoolean("verbose"));
 
 //            if (initialGraph != null) {
 //                search.setInitialGraph(initialGraph);

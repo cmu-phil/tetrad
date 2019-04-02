@@ -49,6 +49,7 @@ public class Rfci implements Algorithm, HasKnowledge, TakesIndependenceWrapper {
             search.setDepth(parameters.getInt("depth"));
             search.setMaxPathLength(parameters.getInt("maxPathLength"));
             search.setCompleteRuleSetUsed(parameters.getBoolean("completeRuleSetUsed"));
+            search.setVerbose(parameters.getBoolean("verbose"));
             return search.search();
         } else {
             Rfci algorithm = new Rfci(test);

@@ -49,6 +49,7 @@ public class ImagesPcStableMax implements MultiDataSetAlgorithm, HasKnowledge {
             search.setMaxPathLength(parameters.getInt("maxPOrientationMaxPathLength"));
             search.setKnowledge(knowledge);
             search.setDepth(parameters.getInt("depth"));
+            search.setVerbose(parameters.getBoolean("verbose"));
             return search.search();
     	}else{
     		ImagesPcStableMax imagesPcStableMax = new ImagesPcStableMax();

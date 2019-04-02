@@ -43,6 +43,7 @@ public class MixedFgesDiscretingContinuousVariables implements Algorithm {
             dataSet = discretizer.discretize();
             DataSet _dataSet = DataUtils.getDiscreteDataSet(dataSet);
             Fges fges = new Fges(score.getScore(_dataSet, parameters));
+            fges.setVerbose(parameters.getBoolean("verbose"));
             Graph p = fges.search();
             return convertBack(_dataSet, p);
     	}else{
