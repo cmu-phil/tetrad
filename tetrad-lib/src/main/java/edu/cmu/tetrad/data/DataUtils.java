@@ -1816,6 +1816,7 @@ public final class DataUtils {
 
             X.assignColumn(j, new TetradVector(x));
         }
+
         return ColtDataSet.makeContinuousData(dataSet.getVariables(), X);
     }
 
