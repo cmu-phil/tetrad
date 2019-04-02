@@ -79,6 +79,7 @@ public class Lingam implements Algorithm {
     @Override
     public List<String> getParameters() {
         List<String> parameters = new ArrayList<>();
+        parameters.add("penaltyDiscount");
         // Resampling
         parameters.add("numberResampling");
         parameters.add("percentResampleSize");

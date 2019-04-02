@@ -146,17 +146,5 @@ public class Lingam {
         this.penaltyDiscount = penaltyDiscount;
     }
 
-    public static class CausalOrder {
-        private int[] perm;
-
-        CausalOrder(int[] perm) {
-            this.perm = perm;
-        }
-
-        int[] getPerm() {
-            return perm;
-        }
-    }
-
 }
 
