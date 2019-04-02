@@ -86,7 +86,7 @@ public final class MlBayesEstimator {
                 for (int col = 0; col < numCols; col++) {
 
                     // Remove values from the proposition in various ways; if
-                    // a combination exists in the end, calculate a contitional
+                    // a combination exists in the end, calculate a conditional
                     // probability.
                     assertion.setToTautology();
                     condition.setToTautology();

@@ -38,6 +38,7 @@ public class Cfci implements Algorithm, HasKnowledge {
             search.setKnowledge(knowledge);
             search.setCompleteRuleSetUsed(parameters.getBoolean("completeRuleSetUsed"));
             search.setDepth(parameters.getInt("depth"));
+            search.setVerbose(parameters.getBoolean("verbose"));
             return search.search();
     	}else{
     		Cfci algorithm = new Cfci(test);
