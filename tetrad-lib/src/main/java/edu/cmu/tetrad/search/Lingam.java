@@ -57,11 +57,11 @@ public class Lingam {
         FastIca fastIca = new FastIca(X, 30);
         fastIca.setVerbose(false);
         FastIca.IcaResult result11 = fastIca.findComponents();
-        TetradMatrix W = result11.getW().transpose();
+        TetradMatrix W = result11.getW();
 
         System.out.println("W = " + W);
 
-        PermutationGenerator gen1 = new PermutationGenerator(W.rows());
+        PermutationGenerator gen1 = new PermutationGenerator(W.columns());
         int[] perm1 = new int[0];
         double sum1 = Double.POSITIVE_INFINITY;
         int[] choice1;
@@ -69,8 +69,8 @@ public class Lingam {
         while ((choice1 = gen1.next()) != null) {
             double sum = 0.0;
 
-            for (int i = 0; i < W.rows(); i++) {
-                final double wij = W.get(choice1[i], i);
+            for (int i = 0; i < W.columns(); i++) {
+                final double wij = W.get(i, choice1[i]);
                 sum += 1.0 / abs(wij);
             }
 
@@ -84,16 +84,16 @@ public class Lingam {
 
         System.out.println("WTilde before normalization = " + WTilde);
 
-        for (int i = 0; i < WTilde.columns(); i++) {
-            for (int j = 0; j < WTilde.rows(); j++) {
-                WTilde.set(i, j, WTilde.get(i, j) / WTilde.get(i, i));
+        for (int i = 0; i < WTilde.rows(); i++) {
+            for (int j = 0; j < WTilde.columns(); j++) {
+                WTilde.set(i, j, WTilde.get(j, i) / WTilde.get(i, i));
             }
         }
 
         System.out.println("WTilde after normalization = " + WTilde);
 
         final int m = data.getNumColumns();
-        TetradMatrix B = TetradMatrix.identity(m).minus(WTilde.transpose());
+        TetradMatrix B = TetradMatrix.identity(m).minus(WTilde);
 
         System.out.println("B = " + B);
 
@@ -105,8 +105,8 @@ public class Lingam {
         while ((choice2 = gen2.next()) != null) {
             double sum = 0.0;
 
-            for (int j = 0; j < W.columns(); j++) {
-                for (int i = 0; i < j; i++) {
+            for (int i = 0; i < W.rows(); i++) {
+                for (int j = i + 1; j < W.columns(); j++) {
                     final double c = B.get(choice2[i], choice2[j]);
                     sum += abs(c);
                 }
@@ -130,7 +130,7 @@ public class Lingam {
         final List<Node> variables = data.getVariables();
 
         for (int i = 0; i < variables.size(); i++) {
-            knowledge.addToTier(i + 1, variables.get(perm2[variables.size() - i - 1]).getName());
+            knowledge.addToTier(i + 1, variables.get(perm2[i]).getName());
         }
 
         fges.setKnowledge(knowledge);
