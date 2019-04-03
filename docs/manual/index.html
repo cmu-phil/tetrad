@@ -2704,9 +2704,17 @@ there is a single latent for each output cluster. For MimBuild, a pattern over t
 
     <div id="fofc">
 
-        <p>The FOFC (Find One Factor Clusters) is an alternative method that achieves the same goal as BPC; in testing,
-            it seems to scale better with somewhat better accuracy (Kummerfeld and Ramsey, 2017).
-            The basic idea is to build up clusters one at a time by adding variables that keep them pure,
+        <p>Searches for causal structure over latent variables, where the true models are Multiple Indicator Models
+            (MIM’s) as described in the Graphs section.
+            The idea is this. There is a set of latent (unmeasured) variables over which a directed acyclic model has
+            been defined.
+            Then for each of these latent L there are 3 (preferably 4) or more measures of that variable—that is,
+            measured variables that are all children of L.
+            Under these conditions, one may define tetrad constraints (see Spirtes et al., 2000).
+            There is a theorem to the effect that if certain patterns of these tetrad constraints hold,
+            there must be a latent common cause of all of them (the Tetrad Representation Theorem).
+            The FOFC (Find One Factor Clusters) takes advantage of this fact. The basic idea is to build up clusters one
+            at a time by adding variables that keep them pure,
             in the sense that all relevant tetrad constraints still hold.
             There are different ways of going about this. One could try to build one cluster up as far as possible,
             then remove all of those variables from the set, and try to make a another cluster using the remaining
@@ -2714,9 +2722,17 @@ there is a single latent for each output cluster. For MimBuild, a pattern over t
             Or one can try in parallel to grow all possible clusters and then choose among the grown clusters using some
             criterion such as cluster size (GAP, Grow and Pick).
             In general, GAP is more accurate. The result is a clustering of variables.
-            Similarly to BPC, MimBuild may be run on a covariance matrix estimated over the latents for the resulting
-            clusters to find a pattern over the latents that
-            represents the causal structure over the latents.</p>
+            Moreover, once one has such a “measurement model,”
+            once can estimate a covariance matrix over the latent variables that are parents of the measures and use
+            some algorithm such as PC or GES to estimate a pattern over the latents.
+            The algorithm to run PC or GES on this covariance matrix is called MimBuild (“MIM” is the the graph,
+            Multiple Indicator Model; “Build” means build).
+            In this way, one may recover causal structure over the latents. The more measures one has for each latent,
+            the better the result is, generally.
+            The larger the sample size the better. One important issue is that the algorithm is sensitive to so-called
+            “impurities”—that is,
+            causal edges among the measured variables, or between measured variables and unintended latent.
+            The algorithm will in effect remove one measure in each impure pair from consideration</p>
 
     </div>
 
@@ -3864,7 +3880,7 @@ Usually covariance values are chosen from U(-b, -a) U U(a, b) for some a, b; thi
         <h3 id="numLatents" class="parameter_description">numLatents</h3>
         <ul class="parameter_description_list">
             <li>Short Description: <span id="numLatents_short_desc">Number of latent variables (min = 0)</span></li>
-            <li>Long Description: <span id="numLatents_long_desc">A latent (or ‘unmeasured’) variable is one for which values are not recorded in the dataset being analyzed. These are variables that affect the measured variables but which are not included in the final dataset. This situation comes up frequently when analyzing real data, so it is important to be able to generate random datasets with this feature, in order to see how the algorithms react to the existence of latent variables. Some algorithms, like FCI, FFCI, BPC, FOFC, FTFC, and such, are correct when some variables not measured affect the data.</span>
+            <li>Long Description: <span id="numLatents_long_desc">A latent (or ‘unmeasured’) variable is one for which values are not recorded in the dataset being analyzed. These are variables that affect the measured variables but which are not included in the final dataset. This situation comes up frequently when analyzing real data, so it is important to be able to generate random datasets with this feature, in order to see how the algorithms react to the existence of latent variables. Some algorithms, like FCI, FFCI, FOFC, FTFC, and such, are correct when some variables not measured affect the data.</span>
             </li>
             <li>Default Value: <span id="numLatents_default_value">0</span></li>
             <li>Lower Bound: <span id="numLatents_lower_bound">0</span></li>
@@ -4441,7 +4457,8 @@ The “Max P” method for orienting an unshielded triple X—Y—Z records p-va
 
         <h3 id="include_structure_model" class="parameter_description">verbose</h3>
         <ul class="parameter_description_list">
-            <li>Short Description: <span id="include_structure_model_short_desc">Yes if the (MimBuild) stucture model should be included in the output graph</span></li>
+            <li>Short Description: <span id="include_structure_model_short_desc">Yes if the (MimBuild) stucture model should be included in the output graph</span>
+            </li>
             <li>Long Description: <span id="include_structure_model_long_desc">FOFC proper yields a measurement model--that is, a set of pure children for each of the discovered latents. One can estimate the structure over the latents (the structure model) using Mimbuild. This struture model is included in the output if this parameter is set to Yes.</span>
             </li>
             <li>Default Value: <span id="include_structure_model_default_value">true</span></li>
@@ -4643,6 +4660,7 @@ The “Max P” method for orienting an unshielded triple X—Y—Z records p-va
 <script>
 window.ga=function(){ga.q.push(arguments)};ga.q=[];ga.l=+new Date;
 ga('create','UA-XXXXX-Y','auto');ga('send','pageview')
+
 
 
 </script>
