@@ -7,10 +7,11 @@ import edu.cmu.tetrad.annotation.AlgType;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.search.FindOneFactorClusters;
-import edu.cmu.tetrad.search.SearchGraphUtils;
-import edu.cmu.tetrad.search.TestType;
+import edu.cmu.tetrad.graph.GraphUtils;
+import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.search.*;
 import edu.cmu.tetrad.util.Parameters;
+import edu.cmu.tetrad.util.TetradLogger;
 import edu.pitt.dbmi.algo.resampling.GeneralResamplingTest;
 import edu.pitt.dbmi.algo.resampling.ResamplingEdgeEnsemble;
 
@@ -65,7 +66,45 @@ public class Fofc implements Algorithm, TakesInitialGraph, HasKnowledge, Cluster
                     = new edu.cmu.tetrad.search.FindOneFactorClusters(cov, testType, algorithm, alpha);
             search.setVerbose(parameters.getBoolean("verbose"));
 
-            return search.search();
+            Graph graph = search.search();
+
+            if (!parameters.getBoolean("include_structure_model")) {
+                return graph;
+            } else {
+
+                Clusters clusters = ClusterUtils.mimClusters(graph);
+
+                Mimbuild2 mimbuild = new Mimbuild2();
+                mimbuild.setAlpha(parameters.getDouble("alpha", 0.001));
+                mimbuild.setKnowledge((IKnowledge) parameters.get("knowledge", new Knowledge2()));
+
+                if (parameters.getBoolean("includeThreeClusters", true)) {
+                    mimbuild.setMinClusterSize(3);
+                } else {
+                    mimbuild.setMinClusterSize(4);
+                }
+
+                List<List<Node>> partition = ClusterUtils.clustersToPartition(clusters, dataSet.getVariables());
+                List<String> latentNames = new ArrayList<>();
+
+                for (int i = 0; i < clusters.getNumClusters(); i++) {
+                    latentNames.add(clusters.getClusterName(i));
+                }
+
+                Graph structureGraph = mimbuild.search(partition, latentNames, cov);
+                GraphUtils.circleLayout(structureGraph, 200, 200, 150);
+                GraphUtils.fruchtermanReingoldLayout(structureGraph);
+
+                ICovarianceMatrix latentsCov = mimbuild.getLatentsCov();
+
+                TetradLogger.getInstance().log("details", "Latent covs = \n" + latentsCov);
+
+                Graph fullGraph = mimbuild.getFullGraph();
+                GraphUtils.circleLayout(fullGraph, 200, 200, 150);
+                GraphUtils.fruchtermanReingoldLayout(fullGraph);
+
+                return fullGraph;
+            }
         } else {
             Fofc algorithm = new Fofc();
 
@@ -122,6 +161,7 @@ public class Fofc implements Algorithm, TakesInitialGraph, HasKnowledge, Cluster
         parameters.add("alpha");
         parameters.add("useWishart");
         parameters.add("useGap");
+        parameters.add("include_structure_model");
         parameters.add("verbose");
         // Resampling
         parameters.add("numberResampling");
