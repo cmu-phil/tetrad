@@ -58,7 +58,7 @@ public class RfciBsc implements GraphSearch {
 
 	private double bscD = 0.0, bscI = 0.0;
 
-	private List<Graph> pags = new ArrayList<>();
+	private List<Graph> pags = Collections.synchronizedList(new ArrayList<>());
 
 	private int numRandomizedSearchModels = 10;
 
@@ -94,6 +94,8 @@ public class RfciBsc implements GraphSearch {
     
     private boolean thresholdNoRandomConstrainSearch = true;
     private double cutoffConstrainSearch = 0.5;
+    
+    private int numCandidatePagSearchTrial = 1000;
     
     public RfciBsc(Rfci rfci) {
 		this.rfci = rfci;
@@ -180,7 +182,7 @@ public class RfciBsc implements GraphSearch {
 
 		int trial = 0;
 		
-		while(vars.size() == 0 && trial < 1000) {
+		while(vars.size() == 0 && trial < numCandidatePagSearchTrial) {
 			tasks.clear();
 			
 			for (int i = 0; i < numRandomizedSearchModels; i++) {
@@ -202,7 +204,8 @@ public class RfciBsc implements GraphSearch {
 	        trial++;
 		}
 		
-		if(trial == 1000) {
+		// Failed to generate a list of qualified constraints
+		if(trial == numCandidatePagSearchTrial) {
 			return new EdgeListGraph(dataSet.getVariables());
 		}
 		
