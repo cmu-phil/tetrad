@@ -18,9 +18,9 @@
 // along with this program; if not, write to the Free Software               //
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA //
 ///////////////////////////////////////////////////////////////////////////////
-
 package edu.cmu.tetradapp.model;
 
+import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataUtils;
 import edu.cmu.tetrad.data.LogDataUtils;
@@ -33,25 +33,20 @@ import edu.cmu.tetrad.util.TetradSerializableUtils;
  * @author Joseph Ramsey
  */
 public class NonparanormalTransform extends DataWrapper {
+
     static final long serialVersionUID = 23L;
 
     //=============================CONSTRUCTORS==============================//
-
     public NonparanormalTransform(DataWrapper wrapper, Parameters params) {
-        DataSet dataSet;
-        if (wrapper.getSelectedDataModel() instanceof DataSet) {
-            DataSet _dataSet = (DataSet) wrapper.getSelectedDataModel();
-            dataSet = DataUtils.getNonparanormalTransformed(_dataSet);
+        DataModel dataModel = wrapper.getSelectedDataModel();
+        if (dataModel instanceof DataSet && ((DataSet) dataModel).isContinuous()) {
+            setDataModel(DataUtils.getNonparanormalTransformed((DataSet) dataModel));
+            setSourceGraph(wrapper.getSourceGraph());
+
+            LogDataUtils.logDataModelList("Conversion of parent data to correlation matrix form.", getDataModelList());
+        } else {
+            throw new IllegalArgumentException("Expecting a continuous data set.");
         }
-        else {
-            throw new IllegalArgumentException("Expecting a continuous data set or a covariance matrix.");
-        }
-
-        setDataModel(dataSet);
-        setSourceGraph(wrapper.getSourceGraph());
-
-        LogDataUtils.logDataModelList("Conversion of parent data to correlation matrix form.", getDataModelList());
-
     }
 
     /**
@@ -62,10 +57,5 @@ public class NonparanormalTransform extends DataWrapper {
     public static PcRunner serializableInstance() {
         return PcRunner.serializableInstance();
     }
+
 }
-
-
-
-
-
-
