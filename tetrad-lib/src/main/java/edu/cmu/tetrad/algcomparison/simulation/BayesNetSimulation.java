@@ -50,7 +50,6 @@ public class BayesNetSimulation implements Simulation {
 
         dataSets = new ArrayList<>();
         graphs = new ArrayList<>();
-
         ims = new ArrayList<>();
 
         for (int i = 0; i < parameters.getInt("numRuns"); i++) {
