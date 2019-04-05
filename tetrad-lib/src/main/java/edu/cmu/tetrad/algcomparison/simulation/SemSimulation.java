@@ -45,6 +45,8 @@ public class SemSimulation implements Simulation {
         this.randomGraph = new SingleGraph(graph);
         this.im = im;
         this.pm = im.getSemPm();
+        this.ims = new ArrayList<>();
+        ims.add(im);
     }
 
     @Override
