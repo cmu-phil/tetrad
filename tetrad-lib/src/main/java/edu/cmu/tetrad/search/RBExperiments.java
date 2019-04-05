@@ -246,7 +246,7 @@ public class RBExperiments {
 		DataSet data = DataUtils.restrictToMeasured(fullData);
 
 		// get the true underlying PAG
-		final DagToPag dagToPag = new DagToPag(dag);
+		final DagToPag2 dagToPag = new DagToPag2(dag);
 		dagToPag.setCompleteRuleSetUsed(false);
 		Graph PAG_True = dagToPag.convert();
 		PAG_True = GraphUtils.replaceNodes(PAG_True, data.getVariables());

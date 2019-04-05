@@ -282,7 +282,7 @@ public final class TestGraphUtils {
     @Test
     public void testPagColoring() {
         Graph dag = GraphUtils.randomGraph(30, 5, 50, 10, 10, 10, false);
-        Graph pag = new DagToPag(dag).convert();
+        Graph pag = new DagToPag2(dag).convert();
 
         GraphUtils.addPagColoring(pag);
 
