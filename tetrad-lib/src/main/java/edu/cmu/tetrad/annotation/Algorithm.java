@@ -18,6 +18,7 @@
  */
 package edu.cmu.tetrad.annotation;
 
+import edu.cmu.tetrad.data.DataType;
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -40,5 +41,7 @@ public @interface Algorithm {
     String command();
 
     AlgType algoType();
+
+    DataType[] dataType() default DataType.All;
 
 }
