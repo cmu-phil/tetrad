@@ -20,6 +20,7 @@ package edu.cmu.tetradapp.ui.model;
 
 import edu.cmu.tetrad.annotation.AlgType;
 import edu.cmu.tetrad.annotation.AlgorithmAnnotations;
+import edu.cmu.tetrad.data.DataType;
 import java.util.Collections;
 import java.util.EnumMap;
 import java.util.LinkedList;
@@ -69,13 +70,28 @@ public class AlgorithmModels {
         return INSTANCE;
     }
 
-    public List<AlgorithmModel> getModels() {
-        return models;
+    private List<AlgorithmModel> filterInclusivelyByAllOrSpecificDataType(List<AlgorithmModel> algorithmModels, DataType dataType) {
+        return (dataType == DataType.All)
+                ? algorithmModels
+                : algorithmModels.stream()
+                        .filter(e -> {
+                            for (DataType dt : e.getAlgorithm().getAnnotation().dataType()) {
+                                if (!(dt == DataType.All || dt == dataType)) {
+                                    return false;
+                                }
+                            }
+                            return true;
+                        })
+                        .collect(Collectors.toList());
     }
 
-    public List<AlgorithmModel> getModels(AlgType algType) {
+    public List<AlgorithmModel> getModels(DataType dataType) {
+        return filterInclusivelyByAllOrSpecificDataType(models, dataType);
+    }
+
+    public List<AlgorithmModel> getModels(AlgType algType, DataType dataType) {
         return modelMap.containsKey(algType)
-                ? modelMap.get(algType)
+                ? filterInclusivelyByAllOrSpecificDataType(modelMap.get(algType), dataType)
                 : Collections.EMPTY_LIST;
     }
 
