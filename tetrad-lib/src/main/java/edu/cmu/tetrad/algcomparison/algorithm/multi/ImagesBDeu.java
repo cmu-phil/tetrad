@@ -34,7 +34,8 @@ import java.util.List;
 @edu.cmu.tetrad.annotation.Algorithm(
         name = "IMaGES Discrete",
         command = "imgs_disc",
-        algoType = AlgType.forbid_latent_common_causes
+        algoType = AlgType.forbid_latent_common_causes,
+        dataType = DataType.Discrete
 )
 public class ImagesBDeu implements MultiDataSetAlgorithm, HasKnowledge {
 

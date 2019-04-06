@@ -33,7 +33,8 @@ import java.util.List;
 @edu.cmu.tetrad.annotation.Algorithm(
         name = "IMaGES Continuous",
         command = "imgs_cont",
-        algoType = AlgType.forbid_latent_common_causes
+        algoType = AlgType.forbid_latent_common_causes,
+        dataType = DataType.Continuous
 )
 public class ImagesSemBic implements MultiDataSetAlgorithm, HasKnowledge {
 
