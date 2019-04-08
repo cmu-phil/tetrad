@@ -575,29 +575,17 @@ public class Comparison {
      */
     public void saveToFilesSingleSimulation(String dataPath, Simulation simulation, Parameters parameters) {
         File dir0 = new File(dataPath);
-        File dir;
-        //int i = 0;
-
-        dir = new File(dir0, "save");
-
-//
-//        do {
-//            dir = new File(dir0, "Simulation" + (++i));
-//        } while (dir.exists());
-
-//        if (dir.exists()) {
-//            JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
-//                    "A file already exists named 'Simulation' in directory '" + dir0.getPath() + "'; \n" +
-//                            "please remove it first or move it out of the way.");
-//        }
+        File dir = new File(dir0, "save");
 
         deleteFilesThenDirectory(dir);
-
-        //if(!dir.exists()){
-        //	dir.mkdirs();
-        //}
+        dir.mkdirs();
 
         try {
+            PrintStream _out = new PrintStream(new FileOutputStream(new File(dir, "parameters.txt")));
+            _out.println(simulation.getDescription());
+            _out.println(parameters);
+            _out.close();
+
             int numDataSets = simulation.getNumDataModels();
             if (numDataSets <= 0) {
 
@@ -607,33 +595,16 @@ public class Comparison {
                 dir1.mkdirs();
                 dir2.mkdirs();
 
-                PrintStream out = new PrintStream(new FileOutputStream(new File(dir, "parameters.txt")));
-                out.println(simulation.getDescription());
-                out.println(parameters);
-                out.close();
-
                 return;
             }
-
-            int index = 0;
-
-//            SimulationWrapper simulationWrapper = new SimulationWrapper(simulation, parameters);
-//
-//            for (String param : simulationWrapper.getParameters()) {
-//                parameters.set(param, simulationWrapper.getValue(param));
-//            }
-
-//            simulationWrapper.createData(simulationWrapper.getSimulationSpecificParameters());
 
             File subdir = dir;
 
             File dir1 = new File(subdir, "graph");
             File dir2 = new File(subdir, "data");
-//            File dir2a = new File(subdir, "data.with.latents");
 
             dir1.mkdirs();
             dir2.mkdirs();
-//            dir2a.mkdirs();
 
             File dir3 = null;
 
@@ -662,12 +633,6 @@ public class Comparison {
                 DataWriter.writeRectangularData((DataSet) dataModel, out, '\t');
                 out.close();
 
-//                File filea = new File(dir2a, "data.with.latents" + (j + 1) + ".txt");
-//                Writer outa = new FileWriter(filea);
-//                DataModel dataModelWithLatents = (DataModel) simulation.getDataModelWithLatents(j);
-////                DataWriter.writeRectangularData((DataSet) dataModelWithLatents, outa, '\t');
-//                outa.close();
-
                 if (isSavePatterns()) {
                     File file3 = new File(dir3, "pattern." + (j + 1) + ".txt");
                     GraphUtils.saveGraph(SearchGraphUtils.patternForDag(graph), file3, false);
@@ -678,11 +643,6 @@ public class Comparison {
                     GraphUtils.saveGraph(new DagToPag2(graph).convert(), file4, false);
                 }
             }
-
-            PrintStream out = new PrintStream(new FileOutputStream(new File(subdir, "parameters.txt")));
-            out.println(simulation.getDescription());
-//            out.println(simulation.getSimulationSpecificParameters());
-            out.close();
         } catch (IOException e) {
             e.printStackTrace();
         }
