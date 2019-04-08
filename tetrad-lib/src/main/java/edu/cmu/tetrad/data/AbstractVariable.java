@@ -133,33 +133,17 @@ public abstract class AbstractVariable implements Variable {
 
 
     public int compareTo(Object o) {
-        Node node = (Node) o;
-        final String name = getName();
-
-        // This splitting is too slow in an inner loop.
-//        String[] tokens1 = name.split(":");
-        final String _name = node.getName();
-//        String[] tokens2 = _name.split(":");
-
-        return name.compareTo(_name);
-
-//        if (tokens1.length == 1) {
-//            tokens1 = new String[]{tokens1[0], "0"};
-//        }
-//
-//        if (tokens2.length == 1) {
-//            tokens2 = new String[]{tokens2[0], "0"};
-//        }
-//
-//        int i1 = tokens1[1].compareTo(tokens2[1]);
-//        int i2 = tokens1[0].compareTo(tokens2[0]);
-//
-//        if (i1 == 0) {
-//            return i2;
-//        }
-//        else {
-//            return i1;
-//        }
+        String node1 = this.getName();
+        String node2 = ((Node) o).getName();
+        String s1 = node1.replaceAll("\\D+", "");
+        String s2 = node2.replaceAll("\\D+", "");
+        if (s1.isEmpty() && s2.isEmpty()) {
+            return node1.toLowerCase().compareTo(node2.toLowerCase());
+        } else {
+            Integer n1 = s1.isEmpty() ? 0 : Integer.valueOf(s1);
+            Integer n2 = s2.isEmpty() ? 0 : Integer.valueOf(s2);
+            return n1.compareTo(n2);
+        }
     }
 }
 
