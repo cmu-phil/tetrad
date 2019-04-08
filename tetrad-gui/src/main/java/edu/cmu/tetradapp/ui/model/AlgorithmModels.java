@@ -76,11 +76,11 @@ public class AlgorithmModels {
                 : algorithmModels.stream()
                         .filter(e -> {
                             for (DataType dt : e.getAlgorithm().getAnnotation().dataType()) {
-                                if (!(dt == DataType.All || dt == dataType)) {
-                                    return false;
+                                if (dt == DataType.All || dt == dataType) {
+                                    return true;
                                 }
                             }
-                            return true;
+                            return false;
                         })
                         .collect(Collectors.toList());
     }
