@@ -588,7 +588,7 @@ public class TestFges {
 //        System.out.println(pattern);
 
         String trueString = "Graph Nodes:\n" +
-                "ABILITY,GPQ,PREPROD,QFJ,SEX,CITES,PUBS\n" +
+                "ABILITY;GPQ;PREPROD;QFJ;SEX;CITES;PUBS\n" +
                 "\n" +
                 "Graph Edges: \n" +
                 "1. ABILITY --> GPQ \n" +
