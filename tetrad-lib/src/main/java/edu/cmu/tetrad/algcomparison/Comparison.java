@@ -566,6 +566,128 @@ public class Comparison {
         }
     }
 
+    /**
+     * Saves simulationWrapper data.
+     *
+     * @param dataPath   The path to the directory where the simulationWrapper data should be saved.
+     * @param simulation The simulate used to generate the graphs and data.
+     * @param parameters The parameters to be used in the simulationWrapper.
+     */
+    public void saveToFilesSingleSimulation(String dataPath, Simulation simulation, Parameters parameters) {
+        File dir0 = new File(dataPath);
+        File dir;
+        //int i = 0;
+
+        dir = new File(dir0, "save");
+
+//
+//        do {
+//            dir = new File(dir0, "Simulation" + (++i));
+//        } while (dir.exists());
+
+//        if (dir.exists()) {
+//            JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
+//                    "A file already exists named 'Simulation' in directory '" + dir0.getPath() + "'; \n" +
+//                            "please remove it first or move it out of the way.");
+//        }
+
+        deleteFilesThenDirectory(dir);
+
+        //if(!dir.exists()){
+        //	dir.mkdirs();
+        //}
+
+        try {
+            int numDataSets = simulation.getNumDataModels();
+            if (numDataSets <= 0) {
+
+                File dir1 = new File(dir, "graph");
+                File dir2 = new File(dir, "data");
+
+                dir1.mkdirs();
+                dir2.mkdirs();
+
+                PrintStream out = new PrintStream(new FileOutputStream(new File(dir, "parameters.txt")));
+                out.println(simulation.getDescription());
+                out.println(parameters);
+                out.close();
+
+                return;
+            }
+
+            int index = 0;
+
+//            SimulationWrapper simulationWrapper = new SimulationWrapper(simulation, parameters);
+//
+//            for (String param : simulationWrapper.getParameters()) {
+//                parameters.set(param, simulationWrapper.getValue(param));
+//            }
+
+//            simulationWrapper.createData(simulationWrapper.getSimulationSpecificParameters());
+
+            File subdir = dir;
+
+            File dir1 = new File(subdir, "graph");
+            File dir2 = new File(subdir, "data");
+//            File dir2a = new File(subdir, "data.with.latents");
+
+            dir1.mkdirs();
+            dir2.mkdirs();
+//            dir2a.mkdirs();
+
+            File dir3 = null;
+
+            if (isSavePatterns()) {
+                dir3 = new File(subdir, "patterns");
+                dir3.mkdirs();
+            }
+
+            File dir4 = null;
+
+            if (isSavePags()) {
+                dir4 = new File(subdir, "pags");
+                dir4.mkdirs();
+            }
+
+
+            for (int j = 0; j < simulation.getNumDataModels(); j++) {
+                File file2 = new File(dir1, "graph." + (j + 1) + ".txt");
+                Graph graph = simulation.getTrueGraph(j);
+
+                GraphUtils.saveGraph(graph, file2, false);
+
+                File file = new File(dir2, "data." + (j + 1) + ".txt");
+                Writer out = new FileWriter(file);
+                DataModel dataModel = simulation.getDataModel(j);
+                DataWriter.writeRectangularData((DataSet) dataModel, out, '\t');
+                out.close();
+
+//                File filea = new File(dir2a, "data.with.latents" + (j + 1) + ".txt");
+//                Writer outa = new FileWriter(filea);
+//                DataModel dataModelWithLatents = (DataModel) simulation.getDataModelWithLatents(j);
+////                DataWriter.writeRectangularData((DataSet) dataModelWithLatents, outa, '\t');
+//                outa.close();
+
+                if (isSavePatterns()) {
+                    File file3 = new File(dir3, "pattern." + (j + 1) + ".txt");
+                    GraphUtils.saveGraph(SearchGraphUtils.patternForDag(graph), file3, false);
+                }
+
+                if (isSavePags()) {
+                    File file4 = new File(dir4, "pag." + (j + 1) + ".txt");
+                    GraphUtils.saveGraph(new DagToPag2(graph).convert(), file4, false);
+                }
+            }
+
+            PrintStream out = new PrintStream(new FileOutputStream(new File(subdir, "parameters.txt")));
+            out.println(simulation.getDescription());
+//            out.println(simulation.getSimulationSpecificParameters());
+            out.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
 
     /**
      *
