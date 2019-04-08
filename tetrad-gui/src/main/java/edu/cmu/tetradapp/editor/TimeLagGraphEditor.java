@@ -381,7 +381,7 @@ public final class TimeLagGraphEditor extends JPanel
 //
 //        edit.add(copy);
 //        edit.add(paste);
-        edit.addSeparator();
+//        edit.addSeparator();
 
         JMenuItem configuration = new JMenuItem("Configuration...");
         edit.add(configuration);
