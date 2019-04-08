@@ -628,18 +628,6 @@
                 </model-class>
                 <editor-class>edu.cmu.tetradapp.editor.DataEditor</editor-class>
             </model>
-            <model name="Replace Missing Values with Regression Predictions"
-                   acronym="Replace Regression" help="data"
-                   category="Missing Values">
-                <logger>
-                    <event id="info" description="Information" default="on"/>
-                    <event id="data" description="Data"/>
-                </logger>
-                <model-class>
-                    edu.cmu.tetradapp.model.datamanip.RegressionInterpolatorWrapper
-                </model-class>
-                <editor-class>edu.cmu.tetradapp.editor.DataEditor</editor-class>
-            </model>
             <model name="Replace Missing Values by Extra Category"
                    acronym="Replace Category" help="data"
                    category="Missing Values">
@@ -1526,16 +1514,16 @@
             <!--Restored Mimbuild on 6/20/2017 -->
             <!--Removed again Mimbuild on 4/9/2019 Folded into FOFC -->
             <!--<model name="MIMBuild" acronym="MIMBuild" help="mimbuild"-->
-                   <!--category="Multiple Indicator Model searches">-->
-                <!--<logger>-->
-                    <!--<event id="info" description="Information" default="on"/>-->
-                    <!--<event id="details" description="Misc Fine Details" default="on"/>-->
-                    <!--<event id="maxmodel" description="Max P Value Model" default="on"/>-->
-                <!--</logger>-->
-                <!--<model-class>edu.cmu.tetradapp.model.MimBuildRunner-->
-                <!--</model-class>-->
-                <!--<editor-class>edu.cmu.tetradapp.editor.MimbuildEditor-->
-                <!--</editor-class>-->
+            <!--category="Multiple Indicator Model searches">-->
+            <!--<logger>-->
+            <!--<event id="info" description="Information" default="on"/>-->
+            <!--<event id="details" description="Misc Fine Details" default="on"/>-->
+            <!--<event id="maxmodel" description="Max P Value Model" default="on"/>-->
+            <!--</logger>-->
+            <!--<model-class>edu.cmu.tetradapp.model.MimBuildRunner-->
+            <!--</model-class>-->
+            <!--<editor-class>edu.cmu.tetradapp.editor.MimbuildEditor-->
+            <!--</editor-class>-->
             <!--</model>-->
 
             <!--<model name="MIMTrekBuild" acronym="MIMTrekBuild" help="mimbuild"-->
