@@ -3,9 +3,6 @@
  */
 package edu.cmu.tetrad.algcomparison.algorithm.oracle.pag;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.independence.ProbabilisticTest;
@@ -19,6 +16,8 @@ import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.DagToPag;
 import edu.cmu.tetrad.util.Parameters;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Jan 4, 2019 4:32:05 PM
@@ -29,7 +28,8 @@ import edu.cmu.tetrad.util.Parameters;
 @edu.cmu.tetrad.annotation.Algorithm(
         name = "RFCI-BSC",
         command = "rfci-bsc",
-        algoType = AlgType.forbid_latent_common_causes
+        algoType = AlgType.forbid_latent_common_causes,
+        dataType = DataType.Discrete
 )
 public class RfciBsc implements Algorithm, HasKnowledge {
 
