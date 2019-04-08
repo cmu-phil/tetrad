@@ -104,8 +104,12 @@ public class TimeLagGraph implements Graph {
             }
         } else {
             for (int i = 1; i <= getMaxLag(); i++) {
-                Node node1 = node.like(id.getName() + ":" + i);
-                getGraph().addNode(node1);
+                final String name = id.getName() + ":" + i;
+                Node node1 = node.like(name);
+
+                if (getGraph().getNode(name) == null) {
+                    getGraph().addNode(node1);
+                }
             }
         }
 

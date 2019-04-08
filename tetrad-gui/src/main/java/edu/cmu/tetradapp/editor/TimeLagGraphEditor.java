@@ -232,7 +232,7 @@ public final class TimeLagGraphEditor extends JPanel
             }
         });
         
-        // Graph menu at the very top of the window
+//         Graph menu at the very top of the window
         JMenuBar menuBar = createGraphMenuBar();
    
         // topBox Left side toolbar
@@ -352,11 +352,11 @@ public final class TimeLagGraphEditor extends JPanel
 
         JMenu fileMenu = new GraphFileMenu(this, getWorkbench());
         JMenu editMenu = createEditMenu();
-        JMenu graphMenu = createGraphMenu();
+//        JMenu graphMenu = createGraphMenu();
 
         menuBar.add(fileMenu);
         menuBar.add(editMenu);
-        menuBar.add(graphMenu);
+//        menuBar.add(graphMenu);
         menuBar.add(new LayoutMenu(this));
 
         return menuBar;
@@ -381,7 +381,7 @@ public final class TimeLagGraphEditor extends JPanel
 //
 //        edit.add(copy);
 //        edit.add(paste);
-        edit.addSeparator();
+//        edit.addSeparator();
 
         JMenuItem configuration = new JMenuItem("Configuration...");
         edit.add(configuration);
