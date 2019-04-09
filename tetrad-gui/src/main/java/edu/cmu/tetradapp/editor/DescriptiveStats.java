@@ -29,6 +29,7 @@ import edu.cmu.tetrad.data.DiscreteVariable;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.NumberFormatUtil;
 import edu.cmu.tetrad.util.StatUtils;
+import edu.cmu.tetrad.util.TextTable;
 
 import java.text.NumberFormat;
 import java.util.Arrays;
@@ -73,30 +74,62 @@ class DescriptiveStats {
             }
         }
 
-        String result = "Descriptive Statistics for: " + variable.getName() + "\n";
-        result +=       "------------------------------------\n\n";
+        StringBuilder b = new StringBuilder();
+
+        b.append("Descriptive Statistics for: " + variable.getName() + "\n\n");
 
         double[] normalValues = normalParams(data);
-
-        result += "Sample Size:\t\t" + dataSet.getNumRows() + "\n";
-        result += "Mean:\t\t\t" + nf.format(normalValues[0]) + "\nStandard Deviation:\t" + nf.format(normalValues[1]) + "\nVariance:\t\t" + nf.format(normalValues[2]) + "\n";
-
-        result += "Skewness:\t\t" + nf.format(StatUtils.skewness(data)) + "\n";
-        result += "Excess Kurtosis:\t" + nf.format(StatUtils.kurtosis(data)) + "\n";
+        TextTable table;
 
         if (continuous) {
-            result += "SE Mean:\t\t" + nf.format(standardErrorMean(normalValues[1], dataSet.getNumRows())) + "\n";
+            table = new TextTable(11, 2);
+        } else {
+            table = new TextTable(7, 2);
         }
 
-        double[] median = median(data);
+        int rowindex = 0;
 
-        result += "Median:\t\t\t" + nf.format(median[0]) + "\n";
+        table.setToken(rowindex, 0, "Sample Size:");
+        table.setToken(rowindex++, 1, "" + dataSet.getNumRows());
+
+        table.setToken(rowindex, 0, "Mean:");
+        table.setToken(rowindex++, 1, nf.format(normalValues[0]));
+
+        table.setToken(rowindex, 0, "Standard Deviation:");
+        table.setToken(rowindex++, 1, nf.format(normalValues[1]));
+
+        table.setToken(rowindex, 0, "Variance:");
+        table.setToken(rowindex++, 1, nf.format(normalValues[2]));
+
+        table.setToken(rowindex, 0, "Skewness:");
+        table.setToken(rowindex++, 1, nf.format(StatUtils.skewness(data)));
+
+        table.setToken(rowindex, 0, "Excess Kurtosis:");
+        table.setToken(rowindex++, 1, nf.format(StatUtils.skewness(data)));
+
+        table.setToken(rowindex, 0, "Skewness:");
+        table.setToken(rowindex++, 1, nf.format(StatUtils.kurtosis(data)));
+
 
         if (continuous) {
-            result += "Minimum Value:\t\t" + nf.format(median[1]) + "\nMaximum Value:\t\t" + nf.format(median[2]);
+            double[] median = median(data);
+
+            table.setToken(rowindex, 0, "SE Mean:");
+            table.setToken(rowindex++, 1, nf.format(standardErrorMean(normalValues[1], dataSet.getNumRows())));
+
+            table.setToken(rowindex, 0, "Median:");
+            table.setToken(rowindex++, 1, nf.format(median[0]));
+
+            table.setToken(rowindex, 0, "Minimum:");
+            table.setToken(rowindex++, 1, nf.format(median[1]));
+
+            table.setToken(rowindex, 0, "Maximum:");
+            table.setToken(rowindex++, 1, nf.format(median[2]));
         }
 
-        return result;
+        b.append(table);
+
+        return b.toString();
     }
 
     /*
