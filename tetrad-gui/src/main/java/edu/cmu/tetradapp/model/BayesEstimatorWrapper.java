@@ -82,11 +82,13 @@ public class BayesEstimatorWrapper implements SessionModel {
             throw new NullPointerException("BayesPmWrapper must not be null");
         }
         
-        DataModel dataModel = dataWrapper.getDataModelList();
+        DataModelList dataModel = dataWrapper.getDataModelList();
         
         if (dataModel != null) {
-            for (DataModel model : (DataModelList)dataModel) {
+            for (int i = 0; i < dataWrapper.getDataModelList().size(); i++) {
+                DataModel model = dataWrapper.getDataModelList().get(i);
             	DataSet dataSet = (DataSet) model;
+            	bayesPmWrapper.setModelIndex(i);
             	BayesPm bayesPm = bayesPmWrapper.getBayesPm();
             	
             	estimate(dataSet, bayesPm);
@@ -104,7 +106,7 @@ public class BayesEstimatorWrapper implements SessionModel {
         this.numModels = bayesIms.size();
         this.modelIndex = 0;
         this.bayesIm = bayesIms.get(modelIndex);
-        DataModel model = ((DataModelList)dataModel).get(modelIndex);
+        DataModel model = dataModel.get(modelIndex);
         this.dataSet = (DataSet)model;
     }
 

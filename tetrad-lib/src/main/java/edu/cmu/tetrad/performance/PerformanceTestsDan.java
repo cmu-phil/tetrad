@@ -26,10 +26,7 @@ import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataUtils;
 import edu.cmu.tetrad.data.ICovarianceMatrix;
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.search.DagToPag;
-import edu.cmu.tetrad.search.GFci;
-import edu.cmu.tetrad.search.IndTestFisherZ;
-import edu.cmu.tetrad.search.Pc;
+import edu.cmu.tetrad.search.*;
 import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemPm;
 
@@ -205,7 +202,7 @@ public class PerformanceTestsDan {
             out10.println(data);
 
             out11.println("True PAG_of_the_true_DAG");
-            final Graph truePag = new DagToPag(dag).convert();
+            final Graph truePag = new DagToPag2(dag).convert();
             out11.println(truePag);
             printDanMatrix(_vars, truePag, out12);
 

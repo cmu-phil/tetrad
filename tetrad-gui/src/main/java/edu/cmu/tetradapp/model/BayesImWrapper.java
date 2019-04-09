@@ -91,7 +91,7 @@ public class BayesImWrapper implements SessionModel, Memorable {
         List<BayesIm> bayesIms = null;
 
         if (simulation == null) {
-            throw new NullPointerException("The Simulation box does not contain a simulation.");
+            throw new NullPointerException("The S   imulation box does not contain a simulation.");
         }
 
         edu.cmu.tetrad.algcomparison.simulation.Simulation _simulation = simulation.getSimulation();

@@ -115,7 +115,7 @@ public class TsFciRunner2 extends AbstractAlgorithmRunner
         Score score = new ScoredIndTest(independenceTest);
 
         if (independenceTest instanceof  IndTestDSep) {
-            final DagToPag dagToPag = new DagToPag(((IndTestDSep) independenceTest).getGraph());
+            final DagToPag2 dagToPag = new DagToPag2(((IndTestDSep) independenceTest).getGraph());
             dagToPag.setCompleteRuleSetUsed(params.getBoolean("completeRuleSetUsed", false));
             graph = dagToPag.convert();
         }
