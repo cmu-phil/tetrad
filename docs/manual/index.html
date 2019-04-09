@@ -4471,7 +4471,8 @@ The “Max P” method for orienting an unshielded triple X—Y—Z records p-va
 
     <p>The regression box performs regression on variables in a data set, in an attempt to discover causal correlations
         between them.
-        Both linear and logistic regression are available.</p>
+        Both linear and 
+        regression are available.</p>
 
     <h2>Possible Parent Boxes of the Regression Box</h2>
 
@@ -4532,11 +4533,12 @@ The “Max P” method for orienting an unshielded triple X—Y—Z records p-va
     <h2>Logistic Regression</h2>
 
     <p>Logistic regression may be run on discrete, continuous, or mixed data sets; however, the response variable must
-        be binary. In all other ways, the logistic regression box functions like the linear regression box.</p>
+        be binary. In all other ways, the logistic regression box functions like the linear regression box.
+    </p>
 
-<h2>Lingam</h2>
+    <h2>Lingam</h2>
 
-<p>LiNGAM (Shimizu et al., 2006) was one of the first of the algorithms that assumed linearity among the variables 
+    <p>LiNGAM (Shimizu et al., 2006) was one of the first of the algorithms that assumed linearity among the variables 
     and non-Gaussianity of error term, and still one of the best for smaller models, for the basic algorithm, 
     implemented here. The idea is to use the Independent Components Analysis (ICA) algorithm to check all 
     permutations of the variables to find one that is a causal order—that is, one in which earlier variables 
@@ -4545,26 +4547,27 @@ The “Max P” method for orienting an unshielded triple X—Y—Z records p-va
     of the inverse of the weight matrix contains no zeros. This gives us a permuted estimate of the weight matrix. 
     Then we look for a permutation of this weight matrix that is lower triangular. There must be one, since the 
     model is assumed to be a DAG. But a lower triangular weight matrix just gives a causal order, so we’re done.
-</p>
- <p>
-In the referenced paper, we implement Algorithm A, which is described above. Once one has a causal order the only 
+    </p>
+    <p>
+    In the referenced paper, we implement Algorithm A, which is described above. Once one has a causal order the only 
      thing one needs to do is to eliminate the extra edges. For this, we use the causal order to define knowledge 
      of tiers and run FGES.
-</p>
+    </p>
  
-<p>
-Our implementation of LiNGAM has one parameter, penalty discount, used for the FGES adjacency search. The method as 
+    <p>
+    Our implementation of LiNGAM has one parameter, penalty discount, used for the FGES adjacency search. The method as 
     implemented does not scale much beyond 10 variables, because it is checking every permutation of all of the 
     variables (twice). The implementation of ICA we use is FastIca (Hyvärinen et al., 2004).
-</p>
+    </p>
  
-<p>
-Shimizu, S., Hoyer, P. O., Hyvärinen, A., & Kerminen, A. (2006). A linear non-Gaussian acyclic model for causal discovery. Journal of Machine Learning Research, 7(Oct), 2003-2030.
-</p> 
+    <p>
+    Shimizu, S., Hoyer, P. O., Hyvärinen, A., & Kerminen, A. (2006). A linear non-Gaussian acyclic model for causal 
+        discovery. Journal of Machine Learning Research, 7(Oct), 2003-2030.
+    </p> 
 
-<p>
-Hyvärinen, A., Karhunen, J., & Oja, E. (2004). Independent component analysis (Vol. 46). John Wiley & Sons.
-</p>
+    <p>
+    Hyvärinen, A., Karhunen, J., & Oja, E. (2004). Independent component analysis (Vol. 46). John Wiley & Sons.
+    </p>
 
     <h1 id="appendix"><span class="section_heading">Appendix</span></h1>
     <h2>An Introduction to PAGs</h2>
