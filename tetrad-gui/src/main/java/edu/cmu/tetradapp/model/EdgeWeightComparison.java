@@ -23,9 +23,12 @@ package edu.cmu.tetradapp.model;
 
 import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.session.SessionModel;
+import edu.cmu.tetrad.util.NumberFormatUtil;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradMatrix;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
+
+import java.text.NumberFormat;
 
 /**
  * @author Michael Freenor
@@ -69,8 +72,10 @@ public class EdgeWeightComparison implements SessionModel {
                         * (targetMatrix.get(i, j) - referenceMatrix.get(i, j));
             }
         }
-        displayString += "Scheines Score: " + score + "\n\n";
-        displayString += "(Calculated by summing the squared differences\n of each corresponding edge weight.)";
+
+        NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
+
+        displayString += "Sum of squared differences of corresponding\nedge weights:\n\n" + nf.format(score);
         return displayString;
     }
 

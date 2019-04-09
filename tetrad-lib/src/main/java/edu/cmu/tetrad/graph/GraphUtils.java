@@ -3068,6 +3068,8 @@ public final class GraphUtils {
         for (Edge edge : graph.getEdges(node1)) {
             Node child = Edges.traverseDirected(node1, edge);
 
+            if (graph.getEdges(node1, child).size() == 2) return true;
+
             if (child == null) {
                 continue;
             }
