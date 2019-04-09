@@ -225,7 +225,7 @@ public final class UpdatedBayesImWizard extends JPanel {
 
         Box b0 = Box.createHorizontalBox();
         b0.add(new JLabel(
-                "of its parents, updated to reflect the following evidence:"));
+                "of its parents, conditional on the following additional evidence:"));
         b0.add(Box.createHorizontalGlue());
 
         conditionalBox.add(b0);
