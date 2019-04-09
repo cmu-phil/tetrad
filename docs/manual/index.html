@@ -2698,41 +2698,37 @@ there is a single latent for each output cluster. For MimBuild, a pattern over t
 -->
 
 
-    <h3>The FOFC Algorithm</h3>
+    <h3>The FOFC and MIMBUILD Algorithms</h3>
 
     <h4>Description</h4>
 
     <div id="fofc">
 
         <p>Searches for causal structure over latent variables, where the true models are Multiple Indicator Models
-            (MIM’s) as described in the Graphs section.
-            The idea is this. There is a set of latent (unmeasured) variables over which a directed acyclic model has
-            been defined.
-            Then for each of these latent L there are 3 (preferably 4) or more measures of that variable—that is,
-            measured variables that are all children of L.
-            Under these conditions, one may define tetrad constraints (see Spirtes et al., 2000).
-            There is a theorem to the effect that if certain patterns of these tetrad constraints hold,
-            there must be a latent common cause of all of them (the Tetrad Representation Theorem).
-            The FOFC (Find One Factor Clusters) takes advantage of this fact. The basic idea is to build up clusters one
-            at a time by adding variables that keep them pure,
-            in the sense that all relevant tetrad constraints still hold.
-            There are different ways of going about this. One could try to build one cluster up as far as possible,
-            then remove all of those variables from the set, and try to make a another cluster using the remaining
-            variables (SAG, Seed and Grow).
-            Or one can try in parallel to grow all possible clusters and then choose among the grown clusters using some
-            criterion such as cluster size (GAP, Grow and Pick).
-            In general, GAP is more accurate. The result is a clustering of variables.
-            Moreover, once one has such a “measurement model,”
-            once can estimate a covariance matrix over the latent variables that are parents of the measures and use
-            some algorithm such as PC or GES to estimate a pattern over the latents.
-            The algorithm to run PC or GES on this covariance matrix is called MimBuild (“MIM” is the the graph,
-            Multiple Indicator Model; “Build” means build).
-            In this way, one may recover causal structure over the latents. The more measures one has for each latent,
-            the better the result is, generally.
-            The larger the sample size the better. One important issue is that the algorithm is sensitive to so-called
-            “impurities”—that is,
-            causal edges among the measured variables, or between measured variables and unintended latent.
-            The algorithm will in effect remove one measure in each impure pair from consideration</p>
+        (MIM’s) as described in the Graphs section.
+        The idea is this. There is a set of latent (unmeasured) variables over which a directed acyclic model has
+        been defined, Then for each of these latent L there are 3 (preferably 4) or more measures of that variable—that is,
+        measured variables that are all children of L.
+        Under these conditions, one may define tetrad constraints (see Spirtes et al., 2000).
+        There is a theorem to the effect that if certain patterns of these tetrad constraints hold,
+        there must be a latent common cause of all of them (the Tetrad Representation Theorem).
+        The FOFC (Find One Factor Clusters) takes advantage of this fact. The basic idea is to build up clusters one
+        at a time by adding variables that keep them pure in the sense that all relevant tetrad constraints still hold.
+        There are different ways of going about this. One could try to build one cluster up as far as possible,
+        then remove all of those variables from the set, and try to make a another cluster using the remaining
+        variables (SAG, Seed and Grow).
+        Or one can try in parallel to grow all possible clusters and then choose among the grown clusters using some
+        criterion such as cluster size (GAP, Grow and Pick).
+        In general, GAP is more accurate. The result is a clustering of variables.
+        Once one has such a “measurement model, one can estimate (using the ESTIMATOR box) a covariance matrix over the latent variables that are parents of the        
+       measures and use some algorithm such as PC or GES to estimate a pattern over the latent variables. The algorithm to run PC or GES on this covariance matrix is  
+       called MimBuild (“MIM” is the    graph, Multiple Indicator Model; “Build” means build). MimBUILD is an optional choice inside FOFC
+        In this way, one may recover causal structure over the latents. The more measures one has for each latent the better the result is, generally. At least 3 measured 
+         indicator variables are needed for each latent variable.
+        The larger the sample size the better. One important issue is that the algorithm is sensitive to so-called
+        “impurities”—that is,causal edges among the measured variables, or between measured variables and multiple latent variables.
+        The algorithm will in effect remove one measure in each impure pair from consideration.
+    </p>
 
     </div>
 
@@ -4538,6 +4534,37 @@ The “Max P” method for orienting an unshielded triple X—Y—Z records p-va
     <p>Logistic regression may be run on discrete, continuous, or mixed data sets; however, the response variable must
         be binary. In all other ways, the logistic regression box functions like the linear regression box.</p>
 
+<h2>Lingam</h2>
+
+<p>LiNGAM (Shimizu et al., 2006) was one of the first of the algorithms that assumed linearity among the variables 
+    and non-Gaussianity of error term, and still one of the best for smaller models, for the basic algorithm, 
+    implemented here. The idea is to use the Independent Components Analysis (ICA) algorithm to check all 
+    permutations of the variables to find one that is a causal order—that is, one in which earlier variables 
+    can cause later variables but not vice-versa. The method is clever. First, since we assume the model is a 
+    directed acyclic graph (DAG), there must be some permutation of the variables for which the main diagonal 
+    of the inverse of the weight matrix contains no zeros. This gives us a permuted estimate of the weight matrix. 
+    Then we look for a permutation of this weight matrix that is lower triangular. There must be one, since the 
+    model is assumed to be a DAG. But a lower triangular weight matrix just gives a causal order, so we’re done.
+</p>
+ <p>
+In the referenced paper, we implement Algorithm A, which is described above. Once one has a causal order the only 
+     thing one needs to do is to eliminate the extra edges. For this, we use the causal order to define knowledge 
+     of tiers and run FGES.
+</p>
+ 
+<p>
+Our implementation of LiNGAM has one parameter, penalty discount, used for the FGES adjacency search. The method as 
+    implemented does not scale much beyond 10 variables, because it is checking every permutation of all of the 
+    variables (twice). The implementation of ICA we use is FastIca (Hyvärinen et al., 2004).
+</p>
+ 
+<p>
+Shimizu, S., Hoyer, P. O., Hyvärinen, A., & Kerminen, A. (2006). A linear non-Gaussian acyclic model for causal discovery. Journal of Machine Learning Research, 7(Oct), 2003-2030.
+</p> 
+
+<p>
+Hyvärinen, A., Karhunen, J., & Oja, E. (2004). Independent component analysis (Vol. 46). John Wiley & Sons.
+</p>
 
     <h1 id="appendix"><span class="section_heading">Appendix</span></h1>
     <h2>An Introduction to PAGs</h2>
@@ -4649,11 +4676,12 @@ The “Max P” method for orienting an unshielded triple X—Y—Z records p-va
 
         <p>Figure 1. Two CBNs that FCI (as well as FCI+, GFCI, and RFCI) cannot distinguish.</p>
 
-        <p>Figure 2. The PAG that represents the CBNs in both Figures 1a and 1b.</p>
+        <p>Figure 2. The PAG that represents the CBN s in both Figures 1a and 1b.</p>
 
 
     </table>
 
+<h1>Glossary</h1>
 </div>
 
 <!-- Google Analytics: change UA-XXXXX-Y to be your site's ID. -->
