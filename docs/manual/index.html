@@ -2705,30 +2705,37 @@ there is a single latent for each output cluster. For MimBuild, a pattern over t
     <div id="fofc">
 
         <p>Searches for causal structure over latent variables, where the true models are Multiple Indicator Models
-        (MIM’s) as described in the Graphs section.
-        The idea is this. There is a set of latent (unmeasured) variables over which a directed acyclic model has
-        been defined, Then for each of these latent L there are 3 (preferably 4) or more measures of that variable—that is,
-        measured variables that are all children of L.
-        Under these conditions, one may define tetrad constraints (see Spirtes et al., 2000).
-        There is a theorem to the effect that if certain patterns of these tetrad constraints hold,
-        there must be a latent common cause of all of them (the Tetrad Representation Theorem).
-        The FOFC (Find One Factor Clusters) takes advantage of this fact. The basic idea is to build up clusters one
-        at a time by adding variables that keep them pure in the sense that all relevant tetrad constraints still hold.
-        There are different ways of going about this. One could try to build one cluster up as far as possible,
-        then remove all of those variables from the set, and try to make a another cluster using the remaining
-        variables (SAG, Seed and Grow).
-        Or one can try in parallel to grow all possible clusters and then choose among the grown clusters using some
-        criterion such as cluster size (GAP, Grow and Pick).
-        In general, GAP is more accurate. The result is a clustering of variables.
-        Once one has such a “measurement model, one can estimate (using the ESTIMATOR box) a covariance matrix over the latent variables that are parents of the        
-       measures and use some algorithm such as PC or GES to estimate a pattern over the latent variables. The algorithm to run PC or GES on this covariance matrix is  
-       called MimBuild (“MIM” is the    graph, Multiple Indicator Model; “Build” means build). MimBUILD is an optional choice inside FOFC
-        In this way, one may recover causal structure over the latents. The more measures one has for each latent the better the result is, generally. At least 3 measured 
-         indicator variables are needed for each latent variable.
-        The larger the sample size the better. One important issue is that the algorithm is sensitive to so-called
-        “impurities”—that is,causal edges among the measured variables, or between measured variables and multiple latent variables.
-        The algorithm will in effect remove one measure in each impure pair from consideration.
-    </p>
+            (MIM’s) as described in the Graphs section.
+            The idea is this. There is a set of latent (unmeasured) variables over which a directed acyclic model has
+            been defined, Then for each of these latent L there are 3 (preferably 4) or more measures of that
+            variable—that is,
+            measured variables that are all children of L.
+            Under these conditions, one may define tetrad constraints (see Spirtes et al., 2000).
+            There is a theorem to the effect that if certain patterns of these tetrad constraints hold,
+            there must be a latent common cause of all of them (the Tetrad Representation Theorem).
+            The FOFC (Find One Factor Clusters) takes advantage of this fact. The basic idea is to build up clusters one
+            at a time by adding variables that keep them pure in the sense that all relevant tetrad constraints still
+            hold.
+            There are different ways of going about this. One could try to build one cluster up as far as possible,
+            then remove all of those variables from the set, and try to make a another cluster using the remaining
+            variables (SAG, Seed and Grow).
+            Or one can try in parallel to grow all possible clusters and then choose among the grown clusters using some
+            criterion such as cluster size (GAP, Grow and Pick).
+            In general, GAP is more accurate. The result is a clustering of variables.
+            Once one has such a “measurement model, one can estimate (using the ESTIMATOR box) a covariance matrix over
+            the latent variables that are parents of the
+            measures and use some algorithm such as PC or GES to estimate a pattern over the latent variables. The
+            algorithm to run PC or GES on this covariance matrix is
+            called MimBuild (“MIM” is the graph, Multiple Indicator Model; “Build” means build). MimBUILD is an optional
+            choice inside FOFC
+            In this way, one may recover causal structure over the latents. The more measures one has for each latent
+            the better the result is, generally. At least 3 measured
+            indicator variables are needed for each latent variable.
+            The larger the sample size the better. One important issue is that the algorithm is sensitive to so-called
+            “impurities”—that is,causal edges among the measured variables, or between measured variables and multiple
+            latent variables.
+            The algorithm will in effect remove one measure in each impure pair from consideration.
+        </p>
 
     </div>
 
@@ -2775,7 +2782,44 @@ there is a single latent for each output cluster. For MimBuild, a pattern over t
 
     <p><a href="#maxit">alpha</a>, <a href="#useWishart">useWishart</a>, <a href="#useGap">useGap</a></p>
 
-    <h3>Orientation Algorithms (EB, R1, R2, R3, R4, RSkew, RSkewE, Skew, SkewE)</h3>
+    <h3>The LiNGAM Algorithm</h3>
+
+    <h4>Description</h4>
+
+    <p>LiNGAM (Shimizu et al., 2006) was one of the first of the algorithms that assumed linearity among the variables
+        and non-Gaussianity of error term, and still one of the best for smaller models, for the basic algorithm,
+        implemented here. The idea is to use the Independent Components Analysis (ICA) algorithm to check all
+        permutations of the variables to find one that is a causal order—that is, one in which earlier variables
+        can cause later variables but not vice-versa. The method is clever. First, since we assume the model is a
+        directed acyclic graph (DAG), there must be some permutation of the variables for which the main diagonal
+        of the inverse of the weight matrix contains no zeros. This gives us a permuted estimate of the weight matrix.
+        Then we look for a permutation of this weight matrix that is lower triangular. There must be one, since the
+        model is assumed to be a DAG. But a lower triangular weight matrix just gives a causal order, so we’re done.
+    </p>
+    <p>
+        In the referenced paper, we implement Algorithm A, which is described above. Once one has a causal order the
+        only
+        thing one needs to do is to eliminate the extra edges. For this, we use the causal order to define knowledge
+        of tiers and run FGES.
+    </p>
+
+    <p>
+        Our implementation of LiNGAM has one parameter, penalty discount, used for the FGES adjacency search. The method
+        as
+        implemented does not scale much beyond 10 variables, because it is checking every permutation of all of the
+        variables (twice). The implementation of ICA we use is FastIca (Hyvärinen et al., 2004).
+    </p>
+
+    <p>
+        Shimizu, S., Hoyer, P. O., Hyvärinen, A., & Kerminen, A. (2006). A linear non-Gaussian acyclic model for causal
+        discovery. Journal of Machine Learning Research, 7(Oct), 2003-2030.
+    </p>
+
+    <p>
+        Hyvärinen, A., Karhunen, J., & Oja, E. (2004). Independent component analysis (Vol. 46). John Wiley & Sons.
+    </p>
+
+    <h3>Orientation Algorithms (R3, RSkew, Skew)</h3>
 
     <h4>Description</h4>
 
@@ -2785,22 +2829,15 @@ there is a single latent for each output cluster. For MimBuild, a pattern over t
             information.
             (If the variables are all Gaussian, one cannot orient these edges. That is, these rules will orient left or
             right randomly.)
-            For EB, RSkew, RSkewE, Skew and SkewE, see Hyvarinen and Smith, 2013. For R1, R2, R3 and R4, see Ramsey et
+            For RSkew and Skew, see Hyvarinen and Smith, 2013. For R3 see Ramsey et
             al., 2012.</p>
 
         <p>The principles governing these rules vary.
-            R1 and R2 appeal directly to the Central Limit Theorem to judge which of various conditioning sets yields
-            the greatest non-Gaussianity measure.
-            (The measure for non-Gaussianity measure used is Anderson-Darling.)
-            R4 does as well, but allows coefficients for relevant parameters to be adjusted to achieve maximum
-            non-Gaussianity.
-            EB works by appealing to entropy for the orientation. R3 uses the same rule as EB except using the
-            Anderson-Darling score for a measure of non-Gaussianity.
+            R3 appeals to entropy for orientation. This is similar in spirit to the method EB (Entropy Based) of
+            Hyvarinen and Smith, though with a different non-Gaussianity measure.
             RSkew and Skew appeal to measures of skew for the variables and assume positive skewness for all variables.
             The rules for the two are different; please see Hyvarinen and Smith for details.
-            SkewE and RSkewE adjust the signs of variables by the signs of their skewnesses to ensure that the
-            assumption of positive skewness holds.
-            A comparison of all of these methods is given in Ramsey et al., 2012.
+            A comparison of these and other methods is given in Ramsey et al., 2012.
             In general, for fMRI data, we find that the RSkew method works the best, followed by the R3 method.
             Cycles can be oriented using these methods, since each edge is oriented independently of the others.</p>
 
@@ -2920,7 +2957,8 @@ there is a single latent for each output cluster. For MimBuild, a pattern over t
             <li>Default Value: <span id="avgDegree_default_value">2</span></li>
             <li>Lower Bound: <span id="avgDegree_lower_bound">1</span></li>
             <li>Upper Bound: <span id="avgDegree_upper_bound">2147483647</span></li>
-            <li>Value Type: <span id="avgDegree_value_type">Integer</span></li></td>
+            <li>Value Type: <span id="avgDegree_value_type">Integer</span></li>
+            </td>
         </ul>
 
         <h3 id="basisType" class="parameter_description">basisType</h3>
@@ -2931,7 +2969,8 @@ there is a single latent for each output cluster. For MimBuild, a pattern over t
             <li>Default Value: <span id="basisType_default_value">2</span></li>
             <li>Lower Bound: <span id="basisType_lower_bound">1</span></li>
             <li>Upper Bound: <span id="basisType_upper_bound">2</span></li>
-            <li>Value Type: <span id="basisType_value_type">Integer</span></li></td>
+            <li>Value Type: <span id="basisType_value_type">Integer</span></li>
+            </td>
         </ul>
 
         <h3 id="betaLeftValue" class="parameter_description">betaLeftValue</h3>
@@ -2942,7 +2981,8 @@ there is a single latent for each output cluster. For MimBuild, a pattern over t
             <li>Default Value: <span id="betaLeftValue_default_value">1</span></li>
             <li>Lower Bound: <span id="betaLeftValue_lower_bound">-2147483648</span></li>
             <li>Upper Bound: <span id="betaLeftValue_upper_bound">2147483647</span></li>
-            <li>Value Type: <span id="betaLeftValue_value_type">Integer</span></li></td>
+            <li>Value Type: <span id="betaLeftValue_value_type">Integer</span></li>
+            </td>
         </ul>
 
         <h3 id="betaRightValue" class="parameter_description">betaRightValue</h3>
@@ -2953,7 +2993,8 @@ there is a single latent for each output cluster. For MimBuild, a pattern over t
             <li>Default Value: <span id="betaRightValue_default_value">5</span></li>
             <li>Lower Bound: <span id="betaRightValue_lower_bound">-2147483648</span></li>
             <li>Upper Bound: <span id="betaRightValue_upper_bound">2147483647</span></li>
-            <li>Value Type: <span id="betaRightValue_value_type">Integer</span></li></td>
+            <li>Value Type: <span id="betaRightValue_value_type">Integer</span></li>
+            </td>
         </ul>
 
         <h3 id="cciScoreAlpha" class="parameter_description">cciScoreAlpha</h3>
@@ -3022,7 +3063,8 @@ there is a single latent for each output cluster. For MimBuild, a pattern over t
             <li>Default Value: <span id="colliderDiscoveryRule_default_value">1</span></li>
             <li>Lower Bound: <span id="colliderDiscoveryRule_lower_bound">1</span></li>
             <li>Upper Bound: <span id="colliderDiscoveryRule_upper_bound">3</span></li>
-            <li>Value Type: <span id="colliderDiscoveryRule_value_type">Integer</span></li></td>
+            <li>Value Type: <span id="colliderDiscoveryRule_value_type">Integer</span></li>
+            </td>
         </ul>
 
         <h3 id="completeRuleSetUsed" class="parameter_description">completeRuleSetUsed</h3>
@@ -3058,7 +3100,8 @@ there is a single latent for each output cluster. For MimBuild, a pattern over t
             <li>Default Value: <span id="conflictRule_default_value">1</span></li>
             <li>Lower Bound: <span id="conflictRule_lower_bound">1</span></li>
             <li>Upper Bound: <span id="conflictRule_upper_bound">3</span></li>
-            <li>Value Type: <span id="conflictRule_value_type">Integer</span></li></td>
+            <li>Value Type: <span id="conflictRule_value_type">Integer</span></li>
+            </td>
         </ul>
 
         <h3 id="connected" class="parameter_description">connected</h3>
@@ -3158,7 +3201,8 @@ Usually covariance values are chosen from U(-b, -a) U U(a, b) for some a, b; thi
             <li>Default Value: <span id="depth_default_value">-1</span></li>
             <li>Lower Bound: <span id="depth_lower_bound">-1</span></li>
             <li>Upper Bound: <span id="depth_upper_bound">2147483647</span></li>
-            <li>Value Type: <span id="depth_value_type">Integer</span></li></td>
+            <li>Value Type: <span id="depth_value_type">Integer</span></li>
+            </td>
         </ul>
 
         <h3 id="determinismThreshold" class="parameter_description">determinismThreshold</h3>
@@ -3254,7 +3298,8 @@ Usually covariance values are chosen from U(-b, -a) U U(a, b) for some a, b; thi
             <li>Default Value: <span id="fasRule_default_value">1</span></li>
             <li>Lower Bound: <span id="fasRule_lower_bound">1</span></li>
             <li>Upper Bound: <span id="fasRule_upper_bound">3</span></li>
-            <li>Value Type: <span id="fasRule_value_type">Integer</span></li></td>
+            <li>Value Type: <span id="fasRule_value_type">Integer</span></li>
+            </td>
         </ul>
 
         <h3 id="faskDelta" class="parameter_description">faskDelta</h3>
@@ -3410,7 +3455,8 @@ Usually covariance values are chosen from U(-b, -a) U U(a, b) for some a, b; thi
             <li>Default Value: <span id="intervalBetweenRecordings_default_value">10</span></li>
             <li>Lower Bound: <span id="intervalBetweenRecordings_lower_bound">1</span></li>
             <li>Upper Bound: <span id="intervalBetweenRecordings_upper_bound">2147483647</span></li>
-            <li>Value Type: <span id="intervalBetweenRecordings_value_type">Integer</span></li></td>
+            <li>Value Type: <span id="intervalBetweenRecordings_value_type">Integer</span></li>
+            </td>
         </ul>
 
         <h3 id="intervalBetweenShocks" class="parameter_description">intervalBetweenShocks</h3>
@@ -3422,7 +3468,8 @@ Usually covariance values are chosen from U(-b, -a) U U(a, b) for some a, b; thi
             <li>Default Value: <span id="intervalBetweenShocks_default_value">10</span></li>
             <li>Lower Bound: <span id="intervalBetweenShocks_lower_bound">1</span></li>
             <li>Upper Bound: <span id="intervalBetweenShocks_upper_bound">2147483647</span></li>
-            <li>Value Type: <span id="intervalBetweenShocks_value_type">Integer</span></li></td>
+            <li>Value Type: <span id="intervalBetweenShocks_value_type">Integer</span></li>
+            </td>
         </ul>
 
         <h3 id="ipen" class="parameter_description">ipen</h3>
@@ -3475,7 +3522,8 @@ Usually covariance values are chosen from U(-b, -a) U U(a, b) for some a, b; thi
             <li>Default Value: <span id="kciCutoff_default_value">6</span></li>
             <li>Lower Bound: <span id="kciCutoff_lower_bound">1</span></li>
             <li>Upper Bound: <span id="kciCutoff_upper_bound">2147483647</span></li>
-            <li>Value Type: <span id="kciCutoff_value_type">Integer</span></li></td>
+            <li>Value Type: <span id="kciCutoff_value_type">Integer</span></li>
+            </td>
         </ul>
 
         <h3 id="kciEpsilon" class="parameter_description">kciEpsilon</h3>
@@ -3499,7 +3547,8 @@ Usually covariance values are chosen from U(-b, -a) U U(a, b) for some a, b; thi
             <li>Default Value: <span id="kciNumBootstraps_default_value">5000</span></li>
             <li>Lower Bound: <span id="kciNumBootstraps_lower_bound">1</span></li>
             <li>Upper Bound: <span id="kciNumBootstraps_upper_bound">2147483647</span></li>
-            <li>Value Type: <span id="kciNumBootstraps_value_type">Integer</span></li></td>
+            <li>Value Type: <span id="kciNumBootstraps_value_type">Integer</span></li>
+            </td>
         </ul>
 
         <h3 id="kciUseAppromation" class="parameter_description">kciUseAppromation</h3>
@@ -3535,7 +3584,8 @@ Usually covariance values are chosen from U(-b, -a) U U(a, b) for some a, b; thi
             <li>Default Value: <span id="kernelRegressionSampleSize_default_value">100</span></li>
             <li>Lower Bound: <span id="kernelRegressionSampleSize_lower_bound">-2147483648</span></li>
             <li>Upper Bound: <span id="kernelRegressionSampleSize_upper_bound">2147483647</span></li>
-            <li>Value Type: <span id="kernelRegressionSampleSize_value_type">Integer</span></li></td>
+            <li>Value Type: <span id="kernelRegressionSampleSize_value_type">Integer</span></li>
+            </td>
         </ul>
 
         <h3 id="kernelType" class="parameter_description">kernelType</h3>
@@ -3547,7 +3597,8 @@ Usually covariance values are chosen from U(-b, -a) U U(a, b) for some a, b; thi
             <li>Default Value: <span id="kernelType_default_value">2</span></li>
             <li>Lower Bound: <span id="kernelType_lower_bound">1</span></li>
             <li>Upper Bound: <span id="kernelType_upper_bound">2</span></li>
-            <li>Value Type: <span id="kernelType_value_type">Integer</span></li></td>
+            <li>Value Type: <span id="kernelType_value_type">Integer</span></li>
+            </td>
         </ul>
 
         <h3 id="kernelWidth" class="parameter_description">kernelWidth</h3>
@@ -3570,7 +3621,8 @@ Usually covariance values are chosen from U(-b, -a) U U(a, b) for some a, b; thi
             <li>Default Value: <span id="latentMeasuredImpureParents_default_value">0</span></li>
             <li>Lower Bound: <span id="latentMeasuredImpureParents_lower_bound">-2147483648</span></li>
             <li>Upper Bound: <span id="latentMeasuredImpureParents_upper_bound">2147483647</span></li>
-            <li>Value Type: <span id="latentMeasuredImpureParents_value_type">Integer</span></li></td>
+            <li>Value Type: <span id="latentMeasuredImpureParents_value_type">Integer</span></li>
+            </td>
         </ul>
 
         <h3 id="lowerBound" class="parameter_description">lowerBound</h3>
@@ -3592,7 +3644,8 @@ Usually covariance values are chosen from U(-b, -a) U U(a, b) for some a, b; thi
             <li>Default Value: <span id="maxCategories_default_value">2</span></li>
             <li>Lower Bound: <span id="maxCategories_lower_bound">2</span></li>
             <li>Upper Bound: <span id="maxCategories_upper_bound">2147483647</span></li>
-            <li>Value Type: <span id="maxCategories_value_type">Integer</span></li></td>
+            <li>Value Type: <span id="maxCategories_value_type">Integer</span></li>
+            </td>
         </ul>
 
         <h3 id="maxDegree" class="parameter_description">maxDegree</h3>
@@ -3604,7 +3657,8 @@ Usually covariance values are chosen from U(-b, -a) U U(a, b) for some a, b; thi
             <li>Default Value: <span id="maxDegree_default_value">100</span></li>
             <li>Lower Bound: <span id="maxDegree_lower_bound">-1</span></li>
             <li>Upper Bound: <span id="maxDegree_upper_bound">2147483647</span></li>
-            <li>Value Type: <span id="maxDegree_value_type">Integer</span></li></td>
+            <li>Value Type: <span id="maxDegree_value_type">Integer</span></li>
+            </td>
         </ul>
 
         <h3 id="maxDistinctValuesDiscrete" class="parameter_description">maxDistinctValuesDiscrete</h3>
@@ -3616,7 +3670,8 @@ Usually covariance values are chosen from U(-b, -a) U U(a, b) for some a, b; thi
             <li>Default Value: <span id="maxDistinctValuesDiscrete_default_value">0</span></li>
             <li>Lower Bound: <span id="maxDistinctValuesDiscrete_lower_bound">0</span></li>
             <li>Upper Bound: <span id="maxDistinctValuesDiscrete_upper_bound">2147483647</span></li>
-            <li>Value Type: <span id="maxDistinctValuesDiscrete_value_type">Integer</span></li></td>
+            <li>Value Type: <span id="maxDistinctValuesDiscrete_value_type">Integer</span></li>
+            </td>
         </ul>
 
         <h3 id="maxIndegree" class="parameter_description">maxIndegree</h3>
@@ -3627,7 +3682,8 @@ Usually covariance values are chosen from U(-b, -a) U U(a, b) for some a, b; thi
             <li>Default Value: <span id="maxIndegree_default_value">100</span></li>
             <li>Lower Bound: <span id="maxIndegree_lower_bound">1</span></li>
             <li>Upper Bound: <span id="maxIndegree_upper_bound">2147483647</span></li>
-            <li>Value Type: <span id="maxIndegree_value_type">Integer</span></li></td>
+            <li>Value Type: <span id="maxIndegree_value_type">Integer</span></li>
+            </td>
         </ul>
 
         <h3 id="maxIterations" class="parameter_description">maxIterations</h3>
@@ -3639,7 +3695,8 @@ Usually covariance values are chosen from U(-b, -a) U U(a, b) for some a, b; thi
             <li>Default Value: <span id="maxIterations_default_value">15</span></li>
             <li>Lower Bound: <span id="maxIterations_lower_bound">0</span></li>
             <li>Upper Bound: <span id="maxIterations_upper_bound">2147483647</span></li>
-            <li>Value Type: <span id="maxIterations_value_type">Integer</span></li></td>
+            <li>Value Type: <span id="maxIterations_value_type">Integer</span></li>
+            </td>
         </ul>
 
         <h3 id="maxOutdegree" class="parameter_description">maxOutdegree</h3>
@@ -3650,7 +3707,8 @@ Usually covariance values are chosen from U(-b, -a) U U(a, b) for some a, b; thi
             <li>Default Value: <span id="maxOutdegree_default_value">100</span></li>
             <li>Lower Bound: <span id="maxOutdegree_lower_bound">1</span></li>
             <li>Upper Bound: <span id="maxOutdegree_upper_bound">2147483647</span></li>
-            <li>Value Type: <span id="maxOutdegree_value_type">Integer</span></li></td>
+            <li>Value Type: <span id="maxOutdegree_value_type">Integer</span></li>
+            </td>
         </ul>
 
         <h3 id="maxPOrientationMaxPathLength" class="parameter_description">maxPOrientationMaxPathLength</h3>
@@ -3662,7 +3720,8 @@ Usually covariance values are chosen from U(-b, -a) U U(a, b) for some a, b; thi
             <li>Default Value: <span id="maxPOrientationMaxPathLength_default_value">3</span></li>
             <li>Lower Bound: <span id="maxPOrientationMaxPathLength_lower_bound">0</span></li>
             <li>Upper Bound: <span id="maxPOrientationMaxPathLength_upper_bound">2147483647</span></li>
-            <li>Value Type: <span id="maxPOrientationMaxPathLength_value_type">Integer</span></li></td>
+            <li>Value Type: <span id="maxPOrientationMaxPathLength_value_type">Integer</span></li>
+            </td>
         </ul>
 
         <h3 id="maxPathLength" class="parameter_description">maxPathLength</h3>
@@ -3674,7 +3733,8 @@ Usually covariance values are chosen from U(-b, -a) U U(a, b) for some a, b; thi
             <li>Default Value: <span id="maxPathLength_default_value">-1</span></li>
             <li>Lower Bound: <span id="maxPathLength_lower_bound">-1</span></li>
             <li>Upper Bound: <span id="maxPathLength_upper_bound">2147483647</span></li>
-            <li>Value Type: <span id="maxPathLength_value_type">Integer</span></li></td>
+            <li>Value Type: <span id="maxPathLength_value_type">Integer</span></li>
+            </td>
         </ul>
 
         <h3 id="maxit" class="parameter_description">maxit</h3>
@@ -3685,7 +3745,8 @@ Usually covariance values are chosen from U(-b, -a) U U(a, b) for some a, b; thi
             <li>Default Value: <span id="maxit_default_value">10000</span></li>
             <li>Lower Bound: <span id="maxit_lower_bound">1</span></li>
             <li>Upper Bound: <span id="maxit_upper_bound">2147483647</span></li>
-            <li>Value Type: <span id="maxit_value_type">Integer</span></li></td>
+            <li>Value Type: <span id="maxit_value_type">Integer</span></li>
+            </td>
         </ul>
 
         <h3 id="meanHigh" class="parameter_description">meanHigh</h3>
@@ -3720,7 +3781,8 @@ Usually covariance values are chosen from U(-b, -a) U U(a, b) for some a, b; thi
             <li>Default Value: <span id="measuredMeasuredImpureAssociations_default_value">0</span></li>
             <li>Lower Bound: <span id="measuredMeasuredImpureAssociations_lower_bound">-2147483648</span></li>
             <li>Upper Bound: <span id="measuredMeasuredImpureAssociations_upper_bound">2147483647</span></li>
-            <li>Value Type: <span id="measuredMeasuredImpureAssociations_value_type">Integer</span></li></td>
+            <li>Value Type: <span id="measuredMeasuredImpureAssociations_value_type">Integer</span></li>
+            </td>
         </ul>
 
         <h3 id="measuredMeasuredImpureParents" class="parameter_description">measuredMeasuredImpureParents</h3>
@@ -3732,7 +3794,8 @@ Usually covariance values are chosen from U(-b, -a) U U(a, b) for some a, b; thi
             <li>Default Value: <span id="measuredMeasuredImpureParents_default_value">0</span></li>
             <li>Lower Bound: <span id="measuredMeasuredImpureParents_lower_bound">-2147483648</span></li>
             <li>Upper Bound: <span id="measuredMeasuredImpureParents_upper_bound">2147483647</span></li>
-            <li>Value Type: <span id="measuredMeasuredImpureParents_value_type">Integer</span></li></td>
+            <li>Value Type: <span id="measuredMeasuredImpureParents_value_type">Integer</span></li>
+            </td>
         </ul>
 
         <h3 id="measurementModelDegree" class="parameter_description">measurementModelDegree</h3>
@@ -3744,7 +3807,8 @@ Usually covariance values are chosen from U(-b, -a) U U(a, b) for some a, b; thi
             <li>Default Value: <span id="measurementModelDegree_default_value">5</span></li>
             <li>Lower Bound: <span id="measurementModelDegree_lower_bound">-2147483648</span></li>
             <li>Upper Bound: <span id="measurementModelDegree_upper_bound">2147483647</span></li>
-            <li>Value Type: <span id="measurementModelDegree_value_type">Integer</span></li></td>
+            <li>Value Type: <span id="measurementModelDegree_value_type">Integer</span></li>
+            </td>
         </ul>
 
         <h3 id="measurementVariance" class="parameter_description">measurementVariance</h3>
@@ -3756,7 +3820,8 @@ Usually covariance values are chosen from U(-b, -a) U U(a, b) for some a, b; thi
             <li>Default Value: <span id="measurementVariance_default_value">0.0</span></li>
             <li>Lower Bound: <span id="measurementVariance_lower_bound">0.0</span></li>
             <li>Upper Bound: <span id="measurementVariance_upper_bound">1.7976931348623157E308</span></li>
-            <li>Value Type: <span id="measurementVariance_value_type">Double</span></li></li>
+            <li>Value Type: <span id="measurementVariance_value_type">Double</span></li>
+            </li>
         </ul>
 
         <h3 id="mgmParam1" class="parameter_description">mgmParam1</h3>
@@ -3767,7 +3832,8 @@ Usually covariance values are chosen from U(-b, -a) U U(a, b) for some a, b; thi
             <li>Default Value: <span id="mgmParam1_default_value">0.1</span></li>
             <li>Lower Bound: <span id="mgmParam1_lower_bound">0.0</span></li>
             <li>Upper Bound: <span id="mgmParam1_upper_bound">1.7976931348623157E308</span></li>
-            <li>Value Type: <span id="mgmParam1_value_type">Double</span></li></li>
+            <li>Value Type: <span id="mgmParam1_value_type">Double</span></li>
+            </li>
         </ul>
 
         <h3 id="mgmParam2" class="parameter_description">mgmParam2</h3>
@@ -3778,7 +3844,8 @@ Usually covariance values are chosen from U(-b, -a) U U(a, b) for some a, b; thi
             <li>Default Value: <span id="mgmParam2_default_value">0.1</span></li>
             <li>Lower Bound: <span id="mgmParam2_lower_bound">0.0</span></li>
             <li>Upper Bound: <span id="mgmParam2_upper_bound">1.7976931348623157E308</span></li>
-            <li>Value Type: <span id="mgmParam2_value_type">Double</span></li></li>
+            <li>Value Type: <span id="mgmParam2_value_type">Double</span></li>
+            </li>
         </ul>
 
         <h3 id="mgmParam3" class="parameter_description">mgmParam3</h3>
@@ -3789,7 +3856,8 @@ Usually covariance values are chosen from U(-b, -a) U U(a, b) for some a, b; thi
             <li>Default Value: <span id="mgmParam3_default_value">0.1</span></li>
             <li>Lower Bound: <span id="mgmParam3_lower_bound">0.0</span></li>
             <li>Upper Bound: <span id="mgmParam3_upper_bound">1.7976931348623157E308</span></li>
-            <li>Value Type: <span id="mgmParam3_value_type">Double</span></li></li>
+            <li>Value Type: <span id="mgmParam3_value_type">Double</span></li>
+            </li>
         </ul>
 
         <h3 id="minCategories" class="parameter_description">minCategories</h3>
@@ -3801,7 +3869,8 @@ Usually covariance values are chosen from U(-b, -a) U U(a, b) for some a, b; thi
             <li>Default Value: <span id="minCategories_default_value">2</span></li>
             <li>Lower Bound: <span id="minCategories_lower_bound">2</span></li>
             <li>Upper Bound: <span id="minCategories_upper_bound">2147483647</span></li>
-            <li>Value Type: <span id="minCategories_value_type">Integer</span></li></td>
+            <li>Value Type: <span id="minCategories_value_type">Integer</span></li>
+            </td>
         </ul>
 
         <h3 id="noRandomlyDeterminedIndependence" class="parameter_description">noRandomlyDeterminedIndependence</h3>
@@ -3824,7 +3893,8 @@ Usually covariance values are chosen from U(-b, -a) U U(a, b) for some a, b; thi
             <li>Default Value: <span id="numBasisFunctions_default_value">30</span></li>
             <li>Lower Bound: <span id="numBasisFunctions_lower_bound">1</span></li>
             <li>Upper Bound: <span id="numBasisFunctions_upper_bound">2147483647</span></li>
-            <li>Value Type: <span id="numBasisFunctions_value_type">Integer</span></li></td>
+            <li>Value Type: <span id="numBasisFunctions_value_type">Integer</span></li>
+            </td>
         </ul>
 
         <h3 id="numBscBootstrapSamples" class="parameter_description">numBscBootstrapSamples</h3>
@@ -3835,7 +3905,8 @@ Usually covariance values are chosen from U(-b, -a) U U(a, b) for some a, b; thi
             <li>Default Value: <span id="numBscBootstrapSamples_default_value">50</span></li>
             <li>Lower Bound: <span id="numBscBootstrapSamples_lower_bound">1</span></li>
             <li>Upper Bound: <span id="numBscBootstrapSamples_upper_bound">2147483647</span></li>
-            <li>Value Type: <span id="numBscBootstrapSamples_value_type">Integer</span></li></td>
+            <li>Value Type: <span id="numBscBootstrapSamples_value_type">Integer</span></li>
+            </td>
         </ul>
 
         <h3 id="numCategories" class="parameter_description">numCategories</h3>
@@ -3847,7 +3918,8 @@ Usually covariance values are chosen from U(-b, -a) U U(a, b) for some a, b; thi
             <li>Default Value: <span id="numCategories_default_value">4</span></li>
             <li>Lower Bound: <span id="numCategories_lower_bound">2</span></li>
             <li>Upper Bound: <span id="numCategories_upper_bound">2147483647</span></li>
-            <li>Value Type: <span id="numCategories_value_type">Integer</span></li></td>
+            <li>Value Type: <span id="numCategories_value_type">Integer</span></li>
+            </td>
         </ul>
 
         <h3 id="numCategoriesToDiscretize" class="parameter_description">numCategoriesToDiscretize</h3>
@@ -3859,7 +3931,8 @@ Usually covariance values are chosen from U(-b, -a) U U(a, b) for some a, b; thi
             <li>Default Value: <span id="numCategoriesToDiscretize_default_value">3</span></li>
             <li>Lower Bound: <span id="numCategoriesToDiscretize_lower_bound">2</span></li>
             <li>Upper Bound: <span id="numCategoriesToDiscretize_upper_bound">2147483647</span></li>
-            <li>Value Type: <span id="numCategoriesToDiscretize_value_type">Integer</span></li></td>
+            <li>Value Type: <span id="numCategoriesToDiscretize_value_type">Integer</span></li>
+            </td>
         </ul>
 
         <h3 id="numLags" class="parameter_description">numLags</h3>
@@ -3870,7 +3943,8 @@ Usually covariance values are chosen from U(-b, -a) U U(a, b) for some a, b; thi
             <li>Default Value: <span id="numLags_default_value">1</span></li>
             <li>Lower Bound: <span id="numLags_lower_bound">-2147483648</span></li>
             <li>Upper Bound: <span id="numLags_upper_bound">2147483647</span></li>
-            <li>Value Type: <span id="numLags_value_type">Integer</span></li></td>
+            <li>Value Type: <span id="numLags_value_type">Integer</span></li>
+            </td>
         </ul>
 
         <h3 id="numLatents" class="parameter_description">numLatents</h3>
@@ -3881,7 +3955,8 @@ Usually covariance values are chosen from U(-b, -a) U U(a, b) for some a, b; thi
             <li>Default Value: <span id="numLatents_default_value">0</span></li>
             <li>Lower Bound: <span id="numLatents_lower_bound">0</span></li>
             <li>Upper Bound: <span id="numLatents_upper_bound">2147483647</span></li>
-            <li>Value Type: <span id="numLatents_value_type">Integer</span></li></td>
+            <li>Value Type: <span id="numLatents_value_type">Integer</span></li>
+            </td>
         </ul>
 
         <h3 id="numMeasures" class="parameter_description">numMeasures</h3>
@@ -3892,7 +3967,8 @@ Usually covariance values are chosen from U(-b, -a) U U(a, b) for some a, b; thi
             <li>Default Value: <span id="numMeasures_default_value">10</span></li>
             <li>Lower Bound: <span id="numMeasures_lower_bound">1</span></li>
             <li>Upper Bound: <span id="numMeasures_upper_bound">2147483647</span></li>
-            <li>Value Type: <span id="numMeasures_value_type">Integer</span></li></td>
+            <li>Value Type: <span id="numMeasures_value_type">Integer</span></li>
+            </td>
         </ul>
 
         <h3 id="numRandomizedSearchModels" class="parameter_description">numRandomizedSearchModels</h3>
@@ -3903,7 +3979,8 @@ Usually covariance values are chosen from U(-b, -a) U U(a, b) for some a, b; thi
             <li>Default Value: <span id="numRandomizedSearchModels_default_value">10</span></li>
             <li>Lower Bound: <span id="numRandomizedSearchModels_lower_bound">1</span></li>
             <li>Upper Bound: <span id="numRandomizedSearchModels_upper_bound">2147483647</span></li>
-            <li>Value Type: <span id="numRandomizedSearchModels_value_type">Integer</span></li></td>
+            <li>Value Type: <span id="numRandomizedSearchModels_value_type">Integer</span></li>
+            </td>
         </ul>
 
         <h3 id="numRuns" class="parameter_description">numRuns</h3>
@@ -3914,7 +3991,8 @@ Usually covariance values are chosen from U(-b, -a) U U(a, b) for some a, b; thi
             <li>Default Value: <span id="numRuns_default_value">1</span></li>
             <li>Lower Bound: <span id="numRuns_lower_bound">1</span></li>
             <li>Upper Bound: <span id="numRuns_upper_bound">2147483647</span></li>
-            <li>Value Type: <span id="numRuns_value_type">Integer</span></li></td>
+            <li>Value Type: <span id="numRuns_value_type">Integer</span></li>
+            </td>
         </ul>
 
         <h3 id="numStructuralEdges" class="parameter_description">numStructuralEdges</h3>
@@ -3925,7 +4003,8 @@ Usually covariance values are chosen from U(-b, -a) U U(a, b) for some a, b; thi
             <li>Default Value: <span id="numStructuralEdges_default_value">3</span></li>
             <li>Lower Bound: <span id="numStructuralEdges_lower_bound">-2147483648</span></li>
             <li>Upper Bound: <span id="numStructuralEdges_upper_bound">2147483647</span></li>
-            <li>Value Type: <span id="numStructuralEdges_value_type">Integer</span></li></td>
+            <li>Value Type: <span id="numStructuralEdges_value_type">Integer</span></li>
+            </td>
         </ul>
 
         <h3 id="numStructuralNodes" class="parameter_description">numStructuralNodes</h3>
@@ -3936,7 +4015,8 @@ Usually covariance values are chosen from U(-b, -a) U U(a, b) for some a, b; thi
             <li>Default Value: <span id="numStructuralNodes_default_value">3</span></li>
             <li>Lower Bound: <span id="numStructuralNodes_lower_bound">-2147483648</span></li>
             <li>Upper Bound: <span id="numStructuralNodes_upper_bound">2147483647</span></li>
-            <li>Value Type: <span id="numStructuralNodes_value_type">Integer</span></li></td>
+            <li>Value Type: <span id="numStructuralNodes_value_type">Integer</span></li>
+            </td>
         </ul>
 
         <h3 id="numberResampling" class="parameter_description">numberResampling</h3>
@@ -3948,7 +4028,8 @@ Usually covariance values are chosen from U(-b, -a) U U(a, b) for some a, b; thi
             <li>Default Value: <span id="numberResampling_default_value">0</span></li>
             <li>Lower Bound: <span id="numberResampling_lower_bound">0</span></li>
             <li>Upper Bound: <span id="numberResampling_upper_bound">2147483647</span></li>
-            <li>Value Type: <span id="numberResampling_value_type">Integer</span></li></td>
+            <li>Value Type: <span id="numberResampling_value_type">Integer</span></li>
+            </td>
         </ul>
 
         <h3 id="orientTowardDConnections" class="parameter_description">orientTowardDConnections</h3>
@@ -4018,7 +4099,8 @@ Usually covariance values are chosen from U(-b, -a) U U(a, b) for some a, b; thi
             <li>Default Value: <span id="percentResampleSize_default_value">100</span></li>
             <li>Lower Bound: <span id="percentResampleSize_lower_bound">-2147483648</span></li>
             <li>Upper Bound: <span id="percentResampleSize_upper_bound">2147483647</span></li>
-            <li>Value Type: <span id="percentResampleSize_value_type">Integer</span></li></td>
+            <li>Value Type: <span id="percentResampleSize_value_type">Integer</span></li>
+            </td>
         </ul>
 
         <h3 id="possibleDsepDone" class="parameter_description">possibleDsepDone</h3>
@@ -4030,7 +4112,8 @@ Usually covariance values are chosen from U(-b, -a) U U(a, b) for some a, b; thi
             <li>Default Value: <span id="possibleDsepDone_default_value">true</span></li>
             <li>Lower Bound: <span id="possibleDsepDone_lower_bound"></span></li>
             <li>Upper Bound: <span id="possibleDsepDone_upper_bound"></span></li>
-            <li>Value Type: <span id="possibleDsepDone_value_type">Boolean</span></li></li>
+            <li>Value Type: <span id="possibleDsepDone_value_type">Boolean</span></li>
+            </li>
         </ul>
 
         <h3 id="probCycle" class="parameter_description">probCycle</h3>
@@ -4066,7 +4149,8 @@ Usually covariance values are chosen from U(-b, -a) U U(a, b) for some a, b; thi
             <li>Default Value: <span id="randomSelectionSize_default_value">1</span></li>
             <li>Lower Bound: <span id="randomSelectionSize_lower_bound">-2147483648</span></li>
             <li>Upper Bound: <span id="randomSelectionSize_upper_bound">2147483647</span></li>
-            <li>Value Type: <span id="randomSelectionSize_value_type">Integer</span></li></td>
+            <li>Value Type: <span id="randomSelectionSize_value_type">Integer</span></li>
+            </td>
         </ul>
 
         <h3 id="randomizeColumns" class="parameter_description">randomizeColumns</h3>
@@ -4089,7 +4173,8 @@ Usually covariance values are chosen from U(-b, -a) U U(a, b) for some a, b; thi
             <li>Default Value: <span id="rcitNumFeatures_default_value">10</span></li>
             <li>Lower Bound: <span id="rcitNumFeatures_lower_bound">1</span></li>
             <li>Upper Bound: <span id="rcitNumFeatures_upper_bound">2147483647</span></li>
-            <li>Value Type: <span id="rcitNumFeatures_value_type">Integer</span></li></td>
+            <li>Value Type: <span id="rcitNumFeatures_value_type">Integer</span></li>
+            </td>
         </ul>
 
         <h3 id="resamplingEnsemble" class="parameter_description">resamplingEnsemble</h3>
@@ -4101,7 +4186,8 @@ Usually covariance values are chosen from U(-b, -a) U U(a, b) for some a, b; thi
             <li>Default Value: <span id="resamplingEnsemble_default_value">1</span></li>
             <li>Lower Bound: <span id="resamplingEnsemble_lower_bound">0</span></li>
             <li>Upper Bound: <span id="resamplingEnsemble_upper_bound">2</span></li>
-            <li>Value Type: <span id="resamplingEnsemble_value_type">Integer</span></li></td>
+            <li>Value Type: <span id="resamplingEnsemble_value_type">Integer</span></li>
+            </td>
         </ul>
 
         <h3 id="resamplingWithReplacement" class="parameter_description">resamplingWithReplacement</h3>
@@ -4135,7 +4221,8 @@ Usually covariance values are chosen from U(-b, -a) U U(a, b) for some a, b; thi
             <li>Default Value: <span id="sampleSize_default_value">1000</span></li>
             <li>Lower Bound: <span id="sampleSize_lower_bound">1</span></li>
             <li>Upper Bound: <span id="sampleSize_upper_bound">2147483647</span></li>
-            <li>Value Type: <span id="sampleSize_value_type">Integer</span></li></td>
+            <li>Value Type: <span id="sampleSize_value_type">Integer</span></li>
+            </td>
         </ul>
 
         <h3 id="saveLatentVars" class="parameter_description">saveLatentVars</h3>
@@ -4182,7 +4269,8 @@ Usually covariance values are chosen from U(-b, -a) U U(a, b) for some a, b; thi
             <li>Default Value: <span id="scaleFreeDeltaIn_default_value">3</span></li>
             <li>Lower Bound: <span id="scaleFreeDeltaIn_lower_bound">-2147483648</span></li>
             <li>Upper Bound: <span id="scaleFreeDeltaIn_upper_bound">2147483647</span></li>
-            <li>Value Type: <span id="scaleFreeDeltaIn_value_type">Integer</span></li></td>
+            <li>Value Type: <span id="scaleFreeDeltaIn_value_type">Integer</span></li>
+            </td>
         </ul>
 
         <h3 id="scaleFreeDeltaOut" class="parameter_description">scaleFreeDeltaOut</h3>
@@ -4194,7 +4282,8 @@ Usually covariance values are chosen from U(-b, -a) U U(a, b) for some a, b; thi
             <li>Default Value: <span id="scaleFreeDeltaOut_default_value">3</span></li>
             <li>Lower Bound: <span id="scaleFreeDeltaOut_lower_bound">-2147483648</span></li>
             <li>Upper Bound: <span id="scaleFreeDeltaOut_upper_bound">2147483647</span></li>
-            <li>Value Type: <span id="scaleFreeDeltaOut_value_type">Integer</span></li></td>
+            <li>Value Type: <span id="scaleFreeDeltaOut_value_type">Integer</span></li>
+            </td>
         </ul>
 
         <h3 id="selfLoopCoef" class="parameter_description">selfLoopCoef</h3>
@@ -4218,7 +4307,8 @@ Usually covariance values are chosen from U(-b, -a) U U(a, b) for some a, b; thi
             <li>Default Value: <span id="skipNumRecords_default_value">0</span></li>
             <li>Lower Bound: <span id="skipNumRecords_lower_bound">0</span></li>
             <li>Upper Bound: <span id="skipNumRecords_upper_bound">2147483647</span></li>
-            <li>Value Type: <span id="skipNumRecords_value_type">Integer</span></li></td>
+            <li>Value Type: <span id="skipNumRecords_value_type">Integer</span></li>
+            </td>
         </ul>
 
         <h3 id="stableFAS" class="parameter_description">stableFAS</h3>
@@ -4471,7 +4561,7 @@ The “Max P” method for orienting an unshielded triple X—Y—Z records p-va
 
     <p>The regression box performs regression on variables in a data set, in an attempt to discover causal correlations
         between them.
-        Both linear and 
+        Both linear and
         regression are available.</p>
 
     <h2>Possible Parent Boxes of the Regression Box</h2>
@@ -4534,39 +4624,6 @@ The “Max P” method for orienting an unshielded triple X—Y—Z records p-va
 
     <p>Logistic regression may be run on discrete, continuous, or mixed data sets; however, the response variable must
         be binary. In all other ways, the logistic regression box functions like the linear regression box.
-    </p>
-
-    <h2>Lingam</h2>
-
-    <p>LiNGAM (Shimizu et al., 2006) was one of the first of the algorithms that assumed linearity among the variables 
-    and non-Gaussianity of error term, and still one of the best for smaller models, for the basic algorithm, 
-    implemented here. The idea is to use the Independent Components Analysis (ICA) algorithm to check all 
-    permutations of the variables to find one that is a causal order—that is, one in which earlier variables 
-    can cause later variables but not vice-versa. The method is clever. First, since we assume the model is a 
-    directed acyclic graph (DAG), there must be some permutation of the variables for which the main diagonal 
-    of the inverse of the weight matrix contains no zeros. This gives us a permuted estimate of the weight matrix. 
-    Then we look for a permutation of this weight matrix that is lower triangular. There must be one, since the 
-    model is assumed to be a DAG. But a lower triangular weight matrix just gives a causal order, so we’re done.
-    </p>
-    <p>
-    In the referenced paper, we implement Algorithm A, which is described above. Once one has a causal order the only 
-     thing one needs to do is to eliminate the extra edges. For this, we use the causal order to define knowledge 
-     of tiers and run FGES.
-    </p>
- 
-    <p>
-    Our implementation of LiNGAM has one parameter, penalty discount, used for the FGES adjacency search. The method as 
-    implemented does not scale much beyond 10 variables, because it is checking every permutation of all of the 
-    variables (twice). The implementation of ICA we use is FastIca (Hyvärinen et al., 2004).
-    </p>
- 
-    <p>
-    Shimizu, S., Hoyer, P. O., Hyvärinen, A., & Kerminen, A. (2006). A linear non-Gaussian acyclic model for causal 
-        discovery. Journal of Machine Learning Research, 7(Oct), 2003-2030.
-    </p> 
-
-    <p>
-    Hyvärinen, A., Karhunen, J., & Oja, E. (2004). Independent component analysis (Vol. 46). John Wiley & Sons.
     </p>
 
     <h1 id="appendix"><span class="section_heading">Appendix</span></h1>
@@ -4673,9 +4730,11 @@ The “Max P” method for orienting an unshielded triple X—Y—Z records p-va
             means "A is a cause of B"; an arrowhead ">" at the A end of an edge between A and B means "A is not a cause
             of B"; and a circle "o" at the A end of an edge between A and B means "can't tell whether or not A is a
             cause of B". For example A  B means that A is a cause of B, and that B is not a cause of A in all of the
-            CBNs represented by the PAG.</tr>
+            CBNs represented by the PAG.
+        </tr>
         <tr>The PAG in Figure 2 shows examples of each type of edge, and the CBNs Figure 1. show some examples of what
-            kinds of CBNs can be represented by that PAG.</tr>
+            kinds of CBNs can be represented by that PAG.
+        </tr>
 
         <tr>Figure 1. Two CBNs that FCI (as well as FCI+, GFCI, and RFCI) cannot distinguish.</tr>
 
@@ -4684,13 +4743,14 @@ The “Max P” method for orienting an unshielded triple X—Y—Z records p-va
 
     </table>
 
-<h1>Glossary</h1>
+    <h1>Glossary</h1>
 </div>
 
 <!-- Google Analytics: change UA-XXXXX-Y to be your site's ID. -->
 <script>
 window.ga=function(){ga.q.push(arguments)};ga.q=[];ga.l=+new Date;
 ga('create','UA-XXXXX-Y','auto');ga('send','pageview')
+
 
 
 
