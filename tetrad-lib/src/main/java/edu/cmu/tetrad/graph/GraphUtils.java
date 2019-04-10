@@ -3107,6 +3107,7 @@ public final class GraphUtils {
             Node t = Q.remove();
 
             for (Node u : G.getAdjacentNodes(t)) {
+                if (G.getEdges(t, u).size() == 1) return true;
                 Edge edge = G.getEdge(t, u);
                 Node c = Edges.traverseDirected(t, edge);
 
