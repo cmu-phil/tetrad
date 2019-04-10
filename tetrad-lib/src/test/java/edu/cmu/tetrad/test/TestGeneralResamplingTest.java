@@ -37,17 +37,16 @@ import edu.cmu.tetrad.data.DiscreteVariable;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.search.DagToPag;
+import edu.cmu.tetrad.search.DagToPag2;
 import edu.cmu.tetrad.sem.LargeScaleSimulation;
 import edu.cmu.tetrad.util.Parameters;
 import edu.pitt.dbmi.algo.resampling.GeneralResamplingTest;
 import edu.pitt.dbmi.algo.resampling.ResamplingEdgeEnsemble;
+import org.junit.Ignore;
+import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.List;
-
-import org.junit.Ignore;
-import org.junit.Test;
 
 /**
  *
@@ -201,7 +200,7 @@ public class TestGeneralResamplingTest {
 
 		Graph dag = makeContinuousDAG(numVars, numLatentConfounders, edgesPerNode);
 
-		DagToPag dagToPag = new DagToPag(dag);
+		DagToPag2 dagToPag = new DagToPag2(dag);
 		Graph truePag = dagToPag.convert();
 
 		//System.out.println("Truth PAG_of_the_true_DAG Graph:");
@@ -266,7 +265,7 @@ public class TestGeneralResamplingTest {
 
 		Graph dag = makeDiscreteDAG(numVars, numLatentConfounders, edgesPerNode);
 
-		DagToPag dagToPag = new DagToPag(dag);
+		DagToPag2 dagToPag = new DagToPag2(dag);
 		Graph truePag = dagToPag.convert();
 
 		//System.out.println("Truth PAG_of_the_true_DAG Graph:");
@@ -326,7 +325,7 @@ public class TestGeneralResamplingTest {
 
 		Graph dag = makeContinuousDAG(numVars, numLatentConfounders, edgesPerNode);
 
-		DagToPag dagToPag = new DagToPag(dag);
+		DagToPag2 dagToPag = new DagToPag2(dag);
 		Graph truePag = dagToPag.convert();
 
 		//System.out.println("Truth PAG_of_the_true_DAG Graph:");
@@ -391,7 +390,7 @@ public class TestGeneralResamplingTest {
 
 		Graph dag = makeDiscreteDAG(numVars, numLatentConfounders, edgesPerNode);
 
-		DagToPag dagToPag = new DagToPag(dag);
+		DagToPag2 dagToPag = new DagToPag2(dag);
 		Graph truePag = dagToPag.convert();
 
 		//System.out.println("Truth PAG_of_the_true_DAG Graph:");

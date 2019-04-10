@@ -301,7 +301,7 @@ public final class Fges implements GraphSearch, GraphScorer {
         }
 
 
-        return graph;
+        return new EdgeListGraph(graph);
     }
 
     /**

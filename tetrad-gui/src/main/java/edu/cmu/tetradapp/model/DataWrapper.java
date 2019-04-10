@@ -31,6 +31,7 @@ import edu.cmu.tetrad.session.SessionModel;
 import edu.cmu.tetrad.session.SimulationParamsSource;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
+
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.util.*;
@@ -103,7 +104,9 @@ public class DataWrapper implements SessionModel, KnowledgeEditable, KnowledgeBo
         for (DataModel model : wrapper.getDataModels()) {
             if (model instanceof DataSet) {
                 dataModelList.add(((DataSet) model).copy());
-            } else if (model instanceof ICovarianceMatrix) {
+            } else if (model instanceof CorrelationMatrix) {
+                dataModelList.add(new CorrelationMatrix((CorrelationMatrix) model));
+            } else if (model instanceof CovarianceMatrix) {
                 dataModelList.add(new CovarianceMatrix((CovarianceMatrix) model));
             } else {
                 throw new IllegalArgumentException();
@@ -123,16 +126,21 @@ public class DataWrapper implements SessionModel, KnowledgeEditable, KnowledgeBo
         int selected = -1;
 
         for (int i = 0; i < wrapper.getDataModelList().size(); i++) {
-            if (wrapper.getDataModelList().get(i) instanceof DataSet) {
-                DataSet data = (DataSet) wrapper.getDataModelList().get(i);
+            DataModel model = wrapper.getDataModelList().get(i);
 
-                if (data.equals(wrapper.getDataModelList().getSelectedModel())) {
-                    selected = i;
-                }
-
-                dataModelList.add(copyData(data));
+            if (model instanceof DataSet) {
+                dataModelList.add(((DataSet) model).copy());
+            } else if (model instanceof CorrelationMatrix) {
+                dataModelList.add(new CorrelationMatrix((CorrelationMatrix) model));
+            } else if (model instanceof CovarianceMatrix) {
+                dataModelList.add(new CovarianceMatrix((CovarianceMatrix) model));
+            } else {
+                throw new IllegalArgumentException();
             }
 
+            if (model.equals(wrapper.getDataModelList().getSelectedModel())) {
+                selected = i;
+            }
         }
 
         if (selected > -1) {
@@ -298,6 +306,7 @@ public class DataWrapper implements SessionModel, KnowledgeEditable, KnowledgeBo
     }
 
     //==============================PUBLIC METHODS========================//
+
     /**
      * Stores a reference to the data model being wrapped.
      *
@@ -397,21 +406,6 @@ public class DataWrapper implements SessionModel, KnowledgeEditable, KnowledgeBo
 
     public List<Node> getKnownVariables() {
         return knownVariables;
-    }
-
-    //=============================== Private Methods ==========================//
-    private static DataModel copyData(DataSet data) {
-        ColtDataSet newData = new ColtDataSet(data.getNumRows(), data.getVariables());
-        for (int col = 0; col < data.getNumColumns(); col++) {
-            for (int row = 0; row < data.getNumRows(); row++) {
-                newData.setObject(row, col, data.getObject(row, col));
-            }
-        }
-        newData.setKnowledge(data.getKnowledge().copy());
-        if (data.getName() != null) {
-            newData.setName(data.getName());
-        }
-        return newData;
     }
 
     /**
