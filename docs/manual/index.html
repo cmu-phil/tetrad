@@ -2810,6 +2810,45 @@ there is a single latent for each output cluster. For MimBuild, a pattern over t
         </p>
     </div>
 
+    <h3>The FASK Algorithm)</h3>
+
+    <div id="fask">
+        <p>FASK learns a linear model in which all of the variables are skewed. </p>
+
+        <p>The idea is as follows. First, FAS-stable  is run on the data, producing an
+            undirected graph. We use the BIC scoreas a conditional independence test with a specified penalty
+            discount c. This yields undirected graph G0 . The reason FAS-stable  works forsparse cyclic  models
+            where the linear  coefficients  are all less than  1 is that correlations induced by long cyclic
+            paths are statisticallyjudged as zero, since they are products of multiple coefficients less  than
+            1.  Then, each  of the X − Y  adjacencies  in G0   is  oriented  as a 2-cycle  X +=  Y , or X → Y ,
+            or X ← Y .   Taking up each  adjacency  in turn, one tests  to see  whether  the adjacency  is a
+            2-cycle bytesting if the difference between  corr(X, Y ) and corr(X, Y |X  > 0), and corr(X, Y )
+            and corr(X, Y |Y  > 0), are both significantly not zero. If so, the edges X → Y and X ← Y  are added
+            to the output  graph G1 .  If not, the Left-Right  orientation is rule is applied: Orient X → Y in
+            G1, if (E(X Y |X > 0)/    E(X 2|X > 0)E(Y 2 |X > 0) − E(X Y |Y  > 0)/  E(X 2 |Y  > 0)E(Y 2|Y  > 0)) >  0;
+            otherwise orient X ← Y .  G1  will bea fully oriented graph. For some models, where the true
+            coefficients of a 2-cycle between X and Y  are more or less equal in magnitudebut opposite in sign,
+            FAS-stable  may fail to detect an edge between X and Y  when in fact a 2-cycle exists. In this case,
+            we checkexplicitly whether corr(X, Y |X > 0) and corr(X, Y |Y  > 0) differ  by more than a set amount
+            of 0.3. If so, the adjacency  is added to the graph and oriented using the aforementioned rules.
+        </p>
+
+        <p>See Sanchez-Romero R, Ramsey JD, Zhang K, Glymour MR, Huang B, Glymour C. Causal discovery of feedback
+            networks with functional magnetic resonance imaging. Network Neuroscience 2018.</p>
+    </div>
+
+    <div id="multi-fask">
+        <p>Multi-FASK is a metascript that learns a model from a list of datasets in a method similar to
+            IMaGES (see). For adjacencies, it uses FAS-Stable with the voting-based score from IMaGES used as
+            a test (using all of the datasets, standardized), producing a single undirected graph G. It then
+            orients each edge X--Y in G for each dataset using the FASK (see) left-right rule and orient X->Y if
+            that rule orients X--Y as such in at least half of the datasets. The final graph is returned.
+        </p>
+
+        <p>For FASK, See Sanchez-Romero R, Ramsey JD, Zhang K, Glymour MR, Huang B, Glymour C. Causal discovery
+            of feedback networks with functional magnetic resonance imaging. Network Neuroscience 2018.</p>
+    </div>
+
     <h3>Orientation Algorithms (R3, RSkew, Skew)</h3>
 
     <h4>Description</h4>
