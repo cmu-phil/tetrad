@@ -2739,18 +2739,7 @@ there is a single latent for each output cluster. For MimBuild, a pattern over t
 
     </div>
 
-    <h4>Input Assumptions</h4>
-
-    <p>Continuous data containing as many measures as are available.</p>
-
-    <h4>Output Format</h4>
-
-    <p>For FOFC, a clustering of variables. For MimBuild, a pattern over latents.</p>
-
-    <h4>Parameters</h4>
-
-    <p><a href="#maxit">alpha</a>, <a href="#useWishart">useWishart</a>, <a href="#useGap">useGap</a></p>
-
+Ω
     <h3>The FTFC Algorithm</h3>
 
     <h4>Description</h4>
@@ -2786,62 +2775,87 @@ there is a single latent for each output cluster. For MimBuild, a pattern over t
 
     <h4>Description</h4>
 
-    <p>LiNGAM (Shimizu et al., 2006) was one of the first of the algorithms that assumed linearity among the variables
-        and non-Gaussianity of error term, and still one of the best for smaller models, for the basic algorithm,
-        implemented here. The idea is to use the Independent Components Analysis (ICA) algorithm to check all
-        permutations of the variables to find one that is a causal order—that is, one in which earlier variables
-        can cause later variables but not vice-versa. The method is clever. First, since we assume the model is a
-        directed acyclic graph (DAG), there must be some permutation of the variables for which the main diagonal
-        of the inverse of the weight matrix contains no zeros. This gives us a permuted estimate of the weight matrix.
-        Then we look for a permutation of this weight matrix that is lower triangular. There must be one, since the
-        model is assumed to be a DAG. But a lower triangular weight matrix just gives a causal order, so we’re done.
-    </p>
-    <p>
-        In the referenced paper, we implement Algorithm A, which is described above. Once one has a causal order the
-        only
-        thing one needs to do is to eliminate the extra edges. For this, we use the causal order to define knowledge
-        of tiers and run FGES.
-    </p>
+    <div id="ftfc">
+        <p>LiNGAM (Shimizu et al., 2006) was one of the first of the algorithms that assumed linearity among the variables
+            and non-Gaussianity of error term, and still one of the best for smaller models, for the basic algorithm,
+            implemented here. The idea is to use the Independent Components Analysis (ICA) algorithm to check all
+            permutations of the variables to find one that is a causal order—that is, one in which earlier variables
+            can cause later variables but not vice-versa. The method is clever. First, since we assume the model is a
+            directed acyclic graph (DAG), there must be some permutation of the variables for which the main diagonal
+            of the inverse of the weight matrix contains no zeros. This gives us a permuted estimate of the weight matrix.
+            Then we look for a permutation of this weight matrix that is lower triangular. There must be one, since the
+            model is assumed to be a DAG. But a lower triangular weight matrix just gives a causal order, so we’re done.
+        </p>
+        <p>
+            In the referenced paper, we implement Algorithm A, which is described above. Once one has a causal order the
+            only
+            thing one needs to do is to eliminate the extra edges. For this, we use the causal order to define knowledge
+            of tiers and run FGES.
+        </p>
 
-    <p>
-        Our implementation of LiNGAM has one parameter, penalty discount, used for the FGES adjacency search. The method
-        as
-        implemented does not scale much beyond 10 variables, because it is checking every permutation of all of the
-        variables (twice). The implementation of ICA we use is FastIca (Hyvärinen et al., 2004).
-    </p>
+        <p>
+            Our implementation of LiNGAM has one parameter, penalty discount, used for the FGES adjacency search. The method
+            as
+            implemented does not scale much beyond 10 variables, because it is checking every permutation of all of the
+            variables (twice). The implementation of ICA we use is FastIca (Hyvärinen et al., 2004).
+        </p>
 
-    <p>
-        Shimizu, S., Hoyer, P. O., Hyvärinen, A., & Kerminen, A. (2006). A linear non-Gaussian acyclic model for causal
-        discovery. Journal of Machine Learning Research, 7(Oct), 2003-2030.
-    </p>
+        <p>
+            Shimizu, S., Hoyer, P. O., Hyvärinen, A., & Kerminen, A. (2006). A linear non-Gaussian acyclic model for causal
+            discovery. Journal of Machine Learning Research, 7(Oct), 2003-2030.
+        </p>
 
-    <p>
-        Hyvärinen, A., Karhunen, J., & Oja, E. (2004). Independent component analysis (Vol. 46). John Wiley & Sons.
-    </p>
+        <p>
+            Hyvärinen, A., Karhunen, J., & Oja, E. (2004). Independent component analysis (Vol. 46). John Wiley & Sons.
+        </p>
+    </div>
 
     <h3>Orientation Algorithms (R3, RSkew, Skew)</h3>
 
     <h4>Description</h4>
 
-    <div id="">
+    <div id="r3">
 
-        <p>These are algorithms that orient edges X—Y for continuous variables pairwise based on non-Gaussian
-            information.
-            (If the variables are all Gaussian, one cannot orient these edges. That is, these rules will orient left or
-            right randomly.)
-            For RSkew and Skew, see Hyvarinen and Smith, 2013. For R3 see Ramsey et
-            al., 2012.</p>
+        <p>This is an algorithm that orients an edge X--Y for continuous varaibles based on non-Gaussian information.
+            This rule in particular uses an entropy calculation to make the orientation. Note that if the variables X
+            and Y are both Gaussian, and the model is linear, it is not possible to orient the edge X--Y pairwise;
+            any attempt to do so would result in random orientation. But if X and Y are non-Gaussian, the orientation
+            is fairly easy. This rule is similar to Hyvarinen and Smith's (2013) EB rule, but using Anderson
+            Darling for the measure of non-Gaussianity, to somewhat better effect. See Ramsey et al. (2012).
+        </p>
+    </div>
 
-        <p>The principles governing these rules vary.
-            R3 appeals to entropy for orientation. This is similar in spirit to the method EB (Entropy Based) of
-            Hyvarinen and Smith, though with a different non-Gaussianity measure.
-            RSkew and Skew appeal to measures of skew for the variables and assume positive skewness for all variables.
-            The rules for the two are different; please see Hyvarinen and Smith for details.
-            A comparison of these and other methods is given in Ramsey et al., 2012.
-            In general, for fMRI data, we find that the RSkew method works the best, followed by the R3 method.
-            Cycles can be oriented using these methods, since each edge is oriented independently of the others.</p>
+
+    <div id="skew">
+
+        <p>This is an algorithm that orients an edge X--Y for continuous varaibles based on non-Gaussian information.
+            This rule in particular uses a skewness to make the orientation. Note that if the variables X
+            and Y are both Gaussian, and the model is linear, it is not possible to orient the edge X--Y pairwise;
+            any attempt to do so would result in random orientation. But if X and Y are non-Gaussian, in particular
+            in this case, if X and Y are skewed, the orientation is relatively straightforward. See Hyvarinen
+            and Smith (2013) for details.
+        </p>
+
+        <p>The Skew rule is differenty motivated from the RSkew rule (see), though they both appeal to the skewness
+            of the variables.</p>
 
     </div>
+
+    <div id="rskew">
+
+        <p>This is an algorithm that orients an edge X--Y for continuous varaibles based on non-Gaussian information.
+            This rule in particular uses a skewness to make the orientation. Note that if the variables X
+            and Y are both Gaussian, and the model is linear, it is not possible to orient the edge X--Y pairwise;
+            any attempt to do so would result in random orientation. But if X and Y are non-Gaussian, in particular
+            in this case, if X and Y are skewed, the orientation is relatively straightforward. See Hyvarinen
+            and Smith (2013) for details.
+        </p>
+
+        <p>The RSkew rule is differenty motivated from the Skew rule (see), though they both appeal to the skewness
+        of the variables.</p>
+
+    </div>
+
 
     <h4>Input Assumptions</h4>
 
