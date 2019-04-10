@@ -21,12 +21,16 @@
 package edu.cmu.tetrad.graph;
 
 import edu.cmu.tetrad.util.TetradSerializable;
+
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.util.Arrays;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.regex.Pattern;
 
 /**
  * Implements a basic node in a graph--that is, a node that is not itself a
@@ -82,6 +86,7 @@ public class GraphNode implements Node, TetradSerializable {
     private Map<String, Object> attributes = new HashMap<>();
 
     //============================CONSTRUCTORS==========================//
+
     /**
      * Constructs a new Tetrad node with the given (non-null) string.
      */
@@ -107,6 +112,7 @@ public class GraphNode implements Node, TetradSerializable {
     }
 
     //============================PUBLIC METHODS========================//
+
     /**
      * @return the name of the variable.
      */
@@ -274,15 +280,61 @@ public class GraphNode implements Node, TetradSerializable {
     public int compareTo(Object o) {
         String node1 = this.getName();
         String node2 = ((Node) o).getName();
-        String s1 = node1.replaceAll("\\D+", "");
-        String s2 = node2.replaceAll("\\D+", "");
-        if (s1.isEmpty() && s2.isEmpty()) {
-            return node1.toLowerCase().compareTo(node2.toLowerCase());
-        } else {
-            Integer n1 = s1.isEmpty() ? 0 : Integer.valueOf(s1);
-            Integer n2 = s2.isEmpty() ? 0 : Integer.valueOf(s2);
-            return n1.compareTo(n2);
+//        String s1 = node1.replaceAll("\\D+", "");
+//        String s2 = node2.replaceAll("\\D+", "");
+//        if (s1.isEmpty() && s2.isEmpty()) {
+//            return node1.toLowerCase().compareTo(node2.toLowerCase());
+//        } else {
+//            Integer n1 = s1.isEmpty() ? 0 : Integer.valueOf(s1);
+//            Integer n2 = s2.isEmpty() ? 0 : Integer.valueOf(s2);
+//            return n1.compareTo(n2);
+//        }
+
+        Pattern alpha = Pattern.compile("^[a-zA-Z]+$");
+        Pattern alphaNum = Pattern.compile("^[a-zA-Z]+[0-9]+$");
+        Pattern lag = Pattern.compile("^[a-zA-Z]+:[0-9]+$");
+        boolean isAlpha1 = alpha.matcher(node1).matches();
+        boolean isAlpha2 = alpha.matcher(node2).matches();
+        boolean isAlphaNum1 = alphaNum.matcher(node1).matches();
+        boolean isAlphaNum2 = alphaNum.matcher(node2).matches();
+        boolean isLag1 = lag.matcher(node1).matches();
+        boolean isLag2 = lag.matcher(node2).matches();
+
+        if (isAlpha1) {
+            if (isLag2) {
+                return -1;
+            }
+        } else if (isAlphaNum1) {
+            if (isAlphaNum2) {
+                String s1 = node1.replaceAll("\\d+", "");
+                String s2 = node2.replaceAll("\\d+", "");
+                if (s1.equals(s2)) {
+                    String n1 = node1.replaceAll("\\D+", "");
+                    String n2 = node2.replaceAll("\\D+", "");
+
+                    return Integer.valueOf(n1).compareTo(Integer.valueOf(n2));
+                }
+            } else if (isLag2) {
+                return -1;
+            }
+        } else if (isLag1) {
+            if (isAlpha2) {
+                return 1;
+            } else if (isLag2) {
+                String l1 = node1.replaceAll(":", "");
+                String l2 = node2.replaceAll(":", "");
+                String s1 = l1.replaceAll("\\d+", "");
+                String s2 = l2.replaceAll("\\d+", "");
+                if (s1.equals(s2)) {
+                    String n1 = node1.replaceAll("\\D+", "");
+                    String n2 = node2.replaceAll("\\D+", "");
+
+                    return Integer.valueOf(n1).compareTo(Integer.valueOf(n2));
+                }
+            }
         }
+
+        return node1.compareTo(node2);
     }
 
     @Override
