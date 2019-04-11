@@ -262,6 +262,8 @@ public class TestStandardizedSem {
         graph.addDirectedEdge(x1, x2);
         graph.addBidirectedEdge(ex1, ex2);
 
+        System.out.println(graph);
+
 //        List<List<Node>> treks = DataGraphUtils.treksIncludingBidirected(graph, x1, x3);
 //
 //        for (List<Node> trek : treks) {
