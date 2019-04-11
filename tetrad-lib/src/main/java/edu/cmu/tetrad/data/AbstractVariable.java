@@ -18,27 +18,24 @@
 // along with this program; if not, write to the Free Software               //
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA //
 ///////////////////////////////////////////////////////////////////////////////
-
 package edu.cmu.tetrad.data;
 
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.NamingProtocol;
 
-import java.util.regex.Pattern;
-
-
 /**
- * Base class for variable specifications for DataSet.  These objects govern the
+ * Base class for variable specifications for DataSet. These objects govern the
  * types of values which may be recorded in a Column of data and provide
- * information about the interpretation of these values.  Variables of every
- * type must provide a marker which is recorded in a column of data for that
- * variable when the value is missing; this missing data marker should not be
- * used for other purposes.
+ * information about the interpretation of these values. Variables of every type
+ * must provide a marker which is recorded in a column of data for that variable
+ * when the value is missing; this missing data marker should not be used for
+ * other purposes.
  *
  * @author Willie Wheeler 7/99
  * @author Joseph Ramsey modifications 12/00
  */
 public abstract class AbstractVariable implements Variable {
+
     static final long serialVersionUID = 23L;
 
     public static int LAST_ID = 0;
@@ -64,7 +61,6 @@ public abstract class AbstractVariable implements Variable {
 //            throw new NullPointerException(
 //                    NamingProtocol.getProtocolDescription() + ": " + name);
 //        }
-
         this.name = name;
     }
 
@@ -104,11 +100,11 @@ public abstract class AbstractVariable implements Variable {
 
     /**
      * Checks to see whether the passed value is an acceptable value for
-     * <tt>this</tt> variable.  For <tt>AbstractVariable</tt>, this method
-     * always returns <tt>true</tt>. </p> Subclasses should override
+     * <tt>this</tt> variable. For <tt>AbstractVariable</tt>, this method always
+     * returns <tt>true</tt>. </p> Subclasses should override
      * <tt>checkValue()</tt> in order to provide for subclass-specific value
-     * checking.  The value should pass the test if it can be converted into
-     * an equivalent object of the correct class type (see
+     * checking. The value should pass the test if it can be converted into an
+     * equivalent object of the correct class type (see
      * <tt>getValueClass()</tt> for this variable; otherwise, it should fail. In
      * general, <tt>checkValue()</tt> should not fail a value for simply not
      * being an instance of a particular class. </p> Since this method is not
@@ -124,7 +120,7 @@ public abstract class AbstractVariable implements Variable {
     }
 
     /**
-     * @return a String representation of this variable.  Specifically, the name
+     * @return a String representation of this variable. Specifically, the name
      * of the variable is returned.
      */
     public String toString() {
@@ -133,29 +129,17 @@ public abstract class AbstractVariable implements Variable {
 
     public abstract Node like(String name);
 
+    @Override
+    public int compareTo(Node node) {
+        String node1 = getName();
+        String node2 = node.getName();
 
-    public int compareTo(Object o) {
-        String node1 = this.getName();
-        String node2 = ((Node) o).getName();
-//        String s1 = node1.replaceAll("\\D+", "");
-//        String s2 = node2.replaceAll("\\D+", "");
-//        if (s1.isEmpty() && s2.isEmpty()) {
-//            return node1.toLowerCase().compareTo(node2.toLowerCase());
-//        } else {
-//            Integer n1 = s1.isEmpty() ? 0 : Integer.valueOf(s1);
-//            Integer n2 = s2.isEmpty() ? 0 : Integer.valueOf(s2);
-//            return n1.compareTo(n2);
-//        }
-
-        Pattern alpha = Pattern.compile("^[a-zA-Z]+$");
-        Pattern alphaNum = Pattern.compile("^[a-zA-Z]+[0-9]+$");
-        Pattern lag = Pattern.compile("^[a-zA-Z]+:[0-9]+$");
-        boolean isAlpha1 = alpha.matcher(node1).matches();
-        boolean isAlpha2 = alpha.matcher(node2).matches();
-        boolean isAlphaNum1 = alphaNum.matcher(node1).matches();
-        boolean isAlphaNum2 = alphaNum.matcher(node2).matches();
-        boolean isLag1 = lag.matcher(node1).matches();
-        boolean isLag2 = lag.matcher(node2).matches();
+        boolean isAlpha1 = ALPHA.matcher(node1).matches();
+        boolean isAlpha2 = ALPHA.matcher(node2).matches();
+        boolean isAlphaNum1 = ALPHA_NUM.matcher(node1).matches();
+        boolean isAlphaNum2 = ALPHA_NUM.matcher(node2).matches();
+        boolean isLag1 = LAG.matcher(node1).matches();
+        boolean isLag2 = LAG.matcher(node2).matches();
 
         if (isAlpha1) {
             if (isLag2) {
@@ -170,12 +154,14 @@ public abstract class AbstractVariable implements Variable {
                     String n2 = node2.replaceAll("\\D+", "");
 
                     return Integer.valueOf(n1).compareTo(Integer.valueOf(n2));
+                } else {
+                    return s1.compareTo(s2);
                 }
             } else if (isLag2) {
                 return -1;
             }
         } else if (isLag1) {
-            if (isAlpha2) {
+            if (isAlpha2 || isAlphaNum2) {
                 return 1;
             } else if (isLag2) {
                 String l1 = node1.replaceAll(":", "");
@@ -183,19 +169,17 @@ public abstract class AbstractVariable implements Variable {
                 String s1 = l1.replaceAll("\\d+", "");
                 String s2 = l2.replaceAll("\\d+", "");
                 if (s1.equals(s2)) {
-                    String n1 = node1.replaceAll("\\D+", "");
-                    String n2 = node2.replaceAll("\\D+", "");
+                    String n1 = l1.replaceAll("\\D+", "");
+                    String n2 = l2.replaceAll("\\D+", "");
 
                     return Integer.valueOf(n1).compareTo(Integer.valueOf(n2));
+                } else {
+                    return s1.compareTo(s2);
                 }
             }
         }
 
         return node1.compareTo(node2);
     }
+
 }
-
-
-
-
-
