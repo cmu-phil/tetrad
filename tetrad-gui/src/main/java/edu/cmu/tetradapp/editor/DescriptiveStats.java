@@ -82,9 +82,9 @@ class DescriptiveStats {
         TextTable table;
 
         if (continuous) {
-            table = new TextTable(11, 2);
+            table = new TextTable(10, 2);
         } else {
-            table = new TextTable(7, 2);
+            table = new TextTable(6, 2);
         }
 
         int rowindex = 0;
@@ -102,9 +102,6 @@ class DescriptiveStats {
         table.setToken(rowindex++, 1, nf.format(normalValues[2]));
 
         table.setToken(rowindex, 0, "Skewness:");
-        table.setToken(rowindex++, 1, nf.format(StatUtils.skewness(data)));
-
-        table.setToken(rowindex, 0, "Excess Kurtosis:");
         table.setToken(rowindex++, 1, nf.format(StatUtils.skewness(data)));
 
         table.setToken(rowindex, 0, "Kurtosis:");
