@@ -749,7 +749,7 @@ public class PerformanceTests {
 
         out.println(outGraph);
 
-        System.out.println(MisclassificationUtils.edgeMisclassifications(outGraph, new DagToPag(dag).convert()));
+        System.out.println(MisclassificationUtils.edgeMisclassifications(outGraph, new DagToPag2(dag).convert()));
 
         long time4 = System.currentTimeMillis();
 
@@ -1347,7 +1347,7 @@ public class PerformanceTests {
 
             System.out.println("Graph done");
 
-            final DagToPag dagToPag = new DagToPag(dag);
+            final DagToPag2 dagToPag = new DagToPag2(dag);
             dagToPag.setCompleteRuleSetUsed(false);
             dagToPag.setMaxPathLength(maxPathLength);
             Graph truePag = dagToPag.convert();

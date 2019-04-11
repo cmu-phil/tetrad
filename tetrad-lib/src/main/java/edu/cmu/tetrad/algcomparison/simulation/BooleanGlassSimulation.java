@@ -16,7 +16,7 @@ import edu.cmu.tetrad.util.Parameters;
 import java.util.*;
 
 /**
- * A version of the Lee & Hastic simulation which is guaranteed ot generate a discrete
+ * A version of the Lee & Hastic simulation which is guaranteed to generate a discrete
  * data set.
  *
  * @author jdramsey
