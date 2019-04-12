@@ -20,8 +20,11 @@
 ///////////////////////////////////////////////////////////////////////////////
 package edu.cmu.tetradapp.editor;
 
+import edu.cmu.tetrad.data.DataSet;
+import edu.cmu.tetrad.data.DiscreteVariable;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
+import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.regression.LogisticRegression;
 import edu.cmu.tetrad.util.NumberFormatUtil;
 import edu.cmu.tetrad.util.Parameters;
@@ -68,6 +71,19 @@ public class LogisticRegressionEditor extends JPanel {
 
     public LogisticRegressionEditor(final LogisticRegressionRunner regressionRunner) {
         final LogisticRegressionRunner regRunner = regressionRunner;
+
+        DataSet dataSet = (DataSet) regressionRunner.getDataModel();
+
+        for (Node node : dataSet.getVariables()) {
+            if (node instanceof DiscreteVariable) {
+                DiscreteVariable v = (DiscreteVariable) node;
+                if (v.getNumCategories() != 2) {
+                    throw new IllegalArgumentException("Logistic regression requires a dataset in which all variables " +
+                            "are either continuous or binary.");
+                }
+            }
+        }
+
         final GraphWorkbench workbench = new GraphWorkbench();
         this.modelParameters = new JTextArea();
         final JButton executeButton = new JButton("Execute");

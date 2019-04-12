@@ -30,7 +30,7 @@ public class ArrowConfusion {
     private int TCfn;
     private int TCfp;
 
-    public ArrowConfusion(Graph truth, Graph est) {
+    public  ArrowConfusion(Graph truth, Graph est) {
         this.truth = truth;
         this.est = est;
         arrowsTp = 0;
