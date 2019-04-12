@@ -95,8 +95,6 @@ public class LinearFisherModel implements Simulation, TakesData {
                     parameters.getDouble("varHigh"));
             simulator.setIncludePositiveCoefs(parameters.getBoolean("includePositiveCoefs"));
             simulator.setIncludeNegativeCoefs(parameters.getBoolean("includeNegativeCoefs"));
-            simulator.setBetaLeftValue(parameters.getDouble("betaLeftValue"));
-            simulator.setBetaRightValue(parameters.getDouble("betaRightValue"));
             simulator.setSelfLoopCoef(parameters.getDouble("selfLoopCoef"));
             simulator.setMeanRange(
                     parameters.getDouble("meanLow"),
