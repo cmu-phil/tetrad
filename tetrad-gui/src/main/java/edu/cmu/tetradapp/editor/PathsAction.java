@@ -415,11 +415,7 @@ class PathsAction extends AbstractAction implements ClipboardOwner {
             return "--NONE--";
         }
 
-        Collections.sort(nodes, new Comparator<Node>() {
-            public int compare(Node o1, Node o2) {
-                return o1.getName().compareTo(o2.getName());
-            }
-        });
+        Collections.sort(nodes);
 
         StringBuilder buf = new StringBuilder();
 

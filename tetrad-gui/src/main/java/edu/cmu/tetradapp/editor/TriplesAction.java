@@ -75,11 +75,7 @@ class TriplesAction extends AbstractAction implements ClipboardOwner {
         textArea.append("Underlinings:");
         boolean allEmpty = true;
         List<Node> nodes = graph.getNodes();
-        Collections.sort(nodes, new Comparator<Node>() {
-            public int compare(Node node1, Node node2) {
-                return node1.getName().compareTo(node2.getName());
-            }
-        });
+        Collections.sort(nodes);
 
         for (int i = 0; i < nodes.size(); i++) {
             Node node = nodes.get(i);

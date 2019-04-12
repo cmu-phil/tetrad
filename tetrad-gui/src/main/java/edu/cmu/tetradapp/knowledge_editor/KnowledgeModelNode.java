@@ -147,8 +147,8 @@ public class KnowledgeModelNode implements Node, TetradSerializableExcluded {
         return getName();
     }
 
-    public int compareTo(Object o) {
-        Node node = (Node) o;
+    @Override
+    public int compareTo(Node node) {
         final String name = getName();
         String[] tokens1 = name.split(":");
         final String _name = node.getName();

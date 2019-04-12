@@ -18,7 +18,6 @@
 // along with this program; if not, write to the Free Software               //
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA //
 ///////////////////////////////////////////////////////////////////////////////
-
 package edu.cmu.tetrad.session;
 
 import edu.cmu.tetrad.graph.Node;
@@ -36,24 +35,28 @@ import java.util.*;
 import javax.swing.*;
 
 /**
- * <p>Represents a node in a session for a model in a particular class. The sets
- * of possible model classes for this node are given in the constructors of the
+ * <p>
+ * Represents a node in a session for a model in a particular class. The sets of
+ * possible model classes for this node are given in the constructors of the
  * model classes for the node. Parents (also SessionNodes) may be added to this
  * node provided some combination of the parents' model classes serves a partial
  * argument set to some constructor of the one of this node's model classes. To
  * put it slightly differently, parents can be added to this node one at a time,
  * though at any step along the way it ought to be possible (perhaps by adding
  * more parent nodes) to use the parent models to construct a model of one of
- * the legal types for this node.</p> <p>To retrieve the list of classes for
- * which models may be created, call the <code>getConsistentModelClasses
+ * the legal types for this node.</p>
+ * <p>
+ * To retrieve the list of classes for which models may be created, call the <code>getConsistentModelClasses
  * </code>. To construct a model for a particular model choice, call
  * <code>createModel</code> method for the desired class. If the model has a
  * parameterizing object, this object may be passed in using the
  * <code>createParameterizedModel</code> method. For parameterized models, the
  * model object is treated simply as an additional parent to the model and
  * therefore must appear as an argument to one of the constructors of the
- * model.</p> <p>This node keeps track of its parents and its children and keeps
- * these two sets of SessionNodes in sync.</p>
+ * model.</p>
+ * <p>
+ * This node keeps track of its parents and its children and keeps these two
+ * sets of SessionNodes in sync.</p>
  *
  * @author Joseph Ramsey
  * @see Session
@@ -62,6 +65,7 @@ import javax.swing.*;
  * @see SessionEvent
  */
 public class SessionNode implements Node, TetradSerializable {
+
     static final long serialVersionUID = 23L;
 
     /**
@@ -110,8 +114,8 @@ public class SessionNode implements Node, TetradSerializable {
     private SessionModel model;
 
     /**
-     * Stores a reference to the previous model so that information
-     * from it can be used to initialize a new model.
+     * Stores a reference to the previous model so that information from it can
+     * be used to initialize a new model.
      *
      * @serial Can be null.
      */
@@ -175,19 +179,18 @@ public class SessionNode implements Node, TetradSerializable {
     private transient SessionHandler sessionHandler;
     private TetradLoggerConfig loggerConfig = null;
     private Parameters parameters = new Parameters();
-    
+
     /**
-     * Node variable type (domain, interventional status, interventional value..) of this node variable
+     * Node variable type (domain, interventional status, interventional
+     * value..) of this node variable
      */
     private NodeVariableType nodeVariableType = NodeVariableType.DOMAIN;
 
     private Map<String, Object> attributes = new HashMap<>();
 
     //==========================CONSTRUCTORS===========================//
-
     /**
-     * Creates a new session node capable of implementing the given model
-     * class.
+     * Creates a new session node capable of implementing the given model class.
      */
     public SessionNode(Class modelClass) {
         this("???", modelClass.getName(), new Class[]{modelClass});
@@ -197,11 +200,10 @@ public class SessionNode implements Node, TetradSerializable {
      * Creates a new session node with the given name, capable of implementing
      * the given model class.
      *
-     * @param boxType     The name of the box type--for instance, "Graph."
+     * @param boxType The name of the box type--for instance, "Graph."
      * @param displayName The name of this particular session node. Any non-null
-     *                    string.
-     * @param modelClass  A single model class associated with this session
-     *                    node.
+     * string.
+     * @param modelClass A single model class associated with this session node.
      */
     public SessionNode(String boxType, String displayName, Class modelClass) {
         this(boxType, displayName, new Class[]{modelClass});
@@ -223,14 +225,14 @@ public class SessionNode implements Node, TetradSerializable {
      * class given as argument to the <code>createModel</code> method, which
      * must itself be one of these model classes.
      *
-     * @param boxType      The name of the box type--for instance, "Graph."
-     * @param displayName  The name of this particular session node. Any
-     *                     non-null string.
+     * @param boxType The name of the box type--for instance, "Graph."
+     * @param displayName The name of this particular session node. Any non-null
+     * string.
      * @param modelClasses An array of model classes associated with this
-     *                     session node.
+     * session node.
      */
     public SessionNode(String boxType, String displayName,
-                       Class[] modelClasses) {
+            Class[] modelClasses) {
         setBoxType(boxType);
         setDisplayName(displayName);
 
@@ -246,8 +248,8 @@ public class SessionNode implements Node, TetradSerializable {
 
             if (!(SessionModel.class.isAssignableFrom(modelClasses[i]))) {
                 throw new ClassCastException(
-                        "Model class must implement SessionModel: " +
-                                modelClasses[i]);
+                        "Model class must implement SessionModel: "
+                        + modelClasses[i]);
             }
         }
 
@@ -265,7 +267,6 @@ public class SessionNode implements Node, TetradSerializable {
     }
 
     //==========================PUBLIC METHODS============================//
-
     /**
      * Adds a parent to this node provided the resulting set of parents taken
      * together provides some combination of possible model classes that can be
@@ -559,16 +560,15 @@ public class SessionNode implements Node, TetradSerializable {
      * printed to System.err and an IllegalArgumentException is thrown. t
      *
      * @throws RuntimeException if the attempt to construct the model throws
-     *                          either an IllegalAccessException, an
-     *                          InstantiationException, or an InvocationTargetException.
-     *                          In this case, a stack trace is printed to
-     *                          System.err.
+     * either an IllegalAccessException, an InstantiationException, or an
+     * InvocationTargetException. In this case, a stack trace is printed to
+     * System.err.
      */
     public void createModel(Class modelClass, boolean simulation)
             throws Exception {
         if (!Arrays.asList(this.modelClasses).contains(modelClass)) {
-            throw new IllegalArgumentException("Class not among possible " +
-                    "model classes: " + modelClass);
+            throw new IllegalArgumentException("Class not among possible "
+                    + "model classes: " + modelClass);
         }
 
         this.loggerConfig = getLoggerConfig(modelClass);
@@ -583,7 +583,6 @@ public class SessionNode implements Node, TetradSerializable {
         // If param not null, add it to the list of parentModels.
         Object param = getParam(modelClass);
         this.model = null;
-
 
         List<Object> expandedModels = new ArrayList<>(parentModels);
 
@@ -781,9 +780,9 @@ public class SessionNode implements Node, TetradSerializable {
      * that it was constructed with, and it may or may not have a name.
      */
     public boolean isFreshlyCreated() {
-        return (this.model == null) && (this.modelParamTypes == null) &&
-                (this.parents.size() == 0) && (this.children.size() == 0) &&
-                (this.sessionHandler == null) && (this.sessionSupport == null);
+        return (this.model == null) && (this.modelParamTypes == null)
+                && (this.parents.size() == 0) && (this.children.size() == 0)
+                && (this.sessionHandler == null) && (this.sessionSupport == null);
     }
 
     /**
@@ -794,8 +793,8 @@ public class SessionNode implements Node, TetradSerializable {
     public void resetToFreshlyCreated() {
         if (!isFreshlyCreated()) {
             Set<SessionNode> _parents = new HashSet<>(this.parents);
-            Set<SessionNode> _children =
-                    new HashSet<>(this.children);
+            Set<SessionNode> _children
+                    = new HashSet<>(this.children);
 
             for (SessionNode _parent : _parents) {
                 removeParent(_parent);
@@ -844,16 +843,18 @@ public class SessionNode implements Node, TetradSerializable {
     }
 
     /**
-     * <p>Tests whether two session nodes that are not necessarily object
-     * identical are nevertheless identical in structure. This method should not
-     * be made to override <code>equals</code> since <code>equals</code> is used
-     * in the Collections API to determine, for example, containment in an
-     * ArrayList, and the sense of equality needed for that is object identity.
+     * <p>
+     * Tests whether two session nodes that are not necessarily object identical
+     * are nevertheless identical in structure. This method should not be made
+     * to override <code>equals</code> since <code>equals</code> is used in the
+     * Collections API to determine, for example, containment in an ArrayList,
+     * and the sense of equality needed for that is object identity.
      * Nevertheless, for certain other purposes, such as checking serialization,
-     * a looser sense of structural identity is helpful.</p> </p> <p>Two
-     * SessionNodes are structurally identical just in case their possible model
-     * classes are equal, the parameter type arrays used to construct their
-     * models are equal, their models themselves are equal, and the model
+     * a looser sense of structural identity is helpful.</p> </p>
+     * <p>
+     * Two SessionNodes are structurally identical just in case their possible
+     * model classes are equal, the parameter type arrays used to construct
+     * their models are equal, their models themselves are equal, and the model
      * classes of the parent and child SessionNodes are equal. We dare not check
      * equality of parents and children outright for fear of circularity.</p>
      */
@@ -864,8 +865,8 @@ public class SessionNode implements Node, TetradSerializable {
 
         // Check equality of possible model classes.
         Set<Class> set1 = new HashSet<>(Arrays.asList(getModelClasses()));
-        Set<Class> set2 =
-                new HashSet<>(Arrays.asList(node.getModelClasses()));
+        Set<Class> set2
+                = new HashSet<>(Arrays.asList(node.getModelClasses()));
 
         if (!set1.equals(set2)) {
             return false;
@@ -1084,7 +1085,7 @@ public class SessionNode implements Node, TetradSerializable {
     }
 
     @Override
-    public int compareTo(Object o) {
+    public int compareTo(Node node) {
         return 0;
     }
 
@@ -1136,8 +1137,8 @@ public class SessionNode implements Node, TetradSerializable {
 
     /**
      * @return true if the cloning operation was successful, false if not. If
-     * the cloning operation was not successful, the model will not have
-     * been altered.
+     * the cloning operation was not successful, the model will not have been
+     * altered.
      */
     public boolean useClonedModel() {
 
@@ -1155,8 +1156,8 @@ public class SessionNode implements Node, TetradSerializable {
             this.model = new MarshalledObject<>(model).get();
             this.model.setName(getDisplayName());
 
-            if (this.model instanceof ParamsResettable &&
-                    temp instanceof ParamsResettable) {
+            if (this.model instanceof ParamsResettable
+                    && temp instanceof ParamsResettable) {
                 Object resettableParams = ((ParamsResettable) temp).getResettableParams();
                 ((ParamsResettable) this.model).resetParams(resettableParams);
             }
@@ -1181,11 +1182,9 @@ public class SessionNode implements Node, TetradSerializable {
     }
 
     //=====================PACKAGE PROTECTED METHODS=====================//
-
     //===================================================================//
     // Note: Leave these method package protected for unit testing.      //
     //===================================================================//
-
     /**
      * Determines whether a given model class is consistent with the models
      * contained in the given List of nodes, in the sense that the model class
@@ -1209,10 +1208,11 @@ public class SessionNode implements Node, TetradSerializable {
     }
 
     /**
-     * <p>Tests whether the model class has an argument that takes all of the
-     * given argument classes (or more) as arguments. The purpose of this is to
-     * allow parent nodes to be added one at a time to this node, whether or not
-     * any of the nodes in question have non-null models.</p>
+     * <p>
+     * Tests whether the model class has an argument that takes all of the given
+     * argument classes (or more) as arguments. The purpose of this is to allow
+     * parent nodes to be added one at a time to this node, whether or not any
+     * of the nodes in question have non-null models.</p>
      */
     public boolean existsConstructor(Class modelClass, Class[] argumentTypes) {
         for (Class argumentType1 : argumentTypes) {
@@ -1227,8 +1227,8 @@ public class SessionNode implements Node, TetradSerializable {
         loop:
         for (Constructor constructor : constructors) {
             Class[] parameterTypes = constructor.getParameterTypes();
-            List<Class> remainingParameterTypes =
-                    new ArrayList<>(Arrays.asList(parameterTypes));
+            List<Class> remainingParameterTypes
+                    = new ArrayList<>(Arrays.asList(parameterTypes));
 
             loop2:
             for (Class argumentType : argumentTypes) {
@@ -1248,8 +1248,9 @@ public class SessionNode implements Node, TetradSerializable {
     }
 
     /**
-     * <p>Returns the first class c in <code>classes</code> that
-     * <code>clazz</code> is assignable to.</p>
+     * <p>
+     * Returns the first class c in <code>classes</code> that <code>clazz</code>
+     * is assignable to.</p>
      */
     public Class getAssignableClass(List classes, Class clazz) {
         for (Object aClass : classes) {
@@ -1263,14 +1264,15 @@ public class SessionNode implements Node, TetradSerializable {
     }
 
     /**
-     * <p>Returns the objects in the List as an array in the same order as the
+     * <p>
+     * Returns the objects in the List as an array in the same order as the
      * parameter types. If an exact match cannot be found, throws a
      * RuntimeException with an appropriate message. </p>
      *
      * @param parameterTypes a list of classes; if any of them is null, a
-     *                       NullPointerException will be thrown.
-     * @param objects        a List of objects. (The nulls will be automatically
-     *                       thrown out for this one.)
+     * NullPointerException will be thrown.
+     * @param objects a List of objects. (The nulls will be automatically thrown
+     * out for this one.)
      */
     public Object[] assignParameters(Class[] parameterTypes, List objects)
             throws RuntimeException {
@@ -1345,7 +1347,9 @@ public class SessionNode implements Node, TetradSerializable {
             existingNodes.remove(this);
 
             for (Class<?> type : constructorTypes) {
-                if (type.equals(Parameters.class)) continue;
+                if (type.equals(Parameters.class)) {
+                    continue;
+                }
                 boolean foundNode = false;
 
                 FOR:
@@ -1463,7 +1467,6 @@ public class SessionNode implements Node, TetradSerializable {
     }
 
     //==============================PRIVATE METHODS=======================//
-
     /**
      * @return true iff the given node is parent of this node.
      */
@@ -1513,7 +1516,6 @@ public class SessionNode implements Node, TetradSerializable {
 //                throw new RuntimeException(
 //                        "One of the parents has an empty model.");
 //            }
-
             if (model != null) {
                 models.add(model);
             }
@@ -1541,8 +1543,8 @@ public class SessionNode implements Node, TetradSerializable {
             Class[] constructorTypes = constructor.getParameterTypes();
             Object[] arguments = null;
 
-            if (constructorTypes.length == 2 && constructorTypes[0].isArray() &&
-                    constructorTypes[1] == Parameters.class) {
+            if (constructorTypes.length == 2 && constructorTypes[0].isArray()
+                    && constructorTypes[1] == Parameters.class) {
                 List<Object> _objects = new ArrayList<>();
                 Class<?> c1 = constructorTypes[0].getComponentType();
                 Parameters parameters = null;
@@ -1585,7 +1587,9 @@ public class SessionNode implements Node, TetradSerializable {
                 arguments = assignParameters(constructorTypes, models);
             }
 
-            if (constructorTypes.length == 0) continue;
+            if (constructorTypes.length == 0) {
+                continue;
+            }
 
             if (arguments != null) {
                 try {
@@ -1619,7 +1623,7 @@ public class SessionNode implements Node, TetradSerializable {
                     } else {
                         throw new InvocationTargetException(e,
                                 "Could not construct node; root cause: " + e.getCause().getMessage()
-                                        + " " + packagePath + " " + begin + " " + name
+                                + " " + packagePath + " " + begin + " " + name
                         );
                     }
                 }
@@ -1638,13 +1642,12 @@ public class SessionNode implements Node, TetradSerializable {
      * New version 2015901.
      */
     private boolean isConsistentModelClass(Class modelClass, Class[][] parentClasses, boolean exact,
-                                           List<SessionNode> existingNodes) {
+            List<SessionNode> existingNodes) {
         Constructor[] constructors = modelClass.getConstructors();
 
         // If the constructor takes the special form of an array followed by Parameters,
         // public Clazz(C1[] c1, Parameters paramters);
         // just check to make sure all models besides Parameters are of class C1.
-
         L:
         for (Constructor constructor : constructors) {
             Class<?>[] constructorTypes = constructor.getParameterTypes();
@@ -1652,7 +1655,9 @@ public class SessionNode implements Node, TetradSerializable {
             boolean hasParameters = false;
 
             for (int j = 0; j < constructorTypes.length; j++) {
-                if (constructorTypes[j] == Parameters.class) hasParameters = true;
+                if (constructorTypes[j] == Parameters.class) {
+                    hasParameters = true;
+                }
             }
 
             if (constructorTypes.length == 2) {
@@ -1705,7 +1710,9 @@ public class SessionNode implements Node, TetradSerializable {
 
             for (int i = 0; i < parentClasses.length; i++) {
                 dims[i] = summary.get(i).size();
-                if (dims[i] == 0) continue L;
+                if (dims[i] == 0) {
+                    continue L;
+                }
             }
 
             CombinationIterator iterator = new CombinationIterator(dims);
@@ -1719,7 +1726,6 @@ public class SessionNode implements Node, TetradSerializable {
                     for (int i = 0; i < comb.length; i++) {
                         modelTypes[i] = summary.get(i).get(comb[i]);
                     }
-
 
                     modelTypes[comb.length] = Parameters.class;
 
@@ -1746,7 +1752,7 @@ public class SessionNode implements Node, TetradSerializable {
     }
 
     private Class findMatchingType(List<Class> parameterTypes,
-                                   Class argumentType) {
+            Class argumentType) {
         for (Class type : parameterTypes) {
             if (type.isAssignableFrom(argumentType)) {
                 return type;
@@ -1783,8 +1789,8 @@ public class SessionNode implements Node, TetradSerializable {
         }
 
         // Collect up the model types from the parents.
-        List<Class<? extends Object>> list1 =
-                new ArrayList<>();
+        List<Class<? extends Object>> list1
+                = new ArrayList<>();
 
         for (SessionNode node : this.parents) {
             Object model = node.getModel();
@@ -1852,7 +1858,6 @@ public class SessionNode implements Node, TetradSerializable {
         this.nodeVariableType = nodeVariableType;
     }
 
-
     /**
      * Handles <code>SessionEvent</code>s. Hides the handling of these from the
      * API.
@@ -1869,9 +1874,9 @@ public class SessionNode implements Node, TetradSerializable {
         }
 
         /**
-         * When a new execution is begun of a simulation edu.cmu.tetrad.study, this event is
-         * sent downstream so that certain parameter objects can reset
-         * themselves.
+         * When a new execution is begun of a simulation edu.cmu.tetrad.study,
+         * this event is sent downstream so that certain parameter objects can
+         * reset themselves.
          */
         public void executionStarted(SessionEvent event) {
 
@@ -1947,29 +1952,24 @@ public class SessionNode implements Node, TetradSerializable {
         }
     }
 
-	@Override
-	public Map<String, Object> getAllAttributes() {
-		return attributes;
-	}
+    @Override
+    public Map<String, Object> getAllAttributes() {
+        return attributes;
+    }
 
-	@Override
-	public Object getAttribute(String key) {
-		return attributes.get(key);
-	}
+    @Override
+    public Object getAttribute(String key) {
+        return attributes.get(key);
+    }
 
-	@Override
-	public void removeAttribute(String key) {
-		attributes.remove(key);
-	}
+    @Override
+    public void removeAttribute(String key) {
+        attributes.remove(key);
+    }
 
-	@Override
-	public void addAttribute(String key, Object value) {
-		attributes.put(key, value);
-	}
+    @Override
+    public void addAttribute(String key, Object value) {
+        attributes.put(key, value);
+    }
 
 }
-
-
-
-
-

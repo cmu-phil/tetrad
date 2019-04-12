@@ -44,21 +44,7 @@ import java.io.Reader;
 import java.io.Writer;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
-import java.util.ArrayDeque;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.Formatter;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Queue;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.RecursiveTask;
 import java.util.regex.Matcher;
 import nu.xom.Builder;
@@ -87,12 +73,7 @@ public final class GraphUtils {
             return;
         }
         List<Node> nodes = graph.getNodes();
-
-        Collections.sort(nodes, new Comparator<Node>() {
-            public int compare(Node o1, Node o2) {
-                return o1.getName().compareTo(o2.getName());
-            }
-        });
+        Collections.sort(nodes);
 
         double rad = 6.28 / nodes.size();
         double phi = .75 * 6.28;    // start from 12 o'clock.
@@ -4071,7 +4052,7 @@ public final class GraphUtils {
     public static String graphNodeAttributesToText(Graph graph, String title, char delimiter) {
         List<Node> nodes = graph.getNodes();
         
-        Map<String, Map<String, Object>> graphNodeAttributes = new LinkedHashMap<>(); 
+        Map<String, Map<String, Object>> graphNodeAttributes = new LinkedHashMap<>();
         for (Node node : nodes) {
             Map<String, Object> attributes = node.getAllAttributes();
             
