@@ -1294,10 +1294,13 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         Box topBox = Box.createVerticalBox();
         topBox.setPreferredSize(new Dimension(820, 400));
 
+        GraphWorkbench graphWorkbench = new GraphWorkbench(graph);
+        graphWorkbench.enableEditing(false);
+
         // topBox graph editor
         JScrollPane graphEditorScroll = new JScrollPane();
         graphEditorScroll.setPreferredSize(new Dimension(820, 420));
-        graphEditorScroll.setViewportView(new GraphWorkbench(graph));
+        graphEditorScroll.setViewportView(graphWorkbench);
 
         // Instruction with info button
         Box instructionBox = Box.createHorizontalBox();
