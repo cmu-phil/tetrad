@@ -270,6 +270,8 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
      */
     private JComponent currentMouseoverLbl = null;
 
+    private boolean enableEditing = true;
+
     // ==============================CONSTRUCTOR============================//
     /**
      * Constructs a new workbench workbench.
@@ -289,6 +291,7 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
                 grabFocus();
             }
         });
+        setEnabled(enableEditing);
     }
 
     // ============================PUBLIC METHODS==========================//
@@ -2540,6 +2543,15 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
         this.deleteVariablesAllowed = deleteVariablesAllowed;
     }
 
+    public boolean isEnableEditing() {
+        return enableEditing;
+    }
+
+    public void enableEditing(boolean enableEditing) {
+        this.enableEditing = enableEditing;
+        setEnabled(enableEditing);
+    }
+
     /**
      * This inner class is a simple wrapper for JComponents which are to serve
      * as edge labels in the workbench. Its sole function is to make sure the
@@ -2738,6 +2750,7 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
          * Adjusts scrollbars to automatically reflect the position of a
          * component which is being dragged.
          */
+        @Override
         public final void componentMoved(ComponentEvent e) {
             Component source = (Component) e.getSource();
             Rectangle bounds = source.getBounds();
@@ -2769,7 +2782,7 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
     /**
      * Handles mouse events and mouse motion events.
      */
-    private static final class MouseHandler extends MouseAdapter {
+    private final class MouseHandler extends MouseAdapter {
 
         private final AbstractWorkbench workbench;
 
@@ -2777,22 +2790,33 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
             this.workbench = workbench;
         }
 
+        @Override
         public final void mouseClicked(MouseEvent e) {
-            workbench.handleMouseClicked(e);
+            if (AbstractWorkbench.this.isEnableEditing()) {
+                workbench.handleMouseClicked(e);
+            }
         }
 
+        @Override
         public final void mousePressed(MouseEvent e) {
             workbench.handleMousePressed(e);
         }
 
+        @Override
         public final void mouseReleased(MouseEvent e) {
-            workbench.handleMouseReleased(e);
+            if (AbstractWorkbench.this.isEnableEditing()) {
+                workbench.handleMouseReleased(e);
+            }
         }
 
+        @Override
         public final void mouseEntered(MouseEvent e) {
-            workbench.handleMouseEntered(e);
+            if (AbstractWorkbench.this.isEnableEditing()) {
+                workbench.handleMouseEntered(e);
+            }
         }
 
+        @Override
         public final void mouseExited(MouseEvent e) {
             // Commented out by Zhou
             //workbench.handleMouseExited(e);
@@ -2807,10 +2831,12 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
             this.workbench = workbench;
         }
 
+        @Override
         public final void mouseMoved(MouseEvent e) {
             workbench.currentMouseLocation = e.getPoint();
         }
 
+        @Override
         public final void mouseDragged(MouseEvent e) {
             workbench.handleMouseDragged(e);
         }
