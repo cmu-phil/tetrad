@@ -18,32 +18,34 @@
 // along with this program; if not, write to the Free Software               //
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA //
 ///////////////////////////////////////////////////////////////////////////////
-
 package edu.cmu.tetradapp.editor;
 
 import edu.cmu.tetrad.bayes.BayesIm;
 import edu.cmu.tetradapp.workbench.GraphWorkbench;
-
-import javax.swing.*;
-import javax.swing.border.MatteBorder;
 import java.awt.*;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import javax.swing.*;
+import javax.swing.border.MatteBorder;
 
 /**
  * Allows the user to choose a variable in a Bayes net and edit the parameters
- * associated with that variable.  
+ * associated with that variable.
  *
  * @author Joseph Ramsey jdramsey@andrew.cmu.edu
  */
-
 //////////////////////////////////////
 // there is only one JPD table
 //
 public final class BayesImEditorWizardObs extends JPanel {
+
+    private static final long serialVersionUID = -2275425522013903246L;
+
     private BayesIm bayesIm;
     private JComboBox varNamesComboBox;
     private GraphWorkbench workbench;
+
+    private boolean enableEditing = true;
 
     public BayesImEditorWizardObs(BayesIm bayesIm, GraphWorkbench workbench) {
         if (bayesIm == null) {
@@ -76,7 +78,6 @@ public final class BayesImEditorWizardObs extends JPanel {
         editingTable.grabFocus();
 
         // Do Layout.
-		
         Box b3 = Box.createHorizontalBox();
         b3.add(new JLabel("Click in the appropriate box and assign "
                 + "a probability to each combination"));
@@ -92,10 +93,10 @@ public final class BayesImEditorWizardObs extends JPanel {
         Box b5 = Box.createHorizontalBox();
         b5.add(new JLabel("Right click in table to randomize."));
         b5.add(Box.createHorizontalGlue());
-		
+
         Box b6 = Box.createHorizontalBox();
         b6.add(new JLabel("Note: Editing this table with arbitrary numbers "
-								+ "may result in a table "));
+                + "may result in a table "));
         b6.add(Box.createHorizontalGlue());
 
         Box b6a = Box.createHorizontalBox();
@@ -121,10 +122,16 @@ public final class BayesImEditorWizardObs extends JPanel {
     private GraphWorkbench getWorkbench() {
         return workbench;
     }
+
+    public boolean isEnableEditing() {
+        return enableEditing;
+    }
+
+    public void enableEditing(boolean enableEditing) {
+        this.enableEditing = enableEditing;
+        if (this.workbench != null) {
+            this.workbench.enableEditing(enableEditing);
+        }
+    }
+
 }
-
-
-
-
-
-
