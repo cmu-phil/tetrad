@@ -196,8 +196,6 @@ public class LinearFisherModel implements Simulation, TakesData {
         parameters.add("includePositiveCoefs");
         parameters.add("includeNegativeCoefs");
         parameters.add("errorsNormal");
-        parameters.add("betaLeftValue");
-        parameters.add("betaRightValue");
         parameters.add("numRuns");
         parameters.add("percentDiscrete");
         parameters.add("numCategories");
