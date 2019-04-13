@@ -18,7 +18,6 @@
 // along with this program; if not, write to the Free Software               //
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA //
 ///////////////////////////////////////////////////////////////////////////////
-
 package edu.cmu.tetradapp.editor;
 
 import edu.cmu.tetrad.bayes.BayesIm;
@@ -27,20 +26,28 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetradapp.util.SortingComboBox;
 import edu.cmu.tetradapp.workbench.GraphWorkbench;
-
-import javax.swing.*;
-import javax.swing.border.MatteBorder;
-import javax.swing.table.TableCellEditor;
-import java.awt.*;
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.List;
+import javax.swing.Box;
+import javax.swing.JButton;
+import javax.swing.JComboBox;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.border.MatteBorder;
+import javax.swing.table.TableCellEditor;
 
 /**
  * Allows the user to choose a variable in a Bayes net and edit the parameters
- * associated with that variable.  Parameters are of the form
+ * associated with that variable. Parameters are of the form
  * P(Node=value1|Parent1=value2, Parent2=value2,...); values for these
  * parameters are probabilities ranging from 0.0 to 1.0. For a given combination
  * of parent values for node N, the probabilities for the values of N
@@ -50,11 +57,16 @@ import java.util.List;
  * @author Frank Wimberly adapted for EM Bayes estimation.
  */
 final class EMBayesEstimatorEditorWizard extends JPanel {
+
+    private static final long serialVersionUID = -4844735953555314165L;
+
     private BayesIm bayesIm;
     private JComboBox varNamesComboBox;
     private GraphWorkbench workbench;
     private BayesEstimatorNodeEditingTable editingTable;
     private JPanel tablePanel;
+
+    private boolean enableEditing = true;
 
     public EMBayesEstimatorEditorWizard(BayesIm bayesIm,
             GraphWorkbench workbench) {
@@ -225,10 +237,16 @@ final class EMBayesEstimatorEditorWizard extends JPanel {
     private GraphWorkbench getWorkbench() {
         return workbench;
     }
+
+    public boolean isEnableEditing() {
+        return enableEditing;
+    }
+
+    public void enableEditing(boolean enableEditing) {
+        this.enableEditing = enableEditing;
+        if (this.workbench != null) {
+            this.workbench.enableEditing(enableEditing);
+        }
+    }
+
 }
-
-
-
-
-
-
