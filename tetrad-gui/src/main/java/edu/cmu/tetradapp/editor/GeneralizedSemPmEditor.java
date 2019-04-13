@@ -18,7 +18,6 @@
 // along with this program; if not, write to the Free Software               //
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA //
 ///////////////////////////////////////////////////////////////////////////////
-
 package edu.cmu.tetradapp.editor;
 
 import edu.cmu.tetrad.data.IKnowledge;
@@ -32,11 +31,7 @@ import edu.cmu.tetradapp.util.DesktopController;
 import edu.cmu.tetradapp.util.IntTextField;
 import edu.cmu.tetradapp.util.LayoutEditable;
 import edu.cmu.tetradapp.workbench.LayoutMenu;
-
-import javax.swing.*;
-import javax.swing.border.EmptyBorder;
-import javax.swing.event.*;
-import java.awt.*;
+import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
@@ -45,7 +40,23 @@ import java.text.ParseException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.prefs.Preferences;
-
+import javax.swing.Box;
+import javax.swing.JComponent;
+import javax.swing.JLabel;
+import javax.swing.JLayeredPane;
+import javax.swing.JMenu;
+import javax.swing.JMenuBar;
+import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JTabbedPane;
+import javax.swing.border.EmptyBorder;
+import javax.swing.event.AncestorEvent;
+import javax.swing.event.AncestorListener;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
+import javax.swing.event.InternalFrameAdapter;
+import javax.swing.event.InternalFrameEvent;
 
 /**
  * Edits a SEM PM model.
@@ -82,15 +93,13 @@ public final class GeneralizedSemPmEditor extends JPanel implements DelegatesEdi
     private JMenuItem errorTerms;
 
     /**
-     * A common map of nodes to launched editors so that they can all be closed when this editor
-     * is closed.
+     * A common map of nodes to launched editors so that they can all be closed
+     * when this editor is closed.
      */
     private final Map<Object, EditorWindow> launchedEditors = new HashMap<>();
 
-
     public GeneralizedSemPmEditor(final GeneralizedSemPmWrapper wrapper) {
         GeneralizedSemPm semPm = wrapper.getSemPm();
-
         if (semPm == null) {
             throw new NullPointerException("Generalized SEM PM must not be null.");
         }
@@ -129,8 +138,7 @@ public final class GeneralizedSemPmEditor extends JPanel implements DelegatesEdi
 
         if (shown) {
             errorTerms.setText("Hide Error Terms");
-        }
-        else {
+        } else {
             errorTerms.setText("Show Error Terms");
         }
 
@@ -144,8 +152,7 @@ public final class GeneralizedSemPmEditor extends JPanel implements DelegatesEdi
                     graph.setShowErrorTerms(false);
                     wrapper.setShowErrors(false);
                     graphicalEditor().refreshLabels();
-                }
-                else if ("Show Error Terms".equals(menuItem.getText())) {
+                } else if ("Show Error Terms".equals(menuItem.getText())) {
                     menuItem.setText("Hide Error Terms");
                     SemGraph graph = (SemGraph) graphicalEditor.getWorkbench().getGraph();
                     graph.setShowErrorTerms(true);
@@ -167,13 +174,12 @@ public final class GeneralizedSemPmEditor extends JPanel implements DelegatesEdi
 //                    editor.useParametersAsStartup();
                 }
 
-
                 JPanel panel = new JPanel();
                 panel.setLayout(new BorderLayout());
                 panel.add(editor, BorderLayout.CENTER);
 
-                final EditorWindow editorWindow =
-                        new EditorWindow(panel, "Apply Templates", "OK", false, GeneralizedSemPmEditor.this);
+                final EditorWindow editorWindow
+                        = new EditorWindow(panel, "Apply Templates", "OK", false, GeneralizedSemPmEditor.this);
 
                 DesktopController.getInstance().addEditorWindow(editorWindow, JLayeredPane.PALETTE_LAYER);
                 editorWindow.pack();
@@ -190,8 +196,8 @@ public final class GeneralizedSemPmEditor extends JPanel implements DelegatesEdi
                                     semPm.setNodeExpression(node, _semPm.getNodeExpressionString(node));
                                 } catch (ParseException e) {
                                     JOptionPane.showMessageDialog(GeneralizedSemPmEditor.this,
-                                            "Could not set the expression for " + node + " to " +
-                                                    _semPm.getNodeExpressionString(node));
+                                            "Could not set the expression for " + node + " to "
+                                            + _semPm.getNodeExpressionString(node));
                                 }
                             }
 
@@ -200,8 +206,8 @@ public final class GeneralizedSemPmEditor extends JPanel implements DelegatesEdi
                                     semPm.setStartsWithParametersTemplate(startsWith, _semPm.getStartsWithParameterTemplate(startsWith));
                                 } catch (ParseException e) {
                                     JOptionPane.showMessageDialog(GeneralizedSemPmEditor.this,
-                                            "Could not set the expression for " + startsWith + " to " +
-                                                    _semPm.getParameterExpressionString(_semPm.getStartsWithParameterTemplate(startsWith)));
+                                            "Could not set the expression for " + startsWith + " to "
+                                            + _semPm.getParameterExpressionString(_semPm.getStartsWithParameterTemplate(startsWith)));
                                 }
                             }
 
@@ -222,8 +228,8 @@ public final class GeneralizedSemPmEditor extends JPanel implements DelegatesEdi
                                     }
                                 } catch (ParseException e) {
                                     JOptionPane.showMessageDialog(GeneralizedSemPmEditor.this,
-                                            "Could not set the expression for " + parameter + " to " +
-                                                    _semPm.getParameterExpressionString(parameter));
+                                            "Could not set the expression for " + parameter + " to "
+                                            + _semPm.getParameterExpressionString(parameter));
                                 }
                             }
 
@@ -232,8 +238,8 @@ public final class GeneralizedSemPmEditor extends JPanel implements DelegatesEdi
                                 semPm.setErrorsTemplate(_semPm.getErrorsTemplate());
                                 semPm.setParametersTemplate(_semPm.getParametersTemplate());
                             } catch (ParseException e) {
-                                throw new RuntimeException("Could not set templates from copy of GeneralizedPm to " +
-                                        "actual GeneralizedPm.");
+                                throw new RuntimeException("Could not set templates from copy of GeneralizedPm to "
+                                        + "actual GeneralizedPm.");
                             }
 
                             graphicalEditor.refreshLabels();
@@ -261,12 +267,10 @@ public final class GeneralizedSemPmEditor extends JPanel implements DelegatesEdi
                             if (value > 0) {
                                 Preferences.userRoot().putInt("maxExpressionLength", value);
                                 return value;
-                            }
-                            else {
+                            } else {
                                 return 0;
                             }
-                        }
-                        catch (Exception e) {
+                        } catch (Exception e) {
                             return oldValue;
                         }
                     }
@@ -286,8 +290,8 @@ public final class GeneralizedSemPmEditor extends JPanel implements DelegatesEdi
                 panel.setLayout(new BorderLayout());
                 panel.add(b, BorderLayout.CENTER);
 
-                final EditorWindow editorWindow =
-                        new EditorWindow(panel, "Apply Templates", "OK", false, GeneralizedSemPmEditor.this);
+                final EditorWindow editorWindow
+                        = new EditorWindow(panel, "Apply Templates", "OK", false, GeneralizedSemPmEditor.this);
 
                 editorWindow.addInternalFrameListener(new InternalFrameAdapter() {
                     public void internalFrameClosing(InternalFrameEvent event) {
@@ -310,7 +314,6 @@ public final class GeneralizedSemPmEditor extends JPanel implements DelegatesEdi
         menuBar.add(new LayoutMenu(this));
 
         add(menuBar, BorderLayout.NORTH);
-
 
         // When the dialog closes, we want to close all generalized expression editors. We do this by
         // detecting when the ancestor of this editor has been removed.
@@ -347,6 +350,7 @@ public final class GeneralizedSemPmEditor extends JPanel implements DelegatesEdi
     public Map getModelEdgesToDisplay() {
         return graphicalEditor().getWorkbench().getModelEdgesToDisplay();
     }
+
     public Map getModelNodesToDisplay() {
         return graphicalEditor().getWorkbench().getModelNodesToDisplay();
     }
@@ -380,7 +384,6 @@ public final class GeneralizedSemPmEditor extends JPanel implements DelegatesEdi
     }
 
     //========================PRIVATE METHODS===========================//
-
     private GeneralizedSemPm getSemPm() {
         return semPm;
     }
@@ -388,6 +391,7 @@ public final class GeneralizedSemPmEditor extends JPanel implements DelegatesEdi
     private GeneralizedSemPmGraphicalEditor graphicalEditor() {
         if (this.graphicalEditor == null) {
             this.graphicalEditor = new GeneralizedSemPmGraphicalEditor(getSemPm(), launchedEditors);
+            this.graphicalEditor.enableEditing(false);
 
             this.graphicalEditor.addPropertyChangeListener(new PropertyChangeListener() {
                 public void propertyChange(PropertyChangeEvent event) {
@@ -422,5 +426,3 @@ public final class GeneralizedSemPmEditor extends JPanel implements DelegatesEdi
         return this.parameterEditor;
     }
 }
-
-
