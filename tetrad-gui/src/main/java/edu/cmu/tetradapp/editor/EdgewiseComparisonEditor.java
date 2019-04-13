@@ -18,32 +18,34 @@
 // along with this program; if not, write to the Free Software               //
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA //
 ///////////////////////////////////////////////////////////////////////////////
-
 package edu.cmu.tetradapp.editor;
 
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetradapp.model.EdgewiseComparisonModel;
 import edu.cmu.tetradapp.model.GraphWrapper;
-
-import javax.swing.*;
-import java.awt.*;
+import java.awt.BorderLayout;
+import java.awt.Dimension;
+import java.awt.Font;
 import java.util.List;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTabbedPane;
+import javax.swing.JTextArea;
 
 /**
- * Provides a little display/editor for notes in the session workbench. This
- * may be elaborated in the future to allow marked up text.
+ * Provides a little display/editor for notes in the session workbench. This may
+ * be elaborated in the future to allow marked up text.
  *
  * @author Joseph Ramsey
  */
 public class EdgewiseComparisonEditor extends JPanel {
 
-	private static final long serialVersionUID = 7921819261142670181L;
-	
-	/**
+    private static final long serialVersionUID = 7921819261142670181L;
+
+    /**
      * The model for the note.
      */
     private final EdgewiseComparisonModel comparison;
-
 
     /**
      * Constructs the editor given the model
@@ -54,7 +56,6 @@ public class EdgewiseComparisonEditor extends JPanel {
     }
 
     //============================ Private Methods =========================//
-
     private void setup() {
         setLayout(new BorderLayout());
 
@@ -64,7 +65,7 @@ public class EdgewiseComparisonEditor extends JPanel {
         for (int i = 0; i < referenceGraphs.size(); i++) {
             JTabbedPane pane2 = new JTabbedPane(JTabbedPane.TOP);
             String compareString = comparison.getComparisonString(i);
- 
+
             Font font = new Font("Monospaced", Font.PLAIN, 14);
             final JTextArea textPane = new JTextArea();
             textPane.setText(compareString);
@@ -73,26 +74,29 @@ public class EdgewiseComparisonEditor extends JPanel {
 
             JScrollPane scrollTextPane = new JScrollPane(textPane);
             scrollTextPane.setPreferredSize(new Dimension(400, 400));
-            
+
             pane2.add("Comparison", scrollTextPane);
-            
-            JScrollPane scrollTargetGraph = new JScrollPane(new GraphEditor(new GraphWrapper(comparison.getTargetGraphs().get(i))).getWorkbench());
+
+            GraphEditor graphEditor = new GraphEditor(new GraphWrapper(comparison.getTargetGraphs().get(i)));
+            graphEditor.enableEditing(false);
+
+            JScrollPane scrollTargetGraph = new JScrollPane(graphEditor.getWorkbench());
             scrollTargetGraph.setPreferredSize(new Dimension(400, 400));
-            
+
             pane2.add("Target Graph", scrollTargetGraph);
 
-            JScrollPane scrollTrueGraph = new JScrollPane(new GraphEditor(new GraphWrapper(comparison.getReferenceGraphs().get(i))).getWorkbench());
+            graphEditor = new GraphEditor(new GraphWrapper(comparison.getReferenceGraphs().get(i)));
+            graphEditor.enableEditing(false);
+
+            JScrollPane scrollTrueGraph = new JScrollPane(graphEditor.getWorkbench());
             scrollTrueGraph.setPreferredSize(new Dimension(400, 400));
-            
+
             pane2.add("True Graph", scrollTrueGraph);
 
             pane.add("" + (i + 1), pane2);
         }
-        
+
         add(pane);
     }
 
 }
-
-
-
