@@ -18,7 +18,6 @@
 // along with this program; if not, write to the Free Software               //
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA //
 ///////////////////////////////////////////////////////////////////////////////
-
 package edu.cmu.tetradapp.editor;
 
 import edu.cmu.tetrad.data.IKnowledge;
@@ -32,20 +31,28 @@ import edu.cmu.tetradapp.util.DesktopController;
 import edu.cmu.tetradapp.util.IntTextField;
 import edu.cmu.tetradapp.util.LayoutEditable;
 import edu.cmu.tetradapp.workbench.LayoutMenu;
-
-import javax.swing.*;
-import javax.swing.border.EmptyBorder;
-import javax.swing.event.AncestorEvent;
-import javax.swing.event.AncestorListener;
-import javax.swing.event.InternalFrameAdapter;
-import javax.swing.event.InternalFrameEvent;
-import java.awt.*;
+import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.prefs.Preferences;
-
+import javax.swing.Box;
+import javax.swing.JButton;
+import javax.swing.JComponent;
+import javax.swing.JLabel;
+import javax.swing.JLayeredPane;
+import javax.swing.JMenu;
+import javax.swing.JMenuBar;
+import javax.swing.JMenuItem;
+import javax.swing.JPanel;
+import javax.swing.JTabbedPane;
+import javax.swing.JTextArea;
+import javax.swing.border.EmptyBorder;
+import javax.swing.event.AncestorEvent;
+import javax.swing.event.AncestorListener;
+import javax.swing.event.InternalFrameAdapter;
+import javax.swing.event.InternalFrameEvent;
 
 /**
  * Edits a SEM PM model.
@@ -53,8 +60,9 @@ import java.util.prefs.Preferences;
  * @author Donald Crimbchin
  * @author Joseph Ramsey
  */
-public final class GeneralizedSemEstimatorEditor extends JPanel implements DelegatesEditing,
-        LayoutEditable {
+public final class GeneralizedSemEstimatorEditor extends JPanel implements DelegatesEditing, LayoutEditable {
+
+    private static final long serialVersionUID = 5161532456725190959L;
 
     /**
      * The graphical editor for the SemIm.
@@ -67,14 +75,13 @@ public final class GeneralizedSemEstimatorEditor extends JPanel implements Deleg
     private final JMenuItem errorTerms;
 
     /**
-     * A common map of nodes to launched editors so that they can all be closed when this editor
-     * is closed.
+     * A common map of nodes to launched editors so that they can all be closed
+     * when this editor is closed.
      */
     private final Map<Object, EditorWindow> launchedEditors = new HashMap<>();
     private final GeneralizedSemEstimatorWrapper wrapper;
 
     //========================CONSTRUCTORS===========================//
-
     public GeneralizedSemEstimatorEditor(final GeneralizedSemEstimatorWrapper wrapper) {
         setLayout(new BorderLayout());
 
@@ -179,8 +186,8 @@ public final class GeneralizedSemEstimatorEditor extends JPanel implements Deleg
                 panel.setLayout(new BorderLayout());
                 panel.add(b, BorderLayout.CENTER);
 
-                final EditorWindow editorWindow =
-                        new EditorWindow(panel, "Apply Templates", "OK", false, GeneralizedSemEstimatorEditor.this);
+                final EditorWindow editorWindow
+                        = new EditorWindow(panel, "Apply Templates", "OK", false, GeneralizedSemEstimatorEditor.this);
 
                 editorWindow.addInternalFrameListener(new InternalFrameAdapter() {
                     public void internalFrameClosing(InternalFrameEvent event) {
@@ -202,7 +209,6 @@ public final class GeneralizedSemEstimatorEditor extends JPanel implements Deleg
         menuBar.add(new LayoutMenu(this));
 
         add(menuBar, BorderLayout.NORTH);
-
 
         // When the dialog closes, we want to close all generalized expression editors. We do this by
         // detecting when the ancestor of this editor has been removed.
@@ -270,16 +276,17 @@ public final class GeneralizedSemEstimatorEditor extends JPanel implements Deleg
     }
 
     //========================PRIVATE METHODS===========================//
-
     private GeneralizedSemImGraphicalEditor graphicalEditor() {
         this.graphicalEditor = new GeneralizedSemImGraphicalEditor(getEstIm(), launchedEditors);
+        this.graphicalEditor.enableEditing(false);
+
         return this.graphicalEditor;
     }
 
     private GeneralizedSemImListEditor listEditor() {
         /*
       The graphical editor for the SemIm.
-     */
+         */
         GeneralizedSemImListEditor listEditor = new GeneralizedSemImListEditor(getEstIm(), launchedEditors);
         return listEditor;
     }
@@ -287,7 +294,7 @@ public final class GeneralizedSemEstimatorEditor extends JPanel implements Deleg
     private GeneralizedSemImParamsEditor parametersEditor() {
         /*
       Edits the initial distributions of the parameters.
-     */
+         */
         GeneralizedSemImParamsEditor paramsEditor = new GeneralizedSemImParamsEditor(getEstIm(), launchedEditors);
         return paramsEditor;
     }
@@ -298,7 +305,7 @@ public final class GeneralizedSemEstimatorEditor extends JPanel implements Deleg
 
         /*
 
-     */
+         */
         JTextArea report = new JTextArea(wrapper.getReport());
         p.add(report, BorderLayout.CENTER);
 
@@ -316,5 +323,3 @@ public final class GeneralizedSemEstimatorEditor extends JPanel implements Deleg
         return wrapper.getSemIm();
     }
 }
-
-

@@ -18,7 +18,6 @@
 // along with this program; if not, write to the Free Software               //
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA //
 ///////////////////////////////////////////////////////////////////////////////
-
 package edu.cmu.tetradapp.editor;
 
 import edu.cmu.tetrad.bayes.BayesIm;
@@ -26,14 +25,18 @@ import edu.cmu.tetrad.bayes.BayesPm;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetradapp.model.BayesImWrapperObs;
 import edu.cmu.tetradapp.workbench.GraphWorkbench;
-
-import javax.swing.*;
-import java.awt.*;
+import java.awt.BorderLayout;
+import java.awt.Dimension;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import javax.swing.JMenu;
+import javax.swing.JMenuBar;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JSplitPane;
 
 /**
- * An editor for Bayes net instantiated models.  Assumes that the workbench and
+ * An editor for Bayes net instantiated models. Assumes that the workbench and
  * parameterized model have been established (that is, that the nodes have been
  * identified and named and that the number and names of the values for the
  * nodes have been specified).
@@ -41,12 +44,13 @@ import java.beans.PropertyChangeListener;
  * @author Aaron Powers
  * @author Joseph Ramsey jdramsey@andrew.cmu.edu
  */
-
 /////////////////////////////////////////////////////////////////
-// allow the user to set the probabilities of given combinations 
+// allow the user to set the probabilities of given combinations
 // of node values
 //
 public class BayesImEditorObs extends JPanel {
+
+    private static final long serialVersionUID = 3600349007912545105L;
 
     /**
      * The wizard that allows the user to modify parameter values for this IM.
@@ -86,6 +90,7 @@ public class BayesImEditorObs extends JPanel {
         add(menuBar, BorderLayout.NORTH);
 
         wizard = new BayesImEditorWizardObs(bayesIm, workbench);
+        wizard.enableEditing(false);
 
         wizard.addPropertyChangeListener(new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent evt) {
@@ -158,8 +163,3 @@ public class BayesImEditorObs extends JPanel {
         firePropertyChange("modelChanged", null, null);
     }
 }
-
-
-
-
-

@@ -1021,6 +1021,7 @@ public final class SemImEditor extends JPanel implements LayoutEditable, DoNotSc
         private GraphWorkbench workbench() {
             if (this.getWorkbench() == null) {
                 this.workbench = new GraphWorkbench(graph());
+                this.workbench.enableEditing(false);
                 this.getWorkbench().setAllowDoubleClickActions(false);
                 this.getWorkbench().addPropertyChangeListener((evt) -> {
                     if ("BackgroundClicked".equals(
@@ -1111,9 +1112,9 @@ public final class SemImEditor extends JPanel implements LayoutEditable, DoNotSc
                 label.setBackground(Color.white);
                 label.setOpaque(true);
                 label.setFont(SMALL_FONT);
-                
+
                 label.setText(" " + asString(val) + " ");
-                
+
                 label.setToolTipText(parameter.getName() + " = " + asString(val));
                 label.addMouseListener(new EdgeMouseListener(edge, this));
                 if (!Double.isNaN(standardError) && semIm().isEstimated()) {

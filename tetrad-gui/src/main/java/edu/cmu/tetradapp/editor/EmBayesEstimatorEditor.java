@@ -18,7 +18,6 @@
 // along with this program; if not, write to the Free Software               //
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA //
 ///////////////////////////////////////////////////////////////////////////////
-
 package edu.cmu.tetradapp.editor;
 
 import edu.cmu.tetrad.bayes.BayesIm;
@@ -28,15 +27,21 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.util.NumberFormatUtil;
 import edu.cmu.tetradapp.model.EmBayesEstimatorWrapper;
 import edu.cmu.tetradapp.workbench.GraphWorkbench;
-
-import javax.swing.*;
-import java.awt.*;
+import java.awt.BorderLayout;
+import java.awt.Dimension;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.text.NumberFormat;
+import javax.swing.JMenu;
+import javax.swing.JMenuBar;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JSplitPane;
+import javax.swing.JTabbedPane;
+import javax.swing.JTextArea;
 
 /**
- * An editor for Bayes net instantiated models.  Assumes that the workbench and
+ * An editor for Bayes net instantiated models. Assumes that the workbench and
  * parameterized model have been established (that is, that the nodes have been
  * identified and named and that the number and names of the values for the
  * nodes have been specified) and allows the user to set conditional
@@ -45,9 +50,11 @@ import java.text.NumberFormat;
  * @author Aaron Powers
  * @author Joseph Ramsey jdramsey@andrew.cmu.edu
  * @author Frank Wimberly - adapted for EM Bayes estimator and Strucural EM
- *         Bayes estimator
+ * Bayes estimator
  */
 public class EmBayesEstimatorEditor extends JPanel {
+
+    private static final long serialVersionUID = -5645975222086813463L;
 
     /**
      * The wizard that allows the user to modify parameter values for this IM.
@@ -66,6 +73,7 @@ public class EmBayesEstimatorEditor extends JPanel {
         Graph graph = bayesIm.getBayesPm().getDag();
         GraphWorkbench workbench = new GraphWorkbench(graph);
         wizard = new EMBayesEstimatorEditorWizard(bayesIm, workbench);
+        wizard.enableEditing(false);
 
         // Add a menu item to allow the BayesIm to be saved out in
         // causality lab format.
@@ -102,7 +110,7 @@ public class EmBayesEstimatorEditor extends JPanel {
         buf.append("\nDf = ").append(scorer.getPValueDf());
         /*
       Formats numbers.
-     */
+         */
         NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
         buf.append("\nChi square = ").append(
                 nf.format(scorer.getPValueChisq()));
@@ -162,8 +170,3 @@ public class EmBayesEstimatorEditor extends JPanel {
         return wizard;
     }
 }
-
-
-
-
-

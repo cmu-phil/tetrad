@@ -18,7 +18,6 @@
 // along with this program; if not, write to the Free Software               //
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA //
 ///////////////////////////////////////////////////////////////////////////////
-
 package edu.cmu.tetradapp.editor;
 
 import edu.cmu.tetrad.data.IKnowledge;
@@ -28,11 +27,7 @@ import edu.cmu.tetrad.sem.StandardizedSemIm;
 import edu.cmu.tetradapp.model.StandardizedSemImWrapper;
 import edu.cmu.tetradapp.util.LayoutEditable;
 import edu.cmu.tetradapp.workbench.LayoutMenu;
-
-import javax.swing.*;
-import javax.swing.border.TitledBorder;
-import javax.swing.table.TableModel;
-import java.awt.*;
+import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
@@ -41,7 +36,18 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.Map;
-
+import javax.swing.Box;
+import javax.swing.BoxLayout;
+import javax.swing.JComboBox;
+import javax.swing.JMenu;
+import javax.swing.JMenuBar;
+import javax.swing.JMenuItem;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTabbedPane;
+import javax.swing.JTable;
+import javax.swing.border.TitledBorder;
+import javax.swing.table.TableModel;
 
 /**
  * Edits a standardized SEM model in which (a) all means are zero, (b) all
@@ -51,6 +57,7 @@ import java.util.Map;
  * @author Joseph Ramsey
  */
 public final class StandardizedSemImEditor extends JPanel implements LayoutEditable {
+
     static final long serialVersionUID = 23L;
 
     /**
@@ -69,9 +76,7 @@ public final class StandardizedSemImEditor extends JPanel implements LayoutEdita
     private JMenuItem errorTerms;
     private StandardizedSemImImpliedMatricesPanel impliedMatricesPanel;
 
-
     //========================CONSTRUCTORS===========================//
-
     /**
      * Constructs a new SemImEditor from the given OldSemEstimateAdapter.
      */
@@ -102,7 +107,6 @@ public final class StandardizedSemImEditor extends JPanel implements LayoutEdita
 
         // By default, hide the error terms.
 //        getSemGraph().setShowErrorTerms(false);
-
         SemGraph graph = (SemGraph) graphicalEditor().getWorkbench().getGraph();
         boolean shown = wrapper.isShowErrors();
         graph.setShowErrorTerms(shown);
@@ -115,7 +119,6 @@ public final class StandardizedSemImEditor extends JPanel implements LayoutEdita
 //        else {
 //            errorTerms.setText("Show Error Terms");
 //        }
-
         errorTerms.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 JMenuItem menuItem = (JMenuItem) e.getSource();
@@ -126,8 +129,7 @@ public final class StandardizedSemImEditor extends JPanel implements LayoutEdita
                     graph.setShowErrorTerms(false);
                     wrapper.setShowErrors(false);
                     graphicalEditor().resetLabels();
-                }
-                else if ("Show Error Terms".equals(menuItem.getText())) {
+                } else if ("Show Error Terms".equals(menuItem.getText())) {
                     menuItem.setText("Hide Error Terms");
                     SemGraph graph = (SemGraph) graphicalEditor().getWorkbench().getGraph();
                     graph.setShowErrorTerms(true);
@@ -142,7 +144,6 @@ public final class StandardizedSemImEditor extends JPanel implements LayoutEdita
 //        } else {
 //            errorTerms.setText("Show Error Terms");
 //        }
-
 //        errorTerms.addActionListener(new ActionListener() {
 //            public void actionPerformed(ActionEvent e) {
 //                JMenuItem menuItem = (JMenuItem) e.getSource();
@@ -158,12 +159,10 @@ public final class StandardizedSemImEditor extends JPanel implements LayoutEdita
 //                }
 //            }
 //        });
-
 //        JMenu params = new JMenu("Parameters");
 //        params.add(errorTerms);
 //        params.addSeparator();
 //        params.addSeparator();
-
 //        menuBar.add(params);
         menuBar.add(new LayoutMenu(this));
 
@@ -188,16 +187,16 @@ public final class StandardizedSemImEditor extends JPanel implements LayoutEdita
     }
 
     /**
-     * @return the knowledge currently stored in the workbench. Required for
-     * and interface.
+     * @return the knowledge currently stored in the workbench. Required for and
+     * interface.
      */
     public IKnowledge getKnowledge() {
         return standardizedSemImGraphicalEditor.getWorkbench().getKnowledge();
     }
 
     /**
-     * @return the source graph currently stored in the workbench. Required
-     * for an interface.
+     * @return the source graph currently stored in the workbench. Required for
+     * an interface.
      */
     public Graph getSourceGraph() {
         return standardizedSemImGraphicalEditor.getWorkbench().getSourceGraph();
@@ -205,6 +204,7 @@ public final class StandardizedSemImEditor extends JPanel implements LayoutEdita
 
     /**
      * Lays out the graph in the workbench.
+     *
      * @param graph The graph whose layout is to be mimicked.
      */
     public void layoutByGraph(Graph graph) {
@@ -229,7 +229,6 @@ public final class StandardizedSemImEditor extends JPanel implements LayoutEdita
     }
 
     //========================PRIVATE METHODS===========================//
-
     private SemGraph getSemGraph() {
         return semIm.getSemPm().getGraph();
     }
@@ -240,15 +239,15 @@ public final class StandardizedSemImEditor extends JPanel implements LayoutEdita
 
     private StandardizedSemImGraphicalEditor graphicalEditor() {
         if (this.standardizedSemImGraphicalEditor == null) {
-            this.standardizedSemImGraphicalEditor = new StandardizedSemImGraphicalEditor(getSemIm(),
-                    this);
+            this.standardizedSemImGraphicalEditor = new StandardizedSemImGraphicalEditor(getSemIm(), this);
             this.standardizedSemImGraphicalEditor.addPropertyChangeListener(
                     new PropertyChangeListener() {
-                        public void propertyChange(PropertyChangeEvent evt) {
-                            firePropertyChange(evt.getPropertyName(), null,
-                                    null);
-                        }
-                    });
+                public void propertyChange(PropertyChangeEvent evt) {
+                    firePropertyChange(evt.getPropertyName(), null,
+                            null);
+                }
+            });
+            this.standardizedSemImGraphicalEditor.enableEditing(false);
         }
 
         return this.standardizedSemImGraphicalEditor;
@@ -257,19 +256,18 @@ public final class StandardizedSemImEditor extends JPanel implements LayoutEdita
     private StandardizedSemImImpliedMatricesPanel impliedMatricesPanel() {
         if (this.impliedMatricesPanel == null) {
             int matrixSelection = 0;
-            this.impliedMatricesPanel =
-                    new StandardizedSemImImpliedMatricesPanel(getSemIm(), matrixSelection);
+            this.impliedMatricesPanel
+                    = new StandardizedSemImImpliedMatricesPanel(getSemIm(), matrixSelection);
         }
         return this.impliedMatricesPanel;
     }
 }
 
-
-
 /**
  * Dispays the implied covariance and correlation matrices for the given SemIm.
  */
 class StandardizedSemImImpliedMatricesPanel extends JPanel {
+
     private final StandardizedSemIm semIm;
     private JTable impliedJTable;
     private int matrixSelection = 0;
@@ -287,7 +285,6 @@ class StandardizedSemImImpliedMatricesPanel extends JPanel {
 
         setMatrixSelection(matrixSelection);
     }
-
 
     /**
      * @return the matrix in tab delimited form.
@@ -307,7 +304,6 @@ class StandardizedSemImImpliedMatricesPanel extends JPanel {
         }
         return builder.toString();
     }
-
 
     private JTable impliedJTable() {
         if (this.impliedJTable == null) {
@@ -395,5 +391,3 @@ class StandardizedSemImImpliedMatricesPanel extends JPanel {
         return this.matrixSelection;
     }
 }
-
-

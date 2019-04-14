@@ -18,7 +18,6 @@
 // along with this program; if not, write to the Free Software               //
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA //
 ///////////////////////////////////////////////////////////////////////////////
-
 package edu.cmu.tetradapp.editor;
 
 import edu.cmu.tetrad.bayes.BayesIm;
@@ -31,17 +30,26 @@ import edu.cmu.tetradapp.model.BayesEstimatorWrapper;
 import edu.cmu.tetradapp.model.BayesImWrapper;
 import edu.cmu.tetradapp.model.DataWrapper;
 import edu.cmu.tetradapp.workbench.GraphWorkbench;
-
-import javax.swing.*;
-import java.awt.*;
+import java.awt.BorderLayout;
+import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.text.NumberFormat;
+import javax.swing.Box;
+import javax.swing.JComboBox;
+import javax.swing.JLabel;
+import javax.swing.JMenu;
+import javax.swing.JMenuBar;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JSplitPane;
+import javax.swing.JTabbedPane;
+import javax.swing.JTextArea;
 
 /**
- * An editor for Bayes net instantiated models.  Assumes that the workbench and
+ * An editor for Bayes net instantiated models. Assumes that the workbench and
  * parameterized model have been established (that is, that the nodes have been
  * identified and named and that the number and names of the values for the
  * nodes have been specified) and allows the user to set conditional
@@ -52,20 +60,20 @@ import java.text.NumberFormat;
  */
 public class BayesEstimatorEditor extends JPanel {
 
-	private static final long serialVersionUID = 1L;
-	
-	private JPanel targetPanel;
-	/**
+    private static final long serialVersionUID = 1L;
+
+    private JPanel targetPanel;
+    /**
      * The wizard that allows the user to modify parameter values for this IM.
      */
     private BayesEstimatorEditorWizard wizard;
     private BayesEstimatorWrapper wrapper;
-    
+
     /**
      * Constructs a new instantiated model editor from a Bayes IM.
      */
     public BayesEstimatorEditor(BayesIm bayesIm, DataSet dataSet) {
-    	this(new BayesEstimatorWrapper(new DataWrapper(dataSet), new BayesImWrapper(bayesIm)));
+        this(new BayesEstimatorWrapper(new DataWrapper(dataSet), new BayesImWrapper(bayesIm)));
     }
 
     /**
@@ -73,19 +81,19 @@ public class BayesEstimatorEditor extends JPanel {
      */
     public BayesEstimatorEditor(BayesEstimatorWrapper bayesEstWrapper) {
         this.wrapper = bayesEstWrapper;
-        
+
         setLayout(new BorderLayout());
 
         targetPanel = new JPanel();
         targetPanel.setLayout(new BorderLayout());
-        
+
         resetBayesImEditor();
-        
+
         add(targetPanel, BorderLayout.CENTER);
         validate();
-        
+
         if (wrapper.getNumModels() > 1) {
-        	final JComboBox<Integer> comp = new JComboBox<>();
+            final JComboBox<Integer> comp = new JComboBox<>();
 
             for (int i = 0; i < wrapper.getNumModels(); i++) {
                 comp.addItem(i + 1);
@@ -94,7 +102,7 @@ public class BayesEstimatorEditor extends JPanel {
             comp.addActionListener(new ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent e) {
-                    wrapper.setModelIndex(((Integer)comp.getSelectedItem()).intValue() - 1);
+                    wrapper.setModelIndex(((Integer) comp.getSelectedItem()).intValue() - 1);
                     resetBayesImEditor();
                     validate();
                 }
@@ -128,18 +136,19 @@ public class BayesEstimatorEditor extends JPanel {
     private BayesEstimatorEditorWizard getWizard() {
         return wizard;
     }
-    
+
     private void resetBayesImEditor() {
-    	JPanel panel = new JPanel();
+        JPanel panel = new JPanel();
         panel.setLayout(new BorderLayout());
-        
+
         // Rest of setup
         BayesIm bayesIm = wrapper.getEstimatedBayesIm();
         BayesPm bayesPm = bayesIm.getBayesPm();
         Graph graph = bayesPm.getDag();
-        
+
         GraphWorkbench workbench = new GraphWorkbench(graph);
         wizard = new BayesEstimatorEditorWizard(bayesIm, workbench);
+        wizard.enableEditing(false);
 
         wizard.addPropertyChangeListener(new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent evt) {
@@ -162,7 +171,7 @@ public class BayesEstimatorEditor extends JPanel {
         buf.append("\nDf = ").append(properties.getDof());
         /*
       Formats numbers.
-     */
+         */
         NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
         buf.append("\nChi square = ")
                 .append(nf.format(properties.getChisq()));
@@ -204,13 +213,8 @@ public class BayesEstimatorEditor extends JPanel {
 //        file.add(new SaveScreenshot(this, true, "Save Screenshot..."));
         file.add(new SaveComponentImage(workbench, "Save Graph Image..."));
         panel.add(menuBar, BorderLayout.NORTH);
-        
-    	targetPanel.add(panel, BorderLayout.CENTER);
+
+        targetPanel.add(panel, BorderLayout.CENTER);
         validate();
     }
 }
-
-
-
-
-

@@ -18,29 +18,35 @@
 // along with this program; if not, write to the Free Software               //
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA //
 ///////////////////////////////////////////////////////////////////////////////
-
 package edu.cmu.tetradapp.editor;
 
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetradapp.model.GraphWrapper;
 import edu.cmu.tetradapp.model.Misclassifications;
-
-import javax.swing.*;
-import java.awt.*;
+import java.awt.BorderLayout;
+import java.awt.Dimension;
+import java.awt.Font;
+import javax.swing.Box;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTabbedPane;
+import javax.swing.JTextArea;
 
 /**
- * Provides a little display/editor for notes in the session workbench. This
- * may be elaborated in the future to allow marked up text.
+ * Provides a little display/editor for notes in the session workbench. This may
+ * be elaborated in the future to allow marked up text.
  *
  * @author Joseph Ramsey
  */
 public class MisclassificationsEditor extends JPanel {
 
+    private static final long serialVersionUID = -5291697901326757833L;
+
     /**
      * The model for the note.
      */
     private final Misclassifications comparison;
-
 
     /**
      * Constructs the editor given the model
@@ -51,8 +57,6 @@ public class MisclassificationsEditor extends JPanel {
     }
 
     //============================ Private Methods =========================//
-
-
     private boolean isLegal(String text) {
 //        if (!NamingProtocol.isLegalName(text)) {
 //            JOptionPane.showMessageDialog(this, NamingProtocol.getProtocolDescription() + ": " + text);
@@ -95,53 +99,19 @@ public class MisclassificationsEditor extends JPanel {
 
             pane2.add("Comparison", scroll);
 
-            pane2.add("Target Graph", new GraphEditor(new GraphWrapper(comparison.getTargetGraphs().get(i))).getWorkbench());
-            pane2.add("True Graph", new GraphEditor(new GraphWrapper(comparison.getReferenceGraphs().get(i))).getWorkbench());
+            GraphEditor graphEditor = new GraphEditor(new GraphWrapper(comparison.getTargetGraphs().get(i)));
+            graphEditor.enableEditing(false);
+            pane2.add("Target Graph", graphEditor.getWorkbench());
+
+            graphEditor = new GraphEditor(new GraphWrapper(comparison.getReferenceGraphs().get(i)));
+            graphEditor.enableEditing(false);
+            pane2.add("True Graph", graphEditor.getWorkbench());
 
             pane.add("" + (i + 1), pane2);
-
 
         }
 
         add(pane);
     }
 
-//    private void setup() {
-//        java.util.List<Graph> referenceGraphs = comparison.getReferenceGraphs();
-//        JTabbedPane pane = new JTabbedPane(JTabbedPane.LEFT);
-//
-//        for (int i = 0; i < referenceGraphs.size(); i++) {
-//            String compareString = comparison.getComparisonString(i);
-//
-//            Font font = new Font("Monospaced", Font.PLAIN, 14);
-//            final JTextArea textPane = new JTextArea();
-//            textPane.setText(compareString);
-//
-//            textPane.setFont(font);
-//
-//            JScrollPane scroll = new JScrollPane(textPane);
-//            scroll.setPreferredSize(new Dimension(400, 400));
-//
-//            this.setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
-//            this.add(Box.createVerticalStrut(10));
-//
-//            Box box = Box.createHorizontalBox();
-//            this.add(box);
-//            this.add(Box.createVerticalStrut(10));
-//
-//            Box box1 = Box.createHorizontalBox();
-//            box1.add(new JLabel("Graph Comparison: "));
-//            box1.add(Box.createHorizontalGlue());
-//
-//            add(box1);
-//            setLayout(new BorderLayout());
-//            pane.add("" + (i + 1), scroll);
-//        }
-//
-//        add(pane);
-//    }
-
 }
-
-
-
