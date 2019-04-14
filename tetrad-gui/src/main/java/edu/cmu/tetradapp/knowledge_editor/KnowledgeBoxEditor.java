@@ -572,7 +572,9 @@ public class KnowledgeBoxEditor extends JPanel {
         KnowledgeGraph graph = new KnowledgeGraph(getKnowledge());
         getVarNames().forEach(e -> {
             knowledge.addVariable(e);
-            graph.addNode(new KnowledgeModelNode(e));
+            if (graph.getNode(e) == null) {
+                graph.addNode(new KnowledgeModelNode(e));
+            }   
         });
 
         if (this.showRequiredByGroups) {
