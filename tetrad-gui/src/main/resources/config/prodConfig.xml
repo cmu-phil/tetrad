@@ -271,21 +271,21 @@
                     edu.cmu.tetradapp.editor.BayesImParamsEditor
                 </params-editor-class>
             </model>
-            <model name="Bayes Instantiated Model: Observed Variables Only"
-                   acronym="Bayes IM Obs"
-                   help="bayes_im_obs">
-                <logger>
-                    <event id="info" description="Information" default="on"/>
-                    <event id="im" description="Instantiated Model" default="on"/>
-                </logger>
-                <model-class>edu.cmu.tetradapp.model.BayesImWrapperObs
-                </model-class>
-                <editor-class>edu.cmu.tetradapp.editor.BayesImEditorObs
-                </editor-class>
-                <params-editor-class>
-                    edu.cmu.tetradapp.editor.BayesImParamsEditor
-                </params-editor-class>
-            </model>
+<!--            <model name="Bayes Instantiated Model: Observed Variables Only"-->
+<!--                   acronym="Bayes IM Obs"-->
+<!--                   help="bayes_im_obs">-->
+<!--                <logger>-->
+<!--                    <event id="info" description="Information" default="on"/>-->
+<!--                    <event id="im" description="Instantiated Model" default="on"/>-->
+<!--                </logger>-->
+<!--                <model-class>edu.cmu.tetradapp.model.BayesImWrapperObs-->
+<!--                </model-class>-->
+<!--                <editor-class>edu.cmu.tetradapp.editor.BayesImEditorObs-->
+<!--                </editor-class>-->
+<!--                <params-editor-class>-->
+<!--                    edu.cmu.tetradapp.editor.BayesImParamsEditor-->
+<!--                </params-editor-class>-->
+<!--            </model>-->
             <model name="Dirichlet Bayes Instantiated Model"
                    acronym="Dir Bayes IM" help="dirichlet_bayes_im">
                 <logger>
