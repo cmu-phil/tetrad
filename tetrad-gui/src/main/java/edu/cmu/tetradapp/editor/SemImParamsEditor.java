@@ -108,7 +108,7 @@ public class SemImParamsEditor extends JPanel implements ParameterEditor {
             }
         });
 
-        final DoubleTextField covLowField = new DoubleTextField(params.getDouble("covLow", 0.1),
+        final DoubleTextField covLowField = new DoubleTextField(params.getDouble("covLow", 0.0),
                 6, decimalFormat);
 
         covLowField.setFilter(new DoubleTextField.Filter() {
@@ -124,7 +124,7 @@ public class SemImParamsEditor extends JPanel implements ParameterEditor {
             }
         });
 
-        final DoubleTextField covHighField = new DoubleTextField(params.getDouble("covHigh", 0.2),
+        final DoubleTextField covHighField = new DoubleTextField(params.getDouble("covHigh", 0.0),
                 6, decimalFormat);
 
         covHighField.setFilter(new DoubleTextField.Filter() {

@@ -2973,7 +2973,7 @@ there is a single latent for each output cluster. For MimBuild, a pattern over t
             </li>
             <li>Long Description: <span id="addOriginalDataset_long_desc">It has been shown that adding in the algorithm result one would get using the original data to those found by the bootstrap method can improve accuracy of summary graphs. Select “Yes” here to include an extra run using the original dataset.</span>
             </li>
-            <li>Default Value: <span id="addOriginalDataset_default_value">false</span></li>
+            <li>Default Value: <span id="addOriginalDataset_default_value">true</span></li>
             <li>Lower Bound: <span id="addOriginalDataset_lower_bound"></span></li>
             <li>Upper Bound: <span id="addOriginalDataset_upper_bound"></span></li>
             <li>Value Type: <span id="addOriginalDataset_value_type">Boolean</span></li>
@@ -3023,30 +3023,6 @@ there is a single latent for each output cluster. For MimBuild, a pattern over t
             <li>Lower Bound: <span id="basisType_lower_bound">1</span></li>
             <li>Upper Bound: <span id="basisType_upper_bound">2</span></li>
             <li>Value Type: <span id="basisType_value_type">Integer</span></li>
-            </td>
-        </ul>
-
-        <h3 id="betaLeftValue" class="parameter_description">betaLeftValue</h3>
-        <ul class="parameter_description_list">
-            <li>Short Description: <span id="betaLeftValue_short_desc">For Beta(x, y), the 'x'</span></li>
-            <li>Long Description: <span id="betaLeftValue_long_desc">If the errors are Beta(x, y), this is the “x”. (For Gaussian errors, this is ignored.)</span>
-            </li>
-            <li>Default Value: <span id="betaLeftValue_default_value">1</span></li>
-            <li>Lower Bound: <span id="betaLeftValue_lower_bound">-2147483648</span></li>
-            <li>Upper Bound: <span id="betaLeftValue_upper_bound">2147483647</span></li>
-            <li>Value Type: <span id="betaLeftValue_value_type">Integer</span></li>
-            </td>
-        </ul>
-
-        <h3 id="betaRightValue" class="parameter_description">betaRightValue</h3>
-        <ul class="parameter_description_list">
-            <li>Short Description: <span id="betaRightValue_short_desc">For Beta(x, y), the 'y'</span></li>
-            <li>Long Description: <span id="betaRightValue_long_desc">If the errors are Beta(x, y), this is the “y”. (For Gaussian errors, this is ignored.)</span>
-            </li>
-            <li>Default Value: <span id="betaRightValue_default_value">5</span></li>
-            <li>Lower Bound: <span id="betaRightValue_lower_bound">-2147483648</span></li>
-            <li>Upper Bound: <span id="betaRightValue_upper_bound">2147483647</span></li>
-            <li>Value Type: <span id="betaRightValue_value_type">Integer</span></li>
             </td>
         </ul>
 
@@ -3113,7 +3089,7 @@ there is a single latent for each output cluster. For MimBuild, a pattern over t
             </li>
             <li>Long Description: <span id="colliderDiscoveryRule_long_desc">For variants of PC, one may choose from one of three different ways for orienting colliders. One may look them up from sepsets, as in the original PC, or estimate them conservatively, as from the Conservative PC algorithm, or by choosing the sepsets with the maximum p-value.</span>
             </li>
-            <li>Default Value: <span id="colliderDiscoveryRule_default_value">1</span></li>
+            <li>Default Value: <span id="colliderDiscoveryRule_default_value">3</span></li>
             <li>Lower Bound: <span id="colliderDiscoveryRule_lower_bound">1</span></li>
             <li>Upper Bound: <span id="colliderDiscoveryRule_upper_bound">3</span></li>
             <li>Value Type: <span id="colliderDiscoveryRule_value_type">Integer</span></li>
@@ -3138,7 +3114,7 @@ there is a single latent for each output cluster. For MimBuild, a pattern over t
             </li>
             <li>Long Description: <span id="concurrentFAS_long_desc">Various versions of the PC adjacency search lend themselves to concurrent processing—that is, doing different independence tests in parallel to speed up the processing. If this parameter is set to ‘Yes’, and this option is available, it will be used.</span>
             </li>
-            <li>Default Value: <span id="concurrentFAS_default_value">true</span></li>
+            <li>Default Value: <span id="concurrentFAS_default_value">false</span></li>
             <li>Lower Bound: <span id="concurrentFAS_lower_bound"></span></li>
             <li>Upper Bound: <span id="concurrentFAS_upper_bound"></span></li>
             <li>Value Type: <span id="concurrentFAS_value_type">Boolean</span></li>
@@ -3150,7 +3126,7 @@ there is a single latent for each output cluster. For MimBuild, a pattern over t
             </li>
             <li>Long Description: <span id="conflictRule_long_desc">It is not possible to avoid collider orientation conflicts in PC entirely. We offer three ways to deal with them. One may use the “overwrite” rule as introduced in the PCALG R package, or one may mark all collider conflicts using bidirected edges, or one may prioritize existing colliders, ignoring subsequent conflicting information.</span>
             </li>
-            <li>Default Value: <span id="conflictRule_default_value">1</span></li>
+            <li>Default Value: <span id="conflictRule_default_value">3</span></li>
             <li>Lower Bound: <span id="conflictRule_lower_bound">1</span></li>
             <li>Upper Bound: <span id="conflictRule_upper_bound">3</span></li>
             <li>Value Type: <span id="conflictRule_value_type">Integer</span></li>
@@ -3173,7 +3149,7 @@ there is a single latent for each output cluster. For MimBuild, a pattern over t
             <li>Short Description: <span id="covHigh_short_desc">High end of covariance range (min = 0.0)</span></li>
             <li>Long Description: <span id="covHigh_long_desc">When simulating data from linear models, one needs to specify the distribution of the covariance parameters. Here, we draw coefficients from U(-c2, -c1) U U(c1, c2); c2 is what is being called the “high end of the covariance range” and must be greater  than c1. The default value is 1.5.</span>
             </li>
-            <li>Default Value: <span id="covHigh_default_value">1.5</span></li>
+            <li>Default Value: <span id="covHigh_default_value">0.0</span></li>
             <li>Lower Bound: <span id="covHigh_lower_bound">0.0</span></li>
             <li>Upper Bound: <span id="covHigh_upper_bound">1.7976931348623157E308</span></li>
             <li>Value Type: <span id="covHigh_value_type">Double</span></li>
@@ -3184,7 +3160,7 @@ there is a single latent for each output cluster. For MimBuild, a pattern over t
             <li>Short Description: <span id="covLow_short_desc">Low end of covariance range (min = 0.0)</span></li>
             <li>Long Description: <span id="covLow_long_desc">When simulating data from linear models, one needs to specify the distribution of the covariance parameters. Here, we draw coefficients from U(-c2, -c1) U U(c1, c2); c1 is what is being called the “low end of the covariance range” and has a minimum value of 0. The default value is 0.5.</span>
             </li>
-            <li>Default Value: <span id="covLow_default_value">0.5</span></li>
+            <li>Default Value: <span id="covLow_default_value">0.0</span></li>
             <li>Lower Bound: <span id="covLow_lower_bound">0.0</span></li>
             <li>Upper Bound: <span id="covLow_upper_bound">1.7976931348623157E308</span></li>
             <li>Value Type: <span id="covLow_value_type">Double</span></li>
@@ -3308,7 +3284,7 @@ Usually covariance values are chosen from U(-b, -a) U U(a, b) for some a, b; thi
 
         <h3 id="errorsNormal" class="parameter_description">errorsNormal</h3>
         <ul class="parameter_description_list">
-            <li>Short Description: <span id="errorsNormal_short_desc">Yes if errors should be Normal; No if they should be Beta</span>
+            <li>Short Description: <span id="errorsNormal_short_desc">Yes if errors should be Normal; No if they should be abs(Normal) (i.e., non-Gaussian)</span>
             </li>
             <li>Long Description: <span id="errorsNormal_long_desc">A “quick and dirty” way to generate linear, non-Gaussian data is to set this parameter to “No”; then the errors will be sampled from a Beta distribution.</span>
             </li>
@@ -3361,7 +3337,7 @@ Usually covariance values are chosen from U(-b, -a) U U(a, b) for some a, b; thi
             </li>
             <li>Long Description: <span id="faskDelta_long_desc">For FASK, a dataset dependent threshold that affects accuracy for negatively skewed variables, in the range (-1, 0); the default value is -0.2. Sanchez-Romero, Ramsey et al., (2018) Network Neuroscience.</span>
             </li>
-            <li>Default Value: <span id="faskDelta_default_value">-0.2</span></li>
+            <li>Default Value: <span id="faskDelta_default_value">-1.0</span></li>
             <li>Lower Bound: <span id="faskDelta_lower_bound">-1.0</span></li>
             <li>Upper Bound: <span id="faskDelta_upper_bound">1.0</span></li>
             <li>Value Type: <span id="faskDelta_value_type">Double</span></li>
@@ -3446,7 +3422,7 @@ Usually covariance values are chosen from U(-b, -a) U U(a, b) for some a, b; thi
             <li>Short Description: <span id="ia_short_desc">IA parameter (GLASSO)</span></li>
             <li>Long Description: <span id="ia_long_desc">The R Fortan implementation of GLASSO (https://CRAN.R-project.org/package=glasso) includes a number of parameters, of which this is one. This is the maximum number of iterations of the optimization loop.</span>
             </li>
-            <li>Default Value: <span id="ia_default_value">false</span></li>
+            <li>Default Value: <span id="ia_default_value">true</span></li>
             <li>Lower Bound: <span id="ia_lower_bound"></span></li>
             <li>Upper Bound: <span id="ia_upper_bound"></span></li>
             <li>Value Type: <span id="ia_value_type">Boolean</span></li>
@@ -4149,7 +4125,7 @@ Usually covariance values are chosen from U(-b, -a) U U(a, b) for some a, b; thi
                     id="percentResampleSize_short_desc">The percentage of resample size (min = 0.1)</span></li>
             <li>Long Description: <span id="percentResampleSize_long_desc">Each bootstrap iteration uses a certain portion of the data drawn randomly either with replacement or without replacement. This parameter specifies the percentage of records in the bootstrap (as a percentage of the total original sample size of the data being bootstrapped), in the range 1 to 100.</span>
             </li>
-            <li>Default Value: <span id="percentResampleSize_default_value">100</span></li>
+            <li>Default Value: <span id="percentResampleSize_default_value">90</span></li>
             <li>Lower Bound: <span id="percentResampleSize_lower_bound">-2147483648</span></li>
             <li>Upper Bound: <span id="percentResampleSize_upper_bound">2147483647</span></li>
             <li>Value Type: <span id="percentResampleSize_value_type">Integer</span></li>
@@ -4236,7 +4212,7 @@ Usually covariance values are chosen from U(-b, -a) U U(a, b) for some a, b; thi
             </li>
             <li>Long Description: <span id="resamplingEnsemble_long_desc">This parameter governs how summary graphs are generated based on graphs learned from individual bootstrap samples. If “Preserved”, an edge is kept and its orientation is chosen based on the highest probability. If “Highest”, an edge is kept the same way the preserved ensemble one does except when [no edge]'s probability is the highest one, then the edge is ignored. If “Majority”, the edge is kept only if its chosen orientations' probability is more than 0.5. </span>
             </li>
-            <li>Default Value: <span id="resamplingEnsemble_default_value">1</span></li>
+            <li>Default Value: <span id="resamplingEnsemble_default_value">0</span></li>
             <li>Lower Bound: <span id="resamplingEnsemble_lower_bound">0</span></li>
             <li>Upper Bound: <span id="resamplingEnsemble_upper_bound">2</span></li>
             <li>Value Type: <span id="resamplingEnsemble_value_type">Integer</span></li>
@@ -4369,7 +4345,7 @@ Usually covariance values are chosen from U(-b, -a) U U(a, b) for some a, b; thi
             <li>Short Description: <span id="stableFAS_short_desc">Yes if the 'stable' FAS should be done</span></li>
             <li>Long Description: <span id="stableFAS_long_desc">In Colombo, D., & Maathuis, M. H. (2014, Order-independent constraint-based causal structure learning, The Journal of Machine Learning Research, 15(1), 3741-3782), a modification of the adjacency search of PC was proposed that results in invariance under order permutations of the variables in the data. If this parameter is set to ‘Yes’, this version of the PC adjacency search is used.</span>
             </li>
-            <li>Default Value: <span id="stableFAS_default_value">false</span></li>
+            <li>Default Value: <span id="stableFAS_default_value">true</span></li>
             <li>Lower Bound: <span id="stableFAS_lower_bound"></span></li>
             <li>Upper Bound: <span id="stableFAS_upper_bound"></span></li>
             <li>Value Type: <span id="stableFAS_value_type">Boolean</span></li>
@@ -4471,7 +4447,7 @@ Usually covariance values are chosen from U(-b, -a) U U(a, b) for some a, b; thi
             <li>Short Description: <span id="twoCycleAlpha_short_desc">Alpha orienting 2-cycles (min = 0.0)</span></li>
             <li>Long Description: <span id="twoCycleAlpha_long_desc">The alpha level of a T-test used to determine where 2-cycles exist in the graph. A value of zero turns off 2-cycle detection. </span>
             </li>
-            <li>Default Value: <span id="twoCycleAlpha_default_value">0.05</span></li>
+            <li>Default Value: <span id="twoCycleAlpha_default_value">0.0</span></li>
             <li>Lower Bound: <span id="twoCycleAlpha_lower_bound">0.0</span></li>
             <li>Upper Bound: <span id="twoCycleAlpha_upper_bound">1.0</span></li>
             <li>Value Type: <span id="twoCycleAlpha_value_type">Double</span></li>
