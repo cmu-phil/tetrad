@@ -29,11 +29,9 @@ import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetrad.util.TetradMatrix;
 import org.apache.commons.math3.linear.SingularMatrixException;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
+import static edu.cmu.tetrad.util.StatUtils.correlation;
 import static edu.cmu.tetrad.util.StatUtils.skewness;
 import static java.lang.Math.*;
 
@@ -85,9 +83,6 @@ public final class Fask implements GraphSearch {
 
     // True if skew adjacencies should be included in the output.
     private boolean useSkewAdjacencies = true;
-
-    // Threshold for reversing casual judgments for negative coefficients.
-    private double delta = -0.2;
 
     /**
      * @param dataSet These datasets must all have the same variables, in the same order.
@@ -143,6 +138,11 @@ public final class Fask implements GraphSearch {
             fas.setVerbose(false);
             fas.setKnowledge(knowledge);
             G0 = fas.search();
+
+//            Fges fges = new Fges(new SemBicScore(new CovarianceMatrixOnTheFly(dataSet)));
+//            fges.setFaithfulnessAssumed(false);
+//            fges.setKnowledge(knowledge);
+//            G0 = fges.search();
         }
 
         SearchGraphUtils.pcOrientbk(knowledge, G0, G0.getNodes());
@@ -176,7 +176,7 @@ public final class Fask implements GraphSearch {
                         graph.addEdge(edge1);
                         graph.addEdge(edge2);
                     } else {
-                        if (leftright(x, y)) {
+                        if (leftRightMinnesota(x, y)) {
                             graph.addDirectedEdge(X, Y);
                         } else {
                             graph.addDirectedEdge(Y, X);
@@ -194,6 +194,69 @@ public final class Fask implements GraphSearch {
 
         return graph;
     }
+
+//    public Graph search2() {
+//        DataSet dataSet = DataUtils.standardizeData(this.dataSet);
+//        double[][] colData = dataSet.getDoubleData().transpose().toArray();
+//
+//        List<Node> variables = dataSet.getVariables();
+//
+////        Collections.sort(variables, new Comparator<Node>() {
+////            @Override
+////            public int compare(Node o1, Node o2) {
+////                if (o1 == o2) return 0;
+////                int i = variables.indexOf(o1);
+////                int j = variables.indexOf(o2);
+////                final double[] x = colData[i];
+////                final double[] y = colData[j];
+////                return leftRightMinnesota(x, y) ? +1 : -1;
+////            }
+////        });
+//
+//        Graph graph = new EdgeListGraph(variables);
+//
+//        for (int i = 0; i < variables.size(); i++) {
+//            for  (int j = i + 1; j < variables.size(); j++) {
+//                final double[] x = colData[i];
+//                final double[] y = colData[j];
+//
+//                if (leftRightMinnesota(x, y)) {
+//                    graph.addDirectedEdge(variables.get(i), variables.get(j));
+//                } else  {
+//                    graph.addDirectedEdge(variables.get(j), variables.get(i));
+//                }
+//            }
+//        }
+//
+////        Knowledge2 knowledge = new Knowledge2();
+////
+////        for (int i = 0; i < variables.size(); i++) {
+////            knowledge.addToTier(i + 1, variables.get(i).getName());
+////        }
+//
+//        int numOfNodes = variables.size();
+//        for (int i = 0; i < numOfNodes; i++) {
+//            for (int j = i + 1; j < numOfNodes; j++) {
+//                Node n1 = variables.get(i);
+//                Node n2 = variables.get(j);
+//
+//                if (n1.getName().startsWith("E_") || n2.getName().startsWith("E_")) {
+//                    continue;
+//                }
+//
+//                Edge edge = graph.getEdge(n1, n2);
+//                if (edge != null && edge.isDirected()) {
+//                    knowledge.setForbidden(edge.getNode2().getName(), edge.getNode1().getName());
+//                }
+//            }
+//        }
+//
+//        final SemBicScore score = new SemBicScore(new CovarianceMatrixOnTheFly(dataSet));
+//        score.setPenaltyDiscount(penaltyDiscount);
+//        Fges fges = new Fges(score);
+//        fges.setKnowledge(knowledge);
+//        return fges.search();
+//    }
 
     private boolean bidirected(double[] x, double[] y, Graph G0, Node X, Node Y) {
 
@@ -230,9 +293,9 @@ public final class Fask implements GraphSearch {
                 continue;
             }
 
-            int nc = StatUtils.getRows(x, x, Double.NEGATIVE_INFINITY, +1).size();
-            int nc1 = StatUtils.getRows(x, x, 0, +1).size();
-            int nc2 = StatUtils.getRows(y, y, 0, +1).size();
+            int nc = StatUtils.getRows(x, Double.NEGATIVE_INFINITY, +1).size();
+            int nc1 = StatUtils.getRows(x, 0, +1).size();
+            int nc2 = StatUtils.getRows(y, 0, +1).size();
 
             double z = 0.5 * (log(1.0 + pc) - log(1.0 - pc));
             double z1 = 0.5 * (log(1.0 + pc1) - log(1.0 - pc1));
@@ -262,20 +325,78 @@ public final class Fask implements GraphSearch {
         return true;
     }
 
-    private boolean leftright(double[] x, double[] y) {
-        double left = cu(x, y, x) / (sqrt(cu(x, x, x) * cu(y, y, x)));
-        double right = cu(x, y, y) / (sqrt(cu(x, x, y) * cu(y, y, y)));
-        double lr = left - right;
+    private boolean leftRightMinnesota(double[] x, double[] y) {
+        x = correctSkewness(x);
+        y = correctSkewness(y);
 
-        double r = StatUtils.correlation(x, y);
-        double sx = StatUtils.skewness(x);
-        double sy = StatUtils.skewness(y);
+        final double cxyx = cov(x, y, x);
+        final double cxyy = cov(x, y, y);
+        final double cxxx = cov(x, x, x);
+        final double cyyx = cov(y, y, x);
+        final double cxxy = cov(x, x, y);
+        final double cyyy = cov(y, y, y);
 
-        r *= signum(sx) * signum(sy);
-        lr *= signum(r);
-        if (r < getDelta()) lr *= -1;
+        double a1 = cxyx / cxxx;
+        double a2 = cxyy / cxxy;
+        double b1 = cxyy / cyyy;
+        double b2 = cxyx / cyyx;
+
+        double Q = (a2 > 0) ? a1 / a2 : a2 / a1;
+        double R = (b2 > 0) ? b1 / b2 : b2 / b1;
+
+        double lr = Q - R;
+
+        final double sk_ey = StatUtils.skewness(residuals(y, new double[][]{x}));
+
+        if (sk_ey < 0) {
+            lr *= -1;
+        }
+
+        final double a = correlation(x, y);
+
+        if (a < 0 && sk_ey > 0) {
+            lr *= -1;
+        }
 
         return lr > 0;
+    }
+
+    private double[] correctSkewness(double[] data) {
+        double skewness = StatUtils.skewness(data);
+        double[] data2 = new double[data.length];
+        for (int i = 0; i < data.length; i++) data2[i] = data[i] * Math.signum(skewness);
+        return data2;
+    }
+
+    private static double cov(double[] x, double[] y, double[] condition) {
+        double exy = 0.0;
+
+        int n = 0;
+
+        for (int k = 0; k < x.length; k++) {
+            if (condition[k] > 0) {
+                exy += x[k] * y[k];
+                n++;
+            }
+        }
+
+        return exy / n;
+    }
+
+    private double[] residuals(double[] _y, double[][] _x) {
+        TetradMatrix y = new TetradMatrix(new double[][]{_y}).transpose();
+        TetradMatrix x = new TetradMatrix(_x).transpose();
+
+        TetradMatrix xT = x.transpose();
+        TetradMatrix xTx = xT.times(x);
+        TetradMatrix xTxInv = xTx.inverse();
+        TetradMatrix xTy = xT.times(y);
+        TetradMatrix b = xTxInv.times(xTy);
+
+        TetradMatrix yHat = x.times(b);
+        if (yHat.columns() == 0) yHat = y.copy();
+
+        return y.minus(yHat).getColumn(0).toArray();
     }
 
     private static double cu(double[] x, double[] y, double[] condition) {
@@ -412,14 +533,6 @@ public final class Fask implements GraphSearch {
 
     public void setUseSkewAdjacencies(boolean useSkewAdjacencies) {
         this.useSkewAdjacencies = useSkewAdjacencies;
-    }
-
-    public double getDelta() {
-        return delta;
-    }
-
-    public void setDelta(double delta) {
-        this.delta = delta;
     }
 }
 

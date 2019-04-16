@@ -2053,7 +2053,7 @@ public final class StatUtils {
     }
 
     public static double[][] covMatrix(double[] x, double[] y, double[][] z, double[] condition, double threshold, double direction) {
-        List<Integer> rows = getRows(x, condition, threshold, direction);
+        List<Integer> rows = getRows(condition, threshold, direction);
 
         double[][] allData = new double[z.length + 2][];
 
@@ -2077,29 +2077,36 @@ public final class StatUtils {
         double[][] cov = new double[z.length + 2][z.length + 2];
 
         for (int i = 0; i < z.length + 2; i++) {
-            for (int j = 0; j < z.length + 2; j++) {
+            for (int j = i; j < z.length + 2; j++) {
+//                double c = StatUtils.sxy(subdata[i], subdata[j]);
                 double c = StatUtils.covariance(subdata[i], subdata[j]);
                 cov[i][j] = c;
+                cov[j][i] = c;
             }
         }
 
         return cov;
     }
 
-    public static List<Integer> getRows(double[] x, double[] condition, double threshold, double direction) {
+    public static List<Integer> getRows(double[] x, double threshold, double direction) {
         List<Integer> rows = new ArrayList<>();
 
         for (int k = 0; k < x.length; k++) {
             if (direction > threshold) {
-                if (condition[k] > threshold) {
+                if (x[k] > threshold) {
                     rows.add(k);
                 }
             } else if (direction < threshold) {
-                if (condition[k] > threshold) {
+                if (x[k] > threshold) {
+                    rows.add(k);
+                }
+            } else {
+                if (x[k] > threshold) {
                     rows.add(k);
                 }
             }
         }
+
         return rows;
     }
 

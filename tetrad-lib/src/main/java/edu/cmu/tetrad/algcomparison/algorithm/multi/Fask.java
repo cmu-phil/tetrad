@@ -11,6 +11,7 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.util.Parameters;
 import edu.pitt.dbmi.algo.resampling.GeneralResamplingTest;
 import edu.pitt.dbmi.algo.resampling.ResamplingEdgeEnsemble;
+
 import java.util.List;
 
 /**
@@ -53,12 +54,6 @@ public class Fask implements Algorithm, HasKnowledge, UsesScoreWrapper {
             search.setUseFasAdjacencies(parameters.getBoolean("useFasAdjacencies"));
             search.setUseSkewAdjacencies(parameters.getBoolean("useCorrDiffAdjacencies"));
             search.setAlpha(parameters.getDouble("twoCycleAlpha"));
-            search.setDelta(parameters.getDouble("faskDelta"));
-
-//            search.setPercentBootstrapForLinearityTest(parameters.getDouble("percentBootstrapForLinearityTest"));
-//            search.setNumBootstrapForLinearityTest(parameters.getInt("numBootstrapForLinearityTest"));
-//            search.setCutoffForLinearityTest(parameters.getDouble("cutoffForLinearityTest"));
-
             search.setKnowledge(knowledge);
             return getGraph(search);
         } else {
@@ -67,10 +62,10 @@ public class Fask implements Algorithm, HasKnowledge, UsesScoreWrapper {
             DataSet data = (DataSet) dataSet;
             GeneralResamplingTest search = new GeneralResamplingTest(data, fask, parameters.getInt("numberResampling"));
             search.setKnowledge(knowledge);
-            
+
             search.setPercentResampleSize(parameters.getDouble("percentResampleSize"));
             search.setResamplingWithReplacement(parameters.getBoolean("resamplingWithReplacement"));
-            
+
             ResamplingEdgeEnsemble edgeEnsemble = ResamplingEdgeEnsemble.Highest;
             switch (parameters.getInt("resamplingEnsemble", 1)) {
                 case 0:
@@ -103,7 +98,7 @@ public class Fask implements Algorithm, HasKnowledge, UsesScoreWrapper {
 
     @Override
     public DataType getDataType() {
-        return DataType.Mixed;
+        return DataType.Continuous;
     }
 
     @Override
@@ -112,11 +107,10 @@ public class Fask implements Algorithm, HasKnowledge, UsesScoreWrapper {
         parameters.add("depth");
         parameters.add("twoCycleAlpha");
         parameters.add("extraEdgeThreshold");
-        parameters.add("faskDelta");
 
         parameters.add("useFasAdjacencies");
         parameters.add("useCorrDiffAdjacencies");
-        
+
         // Resampling
         parameters.add("numberResampling");
         parameters.add("percentResampleSize");
@@ -142,7 +136,7 @@ public class Fask implements Algorithm, HasKnowledge, UsesScoreWrapper {
     public void setScoreWrapper(ScoreWrapper score) {
         this.score = score;
     }
-    
+
     @Override
     public ScoreWrapper getScoreWarpper() {
         return score;
