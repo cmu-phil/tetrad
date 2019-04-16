@@ -24,6 +24,8 @@ package edu.cmu.tetrad.test;
 import edu.cmu.tetrad.algcomparison.Comparison;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithms;
 import edu.cmu.tetrad.algcomparison.algorithm.multi.*;
+import edu.cmu.tetrad.algcomparison.independence.FisherZ;
+import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.score.SemBicScore;
 import edu.cmu.tetrad.algcomparison.simulation.Simulations;
 import edu.cmu.tetrad.algcomparison.statistic.*;
@@ -34,6 +36,7 @@ import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.Fask;
+import edu.cmu.tetrad.search.IndTestFisherZ;
 import edu.cmu.tetrad.search.Lofs2;
 import edu.cmu.tetrad.sem.GeneralizedSemIm;
 import edu.cmu.tetrad.sem.GeneralizedSemPm;
@@ -54,7 +57,6 @@ public class TestSimulatedFmri {
         parameters.set("penaltyDiscount", 4);
         parameters.set("depth", -1);
         parameters.set("twoCycleAlpha", 1e-10);
-        parameters.set("faskDelta", -.2);
         parameters.set("reverseOrientationsBySignOfCorrelation", false);
         parameters.set("reverseOrientationsBySkewnessOfVariables", false);
 
@@ -177,7 +179,7 @@ public class TestSimulatedFmri {
 
         Algorithms algorithms = new Algorithms();
 
-        algorithms.add(new FaskConcatenated(new SemBicScore()));
+        algorithms.add(new FaskConcatenated(new FisherZ()));
 //        algorithms.add(new FaskGfciConcatenated(new SemBicTest()));
 
 //        algorithms.add(new FasLofsConcatenated(Lofs2.Rule.RSkew));
@@ -210,7 +212,6 @@ public class TestSimulatedFmri {
         parameters.set("penaltyDiscount", 1);
         parameters.set("depth", -1);
         parameters.set("twoCycleAlpha", 0);
-        parameters.set("faskDelta", -.1);
 
         parameters.set("numRuns", 10);
         parameters.set("randomSelectionSize", 2);
@@ -256,7 +257,8 @@ public class TestSimulatedFmri {
 //        algorithms.add(new LofsConcatenated(Lofs2.Rule.SkewE));
 //        algorithms.add(new LofsConcatenated(Lofs2.Rule.Patel));
 
-        algorithms.add(new FaskConcatenated( new SemBicScore()));
+        algorithms.add(new FaskConcatenated(new FisherZ() {
+        }));
 //        algorithms.add(new FasLofsConcatenated(Lofs2.Rule.R1));
 //        algorithms.add(new FasLofsConcatenated(Lofs2.Rule.R3));
 //        algorithms.add(new FasLofsConcatenated(Lofs2.Rule.RSkew));
@@ -336,7 +338,7 @@ public class TestSimulatedFmri {
 //
 //        algorithms.add(new FgesConcatenated(new edu.cmu.tetrad.algcomparison.score.SemBicScore(), true));
 //        algorithms.add(new PcStableMaxConcatenated(new SemBicTest(), true));
-        algorithms.add(new FaskConcatenated(new SemBicScore()));
+        algorithms.add(new FaskConcatenated(new FisherZ()));
 //        algorithms.add(new FasLofsConcatenated(Lofs2.Rule.R1));
 //        algorithms.add(new FasLofsConcatenated(Lofs2.Rule.R2));
 //        algorithms.add(new FasLofsConcatenated(Lofs2.Rule.R3));
@@ -398,10 +400,8 @@ public class TestSimulatedFmri {
                 GeneralizedSemIm im = new GeneralizedSemIm(pm);
                 DataSet data = im.simulateData(N, false);
 
-                edu.cmu.tetrad.search.SemBicScore score = new edu.cmu.tetrad.search.SemBicScore(new CovarianceMatrixOnTheFly(data, false));
-                score.setPenaltyDiscount(penaltyDiscount);
 
-                Fask fask = new Fask(data, score);
+                Fask fask = new Fask(data, new IndTestFisherZ(data, 0.001));
                 fask.setPenaltyDiscount(penaltyDiscount);
                 fask.setAlpha(alpha);
                 Graph out = fask.search();
@@ -441,10 +441,7 @@ public class TestSimulatedFmri {
                 GeneralizedSemIm im = new GeneralizedSemIm(pm);
                 DataSet data = im.simulateData(N, false);
 
-                edu.cmu.tetrad.search.SemBicScore score = new edu.cmu.tetrad.search.SemBicScore(new CovarianceMatrixOnTheFly(data, false));
-                score.setPenaltyDiscount(penaltyDiscount);
-
-                Fask fask = new Fask(data, score);
+                Fask fask = new Fask(data, new IndTestFisherZ(data, 0.001));
                 fask.setPenaltyDiscount(penaltyDiscount);
                 fask.setAlpha(alpha);
                 Graph out = fask.search();
@@ -491,9 +488,7 @@ public class TestSimulatedFmri {
         GeneralizedSemIm im = new GeneralizedSemIm(pm);
         DataSet data = im.simulateData(1000, false);
 
-        edu.cmu.tetrad.search.SemBicScore score = new edu.cmu.tetrad.search.SemBicScore(new CovarianceMatrixOnTheFly(data, false));
-
-        Fask fask = new Fask(data, score);
+        Fask fask = new Fask(data, new IndTestFisherZ(data, 0.001));
         fask.setPenaltyDiscount(1);
         fask.setAlpha(0.5);
         Graph out = fask.search();

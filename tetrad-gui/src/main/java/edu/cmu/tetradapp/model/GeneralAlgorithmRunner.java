@@ -322,7 +322,7 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
                     } else if (data.isMixed() && algDataType == DataType.Mixed) {
                         graphList.add(algo.search(data, parameters));
                     } else {
-                        throw new IllegalArgumentException("The type of data has changed; open up the search editor and run the algorithm again.");
+                            throw new IllegalArgumentException("The algorithm was not expecting that type of data.");
                     }
                 });
             }
