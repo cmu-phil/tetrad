@@ -57,7 +57,6 @@ public class TestSimulatedFmri {
         parameters.set("penaltyDiscount", 4);
         parameters.set("depth", -1);
         parameters.set("twoCycleAlpha", 1e-10);
-        parameters.set("faskDelta", -.2);
         parameters.set("reverseOrientationsBySignOfCorrelation", false);
         parameters.set("reverseOrientationsBySkewnessOfVariables", false);
 
@@ -213,7 +212,6 @@ public class TestSimulatedFmri {
         parameters.set("penaltyDiscount", 1);
         parameters.set("depth", -1);
         parameters.set("twoCycleAlpha", 0);
-        parameters.set("faskDelta", -.1);
 
         parameters.set("numRuns", 10);
         parameters.set("randomSelectionSize", 2);
