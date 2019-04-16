@@ -4,6 +4,7 @@ import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.Score;
 import edu.cmu.tetrad.util.Parameters;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -26,8 +27,12 @@ public class SemBicScore implements ScoreWrapper {
     @Override
     public Score getScore(DataModel dataSet, Parameters parameters) {
         this.dataSet = dataSet;
+
+        ICovarianceMatrix cov = dataSet instanceof ICovarianceMatrix ? (ICovarianceMatrix) dataSet
+                : new CovarianceMatrixOnTheFly((DataSet) dataSet);
+
         edu.cmu.tetrad.search.SemBicScore semBicScore
-                = new edu.cmu.tetrad.search.SemBicScore(new CovarianceMatrixOnTheFly((DataSet) dataSet));
+                = new edu.cmu.tetrad.search.SemBicScore(cov);
         double penaltyDiscount = parameters.getDouble("penaltyDiscount");
         this.penaltyDiscount = penaltyDiscount;
         semBicScore.setPenaltyDiscount(penaltyDiscount);
