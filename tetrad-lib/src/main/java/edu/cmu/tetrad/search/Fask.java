@@ -45,7 +45,7 @@ import static java.lang.Math.*;
 public final class Fask implements GraphSearch {
 
     // The score to be used for the FAS adjacency search.
-    private final Score score;
+    private final IndependenceTest test;
 
     // An initial graph to orient, skipping the adjacency step.
     private Graph initialGraph = null;
@@ -87,9 +87,9 @@ public final class Fask implements GraphSearch {
     /**
      * @param dataSet These datasets must all have the same variables, in the same order.
      */
-    public Fask(DataSet dataSet, Score score) {
+    public Fask(DataSet dataSet, IndependenceTest test) {
         this.dataSet = dataSet;
-        this.score = score;
+        this.test = test;
 
         data = dataSet.getDoubleData().transpose().toArray();
     }
@@ -130,7 +130,6 @@ public final class Fask implements GraphSearch {
 
             G0 = g1;
         } else {
-            IndependenceTest test = new IndTestScore(score, dataSet);
             System.out.println("FAS");
 
             FasStable fas = new FasStable(test);
@@ -354,7 +353,7 @@ public final class Fask implements GraphSearch {
 
         final double a = correlation(x, y);
 
-        if (a < 0 && sk_ey > 0) {
+        if (a < 0) {// && sk_ey > 0) {
             lr *= -1;
         }
 

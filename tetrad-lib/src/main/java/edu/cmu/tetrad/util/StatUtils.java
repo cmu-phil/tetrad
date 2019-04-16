@@ -23,12 +23,8 @@ package edu.cmu.tetrad.util;
 
 import cern.colt.list.DoubleArrayList;
 import cern.jet.stat.Descriptive;
-import edu.cmu.tetrad.data.BoxDataSet;
-import edu.cmu.tetrad.data.CovarianceMatrix;
-import edu.cmu.tetrad.data.DoubleDataBox;
 import org.apache.commons.math3.distribution.ChiSquaredDistribution;
 import org.apache.commons.math3.distribution.NormalDistribution;
-import org.apache.commons.math3.linear.SingularMatrixException;
 
 import java.util.*;
 
@@ -1235,15 +1231,14 @@ public final class StatUtils {
             thirdMoment += s * s * s;
         }
 
-        double ess = secondMoment / N;
-        double esss = thirdMoment / (N - 1);
+        double ess = secondMoment / (N - 1);
+        double esss = thirdMoment / (N);
 
         if (secondMoment == 0) {
             throw new ArithmeticException("StatUtils.skew:  There is no skew " +
                     "when the variance is zero.");
         }
 
-        //        thirdMoment /= (N * Math.pow(secondMoment, 1.5));
         return esss / Math.pow(ess, 1.5);
     }
 
@@ -1592,7 +1587,7 @@ public final class StatUtils {
         }
 
         if (!pSorted) {
-            pValues = new ArrayList<>(pValues);
+//            pValues = new ArrayList<>(pValues);
             Collections.sort(pValues);
         }
 
@@ -1769,7 +1764,7 @@ public final class StatUtils {
 //        return cov / Math.sqrt(var1 * var2);
 
         TetradMatrix inverse = submatrix.inverse();
-        return -(1.0 * inverse.get(0, 1)) / Math.sqrt(inverse.get(0, 0) * inverse.get(1, 1));
+        return (-inverse.get(0, 1)) / Math.sqrt(inverse.get(0, 0) * inverse.get(1, 1));
     }
 
     /**

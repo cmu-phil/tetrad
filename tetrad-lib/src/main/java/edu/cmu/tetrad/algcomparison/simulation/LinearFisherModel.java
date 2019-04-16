@@ -39,7 +39,7 @@ public class LinearFisherModel implements Simulation, TakesData {
         if (shocks != null) {
             JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
                     "The initial dataset you've provided will be used as initial shocks"
-                    + "\nfor a Fisher model.");
+                            + "\nfor a Fisher model.");
 
             for (DataModel _shocks : shocks) {
                 if (_shocks == null) {

@@ -1,8 +1,11 @@
 package edu.cmu.tetrad.algcomparison.algorithm.multi;
 
 import edu.cmu.tetrad.algcomparison.algorithm.MultiDataSetAlgorithm;
+import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
+import edu.cmu.tetrad.algcomparison.utils.TakesIndependenceWrapper;
+import edu.cmu.tetrad.algcomparison.utils.TakesInitialGraph;
 import edu.cmu.tetrad.algcomparison.utils.UsesScoreWrapper;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.EdgeListGraph;
@@ -30,18 +33,18 @@ import java.util.List;
 //        command = "fask-concatenated",
 //        algoType = AlgType.forbid_latent_common_causes
 //)
-public class FaskConcatenated implements MultiDataSetAlgorithm, HasKnowledge, UsesScoreWrapper {
+public class FaskConcatenated implements MultiDataSetAlgorithm, HasKnowledge, TakesIndependenceWrapper {
 
     static final long serialVersionUID = 23L;
-    private ScoreWrapper score;
+    private IndependenceWrapper test;
     private IKnowledge knowledge = new Knowledge2();
 
     public FaskConcatenated() {
 
     }
 
-    public FaskConcatenated(ScoreWrapper score) {
-        this.score = score;
+    public FaskConcatenated(IndependenceWrapper test) {
+        this.test = test;
     }
 
     @Override
@@ -57,7 +60,7 @@ public class FaskConcatenated implements MultiDataSetAlgorithm, HasKnowledge, Us
 
             dataSet.setNumberFormat(new DecimalFormat("0.000000000000000000"));
 
-            Fask search = new Fask(dataSet, score.getScore(dataSet, parameters));
+            Fask search = new Fask(dataSet, test.getTest(dataSet, parameters));
             search.setDepth(parameters.getInt("depth"));
             search.setPenaltyDiscount(parameters.getDouble("penaltyDiscount"));
             search.setExtraEdgeThreshold(parameters.getDouble("extraEdgeThreshold"));
@@ -66,7 +69,7 @@ public class FaskConcatenated implements MultiDataSetAlgorithm, HasKnowledge, Us
             
             return search.search();
         } else {
-            FaskConcatenated algorithm = new FaskConcatenated(score);
+            FaskConcatenated algorithm = new FaskConcatenated(test);
 
             List<DataSet> datasets = new ArrayList<>();
 
@@ -104,7 +107,7 @@ public class FaskConcatenated implements MultiDataSetAlgorithm, HasKnowledge, Us
         if (parameters.getInt("numberResampling") < 1) {
             return search(Collections.singletonList((DataModel) DataUtils.getContinuousDataSet(dataSet)), parameters);
         } else {
-            FaskConcatenated algorithm = new FaskConcatenated(score);
+            FaskConcatenated algorithm = new FaskConcatenated(test);
 
             List<DataSet> dataSets = Collections.singletonList(DataUtils.getContinuousDataSet(dataSet));
             GeneralResamplingTest search = new GeneralResamplingTest(dataSets, algorithm, parameters.getInt("numberResampling"));
@@ -150,7 +153,7 @@ public class FaskConcatenated implements MultiDataSetAlgorithm, HasKnowledge, Us
 
     @Override
     public List<String> getParameters() {
-        List<String> parameters = score.getParameters();
+        List<String> parameters = test.getParameters();
         parameters.add("depth");
         parameters.add("twoCycleAlpha");
         parameters.add("extraEdgeThreshold");
@@ -180,12 +183,12 @@ public class FaskConcatenated implements MultiDataSetAlgorithm, HasKnowledge, Us
     }
 
     @Override
-    public void setScoreWrapper(ScoreWrapper score) {
-        this.score = score;
+    public void setIndependenceWrapper(IndependenceWrapper independenceWrapper) {
+        this.test = independenceWrapper;
     }
-    
+
     @Override
-    public ScoreWrapper getScoreWarpper() {
-        return score;
+    public IndependenceWrapper getIndependenceWrapper() {
+        return test;
     }
 }
