@@ -28,7 +28,8 @@ import java.util.List;
 @edu.cmu.tetrad.annotation.Algorithm(
         name = "FASK",
         command = "fask",
-        algoType = AlgType.forbid_latent_common_causes
+        algoType = AlgType.forbid_latent_common_causes,
+        dataType = DataType.Continuous
 )
 public class Fask implements Algorithm, HasKnowledge, TakesIndependenceWrapper {
     static final long serialVersionUID = 23L;
