@@ -1,8 +1,6 @@
 package edu.cmu.tetrad.algcomparison.score;
 
-import edu.cmu.tetrad.data.DataModel;
-import edu.cmu.tetrad.data.DataType;
-import edu.cmu.tetrad.data.DataUtils;
+import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.Score;
 import edu.cmu.tetrad.util.Parameters;
@@ -29,7 +27,7 @@ public class SemBicScore implements ScoreWrapper {
     public Score getScore(DataModel dataSet, Parameters parameters) {
         this.dataSet = dataSet;
         edu.cmu.tetrad.search.SemBicScore semBicScore
-                = new edu.cmu.tetrad.search.SemBicScore(DataUtils.getCovMatrix(dataSet));
+                = new edu.cmu.tetrad.search.SemBicScore(new CovarianceMatrixOnTheFly((DataSet) dataSet));
         double penaltyDiscount = parameters.getDouble("penaltyDiscount");
         this.penaltyDiscount = penaltyDiscount;
         semBicScore.setPenaltyDiscount(penaltyDiscount);

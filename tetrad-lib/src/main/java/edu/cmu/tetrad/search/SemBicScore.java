@@ -89,7 +89,7 @@ public class SemBicScore implements Score {
      */
     public double localScore(int i, int... parents) {
         for (int p : parents) if (forbidden.contains(p)) return Double.NaN;
-
+    
         try {
             double s2 = getCovariances().getValue(i, i);
             int p = parents.length;
@@ -107,7 +107,7 @@ public class SemBicScore implements Score {
             }
 
             int n = getSampleSize();
-            return -(n) * log(s2) - getPenaltyDiscount() * log(n);
+            return -(n) * log(s2) - getPenaltyDiscount() * p * log(n);
             // + getStructurePrior(parents.length);// - getStructurePrior(parents.length + 1);
         } catch (Exception e) {
             boolean removedOne = true;
@@ -157,8 +157,8 @@ public class SemBicScore implements Score {
         int p = 2 + z.length;
 
         int N = covariances.getSampleSize();
-        return -N * Math.log(1.0 - r * r) - p * getPenaltyDiscount() * Math.log(N);
-//        return localScore(y, append(z, x)) - localScore(y, z);
+//        return -N * Math.log(1.0 - r * r) - p * getPenaltyDiscount() * Math.log(N) + sp1 - sp2;
+        return localScore(y, append(z, x)) - localScore(y, z);
     }
 
     private List<Node> getVariableList(int[] indices) {
