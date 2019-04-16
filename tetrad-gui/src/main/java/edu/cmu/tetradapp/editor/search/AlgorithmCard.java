@@ -16,7 +16,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA 02110-1301  USA
  */
-package edu.cmu.tetradapp.editor.algorithm;
+package edu.cmu.tetradapp.editor.search;
 
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.AlgorithmFactory;
@@ -54,14 +54,17 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.EnumMap;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.ButtonGroup;
 import javax.swing.ButtonModel;
+import javax.swing.ComboBoxModel;
 import javax.swing.DefaultListModel;
 import javax.swing.GroupLayout;
 import javax.swing.JButton;
@@ -89,6 +92,14 @@ public class AlgorithmCard extends JPanel {
     private static final long serialVersionUID = -968121724334131937L;
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AlgorithmCard.class);
+
+    private final String ALGO_PARAM = "algo";
+    private final String IND_TEST_PARAM = "ind_test";
+    private final String SCORE_PARAM = "score";
+    private final String ALGO_TYPE_PARAM = "algo_type";
+    private final String LINEAR_PARAM = "linear";
+    private final String GAUSSIAN_PARAM = "gaussian";
+    private final String KNOWLEDGE_PARAM = "knowledge";
 
     private final JButton forwardBtn = new JButton("Set Parameters   >");
 
@@ -190,6 +201,119 @@ public class AlgorithmCard extends JPanel {
         addPropertyChangeListener(algorithmEditor);
     }
 
+    public void refresh() {
+        restoreUserAlgoSelections(algorithmRunner.getUserAlgoSelections());
+    }
+
+    public void saveStates() {
+        rememberUserAlgoSelections(algorithmRunner.getUserAlgoSelections());
+    }
+
+    private void rememberUserAlgoSelections(Map<String, Object> userAlgoSelections) {
+        userAlgoSelections.put(IND_TEST_PARAM, indTestComboBox.getSelectedItem());
+        userAlgoSelections.put(SCORE_PARAM, scoreComboBox.getSelectedItem());
+        userAlgoSelections.put(ALGO_TYPE_PARAM, algoFilterBtnGrp.getSelection().getActionCommand());
+        userAlgoSelections.put(LINEAR_PARAM, linearVarChkBox.isSelected());
+        userAlgoSelections.put(GAUSSIAN_PARAM, gaussianVarChkBox.isSelected());
+        userAlgoSelections.put(KNOWLEDGE_PARAM, knowledgeChkBox.isSelected());
+
+        // When there's a search result, we store the algo string name from the search so we wont' lose it
+        // when the upstream nodes change.
+        // Otherwise, we use the one that users selcted on the UI - Zhou
+        if (algorithmRunner.getGraphs() != null && algorithmRunner.getGraphs().size() > 0) {
+            userAlgoSelections.put(ALGO_PARAM, algorithmRunner.getAlgorithm().getClass().getAnnotation(edu.cmu.tetrad.annotation.Algorithm.class).name());
+        } else {
+            userAlgoSelections.put(ALGO_PARAM, algorithmList.getSelectedValue().toString());
+        }
+    }
+
+    /**
+     * This restore mechanism won't restore user selections other than selected
+     * algo name when user changes the upstream (after clicking the "Execute"
+     * button), because a new algo algorithmRunner is created and we lose the
+     * stored models from the old algorithmRunner - Zhou
+     *
+     * @param models
+     */
+    private void restoreUserAlgoSelections(Map<String, Object> userAlgoSelections) {
+        Object obj = userAlgoSelections.get(LINEAR_PARAM);
+        if ((obj != null) && (obj instanceof Boolean)) {
+            linearVarChkBox.setSelected((Boolean) obj);
+        }
+        obj = userAlgoSelections.get(GAUSSIAN_PARAM);
+        if ((obj != null) && (obj instanceof Boolean)) {
+            gaussianVarChkBox.setSelected((Boolean) obj);
+        }
+        obj = userAlgoSelections.get(KNOWLEDGE_PARAM);
+        if ((obj != null) && (obj instanceof Boolean)) {
+            knowledgeChkBox.setSelected((Boolean) obj);
+        }
+        obj = userAlgoSelections.get(ALGO_TYPE_PARAM);
+        if ((obj != null) && (obj instanceof String)) {
+            String actCmd = String.valueOf(obj);
+            Optional<JRadioButton> opt = algoTypeOpts.stream()
+                    .filter(e -> e.getActionCommand().equals(actCmd))
+                    .findFirst();
+            if (opt.isPresent()) {
+                opt.get().setSelected(true);
+            }
+        }
+
+        refreshAlgorithmList();
+        refreshTestAndScoreList();
+
+        // Restore the algo name from search when there's a search result.
+        // Otherwise use the stored name form algorithmRunner.getModels(), which will be lost when the upstream nodes change - Zhou
+        String selectedAlgoName = null;
+        if (algorithmRunner.getGraphs() != null && algorithmRunner.getGraphs().size() > 0) {
+            selectedAlgoName = algorithmRunner.getAlgorithm().getClass().getAnnotation(edu.cmu.tetrad.annotation.Algorithm.class).name();
+        } else {
+            obj = userAlgoSelections.get(ALGO_PARAM);
+            if ((obj != null) && (obj instanceof String)) {
+                selectedAlgoName = (String) obj;
+            }
+        }
+
+        Enumeration<AlgorithmModel> enums = algoModels.elements();
+        while (enums.hasMoreElements()) {
+            AlgorithmModel model = enums.nextElement();
+            if (model.toString().equals(selectedAlgoName)) {
+                algorithmList.setSelectedValue(model, true);
+                break;
+            }
+        }
+
+        obj = userAlgoSelections.get(IND_TEST_PARAM);
+        if ((obj != null) && (obj instanceof IndependenceTestModel)) {
+            String value = ((IndependenceTestModel) obj).toString();
+            ComboBoxModel<IndependenceTestModel> comboBoxModels = indTestComboBox.getModel();
+            int size = comboBoxModels.getSize();
+            for (int i = 0; i < size; i++) {
+                IndependenceTestModel model = comboBoxModels.getElementAt(i);
+                if (model.toString().equals(value)) {
+                    userAlgoSelections.put(IND_TEST_PARAM, model);
+                    indTestComboBox.getModel().setSelectedItem(model);
+                    break;
+                }
+            }
+        }
+
+        obj = userAlgoSelections.get(SCORE_PARAM);
+        if ((obj != null) && (obj instanceof ScoreModel)) {
+            String value = ((ScoreModel) obj).toString();
+            ComboBoxModel<ScoreModel> comboBoxModels = scoreComboBox.getModel();
+            int size = comboBoxModels.getSize();
+            for (int i = 0; i < size; i++) {
+                ScoreModel model = comboBoxModels.getElementAt(i);
+                if (model.toString().equals(value)) {
+                    userAlgoSelections.put(SCORE_PARAM, model);
+                    scoreComboBox.getModel().setSelectedItem(model);
+                    break;
+                }
+            }
+        }
+    }
+
     private DataType getDataType() {
         DataModelList dataModelList = algorithmRunner.getDataModelList();
         if (dataModelList.containsEmptyData()) {
@@ -213,6 +337,26 @@ public class AlgorithmCard extends JPanel {
                 return null;
             }
         }
+    }
+
+    public AlgorithmModel getSelectedAlgorithm() {
+        return algorithmList.getSelectedValue();
+    }
+
+    public IndependenceTestModel getSelectedIndependenceTest() {
+        if (indTestComboBox.isEnabled()) {
+            return indTestComboBox.getItemAt(indTestComboBox.getSelectedIndex());
+        }
+
+        return null;
+    }
+
+    public ScoreModel getSelectedScore() {
+        if (scoreComboBox.isEnabled()) {
+            scoreComboBox.getItemAt(scoreComboBox.getSelectedIndex());
+        }
+
+        return null;
     }
 
     /**

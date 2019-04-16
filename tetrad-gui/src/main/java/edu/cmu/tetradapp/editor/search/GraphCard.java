@@ -16,8 +16,9 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA 02110-1301  USA
  */
-package edu.cmu.tetradapp.editor.algorithm;
+package edu.cmu.tetradapp.editor.search;
 
+import edu.cmu.tetrad.annotation.Algorithm;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetradapp.editor.GeneralAlgorithmEditor;
 import edu.cmu.tetradapp.model.GeneralAlgorithmRunner;
@@ -43,6 +44,7 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.JTabbedPane;
+import javax.swing.SwingConstants;
 import javax.swing.border.EmptyBorder;
 
 /**
@@ -76,11 +78,12 @@ public class GraphCard extends JPanel {
             firePropertyChange("graphBack", null, null);
         });
 
-        JPanel titlePanel = new JPanel();
-        titlePanel.add(title);
+        title.setHorizontalAlignment(SwingConstants.CENTER);
+        title.setVerticalAlignment(SwingConstants.CENTER);
 
-        add(titlePanel, BorderLayout.NORTH);
-        add(new PaddingPanel(graphContainer), BorderLayout.CENTER);
+        setLayout(new BorderLayout());
+        add(title, BorderLayout.NORTH);
+        add(graphContainer, BorderLayout.CENTER);
         add(new SouthPanel(), BorderLayout.SOUTH);
 
         addPropertyChangeListener(algorithmEditor);
@@ -176,7 +179,7 @@ public class GraphCard extends JPanel {
     public void refresh() {
         graphContainer.removeAll();
 
-        title.setText("Algorithm: " + algorithmRunner.getAlgorithmName());
+        title.setText("Algorithm: " + algorithmRunner.getAlgorithm().getClass().getAnnotation(Algorithm.class).name());
 
         int count = 0;
         for (Graph graph : algorithmRunner.getGraphs()) {
