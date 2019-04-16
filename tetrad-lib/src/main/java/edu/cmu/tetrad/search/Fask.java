@@ -88,6 +88,10 @@ public final class Fask implements GraphSearch {
      * @param dataSet These datasets must all have the same variables, in the same order.
      */
     public Fask(DataSet dataSet, IndependenceTest test) {
+        if (!dataSet.isContinuous()) {
+            throw new IllegalArgumentException("For FASK, the dataset must be entirely continuous");
+        }
+
         this.dataSet = dataSet;
         this.test = test;
 

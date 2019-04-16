@@ -89,7 +89,7 @@ public class SemBicScore implements Score {
      */
     public double localScore(int i, int... parents) {
         for (int p : parents) if (forbidden.contains(p)) return Double.NaN;
-    
+
         try {
             double s2 = getCovariances().getValue(i, i);
             int p = parents.length;
