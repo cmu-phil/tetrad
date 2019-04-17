@@ -29,10 +29,6 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.util.List;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
@@ -56,6 +52,8 @@ import javax.swing.table.TableCellEditor;
  * @author Joseph Ramsey jdramsey@andrew.cmu.edu
  */
 final class DirichletBayesImCountsWizard extends JPanel {
+
+    private static final long serialVersionUID = -595675916538961350L;
 
     private DirichletBayesIm bayesIm;
     private JComboBox varNamesComboBox;
@@ -89,11 +87,9 @@ final class DirichletBayesImCountsWizard extends JPanel {
 
         Node node = (Node) (varNamesComboBox.getSelectedItem());
         editingTable = new DirichletBayesImNodeCountsTable(node, bayesIm);
-        editingTable.addPropertyChangeListener(new PropertyChangeListener() {
-            public void propertyChange(PropertyChangeEvent evt) {
-                if ("editorValueChanged".equals(evt.getPropertyName())) {
-                    firePropertyChange("editorValueChanged", null, null);
-                }
+        editingTable.addPropertyChangeListener((evt) -> {
+            if ("editorValueChanged".equals(evt.getPropertyName())) {
+                firePropertyChange("editorValueChanged", null, null);
             }
         });
 
@@ -133,42 +129,35 @@ final class DirichletBayesImCountsWizard extends JPanel {
         add(b4);
 
         // Add listeners.
-        varNamesComboBox.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                Node node = (Node) (varNamesComboBox.getSelectedItem());
-                getWorkbench().scrollWorkbenchToNode(node);
-                setCurrentNode(node);
-            }
+        varNamesComboBox.addActionListener((e) -> {
+            Node n = (Node) (varNamesComboBox.getSelectedItem());
+            getWorkbench().scrollWorkbenchToNode(n);
+            setCurrentNode(n);
         });
 
-        nextButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                int current = varNamesComboBox.getSelectedIndex();
-                int max = varNamesComboBox.getItemCount();
+        nextButton.addActionListener((e) -> {
+            int current = varNamesComboBox.getSelectedIndex();
+            int max = varNamesComboBox.getItemCount();
 
-                ++current;
+            ++current;
 
-                if (current == max) {
-                    JOptionPane.showMessageDialog(
-                            DirichletBayesImCountsWizard.this,
-                            "There are no more variables.");
-                }
-
-                int set = (current < max) ? current : 0;
-
-                varNamesComboBox.setSelectedIndex(set);
+            if (current == max) {
+                JOptionPane.showMessageDialog(
+                        DirichletBayesImCountsWizard.this,
+                        "There are no more variables.");
             }
+
+            int set = (current < max) ? current : 0;
+
+            varNamesComboBox.setSelectedIndex(set);
         });
 
-        workbench.addPropertyChangeListener(new PropertyChangeListener() {
-            public void propertyChange(PropertyChangeEvent e) {
-                if (e.getPropertyName().equals("selectedNodes")) {
-                    List selection = (List) (e.getNewValue());
+        workbench.addPropertyChangeListener((evt) -> {
+            if (evt.getPropertyName().equals("selectedNodes")) {
+                List selection = (List) (evt.getNewValue());
 
-                    if (selection.size() == 1) {
-                        Node node = (Node) (selection.get(0));
-                        varNamesComboBox.setSelectedItem(node);
-                    }
+                if (selection.size() == 1) {
+                    varNamesComboBox.setSelectedItem((Node) selection.get(0));
                 }
             }
         });
@@ -209,11 +198,9 @@ final class DirichletBayesImCountsWizard extends JPanel {
         }
 
         editingTable = new DirichletBayesImNodeCountsTable(node, getBayesIm());
-        editingTable.addPropertyChangeListener(new PropertyChangeListener() {
-            public void propertyChange(PropertyChangeEvent evt) {
-                if ("editorValueChanged".equals(evt.getPropertyName())) {
-                    firePropertyChange("editorValueChanged", null, null);
-                }
+        editingTable.addPropertyChangeListener((evt) -> {
+            if ("editorValueChanged".equals(evt.getPropertyName())) {
+                firePropertyChange("editorValueChanged", null, null);
             }
         });
 
