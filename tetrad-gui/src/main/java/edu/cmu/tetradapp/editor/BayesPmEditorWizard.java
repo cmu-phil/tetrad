@@ -26,7 +26,6 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.NodeType;
 import edu.cmu.tetrad.util.JOptionUtils;
-import edu.cmu.tetradapp.util.SortingComboBox;
 import edu.cmu.tetradapp.util.StringTextField;
 import edu.cmu.tetradapp.workbench.GraphWorkbench;
 import java.awt.BorderLayout;
@@ -40,11 +39,12 @@ import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.Box;
@@ -78,7 +78,7 @@ final class BayesPmEditorWizard extends JPanel {
     /**
      * Lets the user select the variable they want to edit.
      */
-    private JComboBox variableChooser;
+    private JComboBox<Node> variableChooser;
 
     /**
      * True iff the editing of measured variables is allowed.
@@ -388,28 +388,21 @@ final class BayesPmEditorWizard extends JPanel {
         firePropertyChange("modelChanged", null, null);
     }
 
-    private void createVariableChooser(BayesPm bayesPm,
-            GraphWorkbench workbench) {
-        variableChooser = new SortingComboBox() {
-            public Dimension getMaximumSize() {
-                return getPreferredSize();
-            }
-        };
-
+    private void createVariableChooser(BayesPm bayesPm, GraphWorkbench workbench) {
+        variableChooser = new JComboBox<>();
         variableChooser.setBackground(Color.white);
 
         Graph graphModel = bayesPm.getDag();
 
-        for (Iterator it = graphModel.getNodes().iterator(); it.hasNext();) {
-            variableChooser.addItem(it.next());
-        }
+        List<Node> nodes = graphModel.getNodes().stream().collect(Collectors.toList());
+        Collections.sort(nodes);
+        nodes.forEach(variableChooser::addItem);
 
-        if (graphModel.getNodes().size() > 0) {
+        if (variableChooser.getItemCount() > 0) {
             variableChooser.setSelectedIndex(0);
         }
 
-        workbench.scrollWorkbenchToNode(
-                (Node) (variableChooser.getSelectedItem()));
+        workbench.scrollWorkbenchToNode((Node) variableChooser.getSelectedItem());
     }
 
     private void setNode(Node node) {

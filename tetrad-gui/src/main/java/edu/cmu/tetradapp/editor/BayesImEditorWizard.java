@@ -23,13 +23,14 @@ package edu.cmu.tetradapp.editor;
 import edu.cmu.tetrad.bayes.BayesIm;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetradapp.util.SortingComboBox;
 import edu.cmu.tetradapp.workbench.GraphWorkbench;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
+import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
@@ -173,26 +174,21 @@ public final class BayesImEditorWizard extends JPanel {
         this.workbench = workbench;
     }
 
-    private JComboBox createVarNamesComboBox(BayesIm bayesIm) {
-        JComboBox varNamesComboBox = new SortingComboBox() {
-            public Dimension getMaximumSize() {
-                return getPreferredSize();
-            }
-        };
-
-        varNamesComboBox.setBackground(Color.white);
+    private JComboBox<Node> createVarNamesComboBox(BayesIm bayesIm) {
+        JComboBox<Node> varNameComboBox = new JComboBox<>();
+        varNameComboBox.setBackground(Color.white);
 
         Graph graph = bayesIm.getBayesPm().getDag();
 
-        for (Object o : graph.getNodes()) {
-            varNamesComboBox.addItem(o);
+        List<Node> nodes = graph.getNodes().stream().collect(Collectors.toList());
+        Collections.sort(nodes);
+        nodes.forEach(varNameComboBox::addItem);
+
+        if (varNameComboBox.getItemCount() > 0) {
+            varNameComboBox.setSelectedIndex(0);
         }
 
-        if (graph.getNodes().size() > 0) {
-            varNamesComboBox.setSelectedIndex(0);
-        }
-
-        return varNamesComboBox;
+        return varNameComboBox;
     }
 
     /**
