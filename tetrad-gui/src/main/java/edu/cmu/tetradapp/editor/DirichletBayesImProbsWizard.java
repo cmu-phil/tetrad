@@ -23,13 +23,14 @@ package edu.cmu.tetradapp.editor;
 import edu.cmu.tetrad.bayes.DirichletBayesIm;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetradapp.util.SortingComboBox;
 import edu.cmu.tetradapp.workbench.GraphWorkbench;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
+import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
@@ -56,7 +57,7 @@ final class DirichletBayesImProbsWizard extends JPanel {
     private static final long serialVersionUID = -1170540204903006651L;
 
     private DirichletBayesIm bayesIm;
-    private JComboBox varNamesComboBox;
+    private JComboBox<Node> varNamesComboBox;
     private GraphWorkbench workbench;
     private DirichletBayesImNodeProbsTable editingTable;
     private JPanel tablePanel;
@@ -80,8 +81,7 @@ final class DirichletBayesImProbsWizard extends JPanel {
 
         // Set up components.
         this.varNamesComboBox = createVarNamesComboBox(bayesIm);
-        workbench.scrollWorkbenchToNode(
-                (Node) (varNamesComboBox.getSelectedItem()));
+        workbench.scrollWorkbenchToNode((Node) varNamesComboBox.getSelectedItem());
 
         JButton nextButton = new JButton("Next");
         nextButton.setMnemonic('N');
@@ -130,7 +130,7 @@ final class DirichletBayesImProbsWizard extends JPanel {
 
         // Add listeners.
         varNamesComboBox.addActionListener((e) -> {
-            Node n = (Node) (varNamesComboBox.getSelectedItem());
+            Node n = (Node) varNamesComboBox.getSelectedItem();
             getWorkbench().scrollWorkbenchToNode(n);
             setCurrentNode(n);
         });
@@ -166,22 +166,21 @@ final class DirichletBayesImProbsWizard extends JPanel {
         this.workbench = workbench;
     }
 
-    private JComboBox createVarNamesComboBox(DirichletBayesIm bayesIm) {
-        JComboBox varNamesComboBox = new SortingComboBox() {
-            public Dimension getMaximumSize() {
-                return getPreferredSize();
-            }
-        };
+    private JComboBox<Node> createVarNamesComboBox(DirichletBayesIm bayesIm) {
+        JComboBox<Node> varNameComboBox = new JComboBox<>();
+        varNameComboBox.setBackground(Color.white);
 
-        varNamesComboBox.setBackground(Color.WHITE);
         Graph graph = bayesIm.getBayesPm().getDag();
 
-        for (Node node : graph.getNodes()) {
-            varNamesComboBox.addItem(node);
+        List<Node> nodes = graph.getNodes().stream().collect(Collectors.toList());
+        Collections.sort(nodes);
+        nodes.forEach(varNameComboBox::addItem);
+
+        if (varNameComboBox.getItemCount() > 0) {
+            varNameComboBox.setSelectedIndex(0);
         }
 
-        varNamesComboBox.setSelectedIndex(0);
-        return varNamesComboBox;
+        return varNameComboBox;
     }
 
     /**
