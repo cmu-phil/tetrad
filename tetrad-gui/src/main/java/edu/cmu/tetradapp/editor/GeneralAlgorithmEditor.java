@@ -497,14 +497,18 @@ public class GeneralAlgorithmEditor extends JPanel implements PropertyChangeList
                     }
 
                     if (hpcAccount == null) {
-                        algorithmRunner.execute();
+                        try {
+                            algorithmRunner.execute();
 
-                        firePropertyChange("modelChanged", null, null);
+                            firePropertyChange("modelChanged", null, null);
+                            graphCard.refresh();
+                            changeCard(GRAPH_CARD);
+                        } catch (Exception exception) {
+                            exception.printStackTrace(System.err);
+                        }
 
                         // Update the graphContainer
                         parameterCard.enableButtons();
-                        graphCard.refresh();
-                        changeCard(GRAPH_CARD);
                     } else {
                         try {
                             doRemoteCompute(algorithmRunner, hpcAccount);
