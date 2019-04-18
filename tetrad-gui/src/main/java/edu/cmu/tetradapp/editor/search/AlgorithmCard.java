@@ -47,7 +47,6 @@ import edu.cmu.tetradapp.ui.model.ScoreModel;
 import edu.cmu.tetradapp.ui.model.ScoreModels;
 import edu.cmu.tetradapp.util.DesktopController;
 import java.awt.BorderLayout;
-import static java.awt.Component.LEFT_ALIGNMENT;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.lang.reflect.InvocationTargetException;
@@ -125,11 +124,15 @@ public class AlgorithmCard extends JPanel {
     private final GeneralAlgorithmRunner algorithmRunner;
     private final DataType dataType;
     private final TetradDesktop desktop;
+    private final boolean multiDataAlgo;
 
     public AlgorithmCard(GeneralAlgorithmEditor algorithmEditor, GeneralAlgorithmRunner algorithmRunner) {
         this.algorithmRunner = algorithmRunner;
         this.dataType = getDataType();
         this.desktop = (TetradDesktop) DesktopController.getInstance();
+        this.multiDataAlgo = algorithmRunner.getDataModelList().isEmpty()
+                ? true
+                : algorithmRunner.getDataModelList().size() > 1;
 
         initComponents(algorithmEditor);
         resetAllSettings();
@@ -498,20 +501,20 @@ public class AlgorithmCard extends JPanel {
             String algoType = selectedAlgoType.getActionCommand();
             if ("all".equals(algoType)) {
                 if (knowledgeChkBox.isSelected()) {
-                    algorithmModels.getModels(dataType).stream()
+                    algorithmModels.getModels(dataType, multiDataAlgo).stream()
                             .filter(e -> HasKnowledge.class.isAssignableFrom(e.getAlgorithm().getClazz()))
                             .forEach(e -> algoModels.addElement(e));
                 } else {
-                    algorithmModels.getModels(dataType).stream()
+                    algorithmModels.getModels(dataType, multiDataAlgo).stream()
                             .forEach(e -> algoModels.addElement(e));
                 }
             } else {
                 if (knowledgeChkBox.isSelected()) {
-                    algorithmModels.getModels(AlgType.valueOf(algoType), dataType).stream()
+                    algorithmModels.getModels(AlgType.valueOf(algoType), dataType, multiDataAlgo).stream()
                             .filter(e -> HasKnowledge.class.isAssignableFrom(e.getAlgorithm().getClazz()))
                             .forEach(e -> algoModels.addElement(e));
                 } else {
-                    algorithmModels.getModels(AlgType.valueOf(algoType), dataType).stream()
+                    algorithmModels.getModels(AlgType.valueOf(algoType), dataType, multiDataAlgo).stream()
                             .forEach(e -> algoModels.addElement(e));
                 }
             }
