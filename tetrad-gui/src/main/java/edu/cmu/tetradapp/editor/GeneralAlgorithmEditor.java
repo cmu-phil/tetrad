@@ -500,6 +500,8 @@ public class GeneralAlgorithmEditor extends JPanel implements PropertyChangeList
                         try {
                             algorithmRunner.execute();
 
+                            algorithmCard.saveStates();
+
                             firePropertyChange("modelChanged", null, null);
                             graphCard.refresh();
                             changeCard(GRAPH_CARD);
@@ -532,8 +534,6 @@ public class GeneralAlgorithmEditor extends JPanel implements PropertyChangeList
 
     @Override
     public boolean finalizeEditor() {
-        algorithmCard.saveStates();
-
         List<Graph> graphs = algorithmRunner.getGraphs();
         if (hpcJobInfo == null && (graphs == null || graphs.isEmpty())) {
             int option = JOptionPane.showConfirmDialog(this, "You have not performed a search. Close anyway?", "Close?",
