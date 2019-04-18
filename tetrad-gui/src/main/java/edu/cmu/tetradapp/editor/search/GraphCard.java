@@ -43,7 +43,6 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
-import javax.swing.JTabbedPane;
 import javax.swing.SwingConstants;
 import javax.swing.border.EmptyBorder;
 
@@ -60,7 +59,9 @@ public class GraphCard extends JPanel {
     private final JButton backBtn = new JButton("<   Set Parameters");
 
     private final JLabel title = new JLabel();
-    private final JTabbedPane graphContainer = new JTabbedPane();
+    private final JPanel graphContainer = new JPanel(new BorderLayout(0, 5));
+
+    private JSplitPane mainPanel = new JSplitPane();
 
     private final GeneralAlgorithmRunner algorithmRunner;
 
@@ -81,9 +82,11 @@ public class GraphCard extends JPanel {
         title.setHorizontalAlignment(SwingConstants.CENTER);
         title.setVerticalAlignment(SwingConstants.CENTER);
 
+        graphContainer.add(title, BorderLayout.NORTH);
+        graphContainer.add(mainPanel, BorderLayout.CENTER);
+
         setLayout(new BorderLayout());
-        add(title, BorderLayout.NORTH);
-        add(graphContainer, BorderLayout.CENTER);
+        add(new PaddingPanel(graphContainer), BorderLayout.CENTER);
         add(new SouthPanel(), BorderLayout.SOUTH);
 
         addPropertyChangeListener(algorithmEditor);
@@ -177,16 +180,15 @@ public class GraphCard extends JPanel {
     }
 
     public void refresh() {
-        graphContainer.removeAll();
-
         title.setText("Algorithm: " + algorithmRunner.getAlgorithm().getClass().getAnnotation(Algorithm.class).name());
 
-        int count = 0;
-        for (Graph graph : algorithmRunner.getGraphs()) {
-            graphContainer.addTab(
-                    String.format("Graph %d", ++count),
-                    new PaddingPanel(createSearchResultPane(graph)));
-        }
+        graphContainer.remove(mainPanel);
+
+        mainPanel = createSearchResultPane(algorithmRunner.getGraph());
+
+        graphContainer.add(mainPanel, BorderLayout.CENTER);
+        graphContainer.revalidate();
+        graphContainer.repaint();
     }
 
     private class SouthPanel extends JPanel {
