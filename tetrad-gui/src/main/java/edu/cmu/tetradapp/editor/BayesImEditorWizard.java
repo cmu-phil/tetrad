@@ -23,17 +23,14 @@ package edu.cmu.tetradapp.editor;
 import edu.cmu.tetrad.bayes.BayesIm;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetradapp.util.SortingComboBox;
 import edu.cmu.tetradapp.workbench.GraphWorkbench;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
+import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
@@ -91,11 +88,9 @@ public final class BayesImEditorWizard extends JPanel {
 
         Node node = (Node) (varNamesComboBox.getSelectedItem());
         editingTable = new BayesImNodeEditingTable(node, bayesIm);
-        editingTable.addPropertyChangeListener(new PropertyChangeListener() {
-            public void propertyChange(PropertyChangeEvent evt) {
-                if ("modelChanged".equals(evt.getPropertyName())) {
-                    firePropertyChange("modelChanged", null, null);
-                }
+        editingTable.addPropertyChangeListener((evt) -> {
+            if ("modelChanged".equals(evt.getPropertyName())) {
+                firePropertyChange("modelChanged", null, null);
             }
         });
 
@@ -144,41 +139,33 @@ public final class BayesImEditorWizard extends JPanel {
         add(b5);
 
         // Add listeners.
-        varNamesComboBox.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                Node node = (Node) (varNamesComboBox.getSelectedItem());
-                getWorkbench().scrollWorkbenchToNode(node);
-                setCurrentNode(node);
-            }
+        varNamesComboBox.addActionListener((e) -> {
+            Node n = (Node) (varNamesComboBox.getSelectedItem());
+            getWorkbench().scrollWorkbenchToNode(n);
+            setCurrentNode(n);
         });
 
-        nextButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                int current = varNamesComboBox.getSelectedIndex();
-                int max = varNamesComboBox.getItemCount();
+        nextButton.addActionListener((e) -> {
+            int current = varNamesComboBox.getSelectedIndex();
+            int max = varNamesComboBox.getItemCount();
 
-                ++current;
+            ++current;
 
-                if (current == max) {
-                    JOptionPane.showMessageDialog(BayesImEditorWizard.this,
-                            "There are no more variables.");
-                }
-
-                int set = (current < max) ? current : 0;
-
-                varNamesComboBox.setSelectedIndex(set);
+            if (current == max) {
+                JOptionPane.showMessageDialog(BayesImEditorWizard.this,
+                        "There are no more variables.");
             }
+
+            int set = (current < max) ? current : 0;
+
+            varNamesComboBox.setSelectedIndex(set);
         });
 
-        workbench.addPropertyChangeListener(new PropertyChangeListener() {
-            public void propertyChange(PropertyChangeEvent e) {
-                if (e.getPropertyName().equals("selectedNodes")) {
-                    List selection = (List) (e.getNewValue());
-
-                    if (selection.size() == 1) {
-                        Node node = (Node) (selection.get(0));
-                        varNamesComboBox.setSelectedItem(node);
-                    }
+        workbench.addPropertyChangeListener((evt) -> {
+            if (evt.getPropertyName().equals("selectedNodes")) {
+                List selection = (List) (evt.getNewValue());
+                if (selection.size() == 1) {
+                    varNamesComboBox.setSelectedItem((Node) (selection.get(0)));
                 }
             }
         });
@@ -187,26 +174,21 @@ public final class BayesImEditorWizard extends JPanel {
         this.workbench = workbench;
     }
 
-    private JComboBox createVarNamesComboBox(BayesIm bayesIm) {
-        JComboBox varNamesComboBox = new SortingComboBox() {
-            public Dimension getMaximumSize() {
-                return getPreferredSize();
-            }
-        };
-
-        varNamesComboBox.setBackground(Color.white);
+    private JComboBox<Node> createVarNamesComboBox(BayesIm bayesIm) {
+        JComboBox<Node> varNameComboBox = new JComboBox<>();
+        varNameComboBox.setBackground(Color.white);
 
         Graph graph = bayesIm.getBayesPm().getDag();
 
-        for (Object o : graph.getNodes()) {
-            varNamesComboBox.addItem(o);
+        List<Node> nodes = graph.getNodes().stream().collect(Collectors.toList());
+        Collections.sort(nodes);
+        nodes.forEach(varNameComboBox::addItem);
+
+        if (varNameComboBox.getItemCount() > 0) {
+            varNameComboBox.setSelectedIndex(0);
         }
 
-        if (graph.getNodes().size() > 0) {
-            varNamesComboBox.setSelectedIndex(0);
-        }
-
-        return varNamesComboBox;
+        return varNameComboBox;
     }
 
     /**
@@ -221,11 +203,9 @@ public final class BayesImEditorWizard extends JPanel {
         }
 
         editingTable = new BayesImNodeEditingTable(node, getBayesIm());
-        editingTable.addPropertyChangeListener(new PropertyChangeListener() {
-            public void propertyChange(PropertyChangeEvent evt) {
-                if ("modelChanged".equals(evt.getPropertyName())) {
-                    firePropertyChange("modelChanged", null, null);
-                }
+        editingTable.addPropertyChangeListener((evt) -> {
+            if ("modelChanged".equals(evt.getPropertyName())) {
+                firePropertyChange("modelChanged", null, null);
             }
         });
 

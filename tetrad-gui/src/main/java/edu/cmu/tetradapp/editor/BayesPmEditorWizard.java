@@ -18,7 +18,6 @@
 // along with this program; if not, write to the Free Software               //
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA //
 ///////////////////////////////////////////////////////////////////////////////
-
 package edu.cmu.tetradapp.editor;
 
 import edu.cmu.tetrad.bayes.BayesPm;
@@ -27,22 +26,41 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.NodeType;
 import edu.cmu.tetrad.util.JOptionUtils;
-import edu.cmu.tetradapp.util.SortingComboBox;
 import edu.cmu.tetradapp.util.StringTextField;
 import edu.cmu.tetradapp.workbench.GraphWorkbench;
-
-import javax.swing.*;
-import javax.swing.border.EmptyBorder;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
-import java.awt.*;
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Component;
+import java.awt.Container;
+import java.awt.Dimension;
+import java.awt.FocusTraversalPolicy;
+import java.awt.Font;
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+import javax.swing.AbstractAction;
+import javax.swing.Action;
+import javax.swing.Box;
+import javax.swing.JButton;
+import javax.swing.JComboBox;
+import javax.swing.JComponent;
+import javax.swing.JLabel;
+import javax.swing.JMenu;
+import javax.swing.JMenuBar;
+import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JSpinner;
+import javax.swing.KeyStroke;
+import javax.swing.SpinnerNumberModel;
+import javax.swing.border.EmptyBorder;
 
 /**
  * A wizard to let the user go through a workbench systematically and set the
@@ -60,7 +78,7 @@ final class BayesPmEditorWizard extends JPanel {
     /**
      * Lets the user select the variable they want to edit.
      */
-    private JComboBox variableChooser;
+    private JComboBox<Node> variableChooser;
 
     /**
      * True iff the editing of measured variables is allowed.
@@ -92,7 +110,7 @@ final class BayesPmEditorWizard extends JPanel {
      * The preset strings that will be used.
      */
     private final String[][] presetStrings = new String[][]{{"Low", "High"},
-            {"Low", "Medium", "High"}, {"On", "Off"}, {"Yes", "No"}};
+    {"Low", "Medium", "High"}, {"On", "Off"}, {"Yes", "No"}};
 
     /**
      * ?
@@ -115,7 +133,7 @@ final class BayesPmEditorWizard extends JPanel {
     private JMenu presetMenu;
 
     /**
-     * This is the wizard for the PMEditor class.  Its function is to allow the
+     * This is the wizard for the PMEditor class. Its function is to allow the
      * user to enter, for each variable in the associated Graph, the number of
      * categories it may take on and the string names for each of those
      * categories.
@@ -155,18 +173,21 @@ final class BayesPmEditorWizard extends JPanel {
         if (numCategories != 0) {
             spinnerModel = new SpinnerNumberModel(numCategories, 2, 1000, 1);
             numCategoriesSpinner = new JSpinner(spinnerModel) {
+
+                private static final long serialVersionUID = -7932603602816371347L;
+
+                @Override
                 public Dimension getMaximumSize() {
                     return getPreferredSize();
                 }
+
             };
             numCategoriesSpinner.setFont(new Font("Serif", Font.PLAIN, 12));
-            numCategoriesSpinner.addChangeListener(new ChangeListener() {
-                public void stateChanged(ChangeEvent e) {
-                    JSpinner spinner = (JSpinner) e.getSource();
-                    SpinnerNumberModel model =
-                            (SpinnerNumberModel) spinner.getModel();
-                    setNumCategories(model.getNumber().intValue());
-                }
+            numCategoriesSpinner.addChangeListener((e) -> {
+                JSpinner spinner = (JSpinner) e.getSource();
+                SpinnerNumberModel model
+                        = (SpinnerNumberModel) spinner.getModel();
+                setNumCategories(model.getNumber().intValue());
             });
 
             Box b3 = Box.createHorizontalBox();
@@ -204,42 +225,36 @@ final class BayesPmEditorWizard extends JPanel {
         add(b1, BorderLayout.CENTER);
         add(menuBar, BorderLayout.NORTH);
 
-        workbench.addPropertyChangeListener(new PropertyChangeListener() {
-            public void propertyChange(PropertyChangeEvent evt) {
-                if (evt.getPropertyName().equals("selectedNodes")) {
-                    List selection = (List) (evt.getNewValue());
-                    if (selection.size() == 1) {
-                        Node node = (Node) (selection.get(0));
-                        variableChooser.setSelectedItem(node);
-                    }
+        workbench.addPropertyChangeListener((evt) -> {
+            if (evt.getPropertyName().equals("selectedNodes")) {
+                List selection = (List) (evt.getNewValue());
+                if (selection.size() == 1) {
+                    Node node = (Node) (selection.get(0));
+                    variableChooser.setSelectedItem(node);
                 }
             }
         });
 
-        variableChooser.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                Node node = (Node) (variableChooser.getSelectedItem());
-                workbench().scrollWorkbenchToNode(node);
-                setNode(node);
-            }
+        variableChooser.addActionListener((e) -> {
+            Node n = (Node) (variableChooser.getSelectedItem());
+            workbench().scrollWorkbenchToNode(n);
+            setNode(n);
         });
 
-        nextButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                int current = variableChooser.getSelectedIndex();
-                int max = variableChooser.getItemCount();
+        nextButton.addActionListener((e) -> {
+            int current = variableChooser.getSelectedIndex();
+            int max = variableChooser.getItemCount();
 
-                ++current;
+            ++current;
 
-                if (current == max) {
-                    JOptionPane.showMessageDialog(BayesPmEditorWizard.this,
-                            "There are no more variables.");
-                }
-
-                int set = (current < max) ? current : 0;
-
-                variableChooser.setSelectedIndex(set);
+            if (current == max) {
+                JOptionPane.showMessageDialog(BayesPmEditorWizard.this,
+                        "There are no more variables.");
             }
+
+            int set = (current < max) ? current : 0;
+
+            variableChooser.setSelectedIndex(set);
         });
 
         enableByNodeType();
@@ -248,15 +263,12 @@ final class BayesPmEditorWizard extends JPanel {
     private void enableByNodeType() {
         if (!isEditingMeasuredVariablesAllowed() && categoryEditor.getNode().getNodeType() == NodeType.MEASURED) {
             setEnabled(false);
-        }
-        else if (!isEditingLatentVariablesAllowed() && categoryEditor.getNode().getNodeType() == NodeType.LATENT) {
+        } else if (!isEditingLatentVariablesAllowed() && categoryEditor.getNode().getNodeType() == NodeType.LATENT) {
             setEnabled(false);
-        }
-        else {
+        } else {
             setEnabled(true);
         }
     }
-
 
     public void setEnabled(boolean enabled) {
         super.setEnabled(enabled);
@@ -287,9 +299,14 @@ final class BayesPmEditorWizard extends JPanel {
             }
 
             Action action = new IndexedAction(buf.toString(), i) {
+
+                private static final long serialVersionUID = 5052478563546335636L;
+
+                @Override
                 public void actionPerformed(ActionEvent e) {
                     setCategories(Arrays.asList(presetStrings[getIndex()]));
                 }
+
             };
 
             presetMenu.add(action);
@@ -298,6 +315,10 @@ final class BayesPmEditorWizard extends JPanel {
         presetMenu.addSeparator();
 
         Action sequence = new AbstractAction("x1, x2, x3, ...") {
+
+            private static final long serialVersionUID = 4377386270269629176L;
+
+            @Override
             public void actionPerformed(ActionEvent e) {
                 List categories = new ArrayList();
                 String ret = JOptionPane.showInputDialog(
@@ -321,22 +342,18 @@ final class BayesPmEditorWizard extends JPanel {
         JMenuItem copy = new JMenuItem("Copy categories");
         JMenuItem paste = new JMenuItem("Paste categories");
 
-        copy.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                copyCategories();
+        copy.addActionListener((e) -> {
+            copyCategories();
 
-                JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
-                        "<html>" +
-                                "The categories for this node have been copied; to transfer " +
-                                "<br>these categories, choose another node and paste. You may" +
-                                "<br>paste multiple times." + "</html>");
-            }
+            JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
+                    "<html>"
+                    + "The categories for this node have been copied; to transfer "
+                    + "<br>these categories, choose another node and paste. You may"
+                    + "<br>paste multiple times." + "</html>");
         });
 
-        paste.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                pasteCategories();
-            }
+        paste.addActionListener((e) -> {
+            pasteCategories();
         });
 
         copy.setAccelerator(
@@ -354,8 +371,8 @@ final class BayesPmEditorWizard extends JPanel {
 
     private void copyCategories() {
         Node node = (Node) variableChooser.getSelectedItem();
-        DiscreteVariable variable =
-                (DiscreteVariable) bayesPm.getVariable(node);
+        DiscreteVariable variable
+                = (DiscreteVariable) bayesPm.getVariable(node);
         this.copiedCategories = variable.getCategories();
     }
 
@@ -371,28 +388,21 @@ final class BayesPmEditorWizard extends JPanel {
         firePropertyChange("modelChanged", null, null);
     }
 
-    private void createVariableChooser(BayesPm bayesPm,
-            GraphWorkbench workbench) {
-        variableChooser = new SortingComboBox() {
-            public Dimension getMaximumSize() {
-                return getPreferredSize();
-            }
-        };
-
+    private void createVariableChooser(BayesPm bayesPm, GraphWorkbench workbench) {
+        variableChooser = new JComboBox<>();
         variableChooser.setBackground(Color.white);
 
         Graph graphModel = bayesPm.getDag();
 
-        for (Iterator it = graphModel.getNodes().iterator(); it.hasNext();) {
-            variableChooser.addItem(it.next());
-        }
+        List<Node> nodes = graphModel.getNodes().stream().collect(Collectors.toList());
+        Collections.sort(nodes);
+        nodes.forEach(variableChooser::addItem);
 
-        if (graphModel.getNodes().size() > 0) {
+        if (variableChooser.getItemCount() > 0) {
             variableChooser.setSelectedIndex(0);
         }
 
-        workbench.scrollWorkbenchToNode(
-                (Node) (variableChooser.getSelectedItem()));
+        workbench.scrollWorkbenchToNode((Node) variableChooser.getSelectedItem());
     }
 
     private void setNode(Node node) {
@@ -459,11 +469,13 @@ final class BayesPmEditorWizard extends JPanel {
      * @author Joseph Ramsey
      */
     class CategoryEditor extends JPanel {
+
+        private static final long serialVersionUID = -7488118975131239436L;
+
         private BayesPm bayesPm;
         private Node node;
         private StringTextField[] categoryFields;
         private final LinkedList focusTraveralOrder = new LinkedList();
-
 
         public CategoryEditor(BayesPm bayesPm, Node node) {
             if (bayesPm == null) {
@@ -485,8 +497,8 @@ final class BayesPmEditorWizard extends JPanel {
 
         public void setNumCategories(int numCategories) {
             removeAll();
-            JComponent categoryFieldsPanel =
-                    createCategoryFieldsPanel(numCategories);
+            JComponent categoryFieldsPanel
+                    = createCategoryFieldsPanel(numCategories);
             add(categoryFieldsPanel, BorderLayout.CENTER);
             revalidate();
             repaint();
@@ -521,8 +533,9 @@ final class BayesPmEditorWizard extends JPanel {
             add(panel, BorderLayout.CENTER);
 
             setFocusTraversalPolicy(new FocusTraversalPolicy() {
+                @Override
                 public Component getComponentAfter(Container focusCycleRoot,
-                                                   Component aComponent) {
+                        Component aComponent) {
                     int index = focusTraveralOrder.indexOf(aComponent);
                     int size = focusTraveralOrder.size();
 
@@ -534,8 +547,9 @@ final class BayesPmEditorWizard extends JPanel {
                     }
                 }
 
+                @Override
                 public Component getComponentBefore(Container focusCycleRoot,
-                                                    Component aComponent) {
+                        Component aComponent) {
                     int index = focusTraveralOrder.indexOf(aComponent);
                     int size = focusTraveralOrder.size();
 
@@ -547,14 +561,17 @@ final class BayesPmEditorWizard extends JPanel {
                     }
                 }
 
+                @Override
                 public Component getFirstComponent(Container focusCycleRoot) {
                     return (Component) focusTraveralOrder.getFirst();
                 }
 
+                @Override
                 public Component getLastComponent(Container focusCycleRoot) {
                     return (Component) focusTraveralOrder.getLast();
                 }
 
+                @Override
                 public Component getDefaultComponent(Container focusCycleRoot) {
                     return getFirstComponent(focusCycleRoot);
                 }
@@ -565,6 +582,7 @@ final class BayesPmEditorWizard extends JPanel {
             return panel;
         }
 
+        @Override
         public void setEnabled(boolean enabled) {
             super.setEnabled(enabled);
             for (StringTextField field : categoryFields) {
@@ -579,26 +597,24 @@ final class BayesPmEditorWizard extends JPanel {
                 this.categoryFields[i] = new StringTextField(category(i), 10);
                 final StringTextField _field = this.categoryFields[i];
 
-                this.categoryFields[i].setFilter(new StringTextField.Filter() {
-                    public String filter(String value, String oldValue) {
-                        if (labels.get(_field) != null) {
-                            int index = labels.get(_field);
+                this.categoryFields[i].setFilter((String value, String oldValue) -> {
+                    if (labels.get(_field) != null) {
+                        int index = labels.get(_field);
 
-                            if (value == null) {
-                                value = category(index);
-                            }
-
-                            for (int i = 0; i < numCategories(); i++) {
-                                if (i != index && category(i).equals(value)) {
-                                    value = category(index);
-                                }
-                            }
-
-                            setCategory(index, value);
+                        if (value == null) {
+                            value = category(index);
                         }
 
-                        return value;
+                        for (int j = 0; j < numCategories(); j++) {
+                            if (j != index && category(j).equals(value)) {
+                                value = category(index);
+                            }
+                        }
+
+                        setCategory(index, value);
                     }
+
+                    return value;
                 });
 
                 labels.put(this.categoryFields[i], i);
@@ -615,8 +631,8 @@ final class BayesPmEditorWizard extends JPanel {
         }
 
         private void setCategory(int index, String value) {
-            DiscreteVariable variable =
-                    (DiscreteVariable) bayesPm.getVariable(getNode());
+            DiscreteVariable variable
+                    = (DiscreteVariable) bayesPm.getVariable(getNode());
             List<String> categories = new ArrayList<>(variable.getCategories());
             categories.set(index, value);
             bayesPm.setCategories(node, categories);
@@ -640,8 +656,8 @@ final class BayesPmEditorWizard extends JPanel {
 
             if (categories.size() < 2) {
                 throw new IllegalArgumentException(
-                        "Number of categories must be" + " >= 2: " +
-                                categories.size());
+                        "Number of categories must be" + " >= 2: "
+                        + categories.size());
             }
 
             for (int i = 0; i < categories.size(); i++) {
@@ -651,8 +667,8 @@ final class BayesPmEditorWizard extends JPanel {
             }
 
             removeAll();
-            JComponent categoryFieldsPanel =
-                    createCategoryFieldsPanel(categories.size());
+            JComponent categoryFieldsPanel
+                    = createCategoryFieldsPanel(categories.size());
 
             for (int i = 0; i < categories.size(); i++) {
                 this.categoryFields[i].setValue((String) categories.get(i));
@@ -672,6 +688,9 @@ final class BayesPmEditorWizard extends JPanel {
      * The actionPerformed method is still abstract.
      */
     abstract static class IndexedAction extends AbstractAction {
+
+        private static final long serialVersionUID = -8261331986030513841L;
+
         private final int index;
 
         public IndexedAction(String name, int index) {
@@ -682,11 +701,7 @@ final class BayesPmEditorWizard extends JPanel {
         public int getIndex() {
             return index;
         }
+
     }
+
 }
-
-
-
-
-
-
