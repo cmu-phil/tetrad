@@ -82,6 +82,11 @@ public class ConditionalGaussianSimulation implements Simulation {
 
             DataSet dataSet = simulate(graph, parameters);
             dataSet.setName("" + (i + 1));
+
+            if (parameters.getBoolean("randomizeColumns")) {
+                dataSet = DataUtils.reorderColumns(dataSet);
+            }
+
             dataSets.add(dataSet);
         }
     }
@@ -118,6 +123,7 @@ public class ConditionalGaussianSimulation implements Simulation {
         parameters.add("meanLow");
         parameters.add("meanHigh");
         parameters.add("saveLatentVars");
+        parameters.add("randomizeColumns");
 
         return parameters;
     }

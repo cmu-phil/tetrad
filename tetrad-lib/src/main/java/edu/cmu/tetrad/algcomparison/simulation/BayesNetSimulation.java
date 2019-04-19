@@ -8,6 +8,7 @@ import edu.cmu.tetrad.bayes.MlBayesIm;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
+import edu.cmu.tetrad.data.DataUtils;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.util.Parameters;
@@ -62,6 +63,11 @@ public class BayesNetSimulation implements Simulation {
             graphs.add(graph);
 
             DataSet dataSet = simulate(graph, parameters);
+
+            if (parameters.getBoolean("randomizeColumns")) {
+                dataSet = DataUtils.reorderColumns(dataSet);
+            }
+
             dataSet.setName("" + (i + 1));
             dataSets.add(dataSet);
         }
@@ -104,6 +110,7 @@ public class BayesNetSimulation implements Simulation {
 
         parameters.add("numRuns");
         parameters.add("differentGraphs");
+        parameters.add("randomizeColumns");
         parameters.add("sampleSize");
         parameters.add("saveLatentVars");
 
