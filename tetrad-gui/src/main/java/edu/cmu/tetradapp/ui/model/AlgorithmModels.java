@@ -70,10 +70,17 @@ public class AlgorithmModels {
         return INSTANCE;
     }
 
-    private List<AlgorithmModel> filterInclusivelyByAllOrSpecificDataType(List<AlgorithmModel> algorithmModels, DataType dataType) {
+    private List<AlgorithmModel> filterInclusivelyByAllOrSpecificDataType(List<AlgorithmModel> algorithmModels, DataType dataType, boolean multiDataSetAlgorithm) {
+        AlgorithmAnnotations algoAnno = AlgorithmAnnotations.getInstance();
+
         return (dataType == DataType.All)
                 ? algorithmModels
                 : algorithmModels.stream()
+                        .filter(e -> {
+                            return multiDataSetAlgorithm
+                                    ? algoAnno.acceptMultipleDataset(e.getAlgorithm().getClazz())
+                                    : true;
+                        })
                         .filter(e -> {
                             for (DataType dt : e.getAlgorithm().getAnnotation().dataType()) {
                                 if (dt == DataType.All || dt == dataType) {
@@ -85,13 +92,13 @@ public class AlgorithmModels {
                         .collect(Collectors.toList());
     }
 
-    public List<AlgorithmModel> getModels(DataType dataType) {
-        return filterInclusivelyByAllOrSpecificDataType(models, dataType);
+    public List<AlgorithmModel> getModels(DataType dataType, boolean multiDataSetAlgorithm) {
+        return filterInclusivelyByAllOrSpecificDataType(models, dataType, multiDataSetAlgorithm);
     }
 
-    public List<AlgorithmModel> getModels(AlgType algType, DataType dataType) {
+    public List<AlgorithmModel> getModels(AlgType algType, DataType dataType, boolean multiDataSetAlgorithm) {
         return modelMap.containsKey(algType)
-                ? filterInclusivelyByAllOrSpecificDataType(modelMap.get(algType), dataType)
+                ? filterInclusivelyByAllOrSpecificDataType(modelMap.get(algType), dataType, multiDataSetAlgorithm)
                 : Collections.EMPTY_LIST;
     }
 
