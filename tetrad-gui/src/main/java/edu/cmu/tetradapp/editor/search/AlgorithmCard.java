@@ -520,6 +520,7 @@ public class AlgorithmCard extends JPanel {
             }
 
             if (algoModels.isEmpty()) {
+                algoDescTextArea.setText("");
                 forwardBtn.setEnabled(false);
             } else {
                 algorithmList.setSelectedIndex(0);
