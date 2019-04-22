@@ -2982,7 +2982,7 @@ there is a single latent for each output cluster. For MimBuild, a pattern over t
         <h3 id="alpha" class="parameter_description">alpha</h3>
         <ul class="parameter_description_list">
             <li>Short Description: <span id="alpha_short_desc">Cutoff for p values (alpha) (min = 0.0)</span></li>
-            <li>Long Description: <span id="alpha_long_desc">Statistical tests often compare a test statistic to a distribution and make a judgment that the null hypothesis has been rejected based on whether the area in the tails for the distribution for that test statistic is greater than some cutoff alpha. For tests of independence, for instance, a lower alpha level makes it easier to judge independence, and a higher alpha makes it harder to judge independence. Thus, a lower alpha for a search generally results in a sparser graph.</span>
+            <li>Long Description: <span id="alpha_long_desc">Statistical tests often compare a test statistic to a distribution and make a judgment that the null hypothesis has been rejected based on whether the area in the tails for the distribution for that test statistic is greater than some cutoff alpha. For tests of independence, for instance, a lower alpha level makes it easier to judge independence, and a higher alpha makes it harder to judge independence. Thus, a lower alpha for a search generally results in a sparser graph. The default for this is 0.01, though for discrete searches we recommend using a value of 0.05.</span>
             </li>
             <li>Default Value: <span id="alpha_default_value">0.01</span></li>
             <li>Lower Bound: <span id="alpha_lower_bound">0.0</span></li>
@@ -3087,9 +3087,9 @@ there is a single latent for each output cluster. For MimBuild, a pattern over t
         <ul class="parameter_description_list">
             <li>Short Description: <span id="colliderDiscoveryRule_short_desc">Collider discovery: 1 = Lookup from adjacency sepsets, 2 = Conservative (CPC), 3 = Max-P</span>
             </li>
-            <li>Long Description: <span id="colliderDiscoveryRule_long_desc">For variants of PC, one may choose from one of three different ways for orienting colliders. One may look them up from sepsets, as in the original PC, or estimate them conservatively, as from the Conservative PC algorithm, or by choosing the sepsets with the maximum p-value.</span>
+            <li>Long Description: <span id="colliderDiscoveryRule_long_desc">For variants of PC, one may choose from one of three different ways for orienting colliders. One may look them up from sepsets, as in the original PC, or estimate them conservatively, as from the Conservative PC algorithm, or by choosing the sepsets with the maximum p-value. In simulation, CPC (default = 2) works the best for sample sizes greater than 100; for very small sample sizes, PC-Max generally works better.</span>
             </li>
-            <li>Default Value: <span id="colliderDiscoveryRule_default_value">3</span></li>
+            <li>Default Value: <span id="colliderDiscoveryRule_default_value">2</span></li>
             <li>Lower Bound: <span id="colliderDiscoveryRule_lower_bound">1</span></li>
             <li>Upper Bound: <span id="colliderDiscoveryRule_upper_bound">3</span></li>
             <li>Value Type: <span id="colliderDiscoveryRule_value_type">Integer</span></li>
@@ -3646,7 +3646,7 @@ Usually covariance values are chosen from U(-b, -a) U U(a, b) for some a, b; thi
             </li>
             <li>Long Description: <span id="maxCategories_long_desc">The maximum number of categories to be used for randomly generated discrete variables. The default is 2. This needs to be greater or equal to than the minimum number of categories.</span>
             </li>
-            <li>Default Value: <span id="maxCategories_default_value">2</span></li>
+            <li>Default Value: <span id="maxCategories_default_value">3</span></li>
             <li>Lower Bound: <span id="maxCategories_lower_bound">2</span></li>
             <li>Upper Bound: <span id="maxCategories_upper_bound">2147483647</span></li>
             <li>Value Type: <span id="maxCategories_value_type">Integer</span></li>
@@ -3871,7 +3871,7 @@ Usually covariance values are chosen from U(-b, -a) U U(a, b) for some a, b; thi
             </li>
             <li>Long Description: <span id="minCategories_long_desc">The minimum number of categories to be used for randomly generated discrete variables. The default is 2.</span>
             </li>
-            <li>Default Value: <span id="minCategories_default_value">2</span></li>
+            <li>Default Value: <span id="minCategories_default_value">3</span></li>
             <li>Lower Bound: <span id="minCategories_lower_bound">2</span></li>
             <li>Upper Bound: <span id="minCategories_upper_bound">2147483647</span></li>
             <li>Value Type: <span id="minCategories_value_type">Integer</span></li>
@@ -4210,9 +4210,9 @@ Usually covariance values are chosen from U(-b, -a) U U(a, b) for some a, b; thi
         <h3 id="samplePrior" class="parameter_description">samplePrior</h3>
         <ul class="parameter_description_list">
             <li>Short Description: <span id="samplePrior_short_desc">Sample prior (min = 1.0)</span></li>
-            <li>Long Description: <span id="samplePrior_long_desc">For the BDeu score, this sets the prior equivalent sample size. This number is added to the sample size for each conditional probability table in the model and is divided equally among the cells in the table.</span>
+            <li>Long Description: <span id="samplePrior_long_desc">For the BDeu score, this sets the prior equivalent sample size. This number is added to the sample size for each conditional probability table in the model and is divided equally among the cells in the table. A prior of 15 (default) does well as optimizing the estimate of the output pattern; a prior of 5 will optimize the structural Hamming distance.</span>
             </li>
-            <li>Default Value: <span id="samplePrior_default_value">1.0</span></li>
+            <li>Default Value: <span id="samplePrior_default_value">15.0</span></li>
             <li>Lower Bound: <span id="samplePrior_lower_bound">1.0</span></li>
             <li>Upper Bound: <span id="samplePrior_upper_bound">1.7976931348623157E308</span></li>
             <li>Value Type: <span id="samplePrior_value_type">Double</span></li>
@@ -4344,7 +4344,7 @@ Usually covariance values are chosen from U(-b, -a) U U(a, b) for some a, b; thi
             </li>
             <li>Long Description: <span id="structurePrior_long_desc">For Tetrad, we use as a structure prior the default number of parents for any conditional probability table. Higher weight is accorded to tables with about that number of parents. The prior structure weights are distributed according to a binomial distribution.</span>
             </li>
-            <li>Default Value: <span id="structurePrior_default_value">1.0</span></li>
+            <li>Default Value: <span id="structurePrior_default_value">3.0</span></li>
             <li>Lower Bound: <span id="structurePrior_lower_bound">0.0</span></li>
             <li>Upper Bound: <span id="structurePrior_upper_bound">1.7976931348623157E308</span></li>
             <li>Value Type: <span id="structurePrior_value_type">Double</span></li>

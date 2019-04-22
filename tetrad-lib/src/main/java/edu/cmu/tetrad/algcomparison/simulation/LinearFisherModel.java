@@ -136,23 +136,27 @@ public class LinearFisherModel implements Simulation, TakesData {
 
             dataSet.setName("" + (i + 1));
 
-            if (parameters.getDouble("percentDiscrete") > 0.0) {
-                if (this.shuffledOrder == null) {
-                    List<Node> shuffledNodes = new ArrayList<>(dataSet.getVariables());
-                    Collections.shuffle(shuffledNodes);
-                    this.shuffledOrder = shuffledNodes;
-                }
+//            if (parameters.getDouble("percentDiscrete") > 0.0) {
+//                if (this.shuffledOrder == null) {
+//                    List<Node> shuffledNodes = new ArrayList<>(dataSet.getVariables());
+//                    Collections.shuffle(shuffledNodes);
+//                    this.shuffledOrder = shuffledNodes;
+//                }
+//
+//                Discretizer discretizer = new Discretizer(dataSet);
+//
+//                for (int k = 0; k < shuffledOrder.size() * parameters.getDouble("percentDiscrete") * 0.01; k++) {
+//                    discretizer.equalIntervals(dataSet.getVariable(shuffledOrder.get(k).getName()),
+//                            parameters.getInt("numCategories"));
+//                }
+//
+//                String name = dataSet.getName();
+//                dataSet = discretizer.discretize();
+//                dataSet.setName(name);
+//            }
 
-                Discretizer discretizer = new Discretizer(dataSet);
-
-                for (int k = 0; k < shuffledOrder.size() * parameters.getDouble("percentDiscrete") * 0.01; k++) {
-                    discretizer.equalIntervals(dataSet.getVariable(shuffledOrder.get(k).getName()),
-                            parameters.getInt("numCategories"));
-                }
-
-                String name = dataSet.getName();
-                dataSet = discretizer.discretize();
-                dataSet.setName(name);
+            if (parameters.getBoolean("standardize")) {
+                dataSet = DataUtils.standardizeData(dataSet);
             }
 
             if (parameters.getBoolean("randomizeColumns")) {
@@ -197,7 +201,7 @@ public class LinearFisherModel implements Simulation, TakesData {
         parameters.add("includeNegativeCoefs");
         parameters.add("errorsNormal");
         parameters.add("numRuns");
-        parameters.add("percentDiscrete");
+//        parameters.add("percentDiscrete");
         parameters.add("numCategories");
         parameters.add("differentGraphs");
         parameters.add("sampleSize");
@@ -208,6 +212,7 @@ public class LinearFisherModel implements Simulation, TakesData {
         parameters.add("randomizeColumns");
         parameters.add("measurementVariance");
         parameters.add("saveLatentVars");
+        parameters.add("standardize");
 
         return parameters;
     }
