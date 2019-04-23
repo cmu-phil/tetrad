@@ -18,14 +18,14 @@
 // along with this program; if not, write to the Free Software               //
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA //
 ///////////////////////////////////////////////////////////////////////////////
-
 package edu.cmu.tetrad.data;
 
 /**
- * Stores a 2D array of integer data. Note that the missing value marker for this
- * box is -99.
+ * Stores a 2D array of integer data. Note that the missing value marker for
+ * this box is -99.
  */
 public class IntDataBox implements DataBox {
+
     static final long serialVersionUID = 23L;
 
     /**
@@ -83,8 +83,8 @@ public class IntDataBox implements DataBox {
     }
 
     /**
-     * Sets the value at the given row/column to the given Number value.
-     * The value used is number.shortValue().
+     * Sets the value at the given row/column to the given Number value. The
+     * value used is number.shortValue().
      */
     public void set(int row, int col, Number value) {
         if (value == null) {
@@ -99,8 +99,8 @@ public class IntDataBox implements DataBox {
     }
 
     /**
-     * @return the Number value at the given row and column. If the value
-     * is missing (-99), null, is returned.
+     * @return the Number value at the given row and column. If the value is
+     * missing (-99), null, is returned.
      */
     public Number get(int row, int col) {
         int datum = data[row][col];
@@ -134,8 +134,12 @@ public class IntDataBox implements DataBox {
         int[] rows = new int[numRows()];
         int[] cols = new int[numCols()];
 
-        for (int i = 0; i < numRows(); i++) rows[i] = i;
-        for (int j = 0; j < numCols(); j++) cols[j] = j;
+        for (int i = 0; i < numRows(); i++) {
+            rows[i] = i;
+        }
+        for (int j = 0; j < numCols(); j++) {
+            cols[j] = j;
+        }
 
         return viewSelection(rows, cols);
     }
@@ -152,7 +156,9 @@ public class IntDataBox implements DataBox {
 
         return _dataBox;
     }
+
+    public int[][] getData() {
+        return data;
+    }
+
 }
-
-
-
