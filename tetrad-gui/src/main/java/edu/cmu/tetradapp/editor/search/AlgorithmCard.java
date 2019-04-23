@@ -130,9 +130,9 @@ public class AlgorithmCard extends JPanel {
         this.algorithmRunner = algorithmRunner;
         this.dataType = getDataType();
         this.desktop = (TetradDesktop) DesktopController.getInstance();
-        this.multiDataAlgo = algorithmRunner.getDataModelList().isEmpty()
-                ? true
-                : algorithmRunner.getDataModelList().size() > 1;
+        this.multiDataAlgo = (algorithmRunner.getSourceGraph() == null)
+                ? algorithmRunner.getDataModelList().size() > 1
+                : false;
 
         initComponents(algorithmEditor);
         resetAllSettings();
@@ -520,6 +520,7 @@ public class AlgorithmCard extends JPanel {
             }
 
             if (algoModels.isEmpty()) {
+                algoDescTextArea.setText("");
                 forwardBtn.setEnabled(false);
             } else {
                 algorithmList.setSelectedIndex(0);
