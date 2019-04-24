@@ -123,13 +123,14 @@ public class SemSimulation implements Simulation {
             parameters.addAll(SemIm.getParameterNames());
         }
 
-        parameters.add("standardize");
         parameters.add("measurementVariance");
         parameters.add("numRuns");
         parameters.add("differentGraphs");
         parameters.add("randomizeColumns");
         parameters.add("sampleSize");
         parameters.add("saveLatentVars");
+        parameters.add("standardize");
+
         return parameters;
     }
 

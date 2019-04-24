@@ -57,7 +57,7 @@ public final class FciMax implements GraphSearch {
     /**
      * The SepsetMap being constructed.
      */
-    private SepsetMap sepsets;
+    private SepsetMap sepsets = new SepsetMap();
 
     /**
      * The background knowledge.
@@ -151,7 +151,7 @@ public final class FciMax implements GraphSearch {
     }
 
     public Graph search() {
-        FasConcurrent fas = new FasConcurrent(initialGraph, getIndependenceTest());
+        Fas fas = new Fas(initialGraph, getIndependenceTest());
         fas.setVerbose(verbose);
         return search(fas);
     }
@@ -169,7 +169,7 @@ public final class FciMax implements GraphSearch {
         fas.setDepth(depth);
         fas.setVerbose(verbose);
         this.graph = fas.search();
-        this.sepsets = fas.getSepsets();
+//        this.sepsets = fas.getSepsets();
 
         graph.reorientAllWith(Endpoint.CIRCLE);
 
@@ -333,6 +333,8 @@ public final class FciMax implements GraphSearch {
                     S = s;
                 }
             }
+
+            getSepsets().set(a, c, S);
 
             // S actually has to be non-null here, but the compiler doesn't know that.
             if (S != null && !S.contains(b)) {

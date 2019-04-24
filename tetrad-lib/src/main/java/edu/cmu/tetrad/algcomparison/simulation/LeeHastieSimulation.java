@@ -5,6 +5,7 @@ import edu.cmu.tetrad.algcomparison.utils.HasParameters;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
+import edu.cmu.tetrad.data.DataUtils;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.sem.GeneralizedSemIm;
@@ -71,6 +72,11 @@ public class LeeHastieSimulation implements Simulation, HasParameters {
 
             DataSet dataSet = simulate(graph, parameters);
             dataSet.setName("" + (i + 1));
+
+            if (parameters.getBoolean("randomizeColumns")) {
+                dataSet = DataUtils.reorderColumns(dataSet);
+            }
+
             dataSets.add(dataSet);
         }
     }
@@ -97,6 +103,7 @@ public class LeeHastieSimulation implements Simulation, HasParameters {
         parameters.add("percentDiscrete");
         parameters.add("numRuns");
         parameters.add("differentGraphs");
+        parameters.add("randomizeColumns");
         parameters.add("sampleSize");
         parameters.add("saveLatentVars");
 
