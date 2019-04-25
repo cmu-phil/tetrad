@@ -53,13 +53,13 @@ public class ExampleCompareSimulationContinuousPattern {
         Parameters parameters = new Parameters();
         int sampleSize = 500;
 
-        parameters.set("numRuns", 1);
-        parameters.set("numMeasures", 10);
+        parameters.set("numRuns", 10);
+        parameters.set("numMeasures", 20);
         parameters.set("avgDegree", 2);
         parameters.set("sampleSize", sampleSize); // This varies.
         parameters.set("differentGraphs", true);
 
-        parameters.set("alpha", 0.01, 0.001, 0.0001);
+        parameters.set("alpha", 0.01, 0.001);
         parameters.set("colliderDiscoveryRule", 1, 2, 3);
         parameters.set("conflictRule", 1, 2, 3);;
 
@@ -67,7 +67,7 @@ public class ExampleCompareSimulationContinuousPattern {
         parameters.set("coefHigh", 0.7);
 
         parameters.set("varLow", 1.0);
-        parameters.set("varHigh", 1.1);
+        parameters.set("varHigh", 3.0);
 
         parameters.set("penaltyDiscount", 2);
 
@@ -102,16 +102,20 @@ public class ExampleCompareSimulationContinuousPattern {
 
         Algorithms algorithms = new Algorithms();
 
-//        algorithms.add(new PcAll(new FisherZ()));
-//        algorithms.add(new PcAll(new SemBicTest()));
-//        algorithms.add(new Fges(new SemBicScore()));
-//        algorithms.add(new Fges(new FisherZScore()));
-//        algorithms.add(new Fask(new PcAll(new SemBicTest())));
-//        algorithms.add(new R3(new PcAll(new SemBicTest())));
-//        algorithms.add(new Skew(new PcAll(new SemBicTest())));
-//        algorithms.add(new RSkew(new PcAll(new SemBicTest())));
+        algorithms.add(new PcAll(new FisherZ()));
+        algorithms.add(new PcAll(new SemBicTest()));
+        algorithms.add(new Fges(new SemBicScore()));
+        algorithms.add(new Fges(new FisherZScore()));
+        algorithms.add(new Fask(new PcAll(new SemBicTest())));
+        algorithms.add(new Fask(new PcAll(new FisherZ())));
+        algorithms.add(new R3(new PcAll(new SemBicTest())));
+        algorithms.add(new R3(new PcAll(new FisherZ())));
+        algorithms.add(new Skew(new PcAll(new SemBicTest())));
+        algorithms.add(new Skew(new PcAll(new FisherZ())));
+        algorithms.add(new RSkew(new PcAll(new SemBicTest())));
+        algorithms.add(new RSkew(new PcAll(new FisherZ())));
 //        algorithms.add(new Lingam());
-        algorithms.add(new R3(new Glasso()));
+//        algorithms.add(new R3(new Glasso()));
 //        algorithms.add(new Skew(new Glasso()));
 
         parameters.set("IA", true);

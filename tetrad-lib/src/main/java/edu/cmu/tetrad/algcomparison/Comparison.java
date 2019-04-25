@@ -216,15 +216,7 @@ public class Comparison {
         int numRuns = parameters.getInt("numRuns");
 
         for (Simulation simulation : simulations.getSimulations()) {
-            List<String> parameters1 = simulation.getParameters();
-
-            Parameters parameters2 = new Parameters();
-
-            for (String s : parameters1) {
-                parameters2.set(s, parameters.get(s));
-            }
-
-            List<SimulationWrapper> wrappers = getSimulationWrappers(simulation, parameters2);
+            List<SimulationWrapper> wrappers = getSimulationWrappers(simulation, parameters);
 
             for (SimulationWrapper wrapper : wrappers) {
                 wrapper.createData(wrapper.getSimulationSpecificParameters());

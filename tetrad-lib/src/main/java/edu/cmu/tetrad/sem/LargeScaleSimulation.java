@@ -805,6 +805,7 @@ public final class LargeScaleSimulation {
 
                 if (!errorsNormal) {
                     sample = abs(sample);
+//                    sample = sample * sample;
                 }
 
                 shocks[i][j] = sample;
