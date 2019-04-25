@@ -23,10 +23,12 @@ package edu.cmu.tetrad.study;
 
 import edu.cmu.tetrad.algcomparison.Comparison;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithms;
+import edu.cmu.tetrad.algcomparison.algorithm.continuous.dag.Lingam;
 import edu.cmu.tetrad.algcomparison.algorithm.multi.Fask;
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern.FAS;
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern.Fges;
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern.PcAll;
+import edu.cmu.tetrad.algcomparison.algorithm.other.Glasso;
 import edu.cmu.tetrad.algcomparison.algorithm.pairwise.R3;
 import edu.cmu.tetrad.algcomparison.algorithm.pairwise.RSkew;
 import edu.cmu.tetrad.algcomparison.algorithm.pairwise.Skew;
@@ -52,8 +54,8 @@ public class ExampleCompareSimulationContinuousPattern {
         int sampleSize = 500;
 
         parameters.set("numRuns", 10);
-        parameters.set("numMeasures", 20);
-        parameters.set("avgDegree", 4);
+        parameters.set("numMeasures", 10);
+        parameters.set("avgDegree", 2);
         parameters.set("sampleSize", sampleSize); // This varies.
         parameters.set("differentGraphs", true);
 
@@ -101,15 +103,17 @@ public class ExampleCompareSimulationContinuousPattern {
 
         Algorithms algorithms = new Algorithms();
 
-//        algorithms.add(new PcAll(new FisherZ()));
-//        algorithms.add(new PcAll(new SemBicTest()));
-//
-//        algorithms.add(new Fges(new SemBicScore()));
-//        algorithms.add(new Fges(new FisherZScore()));
+        algorithms.add(new PcAll(new FisherZ()));
+        algorithms.add(new PcAll(new SemBicTest()));
+        algorithms.add(new Fges(new SemBicScore()));
+        algorithms.add(new Fges(new FisherZScore()));
         algorithms.add(new Fask(new PcAll(new SemBicTest())));
         algorithms.add(new R3(new PcAll(new SemBicTest())));
         algorithms.add(new Skew(new PcAll(new SemBicTest())));
-//        algorithms.add(new RSkew(new PcAll(new SemBicTest())));
+        algorithms.add(new RSkew(new PcAll(new SemBicTest())));
+        algorithms.add(new Lingam());
+//        algorithms.add(new R3(new Glasso()));
+//        algorithms.add(new Skew(new Glasso()));
 
         Simulations simulations = new Simulations();
 
