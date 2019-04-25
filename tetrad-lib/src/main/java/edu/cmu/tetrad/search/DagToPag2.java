@@ -137,7 +137,7 @@ public final class DagToPag2 {
                 boolean exists = inducingPath != null;
 
                 if (exists) {
-                    graph.addEdge(Edges.nondirectedEdge(n1, n2));
+                    graph.addEdge(Edges.directedEdge(n1, n2));
                 }
             }
         }

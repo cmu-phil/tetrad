@@ -55,7 +55,7 @@ public class ExampleCompareSimulationContinuousPattern {
 
         parameters.set("numRuns", 10);
         parameters.set("numMeasures", 20);
-        parameters.set("avgDegree", 2);
+        parameters.set("avgDegree", 6);
         parameters.set("sampleSize", sampleSize); // This varies.
         parameters.set("differentGraphs", true);
 
