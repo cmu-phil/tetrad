@@ -202,7 +202,7 @@ public class LinearFisherModel implements Simulation, TakesData {
         parameters.add("errorsNormal");
         parameters.add("numRuns");
 //        parameters.add("percentDiscrete");
-        parameters.add("numCategories");
+//        parameters.add("numCategories");
         parameters.add("differentGraphs");
         parameters.add("sampleSize");
         parameters.add("intervalBetweenShocks");

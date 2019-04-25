@@ -53,7 +53,7 @@ public class ExampleCompareSimulationContinuousPattern {
         Parameters parameters = new Parameters();
         int sampleSize = 500;
 
-        parameters.set("numRuns", 10);
+        parameters.set("numRuns", 1);
         parameters.set("numMeasures", 10);
         parameters.set("avgDegree", 2);
         parameters.set("sampleSize", sampleSize); // This varies.
@@ -63,10 +63,13 @@ public class ExampleCompareSimulationContinuousPattern {
         parameters.set("colliderDiscoveryRule", 1, 2, 3);
         parameters.set("conflictRule", 1, 2, 3);;
 
-        parameters.set("coefLow", 0.3);
-        parameters.set("coefHigh", .7);
+        parameters.set("coefLow", 0.2);
+        parameters.set("coefHigh", 0.7);
 
-        parameters.set("penaltyDiscount", 1, 2, 3, 4);
+        parameters.set("varLow", 1.0);
+        parameters.set("varHigh", 1.1);
+
+        parameters.set("penaltyDiscount", 2);
 
         Statistics statistics = new Statistics();
 
@@ -75,10 +78,6 @@ public class ExampleCompareSimulationContinuousPattern {
         statistics.add(new ParameterColumn("sampleSize"));
         statistics.add(new ParameterColumn("colliderDiscoveryRule"));
         statistics.add(new ParameterColumn("conflictRule"));
-//        statistics.add(new ParameterColumn("samplePrior"));
-//        statistics.add(new ParameterColumn("structurePrior"));
-//        statistics.add(new ParameterColumn("penaltyDiscount"));
-//        statistics.add(new ParameterColumn("discretize"));
         statistics.add(new ParameterColumn("alpha"));
         statistics.add(new ParameterColumn("penaltyDiscount"));
         statistics.add(new ParameterColumn("extraEdgeThreshold"));
@@ -103,17 +102,19 @@ public class ExampleCompareSimulationContinuousPattern {
 
         Algorithms algorithms = new Algorithms();
 
-        algorithms.add(new PcAll(new FisherZ()));
-        algorithms.add(new PcAll(new SemBicTest()));
-        algorithms.add(new Fges(new SemBicScore()));
-        algorithms.add(new Fges(new FisherZScore()));
-        algorithms.add(new Fask(new PcAll(new SemBicTest())));
-        algorithms.add(new R3(new PcAll(new SemBicTest())));
-        algorithms.add(new Skew(new PcAll(new SemBicTest())));
-        algorithms.add(new RSkew(new PcAll(new SemBicTest())));
-        algorithms.add(new Lingam());
-//        algorithms.add(new R3(new Glasso()));
+//        algorithms.add(new PcAll(new FisherZ()));
+//        algorithms.add(new PcAll(new SemBicTest()));
+//        algorithms.add(new Fges(new SemBicScore()));
+//        algorithms.add(new Fges(new FisherZScore()));
+//        algorithms.add(new Fask(new PcAll(new SemBicTest())));
+//        algorithms.add(new R3(new PcAll(new SemBicTest())));
+//        algorithms.add(new Skew(new PcAll(new SemBicTest())));
+//        algorithms.add(new RSkew(new PcAll(new SemBicTest())));
+//        algorithms.add(new Lingam());
+        algorithms.add(new R3(new Glasso()));
 //        algorithms.add(new Skew(new Glasso()));
+
+        parameters.set("IA", true);
 
         Simulations simulations = new Simulations();
 
