@@ -21,11 +21,11 @@ import java.util.List;
  *
  * @author jdramsey
  */
-//@edu.cmu.tetrad.annotation.Algorithm(
-//        name = "FCI-Max",
-//        command = "fcimax",
-//        algoType = AlgType.allow_latent_common_causes
-//)
+@edu.cmu.tetrad.annotation.Algorithm(
+        name = "FCI-Max",
+        command = "fcimax",
+        algoType = AlgType.allow_latent_common_causes
+)
 public class FciMax implements Algorithm, TakesInitialGraph, HasKnowledge, TakesIndependenceWrapper {
 
     static final long serialVersionUID = 23L;

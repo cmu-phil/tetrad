@@ -28,7 +28,7 @@ public class SemBicTest implements IndependenceWrapper {
             score = new SemBicScore((ICovarianceMatrix) dataSet);
             score.setPenaltyDiscount(parameters.getDouble("penaltyDiscount"));
         } else {
-            score = new SemBicScore(new CovarianceMatrix((DataSet) dataSet));
+            score = new SemBicScore(new CovarianceMatrixOnTheFly((DataSet) dataSet));
             score.setPenaltyDiscount(parameters.getDouble("penaltyDiscount"));
 
         }

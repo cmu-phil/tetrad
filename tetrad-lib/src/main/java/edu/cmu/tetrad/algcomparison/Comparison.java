@@ -216,7 +216,15 @@ public class Comparison {
         int numRuns = parameters.getInt("numRuns");
 
         for (Simulation simulation : simulations.getSimulations()) {
-            List<SimulationWrapper> wrappers = getSimulationWrappers(simulation, parameters);
+            List<String> parameters1 = simulation.getParameters();
+
+            Parameters parameters2 = new Parameters();
+
+            for (String s : parameters1) {
+                parameters2.set(s, parameters.get(s));
+            }
+
+            List<SimulationWrapper> wrappers = getSimulationWrappers(simulation, parameters2);
 
             for (SimulationWrapper wrapper : wrappers) {
                 wrapper.createData(wrapper.getSimulationSpecificParameters());
@@ -1480,7 +1488,8 @@ public class Comparison {
 
                         statTables[u][i][j] = stat;
                     } else if (mode == Mode.Average) {
-                        statTables[u][i][j] = StatUtils.mean(allStats[u][i][j]);
+                        final double mean = StatUtils.mean(allStats[u][i][j]);
+                        statTables[u][i][j] = mean;
                     } else if (mode == Mode.WorstCase) {
                         statTables[u][i][j] = StatUtils.min(allStats[u][i][j]);
                     } else if (mode == Mode.StandardDeviation) {
@@ -1593,7 +1602,8 @@ public class Comparison {
 
                     if (stat == 0.0) {
                         table.setToken(t + 1, initialColumn + statIndex, "-");
-                    } else if (stat == Double.POSITIVE_INFINITY) {
+                    } else
+                        if (stat == Double.POSITIVE_INFINITY) {
                         table.setToken(t + 1, initialColumn + statIndex, "Yes");
                     } else if (stat == Double.NEGATIVE_INFINITY) {
                         table.setToken(t + 1, initialColumn + statIndex, "No");
