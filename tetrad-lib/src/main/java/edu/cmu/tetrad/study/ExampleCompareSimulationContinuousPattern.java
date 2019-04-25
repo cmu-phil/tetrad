@@ -104,12 +104,12 @@ public class ExampleCompareSimulationContinuousPattern {
 //        algorithms.add(new PcAll(new FisherZ()));
 //        algorithms.add(new PcAll(new SemBicTest()));
 //
-        algorithms.add(new Fges(new SemBicScore()));
-        algorithms.add(new Fges(new FisherZScore()));
+//        algorithms.add(new Fges(new SemBicScore()));
+//        algorithms.add(new Fges(new FisherZScore()));
         algorithms.add(new Fask(new PcAll(new SemBicTest())));
         algorithms.add(new R3(new PcAll(new SemBicTest())));
         algorithms.add(new Skew(new PcAll(new SemBicTest())));
-        algorithms.add(new RSkew(new PcAll(new SemBicTest())));
+//        algorithms.add(new RSkew(new PcAll(new SemBicTest())));
 
         Simulations simulations = new Simulations();
 
