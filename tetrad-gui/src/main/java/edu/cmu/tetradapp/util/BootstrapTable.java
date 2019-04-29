@@ -195,8 +195,8 @@ public final class BootstrapTable {
             }
             String probValue = String.format("%.4f", prob);
             
-            // FInd the max value of edge type probability
-            if(prob > maxProb) {
+            // FInd the max value of edge type probability but not no edge
+            if(prob > maxProb && edgeTypeProb.getEdgeType() != EdgeTypeProbability.EdgeType.nil) {
             	maxProb = prob;
             	maxProbString = probValue;
             }
