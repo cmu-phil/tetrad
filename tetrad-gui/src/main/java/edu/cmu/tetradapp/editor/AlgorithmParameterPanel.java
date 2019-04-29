@@ -28,7 +28,9 @@ import edu.cmu.tetradapp.util.IntTextField;
 import edu.cmu.tetradapp.util.StringTextField;
 import java.awt.BorderLayout;
 import java.text.DecimalFormat;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
@@ -50,6 +52,16 @@ public class AlgorithmParameterPanel extends JPanel {
     private static final long serialVersionUID = 274638263704283474L;
 
     private static final String DEFAULT_TITLE_BORDER = "Algorithm Parameters";
+
+    private static final Set<String> BOOTSTRAP_PARAMS = new HashSet<>();
+
+    static {
+        BOOTSTRAP_PARAMS.add("numberResampling");
+        BOOTSTRAP_PARAMS.add("percentResampleSize");
+        BOOTSTRAP_PARAMS.add("resamplingWithReplacement");
+        BOOTSTRAP_PARAMS.add("resamplingEnsemble");
+        BOOTSTRAP_PARAMS.add("addOriginalDataset");
+    }
 
     public AlgorithmParameterPanel() {
         initComponents();
@@ -81,9 +93,14 @@ public class AlgorithmParameterPanel extends JPanel {
             row.add(new JLabel("No parameters to edit"));
             paramsBox.add(row);
         } else {
+            boolean isRunFromGraph = runner.getSourceGraph() != null;
             List<String> uniqueParams = parametersToEdit.stream()
+                    .filter(e -> {
+                        return isRunFromGraph ? !BOOTSTRAP_PARAMS.contains(e) : true;
+                    })
                     .distinct()
                     .collect(Collectors.toList());
+
             uniqueParams.forEach(parameter -> {
                 Object defaultValue = ParamDescriptions.getInstance().get(parameter).getDefaultValue();
 
@@ -112,7 +129,9 @@ public class AlgorithmParameterPanel extends JPanel {
 
                 JLabel paramLabel = new JLabel(ParamDescriptions.getInstance().get(parameter).getShortDescription());
                 String longDescription = ParamDescriptions.getInstance().get(parameter).getLongDescription();
-                if (longDescription != null) paramLabel.setToolTipText(longDescription);
+                if (longDescription != null) {
+                    paramLabel.setToolTipText(longDescription);
+                }
                 paramRow.add(paramLabel);
                 paramRow.add(Box.createHorizontalGlue());
                 paramRow.add(parameterSelection);
