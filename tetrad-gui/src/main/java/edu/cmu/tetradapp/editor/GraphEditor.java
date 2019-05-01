@@ -99,9 +99,9 @@ public final class GraphEditor extends JPanel
     private static final long serialVersionUID = 5123725895449927539L;
 
     private GraphWorkbench workbench;
-    private Parameters parameters;
+    private final Parameters parameters;
 
-    private JScrollPane graphEditorScroll = new JScrollPane();
+    private final JScrollPane graphEditorScroll = new JScrollPane();
     private Box tablePaneBox;
 
     /**
@@ -114,7 +114,8 @@ public final class GraphEditor extends JPanel
     //===========================CONSTRUCTOR========================//
     public GraphEditor(GraphWrapper graphWrapper) {
         // Check if this graph has interventional nodes - Zhou
-        boolean result = graphWrapper.getGraph().getNodes().stream().anyMatch(e -> (e.getNodeVariableType() == NodeVariableType.INTERVENTION_STATUS || e.getNodeVariableType() == NodeVariableType.INTERVENTION_VALUE));
+        boolean result = graphWrapper.getGraph().getNodes().stream()
+                .anyMatch(e -> (e.getNodeVariableType() == NodeVariableType.INTERVENTION_STATUS || e.getNodeVariableType() == NodeVariableType.INTERVENTION_VALUE));
         setHasInterventional(result);
 
         setLayout(new BorderLayout());
@@ -170,12 +171,12 @@ public final class GraphEditor extends JPanel
         getWorkbench().pasteSubgraph(sessionElements, upperLeft);
         getWorkbench().deselectAll();
 
-        for (Object o : sessionElements) {
+        sessionElements.forEach(o -> {
             if (o instanceof GraphNode) {
                 Node modelNode = (Node) o;
                 getWorkbench().selectNode(modelNode);
             }
-        }
+        });
 
         getWorkbench().selectConnectingEdges();
     }
@@ -456,22 +457,6 @@ public final class GraphEditor extends JPanel
         return menuBar;
     }
 
-//    /**
-//     * Creates the "file" menu, which allows the user to load, save, and post
-//     * workbench models.
-//     *
-//     * @return this menu.
-//     */
-//    private JMenu createFileMenu() {
-//        JMenu file = new JMenu("File");
-//
-//        file.add(new LoadGraph(this, "Load Graph..."));
-//        file.add(new SaveGraph(this, "Save Graph..."));
-////        file.add(new SaveScreenshot(this, true, "Save Screenshot..."));
-//        file.add(new SaveComponentImage(getWorkbench(), "Save Graph Image..."));
-//
-//        return file;
-//    }
     /**
      * Creates the "file" menu, which allows the user to load, save, and post
      * workbench models.
@@ -509,75 +494,59 @@ public final class GraphEditor extends JPanel
         graph.add(uncorrelateExogenous);
         graph.addSeparator();
 
-        correlateExogenous.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                correlateExogenousVariables();
-                getWorkbench().invalidate();
-                getWorkbench().repaint();
-            }
+        correlateExogenous.addActionListener(e -> {
+            correlateExogenousVariables();
+            getWorkbench().invalidate();
+            getWorkbench().repaint();
         });
 
-        uncorrelateExogenous.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                uncorrelationExogenousVariables();
-                getWorkbench().invalidate();
-                getWorkbench().repaint();
-            }
+        uncorrelateExogenous.addActionListener(e -> {
+            uncorrelationExogenousVariables();
+            getWorkbench().invalidate();
+            getWorkbench().repaint();
         });
 
         JMenuItem randomGraph = new JMenuItem("Random Graph");
         graph.add(randomGraph);
 
-        randomGraph.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                final GraphParamsEditor editor = new GraphParamsEditor();
-                editor.setParams(parameters);
+        randomGraph.addActionListener(e -> {
+            final GraphParamsEditor editor = new GraphParamsEditor();
+            editor.setParams(parameters);
 
-                EditorWindow editorWindow = new EditorWindow(editor, "Edit Random Graph Parameters",
-                        "Done", false, GraphEditor.this);
+            EditorWindow editorWindow = new EditorWindow(editor, "Edit Random Graph Parameters",
+                    "Done", false, GraphEditor.this);
 
-                DesktopController.getInstance().addEditorWindow(editorWindow, JLayeredPane.PALETTE_LAYER);
-                editorWindow.pack();
-                editorWindow.setVisible(true);
+            DesktopController.getInstance().addEditorWindow(editorWindow, JLayeredPane.PALETTE_LAYER);
+            editorWindow.pack();
+            editorWindow.setVisible(true);
 
-                editorWindow.addInternalFrameListener(new InternalFrameAdapter() {
-                    public void internalFrameClosed(InternalFrameEvent e1) {
-                        EditorWindow window = (EditorWindow) e1.getSource();
+            editorWindow.addInternalFrameListener(new InternalFrameAdapter() {
+                @Override
+                public void internalFrameClosed(InternalFrameEvent e1) {
+                    EditorWindow window = (EditorWindow) e1.getSource();
 
-                        if (window.isCanceled()) {
-                            return;
-                        }
-
-                        RandomUtil.getInstance().setSeed(new Date().getTime());
-                        Graph graph1 = edu.cmu.tetradapp.util.GraphUtils.makeRandomGraph(getGraph(), parameters);
-
-                        boolean addCycles = parameters.getBoolean("randomAddCycles", false);
-
-                        if (addCycles) {
-                            int newGraphNumMeasuredNodes = parameters.getInt("newGraphNumMeasuredNodes", 10);
-                            int newGraphNumEdges = parameters.getInt("newGraphNumEdges", 10);
-                            graph1 = GraphUtils.cyclicGraph2(newGraphNumMeasuredNodes, newGraphNumEdges, 8);
-                        }
-
-                        getWorkbench().setGraph(graph1);
+                    if (window.isCanceled()) {
+                        return;
                     }
-                });
-            }
+
+                    RandomUtil.getInstance().setSeed(new Date().getTime());
+                    Graph graph1 = edu.cmu.tetradapp.util.GraphUtils.makeRandomGraph(getGraph(), parameters);
+
+                    boolean addCycles = parameters.getBoolean("randomAddCycles", false);
+
+                    if (addCycles) {
+                        int newGraphNumMeasuredNodes = parameters.getInt("newGraphNumMeasuredNodes", 10);
+                        int newGraphNumEdges = parameters.getInt("newGraphNumEdges", 10);
+                        graph1 = GraphUtils.cyclicGraph2(newGraphNumMeasuredNodes, newGraphNumEdges, 8);
+                    }
+
+                    getWorkbench().setGraph(graph1);
+                }
+            });
         });
 
         graph.addSeparator();
-//        JMenuItem meekOrient = new JMenuItem("Meek Orientation");
-//        graph.add(meekOrient);
 
-//        meekOrient.addActionListener(new ActionListener() {
-//            public void actionPerformed(ActionEvent e) {
-//                MeekRules rules = new MeekRules();
-//                rules.orientImplied(getGraph());
-//                getWorkbench().setGraph(getGraph());
-//                firePropertyChange("modelChanged", null, null);
-//            }
-//        }
-//        );
         graph.add(new JMenuItem(new SelectBidirectedAction(getWorkbench())));
         graph.add(new JMenuItem(new SelectUndirectedAction(getWorkbench())));
         graph.add(new JMenuItem(new SelectLatentsAction(getWorkbench())));
@@ -588,10 +557,6 @@ public final class GraphEditor extends JPanel
             graph.add(new JMenuItem(new HideShowInterventionalAction(getWorkbench())));
         }
 
-//        graph.addSeparator();
-//        IndependenceFactsAction action = new IndependenceFactsAction(
-//                JOptionUtils.centeringComp(), this, "D Separation Facts...");
-//        graph.add(action);
         graph.addSeparator();
         graph.add(new JMenuItem(new HideShowNoConnectionNodesAction(getWorkbench())));
 
