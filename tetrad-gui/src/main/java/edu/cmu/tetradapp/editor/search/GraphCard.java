@@ -20,10 +20,10 @@ package edu.cmu.tetradapp.editor.search;
 
 import edu.cmu.tetrad.annotation.Algorithm;
 import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetradapp.editor.EdgeTypeTable;
 import edu.cmu.tetradapp.editor.GeneralAlgorithmEditor;
 import edu.cmu.tetradapp.model.GeneralAlgorithmRunner;
 import edu.cmu.tetradapp.ui.PaddingPanel;
-import edu.cmu.tetradapp.util.BootstrapTable;
 import edu.cmu.tetradapp.util.ImageUtils;
 import edu.cmu.tetradapp.workbench.GraphWorkbench;
 import java.awt.BorderLayout;
@@ -65,8 +65,11 @@ public class GraphCard extends JPanel {
 
     private final GeneralAlgorithmRunner algorithmRunner;
 
+    private final EdgeTypeTable edgeTypeTable;
+
     public GraphCard(GeneralAlgorithmEditor algorithmEditor, GeneralAlgorithmRunner algorithmRunner) {
         this.algorithmRunner = algorithmRunner;
+        this.edgeTypeTable = new EdgeTypeTable();
 
         initComponents(algorithmEditor);
     }
@@ -153,28 +156,11 @@ public class GraphCard extends JPanel {
         topBox.add(graphEditorScroll);
         topBox.add(instructionBox);
 
-        // bottomBox contains bootstrap table
-        Box bottomBox = Box.createVerticalBox();
-        bottomBox.setPreferredSize(new Dimension(820, 150));
-
-        bottomBox.add(Box.createVerticalStrut(5));
-
-        // Put the table title label in a box so it can be centered
-        Box tableTitleBox = Box.createHorizontalBox();
-        JLabel tableTitle = new JLabel("Edges and Edge Type Probabilities");
-        tableTitleBox.add(tableTitle);
-
-        bottomBox.add(tableTitleBox);
-
-        bottomBox.add(Box.createVerticalStrut(5));
-
-        JScrollPane tablePane = BootstrapTable.renderBootstrapTable(graph);
-
-        bottomBox.add(tablePane);
-
         // Use JSplitPane to allow resize the bottom box - Zhou
-        JSplitPane splitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT, topBox, bottomBox);
+        JSplitPane splitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT, topBox, edgeTypeTable);
         splitPane.setDividerLocation(400);
+
+        edgeTypeTable.update(graph);
 
         return splitPane;
     }

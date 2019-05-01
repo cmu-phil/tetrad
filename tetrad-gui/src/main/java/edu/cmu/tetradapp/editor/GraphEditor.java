@@ -38,7 +38,7 @@ import edu.cmu.tetrad.util.RandomUtil;
 import edu.cmu.tetrad.util.TetradSerializable;
 import edu.cmu.tetradapp.model.GraphWrapper;
 import edu.cmu.tetradapp.model.IndTestProducer;
-import edu.cmu.tetradapp.util.BootstrapTable;
+import edu.cmu.tetradapp.ui.PaddingPanel;
 import edu.cmu.tetradapp.util.DesktopController;
 import edu.cmu.tetradapp.util.ImageUtils;
 import edu.cmu.tetradapp.util.LayoutEditable;
@@ -93,8 +93,7 @@ import javax.swing.event.InternalFrameEvent;
  * @author Joseph Ramsey
  * @author Zhou Yuan 8/22/2018
  */
-public final class GraphEditor extends JPanel
-        implements GraphEditable, LayoutEditable, IndTestProducer {
+public final class GraphEditor extends JPanel implements GraphEditable, LayoutEditable, IndTestProducer {
 
     private static final long serialVersionUID = 5123725895449927539L;
 
@@ -102,7 +101,8 @@ public final class GraphEditor extends JPanel
     private final Parameters parameters;
 
     private final JScrollPane graphEditorScroll = new JScrollPane();
-    private Box tablePaneBox;
+
+    private final EdgeTypeTable edgeTypeTable;
 
     /**
      * Flag to indicate if interventional variables are in the graph - Zhou
@@ -121,6 +121,7 @@ public final class GraphEditor extends JPanel
         setLayout(new BorderLayout());
 
         this.parameters = graphWrapper.getParameters();
+        this.edgeTypeTable = new EdgeTypeTable();
 
         initUI(graphWrapper);
     }
@@ -323,38 +324,16 @@ public final class GraphEditor extends JPanel
         topBox.add(topGraphBox);
         topBox.add(instructionBox);
 
-        // bottomBox contains bootstrap table
-        Box bottomBox = Box.createVerticalBox();
-        bottomBox.setPreferredSize(new Dimension(750, 150));
-
-        bottomBox.add(Box.createVerticalStrut(5));
-
-        // Put the table title label in a box so it can be centered
-        Box tableTitleBox = Box.createHorizontalBox();
-        JLabel tableTitle = new JLabel("Edges and Edge Type Probabilities");
-        tableTitleBox.add(tableTitle);
-
-        bottomBox.add(tableTitleBox);
-
-        bottomBox.add(Box.createVerticalStrut(5));
-
-        // Table box contains the table pane
-        tablePaneBox = Box.createHorizontalBox();
-        JScrollPane tablePane = BootstrapTable.renderBootstrapTable(graph);
-        tablePaneBox.add(tablePane);
-
-        bottomBox.add(tablePaneBox);
-
         // Use JSplitPane to allow resize the bottom box - Zhou
         JSplitPane splitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
-
-        // Set the top and bottom split panes
-        splitPane.setTopComponent(topBox);
-        splitPane.setBottomComponent(bottomBox);
+        splitPane.setTopComponent(new PaddingPanel(topBox));
+        splitPane.setBottomComponent(new PaddingPanel(edgeTypeTable));
 
         // Add to parent container
         add(menuBar, BorderLayout.NORTH);
         add(splitPane, BorderLayout.CENTER);
+
+        edgeTypeTable.update(graph);
 
         // Performs relayout.
         // It means invalid content is asked for all the sizes and
@@ -381,9 +360,7 @@ public final class GraphEditor extends JPanel
      * @param graph
      */
     private void updateBootstrapTable(Graph graph) {
-        tablePaneBox.removeAll();
-        JScrollPane tablePane = BootstrapTable.renderBootstrapTable(graph);
-        tablePaneBox.add(tablePane);
+        edgeTypeTable.update(graph);
 
         validate();
     }
