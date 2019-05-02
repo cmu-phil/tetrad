@@ -120,6 +120,7 @@ public class TsFci implements Algorithm, TakesInitialGraph, HasKnowledge, TakesI
         parameters.add("resamplingWithReplacement");
         parameters.add("resamplingEnsemble");
         parameters.add("addOriginalDataset");
+
         parameters.add("verbose");
         return parameters;
     }

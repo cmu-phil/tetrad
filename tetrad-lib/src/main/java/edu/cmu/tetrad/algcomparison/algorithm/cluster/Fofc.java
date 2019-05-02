@@ -162,13 +162,15 @@ public class Fofc implements Algorithm, TakesInitialGraph, HasKnowledge, Cluster
         parameters.add("useWishart");
         parameters.add("useGap");
         parameters.add("include_structure_model");
-        parameters.add("verbose");
         // Resampling
         parameters.add("numberResampling");
         parameters.add("percentResampleSize");
         parameters.add("resamplingWithReplacement");
         parameters.add("resamplingEnsemble");
         parameters.add("addOriginalDataset");
+
+        parameters.add("verbose");
+
         return parameters;
     }
 

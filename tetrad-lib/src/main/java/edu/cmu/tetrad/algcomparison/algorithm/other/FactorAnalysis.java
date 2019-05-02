@@ -167,13 +167,15 @@ public class FactorAnalysis implements Algorithm {
         params.add("numFactors");
         params.add("useVarimax");
         params.add("convergenceThreshold");
-        params.add("verbose");
         // Resampling
         params.add("numberResampling");
         params.add("percentResampleSize");
         params.add("resamplingWithReplacement");
         params.add("resamplingEnsemble");
         params.add("addOriginalDataset");
+
+        params.add("verbose");
+
         return params;
     }
 }

@@ -101,13 +101,15 @@ public class Pcd implements Algorithm, HasKnowledge {
         parameters.add("penaltyDiscount");
         parameters.add("depth");
         parameters.add("determinismThreshold");
-        parameters.add("verbose");
         // Resampling
         parameters.add("numberResampling");
         parameters.add("percentResampleSize");
         parameters.add("resamplingWithReplacement");
         parameters.add("resamplingEnsemble");
         parameters.add("addOriginalDataset");
+
+        parameters.add("verbose");
+
         return parameters;
     }
 

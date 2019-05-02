@@ -22,7 +22,8 @@ import java.util.List;
 @edu.cmu.tetrad.annotation.Algorithm(
         name = "LiNGAM",
         command = "lingam",
-        algoType = AlgType.forbid_latent_common_causes
+        algoType = AlgType.forbid_latent_common_causes,
+        dataType = DataType.Continuous
 )
 public class Lingam implements Algorithm {
 
@@ -86,6 +87,7 @@ public class Lingam implements Algorithm {
         parameters.add("resamplingWithReplacement");
         parameters.add("resamplingEnsemble");
         parameters.add("addOriginalDataset");
+
         parameters.add("verbose");
         return parameters;
     }

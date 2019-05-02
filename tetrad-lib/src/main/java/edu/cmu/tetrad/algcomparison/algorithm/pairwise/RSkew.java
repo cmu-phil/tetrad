@@ -26,7 +26,8 @@ import java.util.List;
 @edu.cmu.tetrad.annotation.Algorithm(
         name = "RSkew",
         command = "r-skew",
-        algoType = AlgType.orient_pairwise
+        algoType = AlgType.orient_pairwise,
+        dataType = DataType.Continuous
 )
 public class RSkew implements Algorithm, TakesInitialGraph {
 

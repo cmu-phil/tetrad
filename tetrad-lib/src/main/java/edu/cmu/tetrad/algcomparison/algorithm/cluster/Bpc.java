@@ -111,13 +111,15 @@ public class Bpc implements Algorithm, TakesInitialGraph, HasKnowledge, ClusterA
         List<String> parameters = new ArrayList<>();
         parameters.add("alpha");
         parameters.add("useWishart");
-        parameters.add("verbose");
         // Resampling
         parameters.add("numberResampling");
         parameters.add("percentResampleSize");
         parameters.add("resamplingWithReplacement");
         parameters.add("resamplingEnsemble");
         parameters.add("addOriginalDataset");
+
+        parameters.add("verbose");
+
         return parameters;
     }
 

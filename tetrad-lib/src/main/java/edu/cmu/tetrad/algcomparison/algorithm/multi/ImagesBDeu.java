@@ -151,6 +151,8 @@ public class ImagesBDeu implements MultiDataSetAlgorithm, HasKnowledge {
         parameters.add("resamplingWithReplacement");
         parameters.add("resamplingEnsemble");
         parameters.add("addOriginalDataset");
+
+        parameters.remove("verbose");
         parameters.add("verbose");
 
         return parameters;

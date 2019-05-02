@@ -109,6 +109,7 @@ public class Jcpc implements Algorithm, TakesInitialGraph, HasKnowledge {
         parameters.add("resamplingWithReplacement");
         parameters.add("resamplingEnsemble");
         parameters.add("addOriginalDataset");
+
         parameters.add("verbose");
         return parameters;
     }

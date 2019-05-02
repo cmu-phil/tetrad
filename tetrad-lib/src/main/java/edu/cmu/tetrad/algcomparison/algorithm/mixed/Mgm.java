@@ -128,6 +128,7 @@ public class Mgm implements Algorithm {
         parameters.add("resamplingWithReplacement");
         parameters.add("resamplingEnsemble");
         parameters.add("addOriginalDataset");
+
         parameters.add("verbose");
         return parameters;
     }

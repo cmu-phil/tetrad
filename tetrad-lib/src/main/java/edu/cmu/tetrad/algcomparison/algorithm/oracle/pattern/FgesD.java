@@ -135,13 +135,15 @@ public class FgesD implements Algorithm, TakesInitialGraph, HasKnowledge {
 		parameters.add("faithfulnessAssumed");
 		parameters.add("maxDegree");
 		parameters.add("determinismThreshold");
-		parameters.add("verbose");
 		// Resampling
         parameters.add("numberResampling");
         parameters.add("percentResampleSize");
         parameters.add("resamplingWithReplacement");
         parameters.add("resamplingEnsemble");
         parameters.add("addOriginalDataset");
+
+		parameters.add("verbose");
+
 		return parameters;
 	}
 

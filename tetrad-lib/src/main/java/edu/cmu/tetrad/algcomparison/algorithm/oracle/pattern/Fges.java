@@ -141,13 +141,15 @@ public class Fges implements Algorithm, TakesInitialGraph, HasKnowledge, UsesSco
         parameters.add("faithfulnessAssumed");
         parameters.add("symmetricFirstStep");
         parameters.add("maxDegree");
-        parameters.add("verbose");
         // Resampling
         parameters.add("numberResampling");
         parameters.add("percentResampleSize");
         parameters.add("resamplingWithReplacement");
         parameters.add("resamplingEnsemble");
         parameters.add("addOriginalDataset");
+
+        parameters.add("verbose");
+
         return parameters;
     }
 

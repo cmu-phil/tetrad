@@ -107,6 +107,9 @@ public class LeeHastieSimulation implements Simulation, HasParameters {
         parameters.add("sampleSize");
         parameters.add("saveLatentVars");
 
+        parameters.remove("verbose");
+        parameters.add("verbose");
+
         return parameters;
     }
 

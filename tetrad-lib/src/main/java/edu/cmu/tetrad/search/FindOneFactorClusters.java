@@ -187,7 +187,7 @@ public class FindOneFactorClusters {
             outlier = removeZeroIndex(outlier);
         }
 
-        log(removedVariables.size() + " variables removed: " + variablesForIndices(removedVariables), true);
+        log(removedVariables.size() + " variables removed: " + variablesForIndices(removedVariables));
 
         return (removedVariables);
     }
@@ -268,7 +268,7 @@ public class FindOneFactorClusters {
             return new HashSet<>();
         }
 
-        log("Finding pure triples.", true);
+        log("Finding pure triples.");
 
         ChoiceGenerator gen = new ChoiceGenerator(allVariables.size(), 3);
         int[] choice;
@@ -312,7 +312,7 @@ public class FindOneFactorClusters {
             HashSet<Integer> _cluster = new HashSet<>(triple);
 
             if (verbose) {
-                log("++" + variablesForIndices(triple), false);
+                log("++" + variablesForIndices(triple));
             }
 
             puretriples.add(_cluster);
@@ -322,7 +322,7 @@ public class FindOneFactorClusters {
     }
 
     private Set<Set<Integer>> combinePuretriples(Set<Set<Integer>> puretriples, List<Integer> _variables) {
-        log("Growing pure triples.", true);
+        log("Growing pure triples.");
         Set<Set<Integer>> grown = new HashSet<>();
 
         // Lax grow phase with speedup.
@@ -408,7 +408,7 @@ public class FindOneFactorClusters {
                 }
 
                 if (verbose) {
-                    System.out.println("Grown " + (++count) + " of " + total + ": " + variablesForIndices(new ArrayList<>(_cluster)));
+                    log("Grown " + (++count) + " of " + total + ": " + variablesForIndices(new ArrayList<>(_cluster)));
                 }
                 grown.add(_cluster);
             } while (!puretriples.isEmpty());
@@ -630,13 +630,13 @@ public class FindOneFactorClusters {
         }
 
         // Optimized pick phase.
-        log("Choosing among grown clusters.", true);
+        log("Choosing among grown clusters.");
 
         for (Set<Integer> l : grown) {
             ArrayList<Integer> _l = new ArrayList<>(l);
             Collections.sort(_l);
             if (verbose) {
-                log("Grown: " + variablesForIndices(_l), false);
+                log("Grown: " + variablesForIndices(_l));
             }
         }
 
@@ -692,14 +692,14 @@ public class FindOneFactorClusters {
             for (Set<Integer> _out : out) {
                 try {
                     double p = significance(new ArrayList<>(_out));
-                    log("OUT: " + variablesForIndices(new ArrayList<>(_out)) + " p = " + p, true);
+                    log("OUT: " + variablesForIndices(new ArrayList<>(_out)) + " p = " + p);
                 } catch (Exception e) {
-                    log("OUT: " + variablesForIndices(new ArrayList<>(_out)) + " p = EXCEPTION", true);
+                    log("OUT: " + variablesForIndices(new ArrayList<>(_out)) + " p = EXCEPTION");
                 }
             }
         } else {
             for (Set<Integer> _out : out) {
-                log("OUT: " + variablesForIndices(new ArrayList<>(_out)), true);
+                log("OUT: " + variablesForIndices(new ArrayList<>(_out)));
             }
         }
 
@@ -741,7 +741,7 @@ public class FindOneFactorClusters {
                 // remove all latent-measure impurities between pairs of latents.
                 if (pure(cluster, allVariables, alpha)) {
                     if (verbose) {
-                        log("Found a pure: " + variablesForIndices(cluster), false);
+                        log("Found a pure: " + variablesForIndices(cluster));
                     }
 
 //                    if (modelInsignificantWithNewCluster(clusters, cluster)) continue;
@@ -749,7 +749,7 @@ public class FindOneFactorClusters {
                     addOtherVariables(_variables, allVariables, cluster);
 
                     if (verbose) {
-                        log("Cluster found: " + variablesForIndices(cluster), true);
+                        log("Cluster found: " + variablesForIndices(cluster));
                     }
                     clusters.add(cluster);
                     _variables.removeAll(cluster);
@@ -799,8 +799,8 @@ public class FindOneFactorClusters {
             }
 
 //            if (found) {
-                log("Extending by " + variables.get(o), false);
-                cluster.add(o);
+            log("Extending by " + variables.get(o));
+            cluster.add(o);
 //            }
         }
     }
@@ -812,7 +812,7 @@ public class FindOneFactorClusters {
         __clusters.add(cluster);
         double significance3 = getModelPValue(__clusters);
         if (verbose) {
-            log("Significance * " + __clusters + " = " + significance3, false);
+            log("Significance * " + __clusters + " = " + significance3);
         }
 
         return significance3 < alpha;
@@ -832,7 +832,7 @@ public class FindOneFactorClusters {
             if (remaining.size() < 3) break;
 
             if (verbose) {
-                log("UnionPure = " + variablesForIndices(new ArrayList<>(unionPure)), false);
+                log("UnionPure = " + variablesForIndices(new ArrayList<>(unionPure)));
             }
 
             ChoiceGenerator gen = new ChoiceGenerator(remaining.size(), 3);
@@ -890,7 +890,7 @@ public class FindOneFactorClusters {
                     remaining.removeAll(cluster);
 
                     if (verbose) {
-                        log("3-cluster found: " + variablesForIndices(cluster), false);
+                        log("3-cluster found: " + variablesForIndices(cluster));
                     }
 
                     continue REMAINING;
@@ -1214,12 +1214,11 @@ public class FindOneFactorClusters {
         return unionPure;
     }
 
-    private void log(String s, boolean toLog) {
-        if (toLog) {
-            TetradLogger.getInstance().log("info", s);
+    private void log(String s) {
+        if (verbose) {
+            TetradLogger.getInstance().forceLogMessage(s);
+            System.out.println(s);
         }
-
-//        System.out.println(s);
     }
 
     public boolean isSignificanceCalculated() {

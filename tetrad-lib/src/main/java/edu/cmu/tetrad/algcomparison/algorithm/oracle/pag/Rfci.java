@@ -107,6 +107,7 @@ public class Rfci implements Algorithm, HasKnowledge, TakesIndependenceWrapper {
         parameters.add("resamplingWithReplacement");
         parameters.add("resamplingEnsemble");
         parameters.add("addOriginalDataset");
+
         parameters.add("verbose");
         return parameters;
     }

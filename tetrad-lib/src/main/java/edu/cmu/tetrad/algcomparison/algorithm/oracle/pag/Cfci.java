@@ -93,6 +93,7 @@ public class Cfci implements Algorithm, HasKnowledge {
         parameters.add("resamplingWithReplacement");
         parameters.add("resamplingEnsemble");
         parameters.add("addOriginalDataset");
+
         parameters.add("verbose");
         return parameters;
     }
