@@ -29,11 +29,13 @@ import java.awt.Component;
 import java.awt.Font;
 import java.util.List;
 import java.util.stream.Collectors;
+import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.SwingConstants;
+import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.JTableHeader;
 import javax.swing.table.TableCellRenderer;
@@ -77,22 +79,7 @@ public class EdgeTypeTable extends JPanel {
     };
 
     private final JLabel title = new JLabel();
-    private final DefaultTableModel tableModel = new DefaultTableModel();
-    private final JTable table = new JTable() {
-
-        private static final long serialVersionUID = -2109240922540773533L;
-
-        @Override
-        public Component prepareRenderer(TableCellRenderer renderer, int row, int column) {
-            // adjust each column width automatically to fit the content
-            Component component = super.prepareRenderer(renderer, row, column);
-            int rendererWidth = component.getPreferredSize().width;
-            TableColumn tableColumn = getColumnModel().getColumn(column);
-            tableColumn.setPreferredWidth(Math.max(rendererWidth + getIntercellSpacing().width, tableColumn.getPreferredWidth()));
-            return component;
-        }
-
-    };
+    private final JTable table = new EdgeInfoTable(new DefaultTableModel());
 
     public EdgeTypeTable() {
         initComponents();
@@ -102,22 +89,14 @@ public class EdgeTypeTable extends JPanel {
         title.setHorizontalAlignment(SwingConstants.CENTER);
         title.setVerticalAlignment(SwingConstants.CENTER);
 
-        table.setRowSorter(new TableRowSorter<TableModel>(tableModel) {
-            @Override
-            public boolean isSortable(int column) {
-                return !(column == 1 || column == 12);
-            }
-        });
-        table.setModel(tableModel);
-        JScrollPane scrollPane = new JScrollPane(table);
-        table.setFillsViewportHeight(true);
-
         setLayout(new BorderLayout(0, 10));
         add(title, BorderLayout.NORTH);
-        add(scrollPane, BorderLayout.CENTER);
+        add(new JScrollPane(table), BorderLayout.CENTER);
     }
 
     public void update(Graph graph) {
+        DefaultTableModel tableModel = (DefaultTableModel) table.getModel();
+
         tableModel.setRowCount(0);
 
         if (hasEdgeProbabilities(graph)) {
@@ -201,7 +180,6 @@ public class EdgeTypeTable extends JPanel {
                     } else {
                         rowData[5] = probValue;
                     }
-
                     break;
                 case at:
                     nl = false;
@@ -302,6 +280,69 @@ public class EdgeTypeTable extends JPanel {
         }
 
         return false;
+    }
+
+    private class EdgeInfoTable extends JTable {
+
+        private static final long serialVersionUID = -4052775309418269033L;
+
+        public EdgeInfoTable(TableModel dm) {
+            super(dm);
+            initComponents();
+        }
+
+        private void initComponents() {
+            setFillsViewportHeight(true);
+            setDefaultRenderer(Object.class, new StripedRowTableCellRenderer());
+            setOpaque(true);
+
+            setRowSorter(new TableRowSorter<TableModel>(getModel()) {
+                @Override
+                public boolean isSortable(int column) {
+                    return !(column == 1 || column == 12);
+                }
+            });
+        }
+
+        @Override
+        public Component prepareRenderer(TableCellRenderer renderer, int row, int column) {
+            // adjust each column width automatically to fit the content
+            Component component = super.prepareRenderer(renderer, row, column);
+            int rendererWidth = component.getPreferredSize().width;
+            TableColumn tableColumn = getColumnModel().getColumn(column);
+            tableColumn.setPreferredWidth(Math.max(rendererWidth + getIntercellSpacing().width, tableColumn.getPreferredWidth()));
+
+            return component;
+        }
+
+    }
+
+    private class StripedRowTableCellRenderer extends DefaultTableCellRenderer {
+
+        private static final long serialVersionUID = 4603884548966502824L;
+
+        private final Color STRIPE = new Color(0.929f, 0.953f, 0.996f);
+        private final Color NON_STRIPE = Color.WHITE;
+
+        public StripedRowTableCellRenderer() {
+            initComponents();
+        }
+
+        private void initComponents() {
+            setOpaque(true);
+        }
+
+        @Override
+        public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+            JComponent component = (JComponent) super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+
+            if (!isSelected) {
+                component.setBackground((row % 2 == 0) ? NON_STRIPE : STRIPE);
+            }
+
+            return component;
+        }
+
     }
 
 }
