@@ -22,6 +22,8 @@
 package edu.cmu.tetrad.test;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 import junit.framework.TestCase;
+
+import org.junit.Ignore;
 import org.junit.Test;
 
 import static junit.framework.TestCase.fail;
@@ -117,6 +119,7 @@ import static junit.framework.TestCase.fail;
  * @author Joseph Ramsey
 // * @see edu.cmu.tetradapp.util.TetradSerializableUtils
  */
+@Ignore
 public class TestSerialization {
 
     /**

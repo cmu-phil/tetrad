@@ -20,12 +20,14 @@
 ///////////////////////////////////////////////////////////////////////////////
 package edu.cmu.tetradapp.model;
 
-import edu.cmu.tetrad.data.ColtDataSet;
+import edu.cmu.tetrad.data.BoxDataSet;
 import edu.cmu.tetrad.data.ContinuousVariable;
 import edu.cmu.tetrad.data.CovarianceMatrix;
+import edu.cmu.tetrad.data.DataBox;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataModelList;
 import edu.cmu.tetrad.data.DataSet;
+import edu.cmu.tetrad.data.DoubleDataBox;
 import edu.cmu.tetrad.data.ICovarianceMatrix;
 import edu.cmu.tetrad.graph.Dag;
 import edu.cmu.tetrad.graph.Graph;
@@ -97,40 +99,31 @@ public class SemEstimatorWrapper implements SessionModel, Unmarshallable {
 
         this.params = params;
 
-        for (DataModel model : dataModel) {
-            if (model instanceof DataSet) {
-                this.semPm = semPm;
-                SemEstimator estimator = new SemEstimator(dataSet, semPm, getOptimizer());
-                estimator.setNumRestarts(getParams().getInt("numRestarts", 1));
-                estimator.setScoreType((ScoreType) getParams().get("scoreType", ScoreType.Fgls));
-                if (!degreesOfFreedomCheck(semPm));
-                estimator.estimate();
+        if (dataSet instanceof DataSet) {
+            this.semPm = semPm;
+            SemEstimator estimator = new SemEstimator(dataSet, semPm, getOptimizer());
+            estimator.setNumRestarts(getParams().getInt("numRestarts", 1));
+            estimator.setScoreType((ScoreType) getParams().get("scoreType", ScoreType.Fgls));
+            if (!degreesOfFreedomCheck(semPm));
+            estimator.estimate();
 
-                getMultipleResultList().add(estimator);
-            } else if (model instanceof ICovarianceMatrix) {
-                ICovarianceMatrix covMatrix = new CovarianceMatrix((ICovarianceMatrix) model);
-                this.semPm = semPm;
-                SemEstimator estimator = new SemEstimator(covMatrix, semPm, getOptimizer());
-                estimator.setNumRestarts(getParams().getInt("numRestarts", 1));
-                estimator.setScoreType((ScoreType) getParams().get("scoreType", ScoreType.SemBic));
-                if (!degreesOfFreedomCheck(semPm));
-                estimator.estimate();
+            getMultipleResultList().add(estimator);
+        } else if (dataSet instanceof ICovarianceMatrix) {
+            ICovarianceMatrix covMatrix = new CovarianceMatrix((ICovarianceMatrix) dataSet);
+            this.semPm = semPm;
+            SemEstimator estimator = new SemEstimator(covMatrix, semPm, getOptimizer());
+            estimator.setNumRestarts(getParams().getInt("numRestarts", 1));
+            estimator.setScoreType((ScoreType) getParams().get("scoreType", ScoreType.SemBic));
+            if (!degreesOfFreedomCheck(semPm));
+            estimator.estimate();
 
-                getMultipleResultList().add(estimator);
-            } else {
-                throw new IllegalArgumentException("Data must consist of continuous data sets or covariance matrices.");
-            }
-        }
-
-        if (dataModel != null) {
-            multipleResults = true;
-
-            this.semEstimator = getMultipleResultList().get(0);
+            getMultipleResultList().add(estimator);
         } else {
             throw new IllegalArgumentException("Data must consist of continuous data sets or covariance matrices.");
         }
 
         this.semEstimator = new SemEstimator(dataSet, semPm, getOptimizer());
+
     }
 
     public SemEstimatorWrapper(DataWrapper dataWrapper,
@@ -229,13 +222,16 @@ public class SemEstimatorWrapper implements SessionModel, Unmarshallable {
         List<Node> variables = new LinkedList<>();
         ContinuousVariable x = new ContinuousVariable("X");
         variables.add(x);
-        DataSet dataSet = new ColtDataSet(10, variables);
-
-        for (int i = 0; i < dataSet.getNumRows(); i++) {
-            for (int j = 0; j < dataSet.getNumColumns(); j++) {
-                dataSet.setDouble(i, j, RandomUtil.getInstance().nextDouble());
+        
+        DataBox dataBox = new DoubleDataBox(10, variables.size());
+        for (int i = 0; i < dataBox.numRows(); i++) {
+            for (int j = 0; j < dataBox.numCols(); j++) {
+            	dataBox.set(i, j, RandomUtil.getInstance().nextDouble());
             }
         }
+        
+        DataSet dataSet = new BoxDataSet(dataBox, variables);
+
         Dag dag = new Dag();
         dag.addNode(x);
         SemPm pm = new SemPm(dag);
