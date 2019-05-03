@@ -316,9 +316,11 @@ public final class DagEditor extends JPanel
         topBox.add(topGraphBox);
         topBox.add(instructionBox);
 
+        edgeTypeTable.setPreferredSize(new Dimension(820, 150));
+
         // Use JSplitPane to allow resize the bottom box - Zhou
         JSplitPane splitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT, new PaddingPanel(topBox), new PaddingPanel(edgeTypeTable));
-        splitPane.setDividerLocation((int) (splitPane.getPreferredSize().getHeight() - 200));
+        splitPane.setDividerLocation((int) (splitPane.getPreferredSize().getHeight() - 150));
 
         // Add to parent container
         add(menuBar, BorderLayout.NORTH);
