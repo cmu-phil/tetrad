@@ -26,7 +26,8 @@ import java.util.List;
 @edu.cmu.tetrad.annotation.Algorithm(
         name = "FOFC",
         command = "fofc",
-        algoType = AlgType.search_for_structure_over_latents
+        algoType = AlgType.search_for_structure_over_latents,
+        dataType = DataType.Continuous
 )
 public class Fofc implements Algorithm, TakesInitialGraph, HasKnowledge, ClusterAlgorithm {
 
