@@ -23,7 +23,8 @@ import java.util.List;
 @edu.cmu.tetrad.annotation.Algorithm(
         name = "FTFC",
         command = "ftfc",
-        algoType = AlgType.search_for_structure_over_latents
+        algoType = AlgType.search_for_structure_over_latents,
+        dataType = DataType.Continuous
 )
 public class Ftfc implements Algorithm, HasKnowledge, ClusterAlgorithm {
 
@@ -117,13 +118,15 @@ public class Ftfc implements Algorithm, HasKnowledge, ClusterAlgorithm {
         parameters.add("alpha");
         parameters.add("useWishart");
         parameters.add("useGap");
-        parameters.add("verbose");
         // Resampling
         parameters.add("numberResampling");
         parameters.add("percentResampleSize");
         parameters.add("resamplingWithReplacement");
         parameters.add("resamplingEnsemble");
         parameters.add("addOriginalDataset");
+
+        parameters.add("verbose");
+
         return parameters;
     }
 

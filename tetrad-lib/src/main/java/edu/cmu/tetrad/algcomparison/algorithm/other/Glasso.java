@@ -23,7 +23,8 @@ import java.util.List;
 @edu.cmu.tetrad.annotation.Algorithm(
         name = "GLASSO",
         command = "glasso",
-        algoType = AlgType.produce_undirected_graphs
+        algoType = AlgType.produce_undirected_graphs,
+        dataType = DataType.Continuous
 )
 public class Glasso implements Algorithm {
 
@@ -115,6 +116,7 @@ public class Glasso implements Algorithm {
         params.add("resamplingWithReplacement");
         params.add("resamplingEnsemble");
         params.add("addOriginalDataset");
+
         params.add("verbose");
         return params;
     }

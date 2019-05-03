@@ -100,7 +100,6 @@ public class RfciBsc implements Algorithm, HasKnowledge {
         parameters.add("depth");
         parameters.add("maxPathLength");
         parameters.add("completeRuleSetUsed");
-        parameters.add("verbose");
         // RFCI-BSC
         parameters.add("numRandomizedSearchModels");
         parameters.add("thresholdNoRandomDataSearch");
@@ -111,6 +110,9 @@ public class RfciBsc implements Algorithm, HasKnowledge {
 		parameters.add("lowerBound");
         parameters.add("upperBound");
         parameters.add("outputRBD");
+
+		parameters.add("verbose");
+
 		return parameters;
 	}
 

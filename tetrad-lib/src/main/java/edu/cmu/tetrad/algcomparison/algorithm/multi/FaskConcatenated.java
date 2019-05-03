@@ -167,6 +167,7 @@ public class FaskConcatenated implements MultiDataSetAlgorithm, HasKnowledge, Ta
         parameters.add("resamplingWithReplacement");
         parameters.add("resamplingEnsemble");
         parameters.add("addOriginalDataset");
+
         parameters.add("verbose");
 
         return parameters;

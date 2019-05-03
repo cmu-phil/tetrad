@@ -354,6 +354,11 @@ public class Mimbuild2 {
 
         int df = (p) * (p + 1) / 2 - (numParams);
         double x = (N - 1) * minimum;
+
+        if (df < 1) throw new IllegalStateException(
+                "The degrees of freedom for this model was calculated to be less than 1. Perhaps the model is " +
+                        "\nnot a multiple indicator model or doesn't have enough pure measurments.");
+
         this.pValue = 1.0 - new ChiSquaredDistribution(df).cumulativeProbability(x);
 
         return latentscov;

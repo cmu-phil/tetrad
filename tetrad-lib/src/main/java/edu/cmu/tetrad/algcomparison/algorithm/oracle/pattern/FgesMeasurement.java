@@ -120,7 +120,6 @@ public class FgesMeasurement implements Algorithm, TakesInitialGraph, HasKnowled
     public List<String> getParameters() {
         List<String> parameters = score.getParameters();
         parameters.add("faithfulnessAssumed");
-        parameters.add("verbose");
         parameters.add("measurementVariance");
         // Resampling
         parameters.add("numberResampling");
@@ -128,6 +127,8 @@ public class FgesMeasurement implements Algorithm, TakesInitialGraph, HasKnowled
         parameters.add("resamplingWithReplacement");
         parameters.add("resamplingEnsemble");
         parameters.add("addOriginalDataset");
+
+        parameters.add("verbose");
 
         return parameters;
     }

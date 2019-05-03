@@ -131,7 +131,9 @@ public class Fci implements Algorithm, TakesInitialGraph, HasKnowledge, TakesInd
         parameters.add("resamplingWithReplacement");
         parameters.add("resamplingEnsemble");
         parameters.add("addOriginalDataset");
+
         parameters.add("verbose");
+
         return parameters;
     }
 

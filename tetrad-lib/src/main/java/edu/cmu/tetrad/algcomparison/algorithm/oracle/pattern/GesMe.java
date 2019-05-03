@@ -231,7 +231,6 @@ public class GesMe implements Algorithm, TakesInitialGraph/*, HasKnowledge*/ {
         parameters.add("symmetricFirstStep");
         parameters.add("faithfulnessAssumed");
         parameters.add("maxDegree");
-        parameters.add("verbose");
         parameters.add("determinismThreshold");
         parameters.add("convergenceThreshold");
         parameters.add("fa_threshold");
@@ -244,6 +243,9 @@ public class GesMe implements Algorithm, TakesInitialGraph/*, HasKnowledge*/ {
         parameters.add("resamplingWithReplacement");
         parameters.add("resamplingEnsemble");
         parameters.add("addOriginalDataset");
+
+        parameters.add("verbose");
+
         return parameters;
     }
 

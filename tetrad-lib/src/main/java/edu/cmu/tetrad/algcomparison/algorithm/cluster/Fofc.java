@@ -26,7 +26,8 @@ import java.util.List;
 @edu.cmu.tetrad.annotation.Algorithm(
         name = "FOFC",
         command = "fofc",
-        algoType = AlgType.search_for_structure_over_latents
+        algoType = AlgType.search_for_structure_over_latents,
+        dataType = DataType.Continuous
 )
 public class Fofc implements Algorithm, TakesInitialGraph, HasKnowledge, ClusterAlgorithm {
 
@@ -162,13 +163,15 @@ public class Fofc implements Algorithm, TakesInitialGraph, HasKnowledge, Cluster
         parameters.add("useWishart");
         parameters.add("useGap");
         parameters.add("include_structure_model");
-        parameters.add("verbose");
         // Resampling
         parameters.add("numberResampling");
         parameters.add("percentResampleSize");
         parameters.add("resamplingWithReplacement");
         parameters.add("resamplingEnsemble");
         parameters.add("addOriginalDataset");
+
+        parameters.add("verbose");
+
         return parameters;
     }
 
