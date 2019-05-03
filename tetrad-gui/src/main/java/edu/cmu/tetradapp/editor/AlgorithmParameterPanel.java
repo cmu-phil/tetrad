@@ -19,6 +19,7 @@
 package edu.cmu.tetradapp.editor;
 
 import edu.cmu.tetrad.annotation.Algorithm;
+import edu.cmu.tetrad.util.ParamDescription;
 import edu.cmu.tetrad.util.ParamDescriptions;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetradapp.model.GeneralAlgorithmRunner;
@@ -28,6 +29,8 @@ import edu.cmu.tetradapp.util.IntTextField;
 import edu.cmu.tetradapp.util.StringTextField;
 import java.awt.BorderLayout;
 import java.text.DecimalFormat;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -51,17 +54,17 @@ public class AlgorithmParameterPanel extends JPanel {
 
     private static final long serialVersionUID = 274638263704283474L;
 
-    private static final String DEFAULT_TITLE_BORDER = "Algorithm Parameters";
+    protected static final String DEFAULT_TITLE_BORDER = "Algorithm Parameters";
 
-    private static final Set<String> BOOTSTRAP_PARAMS = new HashSet<>();
-
-    static {
-        BOOTSTRAP_PARAMS.add("numberResampling");
-        BOOTSTRAP_PARAMS.add("percentResampleSize");
-        BOOTSTRAP_PARAMS.add("resamplingWithReplacement");
-        BOOTSTRAP_PARAMS.add("resamplingEnsemble");
-        BOOTSTRAP_PARAMS.add("addOriginalDataset");
-    }
+    protected static final Set<String> BOOTSTRAP_PARAMS = Collections.unmodifiableSet(
+            new HashSet<>(Arrays.asList(
+                    "numberResampling",
+                    "percentResampleSize",
+                    "resamplingWithReplacement",
+                    "resamplingEnsemble",
+                    "addOriginalDataset"
+            ))
+    );
 
     public AlgorithmParameterPanel() {
         initComponents();
@@ -102,16 +105,17 @@ public class AlgorithmParameterPanel extends JPanel {
                     .collect(Collectors.toList());
 
             uniqueParams.forEach(parameter -> {
-                Object defaultValue = ParamDescriptions.getInstance().get(parameter).getDefaultValue();
+                ParamDescription paramDesc = ParamDescriptions.getInstance().get(parameter);
 
                 JComponent parameterSelection;
+                Object defaultValue = paramDesc.getDefaultValue();
                 if (defaultValue instanceof Double) {
-                    double lowerBoundDouble = ParamDescriptions.getInstance().get(parameter).getLowerBoundDouble();
-                    double upperBoundDouble = ParamDescriptions.getInstance().get(parameter).getUpperBoundDouble();
+                    double lowerBoundDouble = paramDesc.getLowerBoundDouble();
+                    double upperBoundDouble = paramDesc.getUpperBoundDouble();
                     parameterSelection = getDoubleField(parameter, parameters, (Double) defaultValue, lowerBoundDouble, upperBoundDouble);
                 } else if (defaultValue instanceof Integer) {
-                    int lowerBoundInt = ParamDescriptions.getInstance().get(parameter).getLowerBoundInt();
-                    int upperBoundInt = ParamDescriptions.getInstance().get(parameter).getUpperBoundInt();
+                    int lowerBoundInt = paramDesc.getLowerBoundInt();
+                    int upperBoundInt = paramDesc.getUpperBoundInt();
                     parameterSelection = getIntTextField(parameter, parameters, (Integer) defaultValue, lowerBoundInt, upperBoundInt);
                 } else if (defaultValue instanceof Boolean) {
                     // Joe's old implementation with dropdown yes or no
@@ -127,8 +131,8 @@ public class AlgorithmParameterPanel extends JPanel {
                 // Each parameter row contains parameter label and selection/input field
                 Box paramRow = Box.createHorizontalBox();
 
-                JLabel paramLabel = new JLabel(ParamDescriptions.getInstance().get(parameter).getShortDescription());
-                String longDescription = ParamDescriptions.getInstance().get(parameter).getLongDescription();
+                JLabel paramLabel = new JLabel(paramDesc.getShortDescription());
+                String longDescription = paramDesc.getLongDescription();
                 if (longDescription != null) {
                     paramLabel.setToolTipText(longDescription);
                 }
@@ -147,7 +151,7 @@ public class AlgorithmParameterPanel extends JPanel {
         add(new PaddingPanel(paramsBox), BorderLayout.CENTER);
     }
 
-    private DoubleTextField getDoubleField(final String parameter, final Parameters parameters,
+    protected DoubleTextField getDoubleField(final String parameter, final Parameters parameters,
             double defaultValue, final double lowerBound, final double upperBound) {
         final DoubleTextField field = new DoubleTextField(parameters.getDouble(parameter, defaultValue),
                 8, new DecimalFormat("0.####"), new DecimalFormat("0.0#E0"), 0.001);
@@ -177,7 +181,7 @@ public class AlgorithmParameterPanel extends JPanel {
         return field;
     }
 
-    private IntTextField getIntTextField(final String parameter, final Parameters parameters,
+    protected IntTextField getIntTextField(final String parameter, final Parameters parameters,
             final int defaultValue, final double lowerBound, final double upperBound) {
         final IntTextField field = new IntTextField(parameters.getInt(parameter, defaultValue), 8);
 
@@ -207,7 +211,7 @@ public class AlgorithmParameterPanel extends JPanel {
     }
 
     // Joe's old implementation with dropdown yes or no
-    private JComboBox getBooleanBox(final String parameter, final Parameters parameters, boolean defaultValue) {
+    protected JComboBox getBooleanBox(final String parameter, final Parameters parameters, boolean defaultValue) {
         JComboBox<String> box = new JComboBox<>(new String[]{"Yes", "No"});
 
         boolean aBoolean = parameters.getBoolean(parameter, defaultValue);
@@ -231,7 +235,7 @@ public class AlgorithmParameterPanel extends JPanel {
     }
 
     // Zhou's new implementation with yes/no radio buttons
-    private Box getBooleanSelectionBox(final String parameter, final Parameters parameters, boolean defaultValue) {
+    protected Box getBooleanSelectionBox(final String parameter, final Parameters parameters, boolean defaultValue) {
         Box selectionBox = Box.createHorizontalBox();
 
         JRadioButton yesButton = new JRadioButton("Yes");
@@ -274,7 +278,7 @@ public class AlgorithmParameterPanel extends JPanel {
         return selectionBox;
     }
 
-    private StringTextField getStringField(final String parameter, final Parameters parameters, String defaultValue) {
+    protected StringTextField getStringField(final String parameter, final Parameters parameters, String defaultValue) {
         final StringTextField field = new StringTextField(parameters.getString(parameter, defaultValue), 20);
 
         field.setFilter((value, oldValue) -> {
