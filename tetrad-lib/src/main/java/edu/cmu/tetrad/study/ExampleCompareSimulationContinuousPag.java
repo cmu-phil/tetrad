@@ -26,8 +26,10 @@ import edu.cmu.tetrad.algcomparison.algorithm.Algorithms;
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.pag.*;
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern.Fges;
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern.PcAll;
+import edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern.Cpc;
 import edu.cmu.tetrad.algcomparison.graph.RandomForward;
 import edu.cmu.tetrad.algcomparison.independence.FisherZ;
+import edu.cmu.tetrad.algcomparison.independence.SemBicDTest;
 import edu.cmu.tetrad.algcomparison.independence.SemBicTest;
 import edu.cmu.tetrad.algcomparison.score.FisherZScore;
 import edu.cmu.tetrad.algcomparison.score.SemBicScore;
@@ -47,71 +49,86 @@ public class ExampleCompareSimulationContinuousPag {
     public static void main(String... args) {
         Parameters parameters = new Parameters();
         int sampleSize = 500;
+        int avgDegree = 6;
+        int numMeasures = 10;
 
         parameters.set("numRuns", 10);
-        parameters.set("numMeasures", 10, 20);
-        parameters.set("avgDegree", 2, 4);
+        parameters.set("numMeasures", numMeasures);
+//        parameters.set("numLatents", 2, 4, 6);
+        parameters.set("avgDegree", avgDegree);
         parameters.set("sampleSize", sampleSize); // This varies.
-//        parameters.set("minCategories", 3);
-//        parameters.set("maxCategories", 3);
+        // parameters.set("minCategories", 3);
+        // parameters.set("maxCategories", 3);
         parameters.set("differentGraphs", true);
 
         parameters.set("alpha", 0.05, 0.01, 0.001);
         parameters.set("colliderDiscoveryRule", 1, 2, 3);
-        parameters.set("conflictRule", 1, 2, 3);;
+        parameters.set("conflictRule", 1, 2, 3);
 
         parameters.set("maxDegree", 100);
-//        parameters.set("samplePrior",  1, 5, 10, 15, 20, 25, 30, 50, 80, 100);
-//        parameters.set("structurePrior", 1, 2, 3, 4, 5);
+        // parameters.set("samplePrior", 1, 5, 10, 15, 20, 25, 30, 50, 80, 100);
+        // parameters.set("structurePrior", 1, 2, 3, 4, 5);
 
-        parameters.set("penaltyDiscount", 1, 2, 3, 4);
+        parameters.set("penaltyDiscount", 2); // originally is 1, 2, 3, 4
         parameters.set("discretize", true);
 
         Statistics statistics = new Statistics();
 
         statistics.add(new ParameterColumn("numMeasures"));
+
+//        statistics.add(new ParameterColumn("numLatents"));
+
         statistics.add(new ParameterColumn("avgDegree"));
         statistics.add(new ParameterColumn("sampleSize"));
         statistics.add(new ParameterColumn("colliderDiscoveryRule"));
         statistics.add(new ParameterColumn("conflictRule"));
-//        statistics.add(new ParameterColumn("samplePrior"));
-//        statistics.add(new ParameterColumn("structurePrior"));
-//        statistics.add(new ParameterColumn("penaltyDiscount"));
-//        statistics.add(new ParameterColumn("discretize"));
+        // statistics.add(new ParameterColumn("samplePrior"));
+        // statistics.add(new ParameterColumn("structurePrior"));
+        // statistics.add(new ParameterColumn("penaltyDiscount"));
+        // statistics.add(new ParameterColumn("discretize"));
         statistics.add(new ParameterColumn("alpha"));
-        statistics.add(new ParameterColumn("penaltyDiscount"));
+//        statistics.add(new ParameterColumn("penaltyDiscount"));
 
         statistics.add(new AdjacencyPrecision());
         statistics.add(new AdjacencyRecall());
         statistics.add(new ArrowheadPrecision());
         statistics.add(new ArrowheadPrecisionCommonEdges());
         statistics.add(new ArrowheadRecall());
-//        statistics.add(new MathewsCorrAdj());
-//        statistics.add(new MathewsCorrArrow());
-//        statistics.add(new F1Adj());
-//        statistics.add(new F1Arrow());
-//        statistics.add(new SHD());
-//        statistics.add(new ElapsedTime());
+        // statistics.add(new MathewsCorrAdj());
+        // statistics.add(new MathewsCorrArrow());
+        // statistics.add(new F1Adj());
+        // statistics.add(new F1Arrow());
+        // statistics.add(new SHD());
+        // statistics.add(new ElapsedTime());
 
         statistics.setWeight("AP", 1.0);
         statistics.setWeight("AR", 1.0);
         statistics.setWeight("AHP", 1.0);
         statistics.setWeight("AHR", 1.0);
-//        statistics.setWeight("SHD", 1.0);
+        // statistics.setWeight("SHD", 1.0);
 
         Algorithms algorithms = new Algorithms();
+
+        algorithms.add(new PcAll(new FisherZ()));
+        algorithms.add(new PcAll(new SemBicTest()));
+
+        algorithms.add(new Cpc(new FisherZ()));
+        algorithms.add(new Cpc(new SemBicTest()));
+
+        algorithms.add(new Fges(new SemBicScore()));
+        algorithms.add(new Fges(new FisherZScore()));
 
         algorithms.add(new Fci(new FisherZ()));
         algorithms.add(new Fci(new SemBicTest()));
 
-        algorithms.add(new Rfci(new FisherZ()));
-        algorithms.add(new Rfci(new SemBicTest()));
-
-        algorithms.add(new FciMax(new FisherZ()));
-        algorithms.add(new FciMax(new SemBicTest()));
-
-        algorithms.add(new CFCI(new FisherZ()));
-        algorithms.add(new CFCI(new SemBicTest()));
+//        algorithms.add(new Rfci(new FisherZ()));
+//        algorithms.add(new Rfci(new SemBicTest()));
+//
+//        algorithms.add(new FciMax(new FisherZ()));
+//        algorithms.add(new FciMax(new SemBicTest()));
+//
+//        algorithms.add(new CFCI(new FisherZ()));
+//        algorithms.add(new CFCI(new SemBicTest()));
 
         algorithms.add(new Gfci(new FisherZ(), new FisherZScore()));
         algorithms.add(new Gfci(new FisherZ(), new SemBicScore()));
@@ -127,15 +144,12 @@ public class ExampleCompareSimulationContinuousPag {
         comparison.setShowAlgorithmIndices(true);
         comparison.setShowSimulationIndices(true);
         comparison.setSortByUtility(true);
-//        comparison.setShowUtilities(true);
-//        comparison.setParallelized(true);
+        // comparison.setShowUtilities(true);
+        // comparison.setParallelized(true);
 
         comparison.setComparisonGraph(Comparison.ComparisonGraph.PAG_of_the_true_DAG);
 
-        comparison.compareFromSimulations("comparison.continuous.pag", simulations, "comparison_all_" + sampleSize, algorithms, statistics, parameters);
+        comparison.compareFromSimulations("comparison.continuous.pag", simulations, "noLatent_" + numMeasures + "_avgD_" + avgDegree + "_" + sampleSize + ".txt",
+                algorithms, statistics, parameters);
     }
 }
-
-
-
-

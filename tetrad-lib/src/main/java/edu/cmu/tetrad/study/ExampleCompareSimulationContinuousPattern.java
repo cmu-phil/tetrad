@@ -28,6 +28,9 @@ import edu.cmu.tetrad.algcomparison.algorithm.multi.Fask;
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern.FAS;
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern.Fges;
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern.PcAll;
+import edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern.Cpc;
+import edu.cmu.tetrad.algcomparison.algorithm.oracle.pag.Fci;
+import edu.cmu.tetrad.algcomparison.algorithm.oracle.pag.Gfci;
 import edu.cmu.tetrad.algcomparison.algorithm.other.Glasso;
 import edu.cmu.tetrad.algcomparison.algorithm.pairwise.R3;
 import edu.cmu.tetrad.algcomparison.algorithm.pairwise.RSkew;
@@ -55,13 +58,14 @@ public class ExampleCompareSimulationContinuousPattern {
 
         parameters.set("numRuns", 10);
         parameters.set("numMeasures", 20);
-        parameters.set("avgDegree", 6);
+        parameters.set("numLatents", 2, 4, 6);
+        parameters.set("avgDegree", 2, 4, 6);
         parameters.set("sampleSize", sampleSize); // This varies.
         parameters.set("differentGraphs", true);
 
         parameters.set("alpha", 0.01, 0.001);
         parameters.set("colliderDiscoveryRule", 1, 2, 3);
-        parameters.set("conflictRule", 1, 2, 3);;
+        parameters.set("conflictRule", 1, 2, 3);
 
         parameters.set("coefLow", 0.2);
         parameters.set("coefHigh", 0.7);
@@ -87,36 +91,49 @@ public class ExampleCompareSimulationContinuousPattern {
         statistics.add(new ArrowheadPrecision());
         statistics.add(new ArrowheadPrecisionCommonEdges());
         statistics.add(new ArrowheadRecall());
-//        statistics.add(new MathewsCorrAdj());
-//        statistics.add(new MathewsCorrArrow());
-//        statistics.add(new F1Adj());
-//        statistics.add(new F1Arrow());
+        // statistics.add(new MathewsCorrAdj());
+        // statistics.add(new MathewsCorrArrow());
+        // statistics.add(new F1Adj());
+        // statistics.add(new F1Arrow());
         statistics.add(new SHD());
-//        statistics.add(new ElapsedTime());
+        // statistics.add(new ElapsedTime());
 
-//        statistics.setWeight("AP", 1.0);
-//        statistics.setWeight("AR", 1.0);
-        statistics.setWeight("AHP", 1.0);
-        statistics.setWeight("AHR", 1.0);
-//        statistics.setWeight("SHD", 1.0);
+        // Adjacency precision and recall
+        statistics.setWeight("AP", 1.0);
+        statistics.setWeight("AR", 1.0);
+
+        // Arrow head precision and recall
+        // statistics.setWeight("AHP", 1.0);
+        // statistics.setWeight("AHR", 1.0);
+        // statistics.setWeight("SHD", 1.0);
 
         Algorithms algorithms = new Algorithms();
 
         algorithms.add(new PcAll(new FisherZ()));
         algorithms.add(new PcAll(new SemBicTest()));
+        algorithms.add(new Cpc(new FisherZ()));
+        algorithms.add(new Cpc(new SemBicDTest()));
         algorithms.add(new Fges(new SemBicScore()));
         algorithms.add(new Fges(new FisherZScore()));
-        algorithms.add(new Fask(new PcAll(new SemBicTest())));
-        algorithms.add(new Fask(new PcAll(new FisherZ())));
-        algorithms.add(new R3(new PcAll(new SemBicTest())));
-        algorithms.add(new R3(new PcAll(new FisherZ())));
-        algorithms.add(new Skew(new PcAll(new SemBicTest())));
-        algorithms.add(new Skew(new PcAll(new FisherZ())));
-        algorithms.add(new RSkew(new PcAll(new SemBicTest())));
-        algorithms.add(new RSkew(new PcAll(new FisherZ())));
-//        algorithms.add(new Lingam());
-//        algorithms.add(new R3(new Glasso()));
-//        algorithms.add(new Skew(new Glasso()));
+
+//        algorithms.add(new Fci(new FisherZ()));
+//        algorithms.add(new Fci(new SemBicTest()));
+//        algorithms.add(new Gfci(new FisherZ(), new FisherZScore()));
+//        algorithms.add(new Gfci(new FisherZ(), new SemBicScore()));
+//        algorithms.add(new Gfci(new SemBicTest(), new FisherZScore()));
+//        algorithms.add(new Gfci(new SemBicTest(), new SemBicScore()));
+
+        // algorithms.add(new Fask(new PcAll(new SemBicTest())));
+        // algorithms.add(new Fask(new PcAll(new FisherZ())));
+//        algorithms.add(new R3(new PcAll(new SemBicTest())));
+//        algorithms.add(new R3(new PcAll(new FisherZ())));
+        // algorithms.add(new Skew(new PcAll(new SemBicTest())));
+        // algorithms.add(new Skew(new PcAll(new FisherZ())));
+        // algorithms.add(new RSkew(new PcAll(new SemBicTest())));
+        // algorithms.add(new RSkew(new PcAll(new FisherZ())));
+        // algorithms.add(new Lingam());
+        // algorithms.add(new R3(new Glasso()));
+        // algorithms.add(new Skew(new Glasso()));
 
         parameters.set("IA", true);
 
@@ -133,15 +150,12 @@ public class ExampleCompareSimulationContinuousPattern {
         comparison.setShowAlgorithmIndices(true);
         comparison.setShowSimulationIndices(true);
         comparison.setSortByUtility(true);
-//        comparison.setShowUtilities(true);
-//        comparison.setParallelized(true);
+        // comparison.setShowUtilities(true);
+        // comparison.setParallelized(true);
 
         comparison.setComparisonGraph(Comparison.ComparisonGraph.true_DAG);
 
-        comparison.compareFromSimulations("comparison.continuous.pattern", simulations, "comparison_all_" + sampleSize, algorithms, statistics, parameters);
+        comparison.compareFromSimulations("comparison.continuous.pattern", simulations, "comparison_all_" + sampleSize,
+                algorithms, statistics, parameters);
     }
 }
-
-
-
-
