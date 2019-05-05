@@ -43,6 +43,7 @@ import edu.cmu.tetrad.algcomparison.utils.TakesInitialGraph;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.DagToPag2;
+import edu.cmu.tetrad.search.DagToMag;
 import edu.cmu.tetrad.search.SearchGraphUtils;
 import edu.cmu.tetrad.util.*;
 import org.reflections.Reflections;
@@ -64,7 +65,7 @@ import java.util.concurrent.RecursiveTask;
 public class Comparison {
 
 
-    public enum ComparisonGraph {true_DAG, Pattern_of_the_true_DAG, PAG_of_the_true_DAG}
+    public enum ComparisonGraph {true_DAG, Pattern_of_the_true_DAG, PAG_of_the_true_DAG, MAG_of_the_true_DAG}
 
     private boolean[] graphTypeUsed;
     private PrintStream out;
@@ -1311,6 +1312,8 @@ public class Comparison {
             comparisonGraph = SearchGraphUtils.patternForDag(new EdgeListGraph(trueGraph));
         } else if (this.comparisonGraph == ComparisonGraph.PAG_of_the_true_DAG) {
             comparisonGraph = new DagToPag2(new EdgeListGraph(trueGraph)).convert();
+        } else if (this.comparisonGraph == ComparisonGraph.MAG_of_the_true_DAG) {
+            comparisonGraph = new DagToMag(new EdgeListGraph(trueGraph)).convert();
         } else {
             throw new IllegalArgumentException("Unrecognized graph type.");
         }
