@@ -1,6 +1,5 @@
 package edu.cmu.tetrad.algcomparison.independence;
 
-import edu.cmu.tetrad.annotation.TestOfIndependence;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.data.DataUtils;
@@ -14,11 +13,11 @@ import java.util.List;
  *
  * @author jdramsey
  */
-@TestOfIndependence(
-        name = "Multinomial Logistic Retression Wald Test",
-        command = "multinomial-logistic-regression-wald",
-        dataType = DataType.Mixed
-)
+//@TestOfIndependence(
+//        name = "Multinomial Logistic Retression Wald Test",
+//        command = "multinomial-logistic-regression-wald",
+//        dataType = DataType.Mixed
+//)
 public class MultinomialLogisticRegressionWald implements IndependenceWrapper {
 
     static final long serialVersionUID = 23L;
