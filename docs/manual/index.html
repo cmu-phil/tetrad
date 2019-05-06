@@ -2911,6 +2911,31 @@ there is a single latent for each output cluster. For MimBuild, a pattern over t
 
     <h2>Statistical Tests</h2>
 
+    <p><strong>Fisher Z</strong> - Judges independence if the conditional correlation is zero. Primarily for the linear, Gaussian case.</p>
+
+    <p><strong>Conditional correlation</strong> - Judges independence if the conditional correlation is zero for all combinations of functional transformations of the variables, in a truncated basis of functions. Maybe used for nonlinear, non-Gaussian models, where errors are additive.</p>
+
+    <p><strong>Conditional Gaussian Likelihood Ratio Test</strong> - May be used for the case where there is a mixture of discrete and Gaussian variables. Uses a likelihood ratio test of independence, where the likelihood is calculated using a conditional Gaussian assumption.</p>
+
+    <p><strong>Kernel Conditional Independence Test</strong> - A general test of independence; can be fairly slow. For a description, see the paper <i>Zhang, K., Peters, J., Janzing, D., & Schölkopf, B. (2012). Kernel-based conditional independence test and application in causal discovery. arXiv preprint arXiv:1202.3775.</i></p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     <h3>CCI</h3>
 
     <p>CCI (“Conditional Correlation Independence”) is a fairly general independence test—not completely general, but
@@ -2960,6 +2985,17 @@ there is a single latent for each output cluster. For MimBuild, a pattern over t
         constraint-based algorithm (PC, FCI, etc.)</p>
 
     <h2>Scoring Functions</h2>
+
+    <p><strong>SEM BIC Score</strong> - Calculates a linear, Gaussian BIC score.</p>
+
+    <p><strong>Conditional Gaussian BIC Score</strong> - May be used for the case where there is a mixture of discrete and Gaussian variables. Calculates a BIC score based on likelihood that is calculated using a conditional Gaussian assumption.</p>
+
+    <p><strong>Conditional Correlation Score</strong> - Returns 1 - p-value for the Conditional correlation test. May be used as a score for the nonlinear case, assuming additivity.</p>
+
+
+
+
+
 
     <div id="parameters">
         <h2>Search Parameters</h2>
