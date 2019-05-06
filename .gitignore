@@ -30,3 +30,5 @@ tetrad-lib/bin/*
 
 .DS_store
 .project
+.classpath
+.factorypath
