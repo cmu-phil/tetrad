@@ -30,3 +30,4 @@ tetrad-lib/bin/*
 
 .DS_store
 .project
+*.swp
