@@ -27,21 +27,45 @@ public final class TestDagToMag {
      * 2. no inducing path between non-adjacent nodes
      */
     @Test
-    public void testDagToMag1() {
+    public void testDagToMag0() {
         checkConvertInducingPath("Latent(L)-->X1,Latent(L)-->X2,X1-->X3,X2-->X3,X3-->X4,X2-->X5");
     }
 
     @Test
-    public void testDagToMag2() {
-        checkConvertAdjacency("Latent(L)-->X1,Latent(L)-->X2,X1-->X3,X2-->X3,X3-->X4,X2-->X5", false);
+    public void testDagToMag11() {
+        String inputDag = "Latent(L)-->X1,Latent(L)-->X2,X1-->X3,X2-->X3,X3-->X4,X2-->X5";
+        checkConvertAdjacency(inputDag, false);
+
+        String outputMag = "X1-->X3,X2-->X3,X3-->X4,X2-->X5";
+        checkDagToMag(inputDag, outputMag, false);
     }
 
     @Test
-    public void testDagToMag3() {
-        checkDagToMag("Latent(L)-->X1,Latent(L)-->X2,X1-->X3,X2-->X3,X3-->X4,X2-->X5",
-                "X1-->X3,X2-->X3,X3-->X4,X2-->X5", false);
+    public void testDagToMag12() {
+        String inputDag = "Latent(L)<-X1,Latent(L)-->X2,X1-->X3,X2-->X3,X3-->X4,X2-->X5";
+        checkConvertAdjacency(inputDag, false);
+
+        String outputMag = "X1-->X3,X2-->X3,X3-->X4,X2-->X5";
+        checkDagToMag(inputDag, outputMag, false);
     }
 
+//    @Test
+//    public void testDagToMag13() {
+//        String inputDag = "Latent(L)<--X1,Latent(L)-->X2,L-->X3,X2-->X3,X3-->X4";
+//        checkConvertAdjacency(inputDag, false);
+//
+//        String outputMag = "X1-->X2,X2-->X3,X3-->X4";
+//        checkDagToMag(inputDag, outputMag, true);
+//    }
+
+//    @Test
+//    public void testDagToMag14() {
+//        String inputDag = "Latent(L)<--X1,Latent(L)<--X2,X1-->X3,X3-->X4,X2-->X3";
+//        checkConvertAdjacency(inputDag, false);
+//
+//        String outputMag = "X1<->X2,X1-->X3,X2-->X3,X3-->X4";
+//        checkDagToMag(inputDag, outputMag, true);
+//    }
 
     /**
      * Input a DAG, convert to a MAG, check if inducing path between non-adjacent nodes exist
