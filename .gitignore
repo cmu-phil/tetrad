@@ -29,3 +29,4 @@ tetrad-gui/bin/*
 tetrad-lib/bin/*
 
 .DS_store
+.project
