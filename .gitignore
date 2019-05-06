@@ -27,3 +27,5 @@ tetrad-lib/target/*
 
 tetrad-gui/bin/*
 tetrad-lib/bin/*
+
+.DS_store

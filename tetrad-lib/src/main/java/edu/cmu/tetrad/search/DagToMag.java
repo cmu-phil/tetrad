@@ -57,7 +57,7 @@ public final class DagToMag {
             System.out.println("DAG to MAG_of_the_true_DAG: Starting ancestral information gathering");
         }
 
-        orientAdjacencyGraphOfPag(graph, dag);
+        orientAdjacencyGraph(graph, dag);
 
         if (verbose) {
             System.out.println("Finishing orientation");
@@ -66,6 +66,10 @@ public final class DagToMag {
         return graph;
     }
 
+    /**
+     * Find the adjacency graph, should give out the same adjancency as PAG
+     * @return
+     */
     private Graph calcAdjacencyGraph() {
         List<Node> allNodes = dag.getNodes();
         List<Node> measured = new ArrayList<Node>();
@@ -96,10 +100,18 @@ public final class DagToMag {
         return graph;
     }
 
-    private void orientAdjacencyGraphOfPag(Graph graph, Graph dag) {
-        graph.reorientAllWith(Endpoint.TAIL);
+    /**
+     * Orient adjacency graph, using the ancestral and non-ancestral info from DAG
+     * @param graph
+     * @param dag
+     * @return
+     */
+    private void orientAdjacencyGraph(Graph graph, Graph dag) {
+        graph.reorientAllWith(Endpoint.ARROW);  // remove all ancestral info
 
         List<Node> allNodes = dag.getNodes();
+
+        // actually not necessary, since all nodes in AdjGraph from PAG are measured
         List<Node> measured = new ArrayList<Node>();
 
         for (Node node : allNodes) {
@@ -109,27 +121,36 @@ public final class DagToMag {
         }
 
         // get ancestral and non-ancestral information from DAG
-        for (Node n : measured) {
-            List<Node> adjn = graph.getAdjacentNodes(n);
+        for (int i = 0; i < measured.size(); i++) {
+            Node node = measured.get(i);
 
-            if (adjn.size() < 2) continue;
+            List<Node> adjNodes = graph.getAdjacentNodes(node);
+            if (adjNodes.size() < 1) continue;
 
-            for (int i = 0; i < adjn.size(); i++) {
-                Node c = adjn.get(i);
+            for (int j = i + 1; j < measured.size(); j++) {
+                Node child = measured.get(j);
 
-                boolean nIsAncestorOfC = graph.isAncestorOf(n, c);
-                boolean cIsAncestorOfN = graph.isAncestorOf(c, n);
+                // whether in adjNodes
+                if (true == adjNodes.contains(child)) {
 
-                if (true == nIsAncestorOfC && false == cIsAncestorOfN) {  // n->c
-                    graph.setEndpoint(n, c, Endpoint.ARROW);
-                } else if (false == nIsAncestorOfC && true == cIsAncestorOfN) {  // n<-c
-                    graph.setEndpoint(c, n, Endpoint.ARROW);
-                } else if (false == nIsAncestorOfC && false == cIsAncestorOfN) {  // n<->c
-                    graph.setEndpoint(n, c, Endpoint.ARROW);
-                    graph.setEndpoint(c, n, Endpoint.ARROW);
-                } else {  // cycle in the original DAG
-                    throw new IllegalArgumentException("Cycle found in input DAG");
+                    boolean nodeIsAncestorOfChild = dag.isAncestorOf(node, child);
+                    boolean childIsAncestorOfNode = dag.isAncestorOf(child, node);
+
+                    if (true == nodeIsAncestorOfChild && false == childIsAncestorOfNode) {  // n->c
+                        graph.setEndpoint(child, node, Endpoint.TAIL);
+                    } else if (false == nodeIsAncestorOfChild && true == childIsAncestorOfNode) {  // n<-c
+                        graph.setEndpoint(node, child, Endpoint.TAIL);
+                    } else if (false == nodeIsAncestorOfChild && false == childIsAncestorOfNode) {  // n<->c
+//                        graph.setEndpoint(node, child, Endpoint.ARROW);
+//                        graph.setEndpoint(child, node, Endpoint.ARROW);
+                    } else {  // cycle in the original DAG
+                        throw new IllegalArgumentException("Cycle found in input DAG");
+                    }
                 }
+
+//                System.out.println("n " + node + ", c " + child);
+//                System.out.println("n&c " + nodeIsAncestorOfChild + " c&n " + childIsAncestorOfNode);
+//                System.out.println("current graph\n" + graph);
             }
         }
     }
