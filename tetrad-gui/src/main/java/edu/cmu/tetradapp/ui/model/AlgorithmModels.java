@@ -34,7 +34,7 @@ import java.util.stream.Collectors;
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
  */
-public class AlgorithmModels {
+public final class AlgorithmModels {
 
     private static final AlgorithmModels INSTANCE = new AlgorithmModels();
 

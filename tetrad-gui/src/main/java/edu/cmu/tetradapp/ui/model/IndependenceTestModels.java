@@ -36,7 +36,7 @@ import java.util.stream.Stream;
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
  */
-public class IndependenceTestModels {
+public final class IndependenceTestModels {
 
     private static final IndependenceTestModels INSTANCE = new IndependenceTestModels();
 
