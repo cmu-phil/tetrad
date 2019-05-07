@@ -5,6 +5,7 @@ import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.algcomparison.utils.TakesIndependenceWrapper;
 import edu.cmu.tetrad.annotation.AlgType;
+import edu.cmu.tetrad.annotation.Bootstrapping;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
@@ -12,7 +13,6 @@ import edu.cmu.tetrad.search.DagToPag2;
 import edu.cmu.tetrad.util.Parameters;
 import edu.pitt.dbmi.algo.resampling.GeneralResamplingTest;
 import edu.pitt.dbmi.algo.resampling.ResamplingEdgeEnsemble;
-
 import java.util.List;
 
 /**
@@ -25,6 +25,7 @@ import java.util.List;
         command = "rfci",
         algoType = AlgType.allow_latent_common_causes
 )
+@Bootstrapping
 public class Rfci implements Algorithm, HasKnowledge, TakesIndependenceWrapper {
 
     static final long serialVersionUID = 23L;
@@ -101,12 +102,6 @@ public class Rfci implements Algorithm, HasKnowledge, TakesIndependenceWrapper {
         parameters.add("depth");
         parameters.add("maxPathLength");
         parameters.add("completeRuleSetUsed");
-        // Resampling
-        parameters.add("numberResampling");
-        parameters.add("percentResampleSize");
-        parameters.add("resamplingWithReplacement");
-        parameters.add("resamplingEnsemble");
-        parameters.add("addOriginalDataset");
 
         parameters.add("verbose");
         return parameters;

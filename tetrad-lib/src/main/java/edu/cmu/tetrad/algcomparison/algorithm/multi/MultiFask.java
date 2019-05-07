@@ -5,6 +5,7 @@ import edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern.Fges;
 import edu.cmu.tetrad.algcomparison.score.SemBicScore;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.annotation.AlgType;
+import edu.cmu.tetrad.annotation.Bootstrapping;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
@@ -12,7 +13,6 @@ import edu.cmu.tetrad.search.SemBicScoreMultiFas;
 import edu.cmu.tetrad.util.Parameters;
 import edu.pitt.dbmi.algo.resampling.GeneralResamplingTest;
 import edu.pitt.dbmi.algo.resampling.ResamplingEdgeEnsemble;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -32,6 +32,7 @@ import java.util.List;
         algoType = AlgType.forbid_latent_common_causes,
         dataType = DataType.Continuous
 )
+@Bootstrapping
 public class MultiFask implements MultiDataSetAlgorithm, HasKnowledge {
 
     static final long serialVersionUID = 23L;
@@ -140,13 +141,7 @@ public class MultiFask implements MultiDataSetAlgorithm, HasKnowledge {
         List<String> parameters = new Fges(new SemBicScore(), false).getParameters();
         parameters.add("numRuns");
         parameters.add("randomSelectionSize");
-        // Resampling
-        parameters.add("numberResampling");
-        parameters.add("percentResampleSize");
-        parameters.add("resamplingWithReplacement");
-        parameters.add("resamplingEnsemble");
-        parameters.add("addOriginalDataset");
-
+        
         parameters.remove("verbose");
         parameters.add("verbose");
 

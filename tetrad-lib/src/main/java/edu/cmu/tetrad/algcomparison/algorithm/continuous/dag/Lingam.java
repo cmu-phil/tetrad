@@ -2,6 +2,7 @@ package edu.cmu.tetrad.algcomparison.algorithm.continuous.dag;
 
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.annotation.AlgType;
+import edu.cmu.tetrad.annotation.Bootstrapping;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
@@ -25,6 +26,7 @@ import java.util.List;
         algoType = AlgType.forbid_latent_common_causes,
         dataType = DataType.Continuous
 )
+@Bootstrapping
 public class Lingam implements Algorithm {
 
     static final long serialVersionUID = 23L;
@@ -81,13 +83,6 @@ public class Lingam implements Algorithm {
     public List<String> getParameters() {
         List<String> parameters = new ArrayList<>();
         parameters.add("penaltyDiscount");
-        // Resampling
-        parameters.add("numberResampling");
-        parameters.add("percentResampleSize");
-        parameters.add("resamplingWithReplacement");
-        parameters.add("resamplingEnsemble");
-        parameters.add("addOriginalDataset");
-
         parameters.add("verbose");
         return parameters;
     }

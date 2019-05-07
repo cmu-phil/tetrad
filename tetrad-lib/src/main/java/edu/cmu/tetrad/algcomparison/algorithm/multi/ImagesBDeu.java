@@ -5,6 +5,7 @@ import edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern.Fges;
 import edu.cmu.tetrad.algcomparison.score.BdeuScore;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.annotation.AlgType;
+import edu.cmu.tetrad.annotation.Bootstrapping;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
@@ -37,6 +38,7 @@ import java.util.List;
         algoType = AlgType.forbid_latent_common_causes,
         dataType = DataType.Discrete
 )
+@Bootstrapping
 public class ImagesBDeu implements MultiDataSetAlgorithm, HasKnowledge {
 
     static final long serialVersionUID = 23L;
@@ -145,13 +147,6 @@ public class ImagesBDeu implements MultiDataSetAlgorithm, HasKnowledge {
         List<String> parameters = new Fges(new BdeuScore(), false).getParameters();
         parameters.add("numRuns");
         parameters.add("randomSelectionSize");
-        // Resampling
-        parameters.add("numberResampling");
-        parameters.add("percentResampleSize");
-        parameters.add("resamplingWithReplacement");
-        parameters.add("resamplingEnsemble");
-        parameters.add("addOriginalDataset");
-
         parameters.remove("verbose");
         parameters.add("verbose");
 

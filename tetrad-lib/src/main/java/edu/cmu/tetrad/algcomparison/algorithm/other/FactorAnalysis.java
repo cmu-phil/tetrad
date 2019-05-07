@@ -1,12 +1,12 @@
 package edu.cmu.tetrad.algcomparison.algorithm.other;
 
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
+import edu.cmu.tetrad.annotation.Bootstrapping;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.*;
 import edu.pitt.dbmi.algo.resampling.GeneralResamplingTest;
 import edu.pitt.dbmi.algo.resampling.ResamplingEdgeEnsemble;
-
 import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.List;
@@ -15,6 +15,7 @@ import java.util.Vector;
 /**
  * @author jdramsey
  */
+@Bootstrapping
 public class FactorAnalysis implements Algorithm {
     static final long serialVersionUID = 23L;
 
@@ -167,12 +168,6 @@ public class FactorAnalysis implements Algorithm {
         params.add("numFactors");
         params.add("useVarimax");
         params.add("convergenceThreshold");
-        // Resampling
-        params.add("numberResampling");
-        params.add("percentResampleSize");
-        params.add("resamplingWithReplacement");
-        params.add("resamplingEnsemble");
-        params.add("addOriginalDataset");
 
         params.add("verbose");
 

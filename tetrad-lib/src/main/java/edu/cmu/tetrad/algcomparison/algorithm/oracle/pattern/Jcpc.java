@@ -5,6 +5,7 @@ import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.algcomparison.utils.TakesInitialGraph;
+import edu.cmu.tetrad.annotation.Bootstrapping;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
@@ -12,7 +13,6 @@ import edu.cmu.tetrad.search.SearchGraphUtils;
 import edu.cmu.tetrad.util.Parameters;
 import edu.pitt.dbmi.algo.resampling.GeneralResamplingTest;
 import edu.pitt.dbmi.algo.resampling.ResamplingEdgeEnsemble;
-
 import java.util.List;
 
 /**
@@ -20,6 +20,7 @@ import java.util.List;
  *
  * @author jdramsey
  */
+@Bootstrapping
 public class Jcpc implements Algorithm, TakesInitialGraph, HasKnowledge {
 
     static final long serialVersionUID = 23L;
@@ -103,12 +104,6 @@ public class Jcpc implements Algorithm, TakesInitialGraph, HasKnowledge {
     public List<String> getParameters() {
         List<String> parameters = test.getParameters();
         parameters.add("depth");
-        // Resampling
-        parameters.add("numberResampling");
-        parameters.add("percentResampleSize");
-        parameters.add("resamplingWithReplacement");
-        parameters.add("resamplingEnsemble");
-        parameters.add("addOriginalDataset");
 
         parameters.add("verbose");
         return parameters;

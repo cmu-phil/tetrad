@@ -2,6 +2,7 @@ package edu.cmu.tetrad.algcomparison.algorithm.pairwise;
 
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.utils.TakesInitialGraph;
+import edu.cmu.tetrad.annotation.Bootstrapping;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
@@ -27,6 +28,7 @@ import java.util.List;
 //        command = "skew-e",
 //        algoType = AlgType.orient_pairwise
 //)
+@Bootstrapping
 public class SkewE implements Algorithm, TakesInitialGraph {
 
     static final long serialVersionUID = 23L;
@@ -115,12 +117,6 @@ public class SkewE implements Algorithm, TakesInitialGraph {
             parameters.addAll(algorithm.getParameters());
         }
 
-        // Resampling
-        parameters.add("numberResampling");
-        parameters.add("percentResampleSize");
-        parameters.add("resamplingWithReplacement");
-        parameters.add("resamplingEnsemble");
-        parameters.add("addOriginalDataset");
         parameters.add("verbose");
 
         return parameters;

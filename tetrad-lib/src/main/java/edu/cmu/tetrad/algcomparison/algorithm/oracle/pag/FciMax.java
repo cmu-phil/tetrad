@@ -5,7 +5,7 @@ import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.algcomparison.utils.TakesIndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.utils.TakesInitialGraph;
-import edu.cmu.tetrad.annotation.AlgType;
+import edu.cmu.tetrad.annotation.Bootstrapping;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
@@ -26,6 +26,7 @@ import java.util.List;
 //        command = "fcimax",
 //        algoType = AlgType.allow_latent_common_causes
 //)
+@Bootstrapping
 public class FciMax implements Algorithm, TakesInitialGraph, HasKnowledge, TakesIndependenceWrapper {
 
     static final long serialVersionUID = 23L;
@@ -125,12 +126,6 @@ public class FciMax implements Algorithm, TakesInitialGraph, HasKnowledge, Takes
         parameters.add("depth");
         parameters.add("maxPathLength");
         parameters.add("completeRuleSetUsed");
-        // Resampling
-        parameters.add("numberResampling");
-        parameters.add("percentResampleSize");
-        parameters.add("resamplingWithReplacement");
-        parameters.add("resamplingEnsemble");
-        parameters.add("addOriginalDataset");
 
         parameters.add("verbose");
         return parameters;

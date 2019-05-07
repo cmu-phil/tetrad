@@ -5,6 +5,7 @@ import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.algcomparison.utils.TakesIndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.utils.TakesInitialGraph;
+import edu.cmu.tetrad.annotation.Bootstrapping;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
@@ -29,6 +30,7 @@ import java.util.List;
 //        command = "pc-stable-max",
 //        algoType = AlgType.forbid_latent_common_causes
 //)
+@Bootstrapping
 public class PcStableMax implements Algorithm, TakesInitialGraph, HasKnowledge, TakesIndependenceWrapper {
 
     static final long serialVersionUID = 23L;
@@ -125,12 +127,6 @@ public class PcStableMax implements Algorithm, TakesInitialGraph, HasKnowledge, 
         parameters.add("depth");
         parameters.add("useMaxPOrientationHeuristic");
         parameters.add("maxPOrientationMaxPathLength");
-        // Resampling
-        parameters.add("numberResampling");
-        parameters.add("percentResampleSize");
-        parameters.add("resamplingWithReplacement");
-        parameters.add("resamplingEnsemble");
-        parameters.add("addOriginalDataset");
 
         parameters.add("verbose");
 

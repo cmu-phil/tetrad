@@ -3,6 +3,7 @@ package edu.cmu.tetrad.algcomparison.algorithm.cluster;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.annotation.AlgType;
+import edu.cmu.tetrad.annotation.Bootstrapping;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
@@ -11,7 +12,6 @@ import edu.cmu.tetrad.search.SearchGraphUtils;
 import edu.cmu.tetrad.util.Parameters;
 import edu.pitt.dbmi.algo.resampling.GeneralResamplingTest;
 import edu.pitt.dbmi.algo.resampling.ResamplingEdgeEnsemble;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -26,6 +26,7 @@ import java.util.List;
         algoType = AlgType.search_for_structure_over_latents,
         dataType = DataType.Continuous
 )
+@Bootstrapping
 public class Ftfc implements Algorithm, HasKnowledge, ClusterAlgorithm {
 
     static final long serialVersionUID = 23L;
@@ -118,13 +119,6 @@ public class Ftfc implements Algorithm, HasKnowledge, ClusterAlgorithm {
         parameters.add("alpha");
         parameters.add("useWishart");
         parameters.add("useGap");
-        // Resampling
-        parameters.add("numberResampling");
-        parameters.add("percentResampleSize");
-        parameters.add("resamplingWithReplacement");
-        parameters.add("resamplingEnsemble");
-        parameters.add("addOriginalDataset");
-
         parameters.add("verbose");
 
         return parameters;

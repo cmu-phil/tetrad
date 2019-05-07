@@ -4,6 +4,7 @@ import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.algcomparison.utils.TakesInitialGraph;
+import edu.cmu.tetrad.annotation.Bootstrapping;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
@@ -12,7 +13,6 @@ import edu.cmu.tetrad.search.SearchGraphUtils;
 import edu.cmu.tetrad.util.Parameters;
 import edu.pitt.dbmi.algo.resampling.GeneralResamplingTest;
 import edu.pitt.dbmi.algo.resampling.ResamplingEdgeEnsemble;
-
 import java.io.PrintStream;
 import java.util.List;
 
@@ -21,6 +21,7 @@ import java.util.List;
  *
  * @author jdramsey
  */
+@Bootstrapping
 public class PcFges implements Algorithm, TakesInitialGraph, HasKnowledge {
 
     static final long serialVersionUID = 23L;
@@ -118,12 +119,6 @@ public class PcFges implements Algorithm, TakesInitialGraph, HasKnowledge {
         parameters.add("faithfulnessAssumed");
         parameters.add("symmetricFirstStep");
         parameters.add("maxDegree");
-        // Resampling
-        parameters.add("numberResampling");
-        parameters.add("percentResampleSize");
-        parameters.add("resamplingWithReplacement");
-        parameters.add("resamplingEnsemble");
-        parameters.add("addOriginalDataset");
 
         parameters.add("verbose");
 

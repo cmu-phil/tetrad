@@ -3,6 +3,7 @@ package edu.cmu.tetrad.algcomparison.algorithm.cluster;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.algcomparison.utils.TakesInitialGraph;
+import edu.cmu.tetrad.annotation.Bootstrapping;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
@@ -25,6 +26,7 @@ import java.util.List;
 //        command = "bpc",
 //        algoType = AlgType.search_for_structure_over_latents
 //)
+@Bootstrapping
 public class Bpc implements Algorithm, TakesInitialGraph, HasKnowledge, ClusterAlgorithm {
 
     static final long serialVersionUID = 23L;
@@ -111,13 +113,6 @@ public class Bpc implements Algorithm, TakesInitialGraph, HasKnowledge, ClusterA
         List<String> parameters = new ArrayList<>();
         parameters.add("alpha");
         parameters.add("useWishart");
-        // Resampling
-        parameters.add("numberResampling");
-        parameters.add("percentResampleSize");
-        parameters.add("resamplingWithReplacement");
-        parameters.add("resamplingEnsemble");
-        parameters.add("addOriginalDataset");
-
         parameters.add("verbose");
 
         return parameters;

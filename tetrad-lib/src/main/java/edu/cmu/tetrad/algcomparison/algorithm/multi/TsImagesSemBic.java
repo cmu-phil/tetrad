@@ -4,16 +4,16 @@ import edu.cmu.tetrad.algcomparison.algorithm.MultiDataSetAlgorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern.Fges;
 import edu.cmu.tetrad.algcomparison.score.SemBicScore;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
+import edu.cmu.tetrad.annotation.Bootstrapping;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.EdgeListGraph;
+import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.IndTestScore;
+import edu.cmu.tetrad.search.SearchGraphUtils;
+import edu.cmu.tetrad.search.SemBicScoreImages;
 import edu.cmu.tetrad.util.Parameters;
 import edu.pitt.dbmi.algo.resampling.GeneralResamplingTest;
 import edu.pitt.dbmi.algo.resampling.ResamplingEdgeEnsemble;
-import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.search.SearchGraphUtils;
-import edu.cmu.tetrad.search.SemBicScoreImages;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -27,6 +27,7 @@ import java.util.List;
  * @author jdramsey
  * @author dmalinsky
  */
+@Bootstrapping
 public class TsImagesSemBic implements MultiDataSetAlgorithm, HasKnowledge {
     static final long serialVersionUID = 23L;
     private IKnowledge knowledge = new Knowledge2();
@@ -137,14 +138,8 @@ public class TsImagesSemBic implements MultiDataSetAlgorithm, HasKnowledge {
     public List<String> getParameters() {
         List<String> parameters = new Fges(new SemBicScore(), false).getParameters();
         parameters.add("randomSelectionSize");
-        // Resampling
-        parameters.add("numberResampling");
-        parameters.add("percentResampleSize");
-        parameters.add("resamplingWithReplacement");
-        parameters.add("resamplingEnsemble");
-        parameters.add("addOriginalDataset");
 
-  		parameters.add("verbose");
+  	parameters.add("verbose");
   		
         return parameters;
     }

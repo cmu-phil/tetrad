@@ -2,11 +2,9 @@ package edu.cmu.tetrad.algcomparison.algorithm.multi;
 
 import edu.cmu.tetrad.algcomparison.algorithm.MultiDataSetAlgorithm;
 import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
-import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.algcomparison.utils.TakesIndependenceWrapper;
-import edu.cmu.tetrad.algcomparison.utils.TakesInitialGraph;
-import edu.cmu.tetrad.algcomparison.utils.UsesScoreWrapper;
+import edu.cmu.tetrad.annotation.Bootstrapping;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
@@ -33,6 +31,7 @@ import java.util.List;
 //        command = "fask-concatenated",
 //        algoType = AlgType.forbid_latent_common_causes
 //)
+@Bootstrapping
 public class FaskConcatenated implements MultiDataSetAlgorithm, HasKnowledge, TakesIndependenceWrapper {
 
     static final long serialVersionUID = 23L;
@@ -160,14 +159,7 @@ public class FaskConcatenated implements MultiDataSetAlgorithm, HasKnowledge, Ta
 
         parameters.add("numRuns");
         parameters.add("randomSelectionSize");
-
-        // Resampling
-        parameters.add("numberResampling");
-        parameters.add("percentResampleSize");
-        parameters.add("resamplingWithReplacement");
-        parameters.add("resamplingEnsemble");
-        parameters.add("addOriginalDataset");
-
+        
         parameters.add("verbose");
 
         return parameters;

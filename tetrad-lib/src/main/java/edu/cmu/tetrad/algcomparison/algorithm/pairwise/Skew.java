@@ -3,6 +3,7 @@ package edu.cmu.tetrad.algcomparison.algorithm.pairwise;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.utils.TakesInitialGraph;
 import edu.cmu.tetrad.annotation.AlgType;
+import edu.cmu.tetrad.annotation.Bootstrapping;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
@@ -13,7 +14,6 @@ import edu.cmu.tetrad.search.Lofs2;
 import edu.cmu.tetrad.util.Parameters;
 import edu.pitt.dbmi.algo.resampling.GeneralResamplingTest;
 import edu.pitt.dbmi.algo.resampling.ResamplingEdgeEnsemble;
-
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
@@ -30,6 +30,7 @@ import java.util.List;
         dataType = DataType.Continuous
 
 )
+@Bootstrapping
 public class Skew implements Algorithm, TakesInitialGraph {
 
     static final long serialVersionUID = 23L;
@@ -118,12 +119,6 @@ public class Skew implements Algorithm, TakesInitialGraph {
             parameters.addAll(algorithm.getParameters());
         }
 
-        // Resampling
-        parameters.add("numberResampling");
-        parameters.add("percentResampleSize");
-        parameters.add("resamplingWithReplacement");
-        parameters.add("resamplingEnsemble");
-        parameters.add("addOriginalDataset");
         parameters.add("verbose");
 
         return parameters;

@@ -5,6 +5,7 @@ import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.algcomparison.utils.TakesIndependenceWrapper;
 import edu.cmu.tetrad.annotation.AlgType;
+import edu.cmu.tetrad.annotation.Bootstrapping;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
@@ -30,6 +31,7 @@ import java.util.List;
         command = "mbfs",
         algoType = AlgType.search_for_Markov_blankets
 )
+@Bootstrapping
 public class MBFS implements Algorithm, HasKnowledge, TakesIndependenceWrapper {
 
     static final long serialVersionUID = 23L;
@@ -115,12 +117,6 @@ public class MBFS implements Algorithm, HasKnowledge, TakesIndependenceWrapper {
         List<String> parameters = test.getParameters();
         parameters.add("depth");
         parameters.add("targetName");
-        // Resampling
-        parameters.add("numberResampling");
-        parameters.add("percentResampleSize");
-        parameters.add("resamplingWithReplacement");
-        parameters.add("resamplingEnsemble");
-        parameters.add("addOriginalDataset");
 
         parameters.add("verbose");
         return parameters;

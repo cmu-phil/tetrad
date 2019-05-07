@@ -16,8 +16,6 @@ import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.DagToPag2;
 import edu.cmu.tetrad.util.Parameters;
-import java.util.ArrayList;
-import java.util.List;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -104,10 +102,10 @@ public class RfciBsc implements Algorithm, HasKnowledge {
         parameters.add("numRandomizedSearchModels");
         parameters.add("thresholdNoRandomDataSearch");
         parameters.add("cutoffDataSearch");
-		parameters.add("numBscBootstrapSamples");
-		parameters.add("thresholdNoRandomConstrainSearch");
-		parameters.add("cutoffConstrainSearch");
-		parameters.add("lowerBound");
+        parameters.add("numBscBootstrapSamples");
+        parameters.add("thresholdNoRandomConstrainSearch");
+        parameters.add("cutoffConstrainSearch");
+        parameters.add("lowerBound");
         parameters.add("upperBound");
         parameters.add("outputRBD");
 

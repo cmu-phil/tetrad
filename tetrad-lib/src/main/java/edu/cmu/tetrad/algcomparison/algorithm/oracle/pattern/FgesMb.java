@@ -6,6 +6,7 @@ import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.algcomparison.utils.TakesInitialGraph;
 import edu.cmu.tetrad.algcomparison.utils.UsesScoreWrapper;
 import edu.cmu.tetrad.annotation.AlgType;
+import edu.cmu.tetrad.annotation.Bootstrapping;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
@@ -29,6 +30,7 @@ import java.util.List;
         command = "fges-mb",
         algoType = AlgType.search_for_Markov_blankets
 )
+@Bootstrapping
 public class FgesMb implements Algorithm, TakesInitialGraph, HasKnowledge, UsesScoreWrapper {
 
     static final long serialVersionUID = 23L;
@@ -130,15 +132,7 @@ public class FgesMb implements Algorithm, TakesInitialGraph, HasKnowledge, UsesS
         parameters.add("targetName");
         parameters.add("faithfulnessAssumed");
         parameters.add("maxDegree");
-
-        // Resampling
-        parameters.add("numberResampling");
-        parameters.add("percentResampleSize");
-        parameters.add("resamplingWithReplacement");
-        parameters.add("resamplingEnsemble");
-
         parameters.add("verbose");
-
 
         return parameters;
     }

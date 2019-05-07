@@ -3,6 +3,7 @@ package edu.cmu.tetrad.algcomparison.algorithm.oracle.pag;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
+import edu.cmu.tetrad.annotation.Bootstrapping;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
@@ -10,7 +11,6 @@ import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.util.Parameters;
 import edu.pitt.dbmi.algo.resampling.GeneralResamplingTest;
 import edu.pitt.dbmi.algo.resampling.ResamplingEdgeEnsemble;
-
 import java.util.List;
 
 /**
@@ -23,6 +23,7 @@ import java.util.List;
         algType = AlgType.forbid_latent_common_causes,
         oracleType = OracleType.Test
 )*/
+@Bootstrapping
 public class CcdMax implements Algorithm, HasKnowledge {
 
     static final long serialVersionUID = 23L;
@@ -102,12 +103,6 @@ public class CcdMax implements Algorithm, HasKnowledge {
         parameters.add("maxPOrientationMaxPathLength");
         parameters.add("applyR1");
         parameters.add("orientTowardDConnections");
-        // Resampling
-        parameters.add("numberResampling");
-        parameters.add("percentResampleSize");
-        parameters.add("resamplingWithReplacement");
-        parameters.add("resamplingEnsemble");
-        parameters.add("addOriginalDataset");
 
         parameters.add("verbose");
         return parameters;

@@ -2,15 +2,13 @@ package edu.cmu.tetrad.algcomparison.algorithm.multi;
 
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
-import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.algcomparison.utils.TakesIndependenceWrapper;
-import edu.cmu.tetrad.algcomparison.utils.UsesScoreWrapper;
 import edu.cmu.tetrad.annotation.AlgType;
+import edu.cmu.tetrad.annotation.Bootstrapping;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.util.Parameters;
 import edu.pitt.dbmi.algo.resampling.GeneralResamplingTest;
 import edu.pitt.dbmi.algo.resampling.ResamplingEdgeEnsemble;
@@ -31,6 +29,7 @@ import java.util.List;
         algoType = AlgType.forbid_latent_common_causes,
         dataType = DataType.Continuous
 )
+@Bootstrapping
 public class Fask implements Algorithm, HasKnowledge, TakesIndependenceWrapper {
     static final long serialVersionUID = 23L;
     private IndependenceWrapper test;
@@ -114,13 +113,6 @@ public class Fask implements Algorithm, HasKnowledge, TakesIndependenceWrapper {
 
         parameters.add("useFasAdjacencies");
         parameters.add("useCorrDiffAdjacencies");
-
-        // Resampling
-        parameters.add("numberResampling");
-        parameters.add("percentResampleSize");
-        parameters.add("resamplingWithReplacement");
-        parameters.add("resamplingEnsemble");
-        parameters.add("addOriginalDataset");
 
         parameters.add("verbose");
 

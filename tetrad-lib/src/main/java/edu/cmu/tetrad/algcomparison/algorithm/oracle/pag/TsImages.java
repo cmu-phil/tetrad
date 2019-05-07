@@ -8,6 +8,7 @@ import edu.cmu.tetrad.algcomparison.score.SemBicScore;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.algcomparison.utils.UsesScoreWrapper;
 import edu.cmu.tetrad.annotation.AlgType;
+import edu.cmu.tetrad.annotation.Bootstrapping;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
@@ -38,6 +39,7 @@ import java.util.List;
         command = "ts-imgs",
         algoType = AlgType.forbid_latent_common_causes
 )
+@Bootstrapping
 public class TsImages implements Algorithm, HasKnowledge, MultiDataSetAlgorithm, UsesScoreWrapper {
 
     static final long serialVersionUID = 23L;
@@ -122,12 +124,6 @@ public class TsImages implements Algorithm, HasKnowledge, MultiDataSetAlgorithm,
         List<String> parameters = score.getParameters();
         parameters.add("numRuns");
         parameters.add("randomSelectionSize");
-        // Subsampling
-        parameters.add("numberResampling");
-        parameters.add("percentResampleSize");
-        parameters.add("resamplingWithReplacement");
-        parameters.add("resamplingEnsemble");
-        parameters.add("addOriginalDataset");
 
         parameters.add("verbose");
         return parameters;

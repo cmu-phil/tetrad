@@ -4,6 +4,7 @@ import cern.colt.matrix.DoubleMatrix2D;
 import cern.colt.matrix.impl.DenseDoubleMatrix2D;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.annotation.AlgType;
+import edu.cmu.tetrad.annotation.Bootstrapping;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
@@ -13,7 +14,6 @@ import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradMatrix;
 import edu.pitt.dbmi.algo.resampling.GeneralResamplingTest;
 import edu.pitt.dbmi.algo.resampling.ResamplingEdgeEnsemble;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -26,6 +26,7 @@ import java.util.List;
         algoType = AlgType.produce_undirected_graphs,
         dataType = DataType.Continuous
 )
+@Bootstrapping
 public class Glasso implements Algorithm {
 
     static final long serialVersionUID = 23L;
@@ -110,12 +111,6 @@ public class Glasso implements Algorithm {
         params.add("itr");
         params.add("ipen");
         params.add("thr");
-        // Resampling
-        params.add("numberResampling");
-        params.add("percentResampleSize");
-        params.add("resamplingWithReplacement");
-        params.add("resamplingEnsemble");
-        params.add("addOriginalDataset");
 
         params.add("verbose");
         return params;

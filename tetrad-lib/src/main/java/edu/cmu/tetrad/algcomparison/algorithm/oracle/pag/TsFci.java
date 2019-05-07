@@ -6,6 +6,7 @@ import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.algcomparison.utils.TakesIndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.utils.TakesInitialGraph;
 import edu.cmu.tetrad.annotation.AlgType;
+import edu.cmu.tetrad.annotation.Bootstrapping;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
@@ -29,6 +30,7 @@ import java.util.List;
         command = "ts-fci",
         algoType = AlgType.allow_latent_common_causes
 )
+@Bootstrapping
 public class TsFci implements Algorithm, TakesInitialGraph, HasKnowledge, TakesIndependenceWrapper {
 
     static final long serialVersionUID = 23L;
@@ -114,12 +116,6 @@ public class TsFci implements Algorithm, TakesInitialGraph, HasKnowledge, TakesI
     @Override
     public List<String> getParameters() {
         List<String> parameters = test.getParameters();
-        // Resampling
-        parameters.add("numberResampling");
-        parameters.add("percentResampleSize");
-        parameters.add("resamplingWithReplacement");
-        parameters.add("resamplingEnsemble");
-        parameters.add("addOriginalDataset");
 
         parameters.add("verbose");
         return parameters;

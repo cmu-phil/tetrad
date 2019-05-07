@@ -7,6 +7,7 @@ import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.algcomparison.utils.TakesIndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.utils.UsesScoreWrapper;
 import edu.cmu.tetrad.annotation.AlgType;
+import edu.cmu.tetrad.annotation.Bootstrapping;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.DagToPag2;
@@ -14,7 +15,6 @@ import edu.cmu.tetrad.search.GFci;
 import edu.cmu.tetrad.util.Parameters;
 import edu.pitt.dbmi.algo.resampling.GeneralResamplingTest;
 import edu.pitt.dbmi.algo.resampling.ResamplingEdgeEnsemble;
-
 import java.io.PrintStream;
 import java.util.List;
 
@@ -29,6 +29,7 @@ import java.util.List;
         command = "gfci",
         algoType = AlgType.allow_latent_common_causes
 )
+@Bootstrapping
 public class Gfci implements Algorithm, HasKnowledge, UsesScoreWrapper, TakesIndependenceWrapper {
 
     static final long serialVersionUID = 23L;
@@ -121,12 +122,6 @@ public class Gfci implements Algorithm, HasKnowledge, UsesScoreWrapper, TakesInd
 //        parameters.add("printStream");
         parameters.add("maxPathLength");
         parameters.add("completeRuleSetUsed");
-        // Resampling
-        parameters.add("numberResampling");
-        parameters.add("percentResampleSize");
-        parameters.add("resamplingWithReplacement");
-        parameters.add("resamplingEnsemble");
-        parameters.add("addOriginalDataset");
 
         parameters.add("verbose");
         return parameters;

@@ -4,6 +4,7 @@ import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.algcomparison.utils.TakesInitialGraph;
 import edu.cmu.tetrad.annotation.AlgType;
+import edu.cmu.tetrad.annotation.Bootstrapping;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
@@ -14,7 +15,6 @@ import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.pitt.dbmi.algo.resampling.GeneralResamplingTest;
 import edu.pitt.dbmi.algo.resampling.ResamplingEdgeEnsemble;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -29,6 +29,7 @@ import java.util.List;
         algoType = AlgType.search_for_structure_over_latents,
         dataType = DataType.Continuous
 )
+@Bootstrapping
 public class Fofc implements Algorithm, TakesInitialGraph, HasKnowledge, ClusterAlgorithm {
 
     static final long serialVersionUID = 23L;
@@ -163,13 +164,6 @@ public class Fofc implements Algorithm, TakesInitialGraph, HasKnowledge, Cluster
         parameters.add("useWishart");
         parameters.add("useGap");
         parameters.add("include_structure_model");
-        // Resampling
-        parameters.add("numberResampling");
-        parameters.add("percentResampleSize");
-        parameters.add("resamplingWithReplacement");
-        parameters.add("resamplingEnsemble");
-        parameters.add("addOriginalDataset");
-
         parameters.add("verbose");
 
         return parameters;
