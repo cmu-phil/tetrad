@@ -11,7 +11,9 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.*;
+import edu.cmu.tetrad.util.BootstrapParams;
 import edu.cmu.tetrad.util.Parameters;
+import edu.cmu.tetrad.util.Params;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.pitt.dbmi.algo.resampling.GeneralResamplingTest;
 import edu.pitt.dbmi.algo.resampling.ResamplingEdgeEnsemble;
@@ -42,11 +44,11 @@ public class Fofc implements Algorithm, TakesInitialGraph, HasKnowledge, Cluster
 
     @Override
     public Graph search(DataModel dataSet, Parameters parameters) {
-    	if (parameters.getInt("numberResampling") < 1) {
+    	if (parameters.getInt(BootstrapParams.NUMBER_RESAMPLING) < 1) {
             ICovarianceMatrix cov = DataUtils.getCovMatrix(dataSet);
-            double alpha = parameters.getDouble("alpha");
+            double alpha = parameters.getDouble(Params.ALPHA);
 
-            boolean wishart = parameters.getBoolean("useWishart", true);
+            boolean wishart = parameters.getBoolean(Params.USE_WISHART, true);
             TestType testType;
 
             if (wishart) {
@@ -55,7 +57,7 @@ public class Fofc implements Algorithm, TakesInitialGraph, HasKnowledge, Cluster
                 testType = TestType.TETRAD_DELTA;
             }
 
-            boolean gap = parameters.getBoolean("useGap", true);
+            boolean gap = parameters.getBoolean(Params.USE_GAP, true);
             FindOneFactorClusters.Algorithm algorithm;
 
             if (gap) {
@@ -66,18 +68,18 @@ public class Fofc implements Algorithm, TakesInitialGraph, HasKnowledge, Cluster
 
             edu.cmu.tetrad.search.FindOneFactorClusters search
                     = new edu.cmu.tetrad.search.FindOneFactorClusters(cov, testType, algorithm, alpha);
-            search.setVerbose(parameters.getBoolean("verbose"));
+            search.setVerbose(parameters.getBoolean(Params.VERBOSE));
 
             Graph graph = search.search();
 
-            if (!parameters.getBoolean("include_structure_model")) {
+            if (!parameters.getBoolean(Params.INCLUDE_STRUCTURE_MODEL)) {
                 return graph;
             } else {
 
                 Clusters clusters = ClusterUtils.mimClusters(graph);
 
                 Mimbuild2 mimbuild = new Mimbuild2();
-                mimbuild.setAlpha(parameters.getDouble("alpha", 0.001));
+                mimbuild.setAlpha(parameters.getDouble(Params.ALPHA, 0.001));
                 mimbuild.setKnowledge((IKnowledge) parameters.get("knowledge", new Knowledge2()));
 
                 if (parameters.getBoolean("includeThreeClusters", true)) {
@@ -116,14 +118,14 @@ public class Fofc implements Algorithm, TakesInitialGraph, HasKnowledge, Cluster
 //  		}
 
             DataSet data = (DataSet) dataSet;
-            GeneralResamplingTest search = new GeneralResamplingTest(data, algorithm, parameters.getInt("numberResampling"));
+            GeneralResamplingTest search = new GeneralResamplingTest(data, algorithm, parameters.getInt(BootstrapParams.NUMBER_RESAMPLING));
             search.setKnowledge(knowledge);
             
-            search.setPercentResampleSize(parameters.getDouble("percentResampleSize"));
-            search.setResamplingWithReplacement(parameters.getBoolean("resamplingWithReplacement"));
+            search.setPercentResampleSize(parameters.getDouble(BootstrapParams.PERCENT_RESAMPLE_SIZE));
+            search.setResamplingWithReplacement(parameters.getBoolean(BootstrapParams.RESAMPLING_WITH_REPLACEMENT));
             
             ResamplingEdgeEnsemble edgeEnsemble = ResamplingEdgeEnsemble.Highest;
-            switch (parameters.getInt("resamplingEnsemble", 1)) {
+            switch (parameters.getInt(BootstrapParams.RESAMPLING_ENSEMBLE, 1)) {
                 case 0:
                     edgeEnsemble = ResamplingEdgeEnsemble.Preserved;
                     break;
@@ -134,10 +136,10 @@ public class Fofc implements Algorithm, TakesInitialGraph, HasKnowledge, Cluster
                     edgeEnsemble = ResamplingEdgeEnsemble.Majority;
             }
             search.setEdgeEnsemble(edgeEnsemble);
-            search.setAddOriginalDataset(parameters.getBoolean("addOriginalDataset"));
+            search.setAddOriginalDataset(parameters.getBoolean(BootstrapParams.ADD_ORIGINAL_DATASET));
             
             search.setParameters(parameters);
-            search.setVerbose(parameters.getBoolean("verbose"));
+            search.setVerbose(parameters.getBoolean(Params.VERBOSE));
             return search.search();
         }
     }
@@ -160,11 +162,11 @@ public class Fofc implements Algorithm, TakesInitialGraph, HasKnowledge, Cluster
     @Override
     public List<String> getParameters() {
         List<String> parameters = new ArrayList<>();
-        parameters.add("alpha");
-        parameters.add("useWishart");
-        parameters.add("useGap");
-        parameters.add("include_structure_model");
-        parameters.add("verbose");
+        parameters.add(Params.ALPHA);
+        parameters.add(Params.USE_WISHART);
+        parameters.add(Params.USE_GAP);
+        parameters.add(Params.INCLUDE_STRUCTURE_MODEL);
+        parameters.add(Params.VERBOSE);
 
         return parameters;
     }

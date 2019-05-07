@@ -12,7 +12,9 @@ import edu.cmu.tetrad.data.DiscreteVariable;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.util.BootstrapParams;
 import edu.cmu.tetrad.util.Parameters;
+import edu.cmu.tetrad.util.Params;
 import edu.pitt.csb.mgm.MGM;
 import edu.pitt.dbmi.algo.resampling.GeneralResamplingTest;
 import edu.pitt.dbmi.algo.resampling.ResamplingEdgeEnsemble;
@@ -56,12 +58,12 @@ public class Mgm implements Algorithm {
             throw new IllegalArgumentException("You need at least one continuous and one discrete variable to run MGM.");
         }
         
-        if (parameters.getInt("numberResampling") < 1) {
+        if (parameters.getInt(BootstrapParams.NUMBER_RESAMPLING) < 1) {
             DataSet _ds = DataUtils.getMixedDataSet(ds);
 
-            double mgmParam1 = parameters.getDouble("mgmParam1");
-            double mgmParam2 = parameters.getDouble("mgmParam2");
-            double mgmParam3 = parameters.getDouble("mgmParam3");
+            double mgmParam1 = parameters.getDouble(Params.MGM_PARAM1);
+            double mgmParam2 = parameters.getDouble(Params.MGM_PARAM2);
+            double mgmParam3 = parameters.getDouble(Params.MGM_PARAM3);
 
             double[] lambda = {
                 mgmParam1,
@@ -76,13 +78,13 @@ public class Mgm implements Algorithm {
             Mgm algorithm = new Mgm();
 
             DataSet data = (DataSet) ds;
-            GeneralResamplingTest search = new GeneralResamplingTest(data, algorithm, parameters.getInt("numberResampling"));
+            GeneralResamplingTest search = new GeneralResamplingTest(data, algorithm, parameters.getInt(BootstrapParams.NUMBER_RESAMPLING));
             
-            search.setPercentResampleSize(parameters.getDouble("percentResampleSize"));
-            search.setResamplingWithReplacement(parameters.getBoolean("resamplingWithReplacement"));
+            search.setPercentResampleSize(parameters.getDouble(BootstrapParams.PERCENT_RESAMPLE_SIZE));
+            search.setResamplingWithReplacement(parameters.getBoolean(BootstrapParams.RESAMPLING_WITH_REPLACEMENT));
             
             ResamplingEdgeEnsemble edgeEnsemble = ResamplingEdgeEnsemble.Highest;
-            switch (parameters.getInt("resamplingEnsemble", 1)) {
+            switch (parameters.getInt(BootstrapParams.RESAMPLING_ENSEMBLE, 1)) {
                 case 0:
                     edgeEnsemble = ResamplingEdgeEnsemble.Preserved;
                     break;
@@ -93,10 +95,10 @@ public class Mgm implements Algorithm {
                     edgeEnsemble = ResamplingEdgeEnsemble.Majority;
             }
             search.setEdgeEnsemble(edgeEnsemble);
-            search.setAddOriginalDataset(parameters.getBoolean("addOriginalDataset"));
+            search.setAddOriginalDataset(parameters.getBoolean(BootstrapParams.ADD_ORIGINAL_DATASET));
             
             search.setParameters(parameters);
-            search.setVerbose(parameters.getBoolean("verbose"));
+            search.setVerbose(parameters.getBoolean(Params.VERBOSE));
             return search.search();
         }
     }
@@ -120,10 +122,10 @@ public class Mgm implements Algorithm {
     @Override
     public List<String> getParameters() {
         List<String> parameters = new ArrayList<>();
-        parameters.add("mgmParam1");
-        parameters.add("mgmParam2");
-        parameters.add("mgmParam3");
-        parameters.add("verbose");
+        parameters.add(Params.MGM_PARAM1);
+        parameters.add(Params.MGM_PARAM2);
+        parameters.add(Params.MGM_PARAM3);
+        parameters.add(Params.VERBOSE);
         return parameters;
     }
 }
