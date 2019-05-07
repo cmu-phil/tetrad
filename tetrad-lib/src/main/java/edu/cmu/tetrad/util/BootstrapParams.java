@@ -20,26 +20,19 @@ package edu.cmu.tetrad.util;
 
 /**
  *
- * May 7, 2019 12:00:15 PM
+ * May 7, 2019 2:48:03 PM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
  */
-public enum BootstrapParams {
+public final class BootstrapParams {
 
-    ADD_ORIGINAL_DATASET("addOriginalDataset"),
-    NUMBER_RESAMPLING("numberResampling"),
-    PERCENT_RESAMPLE_SIZE("percentResampleSize"),
-    RESAMPLING_ENSEMBLE("resamplingEnsemble"),
-    RESAMPLING_WITH_REPLACEMENT("resamplingWithReplacement");
+    public static final String ADD_ORIGINAL_DATASET = "addOriginalDataset";
+    public static final String NUMBER_RESAMPLING = "numberResampling";
+    public static final String PERCENT_RESAMPLE_SIZE = "percentResampleSize";
+    public static final String RESAMPLING_ENSEMBLE = "resamplingEnsemble";
+    public static final String RESAMPLING_WITH_REPLACEMENT = "resamplingWithReplacement";
 
-    private final String name;
-
-    private BootstrapParams(String name) {
-        this.name = name;
-    }
-
-    public String getName() {
-        return name;
+    private BootstrapParams() {
     }
 
 }
