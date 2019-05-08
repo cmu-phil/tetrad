@@ -14,6 +14,7 @@ import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 import edu.pitt.dbmi.algo.resampling.GeneralResamplingTest;
 import edu.pitt.dbmi.algo.resampling.ResamplingEdgeEnsemble;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -107,7 +108,8 @@ public class Fask implements Algorithm, HasKnowledge, TakesIndependenceWrapper {
 
     @Override
     public List<String> getParameters() {
-        List<String> parameters = test.getParameters();
+        List<String> parameters = new ArrayList<>();
+        
         parameters.add(Params.DEPTH);
         parameters.add(Params.TWO_CYCLE_ALPHA);
         parameters.add(Params.EXTRA_EDGE_THRESHOLD);

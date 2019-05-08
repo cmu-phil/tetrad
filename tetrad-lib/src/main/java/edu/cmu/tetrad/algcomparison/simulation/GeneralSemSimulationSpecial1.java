@@ -2,7 +2,6 @@ package edu.cmu.tetrad.algcomparison.simulation;
 
 import edu.cmu.tetrad.algcomparison.graph.RandomGraph;
 import edu.cmu.tetrad.data.DataModel;
-import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.graph.Graph;
@@ -11,7 +10,8 @@ import edu.cmu.tetrad.graph.NodeType;
 import edu.cmu.tetrad.sem.GeneralizedSemIm;
 import edu.cmu.tetrad.sem.GeneralizedSemPm;
 import edu.cmu.tetrad.sem.TemplateExpander;
-
+import edu.cmu.tetrad.util.Parameters;
+import edu.cmu.tetrad.util.Params;
 import java.text.ParseException;
 import java.util.*;
 
@@ -39,10 +39,10 @@ public class GeneralSemSimulationSpecial1 implements Simulation {
         dataSets = new ArrayList<>();
         graphs = new ArrayList<>();
 
-        for (int i = 0; i < parameters.getInt("numRuns"); i++) {
+        for (int i = 0; i < parameters.getInt(Params.NUM_RUNS); i++) {
             System.out.println("Simulating dataset #" + (i + 1));
 
-            if (parameters.getBoolean("differentGraphs") && i > 0) {
+            if (parameters.getBoolean(Params.DIFFERENT_GRAPHS) && i > 0) {
                 graph = randomGraph.createGraph(parameters);
             }
 
@@ -57,7 +57,7 @@ public class GeneralSemSimulationSpecial1 implements Simulation {
     private DataSet simulate(Graph graph, Parameters parameters) {
         GeneralizedSemPm pm = getPm(graph);
         GeneralizedSemIm im = new GeneralizedSemIm(pm);
-        return im.simulateData(parameters.getInt("sampleSize"), false);
+        return im.simulateData(parameters.getInt(Params.SAMPLE_SIZE), false);
     }
 
     @Override
@@ -87,9 +87,9 @@ public class GeneralSemSimulationSpecial1 implements Simulation {
     @Override
     public List<String> getParameters() {
         List<String> parameters = randomGraph.getParameters();
-        parameters.add("numRuns");
-        parameters.add("differentGraphs");
-        parameters.add("sampleSize");
+        parameters.add(Params.NUM_RUNS);
+        parameters.add(Params.DIFFERENT_GRAPHS);
+        parameters.add(Params.SAMPLE_SIZE);
         return parameters;
     }
 

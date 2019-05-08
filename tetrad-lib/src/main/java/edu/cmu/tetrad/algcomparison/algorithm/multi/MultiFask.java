@@ -140,7 +140,9 @@ public class MultiFask implements MultiDataSetAlgorithm, HasKnowledge {
 
     @Override
     public List<String> getParameters() {
+        // MultiFask uses SemBicScore internally, so we'll need to add the score parameters too - Zhou
         List<String> parameters = new Fges(new SemBicScore(), false).getParameters();
+        
         parameters.add(Params.NUM_RUNS);
         parameters.add(Params.RANDOM_SELECTION_SIZE);
         

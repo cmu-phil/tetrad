@@ -18,6 +18,7 @@ import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 import edu.pitt.dbmi.algo.resampling.GeneralResamplingTest;
 import edu.pitt.dbmi.algo.resampling.ResamplingEdgeEnsemble;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -115,8 +116,8 @@ public class TsGfci implements Algorithm, TakesInitialGraph, HasKnowledge, Takes
 
     @Override
     public List<String> getParameters() {
-        List<String> parameters = test.getParameters();
-        parameters.addAll(score.getParameters());
+        List<String> parameters = new ArrayList<>();
+        
         parameters.add(Params.FAITHFULNESS_ASSUMED);
         parameters.add(Params.MAX_INDEGREE);
         parameters.add("printStream");
