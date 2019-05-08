@@ -3,13 +3,13 @@ package edu.cmu.tetrad.util;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
-import org.jsoup.select.Elements;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -27,6 +27,8 @@ public class ParamDescriptions {
     private static final ParamDescriptions INSTANCE = new ParamDescriptions();
 
     private final Map<String, ParamDescription> map = new TreeMap<>();
+    
+    private List<String> paramsMissingValueType = new ArrayList<>();
 
     private ParamDescriptions() {
         Document doc = null;
@@ -42,42 +44,56 @@ public class ParamDescriptions {
         
         // Get the description of each parameter
         if (doc != null) {
-            Elements elements = doc.getElementsByClass("parameter_description");
             
-            for (Element element : elements) {
-                String paramName = element.id();
-                
+            Set<String> allParams = Params.getParameters();
+            
+            //Elements elements = doc.getElementsByClass("parameter_description");
+            
+            for (String paramName : allParams) {
                 String valueType = doc.getElementById(paramName + "_value_type").text();
                 
-                String shortDescription = doc.getElementById(paramName + "_short_desc").text();
-                String longDescription = doc.getElementById(paramName + "_long_desc").text();
-                String defaultValue = doc.getElementById(paramName + "_default_value").text();
-                String lowerBound = doc.getElementById(paramName + "_lower_bound").text();
-                String upperBound = doc.getElementById(paramName + "_upper_bound").text();
-
-                ParamDescription paramDescription = null;
-                
-                if (valueType.equalsIgnoreCase("Integer")) {
-                    int defaultValueInt = Integer.parseInt(defaultValue);
-                    int lowerBoundInt = Integer.parseInt(lowerBound);
-                    int upperBoundInt = Integer.parseInt(upperBound);
-                    
-                    paramDescription = new ParamDescription(paramName, shortDescription, longDescription, defaultValueInt, lowerBoundInt, upperBoundInt);
-                } else if (valueType.equalsIgnoreCase("Double")) {
-                    double defaultValueDouble = Double.parseDouble(defaultValue);
-                    double lowerBoundDouble = Double.parseDouble(lowerBound);
-                    double upperBoundDouble = Double.parseDouble(upperBound);
-                
-                    paramDescription = new ParamDescription(paramName, shortDescription, longDescription, defaultValueDouble, lowerBoundDouble, upperBoundDouble);
-                } else if (valueType.equalsIgnoreCase("Boolean")) {
-                    boolean defaultValueBoolean = defaultValue.equalsIgnoreCase("true");
-                    paramDescription = new ParamDescription(paramName, shortDescription, longDescription, defaultValueBoolean);
+                // Add params that don't have value types for spalsh screen error
+                if (valueType.equals("")) {
+                    paramsMissingValueType.add(paramName);
                 } else {
-                    Serializable defaultValueSerializable = (Serializable) defaultValue;
-                    paramDescription = new ParamDescription(paramName, shortDescription, longDescription, defaultValueSerializable);
+                    String shortDescription = doc.getElementById(paramName + "_short_desc").text();
+                    String longDescription = doc.getElementById(paramName + "_long_desc").text();
+                    String defaultValue = doc.getElementById(paramName + "_default_value").text();
+                    String lowerBound = doc.getElementById(paramName + "_lower_bound").text();
+                    String upperBound = doc.getElementById(paramName + "_upper_bound").text();
+
+                    if (shortDescription.equals("")) {
+                        shortDescription = String.format("Missing short description for %s", paramName);
+                    }
+                    
+                    if (longDescription.equals("")) {
+                        longDescription = String.format("Missing long description for %s", paramName);
+                    }
+                    
+                    ParamDescription paramDescription = null;
+
+                    if (valueType.equalsIgnoreCase("Integer")) {
+                        int defaultValueInt = Integer.parseInt(defaultValue);
+                        int lowerBoundInt = Integer.parseInt(lowerBound);
+                        int upperBoundInt = Integer.parseInt(upperBound);
+
+                        paramDescription = new ParamDescription(paramName, shortDescription, longDescription, defaultValueInt, lowerBoundInt, upperBoundInt);
+                    } else if (valueType.equalsIgnoreCase("Double")) {
+                        double defaultValueDouble = Double.parseDouble(defaultValue);
+                        double lowerBoundDouble = Double.parseDouble(lowerBound);
+                        double upperBoundDouble = Double.parseDouble(upperBound);
+
+                        paramDescription = new ParamDescription(paramName, shortDescription, longDescription, defaultValueDouble, lowerBoundDouble, upperBoundDouble);
+                    } else if (valueType.equalsIgnoreCase("Boolean")) {
+                        boolean defaultValueBoolean = defaultValue.equalsIgnoreCase("true");
+                        paramDescription = new ParamDescription(paramName, shortDescription, longDescription, defaultValueBoolean);
+                    } else {
+                        Serializable defaultValueSerializable = (Serializable) defaultValue;
+                        paramDescription = new ParamDescription(paramName, shortDescription, longDescription, defaultValueSerializable);
+                    }
+
+                    map.put(paramName, paramDescription);
                 }
-                   
-                map.put(paramName, paramDescription);
             }
         }
     }
@@ -87,11 +103,7 @@ public class ParamDescriptions {
     }
 
     public ParamDescription get(String name) {
-        ParamDescription paramDesc = map.get(name);
-
-        return (paramDesc == null)
-                ? new ParamDescription(name, String.format("Missing short description for %s", name), String.format("Missing long description for %s.", name), 0)
-                : paramDesc;
+        return map.get(name);
     }
 
     public void put(String name, ParamDescription paramDescription) {
@@ -100,6 +112,10 @@ public class ParamDescriptions {
 
     public Set<String> getNames() {
         return map.keySet();
+    }
+    
+    public List<String> getParamsMissingValueType() {
+        return paramsMissingValueType;
     }
 
 }
