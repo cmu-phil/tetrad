@@ -22,7 +22,9 @@ import edu.cmu.tetrad.search.Score;
 import edu.cmu.tetrad.search.SemBicScoreImages;
 import edu.cmu.tetrad.search.TsDagToPag;
 import edu.cmu.tetrad.search.TsGFci;
+import edu.cmu.tetrad.util.BootstrapParams;
 import edu.cmu.tetrad.util.Parameters;
+import edu.cmu.tetrad.util.Params;
 import edu.pitt.dbmi.algo.resampling.GeneralResamplingTest;
 import edu.pitt.dbmi.algo.resampling.ResamplingEdgeEnsemble;
 import java.util.ArrayList;
@@ -60,7 +62,7 @@ public class TsImages implements Algorithm, HasKnowledge, MultiDataSetAlgorithm,
 
     @Override
     public Graph search(DataModel dataModel, Parameters parameters) {
-        if (parameters.getInt("numberSubSampling") < 1) {
+        if (parameters.getInt(BootstrapParams.NUMBER_RESAMPLING) < 1) {
             DataSet dataSet = (DataSet) dataModel;
             TsGFci search;
             if(knowledge != null) {
@@ -70,21 +72,21 @@ public class TsImages implements Algorithm, HasKnowledge, MultiDataSetAlgorithm,
             IndependenceTest test = new IndTestScore(score1);
             search = new TsGFci(test, score1);
             search.setKnowledge(dataSet.getKnowledge());
-            search.setVerbose(parameters.getBoolean("verbose"));
+            search.setVerbose(parameters.getBoolean(Params.VERBOSE));
             
             return search.search();
         } else {
             TsImages algorithm = new TsImages(score);
 
             DataSet data = (DataSet) dataModel;
-            GeneralResamplingTest search = new GeneralResamplingTest(data, algorithm, parameters.getInt("numberSubSampling"));
+            GeneralResamplingTest search = new GeneralResamplingTest(data, algorithm, parameters.getInt(BootstrapParams.NUMBER_RESAMPLING));
             search.setKnowledge(knowledge);
 
-            search.setPercentResampleSize(parameters.getDouble("percentResampleSize"));
-            search.setResamplingWithReplacement(parameters.getBoolean("subSamplingWithReplacement"));
+            search.setPercentResampleSize(parameters.getDouble(BootstrapParams.PERCENT_RESAMPLE_SIZE));
+            search.setResamplingWithReplacement(parameters.getBoolean(BootstrapParams.RESAMPLING_WITH_REPLACEMENT));
             
             ResamplingEdgeEnsemble edgeEnsemble = ResamplingEdgeEnsemble.Highest;
-            switch (parameters.getInt("subSamplingEnsemble", 1)) {
+            switch (parameters.getInt(BootstrapParams.RESAMPLING_ENSEMBLE, 1)) {
                 case 0:
                     edgeEnsemble = ResamplingEdgeEnsemble.Preserved;
                     break;
@@ -95,10 +97,10 @@ public class TsImages implements Algorithm, HasKnowledge, MultiDataSetAlgorithm,
                     edgeEnsemble = ResamplingEdgeEnsemble.Majority;
             }
             search.setEdgeEnsemble(edgeEnsemble);
-            search.setAddOriginalDataset(parameters.getBoolean("addOriginalDataset"));
+            search.setAddOriginalDataset(parameters.getBoolean(BootstrapParams.ADD_ORIGINAL_DATASET));
             
             search.setParameters(parameters);
-            search.setVerbose(parameters.getBoolean("verbose"));
+            search.setVerbose(parameters.getBoolean(Params.VERBOSE));
             return search.search();
         }
     }
@@ -122,10 +124,10 @@ public class TsImages implements Algorithm, HasKnowledge, MultiDataSetAlgorithm,
     @Override
     public List<String> getParameters() {
         List<String> parameters = score.getParameters();
-        parameters.add("numRuns");
-        parameters.add("randomSelectionSize");
+        parameters.add(Params.NUM_RUNS);
+        parameters.add(Params.RANDOM_SELECTION_SIZE);
 
-        parameters.add("verbose");
+        parameters.add(Params.VERBOSE);
         return parameters;
     }
 
@@ -151,12 +153,12 @@ public class TsImages implements Algorithm, HasKnowledge, MultiDataSetAlgorithm,
 
         if (score instanceof SemBicScore) {
             SemBicScoreImages gesScore = new SemBicScoreImages(dataModels);
-            gesScore.setPenaltyDiscount(parameters.getDouble("penaltyDiscount"));
+            gesScore.setPenaltyDiscount(parameters.getDouble(Params.PENALTY_DISCOUNT));
             IndependenceTest test = new IndTestScore(gesScore);
             search = new TsGFci(test, gesScore);
         } else if (score instanceof BdeuScore) {
-            double samplePrior = parameters.getDouble("samplePrior", 1);
-            double structurePrior = parameters.getDouble("structurePrior", 1);
+            double samplePrior = parameters.getDouble(Params.SAMPLE_PRIOR, 1);
+            double structurePrior = parameters.getDouble(Params.STRUCTURE_PRIOR, 1);
             BdeuScoreImages score = new BdeuScoreImages(dataModels);
             score.setSamplePrior(samplePrior);
             score.setStructurePrior(structurePrior);

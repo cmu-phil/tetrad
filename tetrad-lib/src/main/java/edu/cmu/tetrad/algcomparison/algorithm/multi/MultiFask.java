@@ -10,7 +10,9 @@ import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.SemBicScoreMultiFas;
+import edu.cmu.tetrad.util.BootstrapParams;
 import edu.cmu.tetrad.util.Parameters;
+import edu.cmu.tetrad.util.Params;
 import edu.pitt.dbmi.algo.resampling.GeneralResamplingTest;
 import edu.pitt.dbmi.algo.resampling.ResamplingEdgeEnsemble;
 import java.util.ArrayList;
@@ -43,11 +45,11 @@ public class MultiFask implements MultiDataSetAlgorithm, HasKnowledge {
 
     @Override
     public Graph search(List<DataModel> dataSets, Parameters parameters) {
-    	if (parameters.getInt("numberResampling") < 1) {
+    	if (parameters.getInt(BootstrapParams.NUMBER_RESAMPLING) < 1) {
     	    List<DataSet> _dataSets = new ArrayList<>();
     	    for (DataModel d : dataSets) _dataSets.add((DataSet) d);
             final SemBicScoreMultiFas score = new SemBicScoreMultiFas(dataSets);
-            score.setPenaltyDiscount(parameters.getDouble("penaltyDiscount"));
+            score.setPenaltyDiscount(parameters.getDouble(Params.PENALTY_DISCOUNT));
             edu.cmu.tetrad.search.MultiFask search = new edu.cmu.tetrad.search.MultiFask(_dataSets, score);
             search.setKnowledge(knowledge);
             return search.search();
@@ -59,14 +61,14 @@ public class MultiFask implements MultiDataSetAlgorithm, HasKnowledge {
             for (DataModel dataModel : dataSets) {
                 datasets.add((DataSet) dataModel);
             }
-            GeneralResamplingTest search = new GeneralResamplingTest(datasets, imagesSemBic, parameters.getInt("numberResampling"));
+            GeneralResamplingTest search = new GeneralResamplingTest(datasets, imagesSemBic, parameters.getInt(BootstrapParams.NUMBER_RESAMPLING));
             search.setKnowledge(knowledge);
 
-            search.setPercentResampleSize(parameters.getDouble("percentResampleSize"));
-            search.setResamplingWithReplacement(parameters.getBoolean("resamplingWithReplacement"));
+            search.setPercentResampleSize(parameters.getDouble(BootstrapParams.PERCENT_RESAMPLE_SIZE));
+            search.setResamplingWithReplacement(parameters.getBoolean(BootstrapParams.RESAMPLING_WITH_REPLACEMENT));
             
             ResamplingEdgeEnsemble edgeEnsemble = ResamplingEdgeEnsemble.Highest;
-            switch (parameters.getInt("resamplingEnsemble", 1)) {
+            switch (parameters.getInt(BootstrapParams.RESAMPLING_ENSEMBLE, 1)) {
                 case 0:
                     edgeEnsemble = ResamplingEdgeEnsemble.Preserved;
                     break;
@@ -77,30 +79,30 @@ public class MultiFask implements MultiDataSetAlgorithm, HasKnowledge {
                     edgeEnsemble = ResamplingEdgeEnsemble.Majority;
             }
             search.setEdgeEnsemble(edgeEnsemble);
-            search.setAddOriginalDataset(parameters.getBoolean("addOriginalDataset"));
+            search.setAddOriginalDataset(parameters.getBoolean(BootstrapParams.ADD_ORIGINAL_DATASET));
             
             search.setParameters(parameters);
-            search.setVerbose(parameters.getBoolean("verbose"));
+            search.setVerbose(parameters.getBoolean(Params.VERBOSE));
             return search.search();
         }
     }
 
     @Override
     public Graph search(DataModel dataSet, Parameters parameters) {
-        if (parameters.getInt("numberResampling") < 1) {
+        if (parameters.getInt(BootstrapParams.NUMBER_RESAMPLING) < 1) {
             return search(Collections.singletonList((DataModel) DataUtils.getContinuousDataSet(dataSet)), parameters);
         } else {
             MultiFask imagesSemBic = new MultiFask();
 
             List<DataSet> dataSets = Collections.singletonList(DataUtils.getContinuousDataSet(dataSet));
-            GeneralResamplingTest search = new GeneralResamplingTest(dataSets, imagesSemBic, parameters.getInt("numberResampling"));
+            GeneralResamplingTest search = new GeneralResamplingTest(dataSets, imagesSemBic, parameters.getInt(BootstrapParams.NUMBER_RESAMPLING));
             search.setKnowledge(knowledge);
             
-            search.setPercentResampleSize(parameters.getDouble("percentResampleSize"));
-            search.setResamplingWithReplacement(parameters.getBoolean("resamplingWithReplacement"));
+            search.setPercentResampleSize(parameters.getDouble(BootstrapParams.PERCENT_RESAMPLE_SIZE));
+            search.setResamplingWithReplacement(parameters.getBoolean(BootstrapParams.RESAMPLING_WITH_REPLACEMENT));
             
             ResamplingEdgeEnsemble edgeEnsemble = ResamplingEdgeEnsemble.Highest;
-            switch (parameters.getInt("resamplingEnsemble", 1)) {
+            switch (parameters.getInt(BootstrapParams.RESAMPLING_ENSEMBLE, 1)) {
                 case 0:
                     edgeEnsemble = ResamplingEdgeEnsemble.Preserved;
                     break;
@@ -111,10 +113,10 @@ public class MultiFask implements MultiDataSetAlgorithm, HasKnowledge {
                     edgeEnsemble = ResamplingEdgeEnsemble.Majority;
             }
             search.setEdgeEnsemble(edgeEnsemble);
-            search.setAddOriginalDataset(parameters.getBoolean("addOriginalDataset"));
+            search.setAddOriginalDataset(parameters.getBoolean(BootstrapParams.ADD_ORIGINAL_DATASET));
             
             search.setParameters(parameters);
-            search.setVerbose(parameters.getBoolean("verbose"));
+            search.setVerbose(parameters.getBoolean(Params.VERBOSE));
             return search.search();
         }
     }
@@ -139,11 +141,10 @@ public class MultiFask implements MultiDataSetAlgorithm, HasKnowledge {
     @Override
     public List<String> getParameters() {
         List<String> parameters = new Fges(new SemBicScore(), false).getParameters();
-        parameters.add("numRuns");
-        parameters.add("randomSelectionSize");
+        parameters.add(Params.NUM_RUNS);
+        parameters.add(Params.RANDOM_SELECTION_SIZE);
         
-        parameters.remove("verbose");
-        parameters.add("verbose");
+        parameters.add(Params.VERBOSE);
 
         return parameters;
     }

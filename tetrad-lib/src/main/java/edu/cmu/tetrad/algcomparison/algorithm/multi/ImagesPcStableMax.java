@@ -10,7 +10,9 @@ import edu.cmu.tetrad.search.IndTestScore;
 import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.search.PcStableMax;
 import edu.cmu.tetrad.search.SemBicScoreImages3;
+import edu.cmu.tetrad.util.BootstrapParams;
 import edu.cmu.tetrad.util.Parameters;
+import edu.cmu.tetrad.util.Params;
 import edu.pitt.dbmi.algo.resampling.GeneralResamplingTest;
 import edu.pitt.dbmi.algo.resampling.ResamplingEdgeEnsemble;
 import java.util.ArrayList;
@@ -35,7 +37,7 @@ public class ImagesPcStableMax implements MultiDataSetAlgorithm, HasKnowledge {
 
     @Override
     public Graph search(List<DataModel> dataModels, Parameters parameters) {
-    	if (parameters.getInt("numberResampling") < 1) {
+    	if (parameters.getInt(BootstrapParams.NUMBER_RESAMPLING) < 1) {
             List<DataSet> dataSets = new ArrayList<>();
 
             for (DataModel dataModel : dataModels) {
@@ -43,14 +45,14 @@ public class ImagesPcStableMax implements MultiDataSetAlgorithm, HasKnowledge {
             }
 
             SemBicScoreImages3 score = new SemBicScoreImages3(dataSets);
-            score.setPenaltyDiscount(parameters.getDouble("penaltyDiscount"));
+            score.setPenaltyDiscount(parameters.getDouble(Params.PENALTY_DISCOUNT));
             IndependenceTest test = new IndTestScore(score);
             PcStableMax search = new PcStableMax(test);
-            search.setUseHeuristic(parameters.getBoolean("useMaxPOrientationHeuristic"));
-            search.setMaxPathLength(parameters.getInt("maxPOrientationMaxPathLength"));
+            search.setUseHeuristic(parameters.getBoolean(Params.USE_MAX_P_ORIENTATION_HEURISTIC));
+            search.setMaxPathLength(parameters.getInt(Params.MAX_P_ORIENTATION_MAX_PATH_LENGTH));
             search.setKnowledge(knowledge);
-            search.setDepth(parameters.getInt("depth"));
-            search.setVerbose(parameters.getBoolean("verbose"));
+            search.setDepth(parameters.getInt(Params.DEPTH));
+            search.setVerbose(parameters.getBoolean(Params.VERBOSE));
             return search.search();
     	}else{
     		ImagesPcStableMax imagesPcStableMax = new ImagesPcStableMax();
@@ -60,14 +62,14 @@ public class ImagesPcStableMax implements MultiDataSetAlgorithm, HasKnowledge {
 			for (DataModel dataModel : dataModels) {
 				datasets.add((DataSet) dataModel);
 			}
-			GeneralResamplingTest search = new GeneralResamplingTest(datasets, imagesPcStableMax, parameters.getInt("numberResampling"));
+			GeneralResamplingTest search = new GeneralResamplingTest(datasets, imagesPcStableMax, parameters.getInt(BootstrapParams.NUMBER_RESAMPLING));
 			search.setKnowledge(knowledge);
             
-			search.setPercentResampleSize(parameters.getDouble("percentResampleSize"));
-            search.setResamplingWithReplacement(parameters.getBoolean("resamplingWithReplacement"));
+			search.setPercentResampleSize(parameters.getDouble(BootstrapParams.PERCENT_RESAMPLE_SIZE));
+            search.setResamplingWithReplacement(parameters.getBoolean(BootstrapParams.RESAMPLING_WITH_REPLACEMENT));
             
             ResamplingEdgeEnsemble edgeEnsemble = ResamplingEdgeEnsemble.Highest;
-            switch (parameters.getInt("resamplingEnsemble", 1)) {
+            switch (parameters.getInt(BootstrapParams.RESAMPLING_ENSEMBLE, 1)) {
                 case 0:
                     edgeEnsemble = ResamplingEdgeEnsemble.Preserved;
                     break;
@@ -78,30 +80,30 @@ public class ImagesPcStableMax implements MultiDataSetAlgorithm, HasKnowledge {
                     edgeEnsemble = ResamplingEdgeEnsemble.Majority;
             }
 			search.setEdgeEnsemble(edgeEnsemble);
-			search.setAddOriginalDataset(parameters.getBoolean("addOriginalDataset"));
+			search.setAddOriginalDataset(parameters.getBoolean(BootstrapParams.ADD_ORIGINAL_DATASET));
 			
 			search.setParameters(parameters);
-			search.setVerbose(parameters.getBoolean("verbose"));
+			search.setVerbose(parameters.getBoolean(Params.VERBOSE));
 			return search.search();
     	}
     }
 
     @Override
     public Graph search(DataModel dataSet, Parameters parameters) {
-    	if (parameters.getInt("numberResampling") < 1) {
+    	if (parameters.getInt(BootstrapParams.NUMBER_RESAMPLING) < 1) {
             return search(Collections.singletonList((DataModel) DataUtils.getContinuousDataSet(dataSet)), parameters);
     	}else{
     		ImagesPcStableMax imagesPcStableMax = new ImagesPcStableMax();
     		
     		List<DataSet> dataSets = Collections.singletonList(DataUtils.getContinuousDataSet(dataSet));
-    		GeneralResamplingTest search = new GeneralResamplingTest(dataSets, imagesPcStableMax, parameters.getInt("numberResampling"));
+    		GeneralResamplingTest search = new GeneralResamplingTest(dataSets, imagesPcStableMax, parameters.getInt(BootstrapParams.NUMBER_RESAMPLING));
     		search.setKnowledge(knowledge);
 
-    		search.setPercentResampleSize(parameters.getDouble("percentResampleSize"));
-            search.setResamplingWithReplacement(parameters.getBoolean("resamplingWithReplacement"));
+    		search.setPercentResampleSize(parameters.getDouble(BootstrapParams.PERCENT_RESAMPLE_SIZE));
+            search.setResamplingWithReplacement(parameters.getBoolean(BootstrapParams.RESAMPLING_WITH_REPLACEMENT));
             
             ResamplingEdgeEnsemble edgeEnsemble = ResamplingEdgeEnsemble.Highest;
-            switch (parameters.getInt("resamplingEnsemble", 1)) {
+            switch (parameters.getInt(BootstrapParams.RESAMPLING_ENSEMBLE, 1)) {
                 case 0:
                     edgeEnsemble = ResamplingEdgeEnsemble.Preserved;
                     break;
@@ -112,10 +114,10 @@ public class ImagesPcStableMax implements MultiDataSetAlgorithm, HasKnowledge {
                     edgeEnsemble = ResamplingEdgeEnsemble.Majority;
             }
 			search.setEdgeEnsemble(edgeEnsemble);
-			search.setAddOriginalDataset(parameters.getBoolean("addOriginalDataset"));
+			search.setAddOriginalDataset(parameters.getBoolean(BootstrapParams.ADD_ORIGINAL_DATASET));
 			
 			search.setParameters(parameters);
-			search.setVerbose(parameters.getBoolean("verbose"));
+			search.setVerbose(parameters.getBoolean(Params.VERBOSE));
 			return search.search();
     	}
     }
@@ -138,19 +140,19 @@ public class ImagesPcStableMax implements MultiDataSetAlgorithm, HasKnowledge {
     @Override
     public List<String> getParameters() {
         List<String> parameters = new ArrayList<>();
-        parameters.add("penaltyDiscount");
+        parameters.add(Params.PENALTY_DISCOUNT);
 
-        parameters.add("depth");
-        parameters.add("orientVisibleFeedbackLoops");
-        parameters.add("useMaxPOrientationHeuristic");
-        parameters.add("maxPOrientationMaxPathLength");
-        parameters.add("applyR1");
-        parameters.add("orientTowardDConnections");
+        parameters.add(Params.DEPTH);
+        parameters.add(Params.ORIENT_VISIBLE_FEEDBACK_LOOPS);
+        parameters.add(Params.USE_MAX_P_ORIENTATION_HEURISTIC);
+        parameters.add(Params.MAX_P_ORIENTATION_MAX_PATH_LENGTH);
+        parameters.add(Params.APPLY_R1);
+        parameters.add(Params.ORIENT_TOWARD_DCONNECTIONS);
 
-        parameters.add("numRuns");
-        parameters.add("randomSelectionSize");
+        parameters.add(Params.NUM_RUNS);
+        parameters.add(Params.RANDOM_SELECTION_SIZE);
 
-  	parameters.add("verbose");
+  	parameters.add(Params.VERBOSE);
   		
         return parameters;
     }

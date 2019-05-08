@@ -20,7 +20,7 @@ public class FactorAnalysis implements Algorithm {
     static final long serialVersionUID = 23L;
 
     public Graph search(DataModel ds, Parameters parameters) {
-    	if (parameters.getInt("numberResampling") < 1) {
+    	if (parameters.getInt(BootstrapParams.NUMBER_RESAMPLING) < 1) {
 
             DataSet selectedModel = (DataSet) ds;
 
@@ -80,7 +80,7 @@ public class FactorAnalysis implements Algorithm {
                 }
             }
 
-            if (parameters.getBoolean("verbose")) {
+            if (parameters.getBoolean(Params.VERBOSE)) {
                 NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
 
                 String output = "Unrotated Factor Loading Matrix:\n";
@@ -101,13 +101,13 @@ public class FactorAnalysis implements Algorithm {
     		FactorAnalysis algorithm = new FactorAnalysis();
     		
 			DataSet data = (DataSet) ds;
-			GeneralResamplingTest search = new GeneralResamplingTest(data, algorithm, parameters.getInt("numberResampling"));
+			GeneralResamplingTest search = new GeneralResamplingTest(data, algorithm, parameters.getInt(BootstrapParams.NUMBER_RESAMPLING));
 
-			search.setPercentResampleSize(parameters.getDouble("percentResampleSize"));
-            search.setResamplingWithReplacement(parameters.getBoolean("resamplingWithReplacement"));
+			search.setPercentResampleSize(parameters.getDouble(BootstrapParams.PERCENT_RESAMPLE_SIZE));
+            search.setResamplingWithReplacement(parameters.getBoolean(BootstrapParams.RESAMPLING_WITH_REPLACEMENT));
             
             ResamplingEdgeEnsemble edgeEnsemble = ResamplingEdgeEnsemble.Highest;
-            switch (parameters.getInt("resamplingEnsemble", 1)) {
+            switch (parameters.getInt(BootstrapParams.RESAMPLING_ENSEMBLE, 1)) {
                 case 0:
                     edgeEnsemble = ResamplingEdgeEnsemble.Preserved;
                     break;
@@ -118,10 +118,10 @@ public class FactorAnalysis implements Algorithm {
                     edgeEnsemble = ResamplingEdgeEnsemble.Majority;
             }
 			search.setEdgeEnsemble(edgeEnsemble);
-			search.setAddOriginalDataset(parameters.getBoolean("addOriginalDataset"));
+			search.setAddOriginalDataset(parameters.getBoolean(BootstrapParams.ADD_ORIGINAL_DATASET));
 			
 			search.setParameters(parameters);
-			search.setVerbose(parameters.getBoolean("verbose"));
+			search.setVerbose(parameters.getBoolean(Params.VERBOSE));
 			return search.search();
     	}
     }
@@ -169,7 +169,7 @@ public class FactorAnalysis implements Algorithm {
         params.add("useVarimax");
         params.add("convergenceThreshold");
 
-        params.add("verbose");
+        params.add(Params.VERBOSE);
 
         return params;
     }

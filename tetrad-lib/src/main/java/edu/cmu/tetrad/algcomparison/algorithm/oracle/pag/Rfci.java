@@ -10,7 +10,9 @@ import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.DagToPag2;
+import edu.cmu.tetrad.util.BootstrapParams;
 import edu.cmu.tetrad.util.Parameters;
+import edu.cmu.tetrad.util.Params;
 import edu.pitt.dbmi.algo.resampling.GeneralResamplingTest;
 import edu.pitt.dbmi.algo.resampling.ResamplingEdgeEnsemble;
 import java.util.List;
@@ -41,13 +43,13 @@ public class Rfci implements Algorithm, HasKnowledge, TakesIndependenceWrapper {
 
     @Override
     public Graph search(DataModel dataSet, Parameters parameters) {
-    	if (parameters.getInt("numberResampling") < 1) {
+    	if (parameters.getInt(BootstrapParams.NUMBER_RESAMPLING) < 1) {
             edu.cmu.tetrad.search.Rfci search = new edu.cmu.tetrad.search.Rfci(test.getTest(dataSet, parameters));
             search.setKnowledge(knowledge);
-            search.setDepth(parameters.getInt("depth"));
-            search.setMaxPathLength(parameters.getInt("maxPathLength"));
-            search.setCompleteRuleSetUsed(parameters.getBoolean("completeRuleSetUsed"));
-            search.setVerbose(parameters.getBoolean("verbose"));
+            search.setDepth(parameters.getInt(Params.DEPTH));
+            search.setMaxPathLength(parameters.getInt(Params.MAX_PATH_LENGTH));
+            search.setCompleteRuleSetUsed(parameters.getBoolean(Params.COMPLETE_RULE_SET_USED));
+            search.setVerbose(parameters.getBoolean(Params.VERBOSE));
             return search.search();
         } else {
             Rfci algorithm = new Rfci(test);
@@ -56,14 +58,14 @@ public class Rfci implements Algorithm, HasKnowledge, TakesIndependenceWrapper {
 //      		algorithm.setInitialGraph(initialGraph);
 //  		}
             DataSet data = (DataSet) dataSet;
-            GeneralResamplingTest search = new GeneralResamplingTest(data, algorithm, parameters.getInt("numberResampling"));
+            GeneralResamplingTest search = new GeneralResamplingTest(data, algorithm, parameters.getInt(BootstrapParams.NUMBER_RESAMPLING));
             search.setKnowledge(knowledge);
 
-            search.setPercentResampleSize(parameters.getDouble("percentResampleSize"));
-            search.setResamplingWithReplacement(parameters.getBoolean("resamplingWithReplacement"));
+            search.setPercentResampleSize(parameters.getDouble(BootstrapParams.PERCENT_RESAMPLE_SIZE));
+            search.setResamplingWithReplacement(parameters.getBoolean(BootstrapParams.RESAMPLING_WITH_REPLACEMENT));
             
             ResamplingEdgeEnsemble edgeEnsemble = ResamplingEdgeEnsemble.Highest;
-            switch (parameters.getInt("resamplingEnsemble", 1)) {
+            switch (parameters.getInt(BootstrapParams.RESAMPLING_ENSEMBLE, 1)) {
                 case 0:
                     edgeEnsemble = ResamplingEdgeEnsemble.Preserved;
                     break;
@@ -74,10 +76,10 @@ public class Rfci implements Algorithm, HasKnowledge, TakesIndependenceWrapper {
                     edgeEnsemble = ResamplingEdgeEnsemble.Majority;
             }
             search.setEdgeEnsemble(edgeEnsemble);
-            search.setAddOriginalDataset(parameters.getBoolean("addOriginalDataset"));
+            search.setAddOriginalDataset(parameters.getBoolean(BootstrapParams.ADD_ORIGINAL_DATASET));
             
             search.setParameters(parameters);
-            search.setVerbose(parameters.getBoolean("verbose"));
+            search.setVerbose(parameters.getBoolean(Params.VERBOSE));
             return search.search();
         }
     }
@@ -99,11 +101,11 @@ public class Rfci implements Algorithm, HasKnowledge, TakesIndependenceWrapper {
     @Override
     public List<String> getParameters() {
         List<String> parameters = test.getParameters();
-        parameters.add("depth");
-        parameters.add("maxPathLength");
-        parameters.add("completeRuleSetUsed");
+        parameters.add(Params.DEPTH);
+        parameters.add(Params.MAX_PATH_LENGTH);
+        parameters.add(Params.COMPLETE_RULE_SET_USED);
 
-        parameters.add("verbose");
+        parameters.add(Params.VERBOSE);
         return parameters;
     }
 
