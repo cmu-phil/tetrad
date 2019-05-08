@@ -60,8 +60,8 @@ public final class TestDagToMag {
 
 //    @Test
 //    public void testDagToMag14() {
-//        String inputDag = "Latent(L)<--X1,Latent(L)<--X2,X1-->X3,X3-->X4,X2-->X3";
-//        checkConvertAdjacency(inputDag, false);
+//        String inputDag = "Latent(L)<--X1,Latent(L)<--X2,X1-->X3,X3-->X4,X2-->X3,X2-->X4";
+//        checkConvertAdjacency(inputDag, true);
 //
 //        String outputMag = "X1<->X2,X1-->X3,X2-->X3,X3-->X4";
 //        checkDagToMag(inputDag, outputMag, true);
@@ -112,6 +112,7 @@ public final class TestDagToMag {
         Graph dag = GraphConverter.convert(inputDag);
 
         // Set up DagToPag2 (just for the purpose of checking adjacency).
+        Graph pag_original = new DagToPag2(dag).convert();
         Graph pag = new DagToPag2(dag).convert();
 
         // Set up DagToMag.
@@ -126,8 +127,8 @@ public final class TestDagToMag {
         if (verbose) {
             System.out.println("Start checkConvertAdjacency ... ");
             System.out.println("inputDag\n" + dag);
-            System.out.println("DagToPag2\n" + pag);
-            System.out.println("DagToMag\n" + resultMag);
+            System.out.println("DagToPag2\n" + pag_original);
+            System.out.println("DagToMag (adjacencies only)\n" + resultMag);
         }
 
         // Do test.
