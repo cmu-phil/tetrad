@@ -11,7 +11,6 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.*;
-import edu.cmu.tetrad.util.BootstrapParams;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 import edu.cmu.tetrad.util.TetradLogger;
@@ -44,7 +43,7 @@ public class Fofc implements Algorithm, TakesInitialGraph, HasKnowledge, Cluster
 
     @Override
     public Graph search(DataModel dataSet, Parameters parameters) {
-    	if (parameters.getInt(BootstrapParams.NUMBER_RESAMPLING) < 1) {
+    	if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
             ICovarianceMatrix cov = DataUtils.getCovMatrix(dataSet);
             double alpha = parameters.getDouble(Params.ALPHA);
 
@@ -118,14 +117,14 @@ public class Fofc implements Algorithm, TakesInitialGraph, HasKnowledge, Cluster
 //  		}
 
             DataSet data = (DataSet) dataSet;
-            GeneralResamplingTest search = new GeneralResamplingTest(data, algorithm, parameters.getInt(BootstrapParams.NUMBER_RESAMPLING));
+            GeneralResamplingTest search = new GeneralResamplingTest(data, algorithm, parameters.getInt(Params.NUMBER_RESAMPLING));
             search.setKnowledge(knowledge);
             
-            search.setPercentResampleSize(parameters.getDouble(BootstrapParams.PERCENT_RESAMPLE_SIZE));
-            search.setResamplingWithReplacement(parameters.getBoolean(BootstrapParams.RESAMPLING_WITH_REPLACEMENT));
+            search.setPercentResampleSize(parameters.getDouble(Params.PERCENT_RESAMPLE_SIZE));
+            search.setResamplingWithReplacement(parameters.getBoolean(Params.RESAMPLING_WITH_REPLACEMENT));
             
             ResamplingEdgeEnsemble edgeEnsemble = ResamplingEdgeEnsemble.Highest;
-            switch (parameters.getInt(BootstrapParams.RESAMPLING_ENSEMBLE, 1)) {
+            switch (parameters.getInt(Params.RESAMPLING_ENSEMBLE, 1)) {
                 case 0:
                     edgeEnsemble = ResamplingEdgeEnsemble.Preserved;
                     break;
@@ -136,7 +135,7 @@ public class Fofc implements Algorithm, TakesInitialGraph, HasKnowledge, Cluster
                     edgeEnsemble = ResamplingEdgeEnsemble.Majority;
             }
             search.setEdgeEnsemble(edgeEnsemble);
-            search.setAddOriginalDataset(parameters.getBoolean(BootstrapParams.ADD_ORIGINAL_DATASET));
+            search.setAddOriginalDataset(parameters.getBoolean(Params.ADD_ORIGINAL_DATASET));
             
             search.setParameters(parameters);
             search.setVerbose(parameters.getBoolean(Params.VERBOSE));
