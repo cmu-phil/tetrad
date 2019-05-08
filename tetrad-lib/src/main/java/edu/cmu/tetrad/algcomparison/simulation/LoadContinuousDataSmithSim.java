@@ -7,7 +7,7 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.Parameters;
-
+import edu.cmu.tetrad.util.Params;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -76,10 +76,10 @@ public class LoadContinuousDataSmithSim implements Simulation, HasParameterValue
             }
         }
 
-        if (parameters.get("numRuns") != null) {
-            parameters.set("numRuns", parameters.get("numRuns"));
+        if (parameters.get(Params.NUM_RUNS) != null) {
+            parameters.set(Params.NUM_RUNS, parameters.get(Params.NUM_RUNS));
         } else {
-            parameters.set("numRuns", dataSets.size());
+            parameters.set(Params.NUM_RUNS, dataSets.size());
         }
 
         System.out.println();

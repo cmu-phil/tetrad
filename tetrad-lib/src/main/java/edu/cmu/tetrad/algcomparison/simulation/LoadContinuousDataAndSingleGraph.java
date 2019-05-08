@@ -8,7 +8,7 @@ import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.util.Parameters;
-
+import edu.cmu.tetrad.util.Params;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
@@ -74,10 +74,10 @@ public class LoadContinuousDataAndSingleGraph implements Simulation, HasParamete
             GraphUtils.circleLayout(this.graph, 225, 200, 150);
         }
 
-        if (parameters.get("numRuns") != null) {
-            parameters.set("numRuns", parameters.get("numRuns"));
+        if (parameters.get(Params.NUM_RUNS) != null) {
+            parameters.set(Params.NUM_RUNS, parameters.get(Params.NUM_RUNS));
         } else {
-            parameters.set("numRuns", dataSets.size());
+            parameters.set(Params.NUM_RUNS, dataSets.size());
         }
 
         System.out.println();
