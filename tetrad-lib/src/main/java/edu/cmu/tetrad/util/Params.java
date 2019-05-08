@@ -18,6 +18,16 @@
  */
 package edu.cmu.tetrad.util;
 
+import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
+import edu.cmu.tetrad.algcomparison.utils.TakesIndependenceWrapper;
+import edu.cmu.tetrad.algcomparison.utils.UsesScoreWrapper;
+import edu.cmu.tetrad.annotation.Bootstrapping;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.stream.Collectors;
+
 /**
  *
  * May 7, 2019 2:53:27 PM
@@ -26,6 +36,7 @@ package edu.cmu.tetrad.util;
  */
 public final class Params {
 
+    public static final String ADD_ORIGINAL_DATASET = "addOriginalDataset";
     public static final String ALPHA = "alpha";
     public static final String APPLY_R1 = "applyR1";
     public static final String AVG_DEGREE = "avgDegree";
@@ -114,17 +125,21 @@ public final class Params {
     public static final String NUM_RUNS = "numRuns";
     public static final String NUM_STRUCTURAL_EDGES = "numStructuralEdges";
     public static final String NUM_STRUCTURAL_NODES = "numStructuralNodes";
+    public static final String NUMBER_RESAMPLING = "numberResampling";
     public static final String ORIENT_TOWARD_DCONNECTIONS = "orientTowardDConnections";
     public static final String ORIENT_VISIBLE_FEEDBACK_LOOPS = "orientVisibleFeedbackLoops";
     public static final String OUTPUT_RBD = "outputRBD";
     public static final String PENALTY_DISCOUNT = "penaltyDiscount";
     public static final String PERCENT_DISCRETE = "percentDiscrete";
+    public static final String PERCENT_RESAMPLE_SIZE = "percentResampleSize";
     public static final String POSSIBLE_DSEP_DONE = "possibleDsepDone";
     public static final String PROB_CYCLE = "probCycle";
     public static final String PROB_TWO_CYCLE = "probTwoCycle";
     public static final String RANDOM_SELECTION_SIZE = "randomSelectionSize";
     public static final String RANDOMIZE_COLUMNS = "randomizeColumns";
     public static final String RCIT_NUM_FEATURES = "rcitNumFeatures";
+    public static final String RESAMPLING_ENSEMBLE = "resamplingEnsemble";
+    public static final String RESAMPLING_WITH_REPLACEMENT = "resamplingWithReplacement";
     public static final String SAMPLE_PRIOR = "samplePrior";
     public static final String SAMPLE_SIZE = "sampleSize";
     public static final String SAVE_LATENT_VARS = "saveLatentVars";
@@ -155,7 +170,82 @@ public final class Params {
     public static final String VAR_LOW = "varLow";
     public static final String VERBOSE = "verbose";
 
+    private static final Set<String> ALL_PARAMS = new HashSet<>(Arrays.asList(
+            ADD_ORIGINAL_DATASET, ALPHA, APPLY_R1, AVG_DEGREE, BASIS_TYPE,
+            CCI_SCORE_ALPHA, CG_EXACT, COEF_HIGH, COEF_LOW, COEF_SYMMETRIC,
+            COLLIDER_DISCOVERY_RULE, COMPLETE_RULE_SET_USED, CONCURRENT_FAS,
+            CONFLICT_RULE, CONNECTED, COV_HIGH, COV_LOW, COV_SYMMETRIC,
+            CUTOFF_CONSTRAIN_SEARCH, CUTOFF_DATA_SEARCH, CUTOFF_IND_TEST,
+            DATA_TYPE, DEPTH, DETERMINISM_THRESHOLD, DIFFERENT_GRAPHS, DISCRETIZE,
+            DO_COLLIDER_ORIENTATION, ERRORS_NORMAL, EXTRA_EDGE_THRESHOLD,
+            FAITHFULNESS_ASSUMED, FAS_RULE, FISHER_EPSILON, GENERAL_SEM_ERROR_TEMPLATE,
+            GENERAL_SEM_FUNCTION_TEMPLATE_LATENT, GENERAL_SEM_FUNCTION_TEMPLATE_MEASURED,
+            GENERAL_SEM_PARAMETER_TEMPLATE, IA, INCLUDE_NEGATIVE_COEFS,
+            INCLUDE_NEGATIVE_SKEWS_FOR_BETA, INCLUDE_POSITIVE_COEFS,
+            INCLUDE_POSITIVE_SKEWS_FOR_BETA, INCLUDE_STRUCTURE_MODEL,
+            INTERVAL_BETWEEN_RECORDINGS, INTERVAL_BETWEEN_SHOCKS, IPEN, IS, ITR,
+            KCI_ALPHA, KCI_CUTOFF, KCI_EPSILON, KCI_NUM_BOOTSTRAPS, KCI_USE_APPROMATION,
+            KERNEL_MULTIPLIER, KERNEL_REGRESSION_SAMPLE_SIZE, KERNEL_TYPE, KERNEL_WIDTH,
+            LATENT_MEASURED_IMPURE_PARENTS, LOWER_BOUND, MAX_CATEGORIES, MAX_DEGREE,
+            MAX_DISTINCT_VALUES_DISCRETE, MAX_INDEGREE, MAX_ITERATIONS, MAX_OUTDEGREE,
+            MAX_P_ORIENTATION_MAX_PATH_LENGTH, MAX_PATH_LENGTH, MAXIT, MEAN_HIGH,
+            MEAN_LOW, MEASURED_MEASURED_IMPURE_ASSOCIATIONS, MEASURED_MEASURED_IMPURE_PARENTS,
+            MEASUREMENT_MODEL_DEGREE, MEASUREMENT_VARIANCE, MGM_PARAM1, MGM_PARAM2, MGM_PARAM3,
+            MIN_CATEGORIES, NO_RANDOMLY_DETERMINED_INDEPENDENCE, NUM_BASIS_FUNCTIONS,
+            NUM_BSC_BOOTSTRAP_SAMPLES, NUM_CATEGORIES, NUM_CATEGORIES_TO_DISCRETIZE, NUM_LAGS,
+            NUM_LATENTS, NUM_MEASURES, NUM_RANDOMIZED_SEARCH_MODELS, NUM_RUNS,
+            NUM_STRUCTURAL_EDGES, NUM_STRUCTURAL_NODES, NUMBER_RESAMPLING,
+            ORIENT_TOWARD_DCONNECTIONS, ORIENT_VISIBLE_FEEDBACK_LOOPS, OUTPUT_RBD,
+            PENALTY_DISCOUNT, PERCENT_DISCRETE, PERCENT_RESAMPLE_SIZE, POSSIBLE_DSEP_DONE,
+            PROB_CYCLE, PROB_TWO_CYCLE, RANDOM_SELECTION_SIZE, RANDOMIZE_COLUMNS,
+            RCIT_NUM_FEATURES, RESAMPLING_ENSEMBLE, RESAMPLING_WITH_REPLACEMENT, SAMPLE_PRIOR,
+            SAMPLE_SIZE, SAVE_LATENT_VARS, SCALE_FREE_ALPHA, SCALE_FREE_BETA, SCALE_FREE_DELTA_IN,
+            SCALE_FREE_DELTA_OUT, SELF_LOOP_COEF, SKIP_NUM_RECORDS, STABLE_FAS, STANDARDIZE,
+            STRUCTURE_PRIOR, SYMMETRIC_FIRST_STEP, TARGET_NAME, THR, THRESHOLD_FOR_NUM_EIGENVALUES,
+            THRESHOLD_NO_RANDOM_CONSTRAIN_SEARCH, THRESHOLD_NO_RANDOM_DATA_SEARCH, TWO_CYCLE_ALPHA,
+            UPPER_BOUND, USE_CORR_DIFF_ADJACENCIES, USE_FAS_ADJACENCIES, USE_GAP,
+            USE_MAX_P_ORIENTATION_HEURISTIC, USE_SKEW_ADJACENCIES, USE_WISHART, VAR_HIGH,
+            VAR_LOW, VERBOSE
+    ));
+
+    private static final Set<String> BOOTSTRAPPING_PARAMS = new HashSet<>(Arrays.asList(
+            ADD_ORIGINAL_DATASET,
+            NUMBER_RESAMPLING,
+            PERCENT_RESAMPLE_SIZE,
+            RESAMPLING_ENSEMBLE,
+            RESAMPLING_WITH_REPLACEMENT
+    ));
+
     private Params() {
+    }
+
+    public static Set<String> getAlgorithmParameters(Algorithm algorithm) {
+        return algorithm.getParameters()
+                .stream().collect(Collectors.toSet());
+    }
+
+    public static Set<String> getTestParameters(Algorithm algorithm) {
+        return (algorithm instanceof TakesIndependenceWrapper)
+                ? ((TakesIndependenceWrapper) algorithm).getIndependenceWrapper().getParameters()
+                        .stream().collect(Collectors.toSet())
+                : Collections.EMPTY_SET;
+    }
+
+    public static Set<String> getScoreParameters(Algorithm algorithm) {
+        return (algorithm instanceof UsesScoreWrapper)
+                ? ((UsesScoreWrapper) algorithm).getScoreWarpper().getParameters()
+                        .stream().collect(Collectors.toSet())
+                : Collections.EMPTY_SET;
+    }
+
+    public static Set<String> getBootstrappingParameters(Algorithm algorithm) {
+        return (algorithm.getClass().isAnnotationPresent(Bootstrapping.class))
+                ? BOOTSTRAPPING_PARAMS
+                : Collections.EMPTY_SET;
+    }
+
+    public static final Set<String> getParameters() {
+        return ALL_PARAMS;
     }
 
 }
