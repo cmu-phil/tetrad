@@ -18,6 +18,7 @@ import edu.cmu.tetrad.util.Params;
 import edu.pitt.dbmi.algo.resampling.GeneralResamplingTest;
 import edu.pitt.dbmi.algo.resampling.ResamplingEdgeEnsemble;
 import java.io.PrintStream;
+import java.util.ArrayList;
 import java.util.List;
 
 
@@ -117,8 +118,8 @@ public class Gfci implements Algorithm, HasKnowledge, UsesScoreWrapper, TakesInd
 
     @Override
     public List<String> getParameters() {
-        List<String> parameters = test.getParameters();
-        parameters.addAll(score.getParameters());
+        List<String> parameters = new ArrayList<>();
+
         parameters.add(Params.FAITHFULNESS_ASSUMED);
         parameters.add(Params.MAX_DEGREE);
 //        parameters.add("printStream");

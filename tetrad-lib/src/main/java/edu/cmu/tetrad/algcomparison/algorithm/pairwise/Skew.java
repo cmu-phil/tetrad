@@ -17,7 +17,6 @@ import edu.cmu.tetrad.util.Params;
 import edu.pitt.dbmi.algo.resampling.GeneralResamplingTest;
 import edu.pitt.dbmi.algo.resampling.ResamplingEdgeEnsemble;
 import java.util.ArrayList;
-import java.util.LinkedList;
 import java.util.List;
 
 /**
@@ -115,7 +114,7 @@ public class Skew implements Algorithm, TakesInitialGraph {
 
     @Override
     public List<String> getParameters() {
-        List<String> parameters = new LinkedList<>();
+        List<String> parameters = new ArrayList<>();
 
         if (algorithm != null && !algorithm.getParameters().isEmpty()) {
             parameters.addAll(algorithm.getParameters());

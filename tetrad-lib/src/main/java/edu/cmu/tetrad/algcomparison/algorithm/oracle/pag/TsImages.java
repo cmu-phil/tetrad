@@ -123,7 +123,7 @@ public class TsImages implements Algorithm, HasKnowledge, MultiDataSetAlgorithm,
 
     @Override
     public List<String> getParameters() {
-        List<String> parameters = score.getParameters();
+        List<String> parameters = new ArrayList<>();
         parameters.add(Params.NUM_RUNS);
         parameters.add(Params.RANDOM_SELECTION_SIZE);
 

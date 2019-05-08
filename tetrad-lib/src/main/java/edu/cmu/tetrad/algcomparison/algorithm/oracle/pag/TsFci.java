@@ -19,6 +19,7 @@ import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 import edu.pitt.dbmi.algo.resampling.GeneralResamplingTest;
 import edu.pitt.dbmi.algo.resampling.ResamplingEdgeEnsemble;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -117,7 +118,7 @@ public class TsFci implements Algorithm, TakesInitialGraph, HasKnowledge, TakesI
 
     @Override
     public List<String> getParameters() {
-        List<String> parameters = test.getParameters();
+        List<String> parameters = new ArrayList<>();
 
         parameters.add(Params.VERBOSE);
         return parameters;

@@ -1,8 +1,6 @@
 package edu.cmu.tetrad.algcomparison.algorithm.multi;
 
 import edu.cmu.tetrad.algcomparison.algorithm.MultiDataSetAlgorithm;
-import edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern.Fges;
-import edu.cmu.tetrad.algcomparison.score.SemBicScore;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.annotation.AlgType;
 import edu.cmu.tetrad.annotation.Bootstrapping;
@@ -140,7 +138,7 @@ public class MultiFask implements MultiDataSetAlgorithm, HasKnowledge {
 
     @Override
     public List<String> getParameters() {
-        List<String> parameters = new Fges(new SemBicScore(), false).getParameters();
+        List<String> parameters = new ArrayList<>();
         parameters.add(Params.NUM_RUNS);
         parameters.add(Params.RANDOM_SELECTION_SIZE);
         
