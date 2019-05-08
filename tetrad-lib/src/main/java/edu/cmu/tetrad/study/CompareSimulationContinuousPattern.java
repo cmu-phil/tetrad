@@ -32,18 +32,19 @@ public class CompareSimulationContinuousPattern {
     public static void main(String... args) {
         Parameters parameters = new Parameters();
         // int sampleSize = 500;
+        boolean hasLatent = true;
 
         parameters.set("numRuns", 6);
-        parameters.set("numMeasures", 10, 15);
+        parameters.set("numMeasures", 10, 15, 20);
 
         // Latents
-        parameters.set("numLatents", 2, 4, 6);
+        if (hasLatent) parameters.set("numLatents", 2, 4, 6);
 
         parameters.set("avgDegree", 2, 4, 6);
         parameters.set("sampleSize", 250, 500, 1000, 2000); // This varies.
         parameters.set("differentGraphs", true);
 
-        parameters.set("alpha", 0.05, 0.01);
+        parameters.set("alpha", 0.01);
 
         parameters.set("maxDegree", 30);
 
@@ -53,25 +54,25 @@ public class CompareSimulationContinuousPattern {
         parameters.set("varLow", 1.0);
         parameters.set("varHigh", 3.0);
 
-        // parameters.set("colliderDiscoveryRule", 2, 3);
-        // parameters.set("conflictRule", 1, 3);
+//         parameters.set("colliderDiscoveryRule", 2, 3);
+//         parameters.set("conflictRule", 1, 3);
         parameters.set("penaltyDiscount", 2); // originally is 1, 2, 3, 4
         parameters.set("discretize", true);
 
         Statistics statistics = new Statistics();
 
         statistics.add(new ParameterColumn("sampleSize"));
-
         statistics.add(new ParameterColumn("numMeasures"));
+
         // Latents
-        statistics.add(new ParameterColumn("numLatents"));
+        if (hasLatent) statistics.add(new ParameterColumn("numLatents"));
 
         statistics.add(new ParameterColumn("avgDegree"));
-        statistics.add(new ParameterColumn("alpha"));
+//        statistics.add(new ParameterColumn("alpha"));
 
-        // statistics.add(new ParameterColumn("colliderDiscoveryRule"));
-        // statistics.add(new ParameterColumn("conflictRule"));
-        // statistics.add(new ParameterColumn("penaltyDiscount"));
+//         statistics.add(new ParameterColumn("colliderDiscoveryRule"));
+//         statistics.add(new ParameterColumn("conflictRule"));
+//         statistics.add(new ParameterColumn("penaltyDiscount"));
 
         statistics.add(new AdjacencyPrecision());
         statistics.add(new AdjacencyRecall());
@@ -83,10 +84,10 @@ public class CompareSimulationContinuousPattern {
 
         statistics.setWeight("AP", 1.0);
         statistics.setWeight("AR", 1.0);
-        // statistics.setWeight("AHP", 1.0);
-        // statistics.setWeight("AHR", 1.0);
-        // statistics.setWeight("TP", 1.0);
-        // statistics.setWeight("TR", 1.0);
+//         statistics.setWeight("AHP", 1.0);
+//         statistics.setWeight("AHR", 1.0);
+//         statistics.setWeight("TP", 1.0);
+//         statistics.setWeight("TR", 1.0);
 
         Algorithms algorithms = new Algorithms();
 
@@ -128,7 +129,12 @@ public class CompareSimulationContinuousPattern {
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd_HH:mm:ss");
         String timeNow = sdf.format(cal.getTime());
 
-        comparison.compareFromSimulations("comparison.continuous.pattern", simulations, timeNow + ".txt", algorithms,
-                statistics, parameters);
+        if (hasLatent) {
+            comparison.compareFromSimulations("comparison.continuous.pattern", simulations,
+                    "patternLatent" + timeNow + ".txt", algorithms, statistics, parameters);
+        } else {
+            comparison.compareFromSimulations("comparison.continuous.pattern", simulations,
+                    "patternNoLatent" + timeNow + ".txt", algorithms, statistics, parameters);
+        }
     }
 }

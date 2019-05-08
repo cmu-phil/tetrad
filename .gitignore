@@ -32,3 +32,5 @@ tetrad-lib/bin/*
 .project
 .classpath
 .factorypath
+
+comparison.continuous.*
