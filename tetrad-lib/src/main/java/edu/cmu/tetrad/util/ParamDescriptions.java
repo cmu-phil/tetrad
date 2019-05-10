@@ -46,17 +46,17 @@ public final class ParamDescriptions {
             Set<String> allParams = Params.getParameters();
 
             for (String paramName : allParams) {
-                String valueType = doc.getElementById(paramName + "_value_type").text();
+                String valueType = doc.getElementById(paramName + "_value_type").text().trim();
 
                 // Add params that don't have value types for spalsh screen error
                 if (valueType.equals("")) {
                     paramsMissingValueType.add(paramName);
                 } else {
-                    String shortDescription = doc.getElementById(paramName + "_short_desc").text();
-                    String longDescription = doc.getElementById(paramName + "_long_desc").text();
-                    String defaultValue = doc.getElementById(paramName + "_default_value").text();
-                    String lowerBound = doc.getElementById(paramName + "_lower_bound").text();
-                    String upperBound = doc.getElementById(paramName + "_upper_bound").text();
+                    String shortDescription = doc.getElementById(paramName + "_short_desc").text().trim();
+                    String longDescription = doc.getElementById(paramName + "_long_desc").text().trim();
+                    String defaultValue = doc.getElementById(paramName + "_default_value").text().trim();
+                    String lowerBound = doc.getElementById(paramName + "_lower_bound").text().trim();
+                    String upperBound = doc.getElementById(paramName + "_upper_bound").text().trim();
 
                     if (shortDescription.equals("")) {
                         shortDescription = String.format("Missing short description for %s", paramName);

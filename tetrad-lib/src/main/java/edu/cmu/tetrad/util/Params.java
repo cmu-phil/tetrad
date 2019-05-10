@@ -170,6 +170,7 @@ public final class Params {
     public static final String VAR_LOW = "varLow";
     public static final String VERBOSE = "verbose";
 
+    // System prameters that are not found in the HTML manual
     public static final String PRINT_STREAM = "printStream";
 
     // all parameters in documentation
