@@ -11,10 +11,12 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.Fges;
 import edu.cmu.tetrad.search.SearchGraphUtils;
 import edu.cmu.tetrad.util.Parameters;
+import edu.cmu.tetrad.util.Params;
 import edu.cmu.tetrad.util.RandomUtil;
 import edu.pitt.dbmi.algo.resampling.GeneralResamplingTest;
 import edu.pitt.dbmi.algo.resampling.ResamplingEdgeEnsemble;
 import java.io.PrintStream;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -42,12 +44,12 @@ public class FgesMeasurement implements Algorithm, TakesInitialGraph, HasKnowled
 
     @Override
     public Graph search(DataModel dataModel, Parameters parameters) {
-        if (parameters.getInt("numberResampling") < 1) {
+        if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
             DataSet dataSet = DataUtils.getContinuousDataSet(dataModel);
             dataSet = dataSet.copy();
 
             dataSet = DataUtils.standardizeData(dataSet);
-            double variance = parameters.getDouble("measurementVariance");
+            double variance = parameters.getDouble(Params.MEASUREMENT_VARIANCE);
 
             if (variance > 0) {
                 for (int i = 0; i < dataSet.getNumRows(); i++) {
@@ -60,9 +62,9 @@ public class FgesMeasurement implements Algorithm, TakesInitialGraph, HasKnowled
             }
 
             Fges search = new Fges(score.getScore(dataSet, parameters));
-            search.setFaithfulnessAssumed(parameters.getBoolean("faithfulnessAssumed"));
+            search.setFaithfulnessAssumed(parameters.getBoolean(Params.FAITHFULNESS_ASSUMED));
             search.setKnowledge(knowledge);
-            search.setVerbose(parameters.getBoolean("verbose"));
+            search.setVerbose(parameters.getBoolean(Params.VERBOSE));
 
             Object obj = parameters.get("printStream");
             if (obj instanceof PrintStream) {
@@ -77,14 +79,14 @@ public class FgesMeasurement implements Algorithm, TakesInitialGraph, HasKnowled
                 fgesMeasurement.setInitialGraph(initialGraph);
             }
             DataSet data = (DataSet) dataModel;
-            GeneralResamplingTest search = new GeneralResamplingTest(data, fgesMeasurement, parameters.getInt("numberResampling"));
+            GeneralResamplingTest search = new GeneralResamplingTest(data, fgesMeasurement, parameters.getInt(Params.NUMBER_RESAMPLING));
             search.setKnowledge(knowledge);
 
-            search.setPercentResampleSize(parameters.getDouble("percentResampleSize"));
-            search.setResamplingWithReplacement(parameters.getBoolean("resamplingWithReplacement"));
+            search.setPercentResampleSize(parameters.getDouble(Params.PERCENT_RESAMPLE_SIZE));
+            search.setResamplingWithReplacement(parameters.getBoolean(Params.RESAMPLING_WITH_REPLACEMENT));
 
             ResamplingEdgeEnsemble edgeEnsemble = ResamplingEdgeEnsemble.Highest;
-            switch (parameters.getInt("resamplingEnsemble", 1)) {
+            switch (parameters.getInt(Params.RESAMPLING_ENSEMBLE, 1)) {
                 case 0:
                     edgeEnsemble = ResamplingEdgeEnsemble.Preserved;
                     break;
@@ -95,10 +97,10 @@ public class FgesMeasurement implements Algorithm, TakesInitialGraph, HasKnowled
                     edgeEnsemble = ResamplingEdgeEnsemble.Majority;
             }
             search.setEdgeEnsemble(edgeEnsemble);
-            search.setAddOriginalDataset(parameters.getBoolean("addOriginalDataset"));
+            search.setAddOriginalDataset(parameters.getBoolean(Params.ADD_ORIGINAL_DATASET));
             
             search.setParameters(parameters);
-            search.setVerbose(parameters.getBoolean("verbose"));
+            search.setVerbose(parameters.getBoolean(Params.VERBOSE));
             return search.search();
         }
     }
@@ -120,11 +122,11 @@ public class FgesMeasurement implements Algorithm, TakesInitialGraph, HasKnowled
 
     @Override
     public List<String> getParameters() {
-        List<String> parameters = score.getParameters();
-        parameters.add("faithfulnessAssumed");
-        parameters.add("measurementVariance");
+        List<String> parameters = new ArrayList<>();
+        parameters.add(Params.FAITHFULNESS_ASSUMED);
+        parameters.add(Params.MEASUREMENT_VARIANCE);
 
-        parameters.add("verbose");
+        parameters.add(Params.VERBOSE);
 
         return parameters;
     }

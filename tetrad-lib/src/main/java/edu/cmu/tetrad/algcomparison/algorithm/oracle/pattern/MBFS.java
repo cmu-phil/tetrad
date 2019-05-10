@@ -17,8 +17,10 @@ import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.util.Parameters;
+import edu.cmu.tetrad.util.Params;
 import edu.pitt.dbmi.algo.resampling.GeneralResamplingTest;
 import edu.pitt.dbmi.algo.resampling.ResamplingEdgeEnsemble;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -48,14 +50,14 @@ public class MBFS implements Algorithm, HasKnowledge, TakesIndependenceWrapper {
 
     @Override
     public Graph search(DataModel dataSet, Parameters parameters) {
-    	if (parameters.getInt("numberResampling") < 1) {
+    	if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
             IndependenceTest test = this.test.getTest(dataSet, parameters);
-            edu.cmu.tetrad.search.Mbfs search = new edu.cmu.tetrad.search.Mbfs(test, parameters.getInt("depth"));
+            edu.cmu.tetrad.search.Mbfs search = new edu.cmu.tetrad.search.Mbfs(test, parameters.getInt(Params.DEPTH));
 
-            search.setDepth(parameters.getInt("depth"));
+            search.setDepth(parameters.getInt(Params.DEPTH));
             search.setKnowledge(knowledge);
 
-            this.targetName = parameters.getString("targetName");
+            this.targetName = parameters.getString(Params.TARGET_NAME);
             if (targetName.isEmpty()) {
                 throw new IllegalArgumentException("Target variable name needs to be provided.");
             }
@@ -70,7 +72,7 @@ public class MBFS implements Algorithm, HasKnowledge, TakesIndependenceWrapper {
             MBFS algorithm = new MBFS(test);
 
             DataSet data = (DataSet) dataSet;
-            GeneralResamplingTest search = new GeneralResamplingTest(data, algorithm, parameters.getInt("numberResampling"));
+            GeneralResamplingTest search = new GeneralResamplingTest(data, algorithm, parameters.getInt(Params.NUMBER_RESAMPLING));
             search.setKnowledge(knowledge);
 
             search.setPercentResampleSize(parameters.getDouble("percentResampleSize"));
@@ -114,7 +116,7 @@ public class MBFS implements Algorithm, HasKnowledge, TakesIndependenceWrapper {
 
     @Override
     public List<String> getParameters() {
-        List<String> parameters = test.getParameters();
+        List<String> parameters = new ArrayList<>();
         parameters.add("depth");
         parameters.add("targetName");
 

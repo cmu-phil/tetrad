@@ -44,11 +44,8 @@ public class ParamDescriptions {
         
         // Get the description of each parameter
         if (doc != null) {
-            
             Set<String> allParams = Params.getParameters();
-            
-            //Elements elements = doc.getElementsByClass("parameter_description");
-            
+ 
             for (String paramName : allParams) {
                 String valueType = doc.getElementById(paramName + "_value_type").text();
                 
@@ -87,6 +84,9 @@ public class ParamDescriptions {
                     } else if (valueType.equalsIgnoreCase("Boolean")) {
                         boolean defaultValueBoolean = defaultValue.equalsIgnoreCase("true");
                         paramDescription = new ParamDescription(paramName, shortDescription, longDescription, defaultValueBoolean);
+                    } else if (valueType.equalsIgnoreCase("String")) {
+                        String defaultValueString = defaultValue.toString();
+                        paramDescription = new ParamDescription(paramName, shortDescription, longDescription, defaultValueString);
                     } else {
                         Serializable defaultValueSerializable = (Serializable) defaultValue;
                         paramDescription = new ParamDescription(paramName, shortDescription, longDescription, defaultValueSerializable);

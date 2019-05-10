@@ -46,7 +46,7 @@ public class GesMe implements Algorithm, TakesInitialGraph/*, HasKnowledge*/ {
 
     @Override
     public Graph search(DataModel dataSet, Parameters parameters) {
-    	if (parameters.getInt("numberResampling") < 1) {
+    	if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
 //          dataSet = DataUtils.center((DataSet) dataSet);
             CovarianceMatrix covarianceMatrix = new CovarianceMatrix((DataSet) dataSet);
 
@@ -58,7 +58,7 @@ public class GesMe implements Algorithm, TakesInitialGraph/*, HasKnowledge*/ {
             TetradMatrix unrotated = analysis.successiveResidual();
             TetradMatrix rotated = analysis.successiveFactorVarimax(unrotated);
 
-            if (parameters.getBoolean("verbose")) {
+            if (parameters.getBoolean(Params.VERBOSE)) {
                 NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
 
                 String output = "Unrotated Factor Loading Matrix:\n";
@@ -140,22 +140,22 @@ public class GesMe implements Algorithm, TakesInitialGraph/*, HasKnowledge*/ {
             Score score = this.score.getScore(covFa, parameters);
 
             edu.cmu.tetrad.search.Fges2 search = new edu.cmu.tetrad.search.Fges2(score);
-            search.setFaithfulnessAssumed(parameters.getBoolean("faithfulnessAssumed"));
+            search.setFaithfulnessAssumed(parameters.getBoolean(Params.FAITHFULNESS_ASSUMED));
 
             if (parameters.getBoolean("enforceMinimumLeafNodes")) {
                 search.setKnowledge(knowledge2);
             }
 
-            search.setVerbose(parameters.getBoolean("verbose"));
-            search.setMaxDegree(parameters.getInt("maxDegree"));
-            search.setSymmetricFirstStep(parameters.getBoolean("symmetricFirstStep"));
+            search.setVerbose(parameters.getBoolean(Params.VERBOSE));
+            search.setMaxDegree(parameters.getInt(Params.MAX_DEGREE));
+            search.setSymmetricFirstStep(parameters.getBoolean(Params.SYMMETRIC_FIRST_STEP));
 
             Object obj = parameters.get("printStream");
             if (obj instanceof PrintStream) {
                 search.setOut((PrintStream) obj);
             }
 
-            if (parameters.getBoolean("verbose")) {
+            if (parameters.getBoolean(Params.VERBOSE)) {
 //                NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
                 String output = "Unrotated Factor Loading Matrix:\n";
                 double threshold = parameters.getDouble("fa_threshold");
@@ -181,13 +181,13 @@ public class GesMe implements Algorithm, TakesInitialGraph/*, HasKnowledge*/ {
 				algorithm.setInitialGraph(initialGraph);
 			}
 			DataSet data = (DataSet) dataSet;
-			GeneralResamplingTest search = new GeneralResamplingTest(data, algorithm, parameters.getInt("numberResampling"));
+			GeneralResamplingTest search = new GeneralResamplingTest(data, algorithm, parameters.getInt(Params.NUMBER_RESAMPLING));
 
-			search.setPercentResampleSize(parameters.getDouble("percentResampleSize"));
-            search.setResamplingWithReplacement(parameters.getBoolean("resamplingWithReplacement"));
+			search.setPercentResampleSize(parameters.getDouble(Params.PERCENT_RESAMPLE_SIZE));
+            search.setResamplingWithReplacement(parameters.getBoolean(Params.RESAMPLING_WITH_REPLACEMENT));
             
             ResamplingEdgeEnsemble edgeEnsemble = ResamplingEdgeEnsemble.Highest;
-            switch (parameters.getInt("resamplingEnsemble", 1)) {
+            switch (parameters.getInt(Params.RESAMPLING_ENSEMBLE, 1)) {
                 case 0:
                     edgeEnsemble = ResamplingEdgeEnsemble.Preserved;
                     break;
@@ -198,10 +198,10 @@ public class GesMe implements Algorithm, TakesInitialGraph/*, HasKnowledge*/ {
                     edgeEnsemble = ResamplingEdgeEnsemble.Majority;
             }
 			search.setEdgeEnsemble(edgeEnsemble);
-			search.setAddOriginalDataset(parameters.getBoolean("addOriginalDataset"));
+			search.setAddOriginalDataset(parameters.getBoolean(Params.ADD_ORIGINAL_DATASET));
 			
 			search.setParameters(parameters);
-			search.setVerbose(parameters.getBoolean("verbose"));
+			search.setVerbose(parameters.getBoolean(Params.VERBOSE));
 			return search.search();
     	}
     }
@@ -227,18 +227,18 @@ public class GesMe implements Algorithm, TakesInitialGraph/*, HasKnowledge*/ {
 
     @Override
     public List<String> getParameters() {
-        List<String> parameters = score.getParameters();
-        parameters.add("symmetricFirstStep");
-        parameters.add("faithfulnessAssumed");
-        parameters.add("maxDegree");
-        parameters.add("determinismThreshold");
+        List<String> parameters = new ArrayList<>();
+        parameters.add(Params.SYMMETRIC_FIRST_STEP);
+        parameters.add(Params.FAITHFULNESS_ASSUMED);
+        parameters.add(Params.MAX_DEGREE);
+        parameters.add(Params.DETERMINISM_THRESHOLD);
         parameters.add("convergenceThreshold");
         parameters.add("fa_threshold");
         parameters.add("numFactors");
         parameters.add("useVarimax");
         parameters.add("enforceMinimumLeafNodes");
 
-        parameters.add("verbose");
+        parameters.add(Params.VERBOSE);
 
         return parameters;
     }
