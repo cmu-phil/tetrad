@@ -19,15 +19,15 @@ import org.junit.Test;
  */
 public class TestParamDescriptions {
     @Test
-    public void testParamsMissingValueType() {
-        List<String> paramsMissingValueType = ParamDescriptions.getInstance().getParamsMissingValueType();
+    public void testUnsupportedParamsValueType() {
+        List<String> paramsWithUnsupportedValueType = ParamDescriptions.getInstance().getParamsWithUnsupportedValueType();
         
-        paramsMissingValueType.forEach(e->{
-            System.out.println("Parameter value type not specified in HTML manual: " + e);
+        paramsWithUnsupportedValueType.forEach(e->{
+            System.out.println("Unsupported parameter value type found in HTML manual for: " + e);
         });
         
         // Require all params in edu.cmu.tetrad.util.Params have value type specified in HTML manual
         // Except the system paramters, like printStream
-        assertEquals(paramsMissingValueType.size(), 0);
+        assertEquals(paramsWithUnsupportedValueType.size(), 0);
     }
 }

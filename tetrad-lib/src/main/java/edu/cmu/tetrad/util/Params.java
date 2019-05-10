@@ -170,11 +170,11 @@ public final class Params {
     public static final String VAR_LOW = "varLow";
     public static final String VERBOSE = "verbose";
 
-    // System prameters that are not found in the HTML manual
+    // System prameters that are not supposed to put in the HTML manual documentation
     public static final String PRINT_STREAM = "printStream";
 
-    // all parameters in documentation
-    private static final Set<String> ALL_PARAMS = new HashSet<>(Arrays.asList(
+    // All parameters that are found in HTML manual documentation
+    private static final Set<String> ALL_PARAMS_IN_HTML_MANUAL = new HashSet<>(Arrays.asList(
             ADD_ORIGINAL_DATASET, ALPHA, APPLY_R1, AVG_DEGREE, BASIS_TYPE,
             CCI_SCORE_ALPHA, CG_EXACT, COEF_HIGH, COEF_LOW, COEF_SYMMETRIC,
             COLLIDER_DISCOVERY_RULE, COMPLETE_RULE_SET_USED, CONCURRENT_FAS,
@@ -249,7 +249,7 @@ public final class Params {
     }
 
     public static final Set<String> getParameters() {
-        return ALL_PARAMS;
+        return ALL_PARAMS_IN_HTML_MANUAL;
     }
 
 }

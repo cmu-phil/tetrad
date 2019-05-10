@@ -27,7 +27,7 @@ public final class ParamDescriptions {
 
     private final Map<String, ParamDescription> map = new TreeMap<>();
 
-    private List<String> paramsMissingValueType = new ArrayList<>();
+    private List<String> paramsWithUnsupportedValueType = new ArrayList<>();
 
     private ParamDescriptions() {
         Document doc = null;
@@ -47,10 +47,13 @@ public final class ParamDescriptions {
 
             for (String paramName : allParams) {
                 String valueType = doc.getElementById(paramName + "_value_type").text().trim();
-
+System.out.println(valueType + "======");
                 // Add params that don't have value types for spalsh screen error
-                if (valueType.equals("")) {
-                    paramsMissingValueType.add(paramName);
+                if (!valueType.equalsIgnoreCase("Integer")
+                        || !valueType.equalsIgnoreCase("Double")
+                        || !valueType.equalsIgnoreCase("Boolean")
+                        || !valueType.equalsIgnoreCase("String")) {
+                    paramsWithUnsupportedValueType.add(paramName);
                 } else {
                     String shortDescription = doc.getElementById(paramName + "_short_desc").text().trim();
                     String longDescription = doc.getElementById(paramName + "_long_desc").text().trim();
@@ -86,10 +89,7 @@ public final class ParamDescriptions {
                     } else if (valueType.equalsIgnoreCase("String")) {
                         String defaultValueString = defaultValue;
                         paramDescription = new ParamDescription(paramName, shortDescription, longDescription, defaultValueString);
-                    } else {
-                        Object defaultValueObject = (Object) defaultValue;
-                        paramDescription = new ParamDescription(paramName, shortDescription, longDescription, defaultValueObject);
-                    }
+                    } 
 
                     map.put(paramName, paramDescription);
                 }
@@ -116,8 +116,8 @@ public final class ParamDescriptions {
         return map.keySet();
     }
 
-    public List<String> getParamsMissingValueType() {
-        return paramsMissingValueType;
+    public List<String> getParamsWithUnsupportedValueType() {
+        return paramsWithUnsupportedValueType;
     }
 
 }
