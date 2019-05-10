@@ -55,7 +55,7 @@ public class PcFges implements Algorithm, TakesInitialGraph, HasKnowledge {
 
             System.out.println("Bound graph done");
 
-            Object obj = parameters.get("printStream");
+            Object obj = parameters.get(Params.PRINT_STREAM);
             if (obj instanceof PrintStream) {
                 search.setOut((PrintStream) obj);
             }

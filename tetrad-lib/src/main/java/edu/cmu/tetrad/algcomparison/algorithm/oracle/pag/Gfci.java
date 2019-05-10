@@ -58,7 +58,7 @@ public class Gfci implements Algorithm, HasKnowledge, UsesScoreWrapper, TakesInd
             search.setMaxPathLength(parameters.getInt(Params.MAX_PATH_LENGTH));
             search.setCompleteRuleSetUsed(parameters.getBoolean(Params.COMPLETE_RULE_SET_USED));
 
-            Object obj = parameters.get("printStream");
+            Object obj = parameters.get(Params.PRINT_STREAM);
 
             if (obj instanceof PrintStream) {
                 search.setOut((PrintStream) obj);

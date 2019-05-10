@@ -68,7 +68,7 @@ public class FgesMb implements Algorithm, TakesInitialGraph, HasKnowledge, UsesS
             search.setVerbose(parameters.getBoolean(Params.VERBOSE));
             search.setMaxDegree(parameters.getInt(Params.MAX_DEGREE));
 
-            Object obj = parameters.get("printStream");
+            Object obj = parameters.get(Params.PRINT_STREAM);
             if (obj instanceof PrintStream) {
                 search.setOut((PrintStream) obj);
             }

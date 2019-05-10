@@ -150,7 +150,7 @@ public class GesMe implements Algorithm, TakesInitialGraph/*, HasKnowledge*/ {
             search.setMaxDegree(parameters.getInt(Params.MAX_DEGREE));
             search.setSymmetricFirstStep(parameters.getBoolean(Params.SYMMETRIC_FIRST_STEP));
 
-            Object obj = parameters.get("printStream");
+            Object obj = parameters.get(Params.PRINT_STREAM);
             if (obj instanceof PrintStream) {
                 search.setOut((PrintStream) obj);
             }

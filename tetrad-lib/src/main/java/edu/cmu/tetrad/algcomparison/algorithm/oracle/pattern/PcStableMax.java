@@ -16,6 +16,7 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.*;
 import edu.cmu.tetrad.search.PcAll;
 import edu.cmu.tetrad.util.Parameters;
+import edu.cmu.tetrad.util.Params;
 import edu.pitt.dbmi.algo.resampling.GeneralResamplingTest;
 import edu.pitt.dbmi.algo.resampling.ResamplingEdgeEnsemble;
 import java.util.ArrayList;
@@ -51,22 +52,22 @@ public class PcStableMax implements Algorithm, TakesInitialGraph, HasKnowledge, 
 
     @Override
     public Graph search(DataModel dataSet, Parameters parameters) {
-        if (parameters.getInt("numberResampling") < 1) {
+        if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
 
             if (algorithm != null) {
 //                initialGraph = algorithm.search(dataSet, parameters);
             }
 
             edu.cmu.tetrad.search.PcAll search = new edu.cmu.tetrad.search.PcAll(test.getTest(dataSet, parameters), initialGraph);
-            search.setDepth(parameters.getInt("depth"));
+            search.setDepth(parameters.getInt(Params.DEPTH));
             search.setKnowledge(knowledge);
             search.setFasType(edu.cmu.tetrad.search.PcAll.FasType.STABLE);
             search.setConcurrent(edu.cmu.tetrad.search.PcAll.Concurrent.NO);
             search.setColliderDiscovery(PcAll.ColliderDiscovery.MAX_P);
             search.setConflictRule(edu.cmu.tetrad.search.PcAll.ConflictRule.PRIORITY);
-            search.setVerbose(parameters.getBoolean("verbose"));
-            search.setUseHeuristic(parameters.getBoolean("useMaxPOrientationHeuristic"));
-            search.setMaxPathLength(parameters.getInt("maxPOrientationMaxPathLength"));
+            search.setVerbose(parameters.getBoolean(Params.VERBOSE));
+            search.setUseHeuristic(parameters.getBoolean(Params.USE_MAX_P_ORIENTATION_HEURISTIC));
+            search.setMaxPathLength(parameters.getInt(Params.MAX_P_ORIENTATION_MAX_PATH_LENGTH));
             return search.search();
         } else {
             PcStableMax pcStableMax = new PcStableMax(test, compareToTrue);
@@ -75,14 +76,14 @@ public class PcStableMax implements Algorithm, TakesInitialGraph, HasKnowledge, 
                 pcStableMax.setInitialGraph(initialGraph);
             }
             DataSet data = (DataSet) dataSet;
-            GeneralResamplingTest search = new GeneralResamplingTest(data, pcStableMax, parameters.getInt("numberResampling"));
+            GeneralResamplingTest search = new GeneralResamplingTest(data, pcStableMax, parameters.getInt(Params.NUMBER_RESAMPLING));
             search.setKnowledge(knowledge);
 
-            search.setPercentResampleSize(parameters.getDouble("percentResampleSize"));
-            search.setResamplingWithReplacement(parameters.getBoolean("resamplingWithReplacement"));
+            search.setPercentResampleSize(parameters.getDouble(Params.PERCENT_RESAMPLE_SIZE));
+            search.setResamplingWithReplacement(parameters.getBoolean(Params.RESAMPLING_WITH_REPLACEMENT));
             
             ResamplingEdgeEnsemble edgeEnsemble = ResamplingEdgeEnsemble.Highest;
-            switch (parameters.getInt("resamplingEnsemble", 1)) {
+            switch (parameters.getInt(Params.RESAMPLING_ENSEMBLE, 1)) {
                 case 0:
                     edgeEnsemble = ResamplingEdgeEnsemble.Preserved;
                     break;
@@ -93,10 +94,10 @@ public class PcStableMax implements Algorithm, TakesInitialGraph, HasKnowledge, 
                     edgeEnsemble = ResamplingEdgeEnsemble.Majority;
             }
             search.setEdgeEnsemble(edgeEnsemble);
-            search.setAddOriginalDataset(parameters.getBoolean("addOriginalDataset"));
+            search.setAddOriginalDataset(parameters.getBoolean(Params.ADD_ORIGINAL_DATASET));
             
             search.setParameters(parameters);
-            search.setVerbose(parameters.getBoolean("verbose"));
+            search.setVerbose(parameters.getBoolean(Params.VERBOSE));
             return search.search();
         }
     }
@@ -125,11 +126,11 @@ public class PcStableMax implements Algorithm, TakesInitialGraph, HasKnowledge, 
     @Override
     public List<String> getParameters() {
         List<String> parameters = new ArrayList<>();
-        parameters.add("depth");
-        parameters.add("useMaxPOrientationHeuristic");
-        parameters.add("maxPOrientationMaxPathLength");
+        parameters.add(Params.DEPTH);
+        parameters.add(Params.USE_MAX_P_ORIENTATION_HEURISTIC);
+        parameters.add(Params.MAX_P_ORIENTATION_MAX_PATH_LENGTH);
 
-        parameters.add("verbose");
+        parameters.add(Params.VERBOSE);
 
         return parameters;
     }
