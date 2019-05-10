@@ -1,7 +1,5 @@
 package edu.cmu.tetrad.util;
 
-import java.io.Serializable;
-
 /**
  * Describes a parameter.
  *
@@ -14,13 +12,13 @@ public class ParamDescription {
     private String paramName;
     private String shortDescription;
     private String longDescription;
-    private Serializable defaultValue;
+    private Object defaultValue;
     private double lowerBoundDouble = Double.NEGATIVE_INFINITY;
     private double upperBoundDouble = Double.POSITIVE_INFINITY;
     private int lowerBoundInt = Integer.MIN_VALUE;
     private int upperBoundInt = Integer.MAX_VALUE;
 
-    public ParamDescription(String paramName, String shortDescription, String longDescription, Serializable defaultValue) {
+    public ParamDescription(String paramName, String shortDescription, String longDescription, Object defaultValue) {
         if (paramName == null) {
             throw new NullPointerException("Target parameter name is null.");
         }
@@ -28,7 +26,7 @@ public class ParamDescription {
         if (shortDescription == null) {
             throw new NullPointerException("Target parameter short description is null.");
         }
-        
+
         if (defaultValue == null) {
             throw new NullPointerException("No default value for " + paramName);
         }
@@ -38,8 +36,8 @@ public class ParamDescription {
         this.longDescription = longDescription;
         this.defaultValue = defaultValue;
     }
-    
-    public ParamDescription(String paramName, String shortDescription, String longDescription, Serializable defaultValue, int lowerBound, int upperBound) {
+
+    public ParamDescription(String paramName, String shortDescription, String longDescription, Object defaultValue, int lowerBound, int upperBound) {
         if (paramName == null) {
             throw new NullPointerException("Target parameter name is null.");
         }
@@ -47,7 +45,7 @@ public class ParamDescription {
         if (shortDescription == null) {
             throw new NullPointerException("Target parameter short description is null.");
         }
-        
+
         if (defaultValue == null) {
             throw new NullPointerException("No default value for " + paramName);
         }
@@ -59,8 +57,8 @@ public class ParamDescription {
         this.lowerBoundInt = lowerBound;
         this.upperBoundInt = upperBound;
     }
-    
-    public ParamDescription(String paramName, String shortDescription, String longDescription, Serializable defaultValue, double lowerBound, double upperBound) {
+
+    public ParamDescription(String paramName, String shortDescription, String longDescription, Object defaultValue, double lowerBound, double upperBound) {
         if (paramName == null) {
             throw new NullPointerException("Target parameter name is null.");
         }
@@ -68,7 +66,7 @@ public class ParamDescription {
         if (shortDescription == null) {
             throw new NullPointerException("Target parameter short description is null.");
         }
-        
+
         if (defaultValue == null) {
             throw new NullPointerException("No default value for " + paramName);
         }
@@ -105,11 +103,11 @@ public class ParamDescription {
         this.longDescription = longDescription;
     }
 
-    public Serializable getDefaultValue() {
+    public Object getDefaultValue() {
         return defaultValue;
     }
 
-    public void setDefaultValue(Serializable defaultValue) {
+    public void setDefaultValue(Object defaultValue) {
         this.defaultValue = defaultValue;
     }
 
@@ -144,5 +142,5 @@ public class ParamDescription {
     public void setUpperBoundInt(int upperBoundInt) {
         this.upperBoundInt = upperBoundInt;
     }
-    
+
 }

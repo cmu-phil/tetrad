@@ -170,6 +170,9 @@ public final class Params {
     public static final String VAR_LOW = "varLow";
     public static final String VERBOSE = "verbose";
 
+    public static final String PRINT_STREAM = "printStream";
+
+    // all parameters in documentation
     private static final Set<String> ALL_PARAMS = new HashSet<>(Arrays.asList(
             ADD_ORIGINAL_DATASET, ALPHA, APPLY_R1, AVG_DEGREE, BASIS_TYPE,
             CCI_SCORE_ALPHA, CG_EXACT, COEF_HIGH, COEF_LOW, COEF_SYMMETRIC,

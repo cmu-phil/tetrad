@@ -2,7 +2,6 @@ package edu.cmu.tetrad.util;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -20,19 +19,19 @@ import org.slf4j.LoggerFactory;
  * @author jdramsey
  * @author Zhou Yuan <zhy19@pitt.edu>
  */
-public class ParamDescriptions {
+public final class ParamDescriptions {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ParamDescriptions.class);
-    
+
     private static final ParamDescriptions INSTANCE = new ParamDescriptions();
 
     private final Map<String, ParamDescription> map = new TreeMap<>();
-    
+
     private List<String> paramsMissingValueType = new ArrayList<>();
 
     private ParamDescriptions() {
         Document doc = null;
-        
+
         // Read the copied maunal/index.html from within the jar
         try (InputStream inputStream = this.getClass().getClassLoader().getResourceAsStream("manual/index.html")) {
             if (inputStream != null) {
@@ -41,14 +40,14 @@ public class ParamDescriptions {
         } catch (IOException ex) {
             LOGGER.error("Failed to read tetrad HTML manual 'maunal/index.html' file from within the jar.", ex);
         }
-        
+
         // Get the description of each parameter
         if (doc != null) {
             Set<String> allParams = Params.getParameters();
- 
+
             for (String paramName : allParams) {
                 String valueType = doc.getElementById(paramName + "_value_type").text();
-                
+
                 // Add params that don't have value types for spalsh screen error
                 if (valueType.equals("")) {
                     paramsMissingValueType.add(paramName);
@@ -62,11 +61,11 @@ public class ParamDescriptions {
                     if (shortDescription.equals("")) {
                         shortDescription = String.format("Missing short description for %s", paramName);
                     }
-                    
+
                     if (longDescription.equals("")) {
                         longDescription = String.format("Missing long description for %s", paramName);
                     }
-                    
+
                     ParamDescription paramDescription = null;
 
                     if (valueType.equalsIgnoreCase("Integer")) {
@@ -85,17 +84,20 @@ public class ParamDescriptions {
                         boolean defaultValueBoolean = defaultValue.equalsIgnoreCase("true");
                         paramDescription = new ParamDescription(paramName, shortDescription, longDescription, defaultValueBoolean);
                     } else if (valueType.equalsIgnoreCase("String")) {
-                        String defaultValueString = defaultValue.toString();
+                        String defaultValueString = defaultValue;
                         paramDescription = new ParamDescription(paramName, shortDescription, longDescription, defaultValueString);
                     } else {
-                        Serializable defaultValueSerializable = (Serializable) defaultValue;
-                        paramDescription = new ParamDescription(paramName, shortDescription, longDescription, defaultValueSerializable);
+                        Object defaultValueObject = (Object) defaultValue;
+                        paramDescription = new ParamDescription(paramName, shortDescription, longDescription, defaultValueObject);
                     }
 
                     map.put(paramName, paramDescription);
                 }
             }
         }
+
+        // add parameters not in documentation
+        map.put(Params.PRINT_STREAM, new ParamDescription(Params.PRINT_STREAM, "printStream", "A writer to print output.", System.out));
     }
 
     public static ParamDescriptions getInstance() {
@@ -113,7 +115,7 @@ public class ParamDescriptions {
     public Set<String> getNames() {
         return map.keySet();
     }
-    
+
     public List<String> getParamsMissingValueType() {
         return paramsMissingValueType;
     }
