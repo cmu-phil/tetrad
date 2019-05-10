@@ -58,7 +58,7 @@ public class AlgorithmParameterPanel extends JPanel {
 
     protected static final String DEFAULT_TITLE_BORDER = "Algorithm Parameters";
 
-    private final JPanel mainPanel = new JPanel();
+    protected final JPanel mainPanel = new JPanel();
 
     public AlgorithmParameterPanel() {
         initComponents();
