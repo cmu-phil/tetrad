@@ -3,6 +3,8 @@ package edu.cmu.tetrad.util;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -18,6 +20,7 @@ import org.slf4j.LoggerFactory;
  *
  * @author jdramsey
  * @author Zhou Yuan <zhy19@pitt.edu>
+ * @author Kevin V. Bui (kvb2@pitt.edu)
  */
 public final class ParamDescriptions {
 
@@ -28,9 +31,23 @@ public final class ParamDescriptions {
     private final Map<String, ParamDescription> map = new TreeMap<>();
 
     private List<String> paramsWithUnsupportedValueType = new ArrayList<>();
-
+    
     private ParamDescriptions() {
         Document doc = null;
+        
+        // Currently supported parameter value types
+        // In HTML manual, must use one of the following types for parameter descriptions
+        final String VALUE_TYPE_STRING = "String";
+        final String VALUE_TYPE_INTEGER = "Integer";
+        final String VALUE_TYPE_DOUBLE = "Double";
+        final String VALUE_TYPE_BOOLEAN = "Boolean";
+
+        final Set<String> PARAM_VALUE_TYPES = new HashSet<>(Arrays.asList(
+            VALUE_TYPE_STRING,
+            VALUE_TYPE_INTEGER,
+            VALUE_TYPE_DOUBLE,
+            VALUE_TYPE_BOOLEAN
+        ));
 
         // Read the copied maunal/index.html from within the jar
         try (InputStream inputStream = this.getClass().getClassLoader().getResourceAsStream("manual/index.html")) {
@@ -47,12 +64,9 @@ public final class ParamDescriptions {
 
             for (String paramName : allParams) {
                 String valueType = doc.getElementById(paramName + "_value_type").text().trim();
-System.out.println(valueType + "======");
+
                 // Add params that don't have value types for spalsh screen error
-                if (!valueType.equalsIgnoreCase("Integer")
-                        || !valueType.equalsIgnoreCase("Double")
-                        || !valueType.equalsIgnoreCase("Boolean")
-                        || !valueType.equalsIgnoreCase("String")) {
+                if (!PARAM_VALUE_TYPES.contains(valueType)) {
                     paramsWithUnsupportedValueType.add(paramName);
                 } else {
                     String shortDescription = doc.getElementById(paramName + "_short_desc").text().trim();
@@ -71,22 +85,22 @@ System.out.println(valueType + "======");
 
                     ParamDescription paramDescription = null;
 
-                    if (valueType.equalsIgnoreCase("Integer")) {
+                    if (valueType.equalsIgnoreCase(VALUE_TYPE_INTEGER)) {
                         int defaultValueInt = Integer.parseInt(defaultValue);
                         int lowerBoundInt = Integer.parseInt(lowerBound);
                         int upperBoundInt = Integer.parseInt(upperBound);
 
                         paramDescription = new ParamDescription(paramName, shortDescription, longDescription, defaultValueInt, lowerBoundInt, upperBoundInt);
-                    } else if (valueType.equalsIgnoreCase("Double")) {
+                    } else if (valueType.equalsIgnoreCase(VALUE_TYPE_DOUBLE)) {
                         double defaultValueDouble = Double.parseDouble(defaultValue);
                         double lowerBoundDouble = Double.parseDouble(lowerBound);
                         double upperBoundDouble = Double.parseDouble(upperBound);
 
                         paramDescription = new ParamDescription(paramName, shortDescription, longDescription, defaultValueDouble, lowerBoundDouble, upperBoundDouble);
-                    } else if (valueType.equalsIgnoreCase("Boolean")) {
+                    } else if (valueType.equalsIgnoreCase(VALUE_TYPE_BOOLEAN)) {
                         boolean defaultValueBoolean = defaultValue.equalsIgnoreCase("true");
                         paramDescription = new ParamDescription(paramName, shortDescription, longDescription, defaultValueBoolean);
-                    } else if (valueType.equalsIgnoreCase("String")) {
+                    } else if (valueType.equalsIgnoreCase(VALUE_TYPE_STRING)) {
                         String defaultValueString = defaultValue;
                         paramDescription = new ParamDescription(paramName, shortDescription, longDescription, defaultValueString);
                     } 
