@@ -13,8 +13,8 @@ import edu.cmu.tetrad.sem.GeneralizedSemIm;
 import edu.cmu.tetrad.sem.GeneralizedSemPm;
 import edu.cmu.tetrad.sem.TemplateExpander;
 import edu.cmu.tetrad.util.Parameters;
+import edu.cmu.tetrad.util.Params;
 import edu.cmu.tetrad.util.RandomUtil;
-
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
@@ -61,10 +61,10 @@ public class GeneralSemSimulation implements Simulation {
         graphs = new ArrayList<>();
         ims = new ArrayList<>();
 
-        for (int i = 0; i < parameters.getInt("numRuns"); i++) {
+        for (int i = 0; i < parameters.getInt(Params.NUM_RUNS); i++) {
             System.out.println("Simulating dataset #" + (i + 1));
 
-            if (parameters.getBoolean("differentGraphs") && i > 0) {
+            if (parameters.getBoolean(Params.DIFFERENT_GRAPHS) && i > 0) {
                 graph = randomGraph.createGraph(parameters);
             }
 
@@ -72,11 +72,11 @@ public class GeneralSemSimulation implements Simulation {
 
             DataSet dataSet = simulate(graph, parameters);
 
-            if (parameters.getBoolean("standardize")) {
+            if (parameters.getBoolean(Params.STANDARDIZE)) {
                 dataSet = DataUtils.standardizeData(dataSet);
             }
 
-            double variance = parameters.getDouble("measurementVariance");
+            double variance = parameters.getDouble(Params.MEASUREMENT_VARIANCE);
 
             if (variance > 0) {
                 for (int k = 0; k < dataSet.getNumRows(); k++) {
@@ -88,7 +88,7 @@ public class GeneralSemSimulation implements Simulation {
                 }
             }
 
-            if (parameters.getBoolean("randomizeColumns")) {
+            if (parameters.getBoolean(Params.RANDOMIZE_COLUMNS)) {
                 dataSet = DataUtils.reorderColumns(dataSet);
             }
 
@@ -110,7 +110,7 @@ public class GeneralSemSimulation implements Simulation {
         System.out.println(im);
 
         ims.add(im);
-        return im.simulateData(parameters.getInt("sampleSize"), true);
+        return im.simulateData(parameters.getInt(Params.SAMPLE_SIZE), true);
     }
 
     @Override
@@ -149,9 +149,9 @@ public class GeneralSemSimulation implements Simulation {
             parameters.addAll(GeneralizedSemPm.getParameterNames());
         }
 
-        parameters.add("numRuns");
-        parameters.add("differentGraphs");
-        parameters.add("sampleSize");
+        parameters.add(Params.NUM_RUNS);
+        parameters.add(Params.DIFFERENT_GRAPHS);
+        parameters.add(Params.SAMPLE_SIZE);
 
         return parameters;
     }
@@ -166,23 +166,23 @@ public class GeneralSemSimulation implements Simulation {
 
             for (Node node : variablesNodes) {
                 String _template = TemplateExpander.getInstance().expandTemplate(
-                        parameters.getString("generalSemFunctionTemplateMeasured"), pm, node);
+                        parameters.getString(Params.GENERAL_SEM_FUNCTION_TEMPLATE_MEASURED), pm, node);
                 pm.setNodeExpression(node, _template);
             }
 
             for (Node node : errorNodes) {
                 String _template = TemplateExpander.getInstance().expandTemplate(
-                        parameters.getString("generalSemErrorTemplate"), pm, node);
+                        parameters.getString(Params.GENERAL_SEM_ERROR_TEMPLATE), pm, node);
                 pm.setNodeExpression(node, _template);
             }
 
             for (String parameter : pm.getParameters()) {
-                pm.setParameterExpression(parameter, parameters.getString("generalSemParameterTemplate"));
+                pm.setParameterExpression(parameter, parameters.getString(Params.GENERAL_SEM_PARAMETER_TEMPLATE));
             }
 
-            pm.setVariablesTemplate(parameters.getString("generalSemFunctionTemplateMeasured"));
-            pm.setErrorsTemplate(parameters.getString("generalSemErrorTemplate"));
-            pm.setParametersTemplate(parameters.getString("generalSemParameterTemplate"));
+            pm.setVariablesTemplate(parameters.getString(Params.GENERAL_SEM_FUNCTION_TEMPLATE_MEASURED));
+            pm.setErrorsTemplate(parameters.getString(Params.GENERAL_SEM_ERROR_TEMPLATE));
+            pm.setParametersTemplate(parameters.getString(Params.GENERAL_SEM_PARAMETER_TEMPLATE));
 
         } catch (ParseException e) {
             System.out.println(e);

@@ -12,7 +12,6 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.TimeLagGraph;
 import edu.cmu.tetrad.util.Parameters;
-
 import java.util.*;
 
 /**

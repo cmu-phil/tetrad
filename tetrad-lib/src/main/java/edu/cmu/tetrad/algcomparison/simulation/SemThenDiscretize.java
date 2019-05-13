@@ -2,7 +2,6 @@ package edu.cmu.tetrad.algcomparison.simulation;
 
 import edu.cmu.tetrad.algcomparison.graph.RandomGraph;
 import edu.cmu.tetrad.data.DataModel;
-import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.data.Discretizer;
@@ -10,7 +9,8 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemPm;
-
+import edu.cmu.tetrad.util.Parameters;
+import edu.cmu.tetrad.util.Params;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -38,7 +38,7 @@ public class SemThenDiscretize implements Simulation {
 
     @Override
     public void createData(Parameters parameters) {
-        double percentDiscrete = parameters.getDouble("percentDiscrete");
+        double percentDiscrete = parameters.getDouble(Params.PERCENT_DISCRETE);
 
         boolean discrete = parameters.getString("dataType").equals("discrete");
         boolean continuous = parameters.getString("dataType").equals("continuous");
@@ -60,10 +60,10 @@ public class SemThenDiscretize implements Simulation {
         dataSets = new ArrayList<>();
         graphs = new ArrayList<>();
 
-        for (int i = 0; i < parameters.getInt("numRuns"); i++) {
+        for (int i = 0; i < parameters.getInt(Params.NUM_RUNS); i++) {
             System.out.println("Simulating dataset #" + (i + 1));
 
-            if (parameters.getBoolean("differentGraphs") && i > 0) {
+            if (parameters.getBoolean(Params.DIFFERENT_GRAPHS) && i > 0) {
                 graph = randomGraph.createGraph(parameters);
             }
 
@@ -89,11 +89,11 @@ public class SemThenDiscretize implements Simulation {
     @Override
     public List<String> getParameters() {
         List<String> parameters = randomGraph.getParameters();
-        parameters.add("numCategories");
-        parameters.add("percentDiscrete");
-        parameters.add("numRuns");
-        parameters.add("differentGraphs");
-        parameters.add("sampleSize");
+        parameters.add(Params.NUM_CATEGORIES);
+        parameters.add(Params.PERCENT_DISCRETE);
+        parameters.add(Params.NUM_RUNS);
+        parameters.add(Params.DIFFERENT_GRAPHS);
+        parameters.add(Params.SAMPLE_SIZE);
         return parameters;
     }
 
@@ -115,7 +115,7 @@ public class SemThenDiscretize implements Simulation {
     private DataSet simulate(Graph graph, Parameters parameters) {
         SemPm pm = new SemPm(graph);
         SemIm im = new SemIm(pm);
-        DataSet continuousData = im.simulateData(parameters.getInt("sampleSize"), false);
+        DataSet continuousData = im.simulateData(parameters.getInt(Params.SAMPLE_SIZE), false);
 
         if (this.shuffledOrder == null) {
             List<Node> shuffledNodes = new ArrayList<>(continuousData.getVariables());
@@ -125,9 +125,9 @@ public class SemThenDiscretize implements Simulation {
 
         Discretizer discretizer = new Discretizer(continuousData);
 
-        for (int i = 0; i < shuffledOrder.size() * parameters.getDouble("percentDiscrete") * 0.01; i++) {
+        for (int i = 0; i < shuffledOrder.size() * parameters.getDouble(Params.PERCENT_DISCRETE) * 0.01; i++) {
             discretizer.equalIntervals(continuousData.getVariable(shuffledOrder.get(i).getName()),
-                    parameters.getInt("numCategories"));
+                    parameters.getInt(Params.NUM_CATEGORIES));
         }
 
         return discretizer.discretize();

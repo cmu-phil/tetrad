@@ -5,6 +5,7 @@ import edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern.Fges;
 import edu.cmu.tetrad.algcomparison.score.BdeuScore;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.annotation.AlgType;
+import edu.cmu.tetrad.annotation.Bootstrapping;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
@@ -16,6 +17,7 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.BdeuScoreImages;
 import edu.cmu.tetrad.search.SearchGraphUtils;
 import edu.cmu.tetrad.util.Parameters;
+import edu.cmu.tetrad.util.Params;
 import edu.pitt.dbmi.algo.resampling.GeneralResamplingTest;
 import edu.pitt.dbmi.algo.resampling.ResamplingEdgeEnsemble;
 import java.util.ArrayList;
@@ -37,6 +39,7 @@ import java.util.List;
         algoType = AlgType.forbid_latent_common_causes,
         dataType = DataType.Discrete
 )
+@Bootstrapping
 public class ImagesBDeu implements MultiDataSetAlgorithm, HasKnowledge {
 
     static final long serialVersionUID = 23L;
@@ -47,14 +50,14 @@ public class ImagesBDeu implements MultiDataSetAlgorithm, HasKnowledge {
 
     @Override
     public Graph search(List<DataModel> dataSets, Parameters parameters) {
-        if (parameters.getInt("numberResampling") < 1) {
+        if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
             BdeuScoreImages score = new BdeuScoreImages(dataSets);
-            score.setSamplePrior(parameters.getDouble("samplePrior"));
-            score.setStructurePrior(parameters.getDouble("structurePrior"));
+            score.setSamplePrior(parameters.getDouble(Params.SAMPLE_PRIOR));
+            score.setStructurePrior(parameters.getDouble(Params.STRUCTURE_PRIOR));
             edu.cmu.tetrad.search.Fges search = new edu.cmu.tetrad.search.Fges(score);
             search.setFaithfulnessAssumed(true);
             search.setKnowledge(knowledge);
-            search.setVerbose(parameters.getBoolean("verbose"));
+            search.setVerbose(parameters.getBoolean(Params.VERBOSE));
 
             return search.search();
         } else {
@@ -65,14 +68,14 @@ public class ImagesBDeu implements MultiDataSetAlgorithm, HasKnowledge {
             for (DataModel dataModel : dataSets) {
                 datasets.add((DataSet) dataModel);
             }
-            GeneralResamplingTest search = new GeneralResamplingTest(datasets, imagesBDeu, parameters.getInt("numberResampling"));
+            GeneralResamplingTest search = new GeneralResamplingTest(datasets, imagesBDeu, parameters.getInt(Params.NUMBER_RESAMPLING));
             search.setKnowledge(knowledge);
 
-            search.setPercentResampleSize(parameters.getDouble("percentResampleSize"));
-            search.setResamplingWithReplacement(parameters.getBoolean("resamplingWithReplacement"));
+            search.setPercentResampleSize(parameters.getDouble(Params.PERCENT_RESAMPLE_SIZE));
+            search.setResamplingWithReplacement(parameters.getBoolean(Params.RESAMPLING_WITH_REPLACEMENT));
 
             ResamplingEdgeEnsemble edgeEnsemble = ResamplingEdgeEnsemble.Highest;
-            switch (parameters.getInt("resamplingEnsemble", 1)) {
+            switch (parameters.getInt(Params.RESAMPLING_ENSEMBLE, 1)) {
                 case 0:
                     edgeEnsemble = ResamplingEdgeEnsemble.Preserved;
                     break;
@@ -83,30 +86,30 @@ public class ImagesBDeu implements MultiDataSetAlgorithm, HasKnowledge {
                     edgeEnsemble = ResamplingEdgeEnsemble.Majority;
             }
             search.setEdgeEnsemble(edgeEnsemble);
-            search.setAddOriginalDataset(parameters.getBoolean("addOriginalDataset"));
+            search.setAddOriginalDataset(parameters.getBoolean(Params.ADD_ORIGINAL_DATASET));
 
             search.setParameters(parameters);
-            search.setVerbose(parameters.getBoolean("verbose"));
+            search.setVerbose(parameters.getBoolean(Params.VERBOSE));
             return search.search();
         }
     }
 
     @Override
     public Graph search(DataModel dataSet, Parameters parameters) {
-        if (parameters.getInt("numberResampling") < 1) {
+        if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
             return search(Collections.singletonList((DataModel) DataUtils.getDiscreteDataSet(dataSet)), parameters);
         } else {
             ImagesBDeu imagesBDeu = new ImagesBDeu();
 
             List<DataSet> dataSets = Collections.singletonList(DataUtils.getContinuousDataSet(dataSet));
-            GeneralResamplingTest search = new GeneralResamplingTest(dataSets, imagesBDeu, parameters.getInt("numberResampling"));
+            GeneralResamplingTest search = new GeneralResamplingTest(dataSets, imagesBDeu, parameters.getInt(Params.NUMBER_RESAMPLING));
             search.setKnowledge(knowledge);
 
-            search.setPercentResampleSize(parameters.getDouble("percentResampleSize"));
-            search.setResamplingWithReplacement(parameters.getBoolean("resamplingWithReplacement"));
+            search.setPercentResampleSize(parameters.getDouble(Params.PERCENT_RESAMPLE_SIZE));
+            search.setResamplingWithReplacement(parameters.getBoolean(Params.RESAMPLING_WITH_REPLACEMENT));
 
             ResamplingEdgeEnsemble edgeEnsemble = ResamplingEdgeEnsemble.Highest;
-            switch (parameters.getInt("resamplingEnsemble", 1)) {
+            switch (parameters.getInt(Params.RESAMPLING_ENSEMBLE, 1)) {
                 case 0:
                     edgeEnsemble = ResamplingEdgeEnsemble.Preserved;
                     break;
@@ -117,10 +120,10 @@ public class ImagesBDeu implements MultiDataSetAlgorithm, HasKnowledge {
                     edgeEnsemble = ResamplingEdgeEnsemble.Majority;
             }
             search.setEdgeEnsemble(edgeEnsemble);
-            search.setAddOriginalDataset(parameters.getBoolean("addOriginalDataset"));
+            search.setAddOriginalDataset(parameters.getBoolean(Params.ADD_ORIGINAL_DATASET));
 
             search.setParameters(parameters);
-            search.setVerbose(parameters.getBoolean("verbose"));
+            search.setVerbose(parameters.getBoolean(Params.VERBOSE));
             return search.search();
         }
     }
@@ -143,17 +146,9 @@ public class ImagesBDeu implements MultiDataSetAlgorithm, HasKnowledge {
     @Override
     public List<String> getParameters() {
         List<String> parameters = new Fges(new BdeuScore(), false).getParameters();
-        parameters.add("numRuns");
-        parameters.add("randomSelectionSize");
-        // Resampling
-        parameters.add("numberResampling");
-        parameters.add("percentResampleSize");
-        parameters.add("resamplingWithReplacement");
-        parameters.add("resamplingEnsemble");
-        parameters.add("addOriginalDataset");
-
-        parameters.remove("verbose");
-        parameters.add("verbose");
+        parameters.add(Params.NUM_RUNS);
+        parameters.add(Params.RANDOM_SELECTION_SIZE);
+        parameters.add(Params.VERBOSE);
 
         return parameters;
     }

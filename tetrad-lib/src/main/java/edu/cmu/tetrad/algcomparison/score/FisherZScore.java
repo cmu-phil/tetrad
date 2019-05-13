@@ -16,11 +16,11 @@ import java.util.List;
  *
  * @author jdramsey
  */
-@edu.cmu.tetrad.annotation.Score(
-        name = "Fisher Z Score",
-        command = "fisher-z",
-        dataType = DataType.Continuous
-)
+//@edu.cmu.tetrad.annotation.Score(
+//        name = "Fisher Z Score",
+//        command = "fisher-z",
+//        dataType = DataType.Continuous
+//)
 public class FisherZScore implements ScoreWrapper {
 
     static final long serialVersionUID = 23L;

@@ -26,10 +26,7 @@ import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.sem.*;
 import edu.cmu.tetrad.util.Parameters;
-
-import static junit.framework.TestCase.assertFalse;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import edu.cmu.tetrad.util.Params;
 
 /**
  * @author Joseph Ramsey
@@ -51,15 +48,15 @@ public class TestFgesFa {
         DataSet dataSet = semIm.simulateData(1000, false);
 
         Parameters parameters = new Parameters();
-        parameters.set("penaltyDiscount", 8);
-        parameters.set("symmetricFirstStep", true);
-        parameters.set("faithfulnessAssumed", false);
-        parameters.set("maxDegree", 100);
-        parameters.set("verbose", true);
-        parameters.set("determinismThreshold", .2);
+        parameters.set(Params.PENALTY_DISCOUNT, 8);
+        parameters.set(Params.SYMMETRIC_FIRST_STEP, true);
+        parameters.set(Params.FAITHFULNESS_ASSUMED, false);
+        parameters.set(Params.MAX_DEGREE, 100);
+        parameters.set(Params.VERBOSE, true);
+        parameters.set(Params.DETERMINISM_THRESHOLD, .2);
         parameters.set("convergenceThreshold", 1e-7);
 
-        parameters.set("determinismThreshold", 1);
+        parameters.set(Params.DETERMINISM_THRESHOLD, 1);
 
         GesMe alg = new GesMe();
         Graph pattern = alg.search(dataSet, parameters);

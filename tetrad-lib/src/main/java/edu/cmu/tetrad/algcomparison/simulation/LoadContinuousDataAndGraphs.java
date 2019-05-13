@@ -1,13 +1,13 @@
 package edu.cmu.tetrad.algcomparison.simulation;
 
 import edu.cmu.tetrad.data.DataModel;
-import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.data.DataReader;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
-
+import edu.cmu.tetrad.util.Parameters;
+import edu.cmu.tetrad.util.Params;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
@@ -78,7 +78,7 @@ public class LoadContinuousDataAndGraphs implements Simulation {
                     }
                 }
 
-                parameters.set("numRuns", numDataSets);
+                parameters.set(Params.NUM_RUNS, numDataSets);
             } catch (IOException e) {
                 e.printStackTrace();
             }

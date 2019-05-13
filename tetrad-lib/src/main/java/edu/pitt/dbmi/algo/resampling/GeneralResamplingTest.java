@@ -9,8 +9,8 @@ import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.graph.Edge.Property;
 import edu.cmu.tetrad.graph.EdgeTypeProbability.EdgeType;
 import edu.cmu.tetrad.util.Parameters;
+import edu.cmu.tetrad.util.Params;
 import edu.cmu.tetrad.util.RandomUtil;
-
 import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -85,7 +85,7 @@ public class GeneralResamplingTest {
 
 	public void setParameters(Parameters parameters) {
 		this.parameters = parameters;
-        Object obj = parameters.get("printStream");
+        Object obj = parameters.get(Params.PRINT_STREAM);
         if (obj instanceof PrintStream) {
             setOut((PrintStream) obj);
         }
