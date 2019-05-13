@@ -156,9 +156,11 @@ public class GraphCard extends JPanel {
         topBox.add(graphEditorScroll);
         topBox.add(instructionBox);
 
+        edgeTypeTable.setPreferredSize(new Dimension(820, 150));
+
         // Use JSplitPane to allow resize the bottom box - Zhou
         JSplitPane splitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT, topBox, edgeTypeTable);
-        splitPane.setDividerLocation((int) (splitPane.getPreferredSize().getHeight() - 400));
+        splitPane.setDividerLocation((int) (splitPane.getPreferredSize().getHeight() - 150));
 
         edgeTypeTable.update(graph);
 

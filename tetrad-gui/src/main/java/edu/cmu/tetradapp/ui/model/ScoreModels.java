@@ -36,7 +36,7 @@ import java.util.stream.Stream;
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
  */
-public class ScoreModels {
+public final class ScoreModels {
 
     private static final ScoreModels INSTANCE = new ScoreModels();
 
