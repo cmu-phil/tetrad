@@ -25,24 +25,19 @@ import edu.cmu.tetrad.algcomparison.Comparison;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithms;
 import edu.cmu.tetrad.algcomparison.algorithm.multi.*;
 import edu.cmu.tetrad.algcomparison.independence.FisherZ;
-import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
-import edu.cmu.tetrad.algcomparison.score.SemBicScore;
 import edu.cmu.tetrad.algcomparison.simulation.Simulations;
 import edu.cmu.tetrad.algcomparison.statistic.*;
 import edu.cmu.tetrad.data.ContinuousVariable;
-import edu.cmu.tetrad.data.CovarianceMatrixOnTheFly;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.Fask;
 import edu.cmu.tetrad.search.IndTestFisherZ;
-import edu.cmu.tetrad.search.Lofs2;
 import edu.cmu.tetrad.sem.GeneralizedSemIm;
 import edu.cmu.tetrad.sem.GeneralizedSemPm;
 import edu.cmu.tetrad.util.Parameters;
-import org.junit.Test;
-
+import edu.cmu.tetrad.util.Params;
 import java.text.ParseException;
 
 /**
@@ -54,14 +49,14 @@ public class TestSimulatedFmri {
 
     private void task(boolean testing) {
         Parameters parameters = new Parameters();
-        parameters.set("penaltyDiscount", 4);
-        parameters.set("depth", -1);
-        parameters.set("twoCycleAlpha", 1e-10);
+        parameters.set(Params.PENALTY_DISCOUNT, 4);
+        parameters.set(Params.DEPTH, -1);
+        parameters.set(Params.TWO_CYCLE_ALPHA, 1e-10);
         parameters.set("reverseOrientationsBySignOfCorrelation", false);
         parameters.set("reverseOrientationsBySkewnessOfVariables", false);
 
-        parameters.set("numRuns", 10);
-        parameters.set("randomSelectionSize", 10);
+        parameters.set(Params.NUM_RUNS, 10);
+        parameters.set(Params.RANDOM_SELECTION_SIZE, 10);
 
         parameters.set("Structure", "Placeholder");
 
@@ -209,12 +204,12 @@ public class TestSimulatedFmri {
     //    @Test
     public void task2() {
         Parameters parameters = new Parameters();
-        parameters.set("penaltyDiscount", 1);
-        parameters.set("depth", -1);
-        parameters.set("twoCycleAlpha", 0);
+        parameters.set(Params.PENALTY_DISCOUNT, 1);
+        parameters.set(Params.DEPTH, -1);
+        parameters.set(Params.TWO_CYCLE_ALPHA, 0);
 
-        parameters.set("numRuns", 10);
-        parameters.set("randomSelectionSize", 2);
+        parameters.set(Params.NUM_RUNS, 10);
+        parameters.set(Params.RANDOM_SELECTION_SIZE, 2);
 
         parameters.set("Structure", "Placeholder");
 
@@ -287,12 +282,12 @@ public class TestSimulatedFmri {
     public void testTough() {
         Parameters parameters = new Parameters();
 
-        parameters.set("penaltyDiscount", 2);
-        parameters.set("depth", 5);
-        parameters.set("twoCycleAlpha", .01);
+        parameters.set(Params.PENALTY_DISCOUNT, 2);
+        parameters.set(Params.DEPTH, 5);
+        parameters.set(Params.TWO_CYCLE_ALPHA, .01);
 
-        parameters.set("numRuns", 1);
-        parameters.set("randomSelectionSize", 10);
+        parameters.set(Params.NUM_RUNS, 1);
+        parameters.set(Params.RANDOM_SELECTION_SIZE, 10);
 
         parameters.set("Structure", "Placeholder");
 

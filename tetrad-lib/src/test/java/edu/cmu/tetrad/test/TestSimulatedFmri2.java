@@ -24,10 +24,10 @@ package edu.cmu.tetrad.test;
 import edu.cmu.tetrad.algcomparison.Comparison;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithms;
 import edu.cmu.tetrad.algcomparison.independence.FisherZ;
-import edu.cmu.tetrad.algcomparison.score.SemBicScore;
 import edu.cmu.tetrad.algcomparison.simulation.Simulations;
 import edu.cmu.tetrad.algcomparison.statistic.*;
 import edu.cmu.tetrad.util.Parameters;
+import edu.cmu.tetrad.util.Params;
 
 /**
  * My script.
@@ -38,11 +38,11 @@ public class TestSimulatedFmri2 {
 
     public void TestCycles_Data_fMRI_FASK() {
         Parameters parameters = new Parameters();
-        parameters.set("penaltyDiscount", 8);
-        parameters.set("depth", -1);
-        parameters.set("twoCycleAlpha", 1e-15);
+        parameters.set(Params.PENALTY_DISCOUNT, 8);
+        parameters.set(Params.DEPTH, -1);
+        parameters.set(Params.TWO_CYCLE_ALPHA, 1e-15);
 
-        parameters.set("numRuns", 60);
+        parameters.set(Params.NUM_RUNS, 60);
 //        parameters.set("randomSelectionSize", 1);
 
         parameters.set("Structure", "Placeholder");

@@ -27,6 +27,7 @@ import edu.cmu.tetrad.algcomparison.algorithm.multi.*;
 import edu.cmu.tetrad.algcomparison.simulation.Simulations;
 import edu.cmu.tetrad.algcomparison.statistic.*;
 import edu.cmu.tetrad.util.Parameters;
+import edu.cmu.tetrad.util.Params;
 
 /**
  * Pulling this test out for Madelyn.
@@ -38,12 +39,12 @@ public class TestSimulatedFmr3 {
     public void TestCycles_Data_fMRI_FASK() {
         Parameters parameters = new Parameters();
 
-        parameters.set("penaltyDiscount", 4);
-        parameters.set("depth", -1);
-        parameters.set("twoCycleAlpha", .001);
+        parameters.set(Params.PENALTY_DISCOUNT, 4);
+        parameters.set(Params.DEPTH, -1);
+        parameters.set(Params.TWO_CYCLE_ALPHA, .001);
         parameters.set("thresholdForReversing", 1);
 
-        parameters.set("numRuns", 60);
+        parameters.set(Params.NUM_RUNS, 60);
 //        parameters.set("randomSelectionSize", 10);
 
 //        parameters.set("penaltyDiscount", 6);
@@ -147,13 +148,13 @@ public class TestSimulatedFmr3 {
     public void TestMadelynDAta() {
         Parameters parameters = new Parameters();
 
-        parameters.set("penaltyDiscount", 10);
-        parameters.set("depth", -1);
-        parameters.set("twoCycleAlpha", 1e-12);
+        parameters.set(Params.PENALTY_DISCOUNT, 10);
+        parameters.set(Params.DEPTH, -1);
+        parameters.set(Params.TWO_CYCLE_ALPHA, 1e-12);
         parameters.set("thresholdForReversing", 1);
 
-        parameters.set("numRuns", 10);
-        parameters.set("randomSelectionSize", 10);
+        parameters.set(Params.NUM_RUNS, 10);
+        parameters.set(Params.RANDOM_SELECTION_SIZE, 10);
 
 //        parameters.set("penaltyDiscount", 6);
 //        parameters.set("depth", -1);
