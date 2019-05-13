@@ -5,15 +5,14 @@
  */
 package edu.cmu.tetrad.util;
 
-
-import edu.cmu.tetrad.annotation.Algorithm;
 import edu.cmu.tetrad.annotation.AlgorithmAnnotations;
-import edu.cmu.tetrad.annotation.AnnotatedClass;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -24,46 +23,34 @@ import org.slf4j.LoggerFactory;
 /**
  *
  * @author Zhou Yuan <zhy19@pitt.edu>
+ * @author Kevin V. Bui (kvb2@pitt.edu)
  */
 public class AlgorithmDescriptions {
-    
+
     private static final Logger LOGGER = LoggerFactory.getLogger(AlgorithmDescriptions.class);
-    
+
     private static final AlgorithmDescriptions INSTANCE = new AlgorithmDescriptions();
 
     private final Map<String, String> algoDescMap = new HashMap<>();
-    
+
     private AlgorithmDescriptions() {
-        List<AnnotatedClass<Algorithm>> annotatedClasses = AlgorithmAnnotations.getInstance().getAnnotatedClasses();
-        
-        Document doc = null;
-        
-        // Read the copied maunal/index.html from within the jar
-        try (InputStream inputStream = this.getClass().getClassLoader().getResourceAsStream("manual/index.html")) {
-            if (inputStream != null) {
-                doc = Jsoup.parse(inputStream, "UTF-8", "");
-            }
-        } catch (IOException ex) {
-            LOGGER.error("Failed to read tetrad HTML manual 'maunal/index.html' file from within the jar.", ex);
-        }
-
-        // Get the description of each algorithm, use empty string if not found
-        for (AnnotatedClass<Algorithm> clazz: annotatedClasses) {
-            String algoShortName = clazz.getAnnotation().command();
-            String desc = "";
-
-            if (doc != null) {
-                Element algoDescription = doc.getElementById(algoShortName);
-                if (algoDescription != null) {
-                    Elements paragraphs = algoDescription.children();
-                    desc = paragraphs.stream().map((p) -> p.text() + "\n\n").reduce(desc, String::concat);
+        try (InputStream inputStream = this.getClass().getClassLoader().getResourceAsStream("/manual/index.html")) {
+            Document doc = Jsoup.parse(inputStream, StandardCharsets.UTF_8.name(), "");
+            getAlgorithms().forEach(algoId -> {
+                Element algoDesc = doc.getElementById(algoId);
+                if (algoDesc != null) {
+                    Elements paragraphs = algoDesc.children();
+                    String desc = paragraphs.stream()
+                            .map(p -> p.text().trim())
+                            .collect(Collectors.joining("\n"));
+                    algoDescMap.put(algoId, desc);
                 }
-            }
-            
-            algoDescMap.put(algoShortName, desc);
+            });
+        } catch (IOException exception) {
+            LOGGER.error("Failed to read tetrad HTML manual 'maunal/index.html' file from within the jar.", exception);
         }
     }
-    
+
     public static AlgorithmDescriptions getInstance() {
         return INSTANCE;
     }
@@ -75,4 +62,17 @@ public class AlgorithmDescriptions {
                 ? String.format("Please add algorithm description for %s.", algoShortName)
                 : algoDesc;
     }
+
+    private List<String> getAlgorithms() {
+        // get algorithm from annotations
+        List<String> algorithms = AlgorithmAnnotations.getInstance().getAnnotatedClasses().stream()
+                .map(e -> e.getAnnotation().command())
+                .collect(Collectors.toList());
+
+        // add additional algorithms not annotated
+        algorithms.add("cpc"); // conservative PC
+
+        return algorithms;
+    }
+
 }
