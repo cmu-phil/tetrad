@@ -613,6 +613,10 @@ public class AlgorithmCard extends JPanel {
         } else {
             indTestComboBox.setEnabled(false);
         }
+
+        if (indTestComboBox.getSelectedIndex() == -1) {
+            testDescTextArea.setText("");
+        }
     }
 
     private void refreshScoreList() {
@@ -682,6 +686,10 @@ public class AlgorithmCard extends JPanel {
             scoreComboBox.setSelectedItem(scoreModel);
         } else {
             scoreComboBox.setEnabled(false);
+        }
+
+        if (scoreComboBox.getSelectedIndex() == -1) {
+            scoreDescTextArea.setText("");
         }
     }
 
