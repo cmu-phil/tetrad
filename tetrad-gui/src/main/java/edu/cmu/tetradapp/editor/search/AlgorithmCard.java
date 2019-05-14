@@ -159,6 +159,14 @@ public class AlgorithmCard extends JPanel {
         algoDescTextArea.setLineWrap(true);
         algoDescTextArea.setEditable(false);
 
+        scoreDescTextArea.setWrapStyleWord(true);
+        scoreDescTextArea.setLineWrap(true);
+        scoreDescTextArea.setEditable(false);
+
+        testDescTextArea.setWrapStyleWord(true);
+        testDescTextArea.setLineWrap(true);
+        testDescTextArea.setEditable(false);
+
         populateAlgoTypeOptions(algoTypeOpts);
 
         knowledgeChkBox.addActionListener(e -> {
