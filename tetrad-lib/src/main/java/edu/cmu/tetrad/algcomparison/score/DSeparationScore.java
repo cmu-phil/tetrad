@@ -16,7 +16,7 @@ import java.util.List;
  */
 @edu.cmu.tetrad.annotation.Score(
         name = "D-separation Score",
-        command = "d-separation",
+        command = "d-sep-score",
         dataType = DataType.Graph
 )
 public class DSeparationScore implements ScoreWrapper {

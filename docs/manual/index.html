@@ -2942,21 +2942,26 @@ there is a single latent for each output cluster. For MimBuild, a pattern over t
 
     <p><a href="#maxit">alpha</a>, <a href="#depth">depth</a></p>
 
+    
+    
     <h2>Statistical Tests</h2>
 
-    <h3>Fisher Z</h3>
+    <h3>Fisher Z Test</h3>
 
+    <div id="fisher-z-test">
     <p>
     Fisher Z judges independence if the conditional correlation is zero. Primarily for the linear, Gaussian case.
     </p>
+    </div>
 
     <h4>Parameters</h4>
 
     <p><a href="#alpha">alpha</a></p>
- 
-    <h3>CCI</h3>
 
-    <p>CCI (“Conditional Correlation Independence”) is a fairly general independence test—not completely general, but
+    <h3>Conditional Correlation Independence (CCI) Test</h3>
+
+    <div id="cci-test">
+    <p>CCI ("Conditional Correlation Independence") is a fairly general independence test—not completely general, but
         general for additive noise models—that is,
         model in which each variable is equal to a (possibly nonlinear) function of its parents, plus additive noise,
         where the noise may be arbitrarily distributed.
@@ -2967,14 +2972,16 @@ there is a single latent for each output cluster. For MimBuild, a pattern over t
         It works by calculating the residual of X given Z and the residual of Y given Z and looking to see whether those
         two residuals are independent.
         This test may be used with any constraint-based algorithm (PC, FCI, etc.)</p>
+    </div>
 
     <h4>Parameters</h4>
 
     <p><a href="#alpha">alpha</a>, <a href="#numBasisFunctions">numBasisFunctions</a>, <a href="#kernelType">kernelType</a>, <a href="#kernelMultiplier">kernelMultiplier</a>, <a href="#basisType">basisType</a>, <a href="#fastFDR">fastFDR</a>, <a href="#kernelRegressionSampleSize">kernelRegressionSampleSize</a>, <a href="#numDependenceSpotChecks">numDependenceSpotChecks</a></p>
 
-    <h3>KCI</h3>
+    <h3>Kernel Conditional Independence (KCI) Test</h3>
 
-    <p>KCI (“Kernel Conditional Independence”) is a general independence test for model in which X = f(parents(X), eY);
+    <div id="kci-test">
+    <p>KCI ("Kernel Conditional Independence") is a general independence test for model in which X = f(parents(X), eY);
         here, eY does not need to be additive; it can stand in any functional relationships to the other variables. The
         variables may even be discrete.
         The goal of the method is to estimate whether X is independent of Y given Z, completely generally.
@@ -2984,6 +2991,7 @@ there is a single latent for each output cluster. For MimBuild, a pattern over t
         Since it’s slow, individual independence results are always printed to the console so the user knows how far a
         procedure has gotten.
         This test may be used with any constraint-based algorithm (PC, FCI, etc.)</p>
+    </div>
 
     <h4>Parameters</h4>
 
@@ -2991,12 +2999,14 @@ there is a single latent for each output cluster. For MimBuild, a pattern over t
 
     <h3>Conditional Gaussian Likelihood Ratio Test</h3>
 
+    <div id="cg-lr-test">
     <p>Conditional Gaussian Test is a likelihood ratio test based on the conditional Gaussian likelihood function.
         This is intended for use with datasets where there is a mixture of continuous and discrete variables.
         It is assumed that the continuous variables are Gaussian conditional on each combination of values for the
         discrete variables,
         though it will work fairly well even if that assumption does not hold strictly. This test may be used with any
         constraint-based algorithm (PC, FCI, etc.)</p>
+    </div>
 
     <h4>Parameters</h4>
 
@@ -3010,11 +3020,14 @@ there is a single latent for each output cluster. For MimBuild, a pattern over t
 
     <p>The three available ensemble methods are Preserved, Highest, and Majority. Preserved tends to return the densest graphs, then Highest, and finally Majority returns the sparsest. The Preserved ensemble method ensures that an edge that has been found by some portion of the individual sample graphs is preserved in the final graph, even if the majority of sample graphs returned [no edge] as their answer for that edge. So the voting procedure for Preserved is to return the edge orientation that the highest percentage of sample graphs returned, other than [no edge]. The Highest ensemble method, on the other hand, simply returns the edge orientation which the highest proportion of sample graphs returned, even if that means returning [no edge]. And the Majority method requires that at least 50 percent of the sample graphs agree on an edge orientation in order to return any edge at all. If the highest proportion of sample graphs agree on, for instance, a bidirected edge, but only 40 percent of them do so, then the Majority ensemble method will return [no edge] for that edge.</p>
 
+    
     <h2>Scoring Functions</h2>
 
     <h3>SEM BIC Score</h3>
 
+    <div id="sem-bic-score">
     <p>SEM BIC Score calculates a linear, Gaussian BIC score.</p>
+    </div>
 
     <h4>Parameters</h4>
 
@@ -3022,15 +3035,20 @@ there is a single latent for each output cluster. For MimBuild, a pattern over t
 
     <h3>Conditional Gaussian BIC Score</h3>
 
+    <div id="cg-bic-score">
     <p>Conditional Gaussian BIC Score may be used for the case where there is a mixture of discrete and Gaussian variables. Calculates a BIC score based on likelihood that is calculated using a conditional Gaussian assumption.</p>
-
+    </div>
+    
     <h4>Parameters</h4>
 
     <p><a href="#structurePrior">structurePrior</a>, <a href="#discretize">discretize</a></p>
 
-    <h3>Conditional Correlation Score</h3>
+    <h3>Conditional Correlation Independence (CCI) Score</h3>
+    
+    <div id="cci-score">
     <p>Conditional Correlation Score returns 1 - p-value for the Conditional correlation test. May be used as a score for the nonlinear case, assuming additivity.</p>
-
+    </div>
+    
     <h4>Parameters</h4>
 
     <p><a href="#cciScoreAlpha">cciScoreAlpha</a>, <a href="#numBasisFunctions">numBasisFunctions</a>, <a href="#kernelType">kernelType</a>, <a href="#kernelMultiplier">kernelMultiplier</a>, <a href="#basisType">basisType</a>, <a href="#fastFDR">fastFDR</a>, <a href="#kernelRegressionSampleSize">kernelRegressionSampleSize</a>, <a href="#numDependenceSpotChecks">numDependenceSpotChecks</a></p>

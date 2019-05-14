@@ -16,7 +16,7 @@ import java.util.List;
  */
 @edu.cmu.tetrad.annotation.Score(
         name = "BDeu Score",
-        command = "bdeu",
+        command = "bdeu-score",
         dataType = DataType.Discrete
 )
 public class BdeuScore implements ScoreWrapper {

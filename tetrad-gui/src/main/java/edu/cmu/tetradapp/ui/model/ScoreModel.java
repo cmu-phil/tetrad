@@ -20,6 +20,7 @@ package edu.cmu.tetradapp.ui.model;
 
 import edu.cmu.tetrad.annotation.AnnotatedClass;
 import edu.cmu.tetrad.annotation.Score;
+import edu.cmu.tetrad.util.ScoreDescriptions;
 import java.io.Serializable;
 
 /**
@@ -33,9 +34,13 @@ public class ScoreModel implements Serializable, Comparable<ScoreModel> {
     private static final long serialVersionUID = 2755370016466432455L;
 
     private final AnnotatedClass<Score> score;
+    private final String name;
+    private final String description;
 
     public ScoreModel(AnnotatedClass<Score> score) {
         this.score = score;
+        this.name = score.getAnnotation().name();
+        this.description = ScoreDescriptions.getInstance().get(score.getAnnotation().command());
     }
 
     @Override
@@ -45,11 +50,19 @@ public class ScoreModel implements Serializable, Comparable<ScoreModel> {
 
     @Override
     public String toString() {
-        return score.getAnnotation().name();
+        return this.name;
     }
 
     public AnnotatedClass<Score> getScore() {
         return score;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public String getDescription() {
+        return description;
     }
 
 }

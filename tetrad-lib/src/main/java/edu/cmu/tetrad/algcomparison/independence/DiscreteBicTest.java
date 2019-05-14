@@ -16,7 +16,7 @@ import java.util.List;
  */
 @TestOfIndependence(
         name = "Discrete BIC Test",
-        command = "disc-bic",
+        command = "disc-bic-test",
         dataType = DataType.Discrete
 )
 public class DiscreteBicTest implements IndependenceWrapper {

@@ -18,7 +18,7 @@
  */
 package edu.cmu.tetrad.util;
 
-import edu.cmu.tetrad.annotation.AlgorithmAnnotations;
+import edu.cmu.tetrad.annotation.ScoreAnnotations;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
@@ -35,18 +35,19 @@ import org.slf4j.LoggerFactory;
 
 /**
  *
- * @author Zhou Yuan <zhy19@pitt.edu>
+ * May 14, 2019 11:23:54 AM
+ *
  * @author Kevin V. Bui (kvb2@pitt.edu)
  */
-public class AlgorithmDescriptions {
+public final class ScoreDescriptions {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(AlgorithmDescriptions.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(ScoreDescriptions.class);
 
-    private static final AlgorithmDescriptions INSTANCE = new AlgorithmDescriptions();
+    private static final ScoreDescriptions INSTANCE = new ScoreDescriptions();
 
     private final Map<String, String> descriptions = new HashMap<>();
 
-    private AlgorithmDescriptions() {
+    private ScoreDescriptions() {
         try (InputStream inputStream = this.getClass().getClassLoader().getResourceAsStream("manual/index.html")) {
             final Document doc = Jsoup.parse(inputStream, StandardCharsets.UTF_8.name(), "");
             getShortNames().forEach(shortName -> {
@@ -64,7 +65,7 @@ public class AlgorithmDescriptions {
         }
     }
 
-    public static AlgorithmDescriptions getInstance() {
+    public static ScoreDescriptions getInstance() {
         return INSTANCE;
     }
 
@@ -77,15 +78,9 @@ public class AlgorithmDescriptions {
     }
 
     private List<String> getShortNames() {
-        // get algorithm from annotations
-        List<String> shortNames = AlgorithmAnnotations.getInstance().getAnnotatedClasses().stream()
+        return ScoreAnnotations.getInstance().getAnnotatedClasses().stream()
                 .map(e -> e.getAnnotation().command())
                 .collect(Collectors.toList());
-
-        // add additional shortNames not annotated
-        shortNames.add("cpc"); // conservative PC
-
-        return shortNames;
     }
 
 }

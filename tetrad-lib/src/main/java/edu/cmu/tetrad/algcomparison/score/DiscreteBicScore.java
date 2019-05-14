@@ -16,7 +16,7 @@ import java.util.List;
  */
 @edu.cmu.tetrad.annotation.Score(
         name = "Discrete BIC Score",
-        command = "disc-bic",
+        command = "disc-bic-score",
         dataType = DataType.Discrete
 )
 public class DiscreteBicScore implements ScoreWrapper {

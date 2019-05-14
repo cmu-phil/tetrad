@@ -61,6 +61,7 @@ import java.util.Map;
 import java.util.Optional;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
+import javax.swing.BoxLayout;
 import javax.swing.ButtonGroup;
 import javax.swing.ButtonModel;
 import javax.swing.ComboBoxModel;
@@ -117,6 +118,8 @@ public class AlgorithmCard extends JPanel {
     private final JComboBox<ScoreModel> scoreComboBox = new JComboBox<>();
     private final JList<AlgorithmModel> algorithmList = new JList<>(algoModels);
     private final JTextArea algoDescTextArea = new JTextArea();
+    private final JTextArea scoreDescTextArea = new JTextArea();
+    private final JTextArea testDescTextArea = new JTextArea();
 
     private boolean updatingTestModels;
     private boolean updatingScoreModels;
@@ -156,6 +159,14 @@ public class AlgorithmCard extends JPanel {
         algoDescTextArea.setLineWrap(true);
         algoDescTextArea.setEditable(false);
 
+        scoreDescTextArea.setWrapStyleWord(true);
+        scoreDescTextArea.setLineWrap(true);
+        scoreDescTextArea.setEditable(false);
+
+        testDescTextArea.setWrapStyleWord(true);
+        testDescTextArea.setLineWrap(true);
+        testDescTextArea.setEditable(false);
+
         populateAlgoTypeOptions(algoTypeOpts);
 
         knowledgeChkBox.addActionListener(e -> {
@@ -176,6 +187,8 @@ public class AlgorithmCard extends JPanel {
         });
         indTestComboBox.addActionListener(e -> {
             if (!updatingTestModels && indTestComboBox.getSelectedIndex() >= 0) {
+                setIndepTestDescription();
+
                 AlgorithmModel algoModel = algorithmList.getSelectedValue();
                 Map<DataType, IndependenceTestModel> map = defaultIndTestModels.get(algoModel);
                 if (map == null) {
@@ -187,6 +200,8 @@ public class AlgorithmCard extends JPanel {
         });
         scoreComboBox.addActionListener(e -> {
             if (!updatingScoreModels && scoreComboBox.getSelectedIndex() >= 0) {
+                setScoreDescription();
+
                 AlgorithmModel algoModel = algorithmList.getSelectedValue();
                 Map<DataType, ScoreModel> map = defaultScoreModels.get(algoModel);
                 if (map == null) {
@@ -492,6 +507,26 @@ public class AlgorithmCard extends JPanel {
         }
     }
 
+    private void setScoreDescription() {
+        ScoreModel model = scoreComboBox.getItemAt(scoreComboBox.getSelectedIndex());
+        if (model == null) {
+            scoreDescTextArea.setText("");
+        } else {
+            scoreDescTextArea.setText(model.getDescription());
+            scoreDescTextArea.setCaretPosition(0);
+        }
+    }
+
+    private void setIndepTestDescription() {
+        IndependenceTestModel model = indTestComboBox.getItemAt(indTestComboBox.getSelectedIndex());
+        if (model == null) {
+            testDescTextArea.setText("");
+        } else {
+            testDescTextArea.setText(model.getDescription());
+            testDescTextArea.setCaretPosition(0);
+        }
+    }
+
     private void refreshAlgorithmList() {
         algoModels.clear();
 
@@ -554,8 +589,7 @@ public class AlgorithmCard extends JPanel {
                         .filter(e -> e.getIndependenceTest().getClazz().isAnnotationPresent(Gaussian.class))
                         .forEach(e -> indTestComboBox.addItem(e));
             } else {
-                models.stream()
-                        .forEach(e -> indTestComboBox.addItem(e));
+                models.forEach(e -> indTestComboBox.addItem(e));
             }
         }
         updatingTestModels = false;
@@ -578,6 +612,10 @@ public class AlgorithmCard extends JPanel {
             indTestComboBox.setSelectedItem(testModel);
         } else {
             indTestComboBox.setEnabled(false);
+        }
+
+        if (indTestComboBox.getSelectedIndex() == -1) {
+            testDescTextArea.setText("");
         }
     }
 
@@ -606,8 +644,7 @@ public class AlgorithmCard extends JPanel {
                         .filter(e -> e.getScore().getClazz().isAnnotationPresent(Gaussian.class))
                         .forEach(e -> scoreModels.add(e));
             } else {
-                models.stream()
-                        .forEach(e -> scoreModels.add(e));
+                models.forEach(e -> scoreModels.add(e));
             }
 
             // TsIMaGES can only take SEM BIC score for continuous data
@@ -649,6 +686,10 @@ public class AlgorithmCard extends JPanel {
             scoreComboBox.setSelectedItem(scoreModel);
         } else {
             scoreComboBox.setEnabled(false);
+        }
+
+        if (scoreComboBox.getSelectedIndex() == -1) {
+            scoreDescTextArea.setText("");
         }
     }
 
@@ -879,6 +920,74 @@ public class AlgorithmCard extends JPanel {
 
     }
 
+    private class TestDescPanel extends JPanel {
+
+        private static final long serialVersionUID = -4159055717661942076L;
+
+        public TestDescPanel() {
+            initComponents();
+        }
+
+        private void initComponents() {
+            JScrollPane scrollPane = new JScrollPane(testDescTextArea);
+
+            setBorder(BorderFactory.createTitledBorder("Test of Independence Description"));
+            setPreferredSize(new Dimension(235, 150));
+
+            GroupLayout layout = new GroupLayout(this);
+            this.setLayout(layout);
+            layout.setHorizontalGroup(
+                    layout.createParallelGroup(GroupLayout.Alignment.LEADING)
+                            .addGroup(layout.createSequentialGroup()
+                                    .addContainerGap()
+                                    .addComponent(scrollPane, GroupLayout.DEFAULT_SIZE, 366, Short.MAX_VALUE)
+                                    .addContainerGap())
+            );
+            layout.setVerticalGroup(
+                    layout.createParallelGroup(GroupLayout.Alignment.LEADING)
+                            .addGroup(layout.createSequentialGroup()
+                                    .addContainerGap()
+                                    .addComponent(scrollPane, GroupLayout.DEFAULT_SIZE, 254, Short.MAX_VALUE)
+                                    .addContainerGap())
+            );
+        }
+
+    }
+
+    private class ScoreDescPanel extends JPanel {
+
+        private static final long serialVersionUID = -4159055717661942076L;
+
+        public ScoreDescPanel() {
+            initComponents();
+        }
+
+        private void initComponents() {
+            JScrollPane scrollPane = new JScrollPane(scoreDescTextArea);
+
+            setBorder(BorderFactory.createTitledBorder("Score Description"));
+            setPreferredSize(new Dimension(235, 150));
+
+            GroupLayout layout = new GroupLayout(this);
+            this.setLayout(layout);
+            layout.setHorizontalGroup(
+                    layout.createParallelGroup(GroupLayout.Alignment.LEADING)
+                            .addGroup(layout.createSequentialGroup()
+                                    .addContainerGap()
+                                    .addComponent(scrollPane, GroupLayout.DEFAULT_SIZE, 366, Short.MAX_VALUE)
+                                    .addContainerGap())
+            );
+            layout.setVerticalGroup(
+                    layout.createParallelGroup(GroupLayout.Alignment.LEADING)
+                            .addGroup(layout.createSequentialGroup()
+                                    .addContainerGap()
+                                    .addComponent(scrollPane, GroupLayout.DEFAULT_SIZE, 254, Short.MAX_VALUE)
+                                    .addContainerGap())
+            );
+        }
+
+    }
+
     private class AlgoDescPanel extends JPanel {
 
         private static final long serialVersionUID = -4159055717661942076L;
@@ -891,7 +1000,7 @@ public class AlgorithmCard extends JPanel {
             JScrollPane scrollPane = new JScrollPane(algoDescTextArea);
 
             setBorder(BorderFactory.createTitledBorder("Algorithm Description"));
-            setPreferredSize(new Dimension(235, 300));
+            setPreferredSize(new Dimension(235, 150));
 
             GroupLayout layout = new GroupLayout(this);
             this.setLayout(layout);
@@ -939,9 +1048,17 @@ public class AlgorithmCard extends JPanel {
             westMainPanel.add(westMainWestPanel, BorderLayout.WEST);
             westMainPanel.add(new AlgorithmListPanel(), BorderLayout.EAST);
 
+            JPanel centerMainPanel = new JPanel();
+            centerMainPanel.setLayout(new BoxLayout(centerMainPanel, BoxLayout.Y_AXIS));
+            centerMainPanel.add(new AlgoDescPanel());
+            centerMainPanel.add(Box.createVerticalStrut(10));
+            centerMainPanel.add(new TestDescPanel());
+            centerMainPanel.add(Box.createVerticalStrut(10));
+            centerMainPanel.add(new ScoreDescPanel());
+
             setLayout(new BorderLayout(10, 0));
             add(westMainPanel, BorderLayout.WEST);
-            add(new AlgoDescPanel(), BorderLayout.CENTER);
+            add(centerMainPanel, BorderLayout.CENTER);
         }
 
     }

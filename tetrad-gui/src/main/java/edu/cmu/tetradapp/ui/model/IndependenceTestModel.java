@@ -20,6 +20,7 @@ package edu.cmu.tetradapp.ui.model;
 
 import edu.cmu.tetrad.annotation.AnnotatedClass;
 import edu.cmu.tetrad.annotation.TestOfIndependence;
+import edu.cmu.tetrad.util.IndependenceTestDescriptions;
 import java.io.Serializable;
 
 /**
@@ -33,9 +34,13 @@ public class IndependenceTestModel implements Serializable, Comparable<Independe
     private static final long serialVersionUID = -6802442235695595011L;
 
     private final AnnotatedClass<TestOfIndependence> independenceTest;
+    private final String name;
+    private final String description;
 
     public IndependenceTestModel(AnnotatedClass<TestOfIndependence> independenceTest) {
         this.independenceTest = independenceTest;
+        this.name = independenceTest.getAnnotation().name();
+        this.description = IndependenceTestDescriptions.getInstance().get(independenceTest.getAnnotation().command());
     }
 
     @Override
@@ -45,11 +50,19 @@ public class IndependenceTestModel implements Serializable, Comparable<Independe
 
     @Override
     public String toString() {
-        return independenceTest.getAnnotation().name();
+        return this.name;
     }
 
     public AnnotatedClass<TestOfIndependence> getIndependenceTest() {
         return independenceTest;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public String getDescription() {
+        return description;
     }
 
 }
