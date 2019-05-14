@@ -34,20 +34,20 @@ public class AlgorithmDescriptions {
     private final Map<String, String> algoDescMap = new HashMap<>();
 
     private AlgorithmDescriptions() {
-        try (InputStream inputStream = this.getClass().getClassLoader().getResourceAsStream("/manual/index.html")) {
-            Document doc = Jsoup.parse(inputStream, StandardCharsets.UTF_8.name(), "");
-            getAlgorithms().forEach(algoId -> {
-                Element algoDesc = doc.getElementById(algoId);
+        try (InputStream inputStream = this.getClass().getClassLoader().getResourceAsStream("manual/index.html")) {
+            final Document doc = Jsoup.parse(inputStream, StandardCharsets.UTF_8.name(), "");
+            getAlgorithms().forEach(algoShortName -> {
+                Element algoDesc = doc.getElementById(algoShortName);
                 if (algoDesc != null) {
                     Elements paragraphs = algoDesc.children();
                     String desc = paragraphs.stream()
                             .map(p -> p.text().trim())
                             .collect(Collectors.joining("\n"));
-                    algoDescMap.put(algoId, desc);
+                    algoDescMap.put(algoShortName, desc);
                 }
             });
-        } catch (IOException exception) {
-            LOGGER.error("Failed to read tetrad HTML manual 'maunal/index.html' file from within the jar.", exception);
+        } catch (IOException ex) {
+            LOGGER.error("Failed to read tetrad HTML manual 'maunal/index.html' file from within the jar.", ex);
         }
     }
 
