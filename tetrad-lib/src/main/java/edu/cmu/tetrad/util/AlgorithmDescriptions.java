@@ -50,9 +50,9 @@ public class AlgorithmDescriptions {
         try (InputStream inputStream = this.getClass().getClassLoader().getResourceAsStream("manual/index.html")) {
             final Document doc = Jsoup.parse(inputStream, StandardCharsets.UTF_8.name(), "");
             getShortNames().forEach(shortName -> {
-                Element algoDesc = doc.getElementById(shortName);
-                if (algoDesc != null) {
-                    Elements paragraphs = algoDesc.children();
+                Element element = doc.getElementById(shortName);
+                if (element != null) {
+                    Elements paragraphs = element.children();
                     String desc = paragraphs.stream()
                             .map(p -> p.text().trim())
                             .collect(Collectors.joining("\n"));
@@ -72,7 +72,7 @@ public class AlgorithmDescriptions {
         String description = descriptions.get(shortName);
 
         return (description == null)
-                ? String.format("Please add algorithm description for %s.", shortName)
+                ? String.format("Please add a description for %s.", shortName)
                 : description;
     }
 
