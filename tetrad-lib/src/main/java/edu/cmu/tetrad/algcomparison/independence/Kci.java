@@ -6,7 +6,6 @@ import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.data.DataUtils;
 import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.util.Parameters;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -17,7 +16,7 @@ import java.util.List;
  */
 @TestOfIndependence(
         name = "Kernel Conditional Independence (KCI) Test",
-        command = "kci",
+        command = "kci-test",
         dataType = DataType.Continuous
 )
 public class Kci implements IndependenceWrapper {

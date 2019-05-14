@@ -16,7 +16,7 @@ import java.util.List;
  */
 @TestOfIndependence(
         name = "BDeu Test",
-        command = "bdeu",
+        command = "bdeu-test",
         dataType = DataType.Discrete
 )
 public class BDeuTest implements IndependenceWrapper {

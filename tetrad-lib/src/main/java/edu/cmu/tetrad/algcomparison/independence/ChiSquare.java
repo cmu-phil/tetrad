@@ -17,7 +17,7 @@ import java.util.List;
  */
 @TestOfIndependence(
         name = "Chi Square Test",
-        command = "chi-square",
+        command = "chi-square-test",
         dataType = DataType.Discrete
 )
 public class ChiSquare implements IndependenceWrapper {

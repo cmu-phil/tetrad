@@ -19,7 +19,7 @@ import java.util.List;
 @Experimental
 @edu.cmu.tetrad.annotation.Score(
         name = "Multinomial Logistic Regression BIC Score",
-        command = "multinomial-logistic-regression-bic",
+        command = "mnlr-bic-score",
         dataType = DataType.Mixed
 )
 public class MNLRBicScore implements ScoreWrapper {

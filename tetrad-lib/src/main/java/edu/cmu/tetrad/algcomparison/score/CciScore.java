@@ -9,7 +9,6 @@ import edu.cmu.tetrad.search.IndTestConditionalCorrelation;
 import edu.cmu.tetrad.search.Score;
 import edu.cmu.tetrad.search.ScoredIndTest;
 import edu.cmu.tetrad.util.Parameters;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -19,7 +18,7 @@ import java.util.List;
  * @author jdramsey
  */
 @edu.cmu.tetrad.annotation.Score(
-        name = "Conditional Correlation (CCI) Score",
+        name = "Conditional Correlation Independence (CCI) Score",
         command = "cci-score",
         dataType = {DataType.Continuous}
 )

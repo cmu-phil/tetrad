@@ -19,7 +19,7 @@ import java.util.List;
 @Experimental
 @edu.cmu.tetrad.annotation.Score(
         name = "Discrete Mixed BIC Score",
-        command = "disc-mixed-bic",
+        command = "disc-mixed-bic-score",
         dataType = DataType.Mixed
 )
 public class DiscreteMixedBicScore implements ScoreWrapper {

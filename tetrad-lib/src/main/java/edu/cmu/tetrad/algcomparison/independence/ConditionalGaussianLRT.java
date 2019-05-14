@@ -17,7 +17,7 @@ import java.util.List;
  */
 @TestOfIndependence(
         name = "Conditional Gaussian (CG) Likelihood Ratio Test",
-        command = "cond-gauss-lrt",
+        command = "cg-lr-test",
         dataType = DataType.Mixed
 )
 public class ConditionalGaussianLRT implements IndependenceWrapper {
