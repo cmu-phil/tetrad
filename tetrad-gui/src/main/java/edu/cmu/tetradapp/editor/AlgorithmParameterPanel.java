@@ -34,8 +34,12 @@ import edu.cmu.tetradapp.util.IntTextField;
 import edu.cmu.tetradapp.util.StringTextField;
 import java.awt.BorderLayout;
 import java.text.DecimalFormat;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
-import java.util.TreeSet;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
@@ -111,51 +115,69 @@ public class AlgorithmParameterPanel extends JPanel {
         }
     }
 
+    protected Box[] toArray(Map<String, Box> parameterComponents) {
+        ParamDescriptions paramDescs = ParamDescriptions.getInstance();
+
+        List<Box> boolComps = new LinkedList<>();
+        List<Box> otherComps = new LinkedList<>();
+        parameterComponents.forEach((k, v) -> {
+            if (paramDescs.get(k).getDefaultValue() instanceof Boolean) {
+                boolComps.add(v);
+            } else {
+                otherComps.add(v);
+            }
+        });
+
+        return Stream.concat(otherComps.stream(), boolComps.stream())
+                .toArray(Box[]::new);
+    }
+
+    protected Map<String, Box> createParameterComponents(Set<String> params, Parameters parameters) {
+        ParamDescriptions paramDescs = ParamDescriptions.getInstance();
+        return params.stream()
+                .collect(Collectors.toMap(e -> e, e -> createParameterComponent(e, parameters, paramDescs.get(e))));
+    }
+
+    protected Box createParameterComponent(String parameter, Parameters parameters, ParamDescription paramDesc) {
+        JComponent component;
+        Object defaultValue = paramDesc.getDefaultValue();
+        if (defaultValue instanceof Double) {
+            double lowerBoundDouble = paramDesc.getLowerBoundDouble();
+            double upperBoundDouble = paramDesc.getUpperBoundDouble();
+            component = getDoubleField(parameter, parameters, (Double) defaultValue, lowerBoundDouble, upperBoundDouble);
+        } else if (defaultValue instanceof Integer) {
+            int lowerBoundInt = paramDesc.getLowerBoundInt();
+            int upperBoundInt = paramDesc.getUpperBoundInt();
+            component = getIntTextField(parameter, parameters, (Integer) defaultValue, lowerBoundInt, upperBoundInt);
+        } else if (defaultValue instanceof Boolean) {
+            component = getBooleanSelectionBox(parameter, parameters, (Boolean) defaultValue);
+        } else if (defaultValue instanceof String) {
+            component = getStringField(parameter, parameters, (String) defaultValue);
+        } else {
+            throw new IllegalArgumentException("Unexpected type: " + defaultValue.getClass());
+        }
+
+        Box paramRow = Box.createHorizontalBox();
+
+        JLabel paramLabel = new JLabel(paramDesc.getShortDescription());
+        String longDescription = paramDesc.getLongDescription();
+        if (longDescription != null) {
+            paramLabel.setToolTipText(longDescription);
+        }
+        paramRow.add(paramLabel);
+        paramRow.add(Box.createHorizontalGlue());
+        paramRow.add(component);
+
+        return paramRow;
+    }
+
     protected JPanel createSubPanel(String title, Set<String> params, Parameters parameters) {
         JPanel panel = new JPanel(new BorderLayout());
         panel.setBorder(BorderFactory.createTitledBorder(title));
 
-        Box[] boxes = (new TreeSet<>(params)).stream().map(parameter -> {
-            ParamDescription paramDesc = ParamDescriptions.getInstance().get(parameter);
-
-            JComponent parameterSelection;
-            Object defaultValue = paramDesc.getDefaultValue();
-            if (defaultValue instanceof Double) {
-                double lowerBoundDouble = paramDesc.getLowerBoundDouble();
-                double upperBoundDouble = paramDesc.getUpperBoundDouble();
-                parameterSelection = getDoubleField(parameter, parameters, (Double) defaultValue, lowerBoundDouble, upperBoundDouble);
-            } else if (defaultValue instanceof Integer) {
-                int lowerBoundInt = paramDesc.getLowerBoundInt();
-                int upperBoundInt = paramDesc.getUpperBoundInt();
-                parameterSelection = getIntTextField(parameter, parameters, (Integer) defaultValue, lowerBoundInt, upperBoundInt);
-            } else if (defaultValue instanceof Boolean) {
-                // Joe's old implementation with dropdown yes or no
-                //parameterSelection = getBooleanBox(parameter, parameters, (Boolean) defaultValue);
-                // Zhou's new implementation with yes/no radio buttons
-                parameterSelection = getBooleanSelectionBox(parameter, parameters, (Boolean) defaultValue);
-            } else if (defaultValue instanceof String) {
-                parameterSelection = getStringField(parameter, parameters, (String) defaultValue);
-            } else {
-                throw new IllegalArgumentException("Unexpected type: " + defaultValue.getClass());
-            }
-
-            // Each parameter row contains parameter label and selection/input field
-            Box paramRow = Box.createHorizontalBox();
-
-            JLabel paramLabel = new JLabel(paramDesc.getShortDescription());
-            String longDescription = paramDesc.getLongDescription();
-            if (longDescription != null) {
-                paramLabel.setToolTipText(longDescription);
-            }
-            paramRow.add(paramLabel);
-            paramRow.add(Box.createHorizontalGlue());
-            paramRow.add(parameterSelection);
-
-            return paramRow;
-        }).toArray(Box[]::new);
-
         Box paramsBox = Box.createVerticalBox();
 
+        Box[] boxes = toArray(createParameterComponents(params, parameters));
         int lastIndex = boxes.length - 1;
         for (int i = 0; i < lastIndex; i++) {
             paramsBox.add(boxes[i]);
