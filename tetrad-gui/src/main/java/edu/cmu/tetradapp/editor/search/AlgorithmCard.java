@@ -162,10 +162,12 @@ public class AlgorithmCard extends JPanel {
         scoreDescTextArea.setWrapStyleWord(true);
         scoreDescTextArea.setLineWrap(true);
         scoreDescTextArea.setEditable(false);
+        scoreDescTextArea.setRows(8);
 
         testDescTextArea.setWrapStyleWord(true);
         testDescTextArea.setLineWrap(true);
         testDescTextArea.setEditable(false);
+        testDescTextArea.setRows(8);
 
         populateAlgoTypeOptions(algoTypeOpts);
 
@@ -830,7 +832,6 @@ public class AlgorithmCard extends JPanel {
             scoreLabel = new JLabel();
 
             setBorder(BorderFactory.createTitledBorder("Choose Statistical Test and Score"));
-            setPreferredSize(new Dimension(330, 200));
 
             assumptionsLabel.setText("Filter by dataset properties:");
 
@@ -898,7 +899,6 @@ public class AlgorithmCard extends JPanel {
             JScrollPane scrollPane = new JScrollPane(algorithmList);
 
             setBorder(BorderFactory.createTitledBorder("Choose Algorithm"));
-            setPreferredSize(new Dimension(230, 300));
 
             GroupLayout layout = new GroupLayout(this);
             this.setLayout(layout);
@@ -931,25 +931,9 @@ public class AlgorithmCard extends JPanel {
         private void initComponents() {
             JScrollPane scrollPane = new JScrollPane(testDescTextArea);
 
-            setBorder(BorderFactory.createTitledBorder("Test of Independence Description"));
-            setPreferredSize(new Dimension(235, 150));
-
-            GroupLayout layout = new GroupLayout(this);
-            this.setLayout(layout);
-            layout.setHorizontalGroup(
-                    layout.createParallelGroup(GroupLayout.Alignment.LEADING)
-                            .addGroup(layout.createSequentialGroup()
-                                    .addContainerGap()
-                                    .addComponent(scrollPane, GroupLayout.DEFAULT_SIZE, 366, Short.MAX_VALUE)
-                                    .addContainerGap())
-            );
-            layout.setVerticalGroup(
-                    layout.createParallelGroup(GroupLayout.Alignment.LEADING)
-                            .addGroup(layout.createSequentialGroup()
-                                    .addContainerGap()
-                                    .addComponent(scrollPane, GroupLayout.DEFAULT_SIZE, 254, Short.MAX_VALUE)
-                                    .addContainerGap())
-            );
+            setBorder(BorderFactory.createTitledBorder("Test Description"));
+            setLayout(new BorderLayout());
+            add(new PaddingPanel(scrollPane), BorderLayout.CENTER);
         }
 
     }
@@ -966,24 +950,8 @@ public class AlgorithmCard extends JPanel {
             JScrollPane scrollPane = new JScrollPane(scoreDescTextArea);
 
             setBorder(BorderFactory.createTitledBorder("Score Description"));
-            setPreferredSize(new Dimension(235, 150));
-
-            GroupLayout layout = new GroupLayout(this);
-            this.setLayout(layout);
-            layout.setHorizontalGroup(
-                    layout.createParallelGroup(GroupLayout.Alignment.LEADING)
-                            .addGroup(layout.createSequentialGroup()
-                                    .addContainerGap()
-                                    .addComponent(scrollPane, GroupLayout.DEFAULT_SIZE, 366, Short.MAX_VALUE)
-                                    .addContainerGap())
-            );
-            layout.setVerticalGroup(
-                    layout.createParallelGroup(GroupLayout.Alignment.LEADING)
-                            .addGroup(layout.createSequentialGroup()
-                                    .addContainerGap()
-                                    .addComponent(scrollPane, GroupLayout.DEFAULT_SIZE, 254, Short.MAX_VALUE)
-                                    .addContainerGap())
-            );
+            setLayout(new BorderLayout());
+            add(new PaddingPanel(scrollPane), BorderLayout.CENTER);
         }
 
     }
@@ -1000,24 +968,8 @@ public class AlgorithmCard extends JPanel {
             JScrollPane scrollPane = new JScrollPane(algoDescTextArea);
 
             setBorder(BorderFactory.createTitledBorder("Algorithm Description"));
-            setPreferredSize(new Dimension(235, 150));
-
-            GroupLayout layout = new GroupLayout(this);
-            this.setLayout(layout);
-            layout.setHorizontalGroup(
-                    layout.createParallelGroup(GroupLayout.Alignment.LEADING)
-                            .addGroup(layout.createSequentialGroup()
-                                    .addContainerGap()
-                                    .addComponent(scrollPane, GroupLayout.DEFAULT_SIZE, 366, Short.MAX_VALUE)
-                                    .addContainerGap())
-            );
-            layout.setVerticalGroup(
-                    layout.createParallelGroup(GroupLayout.Alignment.LEADING)
-                            .addGroup(layout.createSequentialGroup()
-                                    .addContainerGap()
-                                    .addComponent(scrollPane, GroupLayout.DEFAULT_SIZE, 254, Short.MAX_VALUE)
-                                    .addContainerGap())
-            );
+            setLayout(new BorderLayout());
+            add(new PaddingPanel(scrollPane), BorderLayout.CENTER);
         }
 
     }
@@ -1048,13 +1000,16 @@ public class AlgorithmCard extends JPanel {
             westMainPanel.add(westMainWestPanel, BorderLayout.WEST);
             westMainPanel.add(new AlgorithmListPanel(), BorderLayout.EAST);
 
-            JPanel centerMainPanel = new JPanel();
-            centerMainPanel.setLayout(new BoxLayout(centerMainPanel, BoxLayout.Y_AXIS));
-            centerMainPanel.add(new AlgoDescPanel());
-            centerMainPanel.add(Box.createVerticalStrut(10));
-            centerMainPanel.add(new TestDescPanel());
-            centerMainPanel.add(Box.createVerticalStrut(10));
-            centerMainPanel.add(new ScoreDescPanel());
+            JPanel testAndScorePanel = new JPanel();
+            testAndScorePanel.setLayout(new BoxLayout(testAndScorePanel, BoxLayout.Y_AXIS));
+            testAndScorePanel.add(new TestDescPanel());
+            testAndScorePanel.add(Box.createVerticalStrut(10));
+            testAndScorePanel.add(new ScoreDescPanel());
+
+            JPanel centerMainPanel = new JPanel(new BorderLayout(0, 10));
+            centerMainPanel.add(new AlgoDescPanel(), BorderLayout.CENTER);
+            centerMainPanel.add(testAndScorePanel, BorderLayout.SOUTH);
+            centerMainPanel.setPreferredSize(new Dimension(235, 200));
 
             setLayout(new BorderLayout(10, 0));
             add(westMainPanel, BorderLayout.WEST);
