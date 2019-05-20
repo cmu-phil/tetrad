@@ -23,6 +23,7 @@ import java.util.List;
  * values.
  *
  * @author jdramsey
+ * @deprecated
  */
 @Bootstrapping
 public class ImagesCcd implements MultiDataSetAlgorithm, HasKnowledge {

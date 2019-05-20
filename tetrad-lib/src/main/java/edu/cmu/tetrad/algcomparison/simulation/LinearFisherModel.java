@@ -67,7 +67,7 @@ public class LinearFisherModel implements Simulation, TakesData {
             System.out.println("Simulating dataset #" + (i + 1));
 
             if (shocks != null && shocks.size() > 0) {
-                parameters.set("numVars", shocks.get(0).getVariables().size());
+                parameters.set("numMeasures", shocks.get(0).getVariables().size());
             }
 
             if (parameters.getBoolean(Params.DIFFERENT_GRAPHS) && i > 0) {

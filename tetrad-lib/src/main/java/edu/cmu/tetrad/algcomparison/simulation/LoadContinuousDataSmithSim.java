@@ -1,6 +1,7 @@
 package edu.cmu.tetrad.algcomparison.simulation;
 
 import edu.cmu.tetrad.algcomparison.utils.HasParameterValues;
+import edu.cmu.tetrad.annotation.Experimental;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
@@ -16,6 +17,7 @@ import java.util.List;
 /**
  * @author jdramsey
  */
+@Experimental
 public class LoadContinuousDataSmithSim implements Simulation, HasParameterValues {
     static final long serialVersionUID = 23L;
     private String path;

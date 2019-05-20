@@ -151,6 +151,7 @@ public final class Params {
     public static final String SKIP_NUM_RECORDS = "skipNumRecords";
     public static final String STABLE_FAS = "stableFAS";
     public static final String STANDARDIZE = "standardize";
+    public static final String STRUCTURE = "structure";
     public static final String STRUCTURE_PRIOR = "structurePrior";
     public static final String SYMMETRIC_FIRST_STEP = "symmetricFirstStep";
     public static final String TARGET_NAME = "targetName";
