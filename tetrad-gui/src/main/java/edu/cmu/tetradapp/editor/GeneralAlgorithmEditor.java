@@ -164,7 +164,6 @@ public class GeneralAlgorithmEditor extends JPanel implements PropertyChangeList
     public void actionPerformed(ActionEvent evt) {
         Object obj = evt.getSource();
         if (obj == algoFwdBtn) {
-            System.out.println(algorithmCard.getPreferredSize());
             if (algorithmCard.isAllValid()) {
                 parameterCard.refresh();
                 showNextCard();
@@ -490,7 +489,6 @@ public class GeneralAlgorithmEditor extends JPanel implements PropertyChangeList
         }
 
         (new HpcJobActivityAction("")).actionPerformed(null);
-
     }
 
     private HpcAccount showRemoteComputingOptions(String algoId) {
@@ -538,8 +536,9 @@ public class GeneralAlgorithmEditor extends JPanel implements PropertyChangeList
 
                     if (hpcAccount == null) {
                         try {
-                            algorithmRunner.execute();
                             algorithmCard.saveStates();
+
+                            algorithmRunner.execute();
 
                             firePropertyChange("modelChanged", null, null);
                             graphCard.refresh();
@@ -547,10 +546,6 @@ public class GeneralAlgorithmEditor extends JPanel implements PropertyChangeList
                         } catch (Exception exception) {
                             exception.printStackTrace(System.err);
                         }
-
-                        // Update the graphContainer
-                        paramBkBtn.setEnabled(false);
-                        paramFwdBtn.setEnabled(false);
                     } else {
                         try {
                             doRemoteCompute(algorithmRunner, hpcAccount);
@@ -561,13 +556,6 @@ public class GeneralAlgorithmEditor extends JPanel implements PropertyChangeList
 
                     paramBkBtn.setEnabled(true);
                     paramFwdBtn.setEnabled(true);
-                }
-
-                HpcAccount hpcAccount = null;
-                if (hpcAccount == null) {
-                    algorithmRunner.execute();
-
-                    firePropertyChange("modelChanged", null, null);
                 }
             }
         };
