@@ -29,7 +29,7 @@ public class LoadContinuousDataAndSingleGraph implements Simulation, HasParamete
     public LoadContinuousDataAndSingleGraph(String path) {
         this.path = path;
         String structure = new File(path).getName();
-        parametersValues.set("Structure", structure);
+        parametersValues.set(Params.STRUCTURE, structure);
     }
 
     @Override

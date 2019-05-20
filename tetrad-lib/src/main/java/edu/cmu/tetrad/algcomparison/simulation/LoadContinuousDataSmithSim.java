@@ -29,7 +29,7 @@ public class LoadContinuousDataSmithSim implements Simulation, HasParameterValue
     public LoadContinuousDataSmithSim(String path) {
         this.path = path;
         String structure = new File(path).getName();
-        parametersValues.set("Structure", structure);
+        parametersValues.set(Params.STRUCTURE, structure);
     }
 
     @Override
