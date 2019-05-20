@@ -18,7 +18,6 @@
 // along with this program; if not, write to the Free Software               //
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA //
 ///////////////////////////////////////////////////////////////////////////////
-
 package edu.cmu.tetradapp.app;
 
 import edu.cmu.tetrad.util.JOptionUtils;
@@ -26,83 +25,77 @@ import edu.cmu.tetradapp.model.SessionWrapper;
 import edu.cmu.tetradapp.model.TetradMetadata;
 import edu.cmu.tetradapp.util.DesktopController;
 import edu.cmu.tetradapp.util.SessionEditorIndirectRef;
-
-import javax.swing.*;
 import java.awt.event.ActionEvent;
-import java.io.*;
+import java.io.IOException;
+import java.io.ObjectOutputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.prefs.Preferences;
+import javax.swing.AbstractAction;
+import javax.swing.JOptionPane;
 
 /**
  * Saves a session from a file.
  *
  * @author Joseph Ramsey jdramsey@andrew.cmu.edu
+ * @author Kevin V. Bui (kvb2@pitt.edu)
  */
-final class  SaveSessionAction extends AbstractAction {
+final class SaveSessionAction extends AbstractAction {
+
+    private static final long serialVersionUID = -1812370698394158108L;
+
     private boolean saved = false;
 
     public SaveSessionAction() {
         super("Save Session");
     }
 
-    /**
-     * Performs the action of loading a session from a file.
-     */
+    @Override
     public void actionPerformed(ActionEvent e) {
-
         // Get the frontmost SessionWrapper.
-        SessionEditorIndirectRef sessionEditorRef =
-                DesktopController.getInstance().getFrontmostSessionEditor();
+        SessionEditorIndirectRef sessionEditorRef
+                = DesktopController.getInstance().getFrontmostSessionEditor();
         SessionEditor sessionEditor = (SessionEditor) sessionEditorRef;
         SessionEditorWorkbench workbench = sessionEditor.getSessionWorkbench();
         SessionWrapper sessionWrapper = workbench.getSessionWrapper();
         TetradMetadata metadata = new TetradMetadata();
 
-        File file = new File(Preferences.userRoot().get("sessionSaveLocation",
-                Preferences.userRoot().absolutePath()),
+        Path outputFile = Paths.get(
+                Preferences.userRoot().get("sessionSaveLocation", Preferences.userRoot().absolutePath()),
                 sessionWrapper.getName());
 
-        if (!file.exists() || sessionWrapper.isNewSession()) {
+        if (Files.notExists(outputFile) || sessionWrapper.isNewSession()) {
             SaveSessionAsAction saveSessionAsAction = new SaveSessionAsAction();
             saveSessionAsAction.actionPerformed(e);
             this.saved = saveSessionAsAction.isSaved();
+
             return;
         }
 
-        if (file.exists()) {
+        if (Files.exists(outputFile)) {
             int ret = JOptionPane.showConfirmDialog(JOptionUtils.centeringComp(),
                     "File already exists. Overwrite?", "Save", JOptionPane.YES_NO_OPTION);
-
             if (ret == JOptionPane.NO_OPTION) {
                 SaveSessionAsAction saveSessionAsAction = new SaveSessionAsAction();
                 saveSessionAsAction.actionPerformed(e);
                 this.saved = saveSessionAsAction.isSaved();
+
                 return;
             }
         }
 
-                                                
-        // Save it.
-        try {
-            FileOutputStream out = new FileOutputStream(file);              
-            ObjectOutputStream objOut = new ObjectOutputStream(out);
-
+        try (ObjectOutputStream objOut = new ObjectOutputStream(Files.newOutputStream(outputFile))) {
             sessionWrapper.setNewSession(false);
             objOut.writeObject(metadata);
             objOut.writeObject(sessionWrapper);
-            out.flush();
-            out.close();
-//            JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
-//                    "Session saved.");
-
-            FileInputStream in = new FileInputStream(file);
-            ObjectInputStream objIn = new ObjectInputStream(in);
-            objIn.readObject();
-        }
-        catch (Exception e2) {
-            e2.printStackTrace();
-            JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
-                    "An error occurred while attempting to save the session as " +
-                            file.getAbsolutePath() + ".");
+        } catch (IOException exception) {
+            exception.printStackTrace(System.err);
+            JOptionPane.showMessageDialog(
+                    JOptionUtils.centeringComp(),
+                    String.format(
+                            "An error occurred while attempting to save the session as %s.",
+                            outputFile.toAbsolutePath()));
         }
 
         sessionWrapper.setSessionChanged(false);
@@ -112,10 +105,5 @@ final class  SaveSessionAction extends AbstractAction {
     public boolean isSaved() {
         return saved;
     }
+
 }
-
-
-
-
-
-
