@@ -47,11 +47,11 @@ import edu.cmu.tetradapp.ui.model.ScoreModels;
 import edu.cmu.tetradapp.util.DesktopController;
 import java.awt.BorderLayout;
 import java.awt.Component;
-import static java.awt.Component.LEFT_ALIGNMENT;
 import java.awt.Dimension;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.EnumMap;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -903,7 +903,7 @@ public class AlgorithmCard extends JPanel {
             algoTypeOpts.add(showAllRadBtn);
             algoFilterBtnGrp.add(showAllRadBtn);
 
-            for (AlgType item : AlgType.values()) {
+            Arrays.stream(AlgType.values()).forEach(item -> {
                 String name = item.name();
 
                 JRadioButton radioButton = new JRadioButton(name.replace("_", " "));
@@ -914,7 +914,7 @@ public class AlgorithmCard extends JPanel {
 
                 algoTypeOpts.add(radioButton);
                 algoFilterBtnGrp.add(radioButton);
-            }
+            });
         }
 
     }
