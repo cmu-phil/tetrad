@@ -1,6 +1,7 @@
 package edu.cmu.tetrad.algcomparison.simulation;
 
 import edu.cmu.tetrad.algcomparison.graph.RandomGraph;
+import edu.cmu.tetrad.annotation.Experimental;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Edge;
 import edu.cmu.tetrad.graph.EdgeListGraph;
@@ -16,6 +17,7 @@ import java.util.*;
  *
  * @author Bryan Andrews
  */
+@Experimental
 public class LinearSineSimulation implements Simulation {
     static final long serialVersionUID = 23L;
     private RandomGraph randomGraph;

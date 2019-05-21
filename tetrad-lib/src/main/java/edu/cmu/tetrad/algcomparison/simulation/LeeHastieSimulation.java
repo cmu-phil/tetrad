@@ -39,8 +39,8 @@ public class LeeHastieSimulation implements Simulation, HasParameters {
     public void createData(Parameters parameters) {
         double percentDiscrete = parameters.getDouble(Params.PERCENT_DISCRETE);
 
-        boolean discrete = parameters.getString("dataType").equals("discrete");
-        boolean continuous = parameters.getString("dataType").equals("continuous");
+        boolean discrete = parameters.getString(Params.DATA_TYPE).equals("discrete");
+        boolean continuous = parameters.getString(Params.DATA_TYPE).equals("continuous");
 
         if (discrete && percentDiscrete != 100.0) {
             throw new IllegalArgumentException("To simulate discrete data, 'percentDiscrete' must be set to 0.0.");
