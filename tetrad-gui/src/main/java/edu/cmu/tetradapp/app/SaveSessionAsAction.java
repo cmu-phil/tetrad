@@ -31,7 +31,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.prefs.Preferences;
 import javax.swing.AbstractAction;
 import javax.swing.JOptionPane;
@@ -88,8 +87,7 @@ final class SaveSessionAsAction extends AbstractAction {
         sessionWrapper.setName(file.getName());
         sessionEditor.setName(file.getName());
 
-        Path outputFile = file.toPath();
-        try (ObjectOutputStream objOut = new ObjectOutputStream(Files.newOutputStream(outputFile))) {
+        try (ObjectOutputStream objOut = new ObjectOutputStream(Files.newOutputStream(file.toPath()))) {
             objOut.writeObject(metadata);
             objOut.writeObject(sessionWrapper);
 
