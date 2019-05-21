@@ -151,7 +151,6 @@ public final class Params {
     public static final String SKIP_NUM_RECORDS = "skipNumRecords";
     public static final String STABLE_FAS = "stableFAS";
     public static final String STANDARDIZE = "standardize";
-    public static final String STRUCTURE = "structure";
     public static final String STRUCTURE_PRIOR = "structurePrior";
     public static final String SYMMETRIC_FIRST_STEP = "symmetricFirstStep";
     public static final String TARGET_NAME = "targetName";
@@ -205,7 +204,7 @@ public final class Params {
             PROB_CYCLE, PROB_TWO_CYCLE, RANDOM_SELECTION_SIZE, RANDOMIZE_COLUMNS,
             RCIT_NUM_FEATURES, RESAMPLING_ENSEMBLE, RESAMPLING_WITH_REPLACEMENT, SAMPLE_PRIOR,
             SAMPLE_SIZE, SAVE_LATENT_VARS, SCALE_FREE_ALPHA, SCALE_FREE_BETA, SCALE_FREE_DELTA_IN,
-            SCALE_FREE_DELTA_OUT, SELF_LOOP_COEF, SKIP_NUM_RECORDS, STABLE_FAS, STANDARDIZE, STRUCTURE, 
+            SCALE_FREE_DELTA_OUT, SELF_LOOP_COEF, SKIP_NUM_RECORDS, STABLE_FAS, STANDARDIZE,
             STRUCTURE_PRIOR, SYMMETRIC_FIRST_STEP, TARGET_NAME, THR, THRESHOLD_FOR_NUM_EIGENVALUES,
             THRESHOLD_NO_RANDOM_CONSTRAIN_SEARCH, THRESHOLD_NO_RANDOM_DATA_SEARCH, TWO_CYCLE_ALPHA,
             UPPER_BOUND, USE_CORR_DIFF_ADJACENCIES, USE_FAS_ADJACENCIES, USE_GAP,
