@@ -19,16 +19,8 @@
 package edu.cmu.tetradapp.editor.search;
 
 import edu.cmu.tetradapp.editor.AlgorithmParameterPanel;
-import edu.cmu.tetradapp.editor.GeneralAlgorithmEditor;
 import edu.cmu.tetradapp.model.GeneralAlgorithmRunner;
-import edu.cmu.tetradapp.ui.PaddingPanel;
-import java.awt.BorderLayout;
 import java.awt.Dimension;
-import javax.swing.GroupLayout;
-import javax.swing.JButton;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.SwingConstants;
 
 /**
  *
@@ -36,91 +28,25 @@ import javax.swing.SwingConstants;
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
  */
-public class ParameterCard extends JPanel {
+public class ParameterCard extends AlgorithmParameterPanel {
 
-    private static final long serialVersionUID = -5820689812610797211L;
-
-    private final JButton backBtn = new JButton("<   Choose Algorithm");
-    private final JButton forwardBtn = new JButton("Run Search & Generate Graph   >");
-
-    private final AlgorithmParameterPanel paramPanel = new AlgorithmParameterPanel();
+    private static final long serialVersionUID = 2684962776580724327L;
 
     private final GeneralAlgorithmRunner algorithmRunner;
 
-    public ParameterCard(GeneralAlgorithmEditor algorithmEditor, GeneralAlgorithmRunner algorithmRunner) {
+    public ParameterCard(GeneralAlgorithmRunner algorithmRunner) {
+        super();
         this.algorithmRunner = algorithmRunner;
 
-        initComponents(algorithmEditor);
+        initComponents();
     }
 
-    private void initComponents(GeneralAlgorithmEditor algorithmEditor) {
-        Dimension buttonSize = new Dimension(268, 25);
-        backBtn.setMinimumSize(buttonSize);
-        backBtn.setMaximumSize(buttonSize);
-        backBtn.addActionListener(e -> {
-            firePropertyChange("paramBack", null, null);
-        });
-
-        forwardBtn.setMinimumSize(buttonSize);
-        forwardBtn.setMaximumSize(buttonSize);
-        forwardBtn.addActionListener(e -> {
-            firePropertyChange("paramFwd", null, null);
-        });
-
-        setLayout(new BorderLayout());
-        add(new JScrollPane(new PaddingPanel(paramPanel)), BorderLayout.CENTER);
-        add(new SouthPanel(), BorderLayout.SOUTH);
-
-        addPropertyChangeListener(algorithmEditor);
+    private void initComponents() {
+        setPreferredSize(new Dimension(800, 506));
     }
 
     public void refresh() {
-        this.paramPanel.addToPanel(algorithmRunner);
-    }
-
-    public void disableButtons() {
-        backBtn.setEnabled(false);
-        forwardBtn.setEnabled(false);
-    }
-
-    public void enableButtons() {
-        backBtn.setEnabled(true);
-        forwardBtn.setEnabled(true);
-    }
-
-    private final class SouthPanel extends JPanel {
-
-        private static final long serialVersionUID = -4055772024145978761L;
-
-        public SouthPanel() {
-            initComponents();
-        }
-
-        private void initComponents() {
-            GroupLayout layout = new GroupLayout(this);
-            layout.setHorizontalGroup(
-                    layout.createParallelGroup(GroupLayout.Alignment.LEADING)
-                            .addGroup(layout.createSequentialGroup()
-                                    .addContainerGap(GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                    .addComponent(backBtn)
-                                    .addGap(18, 18, 18)
-                                    .addComponent(forwardBtn)
-                                    .addContainerGap(GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-            );
-
-            layout.linkSize(SwingConstants.HORIZONTAL, new java.awt.Component[]{backBtn, forwardBtn});
-            layout.setVerticalGroup(
-                    layout.createParallelGroup(GroupLayout.Alignment.LEADING)
-                            .addGroup(layout.createSequentialGroup()
-                                    .addContainerGap()
-                                    .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
-                                            .addComponent(backBtn)
-                                            .addComponent(forwardBtn))
-                                    .addContainerGap())
-            );
-
-            this.setLayout(layout);
-        }
+        addToPanel(algorithmRunner);
     }
 
 }

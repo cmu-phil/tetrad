@@ -38,6 +38,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.swing.BorderFactory;
@@ -135,7 +137,13 @@ public class AlgorithmParameterPanel extends JPanel {
     protected Map<String, Box> createParameterComponents(Set<String> params, Parameters parameters) {
         ParamDescriptions paramDescs = ParamDescriptions.getInstance();
         return params.stream()
-                .collect(Collectors.toMap(e -> e, e -> createParameterComponent(e, parameters, paramDescs.get(e))));
+                .collect(Collectors.toMap(
+                        Function.identity(),
+                        e -> createParameterComponent(e, parameters, paramDescs.get(e)),
+                        (u, v) -> {
+                            throw new IllegalStateException(String.format("Duplicate key %s.", u));
+                        },
+                        TreeMap::new));
     }
 
     protected Box createParameterComponent(String parameter, Parameters parameters, ParamDescription paramDesc) {

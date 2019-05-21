@@ -36,7 +36,6 @@ import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.data.ICovarianceMatrix;
 import edu.cmu.tetrad.data.IKnowledge;
 import edu.cmu.tetradapp.app.TetradDesktop;
-import edu.cmu.tetradapp.editor.GeneralAlgorithmEditor;
 import edu.cmu.tetradapp.model.GeneralAlgorithmRunner;
 import edu.cmu.tetradapp.ui.PaddingPanel;
 import edu.cmu.tetradapp.ui.model.AlgorithmModel;
@@ -47,11 +46,12 @@ import edu.cmu.tetradapp.ui.model.ScoreModel;
 import edu.cmu.tetradapp.ui.model.ScoreModels;
 import edu.cmu.tetradapp.util.DesktopController;
 import java.awt.BorderLayout;
+import java.awt.Component;
 import java.awt.Dimension;
-import java.awt.event.ActionEvent;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.EnumMap;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -89,7 +89,7 @@ import org.slf4j.LoggerFactory;
  */
 public class AlgorithmCard extends JPanel {
 
-    private static final long serialVersionUID = -968121724334131937L;
+    private static final long serialVersionUID = -7552068626783685630L;
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AlgorithmCard.class);
 
@@ -100,8 +100,6 @@ public class AlgorithmCard extends JPanel {
     private final String LINEAR_PARAM = "linear";
     private final String GAUSSIAN_PARAM = "gaussian";
     private final String KNOWLEDGE_PARAM = "knowledge";
-
-    private final JButton forwardBtn = new JButton("Set Parameters   >");
 
     private final List<JRadioButton> algoTypeOpts = new ArrayList<>();
 
@@ -117,6 +115,7 @@ public class AlgorithmCard extends JPanel {
     private final JComboBox<IndependenceTestModel> indTestComboBox = new JComboBox<>();
     private final JComboBox<ScoreModel> scoreComboBox = new JComboBox<>();
     private final JList<AlgorithmModel> algorithmList = new JList<>(algoModels);
+
     private final JTextArea algoDescTextArea = new JTextArea();
     private final JTextArea scoreDescTextArea = new JTextArea();
     private final JTextArea testDescTextArea = new JTextArea();
@@ -129,46 +128,59 @@ public class AlgorithmCard extends JPanel {
     private final TetradDesktop desktop;
     private final boolean multiDataAlgo;
 
-    public AlgorithmCard(GeneralAlgorithmEditor algorithmEditor, GeneralAlgorithmRunner algorithmRunner) {
+    public AlgorithmCard(GeneralAlgorithmRunner algorithmRunner) {
         this.algorithmRunner = algorithmRunner;
-        this.dataType = getDataType();
+        this.dataType = getDataType(algorithmRunner);
         this.desktop = (TetradDesktop) DesktopController.getInstance();
         this.multiDataAlgo = (algorithmRunner.getSourceGraph() == null)
                 ? algorithmRunner.getDataModelList().size() > 1
                 : false;
 
-        initComponents(algorithmEditor);
+        initComponents();
+        initListeners();
+
         resetAllSettings();
     }
 
-    private void initComponents(GeneralAlgorithmEditor algorithmEditor) {
-        Dimension buttonSize = new Dimension(268, 25);
-        forwardBtn.setMinimumSize(buttonSize);
-        forwardBtn.setMaximumSize(buttonSize);
-        forwardBtn.addActionListener(e -> {
-            AlgorithmModel algoModel = algorithmList.getSelectedValue();
-            IndependenceTestModel indTestModel = indTestComboBox.getItemAt(indTestComboBox.getSelectedIndex());
-            ScoreModel scoreModel = scoreComboBox.getItemAt(scoreComboBox.getSelectedIndex());
-            if (isValid(algoModel, indTestModel, scoreModel)) {
-                algorithmRunner.setAlgorithm(getAlgorithmFromInterface(algoModel, indTestModel, scoreModel));
-                firePropertyChange("algoFwd", null, null);
-            }
+    private void initComponents() {
+        initDescriptionTextAreas();
+
+        JButton resetSettingsBtn = new JButton("Reset All Settings");
+        resetSettingsBtn.addActionListener(e -> {
+            resetAllSettings();
         });
 
-        algoDescTextArea.setWrapStyleWord(true);
-        algoDescTextArea.setLineWrap(true);
-        algoDescTextArea.setEditable(false);
+        JPanel westMainSouthPanel = new JPanel(new BorderLayout(0, 10));
+        westMainSouthPanel.add(new TestAndScorePanel(), BorderLayout.CENTER);
+        westMainSouthPanel.add(resetSettingsBtn, BorderLayout.SOUTH);
 
-        scoreDescTextArea.setWrapStyleWord(true);
-        scoreDescTextArea.setLineWrap(true);
-        scoreDescTextArea.setEditable(false);
+        JPanel westMainWestPanel = new JPanel(new BorderLayout(0, 10));
+        westMainWestPanel.add(new AlgorithmFilterPanel(), BorderLayout.CENTER);
+        westMainWestPanel.add(westMainSouthPanel, BorderLayout.SOUTH);
 
-        testDescTextArea.setWrapStyleWord(true);
-        testDescTextArea.setLineWrap(true);
-        testDescTextArea.setEditable(false);
+        JPanel westMainPanel = new JPanel(new BorderLayout(5, 0));
+        westMainPanel.add(westMainWestPanel, BorderLayout.WEST);
+        westMainPanel.add(new AlgorithmListPanel(), BorderLayout.EAST);
 
-        populateAlgoTypeOptions(algoTypeOpts);
+        JPanel testAndScoreDescPanel = new JPanel();
+        testAndScoreDescPanel.setLayout(new BoxLayout(testAndScoreDescPanel, BoxLayout.Y_AXIS));
+        testAndScoreDescPanel.add(new DescriptionPanel("Test Description", testDescTextArea));
+        testAndScoreDescPanel.add(Box.createVerticalStrut(10));
+        testAndScoreDescPanel.add(new DescriptionPanel("Score Description", scoreDescTextArea));
 
+        JPanel centerMainPanel = new JPanel(new BorderLayout(0, 10));
+        centerMainPanel.add(new DescriptionPanel("Algorithm Description", algoDescTextArea), BorderLayout.CENTER);
+        centerMainPanel.add(testAndScoreDescPanel, BorderLayout.SOUTH);
+        centerMainPanel.setPreferredSize(new Dimension(235, 200));
+
+        setLayout(new BorderLayout(10, 0));
+        add(westMainPanel, BorderLayout.WEST);
+        add(centerMainPanel, BorderLayout.CENTER);
+
+        setPreferredSize(new Dimension(800, 506));
+    }
+
+    private void initListeners() {
         knowledgeChkBox.addActionListener(e -> {
             refreshAlgorithmList();
         });
@@ -211,20 +223,67 @@ public class AlgorithmCard extends JPanel {
                 map.put(dataType, scoreComboBox.getItemAt(scoreComboBox.getSelectedIndex()));
             }
         });
-
-        setLayout(new BorderLayout());
-        add(new JScrollPane(new PaddingPanel(new MainPanel())), BorderLayout.CENTER);
-        add(new SouthPanel(), BorderLayout.SOUTH);
-
-        addPropertyChangeListener(algorithmEditor);
     }
 
-    public void refresh() {
-        restoreUserAlgoSelections(algorithmRunner.getUserAlgoSelections());
+    private void initDescriptionTextAreas() {
+        algoDescTextArea.setWrapStyleWord(true);
+        algoDescTextArea.setLineWrap(true);
+        algoDescTextArea.setEditable(false);
+
+        scoreDescTextArea.setWrapStyleWord(true);
+        scoreDescTextArea.setLineWrap(true);
+        scoreDescTextArea.setEditable(false);
+        scoreDescTextArea.setRows(6);
+
+        testDescTextArea.setWrapStyleWord(true);
+        testDescTextArea.setLineWrap(true);
+        testDescTextArea.setEditable(false);
+        testDescTextArea.setRows(6);
     }
 
-    public void saveStates() {
-        rememberUserAlgoSelections(algorithmRunner.getUserAlgoSelections());
+    private DataType getDataType(final GeneralAlgorithmRunner algorithmRunner) {
+        DataModelList dataModelList = algorithmRunner.getDataModelList();
+        if (dataModelList.containsEmptyData()) {
+            if (algorithmRunner.getSourceGraph() == null) {
+                return null;
+            } else {
+                return DataType.Graph;
+            }
+        } else {
+            DataModel dataSet = dataModelList.get(0);
+            if (dataSet.isContinuous() && !(dataSet instanceof ICovarianceMatrix)) {
+                // covariance dataset is continuous at the same time - Zhou
+                return DataType.Continuous;
+            } else if (dataSet.isDiscrete()) {
+                return DataType.Discrete;
+            } else if (dataSet.isMixed()) {
+                return DataType.Mixed;
+            } else if (dataSet instanceof ICovarianceMatrix) { // Better to add an isCovariance() - Zhou
+                return DataType.Covariance;
+            } else {
+                return null;
+            }
+        }
+    }
+
+    public AlgorithmModel getSelectedAlgorithm() {
+        return algorithmList.getSelectedValue();
+    }
+
+    public IndependenceTestModel getSelectedIndependenceTest() {
+        if (indTestComboBox.isEnabled()) {
+            return indTestComboBox.getItemAt(indTestComboBox.getSelectedIndex());
+        }
+
+        return null;
+    }
+
+    public ScoreModel getSelectedScore() {
+        if (scoreComboBox.isEnabled()) {
+            scoreComboBox.getItemAt(scoreComboBox.getSelectedIndex());
+        }
+
+        return null;
     }
 
     private void rememberUserAlgoSelections(Map<String, Object> userAlgoSelections) {
@@ -332,49 +391,12 @@ public class AlgorithmCard extends JPanel {
         }
     }
 
-    private DataType getDataType() {
-        DataModelList dataModelList = algorithmRunner.getDataModelList();
-        if (dataModelList.containsEmptyData()) {
-            if (algorithmRunner.getSourceGraph() == null) {
-                return null;
-            } else {
-                return DataType.Graph;
-            }
-        } else {
-            DataModel dataSet = dataModelList.get(0);
-            if (dataSet.isContinuous() && !(dataSet instanceof ICovarianceMatrix)) {
-                // covariance dataset is continuous at the same time - Zhou
-                return DataType.Continuous;
-            } else if (dataSet.isDiscrete()) {
-                return DataType.Discrete;
-            } else if (dataSet.isMixed()) {
-                return DataType.Mixed;
-            } else if (dataSet instanceof ICovarianceMatrix) { // Better to add an isCovariance() - Zhou
-                return DataType.Covariance;
-            } else {
-                return null;
-            }
-        }
+    public void refresh() {
+        restoreUserAlgoSelections(algorithmRunner.getUserAlgoSelections());
     }
 
-    public AlgorithmModel getSelectedAlgorithm() {
-        return algorithmList.getSelectedValue();
-    }
-
-    public IndependenceTestModel getSelectedIndependenceTest() {
-        if (indTestComboBox.isEnabled()) {
-            return indTestComboBox.getItemAt(indTestComboBox.getSelectedIndex());
-        }
-
-        return null;
-    }
-
-    public ScoreModel getSelectedScore() {
-        if (scoreComboBox.isEnabled()) {
-            scoreComboBox.getItemAt(scoreComboBox.getSelectedIndex());
-        }
-
-        return null;
+    public void saveStates() {
+        rememberUserAlgoSelections(algorithmRunner.getUserAlgoSelections());
     }
 
     /**
@@ -407,7 +429,11 @@ public class AlgorithmCard extends JPanel {
         return algorithm;
     }
 
-    private boolean isValid(AlgorithmModel algoModel, IndependenceTestModel indTestModel, ScoreModel scoreModel) {
+    public boolean isAllValid() {
+        AlgorithmModel algoModel = algorithmList.getSelectedValue();
+        IndependenceTestModel indTestModel = indTestComboBox.getItemAt(indTestComboBox.getSelectedIndex());
+        ScoreModel scoreModel = scoreComboBox.getItemAt(scoreComboBox.getSelectedIndex());
+
         boolean missingTest = algoModel.isRequiredTest() && (indTestModel == null);
         boolean missingScore = algoModel.isRequiredScore() && (scoreModel == null);
         if (missingTest && missingScore) {
@@ -429,12 +455,14 @@ public class AlgorithmCard extends JPanel {
 
             return false;
         } else {
+            algorithmRunner.setAlgorithm(getAlgorithmFromInterface(algoModel, indTestModel, scoreModel));
+
             return true;
         }
     }
 
     private void validateAlgorithmOption() {
-        forwardBtn.setEnabled(true);
+        firePropertyChange("algoFwdBtn", null, true);
 
         AlgorithmModel algoModel = algorithmList.getSelectedValue();
         Class algoClass = algoModel.getAlgorithm().getClazz();
@@ -456,7 +484,7 @@ public class AlgorithmCard extends JPanel {
                 msg = "";
             }
 
-            forwardBtn.setEnabled(false);
+            firePropertyChange("algoFwdBtn", null, false);
             JOptionPane.showMessageDialog(desktop, msg, "Please Note", JOptionPane.INFORMATION_MESSAGE);
         } else {
             // Check if initial graph is provided for those pairwise algorithms
@@ -470,7 +498,7 @@ public class AlgorithmCard extends JPanel {
                             Algorithm algorithm = null;
                             m.invoke(algo, algorithm);
                         } catch (InvocationTargetException | IllegalArgumentException exception) {
-                            forwardBtn.setEnabled(false);
+                            firePropertyChange("algoFwdBtn", null, false);
                             JOptionPane.showMessageDialog(desktop, exception.getCause().getMessage(), "Please Note", JOptionPane.INFORMATION_MESSAGE);
                         }
                     } catch (IllegalAccessException | InstantiationException | NoSuchMethodException exception) {
@@ -488,43 +516,12 @@ public class AlgorithmCard extends JPanel {
                 IKnowledge knowledge = algorithmRunner.getKnowledge();
                 if ((knowledge == null || knowledge.isEmpty())
                         && (dataModel.getKnowledge() == null || dataModel.getKnowledge().isEmpty())) {
-                    forwardBtn.setEnabled(false);
+                    firePropertyChange("algoFwdBtn", null, false);
                     JOptionPane.showMessageDialog(desktop, "Time-series algorithm needs lagged data", "Please Note", JOptionPane.INFORMATION_MESSAGE);
                 }
             }
         }
 
-        // Check dataset data type for those algorithms take mixed data?
-    }
-
-    private void setAlgorithmDescription() {
-        AlgorithmModel model = algorithmList.getSelectedValue();
-        if (model == null) {
-            algoDescTextArea.setText("");
-        } else {
-            algoDescTextArea.setText(model.getDescription());
-            algoDescTextArea.setCaretPosition(0);
-        }
-    }
-
-    private void setScoreDescription() {
-        ScoreModel model = scoreComboBox.getItemAt(scoreComboBox.getSelectedIndex());
-        if (model == null) {
-            scoreDescTextArea.setText("");
-        } else {
-            scoreDescTextArea.setText(model.getDescription());
-            scoreDescTextArea.setCaretPosition(0);
-        }
-    }
-
-    private void setIndepTestDescription() {
-        IndependenceTestModel model = indTestComboBox.getItemAt(indTestComboBox.getSelectedIndex());
-        if (model == null) {
-            testDescTextArea.setText("");
-        } else {
-            testDescTextArea.setText(model.getDescription());
-            testDescTextArea.setCaretPosition(0);
-        }
     }
 
     private void refreshAlgorithmList() {
@@ -556,10 +553,11 @@ public class AlgorithmCard extends JPanel {
 
             if (algoModels.isEmpty()) {
                 algoDescTextArea.setText("");
-                forwardBtn.setEnabled(false);
+                firePropertyChange("algoFwdBtn", null, false);
+
             } else {
                 algorithmList.setSelectedIndex(0);
-                forwardBtn.setEnabled(true);
+                firePropertyChange("algoFwdBtn", null, true);
             }
         }
         scoreComboBox.setEnabled(scoreComboBox.getItemCount() > 0);
@@ -693,39 +691,6 @@ public class AlgorithmCard extends JPanel {
         }
     }
 
-    /**
-     * Create new radio buttons and add them to both the radio button list and
-     * radio button group.
-     *
-     * @param radioButtons
-     */
-    private void populateAlgoTypeOptions(List<JRadioButton> radioButtons) {
-        JRadioButton showAllRadBtn = new JRadioButton("show all");
-        showAllRadBtn.setActionCommand("all");
-        showAllRadBtn.addActionListener(e -> {
-            algoTypeSelectAction(e);
-        });
-        radioButtons.add(showAllRadBtn);
-        algoFilterBtnGrp.add(showAllRadBtn);
-
-        for (AlgType item : AlgType.values()) {
-            String name = item.name();
-
-            JRadioButton radioButton = new JRadioButton(name.replace("_", " "));
-            radioButton.setActionCommand(name);
-            radioButton.addActionListener(e -> {
-                algoTypeSelectAction(e);
-            });
-
-            radioButtons.add(radioButton);
-            algoFilterBtnGrp.add(radioButton);
-        }
-    }
-
-    private void algoTypeSelectAction(ActionEvent e) {
-        refreshAlgorithmList();
-    }
-
     private void refreshTestAndScoreList() {
         refreshTestList();
         refreshScoreList();
@@ -749,73 +714,215 @@ public class AlgorithmCard extends JPanel {
         refreshScoreList();
     }
 
-    private JPanel createAlgorithmFilterPanel() {
-        // Filter based on algo types dropdown
-        Box algoTypesBox = Box.createVerticalBox();
+    private void setAlgorithmDescription() {
+        AlgorithmModel model = algorithmList.getSelectedValue();
+        if (model == null) {
+            algoDescTextArea.setText("");
+        } else {
+            algoDescTextArea.setText(model.getDescription());
+            algoDescTextArea.setCaretPosition(0);
+        }
+    }
 
-        // Algo types label box
-        Box algTypesBoxLabelBox = Box.createHorizontalBox();
-        algTypesBoxLabelBox.add(new JLabel("Show algorithms that: "));
-        algTypesBoxLabelBox.setAlignmentX(LEFT_ALIGNMENT);
+    private void setScoreDescription() {
+        ScoreModel model = scoreComboBox.getItemAt(scoreComboBox.getSelectedIndex());
+        if (model == null) {
+            scoreDescTextArea.setText("");
+        } else {
+            scoreDescTextArea.setText(model.getDescription());
+            scoreDescTextArea.setCaretPosition(0);
+        }
+    }
 
-        // Add label to containing box
-        algoTypesBox.add(algTypesBoxLabelBox);
+    private void setIndepTestDescription() {
+        IndependenceTestModel model = indTestComboBox.getItemAt(indTestComboBox.getSelectedIndex());
+        if (model == null) {
+            testDescTextArea.setText("");
+        } else {
+            testDescTextArea.setText(model.getDescription());
+            testDescTextArea.setCaretPosition(0);
+        }
+    }
 
-        // All option
-        Box algoTypeOptionAllBox = Box.createHorizontalBox();
-        algoTypeOptionAllBox.setAlignmentX(LEFT_ALIGNMENT);
+    private class DescriptionPanel extends JPanel {
 
-        // Add all option to containing box
-        algoTypesBox.add(algoTypeOptionAllBox);
+        private static final long serialVersionUID = 2329356999486712496L;
 
-        // add radio buttons to panel
-        if (!algoTypeOpts.isEmpty()) {
-            Dimension indentSize = new Dimension(10, 20);
-            algoTypeOpts.forEach(btn -> {
-                Box box = Box.createHorizontalBox();
-                box.setAlignmentX(LEFT_ALIGNMENT);
-                box.add(Box.createRigidArea(indentSize));
-                box.add(btn);
-                algoTypesBox.add(box);
+        final String borderTitle;
+        final Component view;
+
+        public DescriptionPanel(String borderTitle, Component view) {
+            this.borderTitle = borderTitle;
+            this.view = view;
+
+            initComponents();
+        }
+
+        private void initComponents() {
+            JScrollPane scrollPane = new JScrollPane(view);
+
+            setBorder(BorderFactory.createTitledBorder(borderTitle));
+            setPreferredSize(new Dimension(235, 150));
+
+            GroupLayout layout = new GroupLayout(this);
+            this.setLayout(layout);
+            layout.setHorizontalGroup(
+                    layout.createParallelGroup(GroupLayout.Alignment.LEADING)
+                            .addGroup(layout.createSequentialGroup()
+                                    .addContainerGap()
+                                    .addComponent(scrollPane, GroupLayout.DEFAULT_SIZE, 366, Short.MAX_VALUE)
+                                    .addContainerGap())
+            );
+            layout.setVerticalGroup(
+                    layout.createParallelGroup(GroupLayout.Alignment.LEADING)
+                            .addGroup(layout.createSequentialGroup()
+                                    .addContainerGap()
+                                    .addComponent(scrollPane, GroupLayout.DEFAULT_SIZE, 254, Short.MAX_VALUE)
+                                    .addContainerGap())
+            );
+        }
+
+    }
+
+    private class AlgorithmListPanel extends JPanel {
+
+        private static final long serialVersionUID = -7068543172769683902L;
+
+        public AlgorithmListPanel() {
+            initComponents();
+        }
+
+        private void initComponents() {
+            JScrollPane scrollPane = new JScrollPane(algorithmList);
+
+            setBorder(BorderFactory.createTitledBorder("Choose Algorithm"));
+
+            GroupLayout layout = new GroupLayout(this);
+            this.setLayout(layout);
+            layout.setHorizontalGroup(
+                    layout.createParallelGroup(GroupLayout.Alignment.LEADING)
+                            .addGroup(layout.createSequentialGroup()
+                                    .addContainerGap()
+                                    .addComponent(scrollPane, GroupLayout.DEFAULT_SIZE, 206, Short.MAX_VALUE)
+                                    .addContainerGap())
+            );
+            layout.setVerticalGroup(
+                    layout.createParallelGroup(GroupLayout.Alignment.LEADING)
+                            .addGroup(layout.createSequentialGroup()
+                                    .addContainerGap()
+                                    .addComponent(scrollPane, GroupLayout.DEFAULT_SIZE, 254, Short.MAX_VALUE)
+                                    .addContainerGap())
+            );
+        }
+
+    }
+
+    private class AlgorithmFilterPanel extends JPanel {
+
+        private static final long serialVersionUID = -3120503093689632462L;
+
+        public AlgorithmFilterPanel() {
+            populateAlgoTypeOptions();
+            initComponents();
+        }
+
+        private void initComponents() {
+            // Filter based on algo types dropdown
+            Box algoTypesBox = Box.createVerticalBox();
+
+            // Algo types label box
+            Box algTypesBoxLabelBox = Box.createHorizontalBox();
+            algTypesBoxLabelBox.add(new JLabel("Show algorithms that: "));
+            algTypesBoxLabelBox.setAlignmentX(LEFT_ALIGNMENT);
+
+            // Add label to containing box
+            algoTypesBox.add(algTypesBoxLabelBox);
+
+            // All option
+            Box algoTypeOptionAllBox = Box.createHorizontalBox();
+            algoTypeOptionAllBox.setAlignmentX(LEFT_ALIGNMENT);
+
+            // Add all option to containing box
+            algoTypesBox.add(algoTypeOptionAllBox);
+
+            // add radio buttons to panel
+            if (!algoTypeOpts.isEmpty()) {
+                Dimension indentSize = new Dimension(10, 20);
+                algoTypeOpts.forEach(btn -> {
+                    Box box = Box.createHorizontalBox();
+                    box.setAlignmentX(LEFT_ALIGNMENT);
+                    box.add(Box.createRigidArea(indentSize));
+                    box.add(btn);
+                    algoTypesBox.add(box);
+                });
+            }
+
+            // Is there a prior knowledge file?
+            Box priorKnowledgeBox = Box.createVerticalBox();
+
+            // Add label into this label box to size
+            Box priorKnowledgeLabelBox = Box.createHorizontalBox();
+            priorKnowledgeLabelBox.add(new JLabel("Show only: "));
+            priorKnowledgeLabelBox.setAlignmentX(LEFT_ALIGNMENT);
+
+            // Checkbox container
+            Box priorKnowledgeOptionBox = Box.createHorizontalBox();
+            priorKnowledgeOptionBox.setAlignmentX(LEFT_ALIGNMENT);
+
+            // Add padding and option
+            priorKnowledgeOptionBox.add(Box.createRigidArea(new Dimension(10, 20)));
+            priorKnowledgeOptionBox.add(knowledgeChkBox);
+
+            // Add to containg box
+            priorKnowledgeBox.add(priorKnowledgeLabelBox);
+            priorKnowledgeBox.add(priorKnowledgeOptionBox);
+
+            Box algoFiltersBox = Box.createVerticalBox();
+            algoFiltersBox.setAlignmentX(LEFT_ALIGNMENT);
+            algoFiltersBox.add(algoTypesBox);
+            algoFiltersBox.add(Box.createVerticalStrut(10));
+            algoFiltersBox.add(priorKnowledgeBox);
+
+            setLayout(new BorderLayout());
+            setBorder(BorderFactory.createTitledBorder("Algorithm Filters"));
+            add(new PaddingPanel(algoFiltersBox), BorderLayout.CENTER);
+        }
+
+        /**
+         * Create new radio buttons and add them to both the radio button list
+         * and radio button group.
+         *
+         * @param radioButtons
+         */
+        private void populateAlgoTypeOptions() {
+            JRadioButton showAllRadBtn = new JRadioButton("show all");
+            showAllRadBtn.setActionCommand("all");
+            showAllRadBtn.addActionListener(e -> {
+                refreshAlgorithmList();
+            });
+            algoTypeOpts.add(showAllRadBtn);
+            algoFilterBtnGrp.add(showAllRadBtn);
+
+            Arrays.stream(AlgType.values()).forEach(item -> {
+                String name = item.name();
+
+                JRadioButton radioButton = new JRadioButton(name.replace("_", " "));
+                radioButton.setActionCommand(name);
+                radioButton.addActionListener(e -> {
+                    refreshAlgorithmList();
+                });
+
+                algoTypeOpts.add(radioButton);
+                algoFilterBtnGrp.add(radioButton);
             });
         }
 
-        // Is there a prior knowledge file?
-        Box priorKnowledgeBox = Box.createVerticalBox();
-
-        // Add label into this label box to size
-        Box priorKnowledgeLabelBox = Box.createHorizontalBox();
-        priorKnowledgeLabelBox.add(new JLabel("Show only: "));
-        priorKnowledgeLabelBox.setAlignmentX(LEFT_ALIGNMENT);
-
-        // Checkbox container
-        Box priorKnowledgeOptionBox = Box.createHorizontalBox();
-        priorKnowledgeOptionBox.setAlignmentX(LEFT_ALIGNMENT);
-
-        // Add padding and option
-        priorKnowledgeOptionBox.add(Box.createRigidArea(new Dimension(10, 20)));
-        priorKnowledgeOptionBox.add(knowledgeChkBox);
-
-        // Add to containg box
-        priorKnowledgeBox.add(priorKnowledgeLabelBox);
-        priorKnowledgeBox.add(priorKnowledgeOptionBox);
-
-        Box algoFiltersBox = Box.createVerticalBox();
-        algoFiltersBox.setAlignmentX(LEFT_ALIGNMENT);
-        algoFiltersBox.add(algoTypesBox);
-        algoFiltersBox.add(Box.createVerticalStrut(10));
-        algoFiltersBox.add(priorKnowledgeBox);
-
-        JPanel algoFilter = new JPanel(new BorderLayout());
-        algoFilter.setBorder(BorderFactory.createTitledBorder("Algorithm Filters"));
-        algoFilter.add(new PaddingPanel(algoFiltersBox), BorderLayout.CENTER);
-
-        return algoFilter;
     }
 
     private class TestAndScorePanel extends JPanel {
 
-        private static final long serialVersionUID = -4389655965283163014L;
+        private static final long serialVersionUID = -1594897454478052884L;
+
         private JLabel assumptionsLabel;
         private JLabel scoreLabel;
         private JLabel testLabel;
@@ -830,7 +937,6 @@ public class AlgorithmCard extends JPanel {
             scoreLabel = new JLabel();
 
             setBorder(BorderFactory.createTitledBorder("Choose Statistical Test and Score"));
-            setPreferredSize(new Dimension(330, 200));
 
             assumptionsLabel.setText("Filter by dataset properties:");
 
@@ -882,213 +988,6 @@ public class AlgorithmCard extends JPanel {
                                             .addComponent(scoreLabel))
                                     .addContainerGap())
             );
-        }
-
-    }
-
-    private class AlgorithmListPanel extends JPanel {
-
-        private static final long serialVersionUID = -7068543172769683902L;
-
-        public AlgorithmListPanel() {
-            initComponents();
-        }
-
-        private void initComponents() {
-            JScrollPane scrollPane = new JScrollPane(algorithmList);
-
-            setBorder(BorderFactory.createTitledBorder("Choose Algorithm"));
-            setPreferredSize(new Dimension(230, 300));
-
-            GroupLayout layout = new GroupLayout(this);
-            this.setLayout(layout);
-            layout.setHorizontalGroup(
-                    layout.createParallelGroup(GroupLayout.Alignment.LEADING)
-                            .addGroup(layout.createSequentialGroup()
-                                    .addContainerGap()
-                                    .addComponent(scrollPane, GroupLayout.DEFAULT_SIZE, 206, Short.MAX_VALUE)
-                                    .addContainerGap())
-            );
-            layout.setVerticalGroup(
-                    layout.createParallelGroup(GroupLayout.Alignment.LEADING)
-                            .addGroup(layout.createSequentialGroup()
-                                    .addContainerGap()
-                                    .addComponent(scrollPane, GroupLayout.DEFAULT_SIZE, 254, Short.MAX_VALUE)
-                                    .addContainerGap())
-            );
-        }
-
-    }
-
-    private class TestDescPanel extends JPanel {
-
-        private static final long serialVersionUID = -4159055717661942076L;
-
-        public TestDescPanel() {
-            initComponents();
-        }
-
-        private void initComponents() {
-            JScrollPane scrollPane = new JScrollPane(testDescTextArea);
-
-            setBorder(BorderFactory.createTitledBorder("Test of Independence Description"));
-            setPreferredSize(new Dimension(235, 150));
-
-            GroupLayout layout = new GroupLayout(this);
-            this.setLayout(layout);
-            layout.setHorizontalGroup(
-                    layout.createParallelGroup(GroupLayout.Alignment.LEADING)
-                            .addGroup(layout.createSequentialGroup()
-                                    .addContainerGap()
-                                    .addComponent(scrollPane, GroupLayout.DEFAULT_SIZE, 366, Short.MAX_VALUE)
-                                    .addContainerGap())
-            );
-            layout.setVerticalGroup(
-                    layout.createParallelGroup(GroupLayout.Alignment.LEADING)
-                            .addGroup(layout.createSequentialGroup()
-                                    .addContainerGap()
-                                    .addComponent(scrollPane, GroupLayout.DEFAULT_SIZE, 254, Short.MAX_VALUE)
-                                    .addContainerGap())
-            );
-        }
-
-    }
-
-    private class ScoreDescPanel extends JPanel {
-
-        private static final long serialVersionUID = -4159055717661942076L;
-
-        public ScoreDescPanel() {
-            initComponents();
-        }
-
-        private void initComponents() {
-            JScrollPane scrollPane = new JScrollPane(scoreDescTextArea);
-
-            setBorder(BorderFactory.createTitledBorder("Score Description"));
-            setPreferredSize(new Dimension(235, 150));
-
-            GroupLayout layout = new GroupLayout(this);
-            this.setLayout(layout);
-            layout.setHorizontalGroup(
-                    layout.createParallelGroup(GroupLayout.Alignment.LEADING)
-                            .addGroup(layout.createSequentialGroup()
-                                    .addContainerGap()
-                                    .addComponent(scrollPane, GroupLayout.DEFAULT_SIZE, 366, Short.MAX_VALUE)
-                                    .addContainerGap())
-            );
-            layout.setVerticalGroup(
-                    layout.createParallelGroup(GroupLayout.Alignment.LEADING)
-                            .addGroup(layout.createSequentialGroup()
-                                    .addContainerGap()
-                                    .addComponent(scrollPane, GroupLayout.DEFAULT_SIZE, 254, Short.MAX_VALUE)
-                                    .addContainerGap())
-            );
-        }
-
-    }
-
-    private class AlgoDescPanel extends JPanel {
-
-        private static final long serialVersionUID = -4159055717661942076L;
-
-        public AlgoDescPanel() {
-            initComponents();
-        }
-
-        private void initComponents() {
-            JScrollPane scrollPane = new JScrollPane(algoDescTextArea);
-
-            setBorder(BorderFactory.createTitledBorder("Algorithm Description"));
-            setPreferredSize(new Dimension(235, 150));
-
-            GroupLayout layout = new GroupLayout(this);
-            this.setLayout(layout);
-            layout.setHorizontalGroup(
-                    layout.createParallelGroup(GroupLayout.Alignment.LEADING)
-                            .addGroup(layout.createSequentialGroup()
-                                    .addContainerGap()
-                                    .addComponent(scrollPane, GroupLayout.DEFAULT_SIZE, 366, Short.MAX_VALUE)
-                                    .addContainerGap())
-            );
-            layout.setVerticalGroup(
-                    layout.createParallelGroup(GroupLayout.Alignment.LEADING)
-                            .addGroup(layout.createSequentialGroup()
-                                    .addContainerGap()
-                                    .addComponent(scrollPane, GroupLayout.DEFAULT_SIZE, 254, Short.MAX_VALUE)
-                                    .addContainerGap())
-            );
-        }
-
-    }
-
-    private final class MainPanel extends JPanel {
-
-        private static final long serialVersionUID = -6171474426370497719L;
-
-        public MainPanel() {
-            initComponents();
-        }
-
-        private void initComponents() {
-            JButton resetSettingsBtn = new JButton("Reset All Settings");
-            resetSettingsBtn.addActionListener(e -> {
-                resetAllSettings();
-            });
-
-            JPanel westMainSouthPanel = new JPanel(new BorderLayout(0, 10));
-            westMainSouthPanel.add(new TestAndScorePanel(), BorderLayout.CENTER);
-            westMainSouthPanel.add(resetSettingsBtn, BorderLayout.SOUTH);
-
-            JPanel westMainWestPanel = new JPanel(new BorderLayout(0, 10));
-            westMainWestPanel.add(createAlgorithmFilterPanel(), BorderLayout.CENTER);
-            westMainWestPanel.add(westMainSouthPanel, BorderLayout.SOUTH);
-
-            JPanel westMainPanel = new JPanel(new BorderLayout(5, 0));
-            westMainPanel.add(westMainWestPanel, BorderLayout.WEST);
-            westMainPanel.add(new AlgorithmListPanel(), BorderLayout.EAST);
-
-            JPanel centerMainPanel = new JPanel();
-            centerMainPanel.setLayout(new BoxLayout(centerMainPanel, BoxLayout.Y_AXIS));
-            centerMainPanel.add(new AlgoDescPanel());
-            centerMainPanel.add(Box.createVerticalStrut(10));
-            centerMainPanel.add(new TestDescPanel());
-            centerMainPanel.add(Box.createVerticalStrut(10));
-            centerMainPanel.add(new ScoreDescPanel());
-
-            setLayout(new BorderLayout(10, 0));
-            add(westMainPanel, BorderLayout.WEST);
-            add(centerMainPanel, BorderLayout.CENTER);
-        }
-
-    }
-
-    private final class SouthPanel extends JPanel {
-
-        private static final long serialVersionUID = -906530775190465683L;
-
-        public SouthPanel() {
-            initComponents();
-        }
-
-        private void initComponents() {
-            GroupLayout layout = new GroupLayout(this);
-            layout.setHorizontalGroup(
-                    layout.createParallelGroup(GroupLayout.Alignment.LEADING)
-                            .addGroup(layout.createSequentialGroup()
-                                    .addContainerGap(GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                    .addComponent(forwardBtn)
-                                    .addContainerGap(GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-            );
-            layout.setVerticalGroup(
-                    layout.createParallelGroup(GroupLayout.Alignment.LEADING)
-                            .addGroup(layout.createSequentialGroup()
-                                    .addContainerGap()
-                                    .addComponent(forwardBtn)
-                                    .addContainerGap())
-            );
-
-            this.setLayout(layout);
         }
 
     }
