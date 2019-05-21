@@ -1,5 +1,7 @@
 package edu.cmu.tetrad.util;
 
+import java.io.Serializable;
+
 /**
  * Describes a parameter.
  *
@@ -12,13 +14,13 @@ public class ParamDescription {
     private String paramName;
     private String shortDescription;
     private String longDescription;
-    private Object defaultValue;
+    private Serializable defaultValue;
     private double lowerBoundDouble = Double.NEGATIVE_INFINITY;
     private double upperBoundDouble = Double.POSITIVE_INFINITY;
     private int lowerBoundInt = Integer.MIN_VALUE;
     private int upperBoundInt = Integer.MAX_VALUE;
 
-    public ParamDescription(String paramName, String shortDescription, String longDescription, Object defaultValue) {
+    public ParamDescription(String paramName, String shortDescription, String longDescription, Serializable defaultValue) {
         if (paramName == null) {
             throw new NullPointerException("Target parameter name is null.");
         }
@@ -37,7 +39,7 @@ public class ParamDescription {
         this.defaultValue = defaultValue;
     }
 
-    public ParamDescription(String paramName, String shortDescription, String longDescription, Object defaultValue, int lowerBound, int upperBound) {
+    public ParamDescription(String paramName, String shortDescription, String longDescription, Serializable defaultValue, int lowerBound, int upperBound) {
         if (paramName == null) {
             throw new NullPointerException("Target parameter name is null.");
         }
@@ -58,7 +60,7 @@ public class ParamDescription {
         this.upperBoundInt = upperBound;
     }
 
-    public ParamDescription(String paramName, String shortDescription, String longDescription, Object defaultValue, double lowerBound, double upperBound) {
+    public ParamDescription(String paramName, String shortDescription, String longDescription, Serializable defaultValue, double lowerBound, double upperBound) {
         if (paramName == null) {
             throw new NullPointerException("Target parameter name is null.");
         }
@@ -103,11 +105,11 @@ public class ParamDescription {
         this.longDescription = longDescription;
     }
 
-    public Object getDefaultValue() {
+    public Serializable getDefaultValue() {
         return defaultValue;
     }
 
-    public void setDefaultValue(Object defaultValue) {
+    public void setDefaultValue(Serializable defaultValue) {
         this.defaultValue = defaultValue;
     }
 

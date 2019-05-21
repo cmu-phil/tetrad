@@ -121,7 +121,9 @@ public class Parameters implements TetradSerializable {
      * @return The object value of this parameter.
      */
     public Object get(String name) {
-        return get(name, ParamDescriptions.getInstance().get(name).getDefaultValue());
+        return Params.PRINT_STREAM.equals(name)
+                ? System.out
+                : get(name, ParamDescriptions.getInstance().get(name).getDefaultValue());
     }
 
     /**

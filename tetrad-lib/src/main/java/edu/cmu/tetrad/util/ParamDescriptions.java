@@ -31,10 +31,10 @@ public final class ParamDescriptions {
     private final Map<String, ParamDescription> map = new TreeMap<>();
 
     private List<String> paramsWithUnsupportedValueType = new ArrayList<>();
-    
+
     private ParamDescriptions() {
         Document doc = null;
-        
+
         // Currently supported parameter value types
         // In HTML manual, must use one of the following types for parameter descriptions
         final String VALUE_TYPE_STRING = "String";
@@ -43,10 +43,10 @@ public final class ParamDescriptions {
         final String VALUE_TYPE_BOOLEAN = "Boolean";
 
         final Set<String> PARAM_VALUE_TYPES = new HashSet<>(Arrays.asList(
-            VALUE_TYPE_STRING,
-            VALUE_TYPE_INTEGER,
-            VALUE_TYPE_DOUBLE,
-            VALUE_TYPE_BOOLEAN
+                VALUE_TYPE_STRING,
+                VALUE_TYPE_INTEGER,
+                VALUE_TYPE_DOUBLE,
+                VALUE_TYPE_BOOLEAN
         ));
 
         // Read the copied maunal/index.html from within the jar
@@ -103,7 +103,7 @@ public final class ParamDescriptions {
                     } else if (valueType.equalsIgnoreCase(VALUE_TYPE_STRING)) {
                         String defaultValueString = defaultValue;
                         paramDescription = new ParamDescription(paramName, shortDescription, longDescription, defaultValueString);
-                    } 
+                    }
 
                     map.put(paramName, paramDescription);
                 }
@@ -111,7 +111,7 @@ public final class ParamDescriptions {
         }
 
         // add parameters not in documentation
-        map.put(Params.PRINT_STREAM, new ParamDescription(Params.PRINT_STREAM, "printStream", "A writer to print output.", System.out));
+        map.put(Params.PRINT_STREAM, new ParamDescription(Params.PRINT_STREAM, "printStream", "A writer to print output messages.", ""));
     }
 
     public static ParamDescriptions getInstance() {
