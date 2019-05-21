@@ -26,11 +26,10 @@ import edu.cmu.tetradapp.model.SessionWrapper;
 import edu.cmu.tetradapp.model.TetradMetadata;
 import edu.cmu.tetradapp.util.DesktopController;
 import edu.cmu.tetradapp.util.SessionEditorIndirectRef;
-
-import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.io.*;
 import java.util.prefs.Preferences;
+import javax.swing.*;
 
 /**
  * Saves a session from a file.
@@ -113,7 +112,6 @@ final class  SaveSessionAction extends AbstractAction {
         return saved;
     }
 }
-
 
 
 

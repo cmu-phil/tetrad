@@ -11,6 +11,8 @@ import java.util.Set;
 import java.util.TreeMap;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -60,9 +62,10 @@ public final class ParamDescriptions {
 
         // Get the description of each parameter
         if (doc != null) {
-            Set<String> allParams = Params.getParameters();
+            Elements elements = doc.getElementsByClass("parameter_description");
 
-            for (String paramName : allParams) {
+            for (Element element : elements) {
+                String paramName = element.id();
                 String valueType = doc.getElementById(paramName + "_value_type").text().trim();
 
                 // Add params that don't have value types for spalsh screen error
@@ -83,22 +86,26 @@ public final class ParamDescriptions {
                         longDescription = String.format("Missing long description for %s", paramName);
                     }
 
+                    if (!valueType.equals(VALUE_TYPE_STRING) && defaultValue.equals("")) {
+                        System.out.println("Invalida default value of parameter: " + paramName);
+                    }
+                    
                     ParamDescription paramDescription = null;
 
                     if (valueType.equalsIgnoreCase(VALUE_TYPE_INTEGER)) {
-                        int defaultValueInt = Integer.parseInt(defaultValue);
+                        Integer defaultValueInt = Integer.parseInt(defaultValue);
                         int lowerBoundInt = Integer.parseInt(lowerBound);
                         int upperBoundInt = Integer.parseInt(upperBound);
 
                         paramDescription = new ParamDescription(paramName, shortDescription, longDescription, defaultValueInt, lowerBoundInt, upperBoundInt);
                     } else if (valueType.equalsIgnoreCase(VALUE_TYPE_DOUBLE)) {
-                        double defaultValueDouble = Double.parseDouble(defaultValue);
+                        Double defaultValueDouble = Double.parseDouble(defaultValue);
                         double lowerBoundDouble = Double.parseDouble(lowerBound);
                         double upperBoundDouble = Double.parseDouble(upperBound);
 
                         paramDescription = new ParamDescription(paramName, shortDescription, longDescription, defaultValueDouble, lowerBoundDouble, upperBoundDouble);
                     } else if (valueType.equalsIgnoreCase(VALUE_TYPE_BOOLEAN)) {
-                        boolean defaultValueBoolean = defaultValue.equalsIgnoreCase("true");
+                        Boolean defaultValueBoolean = defaultValue.equalsIgnoreCase("true");
                         paramDescription = new ParamDescription(paramName, shortDescription, longDescription, defaultValueBoolean);
                     } else if (valueType.equalsIgnoreCase(VALUE_TYPE_STRING)) {
                         String defaultValueString = defaultValue;
