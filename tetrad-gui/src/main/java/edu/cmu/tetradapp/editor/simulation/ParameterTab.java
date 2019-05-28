@@ -104,6 +104,12 @@ public class ParameterTab extends JPanel {
         }
 
         initComponents();
+
+        if (simulation.getDataModelList().isEmpty()) {
+            refreshParameters();
+        } else {
+            showParameters();
+        }
     }
 
     private void initComponents() {
@@ -195,6 +201,8 @@ public class ParameterTab extends JPanel {
         simulationsDropdown.setEnabled(!simulation.isFixedSimulation());
 
         showParameters();
+
+        firePropertyChange("refreshParameters", null, null);
     }
 
     private void showParameters() {
@@ -242,8 +250,6 @@ public class ParameterTab extends JPanel {
         JPanel paramPanel = new JPanel(new BorderLayout(0, 5));
         paramPanel.add(new JLabel("Parameters for your simulation are listed below. Please adjust the parameter values."), BorderLayout.NORTH);
         paramPanel.add(new JScrollPane(parameterBox), BorderLayout.CENTER);
-
-        showParameters();
 
         return paramPanel;
     }

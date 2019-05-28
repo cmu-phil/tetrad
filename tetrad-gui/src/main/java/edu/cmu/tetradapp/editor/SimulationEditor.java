@@ -197,6 +197,9 @@ public final class SimulationEditor extends JPanel implements KnowledgeEditable,
 
                 showTab();
                 break;
+            case "refreshParameters":
+                showTab();
+                break;
         }
     }
 
