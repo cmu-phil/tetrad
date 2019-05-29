@@ -18,9 +18,12 @@
  */
 package edu.cmu.tetradapp.ui.model;
 
+import edu.cmu.tetrad.annotation.AnnotatedClass;
+import edu.cmu.tetrad.annotation.TestOfIndependence;
 import edu.cmu.tetrad.annotation.TestOfIndependenceAnnotations;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.util.TetradProperties;
+import edu.cmu.tetradapp.Tetrad;
 import java.util.Collections;
 import java.util.EnumMap;
 import java.util.LinkedList;
@@ -46,11 +49,14 @@ public final class IndependenceTestModels {
 
     private IndependenceTestModels() {
         TestOfIndependenceAnnotations indTestAnno = TestOfIndependenceAnnotations.getInstance();
-        List<IndependenceTestModel> list = indTestAnno.filterOutExperimental(indTestAnno.getAnnotatedClasses()).stream()
-                .map(e -> new IndependenceTestModel(e))
-                .sorted()
-                .collect(Collectors.toList());
-        models = Collections.unmodifiableList(list);
+        List<AnnotatedClass<TestOfIndependence>> list = Tetrad.enableExperimental
+                ? indTestAnno.getAnnotatedClasses()
+                : indTestAnno.filterOutExperimental(indTestAnno.getAnnotatedClasses());
+        models = Collections.unmodifiableList(
+                list.stream()
+                        .map(e -> new IndependenceTestModel(e))
+                        .sorted()
+                        .collect(Collectors.toList()));
 
         initModelMap();
         initDefaultModelMap();
