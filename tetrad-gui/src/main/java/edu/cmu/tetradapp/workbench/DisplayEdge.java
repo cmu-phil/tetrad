@@ -23,13 +23,12 @@ package edu.cmu.tetradapp.workbench;
 
 import edu.cmu.tetrad.graph.Edge;
 import edu.cmu.tetrad.graph.Endpoint;
-
-import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import javax.swing.*;
 
 /**
  * This component has three modes: <ul> <li> UNANCHORED <li> NORMAL <li>
@@ -85,9 +84,9 @@ public class DisplayEdge extends JComponent implements IDisplayEdge {
     public static final int NONDIRECTED = 1;
 
     /**
-     * Represents the fact tha tthis is an undirected edge, A---B
+     * Represents the fact that this is an undirected edge, A---B
      */
-    private static final int UNDIRECTED = 2;
+    public static final int UNDIRECTED = 2;
 
     /**
      * Represents the fact that this is a partially directed edge, Ao-&gt;B.
@@ -233,9 +232,7 @@ public class DisplayEdge extends JComponent implements IDisplayEdge {
         }
 
         if (type < 0 || type > 5) {
-            throw new IllegalArgumentException("Type must be one of " +
-                    "DIRECTED, NONDIRECTED, " +
-                    "UNDIRECTED, PARTIALLY_ORIENTED, " + " or BIDIRECTED.");
+            throw new IllegalArgumentException("Type must be one of DIRECTED, NONDIRECTED, UNDIRECTED, PARTIALLY_ORIENTED, or BIDIRECTED.");
         }
 
         this.node1 = node1;
@@ -329,9 +326,7 @@ public class DisplayEdge extends JComponent implements IDisplayEdge {
         }
 
         if (type < 0 || type > 5) {
-            throw new IllegalArgumentException("Type must be one of " +
-                    "DIRECTED, NONDIRECTED, " +
-                    "UNDIRECTED, PARTIALLY_ORIENTED, " + " or BIDIRECTED.");
+            throw new IllegalArgumentException("Type must be one of DIRECTED, NONDIRECTED, UNDIRECTED, PARTIALLY_ORIENTED, or BIDIRECTED.");
         }
 
         this.node1 = node1;
