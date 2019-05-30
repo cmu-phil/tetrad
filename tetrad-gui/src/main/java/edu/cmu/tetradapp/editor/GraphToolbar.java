@@ -265,9 +265,9 @@ public class GraphToolbar extends JPanel implements PropertyChangeListener {
     private void selectArrowTools() {
         addDirectedEdge.setEnabled(true);
         addNondirectedEdge.setEnabled(true);
-        addUndirectedEdge.setEnabled(true);
         addPartiallyOrientedEdge.setEnabled(true);
         addBidirectedEdge.setEnabled(true);
+        addUndirectedEdge.setEnabled(true);
     }
 
 //    /**
