@@ -196,16 +196,16 @@ public class ParameterTab extends JPanel {
             }
         }
 
-        boolean fixedGraph = simulation.isFixedGraph();
-        graphsDropdown.setEnabled(!fixedGraph);
-        simulationsDropdown.setEnabled(!simulation.isFixedSimulation());
-
         showParameters();
 
         firePropertyChange("refreshParameters", null, null);
     }
 
     private void showParameters() {
+        boolean fixedGraph = simulation.isFixedGraph();
+        graphsDropdown.setEnabled(!fixedGraph);
+        simulationsDropdown.setEnabled(!simulation.isFixedSimulation());
+
         parameterBox.removeAll();
         if (simulation.getSimulation() != null) {
             Set<String> params = new LinkedHashSet<>(simulation.getSimulation().getParameters());
