@@ -59,7 +59,14 @@ public class GraphToolbar extends JPanel implements PropertyChangeListener {
     private final Box buttonsPanel = Box.createVerticalBox();
 
     // The buttons in the toolbar.
-    private JToggleButton move, addObserved, addLatent, addDirectedEdge, addNondirectedEdge, addPartiallyOrientedEdge, addBidirectedEdge;
+    private JToggleButton move;
+    private JToggleButton addObserved;
+    private JToggleButton addLatent;
+    private JToggleButton addDirectedEdge;
+    private JToggleButton addNondirectedEdge;
+    private JToggleButton addUndirectedEdge;
+    private JToggleButton addPartiallyOrientedEdge;
+    private JToggleButton addBidirectedEdge;
 
     /**
      * The workbench this toolbar governs.
@@ -88,6 +95,7 @@ public class GraphToolbar extends JPanel implements PropertyChangeListener {
         addLatent = new JToggleButton();
         addNondirectedEdge = new JToggleButton();
         addDirectedEdge = new JToggleButton();
+        addUndirectedEdge = new JToggleButton();
         addPartiallyOrientedEdge = new JToggleButton();
         addBidirectedEdge = new JToggleButton();
 
@@ -120,6 +128,7 @@ public class GraphToolbar extends JPanel implements PropertyChangeListener {
                 setWorkbenchMode(GraphWorkbench.SELECT_MOVE);
             }
         });
+        
         addObserved.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 addObserved.getModel().setSelected(true);
@@ -127,6 +136,7 @@ public class GraphToolbar extends JPanel implements PropertyChangeListener {
                 setNodeMode(GraphWorkbench.MEASURED_NODE);
             }
         });
+        
         addLatent.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 addLatent.getModel().setSelected(true);
@@ -134,6 +144,7 @@ public class GraphToolbar extends JPanel implements PropertyChangeListener {
                 setNodeMode(GraphWorkbench.LATENT_NODE);
             }
         });
+        
         addDirectedEdge.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 addDirectedEdge.getModel().setSelected(true);
@@ -141,6 +152,7 @@ public class GraphToolbar extends JPanel implements PropertyChangeListener {
                 setEdgeMode(GraphWorkbench.DIRECTED_EDGE);
             }
         });
+        
         addNondirectedEdge.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 addNondirectedEdge.getModel().setSelected(true);
@@ -148,6 +160,15 @@ public class GraphToolbar extends JPanel implements PropertyChangeListener {
                 setEdgeMode(GraphWorkbench.NONDIRECTED_EDGE);
             }
         });
+        
+        addUndirectedEdge.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                addUndirectedEdge.getModel().setSelected(true);
+                setWorkbenchMode(GraphWorkbench.ADD_EDGE);
+                setEdgeMode(GraphWorkbench.UNDIRECTED_EDGE);
+            }
+        });
+        
         addPartiallyOrientedEdge.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 addPartiallyOrientedEdge.getModel().setSelected(true);
@@ -155,6 +176,7 @@ public class GraphToolbar extends JPanel implements PropertyChangeListener {
                 setEdgeMode(GraphWorkbench.PARTIALLY_ORIENTED_EDGE);
             }
         });
+        
         addBidirectedEdge.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 addBidirectedEdge.getModel().setSelected(true);
@@ -169,6 +191,7 @@ public class GraphToolbar extends JPanel implements PropertyChangeListener {
         addButton(addLatent, "latent");
         addButton(addDirectedEdge, "directed");
         addButton(addNondirectedEdge, "nondirected");
+        addButton(addUndirectedEdge, "undirected");
         addButton(addPartiallyOrientedEdge, "partiallyoriented");
         addButton(addBidirectedEdge, "bidirected");
         workbench.addPropertyChangeListener(this);
@@ -218,8 +241,7 @@ public class GraphToolbar extends JPanel implements PropertyChangeListener {
      * appropriately.
      */
     private void addButton(JToggleButton button, String name) {
-        button.setIcon(
-                new ImageIcon(ImageUtils.getImage(this, name + "3.gif")));
+        button.setIcon(new ImageIcon(ImageUtils.getImage(this, name + "3.gif")));
         button.setMaximumSize(new Dimension(80, 40));
         button.setPreferredSize(new Dimension(80, 40));
         buttonsPanel.add(button);
@@ -245,6 +267,7 @@ public class GraphToolbar extends JPanel implements PropertyChangeListener {
         addNondirectedEdge.setEnabled(true);
         addPartiallyOrientedEdge.setEnabled(true);
         addBidirectedEdge.setEnabled(true);
+        addUndirectedEdge.setEnabled(true);
     }
 
 //    /**
