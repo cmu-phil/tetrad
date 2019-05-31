@@ -19,11 +19,10 @@
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA //
 ///////////////////////////////////////////////////////////////////////////////
 
-package edu.cmu.tetrad.sem;
+package edu.pitt.dbmi.cg;
 
-//import cern.colt.matrix.DoubleMatrix2D;
+import edu.cmu.tetrad.sem.ParamType;
 
-import edu.cmu.tetrad.util.TetradMatrix;
 import edu.cmu.tetrad.util.TetradSerializable;
 
 import java.io.IOException;
@@ -33,10 +32,9 @@ import java.io.ObjectInputStream;
  * <p>Maps a parameter to the matrix element where its value is stored in the
  * model.</p>
  *
- * @author Frank Wimberly
- * @author Joe Ramsey
+ * @author Chirayu Wongchokprasitti, PhD
  */
-public class Mapping implements TetradSerializable {
+public class CgMapping implements TetradSerializable {
     static final long serialVersionUID = 23L;
 
     /**
@@ -44,35 +42,49 @@ public class Mapping implements TetradSerializable {
      *
      * @serial Can't be null.
      */
-    private ISemIm semIm;
+    private CgIm cgIm;
 
     /**
      * The parameter this mapping maps.
      *
      * @serial Can't be null.
      */
-    private Parameter parameter;
+    private CgParameter parameter;
 
     /**
-     * The 2D double array whose element at (i, j) to be manipulated.
+     * The 3D double array whose element at (i, j, k) to be manipulated.
      *
      * @serial Can't be null.
      */
-    private TetradMatrix a;
+    private double[][][][] tensor;
 
     /**
-     * The left-hand coordinate of a[i][j].
+     * The left-hand coordinate of a[i][j][k][l].
      *
      * @serial Any value.
      */
     private int i;
 
     /**
-     * The right-hand coordinate of a[i][j].
+     * The middle-left coordinate of a[i][j][k][i].
      *
      * @serial Any value.
      */
     private int j;
+
+    /**
+     * The middle-right coordinate of a[i][j][k][l].
+     *
+     * @serial Any value.
+     */
+    private int k;
+
+    /**
+     * The right-hand coordinate of a[i][j][k][l].
+     *
+     * @serial Any value.
+     */
+    private int l;
 
     /**
      * Constructs matrix new mapping using the given freeParameters.
@@ -83,8 +95,8 @@ public class Mapping implements TetradSerializable {
      * @param i         Left coordinates of matrix[i][j].
      * @param j         Right coordinate of matrix[i][j].
      */
-    public Mapping(ISemIm semIm, Parameter parameter, TetradMatrix matrix,
-                   int i, int j) {
+    public CgMapping(CgIm semIm, CgParameter parameter, double[][][][] tensor,
+                   int i, int j, int k, int l) {
         if (semIm == null) {
             throw new NullPointerException("SemIm must not be null.");
         }
@@ -93,7 +105,7 @@ public class Mapping implements TetradSerializable {
             throw new NullPointerException("Parameter must not be null.");
         }
 
-        if (matrix == null) {
+        if (tensor == null) {
             throw new NullPointerException("Supplied array must not be null.");
         }
 
@@ -101,20 +113,22 @@ public class Mapping implements TetradSerializable {
             throw new IllegalArgumentException("Indices must be non-negative");
         }
 
-        this.semIm = semIm;
+        this.cgIm = semIm;
         this.parameter = parameter;
-        this.a = matrix;
+        this.tensor = tensor;
         this.i = i;
         this.j = j;
+        this.k = k;
+        this.l = l;
     }
 
     /**
      * Generates a simple exemplar of this class to test serialization.
      */
-    public static Mapping serializableInstance() {
-        return new Mapping(SemIm.serializableInstance(),
-                Parameter.serializableInstance(), new TetradMatrix(0, 0),
-                1, 1);
+    public static CgMapping serializableInstance() {
+        return new CgMapping(CgIm.serializableInstance(),
+                CgParameter.serializableInstance(), new double[0][][][],
+                1, 1, 0, 0);
     }
 
     /**
@@ -122,18 +136,17 @@ public class Mapping implements TetradSerializable {
      * If the array is symmetric sets two elements.
      */
     public void setValue(double x) {
-        if (this.semIm.isParameterBoundsEnforced() &&
+        if (this.cgIm.isParameterBoundsEnforced() &&
                 getParameter().getType() == ParamType.VAR && x < 0.0) {
             throw new IllegalArgumentException(
                     "Variances cannot " + "have values <= 0.0: " + x);
         }
 
-        a.set(i, j, x);
+        tensor[i][j][k][l] = x;
 
         if (getParameter().getType() == ParamType.VAR ||
                 getParameter().getType() == ParamType.COVAR) {
-            a.set(j, i, x);
-            a.set(i, j, x);
+        	tensor[j][i][k][l] = x;
         }
     }
 
@@ -141,13 +154,13 @@ public class Mapping implements TetradSerializable {
      * @return the value of the array element at (i, j).
      */
     public double getValue() {
-        return a.get(i, j);
+        return tensor[i][j][k][l];
     }
 
     /**
      * @return the parameter that this mapping maps.
      */
-    public Parameter getParameter() {
+    public CgParameter getParameter() {
         return this.parameter;
     }
 
@@ -157,7 +170,7 @@ public class Mapping implements TetradSerializable {
      */
     public String toString() {
         return "<" + getParameter().getName() + " " + getParameter().getType() +
-                "[" + i + "][" + j + "]>";
+                "[" + i + "][" + j + "][" + k + "][" + l + "]>";
     }
 
     /**
@@ -177,7 +190,7 @@ public class Mapping implements TetradSerializable {
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();
 
-        if (semIm == null) {
+        if (cgIm == null) {
             throw new NullPointerException();
         }
 

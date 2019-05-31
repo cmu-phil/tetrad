@@ -349,7 +349,7 @@ public final class SemIm implements IM, ISemIm, TetradSerializable {
         initializeValues();
 
         // Note that we want to use the default params object here unless a bona fide
-        // subistute has been provided.
+        // substitute has been provided.
         if (oldSemIm != null && this.getParams().getBoolean("retainPreviousValues", false)) {
             retainPreviousValues(oldSemIm);
         }

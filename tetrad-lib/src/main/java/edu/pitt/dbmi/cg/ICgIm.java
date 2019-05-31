@@ -31,12 +31,12 @@ public interface ICgIm extends Simulator, TetradSerializable {
     /**
      * @return the number of mixed-parent discrete child nodes in the model.
      */
-    int getNumMixedParentsDiscreteNodes();
+    int getCgNumDiscreteNodes();
 	
     /**
      * @return the node corresponding to the given mixed-parent discrete child node index.
      */
-    Node getMixedParentsDiscreteNode(int nodeIndex);
+    Node getCgDiscreteNode(int nodeIndex);
 
     /**
      * @param name the name of the node.
@@ -49,15 +49,15 @@ public interface ICgIm extends Simulator, TetradSerializable {
      * @return the index for that node, or -1 if the node is not in the
      * CgIm.
      */
-    int getMixedParentsDiscreteNodeIndex(Node node);
+    int getCgDiscreteNodeIndex(Node node);
 
     /**
      * @return the list of mixed-parent discrete child variable for this conditional Gaussian model.
      */
-    List<Node> getMixedParentsDiscreteVariables();
+    List<Node> getCgDiscreteVariables();
 
     /**
      * @return the list of mixed-parent discrete child variable names for this conditional Gaussian model.
      */
-    List<String> getMixedParentsDiscreteVariableNames();
+    List<String> getCgDiscreteVariableNames();
 }

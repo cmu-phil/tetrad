@@ -15,14 +15,13 @@ import edu.cmu.tetrad.data.DiscreteVariable;
 import edu.cmu.tetrad.graph.Dag;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.graph.NodeType;
 import edu.cmu.tetrad.sem.ParamType;
 import edu.cmu.tetrad.sem.Parameter;
 import edu.cmu.tetrad.sem.SemPm;
 import edu.cmu.tetrad.util.PM;
-import edu.cmu.tetrad.util.RandomUtil;
 import edu.cmu.tetrad.util.TetradSerializable;
 import edu.cmu.tetrad.util.dist.Normal;
-import edu.cmu.tetrad.util.dist.SingleValue;
 import edu.cmu.tetrad.util.dist.Split;
 import edu.cmu.tetrad.util.dist.Uniform;
 
@@ -42,18 +41,24 @@ public final class CgPm implements PM, TetradSerializable {
     
     private SemPm semPm;
 
-    private Map<Node, DiscreteVariable> discChildrenNodesToVariables;
+    // All discrete nodes
+    private Map<Node, DiscreteVariable> discreteNodesToVariables = new HashMap<>();
+    // All continuous nodes
+    private Map<Node, ContinuousVariable> continuousNodesToVariables = new HashMap<>();
     
-    private Map<Node, ContinuousVariable> contChildrenNodesToVariables;
+    // Mixed parents with discrete child
+	private List<Node> cgDiscreteVariableNodes = new ArrayList<>();
+    // Mixed parents with continuous child
+	private List<Node> cgContinuousVariableNodes = new ArrayList<>();
     
     /**
      * The list of Parameters (unmodifiable).
      *
      * @serial Cannot be null.
      */
-    private List<Parameter> discChildrenNodesParameters;
+    private List<CgParameter> cgDiscreteNodesParameters;
 
-    private List<Parameter> contChildrenNodesParameters;
+    private List<CgParameter> cgContinuousNodesParameters;
 
     /**
      * The index of the most recent "cgT" parameter. (These are variance and
@@ -97,13 +102,11 @@ public final class CgPm implements PM, TetradSerializable {
 		List<Node> contNodes = new ArrayList<>();
         // Bayes
 		List<Node> discNodes = new ArrayList<>();
-        // Mixed parents with continuous child
-		List<Node> contChildrenNodes = new ArrayList<>();
-        // Mixed parents with discrete child
-		List<Node> discChildrenNodes = new ArrayList<>();
         
         for(Node node : nodes) {
         	if(node instanceof ContinuousVariable) {
+    			continuousNodesToVariables.put(node, (ContinuousVariable) node);
+        		
         		boolean allParentsContinuous = true;
         		for (Node x : graph.getParents(node)) {
         			if(x instanceof DiscreteVariable) {
@@ -112,12 +115,20 @@ public final class CgPm implements PM, TetradSerializable {
         			}
         		}
         		if(allParentsContinuous) {
-            		contNodes.add(node);
+        			if(!contNodes.contains(node)) {
+        				contNodes.add(node);       				
+        			}
+        			for (Node x : graph.getParents(node)) {
+        				if(!contNodes.contains(x)) {
+        					contNodes.add(x);
+        				}
+        			}
         		}else {
-        			contChildrenNodes.add(node);
-        			contChildrenNodesToVariables.put(node, (ContinuousVariable) node);
+        			cgContinuousVariableNodes.add(node);
         		}
         	}else { // Discrete Variable
+        		discreteNodesToVariables.put(node, (DiscreteVariable) node);
+        		
         		boolean allParentsDiscrete = true;
         		for(Node x : graph.getParents(node)) {
         			if(x instanceof ContinuousVariable) {
@@ -126,10 +137,16 @@ public final class CgPm implements PM, TetradSerializable {
         			}
         		}
         		if(allParentsDiscrete) {
-            		discNodes.add(node);
+        			if(!discNodes.contains(node)) {
+        				discNodes.add(node);
+        			}
+        			for (Node x : graph.getParents(node)) {
+        				if(!discNodes.contains(x)) {
+        					discNodes.add(x);
+        				}
+        			}
         		}else {
-        			discChildrenNodes.add(node);
-        			discChildrenNodesToVariables.put(node, (DiscreteVariable) node);
+        			cgDiscreteVariableNodes.add(node);
         		}
         	}
         }
@@ -150,81 +167,181 @@ public final class CgPm implements PM, TetradSerializable {
 	
 	private void initializeDiscreteChildrenParams() {
 		
-		List<Parameter> parameters = new ArrayList<>();
+		List<CgParameter> parameters = new ArrayList<>();
 		
-		for(Node node : discChildrenNodesToVariables.keySet()) {
+		for(Node node : cgDiscreteVariableNodes) {
 			
-			DiscreteVariable discVar = discChildrenNodesToVariables.get(node);
-			
-			for (Node parentNode : graph.getParents(node)) {
-    			if(parentNode instanceof DiscreteVariable) {
-    				
-    				
-    				for(int i=0;i<discVar.getNumCategories();i++) {
-        				Parameter mean = new Parameter(newMName(), ParamType.MEAN, parentNode, node);
-        				mean.setDistribution(new Normal(0.0, 1.0));
-        				parameters.add(mean);
-        				
-        				Parameter mean_parent = new Parameter(newMName(), ParamType.MEAN, parentNode, parentNode);
-        				mean_parent.setDistribution(new Normal(0.0, 1.0));
-        				parameters.add(mean_parent);
-        				
-        				Parameter param = new Parameter(newTName(), ParamType.VAR, node, node);
-        	            param.setDistribution(new Uniform(1.0, 3.0));
-        	            parameters.add(param);
-        				
-        				Parameter covar = new Parameter(newTName(), ParamType.COVAR, parentNode, node);
-        				covar.setDistribution(new SingleValue(0.2));
-                        parameters.add(covar);
-                        
-                        Parameter covar_parent = new Parameter(newTName(), ParamType.COVAR, parentNode, parentNode);
-                        covar_parent.setDistribution(new SingleValue(0.2));
-                        parameters.add(covar_parent);
-    				}
-    				
-    			}
-			}
-			
-		}
-		
-		this.discChildrenNodesParameters = Collections.unmodifiableList(parameters);
-	}
-	
-	private void initializeContinuousChildrenParams() {
-		
-		List<Parameter> parameters = new ArrayList<>();
-		
-		for(Node node : contChildrenNodesToVariables.keySet()) {
+			List<Node> discreteParentNodes = new ArrayList<>();
+			List<Node> continuousParentNodes = new ArrayList<>();
+
+			int numConditionalCases = 1;
 			
 			for(Node parentNode : graph.getParents(node)) {
 				if(parentNode instanceof DiscreteVariable) {
-					
-					DiscreteVariable discVar = (DiscreteVariable) parentNode;
-					
-					for(int i=0;i<discVar.getNumCategories();i++) {
-						Parameter coef = new Parameter(newBName(), ParamType.COEF, parentNode, node);
-						coef.setDistribution(new Split(0.5, 1.5));
-						parameters.add(coef);
+					if(!discreteParentNodes.contains(parentNode)) {
+						discreteParentNodes.add(parentNode);
 						
-						Parameter mean = new Parameter(newMName(), ParamType.MEAN, node, node);
+						DiscreteVariable discVar = (DiscreteVariable) parentNode;
+						numConditionalCases *= discVar.getNumCategories();
+					}
+					
+				}else {
+					if(!continuousParentNodes.contains(parentNode)) {
+						continuousParentNodes.add(parentNode);
+					}	
+				}
+			}
+			
+			int numChildCategories = getNumCategories(node);
+			
+			for(int i=0;i<numChildCategories;i++) {
+				for(int j=0;j<numConditionalCases;j++) {
+					for(Node parentNode : continuousParentNodes) {
+						CgParameter mean = new CgParameter(newMName(), ParamType.MEAN, parentNode, node, i, j);
 			            mean.setDistribution(new Normal(0.0, 1.0));
 			            parameters.add(mean);
-						
-						Parameter param = new Parameter(newTName(), ParamType.VAR, node, node);
+			            
+			            CgParameter param = new CgParameter(newTName(), ParamType.VAR, parentNode, node, i, j);
 			            param.setDistribution(new Uniform(1.0, 3.0));
 			            parameters.add(param);
-			            
 					}
 				}
 			}
 			
 		}
 		
-		this.contChildrenNodesParameters = Collections.unmodifiableList(parameters);
+		this.cgDiscreteNodesParameters = Collections.unmodifiableList(parameters);
+	}
+	
+	private void initializeContinuousChildrenParams() {
+		
+		List<CgParameter> parameters = new ArrayList<>();
+		
+		for(Node node : cgContinuousVariableNodes) {
+			
+			List<Node> discreteParentNodes = new ArrayList<>();
+			List<Node> continuousParentNodes = new ArrayList<>();
+			
+			int numConditionalCases = 1;
+			
+			for(Node parentNode : graph.getParents(node)) {
+				if(parentNode instanceof DiscreteVariable) {
+					discreteParentNodes.add(parentNode);
+					
+					DiscreteVariable discVar = (DiscreteVariable) parentNode;
+					numConditionalCases *= discVar.getNumCategories();
+					
+				}else {
+					continuousParentNodes.add(parentNode);
+				}
+			}
+			
+			for(int i=0;i<numConditionalCases;i++) {
+				CgParameter mean = new CgParameter(newMName(), ParamType.MEAN, node, node, i);
+	            mean.setDistribution(new Normal(0.0, 1.0));
+	            parameters.add(mean);
+	            
+	            CgParameter param = new CgParameter(newTName(), ParamType.VAR, node, node, i);
+	            param.setDistribution(new Uniform(1.0, 3.0));
+	            parameters.add(param);
+	            
+				for(Node parentNode : continuousParentNodes) {
+					CgParameter coef = new CgParameter(newBName(), ParamType.COEF, parentNode, node, i);
+					coef.setDistribution(new Split(0.5, 1.5));
+					parameters.add(coef);
+				}
+			}			
+			
+		}
+		
+		this.cgContinuousNodesParameters = Collections.unmodifiableList(parameters);
+	}
+	
+	public CgParameter getContinuousCoefficientParameter(Node nodeA, Node nodeB, int conditionalCase) {
+
+		for(CgParameter parameter : this.cgContinuousNodesParameters) {
+			Node _nodeA = parameter.getNodeA();
+            Node _nodeB = parameter.getNodeB();
+            int caseNo = parameter.getConditionalCaseNo();
+
+            if (nodeA == _nodeA && nodeB == _nodeB && parameter.getType() == ParamType.COEF && 
+            		conditionalCase == caseNo) {
+            	return parameter;
+            }
+		}
+		
+		return null;
+	}
+	
+	public CgParameter getContinuousVarianceParameter(Node node, int conditionalCase) {
+		if(node.getNodeType() == NodeType.ERROR) {
+			node = getGraph().getChildren(node).get(0);
+		}
+		
+		for(CgParameter parameter : this.cgContinuousNodesParameters) {
+			Node _nodeA = parameter.getNodeA();
+			Node _nodeB = parameter.getNodeB();
+			int caseNo = parameter.getConditionalCaseNo();
+			
+			if(node == _nodeA && node == _nodeB && parameter.getType() == ParamType.VAR && 
+            		conditionalCase == caseNo) {
+				return parameter;
+			}
+		}
+		
+		return null;
+	}
+	
+	public List<CgParameter> getContinuousFreeParameters(){
+		List<CgParameter> freeParameters = new ArrayList<>();
+		
+		for(CgParameter parameter : this.cgContinuousNodesParameters) {
+			ParamType type = parameter.getType();
+			
+			if (type == ParamType.VAR || type == ParamType.COVAR || type == ParamType.COEF) {
+                if (!parameter.isFixed()) {
+                    freeParameters.add(parameter);
+                }
+            }
+		}
+		
+		return freeParameters;
+	}
+	
+	public CgParameter getDiscreteVarianceParameter(Node nodeA, Node nodeB, int childCategoryNo, int conditionalCaseNo){
+		for(CgParameter parameter : this.cgDiscreteNodesParameters) {
+			Node _nodeA = parameter.getNodeA();
+            Node _nodeB = parameter.getNodeB();
+            int cateNo = parameter.getChildCategoryNo();
+            int caseNo = parameter.getConditionalCaseNo();
+
+            if (nodeA == _nodeA && nodeB == _nodeB && parameter.getType() == ParamType.VAR && 
+            		cateNo == childCategoryNo && conditionalCaseNo == caseNo) {
+            	return parameter;
+            }
+		}
+		
+		return null;
+	}
+	
+	public List<CgParameter> getDiscreteFreeParameters(){
+		List<CgParameter> freeParameters = new ArrayList<>();
+		
+		for(CgParameter parameter : this.cgDiscreteNodesParameters) {
+			ParamType type = parameter.getType();
+			
+			if (type == ParamType.VAR || type == ParamType.COVAR || type == ParamType.COEF) {
+                if (!parameter.isFixed()) {
+                    freeParameters.add(parameter);
+                }
+            }
+		}
+		
+		return freeParameters;
 	}
 	
     /**
-     * @return a unique (for this PM) parameter name beginning with the Greek
+     * @return a unique (for this PM) parameter name beginning with CG (Conditional Gaussian) and the Greek
      * letter theta.
      */
     private String newTName() {
@@ -232,7 +349,7 @@ public final class CgPm implements PM, TetradSerializable {
     }
 
     /**
-     * @return a unique (for this PM) parameter name beginning with the Greek
+     * @return a unique (for this PM) parameter name beginning with CG (Conditional Gaussian) and the Greek
      * letter mu.
      */
     private String newMName() {
@@ -240,7 +357,7 @@ public final class CgPm implements PM, TetradSerializable {
     }
 
     /**
-     * @return a unique (for this PM) parameter name beginning with the letter
+     * @return a unique (for this PM) parameter name beginning with CG (Conditional Gaussian) and the letter
      * "B".
      */
     private String newBName() {
@@ -266,20 +383,60 @@ public final class CgPm implements PM, TetradSerializable {
 		return semPm;
 	}
 
-	public Map<Node, DiscreteVariable> getDiscChildrenNodesToVariables() {
-		return discChildrenNodesToVariables;
+	public List<Node> getCgDiscreteVariableNodes() {
+		return cgDiscreteVariableNodes;
 	}
 
-	public Map<Node, ContinuousVariable> getContChildrenNodesToVariables() {
-		return contChildrenNodesToVariables;
+	public List<Node> getCgContinuousVariableNodes() {
+		return cgContinuousVariableNodes;
 	}
 
-	public List<Parameter> getDiscChildrenNodesParameters() {
-		return discChildrenNodesParameters;
+	public List<Node> getCgContinuousMeasureNodes() {
+		List<Node> measuredNodes = new ArrayList<>();
+		
+		for (Node variable : getCgContinuousVariableNodes()) {
+            if (variable.getNodeType() == NodeType.MEASURED) {
+                measuredNodes.add(variable);
+            }
+        }
+
+        return measuredNodes;
+	}
+	
+    /**
+     * @return the list of latent variableNodes.
+     */
+    public List<Node> getLatentNodes() {
+        List<Node> latentNodes = new ArrayList<>();
+
+        for (Node node : getCgContinuousVariableNodes()) {
+            if (node.getNodeType() == NodeType.LATENT) {
+                latentNodes.add(node);
+            }
+        }
+
+        return latentNodes;
+    }
+
+	public List<CgParameter> getCgDiscreteNodesParameters() {
+		return cgDiscreteNodesParameters;
 	}
 
-	public List<Parameter> getContChildrenNodesParameters() {
-		return contChildrenNodesParameters;
+	public List<CgParameter> getCgContinuousNodesParameters() {
+		return cgContinuousNodesParameters;
 	}
+	
+    /**
+     * @return the number of values for the given node.
+     */
+    public int getNumCategories(Node node) {
+        DiscreteVariable variable = discreteNodesToVariables.get(node);
+
+        if (variable == null) {
+            return 0;
+        }
+
+        return variable.getNumCategories();
+    }
 	
 }

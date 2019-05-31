@@ -527,7 +527,7 @@ public final class SemPm implements PM, TetradSerializable {
     private void initializeParams() {
 
         // Note that a distinction between parameterizable and non-parameterizable nodes is being added
-        // to accomodate time lag graphs. jdramsey 4/14/10.
+        // to accommodate time lag graphs. jdramsey 4/14/10.
 
         List<Parameter> parameters = new ArrayList<>();
         Set<Edge> edges = graph.getEdges();

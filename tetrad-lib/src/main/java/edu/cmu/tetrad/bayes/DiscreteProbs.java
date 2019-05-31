@@ -31,7 +31,7 @@ import java.util.List;
  *
  * @author Joseph Ramsey
  */
-interface DiscreteProbs {
+public interface DiscreteProbs {
 
     /**
      * @return the variables over which probabilities and conditional
