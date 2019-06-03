@@ -98,6 +98,18 @@ public final class Fask implements GraphSearch {
         data = dataSet.getDoubleData().transpose().toArray();
     }
 
+    public Fask(DataSet dataSet, Graph initialGraph) {
+        if (!dataSet.isContinuous()) {
+            throw new IllegalArgumentException("For FASK, the dataset must be entirely continuous");
+        }
+
+        this.dataSet = dataSet;
+        this.initialGraph = initialGraph;
+        this.test = null;
+
+        data = dataSet.getDoubleData().transpose().toArray();
+    }
+
     //======================================== PUBLIC METHODS ====================================//
 
     /**

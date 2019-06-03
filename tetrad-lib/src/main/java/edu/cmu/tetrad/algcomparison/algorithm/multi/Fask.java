@@ -4,6 +4,7 @@ import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.algcomparison.utils.TakesIndependenceWrapper;
+import edu.cmu.tetrad.algcomparison.utils.TakesInitialGraph;
 import edu.cmu.tetrad.annotation.AlgType;
 import edu.cmu.tetrad.annotation.Bootstrapping;
 import edu.cmu.tetrad.data.*;
@@ -30,11 +31,12 @@ import java.util.List;
         algoType = AlgType.forbid_latent_common_causes,
         dataType = DataType.Continuous
 )
-@Bootstrapping
-public class Fask implements Algorithm, HasKnowledge, TakesIndependenceWrapper {
+public class Fask implements Algorithm, HasKnowledge, TakesIndependenceWrapper, TakesInitialGraph {
     static final long serialVersionUID = 23L;
-    private IndependenceWrapper test;
+    private IndependenceWrapper test = null;
+    private Graph initialGraph = null;
     private IKnowledge knowledge = new Knowledge2();
+    private Algorithm algorithm = null;
 
     public Fask() {
 
@@ -51,7 +53,17 @@ public class Fask implements Algorithm, HasKnowledge, TakesIndependenceWrapper {
     @Override
     public Graph search(DataModel dataSet, Parameters parameters) {
         if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
-            edu.cmu.tetrad.search.Fask search = new edu.cmu.tetrad.search.Fask((DataSet) dataSet, test.getTest(dataSet, parameters));
+            edu.cmu.tetrad.search.Fask search;
+
+            if (algorithm != null) {
+                initialGraph = algorithm.search(dataSet, parameters);
+                search = new edu.cmu.tetrad.search.Fask((DataSet) dataSet, initialGraph);
+                search.setInitialGraph(initialGraph);
+            } else {
+                search = new edu.cmu.tetrad.search.Fask((DataSet) dataSet, test.getTest(dataSet, parameters));
+            }
+
+//            edu.cmu.tetrad.search.Fask search = new edu.cmu.tetrad.search.Fask((DataSet) dataSet, test.getTest(dataSet, parameters));
             search.setDepth(parameters.getInt(Params.DEPTH));
             search.setPenaltyDiscount(parameters.getDouble(Params.PENALTY_DISCOUNT));
             search.setExtraEdgeThreshold(parameters.getDouble(Params.EXTRA_EDGE_THRESHOLD));
@@ -97,7 +109,13 @@ public class Fask implements Algorithm, HasKnowledge, TakesIndependenceWrapper {
 
     @Override
     public String getDescription() {
-        return "FASK using " + test.getDescription();
+        if (test != null) {
+            return "FASK using " + test.getDescription();
+        } else if (algorithm != null) {
+            return "FASK using " + algorithm.getDescription();
+        } else {
+            throw new IllegalStateException("Need to initialize with either a test or an algorithm.");
+        }
     }
 
     @Override
@@ -108,6 +126,14 @@ public class Fask implements Algorithm, HasKnowledge, TakesIndependenceWrapper {
     @Override
     public List<String> getParameters() {
         List<String> parameters = new ArrayList<>();
+
+        if (algorithm != null) {
+            parameters.addAll(algorithm.getParameters());
+        }
+
+        if (test != null) {
+            parameters.addAll(test.getParameters());
+        }
         
         parameters.add(Params.DEPTH);
         parameters.add(Params.TWO_CYCLE_ALPHA);
@@ -140,5 +166,20 @@ public class Fask implements Algorithm, HasKnowledge, TakesIndependenceWrapper {
     @Override
     public IndependenceWrapper getIndependenceWrapper() {
         return test;
+    }
+
+    @Override
+    public Graph getInitialGraph() {
+        return null;
+    }
+
+    @Override
+    public void setInitialGraph(Graph initialGraph) {
+        this.initialGraph = initialGraph;
+    }
+
+    @Override
+    public void setInitialGraph(Algorithm algorithm) {
+        this.algorithm = algorithm;
     }
 }
