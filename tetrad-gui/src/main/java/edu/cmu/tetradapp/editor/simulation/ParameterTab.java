@@ -19,6 +19,7 @@
 package edu.cmu.tetradapp.editor.simulation;
 
 import edu.cmu.tetrad.algcomparison.graph.Cyclic;
+import edu.cmu.tetrad.algcomparison.graph.GraphTypes;
 import edu.cmu.tetrad.algcomparison.graph.RandomForward;
 import edu.cmu.tetrad.algcomparison.graph.RandomGraph;
 import edu.cmu.tetrad.algcomparison.graph.RandomSingleFactorMim;
@@ -27,12 +28,13 @@ import edu.cmu.tetrad.algcomparison.graph.ScaleFree;
 import edu.cmu.tetrad.algcomparison.graph.SingleGraph;
 import edu.cmu.tetrad.algcomparison.simulation.BayesNetSimulation;
 import edu.cmu.tetrad.algcomparison.simulation.BooleanGlassSimulation;
-import edu.cmu.tetrad.algcomparison.simulation.ConditionalGaussianSimulation;
 import edu.cmu.tetrad.algcomparison.simulation.GeneralSemSimulation;
+import edu.cmu.tetrad.algcomparison.simulation.GeneralSemSimulationSpecial1;
 import edu.cmu.tetrad.algcomparison.simulation.LeeHastieSimulation;
 import edu.cmu.tetrad.algcomparison.simulation.LinearFisherModel;
 import edu.cmu.tetrad.algcomparison.simulation.LoadContinuousDataAndGraphs;
 import edu.cmu.tetrad.algcomparison.simulation.SemSimulation;
+import edu.cmu.tetrad.algcomparison.simulation.SimulationTypes;
 import edu.cmu.tetrad.algcomparison.simulation.StandardizedSemSimulation;
 import edu.cmu.tetrad.algcomparison.simulation.TimeSeriesSemSimulation;
 import edu.cmu.tetrad.graph.EdgeListGraph;
@@ -65,20 +67,20 @@ public class ParameterTab extends JPanel {
     private static final long serialVersionUID = 7074205549192562786L;
 
     private static final String[] GRAPH_ITEMS = new String[]{
-        "Random Foward DAG",
-        "Scale Free DAG",
-        "Cyclic, constructed from small loops",
-        "Random One Factor MIM",
-        "Random Two Factor MIM"
+        GraphTypes.RANDOM_FOWARD_DAG,
+        GraphTypes.SCALE_FREE_DAG,
+        GraphTypes.CYCLIC_CONSTRUCTED_FROM_SMALL_LOOPS,
+        GraphTypes.RANDOM_ONE_FACTOR_MIM,
+        GraphTypes.RANDOM_TWO_FACTOR_MIM
     };
 
     private static final String[] SOURCE_GRAPH_ITEMS = {
-        "Bayes net",
-        "Structural Equation Model",
-        "Linear Fisher Model",
-        "Lee & Hastie",
-        "Conditional Gaussian",
-        "Time Series"
+        SimulationTypes.BAYS_NET,
+        SimulationTypes.STRUCTURAL_EQUATION_MODEL,
+        SimulationTypes.LINEAR_FISHER_MODEL,
+        SimulationTypes.LEE_AND_HASTIE,
+        SimulationTypes.CONDITIONAL_GAUSSIAN,
+        SimulationTypes.TIME_SERIES
     };
 
     private static final JLabel NO_PARAM_LBL = new JLabel("No parameters to edit");
@@ -125,73 +127,78 @@ public class ParameterTab extends JPanel {
                 : new SingleGraph(simulation.getSourceGraph());
 
         if (!simulation.isFixedGraph()) {
-            String graphItem = (String) graphsDropdown.getSelectedItem();
+            String graphItem = graphsDropdown.getItemAt(graphsDropdown.getSelectedIndex());
             simulation.getParams().set("graphsDropdownPreference", graphItem);
 
-            if (graphItem.equals(GRAPH_ITEMS[0])) {
-                randomGraph = new RandomForward();
-            } else if (graphItem.equals(GRAPH_ITEMS[1])) {
-                randomGraph = new ScaleFree();
-            } else if (graphItem.equals(GRAPH_ITEMS[2])) {
-                randomGraph = new Cyclic();
-            } else if (graphItem.equals(GRAPH_ITEMS[3])) {
-                randomGraph = new RandomSingleFactorMim();
-            } else if (graphItem.equals(GRAPH_ITEMS[4])) {
-                randomGraph = new RandomTwoFactorMim();
-            } else {
-                throw new IllegalArgumentException("Unrecognized simulation type: " + graphItem);
+            switch (graphItem) {
+                case GraphTypes.RANDOM_FOWARD_DAG:
+                    randomGraph = new RandomForward();
+                    break;
+                case GraphTypes.SCALE_FREE_DAG:
+                    randomGraph = new ScaleFree();
+                    break;
+                case GraphTypes.CYCLIC_CONSTRUCTED_FROM_SMALL_LOOPS:
+                    randomGraph = new Cyclic();
+                    break;
+                case GraphTypes.RANDOM_ONE_FACTOR_MIM:
+                    randomGraph = new RandomSingleFactorMim();
+                    break;
+                case GraphTypes.RANDOM_TWO_FACTOR_MIM:
+                    randomGraph = new RandomTwoFactorMim();
+                    break;
+                default:
+                    throw new IllegalArgumentException("Unrecognized simulation type: " + graphItem);
             }
         }
 
         if (!simulation.isFixedSimulation()) {
-            String[] simulationItems = getSimulationItems(simulation);
+            String simulationItem = simulationsDropdown.getItemAt(simulationsDropdown.getSelectedIndex());
+            simulation.getParams().set("simulationsDropdownPreference", simulationItem);
+            simulation.setFixedGraph(randomGraph instanceof SingleGraph);
+
             if (simulation.getSourceGraph() == null) {
-                String simulationItem = (String) simulationsDropdown.getSelectedItem();
-                simulation.getParams().set("simulationsDropdownPreference", simulationItem);
-                simulation.setFixedGraph(false);
-
-                if (randomGraph instanceof SingleGraph) {
-                    simulation.setFixedGraph(true);
-                }
-
-                if (simulationItem.equals(simulationItems[0])) {
-                    simulation.setSimulation(new BayesNetSimulation(randomGraph), simulation.getParams());
-                } else if (simulationItem.equals(simulationItems[1])) {
-                    simulation.setSimulation(new SemSimulation(randomGraph), simulation.getParams());
-                } else if (simulationItem.equals(simulationItems[2])) {
-                    simulation.setSimulation(new LinearFisherModel(randomGraph, simulation.getInputDataModelList()),
-                            simulation.getParams());
-                } else if (simulationItem.equals(simulationItems[3])) {
-                    simulation.setSimulation(new LeeHastieSimulation(randomGraph), simulation.getParams());
-                } else if (simulationItem.equals(simulationItems[4])) {
-                    simulation.setSimulation(new ConditionalGaussianSimulation(randomGraph), simulation.getParams());
-                } else if (simulationItem.equals(simulationItems[5])) {
-
-                    simulation.setSimulation(new TimeSeriesSemSimulation(randomGraph), simulation.getParams());
-                } else {
-                    throw new IllegalArgumentException("Unrecognized simulation type: " + simulationItem);
+                switch (simulationItem) {
+                    case SimulationTypes.BAYS_NET:
+                        simulation.setSimulation(new BayesNetSimulation(randomGraph), simulation.getParams());
+                        break;
+                    case SimulationTypes.STRUCTURAL_EQUATION_MODEL:
+                        simulation.setSimulation(new SemSimulation(randomGraph), simulation.getParams());
+                        break;
+                    case SimulationTypes.LINEAR_FISHER_MODEL:
+                        simulation.setSimulation(new LinearFisherModel(randomGraph, simulation.getInputDataModelList()), simulation.getParams());
+                        break;
+                    case SimulationTypes.GENERAL_STRUCTURAL_EQUATION_MODEL:
+                        simulation.setSimulation(new GeneralSemSimulationSpecial1(randomGraph), simulation.getParams());
+                        break;
+                    case SimulationTypes.LEE_AND_HASTIE:
+                        simulation.setSimulation(new LeeHastieSimulation(randomGraph), simulation.getParams());
+                        break;
+                    case SimulationTypes.TIME_SERIES:
+                        simulation.setSimulation(new TimeSeriesSemSimulation(randomGraph), simulation.getParams());
+                        break;
+                    case SimulationTypes.BOOLEAN_GLASS_SIMULATION:
+                        simulation.setSimulation(new BooleanGlassSimulation(randomGraph), simulation.getParams());
+                        break;
+                    default:
+                        throw new IllegalArgumentException("Unrecognized simulation type: " + simulationItem);
                 }
             } else {
-                String simulationItem = (String) simulationsDropdown.getSelectedItem();
-                simulation.getParams().set("simulationsDropdownPreference", simulationItem);
-                simulation.setFixedGraph(false);
-
-                if (randomGraph instanceof SingleGraph) {
-                    simulation.setFixedGraph(true);
-                }
-
-                if (simulationItem.equals(simulationItems[0])) {
-                    simulation.setSimulation(new BayesNetSimulation(randomGraph), simulation.getParams());
-                } else if (simulationItem.equals(simulationItems[1])) {
-                    simulation.setSimulation(new SemSimulation(randomGraph), simulation.getParams());
-                } else if (simulationItem.equals(simulationItems[2])) {
-                    simulation.setSimulation(new LinearFisherModel(randomGraph), simulation.getParams());
-                } else if (simulationItem.equals(simulationItems[3])) {
-                    simulation.setSimulation(new LeeHastieSimulation(randomGraph), simulation.getParams());
-                } else if (simulationItem.equals(simulationItems[4])) {
-                    simulation.setSimulation(new TimeSeriesSemSimulation(randomGraph), simulation.getParams());
-                } else {
-                    throw new IllegalArgumentException("Unrecognized simulation type: " + simulationItem);
+                switch (simulationItem) {
+                    case SimulationTypes.BAYS_NET:
+                        simulation.setSimulation(new BayesNetSimulation(randomGraph), simulation.getParams());
+                        break;
+                    case SimulationTypes.STRUCTURAL_EQUATION_MODEL:
+                        simulation.setSimulation(new SemSimulation(randomGraph), simulation.getParams());
+                        break;
+                    case SimulationTypes.LINEAR_FISHER_MODEL:
+                        simulation.setSimulation(new LinearFisherModel(randomGraph), simulation.getParams());
+                        break;
+                    case SimulationTypes.LEE_AND_HASTIE:
+                        simulation.setSimulation(new LeeHastieSimulation(randomGraph), simulation.getParams());
+                        break;
+                    case SimulationTypes.TIME_SERIES:
+                        simulation.setSimulation(new TimeSeriesSemSimulation(randomGraph), simulation.getParams());
+                        break;
                 }
             }
         }
@@ -325,26 +332,28 @@ public class ParameterTab extends JPanel {
         if (simulation.isFixedSimulation()) {
             if (simulation.getSimulation() instanceof BayesNetSimulation) {
                 items = new String[]{
-                    "Bayes net"
+                    SimulationTypes.BAYS_NET
                 };
             } else if (simulation.getSimulation() instanceof SemSimulation) {
                 items = new String[]{
-                    "Structural Equation Model"
+                    SimulationTypes.STRUCTURAL_EQUATION_MODEL
                 };
             } else if (simulation.getSimulation() instanceof LinearFisherModel) {
                 items = new String[]{
-                    "Linear Fisher Model"
+                    SimulationTypes.LINEAR_FISHER_MODEL
                 };
             } else if (simulation.getSimulation() instanceof StandardizedSemSimulation) {
                 items = new String[]{
-                    "Standardized Structural Equation Model"
+                    SimulationTypes.STANDARDIZED_STRUCTURAL_EQUATION_MODEL
                 };
             } else if (simulation.getSimulation() instanceof GeneralSemSimulation) {
                 items = new String[]{
-                    "General Structural Equation Model",};
+                    SimulationTypes.GENERAL_STRUCTURAL_EQUATION_MODEL
+                };
             } else if (simulation.getSimulation() instanceof LoadContinuousDataAndGraphs) {
                 items = new String[]{
-                    "Loaded From Files",};
+                    SimulationTypes.LOADED_FROM_FILES
+                };
             } else {
                 throw new IllegalStateException("Not expecting that model type: "
                         + simulation.getSimulation().getClass());
