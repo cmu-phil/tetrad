@@ -88,8 +88,12 @@ public class Simulation extends DataWrapper implements SessionModel,
             this.fixedSimulation = simulation.fixedSimulation;
 //            createSimulation(); // The suggestion is that you should't actually simulate before the user clicks 'simulate'
         } else {
-            String simulationType = String.valueOf(parameters.getValues("simulationsDropdownPreference")[0]);
-            simulation = SimulationUtils.create(simulationType, new SingleGraph(graphSource.getGraph()));
+            if (parameters.getParametersNames().contains("simulationsDropdownPreference")) {
+                String simulationType = String.valueOf(parameters.getValues("simulationsDropdownPreference")[0]);
+                this.simulation = SimulationUtils.create(simulationType, new SingleGraph(graphSource.getGraph()));
+            } else {
+                this.simulation = new BayesNetSimulation(new SingleGraph(graphSource.getGraph()));
+            }
 
             this.fixedGraph = true;
             this.parameters = parameters;
