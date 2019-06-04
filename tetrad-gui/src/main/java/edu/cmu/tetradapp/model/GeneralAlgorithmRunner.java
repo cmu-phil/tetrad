@@ -251,7 +251,7 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
                         ((DSeparationScore) scoreWrapper).setGraph(getSourceGraph());
                     }
                 }
-                
+
                 if (algo instanceof HasKnowledge) {
                     ((HasKnowledge) algo).setKnowledge(getKnowledge());
                 }
@@ -302,29 +302,31 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
                     });
                 }
             } else {
-                getDataModelList().forEach(data -> {
-                    IKnowledge knowledgeFromData = data.getKnowledge();
-                    if (!(knowledgeFromData == null || knowledgeFromData.getVariables().isEmpty())) {
-                        this.knowledge = knowledgeFromData;
-                    }
+                Algorithm algo = getAlgorithm();
+                if (algo != null) {
+                    getDataModelList().forEach(data -> {
+                        IKnowledge knowledgeFromData = data.getKnowledge();
+                        if (!(knowledgeFromData == null || knowledgeFromData.getVariables().isEmpty())) {
+                            this.knowledge = knowledgeFromData;
+                        }
 
-                    Algorithm algo = getAlgorithm();
-                    if (algo instanceof HasKnowledge) {
-                        ((HasKnowledge) algo).setKnowledge(getKnowledge());
-                    }
+                        if (algo instanceof HasKnowledge) {
+                            ((HasKnowledge) algo).setKnowledge(getKnowledge());
+                        }
 
-                    DataType algDataType = algo.getDataType();
+                        DataType algDataType = algo.getDataType();
 
-                    if (data.isContinuous() && (algDataType == DataType.Continuous || algDataType == DataType.Mixed)) {
-                        graphList.add(algo.search(data, parameters));
-                    } else if (data.isDiscrete() && (algDataType == DataType.Discrete || algDataType == DataType.Mixed)) {
-                        graphList.add(algo.search(data, parameters));
-                    } else if (data.isMixed() && algDataType == DataType.Mixed) {
-                        graphList.add(algo.search(data, parameters));
-                    } else {
+                        if (data.isContinuous() && (algDataType == DataType.Continuous || algDataType == DataType.Mixed)) {
+                            graphList.add(algo.search(data, parameters));
+                        } else if (data.isDiscrete() && (algDataType == DataType.Discrete || algDataType == DataType.Mixed)) {
+                            graphList.add(algo.search(data, parameters));
+                        } else if (data.isMixed() && algDataType == DataType.Mixed) {
+                            graphList.add(algo.search(data, parameters));
+                        } else {
                             throw new IllegalArgumentException("The algorithm was not expecting that type of data.");
-                    }
-                });
+                        }
+                    });
+                }
             }
         }
 
