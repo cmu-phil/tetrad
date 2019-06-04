@@ -28,6 +28,7 @@ import edu.cmu.tetrad.algcomparison.graph.ScaleFree;
 import edu.cmu.tetrad.algcomparison.graph.SingleGraph;
 import edu.cmu.tetrad.algcomparison.simulation.BayesNetSimulation;
 import edu.cmu.tetrad.algcomparison.simulation.BooleanGlassSimulation;
+import edu.cmu.tetrad.algcomparison.simulation.ConditionalGaussianSimulation;
 import edu.cmu.tetrad.algcomparison.simulation.GeneralSemSimulation;
 import edu.cmu.tetrad.algcomparison.simulation.GeneralSemSimulationSpecial1;
 import edu.cmu.tetrad.algcomparison.simulation.LeeHastieSimulation;
@@ -195,6 +196,9 @@ public class ParameterTab extends JPanel {
                         break;
                     case SimulationTypes.LEE_AND_HASTIE:
                         simulation.setSimulation(new LeeHastieSimulation(randomGraph), simulation.getParams());
+                        break;
+                    case SimulationTypes.CONDITIONAL_GAUSSIAN:
+                        simulation.setSimulation(new ConditionalGaussianSimulation(randomGraph), simulation.getParams());
                         break;
                     case SimulationTypes.TIME_SERIES:
                         simulation.setSimulation(new TimeSeriesSemSimulation(randomGraph), simulation.getParams());
