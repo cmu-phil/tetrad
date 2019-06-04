@@ -174,6 +174,9 @@ public class ParameterTab extends JPanel {
                     case SimulationTypes.LEE_AND_HASTIE:
                         simulation.setSimulation(new LeeHastieSimulation(randomGraph), simulation.getParams());
                         break;
+                    case SimulationTypes.CONDITIONAL_GAUSSIAN:
+                        simulation.setSimulation(new ConditionalGaussianSimulation(randomGraph), simulation.getParams());
+                        break;
                     case SimulationTypes.TIME_SERIES:
                         simulation.setSimulation(new TimeSeriesSemSimulation(randomGraph), simulation.getParams());
                         break;
