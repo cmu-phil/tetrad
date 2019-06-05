@@ -17,7 +17,6 @@ import edu.cmu.tetrad.bayes.MlBayesIm;
 import edu.cmu.tetrad.bayes.Proposition;
 import edu.cmu.tetrad.data.ContinuousVariable;
 import edu.cmu.tetrad.data.DataSet;
-import edu.cmu.tetrad.data.DataUtils;
 import edu.cmu.tetrad.data.DiscreteVariable;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
@@ -70,10 +69,6 @@ public final class CgEstimator implements TetradSerializable {
 			i++;
 		}
 		
-		
-		
-		
-		
 	}
 
 	public CgIm getEstimatedCgIm() {
@@ -84,74 +79,39 @@ public final class CgEstimator implements TetradSerializable {
         // Bayes
 		List<Node> discNodes = new ArrayList<>();
 		
-		List<Node> cgContinuousNodeAndItsDiscreteParents = new ArrayList<>();
-		
 		List<Node> cgDiscreteNodesAndTheirDiscreteParents = new ArrayList<>();
         
-        for(int i=0;i<nodes.length;i++) {
-        	Node node = nodes[i];
-        	
-        	if(node instanceof ContinuousVariable) {
-        		
-        		boolean allParentsContinuous = true;
-        		for (Node x : graph.getParents(node)) {
-        			if(x instanceof DiscreteVariable) {
-        				allParentsContinuous = false;
-        				break;
+		List<Node> cgDiscreteNodes = estimatedCgIm.getCgDiscreteVariableNodes();
+		for(Node node : cgDiscreteNodes) {
+			boolean allParentsDiscrete = true;
+    		for(Node x : graph.getParents(node)) {
+    			if(x instanceof ContinuousVariable) {
+    				allParentsDiscrete = false;
+    				break;
+    			}
+    		}
+    		if(allParentsDiscrete) {
+    			if(!discNodes.contains(node)) {
+    				discNodes.add(node);
+    			}
+    			for (Node x : graph.getParents(node)) {
+    				if(!discNodes.contains(x)) {
+    					discNodes.add(x);
+    				}
+    			}
+    		}else {
+    			if(!cgDiscreteNodesAndTheirDiscreteParents.contains(node)) {
+    				cgDiscreteNodesAndTheirDiscreteParents.add(node);
+    			}
+    			for (Node x : graph.getParents(node)) {
+        			if(x instanceof DiscreteVariable && 
+        					!cgDiscreteNodesAndTheirDiscreteParents.contains(x)) {
+        				cgDiscreteNodesAndTheirDiscreteParents.add(x);
         			}
         		}
-        		if(allParentsContinuous) {
-        			if(!contNodes.contains(node)) {
-        				contNodes.add(node);       				
-        			}
-        			for (Node x : graph.getParents(node)) {
-        				if(!contNodes.contains(x)) {
-        					contNodes.add(x);
-        				}
-        			}
-        		}else {
-        			if(!cgContinuousNodeAndItsDiscreteParents.contains(node)) {
-        				cgContinuousNodeAndItsDiscreteParents.add(node);
-        			}
-        			for (Node x : graph.getParents(node)) {
-            			if(x instanceof DiscreteVariable && 
-            					!cgContinuousNodeAndItsDiscreteParents.contains(x)) {
-            				cgContinuousNodeAndItsDiscreteParents.add(x);
-            			}
-            		}
-        		}
-        	}else { // Discrete Variable
-        		
-        		boolean allParentsDiscrete = true;
-        		for(Node x : graph.getParents(node)) {
-        			if(x instanceof ContinuousVariable) {
-        				allParentsDiscrete = false;
-        				break;
-        			}
-        		}
-        		if(allParentsDiscrete) {
-        			if(!discNodes.contains(node)) {
-        				discNodes.add(node);
-        			}
-        			for (Node x : graph.getParents(node)) {
-        				if(!discNodes.contains(x)) {
-        					discNodes.add(x);
-        				}
-        			}
-        		}else {
-        			if(!cgDiscreteNodesAndTheirDiscreteParents.contains(node)) {
-        				cgDiscreteNodesAndTheirDiscreteParents.add(node);
-        			}
-        			for (Node x : graph.getParents(node)) {
-            			if(x instanceof DiscreteVariable && 
-            					!cgDiscreteNodesAndTheirDiscreteParents.contains(x)) {
-            				cgDiscreteNodesAndTheirDiscreteParents.add(x);
-            			}
-            		}
-        		}
-        	}
-        }
-
+    		}
+		}
+		
 		DataSet semDataSet = dataSet.subsetColumns(contNodes);
 		DataSet bayesDataSet = dataSet.subsetColumns(discNodes);
         
@@ -176,8 +136,6 @@ public final class CgEstimator implements TetradSerializable {
 		Proposition condition = Proposition.tautology(estimatedCgBayesIm);
 		Evidence evidence = Evidence.tautology(estimatedCgBayesIm);
 		
-		List<Node> cgDiscreteNodes = cgPm.getCgDiscreteVariableNodes();
-		
 		int numCgBayesNodes = estimatedCgBayesIm.getNumNodes();
 		
 		for(int nodeIndex=0;nodeIndex<numCgBayesNodes;nodeIndex++) {
@@ -193,6 +151,10 @@ public final class CgEstimator implements TetradSerializable {
 				int numCols = estimatedCgBayesIm.getNumColumns(nodeIndex); // a number of node's categories
 				int[] cgBayesParents = estimatedCgBayesIm.getParents(nodeIndex);
 				
+            	int[] cgContinuousParentArray = estimatedCgIm
+            			.getCgDiscreteNodeContinuousParentNodeArray(
+            					cgDiscreteNodeIndex);
+
 				for(int row=0;row<numRows;row++) {
 					
 					int[] cgBayesParentValues = estimatedCgBayesIm.getParentValues(nodeIndex, row);
@@ -224,83 +186,91 @@ public final class CgEstimator implements TetradSerializable {
 	                    	
 	                    	estimatedCgIm.setCgDiscreteProbability(cgDiscreteNodeIndex, row, col, prob);
 	                    	
-	                    	
-	                    	List<Integer> rowListConditioned = new ArrayList<>();
-	                    	
-	                    	for(int dataRow=0;dataRow<dataSet.getNumRows();dataRow++) {
+	                    	if(cgContinuousParentArray != null) {
 	                    		
-	                    		boolean qualified = true;
-	                    		
-	                    		for(int arrayIndex=0;arrayIndex<cgBayesParents.length;arrayIndex++) {
+		                    	List<Integer> rowListConditioned = new ArrayList<>();
 		                    	
-	                    			int parentIndex = cgBayesParents[arrayIndex];
-	                    			int categoryIndex = cgBayesParentValues[arrayIndex];
+		                    	for(int dataRow=0;dataRow<dataSet.getNumRows();dataRow++) {
 		                    		
-	                    			Node cgDiscreteParentNode = estimatedCgBayesIm.getNode(parentIndex);
-	                    			int cgDiscreteParentNodeIndex = dataSet.getColumn(cgDiscreteParentNode);
+		                    		boolean qualified = true;
 		                    		
-	                    			if(categoryIndex != dataSet.getInt(dataRow, cgDiscreteParentNodeIndex)) {
-	                    				qualified = false;
-	                    				break;
-	                    			}
+		                    		for(int arrayIndex=0;arrayIndex<cgBayesParents.length;arrayIndex++) {
+			                    	
+		                    			int parentIndex = cgBayesParents[arrayIndex];
+		                    			int categoryIndex = cgBayesParentValues[arrayIndex];
+			                    		
+		                    			Node cgDiscreteParentNode = estimatedCgBayesIm.getNode(parentIndex);
+		                    			int cgDiscreteParentNodeIndex = dataSet.getColumn(cgDiscreteParentNode);
+			                    		
+		                    			if(categoryIndex != dataSet.getInt(dataRow, cgDiscreteParentNodeIndex)) {
+		                    				qualified = false;
+		                    				break;
+		                    			}
+			                    	}
+		                    		
+		                    		if(qualified) {
+		                    			rowListConditioned.add(dataRow);
+		                    		}
+		                    		
 		                    	}
-	                    		
-	                    		if(qualified) {
-	                    			rowListConditioned.add(dataRow);
-	                    		}
-	                    		
+		                    	
+		                    	int[] rowsConditioned = new int[rowListConditioned.size()];
+		                    	
+		                    	Iterator<Integer> it = rowListConditioned.iterator();
+		                    	int rowIndex = 0;
+		                    	
+		                    	while(it.hasNext()) {
+		                    		rowsConditioned[rowIndex] = it.next().intValue();
+		                    		rowIndex++;
+		                    	}
+		                    	
+		                    	DataSet conditionedData = dataSet.subsetRows(rowsConditioned);
+		                    	
+		                    	List<Node> cgContinuousParentNodes = new ArrayList<>();
+		                    	
+		                    	for(int arrayIndex=0;arrayIndex<cgContinuousParentArray.length;arrayIndex++) {
+		                    		
+		                    		int cgDiscreteNodeContinuousParentNodeIndex = cgContinuousParentArray[arrayIndex];
+		                    		
+		                    		Node continuousParentNode = estimatedCgIm
+		                    				.getCgDiscreteNodeContinuousParentNode(
+		                    						cgDiscreteNodeContinuousParentNodeIndex);
+		                    		cgContinuousParentNodes.add(continuousParentNode);
+		                    	}
+		                    	
+		                    	conditionedData = conditionedData.subsetColumns(cgContinuousParentNodes);
+		                    	
+		                    	TetradMatrix matrix = conditionedData.getDoubleData();
+		                    	
+		                    	for(int arrayIndex=0;arrayIndex<cgContinuousParentArray.length;arrayIndex++) {
+		                    		int continuousParentIndex = cgContinuousParentArray[arrayIndex];
+		                    		
+		                    		TetradVector vector = matrix.getColumn(arrayIndex);
+		                    		double[] data = vector.toArray();
+		                    		
+	    	                    	// Set a mean of each of parents' continuous nodes
+		                    		double mean = StatUtils.mean(data);
+		                    		
+	    	                    	// Set a stand deviation of each of parents' continuous nodes
+		                    		double sd = StatUtils.sd(data);
+		                    		
+		                    		estimatedCgIm.setCgDiscreteParentMean(cgDiscreteNodeIndex, row, col, continuousParentIndex, mean);
+		                    		estimatedCgIm.setCgDiscreteParentMeanStdDev(cgDiscreteNodeIndex, row, col, continuousParentIndex, sd);
+		                    	}
 	                    	}
 	                    	
-	                    	int[] rowsConditioned = new int[rowListConditioned.size()];
-	                    	
-	                    	Iterator<Integer> it = rowListConditioned.iterator();
-	                    	int rowIndex = 0;
-	                    	
-	                    	while(it.hasNext()) {
-	                    		rowsConditioned[rowIndex] = it.next().intValue();
-	                    		rowIndex++;
-	                    	}
-	                    	
-	                    	DataSet conditionedData = dataSet.subsetRows(rowsConditioned);
-	                    	
-	                    	List<Node> cgContinuousParentNodes = new ArrayList<>();
-	                    	
-	                    	int[] cgContinuousParentArray = estimatedCgIm
-	                    			.getCgDiscreteNodeContinuousParentNodeArray(
-	                    					cgDiscreteNodeIndex);
-
-	                    	for(int arrayIndex=0;arrayIndex<cgContinuousParentArray.length;arrayIndex++) {
-	                    		
-	                    		int cgDiscreteNodeContinuousParentNodeIndex = cgContinuousParentArray[arrayIndex];
-	                    		
-	                    		Node continuousParentNode = estimatedCgIm
-	                    				.getCgDiscreteNodeContinuousParentNode(
-	                    						cgDiscreteNodeContinuousParentNodeIndex);
-	                    		cgContinuousParentNodes.add(continuousParentNode);
-	                    	}
-	                    	
-	                    	conditionedData = conditionedData.subsetColumns(cgContinuousParentNodes);
-	                    	
-	                    	TetradMatrix matrix = conditionedData.getDoubleData();
-	                    	
-	                    	for(int arrayIndex=0;arrayIndex<cgContinuousParentArray.length;arrayIndex++) {
-	                    		int continuousParentIndex = cgContinuousParentArray[arrayIndex];
-	                    		
-	                    		TetradVector vector = matrix.getColumn(arrayIndex);
-	                    		double[] data = vector.toArray();
-	                    		
-    	                    	// Set a mean of each of parents' continuous nodes
-	                    		double mean = StatUtils.mean(data);
-	                    		
-    	                    	// Set a stand deviation of each of parents' continuous nodes
-	                    		double sd = StatUtils.sd(data);
-	                    		
-	                    		estimatedCgIm.setCgDiscreteParentMean(cgDiscreteNodeIndex, row, col, continuousParentIndex, mean);
-	                    		estimatedCgIm.setCgDiscreteParentMeanStdDev(cgDiscreteNodeIndex, row, col, continuousParentIndex, sd);
-	                    	}
 	                    	
 	                    } else {
 	                    	estimatedCgIm.setCgDiscreteProbability(cgDiscreteNodeIndex, row, col, Double.NaN);
+	                    	
+	                    	if(cgContinuousParentArray != null) {
+	                    		for(int arrayIndex=0;arrayIndex<cgContinuousParentArray.length;arrayIndex++) {
+		                    		int continuousParentIndex = cgContinuousParentArray[arrayIndex];
+
+		                    		estimatedCgIm.setCgDiscreteParentMean(cgDiscreteNodeIndex, row, col, continuousParentIndex, Double.NaN);
+		                    		estimatedCgIm.setCgDiscreteParentMeanStdDev(cgDiscreteNodeIndex, row, col, continuousParentIndex, Double.NaN);
+		                    	}
+	                    	}
 	                    }
 					}
 				}
@@ -309,8 +279,108 @@ public final class CgEstimator implements TetradSerializable {
 		
 		
 		// 2) Mixed Parent Continuous Child Node
-		Graph cgContinuousGraph = graph.subgraph(cgContinuousNodeAndItsDiscreteParents);
-		List<Node> continuousChildVariableNodes = cgPm.getCgContinuousVariableNodes();
+		List<Node> cgContinuousNodes = estimatedCgIm.getCgContinuousVariableNodes();
+		for(Node cgContinuousNode : cgContinuousNodes) {
+			
+			int cgContinuousNodeIndex = estimatedCgIm.getCgContinuousNodeIndex(cgContinuousNode);
+			
+			int numRows = estimatedCgIm.getCgContinuousNumRows(cgContinuousNodeIndex); // a total number of combination of discrete parent's values
+			int[] cgDiscreteParents = estimatedCgIm.getCgContinuousNodeDiscreteParentNodeArray(cgContinuousNodeIndex);
+			
+        	int[] cgContinuousParentArray = estimatedCgIm
+        			.getCgContinuousNodeContinuousParentNodeArray(cgContinuousNodeIndex);
+        	
+        	for(int row=0;row<numRows;row++) {
+				
+				int[] cgDiscreteParentValues = estimatedCgIm.getCgContinuousNodeDiscreteParentValues(cgContinuousNodeIndex, row);
+				
+				if(cgContinuousParentArray != null) {
+            		
+                	List<Integer> rowListConditioned = new ArrayList<>();
+                	
+                	for(int dataRow=0;dataRow<dataSet.getNumRows();dataRow++) {
+                		
+                		boolean qualified = true;
+                		
+                		for(int arrayIndex=0;arrayIndex<cgDiscreteParents.length;arrayIndex++) {
+                    	
+                			int discreteParentIndex = cgDiscreteParents[arrayIndex];
+                			int categoryIndex = cgDiscreteParentValues[arrayIndex];
+                    		
+                			Node cgDiscreteParentNode = estimatedCgIm.getCgContinuousNodeDiscreteParentNode(discreteParentIndex);
+                			int cgDiscreteParentNodeIndex = dataSet.getColumn(cgDiscreteParentNode);
+                    		
+                			if(categoryIndex != dataSet.getInt(dataRow, cgDiscreteParentNodeIndex)) {
+                				qualified = false;
+                				break;
+                			}
+                    	}
+                		
+                		if(qualified) {
+                			rowListConditioned.add(dataRow);
+                		}
+                		
+                	}
+                	
+                	int[] rowsConditioned = new int[rowListConditioned.size()];
+                	
+                	Iterator<Integer> it = rowListConditioned.iterator();
+                	int rowConditionedIndex = 0;
+                	
+                	while(it.hasNext()) {
+                		rowsConditioned[rowConditionedIndex] = it.next().intValue();
+                		rowConditionedIndex++;
+                	}
+                	
+                	DataSet conditionedData = dataSet.subsetRows(rowsConditioned);
+                	
+                	List<Node> cgContinuousNodeContinuousParentNodes = new ArrayList<>();
+                	cgContinuousNodeContinuousParentNodes.add(cgContinuousNode);
+                	
+                	for(int arrayIndex=0;arrayIndex<cgContinuousParentArray.length;arrayIndex++) {
+                		
+                		int cgContinuousNodeContinuousParentNodeIndex = cgContinuousParentArray[arrayIndex];
+                		
+                		Node continuousParentNode = estimatedCgIm
+                				.getCgDiscreteNodeContinuousParentNode(
+                						cgContinuousNodeContinuousParentNodeIndex);
+                		cgContinuousNodeContinuousParentNodes.add(continuousParentNode);
+                	}
+                	
+                	conditionedData = conditionedData.subsetColumns(cgContinuousNodeContinuousParentNodes);
+                	
+                	TetradMatrix matrix = conditionedData.getDoubleData();
+                	TetradVector childVector = matrix.getColumn(0);
+                	
+                	estimatedCgIm.setCgContinuousParentEdgeCoef(cgContinuousNodeIndex, row, 0, 1);
+                	estimatedCgIm.setCgContinuousParentMean(cgContinuousNodeIndex, row, 0, StatUtils.mean(childVector, childVector.size()));
+            		estimatedCgIm.setCgContinuousParentMeanStdDev(cgContinuousNodeIndex, row, 0, StatUtils.sd(childVector, childVector.size()));
+            		
+                	// We start from index 1 instead of 0 because we reserve index 0 for the continuous child node
+                	for(int arrayIndex=1;arrayIndex<cgContinuousParentArray.length+1;arrayIndex++) {
+                		
+                		TetradVector parentVector = matrix.getColumn(arrayIndex);
+                		
+                		// Set a correlation coefficient of continuous child and continuous parent given this condition
+                		double coef = StatUtils.correlation(childVector, parentVector);
+                		
+                		estimatedCgIm.setCgContinuousParentEdgeCoef(cgContinuousNodeIndex, row, arrayIndex, coef);
+                		
+                    	// Set a mean of each of parents' continuous nodes
+                		double mean = StatUtils.mean(parentVector, parentVector.size());
+                		
+                    	// Set a stand deviation of each of parents' continuous nodes
+                		double sd = StatUtils.sd(parentVector, parentVector.size());
+                		
+                		estimatedCgIm.setCgContinuousParentMean(cgContinuousNodeIndex, row, arrayIndex, mean);
+                		estimatedCgIm.setCgContinuousParentMeanStdDev(cgContinuousNodeIndex, row, arrayIndex, sd);
+                	}
+				}
+				
+        	}
+        	
+		}
+		
 		
 		return estimatedCgIm;
 	}

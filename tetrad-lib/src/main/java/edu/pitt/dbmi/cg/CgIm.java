@@ -62,24 +62,24 @@ public final class CgIm implements IM, ICgIm, TetradSerializable {
 	
 	private final List<Node> cgContinuousMeasuredNodes;
 	
-	private List<CgParameter> continuousFreeParameters;
+	private List<CgParameter> cgContinuousFreeParameters;
 	
-	private List<CgParameter> continuousFixedParameters;
+	private List<CgParameter> cgContinuousFixedParameters;
 	
-	private List<CgMapping> continuousFreeMappings;
+	private List<CgMapping> cgContinuousFreeMappings;
 	
-	private List<CgMapping> continuousFixedMappings;
+	private List<CgMapping> cgContinuousFixedMappings;
 	
     // Mixed parents with discrete child
 	private final List<Node> cgDiscreteVariableNodes;
 	
-	private List<CgParameter> discreteFreeParameters;
+	private List<CgParameter> cgDiscreteFreeParameters;
 	
-	private List<CgParameter> discreteFixedParameters;
+	private List<CgParameter> cgDiscreteFixedParameters;
 	
-	private List<CgMapping> discreteFreeMappings;
+	private List<CgMapping> cgDiscreteFreeMappings;
 	
-	private List<CgMapping> discreteFixedMappings;
+	private List<CgMapping> cgDiscreteFixedMappings;
 	
 	/**
 	 * True iff this CgIm is estimated.
@@ -153,7 +153,7 @@ public final class CgIm implements IM, ICgIm, TetradSerializable {
 	private double[][][][] cgDiscreteNodeMeans;
 	private double[][][][] cgDiscreteNodeMeanStdDevs;
 	
-	// nodeIndex, discreteParentConditionIndex, nodeCategoryIndex (= 0), continuousParentNodeIndex
+	// nodeIndex, discreteParentConditionIndex, nodeCategoryIndex (= 0), continuousParentNodeIndex ( +1 self)
 	private double[][][][] cgContinuousNodeEdgeCoef;
 	private double[][][][] cgContinuousNodeErrCovar;
 	private double[][][][] cgContinuousNodeMeans;
@@ -204,15 +204,15 @@ public final class CgIm implements IM, ICgIm, TetradSerializable {
 		this.bayesIm = oldCgIm.getBayesIm();
 		this.semIm = oldCgIm.getSemIm();
 		
-		this.continuousFreeParameters = initContinuousFreeParameters();
-		this.continuousFreeMappings = createContinuousMappings(continuousFreeParameters);
-		this.continuousFixedParameters = initContinuousFixedParameters();
-		this.continuousFixedMappings = createContinuousMappings(continuousFixedParameters);
+		this.cgContinuousFreeParameters = initCgContinuousFreeParameters();
+		this.cgContinuousFreeMappings = createCgContinuousMappings(cgContinuousFreeParameters);
+		this.cgContinuousFixedParameters = initCgContinuousFixedParameters();
+		this.cgContinuousFixedMappings = createCgContinuousMappings(cgContinuousFixedParameters);
 		
-		this.discreteFreeParameters = initDiscreteFreeParameters();
-		this.discreteFreeMappings = createDiscreteMappings(discreteFreeParameters);
-		this.discreteFixedParameters = initDiscreteFixedParameters();
-		this.discreteFixedMappings = createDiscreteMappings(discreteFixedParameters);
+		this.cgDiscreteFreeParameters = initCgDiscreteFreeParameters();
+		this.cgDiscreteFreeMappings = createDiscreteMappings(cgDiscreteFreeParameters);
+		this.cgDiscreteFixedParameters = initCgDiscreteFixedParameters();
+		this.cgDiscreteFixedMappings = createDiscreteMappings(cgDiscreteFixedParameters);
 
 		Graph graph = getCgPm().getGraph();
 		
@@ -397,12 +397,12 @@ public final class CgIm implements IM, ICgIm, TetradSerializable {
  		this.cgContinuousNodeContinuousParentNodes = continuousParentList.toArray(new Node[continuousParentList.size()]);
 	}
 
-	public List<CgParameter> initDiscreteFreeParameters(){
-		return Collections.unmodifiableList(cgPm.getDiscreteFreeParameters());
+	public List<CgParameter> initCgDiscreteFreeParameters(){
+		return Collections.unmodifiableList(cgPm.getCgDiscreteFreeParameters());
 	}
 	
-	public List<CgParameter> initContinuousFreeParameters(){
-		return Collections.unmodifiableList(cgPm.getContinuousFreeParameters());
+	public List<CgParameter> initCgContinuousFreeParameters(){
+		return Collections.unmodifiableList(cgPm.getCgContinuousFreeParameters());
 	}
 	
 	public List<CgMapping> createDiscreteMappings(List<CgParameter> parameters){
@@ -437,7 +437,7 @@ public final class CgIm implements IM, ICgIm, TetradSerializable {
 		return Collections.unmodifiableList(mappings);
 	}
 	
-	public List<CgMapping> createContinuousMappings(List<CgParameter> parameters){
+	public List<CgMapping> createCgContinuousMappings(List<CgParameter> parameters){
 		List<CgMapping> mappings = new ArrayList<>();
 		Graph graph = getCgPm().getGraph();
 		
@@ -471,7 +471,7 @@ public final class CgIm implements IM, ICgIm, TetradSerializable {
 		return Collections.unmodifiableList(mappings);
 	}
 	
-	public List<CgParameter> initDiscreteFixedParameters(){
+	public List<CgParameter> initCgDiscreteFixedParameters(){
 		List<CgParameter> fixedParameters = new ArrayList<>();
 		
 		for(CgParameter parameter : getCgPm().getCgDiscreteNodesParameters()) {
@@ -487,7 +487,7 @@ public final class CgIm implements IM, ICgIm, TetradSerializable {
 		return Collections.unmodifiableList(fixedParameters);
 	}
 	
-	public List<CgParameter> initContinuousFixedParameters(){
+	public List<CgParameter> initCgContinuousFixedParameters(){
 		List<CgParameter> fixedParameters = new ArrayList<>();
 		
 		for (CgParameter parameter : getCgPm().getCgContinuousNodesParameters()) {
@@ -582,7 +582,7 @@ public final class CgIm implements IM, ICgIm, TetradSerializable {
         
         for(int i = 0; i < discreteDims.length; i++) {
         	Node pNode = cgContinuousNodeDiscreteParentNodes[discreteParentArray[i]];
-        	discreteDims[i] = getCgPm().getNumCategories(pNode);
+        	discreteDims[i] = getCgPm().getDiscreteNumCategories(pNode);
         }
         
         // Calculate dimensions of table.
@@ -606,20 +606,20 @@ public final class CgIm implements IM, ICgIm, TetradSerializable {
         // Continuous variable has only one category of bandwith's of values
         int numCols = 1;
         
-        int numContinuousParents = continuousParentArray.length;
+        int numContinuousSelfAndParents = continuousParentArray.length + 1;
         
         cgContinuousNodeDims[nodeIndex] = discreteDims;
-        cgContinuousNodeEdgeCoef[nodeIndex] = new double[numRows][numCols][numContinuousParents];
-        cgContinuousNodeErrCovar[nodeIndex] = new double[numRows][numCols][numContinuousParents];
-        cgContinuousNodeMeans[nodeIndex] = new double[numRows][numCols][numContinuousParents];
-        cgContinuousNodeMeanStdDevs[nodeIndex] = new double[numRows][numCols][numContinuousParents];
+        cgContinuousNodeEdgeCoef[nodeIndex] = new double[numRows][numCols][numContinuousSelfAndParents];
+        cgContinuousNodeErrCovar[nodeIndex] = new double[numRows][numCols][numContinuousSelfAndParents];
+        cgContinuousNodeMeans[nodeIndex] = new double[numRows][numCols][numContinuousSelfAndParents];
+        cgContinuousNodeMeanStdDevs[nodeIndex] = new double[numRows][numCols][numContinuousSelfAndParents];
         
         // Initialize each row.
         if (initializationMethod == RANDOM) {
         	// Set variable means to 0.0 pending the program creating the CgIm
             // setting them. I.e. by default they are set to 0.0.
             for (int i = 0; i < numRows; i++) {
-            	for(int j=0;j<numContinuousParents;j++) {
+            	for(int j=0;j<numContinuousSelfAndParents;j++) {
                 	cgContinuousNodeEdgeCoef[nodeIndex][i][0][j] = 1;
                 	cgContinuousNodeErrCovar[nodeIndex][i][0][j] = 0;
                 	cgContinuousNodeMeans[nodeIndex][i][0][j] = 0;
@@ -684,8 +684,8 @@ public final class CgIm implements IM, ICgIm, TetradSerializable {
 				
 				if(!Double.isNaN(_value)) {
 					try {
-						CgParameter _parameter = oldCgIm.getCgPm().getContinuousVarianceParameter(_node, i);
-						CgParameter parameter = getCgPm().getContinuousVarianceParameter(node, i);
+						CgParameter _parameter = oldCgIm.getCgPm().getCgContinuousVarianceParameter(_node, i);
+						CgParameter parameter = getCgPm().getCgContinuousVarianceParameter(node, i);
 						
 						if (parameter == null || _parameter == null) {
                             continue;
@@ -717,8 +717,8 @@ public final class CgIm implements IM, ICgIm, TetradSerializable {
 					
 					if(!Double.isNaN(_value)) {
 						try {
-							CgParameter _parameter = oldCgIm.getCgPm().getContinuousCoefficientParameter(_parentNode, _node, i);
-							CgParameter parameter = getCgPm().getContinuousCoefficientParameter(parentNode, node, i);
+							CgParameter _parameter = oldCgIm.getCgPm().getCgContinuousCoefficientParameter(_parentNode, _node, i);
+							CgParameter parameter = getCgPm().getCgContinuousCoefficientParameter(parentNode, node, i);
 							
 							if (parameter == null || _parameter == null) {
 	                            continue;
@@ -745,9 +745,9 @@ public final class CgIm implements IM, ICgIm, TetradSerializable {
 	
 	public void setDiscreteParamValue(CgParameter parameter, double value) {
 		// getFreeParameters
-		if(getDiscreteFreeParameters().contains(parameter)) {
-			int index = getDiscreteFreeParameters().indexOf(parameter);
-			CgMapping mapping = this.discreteFreeMappings.get(index);
+		if(getCgDiscreteFreeParameters().contains(parameter)) {
+			int index = getCgDiscreteFreeParameters().indexOf(parameter);
+			CgMapping mapping = this.cgDiscreteFreeMappings.get(index);
 			mapping.setValue(value);
 		// throws error
 		}else {
@@ -759,9 +759,9 @@ public final class CgIm implements IM, ICgIm, TetradSerializable {
 	
 	public void setDiscreteFixedParamValue(CgParameter parameter, double value) {
 		// getFixedParameters
-		if(getDiscreteFixedParameters().contains(parameter)) {
-			int index = getDiscreteFixedParameters().indexOf(parameter);
-			CgMapping mapping = this.discreteFixedMappings.get(index);
+		if(getCgDiscreteFixedParameters().contains(parameter)) {
+			int index = getCgDiscreteFixedParameters().indexOf(parameter);
+			CgMapping mapping = this.cgDiscreteFixedMappings.get(index);
 			mapping.setValue(value);
 		// throws error
 		}else {
@@ -787,7 +787,7 @@ public final class CgIm implements IM, ICgIm, TetradSerializable {
 		}
         
         if(parameter == null) {
-        	parameter = getCgPm().getDiscreteVarianceParameter(nodeA, nodeB, childCategoryNo, conditionalCaseNo);
+        	parameter = getCgPm().getCgDiscreteVarianceParameter(nodeA, nodeB, childCategoryNo, conditionalCaseNo);
         }
         
         if (parameter == null) {
@@ -795,7 +795,7 @@ public final class CgIm implements IM, ICgIm, TetradSerializable {
                     + "model for an edge from " + nodeA + " to " + nodeB + ".");
         }
 
-        if (!this.getContinuousFreeParameters().contains(parameter)) {
+        if (!this.getCgContinuousFreeParameters().contains(parameter)) {
             throw new IllegalArgumentException(
                     "Not a free parameter in " + "this model: " + parameter);
         }
@@ -809,13 +809,13 @@ public final class CgIm implements IM, ICgIm, TetradSerializable {
             throw new NullPointerException();
         }
 		
-		if(getDiscreteFreeParameters().contains(parameter)) {
-			int index = getDiscreteFreeParameters().indexOf(parameter);
-			CgMapping mapping = this.discreteFreeMappings.get(index);
+		if(getCgDiscreteFreeParameters().contains(parameter)) {
+			int index = getCgDiscreteFreeParameters().indexOf(parameter);
+			CgMapping mapping = this.cgDiscreteFreeMappings.get(index);
 			return mapping.getValue();
-		} else if(getDiscreteFixedParameters().contains(parameter)) {
-			int index = getDiscreteFixedParameters().indexOf(parameter);
-			CgMapping mapping = this.discreteFixedMappings.get(index);
+		} else if(getCgDiscreteFixedParameters().contains(parameter)) {
+			int index = getCgDiscreteFixedParameters().indexOf(parameter);
+			CgMapping mapping = this.cgDiscreteFixedMappings.get(index);
 			return mapping.getValue();
 		}
 		
@@ -830,13 +830,13 @@ public final class CgIm implements IM, ICgIm, TetradSerializable {
 			throw new IllegalArgumentException("Two nodes cannot be the same!");
 		}
 		
-		parameter = getCgPm().getDiscreteVarianceParameter(nodeA, nodeB, childCategoryNo, conditionalCaseNo);
+		parameter = getCgPm().getCgDiscreteVarianceParameter(nodeA, nodeB, childCategoryNo, conditionalCaseNo);
 		
 		if (parameter == null) {
             return Double.NaN;
         }
 
-        if (!getContinuousFreeParameters().contains(parameter)) {
+        if (!getCgContinuousFreeParameters().contains(parameter)) {
             return Double.NaN;
         }
 		
@@ -845,9 +845,9 @@ public final class CgIm implements IM, ICgIm, TetradSerializable {
 	
 	public void setContinuousParamValue(CgParameter parameter, double value) {
 		// getFreeParameters
-		if(getContinuousFreeParameters().contains(parameter)) {
-			int index = getContinuousFreeParameters().indexOf(parameter);
-			CgMapping mapping = this.continuousFreeMappings.get(index);
+		if(getCgContinuousFreeParameters().contains(parameter)) {
+			int index = getCgContinuousFreeParameters().indexOf(parameter);
+			CgMapping mapping = this.cgContinuousFreeMappings.get(index);
 			mapping.setValue(value);
 		// throws error
 		}else {
@@ -859,9 +859,9 @@ public final class CgIm implements IM, ICgIm, TetradSerializable {
 	
 	public void setContinuousFixedParamValue(CgParameter parameter, double value) {
 		// getFixedParameters
-		if(getContinuousFixedParameters().contains(parameter)) {
-			int index = getContinuousFixedParameters().indexOf(parameter);
-			CgMapping mapping = this.continuousFixedMappings.get(index);
+		if(getCgContinuousFixedParameters().contains(parameter)) {
+			int index = getCgContinuousFixedParameters().indexOf(parameter);
+			CgMapping mapping = this.cgContinuousFixedMappings.get(index);
 			mapping.setValue(value);
 		// throws error
 		}else {
@@ -883,11 +883,11 @@ public final class CgIm implements IM, ICgIm, TetradSerializable {
         CgParameter parameter = null;
         
         if(nodeA == nodeB) {
-			parameter = getCgPm().getContinuousVarianceParameter(nodeA, conditionalCase);
+			parameter = getCgPm().getCgContinuousVarianceParameter(nodeA, conditionalCase);
 		}
         
         if(parameter == null) {
-        	parameter = getCgPm().getContinuousCoefficientParameter(nodeA, nodeB, conditionalCase);
+        	parameter = getCgPm().getCgContinuousCoefficientParameter(nodeA, nodeB, conditionalCase);
         }
         
         if (parameter == null) {
@@ -895,7 +895,7 @@ public final class CgIm implements IM, ICgIm, TetradSerializable {
                     + "model for an edge from " + nodeA + " to " + nodeB + ".");
         }
 
-        if (!this.getContinuousFreeParameters().contains(parameter)) {
+        if (!this.getCgContinuousFreeParameters().contains(parameter)) {
             throw new IllegalArgumentException(
                     "Not a free parameter in " + "this model: " + parameter);
         }
@@ -909,13 +909,13 @@ public final class CgIm implements IM, ICgIm, TetradSerializable {
             throw new NullPointerException();
         }
 		
-		if(getContinuousFreeParameters().contains(parameter)) {
-			int index = getContinuousFreeParameters().indexOf(parameter);
-			CgMapping mapping = this.continuousFreeMappings.get(index);
+		if(getCgContinuousFreeParameters().contains(parameter)) {
+			int index = getCgContinuousFreeParameters().indexOf(parameter);
+			CgMapping mapping = this.cgContinuousFreeMappings.get(index);
 			return mapping.getValue();
-		} else if(getContinuousFixedParameters().contains(parameter)) {
-			int index = getContinuousFixedParameters().indexOf(parameter);
-			CgMapping mapping = this.continuousFixedMappings.get(index);
+		} else if(getCgContinuousFixedParameters().contains(parameter)) {
+			int index = getCgContinuousFixedParameters().indexOf(parameter);
+			CgMapping mapping = this.cgContinuousFixedMappings.get(index);
 			return mapping.getValue();
 		}
 		
@@ -927,38 +927,38 @@ public final class CgIm implements IM, ICgIm, TetradSerializable {
 		CgParameter parameter = null;
 		
 		if(nodeA == nodeB) {
-			parameter = getCgPm().getContinuousVarianceParameter(nodeA, conditionalCase);
+			parameter = getCgPm().getCgContinuousVarianceParameter(nodeA, conditionalCase);
 		}
 		
 		if(parameter == null) {
-			parameter = getCgPm().getContinuousCoefficientParameter(nodeA, nodeB, conditionalCase);
+			parameter = getCgPm().getCgContinuousCoefficientParameter(nodeA, nodeB, conditionalCase);
 		}
 		
 		if (parameter == null) {
             return Double.NaN;
         }
 
-        if (!getContinuousFreeParameters().contains(parameter)) {
+        if (!getCgContinuousFreeParameters().contains(parameter)) {
             return Double.NaN;
         }
 		
 		return getContinuousParamValue(parameter);
 	}
 	
-	public List<CgParameter> getDiscreteFreeParameters() {
-		return discreteFreeParameters;
+	public List<CgParameter> getCgDiscreteFreeParameters() {
+		return cgDiscreteFreeParameters;
 	}
 	
-	public List<CgParameter> getDiscreteFixedParameters() {
-		return discreteFixedParameters;
+	public List<CgParameter> getCgDiscreteFixedParameters() {
+		return cgDiscreteFixedParameters;
 	}
 	
-	public List<CgParameter> getContinuousFreeParameters() {
-		return continuousFreeParameters;
+	public List<CgParameter> getCgContinuousFreeParameters() {
+		return cgContinuousFreeParameters;
 	}
 	
-	public List<CgParameter> getContinuousFixedParameters() {
-		return continuousFixedParameters;
+	public List<CgParameter> getCgContinuousFixedParameters() {
+		return cgContinuousFixedParameters;
 	}
 	
 	/**
@@ -1005,7 +1005,7 @@ public final class CgIm implements IM, ICgIm, TetradSerializable {
         
         for(int i = 0; i < discreteDims.length; i++) {
         	Node pNode = cgDiscreteNodeDiscreteParentNodes[discreteParentArray[i]];
-        	discreteDims[i] = getCgPm().getNumCategories(pNode);
+        	discreteDims[i] = getCgPm().getDiscreteNumCategories(pNode);
         }
         
         // Calculate dimensions of table.
@@ -1025,7 +1025,7 @@ public final class CgIm implements IM, ICgIm, TetradSerializable {
             numRows *= dim;
         }
         
-        int numCols = getCgPm().getNumCategories(node);
+        int numCols = getCgPm().getDiscreteNumCategories(node);
         
         int numContinuousParents = continuousParentArray.length;
         
@@ -1055,7 +1055,7 @@ public final class CgIm implements IM, ICgIm, TetradSerializable {
     private void retainOldDiscreteRowIfPossible(int nodeIndex, int rowIndex,
                                         CgIm oldCgIm, int initializationMethod) {
 
-        int oldNodeIndex = getCorrespondingDiscreteNodeIndex(nodeIndex, oldCgIm);
+        int oldNodeIndex = getCorrespondingCgDiscreteNodeIndex(nodeIndex, oldCgIm);
 
         if (oldNodeIndex == -1) {
             overwriteDiscreteRow(nodeIndex, rowIndex, initializationMethod);
@@ -1086,7 +1086,7 @@ public final class CgIm implements IM, ICgIm, TetradSerializable {
      */
     private int getUniqueCompatibleOldRow(int nodeIndex, int rowIndex,
                                           CgIm oldCgIm) {
-        int oldNodeIndex = getCorrespondingDiscreteNodeIndex(nodeIndex, oldCgIm);
+        int oldNodeIndex = getCorrespondingCgDiscreteNodeIndex(nodeIndex, oldCgIm);
         int oldNumParents = oldCgIm.getCgDiscreteNodeNumParents(oldNodeIndex);
 
         int[] oldParentValues = new int[oldNumParents];
@@ -1102,7 +1102,7 @@ public final class CgIm implements IM, ICgIm, TetradSerializable {
             // parent.
             int parentNodeIndex = getCgDiscreteNodeDiscreteParentNodeIndex(nodeIndex, i);
             int oldParentNodeIndex =
-            		getCorrespondingDiscreteNodeIndex(parentNodeIndex, oldCgIm);
+            		getCorrespondingCgDiscreteNodeIndex(parentNodeIndex, oldCgIm);
             int oldParentIndex = -1;
 
             for (int j = 0; j < oldCgIm.getCgDiscreteNodeNumParents(oldNodeIndex); j++) {
@@ -1208,14 +1208,25 @@ public final class CgIm implements IM, ICgIm, TetradSerializable {
 		}
 		
 		cgDiscreteNodeMeanStdDevs[nodeIndex][rowIndex][colIndex][continuousParentIndex] = value;
-    	// 
     }
-    // 
+    
+    public void setCgContinuousParentEdgeCoef(int nodeIndex, int rowIndex, int continuousParentIndex, double value) {
+		cgContinuousNodeEdgeCoef[nodeIndex][rowIndex][0][continuousParentIndex] = value;
+    }
+    
+    public void setCgContinuousParentMean(int nodeIndex, int rowIndex, int continuousParentIndex, double value) {
+		cgContinuousNodeMeans[nodeIndex][rowIndex][0][continuousParentIndex] = value;
+    }
+    
+    public void setCgContinuousParentMeanStdDev(int nodeIndex, int rowIndex, int continuousParentIndex, double value) {
+		cgContinuousNodeMeanStdDevs[nodeIndex][rowIndex][0][continuousParentIndex] = value;
+    }
+    
     /**
      * @return the index of the node with the given name in the specified
      * CgIm.
      */
-    public int getCorrespondingDiscreteNodeIndex(int nodeIndex, CgIm otherCgIm) {
+    public int getCorrespondingCgDiscreteNodeIndex(int nodeIndex, CgIm otherCgIm) {
         String nodeName = getCgDiscreteNode(nodeIndex).getName();
         Node oldNode = otherCgIm.getNode(nodeName);
         return otherCgIm.getCgDiscreteNodeIndex(oldNode);
@@ -1243,17 +1254,23 @@ public final class CgIm implements IM, ICgIm, TetradSerializable {
     
     private void initializeContinuousRowAsUnknowns(int nodeIndex, int rowIndex) {
     	int[] continuousParentArray = cgContinuousNodeContinuousParentArray[nodeIndex];
-    	final int size = continuousParentArray.length;
+    	final int size = continuousParentArray.length + 1; // +1 self
         double[] row = new double[size];
         Arrays.fill(row, Double.NaN);
         // columnIndex always equal to 0 for continuous rows
         cgContinuousNodeEdgeCoef[nodeIndex][rowIndex][0] = row;
+        cgContinuousNodeErrCovar[nodeIndex][rowIndex][0] = row;
+        cgContinuousNodeMeans[nodeIndex][rowIndex][0] = row;
+        cgContinuousNodeMeanStdDevs[nodeIndex][rowIndex][0] = row;
     }
     
     private void randomizeContinuousRow(int nodeIndex, int rowIndex) {
     	int[] continuousParentArray = cgContinuousNodeContinuousParentArray[nodeIndex];
-    	final int size = continuousParentArray.length;
+    	final int size = continuousParentArray.length + 1;
     	cgContinuousNodeEdgeCoef[nodeIndex][rowIndex][0] = getRandomWeights(size);
+    	cgContinuousNodeErrCovar[nodeIndex][rowIndex][0] = getRandomWeights(size);
+    	cgContinuousNodeMeans[nodeIndex][rowIndex][0] = getRandomWeights(size);
+    	cgContinuousNodeMeanStdDevs[nodeIndex][rowIndex][0] = getRandomWeights(size);
     }
     
 	private void overwriteDiscreteRow(int nodeIndex, int rowIndex, int initializationMethod) {
@@ -1295,6 +1312,16 @@ public final class CgIm implements IM, ICgIm, TetradSerializable {
         return cgDiscreteNodeProbs[nodeIndex].length;
     }
 
+    /**
+     * @return this number.
+     * @see #getRowIndex
+     * @see #getNumColumns
+     */
+    public int getCgContinuousNumRows(int nodeIndex) {
+        return cgContinuousNodeEdgeCoef[nodeIndex].length;
+    }
+
+    
     /**
      * @param nodeIndex the given node.
      * @return the number of parents for this node.
@@ -1338,6 +1365,17 @@ public final class CgIm implements IM, ICgIm, TetradSerializable {
      */
     public int[] getCgDiscreteNodeDiscreteParentDims(int nodeIndex) {
         int[] dims = cgDiscreteNodeDims[nodeIndex];
+        int[] copy = new int[dims.length];
+        System.arraycopy(dims, 0, copy, 0, dims.length);
+        return copy;
+    }
+
+    /**
+     * @return this array of parent dimensions.
+     * @see #getParents
+     */
+    public int[] getCgContinuousNodeDiscreteParentDims(int nodeIndex) {
+        int[] dims = cgContinuousNodeDims[nodeIndex];
         int[] copy = new int[dims.length];
         System.arraycopy(dims, 0, copy, 0, dims.length);
         return copy;
@@ -1415,8 +1453,36 @@ public final class CgIm implements IM, ICgIm, TetradSerializable {
      * @return the value in the probability table for the given node, at the
      * given row and column.
      */
-    public int getCgDiscreteParentValueOfDiscreteNode(int nodeIndex, int rowIndex, int colIndex) {
+    public int getCgDiscreteNodeDiscreteParentValue(int nodeIndex, int rowIndex, int colIndex) {
         return getCgDiscreteNodeDiscreteParentValues(nodeIndex, rowIndex)[colIndex];
+    }
+
+    /**
+     * @param nodeIndex the index of the node.
+     * @param rowIndex  the index of the row in question.
+     * @return the array representing the combination of parent values for this
+     * row.
+     * @see #getNodeIndex
+     * @see #getRowIndex
+     */
+    public int[] getCgContinuousNodeDiscreteParentValues(int nodeIndex, int rowIndex) {
+        int[] dims = getCgContinuousNodeDiscreteParentDims(nodeIndex);
+        int[] values = new int[dims.length];
+
+        for (int i = dims.length - 1; i >= 0; i--) {
+            values[i] = rowIndex % dims[i];
+            rowIndex /= dims[i];
+        }
+
+        return values;
+    }
+
+    /**
+     * @return the value in the probability table for the given node, at the
+     * given row and column.
+     */
+    public int getCgContinuousNodeDiscreteParentValue(int nodeIndex, int rowIndex, int colIndex) {
+        return getCgContinuousNodeDiscreteParentValues(nodeIndex, rowIndex)[colIndex];
     }
 
     /**
@@ -1645,36 +1711,12 @@ public final class CgIm implements IM, ICgIm, TetradSerializable {
 		return cgDiscreteNodeContinuousParentNodes[continuousParentIndex];
 	}
 
-	public Map<Node, Integer> getCgDiscreteNodeIndex() {
-		return cgDiscreteNodeIndex;
+	public Node getCgContinuousNodeDiscreteParentNode(int discreteParentIndex) {
+		return cgContinuousNodeDiscreteParentNodes[discreteParentIndex];
 	}
 
-	public Map<Node, Integer> getCgDiscreteNodeDiscreteParentNodeIndex() {
-		return cgDiscreteNodeDiscreteParentNodeIndex;
-	}
-
-	public Map<Node, Integer> getCgDiscreteNodeContinuousParentNodeIndex() {
-		return cgDiscreteNodeContinuousParentNodeIndex;
-	}
-
-	public Node[] getCgContinuousNodeDiscreteParentNodes() {
-		return cgContinuousNodeDiscreteParentNodes;
-	}
-
-	public Node[] getCgContinuousNodeContinuousParentNodes() {
-		return cgContinuousNodeContinuousParentNodes;
-	}
-
-	public Map<Node, Integer> getCgContinuousNodeIndex() {
-		return cgContinuousNodeIndex;
-	}
-
-	public Map<Node, Integer> getCgContinuousNodeDiscreteParentNodeIndex() {
-		return cgContinuousNodeDiscreteParentNodeIndex;
-	}
-
-	public Map<Node, Integer> getCgContinuousNodeContinuousParentNodeIndex() {
-		return cgContinuousNodeContinuousParentNodeIndex;
+	public Node getCgContinuousNodeContinuousParentNode(int continuousParentIndex) {
+		return cgContinuousNodeContinuousParentNodes[continuousParentIndex];
 	}
 
 }

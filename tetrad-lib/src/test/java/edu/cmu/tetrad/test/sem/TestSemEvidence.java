@@ -19,20 +19,17 @@
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA //
 ///////////////////////////////////////////////////////////////////////////////
 
-package edu.cmu.tetrad.test;
+package edu.cmu.tetrad.test.sem;
 
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphNode;
 import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.sem.SemEvidence;
 import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemPm;
-import edu.cmu.tetrad.sem.SemProposition;
 import org.junit.Test;
 
-import java.util.List;
-
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 /**
@@ -41,27 +38,17 @@ import static org.junit.Assert.assertTrue;
  *
  * @author Joseph Ramsey
  */
-public class TestSemProposition {
+public class TestSemEvidence {
 
     @Test
-    public void testEvidence() {
+    public void testSemEvidence() {
         Graph graph = constructGraph1();
         SemPm semPm = new SemPm(graph);
         SemIm semIm = new SemIm(semPm);
-        List nodes = semIm.getVariableNodes();
+        SemEvidence evidence = new SemEvidence(semIm);
 
-        SemProposition proposition = SemProposition.tautology(semIm);
-
-        for (int i = 0; i < semIm.getVariableNodes().size(); i++) {
-            assertTrue(Double.isNaN(proposition.getValue(i)));
-        }
-
-        proposition.setValue(1, 0.5);
-        assertEquals(0.5, proposition.getValue(1), 0.0);
-
-        Node node4 = (Node) nodes.get(3);
-        proposition.setValue(node4, 0.7);
-        assertEquals(0.7, proposition.getValue(node4), 0.0);
+        evidence.setManipulated(1, true);
+        assertTrue(evidence.isManipulated(1));
     }
 
     private Graph constructGraph1() {

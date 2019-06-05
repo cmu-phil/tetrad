@@ -766,6 +766,10 @@ public final class StatUtils {
     public static double sd(double array[]) {
         return sd(array, array.length);
     }
+    
+    public static double sd(TetradVector vector, int N) {
+    	return sd(vector.toArray(), N);
+    }
 
     /**
      * @param array a long array.

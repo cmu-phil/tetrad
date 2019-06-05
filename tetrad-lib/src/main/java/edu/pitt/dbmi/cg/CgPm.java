@@ -6,20 +6,23 @@ package edu.pitt.dbmi.cg;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
 import edu.cmu.tetrad.bayes.BayesPm;
 import edu.cmu.tetrad.data.ContinuousVariable;
+import edu.cmu.tetrad.data.DataUtils;
 import edu.cmu.tetrad.data.DiscreteVariable;
 import edu.cmu.tetrad.graph.Dag;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.NodeType;
 import edu.cmu.tetrad.sem.ParamType;
-import edu.cmu.tetrad.sem.Parameter;
 import edu.cmu.tetrad.sem.SemPm;
 import edu.cmu.tetrad.util.PM;
+import edu.cmu.tetrad.util.RandomUtil;
 import edu.cmu.tetrad.util.TetradSerializable;
 import edu.cmu.tetrad.util.dist.Normal;
 import edu.cmu.tetrad.util.dist.Split;
@@ -40,6 +43,9 @@ public final class CgPm implements PM, TetradSerializable {
     private BayesPm bayesPm;
     
     private SemPm semPm;
+    
+    private int discreteLowerBound = 3;
+    private int discreteUpperBound = 3;
 
     // All discrete nodes
     private Map<Node, DiscreteVariable> discreteNodesToVariables = new HashMap<>();
@@ -56,9 +62,9 @@ public final class CgPm implements PM, TetradSerializable {
      *
      * @serial Cannot be null.
      */
-    private List<CgParameter> cgDiscreteNodesParameters;
+    private List<CgParameter> cgDiscreteNodeParameters;
 
-    private List<CgParameter> cgContinuousNodesParameters;
+    private List<CgParameter> cgContinuousNodeParameters;
 
     /**
      * The index of the most recent "cgT" parameter. (These are variance and
@@ -93,6 +99,24 @@ public final class CgPm implements PM, TetradSerializable {
 		this.graph = cgPm.getGraph();
 		initializeNodes(graph);
 		initializeParams();
+	}
+
+	public CgPm(Graph graph, int discreteLowerBound, int discreteUpperBound) {
+		this.graph = graph;
+		this.discreteLowerBound = discreteLowerBound;
+		this.discreteUpperBound = discreteUpperBound;
+		initializeNodes(graph);
+        initializeParams();
+        initializeDiscreteValues(discreteLowerBound, discreteUpperBound);
+	}
+	
+	public CgPm(CgPm cgPm, int discreteLowerBound, int discreteUpperBound) {
+		this.graph = cgPm.getGraph();
+		this.discreteLowerBound = discreteLowerBound;
+		this.discreteUpperBound = discreteUpperBound;
+		initializeNodes(graph);
+		initializeParams();
+        initializeDiscreteValues(discreteLowerBound, discreteUpperBound);
 	}
 
 	private void initializeNodes(Graph graph) {
@@ -154,18 +178,18 @@ public final class CgPm implements PM, TetradSerializable {
         Graph contGraph = graph.subgraph(contNodes);
         Graph discGraph = graph.subgraph(discNodes);
         
-        this.bayesPm = new BayesPm(discGraph);
+        this.bayesPm = new BayesPm(discGraph, discreteLowerBound, discreteUpperBound);
         this.semPm = new SemPm(contGraph);
 	}
 	
 	private void initializeParams() {
 		// Initialize Discrete Children with Mixed Parents
-		initializeDiscreteChildrenParams();
+		initializeCgDiscreteNodeParams();
 		// Initialize Continuous Children with Mixed Parents
-		initializeContinuousChildrenParams();
+		initializeCgContinuousNodeParams();
 	}
 	
-	private void initializeDiscreteChildrenParams() {
+	private void initializeCgDiscreteNodeParams() {
 		
 		List<CgParameter> parameters = new ArrayList<>();
 		
@@ -192,7 +216,7 @@ public final class CgPm implements PM, TetradSerializable {
 				}
 			}
 			
-			int numChildCategories = getNumCategories(node);
+			int numChildCategories = getDiscreteNumCategories(node);
 			
 			for(int i=0;i<numChildCategories;i++) {
 				for(int j=0;j<numConditionalCases;j++) {
@@ -201,7 +225,7 @@ public final class CgPm implements PM, TetradSerializable {
 			            mean.setDistribution(new Normal(0.0, 1.0));
 			            parameters.add(mean);
 			            
-			            CgParameter param = new CgParameter(newTName(), ParamType.VAR, parentNode, node, i, j);
+			            CgParameter param = new CgParameter(newTName(), ParamType.COVAR, parentNode, node, i, j);
 			            param.setDistribution(new Uniform(1.0, 3.0));
 			            parameters.add(param);
 					}
@@ -210,10 +234,10 @@ public final class CgPm implements PM, TetradSerializable {
 			
 		}
 		
-		this.cgDiscreteNodesParameters = Collections.unmodifiableList(parameters);
+		this.cgDiscreteNodeParameters = Collections.unmodifiableList(parameters);
 	}
 	
-	private void initializeContinuousChildrenParams() {
+	private void initializeCgContinuousNodeParams() {
 		
 		List<CgParameter> parameters = new ArrayList<>();
 		
@@ -254,12 +278,18 @@ public final class CgPm implements PM, TetradSerializable {
 			
 		}
 		
-		this.cgContinuousNodesParameters = Collections.unmodifiableList(parameters);
+		this.cgContinuousNodeParameters = Collections.unmodifiableList(parameters);
 	}
 	
-	public CgParameter getContinuousCoefficientParameter(Node nodeA, Node nodeB, int conditionalCase) {
+    public void initializeDiscreteValues(int discreteLowerBound, int discreteUpperBound) {
+    	for(Node node : discreteNodesToVariables.keySet()) {
+    		setDiscreteNewValues(node, discreteLowerBound, discreteUpperBound);
+    	}
+    }
+    
+	public CgParameter getCgContinuousCoefficientParameter(Node nodeA, Node nodeB, int conditionalCase) {
 
-		for(CgParameter parameter : this.cgContinuousNodesParameters) {
+		for(CgParameter parameter : this.cgContinuousNodeParameters) {
 			Node _nodeA = parameter.getNodeA();
             Node _nodeB = parameter.getNodeB();
             int caseNo = parameter.getConditionalCaseNo();
@@ -273,12 +303,12 @@ public final class CgPm implements PM, TetradSerializable {
 		return null;
 	}
 	
-	public CgParameter getContinuousVarianceParameter(Node node, int conditionalCase) {
+	public CgParameter getCgContinuousVarianceParameter(Node node, int conditionalCase) {
 		if(node.getNodeType() == NodeType.ERROR) {
 			node = getGraph().getChildren(node).get(0);
 		}
 		
-		for(CgParameter parameter : this.cgContinuousNodesParameters) {
+		for(CgParameter parameter : this.cgContinuousNodeParameters) {
 			Node _nodeA = parameter.getNodeA();
 			Node _nodeB = parameter.getNodeB();
 			int caseNo = parameter.getConditionalCaseNo();
@@ -292,10 +322,10 @@ public final class CgPm implements PM, TetradSerializable {
 		return null;
 	}
 	
-	public List<CgParameter> getContinuousFreeParameters(){
+	public List<CgParameter> getCgContinuousFreeParameters(){
 		List<CgParameter> freeParameters = new ArrayList<>();
 		
-		for(CgParameter parameter : this.cgContinuousNodesParameters) {
+		for(CgParameter parameter : this.cgContinuousNodeParameters) {
 			ParamType type = parameter.getType();
 			
 			if (type == ParamType.VAR || type == ParamType.COVAR || type == ParamType.COEF) {
@@ -308,14 +338,14 @@ public final class CgPm implements PM, TetradSerializable {
 		return freeParameters;
 	}
 	
-	public CgParameter getDiscreteVarianceParameter(Node nodeA, Node nodeB, int childCategoryNo, int conditionalCaseNo){
-		for(CgParameter parameter : this.cgDiscreteNodesParameters) {
+	public CgParameter getCgDiscreteVarianceParameter(Node nodeA, Node nodeB, int childCategoryNo, int conditionalCaseNo){
+		for(CgParameter parameter : this.cgDiscreteNodeParameters) {
 			Node _nodeA = parameter.getNodeA();
             Node _nodeB = parameter.getNodeB();
             int cateNo = parameter.getChildCategoryNo();
             int caseNo = parameter.getConditionalCaseNo();
 
-            if (nodeA == _nodeA && nodeB == _nodeB && parameter.getType() == ParamType.VAR && 
+            if (nodeA == _nodeA && nodeB == _nodeB && parameter.getType() == ParamType.COVAR && 
             		cateNo == childCategoryNo && conditionalCaseNo == caseNo) {
             	return parameter;
             }
@@ -324,10 +354,10 @@ public final class CgPm implements PM, TetradSerializable {
 		return null;
 	}
 	
-	public List<CgParameter> getDiscreteFreeParameters(){
+	public List<CgParameter> getCgDiscreteFreeParameters(){
 		List<CgParameter> freeParameters = new ArrayList<>();
 		
-		for(CgParameter parameter : this.cgDiscreteNodesParameters) {
+		for(CgParameter parameter : this.cgDiscreteNodeParameters) {
 			ParamType type = parameter.getType();
 			
 			if (type == ParamType.VAR || type == ParamType.COVAR || type == ParamType.COEF) {
@@ -411,7 +441,17 @@ public final class CgPm implements PM, TetradSerializable {
 
         for (Node node : getCgContinuousVariableNodes()) {
             if (node.getNodeType() == NodeType.LATENT) {
-                latentNodes.add(node);
+            	if(!latentNodes.contains(node)) {
+                    latentNodes.add(node);
+            	}
+            }
+        }
+
+        for (Node node : getCgDiscreteVariableNodes()) {
+            if (node.getNodeType() == NodeType.LATENT) {
+            	if(!latentNodes.contains(node)) {
+                    latentNodes.add(node);
+            	}
             }
         }
 
@@ -419,17 +459,17 @@ public final class CgPm implements PM, TetradSerializable {
     }
 
 	public List<CgParameter> getCgDiscreteNodesParameters() {
-		return cgDiscreteNodesParameters;
+		return cgDiscreteNodeParameters;
 	}
 
 	public List<CgParameter> getCgContinuousNodesParameters() {
-		return cgContinuousNodesParameters;
+		return cgContinuousNodeParameters;
 	}
 	
     /**
      * @return the number of values for the given node.
      */
-    public int getNumCategories(Node node) {
+    public int getDiscreteNumCategories(Node node) {
         DiscreteVariable variable = discreteNodesToVariables.get(node);
 
         if (variable == null) {
@@ -439,4 +479,123 @@ public final class CgPm implements PM, TetradSerializable {
         return variable.getNumCategories();
     }
 	
+    /**
+     * @return the index'th value for the given node.
+     */
+    public String getDiscreteCategory(Node node, int index) {
+        DiscreteVariable variable = discreteNodesToVariables.get(node);
+
+        if (variable != null) {
+            return variable.getCategory(index);
+        }
+
+        for (DiscreteVariable _node : discreteNodesToVariables.values()) {
+            if (_node == null) {
+                continue;
+            }
+
+            if (_node.getName().equals(node.getName())) {
+                return _node.getCategory(index);
+            }
+        }
+
+        throw new IllegalStateException();
+    }
+
+    /**
+     * @return the index of the given category for the given node.
+     */
+    public int getDiscreteCategoryIndex(Node node, String category) {
+        DiscreteVariable variable = discreteNodesToVariables.get(node);
+        return variable.getIndex(category);
+    }
+
+    /**
+     * Sets the number of values for the given node to the given number.
+     */
+    public void setDiscreteNumCategories(Node node, int numCategories) {
+        if (!discreteNodesToVariables.containsKey(node)) {
+            throw new IllegalArgumentException("Node not in CgPm: " + node);
+        }
+
+        if (numCategories < 1) {
+            throw new IllegalArgumentException(
+                    "Number of categories must be >= 1: " + numCategories);
+        }
+
+        DiscreteVariable variable = discreteNodesToVariables.get(node);
+
+        List<String> oldCategories = variable.getCategories();
+        List<String> newCategories = new LinkedList<>();
+        int min = Math.min(numCategories, oldCategories.size());
+
+        for (int i = 0; i < min; i++) {
+            newCategories.add(oldCategories.get(i));
+        }
+
+        for (int i = min; i < numCategories; i++) {
+            String proposedName = DataUtils.defaultCategory(i);
+
+            if (newCategories.contains(proposedName)) {
+                throw new IllegalArgumentException("Default name already in " +
+                        "list of categories: " + proposedName);
+            }
+
+            newCategories.add(proposedName);
+        }
+
+        mapDiscreteNodeToVariable(node, newCategories);
+    }
+
+    public void setDiscreteCategories(Node node, List<String> categories) {
+    	mapDiscreteNodeToVariable(node, categories);
+    }
+    
+    private void setDiscreteNewValues(Node node, int lowerBound, int upperBound) {
+        if (node == null) {
+            throw new NullPointerException("Node must not be null.");
+        }
+
+        List<String> valueList = new ArrayList<>();
+
+        for (int i = 0; i < pickDiscreteNumVals(lowerBound, upperBound); i++) {
+            valueList.add(DataUtils.defaultCategory(i));
+        }
+
+        mapDiscreteNodeToVariable(node, valueList);
+    }
+    
+    private void mapDiscreteNodeToVariable(Node node, List<String> categories) {
+        if (categories.size() != new HashSet<>(categories).size()) {
+            throw new IllegalArgumentException("Duplicate variable names.");
+        }
+
+        DiscreteVariable variable =
+                new DiscreteVariable(node.getName(), categories);
+
+        variable.setNodeType(node.getNodeType());
+        
+        this.discreteNodesToVariables.put(node, variable);
+        
+        if(this.bayesPm.getDag().getNodes().contains(node)) {
+        	this.bayesPm.setCategories(node, categories);
+        }
+    }
+
+    private static int pickDiscreteNumVals(int lowerBound, int upperBound) {
+        if (lowerBound < 2) {
+            throw new IllegalArgumentException(
+                    "Lower bound must be >= 2: " + lowerBound);
+        }
+
+        if (upperBound < lowerBound) {
+            throw new IllegalArgumentException(
+                    "Upper bound for number of categories must be >= lower " + "bound.");
+        }
+
+        int difference = upperBound - lowerBound;
+        RandomUtil randomUtil = RandomUtil.getInstance();
+        return randomUtil.nextInt(difference + 1) + lowerBound;
+    }
+
 }
