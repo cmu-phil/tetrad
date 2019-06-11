@@ -154,6 +154,11 @@
             <version>1.11.2</version>
         </dependency>
 
+        <dependency>
+            <groupId>edu.pitt.dbmi</groupId>
+            <artifactId>data-reader</artifactId>
+            <version>${project.version}</version>
+        </dependency>
     </dependencies>
 
     <!--<distributionManagement> -->

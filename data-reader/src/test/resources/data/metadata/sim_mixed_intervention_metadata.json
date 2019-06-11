@@ -1,0 +1,25 @@
+{
+  "domains" : [ {
+    "name" : "X3",
+    "discrete" : false
+  }, {
+    "name" : "X5",
+    "discrete" : true
+  } ],
+  "interventions" : [ {
+    "value" : {
+      "name" : "X9",
+      "discrete" : true
+    },
+    "status" : {
+      "name" : "X10",
+      "discrete" : false
+    }
+  }, {
+    "value" : {
+      "name" : "X8",
+      "discrete" : false
+    },
+    "status" : null
+  } ]
+}
