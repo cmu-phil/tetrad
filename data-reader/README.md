@@ -4,20 +4,6 @@
 
 This data reader was created to handle large size data files for efficient data loading. It reads data from a file as bytes using native file I/O instead of using the Java file handling API. In addition, it also packaged with data validation and other useful utilities.
 
-In this new release, we also added metadata file handling and we'll describe it later.
-
-In order to use this data reader as a dependency in your project, you'll first need to build the data reader with `mvn clean install` and then add the following config to your `pom.xml` file:
-
-````xml
-<dependency>
-    <groupId>edu.pitt.dbmi</groupId>
-    <artifactId>data-reader</artifactId>
-    <version>1.1.0</version>
-</dependency>
-````
-
-Currently, CMU's [Tetrad](https://github.com/cmu-phil/tetrad) project uses this data reader to handle the data validation and loading in their GUI application. Our [causal-cmd](https://github.com/bd2kccd/causal-cmd) command line tool also uses it.
-
 ## General Tabular Data Reading
 
 The usage of data reader is based on the target file type: Tabular or Covariance. For tabular data, you should choose the right class based on the data type: continuous, discrete, or mixed. 
