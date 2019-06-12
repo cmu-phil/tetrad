@@ -10,6 +10,7 @@
     <modules>
         <module>tetrad-gui</module>
         <module>tetrad-lib</module>
+        <module>data-reader</module>
     </modules>
 
     <licenses>
@@ -122,19 +123,14 @@
 
     <dependencies>
         <dependency>
-            <groupId>edu.pitt.dbmi</groupId>
-            <artifactId>data-reader</artifactId>
-            <version>1.1.0</version>
-        </dependency>
-        <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-log4j12</artifactId>
-            <version>1.7.19</version>
+            <version>1.7.26</version>
         </dependency>
         <dependency> <!--For java annotations used by annotated algorithms-->
             <groupId>org.reflections</groupId>
             <artifactId>reflections</artifactId>
-            <version>0.9.10</version>
+            <version>0.9.11</version>
         </dependency>
         <dependency>
             <groupId>de.bwaldvogel</groupId>
