@@ -1,4 +1,4 @@
-# Data Reader v1.1.0
+# Data Reader
 
 ## Introduction
 
