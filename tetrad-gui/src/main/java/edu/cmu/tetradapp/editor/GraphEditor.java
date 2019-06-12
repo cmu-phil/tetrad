@@ -60,6 +60,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -96,6 +97,13 @@ import javax.swing.event.InternalFrameEvent;
 public final class GraphEditor extends JPanel implements GraphEditable, LayoutEditable, IndTestProducer {
 
     private static final long serialVersionUID = 5123725895449927539L;
+
+    private final static Set<String> EVENTS = new HashSet<>(Arrays.asList(
+            "graph",
+            "edgeAdded",
+            "edgeRemoved",
+            "nodeRemoved"
+    ));
 
     private GraphWorkbench workbench;
     private final Parameters parameters;
@@ -241,11 +249,7 @@ public final class GraphEditor extends JPanel implements GraphEditable, LayoutEd
 
         workbench.addPropertyChangeListener((PropertyChangeEvent evt) -> {
             String propertyName = evt.getPropertyName();
-
-            // Update the bootstrap table if there's changes to the edges or node renaming
-            String[] events = {"graph", "edgeAdded", "edgeRemoved"};
-
-            if (Arrays.asList(events).contains(propertyName)) {
+            if (EVENTS.contains(propertyName)) {
                 if (getWorkbench() != null) {
                     Graph targetGraph = (Graph) getWorkbench().getGraph();
 
