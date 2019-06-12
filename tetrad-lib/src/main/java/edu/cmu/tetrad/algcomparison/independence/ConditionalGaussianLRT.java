@@ -7,6 +7,7 @@ import edu.cmu.tetrad.data.DataUtils;
 import edu.cmu.tetrad.search.IndTestConditionalGaussianLRT;
 import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.util.Parameters;
+import edu.cmu.tetrad.util.Params;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -28,9 +29,9 @@ public class ConditionalGaussianLRT implements IndependenceWrapper {
     public IndependenceTest getTest(DataModel dataSet, Parameters parameters) {
         final IndTestConditionalGaussianLRT test
                 = new IndTestConditionalGaussianLRT(DataUtils.getMixedDataSet(dataSet),
-                        parameters.getDouble("alpha"),
-                        parameters.getBoolean("discretize"));
-        test.setNumCategoriesToDiscretize(parameters.getInt("numCategoriesToDiscretize"));
+                        parameters.getDouble(Params.ALPHA),
+                        parameters.getBoolean(Params.DISCRETIZE));
+        test.setNumCategoriesToDiscretize(parameters.getInt(Params.NUM_CATEGORIES_TO_DISCRETIZE));
         return test;
     }
 
@@ -47,8 +48,8 @@ public class ConditionalGaussianLRT implements IndependenceWrapper {
     @Override
     public List<String> getParameters() {
         List<String> parameters = new ArrayList<>();
-        parameters.add("alpha");
-        parameters.add("discretize");
+        parameters.add(Params.ALPHA);
+        parameters.add(Params.DISCRETIZE);
         return parameters;
     }
 

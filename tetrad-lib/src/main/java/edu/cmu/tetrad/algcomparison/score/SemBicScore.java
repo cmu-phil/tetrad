@@ -4,6 +4,7 @@ import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.Score;
 import edu.cmu.tetrad.util.Parameters;
+import edu.cmu.tetrad.util.Params;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -32,7 +33,7 @@ public class SemBicScore implements ScoreWrapper {
 
         edu.cmu.tetrad.search.SemBicScore semBicScore
                 = new edu.cmu.tetrad.search.SemBicScore(cov);
-        double penaltyDiscount = parameters.getDouble("penaltyDiscount");
+        double penaltyDiscount = parameters.getDouble(Params.PENALTY_DISCOUNT);
         this.penaltyDiscount = penaltyDiscount;
         semBicScore.setPenaltyDiscount(penaltyDiscount);
         return semBicScore;
@@ -51,7 +52,7 @@ public class SemBicScore implements ScoreWrapper {
     @Override
     public List<String> getParameters() {
         List<String> parameters = new ArrayList<>();
-        parameters.add("penaltyDiscount");
+        parameters.add(Params.PENALTY_DISCOUNT);
         return parameters;
     }
 
