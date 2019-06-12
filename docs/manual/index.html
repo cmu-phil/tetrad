@@ -19,7 +19,7 @@
 
     <div class="header">
         <h1>Tetrad Manual</h1>
-        <p>Last updated: May 8th, 2019</p>
+        <p>Last updated: June 11th, 2019</p>
     </div>
 
     <!-- Table of Contents, give each section a unique id -->
@@ -2946,6 +2946,18 @@ there is a single latent for each output cluster. For MimBuild, a pattern over t
     
     <h2>Statistical Tests</h2>
 
+    <h3>BDeu Test</h3>
+
+    <div id="bdeu-test">
+    <p>
+        This is the BDeu score given in Heckerman, D., Geiger, D., & Chickering, D. M. (1995). Learning Bayesian networks: The combination of knowledge and statistical data. <i>Machine learning, 20</i>(3), 197-243, used as a test. This gives a score for any two variables conditioned on any list of others which is more positive for distributions which are more strongly dependent. The test for X _||_ Y | Z compares two different models, X conditional on Y, and X conditional on Y and Z; the scores for the two models are subtracted, in that order. If the difference is negative, independence is inferred.
+    </p>
+    </div>
+
+    <h4>Parameters</h4>
+
+    <p><a href="#samplePrior">samplePrior</a>, <a href="#structurePrior">structurePrior</a></p>
+    
     <h3>Fisher Z Test</h3>
 
     <div id="fisher-z-test">
@@ -2978,6 +2990,46 @@ there is a single latent for each output cluster. For MimBuild, a pattern over t
 
     <p><a href="#alpha">alpha</a>, <a href="#numBasisFunctions">numBasisFunctions</a>, <a href="#kernelType">kernelType</a>, <a href="#kernelMultiplier">kernelMultiplier</a>, <a href="#basisType">basisType</a>, <a href="#fastFDR">fastFDR</a>, <a href="#kernelRegressionSampleSize">kernelRegressionSampleSize</a>, <a href="#numDependenceSpotChecks">numDependenceSpotChecks</a></p>
 
+    <h3>Chi Square Test</h3>
+
+    <div id="chi-square-test">
+    <p>
+    This is the usual Chi-Square test for discrete variables; consult an introductory statistics book for details for the unconditional case, where you're just trying, e.g., to determine if X and Y are independent. For the conditional case, the test proceeds as in Fienberg, S. E. (2007). <i>The analysis of cross-classified categorical data</i>. Springer Science & Business Media, by identifying and removing from consideration zero rows or columns in the conditional tables and judging dependence based on the remaining rows and columns.
+    </p>
+    </div>
+
+    <h4>Parameters</h4>
+
+    <p><a href="#alpha">alpha</a></p>
+    
+    <h3>D-Separation Test</h3>
+
+    <div id="d-sep-test">
+    <p>
+    This is the usual test of d-separation, a property of graphs, not distributions. It's not really a test, but it can be used in place of a test of the true graph is known. This is a way to find out, for constraint-based algorithms, or even for some score-based algorithms like FGES, what answer the algorithm would give if all of the statistical decisions made are correct. Just draw an edge from the true graph to the algorithm--the d-separation option will appear, and you can then just run the search as usual.
+    </p>
+    </div>
+    
+    <h3>Discrete BIC Test</h3>
+
+    <div id="disc-bic-test">
+    <p>
+    This is just the BIC score for the discrete case, used as a test. The likelihood is judged by the multinomial tables directly, and this is penalized as is usual for a BIC score. The only surprising thing perhaps is that we use the formula BIC = 2L - k ln N, where L is the likelihood, k the number of parameters, and N the sample size, instead of the usual L + k / 2 ln N. So higher BIC scores will correspond to greater dependence. In the case of independence, the BIC score will be negative, since the likelihood will be zero, and this will be penalized.  The test yields a p-value; we simply use alpha - p as the score, where alpha is the cutoff for rejecting the null hypothesis of independence. This is a number that is positive for dependent cases and negative for independent cases.
+    </p>
+    </div>
+
+    <h3>G Square Test</h3>
+
+    <div id="g-square-test">
+    <p>
+        This is completely parallel to the Chi-Square statistic, using a slightly different method for estimating the statistic. The alternative statistic is still distributed as chi-square in the limit. In practice, this statistic is more or less indistinguishable in most cases from Chi-Square. For an explanation, see Spirtes, P., Glymour, C. N., Scheines, R., Heckerman, D., Meek, C., Cooper, G., & Richardson, T. (2000). <i>Causation, prediction, and search</i>. MIT press.
+    </p>
+    </div>
+
+    <h4>Parameters</h4>
+
+    <p><a href="#alpha">alpha</a></p>
+    
     <h3>Kernel Conditional Independence (KCI) Test</h3>
 
     <div id="kci-test">
@@ -3023,16 +3075,18 @@ there is a single latent for each output cluster. For MimBuild, a pattern over t
     
     <h2>Scoring Functions</h2>
 
-    <h3>SEM BIC Score</h3>
+    <h3>BDeu Score</h3>
 
-    <div id="sem-bic-score">
-    <p>SEM BIC Score calculates a linear, Gaussian BIC score.</p>
+    <div id="bdeu-score">
+    <p>
+    This is the BDeu score given in Heckerman, D., Geiger, D., & Chickering, D. M. (1995). Learning Bayesian networks: The combination of knowledge and statistical data. <i>Machine learning, 20</i>(3), 197-243. This gives a score for any two variables conditioned on any list of others which is more positive for distributions which are more strongly dependent.
+    </p>
     </div>
 
     <h4>Parameters</h4>
 
-    <p><a href="#alpha">alpha</a></p>
-
+    <p><a href="#samplePrior">samplePrior</a>, <a href="#structurePrior">structurePrior</a></p>
+    
     <h3>Conditional Gaussian BIC Score</h3>
 
     <div id="cg-bic-score">
@@ -3053,7 +3107,33 @@ there is a single latent for each output cluster. For MimBuild, a pattern over t
 
     <p><a href="#cciScoreAlpha">cciScoreAlpha</a>, <a href="#numBasisFunctions">numBasisFunctions</a>, <a href="#kernelType">kernelType</a>, <a href="#kernelMultiplier">kernelMultiplier</a>, <a href="#basisType">basisType</a>, <a href="#fastFDR">fastFDR</a>, <a href="#kernelRegressionSampleSize">kernelRegressionSampleSize</a>, <a href="#numDependenceSpotChecks">numDependenceSpotChecks</a></p>
 
+    <h3>D-separation Score</h3>
 
+    <div id="d-sep-score">
+    <p>
+    This uses d-separation to make something that acts as a score if you know the true graph. A score in Tetrad, for FGES, say, is a function that for X and Y conditional on Z, returns a negative number if X _||_ Y | Z and a positive number otherwise. So to get this behavior in no u certain terms, we simply return -1 for independent cases and +1 for dependent cases. Works like a charm. This can be used for FGES to check what the ideal behavior of the algorithm should be. Simply draw an edge from the true graph to the search box, select FGES, and search as usual.
+    </p>
+    </div>
+
+    <h3>Discrete BIC Score</h3>
+
+    <div id="disc-bic-score">
+    <p>
+    This is just the BIC score for the discrete case. The likelihood is judged by the multinomial tables directly, and this is penalized as is usual for a BIC score. The only surprising thing perhaps is that we use the formula BIC = 2L - k ln N, where L is the likelihood, k the number of parameters, and N the sample size, instead of the usual L + k / 2 ln N. So higher BIC scores will correspond to greater dependence. In the case of independence, the BIC score will be negative, since the likelihood will be zero, and this will be penalized.
+    </p>
+    </div>
+    
+    <h3>SEM BIC Score</h3>
+
+    <div id="sem-bic-score">
+    <p>
+    This is specifically a BIC score for the linear, Gaussian case, where we include an additional penalty term, which is commonly used. We call this the <i>penalty discount</i>. So our formulas has BIC = 2L - ck log N, where L is the likelihood, c the penalty discount (usually greater than or equal to 1), and N the sample size. Since the assumption is that the data are distributed as Gaussian, this reduces to BIC = -n log sigma - ck ln N, where sigma is the standard deviation of the linear residual obtained by regressing a child variable onto all of its parents in the model.
+    </p>
+    </div>
+
+    <h4>Parameters</h4>
+
+    <p><a href="#penaltyDiscount">penaltyDiscount</a></p>
 
 
     <div id="parameters">
