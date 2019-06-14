@@ -22,6 +22,8 @@
 package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.*;
+import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.*;
 import org.apache.commons.math3.distribution.NormalDistribution;
@@ -48,6 +50,8 @@ public final class IndTestFisherZ implements IndependenceTest {
      * The covariance matrix.
      */
     private final ICovarianceMatrix covMatrix;
+    private IndTestDSep dsep = null;
+    private Graph trueGraph = null;
 
 //    /**
 //     * The matrix out of the cov matrix.
@@ -117,6 +121,28 @@ public final class IndTestFisherZ implements IndependenceTest {
         this.dataSet = dataSet;
     }
 
+    public IndTestFisherZ(Graph trueGraph, DataSet dataSet, double alpha) {
+        if (!(dataSet.isContinuous())) {
+            throw new IllegalArgumentException("Data set must be continuous.");
+        }
+
+        if (!(alpha >= 0 && alpha <= 1)) {
+            throw new IllegalArgumentException("Alpha mut be in [0, 1]");
+        }
+
+        this.covMatrix = new CovarianceMatrixOnTheFly(dataSet);
+        List<Node> nodes = covMatrix.getVariables();
+
+        this.variables = Collections.unmodifiableList(nodes);
+        this.indexMap = indexMap(variables);
+        this.nameMap = nameMap(variables);
+        setAlpha(alpha);
+
+        this.dataSet = dataSet;
+        this.trueGraph = trueGraph;
+
+        this.dsep = new IndTestDSep(trueGraph);
+    }
     /**
      * Constructs a new Fisher Z independence test with  the listed arguments.
      *
@@ -143,6 +169,15 @@ public final class IndTestFisherZ implements IndependenceTest {
         this.indexMap = indexMap(variables);
         this.nameMap = nameMap(variables);
         setAlpha(alpha);
+    }
+
+    public IndTestFisherZ(Graph trueGraph, ICovarianceMatrix covMatrix, double alpha) {
+        this.covMatrix = covMatrix;
+        this.variables = covMatrix.getVariables();
+        this.indexMap = indexMap(variables);
+        this.nameMap = nameMap(variables);
+        setAlpha(alpha);
+        this.trueGraph = trueGraph;
     }
 
     //==========================PUBLIC METHODS=============================//
@@ -199,7 +234,11 @@ public final class IndTestFisherZ implements IndependenceTest {
         this.fisherZ = fisherZ;
         this.rho = r;
 
-        return Math.abs(fisherZ) < cutoff;
+        final boolean independent = abs(fisherZ) < cutoff;
+
+        System.out.println((dsep.isIndependent(x, y, z) ? 0 : 1) + "\t" + (independent ? 0 : 1));
+
+        return independent;
     }
 
     private double partialCorrelation(Node x, Node y, List<Node> z) throws SingularMatrixException {

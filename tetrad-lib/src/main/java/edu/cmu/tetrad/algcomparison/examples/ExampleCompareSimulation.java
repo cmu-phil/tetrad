@@ -31,7 +31,10 @@ import edu.cmu.tetrad.algcomparison.score.SemBicScore;
 import edu.cmu.tetrad.algcomparison.simulation.SemSimulation;
 import edu.cmu.tetrad.algcomparison.simulation.Simulations;
 import edu.cmu.tetrad.algcomparison.statistic.*;
+import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.util.Parameters;
+import edu.cmu.tetrad.util.RandomUtil;
+import org.apache.commons.lang3.RandomUtils;
 
 /**
  * An example script to simulate data and run a comparison analysis on it.
@@ -40,13 +43,16 @@ import edu.cmu.tetrad.util.Parameters;
  */
 public class ExampleCompareSimulation {
     public static void main(String... args) {
+        RandomUtil.getInstance().setSeed(49394923849234L);
+
         Parameters parameters = new Parameters();
         https://arxiv.org/abs/1607.08110
-        parameters.set("numRuns", 10);
-        parameters.set("numMeasures", 100);
-        parameters.set("avgDegree", 4, 6);
-        parameters.set("sampleSize", 500);
-        parameters.set("alpha", 1e-4, 1e-3, 1e-2);
+        parameters.set("numRuns", 1);
+        parameters.set("numMeasures", 10);
+        parameters.set("avgDegree", 2);
+        parameters.set("sampleSize", 5000);
+        parameters.set("alpha", .000001);
+        parameters.set("verbose", false);
 
         Statistics statistics = new Statistics();
 
@@ -66,14 +72,22 @@ public class ExampleCompareSimulation {
 
         Algorithms algorithms = new Algorithms();
 
-        algorithms.add(new Pc(new FisherZ()));
-        algorithms.add(new Cpc(new FisherZ(), new Fges(new SemBicScore(), false)));
-        algorithms.add(new PcStable(new FisherZ()));
-        algorithms.add(new CpcStable(new FisherZ()));
+//        algorithms.add(new Pc(new FisherZ()));
+//        algorithms.add(new Cpc(new FisherZ(), new Fges(new SemBicScore(), false)));
+//        algorithms.add(new PcStable(new FisherZ()));
+//        algorithms.add(new CpcStable(new FisherZ()));
 
         Simulations simulations = new Simulations();
 
-        simulations.add(new SemSimulation(new RandomForward()));
+        final SemSimulation simulation = new SemSimulation(new RandomForward());
+        simulation.createData(parameters);
+        Graph graph = simulation.getTrueGraph(0);
+        FisherZ test = new FisherZ();
+        test.setInitialGraph(graph);
+
+        algorithms.add(new Pc(test));
+
+        simulations.add(simulation);
 
         Comparison comparison = new Comparison();
 
@@ -83,7 +97,7 @@ public class ExampleCompareSimulation {
         comparison.setShowUtilities(true);
         comparison.setParallelized(true);
 
-        comparison.compareFromSimulations("comparison", simulations, algorithms, statistics, parameters);
+        comparison.compareFromSimulations("comparison-lozada", simulations, algorithms, statistics, parameters);
     }
 }
 

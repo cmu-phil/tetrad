@@ -138,6 +138,13 @@ public class IndTestDSep implements IndependenceTest {
             }
         }
 
+        x = graph.getNode(x.getName());
+        y = graph.getNode(y.getName());
+
+        for (int i = 0; i < z.size(); i++) {
+            z.set(i, graph.getNode(z.get(i).getName()));
+        }
+
         if (!observedVars.contains(x)) {
             throw new IllegalArgumentException("Not an observed variable: " + x);
         }
