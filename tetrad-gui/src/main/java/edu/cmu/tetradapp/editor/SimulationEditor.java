@@ -196,6 +196,7 @@ public final class SimulationEditor extends JPanel implements KnowledgeEditable,
                 tabbedPane.setComponentAt(2, new DataEditor(wrapper, false, JTabbedPane.LEFT));
 
                 showTab();
+                firePropertyChange("modelChanged", null, null);
                 break;
             case "refreshParameters":
                 showTab();
