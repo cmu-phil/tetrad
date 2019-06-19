@@ -87,7 +87,7 @@ public final class ParamDescriptions {
                     }
 
                     if (!valueType.equals(VALUE_TYPE_STRING) && defaultValue.equals("")) {
-                        System.out.println("Invalida default value of parameter: " + paramName);
+                        System.out.println("Invalid default value of parameter: " + paramName);
                     }
 
                     ParamDescription paramDescription = null;
