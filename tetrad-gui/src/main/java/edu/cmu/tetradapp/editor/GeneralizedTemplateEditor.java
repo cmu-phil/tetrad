@@ -50,7 +50,7 @@ import javax.swing.text.*;
  *
  * @author Joseph Ramsey
  */
-class GeneralizedTemplateEditor extends JComponent {
+public class GeneralizedTemplateEditor extends JComponent {
 
     private static final long serialVersionUID = 3455126100397759982L;
 

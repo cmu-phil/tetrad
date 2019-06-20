@@ -33,7 +33,7 @@ import edu.cmu.tetradapp.app.hpc.action.LoadHpcGraphJsonAction;
  * @author Aaron Powers
  * @author Joseph Ramsey
  */
-final class GraphFileMenu extends JMenu {
+public final class GraphFileMenu extends JMenu {
 
     private static final long serialVersionUID = 8003709852565658589L;
 

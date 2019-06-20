@@ -23,6 +23,7 @@ package edu.cmu.tetradapp.editor;
 
 import edu.cmu.tetrad.bayes.BayesIm;
 import edu.cmu.tetrad.bayes.BayesXmlRenderer;
+import edu.cmu.tetradapp.editor.bayes.BayesImEditor;
 import edu.cmu.tetradapp.model.EditorUtils;
 import nu.xom.Document;
 import nu.xom.Element;
@@ -34,7 +35,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 
-class SaveBayesImXmlAction extends AbstractAction {
+public class SaveBayesImXmlAction extends AbstractAction {
     private BayesImEditor bayesImEditor;
 
     public SaveBayesImXmlAction(BayesImEditor bayesImEditor) {

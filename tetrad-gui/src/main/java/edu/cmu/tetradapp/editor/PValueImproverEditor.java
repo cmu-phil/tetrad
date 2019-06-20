@@ -33,6 +33,7 @@ import edu.cmu.tetrad.sem.Scorer;
 import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemPm;
 import edu.cmu.tetrad.util.Parameters;
+import edu.cmu.tetradapp.editor.sem.SemImEditor;
 import edu.cmu.tetradapp.model.PValueImproverWrapper;
 import edu.cmu.tetradapp.model.SemImWrapper;
 import edu.cmu.tetradapp.util.DoubleTextField;

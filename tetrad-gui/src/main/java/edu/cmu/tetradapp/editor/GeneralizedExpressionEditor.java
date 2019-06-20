@@ -47,7 +47,7 @@ import java.util.prefs.Preferences;
  *
  * @author Joseph Ramsey
  */
-class GeneralizedExpressionEditor extends JComponent {
+public class GeneralizedExpressionEditor extends JComponent {
     /**
      * The color that selected text is being rendered. Either black or red.
      */

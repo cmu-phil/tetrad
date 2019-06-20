@@ -39,7 +39,7 @@ import java.awt.event.ActionEvent;
  *
  * @author Joseph Ramsey jdramsey@andrew.cmu.edu
  */
-class SelectBidirectedAction extends AbstractAction implements ClipboardOwner {
+public class SelectBidirectedAction extends AbstractAction implements ClipboardOwner {
 
     /**
      * The desktop containing the target session editor.

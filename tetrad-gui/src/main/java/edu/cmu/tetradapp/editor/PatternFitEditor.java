@@ -25,6 +25,8 @@ import edu.cmu.tetrad.bayes.BayesIm;
 import edu.cmu.tetrad.data.DataModelList;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.sem.SemPm;
+import edu.cmu.tetradapp.editor.bayes.BayesEstimatorEditor;
+import edu.cmu.tetradapp.editor.sem.SemEstimatorEditor;
 import edu.cmu.tetradapp.model.PatternFitModel;
 
 import javax.swing.*;

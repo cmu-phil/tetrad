@@ -31,7 +31,7 @@ public interface ICgIm extends Simulator, TetradSerializable {
     /**
      * @return the number of mixed-parent discrete child nodes in the model.
      */
-    int getCgNumDiscreteNodes();
+    int getCgDiscreteNumNodes();
 	
     /**
      * @return the node corresponding to the given mixed-parent discrete child node index.

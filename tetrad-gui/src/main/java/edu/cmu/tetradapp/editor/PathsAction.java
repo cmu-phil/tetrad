@@ -46,7 +46,7 @@ import java.util.prefs.Preferences;
  *
  * @author Joseph Ramsey jdramsey@andrew.cmu.edu
  */
-class PathsAction extends AbstractAction implements ClipboardOwner {
+public class PathsAction extends AbstractAction implements ClipboardOwner {
     private final GraphWorkbench workbench;
     private List<Node> nodes1, nodes2;
     private JTextArea textArea;

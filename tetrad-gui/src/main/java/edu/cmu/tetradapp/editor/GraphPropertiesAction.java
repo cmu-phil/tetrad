@@ -38,7 +38,7 @@ import java.awt.event.ActionEvent;
  *
  * @author Joseph Ramsey jdramsey@andrew.cmu.edu
  */
-class GraphPropertiesAction extends AbstractAction implements ClipboardOwner {
+public class GraphPropertiesAction extends AbstractAction implements ClipboardOwner {
     private GraphWorkbench workbench;
 
     /**

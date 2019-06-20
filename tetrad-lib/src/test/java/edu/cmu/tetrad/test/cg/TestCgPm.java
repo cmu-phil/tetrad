@@ -8,16 +8,12 @@ import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
 
-import edu.cmu.tetrad.bayes.BayesPm;
 import edu.cmu.tetrad.data.ContinuousVariable;
 import edu.cmu.tetrad.data.DiscreteVariable;
-import edu.cmu.tetrad.graph.Dag;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.graph.GraphNode;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.NodeType;
-import edu.cmu.tetrad.sem.SemPm;
 import edu.pitt.dbmi.cg.CgPm;
 
 /**

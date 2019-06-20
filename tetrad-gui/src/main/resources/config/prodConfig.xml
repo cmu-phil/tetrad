@@ -47,7 +47,7 @@
                 </logger>
                 <model-class>edu.cmu.tetradapp.model.SemGraphWrapper
                 </model-class>
-                <editor-class>edu.cmu.tetradapp.editor.SemGraphEditor
+                <editor-class>edu.cmu.tetradapp.editor.sem.SemGraphEditor
                 </editor-class>
             </model>
             <model name="Time Lag Graph" acronym="Lag Graph" help="time_lag_graph" category="Basic Graph Types">
@@ -217,10 +217,10 @@
                 </logger>
                 <model-class>edu.cmu.tetradapp.model.BayesPmWrapper
                 </model-class>
-                <editor-class>edu.cmu.tetradapp.editor.BayesPmEditor
+                <editor-class>edu.cmu.tetradapp.editor.bayes.BayesPmEditor
                 </editor-class>
                 <params-editor-class>
-                    edu.cmu.tetradapp.editor.BayesPmParamsEditor
+                    edu.cmu.tetradapp.editor.bayes.BayesPmParamsEditor
                 </params-editor-class>
             </model>
             <model name="SEM Parametric Model" acronym="SEM PM" help="sem_im">
@@ -229,7 +229,7 @@
                     <event id="pm" description="Parametric Model" default="on"/>
                 </logger>
                 <model-class>edu.cmu.tetradapp.model.SemPmWrapper</model-class>
-                <editor-class>edu.cmu.tetradapp.editor.SemPmEditor
+                <editor-class>edu.cmu.tetradapp.editor.sem.SemPmEditor
                 </editor-class>
             </model>
             <model name="Generalized SEM Parametric Model" acronym="Gen. SEM PM" help="sem_im">
@@ -238,7 +238,7 @@
                     <event id="pm" description="Parametric Model" default="on"/>
                 </logger>
                 <model-class>edu.cmu.tetradapp.model.GeneralizedSemPmWrapper</model-class>
-                <editor-class>edu.cmu.tetradapp.editor.GeneralizedSemPmEditor
+                <editor-class>edu.cmu.tetradapp.editor.sem.GeneralizedSemPmEditor
                 </editor-class>
             </model>
         </models>
@@ -265,10 +265,10 @@
                 </logger>
                 <model-class>edu.cmu.tetradapp.model.BayesImWrapper
                 </model-class>
-                <editor-class>edu.cmu.tetradapp.editor.BayesImEditor
+                <editor-class>edu.cmu.tetradapp.editor.bayes.BayesImEditor
                 </editor-class>
                 <params-editor-class>
-                    edu.cmu.tetradapp.editor.BayesImParamsEditor
+                    edu.cmu.tetradapp.editor.bayes.BayesImParamsEditor
                 </params-editor-class>
             </model>
 <!--            <model name="Bayes Instantiated Model: Observed Variables Only"-->
@@ -294,10 +294,10 @@
                 </logger>
                 <model-class>edu.cmu.tetradapp.model.DirichletBayesImWrapper
                 </model-class>
-                <editor-class>edu.cmu.tetradapp.editor.DirichletBayesImEditor
+                <editor-class>edu.cmu.tetradapp.editor.bayes.DirichletBayesImEditor
                 </editor-class>
                 <params-editor-class>
-                    edu.cmu.tetradapp.editor.DirichletBayesImParamsEditor
+                    edu.cmu.tetradapp.editor.bayes.DirichletBayesImParamsEditor
                 </params-editor-class>
             </model>
             <model name="SEM Instantiated Model" acronym="SEM IM" help="sem_im">
@@ -306,10 +306,10 @@
                     <event id="im" description="Instantiated Model" default="on"/>
                 </logger>
                 <model-class>edu.cmu.tetradapp.model.SemImWrapper</model-class>
-                <editor-class>edu.cmu.tetradapp.editor.SemImEditor
+                <editor-class>edu.cmu.tetradapp.editor.sem.SemImEditor
                 </editor-class>
                 <params-editor-class>
-                    edu.cmu.tetradapp.editor.SemImParamsEditor
+                    edu.cmu.tetradapp.editor.sem.SemImParamsEditor
                 </params-editor-class>
             </model>
             <model name="Standardized SEM Instantiated Model" acronym="St SEM IM" help="sem_im">
@@ -318,7 +318,7 @@
                     <event id="im" description="Instantiated Model" default="on"/>
                 </logger>
                 <model-class>edu.cmu.tetradapp.model.StandardizedSemImWrapper</model-class>
-                <editor-class>edu.cmu.tetradapp.editor.StandardizedSemImEditor</editor-class>
+                <editor-class>edu.cmu.tetradapp.editor.sem.StandardizedSemImEditor</editor-class>
             </model>
             <model name="Generalized SEM Instantiated Model" acronym="Gen. SEM IM" help="gen_sem_im">
                 <logger>
@@ -326,7 +326,7 @@
                     <event id="im" description="Instantiated Model" default="on"/>
                 </logger>
                 <model-class>edu.cmu.tetradapp.model.GeneralizedSemImWrapper</model-class>
-                <editor-class>edu.cmu.tetradapp.editor.GeneralizedSemImEditor</editor-class>
+                <editor-class>edu.cmu.tetradapp.editor.sem.GeneralizedSemImEditor</editor-class>
             </model>
         </models>
         <display-component image="imIcon.gif"/>
@@ -885,7 +885,7 @@
                 </logger>
                 <model-class>edu.cmu.tetradapp.model.BayesEstimatorWrapper
                 </model-class>
-                <editor-class>edu.cmu.tetradapp.editor.BayesEstimatorEditor
+                <editor-class>edu.cmu.tetradapp.editor.bayes.BayesEstimatorEditor
                 </editor-class>
             </model>
             <model name="SEM Estimator" acronym="SEM Est" help="sem_estimator">
@@ -898,7 +898,7 @@
                 </logger>
                 <model-class>edu.cmu.tetradapp.model.SemEstimatorWrapper
                 </model-class>
-                <editor-class>edu.cmu.tetradapp.editor.SemEstimatorEditor
+                <editor-class>edu.cmu.tetradapp.editor.sem.SemEstimatorEditor
                 </editor-class>
             </model>
             <model name="Generalized SEM Estimator" acronym="Gen. SEM Est" help="gen_sem_est">
@@ -907,7 +907,7 @@
                     <event id="im" description="Instantiated Model" default="on"/>
                 </logger>
                 <model-class>edu.cmu.tetradapp.model.GeneralizedSemEstimatorWrapper</model-class>
-                <editor-class>edu.cmu.tetradapp.editor.GeneralizedSemEstimatorEditor</editor-class>
+                <editor-class>edu.cmu.tetradapp.editor.sem.GeneralizedSemEstimatorEditor</editor-class>
             </model>
             <model name="Dirichlet Estimator" acronym="Dir Bayes Est"
                    help="dirichlet_estimator">
@@ -917,10 +917,10 @@
                 </logger>
                 <model-class>edu.cmu.tetradapp.model.DirichletEstimatorWrapper
                 </model-class>
-                <editor-class>edu.cmu.tetradapp.editor.DirichletBayesImEditor
+                <editor-class>edu.cmu.tetradapp.editor.bayes.DirichletBayesImEditor
                 </editor-class>
                 <params-editor-class>
-                    edu.cmu.tetradapp.editor.DirichletEstimatorParamsEditor
+                    edu.cmu.tetradapp.editor.bayes.DirichletEstimatorParamsEditor
                 </params-editor-class>
             </model>
             <model name="EM Bayes Estimator" acronym="Em Bayes Est" help="em_bayes_estimator">
@@ -931,8 +931,8 @@
                     <event id="im" description="Estimated Model"/>
                 </logger>
                 <model-class>edu.cmu.tetradapp.model.EmBayesEstimatorWrapper</model-class>
-                <editor-class>edu.cmu.tetradapp.editor.EmBayesEstimatorEditor</editor-class>
-                <params-editor-class>edu.cmu.tetradapp.editor.EMBayesEstimatorParamsEditor</params-editor-class>
+                <editor-class>edu.cmu.tetradapp.editor.bayes.EmBayesEstimatorEditor</editor-class>
+                <params-editor-class>edu.cmu.tetradapp.editor.bayes.EMBayesEstimatorParamsEditor</params-editor-class>
             </model>
         </models>
         <display-component image="estimatorIcon.gif"/>
@@ -957,7 +957,7 @@
                 </logger>
                 <model-class>edu.cmu.tetradapp.model.ApproximateUpdaterWrapper
                 </model-class>
-                <editor-class>edu.cmu.tetradapp.editor.BayesUpdaterEditor
+                <editor-class>edu.cmu.tetradapp.editor.bayes.BayesUpdaterEditor
                 </editor-class>
             </model>
             <model name="Row Summing Exact Updater" acronym="Row Sum"
@@ -968,7 +968,7 @@
                 </logger>
                 <model-class>edu.cmu.tetradapp.model.RowSummingExactWrapper
                 </model-class>
-                <editor-class>edu.cmu.tetradapp.editor.BayesUpdaterEditor
+                <editor-class>edu.cmu.tetradapp.editor.bayes.BayesUpdaterEditor
                 </editor-class>
             </model>
             <model name="CPT Invariant Exact Updater" acronym="CPT Inv"
@@ -979,13 +979,13 @@
                 </logger>
                 <model-class>edu.cmu.tetradapp.model.CptInvariantUpdaterWrapper
                 </model-class>
-                <editor-class>edu.cmu.tetradapp.editor.BayesUpdaterEditor
+                <editor-class>edu.cmu.tetradapp.editor.bayes.BayesUpdaterEditor
                 </editor-class>
             </model>
             <model name="SEM Updater" acronym="SEM Up" help="sem_updater">
                 <model-class>edu.cmu.tetradapp.model.SemUpdaterWrapper
                 </model-class>
-                <editor-class>edu.cmu.tetradapp.editor.SemUpdaterEditor
+                <editor-class>edu.cmu.tetradapp.editor.sem.SemUpdaterEditor
                 </editor-class>
             </model>
             <model name="Identifiability" acronym="Ident"
@@ -996,7 +996,7 @@
                 </logger>
                 <model-class>edu.cmu.tetradapp.model.IdentifiabilityWrapper
                 </model-class>
-                <editor-class>edu.cmu.tetradapp.editor.BayesUpdaterEditorObs
+                <editor-class>edu.cmu.tetradapp.editor.bayes.BayesUpdaterEditorObs
                 </editor-class>
             </model>
         </models>

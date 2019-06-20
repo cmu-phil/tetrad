@@ -79,34 +79,37 @@ public final class CgEstimator implements TetradSerializable {
         // Bayes
 		List<Node> discNodes = new ArrayList<>();
 		
+		List<Node> continuousNodes = estimatedCgIm.getContinuousNodes();
+		for(Node _node : continuousNodes) {
+			Node node = dataSet.getVariable(_node.getName());
+			contNodes.add(node);
+		}
+		
 		List<Node> cgDiscreteNodesAndTheirDiscreteParents = new ArrayList<>();
         
-		List<Node> cgDiscreteNodes = estimatedCgIm.getCgDiscreteVariableNodes();
-		for(Node node : cgDiscreteNodes) {
+		List<Node> discreteNodes = estimatedCgIm.getDiscreteNodes();
+		for(Node _node : discreteNodes) {
+			Node node = dataSet.getVariable(_node.getName());
+			discNodes.add(node);
+			
 			boolean allParentsDiscrete = true;
-    		for(Node x : graph.getParents(node)) {
-    			if(x instanceof ContinuousVariable) {
+			
+    		for(Node _parentNode : graph.getParents(_node)) {
+    			if(_parentNode instanceof ContinuousVariable) {
     				allParentsDiscrete = false;
     				break;
     			}
     		}
-    		if(allParentsDiscrete) {
-    			if(!discNodes.contains(node)) {
-    				discNodes.add(node);
-    			}
-    			for (Node x : graph.getParents(node)) {
-    				if(!discNodes.contains(x)) {
-    					discNodes.add(x);
-    				}
-    			}
-    		}else {
+    		if(!allParentsDiscrete) {
     			if(!cgDiscreteNodesAndTheirDiscreteParents.contains(node)) {
     				cgDiscreteNodesAndTheirDiscreteParents.add(node);
     			}
-    			for (Node x : graph.getParents(node)) {
-        			if(x instanceof DiscreteVariable && 
-        					!cgDiscreteNodesAndTheirDiscreteParents.contains(x)) {
-        				cgDiscreteNodesAndTheirDiscreteParents.add(x);
+    			for (Node _parentNode : graph.getParents(_node)) {
+    				Node parentNode = dataSet.getVariable(_parentNode.getName());
+    				
+        			if(parentNode instanceof DiscreteVariable && 
+        					!cgDiscreteNodesAndTheirDiscreteParents.contains(parentNode)) {
+        				cgDiscreteNodesAndTheirDiscreteParents.add(parentNode);
         			}
         		}
     		}
@@ -143,7 +146,7 @@ public final class CgEstimator implements TetradSerializable {
 			Node cgDiscreteNode = estimatedCgBayesIm.getNode(nodeIndex);
 			
 			// Mixed parents with discrete child
-			if(cgDiscreteNodes.contains(cgDiscreteNode)) {
+			if(discreteNodes.contains(cgDiscreteNode)) {
 				
 				int cgDiscreteNodeIndex = estimatedCgIm.getCgDiscreteNodeIndex(cgDiscreteNode);
 				
@@ -254,8 +257,8 @@ public final class CgEstimator implements TetradSerializable {
 	    	                    	// Set a stand deviation of each of parents' continuous nodes
 		                    		double sd = StatUtils.sd(data);
 		                    		
-		                    		estimatedCgIm.setCgDiscreteParentMean(cgDiscreteNodeIndex, row, col, continuousParentIndex, mean);
-		                    		estimatedCgIm.setCgDiscreteParentMeanStdDev(cgDiscreteNodeIndex, row, col, continuousParentIndex, sd);
+		                    		estimatedCgIm.setCgDiscreteNodeContinuousParentMean(cgDiscreteNodeIndex, row, col, continuousParentIndex, mean);
+		                    		estimatedCgIm.setCgDiscreteNodeContinuousParentMeanStdDev(cgDiscreteNodeIndex, row, col, continuousParentIndex, sd);
 		                    	}
 	                    	}
 	                    	
@@ -267,8 +270,8 @@ public final class CgEstimator implements TetradSerializable {
 	                    		for(int arrayIndex=0;arrayIndex<cgContinuousParentArray.length;arrayIndex++) {
 		                    		int continuousParentIndex = cgContinuousParentArray[arrayIndex];
 
-		                    		estimatedCgIm.setCgDiscreteParentMean(cgDiscreteNodeIndex, row, col, continuousParentIndex, Double.NaN);
-		                    		estimatedCgIm.setCgDiscreteParentMeanStdDev(cgDiscreteNodeIndex, row, col, continuousParentIndex, Double.NaN);
+		                    		estimatedCgIm.setCgDiscreteNodeContinuousParentMean(cgDiscreteNodeIndex, row, col, continuousParentIndex, Double.NaN);
+		                    		estimatedCgIm.setCgDiscreteNodeContinuousParentMeanStdDev(cgDiscreteNodeIndex, row, col, continuousParentIndex, Double.NaN);
 		                    	}
 	                    	}
 	                    }
@@ -306,9 +309,9 @@ public final class CgEstimator implements TetradSerializable {
                     	
                 			int discreteParentIndex = cgDiscreteParents[arrayIndex];
                 			int categoryIndex = cgDiscreteParentValues[arrayIndex];
-                    		
+                			
                 			Node cgDiscreteParentNode = estimatedCgIm.getCgContinuousNodeDiscreteParentNode(discreteParentIndex);
-                			int cgDiscreteParentNodeIndex = dataSet.getColumn(cgDiscreteParentNode);
+                			int cgDiscreteParentNodeIndex = dataSet.getColumn(dataSet.getVariable(cgDiscreteParentNode.getName()));
                     		
                 			if(categoryIndex != dataSet.getInt(dataRow, cgDiscreteParentNodeIndex)) {
                 				qualified = false;
@@ -352,9 +355,9 @@ public final class CgEstimator implements TetradSerializable {
                 	TetradMatrix matrix = conditionedData.getDoubleData();
                 	TetradVector childVector = matrix.getColumn(0);
                 	
-                	estimatedCgIm.setCgContinuousParentEdgeCoef(cgContinuousNodeIndex, row, 0, 1);
-                	estimatedCgIm.setCgContinuousParentMean(cgContinuousNodeIndex, row, 0, StatUtils.mean(childVector, childVector.size()));
-            		estimatedCgIm.setCgContinuousParentMeanStdDev(cgContinuousNodeIndex, row, 0, StatUtils.sd(childVector, childVector.size()));
+                	estimatedCgIm.setCgContinuousNodeContinuousParentEdgeCoef(cgContinuousNodeIndex, row, 0, 1);
+                	estimatedCgIm.setCgContinuousNodeContinuousParentMean(cgContinuousNodeIndex, row, 0, StatUtils.mean(childVector, childVector.size()));
+            		estimatedCgIm.setCgContinuousNodeContinuousParentMeanStdDev(cgContinuousNodeIndex, row, 0, StatUtils.sd(childVector, childVector.size()));
             		
                 	// We start from index 1 instead of 0 because we reserve index 0 for the continuous child node
                 	for(int arrayIndex=1;arrayIndex<cgContinuousParentArray.length+1;arrayIndex++) {
@@ -364,7 +367,7 @@ public final class CgEstimator implements TetradSerializable {
                 		// Set a correlation coefficient of continuous child and continuous parent given this condition
                 		double coef = StatUtils.correlation(childVector, parentVector);
                 		
-                		estimatedCgIm.setCgContinuousParentEdgeCoef(cgContinuousNodeIndex, row, arrayIndex, coef);
+                		estimatedCgIm.setCgContinuousNodeContinuousParentEdgeCoef(cgContinuousNodeIndex, row, arrayIndex, coef);
                 		
                     	// Set a mean of each of parents' continuous nodes
                 		double mean = StatUtils.mean(parentVector, parentVector.size());
@@ -372,8 +375,8 @@ public final class CgEstimator implements TetradSerializable {
                     	// Set a stand deviation of each of parents' continuous nodes
                 		double sd = StatUtils.sd(parentVector, parentVector.size());
                 		
-                		estimatedCgIm.setCgContinuousParentMean(cgContinuousNodeIndex, row, arrayIndex, mean);
-                		estimatedCgIm.setCgContinuousParentMeanStdDev(cgContinuousNodeIndex, row, arrayIndex, sd);
+                		estimatedCgIm.setCgContinuousNodeContinuousParentMean(cgContinuousNodeIndex, row, arrayIndex, mean);
+                		estimatedCgIm.setCgContinuousNodeContinuousParentMeanStdDev(cgContinuousNodeIndex, row, arrayIndex, sd);
                 	}
 				}
 				

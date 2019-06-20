@@ -1,6 +1,7 @@
 package edu.cmu.tetrad.algcomparison.simulation;
 
 import edu.cmu.tetrad.algcomparison.graph.RandomGraph;
+import edu.cmu.tetrad.algcomparison.graph.SingleGraph;
 import edu.cmu.tetrad.bayes.BayesIm;
 import edu.cmu.tetrad.bayes.BayesPm;
 import edu.cmu.tetrad.bayes.MlBayesIm;
@@ -8,6 +9,9 @@ import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.sem.*;
 import edu.cmu.tetrad.util.*;
+import edu.pitt.dbmi.cg.CgIm;
+import edu.pitt.dbmi.cg.CgPm;
+
 import java.util.*;
 import org.apache.commons.lang3.RandomUtils;
 
@@ -20,8 +24,13 @@ public class ConditionalGaussianSimulation implements Simulation {
 
     static final long serialVersionUID = 23L;
     private RandomGraph randomGraph;
+    private CgPm cgPm;
+    private CgIm cgIm;
+    
     private List<DataSet> dataSets = new ArrayList<>();
     private List<Graph> graphs = new ArrayList<>();
+    private List<CgIm> cgIms = new ArrayList<>();
+    
     private DataType dataType;
     private List<Node> shuffledOrder;
     private double varLow = 1;
@@ -35,7 +44,20 @@ public class ConditionalGaussianSimulation implements Simulation {
     public ConditionalGaussianSimulation(RandomGraph graph) {
         this.randomGraph = graph;
     }
+    
+    public ConditionalGaussianSimulation(CgPm cgPm) {
+    	this.randomGraph = new SingleGraph(cgPm.getGraph());
+    	this.cgPm = cgPm;
+    }
 
+    public ConditionalGaussianSimulation(CgIm cgIm) {
+    	this.randomGraph = new SingleGraph(cgIm.getDag());
+    	this.cgIm = cgIm;
+    	this.cgPm = cgIm.getCgPm();
+    	this.cgIms = new ArrayList<>();
+    	cgIms.add(cgIm);
+    }
+    
     @Override
     public void createData(Parameters parameters) {
         setVarLow(parameters.getDouble("varLow"));
@@ -70,6 +92,7 @@ public class ConditionalGaussianSimulation implements Simulation {
 
         dataSets = new ArrayList<>();
         graphs = new ArrayList<>();
+        cgIms = new ArrayList<>();
 
         for (int i = 0; i < parameters.getInt("numRuns"); i++) {
             System.out.println("Simulating dataset #" + (i + 1));
@@ -164,8 +187,40 @@ public class ConditionalGaussianSimulation implements Simulation {
 
         G = makeMixedGraph(G, nd);
         nodes = G.getNodes();
+        
+        boolean saveLatentVars = parameters.getBoolean("saveLatentVars");
+        
+        try {
+        	CgIm cgIm = this.cgIm;
+        	
+        	if(cgIm == null) {
+        		CgPm cgPm = this.cgPm;
+        		
+        		if(cgPm == null) {
+        			int minCategories = parameters.getInt("minCategories");
+                    int maxCategories = parameters.getInt("maxCategories");
+                    cgPm = new CgPm(G, minCategories, maxCategories);
+                    cgIm = new CgIm(cgPm, CgIm.RANDOM);
+                    cgIms.add(cgIm);
+                    return cgIm.simulateData(parameters.getInt("sampleSize"), saveLatentVars);
+        		}else {
+        			cgIm = new CgIm(cgPm, CgIm.RANDOM);
+        			this.cgIm = cgIm;
+        			cgIms.add(cgIm);
+        			return cgIm.simulateData(parameters.getInt("sampleSize"), saveLatentVars);
+        		}
+        	}else {
+        		cgIms.add(cgIm);
+        		return cgIm.simulateData(parameters.getInt("sampleSize"), saveLatentVars);
+        	}
+        	
+        }catch (Exception e) {
+        	e.printStackTrace();
+            throw new IllegalArgumentException("Sorry, I couldn't simulate from that Conditional Gaussian IM; perhaps not all of\n"
+                    + "the parameters have been specified.");
+        }
 
-        DataSet mixedData = new BoxDataSet(new MixedDataBox(nodes, parameters.getInt("sampleSize")), nodes);
+        /*DataSet mixedData = new BoxDataSet(new MixedDataBox(nodes, parameters.getInt("sampleSize")), nodes);
 
         List<Node> X = new ArrayList<>();
         List<Node> A = new ArrayList<>();
@@ -178,14 +233,15 @@ public class ConditionalGaussianSimulation implements Simulation {
             }
         }
 
-        Graph AG = G.subgraph(A);
+        Graph AG = G.subgraph(A);// Discrete nodes
         Graph XG = G.subgraph(X);
 
+        // Continuous parent - discrete child map
         Map<ContinuousVariable, DiscreteVariable> erstatzNodes = new HashMap<>();
         Map<String, ContinuousVariable> erstatzNodesReverse = new HashMap<>();
 
-        for (Node y : A) {
-            for (Node x : G.getParents(y)) {
+        for (Node y : A) {// Discrete nodes
+            for (Node x : G.getParents(y)) {// Continuous parent
                 if (x instanceof ContinuousVariable) {
                     DiscreteVariable ersatz = erstatzNodes.get(x);
 
@@ -323,8 +379,8 @@ public class ConditionalGaussianSimulation implements Simulation {
             }
         }
 
-        boolean saveLatentVars = parameters.getBoolean("saveLatentVars");
-        return saveLatentVars ? mixedData : DataUtils.restrictToMeasured(mixedData);
+        //boolean saveLatentVars = parameters.getBoolean("saveLatentVars");
+        return saveLatentVars ? mixedData : DataUtils.restrictToMeasured(mixedData);*/
     }
 
     private double[] getBreakpoints(DataSet mixedData, DiscreteVariable _parent, int mixedParentColumn) {
@@ -488,5 +544,9 @@ public class ConditionalGaussianSimulation implements Simulation {
 
     private int pickNumCategories(int min, int max) {
         return RandomUtils.nextInt(min, max + 1);
+    }
+    
+    public List<CgIm> getCgIms() {
+    	return cgIms;
     }
 }

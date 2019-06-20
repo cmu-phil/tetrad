@@ -16,6 +16,7 @@ import edu.cmu.tetrad.data.ContinuousVariable;
 import edu.cmu.tetrad.data.DataUtils;
 import edu.cmu.tetrad.data.DiscreteVariable;
 import edu.cmu.tetrad.graph.Dag;
+import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.NodeType;
@@ -44,8 +45,8 @@ public final class CgPm implements PM, TetradSerializable {
     
     private SemPm semPm;
     
-    private int discreteLowerBound = 3;
-    private int discreteUpperBound = 3;
+    private int discreteLowerBound = 2;
+    private int discreteUpperBound = 2;
 
     // All discrete nodes
     private Map<Node, DiscreteVariable> discreteNodesToVariables = new HashMap<>();
@@ -62,9 +63,9 @@ public final class CgPm implements PM, TetradSerializable {
      *
      * @serial Cannot be null.
      */
-    private List<CgParameter> cgDiscreteNodeParameters;
+    //private List<CgParameter> cgDiscreteNodeParameters;
 
-    private List<CgParameter> cgContinuousNodeParameters;
+    //private List<CgParameter> cgContinuousNodeParameters;
 
     /**
      * The index of the most recent "cgT" parameter. (These are variance and
@@ -90,24 +91,37 @@ public final class CgPm implements PM, TetradSerializable {
     private int bIndex = 0;
     
 	public CgPm(Graph graph) {
-		this.graph = graph;
-		initializeNodes(graph);
+        if (graph == null) {
+            throw new NullPointerException("The graph must not be null.");
+        }
+
+		this.graph = new EdgeListGraph(graph);
+		initializeNodes(this.graph);
+		initializeDiscreteValues(discreteLowerBound, discreteUpperBound);
         initializeParams();
 	}
 	
 	public CgPm(CgPm cgPm) {
 		this.graph = cgPm.getGraph();
-		initializeNodes(graph);
+		copyAvailableInformationFromOldCgPm(cgPm, 2, 2);
 		initializeParams();
+	}
+	
+	public CgPm(Graph graph, CgPm cgPm) {
+		this(graph, cgPm, 2, 2);
 	}
 
 	public CgPm(Graph graph, int discreteLowerBound, int discreteUpperBound) {
-		this.graph = graph;
+        if (graph == null) {
+            throw new NullPointerException("The graph must not be null.");
+        }
+
+		this.graph = new EdgeListGraph(graph);
 		this.discreteLowerBound = discreteLowerBound;
 		this.discreteUpperBound = discreteUpperBound;
 		initializeNodes(graph);
-        initializeParams();
         initializeDiscreteValues(discreteLowerBound, discreteUpperBound);
+        initializeParams();
 	}
 	
 	public CgPm(CgPm cgPm, int discreteLowerBound, int discreteUpperBound) {
@@ -115,22 +129,42 @@ public final class CgPm implements PM, TetradSerializable {
 		this.discreteLowerBound = discreteLowerBound;
 		this.discreteUpperBound = discreteUpperBound;
 		initializeNodes(graph);
-		initializeParams();
         initializeDiscreteValues(discreteLowerBound, discreteUpperBound);
+		initializeParams();
 	}
 
+	public CgPm(Graph graph, CgPm oldCgPm, int discreteLowerBound, int discreteUpperBound) {
+        if (graph == null) {
+            throw new NullPointerException("The graph must not be null.");
+        }
+
+        if (oldCgPm == null) {
+            throw new NullPointerException("CgPm must not be null.");
+        }
+
+        if (graph.getNumNodes() == 0) {
+            throw new IllegalArgumentException(
+                    "The graph must have at least " + "one node in it.");
+        }
+
+        this.graph = new EdgeListGraph(graph);
+        copyAvailableInformationFromOldCgPm(oldCgPm, discreteLowerBound, discreteUpperBound);
+        initializeParams();
+	}
+	
 	private void initializeNodes(Graph graph) {
 		List<Node> nodes = graph.getNodes();
 		
 		// SEM
-		List<Node> contNodes = new ArrayList<>();
+		List<Node> continuousNodes = new ArrayList<>();
         // Bayes
-		List<Node> discNodes = new ArrayList<>();
+		List<Node> discreteNodes = new ArrayList<>();
         
         for(Node node : nodes) {
         	if(node instanceof ContinuousVariable) {
     			continuousNodesToVariables.put(node, (ContinuousVariable) node);
-        		
+    			continuousNodes.add(node);
+    			
         		boolean allParentsContinuous = true;
         		for (Node x : graph.getParents(node)) {
         			if(x instanceof DiscreteVariable) {
@@ -138,20 +172,12 @@ public final class CgPm implements PM, TetradSerializable {
         				break;
         			}
         		}
-        		if(allParentsContinuous) {
-        			if(!contNodes.contains(node)) {
-        				contNodes.add(node);       				
-        			}
-        			for (Node x : graph.getParents(node)) {
-        				if(!contNodes.contains(x)) {
-        					contNodes.add(x);
-        				}
-        			}
-        		}else {
+        		if(!allParentsContinuous) {
         			cgContinuousVariableNodes.add(node);
         		}
         	}else { // Discrete Variable
         		discreteNodesToVariables.put(node, (DiscreteVariable) node);
+        		discreteNodes.add(node);
         		
         		boolean allParentsDiscrete = true;
         		for(Node x : graph.getParents(node)) {
@@ -160,26 +186,149 @@ public final class CgPm implements PM, TetradSerializable {
         				break;
         			}
         		}
-        		if(allParentsDiscrete) {
-        			if(!discNodes.contains(node)) {
-        				discNodes.add(node);
-        			}
-        			for (Node x : graph.getParents(node)) {
-        				if(!discNodes.contains(x)) {
-        					discNodes.add(x);
-        				}
-        			}
-        		}else {
+        		if(!allParentsDiscrete) {
         			cgDiscreteVariableNodes.add(node);
         		}
         	}
         }
         
-        Graph contGraph = graph.subgraph(contNodes);
-        Graph discGraph = graph.subgraph(discNodes);
+        Graph continuousGraph = graph.subgraph(continuousNodes);
+        Graph discreteGraph = graph.subgraph(discreteNodes);
         
-        this.bayesPm = new BayesPm(discGraph, discreteLowerBound, discreteUpperBound);
-        this.semPm = new SemPm(contGraph);
+        this.bayesPm = new BayesPm(discreteGraph);
+        this.semPm = new SemPm(continuousGraph);
+	}
+	
+	private void copyAvailableInformationFromOldCgPm(CgPm oldCgPm, int discreteLowerBound, int discreteUpperBound) {
+		//System.out.println("copyAvailableInformationFromOldCgPm");
+		
+		Graph newGraph = getGraph();
+		Graph oldGraph = oldCgPm.getGraph();
+		//System.out.println("newGraph: " + newGraph);
+		//System.out.println("oldGraph: " + oldGraph);
+		
+		BayesPm oldBayesPm = oldCgPm.getBayesPm();
+		
+		List<Node> nodes = newGraph.getNodes();
+		
+		// SEM
+		List<Node> continuousNodes = new ArrayList<>();
+        // Bayes
+		List<Node> discreteNodes = new ArrayList<>();
+        
+        for(Node node : nodes) {
+        	if(node instanceof DiscreteVariable) {
+        		discreteNodesToVariables.put(node, (DiscreteVariable) node);
+        		discreteNodes.add(node);
+        		
+        		boolean allParentsDiscrete = true;
+        		for(Node x : newGraph.getParents(node)) {
+        			if(x instanceof ContinuousVariable) {
+        				allParentsDiscrete = false;
+        				break;
+        			}
+        		}
+        		if(!allParentsDiscrete) {
+        			cgDiscreteVariableNodes.add(node);
+        		}        		
+        	}else { // Continuous Variable
+    			continuousNodesToVariables.put(node, (ContinuousVariable) node);
+    			continuousNodes.add(node);   
+    			
+        		boolean allParentsContinuous = true;
+        		for (Node x : newGraph.getParents(node)) {
+        			if(x instanceof DiscreteVariable) {
+        				allParentsContinuous = false;
+        				break;
+        			}
+        		}
+        		if(!allParentsContinuous) {
+        			cgContinuousVariableNodes.add(node);
+        		}
+        	}
+        }
+        
+        //Graph contGraph = newGraph.subgraph(contNodes);
+        Graph discreteGraph = newGraph.subgraph(discreteNodes);
+        //System.out.println("discreteNodes: " + discreteNodes);
+        //System.out.println("discreteGraph: " + discreteGraph);
+        
+        // Continuous parent - discrete child map
+        /*Map<ContinuousVariable, DiscreteVariable> erstatzNodes = new HashMap<>();
+        Map<String, ContinuousVariable> erstatzNodesReverse = new HashMap<>();
+        
+        for(Node node : discreteNodes) {
+        	for(Node parentNode : graph.getParents(node)) {
+        		if(parentNode instanceof ContinuousVariable) {
+        			DiscreteVariable ersatz = erstatzNodes.get(parentNode);
+
+                    if (ersatz == null) {
+                        ersatz = new DiscreteVariable("Ersatz_" + parentNode.getName(), RandomUtil.getInstance().nextInt(3) + 2);
+                        erstatzNodes.put((ContinuousVariable) parentNode, ersatz);
+                        erstatzNodesReverse.put(ersatz.getName(), (ContinuousVariable) parentNode);
+                        discreteGraph.addNode(ersatz);
+                    }
+
+                    discreteGraph.addDirectedEdge(ersatz, node);
+        		}
+        	}
+        }*/
+        
+		// Bayes
+		this.bayesPm = new BayesPm(discreteGraph, oldBayesPm, discreteLowerBound, discreteUpperBound);
+		
+		for(Node node : discreteNodesToVariables.keySet()) {
+			//System.out.println("node: " + node);
+			Node _node = oldGraph.getNode(node.getName());
+			if(_node != null) {
+				//System.out.println("copyDiscreteOldValues: " + _node);
+				copyDiscreteOldValues(oldCgPm, _node, node, discreteLowerBound, discreteUpperBound);
+			}else {
+				setDiscreteNewValues(node, discreteLowerBound, discreteUpperBound);
+			}
+		}
+		
+		// SEM
+		this.semPm = new SemPm(oldCgPm.getSemPm());
+	}
+	
+	private void copyDiscreteOldValues(CgPm oldCgPm, Node oldNode, Node node, int discreteLowerBound, int discreteUpperBound) {
+		List<String> values = new ArrayList<>();
+
+        int numVals;
+        
+    	Node _oldNode = oldCgPm.getGraph().getNode(node.getName());
+        if (_oldNode != null) {
+        	numVals = oldCgPm.getDiscreteNumCategories(_oldNode);
+        	//System.out.println("oldCgPm.getDiscreteNumCategories(" + oldNode + "): " + numVals);
+        	
+        	if(numVals == 0) {
+        		numVals = pickDiscreteNumVals(discreteLowerBound, discreteUpperBound);
+        	}
+        	
+        }else {
+        	numVals = pickDiscreteNumVals(discreteLowerBound, discreteUpperBound);
+        }
+        
+        int min = Math.min(oldCgPm.getDiscreteNumCategories(_oldNode), numVals);
+        //System.out.println("min: " + min);
+        
+        for(int i = 0;i<min;i++) {
+        	values.add(oldCgPm.getDiscreteCategory(_oldNode, i));
+        }
+        
+        for(int i=min;i<numVals;i++) {
+        	String proposedName = DataUtils.defaultCategory(i);
+        	
+        	if(values.contains(proposedName)) {
+        		throw new IllegalArgumentException("Default name already in " +
+                        "list of values: " + proposedName);
+        	}
+        	
+        	values.add(proposedName);
+        }
+        
+        mapDiscreteNodeToVariable(node, values);
 	}
 	
 	private void initializeParams() {
@@ -221,11 +370,11 @@ public final class CgPm implements PM, TetradSerializable {
 			for(int i=0;i<numChildCategories;i++) {
 				for(int j=0;j<numConditionalCases;j++) {
 					for(Node parentNode : continuousParentNodes) {
-						CgParameter mean = new CgParameter(newMName(), ParamType.MEAN, parentNode, node, i, j);
+			            CgParameter mean = new CgParameter(newMName(), ParamType.MEAN, node, parentNode, i, j);
 			            mean.setDistribution(new Normal(0.0, 1.0));
 			            parameters.add(mean);
 			            
-			            CgParameter param = new CgParameter(newTName(), ParamType.COVAR, parentNode, node, i, j);
+			            CgParameter param = new CgParameter(newTName(), ParamType.COVAR, node, parentNode, i, j);
 			            param.setDistribution(new Uniform(1.0, 3.0));
 			            parameters.add(param);
 					}
@@ -234,7 +383,7 @@ public final class CgPm implements PM, TetradSerializable {
 			
 		}
 		
-		this.cgDiscreteNodeParameters = Collections.unmodifiableList(parameters);
+		//this.cgDiscreteNodeParameters = Collections.unmodifiableList(parameters);
 	}
 	
 	private void initializeCgContinuousNodeParams() {
@@ -243,42 +392,63 @@ public final class CgPm implements PM, TetradSerializable {
 		
 		for(Node node : cgContinuousVariableNodes) {
 			
+			//System.out.println("cgContinuousVariableNodes.node: " + node);
+			
 			List<Node> discreteParentNodes = new ArrayList<>();
 			List<Node> continuousParentNodes = new ArrayList<>();
 			
 			int numConditionalCases = 1;
 			
 			for(Node parentNode : graph.getParents(node)) {
+				
 				if(parentNode instanceof DiscreteVariable) {
 					discreteParentNodes.add(parentNode);
 					
-					DiscreteVariable discVar = (DiscreteVariable) parentNode;
-					numConditionalCases *= discVar.getNumCategories();
+					int numCategories = getDiscreteNumCategories(parentNode);
+					
+					//System.out.println("discreteParentNodes.add(parentNode).node: " + parentNode + " numCategories: " + numCategories);
+					
+					numConditionalCases *= numCategories;
+					
+					
 					
 				}else {
 					continuousParentNodes.add(parentNode);
+					//System.out.println("continuousParentNodes.add(parentNode).node: " + parentNode);
 				}
 			}
 			
 			for(int i=0;i<numConditionalCases;i++) {
-				CgParameter mean = new CgParameter(newMName(), ParamType.MEAN, node, node, i);
-	            mean.setDistribution(new Normal(0.0, 1.0));
-	            parameters.add(mean);
+	            CgParameter selfcoef = new CgParameter(newBName(), ParamType.COEF, node, node, i);
+	            selfcoef.setDistribution(new Uniform(1.0, 1.0));
+				parameters.add(selfcoef);
 	            
-	            CgParameter param = new CgParameter(newTName(), ParamType.VAR, node, node, i);
-	            param.setDistribution(new Uniform(1.0, 3.0));
-	            parameters.add(param);
+				CgParameter selfmean = new CgParameter(newMName(), ParamType.MEAN, node, node, i);
+				selfmean.setDistribution(new Normal(0.0, 1.0));
+	            parameters.add(selfmean);
+	            
+	            CgParameter selfvar = new CgParameter(newTName(), ParamType.VAR, node, node, i);
+	            selfvar.setDistribution(new Uniform(1.0, 3.0));
+	            parameters.add(selfvar);
 	            
 				for(Node parentNode : continuousParentNodes) {
-					CgParameter coef = new CgParameter(newBName(), ParamType.COEF, parentNode, node, i);
+					CgParameter coef = new CgParameter(newBName(), ParamType.COEF, node, parentNode, i);
 					coef.setDistribution(new Split(0.5, 1.5));
 					parameters.add(coef);
+					
+					CgParameter mean = new CgParameter(newMName(), ParamType.MEAN, node, parentNode, i);
+					mean.setDistribution(new Normal(0.0, 1.0));
+		            parameters.add(mean);
+		            
+		            CgParameter cov = new CgParameter(newTName(), ParamType.COVAR, node, parentNode, i);
+		            cov.setDistribution(new Uniform(1.0, 3.0));
+		            parameters.add(cov);
 				}
 			}			
 			
 		}
 		
-		this.cgContinuousNodeParameters = Collections.unmodifiableList(parameters);
+		//this.cgContinuousNodeParameters = Collections.unmodifiableList(parameters);
 	}
 	
     public void initializeDiscreteValues(int discreteLowerBound, int discreteUpperBound) {
@@ -287,7 +457,7 @@ public final class CgPm implements PM, TetradSerializable {
     	}
     }
     
-	public CgParameter getCgContinuousCoefficientParameter(Node nodeA, Node nodeB, int conditionalCase) {
+	/*public CgParameter getCgContinuousCoefficientParameter(Node nodeA, Node nodeB, int conditionalCaseNo) {
 
 		for(CgParameter parameter : this.cgContinuousNodeParameters) {
 			Node _nodeA = parameter.getNodeA();
@@ -295,7 +465,12 @@ public final class CgPm implements PM, TetradSerializable {
             int caseNo = parameter.getConditionalCaseNo();
 
             if (nodeA == _nodeA && nodeB == _nodeB && parameter.getType() == ParamType.COEF && 
-            		conditionalCase == caseNo) {
+            		conditionalCaseNo == caseNo) {
+            	return parameter;
+            }
+            
+            if (nodeA == _nodeB && nodeB == _nodeA && parameter.getType() == ParamType.COEF && 
+            		conditionalCaseNo == caseNo) {
             	return parameter;
             }
 		}
@@ -325,10 +500,12 @@ public final class CgPm implements PM, TetradSerializable {
 	public List<CgParameter> getCgContinuousFreeParameters(){
 		List<CgParameter> freeParameters = new ArrayList<>();
 		
+		//System.out.println("this.cgContinuousNodeParameters: " + this.cgContinuousNodeParameters);
+		
 		for(CgParameter parameter : this.cgContinuousNodeParameters) {
 			ParamType type = parameter.getType();
 			
-			if (type == ParamType.VAR || type == ParamType.COVAR || type == ParamType.COEF) {
+			if (type == ParamType.MEAN || type == ParamType.VAR || type == ParamType.COVAR || type == ParamType.COEF) {
                 if (!parameter.isFixed()) {
                     freeParameters.add(parameter);
                 }
@@ -368,7 +545,7 @@ public final class CgPm implements PM, TetradSerializable {
 		}
 		
 		return freeParameters;
-	}
+	}*/
 	
     /**
      * @return a unique (for this PM) parameter name beginning with CG (Conditional Gaussian) and the Greek
@@ -458,12 +635,20 @@ public final class CgPm implements PM, TetradSerializable {
         return latentNodes;
     }
 
-	public List<CgParameter> getCgDiscreteNodesParameters() {
+	/*public List<CgParameter> getCgDiscreteNodesParameters() {
 		return cgDiscreteNodeParameters;
 	}
 
 	public List<CgParameter> getCgContinuousNodesParameters() {
 		return cgContinuousNodeParameters;
+	}*/
+	
+	public List<Node> getDiscreteNodes() {
+		return new ArrayList<>(discreteNodesToVariables.keySet());
+	}
+	
+	public List<Node> getContinuousNodes() {
+		return new ArrayList<>(continuousNodesToVariables.keySet());
 	}
 	
     /**
@@ -557,7 +742,7 @@ public final class CgPm implements PM, TetradSerializable {
         }
 
         List<String> valueList = new ArrayList<>();
-
+        
         for (int i = 0; i < pickDiscreteNumVals(lowerBound, upperBound); i++) {
             valueList.add(DataUtils.defaultCategory(i));
         }
@@ -577,8 +762,12 @@ public final class CgPm implements PM, TetradSerializable {
         
         this.discreteNodesToVariables.put(node, variable);
         
-        if(this.bayesPm.getDag().getNodes().contains(node)) {
-        	this.bayesPm.setCategories(node, categories);
+        Node _node = this.bayesPm.getDag().getNode(node.getName());
+        if(_node != null && this.bayesPm.getDag().getNodes().contains(_node)) {
+        	this.bayesPm.setCategories(_node, categories);
+        	//System.out.println("CgPm.mapDiscreteNodeToVariable.this.bayesPm.setCategories(_node: " + _node + ", categories: " + categories.size() + ")");
+        //}else {
+        	//System.out.println(node.getName() + " not found in BayesPm!!!");
         }
     }
 

@@ -634,7 +634,7 @@ public final class SemIm implements IM, ISemIm, TetradSerializable {
     public void setParamValue(Parameter parameter, double value) {
         if (getFreeParameters().contains(parameter)) {
             // Note this assumes the freeMappings are in the same order as the
-            // free freeParameters.                                        get
+            // free freeParameters.get
             int index = getFreeParameters().indexOf(parameter);
             Mapping mapping = this.freeMappings.get(index);
             mapping.setValue(value);

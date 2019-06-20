@@ -35,7 +35,7 @@ import java.text.NumberFormat;
  *
  * @author Frank Wimbely, Joseph Ramsey
  */
-class RocPlot extends JPanel implements PropertyChangeListener {
+public class RocPlot extends JPanel implements PropertyChangeListener {
 
     /**
      * The stored size of this component.
