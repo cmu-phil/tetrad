@@ -120,11 +120,6 @@ final class BayesPmEditorWizard extends JPanel {
     /**
      * ?
      */
-    private final Map<Object, Integer> labels = new HashMap<>();
-
-    /**
-     * ?
-     */
     private JSpinner numCategoriesSpinner;
 
     /**
@@ -471,6 +466,9 @@ final class BayesPmEditorWizard extends JPanel {
     class CategoryEditor extends JPanel {
 
         private static final long serialVersionUID = -7488118975131239436L;
+
+
+        private final Map<Object, Integer> labels = new HashMap<>();
 
         private BayesPm bayesPm;
         private Node node;

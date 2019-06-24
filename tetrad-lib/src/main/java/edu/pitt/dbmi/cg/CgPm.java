@@ -590,6 +590,14 @@ public final class CgPm implements PM, TetradSerializable {
 		return semPm;
 	}
 
+	public Node getDiscreteVariable(Node node) {
+		return discreteNodesToVariables.get(node);
+	}
+	
+	public Node getContinuousVariable(Node node) {
+		return continuousNodesToVariables.get(node);
+	}
+	
 	public List<Node> getCgDiscreteVariableNodes() {
 		return cgDiscreteVariableNodes;
 	}
