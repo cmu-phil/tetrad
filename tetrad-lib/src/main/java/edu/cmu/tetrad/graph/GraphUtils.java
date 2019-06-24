@@ -44,7 +44,21 @@ import java.io.Reader;
 import java.io.Writer;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
-import java.util.*;
+import java.util.ArrayDeque;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.Formatter;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Queue;
+import java.util.Set;
 import java.util.concurrent.RecursiveTask;
 import java.util.regex.Matcher;
 import nu.xom.Builder;
@@ -2108,27 +2122,27 @@ public final class GraphUtils {
         StringBuilder builder = new StringBuilder();
         builder.append("digraph g {\n");
         for (Edge edge : graph.getEdges()) {
-        	String n1 = edge.getNode1().getName();
-        	String n2 = edge.getNode2().getName();
-        	
-        	Endpoint end1 = edge.getEndpoint1();
-        	Endpoint end2 = edge.getEndpoint2();
-        	
-        	if(n1.compareTo(n2) > 0) {
-        		String temp = n1;
-        		n1 = n2;
-        		n2 = temp;
-        		
-        		Endpoint tmp = end1;
-        		end1 = end2;
-        		end2 = tmp;
-        	}
-            builder.append(" \"").append(n1).append("\" -> \"").append(n2).append("\" [");
-            
-            if(end1 != Endpoint.TAIL) {
-            	builder.append("dir=both, ");
+            String n1 = edge.getNode1().getName();
+            String n2 = edge.getNode2().getName();
+
+            Endpoint end1 = edge.getEndpoint1();
+            Endpoint end2 = edge.getEndpoint2();
+
+            if (n1.compareTo(n2) > 0) {
+                String temp = n1;
+                n1 = n2;
+                n2 = temp;
+
+                Endpoint tmp = end1;
+                end1 = end2;
+                end2 = tmp;
             }
-            
+            builder.append(" \"").append(n1).append("\" -> \"").append(n2).append("\" [");
+
+            if (end1 != Endpoint.TAIL) {
+                builder.append("dir=both, ");
+            }
+
             builder.append("arrowtail=");
             if (end1 == Endpoint.ARROW) {
                 builder.append("normal");
@@ -2145,56 +2159,56 @@ public final class GraphUtils {
             } else if (end2 == Endpoint.CIRCLE) {
                 builder.append("odot");
             }
-            
+
             // Bootstrapping
             List<EdgeTypeProbability> edgeTypeProbabilities = edge.getEdgeTypeProbabilities();
-            if(edgeTypeProbabilities != null && !edgeTypeProbabilities.isEmpty()) {
-            	String label = n1 + " - " + n2;
-            	for(EdgeTypeProbability edgeTypeProbability : edgeTypeProbabilities) {
-            		EdgeType edgeType = edgeTypeProbability.getEdgeType();
-            		double probability = edgeTypeProbability.getProbability();
-            		if(probability > 0) {
-                		String edgeTypeString = "";
-                		switch(edgeType) {
-                		case nil:
-                			edgeTypeString = "no edge";
-                			break;
-                		case ta:
-                			edgeTypeString = "-->";
-                			break;
-                		case at:
-                			edgeTypeString = "<--";
-                			break;
-                		case ca:
-                			edgeTypeString = "o->";
-                			break;
-                		case ac:
-                			edgeTypeString = "<-o";
-                			break;
-                		case cc:
-                			edgeTypeString = "o-o";
-                			break;
-                		case aa:
-                			edgeTypeString = "<->";
-                			break;
-                		case tt:
-                			edgeTypeString = "---";
-                			break;
-                		}
-                		
-                		List<Property> properties = edgeTypeProbability.getProperties();
-            			if(properties != null && properties.size() > 0) {
-            	        	for(Property property : properties) {
-            	        		edgeTypeString += " " + property.toString();
-            	        	}
-            	        }
-                		
-                		label += "\\n[" + edgeTypeString + "]:" + edgeTypeProbability.getProbability();
-            		}
-            	}
-            	builder.append(", label=\"" + label + "\", fontname=courier");
+            if (edgeTypeProbabilities != null && !edgeTypeProbabilities.isEmpty()) {
+                String label = n1 + " - " + n2;
+                for (EdgeTypeProbability edgeTypeProbability : edgeTypeProbabilities) {
+                    EdgeType edgeType = edgeTypeProbability.getEdgeType();
+                    double probability = edgeTypeProbability.getProbability();
+                    if (probability > 0) {
+                        String edgeTypeString = "";
+                        switch (edgeType) {
+                            case nil:
+                                edgeTypeString = "no edge";
+                                break;
+                            case ta:
+                                edgeTypeString = "-->";
+                                break;
+                            case at:
+                                edgeTypeString = "<--";
+                                break;
+                            case ca:
+                                edgeTypeString = "o->";
+                                break;
+                            case ac:
+                                edgeTypeString = "<-o";
+                                break;
+                            case cc:
+                                edgeTypeString = "o-o";
+                                break;
+                            case aa:
+                                edgeTypeString = "<->";
+                                break;
+                            case tt:
+                                edgeTypeString = "---";
+                                break;
+                        }
+
+                        List<Property> properties = edgeTypeProbability.getProperties();
+                        if (properties != null && properties.size() > 0) {
+                            for (Property property : properties) {
+                                edgeTypeString += " " + property.toString();
+                            }
+                        }
+
+                        label += "\\n[" + edgeTypeString + "]:" + edgeTypeProbability.getProbability();
+                    }
+                }
+                builder.append(", label=\"" + label + "\", fontname=courier");
             }
-            
+
             builder.append("]; \n");
         }
         builder.append("}");
@@ -2643,63 +2657,65 @@ public final class GraphUtils {
             Edge _edge = new Edge(_from, _to, _end1, _end2);
 
             //Bootstrapping
-            if (line.indexOf("[no edge]") > -1 || 
-            		line.indexOf(" --> ") > -1 ||
-            		line.indexOf(" <-- ") > -1 ||
-            		line.indexOf(" o-> ") > -1 ||
-            		line.indexOf(" <-o ") > -1 ||
-            		line.indexOf(" o-o ") > -1 ||
-            		line.indexOf(" <-> ") > -1 ||
-            		line.indexOf(" --- ") > -1) {
+            if (line.indexOf("[no edge]") > -1
+                    || line.indexOf(" --> ") > -1
+                    || line.indexOf(" <-- ") > -1
+                    || line.indexOf(" o-> ") > -1
+                    || line.indexOf(" <-o ") > -1
+                    || line.indexOf(" o-o ") > -1
+                    || line.indexOf(" <-> ") > -1
+                    || line.indexOf(" --- ") > -1) {
 
                 // String bootstrap_format = "[no edge]:0.0000;[n1 --> n2]:0.0000;[n1 <-- n2]:0.0000;[n1 o-> n2]:0.0000;[n1 <-o n2]:0.0000;[n1 o-o n2]:0.0000;[n1 <-> n2]:0.0000;[n1 --- n2]:0.0000;";
                 int last_semicolon = line.lastIndexOf(";");
-            	String bootstraps = "";
-            	if(last_semicolon != -1) {
-            		bootstraps = line.substring(0, last_semicolon + 1);
-            	}else {
-            		bootstraps = line;
-            	}
-                
+                String bootstraps = "";
+                if (last_semicolon != -1) {
+                    bootstraps = line.substring(0, last_semicolon + 1);
+                } else {
+                    bootstraps = line;
+                }
+
                 line = line.substring(bootstraps.length()).trim();
 
                 String[] bootstrap = bootstraps.split(";");
-                for(int i=0;i<bootstrap.length;i++) {
-                	String[] token = bootstrap[i].split(":");
-                	if(token == null || token.length < 2) continue;
+                for (int i = 0; i < bootstrap.length; i++) {
+                    String[] token = bootstrap[i].split(":");
+                    if (token == null || token.length < 2) {
+                        continue;
+                    }
 
-                	String orient = token[0];
-                	double prob = Double.parseDouble(token[1]);
-                	
-                	if(orient.equalsIgnoreCase("[no edge]")) {
+                    String orient = token[0];
+                    double prob = Double.parseDouble(token[1]);
+
+                    if (orient.equalsIgnoreCase("[no edge]")) {
                         _edge.addEdgeTypeProbability(new EdgeTypeProbability(EdgeType.nil, prob));
-                	}else {
-                		orient = orient.replace("[", "").replace("]", "");
-                		EdgeTypeProbability etp = null;
-                		if(orient.indexOf(" --> ") > -1) {
-                			etp = new EdgeTypeProbability(EdgeType.ta, prob);
-                    	}else if(orient.indexOf(" <-- ") > -1) {
-                    		etp = new EdgeTypeProbability(EdgeType.at, prob);
-                    	}else if(orient.indexOf(" o-> ") > -1) {
-                    		etp = new EdgeTypeProbability(EdgeType.ca, prob);
-                    	}else if(orient.indexOf(" <-o ") > -1) {
-                    		etp = new EdgeTypeProbability(EdgeType.ac, prob);
-                    	}else if(orient.indexOf(" o-o ") > -1) {
-                    		etp = new EdgeTypeProbability(EdgeType.cc, prob);
-                    	}else if(orient.indexOf(" <-> ") > -1) {
-                    		etp = new EdgeTypeProbability(EdgeType.aa, prob);
-                    	}else {// [n1 --- n2]
-                    		etp = new EdgeTypeProbability(EdgeType.tt, prob);
-                    	}
-                		String[] _edge_property = orient.trim().split("\\s+");
-                		if(_edge_property != null && _edge_property.length > 3) {
-                			for(int j=3;j<_edge_property.length;j++) {
-                				etp.addProperty(Edge.Property.valueOf(_edge_property[j]));
-                			}
-                		}
-                		_edge.addEdgeTypeProbability(etp);
-                	}
-                    
+                    } else {
+                        orient = orient.replace("[", "").replace("]", "");
+                        EdgeTypeProbability etp = null;
+                        if (orient.indexOf(" --> ") > -1) {
+                            etp = new EdgeTypeProbability(EdgeType.ta, prob);
+                        } else if (orient.indexOf(" <-- ") > -1) {
+                            etp = new EdgeTypeProbability(EdgeType.at, prob);
+                        } else if (orient.indexOf(" o-> ") > -1) {
+                            etp = new EdgeTypeProbability(EdgeType.ca, prob);
+                        } else if (orient.indexOf(" <-o ") > -1) {
+                            etp = new EdgeTypeProbability(EdgeType.ac, prob);
+                        } else if (orient.indexOf(" o-o ") > -1) {
+                            etp = new EdgeTypeProbability(EdgeType.cc, prob);
+                        } else if (orient.indexOf(" <-> ") > -1) {
+                            etp = new EdgeTypeProbability(EdgeType.aa, prob);
+                        } else {// [n1 --- n2]
+                            etp = new EdgeTypeProbability(EdgeType.tt, prob);
+                        }
+                        String[] _edge_property = orient.trim().split("\\s+");
+                        if (_edge_property != null && _edge_property.length > 3) {
+                            for (int j = 3; j < _edge_property.length; j++) {
+                                etp.addProperty(Edge.Property.valueOf(_edge_property[j]));
+                            }
+                        }
+                        _edge.addEdgeTypeProbability(etp);
+                    }
+
                 }
             }
 
@@ -3049,7 +3065,9 @@ public final class GraphUtils {
         for (Edge edge : graph.getEdges(node1)) {
             Node child = Edges.traverseDirected(node1, edge);
 
-            if (graph.getEdges(node1, child).size() == 2) return true;
+            if (graph.getEdges(node1, child).size() == 2) {
+                return true;
+            }
 
             if (child == null) {
                 continue;
@@ -4018,17 +4036,17 @@ public final class GraphUtils {
         Formatter fmt = new Formatter();
         fmt.format("%s%n%n", graphNodesToText(graph, "Graph Nodes:", ';'));
         fmt.format("%s%n", graphEdgesToText(graph, "Graph Edges:"));
-        
+
         // Graph Attributes
         String graphAttributes = graphAttributesToText(graph, "Graph Attributes:");
-        if(graphAttributes != null) {
-        	fmt.format("%s%n", graphAttributes);
+        if (graphAttributes != null) {
+            fmt.format("%s%n", graphAttributes);
         }
-        
+
         // Nodes Attributes
         String graphNodeAttributes = graphNodeAttributesToText(graph, "Graph Node Attributes:", ';');
-        if(graphNodeAttributes != null) {
-        	fmt.format("%s%n", graphNodeAttributes);
+        if (graphNodeAttributes != null) {
+            fmt.format("%s%n", graphNodeAttributes);
         }
 
         Set<Triple> ambiguousTriples = graph.getAmbiguousTriples();
@@ -4051,84 +4069,81 @@ public final class GraphUtils {
 
     public static String graphNodeAttributesToText(Graph graph, String title, char delimiter) {
         List<Node> nodes = graph.getNodes();
-        
+
         Map<String, Map<String, Object>> graphNodeAttributes = new LinkedHashMap<>();
         for (Node node : nodes) {
             Map<String, Object> attributes = node.getAllAttributes();
-            
-            if(!attributes.isEmpty()) {
-            	for(String key : attributes.keySet()) {
-            		Object value = attributes.get(key);
-            		
-            		Map<String, Object> nodeAttributes = graphNodeAttributes.get(key);
-            		if(nodeAttributes == null) {
-            			nodeAttributes = new LinkedHashMap<>();
-            		}
-            		nodeAttributes.put(node.getName(), value);
-            		
-            		graphNodeAttributes.put(key, nodeAttributes);
-            	}
-            }
-        } 
 
-        if(!graphNodeAttributes.isEmpty()) {
-        	StringBuilder sb = (title == null || title.length() == 0)
+            if (!attributes.isEmpty()) {
+                for (String key : attributes.keySet()) {
+                    Object value = attributes.get(key);
+
+                    Map<String, Object> nodeAttributes = graphNodeAttributes.get(key);
+                    if (nodeAttributes == null) {
+                        nodeAttributes = new LinkedHashMap<>();
+                    }
+                    nodeAttributes.put(node.getName(), value);
+
+                    graphNodeAttributes.put(key, nodeAttributes);
+                }
+            }
+        }
+
+        if (!graphNodeAttributes.isEmpty()) {
+            StringBuilder sb = (title == null || title.length() == 0)
                     ? new StringBuilder()
                     : new StringBuilder(String.format("%s", title));
-            
-            for(String key : graphNodeAttributes.keySet()) {
-            	Map<String, Object> nodeAttributes = graphNodeAttributes.get(key);
+
+            for (String key : graphNodeAttributes.keySet()) {
+                Map<String, Object> nodeAttributes = graphNodeAttributes.get(key);
                 int size = nodeAttributes.size();
                 int count = 0;
-                
+
                 sb.append(String.format("%n%s: [", key));
-                
-                for(String nodeName : nodeAttributes.keySet()) {
-                	Object value = nodeAttributes.get(nodeName);
-                	
-                	sb.append(String.format("%s: %f", nodeName, value));
-                	
-                	count++;
-                	
-                	if(count < size) {
-                		sb.append(delimiter);
-                	}
-                	
+
+                for (String nodeName : nodeAttributes.keySet()) {
+                    Object value = nodeAttributes.get(nodeName);
+
+                    sb.append(String.format("%s: %f", nodeName, value));
+
+                    count++;
+
+                    if (count < size) {
+                        sb.append(delimiter);
+                    }
+
                 }
-            	
+
                 sb.append("]");
             }
-                    
-        	
+
             return sb.toString();
         }
-        
 
-    	
-    	return null;
+        return null;
     }
-    
+
     public static String graphAttributesToText(Graph graph, String title) {
-        Map<String,Object> attributes = graph.getAllAttributes();
-        if(!attributes.isEmpty()) {
-        	StringBuilder sb = (title == null || title.length() == 0)
+        Map<String, Object> attributes = graph.getAllAttributes();
+        if (!attributes.isEmpty()) {
+            StringBuilder sb = (title == null || title.length() == 0)
                     ? new StringBuilder()
                     : new StringBuilder(String.format("%s%n", title));
-                    
-        	for(String key : attributes.keySet()) {
-        		Object value = attributes.get(key);
-        		
-        		sb.append(key);
-        		sb.append(": ");
-        		sb.append(String.format("%f%n", value));
-        	}
 
-        	return sb.toString();
+            for (String key : attributes.keySet()) {
+                Object value = attributes.get(key);
+
+                sb.append(key);
+                sb.append(": ");
+                sb.append(String.format("%f%n", value));
+            }
+
+            return sb.toString();
         }
-    	
-    	return null;
+
+        return null;
     }
-    
+
     public static String graphNodesToText(Graph graph, String title, char delimiter) {
         StringBuilder sb = (title == null || title.length() == 0)
                 ? new StringBuilder()
@@ -4166,14 +4181,12 @@ public final class GraphUtils {
 
             // We will print edge's properties in the edge (via toString() function) level.
             //List<Edge.Property> properties = edge.getProperties();
-
             if (count < size) {
                 String f = "%d. %s";
 
                 //for (int i = 0; i < properties.size(); i++) {
                 //    f += " %s";
                 //}
-
                 Object[] o = new Object[2 /*+ properties.size()*/];
 
                 o[0] = count;
@@ -4182,7 +4195,6 @@ public final class GraphUtils {
                 //for (int i = 0; i < properties.size(); i++) {
                 //    o[2 + i] = properties.get(i);
                 //}
-
                 fmt.format(f, o);
 
                 fmt.format("\n");
@@ -4200,7 +4212,6 @@ public final class GraphUtils {
                 //for (int i = 0; i < properties.size(); i++) {
                 //    o[2 + i] = properties.get(i);
                 //}
-
                 fmt.format(f, o);
 
                 fmt.format("\n");
