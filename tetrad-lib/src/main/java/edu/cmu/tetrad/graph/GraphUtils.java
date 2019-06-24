@@ -46,6 +46,7 @@ import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
@@ -2586,30 +2587,30 @@ public final class GraphUtils {
     }
 
     public static Graph readerToGraphTxt(Reader reader) throws IOException {
-        BufferedReader in = new BufferedReader(reader);
-
-        while (!in.readLine().trim().equals("Graph Nodes:")) ;
-
-        String line;
         Graph graph = new EdgeListGraph();
-
-        while (!(line = in.readLine().trim()).equals("")) {
-            String[] tokens = line.split(";");
-
-            for (String token : tokens) {
-                graph.addNode(new GraphNode(token));
+        try (BufferedReader in = new BufferedReader(reader)) {
+            for (String line = in.readLine(); line != null; line = in.readLine()) {
+                line = line.trim();
+                switch (line) {
+                    case "Graph Nodes:":
+                        extractGraphNodes(graph, in);
+                        break;
+                    case "Graph Edges:":
+                        extractGraphEdges(graph, in);
+                        break;
+                }
             }
         }
 
-        while (!in.readLine().trim().equals("Graph Edges:")) ;
+        return graph;
+    }
 
-        while ((line = in.readLine()) != null) {
+    private static void extractGraphEdges(Graph graph, BufferedReader in) throws IOException {
+        for (String line = in.readLine(); line != null; line = in.readLine()) {
             line = line.trim();
-            if (line.equals("")) {
+            if (line.isEmpty()) {
                 break;
             }
-
-            System.out.println(line);
 
             String[] tokens = line.split("\\s+");
 
@@ -2633,6 +2634,9 @@ public final class GraphUtils {
             char end2 = edge.charAt(2);
 
             Endpoint _end1, _end2;
+
+            switch (end1) {
+            }
 
             if (end1 == '<') {
                 _end1 = Endpoint.ARROW;
@@ -2729,8 +2733,19 @@ public final class GraphUtils {
 
             graph.addEdge(_edge);
         }
+    }
 
-        return graph;
+    private static void extractGraphNodes(Graph graph, BufferedReader in) throws IOException {
+        for (String line = in.readLine(); line != null; line = in.readLine()) {
+            line = line.trim();
+            if (line.isEmpty()) {
+                break;
+            }
+
+            Arrays.stream(line.split("[,;]"))
+                    .map(GraphNode::new)
+                    .forEach(graph::addNode);
+        }
     }
 
     public static Graph readerToGraphJson(Reader reader) throws IOException {
