@@ -87,9 +87,9 @@ public final class ParamDescriptions {
                     }
 
                     if (!valueType.equals(VALUE_TYPE_STRING) && defaultValue.equals("")) {
-                        System.out.println("Invalida default value of parameter: " + paramName);
+                        System.out.println("Invalid default value of parameter: " + paramName);
                     }
-                    
+
                     ParamDescription paramDescription = null;
 
                     if (valueType.equalsIgnoreCase(VALUE_TYPE_INTEGER)) {
@@ -126,7 +126,11 @@ public final class ParamDescriptions {
     }
 
     public ParamDescription get(String name) {
-        return map.get(name);
+        ParamDescription paramDesc = map.get(name);
+
+        return (paramDesc == null)
+                ? new ParamDescription(name, String.format("Please add a description for %s to the manual.", name), "", 0)
+                : paramDesc;
     }
 
     public void put(String name, ParamDescription paramDescription) {
