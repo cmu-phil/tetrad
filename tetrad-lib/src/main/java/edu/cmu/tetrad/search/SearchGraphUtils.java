@@ -2269,20 +2269,13 @@ public final class SearchGraphUtils {
     }
 
     public static Graph chooseDagInPattern(Graph graph) {
-        return new DagInPatternIterator(graph).next();
+        graph.getEdges().forEach(e -> {
+            if (!(Edges.isDirectedEdge(e) || Edges.isUndirectedEdge(e))) {
+                throw new IllegalArgumentException("This edge in the graph is not directed nor undirected: " + e);
+            }
+        });
 
-//        Graph newGraph = new EdgeListGraph(graph);
-//
-//        for(Edge edge : newGraph.getEdges()){
-//            if(Edges.isBidirectedEdge(edge)){
-//                newGraph.removeEdge(edge);
-//            }
-//        }
-//
-//        PatternToDag search = new PatternToDag(new EdgeListGraph(newGraph));
-//        Graph dag = search.patternToDagMeek();
-//        GraphUtils.arrangeBySourceGraph(dag, graph);
-//        return dag;
+        return new DagInPatternIterator(graph).next();
     }
 
     public static Graph chooseMagInPag(Graph graph) {
