@@ -29,6 +29,8 @@ import edu.cmu.tetrad.util.*;
 import org.apache.commons.math3.distribution.NormalDistribution;
 import org.apache.commons.math3.linear.SingularMatrixException;
 
+import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.PrintStream;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
@@ -143,6 +145,7 @@ public final class IndTestFisherZ implements IndependenceTest {
 
         this.dsep = new IndTestDSep(trueGraph);
     }
+
     /**
      * Constructs a new Fisher Z independence test with  the listed arguments.
      *
@@ -236,7 +239,12 @@ public final class IndTestFisherZ implements IndependenceTest {
 
         final boolean independent = abs(fisherZ) < cutoff;
 
-        System.out.println((dsep.isIndependent(x, y, z) ? 0 : 1) + "\t" + (independent ? 0 : 1));
+        NumberFormat nf = new DecimalFormat("0.0000000000");
+
+        MyFileRef.myFileOutput.println((dsep.isIndependent(x, y, z) ? 1 : 0) + "\t" + z.size() + "\t" + (independent ? 1 : 0) + "\t" + nf.format(getPValue())
+                + "\t" + x + "\t" + y + "\t" + z);
+        //System.out.println("\n");
+        MyFileRef.myFileOutput.flush();
 
         return independent;
     }

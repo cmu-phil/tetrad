@@ -43,6 +43,7 @@ import edu.cmu.tetrad.algcomparison.utils.TakesInitialGraph;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.DagToPag2;
+import edu.cmu.tetrad.search.MyFileRef;
 import edu.cmu.tetrad.search.SearchGraphUtils;
 import edu.cmu.tetrad.util.*;
 import org.reflections.Reflections;
@@ -558,6 +559,7 @@ public class Comparison {
                 PrintStream out = new PrintStream(new FileOutputStream(new File(subdir, "parameters.txt")));
                 out.println(simulationWrapper.getDescription());
                 out.println(simulationWrapper.getSimulationSpecificParameters());
+                //out.println((dsep.isIndependent(x, y, z) ? 0 : 1) + "\t" + (independent ? 0 : 1) + "\t" + getPValue());
                 out.close();
             }
         } catch (IOException e) {
@@ -1226,11 +1228,20 @@ public class Comparison {
         System.out.println("Run " + (run.getRunIndex() + 1));
         System.out.println();
 
+
         AlgorithmSimulationWrapper algorithmSimulationWrapper = algorithmSimulationWrappers.get(run.getAlgSimIndex());
         AlgorithmWrapper algorithmWrapper = algorithmSimulationWrapper.getAlgorithmWrapper();
         SimulationWrapper simulationWrapper = algorithmSimulationWrapper.getSimulationWrapper();
         DataModel data = simulationWrapper.getDataModel(run.getRunIndex());
         Graph trueGraph = simulationWrapper.getTrueGraph(run.getRunIndex());
+
+        try {
+            MyFileRef.myFileOutput = new PrintStream(
+                    new File("/Users/jonathanlozada/IdeaProjects/Tetrad/" +
+                            "comparison-lozada/fileout.run" + (run.getRunIndex() + 1) + "." + (run.getAlgSimIndex() + 1) + ".txt"));
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
 
         System.out.println((run.getAlgSimIndex() + 1) + ". " + algorithmWrapper.getDescription()
                 + " simulationWrapper: " + simulationWrapper.getDescription());
@@ -1273,6 +1284,8 @@ public class Comparison {
                 Parameters _params = algorithmWrapper.getAlgorithmSpecificParameters();
                 out = algorithm.search(dataModel, _params);
             }
+
+            MyFileRef.myFileOutput.close();
         } catch (Exception e) {
             System.out.println("Could not run " + algorithmWrapper.getDescription());
             e.printStackTrace();

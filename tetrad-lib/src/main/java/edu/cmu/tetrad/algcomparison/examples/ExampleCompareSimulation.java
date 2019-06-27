@@ -36,6 +36,8 @@ import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.RandomUtil;
 import org.apache.commons.lang3.RandomUtils;
 
+import java.io.*;
+
 /**
  * An example script to simulate data and run a comparison analysis on it.
  *
@@ -47,11 +49,11 @@ public class ExampleCompareSimulation {
 
         Parameters parameters = new Parameters();
         https://arxiv.org/abs/1607.08110
-        parameters.set("numRuns", 1);
+        parameters.set("numRuns", 12);
         parameters.set("numMeasures", 10);
         parameters.set("avgDegree", 2);
-        parameters.set("sampleSize", 5000);
-        parameters.set("alpha", .000001);
+        parameters.set("sampleSize", 100, 100, 100);
+        parameters.set("alpha", .05);
         parameters.set("verbose", false);
 
         Statistics statistics = new Statistics();
@@ -66,6 +68,8 @@ public class ExampleCompareSimulation {
         statistics.add(new F1Arrow());
         statistics.add(new SHD());
         statistics.add(new ElapsedTime());
+        statistics.add(new NumberOfEdgesTrue());
+
 
         statistics.setWeight("AP", 1.0);
         statistics.setWeight("AR", 0.5);
@@ -97,6 +101,10 @@ public class ExampleCompareSimulation {
         comparison.setShowUtilities(true);
         comparison.setParallelized(true);
 
+        //PrintStream out = new PrintStream(new FileOutputStream("indTest_PValue.txt", append), autoFlush);
+        //System.setOut(out);
+
+        //comparison.saveToFiles("comparison-lozada", simulation, parameters);
         comparison.compareFromSimulations("comparison-lozada", simulations, algorithms, statistics, parameters);
     }
 }
