@@ -142,7 +142,9 @@ public class TextFileUtils {
                                             if (c == quoteChar) {
                                                 hasQuoteChar = !hasQuoteChar;
                                             } else if (!hasQuoteChar) {
-                                                characters[c]++;
+                                                if (c >= 0 && c < characters.length) {
+                                                    characters[c]++;
+                                                }
                                             }
                                         }
                                         byteBuffer.clear();
@@ -151,7 +153,9 @@ public class TextFileUtils {
                                     if (currChar == quoteChar) {
                                         hasQuoteChar = !hasQuoteChar;
                                     } else if (!hasQuoteChar) {
-                                        characters[currChar]++;
+                                        if (currChar >= 0 && currChar < characters.length) {
+                                            characters[currChar]++;
+                                        }
                                     }
                                 }
                             }
