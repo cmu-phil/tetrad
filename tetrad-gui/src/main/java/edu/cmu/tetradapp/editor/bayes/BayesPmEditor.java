@@ -182,7 +182,7 @@ public class BayesPmEditor extends JPanel
     }
 
     /**
-     * Sets the name fo the Bayes PM.
+     * Sets the name for the Bayes PM.
      */
     public void setName(String name) {
         String oldName = getName();

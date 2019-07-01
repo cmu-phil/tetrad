@@ -70,7 +70,9 @@ import javax.swing.border.EmptyBorder;
  */
 final class BayesPmEditorWizard extends JPanel {
 
-    /**
+	private static final long serialVersionUID = 1L;
+
+	/**
      * The BayesPm model being edited.
      */
     private BayesPm bayesPm;

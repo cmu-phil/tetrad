@@ -241,6 +241,15 @@
                 <editor-class>edu.cmu.tetradapp.editor.sem.GeneralizedSemPmEditor
                 </editor-class>
             </model>
+            <model name="Conditional Gaussian Parametric Model" acronym="CG PM" help="sem_im">
+                <logger>
+                    <event id="info" description="Information" default="on"/>
+                    <event id="pm" description="Parametric Model" default="on"/>
+                </logger>
+                <model-class>edu.cmu.tetradapp.model.CgPmWrapper</model-class>
+                <editor-class>edu.cmu.tetradapp.editor.cg.CgPmEditor
+                </editor-class>
+            </model>
         </models>
         <display-component image="pmIcon.gif"/>
         <model-chooser title="Types of Parameterized Models"/>

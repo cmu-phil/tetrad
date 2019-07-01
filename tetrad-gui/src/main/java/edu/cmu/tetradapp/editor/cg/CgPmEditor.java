@@ -5,10 +5,15 @@ package edu.cmu.tetradapp.editor.cg;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 
+import javax.swing.Box;
+import javax.swing.JComboBox;
 import javax.swing.JComponent;
+import javax.swing.JLabel;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JPanel;
@@ -33,7 +38,21 @@ public class CgPmEditor extends JPanel implements PropertyChangeListener, Delega
 
 	private final JPanel targetPanel;
 	private final CgPmWrapper wrapper;
-	
+    /**
+     * True iff the editing of measured variables is allowed.
+     */
+    private boolean editingMeasuredVariablesAllowed = true;
+
+    /**
+     * True iff the editing of latent variables is allowed.
+     */
+    private boolean editingLatentVariablesAllowed = true;
+
+    /**
+     * The wizard that lets the user edit values.
+     */
+    private CgPmEditorWizard wizard;
+    
 	public CgPmEditor(final CgPmWrapper wrapper) {
 		this.wrapper = wrapper;
 		setLayout(new BorderLayout());
@@ -45,6 +64,35 @@ public class CgPmEditor extends JPanel implements PropertyChangeListener, Delega
 		
 		add(targetPanel, BorderLayout.CENTER);
         validate();
+        
+        if(wrapper.getNumModels() > 1) {
+        	final JComboBox<Integer> comp = new JComboBox<>();
+
+            for (int i = 0; i < wrapper.getNumModels(); i++) {
+                comp.addItem(i + 1);
+            }
+
+            comp.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    wrapper.setModelIndex(((Integer) comp.getSelectedItem()).intValue() - 1);
+                    setEditorPanel();
+                    validate();
+                }
+            });
+            
+            comp.setMaximumSize(comp.getPreferredSize());
+
+            Box b = Box.createHorizontalBox();
+            b.add(new JLabel("Using model"));
+            b.add(comp);
+            b.add(new JLabel("from "));
+            b.add(new JLabel(wrapper.getModelSourceName()));
+            b.add(Box.createHorizontalGlue());
+
+            add(b, BorderLayout.NORTH);
+        }
+        
 	}
 	
 	private void setEditorPanel() {
@@ -83,18 +131,73 @@ public class CgPmEditor extends JPanel implements PropertyChangeListener, Delega
         
         setName("Conditional Gaussian PM Editor");
         wizard.addPropertyChangeListener(this);
+        
+        wizard.setEditingLatentVariablesAllowed(isEditingLatentVariablesAllowed());
+        wizard.setEditingMeasuredVariablesAllowed(isEditingMeasuredVariablesAllowed());
+        
+        this.wizard = wizard;
+        
+        targetPanel.add(panel, BorderLayout.CENTER);
 	}
 	
+    /**
+     * True iff the editing of measured variables is allowed.
+     */
+    private boolean isEditingMeasuredVariablesAllowed() {
+        return editingMeasuredVariablesAllowed;
+    }
+
+    /**
+     * True iff the editing of measured variables is allowed.
+     */
+    public void setEditingMeasuredVariablesAllowed(boolean editingMeasuredVariablesAllowed) {
+        this.editingMeasuredVariablesAllowed = editingMeasuredVariablesAllowed;
+        wizard.setEditingMeasuredVariablesAllowed(isEditingMeasuredVariablesAllowed());
+    }
+
+    /**
+     * True iff the editing of latent variables is allowed.
+     */
+    private boolean isEditingLatentVariablesAllowed() {
+        return editingLatentVariablesAllowed;
+    }
+
+    /**
+     * True iff the editing of latent variables is allowed.
+     */
+    public void setEditingLatentVariablesAllowed(boolean editingLatentVariablesAllowed) {
+        this.editingLatentVariablesAllowed = editingLatentVariablesAllowed;
+        wizard.setEditingLatentVariablesAllowed(isEditingLatentVariablesAllowed());
+    }
+
 	@Override
 	public JComponent getEditDelegate() {
-		// TODO Auto-generated method stub
-		return null;
+		return wizard;
 	}
 
 	@Override
-	public void propertyChange(PropertyChangeEvent evt) {
-		// TODO Auto-generated method stub
+	public void propertyChange(PropertyChangeEvent e) {
+        if ("editorClosing".equals(e.getPropertyName())) {
+            firePropertyChange("editorClosing", null, getName());
+        }
 
+        if ("closeFrame".equals(e.getPropertyName())) {
+            firePropertyChange("closeFrame", null, null);
+        }
+
+        if ("modelChanged".equals(e.getPropertyName())) {
+            firePropertyChange("modelChanged", e.getOldValue(),
+                    e.getNewValue());
+        }
 	}
+	
+    /**
+     * Sets the name for the CG PM.
+     */
+    public void setName(String name) {
+        String oldName = getName();
+        super.setName(name);
+        firePropertyChange("name", oldName, getName());
+    }
 
 }

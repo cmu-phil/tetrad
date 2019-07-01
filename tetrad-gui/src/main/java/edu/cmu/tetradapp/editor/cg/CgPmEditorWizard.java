@@ -12,9 +12,7 @@ import java.awt.event.KeyEvent;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 import javax.swing.AbstractAction;
@@ -22,13 +20,13 @@ import javax.swing.Action;
 import javax.swing.Box;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
-import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 import javax.swing.JSpinner;
 import javax.swing.KeyStroke;
 import javax.swing.SpinnerNumberModel;
@@ -81,6 +79,11 @@ public class CgPmEditorWizard extends JPanel {
     private CgCategoryEditor categoryEditor;
 
     /**
+     * A reference to the category editor.
+     */
+    private CgSemParameterEditor semParameterEditor;
+
+    /**
      * A reference to the spinner model.
      */
     private SpinnerNumberModel spinnerModel;
@@ -94,27 +97,19 @@ public class CgPmEditorWizard extends JPanel {
     /**
      * ?
      */
-    private List copiedCategories;
-
-    /**
-     * ?
-     */
-    private final Map<Object, Integer> labels = new HashMap<>();
+    private List<String> copiedCategories;
 
     /**
      * ?
      */
     private JSpinner numCategoriesSpinner;
 
-    /**
-     *
-     */
     private JMenu presetMenu;
-
+    
     private JPanel editorWizard;
     
-    private JComponent bayesEditorWizard = null;
-    private JComponent semEditorWizard = null;
+    private JPanel bayesEditorWizard;
+    private JPanel semEditorWizard;
     
     /**
      * This is the wizard for the PMEditor class. Its function is to allow the
@@ -151,16 +146,12 @@ public class CgPmEditorWizard extends JPanel {
         b2.add(variableChooser);
         b2.add(nextButton);
         b2.add(Box.createHorizontalGlue());
+        
         b1.add(b2);
         b1.add(Box.createVerticalStrut(10));
 
-        JMenuBar menuBar = createMenuBar();
-
-        b1.setBorder(new EmptyBorder(10, 10, 0, 10));
-
         JPanel headerPanel = new JPanel();
         headerPanel.setLayout(new BorderLayout());
-        headerPanel.add(menuBar, BorderLayout.NORTH);
         headerPanel.add(b1, BorderLayout.CENTER);
 
         editorWizard = new JPanel(new BorderLayout());
@@ -171,18 +162,30 @@ public class CgPmEditorWizard extends JPanel {
  
         workbench.addPropertyChangeListener((evt) -> {
             if (evt.getPropertyName().equals("selectedNodes")) {
-                List selection = (List) (evt.getNewValue());
-                if (selection.size() == 1) {
-                    Node node = (Node) (selection.get(0));
-                    variableChooser.setSelectedItem(node);
-                }
+            	if(evt.getNewValue() instanceof List<?>) {
+                    List<Node> selection = (List<Node>) (evt.getNewValue());
+                    if (selection.size() == 1) {
+                        Node node = (Node) (selection.get(0));
+                        variableChooser.setSelectedItem(node);
+                    }
+            	}
             }
         });
 
         variableChooser.addActionListener((e) -> {
-            Node n = (Node) (variableChooser.getSelectedItem());
-            workbench().scrollWorkbenchToNode(n);
-            setNode(n);
+            Node node = (Node) (variableChooser.getSelectedItem());
+            workbench().scrollWorkbenchToNode(node);
+            
+            //System.out.println("variableChooser.addActionListener: node: " + node);
+            
+            if(node instanceof DiscreteVariable) {
+                //System.out.println("variableChooser.addActionListener: setDiscreteNode");
+                setDiscreteNode(node);
+            } else {
+                //System.out.println("variableChooser.addActionListener: setContinuousNode");
+            	setContinuousNode(node);
+            }
+            
         });
 
         nextButton.addActionListener((e) -> {
@@ -202,29 +205,34 @@ public class CgPmEditorWizard extends JPanel {
         });
 
         editorWizard.removeAll();
-        if (numCategories != 0) {
-        	if(bayesEditorWizard == null) {
-            	bayesEditorWizard = createBayesEditorWizard(numCategories);
-        	}
-        	
+        if (getNode() instanceof DiscreteVariable) {
+        	bayesEditorWizard = createBayesEditorWizard(numCategories);
         	editorWizard.add(bayesEditorWizard, BorderLayout.CENTER);
         }else { // SEM or CG Continuous
-        	if(semEditorWizard == null) {
-        		semEditorWizard = createSemEditorWizard();
-        	}
-        	
+        	semEditorWizard = createSemEditorWizard();
         	editorWizard.add(semEditorWizard, BorderLayout.CENTER);
         }
 
+        revalidate();
+        repaint();
+        
         enableByNodeType();
     }
     
-    private JComponent createSemEditorWizard() {
-    	Box b1 = Box.createVerticalBox();
-    	return b1; 
+    private JPanel createSemEditorWizard() {
+    	semParameterEditor = new CgSemParameterEditor(cgPm, getNode());
+        
+        JScrollPane scrollPane = new JScrollPane(semParameterEditor);
+        scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+        scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
+        
+        JPanel panel = new JPanel(new BorderLayout());
+        panel.add(scrollPane, BorderLayout.CENTER);
+        
+    	return panel; 
     }
     
-    private JComponent createBayesEditorWizard(int numCategories) {
+    private JPanel createBayesEditorWizard(int numCategories) {
     	Box b1 = Box.createVerticalBox();
     	
     	spinnerModel = new SpinnerNumberModel(numCategories, 2, 1000, 1);
@@ -272,14 +280,24 @@ public class CgPmEditorWizard extends JPanel {
         b1.add(b6);
         b1.add(Box.createVerticalGlue());
         
-    	return b1;
+        b1.setBorder(new EmptyBorder(10, 10, 0, 10));
+        
+        JMenuBar menuBar = createMenuBar();
+        
+        JPanel panel = new JPanel(new BorderLayout());
+        panel.add(b1, BorderLayout.CENTER);
+        panel.add(menuBar, BorderLayout.NORTH);
+        
+    	return panel;
     }
     
     private void copyCategories() {
+    	this.copiedCategories = null;
         Node node = (Node) variableChooser.getSelectedItem();
-        DiscreteVariable variable
-                = (DiscreteVariable) cgPm.getDiscreteVariable(node);
-        this.copiedCategories = variable.getCategories();
+        if(node instanceof DiscreteVariable) {
+            DiscreteVariable variable = (DiscreteVariable) cgPm.getDiscreteVariable(node);
+            this.copiedCategories = variable.getCategories();
+        }
     }
 
     private void pasteCategories() {
@@ -288,7 +306,7 @@ public class CgPmEditorWizard extends JPanel {
         }
     }
 
-    private void setCategories(List categories) {
+    private void setCategories(List<String> categories) {
         categoryEditor.setCategories(categories);
         spinnerModel.setValue(categories.size());
         firePropertyChange("modelChanged", null, null);
@@ -303,27 +321,58 @@ public class CgPmEditorWizard extends JPanel {
     }
 
     private void enableByNodeType() {
-        if (!isEditingMeasuredVariablesAllowed() && categoryEditor.getNode().getNodeType() == NodeType.MEASURED) {
-            setEnabled(false);
-        } else if (!isEditingLatentVariablesAllowed() && categoryEditor.getNode().getNodeType() == NodeType.LATENT) {
-            setEnabled(false);
-        } else {
-            setEnabled(true);
-        }
+    	if(getNode() instanceof DiscreteVariable) {
+            if (!isEditingMeasuredVariablesAllowed() && categoryEditor.getNode().getNodeType() == NodeType.MEASURED) {
+                setEnabled(false);
+            } else if (!isEditingLatentVariablesAllowed() && categoryEditor.getNode().getNodeType() == NodeType.LATENT) {
+                setEnabled(false);
+            } else {
+                setEnabled(true);
+            }
+    	}
     }
 
-    private void setNode(Node node) {
-        categoryEditor.setNode(node);
+    private void setContinuousNode(Node node) {
+        editorWizard.removeAll();
+        
+        if(semEditorWizard == null) {
+            semEditorWizard = createSemEditorWizard();
+        }
+        
+        semParameterEditor.setNode(node);
+        
+    	editorWizard.add(semEditorWizard, BorderLayout.CENTER);
+    	
+    	revalidate();
+        repaint();
+        
+    	firePropertyChange("modelChanged", null, null);
+        enableByNodeType();
+    }
+    
+    private void setDiscreteNode(Node node) {
         int numCategories = cgPm.getDiscreteNumCategories(node);
+        
+        editorWizard.removeAll();
+        if(bayesEditorWizard == null) {
+        	bayesEditorWizard = createBayesEditorWizard(numCategories);
+        }
+        editorWizard.add(bayesEditorWizard, BorderLayout.CENTER);
+
+        categoryEditor.setNode(node);
+        
         spinnerModel.setValue(numCategories);
+        
+        revalidate();
+        repaint();
+        
         firePropertyChange("modelChanged", null, null);
         enableByNodeType();
     }
 
     private JMenuBar createMenuBar() {
         JMenuBar menuBar = new JMenuBar();
-        JMenu presetMenu = new JMenu("Presets");
-        this.presetMenu = presetMenu;
+        this.presetMenu = new JMenu("Presets");
         menuBar.add(presetMenu);
 
         for (int i = 0; i < presetStrings.length; i++) {
@@ -359,7 +408,7 @@ public class CgPmEditorWizard extends JPanel {
 
             @Override
             public void actionPerformed(ActionEvent e) {
-                List categories = new ArrayList();
+                List<String> categories = new ArrayList<>();
                 String ret = JOptionPane.showInputDialog(
                         JOptionUtils.centeringComp(),
                         "Please input a prefix string for the sequence: ",
@@ -472,6 +521,46 @@ public class CgPmEditorWizard extends JPanel {
         }
 
     }
+
+    public void setNode(Node node) {
+    	if(node instanceof DiscreteVariable) {
+    		setDiscreteNode(node);
+    	} else {
+    		setContinuousNode(node);
+    	}
+    }
+    
+	public void setEditingLatentVariablesAllowed(boolean editingLatentVariablesAllowed) {
+		this.editingLatentVariablesAllowed = editingLatentVariablesAllowed;
+		
+		Node node = getNode();
+		if(node instanceof DiscreteVariable) {
+			setNode(categoryEditor.getNode());
+
+			if(!editingLatentVariablesAllowed) {
+				presetMenu.setEnabled(false);
+			}
+		}
+		
+	}
+
+	/**
+	 * @param editingMeasuredVariablesAllowed
+	 */
+	public void setEditingMeasuredVariablesAllowed(boolean editingMeasuredVariablesAllowed) {
+		this.editingMeasuredVariablesAllowed = editingMeasuredVariablesAllowed;
+		
+		Node node = getNode();
+		if(node instanceof DiscreteVariable) {
+			setNode(categoryEditor.getNode());
+		
+			if (!editingMeasuredVariablesAllowed) {
+	            presetMenu.setEnabled(false);
+	        } else {
+	            presetMenu.setEnabled(true);
+	        }
+		}
+	}
 
 
 }

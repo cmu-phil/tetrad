@@ -89,7 +89,7 @@ public final class CgPm implements PM, TetradSerializable {
      * @serial Range >= 0.
      */
     private int bIndex = 0;
-    
+
 	public CgPm(Graph graph) {
         if (graph == null) {
             throw new NullPointerException("The graph must not be null.");

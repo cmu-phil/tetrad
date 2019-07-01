@@ -19,7 +19,6 @@ import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 
-import edu.cmu.tetrad.bayes.BayesPm;
 import edu.cmu.tetrad.data.DiscreteVariable;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetradapp.util.StringTextField;
@@ -40,7 +39,7 @@ public class CgCategoryEditor extends JPanel {
     private CgPm cgPm;
     private Node node;
     private StringTextField[] categoryFields;
-    private final LinkedList focusTraveralOrder = new LinkedList();
+    private final LinkedList<StringTextField> focusTraveralOrder = new LinkedList<>();
 
     public CgCategoryEditor(CgPm cgPm, Node node) {
         if (cgPm == null) {
@@ -214,7 +213,7 @@ public class CgCategoryEditor extends JPanel {
         setNumCategories(cgPm.getDiscreteNumCategories(node));
     }
 
-    public void setCategories(List categories) {
+    public void setCategories(List<String> categories) {
         if (categories == null) {
             throw new NullPointerException();
         }
