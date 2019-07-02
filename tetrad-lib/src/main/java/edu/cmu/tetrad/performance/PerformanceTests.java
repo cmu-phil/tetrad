@@ -865,7 +865,7 @@ public class PerformanceTests {
 
                 long time3 = System.currentTimeMillis();
 
-                ICovarianceMatrix cov = new CovarianceMatrixOnTheFly(data, true);
+                ICovarianceMatrix cov = new CovarianceMatrixOnTheFly(data);
 
                 System.out.println("Covariance matrix done");
 
@@ -1108,7 +1108,7 @@ public class PerformanceTests {
 
             long time3 = System.currentTimeMillis();
 
-            ICovarianceMatrix cov = new CovarianceMatrixOnTheFly(data, true);
+            ICovarianceMatrix cov = new CovarianceMatrixOnTheFly(data);
 
             System.out.println("Covariance matrix done");
 
