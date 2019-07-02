@@ -1,6 +1,6 @@
 package edu.cmu.tetrad.simulation;
 
-import edu.cmu.tetrad.data.CovarianceMatrixOnTheFly;
+import edu.cmu.tetrad.data.CovarianceMatrix;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.ICovarianceMatrix;
 import edu.cmu.tetrad.graph.Dag;
@@ -77,7 +77,7 @@ public class HsimEvalFromData {
                 edgeratio = 3;
 
                 //!#@^$@&%^!#$!&@^ CALCULATING TARGET ERRORS $%$#@^@!%!#^$!%$#%
-                ICovarianceMatrix newcov = new CovarianceMatrixOnTheFly(data1);
+                ICovarianceMatrix newcov = new CovarianceMatrix(data1);
                 SemBicScore oscore = new SemBicScore(newcov);
                 Fges ofgs = new Fges(oscore);
                 ofgs.setVerbose(false);
@@ -104,7 +104,7 @@ public class HsimEvalFromData {
 
                         DataSet simData = fittedIM.simulateData(data1.getNumRows(), false);
                         //after making the full resim data (simData), run FGS on that
-                        ICovarianceMatrix simcov = new CovarianceMatrixOnTheFly(simData);
+                        ICovarianceMatrix simcov = new CovarianceMatrix(simData);
                         SemBicScore simscore = new SemBicScore(simcov);
                         Fges simfgs = new Fges(simscore);
                         simfgs.setVerbose(false);

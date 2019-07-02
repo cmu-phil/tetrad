@@ -144,7 +144,7 @@ public class Comparison {
                 throw new IllegalArgumentException("Penalty discount not set.");
             }
 
-            SemBicScore semBicScore = new SemBicScore(new CovarianceMatrixOnTheFly(dataSet));
+            SemBicScore semBicScore = new SemBicScore(new CovarianceMatrix(dataSet));
             semBicScore.setPenaltyDiscount(params.getPenaltyDiscount());
             score = semBicScore;
 

@@ -65,7 +65,7 @@ public final class IndTestFisherZFisherPValue implements IndependenceTest {
         for (DataSet dataSet : dataSets) {
 //            dataSet = DataUtils.center(dataSet);
 //            TetradMatrix d = dataSet.getDoubleData();
-            ncov.add(new CovarianceMatrixOnTheFly(dataSet));
+            ncov.add(new CovarianceMatrix(dataSet));
 //            allLagged.add(d);
         }
 

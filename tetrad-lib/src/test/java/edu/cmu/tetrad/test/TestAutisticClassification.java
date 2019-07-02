@@ -21,7 +21,7 @@
 
 package edu.cmu.tetrad.test;
 
-import edu.cmu.tetrad.data.CovarianceMatrixOnTheFly;
+import edu.cmu.tetrad.data.CovarianceMatrix;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Edge;
 import edu.cmu.tetrad.graph.Graph;
@@ -464,7 +464,7 @@ public class TestAutisticClassification {
         for (int i = 0; i < datasets.size(); i++) {
             DataSet dataSet = datasets.get(i);
 
-            SemBicScore score = new SemBicScore(new CovarianceMatrixOnTheFly(dataSet));
+            SemBicScore score = new SemBicScore(new CovarianceMatrix(dataSet));
             Fas fas = new Fas(new IndTestScore(score));
             Graph graph = fas.search();
 

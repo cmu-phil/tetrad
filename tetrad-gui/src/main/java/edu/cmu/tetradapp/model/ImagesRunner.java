@@ -128,7 +128,7 @@ public class ImagesRunner extends AbstractAlgorithmRunner implements IFgesRunner
             DataSet dataSet = (DataSet) model;
 
             if (dataSet.isContinuous()) {
-                SemBicScore gesScore = new SemBicScore(new CovarianceMatrixOnTheFly((DataSet) model));
+                SemBicScore gesScore = new SemBicScore(new CovarianceMatrix((DataSet) model));
                 gesScore.setPenaltyDiscount(params.getDouble("penaltyDiscount", 4));
                 fges = new Fges(gesScore);
             } else if (dataSet.isDiscrete()) {

@@ -29,7 +29,7 @@ public class SemBicScore implements ScoreWrapper {
         this.dataSet = dataSet;
 
         ICovarianceMatrix cov = dataSet instanceof ICovarianceMatrix ? (ICovarianceMatrix) dataSet
-                : new CovarianceMatrixOnTheFly((DataSet) dataSet);
+                : new CovarianceMatrix((DataSet) dataSet);
 
         edu.cmu.tetrad.search.SemBicScore semBicScore
                 = new edu.cmu.tetrad.search.SemBicScore(cov);

@@ -38,6 +38,8 @@ import org.apache.commons.math3.linear.RealMatrix;
 import org.apache.commons.math3.linear.RectangularCholeskyDecomposition;
 import org.apache.commons.math3.linear.SingularValueDecomposition;
 
+import static java.lang.Math.sqrt;
+
 /**
  * Class Matrix includes several public static functions performing matrix
  * operations. These function include: determinant, GJinverse, inverse,
@@ -680,6 +682,8 @@ public final class MatrixUtils {
      * matrix is returned for convenience, but m is modified in the process.
      */
     public static TetradMatrix convertCovToCorr(TetradMatrix m) {
+        m = m.copy();
+
         for (int i = 0; i < m.rows(); i++) {
             for (int j = 0; j < m.columns(); j++) {
                 if (Double.isNaN(m.get(i, j))) {
@@ -688,7 +692,18 @@ public final class MatrixUtils {
             }
         }
 
-        return correlation(m);
+        for (int i = 0; i < m.rows(); i++) {
+            for (int j = 0; j < m.columns(); j++) {
+                if (i == j) continue;
+                m.set(i, j, m.get(i, j) / sqrt(m.get(i, i) * m.get(j, j)));
+            }
+        }
+
+        for (int i = 0; i < m.rows(); i++) {
+            m.set(i, i, 1.0);
+        }
+
+        return m;
     }
 
     private static TetradMatrix correlation(TetradMatrix var0) {
@@ -717,8 +732,8 @@ public final class MatrixUtils {
                     break;
                 }
 
-                double var3 = Math.sqrt(var0.get(var1, var1));
-                double var5 = Math.sqrt(var0.get(var2, var2));
+                double var3 = sqrt(var0.get(var1, var1));
+                double var5 = sqrt(var0.get(var2, var2));
                 double var7 = var0.get(var1, var2);
                 double var9 = var7 / (var3 * var5);
                 var0.set(var1, var2, var9);

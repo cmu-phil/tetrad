@@ -21,7 +21,6 @@
 package edu.cmu.tetrad.data;
 
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.stat.correlation.*;
 import edu.cmu.tetrad.util.NumberFormatUtil;
 import edu.cmu.tetrad.util.TetradAlgebra;
 import edu.cmu.tetrad.util.TetradMatrix;
@@ -89,7 +88,7 @@ public class CovarianceMatrix implements ICovarianceMatrix {
     /**
      * Stores the covariances and calculates them if necessary.
      */
-    private Covariances covariances;
+    private TetradMatrix covariances;
 
 
     //=============================CONSTRUCTORS=========================//
@@ -108,36 +107,39 @@ public class CovarianceMatrix implements ICovarianceMatrix {
             throw new IllegalArgumentException("Not a continuous data set.");
         }
 
+        Covariances covariances = null;
+
         if (dataType == DATA_TYPE.Float) {
             if (covType == COVARIANCE_CALCULATION_TYPE.Standard) {
                 if (corrected == BIAS_CORRECTED.Yes) {
-                    this.covariances = new CovariancesFloatStandard(dataSet.getDoubleData().toArray(), true);
+                    covariances = new CovariancesFloatStandard(dataSet.getDoubleData().toArray(), true);
                 } else if (corrected == BIAS_CORRECTED.No) {
-                    this.covariances = new CovariancesFloatStandard(dataSet.getDoubleData().toArray(), false);
+                    covariances = new CovariancesFloatStandard(dataSet.getDoubleData().toArray(), false);
                 }
             } else {
                 if (corrected == BIAS_CORRECTED.Yes) {
-                    this.covariances = new CovariancesFloatAlt(dataSet.getDoubleData().toArray(), true);
+                    covariances = new CovariancesFloatAlt(dataSet.getDoubleData().toArray(), true);
                 } else if (corrected == BIAS_CORRECTED.No) {
-                    this.covariances = new CovariancesFloatAlt(dataSet.getDoubleData().toArray(), false);
+                    covariances = new CovariancesFloatAlt(dataSet.getDoubleData().toArray(), false);
                 }
             }
         } else if (dataType == DATA_TYPE.Double) {
             if (covType == COVARIANCE_CALCULATION_TYPE.Standard) {
                 if (corrected == BIAS_CORRECTED.Yes) {
-                    this.covariances = new CovariancesDoubleStandard(dataSet.getDoubleData().toArray(), true);
+                    covariances = new CovariancesDoubleStandard(dataSet.getDoubleData().toArray(), true);
                 } else if (corrected == BIAS_CORRECTED.No) {
-                    this.covariances = new CovariancesDoubleStandard(dataSet.getDoubleData().toArray(), false);
+                    covariances = new CovariancesDoubleStandard(dataSet.getDoubleData().toArray(), false);
                 }
             } else {
                 if (corrected == BIAS_CORRECTED.Yes) {
-                    this.covariances = new CovariancesDoubleAlt(dataSet.getDoubleData().toArray(), true);
+                    covariances = new CovariancesDoubleAlt(dataSet.getDoubleData().toArray(), true);
                 } else if (corrected == BIAS_CORRECTED.No) {
-                    this.covariances = new CovariancesDoubleAlt(dataSet.getDoubleData().toArray(), false);
+                    covariances = new CovariancesDoubleAlt(dataSet.getDoubleData().toArray(), false);
                 }
             }
         }
 
+        this.covariances = new TetradMatrix(covariances.getMatrix());
         this.variables = Collections.unmodifiableList(dataSet.getVariables());
         this.sampleSize = dataSet.getNumRows();
     }
@@ -162,21 +164,24 @@ public class CovarianceMatrix implements ICovarianceMatrix {
 
     public CovarianceMatrix(List<Node> variables, double[][] matrix,
                             int sampleSize) {
+
         if (variables.size() != matrix.length && variables.size() != matrix[0].length) {
             throw new IllegalArgumentException("# variables not equal to matrix dimension.");
         }
 
         // This is not calculating covariances, just storing them.
-        this.covariances = new CovariancesDoubleStandard(matrix, sampleSize);
+        this.covariances = new TetradMatrix(matrix);
+        this.variables = Collections.unmodifiableList(variables);
+        this.sampleSize = sampleSize;
     }
 
     /**
      * Copy constructor.
      */
     public CovarianceMatrix(CovarianceMatrix covMatrix) {
-
-        // This is not calculating covariances, just storing them.
-        this.covariances = new CovariancesDoubleStandard(covMatrix.getMatrix().toArray(), sampleSize);
+        this.covariances = covMatrix.getMatrix();
+        this.variables = Collections.unmodifiableList(covMatrix.getVariables());
+        this.sampleSize = covMatrix.getSampleSize();
     }
 
     public CovarianceMatrix(ICovarianceMatrix covMatrix) {
@@ -288,7 +293,7 @@ public class CovarianceMatrix implements ICovarianceMatrix {
             submatrixVars.add(variables.get(indice));
         }
 
-        TetradMatrix cov = new TetradMatrix(covariances.getSubMatrix(indices, indices));
+        TetradMatrix cov = new TetradMatrix(covariances.getSelection(indices, indices));
         return new CovarianceMatrix(submatrixVars, cov, getSampleSize());
     }
 
@@ -339,7 +344,7 @@ public class CovarianceMatrix implements ICovarianceMatrix {
      * @return the value of element (i,j) in the matrix
      */
     public final double getValue(int i, int j) {
-        return covariances.covariance(i, j);
+        return covariances.get(i, j);
     }
 
     public void setMatrix(TetradMatrix matrix) {
@@ -358,14 +363,14 @@ public class CovarianceMatrix implements ICovarianceMatrix {
      * @return the size of the square matrix.
      */
     public final int getSize() {
-        return covariances.size();
+        return covariances.columns();
     }
 
     /**
      * @return a the covariance matrix (not a copy).
      */
     public final TetradMatrix getMatrix() {
-        return new TetradMatrix(covariances.getMatrix());
+        return covariances.copy();
     }
 
     public final void select(Node variable) {
@@ -477,7 +482,7 @@ public class CovarianceMatrix implements ICovarianceMatrix {
 
     @Override
     public void setValue(int i, int j, double v) {
-        covariances.setCovariance(i, j, v);
+        covariances.set(i, j, v);
     }
 
     @Override

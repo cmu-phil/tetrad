@@ -33,9 +33,9 @@ public class HsimRun {
             //DataWriter.writeRectangularData(dataSet, new FileWriter("dataOut2.txt"), '\t');
             //apply Hsim to data, with whatever parameters
             //========first make the Dag for Hsim==========
-            //ICovarianceMatrix cov = new CovarianceMatrixOnTheFly(dataSet);
+            //ICovarianceMatrix cov = new CovarianceMatrix(dataSet);
             double penaltyDiscount = 2.0;
-            SemBicScore score = new SemBicScore(new CovarianceMatrixOnTheFly(dataSet));
+            SemBicScore score = new SemBicScore(new CovarianceMatrix(dataSet));
             score.setPenaltyDiscount(penaltyDiscount);
             Fges fges = new Fges(score);
             fges.setVerbose(false);

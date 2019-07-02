@@ -353,7 +353,7 @@ public class TestPc {
 
             IndTestFisherZ test = new IndTestFisherZ(data, alpha);
 
-            SemBicScore score = new SemBicScore(new CovarianceMatrixOnTheFly(data));
+            SemBicScore score = new SemBicScore(new CovarianceMatrix(data));
             score.setPenaltyDiscount(penaltyDiscount);
             GraphSearch search;
 
@@ -725,7 +725,7 @@ public class TestPc {
             IndTestFisherZ test = new IndTestFisherZ(data, alpha);
 
 
-            SemBicScore score = new SemBicScore(new CovarianceMatrixOnTheFly(data));
+            SemBicScore score = new SemBicScore(new CovarianceMatrix(data));
             score.setPenaltyDiscount(penaltyDiscount);
             GraphSearch search;
             Graph out;

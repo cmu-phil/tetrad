@@ -52,7 +52,7 @@ public class HsimAutoC {
         double[] output;
         output = new double[5];
         //========first make the Dag for Hsim==========
-        ICovarianceMatrix cov = new CovarianceMatrixOnTheFly(data);
+        ICovarianceMatrix cov = new CovarianceMatrix(data);
         SemBicScore score = new SemBicScore(cov);
 
         double penaltyDiscount = 2.0;
@@ -115,7 +115,7 @@ public class HsimAutoC {
         //=======Run FGS on the output data, and compare it to the original learned graph
         //Path dataFileOut = Paths.get(filenameOut);
         //edu.cmu.tetrad.io.DataReader dataReaderOut = new VerticalTabularDiscreteDataReader(dataFileOut, delimiter);
-        ICovarianceMatrix newcov = new CovarianceMatrixOnTheFly(data);
+        ICovarianceMatrix newcov = new CovarianceMatrix(data);
         SemBicScore newscore = new SemBicScore(newcov);
         Fges fgesOut = new Fges(newscore);
         fgesOut.setVerbose(false);
