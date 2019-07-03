@@ -237,11 +237,21 @@ public final class IndTestFisherZ implements IndependenceTest {
         this.fisherZ = fisherZ;
         this.rho = r;
 
+        Node x2 = trueGraph.getNode(x.getName());
+        Node y2 = trueGraph.getNode(y.getName());
+
+        List<Node> z2 = new ArrayList<>();
+
+        for (Node n2 : z) {
+            z2.add(trueGraph.getNode(n2.getName()));
+        }
+
+
         final boolean independent = abs(fisherZ) < cutoff;
 
         NumberFormat nf = new DecimalFormat("0.0000000000");
 
-        MyFileRef.myFileOutput.println((dsep.isIndependent(x, y, z) ? 1 : 0) + "\t" + z.size() + "\t" + (independent ? 1 : 0) + "\t" + nf.format(getPValue())
+        MyFileRef.myFileOutput.println((dsep.isIndependent(x2, y2, z2) ? 1 : 0) + "\t" + (independent ? 1 : 0) + "\t" + z.size() + "\t" + nf.format(getPValue())
                 + "\t" + x + "\t" + y + "\t" + z);
         //System.out.println("\n");
         MyFileRef.myFileOutput.flush();

@@ -45,14 +45,14 @@ import java.io.*;
  */
 public class ExampleCompareSimulation {
     public static void main(String... args) {
-        RandomUtil.getInstance().setSeed(49394923849234L);
+        RandomUtil.getInstance().setSeed(49374923849234L);
 
         Parameters parameters = new Parameters();
         https://arxiv.org/abs/1607.08110
         parameters.set("numRuns", 12);
         parameters.set("numMeasures", 10);
         parameters.set("avgDegree", 2);
-        parameters.set("sampleSize", 100, 100, 100);
+        parameters.set("sampleSize", 1000, 1000, 1000, 1000);
         parameters.set("alpha", .05);
         parameters.set("verbose", false);
 
@@ -101,11 +101,16 @@ public class ExampleCompareSimulation {
         comparison.setShowUtilities(true);
         comparison.setParallelized(true);
 
+        comparison.setSaveGraphs(true);
+        comparison.setSavePags(true);
+        comparison.setSavePatterns(true);
+
         //PrintStream out = new PrintStream(new FileOutputStream("indTest_PValue.txt", append), autoFlush);
         //System.setOut(out);
 
-        //comparison.saveToFiles("comparison-lozada", simulation, parameters);
-        comparison.compareFromSimulations("comparison-lozada", simulations, algorithms, statistics, parameters);
+        comparison.saveToFiles("comparison-lozada", simulation, parameters);
+
+        comparison.compareFromFiles("comparison-lozada", "comparison-lozada", algorithms, statistics, parameters);
     }
 }
 
