@@ -35,6 +35,7 @@ public class Pc implements Algorithm, TakesInitialGraph, HasKnowledge, TakesInde
     private Algorithm algorithm = null;
     private Graph initialGraph = null;
     private IKnowledge knowledge = new Knowledge2();
+    private Graph trueGraph;
 
     public Pc(IndependenceWrapper test) {
         this.test = test;
@@ -153,5 +154,9 @@ public class Pc implements Algorithm, TakesInitialGraph, HasKnowledge, TakesInde
     @Override
     public IndependenceWrapper getIndependenceWrapper() {
         return test;
+    }
+
+    public void setTrueGraph(Graph trueGraph) {
+        this.trueGraph = trueGraph;
     }
 }

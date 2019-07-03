@@ -25,6 +25,11 @@ import edu.cmu.tetrad.algcomparison.Comparison;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithms;
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern.*;
 import edu.cmu.tetrad.algcomparison.independence.FisherZ;
+import edu.cmu.tetrad.algcomparison.simulation.LoadContinuousDataAndSingleGraph;
+import edu.cmu.tetrad.algcomparison.simulation.LoadDataAndGraphs;
+import edu.cmu.tetrad.algcomparison.simulation.Simulation;
+import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.algcomparison.statistic.*;
 
@@ -42,16 +47,16 @@ import edu.cmu.tetrad.algcomparison.statistic.*;
 public class ExampleCompareFromFiles {
     public static void main(String... args) {
         Parameters parameters = new Parameters();
-
-        // Can leave the simulation parameters out since
-        // we're loading from file here.
-        parameters.set("alpha", 1e-4);
-        parameters.set("numRuns", 10);
+        https://arxiv.org/abs/1607.08110
+        parameters.set("numRuns", 12);
+        parameters.set("numMeasures", 10);
+        parameters.set("avgDegree", 2);
+        parameters.set("sampleSize", 1000, 1000, 1000, 1000);
+        parameters.set("alpha", .05);
+        parameters.set("verbose", false);
 
         Statistics statistics = new Statistics();
 
-        statistics.add(new ParameterColumn("avgDegree"));
-        statistics.add(new ParameterColumn("sampleSize"));
         statistics.add(new AdjacencyPrecision());
         statistics.add(new AdjacencyRecall());
         statistics.add(new ArrowheadPrecision());
@@ -62,27 +67,36 @@ public class ExampleCompareFromFiles {
         statistics.add(new F1Arrow());
         statistics.add(new SHD());
         statistics.add(new ElapsedTime());
+        statistics.add(new NumberOfEdgesTrue());
 
         statistics.setWeight("AP", 1.0);
         statistics.setWeight("AR", 0.5);
-        statistics.setWeight("AHP", 1.0);
-        statistics.setWeight("AHR", 0.5);
 
         Algorithms algorithms = new Algorithms();
 
         algorithms.add(new Pc(new FisherZ()));
-        algorithms.add(new Cpc(new FisherZ()));
-        algorithms.add(new PcStable(new FisherZ()));
-        algorithms.add(new CpcStable(new FisherZ()));
+
+        Simulation simulation = new LoadDataAndGraphs("/Users/user/tetrad/comparison-lozada/save/1");
+        simulation.createData(parameters);
+
+        Graph trueGraph = simulation.getTrueGraph(0);
+        trueGraph = GraphUtils.replaceNodes(trueGraph, simulation.getDataModel(0).getVariables());
+
+        FisherZ fisherZ = new FisherZ();
+        fisherZ.setTrueGraph(trueGraph);
 
         Comparison comparison = new Comparison();
-        comparison.setShowAlgorithmIndices(false);
-        comparison.setShowSimulationIndices(false);
+        comparison.setShowAlgorithmIndices(true);
+        comparison.setShowSimulationIndices(true);
         comparison.setSortByUtility(true);
         comparison.setShowUtilities(true);
         comparison.setParallelized(true);
 
-        comparison.compareFromFiles("comparison", algorithms, statistics, parameters);
+        comparison.setSaveGraphs(true);
+        comparison.setSavePags(true);
+        comparison.setSavePatterns(true);
+
+        comparison.compareFromFiles("comparison-lozada", algorithms, statistics, parameters);
     }
 }
 

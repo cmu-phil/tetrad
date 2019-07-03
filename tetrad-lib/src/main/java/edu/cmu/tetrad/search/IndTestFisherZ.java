@@ -143,6 +143,8 @@ public final class IndTestFisherZ implements IndependenceTest {
         this.dataSet = dataSet;
         this.trueGraph = trueGraph;
 
+        System.out.println(trueGraph);
+
         this.dsep = new IndTestDSep(trueGraph);
     }
 
@@ -181,6 +183,11 @@ public final class IndTestFisherZ implements IndependenceTest {
         this.nameMap = nameMap(variables);
         setAlpha(alpha);
         this.trueGraph = trueGraph;
+
+        System.out.println(trueGraph);
+
+        System.out.println();
+
     }
 
     //==========================PUBLIC METHODS=============================//
@@ -221,7 +228,7 @@ public final class IndTestFisherZ implements IndependenceTest {
      * @return true iff x _||_ y | z.
      * @throws RuntimeException if a matrix singularity is encountered.
      */
-    public boolean isIndependent(Node x, Node y, List<Node> z) {
+    public synchronized boolean isIndependent(Node x, Node y, List<Node> z) {
         int n = sampleSize();
         double r;
 
@@ -249,12 +256,18 @@ public final class IndTestFisherZ implements IndependenceTest {
 
         final boolean independent = abs(fisherZ) < cutoff;
 
+//        System.out.println(trueGraph);
+//        System.out.println(x + "\t" + y + "\t" + z + "desp = " + dsep.isIndependent(x2, y2, z2));
+
         NumberFormat nf = new DecimalFormat("0.0000000000");
 
-        MyFileRef.myFileOutput.println((dsep.isIndependent(x2, y2, z2) ? 1 : 0) + "\t" + (independent ? 1 : 0) + "\t" + z.size() + "\t" + nf.format(getPValue())
+
+
+
+        System.out.println((dsep.isIndependent(x2, y2, z2) ? 1 : 0) + "\t" + (independent ? 1 : 0) + "\t" + z.size() + "\t" + nf.format(getPValue())
                 + "\t" + x + "\t" + y + "\t" + z);
         //System.out.println("\n");
-        MyFileRef.myFileOutput.flush();
+//        MyFileRef.myFil .eOutput.flush();
 
         return independent;
     }

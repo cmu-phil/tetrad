@@ -32,6 +32,7 @@ import edu.cmu.tetrad.algcomparison.simulation.SemSimulation;
 import edu.cmu.tetrad.algcomparison.simulation.Simulations;
 import edu.cmu.tetrad.algcomparison.statistic.*;
 import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.RandomUtil;
 import org.apache.commons.lang3.RandomUtils;
@@ -85,11 +86,15 @@ public class ExampleCompareSimulation {
 
         final SemSimulation simulation = new SemSimulation(new RandomForward());
         simulation.createData(parameters);
-        Graph graph = simulation.getTrueGraph(0);
-        FisherZ test = new FisherZ();
-        test.setInitialGraph(graph);
+        Graph trueGraph = simulation.getTrueGraph(0);
+        trueGraph = GraphUtils.replaceNodes(trueGraph, simulation.getDataModel(0).getVariables());
 
-        algorithms.add(new Pc(test));
+        FisherZ test = new FisherZ();
+        test.setTrueGraph(trueGraph);
+
+
+        Pc algorithm = new Pc(test);
+        algorithms.add(algorithm);
 
         simulations.add(simulation);
 

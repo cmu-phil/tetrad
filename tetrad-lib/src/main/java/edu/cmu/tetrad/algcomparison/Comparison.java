@@ -1220,7 +1220,7 @@ public class Comparison {
         dir.delete();
     }
 
-    private void doRun(List<AlgorithmSimulationWrapper> algorithmSimulationWrappers,
+    private synchronized void doRun(List<AlgorithmSimulationWrapper> algorithmSimulationWrappers,
                        List<AlgorithmWrapper> algorithmWrappers, List<SimulationWrapper> simulationWrappers,
                        Statistics statistics,
                        int numGraphTypes, double[][][][] allStats, Run run) {
@@ -1237,7 +1237,7 @@ public class Comparison {
 
         try {
             MyFileRef.myFileOutput = new PrintStream(
-                    new File("/Users/jonathanlozada/IdeaProjects/Tetrad/" +
+                    new File("/Users/user/tetrad/" +
                             "comparison-lozada/fileout.run" + (run.getRunIndex() + 1) + "." + (run.getAlgSimIndex() + 1) + ".txt"));
         } catch (FileNotFoundException e) {
             e.printStackTrace();
@@ -1285,7 +1285,9 @@ public class Comparison {
                 out = algorithm.search(dataModel, _params);
             }
 
-            MyFileRef.myFileOutput.close();
+            if (MyFileRef.myFileOutput != null) {
+                MyFileRef.myFileOutput.close();
+            }
         } catch (Exception e) {
             System.out.println("Could not run " + algorithmWrapper.getDescription());
             e.printStackTrace();
