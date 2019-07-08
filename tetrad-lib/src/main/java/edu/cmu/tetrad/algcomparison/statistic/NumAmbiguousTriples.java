@@ -1,7 +1,6 @@
 package edu.cmu.tetrad.algcomparison.statistic;
 
-import edu.cmu.tetrad.graph.Edge;
-import edu.cmu.tetrad.graph.Edges;
+import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.graph.Graph;
 
 import static java.lang.Math.tanh;
@@ -26,7 +25,7 @@ public class NumAmbiguousTriples implements Statistic {
     }
 
     @Override
-    public double getValue(Graph trueGraph, Graph estGraph) {
+    public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
         return estGraph.getAmbiguousTriples().size();
     }
 

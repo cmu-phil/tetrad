@@ -1545,10 +1545,10 @@ public class TestFges {
         Statistic ahp = new ArrowheadPrecision();
         Statistic ahr = new ArrowheadRecall();
 
-        System.out.println("AP = " + ap.getValue(trueGraph, estGraph));
-        System.out.println("AR = " + ar.getValue(trueGraph, estGraph));
-        System.out.println("AHP = " + ahp.getValue(trueGraph, estGraph));
-        System.out.println("AHR = " + ahr.getValue(trueGraph, estGraph));
+        System.out.println("AP = " + ap.getValue(trueGraph, estGraph, null));
+        System.out.println("AR = " + ar.getValue(trueGraph, estGraph, null));
+        System.out.println("AHP = " + ahp.getValue(trueGraph, estGraph, null));
+        System.out.println("AHR = " + ahr.getValue(trueGraph, estGraph, null));
     }
 
 

@@ -44,11 +44,11 @@ public class ExampleCompareSimulation {
 //        parameters.set("minCategories", 3);
 //        parameters.set("maxCategories", 3);
 
-        parameters.set("numRuns", 1);
+        parameters.set("numRuns", 5);
         parameters.set("differentGraphs", true);
         parameters.set("sampleSize", 1000);
 
-        parameters.set("numMeasures", 5000);
+        parameters.set("numMeasures", 1000);
         parameters.set("numLatents", 0);
         parameters.set("avgDegree", 4);
         parameters.set("maxDegree", 500);
@@ -62,7 +62,6 @@ public class ExampleCompareSimulation {
         parameters.set("varHigh", 3);
         parameters.set("verbose", false);
         parameters.set("coefSymmetric", true);
-        parameters.set("numRuns", 1);
         parameters.set("percentDiscrete", 0);
         parameters.set("numCategories", 3);
         parameters.set("differentGraphs", true);
@@ -137,6 +136,7 @@ public class ExampleCompareSimulation {
         comparison.setShowSimulationIndices(true);
         comparison.setSortByUtility(false);
         comparison.setShowUtilities(true);
+        comparison.setParallelized(true);
 
         comparison.compareFromSimulations("comparisonJoe", simulations, algorithms, statistics, parameters);
     }

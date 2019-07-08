@@ -1,5 +1,6 @@
 package edu.cmu.tetrad.algcomparison.statistic;
 
+import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.graph.Edge;
 import edu.cmu.tetrad.graph.Edges;
 import edu.cmu.tetrad.graph.Graph;
@@ -24,7 +25,7 @@ public class NumBidirectedEdges implements Statistic {
     }
 
     @Override
-    public double getValue(Graph trueGraph, Graph estGraph) {
+    public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
         int numBidirected = 0;
         int numTotal = 0;
 

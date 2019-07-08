@@ -1,5 +1,6 @@
 package edu.cmu.tetrad.algcomparison.statistic;
 
+import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.graph.Graph;
 
 /**
@@ -43,7 +44,7 @@ public class ParameterColumn implements Statistic {
      * This value is obtained by the Comparison class internally.
      * @throws UnsupportedOperationException
      */
-    public double getValue(Graph trueGraph, Graph estGraph) {
+    public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
         throw new UnsupportedOperationException();
     }
 
