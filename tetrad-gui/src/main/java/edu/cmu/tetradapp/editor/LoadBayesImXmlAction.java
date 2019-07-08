@@ -39,14 +39,17 @@ import java.util.prefs.Preferences;
 
 
 public class LoadBayesImXmlAction extends AbstractAction {
-    private BayesImWrapper bayesImWrapper;
+
+	private static final long serialVersionUID = 1L;
+	
+	private BayesImWrapper bayesImWrapper;
     private BayesImEditor bayesImEditor;
 
     public LoadBayesImXmlAction(BayesImWrapper wrapper, BayesImEditor bayesImEditor) {
         super("Load Bayes IM as XML");
         if (bayesImEditor == null) {
             throw new NullPointerException(
-                    "BayesImEditorWizard must not be null.");
+                    "BayesImEditor must not be null.");
         }
         this.bayesImWrapper = wrapper;
         this.bayesImEditor = bayesImEditor;

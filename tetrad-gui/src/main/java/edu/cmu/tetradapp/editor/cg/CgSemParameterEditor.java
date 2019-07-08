@@ -20,11 +20,13 @@ import javax.swing.JTextField;
 import javax.swing.border.EmptyBorder;
 
 import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.sem.ParamType;
 import edu.cmu.tetrad.sem.Parameter;
 import edu.cmu.tetrad.sem.SemPm;
 import edu.cmu.tetrad.util.NumberFormatUtil;
 import edu.cmu.tetradapp.util.DoubleTextField;
 import edu.cmu.tetradapp.util.StringTextField;
+import edu.pitt.dbmi.cg.CgIm;
 import edu.pitt.dbmi.cg.CgPm;
 
 /**
@@ -37,8 +39,15 @@ public class CgSemParameterEditor extends JPanel {
 
 	private static final long serialVersionUID = 1L;
 
-	private CgPm cgPm;
+	private CgIm cgIm = null;
+	private CgPm cgPm = null;
 	private Node node;
+	
+	public CgSemParameterEditor(CgIm cgIm, Node node) {
+		this(cgIm.getCgPm(), node);
+		
+		this.cgIm = cgIm;
+	}
 	
 	public CgSemParameterEditor(CgPm cgPm, Node node) {
 		if (cgPm == null) {
@@ -48,7 +57,6 @@ public class CgSemParameterEditor extends JPanel {
         setLayout(new BorderLayout());
 
         if (node == null) {
-//            return;
             throw new NullPointerException();
         }
 
@@ -80,7 +88,7 @@ public class CgSemParameterEditor extends JPanel {
     	
     	// Linear Coefficient
         for(Node parentNode : semPm.getGraph().getParents(node)) {
-        	System.out.println("Coeficient with Parent Node: " + parentNode);
+        	//System.out.println("Coeficient with Parent Node: " + parentNode);
         	
         	Box parentNodeNameBox = Box.createHorizontalBox();
         	parentNodeNameBox.add(Box.createHorizontalGlue());
@@ -106,20 +114,26 @@ public class CgSemParameterEditor extends JPanel {
     	
     	String paramType = "" + parameter.getType();
     	
+    	if (cgIm != null && parameter.getType() == ParamType.VAR) {
+    		paramType = "Standard Deviation";
+    	}
+    	
     	Box b1 = Box.createVerticalBox();
     	
+    	Box nameBox = Box.createHorizontalBox();
+    	nameBox.add(new JLabel(paramType + " Name: "));
+    	nameBox.add(Box.createHorizontalGlue());
+
     	final StringTextField nameField = new StringTextField(parameter.getName(), length);
     	nameField.setHorizontalAlignment(JTextField.RIGHT);
         nameField.grabFocus();
         nameField.selectAll();
         
-    	Box nameBox = Box.createHorizontalBox();
-    	nameBox.add(new JLabel(paramType + " Name: "));
-    	nameBox.add(Box.createHorizontalGlue());
     	nameBox.add(nameField);
     	nameBox.setBorder(BorderFactory.createLineBorder(Color.black));
+
     	b1.add(nameBox);
-    	
+
     	nameField.setFilter(new StringTextField.Filter() {
             public String filter(String value, String oldValue) {
                 try {
@@ -142,103 +156,149 @@ public class CgSemParameterEditor extends JPanel {
                 }
             }
         });
-    	
-    	boolean fixed4Estimation = parameter.isFixed();
-    	
-    	JCheckBox checkbox = new JCheckBox() {
+
+    	if(cgIm != null) {
+    		nameField.setEditable(false);
+    	}
+
+    	if(cgIm == null) {
+        	boolean fixed4Estimation = parameter.isFixed();
+        	
+        	JCheckBox checkbox = new JCheckBox() {
+                
+    			private static final long serialVersionUID = 1L;
+
+    			public Dimension getMaximumSize() {
+                    return getPreferredSize();
+                }
+            };
+            checkbox.setSelected(fixed4Estimation);
+            checkbox.addActionListener(new ActionListener() {
+
+    			public void actionPerformed(ActionEvent e) {
+    				JCheckBox checkbox = (JCheckBox) e.getSource();
+                    boolean selected = checkbox.isSelected();
+                    parameter.setFixed(selected);
+    			}
+    		
+            });
             
-			private static final long serialVersionUID = 1L;
-
-			public Dimension getMaximumSize() {
-                return getPreferredSize();
-            }
-        };
-        checkbox.setSelected(fixed4Estimation);
-        checkbox.addActionListener(new ActionListener() {
-
-			public void actionPerformed(ActionEvent e) {
-				JCheckBox checkbox = (JCheckBox) e.getSource();
-                boolean selected = checkbox.isSelected();
-                parameter.setFixed(selected);
-			}
-		
-        });
-        
-    	// Fixed for estimation
-    	Box isFixedEstimationBox = Box.createHorizontalBox();
-    	isFixedEstimationBox.add(new JLabel(paramType + " Fixed for Estimation?"));
-    	isFixedEstimationBox.add(Box.createHorizontalGlue());
-        isFixedEstimationBox.add(checkbox);
-        
-        b1.add(isFixedEstimationBox);
-        
-        // Starting Value
-        boolean initRandomly = parameter.isInitializedRandomly();
-        
-        final DoubleTextField startValueField = new DoubleTextField(parameter.getStartingValue(), length, 
+        	// Fixed for estimation
+        	Box isFixedEstimationBox = Box.createHorizontalBox();
+        	isFixedEstimationBox.add(new JLabel(paramType + " Fixed for Estimation?"));
+        	isFixedEstimationBox.add(Box.createHorizontalGlue());
+            isFixedEstimationBox.add(checkbox);
+            
+            b1.add(isFixedEstimationBox);
+    	}
+    	
+    	// Starting Value
+    	double startingValue;
+    	
+    	if(cgIm != null) {
+    		if(parameter.getType() == ParamType.MEAN) {
+    			startingValue = cgIm.getSemIm().getMean(node);
+    		} else if (parameter.getType() == ParamType.COEF) {
+    			startingValue = cgIm.getSemIm().getEdgeCoef(parameter.getNodeA(), parameter.getNodeB());
+    		} else {
+    			startingValue = Math.sqrt(cgIm.getSemIm().getParamValue(parameter));
+    		}
+    		
+    	} else {
+    		startingValue = parameter.getStartingValue();
+    	}
+    	
+        final DoubleTextField startValueField = new DoubleTextField(startingValue, length, 
         		NumberFormatUtil.getInstance().getNumberFormat());
         startValueField.setFilter(new DoubleTextField.Filter() {
 			
 			public double filter(double value, double oldValue) {
 				try {
-					parameter.setStartingValue(value);
+					if(cgIm != null) {
+						double newValue = new Double(value);
+						if(parameter.getType() == ParamType.MEAN) {
+							cgIm.getSemIm().setMean(node, newValue);
+						} else if (parameter.getType() == ParamType.COEF) {
+							cgIm.getSemIm().setEdgeCoef(parameter.getNodeA(), parameter.getNodeB(), newValue);
+						} else if (newValue >= 0) {
+							cgIm.getSemIm().setParamValue(node, node, newValue*newValue);
+						}
+					} else {
+						parameter.setStartingValue(value);
+					}
+			
+					firePropertyChange("modelChanged", null, null);
+					
 					return value;
 				}catch(Exception e) {
 					return oldValue;
 				}
 			}
 		});
-        startValueField.setEditable(!initRandomly);
-    	
-        JRadioButton randomRadioButton = new JRadioButton("Drawn mean randomly");
-        randomRadioButton.addActionListener(new ActionListener() {
-			
-			public void actionPerformed(ActionEvent e) {
-				parameter.setInitializedRandomly(true);
-				startValueField.setEditable(false);
-			}
-		});
         
-        JRadioButton startValueRadioButton = new JRadioButton();
-        startValueRadioButton.addActionListener(new ActionListener() {
-        	
-        	public void actionPerformed(ActionEvent e) {
-        		parameter.setInitializedRandomly(false);
-				startValueField.setEditable(true);
-        	}
-        });
-        
-        ButtonGroup buttonInitValueGroup = new ButtonGroup();
-        buttonInitValueGroup.add(randomRadioButton);
-        buttonInitValueGroup.add(startValueRadioButton);
-        
-        if(initRandomly) {
-        	buttonInitValueGroup.setSelected(randomRadioButton.getModel(), true);
+
+        if(cgIm != null) {
+        	Box startValueRadioBox = Box.createHorizontalBox();
+            startValueRadioBox.add(new JLabel("New value: "));
+            startValueRadioBox.add(Box.createHorizontalGlue());
+            startValueRadioBox.add(startValueField);
+            
+            b1.add(startValueRadioBox);
         } else {
-        	buttonInitValueGroup.setSelected(startValueRadioButton.getModel(), true);
+            boolean initRandomly = parameter.isInitializedRandomly();
+
+            startValueField.setEditable(!initRandomly);
+        	
+            JRadioButton randomRadioButton = new JRadioButton("Drawn mean randomly");
+            randomRadioButton.addActionListener(new ActionListener() {
+    			
+    			public void actionPerformed(ActionEvent e) {
+    				parameter.setInitializedRandomly(true);
+    				startValueField.setEditable(false);
+    			}
+    		});
+            
+            JRadioButton startValueRadioButton = new JRadioButton();
+            startValueRadioButton.addActionListener(new ActionListener() {
+            	
+            	public void actionPerformed(ActionEvent e) {
+            		parameter.setInitializedRandomly(false);
+    				startValueField.setEditable(true);
+            	}
+            });
+            
+            ButtonGroup buttonInitValueGroup = new ButtonGroup();
+            buttonInitValueGroup.add(randomRadioButton);
+            buttonInitValueGroup.add(startValueRadioButton);
+            
+            if(initRandomly) {
+            	buttonInitValueGroup.setSelected(randomRadioButton.getModel(), true);
+            } else {
+            	buttonInitValueGroup.setSelected(startValueRadioButton.getModel(), true);
+            }
+            
+            // Starting Value for Estimation
+            Box startingValueHeaderBox = Box.createHorizontalBox();
+            startingValueHeaderBox.add(new JLabel(paramType + " Starting Value for Estimation:"));
+            startingValueHeaderBox.add(Box.createHorizontalGlue());
+            b1.add(startingValueHeaderBox);
+            
+            Box randomRadioBox = Box.createHorizontalBox();
+            randomRadioBox.add(Box.createHorizontalStrut(10));
+            randomRadioBox.add(randomRadioButton);
+            randomRadioBox.add(Box.createHorizontalGlue());
+            
+            b1.add(randomRadioBox);
+            
+            Box startValueRadioBox = Box.createHorizontalBox();
+            startValueRadioBox.add(Box.createHorizontalStrut(10));
+            startValueRadioBox.add(startValueRadioButton);
+            startValueRadioBox.add(new JLabel("Set to: "));
+            startValueRadioBox.add(Box.createHorizontalGlue());
+            startValueRadioBox.add(startValueField);
+            
+            b1.add(startValueRadioBox);
         }
-        
-        // Starting Value for Estimation
-        Box startingValueHeaderBox = Box.createHorizontalBox();
-        startingValueHeaderBox.add(new JLabel(paramType + " Starting Value for Estimation:"));
-        startingValueHeaderBox.add(Box.createHorizontalGlue());
-        b1.add(startingValueHeaderBox);
-        
-        Box randomRadioBox = Box.createHorizontalBox();
-        randomRadioBox.add(Box.createHorizontalStrut(10));
-        randomRadioBox.add(randomRadioButton);
-        randomRadioBox.add(Box.createHorizontalGlue());
-        
-        b1.add(randomRadioBox);
-        
-        Box startValueRadioBox = Box.createHorizontalBox();
-        startValueRadioBox.add(Box.createHorizontalStrut(10));
-        startValueRadioBox.add(startValueRadioButton);
-        startValueRadioBox.add(new JLabel("Set to: "));
-        startValueRadioBox.add(Box.createHorizontalGlue());
-        startValueRadioBox.add(startValueField);
-        
-        b1.add(startValueRadioBox);
 		
 		return b1;
 	}

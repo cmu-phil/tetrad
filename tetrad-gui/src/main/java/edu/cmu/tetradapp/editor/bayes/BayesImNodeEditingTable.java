@@ -51,8 +51,11 @@ import java.text.NumberFormat;
  *
  * @author Joseph Ramsey jdramsey@andrew.cmu.edu
  */
-class BayesImNodeEditingTable extends JTable {
-    private int focusRow = 0;
+public class BayesImNodeEditingTable extends JTable {
+    
+	private static final long serialVersionUID = 1L;
+	
+	private int focusRow = 0;
     private int focusCol = 0;
     private int lastX;
     private int lastY;

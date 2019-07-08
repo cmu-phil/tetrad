@@ -19,11 +19,10 @@
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA //
 ///////////////////////////////////////////////////////////////////////////////
 
-package edu.cmu.tetradapp.editor;
+package edu.cmu.tetradapp.editor.bayes;
 
 import edu.cmu.tetrad.bayes.BayesIm;
 import edu.cmu.tetrad.bayes.BayesXmlRenderer;
-import edu.cmu.tetradapp.editor.bayes.BayesImEditor;
 import edu.cmu.tetradapp.model.EditorUtils;
 import nu.xom.Document;
 import nu.xom.Element;
@@ -42,7 +41,7 @@ public class SaveBayesImXmlAction extends AbstractAction {
         super("Save Bayes IM as XML");
         if (bayesImEditor == null) {
             throw new NullPointerException(
-                    "BayesImEditorWizard must not be null.");
+                    "BayesImEditor must not be null.");
         }
         this.bayesImEditor = bayesImEditor;
     }

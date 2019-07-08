@@ -24,7 +24,6 @@ import edu.cmu.tetrad.bayes.BayesIm;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetradapp.editor.LoadBayesImXmlAction;
 import edu.cmu.tetradapp.editor.LoadBayesImXsdlXmlAction;
-import edu.cmu.tetradapp.editor.SaveBayesImXmlAction;
 import edu.cmu.tetradapp.editor.SaveComponentImage;
 import edu.cmu.tetradapp.editor.SaveScreenshot;
 import edu.cmu.tetradapp.model.BayesImWrapper;
@@ -66,7 +65,7 @@ public class BayesImEditor extends JPanel {
     private BayesImWrapper wrapper;
 
     /**
-     * Constructs a new instanted model editor from a Bayes IM.
+     * Constructs a new instantiated model editor from a Bayes IM.
      */
     public BayesImEditor(final BayesImWrapper wrapper) {
         this.wrapper = wrapper;

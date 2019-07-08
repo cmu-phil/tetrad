@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import edu.cmu.tetrad.algcomparison.simulation.ConditionalGaussianSimulation;
+import edu.cmu.tetrad.graph.Dag;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.session.SessionModel;
@@ -49,9 +50,10 @@ public class CgPmWrapper implements SessionModel {
 
         int lowerBound, upperBound;
 
-        if (params.getString("initializationMode", "manualRetain").equals("manual")) {
+        String initModeParam = params.getString("initializationMode", "manualRetain");
+        if (initModeParam.equals("manual")) {
             lowerBound = upperBound = 2;
-        } else if (params.getString("initializationMode", "manualRetain").equals("automatic")) {
+        } else if (initModeParam.equals("automatic")) {
             lowerBound = params.getInt("minCategories", 2);
             upperBound = params.getInt("maxCategories", 2);
         } else {
@@ -118,6 +120,10 @@ public class CgPmWrapper implements SessionModel {
         this.numModels = simulation.getDataModelList().size();
         this.modelIndex = 0;
         this.modelSourceName = simulation.getName();
+    }
+    
+    public static CgPmWrapper serializableInstance() {
+    	return new CgPmWrapper(Dag.serializableInstance(), new Parameters());
     }
     
     //=============================PUBLIC METHODS========================//
