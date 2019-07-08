@@ -2196,10 +2196,9 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
             particular, GES starts its search with the empty graph. It then performs a forward stepping search in
             which edges are added between nodes in order to increase the Bayesian score. This process
             continues until no single edge addition increases the score. Finally, it performs a backward
-            stepping search that removes edges until no single edge removal can increase the score. For more
-            information see
-            https://www.ccd.pitt.edu//wp-content/uploads/2018/10/FGES1c-user-documentation-5_21_2016-sample-size.pdf and
-            https://www.ccd.pitt.edu//wp-content/uploads/2018/10/FGES1d-user-documentation-7_20_2016-sample-size.pdf.
+            stepping search that removes edges until no single edge removal can increase the score. More information is
+            available <a href="https://www.ccd.pitt.edu//wp-content/uploads/2018/10/FGES1c-user-documentation-5_21_2016-sample-size.pdf">here</a> and
+            <a href="https://www.ccd.pitt.edu//wp-content/uploads/2018/10/FGES1d-user-documentation-7_20_2016-sample-size.pdf">here</a>.
             The reference is Ramsey et al., 2017.
         </p>
 
@@ -2412,7 +2411,8 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
             After the adjacency phase of FCI, some of the orientations of FGES are then used to provide an initial
             orientation of
             the undirected graph that is then augmented by the orientation phase of FCI to provide additional
-            orientations.</p>
+            orientations.  A verbose description of GFCI can be found <a href="https://www.ccd.pitt.edu//pdfs/GFCId.pdf">
+                here (discrete variables)</a> and <a href="https://www.ccd.pitt.edu//wp-content/uploads/2018/10/GFCIc-overview-11_22_2016.pdf">here (continuous variables)</a>.</p>
 
     </div>
 
@@ -4911,14 +4911,14 @@ The “Max P” method for orienting an unshielded triple X—Y—Z records p-va
 
         <tr>Table A1 is sufficient to understand the basic meaning of edge types in PAGs. Nonetheless, it can be helpful
             to know the following additional perspective on the information encoded by PAGs. Each edge has two
-            endpoints, one on the A side, and one on the B side. For example A  B has a tail at the A end, and an
+            endpoints, one on the A side, and one on the B side. For example A --> B has a tail at the A end, and an
             arrowhead at the B end. Altogether, there are three kinds of edge endpoints: a tail "–", an arrowhead ">",
             and a "o." Note that some kinds of combinations of endpoints never occur; for example, A o– B never occurs.
             As a mnemonic device, the basic meaning of each kind of edge can be derived from three simple rules that
             explain what the meaning of each kind of endpoint is. A tail "–" at the A end of an edge between A and B
             means "A is a cause of B"; an arrowhead ">" at the A end of an edge between A and B means "A is not a cause
             of B"; and a circle "o" at the A end of an edge between A and B means "can't tell whether or not A is a
-            cause of B". For example A  B means that A is a cause of B, and that B is not a cause of A in all of the
+            cause of B". For example A --> B means that A is a cause of B, and that B is not a cause of A in all of the
             CBNs represented by the PAG.
         </tr>
         <tr>The PAG in Figure 2 shows examples of each type of edge, and the CBNs Figure 1. show some examples of what
@@ -4931,6 +4931,13 @@ The “Max P” method for orienting an unshielded triple X—Y—Z records p-va
 
 
     </table>
+
+    <h2>Solving Out of Memory Errors</h2>
+    <p>By default Java will allocate the smaller of 1/4 system memory or 1GB to the Java virtual machine (JVM). If you
+        run out of memory (heap memory space) running your analyses you should increase the memory allocated to the JVM
+        with the following switch '-XmxXXG' where XX is the number of gigabytes of ram you allow the JVM to utilize. Do
+        run Tetrad with more memory you need to start it from the command line or terminal. For example to allocate 8
+        gigabytes of ram you would add -Xmx8G immediately after the java command e.g., java -Xmx8G -jar tetrad-gui.jar.</p>
 
     <h2>Glossary of Terms</h2>
 
