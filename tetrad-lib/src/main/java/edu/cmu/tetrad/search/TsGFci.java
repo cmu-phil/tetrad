@@ -281,7 +281,7 @@ public final class TsGFci implements GraphSearch {
             score0.setPenaltyDiscount(penaltyDiscount);
             score = score0;
         } else if (dataSet.isContinuous()) {
-            covarianceMatrix = new CovarianceMatrixOnTheFly(dataSet);
+            covarianceMatrix = new CovarianceMatrix(dataSet);
             SemBicScore score0 = new SemBicScore(covarianceMatrix);
             score0.setPenaltyDiscount(penaltyDiscount);
             score = score0;

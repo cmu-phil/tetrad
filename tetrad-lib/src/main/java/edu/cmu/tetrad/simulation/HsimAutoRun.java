@@ -73,7 +73,7 @@ public class HsimAutoRun {
             //========first make the Dag for Hsim==========
             BDeuScore score = new BDeuScore(data);
 
-            //ICovarianceMatrix cov = new CovarianceMatrixOnTheFly(dataSet);
+            //ICovarianceMatrix cov = new CovarianceMatrix(dataSet);
             double penaltyDiscount = 2.0;
             Fges fges = new Fges(score);
             fges.setVerbose(false);

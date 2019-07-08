@@ -210,11 +210,11 @@ public class GFciRunner extends AbstractAlgorithmRunner
                 DataSet dataSet = (DataSet) model;
 
                 if (dataSet.isContinuous()) {
-                    IndependenceTest test = new IndTestFisherZ(new CovarianceMatrixOnTheFly((DataSet) model), 0.001);
-                    SemBicScore gesScore = new SemBicScore(new CovarianceMatrixOnTheFly((DataSet) model));
+                    IndependenceTest test = new IndTestFisherZ(new CovarianceMatrix((DataSet) model), 0.001);
+                    SemBicScore gesScore = new SemBicScore(new CovarianceMatrix((DataSet) model));
                     gesScore.setPenaltyDiscount(penaltyDiscount);
-//                    SemBicScore2 gesScore = new SemBicScore2(new CovarianceMatrixOnTheFly((DataSet) model));
-//                    SemGpScore gesScore = new SemGpScore(new CovarianceMatrixOnTheFly((DataSet) model));
+//                    SemBicScore2 gesScore = new SemBicScore2(new CovarianceMatrix((DataSet) model));
+//                    SemGpScore gesScore = new SemGpScore(new CovarianceMatrix((DataSet) model));
 //                    SvrScore gesScore = new SvrScore((DataSet) model);
                     gesScore.setPenaltyDiscount(penaltyDiscount);
                     System.out.println("Score done");

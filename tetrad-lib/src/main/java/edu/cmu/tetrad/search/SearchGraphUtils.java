@@ -21,7 +21,7 @@
 package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.CovarianceMatrix;
-import edu.cmu.tetrad.data.CovarianceMatrixOnTheFly;
+import edu.cmu.tetrad.data.CovarianceMatrix;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataModelList;
 import edu.cmu.tetrad.data.DataSet;
@@ -3380,7 +3380,7 @@ public final class SearchGraphUtils {
             Score score;
 
             if (((DataSet) dataModel).isContinuous()) {
-                score = new SemBicScore(new CovarianceMatrixOnTheFly(dataSet));
+                score = new SemBicScore(new CovarianceMatrix(dataSet));
             } else if (dataSet.isDiscrete()) {
                 score = new BDeuScore(dataSet);
             } else {

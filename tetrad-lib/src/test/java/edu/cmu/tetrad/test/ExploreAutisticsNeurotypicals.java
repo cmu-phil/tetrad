@@ -89,7 +89,7 @@ public final class ExploreAutisticsNeurotypicals {
                 String name = dataSet.getName() + "." + penaltyDiscount + ".graph.txt";
                 File file = new File(path, name);
 
-                SemBicScore score = new SemBicScore(new CovarianceMatrixOnTheFly(dataSet));
+                SemBicScore score = new SemBicScore(new CovarianceMatrix(dataSet));
                 score.setPenaltyDiscount(penaltyDiscount);
                 Fges search = new Fges(score);
                 search.setVerbose(false);

@@ -92,7 +92,7 @@ public class TestFges {
         DataSet data = simulator.simulateDataFisher(numCases);
 
 //        ICovarianceMatrix cov = new CovarianceMatrix(data);
-        ICovarianceMatrix cov = new CovarianceMatrixOnTheFly(data);
+        ICovarianceMatrix cov = new CovarianceMatrix(data);
         SemBicScore score = new SemBicScore(cov);
         score.setPenaltyDiscount(penaltyDiscount);
 
@@ -851,7 +851,7 @@ public class TestFges {
 
     private Graph searchSemFges(DataSet Dk, double penalty) {
         Dk = DataUtils.convertNumericalDiscreteToContinuous(Dk);
-        SemBicScore score = new SemBicScore(new CovarianceMatrixOnTheFly(Dk));
+        SemBicScore score = new SemBicScore(new CovarianceMatrix(Dk));
         score.setPenaltyDiscount(penalty);
         Fges fges = new Fges(score);
         return fges.search();
@@ -888,7 +888,7 @@ public class TestFges {
         //m.setVerbose(this.verbose);
         Graph gm = m.search();
         DataSet dataSet = MixedUtils.makeContinuousData(ds);
-        SemBicScore score = new SemBicScore(new CovarianceMatrixOnTheFly(dataSet));
+        SemBicScore score = new SemBicScore(new CovarianceMatrix(dataSet));
         score.setPenaltyDiscount(penalty);
         Fges fg = new Fges(score);
         fg.setBoundGraph(gm);
@@ -1406,7 +1406,7 @@ public class TestFges {
             SemIm semIm = new SemIm(semPm);
             DataSet dataSet = semIm.simulateData(1000, false);
 
-            Fges fges = new Fges(new SemBicScore(new CovarianceMatrixOnTheFly(dataSet)));
+            Fges fges = new Fges(new SemBicScore(new CovarianceMatrix(dataSet)));
             Graph pattern = fges.search();
 
             Graph dag = dagFromPattern(pattern);

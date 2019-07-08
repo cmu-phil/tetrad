@@ -175,7 +175,7 @@ public final class FgesOld implements GraphSearch, GraphScorer {
         if (dataSet.isDiscrete()) {
             setScore(new BDeuScore(dataSet));
         } else {
-            SemBicScore fgesScore = new SemBicScore(new CovarianceMatrixOnTheFly(dataSet));
+            SemBicScore fgesScore = new SemBicScore(new CovarianceMatrix(dataSet));
             setScore(fgesScore);
         }
 

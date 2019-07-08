@@ -21,7 +21,7 @@
 
 package edu.cmu.tetrad.search;
 
-import edu.cmu.tetrad.data.CovarianceMatrixOnTheFly;
+import edu.cmu.tetrad.data.CovarianceMatrix;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.ICovarianceMatrix;
@@ -87,7 +87,7 @@ public class SemBicScoreImages2 implements Score {
                     throw new IllegalArgumentException("Datasets must be continuous.");
                 }
 
-                CovarianceMatrixOnTheFly cov = new CovarianceMatrixOnTheFly(dataSet);
+                CovarianceMatrix cov = new CovarianceMatrix(dataSet);
                 cov.setVariables(variables);
                 covariances.add(cov);
             } else if (model instanceof ICovarianceMatrix) {
