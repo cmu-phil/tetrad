@@ -60,7 +60,7 @@
 
     <p>Tetrad allows for numerous types of data, graph, and model to be input and output, and some functions may be restricted based on what types of data or graph the user inputs. Other functions may simply not perform as well on certain types of data.</p>
 
-    <p>All analysis in Tetrad is done using boxes, found in a sidebar to the left of the workspace. A box either houses an object such as a graph or a dataset, or performs an operation such as a search or an estimation. Some boxes require input from other boxes in order to work. Complex operations are performed by stringing chains of boxes together in the workspace. For instance, to simulate data, you would input a graph box into a parametric model box, the PM box into an instantiated model box, and finally the IM box into a simulation box.</p>
+    <p>All analysis in Tetrad is performed graphically using a box paradigm, found in a sidebar to the left of the workspace. A box either houses an object such as a graph or a dataset, or performs an operation such as a search or an estimation. Some boxes require input from other boxes in order to work. Complex operations are performed by stringing chains of boxes together in the workspace. For instance, to simulate data, you would input a graph box into a parametric model box, the PM box into an instantiated model box, and finally the IM box into a simulation box.</p>
 
     <p>In order to use a box, click on it in the sidebar, then click inside the workspace. This creates an empty box, which you can instantiated by double-clicking. Most boxes have multiple options available on instantiation, which will be explained in further detail in this manual.</p>
 
@@ -183,7 +183,7 @@
     <h3>Display Subgraphs</h3>
 
     <p>This option allows you to isolate a subgraph from the parent graph. Add variables to the subgraph by highlighting
-        the variable name in the “Unselected” pane and clicking on the right arrow. The hiighlighted variable will then
+        the variable name in the “Unselected” pane and clicking on the right arrow. The highlighted variable will then
         show up in the “Selected” pane. (You may also define which variables go in the “Selected” pane by clicking on
         the “Text Input…” button and typing the variable names directly into the window.) Choose the type of subgraph
         you want to display from the drop-down panel below. Then click “Graph It!” and the resulting subgraph of the
@@ -439,7 +439,7 @@
     <img src="images/compare_box_6.png" alt="" width="650">
 
     <p>The drop-down menu allows you to choose which variables you want to check the dependence of. If you select more
-        than two variables, an subsequent variables will be considered members of the conditioning set. So, if you
+        than two variables, any subsequent variables will be considered members of the conditioning set. So, if you
         select variables X1, X2, and X3, in that order, the box will determine whether X1 is independent of X2,
         conditional on X3, in each of the graphs being compared. When you click “List,” in the bottom right of the
         window, the results will be displayed in the center of the window: </p>
@@ -974,9 +974,10 @@ X1  X2  X3  X4  X5
 1.4658  -1.4069 1.7234  -1.7129 -3.8298
 </pre>
 
-    <h3>Handling Tabular Data With Interventions</h3>
+    <h3>Handling Tabular Data with Interventional Variables</h3>
 
-    <p>This is advanced topic for dataset that contains interventional variables. Below is a sample dataset, in which
+    <p>This is an advanced topic for datasets that contain interventional (i.e., experimental) variables. We model a
+        single intervention using two variables: status variable and value variable. Below is a sample dataset, in which
         `raf`, `mek`, `pip2`, `erk`, `atk` are the 5 domain variables, and `cd3_s` and `cd3_v` are an interventional
         pair (status and value variable respectively). `icam` in another intervention variable, but it's a combined
         variable that doesn't have status.</p>
@@ -1438,7 +1439,7 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
     <p>When the EM algorithm is used with latent variable models, we recommend multiple random restarts. The number of
         restarts can be set in the lower right hand corner of the Estimator Box. The figure on the left shows the EM
         results for a SEM model with 1 restart. The figure on the right shows the EM results with 20 restarts. The
-        results are very different. The estimates with 20 restarts are much closer to the true values. 100 restrarts
+        results are very different. The estimates with 20 restarts are much closer to the true values. 100 restarts
         gives estimates that are within .1 of the first decimal and .2 of the second decimal.</p>
 
     <img src="images/estimator_box_3.png" alt="" width="650">
@@ -1461,7 +1462,7 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
         case the Updater will calculate the conditional probabilities or conditional means for other variables when the
         evidence variables are forced to have their specified values. In manipulated calculations, all connections into
         a measured variable are discarded, the manipulated variables are treated as independent of their causes in the
-        graph, and probabilities for variables that are causes of the maniputated variables are unchanged. </p>
+        graph, and probabilities for variables that are causes of the manipulated variables are unchanged. </p>
 
     <p>There are four available updater algorithms in Tetrad: the approximate updater, the row summing exact updater,
         the CPT invariant updater, and the SEM updater. All except for the SEM updater function only when given Bayes
@@ -1688,6 +1689,13 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
     <p>You can also limit the search such that edges from one tier only are added to the next immediate tier e.g,. if
         Tier 1 "Can cause only next tier" is checked then edges from variables in Tier 1 to variables in Tier 3 are
         forbidden.</p>
+
+    <h3>Handling of Interventional Variables in Tiers</h3>
+
+    <p>If you have annotated your variables with interventional status and interventional value tags using a metadata
+        JSON file (see Data Box section) the Tiers and Edges panel will automatically place these variables in Tier 1.
+        If you have information about the effects of the intervention variables you can use the groups tab to indicate
+        this.</p>
 
     <h3>Groups</h3>
 
@@ -1982,7 +1990,7 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
     <p>After selecting the algorithm and desired test/score, click on "Set parameters" which will allow you to
         confirm/change the parameters of the search. </p>
 
-    <p>After optionally changing any search paramaters, click on "Run Search and Generate Graph" which will execute the
+    <p>After optionally changing any search parameters, click on "Run Search and Generate Graph" which will execute the
         search</p>
 
 
@@ -2156,7 +2164,7 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
             to orient the triple, instead just list the p-values for each of these conditional independence judgments
             and pick the set S’ that yields the highest such p-value. Then orient X->Y<-Z if S does not contain Y and
             X—Y—Z otherwise. This orients all unshielded triples. It’s possible (though rare) that adjacent triples both
-            both be oriented as 2-cycles, X->Y<->Z<-W. If this happens, pick one of the other of these triples or orient
+            be oriented as 2-cycles, X->Y<->Z<-W. If this happens, pick one of the other of these triples or orient
             as a collider, arbitrarily. This guarantees that the resulting graph will be a pattern.</p>
 
     </div>
@@ -2231,7 +2239,7 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
     <div id="imgs_disc">
 
         <p>Adjusts the discrete BDeu variable score of FGES so allow for multiple datasets as input. The BDeu scores for
-            each data set are averaged at each step of the algorithm, producing a model for al data sets that assumes
+            each data set are averaged at each step of the algorithm, producing a model for all data sets that assumes
             they have the same graphical structure across dataset. Note that in order to use this algorithm in a
             nontrivial way, one needs to have loaded or simulated multiple dataset.</p>
 
@@ -2828,20 +2836,20 @@ there is a single latent for each output cluster. For MimBuild, a pattern over t
         <p>FASK learns a linear model in which all of the variables are skewed. </p>
 
         <p>The idea is as follows. First, FAS-stable  is run on the data, producing an
-            undirected graph. We use the BIC scoreas a conditional independence test with a specified penalty
-            discount c. This yields undirected graph G0 . The reason FAS-stable  works forsparse cyclic  models
+            undirected graph. We use the BIC score as a conditional independence test with a specified penalty
+            discount c. This yields undirected graph G0 . The reason FAS-stable  works for sparse cyclic  models
             where the linear  coefficients  are all less than  1 is that correlations induced by long cyclic
-            paths are statisticallyjudged as zero, since they are products of multiple coefficients less  than
+            paths are statistically judged as zero, since they are products of multiple coefficients less  than
             1.  Then, each  of the X − Y  adjacencies  in G0   is  oriented  as a 2-cycle  X +=  Y , or X → Y ,
             or X ← Y .   Taking up each  adjacency  in turn, one tests  to see  whether  the adjacency  is a
-            2-cycle bytesting if the difference between  corr(X, Y ) and corr(X, Y |X  > 0), and corr(X, Y )
+            2-cycle by testing if the difference between  corr(X, Y ) and corr(X, Y |X  > 0), and corr(X, Y )
             and corr(X, Y |Y  > 0), are both significantly not zero. If so, the edges X → Y and X ← Y  are added
             to the output  graph G1 .  If not, the Left-Right  orientation is rule is applied: Orient X → Y in
             G1, if (E(X Y |X > 0)/    E(X 2|X > 0)E(Y 2 |X > 0) − E(X Y |Y  > 0)/  E(X 2 |Y  > 0)E(Y 2|Y  > 0)) >  0;
-            otherwise orient X ← Y .  G1  will bea fully oriented graph. For some models, where the true
-            coefficients of a 2-cycle between X and Y  are more or less equal in magnitudebut opposite in sign,
+            otherwise orient X ← Y .  G1  will be a fully oriented graph. For some models, where the true
+            coefficients of a 2-cycle between X and Y  are more or less equal in magnitude but opposite in sign,
             FAS-stable  may fail to detect an edge between X and Y  when in fact a 2-cycle exists. In this case,
-            we checkexplicitly whether corr(X, Y |X > 0) and corr(X, Y |Y  > 0) differ  by more than a set amount
+            we check explicitly whether corr(X, Y |X > 0) and corr(X, Y |Y  > 0) differ  by more than a set amount
             of 0.3. If so, the adjacency  is added to the graph and oriented using the aforementioned rules.
         </p>
 
@@ -2888,7 +2896,7 @@ there is a single latent for each output cluster. For MimBuild, a pattern over t
 
     <div id="r3">
 
-        <p>This is an algorithm that orients an edge X--Y for continuous varaibles based on non-Gaussian information.
+        <p>This is an algorithm that orients an edge X--Y for continuous variables based on non-Gaussian information.
             This rule in particular uses an entropy calculation to make the orientation. Note that if the variables X
             and Y are both Gaussian, and the model is linear, it is not possible to orient the edge X--Y pairwise;
             any attempt to do so would result in random orientation. But if X and Y are non-Gaussian, the orientation
@@ -2900,7 +2908,7 @@ there is a single latent for each output cluster. For MimBuild, a pattern over t
 
     <div id="skew">
 
-        <p>This is an algorithm that orients an edge X--Y for continuous varaibles based on non-Gaussian information.
+        <p>This is an algorithm that orients an edge X--Y for continuous variables based on non-Gaussian information.
             This rule in particular uses a skewness to make the orientation. Note that if the variables X
             and Y are both Gaussian, and the model is linear, it is not possible to orient the edge X--Y pairwise;
             any attempt to do so would result in random orientation. But if X and Y are non-Gaussian, in particular
@@ -2908,14 +2916,14 @@ there is a single latent for each output cluster. For MimBuild, a pattern over t
             and Smith (2013) for details.
         </p>
 
-        <p>The Skew rule is differenty motivated from the RSkew rule (see), though they both appeal to the skewness
+        <p>The Skew rule is differently motivated from the RSkew rule (see), though they both appeal to the skewness
             of the variables.</p>
 
     </div>
 
     <div id="r-skew">
 
-        <p>This is an algorithm that orients an edge X--Y for continuous varaibles based on non-Gaussian information.
+        <p>This is an algorithm that orients an edge X--Y for continuous variables based on non-Gaussian information.
             This rule in particular uses a skewness to make the orientation. Note that if the variables X
             and Y are both Gaussian, and the model is linear, it is not possible to orient the edge X--Y pairwise;
             any attempt to do so would result in random orientation. But if X and Y are non-Gaussian, in particular
@@ -2923,7 +2931,7 @@ there is a single latent for each output cluster. For MimBuild, a pattern over t
             and Smith (2013) for details.
         </p>
 
-        <p>The RSkew rule is differenty motivated from the Skew rule (see), though they both appeal to the skewness
+        <p>The RSkew rule is differently motivated from the Skew rule (see), though they both appeal to the skewness
             of the variables.</p>
 
     </div>
@@ -2942,8 +2950,8 @@ there is a single latent for each output cluster. For MimBuild, a pattern over t
 
     <p><a href="#maxit">alpha</a>, <a href="#depth">depth</a></p>
 
-    
-    
+
+
     <h2>Statistical Tests</h2>
 
     <h3>BDeu Test</h3>
@@ -2957,7 +2965,7 @@ there is a single latent for each output cluster. For MimBuild, a pattern over t
     <h4>Parameters</h4>
 
     <p><a href="#samplePrior">samplePrior</a>, <a href="#structurePrior">structurePrior</a></p>
-    
+
     <h3>Fisher Z Test</h3>
 
     <div id="fisher-z-test">
@@ -3001,7 +3009,7 @@ there is a single latent for each output cluster. For MimBuild, a pattern over t
     <h4>Parameters</h4>
 
     <p><a href="#alpha">alpha</a></p>
-    
+
     <h3>D-Separation Test</h3>
 
     <div id="d-sep-test">
@@ -3009,7 +3017,7 @@ there is a single latent for each output cluster. For MimBuild, a pattern over t
     This is the usual test of d-separation, a property of graphs, not distributions. It's not really a test, but it can be used in place of a test of the true graph is known. This is a way to find out, for constraint-based algorithms, or even for some score-based algorithms like FGES, what answer the algorithm would give if all of the statistical decisions made are correct. Just draw an edge from the true graph to the algorithm--the d-separation option will appear, and you can then just run the search as usual.
     </p>
     </div>
-    
+
     <h3>Discrete BIC Test</h3>
 
     <div id="disc-bic-test">
@@ -3029,7 +3037,7 @@ there is a single latent for each output cluster. For MimBuild, a pattern over t
     <h4>Parameters</h4>
 
     <p><a href="#alpha">alpha</a></p>
-    
+
     <h3>Kernel Conditional Independence (KCI) Test</h3>
 
     <div id="kci-test">
@@ -3072,7 +3080,7 @@ there is a single latent for each output cluster. For MimBuild, a pattern over t
 
     <p>The three available ensemble methods are Preserved, Highest, and Majority. Preserved tends to return the densest graphs, then Highest, and finally Majority returns the sparsest. The Preserved ensemble method ensures that an edge that has been found by some portion of the individual sample graphs is preserved in the final graph, even if the majority of sample graphs returned [no edge] as their answer for that edge. So the voting procedure for Preserved is to return the edge orientation that the highest percentage of sample graphs returned, other than [no edge]. The Highest ensemble method, on the other hand, simply returns the edge orientation which the highest proportion of sample graphs returned, even if that means returning [no edge]. And the Majority method requires that at least 50 percent of the sample graphs agree on an edge orientation in order to return any edge at all. If the highest proportion of sample graphs agree on, for instance, a bidirected edge, but only 40 percent of them do so, then the Majority ensemble method will return [no edge] for that edge.</p>
 
-    
+
     <h2>Scoring Functions</h2>
 
     <h3>BDeu Score</h3>
@@ -3086,23 +3094,23 @@ there is a single latent for each output cluster. For MimBuild, a pattern over t
     <h4>Parameters</h4>
 
     <p><a href="#samplePrior">samplePrior</a>, <a href="#structurePrior">structurePrior</a></p>
-    
+
     <h3>Conditional Gaussian BIC Score</h3>
 
     <div id="cg-bic-score">
     <p>Conditional Gaussian BIC Score may be used for the case where there is a mixture of discrete and Gaussian variables. Calculates a BIC score based on likelihood that is calculated using a conditional Gaussian assumption.</p>
     </div>
-    
+
     <h4>Parameters</h4>
 
     <p><a href="#structurePrior">structurePrior</a>, <a href="#discretize">discretize</a></p>
 
     <h3>Conditional Correlation Independence (CCI) Score</h3>
-    
+
     <div id="cci-score">
     <p>Conditional Correlation Score returns 1 - p-value for the Conditional correlation test. May be used as a score for the nonlinear case, assuming additivity.</p>
     </div>
-    
+
     <h4>Parameters</h4>
 
     <p><a href="#cciScoreAlpha">cciScoreAlpha</a>, <a href="#numBasisFunctions">numBasisFunctions</a>, <a href="#kernelType">kernelType</a>, <a href="#kernelMultiplier">kernelMultiplier</a>, <a href="#basisType">basisType</a>, <a href="#fastFDR">fastFDR</a>, <a href="#kernelRegressionSampleSize">kernelRegressionSampleSize</a>, <a href="#numDependenceSpotChecks">numDependenceSpotChecks</a></p>
@@ -3122,7 +3130,7 @@ there is a single latent for each output cluster. For MimBuild, a pattern over t
     This is just the BIC score for the discrete case. The likelihood is judged by the multinomial tables directly, and this is penalized as is usual for a BIC score. The only surprising thing perhaps is that we use the formula BIC = 2L - k ln N, where L is the likelihood, k the number of parameters, and N the sample size, instead of the usual L + k / 2 ln N. So higher BIC scores will correspond to greater dependence. In the case of independence, the BIC score will be negative, since the likelihood will be zero, and this will be penalized.
     </p>
     </div>
-    
+
     <h3>SEM BIC Score</h3>
 
     <div id="sem-bic-score">
