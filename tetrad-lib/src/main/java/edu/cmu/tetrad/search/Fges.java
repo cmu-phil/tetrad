@@ -22,10 +22,7 @@ package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.util.ChoiceGenerator;
-import edu.cmu.tetrad.util.ForkJoinPoolInstance;
-import edu.cmu.tetrad.util.TaskManager;
-import edu.cmu.tetrad.util.TetradLogger;
+import edu.cmu.tetrad.util.*;
 
 import java.io.PrintStream;
 import java.text.DecimalFormat;
@@ -72,8 +69,6 @@ public final class Fges implements GraphSearch, GraphScorer {
      * List of variables in the data set, in order.
      */
     private List<Node> variables;
-
-    private Map<Node, Object> nodeAttributes = new HashMap<>();
 
     /**
      * The true graph, if known. If this is provided, asterisks will be printed
@@ -277,21 +272,8 @@ public final class Fges implements GraphSearch, GraphScorer {
             fes();
             bes();
         }
-
-        this.modelScore = totalScore;
-
-        this.out.println("Model Score = " + modelScore);
-
-        for (Node _node : nodeAttributes.keySet()) {
-            Object value = nodeAttributes.get(_node);
-
-            this.out.println(_node.getName() + " Score = " + value);
-
-            Node node = graph.getNode(_node.getName());
-            node.addAttribute("BIC", value);
-        }
-
-        graph.addAttribute("BIC", modelScore);
+//
+        this.modelScore = scoreDag(SearchGraphUtils.dagFromPattern(graph), true);
 
         long endTime = System.currentTimeMillis();
         this.elapsedTime = endTime - start;
@@ -342,8 +324,8 @@ public final class Fges implements GraphSearch, GraphScorer {
     /**
      * @return the totalScore of the given DAG, up to a constant.
      */
-    public double getScore(Graph dag) {
-        return scoreDag(dag);
+    public double scoreDag(Graph dag) {
+        return scoreDag(dag, false);
     }
 
     /**
@@ -641,10 +623,6 @@ public final class Fges implements GraphSearch, GraphScorer {
     }
 
     private void initializeForwardEdgesFromEmptyGraph(final List<Node> nodes) {
-//        if (verbose) {
-//            System.out.println("heuristicSpeedup = true");
-//        }
-
         sortedArrows = new ConcurrentSkipListSet<>();
         lookupArrows = new ConcurrentHashMap<>();
         neighbors = new ConcurrentHashMap<>();
@@ -701,10 +679,6 @@ public final class Fges implements GraphSearch, GraphScorer {
     }
 
     private void initializeTwoStepEdges(final List<Node> nodes) {
-//        if (verbose) {
-//            System.out.println("heuristicSpeedup = false");
-//        }
-
         count[0] = 0;
 
         sortedArrows = new ConcurrentSkipListSet<>();
@@ -827,10 +801,6 @@ public final class Fges implements GraphSearch, GraphScorer {
     }
 
     private void initializeForwardEdgesFromExistingGraph(final List<Node> nodes) {
-//        if (verbose) {
-//            System.out.println("heuristicSpeedup = false");
-//        }
-
         count[0] = 0;
 
         sortedArrows = new ConcurrentSkipListSet<>();
@@ -937,6 +907,10 @@ public final class Fges implements GraphSearch, GraphScorer {
             out.println("** FORWARD EQUIVALENCE SEARCH");
         }
 
+        if (score instanceof SemBicScore) {
+            ((SemBicScore) score).setForward(true);
+        }
+
         int maxDegree = this.maxDegree == -1 ? 1000 : this.maxDegree;
 
         while (!sortedArrows.isEmpty()) {
@@ -947,6 +921,8 @@ public final class Fges implements GraphSearch, GraphScorer {
             Node y = arrow.getB();
 
             if (graph.isAdjacentTo(x, y)) {
+                clearArrow(x, y);
+                clearArrow(y, x);
                 continue;
             }
 
@@ -957,7 +933,7 @@ public final class Fges implements GraphSearch, GraphScorer {
                 continue;
             }
 
-            if (!arrow.getNaYX().equals(getNaYX(x, y))) {
+            if (!getNaYX(x, y).containsAll(arrow.getNaYX())) {
                 continue;
             }
 
@@ -965,19 +941,20 @@ public final class Fges implements GraphSearch, GraphScorer {
                 continue;
             }
 
-            if (!validInsert(x, y, arrow.getHOrT(), getNaYX(x, y))) {
+            if (!validInsert(x, y, arrow.getHOrT(), arrow.getNaYX())) {
                 continue;
             }
 
-            Set<Node> T = arrow.getHOrT();
-            double bump = arrow.getBump();
+            boolean inserted = insert(x, y, arrow.getHOrT(), arrow.getBump());
 
-            boolean inserted = insert(x, y, T, bump);
             if (!inserted) {
                 continue;
             }
 
-            totalScore += bump;
+            totalScore += arrow.getBump();
+
+            SearchGraphUtils.basicPattern(graph, false);
+            new MeekRules().orientImplied(graph);
 
             Set<Node> visited = reapplyOrientation(x, y, null);
             Set<Node> toProcess = new HashSet<>();
@@ -1005,6 +982,10 @@ public final class Fges implements GraphSearch, GraphScorer {
             out.println("** BACKWARD EQUIVALENCE SEARCH");
         }
 
+        if (score instanceof SemBicScore) {
+            ((SemBicScore) score).setForward(false);
+        }
+
         sortedArrows = new ConcurrentSkipListSet<>();
         lookupArrows = new ConcurrentHashMap<>();
         neighbors = new ConcurrentHashMap<>();
@@ -1018,7 +999,7 @@ public final class Fges implements GraphSearch, GraphScorer {
             Node x = arrow.getA();
             Node y = arrow.getB();
 
-            if (!arrow.getNaYX().equals(getNaYX(x, y))) {
+            if (!getNaYX(x, y).containsAll(arrow.getNaYX())) {
                 continue;
             }
 
@@ -1031,30 +1012,19 @@ public final class Fges implements GraphSearch, GraphScorer {
                 continue;
             }
 
-            HashSet<Node> diff = new HashSet<>(arrow.getNaYX());
-            diff.removeAll(arrow.getHOrT());
-
             if (!validDelete(x, y, arrow.getHOrT(), arrow.getNaYX())) {
                 continue;
             }
 
-            Set<Node> H = arrow.getHOrT();
-            double bump = arrow.getBump();
-
-            boolean deleted = delete(x, y, H, bump, arrow.getNaYX());
+            boolean deleted = delete(x, y, arrow.getHOrT(), arrow.getBump(), arrow.getNaYX());
 
             if (!deleted) {
                 continue;
             }
 
-            orientNodeAway(x);
-            orientNodeAway(y);
+            totalScore += arrow.getBump();
 
-            totalScore += bump;
-
-            clearArrow(x, y);
-
-            Set<Node> visited = reapplyOrientation(x, y, H);
+            Set<Node> visited = reapplyOrientation(x, y, arrow.getHOrT());
 
             Set<Node> toProcess = new HashSet<>();
 
@@ -1067,21 +1037,9 @@ public final class Fges implements GraphSearch, GraphScorer {
                 }
             }
 
-            toProcess.add(x);
-            toProcess.add(y);
-            toProcess.addAll(getCommonAdjacents(x, y));
-
             storeGraph();
             reevaluateBackward(toProcess);
         }
-
-//        meekOrientRestricted(getVariables(), getKnowledge());
-    }
-
-    private Set<Node> getCommonAdjacents(Node x, Node y) {
-        Set<Node> commonChildren = new HashSet<>(graph.getAdjacentNodes(x));
-        commonChildren.retainAll(graph.getAdjacentNodes(y));
-        return commonChildren;
     }
 
     private Set<Node> reapplyOrientation(Node x, Node y, Set<Node> newArrows) {
@@ -1113,16 +1071,12 @@ public final class Fges implements GraphSearch, GraphScorer {
                 }
             }
 
-            clearArrow(x, y);
-            clearArrow(y, x);
-
             if (edge.pointsTowards(y)) {
                 calculateArrowsBackward(x, y);
             } else if (edge.pointsTowards(x)) {
                 calculateArrowsBackward(y, x);
             } else {
                 calculateArrowsBackward(x, y);
-                calculateArrowsBackward(y, x);
             }
 
             this.neighbors.put(x, getNeighbors(x));
@@ -1175,8 +1129,7 @@ public final class Fges implements GraphSearch, GraphScorer {
 
                             adj = new ArrayList<>(g);
                         } else if (mode == Mode.allowUnfaithfulness) {
-                            HashSet<Node> D = new HashSet<>();
-                            D.addAll(getUnconditionallyDconnectedVars(x, graph));
+                            HashSet<Node> D = new HashSet<>(getUnconditionallyDconnectedVars(x, graph));
                             D.remove(x);
                             adj = new ArrayList<>(D);
                         } else {
@@ -1193,7 +1146,6 @@ public final class Fges implements GraphSearch, GraphScorer {
                             }
 
                             if (!graph.isAdjacentTo(w, x)) {
-                                clearArrow(w, x);
                                 calculateArrowsForward(w, x);
                             }
                         }
@@ -1228,6 +1180,8 @@ public final class Fges implements GraphSearch, GraphScorer {
             return;
         }
         this.neighbors.put(b, getNeighbors(b));
+
+        clearArrow(a, b);
 
         if (a == b) {
             throw new IllegalArgumentException();
@@ -1282,13 +1236,8 @@ public final class Fges implements GraphSearch, GraphScorer {
                 double bump = insertEval(a, b, T, naYX, hashIndices);
 
                 if (bump > 0) {
-                    addArrow(a, b, naYX, T, bump);
+                    addArrow(a, b, T, naYX, bump);
                 }
-
-//                if (mode == Mode.heuristicSpeedup && union.isEmpty() && score.isEffectEdge(bump) &&
-//                        !effectEdgesGraph.isAdjacentTo(a, b) && graph.getParents(b).isEmpty()) {
-//                    effectEdgesGraph.addUndirectedEdge(a, b);
-//                }
             }
 
             previousCliques = newCliques;
@@ -1296,7 +1245,7 @@ public final class Fges implements GraphSearch, GraphScorer {
         }
     }
 
-    private void addArrow(Node a, Node b, Set<Node> naYX, Set<Node> hOrT, double bump) {
+    private void addArrow(Node a, Node b, Set<Node> hOrT, Set<Node> naYX, double bump) {
         Arrow arrow = new Arrow(bump, a, b, hOrT, naYX, arrowIndex++);
         sortedArrows.add(arrow);
         addLookupArrow(a, b, arrow);
@@ -1332,14 +1281,8 @@ public final class Fges implements GraphSearch, GraphScorer {
 
                         if (e != null) {
                             if (e.pointsTowards(r)) {
-                                clearArrow(w, r);
-                                clearArrow(r, w);
-
                                 calculateArrowsBackward(w, r);
                             } else if (Edges.isUndirectedEdge(graph.getEdge(w, r))) {
-                                clearArrow(w, r);
-                                clearArrow(r, w);
-
                                 calculateArrowsBackward(w, r);
                                 calculateArrowsBackward(r, w);
                             }
@@ -1378,6 +1321,8 @@ public final class Fges implements GraphSearch, GraphScorer {
             }
         }
 
+        clearArrow(a, b);
+
         Set<Node> naYX = getNaYX(a, b);
 
         List<Node> _naYX = new ArrayList<>(naYX);
@@ -1389,10 +1334,7 @@ public final class Fges implements GraphSearch, GraphScorer {
             int[] choice;
 
             while ((choice = gen.next()) != null) {
-                Set<Node> diff = GraphUtils.asSet(choice, _naYX);
-
-                Set<Node> h = new HashSet<>(_naYX);
-                h.removeAll(diff);
+                Set<Node> h = GraphUtils.asSet(choice, _naYX);
 
                 if (existsKnowledge()) {
                     if (!validSetByKnowledge(b, h)) {
@@ -1400,10 +1342,10 @@ public final class Fges implements GraphSearch, GraphScorer {
                     }
                 }
 
-                double bump = deleteEval(a, b, diff, naYX, hashIndices);
+                double bump = deleteEval(a, b, h, naYX, hashIndices);
 
-                if (bump > 0.0) {
-                    addArrow(a, b, naYX, h, bump);
+                if (bump >= 0.0) {
+                    addArrow(a, b, h, naYX, bump);
                 }
             }
         }
@@ -1538,11 +1480,13 @@ public final class Fges implements GraphSearch, GraphScorer {
     }
 
     // Evaluate the Delete(X, Y, T) operator (Definition 12 from Chickering, 2002).
-    private double deleteEval(Node x, Node y, Set<Node> diff, Set<Node> naYX,
+    private double deleteEval(Node x, Node y, Set<Node> h, Set<Node> naYX,
                               Map<Node, Integer> hashIndices) {
-        Set<Node> set = new HashSet<>(diff);
-        set.addAll(graph.getParents(y));
-        set.remove(x);
+        Set<Node> set = new HashSet<>(naYX);
+        set.removeAll(h);
+        final List<Node> parents = graph.getParents(y);
+        parents.remove(x);
+        set.addAll(parents);
         return -scoreGraphChange(y, set, x, hashIndices);
     }
 
@@ -1576,11 +1520,9 @@ public final class Fges implements GraphSearch, GraphScorer {
 
         int numEdges = graph.getNumEdges();
 
-//        if (verbose) {
         if (numEdges % 1000 == 0) {
             out.println("Num edges added: " + numEdges);
         }
-//        }
 
         if (verbose) {
             String label = trueGraph != null && trueEdge != null ? "*" : "";
@@ -1630,12 +1572,10 @@ public final class Fges implements GraphSearch, GraphScorer {
         graph.removeEdge(oldxy);
         removedEdges.add(Edges.undirectedEdge(x, y));
 
-//        if (verbose) {
         int numEdges = graph.getNumEdges();
         if (numEdges % 1000 == 0) {
             out.println("Num edges (backwards) = " + numEdges);
         }
-//        }
 
         if (verbose) {
             String label = trueGraph != null && trueEdge != null ? "*" : "";
@@ -1657,7 +1597,7 @@ public final class Fges implements GraphSearch, GraphScorer {
             graph.addEdge(Edges.directedEdge(y, h));
 
             if (verbose) {
-                TetradLogger.getInstance().forceLogMessage( "--- Directing " + oldyh + " to "
+                TetradLogger.getInstance().forceLogMessage("--- Directing " + oldyh + " to "
                         + graph.getEdge(y, h));
                 out.println("--- Directing " + oldyh + " to " + graph.getEdge(y, h));
             }
@@ -1949,15 +1889,6 @@ public final class Fges implements GraphSearch, GraphScorer {
         return rules.getVisited();
     }
 
-    private void orientNodeAway(Node node) {
-        MeekRules rules = new MeekRules();
-        rules.setKnowledge(knowledge);
-//        rules.setUndirectUnforcedEdges(true);
-        rules.orientImplied(graph, Collections.singletonList(node));
-//        return rules.getVisited();
-
-    }
-
     // Maps adj to their indices for quick lookup.
     private void buildIndexing(List<Node> nodes) {
         this.hashIndices = new ConcurrentHashMap<>();
@@ -2000,29 +1931,84 @@ public final class Fges implements GraphSearch, GraphScorer {
     /**
      * Scores the given DAG, up to a constant.
      */
-    public double scoreDag(Graph dag) {
-        buildIndexing(dag.getNodes());
+//    {
+//        buildIndexing(dag.getNodes());
+//
+//        double _score = 0.0;
+//
+//        for (Node y : dag.getNodes()) {
+//            Set<Node> parents = new HashSet<>(dag.getParents(y));
+//            int parentIndices[] = new int[parents.size()];
+//            Iterator<Node> pi = parents.iterator();
+//            int count = 0;
+//
+//            while (pi.hasNext()) {
+//                Node nextParent = pi.next();
+//                parentIndices[count++] = hashIndices.get(nextParent);
+//            }
+//
+//            // Calculate BIC score for this node
+//            int yIndex = hashIndices.get(y);
+//            double node_score = score.localScore(yIndex, parentIndices);
+//
+//            nodeAttributes.put(y, node_score);
+//
+//            _score += node_score;
+//        }
+//
+//        return _score;
+//    }
+    private double scoreDag(Graph dag, boolean recordScores) {
+        if (score instanceof GraphScore) return 0.0;
+        NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
 
-        double _score = 0.0;
+        dag = GraphUtils.replaceNodes(dag, getVariables());
 
-        for (Node y : dag.getNodes()) {
-            Set<Node> parents = new HashSet<>(dag.getParents(y));
-            int parentIndices[] = new int[parents.size()];
-            Iterator<Node> pi = parents.iterator();
-            int count = 0;
+        // Make
+        double penalty1 = 1.0;
+        double structure1 = 0.0;
+        double theshold1 = 0.0;
+        double _score = 0;
 
-            while (pi.hasNext()) {
-                Node nextParent = pi.next();
-                parentIndices[count++] = hashIndices.get(nextParent);
+        if (score instanceof SemBicScore) {
+            penalty1 = ((SemBicScore) score).getPenaltyDiscount();
+            structure1 = ((SemBicScore) score).getStructurePrior();
+            theshold1 = ((SemBicScore) score).getThreshold();
+            ((SemBicScore) score).setPenaltyDiscount(1);
+            ((SemBicScore) score).setStructurePrior(0);
+            ((SemBicScore) score).setThreshold(0);
+        }
+        for (Node node : getVariables()) {
+
+            if (score instanceof SemBicScore) {
+                Node y = node;
+                List<Node> x = dag.getParents(y);
+
+                int[] parentIndices = new int[x.size()];
+
+                int count = 0;
+                for (Node parent : x) {
+                    parentIndices[count++] = hashIndices.get(parent);
+                }
+
+                final double bic = score.localScore(hashIndices.get(y), parentIndices);
+
+                if (recordScores) {
+                    node.addAttribute("BIC", bic);
+                }
+
+                _score += bic;
             }
+        }
 
-            // Calculate BIC score for this node
-            int yIndex = hashIndices.get(y);
-            double node_score = score.localScore(yIndex, parentIndices);
+        if (score instanceof SemBicScore) {
+            ((SemBicScore) score).setPenaltyDiscount(penalty1);
+            ((SemBicScore) score).setStructurePrior(structure1);
+            ((SemBicScore) score).setThreshold(theshold1);
+        }
 
-            nodeAttributes.put(y, node_score);
-
-            _score += node_score;
+        if (recordScores) {
+            graph.addAttribute("BIC", _score);
         }
 
         return _score;
@@ -2047,6 +2033,31 @@ public final class Fges implements GraphSearch, GraphScorer {
         }
 
         return score.localScoreDiff(hashIndices.get(x), yIndex, parentIndices);
+    }
+
+    private boolean independent(Node x, Node y, List<Node> z, Map<Node, Integer> hashIndices) {
+        int yIndex = hashIndices.get(y);
+
+        if (x == y) {
+            throw new IllegalArgumentException();
+        }
+
+        if (z.contains(x)) {
+            throw new IllegalArgumentException();
+        }
+
+        if (z.contains(y)) {
+            throw new IllegalArgumentException();
+        }
+
+        int[] _z = new int[z.size()];
+
+        int count = 0;
+        for (Node parent : z) {
+            _z[count++] = hashIndices.get(parent);
+        }
+
+        return score.localScoreDiff(hashIndices.get(x), yIndex, _z) < 0;
     }
 
     private List<Node> getVariables() {

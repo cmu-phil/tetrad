@@ -47,7 +47,9 @@ public class CovarianceMatrix implements ICovarianceMatrix {
     static final long serialVersionUID = 23L;
 
     public enum BIAS_CORRECTED {Yes, No}
-    public enum COVARIANCE_CALCULATION_TYPE {Standard, Alternate}
+
+    public enum COVARIANCE_CALCULATION_TYPE {Standard, Alternate, ForkJoin}
+
     public enum DATA_TYPE {Float, Double}
 
     /**
@@ -88,7 +90,9 @@ public class CovarianceMatrix implements ICovarianceMatrix {
     /**
      * Stores the covariances and calculates them if necessary.
      */
-    private TetradMatrix covariances;
+    private Covariances covariances;
+
+    private final TetradMatrix _covariancesMatrix;
 
 
     //=============================CONSTRUCTORS=========================//
@@ -99,7 +103,7 @@ public class CovarianceMatrix implements ICovarianceMatrix {
      * @throws IllegalArgumentException if this is not a continuous data set.
      */
     public CovarianceMatrix(DataSet dataSet) {
-        this(dataSet, BIAS_CORRECTED.Yes, COVARIANCE_CALCULATION_TYPE.Alternate, DATA_TYPE.Double);
+        this(dataSet, BIAS_CORRECTED.Yes, COVARIANCE_CALCULATION_TYPE.ForkJoin, DATA_TYPE.Double);
     }
 
     public CovarianceMatrix(DataSet dataSet, BIAS_CORRECTED corrected, COVARIANCE_CALCULATION_TYPE covType, DATA_TYPE dataType) {
@@ -107,41 +111,43 @@ public class CovarianceMatrix implements ICovarianceMatrix {
             throw new IllegalArgumentException("Not a continuous data set.");
         }
 
-        Covariances covariances = null;
-
         if (dataType == DATA_TYPE.Float) {
             if (covType == COVARIANCE_CALCULATION_TYPE.Standard) {
                 if (corrected == BIAS_CORRECTED.Yes) {
-                    covariances = new CovariancesFloatStandard(dataSet.getDoubleData().toArray(), true);
+                    this.covariances = new CovariancesFloatStandard(dataSet.getDoubleData().toArray(), true);
                 } else if (corrected == BIAS_CORRECTED.No) {
-                    covariances = new CovariancesFloatStandard(dataSet.getDoubleData().toArray(), false);
+                    this.covariances = new CovariancesFloatStandard(dataSet.getDoubleData().toArray(), false);
                 }
-            } else {
+            } else if (covType == COVARIANCE_CALCULATION_TYPE.Alternate) {
                 if (corrected == BIAS_CORRECTED.Yes) {
-                    covariances = new CovariancesFloatAlt(dataSet.getDoubleData().toArray(), true);
+                    this.covariances = new CovariancesFloatAlt(dataSet.getDoubleData().toArray(), true);
                 } else if (corrected == BIAS_CORRECTED.No) {
-                    covariances = new CovariancesFloatAlt(dataSet.getDoubleData().toArray(), false);
+                    this.covariances = new CovariancesFloatAlt(dataSet.getDoubleData().toArray(), false);
                 }
+            } else if (covType == COVARIANCE_CALCULATION_TYPE.ForkJoin) {
+                throw new IllegalStateException("ForkJoin not implemented for float data.");
             }
         } else if (dataType == DATA_TYPE.Double) {
             if (covType == COVARIANCE_CALCULATION_TYPE.Standard) {
                 if (corrected == BIAS_CORRECTED.Yes) {
-                    covariances = new CovariancesDoubleStandard(dataSet.getDoubleData().toArray(), true);
+                    this.covariances = new CovariancesDoubleStandard(dataSet.getDoubleData().toArray(), true);
                 } else if (corrected == BIAS_CORRECTED.No) {
-                    covariances = new CovariancesDoubleStandard(dataSet.getDoubleData().toArray(), false);
+                    this.covariances = new CovariancesDoubleStandard(dataSet.getDoubleData().toArray(), false);
                 }
-            } else {
+            } else if (covType == COVARIANCE_CALCULATION_TYPE.Alternate) {
                 if (corrected == BIAS_CORRECTED.Yes) {
-                    covariances = new CovariancesDoubleAlt(dataSet.getDoubleData().toArray(), true);
+                    this.covariances = new CovariancesDoubleAlt(dataSet.getDoubleData().toArray(), true);
                 } else if (corrected == BIAS_CORRECTED.No) {
-                    covariances = new CovariancesDoubleAlt(dataSet.getDoubleData().toArray(), false);
+                    this.covariances = new CovariancesDoubleAlt(dataSet.getDoubleData().toArray(), false);
                 }
+            } else if (covType == COVARIANCE_CALCULATION_TYPE.ForkJoin) {
+                this.covariances = new CovariancesDoubleForkJoin(dataSet.getDoubleData().toArray(), false);
             }
         }
 
-        this.covariances = new TetradMatrix(covariances.getMatrix());
         this.variables = Collections.unmodifiableList(dataSet.getVariables());
         this.sampleSize = dataSet.getNumRows();
+        this._covariancesMatrix = new TetradMatrix(covariances.getMatrix());
     }
 
     /**
@@ -164,24 +170,24 @@ public class CovarianceMatrix implements ICovarianceMatrix {
 
     public CovarianceMatrix(List<Node> variables, double[][] matrix,
                             int sampleSize) {
-
         if (variables.size() != matrix.length && variables.size() != matrix[0].length) {
             throw new IllegalArgumentException("# variables not equal to matrix dimension.");
         }
 
         // This is not calculating covariances, just storing them.
-        this.covariances = new TetradMatrix(matrix);
-        this.variables = Collections.unmodifiableList(variables);
-        this.sampleSize = sampleSize;
+        this.covariances = new CovariancesDoubleStandard(matrix, sampleSize);
+        this._covariancesMatrix = new TetradMatrix(covariances.getMatrix());
     }
 
     /**
      * Copy constructor.
      */
     public CovarianceMatrix(CovarianceMatrix covMatrix) {
-        this.covariances = covMatrix.getMatrix();
-        this.variables = Collections.unmodifiableList(covMatrix.getVariables());
-        this.sampleSize = covMatrix.getSampleSize();
+
+        // This is not calculating covariances, just storing them.
+        this.covariances = new CovariancesDoubleStandard(covMatrix.getMatrix().toArray(), sampleSize);
+        this._covariancesMatrix = new TetradMatrix(covariances.getMatrix());
+
     }
 
     public CovarianceMatrix(ICovarianceMatrix covMatrix) {
@@ -293,7 +299,7 @@ public class CovarianceMatrix implements ICovarianceMatrix {
             submatrixVars.add(variables.get(indice));
         }
 
-        TetradMatrix cov = new TetradMatrix(covariances.getSelection(indices, indices));
+        TetradMatrix cov = new TetradMatrix(covariances.getSubMatrix(indices, indices));
         return new CovarianceMatrix(submatrixVars, cov, getSampleSize());
     }
 
@@ -344,7 +350,7 @@ public class CovarianceMatrix implements ICovarianceMatrix {
      * @return the value of element (i,j) in the matrix
      */
     public final double getValue(int i, int j) {
-        return covariances.get(i, j);
+        return covariances.covariance(i, j);
     }
 
     public void setMatrix(TetradMatrix matrix) {
@@ -363,14 +369,14 @@ public class CovarianceMatrix implements ICovarianceMatrix {
      * @return the size of the square matrix.
      */
     public final int getSize() {
-        return covariances.columns();
+        return covariances.size();
     }
 
     /**
      * @return a the covariance matrix (not a copy).
      */
     public final TetradMatrix getMatrix() {
-        return covariances.copy();
+        return _covariancesMatrix;
     }
 
     public final void select(Node variable) {
@@ -482,7 +488,7 @@ public class CovarianceMatrix implements ICovarianceMatrix {
 
     @Override
     public void setValue(int i, int j, double v) {
-        covariances.set(i, j, v);
+        covariances.setCovariance(i, j, v);
     }
 
     @Override

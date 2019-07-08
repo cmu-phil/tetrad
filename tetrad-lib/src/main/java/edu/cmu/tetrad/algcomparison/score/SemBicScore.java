@@ -4,38 +4,37 @@ import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.Score;
 import edu.cmu.tetrad.util.Parameters;
-import edu.cmu.tetrad.util.Params;
+import edu.cmu.tetrad.util.StatUtils;
+
 import java.util.ArrayList;
 import java.util.List;
 
+import static edu.cmu.tetrad.util.StatUtils.skewness;
+
 /**
- * Wrapper for Fisher Z test.
+ * Wrapper for linear, Gaussian SEM BIC score.
  *
  * @author jdramsey
  */
 @edu.cmu.tetrad.annotation.Score(
         name = "Sem BIC Score",
-        command = "sem-bic-score",
+        command = "sem-bic",
         dataType = {DataType.Continuous, DataType.Covariance}
 )
 public class SemBicScore implements ScoreWrapper {
 
     static final long serialVersionUID = 23L;
     private DataModel dataSet;
-    private double penaltyDiscount = 2.0;
 
     @Override
     public Score getScore(DataModel dataSet, Parameters parameters) {
         this.dataSet = dataSet;
 
-        ICovarianceMatrix cov = dataSet instanceof ICovarianceMatrix ? (ICovarianceMatrix) dataSet
-                : new CovarianceMatrix((DataSet) dataSet);
-
         edu.cmu.tetrad.search.SemBicScore semBicScore
-                = new edu.cmu.tetrad.search.SemBicScore(cov);
-        double penaltyDiscount = parameters.getDouble(Params.PENALTY_DISCOUNT);
-        this.penaltyDiscount = penaltyDiscount;
-        semBicScore.setPenaltyDiscount(penaltyDiscount);
+                = new edu.cmu.tetrad.search.SemBicScore((DataSet) this.dataSet);
+        semBicScore.setPenaltyDiscount(parameters.getDouble("penaltyDiscount"));
+        semBicScore.setStructurePrior(parameters.getDouble("structurePrior"));
+        semBicScore.setThreshold(parameters.getDouble("semBicThreshold"));
         return semBicScore;
     }
 
@@ -52,7 +51,9 @@ public class SemBicScore implements ScoreWrapper {
     @Override
     public List<String> getParameters() {
         List<String> parameters = new ArrayList<>();
-        parameters.add(Params.PENALTY_DISCOUNT);
+        parameters.add("penaltyDiscount");
+        parameters.add("structurePrior");
+        parameters.add("semBicThreshold");
         return parameters;
     }
 
