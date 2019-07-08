@@ -233,7 +233,10 @@ public class RealCovarianceMatrixForkJoin implements RealCovariance {
                 List<MeanAction> actions = new LinkedList<>();
                 int startIndex = start;
                 int endIndex = startIndex + delta;
-                while (endIndex < numOfCols) {
+                while (startIndex < numOfCols) {
+                    if (endIndex >= numOfCols) {
+                        endIndex = numOfCols - 1;
+                    }
                     actions.add(new MeanAction(means, data, startIndex, endIndex));
                     startIndex = endIndex + 1;
                     endIndex = startIndex + delta;
