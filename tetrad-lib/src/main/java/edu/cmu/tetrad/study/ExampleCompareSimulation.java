@@ -45,7 +45,7 @@ public class ExampleCompareSimulation {
 //        parameters.set("maxCategories", 3);
 
         parameters.set("numRuns", 5);
-        parameters.set("differentGraphs", true);
+        parameters.set("differentGraphs", false);
         parameters.set("sampleSize", 1000);
 
         parameters.set("numMeasures", 1000);
@@ -136,7 +136,6 @@ public class ExampleCompareSimulation {
         comparison.setShowSimulationIndices(true);
         comparison.setSortByUtility(false);
         comparison.setShowUtilities(true);
-        comparison.setParallelized(true);
 
         comparison.compareFromSimulations("comparisonJoe", simulations, algorithms, statistics, parameters);
     }

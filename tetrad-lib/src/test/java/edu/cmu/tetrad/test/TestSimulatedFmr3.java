@@ -138,7 +138,6 @@ public class TestSimulatedFmr3 {
         comparison.setShowSimulationIndices(true);
         comparison.setSortByUtility(false);
         comparison.setShowUtilities(false);
-        comparison.setParallelized(false);
         comparison.setSaveGraphs(false);
         comparison.setTabDelimitedTables(false);
 
@@ -225,7 +224,7 @@ public class TestSimulatedFmr3 {
             comparison.setShowSimulationIndices(true);
             comparison.setSortByUtility(false);
             comparison.setShowUtilities(false);
-            comparison.setParallelized(false);
+//            comparison.setParallelized(false);
             comparison.setSaveGraphs(false);
             comparison.setTabDelimitedTables(false);
             comparison.setComparisonGraph(Comparison.ComparisonGraph.true_DAG);

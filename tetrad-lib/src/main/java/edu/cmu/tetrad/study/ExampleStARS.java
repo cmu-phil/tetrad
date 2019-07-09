@@ -140,7 +140,6 @@ public class ExampleStARS {
         comparison.setShowSimulationIndices(true);
         comparison.setSortByUtility(false);
         comparison.setShowUtilities(false);
-        comparison.setParallelized(true);
         comparison.setComparisonGraph(Comparison.ComparisonGraph.Pattern_of_the_true_DAG);
 
         comparison.compareFromSimulations("first.inflection", simulations, algorithms, statistics, parameters);

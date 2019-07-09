@@ -77,7 +77,7 @@ public class Comparison {
     private boolean sortByUtility = false;
     private String dataPath = null;
     private String resultsPath = null;
-    private boolean parallelized = true;
+    private boolean parallelized = false;
     private boolean savePatterns = false;
     private boolean savePags = false;
     //    private boolean saveTrueDags = false;
@@ -1102,9 +1102,9 @@ public class Comparison {
         return parallelized;
     }
 
-    public void setParallelized(boolean parallelized) {
-        this.parallelized = parallelized;
-    }
+//    public void setParallelized(boolean parallelized) {
+//        this.parallelized = parallelized;
+//    }
 
     /**
      * @return True if patterns should be saved out.

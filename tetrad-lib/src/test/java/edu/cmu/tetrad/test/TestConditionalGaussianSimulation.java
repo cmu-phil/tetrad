@@ -86,7 +86,6 @@ public class TestConditionalGaussianSimulation {
         comparison.setShowSimulationIndices(true);
         comparison.setSortByUtility(true);
         comparison.setShowUtilities(true);
-        comparison.setParallelized(false);
 
         comparison.compareFromSimulations("comparison", simulations, algorithms, statistics, parameters);
     }

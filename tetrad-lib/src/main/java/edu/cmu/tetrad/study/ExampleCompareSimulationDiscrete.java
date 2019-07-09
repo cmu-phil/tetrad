@@ -114,7 +114,6 @@ public class ExampleCompareSimulationDiscrete {
         comparison.setShowSimulationIndices(true);
         comparison.setSortByUtility(true);
 //        comparison.setShowUtilities(true);
-//        comparison.setParallelized(true);
 
         comparison.setComparisonGraph(Comparison.ComparisonGraph.Pattern_of_the_true_DAG);
 
