@@ -8,6 +8,7 @@ import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.independence.ProbabilisticTest;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.annotation.AlgType;
+import edu.cmu.tetrad.annotation.Experimental;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.data.IKnowledge;
@@ -32,6 +33,7 @@ import java.util.List;
         algoType = AlgType.forbid_latent_common_causes,
         dataType = DataType.Discrete
 )
+@Experimental
 public class RfciBsc implements Algorithm, HasKnowledge {
 
     static final long serialVersionUID = 23L;
@@ -88,9 +90,6 @@ public class RfciBsc implements Algorithm, HasKnowledge {
 		return DataType.Discrete;
 	}
 
-	/* (non-Javadoc)
-	 * @see edu.cmu.tetrad.algcomparison.algorithm.Algorithm#getParameters()
-	 */
 	@Override
 	public List<String> getParameters() {
             List<String> parameters = new ArrayList<>();
