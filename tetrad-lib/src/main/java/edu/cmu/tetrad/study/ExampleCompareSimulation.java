@@ -89,7 +89,7 @@ public class ExampleCompareSimulation {
 
         parameters.set("penaltyDiscount", 1);
         parameters.set("structurePrior", 0);
-        parameters.set("semBicThreshold", 0.3);
+        parameters.set("semBicThreshold", .2);
 
 
         Statistics statistics = new Statistics();

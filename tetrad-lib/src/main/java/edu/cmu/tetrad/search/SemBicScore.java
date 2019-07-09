@@ -419,6 +419,10 @@ public class SemBicScore implements Score {
     }
 
     public double getBias() {
+        if (getThreshold() < 0.0 || getThreshold() >= 1.0) {
+            throw new IllegalArgumentException("Bias threshold needs to be in [0, 1).");
+        }
+
         if (getThreshold() == 0.0) {
             bias = 0.0;
         } else if (Double.isNaN(bias)) {
