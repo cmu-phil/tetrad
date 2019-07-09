@@ -48,7 +48,7 @@ public class ExampleCompareSimulation {
         parameters.set("differentGraphs", false);
         parameters.set("sampleSize", 1000);
 
-        parameters.set("numMeasures", 1000);
+        parameters.set("numMeasures", 100);
         parameters.set("numLatents", 0);
         parameters.set("avgDegree", 4);
         parameters.set("maxDegree", 500);
@@ -89,7 +89,7 @@ public class ExampleCompareSimulation {
 
         parameters.set("penaltyDiscount", 1);
         parameters.set("structurePrior", 0);
-        parameters.set("semBicThreshold", 0.5);
+        parameters.set("semBicThreshold", 1);
 
 
         Statistics statistics = new Statistics();
@@ -101,6 +101,8 @@ public class ExampleCompareSimulation {
         statistics.add(new AdjacencyRecall());
         statistics.add(new ArrowheadPrecision());
         statistics.add(new ArrowheadRecall());
+        statistics.add(new ArrowheadPrecisionCommonEdges());
+        statistics.add(new ArrowheadRecallCommonEdges());
 //        statistics.add(new NumBidirectedEdges());
 //        statistics.add(new MathewsCorrAdj());
 //        statistics.add(new MathewsCorrArrow());
