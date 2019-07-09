@@ -50,7 +50,7 @@ public class ExampleCompareSimulation {
 
         parameters.set("numMeasures", 100);
         parameters.set("numLatents", 0);
-        parameters.set("avgDegree", 4);
+        parameters.set("avgDegree", 2);
         parameters.set("maxDegree", 500);
         parameters.set("maxIndegree", 100);
         parameters.set("maxOutdegree", 100);
@@ -89,7 +89,7 @@ public class ExampleCompareSimulation {
 
         parameters.set("penaltyDiscount", 1);
         parameters.set("structurePrior", 0);
-        parameters.set("semBicThreshold", 1);
+        parameters.set("semBicThreshold", 0.3);
 
 
         Statistics statistics = new Statistics();

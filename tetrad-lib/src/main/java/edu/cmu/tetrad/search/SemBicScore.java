@@ -431,7 +431,8 @@ public class SemBicScore implements Score {
             double[] e = new double[numSamples];
 
             for (int i = 0; i < numSamples; i++) {
-                e[i] = -n * log(ch.sample() / (n - 1)) + n * log(ch.sample() / (n - 1));
+//                e[i] = -n * log(ch.sample() / (n - 1)) + n * log(ch.sample() / (n - 1));
+                e[i] = -n * log(ch.sample() / (ch.sample()));
             }
 
 
