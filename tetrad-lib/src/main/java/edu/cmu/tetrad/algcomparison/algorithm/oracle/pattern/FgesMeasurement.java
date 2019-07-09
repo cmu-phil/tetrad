@@ -43,7 +43,7 @@ public class FgesMeasurement implements Algorithm, TakesInitialGraph, HasKnowled
     }
 
     @Override
-    public Graph search(DataModel dataModel, Parameters parameters) {
+    public Graph search(DataModel dataModel, Parameters parameters, Graph trueGraph) {
         if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
             DataSet dataSet = DataUtils.getContinuousDataSet(dataModel);
             dataSet = dataSet.copy();

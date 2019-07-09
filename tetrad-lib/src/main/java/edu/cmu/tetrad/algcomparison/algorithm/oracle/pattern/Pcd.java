@@ -29,7 +29,7 @@ public class Pcd implements Algorithm, HasKnowledge {
     }
 
     @Override
-    public Graph search(DataModel dataSet, Parameters parameters) {
+    public Graph search(DataModel dataSet, Parameters parameters, Graph trueGraph) {
     	if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
             IndTestScore test;
 

@@ -43,11 +43,11 @@ public class Jcpc implements Algorithm, TakesInitialGraph, HasKnowledge {
     }
 
     @Override
-    public Graph search(DataModel dataSet, Parameters parameters) {
+    public Graph search(DataModel dataSet, Parameters parameters, Graph trueGraph) {
     	if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
             DataSet continuousDataSet = DataUtils.getContinuousDataSet(dataSet);
             edu.cmu.tetrad.search.Jcpc search = new edu.cmu.tetrad.search.Jcpc(
-                    test.getTest(continuousDataSet, parameters),
+                    test.getTest(continuousDataSet, parameters, null),
                     score.getScore(continuousDataSet, parameters));
             search.setKnowledge(knowledge);
 

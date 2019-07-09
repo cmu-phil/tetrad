@@ -47,9 +47,9 @@ public class FAS implements Algorithm, HasKnowledge, TakesIndependenceWrapper {
     }
 
     @Override
-    public Graph search(DataModel dataSet, Parameters parameters) {
+    public Graph search(DataModel dataSet, Parameters parameters, Graph trueGraph) {
         if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
-            edu.cmu.tetrad.search.Fas search = new edu.cmu.tetrad.search.Fas(test.getTest(dataSet, parameters));
+            edu.cmu.tetrad.search.Fas search = new edu.cmu.tetrad.search.Fas(test.getTest(dataSet, parameters, null));
             search.setDepth(parameters.getInt(Params.DEPTH));
             search.setKnowledge(knowledge);
             search.setVerbose(parameters.getBoolean(Params.VERBOSE));

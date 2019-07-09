@@ -19,7 +19,7 @@ import java.util.Vector;
 public class FactorAnalysis implements Algorithm {
     static final long serialVersionUID = 23L;
 
-    public Graph search(DataModel ds, Parameters parameters) {
+    public Graph search(DataModel ds, Parameters parameters, Graph trueGraph) {
     	if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
 
             DataSet selectedModel = (DataSet) ds;

@@ -38,7 +38,7 @@ public class FgesD implements Algorithm, TakesInitialGraph, HasKnowledge {
 	}
 
 	@Override
-	public Graph search(DataModel dataSet, Parameters parameters) {
+	public Graph search(DataModel dataSet, Parameters parameters, Graph trueGraph) {
 		if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
 			if (algorithm != null) {
 //				initialGraph = algorithm.search(dataSet, parameters);

@@ -114,7 +114,7 @@ public class FaskGraphs {
                         filenames.add(name);
                         datasets.add(dataSet);
                         Fask fask = new Fask();
-                        Graph search = fask.search(dataSet, parameters);
+                        Graph search = fask.search(dataSet, parameters, null);
                         graphs.add(search);
                     } else if (name.contains("typical")) {
                         types.add(false);
@@ -122,7 +122,7 @@ public class FaskGraphs {
                         filenames.add(name);
                         datasets.add(dataSet);
                         Fask fask = new Fask();
-                        Graph search = fask.search(dataSet, parameters);
+                        Graph search = fask.search(dataSet, parameters, null);
                         graphs.add(search);
                     }
 

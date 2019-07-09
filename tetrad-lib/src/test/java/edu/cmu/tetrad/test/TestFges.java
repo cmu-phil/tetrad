@@ -406,7 +406,7 @@ public class TestFges {
 
         Algorithm fges = new edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern.Fges(score, false);
 
-        Graph fgesGraph = fges.search(dataSet, parameters);
+        Graph fgesGraph = fges.search(dataSet, parameters, null);
 
         clarkTestForAlpha(0.05, parameters, dataSet, trueGraph, fgesGraph, test);
         clarkTestForAlpha(0.01, parameters, dataSet, trueGraph, fgesGraph, test);
@@ -422,7 +422,7 @@ public class TestFges {
         trueGraph = GraphUtils.replaceNodes(trueGraph, nodes);
         pattern = GraphUtils.replaceNodes(pattern, nodes);
 
-        IndependenceTest _test = test.getTest(dataSet, parameters);
+        IndependenceTest _test = test.getTest(dataSet, parameters, null);
 
         System.out.println(parameters);
 
@@ -765,7 +765,7 @@ public class TestFges {
 
         long start = System.currentTimeMillis();
 
-        Graph graph = pcFges.search(dataSet, parameters);
+        Graph graph = pcFges.search(dataSet, parameters, null);
 
         long stop = System.currentTimeMillis();
 
@@ -1511,7 +1511,7 @@ public class TestFges {
 //            IndependenceWrapper test = new FisherZ();
             Algorithm alg = new edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern.Cpc(test);
 
-            Graph out = alg.search(sim.getDataModel(0), parameters);
+            Graph out = alg.search(sim.getDataModel(0), parameters, null);
 //            Graph out = GraphUtils.undirectedGraph(alg.search(sim.getDataModel(0), parameters));
 
             Set<Edge> edges1 = out.getEdges();
@@ -1592,7 +1592,7 @@ public class TestFges {
             parameters.set(Params.ALPHA, 1e-8);
 
             for (int i = 0; i < 5; i++) {
-                Graph out1 = alg.search(sim.getDataModel(0), parameters);
+                Graph out1 = alg.search(sim.getDataModel(0), parameters, null);
 
                 System.out.println(out1);
             }

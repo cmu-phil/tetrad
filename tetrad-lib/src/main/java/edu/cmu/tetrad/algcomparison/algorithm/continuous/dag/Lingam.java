@@ -32,7 +32,7 @@ public class Lingam implements Algorithm {
 
     static final long serialVersionUID = 23L;
 
-    public Graph search(DataModel dataSet, Parameters parameters) {
+    public Graph search(DataModel dataSet, Parameters parameters, Graph trueGraph) {
         if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
             edu.cmu.tetrad.search.Lingam lingam = new edu.cmu.tetrad.search.Lingam();
             lingam.setPenaltyDiscount(parameters.getDouble(Params.PENALTY_DISCOUNT));

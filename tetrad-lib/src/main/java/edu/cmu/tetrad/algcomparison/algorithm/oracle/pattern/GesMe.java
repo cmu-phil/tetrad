@@ -47,7 +47,7 @@ public class GesMe implements Algorithm, TakesInitialGraph/*, HasKnowledge*/ {
     }
 
     @Override
-    public Graph search(DataModel dataSet, Parameters parameters) {
+    public Graph search(DataModel dataSet, Parameters parameters, Graph trueGraph) {
     	if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
 //          dataSet = DataUtils.center((DataSet) dataSet);
             CovarianceMatrix covarianceMatrix = new CovarianceMatrix((DataSet) dataSet);

@@ -28,7 +28,7 @@ public class SingleGraphAlg implements Algorithm, HasKnowledge {
     }
 
     @Override
-    public Graph search(DataModel dataSet, Parameters parameters) {
+    public Graph search(DataModel dataSet, Parameters parameters, Graph trueGraph) {
         return graph;
     }
 

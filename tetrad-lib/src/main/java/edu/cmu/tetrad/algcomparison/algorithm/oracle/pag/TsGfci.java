@@ -50,7 +50,7 @@ public class TsGfci implements Algorithm, TakesInitialGraph, HasKnowledge, Takes
     }
 
     @Override
-    public Graph search(DataModel dataSet, Parameters parameters) {
+    public Graph search(DataModel dataSet, Parameters parameters, Graph trueGraph) {
 //    	if (!(dataSet instanceof TimeSeriesData)) {
 //            throw new IllegalArgumentException("You need a (labeled) time series data set to run TsGFCI.");
 //        }
@@ -59,7 +59,7 @@ public class TsGfci implements Algorithm, TakesInitialGraph, HasKnowledge, Takes
         	if(knowledge != null) {
         		dataSet.setKnowledge(knowledge);
         	}
-            edu.cmu.tetrad.search.TsGFci search = new edu.cmu.tetrad.search.TsGFci(test.getTest(dataSet, parameters),
+            edu.cmu.tetrad.search.TsGFci search = new edu.cmu.tetrad.search.TsGFci(test.getTest(dataSet, parameters, null),
                     score.getScore(dataSet, parameters));
             IKnowledge _knowledge = dataSet.getKnowledge() != null ? dataSet.getKnowledge() : new Knowledge2();
             search.setKnowledge(dataSet.getKnowledge());

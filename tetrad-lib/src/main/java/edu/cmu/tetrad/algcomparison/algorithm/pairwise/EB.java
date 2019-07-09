@@ -45,12 +45,12 @@ public class EB implements Algorithm, TakesInitialGraph {
     }
 
     @Override
-    public Graph search(DataModel dataSet, Parameters parameters) {
+    public Graph search(DataModel dataSet, Parameters parameters, Graph trueGraph) {
     	if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
-            initialGraph = algorithm.search(dataSet, parameters);
+            initialGraph = algorithm.search(dataSet, parameters, null);
 
             if (initialGraph != null) {
-                initialGraph = algorithm.search(dataSet, parameters);
+                initialGraph = algorithm.search(dataSet, parameters, null);
             } else {
                 throw new IllegalArgumentException("This EB algorithm needs both data and a graph source as inputs; it \n"
                         + "will orient the edges in the input graph using the data.");

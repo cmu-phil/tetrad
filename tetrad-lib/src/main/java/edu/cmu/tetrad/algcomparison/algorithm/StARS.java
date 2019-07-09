@@ -39,7 +39,7 @@ public class StARS implements Algorithm, TakesInitialGraph {
     }
 
     @Override
-    public Graph search(DataModel dataSet, Parameters parameters) {
+    public Graph search(DataModel dataSet, Parameters parameters, Graph trueGraph) {
         this._dataSet = (DataSet) dataSet;
 
 //        int numVars = Math.min(50, ((DataSet) dataSet).getNumColumns());
@@ -142,7 +142,7 @@ public class StARS implements Algorithm, TakesInitialGraph {
         System.out.println(parameter + " = " + getValue(_lambda, parameters));
         _parameters.set(parameter, getValue(_lambda, parameters));
 
-        return algorithm.search(dataSet, _parameters);
+        return algorithm.search(dataSet, _parameters, null);
     }
 
     private static double getD(Parameters params, String paramName, double paramValue, final List<DataSet> samples,
@@ -174,7 +174,7 @@ public class StARS implements Algorithm, TakesInitialGraph {
             protected void compute() {
                 if (to - from <= chunk) {
                     for (int s = from; s < to; s++) {
-                        Graph e = algorithm.search(samples.get(s), params);
+                        Graph e = algorithm.search(samples.get(s), params, null);
                         e = GraphUtils.replaceNodes(e, samples.get(0).getVariables());
                         graphs.add(e);
                     }

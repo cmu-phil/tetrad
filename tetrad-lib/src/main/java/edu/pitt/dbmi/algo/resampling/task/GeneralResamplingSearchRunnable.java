@@ -130,7 +130,7 @@ public class GeneralResamplingSearchRunnable implements Runnable {
         			out.println("knowledge being set ... ");
         		}
             }
-			graph = algorithm.search(dataSet, parameters);
+			graph = algorithm.search(dataSet, parameters, null);
 		}else{
 			if (multiDataSetAlgorithm instanceof HasKnowledge) {
                 ((HasKnowledge) multiDataSetAlgorithm).setKnowledge(knowledge);

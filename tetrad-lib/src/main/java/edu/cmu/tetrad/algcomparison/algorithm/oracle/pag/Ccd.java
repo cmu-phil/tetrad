@@ -30,10 +30,10 @@ public class Ccd implements Algorithm {
     }
 
     @Override
-    public Graph search(DataModel dataSet, Parameters parameters) {
+    public Graph search(DataModel dataSet, Parameters parameters, Graph trueGraph) {
     	if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
             edu.cmu.tetrad.search.Ccd search = new edu.cmu.tetrad.search.Ccd(
-                    test.getTest(dataSet, parameters));
+                    test.getTest(dataSet, parameters, null));
             search.setDepth(parameters.getInt(Params.DEPTH));
             search.setApplyR1(parameters.getBoolean(Params.APPLY_R1));
 

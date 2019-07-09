@@ -1170,7 +1170,7 @@ public class TimeoutComparison {
             } else {
                 DataModel dataModel = copyData ? data.copy() : data;
                 Parameters _params = algorithmWrapper.getAlgorithmSpecificParameters();
-                out = algorithm.search(dataModel, _params);
+                out = algorithm.search(dataModel, _params, null);
             }
         } catch (Exception e) {
             System.out.println("Could not run " + algorithmWrapper.getDescription());
@@ -1645,8 +1645,8 @@ public class TimeoutComparison {
         }
 
         @Override
-        public Graph search(DataModel DataModel, Parameters parameters) {
-            return algorithm.search(DataModel, this.parameters);
+        public Graph search(DataModel DataModel, Parameters parameters, Graph trueGraph) {
+            return algorithm.search(DataModel, this.parameters, trueGraph);
         }
 
         @Override
@@ -1711,8 +1711,8 @@ public class TimeoutComparison {
         }
 
         @Override
-        public Graph search(DataModel DataModel, Parameters parameters) {
-            return algorithmWrapper.getAlgorithm().search(DataModel, parameters);
+        public Graph search(DataModel DataModel, Parameters parameters, Graph trueGraph) {
+            return algorithmWrapper.getAlgorithm().search(DataModel, parameters, trueGraph);
         }
 
         @Override

@@ -1,15 +1,12 @@
 package edu.cmu.tetrad.algcomparison.algorithm.external;
 
 import edu.cmu.tetrad.algcomparison.algorithm.ExternalAlgorithm;
-import edu.cmu.tetrad.algcomparison.simulation.Simulation;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.Parameters;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Set;
 
 /**
@@ -56,7 +53,7 @@ public class ExternalAlgorithmIntersection extends ExternalAlgorithm {
     /**
      * Reads in the relevant graph from the file (see above) and returns it.
      */
-    public Graph search(DataModel dataSet, Parameters parameters) {
+    public Graph search(DataModel dataSet, Parameters parameters, Graph trueGraph) {
         this.elapsed = 0;
 
         for (ExternalAlgorithm algorithm : algorithms) {
@@ -66,11 +63,11 @@ public class ExternalAlgorithmIntersection extends ExternalAlgorithm {
             elapsed += algorithm.getElapsedTime((DataSet) dataSet, parameters);
         }
 
-        Graph graph0 = algorithms[0].search(dataSet, parameters);
+        Graph graph0 = algorithms[0].search(dataSet, parameters, null);
         Set<Edge> edges = graph0.getEdges();
 
         for (int i = 1; i < algorithms.length; i++) {
-            edges.retainAll(algorithms[i].search(dataSet, parameters).getEdges());
+            edges.retainAll(algorithms[i].search(dataSet, parameters, null).getEdges());
         }
 
         EdgeListGraph intersection = new EdgeListGraph(graph0.getNodes());

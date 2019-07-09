@@ -44,9 +44,9 @@ public class R1 implements Algorithm, TakesInitialGraph {
     }
 
     @Override
-    public Graph search(DataModel dataSet, Parameters parameters) {
+    public Graph search(DataModel dataSet, Parameters parameters, Graph trueGraph) {
     	if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
-            Graph graph = algorithm.search(dataSet, parameters);
+            Graph graph = algorithm.search(dataSet, parameters, null);
 
             if (graph != null) {
                 initialGraph = graph;

@@ -23,7 +23,7 @@ import java.util.List;
 @Bootstrapping
 public class MixedFgesTreatingDiscreteAsContinuous implements Algorithm {
     static final long serialVersionUID = 23L;
-    public Graph search(DataModel Dk, Parameters parameters) {
+    public Graph search(DataModel Dk, Parameters parameters, Graph trueGraph) {
     	if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
             DataSet mixedDataSet = DataUtils.getMixedDataSet(Dk);
             mixedDataSet = DataUtils.convertNumericalDiscreteToContinuous(mixedDataSet);

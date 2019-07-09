@@ -83,7 +83,6 @@ public class ExampleCompareFromFiles {
         trueGraph = GraphUtils.replaceNodes(trueGraph, simulation.getDataModel(0).getVariables());
 
         FisherZ fisherZ = new FisherZ();
-        fisherZ.setTrueGraph(trueGraph);
 
         Comparison comparison = new Comparison();
         comparison.setShowAlgorithmIndices(true);

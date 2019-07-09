@@ -44,7 +44,7 @@ public class CcdMaxConcatenated implements MultiDataSetAlgorithm, HasKnowledge {
 
 			DataSet dataSet = DataUtils.concatenate(dataSets);
 
-			IndependenceTest test = this.test.getTest(dataSet, parameters);
+			IndependenceTest test = this.test.getTest(dataSet, parameters, null);
 			edu.cmu.tetrad.search.CcdMax search = new edu.cmu.tetrad.search.CcdMax(test);
 			search.setDoColliderOrientations(parameters.getBoolean(Params.DO_COLLIDER_ORIENTATION));
 			search.setUseHeuristic(parameters.getBoolean(Params.USE_MAX_P_ORIENTATION_HEURISTIC));
@@ -89,7 +89,7 @@ public class CcdMaxConcatenated implements MultiDataSetAlgorithm, HasKnowledge {
 	}
 
 	@Override
-	public Graph search(DataModel dataSet, Parameters parameters) {
+	public Graph search(DataModel dataSet, Parameters parameters, Graph trueGraph) {
 		if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
 			return search(Collections.singletonList((DataModel) DataUtils.getContinuousDataSet(dataSet)), parameters);
 		}else{

@@ -54,13 +54,13 @@ public class FciMax implements Algorithm, TakesInitialGraph, HasKnowledge, Takes
     }
 
     @Override
-    public Graph search(DataModel dataSet, Parameters parameters) {
+    public Graph search(DataModel dataSet, Parameters parameters, Graph trueGraph) {
     	if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
             if (algorithm != null) {
-                initialGraph = algorithm.search(dataSet, parameters);
+                initialGraph = algorithm.search(dataSet, parameters, null);
             }
 
-            edu.cmu.tetrad.search.FciMax search = new edu.cmu.tetrad.search.FciMax(test.getTest(dataSet, parameters));
+            edu.cmu.tetrad.search.FciMax search = new edu.cmu.tetrad.search.FciMax(test.getTest(dataSet, parameters, null));
             search.setDepth(parameters.getInt(Params.DEPTH));
             search.setKnowledge(knowledge);
             search.setMaxPathLength(parameters.getInt(Params.MAX_PATH_LENGTH));

@@ -37,7 +37,7 @@ public class Mgm implements Algorithm {
     }
 
     @Override
-    public Graph search(DataModel ds, Parameters parameters) {
+    public Graph search(DataModel ds, Parameters parameters, Graph trueGraph) {
     	// Notify the user that you need at least one continuous and one discrete variable to run MGM
         List<Node> variables = ds.getVariables();
         boolean hasContinuous = false;

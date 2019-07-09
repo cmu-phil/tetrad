@@ -49,9 +49,9 @@ public class MBFS implements Algorithm, HasKnowledge, TakesIndependenceWrapper {
     }
 
     @Override
-    public Graph search(DataModel dataSet, Parameters parameters) {
+    public Graph search(DataModel dataSet, Parameters parameters, Graph trueGraph) {
     	if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
-            IndependenceTest test = this.test.getTest(dataSet, parameters);
+            IndependenceTest test = this.test.getTest(dataSet, parameters, null);
             edu.cmu.tetrad.search.Mbfs search = new edu.cmu.tetrad.search.Mbfs(test, parameters.getInt(Params.DEPTH));
 
             search.setDepth(parameters.getInt(Params.DEPTH));

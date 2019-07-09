@@ -42,9 +42,9 @@ public class Rfci implements Algorithm, HasKnowledge, TakesIndependenceWrapper {
     }
 
     @Override
-    public Graph search(DataModel dataSet, Parameters parameters) {
+    public Graph search(DataModel dataSet, Parameters parameters, Graph trueGraph) {
     	if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
-            edu.cmu.tetrad.search.Rfci search = new edu.cmu.tetrad.search.Rfci(test.getTest(dataSet, parameters));
+            edu.cmu.tetrad.search.Rfci search = new edu.cmu.tetrad.search.Rfci(test.getTest(dataSet, parameters, null));
             search.setKnowledge(knowledge);
             search.setDepth(parameters.getInt(Params.DEPTH));
             search.setMaxPathLength(parameters.getInt(Params.MAX_PATH_LENGTH));

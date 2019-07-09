@@ -52,7 +52,7 @@ public class PcStableMaxConcatenated implements MultiDataSetAlgorithm, HasKnowle
 
             DataSet dataSet = DataUtils.concatenate(dataSets);
             PcStableMax search = new PcStableMax(
-                    test.getTest(dataSet, parameters));
+                    test.getTest(dataSet, parameters, null));
             search.setUseHeuristic(parameters.getBoolean(Params.USE_MAX_P_ORIENTATION_HEURISTIC));
             search.setMaxPathLength(parameters.getInt(Params.MAX_P_ORIENTATION_MAX_PATH_LENGTH));
             search.setKnowledge(knowledge);
@@ -94,7 +94,7 @@ public class PcStableMaxConcatenated implements MultiDataSetAlgorithm, HasKnowle
     }
 
     @Override
-    public Graph search(DataModel dataSet, Parameters parameters) {
+    public Graph search(DataModel dataSet, Parameters parameters, Graph trueGraph) {
     	if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
             return search(Collections.singletonList((DataModel) DataUtils.getContinuousDataSet(dataSet)), parameters);
     	}else{

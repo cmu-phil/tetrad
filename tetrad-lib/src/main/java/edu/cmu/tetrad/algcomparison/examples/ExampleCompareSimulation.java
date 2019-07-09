@@ -86,12 +86,8 @@ public class ExampleCompareSimulation {
 
         final SemSimulation simulation = new SemSimulation(new RandomForward());
         simulation.createData(parameters);
-        Graph trueGraph = simulation.getTrueGraph(0);
-        trueGraph = GraphUtils.replaceNodes(trueGraph, simulation.getDataModel(0).getVariables());
 
         FisherZ test = new FisherZ();
-        test.setTrueGraph(trueGraph);
-
 
         Pc algorithm = new Pc(test);
         algorithms.add(algorithm);

@@ -42,7 +42,7 @@ public class Fofc implements Algorithm, TakesInitialGraph, HasKnowledge, Cluster
     }
 
     @Override
-    public Graph search(DataModel dataSet, Parameters parameters) {
+    public Graph search(DataModel dataSet, Parameters parameters, Graph trueGraph) {
     	if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
             ICovarianceMatrix cov = DataUtils.getCovMatrix(dataSet);
             double alpha = parameters.getDouble(Params.ALPHA);

@@ -40,7 +40,7 @@ public class StARS2 implements Algorithm, TakesInitialGraph {
     }
 
     @Override
-    public Graph search(DataModel dataSet, Parameters parameters) {
+    public Graph search(DataModel dataSet, Parameters parameters, Graph trueGraph) {
         this._dataSet = (DataSet) dataSet;
 
 //        int numVars = Math.min(50, ((DataSet) dataSet).getNumColumns());
@@ -104,7 +104,7 @@ public class StARS2 implements Algorithm, TakesInitialGraph {
         System.out.println(parameter + " = " + _p);
         _parameters.set(parameter, getValue(_p, parameters));
 //
-        return algorithm.search(dataSet, _parameters);
+        return algorithm.search(dataSet, _parameters, null);
     }
 
 //    static class FittingFunction implements MultivariateFunction {
@@ -168,7 +168,7 @@ public class StARS2 implements Algorithm, TakesInitialGraph {
         List<Graph> graphs = new ArrayList<>();
 
         for (DataSet d : boostraps) {
-            Graph e = GraphUtils.undirectedGraph(algorithm.search(d, params));
+            Graph e = GraphUtils.undirectedGraph(algorithm.search(d, params, null));
             e = GraphUtils.replaceNodes(e, boostraps.get(0).getVariables());
             graphs.add(e);
 

@@ -30,7 +30,7 @@ public class CciTest implements IndependenceWrapper {
     private Graph initialGraph = null;
 
     @Override
-    public IndependenceTest getTest(DataModel dataSet, Parameters parameters) {
+    public IndependenceTest getTest(DataModel dataSet, Parameters parameters, Graph trueGraph) {
         final IndTestConditionalCorrelation cci = new IndTestConditionalCorrelation(DataUtils.getContinuousDataSet(dataSet),
                 parameters.getDouble("alpha"));
         if (parameters.getInt("kernelType") == 1) {

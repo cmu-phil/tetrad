@@ -32,7 +32,7 @@ public class StabilitySelection implements Algorithm, TakesInitialGraph {
     }
 
     @Override
-    public Graph search(DataModel dataSet, Parameters parameters) {
+    public Graph search(DataModel dataSet, Parameters parameters, Graph trueGraph) {
         DataSet _dataSet = (DataSet) dataSet;
 
         double percentageB = parameters.getDouble("percentSubsampleSize");
@@ -63,7 +63,7 @@ public class StabilitySelection implements Algorithm, TakesInitialGraph {
                         BootstrapSampler sampler = new BootstrapSampler();
                         sampler.setWithoutReplacements(true);
                         DataSet sample = sampler.sample(_dataSet, (int) (percentageB * _dataSet.getNumRows()));
-                        Graph graph = algorithm.search(sample, parameters);
+                        Graph graph = algorithm.search(sample, parameters, null);
                         graphs.add(graph);
                     }
                 } else {

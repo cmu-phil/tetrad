@@ -37,7 +37,7 @@ public class DSeparationTest implements IndependenceWrapper {
     }
 
     @Override
-    public IndependenceTest getTest(DataModel dataSet, Parameters parameters) {
+    public IndependenceTest getTest(DataModel dataSet, Parameters parameters, Graph trueGraph) {
         if (dataSet == null) {
             return new IndTestDSep(graph);
         } else {

@@ -1,7 +1,6 @@
 package edu.cmu.tetrad.algcomparison.algorithm.external;
 
 import edu.cmu.tetrad.algcomparison.algorithm.ExternalAlgorithm;
-import edu.cmu.tetrad.algcomparison.simulation.Simulation;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.graph.EdgeListGraph;
@@ -13,8 +12,6 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * An API to allow results from external algorithms to be included in a report through the algrorithm
@@ -65,7 +62,7 @@ public class ExternalAlgorithmTetrad extends ExternalAlgorithm  {
     /**
      * Reads in the relevant graph from the file and returns it.
      */
-    public Graph search(DataModel dataSet, Parameters parameters) {
+    public Graph search(DataModel dataSet, Parameters parameters, Graph trueGraph) {
         int index = getIndex(dataSet);
         File file = new File(path, "/results/" + extDir + "/" + (simIndex + 1) + "/graph." + index + ".txt");
         System.out.println(file.getAbsolutePath());

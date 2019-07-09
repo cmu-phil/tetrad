@@ -1,6 +1,7 @@
 package edu.cmu.tetrad.algcomparison.independence;
 
 import edu.cmu.tetrad.data.*;
+import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.*;
 import edu.cmu.tetrad.util.Parameters;
 import java.util.*;
@@ -20,7 +21,7 @@ public class SemBicTest implements IndependenceWrapper {
     static final long serialVersionUID = 23L;
 
     @Override
-    public IndependenceTest getTest(DataModel dataSet, Parameters parameters) {
+    public IndependenceTest getTest(DataModel dataSet, Parameters parameters, Graph trueGraph) {
         SemBicScore score = null;
 
         if (dataSet instanceof ICovarianceMatrix) {

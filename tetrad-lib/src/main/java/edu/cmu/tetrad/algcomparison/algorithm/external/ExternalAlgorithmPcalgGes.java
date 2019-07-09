@@ -1,10 +1,7 @@
 package edu.cmu.tetrad.algcomparison.algorithm.external;
 
 import edu.cmu.tetrad.algcomparison.algorithm.ExternalAlgorithm;
-import edu.cmu.tetrad.algcomparison.simulation.Simulation;
 import edu.cmu.tetrad.data.DataModel;
-import edu.cmu.tetrad.data.DataReader;
-import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.Parameters;
@@ -64,7 +61,7 @@ public class ExternalAlgorithmPcalgGes extends ExternalAlgorithm {
     /**
      * Reads in the relevant graph from the file (see above) and returns it.
      */
-    public Graph search(DataModel dataSet, Parameters parameters) {
+    public Graph search(DataModel dataSet, Parameters parameters, Graph trueGraph) {
         int index = getIndex(dataSet);
 
         File nodes = new File(path, "/results/" + extDir + "/" + (simIndex + 1) + "/nodes." + index + ".txt");

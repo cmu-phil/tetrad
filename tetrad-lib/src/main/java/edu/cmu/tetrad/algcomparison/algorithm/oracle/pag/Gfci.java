@@ -48,9 +48,9 @@ public class Gfci implements Algorithm, HasKnowledge, UsesScoreWrapper, TakesInd
     }
 
     @Override
-    public Graph search(DataModel dataSet, Parameters parameters) {
+    public Graph search(DataModel dataSet, Parameters parameters, Graph trueGraph) {
     	if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
-            GFci search = new GFci(test.getTest(dataSet, parameters), score.getScore(dataSet, parameters));  
+            GFci search = new GFci(test.getTest(dataSet, parameters, null), score.getScore(dataSet, parameters));
             search.setMaxDegree(parameters.getInt(Params.MAX_DEGREE));
             search.setKnowledge(knowledge);
             search.setVerbose(parameters.getBoolean(Params.VERBOSE));

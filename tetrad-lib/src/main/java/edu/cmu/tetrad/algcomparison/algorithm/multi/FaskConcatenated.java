@@ -60,7 +60,7 @@ public class FaskConcatenated implements MultiDataSetAlgorithm, HasKnowledge, Ta
 
             dataSet.setNumberFormat(new DecimalFormat("0.000000000000000000"));
 
-            Fask search = new Fask(dataSet, test.getTest(dataSet, parameters));
+            Fask search = new Fask(dataSet, test.getTest(dataSet, parameters, null));
             search.setDepth(parameters.getInt(Params.DEPTH));
             search.setPenaltyDiscount(parameters.getDouble(Params.PENALTY_DISCOUNT));
             search.setExtraEdgeThreshold(parameters.getDouble(Params.EXTRA_EDGE_THRESHOLD));
@@ -103,7 +103,7 @@ public class FaskConcatenated implements MultiDataSetAlgorithm, HasKnowledge, Ta
     }
 
     @Override
-    public Graph search(DataModel dataSet, Parameters parameters) {
+    public Graph search(DataModel dataSet, Parameters parameters, Graph trueGraph) {
         if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
             return search(Collections.singletonList((DataModel) DataUtils.getContinuousDataSet(dataSet)), parameters);
         } else {

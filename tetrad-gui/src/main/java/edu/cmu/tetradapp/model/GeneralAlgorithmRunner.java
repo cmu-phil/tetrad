@@ -256,7 +256,7 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
                     ((HasKnowledge) algo).setKnowledge(getKnowledge());
                 }
 
-                graphList.add(algo.search(null, parameters));
+                graphList.add(algo.search(null, parameters, null));
             } else {
                 throw new IllegalArgumentException("The parent boxes did not include any datasets or graphs. Try opening\n"
                         + "the editors for those boxes and loading or simulating them.");
@@ -289,7 +289,7 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
                     getDataModelList().forEach(dataModel -> {
                         if (dataModel instanceof ICovarianceMatrix) {
                             ICovarianceMatrix dataSet = (ICovarianceMatrix) dataModel;
-                            graphList.add(algorithm.search(dataSet, parameters));
+                            graphList.add(algorithm.search(dataSet, parameters, null));
                         } else if (dataModel instanceof DataSet) {
                             DataSet dataSet = (DataSet) dataModel;
 
@@ -297,7 +297,7 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
                                 throw new IllegalArgumentException("Sorry, you need a continuous dataset for a cluster algorithm.");
                             }
 
-                            graphList.add(algorithm.search(dataSet, parameters));
+                            graphList.add(algorithm.search(dataSet, parameters, null));
                         }
                     });
                 }
@@ -317,11 +317,11 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
                         DataType algDataType = algo.getDataType();
 
                         if (data.isContinuous() && (algDataType == DataType.Continuous || algDataType == DataType.Mixed)) {
-                            graphList.add(algo.search(data, parameters));
+                            graphList.add(algo.search(data, parameters, null));
                         } else if (data.isDiscrete() && (algDataType == DataType.Discrete || algDataType == DataType.Mixed)) {
-                            graphList.add(algo.search(data, parameters));
+                            graphList.add(algo.search(data, parameters, null));
                         } else if (data.isMixed() && algDataType == DataType.Mixed) {
-                            graphList.add(algo.search(data, parameters));
+                            graphList.add(algo.search(data, parameters, null));
                         } else {
                             throw new IllegalArgumentException("The algorithm was not expecting that type of data.");
                         }

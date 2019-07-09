@@ -4,6 +4,7 @@ import edu.cmu.tetrad.annotation.TestOfIndependence;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.data.DataUtils;
+import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.*;
 import edu.cmu.tetrad.util.Parameters;
 import java.util.ArrayList;
@@ -24,7 +25,7 @@ public class DiscreteBicTest implements IndependenceWrapper {
     static final long serialVersionUID = 23L;
 
     @Override
-    public IndependenceTest getTest(DataModel dataSet, Parameters parameters) {
+    public IndependenceTest getTest(DataModel dataSet, Parameters parameters, Graph trueGraph) {
         Score score = new BicScore(DataUtils.getDiscreteDataSet(dataSet));
 //        score.setSamplePrior(parameters.getDouble("samplePrior"));
 //        score.setStructurePrior(parameters.getDouble("structurePrior"));

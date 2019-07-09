@@ -60,7 +60,7 @@ public class TsImages implements Algorithm, HasKnowledge, MultiDataSetAlgorithm,
     }
 
     @Override
-    public Graph search(DataModel dataModel, Parameters parameters) {
+    public Graph search(DataModel dataModel, Parameters parameters, Graph trueGraph) {
         if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
             DataSet dataSet = (DataSet) dataModel;
             TsGFci search;

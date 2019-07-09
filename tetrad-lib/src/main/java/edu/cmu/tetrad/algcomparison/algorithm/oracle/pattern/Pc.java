@@ -35,7 +35,6 @@ public class Pc implements Algorithm, TakesInitialGraph, HasKnowledge, TakesInde
     private Algorithm algorithm = null;
     private Graph initialGraph = null;
     private IKnowledge knowledge = new Knowledge2();
-    private Graph trueGraph;
 
     public Pc(IndependenceWrapper test) {
         this.test = test;
@@ -55,12 +54,12 @@ public class Pc implements Algorithm, TakesInitialGraph, HasKnowledge, TakesInde
     }
 
     @Override
-    public Graph search(DataModel dataSet, Parameters parameters) {
+    public Graph search(DataModel dataSet, Parameters parameters, Graph trueGraph) {
         if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
             if (algorithm != null) {
 //            	initialGraph = algorithm.search(dataSet, parameters);
             }
-            edu.cmu.tetrad.search.PcAll search = new edu.cmu.tetrad.search.PcAll(test.getTest(dataSet, parameters), initialGraph);
+            edu.cmu.tetrad.search.PcAll search = new edu.cmu.tetrad.search.PcAll(test.getTest(dataSet, parameters, trueGraph), initialGraph);
             search.setDepth(parameters.getInt(Params.DEPTH));
             search.setKnowledge(knowledge);
             search.setFasType(edu.cmu.tetrad.search.PcAll.FasType.REGULAR);
@@ -154,9 +153,5 @@ public class Pc implements Algorithm, TakesInitialGraph, HasKnowledge, TakesInde
     @Override
     public IndependenceWrapper getIndependenceWrapper() {
         return test;
-    }
-
-    public void setTrueGraph(Graph trueGraph) {
-        this.trueGraph = trueGraph;
     }
 }

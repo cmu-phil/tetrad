@@ -3,8 +3,7 @@ package edu.cmu.tetrad.algcomparison.independence;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
-import edu.cmu.tetrad.data.ICovarianceMatrix;
-import edu.cmu.tetrad.search.IndTestFisherZ;
+import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.IndTestPositiveCorr;
 import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.util.Parameters;
@@ -22,7 +21,7 @@ public class PositiveCorr implements IndependenceWrapper {
     private double alpha = 0.001;
 
     @Override
-    public IndependenceTest getTest(DataModel dataSet, Parameters parameters) {
+    public IndependenceTest getTest(DataModel dataSet, Parameters parameters, Graph trueGraph) {
         double alpha = parameters.getDouble("alpha");
         this.alpha = alpha;
 

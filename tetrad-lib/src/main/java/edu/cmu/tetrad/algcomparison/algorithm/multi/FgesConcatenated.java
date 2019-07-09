@@ -61,7 +61,7 @@ public class FgesConcatenated implements MultiDataSetAlgorithm, HasKnowledge {
 			Graph initial = null;
 			if (initialGraph != null) {
 
-				initial = initialGraph.search(dataSet, parameters);
+				initial = initialGraph.search(dataSet, parameters, null);
 			}
 
 			edu.cmu.tetrad.search.Fges search = new edu.cmu.tetrad.search.Fges(score.getScore(dataSet, parameters));
@@ -116,7 +116,7 @@ public class FgesConcatenated implements MultiDataSetAlgorithm, HasKnowledge {
 	}
 
 	@Override
-	public Graph search(DataModel dataSet, Parameters parameters) {
+	public Graph search(DataModel dataSet, Parameters parameters, Graph trueGraph) {
 		if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
 			return search(Collections.singletonList((DataModel) DataUtils.getContinuousDataSet(dataSet)), parameters);
 		} else {

@@ -59,7 +59,7 @@ public class TestFgesFa {
         parameters.set(Params.DETERMINISM_THRESHOLD, 1);
 
         GesMe alg = new GesMe();
-        Graph pattern = alg.search(dataSet, parameters);
+        Graph pattern = alg.search(dataSet, parameters, null);
 
         System.out.println(pattern);
     }

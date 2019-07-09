@@ -20,9 +20,10 @@ public interface Algorithm extends HasParameters, TetradSerializable {
      *
      * @param dataSet    The data set to run to the search on.
      * @param parameters The paramters of the search.
+     * @param trueGraph
      * @return The result graph.
      */
-    Graph search(DataModel dataSet, Parameters parameters);
+    Graph search(DataModel dataSet, Parameters parameters, Graph trueGraph);
 
     /**
      * Returns that graph that the result should be compared to.

@@ -49,8 +49,8 @@ public class RfciBsc implements Algorithm, HasKnowledge {
 	}
 
 	@Override
-	public Graph search(DataModel dataSet, Parameters parameters) {
-		edu.cmu.tetrad.search.Rfci search = new edu.cmu.tetrad.search.Rfci(test.getTest(dataSet, parameters));
+	public Graph search(DataModel dataSet, Parameters parameters, Graph trueGraph) {
+		edu.cmu.tetrad.search.Rfci search = new edu.cmu.tetrad.search.Rfci(test.getTest(dataSet, parameters, null));
 		search.setKnowledge(knowledge);
         search.setDepth(parameters.getInt(Params.DEPTH));
         search.setMaxPathLength(parameters.getInt(Params.MAX_PATH_LENGTH));

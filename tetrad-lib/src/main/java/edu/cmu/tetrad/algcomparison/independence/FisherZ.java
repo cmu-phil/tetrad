@@ -30,11 +30,10 @@ public class FisherZ implements IndependenceWrapper, TakesInitialGraph {
 
     static final long serialVersionUID = 23L;
     private double alpha = 0.001;
-    private Graph trueGraph;
     private Graph initialGraph;
 
     @Override
-    public IndependenceTest getTest(DataModel dataSet, Parameters parameters) {
+    public IndependenceTest getTest(DataModel dataSet, Parameters parameters, Graph trueGraph) {
         double alpha = parameters.getDouble("alpha");
         this.alpha = alpha;
 
@@ -85,11 +84,5 @@ public class FisherZ implements IndependenceWrapper, TakesInitialGraph {
     @Override
     public void setInitialGraph(Algorithm algorithm) {
         throw new IllegalStateException();
-    }
-
-    public void setTrueGraph(Graph trueGraph) {
-        this.trueGraph = trueGraph;
-        System.out.println(trueGraph);
-        System.out.println();
     }
 }
