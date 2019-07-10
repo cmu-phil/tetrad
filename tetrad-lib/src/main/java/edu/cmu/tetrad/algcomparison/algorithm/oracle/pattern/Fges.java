@@ -187,7 +187,7 @@ public class Fges implements Algorithm, TakesInitialGraph, HasKnowledge, UsesSco
     }
     
     @Override
-    public ScoreWrapper getScoreWarpper() {
+    public ScoreWrapper getScoreWrapper() {
         return score;
     }
 

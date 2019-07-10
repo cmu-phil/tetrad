@@ -94,7 +94,7 @@ public class AlgorithmParameterPanel extends JPanel {
 
         params = Params.getScoreParameters(algorithm);
         if (!params.isEmpty()) {
-            String title = ((UsesScoreWrapper) algorithm).getScoreWarpper()
+            String title = ((UsesScoreWrapper) algorithm).getScoreWrapper()
                     .getClass().getAnnotation(Score.class).name();
             mainPanel.add(createSubPanel(title, params, parameters));
             mainPanel.add(Box.createVerticalStrut(10));

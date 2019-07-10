@@ -36,14 +36,12 @@ import edu.cmu.tetrad.algcomparison.statistic.ElapsedTime;
 import edu.cmu.tetrad.algcomparison.statistic.ParameterColumn;
 import edu.cmu.tetrad.algcomparison.statistic.Statistic;
 import edu.cmu.tetrad.algcomparison.statistic.Statistics;
-import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
-import edu.cmu.tetrad.algcomparison.utils.HasParameterValues;
-import edu.cmu.tetrad.algcomparison.utils.HasParameters;
-import edu.cmu.tetrad.algcomparison.utils.TakesInitialGraph;
+import edu.cmu.tetrad.algcomparison.utils.*;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.DagToPag2;
 import edu.cmu.tetrad.search.SearchGraphUtils;
+import edu.cmu.tetrad.sem.Parameter;
 import edu.cmu.tetrad.util.*;
 import org.reflections.Reflections;
 
@@ -229,12 +227,13 @@ public class Comparison {
         // Set up the algorithms.
         List<AlgorithmWrapper> algorithmWrappers = new ArrayList<>();
 
-        for (
-                Algorithm algorithm : algorithms.getAlgorithms()) {
+        for (Algorithm algorithm : algorithms.getAlgorithms()) {
             List<Integer> _dims = new ArrayList<>();
             List<String> varyingParameters = new ArrayList<>();
 
-            final List<String> parameters1 = algorithm.getParameters();
+            List<String> parameters1 = new ArrayList<>(Params.getAlgorithmParameters(algorithm));
+            parameters1.addAll(Params.getTestParameters(algorithm));
+            parameters1.addAll(Params.getScoreParameters(algorithm));
 
             for (String name : parameters1) {
                 if (parameters.getNumValues(name) > 1) {
@@ -272,8 +271,7 @@ public class Comparison {
         // simulation.
         List<AlgorithmSimulationWrapper> algorithmSimulationWrappers = new ArrayList<>();
 
-        for (
-                SimulationWrapper simulationWrapper : simulationWrappers) {
+        for (SimulationWrapper simulationWrapper : simulationWrappers) {
             for (AlgorithmWrapper algorithmWrapper : algorithmWrappers) {
                 DataType algDataType = algorithmWrapper.getDataType();
                 DataType simDataType = simulationWrapper.getDataType();
@@ -1510,7 +1508,7 @@ public class Comparison {
                         AlgorithmWrapper algorithmWrapper = wrappers.get(i).getAlgorithmWrapper();
                         double stat = Double.NaN;
 
-                        List<String> parameterNames = simulationWrapper.getParameters();
+                        List<String > parameterNames = simulationWrapper.getParameters();
                         Parameters parameters = simulationWrapper.getSimulationSpecificParameters();
 
                         for (String name : parameterNames) {
@@ -1527,7 +1525,10 @@ public class Comparison {
                         }
 
                         if (Double.isNaN(stat)) {
-                            List<String> _parameterNames = algorithmWrapper.getParameters();
+                            List<String> _parameterNames = new ArrayList<>(Params.getAlgorithmParameters(algorithmWrapper.getAlgorithm()));
+                            _parameterNames.addAll(Params.getScoreParameters(algorithmWrapper.getAlgorithm()));
+                            _parameterNames.addAll(Params.getTestParameters(algorithmWrapper.getAlgorithm()));
+
                             Parameters _parameters = algorithmWrapper.parameters;
 
                             for (String name : _parameterNames) {

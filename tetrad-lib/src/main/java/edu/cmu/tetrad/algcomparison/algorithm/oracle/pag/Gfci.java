@@ -155,7 +155,7 @@ public class Gfci implements Algorithm, HasKnowledge, UsesScoreWrapper, TakesInd
     }
 
     @Override
-    public ScoreWrapper getScoreWarpper() {
+    public ScoreWrapper getScoreWrapper() {
         return score;
     }
 

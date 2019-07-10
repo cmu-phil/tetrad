@@ -25,6 +25,7 @@ import edu.cmu.tetrad.algcomparison.Comparison;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithms;
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern.*;
 import edu.cmu.tetrad.algcomparison.graph.RandomForward;
+import edu.cmu.tetrad.algcomparison.independence.FisherZ;
 import edu.cmu.tetrad.algcomparison.score.FisherZScore;
 import edu.cmu.tetrad.algcomparison.score.SemBicScore;
 import edu.cmu.tetrad.algcomparison.simulation.LinearFisherModel;
@@ -48,9 +49,9 @@ public class ExampleCompareSimulation {
         parameters.set("differentGraphs", false);
         parameters.set("sampleSize", 1000);
 
-        parameters.set("numMeasures", 100);
+        parameters.set("numMeasures", 50);
         parameters.set("numLatents", 0);
-        parameters.set("avgDegree", 2);
+        parameters.set("avgDegree", 4);
         parameters.set("maxDegree", 500);
         parameters.set("maxIndegree", 100);
         parameters.set("maxOutdegree", 100);
@@ -71,7 +72,7 @@ public class ExampleCompareSimulation {
         parameters.set("fisherEpsilon", 0.001);
         parameters.set("randomizeColumns", true);
 
-        parameters.set("alpha", 1e-8);
+        parameters.set("alpha", .01);
         parameters.set("depth", -1);
 
         parameters.set("useMaxPOrientationHeuristic", false);
@@ -89,13 +90,18 @@ public class ExampleCompareSimulation {
 
         parameters.set("penaltyDiscount", 1);
         parameters.set("structurePrior", 0);
-        parameters.set("semBicThreshold", .2);
+        parameters.set("semBicThreshold", 0, .1, .3, .4, .5, .6, .7, .8, .9, 1.0);
+
+        parameters.set("colliderDiscoveryRule", 2, 3);
 
 
         Statistics statistics = new Statistics();
 
-        statistics.add(new ParameterColumn("numMeasures"));
-        statistics.add(new ParameterColumn("avgDegree"));
+//        statistics.add(new ParameterColumn("numMeasures"));
+//        statistics.add(new ParameterColumn("avgDegree"));
+//        statistics.add(new ParameterColumn("alpha"));
+        statistics.add(new ParameterColumn("colliderDiscoveryRule"));
+        statistics.add(new ParameterColumn("semBicThreshold"));
 
         statistics.add(new AdjacencyPrecision());
         statistics.add(new AdjacencyRecall());
@@ -118,15 +124,8 @@ public class ExampleCompareSimulation {
 
         Algorithms algorithms = new Algorithms();
 
-//        algorithms.add(new Pc(new FisherZ()));
-//        algorithms.add(new Pc(new SemBicTest()));
-//        algorithms.add(new Cpc(new FisherZ()));
-//        algorithms.add(new PcStable(new FisherZ()));
-//        algorithms.add(new CpcStable(new FisherZ()));
-//        algorithms.add(new PcStableMax(new FisherZ(), false));
-//        algorithms.add(new PcStableMax(new SemBicTest(), false));
-//            algorithms.add(new Fges(new FisherZScore(), false));
-        algorithms.add(new Fges(new SemBicScore(), false));
+        algorithms.add(new PcAll(new FisherZ()));
+        algorithms.add(new Fges(new SemBicScore()));
 
         Simulations simulations = new Simulations();
 
@@ -135,9 +134,10 @@ public class ExampleCompareSimulation {
         Comparison comparison = new Comparison();
 
         comparison.setShowAlgorithmIndices(true);
-        comparison.setShowSimulationIndices(true);
+        comparison.setShowSimulationIndices(false);
         comparison.setSortByUtility(false);
-        comparison.setShowUtilities(true);
+        comparison.setShowUtilities(false);
+        comparison.setComparisonGraph(Comparison.ComparisonGraph.Pattern_of_the_true_DAG);
 
         comparison.compareFromSimulations("comparisonJoe", simulations, algorithms, statistics, parameters);
     }

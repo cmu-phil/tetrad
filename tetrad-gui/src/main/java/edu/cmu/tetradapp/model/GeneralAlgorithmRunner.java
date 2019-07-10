@@ -246,7 +246,7 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
 
                 if (algo instanceof UsesScoreWrapper) {
                     // We inject the graph to the score to satisfy the tests like DSeparationScore - Zhou
-                    ScoreWrapper scoreWrapper = ((UsesScoreWrapper) algo).getScoreWarpper();
+                    ScoreWrapper scoreWrapper = ((UsesScoreWrapper) algo).getScoreWrapper();
                     if (scoreWrapper instanceof DSeparationScore) {
                         ((DSeparationScore) scoreWrapper).setGraph(getSourceGraph());
                     }

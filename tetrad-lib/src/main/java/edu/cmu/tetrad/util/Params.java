@@ -237,7 +237,7 @@ public final class Params {
 
     public static Set<String> getScoreParameters(Algorithm algorithm) {
         return (algorithm instanceof UsesScoreWrapper)
-                ? ((UsesScoreWrapper) algorithm).getScoreWarpper().getParameters()
+                ? ((UsesScoreWrapper) algorithm).getScoreWrapper().getParameters()
                         .stream().collect(Collectors.toSet())
                 : Collections.EMPTY_SET;
     }

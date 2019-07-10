@@ -166,7 +166,7 @@ public class TsGfci implements Algorithm, TakesInitialGraph, HasKnowledge, Takes
     }
 
     @Override
-    public ScoreWrapper getScoreWarpper() {
+    public ScoreWrapper getScoreWrapper() {
         return score;
     }
     
