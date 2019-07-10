@@ -558,7 +558,7 @@ public class TestFges {
 
         char[] citesChars = citesString.toCharArray();
         DataReader reader = new DataReader();
-        ICovarianceMatrix dataSet = reader.parseCovariance(citesChars);
+        ICovarianceMatrix cov = reader.parseCovariance(citesChars);
 
         IKnowledge knowledge = new Knowledge2();
 
@@ -570,14 +570,16 @@ public class TestFges {
         knowledge.addToTier(5, "PUBS");
         knowledge.addToTier(6, "CITES");
 
-        SemBicScore score = new SemBicScore(dataSet);
+        SemBicScore score = new SemBicScore(cov);
         score.setPenaltyDiscount(1);
         Fges fges = new Fges(score);
-        fges.setKnowledge(knowledge);
+//        fges.setKnowledge(knowledge);
+
+        fges.setVerbose(true);
 
         Graph pattern = fges.search();
 
-//        System.out.println(pattern);
+        System.out.println(pattern);
 
         String trueString = "Graph Nodes:\n" +
                 "ABILITY;GPQ;PREPROD;QFJ;SEX;CITES;PUBS\n" +
