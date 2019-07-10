@@ -953,9 +953,6 @@ public final class Fges implements GraphSearch, GraphScorer {
 
             totalScore += arrow.getBump();
 
-//            SearchGraphUtils.basicPattern(graph, false);
-//            new MeekRules().orientImplied(graph);
-
             Set<Node> visited = reapplyOrientation(x, y, null);
             Set<Node> toProcess = new HashSet<>();
 
