@@ -31,6 +31,7 @@ import java.util.concurrent.RecursiveAction;
  * @author Kevin V. Bui (kvb2@pitt.edu)
  */
 public class RealCovarianceMatrixForkJoin implements RealCovariance {
+    static final long serialVersionUID = 23L;
 
     private final double[][] data;
 

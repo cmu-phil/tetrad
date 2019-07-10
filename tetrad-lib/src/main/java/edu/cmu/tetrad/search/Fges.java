@@ -953,8 +953,8 @@ public final class Fges implements GraphSearch, GraphScorer {
 
             totalScore += arrow.getBump();
 
-            SearchGraphUtils.basicPattern(graph, false);
-            new MeekRules().orientImplied(graph);
+//            SearchGraphUtils.basicPattern(graph, false);
+//            new MeekRules().orientImplied(graph);
 
             Set<Node> visited = reapplyOrientation(x, y, null);
             Set<Node> toProcess = new HashSet<>();
@@ -1022,7 +1022,8 @@ public final class Fges implements GraphSearch, GraphScorer {
                 continue;
             }
 
-            totalScore += arrow.getBump();
+            orientNodeAway(x);
+            orientNodeAway(y);
 
             Set<Node> visited = reapplyOrientation(x, y, arrow.getHOrT());
 
@@ -1887,6 +1888,15 @@ public final class Fges implements GraphSearch, GraphScorer {
         rules.setUndirectUnforcedEdges(true);
         rules.orientImplied(graph, nodes);
         return rules.getVisited();
+    }
+
+    private void orientNodeAway(Node node) {
+        MeekRules rules = new MeekRules();
+        rules.setKnowledge(knowledge);
+//        rules.setUndirectUnforcedEdges(true);
+        rules.orientImplied(graph, Collections.singletonList(node));
+//        return rules.getVisited();
+
     }
 
     // Maps adj to their indices for quick lookup.

@@ -30,8 +30,16 @@ public class SemBicScore implements ScoreWrapper {
     public Score getScore(DataModel dataSet, Parameters parameters) {
         this.dataSet = dataSet;
 
-        edu.cmu.tetrad.search.SemBicScore semBicScore
-                = new edu.cmu.tetrad.search.SemBicScore((DataSet) this.dataSet);
+        edu.cmu.tetrad.search.SemBicScore semBicScore;
+
+        if (dataSet instanceof DataSet) {
+            semBicScore = new edu.cmu.tetrad.search.SemBicScore((DataSet) this.dataSet);
+        } else if (dataSet instanceof ICovarianceMatrix) {
+            semBicScore = new edu.cmu.tetrad.search.SemBicScore((ICovarianceMatrix) this.dataSet);
+        } else {
+            throw new IllegalArgumentException("Expecting either a dataset or a covariance matrix.");
+        }
+
         semBicScore.setPenaltyDiscount(parameters.getDouble("penaltyDiscount"));
         semBicScore.setStructurePrior(parameters.getDouble("structurePrior"));
         semBicScore.setThreshold(parameters.getDouble("semBicThreshold"));

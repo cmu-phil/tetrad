@@ -573,7 +573,7 @@ public class TestFges {
         SemBicScore score = new SemBicScore(cov);
         score.setPenaltyDiscount(1);
         Fges fges = new Fges(score);
-//        fges.setKnowledge(knowledge);
+        fges.setKnowledge(knowledge);
 
         fges.setVerbose(true);
 
@@ -587,11 +587,11 @@ public class TestFges {
                 "Graph Edges:\n" +
                 "1. ABILITY --> GPQ\n" +
                 "2. ABILITY --> PREPROD\n" +
-                "3. ABILITY --> PUBS\n" +
+//                "3. ABILITY --> PUBS\n" +
                 "4. GPQ --> QFJ\n" +
                 "5. PREPROD --> CITES\n" +
                 "6. PUBS --> CITES\n" +
-                "7. QFJ --> CITES\n" +
+//                "7. QFJ --> CITES\n" +
                 "8. QFJ --> PUBS\n" +
                 "9. SEX --> PUBS";
 
