@@ -1,44 +1,34 @@
-///////////////////////////////////////////////////////////////////////////////
-// For information as to what this class does, see the Javadoc, below.       //
-// Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
-//                                                                           //
-// This program is free software; you can redistribute it and/or modify      //
-// it under the terms of the GNU General Public License as published by      //
-// the Free Software Foundation; either version 2 of the License, or         //
-// (at your option) any later version.                                       //
-//                                                                           //
-// This program is distributed in the hope that it will be useful,           //
-// but WITHOUT ANY WARRANTY; without even the implied warranty of            //
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the             //
-// GNU General Public License for more details.                              //
-//                                                                           //
-// You should have received a copy of the GNU General Public License         //
-// along with this program; if not, write to the Free Software               //
-// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA //
-///////////////////////////////////////////////////////////////////////////////
+/**
+ * 
+ */
+package edu.cmu.tetradapp.editor.cg;
 
-package edu.cmu.tetradapp.editor.sem;
+import java.awt.BorderLayout;
+import java.awt.Font;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.text.DecimalFormat;
+
+import javax.swing.BorderFactory;
+import javax.swing.Box;
+import javax.swing.BoxLayout;
+import javax.swing.ButtonGroup;
+import javax.swing.JCheckBox;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JRadioButton;
 
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetradapp.editor.ParameterEditor;
 import edu.cmu.tetradapp.util.DoubleTextField;
 
-import javax.swing.*;
-import javax.swing.border.EmptyBorder;
-import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.text.DecimalFormat;
-
-
 /**
- * Edits the parameters for simulating data from SEMs.
+ * Jul 11, 2019 1:38:17 PM
  *
- * @author Joseph Ramsey jdramsey@andrew.cmu.edu
+ * @author Chirayu Kong Wongchokprasitti, PhD (chw20@pitt.edu)
+ *
  */
-public class SemImParamsEditor extends JPanel implements ParameterEditor {
+public class CgImParamsEditor extends JPanel implements ParameterEditor {
 
 	private static final long serialVersionUID = 1L;
 	
@@ -47,35 +37,39 @@ public class SemImParamsEditor extends JPanel implements ParameterEditor {
      */
     private Parameters params = null;
 
-    /**
-     * Constructs a dialog to edit the given workbench SEM simulation
-     * getMappings object.
-     */
-    public SemImParamsEditor() {
-    }
 
-    public void setParams(Parameters params) {
+	@Override
+	public void setParams(Parameters params) {
         if (params == null) {
             throw new NullPointerException();
         }
 
         this.params = params;
-    }
+	}
 
-    public void setParentModels(Object[] parentModels) {
-        // Do nothing.
-    }
+	@Override
+	public void setParentModels(Object[] parentModels) {
+		// Do nothing.
+	}
 
+	@Override
     /**
      * Constructs the Gui used to edit properties; called from each constructor.
      * Constructs labels and text fields for editing each property and adds
      * appropriate listeners.
      */
-    public void setup() {
-        setLayout(new BorderLayout());
+	public void setup() {
+        setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
 
-//        final JCheckBox randomEveryTime = new JCheckBox();
-//        randomEveryTime.setSelected(!params.getBoolean("retainPreviousValues", false));
+        add(createBayesImParamsEditor());
+        add(createSemImParamsEditor());
+	}
+	
+	private JPanel createSemImParamsEditor() {
+		String title = "SEM Parameters";
+		JPanel panel = new JPanel(new BorderLayout());
+        panel.setBorder(BorderFactory.createTitledBorder(title));
+    
         DecimalFormat decimalFormat = new DecimalFormat("0.0######");
 
         final DoubleTextField coefLowField = new DoubleTextField(params.getDouble("coefLow", 0.5),
@@ -195,19 +189,7 @@ public class SemImParamsEditor extends JPanel implements ParameterEditor {
                 params.set("covSymmetric", checkBox.isSelected());
             }
         });
-
-//        randomEveryTime.setText("Pick new random values each time this SEM IM is reinitialized.");
-//        randomEveryTime.setVerticalTextPosition(SwingConstants.TOP);
-//
-//        randomEveryTime.addActionListener(new ActionListener() {
-//            public void actionPerformed(ActionEvent e) {
-//                JCheckBox checkBox = (JCheckBox) e.getSource();
-//                boolean retainPreviousValues = !checkBox.isSelected();
-//                getParams().set("retainPreviousValues", retainPreviousValues);
-//            }
-//        });
-
-        // continue workbench construction.
+        
         Box b1 = Box.createVerticalBox();
 
         Box b2 = Box.createHorizontalBox();
@@ -218,7 +200,6 @@ public class SemImParamsEditor extends JPanel implements ParameterEditor {
         b1.add(Box.createVerticalStrut(5));
 
         Box b4a = Box.createHorizontalBox();
-//        b4a.add(Box.createHorizontalStrut(10));
         b4a.add(new JLabel("Coefficient values are drawn from "));
         b4a.add(new BigLabel("("));
         b4a.add(coefLowField);
@@ -230,7 +211,6 @@ public class SemImParamsEditor extends JPanel implements ParameterEditor {
         b1.add(b4a);
 
         Box b4b = Box.createHorizontalBox();
-//        b4b.add(Box.createHorizontalStrut(10));
         b4b.add(new JLabel("Error covariance values are drawn from "));
         b4b.add(new BigLabel("("));
         b4b.add(covLowField);
@@ -242,7 +222,6 @@ public class SemImParamsEditor extends JPanel implements ParameterEditor {
         b1.add(b4b);
 
         Box b4c = Box.createHorizontalBox();
-//        b4c.add(Box.createHorizontalStrut(10));
         b4c.add(new JLabel("Error standard deviation values are drawn from "));
         b4c.add(new BigLabel("("));
         b4c.add(varLowField);
@@ -253,29 +232,94 @@ public class SemImParamsEditor extends JPanel implements ParameterEditor {
         b4c.add(Box.createHorizontalGlue());
         b1.add(b4c);
 
-//        Box b5 = Box.createHorizontalBox();
-//        b5.add(Box.createHorizontalStrut(10));
-//        b5.add(randomEveryTime);
-//        b5.add(Box.createHorizontalGlue());
-//        b1.add(b5);
-
         b1.add(Box.createHorizontalGlue());
-        add(b1, BorderLayout.CENTER);
-        setBorder(new EmptyBorder(5, 5, 5, 5));        
-    }
 
-    public boolean mustBeShown() {
-        return false;
-    }
+        panel.add(b1, BorderLayout.CENTER);
+        
+        return panel;
+	}
+	
+	private JPanel createBayesImParamsEditor() {
+		String title = "Bayes Parameters";
+		JPanel panel = new JPanel(new BorderLayout());
+        panel.setBorder(BorderFactory.createTitledBorder(title));
+        
+        JRadioButton manually = new JRadioButton();
+        final JRadioButton randomly = new JRadioButton();
 
+        manually.setText("Manually.");
+        randomly.setText("Randomly.");
+
+        ButtonGroup group = new ButtonGroup();
+        group.add(manually);
+        group.add(randomly);
+
+        if (getParams().getString("initializationMode", "manualRetain").equals("manualRetain")) {
+            manually.setSelected(true);
+        } else if (getParams().getString("initializationMode", "manualRetain").equals("randomRetain")) {
+            randomly.setSelected(true);
+        } else if (getParams().getString("initializationMode", "manualRetain").equals("randomOverwrite")) {
+            randomly.setSelected(true);
+        } else {
+            throw new IllegalStateException();
+        }
+
+        manually.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                getParams().set("initializationMode", "manualRetain");
+                firePropertyChange("modelChanged", null, null);
+            }
+        });
+
+        randomly.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                getParams().set("initializationMode", "randomRetain");
+                firePropertyChange("modelChanged", null, null);
+            }
+        });
+
+        // continue workbench construction.
+        Box b1 = Box.createVerticalBox();
+
+        Box b2 = Box.createHorizontalBox();
+        b2.add(new JLabel(
+                "Probability values for this Conditional Gaussian IM should be filled in: "));
+        b2.add(Box.createHorizontalGlue());
+
+        Box b3 = Box.createHorizontalBox();
+        b3.add(manually);
+        b3.add(Box.createHorizontalGlue());
+
+        Box b4 = Box.createHorizontalBox();
+        b4.add(randomly);
+        b4.add(Box.createHorizontalGlue());
+
+        b1.add(b2);
+        b1.add(Box.createVerticalStrut(5));
+        b1.add(b3);
+        b1.add(b4);
+        b1.add(Box.createHorizontalGlue());
+
+        panel.add(b1, BorderLayout.CENTER);
+        
+        return panel;
+	}
+
+	@Override
+	public boolean mustBeShown() {
+		return false;
+	}
+	
     /**
-     * @return the getMappings object being edited. (This probably should not be
+     * Returns the getMappings object being edited. (This probably should not be
      * public, but it is needed so that the textfields can edit the model.)
+     *
+     * @return the stored simulation parameters model.
      */
     private synchronized Parameters getParams() {
         return this.params;
     }
-
+    
     private final static class BigLabel extends JLabel {
 
 		private static final long serialVersionUID = 1L;
@@ -288,5 +332,3 @@ public class SemImParamsEditor extends JPanel implements ParameterEditor {
         }
     }
 }
-
-

@@ -337,6 +337,18 @@
                 <model-class>edu.cmu.tetradapp.model.GeneralizedSemImWrapper</model-class>
                 <editor-class>edu.cmu.tetradapp.editor.sem.GeneralizedSemImEditor</editor-class>
             </model>
+            <model name="Conditional Gaussian Instantiated Model" acronym="CG IM"
+                   help="cg_im">
+                <logger>
+                    <event id="info" description="Information" default="on"/>
+                    <event id="im" description="Instantiated Model" default="on"/>
+                </logger>
+                <model-class>edu.cmu.tetradapp.model.CgImWrapper</model-class>
+                <editor-class>edu.cmu.tetradapp.editor.cg.CgImEditor</editor-class>
+                <params-editor-class>
+                    edu.cmu.tetradapp.editor.cg.CgImParamsEditor
+                </params-editor-class>
+            </model>
         </models>
         <display-component image="imIcon.gif"/>
         <model-chooser title="Types of Instantiated Models"/>

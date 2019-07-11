@@ -252,8 +252,8 @@ public final class CgIm implements IM, ICgIm, TetradSerializable {
 			this.bayesIm = new MlBayesIm(cgPm.getBayesPm(),oldCgIm.getBayesIm(), initializationMethod);
 			this.semIm = new SemIm(cgPm.getSemPm(), oldCgIm.getSemIm(), parameters);
 		}else {
-			this.bayesIm = new MlBayesIm(cgPm.getBayesPm());
-			this.semIm = new SemIm(cgPm.getSemPm());
+			this.bayesIm = new MlBayesIm(cgPm.getBayesPm(), initializationMethod);
+			this.semIm = new SemIm(cgPm.getSemPm(), parameters);
 		}
 
 		Graph graph = getCgPm().getGraph();

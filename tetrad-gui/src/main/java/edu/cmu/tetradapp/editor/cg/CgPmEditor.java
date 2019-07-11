@@ -25,6 +25,7 @@ import edu.cmu.tetrad.session.DelegatesEditing;
 import edu.cmu.tetradapp.editor.SaveComponentImage;
 import edu.cmu.tetradapp.model.CgPmWrapper;
 import edu.cmu.tetradapp.workbench.GraphWorkbench;
+import edu.pitt.dbmi.cg.CgPm;
 
 /**
  * Jun 20, 2019 3:40:42 PM
@@ -105,10 +106,19 @@ public class CgPmEditor extends JPanel implements PropertyChangeListener, Delega
         
         setLayout(new BorderLayout());
         
-        Graph graph = wrapper.getCgPm().getGraph();
+        CgPm cgPm = wrapper.getCgPm();
+        Graph graph = cgPm.getGraph();
         GraphWorkbench workbench = new GraphWorkbench(graph);
         workbench.enableEditing(false);
-        CgPmEditorWizard wizard = new CgPmEditorWizard(wrapper.getCgPm(), workbench);
+        
+        wizard = new CgPmEditorWizard(cgPm, workbench);
+        wizard.addPropertyChangeListener(new PropertyChangeListener() {
+            public void propertyChange(PropertyChangeEvent evt) {
+                if ("editorValueChanged".equals(evt.getPropertyName())) {
+                    firePropertyChange("modelChanged", null, null);
+                }
+            }
+        });
         
         JScrollPane workbenchScroll = new JScrollPane(workbench);
         JScrollPane wizardScroll = new JScrollPane(wizard);
@@ -135,9 +145,9 @@ public class CgPmEditor extends JPanel implements PropertyChangeListener, Delega
         wizard.setEditingLatentVariablesAllowed(isEditingLatentVariablesAllowed());
         wizard.setEditingMeasuredVariablesAllowed(isEditingMeasuredVariablesAllowed());
         
-        this.wizard = wizard;
-        
         targetPanel.add(panel, BorderLayout.CENTER);
+        revalidate();
+        repaint();
 	}
 	
     /**

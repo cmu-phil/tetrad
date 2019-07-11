@@ -145,8 +145,7 @@ public class CgImEditorWizard extends JPanel {
         JScrollPane scroll = new JScrollPane(editingPanel);
         scroll.setPreferredSize(new Dimension(0, 150));
         
-        tablePanel = new JPanel();
-        tablePanel.setLayout(new BorderLayout());
+        tablePanel.removeAll();
         tablePanel.add(scroll, BorderLayout.CENTER);
         tablePanel.revalidate();
         tablePanel.repaint();

@@ -125,14 +125,14 @@ public class CgPmEditorWizard extends JPanel {
         if (workbench == null) {
             throw new NullPointerException();
         }
-
+        
         this.cgPm = cgPm;
         this.workbench = workbench;
         
-        workbench().setAllowDoubleClickActions(false);
+        workbench.setAllowDoubleClickActions(false);
         
         // Construct components.
-        createVariableChooser(getCgPm(), workbench());
+        createVariableChooser(cgPm, workbench);
 
         JButton nextButton = new JButton("Next");
         nextButton.setMnemonic('N');
@@ -174,7 +174,7 @@ public class CgPmEditorWizard extends JPanel {
 
         variableChooser.addActionListener((e) -> {
             Node node = (Node) (variableChooser.getSelectedItem());
-            workbench().scrollWorkbenchToNode(node);
+            workbench.scrollWorkbenchToNode(node);
             
             //System.out.println("variableChooser.addActionListener: node: " + node);
             
@@ -204,8 +204,10 @@ public class CgPmEditorWizard extends JPanel {
             variableChooser.setSelectedIndex(set);
         });
 
+        Node node = getNode();
+        
         editorWizard.removeAll();
-        if (getNode() instanceof DiscreteVariable) {
+        if (node instanceof DiscreteVariable) {
         	bayesEditorWizard = createBayesEditorWizard(numCategories);
         	editorWizard.add(bayesEditorWizard, BorderLayout.CENTER);
         }else { // SEM or CG Continuous
@@ -481,10 +483,6 @@ public class CgPmEditorWizard extends JPanel {
     	return this.cgPm;
     }
     
-    private GraphWorkbench workbench() {
-        return this.workbench;
-    }
-
     private void createVariableChooser(CgPm cgPm, GraphWorkbench workbench) {
     	variableChooser = new JComboBox<>();
         variableChooser.setBackground(Color.white);

@@ -44,9 +44,21 @@ public class CgSemParameterEditor extends JPanel {
 	private Node node;
 	
 	public CgSemParameterEditor(CgIm cgIm, Node node) {
-		this(cgIm.getCgPm(), node);
-		
-		this.cgIm = cgIm;
+		if (cgIm == null) {
+            throw new NullPointerException();
+        }
+
+        setLayout(new BorderLayout());
+
+        if (node == null) {
+            throw new NullPointerException();
+        }
+
+        this.cgIm = cgIm;
+        this.cgPm = cgIm.getCgPm();
+        this.node = node;
+        
+        createEditor();
 	}
 	
 	public CgSemParameterEditor(CgPm cgPm, Node node) {

@@ -37,7 +37,9 @@ import java.awt.event.ActionListener;
  */
 public class BayesImParamsEditor extends JPanel implements ParameterEditor {
 
-    /**
+	private static final long serialVersionUID = 1L;
+	
+	/**
      * The parameters object being edited.
      */
     private Parameters params = null;
@@ -71,7 +73,7 @@ public class BayesImParamsEditor extends JPanel implements ParameterEditor {
 
         JRadioButton manually = new JRadioButton();
         final JRadioButton randomly = new JRadioButton();
-        final JCheckBox randomEveryTime = new JCheckBox();
+        //final JCheckBox randomEveryTime = new JCheckBox();
 
         manually.setText("Manually.");
         randomly.setText("Randomly.");

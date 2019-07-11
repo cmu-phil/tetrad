@@ -8,7 +8,6 @@ import java.io.ObjectInputStream;
 import java.util.ArrayList;
 import java.util.List;
 
-import edu.cmu.tetrad.algcomparison.simulation.BayesNetSimulation;
 import edu.cmu.tetrad.algcomparison.simulation.ConditionalGaussianSimulation;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
@@ -53,25 +52,31 @@ public class CgImWrapper implements SessionModel, Memorable {
     		throw new NullPointerException("Parameters must not be null.");
     	}
     	
+    	System.out.println("CgImWrapper(CgPmWrapper cgPmWrapper, CgImWrapper oldCgImWrapper, Parameters params)");
+    	
     	CgPm cgPm = new CgPm(cgPmWrapper.getCgPm());
     	CgIm oldCgIm = oldCgImWrapper.getCgIm();
     	
     	String initModeParam = params.getString("initializationMode", "manualRetain");
-    	if (initModeParam.equals("manualRetain")) {
+    	if (initModeParam.equalsIgnoreCase("manualRetain")) {
     		setCgIm(cgPm, oldCgIm, CgIm.MANUAL);
-    	} else if (initModeParam.equals("randomRetain")) {
+    	} else if (initModeParam.equalsIgnoreCase("randomRetain")) {
     		setCgIm(cgPm, oldCgIm, CgIm.RANDOM);
-    	} else if (initModeParam.equals("randomOverwrite")) {
+    	} else if (initModeParam.equalsIgnoreCase("randomOverwrite")) {
     		setCgIm(new CgIm(cgPm, CgIm.RANDOM));
     	}
     }
     
     private void setCgIm(CgPm cgPm, CgIm oldCgIm, int manual) {
+    	System.out.println("setCgIm(CgPm cgPm, CgIm oldCgIm, int manual)");
+    	
     	cgIms = new ArrayList<>();
     	cgIms.add(new CgIm(cgPm, oldCgIm, manual));
     }
     
     public CgImWrapper(Simulation simulation) {
+    	System.out.println("CgImWrapper(Simulation simulation)");
+    	
     	List<CgIm> cgIms = null;
     	
     	if (simulation == null) {
@@ -84,8 +89,8 @@ public class CgImWrapper implements SessionModel, Memorable {
             throw new NullPointerException("No data sets have been simulated.");
         }
 
-        if (!(_simulation instanceof BayesNetSimulation)) {
-            throw new IllegalArgumentException("That was not a discrete Bayes net simulation.");
+        if (!(_simulation instanceof ConditionalGaussianSimulation)) {
+            throw new IllegalArgumentException("That was not a conditional Gaussian net simulation.");
         }
         
         cgIms = ((ConditionalGaussianSimulation) _simulation).getCgIms();
@@ -106,6 +111,8 @@ public class CgImWrapper implements SessionModel, Memorable {
     //}
     
     public CgImWrapper(CgPmWrapper cgPmWrapper, Parameters params) {
+    	System.out.println("CgImWrapper(CgPmWrapper cgPmWrapper, Parameters params)");
+    	
     	if(cgPmWrapper == null) {
     		throw new NullPointerException("CgPmWrapper must not be null.");
     	}
@@ -117,16 +124,19 @@ public class CgImWrapper implements SessionModel, Memorable {
     	CgPm cgPm = new CgPm(cgPmWrapper.getCgPm());
     	
     	String initModeParam = params.getString("initializationMode", "manualRetain");
-    	if (initModeParam.equals("manualRetain")) {
-    		setCgIm(new CgIm(cgPm));
-    	} else if (initModeParam.equals("randomRetain")) {
+    	System.out.println("params.getString(\"initializationMode\", \"manualRetain\"): " + initModeParam);
+    	if (initModeParam.equalsIgnoreCase("manualRetain")) {
+    		setCgIm(new CgIm(cgPm, CgIm.MANUAL));
+    	} else if (initModeParam.equalsIgnoreCase("randomRetain")) {
     		setCgIm(new CgIm(cgPm, CgIm.RANDOM));
-    	} else if (initModeParam.equals("randomOverwrite")) {
+    	} else if (initModeParam.equalsIgnoreCase("randomOverwrite")) {
     		setCgIm(new CgIm(cgPm, CgIm.RANDOM));
     	}
     }
     
     public CgImWrapper(CgImWrapper cgImWrapper) {
+    	System.out.println("CgImWrapper(CgImWrapper cgImWrapper)");
+    	
     	if(cgImWrapper == null) {
     		throw new NullPointerException();
     	}
@@ -135,6 +145,8 @@ public class CgImWrapper implements SessionModel, Memorable {
     }
     
     public CgImWrapper(CgIm cgIm) {
+    	System.out.println("CgImWrapper(CgIm cgIm)");
+    	
     	if(cgIm == null) {
     		throw new NullPointerException("CG IM must not be null.");
     	}
