@@ -45,13 +45,13 @@ public class ExampleCompareSimulation {
 //        parameters.set("minCategories", 3);
 //        parameters.set("maxCategories", 3);
 
-        parameters.set("numRuns", 5);
+        parameters.set("numRuns", 2);
         parameters.set("differentGraphs", false);
         parameters.set("sampleSize", 1000);
 
-        parameters.set("numMeasures", 500);
+        parameters.set("numMeasures", 1000);
         parameters.set("numLatents", 0);
-        parameters.set("avgDegree", 8);
+        parameters.set("avgDegree", 2, 3, 4, 5, 6, 7, 8, 9, 10);
         parameters.set("maxDegree", 500);
         parameters.set("maxIndegree", 100);
         parameters.set("maxOutdegree", 100);
@@ -79,16 +79,16 @@ public class ExampleCompareSimulation {
         parameters.set("maxPOrientationMaxPathLength", 3);
         parameters.set("verbose", false);
 
-        parameters.set("scaleFreeAlpha", 0.00001);
-        parameters.set("scaleFreeBeta", 0.4);
-        parameters.set("scaleFreeDeltaIn", .1);
-        parameters.set("scaleFreeDeltaOut", 3);
+//        parameters.set("scaleFreeAlpha", 0.00001);
+//        parameters.set("scaleFreeBeta", 0.4);
+//        parameters.set("scaleFreeDeltaIn", .1);
+//        parameters.set("scaleFreeDeltaOut", 3);
 
         parameters.set("symmetricFirstStep", false);
         parameters.set("faithfulnessAssumed", true);
         parameters.set("maxDegree", 100);
 
-        parameters.set("penaltyDiscount", 1);
+        parameters.set("penaltyDiscount", 3);
         parameters.set("structurePrior", 0);
         parameters.set("semBicThreshold", 0);//, .1, .3, .4, .5, .6, .7, .8, .9, 1.0);
 
@@ -98,17 +98,18 @@ public class ExampleCompareSimulation {
         Statistics statistics = new Statistics();
 
 //        statistics.add(new ParameterColumn("numMeasures"));
-//        statistics.add(new ParameterColumn("avgDegree"));
+        statistics.add(new ParameterColumn("avgDegree"));
 //        statistics.add(new ParameterColumn("alpha"));
-        statistics.add(new ParameterColumn("colliderDiscoveryRule"));
-        statistics.add(new ParameterColumn("semBicThreshold"));
+//        statistics.add(new ParameterColumn("colliderDiscoveryRule"));
+//        statistics.add(new ParameterColumn("semBicThreshold"));
+        statistics.add(new ParameterColumn("penaltyDiscount"));
 
         statistics.add(new AdjacencyPrecision());
         statistics.add(new AdjacencyRecall());
         statistics.add(new ArrowheadPrecision());
         statistics.add(new ArrowheadRecall());
-        statistics.add(new ArrowheadPrecisionCommonEdges());
-        statistics.add(new ArrowheadRecallCommonEdges());
+//        statistics.add(new ArrowheadPrecisionCommonEdges());
+//        statistics.add(new ArrowheadRecallCommonEdges());
 //        statistics.add(new NumBidirectedEdges());
 //        statistics.add(new MathewsCorrAdj());
 //        statistics.add(new MathewsCorrArrow());
@@ -133,7 +134,7 @@ public class ExampleCompareSimulation {
 
         Comparison comparison = new Comparison();
 
-        comparison.setShowAlgorithmIndices(true);
+        comparison.setShowAlgorithmIndices(false);
         comparison.setShowSimulationIndices(false);
         comparison.setSortByUtility(false);
         comparison.setShowUtilities(false);

@@ -130,21 +130,22 @@ public class SemBicScore implements Score {
 
     @Override
     public double localScoreDiff(int x, int y, int[] z) {
-//        Node _x = variables.get(x);
-//        Node _y = variables.get(y);
-//        List<Node> _z = getVariableList(z);
-//        double r = partialCorrelation(_x, _y, _z);
         double sp1 = getStructurePrior(z.length + 1);
         double sp2 = getStructurePrior(z.length);
         int n = covariances.getSampleSize();
 
-//        if (false) {
-//        return -n * Math.log(1.0 - r * r) - getPenaltyDiscount() * log(n) - getBias()
-//                    + signum(getStructurePrior()) * (sp1 - sp2);
-//        } else {
-        return (localScore(x, append(z, y)) - localScore(x, z)) - getPenaltyDiscount() * log(n) - getBias()
-                + signum(getStructurePrior()) * (sp1 - sp2);
-//        }
+        if (false) {
+            Node _x = variables.get(x);
+            Node _y = variables.get(y);
+            List<Node> _z = getVariableList(z);
+            double r = partialCorrelation(_x, _y, _z);
+
+            return -n * Math.log(1.0 - r * r) - getPenaltyDiscount() * log(n) - getBias()
+                    + signum(getStructurePrior()) * (sp1 - sp2);
+        } else {
+            return (localScore(x, append(z, y)) - localScore(x, z)) - getPenaltyDiscount() * log(n) - getBias()
+                    + signum(getStructurePrior()) * (sp1 - sp2);
+        }
 
     }
 
@@ -166,6 +167,7 @@ public class SemBicScore implements Score {
 
             TetradMatrix covxx = getCovariances().getSelection(parents, parents);
             TetradVector covxy = (getCovariances().getSelection(parents, new int[]{i})).getColumn(0);
+
             TetradVector coefs = (covxx.inverse()).times(covxy);
             s2 -= coefs.dotProduct(covxy);
 

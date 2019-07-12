@@ -1,0 +1,362 @@
+Thu Jul 11 08:23:26 EDT 2019
+
+Statistics:
+
+avgDegree = Extra column for avgDegree
+colliderDiscoveryRule = Extra column for colliderDiscoveryRule
+semBicThreshold = Extra column for semBicThreshold
+AP = Adjacency Precision
+AR = Adjacency Recall
+AHP = Arrowhead precision
+AHR = Arrowhead recall
+AHPC = Arrowhead precision (common edges)
+AHRC = Arrowhead recall (common edges)
+E = Elapsed Time in Seconds
+
+Simulations:
+
+Simulation 1: Linear Fisher model simulation
+
+Comparison.printParameters
+Number of measured variables (min = 1) = 1000
+Number of latent variables (min = 0) = 0
+Average degree of graph (min = 1) = 2
+The maximum degree of the graph (min = -1) = 100
+Maximum indegree of graph (min = 1) = 100
+Maximum outdegree of graph (min = 1) = 100
+Yes if graph should be connected = No
+Low end of coefficient range (min = 0.0) = 0.2
+High end of coefficient range (min = 0.0) = 0.9
+Low end of variance range (min = 0.0) = 1
+High end of variance range (min = 0.0) = 3
+Yes if verbose output should be printed or logged = No
+Yes if positive coefficients should be included in the model = Yes
+Yes if negative coefficients should be included in the model = Yes
+Yes if errors should be Normal; No if they should be abs(Normal) (i.e., non-Gaussian) = Yes
+Number of runs (min = 1) = 2
+Number of categories for discrete variables (min = 2) = 3
+Yes if a different graph should be used for each run = Yes
+Sample size (min = 1) = 1000
+Interval beween shocks (R. A. Fisher simulation model) (min = 1) = 10
+Interval between data recordings for the linear Fisher model (min = 1) = 10
+The coefficient for the self-loop (default 0.0) = 0.0
+Epsilon where |xi.t - xi.t-1| < epsilon, criterion for convergence = 0.001
+Yes if the order of the columns in each datasets should be randomized = Yes
+Additive measurement noise variance (min = 0.0) = 0.0
+Save latent variables. = No
+Yes if the data should be standardized = No
+
+Simulation 2: Linear Fisher model simulation
+
+Comparison.printParameters
+Number of measured variables (min = 1) = 1000
+Number of latent variables (min = 0) = 0
+Average degree of graph (min = 1) = 3
+The maximum degree of the graph (min = -1) = 100
+Maximum indegree of graph (min = 1) = 100
+Maximum outdegree of graph (min = 1) = 100
+Yes if graph should be connected = No
+Low end of coefficient range (min = 0.0) = 0.2
+High end of coefficient range (min = 0.0) = 0.9
+Low end of variance range (min = 0.0) = 1
+High end of variance range (min = 0.0) = 3
+Yes if verbose output should be printed or logged = No
+Yes if positive coefficients should be included in the model = Yes
+Yes if negative coefficients should be included in the model = Yes
+Yes if errors should be Normal; No if they should be abs(Normal) (i.e., non-Gaussian) = Yes
+Number of runs (min = 1) = 2
+Number of categories for discrete variables (min = 2) = 3
+Yes if a different graph should be used for each run = Yes
+Sample size (min = 1) = 1000
+Interval beween shocks (R. A. Fisher simulation model) (min = 1) = 10
+Interval between data recordings for the linear Fisher model (min = 1) = 10
+The coefficient for the self-loop (default 0.0) = 0.0
+Epsilon where |xi.t - xi.t-1| < epsilon, criterion for convergence = 0.001
+Yes if the order of the columns in each datasets should be randomized = Yes
+Additive measurement noise variance (min = 0.0) = 0.0
+Save latent variables. = No
+Yes if the data should be standardized = No
+
+Simulation 3: Linear Fisher model simulation
+
+Comparison.printParameters
+Number of measured variables (min = 1) = 1000
+Number of latent variables (min = 0) = 0
+Average degree of graph (min = 1) = 4
+The maximum degree of the graph (min = -1) = 100
+Maximum indegree of graph (min = 1) = 100
+Maximum outdegree of graph (min = 1) = 100
+Yes if graph should be connected = No
+Low end of coefficient range (min = 0.0) = 0.2
+High end of coefficient range (min = 0.0) = 0.9
+Low end of variance range (min = 0.0) = 1
+High end of variance range (min = 0.0) = 3
+Yes if verbose output should be printed or logged = No
+Yes if positive coefficients should be included in the model = Yes
+Yes if negative coefficients should be included in the model = Yes
+Yes if errors should be Normal; No if they should be abs(Normal) (i.e., non-Gaussian) = Yes
+Number of runs (min = 1) = 2
+Number of categories for discrete variables (min = 2) = 3
+Yes if a different graph should be used for each run = Yes
+Sample size (min = 1) = 1000
+Interval beween shocks (R. A. Fisher simulation model) (min = 1) = 10
+Interval between data recordings for the linear Fisher model (min = 1) = 10
+The coefficient for the self-loop (default 0.0) = 0.0
+Epsilon where |xi.t - xi.t-1| < epsilon, criterion for convergence = 0.001
+Yes if the order of the columns in each datasets should be randomized = Yes
+Additive measurement noise variance (min = 0.0) = 0.0
+Save latent variables. = No
+Yes if the data should be standardized = No
+
+Simulation 4: Linear Fisher model simulation
+
+Comparison.printParameters
+Number of measured variables (min = 1) = 1000
+Number of latent variables (min = 0) = 0
+Average degree of graph (min = 1) = 5
+The maximum degree of the graph (min = -1) = 100
+Maximum indegree of graph (min = 1) = 100
+Maximum outdegree of graph (min = 1) = 100
+Yes if graph should be connected = No
+Low end of coefficient range (min = 0.0) = 0.2
+High end of coefficient range (min = 0.0) = 0.9
+Low end of variance range (min = 0.0) = 1
+High end of variance range (min = 0.0) = 3
+Yes if verbose output should be printed or logged = No
+Yes if positive coefficients should be included in the model = Yes
+Yes if negative coefficients should be included in the model = Yes
+Yes if errors should be Normal; No if they should be abs(Normal) (i.e., non-Gaussian) = Yes
+Number of runs (min = 1) = 2
+Number of categories for discrete variables (min = 2) = 3
+Yes if a different graph should be used for each run = Yes
+Sample size (min = 1) = 1000
+Interval beween shocks (R. A. Fisher simulation model) (min = 1) = 10
+Interval between data recordings for the linear Fisher model (min = 1) = 10
+The coefficient for the self-loop (default 0.0) = 0.0
+Epsilon where |xi.t - xi.t-1| < epsilon, criterion for convergence = 0.001
+Yes if the order of the columns in each datasets should be randomized = Yes
+Additive measurement noise variance (min = 0.0) = 0.0
+Save latent variables. = No
+Yes if the data should be standardized = No
+
+Simulation 5: Linear Fisher model simulation
+
+Comparison.printParameters
+Number of measured variables (min = 1) = 1000
+Number of latent variables (min = 0) = 0
+Average degree of graph (min = 1) = 6
+The maximum degree of the graph (min = -1) = 100
+Maximum indegree of graph (min = 1) = 100
+Maximum outdegree of graph (min = 1) = 100
+Yes if graph should be connected = No
+Low end of coefficient range (min = 0.0) = 0.2
+High end of coefficient range (min = 0.0) = 0.9
+Low end of variance range (min = 0.0) = 1
+High end of variance range (min = 0.0) = 3
+Yes if verbose output should be printed or logged = No
+Yes if positive coefficients should be included in the model = Yes
+Yes if negative coefficients should be included in the model = Yes
+Yes if errors should be Normal; No if they should be abs(Normal) (i.e., non-Gaussian) = Yes
+Number of runs (min = 1) = 2
+Number of categories for discrete variables (min = 2) = 3
+Yes if a different graph should be used for each run = Yes
+Sample size (min = 1) = 1000
+Interval beween shocks (R. A. Fisher simulation model) (min = 1) = 10
+Interval between data recordings for the linear Fisher model (min = 1) = 10
+The coefficient for the self-loop (default 0.0) = 0.0
+Epsilon where |xi.t - xi.t-1| < epsilon, criterion for convergence = 0.001
+Yes if the order of the columns in each datasets should be randomized = Yes
+Additive measurement noise variance (min = 0.0) = 0.0
+Save latent variables. = No
+Yes if the data should be standardized = No
+
+Simulation 6: Linear Fisher model simulation
+
+Comparison.printParameters
+Number of measured variables (min = 1) = 1000
+Number of latent variables (min = 0) = 0
+Average degree of graph (min = 1) = 7
+The maximum degree of the graph (min = -1) = 100
+Maximum indegree of graph (min = 1) = 100
+Maximum outdegree of graph (min = 1) = 100
+Yes if graph should be connected = No
+Low end of coefficient range (min = 0.0) = 0.2
+High end of coefficient range (min = 0.0) = 0.9
+Low end of variance range (min = 0.0) = 1
+High end of variance range (min = 0.0) = 3
+Yes if verbose output should be printed or logged = No
+Yes if positive coefficients should be included in the model = Yes
+Yes if negative coefficients should be included in the model = Yes
+Yes if errors should be Normal; No if they should be abs(Normal) (i.e., non-Gaussian) = Yes
+Number of runs (min = 1) = 2
+Number of categories for discrete variables (min = 2) = 3
+Yes if a different graph should be used for each run = Yes
+Sample size (min = 1) = 1000
+Interval beween shocks (R. A. Fisher simulation model) (min = 1) = 10
+Interval between data recordings for the linear Fisher model (min = 1) = 10
+The coefficient for the self-loop (default 0.0) = 0.0
+Epsilon where |xi.t - xi.t-1| < epsilon, criterion for convergence = 0.001
+Yes if the order of the columns in each datasets should be randomized = Yes
+Additive measurement noise variance (min = 0.0) = 0.0
+Save latent variables. = No
+Yes if the data should be standardized = No
+
+Simulation 7: Linear Fisher model simulation
+
+Comparison.printParameters
+Number of measured variables (min = 1) = 1000
+Number of latent variables (min = 0) = 0
+Average degree of graph (min = 1) = 8
+The maximum degree of the graph (min = -1) = 100
+Maximum indegree of graph (min = 1) = 100
+Maximum outdegree of graph (min = 1) = 100
+Yes if graph should be connected = No
+Low end of coefficient range (min = 0.0) = 0.2
+High end of coefficient range (min = 0.0) = 0.9
+Low end of variance range (min = 0.0) = 1
+High end of variance range (min = 0.0) = 3
+Yes if verbose output should be printed or logged = No
+Yes if positive coefficients should be included in the model = Yes
+Yes if negative coefficients should be included in the model = Yes
+Yes if errors should be Normal; No if they should be abs(Normal) (i.e., non-Gaussian) = Yes
+Number of runs (min = 1) = 2
+Number of categories for discrete variables (min = 2) = 3
+Yes if a different graph should be used for each run = Yes
+Sample size (min = 1) = 1000
+Interval beween shocks (R. A. Fisher simulation model) (min = 1) = 10
+Interval between data recordings for the linear Fisher model (min = 1) = 10
+The coefficient for the self-loop (default 0.0) = 0.0
+Epsilon where |xi.t - xi.t-1| < epsilon, criterion for convergence = 0.001
+Yes if the order of the columns in each datasets should be randomized = Yes
+Additive measurement noise variance (min = 0.0) = 0.0
+Save latent variables. = No
+Yes if the data should be standardized = No
+
+Simulation 8: Linear Fisher model simulation
+
+Comparison.printParameters
+Number of measured variables (min = 1) = 1000
+Number of latent variables (min = 0) = 0
+Average degree of graph (min = 1) = 9
+The maximum degree of the graph (min = -1) = 100
+Maximum indegree of graph (min = 1) = 100
+Maximum outdegree of graph (min = 1) = 100
+Yes if graph should be connected = No
+Low end of coefficient range (min = 0.0) = 0.2
+High end of coefficient range (min = 0.0) = 0.9
+Low end of variance range (min = 0.0) = 1
+High end of variance range (min = 0.0) = 3
+Yes if verbose output should be printed or logged = No
+Yes if positive coefficients should be included in the model = Yes
+Yes if negative coefficients should be included in the model = Yes
+Yes if errors should be Normal; No if they should be abs(Normal) (i.e., non-Gaussian) = Yes
+Number of runs (min = 1) = 2
+Number of categories for discrete variables (min = 2) = 3
+Yes if a different graph should be used for each run = Yes
+Sample size (min = 1) = 1000
+Interval beween shocks (R. A. Fisher simulation model) (min = 1) = 10
+Interval between data recordings for the linear Fisher model (min = 1) = 10
+The coefficient for the self-loop (default 0.0) = 0.0
+Epsilon where |xi.t - xi.t-1| < epsilon, criterion for convergence = 0.001
+Yes if the order of the columns in each datasets should be randomized = Yes
+Additive measurement noise variance (min = 0.0) = 0.0
+Save latent variables. = No
+Yes if the data should be standardized = No
+
+Simulation 9: Linear Fisher model simulation
+
+Comparison.printParameters
+Number of measured variables (min = 1) = 1000
+Number of latent variables (min = 0) = 0
+Average degree of graph (min = 1) = 10
+The maximum degree of the graph (min = -1) = 100
+Maximum indegree of graph (min = 1) = 100
+Maximum outdegree of graph (min = 1) = 100
+Yes if graph should be connected = No
+Low end of coefficient range (min = 0.0) = 0.2
+High end of coefficient range (min = 0.0) = 0.9
+Low end of variance range (min = 0.0) = 1
+High end of variance range (min = 0.0) = 3
+Yes if verbose output should be printed or logged = No
+Yes if positive coefficients should be included in the model = Yes
+Yes if negative coefficients should be included in the model = Yes
+Yes if errors should be Normal; No if they should be abs(Normal) (i.e., non-Gaussian) = Yes
+Number of runs (min = 1) = 2
+Number of categories for discrete variables (min = 2) = 3
+Yes if a different graph should be used for each run = Yes
+Sample size (min = 1) = 1000
+Interval beween shocks (R. A. Fisher simulation model) (min = 1) = 10
+Interval between data recordings for the linear Fisher model (min = 1) = 10
+The coefficient for the self-loop (default 0.0) = 0.0
+Epsilon where |xi.t - xi.t-1| < epsilon, criterion for convergence = 0.001
+Yes if the order of the columns in each datasets should be randomized = Yes
+Additive measurement noise variance (min = 0.0) = 0.0
+Save latent variables. = No
+Yes if the data should be standardized = No
+
+Algorithms:
+
+1. FGES (Fast Greedy Equivalence Search) using Sem BIC Score
+
+Graphs are being compared to the Pattern of the true DAG.
+
+AVERAGE STATISTICS
+
+All edges
+
+  Alg  avgDegree  colliderDiscoveryRule  semBicThreshold    AP    AR   AHP   AHR  AHPC  AHRC     E
+    1       2.00                      *             0.40  1.00  0.93  0.99  0.88  0.99  0.96  2.51
+    1       3.00                      *             0.40  1.00  0.90  1.00  0.88  1.00  0.98  2.39
+    1       4.00                      *             0.40  1.00  0.87  0.98  0.84  0.99  0.98  2.48
+    1       5.00                      *             0.40  0.99  0.85  0.98  0.83  0.99  0.99  2.87
+    1       6.00                      *             0.40  0.99  0.82  0.97  0.80  0.98  0.98  3.19
+    1       7.00                      *             0.40  0.99  0.79  0.99  0.78  0.99  0.99  3.50
+    1       8.00                      *             0.40  0.98  0.75  0.97  0.73  0.99  0.99  4.00
+    1       9.00                      *             0.40  0.97  0.72  0.95  0.70  0.98  0.98  4.92
+    1      10.00                      *             0.40  0.98  0.69  0.95  0.67  0.98  0.98  5.30
+
+STANDARD DEVIATIONS
+
+All edges
+
+  Alg  avgDegree  colliderDiscoveryRule  semBicThreshold       AP       AR      AHP      AHR     AHPC     AHRC     E
+    1       2.00                      *             0.40        -  5.66E-3  1.83E-3  7.74E-3  1.83E-3  3.52E-3  0.10
+    1       3.00                      *             0.40        -  7.07E-3  6.32E-3     0.01  6.32E-3  4.09E-3  0.30
+    1       4.00                      *             0.40  1.96E-5  4.95E-3  8.64E-5  8.18E-3  5.15E-4  6.70E-3  0.09
+    1       5.00                      *             0.40  1.64E-3  8.49E-4  7.06E-3  2.26E-3  8.87E-3  2.20E-3  0.05
+    1       6.00                      *             0.40  1.05E-3  5.19E-3  3.54E-3  4.64E-3  2.71E-3  1.42E-3  0.28
+    1       7.00                      *             0.40  1.43E-3     0.01  6.96E-3     0.01  5.78E-3  3.09E-3  0.14
+    1       8.00                      *             0.40     0.02  1.94E-3     0.02  2.12E-3  6.78E-3  6.03E-3  0.22
+    1       9.00                      *             0.40  1.36E-3  7.39E-3  5.34E-3  7.49E-3  4.53E-3  6.37E-4  0.34
+    1      10.00                      *             0.40  7.10E-3     0.01     0.02  8.81E-3  8.69E-3  7.17E-3  1.12
+
+WORST CASE
+
+All edges
+
+  Alg  avgDegree  colliderDiscoveryRule  semBicThreshold    AP    AR   AHP   AHR  AHPC  AHRC     E
+    1       2.00                      *             0.40  1.00  0.92  0.99  0.87  0.99  0.96  2.44
+    1       3.00                      *             0.40  1.00  0.90  0.99  0.87  0.99  0.98  2.18
+    1       4.00                      *             0.40  1.00  0.86  0.98  0.83  0.99  0.97  2.41
+    1       5.00                      *             0.40  0.99  0.85  0.97  0.83  0.98  0.99  2.84
+    1       6.00                      *             0.40  0.99  0.82  0.97  0.80  0.98  0.98  2.98
+    1       7.00                      *             0.40  0.99  0.78  0.98  0.77  0.99  0.99  3.41
+    1       8.00                      *             0.40  0.97  0.75  0.96  0.73  0.98  0.98  3.84
+    1       9.00                      *             0.40  0.97  0.71  0.95  0.70  0.98  0.98  4.69
+    1      10.00                      *             0.40  0.97  0.68  0.94  0.66  0.97  0.98  4.52
+
+MEDIAN CASE
+
+All edges
+
+  Alg  avgDegree  colliderDiscoveryRule  semBicThreshold    AP    AR   AHP   AHR  AHPC  AHRC     E
+    1       2.00                      *             0.40  1.00  0.93  0.99  0.88  0.99  0.96  2.51
+    1       3.00                      *             0.40  1.00  0.90  1.00  0.88  1.00  0.98  2.39
+    1       4.00                      *             0.40  1.00  0.87  0.98  0.84  0.99  0.98  2.48
+    1       5.00                      *             0.40  0.99  0.85  0.98  0.83  0.99  0.99  2.87
+    1       6.00                      *             0.40  0.99  0.82  0.97  0.80  0.98  0.98  3.19
+    1       7.00                      *             0.40  0.99  0.79  0.99  0.78  0.99  0.99  3.50
+    1       8.00                      *             0.40  0.98  0.75  0.97  0.73  0.99  0.99  4.00
+    1       9.00                      *             0.40  0.97  0.72  0.95  0.70  0.98  0.98  4.92
+    1      10.00                      *             0.40  0.98  0.69  0.95  0.67  0.98  0.98  5.30
+
