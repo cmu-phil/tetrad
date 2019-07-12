@@ -723,6 +723,108 @@ public class TestFges {
         }
     }
 
+
+    @Test
+    public void testFromGraphWithForbiddenKnowledge() {
+        int numNodes = 20;
+        int numIterations = 20;
+
+        for (int i = 0; i < numIterations; i++) {
+            System.out.println("Iteration " + (i + 1));
+            Graph dag = GraphUtils.randomDag(numNodes, 0, numNodes, 10, 10, 10, false);
+            Graph knowledgeGraph = GraphUtils.randomDag(numNodes, 0, numNodes, 10, 10, 10, false);
+            knowledgeGraph = GraphUtils.replaceNodes(knowledgeGraph, dag.getNodes());
+
+            IKnowledge knowledge = forbiddenKnowledge(knowledgeGraph);
+
+            Fges fges = new Fges(new GraphScore(dag));
+            fges.setFaithfulnessAssumed(true);
+            fges.setKnowledge(knowledge);
+            Graph pattern1 = fges.search();
+
+            for (Edge edge : knowledgeGraph.getEdges()) {
+                Node x = Edges.getDirectedEdgeTail(edge);
+                Node y = Edges.getDirectedEdgeHead(edge);
+
+                if (pattern1.isParentOf(x, y)) {
+                    System.out.println("Knowledge violated: " + edge + " x = " + x + " y = " + y);
+                }
+
+                assertFalse(pattern1.isParentOf(x, y));
+            }
+        }
+    }
+
+    @Test
+    public void testFromGraphWithRequiredKnowledge() {
+        int numNodes = 20;
+        int numIterations = 20;
+
+        for (int i = 0; i < numIterations; i++) {
+            System.out.println("Iteration " + (i + 1));
+            Graph dag = GraphUtils.randomDag(numNodes, 0, numNodes, 10, 10, 10, false);
+            Graph knowledgeGraph = GraphUtils.randomDag(numNodes, 0, numNodes, 10, 10, 10, false);
+            knowledgeGraph = GraphUtils.replaceNodes(knowledgeGraph, dag.getNodes());
+
+            IKnowledge knowledge = requiredKnowledge(knowledgeGraph);
+
+            Fges fges = new Fges(new GraphScore(dag));
+            fges.setFaithfulnessAssumed(true);
+            fges.setKnowledge(knowledge);
+            Graph pattern1 = fges.search();
+
+            for (Edge edge : knowledgeGraph.getEdges()) {
+                Node x = Edges.getDirectedEdgeTail(edge);
+                Node y = Edges.getDirectedEdgeHead(edge);
+
+                if (!pattern1.isParentOf(x, y)) {
+                    System.out.println("Knowledge violated: " + edge + " x = " + x + " y = " + y);
+                }
+
+                assertTrue (pattern1.isParentOf(x, y));
+            }
+        }
+    }
+
+
+    private IKnowledge forbiddenKnowledge(Graph graph) {
+        IKnowledge knowledge = new Knowledge2(graph.getNodeNames());
+
+        List<Node> nodes = graph.getNodes();
+
+        for (Edge edge : graph.getEdges()) {
+            Node n1 = Edges.getDirectedEdgeTail(edge);
+            Node n2 = Edges.getDirectedEdgeHead(edge);
+
+            if (n1.getName().startsWith("E_") || n2.getName().startsWith("E_")) {
+                continue;
+            }
+
+            knowledge.setForbidden(n1.getName(), n2.getName());
+        }
+
+        return knowledge;
+    }
+
+    private IKnowledge requiredKnowledge(Graph graph) {
+
+        IKnowledge knowledge = new Knowledge2(graph.getNodeNames());
+
+        for (Edge edge : graph.getEdges()) {
+            Node n1 = Edges.getDirectedEdgeTail(edge);
+            Node n2 = Edges.getDirectedEdgeHead(edge);
+
+            if (n1.getName().startsWith("E_") || n2.getName().startsWith("E_")) {
+                continue;
+            }
+
+            knowledge.setRequired(n1.getName(), n2.getName());
+        }
+
+        return knowledge;
+    }
+
+
     @Test
     public void testFromData() {
         Parameters parameters = new Parameters();
