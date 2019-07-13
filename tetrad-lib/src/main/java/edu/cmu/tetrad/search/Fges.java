@@ -157,6 +157,7 @@ public final class Fges implements GraphSearch, GraphScorer {
     // The ordering doesn't matter; it just have to be transitive.
     private int arrowIndex = 0;
 
+    // The BIC score of the model.
     private double modelScore;
 
     // Internal.
@@ -187,18 +188,18 @@ public final class Fges implements GraphSearch, GraphScorer {
      * the machine.
      */
     public Fges(Score score) {
-        this(score, Runtime.getRuntime().availableProcessors());
+        this(score, Runtime.getRuntime().availableProcessors() * 10);
     }
 
     /**
-     * Lets one construct with a score and a parallelism, that is, the number of processors to effectively use.
+     * Lets one construct with a score and a parallelism, that is, the number of threads to effectively use.
      */
     public Fges(Score score, int parallelism) {
         if (score == null) {
             throw new NullPointerException();
         }
         setScore(score);
-        this.maxThreads = parallelism * 10;
+        this.maxThreads = parallelism;
         this.pool = new ForkJoinPool(parallelism);
         this.graph = new EdgeListGraphSingleConnections(getVariables());
     }
@@ -552,7 +553,7 @@ public final class Fges implements GraphSearch, GraphScorer {
         return Math.max(n / maxThreads, minChunk);
     }
 
-    class NodeTaskEmptyGraph extends RecursiveTask<Boolean> {
+    class NodeTaskEmptyGraph implements Callable<Boolean> {
 
         private final int from;
         private final int to;
@@ -567,7 +568,7 @@ public final class Fges implements GraphSearch, GraphScorer {
         }
 
         @Override
-        protected Boolean compute() {
+        public Boolean call() {
             for (int i = from; i < to; i++) {
                 if ((i + 1) % 1000 == 0) {
                     count[0] += 1000;
@@ -632,48 +633,60 @@ public final class Fges implements GraphSearch, GraphScorer {
         long start = System.currentTimeMillis();
         this.effectEdgesGraph = new EdgeListGraphSingleConnections(nodes);
 
-        class InitializeFromEmptyGraphTask extends RecursiveTask<Boolean> {
+        List<Callable<Boolean>> tasks = new ArrayList<>();
 
-            private InitializeFromEmptyGraphTask() {
-            }
+        int numNodesPerTask = Math.max(100, nodes.size() / maxThreads);
 
-            @Override
-            protected Boolean compute() {
-                Queue<NodeTaskEmptyGraph> tasks = new ArrayDeque<>();
-
-                int numNodesPerTask = Math.max(100, nodes.size() / maxThreads);
-
-                for (int i = 0; i < nodes.size() && !Thread.currentThread().isInterrupted(); i += numNodesPerTask) {
-                    NodeTaskEmptyGraph task = new NodeTaskEmptyGraph(i, Math.min(nodes.size(), i + numNodesPerTask),
-                            nodes, emptySet);
-                    tasks.add(task);
-                    task.fork();
-
-                    for (NodeTaskEmptyGraph _task : new ArrayList<>(tasks)) {
-                        if (_task.isDone()) {
-                            _task.join();
-                            tasks.remove(_task);
-                        }
-                    }
-
-                    while (tasks.size() > maxThreads) {
-                        NodeTaskEmptyGraph _task = tasks.poll();
-
-                        if (_task != null) {
-                            _task.join();
-                        }
-                    }
-                }
-
-                for (NodeTaskEmptyGraph task : tasks) {
-                    task.join();
-                }
-
-                return true;
-            }
+        for (int i = 0; i < nodes.size() && !Thread.currentThread().isInterrupted(); i += numNodesPerTask) {
+            NodeTaskEmptyGraph task = new NodeTaskEmptyGraph(i, Math.min(nodes.size(), i + numNodesPerTask),
+                    nodes, emptySet);
+            tasks.add(task);
         }
 
-        pool.invoke(new InitializeFromEmptyGraphTask());
+        pool.invokeAll(tasks);
+
+//        class InitializeFromEmptyGraphTask extends RecursiveTask<Boolean> {
+//
+//            private InitializeFromEmptyGraphTask() {
+//            }
+//
+//            @Override
+//            protected Boolean compute() {
+//                Queue<NodeTaskEmptyGraph> tasks = new ArrayDeque<>();
+//
+//                int numNodesPerTask = Math.max(100, nodes.size() / maxThreads);
+//
+//                for (int i = 0; i < nodes.size() && !Thread.currentThread().isInterrupted(); i += numNodesPerTask) {
+//                    NodeTaskEmptyGraph task = new NodeTaskEmptyGraph(i, Math.min(nodes.size(), i + numNodesPerTask),
+//                            nodes, emptySet);
+//                    tasks.add(task);
+//                    task.fork();
+//
+//                    for (NodeTaskEmptyGraph _task : new ArrayList<>(tasks)) {
+//                        if (_task.isDone()) {
+//                            _task.join();
+//                            tasks.remove(_task);
+//                        }
+//                    }
+//
+//                    while (tasks.size() > maxThreads) {
+//                        NodeTaskEmptyGraph _task = tasks.poll();
+//
+//                        if (_task != null) {
+//                            _task.join();
+//                        }
+//                    }
+//                }
+//
+//                for (NodeTaskEmptyGraph task : tasks) {
+//                    task.join();
+//                }
+//
+//                return true;
+//            }
+//        }
+//
+//        pool.invoke(new InitializeFromEmptyGraphTask());
 
         long stop = System.currentTimeMillis();
 
