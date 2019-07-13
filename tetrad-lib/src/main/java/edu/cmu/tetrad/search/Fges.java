@@ -1022,89 +1022,82 @@ public final class Fges implements GraphSearch, GraphScorer {
 
     // Calcuates new arrows based on changes in the graph for the forward search.
     private void reevaluateForward(final Set<Node> nodes) {
-        class AdjTask extends RecursiveTask<Boolean> {
+        class AdjTask implements Callable<Boolean> {
 
             private final List<Node> nodes;
             private int from;
             private int to;
-            private int chunk;
 
-            private AdjTask(int chunk, List<Node> nodes, int from, int to) {
+            private AdjTask(List<Node> nodes, int from, int to) {
                 this.nodes = nodes;
                 this.from = from;
                 this.to = to;
-                this.chunk = chunk;
             }
 
             @Override
-            protected Boolean compute() {
-                if (to - from <= chunk) {
-                    for (int _w = from; _w < to; _w++) {
-                        Node x = nodes.get(_w);
+            public Boolean call() {
+                for (int _w = from; _w < to; _w++) {
+                    Node x = nodes.get(_w);
 
-                        List<Node> adj;
+                    List<Node> adj;
 
-                        if (mode == Mode.heuristicSpeedup) {
-                            adj = effectEdgesGraph.getAdjacentNodes(x);
-                        } else if (mode == Mode.coverNoncolliders) {
-                            Set<Node> g = new HashSet<>();
+                    if (mode == Mode.heuristicSpeedup) {
+                        adj = effectEdgesGraph.getAdjacentNodes(x);
+                    } else if (mode == Mode.coverNoncolliders) {
+                        Set<Node> g = new HashSet<>();
 
-                            for (Node n : graph.getAdjacentNodes(x)) {
-                                for (Node m : graph.getAdjacentNodes(n)) {
-                                    if (graph.isAdjacentTo(x, m)) {
-                                        continue;
-                                    }
-
-                                    if (graph.isDefCollider(m, n, x)) {
-                                        continue;
-                                    }
-
-                                    g.add(m);
+                        for (Node n : graph.getAdjacentNodes(x)) {
+                            for (Node m : graph.getAdjacentNodes(n)) {
+                                if (graph.isAdjacentTo(x, m)) {
+                                    continue;
                                 }
-                            }
 
-                            adj = new ArrayList<>(g);
-                        } else if (mode == Mode.allowUnfaithfulness) {
-                            HashSet<Node> D = new HashSet<>(getUnconditionallyDconnectedVars(x, graph));
-                            D.remove(x);
-                            adj = new ArrayList<>(D);
-                        } else {
-                            throw new IllegalStateException();
-                        }
+                                if (graph.isDefCollider(m, n, x)) {
+                                    continue;
+                                }
 
-                        for (Node w : adj) {
-                            if (adjacencies != null && !(adjacencies.isAdjacentTo(w, x))) {
-                                continue;
-                            }
-
-                            if (w == x) {
-                                continue;
-                            }
-
-                            if (!graph.isAdjacentTo(w, x)) {
-                                calculateArrowsForward(w, x);
+                                g.add(m);
                             }
                         }
+
+                        adj = new ArrayList<>(g);
+                    } else if (mode == Mode.allowUnfaithfulness) {
+                        HashSet<Node> D = new HashSet<>(getUnconditionallyDconnectedVars(x, graph));
+                        D.remove(x);
+                        adj = new ArrayList<>(D);
+                    } else {
+                        throw new IllegalStateException();
                     }
 
-                    return true;
-                } else {
-                    int mid = (to - from) / 2;
+                    for (Node w : adj) {
+                        if (adjacencies != null && !(adjacencies.isAdjacentTo(w, x))) {
+                            continue;
+                        }
 
-                    List<AdjTask> tasks = new ArrayList<>();
+                        if (w == x) {
+                            continue;
+                        }
 
-                    tasks.add(new AdjTask(chunk, nodes, from, from + mid));
-                    tasks.add(new AdjTask(chunk, nodes, from + mid, to));
-
-                    invokeAll(tasks);
-
-                    return true;
+                        if (!graph.isAdjacentTo(w, x)) {
+                            calculateArrowsForward(w, x);
+                        }
+                    }
                 }
+
+                return true;
             }
         }
 
-        final AdjTask task = new AdjTask(getMinChunk(nodes.size()), new ArrayList<>(nodes), 0, nodes.size());
-        pool.invoke(task);
+        List<Callable<Boolean>> tasks = new ArrayList<>();
+
+        int numNodesPerTask = Math.max(100, nodes.size() / maxThreads);
+
+        for (int i = 0; i < nodes.size() && !Thread.currentThread(). isInterrupted(); i += numNodesPerTask) {
+            AdjTask task = new AdjTask(new ArrayList<>(nodes), i, Math.min(nodes.size(), i + numNodesPerTask));
+            tasks.add(task);
+        }
+
+        pool.invokeAll(tasks);
     }
 
     // Calculates the new arrows for an a->b edge.
@@ -1305,10 +1298,10 @@ public final class Fges implements GraphSearch, GraphScorer {
     }
 
     // Basic data structure for an arrow a->b considered for addition or removal from the graph, together with
-    // associated sets needed to make this determination. For both forward and backward direction, NaYX is needed.
-    // For the forward direction, TNeighbors neighbors are needed; for the backward direction, H neighbors are needed.
-    // See Chickering (2002). The totalScore difference resulting from added in the edge (hypothetically) is recorded
-    // as the "bump".
+// associated sets needed to make this determination. For both forward and backward direction, NaYX is needed.
+// For the forward direction, TNeighbors neighbors are needed; for the backward direction, H neighbors are needed.
+// See Chickering (2002). The totalScore difference resulting from added in the edge (hypothetically) is recorded
+// as the "bump".
     private static class Arrow implements Comparable<Arrow> {
 
         private double bump;
@@ -1384,6 +1377,7 @@ public final class Fges implements GraphSearch, GraphScorer {
         void setTNeighbors(Set<Node> TNeighbors) {
             this.TNeighbors = TNeighbors;
         }
+
     }
 
     // Get all adj that are connected to Y by an undirected edge and not adjacent to X.

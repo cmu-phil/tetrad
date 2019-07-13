@@ -49,7 +49,7 @@ public class ExampleCompareSimulation {
         parameters.set("differentGraphs", false);
         parameters.set("sampleSize", 1000);
 
-        parameters.set("numMeasures", 10);
+        parameters.set("numMeasures", 100);
         parameters.set("numLatents", 0);
         parameters.set("avgDegree", 4);//, 3, 4, 5, 6, 7, 8, 9, 10);
         parameters.set("maxDegree", 500);
