@@ -71,7 +71,7 @@ public class Fges implements Algorithm, TakesInitialGraph, HasKnowledge, UsesSco
             }
 
             edu.cmu.tetrad.search.Fges search
-                    = new edu.cmu.tetrad.search.Fges(score.getScore(dataSet, parameters));
+                    = new edu.cmu.tetrad.search.Fges(score.getScore(dataSet, parameters), Runtime.getRuntime().availableProcessors());
             search.setFaithfulnessAssumed(parameters.getBoolean(Params.FAITHFULNESS_ASSUMED));
             search.setKnowledge(knowledge);
             search.setVerbose(parameters.getBoolean(Params.VERBOSE));

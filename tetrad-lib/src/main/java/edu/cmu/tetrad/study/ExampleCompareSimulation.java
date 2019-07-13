@@ -47,7 +47,7 @@ public class ExampleCompareSimulation {
 
         parameters.set("numRuns", 1);
         parameters.set("differentGraphs", false);
-        parameters.set("sampleSize", 10000);
+        parameters.set("sampleSize", 1000);
 
         parameters.set("numMeasures", 10);
         parameters.set("numLatents", 0);
@@ -88,9 +88,9 @@ public class ExampleCompareSimulation {
         parameters.set("faithfulnessAssumed", true);
         parameters.set("maxDegree", 100);
 
-        parameters.set("penaltyDiscount", 1);
+        parameters.set("penaltyDiscount", 3);
         parameters.set("structurePrior", 0);
-        parameters.set("semBicThreshold", .1, .3, .4, .5, .6, .7, .8, .9, 1.0);
+        parameters.set("semBicThreshold", 0., .1, .3, .4, .5, .6, .7, .8, .9, 1.0);
 
         parameters.set("colliderDiscoveryRule", 2, 3);
 

@@ -177,7 +177,7 @@ public final class Fges implements GraphSearch, GraphScorer {
     // for each edge with the maximum score chosen.
     private boolean symmetricFirstStep = false;
 
-    final int maxThreads = 10 * ForkJoinPoolInstance.getInstance().getPool().getParallelism();
+    final int maxThreads;
 
     //===========================CONSTRUCTORS=============================//
 
@@ -191,7 +191,19 @@ public final class Fges implements GraphSearch, GraphScorer {
         if (score == null) {
             throw new NullPointerException();
         }
+        this.pool = new ForkJoinPool(1);
+        this.maxThreads = 10;
         setScore(score);
+        this.graph = new EdgeListGraphSingleConnections(getVariables());
+    }
+
+    public Fges(Score score, int parallelism) {
+        if (score == null) {
+            throw new NullPointerException();
+        }
+        setScore(score);
+        this.pool = new ForkJoinPool(parallelism);
+        this.maxThreads = 10 * ForkJoinPoolInstance.getInstance().getPool().getParallelism();
         this.graph = new EdgeListGraphSingleConnections(getVariables());
     }
 
@@ -438,13 +450,6 @@ public final class Fges implements GraphSearch, GraphScorer {
             throw new IllegalArgumentException("Cycle bound needs to be -1 or >= 1: " + cycleBound);
         }
         this.cycleBound = cycleBound;
-    }
-
-    /**
-     * Creates a new processors pool with the specified number of threads.
-     */
-    public void setParallelism(int numProcessors) {
-        this.pool = new ForkJoinPool(numProcessors);
     }
 
     /**
@@ -974,6 +979,12 @@ public final class Fges implements GraphSearch, GraphScorer {
         }
     }
 
+    private Set<Node> getCommonAdjacents(Node x, Node y) {
+        Set<Node> adj = new HashSet<>(graph.getAdjacentNodes(x));
+        adj.retainAll(graph.getAdjacentNodes(y));
+        return adj;
+    }
+
     private void bes() {
         if (verbose) {
             TetradLogger.getInstance().forceLogMessage("** BACKWARD EQUIVALENCE SEARCH");
@@ -1021,9 +1032,6 @@ public final class Fges implements GraphSearch, GraphScorer {
                 continue;
             }
 
-            orientNodeAway(x);
-            orientNodeAway(y);
-
             Set<Node> visited = reapplyOrientation(x, y, arrow.getHOrT());
 
             Set<Node> toProcess = new HashSet<>();
@@ -1036,6 +1044,10 @@ public final class Fges implements GraphSearch, GraphScorer {
                     toProcess.add(node);
                 }
             }
+
+            toProcess.add(x);
+            toProcess.add(y);
+            toProcess.addAll(getCommonAdjacents(x, y));
 
             storeGraph();
             reevaluateBackward(toProcess);
