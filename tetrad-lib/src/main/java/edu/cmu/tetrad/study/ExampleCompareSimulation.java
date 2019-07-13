@@ -45,13 +45,13 @@ public class ExampleCompareSimulation {
 //        parameters.set("minCategories", 3);
 //        parameters.set("maxCategories", 3);
 
-        parameters.set("numRuns", 10);
+        parameters.set("numRuns", 1);
         parameters.set("differentGraphs", false);
         parameters.set("sampleSize", 1000);
 
-        parameters.set("numMeasures", 1000);
+        parameters.set("numMeasures", 7000);
         parameters.set("numLatents", 0);
-        parameters.set("avgDegree", 2, 3, 4, 5, 6, 7, 8, 9, 10);
+        parameters.set("avgDegree", 5);//, 3, 4, 5, 6, 7, 8, 9, 10);
         parameters.set("maxDegree", 500);
         parameters.set("maxIndegree", 100);
         parameters.set("maxOutdegree", 100);
