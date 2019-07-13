@@ -98,7 +98,6 @@ public class TestFges {
 
         Fges fges = new Fges(score);
         fges.setVerbose(false);
-        fges.setNumPatternsToStore(0);
         fges.setOut(out);
         fges.setFaithfulnessAssumed(true);
 //        fges.setMaxIndegree(1);
@@ -165,7 +164,6 @@ public class TestFges {
 
         Fges ges = new Fges(score);
         ges.setVerbose(false);
-        ges.setNumPatternsToStore(0);
         ges.setFaithfulnessAssumed(false);
 
         Graph estPattern = ges.search();

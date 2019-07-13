@@ -155,7 +155,6 @@ public final class GPc implements GraphSearch {
         Fges fges = new Fges(score);
         fges.setKnowledge(getKnowledge());
         fges.setVerbose(verbose);
-        fges.setNumPatternsToStore(0);
 //        fges.setHeuristicSpeedup(heuristicSpeedup);
 //        fges.setMaxDegree(fgesDepth);
         graph = fges.search();

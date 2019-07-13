@@ -57,7 +57,6 @@ public class HsimRobustCompare {
             BDeuScore oscore = new BDeuScore(oData);
             Fges fges = new Fges(oscore);
             fges.setVerbose(false);
-            fges.setNumPatternsToStore(0);
             fges.setPenaltyDiscount(penaltyDiscount);
             Graph oGraphOut = fges.search();
             if (verbose) System.out.println(oGraphOut);
@@ -90,7 +89,6 @@ public class HsimRobustCompare {
             BDeuScore simscore = new BDeuScore(simData);
             Fges simfges = new Fges(simscore);
             simfges.setVerbose(false);
-            simfges.setNumPatternsToStore(0);
             simfges.setPenaltyDiscount(penaltyDiscount);
             Graph simGraphOut = simfges.search();
             //simErrors = new double[5];

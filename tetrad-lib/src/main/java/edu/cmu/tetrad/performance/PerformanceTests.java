@@ -881,7 +881,6 @@ public class PerformanceTests {
 
                 Fges fges = new Fges(score);
 //                fges.setVerbose(false);
-                fges.setNumPatternsToStore(0);
                 fges.setOut(System.out);
                 fges.setFaithfulnessAssumed(faithfulness);
                 fges.setCycleBound(-1);
@@ -924,7 +923,6 @@ public class PerformanceTests {
 
                 Fges fges = new Fges(score);
 //                fges.setVerbose(false);
-                fges.setNumPatternsToStore(0);
                 fges.setOut(System.out);
                 fges.setFaithfulnessAssumed(faithfulness);
                 fges.setCycleBound(-1);

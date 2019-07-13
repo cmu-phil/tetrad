@@ -114,11 +114,6 @@ public final class Fges implements GraphSearch, GraphScorer {
     private LinkedList<ScoredGraph> topGraphs = new LinkedList<>();
 
     /**
-     * The number of top patterns to store.
-     */
-    private int numPatternsToStore = 0;
-
-    /**
      * True if verbose output should be printed.
      */
     private boolean verbose = false;
@@ -137,9 +132,6 @@ public final class Fges implements GraphSearch, GraphScorer {
 
     // The static ForkJoinPool instance.
     private final ForkJoinPool pool;
-
-    // A running tally of the total BIC totalScore.
-    private double totalScore;
 
     // A graph where X--Y means that X and Y have non-zero total effect on one another.
     private Graph effectEdgesGraph;
@@ -231,8 +223,6 @@ public final class Fges implements GraphSearch, GraphScorer {
      */
     public Graph search() {
         long start = System.currentTimeMillis();
-        totalScore = 0.0;
-
         topGraphs.clear();
 
         lookupArrows = new ConcurrentHashMap<>();
@@ -246,12 +236,6 @@ public final class Fges implements GraphSearch, GraphScorer {
         if (initialGraph != null) {
             graph = new EdgeListGraphSingleConnections(initialGraph);
             graph = GraphUtils.replaceNodes(graph, nodes);
-        }
-
-        try {
-            totalScore = scoreDag(SearchGraphUtils.dagFromPattern(graph));
-        } catch (Exception e) {
-            totalScore = 0.0;
         }
 
         addRequiredEdges(graph);
@@ -342,25 +326,6 @@ public final class Fges implements GraphSearch, GraphScorer {
      */
     public LinkedList<ScoredGraph> getTopGraphs() {
         return topGraphs;
-    }
-
-    /**
-     * @return the number of patterns to store.
-     */
-    private int getNumPatternsToStore() {
-        return numPatternsToStore;
-    }
-
-    /**
-     * Sets the number of patterns to store. This should be set to zero for fast
-     * search.
-     */
-    public void setNumPatternsToStore(int numPatternsToStore) {
-        if (numPatternsToStore < 0) {
-            throw new IllegalArgumentException("# graphs to store must at least 0: " + numPatternsToStore);
-        }
-
-        this.numPatternsToStore = numPatternsToStore;
     }
 
     /**
@@ -645,49 +610,6 @@ public final class Fges implements GraphSearch, GraphScorer {
 
         pool.invokeAll(tasks);
 
-//        class InitializeFromEmptyGraphTask extends RecursiveTask<Boolean> {
-//
-//            private InitializeFromEmptyGraphTask() {
-//            }
-//
-//            @Override
-//            protected Boolean compute() {
-//                Queue<NodeTaskEmptyGraph> tasks = new ArrayDeque<>();
-//
-//                int numNodesPerTask = Math.max(100, nodes.size() / maxThreads);
-//
-//                for (int i = 0; i < nodes.size() && !Thread.currentThread().isInterrupted(); i += numNodesPerTask) {
-//                    NodeTaskEmptyGraph task = new NodeTaskEmptyGraph(i, Math.min(nodes.size(), i + numNodesPerTask),
-//                            nodes, emptySet);
-//                    tasks.add(task);
-//                    task.fork();
-//
-//                    for (NodeTaskEmptyGraph _task : new ArrayList<>(tasks)) {
-//                        if (_task.isDone()) {
-//                            _task.join();
-//                            tasks.remove(_task);
-//                        }
-//                    }
-//
-//                    while (tasks.size() > maxThreads) {
-//                        NodeTaskEmptyGraph _task = tasks.poll();
-//
-//                        if (_task != null) {
-//                            _task.join();
-//                        }
-//                    }
-//                }
-//
-//                for (NodeTaskEmptyGraph task : tasks) {
-//                    task.join();
-//                }
-//
-//                return true;
-//            }
-//        }
-//
-//        pool.invoke(new InitializeFromEmptyGraphTask());
-
         long stop = System.currentTimeMillis();
 
         if (verbose) {
@@ -933,8 +855,6 @@ public final class Fges implements GraphSearch, GraphScorer {
             Node y = arrow.getB();
 
             if (graph.isAdjacentTo(x, y)) {
-                clearArrow(x, y);
-                clearArrow(y, x);
                 continue;
             }
 
@@ -964,8 +884,6 @@ public final class Fges implements GraphSearch, GraphScorer {
                 continue;
             }
 
-            totalScore += arrow.getBump();
-
             Set<Node> visited = reapplyOrientation(x, y, null);
             Set<Node> toProcess = new HashSet<>();
 
@@ -981,7 +899,6 @@ public final class Fges implements GraphSearch, GraphScorer {
             toProcess.add(x);
             toProcess.add(y);
 
-            storeGraph();
             reevaluateForward(toProcess);
         }
     }
@@ -1056,7 +973,6 @@ public final class Fges implements GraphSearch, GraphScorer {
             toProcess.add(y);
             toProcess.addAll(getCommonAdjacents(x, y));
 
-            storeGraph();
             reevaluateBackward(toProcess);
         }
     }
@@ -2037,18 +1953,6 @@ public final class Fges implements GraphSearch, GraphScorer {
 
     private List<Node> getVariables() {
         return variables;
-    }
-
-    // Stores the graph, if its totalScore knocks out one of the top ones.
-    private void storeGraph() {
-        if (getNumPatternsToStore() > 0) {
-            Graph graphCopy = new EdgeListGraphSingleConnections(graph);
-            topGraphs.addLast(new ScoredGraph(graphCopy, totalScore));
-        }
-
-        if (topGraphs.size() == getNumPatternsToStore() + 1) {
-            topGraphs.removeFirst();
-        }
     }
 
     private Map<Edge, Double> logEdgeBayesFactors(Graph dag) {

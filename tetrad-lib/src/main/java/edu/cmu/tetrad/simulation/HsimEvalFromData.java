@@ -81,7 +81,6 @@ public class HsimEvalFromData {
                 SemBicScore oscore = new SemBicScore(newcov);
                 Fges ofgs = new Fges(oscore);
                 ofgs.setVerbose(false);
-                ofgs.setNumPatternsToStore(0);
                 Graph oFGSGraph = ofgs.search();//***********This is the original FGS output on the data
                 PRAOerrors oErrors = new PRAOerrors(HsimUtils.errorEval(oFGSGraph, odag), "target errors");
 
@@ -108,7 +107,6 @@ public class HsimEvalFromData {
                         SemBicScore simscore = new SemBicScore(simcov);
                         Fges simfgs = new Fges(simscore);
                         simfgs.setVerbose(false);
-                        simfgs.setNumPatternsToStore(0);
                         Graph simGraphOut = simfgs.search();
                         PRAOerrors simErrors = new PRAOerrors(HsimUtils.errorEval(simGraphOut, fgsdag2), "Fsim errors " + r);
                         errorsList.add(simErrors);
