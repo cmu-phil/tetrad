@@ -87,7 +87,7 @@ public class SemBicScore implements Score {
     private boolean forward = true;
 
     // The amount by which the score should be adjusted due to error about the true bump scores.
-    private double bias = Double.NaN;
+    private double errorThreshold = Double.NaN;
 
     /**
      * Constructs the score using a covariance matrix.
@@ -140,10 +140,10 @@ public class SemBicScore implements Score {
             List<Node> _z = getVariableList(z);
             double r = partialCorrelation(_x, _y, _z);
 
-            return -n * Math.log(1.0 - r * r) - getPenaltyDiscount() * log(n) - getBias()
+            return -n * Math.log(1.0 - r * r) - getPenaltyDiscount() * log(n) - getErrorThreshold()
                     + signum(getStructurePrior()) * (sp1 - sp2);
         } else {
-            return (localScore(x, append(z, y)) - localScore(x, z)) - getPenaltyDiscount() * log(n) - getBias()
+            return (localScore(x, append(z, y)) - localScore(x, z)) - getPenaltyDiscount() * log(n) - getErrorThreshold()
                     + signum(getStructurePrior()) * (sp1 - sp2);
         }
 
@@ -420,14 +420,14 @@ public class SemBicScore implements Score {
         return all;
     }
 
-    public double getBias() {
+    public synchronized double getErrorThreshold() {
         if (getThreshold() < 0.0 || getThreshold() > 1.0) {
             throw new IllegalArgumentException("Bias threshold needs to be in [0, 1].");
         }
 
         if (getThreshold() == 0.0) {
-            bias = 0.0;
-        } else if (Double.isNaN(bias)) {
+            errorThreshold = 0.0;
+        } else if (Double.isNaN(errorThreshold)) {
             int n = covariances.getSampleSize();
 
             ChiSquaredDistribution ch = new ChiSquaredDistribution(n - 1);
@@ -446,12 +446,12 @@ public class SemBicScore implements Score {
             percentile = percentile < 50.0 ? 50.0 : percentile;
             percentile = percentile > 100.0 ? 100.0 : percentile;
 
-            this.bias = percentile(e, percentile);
+            this.errorThreshold = percentile(e, percentile);
 
-            System.out.println("Bias = " + bias);
+            System.out.println("Bias = " + errorThreshold);
         }
 
-        return bias;
+        return errorThreshold;
     }
 
     public void printBiases() {
@@ -477,7 +477,7 @@ public class SemBicScore implements Score {
 
             double bias = percentile(e, percentile);
 
-            System.out.println("Threshold = " + nf.format(threshold) + " Bias = " + nf.format(bias) + "; corresponding penalty discount = 1 + bias / ln n = " + (1.0 + bias / log(n)));
+            System.out.println("Threshold = " + nf.format(threshold) + " Bias = " + nf.format(bias) + "; corresponding penalty discount = 1 + errorThreshold / ln n = " + (1.0 + bias / log(n)));
 
         }
     }

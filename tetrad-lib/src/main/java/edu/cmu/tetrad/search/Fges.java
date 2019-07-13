@@ -188,13 +188,7 @@ public final class Fges implements GraphSearch, GraphScorer {
      * consistent scoring criterion.
      */
     public Fges(Score score) {
-        if (score == null) {
-            throw new NullPointerException();
-        }
-        this.pool = new ForkJoinPool(1);
-        this.maxThreads = 10;
-        setScore(score);
-        this.graph = new EdgeListGraphSingleConnections(getVariables());
+        this(score, Runtime.getRuntime().availableProcessors());
     }
 
     public Fges(Score score, int parallelism) {
@@ -202,8 +196,8 @@ public final class Fges implements GraphSearch, GraphScorer {
             throw new NullPointerException();
         }
         setScore(score);
+        this.maxThreads = parallelism * 10;
         this.pool = new ForkJoinPool(parallelism);
-        this.maxThreads = 10 * ForkJoinPoolInstance.getInstance().getPool().getParallelism();
         this.graph = new EdgeListGraphSingleConnections(getVariables());
     }
 
