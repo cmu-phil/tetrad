@@ -56,6 +56,7 @@ public final class Fges implements GraphSearch, GraphScorer {
     /**
      * Internal.
      */
+
     private enum Mode {
         allowUnfaithfulness, heuristicSpeedup, coverNoncolliders
     }
@@ -156,7 +157,6 @@ public final class Fges implements GraphSearch, GraphScorer {
     // The ordering doesn't matter; it just have to be transitive.
     private int arrowIndex = 0;
 
-    // The final totalScore after search.
     private double modelScore;
 
     // Internal.
@@ -183,12 +183,16 @@ public final class Fges implements GraphSearch, GraphScorer {
      * Construct a Score and pass it in here. The totalScore should return a
      * positive value in case of conditional dependence and a negative values in
      * case of conditional independence. See Chickering (2002), locally
-     * consistent scoring criterion.
+     * consistent scoring criterion. This by default uses all of the processors on
+     * the machine.
      */
     public Fges(Score score) {
         this(score, Runtime.getRuntime().availableProcessors());
     }
 
+    /**
+     * Lets one construct with a score and a parallelism, that is, the number of processors to effectively use.
+     */
     public Fges(Score score, int parallelism) {
         if (score == null) {
             throw new NullPointerException();
@@ -511,6 +515,15 @@ public final class Fges implements GraphSearch, GraphScorer {
 
     public void setSymmetricFirstStep(boolean symmetricFirstStep) {
         this.symmetricFirstStep = symmetricFirstStep;
+    }
+
+    public String logEdgeBayesFactorsString(Graph dag) {
+        Map<Edge, Double> factors = logEdgeBayesFactors(dag);
+        return logBayesPosteriorFactorsString(factors);
+    }
+
+    double getModelScore() {
+        return modelScore;
     }
 
     //===========================PRIVATE METHODS========================//
@@ -1362,10 +1375,6 @@ public final class Fges implements GraphSearch, GraphScorer {
         }
     }
 
-    double getModelScore() {
-        return modelScore;
-    }
-
     // Basic data structure for an arrow a->b considered for addition or removal from the graph, together with
     // associated sets needed to make this determination. For both forward and backward direction, NaYX is needed.
     // For the forward direction, TNeighbors neighbors are needed; for the backward direction, H neighbors are needed.
@@ -2027,11 +2036,6 @@ public final class Fges implements GraphSearch, GraphScorer {
         if (topGraphs.size() == getNumPatternsToStore() + 1) {
             topGraphs.removeFirst();
         }
-    }
-
-    public String logEdgeBayesFactorsString(Graph dag) {
-        Map<Edge, Double> factors = logEdgeBayesFactors(dag);
-        return logBayesPosteriorFactorsString(factors);
     }
 
     private Map<Edge, Double> logEdgeBayesFactors(Graph dag) {
