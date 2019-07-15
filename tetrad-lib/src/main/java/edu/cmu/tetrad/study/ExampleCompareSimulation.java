@@ -47,7 +47,7 @@ public class ExampleCompareSimulation {
 
         parameters.set("numRuns", 10);
         parameters.set("differentGraphs", false);
-        parameters.set("sampleSize", 1000);
+        parameters.set("sampleSize", 10000);
 
         parameters.set("numMeasures", 10);
         parameters.set("numLatents", 0);

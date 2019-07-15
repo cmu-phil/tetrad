@@ -1745,7 +1745,7 @@ public final class Fges implements GraphSearch, GraphScorer {
     // Returns true iif the given set forms a clique in the given graph.
     private boolean isClique(Set<Node> nodes) {
         List<Node> _nodes = new ArrayList<>(nodes);
-        for (int i = 0; i < _nodes.size() - 1; i++) {
+        for (int i = 0; i < _nodes.size(); i++) {
             for (int j = i + 1; j < _nodes.size(); j++) {
                 if (!graph.isAdjacentTo(_nodes.get(i), _nodes.get(j))) {
                     return false;
