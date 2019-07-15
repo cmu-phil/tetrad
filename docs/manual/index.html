@@ -4261,7 +4261,7 @@ Usually covariance values are chosen from U(-b, -a) U U(a, b) for some a, b; thi
             <li>Short Description: <span id="penaltyDiscount_short_desc">Penalty discount (min = 0.0)</span></li>
             <li>Long Description: <span id="penaltyDiscount_long_desc">A BIC score is of the form 2L – k ln N, where L is the likelihood, k the number of degrees of freedom, and N the sample size. Tests based on this statistic can often yield too dense a graph; to compensate for this, we add a factor c, as follows: 2L – c k ln N, where usually c >= 1. If c is chosen to be greater than 1, say 2, the output graph will be sparser. We call this c the “penalty discount”; similar mechanisms have been proposed elsewhere.</span>
             </li>
-            <li>Default Value: <span id="penaltyDiscount_default_value">2.0</span></li>
+            <li>Default Value: <span id="penaltyDiscount_default_value">1.0</span></li>
             <li>Lower Bound: <span id="penaltyDiscount_lower_bound">0.0</span></li>
             <li>Upper Bound: <span id="penaltyDiscount_upper_bound">1.7976931348623157E308</span></li>
             <li>Value Type: <span id="penaltyDiscount_value_type">Double</span></li>
@@ -4272,7 +4272,7 @@ Usually covariance values are chosen from U(-b, -a) U U(a, b) for some a, b; thi
             <li>Short Description: <span id="errorThreshold_short_desc">Error Threshold</span></li>
             <li>Long Description: <span id="errorThreshold_long_desc">Adjusts the threshold for judging conditional dependence.</span>
             </li>
-            <li>Default Value: <span id="errorThreshold_default_value">1.0</span></li>
+            <li>Default Value: <span id="errorThreshold_default_value">0.0</span></li>
             <li>Lower Bound: <span id="errorThreshold_lower_bound">0.0</span></li>
             <li>Upper Bound: <span id="errorThreshold_upper_bound">1.7976931348623157E308</span></li>
             <li>Value Type: <span id="errorThreshold_value_type">Double</span></li>
@@ -4539,7 +4539,7 @@ Usually covariance values are chosen from U(-b, -a) U U(a, b) for some a, b; thi
             </li>
             <li>Long Description: <span id="structurePrior_long_desc">For Tetrad, we use as a structure prior the default number of parents for any conditional probability table. Higher weight is accorded to tables with about that number of parents. The prior structure weights are distributed according to a binomial distribution.</span>
             </li>
-            <li>Default Value: <span id="structurePrior_default_value">3.0</span></li>
+            <li>Default Value: <span id="structurePrior_default_value">0.0</span></li>
             <li>Lower Bound: <span id="structurePrior_lower_bound">0.0</span></li>
             <li>Upper Bound: <span id="structurePrior_upper_bound">1.7976931348623157E308</span></li>
             <li>Value Type: <span id="structurePrior_value_type">Double</span></li>
