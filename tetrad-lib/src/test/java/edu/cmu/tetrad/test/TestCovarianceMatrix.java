@@ -74,7 +74,7 @@ public final class TestCovarianceMatrix {
         assertEquals(1, c3.getValue(0, 0), 0.001);
 
         // In place should modify the original covariance matrix.
-        CorrelationMatrix c4 = new CorrelationMatrix(c1, true);
+        CorrelationMatrix c4 = new CorrelationMatrix(c1);
 //        assertEquals(1, c1.getValue(0, 0), 0.001);
 
         c1 = new CovarianceMatrix(_dataSet);

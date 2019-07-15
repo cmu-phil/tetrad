@@ -34,14 +34,8 @@ public class CovariancesDoubleForkJoin {
 
     public CovariancesDoubleForkJoin(double[][] data, boolean biasCorrected) {
         this.numOfCols = data[0].length;
-
         RealCovarianceMatrixForkJoin cov = new RealCovarianceMatrixForkJoin(data, 10 * Runtime.getRuntime().availableProcessors());
         this.covariances = cov.compute(biasCorrected);
-    }
-
-    public CovariancesDoubleForkJoin(double[][] matrix, int sampleSize) {
-        this.covariances = matrix;
-        this.numOfCols = matrix.length;
     }
 
     public double covariance(int i, int j) {
@@ -50,11 +44,6 @@ public class CovariancesDoubleForkJoin {
 
     public int size() {
         return numOfCols;
-    }
-
-    public void setCovariance(int i, int j, double v) {
-        covariances[i][j] = v;
-        covariances[j][i] = v;
     }
 
     public double[][] getMatrix() {

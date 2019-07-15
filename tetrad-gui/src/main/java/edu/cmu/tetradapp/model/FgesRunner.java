@@ -206,7 +206,6 @@ public class FgesRunner extends AbstractAlgorithmRunner implements IFgesRunner, 
 
         fges.setInitialGraph(initialGraph);
         fges.setKnowledge((IKnowledge) getParams().get("knowledge", new Knowledge2()));
-        fges.setNumPatternsToStore(params.getInt("numPatternsToSave", 1));
         fges.setVerbose(true);
         fges.setFaithfulnessAssumed(params.getBoolean("faithfulnessAssumed", true));
         Graph graph = fges.search();

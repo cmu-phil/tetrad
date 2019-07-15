@@ -81,8 +81,10 @@ public class CovarianceMatrix implements ICovarianceMatrix {
      */
     private IKnowledge knowledge = new Knowledge2();
 
+    /**
+     * The wrapped covariance matrix data.
+     */
     private final TetradMatrix _covariancesMatrix;
-
 
     //=============================CONSTRUCTORS=========================//
 
@@ -131,8 +133,7 @@ public class CovarianceMatrix implements ICovarianceMatrix {
         }
 
         // This is not calculating covariances, just storing them.
-        CovariancesDoubleForkJoin covariances = new CovariancesDoubleForkJoin(matrix, sampleSize);
-        this._covariancesMatrix = new TetradMatrix(covariances.getMatrix());
+        this._covariancesMatrix = new TetradMatrix(matrix);
         this.variables = variables;
         this.sampleSize = sampleSize;
     }
@@ -143,10 +144,12 @@ public class CovarianceMatrix implements ICovarianceMatrix {
     public CovarianceMatrix(CovarianceMatrix covMatrix) {
 
         // This is not calculating covariances, just storing them.
-        CovariancesDoubleForkJoin covariances = new CovariancesDoubleForkJoin(covMatrix.getMatrix().toArray(), sampleSize);
-        this._covariancesMatrix = new TetradMatrix(covariances.getMatrix());
+        this._covariancesMatrix = new TetradMatrix(covMatrix.getMatrix());
         this.variables = covMatrix.getVariables();
         this.sampleSize = covMatrix.getSampleSize();
+        this.name = covMatrix.getName();
+        this.knowledge = covMatrix.getKnowledge();
+        this.selectedVariables = covMatrix.getSelectedVariables();
     }
 
     public CovarianceMatrix(ICovarianceMatrix covMatrix) {
@@ -486,9 +489,6 @@ public class CovarianceMatrix implements ICovarianceMatrix {
      * class, even if Tetrad sessions were previously saved out using a version
      * of the class that didn't include it. (That's what the
      * "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for help.
-     *
-     * @throws java.io.IOException
-     * @throws ClassNotFoundException
      */
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {

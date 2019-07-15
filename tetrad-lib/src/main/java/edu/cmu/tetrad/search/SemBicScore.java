@@ -21,6 +21,7 @@
 
 package edu.cmu.tetrad.search;
 
+import edu.cmu.tetrad.data.CorrelationMatrix;
 import edu.cmu.tetrad.data.CovarianceMatrix;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.ICovarianceMatrix;
@@ -97,12 +98,10 @@ public class SemBicScore implements Score {
             throw new NullPointerException();
         }
 
-        setCovariances(covariances);
+        setCovariances(new CorrelationMatrix(covariances));
         this.variables = covariances.getVariables();
         this.sampleSize = covariances.getSampleSize();
         this.indexMap = indexMap(this.variables);
-
-//        printBiases();
     }
 
     /**
@@ -115,16 +114,15 @@ public class SemBicScore implements Score {
 
         this.dataSet = dataSet;
 
-        ICovarianceMatrix cov = dataSet instanceof ICovarianceMatrix ? (ICovarianceMatrix) dataSet
-                : new CovarianceMatrix(dataSet);
+//        ICovarianceMatrix cov = dataSet instanceof ICovarianceMatrix ? (ICovarianceMatrix) dataSet
+//                : new CovarianceMatrix(dataSet, false);
+        ICovarianceMatrix cov = new CorrelationMatrix(dataSet);
 
         setCovariances(cov);
 
         this.variables = covariances.getVariables();
         this.sampleSize = covariances.getSampleSize();
         this.indexMap = indexMap(this.variables);
-
-//        printBiases();
 
     }
 
@@ -143,8 +141,7 @@ public class SemBicScore implements Score {
             return -n * Math.log(1.0 - r * r) - getPenaltyDiscount() * log(n) - getErrorThreshold()
                     + signum(getStructurePrior()) * (sp1 - sp2);
         } else {
-            return (localScore(x, append(z, y)) - localScore(x, z)) - getPenaltyDiscount() * log(n) - getErrorThreshold()
-                    + signum(getStructurePrior()) * (sp1 - sp2);
+            return (localScore(x, append(z, y)) - localScore(x, z)) - getPenaltyDiscount() * log(n) - getErrorThreshold();
         }
 
     }
@@ -179,7 +176,8 @@ public class SemBicScore implements Score {
                 return Double.NaN;
             }
 
-            return -n * log(s2) - getPenaltyDiscount() * k * log(n) + signum(getStructurePrior()) * getStructurePrior(parents.length);
+            return -(n - 1.) * log(s2) /*- 2 * n * log(sqrt(2 * PI))*/
+                    - getPenaltyDiscount() * k * log(n) + signum(getStructurePrior()) * getStructurePrior(parents.length);
         } catch (Exception e) {
             boolean removedOne = true;
 
@@ -311,7 +309,7 @@ public class SemBicScore implements Score {
         return threshold;
     }
 
-    public void setThreshold(double threshold) {
+    public void setErrorThreshold(double threshold) {
         this.threshold = threshold;
     }
 
@@ -420,68 +418,49 @@ public class SemBicScore implements Score {
         return all;
     }
 
-    public synchronized double getErrorThreshold() {
+    private synchronized double getErrorThreshold() {
         if (getThreshold() < 0.0 || getThreshold() > 1.0) {
             throw new IllegalArgumentException("Bias threshold needs to be in [0, 1].");
         }
 
-        if (getThreshold() == 0.0) {
-            errorThreshold = 0.0;
-        } else if (Double.isNaN(errorThreshold)) {
-            int n = covariances.getSampleSize();
+        if (Double.isNaN(errorThreshold)) {
+            if (getThreshold() == 0.0) {
+                errorThreshold = 0.0;
+            } else {
+                double n = covariances.getSampleSize();
 
-            ChiSquaredDistribution ch = new ChiSquaredDistribution(n - 1);
+                ChiSquaredDistribution ch = new ChiSquaredDistribution(n - 1);
 
-            int numSamples = 5000;
+                int numSamples = 20000;
 
-            double[] e = new double[numSamples];
+                double[] e = new double[numSamples];
 
-            for (int i = 0; i < numSamples; i++) {
-//                e[i] = -n * log(ch.sample() / (n - 1)) + n * log(ch.sample() / (n - 1));
-                e[i] = -n * log(ch.sample() / (ch.sample()));
+                for (int i = 0; i < numSamples; i++) {
+                    e[i] = -(n - 1) * log(ch.sample() / (ch.sample()));
+                }
+
+                double percentile = 100.0 * (getThreshold() / 2.0 + 0.5);
+
+                if (false) {//percentile == 100) {
+                    double max = Double.NEGATIVE_INFINITY;
+
+                    for (int i = 0; i < e.length; i++) {
+                        if (e[i] > max) max = e[i];
+                    }
+
+                    this.errorThreshold = max;
+                } else {
+                    this.errorThreshold = percentile(e, percentile);
+                }
+
+                System.out.println("percentile = " + percentile);
             }
 
-
-            double percentile = 100.0 * (getThreshold() / 2.0 + 0.5);
-            percentile = percentile < 50.0 ? 50.0 : percentile;
-            percentile = percentile > 100.0 ? 100.0 : percentile;
-
-            this.errorThreshold = percentile(e, percentile);
-
-            System.out.println("Bias = " + errorThreshold);
+            System.out.println("Error threshold = " + errorThreshold);
         }
 
         return errorThreshold;
     }
-
-    public void printBiases() {
-        NumberFormat nf = new DecimalFormat("0.00");
-
-        for (double threshold = 0.0; threshold <= 1.00; threshold += 0.1) {
-            int n = covariances.getSampleSize();
-
-            ChiSquaredDistribution ch = new ChiSquaredDistribution(n - 1);
-
-            int numSamples = 5000;
-
-            double[] e = new double[numSamples];
-
-            for (int i = 0; i < numSamples; i++) {
-                e[i] = -n * log(ch.sample() / (n - 1)) + n * log(ch.sample() / (n - 1));
-            }
-
-
-            double percentile = 100.0 * (threshold / 2.0 + 0.5);
-            percentile = percentile < 50.0 ? 50.0 : percentile;
-            percentile = percentile > 100.0 ? 100.0 : percentile;
-
-            double bias = percentile(e, percentile);
-
-            System.out.println("Threshold = " + nf.format(threshold) + " Bias = " + nf.format(bias) + "; corresponding penalty discount = 1 + errorThreshold / ln n = " + (1.0 + bias / log(n)));
-
-        }
-    }
-
 
     public boolean isForward() {
         return forward;

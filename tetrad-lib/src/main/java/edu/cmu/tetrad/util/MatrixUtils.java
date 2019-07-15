@@ -682,28 +682,25 @@ public final class MatrixUtils {
      * matrix is returned for convenience, but m is modified in the process.
      */
     public static TetradMatrix convertCovToCorr(TetradMatrix m) {
-        m = m.copy();
+        if (m.rows() != m.columns()) throw new IllegalArgumentException("Not a square matrix.");
 
-        for (int i = 0; i < m.rows(); i++) {
-            for (int j = 0; j < m.columns(); j++) {
-                if (Double.isNaN(m.get(i, j))) {
-                    throw new IllegalArgumentException("Please remove or impute missing values.");
+        TetradMatrix corr = m.copy();
+
+        for (int i = 0; i < corr.columns(); i++) {
+            for (int j = 0; j < corr.columns(); j++) {
+                if (i == j) {
+                    continue;
                 }
+                double v = corr.get(i, j) / sqrt(corr.get(i, i) * corr.get(j, j));
+                corr.set(i, j, v);
             }
         }
 
-        for (int i = 0; i < m.rows(); i++) {
-            for (int j = 0; j < m.columns(); j++) {
-                if (i == j) continue;
-                m.set(i, j, m.get(i, j) / sqrt(m.get(i, i) * m.get(j, j)));
-            }
+        for (int i = 0; i < corr.columns(); i++) {
+            corr.set(i, i, 1.0);
         }
 
-        for (int i = 0; i < m.rows(); i++) {
-            m.set(i, i, 1.0);
-        }
-
-        return m;
+        return corr;
     }
 
     private static TetradMatrix correlation(TetradMatrix var0) {

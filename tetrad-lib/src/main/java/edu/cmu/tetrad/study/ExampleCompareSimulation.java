@@ -49,7 +49,7 @@ public class ExampleCompareSimulation {
         parameters.set("differentGraphs", false);
         parameters.set("sampleSize", 1000);
 
-        parameters.set("numMeasures", 100);
+        parameters.set("numMeasures", 10);
         parameters.set("numLatents", 0);
         parameters.set("avgDegree", 4);//, 3, 4, 5, 6, 7, 8, 9, 10);
         parameters.set("maxDegree", 500);
@@ -72,7 +72,7 @@ public class ExampleCompareSimulation {
         parameters.set("fisherEpsilon", 0.001);
         parameters.set("randomizeColumns", true);
 
-        parameters.set("alpha", .01);
+        parameters.set("alpha", 0.001, 0.01, 0.1);
         parameters.set("depth", -1);
 
         parameters.set("useMaxPOrientationHeuristic", false);
@@ -90,20 +90,22 @@ public class ExampleCompareSimulation {
 
         parameters.set("penaltyDiscount", 1);
         parameters.set("structurePrior", 0);
-        parameters.set("semBicThreshold", 0, .1, .3, .4, .5, .6, .7, .8, .9, 1.0);
+        parameters.set("errorThreshold", 0, .1, .2, .3, .4, .5, .6, .7, .8, .9, 1.0);
 
-        parameters.set("colliderDiscoveryRule", 2, 3);
+        parameters.set("colliderDiscoveryRule", 1, 2, 3);
+        parameters.set("concurrentFAS", true);
 
 
         Statistics statistics = new Statistics();
 
 //        statistics.add(new ParameterColumn("numMeasures"));
         statistics.add(new ParameterColumn("avgDegree"));
-//        statistics.add(new ParameterColumn("alpha"));
-//        statistics.add(new ParameterColumn("colliderDiscoveryRule"));
-        statistics.add(new ParameterColumn("semBicThreshold"));
+        statistics.add(new ParameterColumn("alpha"));
+        statistics.add(new ParameterColumn("colliderDiscoveryRule"));
+        statistics.add(new ParameterColumn("errorThreshold"));
         statistics.add(new ParameterColumn("penaltyDiscount"));
 
+        statistics.add(new NumberOfEdgesEst());
         statistics.add(new AdjacencyPrecision());
         statistics.add(new AdjacencyRecall());
         statistics.add(new ArrowheadPrecision());
@@ -125,7 +127,7 @@ public class ExampleCompareSimulation {
 
         Algorithms algorithms = new Algorithms();
 
-//        algorithms.add(new PcAll(new FisherZ()));
+        algorithms.add(new PcAll(new FisherZ()));
         algorithms.add(new Fges(new SemBicScore()));
 
         Simulations simulations = new Simulations();
@@ -138,7 +140,7 @@ public class ExampleCompareSimulation {
         comparison.setShowSimulationIndices(false);
         comparison.setSortByUtility(false);
         comparison.setShowUtilities(false);
-        comparison.setComparisonGraph(Comparison.ComparisonGraph.Pattern_of_the_true_DAG);
+        comparison.setComparisonGraph(Comparison.ComparisonGraph.true_DAG);
 
         comparison.compareFromSimulations("comparisonJoe", simulations, algorithms, statistics, parameters);
     }

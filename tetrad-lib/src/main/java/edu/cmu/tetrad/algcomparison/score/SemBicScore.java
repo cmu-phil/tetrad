@@ -1,15 +1,15 @@
 package edu.cmu.tetrad.algcomparison.score;
 
-import edu.cmu.tetrad.data.*;
+import edu.cmu.tetrad.data.DataModel;
+import edu.cmu.tetrad.data.DataSet;
+import edu.cmu.tetrad.data.DataType;
+import edu.cmu.tetrad.data.ICovarianceMatrix;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.Score;
 import edu.cmu.tetrad.util.Parameters;
-import edu.cmu.tetrad.util.StatUtils;
 
 import java.util.ArrayList;
 import java.util.List;
-
-import static edu.cmu.tetrad.util.StatUtils.skewness;
 
 /**
  * Wrapper for linear, Gaussian SEM BIC score.
@@ -42,7 +42,7 @@ public class SemBicScore implements ScoreWrapper {
 
         semBicScore.setPenaltyDiscount(parameters.getDouble("penaltyDiscount"));
         semBicScore.setStructurePrior(parameters.getDouble("structurePrior"));
-        semBicScore.setThreshold(parameters.getDouble("semBicThreshold"));
+        semBicScore.setErrorThreshold(parameters.getDouble("errorThreshold"));
         return semBicScore;
     }
 
@@ -61,7 +61,7 @@ public class SemBicScore implements ScoreWrapper {
         List<String> parameters = new ArrayList<>();
         parameters.add("penaltyDiscount");
         parameters.add("structurePrior");
-        parameters.add("semBicThreshold");
+        parameters.add("errorThreshold");
         return parameters;
     }
 

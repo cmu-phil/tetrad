@@ -193,7 +193,6 @@ public class ImagesRunner extends AbstractAlgorithmRunner implements IFgesRunner
         }
 
         fges.setKnowledge((IKnowledge) getParams().get("knowledge", new Knowledge2()));
-        fges.setNumPatternsToStore(params.getInt("numPatternsToSave", 1));
         fges.setFaithfulnessAssumed(params.getBoolean("faithfulnessAssumed", true));
         fges.setVerbose(true);
         Graph graph = fges.search();

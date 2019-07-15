@@ -1887,7 +1887,7 @@ public final class Fges implements GraphSearch, GraphScorer {
             theshold1 = ((SemBicScore) score).getThreshold();
             ((SemBicScore) score).setPenaltyDiscount(1);
             ((SemBicScore) score).setStructurePrior(0);
-            ((SemBicScore) score).setThreshold(0);
+            ((SemBicScore) score).setErrorThreshold(0);
         }
         for (Node node : getVariables()) {
 
@@ -1914,7 +1914,7 @@ public final class Fges implements GraphSearch, GraphScorer {
         if (score instanceof SemBicScore) {
             ((SemBicScore) score).setPenaltyDiscount(penalty1);
             ((SemBicScore) score).setStructurePrior(structure1);
-            ((SemBicScore) score).setThreshold(theshold1);
+            ((SemBicScore) score).setErrorThreshold(theshold1);
         }
 
         if (recordScores) {

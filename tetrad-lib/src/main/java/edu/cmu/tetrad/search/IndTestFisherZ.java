@@ -48,7 +48,7 @@ public final class IndTestFisherZ implements IndependenceTest {
     /**
      * The covariance matrix.
      */
-    private final ICovarianceMatrix covMatrix;
+//    private final ICovarianceMatrix cov;
 
     private final ICovarianceMatrix corr;
 
@@ -61,11 +61,6 @@ public final class IndTestFisherZ implements IndependenceTest {
      * The significance level of the independence tests.
      */
     private double alpha;
-
-    /**
-     * The value of the Fisher's Z statistic associated with the las calculated partial correlation.
-     */
-    private double pValue;
 
     /**
      * Formats as 0.0000.
@@ -102,9 +97,9 @@ public final class IndTestFisherZ implements IndependenceTest {
             throw new IllegalArgumentException("Alpha mut be in [0, 1]");
         }
 
-        this.covMatrix = new CovarianceMatrix(dataSet);
-        this.corr = new CorrelationMatrixOnTheFly(covMatrix);
-        List<Node> nodes = covMatrix.getVariables();
+//        this.cov = new CovarianceMatrix(dataSet);
+        this.corr = new CorrelationMatrix(dataSet);
+        List<Node> nodes = this.corr.getVariables();
 
         this.variables = Collections.unmodifiableList(nodes);
         this.indexMap = indexMap(variables);
@@ -122,9 +117,8 @@ public final class IndTestFisherZ implements IndependenceTest {
      * @param alpha     The significance cutoff level. p values less than alpha will be reported as dependent.
      */
     public IndTestFisherZ(TetradMatrix data, List<Node> variables, double alpha) {
-        this.dataSet = ColtDataSet.makeContinuousData(variables, data);
-        this.covMatrix = new CovarianceMatrix(dataSet);
-        this.corr = new CorrelationMatrixOnTheFly(covMatrix);
+        this.dataSet = new BoxDataSet(new VerticalDoubleDataBox(data.transpose().toArray()), variables);
+        this.corr = new CorrelationMatrix(dataSet);
         this.variables = Collections.unmodifiableList(variables);
         this.indexMap = indexMap(variables);
         this.nameMap = nameMap(variables);
@@ -136,8 +130,7 @@ public final class IndTestFisherZ implements IndependenceTest {
      * matrix and the given significance level.
      */
     public IndTestFisherZ(ICovarianceMatrix covMatrix, double alpha) {
-        this.covMatrix = covMatrix;
-        this.corr = new CorrelationMatrixOnTheFly(covMatrix);
+        this.corr = new CorrelationMatrix(covMatrix);
         this.variables = covMatrix.getVariables();
         this.indexMap = indexMap(variables);
         this.nameMap = nameMap(variables);
@@ -167,7 +160,7 @@ public final class IndTestFisherZ implements IndependenceTest {
             indices[i] = indexMap.get(vars.get(i));
         }
 
-        ICovarianceMatrix newCovMatrix = covMatrix.getSubmatrix(indices);
+        ICovarianceMatrix newCovMatrix = corr.getSubmatrix(indices);
 
         double alphaNew = getAlpha();
         return new IndTestFisherZ(newCovMatrix, alphaNew);
@@ -287,13 +280,13 @@ public final class IndTestFisherZ implements IndependenceTest {
         int[] parents = new int[z.size()];
 
         for (int j = 0; j < parents.length; j++) {
-            parents[j] = covMatrix.getVariables().indexOf(z.get(j));
+            parents[j] = corr.getVariables().indexOf(z.get(j));
         }
 
         if (parents.length > 0) {
 
             // Regress z onto i, yielding regression coefficients b.
-            TetradMatrix Czz = covMatrix.getSelection(parents, parents);
+            TetradMatrix Czz = corr.getSelection(parents, parents);
 
             try {
                 Czz.inverse();
@@ -327,7 +320,7 @@ public final class IndTestFisherZ implements IndependenceTest {
     }
 
     private ICovarianceMatrix covMatrix() {
-        return covMatrix;
+        return corr;
     }
 
     private Map<String, Node> nameMap(List<Node> variables) {
@@ -353,11 +346,11 @@ public final class IndTestFisherZ implements IndependenceTest {
     public void setVariables(List<Node> variables) {
         if (variables.size() != this.variables.size()) throw new IllegalArgumentException("Wrong # of variables.");
         this.variables = new ArrayList<>(variables);
-        covMatrix.setVariables(variables);
+        corr.setVariables(variables);
     }
 
     public ICovarianceMatrix getCov() {
-        return covMatrix;
+        return corr;
     }
 
     @Override
@@ -369,7 +362,7 @@ public final class IndTestFisherZ implements IndependenceTest {
 
     @Override
     public int getSampleSize() {
-        return covMatrix.getSampleSize();
+        return corr.getSampleSize();
     }
 
     @Override
