@@ -21,20 +21,20 @@
 
 package edu.cmu.tetrad.search;
 
-import edu.cmu.tetrad.data.CorrelationMatrix;
 import edu.cmu.tetrad.data.CovarianceMatrix;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.ICovarianceMatrix;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.util.*;
+import edu.cmu.tetrad.util.DepthChoiceGenerator;
+import edu.cmu.tetrad.util.StatUtils;
+import edu.cmu.tetrad.util.TetradMatrix;
+import edu.cmu.tetrad.util.TetradVector;
 import org.apache.commons.math3.distribution.ChiSquaredDistribution;
 import org.apache.commons.math3.linear.RealMatrix;
 import org.apache.commons.math3.linear.SingularMatrixException;
 import org.apache.commons.math3.util.FastMath;
 
 import java.io.PrintStream;
-import java.text.DecimalFormat;
-import java.text.NumberFormat;
 import java.util.*;
 
 import static java.lang.Math.*;
@@ -98,7 +98,7 @@ public class SemBicScore implements Score {
             throw new NullPointerException();
         }
 
-        setCovariances(new CorrelationMatrix(covariances));
+        setCovariances(new CovarianceMatrix(covariances));
         this.variables = covariances.getVariables();
         this.sampleSize = covariances.getSampleSize();
         this.indexMap = indexMap(this.variables);
@@ -116,7 +116,7 @@ public class SemBicScore implements Score {
 
 //        ICovarianceMatrix cov = dataSet instanceof ICovarianceMatrix ? (ICovarianceMatrix) dataSet
 //                : new CovarianceMatrix(dataSet, false);
-        ICovarianceMatrix cov = new CorrelationMatrix(dataSet);
+        ICovarianceMatrix cov = new CovarianceMatrix(dataSet);
 
         setCovariances(cov);
 

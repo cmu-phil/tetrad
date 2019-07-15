@@ -45,7 +45,7 @@ public class ExampleCompareSimulation {
 //        parameters.set("minCategories", 3);
 //        parameters.set("maxCategories", 3);
 
-        parameters.set("numRuns", 1);
+        parameters.set("numRuns", 10);
         parameters.set("differentGraphs", false);
         parameters.set("sampleSize", 1000);
 
