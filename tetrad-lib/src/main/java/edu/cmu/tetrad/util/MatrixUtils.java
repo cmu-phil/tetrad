@@ -683,60 +683,25 @@ public final class MatrixUtils {
      */
     public static TetradMatrix convertCovToCorr(TetradMatrix m) {
         if (m.rows() != m.columns()) throw new IllegalArgumentException("Not a square matrix.");
+        if (!MatrixUtils.isSymmetric(m.toArray(),0.001)) {
+            throw new IllegalArgumentException("Not symmetric with tolerance " + 0.001);
+        }
 
-        TetradMatrix corr = m.copy();
+        TetradMatrix corr = m.like();
 
-        for (int i = 0; i < corr.columns(); i++) {
-            for (int j = 0; j < corr.columns(); j++) {
-                if (i == j) {
-                    continue;
-                }
-                double v = corr.get(i, j) / sqrt(corr.get(i, i) * corr.get(j, j));
+        for (int i = 0; i < m.rows(); i++) {
+            for (int j = i + 1; j < m.columns(); j++) {
+                double v = m.get(i, j) / sqrt(m.get(i, i) * m.get(j, j));
                 corr.set(i, j, v);
+                corr.set(j, i, v);
             }
         }
 
-        for (int i = 0; i < corr.columns(); i++) {
+        for (int i = 0; i < m.columns(); i++) {
             corr.set(i, i, 1.0);
         }
 
         return corr;
-    }
-
-    private static TetradMatrix correlation(TetradMatrix var0) {
-        int var1 = var0.columns();
-
-        while (true) {
-            --var1;
-            if (var1 < 0) {
-                var1 = var0.columns();
-
-                while (true) {
-                    --var1;
-                    if (var1 < 0) {
-                        return var0;
-                    }
-
-                    var0.set(var1, var1, 1.0D);
-                }
-            }
-
-            int var2 = var1;
-
-            while (true) {
-                --var2;
-                if (var2 < 0) {
-                    break;
-                }
-
-                double var3 = sqrt(var0.get(var1, var1));
-                double var5 = sqrt(var0.get(var2, var2));
-                double var7 = var0.get(var1, var2);
-                double var9 = var7 / (var3 * var5);
-                var0.set(var1, var2, var9);
-                var0.set(var2, var1, var9);
-            }
-        }
     }
 
     /**
