@@ -24,10 +24,6 @@ package edu.cmu.tetrad.study.Conditions;
 import edu.cmu.tetrad.algcomparison.Comparison;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithms;
 import edu.cmu.tetrad.algcomparison.algorithm.external.*;
-import edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern.*;
-import edu.cmu.tetrad.algcomparison.independence.FisherZ;
-import edu.cmu.tetrad.algcomparison.score.FisherZScore;
-import edu.cmu.tetrad.algcomparison.score.SemBicScore;
 import edu.cmu.tetrad.algcomparison.statistic.*;
 import edu.cmu.tetrad.util.Parameters;
 
@@ -85,27 +81,6 @@ public class Condition2 {
         comparison.setSortByUtility(false);
         comparison.setShowUtilities(true);
         comparison.setSaveGraphs(true);
-
-//        comparison.compareFromFiles("/Users/user/comparison-data/condition_2",
-//                "/Users/user/causal-comparisons/condition_2",
-//                algorithms, statistics, parameters);
-//
-//        algorithms = new Algorithms();
-//
-//        parameters.set("penaltyDiscount", 2, 4);
-//        parameters.set("alpha", 0.001, 0.0001, 1e-8);
-//        parameters.set("faithfulnessAssumed", true, false);
-//
-//        algorithms.add(new Fges(new FisherZScore()));
-//
-//        comparison.compareFromFiles("/Users/user/comparison-data/condition_2",
-//                "/Users/user/causal-comparisons/condition_2",
-//                algorithms, statistics, parameters);
-//
-//        algorithms = new Algorithms();
-
-
-//        algorithms.add(new Fges(new SemBicScore()));
 
         comparison.compareFromFiles("/Users/user/comparison-data/condition_2",
                 "/Users/user/causal-comparisons/condition_2",

@@ -23,10 +23,10 @@ package edu.cmu.tetrad.study;
 
 import edu.cmu.tetrad.algcomparison.Comparison;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithms;
-import edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern.*;
+import edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern.Fges;
+import edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern.PcAll;
 import edu.cmu.tetrad.algcomparison.graph.RandomForward;
 import edu.cmu.tetrad.algcomparison.independence.FisherZ;
-import edu.cmu.tetrad.algcomparison.score.FisherZScore;
 import edu.cmu.tetrad.algcomparison.score.SemBicScore;
 import edu.cmu.tetrad.algcomparison.simulation.LinearFisherModel;
 import edu.cmu.tetrad.algcomparison.simulation.Simulations;
@@ -48,9 +48,9 @@ public class ExampleCompareSimulation {
 
         parameters.set("numRuns", 1);
         parameters.set("differentGraphs", false);
-        parameters.set("sampleSize", 1000);
+        parameters.set("sampleSize", 10000);
 
-        parameters.set("numMeasures", 500);
+        parameters.set("numMeasures", 100);
         parameters.set("numLatents", 0);
         parameters.set("avgDegree", 6);//, 3, 4, 5, 6, 7, 8, 9, 10);
         parameters.set("maxDegree", 500);
@@ -58,10 +58,10 @@ public class ExampleCompareSimulation {
         parameters.set("maxOutdegree", 100);
         parameters.set("connected", false);
 
-        parameters.set("coefLow", 0.2);
-        parameters.set("coefHigh", 0.9);
-        parameters.set("varLow", 1);
-        parameters.set("varHigh", 3);
+        parameters.set("coefLow", 0.1);
+        parameters.set("coefHigh", 0.7);
+        parameters.set("varLow", .5);
+        parameters.set("varHigh", 1.5);
         parameters.set("verbose", false);
         parameters.set("coefSymmetric", true);
         parameters.set("percentDiscrete", 0);
@@ -89,11 +89,11 @@ public class ExampleCompareSimulation {
         parameters.set("faithfulnessAssumed", true);
         parameters.set("maxDegree", 100);
 
-        parameters.set("penaltyDiscount", 1);
+        parameters.set("penaltyDiscount", 1);//, 2, 3, 4, 5, 6);
         parameters.set("structurePrior", 0);
         parameters.set("errorThreshold", 0, .1, .2, .3, .4, .5, .6, .7, .8, .9, 1.0);
 
-        parameters.set("colliderDiscoveryRule", 1, 2, 3);
+        parameters.set("colliderDiscoveryRule", 2, 3);
         parameters.set("concurrentFAS", true);
 
 

@@ -122,14 +122,6 @@ public class ExampleStARS {
         algorithms.add(new StARS(new Fges(new SemBicScore()), "penaltyDiscount", 1, 5));
         algorithms.add(new FirstInflection(new Fges(new SemBicScore()), "penaltyDiscount", 1, 5, .1));
 
-//        parameters.set("penaltyDiscount", 5, 11, 15);
-//        algorithms.add(new Fges(new SemBicScore()));
-
-//        parameters.set("logScale", true);
-//        Algorithm fges = new Fges(new FisherZScore());
-//        algorithms.add(new StARS(fges, "alpha", -10, -2, -8));
-//        algorithms.add(new FirstInflection(fges, "alpha", -10, -2, -3));
-
         Simulations simulations = new Simulations();
 
         simulations.add(new LinearFisherModel(new RandomForward()));
