@@ -19,6 +19,7 @@
 package edu.cmu.tetradapp.editor;
 
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
+import edu.cmu.tetrad.algcomparison.algorithm.oracle.pag.RfciBsc;
 import edu.cmu.tetrad.algcomparison.utils.TakesIndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.utils.UsesScoreWrapper;
 import edu.cmu.tetrad.annotation.Score;
@@ -34,6 +35,7 @@ import edu.cmu.tetradapp.util.IntTextField;
 import edu.cmu.tetradapp.util.StringTextField;
 import java.awt.BorderLayout;
 import java.text.DecimalFormat;
+import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -83,38 +85,78 @@ public class AlgorithmParameterPanel extends JPanel {
         Algorithm algorithm = algorithmRunner.getAlgorithm();
         Parameters parameters = algorithmRunner.getParameters();
 
-        // add algorithm parameters
-        Set<String> params = Params.getAlgorithmParameters(algorithm);
-        if (!params.isEmpty()) {
+        // Hard-coded parameter groups for Rfci-Bsc
+        if (algorithm instanceof RfciBsc) {
+            // Phase one: PAG and constraints candidates Searching
             String title = algorithm
                     .getClass().getAnnotation(edu.cmu.tetrad.annotation.Algorithm.class).name();
+            Set<String> params = new LinkedHashSet<>();
+            // RFCI
+            params.add(Params.DEPTH);
+            params.add(Params.MAX_PATH_LENGTH);
+            params.add(Params.COMPLETE_RULE_SET_USED);
+            params.add(Params.VERBOSE);
             mainPanel.add(createSubPanel(title, params, parameters));
             mainPanel.add(Box.createVerticalStrut(10));
-        }
 
-        params = Params.getScoreParameters(algorithm);
-        if (!params.isEmpty()) {
-            String title = ((UsesScoreWrapper) algorithm).getScoreWrapper()
-                    .getClass().getAnnotation(Score.class).name();
+            // Phase one: PAG and constraints candidates Searching
+            title = "Phase One: PAG and constraints candidates Searching";
+            params = new LinkedHashSet<>();
+            // Thresholds
+            params.add(Params.NUM_RANDOMIZED_SEARCH_MODELS);
+            params.add(Params.THRESHOLD_NO_RANDOM_DATA_SEARCH);
+            params.add(Params.CUTOFF_DATA_SEARCH);
             mainPanel.add(createSubPanel(title, params, parameters));
             mainPanel.add(Box.createVerticalStrut(10));
-        }
 
-        params = Params.getTestParameters(algorithm);
-        if (!params.isEmpty()) {
-            String title = ((TakesIndependenceWrapper) algorithm).getIndependenceWrapper()
-                    .getClass().getAnnotation(TestOfIndependence.class).name();
+            // Phase two: Bayesian Scoring of Constraints
+            title = "Phase Two: Bayesian Scoring of Constraints";
+            params = new LinkedHashSet<>();
+            params.add(Params.NUM_BSC_BOOTSTRAP_SAMPLES);
+            params.add(Params.THRESHOLD_NO_RANDOM_CONSTRAIN_SEARCH);
+            params.add(Params.CUTOFF_CONSTRAIN_SEARCH);
+            params.add(Params.LOWER_BOUND);
+            params.add(Params.UPPER_BOUND);
+            params.add(Params.OUTPUT_RBD);
             mainPanel.add(createSubPanel(title, params, parameters));
             mainPanel.add(Box.createVerticalStrut(10));
-        }
 
-        if (algorithmRunner.getSourceGraph() == null) {
-            params = Params.getBootstrappingParameters(algorithm);
+        } else {
+            // add algorithm parameters
+            Set<String> params = Params.getAlgorithmParameters(algorithm);
+
             if (!params.isEmpty()) {
-                mainPanel.add(createSubPanel("Bootstrapping", params, parameters));
+                String title = algorithm
+                        .getClass().getAnnotation(edu.cmu.tetrad.annotation.Algorithm.class).name();
+                mainPanel.add(createSubPanel(title, params, parameters));
                 mainPanel.add(Box.createVerticalStrut(10));
             }
+
+            params = Params.getScoreParameters(algorithm);
+            if (!params.isEmpty()) {
+                String title = ((UsesScoreWrapper) algorithm).getScoreWrapper()
+                        .getClass().getAnnotation(Score.class).name();
+                mainPanel.add(createSubPanel(title, params, parameters));
+                mainPanel.add(Box.createVerticalStrut(10));
+            }
+
+            params = Params.getTestParameters(algorithm);
+            if (!params.isEmpty()) {
+                String title = ((TakesIndependenceWrapper) algorithm).getIndependenceWrapper()
+                        .getClass().getAnnotation(TestOfIndependence.class).name();
+                mainPanel.add(createSubPanel(title, params, parameters));
+                mainPanel.add(Box.createVerticalStrut(10));
+            }
+
+            if (algorithmRunner.getSourceGraph() == null) {
+                params = Params.getBootstrappingParameters(algorithm);
+                if (!params.isEmpty()) {
+                    mainPanel.add(createSubPanel("Bootstrapping", params, parameters));
+                    mainPanel.add(Box.createVerticalStrut(10));
+                }
+            }
         }
+
     }
 
     protected Box[] toArray(Map<String, Box> parameterComponents) {
@@ -199,7 +241,7 @@ public class AlgorithmParameterPanel extends JPanel {
     }
 
     protected DoubleTextField getDoubleField(final String parameter, final Parameters parameters,
-            double defaultValue, final double lowerBound, final double upperBound) {
+                                             double defaultValue, final double lowerBound, final double upperBound) {
         final DoubleTextField field = new DoubleTextField(parameters.getDouble(parameter, defaultValue),
                 8, new DecimalFormat("0.####"), new DecimalFormat("0.0#E0"), 0.001);
 
@@ -229,7 +271,7 @@ public class AlgorithmParameterPanel extends JPanel {
     }
 
     protected IntTextField getIntTextField(final String parameter, final Parameters parameters,
-            final int defaultValue, final double lowerBound, final double upperBound) {
+                                           final int defaultValue, final double lowerBound, final double upperBound) {
         final IntTextField field = new IntTextField(parameters.getInt(parameter, defaultValue), 8);
 
         field.setFilter((value, oldValue) -> {

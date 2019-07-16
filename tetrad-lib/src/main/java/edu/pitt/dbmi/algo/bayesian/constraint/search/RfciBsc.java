@@ -9,6 +9,7 @@ import static java.lang.Math.log;
 import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -30,11 +31,16 @@ import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataUtils;
 import edu.cmu.tetrad.data.DiscreteVariable;
 import edu.cmu.tetrad.data.VerticalIntDataBox;
+import edu.cmu.tetrad.graph.Edge;
 import edu.cmu.tetrad.graph.EdgeListGraph;
+import edu.cmu.tetrad.graph.EdgeTypeProbability;
+import edu.cmu.tetrad.graph.Endpoint;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.IndependenceFact;
 import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.graph.Edge.Property;
+import edu.cmu.tetrad.graph.EdgeTypeProbability.EdgeType;
 import edu.cmu.tetrad.search.BDeuScore;
 import edu.cmu.tetrad.search.Fges;
 import edu.cmu.tetrad.search.GraphSearch;
@@ -58,7 +64,7 @@ public class RfciBsc implements GraphSearch {
 
 	private double bscD = 0.0, bscI = 0.0;
 
-	private List<Graph> pags = Collections.synchronizedList(new ArrayList<>());
+	private List<Graph> pAGs = Collections.synchronizedList(new ArrayList<>());
 
 	private int numRandomizedSearchModels = 10;
 
@@ -111,7 +117,7 @@ public class RfciBsc implements GraphSearch {
 		// create empirical data for constraints
 		final DataSet dataSet = DataUtils.getDiscreteDataSet(_test.getData());
 
-		pags.clear();
+		pAGs.clear();
 
 		// A map from independence facts to their probabilities of independence.
 		List<Node> vars = Collections.synchronizedList(new ArrayList<>());
@@ -142,7 +148,7 @@ public class RfciBsc implements GraphSearch {
 				
 				Graph pag = this.rfci.search();
 				pag = GraphUtils.replaceNodes(pag, this.test.getVariables());
-				pags.add(pag);
+				pAGs.add(pag);
 				
 				Map<IndependenceFact, Double> _h = this.test.getH();
 
@@ -282,8 +288,10 @@ public class RfciBsc implements GraphSearch {
 		depPattern = GraphUtils.replaceNodes(depPattern, depData.getVariables());
 		Graph estDepBN = SearchGraphUtils.dagFromPattern(depPattern);
 		
-		out.println("estDepBN:");
-		out.println(estDepBN);
+		if(verbose) {
+			out.println("estDepBN:");
+			out.println(estDepBN);
+		}
 
 		// estimate parameters of the graph learned for constraints
 		BayesPm pmHat = new BayesPm(estDepBN, 2, 2);
@@ -323,8 +331,8 @@ public class RfciBsc implements GraphSearch {
 		
 		tasks.clear();
 		
-		for (int i = 0; i < pags.size(); i++) {
-			Graph pagOrig = pags.get(i);
+		for (int i = 0; i < pAGs.size(); i++) {
+			Graph pagOrig = pAGs.get(i);
 			tasks.add(new CalculateBscScoreTask(pagOrig));
 		}
 		
@@ -341,8 +349,8 @@ public class RfciBsc implements GraphSearch {
 
         shutdownAndAwaitTermination(pool);
 		
-		for (int i = 0; i < pags.size(); i++) {
-			Graph pagOrig = pags.get(i);
+		for (int i = 0; i < pAGs.size(); i++) {
+			Graph pagOrig = pAGs.get(i);
 			
 			double lnDep = pagLnBSCD.get(pagOrig);
 			double lnInd = pagLnBSCI.get(pagOrig);
@@ -359,8 +367,10 @@ public class RfciBsc implements GraphSearch {
 			
 		}
 
-		out.println("maxLnDep: " + maxLnDep + " maxLnInd: " + maxLnInd);
-
+		if(verbose) {
+			out.println("maxLnDep: " + maxLnDep + " maxLnInd: " + maxLnInd);
+		}
+		
 		double lnQBSCDTotal = lnQTotal(pagLnBSCD);
 		double lnQBSCITotal = lnQTotal(pagLnBSCI);
 
@@ -382,22 +392,153 @@ public class RfciBsc implements GraphSearch {
 		bscI = Math.exp(bscI);
 		graphRBI.addAttribute("bscI", bscI);
 
-		out.println("bscD: " + bscD + " bscI: " + bscI);
+		if(verbose) {
 
-		out.println("graphRBD:\n" + graphRBD);
-		out.println("graphRBI:\n" + graphRBI);
+			out.println("bscD: " + bscD + " bscI: " + bscI);
+	
+			out.println("graphRBD:\n" + graphRBD);
+			out.println("graphRBI:\n" + graphRBI);
+			
+			stop = System.currentTimeMillis();
+			
+			out.println("Elapsed " + (stop - start) + " ms");
+		}
 		
-		stop = System.currentTimeMillis();
-		
-		out.println("Elapsed " + (stop - start) + " ms");
+		Graph output = graphRBD;
 		
 		if (!outputRBD) {
-			return graphRBI;
+			output = graphRBI;
 		}
 
-		return graphRBD;// graphRBI
+		return generateBootstrappingAttributes(output);
+		
+		
+	}
+	
+	private Graph generateBootstrappingAttributes(Graph graph) {
+		for(Edge edge : graph.getEdges()) {
+			Node nodeA = edge.getNode1();
+			Node nodeB = edge.getNode2();
+			
+			List<EdgeTypeProbability> edgeTypeProbabilities = getProbability(nodeA, nodeB);
+			
+			for(EdgeTypeProbability etp : edgeTypeProbabilities) {
+				edge.addEdgeTypeProbability(etp);
+			}
+		}
+		
+		return graph;
 	}
 
+	private List<EdgeTypeProbability> getProbability(Node node1, Node node2){
+		Map<String, Integer> edgeDist = new HashMap<>();
+		int no_edge_num = 0;
+		for (Graph g : pAGs) {
+			Edge e = g.getEdge(node1, node2);
+			if(e != null) {				
+				String edgeString = e.toString();
+				if(e.getEndpoint1() == e.getEndpoint2() && node1.compareTo(e.getNode1()) != 0) {
+					Edge edge = new Edge(node1, node2, e.getEndpoint1(), e.getEndpoint2());
+					for(Property property : e.getProperties()) {
+						edge.addProperty(property);
+					}
+					edgeString = edge.toString();
+				}
+				Integer num_edge = edgeDist.get(edgeString);
+				if(num_edge == null) {
+					num_edge = 0;
+				}
+				num_edge = num_edge.intValue() + 1;
+				edgeDist.put(edgeString, num_edge);	
+			}else {
+				no_edge_num++;
+			}
+		}
+		int n = pAGs.size();
+		// Normalization
+		List<EdgeTypeProbability> edgeTypeProbabilities = edgeDist.size()==0?null:new ArrayList<>();
+		for(String edgeString : edgeDist.keySet()) {
+			int edge_num = edgeDist.get(edgeString);
+			double probability = (double) edge_num/n;
+			
+			String[] token = edgeString.split("\\s+");
+			String n1 = token[0];
+			String arc = token[1];
+			String n2 = token[2];
+			
+			char end1 = arc.charAt(0);
+            char end2 = arc.charAt(2);
+
+            Endpoint _end1, _end2;
+
+            if (end1 == '<') {
+                _end1 = Endpoint.ARROW;
+            } else if (end1 == 'o') {
+                _end1 = Endpoint.CIRCLE;
+            } else if (end1 == '-') {
+                _end1 = Endpoint.TAIL;
+            } else {
+                throw new IllegalArgumentException();
+            }
+
+            if (end2 == '>') {
+                _end2 = Endpoint.ARROW;
+            } else if (end2 == 'o') {
+                _end2 = Endpoint.CIRCLE;
+            } else if (end2 == '-') {
+                _end2 = Endpoint.TAIL;
+            } else {
+                throw new IllegalArgumentException();
+            }
+            
+            if(node1.getName().equalsIgnoreCase(n2) && node2.getName().equalsIgnoreCase(n1)) {
+            	Endpoint tmp = _end1;
+            	_end1 = _end2;
+            	_end2 = tmp;
+            }
+            
+            EdgeType edgeType = EdgeType.nil;
+            
+            if(_end1 == Endpoint.TAIL && _end2 == Endpoint.ARROW) {
+            	edgeType = EdgeType.ta;
+            }
+            if(_end1 == Endpoint.ARROW && _end2 == Endpoint.TAIL) {
+            	edgeType = EdgeType.at;
+            }
+            if(_end1 == Endpoint.CIRCLE && _end2 == Endpoint.ARROW) {
+            	edgeType = EdgeType.ca;
+            }
+            if(_end1 == Endpoint.ARROW && _end2 == Endpoint.CIRCLE) {
+            	edgeType = EdgeType.ac;
+            }
+            if(_end1 == Endpoint.CIRCLE && _end2 == Endpoint.CIRCLE) {
+            	edgeType = EdgeType.cc;
+            }
+            if(_end1 == Endpoint.ARROW && _end2 == Endpoint.ARROW) {
+            	edgeType = EdgeType.aa;
+            }
+            if(_end1 == Endpoint.TAIL && _end2 == Endpoint.TAIL) {
+            	edgeType = EdgeType.tt;
+            }
+            
+            EdgeTypeProbability etp = new EdgeTypeProbability(edgeType, probability);
+            
+            // Edge's properties
+            if(token.length > 3) {
+            	for(int i=3;i<token.length;i++) {
+            		etp.addProperty(Edge.Property.valueOf(token[i]));
+            	}
+            }
+            edgeTypeProbabilities.add(etp);
+		}
+		
+		if(no_edge_num < n && edgeTypeProbabilities != null) {
+			edgeTypeProbabilities.add(new EdgeTypeProbability(EdgeType.nil, (double)no_edge_num/n));
+		}
+		
+		return edgeTypeProbabilities;
+	}
+	
 	private static double lnXplusY(double lnX, double lnY) {
 		double lnYminusLnX, temp;
 

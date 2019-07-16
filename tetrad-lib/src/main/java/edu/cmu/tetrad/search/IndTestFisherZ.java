@@ -46,10 +46,8 @@ import static java.lang.StrictMath.log;
 public final class IndTestFisherZ implements IndependenceTest {
 
     /**
-     * The covariance matrix.
+     * The correlation matrix.
      */
-//    private final ICovarianceMatrix cov;
-
     private final ICovarianceMatrix cov;
 
     /**
@@ -61,11 +59,6 @@ public final class IndTestFisherZ implements IndependenceTest {
      * The significance level of the independence tests.
      */
     private double alpha;
-
-    /**
-     * Formats as 0.0000.
-     */
-    private static NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
 
     /**
      * Stores a reference to the dataset being analyzed.
@@ -97,8 +90,7 @@ public final class IndTestFisherZ implements IndependenceTest {
             throw new IllegalArgumentException("Alpha mut be in [0, 1]");
         }
 
-        this.cov = new CovarianceMatrix(dataSet);
-//        this.cov = new CorrelationMatrix(dataSet);
+        this.cov = new CorrelationMatrix(dataSet);
         List<Node> nodes = this.cov.getVariables();
 
         this.variables = Collections.unmodifiableList(nodes);
@@ -118,8 +110,7 @@ public final class IndTestFisherZ implements IndependenceTest {
      */
     public IndTestFisherZ(TetradMatrix data, List<Node> variables, double alpha) {
         this.dataSet = new BoxDataSet(new VerticalDoubleDataBox(data.transpose().toArray()), variables);
-        this.cov = new CovarianceMatrix(dataSet);
-//        this.cov = new CorrelationMatrix(dataSet);
+        this.cov = new CorrelationMatrix(dataSet);
         this.variables = Collections.unmodifiableList(variables);
         this.indexMap = indexMap(variables);
         this.nameMap = nameMap(variables);
@@ -131,8 +122,7 @@ public final class IndTestFisherZ implements IndependenceTest {
      * matrix and the given significance level.
      */
     public IndTestFisherZ(ICovarianceMatrix covMatrix, double alpha) {
-        this.cov = new CovarianceMatrix(covMatrix);
-//        this.cov = new CorrelationMatrix(covMatrix);
+        this.cov = new CorrelationMatrix(covMatrix);
         this.variables = covMatrix.getVariables();
         this.indexMap = indexMap(variables);
         this.nameMap = nameMap(variables);
