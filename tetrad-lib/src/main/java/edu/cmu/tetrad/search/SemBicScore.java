@@ -114,10 +114,7 @@ public class SemBicScore implements Score {
 
         this.dataSet = dataSet;
 
-//        ICovarianceMatrix cov = dataSet instanceof ICovarianceMatrix ? (ICovarianceMatrix) dataSet
-//                : new CovarianceMatrix(dataSet, false);
         ICovarianceMatrix cov = new CovarianceMatrix(dataSet);
-
         setCovariances(cov);
 
         this.variables = covariances.getVariables();

@@ -32,6 +32,7 @@ import edu.cmu.tetrad.algcomparison.simulation.LinearFisherModel;
 import edu.cmu.tetrad.algcomparison.simulation.Simulations;
 import edu.cmu.tetrad.algcomparison.statistic.*;
 import edu.cmu.tetrad.util.Parameters;
+import edu.cmu.tetrad.util.Params;
 
 /**
  * An example script to simulate data and run a comparison analysis on it.
@@ -49,9 +50,9 @@ public class ExampleCompareSimulation {
         parameters.set("differentGraphs", false);
         parameters.set("sampleSize", 1000);
 
-        parameters.set("numMeasures", 1000);
+        parameters.set("numMeasures", 500);
         parameters.set("numLatents", 0);
-        parameters.set("avgDegree", 4);//, 3, 4, 5, 6, 7, 8, 9, 10);
+        parameters.set("avgDegree", 6);//, 3, 4, 5, 6, 7, 8, 9, 10);
         parameters.set("maxDegree", 500);
         parameters.set("maxIndegree", 100);
         parameters.set("maxOutdegree", 100);
@@ -72,10 +73,10 @@ public class ExampleCompareSimulation {
         parameters.set("fisherEpsilon", 0.001);
         parameters.set("randomizeColumns", true);
 
-        parameters.set("alpha", 0.0001);
+        parameters.set("alpha", 0.001);
         parameters.set("depth", -1);
 
-        parameters.set("useMaxPOrientationHeuristic", false);
+        parameters.set(Params.USE_MAX_P_ORIENTATION_HEURISTIC, false);
         parameters.set("maxPOrientationMaxPathLength", 3);
         parameters.set("verbose", false);
 
@@ -92,7 +93,7 @@ public class ExampleCompareSimulation {
         parameters.set("structurePrior", 0);
         parameters.set("errorThreshold", 0, .1, .2, .3, .4, .5, .6, .7, .8, .9, 1.0);
 
-        parameters.set("colliderDiscoveryRule", 2);
+        parameters.set("colliderDiscoveryRule", 1, 2, 3);
         parameters.set("concurrentFAS", true);
 
 
@@ -104,6 +105,7 @@ public class ExampleCompareSimulation {
         statistics.add(new ParameterColumn("colliderDiscoveryRule"));
         statistics.add(new ParameterColumn("errorThreshold"));
         statistics.add(new ParameterColumn("penaltyDiscount"));
+//        statistics.add(new ParameterColumn("useMaxPOrientationHeuristic"));
 
         statistics.add(new NumberOfEdgesEst());
         statistics.add(new AdjacencyPrecision());
@@ -120,10 +122,10 @@ public class ExampleCompareSimulation {
 //        statistics.add(new SHD());
         statistics.add(new ElapsedTime());
 
-        statistics.setWeight("AP", 0.25);
-        statistics.setWeight("AR", 0.25);
-        statistics.setWeight("AHP", 0.25);
-        statistics.setWeight("AHR", 0.25);
+        statistics.setWeight("AP", 1);
+        statistics.setWeight("AR", 1);
+        statistics.setWeight("AHP", 1);
+        statistics.setWeight("AHR", 1);
 
         Algorithms algorithms = new Algorithms();
 
