@@ -4,7 +4,6 @@
 package edu.pitt.dbmi.cg;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -677,17 +676,21 @@ public final class CgPm implements PM, TetradSerializable {
      */
     public String getDiscreteCategory(Node node, int index) {
         DiscreteVariable variable = discreteNodesToVariables.get(node);
-
+        // System.out.println("variable: " + variable);
+        // System.out.println("index: " + index);
+        
         if (variable != null) {
             return variable.getCategory(index);
         }
 
         for (DiscreteVariable _node : discreteNodesToVariables.values()) {
+        	// System.out.println("_node: " + _node);
             if (_node == null) {
                 continue;
             }
 
             if (_node.getName().equals(node.getName())) {
+            	// System.out.println("_node.getCategories(): " + _node.getCategories());
                 return _node.getCategory(index);
             }
         }

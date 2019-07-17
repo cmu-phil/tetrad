@@ -461,7 +461,7 @@ public class BayesImNodeEditingTable extends JTable {
      *
      * @author Joseph Ramsey jdramsey@andrew.cmu.edu
      */
-    static final class Model extends AbstractTableModel {
+    private static final class Model extends AbstractTableModel {
 
         /**
          * The BayesIm being edited.

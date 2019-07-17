@@ -43,8 +43,8 @@ public class CgImNodeEditingPanel extends JPanel {
         int cgContIdx = cgIm.getCgContinuousNodeIndex(node);
         int cgDiscreteIdx = cgIm.getCgDiscreteNodeIndex(node);
         
-        System.out.println("cgContIdx: " + cgContIdx);
-        System.out.println("cgDiscreteIdx: " + cgDiscreteIdx);
+        //System.out.println("cgContIdx: " + cgContIdx);
+        //System.out.println("cgDiscreteIdx: " + cgDiscreteIdx);
         
         // Bayes
         if(node instanceof DiscreteVariable && cgDiscreteIdx < 0) {
@@ -68,9 +68,22 @@ public class CgImNodeEditingPanel extends JPanel {
         // CG Discrete
         } else if(cgDiscreteIdx > -1) {
         	System.out.println("CG Discrete");
+        	CgDiscreteNodeEditingTable editingTable = new CgDiscreteNodeEditingTable(cgIm, node);
+        	editingTable.addPropertyChangeListener((evt) -> {
+                if ("modelChanged".equals(evt.getPropertyName())) {
+                    firePropertyChange("modelChanged", null, null);
+                }
+            });
+
+            JScrollPane scroll = new JScrollPane(editingTable);
+            scroll.setPreferredSize(new Dimension(0, 150));
+        	
+        	add(scroll, BorderLayout.CENTER);
         // CG Continuous
         } else if(cgContIdx > -1) {
         	System.out.println("CG Continuous");
+        	CgContinuousParameterEditor cgContEditor = new CgContinuousParameterEditor(cgIm, node);
+        	add(cgContEditor, BorderLayout.CENTER);
         } else {
         	throw new IllegalArgumentException("Node " + node +
                     " is not a node" + " for CgIm " + cgIm + ".");
