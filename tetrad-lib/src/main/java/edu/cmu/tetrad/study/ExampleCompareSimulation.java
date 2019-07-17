@@ -23,6 +23,7 @@ package edu.cmu.tetrad.study;
 
 import edu.cmu.tetrad.algcomparison.Comparison;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithms;
+import edu.cmu.tetrad.algcomparison.algorithm.multi.PcStableMaxConcatenated;
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern.Fges;
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern.PcAll;
 import edu.cmu.tetrad.algcomparison.graph.RandomForward;
@@ -50,27 +51,26 @@ public class ExampleCompareSimulation {
         parameters.set("differentGraphs", false);
         parameters.set("sampleSize", 10000);
 
-        parameters.set("numMeasures", 100);
+        parameters.set("numMeasures", 10);
         parameters.set("numLatents", 0);
-        parameters.set("avgDegree", 6);//, 3, 4, 5, 6, 7, 8, 9, 10);
+        parameters.set("avgDegree", 4);//, 3, 4, 5, 6, 7, 8, 9, 10);
         parameters.set("maxDegree", 500);
         parameters.set("maxIndegree", 100);
         parameters.set("maxOutdegree", 100);
         parameters.set("connected", false);
 
         parameters.set("coefLow", 0.1);
-        parameters.set("coefHigh", 0.7);
-        parameters.set("varLow", .5);
-        parameters.set("varHigh", 1.5);
+        parameters.set("coefHigh", 0.9);
+        parameters.set("varLow", 1);
+        parameters.set("varHigh", 3);
         parameters.set("verbose", false);
         parameters.set("coefSymmetric", true);
         parameters.set("percentDiscrete", 0);
         parameters.set("numCategories", 3);
         parameters.set("differentGraphs", true);
-        parameters.set("sampleSize", 1000);
-        parameters.set("intervalBetweenShocks", 10);
-        parameters.set("intervalBetweenRecordings", 10);
-        parameters.set("fisherEpsilon", 0.001);
+        parameters.set("intervalBetweenShocks", 100);
+        parameters.set("intervalBetweenRecordings", 100);
+        parameters.set("fisherEpsilon", 0.00001);
         parameters.set("randomizeColumns", true);
 
         parameters.set("alpha", 0.001);
@@ -89,12 +89,13 @@ public class ExampleCompareSimulation {
         parameters.set("faithfulnessAssumed", true);
         parameters.set("maxDegree", 100);
 
-        parameters.set("penaltyDiscount", 1);//, 2, 3, 4, 5, 6);
+        parameters.set("penaltyDiscount", 1);//, 2, 3, 4, 5, 6, 10, 20, 30);
         parameters.set("structurePrior", 0);
         parameters.set("errorThreshold", 0, .1, .2, .3, .4, .5, .6, .7, .8, .9, 1.0);
 
-        parameters.set("colliderDiscoveryRule", 2, 3);
-        parameters.set("concurrentFAS", true);
+        parameters.set(Params.STABLE_FAS, true);
+        parameters.set(Params.CONCURRENT_FAS, true);
+        parameters.set(Params.COLLIDER_DISCOVERY_RULE, 2, 3);
 
 
         Statistics statistics = new Statistics();
@@ -129,8 +130,9 @@ public class ExampleCompareSimulation {
 
         Algorithms algorithms = new Algorithms();
 
-        algorithms.add(new PcAll(new FisherZ()));
+//        algorithms.add(new PcAll(new FisherZ()));
         algorithms.add(new Fges(new SemBicScore()));
+//        algorithms.add(new PcStableMaxConcatenated(new FisherZ()));
 
         Simulations simulations = new Simulations();
 

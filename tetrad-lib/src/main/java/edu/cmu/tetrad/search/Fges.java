@@ -1429,7 +1429,7 @@ public final class Fges implements GraphSearch, GraphScorer {
         Set<Node> set = new HashSet<>(naYX);
         set.addAll(t);
         set.addAll(graph.getParents(y));
-        return scoreGraphChange(y, set, x, hashIndices);
+        return scoreGraphChange(x, y, set, hashIndices);
     }
 
     // Evaluate the Delete(X, Y, TNeighbors) operator (Definition 12 from Chickering, 2002).
@@ -1440,7 +1440,7 @@ public final class Fges implements GraphSearch, GraphScorer {
         final List<Node> parents = graph.getParents(y);
         parents.remove(x);
         set.addAll(parents);
-        return -scoreGraphChange(y, set, x, hashIndices);
+        return -scoreGraphChange(x, y, set, hashIndices);
     }
 
     // Do an actual insertion. (Definition 12 from Chickering, 2002).
@@ -1924,8 +1924,8 @@ public final class Fges implements GraphSearch, GraphScorer {
         return _score;
     }
 
-    private double scoreGraphChange(Node y, Set<Node> parents,
-                                    Node x, Map<Node, Integer> hashIndices) {
+    private double scoreGraphChange(Node x, Node y, Set<Node> parents,
+                                    Map<Node, Integer> hashIndices) {
         int yIndex = hashIndices.get(y);
 
         if (x == y) {

@@ -137,7 +137,7 @@ public class SemBicScore implements Score {
             return -n * Math.log(1.0 - r * r) - getPenaltyDiscount() * log(n) - getErrorThreshold()
                     + signum(getStructurePrior()) * (sp1 - sp2);
         } else {
-            return 2. * (getL(y, append(z, x)) - getL(y, z)) - log(n) - getErrorThreshold()
+            return 2. * (getL(y, append(z, x)) - getL(y, z)) - getPenaltyDiscount() * log(n) - getErrorThreshold()
                     + signum(getStructurePrior()) * (sp1 - sp2);
         }
 
@@ -168,7 +168,20 @@ public class SemBicScore implements Score {
             TetradVector covxy = (getCovariances().getSelection(parents, new int[]{i})).getColumn(0);
 
             TetradVector coefs = (covxx.inverse()).times(covxy);
-            s2 -= coefs.dotProduct(covxy);
+//            s2 -= coefs.dotProduct(coefs);
+
+
+
+            double ss2 = 0.0;
+//
+            for (int p = 0; p < parents.length; p++) {
+                double var = getCovariances().getValue(parents[p], parents[p]);
+                ss2 += coefs.get(p) * covxy.get(p);// * var;
+            }
+
+//            System.out.println(coefs.dotProduct(covxy) + " " + ss2);
+
+            s2 -= ss2;
 
             if (s2 <= 0) {
                 if (isVerbose()) {
@@ -400,7 +413,7 @@ public class SemBicScore implements Score {
 
         if (Double.isNaN(errorThreshold)) {
             if (getThreshold() == 0.0) {
-                errorThreshold = -.5;
+                errorThreshold = 0.0;
             } else {
                 FDistribution f = new FDistribution(getSampleSize() - 1., getSampleSize() - 1.);
 
@@ -412,27 +425,10 @@ public class SemBicScore implements Score {
                     double fSample = f.sample();
                     double logf = log(fSample);
                     e[i] = -getSampleSize() * logf;
-//                System.out.println(e[i]);
-//                System.out.println("var = " + StatUtils.variance(e) + " f = " + fSample
-//                        + " fSample = " + fSample + " logratio = " + logf + " e[" + i + "] = " + e[i]);
                 }
 
-                System.out.println("sd(e) = " + sd(e));
-
                 double percentile = 100.0 * (getThreshold() / 2.0 + 0.5);
-
-//                if (percentile == 100.0) {
-//                    double max = Double.NEGATIVE_INFINITY;
-//
-//                    for (int i = 0; i < e.length; i++) {
-//                        if (e[i] > max) max = e[i];
-//                    }
-//
-//                    this.errorThreshold = max;
-//                } else {
                 this.errorThreshold = percentile(e, percentile);
-//                }
-
                 System.out.println("percentile = " + percentile);
             }
 
