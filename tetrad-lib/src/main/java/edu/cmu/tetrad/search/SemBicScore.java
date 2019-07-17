@@ -21,6 +21,7 @@
 
 package edu.cmu.tetrad.search;
 
+import edu.cmu.tetrad.data.CorrelationMatrix;
 import edu.cmu.tetrad.data.CovarianceMatrix;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.ICovarianceMatrix;
@@ -29,13 +30,14 @@ import edu.cmu.tetrad.util.DepthChoiceGenerator;
 import edu.cmu.tetrad.util.StatUtils;
 import edu.cmu.tetrad.util.TetradMatrix;
 import edu.cmu.tetrad.util.TetradVector;
-import org.apache.commons.math3.distribution.FDistribution;
+import org.apache.commons.math3.distribution.ChiSquaredDistribution;
+import org.apache.commons.math3.linear.RealMatrix;
 import org.apache.commons.math3.linear.SingularMatrixException;
+import org.apache.commons.math3.util.FastMath;
 
 import java.io.PrintStream;
 import java.util.*;
 
-import static edu.cmu.tetrad.util.StatUtils.sd;
 import static java.lang.Math.*;
 import static org.apache.commons.math3.stat.StatUtils.percentile;
 
@@ -113,7 +115,7 @@ public class SemBicScore implements Score {
 
         this.dataSet = dataSet;
 
-        ICovarianceMatrix cov = new CovarianceMatrix(dataSet);
+        ICovarianceMatrix cov = new CorrelationMatrix(dataSet);
         setCovariances(cov);
 
         this.variables = covariances.getVariables();
@@ -137,8 +139,7 @@ public class SemBicScore implements Score {
             return -n * Math.log(1.0 - r * r) - getPenaltyDiscount() * log(n) - getErrorThreshold()
                     + signum(getStructurePrior()) * (sp1 - sp2);
         } else {
-            return 2. * (getL(y, append(z, x)) - getL(y, z)) - getPenaltyDiscount() * log(n) - getErrorThreshold()
-                    + signum(getStructurePrior()) * (sp1 - sp2);
+            return (localScore(x, append(z, y)) - localScore(x, z)) - getErrorThreshold();
         }
 
     }
@@ -152,36 +153,18 @@ public class SemBicScore implements Score {
      * Calculates the sample likelihood and BIC score for i given its parents in a simple SEM model
      */
     public double localScore(int i, int... parents) {
-        double n = getSampleSize();
-        int p = parents.length;
-        int k = p + 1;
 
-        return 2 * getL(i, parents)  - getPenaltyDiscount() * k * log(n) + signum(getStructurePrior()) * getStructurePrior(parents.length);
-    }
-
-    private double getL(int i, int[] parents) {
         try {
             double s2 = getCovariances().getValue(i, i);
+            final int p = parents.length;
+            int k = p + 1;
             double n = getSampleSize();
 
             TetradMatrix covxx = getCovariances().getSelection(parents, parents);
             TetradVector covxy = (getCovariances().getSelection(parents, new int[]{i})).getColumn(0);
 
             TetradVector coefs = (covxx.inverse()).times(covxy);
-//            s2 -= coefs.dotProduct(coefs);
-
-
-
-            double ss2 = 0.0;
-//
-            for (int p = 0; p < parents.length; p++) {
-                double var = getCovariances().getValue(parents[p], parents[p]);
-                ss2 += coefs.get(p) * covxy.get(p);// * var;
-            }
-
-//            System.out.println(coefs.dotProduct(covxy) + " " + ss2);
-
-            s2 -= ss2;
+            s2 -= coefs.dotProduct(covxy);
 
             if (s2 <= 0) {
                 if (isVerbose()) {
@@ -191,7 +174,8 @@ public class SemBicScore implements Score {
                 return Double.NaN;
             }
 
-            return -0.5 * n * log(s2);
+            return -n * log(s2) /*- 2 * n * log(sqrt(2 * PI))*/
+                    - getPenaltyDiscount() * k * log(n) + signum(getStructurePrior()) * getStructurePrior(parents.length);
         } catch (Exception e) {
             boolean removedOne = true;
 
@@ -331,6 +315,32 @@ public class SemBicScore implements Score {
         this.covariances = covariances;
     }
 
+
+    private static double LOG2PI = log(2.0 * Math.PI);
+
+    // One record.
+    private double gaussianLikelihood(int k, TetradMatrix sigma) {
+        return -0.5 * logdet(sigma) - 0.5 * k * (1 + LOG2PI);
+    }
+
+    private double logdet(TetradMatrix m) {
+        if (m.columns() == 0) {
+            return 1;
+        }
+
+        RealMatrix M = m.getRealMatrix();
+        final double tol = 1e-9;
+        RealMatrix LT = new org.apache.commons.math3.linear.CholeskyDecomposition(M, tol, tol).getLT();
+
+        double sum = 0.0;
+
+        for (int i = 0; i < LT.getRowDimension(); i++) {
+            sum += FastMath.log(LT.getEntry(i, i));
+        }
+
+        return sum;
+    }
+
     private double getStructurePrior(int parents) {
         if (abs(getStructurePrior()) <= 0) {
             return 0;
@@ -415,20 +425,32 @@ public class SemBicScore implements Score {
             if (getThreshold() == 0.0) {
                 errorThreshold = 0.0;
             } else {
-                FDistribution f = new FDistribution(getSampleSize() - 1., getSampleSize() - 1.);
+                double n = covariances.getSampleSize();
 
-                int numSamples = getSampleSize();
+                ChiSquaredDistribution ch = new ChiSquaredDistribution(n - 1);
+
+                int numSamples = 20000;
 
                 double[] e = new double[numSamples];
 
                 for (int i = 0; i < numSamples; i++) {
-                    double fSample = f.sample();
-                    double logf = log(fSample);
-                    e[i] = -getSampleSize() * logf;
+                    e[i] = -(n - 1) * log(ch.sample() / (ch.sample()));
                 }
 
                 double percentile = 100.0 * (getThreshold() / 2.0 + 0.5);
-                this.errorThreshold = percentile(e, percentile);
+
+                if (false) {//percentile == 100) {
+                    double max = Double.NEGATIVE_INFINITY;
+
+                    for (int i = 0; i < e.length; i++) {
+                        if (e[i] > max) max = e[i];
+                    }
+
+                    this.errorThreshold = max;
+                } else {
+                    this.errorThreshold = percentile(e, percentile);
+                }
+
                 System.out.println("percentile = " + percentile);
             }
 
