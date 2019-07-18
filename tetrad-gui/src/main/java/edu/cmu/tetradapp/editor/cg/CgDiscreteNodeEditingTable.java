@@ -140,36 +140,107 @@ public class CgDiscreteNodeEditingTable extends JTable {
         }
 
 		public String getColumnName(int columnIndex) {
-			Node discreteParentNode = cgIm.getCgDiscreteNodeDiscreteParentNode(columnIndex);
+			int numDiscreteParents = cgIm.getCgDiscreteNodeNumDiscreteParents(nodeIndex);
+			int numContinuousParents = cgIm.getCgDiscreteNodeNumContinuousParents(nodeIndex);
 			
-			return discreteParentNode.getName();
+			if(columnIndex < numDiscreteParents) {
+				Node discreteParentNode = cgIm.getCgDiscreteNodeDiscreteParentNode(columnIndex);
+				
+				return discreteParentNode.getName();
+			} else if (columnIndex < numDiscreteParents + 2*numContinuousParents) {
+				int continuousParentIndex = columnIndex - numDiscreteParents;
+				boolean meanContParent = continuousParentIndex % 2 == 0? true : false;
+				
+				continuousParentIndex = continuousParentIndex / 2;
+				
+				int[] continuousParentArray = cgIm.getCgDiscreteNodeContinuousParentNodeArray(nodeIndex);
+				
+				Node continuousParentNode = cgIm.getCgDiscreteNodeContinuousParentNode(continuousParentArray[continuousParentIndex]);
+				if (meanContParent) {
+					return "μ(" + continuousParentNode + ")";
+				} else {
+					return "sd(" + continuousParentNode + ")";
+				}
+			} else {
+				int valIndex = columnIndex - numDiscreteParents - 2*numContinuousParents;
+				
+				Node node = cgIm.getCgDiscreteNode(nodeIndex);
+				
+				if (valIndex == 0) {
+					return node.getName();
+				}
+				
+				return "Probability";
+			}
 		}
 		
 		
 		@Override
 		public int getRowCount() {
-			return cgIm.getCgDiscreteNumRows(nodeIndex);
+			return cgIm.getCgDiscreteNumRows(nodeIndex) * cgIm.getCgDiscreteNumColumns(nodeIndex);
 		}
 
 		@Override
 		public int getColumnCount() {
-			return cgIm.getCgDiscreteNodeNumDiscreteParents(nodeIndex);
+			int numDiscreteParents = cgIm.getCgDiscreteNodeNumDiscreteParents(nodeIndex);
+			int numContinuousParents = cgIm.getCgDiscreteNodeNumContinuousParents(nodeIndex);
+			int numColumns = 2;
+			return numDiscreteParents + 2*numContinuousParents + numColumns;
 		}
 
 		@Override
 		public Object getValueAt(int rowIndex, int columnIndex) {
-			int[] discretParentVals = cgIm.getCgDiscreteNodeDiscreteParentValues(nodeIndex, rowIndex);
-			int[] discreteParentArray = cgIm.getCgDiscreteNodeDiscreteParentNodeArray(nodeIndex);
+			int numCategories = cgIm.getCgDiscreteNumColumns(nodeIndex);
+			int colIndex = rowIndex % numCategories;
+			int numDiscreteParents = cgIm.getCgDiscreteNodeNumDiscreteParents(nodeIndex);
+			int numContinuousParents = cgIm.getCgDiscreteNodeNumContinuousParents(nodeIndex);
 			
-			Node discreteParentNode = cgIm.getCgDiscreteNodeDiscreteParentNode(discreteParentArray[columnIndex]);
+			rowIndex = rowIndex / numCategories;
 			
-			if(discreteParentNode == null) {
-				return "null";
-			}
-			try {
-				return cgIm.getCgPm().getDiscreteCategory(discreteParentNode, discretParentVals[columnIndex]);
-			}catch(Exception e) {
-				return "Error";
+			if(columnIndex < numDiscreteParents) {
+				int[] discretParentVals = cgIm.getCgDiscreteNodeDiscreteParentValues(nodeIndex, rowIndex);
+				int[] discreteParentArray = cgIm.getCgDiscreteNodeDiscreteParentNodeArray(nodeIndex);
+				
+				Node discreteParentNode = cgIm.getCgDiscreteNodeDiscreteParentNode(discreteParentArray[columnIndex]);
+				
+				if(discreteParentNode == null) {
+					return "null";
+				}
+				try {
+					return cgIm.getCgPm().getDiscreteCategory(discreteParentNode, discretParentVals[columnIndex]);
+				}catch(Exception e) {
+					return "Error";
+				}
+			} else if (columnIndex < numDiscreteParents + 2*numContinuousParents) {
+				int continuousParentIndex = columnIndex - numDiscreteParents;
+				boolean meanContParent = continuousParentIndex % 2 == 0? true : false;
+				
+				continuousParentIndex = continuousParentIndex / 2;
+				
+				if (meanContParent) {
+					double mean = cgIm.getCgDiscreteNodeContinuousParentMean(
+							nodeIndex, rowIndex, colIndex, continuousParentIndex);
+					
+					return mean;
+				} else {
+					double sd = cgIm.getCgDiscreteNodeContinuousParentMeanStdDev(
+							nodeIndex, rowIndex, colIndex, continuousParentIndex);
+					
+					return sd;
+				}
+			} else {
+				int valIndex = columnIndex - numDiscreteParents - 2*numContinuousParents;
+				
+				if (valIndex == 0) {
+					Node node = cgIm.getCgDiscreteNode(nodeIndex);
+					
+					return cgIm.getCgPm().getDiscreteCategory(node, colIndex);
+				}
+				
+				double prob = cgIm.getCgDiscreteNodeProbability(nodeIndex, rowIndex, colIndex);
+				
+				return prob;
+				
 			}
 		}
 		
