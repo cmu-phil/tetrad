@@ -23,13 +23,11 @@ package edu.cmu.tetrad.study;
 
 import edu.cmu.tetrad.algcomparison.Comparison;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithms;
-import edu.cmu.tetrad.algcomparison.algorithm.multi.PcStableMaxConcatenated;
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern.Fges;
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern.PcAll;
 import edu.cmu.tetrad.algcomparison.graph.RandomForward;
 import edu.cmu.tetrad.algcomparison.independence.FisherZ;
 import edu.cmu.tetrad.algcomparison.score.SemBicScore;
-import edu.cmu.tetrad.algcomparison.simulation.LinearFisherModel;
 import edu.cmu.tetrad.algcomparison.simulation.SemSimulation;
 import edu.cmu.tetrad.algcomparison.simulation.Simulations;
 import edu.cmu.tetrad.algcomparison.statistic.*;
@@ -98,16 +96,12 @@ public class ExampleCompareSimulation {
         parameters.set(Params.CONCURRENT_FAS, true);
         parameters.set(Params.COLLIDER_DISCOVERY_RULE, 2, 3);
 
-
         Statistics statistics = new Statistics();
 
-//        statistics.add(new ParameterColumn("numMeasures"));
-        statistics.add(new ParameterColumn("avgDegree"));
         statistics.add(new ParameterColumn("alpha"));
         statistics.add(new ParameterColumn("colliderDiscoveryRule"));
         statistics.add(new ParameterColumn("errorThreshold"));
         statistics.add(new ParameterColumn("penaltyDiscount"));
-//        statistics.add(new ParameterColumn("useMaxPOrientationHeuristic"));
 
         statistics.add(new NumberOfEdgesEst());
         statistics.add(new AdjacencyPrecision());
@@ -115,14 +109,7 @@ public class ExampleCompareSimulation {
         statistics.add(new ArrowheadPrecision());
         statistics.add(new ArrowheadRecall());
         statistics.add(new F1All());
-//        statistics.add(new ArrowheadPrecisionCommonEdges());
-//        statistics.add(new ArrowheadRecallCommonEdges());
-//        statistics.add(new NumBidirectedEdges());
-//        statistics.add(new MathewsCorrAdj());
-//        statistics.add(new MathewsCorrArrow());
-//        statistics.add(new F1Adj());
-//        statistics.add(new F1Arrow());
-//        statistics.add(new SHD());
+        statistics.add(new BicDiff());
         statistics.add(new ElapsedTime());
 
         statistics.setWeight("AP", 1);

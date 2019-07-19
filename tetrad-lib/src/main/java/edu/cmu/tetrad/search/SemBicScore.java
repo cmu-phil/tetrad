@@ -193,10 +193,10 @@ public class SemBicScore implements Score {
 
         try {
             final int p = parents.length;
-//            int k = p * (p + 1) / 2 + 1;
-            int k = (p + 1) * (p + 2) / 2 + 1;
+//            int k = p * (p + 1) / 2 + p + 1;
+//            int k = (p + 1) * (p + 2) / 2;
 //            int k = 1 + p + (p * (p + 1) / 2);
-//            int k = (p + 1) * (p + 1);
+            int k = (p + 1) * (p + 1);
             double n = getSampleSize();
 
             int[] ii = {i};
