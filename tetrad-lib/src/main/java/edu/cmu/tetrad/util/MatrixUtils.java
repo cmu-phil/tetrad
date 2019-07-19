@@ -20,6 +20,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 package edu.cmu.tetrad.util;
 
+import cern.colt.matrix.DoubleMatrix2D;
 import cern.colt.matrix.impl.DenseDoubleMatrix1D;
 import cern.colt.matrix.impl.DenseDoubleMatrix2D;
 import cern.colt.matrix.linalg.CholeskyDecomposition;
@@ -662,16 +663,10 @@ public final class MatrixUtils {
         return true;
     }
 
-    public static double[][] cholesky(double[][] covar) {
-        return new CholeskyDecomposition(
-                new DenseDoubleMatrix2D(covar)).getL().toArray();
-    }
-
-    public static TetradMatrix choleskyC(TetradMatrix covar) {
+    public static TetradMatrix cholesky(TetradMatrix covar) {
         RealMatrix L = new org.apache.commons.math3.linear.CholeskyDecomposition(covar.getRealMatrix()).getL();
         return new TetradMatrix(L);
 
-//        return new TetradMatrix(cholesky(covar.toArray()));
 //        DoubleMatrix2D _covar = new DenseDoubleMatrix2D(covar.toArray());
 //        DoubleMatrix2D l = new CholeskyDecomposition(_covar).getL();
 //        return new TetradMatrix(l.toArray());

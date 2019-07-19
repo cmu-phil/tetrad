@@ -30,6 +30,7 @@ import edu.cmu.tetrad.algcomparison.graph.RandomForward;
 import edu.cmu.tetrad.algcomparison.independence.FisherZ;
 import edu.cmu.tetrad.algcomparison.score.SemBicScore;
 import edu.cmu.tetrad.algcomparison.simulation.LinearFisherModel;
+import edu.cmu.tetrad.algcomparison.simulation.SemSimulation;
 import edu.cmu.tetrad.algcomparison.simulation.Simulations;
 import edu.cmu.tetrad.algcomparison.statistic.*;
 import edu.cmu.tetrad.util.Parameters;
@@ -54,15 +55,15 @@ public class ExampleCompareSimulation {
         parameters.set("numMeasures", 100);
         parameters.set("numLatents", 0);
         parameters.set("avgDegree", 6);//, 3, 4, 5, 6, 7, 8, 9, 10);
-        parameters.set("maxDegree", 500);
-        parameters.set("maxIndegree", 100);
-        parameters.set("maxOutdegree", 100);
+        parameters.set("maxDegree", 1000);
+        parameters.set("maxIndegree", 1000);
+        parameters.set("maxOutdegree", 1000);
         parameters.set("connected", false);
 
         parameters.set("coefLow", 0.1);
         parameters.set("coefHigh", 0.9);
-        parameters.set("varLow", 1);
-        parameters.set("varHigh", 3);
+        parameters.set("varLow", .5);
+        parameters.set("varHigh", 1.5);
         parameters.set("verbose", false);
         parameters.set("coefSymmetric", true);
         parameters.set("percentDiscrete", 0);
@@ -113,6 +114,7 @@ public class ExampleCompareSimulation {
         statistics.add(new AdjacencyRecall());
         statistics.add(new ArrowheadPrecision());
         statistics.add(new ArrowheadRecall());
+        statistics.add(new F1All());
 //        statistics.add(new ArrowheadPrecisionCommonEdges());
 //        statistics.add(new ArrowheadRecallCommonEdges());
 //        statistics.add(new NumBidirectedEdges());
@@ -135,7 +137,7 @@ public class ExampleCompareSimulation {
 
         Simulations simulations = new Simulations();
 
-        simulations.add(new LinearFisherModel(new RandomForward()));
+        simulations.add(new SemSimulation(new RandomForward()));
 
         Comparison comparison = new Comparison();
 

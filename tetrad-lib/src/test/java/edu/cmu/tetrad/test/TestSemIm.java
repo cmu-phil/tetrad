@@ -162,7 +162,7 @@ public class TestSemIm {
             }
         }
 
-        double[][] l = MatrixUtils.cholesky(a);
+        double[][] l = MatrixUtils.cholesky(new TetradMatrix(a)).toArray();
         double[][] lT = MatrixUtils.transpose(l);
         double[][] product = MatrixUtils.product(l, lT);
 

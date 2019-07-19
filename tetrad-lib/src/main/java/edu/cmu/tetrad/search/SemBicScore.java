@@ -21,7 +21,6 @@
 
 package edu.cmu.tetrad.search;
 
-import edu.cmu.tetrad.data.CorrelationMatrix;
 import edu.cmu.tetrad.data.CovarianceMatrix;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.ICovarianceMatrix;
@@ -115,7 +114,7 @@ public class SemBicScore implements Score {
 
         this.dataSet = dataSet;
 
-        ICovarianceMatrix cov = new CorrelationMatrix(dataSet);
+        ICovarianceMatrix cov = new CovarianceMatrix(dataSet);
         setCovariances(cov);
 
         this.variables = covariances.getVariables();
@@ -139,7 +138,7 @@ public class SemBicScore implements Score {
             return -n * Math.log(1.0 - r * r) - getPenaltyDiscount() * log(n) - getErrorThreshold()
                     + signum(getStructurePrior()) * (sp1 - sp2);
         } else {
-            return (localScore(x, append(z, y)) - localScore(x, z)) - getErrorThreshold();
+            return (localScore(y, append(z, x)) - localScore(y, z)) - getErrorThreshold();
         }
 
     }
@@ -152,7 +151,7 @@ public class SemBicScore implements Score {
     /**
      * Calculates the sample likelihood and BIC score for i given its parents in a simple SEM model
      */
-    public double localScore(int i, int... parents) {
+    public double localScore1(int i, int... parents) {
 
         try {
             double s2 = getCovariances().getValue(i, i);
@@ -162,7 +161,6 @@ public class SemBicScore implements Score {
 
             TetradMatrix covxx = getCovariances().getSelection(parents, parents);
             TetradVector covxy = (getCovariances().getSelection(parents, new int[]{i})).getColumn(0);
-
             TetradVector coefs = (covxx.inverse()).times(covxy);
             s2 -= coefs.dotProduct(covxy);
 
@@ -174,8 +172,7 @@ public class SemBicScore implements Score {
                 return Double.NaN;
             }
 
-            return -n * log(s2) /*- 2 * n * log(sqrt(2 * PI))*/
-                    - getPenaltyDiscount() * k * log(n) + signum(getStructurePrior()) * getStructurePrior(parents.length);
+            return -n * log(s2) - getPenaltyDiscount() * k * log(n) + signum(getStructurePrior()) * getStructurePrior(parents.length);
         } catch (Exception e) {
             boolean removedOne = true;
 
@@ -191,6 +188,59 @@ public class SemBicScore implements Score {
             return Double.NaN;
         }
     }
+
+    public double localScore(int i, int... parents) {
+
+        try {
+            final int p = parents.length;
+//            int k = p * (p + 1) / 2 + 1;
+            int k = (p + 1) * (p + 2) / 2 + 1;
+//            int k = 1 + p + (p * (p + 1) / 2);
+//            int k = (p + 1) * (p + 1);
+            double n = getSampleSize();
+
+            int[] ii = {i};
+            TetradMatrix X = getCovariances().getSelection(parents, parents);
+            TetradMatrix Y = getCovariances().getSelection(parents, ii);
+            double s2 = getCovariances().getValue(i, i);
+
+            TetradVector coefs = getCoefs1(X, Y).getColumn(0);
+
+            for (int q = 0; q < X.rows(); q++) {
+                for (int r = 0; r < X.columns(); r++) {
+                    s2 -= coefs.get(q) * coefs.get(r) * X.get(r, q);
+                }
+            }
+
+            if (s2 <= 0) {
+                if (isVerbose()) {
+                    out.println("Nonpositive residual varianceY: resVar / varianceY = " + (s2 / getCovariances().getValue(i, i)));
+                }
+
+                return Double.NaN;
+            }
+
+            return -n * log(s2) - getPenaltyDiscount() * k * log(n) + signum(getStructurePrior()) * getStructurePrior(parents.length);
+        } catch (Exception e) {
+            boolean removedOne = true;
+
+            while (removedOne) {
+                List<Integer> _parents = new ArrayList<>();
+                for (int parent : parents) _parents.add(parent);
+                _parents.removeAll(forbidden);
+                parents = new int[_parents.size()];
+                for (int y = 0; y < _parents.size(); y++) parents[y] = _parents.get(y);
+                removedOne = printMinimalLinearlyDependentSet(parents, getCovariances());
+            }
+
+            return Double.NaN;
+        }
+    }
+
+    private TetradMatrix getCoefs1(TetradMatrix x, TetradMatrix y) {
+        return (x.inverse()).times(y);
+    }
+
 
     /**
      * Specialized scoring method for a single parent. Used to speed up the effect edges search.
@@ -466,6 +516,21 @@ public class SemBicScore implements Score {
 
     public void setForward(boolean forward) {
         this.forward = forward;
+    }
+
+    private double[] residuals(TetradMatrix x, TetradMatrix y) {
+        TetradMatrix b = getCoefs2(x, y);
+        TetradMatrix yHat = x.times(b);
+        if (yHat.columns() == 0) yHat = y.copy();
+        return y.minus(yHat).getColumn(0).toArray();
+    }
+
+    private TetradMatrix getCoefs2(TetradMatrix x, TetradMatrix y) {
+        TetradMatrix xT = x.transpose();
+        TetradMatrix xTx = xT.times(x);
+        TetradMatrix xTxInv = xTx.inverse();
+        TetradMatrix xTy = xT.times(y);
+        return xTxInv.times(xTy);
     }
 }
 

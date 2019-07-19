@@ -1432,8 +1432,8 @@ public final class SemIm implements IM, ISemIm, TetradSerializable {
 
         TetradMatrix impliedCovar = implCovar();
 
-        DataSet fullDataSet = new ColtDataSet(sampleSize, newVariables);
-        TetradMatrix cholesky = MatrixUtils.choleskyC(impliedCovar);
+        DataSet fullDataSet = new BoxDataSet(new VerticalDoubleDataBox(sampleSize, newVariables.size()), newVariables);
+        TetradMatrix cholesky = MatrixUtils.cholesky(impliedCovar);
 
         // Simulate the data by repeatedly calling the Cholesky.exogenousData
         // method. Store only the data for the measured variables.
@@ -1548,7 +1548,7 @@ public final class SemIm implements IM, ISemIm, TetradSerializable {
             }
         }
 
-        TetradMatrix cholesky = MatrixUtils.choleskyC(errCovar());
+        TetradMatrix cholesky = MatrixUtils.cholesky(errCovar());
 
         // Do the simulation.
         ROW:
@@ -1998,24 +1998,15 @@ public final class SemIm implements IM, ISemIm, TetradSerializable {
         // Pick error values e, for each calculate inv * e.
         TetradMatrix sim = new TetradMatrix(sampleSize, numVars);
 
-        // Generate error data with the right variances and covariances, then override this
-        // with error data for variables that have special distributions defined. Not ideal,
-        // but not sure what else to do at the moment. It's better than not taking covariances
-        // into account!
-        TetradMatrix cholesky = MatrixUtils.choleskyC(errCovar());
-
         ROW:
         for (int row = 0; row < sampleSize; row++) {
 
             // Step 1. Generate normal samples.
-            TetradVector exoData = new TetradVector(cholesky.rows());
-//
-            for (int i = 0; i < exoData.size(); i++) {
-                exoData.set(i, RandomUtil.getInstance().nextNormal(0, 1));
-            }
+            TetradVector e = new TetradVector(edgeCoef.columns());
 
-            // Step 2. Multiply by cholesky to get correct covariance.
-            TetradVector e = cholesky.times(exoData);
+            for (int i = 0; i < e.size(); i++) {
+                e.set(i, RandomUtil.getInstance().nextNormal(0, sqrt(errCovar.get(i, i))));
+            }
 
             // Step 3. Calculate the new rows in the data.
             TetradVector sample = iMinusBInv.times(e);
@@ -2041,7 +2032,6 @@ public final class SemIm implements IM, ISemIm, TetradSerializable {
             continuousVars.add(var);
         }
 
-//        DataSet fullDataSet = ColtDataSet.makeContinuousData(continuousVars, sim);
         DataSet fullDataSet = new BoxDataSet(new DoubleDataBox(sim.toArray()), continuousVars);
 
         if (latentDataSaved) {
