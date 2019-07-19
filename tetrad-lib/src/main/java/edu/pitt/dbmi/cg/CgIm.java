@@ -1740,10 +1740,10 @@ public final class CgIm implements IM, ICgIm, TetradSerializable {
      * @see #getNumRows
      */
     public int getCgDiscreteNumColumns(int nodeIndex) {
-    	//System.out.println("cgDiscreteNodeProbs.numNodes: " + cgDiscreteNodeProbs.length);
-    	//System.out.println("cgDiscreteNodeProbs.numNodes.rows: " + cgDiscreteNodeProbs[nodeIndex].length);
-    	//System.out.println("cgDiscreteNodeProbs.numNodes.rows.cols: " + cgDiscreteNodeProbs[nodeIndex][0].length);
-        return cgDiscreteNodeProbs[nodeIndex][0].length;
+    	//System.out.println("cgDiscreteNodeMeans.numNodes: " + cgDiscreteNodeMeans.length);
+    	//System.out.println("cgDiscreteNodeMeans.numNodes.rows: " + cgDiscreteNodeMeans[nodeIndex].length);
+    	//System.out.println("cgDiscreteNodeMeans.numNodes.rows.cols: " + cgDiscreteNodeMeans[nodeIndex][0].length);
+        return cgDiscreteNodeMeans[nodeIndex][0].length;
     }
 
 	/**
@@ -2010,8 +2010,9 @@ public final class CgIm implements IM, ICgIm, TetradSerializable {
         final double covLow = getParams().getDouble("covLow", 1);
         final double covHigh = getParams().getDouble("covHigh", 3);
     	
+        cgDiscreteNodeProbs[nodeIndex][rowIndex] = getRandomProbability(numCols);
+        
 		for(int colIndex=0;colIndex<numCols;colIndex++) {
-			cgDiscreteNodeProbs[nodeIndex][rowIndex][colIndex] = getRandomWeights(size);
 			cgDiscreteNodeErrCovar[nodeIndex][rowIndex][colIndex] =  getRandomWeights(size,covLow,covHigh);
 			cgDiscreteNodeMeans[nodeIndex][rowIndex][colIndex] = getRandomWeights(size,coefLow,coefHigh);
             cgDiscreteNodeMeanStdDevs[nodeIndex][rowIndex][colIndex] = getRandomWeights(size,covLow,covHigh);
@@ -2047,24 +2048,24 @@ public final class CgIm implements IM, ICgIm, TetradSerializable {
         //System.out.println("getCgDiscreteNodeIndex.cgDiscreteNodeIndex.containsKey(node): false");
         return -1;
     }
-
-    private static double[] getRandomWeights(int size) {
-        assert size >= 0;
-
-        double[] row = new double[size];
-        double sum = 0.0;
-
-        for (int i = 0; i < size; i++) {
-            double v = RandomUtil.getInstance().nextBeta(1, size - 1);
-            row[i] = v;// > 0.5 ? 2 * v : 0.5 * v;
-            sum += row[i];
+    
+    private static double[][] getRandomProbability(int numColumns) {
+    	assert numColumns >= 0;
+    	
+    	double[][] probs = new double[numColumns][1];
+    	double sum = 0.0;
+    	
+    	for (int i = 0; i < numColumns; i++) {
+    		double v = RandomUtil.getInstance().nextBeta(1, numColumns - 1);
+    		probs[i][0] = v;// > 0.5 ? 2 * v : 0.5 * v;
+            sum += probs[i][0];
         }
-
-        for (int i = 0; i < size; i++) {
-            row[i] /= sum;
-        }
-
-        return row;
+    	
+    	for (int i = 0; i < numColumns; i++) {
+    		probs[i][0] /= sum;
+    	}
+    	
+    	return probs;
     }
 
     private static double[] getRandomWeights(int size, double lowerBound, double upperBound) {
