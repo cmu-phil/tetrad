@@ -1872,26 +1872,22 @@ public final class Fges implements GraphSearch, GraphScorer {
 
     private double scoreDag(Graph dag, boolean recordScores) {
         if (score instanceof GraphScore) return 0.0;
+
+        Score score2 = score;
+
+        if (score instanceof SemBicScore) {
+            score2 = new SemBicScore(((SemBicScore)score).getDataSet());
+        }
+
         dag = GraphUtils.replaceNodes(dag, getVariables());
 
         if (dag == null) throw new NullPointerException("DAG not specified.");
 
-        double penalty1 = 1.0;
-        double structure1 = 0.0;
-        double theshold1 = 0.0;
         double _score = 0;
 
-        if (score instanceof SemBicScore) {
-            penalty1 = ((SemBicScore) score).getPenaltyDiscount();
-            structure1 = ((SemBicScore) score).getStructurePrior();
-            theshold1 = ((SemBicScore) score).getThreshold();
-            ((SemBicScore) score).setPenaltyDiscount(1);
-            ((SemBicScore) score).setStructurePrior(0);
-            ((SemBicScore) score).setErrorThreshold(0);
-        }
         for (Node node : getVariables()) {
 
-            if (score instanceof SemBicScore) {
+            if (score2 instanceof SemBicScore) {
                 List<Node> x = dag.getParents(node);
 
                 int[] parentIndices = new int[x.size()];
@@ -1901,7 +1897,7 @@ public final class Fges implements GraphSearch, GraphScorer {
                     parentIndices[count++] = hashIndices.get(parent);
                 }
 
-                final double bic = score.localScore(hashIndices.get(node), parentIndices);
+                final double bic = score2.localScore(hashIndices.get(node), parentIndices);
 
                 if (recordScores) {
                     node.addAttribute("BIC", bic);
@@ -1909,12 +1905,6 @@ public final class Fges implements GraphSearch, GraphScorer {
 
                 _score += bic;
             }
-        }
-
-        if (score instanceof SemBicScore) {
-            ((SemBicScore) score).setPenaltyDiscount(penalty1);
-            ((SemBicScore) score).setStructurePrior(structure1);
-            ((SemBicScore) score).setErrorThreshold(theshold1);
         }
 
         if (recordScores) {

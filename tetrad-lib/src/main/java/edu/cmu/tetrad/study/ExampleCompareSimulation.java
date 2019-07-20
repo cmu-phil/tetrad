@@ -48,11 +48,11 @@ public class ExampleCompareSimulation {
 
         parameters.set("numRuns", 1);
         parameters.set("differentGraphs", false);
-        parameters.set("sampleSize", 1000);
+        parameters.set("sampleSize", 1000000);
 
-        parameters.set("numMeasures", 100);
+        parameters.set("numMeasures", 10);
         parameters.set("numLatents", 0);
-        parameters.set("avgDegree", 6);//, 3, 4, 5, 6, 7, 8, 9, 10);
+        parameters.set("avgDegree", 4);//, 3, 4, 5, 6, 7, 8, 9, 10);
         parameters.set("maxDegree", 1000);
         parameters.set("maxIndegree", 1000);
         parameters.set("maxOutdegree", 1000);
@@ -88,9 +88,9 @@ public class ExampleCompareSimulation {
         parameters.set("faithfulnessAssumed", true);
         parameters.set("maxDegree", 100);
 
-        parameters.set("penaltyDiscount", 1);//, 2, 3, 4, 5, 6, 10, 20, 30);
+        parameters.set("penaltyDiscount", 1);//, 2, 3, 4);//, 6, 6, 10, 20, 30);
         parameters.set("structurePrior", 0);
-        parameters.set("errorThreshold", 0, .1, .2, .3, .4, .5, .6, .7, .8, .9, 1.0);
+        parameters.set("thresholdAlpha", .5);
 
         parameters.set(Params.STABLE_FAS, true);
         parameters.set(Params.CONCURRENT_FAS, true);
@@ -98,18 +98,20 @@ public class ExampleCompareSimulation {
 
         Statistics statistics = new Statistics();
 
-        statistics.add(new ParameterColumn("alpha"));
-        statistics.add(new ParameterColumn("colliderDiscoveryRule"));
-        statistics.add(new ParameterColumn("errorThreshold"));
-        statistics.add(new ParameterColumn("penaltyDiscount"));
+//        statistics.add(new ParameterColumn("alpha"));
+//        statistics.add(new ParameterColumn("colliderDiscoveryRule"));
+        statistics.add(new ParameterColumn("thresholdAlpha"));
+//        statistics.add(new ParameterColumn("penaltyDiscount"));
 
         statistics.add(new NumberOfEdgesEst());
         statistics.add(new AdjacencyPrecision());
         statistics.add(new AdjacencyRecall());
         statistics.add(new ArrowheadPrecision());
         statistics.add(new ArrowheadRecall());
+        statistics.add(new ArrowheadPrecisionCommonEdges());
+        statistics.add(new ArrowheadRecallCommonEdges());
         statistics.add(new F1All());
-        statistics.add(new BicDiff());
+        statistics.add(new BicDiffPerRecord());
         statistics.add(new ElapsedTime());
 
         statistics.setWeight("AP", 1);

@@ -29,7 +29,7 @@ import edu.cmu.tetrad.util.DepthChoiceGenerator;
 import edu.cmu.tetrad.util.StatUtils;
 import edu.cmu.tetrad.util.TetradMatrix;
 import edu.cmu.tetrad.util.TetradVector;
-import org.apache.commons.math3.distribution.ChiSquaredDistribution;
+import org.apache.commons.math3.distribution.FDistribution;
 import org.apache.commons.math3.linear.RealMatrix;
 import org.apache.commons.math3.linear.SingularMatrixException;
 import org.apache.commons.math3.util.FastMath;
@@ -82,7 +82,7 @@ public class SemBicScore implements Score {
     private double structurePrior = 0.0;
 
     // A number subtracted from score differences.
-    private double threshold = 0.0;
+    private double thresholdAlpha = 0.0;
 
     // True if forward search, false if backward search.
     private boolean forward = true;
@@ -138,6 +138,7 @@ public class SemBicScore implements Score {
             return -n * Math.log(1.0 - r * r) - getPenaltyDiscount() * log(n) - getErrorThreshold()
                     + signum(getStructurePrior()) * (sp1 - sp2);
         } else {
+
             return (localScore(y, append(z, x)) - localScore(y, z)) - getErrorThreshold();
         }
 
@@ -148,55 +149,11 @@ public class SemBicScore implements Score {
         return localScoreDiff(x, y, new int[0]);
     }
 
-    /**
-     * Calculates the sample likelihood and BIC score for i given its parents in a simple SEM model
-     */
-    public double localScore1(int i, int... parents) {
-
-        try {
-            double s2 = getCovariances().getValue(i, i);
-            final int p = parents.length;
-            int k = p + 1;
-            double n = getSampleSize();
-
-            TetradMatrix covxx = getCovariances().getSelection(parents, parents);
-            TetradVector covxy = (getCovariances().getSelection(parents, new int[]{i})).getColumn(0);
-            TetradVector coefs = (covxx.inverse()).times(covxy);
-            s2 -= coefs.dotProduct(covxy);
-
-            if (s2 <= 0) {
-                if (isVerbose()) {
-                    out.println("Nonpositive residual varianceY: resVar / varianceY = " + (s2 / getCovariances().getValue(i, i)));
-                }
-
-                return Double.NaN;
-            }
-
-            return -n * log(s2) - getPenaltyDiscount() * k * log(n) + signum(getStructurePrior()) * getStructurePrior(parents.length);
-        } catch (Exception e) {
-            boolean removedOne = true;
-
-            while (removedOne) {
-                List<Integer> _parents = new ArrayList<>();
-                for (int parent : parents) _parents.add(parent);
-                _parents.removeAll(forbidden);
-                parents = new int[_parents.size()];
-                for (int y = 0; y < _parents.size(); y++) parents[y] = _parents.get(y);
-                removedOne = printMinimalLinearlyDependentSet(parents, getCovariances());
-            }
-
-            return Double.NaN;
-        }
-    }
-
     public double localScore(int i, int... parents) {
 
         try {
             final int p = parents.length;
-//            int k = p * (p + 1) / 2 + p + 1;
-//            int k = (p + 1) * (p + 2) / 2;
-//            int k = 1 + p + (p * (p + 1) / 2);
-            int k = (p + 1) * (p + 1);
+            int k = (p) * (p - 1) / 2 + p + 1;
             double n = getSampleSize();
 
             int[] ii = {i};
@@ -220,7 +177,8 @@ public class SemBicScore implements Score {
                 return Double.NaN;
             }
 
-            return -n * log(s2) - getPenaltyDiscount() * k * log(n) + signum(getStructurePrior()) * getStructurePrior(parents.length);
+            return -n * log(s2) - getPenaltyDiscount() * k * log(n)
+                    + signum(getStructurePrior()) * getStructurePrior(parents.length);
         } catch (Exception e) {
             boolean removedOne = true;
 
@@ -353,25 +311,14 @@ public class SemBicScore implements Score {
         this.structurePrior = structurePrior;
     }
 
-    public double getThreshold() {
-        return threshold;
-    }
-
-    public void setErrorThreshold(double threshold) {
-        this.threshold = threshold;
+    public void setErrorThreshold(double thresholdAlpha) {
+        this.thresholdAlpha = thresholdAlpha;
     }
 
     private void setCovariances(ICovarianceMatrix covariances) {
         this.covariances = covariances;
     }
 
-
-    private static double LOG2PI = log(2.0 * Math.PI);
-
-    // One record.
-    private double gaussianLikelihood(int k, TetradMatrix sigma) {
-        return -0.5 * logdet(sigma) - 0.5 * k * (1 + LOG2PI);
-    }
 
     private double logdet(TetradMatrix m) {
         if (m.columns() == 0) {
@@ -467,43 +414,10 @@ public class SemBicScore implements Score {
     }
 
     private synchronized double getErrorThreshold() {
-        if (getThreshold() < 0.0 || getThreshold() > 1.0) {
-            throw new IllegalArgumentException("Bias threshold needs to be in [0, 1].");
-        }
-
         if (Double.isNaN(errorThreshold)) {
-            if (getThreshold() == 0.0) {
-                errorThreshold = 0.0;
-            } else {
-                double n = covariances.getSampleSize();
-
-                ChiSquaredDistribution ch = new ChiSquaredDistribution(n - 1);
-
-                int numSamples = 20000;
-
-                double[] e = new double[numSamples];
-
-                for (int i = 0; i < numSamples; i++) {
-                    e[i] = -(n - 1) * log(ch.sample() / (ch.sample()));
-                }
-
-                double percentile = 100.0 * (getThreshold() / 2.0 + 0.5);
-
-                if (false) {//percentile == 100) {
-                    double max = Double.NEGATIVE_INFINITY;
-
-                    for (int i = 0; i < e.length; i++) {
-                        if (e[i] > max) max = e[i];
-                    }
-
-                    this.errorThreshold = max;
-                } else {
-                    this.errorThreshold = percentile(e, percentile);
-                }
-
-                System.out.println("percentile = " + percentile);
-            }
-
+            FDistribution f = new FDistribution(getSampleSize() - 1,
+                    getSampleSize() - 1);
+            this.errorThreshold = -getSampleSize() * log(f.inverseCumulativeProbability(thresholdAlpha));
             System.out.println("Error threshold = " + errorThreshold);
         }
 
@@ -516,13 +430,6 @@ public class SemBicScore implements Score {
 
     public void setForward(boolean forward) {
         this.forward = forward;
-    }
-
-    private double[] residuals(TetradMatrix x, TetradMatrix y) {
-        TetradMatrix b = getCoefs2(x, y);
-        TetradMatrix yHat = x.times(b);
-        if (yHat.columns() == 0) yHat = y.copy();
-        return y.minus(yHat).getColumn(0).toArray();
     }
 
     private TetradMatrix getCoefs2(TetradMatrix x, TetradMatrix y) {

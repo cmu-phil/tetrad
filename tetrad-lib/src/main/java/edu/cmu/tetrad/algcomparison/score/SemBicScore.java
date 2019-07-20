@@ -42,7 +42,7 @@ public class SemBicScore implements ScoreWrapper {
 
         semBicScore.setPenaltyDiscount(parameters.getDouble("penaltyDiscount"));
         semBicScore.setStructurePrior(parameters.getDouble("structurePrior"));
-        semBicScore.setErrorThreshold(parameters.getDouble("errorThreshold"));
+        semBicScore.setErrorThreshold(parameters.getDouble("thresholdAlpha"));
         return semBicScore;
     }
 
@@ -61,7 +61,7 @@ public class SemBicScore implements ScoreWrapper {
         List<String> parameters = new ArrayList<>();
         parameters.add("penaltyDiscount");
         parameters.add("structurePrior");
-        parameters.add("errorThreshold");
+        parameters.add("thresholdAlpha");
         return parameters;
     }
 
