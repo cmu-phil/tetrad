@@ -28,6 +28,7 @@ import edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern.PcAll;
 import edu.cmu.tetrad.algcomparison.graph.RandomForward;
 import edu.cmu.tetrad.algcomparison.independence.FisherZ;
 import edu.cmu.tetrad.algcomparison.score.SemBicScore;
+import edu.cmu.tetrad.algcomparison.simulation.LinearFisherModel;
 import edu.cmu.tetrad.algcomparison.simulation.SemSimulation;
 import edu.cmu.tetrad.algcomparison.simulation.Simulations;
 import edu.cmu.tetrad.algcomparison.statistic.*;
@@ -48,11 +49,11 @@ public class ExampleCompareSimulation {
 
         parameters.set("numRuns", 1);
         parameters.set("differentGraphs", false);
-        parameters.set("sampleSize", 1000000);
+        parameters.set("sampleSize", 1000);
 
-        parameters.set("numMeasures", 10);
+        parameters.set("numMeasures", 1200);
         parameters.set("numLatents", 0);
-        parameters.set("avgDegree", 4);//, 3, 4, 5, 6, 7, 8, 9, 10);
+        parameters.set("avgDegree",4);//, 3, 4, 5, 6, 7, 8, 9, 10);
         parameters.set("maxDegree", 1000);
         parameters.set("maxIndegree", 1000);
         parameters.set("maxOutdegree", 1000);
@@ -90,7 +91,7 @@ public class ExampleCompareSimulation {
 
         parameters.set("penaltyDiscount", 1);//, 2, 3, 4);//, 6, 6, 10, 20, 30);
         parameters.set("structurePrior", 0);
-        parameters.set("thresholdAlpha", .5);
+        parameters.set("thresholdAlpha", .45);//.1, .2, .3,.4, .45, .46, .47, .48, .49, .5);
 
         parameters.set(Params.STABLE_FAS, true);
         parameters.set(Params.CONCURRENT_FAS, true);
@@ -104,6 +105,8 @@ public class ExampleCompareSimulation {
 //        statistics.add(new ParameterColumn("penaltyDiscount"));
 
         statistics.add(new NumberOfEdgesEst());
+        statistics.add(new AdjacencyTPR());
+        statistics.add(new AdjacencyFPR());
         statistics.add(new AdjacencyPrecision());
         statistics.add(new AdjacencyRecall());
         statistics.add(new ArrowheadPrecision());
@@ -121,12 +124,12 @@ public class ExampleCompareSimulation {
 
         Algorithms algorithms = new Algorithms();
 
-        algorithms.add(new PcAll(new FisherZ()));
+//        algorithms.add(new PcAll(new FisherZ()));
         algorithms.add(new Fges(new SemBicScore()));
 
         Simulations simulations = new Simulations();
 
-        simulations.add(new SemSimulation(new RandomForward()));
+        simulations.add(new LinearFisherModel(new RandomForward()));
 
         Comparison comparison = new Comparison();
 
