@@ -28,7 +28,8 @@ public class ConditionalGaussianLRT implements IndependenceWrapper {
     @Override
     public IndependenceTest getTest(DataModel dataSet, Parameters parameters, Graph trueGraph) {
         final IndTestConditionalGaussianLRT test
-                = new IndTestConditionalGaussianLRT(DataUtils.getMixedDataSet(dataSet),
+                = new IndTestConditionalGaussianLRT(trueGraph,
+                        DataUtils.getMixedDataSet(dataSet),
                         parameters.getDouble("alpha"),
                         parameters.getBoolean("discretize"));
         test.setNumCategoriesToDiscretize(parameters.getInt("numCategoriesToDiscretize"));

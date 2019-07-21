@@ -25,10 +25,12 @@ import edu.cmu.tetrad.data.ContinuousVariable;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DiscreteVariable;
 import edu.cmu.tetrad.data.ICovarianceMatrix;
+import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.regression.LogisticRegression;
 import edu.cmu.tetrad.regression.RegressionDataset;
 import edu.cmu.tetrad.regression.RegressionResult;
+import edu.cmu.tetrad.search.IndTestDSep;
 import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.search.SearchLogUtils;
 import edu.cmu.tetrad.util.ProbUtils;
@@ -50,6 +52,8 @@ import java.util.*;
  * @author Augustus Mayo.
  */
 public class IndTestMultinomialLogisticRegressionWald implements IndependenceTest {
+    private final Graph trueGraph;
+    private final IndTestDSep dsep;
     private DataSet originalData;
     private List<Node> searchVariables;
     private DataSet internalData;
@@ -61,7 +65,7 @@ public class IndTestMultinomialLogisticRegressionWald implements IndependenceTes
     private boolean preferLinear;
     private boolean verbose = false;
 
-    public IndTestMultinomialLogisticRegressionWald(DataSet data, double alpha, boolean preferLinear) {
+    public IndTestMultinomialLogisticRegressionWald(Graph trueGraph, DataSet data, double alpha, boolean preferLinear) {
         if (!(alpha >= 0 && alpha <= 1)) {
             throw new IllegalArgumentException("Alpha mut be in [0, 1]");
         }
@@ -82,6 +86,13 @@ public class IndTestMultinomialLogisticRegressionWald implements IndependenceTes
         this.internalData = internalData;
         this.logisticRegression = new LogisticRegression(internalData);
         this.regression = new RegressionDataset(internalData);
+
+        this.trueGraph = trueGraph;
+
+        System.out.println(trueGraph);
+
+        this.dsep = new IndTestDSep(trueGraph);
+
     }
 
     /**
@@ -255,6 +266,20 @@ public class IndTestMultinomialLogisticRegressionWald implements IndependenceTes
 
         indep = p > alpha;
 
+        NumberFormat nf = new DecimalFormat("0.0000000000");
+
+        Node x2 = trueGraph.getNode(x.getName());
+        Node y2 = trueGraph.getNode(y.getName());
+
+        List<Node> z2 = new ArrayList<>();
+
+        for (Node n2 : z) {
+            z2.add(trueGraph.getNode(n2.getName()));
+        }
+
+        System.out.println((dsep.isIndependent(x2, y2, z2) ? 1 : 0) + "\t" + (p > alpha ? 1 : 0) + "\t" + z.size() + "\t" + nf.format(getPValue())
+                + "\t" + x + "\t" + y + "\t" + z);
+
         this.lastP = p;
 
         if (indep) {
@@ -376,6 +401,20 @@ public class IndTestMultinomialLogisticRegressionWald implements IndependenceTes
         } else {
             TetradLogger.getInstance().log("dependencies", SearchLogUtils.dependenceFactMsg(x, y, z, p));
         }
+
+        NumberFormat nf = new DecimalFormat("0.0000000000");
+
+        Node x2 = trueGraph.getNode(x.getName());
+        Node y2 = trueGraph.getNode(y.getName());
+
+        List<Node> z2 = new ArrayList<>();
+
+        for (Node n2 : z) {
+            z2.add(trueGraph.getNode(n2.getName()));
+        }
+
+        System.out.println((dsep.isIndependent(x2, y2, z2) ? 1 : 0) + "\t" + (p > alpha ? 1 : 0) + "\t" + z.size() + "\t" + nf.format(getPValue())
+                + "\t" + x + "\t" + y + "\t" + z);
 
         return indep;
     }

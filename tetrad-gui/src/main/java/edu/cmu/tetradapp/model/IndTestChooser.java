@@ -123,7 +123,7 @@ final class IndTestChooser {
                                           Parameters params, IndTestType testType) {
 
         if (IndTestType.MIXED_MLR == testType) {
-            return new IndTestMultinomialLogisticRegressionWald(dataSet, params.getDouble("alpha", 0.001), false);
+            return new IndTestMultinomialLogisticRegressionWald(null, dataSet, params.getDouble("alpha", 0.001), false);
         } else if (IndTestType.LINEAR_REGRESSION == testType) {
             return new IndTestRegression(dataSet,
                     params.getDouble("alpha", 0.001));
@@ -136,7 +136,7 @@ final class IndTestChooser {
     private IndependenceTest getContinuousTest(DataSet dataSet,
                                                Parameters params, IndTestType testType) {
         if (IndTestType.CONDITIONAL_CORRELATION == testType) {
-            return new IndTestConditionalCorrelation(dataSet, params.getDouble("alpha", 0.001));
+            return new IndTestConditionalCorrelation(null, dataSet, params.getDouble("alpha", 0.001));
         }
         if (IndTestType.FISHER_Z == testType) {
             return new IndTestFisherZ(dataSet, params.getDouble("alpha", 0.001));

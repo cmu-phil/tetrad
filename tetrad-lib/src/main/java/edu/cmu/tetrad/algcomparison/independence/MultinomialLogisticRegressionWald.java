@@ -6,6 +6,7 @@ import edu.cmu.tetrad.data.DataUtils;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.util.Parameters;
 import edu.pitt.csb.mgm.IndTestMultinomialLogisticRegressionWald;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -25,7 +26,7 @@ public class MultinomialLogisticRegressionWald implements IndependenceWrapper {
 
     @Override
     public edu.cmu.tetrad.search.IndependenceTest getTest(DataModel dataSet, Parameters parameters, Graph trueGraph) {
-        return new IndTestMultinomialLogisticRegressionWald(
+        return new IndTestMultinomialLogisticRegressionWald(trueGraph,
                 DataUtils.getMixedDataSet(dataSet),
                 parameters.getDouble("alpha"),
                 false);

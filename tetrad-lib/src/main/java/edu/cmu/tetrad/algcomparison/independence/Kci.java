@@ -27,7 +27,7 @@ public class Kci implements IndependenceWrapper {
 
     @Override
     public IndependenceTest getTest(DataModel dataSet, Parameters parameters, Graph trueGraph) {
-        final edu.cmu.tetrad.search.Kci kci = new edu.cmu.tetrad.search.Kci(DataUtils.getContinuousDataSet(dataSet),
+        final edu.cmu.tetrad.search.Kci kci = new edu.cmu.tetrad.search.Kci(trueGraph, DataUtils.getContinuousDataSet(dataSet),
                 parameters.getDouble("alpha"));
         kci.setApproximate(parameters.getBoolean("kciUseAppromation"));
         kci.setWidthMultiplier(parameters.getDouble("kernelMultiplier"));

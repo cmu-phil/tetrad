@@ -64,8 +64,8 @@ public class ExploreIndepTests {
             DataSet ds = MixedUtils.loadDataSet(path, "DAG_0_data.txt");
 
             IndTestMultinomialLogisticRegression indMix = new IndTestMultinomialLogisticRegression(ds, .05);
-            IndTestMultinomialLogisticRegressionWald indWalLin = new IndTestMultinomialLogisticRegressionWald(ds, .05, true);
-            IndTestMultinomialLogisticRegressionWald indWalLog = new IndTestMultinomialLogisticRegressionWald(ds, .05, false);
+            IndTestMultinomialLogisticRegressionWald indWalLin = new IndTestMultinomialLogisticRegressionWald(null, ds, .05, true);
+            IndTestMultinomialLogisticRegressionWald indWalLog = new IndTestMultinomialLogisticRegressionWald(null, ds, .05, false);
 
             PcStable s1 = new PcStable(indMix);
             PcStable s2 = new PcStable(indWalLin);

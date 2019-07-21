@@ -23,12 +23,14 @@ package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.ICovarianceMatrix;
+import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.IndependenceFact;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.NumberFormatUtil;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetrad.util.TetradMatrix;
 
+import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.*;
 
@@ -53,6 +55,8 @@ public final class IndTestConditionalCorrelation implements IndependenceTest, Sc
      * The variables of the covariance data, in order. (Unmodifiable list.)
      */
     private final List<Node> variables;
+    private final Graph trueGraph;
+    private final IndTestDSep dsep;
 
     /**
      * The significance level of the independence tests.
@@ -94,7 +98,7 @@ public final class IndTestConditionalCorrelation implements IndependenceTest, Sc
      * @param dataSet A data set containing only continuous columns.
      * @param alpha   The q level of the test.
      */
-    public IndTestConditionalCorrelation(DataSet dataSet, double alpha) {
+    public IndTestConditionalCorrelation(Graph trueGraph, DataSet dataSet, double alpha) {
         if (!(dataSet.isContinuous())) {
             throw new IllegalArgumentException("Data set must be continuous.");
         }
@@ -117,6 +121,12 @@ public final class IndTestConditionalCorrelation implements IndependenceTest, Sc
         }
 
         this.dataSet = dataSet;
+        this.trueGraph = trueGraph;
+
+        System.out.println(trueGraph);
+
+        this.dsep = new IndTestDSep(trueGraph);
+
     }
 
     //==========================PUBLIC METHODS=============================//
@@ -134,7 +144,7 @@ public final class IndTestConditionalCorrelation implements IndependenceTest, Sc
         List<String> _z = new ArrayList<>();
         for (Node node : z) _z.add(node.getName());
 
-        if(fastFDR) {
+        if(false) {
             final int d1 = 0; // reference
             final int d2 = z.size();
             final int v = variables.size() - 2;
@@ -180,6 +190,20 @@ public final class IndTestConditionalCorrelation implements IndependenceTest, Sc
                     TetradLogger.getInstance().log("info", s);
                 }
             }
+
+            NumberFormat nf = new DecimalFormat("0.0000000000");
+
+            Node x2 = trueGraph.getNode(x.getName());
+            Node y2 = trueGraph.getNode(y.getName());
+
+            List<Node> z2 = new ArrayList<>();
+
+            for (Node n2 : z) {
+                z2.add(trueGraph.getNode(n2.getName()));
+            }
+
+            System.out.println((dsep.isIndependent(x2, y2, z2) ? 1 : 0) + "\t" + (p > alpha ? 1 : 0) + "\t" + z.size() + "\t" + nf.format(getPValue())
+                    + "\t" + x + "\t" + y + "\t" + z);
 
             return p > alpha;
         }

@@ -4,6 +4,7 @@ import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataUtils;
 import edu.cmu.tetrad.data.ICovarianceMatrix;
+import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.IndependenceFact;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.IndependenceTest;
@@ -19,6 +20,8 @@ import org.apache.commons.math3.linear.SingularValueDecomposition;
 import org.apache.commons.math3.random.SynchronizedRandomGenerator;
 import org.apache.commons.math3.random.Well44497b;
 
+import java.text.DecimalFormat;
+import java.text.NumberFormat;
 import java.util.*;
 
 import static com.google.common.primitives.Doubles.asList;
@@ -55,6 +58,8 @@ public class Kci implements IndependenceTest, ScoreForFact {
 
     // The data stored in vertical columns.
     private final double[][] _data;
+    private final Graph trueGraph;
+    private final IndTestDSep dsep;
 
     // Variables in data
     private List<Node> variables;
@@ -111,7 +116,7 @@ public class Kci implements IndependenceTest, ScoreForFact {
      * @param data  The dataset to analyse. Must be continuous.
      * @param alpha The alpha value of the test.
      */
-    public Kci(DataSet data, double alpha) {
+    public Kci(Graph trueGraph, DataSet data, double alpha) {
         this.data = DataUtils.standardizeData(data);
         this.variables = data.getVariables();
         this._data = this.data.getDoubleData().transpose().toArray();
@@ -150,6 +155,13 @@ public class Kci implements IndependenceTest, ScoreForFact {
         for (int i = 0; i < h.length; i++) {
             if (h[i] == 0) h[i] = avg;
         }
+
+        this.trueGraph = trueGraph;
+
+        System.out.println(trueGraph);
+
+        this.dsep = new IndTestDSep(trueGraph);
+
     }
 
     //====================================PUBLIC METHODS==================================//
@@ -187,6 +199,20 @@ public class Kci implements IndependenceTest, ScoreForFact {
 
             facts.put(fact, independent);
         }
+
+        NumberFormat nf = new DecimalFormat("0.0000000000");
+
+        Node x2 = trueGraph.getNode(x.getName());
+        Node y2 = trueGraph.getNode(y.getName());
+
+        List<Node> z2 = new ArrayList<>();
+
+        for (Node n2 : z) {
+            z2.add(trueGraph.getNode(n2.getName()));
+        }
+
+        System.out.println((dsep.isIndependent(x2, y2, z2) ? 1 : 0) + "\t" + (this.p > alpha ? 1 : 0) + "\t" + z.size() + "\t" + nf.format(getPValue())
+                + "\t" + x + "\t" + y + "\t" + z);
 
         if (verbose) {
             double p = getPValue();

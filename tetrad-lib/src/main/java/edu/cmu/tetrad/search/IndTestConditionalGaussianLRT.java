@@ -23,6 +23,7 @@ package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.ICovarianceMatrix;
+import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.TetradMatrix;
 import org.apache.commons.collections4.map.HashedMap;
@@ -45,6 +46,8 @@ import static java.lang.Math.log;
  * @author Joseph Ramsey
  */
 public class IndTestConditionalGaussianLRT implements IndependenceTest {
+    private final Graph trueGraph;
+    private final IndTestDSep dsep;
     private DataSet data;
     private Map<Node, Integer> nodesHash;
     private double alpha = 0.001;
@@ -57,7 +60,7 @@ public class IndTestConditionalGaussianLRT implements IndependenceTest {
     private boolean verbose = false;
     private boolean fastFDR = false;
 
-    public IndTestConditionalGaussianLRT(DataSet data, double alpha, boolean discretize) {
+    public IndTestConditionalGaussianLRT(Graph trueGraph, DataSet data, double alpha, boolean discretize) {
         this.data = data;
         this.likelihood = new ConditionalGaussianLikelihood(data);
         this.likelihood.setDiscretize(discretize);
@@ -70,6 +73,12 @@ public class IndTestConditionalGaussianLRT implements IndependenceTest {
         }
 
         this.alpha = alpha;
+        this.trueGraph = trueGraph;
+
+        System.out.println(trueGraph);
+
+        this.dsep = new IndTestDSep(trueGraph);
+
     }
 
     /**
@@ -137,6 +146,21 @@ public class IndTestConditionalGaussianLRT implements IndependenceTest {
         }
 
         this.pValue = Math.min(p0, p1);
+
+        NumberFormat nf = new DecimalFormat("0.0000000000");
+
+        Node x2 = trueGraph.getNode(x.getName());
+        Node y2 = trueGraph.getNode(y.getName());
+
+        List<Node> z2 = new ArrayList<>();
+
+        for (Node n2 : z) {
+            z2.add(trueGraph.getNode(n2.getName()));
+        }
+
+        System.out.println((dsep.isIndependent(x2, y2, z2) ? 1 : 0) + "\t" + (this.pValue > alpha ? 1 : 0) + "\t" + z.size() + "\t" + nf.format(getPValue())
+                + "\t" + x + "\t" + y + "\t" + z);
+
 
 //        return this.pValue > alpha;
 
