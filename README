@@ -7,13 +7,17 @@ on the Issues tab, above).
 
 An introduction to Tetrad can be found here:
 
-www.phil.cmu.edu/tetrad
+http://www.phil.cmu.edu/tetrad
+
+Manual is here:
+
+http://cmu-phil.github.io/tetrad/manual/
 
 Javadocs can be found by running the javadocs command on the project once checked out.
 
 Downloads directory is here:
 
-https://cloud.ccd.pitt.edu/nexus/content/repositories/releases/edu/cmu/tetrad-gui/6.2.0/tetrad-gui-6.2.0-launch.jar
+https://cloud.ccd.pitt.edu/nexus/content/repositories/releases/edu/cmu/tetrad-gui/
 
 The wiki is here:
 
