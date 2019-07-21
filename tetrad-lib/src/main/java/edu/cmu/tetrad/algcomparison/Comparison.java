@@ -1237,10 +1237,10 @@ public class Comparison {
 
         try {
             MyFileRef.myFileOutput = new PrintStream(
-                    new File("/Users/user/tetrad/" +
-                            "comparison-lozada/fileout.run" + (run.getRunIndex() + 1) + "." + (run.getAlgSimIndex() + 1) + ".txt"));
-//            new File("/Users/jonathanlozada/IdeaProjects/tetrad/" +
-//                    "comparison-lozada/fileout.run" + (run.getRunIndex() + 1) + "." + (run.getAlgSimIndex() + 1) + ".txt"));
+//                    new File("/Users/user/tetrad/" +
+//                            "comparison-lozada/fileout.run" + (run.getRunIndex() + 1) + "." + (run.getAlgSimIndex() + 1) + ".txt"));
+            new File("/Users/jonathanlozada/IdeaProjects/tetrad/" +
+                    "comparison-lozada/fileout.run" + (run.getRunIndex() + 1) + "." + (run.getAlgSimIndex() + 1) + ".txt"));
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
