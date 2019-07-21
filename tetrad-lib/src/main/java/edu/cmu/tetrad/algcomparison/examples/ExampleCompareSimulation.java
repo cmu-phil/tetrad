@@ -28,6 +28,7 @@ import edu.cmu.tetrad.algcomparison.graph.RandomForward;
 import edu.cmu.tetrad.algcomparison.independence.FisherZ;
 import edu.cmu.tetrad.algcomparison.score.MVPBicScore;
 import edu.cmu.tetrad.algcomparison.score.SemBicScore;
+import edu.cmu.tetrad.algcomparison.simulation.LeeHastieSimulation;
 import edu.cmu.tetrad.algcomparison.simulation.SemSimulation;
 import edu.cmu.tetrad.algcomparison.simulation.Simulations;
 import edu.cmu.tetrad.algcomparison.statistic.*;
@@ -46,16 +47,17 @@ import java.io.*;
  */
 public class ExampleCompareSimulation {
     public static void main(String... args) {
-        RandomUtil.getInstance().setSeed(49374923849234L);
+        RandomUtil.getInstance().setSeed(49374023849234L);
 
         Parameters parameters = new Parameters();
         https://arxiv.org/abs/1607.08110
-        parameters.set("numRuns", 12);
-        parameters.set("numMeasures", 10);
-        parameters.set("avgDegree", 2);
-        parameters.set("sampleSize", 1000, 1000, 1000, 1000);
+        parameters.set("numRuns", 4);
+        parameters.set("numMeasures", 30);
+        parameters.set("avgDegree", 4);
+        parameters.set("sampleSize", 100, 100, 100, 100, 100);
         parameters.set("alpha", .05);
         parameters.set("verbose", false);
+        parameters.set("numCategories", 3);
 
         Statistics statistics = new Statistics();
 
@@ -84,7 +86,7 @@ public class ExampleCompareSimulation {
 
         Simulations simulations = new Simulations();
 
-        final SemSimulation simulation = new SemSimulation(new RandomForward());
+        final LeeHastieSimulation simulation = new LeeHastieSimulation(new RandomForward());
         simulation.createData(parameters);
 
         FisherZ test = new FisherZ();

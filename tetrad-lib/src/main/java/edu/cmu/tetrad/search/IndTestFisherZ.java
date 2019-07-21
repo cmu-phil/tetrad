@@ -264,7 +264,7 @@ public final class IndTestFisherZ implements IndependenceTest {
 
 
 
-        System.out.println((dsep.isIndependent(x2, y2, z2) ? 1 : 0) + "\t" + (independent ? 1 : 0) + "\t" + z.size() + "\t" + nf.format(getPValue())
+        MyFileRef.myFileOutput.println((dsep.isIndependent(x2, y2, z2) ? 1 : 0) + "\t" + (independent ? 1 : 0) + "\t" + z.size() + "\t" + nf.format(getPValue())
                 + "\t" + x + "\t" + y + "\t" + z);
         //System.out.println("\n");
 //        MyFileRef.myFil .eOutput.flush();
