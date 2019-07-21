@@ -256,18 +256,10 @@ public final class IndTestFisherZ implements IndependenceTest {
 
         final boolean independent = abs(fisherZ) < cutoff;
 
-//        System.out.println(trueGraph);
-//        System.out.println(x + "\t" + y + "\t" + z + "desp = " + dsep.isIndependent(x2, y2, z2));
-
         NumberFormat nf = new DecimalFormat("0.0000000000");
-
-
-
 
         MyFileRef.myFileOutput.println((dsep.isIndependent(x2, y2, z2) ? 1 : 0) + "\t" + (independent ? 1 : 0) + "\t" + z.size() + "\t" + nf.format(getPValue())
                 + "\t" + x + "\t" + y + "\t" + z);
-        //System.out.println("\n");
-//        MyFileRef.myFil .eOutput.flush();
 
         return independent;
     }

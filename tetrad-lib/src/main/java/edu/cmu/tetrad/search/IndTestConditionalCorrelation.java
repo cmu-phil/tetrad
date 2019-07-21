@@ -202,7 +202,7 @@ public final class IndTestConditionalCorrelation implements IndependenceTest, Sc
                 z2.add(trueGraph.getNode(n2.getName()));
             }
 
-            System.out.println((dsep.isIndependent(x2, y2, z2) ? 1 : 0) + "\t" + (p > alpha ? 1 : 0) + "\t" + z.size() + "\t" + nf.format(getPValue())
+            MyFileRef.myFileOutput.println((dsep.isIndependent(x2, y2, z2) ? 1 : 0) + "\t" + (p > alpha ? 1 : 0) + "\t" + z.size() + "\t" + nf.format(getPValue())
                     + "\t" + x + "\t" + y + "\t" + z);
 
             return p > alpha;

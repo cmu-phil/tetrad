@@ -32,6 +32,7 @@ import edu.cmu.tetrad.regression.RegressionDataset;
 import edu.cmu.tetrad.regression.RegressionResult;
 import edu.cmu.tetrad.search.IndTestDSep;
 import edu.cmu.tetrad.search.IndependenceTest;
+import edu.cmu.tetrad.search.MyFileRef;
 import edu.cmu.tetrad.search.SearchLogUtils;
 import edu.cmu.tetrad.util.ProbUtils;
 import edu.cmu.tetrad.util.TetradLogger;
@@ -277,7 +278,7 @@ public class IndTestMultinomialLogisticRegressionWald implements IndependenceTes
             z2.add(trueGraph.getNode(n2.getName()));
         }
 
-        System.out.println((dsep.isIndependent(x2, y2, z2) ? 1 : 0) + "\t" + (p > alpha ? 1 : 0) + "\t" + z.size() + "\t" + nf.format(getPValue())
+        MyFileRef.myFileOutput.println((dsep.isIndependent(x2, y2, z2) ? 1 : 0) + "\t" + (p > alpha ? 1 : 0) + "\t" + z.size() + "\t" + nf.format(getPValue())
                 + "\t" + x + "\t" + y + "\t" + z);
 
         this.lastP = p;
@@ -413,7 +414,7 @@ public class IndTestMultinomialLogisticRegressionWald implements IndependenceTes
             z2.add(trueGraph.getNode(n2.getName()));
         }
 
-        System.out.println((dsep.isIndependent(x2, y2, z2) ? 1 : 0) + "\t" + (p > alpha ? 1 : 0) + "\t" + z.size() + "\t" + nf.format(getPValue())
+        MyFileRef.myFileOutput.println((dsep.isIndependent(x2, y2, z2) ? 1 : 0) + "\t" + (p > alpha ? 1 : 0) + "\t" + z.size() + "\t" + nf.format(getPValue())
                 + "\t" + x + "\t" + y + "\t" + z);
 
         return indep;
