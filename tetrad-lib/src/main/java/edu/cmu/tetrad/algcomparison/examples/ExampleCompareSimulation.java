@@ -25,6 +25,7 @@ import edu.cmu.tetrad.algcomparison.Comparison;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithms;
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern.*;
 import edu.cmu.tetrad.algcomparison.graph.RandomForward;
+import edu.cmu.tetrad.algcomparison.independence.ConditionalGaussianLRT;
 import edu.cmu.tetrad.algcomparison.independence.FisherZ;
 import edu.cmu.tetrad.algcomparison.score.MVPBicScore;
 import edu.cmu.tetrad.algcomparison.score.SemBicScore;
@@ -89,7 +90,7 @@ public class ExampleCompareSimulation {
         final LeeHastieSimulation simulation = new LeeHastieSimulation(new RandomForward());
         simulation.createData(parameters);
 
-        FisherZ test = new FisherZ();
+        ConditionalGaussianLRT test = new ConditionalGaussianLRT();
 
         Pc algorithm = new Pc(test);
         algorithms.add(algorithm);
