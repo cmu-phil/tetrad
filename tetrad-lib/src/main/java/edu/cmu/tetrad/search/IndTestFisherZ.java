@@ -190,7 +190,7 @@ public final class IndTestFisherZ implements IndependenceTest {
         indices[0] = indexMap.get(x);
         indices[1] = indexMap.get(y);
 
-        if (z.isEmpty()) return cov.getValue(indices[0], indices[1]);
+//        if (z.isEmpty()) return cov.getValue(indices[0], indices[1]);
 
         for (int i = 0; i < z.size(); i++) indices[i + 2] = indexMap.get(z.get(i));
         TetradMatrix submatrix = cov.getSubmatrix(indices).getMatrix();

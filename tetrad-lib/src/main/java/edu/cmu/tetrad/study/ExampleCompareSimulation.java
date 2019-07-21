@@ -52,7 +52,7 @@ public class ExampleCompareSimulation {
 
         parameters.set("numMeasures", 10);
         parameters.set("numLatents", 0);
-        parameters.set("avgDegree", 4);//, 3, 4, 5, 6, 7, 8, 9, 10);
+        parameters.set("avgDegree", 2);//, 3, 4, 5, 6, 7, 8, 9, 10);
         parameters.set("maxDegree", 1000);
         parameters.set("maxIndegree", 1000);
         parameters.set("maxOutdegree", 1000);
