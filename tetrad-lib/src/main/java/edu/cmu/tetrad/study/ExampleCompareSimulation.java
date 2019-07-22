@@ -51,9 +51,9 @@ public class ExampleCompareSimulation {
         parameters.set("differentGraphs", false);
         parameters.set("sampleSize", 1000);
 
-        parameters.set("numMeasures", 1200);
+        parameters.set("numMeasures", 300);
         parameters.set("numLatents", 0);
-        parameters.set("avgDegree",4);//, 3, 4, 5, 6, 7, 8, 9, 10);
+        parameters.set("avgDegree", 4);//, 3, 4, 5, 6, 7, 8, 9, 10);
         parameters.set("maxDegree", 1000);
         parameters.set("maxIndegree", 1000);
         parameters.set("maxOutdegree", 1000);
@@ -89,9 +89,9 @@ public class ExampleCompareSimulation {
         parameters.set("faithfulnessAssumed", true);
         parameters.set("maxDegree", 100);
 
-        parameters.set("penaltyDiscount", 1);//, 2, 3, 4);//, 6, 6, 10, 20, 30);
+        parameters.set("penaltyDiscount", 1, 2, 3, 4);//, 6, 6, 10, 20, 30);
         parameters.set("structurePrior", 0);
-        parameters.set("thresholdAlpha", .45);//.1, .2, .3,.4, .45, .46, .47, .48, .49, .5);
+        parameters.set("thresholdAlpha", .5);//.1, .2, .3,.4, .45, .46, .47, .48, .49, .5);
 
         parameters.set(Params.STABLE_FAS, true);
         parameters.set(Params.CONCURRENT_FAS, true);
