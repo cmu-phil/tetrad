@@ -149,18 +149,8 @@ public class TestSemIm {
         DataSet dataSet = semIm.simulateData(500, false);
 
         TetradMatrix data = dataSet.getDoubleData();
-
-        double[][] a = new double[data.columns()][data.columns()];
-
-        for (int i = 0; i < data.columns(); i++) {
-            for (int j = 0; j < data.columns(); j++) {
-                DoubleArrayList icol =
-                        new DoubleArrayList(data.getColumn(i).toArray());
-                DoubleArrayList jcol =
-                        new DoubleArrayList(data.getColumn(j).toArray());
-                a[i][j] = Descriptive.covariance(icol, jcol);
-            }
-        }
+        ICovarianceMatrix cov = new CovarianceMatrix(dataSet);
+        double[][] a = cov.getMatrix().toArray();
 
         double[][] l = MatrixUtils.cholesky(new TetradMatrix(a)).toArray();
         double[][] lT = MatrixUtils.transpose(l);

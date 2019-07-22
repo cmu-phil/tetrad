@@ -90,7 +90,7 @@ public class ExampleCompareSimulation {
         parameters.set("maxDegree", 100);
 
         parameters.set("penaltyDiscount", 1, 1.2, 1.5, 2, 3, 4);//, 6, 6, 10, 20, 30);
-        parameters.set("structurePrior", 0);
+        parameters.set("structurePrior", 2);
         parameters.set("thresholdAlpha", .5);//.1, .2, .3,.4, .45, .46, .47, .48, .49, .5);
 
         parameters.set(Params.STABLE_FAS, true);
