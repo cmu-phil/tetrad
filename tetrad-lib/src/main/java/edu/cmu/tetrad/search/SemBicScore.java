@@ -82,7 +82,7 @@ public class SemBicScore implements Score {
     private double structurePrior = 0.0;
 
     // A number subtracted from score differences.
-    private double thresholdAlpha = 0.0;
+    private double thresholdAlpha = 0.5;
 
     // True if forward search, false if backward search.
     private boolean forward = true;

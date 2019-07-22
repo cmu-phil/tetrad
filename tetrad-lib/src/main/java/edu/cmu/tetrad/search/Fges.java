@@ -1092,7 +1092,7 @@ public final class Fges implements GraphSearch, GraphScorer {
 
         int numNodesPerTask = Math.max(100, nodes.size() / maxThreads);
 
-        for (int i = 0; i < nodes.size() && !Thread.currentThread(). isInterrupted(); i += numNodesPerTask) {
+        for (int i = 0; i < nodes.size() && !Thread.currentThread().isInterrupted(); i += numNodesPerTask) {
             AdjTask task = new AdjTask(new ArrayList<>(nodes), i, Math.min(nodes.size(), i + numNodesPerTask));
             tasks.add(task);
         }
@@ -1876,7 +1876,17 @@ public final class Fges implements GraphSearch, GraphScorer {
         Score score2 = score;
 
         if (score instanceof SemBicScore) {
-            score2 = new SemBicScore(((SemBicScore)score).getDataSet());
+            DataSet dataSet = ((SemBicScore) score).getDataSet();
+
+            if (dataSet != null) {
+                score2 = new SemBicScore(dataSet);
+            } else {
+                ICovarianceMatrix cov = ((SemBicScore) score).getCovariances();
+
+                if (cov != null) {
+                    score2 = new SemBicScore(cov);
+                }
+            }
         }
 
         dag = GraphUtils.replaceNodes(dag, getVariables());
