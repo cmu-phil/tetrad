@@ -264,6 +264,18 @@ public final class Fges implements GraphSearch, GraphScorer {
             initializeForwardEdgesFromExistingGraph(getVariables());
             fes();
             bes();
+
+            fes();
+            bes();
+
+            fes();
+            bes();
+
+            fes();
+            bes();
+
+            fes();
+            bes();
         }
 
         this.modelScore = scoreDag(SearchGraphUtils.dagFromPattern(graph), true);

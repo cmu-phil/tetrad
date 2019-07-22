@@ -392,6 +392,8 @@ public class SemBicScore implements Score {
     }
 
     private synchronized double getErrorThreshold() {
+        if (true) return 0;
+
         if (Double.isNaN(errorThreshold)) {
             FDistribution f = new FDistribution(getSampleSize() - 1,
                     getSampleSize() - 1);

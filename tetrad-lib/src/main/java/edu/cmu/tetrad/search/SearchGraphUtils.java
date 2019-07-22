@@ -1548,6 +1548,117 @@ public final class SearchGraphUtils {
 ////        return graph;
     }
 
+    public static Graph patternFromEPattern(Graph ePattern) {
+        ePattern = new EdgeListGraph(ePattern);
+
+        MeekRules rules = new MeekRules();
+        rules.orientImplied(ePattern);
+
+        List<Triple> ambiguousTriples = new ArrayList<>(ePattern.getAmbiguousTriples());
+
+        while (!ambiguousTriples.isEmpty()) {
+            Triple triple = ambiguousTriples.get(0);
+
+            Node x = triple.getX();
+            Node y = triple.getY();
+            Node z = triple.getZ();
+
+            if (!ePattern.isDefCollider(x, y, z)) {
+                ePattern.removeEdge(x, y);
+                ePattern.removeEdge(z, y);
+                ePattern.addDirectedEdge(x, y);
+                ePattern.addDirectedEdge(z, y);
+            }
+
+            rules.orientImplied(ePattern);
+            removeExtraAmbiguousTriples(ePattern, ambiguousTriples);
+        }
+
+        return ePattern;
+    }
+
+    private static void removeExtraAmbiguousTriples(Graph graph, List<Triple> ambiguousTriples) {
+        Set<Triple> ambiguities = graph.getAmbiguousTriples();
+
+        for (Triple triple : new HashSet<>(ambiguities)) {
+            final Node x = triple.getX();
+            final Node y = triple.getY();
+            final Node z = triple.getZ();
+
+            if (!graph.isAdjacentTo(x, y) || !graph.isAdjacentTo(y, x)) {
+                graph.removeAmbiguousTriple(x, y, z);
+                ambiguousTriples.remove(triple);
+            }
+
+            if (graph.isDefCollider(x, y, z)) {
+                graph.removeAmbiguousTriple(x, y, z);
+                ambiguousTriples.remove(triple);
+            }
+
+            if (graph.getEdge(x, y).pointsTowards(x) || graph.getEdge(y, z).pointsTowards(z)) {
+                graph.removeAmbiguousTriple(x, y, z);
+                ambiguousTriples.remove(triple);
+            }
+        }
+    }
+
+    public static Graph bestPatternFromEPattern(Graph ePattern, DataSet dataSet, int maxCount) {
+        ePattern = new EdgeListGraph(ePattern);
+        Graph out = new EdgeListGraph();
+
+        MeekRules rules = new MeekRules();
+        rules.orientImplied(ePattern);
+        double bestBIC = Double.NEGATIVE_INFINITY;
+
+        List<Triple> _ambiguousTriples = new ArrayList<>(ePattern.getAmbiguousTriples());
+
+        for (int c = 0; c < maxCount; c++) {
+            Graph _ePattern = new EdgeListGraph(ePattern);
+
+            List<Triple> ambiguousTriples = new ArrayList<>(_ambiguousTriples);
+            Collections.shuffle(ambiguousTriples);
+
+            while (!ambiguousTriples.isEmpty()) {
+                Triple triple = ambiguousTriples.get(0);
+
+                Node x = triple.getX();
+                Node y = triple.getY();
+                Node z = triple.getZ();
+
+                if (!_ePattern.isDefCollider(x, y, z)) {
+                    _ePattern.removeEdge(x, y);
+                    _ePattern.removeEdge(z, y);
+                    _ePattern.addDirectedEdge(x, y);
+                    _ePattern.addDirectedEdge(z, y);
+                }
+
+                rules.orientImplied(_ePattern);
+                removeExtraAmbiguousTriples(_ePattern, ambiguousTriples);
+            }
+
+            Graph dag = chooseDagInPattern(_ePattern);
+            double bic = SemBicScorer.scoreDag(dag, dataSet);
+
+            if (bic > bestBIC){
+                bestBIC = bic;
+                out = _ePattern;
+            }
+        }
+
+
+        return out;
+    }
+
+    private static List<Triple> asList(int[] indices, List<Triple> nodes) {
+        List<Triple> list = new LinkedList<>();
+
+        for (int i : indices) {
+            list.add(nodes.get(i));
+        }
+
+        return list;
+    }
+
     private static void direct(Node a, Node c, Graph graph) {
         Edge before = graph.getEdge(a, c);
         Edge after = Edges.directedEdge(a, c);

@@ -89,7 +89,7 @@ public class ExampleCompareSimulation {
         parameters.set("faithfulnessAssumed", true);
         parameters.set("maxDegree", 100);
 
-        parameters.set("penaltyDiscount", 1, 2, 3, 4);//, 6, 6, 10, 20, 30);
+        parameters.set("penaltyDiscount", 1, 1.2, 1.5, 2, 3, 4);//, 6, 6, 10, 20, 30);
         parameters.set("structurePrior", 0);
         parameters.set("thresholdAlpha", .5);//.1, .2, .3,.4, .45, .46, .47, .48, .49, .5);
 
@@ -101,8 +101,8 @@ public class ExampleCompareSimulation {
 
 //        statistics.add(new ParameterColumn("alpha"));
 //        statistics.add(new ParameterColumn("colliderDiscoveryRule"));
-        statistics.add(new ParameterColumn("thresholdAlpha"));
-//        statistics.add(new ParameterColumn("penaltyDiscount"));
+//        statistics.add(new ParameterColumn("thresholdAlpha"));
+        statistics.add(new ParameterColumn("penaltyDiscount"));
 
         statistics.add(new NumberOfEdgesEst());
         statistics.add(new AdjacencyTPR());
@@ -124,7 +124,7 @@ public class ExampleCompareSimulation {
 
         Algorithms algorithms = new Algorithms();
 
-//        algorithms.add(new PcAll(new FisherZ()));
+        algorithms.add(new PcAll(new FisherZ()));
         algorithms.add(new Fges(new SemBicScore()));
 
         Simulations simulations = new Simulations();
