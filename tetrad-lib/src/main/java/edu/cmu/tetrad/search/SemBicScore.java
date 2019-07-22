@@ -84,9 +84,6 @@ public class SemBicScore implements Score {
     // A number subtracted from score differences.
     private double thresholdAlpha = 0.5;
 
-    // True if forward search, false if backward search.
-    private boolean forward = true;
-
     // The amount by which the score should be adjusted due to error about the true bump scores.
     private double errorThreshold = Double.NaN;
 
@@ -319,25 +316,6 @@ public class SemBicScore implements Score {
         this.covariances = covariances;
     }
 
-
-    private double logdet(TetradMatrix m) {
-        if (m.columns() == 0) {
-            return 1;
-        }
-
-        RealMatrix M = m.getRealMatrix();
-        final double tol = 1e-9;
-        RealMatrix LT = new org.apache.commons.math3.linear.CholeskyDecomposition(M, tol, tol).getLT();
-
-        double sum = 0.0;
-
-        for (int i = 0; i < LT.getRowDimension(); i++) {
-            sum += FastMath.log(LT.getEntry(i, i));
-        }
-
-        return sum;
-    }
-
     private double getStructurePrior(int parents) {
         if (abs(getStructurePrior()) <= 0) {
             return 0;
@@ -422,22 +400,6 @@ public class SemBicScore implements Score {
         }
 
         return errorThreshold;
-    }
-
-    public boolean isForward() {
-        return forward;
-    }
-
-    public void setForward(boolean forward) {
-        this.forward = forward;
-    }
-
-    private TetradMatrix getCoefs2(TetradMatrix x, TetradMatrix y) {
-        TetradMatrix xT = x.transpose();
-        TetradMatrix xTx = xT.times(x);
-        TetradMatrix xTxInv = xTx.inverse();
-        TetradMatrix xTy = xT.times(y);
-        return xTxInv.times(xTy);
     }
 }
 
