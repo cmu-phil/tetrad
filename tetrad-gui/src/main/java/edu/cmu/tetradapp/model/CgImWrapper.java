@@ -68,14 +68,14 @@ public class CgImWrapper implements SessionModel, Memorable {
     }
     
     private void setCgIm(CgPm cgPm, CgIm oldCgIm, int manual) {
-    	System.out.println("setCgIm(CgPm cgPm, CgIm oldCgIm, int manual)");
+    	//System.out.println("setCgIm(CgPm cgPm, CgIm oldCgIm, int manual)");
     	
     	cgIms = new ArrayList<>();
     	cgIms.add(new CgIm(cgPm, oldCgIm, manual));
     }
     
     public CgImWrapper(Simulation simulation) {
-    	System.out.println("CgImWrapper(Simulation simulation)");
+    	//System.out.println("CgImWrapper(Simulation simulation)");
     	
     	List<CgIm> cgIms = null;
     	
@@ -111,7 +111,7 @@ public class CgImWrapper implements SessionModel, Memorable {
     //}
     
     public CgImWrapper(CgPmWrapper cgPmWrapper, Parameters params) {
-    	System.out.println("CgImWrapper(CgPmWrapper cgPmWrapper, Parameters params)");
+    	//System.out.println("CgImWrapper(CgPmWrapper cgPmWrapper, Parameters params)");
     	
     	if(cgPmWrapper == null) {
     		throw new NullPointerException("CgPmWrapper must not be null.");
@@ -124,7 +124,7 @@ public class CgImWrapper implements SessionModel, Memorable {
     	CgPm cgPm = new CgPm(cgPmWrapper.getCgPm());
     	
     	String initModeParam = params.getString("initializationMode", "manualRetain");
-    	System.out.println("params.getString(\"initializationMode\", \"manualRetain\"): " + initModeParam);
+    	//System.out.println("params.getString(\"initializationMode\", \"manualRetain\"): " + initModeParam);
     	if (initModeParam.equalsIgnoreCase("manualRetain")) {
     		setCgIm(new CgIm(cgPm, CgIm.MANUAL));
     	} else if (initModeParam.equalsIgnoreCase("randomRetain")) {
@@ -135,7 +135,7 @@ public class CgImWrapper implements SessionModel, Memorable {
     }
     
     public CgImWrapper(CgImWrapper cgImWrapper) {
-    	System.out.println("CgImWrapper(CgImWrapper cgImWrapper)");
+    	//System.out.println("CgImWrapper(CgImWrapper cgImWrapper)");
     	
     	if(cgImWrapper == null) {
     		throw new NullPointerException();
@@ -145,7 +145,7 @@ public class CgImWrapper implements SessionModel, Memorable {
     }
     
     public CgImWrapper(CgIm cgIm) {
-    	System.out.println("CgImWrapper(CgIm cgIm)");
+    	//System.out.println("CgImWrapper(CgIm cgIm)");
     	
     	if(cgIm == null) {
     		throw new NullPointerException("CG IM must not be null.");

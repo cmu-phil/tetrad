@@ -43,6 +43,17 @@ public class CgPmWrapper implements SessionModel {
      * Creates a new CgPm from the given DAG and uses it to construct a new
      * CgPm.
      */
+    public CgPmWrapper(CgImWrapper wrapper) {
+    	cgPms = new ArrayList<>();
+    	
+    	for (int i = 0; i < wrapper.getNumModels(); i++) {
+            wrapper.setModelIndex(i);
+            cgPms.add(wrapper.getCgIm().getCgPm());
+    	}
+    	
+    	numModels = wrapper.getNumModels();
+    }
+    
     public CgPmWrapper(Graph graph, Parameters params) {
         if (graph == null) {
             throw new NullPointerException("Graph must not be null.");

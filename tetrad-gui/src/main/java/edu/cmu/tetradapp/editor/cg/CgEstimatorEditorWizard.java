@@ -27,24 +27,24 @@ import edu.cmu.tetradapp.workbench.GraphWorkbench;
 import edu.pitt.dbmi.cg.CgIm;
 
 /**
- * Jul 2, 2019 3:44:43 PM
+ * Jul 22, 2019 3:28:29 PM
  *
  * @author Chirayu Kong Wongchokprasitti, PhD (chw20@pitt.edu)
  *
  */
-public class CgImEditorWizard extends JPanel {
+public class CgEstimatorEditorWizard extends JPanel {
 
 	private static final long serialVersionUID = 1L;
 
 	private CgIm cgIm;
 	private JComboBox<Node> varNamesComboBox;
-	private GraphWorkbench workbench;
-	private CgImNodeEditingPanel editingPanel;
+    private GraphWorkbench workbench;
+    private CgImNodeEditingPanel editingPanel;
 	private JPanel tablePanel;
 	
-    private boolean enableEditing = true;
-
-	public CgImEditorWizard(CgIm cgIm, GraphWorkbench workbench) {
+	private boolean enableEditing = true;
+	
+	public CgEstimatorEditorWizard(CgIm cgIm, GraphWorkbench workbench) {
 		if(cgIm == null) {
 			throw new NullPointerException();
 		}
@@ -111,7 +111,7 @@ public class CgImEditorWizard extends JPanel {
             ++current;
 
             if (current == max) {
-                JOptionPane.showMessageDialog(CgImEditorWizard.this,
+                JOptionPane.showMessageDialog(CgEstimatorEditorWizard.this,
                         "There are no more variables.");
             }
 
@@ -132,8 +132,7 @@ public class CgImEditorWizard extends JPanel {
 		this.cgIm = cgIm;
 		this.workbench = workbench;
 	}
-	
-	
+    
 	private void setCurrentNode(Node node) {
 		editingPanel = new CgImNodeEditingPanel(node, cgIm);
         editingPanel.addPropertyChangeListener((evt) -> {
@@ -152,7 +151,6 @@ public class CgImEditorWizard extends JPanel {
         
         editingPanel.grabFocus();
 	}
-
 
 	private JComboBox<Node> createVarNamesComboBox(CgIm cgIm) {
 		JComboBox<Node> varNameComboBox = new JComboBox<>();
@@ -174,6 +172,7 @@ public class CgImEditorWizard extends JPanel {
 	public CgIm getCgIm() {
 		return cgIm;
 	}
+
 
 	private GraphWorkbench getWorkbench() {
         return workbench;

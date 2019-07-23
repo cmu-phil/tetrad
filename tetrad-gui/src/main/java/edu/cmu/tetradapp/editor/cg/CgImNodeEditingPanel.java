@@ -43,12 +43,8 @@ public class CgImNodeEditingPanel extends JPanel {
         int cgContIdx = cgIm.getCgContinuousNodeIndex(node);
         int cgDiscreteIdx = cgIm.getCgDiscreteNodeIndex(node);
         
-        //System.out.println("cgContIdx: " + cgContIdx);
-        //System.out.println("cgDiscreteIdx: " + cgDiscreteIdx);
-        
         // Bayes
         if(node instanceof DiscreteVariable && cgDiscreteIdx < 0) {
-        	System.out.println("Bayes");
         	BayesImNodeEditingTable editingTable = new BayesImNodeEditingTable(node, cgIm.getBayesIm());
         	editingTable.addPropertyChangeListener((evt) -> {
                 if ("modelChanged".equals(evt.getPropertyName())) {
@@ -62,12 +58,10 @@ public class CgImNodeEditingPanel extends JPanel {
         	add(scroll, BorderLayout.CENTER);
         // SEM
         } else if (node instanceof ContinuousVariable && cgContIdx < 0) {
-        	System.out.println("SEM");
         	CgSemParameterEditor semEditor = new CgSemParameterEditor(cgIm, node);
         	add(semEditor, BorderLayout.CENTER);
         // CG Discrete
         } else if(cgDiscreteIdx > -1) {
-        	System.out.println("CG Discrete");
         	CgDiscreteNodeEditingTable editingTable = new CgDiscreteNodeEditingTable(cgIm, node);
         	editingTable.addPropertyChangeListener((evt) -> {
                 if ("modelChanged".equals(evt.getPropertyName())) {
@@ -81,7 +75,6 @@ public class CgImNodeEditingPanel extends JPanel {
         	add(scroll, BorderLayout.CENTER);
         // CG Continuous
         } else if(cgContIdx > -1) {
-        	System.out.println("CG Continuous");
         	CgContinuousParameterEditor cgContEditor = new CgContinuousParameterEditor(cgIm, node);
         	add(cgContEditor, BorderLayout.CENTER);
         } else {

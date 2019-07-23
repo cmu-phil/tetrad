@@ -3,18 +3,24 @@
  */
 package edu.cmu.tetradapp.editor.cg;
 
+import java.awt.FontMetrics;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.text.NumberFormat;
 
 import javax.swing.JComponent;
+import javax.swing.JOptionPane;
 import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.table.AbstractTableModel;
+import javax.swing.table.TableColumn;
 
 import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.util.JOptionUtils;
+import edu.cmu.tetrad.util.NumberFormatUtil;
 import edu.cmu.tetradapp.editor.NumberCellEditor;
 import edu.cmu.tetradapp.editor.NumberCellRenderer;
 import edu.pitt.dbmi.cg.CgIm;
@@ -31,8 +37,6 @@ public class CgDiscreteNodeEditingTable extends JTable {
 
 	private int focusRow = 0;
     private int focusCol = 0;
-    private int lastX;
-    private int lastY;
 
     /**
      * Constructs a new editing table from a given editing table model.
@@ -73,9 +77,44 @@ public class CgDiscreteNodeEditingTable extends JTable {
 
         });
 
+        ListSelectionModel columnSelectionModel = getColumnModel()
+                .getSelectionModel();
+        
+        columnSelectionModel.addListSelectionListener(new ListSelectionListener() {
+            public void valueChanged(ListSelectionEvent e) {
+                ListSelectionModel m =
+                        (ListSelectionModel) (e.getSource());
+                setFocusColumn(m.getAnchorSelectionIndex());
+            }
+        });
+        
         setFocusRow(0);
+        setFocusColumn(0);
     }
     
+    public void createDefaultColumnsFromModel() {
+        super.createDefaultColumnsFromModel();
+
+        if (getModel() instanceof Model) {
+            FontMetrics fontMetrics = getFontMetrics(getFont());
+            Model model = (Model) getModel();
+
+            for (int i = 0; i < model.getColumnCount(); i++) {
+                TableColumn column = getColumnModel().getColumn(i);
+                String columnName = model.getColumnName(i);
+                int currentWidth = column.getPreferredWidth();
+
+                if (columnName != null) {
+                    int minimumWidth = fontMetrics.stringWidth(columnName) + 8;
+
+                    if (minimumWidth > currentWidth) {
+                        column.setPreferredWidth(minimumWidth);
+                    }
+                }
+            }
+        }
+    }
+
     /**
      * Sets the focus row to the anchor row currently being selected.
      */
@@ -100,6 +139,26 @@ public class CgDiscreteNodeEditingTable extends JTable {
         }
 		
 	}
+
+    /**
+     * Sets the focus column to the anchor column currently being selected.
+     */
+    private void setFocusColumn(int col) {
+        Model editingTableModel = (Model) getModel();
+        int failedCol = editingTableModel.getFailedCol();
+
+        if (failedCol != -1) {
+            col = failedCol;
+            editingTableModel.resetFailedCol();
+        }
+    	
+        int numColumns = getColumnCount();
+        
+        this.focusCol = numColumns - 1;
+        
+        setColumnSelectionInterval(focusCol, focusCol);
+        editCellAt(focusRow, focusCol);
+    }
 
 	private static final class Model extends AbstractTableModel {
     	
@@ -244,8 +303,164 @@ public class CgDiscreteNodeEditingTable extends JTable {
 			}
 		}
 		
+        /**
+         * Sets the value of the cell at (rowIndex, columnIndex) to 'aValue'.
+         */
+        public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
+        	int currentRowIndex = rowIndex;
+        	int numCategories = cgIm.getCgDiscreteNumColumns(nodeIndex);
+			int colIndex = rowIndex % numCategories;
+			
+			rowIndex = rowIndex / numCategories;
+			
+			if ("".equals(aValue) || aValue == null) {
+				cgIm.setCgDiscreteProbability(nodeIndex, rowIndex, colIndex, Double.NaN);
+				fireTableRowsUpdated(currentRowIndex, currentRowIndex);
+				getPcs().firePropertyChange("modelChanged", null, null);
+                return;
+			}
+        	
+			try {
+				NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
+
+                double probability = Double.parseDouble((String) aValue);
+                double sumInColumn = sumInColumn(rowIndex, columnIndex) + probability;
+                
+                double oldProbability = cgIm.getCgDiscreteNodeProbability(nodeIndex, rowIndex, colIndex);
+                
+                if (!Double.isNaN(oldProbability)) {
+                    oldProbability = Double.parseDouble(nf.format(oldProbability));
+                }
+
+                if (Math.abs(probability - oldProbability) <= .00005) {
+                    return;
+                }
+                
+                if (probabilityOutOfRange(probability)) {
+                    JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
+                            "Probabilities must be in range [0.0, 1.0].");
+                    failedRow = currentRowIndex;
+                    failedCol = getColumnCount() - 1;
+                } else if (numNanRows(rowIndex) == 0) {
+                	if (sumInColumn < 0.99995 || sumInColumn > 1.00005) {
+                		emptyColumns(rowIndex);
+                		cgIm.setCgDiscreteProbability(nodeIndex, rowIndex, colIndex, probability);
+                		if (numCategories == 2) {
+                			fillInSingleRemainingRow(rowIndex);
+                		}
+                		fireTableRowsUpdated(currentRowIndex, currentRowIndex);
+                        getPcs().firePropertyChange("modelChanged", null,
+                                null);
+                	}
+                } else if (sumInColumn > 1.00005) {
+                	JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
+                            "Sum of probabilities in row must not exceed 1.0.");
+                	failedRow = currentRowIndex;
+                    failedCol = getColumnCount() - 1;
+                } else {
+                	cgIm.setCgDiscreteProbability(nodeIndex, rowIndex, colIndex, probability);
+                	fillInSingleRemainingRow(rowIndex);
+                	fillInZerosIfSumIsOne(rowIndex);
+                	fireTableRowsUpdated(currentRowIndex, currentRowIndex);
+                    getPcs().firePropertyChange("modelChanged", null,
+                            null);
+                }
+                
+			} catch(Exception e) {
+				e.printStackTrace();
+                JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
+                        "Could not interpret '" + aValue + "'");
+                failedRow = currentRowIndex;
+                failedCol = getColumnCount() - 1;
+			}
+        }
+		
+        private boolean probabilityOutOfRange(double value) {
+            return value < 0.0 || value > 1.0;
+        }
+        
+        private int uniqueNanCol(int rowIndex) {
+        	int numCategories = cgIm.getCgDiscreteNumColumns(nodeIndex);
+        	
+        	for(int i=0;i < numCategories;i++) {
+        		double probability = cgIm.getCgDiscreteNodeProbability(nodeIndex, rowIndex, i);
+        		
+        		if(Double.isNaN(probability)) {
+        			return i;
+        		}
+        	}
+        	
+        	return -1;
+        }
+        
+        private void fillInZerosIfSumIsOne(int rowIndex) {
+        	double sum = sumInColumn(rowIndex, -1);
+        	int numCategories = cgIm.getCgDiscreteNumColumns(nodeIndex);
+        	
+        	if (sum > 0.9995 && sum < 1.0005) {
+        		for(int i=0;i < numCategories;i++) {
+        			double probability = cgIm.getCgDiscreteNodeProbability(nodeIndex, rowIndex, i);
+        			
+        			if(Double.isNaN(probability)) {
+        				cgIm.setCgDiscreteProbability(nodeIndex, rowIndex, i, 0.0);
+            		}
+        		}
+        	}
+        }
+        
+        private void fillInSingleRemainingRow(int rowIndex) {
+        	int leftOverColumn = uniqueNanCol(rowIndex);
+        	
+        	if (leftOverColumn != -1) {
+                double difference = 1.0 - sumInColumn(rowIndex, leftOverColumn);
+                cgIm.setCgDiscreteProbability(nodeIndex, rowIndex, leftOverColumn, difference);
+        	}
+        }
+        
+        private void emptyColumns(int rowIndex) {
+        	int numCategories = cgIm.getCgDiscreteNumColumns(nodeIndex);
+        	
+        	for(int i=0;i < numCategories;i++) {
+        		cgIm.setCgDiscreteProbability(nodeIndex, rowIndex, i, Double.NaN);
+        	}
+        }
+        
+        private int numNanRows(int rowIndex) {
+        	int count = 0;
+        	int numCategories = cgIm.getCgDiscreteNumColumns(nodeIndex);
+        	
+        	for(int i=0;i < numCategories;i++) {
+        		double probability = cgIm.getCgDiscreteNodeProbability(nodeIndex, rowIndex, i);
+        		
+        		if(Double.isNaN(probability)) {
+        			count++;
+        		}
+        	}
+        	
+        	return count;
+        }
+
+        private double sumInColumn(int rowIndex, int skipColumnIndex) {
+        	double sum = 0.0;
+        	int numCategories = cgIm.getCgDiscreteNumColumns(nodeIndex);
+        	
+        	for(int i=0;i < numCategories;i++) {
+        		double probability = cgIm.getCgDiscreteNodeProbability(nodeIndex, rowIndex, i);
+        		
+        		if (i != skipColumnIndex && !Double.isNaN(probability)) {
+        			NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
+                    probability = Double.parseDouble(nf.format(probability));
+
+                    sum += probability;
+        		}
+        		
+        	}
+        	
+        	return sum;
+        }
+        
 		public boolean isCellEditable(int row, int col) {
-			return false;
+			return col == getColumnCount() - 1;
 		}
 		
         public void addPropertyChangeListener(PropertyChangeListener l) {
