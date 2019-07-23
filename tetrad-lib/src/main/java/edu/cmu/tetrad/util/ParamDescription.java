@@ -28,7 +28,7 @@ public class ParamDescription {
         if (shortDescription == null) {
             throw new NullPointerException("Target parameter short description is null.");
         }
-        
+
         if (defaultValue == null) {
             throw new NullPointerException("No default value for " + paramName);
         }
@@ -38,7 +38,7 @@ public class ParamDescription {
         this.longDescription = longDescription;
         this.defaultValue = defaultValue;
     }
-    
+
     public ParamDescription(String paramName, String shortDescription, String longDescription, Serializable defaultValue, int lowerBound, int upperBound) {
         if (paramName == null) {
             throw new NullPointerException("Target parameter name is null.");
@@ -47,7 +47,7 @@ public class ParamDescription {
         if (shortDescription == null) {
             throw new NullPointerException("Target parameter short description is null.");
         }
-        
+
         if (defaultValue == null) {
             throw new NullPointerException("No default value for " + paramName);
         }
@@ -59,7 +59,7 @@ public class ParamDescription {
         this.lowerBoundInt = lowerBound;
         this.upperBoundInt = upperBound;
     }
-    
+
     public ParamDescription(String paramName, String shortDescription, String longDescription, Serializable defaultValue, double lowerBound, double upperBound) {
         if (paramName == null) {
             throw new NullPointerException("Target parameter name is null.");
@@ -68,7 +68,7 @@ public class ParamDescription {
         if (shortDescription == null) {
             throw new NullPointerException("Target parameter short description is null.");
         }
-        
+
         if (defaultValue == null) {
             throw new NullPointerException("No default value for " + paramName);
         }
@@ -144,5 +144,5 @@ public class ParamDescription {
     public void setUpperBoundInt(int upperBoundInt) {
         this.upperBoundInt = upperBoundInt;
     }
-    
+
 }

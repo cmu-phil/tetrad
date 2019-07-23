@@ -26,7 +26,6 @@ import edu.cmu.tetrad.algcomparison.graph.RandomForward;
 import edu.cmu.tetrad.algcomparison.graph.RandomGraph;
 import edu.cmu.tetrad.algcomparison.independence.FisherZ;
 import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
-import edu.cmu.tetrad.algcomparison.independence.SemBicDTest;
 import edu.cmu.tetrad.algcomparison.independence.SemBicTest;
 import edu.cmu.tetrad.algcomparison.score.FisherZScore;
 import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
@@ -40,25 +39,18 @@ import edu.cmu.tetrad.bayes.MlBayesIm;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.*;
-import edu.cmu.tetrad.search.Fges;
-import edu.cmu.tetrad.search.Pc;
-import edu.cmu.tetrad.search.SemBicScore;
 import edu.cmu.tetrad.sem.*;
 import edu.cmu.tetrad.util.*;
 import edu.pitt.csb.mgm.MGM;
 import edu.pitt.csb.mgm.MixedUtils;
-import org.junit.Test;
-import org.junit.rules.TestWatcher;
-
 import java.io.*;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.*;
-
-import static java.lang.Math.exp;
 import static junit.framework.TestCase.assertFalse;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+import org.junit.Test;
 
 /**
  * @author Joseph Ramsey
@@ -382,25 +374,25 @@ public class TestFges {
 
         Parameters parameters = new Parameters();
 
-        parameters.set("numMeasures", 100);
-        parameters.set("numLatents", 0);
-        parameters.set("coefLow", 0.2);
-        parameters.set("coefHigh", 0.8);
-        parameters.set("avgDegree", 2);
-        parameters.set("maxDegree", 100);
-        parameters.set("maxIndegree", 100);
-        parameters.set("maxOutdegree", 100);
-        parameters.set("connected", false);
+        parameters.set(Params.NUM_MEASURES, 100);
+        parameters.set(Params.NUM_LATENTS, 0);
+        parameters.set(Params.COEF_LOW, 0.2);
+        parameters.set(Params.COEF_HIGH, 0.8);
+        parameters.set(Params.AVG_DEGREE, 2);
+        parameters.set(Params.MAX_DEGREE, 100);
+        parameters.set(Params.MAX_INDEGREE, 100);
+        parameters.set(Params.MAX_OUTDEGREE, 100);
+        parameters.set(Params.CONNECTED, false);
 
-        parameters.set("numRuns", 1);
-        parameters.set("differentGraphs", false);
-        parameters.set("sampleSize", 1000);
+        parameters.set(Params.NUM_RUNS, 1);
+        parameters.set(Params.DIFFERENT_GRAPHS, false);
+        parameters.set(Params.SAMPLE_SIZE, 1000);
 
-        parameters.set("faithfulnessAssumed", false);
-        parameters.set("maxDegree", -1);
-        parameters.set("verbose", false);
+        parameters.set(Params.FAITHFULNESS_ASSUMED, false);
+        parameters.set(Params.MAX_DEGREE, -1);
+        parameters.set(Params.VERBOSE, false);
 
-        parameters.set("alpha", 0.01);
+        parameters.set(Params.ALPHA, 0.01);
 
         simulation.createData(parameters);
 
@@ -423,7 +415,7 @@ public class TestFges {
 
     private void clarkTestForAlpha(double alpha, Parameters parameters, DataSet dataSet, Graph trueGraph,
                                    Graph pattern, IndependenceWrapper test) {
-        parameters.set("alpha", alpha);
+        parameters.set(Params.ALPHA, alpha);
 
         List<Node> nodes = dataSet.getVariables();
 
@@ -732,34 +724,34 @@ public class TestFges {
     @Test
     public void testFromData() {
         Parameters parameters = new Parameters();
-        parameters.set("standardize", false);
-        parameters.set("measurementVariance", 0);
-        parameters.set("numRuns", 1);
-        parameters.set("differentGraphs", true);
-        parameters.set("sampleSize", 1000);
+        parameters.set(Params.STANDARDIZE, false);
+        parameters.set(Params.MEASUREMENT_VARIANCE, 0);
+        parameters.set(Params.NUM_RUNS, 1);
+        parameters.set(Params.DIFFERENT_GRAPHS, true);
+        parameters.set(Params.SAMPLE_SIZE, 1000);
 
-        parameters.set("numMeasures", 100);
-        parameters.set("numLatents", 0);
-        parameters.set("avgDegree", 6);
+        parameters.set(Params.NUM_MEASURES, 100);
+        parameters.set(Params.NUM_LATENTS, 0);
+        parameters.set(Params.AVG_DEGREE, 6);
 
 //        parameters.set("maxDegree", 100);
 //        parameters.set("maxIndegree", 100);
 //        parameters.set("maxOutdegree", 100);
 
-        parameters.set("symmetricFirstStep", true);
+        parameters.set(Params.SYMMETRIC_FIRST_STEP, true);
 
-        parameters.set("faithfulnessAssumed", false);
-        parameters.set("penaltyDisount", 2);
-        parameters.set("alpha", 0.001);
+        parameters.set(Params.FAITHFULNESS_ASSUMED, false);
+        parameters.set(Params.PENALTY_DISCOUNT, 2);
+        parameters.set(Params.ALPHA, 0.001);
 
-        parameters.set("coefLow", 0.2);
-        parameters.set("coefHigh", 0.9);
-        parameters.set("varLow", 1);
-        parameters.set("varHigh", 3);
-        parameters.set("coefSymmetric", true);
-        parameters.set("covSymmetric", true);
+        parameters.set(Params.COEF_LOW, 0.2);
+        parameters.set(Params.COEF_HIGH, 0.9);
+        parameters.set(Params.VAR_LOW, 1);
+        parameters.set(Params.VAR_HIGH, 3);
+        parameters.set(Params.COEF_SYMMETRIC, true);
+        parameters.set(Params.COV_SYMMETRIC, true);
 
-        parameters.set("randomizeColumns", true);
+        parameters.set(Params.RANDOMIZE_COLUMNS, true);
 
         SemSimulation simulation = new SemSimulation(new RandomForward());
         simulation.createData(parameters);
@@ -1477,29 +1469,29 @@ public class TestFges {
 
         Parameters parameters = new Parameters();
 
-        parameters.set("numMeasures", 50);
-        parameters.set("numLatents", 0);
-        parameters.set("avgDegree", 2);
-        parameters.set("maxDegree", 20);
-        parameters.set("maxIndegree", 20);
-        parameters.set("maxOutdegree", 20);
-        parameters.set("connected", false);
+        parameters.set(Params.NUM_MEASURES, 50);
+        parameters.set(Params.NUM_LATENTS, 0);
+        parameters.set(Params.AVG_DEGREE, 2);
+        parameters.set(Params.MAX_DEGREE, 20);
+        parameters.set(Params.MAX_INDEGREE, 20);
+        parameters.set(Params.MAX_OUTDEGREE, 20);
+        parameters.set(Params.CONNECTED, false);
 
-        parameters.set("coefLow", 0.2);
-        parameters.set("coefHigh", 0.9);
-        parameters.set("varLow", 1);
-        parameters.set("varHigh", 3);
-        parameters.set("verbose", false);
-        parameters.set("coefSymmetric", true);
-        parameters.set("numRuns", 1);
-        parameters.set("percentDiscrete", 0);
-        parameters.set("numCategories", 3);
-        parameters.set("differentGraphs", true);
-        parameters.set("sampleSize", 500);
-        parameters.set("intervalBetweenShocks", 10);
-        parameters.set("intervalBetweenRecordings", 10);
-        parameters.set("fisherEpsilon", 0.001);
-        parameters.set("randomizeColumns", true);
+        parameters.set(Params.COEF_LOW, 0.2);
+        parameters.set(Params.COEF_HIGH, 0.9);
+        parameters.set(Params.VAR_LOW, 1);
+        parameters.set(Params.VAR_HIGH, 3);
+        parameters.set(Params.VERBOSE, false);
+        parameters.set(Params.COEF_SYMMETRIC, true);
+        parameters.set(Params.NUM_RUNS, 1);
+        parameters.set(Params.PERCENT_DISCRETE, 0);
+        parameters.set(Params.NUM_CATEGORIES, 3);
+        parameters.set(Params.DIFFERENT_GRAPHS, true);
+        parameters.set(Params.SAMPLE_SIZE, 500);
+        parameters.set(Params.INTERVAL_BETWEEN_SHOCKS, 10);
+        parameters.set(Params.INTERVAL_BETWEEN_RECORDINGS, 10);
+        parameters.set(Params.FISHER_EPSILON, 0.001);
+        parameters.set(Params.RANDOMIZE_COLUMNS, true);
 
         RandomGraph graph = new RandomForward();
         LinearFisherModel sim = new LinearFisherModel(graph);
@@ -1509,7 +1501,7 @@ public class TestFges {
 
 //        for (int l = 7; l >= 1; l--) {
         for (int i = 2; i <= 20; i++) {
-            parameters.set("penaltyDiscount", i / (double) 10);
+            parameters.set(Params.PENALTY_DISCOUNT, i / (double) 10);
 //            parameters.set("alpha", Double.parseDouble("1E-" + l));
 
 //            ScoreWrapper score = new edu.cmu.tetrad.algcomparison.score.SemBicScore();
@@ -1531,7 +1523,7 @@ public class TestFges {
                 edges2.removeAll(edges1);
                 int diff = edges2.size();
 //
-                System.out.println("Penalty discount =" + parameters.getDouble("penaltyDiscount")
+                System.out.println("Penalty discount =" + parameters.getDouble(Params.PENALTY_DISCOUNT)
                         + " # edges = " + numEdges
                         + " # additional = " + diff);
 
@@ -1567,29 +1559,29 @@ public class TestFges {
 
             Parameters parameters = new Parameters();
 
-            parameters.set("numMeasures", numMeasures);
-            parameters.set("numLatents", 0);
-            parameters.set("avgDegree", avgDegree);
-            parameters.set("maxDegree", 20);
-            parameters.set("maxIndegree", 20);
-            parameters.set("maxOutdegree", 20);
-            parameters.set("connected", false);
+            parameters.set(Params.NUM_MEASURES, numMeasures);
+            parameters.set(Params.NUM_LATENTS, 0);
+            parameters.set(Params.AVG_DEGREE, avgDegree);
+            parameters.set(Params.MAX_DEGREE, 20);
+            parameters.set(Params.MAX_INDEGREE, 20);
+            parameters.set(Params.MAX_OUTDEGREE, 20);
+            parameters.set(Params.CONNECTED, false);
 
-            parameters.set("coefLow", 0.2);
-            parameters.set("coefHigh", 0.9);
-            parameters.set("varLow", 1);
-            parameters.set("varHigh", 3);
-            parameters.set("verbose", false);
-            parameters.set("coefSymmetric", true);
-            parameters.set("numRuns", 1);
-            parameters.set("percentDiscrete", 0);
-            parameters.set("numCategories", 3);
-            parameters.set("differentGraphs", true);
-            parameters.set("sampleSize", 1000);
-            parameters.set("intervalBetweenShocks", 10);
-            parameters.set("intervalBetweenRecordings", 10);
-            parameters.set("fisherEpsilon", 0.001);
-            parameters.set("randomizeColumns", true);
+            parameters.set(Params.COEF_LOW, 0.2);
+            parameters.set(Params.COEF_HIGH, 0.9);
+            parameters.set(Params.VAR_LOW, 1);
+            parameters.set(Params.VAR_HIGH, 3);
+            parameters.set(Params.VERBOSE, false);
+            parameters.set(Params.COEF_SYMMETRIC, true);
+            parameters.set(Params.NUM_RUNS, 1);
+            parameters.set(Params.PERCENT_DISCRETE, 0);
+            parameters.set(Params.NUM_CATEGORIES, 3);
+            parameters.set(Params.DIFFERENT_GRAPHS, true);
+            parameters.set(Params.SAMPLE_SIZE, 1000);
+            parameters.set(Params.INTERVAL_BETWEEN_SHOCKS, 10);
+            parameters.set(Params.INTERVAL_BETWEEN_RECORDINGS, 10);
+            parameters.set(Params.FISHER_EPSILON, 0.001);
+            parameters.set(Params.RANDOMIZE_COLUMNS, true);
 
             RandomGraph graph = new RandomForward();
             LinearFisherModel sim = new LinearFisherModel(graph);
@@ -1597,7 +1589,7 @@ public class TestFges {
             ScoreWrapper score = new FisherZScore();
             Algorithm alg = new edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern.Fges(score);
 
-            parameters.set("alpha", 1e-8);
+            parameters.set(Params.ALPHA, 1e-8);
 
             for (int i = 0; i < 5; i++) {
                 Graph out1 = alg.search(sim.getDataModel(0), parameters);

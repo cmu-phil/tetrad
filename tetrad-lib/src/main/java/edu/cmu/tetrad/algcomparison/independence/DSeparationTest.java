@@ -17,7 +17,7 @@ import java.util.List;
  */
 @TestOfIndependence(
         name = "D-Separation Test",
-        command = "d-sep",
+        command = "d-sep-test",
         dataType = DataType.Graph
 )
 public class DSeparationTest implements IndependenceWrapper {

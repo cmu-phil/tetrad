@@ -39,7 +39,7 @@ import javax.swing.JTabbedPane;
  *
  * @author jdramsey
  */
-final class SimulationGraphEditor extends JPanel {
+public final class SimulationGraphEditor extends JPanel {
 
     private static final long serialVersionUID = -8394516826928341168L;
 
@@ -98,6 +98,7 @@ final class SimulationGraphEditor extends JPanel {
         }
 
         this.tabbedPane.validate();
+        this.tabbedPane.repaint();
     }
 
     /**

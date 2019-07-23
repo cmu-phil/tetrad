@@ -9,9 +9,9 @@ import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.sem.LargeScaleSimulation;
 import edu.cmu.tetrad.util.JOptionUtils;
 import edu.cmu.tetrad.util.Parameters;
+import edu.cmu.tetrad.util.Params;
 import edu.cmu.tetrad.util.RandomUtil;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import javax.swing.*;
 
@@ -55,7 +55,7 @@ public class LinearFisherModel implements Simulation, TakesData {
 
     @Override
     public void createData(Parameters parameters) {
-        boolean saveLatentVars = parameters.getBoolean("saveLatentVars");
+        boolean saveLatentVars = parameters.getBoolean(Params.SAVE_LATENT_VARS);
 
         dataSets = new ArrayList<>();
         graphs = new ArrayList<>();
@@ -63,14 +63,14 @@ public class LinearFisherModel implements Simulation, TakesData {
 
         System.out.println("degree = " + GraphUtils.getDegree(graph));
 
-        for (int i = 0; i < parameters.getInt("numRuns"); i++) {
+        for (int i = 0; i < parameters.getInt(Params.NUM_RUNS); i++) {
             System.out.println("Simulating dataset #" + (i + 1));
 
             if (shocks != null && shocks.size() > 0) {
-                parameters.set("numVars", shocks.get(0).getVariables().size());
+                parameters.set(Params.NUM_MEASURES, shocks.get(0).getVariables().size());
             }
 
-            if (parameters.getBoolean("differentGraphs") && i > 0) {
+            if (parameters.getBoolean(Params.DIFFERENT_GRAPHS) && i > 0) {
                 graph = randomGraph.createGraph(parameters);
             }
 
@@ -88,28 +88,28 @@ public class LinearFisherModel implements Simulation, TakesData {
             LargeScaleSimulation simulator = new LargeScaleSimulation(
                     graph, graph.getNodes(), tiers);
             simulator.setCoefRange(
-                    parameters.getDouble("coefLow"),
-                    parameters.getDouble("coefHigh"));
+                    parameters.getDouble(Params.COEF_LOW),
+                    parameters.getDouble(Params.COEF_HIGH));
             simulator.setVarRange(
-                    parameters.getDouble("varLow"),
-                    parameters.getDouble("varHigh"));
-            simulator.setIncludePositiveCoefs(parameters.getBoolean("includePositiveCoefs"));
-            simulator.setIncludeNegativeCoefs(parameters.getBoolean("includeNegativeCoefs"));
-            simulator.setSelfLoopCoef(parameters.getDouble("selfLoopCoef"));
+                    parameters.getDouble(Params.VAR_LOW),
+                    parameters.getDouble(Params.VAR_HIGH));
+            simulator.setIncludePositiveCoefs(parameters.getBoolean(Params.INCLUDE_POSITIVE_COEFS));
+            simulator.setIncludeNegativeCoefs(parameters.getBoolean(Params.INCLUDE_NEGATIVE_COEFS));
+            simulator.setSelfLoopCoef(parameters.getDouble(Params.SELF_LOOP_COEF));
             simulator.setMeanRange(
-                    parameters.getDouble("meanLow"),
-                    parameters.getDouble("meanHigh"));
-            simulator.setErrorsNormal(parameters.getBoolean("errorsNormal"));
-            simulator.setVerbose(parameters.getBoolean("verbose"));
+                    parameters.getDouble(Params.MEAN_LOW),
+                    parameters.getDouble(Params.MEAN_HIGH));
+            simulator.setErrorsNormal(parameters.getBoolean(Params.ERRORS_NORMAL));
+            simulator.setVerbose(parameters.getBoolean(Params.VERBOSE));
 
             DataSet dataSet;
 
             if (shocks == null) {
                 dataSet = simulator.simulateDataFisher(
-                        parameters.getInt("intervalBetweenShocks"),
-                        parameters.getInt("intervalBetweenRecordings"),
-                        parameters.getInt("sampleSize"),
-                        parameters.getDouble("fisherEpsilon"),
+                        parameters.getInt(Params.INTERVAL_BETWEEN_SHOCKS),
+                        parameters.getInt(Params.INTERVAL_BETWEEN_RECORDINGS),
+                        parameters.getInt(Params.SAMPLE_SIZE),
+                        parameters.getDouble(Params.FISHER_EPSILON),
                         saveLatentVars
                 );
             } else {
@@ -117,12 +117,12 @@ public class LinearFisherModel implements Simulation, TakesData {
 
                 dataSet = simulator.simulateDataFisher(
                         _shocks.getDoubleData().toArray(),
-                        parameters.getInt("intervalBetweenShocks"),
-                        parameters.getDouble("fisherEpsilon")
+                        parameters.getInt(Params.INTERVAL_BETWEEN_SHOCKS),
+                        parameters.getDouble(Params.FISHER_EPSILON)
                 );
             }
 
-            double variance = parameters.getDouble("measurementVariance");
+            double variance = parameters.getDouble(Params.MEASUREMENT_VARIANCE);
 
             if (variance > 0) {
                 for (int k = 0; k < dataSet.getNumRows(); k++) {
@@ -155,11 +155,11 @@ public class LinearFisherModel implements Simulation, TakesData {
 //                dataSet.setName(name);
 //            }
 
-            if (parameters.getBoolean("standardize")) {
+            if (parameters.getBoolean(Params.STANDARDIZE)) {
                 dataSet = DataUtils.standardizeData(dataSet);
             }
 
-            if (parameters.getBoolean("randomizeColumns")) {
+            if (parameters.getBoolean(Params.RANDOMIZE_COLUMNS)) {
                 dataSet = DataUtils.reorderColumns(dataSet);
             }
 
@@ -188,31 +188,31 @@ public class LinearFisherModel implements Simulation, TakesData {
         parameters.addAll(randomGraph.getParameters());
 
         if (shocks != null) {
-            parameters.remove("numMeasures");
-            parameters.remove("numLatents");
+            parameters.remove(Params.NUM_MEASURES);
+            parameters.remove(Params.NUM_LATENTS);
         }
 
-        parameters.add("coefLow");
-        parameters.add("coefHigh");
-        parameters.add("varLow");
-        parameters.add("varHigh");
-        parameters.add("verbose");
-        parameters.add("includePositiveCoefs");
-        parameters.add("includeNegativeCoefs");
-        parameters.add("errorsNormal");
-        parameters.add("numRuns");
+        parameters.add(Params.COEF_LOW);
+        parameters.add(Params.COEF_HIGH);
+        parameters.add(Params.VAR_LOW);
+        parameters.add(Params.VAR_HIGH);
+        parameters.add(Params.VERBOSE);
+        parameters.add(Params.INCLUDE_POSITIVE_COEFS);
+        parameters.add(Params.INCLUDE_NEGATIVE_COEFS);
+        parameters.add(Params.ERRORS_NORMAL);
+        parameters.add(Params.NUM_RUNS);
 //        parameters.add("percentDiscrete");
-        parameters.add("numCategories");
-        parameters.add("differentGraphs");
-        parameters.add("sampleSize");
-        parameters.add("intervalBetweenShocks");
-        parameters.add("intervalBetweenRecordings");
-        parameters.add("selfLoopCoef");
-        parameters.add("fisherEpsilon");
-        parameters.add("randomizeColumns");
-        parameters.add("measurementVariance");
-        parameters.add("saveLatentVars");
-        parameters.add("standardize");
+        parameters.add(Params.NUM_CATEGORIES);
+        parameters.add(Params.DIFFERENT_GRAPHS);
+        parameters.add(Params.SAMPLE_SIZE);
+        parameters.add(Params.INTERVAL_BETWEEN_SHOCKS);
+        parameters.add(Params.INTERVAL_BETWEEN_RECORDINGS);
+        parameters.add(Params.SELF_LOOP_COEF);
+        parameters.add(Params.FISHER_EPSILON);
+        parameters.add(Params.RANDOMIZE_COLUMNS);
+        parameters.add(Params.MEASUREMENT_VARIANCE);
+        parameters.add(Params.SAVE_LATENT_VARS);
+        parameters.add(Params.STANDARDIZE);
 
         return parameters;
     }

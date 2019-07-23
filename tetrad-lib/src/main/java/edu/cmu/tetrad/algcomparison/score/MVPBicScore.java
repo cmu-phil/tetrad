@@ -19,7 +19,7 @@ import java.util.List;
 @Experimental
 @edu.cmu.tetrad.annotation.Score(
         name = "Mixed Variable Polynomial BIC Score",
-        command = "mixed-var-polynominal-bic",
+        command = "mvp-bic-score",
         dataType = DataType.Mixed
 )
 public class MVPBicScore implements ScoreWrapper {

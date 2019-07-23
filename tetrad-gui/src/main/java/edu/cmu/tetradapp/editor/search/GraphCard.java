@@ -18,12 +18,10 @@
  */
 package edu.cmu.tetradapp.editor.search;
 
-import edu.cmu.tetrad.annotation.Algorithm;
 import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetradapp.editor.GeneralAlgorithmEditor;
+import edu.cmu.tetradapp.editor.EdgeTypeTable;
 import edu.cmu.tetradapp.model.GeneralAlgorithmRunner;
 import edu.cmu.tetradapp.ui.PaddingPanel;
-import edu.cmu.tetradapp.util.BootstrapTable;
 import edu.cmu.tetradapp.util.ImageUtils;
 import edu.cmu.tetradapp.workbench.GraphWorkbench;
 import java.awt.BorderLayout;
@@ -35,15 +33,14 @@ import java.net.URL;
 import javax.help.CSH;
 import javax.help.HelpBroker;
 import javax.help.HelpSet;
+import javax.swing.BorderFactory;
 import javax.swing.Box;
-import javax.swing.GroupLayout;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
-import javax.swing.SwingConstants;
 import javax.swing.border.EmptyBorder;
 
 /**
@@ -54,67 +51,56 @@ import javax.swing.border.EmptyBorder;
  */
 public class GraphCard extends JPanel {
 
-    private static final long serialVersionUID = 8349434413076189088L;
-
-    private final JButton backBtn = new JButton("<   Set Parameters");
-
-    private final JLabel title = new JLabel();
-    private final JPanel graphContainer = new JPanel(new BorderLayout(0, 5));
-
-    private JSplitPane mainPanel = new JSplitPane();
+    private static final long serialVersionUID = -7654484444146823298L;
 
     private final GeneralAlgorithmRunner algorithmRunner;
 
-    public GraphCard(GeneralAlgorithmEditor algorithmEditor, GeneralAlgorithmRunner algorithmRunner) {
+    public GraphCard(GeneralAlgorithmRunner algorithmRunner) {
         this.algorithmRunner = algorithmRunner;
 
-        initComponents(algorithmEditor);
+        initComponents();
     }
 
-    private void initComponents(GeneralAlgorithmEditor algorithmEditor) {
-        Dimension buttonSize = new Dimension(268, 25);
-        backBtn.setMinimumSize(buttonSize);
-        backBtn.setMaximumSize(buttonSize);
-        backBtn.addActionListener((e) -> {
-            firePropertyChange("graphBack", null, null);
-        });
-
-        title.setHorizontalAlignment(SwingConstants.CENTER);
-        title.setVerticalAlignment(SwingConstants.CENTER);
-
-        graphContainer.add(title, BorderLayout.NORTH);
-        graphContainer.add(mainPanel, BorderLayout.CENTER);
-
+    private void initComponents() {
         setLayout(new BorderLayout());
-        add(new PaddingPanel(graphContainer), BorderLayout.CENTER);
-        add(new SouthPanel(), BorderLayout.SOUTH);
-
-        addPropertyChangeListener(algorithmEditor);
+        setPreferredSize(new Dimension(800, 506));
     }
 
-    /**
-     * Resulting graph with bootstrap table - Zhou
-     *
-     * @param graph
-     * @return
-     */
-    private JSplitPane createSearchResultPane(Graph graph) {
-        // topBox contains the graphEditorScroll and the instructionBox underneath
-        Box topBox = Box.createVerticalBox();
-        topBox.setPreferredSize(new Dimension(820, 400));
+    public void refresh() {
+        removeAll();
 
+        setBorder(BorderFactory.createTitledBorder(algorithmRunner.getAlgorithm().getDescription()));
+
+        Graph graph = algorithmRunner.getGraph();
+        JSplitPane splitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT, createGraphPanel(graph), createEdgeTypeTable(graph));
+        splitPane.setDividerLocation(406);
+        add(new PaddingPanel(splitPane), BorderLayout.CENTER);
+
+        revalidate();
+        repaint();
+    }
+
+    private EdgeTypeTable createEdgeTypeTable(Graph graph) {
+        EdgeTypeTable edgeTypeTable = new EdgeTypeTable();
+        edgeTypeTable.setPreferredSize(new Dimension(825, 100));
+        edgeTypeTable.update(graph);
+
+        return edgeTypeTable;
+    }
+
+    private JPanel createGraphPanel(Graph graph) {
         GraphWorkbench graphWorkbench = new GraphWorkbench(graph);
         graphWorkbench.enableEditing(false);
 
-        // topBox graph editor
-        JScrollPane graphEditorScroll = new JScrollPane();
-        graphEditorScroll.setPreferredSize(new Dimension(820, 420));
-        graphEditorScroll.setViewportView(graphWorkbench);
+        JPanel mainPanel = new JPanel(new BorderLayout());
+        mainPanel.setPreferredSize(new Dimension(825, 406));
+        mainPanel.add(new JScrollPane(graphWorkbench), BorderLayout.CENTER);
+        mainPanel.add(createInstructionBox(), BorderLayout.SOUTH);
 
-        // Instruction with info button
-        Box instructionBox = Box.createHorizontalBox();
-        instructionBox.setMaximumSize(new Dimension(820, 40));
+        return mainPanel;
+    }
 
+    private Box createInstructionBox() {
         JLabel label = new JLabel("More information on graph edge types");
         label.setFont(new Font("SansSerif", Font.PLAIN, 12));
 
@@ -145,79 +131,17 @@ public class GraphCard extends JPanel {
             }
         });
 
-        instructionBox.add(label);
-        instructionBox.add(Box.createHorizontalStrut(2));
-        instructionBox.add(infoBtn);
+        Box instruction = Box.createHorizontalBox();
+        instruction.add(label);
+        instruction.add(Box.createHorizontalStrut(5));
+        instruction.add(infoBtn);
 
-        // Add to topBox
-        topBox.add(graphEditorScroll);
-        topBox.add(instructionBox);
+        Box instructionBox = Box.createVerticalBox();
+        instructionBox.add(Box.createVerticalStrut(5));
+        instructionBox.add(instruction);
+        instructionBox.add(Box.createVerticalStrut(5));
 
-        // bottomBox contains bootstrap table
-        Box bottomBox = Box.createVerticalBox();
-        bottomBox.setPreferredSize(new Dimension(820, 150));
-
-        bottomBox.add(Box.createVerticalStrut(5));
-
-        // Put the table title label in a box so it can be centered
-        Box tableTitleBox = Box.createHorizontalBox();
-        JLabel tableTitle = new JLabel("Edges and Edge Type Probabilities");
-        tableTitleBox.add(tableTitle);
-
-        bottomBox.add(tableTitleBox);
-
-        bottomBox.add(Box.createVerticalStrut(5));
-
-        JScrollPane tablePane = BootstrapTable.renderBootstrapTable(graph);
-
-        bottomBox.add(tablePane);
-
-        // Use JSplitPane to allow resize the bottom box - Zhou
-        JSplitPane splitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT, topBox, bottomBox);
-        splitPane.setDividerLocation(400);
-
-        return splitPane;
-    }
-
-    public void refresh() {
-        title.setText("Algorithm: " + algorithmRunner.getAlgorithm().getClass().getAnnotation(Algorithm.class).name());
-
-        graphContainer.remove(mainPanel);
-
-        mainPanel = createSearchResultPane(algorithmRunner.getGraph());
-
-        graphContainer.add(mainPanel, BorderLayout.CENTER);
-        graphContainer.revalidate();
-        graphContainer.repaint();
-    }
-
-    private class SouthPanel extends JPanel {
-
-        private static final long serialVersionUID = -6938352710872851817L;
-
-        public SouthPanel() {
-            initComponents();
-        }
-
-        private void initComponents() {
-            GroupLayout layout = new GroupLayout(this);
-            layout.setHorizontalGroup(
-                    layout.createParallelGroup(GroupLayout.Alignment.LEADING)
-                            .addGroup(layout.createSequentialGroup()
-                                    .addContainerGap(GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                    .addComponent(backBtn)
-                                    .addContainerGap(GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-            );
-            layout.setVerticalGroup(
-                    layout.createParallelGroup(GroupLayout.Alignment.LEADING)
-                            .addGroup(layout.createSequentialGroup()
-                                    .addContainerGap()
-                                    .addComponent(backBtn)
-                                    .addContainerGap())
-            );
-
-            this.setLayout(layout);
-        }
+        return instructionBox;
     }
 
 }

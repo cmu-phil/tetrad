@@ -36,9 +36,10 @@ public class AlgorithmModel implements Serializable, Comparable<AlgorithmModel> 
     private static final long serialVersionUID = 8599854464475682558L;
 
     private final AnnotatedClass<Algorithm> algorithm;
+    private final String name;
+    private final String description;
     private final boolean requiredScore;
     private final boolean requiredTest;
-    private final String description;
 
     public AlgorithmModel(AnnotatedClass<Algorithm> algorithm) {
         if (algorithm == null) {
@@ -46,23 +47,32 @@ public class AlgorithmModel implements Serializable, Comparable<AlgorithmModel> 
         }
 
         this.algorithm = algorithm;
+        this.name = algorithm.getAnnotation().name();
+        this.description = AlgorithmDescriptions.getInstance().get(algorithm.getAnnotation().command());
         this.requiredScore = UsesScoreWrapper.class.isAssignableFrom(algorithm.getClazz());
         this.requiredTest = TakesIndependenceWrapper.class.isAssignableFrom(algorithm.getClazz());
-        this.description = AlgorithmDescriptions.getInstance().get(algorithm.getAnnotation().command());
     }
 
     @Override
     public int compareTo(AlgorithmModel other) {
-        return algorithm.getAnnotation().name().compareTo(other.algorithm.getAnnotation().name());
+        return this.name.compareTo(other.name);
     }
 
     @Override
     public String toString() {
-        return algorithm.getAnnotation().name();
+        return this.name;
     }
 
     public AnnotatedClass<Algorithm> getAlgorithm() {
         return algorithm;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public String getDescription() {
+        return description;
     }
 
     public boolean isRequiredScore() {
@@ -71,10 +81,6 @@ public class AlgorithmModel implements Serializable, Comparable<AlgorithmModel> 
 
     public boolean isRequiredTest() {
         return requiredTest;
-    }
-
-    public String getDescription() {
-        return description;
     }
 
 }

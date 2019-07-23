@@ -1,6 +1,7 @@
 package edu.cmu.tetrad.algcomparison.simulation;
 
 import edu.cmu.tetrad.algcomparison.utils.HasParameterValues;
+import edu.cmu.tetrad.annotation.Experimental;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataReader;
 import edu.cmu.tetrad.data.DataSet;
@@ -8,7 +9,7 @@ import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.util.Parameters;
-
+import edu.cmu.tetrad.util.Params;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
@@ -16,6 +17,7 @@ import java.util.List;
 /**
  * @author jdramsey
  */
+@Experimental
 public class LoadContinuousDataAndSingleGraph implements Simulation, HasParameterValues {
     static final long serialVersionUID = 23L;
     private String path;
@@ -27,7 +29,7 @@ public class LoadContinuousDataAndSingleGraph implements Simulation, HasParamete
     public LoadContinuousDataAndSingleGraph(String path) {
         this.path = path;
         String structure = new File(path).getName();
-        parametersValues.set("Structure", structure);
+        parametersValues.set("structure", structure);
     }
 
     @Override
@@ -74,10 +76,10 @@ public class LoadContinuousDataAndSingleGraph implements Simulation, HasParamete
             GraphUtils.circleLayout(this.graph, 225, 200, 150);
         }
 
-        if (parameters.get("numRuns") != null) {
-            parameters.set("numRuns", parameters.get("numRuns"));
+        if (parameters.get(Params.NUM_RUNS) != null) {
+            parameters.set(Params.NUM_RUNS, parameters.get(Params.NUM_RUNS));
         } else {
-            parameters.set("numRuns", dataSets.size());
+            parameters.set(Params.NUM_RUNS, dataSets.size());
         }
 
         System.out.println();

@@ -19,8 +19,11 @@
 package edu.cmu.tetradapp.ui.model;
 
 import edu.cmu.tetrad.annotation.AlgType;
+import edu.cmu.tetrad.annotation.Algorithm;
 import edu.cmu.tetrad.annotation.AlgorithmAnnotations;
+import edu.cmu.tetrad.annotation.AnnotatedClass;
 import edu.cmu.tetrad.data.DataType;
+import edu.cmu.tetradapp.Tetrad;
 import java.util.Collections;
 import java.util.EnumMap;
 import java.util.LinkedList;
@@ -34,7 +37,7 @@ import java.util.stream.Collectors;
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
  */
-public class AlgorithmModels {
+public final class AlgorithmModels {
 
     private static final AlgorithmModels INSTANCE = new AlgorithmModels();
 
@@ -43,11 +46,14 @@ public class AlgorithmModels {
 
     private AlgorithmModels() {
         AlgorithmAnnotations algoAnno = AlgorithmAnnotations.getInstance();
-        List<AlgorithmModel> list = algoAnno.filterOutExperimental(algoAnno.getAnnotatedClasses()).stream()
-                .map(e -> new AlgorithmModel(e))
-                .sorted()
-                .collect(Collectors.toList());
-        models = Collections.unmodifiableList(list);
+        List<AnnotatedClass<Algorithm>> list = Tetrad.enableExperimental
+                ? algoAnno.getAnnotatedClasses()
+                : algoAnno.filterOutExperimental(algoAnno.getAnnotatedClasses());
+        models = Collections.unmodifiableList(
+                list.stream()
+                        .map(e -> new AlgorithmModel(e))
+                        .sorted()
+                        .collect(Collectors.toList()));
 
         Map<AlgType, List<AlgorithmModel>> map = new EnumMap<>(AlgType.class);
 

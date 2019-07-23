@@ -56,6 +56,7 @@ public class GraphWorkbench extends AbstractWorkbench implements TripleClassifie
     public static final int NONDIRECTED_EDGE = 2;
     public static final int PARTIALLY_ORIENTED_EDGE = 3;
     public static final int BIDIRECTED_EDGE = 4;
+    public static final int UNDIRECTED_EDGE = 5;
 
     //====================PRIVATE FIELDS=================================//
     private int nodeType = MEASURED_NODE;
@@ -197,6 +198,9 @@ public class GraphWorkbench extends AbstractWorkbench implements TripleClassifie
 
             case NONDIRECTED_EDGE:
                 return Edges.nondirectedEdge(node1, node2);
+                
+            case UNDIRECTED_EDGE:
+                return Edges.undirectedEdge(node1, node2);
 
             case PARTIALLY_ORIENTED_EDGE:
                 return Edges.partiallyOrientedEdge(node1, node2);
@@ -227,6 +231,9 @@ public class GraphWorkbench extends AbstractWorkbench implements TripleClassifie
 
             case NONDIRECTED_EDGE:
                 return new DisplayEdge(node, mouseLoc, DisplayEdge.NONDIRECTED, color);
+            
+            case UNDIRECTED_EDGE:
+                return new DisplayEdge(node, mouseLoc, DisplayEdge.UNDIRECTED, color);
 
             case PARTIALLY_ORIENTED_EDGE:
                 return new DisplayEdge(node, mouseLoc,
@@ -290,6 +297,8 @@ public class GraphWorkbench extends AbstractWorkbench implements TripleClassifie
             case DIRECTED_EDGE:
             // Falls through!
             case NONDIRECTED_EDGE:
+            // Falls through!
+            case UNDIRECTED_EDGE:
             // Falls through!
             case PARTIALLY_ORIENTED_EDGE:
             // Falls through!

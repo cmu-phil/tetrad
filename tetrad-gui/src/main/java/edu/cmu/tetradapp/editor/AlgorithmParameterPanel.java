@@ -18,9 +18,16 @@
  */
 package edu.cmu.tetradapp.editor;
 
-import edu.cmu.tetrad.annotation.Algorithm;
+import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
+import edu.cmu.tetrad.algcomparison.algorithm.oracle.pag.RfciBsc;
+import edu.cmu.tetrad.algcomparison.utils.TakesIndependenceWrapper;
+import edu.cmu.tetrad.algcomparison.utils.UsesScoreWrapper;
+import edu.cmu.tetrad.annotation.Score;
+import edu.cmu.tetrad.annotation.TestOfIndependence;
+import edu.cmu.tetrad.util.ParamDescription;
 import edu.cmu.tetrad.util.ParamDescriptions;
 import edu.cmu.tetrad.util.Parameters;
+import edu.cmu.tetrad.util.Params;
 import edu.cmu.tetradapp.model.GeneralAlgorithmRunner;
 import edu.cmu.tetradapp.ui.PaddingPanel;
 import edu.cmu.tetradapp.util.DoubleTextField;
@@ -28,12 +35,18 @@ import edu.cmu.tetradapp.util.IntTextField;
 import edu.cmu.tetradapp.util.StringTextField;
 import java.awt.BorderLayout;
 import java.text.DecimalFormat;
-import java.util.HashSet;
+import java.util.LinkedHashSet;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
+import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
+import javax.swing.BoxLayout;
 import javax.swing.ButtonGroup;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
@@ -51,103 +64,183 @@ public class AlgorithmParameterPanel extends JPanel {
 
     private static final long serialVersionUID = 274638263704283474L;
 
-    private static final String DEFAULT_TITLE_BORDER = "Algorithm Parameters";
+    protected static final String DEFAULT_TITLE_BORDER = "Algorithm Parameters";
 
-    private static final Set<String> BOOTSTRAP_PARAMS = new HashSet<>();
-
-    static {
-        BOOTSTRAP_PARAMS.add("numberResampling");
-        BOOTSTRAP_PARAMS.add("percentResampleSize");
-        BOOTSTRAP_PARAMS.add("resamplingWithReplacement");
-        BOOTSTRAP_PARAMS.add("resamplingEnsemble");
-        BOOTSTRAP_PARAMS.add("addOriginalDataset");
-    }
+    protected final JPanel mainPanel = new JPanel();
 
     public AlgorithmParameterPanel() {
         initComponents();
     }
 
     private void initComponents() {
+        mainPanel.setLayout(new BoxLayout(mainPanel, BoxLayout.Y_AXIS));
+
         setLayout(new BorderLayout());
+        add(mainPanel, BorderLayout.NORTH);
     }
 
-    public void addToPanel(GeneralAlgorithmRunner runner) {
-        List<String> parametersToEdit = runner.getAlgorithm().getParameters();
-        Parameters parameters = runner.getParameters();
+    public void addToPanel(GeneralAlgorithmRunner algorithmRunner) {
+        mainPanel.removeAll();
 
-        Algorithm algoAnno = runner.getAlgorithm().getClass().getAnnotation(Algorithm.class);
-        String title = (algoAnno == null)
-                ? DEFAULT_TITLE_BORDER
-                : String.format("%s Parameters", algoAnno.name());
-        setBorder(BorderFactory.createTitledBorder(title));
+        Algorithm algorithm = algorithmRunner.getAlgorithm();
+        Parameters parameters = algorithmRunner.getParameters();
 
-        removeAll();
+        // Hard-coded parameter groups for Rfci-Bsc
+        if (algorithm instanceof RfciBsc) {
+        	// Phase one: PAG and constraints candidates Searching
+        	String title = algorithm
+                    .getClass().getAnnotation(edu.cmu.tetrad.annotation.Algorithm.class).name();
+        	Set<String> params = new LinkedHashSet<>();
+        	// RFCI
+        	params.add(Params.DEPTH);
+        	params.add(Params.MAX_PATH_LENGTH);
+        	params.add(Params.COMPLETE_RULE_SET_USED);
+        	params.add(Params.VERBOSE);
+        	mainPanel.add(createSubPanel(title, params, parameters));
+            mainPanel.add(Box.createVerticalStrut(10));
+            
+        	// Phase one: PAG and constraints candidates Searching
+        	title = "Phase One: PAG and constraints candidates Searching";
+        	params = new LinkedHashSet<>();
+        	// Thresholds
+        	params.add(Params.NUM_RANDOMIZED_SEARCH_MODELS);
+        	params.add(Params.THRESHOLD_NO_RANDOM_DATA_SEARCH);
+        	params.add(Params.CUTOFF_DATA_SEARCH);
+        	mainPanel.add(createSubPanel(title, params, parameters));
+            mainPanel.add(Box.createVerticalStrut(10));
+            
+        	// Phase two: Bayesian Scoring of Constraints
+        	title = "Phase Two: Bayesian Scoring of Constraints";
+        	params = new LinkedHashSet<>();
+        	params.add(Params.NUM_BSC_BOOTSTRAP_SAMPLES);
+        	params.add(Params.THRESHOLD_NO_RANDOM_CONSTRAIN_SEARCH);
+        	params.add(Params.CUTOFF_CONSTRAIN_SEARCH);
+        	params.add(Params.LOWER_BOUND);
+        	params.add(Params.UPPER_BOUND);
+        	params.add(Params.OUTPUT_RBD);
+        	mainPanel.add(createSubPanel(title, params, parameters));
+            mainPanel.add(Box.createVerticalStrut(10));
+        	
+        } else {
+            // add algorithm parameters
+            Set<String> params = Params.getAlgorithmParameters(algorithm);
+
+            if (!params.isEmpty()) {
+                String title = algorithm
+                        .getClass().getAnnotation(edu.cmu.tetrad.annotation.Algorithm.class).name();
+                mainPanel.add(createSubPanel(title, params, parameters));
+                mainPanel.add(Box.createVerticalStrut(10));
+            }
+
+            params = Params.getScoreParameters(algorithm);
+            if (!params.isEmpty()) {
+                String title = ((UsesScoreWrapper) algorithm).getScoreWarpper()
+                        .getClass().getAnnotation(Score.class).name();
+                mainPanel.add(createSubPanel(title, params, parameters));
+                mainPanel.add(Box.createVerticalStrut(10));
+            }
+
+            params = Params.getTestParameters(algorithm);
+            if (!params.isEmpty()) {
+                String title = ((TakesIndependenceWrapper) algorithm).getIndependenceWrapper()
+                        .getClass().getAnnotation(TestOfIndependence.class).name();
+                mainPanel.add(createSubPanel(title, params, parameters));
+                mainPanel.add(Box.createVerticalStrut(10));
+            }
+
+            if (algorithmRunner.getSourceGraph() == null) {
+                params = Params.getBootstrappingParameters(algorithm);
+                if (!params.isEmpty()) {
+                    mainPanel.add(createSubPanel("Bootstrapping", params, parameters));
+                    mainPanel.add(Box.createVerticalStrut(10));
+                }
+            }
+        }
+        
+    }
+
+    protected Box[] toArray(Map<String, Box> parameterComponents) {
+        ParamDescriptions paramDescs = ParamDescriptions.getInstance();
+
+        List<Box> boolComps = new LinkedList<>();
+        List<Box> otherComps = new LinkedList<>();
+        parameterComponents.forEach((k, v) -> {
+            if (paramDescs.get(k).getDefaultValue() instanceof Boolean) {
+                boolComps.add(v);
+            } else {
+                otherComps.add(v);
+            }
+        });
+
+        return Stream.concat(otherComps.stream(), boolComps.stream())
+                .toArray(Box[]::new);
+    }
+
+    protected Map<String, Box> createParameterComponents(Set<String> params, Parameters parameters) {
+        ParamDescriptions paramDescs = ParamDescriptions.getInstance();
+        return params.stream()
+                .collect(Collectors.toMap(
+                        Function.identity(),
+                        e -> createParameterComponent(e, parameters, paramDescs.get(e)),
+                        (u, v) -> {
+                            throw new IllegalStateException(String.format("Duplicate key %s.", u));
+                        },
+                        TreeMap::new));
+    }
+
+    protected Box createParameterComponent(String parameter, Parameters parameters, ParamDescription paramDesc) {
+        JComponent component;
+        Object defaultValue = paramDesc.getDefaultValue();
+        if (defaultValue instanceof Double) {
+            double lowerBoundDouble = paramDesc.getLowerBoundDouble();
+            double upperBoundDouble = paramDesc.getUpperBoundDouble();
+            component = getDoubleField(parameter, parameters, (Double) defaultValue, lowerBoundDouble, upperBoundDouble);
+        } else if (defaultValue instanceof Integer) {
+            int lowerBoundInt = paramDesc.getLowerBoundInt();
+            int upperBoundInt = paramDesc.getUpperBoundInt();
+            component = getIntTextField(parameter, parameters, (Integer) defaultValue, lowerBoundInt, upperBoundInt);
+        } else if (defaultValue instanceof Boolean) {
+            component = getBooleanSelectionBox(parameter, parameters, (Boolean) defaultValue);
+        } else if (defaultValue instanceof String) {
+            component = getStringField(parameter, parameters, (String) defaultValue);
+        } else {
+            throw new IllegalArgumentException("Unexpected type: " + defaultValue.getClass());
+        }
+
+        Box paramRow = Box.createHorizontalBox();
+
+        JLabel paramLabel = new JLabel(paramDesc.getShortDescription());
+        String longDescription = paramDesc.getLongDescription();
+        if (longDescription != null) {
+            paramLabel.setToolTipText(longDescription);
+        }
+        paramRow.add(paramLabel);
+        paramRow.add(Box.createHorizontalGlue());
+        paramRow.add(component);
+
+        return paramRow;
+    }
+
+    protected JPanel createSubPanel(String title, Set<String> params, Parameters parameters) {
+        JPanel panel = new JPanel(new BorderLayout());
+        panel.setBorder(BorderFactory.createTitledBorder(title));
 
         Box paramsBox = Box.createVerticalBox();
 
-        // Some algorithms don't have algorithm parameters to edit
-        // E.g., EB, R1...R4, RSkew, RSkewE, Skew, SkewE
-        // But we added bootstrap parameters anyway  - Zhou
-        if (parametersToEdit.isEmpty()) {
-            Box row = Box.createHorizontalBox();
-            row.add(new JLabel("No parameters to edit"));
-            paramsBox.add(row);
-        } else {
-            boolean isRunFromGraph = runner.getSourceGraph() != null;
-            List<String> uniqueParams = parametersToEdit.stream()
-                    .filter(e -> {
-                        return isRunFromGraph ? !BOOTSTRAP_PARAMS.contains(e) : true;
-                    })
-                    .distinct()
-                    .collect(Collectors.toList());
-
-            uniqueParams.forEach(parameter -> {
-                Object defaultValue = ParamDescriptions.getInstance().get(parameter).getDefaultValue();
-
-                JComponent parameterSelection;
-                if (defaultValue instanceof Double) {
-                    double lowerBoundDouble = ParamDescriptions.getInstance().get(parameter).getLowerBoundDouble();
-                    double upperBoundDouble = ParamDescriptions.getInstance().get(parameter).getUpperBoundDouble();
-                    parameterSelection = getDoubleField(parameter, parameters, (Double) defaultValue, lowerBoundDouble, upperBoundDouble);
-                } else if (defaultValue instanceof Integer) {
-                    int lowerBoundInt = ParamDescriptions.getInstance().get(parameter).getLowerBoundInt();
-                    int upperBoundInt = ParamDescriptions.getInstance().get(parameter).getUpperBoundInt();
-                    parameterSelection = getIntTextField(parameter, parameters, (Integer) defaultValue, lowerBoundInt, upperBoundInt);
-                } else if (defaultValue instanceof Boolean) {
-                    // Joe's old implementation with dropdown yes or no
-                    //parameterSelection = getBooleanBox(parameter, parameters, (Boolean) defaultValue);
-                    // Zhou's new implementation with yes/no radio buttons
-                    parameterSelection = getBooleanSelectionBox(parameter, parameters, (Boolean) defaultValue);
-                } else if (defaultValue instanceof String) {
-                    parameterSelection = getStringField(parameter, parameters, (String) defaultValue);
-                } else {
-                    throw new IllegalArgumentException("Unexpected type: " + defaultValue.getClass());
-                }
-
-                // Each parameter row contains parameter label and selection/input field
-                Box paramRow = Box.createHorizontalBox();
-
-                JLabel paramLabel = new JLabel(ParamDescriptions.getInstance().get(parameter).getShortDescription());
-                String longDescription = ParamDescriptions.getInstance().get(parameter).getLongDescription();
-                if (longDescription != null) {
-                    paramLabel.setToolTipText(longDescription);
-                }
-                paramRow.add(paramLabel);
-                paramRow.add(Box.createHorizontalGlue());
-                paramRow.add(parameterSelection);
-
-                // Add each paramRow to paramsBox
-                paramsBox.add(paramRow);
-
-                // Also add some gap between rows
-                paramsBox.add(Box.createVerticalStrut(10));
-            });
+        Box[] boxes = toArray(createParameterComponents(params, parameters));
+        int lastIndex = boxes.length - 1;
+        for (int i = 0; i < lastIndex; i++) {
+            paramsBox.add(boxes[i]);
+            paramsBox.add(Box.createVerticalStrut(10));
         }
+        paramsBox.add(boxes[lastIndex]);
 
-        add(new PaddingPanel(paramsBox), BorderLayout.CENTER);
+        panel.add(new PaddingPanel(paramsBox), BorderLayout.CENTER);
+
+        return panel;
     }
 
-    private DoubleTextField getDoubleField(final String parameter, final Parameters parameters,
+    protected DoubleTextField getDoubleField(final String parameter, final Parameters parameters,
             double defaultValue, final double lowerBound, final double upperBound) {
         final DoubleTextField field = new DoubleTextField(parameters.getDouble(parameter, defaultValue),
                 8, new DecimalFormat("0.####"), new DecimalFormat("0.0#E0"), 0.001);
@@ -177,7 +270,7 @@ public class AlgorithmParameterPanel extends JPanel {
         return field;
     }
 
-    private IntTextField getIntTextField(final String parameter, final Parameters parameters,
+    protected IntTextField getIntTextField(final String parameter, final Parameters parameters,
             final int defaultValue, final double lowerBound, final double upperBound) {
         final IntTextField field = new IntTextField(parameters.getInt(parameter, defaultValue), 8);
 
@@ -207,7 +300,7 @@ public class AlgorithmParameterPanel extends JPanel {
     }
 
     // Joe's old implementation with dropdown yes or no
-    private JComboBox getBooleanBox(final String parameter, final Parameters parameters, boolean defaultValue) {
+    protected JComboBox getBooleanBox(final String parameter, final Parameters parameters, boolean defaultValue) {
         JComboBox<String> box = new JComboBox<>(new String[]{"Yes", "No"});
 
         boolean aBoolean = parameters.getBoolean(parameter, defaultValue);
@@ -231,7 +324,7 @@ public class AlgorithmParameterPanel extends JPanel {
     }
 
     // Zhou's new implementation with yes/no radio buttons
-    private Box getBooleanSelectionBox(final String parameter, final Parameters parameters, boolean defaultValue) {
+    protected Box getBooleanSelectionBox(final String parameter, final Parameters parameters, boolean defaultValue) {
         Box selectionBox = Box.createHorizontalBox();
 
         JRadioButton yesButton = new JRadioButton("Yes");
@@ -274,7 +367,7 @@ public class AlgorithmParameterPanel extends JPanel {
         return selectionBox;
     }
 
-    private StringTextField getStringField(final String parameter, final Parameters parameters, String defaultValue) {
+    protected StringTextField getStringField(final String parameter, final Parameters parameters, String defaultValue) {
         final StringTextField field = new StringTextField(parameters.getString(parameter, defaultValue), 20);
 
         field.setFilter((value, oldValue) -> {

@@ -1,0 +1,24 @@
+{
+  "interventions" : [ {
+    "value" : {
+      "name" : "X5",
+      "discrete" : true
+    },
+    "status" : null
+  }, {
+    "value" : {
+      "name" : "X6",
+      "discrete" : true
+    },
+    "status" : null
+  }, {
+    "value" : {
+      "name" : "X9",
+      "discrete" : true
+    },
+    "status" : {
+      "name" : "X10",
+      "discrete" : true
+    }
+  } ]
+}

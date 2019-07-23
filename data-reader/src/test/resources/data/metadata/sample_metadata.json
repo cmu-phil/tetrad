@@ -1,0 +1,31 @@
+{
+  "interventions": [
+    {
+      "status": {
+        "name": "cd3_s",
+        "discrete": true
+      },
+      "value": {
+        "name": "cd3_v",
+        "discrete": false
+      }
+    },
+    {
+      "status": null,
+      "value": {
+        "name": "icam",
+        "discrete": false
+      }
+    }
+  ],
+  "domains": [
+    {
+      "name": "raf",
+      "discrete": false
+    },
+    {
+      "name": "mek",
+      "discrete": false
+    }
+  ]
+}

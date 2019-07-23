@@ -19,7 +19,7 @@
 
     <div class="header">
         <h1>Tetrad Manual</h1>
-        <p>Last updated: April 16th, 2019</p>
+        <p>Last updated: June 11th, 2019</p>
     </div>
 
     <!-- Table of Contents, give each section a unique id -->
@@ -27,6 +27,7 @@
 
         <b>Table of Contents</b>
         <ul class="ul">
+            <li><a href="#introduction">Introduction</a></li>
             <li><a href="#graph_box">Graph Box</a></li>
             <li><a href="#compare_box">Compare Box</a></li>
             <li><a href="#parametric_model_box">Parametric Model Box</a></li>
@@ -47,6 +48,24 @@
     </div>
 
     <!-- Assign id with the section name, this will be linked in the table of contents -->
+    <h1 id="introduction"><span class="section_heading">Introduction</span></h1>
+
+    <p>Tetrad is a suite of software for the discovery, estimation, and simulation of causal models. Some of the functions that you can perform with Tetrad include, but are not limited to:</p>
+
+    <ul class="ul">
+        <li>Loading an existing data set, restricting  potential models using your a priori causal knowledge, and searching for a model that explains it using one of Tetrad’s causal search algorithms</li>
+        <li>Loading an existing causal graph and existing data set, and estimating a parameterized model from them</li>
+        <li>Creating a new causal graph, parameterizing a model from it, and simulating data from that model</li>
+    </ul>
+
+    <p>Tetrad allows for numerous types of data, graph, and model to be input and output, and some functions may be restricted based on what types of data or graph the user inputs. Other functions may simply not perform as well on certain types of data.</p>
+
+    <p>All analysis in Tetrad is performed graphically using a box paradigm, found in a sidebar to the left of the workspace. A box either houses an object such as a graph or a dataset, or performs an operation such as a search or an estimation. Some boxes require input from other boxes in order to work. Complex operations are performed by stringing chains of boxes together in the workspace. For instance, to simulate data, you would input a graph box into a parametric model box, the PM box into an instantiated model box, and finally the IM box into a simulation box.</p>
+
+    <p>In order to use a box, click on it in the sidebar, then click inside the workspace. This creates an empty box, which you can instantiated by double-clicking. Most boxes have multiple options available on instantiation, which will be explained in further detail in this manual.</p>
+
+    <p>In order to use one box as input to another, draw an arrow between them by clicking on the arrow tool in the sidebar, and clicking and dragging from the first box to the second in the workspace.</p>
+
     <h1 id="graph_box"><span class="section_heading">Graph Box</span></h1>
 
     <p>The graph box can be used to create a new graph, or to copy or edit a graph from another box.</p>
@@ -84,25 +103,22 @@
     <h2>Creating a New Graph</h2>
 
     <p>When you first open a graph box with no parent, you will be presented with several options for which kind of
-        graph you would like to create: a directed acyclic graph (DAG), a structural equation model (SEM)graph, a
-        general graph, or a time lag graph. Once you have selected the type of graph you want to create, an empty graph
+        graph you would like to create: a general graph, a directed acyclic graph (DAG), a structural equation model (SEM)graph, or a time lag graph. Once you have selected the type of graph you want to create, an empty graph
         box will open.</p>
 
     <p>You can add variables to your graph by clicking on the variable button on the left, then clicking inside the
         graph area. Add edges by clicking on an edge type, then clicking and dragging from one variable to another.
-        Variables may be measured (represented by rectangular icons) or latents (represented by elliptical icons). Edges
+        Variables may be measured (represented by rectangular icons) or latent (represented by elliptical icons). Edges
         may be directed, undirected, bidirected, or uncertain (represented by circles at the ends of an edge). Depending
         on the type of graph you choose to create, your choice of edges may be limited.</p>
 
-    <p><i>DAGs</i> allow only directed, bidirected, and uncertain edges. If an edge would create a cycle (or potential
-        cycle, in the case of uncertain edges) it will not be accepted. A graph box containing a DAG can be used as
+    <p><i>DAGs</i> allow only directed edges. If an edge would create a cycle, it will not be accepted. A graph box containing a DAG can be used as
         input for any parametric model box, and is the only kind of graph box that can be used as input for a Bayes
         parametric model.</p>
 
     <p><i>SEM graphs</i> allow only directed and bidirected edges. A graph box containing a SEM graph can be used as
         input to a SEM parametric model or generalized SEM parametric model, where a bidirected edge between two
         variables X and Y will be interpreted as X and Y having correlated error terms.</p>
-
 
     <p><i>Time lag graphs</i> allow only directed edges. New variables that you add will be initialized with a single
         lag. (The number of lags in the graph may be changed under “Edit—Configuration…”) Edges from later lags to
@@ -167,7 +183,7 @@
     <h3>Display Subgraphs</h3>
 
     <p>This option allows you to isolate a subgraph from the parent graph. Add variables to the subgraph by highlighting
-        the variable name in the “Unselected” pane and clicking on the right arrow. The hiighlighted variable will then
+        the variable name in the “Unselected” pane and clicking on the right arrow. The highlighted variable will then
         show up in the “Selected” pane. (You may also define which variables go in the “Selected” pane by clicking on
         the “Text Input…” button and typing the variable names directly into the window.) Choose the type of subgraph
         you want to display from the drop-down panel below. Then click “Graph It!” and the resulting subgraph of the
@@ -213,14 +229,11 @@
             in the selected set if they are part of a path)
         </li>
         <li>Y Structures (displays any Y structures involving at least two of the selected nodes)</li>
+        <li>Pag_Y Structures (displays any Y PAGs involving at least two of the selected nodes)</li>
         <li>Indegree (displays the selected nodes and their parents)</li>
         <li>Outdegree (displays the selected nodes and their children)</li>
         <li>Degree (displays the selected nodes and their parents and children)</li>
     </ul>
-
-    <p>The “Graph Properties” and “Paths” functions are available in this type of graph box, but they will display
-        information about the full graph, not the currently displayed subgraph.
-        To see graph properties for the subgraph, first copy it into a new graph box.</p>
 
     <h3>Choose DAG in Pattern</h3>
 
@@ -267,10 +280,20 @@
 
     <h3>Generate Complete Graph</h3>
 
+    <p>Creates a completely connected, undirected graph from the variables in the input graph.</p>
+
     <h3>Extract Structure Model</h3>
+
+    <p>Isolates the subgraph of the input graph involving all and only latent variables.</p>
 
 
     <h2>Other Graph Box Functions</h2>
+
+    <h3>Edges and Edge Type Probabilities</h3>
+
+    <p>At the bottom of the graph box, the Edges and Edge Type Probabilities section provides an accounting of every edge in the graph, and how certain Tetrad is of its type. The first three columns contain a list, in text form, of all of the edges in the graph. The columns to the right are all blank in manually constructed graphs, user-loaded graphs, and graphs output by searches with default settings. They are only filled in for graphs that are output by searches performed with bootstrapping. In those cases, the fourth column will contain the percentage of bootstrap outputs in which the edge type between these two variables matches the edge type in the final graph. All of the columns to the right contain the percentages of the bootstrap outputs that output each possible edge type.</p>
+
+    <p>For more information on bootstrap searches, see the Search Box section of the manual.</p>
 
     <h3>Layout</h3>
 
@@ -304,10 +327,6 @@
         or all treks between the two variables of interest, and the maximum length of the paths you are interested in
         using drop boxes at the top of the pane.
         To apply those settings, click “update.”</p>
-
-    <h3>Meek Orientation</h3>
-
-    <p>Clicking “Meek Orientation” will orient a pattern according to the Meek orientation rules.</p>
 
     <h3>Correlation</h3>
 
@@ -372,13 +391,10 @@
         of the graphs is the reference graph, and whether it contains latent variables. When the comparison is complete,
         the following window results:</p>
 
-    <img src="images/compare_box_4.png" alt="" width="650">
+    <img src="images/compare_box_11.png" alt="" width="650">
 
 
-    <p>The first column lists the number of adjacencies in the reference graph that are also in the true graph. The
-        second column lists the number of adjacencies in the reference graph which are not in the compared graph. The
-        third column lists the number of adjacencies in the comparison graph which are not in the reference graph. The
-        next three columns list analogous information for arrowpoints (orientations of edges).</p>
+    <p>The first column lists the “adjacency precision”—the percentage of edges in target graph that are in the true graph. The second column is the “adjacency recall”—the percentage of edges in the true graph that are in the target graph. The third and fourth columns are arrowhead precision and recall. The fifth and sixth columns are two-cycle (a.k.a. direct feedback cycle) precision and recall, for graphs where that is applicable. The final column is the total number of two-cycle false positives in the target graph.</p>
 
     <p>If one of the parent boxes contains multiple graphs, each graph will be compared separately to the reference
         graph (or the estimated graph will be compared separately to each reference graph, depending on which parent box
@@ -388,7 +404,7 @@
 
     <p>A misclassification procedure organizes a graph comparison by edge type. The edge types (undirected, directed,
         uncertain, partially uncertain, bidirected, and null) are listed as the rows and columns of a matrix, with the
-        reference graph edges as the row headers and the estimate graph edges as the column headers. If, for example,
+        true graph edges as the row headers and the target graph edges as the column headers. If, for example,
         there are three pairs of variables that are connected by undirected edges in the reference graph, but are
         connected by directed edges in the estimated graph, then there will be a 3 in the (undirected, directed) cell of
         the matrix. An analogous method is used to represent endpoint errors. For example:</p>
@@ -423,7 +439,7 @@
     <img src="images/compare_box_6.png" alt="" width="650">
 
     <p>The drop-down menu allows you to choose which variables you want to check the dependence of. If you select more
-        than two variables, an subsequent variables will be considered members of the conditioning set. So, if you
+        than two variables, any subsequent variables will be considered members of the conditioning set. So, if you
         select variables X1, X2, and X3, in that order, the box will determine whether X1 is independent of X2,
         conditional on X3, in each of the graphs being compared. When you click “List,” in the bottom right of the
         window, the results will be displayed in the center of the window: </p>
@@ -456,7 +472,7 @@
     <h2>Model Fit</h2>
 
     <p>A model fit comparison takes a simulation box and a search box (ideally, a search that has been run on the
-        simulated data in the simulation box), and provides goodness-of-fit statistics for the output graph and the
+        simulated data in the simulation box), and provides goodness-of-fit statistics, including a Student’s t statistic and p value for each edge, for the output graph and the
         data, as well as estimating the values of any parameters. It looks and functions identically to the estimator
         box, but unlike the estimator box, it takes the search box directly as a parent, without needing to isolate and
         parameterize the graph output by the search.</p>
@@ -540,7 +556,7 @@
         are continuous. </p>
 
     <p>A SEM PM has two components: the graphical causal structure of the model, and a list of parameters used in a set
-        of linear equations that define the causal relationships int the model. Each variable in a SEM PM is a linear
+        of linear equations that define the causal relationships in the model. Each variable in a SEM PM is a linear
         function of a subset of the other variables and of an error term drawn from a Normal distribution.</p>
 
     <p>Here is an example of a SEM graph and the SEM PM that Tetrad creates from it:</p>
@@ -660,10 +676,7 @@
         the probabilities of the several values of X must sum to 1.</p>
 
     <p>You can manually set the probability values for each variable, or have Tetrad assign them randomly. If you choose
-        to have Tetrad assign probability values, you can manually edit them later. If you wish for Tetrad to randomly
-        reassign probability values each time the box is opened, check “Pick new random values every time this Bayes IM
-        is re-initialized.” then if you destroy the model in the box and create a new one, the box will remember the
-        random values it created.</p>
+        to have Tetrad assign probability values, you can manually edit them later.</p>
 
     <p>Here is an example of a Bayes PM and its randomly created instantiated model:</p>
 
@@ -687,11 +700,6 @@
         probabilities in the row containing that cell, randomize the values in all incomplete rows in the table,
         randomize the entire table, or randomize the table of every variable in the model. You can also choose to clear
         the row or table.</p>
-
-
-    <h2>Bayes Instantiated Models: Observed Variables Only</h2>
-
-    <p>This box functions in the same way as a Bayes IM box, but represents only measured variables in the model.</p>
 
     <h2>Dirichlet Instantiated Models</h2>
 
@@ -732,7 +740,7 @@
 
     <h2>SEM Instantiated Models</h2>
 
-    <p>A SEM instantiated model is a SEM parametric model in which the parameters and error terms have defined values.
+    <p>A SEM instantiated model is a SEM parametric model in which the parameters and error terms have defined values. It assumes that relationships between variables are linear, and that error terms have Gaussian distributions.
         If you choose to create a SEM IM, the following window will open:</p>
 
     <img src="images/instantiated_model_box_6.png" alt="" width="450">
@@ -800,7 +808,7 @@
 
     <h2>Generalized SEM Instantiated Models</h2>
 
-    <p>A generalized SEM instantiated model consists of a a generalized SEM parametric model with defined values for its
+    <p>A generalized SEM instantiated model consists of a generalized SEM parametric model with defined values for its
         parameters. Since the distributions of the parameters were specified in the SEM PM, Tetrad does not give you the
         option of specifying these before it creates the instantiated model.</p>
 
@@ -966,9 +974,10 @@ X1  X2  X3  X4  X5
 1.4658  -1.4069 1.7234  -1.7129 -3.8298
 </pre>
 
-    <h3>Handling Tabular Data With Interventions</h3>
+    <h3>Handling Tabular Data with Interventional Variables</h3>
 
-    <p>This is advanced topic for dataset that contains interventional variables. Below is a sample dataset, in which
+    <p>This is an advanced topic for datasets that contain interventional (i.e., experimental) variables. We model a
+        single intervention using two variables: status variable and value variable. Below is a sample dataset, in which
         `raf`, `mek`, `pip2`, `erk`, `atk` are the 5 domain variables, and `cd3_s` and `cd3_v` are an interventional
         pair (status and value variable respectively). `icam` in another intervention variable, but it's a combined
         variable that doesn't have status.</p>
@@ -1430,8 +1439,10 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
     <p>When the EM algorithm is used with latent variable models, we recommend multiple random restarts. The number of
         restarts can be set in the lower right hand corner of the Estimator Box. The figure on the left shows the EM
         results for a SEM model with 1 restart. The figure on the right shows the EM results with 20 restarts. The
-        results are very different. The estimates with 20 restarts are much closer to the true values. 100 restrarts
+        results are very different. The estimates with 20 restarts are much closer to the true values. 100 restarts
         gives estimates that are within .1 of the first decimal and .2 of the second decimal.</p>
+
+    <img src="images/estimator_box_3.png" alt="" width="650">
 
 
     <h2>Generalized Estimator</h2>
@@ -1449,9 +1460,9 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
         probabilities (Bayes net models; categorical variables) or conditional means (SEM models; continuous variables)
         are computed. For any variable for which evidence is specified, the user can click on “Manipulated,” in which
         case the Updater will calculate the conditional probabilities or conditional means for other variables when the
-        evidence variables are forced to have their specified values.. In manipulated calculations, all connections into
+        evidence variables are forced to have their specified values. In manipulated calculations, all connections into
         a measured variable are discarded, the manipulated variables are treated as independent of their causes in the
-        graph, and probabilities for variables that are causes of the maniputated variables are unchanged. </p>
+        graph, and probabilities for variables that are causes of the manipulated variables are unchanged. </p>
 
     <p>There are four available updater algorithms in Tetrad: the approximate updater, the row summing exact updater,
         the CPT invariant updater, and the SEM updater. All except for the SEM updater function only when given Bayes
@@ -1678,6 +1689,13 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
     <p>You can also limit the search such that edges from one tier only are added to the next immediate tier e.g,. if
         Tier 1 "Can cause only next tier" is checked then edges from variables in Tier 1 to variables in Tier 3 are
         forbidden.</p>
+
+    <h3>Handling of Interventional Variables in Tiers</h3>
+
+    <p>If you have annotated your variables with interventional status and interventional value tags using a metadata
+        JSON file (see Data Box section) the Tiers and Edges panel will automatically place these variables in Tier 1.
+        If you have information about the effects of the intervention variables you can use the groups tab to indicate
+        this.</p>
 
     <h3>Groups</h3>
 
@@ -1972,7 +1990,7 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
     <p>After selecting the algorithm and desired test/score, click on "Set parameters" which will allow you to
         confirm/change the parameters of the search. </p>
 
-    <p>After optionally changing any search paramaters, click on "Run Search and Generate Graph" which will execute the
+    <p>After optionally changing any search parameters, click on "Run Search and Generate Graph" which will execute the
         search</p>
 
 
@@ -2146,7 +2164,7 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
             to orient the triple, instead just list the p-values for each of these conditional independence judgments
             and pick the set S’ that yields the highest such p-value. Then orient X->Y<-Z if S does not contain Y and
             X—Y—Z otherwise. This orients all unshielded triples. It’s possible (though rare) that adjacent triples both
-            both be oriented as 2-cycles, X->Y<->Z<-W. If this happens, pick one of the other of these triples or orient
+            be oriented as 2-cycles, X->Y<->Z<-W. If this happens, pick one of the other of these triples or orient
             as a collider, arbitrarily. This guarantees that the resulting graph will be a pattern.</p>
 
     </div>
@@ -2178,10 +2196,9 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
             particular, GES starts its search with the empty graph. It then performs a forward stepping search in
             which edges are added between nodes in order to increase the Bayesian score. This process
             continues until no single edge addition increases the score. Finally, it performs a backward
-            stepping search that removes edges until no single edge removal can increase the score. For more
-            information see
-            https://www.ccd.pitt.edu//wp-content/uploads/2018/10/FGES1c-user-documentation-5_21_2016-sample-size.pdf and
-            https://www.ccd.pitt.edu//wp-content/uploads/2018/10/FGES1d-user-documentation-7_20_2016-sample-size.pdf.
+            stepping search that removes edges until no single edge removal can increase the score. More information is
+            available <a href="https://www.ccd.pitt.edu//wp-content/uploads/2018/10/FGES1c-user-documentation-5_21_2016-sample-size.pdf">here</a> and
+            <a href="https://www.ccd.pitt.edu//wp-content/uploads/2018/10/FGES1d-user-documentation-7_20_2016-sample-size.pdf">here</a>.
             The reference is Ramsey et al., 2017.
         </p>
 
@@ -2221,7 +2238,7 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
     <div id="imgs_disc">
 
         <p>Adjusts the discrete BDeu variable score of FGES so allow for multiple datasets as input. The BDeu scores for
-            each data set are averaged at each step of the algorithm, producing a model for al data sets that assumes
+            each data set are averaged at each step of the algorithm, producing a model for all data sets that assumes
             they have the same graphical structure across dataset. Note that in order to use this algorithm in a
             nontrivial way, one needs to have loaded or simulated multiple dataset.</p>
 
@@ -2394,7 +2411,8 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
             After the adjacency phase of FCI, some of the orientations of FGES are then used to provide an initial
             orientation of
             the undirected graph that is then augmented by the orientation phase of FCI to provide additional
-            orientations.</p>
+            orientations.  A verbose description of GFCI can be found <a href="https://www.ccd.pitt.edu//pdfs/GFCId.pdf">
+                here (discrete variables)</a> and <a href="https://www.ccd.pitt.edu//wp-content/uploads/2018/10/GFCIc-overview-11_22_2016.pdf">here (continuous variables)</a>.</p>
 
     </div>
 
@@ -2417,11 +2435,11 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
 
     <div id="tsfci">
 
-        <p>The tsGFCI algorithm is a version of GFCI for time series data. See the GFCI documentation for a description
-            of the GFCI algorithm,
+        <p>The tsFCI algorithm is a version of FCI for time series data. See the FCI documentation for a description
+            of the FCI algorithm,
             which allows for unmeasured (hidden, latent) variables in the data-generating process and produces a PAG
             (partial ancestral graph).
-            tsGFCI takes as input a “time lag data set,” i.e., a data set which includes time series observations of
+            tsFCI takes as input a “time lag data set,” i.e., a data set which includes time series observations of
             variables X1, X2, X3, ...,
             and their lags X1:1, X2:1, X3:1, ..., X1:2, X2:2,X3:2, ... and so on. X1:n is the nth-lag of the variable
             X1.
@@ -2440,7 +2458,7 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
 
     <h4>Output Format</h4>
 
-    <p>(Need to get this from Dan.)</p>
+    <p>A PAG over the input variables with stated number of lags.</p>
 
     <h4>Parameters</h4>
 
@@ -2478,7 +2496,7 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
 
     <h4>Output Format</h4>
 
-    <p>(Need to get this from Dan.)</p>
+    <p>A PAG over the input variables with stated number of lags.</p>
 
     <h4>Parameters</h4>
 
@@ -2511,7 +2529,7 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
 
     <h4>Output Format</h4>
 
-    <p>(Need to get this from Dan.)</p>
+    <p>A PAG over the input variables with stated number of lags.</p>
 
     <h4>Parameters</h4>
 
@@ -2739,7 +2757,7 @@ there is a single latent for each output cluster. For MimBuild, a pattern over t
 
     </div>
 
-Ω
+    Ω
     <h3>The FTFC Algorithm</h3>
 
     <h4>Description</h4>
@@ -2769,7 +2787,7 @@ there is a single latent for each output cluster. For MimBuild, a pattern over t
 
     <h4>Parameters</h4>
 
-    <p><a href="#maxit">alpha</a>, <a href="#useWishart">useWishart</a>, <a href="#useGap">useGap</a></p>
+    <p><a href="#alpha">alpha</a>, <a href="#useWishart">useWishart</a>, <a href="#useGap">useGap</a></p>
 
     <h3>The LiNGAM Algorithm</h3>
 
@@ -2810,32 +2828,47 @@ there is a single latent for each output cluster. For MimBuild, a pattern over t
         </p>
     </div>
 
-    <h3>The FASK Algorithm)</h3>
+    <h3>The FASK Algorithm</h3>
+
+    <h4>Description</h4>
 
     <div id="fask">
         <p>FASK learns a linear model in which all of the variables are skewed. </p>
 
         <p>The idea is as follows. First, FAS-stable  is run on the data, producing an
-            undirected graph. We use the BIC scoreas a conditional independence test with a specified penalty
-            discount c. This yields undirected graph G0 . The reason FAS-stable  works forsparse cyclic  models
+            undirected graph. We use the BIC score as a conditional independence test with a specified penalty
+            discount c. This yields undirected graph G0 . The reason FAS-stable  works for sparse cyclic  models
             where the linear  coefficients  are all less than  1 is that correlations induced by long cyclic
-            paths are statisticallyjudged as zero, since they are products of multiple coefficients less  than
+            paths are statistically judged as zero, since they are products of multiple coefficients less  than
             1.  Then, each  of the X − Y  adjacencies  in G0   is  oriented  as a 2-cycle  X +=  Y , or X → Y ,
             or X ← Y .   Taking up each  adjacency  in turn, one tests  to see  whether  the adjacency  is a
-            2-cycle bytesting if the difference between  corr(X, Y ) and corr(X, Y |X  > 0), and corr(X, Y )
+            2-cycle by testing if the difference between  corr(X, Y ) and corr(X, Y |X  > 0), and corr(X, Y )
             and corr(X, Y |Y  > 0), are both significantly not zero. If so, the edges X → Y and X ← Y  are added
             to the output  graph G1 .  If not, the Left-Right  orientation is rule is applied: Orient X → Y in
             G1, if (E(X Y |X > 0)/    E(X 2|X > 0)E(Y 2 |X > 0) − E(X Y |Y  > 0)/  E(X 2 |Y  > 0)E(Y 2|Y  > 0)) >  0;
-            otherwise orient X ← Y .  G1  will bea fully oriented graph. For some models, where the true
-            coefficients of a 2-cycle between X and Y  are more or less equal in magnitudebut opposite in sign,
+            otherwise orient X ← Y .  G1  will be a fully oriented graph. For some models, where the true
+            coefficients of a 2-cycle between X and Y  are more or less equal in magnitude but opposite in sign,
             FAS-stable  may fail to detect an edge between X and Y  when in fact a 2-cycle exists. In this case,
-            we checkexplicitly whether corr(X, Y |X > 0) and corr(X, Y |Y  > 0) differ  by more than a set amount
+            we check explicitly whether corr(X, Y |X > 0) and corr(X, Y |Y  > 0) differ  by more than a set amount
             of 0.3. If so, the adjacency  is added to the graph and oriented using the aforementioned rules.
         </p>
 
         <p>See Sanchez-Romero R, Ramsey JD, Zhang K, Glymour MR, Huang B, Glymour C. Causal discovery of feedback
-            networks with functional magnetic resonance imaging. Network Neuroscience 2018.</p>
+            networks with functional magnetic resonance imaging. <em>Network Neuroscience</em> 2018.</p>
     </div>
+
+    <h4>Input Assumptions</h4>
+
+    <p>Continuous, linear data in which all of the variables are skewed.</p>
+
+    <h4>Output Format</h4>
+
+    <p>A fully directed, potentially cyclic, causal graph.</p>
+
+
+    <h3>The MultiFASK Algorithm</h3>
+
+    <h4>Description</h4>
 
     <div id="multi-fask">
         <p>Multi-FASK is a metascript that learns a model from a list of datasets in a method similar to
@@ -2849,13 +2882,21 @@ there is a single latent for each output cluster. For MimBuild, a pattern over t
             of feedback networks with functional magnetic resonance imaging. Network Neuroscience 2018.</p>
     </div>
 
+    <h4>Input Assumptions</h4>
+
+    <p>Same as FASK.</p>
+
+    <h4>Output Format</h4>
+
+    <p>Same as FASK.</p>
+
     <h3>Orientation Algorithms (R3, RSkew, Skew)</h3>
 
     <h4>Description</h4>
 
     <div id="r3">
 
-        <p>This is an algorithm that orients an edge X--Y for continuous varaibles based on non-Gaussian information.
+        <p>This is an algorithm that orients an edge X--Y for continuous variables based on non-Gaussian information.
             This rule in particular uses an entropy calculation to make the orientation. Note that if the variables X
             and Y are both Gaussian, and the model is linear, it is not possible to orient the edge X--Y pairwise;
             any attempt to do so would result in random orientation. But if X and Y are non-Gaussian, the orientation
@@ -2867,7 +2908,7 @@ there is a single latent for each output cluster. For MimBuild, a pattern over t
 
     <div id="skew">
 
-        <p>This is an algorithm that orients an edge X--Y for continuous varaibles based on non-Gaussian information.
+        <p>This is an algorithm that orients an edge X--Y for continuous variables based on non-Gaussian information.
             This rule in particular uses a skewness to make the orientation. Note that if the variables X
             and Y are both Gaussian, and the model is linear, it is not possible to orient the edge X--Y pairwise;
             any attempt to do so would result in random orientation. But if X and Y are non-Gaussian, in particular
@@ -2875,14 +2916,14 @@ there is a single latent for each output cluster. For MimBuild, a pattern over t
             and Smith (2013) for details.
         </p>
 
-        <p>The Skew rule is differenty motivated from the RSkew rule (see), though they both appeal to the skewness
+        <p>The Skew rule is differently motivated from the RSkew rule (see), though they both appeal to the skewness
             of the variables.</p>
 
     </div>
 
     <div id="r-skew">
 
-        <p>This is an algorithm that orients an edge X--Y for continuous varaibles based on non-Gaussian information.
+        <p>This is an algorithm that orients an edge X--Y for continuous variables based on non-Gaussian information.
             This rule in particular uses a skewness to make the orientation. Note that if the variables X
             and Y are both Gaussian, and the model is linear, it is not possible to orient the edge X--Y pairwise;
             any attempt to do so would result in random orientation. But if X and Y are non-Gaussian, in particular
@@ -2890,8 +2931,8 @@ there is a single latent for each output cluster. For MimBuild, a pattern over t
             and Smith (2013) for details.
         </p>
 
-        <p>The RSkew rule is differenty motivated from the Skew rule (see), though they both appeal to the skewness
-        of the variables.</p>
+        <p>The RSkew rule is differently motivated from the Skew rule (see), though they both appeal to the skewness
+            of the variables.</p>
 
     </div>
 
@@ -2909,11 +2950,38 @@ there is a single latent for each output cluster. For MimBuild, a pattern over t
 
     <p><a href="#maxit">alpha</a>, <a href="#depth">depth</a></p>
 
+
+
     <h2>Statistical Tests</h2>
 
-    <h3>CCI</h3>
+    <h3>BDeu Test</h3>
 
-    <p>CCI (“Conditional Correlation Independence”) is a fairly general independence test—not completely general, but
+    <div id="bdeu-test">
+    <p>
+        This is the BDeu score given in Heckerman, D., Geiger, D., & Chickering, D. M. (1995). Learning Bayesian networks: The combination of knowledge and statistical data. <i>Machine learning, 20</i>(3), 197-243, used as a test. This gives a score for any two variables conditioned on any list of others which is more positive for distributions which are more strongly dependent. The test for X _||_ Y | Z compares two different models, X conditional on Y, and X conditional on Y and Z; the scores for the two models are subtracted, in that order. If the difference is negative, independence is inferred.
+    </p>
+    </div>
+
+    <h4>Parameters</h4>
+
+    <p><a href="#samplePrior">samplePrior</a>, <a href="#structurePrior">structurePrior</a></p>
+
+    <h3>Fisher Z Test</h3>
+
+    <div id="fisher-z-test">
+    <p>
+    Fisher Z judges independence if the conditional correlation is zero. Primarily for the linear, Gaussian case.
+    </p>
+    </div>
+
+    <h4>Parameters</h4>
+
+    <p><a href="#alpha">alpha</a></p>
+
+    <h3>Conditional Correlation Independence (CCI) Test</h3>
+
+    <div id="cci-test">
+    <p>CCI ("Conditional Correlation Independence") is a fairly general independence test—not completely general, but
         general for additive noise models—that is,
         model in which each variable is equal to a (possibly nonlinear) function of its parents, plus additive noise,
         where the noise may be arbitrarily distributed.
@@ -2924,10 +2992,56 @@ there is a single latent for each output cluster. For MimBuild, a pattern over t
         It works by calculating the residual of X given Z and the residual of Y given Z and looking to see whether those
         two residuals are independent.
         This test may be used with any constraint-based algorithm (PC, FCI, etc.)</p>
+    </div>
 
-    <h3>KCI</h3>
+    <h4>Parameters</h4>
 
-    <p>KCI (“Kernel Conditional Independence”) is a general independence test for model in which X = f(parents(X), eY);
+    <p><a href="#alpha">alpha</a>, <a href="#numBasisFunctions">numBasisFunctions</a>, <a href="#kernelType">kernelType</a>, <a href="#kernelMultiplier">kernelMultiplier</a>, <a href="#basisType">basisType</a>, <a href="#fastFDR">fastFDR</a>, <a href="#kernelRegressionSampleSize">kernelRegressionSampleSize</a>, <a href="#numDependenceSpotChecks">numDependenceSpotChecks</a></p>
+
+    <h3>Chi Square Test</h3>
+
+    <div id="chi-square-test">
+    <p>
+    This is the usual Chi-Square test for discrete variables; consult an introductory statistics book for details for the unconditional case, where you're just trying, e.g., to determine if X and Y are independent. For the conditional case, the test proceeds as in Fienberg, S. E. (2007). <i>The analysis of cross-classified categorical data</i>. Springer Science & Business Media, by identifying and removing from consideration zero rows or columns in the conditional tables and judging dependence based on the remaining rows and columns.
+    </p>
+    </div>
+
+    <h4>Parameters</h4>
+
+    <p><a href="#alpha">alpha</a></p>
+
+    <h3>D-Separation Test</h3>
+
+    <div id="d-sep-test">
+    <p>
+    This is the usual test of d-separation, a property of graphs, not distributions. It's not really a test, but it can be used in place of a test of the true graph is known. This is a way to find out, for constraint-based algorithms, or even for some score-based algorithms like FGES, what answer the algorithm would give if all of the statistical decisions made are correct. Just draw an edge from the true graph to the algorithm--the d-separation option will appear, and you can then just run the search as usual.
+    </p>
+    </div>
+
+    <h3>Discrete BIC Test</h3>
+
+    <div id="disc-bic-test">
+    <p>
+    This is just the BIC score for the discrete case, used as a test. The likelihood is judged by the multinomial tables directly, and this is penalized as is usual for a BIC score. The only surprising thing perhaps is that we use the formula BIC = 2L - k ln N, where L is the likelihood, k the number of parameters, and N the sample size, instead of the usual L + k / 2 ln N. So higher BIC scores will correspond to greater dependence. In the case of independence, the BIC score will be negative, since the likelihood will be zero, and this will be penalized.  The test yields a p-value; we simply use alpha - p as the score, where alpha is the cutoff for rejecting the null hypothesis of independence. This is a number that is positive for dependent cases and negative for independent cases.
+    </p>
+    </div>
+
+    <h3>G Square Test</h3>
+
+    <div id="g-square-test">
+    <p>
+        This is completely parallel to the Chi-Square statistic, using a slightly different method for estimating the statistic. The alternative statistic is still distributed as chi-square in the limit. In practice, this statistic is more or less indistinguishable in most cases from Chi-Square. For an explanation, see Spirtes, P., Glymour, C. N., Scheines, R., Heckerman, D., Meek, C., Cooper, G., & Richardson, T. (2000). <i>Causation, prediction, and search</i>. MIT press.
+    </p>
+    </div>
+
+    <h4>Parameters</h4>
+
+    <p><a href="#alpha">alpha</a></p>
+
+    <h3>Kernel Conditional Independence (KCI) Test</h3>
+
+    <div id="kci-test">
+    <p>KCI ("Kernel Conditional Independence") is a general independence test for model in which X = f(parents(X), eY);
         here, eY does not need to be additive; it can stand in any functional relationships to the other variables. The
         variables may even be discrete.
         The goal of the method is to estimate whether X is independent of Y given Z, completely generally.
@@ -2937,33 +3051,103 @@ there is a single latent for each output cluster. For MimBuild, a pattern over t
         Since it’s slow, individual independence results are always printed to the console so the user knows how far a
         procedure has gotten.
         This test may be used with any constraint-based algorithm (PC, FCI, etc.)</p>
+    </div>
 
-    <h3>FASK</h3>
+    <h4>Parameters</h4>
 
-    <p>FASK (“Fast Adjacency Skewness”) assumes that variables are skewed and linearly related, though the linearity may
-        be relaxed to monotonicity more generally.
-        It assume each variable, specifically, in the base case, is equal to a linear combination of its parents plus
-        skewed noise.
-        It operates by first estimating an undirected skeleton using both correlational reasoning and reasoning about
-        skewnesses,
-        then orienting 2-cycles (X->Y and Y->X) in the model, then orienting the rest of the edges in the model left or
-        right.
-        It scales well and is applicable wherever one has skewed variables and additive noise.</p>
+    <p><a href="#alpha">alpha</a>, <a href="#kciUseAppromation">kciUseAppromation</a>, <a href="#kernelMultiplier">kernelMultiplier</a>, <a href="#kciNumBootstraps">kciNumBootstraps</a>, <a href="#thresholdForNumEigenvalues">thresholdForNumEigenvalues</a>, <a href="#kciEpsilon">kciEpsilon</a></p>
 
-    <h3>Conditional Gaussian Test</h3>
+    <h3>Conditional Gaussian Likelihood Ratio Test</h3>
 
+    <div id="cg-lr-test">
     <p>Conditional Gaussian Test is a likelihood ratio test based on the conditional Gaussian likelihood function.
         This is intended for use with datasets where there is a mixture of continuous and discrete variables.
         It is assumed that the continuous variables are Gaussian conditional on each combination of values for the
         discrete variables,
         though it will work fairly well even if that assumption does not hold strictly. This test may be used with any
         constraint-based algorithm (PC, FCI, etc.)</p>
+    </div>
+
+    <h4>Parameters</h4>
+
+    <p><a href="#alpha">alpha</a>, <a href="#discretize">discretize</a></p>
+
+    <h3>Resampling</h3>
+
+    <p>Most TETRAD searches can be performed with resampling. This option is available on the Set Parameters screen. When it is selected, the search will be performed multiple times on randomly selected subsets of the data, and the final output graph will be the result of a voting procedure among all of the graphs. These subsets may be selected with replacement (bootstrapping) or without. There are also options for the user to set the size of the subset, and the number of resampling runs. The default number of resampling runs is zero, in which case no resampling will be performed.</p>
+
+    <p>For each potential edge in the final output graph, the individual sampled graphs may contain a directed edge in one direction, the other direction, a bidirected edge, an uncertain edge, or no edge at all. The voting procedure reconciles all of these possible answers into a single final graph, and the "ensemble method," which can be set by the user in the parameter settings screen, determines how it will do that.</p>
+
+    <p>The three available ensemble methods are Preserved, Highest, and Majority. Preserved tends to return the densest graphs, then Highest, and finally Majority returns the sparsest. The Preserved ensemble method ensures that an edge that has been found by some portion of the individual sample graphs is preserved in the final graph, even if the majority of sample graphs returned [no edge] as their answer for that edge. So the voting procedure for Preserved is to return the edge orientation that the highest percentage of sample graphs returned, other than [no edge]. The Highest ensemble method, on the other hand, simply returns the edge orientation which the highest proportion of sample graphs returned, even if that means returning [no edge]. And the Majority method requires that at least 50 percent of the sample graphs agree on an edge orientation in order to return any edge at all. If the highest proportion of sample graphs agree on, for instance, a bidirected edge, but only 40 percent of them do so, then the Majority ensemble method will return [no edge] for that edge.</p>
+
 
     <h2>Scoring Functions</h2>
+
+    <h3>BDeu Score</h3>
+
+    <div id="bdeu-score">
+    <p>
+    This is the BDeu score given in Heckerman, D., Geiger, D., & Chickering, D. M. (1995). Learning Bayesian networks: The combination of knowledge and statistical data. <i>Machine learning, 20</i>(3), 197-243. This gives a score for any two variables conditioned on any list of others which is more positive for distributions which are more strongly dependent.
+    </p>
+    </div>
+
+    <h4>Parameters</h4>
+
+    <p><a href="#samplePrior">samplePrior</a>, <a href="#structurePrior">structurePrior</a></p>
+
+    <h3>Conditional Gaussian BIC Score</h3>
+
+    <div id="cg-bic-score">
+    <p>Conditional Gaussian BIC Score may be used for the case where there is a mixture of discrete and Gaussian variables. Calculates a BIC score based on likelihood that is calculated using a conditional Gaussian assumption.</p>
+    </div>
+
+    <h4>Parameters</h4>
+
+    <p><a href="#structurePrior">structurePrior</a>, <a href="#discretize">discretize</a></p>
+
+    <h3>Conditional Correlation Independence (CCI) Score</h3>
+
+    <div id="cci-score">
+    <p>Conditional Correlation Score returns 1 - p-value for the Conditional correlation test. May be used as a score for the nonlinear case, assuming additivity.</p>
+    </div>
+
+    <h4>Parameters</h4>
+
+    <p><a href="#cciScoreAlpha">cciScoreAlpha</a>, <a href="#numBasisFunctions">numBasisFunctions</a>, <a href="#kernelType">kernelType</a>, <a href="#kernelMultiplier">kernelMultiplier</a>, <a href="#basisType">basisType</a>, <a href="#fastFDR">fastFDR</a>, <a href="#kernelRegressionSampleSize">kernelRegressionSampleSize</a>, <a href="#numDependenceSpotChecks">numDependenceSpotChecks</a></p>
+
+    <h3>D-separation Score</h3>
+
+    <div id="d-sep-score">
+    <p>
+    This uses d-separation to make something that acts as a score if you know the true graph. A score in Tetrad, for FGES, say, is a function that for X and Y conditional on Z, returns a negative number if X _||_ Y | Z and a positive number otherwise. So to get this behavior in no u certain terms, we simply return -1 for independent cases and +1 for dependent cases. Works like a charm. This can be used for FGES to check what the ideal behavior of the algorithm should be. Simply draw an edge from the true graph to the search box, select FGES, and search as usual.
+    </p>
+    </div>
+
+    <h3>Discrete BIC Score</h3>
+
+    <div id="disc-bic-score">
+    <p>
+    This is just the BIC score for the discrete case. The likelihood is judged by the multinomial tables directly, and this is penalized as is usual for a BIC score. The only surprising thing perhaps is that we use the formula BIC = 2L - k ln N, where L is the likelihood, k the number of parameters, and N the sample size, instead of the usual L + k / 2 ln N. So higher BIC scores will correspond to greater dependence. In the case of independence, the BIC score will be negative, since the likelihood will be zero, and this will be penalized.
+    </p>
+    </div>
+
+    <h3>SEM BIC Score</h3>
+
+    <div id="sem-bic-score">
+    <p>
+    This is specifically a BIC score for the linear, Gaussian case, where we include an additional penalty term, which is commonly used. We call this the <i>penalty discount</i>. So our formulas has BIC = 2L - ck log N, where L is the likelihood, c the penalty discount (usually greater than or equal to 1), and N the sample size. Since the assumption is that the data are distributed as Gaussian, this reduces to BIC = -n log sigma - ck ln N, where sigma is the standard deviation of the linear residual obtained by regressing a child variable onto all of its parents in the model.
+    </p>
+    </div>
+
+    <h4>Parameters</h4>
+
+    <p><a href="#penaltyDiscount">penaltyDiscount</a></p>
+
 
     <div id="parameters">
         <h2>Search Parameters</h2>
 
+        <p>Note: You must specify the "Value Type" of each parameter, and the value type must be one of the following: Integer, Double, String, Boolean.</p>
         <!-- Insert the parameter descriptions here, must follow the same structure and naming conventions -->
 
 
@@ -3212,13 +3396,13 @@ Usually covariance values are chosen from U(-b, -a) U U(a, b) for some a, b; thi
 
         <h3 id="dataType" class="parameter_description">dataType</h3>
         <ul class="parameter_description_list">
-            <li>Short Description: <span id="dataType_short_desc">Categorical or discrete</span></li>
-            <li>Long Description: <span id="dataType_long_desc">For a mixed data type simulation, if this is set to “categorical” or “discrete”, all variables are taken to be of that sort. Used internally to the program.</span>
+            <li>Short Description: <span id="dataType_short_desc">"continuous" or "discrete"</span></li>
+            <li>Long Description: <span id="dataType_long_desc">For a mixed data type simulation, if this is set to “continuous” or “discrete”, all variables are taken to be of that sort. This is used as a double-check to make sure the percent discrete is set appropriately.</span>
             </li>
             <li>Default Value: <span id="dataType_default_value">categorical</span></li>
             <li>Lower Bound: <span id="dataType_lower_bound"></span></li>
             <li>Upper Bound: <span id="dataType_upper_bound"></span></li>
-            <li>Value Type: <span id="dataType_value_type"></span></li>
+            <li>Value Type: <span id="dataType_value_type">String</span></li>
         </ul>
 
         <h3 id="depth" class="parameter_description">depth</h3>
@@ -3352,7 +3536,7 @@ Usually covariance values are chosen from U(-b, -a) U U(a, b) for some a, b; thi
             <li>Default Value: <span id="generalSemErrorTemplate_default_value">Beta(2, 5)</span></li>
             <li>Lower Bound: <span id="generalSemErrorTemplate_lower_bound"></span></li>
             <li>Upper Bound: <span id="generalSemErrorTemplate_upper_bound"></span></li>
-            <li>Value Type: <span id="generalSemErrorTemplate_value_type"></span></li>
+            <li>Value Type: <span id="generalSemErrorTemplate_value_type">String</span></li>
         </ul>
 
         <h3 id="generalSemFunctionTemplateLatent" class="parameter_description">generalSemFunctionTemplateLatent</h3>
@@ -3364,7 +3548,7 @@ Usually covariance values are chosen from U(-b, -a) U U(a, b) for some a, b; thi
             <li>Default Value: <span id="generalSemFunctionTemplateLatent_default_value">TSUM(NEW(B)*$)</span></li>
             <li>Lower Bound: <span id="generalSemFunctionTemplateLatent_lower_bound"></span></li>
             <li>Upper Bound: <span id="generalSemFunctionTemplateLatent_upper_bound"></span></li>
-            <li>Value Type: <span id="generalSemFunctionTemplateLatent_value_type"></span></li>
+            <li>Value Type: <span id="generalSemFunctionTemplateLatent_value_type">String</span></li>
         </ul>
 
         <h3 id="generalSemFunctionTemplateMeasured" class="parameter_description">
@@ -3377,7 +3561,7 @@ Usually covariance values are chosen from U(-b, -a) U U(a, b) for some a, b; thi
             <li>Default Value: <span id="generalSemFunctionTemplateMeasured_default_value">TSUM(NEW(B)*$)</span></li>
             <li>Lower Bound: <span id="generalSemFunctionTemplateMeasured_lower_bound"></span></li>
             <li>Upper Bound: <span id="generalSemFunctionTemplateMeasured_upper_bound"></span></li>
-            <li>Value Type: <span id="generalSemFunctionTemplateMeasured_value_type"></span></li>
+            <li>Value Type: <span id="generalSemFunctionTemplateMeasured_value_type">String</span></li>
         </ul>
 
         <h3 id="generalSemParameterTemplate" class="parameter_description">generalSemParameterTemplate</h3>
@@ -3390,7 +3574,7 @@ Usually covariance values are chosen from U(-b, -a) U U(a, b) for some a, b; thi
             </li>
             <li>Lower Bound: <span id="generalSemParameterTemplate_lower_bound"></span></li>
             <li>Upper Bound: <span id="generalSemParameterTemplate_upper_bound"></span></li>
-            <li>Value Type: <span id="generalSemParameterTemplate_value_type"></span></li>
+            <li>Value Type: <span id="generalSemParameterTemplate_value_type">String</span></li>
         </ul>
 
         <h3 id="ia" class="parameter_description">ia</h3>
@@ -4063,7 +4247,7 @@ Usually covariance values are chosen from U(-b, -a) U U(a, b) for some a, b; thi
 
         <h3 id="outputRBD" class="parameter_description">outputRBD</h3>
         <ul class="parameter_description_list">
-            <li>Short Description: <span id="outputRBD_short_desc">Output graph: Yes: dependent-constraint RB, No: independent-constraint RB.</span>
+            <li>Short Description: <span id="outputRBD_short_desc">Constraint Scoring: Yes: Dependent Scoring, No: Independent Scoring.</span>
             </li>
             <li>Long Description: <span id="outputRBD_long_desc">null</span></li>
             <li>Default Value: <span id="outputRBD_default_value">true</span></li>
@@ -4370,7 +4554,7 @@ Usually covariance values are chosen from U(-b, -a) U U(a, b) for some a, b; thi
             <li>Default Value: <span id="targetName_default_value"></span></li>
             <li>Lower Bound: <span id="targetName_lower_bound"></span></li>
             <li>Upper Bound: <span id="targetName_upper_bound"></span></li>
-            <li>Value Type: <span id="targetName_value_type"></span></li>
+            <li>Value Type: <span id="targetName_value_type">String</span></li>
         </ul>
 
         <h3 id="thr" class="parameter_description">thr</h3>
@@ -4631,7 +4815,7 @@ The “Max P” method for orienting an unshielded triple X—Y—Z records p-va
         be binary. In all other ways, the logistic regression box functions like the linear regression box.
     </p>
 
-    <h1 id="appendix"><span class="section_heading">Appendix</span></h1>
+    <h1 id="appendix"><span class="section_heading">Appendices</span></h1>
     <h2>An Introduction to PAGs</h2>
     <p>Peter Spirites</p>
 
@@ -4727,14 +4911,14 @@ The “Max P” method for orienting an unshielded triple X—Y—Z records p-va
 
         <tr>Table A1 is sufficient to understand the basic meaning of edge types in PAGs. Nonetheless, it can be helpful
             to know the following additional perspective on the information encoded by PAGs. Each edge has two
-            endpoints, one on the A side, and one on the B side. For example A  B has a tail at the A end, and an
+            endpoints, one on the A side, and one on the B side. For example A --> B has a tail at the A end, and an
             arrowhead at the B end. Altogether, there are three kinds of edge endpoints: a tail "–", an arrowhead ">",
             and a "o." Note that some kinds of combinations of endpoints never occur; for example, A o– B never occurs.
             As a mnemonic device, the basic meaning of each kind of edge can be derived from three simple rules that
             explain what the meaning of each kind of endpoint is. A tail "–" at the A end of an edge between A and B
             means "A is a cause of B"; an arrowhead ">" at the A end of an edge between A and B means "A is not a cause
             of B"; and a circle "o" at the A end of an edge between A and B means "can't tell whether or not A is a
-            cause of B". For example A  B means that A is a cause of B, and that B is not a cause of A in all of the
+            cause of B". For example A --> B means that A is a cause of B, and that B is not a cause of A in all of the
             CBNs represented by the PAG.
         </tr>
         <tr>The PAG in Figure 2 shows examples of each type of edge, and the CBNs Figure 1. show some examples of what
@@ -4748,7 +4932,56 @@ The “Max P” method for orienting an unshielded triple X—Y—Z records p-va
 
     </table>
 
-    <h1>Glossary</h1>
+    <h2>Solving Out of Memory Errors</h2>
+    <p>By default Java will allocate the smaller of 1/4 system memory or 1GB to the Java virtual machine (JVM). If you
+        run out of memory (heap memory space) running your analyses you should increase the memory allocated to the JVM
+        with the following switch '-XmxXXG' where XX is the number of gigabytes of ram you allow the JVM to utilize. Do
+        run Tetrad with more memory you need to start it from the command line or terminal. For example to allocate 8
+        gigabytes of ram you would add -Xmx8G immediately after the java command e.g., java -Xmx8G -jar tetrad-gui.jar.</p>
+
+    <h2>Glossary of Terms</h2>
+
+    <h5>Adjacent</h5>
+    <p>Two vertices in a graph are adjacent if there is a directed, or undirected, or double headed edge between them.</p>
+
+    <h5>Degree</h5>
+    <p>The total number of edges directed both into and out of a vertex.</p>
+
+    <h5>Indegree</h5>
+    <p>The number of edges directed into a vertex.</p>
+
+    <h5>Markov Blanket</h5>
+    <p>In a variable set V, with joint probability Pr, the Markov Blanket of a variable X in V is the smallest subset M of V \ {X} such that X II V \ M | M. In a DAG model, the Markov Blanket of X is the union of the set of direct causes (parents) of X, the set of direct effects (children) of X, and the set of direct causes of direct effects of X.</p>
+
+    <h5>Markov Equivalent Graphs</h5>
+    <p>Two directed acyclic graphs (DAGS) are Markov Equivalent if they have the same adjacencies and for every triple X – Y – Z of adjacent vertices, if X and Z are not adjacent, X -> Y &lt;- Z in both graphs or in neither graph.</p>
+
+    <h5>Meek Orientation Rules</h5>
+    <p>Rules for finding all directions of edges implied by a pattern, consistent with any specified “knowledge” constraints on directions. See <a href="https://arxiv.org/pdf/1302.4972.pdf">https://arxiv.org/pdf/1302.4972.pdf</a></p>
+
+    <h5>Mixed Ancestral Graph (MAG)</h5>
+    <p>An acyclic graph with directed and undirected edges. Directed edges have the same interpretation as in DAGs. Undirected edges represent common causes. See Richardson, T. (2003). Markov properties for acyclic directed mixed graphs. <em>Scandinavian Journal of Statistics</em>, 30(1), 145-157.</p>
+
+    <h5>Multiple Indicator Model</h5>
+    <p>A graphical model in which unmeasured variables each have multiple measured effects. There may be directed edges between unmeasured variables, but no directed edges from measured variables to unmeasured variables are allowed.</p>
+
+    <h5>Outdegree</h5>
+    <p>The number of edges directed out of a vertex.</p>
+
+    <h5>Partial Ancestral Graph (PAG)</h5>
+    <p>See PAG description in this manual.</p>
+
+    <h5>Pattern</h5>
+    <p>A graphical representation of a Markov Equivalence Class or Classes, having both directed and undirected edges, with an undirected edge indicating that for each possible direction of the edge, there is a graph in the class or classes having that edge direction.</p>
+
+    <h5>Scale Free Graph</h5>
+    <p>A network in which the frequency of nodes with degree k obeys a power law--the relation between log of degree and log of frequency is roughly linear. See <a href="https://cs.brynmawr.edu/Courses/cs380/spring2013/section02/slides/10_ScaleFreeNetworks.pdf">https://cs.brynmawr.edu/Courses/cs380/spring2013/section02/slides/10_ScaleFreeNetworks.pdf</a>.</p>
+
+    <h5>Trek</h5>
+    <p>A trek between X and Y is a directed path from X to Y or from Y to X, or two directed paths from a third variable Z into X and Y that do not intersect except at Z.</p>
+
+
+
 </div>
 
 <!-- Google Analytics: change UA-XXXXX-Y to be your site's ID. -->

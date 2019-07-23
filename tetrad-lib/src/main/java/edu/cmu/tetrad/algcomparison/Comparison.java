@@ -1580,14 +1580,14 @@ public class Comparison {
                         parameters.putAll(((HasParameterValues) simulation).getParameterValues());
                     }
 
-                    final String abbreviation = statistic.getAbbreviation();
-
-                    Object[] o = parameters.getValues(abbreviation);
-
-                    if (o.length == 1 && o[0] instanceof String) {
-                        table.setToken(t + 1, initialColumn + statIndex, (String) o[0]);
-                        continue;
-                    }
+//                    final String abbreviation = statistic.getAbbreviation();
+//
+//                    Object[] o = parameters.getValues(abbreviation);
+//
+//                    if (o.length == 1 && o[0] instanceof String) {
+//                        table.setToken(t + 1, initialColumn + statIndex, (String) o[0]);
+//                        continue;
+//                    }
 
                     double stat = statTables[u][newOrder[t]][statIndex];
 

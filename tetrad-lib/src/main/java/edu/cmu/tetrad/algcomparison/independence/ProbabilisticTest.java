@@ -3,9 +3,6 @@
  */
 package edu.cmu.tetrad.algcomparison.independence;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import edu.cmu.tetrad.annotation.TestOfIndependence;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataType;
@@ -13,6 +10,8 @@ import edu.cmu.tetrad.data.DataUtils;
 import edu.cmu.tetrad.search.IndTestProbabilistic;
 import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.util.Parameters;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Dec 17, 2018 3:44:46 PM
@@ -22,7 +21,7 @@ import edu.cmu.tetrad.util.Parameters;
  */
 @TestOfIndependence(
         name = "Probabilistic Test",
-        command = "prob",
+        command = "prob-test",
         dataType = DataType.Discrete
 )
 public class ProbabilisticTest implements IndependenceWrapper {

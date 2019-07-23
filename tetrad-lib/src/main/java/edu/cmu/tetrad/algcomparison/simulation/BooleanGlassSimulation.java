@@ -1,6 +1,7 @@
 package edu.cmu.tetrad.algcomparison.simulation;
 
 import edu.cmu.tetrad.algcomparison.graph.RandomGraph;
+import edu.cmu.tetrad.annotation.Experimental;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.gene.tetrad.gene.graph.LagGraphParams;
 import edu.cmu.tetrad.gene.tetrad.gene.graph.RandomActiveLagGraph;
@@ -12,7 +13,6 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.TimeLagGraph;
 import edu.cmu.tetrad.util.Parameters;
-
 import java.util.*;
 
 /**
@@ -21,6 +21,7 @@ import java.util.*;
  *
  * @author jdramsey
  */
+@Experimental
 public class BooleanGlassSimulation implements Simulation {
     static final long serialVersionUID = 23L;
     private RandomGraph randomGraph;

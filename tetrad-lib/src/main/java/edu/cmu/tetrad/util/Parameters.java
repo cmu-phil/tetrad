@@ -5,6 +5,7 @@ import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * Stores a list of named parameters with their values. Stores default values
@@ -48,21 +49,16 @@ public class Parameters implements TetradSerializable {
     }
 
     /**
-     * Returns a list of the parameters whoese values were actually used in the
+     * Returns a list of the parameters whose values were actually used in the
      * course of the simulation.
      *
-     * @return This list, in String form.
+     * @return this list, in String form
      */
+    @Override
     public String toString() {
-        StringBuilder builder = new StringBuilder();
-
-        for (String param : usedParameters) {
-//            ParamDescription paramDescription = ParamDescriptions.getInstance().get(param);
-//            builder.append("\n").append(paramDescription.getDescription()).append(" = ").append(parameters.get(param)[0]);
-            builder.append("\n").append(param).append(" = ").append(parameters.get(param)[0]);
-        }
-
-        return builder.toString();
+        return usedParameters.stream()
+                .map(e -> String.format("%s = %s", e, parameters.get(e)[0]))
+                .collect(Collectors.joining(System.lineSeparator()));
     }
 
     /**

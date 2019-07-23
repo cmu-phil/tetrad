@@ -1,14 +1,15 @@
 package edu.cmu.tetrad.algcomparison.simulation;
 
 import edu.cmu.tetrad.algcomparison.graph.RandomGraph;
+import edu.cmu.tetrad.annotation.Experimental;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Edge;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.Parameters;
+import edu.cmu.tetrad.util.Params;
 import edu.cmu.tetrad.util.RandomUtil;
-
 import java.util.*;
 
 /**
@@ -16,6 +17,7 @@ import java.util.*;
  *
  * @author Bryan Andrews
  */
+@Experimental
 public class LinearSineSimulation implements Simulation {
     static final long serialVersionUID = 23L;
     private RandomGraph randomGraph;
@@ -45,8 +47,8 @@ public class LinearSineSimulation implements Simulation {
         setInterceptHigh(parameters.getDouble("interceptHigh"));
         setLinearLow(parameters.getDouble("linearLow"));
         setLinearHigh(parameters.getDouble("linearHigh"));
-        setVarLow(parameters.getDouble("varLow"));
-        setVarHigh(parameters.getDouble("varHigh"));
+        setVarLow(parameters.getDouble(Params.VAR_LOW));
+        setVarHigh(parameters.getDouble(Params.VAR_HIGH));
         setBetaLow(parameters.getDouble("betaLow"));
         setBetaHigh(parameters.getDouble("betaHigh"));
         setGammaLow(parameters.getDouble("gammaLow"));
@@ -61,10 +63,10 @@ public class LinearSineSimulation implements Simulation {
         dataSets = new ArrayList<>();
         graphs = new ArrayList<>();
 
-        for (int i = 0; i < parameters.getInt("numRuns"); i++) {
+        for (int i = 0; i < parameters.getInt(Params.NUM_RUNS); i++) {
             System.out.println("Simulating dataset #" + (i + 1));
 
-            if (parameters.getBoolean("differentGraphs") && i > 0) graph = randomGraph.createGraph(parameters);
+            if (parameters.getBoolean(Params.DIFFERENT_GRAPHS) && i > 0) graph = randomGraph.createGraph(parameters);
 
             graphs.add(graph);
 
@@ -92,15 +94,15 @@ public class LinearSineSimulation implements Simulation {
     @Override
     public List<String> getParameters() {
         List<String> parameters = randomGraph.getParameters();
-        parameters.add("numRuns");
-        parameters.add("differentGraphs");
-        parameters.add("sampleSize");
+        parameters.add(Params.NUM_RUNS);
+        parameters.add(Params.DIFFERENT_GRAPHS);
+        parameters.add(Params.SAMPLE_SIZE);
         parameters.add("interceptLow");
         parameters.add("interceptHigh");
         parameters.add("linearLow");
         parameters.add("linearHigh");
-        parameters.add("varLow");
-        parameters.add("varHigh");
+        parameters.add(Params.VAR_LOW);
+        parameters.add(Params.VAR_HIGH);
         parameters.add("betaLow");
         parameters.add("betaHigh");
         parameters.add("gammaLow");
@@ -138,7 +140,7 @@ public class LinearSineSimulation implements Simulation {
         G = makeMixedGraph(G, nd);
         nodes = G.getNodes();
 
-        DataSet mixedData = new BoxDataSet(new MixedDataBox(nodes, parameters.getInt("sampleSize")), nodes);
+        DataSet mixedData = new BoxDataSet(new MixedDataBox(nodes, parameters.getInt(Params.SAMPLE_SIZE)), nodes);
 
         List<Node> tierOrdering = G.getCausalOrdering();
         int[] tiers = new int[tierOrdering.size()];
@@ -165,7 +167,7 @@ public class LinearSineSimulation implements Simulation {
                 if (!bounds.containsKey(key)) {
                     double m0 = mixedData.getDouble(0, mixedData.getColumn(continuousParents.get(j - 1)));
                     double m1 = mixedData.getDouble(0, mixedData.getColumn(continuousParents.get(j - 1)));
-                    for (int i = 1; i < parameters.getInt("sampleSize"); i++) {
+                    for (int i = 1; i < parameters.getInt(Params.SAMPLE_SIZE); i++) {
                         m0 = Math.min(m0, mixedData.getDouble(i, mixedData.getColumn(continuousParents.get(j - 1))));
                         m1 = Math.max(m1, mixedData.getDouble(i, mixedData.getColumn(continuousParents.get(j - 1))));
                     }
@@ -180,7 +182,7 @@ public class LinearSineSimulation implements Simulation {
             double mean = 0;
             double var = 0;
 
-            for (int i = 0; i < parameters.getInt("sampleSize"); i++) {
+            for (int i = 0; i < parameters.getInt(Params.SAMPLE_SIZE); i++) {
 
                 double[] parents = new double[continuousParents.size()];
                 double value = 0;
@@ -241,7 +243,7 @@ public class LinearSineSimulation implements Simulation {
             }
 
             double noiseVar = RandomUtil.getInstance().nextUniform(varLow, varHigh);
-            for (int i = 0; i < parameters.getInt("sampleSize"); i++) {
+            for (int i = 0; i < parameters.getInt(Params.SAMPLE_SIZE); i++) {
                 mixedData.setDouble(i, mixedIndex, mixedData.getDouble(i, mixedIndex) + var * RandomUtil.getInstance().nextNormal(0, noiseVar));
             }
         }
