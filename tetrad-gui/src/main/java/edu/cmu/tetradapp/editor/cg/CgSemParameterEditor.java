@@ -133,6 +133,9 @@ public class CgSemParameterEditor extends JPanel {
     	String nameLabel = paramType + ": ";
     	if (cgIm != null) {
     		nameLabel += "" + node;
+    	} else if (parameter.getType() == ParamType.COEF) {
+    		Node parentNode = parameter.getNodeA();
+    		nameLabel += parentNode + " -> " + node;
     	}
     	
     	Box b1 = Box.createVerticalBox();

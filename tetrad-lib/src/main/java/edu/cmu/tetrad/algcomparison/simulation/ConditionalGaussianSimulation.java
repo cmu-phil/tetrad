@@ -2,9 +2,6 @@ package edu.cmu.tetrad.algcomparison.simulation;
 
 import edu.cmu.tetrad.algcomparison.graph.RandomGraph;
 import edu.cmu.tetrad.algcomparison.graph.SingleGraph;
-import edu.cmu.tetrad.bayes.BayesIm;
-import edu.cmu.tetrad.bayes.BayesPm;
-import edu.cmu.tetrad.bayes.MlBayesIm;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.sem.*;
@@ -220,7 +217,7 @@ public class ConditionalGaussianSimulation implements Simulation {
                     + "the parameters have been specified.");
         }
 
-        DataSet mixedData = new BoxDataSet(new MixedDataBox(nodes, parameters.getInt(Params.SAMPLE_SIZE)), nodes);
+        /*DataSet mixedData = new BoxDataSet(new MixedDataBox(nodes, parameters.getInt(Params.SAMPLE_SIZE)), nodes);
 
         List<Node> X = new ArrayList<>();
         List<Node> A = new ArrayList<>();
@@ -379,8 +376,8 @@ public class ConditionalGaussianSimulation implements Simulation {
             }
         }
 
-        boolean saveLatentVars = parameters.getBoolean(Params.SAVE_LATENT_VARS);
-        return saveLatentVars ? mixedData : DataUtils.restrictToMeasured(mixedData);
+        //boolean saveLatentVars = parameters.getBoolean("saveLatentVars");
+        return saveLatentVars ? mixedData : DataUtils.restrictToMeasured(mixedData);*/
     }
 
     private double[] getBreakpoints(DataSet mixedData, DiscreteVariable _parent, int mixedParentColumn) {

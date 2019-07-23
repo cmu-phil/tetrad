@@ -32,10 +32,17 @@ import edu.cmu.tetrad.graph.SemGraph;
 import edu.cmu.tetrad.search.IndTestDSep;
 import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.session.DelegatesEditing;
-import edu.cmu.tetrad.util.JOptionUtils;
-import edu.cmu.tetrad.util.Parameters;
-import edu.cmu.tetrad.util.RandomUtil;
-import edu.cmu.tetrad.util.TetradSerializable;
+import edu.cmu.tetrad.util.*;
+import edu.cmu.tetradapp.editor.CopySubgraphAction;
+import edu.cmu.tetradapp.editor.EdgeTypeTable;
+import edu.cmu.tetradapp.editor.EditorWindow;
+import edu.cmu.tetradapp.editor.GraphEditable;
+import edu.cmu.tetradapp.editor.GraphFileMenu;
+import edu.cmu.tetradapp.editor.GraphParamsEditor;
+import edu.cmu.tetradapp.editor.GraphPropertiesAction;
+import edu.cmu.tetradapp.editor.PasteSubgraphAction;
+import edu.cmu.tetradapp.editor.PathsAction;
+import edu.cmu.tetradapp.editor.SelectBidirectedAction;
 import edu.cmu.tetradapp.model.IndTestProducer;
 import edu.cmu.tetradapp.model.SemGraphWrapper;
 import edu.cmu.tetradapp.ui.PaddingPanel;
@@ -267,7 +274,7 @@ public final class SemGraphEditor extends JPanel
         JMenuBar menuBar = createGraphMenuBar();
 
         // Add the model selection to top if multiple models
-        modelSelectin(semGraphWrapper);
+        modelSelection(semGraphWrapper);
 
         // topBox Left side toolbar
         SemGraphToolbar graphToolbar = new SemGraphToolbar(getWorkbench());
@@ -374,13 +381,13 @@ public final class SemGraphEditor extends JPanel
      *
      * @param semGraphWrapper
      */
-    private void modelSelectin(SemGraphWrapper semGraphWrapper) {
+    private void modelSelection(SemGraphWrapper semGraphWrapper) {
         int numModels = semGraphWrapper.getNumModels();
 
         if (numModels > 1) {
-            Integer[] models = new Integer[numModels];
+        	List<Integer> models = new ArrayList<>();
             for (int i = 0; i < numModels; i++) {
-                models[i] = i + 1;
+                models.add(i + 1);
             }
 
             final JComboBox<Integer> comboBox = new JComboBox(models.toArray());
