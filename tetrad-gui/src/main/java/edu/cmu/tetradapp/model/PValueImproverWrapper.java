@@ -351,7 +351,7 @@ public class PValueImproverWrapper extends AbstractAlgorithmRunner implements Gr
         TetradMatrix impliedCovar = covar;
 
         DataSet fullDataSet = new ColtDataSet(sampleSize, newVariables);
-        TetradMatrix cholesky = MatrixUtils.choleskyC(impliedCovar);
+        TetradMatrix cholesky = MatrixUtils.cholesky(impliedCovar);
 
         // Simulate the data by repeatedly calling the Cholesky.exogenousData
         // method. Store only the data for the measured variables.

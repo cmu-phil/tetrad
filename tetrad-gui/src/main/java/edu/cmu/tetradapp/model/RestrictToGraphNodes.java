@@ -32,7 +32,7 @@ import java.util.List;
 
 
 /**
- * Converts a continuous data set to a correlation matrix.
+ * Restricts a graph to just the nodes in a given graph.
  *
  * @author Joseph Ramsey
  */

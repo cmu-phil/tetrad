@@ -1757,7 +1757,7 @@ public class ProbUtils {
             System.out.println();
         }
         System.exit(0);*/
-        double c[][] = MatrixUtils.cholesky(cov);
+        double c[][] = MatrixUtils.cholesky(new TetradMatrix(cov)).toArray();
         double d[] = new double[a.length], e[] = new double[a.length], f[] =
                 new double[a.length];
         double w[] = new double[a.length - 1], y[] = new double[a.length - 1];

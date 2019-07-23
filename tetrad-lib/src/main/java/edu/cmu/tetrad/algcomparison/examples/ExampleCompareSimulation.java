@@ -81,7 +81,6 @@ public class ExampleCompareSimulation {
         comparison.setShowSimulationIndices(true);
         comparison.setSortByUtility(true);
         comparison.setShowUtilities(true);
-        comparison.setParallelized(true);
 
         comparison.compareFromSimulations("comparison", simulations, algorithms, statistics, parameters);
     }

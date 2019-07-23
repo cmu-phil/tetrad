@@ -106,7 +106,7 @@ public final class IndTestTrekSep implements IndependenceTest {
 //
 //            this.clustering = clustering;
 //
-//            this.covMatrix = new CovarianceMatrixOnTheFly(dataSet);
+//            this.covMatrix = new CovarianceMatrix(dataSet);
 ////        this._covMatrix = covMatrix.getMatrix();
 //            List<Node> nodes = covMatrix.getVariable();
 //

@@ -4,7 +4,8 @@ Functions for handling experimental variables
 Updated default parameters based on empirical simulation
 Extended parameter descriptions (rollovers)
 Updated manual
-RFCI-BSC algorithm
+Reviewed production readiness of algorithms in program
+Experimental algorithms are now only available in experimental mode i.e., --experimental
 Model scores (e.g., BIC) are output where available
 New look for workflow arrows
 Bootstrapping now includes original dataset by default

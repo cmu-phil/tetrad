@@ -126,7 +126,7 @@ public class TsImagesRunner extends AbstractAlgorithmRunner implements IFgesRunn
             DataSet dataSet = (DataSet) model;
 
             if (dataSet.isContinuous()) {
-                SemBicScore gesScore = new SemBicScore(new CovarianceMatrixOnTheFly((DataSet) model));
+                SemBicScore gesScore = new SemBicScore(new CovarianceMatrix((DataSet) model));
                 gesScore.setPenaltyDiscount(penaltyDiscount);
                 IndependenceTest test = new IndTestScore(gesScore);
                 fges = new TsGFci(test, gesScore);

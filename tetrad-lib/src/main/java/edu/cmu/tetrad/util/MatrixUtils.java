@@ -20,6 +20,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 package edu.cmu.tetrad.util;
 
+import cern.colt.matrix.DoubleMatrix2D;
 import cern.colt.matrix.impl.DenseDoubleMatrix1D;
 import cern.colt.matrix.impl.DenseDoubleMatrix2D;
 import cern.colt.matrix.linalg.CholeskyDecomposition;
@@ -37,6 +38,8 @@ import org.apache.commons.math3.linear.NonPositiveDefiniteMatrixException;
 import org.apache.commons.math3.linear.RealMatrix;
 import org.apache.commons.math3.linear.RectangularCholeskyDecomposition;
 import org.apache.commons.math3.linear.SingularValueDecomposition;
+
+import static java.lang.Math.sqrt;
 
 /**
  * Class Matrix includes several public static functions performing matrix
@@ -660,16 +663,10 @@ public final class MatrixUtils {
         return true;
     }
 
-    public static double[][] cholesky(double[][] covar) {
-        return new CholeskyDecomposition(
-                new DenseDoubleMatrix2D(covar)).getL().toArray();
-    }
-
-    public static TetradMatrix choleskyC(TetradMatrix covar) {
+    public static TetradMatrix cholesky(TetradMatrix covar) {
         RealMatrix L = new org.apache.commons.math3.linear.CholeskyDecomposition(covar.getRealMatrix()).getL();
         return new TetradMatrix(L);
 
-//        return new TetradMatrix(cholesky(covar.toArray()));
 //        DoubleMatrix2D _covar = new DenseDoubleMatrix2D(covar.toArray());
 //        DoubleMatrix2D l = new CholeskyDecomposition(_covar).getL();
 //        return new TetradMatrix(l.toArray());
@@ -680,51 +677,26 @@ public final class MatrixUtils {
      * matrix is returned for convenience, but m is modified in the process.
      */
     public static TetradMatrix convertCovToCorr(TetradMatrix m) {
+        if (m.rows() != m.columns()) throw new IllegalArgumentException("Not a square matrix.");
+        if (!MatrixUtils.isSymmetric(m.toArray(),0.001)) {
+            throw new IllegalArgumentException("Not symmetric with tolerance " + 0.001);
+        }
+
+        TetradMatrix corr = m.like();
+
         for (int i = 0; i < m.rows(); i++) {
-            for (int j = 0; j < m.columns(); j++) {
-                if (Double.isNaN(m.get(i, j))) {
-                    throw new IllegalArgumentException("Please remove or impute missing values.");
-                }
+            for (int j = i + 1; j < m.columns(); j++) {
+                double v = m.get(i, j) / sqrt(m.get(i, i) * m.get(j, j));
+                corr.set(i, j, v);
+                corr.set(j, i, v);
             }
         }
 
-        return correlation(m);
-    }
-
-    private static TetradMatrix correlation(TetradMatrix var0) {
-        int var1 = var0.columns();
-
-        while (true) {
-            --var1;
-            if (var1 < 0) {
-                var1 = var0.columns();
-
-                while (true) {
-                    --var1;
-                    if (var1 < 0) {
-                        return var0;
-                    }
-
-                    var0.set(var1, var1, 1.0D);
-                }
-            }
-
-            int var2 = var1;
-
-            while (true) {
-                --var2;
-                if (var2 < 0) {
-                    break;
-                }
-
-                double var3 = Math.sqrt(var0.get(var1, var1));
-                double var5 = Math.sqrt(var0.get(var2, var2));
-                double var7 = var0.get(var1, var2);
-                double var9 = var7 / (var3 * var5);
-                var0.set(var1, var2, var9);
-                var0.set(var2, var1, var9);
-            }
+        for (int i = 0; i < m.columns(); i++) {
+            corr.set(i, i, 1.0);
         }
+
+        return corr;
     }
 
     /**

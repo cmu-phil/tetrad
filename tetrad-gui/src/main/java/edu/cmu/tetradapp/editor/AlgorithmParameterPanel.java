@@ -87,40 +87,40 @@ public class AlgorithmParameterPanel extends JPanel {
 
         // Hard-coded parameter groups for Rfci-Bsc
         if (algorithm instanceof RfciBsc) {
-        	// Phase one: PAG and constraints candidates Searching
-        	String title = algorithm
+            // Phase one: PAG and constraints candidates Searching
+            String title = algorithm
                     .getClass().getAnnotation(edu.cmu.tetrad.annotation.Algorithm.class).name();
-        	Set<String> params = new LinkedHashSet<>();
-        	// RFCI
-        	params.add(Params.DEPTH);
-        	params.add(Params.MAX_PATH_LENGTH);
-        	params.add(Params.COMPLETE_RULE_SET_USED);
-        	params.add(Params.VERBOSE);
-        	mainPanel.add(createSubPanel(title, params, parameters));
+            Set<String> params = new LinkedHashSet<>();
+            // RFCI
+            params.add(Params.DEPTH);
+            params.add(Params.MAX_PATH_LENGTH);
+            params.add(Params.COMPLETE_RULE_SET_USED);
+            params.add(Params.VERBOSE);
+            mainPanel.add(createSubPanel(title, params, parameters));
             mainPanel.add(Box.createVerticalStrut(10));
-            
-        	// Phase one: PAG and constraints candidates Searching
-        	title = "Phase One: PAG and constraints candidates Searching";
-        	params = new LinkedHashSet<>();
-        	// Thresholds
-        	params.add(Params.NUM_RANDOMIZED_SEARCH_MODELS);
-        	params.add(Params.THRESHOLD_NO_RANDOM_DATA_SEARCH);
-        	params.add(Params.CUTOFF_DATA_SEARCH);
-        	mainPanel.add(createSubPanel(title, params, parameters));
+
+            // Phase one: PAG and constraints candidates Searching
+            title = "Phase One: PAG and constraints candidates Searching";
+            params = new LinkedHashSet<>();
+            // Thresholds
+            params.add(Params.NUM_RANDOMIZED_SEARCH_MODELS);
+            params.add(Params.THRESHOLD_NO_RANDOM_DATA_SEARCH);
+            params.add(Params.CUTOFF_DATA_SEARCH);
+            mainPanel.add(createSubPanel(title, params, parameters));
             mainPanel.add(Box.createVerticalStrut(10));
-            
-        	// Phase two: Bayesian Scoring of Constraints
-        	title = "Phase Two: Bayesian Scoring of Constraints";
-        	params = new LinkedHashSet<>();
-        	params.add(Params.NUM_BSC_BOOTSTRAP_SAMPLES);
-        	params.add(Params.THRESHOLD_NO_RANDOM_CONSTRAIN_SEARCH);
-        	params.add(Params.CUTOFF_CONSTRAIN_SEARCH);
-        	params.add(Params.LOWER_BOUND);
-        	params.add(Params.UPPER_BOUND);
-        	params.add(Params.OUTPUT_RBD);
-        	mainPanel.add(createSubPanel(title, params, parameters));
+
+            // Phase two: Bayesian Scoring of Constraints
+            title = "Phase Two: Bayesian Scoring of Constraints";
+            params = new LinkedHashSet<>();
+            params.add(Params.NUM_BSC_BOOTSTRAP_SAMPLES);
+            params.add(Params.THRESHOLD_NO_RANDOM_CONSTRAIN_SEARCH);
+            params.add(Params.CUTOFF_CONSTRAIN_SEARCH);
+            params.add(Params.LOWER_BOUND);
+            params.add(Params.UPPER_BOUND);
+            params.add(Params.OUTPUT_RBD);
+            mainPanel.add(createSubPanel(title, params, parameters));
             mainPanel.add(Box.createVerticalStrut(10));
-        	
+
         } else {
             // add algorithm parameters
             Set<String> params = Params.getAlgorithmParameters(algorithm);
@@ -134,7 +134,7 @@ public class AlgorithmParameterPanel extends JPanel {
 
             params = Params.getScoreParameters(algorithm);
             if (!params.isEmpty()) {
-                String title = ((UsesScoreWrapper) algorithm).getScoreWarpper()
+                String title = ((UsesScoreWrapper) algorithm).getScoreWrapper()
                         .getClass().getAnnotation(Score.class).name();
                 mainPanel.add(createSubPanel(title, params, parameters));
                 mainPanel.add(Box.createVerticalStrut(10));
@@ -156,7 +156,7 @@ public class AlgorithmParameterPanel extends JPanel {
                 }
             }
         }
-        
+
     }
 
     protected Box[] toArray(Map<String, Box> parameterComponents) {
@@ -241,7 +241,7 @@ public class AlgorithmParameterPanel extends JPanel {
     }
 
     protected DoubleTextField getDoubleField(final String parameter, final Parameters parameters,
-            double defaultValue, final double lowerBound, final double upperBound) {
+                                             double defaultValue, final double lowerBound, final double upperBound) {
         final DoubleTextField field = new DoubleTextField(parameters.getDouble(parameter, defaultValue),
                 8, new DecimalFormat("0.####"), new DecimalFormat("0.0#E0"), 0.001);
 
@@ -271,7 +271,7 @@ public class AlgorithmParameterPanel extends JPanel {
     }
 
     protected IntTextField getIntTextField(final String parameter, final Parameters parameters,
-            final int defaultValue, final double lowerBound, final double upperBound) {
+                                           final int defaultValue, final double lowerBound, final double upperBound) {
         final IntTextField field = new IntTextField(parameters.getInt(parameter, defaultValue), 8);
 
         field.setFilter((value, oldValue) -> {

@@ -201,7 +201,7 @@ public final class FgesOrienter implements GraphSearch, GraphScorer, Reorienter 
             setStructurePrior(0.001);
             setSamplePrior(10.);
         } else {
-            setCovMatrix(new CovarianceMatrixOnTheFly(dataSet));
+            setCovMatrix(new CovarianceMatrix(dataSet));
         }
 
         out.println("GES constructor done");

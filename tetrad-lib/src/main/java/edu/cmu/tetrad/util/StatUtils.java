@@ -23,6 +23,7 @@ package edu.cmu.tetrad.util;
 
 import cern.colt.list.DoubleArrayList;
 import cern.jet.stat.Descriptive;
+import edu.cmu.tetrad.data.DataUtils;
 import org.apache.commons.math3.distribution.ChiSquaredDistribution;
 import org.apache.commons.math3.distribution.NormalDistribution;
 
@@ -918,6 +919,9 @@ public final class StatUtils {
      * array2.
      */
     public static double correlation(double array1[], double array2[], int N) {
+//        array1 = DataUtils.center(array1);
+//        array2 = DataUtils.center(array2);
+
         double covXY = sxy(array1, array2, N);
         double covXX = sxy(array1, array1, N);
         double covYY = sxy(array2, array2, N);
@@ -1742,29 +1746,35 @@ public final class StatUtils {
      * @return the given partial correlation.
      */
     public static synchronized double partialCorrelation(TetradMatrix submatrix) {
-//        double cov = partialCovariance(submatrix);
-//
-//        int[] selection1 = new int[submatrix.rows()];
-//        int[] selection2 = new int[submatrix.rows()];
-//
-//        selection1[0] = 0;
-//        selection1[1] = 0;
-//        for (int i = 2; i < selection1.length; i++) selection1[i] = i;
-//
-//        TetradMatrix var1Matrix = submatrix.getSelection(selection1, selection1);
-//        double var1 = partialCovariance(var1Matrix);
-//
-//        selection2[0] = 1;
-//        selection2[1] = 1;
-//        for (int i = 2; i < selection2.length; i++) selection2[i] = i;
-//
-//        TetradMatrix var2Matrix = submatrix.getSelection(selection2, selection2);
-//        double var2 = partialCovariance(var2Matrix);
-//
-//        return cov / Math.sqrt(var1 * var2);
+        return StatUtils.partialCorrelationPrecisionMatrix(submatrix);
+    }
 
+    public static synchronized double partialCorrelationPrecisionMatrix(TetradMatrix submatrix) {
         TetradMatrix inverse = submatrix.inverse();
-        return (-inverse.get(0, 1)) / Math.sqrt(inverse.get(0, 0) * inverse.get(1, 1));
+        return (-inverse.get(0, 1)) / sqrt(inverse.get(0, 0) * inverse.get(1, 1));
+    }
+
+    public static synchronized double partialCorrelationWhittaker(TetradMatrix submatrix) {
+        double cov = partialCovariance(submatrix);
+
+        int[] selection1 = new int[submatrix.rows()];
+        int[] selection2 = new int[submatrix.rows()];
+
+        selection1[0] = 0;
+        selection1[1] = 0;
+        for (int i = 2; i < selection1.length; i++) selection1[i] = i;
+
+        TetradMatrix var1Matrix = submatrix.getSelection(selection1, selection1);
+        double var1 = partialCovariance(var1Matrix);
+
+        selection2[0] = 1;
+        selection2[1] = 1;
+        for (int i = 2; i < selection2.length; i++) selection2[i] = i;
+
+        TetradMatrix var2Matrix = submatrix.getSelection(selection2, selection2);
+        double var2 = partialCovariance(var2Matrix);
+
+        return cov / Math.sqrt(var1 * var2);
     }
 
     /**
@@ -1942,7 +1952,7 @@ public final class StatUtils {
 
         return data2;
     }
-    
+
     public static double factorial(int c) {
         if (c < 0) throw new IllegalArgumentException("Can't take the factorial of a negative number: " + c);
         if (c == 0) return 1;

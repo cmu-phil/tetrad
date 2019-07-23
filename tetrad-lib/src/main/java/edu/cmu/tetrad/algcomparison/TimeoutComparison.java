@@ -1257,7 +1257,7 @@ public class TimeoutComparison {
                     if (_stat instanceof ElapsedTime) {
                         stat = elapsed / 1000.0;
                     } else {
-                        stat = _stat.getValue(truth[u], est[u]);
+                        stat = _stat.getValue(truth[u], est[u], null);
                     }
 
                     allStats[u][run.getAlgSimIndex()][statIndex][run.getRunIndex()] = stat;

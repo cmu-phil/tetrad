@@ -23,10 +23,7 @@ package edu.cmu.tetrad.data;
 
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.util.NumberFormatUtil;
-import edu.cmu.tetrad.util.StatUtils;
-import edu.cmu.tetrad.util.TetradMatrix;
-import edu.cmu.tetrad.util.TetradSerializable;
+import edu.cmu.tetrad.util.*;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -989,23 +986,10 @@ public final class ColtDataSet implements DataSet, TetradSerializable {
      */
     public final TetradMatrix getCorrelationMatrix() {
         if (!isContinuous()) {
-            throw new IllegalStateException("Not a continuous tetradMatrix set.");
+            throw new IllegalStateException("Not a continuous data set.");
         }
 
-        TetradMatrix cov = new TetradMatrix(tetradMatrix.columns(), tetradMatrix.columns());
-
-        for (int i = 0; i < tetradMatrix.columns(); i++) {
-            for (int j = i; j < tetradMatrix.columns(); j++) {
-                double correlation = StatUtils.correlation(tetradMatrix.getColumn(i).toArray(), tetradMatrix.getColumn(j).toArray());
-                cov.set(i, j, correlation);
-                cov.set(j, i, correlation);
-            }
-        }
-
-        return cov;
-
-
-//        return Statistic.correlation(Statistic.covariance(tetradMatrix));
+        return MatrixUtils.convertCovToCorr(getCovarianceMatrix());
     }
 
     /**

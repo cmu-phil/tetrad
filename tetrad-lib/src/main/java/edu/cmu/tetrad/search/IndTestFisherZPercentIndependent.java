@@ -86,7 +86,7 @@ public final class IndTestFisherZPercentIndependent implements IndependenceTest 
 
         this.recursivePartialCorrelation = new ArrayList<>();
         for (TetradMatrix covMatrix : ncov) {
-            recursivePartialCorrelation.add(new RecursivePartialCorrelation(getVariables(), covMatrix));
+            recursivePartialCorrelation.add(new RecursivePartialCorrelation(getVariables(), covMatrix, dataSets.get(0).getNumRows()));
         }
     }
 

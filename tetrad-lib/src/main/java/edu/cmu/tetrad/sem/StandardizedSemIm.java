@@ -606,7 +606,7 @@ public class StandardizedSemIm implements Simulator, TetradSerializable {
         // with error data for varaibles that have special distributions defined. Not ideal,
         // but not sure what else to do at the moment. It's better than not taking covariances
         // into account!
-        TetradMatrix cholesky = MatrixUtils.choleskyC(errCovar(errorVariances()));
+        TetradMatrix cholesky = MatrixUtils.cholesky(errCovar(errorVariances()));
 
         for (int i = 0; i < sampleSize; i++) {
             TetradVector e = new TetradVector(exogenousData(cholesky, RandomUtil.getInstance()));
