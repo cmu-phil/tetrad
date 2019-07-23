@@ -1555,6 +1555,7 @@ public final class SearchGraphUtils {
         rules.orientImplied(ePattern);
 
         List<Triple> ambiguousTriples = new ArrayList<>(ePattern.getAmbiguousTriples());
+        removeExtraAmbiguousTriples(ePattern, new ArrayList<>(ambiguousTriples));
 
         while (!ambiguousTriples.isEmpty()) {
             Triple triple = ambiguousTriples.get(0);
@@ -1563,12 +1564,15 @@ public final class SearchGraphUtils {
             Node y = triple.getY();
             Node z = triple.getZ();
 
-            if (!ePattern.isDefCollider(x, y, z)) {
-                ePattern.removeEdge(x, y);
-                ePattern.removeEdge(z, y);
-                ePattern.addDirectedEdge(x, y);
-                ePattern.addDirectedEdge(z, y);
-            }
+            ePattern.removeAmbiguousTriple(x, y, z);
+            ambiguousTriples.remove(triple);
+
+//            if (!ePattern.isDefCollider(x, y, z)) {
+//                ePattern.removeEdge(x, y);
+//                ePattern.removeEdge(z, y);
+//                ePattern.addDirectedEdge(x, y);
+//                ePattern.addDirectedEdge(z, y);
+//            }
 
             rules.orientImplied(ePattern);
             removeExtraAmbiguousTriples(ePattern, ambiguousTriples);
