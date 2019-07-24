@@ -758,6 +758,7 @@ public final class CgIm implements IM, ICgIm, TetradSerializable {
                     }
                     double meanValue = new Split(coefLow, coefHigh).nextRandom();
                     double sdValue = new Split(covLow, covHigh).nextRandom();
+                    sdValue = Math.abs(sdValue);
                     
                     cgContinuousNodeEdgeCoef[nodeIndex][i][0][j] = coefValue;
                 	cgContinuousNodeErrCovar[nodeIndex][i][0][j] = varValue;
@@ -1707,7 +1708,7 @@ public final class CgIm implements IM, ICgIm, TetradSerializable {
     	cgContinuousNodeEdgeCoef[nodeIndex][rowIndex][0] = getRandomWeights(size,coefLow,coefHigh);
     	cgContinuousNodeErrCovar[nodeIndex][rowIndex][0] = getRandomWeights(size,covLow,covHigh);
     	cgContinuousNodeMeans[nodeIndex][rowIndex][0] = getRandomWeights(size,coefLow,coefHigh);
-    	cgContinuousNodeMeanStdDevs[nodeIndex][rowIndex][0] = getRandomWeights(size,covLow,covHigh);
+    	cgContinuousNodeMeanStdDevs[nodeIndex][rowIndex][0] = getRandomPositiveWeights(size,covLow,covHigh);
     }
     
 	private void overwriteDiscreteRow(int nodeIndex, int rowIndex, int initializationMethod) {
@@ -2015,7 +2016,7 @@ public final class CgIm implements IM, ICgIm, TetradSerializable {
 		for(int colIndex=0;colIndex<numCols;colIndex++) {
 			cgDiscreteNodeErrCovar[nodeIndex][rowIndex][colIndex] =  getRandomWeights(size,covLow,covHigh);
 			cgDiscreteNodeMeans[nodeIndex][rowIndex][colIndex] = getRandomWeights(size,coefLow,coefHigh);
-            cgDiscreteNodeMeanStdDevs[nodeIndex][rowIndex][colIndex] = getRandomWeights(size,covLow,covHigh);
+            cgDiscreteNodeMeanStdDevs[nodeIndex][rowIndex][colIndex] = getRandomPositiveWeights(size,covLow,covHigh);
 		}
 	}
 
@@ -2061,13 +2062,28 @@ public final class CgIm implements IM, ICgIm, TetradSerializable {
             sum += probs[i][0];
         }
     	
-    	for (int i = 0; i < numColumns; i++) {
+    	double truncatedSum = 0.0;
+    	
+    	for (int i = 0; i < numColumns-1; i++) {
     		probs[i][0] /= sum;
+    		probs[i][0] = Double.parseDouble(String.format("%.4f", probs[i][0]));
+    		truncatedSum += probs[i][0];
     	}
+    	
+    	double lastProb = 1 - truncatedSum;
+    	probs[numColumns-1][0] = Double.parseDouble(String.format("%.4f", lastProb));
     	
     	return probs;
     }
 
+    private static double[] getRandomPositiveWeights(int size, double lowerBound, double upperBound) {
+    	double[] row = getRandomWeights(size, lowerBound, upperBound);
+    	for (int i = 0; i < size; i++) {
+    		row[i] = Math.abs(row[i]);
+    	}
+    	return row;
+    }
+    
     private static double[] getRandomWeights(int size, double lowerBound, double upperBound) {
         assert size >= 0;
 

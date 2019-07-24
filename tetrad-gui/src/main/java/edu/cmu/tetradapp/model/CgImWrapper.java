@@ -52,8 +52,6 @@ public class CgImWrapper implements SessionModel, Memorable {
     		throw new NullPointerException("Parameters must not be null.");
     	}
     	
-    	System.out.println("CgImWrapper(CgPmWrapper cgPmWrapper, CgImWrapper oldCgImWrapper, Parameters params)");
-    	
     	CgPm cgPm = new CgPm(cgPmWrapper.getCgPm());
     	CgIm oldCgIm = oldCgImWrapper.getCgIm();
     	
