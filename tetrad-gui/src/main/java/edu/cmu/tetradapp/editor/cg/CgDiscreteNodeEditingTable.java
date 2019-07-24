@@ -7,6 +7,7 @@ import java.awt.FontMetrics;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.text.DecimalFormat;
 import java.text.NumberFormat;
 
 import javax.swing.JComponent;
@@ -256,6 +257,8 @@ public class CgDiscreteNodeEditingTable extends JTable {
 			
 			rowIndex = rowIndex / numCategories;
 			
+			DecimalFormat decimalFormat = new DecimalFormat("0.0###");
+			
 			if(columnIndex < numDiscreteParents) {
 				int[] discretParentVals = cgIm.getCgDiscreteNodeDiscreteParentValues(nodeIndex, rowIndex);
 				int[] discreteParentArray = cgIm.getCgDiscreteNodeDiscreteParentNodeArray(nodeIndex);
@@ -280,12 +283,12 @@ public class CgDiscreteNodeEditingTable extends JTable {
 					double mean = cgIm.getCgDiscreteNodeContinuousParentMean(
 							nodeIndex, rowIndex, colIndex, continuousParentIndex);
 					
-					return mean;
+					return decimalFormat.format(mean);
 				} else {
 					double sd = cgIm.getCgDiscreteNodeContinuousParentMeanStdDev(
 							nodeIndex, rowIndex, colIndex, continuousParentIndex);
 					
-					return sd;
+					return decimalFormat.format(sd);
 				}
 			} else {
 				int valIndex = columnIndex - numDiscreteParents - 2*numContinuousParents;
@@ -298,7 +301,7 @@ public class CgDiscreteNodeEditingTable extends JTable {
 				
 				double prob = cgIm.getCgDiscreteNodeProbability(nodeIndex, rowIndex, colIndex);
 				
-				return prob;
+				return decimalFormat.format(prob);
 				
 			}
 		}

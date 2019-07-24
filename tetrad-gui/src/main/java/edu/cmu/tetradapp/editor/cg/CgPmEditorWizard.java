@@ -68,12 +68,6 @@ public class CgPmEditorWizard extends JPanel {
     private boolean editingLatentVariablesAllowed = false;
 
     /**
-     * Lets the user see graphically which variable is being edited and click to
-     * another variable.
-     */
-    private GraphWorkbench workbench;
-
-    /**
      * A reference to the category editor.
      */
     private CgCategoryEditor categoryEditor;
@@ -127,7 +121,6 @@ public class CgPmEditorWizard extends JPanel {
         }
         
         this.cgPm = cgPm;
-        this.workbench = workbench;
         
         workbench.setAllowDoubleClickActions(false);
         

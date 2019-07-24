@@ -2062,16 +2062,9 @@ public final class CgIm implements IM, ICgIm, TetradSerializable {
             sum += probs[i][0];
         }
     	
-    	double truncatedSum = 0.0;
-    	
-    	for (int i = 0; i < numColumns-1; i++) {
+    	for (int i = 0; i < numColumns; i++) {
     		probs[i][0] /= sum;
-    		probs[i][0] = Double.parseDouble(String.format("%.4f", probs[i][0]));
-    		truncatedSum += probs[i][0];
     	}
-    	
-    	double lastProb = 1 - truncatedSum;
-    	probs[numColumns-1][0] = Double.parseDouble(String.format("%.4f", lastProb));
     	
     	return probs;
     }

@@ -20,6 +20,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 
 import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetradapp.editor.SaveComponentImage;
 import edu.cmu.tetradapp.editor.SaveScreenshot;
 import edu.cmu.tetradapp.model.CgImWrapper;
@@ -94,6 +95,9 @@ public class CgImEditor extends JPanel {
 
         CgIm cgIm = wrapper.getCgIm();
         Graph graph = cgIm.getDag();
+        
+        GraphUtils.circleLayout(graph, 225, 225, 150);
+        
         GraphWorkbench workbench = new GraphWorkbench(graph);
 
         JMenuBar menuBar = new JMenuBar();

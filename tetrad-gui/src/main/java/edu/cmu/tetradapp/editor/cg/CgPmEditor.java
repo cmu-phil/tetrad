@@ -21,6 +21,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 
 import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.session.DelegatesEditing;
 import edu.cmu.tetradapp.editor.SaveComponentImage;
 import edu.cmu.tetradapp.model.CgPmWrapper;
@@ -108,6 +109,9 @@ public class CgPmEditor extends JPanel implements PropertyChangeListener, Delega
         
         CgPm cgPm = wrapper.getCgPm();
         Graph graph = cgPm.getGraph();
+        
+        GraphUtils.circleLayout(graph, 225, 225, 150);
+        
         GraphWorkbench workbench = new GraphWorkbench(graph);
         workbench.enableEditing(false);
         

@@ -85,7 +85,7 @@ public class CgImEditorWizard extends JPanel {
 
         // Do Layout.
         Box b1 = Box.createHorizontalBox();
-        b1.add(new JLabel("Choose the next variable to edit:  "));
+        b1.add(new JLabel("Choose the next variable:  "));
         b1.add(varNamesComboBox);
         b1.add(nextButton);
         b1.add(Box.createHorizontalGlue());
