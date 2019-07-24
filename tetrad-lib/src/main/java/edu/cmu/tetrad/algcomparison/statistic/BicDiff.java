@@ -28,10 +28,9 @@ public class BicDiff implements Statistic {
 
     @Override
     public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
-        Graph g = SearchGraphUtils.dagFromPattern(estGraph);
-        double est = SemBicScorer.scoreDag(g, (DataSet) dataModel);
-        double _true = SemBicScorer.scoreDag(trueGraph, (DataSet) dataModel);
-       return (_true - est);
+        double _true = SemBicScorer.scoreDag(SearchGraphUtils.dagFromPattern(trueGraph), dataModel);
+        double est = SemBicScorer.scoreDag(SearchGraphUtils.dagFromPattern(estGraph), dataModel);
+        return (_true - est);
     }
 
     @Override

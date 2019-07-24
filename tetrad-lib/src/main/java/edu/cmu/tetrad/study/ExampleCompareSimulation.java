@@ -46,16 +46,13 @@ public class ExampleCompareSimulation {
     public static void main(String... args) {
         Parameters parameters = new Parameters();
 
-//        parameters.set("minCategories", 3);
-//        parameters.set("maxCategories", 3);
-
         parameters.set("numRuns", 10);
-        parameters.set("differentGraphs", false);
+        parameters.set("differentGraphs", true);
         parameters.set("sampleSize", 1000);
 
-        parameters.set("numMeasures", 8);
-        parameters.set("numLatents", 4);
-        parameters.set("avgDegree", 2);//, 3, 4, 5, 6, 7, 8, 9, 10);
+        parameters.set("numMeasures", 10);
+        parameters.set("numLatents", 0);
+        parameters.set("avgDegree", 4);
         parameters.set("maxDegree", 1000);
         parameters.set("maxIndegree", 1000);
         parameters.set("maxOutdegree", 1000);
@@ -66,7 +63,7 @@ public class ExampleCompareSimulation {
         parameters.set("varLow", .5);
         parameters.set("varHigh", 1.5);
         parameters.set("verbose", false);
-        parameters.set("coefSymmetric", true);
+        parameters.set("coefSymmetric", false);
         parameters.set("percentDiscrete", 0);
         parameters.set("numCategories", 3);
         parameters.set("differentGraphs", true);
@@ -84,18 +81,13 @@ public class ExampleCompareSimulation {
         parameters.set("maxPOrientationMaxPathLength", 3);
         parameters.set("verbose", false);
 
-//        parameters.set("scaleFreeAlpha", 0.00001);
-//        parameters.set("scaleFreeBeta", 0.4);
-//        parameters.set("scaleFreeDeltaIn", .1);
-//        parameters.set("scaleFreeDeltaOut", 3);
-
         parameters.set("symmetricFirstStep", false);
-        parameters.set("faithfulnessAssumed", true);
+        parameters.set("faithfulnessAssumed", false);
         parameters.set("maxDegree", 100);
 
-//        parameters.set("penaltyDiscount", 1, 1.2, 1.5, 2, 3, 4, 5, 6, 7, 8);//, 6, 6, 10, 20, 30);
+        parameters.set("penaltyDiscount", 1, 1.2, 1.5, 2, 3, 4, 5, 6, 7, 8);//, 6, 6, 10, 20, 30);
         parameters.set("structurePrior", 0);
-        parameters.set("thresholdAlpha", 1e-7, 1e-5, 0.0001, 0.001, 0.01,.1, .2, .3,.4, .45, .46, .47, .48, .49, .5);
+//        parameters.set("thresholdAlpha", 1e-7, 1e-5, 0.0001, 0.001, 0.01,.1, .2, .3,.4, .45, .46, .47, .48, .49, .5);
 
         parameters.set(Params.STABLE_FAS, true);
         parameters.set(Params.CONCURRENT_FAS, true);
@@ -105,12 +97,10 @@ public class ExampleCompareSimulation {
 
 //        statistics.add(new ParameterColumn("alpha"));
 //        statistics.add(new ParameterColumn("colliderDiscoveryRule"));
-        statistics.add(new ParameterColumn("thresholdAlpha"));
-//        statistics.add(new ParameterColumn("penaltyDiscount"));
+//        statistics.add(new ParameterColumn("thresholdAlpha"));
+        statistics.add(new ParameterColumn("penaltyDiscount"));
 
         statistics.add(new NumberOfEdgesEst());
-//        statistics.add(new AdjacencyTPR());
-//        statistics.add(new AdjacencyFPR());
         statistics.add(new AdjacencyPrecision());
         statistics.add(new AdjacencyRecall());
         statistics.add(new ArrowheadPrecision());
@@ -118,7 +108,9 @@ public class ExampleCompareSimulation {
         statistics.add(new ArrowheadPrecisionCommonEdges());
         statistics.add(new ArrowheadRecallCommonEdges());
         statistics.add(new F1All());
-//        statistics.add(new BicDiffPerRecord());
+        statistics.add(new BicTrue());
+        statistics.add(new BicEst());
+        statistics.add(new BicDiffPerRecord());
         statistics.add(new ElapsedTime());
 
         statistics.setWeight("AP", 1);
@@ -129,7 +121,7 @@ public class ExampleCompareSimulation {
         Algorithms algorithms = new Algorithms();
 
 //        algorithms.add(new PcAll(new FisherZ()));
-        algorithms.add(new Gfci(new FisherZ(), new SemBicScore()));
+        algorithms.add(new Fges(new SemBicScore()));
 
         Simulations simulations = new Simulations();
 
@@ -141,7 +133,7 @@ public class ExampleCompareSimulation {
         comparison.setShowSimulationIndices(false);
         comparison.setSortByUtility(false);
         comparison.setShowUtilities(false);
-        comparison.setComparisonGraph(Comparison.ComparisonGraph.PAG_of_the_true_DAG);
+        comparison.setComparisonGraph(Comparison.ComparisonGraph.Pattern_of_the_true_DAG);
 
         comparison.compareFromSimulations("comparisonJoe", simulations, algorithms, statistics, parameters);
     }

@@ -22,7 +22,7 @@ public class SemBicScorer {
         } else if (data instanceof DataSet) {
             score = new SemBicScore((DataSet) data);
         } else {
-            throw new IllegalArgumentException("Expecting a covaraince matrix of a dataset.");
+            throw new IllegalArgumentException("Expecting a covariance matrix of a dataset.");
         }
 
         dag = GraphUtils.replaceNodes(dag, data.getVariables());
