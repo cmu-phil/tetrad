@@ -28,8 +28,7 @@ public class BicTrue implements Statistic {
 
     @Override
     public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
-        Graph g = SearchGraphUtils.dagFromPattern(estGraph);
-        return SemBicScorer.scoreDag(trueGraph, (DataSet) dataModel);
+        return SemBicScorer.scoreDag(trueGraph, dataModel);
     }
 
     @Override

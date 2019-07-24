@@ -28,8 +28,7 @@ public class BicDiffPerRecord implements Statistic {
 
     @Override
     public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
-        Graph g = SearchGraphUtils.dagFromPattern(estGraph);
-        double est = SemBicScorer.scoreDag(g, dataModel);
+        double est = SemBicScorer.scoreDag(SearchGraphUtils.dagFromPattern(estGraph), dataModel);
         double _true = SemBicScorer.scoreDag(trueGraph, dataModel);
         return (_true - est) / ((DataSet) dataModel).getNumRows();
     }
