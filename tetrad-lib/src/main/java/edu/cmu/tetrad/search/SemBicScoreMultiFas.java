@@ -21,7 +21,7 @@
 
 package edu.cmu.tetrad.search;
 
-import edu.cmu.tetrad.data.CovarianceMatrixOnTheFly;
+import edu.cmu.tetrad.data.CovarianceMatrix;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.ICovarianceMatrix;
@@ -91,7 +91,7 @@ public class SemBicScoreMultiFas implements ISemBicScore, Score {
                     throw new IllegalArgumentException("Datasets must be continuous.");
                 }
 
-                SemBicScore semBicScore = new SemBicScore(new CovarianceMatrixOnTheFly(dataSet));
+                SemBicScore semBicScore = new SemBicScore(new CovarianceMatrix(dataSet));
                 semBicScore.setPenaltyDiscount(penaltyDiscount);
                 semBicScores.add(semBicScore);
             } else if (model instanceof ICovarianceMatrix) {

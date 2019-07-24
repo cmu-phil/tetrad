@@ -1,5 +1,6 @@
 package edu.cmu.tetrad.algcomparison.statistic;
 
+import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.ChoiceGenerator;
 
@@ -26,7 +27,7 @@ public class PercentAmbiguous implements Statistic {
     }
 
     @Override
-    public double getValue(Graph trueGraph, Graph estGraph) {
+    public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
         int numAmbiguous = 0;
         int numTriples = 0;
 

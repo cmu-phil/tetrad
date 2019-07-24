@@ -21,7 +21,7 @@
 
 package edu.cmu.tetradapp.model;
 
-import edu.cmu.tetrad.data.CovarianceMatrixOnTheFly;
+import edu.cmu.tetrad.data.CovarianceMatrix;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.IKnowledge;
 import edu.cmu.tetrad.data.Knowledge2;
@@ -158,7 +158,7 @@ public class MbfsRunner extends AbstractAlgorithmRunner implements
 
 		DataSet dataSet = (DataSet) getDataModelList().get(0);
 
-        SemBicScore score = new SemBicScore(new CovarianceMatrixOnTheFly(dataSet));
+        SemBicScore score = new SemBicScore(new CovarianceMatrix(dataSet));
 		score.setPenaltyDiscount(getParams().getDouble("alpha", 0.001));
 		FgesMb search = new FgesMb(score);
         search.setFaithfulnessAssumed(true);

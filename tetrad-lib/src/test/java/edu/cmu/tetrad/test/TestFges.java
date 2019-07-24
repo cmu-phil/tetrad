@@ -27,7 +27,6 @@ import edu.cmu.tetrad.algcomparison.graph.RandomGraph;
 import edu.cmu.tetrad.algcomparison.independence.FisherZ;
 import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.independence.SemBicTest;
-import edu.cmu.tetrad.algcomparison.score.FisherZScore;
 import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
 import edu.cmu.tetrad.algcomparison.simulation.LinearFisherModel;
 import edu.cmu.tetrad.algcomparison.simulation.SemSimulation;
@@ -92,13 +91,12 @@ public class TestFges {
         DataSet data = simulator.simulateDataFisher(numCases);
 
 //        ICovarianceMatrix cov = new CovarianceMatrix(data);
-        ICovarianceMatrix cov = new CovarianceMatrixOnTheFly(data);
+        ICovarianceMatrix cov = new CovarianceMatrix(data);
         SemBicScore score = new SemBicScore(cov);
         score.setPenaltyDiscount(penaltyDiscount);
 
         Fges fges = new Fges(score);
         fges.setVerbose(false);
-        fges.setNumPatternsToStore(0);
         fges.setOut(out);
         fges.setFaithfulnessAssumed(true);
 //        fges.setMaxIndegree(1);
@@ -165,7 +163,6 @@ public class TestFges {
 
         Fges ges = new Fges(score);
         ges.setVerbose(false);
-        ges.setNumPatternsToStore(0);
         ges.setFaithfulnessAssumed(false);
 
         Graph estPattern = ges.search();
@@ -531,7 +528,7 @@ public class TestFges {
         knowledge.setForbidden("D", "B");
         knowledge.setForbidden("C", "B");
 
-        checkWithKnowledge("A-->B,C-->B,B-->D", /*"A---B,B-->C,D",*/"A---B,B-->C,A---D,C-->D,A---C",
+        checkWithKnowledge("A-->B,C-->B,B-->D", /*"A---B,B-->C,D",*/"A---B,B-->C,A---D,A---C,C-->D",
                 knowledge);
     }
 
@@ -558,7 +555,7 @@ public class TestFges {
 
         char[] citesChars = citesString.toCharArray();
         DataReader reader = new DataReader();
-        ICovarianceMatrix dataSet = reader.parseCovariance(citesChars);
+        ICovarianceMatrix cov = reader.parseCovariance(citesChars);
 
         IKnowledge knowledge = new Knowledge2();
 
@@ -570,14 +567,16 @@ public class TestFges {
         knowledge.addToTier(5, "PUBS");
         knowledge.addToTier(6, "CITES");
 
-        SemBicScore score = new SemBicScore(dataSet);
+        SemBicScore score = new SemBicScore(cov);
         score.setPenaltyDiscount(1);
         Fges fges = new Fges(score);
         fges.setKnowledge(knowledge);
 
+        fges.setVerbose(true);
+
         Graph pattern = fges.search();
 
-//        System.out.println(pattern);
+        System.out.println(pattern);
 
         String trueString = "Graph Nodes:\n" +
                 "ABILITY;GPQ;PREPROD;QFJ;SEX;CITES;PUBS\n" +
@@ -585,11 +584,11 @@ public class TestFges {
                 "Graph Edges:\n" +
                 "1. ABILITY --> GPQ\n" +
                 "2. ABILITY --> PREPROD\n" +
-                "3. ABILITY --> PUBS\n" +
+//                "3. ABILITY --> PUBS\n" +
                 "4. GPQ --> QFJ\n" +
                 "5. PREPROD --> CITES\n" +
                 "6. PUBS --> CITES\n" +
-                "7. QFJ --> CITES\n" +
+//                "7. QFJ --> CITES\n" +
                 "8. QFJ --> PUBS\n" +
                 "9. SEX --> PUBS";
 
@@ -707,11 +706,11 @@ public class TestFges {
     @Test
     public void testFromGraph() {
         int numNodes = 20;
-        int numIterations = 20;
+        int numIterations = 1;
 
         for (int i = 0; i < numIterations; i++) {
 //            System.out.println("Iteration " + (i + 1));
-            Graph dag = GraphUtils.randomDag(numNodes, 0, numNodes, 10, 10, 10, false);
+            Graph dag = GraphUtils.randomDag(numNodes, 0, 2 * numNodes, 10, 10, 10, false);
             Fges fges = new Fges(new GraphScore(dag));
             fges.setFaithfulnessAssumed(true);
             Graph pattern1 = fges.search();
@@ -720,6 +719,108 @@ public class TestFges {
             assertEquals(pattern2, pattern1);
         }
     }
+
+
+    @Test
+    public void testFromGraphWithForbiddenKnowledge() {
+        int numNodes = 20;
+        int numIterations = 20;
+
+        for (int i = 0; i < numIterations; i++) {
+            System.out.println("Iteration " + (i + 1));
+            Graph dag = GraphUtils.randomDag(numNodes, 0, numNodes, 10, 10, 10, false);
+            Graph knowledgeGraph = GraphUtils.randomDag(numNodes, 0, numNodes, 10, 10, 10, false);
+            knowledgeGraph = GraphUtils.replaceNodes(knowledgeGraph, dag.getNodes());
+
+            IKnowledge knowledge = forbiddenKnowledge(knowledgeGraph);
+
+            Fges fges = new Fges(new GraphScore(dag));
+            fges.setFaithfulnessAssumed(true);
+            fges.setKnowledge(knowledge);
+            Graph pattern1 = fges.search();
+
+            for (Edge edge : knowledgeGraph.getEdges()) {
+                Node x = Edges.getDirectedEdgeTail(edge);
+                Node y = Edges.getDirectedEdgeHead(edge);
+
+                if (pattern1.isParentOf(x, y)) {
+                    System.out.println("Knowledge violated: " + edge + " x = " + x + " y = " + y);
+                }
+
+                assertFalse(pattern1.isParentOf(x, y));
+            }
+        }
+    }
+
+    @Test
+    public void testFromGraphWithRequiredKnowledge() {
+        int numNodes = 20;
+        int numIterations = 20;
+
+        for (int i = 0; i < numIterations; i++) {
+            System.out.println("Iteration " + (i + 1));
+            Graph dag = GraphUtils.randomDag(numNodes, 0, numNodes, 10, 10, 10, false);
+            Graph knowledgeGraph = GraphUtils.randomDag(numNodes, 0, numNodes, 10, 10, 10, false);
+            knowledgeGraph = GraphUtils.replaceNodes(knowledgeGraph, dag.getNodes());
+
+            IKnowledge knowledge = requiredKnowledge(knowledgeGraph);
+
+            Fges fges = new Fges(new GraphScore(dag));
+            fges.setFaithfulnessAssumed(true);
+            fges.setKnowledge(knowledge);
+            Graph pattern1 = fges.search();
+
+            for (Edge edge : knowledgeGraph.getEdges()) {
+                Node x = Edges.getDirectedEdgeTail(edge);
+                Node y = Edges.getDirectedEdgeHead(edge);
+
+                if (!pattern1.isParentOf(x, y)) {
+                    System.out.println("Knowledge violated: " + edge + " x = " + x + " y = " + y);
+                }
+
+                assertTrue (pattern1.isParentOf(x, y));
+            }
+        }
+    }
+
+
+    private IKnowledge forbiddenKnowledge(Graph graph) {
+        IKnowledge knowledge = new Knowledge2(graph.getNodeNames());
+
+        List<Node> nodes = graph.getNodes();
+
+        for (Edge edge : graph.getEdges()) {
+            Node n1 = Edges.getDirectedEdgeTail(edge);
+            Node n2 = Edges.getDirectedEdgeHead(edge);
+
+            if (n1.getName().startsWith("E_") || n2.getName().startsWith("E_")) {
+                continue;
+            }
+
+            knowledge.setForbidden(n1.getName(), n2.getName());
+        }
+
+        return knowledge;
+    }
+
+    private IKnowledge requiredKnowledge(Graph graph) {
+
+        IKnowledge knowledge = new Knowledge2(graph.getNodeNames());
+
+        for (Edge edge : graph.getEdges()) {
+            Node n1 = Edges.getDirectedEdgeTail(edge);
+            Node n2 = Edges.getDirectedEdgeHead(edge);
+
+            if (n1.getName().startsWith("E_") || n2.getName().startsWith("E_")) {
+                continue;
+            }
+
+            knowledge.setRequired(n1.getName(), n2.getName());
+        }
+
+        return knowledge;
+    }
+
 
     @Test
     public void testFromData() {
@@ -851,7 +952,7 @@ public class TestFges {
 
     private Graph searchSemFges(DataSet Dk, double penalty) {
         Dk = DataUtils.convertNumericalDiscreteToContinuous(Dk);
-        SemBicScore score = new SemBicScore(new CovarianceMatrixOnTheFly(Dk));
+        SemBicScore score = new SemBicScore(new CovarianceMatrix(Dk));
         score.setPenaltyDiscount(penalty);
         Fges fges = new Fges(score);
         return fges.search();
@@ -888,7 +989,7 @@ public class TestFges {
         //m.setVerbose(this.verbose);
         Graph gm = m.search();
         DataSet dataSet = MixedUtils.makeContinuousData(ds);
-        SemBicScore score = new SemBicScore(new CovarianceMatrixOnTheFly(dataSet));
+        SemBicScore score = new SemBicScore(new CovarianceMatrix(dataSet));
         score.setPenaltyDiscount(penalty);
         Fges fg = new Fges(score);
         fg.setBoundGraph(gm);
@@ -1406,7 +1507,7 @@ public class TestFges {
             SemIm semIm = new SemIm(semPm);
             DataSet dataSet = semIm.simulateData(1000, false);
 
-            Fges fges = new Fges(new SemBicScore(new CovarianceMatrixOnTheFly(dataSet)));
+            Fges fges = new Fges(new SemBicScore(new CovarianceMatrix(dataSet)));
             Graph pattern = fges.search();
 
             Graph dag = dagFromPattern(pattern);
@@ -1545,10 +1646,10 @@ public class TestFges {
         Statistic ahp = new ArrowheadPrecision();
         Statistic ahr = new ArrowheadRecall();
 
-        System.out.println("AP = " + ap.getValue(trueGraph, estGraph));
-        System.out.println("AR = " + ar.getValue(trueGraph, estGraph));
-        System.out.println("AHP = " + ahp.getValue(trueGraph, estGraph));
-        System.out.println("AHR = " + ahr.getValue(trueGraph, estGraph));
+        System.out.println("AP = " + ap.getValue(trueGraph, estGraph, null));
+        System.out.println("AR = " + ar.getValue(trueGraph, estGraph, null));
+        System.out.println("AHP = " + ahp.getValue(trueGraph, estGraph, null));
+        System.out.println("AHR = " + ahr.getValue(trueGraph, estGraph, null));
     }
 
 
@@ -1586,7 +1687,7 @@ public class TestFges {
             RandomGraph graph = new RandomForward();
             LinearFisherModel sim = new LinearFisherModel(graph);
             sim.createData(parameters);
-            ScoreWrapper score = new FisherZScore();
+            ScoreWrapper score = new edu.cmu.tetrad.algcomparison.score.SemBicScore();
             Algorithm alg = new edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern.Fges(score);
 
             parameters.set(Params.ALPHA, 1e-8);

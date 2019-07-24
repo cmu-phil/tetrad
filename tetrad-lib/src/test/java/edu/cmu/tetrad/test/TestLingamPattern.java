@@ -23,7 +23,7 @@ package edu.cmu.tetrad.test;
 
 import edu.cmu.tetrad.data.ColtDataSet;
 import edu.cmu.tetrad.data.ContinuousVariable;
-import edu.cmu.tetrad.data.CovarianceMatrixOnTheFly;
+import edu.cmu.tetrad.data.CovarianceMatrix;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.*;
@@ -74,7 +74,7 @@ public class TestLingamPattern {
         SemIm semIm = new SemIm(semPm);
 
         DataSet dataSet = simulateDataNonNormal(semIm, sampleSize, variableDistributions);
-        Score score = new SemBicScore(new CovarianceMatrixOnTheFly(dataSet));
+        Score score = new SemBicScore(new CovarianceMatrix(dataSet));
         Graph estPattern = new Fges(score).search();
 
         LingamPattern lingam = new LingamPattern(estPattern, dataSet);

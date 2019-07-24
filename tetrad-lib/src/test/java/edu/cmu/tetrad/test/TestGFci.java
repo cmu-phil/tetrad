@@ -206,8 +206,8 @@ public class TestGFci {
 
         data = DataUtils.restrictToMeasured(data);
 
-        IndependenceTest test = new IndTestFisherZ(new CovarianceMatrixOnTheFly(data), 0.001);
-        SemBicScore score = new SemBicScore(new CovarianceMatrixOnTheFly(data));
+        IndependenceTest test = new IndTestFisherZ(new CovarianceMatrix(data), 0.001);
+        SemBicScore score = new SemBicScore(new CovarianceMatrix(data));
         score.setPenaltyDiscount(4);
         GFci gFci = new GFci(test, score);
         gFci.setFaithfulnessAssumed(true);

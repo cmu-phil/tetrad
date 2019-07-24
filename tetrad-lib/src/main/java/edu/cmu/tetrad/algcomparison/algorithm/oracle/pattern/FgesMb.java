@@ -170,7 +170,7 @@ public class FgesMb implements Algorithm, TakesInitialGraph, HasKnowledge, UsesS
     }
     
     @Override
-    public ScoreWrapper getScoreWarpper() {
+    public ScoreWrapper getScoreWrapper() {
         return score;
     }
 

@@ -60,7 +60,6 @@ public class SpecialExampleSimulationClark {
         comparison.setShowSimulationIndices(true);
         comparison.setSortByUtility(false);
         comparison.setShowUtilities(false);
-        comparison.setParallelized(true);
         comparison.setSaveGraphs(true);
         comparison.setSavePatterns(true);
         comparison.setSavePags(true);

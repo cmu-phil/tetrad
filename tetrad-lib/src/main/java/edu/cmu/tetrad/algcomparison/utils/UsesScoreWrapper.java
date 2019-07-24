@@ -10,5 +10,5 @@ public interface UsesScoreWrapper {
 
     void setScoreWrapper(ScoreWrapper score);
     
-    ScoreWrapper getScoreWarpper();
+    ScoreWrapper getScoreWrapper();
 }

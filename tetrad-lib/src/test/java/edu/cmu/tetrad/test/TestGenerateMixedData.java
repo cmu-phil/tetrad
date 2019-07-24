@@ -64,7 +64,6 @@ public class TestGenerateMixedData {
         comparison.setShowSimulationIndices(false);
         comparison.setSortByUtility(false);
         comparison.setShowUtilities(false);
-        comparison.setParallelized(false);
         comparison.setSaveGraphs(true);
 
         comparison.setTabDelimitedTables(true);

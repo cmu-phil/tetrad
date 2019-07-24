@@ -21,7 +21,7 @@
 
 package edu.cmu.tetrad.search;
 
-import edu.cmu.tetrad.data.CovarianceMatrixOnTheFly;
+import edu.cmu.tetrad.data.CovarianceMatrix;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.ICovarianceMatrix;
 import edu.cmu.tetrad.graph.Node;
@@ -113,7 +113,7 @@ public final class IndTestPositiveCorr implements IndependenceTest {
             throw new IllegalArgumentException("Alpha mut be in [0, 1]");
         }
 
-        this.covMatrix = new CovarianceMatrixOnTheFly(dataSet);
+        this.covMatrix = new CovarianceMatrix(dataSet);
         List<Node> nodes = covMatrix.getVariables();
 
         this.variables = Collections.unmodifiableList(nodes);

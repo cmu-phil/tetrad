@@ -132,9 +132,9 @@ public class FgesRunner extends AbstractAlgorithmRunner implements IFgesRunner, 
                 DataSet dataSet = (DataSet) model;
 
                 if (dataSet.isContinuous()) {
-                    SemBicScore gesScore = new SemBicScore(new CovarianceMatrixOnTheFly((DataSet) model));
-//                    SemBicScore2 gesScore = new SemBicScore2(new CovarianceMatrixOnTheFly((DataSet) model));
-//                    SemGpScore gesScore = new SemGpScore(new CovarianceMatrixOnTheFly((DataSet) model));
+                    SemBicScore gesScore = new SemBicScore(new CovarianceMatrix((DataSet) model));
+//                    SemBicScore2 gesScore = new SemBicScore2(new CovarianceMatrix((DataSet) model));
+//                    SemGpScore gesScore = new SemGpScore(new CovarianceMatrix((DataSet) model));
 //                    SvrScore gesScore = new SvrScore((DataSet) model);
                     gesScore.setPenaltyDiscount(penaltyDiscount);
                     System.out.println("Score done");
@@ -206,7 +206,6 @@ public class FgesRunner extends AbstractAlgorithmRunner implements IFgesRunner, 
 
         fges.setInitialGraph(initialGraph);
         fges.setKnowledge((IKnowledge) getParams().get("knowledge", new Knowledge2()));
-        fges.setNumPatternsToStore(params.getInt("numPatternsToSave", 1));
         fges.setVerbose(true);
         fges.setFaithfulnessAssumed(params.getBoolean("faithfulnessAssumed", true));
         Graph graph = fges.search();

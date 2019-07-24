@@ -1,5 +1,6 @@
 package edu.cmu.tetrad.algcomparison.statistic;
 
+import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.search.SearchGraphUtils;
@@ -24,7 +25,7 @@ public class SHD implements Statistic {
     }
 
     @Override
-    public double getValue(Graph trueGraph, Graph estGraph) {
+    public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
         GraphUtils.GraphComparison comparison = SearchGraphUtils.getGraphComparison3(estGraph, trueGraph, System.out);
         return comparison.getShd();
     }

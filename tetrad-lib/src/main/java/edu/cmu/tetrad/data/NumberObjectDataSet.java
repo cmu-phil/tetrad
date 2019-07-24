@@ -22,10 +22,7 @@
 package edu.cmu.tetrad.data;
 
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.util.NumberFormatUtil;
-import edu.cmu.tetrad.util.StatUtils;
-import edu.cmu.tetrad.util.TetradMatrix;
-import edu.cmu.tetrad.util.TetradSerializable;
+import edu.cmu.tetrad.util.*;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -854,23 +851,7 @@ public final class NumberObjectDataSet
             throw new IllegalStateException("Not a continuous data set.");
         }
 
-        TetradMatrix cov = new TetradMatrix(data[0].length, data[0].length);
-
-        double[] x = new double[data.length];
-        double[] y = new double[data.length];
-
-        for (int i = 0; i < data[0].length; i++) {
-            for (int j = 0; j < data[0].length; j++) {
-                for (int k = 0; k < data.length; k++) {
-                    x[k] = data[k][i].doubleValue();
-                    y[k] = data[k][j].doubleValue();
-
-                    cov.set(i, j, StatUtils.correlation(x, y));
-                }
-            }
-        }
-
-        return cov;
+        return MatrixUtils.convertCovToCorr(getCovarianceMatrix());
     }
 
     /**

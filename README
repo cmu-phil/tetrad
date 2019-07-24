@@ -43,7 +43,7 @@ packages:
 
 tetrad
 pitt
-tetradapp
+tetradapp (now succeeded by Causal Command - https://github.com/bd2kccd/causal-cmd)
 
 The  tetrad-lib package contains the "model" code; the 
 tetrad-gui package contains the "view" (GUI) code.

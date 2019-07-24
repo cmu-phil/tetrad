@@ -26,12 +26,10 @@ import java.util.List;
 public class FisherZ implements IndependenceWrapper {
 
     static final long serialVersionUID = 23L;
-    private double alpha = 0.001;
 
     @Override
     public IndependenceTest getTest(DataModel dataSet, Parameters parameters) {
         double alpha = parameters.getDouble(Params.ALPHA);
-        this.alpha = alpha;
 
         if (dataSet instanceof ICovarianceMatrix) {
             return new IndTestFisherZ((ICovarianceMatrix) dataSet, alpha);
@@ -44,7 +42,7 @@ public class FisherZ implements IndependenceWrapper {
 
     @Override
     public String getDescription() {
-        return "Fisher Z test, alpha = " + alpha;
+        return "Fisher Z test";
     }
 
     @Override

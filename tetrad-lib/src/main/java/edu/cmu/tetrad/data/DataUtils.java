@@ -1363,7 +1363,7 @@ public final class DataUtils {
         DataSet dataSet = new ColtDataSet(sampleSize, variables);
         TetradMatrix _cov = cov.getMatrix().copy();
 
-        TetradMatrix cholesky = MatrixUtils.choleskyC(_cov);
+        TetradMatrix cholesky = MatrixUtils.cholesky(_cov);
 
         System.out.println("Cholesky decomposition" + cholesky);
 

@@ -1,5 +1,6 @@
 package edu.cmu.tetrad.algcomparison.statistic;
 
+import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.graph.Graph;
 
 /**
@@ -23,7 +24,7 @@ public class ElapsedTime implements Statistic {
     }
 
     @Override
-    public double getValue(Graph trueGraph, Graph estGraph) {
+    public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
         return Double.NaN; // This has to be handled separately.
     }
 

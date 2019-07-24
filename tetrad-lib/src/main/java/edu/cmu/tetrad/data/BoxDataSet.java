@@ -21,6 +21,7 @@
 package edu.cmu.tetrad.data;
 
 import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.util.MatrixUtils;
 import edu.cmu.tetrad.util.NumberFormatUtil;
 import edu.cmu.tetrad.util.TetradMatrix;
 import edu.cmu.tetrad.util.TetradSerializable;
@@ -802,37 +803,7 @@ public final class BoxDataSet implements DataSet, TetradSerializable {
             throw new IllegalStateException("Not a continuous data set.");
         }
 
-        TetradMatrix corr = getCovarianceMatrix();
-
-        for (int i = 0; i < corr.columns(); i++) {
-            for (int j = 0; j < corr.columns(); j++) {
-                if (i == j) {
-                    continue;
-                }
-                corr.set(i, j, corr.get(i, j) / Math.sqrt(corr.get(i, i) * corr.get(j, j)));
-            }
-        }
-
-        for (int i = 0; i < corr.columns(); i++) {
-            corr.set(i, i, 1.0);
-        }
-
-//        TetradMatrix cov = new TetradMatrix(dataBox.numCols(), dataBox.numCols());
-//
-//        double[] x = new double[dataBox.numRows()];
-//        double[] y = new double[dataBox.numRows()];
-//
-//        for (int i = 0; i < dataBox.numCols(); i++) {
-//            for (int j = 0; j < dataBox.numCols(); j++) {
-//                for (int k = 0; k < dataBox.numRows(); k++) {
-//                    x[k] = dataBox.get(k, i).doubleValue();
-//                    y[k] = dataBox.get(k, j).doubleValue();
-//
-//                    cov.set(i, j, StatUtils.correlation(x, y));
-//                }
-//            }
-//        }
-        return corr;
+        return MatrixUtils.convertCovToCorr(getCovarianceMatrix());
     }
 
     /**

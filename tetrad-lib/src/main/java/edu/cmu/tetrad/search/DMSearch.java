@@ -89,7 +89,7 @@ public class DMSearch {
         return (outputs);
     }
 
-    private CovarianceMatrixOnTheFly cov;
+    private CovarianceMatrix cov;
     private LatentStructure dmStructure;
 
     public LatentStructure getDmStructure() {
@@ -124,7 +124,7 @@ public class DMSearch {
         DataSet data = getData();
 
         //2DO: Break stuff below here into seperate fuct/classes.
-        this.cov = new CovarianceMatrixOnTheFly(data);
+        this.cov = new CovarianceMatrix(data);
 
 
         Knowledge2 knowledge = new Knowledge2(data.getVariableNames());
@@ -164,7 +164,7 @@ public class DMSearch {
 
             pattern = recursiveFges(pattern, knowledge, this.gesDiscount, getMinDepth(), data, inputString);
         } else {
-            this.cov = new CovarianceMatrixOnTheFly(data);
+            this.cov = new CovarianceMatrix(data);
 //            PC pc = new PC(new IndTestFisherZ(cov, this.alphaPC));
 //            pc.setKnowledge(knowledge);
 //            pc.setMaxIndegree(0);
@@ -630,7 +630,7 @@ public class DMSearch {
             knowledge.setRequired(edge.getNode1().getName(), edge.getNode2().getName());
         }
 
-        this.cov = new CovarianceMatrixOnTheFly(data);
+        this.cov = new CovarianceMatrix(data);
 
         SemBicScore score = new SemBicScore(cov);
         score.setPenaltyDiscount(penalty);

@@ -97,6 +97,8 @@ public class ExampleFirstInflection {
         statistics.add(new AdjacencyRecall());
         statistics.add(new ArrowheadPrecision());
         statistics.add(new ArrowheadRecall());
+        statistics.add(new ArrowheadPrecisionCommonEdges());
+        statistics.add(new ArrowheadRecallCommonEdges());
         statistics.add(new ElapsedTime());
 
         statistics.setWeight("AP", 0.25);
@@ -120,7 +122,6 @@ public class ExampleFirstInflection {
         comparison.setShowSimulationIndices(true);
         comparison.setSortByUtility(false);
         comparison.setShowUtilities(false);
-        comparison.setParallelized(true);
         comparison.setComparisonGraph(Comparison.ComparisonGraph.Pattern_of_the_true_DAG);
 
         comparison.compareFromSimulations("first.inflection", simulations, algorithms, statistics, parameters);

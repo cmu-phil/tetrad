@@ -178,7 +178,7 @@ public class TsImages implements Algorithm, HasKnowledge, MultiDataSetAlgorithm,
     }
     
     @Override
-    public ScoreWrapper getScoreWarpper() {
+    public ScoreWrapper getScoreWrapper() {
         return score;
     }
 

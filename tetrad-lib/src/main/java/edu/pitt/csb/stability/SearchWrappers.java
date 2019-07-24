@@ -21,7 +21,7 @@
 
 package edu.pitt.csb.stability;
 
-import edu.cmu.tetrad.data.CovarianceMatrixOnTheFly;
+import edu.cmu.tetrad.data.CovarianceMatrix;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.*;
@@ -69,7 +69,7 @@ public class SearchWrappers {
         public FgesWrapper copy() {return new FgesWrapper(searchParams);}
 
         public Graph search(DataSet ds){
-            SemBicScore score = new SemBicScore(new CovarianceMatrixOnTheFly(MixedUtils.makeContinuousData(ds)));
+            SemBicScore score = new SemBicScore(new CovarianceMatrix(MixedUtils.makeContinuousData(ds)));
             score.setPenaltyDiscount(searchParams[0]);
             Fges fg = new Fges(score);
             return fg.search();

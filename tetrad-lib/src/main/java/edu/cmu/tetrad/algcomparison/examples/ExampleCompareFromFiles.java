@@ -80,7 +80,6 @@ public class ExampleCompareFromFiles {
         comparison.setShowSimulationIndices(false);
         comparison.setSortByUtility(true);
         comparison.setShowUtilities(true);
-        comparison.setParallelized(true);
 
         comparison.compareFromFiles("comparison", algorithms, statistics, parameters);
     }

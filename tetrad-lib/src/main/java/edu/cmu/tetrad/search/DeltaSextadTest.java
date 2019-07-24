@@ -64,7 +64,7 @@ public class DeltaSextadTest {
             throw new IllegalArgumentException();
         }
 
-        this.cov = new CovarianceMatrixOnTheFly(dataSet);
+        this.cov = new CovarianceMatrix(dataSet);
 
         TetradMatrix centered = DataUtils.centerData(dataSet.getDoubleData());
         this.data = centered.transpose().toArray();
