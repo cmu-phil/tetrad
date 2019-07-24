@@ -48,11 +48,11 @@ public class ExampleCompareSimulation {
 
         parameters.set("numRuns", 10);
         parameters.set("differentGraphs", true);
-        parameters.set("sampleSize", 30000);
+        parameters.set("sampleSize", 1000);
 
         parameters.set("numMeasures", 10);
         parameters.set("numLatents", 0);
-        parameters.set("avgDegree", 2);
+        parameters.set("avgDegree", 4);
         parameters.set("maxDegree", 1000);
         parameters.set("maxIndegree", 1000);
         parameters.set("maxOutdegree", 1000);
@@ -77,7 +77,7 @@ public class ExampleCompareSimulation {
 
         parameters.set(Params.USE_MAX_P_ORIENTATION_HEURISTIC, false);
         parameters.set(Params.SYMMETRIC_FIRST_STEP, false);
-        parameters.set(Params.FAITHFULNESS_ASSUMED, true);
+        parameters.set(Params.FAITHFULNESS_ASSUMED, false);
         parameters.set("maxPOrientationMaxPathLength", 3);
         parameters.set("verbose", false);
 
@@ -108,6 +108,8 @@ public class ExampleCompareSimulation {
         statistics.add(new ArrowheadPrecisionCommonEdges());
         statistics.add(new ArrowheadRecallCommonEdges());
         statistics.add(new F1All());
+        statistics.add(new BicTrue());
+        statistics.add(new BicEst());
         statistics.add(new BicDiffPerRecord());
         statistics.add(new ElapsedTime());
 
@@ -131,7 +133,7 @@ public class ExampleCompareSimulation {
         comparison.setShowSimulationIndices(false);
         comparison.setSortByUtility(false);
         comparison.setShowUtilities(false);
-        comparison.setComparisonGraph(Comparison.ComparisonGraph.PAG_of_the_true_DAG);
+        comparison.setComparisonGraph(Comparison.ComparisonGraph.Pattern_of_the_true_DAG);
 
         comparison.compareFromSimulations("comparisonJoe", simulations, algorithms, statistics, parameters);
     }

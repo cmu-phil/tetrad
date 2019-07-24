@@ -1482,7 +1482,8 @@ public final class SearchGraphUtils {
 
         for (Edge edge : edges) {
             Edge edge1 = dag.getEdge(edge.getNode1(), edge.getNode2());
-            if (Edges.isUndirectedEdge(edge)) {
+
+            if (Edges.isUndirectedEdge(edge1)) {
                 Node node1 = edge1.getNode1();
                 Node node2 = edge1.getNode2();
 
@@ -1492,8 +1493,6 @@ public final class SearchGraphUtils {
                     direct(node2, node1, dag);
                 } else {
                     System.out.println("Leaving edge unoriented to avoid cycle: " + edge);
-//                    dag.removeEdge(edge);
-//                    throw new IllegalArgumentException("Can't orient " + edge);
                 }
 
                 rules.orientImplied(dag);
@@ -1502,7 +1501,7 @@ public final class SearchGraphUtils {
 
         return dag;
 
-//        DagInPatternIterator dags = new DagInPatternIterator(pattern);
+//        DagInPatternIterator dags = new DagInPatternIterator(graph);
 //        return dags.next();
 //        MeekRules rules = new MeekRules();
 //        rules.orientImplied(graph);
@@ -1540,12 +1539,12 @@ public final class SearchGraphUtils {
 //
 //
 //        return pattern;
+
 //
-////
-////
-////        Graph graph = new EdgeListGraph(pattern);
-////        pdagToDag(graph);
-////        return graph;
+//
+//        Graph graph = new EdgeListGraph(pattern);
+//        pdagToDag(graph);
+//        return graph;
     }
 
     public static Graph patternFromEPattern(Graph ePattern) {
