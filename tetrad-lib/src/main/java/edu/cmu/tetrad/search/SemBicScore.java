@@ -29,16 +29,12 @@ import edu.cmu.tetrad.util.DepthChoiceGenerator;
 import edu.cmu.tetrad.util.StatUtils;
 import edu.cmu.tetrad.util.TetradMatrix;
 import edu.cmu.tetrad.util.TetradVector;
-import org.apache.commons.math3.distribution.FDistribution;
-import org.apache.commons.math3.linear.RealMatrix;
 import org.apache.commons.math3.linear.SingularMatrixException;
-import org.apache.commons.math3.util.FastMath;
 
 import java.io.PrintStream;
 import java.util.*;
 
 import static java.lang.Math.*;
-import static org.apache.commons.math3.stat.StatUtils.percentile;
 
 /**
  * Implements the continuous BIC score for FGES.
@@ -83,9 +79,6 @@ public class SemBicScore implements Score {
 
     // A number subtracted from score differences.
     private double thresholdAlpha = 0.5;
-
-    // The amount by which the score should be adjusted due to error about the true bump scores.
-    private double errorThreshold = Double.NaN;
 
     /**
      * Constructs the score using a covariance matrix.
@@ -132,11 +125,10 @@ public class SemBicScore implements Score {
             List<Node> _z = getVariableList(z);
             double r = partialCorrelation(_x, _y, _z);
 
-            return -n * Math.log(1.0 - r * r) - getPenaltyDiscount() * log(n) - getErrorThreshold()
+            return -n * Math.log(1.0 - r * r) - getPenaltyDiscount() * log(n)
                     + signum(getStructurePrior()) * (sp1 - sp2);
         } else {
-
-            return (localScore(y, append(z, x)) - localScore(y, z)) - getErrorThreshold();
+            return (localScore(y, append(z, x)) - localScore(y, z)) - 0;
         }
 
     }
@@ -150,7 +142,8 @@ public class SemBicScore implements Score {
 
         try {
             final int p = parents.length;
-            int k = (p) * (p - 1) / 2 + p + 1;
+//            int k = ((p + 1) * (p + 2)) / 2;
+            int k = p + 1;
             double n = getSampleSize();
 
             int[] ii = {i};
@@ -308,10 +301,6 @@ public class SemBicScore implements Score {
         this.structurePrior = structurePrior;
     }
 
-    public void setErrorThreshold(double thresholdAlpha) {
-        this.thresholdAlpha = thresholdAlpha;
-    }
-
     private void setCovariances(ICovarianceMatrix covariances) {
         this.covariances = covariances;
     }
@@ -389,19 +378,6 @@ public class SemBicScore implements Score {
         System.arraycopy(parents, 0, all, 0, parents.length);
         all[parents.length] = extra;
         return all;
-    }
-
-    private synchronized double getErrorThreshold() {
-        if (true) return 0;
-
-        if (Double.isNaN(errorThreshold)) {
-            FDistribution f = new FDistribution(getSampleSize() - 1,
-                    getSampleSize() - 1);
-            this.errorThreshold = -getSampleSize() * log(f.inverseCumulativeProbability(thresholdAlpha));
-            System.out.println("Error threshold = " + errorThreshold);
-        }
-
-        return errorThreshold;
     }
 }
 

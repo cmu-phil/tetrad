@@ -528,7 +528,7 @@ public class TestFges {
         knowledge.setForbidden("D", "B");
         knowledge.setForbidden("C", "B");
 
-        checkWithKnowledge("A-->B,C-->B,B-->D", /*"A---B,B-->C,D",*/"A---B,B-->C,A---D,A---C,C-->D",
+        checkWithKnowledge("A-->B,C-->B,B-->D", /*"A---B,B-->C,D",*/"A---B,B-->C,A---C,D---A",
                 knowledge);
     }
 
@@ -584,11 +584,11 @@ public class TestFges {
                 "Graph Edges:\n" +
                 "1. ABILITY --> GPQ\n" +
                 "2. ABILITY --> PREPROD\n" +
-//                "3. ABILITY --> PUBS\n" +
+                "3. ABILITY --> PUBS\n" +
                 "4. GPQ --> QFJ\n" +
                 "5. PREPROD --> CITES\n" +
                 "6. PUBS --> CITES\n" +
-//                "7. QFJ --> CITES\n" +
+                "7. QFJ --> CITES\n" +
                 "8. QFJ --> PUBS\n" +
                 "9. SEX --> PUBS";
 
@@ -705,14 +705,14 @@ public class TestFges {
 
     @Test
     public void testFromGraph() {
-        int numNodes = 20;
+        int numNodes = 10;
         int numIterations = 1;
 
         for (int i = 0; i < numIterations; i++) {
 //            System.out.println("Iteration " + (i + 1));
             Graph dag = GraphUtils.randomDag(numNodes, 0, 2 * numNodes, 10, 10, 10, false);
             Fges fges = new Fges(new GraphScore(dag));
-            fges.setFaithfulnessAssumed(true);
+            fges.setFaithfulnessAssumed(false);
             Graph pattern1 = fges.search();
             Graph pattern2 = new Pc(new IndTestDSep(dag)).search();
 //            System.out.println(pattern2);

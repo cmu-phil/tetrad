@@ -28,10 +28,8 @@ import edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern.Fges;
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern.PcAll;
 import edu.cmu.tetrad.algcomparison.graph.RandomForward;
 import edu.cmu.tetrad.algcomparison.independence.FisherZ;
-import edu.cmu.tetrad.algcomparison.score.FisherZScore;
 import edu.cmu.tetrad.algcomparison.score.SemBicScore;
 import edu.cmu.tetrad.algcomparison.simulation.LinearFisherModel;
-import edu.cmu.tetrad.algcomparison.simulation.SemSimulation;
 import edu.cmu.tetrad.algcomparison.simulation.Simulations;
 import edu.cmu.tetrad.algcomparison.statistic.*;
 import edu.cmu.tetrad.util.Parameters;
@@ -46,7 +44,7 @@ public class ExampleCompareSimulation {
     public static void main(String... args) {
         Parameters parameters = new Parameters();
 
-        parameters.set("numRuns", 10);
+        parameters.set("numRuns", 1);
         parameters.set("differentGraphs", true);
         parameters.set("sampleSize", 1000);
 
@@ -72,22 +70,21 @@ public class ExampleCompareSimulation {
         parameters.set("fisherEpsilon", 0.00001);
         parameters.set("randomizeColumns", true);
 
-        parameters.set("alpha", 0.001);
+        parameters.set("alpha", 0.01);
         parameters.set("depth", -1);
 
         parameters.set(Params.USE_MAX_P_ORIENTATION_HEURISTIC, false);
-        parameters.set(Params.SYMMETRIC_FIRST_STEP, false);
-        parameters.set(Params.FAITHFULNESS_ASSUMED, false);
+        parameters.set(Params.SYMMETRIC_FIRST_STEP, true);
+        parameters.set(Params.FAITHFULNESS_ASSUMED, true);
         parameters.set("maxPOrientationMaxPathLength", 3);
         parameters.set("verbose", false);
 
-        parameters.set("symmetricFirstStep", false);
-        parameters.set("faithfulnessAssumed", false);
         parameters.set("maxDegree", 100);
 
-        parameters.set("penaltyDiscount", 1, 1.2, 1.5, 2, 3, 4, 5, 6, 7, 8);//, 6, 6, 10, 20, 30);
+        parameters.set("penaltyDiscount", 1);
         parameters.set("structurePrior", 0);
-//        parameters.set("thresholdAlpha", 1e-7, 1e-5, 0.0001, 0.001, 0.01,.1, .2, .3,.4, .45, .46, .47, .48, .49, .5);
+
+        parameters.set("alpha", 0.01);
 
         parameters.set(Params.STABLE_FAS, true);
         parameters.set(Params.CONCURRENT_FAS, true);
@@ -95,9 +92,7 @@ public class ExampleCompareSimulation {
 
         Statistics statistics = new Statistics();
 
-//        statistics.add(new ParameterColumn("alpha"));
-//        statistics.add(new ParameterColumn("colliderDiscoveryRule"));
-//        statistics.add(new ParameterColumn("thresholdAlpha"));
+        statistics.add(new ParameterColumn("thresholdAlpha"));
         statistics.add(new ParameterColumn("penaltyDiscount"));
 
         statistics.add(new NumberOfEdgesEst());
@@ -122,6 +117,7 @@ public class ExampleCompareSimulation {
 
 //        algorithms.add(new PcAll(new FisherZ()));
         algorithms.add(new Fges(new SemBicScore()));
+//        algorithms.add(new Gfci(new FisherZ(), new SemBicScore()));
 
         Simulations simulations = new Simulations();
 

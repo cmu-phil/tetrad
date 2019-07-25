@@ -269,17 +269,17 @@ public final class Fges implements GraphSearch, GraphScorer {
             fes();
             bes();
 
-            fes();
-            bes();
-
-            fes();
-            bes();
-
-            fes();
-            bes();
-
-            fes();
-            bes();
+//            fes();
+//            bes();
+//
+//            fes();
+//            bes();
+//
+//            fes();
+//            bes();
+//
+//            fes();
+//            bes();
         }
 
         this.modelScore = scoreDag(SearchGraphUtils.dagFromPattern(graph), true);
@@ -576,14 +576,79 @@ public final class Fges implements GraphSearch, GraphScorer {
                         continue;
                     }
 
+                    // start: changed by Fattaneh
                     int child = hashIndices.get(y);
                     int parent = hashIndices.get(x);
-                    double bump = score.localScoreDiff(parent, child);
+                    double bump = 0.0, bump2 = 0.0;
 
-                    if (symmetricFirstStep) {
-                        double bump2 = score.localScoreDiff(child, parent);
-                        bump = bump > bump2 ? bump : bump2;
+                    // if the initial graph graph is empty, proceed as usual
+                    if (initialGraph == null){
+                        bump = score.localScoreDiff(parent, child);
+
                     }
+                    else{
+                        // if x or y has no adjacency in the initial graph, then proceed as if initial graph is empty
+                        if (initialGraph.getAdjacentNodes(x).isEmpty() && initialGraph.getAdjacentNodes(y).isEmpty()) {
+                            bump = score.localScoreDiff(parent, child);
+
+                        }
+                        // if x or y has adjacencies in the initial graph, then that should be considered in scoring
+                        else{
+                            int[] parentIndicesY;
+                            Set<Node> parentsY = new HashSet<>(initialGraph.getParents(y));
+                            parentIndicesY = new int[parentsY.size()];
+                            int	c = 0;
+                            for (Node p : parentsY) {
+                                parentIndicesY[c++] = hashIndices.get(p);
+                            }
+
+                            bump  = score.localScoreDiff(parent, child, parentIndicesY);
+
+//							if (verbose2){
+//								System.out.println("bump: " + bump);
+//								System.out.println("bump w/o parents y: " + score.localScoreDiff(parent, child));
+//							}
+                        }
+
+                    }
+
+                    // computing the bump of an edge from y (child) --> x (parent)
+                    if (symmetricFirstStep) {
+                        if (initialGraph == null){
+                            bump2 = score.localScoreDiff(child, parent);
+                        }
+                        else{
+                            // if x or y has no adjacency, then proceed as an empty initial graph
+                            if (initialGraph.getAdjacentNodes(x).isEmpty() && initialGraph.getAdjacentNodes(y).isEmpty()) {
+                                bump2 = score.localScoreDiff(child, parent);
+
+                            }
+                            else{
+                                int[] parentIndicesX;
+                                Set<Node> parentsX = new HashSet<>(initialGraph.getParents(x));
+                                parentIndicesX = new int[parentsX.size()];
+                                int	c = 0;
+                                for (Node p : parentsX) {
+                                    parentIndicesX[c++] = hashIndices.get(p);
+                                }
+
+                                bump2  = score.localScoreDiff(child, parent, parentIndicesX);
+
+//								if (verbose2){
+//									System.out.println("bump2: " + bump2);
+//									System.out.println("bump2 w/o parents y: " + score.localScoreDiff(child, parent));
+//								}
+                            }
+
+                        }
+
+						bump = bump > bump2 ? bump : bump2;
+                    }
+
+//                    if (symmetricFirstStep) {
+//                        double bump2 = score.localScoreDiff(child, parent);
+//                        bump = bump > bump2 ? bump : bump2;
+//                    }
 
                     if (boundGraph != null && !boundGraph.isAdjacentTo(x, y)) {
                         continue;
@@ -595,8 +660,45 @@ public final class Fges implements GraphSearch, GraphScorer {
                     }
 
                     if (bump > 0) {
-                        addArrow(x, y, emptySet, emptySet, emptySet, bump);
-                        addArrow(y, x, emptySet, emptySet, emptySet, bump);
+                        if (initialGraph == null ){
+                            addArrow(x, y, emptySet, emptySet, emptySet, bump);
+
+                            if (!symmetricFirstStep){
+                                addArrow(y, x, emptySet, emptySet, emptySet, bump2);
+                            }
+
+                        }
+                        else{
+                            if( initialGraph.getAdjacentNodes(x).isEmpty() && initialGraph.getAdjacentNodes(y).isEmpty()){
+                                addArrow(x, y, emptySet, emptySet, emptySet, bump);
+
+                                if (!symmetricFirstStep){
+                                    addArrow(y, x, emptySet, emptySet, emptySet, bump2);
+                                }
+                            }
+                            else{
+//								System.out.println("x: " +  x+ ", y: " + y);
+//								System.out.println("sortedArrows before calculateArrowsForward: " +  sortedArrows);
+                                calculateArrowsForward(x, y);
+//								System.out.println("sortedArrows after calculateArrowsForward: " +  sortedArrows);
+                                calculateArrowsForward(y, x);
+//								System.out.println("sortedArrows after calculateArrowsForward IN REVERSE : " +  sortedArrows);
+                            }
+                        }
+                    }
+                    if (symmetricFirstStep){
+                        if (bump2 > 0) {
+                            if (initialGraph == null ){
+                                addArrow(y, x, emptySet, emptySet, emptySet, bump2);
+
+                            }
+                            else{
+                                if( initialGraph.getAdjacentNodes(x).isEmpty() && initialGraph.getAdjacentNodes(y).isEmpty()){
+                                    addArrow(y, x, emptySet, emptySet, emptySet, bump2);
+
+                                }
+                            }
+                        }
                     }
                 }
             }
@@ -798,7 +900,7 @@ public final class Fges implements GraphSearch, GraphScorer {
                     Node y = nodes.get(i);
                     Set<Node> D = new HashSet<>(getUnconditionallyDconnectedVars(y, graph));
                     D.remove(y);
-                    D.removeAll(effectEdgesGraph.getAdjacentNodes(y));
+//                    D.removeAll(effectEdgesGraph.getAdjacentNodes(y));
 
                     for (Node x : D) {
                         if (Thread.currentThread().isInterrupted()) {
