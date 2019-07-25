@@ -46,20 +46,20 @@ public class ExampleCompareSimulation {
 
         parameters.set("numRuns", 1);
         parameters.set("differentGraphs", true);
-        parameters.set("sampleSize", 1000);
+        parameters.set("sampleSize", 10000);
 
         parameters.set("numMeasures", 10);
         parameters.set("numLatents", 0);
-        parameters.set("avgDegree", 4);
+        parameters.set("avgDegree", 6);
         parameters.set("maxDegree", 1000);
         parameters.set("maxIndegree", 1000);
         parameters.set("maxOutdegree", 1000);
         parameters.set("connected", false);
 
-        parameters.set("coefLow", 0.1);
+        parameters.set("coefLow", 0.4);
         parameters.set("coefHigh", 0.9);
-        parameters.set("varLow", .5);
-        parameters.set("varHigh", 1.5);
+        parameters.set("varLow", 1);
+        parameters.set("varHigh", 3);
         parameters.set("verbose", false);
         parameters.set("coefSymmetric", false);
         parameters.set("percentDiscrete", 0);
@@ -115,7 +115,7 @@ public class ExampleCompareSimulation {
 
         Algorithms algorithms = new Algorithms();
 
-//        algorithms.add(new PcAll(new FisherZ()));
+        algorithms.add(new PcAll(new FisherZ()));
         algorithms.add(new Fges(new SemBicScore()));
 //        algorithms.add(new Gfci(new FisherZ(), new SemBicScore()));
 
