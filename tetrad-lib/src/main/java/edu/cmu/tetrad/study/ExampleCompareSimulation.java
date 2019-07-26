@@ -44,13 +44,13 @@ public class ExampleCompareSimulation {
     public static void main(String... args) {
         Parameters parameters = new Parameters();
 
-        parameters.set("numRuns", 1);
+        parameters.set("numRuns", 20);
         parameters.set("differentGraphs", true);
-        parameters.set("sampleSize", 10000);
+        parameters.set("sampleSize", 1000);
 
         parameters.set("numMeasures", 10);
         parameters.set("numLatents", 0);
-        parameters.set("avgDegree", 6);
+        parameters.set("avgDegree", 2);
         parameters.set("maxDegree", 1000);
         parameters.set("maxIndegree", 1000);
         parameters.set("maxOutdegree", 1000);
@@ -75,7 +75,7 @@ public class ExampleCompareSimulation {
 
         parameters.set(Params.USE_MAX_P_ORIENTATION_HEURISTIC, false);
         parameters.set(Params.SYMMETRIC_FIRST_STEP, true);
-        parameters.set(Params.FAITHFULNESS_ASSUMED, true);
+        parameters.set(Params.FAITHFULNESS_ASSUMED, false);
         parameters.set("maxPOrientationMaxPathLength", 3);
         parameters.set("verbose", false);
 
@@ -83,6 +83,7 @@ public class ExampleCompareSimulation {
 
         parameters.set("penaltyDiscount", 1);
         parameters.set("structurePrior", 0);
+        parameters.set("thresholdAlpha", 0.5);
 
         parameters.set("alpha", 0.01);
 
@@ -107,6 +108,9 @@ public class ExampleCompareSimulation {
         statistics.add(new BicEst());
         statistics.add(new BicDiffPerRecord());
         statistics.add(new ElapsedTime());
+        statistics.add(new TailPrecision());
+        statistics.add(new TailRecall());
+        statistics.add(new GraphExactlyRight());
 
         statistics.setWeight("AP", 1);
         statistics.setWeight("AR", 1);
@@ -115,7 +119,7 @@ public class ExampleCompareSimulation {
 
         Algorithms algorithms = new Algorithms();
 
-        algorithms.add(new PcAll(new FisherZ()));
+//        algorithms.add(new PcAll(new FisherZ()));
         algorithms.add(new Fges(new SemBicScore()));
 //        algorithms.add(new Gfci(new FisherZ(), new SemBicScore()));
 

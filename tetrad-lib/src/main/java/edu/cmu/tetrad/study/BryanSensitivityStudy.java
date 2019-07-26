@@ -45,15 +45,82 @@ import edu.cmu.tetrad.util.Params;
  */
 public class BryanSensitivityStudy {
     public static void main(String... args) {
+        Statistics statistics = new Statistics();
+
+        statistics.add(new ParameterColumn(Params.SAMPLE_SIZE));
+        statistics.add(new ParameterColumn(Params.PENALTY_DISCOUNT));
+        statistics.add(new ParameterColumn(Params.ALPHA));
+//        statistics.add(new ParameterColumn("thresholdAlpha"));
+
+        statistics.add(new NumberOfEdgesEst());
+        statistics.add(new AdjacencyPrecision());
+        statistics.add(new AdjacencyRecall());
+        statistics.add(new ArrowheadPrecision());
+        statistics.add(new ArrowheadRecall());
+        statistics.add(new ArrowheadPrecisionCommonEdges());
+        statistics.add(new ArrowheadRecallCommonEdges());
+        statistics.add(new GraphExactlyRight());
+        statistics.add(new ElapsedTime());
+
+        statistics.setWeight("AP", 1);
+        statistics.setWeight("AR", 1);
+        statistics.setWeight("AHP", 1);
+        statistics.setWeight("AHR", 1);
+
+        Algorithms algorithms = new Algorithms();
+
+        algorithms.add(new Gfci(new FisherZ(), new SemBicScore()));
+//        algorithms.add(new Fci(new FisherZ()));
+
+        Comparison comparison = new Comparison();
+
+        comparison.setShowAlgorithmIndices(true);
+        comparison.setShowSimulationIndices(true);
+        comparison.setSortByUtility(false);
+        comparison.setShowUtilities(false);
+        comparison.setComparisonGraph(Comparison.ComparisonGraph.PAG_of_the_true_DAG);
+
+
+        {
+            Parameters parameters = getParameters();
+            Graph graph = getGraph1();
+            Simulations simulations = new Simulations();
+            simulations.add(new SemSimulation(new SingleGraph(graph)));
+            comparison.compareFromSimulations("bryan.simulation", simulations, "graph1.txt", algorithms, statistics, parameters);
+        }
+
+        {
+            Parameters parameters = getParameters();
+            Graph graph = getGraph2();
+            Simulations simulations = new Simulations();
+            simulations.add(new SemSimulation(new SingleGraph(graph)));
+            comparison.compareFromSimulations("bryan.simulation", simulations, "graph2.txt", algorithms, statistics, parameters);
+        }
+
+        {
+            Parameters parameters = getParameters();
+            Graph graph = getGraph3();
+            Simulations simulations = new Simulations();
+            simulations.add(new SemSimulation(new SingleGraph(graph)));
+            comparison.compareFromSimulations("bryan.simulation", simulations, "graph3.txt", algorithms, statistics, parameters);
+        }
+
+        {
+            Parameters parameters = getParameters();
+            Graph graph = getGraph4();
+            Simulations simulations = new Simulations();
+            simulations.add(new SemSimulation(new SingleGraph(graph)));
+            comparison.compareFromSimulations("bryan.simulation", simulations, "graph4.txt", algorithms, statistics, parameters);
+        }
+    }
+
+    private static Parameters getParameters() {
         Parameters parameters = new Parameters();
 
-//        Graph graph = getGraph1();
-//        Graph graph = getGraph2();
-        Graph graph = getGraph3();
-//        Graph graph = getGraph4();
+//        parameters.set("thresholdAlpha", .5);
 
-        parameters.set(Params.NUM_RUNS, 10);
-        parameters.set(Params.SAMPLE_SIZE, 1000, 50000);
+        parameters.set(Params.NUM_RUNS, 20);
+        parameters.set(Params.SAMPLE_SIZE, 500, 1000, 5000, 10000, 50000);
 
         parameters.set(Params.COEF_LOW, 0.2);
         parameters.set(Params.COEF_HIGH, 0.7);
@@ -75,55 +142,14 @@ public class BryanSensitivityStudy {
         parameters.set(Params.MAX_INDEGREE, 100);
         parameters.set(Params.MAX_OUTDEGREE, 100);
 
-        parameters.set(Params.PENALTY_DISCOUNT, 1.0, 2.0, 3.0);
-        parameters.set(Params.STRUCTURE_PRIOR, 0);
-        parameters.set(Params.ALPHA, 0.0001, 0.001, 0.01, 0.1);
+        parameters.set(Params.PENALTY_DISCOUNT, 1.);
+        parameters.set(Params.STRUCTURE_PRIOR, 3);
+        parameters.set(Params.ALPHA, 0.001, 0.01);
 
         parameters.set(Params.STABLE_FAS, true);
         parameters.set(Params.CONCURRENT_FAS, true);
         parameters.set(Params.COLLIDER_DISCOVERY_RULE, 2, 3);
-
-        Statistics statistics = new Statistics();
-
-        statistics.add(new ParameterColumn(Params.PENALTY_DISCOUNT));
-        statistics.add(new ParameterColumn(Params.ALPHA));
-        statistics.add(new ParameterColumn(Params.SAMPLE_SIZE));
-
-        statistics.add(new NumberOfEdgesEst());
-        statistics.add(new AdjacencyPrecision());
-        statistics.add(new AdjacencyRecall());
-        statistics.add(new ArrowheadPrecision());
-        statistics.add(new ArrowheadRecall());
-        statistics.add(new ArrowheadPrecisionCommonEdges());
-        statistics.add(new ArrowheadRecallCommonEdges());
-        statistics.add(new TailPrecision());
-        statistics.add(new TailRecall());
-        statistics.add(new GraphExactlyRight());
-        statistics.add(new ElapsedTime());
-
-        statistics.setWeight("AP", 1);
-        statistics.setWeight("AR", 1);
-        statistics.setWeight("AHP", 1);
-        statistics.setWeight("AHR", 1);
-
-        Algorithms algorithms = new Algorithms();
-
-        algorithms.add(new Gfci(new FisherZ(), new SemBicScore()));
-        algorithms.add(new Fci(new FisherZ()));
-
-        Simulations simulations = new Simulations();
-
-        simulations.add(new SemSimulation(new SingleGraph(graph)));
-
-        Comparison comparison = new Comparison();
-
-        comparison.setShowAlgorithmIndices(true);
-        comparison.setShowSimulationIndices(true);
-        comparison.setSortByUtility(false);
-        comparison.setShowUtilities(false);
-        comparison.setComparisonGraph(Comparison.ComparisonGraph.PAG_of_the_true_DAG);
-
-        comparison.compareFromSimulations("bryan.simulation", simulations, algorithms, statistics, parameters);
+        return parameters;
     }
 
     private static Graph getGraph1() {
