@@ -900,7 +900,7 @@ public final class Fges implements GraphSearch, GraphScorer {
                     Node y = nodes.get(i);
                     Set<Node> D = new HashSet<>(getUnconditionallyDconnectedVars(y, graph));
                     D.remove(y);
-//                    D.removeAll(effectEdgesGraph.getAdjacentNodes(y));
+                    D.removeAll(effectEdgesGraph.getAdjacentNodes(y));
 
                     for (Node x : D) {
                         if (Thread.currentThread().isInterrupted()) {
