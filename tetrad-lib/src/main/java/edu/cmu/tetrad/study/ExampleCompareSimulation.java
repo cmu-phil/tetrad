@@ -30,6 +30,7 @@ import edu.cmu.tetrad.algcomparison.graph.RandomForward;
 import edu.cmu.tetrad.algcomparison.independence.FisherZ;
 import edu.cmu.tetrad.algcomparison.score.SemBicScore;
 import edu.cmu.tetrad.algcomparison.simulation.LinearFisherModel;
+import edu.cmu.tetrad.algcomparison.simulation.SemSimulation;
 import edu.cmu.tetrad.algcomparison.simulation.Simulations;
 import edu.cmu.tetrad.algcomparison.statistic.*;
 import edu.cmu.tetrad.util.Parameters;
@@ -46,18 +47,18 @@ public class ExampleCompareSimulation {
 
         parameters.set("numRuns", 20);
         parameters.set("differentGraphs", true);
-        parameters.set("sampleSize", 1000);
+        parameters.set("sampleSize", 10000, 100000);
 
         parameters.set("numMeasures", 10);
         parameters.set("numLatents", 0);
-        parameters.set("avgDegree", 2);
+        parameters.set("avgDegree", 4);
         parameters.set("maxDegree", 1000);
         parameters.set("maxIndegree", 1000);
         parameters.set("maxOutdegree", 1000);
         parameters.set("connected", false);
 
-        parameters.set("coefLow", 0.4);
-        parameters.set("coefHigh", 0.9);
+        parameters.set("coefLow", 0.1);
+        parameters.set("coefHigh", .6);
         parameters.set("varLow", 1);
         parameters.set("varHigh", 3);
         parameters.set("verbose", false);
@@ -70,6 +71,8 @@ public class ExampleCompareSimulation {
         parameters.set("fisherEpsilon", 0.00001);
         parameters.set("randomizeColumns", true);
 
+//        parameters.set(Params.STANDARDIZE, false);
+
         parameters.set("alpha", 0.01);
         parameters.set("depth", -1);
 
@@ -81,9 +84,9 @@ public class ExampleCompareSimulation {
 
         parameters.set("maxDegree", 100);
 
-        parameters.set("penaltyDiscount", 1);
+        parameters.set("penaltyDiscount", .5, 1);
         parameters.set("structurePrior", 0);
-        parameters.set("thresholdAlpha", 0.5);
+        parameters.set("thresholdAlpha", .5);
 
         parameters.set("alpha", 0.01);
 
@@ -93,6 +96,7 @@ public class ExampleCompareSimulation {
 
         Statistics statistics = new Statistics();
 
+        statistics.add(new ParameterColumn(Params.SAMPLE_SIZE));
         statistics.add(new ParameterColumn("thresholdAlpha"));
         statistics.add(new ParameterColumn("penaltyDiscount"));
 
@@ -104,9 +108,9 @@ public class ExampleCompareSimulation {
         statistics.add(new ArrowheadPrecisionCommonEdges());
         statistics.add(new ArrowheadRecallCommonEdges());
         statistics.add(new F1All());
-        statistics.add(new BicTrue());
-        statistics.add(new BicEst());
-        statistics.add(new BicDiffPerRecord());
+//        statistics.add(new BicTrue());
+//        statistics.add(new BicEst());
+//        statistics.add(new BicDiffPerRecord());
         statistics.add(new ElapsedTime());
         statistics.add(new TailPrecision());
         statistics.add(new TailRecall());
@@ -125,7 +129,7 @@ public class ExampleCompareSimulation {
 
         Simulations simulations = new Simulations();
 
-        simulations.add(new LinearFisherModel(new RandomForward()));
+        simulations.add(new SemSimulation(new RandomForward()));
 
         Comparison comparison = new Comparison();
 

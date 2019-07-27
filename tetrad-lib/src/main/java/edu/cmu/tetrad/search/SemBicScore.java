@@ -109,7 +109,7 @@ public class SemBicScore implements Score {
 
         this.dataSet = dataSet;
 
-        ICovarianceMatrix cov = new CovarianceMatrix(dataSet);
+        ICovarianceMatrix cov = new CovarianceMatrix(dataSet, true);
         setCovariances(cov);
 
         this.variables = covariances.getVariables();
@@ -149,6 +149,7 @@ public class SemBicScore implements Score {
         try {
             final int p = parents.length;
 //            int k = ((p + 1) * (p + 2)) / 2;
+//            int k = (p * (p - 1) / 2) + p + 1;
             int k = p + 1;
             double n = getSampleSize();
 
@@ -307,7 +308,7 @@ public class SemBicScore implements Score {
         this.structurePrior = structurePrior;
     }
 
-    public void setErrorThreshold(double thresholdAlpha) {
+    public void setThresholdAlpha(double thresholdAlpha) {
         this.thresholdAlpha = thresholdAlpha;
     }
 

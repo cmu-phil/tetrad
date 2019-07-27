@@ -50,15 +50,16 @@ public class BryanSensitivityStudy {
         statistics.add(new ParameterColumn(Params.SAMPLE_SIZE));
         statistics.add(new ParameterColumn(Params.PENALTY_DISCOUNT));
         statistics.add(new ParameterColumn(Params.ALPHA));
-//        statistics.add(new ParameterColumn("thresholdAlpha"));
+        statistics.add(new ParameterColumn("thresholdAlpha"));
 
-        statistics.add(new NumberOfEdgesEst());
+//        statistics.add(new NumberOfEdgesEst());
         statistics.add(new AdjacencyPrecision());
         statistics.add(new AdjacencyRecall());
         statistics.add(new ArrowheadPrecision());
         statistics.add(new ArrowheadRecall());
-        statistics.add(new ArrowheadPrecisionCommonEdges());
-        statistics.add(new ArrowheadRecallCommonEdges());
+        statistics.add(new F1All());
+//        statistics.add(new ArrowheadPrecisionCommonEdges());
+//        statistics.add(new ArrowheadRecallCommonEdges());
         statistics.add(new GraphExactlyRight());
         statistics.add(new ElapsedTime());
 
@@ -117,7 +118,7 @@ public class BryanSensitivityStudy {
     private static Parameters getParameters() {
         Parameters parameters = new Parameters();
 
-//        parameters.set("thresholdAlpha", .5);
+        parameters.set("thresholdAlpha", .5);
 
         parameters.set(Params.NUM_RUNS, 20);
         parameters.set(Params.SAMPLE_SIZE, 500, 1000, 5000, 10000, 50000);
