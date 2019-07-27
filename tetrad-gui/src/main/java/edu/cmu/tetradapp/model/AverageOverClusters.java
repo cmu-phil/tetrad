@@ -114,7 +114,7 @@ public class AverageOverClusters extends DataWrapper {
             }
 
 
-            DataSet avgData = new ColtDataSet(data.getNumRows(), avgVars);
+            DataSet avgData = new BoxDataSet(new DoubleDataBox(data.getNumRows(), avgVars.size()), avgVars);
 
             for (int i = 0; i < data.getNumRows(); i++) {
                 for (int j = 0; j < clusters.getNumClusters(); j++) {

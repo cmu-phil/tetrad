@@ -57,7 +57,7 @@ public class DataStandardizer extends DataWrapper {
             TetradMatrix data2 = DataUtils.standardizeData(dataSet.getDoubleData());
             List<Node> list = dataSet.getVariables();
 
-            DataSet dataSet2 = ColtDataSet.makeContinuousData(list, data2);
+            DataSet dataSet2 = new BoxDataSet(new VerticalDoubleDataBox(data2.transpose().toArray()), list);
             outList.add(dataSet2);
         }
 

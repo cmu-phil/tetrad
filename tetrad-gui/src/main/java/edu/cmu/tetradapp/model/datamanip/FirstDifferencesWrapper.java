@@ -55,7 +55,8 @@ public class FirstDifferencesWrapper extends DataWrapper {
                 throw new IllegalArgumentException("Not a continuous data set: " + data.getName());
             }
 
-            DataSet firstDiff = new ColtDataSet(data.getNumRows() - 1, data.getVariables());
+            DataSet firstDiff = new BoxDataSet(new DoubleDataBox(data.getNumRows() - 1, data.getVariables().size()),
+                    data.getVariables());
 
             for (int j = 0; j < data.getNumColumns(); j++) {
                 for (int i = 0; i < data.getNumRows() - 1; i++) {

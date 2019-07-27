@@ -21,10 +21,7 @@
 
 package edu.cmu.tetradapp.model.datamanip;
 
-import edu.cmu.tetrad.data.ColtDataSet;
-import edu.cmu.tetrad.data.DataFilter;
-import edu.cmu.tetrad.data.DataSet;
-import edu.cmu.tetrad.data.Variable;
+import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Node;
 
 import java.util.List;
@@ -53,7 +50,7 @@ class RemoveMissingCasesDataFilter implements DataFilter {
             numRows++;
         }
 
-        DataSet newDataSet = new ColtDataSet(numRows, variables);
+        DataSet newDataSet = new BoxDataSet(new DoubleDataBox(numRows, variables.size()), variables);
         int newRow = 0;
 
         ROWS:

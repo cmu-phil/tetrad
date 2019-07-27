@@ -95,18 +95,7 @@ public class GeneralizedSemDataWrapper extends DataWrapper implements SessionMod
      * Sets the data model.
      */
     public void setDataModel(DataModel dataModel) {
-//        if (dataModel == null) {
-//            dataModel = new ColtDataSet(0, new LinkedList<Node>());
-//        }
-//
-//        if (dataModel instanceof DataModelList) {
-//            this.dataModelList = (DataModelList) dataModel;
-//        } else {
-//            this.dataModelList = new DataModelList();
-//            this.dataModelList.add(dataModel);
-//        }
-
-        // These are generated from seeds.
+        throw new UnsupportedOperationException();
     }
 
     private DataModelList simulateData(Simulator simulator, Parameters params) {

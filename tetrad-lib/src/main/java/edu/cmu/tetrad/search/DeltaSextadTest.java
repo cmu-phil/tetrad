@@ -90,7 +90,7 @@ public class DeltaSextadTest {
      * Generates a simple exemplar of this class to test serialization.
      */
     public static DeltaSextadTest serializableInstance() {
-        return new DeltaSextadTest(ColtDataSet.serializableInstance());
+        return new DeltaSextadTest(BoxDataSet.serializableInstance());
     }
 
     /**

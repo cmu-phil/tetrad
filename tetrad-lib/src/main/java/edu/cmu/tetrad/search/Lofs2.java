@@ -99,7 +99,7 @@ public class Lofs2 {
         List<DataSet> dataSets2 = new ArrayList<>();
 
         for (int i = 0; i < dataSets.size(); i++) {
-            DataSet dataSet = ColtDataSet.makeContinuousData(variables, dataSets.get(i).getDoubleData());
+            DataSet dataSet = new BoxDataSet(new DoubleDataBox(dataSets.get(i).getDoubleData().toArray()), variables);
             dataSets2.add(dataSet);
         }
 

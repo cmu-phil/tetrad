@@ -21,9 +21,10 @@
 
 package edu.cmu.tetrad.bayes;
 
-import edu.cmu.tetrad.data.ColtDataSet;
+import edu.cmu.tetrad.data.BoxDataSet;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DiscreteVariable;
+import edu.cmu.tetrad.data.DoubleDataBox;
 import edu.cmu.tetrad.graph.Dag;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
@@ -199,7 +200,7 @@ public final class EmBayesEstimator {
             }
         }
 
-        DataSet dsMixed = new ColtDataSet(numFullCases, variables);
+        DataSet dsMixed = new BoxDataSet(new DoubleDataBox(numFullCases, variables.size()), variables);
 
         for (int j = 0; j < nodes.length; j++) {
             if (nodes[j].getNodeType() == NodeType.LATENT) {

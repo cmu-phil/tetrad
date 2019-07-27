@@ -125,7 +125,9 @@ public class MixedDataBox implements DataBox {
      * @return
      */
     public static BoxDataSet serializableInstance() {
-        return new BoxDataSet(new ShortDataBox(4, 4), null);
+        List<Node> vars = new ArrayList<>();
+        for (int i = 0; i < 4; i++) vars.add(new ContinuousVariable("X" + i));
+        return new BoxDataSet(new ShortDataBox(4, 4), vars);
     }
 
     /**

@@ -153,7 +153,11 @@ public final class BoxDataSet implements DataSet, TetradSerializable {
     //============================CONSTRUCTORS==========================//
     public BoxDataSet(DataBox dataBox, List<Node> variables) {
         this.dataBox = dataBox;
-        this.variables = variables;
+        this.variables = new ArrayList<>(variables);
+
+        if (dataBox.numCols() != variables.size()) {
+            throw new IllegalArgumentException("Number of columns must match the number of variables.");
+        }
     }
 
     /**
@@ -172,7 +176,9 @@ public final class BoxDataSet implements DataSet, TetradSerializable {
      * Generates a simple exemplar of this class to test serialization.
      */
     public static BoxDataSet serializableInstance() {
-        return new BoxDataSet(new ShortDataBox(4, 4), null);
+        List<Node> vars = new ArrayList<>();
+        for (int i = 0; i < 4; i++) vars.add(new ContinuousVariable("X" + i));
+        return new BoxDataSet(new ShortDataBox(4, 4), vars);
     }
 
     //============================PUBLIC METHODS========================//
@@ -362,7 +368,11 @@ public final class BoxDataSet implements DataSet, TetradSerializable {
             throw new IllegalArgumentException("Expecting a new variable: " + variable);
         }
 
-        variables.add(variable);
+        try {
+            variables.add(variable);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
 
         if (dataBox instanceof MixedDataBox) {
             ((MixedDataBox) dataBox).addVariable(variable);

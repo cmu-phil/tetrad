@@ -57,14 +57,14 @@ public class InverseMatrixWrapper extends DataWrapper {
 
             TetradMatrix _data = dataSet.getDoubleData();
             TetradMatrix _data2 = _data.inverse();
-            DataSet inverse = ColtDataSet.makeData(dataSet.getVariables(), _data2);
+            DataSet inverse = new BoxDataSet(new DoubleDataBox(_data2.toArray()), dataSet.getVariables());
             setDataModel(inverse);
             setSourceGraph(wrapper.getSourceGraph());
         } else if (model instanceof ICovarianceMatrix) {
             ICovarianceMatrix cov = (ICovarianceMatrix) model;
             TetradMatrix _data = cov.getMatrix();
             TetradMatrix _data2 = _data.inverse();
-            DataSet inverse = ColtDataSet.makeData(cov.getVariables(), _data2);
+            DataSet inverse = new BoxDataSet(new DoubleDataBox(_data2.toArray()), cov.getVariables());
             setDataModel(inverse);
             setSourceGraph(wrapper.getSourceGraph());
         } else {

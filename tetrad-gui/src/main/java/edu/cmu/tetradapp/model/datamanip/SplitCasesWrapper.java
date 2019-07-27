@@ -101,7 +101,7 @@ public class SplitCasesWrapper extends DataWrapper {
             int _sampleSize = _breakpoints[n + 1] - _breakpoints[n];
 
             DataSet _data =
-                    new ColtDataSet(_sampleSize, dataSet.getVariables());
+                    new BoxDataSet(new VerticalDoubleDataBox(_sampleSize, dataSet.getVariables().size()), dataSet.getVariables());
             _data.setName(splitNames.get(n));
 
             for (int i = 0; i < _sampleSize; i++) {

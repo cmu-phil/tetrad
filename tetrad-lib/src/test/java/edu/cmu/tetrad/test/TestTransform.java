@@ -22,9 +22,7 @@
 package edu.cmu.tetrad.test;
 
 import edu.cmu.tetrad.calculator.Transformation;
-import edu.cmu.tetrad.data.ColtDataSet;
-import edu.cmu.tetrad.data.ContinuousVariable;
-import edu.cmu.tetrad.data.DataSet;
+import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Node;
 import org.junit.Test;
 
@@ -44,7 +42,7 @@ public final class TestTransform {
     public void testTransformWithNewColumnVariable(){
         List<Node> list = Arrays.asList((Node) new ContinuousVariable("x"),
                 new ContinuousVariable("y"));
-        DataSet data = new ColtDataSet(1, list);
+        DataSet data = new BoxDataSet(new VerticalDoubleDataBox(1, list.size()), list);
         data.setDouble(0, 0, 1);
         data.setDouble(1, 0, 1);
 
@@ -68,7 +66,7 @@ public final class TestTransform {
         List<Node> list = Arrays.asList((Node) new ContinuousVariable("x"),
                 new ContinuousVariable("y"),
                 new ContinuousVariable("z"));
-        DataSet data = new ColtDataSet(2, list);
+        DataSet data = new BoxDataSet(new DoubleDataBox(2, list.size()), list);
         data.setDouble(0, 0, 2);
         data.setDouble(1, 0, 3);
         data.setDouble(2, 0, 4);
@@ -81,7 +79,7 @@ public final class TestTransform {
         data.setDouble(1, 2, 8);
         data.setDouble(2, 2, 8);
 
-        DataSet copy = new ColtDataSet((ColtDataSet) data);
+        DataSet copy = data.copy();
         // test transforms on it.
         try {
             String eq = "z = (x + y)";
@@ -90,7 +88,7 @@ public final class TestTransform {
             assertTrue(copy.getDouble(1, 2) == 9.0);
             assertTrue(copy.getDouble(2, 2) == 9.0);
 
-            copy = new ColtDataSet((ColtDataSet) data);
+            copy = data.copy();
             eq = "x = x + 3";
             Transformation.transform(copy, eq);
             assertTrue(copy.getDouble(0, 0) == 5.0);
@@ -98,7 +96,7 @@ public final class TestTransform {
             assertTrue(copy.getDouble(2, 0) == 7.0);
 
 
-            copy = new ColtDataSet((ColtDataSet) data);
+            copy = data.copy();
             eq = "x = pow(x, 2) + y + z";
             Transformation.transform(copy, eq);
             assertTrue(copy.getDouble(0, 0) == 13.0);
