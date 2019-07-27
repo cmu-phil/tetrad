@@ -1514,7 +1514,7 @@ public final class SemIm implements IM, ISemIm, TetradSerializable {
             variables.add(var);
         }
 
-        DataSet fullDataSet = new ColtDataSet(sampleSize, variables);
+        DataSet fullDataSet = new BoxDataSet(new VerticalDoubleDataBox(sampleSize, variables.size()), variables);
 
         // Create some index arrays to hopefully speed up the simulation.
         Graph graph = new EdgeListGraph(getSemPm().getGraph());

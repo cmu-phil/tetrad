@@ -29,14 +29,12 @@ import edu.cmu.tetrad.util.DepthChoiceGenerator;
 import edu.cmu.tetrad.util.StatUtils;
 import edu.cmu.tetrad.util.TetradMatrix;
 import edu.cmu.tetrad.util.TetradVector;
-import org.apache.commons.math3.distribution.FDistribution;
 import org.apache.commons.math3.linear.SingularMatrixException;
 
 import java.io.PrintStream;
 import java.util.*;
 
 import static java.lang.Math.*;
-import static org.apache.commons.math3.stat.StatUtils.percentile;
 
 /**
  * Implements the continuous BIC score for FGES.
@@ -57,10 +55,6 @@ public class SemBicScore implements Score {
     // The sample size of the covariance matrix.
     private int sampleSize;
 
-    // True if linear dependencies should return NaN for the score, and hence be
-    // ignored by FGES
-    private boolean ignoreLinearDependent = false;
-
     // The printstream output should be sent to.
     private PrintStream out = System.out;
 
@@ -78,12 +72,6 @@ public class SemBicScore implements Score {
 
     // The structure prior, 0 for standard BIC.
     private double structurePrior = 0.0;
-
-    // A number subtracted from score differences.
-    private double thresholdAlpha = 0.5;
-
-    // The amount by which the score should be adjusted due to error about the true bump scores.
-    private double errorThreshold = Double.NaN;
 
     /**
      * Constructs the score using a covariance matrix.
@@ -122,21 +110,19 @@ public class SemBicScore implements Score {
     public double localScoreDiff(int x, int y, int[] z) {
         double sp1 = getStructurePrior(z.length + 1);
         double sp2 = getStructurePrior(z.length);
-        int n = covariances.getSampleSize();
 
         if (false) {
+            int n = covariances.getSampleSize();
             Node _x = variables.get(x);
             Node _y = variables.get(y);
             List<Node> _z = getVariableList(z);
             double r = partialCorrelation(_x, _y, _z);
 
-            return -n * Math.log(1.0 - r * r) - getPenaltyDiscount() * log(n) - getErrorThreshold()
-                    + signum(getStructurePrior()) * (sp1 - sp2);
+            return -n * Math.log(1.0 - r * r) - log(n)// - getErrorThreshold()
+                    +  signum(getStructurePrior()) * (sp1 - sp2);
         } else {
-
-            return (localScore(y, append(z, x)) - localScore(y, z)) - getErrorThreshold();
+            return (localScore(y, append(z, x)) - localScore(y, z));// - getErrorThreshold();
         }
-
     }
 
     @Override
@@ -148,8 +134,6 @@ public class SemBicScore implements Score {
 
         try {
             final int p = parents.length;
-//            int k = ((p + 1) * (p + 2)) / 2;
-//            int k = (p * (p - 1) / 2) + p + 1;
             int k = p + 1;
             double n = getSampleSize();
 
@@ -158,7 +142,7 @@ public class SemBicScore implements Score {
             TetradMatrix Y = getCovariances().getSelection(parents, ii);
             double s2 = getCovariances().getValue(i, i);
 
-            TetradVector coefs = getCoefs1(X, Y).getColumn(0);
+            TetradVector coefs = getCoefs(X, Y).getColumn(0);
 
             for (int q = 0; q < X.rows(); q++) {
                 for (int r = 0; r < X.columns(); r++) {
@@ -192,10 +176,9 @@ public class SemBicScore implements Score {
         }
     }
 
-    private TetradMatrix getCoefs1(TetradMatrix x, TetradMatrix y) {
+    private TetradMatrix getCoefs(TetradMatrix x, TetradMatrix y) {
         return (x.inverse()).times(y);
     }
-
 
     /**
      * Specialized scoring method for a single parent. Used to speed up the effect edges search.
@@ -209,17 +192,6 @@ public class SemBicScore implements Score {
      */
     public double localScore(int i) {
         return localScore(i, new int[0]);
-    }
-
-    /**
-     * True iff edges that cause linear dependence are ignored.
-     */
-    public boolean isIgnoreLinearDependent() {
-        return ignoreLinearDependent;
-    }
-
-    public void setIgnoreLinearDependent(boolean ignoreLinearDependent) {
-        this.ignoreLinearDependent = ignoreLinearDependent;
     }
 
     public void setOut(PrintStream out) {
@@ -308,10 +280,6 @@ public class SemBicScore implements Score {
         this.structurePrior = structurePrior;
     }
 
-    public void setThresholdAlpha(double thresholdAlpha) {
-        this.thresholdAlpha = thresholdAlpha;
-    }
-
     private void setCovariances(ICovarianceMatrix covariances) {
         this.covariances = covariances;
     }
@@ -391,20 +359,21 @@ public class SemBicScore implements Score {
         return all;
     }
 
-    private synchronized double getErrorThreshold() {
-        if (Double.isNaN(errorThreshold)) {
-            if (thresholdAlpha == .5) {
-                this.errorThreshold = 0.0;
-            } else {
-                FDistribution f = new FDistribution(getSampleSize() - 1,
-                        getSampleSize() - 1);
-                this.errorThreshold = -getSampleSize() * log(f.inverseCumulativeProbability(thresholdAlpha));
-                System.out.println("Error threshold = " + errorThreshold);
-            }
-        }
-
-        return errorThreshold;
-    }
+//    // Might not be useful.
+//    private synchronized double getErrorThreshold() {
+//        if (Double.isNaN(errorThreshold)) {
+//            if (thresholdAlpha == .5) {
+//                this.errorThreshold = 0.0;
+//            } else {
+//                FDistribution f = new FDistribution(getSampleSize() - 1,
+//                        getSampleSize() - 1);
+//                this.errorThreshold = -getSampleSize() * log(f.inverseCumulativeProbability(thresholdAlpha));
+//                System.out.println("Error threshold = " + errorThreshold);
+//            }
+//        }
+//
+//        return errorThreshold;
+//    }
 }
 
 

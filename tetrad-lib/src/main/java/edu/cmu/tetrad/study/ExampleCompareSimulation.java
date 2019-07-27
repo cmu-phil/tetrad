@@ -47,9 +47,9 @@ public class ExampleCompareSimulation {
 
         parameters.set("numRuns", 20);
         parameters.set("differentGraphs", true);
-        parameters.set("sampleSize", 10000, 100000);
+        parameters.set("sampleSize", 1000, 100000);
 
-        parameters.set("numMeasures", 10);
+        parameters.set("numMeasures", 20);
         parameters.set("numLatents", 0);
         parameters.set("avgDegree", 4);
         parameters.set("maxDegree", 1000);
@@ -84,9 +84,8 @@ public class ExampleCompareSimulation {
 
         parameters.set("maxDegree", 100);
 
-        parameters.set("penaltyDiscount", .5, 1);
+        parameters.set("penaltyDiscount", 1);
         parameters.set("structurePrior", 0);
-        parameters.set("thresholdAlpha", .5);
 
         parameters.set("alpha", 0.01);
 
