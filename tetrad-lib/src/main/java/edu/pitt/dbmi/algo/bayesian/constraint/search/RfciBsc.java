@@ -44,7 +44,9 @@ import edu.cmu.tetrad.graph.EdgeTypeProbability.EdgeType;
 import edu.cmu.tetrad.search.BDeuScore;
 import edu.cmu.tetrad.search.Fges;
 import edu.cmu.tetrad.search.GraphSearch;
+import edu.cmu.tetrad.search.IndTestChiSquare;
 import edu.cmu.tetrad.search.IndTestProbabilistic;
+import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.search.Rfci;
 import edu.cmu.tetrad.search.SearchGraphUtils;
 import edu.cmu.tetrad.util.TetradLogger;
@@ -65,6 +67,8 @@ public class RfciBsc implements GraphSearch {
 	private double bscD = 0.0, bscI = 0.0;
 
 	private List<Graph> pAGs = Collections.synchronizedList(new ArrayList<>());
+
+	private List<Graph> bsPAGs = Collections.synchronizedList(new ArrayList<>());
 
 	private int numRandomizedSearchModels = 10;
 
@@ -252,14 +256,22 @@ public class RfciBsc implements GraphSearch {
 				}
 				return true;
 			}
+
+			public DataSet getBsData() {
+				return bsData;
+			}
 			
 		}
 		
 		tasks.clear();
 		
+		List<DataSet> bootstrappingDataSets = new ArrayList<>();
+		
 		final int rows = dataSet.getNumRows();
 		for (int b = 0; b < numBscBootstrapSamples; b++) {
-			tasks.add(new BootstrapDepDataTask(b,rows));
+			BootstrapDepDataTask task = new BootstrapDepDataTask(b,rows);
+			bootstrappingDataSets.add(task.getBsData());
+			tasks.add(task);
 		}
 
 		ExecutorService pool = Executors.newWorkStealingPool(Runtime.getRuntime().availableProcessors());
@@ -274,7 +286,7 @@ public class RfciBsc implements GraphSearch {
         }
 
         shutdownAndAwaitTermination(pool);
-
+        
 		// learn structure of constraints using empirical data => constraint data
 		BDeuScore sd = new BDeuScore(depData);
 		sd.setSamplePrior(1.0);
@@ -409,10 +421,56 @@ public class RfciBsc implements GraphSearch {
 		if (!outputRBD) {
 			output = graphRBI;
 		}
+		
+		// calculate bootstrapping RFCI
+		class BootstrapPagSearchTask implements Callable<Boolean> {
+			
+			private final IndTestProbabilistic test;
+			private final Rfci rfci;
+			
+			public BootstrapPagSearchTask(DataSet bsData) {
+				this.test = new IndTestProbabilistic(bsData);
+				this.test.setThreshold(thresholdNoRandomDataSearch);
+				if(thresholdNoRandomDataSearch) {
+					this.test.setCutoff(cutoffDataSearch);
+				}
+				
+				this.rfci = new Rfci(test);
+			}
+			
+			@Override
+			public Boolean call() throws Exception {
+				Graph pag = this.rfci.search();
+				pag = GraphUtils.replaceNodes(pag, this.test.getVariables());
+				bsPAGs.add(pag);
+				return true;
+			}
+
+		}
+
+        bsPAGs.clear();
+        tasks.clear();
+        
+        for (int b = 0; b < bootstrappingDataSets.size(); b++) {
+        	DataSet bsData = bootstrappingDataSets.get(b);
+        	BootstrapPagSearchTask task = new BootstrapPagSearchTask(bsData);
+        	tasks.add(task);
+        }
+        
+        pool = Executors.newWorkStealingPool(Runtime.getRuntime().availableProcessors());
+
+        try {
+            pool.invokeAll(tasks);
+        } catch (InterruptedException exception) {
+        	if(verbose) {
+                logger.log("error","Task has been interrupted");
+        	}
+            Thread.currentThread().interrupt();
+        }
+
+        shutdownAndAwaitTermination(pool);
 
 		return generateBootstrappingAttributes(output);
-		
-		
 	}
 	
 	private Graph generateBootstrappingAttributes(Graph graph) {
@@ -433,7 +491,7 @@ public class RfciBsc implements GraphSearch {
 	private List<EdgeTypeProbability> getProbability(Node node1, Node node2){
 		Map<String, Integer> edgeDist = new HashMap<>();
 		int no_edge_num = 0;
-		for (Graph g : pAGs) {
+		for (Graph g : bsPAGs) {
 			Edge e = g.getEdge(node1, node2);
 			if(e != null) {				
 				String edgeString = e.toString();
@@ -454,7 +512,7 @@ public class RfciBsc implements GraphSearch {
 				no_edge_num++;
 			}
 		}
-		int n = pAGs.size();
+		int n = bsPAGs.size();
 		// Normalization
 		List<EdgeTypeProbability> edgeTypeProbabilities = edgeDist.size()==0?null:new ArrayList<>();
 		for(String edgeString : edgeDist.keySet()) {
