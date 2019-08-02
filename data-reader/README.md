@@ -278,7 +278,7 @@ public static DataModel toDataModel(Data data) {
 }
 ```
 
-Here is an example to how read in continuous data:
+Here is an example on how read in continuous data and convert to DataModel:
 ```java
 // create a data reader to read in continuous data
 ContinuousTabularDatasetReader dataReader = new ContinuousTabularDatasetFileReader("data.csv", Delimiter.COMMA);
@@ -290,7 +290,7 @@ Data data = dataReader.readInData();
 DataModel dataModel = DataConvertUtils.toDataModel(data);
 ```
 
-Here's an example on how to read in covariance:
+Here's an example on how to read in covariance and convert to DataModel:
 ```java
 CovarianceDataReader dataFileReader = new LowerCovarianceDataFileReader("covar.txt", Delimiter.SPACE);
 Data data = dataFileReader.readInData();
