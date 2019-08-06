@@ -44,9 +44,7 @@ import edu.cmu.tetrad.graph.EdgeTypeProbability.EdgeType;
 import edu.cmu.tetrad.search.BDeuScore;
 import edu.cmu.tetrad.search.Fges;
 import edu.cmu.tetrad.search.GraphSearch;
-import edu.cmu.tetrad.search.IndTestChiSquare;
 import edu.cmu.tetrad.search.IndTestProbabilistic;
-import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.search.Rfci;
 import edu.cmu.tetrad.search.SearchGraphUtils;
 import edu.cmu.tetrad.util.TetradLogger;
@@ -257,20 +255,13 @@ public class RfciBsc implements GraphSearch {
 				return true;
 			}
 
-			public DataSet getBsData() {
-				return bsData;
-			}
-			
 		}
 		
 		tasks.clear();
 		
-		List<DataSet> bootstrappingDataSets = new ArrayList<>();
-		
 		final int rows = dataSet.getNumRows();
 		for (int b = 0; b < numBscBootstrapSamples; b++) {
 			BootstrapDepDataTask task = new BootstrapDepDataTask(b,rows);
-			bootstrappingDataSets.add(task.getBsData());
 			tasks.add(task);
 		}
 
@@ -423,7 +414,7 @@ public class RfciBsc implements GraphSearch {
 		}
 		
 		// calculate bootstrapping RFCI
-		class BootstrapPagSearchTask implements Callable<Boolean> {
+		/*class BootstrapPagSearchTask implements Callable<Boolean> {
 			
 			private final IndTestProbabilistic test;
 			private final Rfci rfci;
@@ -451,8 +442,8 @@ public class RfciBsc implements GraphSearch {
         bsPAGs.clear();
         tasks.clear();
         
-        for (int b = 0; b < bootstrappingDataSets.size(); b++) {
-        	DataSet bsData = bootstrappingDataSets.get(b);
+        for (int b = 0; b < numRandomizedSearchModels; b++) {
+        	DataSet bsData = DataUtils.getBootstrapSample(dataSet, rows);
         	BootstrapPagSearchTask task = new BootstrapPagSearchTask(bsData);
         	tasks.add(task);
         }
@@ -468,7 +459,7 @@ public class RfciBsc implements GraphSearch {
             Thread.currentThread().interrupt();
         }
 
-        shutdownAndAwaitTermination(pool);
+        shutdownAndAwaitTermination(pool);*/
 
 		return generateBootstrappingAttributes(output);
 	}
@@ -491,7 +482,7 @@ public class RfciBsc implements GraphSearch {
 	private List<EdgeTypeProbability> getProbability(Node node1, Node node2){
 		Map<String, Integer> edgeDist = new HashMap<>();
 		int no_edge_num = 0;
-		for (Graph g : bsPAGs) {
+		for (Graph g : pAGs) {
 			Edge e = g.getEdge(node1, node2);
 			if(e != null) {				
 				String edgeString = e.toString();
@@ -512,7 +503,7 @@ public class RfciBsc implements GraphSearch {
 				no_edge_num++;
 			}
 		}
-		int n = bsPAGs.size();
+		int n = pAGs.size();
 		// Normalization
 		List<EdgeTypeProbability> edgeTypeProbabilities = edgeDist.size()==0?null:new ArrayList<>();
 		for(String edgeString : edgeDist.keySet()) {
