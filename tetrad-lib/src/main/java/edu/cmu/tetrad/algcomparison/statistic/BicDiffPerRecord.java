@@ -5,6 +5,7 @@ import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.*;
 
+import static java.lang.Math.abs;
 import static java.lang.Math.tanh;
 
 /**
@@ -28,9 +29,10 @@ public class BicDiffPerRecord implements Statistic {
 
     @Override
     public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
-        Graph g = SearchGraphUtils.dagFromPattern(estGraph);
-        double est = SemBicScorer.scoreDag(g, dataModel);
-        double _true = SemBicScorer.scoreDag(trueGraph, dataModel);
+        double _true = SemBicScorer.scoreDag(SearchGraphUtils.dagFromPattern(trueGraph), dataModel);
+        double est = SemBicScorer.scoreDag(SearchGraphUtils.dagFromPattern(estGraph), dataModel);
+        if (abs(_true) < 0.0001) _true = 0.0;
+        if (abs(est) < 0.0001) est = 0.0;
         return (_true - est) / ((DataSet) dataModel).getNumRows();
     }
 
