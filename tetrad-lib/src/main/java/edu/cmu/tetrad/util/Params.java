@@ -232,20 +232,20 @@ public final class Params {
         return (algorithm instanceof TakesIndependenceWrapper)
                 ? ((TakesIndependenceWrapper) algorithm).getIndependenceWrapper().getParameters()
                         .stream().collect(Collectors.toSet())
-                : Collections.EMPTY_SET;
+                : Collections.emptySet();
     }
 
     public static Set<String> getScoreParameters(Algorithm algorithm) {
         return (algorithm instanceof UsesScoreWrapper)
                 ? ((UsesScoreWrapper) algorithm).getScoreWrapper().getParameters()
                         .stream().collect(Collectors.toSet())
-                : Collections.EMPTY_SET;
+                : Collections.emptySet();
     }
 
     public static Set<String> getBootstrappingParameters(Algorithm algorithm) {
         return (algorithm.getClass().isAnnotationPresent(Bootstrapping.class))
                 ? BOOTSTRAPPING_PARAMS
-                : Collections.EMPTY_SET;
+                : Collections.emptySet();
     }
 
     public static final Set<String> getParameters() {
