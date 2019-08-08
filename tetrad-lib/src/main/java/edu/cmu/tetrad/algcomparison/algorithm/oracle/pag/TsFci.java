@@ -7,6 +7,7 @@ import edu.cmu.tetrad.algcomparison.utils.TakesIndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.utils.TakesInitialGraph;
 import edu.cmu.tetrad.annotation.AlgType;
 import edu.cmu.tetrad.annotation.Bootstrapping;
+import edu.cmu.tetrad.annotation.TimeSeries;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
@@ -32,6 +33,7 @@ import java.util.List;
         command = "ts-fci",
         algoType = AlgType.allow_latent_common_causes
 )
+@TimeSeries
 @Bootstrapping
 public class TsFci implements Algorithm, TakesInitialGraph, HasKnowledge, TakesIndependenceWrapper {
 
