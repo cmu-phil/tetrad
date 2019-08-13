@@ -5,6 +5,7 @@ import edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern.Fges;
 import edu.cmu.tetrad.algcomparison.score.SemBicScore;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.annotation.Bootstrapping;
+import edu.cmu.tetrad.annotation.TimeSeries;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
@@ -28,6 +29,7 @@ import java.util.List;
  * @author jdramsey
  * @author dmalinsky
  */
+@TimeSeries
 @Bootstrapping
 public class TsImagesSemBic implements MultiDataSetAlgorithm, HasKnowledge {
     static final long serialVersionUID = 23L;
