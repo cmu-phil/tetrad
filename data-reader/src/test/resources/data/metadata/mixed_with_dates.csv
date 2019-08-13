@@ -1,4 +1,4 @@
-date,season,yr,mnth,holiday,weekday,workingday,weathersit,temp,atemp
+dteday,season,yr,mnth,holiday,weekday,workingday,weathersit,temp,atemp
 1-1-2011,1,0,1,0,6,0,2,0.344167,0.363625
 1-2-2011,1,0,1,0,0,0,2,0.363478,0.353739
 1-3-2011,1,0,1,0,1,1,1,0.196364,0.189405
