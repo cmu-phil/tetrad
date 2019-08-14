@@ -19,7 +19,11 @@
 package edu.pitt.dbmi.data.reader.validation.tabular;
 
 import edu.pitt.dbmi.data.reader.DataColumn;
+import edu.pitt.dbmi.data.reader.DataColumns;
 import edu.pitt.dbmi.data.reader.Delimiter;
+import edu.pitt.dbmi.data.reader.metadata.Metadata;
+import edu.pitt.dbmi.data.reader.metadata.MetadataFileReader;
+import edu.pitt.dbmi.data.reader.metadata.MetadataReader;
 import edu.pitt.dbmi.data.reader.tabular.TabularColumnFileReader;
 import edu.pitt.dbmi.data.reader.tabular.TabularColumnReader;
 import edu.pitt.dbmi.data.reader.tabular.TabularDataFileReader;
@@ -57,6 +61,82 @@ public class TabularDataFileValidationTest {
             .getResource("/data/tabular/mixed/bad_data_sim_test_data.csv").getFile());
 
     public TabularDataFileValidationTest() {
+    }
+
+    @Test
+    public void testValidateForMixedDataWithDateColumn() throws IOException {
+        final Path dataFile = Paths.get(getClass().getResource("/data/metadata/mixed_with_dates.csv").getFile());
+        final Path metadataFile = Paths.get(getClass().getResource("/data/metadata/mixed_with_dates_metadata.json").getFile());
+
+        List<ValidationResult> infos = new LinkedList<>();
+        List<ValidationResult> warnings = new LinkedList<>();
+        List<ValidationResult> errors = new LinkedList<>();
+        for (ValidationResult result : (new TabularColumnFileValidation(dataFile, delimiter)).validate()) {
+            switch (result.getCode()) {
+                case INFO:
+                    infos.add(result);
+                    break;
+                case WARNING:
+                    warnings.add(result);
+                    break;
+                default:
+                    errors.add(result);
+            }
+        }
+
+        long expected = 1;
+        long actual = infos.size();
+        Assert.assertEquals(expected, actual);
+
+        expected = 0;
+        actual = warnings.size();
+        Assert.assertEquals(expected, actual);
+
+        expected = 0;
+        actual = errors.size();
+        Assert.assertEquals(expected, actual);
+
+        TabularColumnReader columnReader = new TabularColumnFileReader(dataFile, delimiter);
+
+        boolean isDiscrete = true;
+        DataColumn[] dataColumns = columnReader.readInDataColumns(isDiscrete);
+
+        TabularDataReader dataReader = new TabularDataFileReader(dataFile, delimiter);
+
+        int numberOfCategories = 7;
+        dataReader.determineDiscreteDataColumns(dataColumns, numberOfCategories, hasHeader);
+
+        MetadataReader metadataReader = new MetadataFileReader(metadataFile);
+        Metadata metadata = metadataReader.read();
+        dataColumns = DataColumns.update(dataColumns, metadata);
+
+        infos.clear();
+        warnings.clear();
+        errors.clear();
+        for (ValidationResult result : (new TabularDataFileValidation(dataFile, delimiter)).validate(dataColumns, hasHeader)) {
+            switch (result.getCode()) {
+                case INFO:
+                    infos.add(result);
+                    break;
+                case WARNING:
+                    warnings.add(result);
+                    break;
+                default:
+                    errors.add(result);
+            }
+        }
+
+        expected = 1;
+        actual = infos.size();
+        Assert.assertEquals(expected, actual);
+
+        expected = 0;
+        actual = warnings.size();
+        Assert.assertEquals(expected, actual);
+
+        expected = 0;
+        actual = errors.size();
+        Assert.assertEquals(expected, actual);
     }
 
     /**
