@@ -143,7 +143,7 @@ public final class BoxDataSet implements DataSet, TetradSerializable {
     /**
      * The number formatter used for printing out continuous values.
      */
-    private transient NumberFormat nf;
+    private transient NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
 
     /**
      * The character used as a delimiter when the dataset is printed.
@@ -177,7 +177,9 @@ public final class BoxDataSet implements DataSet, TetradSerializable {
      */
     public static BoxDataSet serializableInstance() {
         List<Node> vars = new ArrayList<>();
-        for (int i = 0; i < 4; i++) vars.add(new ContinuousVariable("X" + i));
+        for (int i = 0; i < 4; i++) {
+            vars.add(new ContinuousVariable("X" + i));
+        }
         return new BoxDataSet(new ShortDataBox(4, 4), vars);
     }
 
@@ -1154,48 +1156,52 @@ public final class BoxDataSet implements DataSet, TetradSerializable {
      * corresponding variables of the same name and corresponding data values
      * equal, when rendered using the number format at
      * <code>NumberFormatUtil.getInstance().getNumberFormat()</code>.
+     * @param obj
+     * @return
      */
-    public final boolean equals(Object obj) {
-        NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
-
-        if (obj == this) {
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        } else if (this == obj) {
             return true;
-        }
-
-        if (!(obj instanceof DataSet)) {
+        } else if (!(obj instanceof BoxDataSet)) {
             return false;
         }
 
-        DataSet _dataSet = (DataSet) obj;
+        BoxDataSet otherDataSet = (BoxDataSet) obj;
 
-        for (int i = 0; i < getVariables().size(); i++) {
-            Node node = getVariables().get(i);
-            Node _node = _dataSet.getVariables().get(i);
-            if (!node.equals(_node)) {
-                return false;
-            }
-        }
-
-        if (!(_dataSet.getNumRows() == getNumRows())) {
+        // compare number of columns
+        if (getNumColumns() != otherDataSet.getNumColumns()) {
             return false;
         }
 
+        // compare number of rows
+        if (getNumRows() != otherDataSet.getNumRows()) {
+            return false;
+        }
+
+        // compare nodes
+        if (!getVariables().equals(otherDataSet.getVariables())) {
+            return false;
+        }
+
+        Node[] nodes = getVariables().toArray(new Node[getVariables().size()]);
         for (int i = 0; i < getNumRows(); i++) {
             for (int j = 0; j < getNumColumns(); j++) {
-                Node variable = getVariable(j);
-
+                Node variable = nodes[j];
+                double val = getDouble(i, j);
+                double otherVal = otherDataSet.getDouble(i, j);
                 if (variable instanceof ContinuousVariable) {
-                    double value = Double.parseDouble(nf.format(getDouble(i, j)));
-                    double _value = Double.parseDouble(nf.format(_dataSet.getDouble(i, j)));
-
-                    if (Math.abs(value - _value) > 0.0) {
+                    if (Double.isNaN(val) ^ Double.isNaN(otherVal)) {
                         return false;
+                    } else if (!(Double.isNaN(val) && Double.isNaN(otherVal))) {
+                        if (Double.compare(Double.parseDouble(nf.format(val)), Double.parseDouble(nf.format(otherVal))) != 0) {
+                            return false;
+                        }
                     }
                 } else {
-                    double value = getInt(i, j);
-                    double _value = _dataSet.getInt(i, j);
-
-                    if (!(value == _value)) {
+                    if (!(val == otherVal)) {
                         return false;
                     }
                 }
