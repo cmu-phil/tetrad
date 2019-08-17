@@ -1374,20 +1374,20 @@
             <!--<editor-class>edu.cmu.tetradapp.editor.FciCcdSearchEditor-->
             <!--</editor-class>-->
             <!--</model>-->
-            <!--<model name="ION" acronym="ION" help="ion" category="allow_latent_common_causes searches">-->
-            <!--<logger>-->
-            <!--<event id="info" description="Information" default="on"/>-->
-            <!--<event id="independencies" description="Independencies" default="on"/>-->
-            <!--<event id="dependencies" description="Dependencies"/>-->
-            <!--<event id="knowledgeOrientations" description="Knowledge orientations"/>-->
-            <!--<event id="colliderOrientations" description="Collider Orientations" default="on"/>-->
-            <!--<event id="impliedOrientations" description="Implied Orientations" default="on"/>-->
-            <!--<event id="graph" description="Graph" default="on"/>-->
-            <!--</logger>-->
-            <!--<model-class>edu.cmu.tetradapp.model.IonRunner</model-class>-->
-            <!--<editor-class>edu.cmu.tetradapp.editor.IonSearchEditor-->
-            <!--</editor-class>-->
-            <!--</model>-->
+            <model name="ION" acronym="ION" help="ion" category="allow_latent_common_causes searches">
+            <logger>
+            <event id="info" description="Information" default="on"/>
+            <event id="independencies" description="Independencies" default="on"/>
+            <event id="dependencies" description="Dependencies"/>
+            <event id="knowledgeOrientations" description="Knowledge orientations"/>
+            <event id="colliderOrientations" description="Collider Orientations" default="on"/>
+            <event id="impliedOrientations" description="Implied Orientations" default="on"/>
+            <event id="graph" description="Graph" default="on"/>
+            </logger>
+            <model-class>edu.cmu.tetradapp.model.IonRunner</model-class>
+            <editor-class>edu.cmu.tetradapp.editor.IonSearchEditor
+            </editor-class>
+            </model>
             <!--<model name="CCD" acronym="CCD" help="ccd" category="allow_latent_common_causes searches">-->
             <!--<logger>-->
             <!--<event id="info" description="Information" default="on"/>-->

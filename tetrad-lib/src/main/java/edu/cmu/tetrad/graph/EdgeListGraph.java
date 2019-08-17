@@ -1512,7 +1512,7 @@ public class EdgeListGraph implements Graph, TripleClassifier {
      */
     public synchronized boolean removeEdge(Edge edge) {
         if (!edgesSet.contains(edge)) {
-            return false;
+            return true;
         }
 
         List<Edge> edgeList1 = edgeLists.get(edge.getNode1());
