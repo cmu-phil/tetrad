@@ -89,6 +89,14 @@ public class CptInvariantUpdaterWrapper implements SessionModel, UpdaterWrapper,
         setup(bayesIm, params);
     }
 
+    public CptInvariantUpdaterWrapper(EmBayesEstimatorWrapper wrapper, Parameters params) {
+        if (wrapper == null) {
+            throw new NullPointerException();
+        }
+        BayesIm bayesIm = wrapper.getEstimateBayesIm();
+        setup(bayesIm, params);
+    }
+
     /**
      * Generates a simple exemplar of this class to test serialization.
      *
