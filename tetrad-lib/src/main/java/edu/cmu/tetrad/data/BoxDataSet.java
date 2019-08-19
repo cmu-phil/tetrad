@@ -1297,8 +1297,8 @@ public final class BoxDataSet implements DataSet, TetradSerializable {
             double[][] dataNew = new double[cols][rows];
             int numOfCols = Math.min(rows, dataBox.numCols());
             int numOfRows = Math.min(cols, dataBox.numRows());
-            for (int r = 0; r < numOfRows; r++) {
-                System.arraycopy(data[r], 0, dataNew[r], 0, numOfCols);
+            for (int c = 0; c < numOfCols; c++) {
+                System.arraycopy(data[c], 0, dataNew[c], 0, numOfRows);
             }
             this.dataBox = new VerticalDoubleDataBox(dataNew);
         }

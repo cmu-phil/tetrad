@@ -147,6 +147,10 @@ public class VerticalDoubleDataBox implements DataBox {
     }
 
     public double[][] getVariableVectors() {
+        if (numCols == 0 || numRows == 0) {
+            return new double[0][0];
+        }
+
         return data;
     }
 
