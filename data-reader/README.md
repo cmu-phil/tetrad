@@ -267,3 +267,34 @@ char inferredDelimiter = TextFileUtils.inferDelimiter(file, n, skip, comment, qu
 ````
 
 When your application requires a delimiter auto-detection feature, this can be plugged in very easily.
+
+## DataConvertUtils
+In the tetrad-lib module there is a ```edu.cmu.tetrad.util.DataConvertUtils``` class that converts the dataset read in from the data reader to the dataset that Tetrad can use.  In other words, it converts ```edu.pitt.dbmi.data.reader.Data``` object to ```edu.cmu.tetrad.data.DataModel``` object.
+
+Converting the dataset from the data read to Tetrad dataset is very simple.  Although there are a bunch of public methods in the DataConvertUtils class, the only method you need to know is:
+```java
+public static DataModel toDataModel(Data data) {
+    ...
+}
+```
+
+Here is an example on how read in continuous data and convert to DataModel:
+```java
+// create a data reader to read in continuous data
+ContinuousTabularDatasetReader dataReader = new ContinuousTabularDatasetFileReader("data.csv", Delimiter.COMMA);
+
+// read in data
+Data data = dataReader.readInData();
+
+// convert to Tetrad dataset
+DataModel dataModel = DataConvertUtils.toDataModel(data);
+```
+
+Here's an example on how to read in covariance and convert to DataModel:
+```java
+CovarianceDataReader dataFileReader = new LowerCovarianceDataFileReader("covar.txt", Delimiter.SPACE);
+Data data = dataFileReader.readInData();
+DataModel dataModel = DataConvertUtils.toDataModel(data);
+```
+
+Note that it does not matter if you read in continuous data, discrete data, mixed data, or covariance data.  The DataConvertUtils will automatically covert the data to DoubleDataBox, VerticalIntDataBox, MixedDataBox, or CovarianceMatrix, respectively.

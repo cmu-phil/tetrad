@@ -6,7 +6,7 @@
     <parent>
         <groupId>edu.cmu</groupId>
         <artifactId>tetrad</artifactId>
-        <version>6.7.0-SNAPSHOT</version>
+        <version>6.8.0-SNAPSHOT</version>
     </parent>
 
     <artifactId>tetrad-lib</artifactId>
@@ -43,20 +43,7 @@
             </plugin>
 
 
-            <!--<plugin> -->
-            <!--<groupId>org.apache.maven.plugins</groupId> -->
-            <!--<artifactId>maven-gpg-plugin</artifactId> -->
-            <!--<version>1.6</version> -->
-            <!--<executions> -->
-            <!--<execution> -->
-            <!--<id>sign-artifacts</id> -->
-            <!--<phase>verify</phase> -->
-            <!--<goals> -->
-            <!--<goal>sign</goal> -->
-            <!--</goals> -->
-            <!--</execution> -->
-            <!--</executions> -->
-            <!--</plugin> -->
+
         </plugins>
         <extensions>
             <extension>
@@ -161,26 +148,12 @@
         </dependency>
     </dependencies>
 
-    <!--<distributionManagement> -->
-    <!--<repository> -->
-    <!--<id>www.phil.cmu.edu_tetrad</id> -->
-    <!--<url>scp://tetrad@www.phil.cmu.edu/home/tetrad/public_html/tetrad_download/maven</url> -->
-    <!--</repository> -->
-    <!--<site> -->
-    <!--<id>www.phil.cmu.edu_tetrad</id> -->
-    <!--<url>scp://tetrad@www.phil.cmu.edu/home/tetrad/public_html/tetrad/maven</url> -->
-    <!--</site> -->
-    <!--</distributionManagement> -->
+
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
 
-    <!--<scm> -->
-    <!--<connection>scm:git:git@github.com:cmu-phil/tetrad.git</connection> -->
-    <!--<url>scm:git:git@github.com:cmu-phil/tetrad.git</url> -->
-    <!--<developerConnection>scm:git:git@github.com:cmu-phil/tetrad.git</developerConnection> -->
-    <!--<tag>HEAD</tag> -->
-    <!--</scm> -->
+
 
 </project>
