@@ -302,9 +302,12 @@ public final class CgIm implements IM, ICgIm, TetradSerializable {
 			cgDiscreteNodeDiscreteParentNodeIndex.put(node, i);
 		}
 		cgDiscreteNodeContinuousParentNodeIndex = new HashMap<>();
+		System.out.println("***************************************");
+		System.out.println("cgDiscreteNodeContinuousParentNodes");
 		for(int i=0;i<cgDiscreteNodeContinuousParentNodes.length;i++) {
 			Node node = cgDiscreteNodeContinuousParentNodes[i];
 			cgDiscreteNodeContinuousParentNodeIndex.put(node, i);
+			System.out.println(node.getName() + " : " + i);
 		}
 		 		
 		// Initialize mixed-parents continuous children
@@ -434,10 +437,14 @@ public final class CgIm implements IM, ICgIm, TetradSerializable {
 			Node node = cgDiscreteNodeDiscreteParentNodes[i];
 			cgDiscreteNodeDiscreteParentNodeIndex.put(node, i);
 		}
+		
 		cgDiscreteNodeContinuousParentNodeIndex = new HashMap<>();
+		System.out.println("***************************************");
+		System.out.println("cgDiscreteNodeContinuousParentNodes");
 		for(int i=0;i<cgDiscreteNodeContinuousParentNodes.length;i++) {
 			Node node = cgDiscreteNodeContinuousParentNodes[i];
 			cgDiscreteNodeContinuousParentNodeIndex.put(node, i);
+			System.out.println(node.getName() + " : " + i);
 		}
  		
 		this.cgContinuousNodes = new Node[cgIm.getCgContinuousNumNodes()];
@@ -1341,7 +1348,7 @@ public final class CgIm implements IM, ICgIm, TetradSerializable {
 		
 		for (int colIndex = 0; colIndex < getCgDiscreteNumColumns(nodeIndex); colIndex++) {
 			double prob = oldCgIm.getCgDiscreteNodeProbability(oldNodeIndex, oldRowIndex,	colIndex);
-			setCgDiscreteProbability(nodeIndex, rowIndex, colIndex, prob);
+			setCgDiscreteNodeProbability(nodeIndex, rowIndex, colIndex, prob);
 			
 			if(getCgDiscreteNodeNumContinuousParents(nodeIndex) == oldCgIm.getCgDiscreteNodeNumContinuousParents(oldNodeIndex)) {
 				//System.out.println("nodeIndex: " + nodeIndex + " oldNodeIndex: " + oldNodeIndex);
@@ -1495,7 +1502,7 @@ public final class CgIm implements IM, ICgIm, TetradSerializable {
      * @param value     the desired probability to be set.
      * @see #getPMF
      */
-    public void setCgDiscreteProbability(int nodeIndex, int rowIndex, int colIndex,
+    public void setCgDiscreteNodeProbability(int nodeIndex, int rowIndex, int colIndex,
                                double value) {
         if (colIndex >= getCgDiscreteNumColumns(nodeIndex)) {
             throw new IllegalArgumentException("Column out of range: " +
@@ -1507,7 +1514,13 @@ public final class CgIm implements IM, ICgIm, TetradSerializable {
                     "between 0.0 and 1.0 or Double.NaN.");
         }
 
+        // nodeIndex, discreteParentConditionIndex, nodeCategoryIndex, 0 = self
+        Node node = cgDiscreteNodes[nodeIndex];
+    	Node continuousParentNode = cgDiscreteNodeContinuousParentNodes[cgDiscreteNodeContinuousParentArray[nodeIndex][0]];
+    	System.out.println("cgDiscreteNode: " + node.getName() + " continuousParentNode: " + continuousParentNode.getName());
+    	System.out.println("Before: setCgDiscreteNodeProbability: cgDiscreteNodeProbs[" + nodeIndex + "][" + + rowIndex + "][" + colIndex + "][" + + 0 + "] = " + cgDiscreteNodeProbs[nodeIndex][rowIndex][colIndex][0]);
         cgDiscreteNodeProbs[nodeIndex][rowIndex][colIndex][0] = value;
+    	System.out.println("After: setCgDiscreteNodeProbability: cgDiscreteNodeProbs[" + nodeIndex + "][" + + rowIndex + "][" + colIndex + "][" + + 0 + "] = " + cgDiscreteNodeProbs[nodeIndex][rowIndex][colIndex][0]);
     }
     
     public double getCgDiscreteNodeContinuousParentErrCovar(int nodeIndex, int rowIndex, int colIndex,
@@ -1541,7 +1554,14 @@ public final class CgIm implements IM, ICgIm, TetradSerializable {
             throw new IllegalArgumentException("Column out of range: " +
                     colIndex + " >= " + getCgDiscreteNumColumns(nodeIndex));
         }
-
+    	
+    	// nodeIndex, discreteParentConditionIndex, nodeCategoryIndex, continuousParentNodeIndex
+    	Node node = cgDiscreteNodes[nodeIndex];
+    	Node continuousParentNode = cgDiscreteNodeContinuousParentNodes[cgDiscreteNodeContinuousParentArray[nodeIndex][continuousParentIndex]];
+    	System.out.println("cgDiscreteNode: " + node.getName() + " continuousParentNode: " + continuousParentNode.getName());
+    	System.out.println("getCgDiscreteNodeContinuousParentMean: cgDiscreteNodeMeans[" + nodeIndex + "][" + + rowIndex + "][" + colIndex + "][" + + continuousParentIndex + "] = " + 
+    			cgDiscreteNodeMeans[nodeIndex][rowIndex][colIndex][continuousParentIndex]);
+    	
         return cgDiscreteNodeMeans[nodeIndex][rowIndex][colIndex][continuousParentIndex];
     }
     
@@ -1552,7 +1572,15 @@ public final class CgIm implements IM, ICgIm, TetradSerializable {
                     colIndex + " >= " + getCgDiscreteNumColumns(nodeIndex));
         }
 
+        System.out.println("cgDiscreteNodeMeans.dim: " + cgDiscreteNodeMeans.length + ":" + + cgDiscreteNodeMeans[0].length + ":" + cgDiscreteNodeMeans[0][0].length + ":" + + cgDiscreteNodeMeans[0][0][0].length);
+        // nodeIndex, discreteParentConditionIndex, nodeCategoryIndex, continuousParentNodeIndex
+        System.out.println("Before: cgDiscreteNodeMeans[" + nodeIndex + "][" + + rowIndex + "][" + colIndex + "][" + + continuousParentIndex + "] = " + 
+        		cgDiscreteNodeMeans[nodeIndex][rowIndex][colIndex][continuousParentIndex]);
+        
         cgDiscreteNodeMeans[nodeIndex][rowIndex][colIndex][continuousParentIndex] = value;
+        
+        System.out.println("After: cgDiscreteNodeMeans[" + nodeIndex + "][" + + rowIndex + "][" + colIndex + "][" + + continuousParentIndex + "] = " + 
+        		cgDiscreteNodeMeans[nodeIndex][rowIndex][colIndex][continuousParentIndex]);
     }
 
     public double getCgDiscreteNodeContinuousParentMeanStdDev(int nodeIndex, int rowIndex, int colIndex,
@@ -1562,7 +1590,14 @@ public final class CgIm implements IM, ICgIm, TetradSerializable {
 			colIndex + " >= " + getCgDiscreteNumColumns(nodeIndex));
 			}
 	
-	return cgDiscreteNodeMeanStdDevs[nodeIndex][rowIndex][colIndex][continuousParentIndex];
+		// nodeIndex, discreteParentConditionIndex, nodeCategoryIndex, continuousParentNodeIndex
+		Node node = cgDiscreteNodes[nodeIndex];
+		Node continuousParentNode = cgDiscreteNodeContinuousParentNodes[cgDiscreteNodeContinuousParentArray[nodeIndex][continuousParentIndex]];
+		System.out.println("cgDiscreteNode: " + node.getName() + " continuousParentNode: " + continuousParentNode.getName());
+		System.out.println("getCgDiscreteNodeContinuousParentMeanStdDev: cgDiscreteNodeMeanStdDevs[" + nodeIndex + "][" + + rowIndex + "][" + colIndex + "][" + + continuousParentIndex + "] = " + 
+				cgDiscreteNodeMeanStdDevs[nodeIndex][rowIndex][colIndex][continuousParentIndex]);
+	
+		return cgDiscreteNodeMeanStdDevs[nodeIndex][rowIndex][colIndex][continuousParentIndex];
 	}
 
     public void setCgDiscreteNodeContinuousParentMeanStdDev(int nodeIndex, int rowIndex, int colIndex,
@@ -1688,13 +1723,12 @@ public final class CgIm implements IM, ICgIm, TetradSerializable {
     private void initializeContinuousRowAsUnknowns(int nodeIndex, int rowIndex) {
     	int[] continuousParentArray = cgContinuousNodeContinuousParentArray[nodeIndex];
     	final int size = continuousParentArray.length + 1; // +1 self
-        double[] row = new double[size];
-        Arrays.fill(row, Double.NaN);
+
         // columnIndex always equal to 0 for continuous rows
-        cgContinuousNodeEdgeCoef[nodeIndex][rowIndex][0] = row;
-        cgContinuousNodeErrCovar[nodeIndex][rowIndex][0] = row;
-        cgContinuousNodeMeans[nodeIndex][rowIndex][0] = row;
-        cgContinuousNodeMeanStdDevs[nodeIndex][rowIndex][0] = row;
+        cgContinuousNodeEdgeCoef[nodeIndex][rowIndex][0] = genereateNaNArray(size);
+        cgContinuousNodeErrCovar[nodeIndex][rowIndex][0] = genereateNaNArray(size);
+        cgContinuousNodeMeans[nodeIndex][rowIndex][0] = genereateNaNArray(size);
+        cgContinuousNodeMeanStdDevs[nodeIndex][rowIndex][0] = genereateNaNArray(size);
     }
     
     private void randomizeContinuousRow(int nodeIndex, int rowIndex) {
@@ -1726,14 +1760,18 @@ public final class CgIm implements IM, ICgIm, TetradSerializable {
         final int size = getCgDiscreteNodeNumContinuousParents(nodeIndex);
         
         for(int colIndex=0;colIndex<numCols;colIndex++) {
-            double[] row = new double[size];
-            Arrays.fill(row, Double.NaN);
-            cgDiscreteNodeProbs[nodeIndex][rowIndex][colIndex] = row;
-            cgDiscreteNodeErrCovar[nodeIndex][rowIndex][colIndex] = row;
-            cgDiscreteNodeMeans[nodeIndex][rowIndex][colIndex] = row;
-            cgDiscreteNodeMeanStdDevs[nodeIndex][rowIndex][colIndex] = row;
+            cgDiscreteNodeProbs[nodeIndex][rowIndex][colIndex] = genereateNaNArray(size);
+            cgDiscreteNodeErrCovar[nodeIndex][rowIndex][colIndex] = genereateNaNArray(size);
+            cgDiscreteNodeMeans[nodeIndex][rowIndex][colIndex] = genereateNaNArray(size);
+            cgDiscreteNodeMeanStdDevs[nodeIndex][rowIndex][colIndex] = genereateNaNArray(size);
         }
         
+    }
+    
+    private double[] genereateNaNArray(int size) {
+    	double[] row = new double[size];
+        Arrays.fill(row, Double.NaN);
+        return row;
     }
 
 	/**
@@ -1867,7 +1905,18 @@ public final class CgIm implements IM, ICgIm, TetradSerializable {
      * @see #getParentDims
      */
     public int[] getCgDiscreteNodeContinuousParentNodeArray(int nodeIndex) {
+    	System.out.println("*********************************************************");
+    	System.out.println("getCgDiscreteNodeContinuousParentNodeArray.nodeIndex: " + nodeIndex);
+    	
         int[] nodeParents = cgDiscreteNodeContinuousParentArray[nodeIndex];
+        if(nodeParents != null) {
+        	for(int i=0;i<nodeParents.length;i++) {
+        		int continuousParentNodeIndex = nodeParents[i];
+        		Node node = cgDiscreteNodeContinuousParentNodes[continuousParentNodeIndex];
+        		
+        		System.out.println("continuousParentNode: " + node + " continuousParentNodeIndex: " + continuousParentNodeIndex);
+        	}
+        }
         int[] copy = new int[nodeParents.length];
         System.arraycopy(nodeParents, 0, copy, 0, nodeParents.length);
         return copy;
@@ -1964,6 +2013,10 @@ public final class CgIm implements IM, ICgIm, TetradSerializable {
      * @see #getRowIndex
      */
     public double getCgDiscreteNodeProbability(int nodeIndex, int rowIndex, int colIndex) {
+    	Node node = cgDiscreteNodes[nodeIndex];
+    	Node continuousParentNode = cgDiscreteNodeContinuousParentNodes[cgDiscreteNodeContinuousParentArray[nodeIndex][0]];
+    	System.out.println("cgDiscreteNode: " + node.getName() + " continuousParentNode: " + continuousParentNode.getName());
+    	System.out.println("getCgDiscreteNodeProbability: cgDiscreteNodeProbs[" + nodeIndex + "][" + + rowIndex + "][" + colIndex + "][" + + 0 + "] = " + cgDiscreteNodeProbs[nodeIndex][rowIndex][colIndex][0]);
         return cgDiscreteNodeProbs[nodeIndex][rowIndex][colIndex][0];
     }
 
@@ -2039,11 +2092,19 @@ public final class CgIm implements IM, ICgIm, TetradSerializable {
      * CgIm.
      */
     public int getCgDiscreteNodeIndex(Node node) {
-        if(cgDiscreteNodeIndex.containsKey(node)) {
+    	Graph graph = getCgPm().getGraph();
+    	Node _node = graph.getNode(node.getName());
+        if(_node != null && cgDiscreteNodeIndex.containsKey(_node)) {
         	//System.out.println("getCgDiscreteNodeIndex.cgDiscreteNodeIndex.containsKey(node): true");
-        	int nodeIndex = cgDiscreteNodeIndex.get(node).intValue();
+        	int nodeIndex = cgDiscreteNodeIndex.get(_node).intValue();
         	//System.out.println("getCgDiscreteNodeIndex.nodeIndex: " + nodeIndex);
         	return nodeIndex;
+        } else {
+        	System.out.println("++++++++++++++++++++++");
+        	System.out.println("cgDiscreteNodeIndex.containsKey(_node) == null: node: " + node.getName());
+        	for(Node n : cgDiscreteNodeIndex.keySet()) {
+        		System.out.println("node: " + n.getName() + " cgDiscreteNodeIndex: " + cgDiscreteNodeIndex.get(n));
+        	}
         }
 
         //System.out.println("getCgDiscreteNodeIndex.cgDiscreteNodeIndex.containsKey(node): false");
@@ -2506,6 +2567,7 @@ public final class CgIm implements IM, ICgIm, TetradSerializable {
 	}
 	
 	public Node getCgDiscreteNodeContinuousParentNode(int continuousParentIndex) {
+		//System.out.println("cgDiscreteNodeContinuousParentNodes.length:" + cgDiscreteNodeContinuousParentNodes.length);
 		return cgDiscreteNodeContinuousParentNodes[continuousParentIndex];
 	}
 

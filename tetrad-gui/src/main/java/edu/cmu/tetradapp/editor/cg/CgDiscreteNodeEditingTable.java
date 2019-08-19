@@ -250,16 +250,22 @@ public class CgDiscreteNodeEditingTable extends JTable {
 
 		@Override
 		public Object getValueAt(int rowIndex, int columnIndex) {
+			System.out.println("rowIndex: " + rowIndex + " columnIndex: " + columnIndex);
+			
 			int numCategories = cgIm.getCgDiscreteNumColumns(nodeIndex);
 			int colIndex = rowIndex % numCategories;
 			int numDiscreteParents = cgIm.getCgDiscreteNodeNumDiscreteParents(nodeIndex);
 			int numContinuousParents = cgIm.getCgDiscreteNodeNumContinuousParents(nodeIndex);
+			
+			System.out.println("numCategories: " + numCategories + " colIndex: " + colIndex + " numDiscreteParents: " + numDiscreteParents + " numContinuousParents: " + numContinuousParents);
 			
 			rowIndex = rowIndex / numCategories;
 			
 			DecimalFormat decimalFormat = new DecimalFormat("0.0###");
 			
 			if(columnIndex < numDiscreteParents) {
+				System.out.println("columnIndex < numDiscreteParents");
+				
 				int[] discretParentVals = cgIm.getCgDiscreteNodeDiscreteParentValues(nodeIndex, rowIndex);
 				int[] discreteParentArray = cgIm.getCgDiscreteNodeDiscreteParentNodeArray(nodeIndex);
 				
@@ -274,24 +280,35 @@ public class CgDiscreteNodeEditingTable extends JTable {
 					return "Error";
 				}
 			} else if (columnIndex < numDiscreteParents + 2*numContinuousParents) {
+				System.out.println("columnIndex < numDiscreteParents + 2*numContinuousParents");
+				
 				int continuousParentIndex = columnIndex - numDiscreteParents;
 				boolean meanContParent = continuousParentIndex % 2 == 0? true : false;
 				
+				System.out.println("meanContParent: " + meanContParent);
+				
 				continuousParentIndex = continuousParentIndex / 2;
 				
+				System.out.println("nodeIndex: " + nodeIndex + " rowIndex: " + rowIndex + " colIndex: " + colIndex + " continuousParentIndex: " + continuousParentIndex);
+				// nodeIndex, discreteParentConditionIndex, nodeCategoryIndex, continuousParentNodeIndex
 				if (meanContParent) {
 					double mean = cgIm.getCgDiscreteNodeContinuousParentMean(
 							nodeIndex, rowIndex, colIndex, continuousParentIndex);
 					
+					System.out.println("mean: " + mean);
 					return decimalFormat.format(mean);
 				} else {
 					double sd = cgIm.getCgDiscreteNodeContinuousParentMeanStdDev(
 							nodeIndex, rowIndex, colIndex, continuousParentIndex);
 					
+					System.out.println("sd: " + sd);
 					return decimalFormat.format(sd);
 				}
 			} else {
+				System.out.println("else");
+				
 				int valIndex = columnIndex - numDiscreteParents - 2*numContinuousParents;
+				System.out.println("columnIndex - numDiscreteParents - 2*numContinuousParents = " + valIndex);
 				
 				if (valIndex == 0) {
 					Node node = cgIm.getCgDiscreteNode(nodeIndex);
@@ -301,6 +318,7 @@ public class CgDiscreteNodeEditingTable extends JTable {
 				
 				double prob = cgIm.getCgDiscreteNodeProbability(nodeIndex, rowIndex, colIndex);
 				
+				System.out.println("prob: " + prob);
 				return decimalFormat.format(prob);
 				
 			}
@@ -317,7 +335,7 @@ public class CgDiscreteNodeEditingTable extends JTable {
 			rowIndex = rowIndex / numCategories;
 			
 			if ("".equals(aValue) || aValue == null) {
-				cgIm.setCgDiscreteProbability(nodeIndex, rowIndex, colIndex, Double.NaN);
+				cgIm.setCgDiscreteNodeProbability(nodeIndex, rowIndex, colIndex, Double.NaN);
 				fireTableRowsUpdated(currentRowIndex, currentRowIndex);
 				getPcs().firePropertyChange("modelChanged", null, null);
                 return;
@@ -347,7 +365,7 @@ public class CgDiscreteNodeEditingTable extends JTable {
                 } else if (numNanRows(rowIndex) == 0) {
                 	if (sumInColumn < 0.99995 || sumInColumn > 1.00005) {
                 		emptyColumns(rowIndex);
-                		cgIm.setCgDiscreteProbability(nodeIndex, rowIndex, colIndex, probability);
+                		cgIm.setCgDiscreteNodeProbability(nodeIndex, rowIndex, colIndex, probability);
                 		if (numCategories == 2) {
                 			fillInSingleRemainingRow(rowIndex);
                 		}
@@ -361,7 +379,7 @@ public class CgDiscreteNodeEditingTable extends JTable {
                 	failedRow = currentRowIndex;
                     failedCol = getColumnCount() - 1;
                 } else {
-                	cgIm.setCgDiscreteProbability(nodeIndex, rowIndex, colIndex, probability);
+                	cgIm.setCgDiscreteNodeProbability(nodeIndex, rowIndex, colIndex, probability);
                 	fillInSingleRemainingRow(rowIndex);
                 	fillInZerosIfSumIsOne(rowIndex);
                 	fireTableRowsUpdated(currentRowIndex, currentRowIndex);
@@ -405,7 +423,7 @@ public class CgDiscreteNodeEditingTable extends JTable {
         			double probability = cgIm.getCgDiscreteNodeProbability(nodeIndex, rowIndex, i);
         			
         			if(Double.isNaN(probability)) {
-        				cgIm.setCgDiscreteProbability(nodeIndex, rowIndex, i, 0.0);
+        				cgIm.setCgDiscreteNodeProbability(nodeIndex, rowIndex, i, 0.0);
             		}
         		}
         	}
@@ -416,7 +434,7 @@ public class CgDiscreteNodeEditingTable extends JTable {
         	
         	if (leftOverColumn != -1) {
                 double difference = 1.0 - sumInColumn(rowIndex, leftOverColumn);
-                cgIm.setCgDiscreteProbability(nodeIndex, rowIndex, leftOverColumn, difference);
+                cgIm.setCgDiscreteNodeProbability(nodeIndex, rowIndex, leftOverColumn, difference);
         	}
         }
         
@@ -424,7 +442,7 @@ public class CgDiscreteNodeEditingTable extends JTable {
         	int numCategories = cgIm.getCgDiscreteNumColumns(nodeIndex);
         	
         	for(int i=0;i < numCategories;i++) {
-        		cgIm.setCgDiscreteProbability(nodeIndex, rowIndex, i, Double.NaN);
+        		cgIm.setCgDiscreteNodeProbability(nodeIndex, rowIndex, i, Double.NaN);
         	}
         }
         

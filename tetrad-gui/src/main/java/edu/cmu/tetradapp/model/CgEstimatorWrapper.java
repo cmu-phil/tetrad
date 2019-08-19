@@ -5,6 +5,7 @@ package edu.cmu.tetradapp.model;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.util.ArrayList;
 import java.util.List;
 
 import edu.cmu.tetrad.data.DataModel;
@@ -70,6 +71,9 @@ public class CgEstimatorWrapper implements SessionModel {
         DataModelList dataModel = dataWrapper.getDataModelList();
         
         if (dataModel != null) {
+        	
+        	cgIms = new ArrayList<>();
+        	
         	for (int i = 0; i < dataWrapper.getDataModelList().size(); i++) {
         		DataModel model = dataWrapper.getDataModelList().get(i);
         		DataSet dataSet = (DataSet) model;

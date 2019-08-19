@@ -167,7 +167,7 @@ public final class TestCgIm {
     	for(int node = 0;node < cgIm4.getCgDiscreteNumNodes();node++) {
     		for(int row = 0;row < cgIm4.getCgDiscreteNumRows(node);row++) {
     			for(int col = 0;col < cgIm4.getCgDiscreteNumColumns(node);col++) {
-    				cgIm4.setCgDiscreteProbability(node, row, col, Double.NaN);
+    				cgIm4.setCgDiscreteNodeProbability(node, row, col, Double.NaN);
     			}
     		}
     	}
@@ -240,7 +240,7 @@ public final class TestCgIm {
             for (int row = 0; row < cgIm4.getCgDiscreteNumRows(_d4); row++) {
             	//System.out.println("cgIm4.getCgDiscreteNumColumns(_d4): " + cgIm4.getCgDiscreteNumColumns(_d4));
                 for (int col = 0; col < cgIm4.getCgDiscreteNumColumns(_d4); col++) {
-                	cgIm4.setCgDiscreteProbability(_d4, row, col, bTable[row][col]);
+                	cgIm4.setCgDiscreteNodeProbability(_d4, row, col, bTable[row][col]);
                 }
             }
         }else {

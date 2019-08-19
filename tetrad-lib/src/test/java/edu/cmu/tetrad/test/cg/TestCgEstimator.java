@@ -41,10 +41,10 @@ public final class TestCgEstimator {
 		// C1(C) -> C4(C)
 		// C2(C) -> C4(C)
 		
-		DiscreteVariable d1 = new DiscreteVariable("D1");
-		DiscreteVariable d2 = new DiscreteVariable("D2");
-		DiscreteVariable d3 = new DiscreteVariable("D3");
-		DiscreteVariable d4 = new DiscreteVariable("D4");
+		DiscreteVariable d1 = new DiscreteVariable("D1", 2);
+		DiscreteVariable d2 = new DiscreteVariable("D2", 2);
+		DiscreteVariable d3 = new DiscreteVariable("D3", 2);
+		DiscreteVariable d4 = new DiscreteVariable("D4", 2);
 
 		ContinuousVariable c1 = new ContinuousVariable("C1");
 		ContinuousVariable c2 = new ContinuousVariable("C2");
@@ -80,6 +80,8 @@ public final class TestCgEstimator {
 	@Test
 	public void test1() {
 		Graph graph = getMixedDataGraph();
+		
+		//System.out.println("graph: " + graph);
 		
 		CgPm cgPm = new CgPm(graph);
 		CgIm cgIm = new CgIm(cgPm);
