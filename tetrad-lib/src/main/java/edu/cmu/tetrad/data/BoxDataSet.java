@@ -1285,8 +1285,8 @@ public final class BoxDataSet implements DataSet, TetradSerializable {
             DoubleDataBox ddb = (DoubleDataBox) this.dataBox;
             double[][] data = ddb.getData();
             double[][] dataNew = new double[rows][cols];
-            int numOfCols = Math.min(cols, data[0].length);
-            int numOfRows = Math.min(rows, data.length);
+            int numOfCols = Math.min(cols, dataBox.numCols());
+            int numOfRows = Math.min(rows, dataBox.numRows());
             for (int r = 0; r < numOfRows; r++) {
                 System.arraycopy(data[r], 0, dataNew[r], 0, numOfCols);
             }
@@ -1295,8 +1295,8 @@ public final class BoxDataSet implements DataSet, TetradSerializable {
             VerticalDoubleDataBox vddb = (VerticalDoubleDataBox) this.dataBox;
             double[][] data = vddb.getVariableVectors();
             double[][] dataNew = new double[cols][rows];
-            int numOfCols = Math.min(rows, data[0].length);
-            int numOfRows = Math.min(cols, data.length);
+            int numOfCols = Math.min(rows, dataBox.numCols());
+            int numOfRows = Math.min(cols, dataBox.numRows());
             for (int r = 0; r < numOfRows; r++) {
                 System.arraycopy(data[r], 0, dataNew[r], 0, numOfCols);
             }

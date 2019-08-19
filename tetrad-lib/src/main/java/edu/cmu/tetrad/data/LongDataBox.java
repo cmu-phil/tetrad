@@ -39,6 +39,16 @@ public class LongDataBox implements DataBox {
     private final long[][] data;
 
     /**
+     * The number of rows (tracked because it may be zero).
+     */
+    private int numRows = 0;
+
+    /**
+     * The number of columns (tracked because it may be zero).
+     */
+    private int numCols = 0;
+
+    /**
      * Constructs an 2D long array consisting entirely of missing values (-99).
      */
     private LongDataBox(int rows, int cols) {
@@ -64,6 +74,9 @@ public class LongDataBox implements DataBox {
         }
 
         this.data = data;
+
+        this.numCols = data[0].length;
+        this.numRows = data.length;
     }
 
     /**
@@ -79,14 +92,14 @@ public class LongDataBox implements DataBox {
      * @return the number of rows in this data box.
      */
     public int numRows() {
-        return data.length;
+        return numRows;
     }
 
     /**
      * @return the number of columns in this data box.n
      */
     public int numCols() {
-        return data[0].length;
+        return numCols;
     }
 
     /**

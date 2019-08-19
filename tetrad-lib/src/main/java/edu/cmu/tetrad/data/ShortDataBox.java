@@ -38,6 +38,17 @@ public class ShortDataBox implements DataBox {
      */
     private final short[][] data;
 
+
+    /**
+     * The number of rows (tracked because it may be zero).
+     */
+    private int numRows = 0;
+
+    /**
+     * The number of columns (tracked because it may be zero).
+     */
+    private int numCols = 0;
+
     /**
      * Constructs an 2D short array consisting entirely of missing values (-99).
      */
@@ -49,6 +60,9 @@ public class ShortDataBox implements DataBox {
                 data[i][j] = -99;
             }
         }
+
+        this.numRows = rows;
+        this.numCols = cols;
     }
 
     /**
@@ -64,6 +78,9 @@ public class ShortDataBox implements DataBox {
         }
 
         this.data = data;
+
+        this.numCols = data[0].length;
+        this.numRows = data.length;
     }
 
     /**
@@ -79,14 +96,14 @@ public class ShortDataBox implements DataBox {
      * @return the number of rows in this data box.
      */
     public int numRows() {
-        return data.length;
+        return numRows;
     }
 
     /**
      * @return the number of columns in this data box.n
      */
     public int numCols() {
-        return data[0].length;
+        return numCols;
     }
 
     /**

@@ -38,6 +38,17 @@ public class ByteDataBox implements DataBox {
      */
     private final byte[][] data;
 
+
+    /**
+     * The number of rows (tracked because it may be zero).
+     */
+    private int numRows = 0;
+
+    /**
+     * The number of columns (tracked because it may be zero).
+     */
+    private int numCols = 0;
+
     /**
      * Constructs an 2D byte array consisting entirely of missing values (-99).
      */
@@ -49,6 +60,9 @@ public class ByteDataBox implements DataBox {
                 data[i][j] = -99;
             }
         }
+
+        this.numRows = rows;
+        this.numCols = cols;
     }
 
     /**
@@ -62,6 +76,9 @@ public class ByteDataBox implements DataBox {
                 throw new IllegalArgumentException("All rows must have same length.");
             }
         }
+
+        this.numCols = data[0].length;
+        this.numRows = data.length;
 
         this.data = data;
     }
@@ -79,14 +96,14 @@ public class ByteDataBox implements DataBox {
      * @return the number of rows in this data box.
      */
     public int numRows() {
-        return data.length;
+        return numRows;
     }
 
     /**
      * @return the number of columns in this data box.n
      */
     public int numCols() {
-        return data[0].length;
+        return numCols;
     }
 
     /**
