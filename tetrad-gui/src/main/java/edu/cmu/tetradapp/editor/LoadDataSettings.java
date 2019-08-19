@@ -1113,6 +1113,12 @@ public final class LoadDataSettings extends JPanel {
                     dataReader.determineDiscreteDataColumns(dataColumns, getMaxNumOfDiscCategories(), hasHeader);
                 }
 
+                if (metadataFile != null) {
+                    MetadataReader metadataReader = new MetadataFileReader(metadataFile.toPath());
+                    metadata = metadataReader.read();
+                    dataColumns = DataColumns.update(dataColumns, metadata);
+                }
+
                 // Step 3: Data validation
                 // when we at this step, it means the column validation is all good without any errors
                 TabularDataValidation tabularDataValidation = new TabularDataFileValidation(file.toPath(), delimiter);
