@@ -109,13 +109,16 @@ public class CgContinuousParameterEditor extends JPanel {
 		
 		for(int i=0;i<=contParentNum;i++) {
 			Box meanBox = createMeanParameterBox(rowIndex, i);
-			b1.add(meanBox);
-			b1.add(Box.createVerticalStrut(10));
-		}
-		
-		for(int i=0;i<=contParentNum;i++) {
 			Box stdDevBox = createStdDevParameterBox(rowIndex, i);
-			b1.add(stdDevBox);
+			
+			Box horizonBox = Box.createHorizontalBox();
+			
+			horizonBox.add(meanBox);
+			horizonBox.add(Box.createHorizontalGlue());
+			horizonBox.add(Box.createHorizontalStrut(10));
+			horizonBox.add(stdDevBox);
+			
+			b1.add(horizonBox);
 			b1.add(Box.createVerticalStrut(10));
 		}
 		
@@ -125,7 +128,9 @@ public class CgContinuousParameterEditor extends JPanel {
 			b1.add(Box.createVerticalStrut(10));
 		}
 		
-		parameterPanel.add(b1, BorderLayout.CENTER);
+		b1.add(Box.createVerticalGlue());
+		
+		parameterPanel.add(b1, BorderLayout.NORTH);
 		
 		revalidate();
         repaint();
@@ -142,13 +147,11 @@ public class CgContinuousParameterEditor extends JPanel {
     	int[] contParentArray = cgIm.getCgContinuousNodeContinuousParentNodeArray(nodeIndex);
     	
     	Node pNode = this.node;
-    	if (continuousParentIndex > 0) {
-    		int _pIndex = contParentArray[continuousParentIndex - 1];
-    		pNode = cgIm.getCgContinuousNodeContinuousParentNode(_pIndex);
-    	}
+		int _pIndex = contParentArray[continuousParentIndex - 1];
+		pNode = cgIm.getCgContinuousNodeContinuousParentNode(_pIndex);
     	
     	Box stdDevBox = Box.createHorizontalBox();
-    	stdDevBox.add(new JLabel((continuousParentIndex > 0?"Parent ":"") + "Linear Coefficient for " + pNode + " --> " + this.node));
+    	stdDevBox.add(new JLabel("Linear Coefficient: " + pNode.getName() + " --> " + this.node.getName()));
     	stdDevBox.add(Box.createHorizontalGlue());
     	
     	double coefValue = cgIm.getCgContinuousNodeContinuousParentEdgeCoef(nodeIndex, rowIndex, continuousParentIndex);

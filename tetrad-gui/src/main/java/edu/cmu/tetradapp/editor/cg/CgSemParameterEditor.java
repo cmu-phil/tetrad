@@ -92,15 +92,19 @@ public class CgSemParameterEditor extends JPanel {
     	Box meanPanel = createSemParameterBox(meanParam);
     	Box errVarPanel = createSemParameterBox(errVarParam);
 
-    	b1.add(meanPanel);
+    	Box horizonBox = Box.createHorizontalBox();
+    	horizonBox.add(meanPanel);
+    	horizonBox.add(Box.createHorizontalGlue());
+    	horizonBox.add(Box.createHorizontalStrut(10));
+    	horizonBox.add(errVarPanel);
+    	
+    	b1.add(horizonBox);
         b1.add(Box.createVerticalStrut(10));
-
-    	b1.add(errVarPanel);
-        b1.add(Box.createVerticalStrut(10));
+        b1.add(Box.createVerticalGlue());
     	
     	// Linear Coefficient
         for(Node parentNode : semPm.getGraph().getParents(node)) {
-        	//System.out.println("Coeficient with Parent Node: " + parentNode);
+        	// System.out.println("Coeficient with Parent Node: " + parentNode);
         	
         	Box parentNodeNameBox = Box.createHorizontalBox();
         	parentNodeNameBox.add(Box.createHorizontalGlue());
@@ -118,7 +122,7 @@ public class CgSemParameterEditor extends JPanel {
         b1.setBorder(new EmptyBorder(10, 10, 0, 10));
 
         setLayout(new BorderLayout());
-        add(b1, BorderLayout.CENTER);
+        add(b1, BorderLayout.NORTH);
 	}
 	
 	private Box createSemParameterBox(final Parameter parameter) {
@@ -131,11 +135,11 @@ public class CgSemParameterEditor extends JPanel {
     	}
     	
     	String nameLabel = paramType + ": ";
-    	if (cgIm != null) {
+    	if (cgIm != null && parameter.getType() != ParamType.COEF) {
     		nameLabel += "" + node;
     	} else if (parameter.getType() == ParamType.COEF) {
     		Node parentNode = parameter.getNodeA();
-    		nameLabel += parentNode + " -> " + node;
+    		nameLabel += parentNode.getName() + " -> " + node.getName();
     	}
     	
     	Box b1 = Box.createVerticalBox();
@@ -336,6 +340,8 @@ public class CgSemParameterEditor extends JPanel {
             b1.add(startValueRadioBox);
     	}
 		
+    	b1.add(Box.createVerticalGlue());
+    	
 		return b1;
 	}
 
