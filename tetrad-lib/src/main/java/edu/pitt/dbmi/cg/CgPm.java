@@ -174,7 +174,7 @@ public final class CgPm implements PM, TetradSerializable {
         		if(!allParentsContinuous) {
         			cgContinuousVariableNodes.add(node);
         		}
-        	}else { // Discrete Variable
+        	}else if (node instanceof DiscreteVariable) { // Discrete Variable
         		discreteNodesToVariables.put(node, (DiscreteVariable) node);
         		discreteNodes.add(node);
         		
@@ -188,7 +188,10 @@ public final class CgPm implements PM, TetradSerializable {
         		if(!allParentsDiscrete) {
         			cgDiscreteVariableNodes.add(node);
         		}
-        	}
+        	} else {
+        		discreteNodes.add(new DiscreteVariable(node.getName()));
+				cgDiscreteVariableNodes.add(node);
+			}
         }
         
         Graph continuousGraph = graph.subgraph(continuousNodes);

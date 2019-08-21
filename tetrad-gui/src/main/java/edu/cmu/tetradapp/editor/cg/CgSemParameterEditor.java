@@ -86,8 +86,8 @@ public class CgSemParameterEditor extends JPanel {
 		SemPm semPm = cgPm.getSemPm();
 		
     	// Parameters
-    	final Parameter meanParam = semPm.getMeanParameter(node);
-    	final Parameter errVarParam = semPm.getVarianceParameter(node);
+    	final Parameter meanParam = semPm.getMeanParameter(semPm.getGraph().getNode(node.getName()));
+    	final Parameter errVarParam = semPm.getVarianceParameter(semPm.getGraph().getNode(node.getName()));
 
     	Box meanPanel = createSemParameterBox(meanParam);
     	Box errVarPanel = createSemParameterBox(errVarParam);
@@ -106,7 +106,7 @@ public class CgSemParameterEditor extends JPanel {
         	parentNodeNameBox.add(Box.createHorizontalGlue());
         	
         	
-        	final Parameter coefParam = semPm.getCoefficientParameter(parentNode, node);
+        	final Parameter coefParam = semPm.getCoefficientParameter(parentNode, semPm.getGraph().getNode(node.getName()));
         	
         	Box coefPanel = createSemParameterBox(coefParam);
         	

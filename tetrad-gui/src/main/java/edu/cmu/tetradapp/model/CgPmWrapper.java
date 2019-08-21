@@ -54,7 +54,7 @@ public class CgPmWrapper implements SessionModel {
     	numModels = wrapper.getNumModels();
     }
     
-    public CgPmWrapper(Graph graph, Parameters params) {
+    public CgPmWrapper(GraphWrapper graph, Parameters params) {
         if (graph == null) {
             throw new NullPointerException("Graph must not be null.");
         }
@@ -62,7 +62,7 @@ public class CgPmWrapper implements SessionModel {
         int lowerBound, upperBound;
 
         String initModeParam = params.getString("initializationMode", "manualRetain");
-        if (initModeParam.equals("manual")) {
+        if (initModeParam.equals("manualRetain")) {
             lowerBound = upperBound = 2;
         } else if (initModeParam.equals("automatic")) {
             lowerBound = params.getInt("minCategories", 2);
@@ -70,10 +70,10 @@ public class CgPmWrapper implements SessionModel {
         } else {
             throw new IllegalStateException("Unrecognized type.");
         }
-    	setCgPm(graph, lowerBound, upperBound);
+    	setCgPm(graph.getGraph(), lowerBound, upperBound);
     }
     
-    public CgPmWrapper(Graph graph, CgPm cgPm, Parameters params) {
+    public CgPmWrapper(GraphWrapper graph, CgPmWrapper cgPm, Parameters params) {
         if (graph == null) {
             throw new NullPointerException("Graph must not be null.");
         }
@@ -86,15 +86,15 @@ public class CgPmWrapper implements SessionModel {
 
         if (params.getString("initializationMode", "manualRetain").equals("manual")) {
             lowerBound = upperBound = 2;
-            setCgPm(new CgPm(graph, cgPm, lowerBound, upperBound));
+            setCgPm(new CgPm(graph.getGraph(), cgPm.getCgPm(), lowerBound, upperBound));
         } else if (params.getString("initializationMode", "manualRetain").equals("automatic")) {
             lowerBound = params.getInt("minCategories", 2);
             upperBound = params.getInt("maxCategories", 2);
-            setCgPm(graph, lowerBound, upperBound);
+            setCgPm(graph.getGraph(), lowerBound, upperBound);
         } else {
             throw new IllegalStateException("Unrecognized type.");
         }
-    	log(cgPm);
+    	log(cgPm.getCgPm());
     }
     
     public CgPmWrapper(Simulation simulation) {
@@ -134,7 +134,7 @@ public class CgPmWrapper implements SessionModel {
     }
     
     public static CgPmWrapper serializableInstance() {
-    	return new CgPmWrapper(Dag.serializableInstance(), new Parameters());
+    	return new CgPmWrapper(GraphWrapper.serializableInstance(), new Parameters());
     }
     
     //=============================PUBLIC METHODS========================//
