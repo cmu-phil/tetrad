@@ -241,7 +241,7 @@
                 <editor-class>edu.cmu.tetradapp.editor.sem.GeneralizedSemPmEditor
                 </editor-class>
             </model>
-            <model name="Conditional Gaussian Parametric Model" acronym="CG PM" help="sem_im">
+            <model name="Conditional Gaussian Parametric Model" acronym="CG PM" help="cg_im">
                 <logger>
                     <event id="info" description="Information" default="on"/>
                     <event id="pm" description="Parametric Model" default="on"/>

@@ -239,7 +239,7 @@ public final class CgIm implements IM, ICgIm, TetradSerializable {
 
 		this.params = parameters;
 
-		this.cgPm = new CgPm(cgPm);
+		this.cgPm = new CgPm(cgPm); // cgPm;
 		
 		this.discreteNodes = Collections.unmodifiableList(getCgPm().getDiscreteNodes());
 		this.continuousNodes = Collections.unmodifiableList(getCgPm().getContinuousNodes());
@@ -826,6 +826,8 @@ public final class CgIm implements IM, ICgIm, TetradSerializable {
 						int numCategories = getCgPm().getDiscreteNumCategories(parentNode);
 						int _numCategories = oldCgIm.getCgPm().getDiscreteNumCategories(parentNode);
 						
+						System.out.println("parentNode: " + parentNode + " numCategories: " + numCategories);
+						
 						if(numCategories != _numCategories) {
 							continue;
 						}
@@ -844,7 +846,7 @@ public final class CgIm implements IM, ICgIm, TetradSerializable {
 			for(int i=0;i < numConditionalCases;i++) {
 				int numContinuousSelfAndParents = continuousParentList.size() + 1;
 				for(int continuousParentIndex=0;continuousParentIndex < numContinuousSelfAndParents;continuousParentIndex++) {
-					//System.out.println("nodeIndex: " + nodeIndex + " _nodeIndex:");
+					System.out.println("node: " + node + " nodeIndex: " + nodeIndex + " _nodeIndex:" + _nodeIndex + " i: " + i + " continuousParentIndex: " + continuousParentIndex);
 					double value = oldCgIm.getCgContinuousNodeContinuousParentEdgeCoef(_nodeIndex, i, continuousParentIndex);
 					setCgContinuousNodeContinuousParentEdgeCoef(nodeIndex, i, continuousParentIndex, value);
 					
