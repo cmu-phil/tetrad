@@ -29,7 +29,7 @@ import java.util.List;
         dataType = DataType.Continuous
 )
 @Bootstrapping
-@Experimental
+//@Experimental
 public class Lingam implements Algorithm {
 
     static final long serialVersionUID = 23L;
