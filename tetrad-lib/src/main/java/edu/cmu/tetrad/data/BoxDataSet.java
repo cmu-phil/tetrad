@@ -1281,27 +1281,17 @@ public final class BoxDataSet implements DataSet, TetradSerializable {
      * @param cols The number of columns in the redimensioned data.
      */
     private void resize(int rows, int cols) {
-        if (dataBox instanceof DoubleDataBox) {
-            DoubleDataBox ddb = (DoubleDataBox) this.dataBox;
-            double[][] data = ddb.getData();
-            double[][] dataNew = new double[rows][cols];
-            int numOfCols = Math.min(cols, dataBox.numCols());
-            int numOfRows = Math.min(rows, dataBox.numRows());
-            for (int r = 0; r < numOfRows; r++) {
-                System.arraycopy(data[r], 0, dataNew[r], 0, numOfCols);
+        VerticalDoubleDataBox newBox = new VerticalDoubleDataBox(rows, cols);
+
+        for (int i = 0; i < rows; i++) {
+            for (int j = 0; j < cols; j++) {
+                if (i < this.dataBox.numRows() && j < this.dataBox.numCols()) {
+                    newBox.set(i, j, this.dataBox.get(i, j));
+                }
             }
-            this.dataBox = new DoubleDataBox(dataNew);
-        } else if (dataBox instanceof VerticalDoubleDataBox) {
-            VerticalDoubleDataBox vddb = (VerticalDoubleDataBox) this.dataBox;
-            double[][] data = vddb.getVariableVectors();
-            double[][] dataNew = new double[cols][rows];
-            int numOfCols = Math.min(rows, dataBox.numCols());
-            int numOfRows = Math.min(cols, dataBox.numRows());
-            for (int c = 0; c < numOfCols; c++) {
-                System.arraycopy(data[c], 0, dataNew[c], 0, numOfRows);
-            }
-            this.dataBox = new VerticalDoubleDataBox(dataNew);
         }
+
+        this.dataBox = newBox;
     }
 
     /**
