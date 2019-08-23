@@ -390,8 +390,8 @@ public class FastIca {
      * @return this list, as an FastIca.IcaResult object.
      */
     public IcaResult findComponents() {
-        int n = X.rows();
-        int p = X.columns();
+        int n = X.columns();
+        int p = X.rows();
 
         if (numComponents > Math.min(n, p)) {
             TetradLogger.getInstance().log("info", "Requested number of components is too large.");
@@ -420,8 +420,6 @@ public class FastIca {
             X = scale(X);
         }
 
-        X = X.transpose();
-
         if (verbose) {
             TetradLogger.getInstance().log("info", "Whitening");
         }
@@ -438,7 +436,7 @@ public class FastIca {
         }
 
         TetradMatrix K = D.times(U.transpose());
-        K = K.scalarMult(-1); // This SVD gives -U from R's SVD.
+//        K = K.scalarMult(-1); // This SVD gives -U from R's SVD.
         K = K.getPart(0, numComponents - 1, 0, p - 1);
 
         TetradMatrix X1 = K.times(X);
@@ -456,8 +454,8 @@ public class FastIca {
 
         TetradMatrix w = b.times(K);
         TetradMatrix S = w.times(X);
-        TetradMatrix A = w.transpose().times(w.times(w.transpose()).inverse());
-        return new IcaResult(X.transpose(), K.transpose(), b.transpose(), A.transpose(), S.transpose());
+        TetradMatrix A = w.inverse();
+        return new IcaResult(X, K, w, A, S);
 
     }
 
@@ -873,11 +871,11 @@ public class FastIca {
     }
 
     private TetradMatrix scale(TetradMatrix x) {
-        for (int j = 0; j < x.columns(); j++) {
-            TetradVector u = x.getColumn(j);
+        for (int j = 0; j < x.rows(); j++) {
+            TetradVector u = x.getRow(j);
             double rms = rms(u);
 
-            for (int i = 0; i < x.rows(); i++) {
+            for (int i = 0; i < x.columns(); i++) {
                 x.set(i, j, x.get(i, j) / rms);
             }
         }
@@ -886,11 +884,11 @@ public class FastIca {
     }
 
     private TetradMatrix center(TetradMatrix x) {
-        for (int j = 0; j < x.columns(); j++) {
-            TetradVector u = x.getColumn(j);
+        for (int i = 0; i < x.rows(); i++) {
+            TetradVector u = x.getRow(i);
             double mean = mean(u);
 
-            for (int i = 0; i < x.rows(); i++) {
+            for (int j = 0; j < x.columns(); j++) {
                 x.set(i, j, x.get(i, j) - mean);
             }
         }
