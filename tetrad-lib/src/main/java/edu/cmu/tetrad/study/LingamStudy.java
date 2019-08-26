@@ -26,6 +26,9 @@ import edu.cmu.tetrad.algcomparison.algorithm.Algorithms;
 import edu.cmu.tetrad.algcomparison.algorithm.continuous.dag.Lingam;
 import edu.cmu.tetrad.algcomparison.algorithm.multi.Fask;
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.pag.Gfci;
+import edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern.FAS;
+import edu.cmu.tetrad.algcomparison.algorithm.pairwise.R3;
+import edu.cmu.tetrad.algcomparison.algorithm.pairwise.RSkew;
 import edu.cmu.tetrad.algcomparison.graph.RandomForward;
 import edu.cmu.tetrad.algcomparison.graph.SingleGraph;
 import edu.cmu.tetrad.algcomparison.independence.FisherZ;
@@ -35,6 +38,7 @@ import edu.cmu.tetrad.algcomparison.simulation.SemSimulation;
 import edu.cmu.tetrad.algcomparison.simulation.Simulations;
 import edu.cmu.tetrad.algcomparison.statistic.*;
 import edu.cmu.tetrad.graph.*;
+import edu.cmu.tetrad.search.Fas;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 
@@ -47,10 +51,9 @@ public class LingamStudy {
     public static void main(String... args) {
         Statistics statistics = new Statistics();
 
-        statistics.add(new ParameterColumn(Params.SAMPLE_SIZE));
+//        statistics.add(new ParameterColumn(Params.SAMPLE_SIZE));
         statistics.add(new ParameterColumn(Params.PENALTY_DISCOUNT));
         statistics.add(new ParameterColumn(Params.ALPHA));
-        statistics.add(new ParameterColumn("thresholdAlpha"));
 
         statistics.add(new AdjacencyPrecision());
         statistics.add(new AdjacencyRecall());
@@ -68,6 +71,8 @@ public class LingamStudy {
         Algorithms algorithms = new Algorithms();
 
         algorithms.add(new Lingam());
+        algorithms.add(new R3(new FAS(new FisherZ())));
+        algorithms.add(new RSkew(new FAS(new FisherZ())));
         algorithms.add(new Fask(new FisherZ()));
 
         Comparison comparison = new Comparison();
@@ -88,16 +93,15 @@ public class LingamStudy {
     private static Parameters getParameters() {
         Parameters parameters = new Parameters();
 
-        parameters.set("thresholdAlpha", .5);
+        parameters.set(Params.VERBOSE, false);
 
         parameters.set(Params.NUM_RUNS, 10);
         parameters.set(Params.SAMPLE_SIZE, 1000);
 
-        parameters.set(Params.COEF_LOW, 0.5);
-        parameters.set(Params.COEF_HIGH, 1.0);
-        parameters.set(Params.VAR_LOW, 1);
-        parameters.set(Params.VAR_HIGH, 1.0001);
-        parameters.set(Params.VERBOSE, false);
+        parameters.set(Params.COEF_LOW, 0.2);
+        parameters.set(Params.COEF_HIGH, 0.7);
+//        parameters.set(Params.VAR_LOW, 1);
+//        parameters.set(Params.VAR_HIGH, 3);
         parameters.set(Params.COEF_SYMMETRIC, true);
         parameters.set(Params.RANDOMIZE_COLUMNS, true);
 
@@ -105,7 +109,6 @@ public class LingamStudy {
 
         parameters.set(Params.SYMMETRIC_FIRST_STEP, false);
         parameters.set(Params.FAITHFULNESS_ASSUMED, true);
-        parameters.set("verbose", true);
         parameters.set(Params.MAX_DEGREE, 100);
         parameters.set(Params.MAX_INDEGREE, 100);
         parameters.set(Params.MAX_OUTDEGREE, 100);
@@ -113,7 +116,7 @@ public class LingamStudy {
         parameters.set(Params.AVG_DEGREE, 2);
 
         parameters.set(Params.PENALTY_DISCOUNT, 1.);
-        parameters.set(Params.ALPHA, 0.001);
+        parameters.set(Params.ALPHA, 0.01);
 
         parameters.set(Params.ERRORS_NORMAL, false);
         parameters.set(Params.RANDOMIZE_COLUMNS, true);

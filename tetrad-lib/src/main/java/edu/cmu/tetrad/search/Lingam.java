@@ -26,7 +26,6 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.PermutationGenerator;
 import edu.cmu.tetrad.util.TetradMatrix;
-import jdk.nashorn.internal.runtime.WithObject;
 
 import java.util.*;
 
@@ -42,6 +41,7 @@ import static java.lang.StrictMath.abs;
  */
 public class Lingam {
     private double penaltyDiscount = 2;
+    private double fastIcaA = 1.1;
 
     //================================CONSTRUCTORS==========================//
 
@@ -52,20 +52,20 @@ public class Lingam {
     }
 
     public Graph search(DataSet data) {
-        data = DataUtils.center(data);
+//        data = DataUtils.center(data);
 
         TetradMatrix X = data.getDoubleData();
         X = DataUtils.centerData(X).transpose();
-        FastIca fastIca = new FastIca(X, 2 * X.rows());
+        FastIca fastIca = new FastIca(X, X.rows());
         fastIca.setVerbose(false);
         fastIca.setMaxIterations(1000);
-        fastIca.setAlgorithmType(FastIca. DEFLATION);
-        fastIca.setTolerance(1e-6);
+        fastIca.setAlgorithmType(FastIca.DEFLATION);
+        fastIca.setTolerance(1e-2);
         fastIca.setFunction(FastIca.LOGCOSH);
+        fastIca.setRowNorm(false);
+        fastIca.setAlpha(fastIcaA);
         FastIca.IcaResult result11 = fastIca.findComponents();
         TetradMatrix W = result11.getW();
-
-//        System.out.println("W = " + W);
 
         PermutationGenerator gen1 = new PermutationGenerator(W.columns());
         int[] perm1 = new int[0];
@@ -86,26 +86,23 @@ public class Lingam {
             }
         }
 
-        int[] cols = new int[W.rows()];
+        int[] cols = new int[W.columns()];
         for (int i = 0; i < cols.length; i++) cols[i] = i;
 
         TetradMatrix WTilde = W.getSelection(perm1, cols);
 
-//        System.out.println("WTilde before normalization = " + WTilde);
         TetradMatrix WPrime = WTilde.copy();
 
         for (int i = 0; i < WPrime.rows(); i++) {
             for (int j = 0; j < WPrime.columns(); j++) {
-                WPrime.set(i, j, WPrime.get(i, j) / WTilde.get(i, i));
+                WPrime.assignRow(i, WTilde.getRow(i).scalarMult(1.0 / WTilde.get(i, i)));
             }
         }
 
-//        System.out.println("WPrime = " + WPrime);
+        System.out.println("WPrime = " + WPrime);
 
         final int m = data.getNumColumns();
         TetradMatrix BHat = TetradMatrix.identity(m).minus(WPrime);
-
-//        System.out.println("BHat = " + BHat);
 
         PermutationGenerator gen2 = new PermutationGenerator(BHat.rows());
         int[] perm2 = new int[0];
@@ -130,7 +127,7 @@ public class Lingam {
 
         TetradMatrix BTilde = BHat.getSelection(perm2, perm2);
 
-//        System.out.println("BTilde = " + BTilde);
+        System.out.println("BTilde = " + BTilde);
 
         final SemBicScore score = new SemBicScore(new CovarianceMatrix(data));
         score.setPenaltyDiscount(penaltyDiscount);
@@ -143,9 +140,6 @@ public class Lingam {
             knowledge.addToTier(i, variables.get(perm2[i]).getName());
         }
 
-//        System.out.println(variables);
-//        System.out.println(knowledge);
-//
         fges.setKnowledge(knowledge);
 
         final Graph graph = fges.search();
@@ -159,5 +153,8 @@ public class Lingam {
         this.penaltyDiscount = penaltyDiscount;
     }
 
+    public void setFastIcaA(double fastIcaA) {
+        this.fastIcaA = fastIcaA;
+    }
 }
 
