@@ -37,6 +37,8 @@ import static java.lang.Math.log;
 /**
  * Implements a degenerate Gaussian BIC score for FGES.
  *
+ * http://proceedings.mlr.press/v104/andrews19a/andrews19a.pdf
+ *
  * @author Bryan Andrews
  */
 public class DegenerateGaussianScore implements Score {
