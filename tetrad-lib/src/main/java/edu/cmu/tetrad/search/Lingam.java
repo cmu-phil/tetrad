@@ -42,8 +42,8 @@ import static java.lang.StrictMath.abs;
 public class Lingam {
     private double penaltyDiscount = 2;
     private double fastIcaA = 1.1;
-    private int mmxIter = 2000;
-    private double tolerance = 1e-6;
+    private int fastIcaMaxIter = 2000;
+    private double fastIcaTolerance = 1e-6;
 
     //================================CONSTRUCTORS==========================//
 
@@ -58,10 +58,10 @@ public class Lingam {
         X = DataUtils.centerData(X).transpose();
         FastIca fastIca = new FastIca(X, X.rows());
         fastIca.setVerbose(false);
-        fastIca.setMaxIterations(mmxIter);
+        fastIca.setMaxIterations(fastIcaMaxIter);
         fastIca.setAlgorithmType(FastIca.PARALLEL);
-        fastIca.setTolerance(tolerance);
-        fastIca.setFunction(FastIca.LOGCOSH);
+        fastIca.setTolerance(fastIcaTolerance);
+        fastIca.setFunction(FastIca.EXP);
         fastIca.setRowNorm(false);
         fastIca.setAlpha(fastIcaA);
         FastIca.IcaResult result11 = fastIca.findComponents();
@@ -158,11 +158,11 @@ public class Lingam {
     }
 
     public void setFastMaxIter(int maxIter) {
-        this.mmxIter = maxIter;
+        this.fastIcaMaxIter = maxIter;
     }
 
     public void setFastIcaTolerance(double tolerance) {
-        this.tolerance = tolerance;
+        this.fastIcaTolerance = tolerance;
     }
 }
 
