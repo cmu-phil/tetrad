@@ -185,6 +185,10 @@ public class MixedDataBox implements DataBox {
      */
     @Override
     public Number get(int row, int col) {
+        if (col >= continuousData.length || row >= numRows()) {
+            return null;
+        }
+
         if (continuousData[col] != null) {
             double v = continuousData[col][row];
             return v == Double.NaN ? null : v;
