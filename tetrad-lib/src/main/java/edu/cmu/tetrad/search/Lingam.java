@@ -42,6 +42,8 @@ import static java.lang.StrictMath.abs;
 public class Lingam {
     private double penaltyDiscount = 2;
     private double fastIcaA = 1.1;
+    private int mmxIter = 2000;
+    private double tolerance = 1e-6;
 
     //================================CONSTRUCTORS==========================//
 
@@ -52,15 +54,13 @@ public class Lingam {
     }
 
     public Graph search(DataSet data) {
-//        data = DataUtils.center(data);
-
         TetradMatrix X = data.getDoubleData();
         X = DataUtils.centerData(X).transpose();
         FastIca fastIca = new FastIca(X, X.rows());
         fastIca.setVerbose(false);
-        fastIca.setMaxIterations(1000);
-        fastIca.setAlgorithmType(FastIca.DEFLATION);
-        fastIca.setTolerance(1e-2);
+        fastIca.setMaxIterations(mmxIter);
+        fastIca.setAlgorithmType(FastIca.PARALLEL);
+        fastIca.setTolerance(tolerance);
         fastIca.setFunction(FastIca.LOGCOSH);
         fastIca.setRowNorm(false);
         fastIca.setAlpha(fastIcaA);
@@ -69,7 +69,7 @@ public class Lingam {
 
         PermutationGenerator gen1 = new PermutationGenerator(W.columns());
         int[] perm1 = new int[0];
-        double sum1 = Double.POSITIVE_INFINITY;
+        double sum1 = Double.NEGATIVE_INFINITY;
         int[] choice1;
 
         while ((choice1 = gen1.next()) != null) {
@@ -77,10 +77,10 @@ public class Lingam {
 
             for (int i = 0; i < W.columns(); i++) {
                 final double wii = W.get(choice1[i], i);
-                sum += 1.0 / abs(wii);
+                sum += abs(wii);
             }
 
-            if (sum < sum1) {
+            if (sum > sum1) {
                 sum1 = sum;
                 perm1 = Arrays.copyOf(choice1, choice1.length);
             }
@@ -99,7 +99,7 @@ public class Lingam {
             }
         }
 
-        System.out.println("WPrime = " + WPrime);
+//        System.out.println("WPrime = " + WPrime);
 
         final int m = data.getNumColumns();
         TetradMatrix BHat = TetradMatrix.identity(m).minus(WPrime);
@@ -115,7 +115,7 @@ public class Lingam {
             for (int i = 0; i < W.rows(); i++) {
                 for (int j = 0; j < i; j++) {
                     final double c = BHat.get(choice2[i], choice2[j]);
-                    sum += c * c;
+                    sum += abs(c);
                 }
             }
 
@@ -125,9 +125,9 @@ public class Lingam {
             }
         }
 
-        TetradMatrix BTilde = BHat.getSelection(perm2, perm2);
-
-        System.out.println("BTilde = " + BTilde);
+//        TetradMatrix BTilde = BHat.getSelection(perm2, perm2);
+//
+//        System.out.println("BTilde = " + BTilde);
 
         final SemBicScore score = new SemBicScore(new CovarianceMatrix(data));
         score.setPenaltyDiscount(penaltyDiscount);
@@ -155,6 +155,14 @@ public class Lingam {
 
     public void setFastIcaA(double fastIcaA) {
         this.fastIcaA = fastIcaA;
+    }
+
+    public void setFastMaxIter(int maxIter) {
+        this.mmxIter = maxIter;
+    }
+
+    public void setFastIcaTolerance(double tolerance) {
+        this.tolerance = tolerance;
     }
 }
 

@@ -117,6 +117,9 @@ public class LingamStudy {
 
         parameters.set(Params.PENALTY_DISCOUNT, 1.);
         parameters.set(Params.ALPHA, 0.01);
+        parameters.set(Params.FAST_ICA_A, 1.1);
+        parameters.set(Params.FAST_ICA_MAX_ITER, 2000);
+        parameters.set(Params.FAST_ICA_TOLERANCE, 1e-6);
 
         parameters.set(Params.ERRORS_NORMAL, false);
         parameters.set(Params.RANDOMIZE_COLUMNS, true);
