@@ -25,6 +25,8 @@ import edu.cmu.tetrad.util.MatrixUtils;
 import edu.cmu.tetrad.util.NumberFormatUtil;
 import edu.cmu.tetrad.util.TetradMatrix;
 import edu.cmu.tetrad.util.TetradSerializable;
+import edu.pitt.dbmi.data.reader.MixedData;
+
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.text.NumberFormat;
@@ -251,15 +253,17 @@ public final class BoxDataSet implements DataSet, TetradSerializable {
         try {
             setIntPrivate(row, column, value);
         } catch (Exception e) {
-            if (row < 0 || column < 0) {
+            if (row < 0 || column < 0 || row >= getNumRows() || column >= getNumColumns()) {
                 throw new IllegalArgumentException(
-                        "Row and column must be >= 0.");
+                        "Row or columns out of range.");
             }
 
-            int newRows = Math.max(row + 1, dataBox.numRows());
-            int newCols = Math.max(column + 1, dataBox.numCols());
-            resize(newRows, newCols);
-            setIntPrivate(row, column, value);
+            // The data set shouldn't resize because of a set command--it the <row, col> are out of bounds,
+            // it should complain
+//            int newRows = Math.max(row + 1, dataBox.numRows());
+//            int newCols = Math.max(column + 1, dataBox.numCols());
+//            resize(newRows, newCols);
+//            setIntPrivate(row, column, value);
         }
     }
 
@@ -274,15 +278,17 @@ public final class BoxDataSet implements DataSet, TetradSerializable {
         try {
             dataBox.set(row, column, value);
         } catch (Exception e) {
-            if (row < 0 || column < 0) {
+            if (row < 0 || column < 0 || row >= getNumRows() || column >= getNumColumns()) {
                 throw new IllegalArgumentException(
-                        "Row and column must be >= 0.");
+                        "Row or columns out of range.");
             }
 
-            int newRows = Math.max(row + 1, dataBox.numRows());
-            int newCols = Math.max(column + 1, dataBox.numCols());
-            resize(newRows, newCols);
-            dataBox.set(row, column, value);
+            // The data set shouldn't resize because of a set command--it the <row, col> are out of bounds,
+            // it should complain
+///            int newRows = Math.max(row + 1, dataBox.numRows());
+//            int newCols = Math.max(column + 1, dataBox.numCols());
+//            resize(newRows, newCols);
+//            dataBox.set(row, column, value);
         }
     }
 
@@ -1281,27 +1287,21 @@ public final class BoxDataSet implements DataSet, TetradSerializable {
      * @param cols The number of columns in the redimensioned data.
      */
     private void resize(int rows, int cols) {
-        if (dataBox instanceof DoubleDataBox) {
-            DoubleDataBox ddb = (DoubleDataBox) this.dataBox;
-            double[][] data = ddb.getData();
-            double[][] dataNew = new double[rows][cols];
-            int numOfCols = Math.min(cols, dataBox.numCols());
-            int numOfRows = Math.min(rows, dataBox.numRows());
-            for (int r = 0; r < numOfRows; r++) {
-                System.arraycopy(data[r], 0, dataNew[r], 0, numOfCols);
-            }
-            this.dataBox = new DoubleDataBox(dataNew);
-        } else if (dataBox instanceof VerticalDoubleDataBox) {
-            VerticalDoubleDataBox vddb = (VerticalDoubleDataBox) this.dataBox;
-            double[][] data = vddb.getVariableVectors();
-            double[][] dataNew = new double[cols][rows];
-            int numOfCols = Math.min(rows, dataBox.numCols());
-            int numOfRows = Math.min(cols, dataBox.numRows());
-            for (int c = 0; c < numOfCols; c++) {
-                System.arraycopy(data[c], 0, dataNew[c], 0, numOfRows);
-            }
-            this.dataBox = new VerticalDoubleDataBox(dataNew);
+        for (int i = getNumColumns(); i < cols; i++) {
+            variables.add(new ContinuousVariable("X" + i));
         }
+
+        MixedDataBox newBox = new MixedDataBox(variables, rows);
+
+        for (int i = 0; i < rows; i++) {
+            for (int j = 0; j < cols; j++) {
+                if (i < this.dataBox.numRows() && j < this.dataBox.numCols()) {
+                    newBox.set(i, j, this.dataBox.get(i, j));
+                }
+            }
+        }
+
+        this.dataBox = newBox;
     }
 
     /**

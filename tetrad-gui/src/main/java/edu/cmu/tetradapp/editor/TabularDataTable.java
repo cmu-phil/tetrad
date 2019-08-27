@@ -183,6 +183,7 @@ class TabularDataTable extends AbstractTableModel {
      * given coordinates is returned.
      */
     public void setValueAt(Object value, int row, int col) {
+
         if (col == 0) {
             throw new IllegalArgumentException("Bad col index: " + col);
         }
@@ -211,21 +212,22 @@ class TabularDataTable extends AbstractTableModel {
                     return;
                 }
             }
-        } else {
-            addColumnsOutTo(col);
-
-            if (row == 1) {
-                setColumnName(col, newColumnName((String) value));
-            } else if (row > 1) {
-                try {
-                    pasteIntoColumn(row, col, value);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                    pcs.firePropertyChange("modelChanged", null, null);
-                    return;
-                }
-            }
         }
+//        else {
+//            addColumnsOutTo(col);
+//
+//            if (row == 1) {
+//                setColumnName(col, newColumnName((String) value));
+//            } else if (row > 1) {
+//                try {
+//                    pasteIntoColumn(row, col, value);
+//                } catch (Exception e) {
+//                    e.printStackTrace();
+//                    pcs.firePropertyChange("modelChanged", null, null);
+//                    return;
+//                }
+//            }
+//        }
 
         fireTableDataChanged();
         pcs.firePropertyChange("modelChanged", null, null);
