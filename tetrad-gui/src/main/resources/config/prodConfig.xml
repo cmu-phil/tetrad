@@ -1779,7 +1779,7 @@
                     edu.cmu.tetradapp.editor.EdgewiseComparisonParamsEditor
                 </params-editor-class>
             </model>
-            <model name="Tabular Comparison" acronym="TabularComp"
+            <model name="Stats List Comparison" acronym="Stats List"
                    help="tabular_comparison" category="Graph-Graph Comparisons">
                 <logger>
                     <event id="info" description="Information" default="on"/>
@@ -1787,7 +1787,8 @@
                 </logger>
                 <model-class>edu.cmu.tetradapp.model.TabularComparison
                 </model-class>
-                <editor-class>edu.cmu.tetradapp.editor.TabularComparisonEditor</editor-class>
+                <editor-class>edu.cmu.tetradapp.editor.StatsListEditor</editor-class>
+<!--                <editor-class>edu.cmu.tetradapp.editor.TabularComparisonEditor</editor-class>-->
                 <params-editor-class>
                     edu.cmu.tetradapp.editor.EdgewiseComparisonParamsEditor
                 </params-editor-class>

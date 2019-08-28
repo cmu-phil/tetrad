@@ -23,7 +23,7 @@ public class TailPrecision implements Statistic {
 
     @Override
     public String getDescription() {
-        return "Arrowhead precision";
+        return "Tail precision";
     }
 
     @Override
