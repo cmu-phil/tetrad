@@ -25,6 +25,8 @@ import edu.cmu.tetrad.util.MatrixUtils;
 import edu.cmu.tetrad.util.NumberFormatUtil;
 import edu.cmu.tetrad.util.TetradMatrix;
 import edu.cmu.tetrad.util.TetradSerializable;
+import edu.pitt.dbmi.data.reader.MixedData;
+
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.text.NumberFormat;
@@ -143,7 +145,7 @@ public final class BoxDataSet implements DataSet, TetradSerializable {
     /**
      * The number formatter used for printing out continuous values.
      */
-    private transient NumberFormat nf;
+    private transient NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
 
     /**
      * The character used as a delimiter when the dataset is printed.
@@ -153,7 +155,11 @@ public final class BoxDataSet implements DataSet, TetradSerializable {
     //============================CONSTRUCTORS==========================//
     public BoxDataSet(DataBox dataBox, List<Node> variables) {
         this.dataBox = dataBox;
-        this.variables = variables;
+        this.variables = new ArrayList<>(variables);
+
+        if (dataBox.numCols() != variables.size()) {
+            throw new IllegalArgumentException("Number of columns must match the number of variables.");
+        }
     }
 
     /**
@@ -172,7 +178,11 @@ public final class BoxDataSet implements DataSet, TetradSerializable {
      * Generates a simple exemplar of this class to test serialization.
      */
     public static BoxDataSet serializableInstance() {
-        return new BoxDataSet(new ShortDataBox(4, 4), null);
+        List<Node> vars = new ArrayList<>();
+        for (int i = 0; i < 4; i++) {
+            vars.add(new ContinuousVariable("X" + i));
+        }
+        return new BoxDataSet(new ShortDataBox(4, 4), vars);
     }
 
     //============================PUBLIC METHODS========================//
@@ -243,15 +253,17 @@ public final class BoxDataSet implements DataSet, TetradSerializable {
         try {
             setIntPrivate(row, column, value);
         } catch (Exception e) {
-            if (row < 0 || column < 0) {
+            if (row < 0 || column < 0 || row >= getNumRows() || column >= getNumColumns()) {
                 throw new IllegalArgumentException(
-                        "Row and column must be >= 0.");
+                        "Row or columns out of range.");
             }
 
-            int newRows = Math.max(row + 1, dataBox.numRows());
-            int newCols = Math.max(column + 1, dataBox.numCols());
-            resize(newRows, newCols);
-            setIntPrivate(row, column, value);
+            // The data set shouldn't resize because of a set command--it the <row, col> are out of bounds,
+            // it should complain
+//            int newRows = Math.max(row + 1, dataBox.numRows());
+//            int newCols = Math.max(column + 1, dataBox.numCols());
+//            resize(newRows, newCols);
+//            setIntPrivate(row, column, value);
         }
     }
 
@@ -266,15 +278,17 @@ public final class BoxDataSet implements DataSet, TetradSerializable {
         try {
             dataBox.set(row, column, value);
         } catch (Exception e) {
-            if (row < 0 || column < 0) {
+            if (row < 0 || column < 0 || row >= getNumRows() || column >= getNumColumns()) {
                 throw new IllegalArgumentException(
-                        "Row and column must be >= 0.");
+                        "Row or columns out of range.");
             }
 
-            int newRows = Math.max(row + 1, dataBox.numRows());
-            int newCols = Math.max(column + 1, dataBox.numCols());
-            resize(newRows, newCols);
-            dataBox.set(row, column, value);
+            // The data set shouldn't resize because of a set command--it the <row, col> are out of bounds,
+            // it should complain
+///            int newRows = Math.max(row + 1, dataBox.numRows());
+//            int newCols = Math.max(column + 1, dataBox.numCols());
+//            resize(newRows, newCols);
+//            dataBox.set(row, column, value);
         }
     }
 
@@ -362,7 +376,11 @@ public final class BoxDataSet implements DataSet, TetradSerializable {
             throw new IllegalArgumentException("Expecting a new variable: " + variable);
         }
 
-        variables.add(variable);
+        try {
+            variables.add(variable);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
 
         if (dataBox instanceof MixedDataBox) {
             ((MixedDataBox) dataBox).addVariable(variable);
@@ -1144,48 +1162,52 @@ public final class BoxDataSet implements DataSet, TetradSerializable {
      * corresponding variables of the same name and corresponding data values
      * equal, when rendered using the number format at
      * <code>NumberFormatUtil.getInstance().getNumberFormat()</code>.
+     * @param obj
+     * @return
      */
-    public final boolean equals(Object obj) {
-        NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
-
-        if (obj == this) {
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        } else if (this == obj) {
             return true;
-        }
-
-        if (!(obj instanceof DataSet)) {
+        } else if (!(obj instanceof BoxDataSet)) {
             return false;
         }
 
-        DataSet _dataSet = (DataSet) obj;
+        BoxDataSet otherDataSet = (BoxDataSet) obj;
 
-        for (int i = 0; i < getVariables().size(); i++) {
-            Node node = getVariables().get(i);
-            Node _node = _dataSet.getVariables().get(i);
-            if (!node.equals(_node)) {
-                return false;
-            }
-        }
-
-        if (!(_dataSet.getNumRows() == getNumRows())) {
+        // compare number of columns
+        if (getNumColumns() != otherDataSet.getNumColumns()) {
             return false;
         }
 
+        // compare number of rows
+        if (getNumRows() != otherDataSet.getNumRows()) {
+            return false;
+        }
+
+        // compare nodes
+        if (!getVariables().equals(otherDataSet.getVariables())) {
+            return false;
+        }
+
+        Node[] nodes = getVariables().toArray(new Node[getVariables().size()]);
         for (int i = 0; i < getNumRows(); i++) {
             for (int j = 0; j < getNumColumns(); j++) {
-                Node variable = getVariable(j);
-
+                Node variable = nodes[j];
+                double val = getDouble(i, j);
+                double otherVal = otherDataSet.getDouble(i, j);
                 if (variable instanceof ContinuousVariable) {
-                    double value = Double.parseDouble(nf.format(getDouble(i, j)));
-                    double _value = Double.parseDouble(nf.format(_dataSet.getDouble(i, j)));
-
-                    if (Math.abs(value - _value) > 0.0) {
+                    if (Double.isNaN(val) ^ Double.isNaN(otherVal)) {
                         return false;
+                    } else if (!(Double.isNaN(val) && Double.isNaN(otherVal))) {
+                        if (Double.compare(Double.parseDouble(nf.format(val)), Double.parseDouble(nf.format(otherVal))) != 0) {
+                            return false;
+                        }
                     }
                 } else {
-                    double value = getInt(i, j);
-                    double _value = _dataSet.getInt(i, j);
-
-                    if (!(value == _value)) {
+                    if (!(val == otherVal)) {
                         return false;
                     }
                 }
@@ -1265,27 +1287,21 @@ public final class BoxDataSet implements DataSet, TetradSerializable {
      * @param cols The number of columns in the redimensioned data.
      */
     private void resize(int rows, int cols) {
-        if (dataBox instanceof DoubleDataBox) {
-            DoubleDataBox ddb = (DoubleDataBox) this.dataBox;
-            double[][] data = ddb.getData();
-            double[][] dataNew = new double[rows][cols];
-            int numOfCols = Math.min(cols, data[0].length);
-            int numOfRows = Math.min(rows, data.length);
-            for (int r = 0; r < numOfRows; r++) {
-                System.arraycopy(data[r], 0, dataNew[r], 0, numOfCols);
-            }
-            this.dataBox = new DoubleDataBox(dataNew);
-        } else if (dataBox instanceof VerticalDoubleDataBox) {
-            VerticalDoubleDataBox vddb = (VerticalDoubleDataBox) this.dataBox;
-            double[][] data = vddb.getVariableVectors();
-            double[][] dataNew = new double[cols][rows];
-            int numOfCols = Math.min(rows, data[0].length);
-            int numOfRows = Math.min(cols, data.length);
-            for (int r = 0; r < numOfRows; r++) {
-                System.arraycopy(data[r], 0, dataNew[r], 0, numOfCols);
-            }
-            this.dataBox = new VerticalDoubleDataBox(dataNew);
+        for (int i = getNumColumns(); i < cols; i++) {
+            variables.add(new ContinuousVariable("X" + i));
         }
+
+        MixedDataBox newBox = new MixedDataBox(variables, rows);
+
+        for (int i = 0; i < rows; i++) {
+            for (int j = 0; j < cols; j++) {
+                if (i < this.dataBox.numRows() && j < this.dataBox.numCols()) {
+                    newBox.set(i, j, this.dataBox.get(i, j));
+                }
+            }
+        }
+
+        this.dataBox = newBox;
     }
 
     /**

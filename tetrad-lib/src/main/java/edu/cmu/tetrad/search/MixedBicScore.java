@@ -355,7 +355,7 @@ public class MixedBicScore implements Score {
 
         TetradMatrix mTranspose = new TetradMatrix(continuousData);
         TetradMatrix m = mTranspose.transpose();
-        DataSet dataSet1 = ColtDataSet.makeContinuousData(variables, m);
+        DataSet dataSet1 = new BoxDataSet(new DoubleDataBox(m.toArray()), variables);
         this.covariances = new CovarianceMatrix(dataSet1);
     }
 

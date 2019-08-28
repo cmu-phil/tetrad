@@ -21,9 +21,7 @@
 
 package edu.cmu.tetrad.test;
 
-import edu.cmu.tetrad.data.ColtDataSet;
-import edu.cmu.tetrad.data.ContinuousVariable;
-import edu.cmu.tetrad.data.DataSet;
+import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.kernel.KernelGaussian;
 import edu.cmu.tetrad.util.TetradLogger;
@@ -47,7 +45,7 @@ public class TestKernelGaussian {
     @Test
     public void testMedianBandwidth() {
         Node X = new ContinuousVariable("X");
-        DataSet dataset = new ColtDataSet(5, Arrays.asList(X));
+        DataSet dataset = new BoxDataSet(new VerticalDoubleDataBox(5, 1), Arrays.asList(X));
         dataset.setDouble(0, 0, 1);
         dataset.setDouble(1, 0, 2);
         dataset.setDouble(2, 0, 3);

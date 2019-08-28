@@ -61,6 +61,8 @@ public class MixedDataBox implements DataBox {
                 Arrays.fill(discreteData[j], -99);
             }
         }
+
+
     }
 
     /**
@@ -125,7 +127,9 @@ public class MixedDataBox implements DataBox {
      * @return
      */
     public static BoxDataSet serializableInstance() {
-        return new BoxDataSet(new ShortDataBox(4, 4), null);
+        List<Node> vars = new ArrayList<>();
+        for (int i = 0; i < 4; i++) vars.add(new ContinuousVariable("X" + i));
+        return new BoxDataSet(new ShortDataBox(4, 4), vars);
     }
 
     /**
@@ -181,6 +185,10 @@ public class MixedDataBox implements DataBox {
      */
     @Override
     public Number get(int row, int col) {
+        if (col >= continuousData.length || row >= numRows()) {
+            return null;
+        }
+
         if (continuousData[col] != null) {
             double v = continuousData[col][row];
             return v == Double.NaN ? null : v;

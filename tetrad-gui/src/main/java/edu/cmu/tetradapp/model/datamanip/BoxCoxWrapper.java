@@ -73,7 +73,8 @@ public class BoxCoxWrapper extends DataWrapper {
     }
 
     private DataModel boxCox(DataSet dataSet, double lambda) {
-        DataSet transformedData = new ColtDataSet(dataSet.getNumRows(), dataSet.getVariables());
+        DataSet transformedData = new BoxDataSet(new VerticalDoubleDataBox(dataSet.getNumRows(), dataSet.getVariables().size()),
+                dataSet.getVariables());
 
         for (int j = 0; j < dataSet.getNumColumns(); j++) {
             for (int i = 0; i < dataSet.getNumRows(); i++) {
@@ -95,7 +96,8 @@ public class BoxCoxWrapper extends DataWrapper {
     }
 
     private DataModel yeoJohnson(DataSet dataSet, double lambda) {
-        DataSet transformedData = new ColtDataSet(dataSet.getNumRows(), dataSet.getVariables());
+        DataSet transformedData = new BoxDataSet(new DoubleDataBox(dataSet.getNumRows(), dataSet.getVariables().size()),
+                dataSet.getVariables());
 
         for (int j = 0; j < dataSet.getNumColumns(); j++) {
             for (int i = 0; i < dataSet.getNumRows(); i++) {

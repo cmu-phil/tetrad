@@ -21,6 +21,11 @@
 
 package edu.cmu.tetrad.data;
 
+import edu.cmu.tetrad.graph.Node;
+
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * Stores a 2D array of int data. Note that the missing value marker for this
  * box is -99.
@@ -32,6 +37,17 @@ public class VerticalIntDataBox implements DataBox {
      * The stored int data.
      */
     private final int[][] data;
+
+
+    /**
+     * The number of rows (tracked because it may be zero).
+     */
+    private int numRows = 0;
+
+    /**
+     * The number of columns (tracked because it may be zero).
+     */
+    private int numCols = 0;
 
     /**
      * Constructs an 2D int array consisting entirely of missing values
@@ -45,6 +61,9 @@ public class VerticalIntDataBox implements DataBox {
                 data[j][i] = -99;
             }
         }
+
+        this.numRows = rows;
+        this.numCols = cols;
     }
 
     /**
@@ -59,6 +78,9 @@ public class VerticalIntDataBox implements DataBox {
             }
         }
 
+        this.numRows = data[0].length;
+        this.numCols = data.length;
+
         this.data = data;
     }
 
@@ -70,27 +92,32 @@ public class VerticalIntDataBox implements DataBox {
                 data[j][i] = dataBox.get(i, j).intValue();
             }
         }
+
+        numRows = dataBox.numRows();
+        numCols = dataBox.numCols();
     }
 
     /**
      * Generates a simple exemplar of this class to test serialization.
      */
     public static BoxDataSet serializableInstance() {
-        return new BoxDataSet(new ShortDataBox(4, 4), null);
+        List<Node> vars = new ArrayList<>();
+        for (int i = 0; i < 4; i++) vars.add(new ContinuousVariable("X" + i));
+        return new BoxDataSet(new ShortDataBox(4, 4), vars);
     }
 
     /**
      * @return the number of rows in this data box.
      */
     public int numRows() {
-        return data[0].length;
+        return numRows;
     }
 
     /**
      * @return the number of columns in this data box.
      */
     public int numCols() {
-        return data.length;
+        return numCols;
     }
 
     /**
@@ -148,13 +175,7 @@ public class VerticalIntDataBox implements DataBox {
      * @return a DataBox of type intDataBox, but with the given dimensions.
      */
     public DataBox like() {
-        int[] rows = new int[numRows()];
-        int[] cols = new int[numCols()];
-
-        for (int i = 0; i < numRows(); i++) rows[i] = i;
-        for (int j = 0; j < numCols(); j++) cols[j] = j;
-
-        return viewSelection(rows, cols);
+        return new VerticalIntDataBox(numRows, numCols);
     }
 
     @Override

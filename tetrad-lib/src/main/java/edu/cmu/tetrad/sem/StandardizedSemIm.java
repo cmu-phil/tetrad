@@ -21,10 +21,7 @@
 
 package edu.cmu.tetrad.sem;
 
-import edu.cmu.tetrad.data.ColtDataSet;
-import edu.cmu.tetrad.data.DataSet;
-import edu.cmu.tetrad.data.DataUtils;
-import edu.cmu.tetrad.data.Simulator;
+import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.*;
 
@@ -162,7 +159,7 @@ public class StandardizedSemIm implements Simulator, TetradSerializable {
             DataSet dataSet = im.simulateData(1000, false);
             TetradMatrix _dataSet = dataSet.getDoubleData();
             _dataSet = DataUtils.standardizeData(_dataSet);
-            DataSet dataSetStandardized = ColtDataSet.makeData(dataSet.getVariables(), _dataSet);
+            DataSet dataSetStandardized = new BoxDataSet(new VerticalDoubleDataBox(_dataSet.toArray()), dataSet.getVariables());
 
             SemEstimator estimator = new SemEstimator(dataSetStandardized, im.getSemPm());
             SemIm imStandardized = estimator.estimate();
@@ -614,7 +611,7 @@ public class StandardizedSemIm implements Simulator, TetradSerializable {
             sim.assignRow(i, ePrime); // sim.viewRow(i).assign(ePrime);
         }
 
-        DataSet fullDataSet = ColtDataSet.makeContinuousData(getVariableNodes(), sim);
+        DataSet fullDataSet = new BoxDataSet(new VerticalDoubleDataBox(sim.transpose().toArray()), getVariableNodes());
 
         if (latentDataSaved) {
             return fullDataSet;

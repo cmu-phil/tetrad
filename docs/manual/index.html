@@ -3093,7 +3093,7 @@ there is a single latent for each output cluster. For MimBuild, a pattern over t
 
     <h4>Parameters</h4>
 
-    <p><a href="#samplePrior">samplePrior</a>, <a href="#structurePrior">structurePrior</a></p>
+    <p><a href="#samplePrior">samplePrior</a>, <a href="#samplePrior">samplePrior</a></p>
 
     <h3>Conditional Gaussian BIC Score</h3>
 
@@ -3513,6 +3513,42 @@ Usually covariance values are chosen from U(-b, -a) U U(a, b) for some a, b; thi
             <li>Upper Bound: <span id="fasRule_upper_bound">3</span></li>
             <li>Value Type: <span id="fasRule_value_type">Integer</span></li>
             </td>
+        </ul>
+
+        <h3 id="fastIcaA" class="parameter_description">fastIcaA</h3>
+        <ul class="parameter_description_list">
+            <li>Short Description: <span id="fastIcaA_short_desc">Fast ICA 'a' parameter. </span>
+            </li>
+            <li>Long Description: <span id="fastIcaA_long_desc">This is the 'a' parameter of Fast ICA. (See Hyvarinen, A. (2001). Independent Component Analysis/Hyvarinen A., Karhunen J., Oja E. NY: John Wiley & Sons Inc.) It ranges between 1 and 2; we use a default of 1.1. This scales values evaluated by the tanh function for the log cosh option.</span>
+            </li>
+            <li>Default Value: <span id="fastIcaA_default_value">1.1</span></li>
+            <li>Lower Bound: <span id="fastIcaA_lower_bound">1.0</span></li>
+            <li>Upper Bound: <span id="fastIcaA_upper_bound">2.0</span></li>
+            <li>Value Type: <span id="fastIcaA_value_type">Double</span></li>
+        </ul>
+
+        <h3 id="fastIcaMaxIter" class="parameter_description">fastIcaMaxIter</h3>
+        <ul class="parameter_description_list">
+            <li>Short Description: <span id="fastIcaMaxIter_short_desc">The maximum number of optimization iterations. </span>
+            </li>
+            <li>Long Description: <span id="fastIcaMaxIter_long_desc">This is the maximum number if iterations of the optimization procedure of ICA. (See Hyvarinen, A. (2001). Independent Component Analysis/Hyvarinen A., Karhunen J., Oja E. NY: John Wiley & Sons Inc.) It's an integer greater than 0; we use a default of 2000.</span>
+            </li>
+            <li>Default Value: <span id="fastIcaMaxIter_default_value">2000</span></li>
+            <li>Lower Bound: <span id="fastIcaMaxIter_lower_bound">1</span></li>
+            <li>Upper Bound: <span id="fastIcaMaxIter_upper_bound">500000</span></li>
+            <li>Value Type: <span id="fastIcaMaxIter_value_type">Double</span></li>
+        </ul>
+
+        <h3 id="fastIcaTolerance" class="parameter_description">fastIcaTolerance</h3>
+        <ul class="parameter_description_list">
+            <li>Short Description: <span id="fastIcaTolerance_short_desc">Fast ICA tolerance parameter. </span>
+            </li>
+            <li>Long Description: <span id="fastIcaTolerance_long_desc">This is the tolerance parameter of Fast ICA. (See Hyvarinen, A. (2001). Independent Component Analysis/Hyvarinen A., Karhunen J., Oja E. NY: John Wiley & Sons Inc.) It must be greater than or equal to 0.00; we use a default of 1e-6.</span>
+            </li>
+            <li>Default Value: <span id="fastIcaTolerance_default_value">1e-6</span></li>
+            <li>Lower Bound: <span id="fastIcaTolerance_lower_bound">0.0</span></li>
+            <li>Upper Bound: <span id="fastIcaTolerance_upper_bound">1000.0</span></li>
+            <li>Value Type: <span id="fastIcaTolerance_value_type">Double</span></li>
         </ul>
 
         <h3 id="fisherEpsilon" class="parameter_description">fisherEpsilon</h3>
@@ -4539,8 +4575,8 @@ Usually covariance values are chosen from U(-b, -a) U U(a, b) for some a, b; thi
             </li>
             <li>Long Description: <span id="structurePrior_long_desc">For Tetrad, we use as a structure prior the default number of parents for any conditional probability table. Higher weight is accorded to tables with about that number of parents. The prior structure weights are distributed according to a binomial distribution.</span>
             </li>
-            <li>Default Value: <span id="structurePrior_default_value">0.0</span></li>
-            <li>Lower Bound: <span id="structurePrior_lower_bound">0.0</span></li>
+            <li>Default Value: <span id="structurePrior_default_value">1.0</span></li>
+            <li>Lower Bound: <span id="structurePrior_lower_bound">0.00000000000000001</span></li>
             <li>Upper Bound: <span id="structurePrior_upper_bound">1.7976931348623157E308</span></li>
             <li>Value Type: <span id="structurePrior_value_type">Double</span></li>
         </ul>

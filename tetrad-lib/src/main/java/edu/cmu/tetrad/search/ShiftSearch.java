@@ -160,7 +160,7 @@ public class ShiftSearch {
         for (DataSet dataSet : dataSets) {
             TetradMatrix mat = dataSet.getDoubleData();
             TetradMatrix mat2 = mat.getPart(topMargin, mat.rows() - topMargin - bottomMargin - 1, 0, mat.columns() - 1);
-            truncatedData.add(ColtDataSet.makeContinuousData(dataSet.getVariables(), mat2));
+            truncatedData.add(new BoxDataSet(new DoubleDataBox(mat2.toArray()), dataSet.getVariables()));
         }
 
         return truncatedData;
@@ -173,7 +173,7 @@ public class ShiftSearch {
             DataSet dataSet = (DataSet) _dataSet;
             TetradMatrix mat = dataSet.getDoubleData();
             TetradMatrix mat2 = mat.getPart(0, numRows - 1, 0, mat.columns() - 1);
-            truncatedData.add(ColtDataSet.makeContinuousData(dataSet.getVariables(), mat2));
+            truncatedData.add(new BoxDataSet(new DoubleDataBox(mat2.toArray()), dataSet.getVariables()));
         }
 
         return truncatedData;

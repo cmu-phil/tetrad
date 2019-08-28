@@ -1,5 +1,6 @@
 package edu.cmu.tetrad.performance;
 
+import cern.colt.list.adapter.DoubleListAdapter;
 import edu.cmu.tetrad.bayes.BayesPm;
 import edu.cmu.tetrad.bayes.MlBayesIm;
 import edu.cmu.tetrad.data.*;
@@ -532,7 +533,7 @@ public class Comparison2 {
             variables.add(new ContinuousVariable(column.toString()));
         }
 
-        DataSet dataSet = new ColtDataSet(0, variables);
+        DataSet dataSet = new BoxDataSet(new DoubleDataBox(0, variables.size()), variables);
         dataSet.setNumberFormat(new DecimalFormat("0"));
 
         for (int i = 0; i < results.size(); i++) {

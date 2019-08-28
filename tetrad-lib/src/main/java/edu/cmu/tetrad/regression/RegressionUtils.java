@@ -21,8 +21,9 @@
 
 package edu.cmu.tetrad.regression;
 
-import edu.cmu.tetrad.data.ColtDataSet;
+import edu.cmu.tetrad.data.BoxDataSet;
 import edu.cmu.tetrad.data.DataSet;
+import edu.cmu.tetrad.data.DoubleDataBox;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.TetradMatrix;
@@ -66,7 +67,7 @@ public class RegressionUtils {
             residuals.assignColumn(i, residualsColumn);
         }
 
-        return ColtDataSet.makeContinuousData(dataSet.getVariables(), residuals);
+        return new BoxDataSet(new DoubleDataBox(residuals.toArray()), dataSet.getVariables());
     }
 }
 

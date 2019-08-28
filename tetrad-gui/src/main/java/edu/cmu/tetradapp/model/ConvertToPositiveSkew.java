@@ -73,7 +73,7 @@ public class ConvertToPositiveSkew extends DataWrapper {
                 list2.add(node);
             }
 
-            DataSet dataSet2 = ColtDataSet.makeContinuousData(list2, matrix2D);
+            DataSet dataSet2 = new BoxDataSet(new DoubleDataBox(matrix2D.toArray()), list2);
             outList.add(dataSet2);
         }
 

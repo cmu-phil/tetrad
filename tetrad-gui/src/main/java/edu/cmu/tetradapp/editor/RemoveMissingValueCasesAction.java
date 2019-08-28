@@ -67,7 +67,7 @@ final class RemoveMissingValueCasesAction extends AbstractAction {
             variables.add(dataSet.getVariable(j));
         }
 
-        DataSet newDataSet = new ColtDataSet(0, variables);
+        DataSet newDataSet = new BoxDataSet(new DoubleDataBox( 0, variables.size()), variables);
 
         int newRow = -1;
 

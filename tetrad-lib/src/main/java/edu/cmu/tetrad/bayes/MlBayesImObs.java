@@ -21,12 +21,14 @@
 
 package edu.cmu.tetrad.bayes;
 
-import edu.cmu.tetrad.data.ColtDataSet;
+import edu.cmu.tetrad.data.BoxDataSet;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DiscreteVariable;
+import edu.cmu.tetrad.data.VerticalDoubleDataBox;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.RandomUtil;
 
+import javax.swing.*;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.util.*;
@@ -776,7 +778,7 @@ public final class MlBayesImObs implements BayesIm {
 
         List<Node> lag0Nodes = timeSeriesGraph.getLag0Nodes();
 
-        DataSet fullData = new ColtDataSet(sampleSize, variables);
+        DataSet fullData = new BoxDataSet(new VerticalDoubleDataBox(sampleSize, variables.size()), variables);
 
         Graph contemporaneousDag = timeSeriesGraph.subgraph(lag0Nodes);
         List<Node> tierOrdering = contemporaneousDag.getCausalOrdering();
@@ -879,7 +881,7 @@ public final class MlBayesImObs implements BayesIm {
             map[index] = j;
         }
 
-        DataSet dataSet = new ColtDataSet(sampleSize, variables);
+        DataSet dataSet = new BoxDataSet(new VerticalDoubleDataBox(sampleSize, variables.size()), variables);
         constructSample(sampleSize, numMeasured, dataSet, map);
         return dataSet;
     }

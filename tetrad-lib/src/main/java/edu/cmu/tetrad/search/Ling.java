@@ -21,8 +21,9 @@
 
 package edu.cmu.tetrad.search;
 
-import edu.cmu.tetrad.data.ColtDataSet;
+import edu.cmu.tetrad.data.BoxDataSet;
 import edu.cmu.tetrad.data.DataSet;
+import edu.cmu.tetrad.data.DoubleDataBox;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphGroup;
 import edu.cmu.tetrad.graph.Node;
@@ -134,7 +135,7 @@ public class Ling {
      * The search method is used to process LiNG. Call search when you want to run the algorithm.
      */
     public StoredGraphs search() {
-        TetradMatrix A, W;
+        TetradMatrix W;
         StoredGraphs graphs = new StoredGraphs();
 
         try {
@@ -154,9 +155,8 @@ public class Ling {
 
                 final List<Mapping> allMappings = createMappings(null, null, dataSet.getNumColumns());
 
-                double[][] _w = estimateW(new TetradMatrix(dataSet.getDoubleData().toArray()),
+                W = estimateW(new TetradMatrix(dataSet.getDoubleData().transpose()),
                         dataSet.getNumColumns(), -zeta, zeta, allMappings);
-                W = new TetradMatrix(_w);
 
                 System.out.println("W = " + W);
 
@@ -173,23 +173,23 @@ public class Ling {
     }
 
 
-    private double[][] estimateW(TetradMatrix matrix, int numNodes, double min, double max, List<Mapping> allMappings) {
-        double[][] W = initializeW(numNodes);
+    private TetradMatrix estimateW(TetradMatrix matrix, int numNodes, double min, double max, List<Mapping> allMappings) {
+        TetradMatrix W = initializeW(numNodes);
         maxMappings(matrix, min, max, W, allMappings);
         return W;
     }
 
     private void maxMappings(final TetradMatrix matrix, final double min,
-                             final double max, final double[][] W, final List<Mapping> allMappings) {
+                             final double max, final TetradMatrix W, final List<Mapping> allMappings) {
 
-        final int numNodes = W.length;
+        final int numNodes = W.rows();
 
         for (int i = 0; i < numNodes; i++) {
             double maxScore = Double.NEGATIVE_INFINITY;
             double[] maxRow = new double[numNodes];
 
             for (Mapping mapping : mappingsForRow(i, allMappings)) {
-                W[mapping.getI()][mapping.getJ()] = 0;
+                W.set(mapping.getI(), mapping.getJ(), 0);
             }
 
             try {
@@ -206,25 +206,25 @@ public class Ling {
             if (v >= 9999) continue;
 
             double[] row = new double[numNodes];
-            for (int k = 0; k < numNodes; k++) row[k] = W[i][k];
+            for (int k = 0; k < numNodes; k++) row[k] = W.get(i, k);
 
             if (v > maxScore) {
                 maxRow = row;
             }
 
-            for (int k = 0; k < numNodes; k++) W[i][k] = maxRow[k];
+            for (int k = 0; k < numNodes; k++) W.set(i, k, maxRow[k]);
         }
     }
 
     private void optimizeNonGaussianity(final int rowIndex, final TetradMatrix dataSetTetradMatrix,
-                                        final double[][] W, List<Mapping> allMappings) {
+                                        final TetradMatrix W, List<Mapping> allMappings) {
         final List<Mapping> mappings = mappingsForRow(rowIndex, allMappings);
 
         MultivariateFunction function = new MultivariateFunction() {
             public double value(double[] values) {
                 for (int i = 0; i < values.length; i++) {
                     Mapping mapping = mappings.get(i);
-                    W[mapping.getI()][mapping.getJ()] = values[i];
+                    W.set(mapping.getI(), mapping.getJ(), values[i]);
                 }
 
                 double v = ngFullData(rowIndex, dataSetTetradMatrix, W);
@@ -240,7 +240,7 @@ public class Ling {
 
             for (int k = 0; k < mappings.size(); k++) {
                 Mapping mapping = mappings.get(k);
-                values[k] = W[mapping.getI()][mapping.getJ()];
+                values[k] = W.get(mapping.getI(), mapping.getJ());
             }
 
             MultivariateOptimizer search = new PowellOptimizer(1e-7, 1e-7);
@@ -255,13 +255,13 @@ public class Ling {
 
             for (int k = 0; k < mappings.size(); k++) {
                 Mapping mapping = mappings.get(k);
-                W[mapping.getI()][mapping.getJ()] = values[k];
+                W.set(mapping.getI(), mapping.getJ(), values[k]);
             }
         }
 
     }
 
-    public double ngFullData(int rowIndex, TetradMatrix data, double[][] W) {
+    public double ngFullData(int rowIndex, TetradMatrix data, TetradMatrix W) {
         double[] col = new double[data.rows()];
 
         for (int i = 0; i < data.rows(); i++) {
@@ -270,8 +270,8 @@ public class Ling {
             // Node _x given parents. Its coefficient is fixed at 1. Also, coefficients for all
             // other variables not neighbors of _x are fixed at zero.
             for (int j = 0; j < data.columns(); j++) {
-                double coef = W[rowIndex][j];
-                Double value = data.get(i, j);
+                double coef = W.get(rowIndex, j);
+                double value = data.get(i, j);
                 d += coef * value;
             }
 
@@ -320,17 +320,17 @@ public class Ling {
         return mappings;
     }
 
-    private double[][] initializeW(int numNodes) {
+    private TetradMatrix initializeW(int numNodes) {
 
         // Initialize W to I.
-        double[][] W = new double[numNodes][numNodes];
+        TetradMatrix W = new TetradMatrix(numNodes, numNodes);
 
         for (int i = 0; i < numNodes; i++) {
             for (int j = 0; j < numNodes; j++) {
                 if (i == j) {
-                    W[i][j] = 1.0;
+                    W.set(i, j, 1.0);
                 } else {
-                    W[i][j] = 0.0;
+                    W.set(i, j, 0.0);
                 }
             }
         }
@@ -371,20 +371,18 @@ public class Ling {
     }
 
     private TetradMatrix getWFastIca() {
-        TetradMatrix A;
         TetradMatrix W;// Using this Fast ICA to get the logging.
-        TetradMatrix data = new TetradMatrix(dataSet.getDoubleData().toArray());
-        FastIca fastIca = new FastIca(data, data.columns());
+        TetradMatrix data = new TetradMatrix(dataSet.getDoubleData().toArray()).transpose();
+        FastIca fastIca = new FastIca(data, 30);
         fastIca.setVerbose(false);
         fastIca.setAlgorithmType(FastIca.DEFLATION);
         fastIca.setFunction(FastIca.LOGCOSH);
-        fastIca.setTolerance(1e-20);
-        fastIca.setMaxIterations(500);
+        fastIca.setTolerance(.01);
+        fastIca.setMaxIterations(1000);
         fastIca.setAlpha(1.0);
         FastIca.IcaResult result = fastIca.findComponents();
-        A = new TetradMatrix(result.getA().transpose().toArray());
-        W = A.inverse();
-        return W;
+        W = new TetradMatrix(result.getW());
+        return W.transpose();
     }
 
     /**
@@ -584,7 +582,7 @@ public class Ling {
         TetradMatrix inVectors = simulateCyclic(graphWP, errorCoefficients, numSamples, gp2);
 
         //reformat it
-        dataSet = ColtDataSet.makeContinuousData(graphWP.getGraph().getNodes(), new TetradMatrix(inVectors.transpose().toArray()));
+        dataSet = new BoxDataSet(new DoubleDataBox(inVectors.transpose().toArray()), graphWP.getGraph().getNodes());
     }
 
     private int[] range(int i1, int i2) {
@@ -978,7 +976,7 @@ public class Ling {
     private static DataSet computeBhatTetradMatrix(TetradMatrix normalizedZldW, List<Node> nodes) {//, List<Integer> perm) {
         int size = normalizedZldW.rows();
         TetradMatrix mat = TetradMatrix.identity(size).minus(normalizedZldW);
-        return ColtDataSet.makeContinuousData(nodes, new TetradMatrix(mat.toArray()));
+        return new BoxDataSet(new DoubleDataBox(mat.toArray()), nodes);
     }
 
     private static boolean allEigenvaluesAreSmallerThanOneInModulus(TetradMatrix mat) {

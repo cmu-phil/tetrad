@@ -21,10 +21,7 @@
 
 package edu.cmu.tetradapp.model;
 
-import edu.cmu.tetrad.data.ColtDataSet;
-import edu.cmu.tetrad.data.DataSet;
-import edu.cmu.tetrad.data.DataUtils;
-import edu.cmu.tetrad.data.LogDataUtils;
+import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.util.TetradMatrix;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 
@@ -49,7 +46,7 @@ public class StandardizeWrapper extends DataWrapper {
 
         DataSet dataSet = (DataSet) data.getDataModelList().get(0);
         TetradMatrix matrix2D = DataUtils.standardizeData(dataSet.getDoubleData());
-        DataSet _dataSet = ColtDataSet.makeContinuousData(dataSet.getVariables(), matrix2D);
+        DataSet _dataSet = new BoxDataSet(new VerticalDoubleDataBox(matrix2D.transpose().toArray()), data.getVariables());
         setDataModel(_dataSet);
         setSourceGraph(data.getSourceGraph());
 
