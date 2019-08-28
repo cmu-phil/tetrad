@@ -227,6 +227,8 @@ public final class BoxDataSet implements DataSet, TetradSerializable {
      * @param column The index of the variable.
      */
     public final void setInt(int row, int column, int value) {
+        ensureRows(row + 1);
+
         Node variable = getVariable(column);
 
         if (!(variable instanceof DiscreteVariable)) {
@@ -275,6 +277,8 @@ public final class BoxDataSet implements DataSet, TetradSerializable {
      * @param column The index of the variable.
      */
     public final void setDouble(int row, int column, double value) {
+        ensureRows(row + 1);
+
         try {
             dataBox.set(row, column, value);
         } catch (Exception e) {
