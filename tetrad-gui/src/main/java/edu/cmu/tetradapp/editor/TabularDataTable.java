@@ -28,6 +28,7 @@ import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.NodeVariableType;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.util.ArrayList;
 import javax.swing.table.AbstractTableModel;
 
 /**
@@ -183,22 +184,13 @@ class TabularDataTable extends AbstractTableModel {
      * given coordinates is returned.
      */
     public void setValueAt(Object value, int row, int col) {
+        dataSet.ensureColumns(col - getNumLeadingCols() + 1, new ArrayList<>());
+        dataSet.ensureRows(row - getNumLeadingRows() + 1);
 
         if (col == 0) {
             throw new IllegalArgumentException("Bad col index: " + col);
         }
-//        if (col == 1) {
-//            if (row >= 2) {
-//                try {
-//                    int multiplier = new Integer((String) value);
-//                    dataSet.setMultiplier(row - 2, multiplier);
-//                }
-//                catch (Exception e) {
-//                    dataSet.setMultiplier(row - 2, 1);
-//                }
-//            }
-//        }
-//        else
+
         if (col >= getNumLeadingCols()
                 && col < dataSet.getNumColumns() + getNumLeadingCols()) {
             if (row == 1) {
@@ -213,21 +205,6 @@ class TabularDataTable extends AbstractTableModel {
                 }
             }
         }
-//        else {
-//            addColumnsOutTo(col);
-//
-//            if (row == 1) {
-//                setColumnName(col, newColumnName((String) value));
-//            } else if (row > 1) {
-//                try {
-//                    pasteIntoColumn(row, col, value);
-//                } catch (Exception e) {
-//                    e.printStackTrace();
-//                    pcs.firePropertyChange("modelChanged", null, null);
-//                    return;
-//                }
-//            }
-//        }
 
         fireTableDataChanged();
         pcs.firePropertyChange("modelChanged", null, null);
@@ -304,7 +281,6 @@ class TabularDataTable extends AbstractTableModel {
 
         if (variable instanceof ContinuousVariable && value instanceof Number) {
             dataSet.setObject(dataRow, dataCol, value);
-//            dataSet.setDouble(dataRow, dataCol, (Double) value);
             return;
         }
 
