@@ -84,6 +84,7 @@ public class CgEstimatorWrapper implements SessionModel {
         		cgIms.add(this.cgIm);
         	}
         	
+        	this.dataSet = (DataSet) dataWrapper.getDataModelList().get(0);
         	this.cgIm = cgIms.get(0);
         	log(cgIm);
         } else {

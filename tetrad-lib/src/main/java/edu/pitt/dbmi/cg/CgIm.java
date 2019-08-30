@@ -239,7 +239,7 @@ public final class CgIm implements IM, ICgIm, TetradSerializable {
 
 		this.params = parameters;
 
-		this.cgPm = new CgPm(cgPm); // cgPm;
+		this.cgPm = new CgPm(cgPm);
 		
 		this.discreteNodes = Collections.unmodifiableList(getCgPm().getDiscreteNodes());
 		this.continuousNodes = Collections.unmodifiableList(getCgPm().getContinuousNodes());

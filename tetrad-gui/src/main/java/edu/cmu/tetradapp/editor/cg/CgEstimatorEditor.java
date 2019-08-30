@@ -30,6 +30,7 @@ import edu.cmu.tetradapp.model.DataWrapper;
 import edu.cmu.tetradapp.workbench.GraphWorkbench;
 import edu.pitt.dbmi.cg.CgIm;
 import edu.pitt.dbmi.cg.CgPm;
+import edu.pitt.dbmi.cg.CgProperties;
 
 /**
  * Jul 22, 2019 3:16:37 PM
@@ -141,8 +142,14 @@ public class CgEstimatorEditor extends JPanel {
         JScrollPane wizardScroll = new JScrollPane(getWizard());
 
         // CG properties
+        CgProperties properties = new CgProperties(wrapper.getDataSet(), graph);
+        
+        StringBuilder buf = new StringBuilder();
+        buf.append("\nDf = ").append(properties.getDof());
+        buf.append("\n\nH0: Complete graph.");
         
         JTextArea modelParametersText = new JTextArea();
+        modelParametersText.setText(buf.toString());
         
         JTabbedPane tabbedPane = new JTabbedPane();
         tabbedPane.add("Model", wizardScroll);

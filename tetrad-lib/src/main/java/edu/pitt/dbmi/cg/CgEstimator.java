@@ -19,6 +19,7 @@ import edu.cmu.tetrad.data.ContinuousVariable;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DiscreteVariable;
 import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.sem.SemEstimator;
 import edu.cmu.tetrad.sem.SemIm;
@@ -61,7 +62,7 @@ public final class CgEstimator implements TetradSerializable {
 		
 		this.cgPm = cgPm;
 		this.dataSet = dataSet;
-		this.graph = cgPm.getGraph();
+		this.graph = GraphUtils.replaceNodes(cgPm.getGraph(), dataSet.getVariables());
 		this.nodes = new Node[graph.getNumNodes()];
 		int i = 0;
 		for(Node node : graph.getNodes()) {
@@ -76,35 +77,35 @@ public final class CgEstimator implements TetradSerializable {
 		
 		// SEM
 		List<Node> contNodes = new ArrayList<>();
-		List<Node> contNodesDataset = new ArrayList<>();
+		//List<Node> contNodesDataset = new ArrayList<>();
 		
         // Bayes
 		List<Node> discNodes = new ArrayList<>();
-		List<Node> discNodesDataset = new ArrayList<>();
+		//List<Node> discNodesDataset = new ArrayList<>();
 		
 		List<Node> continuousNodes = estimatedCgIm.getContinuousNodes();
 		for(Node _node : continuousNodes) {
 			Node node = graph.getNode(_node.getName()); 
-			Node nodeDataset = dataSet.getVariable(_node.getName()); 
+			//Node nodeDataset = dataSet.getVariable(_node.getName()); 
 			
 			contNodes.add(node);
-			contNodesDataset.add(nodeDataset);
+			//contNodesDataset.add(nodeDataset);
 		}
 		
 		List<Node> cgDiscreteNodesAndTheirDiscreteParents = new ArrayList<>();
-		List<Node> cgDiscreteNodesAndTheirDiscreteParentsDataset = new ArrayList<>();
+		//List<Node> cgDiscreteNodesAndTheirDiscreteParentsDataset = new ArrayList<>();
         
 		List<Node> discreteNodes = estimatedCgIm.getDiscreteNodes();
 		for(Node _node : discreteNodes) {
 			Node node = graph.getNode(_node.getName());
-			Node nodeDataset = dataSet.getVariable(_node.getName());
+			//Node nodeDataset = dataSet.getVariable(_node.getName());
 			
 			discNodes.add(node);
-			discNodesDataset.add(nodeDataset);
+			//discNodesDataset.add(nodeDataset);
 			
 			boolean allParentsDiscrete = true;
 			
-    		for(Node _parentNode : graph.getParents(_node)) {
+    		for(Node _parentNode : graph.getParents(node)) {//_node
     			if(_parentNode instanceof ContinuousVariable) {
     				allParentsDiscrete = false;
     				break;
@@ -113,23 +114,23 @@ public final class CgEstimator implements TetradSerializable {
     		if(!allParentsDiscrete) {
     			if(!cgDiscreteNodesAndTheirDiscreteParents.contains(node)) {
     				cgDiscreteNodesAndTheirDiscreteParents.add(node);
-    				cgDiscreteNodesAndTheirDiscreteParentsDataset.add(nodeDataset);
+    				//cgDiscreteNodesAndTheirDiscreteParentsDataset.add(nodeDataset);
     			}
-    			for (Node _parentNode : graph.getParents(_node)) {
+    			for (Node _parentNode : graph.getParents(node)) {//_node
     				Node parentNode = graph.getNode(_parentNode.getName()); 
-    				Node parentNodeDataset = dataSet.getVariable(_parentNode.getName());
+    				//Node parentNodeDataset = dataSet.getVariable(_parentNode.getName());
     				
         			if(parentNode instanceof DiscreteVariable && 
         					!cgDiscreteNodesAndTheirDiscreteParents.contains(parentNode)) {
         				cgDiscreteNodesAndTheirDiscreteParents.add(parentNode);
-        				cgDiscreteNodesAndTheirDiscreteParentsDataset.add(parentNodeDataset);
+        				//cgDiscreteNodesAndTheirDiscreteParentsDataset.add(parentNodeDataset);
         			}
         		}
     		}
 		}
 		
-		DataSet semDataSet = dataSet.subsetColumns(contNodesDataset);
-		DataSet bayesDataSet = dataSet.subsetColumns(discNodesDataset);
+		DataSet semDataSet = dataSet.subsetColumns(contNodes);// contNodesDataset);
+		DataSet bayesDataSet = dataSet.subsetColumns(discNodes);// discNodesDataset);
         
 		MlBayesEstimator bayesEstimator = new MlBayesEstimator();
 		BayesIm estimatedBayesIm = bayesEstimator.estimate(cgPm.getBayesPm(), bayesDataSet);
@@ -145,7 +146,7 @@ public final class CgEstimator implements TetradSerializable {
 		BayesPm cgBayesPm = new BayesPm(cgBayesGraph);
 		BayesIm estimatedCgBayesIm = new MlBayesIm(cgBayesPm);
 		
-		DataSet cgBayesDataSet = dataSet.subsetColumns(cgDiscreteNodesAndTheirDiscreteParentsDataset);
+		DataSet cgBayesDataSet = dataSet.subsetColumns(cgDiscreteNodesAndTheirDiscreteParents);// cgDiscreteNodesAndTheirDiscreteParentsDataset);
 		DiscreteProbs cgBayesProbs = new DataSetProbs(cgBayesDataSet);
 		
 		Proposition assertion = Proposition.tautology(estimatedCgBayesIm);
@@ -239,7 +240,7 @@ public final class CgEstimator implements TetradSerializable {
 		                    			int categoryIndex = cgBayesParentValues[arrayIndex];
 			                    		
 		                    			Node cgDiscreteParentNode = estimatedCgBayesIm.getNode(parentIndex);
-		                    			int cgDiscreteParentNodeIndex = dataSet.getColumn(dataSet.getVariable(cgDiscreteParentNode.getName()));
+		                    			int cgDiscreteParentNodeIndex = dataSet.getColumn(cgDiscreteParentNode);//dataSet.getVariable(cgDiscreteParentNode.getName()));
 			                    		
 		                    			// Need to qualify every one of them
 		                    			if(categoryIndex != dataSet.getInt(dataRow, cgDiscreteParentNodeIndex)) {
@@ -361,7 +362,7 @@ public final class CgEstimator implements TetradSerializable {
                 			int categoryIndex = cgDiscreteParentValues[arrayIndex];
                 			
                 			Node cgDiscreteParentNode = estimatedCgIm.getCgContinuousNodeDiscreteParentNode(discreteParentIndex);
-                			int cgDiscreteParentNodeIndex = dataSet.getColumn(dataSet.getVariable(cgDiscreteParentNode.getName()));
+                			int cgDiscreteParentNodeIndex = dataSet.getColumn(cgDiscreteParentNode);//dataSet.getVariable(cgDiscreteParentNode.getName()));
                     		
                 			if(categoryIndex != dataSet.getInt(dataRow, cgDiscreteParentNodeIndex)) {
                 				qualified = false;
