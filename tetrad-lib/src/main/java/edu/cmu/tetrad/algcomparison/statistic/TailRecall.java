@@ -23,7 +23,7 @@ public class TailRecall implements Statistic {
 
     @Override
     public String getDescription() {
-        return "Arrowhead recall";
+        return "Tail recall";
     }
 
     @Override

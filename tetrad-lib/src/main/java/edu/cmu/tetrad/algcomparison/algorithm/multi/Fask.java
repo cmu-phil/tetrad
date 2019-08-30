@@ -25,6 +25,7 @@ import java.util.List;
  *
  * @author jdramsey
  */
+@Bootstrapping
 @edu.cmu.tetrad.annotation.Algorithm(
         name = "FASK",
         command = "fask",
@@ -131,9 +132,9 @@ public class Fask implements Algorithm, HasKnowledge, TakesIndependenceWrapper, 
             parameters.addAll(algorithm.getParameters());
         }
 
-        if (test != null) {
-            parameters.addAll(test.getParameters());
-        }
+//        if (test != null) {
+//            parameters.addAll(test.getParameters());
+//        }
         
         parameters.add(Params.DEPTH);
         parameters.add(Params.TWO_CYCLE_ALPHA);
