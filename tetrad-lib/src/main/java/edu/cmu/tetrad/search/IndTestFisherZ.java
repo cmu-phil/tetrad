@@ -182,6 +182,18 @@ public final class IndTestFisherZ implements IndependenceTest {
         double q = 0.5 * (log(1.0 + r) - Math.log(1.0 - r));
         double fisherZ = sqrt((double)(n - 3 - z.size())) * abs(q);
         this.fisherZ = fisherZ;
+
+//        double p = getPValue();
+//
+//        double alpha = 1.0 / (1.0 + (1.0 / (-this.alpha * p * log(p))));
+//        double alpha = -this.alpha * p * log(p);
+
+//        if (Double.isNaN(alpha)) alpha = 1;
+
+//        System.out.println("alpha = " + alpha);
+//
+//        return p > alpha;
+//
         return fisherZ < cutoff;
     }
 
