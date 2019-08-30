@@ -21,10 +21,7 @@
 
 package edu.cmu.tetradapp.editor;
 
-import edu.cmu.tetrad.data.ColtDataSet;
-import edu.cmu.tetrad.data.ContinuousVariable;
-import edu.cmu.tetrad.data.DataSet;
-import edu.cmu.tetrad.data.DiscreteVariable;
+import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.BayesUpdaterClassifier;
@@ -302,7 +299,7 @@ public class BayesUpdaterClassifierEditor extends JPanel {
         classVar.setName("Result");
 
         DataSet dataSet =
-                new ColtDataSet(classifications.length, variables);
+                new BoxDataSet(new DoubleDataBox(classifications.length, variables.size()), variables);
 
         for (int i = 0; i < classifications.length; i++) {
             dataSet.setInt(i, 0, classifications[i]);

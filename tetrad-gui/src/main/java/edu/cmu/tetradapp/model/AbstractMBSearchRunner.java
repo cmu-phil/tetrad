@@ -21,9 +21,10 @@
 
 package edu.cmu.tetradapp.model;
 
-import edu.cmu.tetrad.data.ColtDataSet;
+import edu.cmu.tetrad.data.BoxDataSet;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
+import edu.cmu.tetrad.data.DoubleDataBox;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.*;
 import edu.cmu.tetrad.util.Parameters;
@@ -165,7 +166,7 @@ public abstract class AbstractMBSearchRunner extends DataWrapper implements Mark
         }
         this.variables = new ArrayList<>(nodes);
         if (nodes.isEmpty()) {
-            this.dataModel = new ColtDataSet(source.getNumRows(), nodes);
+            this.dataModel = new BoxDataSet(new DoubleDataBox(source.getNumRows(), nodes.size()), nodes);
         } else {
             this.dataModel = this.source.subsetColumns(nodes);
         }

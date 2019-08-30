@@ -72,7 +72,7 @@ public final class BootstrapSampler {
         int oldSampleSize = dataSet.getNumRows();
         int ncols = dataSet.getNumColumns();
 
-        DataSet newDataSet = new ColtDataSet(newSampleSize, dataSet.getVariables());
+        DataSet newDataSet = new BoxDataSet(new VerticalDoubleDataBox(newSampleSize, dataSet.getVariables().size()), dataSet.getVariables());
 //        List<Integer> indices = new ArrayList<Integer>();
 
         // Without replacement.

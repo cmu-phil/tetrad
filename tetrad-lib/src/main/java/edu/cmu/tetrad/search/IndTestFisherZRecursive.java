@@ -123,7 +123,7 @@ public final class IndTestFisherZRecursive implements IndependenceTest {
      * @param alpha     The significance cutoff level. p values less than alpha will be reported as dependent.
      */
     public IndTestFisherZRecursive(TetradMatrix data, List<Node> variables, double alpha) {
-        this.dataSet = ColtDataSet.makeContinuousData(variables, data);
+        this.dataSet = new BoxDataSet(new VerticalDoubleDataBox(data.transpose().toArray()), variables);
         this.covMatrix = new CovarianceMatrix(dataSet);
         this.variables = Collections.unmodifiableList(variables);
         this.indexMap = indexMap(variables);

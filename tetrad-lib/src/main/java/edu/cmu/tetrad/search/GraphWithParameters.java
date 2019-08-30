@@ -21,8 +21,9 @@
 
 package edu.cmu.tetrad.search;
 
-import edu.cmu.tetrad.data.ColtDataSet;
+import edu.cmu.tetrad.data.BoxDataSet;
 import edu.cmu.tetrad.data.DataSet;
+import edu.cmu.tetrad.data.DoubleDataBox;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.GwpResult.AdjacencyEvaluationResult;
 import edu.cmu.tetrad.search.GwpResult.CoefficientEvaluationResult;
@@ -471,7 +472,7 @@ public class GraphWithParameters {
             double value = getWeightHash().get(edge);
             matrix.set(node2Index, node1Index, value); //the B matrix is read: from column to row
         }
-        return ColtDataSet.makeContinuousData(getGraph().getNodes(), new TetradMatrix(matrix.toArray()));
+        return new BoxDataSet(new DoubleDataBox(matrix.toArray()), getGraph().getNodes());
     }
 
     List<List<Integer>> cycles = null;

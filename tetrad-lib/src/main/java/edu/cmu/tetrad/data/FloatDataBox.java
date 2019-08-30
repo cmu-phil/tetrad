@@ -21,6 +21,11 @@
 
 package edu.cmu.tetrad.data;
 
+import edu.cmu.tetrad.graph.Node;
+
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * Stores a 2D array of float data. Note that the missing value marker for this
  * box is Float.NaN.
@@ -65,7 +70,9 @@ public class FloatDataBox implements DataBox {
      * Generates a simple exemplar of this class to test serialization.
      */
     public static BoxDataSet serializableInstance() {
-        return new BoxDataSet(new ShortDataBox(4, 4), null);
+        List<Node> vars = new ArrayList<>();
+        for (int i = 0; i < 4; i++) vars.add(new ContinuousVariable("X" + i));
+        return new BoxDataSet(new ShortDataBox(4, 4), vars);
     }
 
     /**

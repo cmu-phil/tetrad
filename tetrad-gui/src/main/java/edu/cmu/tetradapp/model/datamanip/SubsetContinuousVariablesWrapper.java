@@ -85,7 +85,7 @@ public class SubsetContinuousVariablesWrapper extends DataWrapper {
             }
         }
         if (n == 0) {
-            return new ColtDataSet(0, new ArrayList<Node>());
+            return new BoxDataSet(new DoubleDataBox(0, 0), new ArrayList<>());
         }
 
         int[] indices = new int[n];

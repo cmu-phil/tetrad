@@ -186,7 +186,7 @@ public class Discretizer {
         }
 
         // build new dataset.
-        ColtDataSet newDataSet = new ColtDataSet(sourceDataSet.getNumRows(), variables);
+        DataSet newDataSet = new BoxDataSet(new VerticalDoubleDataBox(sourceDataSet.getNumRows(), variables.size()), variables);
         for (int i = 0; i < newDataSet.getNumColumns(); i++) {
             Node variable = newDataSet.getVariable(i);
             Node sourceVar = replacementMapping.get(variable);

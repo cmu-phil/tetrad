@@ -250,7 +250,7 @@ public class Comparison {
             variables.add(new ContinuousVariable(column.toString()));
         }
 
-        DataSet dataSet = new ColtDataSet(0, variables);
+        DataSet dataSet = new BoxDataSet(new DoubleDataBox(0, variables.size()), variables);
         dataSet.setNumberFormat(new DecimalFormat("0"));
 
         for (int i = 0; i < results.size(); i++) {

@@ -133,9 +133,9 @@ public class ShortTriangularMatrix implements TriangularMatrix {
         ShortTriangularMatrix test = new ShortTriangularMatrix();
         DataReader reader = new DataReader();
         File file = new File("C:/data1.txt");
-        ColtDataSet data = null;
+        DataSet data = null;
         try {
-            data = (ColtDataSet) reader.parseTabular(file);
+            data = reader.parseTabular(file);
         } catch (IOException e) {
             e.printStackTrace();
         }

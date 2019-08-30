@@ -53,7 +53,7 @@ public final class TestCovarianceMatrix {
             variables.add(var);
         }
 
-        DataSet dataSet = new ColtDataSet(10, variables);
+        DataSet dataSet = new BoxDataSet(new DoubleDataBox(10, variables.size()), variables);
 
         for (int i = 0; i < 10; i++) {
             for (int j = 0; j < 5; j++) {

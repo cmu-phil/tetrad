@@ -22,9 +22,7 @@
 package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.cluster.KMeans;
-import edu.cmu.tetrad.data.ColtDataSet;
-import edu.cmu.tetrad.data.DataSet;
-import edu.cmu.tetrad.data.ICovarianceMatrix;
+import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.kernel.Kernel;
 import edu.cmu.tetrad.search.kernel.KernelGaussian;
@@ -122,7 +120,7 @@ public final class IndTestHsic implements IndependenceTest {
     }
 
     public IndTestHsic(TetradMatrix data, List<Node> variables, double alpha) {
-        DataSet dataSet = ColtDataSet.makeContinuousData(variables, data);
+        DataSet dataSet = new BoxDataSet(new DoubleDataBox(data.toArray()), variables);
 
         this.variables = Collections.unmodifiableList(variables);
         setAlpha(alpha);
@@ -236,7 +234,7 @@ public final class IndTestHsic implements IndependenceTest {
             clusterAssign = kmeans.getClusters();
         }
         for (int i = 0; i < this.perms; i++) {
-            DataSet shuffleData = new ColtDataSet((ColtDataSet) dataSet);
+            DataSet shuffleData = dataSet.copy();
             // shuffle data
             if (z.isEmpty()) {
                 List<Integer> indicesList = new ArrayList<>();

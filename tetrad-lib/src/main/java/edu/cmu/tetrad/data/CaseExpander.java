@@ -50,7 +50,7 @@ public final class CaseExpander implements DataFilter {
         }
 
         DataSet newDataSet =
-                new ColtDataSet(rows, dataSet.getVariables());
+                new BoxDataSet(new VerticalDoubleDataBox(rows, dataSet.getVariables().size()), dataSet.getVariables());
         int cols = dataSet.getNumColumns();
         int index = -1;
 

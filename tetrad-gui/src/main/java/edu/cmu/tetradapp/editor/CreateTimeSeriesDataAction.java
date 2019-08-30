@@ -172,7 +172,7 @@ final class CreateTimeSeriesDataAction extends AbstractAction {
         }
 
         DataSet _laggedData =
-                new ColtDataSet(dataSet.getNumRows() - m + 1, variables);
+                new BoxDataSet(new DoubleDataBox(dataSet.getNumRows() - m + 1, variables.size()), variables);
 
         for (int s = 0; s < m; s++) {
             for (int i = 0; i < n; i++) {
@@ -246,7 +246,7 @@ final class CreateTimeSeriesDataAction extends AbstractAction {
         }
 
         DataSet _laggedData =
-                new ColtDataSet(dataSet.getNumRows() - m + 1, variables);
+                new BoxDataSet(new DoubleDataBox(dataSet.getNumRows() - m + 1, variables.size()), variables);
 
         for (int s = 0; s <= m; s++) {
             for (int i = 0; i < n; i++) {

@@ -85,7 +85,7 @@ public class DataWrapper implements SessionModel, KnowledgeEditable, KnowledgeBo
 
     //==============================CONSTRUCTORS===========================//
     protected DataWrapper() {
-        setDataModel(new ColtDataSet(0, new LinkedList<Node>()));
+        setDataModel(new BoxDataSet(new VerticalDoubleDataBox(0 , 0), new LinkedList<Node>()));
         this.parameters = new Parameters();
     }
 
@@ -93,7 +93,7 @@ public class DataWrapper implements SessionModel, KnowledgeEditable, KnowledgeBo
      * Constructs a data wrapper using a new DataSet as data model.
      */
     public DataWrapper(Parameters parameters) {
-        setDataModel(new ColtDataSet(0, new LinkedList<Node>()));
+        setDataModel(new BoxDataSet(new VerticalDoubleDataBox(0, 0), new LinkedList<Node>()));
         this.parameters = parameters;
     }
 
@@ -185,7 +185,7 @@ public class DataWrapper implements SessionModel, KnowledgeEditable, KnowledgeBo
             }
         }
 
-        DataSet dataSet = new ColtDataSet(0, variables);
+        DataSet dataSet = new BoxDataSet(new VerticalDoubleDataBox(0, variables.size()), variables);
         DataModelList dataModelList = new DataModelList();
         dataModelList.add(dataSet);
         this.dataModelList = dataModelList;
@@ -217,7 +217,7 @@ public class DataWrapper implements SessionModel, KnowledgeEditable, KnowledgeBo
 //            throw new IllegalArgumentException("Must provide a continuous data set.");
 //        }
 
-        DataSet data2 = new ColtDataSet((ColtDataSet) data);
+        DataSet data2 = data.copy();
         String predictedVariable = nextVariableName("Pred", data);
         data2.addVariable(new ContinuousVariable(predictedVariable));
 
@@ -344,7 +344,7 @@ public class DataWrapper implements SessionModel, KnowledgeEditable, KnowledgeBo
      */
     public void setDataModel(DataModel dataModel) {
         if (dataModel == null) {
-            dataModel = new ColtDataSet(0, new LinkedList<Node>());
+            dataModel = new BoxDataSet(new VerticalDoubleDataBox(0, 0), new LinkedList<>());
         }
 
         if (dataModel instanceof DataModelList) {

@@ -22,9 +22,10 @@ package edu.cmu.tetradapp.model;
 
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.statistic.*;
-import edu.cmu.tetrad.data.ColtDataSet;
+import edu.cmu.tetrad.data.BoxDataSet;
 import edu.cmu.tetrad.data.ContinuousVariable;
 import edu.cmu.tetrad.data.DataSet;
+import edu.cmu.tetrad.data.DoubleDataBox;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
@@ -214,7 +215,7 @@ public final class TabularComparison implements SessionModel, SimulationParamsSo
             variables.add(new ContinuousVariable(statistic.getAbbreviation()));
         }
 
-        dataSet = new ColtDataSet(0, variables);
+        dataSet = new BoxDataSet(new DoubleDataBox(0, variables.size()), variables);
         dataSet.setNumberFormat(new DecimalFormat("0.00"));
     }
 

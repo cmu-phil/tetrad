@@ -21,8 +21,9 @@
 
 package edu.cmu.tetrad.search;
 
-import edu.cmu.tetrad.data.ColtDataSet;
+import edu.cmu.tetrad.data.BoxDataSet;
 import edu.cmu.tetrad.data.DataSet;
+import edu.cmu.tetrad.data.DoubleDataBox;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphGroup;
 import edu.cmu.tetrad.graph.Node;
@@ -584,7 +585,7 @@ public class Ling {
         TetradMatrix inVectors = simulateCyclic(graphWP, errorCoefficients, numSamples, gp2);
 
         //reformat it
-        dataSet = ColtDataSet.makeContinuousData(graphWP.getGraph().getNodes(), new TetradMatrix(inVectors.transpose().toArray()));
+        dataSet = new BoxDataSet(new DoubleDataBox(inVectors.transpose().toArray()), graphWP.getGraph().getNodes());
     }
 
     private int[] range(int i1, int i2) {
@@ -978,7 +979,7 @@ public class Ling {
     private static DataSet computeBhatTetradMatrix(TetradMatrix normalizedZldW, List<Node> nodes) {//, List<Integer> perm) {
         int size = normalizedZldW.rows();
         TetradMatrix mat = TetradMatrix.identity(size).minus(normalizedZldW);
-        return ColtDataSet.makeContinuousData(nodes, new TetradMatrix(mat.toArray()));
+        return new BoxDataSet(new DoubleDataBox(mat.toArray()), nodes);
     }
 
     private static boolean allEigenvaluesAreSmallerThanOneInModulus(TetradMatrix mat) {
