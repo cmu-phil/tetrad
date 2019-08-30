@@ -3515,6 +3515,42 @@ Usually covariance values are chosen from U(-b, -a) U U(a, b) for some a, b; thi
             </td>
         </ul>
 
+        <h3 id="fastIcaA" class="parameter_description">fastIcaA</h3>
+        <ul class="parameter_description_list">
+            <li>Short Description: <span id="fastIcaA_short_desc">Fast ICA 'a' parameter. </span>
+            </li>
+            <li>Long Description: <span id="fastIcaA_long_desc">This is the 'a' parameter of Fast ICA. (See Hyvarinen, A. (2001). Independent Component Analysis/Hyvarinen A., Karhunen J., Oja E. NY: John Wiley & Sons Inc.) It ranges between 1 and 2; we use a default of 1.1. This scales values evaluated by the tanh function for the log cosh option.</span>
+            </li>
+            <li>Default Value: <span id="fastIcaA_default_value">1.1</span></li>
+            <li>Lower Bound: <span id="fastIcaA_lower_bound">1.0</span></li>
+            <li>Upper Bound: <span id="fastIcaA_upper_bound">2.0</span></li>
+            <li>Value Type: <span id="fastIcaA_value_type">Double</span></li>
+        </ul>
+
+        <h3 id="fastIcaMaxIter" class="parameter_description">fastIcaMaxIter</h3>
+        <ul class="parameter_description_list">
+            <li>Short Description: <span id="fastIcaMaxIter_short_desc">The maximum number of optimization iterations. </span>
+            </li>
+            <li>Long Description: <span id="fastIcaMaxIter_long_desc">This is the maximum number if iterations of the optimization procedure of ICA. (See Hyvarinen, A. (2001). Independent Component Analysis/Hyvarinen A., Karhunen J., Oja E. NY: John Wiley & Sons Inc.) It's an integer greater than 0; we use a default of 2000.</span>
+            </li>
+            <li>Default Value: <span id="fastIcaMaxIter_default_value">2000</span></li>
+            <li>Lower Bound: <span id="fastIcaMaxIter_lower_bound">1</span></li>
+            <li>Upper Bound: <span id="fastIcaMaxIter_upper_bound">500000</span></li>
+            <li>Value Type: <span id="fastIcaMaxIter_value_type">Double</span></li>
+        </ul>
+
+        <h3 id="fastIcaTolerance" class="parameter_description">fastIcaTolerance</h3>
+        <ul class="parameter_description_list">
+            <li>Short Description: <span id="fastIcaTolerance_short_desc">Fast ICA tolerance parameter. </span>
+            </li>
+            <li>Long Description: <span id="fastIcaTolerance_long_desc">This is the tolerance parameter of Fast ICA. (See Hyvarinen, A. (2001). Independent Component Analysis/Hyvarinen A., Karhunen J., Oja E. NY: John Wiley & Sons Inc.) It must be greater than or equal to 0.00; we use a default of 1e-6.</span>
+            </li>
+            <li>Default Value: <span id="fastIcaTolerance_default_value">1e-6</span></li>
+            <li>Lower Bound: <span id="fastIcaTolerance_lower_bound">0.0</span></li>
+            <li>Upper Bound: <span id="fastIcaTolerance_upper_bound">1000.0</span></li>
+            <li>Value Type: <span id="fastIcaTolerance_value_type">Double</span></li>
+        </ul>
+
         <h3 id="fisherEpsilon" class="parameter_description">fisherEpsilon</h3>
         <ul class="parameter_description_list">
             <li>Short Description: <span id="fisherEpsilon_short_desc">Epsilon where |xi.t - xi.t-1| < epsilon, criterion for convergence</span>
@@ -4359,7 +4395,7 @@ Usually covariance values are chosen from U(-b, -a) U U(a, b) for some a, b; thi
             </li>
             <li>Long Description: <span id="randomizeColumns_long_desc">It is usually the case that for graphs that are faithful to the true model the order of the columns in the dataset should not matter; you should always end up with the same model. However, in the real world where unfaithfulness is an issue this may not be true. To test the resilience of methods to random reordering of the columns in the data, set this parameter to “Yes”.</span>
             </li>
-            <li>Default Value: <span id="randomizeColumns_default_value">false</span></li>
+            <li>Default Value: <span id="randomizeColumns_default_value">true</span></li>
             <li>Lower Bound: <span id="randomizeColumns_lower_bound"></span></li>
             <li>Upper Bound: <span id="randomizeColumns_upper_bound"></span></li>
             <li>Value Type: <span id="randomizeColumns_value_type">Boolean</span></li>

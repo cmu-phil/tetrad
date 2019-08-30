@@ -14,6 +14,7 @@ import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 import edu.pitt.dbmi.algo.resampling.GeneralResamplingTest;
 import edu.pitt.dbmi.algo.resampling.ResamplingEdgeEnsemble;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -23,27 +24,31 @@ import java.util.List;
  * @author jdramsey
  */
 @edu.cmu.tetrad.annotation.Algorithm(
-        name = "LiNGAM",
-        command = "lingam",
+        name = "LiNG",
+        command = "ling",
         algoType = AlgType.forbid_latent_common_causes,
         dataType = DataType.Continuous
 )
 @Bootstrapping
-//@Experimental
-public class Lingam implements Algorithm {
+@Experimental
+public class Ling implements Algorithm {
 
     static final long serialVersionUID = 23L;
 
     public Graph search(DataModel dataSet, Parameters parameters) {
         if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
-            edu.cmu.tetrad.search.Lingam lingam = new edu.cmu.tetrad.search.Lingam();
-            lingam.setPenaltyDiscount(parameters.getDouble(Params.PENALTY_DISCOUNT));
-            lingam.setFastIcaA(parameters.getDouble(Params.FAST_ICA_A));
-            lingam.setFastMaxIter(parameters.getInt(Params.FAST_ICA_MAX_ITER));
-            lingam.setFastIcaTolerance(parameters.getDouble(Params.FAST_ICA_TOLERANCE));
-            return lingam.search(DataUtils.getContinuousDataSet(dataSet));
+            DataSet _dataSet = DataUtils.getContinuousDataSet(dataSet);
+            edu.cmu.tetrad.search.Ling lingam = new edu.cmu.tetrad.search.Ling(_dataSet);
+//            lingam.setPenaltyDiscount(parameters.getDouble(Params.PENALTY_DISCOUNT));
+            edu.cmu.tetrad.search.Ling.StoredGraphs search = lingam.search();
+
+            if (search.getNumGraphs() > 0) {
+                return search.getGraph(0);
+            } else {
+                return new EdgeListGraph();
+            }
         } else {
-            Lingam algorithm = new Lingam();
+            Ling algorithm = new Ling();
 
             DataSet data = (DataSet) dataSet;
             GeneralResamplingTest search = new GeneralResamplingTest(data, algorithm, parameters.getInt(Params.NUMBER_RESAMPLING));
@@ -90,9 +95,6 @@ public class Lingam implements Algorithm {
         List<String> parameters = new ArrayList<>();
         parameters.add(Params.PENALTY_DISCOUNT);
         parameters.add(Params.VERBOSE);
-//        parameters.add(Params.FAST_ICA_A);
-        parameters.add(Params.FAST_ICA_MAX_ITER);
-        parameters.add(Params.FAST_ICA_TOLERANCE);
         return parameters;
     }
 }
