@@ -28,7 +28,7 @@ public class StatsListEditor extends JPanel {
     }
 
     private void setup() {
-        JTabbedPane pane = new JTabbedPane(JTabbedPane.TOP);
+//        JTabbedPane pane = new JTabbedPane(JTabbedPane.TOP);
 
         // We'll leave the underlying model the same but just complain if there's not exactly
         // one reference and one target graph.
@@ -41,28 +41,28 @@ public class StatsListEditor extends JPanel {
         referenceGraph = referenceGraphs.get(0);
         targetGraph = targetGraphs.get(0);
 
-        pane.addTab("Comparison", getTableDisplay());
+        add(getTableDisplay());
 
-        JTabbedPane pane2 = new JTabbedPane(JTabbedPane.LEFT);
+//        JTabbedPane pane2 = new JTabbedPane(JTabbedPane.LEFT);
+//
+//        JTabbedPane pane3 = new JTabbedPane(JTabbedPane.TOP);
+//
+//        GraphEditor graphEditor = new GraphEditor(new GraphWrapper(targetGraph));
+//        graphEditor.enableEditing(false);
+//        pane3.add("Target Graph", graphEditor.getWorkbench());
+//
+//        graphEditor = new GraphEditor(new GraphWrapper(referenceGraph));
+//        graphEditor.enableEditing(false);
+//        pane3.add("True Graph", graphEditor.getWorkbench());
+//
+//        pane2.add("", pane3);
+//
+//        pane.addTab("Graphs", pane2);
 
-        JTabbedPane pane3 = new JTabbedPane(JTabbedPane.TOP);
-
-        GraphEditor graphEditor = new GraphEditor(new GraphWrapper(targetGraph));
-        graphEditor.enableEditing(false);
-        pane3.add("Target Graph", graphEditor.getWorkbench());
-
-        graphEditor = new GraphEditor(new GraphWrapper(referenceGraph));
-        graphEditor.enableEditing(false);
-        pane3.add("True Graph", graphEditor.getWorkbench());
-
-        pane2.add("", pane3);
-
-        pane.addTab("Graphs", pane2);
-
-        add(pane);
+//        add(pane);
     }
 
-    private Box getTableDisplay() {
+    private JComponent getTableDisplay() {
 
         List<Statistic> statistics = new ArrayList<>();
 
@@ -120,17 +120,19 @@ public class StatsListEditor extends JPanel {
         );
 
         area.setFont(new Font(Font.MONOSPACED, Font.BOLD, 14));
+        area.setMinimumSize(area.getPreferredSize());
+        area.setMaximumSize(area.getPreferredSize());
 
         JScrollPane pane = new JScrollPane(area);
         pane.setPreferredSize(new Dimension(700, 900));
 
-        Box b = Box.createVerticalBox();
+//        Box b = Box.createVerticalBox();
+//
+//        Box b3 = Box.createHorizontalBox();
+//        b3.add(Box.createHorizontalStrut(20));
+//        b3.add(pane);
+//        b.add(b3);
 
-        Box b3 = Box.createHorizontalBox();
-        b3.add(Box.createHorizontalStrut(20));
-        b3.add(pane);
-        b.add(b3);
-
-        return b;
+        return pane;
     }
 }
