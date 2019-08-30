@@ -78,8 +78,6 @@ public class LeeHastieSimulation implements Simulation, HasParameters {
                 dataSet = DataUtils.reorderColumns(dataSet);
             }
 
-            dataSet = DataUtils.convertNumericalDiscreteToContinuous(dataSet);
-
             dataSets.add(dataSet);
         }
     }
