@@ -116,7 +116,7 @@ public class StatsListEditor extends JPanel {
 
         JTextArea area = new JTextArea(
                 "Comparing target " + comparison.getTargetName() + " to reference " + comparison.getReferenceName() + "\n\n" +
-                table.toString()
+                        table.toString()
         );
 
         area.setFont(new Font(Font.MONOSPACED, Font.BOLD, 14));
