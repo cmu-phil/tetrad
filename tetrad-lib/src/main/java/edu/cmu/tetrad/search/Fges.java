@@ -139,8 +139,8 @@ public final class Fges implements GraphSearch, GraphScorer {
     // Where printed output is sent.
     private PrintStream out = System.out;
 
-    // A initial adjacencies graph.
-    private Graph adjacencies = null;
+//    // A initial adjacencies graph.
+//    private Graph adjacencies = null;
 
     // The graph being constructed.
     private Graph graph;
@@ -233,8 +233,8 @@ public final class Fges implements GraphSearch, GraphScorer {
         final List<Node> nodes = new ArrayList<>(variables);
         graph = new EdgeListGraphSingleConnections(nodes);
 
-        if (adjacencies != null) {
-            adjacencies = GraphUtils.replaceNodes(adjacencies, nodes);
+        if (initialGraph != null) {
+            initialGraph = GraphUtils.replaceNodes(initialGraph, nodes);
         }
 
         if (initialGraph != null) {
@@ -256,6 +256,19 @@ public final class Fges implements GraphSearch, GraphScorer {
             initializeTwoStepEdges(getVariables());
             fes();
             bes();
+//
+//            initializeTwoStepEdges(getVariables());
+//            fes();
+//            bes();
+
+//            initializeTwoStepEdges(getVariables());
+//            fes();
+//            bes();
+//
+//            initializeTwoStepEdges(getVariables());
+//            fes();
+//            bes();
+
         } else {
             initializeForwardEdgesFromEmptyGraph(getVariables());
 
@@ -268,18 +281,6 @@ public final class Fges implements GraphSearch, GraphScorer {
             initializeForwardEdgesFromExistingGraph(getVariables());
             fes();
             bes();
-
-//            fes();
-//            bes();
-//
-//            fes();
-//            bes();
-//
-//            fes();
-//            bes();
-//
-//            fes();
-//            bes();
         }
 
         this.modelScore = scoreDag(SearchGraphUtils.dagFromPattern(graph), true);
@@ -395,21 +396,21 @@ public final class Fges implements GraphSearch, GraphScorer {
         return out;
     }
 
-    /**
-     * @return the set of preset adjacenies for the algorithm; edges not in this
-     * adjacencies graph will not be added.
-     */
-    public Graph getAdjacencies() {
-        return adjacencies;
-    }
+//    /**
+//     * @return the set of preset adjacenies for the algorithm; edges not in this
+//     * adjacencies graph will not be added.
+//     */
+//    public Graph getAdjacencies() {
+//        return adjacencies;
+//    }
 
-    /**
-     * Sets the set of preset adjacenies for the algorithm; edges not in this
-     * adjacencies graph will not be added.
-     */
-    public void setAdjacencies(Graph adjacencies) {
-        this.adjacencies = adjacencies;
-    }
+//    /**
+//     * Sets the set of preset adjacenies for the algorithm; edges not in this
+//     * adjacencies graph will not be added.
+//     */
+//    public void setAdjacencies(Graph adjacencies) {
+//        this.adjacencies = adjacencies;
+//    }
 
     /**
      * A bound on cycle length.
@@ -572,7 +573,7 @@ public final class Fges implements GraphSearch, GraphScorer {
                         }
                     }
 
-                    if (adjacencies != null && !adjacencies.isAdjacentTo(x, y)) {
+                    if (initialGraph != null && !initialGraph.isAdjacentTo(x, y)) {
                         continue;
                     }
 
@@ -778,25 +779,25 @@ public final class Fges implements GraphSearch, GraphScorer {
                         out.println("Initializing effect edges: " + (count[0]));
                     }
 
-                    Node y = nodes.get(i);
+                    Node x = nodes.get(i);
 
                     Set<Node> g = new HashSet<>();
 
-                    for (Node n : graph.getAdjacentNodes(y)) {
+                    for (Node n : graph.getAdjacentNodes(x)) {
                         for (Node m : graph.getAdjacentNodes(n)) {
                             if (Thread.currentThread().isInterrupted()) {
                                 break;
                             }
 
-                            if (m == y) {
+                            if (m == x) {
                                 continue;
                             }
 
-                            if (graph.isAdjacentTo(y, m)) {
+                            if (graph.isAdjacentTo(x, m)) {
                                 continue;
                             }
 
-                            if (graph.isDefCollider(m, n, y)) {
+                            if (graph.isDefCollider(m, n, x)) {
                                 continue;
                             }
 
@@ -804,29 +805,30 @@ public final class Fges implements GraphSearch, GraphScorer {
                         }
                     }
 
-                    for (Node x : g) {
+                    for (Node y : g) {
                         if (Thread.currentThread().isInterrupted()) {
                             break;
                         }
 
-                        if (x == y) {
+                        if (y == x) {
                             throw new IllegalArgumentException();
                         }
 
                         if (existsKnowledge()) {
-                            if (getKnowledge().isForbidden(x.getName(), y.getName()) && getKnowledge().isForbidden(y.getName(), x.getName())) {
+                            if (getKnowledge().isForbidden(y.getName(), x.getName()) && getKnowledge().isForbidden(x.getName(), y.getName())) {
                                 continue;
                             }
 
-                            if (invalidSetByKnowledge(y, emptySet)) {
+                            if (invalidSetByKnowledge(x, emptySet)) {
                                 continue;
                             }
                         }
 
-                        if (adjacencies != null && !adjacencies.isAdjacentTo(x, y)) {
+                        if (initialGraph != null && !initialGraph.isAdjacentTo(x, y)) {
                             continue;
                         }
 
+//                        calculateArrowsForward(y, x);
                         calculateArrowsForward(x, y);
                     }
                 }
@@ -917,7 +919,7 @@ public final class Fges implements GraphSearch, GraphScorer {
                             }
                         }
 
-                        if (adjacencies != null && !adjacencies.isAdjacentTo(x, y)) {
+                        if (initialGraph != null && !initialGraph.isAdjacentTo(x, y)) {
                             continue;
                         }
 
@@ -1166,7 +1168,7 @@ public final class Fges implements GraphSearch, GraphScorer {
                     }
 
                     for (Node w : adj) {
-                        if (adjacencies != null && !(adjacencies.isAdjacentTo(w, x))) {
+                        if (initialGraph != null && !(initialGraph.isAdjacentTo(w, x))) {
                             continue;
                         }
 
@@ -1201,7 +1203,7 @@ public final class Fges implements GraphSearch, GraphScorer {
         if (mode == Mode.heuristicSpeedup && !effectEdgesGraph.isAdjacentTo(a, b)) {
             return;
         }
-        if (adjacencies != null && !adjacencies.isAdjacentTo(a, b)) {
+        if (initialGraph != null && !initialGraph.isAdjacentTo(a, b)) {
             return;
         }
         this.neighbors.put(b, getNeighbors(b));
