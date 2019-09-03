@@ -1329,7 +1329,7 @@ public class Comparison {
                 + " simulationWrapper: " + simulationWrapper.getDescription());
 
         long start = System.currentTimeMillis();
-        Graph out;
+        Graph graphOut;
 
         try {
             Algorithm algorithm = algorithmWrapper.getAlgorithm();
@@ -1362,11 +1362,11 @@ public class Comparison {
                 }
 
                 Parameters _params = algorithmWrapper.getAlgorithmSpecificParameters();
-                out = ((MultiDataSetAlgorithm) algorithm).search(dataModels, _params);
+                graphOut = ((MultiDataSetAlgorithm) algorithm).search(dataModels, _params);
             } else {
                 DataModel dataModel = copyData ? data.copy() : data;
                 Parameters _params = algorithmWrapper.getAlgorithmSpecificParameters();
-                out = algorithm.search(dataModel, _params);
+                graphOut = algorithm.search(dataModel, _params);
             }
         } catch (Exception e) {
             System.out.println("Could not run " + algorithmWrapper.getDescription());
@@ -1381,10 +1381,10 @@ public class Comparison {
 
         long elapsed = stop - start;
 
-        saveGraph(resultsPath, out, run.getRunIndex(), simIndex, algIndex, algorithmWrapper, elapsed);
+        saveGraph(resultsPath, graphOut, run.getRunIndex(), simIndex, algIndex, algorithmWrapper, elapsed);
 
         if (trueGraph != null) {
-            out = GraphUtils.replaceNodes(out, trueGraph.getNodes());
+            graphOut = GraphUtils.replaceNodes(graphOut, trueGraph.getNodes());
         }
 
         if (algorithmWrapper.getAlgorithm() instanceof ExternalAlgorithm) {
@@ -1412,7 +1412,7 @@ public class Comparison {
             }
 
 //        Graph comparisonGraph = trueGraph == null ? null : algorithmSimulationWrapper.getComparisonGraph(trueGraph);
-            est[0] = new EdgeListGraph(out);
+            est[0] = new EdgeListGraph(graphOut);
             graphTypeUsed[0] = true;
 
             if (data.isMixed()) {
