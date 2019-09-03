@@ -1,16 +1,17 @@
-package edu.cmu.tetrad.algcomparison.simulation;
+package edu.cmu.tetrad.data.simulation;
 
+import edu.cmu.tetrad.algcomparison.simulation.Simulation;
 import edu.cmu.tetrad.algcomparison.utils.HasParameterValues;
 import edu.cmu.tetrad.annotation.Experimental;
-import edu.cmu.tetrad.data.DataModel;
-import edu.cmu.tetrad.data.DataReader;
-import edu.cmu.tetrad.data.DataSet;
-import edu.cmu.tetrad.data.DataType;
+import edu.cmu.tetrad.data.*;
+import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
+import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -18,7 +19,7 @@ import java.util.List;
  * @author jdramsey
  */
 @Experimental
-public class LoadContinuousDataAndSingleGraph implements Simulation, HasParameterValues {
+public class LoadContinuousDataSmithSim implements Simulation, HasParameterValues {
     static final long serialVersionUID = 23L;
     private String path;
     private Graph graph = null;
@@ -26,7 +27,7 @@ public class LoadContinuousDataAndSingleGraph implements Simulation, HasParamete
     private List<String> usedParameters = new ArrayList<>();
     private Parameters parametersValues = new Parameters();
 
-    public LoadContinuousDataAndSingleGraph(String path) {
+    public LoadContinuousDataSmithSim(String path) {
         this.path = path;
         String structure = new File(path).getName();
         parametersValues.set("structure", structure);
@@ -36,7 +37,7 @@ public class LoadContinuousDataAndSingleGraph implements Simulation, HasParamete
     public void createData(Parameters parameters) {
         this.dataSets = new ArrayList<>();
 
-        File dir = new File(path + "/data_noise");
+        File dir = new File(path + "/data");
 
         if (dir.exists()) {
             File[] files = dir.listFiles();
@@ -45,7 +46,8 @@ public class LoadContinuousDataAndSingleGraph implements Simulation, HasParamete
                 if (!file.getName().endsWith(".txt")) continue;
                 System.out.println("Loading data from " + file.getAbsolutePath());
                 DataReader reader = new DataReader();
-                reader.setVariablesSupplied(true);
+                reader.setVariablesSupplied(false);
+                reader.setDelimiter(DelimiterType.COMMA);
                 try {
                     DataSet dataSet = reader.parseTabular(file);
                     dataSets.add(dataSet);
@@ -60,20 +62,21 @@ public class LoadContinuousDataAndSingleGraph implements Simulation, HasParamete
         if (dir2.exists()) {
             File[] files = dir2.listFiles();
 
-            if (files.length != 1) {
-                throw new IllegalArgumentException("Expecting exactly one graph file.");
-            }
+            for (File file : files) {
+                if (!file.getName().endsWith(".txt")) continue;
 
-            File file = files[0];
-
-            System.out.println("Loading graph from " + file.getAbsolutePath());
-            this.graph = GraphUtils.loadGraphTxt(file);
+                System.out.println("Loading graph from " + file.getAbsolutePath());
+                this.graph = readGraph(file);
+//            this.graph = GraphUtils.loadGraphTxt(file);
 
 //            if (!graph.isAdjacentTo(graph.getNode("X3"), graph.getNode("X4"))) {
 //                graph.addUndirectedEdge(graph.getNode("X3"), graph.getNode("X4"));
 //            }
 
-            GraphUtils.circleLayout(this.graph, 225, 200, 150);
+                GraphUtils.circleLayout(this.graph, 225, 200, 150);
+
+                break;
+            }
         }
 
         if (parameters.get(Params.NUM_RUNS) != null) {
@@ -123,5 +126,32 @@ public class LoadContinuousDataAndSingleGraph implements Simulation, HasParamete
     @Override
     public Parameters getParameterValues() {
         return parametersValues;
+    }
+
+
+    public Graph readGraph(File file) {
+        try {
+            DataReader reader = new DataReader();
+            reader.setVariablesSupplied(false);
+            reader.setDelimiter(DelimiterType.COMMA);
+
+            DataSet data = reader.parseTabular(file);
+            List<Node> variables = data.getVariables();
+            Graph graph = new EdgeListGraph(variables);
+
+            for (int i = 0; i < variables.size(); i++) {
+                for (int j = 0; j < variables.size(); j++) {
+                    if (i == j) continue;
+
+                    if (data.getDouble(i, j) != 0) {
+                        graph.addDirectedEdge(variables.get(i), variables.get(j));
+                    }
+                }
+            }
+
+            return graph;
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 }
