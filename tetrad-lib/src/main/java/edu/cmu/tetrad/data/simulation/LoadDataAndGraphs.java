@@ -1,12 +1,20 @@
 package edu.cmu.tetrad.data.simulation;
 
 import edu.cmu.tetrad.algcomparison.simulation.Simulation;
-import edu.cmu.tetrad.data.*;
+import edu.cmu.tetrad.data.DataModel;
+import edu.cmu.tetrad.data.DataReader;
+import edu.cmu.tetrad.data.DataSet;
+import edu.cmu.tetrad.data.DataType;
+import edu.cmu.tetrad.data.DelimiterType;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -14,6 +22,7 @@ import java.util.List;
  * @author jdramsey
  */
 public class LoadDataAndGraphs implements Simulation {
+
     static final long serialVersionUID = 23L;
     private String path;
     private List<Graph> graphs = new ArrayList<>();
@@ -21,8 +30,11 @@ public class LoadDataAndGraphs implements Simulation {
     private List<String> usedParameters = new ArrayList<>();
     private String description = "";
 
+    private transient PrintStream stdout;
+
     public LoadDataAndGraphs(String path) {
         this.path = path;
+        this.stdout = stdout;
     }
 
     @Override
@@ -36,7 +48,7 @@ public class LoadDataAndGraphs implements Simulation {
                 for (int i = 0; i < numDataSets; i++) {
                     try {
                         File file2 = new File(path + "/graph/graph." + (i + 1) + ".txt");
-                        System.out.println("Loading graph from " + file2.getAbsolutePath());
+                        stdout.println("Loading graph from " + file2.getAbsolutePath());
                         this.graphs.add(GraphUtils.loadGraphTxt(file2));
                     } catch (Exception e) {
                         this.graphs.add(null);
@@ -46,15 +58,14 @@ public class LoadDataAndGraphs implements Simulation {
 
                     File file1 = new File(path + "/data/data." + (i + 1) + ".txt");
 
-                    System.out.println("Loading data from " + file1.getAbsolutePath());
+                    stdout.println("Loading data from " + file1.getAbsolutePath());
 
-                    DataReader dataReader = new DataReader() ;
+                    DataReader dataReader = new DataReader();
                     dataReader.setVariablesSupplied(true);
                     dataReader.setDelimiter(DelimiterType.TAB);
                     dataReader.setMaxIntegralDiscrete(parameters.getInt("maxDistinctValuesDiscrete"));
 
                     // Header in first row or not
-
                     // Set comment marker
                     dataReader.setCommentMarker("//");
 
@@ -80,7 +91,9 @@ public class LoadDataAndGraphs implements Simulation {
 
                 line = r.readLine();
 
-                if (line != null) this.description = line;
+                if (line != null) {
+                    this.description = line;
+                }
 
                 while ((line = r.readLine()) != null) {
                     if (line.contains(" = ")) {
@@ -93,11 +106,11 @@ public class LoadDataAndGraphs implements Simulation {
                             double _value = Double.parseDouble(value);
                             parameters.set(key, _value);
                         } catch (NumberFormatException e) {
-                        	if(value.equalsIgnoreCase("true") || value.equalsIgnoreCase("false")){
+                            if (value.equalsIgnoreCase("true") || value.equalsIgnoreCase("false")) {
                                 parameters.set(key, Boolean.valueOf(value));
-                        	}else{
+                            } else {
                                 parameters.set(key, value);
-                        	}
+                            }
                         }
                     }
                 }
@@ -159,16 +172,32 @@ public class LoadDataAndGraphs implements Simulation {
         boolean mixed = false;
 
         for (DataSet dataSet : dataSets) {
-            if (dataSet.isContinuous()) continuous = true;
-            if (dataSet.isDiscrete()) discrete = true;
-            if (dataSet.isMixed()) mixed = true;
+            if (dataSet.isContinuous()) {
+                continuous = true;
+            }
+            if (dataSet.isDiscrete()) {
+                discrete = true;
+            }
+            if (dataSet.isMixed()) {
+                mixed = true;
+            }
         }
 
-        if (mixed) return DataType.Mixed;
-        else if (continuous && discrete) return DataType.Mixed;
-        else if (continuous) return DataType.Continuous;
-        else if (discrete) return DataType.Discrete;
+        if (mixed) {
+            return DataType.Mixed;
+        } else if (continuous && discrete) {
+            return DataType.Mixed;
+        } else if (continuous) {
+            return DataType.Continuous;
+        } else if (discrete) {
+            return DataType.Discrete;
+        }
 
         return DataType.Mixed;
     }
+
+    public void setStdout(PrintStream stdout) {
+        this.stdout = stdout;
+    }
+
 }
