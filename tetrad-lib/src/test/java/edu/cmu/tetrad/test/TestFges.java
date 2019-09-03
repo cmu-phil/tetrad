@@ -297,7 +297,7 @@ public class TestFges {
     }
 
     @Test
-    public void testFgesMbFromGraph() {
+    public void testFgesFromGraph() {
         RandomUtil.getInstance().setSeed(1450184147770L);
 
         int numNodes = 20;
@@ -309,25 +309,13 @@ public class TestFges {
             GraphScore fgesScore = new GraphScore(dag);
 
             Fges fges = new Fges(fgesScore);
-            Graph pattern1 = fges.search();
+            fges.setFaithfulnessAssumed(false);
+            Graph pattern = fges.search();
 
-            Node x1 = fgesScore.getVariable("X1");
+            Graph truePattern = SearchGraphUtils.patternForDag(dag);
 
-            Set<Node> mb = new HashSet<>();
-            mb.add(x1);
 
-            mb.addAll(pattern1.getAdjacentNodes(x1));
-
-            for (Node child : pattern1.getChildren(x1)) {
-                mb.addAll(pattern1.getParents(child));
-            }
-
-            Graph mb1 = pattern1.subgraph(new ArrayList<>(mb));
-
-            FgesMb fgesMb = new FgesMb(fgesScore);
-            Graph mb2 = fgesMb.search(x1);
-
-            assertEquals(mb1, mb2);
+            assertEquals(truePattern, pattern);
         }
     }
 

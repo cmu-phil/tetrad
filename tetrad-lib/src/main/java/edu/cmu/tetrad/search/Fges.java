@@ -247,7 +247,6 @@ public final class Fges implements GraphSearch, GraphScorer {
         if (faithfulnessAssumed) {
             initializeForwardEdgesFromEmptyGraph(getVariables());
 
-            // Do forward search.
             this.mode = Mode.heuristicSpeedup;
             fes();
             bes();
@@ -256,23 +255,9 @@ public final class Fges implements GraphSearch, GraphScorer {
             initializeTwoStepEdges(getVariables());
             fes();
             bes();
-//
-//            initializeTwoStepEdges(getVariables());
-//            fes();
-//            bes();
-
-//            initializeTwoStepEdges(getVariables());
-//            fes();
-//            bes();
-//
-//            initializeTwoStepEdges(getVariables());
-//            fes();
-//            bes();
-
         } else {
             initializeForwardEdgesFromEmptyGraph(getVariables());
 
-            // Do forward search.
             this.mode = Mode.heuristicSpeedup;
             fes();
             bes();
@@ -828,7 +813,6 @@ public final class Fges implements GraphSearch, GraphScorer {
                             continue;
                         }
 
-//                        calculateArrowsForward(y, x);
                         calculateArrowsForward(x, y);
                     }
                 }
@@ -899,27 +883,28 @@ public final class Fges implements GraphSearch, GraphScorer {
                     // We want to recapture the variables that would have been effect edges if paths hadn't
                     // exactly canceled. These are variables X which are d-connected to the target Y where
                     // X--Y was noe identified as an effect edge earlier.
-                    Node y = nodes.get(i);
-                    Set<Node> D = new HashSet<>(getUnconditionallyDconnectedVars(y, graph));
-                    D.remove(y);
-                    D.removeAll(effectEdgesGraph.getAdjacentNodes(y));
+                    Node x = nodes.get(i);
+                    Set<Node> D = new HashSet<>(getUnconditionallyDconnectedVars(x, graph));
+                    D.remove(x);
+//                    D.removeAll(effectEdgesGraph.getAdjacentNodes(x));
+                    D.removeAll(graph.getAdjacentNodes(x));
 
-                    for (Node x : D) {
+                    for (Node y : D) {
                         if (Thread.currentThread().isInterrupted()) {
                             break;
                         }
 
                         if (existsKnowledge()) {
-                            if (getKnowledge().isForbidden(x.getName(), y.getName()) && getKnowledge().isForbidden(y.getName(), x.getName())) {
+                            if (getKnowledge().isForbidden(y.getName(), x.getName()) && getKnowledge().isForbidden(x.getName(), y.getName())) {
                                 continue;
                             }
 
-                            if (invalidSetByKnowledge(y, emptySet)) {
+                            if (invalidSetByKnowledge(x, emptySet)) {
                                 continue;
                             }
                         }
 
-                        if (initialGraph != null && !initialGraph.isAdjacentTo(x, y)) {
+                        if (initialGraph != null && !initialGraph.isAdjacentTo(y, x)) {
                             continue;
                         }
 
