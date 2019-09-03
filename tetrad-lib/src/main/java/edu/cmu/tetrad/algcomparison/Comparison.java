@@ -239,6 +239,8 @@ public class Comparison {
             Statistics statistics, Parameters parameters) {
         this.resultsPath = resultsPath;
 
+        PrintStream stdout = (PrintStream) parameters.get("printStream", System.out);
+
         // Create output file.
         try {
             File dir = new File(resultsPath);
@@ -320,7 +322,7 @@ public class Comparison {
                 DataType algDataType = algorithmWrapper.getDataType();
                 DataType simDataType = simulationWrapper.getDataType();
                 if (!(algDataType == DataType.Mixed || (algDataType == simDataType))) {
-                    System.out.println("Type mismatch: " + algorithmWrapper.getDescription()
+                    stdout.println("Type mismatch: " + algorithmWrapper.getDescription()
                             + " / " + simulationWrapper.getDescription());
                 }
 
@@ -339,7 +341,7 @@ public class Comparison {
 
         // Run all of the algorithms and compile statistics.
         double[][][][] allStats = calcStats(algorithmSimulationWrappers, algorithmWrappers, simulationWrappers,
-                statistics, numRuns);
+                statistics, numRuns, stdout);
 
         // Print out the preliminary information for statistics types, etc.
         if (allStats != null) {
@@ -1008,7 +1010,7 @@ public class Comparison {
 
     private double[][][][] calcStats(final List<AlgorithmSimulationWrapper> algorithmSimulationWrappers,
             List<AlgorithmWrapper> algorithmWrappers, List<SimulationWrapper> simulationWrappers,
-            Statistics statistics, int numRuns) {
+            Statistics statistics, int numRuns, PrintStream stdout) {
         int numGraphTypes = 4;
 
         graphTypeUsed = new boolean[4];
@@ -1024,7 +1026,7 @@ public class Comparison {
                 Run run = new Run(algSimIndex, runIndex, index++, algorithmSimulationWrapper);
                 AlgorithmTask task = new AlgorithmTask(algorithmSimulationWrappers,
                         algorithmWrappers, simulationWrappers,
-                        statistics, numGraphTypes, allStats, run);
+                        statistics, numGraphTypes, allStats, run, stdout);
 //                task.compute();
                 tasks.add(task);
             }
@@ -1244,10 +1246,11 @@ public class Comparison {
         private int numGraphTypes;
         private double[][][][] allStats;
         private final Run run;
+        private final PrintStream stdout;
 
         public AlgorithmTask(List<AlgorithmSimulationWrapper> algorithmSimulationWrappers,
                 List<AlgorithmWrapper> algorithmWrappers, List<SimulationWrapper> simulationWrappers,
-                Statistics statistics, int numGraphTypes, double[][][][] allStats, Run run) {
+                Statistics statistics, int numGraphTypes, double[][][][] allStats, Run run, PrintStream stdout) {
             this.algorithmSimulationWrappers = algorithmSimulationWrappers;
             this.simulationWrappers = simulationWrappers;
             this.algorithmWrappers = algorithmWrappers;
@@ -1255,12 +1258,13 @@ public class Comparison {
             this.numGraphTypes = numGraphTypes;
             this.allStats = allStats;
             this.run = run;
+            this.stdout = stdout;
         }
 
         @Override
         protected Boolean compute() {
             doRun(algorithmSimulationWrappers, algorithmWrappers,
-                    simulationWrappers, statistics, numGraphTypes, allStats, run);
+                    simulationWrappers, statistics, numGraphTypes, allStats, run, stdout);
             return true;
         }
     }
@@ -1314,10 +1318,10 @@ public class Comparison {
     private void doRun(List<AlgorithmSimulationWrapper> algorithmSimulationWrappers,
             List<AlgorithmWrapper> algorithmWrappers, List<SimulationWrapper> simulationWrappers,
             Statistics statistics,
-            int numGraphTypes, double[][][][] allStats, Run run) {
-        System.out.println();
-        System.out.println("Run " + (run.getRunIndex() + 1));
-        System.out.println();
+            int numGraphTypes, double[][][][] allStats, Run run, PrintStream stdout) {
+        stdout.println();
+        stdout.println("Run " + (run.getRunIndex() + 1));
+        stdout.println();
 
         AlgorithmSimulationWrapper algorithmSimulationWrapper = algorithmSimulationWrappers.get(run.getAlgSimIndex());
         AlgorithmWrapper algorithmWrapper = algorithmSimulationWrapper.getAlgorithmWrapper();
@@ -1325,7 +1329,7 @@ public class Comparison {
         DataModel data = simulationWrapper.getDataModel(run.getRunIndex());
         Graph trueGraph = simulationWrapper.getTrueGraph(run.getRunIndex());
 
-        System.out.println((run.getAlgSimIndex() + 1) + ". " + algorithmWrapper.getDescription()
+        stdout.println((run.getAlgSimIndex() + 1) + ". " + algorithmWrapper.getDescription()
                 + " simulationWrapper: " + simulationWrapper.getDescription());
 
         long start = System.currentTimeMillis();
@@ -1369,7 +1373,7 @@ public class Comparison {
                 graphOut = algorithm.search(dataModel, _params);
             }
         } catch (Exception e) {
-            System.out.println("Could not run " + algorithmWrapper.getDescription());
+            stdout.println("Could not run " + algorithmWrapper.getDescription());
             e.printStackTrace();
             return;
         }
@@ -1381,7 +1385,7 @@ public class Comparison {
 
         long elapsed = stop - start;
 
-        saveGraph(resultsPath, graphOut, run.getRunIndex(), simIndex, algIndex, algorithmWrapper, elapsed);
+        saveGraph(resultsPath, graphOut, run.getRunIndex(), simIndex, algIndex, algorithmWrapper, elapsed, stdout);
 
         if (trueGraph != null) {
             graphOut = GraphUtils.replaceNodes(graphOut, trueGraph.getNodes());
@@ -1467,7 +1471,7 @@ public class Comparison {
     }
 
     private void saveGraph(String resultsPath, Graph graph, int i, int simIndex, int algIndex,
-            AlgorithmWrapper algorithmWrapper, long elapsed) {
+            AlgorithmWrapper algorithmWrapper, long elapsed, PrintStream stdout) {
         if (!saveGraphs) {
             return;
         }
@@ -1492,12 +1496,12 @@ public class Comparison {
             }
 
             PrintStream out = new PrintStream(file);
-            System.out.println("Saving graph to " + file.getAbsolutePath());
+            stdout.println("Saving graph to " + file.getAbsolutePath());
             out.println(graph);
             out.close();
 
             PrintStream outElapsed = new PrintStream(fileElapsed);
-//            System.out.println("Saving graph to " + file.getAbsolutePath());
+//            stdout.println("Saving graph to " + file.getAbsolutePath());
             outElapsed.println(elapsed);
             outElapsed.close();
         } catch (FileNotFoundException e) {
