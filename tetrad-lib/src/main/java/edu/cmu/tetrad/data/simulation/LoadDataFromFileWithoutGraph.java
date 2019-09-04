@@ -1,5 +1,6 @@
-package edu.cmu.tetrad.algcomparison.simulation;
+package edu.cmu.tetrad.data.simulation;
 
+import edu.cmu.tetrad.algcomparison.simulation.Simulation;
 import edu.cmu.tetrad.algcomparison.statistic.utils.SimulationPath;
 import edu.cmu.tetrad.algcomparison.utils.ParameterValues;
 import edu.cmu.tetrad.data.DataModel;
