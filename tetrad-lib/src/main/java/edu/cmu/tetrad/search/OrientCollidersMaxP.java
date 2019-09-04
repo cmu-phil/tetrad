@@ -203,11 +203,11 @@ public final class OrientCollidersMaxP {
         double p = 0;
         List<Node> S = null;
 
-        double pSum1 = 0.0;
-        double pSum2 = 0.0;
-
-        int count1 = 0;
-        int count2 = 0;
+//        double pSum1 = 0.0;
+//        double pSum2 = 0.0;
+//
+//        int count1 = 0;
+//        int count2 = 0;
 
         DepthChoiceGenerator cg1 = new DepthChoiceGenerator(adja.size(), depth);
         int[] comb2;
@@ -220,22 +220,22 @@ public final class OrientCollidersMaxP {
             List<Node> s = GraphUtils.asList(comb2, adja);
 
             independenceTest.isIndependent(a, c, s);
-            double _p = independenceTest.getPValue();
+            double _p = independenceTest.getPValue() + 0.01 * s.size();
 
             if (_p > p) {
                 p = _p;
                 S = s;
             }
 
-            if (_p < independenceTest.getAlpha()) continue;
-
-            if (s.contains(b)) {
-                pSum1 += p;
-                count1++;
-            } else {
-                pSum2 += p;
-                count2++;
-            }
+//            if (_p < independenceTest.getAlpha()) continue;
+//
+//            if (s.contains(b)) {
+//                pSum1 += p;
+//                count1++;
+//            } else {
+//                pSum2 += p;
+//                count2++;
+//            }
         }
 
         DepthChoiceGenerator cg2 = new DepthChoiceGenerator(adjc.size(), depth);
@@ -249,26 +249,26 @@ public final class OrientCollidersMaxP {
             List<Node> s = GraphUtils.asList(comb3, adjc);
 
             independenceTest.isIndependent(a, c, s);
-            double _p = independenceTest.getPValue();
+            double _p = independenceTest.getPValue() + 0.01 * s.size();
 
             if (_p > p) {
                 p = _p;
                 S = s;
             }
 
-            if (_p < independenceTest.getAlpha()) continue;
-
-            if (s.contains(b)) {
-                pSum1 += p;
-                count1++;
-            } else {
-                pSum2 += p;
-                count2++;
-            }
+//            if (_p < independenceTest.getAlpha()) continue;
+//
+//            if (s.contains(b)) {
+//                pSum1 += p;
+//                count1++;
+//            } else {
+//                pSum2 += p;
+//                count2++;
+//            }
         }
 
-        double avg1 = pSum1 / count1;
-        double avg2 = pSum2 / count2;
+//        double avg1 = pSum1 / count1;
+//        double avg2 = pSum2 / count2;
 
 //        if (avg2 > avg1) {
 //            scores.put(new Triple(a, b, c), avg2);

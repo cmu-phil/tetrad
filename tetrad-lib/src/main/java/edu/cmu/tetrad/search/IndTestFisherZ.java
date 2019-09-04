@@ -71,6 +71,7 @@ public final class IndTestFisherZ implements IndependenceTest {
     private double cutoff = Double.NaN;
     private NormalDistribution normal = new NormalDistribution(0, 1);
     private boolean sellke = false;
+    private double r;
 
     //==========================CONSTRUCTORS=============================//
 
@@ -173,6 +174,7 @@ public final class IndTestFisherZ implements IndependenceTest {
 
         try {
             r = partialCorrelation(x, y, z);
+            this.r = r;
         } catch (SingularMatrixException e) {
             System.out.println(SearchLogUtils.determinismDetected(z, x));
             this.fisherZ = Double.POSITIVE_INFINITY;
@@ -229,6 +231,10 @@ public final class IndTestFisherZ implements IndependenceTest {
      */
     public double getPValue() {
         return 2.0 * (1.0 - normal.cumulativeProbability(abs(fisherZ)));
+    }
+
+    public double getBic() {
+        return -sampleSize() * Math.log(1.0 - r * r) - Math.log(sampleSize());
     }
 
     /**
