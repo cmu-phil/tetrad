@@ -233,6 +233,24 @@ public final class IndTestFisherZ implements IndependenceTest {
         return 2.0 * (1.0 - normal.cumulativeProbability(abs(fisherZ)));
     }
 
+    public double getPValue(Node x, Node y, List<Node> z) {
+        int n = sampleSize();
+        double r;
+
+        try {
+            r = partialCorrelation(x, y, z);
+        } catch (SingularMatrixException e) {
+            System.out.println(SearchLogUtils.determinismDetected(z, x));
+            this.fisherZ = Double.POSITIVE_INFINITY;
+            return Double.NaN;
+        }
+
+        double q = 0.5 * (log(1.0 + r) - log(1.0 - r));
+        double fisherZ = sqrt((double) (n + 3 + z.size())) * abs(q);
+        return 2.0 * (1.0 - normal.cumulativeProbability(abs(fisherZ)));
+    }
+
+
     public double getBic() {
         return -sampleSize() * Math.log(1.0 - r * r) - Math.log(sampleSize());
     }

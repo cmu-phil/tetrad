@@ -37,10 +37,7 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.Triple;
-import edu.cmu.tetrad.util.ChoiceGenerator;
-import edu.cmu.tetrad.util.CombinationGenerator;
-import edu.cmu.tetrad.util.StatUtils;
-import edu.cmu.tetrad.util.TetradLogger;
+import edu.cmu.tetrad.util.*;
 
 import java.io.PrintStream;
 import java.text.DecimalFormat;
@@ -3242,6 +3239,58 @@ public final class SearchGraphUtils {
         return error;
     }
 
+    static SearchGraphUtils.MaxPSepset maxPSepset(Node a, Node c, int depth, Graph graph, IndependenceTest test) {
+        List<Node> adja = graph.getAdjacentNodes(a);
+        List<Node> adjc = graph.getAdjacentNodes(c);
+        adja.remove(c);
+        adjc.remove(a);
+
+        double p = 0;
+        List<Node> S = null;
+
+        depth = depth == -1 ? 1000 : depth;
+
+        DepthChoiceGenerator cg1 = new DepthChoiceGenerator(adja.size(), depth);
+        int[] comb2;
+
+        while ((comb2 = cg1.next()) != null) {
+            if (Thread.currentThread().isInterrupted()) {
+                break;
+            }
+
+            List<Node> s = GraphUtils.asList(comb2, adja);
+
+            test.isIndependent(a, c, s);
+            double _p = test.getPValue();
+
+            if (_p > p) {
+                p = _p;
+                S = s;
+            }
+        }
+
+        DepthChoiceGenerator cg2 = new DepthChoiceGenerator(adjc.size(), depth);
+        int[] comb3;
+
+        while ((comb3 = cg2.next()) != null) {
+            if (Thread.currentThread().isInterrupted()) {
+                break;
+            }
+
+            List<Node> s = GraphUtils.asList(comb3, adjc);
+
+            test.isIndependent(a, c, s);
+            double _p = test.getPValue();
+
+            if (_p > p) {
+                p = _p;
+                S = s;
+            }
+        }
+
+        return new MaxPSepset(S, p);
+    }
+
     private static class AhdCounts {
 
         private int ahdFp = 0;
@@ -3546,5 +3595,23 @@ public final class SearchGraphUtils {
         }
 
         throw new IllegalStateException("Can do that that reorientation.");
+    }
+
+    public static class MaxPSepset {
+        private List<Node> S;
+        private double p;
+
+        public MaxPSepset(List<Node> S, double p) {
+            this.S = S;
+            this.p = p;
+        }
+
+        public List<Node> getS() {
+            return S;
+        }
+
+        public double getP() {
+            return p;
+        }
     }
 }

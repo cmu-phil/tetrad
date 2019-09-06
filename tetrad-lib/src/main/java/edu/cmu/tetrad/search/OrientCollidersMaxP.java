@@ -21,19 +21,14 @@
 
 package edu.cmu.tetrad.search;
 
-import edu.cmu.tetrad.data.CovarianceMatrix;
-import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.IKnowledge;
 import edu.cmu.tetrad.data.Knowledge2;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.ChoiceGenerator;
-import edu.cmu.tetrad.util.DepthChoiceGenerator;
-import edu.cmu.tetrad.util.ForkJoinPoolInstance;
 import edu.cmu.tetrad.util.TetradLogger;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.RecursiveTask;
 
 /**
  * This is an optimization of the CCD (Cyclic Causal Discovery) algorithm by Thomas Richardson.
@@ -151,11 +146,15 @@ public final class OrientCollidersMaxP {
         }
 
         for (Triple triple : tripleList) {
-            Node a = triple.getX();
-            Node b = triple.getY();
-            Node c = triple.getZ();
+            if (scores.get(triple) > independenceTest.getAlpha()) {
+                Node a = triple.getX();
+                Node b = triple.getY();
+                Node c = triple.getZ();
 
-            orientCollider(graph, a, b, c, getConflictRule());
+                if (!(graph.getEndpoint(b, a) == Endpoint.ARROW || graph.getEndpoint(b, c) == Endpoint.ARROW)) {
+                    orientCollider(graph, a, b, c, getConflictRule());
+                }
+            }
         }
     }
 
@@ -195,84 +194,11 @@ public final class OrientCollidersMaxP {
     }
 
     private void testColliderMaxP(Graph graph, Map<Triple, Double> scores, Node a, Node b, Node c) {
-        List<Node> adja = graph.getAdjacentNodes(a);
-        List<Node> adjc = graph.getAdjacentNodes(c);
-        adja.remove(c);
-        adjc.remove(a);
+        if (graph.isAdjacentTo(a, c)) return;
 
-        double p = 0;
-        List<Node> S = null;
-
-//        double pSum1 = 0.0;
-//        double pSum2 = 0.0;
-//
-//        int count1 = 0;
-//        int count2 = 0;
-
-        DepthChoiceGenerator cg1 = new DepthChoiceGenerator(adja.size(), depth);
-        int[] comb2;
-
-        while ((comb2 = cg1.next()) != null) {
-            if (Thread.currentThread().isInterrupted()) {
-                break;
-            }
-
-            List<Node> s = GraphUtils.asList(comb2, adja);
-
-            independenceTest.isIndependent(a, c, s);
-            double _p = independenceTest.getPValue() + 0.01 * s.size();
-
-            if (_p > p) {
-                p = _p;
-                S = s;
-            }
-
-//            if (_p < independenceTest.getAlpha()) continue;
-//
-//            if (s.contains(b)) {
-//                pSum1 += p;
-//                count1++;
-//            } else {
-//                pSum2 += p;
-//                count2++;
-//            }
-        }
-
-        DepthChoiceGenerator cg2 = new DepthChoiceGenerator(adjc.size(), depth);
-        int[] comb3;
-
-        while ((comb3 = cg2.next()) != null) {
-            if (Thread.currentThread().isInterrupted()) {
-                break;
-            }
-
-            List<Node> s = GraphUtils.asList(comb3, adjc);
-
-            independenceTest.isIndependent(a, c, s);
-            double _p = independenceTest.getPValue() + 0.01 * s.size();
-
-            if (_p > p) {
-                p = _p;
-                S = s;
-            }
-
-//            if (_p < independenceTest.getAlpha()) continue;
-//
-//            if (s.contains(b)) {
-//                pSum1 += p;
-//                count1++;
-//            } else {
-//                pSum2 += p;
-//                count2++;
-//            }
-        }
-
-//        double avg1 = pSum1 / count1;
-//        double avg2 = pSum2 / count2;
-
-//        if (avg2 > avg1) {
-//            scores.put(new Triple(a, b, c), avg2);
-//        }
+        SearchGraphUtils.MaxPSepset ret = SearchGraphUtils.maxPSepset(a, c, depth, graph, independenceTest);
+        List<Node> S = ret.getS();
+        double p = ret.getP();
 
         if (S != null && !S.contains(b)) {
             scores.put(new Triple(a, b, c), p);
