@@ -2,6 +2,7 @@ package edu.cmu.tetradapp.editor;
 
 import edu.cmu.tetrad.algcomparison.statistic.*;
 import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.util.TextTable;
 import edu.cmu.tetradapp.model.GraphWrapper;
 import edu.cmu.tetradapp.model.TabularComparison;
@@ -40,6 +41,8 @@ public class StatsListEditor extends JPanel {
 
         referenceGraph = referenceGraphs.get(0);
         targetGraph = targetGraphs.get(0);
+
+        targetGraph = GraphUtils.replaceNodes(targetGraph, referenceGraph.getNodes());
 
         add(getTableDisplay());
 
@@ -87,6 +90,8 @@ public class StatsListEditor extends JPanel {
         statistics.add(new MathewsCorrAdj());
         statistics.add(new MathewsCorrArrow());
         statistics.add(new SHD());
+        statistics.add(new ColliderPrecision());
+        statistics.add(new ColliderRecall());
         statistics.add(new NodesInCyclesPrecision());
         statistics.add(new NodesInCyclesRecall());
         statistics.add(new NumAmbiguousTriples());

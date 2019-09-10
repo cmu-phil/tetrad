@@ -25,8 +25,8 @@ import java.util.List;
  * @author jdramsey
  */
 @edu.cmu.tetrad.annotation.Algorithm(
-        name = "FAS-MAX",
-        command = "fas-max",
+        name = "PC-MAX2",
+        command = "pc-max2",
         algoType = AlgType.produce_undirected_graphs
 )
 @Bootstrapping
@@ -94,7 +94,7 @@ public class FasMax implements Algorithm, HasKnowledge, TakesIndependenceWrapper
 
     @Override
     public String getDescription() {
-        return "Fast adjacency search (FAS) using " + test.getDescription();
+        return "PC-Max2, " + test.getDescription();
     }
 
     @Override

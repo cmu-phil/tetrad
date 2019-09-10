@@ -368,6 +368,18 @@ public class MeekRules implements ImpliedOrientation {
     private void direct(Node a, Node c, Graph graph) {
         Edge before = graph.getEdge(a, c);
 
+        // Don't add unshielded colliders--these were supposed to all be oriented already.
+        for (Node x : graph.getAdjacentNodes(c)) {
+            if (x == a) continue;
+
+            if (graph.getEdge(x, c).pointsTowards(c) && !graph.isAdjacentTo(x, a)) {
+                return;
+            }
+        }
+
+        // No cycles.
+        if (graph.isAncestorOf(c, a)) return;
+
         if (knowledge != null && knowledge.isForbidden(a.getName(), c.getName())) {
             return;
         }

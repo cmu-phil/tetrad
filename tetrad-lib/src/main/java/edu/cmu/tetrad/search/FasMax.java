@@ -24,13 +24,18 @@ package edu.cmu.tetrad.search;
 import edu.cmu.tetrad.data.IKnowledge;
 import edu.cmu.tetrad.data.Knowledge2;
 import edu.cmu.tetrad.graph.*;
+import edu.cmu.tetrad.util.DepthChoiceGenerator;
 import edu.cmu.tetrad.util.TetradLogger;
+import org.apache.commons.math3.distribution.ChiSquaredDistribution;
 
 import java.io.PrintStream;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+
+import static java.lang.Math.exp;
+import static java.lang.Math.log;
 
 /**
  * Implements the "fast adjacency search" used in several causal algorithm in this package. In the fast adjacency
@@ -149,56 +154,34 @@ public class FasMax implements IFas {
         sepset = new SepsetMap();
         sepset.setReturnEmptyIfNotSet(sepsetsReturnEmptyIfNotFixed);
 
-        graph = new EdgeListGraph(nodes);
 
-        final Map<NodePair, Double> scores = new ConcurrentHashMap<>();
+        Graph reference = null;
 
-        for (int k = 0; k < 6; k++) {
+        for (int i = 0; i < 1; i++) {
+            graph = new EdgeListGraph(nodes);
+            graph = GraphUtils.completeGraph(graph);
+
+            final Map<NodePair, Double> scores = new ConcurrentHashMap<>();
+
             int d = 0;
+            boolean more;
 
             do {
-            } while (adjust(graph, d++, scores));
+                more = adjust(graph, d++, scores, reference);
+            } while (more);
+
+            final OrientCollidersMaxP orientCollidersMaxP = new OrientCollidersMaxP(test);
+            orientCollidersMaxP.setConflictRule(PcAll.ConflictRule.PRIORITY);
+            orientCollidersMaxP.setDepth(depth);
+            orientCollidersMaxP.orient(graph);
+
+            MeekRules meekRules = new MeekRules();
+            meekRules.setKnowledge(knowledge);
+            meekRules.orientImplied(graph);
+
+            reference = new EdgeListGraph(graph);
+            reference = GraphUtils.replaceNodes(reference, graph.getNodes());
         }
-
-//        List<NodePair> scoresList = new ArrayList<>(scores.keySet());
-//
-//        // Most independent ones first.
-//        scoresList.sort((o1, o2) -> Double.compare(scores.get(o2), scores.get(o1)));
-//
-//        for (NodePair pair : scoresList) {
-//            System.out.println(pair + " score = " + scores.get(pair));
-//        }
-//
-//        for (NodePair pair : scoresList) {
-//            Node a = pair.getFirst();
-//            Node c = pair.getSecond();
-//
-//            if (!graph.isAdjacentTo(a, c)) {
-//                List<Node> adj = graph.getAdjacentNodes(a);
-//                adj.retainAll(graph.getAdjacentNodes(c));
-//
-//                for (Node b : adj) {
-//                    if (scores.get(new NodePair(a, c)) > test.getAlpha()) {
-//                        if (!(graph.getEndpoint(b, a) == Endpoint.ARROW || graph.getEndpoint(b, c) == Endpoint.ARROW)) {
-//                            graph.setEndpoint(a, b, Endpoint.ARROW);
-//                            graph.setEndpoint(c, b, Endpoint.ARROW);
-//                        }
-//                    }
-//                }
-//            }
-//        }
-
-        final OrientCollidersMaxP orientCollidersMaxP = new OrientCollidersMaxP(test);
-        orientCollidersMaxP.setConflictRule(PcAll.ConflictRule.PRIORITY);
-//        orientCollidersMaxP.setUseHeuristic(false);
-//        orientCollidersMaxP.setMaxPathLength(maxPathLength);
-        orientCollidersMaxP.setDepth(depth);
-        orientCollidersMaxP.orient(graph);
-
-
-        MeekRules meekRules = new MeekRules();
-        meekRules.setKnowledge(knowledge);
-        meekRules.orientImplied(graph);
 
         this.logger.log("info", "Finishing Fast Adjacency Search.");
 
@@ -231,20 +214,20 @@ public class FasMax implements IFas {
 
     //==============================PRIVATE METHODS======================/
 
-    private boolean adjust(Graph graph, int depth, Map<NodePair, Double> scores) {
+    private boolean adjust(Graph graph, int depth, Map<NodePair, Double> scores, Graph reference) {
 
         for (int i = 0; i < graph.getNumNodes(); i++) {
             for (int j = i + 1; j < graph.getNumNodes(); j++) {
                 Node x = graph.getNodes().get(i);
                 Node y = graph.getNodes().get(j);
 
-                SearchGraphUtils.MaxPSepset max = SearchGraphUtils.maxPSepset(x, y, depth, graph, test);
+                ScoredS max = maxP(x, y, depth, graph, test);
 
-                if (graph.isAdjacentTo(x, y) && max.getP() > test.getAlpha()) {
+                if (graph.isAdjacentTo(x, y) && max.S != null) {
                     graph.removeEdge(x, y);
-                    sepset.set(x, y, max.getS());
-                    scores.put(new NodePair(x, y), max.getP());
-                } else if (!graph.isAdjacentTo(x, y) && max.getP() <= test.getAlpha()) {
+                    sepset.set(x, y, max.S);
+                    scores.put(new NodePair(x, y), max.p);
+                } else if (!graph.isAdjacentTo(x, y) && max.S == null) {
                     graph.addUndirectedEdge(x, y);
                     sepset.set(x, y, null);
                     scores.remove(new NodePair(x, y));
@@ -253,6 +236,16 @@ public class FasMax implements IFas {
         }
 
         return freeDegree(nodes, graph) > depth;
+    }
+
+    private static class ScoredS {
+        List<Node> S;
+        double p;
+
+        public ScoredS(List<Node> S, double p) {
+            this.S = S;
+            this.p = p;
+        }
     }
 
     private int freeDegree(List<Node> nodes, Graph graph) {
@@ -274,15 +267,13 @@ public class FasMax implements IFas {
         return max;
     }
 
-    private List<Node> possibleParents(Node x, List<Node> adjx,
-                                       IKnowledge knowledge) {
+    private static List<Node> possibleParents(Node x, List<Node> adjx,
+                                              Graph reference) {
         List<Node> possibleParents = new LinkedList<>();
-        String _x = x.getName();
 
         for (Node z : adjx) {
-            String _z = z.getName();
-
-            if (possibleParentOf(_z, _x, knowledge)) {
+            Edge edge = reference.getEdge(x, z);
+            if (edge != null && !edge.pointsTowards(z)) {
                 possibleParents.add(z);
             }
         }
@@ -290,8 +281,8 @@ public class FasMax implements IFas {
         return possibleParents;
     }
 
-    private boolean possibleParentOf(String z, String x, IKnowledge knowledge) {
-        return !knowledge.isForbidden(z, x) && !knowledge.isRequired(x, z);
+    private static boolean possibleParentOf(String z, String x, IKnowledge knowledge) {
+        return !knowledge.isForbidden(z, x);// && !knowledge.isRequired(x, z);
     }
 
     public int getNumIndependenceTests() {
@@ -373,5 +364,99 @@ public class FasMax implements IFas {
     public void setSepsetsReturnEmptyIfNotFixed(boolean sepsetsReturnEmptyIfNotFixed) {
         this.sepsetsReturnEmptyIfNotFixed = sepsetsReturnEmptyIfNotFixed;
     }
+
+
+    public static synchronized ScoredS maxP(Node a, Node c, int depth, Graph graph, IndependenceTest test) {
+        System.out.println("--");
+        System.out.println("Calculating max sum setpset for " + a + " --- " + c + " depth = " + depth);
+
+        List<Node> adja = graph.getAdjacentNodes(a);
+        List<Node> adjc = graph.getAdjacentNodes(c);
+
+        adja.remove(c);
+        adjc.remove(a);
+
+        System.out.println("adja = " + adja);
+        System.out.println("adjc = " + adjc);
+
+        double sum = 0;
+        List<Node> S = null;
+
+        depth = depth == -1 ? 1000 : depth;
+
+        List<List<Node>> adj = new ArrayList<>();
+        adj.add(adja);
+        adj.add(adjc);
+
+        int count = 0;
+        double maxP = 0;
+
+        Set<Set<Node>> allS = new HashSet<>();
+
+        for (List<Node> _adj : adj) {
+            DepthChoiceGenerator cg1 = new DepthChoiceGenerator(_adj.size(), depth);
+            int[] comb2;
+
+            while ((comb2 = cg1.next()) != null) {
+                if (Thread.currentThread().isInterrupted()) {
+                    break;
+                }
+
+                List<Node> s = GraphUtils.asList(comb2, _adj);
+
+                if (allS.contains(new HashSet<>(s))) continue;
+                allS.add(new HashSet<>(s));
+
+                test.isIndependent(a, c, s);
+                double _p = test.getPValue();
+
+//                if (_p > test.getAlpha()) {
+                    sum += _p;//-2 * log(_p);
+                    S = s;
+                    count++;
+//                }
+
+                if (_p > maxP) {
+                    maxP = _p;
+                }
+            }
+        }
+
+        double avg = sum / count;
+
+//        double p = 0;
+//
+//        if (count > 0) {
+//            p = 1.0 - new ChiSquaredDistribution(2 * count).cumulativeProbability(sum);
+//        }
+
+        if (maxP > test.getAlpha()) {
+            return new ScoredS(S, maxP);
+        } else {
+            return new ScoredS(null, maxP);
+        }
+    }
+
+
+    private IKnowledge forbiddenKnowledge(Graph graph) {
+        IKnowledge knowledge = new Knowledge2(graph.getNodeNames());
+
+        for (Edge edge : graph.getEdges()) {
+            if (!edge.isDirected()) continue;
+            ;
+
+            Node n1 = Edges.getDirectedEdgeTail(edge);
+            Node n2 = Edges.getDirectedEdgeHead(edge);
+
+            if (n1.getName().startsWith("E_") || n2.getName().startsWith("E_")) {
+                continue;
+            }
+
+            knowledge.setForbidden(n1.getName(), n2.getName());
+        }
+
+        return knowledge;
+    }
+
 }
 
