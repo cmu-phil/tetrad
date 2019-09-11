@@ -191,7 +191,7 @@ public final class IndTestFisherZ implements IndependenceTest {
             double alpha = 1.0 / (1.0 + (1.0 / (-this.alpha * p * log(p))));
 //        double alpha = -this.alpha * p * log(p);
 
-            if (Double.isNaN(alpha)) alpha = 1;
+            if (Double.isNaN(alpha)) alpha = 0;
 
 //        System.out.println("alpha = " + alpha);
 //

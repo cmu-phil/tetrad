@@ -150,7 +150,7 @@ public class PurifySextadBased {
             impuritiesPerNode.remove(maxNode);
             eliminated.add(maxNode);
             System.out.println("Eliminated " + maxNode + " impurities = " + max +
-                    "q = " + nf.format(minP) + " maxP = " + nf.format(maxP));
+                    "q = " + nf.format(minP) + " existsSepset = " + nf.format(maxP));
         }
 
         return buildSolution(clustering, eliminated);

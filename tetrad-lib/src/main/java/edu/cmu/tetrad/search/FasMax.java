@@ -26,7 +26,6 @@ import edu.cmu.tetrad.data.Knowledge2;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.DepthChoiceGenerator;
 import edu.cmu.tetrad.util.TetradLogger;
-import org.apache.commons.math3.distribution.ChiSquaredDistribution;
 
 import java.io.PrintStream;
 import java.text.DecimalFormat;
@@ -34,7 +33,6 @@ import java.text.NumberFormat;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
-import static java.lang.Math.exp;
 import static java.lang.Math.log;
 
 /**
@@ -154,20 +152,15 @@ public class FasMax implements IFas {
         sepset = new SepsetMap();
         sepset.setReturnEmptyIfNotSet(sepsetsReturnEmptyIfNotFixed);
 
-
-        Graph reference = null;
-
         for (int i = 0; i < 1; i++) {
             graph = new EdgeListGraph(nodes);
             graph = GraphUtils.completeGraph(graph);
-
-            final Map<NodePair, Double> scores = new ConcurrentHashMap<>();
 
             int d = 0;
             boolean more;
 
             do {
-                more = adjust(graph, d++, scores, reference);
+                more = adjust(graph, d++, test);
             } while (more);
 
             final OrientCollidersMaxP orientCollidersMaxP = new OrientCollidersMaxP(test);
@@ -178,9 +171,6 @@ public class FasMax implements IFas {
             MeekRules meekRules = new MeekRules();
             meekRules.setKnowledge(knowledge);
             meekRules.orientImplied(graph);
-
-            reference = new EdgeListGraph(graph);
-            reference = GraphUtils.replaceNodes(reference, graph.getNodes());
         }
 
         this.logger.log("info", "Finishing Fast Adjacency Search.");
@@ -214,23 +204,19 @@ public class FasMax implements IFas {
 
     //==============================PRIVATE METHODS======================/
 
-    private boolean adjust(Graph graph, int depth, Map<NodePair, Double> scores, Graph reference) {
+    private boolean adjust(Graph graph, int depth, IndependenceTest test) {
 
         for (int i = 0; i < graph.getNumNodes(); i++) {
             for (int j = i + 1; j < graph.getNumNodes(); j++) {
                 Node x = graph.getNodes().get(i);
                 Node y = graph.getNodes().get(j);
 
-                ScoredS max = maxP(x, y, depth, graph, test);
+                boolean existsSepset = existsSepset(x, y, depth, graph, test);
 
-                if (graph.isAdjacentTo(x, y) && max.S != null) {
+                if (existsSepset) {
                     graph.removeEdge(x, y);
-                    sepset.set(x, y, max.S);
-                    scores.put(new NodePair(x, y), max.p);
-                } else if (!graph.isAdjacentTo(x, y) && max.S == null) {
+                } else {
                     graph.addUndirectedEdge(x, y);
-                    sepset.set(x, y, null);
-                    scores.remove(new NodePair(x, y));
                 }
             }
         }
@@ -366,7 +352,7 @@ public class FasMax implements IFas {
     }
 
 
-    public static synchronized ScoredS maxP(Node a, Node c, int depth, Graph graph, IndependenceTest test) {
+    public static synchronized boolean existsSepset(Node a, Node c, int depth, Graph graph, IndependenceTest test) {
         System.out.println("--");
         System.out.println("Calculating max sum setpset for " + a + " --- " + c + " depth = " + depth);
 
@@ -379,7 +365,6 @@ public class FasMax implements IFas {
         System.out.println("adja = " + adja);
         System.out.println("adjc = " + adjc);
 
-        double sum = 0;
         List<Node> S = null;
 
         depth = depth == -1 ? 1000 : depth;
@@ -388,10 +373,8 @@ public class FasMax implements IFas {
         adj.add(adja);
         adj.add(adjc);
 
-        int count = 0;
-        double maxP = 0;
-
         Set<Set<Node>> allS = new HashSet<>();
+        List<Double> pValues = new ArrayList<>();
 
         for (List<Node> _adj : adj) {
             DepthChoiceGenerator cg1 = new DepthChoiceGenerator(_adj.size(), depth);
@@ -410,31 +393,34 @@ public class FasMax implements IFas {
                 test.isIndependent(a, c, s);
                 double _p = test.getPValue();
 
-//                if (_p > test.getAlpha()) {
-                    sum += _p;//-2 * log(_p);
-                    S = s;
-                    count++;
-//                }
-
-                if (_p > maxP) {
-                    maxP = _p;
-                }
+                pValues.add(_p);
             }
         }
 
-        double avg = sum / count;
+        return existsSepsetFromList(pValues, test.getAlpha());
+    }
 
-//        double p = 0;
-//
-//        if (count > 0) {
-//            p = 1.0 - new ChiSquaredDistribution(2 * count).cumulativeProbability(sum);
+    public static boolean existsSepsetFromList(List<Double> pValues, double alpha) {
+        Collections.sort(pValues);
+
+        double avg = 0;
+
+        if (pValues.size() == 1) {
+            avg = log(pValues.get(0));
+        } else if (pValues.size() > 1) {
+            Double max1 = log(pValues.get(pValues.size() - 1));
+            Double next1 = log(pValues.get(pValues.size() - 2));
+            avg = (next1 + max1) / 2.;
+        }
+
+//        if (pValues.size() == 1) {
+//            avg = pValues.get(0);
+//        } else if (pValues.size() > 1) {
+//            Double next1 = pValues.get(pValues.size() - 1);
+//            avg = (next1);
 //        }
 
-        if (maxP > test.getAlpha()) {
-            return new ScoredS(S, maxP);
-        } else {
-            return new ScoredS(null, maxP);
-        }
+        return log(avg) > log(alpha);
     }
 
 

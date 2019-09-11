@@ -450,7 +450,7 @@ public class TestMimbuild2 {
 //
 //        int maxScore = 0;
 //        int maxNumMeasures = 0;
-//        double maxP = 0.0;
+//        double existsSepset = 0.0;
 //
 //        for (int r = 0; r < 1; r++) {
 //            SemIm im = new SemIm(pm, params);
@@ -529,13 +529,13 @@ public class TestMimbuild2 {
 //
 //            }
 //
-//            if (pValue > maxP) {
+//            if (pValue > existsSepset) {
 //                maxScore = shd;
-//                maxP = mimbuild.getpValue();
+//                existsSepset = mimbuild.getpValue();
 //                maxNumMeasures = numClustered(partition);
 //                System.out.println("maxNumMeasures = " + maxNumMeasures);
 //                System.out.println("maxScore = " + maxScore);
-//                System.out.println("maxP = " + maxP);
+//                System.out.println("existsSepset = " + existsSepset);
 //                System.out.println("clusters = " + clusterSizes(partition, trueClusters));
 //            }
 //
@@ -550,7 +550,7 @@ public class TestMimbuild2 {
 //
 //        System.out.println("maxNumMeasures = " + maxNumMeasures);
 //        System.out.println("maxScore = " + maxScore);
-//        System.out.println("maxP = " + maxP);
+//        System.out.println("existsSepset = " + existsSepset);
 //    }
 
 

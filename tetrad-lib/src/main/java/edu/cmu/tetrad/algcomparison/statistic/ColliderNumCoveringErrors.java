@@ -5,30 +5,27 @@ import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.graph.Graph;
 
 /**
- * The collider recall. The true positives are the number of adjacencies in both
- * the true and estimated graphs.
+ * The number of collider errors due to false covering (shielding) of colliders.
  *
  * @author jdramsey
  */
-public class ColliderRecall implements Statistic {
+public class ColliderNumCoveringErrors implements Statistic {
     static final long serialVersionUID = 23L;
 
     @Override
     public String getAbbreviation() {
-        return "CollR";
+        return "CollCovErr";
     }
 
     @Override
     public String getDescription() {
-        return "Collider Recall";
+        return "Number of collider errors due to false covering";
     }
 
     @Override
     public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
         ColliderConfusion confusion = new ColliderConfusion(trueGraph, estGraph);
-        int tp = confusion.getTp();
-        int fn = confusion.getFn();
-        return tp / (double) (tp + fn);
+        return confusion.getNumCoveringErrors();
     }
 
     @Override

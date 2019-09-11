@@ -369,10 +369,11 @@ public class MeekRules implements ImpliedOrientation {
         Edge before = graph.getEdge(a, c);
 
         // Don't add unshielded colliders--these were supposed to all be oriented already.
+        // Also, don't orient any underline as a collider.
         for (Node x : graph.getAdjacentNodes(c)) {
             if (x == a) continue;
 
-            if (graph.getEdge(x, c).pointsTowards(c) && !graph.isAdjacentTo(x, a)) {
+            if (graph.getUnderLines().contains(new Triple(c, x, a))) {
                 return;
             }
         }

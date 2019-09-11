@@ -21,18 +21,19 @@
 
 package edu.cmu.tetrad.search;
 
+import edu.cmu.tetrad.data.CovarianceMatrix;
+import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.IKnowledge;
 import edu.cmu.tetrad.data.Knowledge2;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.ChoiceGenerator;
 import edu.cmu.tetrad.util.DepthChoiceGenerator;
+import edu.cmu.tetrad.util.ForkJoinPoolInstance;
 import edu.cmu.tetrad.util.TetradLogger;
-import org.apache.commons.math3.distribution.ChiSquaredDistribution;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
-
-import static java.lang.Math.log;
+import java.util.concurrent.RecursiveTask;
 
 /**
  * This is an optimization of the CCD (Cyclic Causal Discovery) algorithm by Thomas Richardson.
@@ -87,7 +88,7 @@ public final class OrientCollidersMaxP {
     //======================================== PRIVATE METHODS ====================================//
 
     private void addColliders(Graph graph) {
-        final Map<Triple, FoundSepset> scores = new ConcurrentHashMap<>();
+        final Map<Triple, Double> scores = new ConcurrentHashMap<>();
 
         List<Node> nodes = graph.getNodes();
 
@@ -143,7 +144,7 @@ public final class OrientCollidersMaxP {
         List<Triple> tripleList = new ArrayList<>(scores.keySet());
 
         // Most independent ones first.
-        tripleList.sort((o1, o2) -> Double.compare(scores.get(o2).getP(), scores.get(o1).getP()));
+        tripleList.sort((o1, o2) -> Double.compare(scores.get(o2), scores.get(o1)));
 
         for (Triple triple : tripleList) {
             System.out.println(triple + " score = " + scores.get(triple));
@@ -154,34 +155,11 @@ public final class OrientCollidersMaxP {
             Node b = triple.getY();
             Node c = triple.getZ();
 
-            if (scores.get(triple).getType() == FoundSepset.Type.COLLIDER && !graph.isUnderlineTriple(a, b, c)
-                    && !graph.isAmbiguousTriple(a, c, b)) {
-//                graph.removeEdge(a, c);
-                orientCollider(graph, a, b, c, getConflictRule());
-            } else if (scores.get(triple).getType() == FoundSepset.Type.NONCOLLIDER
-                    && !graph.isUnderlineTriple(a, b, c)) {
-//                graph.removeEdge(a, c);
-                graph.addUnderlineTriple(a, b, c);
-            } else if (scores.get(triple).getType() == FoundSepset.Type.NEITHER) {
-//                graph.addNondirectedEdge(a, c);
-                graph.removeEdge(a, c);
-            } else if (scores.get(triple).getType() == FoundSepset.Type.AMBIGUOUS) {
-                graph.addAmbiguousTriple(a, b, c);
-            }
-
-//            if (scores.get(triple).getP() > independenceTest.getAlpha()) {
-////                Node a = triple.getX();
-////                Node b = triple.getY();
-////                Node c = triple.getZ();
-////
-////                if (!(graph.getEndpoint(b, a) == Endpoint.ARROW || graph.getEndpoint(b, c) == Endpoint.ARROW)) {
-////                    orientCollider(graph, a, b, c, getConflictRule());
-////                }
-//            }
+            orientCollider(graph, a, b, c, getConflictRule());
         }
     }
 
-    private void doNode(Graph graph, Map<Triple, FoundSepset> scores, Node b) {
+    private void doNode(Graph graph, Map<Triple, Double> scores, Node b) {
         List<Node> adjacentNodes = graph.getAdjacentNodes(b);
 
         if (adjacentNodes.size() < 2) {
@@ -216,12 +194,92 @@ public final class OrientCollidersMaxP {
         }
     }
 
-    private void testColliderMaxP(Graph graph, Map<Triple, FoundSepset> scores, Node a, Node b, Node c) {
-        FoundSepset sepset = maxPSepset(a, b, c, -1, graph, independenceTest);
-        scores.put(new Triple(a, b, c), sepset);
+    private void testColliderMaxP(Graph graph, Map<Triple, Double> scores, Node a, Node b, Node c) {
+        List<Node> adja = graph.getAdjacentNodes(a);
+        List<Node> adjc = graph.getAdjacentNodes(c);
+        adja.remove(c);
+        adjc.remove(a);
+
+        double p = 0;
+        List<Node> S = null;
+
+        double pSum1 = 0.0;
+        double pSum2 = 0.0;
+
+        int count1 = 0;
+        int count2 = 0;
+
+        DepthChoiceGenerator cg1 = new DepthChoiceGenerator(adja.size(), depth);
+        int[] comb2;
+
+        while ((comb2 = cg1.next()) != null) {
+            if (Thread.currentThread().isInterrupted()) {
+                break;
+            }
+
+            List<Node> s = GraphUtils.asList(comb2, adja);
+
+            independenceTest.isIndependent(a, c, s);
+            double _p = independenceTest.getPValue();
+
+            if (_p > p) {
+                p = _p;
+                S = s;
+            }
+
+            if (_p < independenceTest.getAlpha()) continue;
+
+            if (s.contains(b)) {
+                pSum1 += p;
+                count1++;
+            } else {
+                pSum2 += p;
+                count2++;
+            }
+        }
+
+        DepthChoiceGenerator cg2 = new DepthChoiceGenerator(adjc.size(), depth);
+        int[] comb3;
+
+        while ((comb3 = cg2.next()) != null) {
+            if (Thread.currentThread().isInterrupted()) {
+                break;
+            }
+
+            List<Node> s = GraphUtils.asList(comb3, adjc);
+
+            independenceTest.isIndependent(a, c, s);
+            double _p = independenceTest.getPValue();
+
+            if (_p > p) {
+                p = _p;
+                S = s;
+            }
+
+            if (_p < independenceTest.getAlpha()) continue;
+
+            if (s.contains(b)) {
+                pSum1 += p;
+                count1++;
+            } else {
+                pSum2 += p;
+                count2++;
+            }
+        }
+
+        double avg1 = pSum1 / count1;
+        double avg2 = pSum2 / count2;
+
+//        if (avg2 > avg1) {
+//            scores.put(new Triple(a, b, c), avg2);
+//        }
+
+        if (S != null && !S.contains(b)) {
+            scores.put(new Triple(a, b, c), p);
+        }
     }
 
-    private void testColliderHeuristic(Graph graph, Map<Triple, FoundSepset> colliders, Node a, Node b, Node c) {
+    private void testColliderHeuristic(Graph graph, Map<Triple, Double> colliders, Node a, Node b, Node c) {
         if (knowledge.isForbidden(a.getName(), b.getName())) {
             return;
         }
@@ -247,7 +305,7 @@ public final class OrientCollidersMaxP {
         }
 
         if (mycollider2) {
-            colliders.put(new Triple(a, b, c), new FoundSepset(null, Math.abs(s2), FoundSepset.Type.COLLIDER));
+            colliders.put(new Triple(a, b, c), Math.abs(s2));
         }
     }
 
@@ -423,408 +481,6 @@ public final class OrientCollidersMaxP {
 
     public void setConflictRule(PcAll.ConflictRule conflictRule) {
         this.conflictRule = conflictRule;
-    }
-
-    static synchronized FoundSepset maxPSepset(Node a, Node b, Node c, int depth, Graph graph, IndependenceTest test) {
-        System.out.println("--");
-        System.out.println("Calculating max p setpset for " + a + " --- " + c + " b = " + b + " depth = " + depth);
-
-        if (b.getName().equals("X5")) {
-            System.out.println();
-        }
-
-        List<List<Node>> withoutSepsets = new ArrayList<>();
-        Map<List<Node>, Double> pValuesWithout = new HashMap<>();
-
-        List<List<Node>> withSepsets = new ArrayList<>();
-        Map<List<Node>, Double> pValuesWith = new HashMap<>();
-
-        List<Node> adja = graph.getAdjacentNodes(a);
-        List<Node> adjc = graph.getAdjacentNodes(c);
-
-        adja.remove(c);
-        adjc.remove(a);
-
-        List<List<Node>> adj = new ArrayList<>();
-        adj.add(adja);
-        adj.add(adjc);
-
-        System.out.println("adja = " + adja);
-        System.out.println("adjc = " + adjc);
-
-        depth = depth == -1 ? 1000 : depth;
-        Set<Set<Node>> allS = new HashSet<>();
-
-        double sumWithout = 0;
-        double sumWith = 0;
-        double maxWithout = 0;
-        double maxWith = 0;
-        List<Node> maxSepsetWith = new ArrayList<>();
-        List<Node> maxSepsetWithout = new ArrayList<>();
-        int withCount = 0;
-        int withoutCount = 0;
-
-        for (List<Node> _adj : adj) {
-            DepthChoiceGenerator cg1 = new DepthChoiceGenerator(_adj.size(), depth);
-            int[] comb2;
-
-            while ((comb2 = cg1.next()) != null) {
-                if (Thread.currentThread().isInterrupted()) {
-                    break;
-                }
-
-                List<Node> s = GraphUtils.asList(comb2, _adj);
-
-                if (allS.contains(new HashSet<>(s))) continue;
-                allS.add(new HashSet<>(s));
-
-                test.isIndependent(a, c, s);
-                double p = test.getPValue();
-
-                if (p > test.getAlpha()) {
-                    if (s.contains(b)) {
-                        withSepsets.add(s);
-                        pValuesWith.put(s, p);
-
-//                        if (sumWith == Double.NEGATIVE_INFINITY && p != 0) {
-//                            sumWith = p;
-//                            withCount++;
-//                        } else if (p != 0) {
-                        sumWith += p;
-                        withCount++;
-//                        }
-
-                        if (p > maxWith) {
-                            maxWith = p;
-                            maxSepsetWith = s;
-                        }
-
-
-                    } else {
-                        withoutSepsets.add(s);
-                        pValuesWithout.put(s, p);
-
-//                        if (sumWithout == Double.NEGATIVE_INFINITY && p != 0) {
-//                            sumWithout = p;
-//                            withoutCount++;
-//                        } else if (p != 0) {
-                        sumWithout += p;
-                        withoutCount++;
-//                        }
-
-                        if (p > maxWithout) {
-                            maxWithout = p;
-                            maxSepsetWithout = s;
-                        }
-                    }
-                }
-            }
-        }
-
-        double avgWithout = 0, avgWith = 0;
-
-        if (withoutCount != 0) {
-            avgWithout = sumWithout / withoutCount;
-        }
-
-        if (withCount != 0) {
-            avgWith = sumWith / withCount;
-        }
-
-
-        withoutSepsets.sort(Comparator.comparingDouble(pValuesWithout::get));
-        withSepsets.sort(Comparator.comparingDouble(pValuesWith::get));
-
-        System.out.println("\nWith P-values: ");
-
-        for (List<Node> withSepset : withSepsets)
-            System.out.println(pValuesWith.get(withSepset));
-
-        System.out.println("\nWithout P-values: ");
-
-        for (List<Node> withoutSepset : withoutSepsets)
-            System.out.println(pValuesWithout.get(withoutSepset));
-
-        System.out.println("\n# without sepsets = " + withoutSepsets.size() + " avg = " + avgWithout);
-        System.out.println("# with sepsets = " + withSepsets.size() + " avg = " + avgWith);
-
-        double pWith = 0.0, pWithout= 0.0;
-
-        if (withCount > 0) {
-            pWith = 1.0 - new ChiSquaredDistribution(withCount * 2).cumulativeProbability(sumWith);
-        }
-
-        if (withoutCount > 0) {
-            pWithout = 1.0 - new ChiSquaredDistribution(withoutCount * 2).cumulativeProbability(sumWithout);
-        }
-
-//        if (pWithout > pWith) {
-//            return new FoundSepset(maxSepsetWithout, maxWithout,
-//                    FoundSepset.Type.COLLIDER);
-//        } else if (pWith > pWithout) {
-//            return new FoundSepset(maxSepsetWith, maxWith,
-//                    FoundSepset.Type.NONCOLLIDER);
-//        } else if (sumWithout == 0 && sumWith == 0) {
-//            return new FoundSepset(null, -1, FoundSepset.Type.NEITHER);
-//        } else {
-//            return new FoundSepset(null, -1, FoundSepset.Type.AMBIGUOUS);
-//        }
-
-        if (sumWithout > sumWith) {
-            return new FoundSepset(maxSepsetWithout, maxWithout,
-                    FoundSepset.Type.COLLIDER);
-        } else if (sumWith > sumWithout) {
-            return new FoundSepset(maxSepsetWith, maxWith,
-                    FoundSepset.Type.NONCOLLIDER);
-        } else if (sumWithout == 0 && sumWith == 0) {
-            return new FoundSepset(null, -1, FoundSepset.Type.NEITHER);
-        } else {
-            return new FoundSepset(null, -1, FoundSepset.Type.AMBIGUOUS);
-        }
-
-//        if (maxWithout > maxWith) {
-//            return new FoundSepset(maxSepsetWithout, maxWithout,
-//                    FoundSepset.Type.COLLIDER);
-//        } else if (maxWith > maxWithout) {
-//            return new FoundSepset(maxSepsetWith, maxWith,
-//                    FoundSepset.Type.NONCOLLIDER);
-//        } else if (sumWithout == 0 && sumWith == 0) {
-//            return new FoundSepset(null, -1, FoundSepset.Type.NEITHER);
-//        } else {
-//            return new FoundSepset(null, -1, FoundSepset.Type.AMBIGUOUS);
-//        }
-
-//        if (avgWithout > avgWith) {
-//            return new FoundSepset(maxSepsetWithout, maxWithout,
-//                    FoundSepset.Type.COLLIDER);
-//        } else if (avgWith > avgWithout) {
-//            return new FoundSepset(maxSepsetWith, maxWith,
-//                    FoundSepset.Type.NONCOLLIDER);
-//        } else if (avgWithout == 0 && avgWith == 0) {
-//            return new FoundSepset(null, -1, FoundSepset.Type.NEITHER);
-//        } else {
-//            return new FoundSepset(null, -1, FoundSepset.Type.AMBIGUOUS);
-//        }
-
-//        if (withoutCount > withCount) {
-//            return new FoundSepset(maxSepsetWithout, maxWithout,
-//                    FoundSepset.Type.COLLIDER);
-//        } else if (withCount > withoutCount) {
-//            return new FoundSepset(maxSepsetWith, maxWith,
-//                    FoundSepset.Type.NONCOLLIDER);
-//        } else if (sumWithout == 0 && sumWith == 0) {
-//            return new FoundSepset(null, -1, FoundSepset.Type.NEITHER);
-//        } else {
-//            return new FoundSepset(null, -1, FoundSepset.Type.AMBIGUOUS);
-//        }
-    }
-
-    static synchronized FoundSepset maxPSepset2(Node a, Node b, Node c, int depth, Graph graph, IndependenceTest test, Graph reference) {
-        System.out.println("--");
-        System.out.println("Calculating max p setpset for " + a + " --- " + c + " b = " + b + " depth = " + depth);
-
-        List<List<Node>> dependentSepsets = new ArrayList<>();
-        Map<List<Node>, Double> pvaluesDep = new HashMap<>();
-
-        List<List<Node>> independentSepsets = new ArrayList<>();
-        Map<List<Node>, Double> pvaluesIndep = new HashMap<>();
-
-
-        List<Node> adja = graph.getAdjacentNodes(a);
-        List<Node> adjc = graph.getAdjacentNodes(c);
-
-        adja.remove(c);
-        adjc.remove(a);
-
-        List<List<Node>> adj = new ArrayList<>();
-        adj.add(adja);
-        adj.add(adjc);
-
-        System.out.println("adja = " + adja);
-        System.out.println("adjc = " + adjc);
-
-        double pDep = -1;
-        double pIndep = -1;
-        List<Node> SDep = new ArrayList<>();
-        List<Node> SIndep = new ArrayList<>();
-
-        depth = depth == -1 ? 1000 : depth;
-        Set<Set<Node>> allS = new HashSet<>();
-
-        for (List<Node> _adj : adj) {
-            DepthChoiceGenerator cg1 = new DepthChoiceGenerator(_adj.size(), depth);
-            int[] comb2;
-
-            while ((comb2 = cg1.next()) != null) {
-                if (Thread.currentThread().isInterrupted()) {
-                    break;
-                }
-
-                List<Node> s = GraphUtils.asList(comb2, _adj);
-
-                if (SDep.contains(s)) continue;
-                allS.add(new HashSet<>(s));
-
-                test.isIndependent(a, c, s);
-                double _p = test.getPValue();
-
-                if (_p > test.getAlpha()) {
-                    if (s.contains(b)) {
-                        dependentSepsets.add(s);
-                        pvaluesDep.put(s, _p);
-
-                        if (_p > pDep) {
-                            pDep = _p;
-                            SDep = s;
-                        }
-                    } else {
-                        independentSepsets.add(s);
-                        pvaluesIndep.put(s, _p);
-
-                        if (_p > pIndep) {
-                            pIndep = _p;
-                            SIndep = s;
-                        }
-                    }
-                }
-            }
-        }
-
-        double sumDep = 0.0;
-        double sumIndep = 0.0;
-
-        for (List<Node> S : dependentSepsets) {
-            sumDep += log(pvaluesDep.get(S));
-        }
-
-        for (List<Node> S : independentSepsets) {
-            sumIndep += log(pvaluesIndep.get(S));
-        }
-
-        double avgDep = sumDep / dependentSepsets.size();
-        double avgIndep = sumIndep / independentSepsets.size();
-
-        System.out.println("### " + avgDep + " " + avgIndep);
-
-
-        dependentSepsets.sort(Comparator.comparingDouble(pvaluesDep::get));
-        independentSepsets.sort(Comparator.comparingDouble(pvaluesIndep::get));
-
-        System.out.println("\nDependent P-values: ");
-
-        for (List<Node> dependentSepset : dependentSepsets) System.out.println(pvaluesDep.get(dependentSepset));
-
-        System.out.println("\nIndependent P-values: ");
-
-        for (List<Node> independentSepset : independentSepsets) System.out.println(pvaluesIndep.get(independentSepset));
-
-        System.out.println("\n# dependent sepsets = " + dependentSepsets.size() + " maxp = " + avgDep);
-        System.out.println("# independent sepsets = " + independentSepsets.size() + " maxp = " + avgIndep);
-
-        if (avgDep > avgIndep) {
-//        if (dependentSepsets.size() >independentSepsets.size()) {
-            return new FoundSepset(SDep, pDep, FoundSepset.Type.NONCOLLIDER);
-        } else if (independentSepsets.size() > dependentSepsets.size()) {
-            return new FoundSepset(SIndep, pIndep, FoundSepset.Type.COLLIDER);
-        } else if (avgDep == Double.NEGATIVE_INFINITY && avgIndep == 0) {
-            return new FoundSepset(null, -1, FoundSepset.Type.NEITHER);
-        } else {
-            return new FoundSepset(null, -1, FoundSepset.Type.AMBIGUOUS);
-        }
-
-//        if (pDep > pIndep) {
-//            return new FoundSepset(SDep, pDep);
-//        } else if (pIndep > pDep) {
-//            return new FoundSepset(SIndep, pIndep);
-//        } else {
-//            return new FoundSepset(null, -1);
-//        }
-
-    }
-
-
-    public static synchronized FoundSepset maxPSepset0(Node a, Node c, int depth, Graph graph, IndependenceTest test) {
-        System.out.println("--");
-        System.out.println("Calculating max p setpset for " + a + " --- " + c + " depth = " + depth);
-
-        List<Node> adja = graph.getAdjacentNodes(a);
-        List<Node> adjc = graph.getAdjacentNodes(c);
-
-        adja.remove(c);
-        adjc.remove(a);
-
-        System.out.println("adja = " + adja);
-        System.out.println("adjc = " + adjc);
-
-        double p = -1;
-        List<Node> S = new ArrayList<>();
-
-        depth = depth == -1 ? 1000 : depth;
-
-        List<List<Node>> adj = new ArrayList<>();
-        adj.add(adja);
-        adj.add(adjc);
-
-        Set<Set<Node>> allS = new HashSet<>();
-
-        for (List<Node> _adj : adj) {
-            DepthChoiceGenerator cg1 = new DepthChoiceGenerator(_adj.size(), depth);
-            int[] comb2;
-
-            while ((comb2 = cg1.next()) != null) {
-                if (Thread.currentThread().isInterrupted()) {
-                    break;
-                }
-
-                List<Node> s = GraphUtils.asList(comb2, _adj);
-
-                if (allS.contains(new HashSet<>(s))) continue;
-                allS.add(new HashSet<>(s));
-
-                test.isIndependent(a, c, s);
-                double _p = test.getPValue();
-
-                if (_p > test.getAlpha()) {
-                    if (_p > p) {
-                        p = _p;
-                        S = s;
-                    }
-                }
-            }
-        }
-
-        return new FoundSepset(S, p, p > test.getAlpha() ? FoundSepset.Type.AMBIGUOUS : FoundSepset.Type.NEITHER);
-    }
-
-    public static class FoundSepset {
-        public Type getType() {
-            return type;
-        }
-
-        public void setType(Type type) {
-            this.type = type;
-        }
-
-        public enum Type {COLLIDER, NONCOLLIDER, AMBIGUOUS, NEITHER}
-
-        private List<Node> S;
-        private double p;
-        private Type type;
-
-        public FoundSepset(List<Node> S, double p, Type type) {
-            this.S = S;
-            this.p = p;
-            this.setType(type);
-        }
-
-        public List<Node> getS() {
-            return S;
-        }
-
-        public double getP() {
-            return p;
-        }
-
     }
 }
 

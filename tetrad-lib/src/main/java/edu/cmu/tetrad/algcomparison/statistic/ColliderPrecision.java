@@ -1,6 +1,5 @@
 package edu.cmu.tetrad.algcomparison.statistic;
 
-import edu.cmu.tetrad.algcomparison.statistic.utils.AdjacencyConfusion;
 import edu.cmu.tetrad.algcomparison.statistic.utils.ColliderConfusion;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.graph.Graph;
@@ -27,11 +26,9 @@ public class ColliderPrecision implements Statistic {
     @Override
     public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
         ColliderConfusion confusion = new ColliderConfusion(trueGraph, estGraph);
-        int adjTp = confusion.getAdjTp();
-        int adjFp = confusion.getAdjFp();
-//        int adjFn = confusion.getAdjFn();
-//        int adjTn = confusion.getAdjTn();
-        return adjTp / (double) (adjTp + adjFp);
+        int tp = confusion.getTp();
+        int fp = confusion.getFp();
+        return tp / (double) (tp + fp);
     }
 
     @Override
