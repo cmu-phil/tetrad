@@ -45,11 +45,12 @@ public class CpcMaxAvg implements Algorithm, HasKnowledge, TakesIndependenceWrap
 
     @Override
     public Graph search(DataModel dataSet, Parameters parameters) {
-//        if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
+        if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
             edu.cmu.tetrad.search.CpcMaxAvg search = new edu.cmu.tetrad.search.CpcMaxAvg(test.getTest(dataSet, parameters));
             search.setDepth(parameters.getInt(Params.DEPTH));
             search.setKnowledge(knowledge);
             search.setVerbose(parameters.getBoolean(Params.VERBOSE));
+            search.setUseMaxTopN(parameters.getInt(Params.USE_MAX_TOP_N));
 
             Object obj = parameters.get(Params.PRINT_STREAM);
             if (obj instanceof PrintStream) {
@@ -57,34 +58,34 @@ public class CpcMaxAvg implements Algorithm, HasKnowledge, TakesIndependenceWrap
             }
 
             return search.search();
-//        } else {
-//            CpcMaxAvg algorithm = new CpcMaxAvg(test);
-//
-//            DataSet data = (DataSet) dataSet;
-//            GeneralResamplingTest search = new GeneralResamplingTest(data, algorithm, parameters.getInt(Params.NUMBER_RESAMPLING));
-//            search.setKnowledge(knowledge);
-//
-//            search.setPercentResampleSize(parameters.getDouble(Params.PERCENT_RESAMPLE_SIZE));
-//            search.setResamplingWithReplacement(parameters.getBoolean(Params.RESAMPLING_WITH_REPLACEMENT));
-//
-//            ResamplingEdgeEnsemble edgeEnsemble = ResamplingEdgeEnsemble.Highest;
-//            switch (parameters.getInt(Params.RESAMPLING_ENSEMBLE, 1)) {
-//                case 0:
-//                    edgeEnsemble = ResamplingEdgeEnsemble.Preserved;
-//                    break;
-//                case 1:
-//                    edgeEnsemble = ResamplingEdgeEnsemble.Highest;
-//                    break;
-//                case 2:
-//                    edgeEnsemble = ResamplingEdgeEnsemble.Majority;
-//            }
-//            search.setEdgeEnsemble(edgeEnsemble);
-//            search.setAddOriginalDataset(parameters.getBoolean(Params.ADD_ORIGINAL_DATASET));
-//
-//            search.setParameters(parameters);
-//            search.setVerbose(parameters.getBoolean(Params.VERBOSE));
-//            return search.search();
-//        }
+        } else {
+            CpcMaxAvg algorithm = new CpcMaxAvg(test);
+
+            DataSet data = (DataSet) dataSet;
+            GeneralResamplingTest search = new GeneralResamplingTest(data, algorithm, parameters.getInt(Params.NUMBER_RESAMPLING));
+            search.setKnowledge(knowledge);
+
+            search.setPercentResampleSize(parameters.getDouble(Params.PERCENT_RESAMPLE_SIZE));
+            search.setResamplingWithReplacement(parameters.getBoolean(Params.RESAMPLING_WITH_REPLACEMENT));
+
+            ResamplingEdgeEnsemble edgeEnsemble = ResamplingEdgeEnsemble.Highest;
+            switch (parameters.getInt(Params.RESAMPLING_ENSEMBLE, 1)) {
+                case 0:
+                    edgeEnsemble = ResamplingEdgeEnsemble.Preserved;
+                    break;
+                case 1:
+                    edgeEnsemble = ResamplingEdgeEnsemble.Highest;
+                    break;
+                case 2:
+                    edgeEnsemble = ResamplingEdgeEnsemble.Majority;
+            }
+            search.setEdgeEnsemble(edgeEnsemble);
+            search.setAddOriginalDataset(parameters.getBoolean(Params.ADD_ORIGINAL_DATASET));
+
+            search.setParameters(parameters);
+            search.setVerbose(parameters.getBoolean(Params.VERBOSE));
+            return search.search();
+        }
     }
 
     @Override
@@ -106,6 +107,7 @@ public class CpcMaxAvg implements Algorithm, HasKnowledge, TakesIndependenceWrap
     public List<String> getParameters() {
         List<String> parameters = new ArrayList<>();
         parameters.add(Params.DEPTH);
+        parameters.add(Params.USE_MAX_TOP_N);
 
         parameters.add(Params.VERBOSE);
         return parameters;

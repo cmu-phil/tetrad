@@ -92,6 +92,8 @@ public class StatsListEditor extends JPanel {
         statistics.add(new SHD());
         statistics.add(new ColliderPrecision());
         statistics.add(new ColliderRecall());
+        statistics.add(new ColliderNumCoveringErrors());
+        statistics.add(new ColliderNumUncoveringErrors());
         statistics.add(new NodesInCyclesPrecision());
         statistics.add(new NodesInCyclesRecall());
         statistics.add(new NumAmbiguousTriples());

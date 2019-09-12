@@ -23,6 +23,7 @@ package edu.cmu.tetrad.util;
 
 import org.apache.commons.collections4.map.HashedMap;
 import org.apache.commons.math3.distribution.*;
+import org.apache.commons.math3.random.MersenneTwister;
 import org.apache.commons.math3.random.RandomGenerator;
 import org.apache.commons.math3.random.SynchronizedRandomGenerator;
 import org.apache.commons.math3.random.Well44497b;
@@ -162,7 +163,7 @@ public class RandomUtil {
     public void setSeed(long seed) {
 
         // Do not change this generator; you will screw up innuerable unit tests!
-        randomGenerator = new SynchronizedRandomGenerator(new Well44497b(seed));
+        randomGenerator = new SynchronizedRandomGenerator(new MersenneTwister(seed));
         seedsToGenerators.put(seed, randomGenerator);
         normal = new NormalDistribution(randomGenerator, 0, 1);
         this.seed = seed;

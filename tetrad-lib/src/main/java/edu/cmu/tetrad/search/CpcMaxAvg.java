@@ -30,10 +30,9 @@ import edu.cmu.tetrad.util.TetradLogger;
 
 import java.io.PrintStream;
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * Implements the CPC-Avg search.
+ * Implements the CPC-MaxAvg search.
  *
  * @author Joseph Ramsey.
  */
@@ -81,6 +80,8 @@ public class CpcMaxAvg implements IFas {
      */
     private boolean verbose = false;
 
+    private int useMaxTopN = 1;
+
     //==========================CONSTRUCTORS=============================//
 
     public CpcMaxAvg(IndependenceTest test) {
@@ -108,15 +109,19 @@ public class CpcMaxAvg implements IFas {
         graph = new EdgeListGraph(nodes);
         graph = GraphUtils.completeGraph(graph);
 
-        int d = 0;
         boolean more;
 
-        do {
-            more = adjust(graph, d++, test);
-            if (d > depth) break;
-        } while (more);
+        Map<NodePair, List<PValue>> pValueMap = new HashMap<>();
 
-        orientTriples();
+        for (int f = 0; f < 2; f++) {
+            int d = 2;
+
+            do {
+                more = adjust(pValueMap, graph, d++, test);
+            } while (more);
+        }
+
+        orientTriples(pValueMap, graph);
 
         MeekRules meekRules = new MeekRules();
         meekRules.setKnowledge(knowledge);
@@ -125,6 +130,28 @@ public class CpcMaxAvg implements IFas {
         this.logger.log("info", "Finishing Fast Adjacency Search.");
 
         return graph;
+    }
+
+    private boolean adjust(Map<NodePair, List<PValue>> pValueMap,
+                           Graph graph, int depth, IndependenceTest test) {
+        Graph complete = GraphUtils.completeGraph(graph);
+
+        for (Edge edge : complete.getEdges()) {
+            Node a = edge.getNode1();
+            Node c = edge.getNode2();
+
+            boolean existsSepset = existsSepset(pValueMap, a, c, depth, graph, test);
+
+            if (existsSepset && graph.isAdjacentTo(a, c)) {
+                graph.removeEdge(a, c);
+                System.out.println("Removing edge " + a + " --- " + c);
+            } else if (!graph.isAdjacentTo(a, c)) {
+                graph.addUndirectedEdge(a, c);
+                pValueMap.remove(new NodePair(a, c));
+            }
+        }
+
+        return freeDegree(nodes, graph) > depth;
     }
 
     public int getDepth() {
@@ -137,8 +164,8 @@ public class CpcMaxAvg implements IFas {
                     "Depth must be -1 (unlimited) or >= 0.");
         }
 
-        if (depth == -1) this.depth = 1000;
-        else this.depth = depth;
+        if (depth == -1) depth = 1000;
+        this.depth = depth;
     }
 
     public IKnowledge getKnowledge() {
@@ -221,67 +248,68 @@ public class CpcMaxAvg implements IFas {
 
     }
 
+    /**
+     * The maximum number of top p-values to average.
+     */
+    private int getUseMaxTopN() {
+        return useMaxTopN;
+    }
+
+    public void setUseMaxTopN(int useMaxTopN) {
+        this.useMaxTopN = useMaxTopN;
+    }
+
     public static enum TripleType {COLLIDER, NONCOLLIDER, AMBIGUOUS, NEITHER}
 
     //==============================PRIVATE METHODS======================/
 
-    private void orientTriples() {
-        addColliders(graph);
-    }
+    private void orientTriples(Map<NodePair, List<PValue>> pValueMap, Graph graph) {
+        List<Node> nodes1 = graph.getNodes();
 
-    private void addColliders(Graph graph) {
-        final Map<Triple, TripleType> scores = new ConcurrentHashMap<>();
+        for (Node b : nodes1) {
+            List<Node> adjacentNodes = graph.getAdjacentNodes(b);
 
-        List<Node> nodes = graph.getNodes();
-
-        for (Node node : nodes) {
-            doNode(graph, scores, node);
-        }
-
-        List<Triple> tripleList = new ArrayList<>(scores.keySet());
-
-        for (Triple triple : tripleList) {
-            Node a = triple.getX();
-            Node b = triple.getY();
-            Node c = triple.getZ();
-
-            if (scores.get(triple) == TripleType.COLLIDER && !graph.isUnderlineTriple(a, b, c)
-                    && !graph.isAmbiguousTriple(a, c, b)) {
-                orientCollider(graph, a, b, c, PcAll.ConflictRule.PRIORITY);
-            } else if (scores.get(triple) == TripleType.NONCOLLIDER) {
-                graph.addUnderlineTriple(a, b, c);
-            } else if (scores.get(triple) == TripleType.NEITHER) {
-//                graph.removeEdge(a, c);
-            } else if (scores.get(triple) == TripleType.AMBIGUOUS) {
-                graph.addAmbiguousTriple(a, b, c);
-            }
-        }
-    }
-
-    private void doNode(Graph graph, Map<Triple, TripleType> scores, Node b) {
-        List<Node> adjacentNodes = graph.getAdjacentNodes(b);
-
-        if (adjacentNodes.size() < 2) {
-            return;
-        }
-
-        ChoiceGenerator cg = new ChoiceGenerator(adjacentNodes.size(), 2);
-        int[] combination;
-
-        while ((combination = cg.next()) != null) {
-            if (Thread.currentThread().isInterrupted()) {
-                break;
-            }
-
-            Node a = adjacentNodes.get(combination[0]);
-            Node c = adjacentNodes.get(combination[1]);
-
-            // Skip triples that are shielded.
-            if (graph.isAdjacentTo(a, c)) {
+            if (adjacentNodes.size() < 2) {
                 continue;
             }
 
-            testColliderMaxP(graph, scores, a, b, c);
+            ChoiceGenerator cg = new ChoiceGenerator(adjacentNodes.size(), 2);
+            int[] combination;
+
+            while ((combination = cg.next()) != null) {
+                if (Thread.currentThread().isInterrupted()) {
+                    break;
+                }
+
+                Node a = adjacentNodes.get(combination[0]);
+                Node c = adjacentNodes.get(combination[1]);
+
+                // Skip triples that are shielded.
+                if (graph.isAdjacentTo(a, c)) {
+                    continue;
+                }
+
+                TripleType type = getTripleType(pValueMap, a, b, c, depth, this.graph, test);
+
+                if (type == TripleType.COLLIDER && !graph.isUnderlineTriple(a, b, c)
+                        && !graph.isAmbiguousTriple(a, c, b)) {
+                    orientCollider(graph, a, b, c, PcAll.ConflictRule.PRIORITY);
+                    graph.removeAmbiguousTriple(a, b, c);
+                    graph.removeUnderlineTriple(a, b, c);
+                } else if (type == TripleType.NONCOLLIDER) {
+                    graph.addUnderlineTriple(a, b, c);
+                    graph.removeAmbiguousTriple(a, b, c);
+                } else if (type == TripleType.NEITHER) {
+//                graph.addUndirectedEdge(a, c);
+//                graph.addAmbiguousTriple(a, b, c);
+                    graph.addUndirectedEdge(a, c);
+                    System.out.println("Neither");
+                } else if (type == TripleType.AMBIGUOUS) {
+                    System.out.println("Both");
+                    graph.addAmbiguousTriple(a, b, c);
+                    graph.removeAmbiguousTriple(a, b, c);
+                }
+            }
         }
     }
 
@@ -312,88 +340,38 @@ public class CpcMaxAvg implements IFas {
         TetradLogger.getInstance().log("colliderOrientations", SearchLogUtils.colliderOrientedMsg(x, y, z));
     }
 
-    private void testColliderMaxP(Graph graph, Map<Triple, TripleType> scores, Node a, Node b, Node c) {
-        TripleType sepset = maxPSepset(a, b, c, depth, graph, test);
-        scores.put(new Triple(a, b, c), sepset);
-    }
-
-    private TripleType maxPSepset(Node a, Node b, Node c, int depth, Graph graph, IndependenceTest test) {
+    private TripleType getTripleType(Map<NodePair, List<PValue>> pValueMap, Node a, Node b, Node c, int depth,
+                                     Graph graph, IndependenceTest test) {
         System.out.println("Calculating max avg for " + a + " --- " + b + " --- " + c + " depth = " + depth);
 
-        List<Double> bPvals = new ArrayList<>();
-        List<Double> notbPvals = new ArrayList<>();
+        List<PValue> pValues = pValueMap.get(new NodePair(a, c));
 
-        List<Node> adja = graph.getAdjacentNodes(a);
-        List<Node> adjc = graph.getAdjacentNodes(c);
+        List<PValue> bPvals = new ArrayList<>();
+        List<PValue> notbPvals = new ArrayList<>();
 
-        adja.remove(c);
-        adjc.remove(a);
-
-        List<List<Node>> adj = new ArrayList<>();
-        adj.add(adja);
-        adj.add(adjc);
-
-        double maxWithout = 0;
-        double maxWith = 0;
-
-        List<Node> maxSepsetWith = new ArrayList<>();
-        List<Node> maxSepsetWithout = new ArrayList<>();
-
-        boolean bb = false;
-
-        for (List<Node> _adj : adj) {
-            DepthChoiceGenerator cg1 = new DepthChoiceGenerator(_adj.size(), depth);
-            int[] comb2;
-
-            while ((comb2 = cg1.next()) != null) {
-                if (Thread.currentThread().isInterrupted()) {
-                    break;
-                }
-
-                List<Node> s = GraphUtils.asList(comb2, _adj);
-
-                if (bb && s.isEmpty()) continue;
-
-                test.isIndependent(a, c, s);
-                double p = test.getPValue();
-
-                if (s.contains(b)) {
-                    bPvals.add(p);
-                } else {
-                    notbPvals.add(p);
-                }
+        for (PValue p : pValues) {
+            if (p.getSepset().contains(b)) {
+                bPvals.add(p);
+            } else {
+                notbPvals.add(p);
             }
-
-            bb = true;
         }
+
+        bPvals.sort(Comparator.comparingDouble(PValue::getP));
+        notbPvals.sort(Comparator.comparingDouble(PValue::getP));
 
         boolean existsb = existsSepsetFromList(bPvals, test.getAlpha());
         boolean existsnotb = existsSepsetFromList(notbPvals, test.getAlpha());
 
         if (existsb && !existsnotb) {
             return TripleType.NONCOLLIDER;
-        } else if (existsnotb && !existsb) {
+        } else if (!existsb && existsnotb) {
             return TripleType.COLLIDER;
         } else if (existsb) {
             return TripleType.AMBIGUOUS;
         } else {
             return TripleType.NEITHER;
         }
-    }
-
-    private boolean adjust(Graph graph, int depth, IndependenceTest test) {
-        for (Edge edge : graph.getEdges()) {
-            Node x = edge.getNode1();
-            Node y = edge.getNode2();
-
-            boolean existsSepset = existsSepset(x, y, depth, graph, test);
-
-            if (existsSepset) {
-                graph.removeEdge(x, y);
-            }
-        }
-
-        return freeDegree(nodes, graph) > depth;
     }
 
     private int freeDegree(List<Node> nodes, Graph graph) {
@@ -415,9 +393,39 @@ public class CpcMaxAvg implements IFas {
         return max;
     }
 
-    private static synchronized boolean existsSepset(Node a, Node c, int depth, Graph graph, IndependenceTest test) {
+    private synchronized boolean existsSepset(Map<NodePair, List<PValue>> pValueList,
+                                              Node a, Node c, int depth, Graph graph, IndependenceTest test) {
         System.out.println("Calculating max avg for " + a + " --- " + c + " depth = " + depth);
+        List<PValue> pValues = getAllPValues(a, c, depth, graph, test);
+        pValueList.put(new NodePair(a, c), pValues);
+        return existsSepsetFromList(pValues, test.getAlpha());
+    }
 
+    private static class PValue {
+        private double p;
+        private Set<Node> sepset;
+
+        PValue(double p, List<Node> sepset) {
+            this.p = p;
+            this.sepset = new HashSet<>(sepset);
+        }
+
+        public Set<Node> getSepset() {
+            return sepset;
+        }
+
+        public double getP() {
+            return p;
+        }
+
+        public boolean equals(Object o) {
+            if (!(o instanceof PValue)) return false;
+            PValue _o = (PValue) o;
+            return _o.getP() == getP() && _o.getSepset().equals(getSepset());
+        }
+    }
+
+    private List<PValue> getAllPValues(Node a, Node c, int depth, Graph graph, IndependenceTest test) {
         List<Node> adja = graph.getAdjacentNodes(a);
         List<Node> adjc = graph.getAdjacentNodes(c);
 
@@ -430,7 +438,7 @@ public class CpcMaxAvg implements IFas {
         adj.add(adja);
         adj.add(adjc);
 
-        List<Double> pValues = new ArrayList<>();
+        List<PValue> pValues = new ArrayList<>();
 
         boolean bb = false;
 
@@ -448,32 +456,31 @@ public class CpcMaxAvg implements IFas {
                 if (bb && s.isEmpty()) continue;
 
                 test.isIndependent(a, c, s);
-                pValues.add(test.getPValue());
+                pValues.add(new PValue(test.getPValue(), s));
             }
 
             bb = true;
         }
 
-        return existsSepsetFromList(pValues, test.getAlpha());
+        return pValues;
     }
 
-    private static boolean existsSepsetFromList(List<Double> pValues, double alpha) {
-        Collections.sort(pValues);
+    private boolean existsSepsetFromList(List<PValue> pValues, double alpha) {
+        if (pValues.isEmpty()) return false;
+        pValues.sort(Comparator.comparingDouble(PValue::getP));
 
-        double avg;
+        double sum = 0;
+        int count = 0;
 
-        if (pValues.isEmpty()) throw new IllegalArgumentException();
-
-        if (pValues.size() == 1) {
-            avg = pValues.get(0);
-        } else {
-            Double max1 = pValues.get(pValues.size() - 1);
-            Double next1 = pValues.get(pValues.size() - 2);
-            avg = (max1 + next1) / 2.;
+        for (int i = pValues.size() - 1; i >= pValues.size() - getUseMaxTopN(); i--) {
+            if (i >= 0) {
+                sum += pValues.get(i).getP();
+                count++;
+            }
         }
 
-        return avg > alpha;
+        double avg = sum / count;
+        return avg > (alpha);
     }
-
 }
 
