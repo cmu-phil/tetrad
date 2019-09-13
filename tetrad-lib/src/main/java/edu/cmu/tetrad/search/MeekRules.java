@@ -376,6 +376,10 @@ public class MeekRules implements ImpliedOrientation {
             if (graph.getUnderLines().contains(new Triple(c, x, a))) {
                 return;
             }
+
+            if (graph.getAmbiguousTriples().contains(new Triple(c, x, a))) {
+                return;
+            }
         }
 
         // No cycles.

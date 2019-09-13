@@ -60,10 +60,11 @@ public class PcMaxStudy {
         statistics.add(new ArrowheadRecall());
         statistics.add(new ArrowheadPrecisionCommonEdges());
         statistics.add(new ArrowheadRecallCommonEdges());
-        statistics.add(new ColliderPrecision());
-        statistics.add(new ColliderRecall());
+        statistics.add(new ColliderFp());
+        statistics.add(new ColliderFn());
         statistics.add(new ColliderNumCoveringErrors());
         statistics.add(new ColliderNumUncoveringErrors());
+        statistics.add(new NumAmbiguousTriples());
         statistics.add(new BicDiff());
         statistics.add(new NumberOfEdgesEst());
 //        statistics.add(new F1All());
@@ -78,8 +79,8 @@ public class PcMaxStudy {
         Algorithms algorithms = new Algorithms();
 
         algorithms.add(new CpcMaxAvg(new FisherZ()));
-//        algorithms.add(new PcAll(new FisherZ()));
-//        algorithms.add(new Fges(new SemBicScore()));
+        algorithms.add(new PcAll(new FisherZ()));
+        algorithms.add(new Fges(new SemBicScore()));
 
         Comparison comparison = new Comparison();
 
@@ -102,10 +103,10 @@ public class PcMaxStudy {
 //        parameters.set(Params.VERBOSE, false);
 //
 ////
-//        parameters.set(Params.COEF_LOW, 0.2);
-//        parameters.set(Params.COEF_HIGH, 0.7);
-//        parameters.set(Params.VAR_LOW, .5);
-//        parameters.set(Params.VAR_HIGH, .9);
+        parameters.set(Params.COEF_LOW, 0.2);
+        parameters.set(Params.COEF_HIGH, 0.7);
+        parameters.set(Params.VAR_LOW, .5);
+        parameters.set(Params.VAR_HIGH, .9);
 //        parameters.set(Params.COEF_SYMMETRIC, true);
 //        parameters.set(Params.SELF_LOOP_COEF, 0.0);
 //        parameters.set(Params.RANDOMIZE_COLUMNS, true);
@@ -140,12 +141,12 @@ public class PcMaxStudy {
 
         parameters.set(Params.NUM_RUNS, 10);
         parameters.set(Params.DEPTH, -1);
-        parameters.set(Params.ALPHA, 0.005);
+        parameters.set(Params.ALPHA, 0.2);
         parameters.set(Params.PENALTY_DISCOUNT, 1);
         parameters.set(Params.AVG_DEGREE, 4);
-        parameters.set(Params.COLLIDER_DISCOVERY_RULE, 1);
-        parameters.set(Params.USE_MAX_TOP_N, 1, 2, 3);
-//        parameters.set(Params.SAMPLE_SIZE, 2000);
+        parameters.set(Params.COLLIDER_DISCOVERY_RULE, 1, 2, 3);
+//        parameters.set(Params.USE_MAX_TOP_N, 1, 2 , 3);
+        parameters.set(Params.SAMPLE_SIZE, 1000);
 
 
         return parameters;

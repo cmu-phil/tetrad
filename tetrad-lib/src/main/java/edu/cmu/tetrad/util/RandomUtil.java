@@ -26,7 +26,6 @@ import org.apache.commons.math3.distribution.*;
 import org.apache.commons.math3.random.MersenneTwister;
 import org.apache.commons.math3.random.RandomGenerator;
 import org.apache.commons.math3.random.SynchronizedRandomGenerator;
-import org.apache.commons.math3.random.Well44497b;
 
 import java.util.Date;
 import java.util.Map;

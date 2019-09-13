@@ -16,7 +16,7 @@ public class ColliderConfusion {
     private int tp;
     private int fp;
     private int fn;
-    private int adjTn;
+    private int tn;
     private int numCoveringErrors;
     private int numUncoveringErrors;
 
@@ -31,41 +31,45 @@ public class ColliderConfusion {
         fp = 0;
         fn = 0;
 
-        setNumCoveringErrors(0);
-        setNumUncoveringErrors(0);
+        numCoveringErrors = 0;
+        numUncoveringErrors = 0;
 
-        for (Triple triple : allColliders) {
-            if (estColliders.contains(triple) &&
-                    !trueColliders.contains(triple)) {
+        for (Triple collider : allColliders) {
+            if (estColliders.contains(collider) && !trueColliders.contains(collider)) {
                 fp++;
 
-                if (est.isAdjacentTo(triple.getX(), triple.getZ()) && !truth.isAdjacentTo(triple.getX(), triple.getZ())) {
-                    setNumCoveringErrors(getNumCoveringErrors() + 1);
-                } else if (truth.isAdjacentTo(triple.getX(), triple.getZ()) && !est.isAdjacentTo(triple.getX(), triple.getZ())) {
-                    setNumUncoveringErrors(getNumUncoveringErrors() + 1);
+                if (est.isAdjacentTo(collider.getX(), collider.getZ())
+                        && !est.isAmbiguousTriple(collider.getX(), collider.getY(), collider.getZ())
+                        && !truth.isAdjacentTo(collider.getX(), collider.getZ())) {
+                    numCoveringErrors++;
+                } else if (truth.isAdjacentTo(collider.getX(), collider.getZ())
+                        && !est.isAmbiguousTriple(collider.getX(), collider.getY(), collider.getZ())
+                        && !est.isAdjacentTo(collider.getX(), collider.getZ())) {
+                    numUncoveringErrors++;
                 }
             }
 
-            if (trueColliders.contains(triple) &&
-                    !estColliders.contains(triple)) {
+            if (trueColliders.contains(collider) && !estColliders.contains(collider)) {
                 fn++;
 
-                if (est.isAdjacentTo(triple.getX(), triple.getZ()) && !truth.isAdjacentTo(triple.getX(), triple.getZ())) {
-                    setNumCoveringErrors(getNumCoveringErrors() + 1);
-                } else if (truth.isAdjacentTo(triple.getX(), triple.getZ()) && !est.isAdjacentTo(triple.getX(), triple.getZ())) {
-                    setNumUncoveringErrors(getNumUncoveringErrors() + 1);
+                if (est.isAdjacentTo(collider.getX(), collider.getZ())
+                        && !est.isAmbiguousTriple(collider.getX(), collider.getY(), collider.getZ())
+                        && !truth.isAdjacentTo(collider.getX(), collider.getZ())) {
+                    numCoveringErrors++;
+                } else if (truth.isAdjacentTo(collider.getX(), collider.getZ())
+                        && !est.isAmbiguousTriple(collider.getX(), collider.getY(), collider.getZ())
+                        && !est.isAdjacentTo(collider.getX(), collider.getZ())) {
+                    numUncoveringErrors++;
                 }
             }
 
-            if (trueColliders.contains(triple) &&
-                    estColliders.contains(triple)) {
+            if (trueColliders.contains(collider) &&
+                    estColliders.contains(collider)) {
                 tp++;
             }
         }
 
-        int allColliderCCount = allColliders.size();
-
-        adjTn = allColliderCCount - trueColliders.size();
+        tn = allColliders.size() - trueColliders.size();
     }
 
     private Set<Triple> getColliders(Graph graph) {
@@ -83,8 +87,6 @@ public class ColliderConfusion {
                 List<Node> _adj = GraphUtils.asList(choice, adjb);
                 Node a = _adj.get(0);
                 Node c = _adj.get(1);
-
-//                if (graph.isAdjacentTo(a, c)) continue;
 
                 if (graph.isDefCollider(a, b, c)) {
                     colliders.add(new Triple(a, b, c));
@@ -107,23 +109,16 @@ public class ColliderConfusion {
         return fn;
     }
 
-    public int getAdjTn() {
-        return adjTn;
+    public int getTn() {
+        return tn;
     }
 
     public int getNumCoveringErrors() {
         return numCoveringErrors;
     }
 
-    public void setNumCoveringErrors(int numCoveringErrors) {
-        this.numCoveringErrors = numCoveringErrors;
-    }
-
     public int getNumUncoveringErrors() {
         return numUncoveringErrors;
     }
 
-    public void setNumUncoveringErrors(int numUncoveringErrors) {
-        this.numUncoveringErrors = numUncoveringErrors;
-    }
 }
