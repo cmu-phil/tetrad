@@ -47,6 +47,7 @@ public class CpcFdrLists implements Algorithm, HasKnowledge, TakesIndependenceWr
         if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
             edu.cmu.tetrad.search.CpcFdrLists search = new edu.cmu.tetrad.search.CpcFdrLists(test.getTest(dataSet, parameters));
             search.setDepth(parameters.getInt(Params.DEPTH));
+            search.setFdrQ(parameters.getDouble(Params.FDR_Q));
             search.setKnowledge(knowledge);
             search.setVerbose(parameters.getBoolean(Params.VERBOSE));
 
@@ -105,6 +106,7 @@ public class CpcFdrLists implements Algorithm, HasKnowledge, TakesIndependenceWr
     public List<String> getParameters() {
         List<String> parameters = new ArrayList<>();
         parameters.add(Params.DEPTH);
+        parameters.add(Params.FDR_Q);
         parameters.add(Params.VERBOSE);
         return parameters;
     }

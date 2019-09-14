@@ -70,6 +70,7 @@ public final class Params {
     public static final String FAST_ICA_A = "fastIcaA";
     public static final String FAST_ICA_MAX_ITER = "fastIcaMaxIter";
     public static final String FAST_ICA_TOLERANCE = "fastIcaTolerance";
+    public static final String FDR_Q = "fdrQ";
     public static final String FISHER_EPSILON = "fisherEpsilon";
     public static final String GENERAL_SEM_ERROR_TEMPLATE = "generalSemErrorTemplate";
     public static final String GENERAL_SEM_FUNCTION_TEMPLATE_LATENT = "generalSemFunctionTemplateLatent";

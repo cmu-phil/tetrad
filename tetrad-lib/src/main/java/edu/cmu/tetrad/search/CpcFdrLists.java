@@ -96,6 +96,11 @@ public class CpcFdrLists implements IFas {
      */
     private long elapsedtime = 0;
 
+    /**
+     * The FDR q to use for the orientation search.
+     */
+    private double fdrQ = 0.05;
+
 
     //==========================CONSTRUCTORS=============================//
 
@@ -238,6 +243,24 @@ public class CpcFdrLists implements IFas {
         return graph;
     }
 
+    /**
+     * The FDR q to use for the orientation search.
+     */
+    public double getFdrQ() {
+        return fdrQ;
+    }
+
+    /**
+     * The FDR q to use for the orientation search.
+     */
+    public void setFdrQ(double fdrQ) {
+        if (fdrQ < 0 || fdrQ > 1) {
+            throw new IllegalArgumentException("FDR q must be in [0, 1]: " + fdrQ);
+        }
+
+        this.fdrQ = fdrQ;
+    }
+
     private static class PValue {
         private double p;
         private Set<Node> sepset;
@@ -305,10 +328,8 @@ public class CpcFdrLists implements IFas {
                     }
                 }
 
-                double q = .1;//test.getAlpha();
-
-                boolean existsb = existsSepsetFromList(bPvals, q);
-                boolean existsnotb = existsSepsetFromList(notbPvals, q);
+                boolean existsb = existsSepsetFromList(bPvals, getFdrQ());
+                boolean existsnotb = existsSepsetFromList(notbPvals, getFdrQ());
 
                 if (existsb && !existsnotb) {
                     graph.addUnderlineTriple(a, b, c);

@@ -139,6 +139,7 @@ public class PcMaxStudy {
         parameters.set(Params.NUM_RUNS, 10);
         parameters.set(Params.DEPTH, -1);
         parameters.set(Params.ALPHA, 0.01);
+        parameters.set(Params.FDR_Q, 0.2);
         parameters.set(Params.PENALTY_DISCOUNT, 6);
         parameters.set(Params.NUM_MEASURES, 100);
         parameters.set(Params.AVG_DEGREE, 6);
