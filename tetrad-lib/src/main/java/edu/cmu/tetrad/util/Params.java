@@ -167,7 +167,6 @@ public final class Params {
     public static final String USE_FAS_ADJACENCIES = "useFasAdjacencies";
     public static final String USE_GAP = "useGap";
     public static final String USE_MAX_P_ORIENTATION_HEURISTIC = "useMaxPOrientationHeuristic";
-    public static final String USE_MAX_TOP_N = "useMaxTopN";
     public static final String USE_SELLKE_ADJUSTMENT = "useSellkeAdjustment";
     public static final String USE_SKEW_ADJACENCIES = "useSkewAdjacencies";
     public static final String USE_WISHART = "useWishart";

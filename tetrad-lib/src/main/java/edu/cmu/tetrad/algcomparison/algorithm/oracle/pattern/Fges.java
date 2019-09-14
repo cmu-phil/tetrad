@@ -19,6 +19,7 @@ import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 import edu.pitt.dbmi.algo.resampling.GeneralResamplingTest;
 import edu.pitt.dbmi.algo.resampling.ResamplingEdgeEnsemble;
+
 import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.List;
@@ -38,7 +39,7 @@ public class Fges implements Algorithm, TakesInitialGraph, HasKnowledge, UsesSco
 
     static final long serialVersionUID = 23L;
 
-    private boolean compareToTrue = false;
+    private boolean compareToTrue = true;
     private ScoreWrapper score;
     private Algorithm algorithm = null;
     private Graph initialGraph = null;
@@ -65,7 +66,7 @@ public class Fges implements Algorithm, TakesInitialGraph, HasKnowledge, UsesSco
 
     @Override
     public Graph search(DataModel dataSet, Parameters parameters) {
-    	if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
+        if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
             if (algorithm != null) {
 //                initialGraph = algorithm.search(dataSet, parameters);
             }
@@ -95,10 +96,10 @@ public class Fges implements Algorithm, TakesInitialGraph, HasKnowledge, UsesSco
             DataSet data = (DataSet) dataSet;
             GeneralResamplingTest search = new GeneralResamplingTest(data, fges, parameters.getInt(Params.NUMBER_RESAMPLING));
             search.setKnowledge(knowledge);
-            
+
             search.setPercentResampleSize(parameters.getDouble(Params.PERCENT_RESAMPLE_SIZE));
             search.setResamplingWithReplacement(parameters.getBoolean(Params.RESAMPLING_WITH_REPLACEMENT));
-            
+
             ResamplingEdgeEnsemble edgeEnsemble = ResamplingEdgeEnsemble.Highest;
             switch (parameters.getInt(Params.RESAMPLING_ENSEMBLE, 1)) {
                 case 0:
@@ -112,7 +113,7 @@ public class Fges implements Algorithm, TakesInitialGraph, HasKnowledge, UsesSco
             }
             search.setEdgeEnsemble(edgeEnsemble);
             search.setAddOriginalDataset(parameters.getBoolean(Params.ADD_ORIGINAL_DATASET));
-            
+
             search.setParameters(parameters);
             search.setVerbose(parameters.getBoolean(Params.VERBOSE));
             return search.search();
@@ -122,11 +123,11 @@ public class Fges implements Algorithm, TakesInitialGraph, HasKnowledge, UsesSco
 
     @Override
     public Graph getComparisonGraph(Graph graph) {
-        if (compareToTrue) {
-            return new EdgeListGraph(graph);
-        } else {
-            return SearchGraphUtils.patternForDag(new EdgeListGraph(graph));
-        }
+//        if (compareToTrue) {
+        return new EdgeListGraph(graph);
+//        } else {
+//            return SearchGraphUtils.patternForDag(new EdgeListGraph(graph));
+//        }
     }
 
     @Override
@@ -185,7 +186,7 @@ public class Fges implements Algorithm, TakesInitialGraph, HasKnowledge, UsesSco
     public void setScoreWrapper(ScoreWrapper score) {
         this.score = score;
     }
-    
+
     @Override
     public ScoreWrapper getScoreWrapper() {
         return score;

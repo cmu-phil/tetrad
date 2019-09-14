@@ -57,7 +57,6 @@ public class ArrowConfusion {
         //    System.out.println(this.truth.getEdges());
 
         for (Edge edge : this.truth.getEdges()) {
-
             List<Edge> edges1 = this.est.getEdges(edge.getNode1(), edge.getNode2());
             Edge edge1;
 

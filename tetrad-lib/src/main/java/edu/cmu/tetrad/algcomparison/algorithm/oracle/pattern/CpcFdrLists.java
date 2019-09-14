@@ -9,7 +9,6 @@ import edu.cmu.tetrad.annotation.Bootstrapping;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.search.SearchGraphUtils;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 import edu.pitt.dbmi.algo.resampling.GeneralResamplingTest;
@@ -25,32 +24,31 @@ import java.util.List;
  * @author jdramsey
  */
 @edu.cmu.tetrad.annotation.Algorithm(
-        name = "CPC-MaxAvg",
-        command = "cpc-maxavg",
+        name = "CPC-FdrLists",
+        command = "cpc-fdrlists",
         algoType = AlgType.produce_undirected_graphs
 )
 @Bootstrapping
-public class CpcMaxAvg implements Algorithm, HasKnowledge, TakesIndependenceWrapper {
+public class CpcFdrLists implements Algorithm, HasKnowledge, TakesIndependenceWrapper {
 
     static final long serialVersionUID = 23L;
     private IndependenceWrapper test;
     private IKnowledge knowledge = new Knowledge2();
 
-    public CpcMaxAvg() {
+    public CpcFdrLists() {
     }
 
-    public CpcMaxAvg(IndependenceWrapper test) {
+    public CpcFdrLists(IndependenceWrapper test) {
         this.test = test;
     }
 
     @Override
     public Graph search(DataModel dataSet, Parameters parameters) {
         if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
-            edu.cmu.tetrad.search.CpcMaxAvg search = new edu.cmu.tetrad.search.CpcMaxAvg(test.getTest(dataSet, parameters));
+            edu.cmu.tetrad.search.CpcFdrLists search = new edu.cmu.tetrad.search.CpcFdrLists(test.getTest(dataSet, parameters));
             search.setDepth(parameters.getInt(Params.DEPTH));
             search.setKnowledge(knowledge);
             search.setVerbose(parameters.getBoolean(Params.VERBOSE));
-            search.setUseMaxTopN(parameters.getInt(Params.USE_MAX_TOP_N));
 
             Object obj = parameters.get(Params.PRINT_STREAM);
             if (obj instanceof PrintStream) {
@@ -59,7 +57,7 @@ public class CpcMaxAvg implements Algorithm, HasKnowledge, TakesIndependenceWrap
 
             return search.search();
         } else {
-            CpcMaxAvg algorithm = new CpcMaxAvg(test);
+            CpcFdrLists algorithm = new CpcFdrLists(test);
 
             DataSet data = (DataSet) dataSet;
             GeneralResamplingTest search = new GeneralResamplingTest(data, algorithm, parameters.getInt(Params.NUMBER_RESAMPLING));
@@ -90,12 +88,12 @@ public class CpcMaxAvg implements Algorithm, HasKnowledge, TakesIndependenceWrap
 
     @Override
     public Graph getComparisonGraph(Graph graph) {
-        return SearchGraphUtils.patternForDag(new EdgeListGraph(graph));
+        return new EdgeListGraph(graph);
     }
 
     @Override
     public String getDescription() {
-        return "CPC-MaxAvg, " + test.getDescription();
+        return "CPC-FdrLists, " + test.getDescription();
     }
 
     @Override
@@ -107,8 +105,6 @@ public class CpcMaxAvg implements Algorithm, HasKnowledge, TakesIndependenceWrap
     public List<String> getParameters() {
         List<String> parameters = new ArrayList<>();
         parameters.add(Params.DEPTH);
-        parameters.add(Params.USE_MAX_TOP_N);
-
         parameters.add(Params.VERBOSE);
         return parameters;
     }

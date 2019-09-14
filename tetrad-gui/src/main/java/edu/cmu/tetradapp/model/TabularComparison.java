@@ -129,7 +129,7 @@ public final class TabularComparison implements SessionModel, SimulationParamsSo
             }
         } else if (referenceName.equals(model2.getName())) {
             if (model2 instanceof Simulation && model1 instanceof GeneralAlgorithmRunner) {
-                this.referenceGraphs = ((GeneralAlgorithmRunner) model1).getCompareGraphs(((Simulation) model2).getGraphs());
+                this.referenceGraphs = ((GeneralAlgorithmRunner) model1).getCompareGraphs(model2.getGraphs());
             } else if (model1 instanceof MultipleGraphSource) {
                 this.referenceGraphs = model2.getGraphs();
             }

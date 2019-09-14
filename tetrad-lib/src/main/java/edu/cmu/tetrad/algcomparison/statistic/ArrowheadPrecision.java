@@ -31,13 +31,7 @@ public class ArrowheadPrecision implements Statistic {
         ArrowConfusion confusion = new ArrowConfusion(trueGraph, estGraph);
         double arrowsTp = confusion.getArrowsTp();
         double arrowsFp = confusion.getArrowsFp();
-        double ahp = arrowsTp / (arrowsTp + arrowsFp);
-
-        System.out.println("True graph = " + trueGraph);
-        System.out.println("Est graph = "+ estGraph);
-        System.out.println("AHP = " + ahp);
-
-        return ahp;
+        return arrowsTp / (arrowsTp + arrowsFp);
     }
 
     @Override

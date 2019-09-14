@@ -162,11 +162,11 @@ public class Comparison {
             count++;
         }
 
-        for (int i = 1; i <= count; i++) {
-            File _dir = new File(dataPath, "save/" + i);
+//        for (int i = 1; i <= count; i++) {
+            File _dir = new File(dataPath, "save");
             simulations.add(new LoadDataAndGraphs(_dir.getAbsolutePath()));
             this.dirs.add(_dir.getAbsolutePath());
-        }
+//        }
 
         compareFromSimulations(this.resultsPath, simulations, algorithms, statistics, parameters);
     }

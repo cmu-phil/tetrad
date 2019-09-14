@@ -44,7 +44,7 @@ public class MeekRules implements ImpliedOrientation {
 
     //True if cycles are to be aggressively prevented. May be expensive for large graphs (but also useful for large
     //graphs).
-    private boolean aggressivelyPreventCycles = false;
+    private boolean aggressivelyPreventCycles = true;
 
     // If knowledge is available.
     boolean useRule4;
@@ -373,8 +373,10 @@ public class MeekRules implements ImpliedOrientation {
         for (Node x : graph.getAdjacentNodes(c)) {
             if (x == a) continue;
 
-            if (graph.getUnderLines().contains(new Triple(c, x, a))) {
-                return;
+            if (graph.getEdge(x, c).pointsTowards(c)) {
+                if (graph.getUnderLines().contains(new Triple(c, x, a))) {
+                    return;
+                }
             }
 
             if (graph.getAmbiguousTriples().contains(new Triple(c, x, a))) {
@@ -383,7 +385,9 @@ public class MeekRules implements ImpliedOrientation {
         }
 
         // No cycles.
-        if (graph.isAncestorOf(c, a)) return;
+        if (aggressivelyPreventCycles) {
+            if (graph.isAncestorOf(c, a)) return;
+        }
 
         if (knowledge != null && knowledge.isForbidden(a.getName(), c.getName())) {
             return;
