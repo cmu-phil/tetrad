@@ -76,8 +76,9 @@ public class PcMaxStudy {
         Algorithms algorithms = new Algorithms();
 
         algorithms.add(new CpcFdrLists(new FisherZ()));
-//        algorithms.add(new PcAll(new FisherZ()));
-//        algorithms.add(new Fges(new SemBicScore()));
+        algorithms.add(new Pcp(new FisherZ()));
+        algorithms.add(new PcAll(new FisherZ()));
+        algorithms.add(new Fges(new SemBicScore()));
 
         Comparison comparison = new Comparison();
 
