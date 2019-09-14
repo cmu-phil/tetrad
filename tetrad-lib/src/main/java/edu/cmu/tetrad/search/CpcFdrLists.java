@@ -305,7 +305,7 @@ public class CpcFdrLists implements IFas {
                     }
                 }
 
-                double q = test.getAlpha();
+                double q = .1;//test.getAlpha();
 
                 boolean existsb = existsSepsetFromList(bPvals, q);
                 boolean existsnotb = existsSepsetFromList(notbPvals, q);
