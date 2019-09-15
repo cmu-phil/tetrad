@@ -56,7 +56,7 @@ public class CpcFdrLists implements IFas {
     private IndependenceTest test;
 
     /**
-     * Specification of which edges are forbidden or required.
+     * Knowledge.
      */
     private IKnowledge knowledge = new Knowledge2();
 
@@ -139,6 +139,9 @@ public class CpcFdrLists implements IFas {
         return depth;
     }
 
+    /**
+     * Specification of which edges are forbidden or required.
+     */
     public IKnowledge getKnowledge() {
         return knowledge;
     }
@@ -233,21 +236,34 @@ public class CpcFdrLists implements IFas {
         orientTriples(depth, graph);
 
         MeekRules meekRules = new MeekRules();
-        meekRules.setKnowledge(knowledge);
+        meekRules.setKnowledge(getKnowledge());
         meekRules.setAggressivelyPreventCycles(isAggressivelyPreventCycles());
         meekRules.orientImplied(graph);
+
+        // Remove unnecessary marks.
+        for (Triple triple : graph.getUnderLines()) {
+            graph.removeUnderlineTriple(triple.getX(), triple.getY(), triple.getZ());
+        }
+
+        for (Triple triple : graph.getAmbiguousTriples()) {
+            if (graph.getEdge(triple.getX(), triple.getY()).pointsTowards(triple.getX())) {
+                graph.removeAmbiguousTriple(triple.getX(), triple.getY(), triple.getZ());
+            }
+
+            if (graph.getEdge(triple.getZ(), triple.getY()).pointsTowards(triple.getZ())) {
+                graph.removeAmbiguousTriple(triple.getX(), triple.getY(), triple.getZ());
+            }
+
+            if (graph.getEdge(triple.getX(), triple.getY()).pointsTowards(triple.getY())
+                    && graph.getEdge(triple.getZ(), triple.getY()).pointsTowards(triple.getY())) {
+                graph.removeAmbiguousTriple(triple.getX(), triple.getY(), triple.getZ());
+            }
+        }
 
         long stop = System.currentTimeMillis();
         this.elapsedtime = stop - start;
 
         return graph;
-    }
-
-    /**
-     * The FDR q to use for the orientation search.
-     */
-    public double getFdrQ() {
-        return fdrQ;
     }
 
     /**
@@ -287,13 +303,19 @@ public class CpcFdrLists implements IFas {
 
     private void findAdjacencies() {
         FasStable fas = new FasStable(test);
+        fas.setKnowledge(knowledge);
+        fas.setVerbose(verbose);
         this.graph = fas.search();
     }
 
     private void orientTriples(int depth, Graph graph) {
-        List<Node> nodes1 = graph.getNodes();
+        List<Triple> colliders = new ArrayList<>();
+        List<Triple> ambiguous = new ArrayList<>();
+        List<Triple> noncolliders = new ArrayList<>();
 
-        for (Node b : nodes1) {
+        Map<NodePair, List<PValue>> notBMap = new HashMap<>();
+
+        for (Node b : graph.getNodes()) {
             List<Node> adjacentNodes = graph.getAdjacentNodes(b);
 
             if (adjacentNodes.size() < 2) {
@@ -309,10 +331,6 @@ public class CpcFdrLists implements IFas {
 
                 if (graph.isAdjacentTo(a, c)) {
                     continue;
-                }
-
-                if (verbose) {
-                    out.println("Calculating max avg for " + a + " --- " + b + " --- " + c + " depth = " + depth);
                 }
 
                 List<PValue> pValues = getAllPValues(a, c, depth, this.graph, test);
@@ -332,17 +350,65 @@ public class CpcFdrLists implements IFas {
                 boolean existsnotb = existsSepsetFromList(notbPvals, getFdrQ());
 
                 if (existsb && !existsnotb) {
-                    graph.addUnderlineTriple(a, b, c);
-                } else if (!existsb && existsnotb) {
-                    graph.removeEdge(a, b);
-                    graph.removeEdge(c, b);
-                    graph.addDirectedEdge(a, b);
-                    graph.addDirectedEdge(c, b);
+                    noncolliders.add(new Triple(a, b, c));
+                    if (verbose) {
+                        out.println(a + " --- " + b + " --- " + c + " depth = " + depth + ": noncollider"
+                                + " bVals = " + bPvals.size() + " notbVals " + notbPvals.size());
+                    }
+                } else if (!existsb && existsnotb && knowledgeAllowsCollider(a, b, c)) {
+                    colliders.add(new Triple(a, b, c));
+                    notBMap.put(new NodePair(a, c), notbPvals);
+
+                    if (verbose) {
+                        out.println(a + " --- " + b + " --- " + c + " depth = " + depth + ": COLLIDER"
+                                + " bVals = " + bPvals.size() + " notbVals " + notbPvals.size());
+                    }
                 } else {
-                    graph.addAmbiguousTriple(a, b, c);
+                    ambiguous.add(new Triple(a, b, c));
+
+                    if (verbose) {
+                        out.println(a + " --- " + b + " --- " + c + " depth = " + depth + ": ...ambiguous"
+                                + " bVals = " + bPvals.size() + " notbVals " + notbPvals.size());
+                    }
                 }
             }
         }
+
+        colliders.sort(Comparator.comparingDouble(a -> -notBMap.get(new NodePair(a.getX(), a.getZ())).get(
+                notBMap.get(new NodePair(a.getX(), a.getZ())).size() - 1).getP()));
+
+        for (Triple triple : colliders) {
+            Node a = triple.getX();
+            Node b = triple.getY();
+            Node c = triple.getZ();
+
+            if (!graph.getEdge(a, b).pointsTowards(a) && !graph.getEdge(b, c).pointsTowards(c)) {
+                graph.removeEdge(a, b);
+                graph.removeEdge(c, b);
+                graph.addDirectedEdge(a, b);
+                graph.addDirectedEdge(c, b);
+            }
+        }
+
+        for (Triple triple : noncolliders) {
+            Node a = triple.getX();
+            Node b = triple.getY();
+            Node c = triple.getZ();
+
+            graph.addUnderlineTriple(a, b, c);
+        }
+
+        for (Triple triple : ambiguous) {
+            Node a = triple.getX();
+            Node b = triple.getY();
+            Node c = triple.getZ();
+
+            graph.addAmbiguousTriple(a, b, c);
+        }
+    }
+
+    private boolean knowledgeAllowsCollider(Node a, Node b, Node c) {
+        return !knowledge.isForbidden(a.getName(), b.getName()) && !knowledge.isForbidden(c.getName(), b.getName());
     }
 
     private List<PValue> getAllPValues(Node a, Node c, int depth, Graph graph, IndependenceTest test) {
@@ -386,11 +452,20 @@ public class CpcFdrLists implements IFas {
 
         double cutoff = StatUtils.fdrCutoff(alpha, _pValues, false, false);
 
+        System.out.println("cutoff = " + cutoff);
+
         for (double p : _pValues) {
             if (p > cutoff) return true;
         }
 
         return false;
+    }
+
+    /**
+     * The FDR q to use for the orientation search.
+     */
+    private double getFdrQ() {
+        return fdrQ;
     }
 }
 
