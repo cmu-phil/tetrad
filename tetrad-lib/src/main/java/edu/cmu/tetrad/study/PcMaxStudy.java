@@ -46,10 +46,11 @@ public class PcMaxStudy {
         Statistics statistics = new Statistics();
 
 //        statistics.add(new ParameterColumn(Params.SAMPLE_SIZE));
-        statistics.add(new ParameterColumn(Params.PENALTY_DISCOUNT));
+//        statistics.add(new ParameterColumn(Params.PENALTY_DISCOUNT));
         statistics.add(new ParameterColumn(Params.ALPHA));
+        statistics.add(new ParameterColumn(Params.FDR_Q));
         statistics.add(new ParameterColumn(Params.AVG_DEGREE));
-        statistics.add(new ParameterColumn(Params.COLLIDER_DISCOVERY_RULE));
+//        statistics.add(new ParameterColumn(Params.COLLIDER_DISCOVERY_RULE));
 
         statistics.add(new AdjacencyPrecision());
         statistics.add(new AdjacencyRecall());
@@ -77,8 +78,8 @@ public class PcMaxStudy {
 
         algorithms.add(new CpcFdrLists(new FisherZ()));
         algorithms.add(new Pcp(new FisherZ()));
-        algorithms.add(new PcAll(new FisherZ()));
-        algorithms.add(new Fges(new SemBicScore()));
+//        algorithms.add(new PcAll(new FisherZ()));
+//        algorithms.add(new Fges(new SemBicScore()));
 
         Comparison comparison = new Comparison();
 
@@ -136,13 +137,13 @@ public class PcMaxStudy {
 //
 //        parameters.set(Params.USE_SELLKE_ADJUSTMENT, false);
 
-        parameters.set(Params.NUM_RUNS, 10);
+        parameters.set(Params.NUM_RUNS, 5);
         parameters.set(Params.DEPTH, -1);
         parameters.set(Params.ALPHA, 0.01);
-        parameters.set(Params.FDR_Q, 0.2);
+        parameters.set(Params.FDR_Q, 0.001);
         parameters.set(Params.PENALTY_DISCOUNT, 6);
-        parameters.set(Params.NUM_MEASURES, 100);
-        parameters.set(Params.AVG_DEGREE, 6);
+        parameters.set(Params.NUM_MEASURES, 20);
+        parameters.set(Params.AVG_DEGREE, 4);
         parameters.set(Params.COLLIDER_DISCOVERY_RULE, 1, 2, 3);
         parameters.set(Params.SAMPLE_SIZE, 1000);
 

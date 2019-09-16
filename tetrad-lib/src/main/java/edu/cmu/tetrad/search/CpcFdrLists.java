@@ -357,6 +357,8 @@ public class CpcFdrLists implements IFas {
                     }
                 } else if (!existsb && existsnotb && knowledgeAllowsCollider(a, b, c)) {
                     colliders.add(new Triple(a, b, c));
+
+                    notbPvals.sort(Comparator.comparingDouble(PValue::getP));
                     notBMap.put(new NodePair(a, c), notbPvals);
 
                     if (verbose) {
@@ -451,8 +453,6 @@ public class CpcFdrLists implements IFas {
         }
 
         double cutoff = StatUtils.fdrCutoff(alpha, _pValues, false, false);
-
-        System.out.println("cutoff = " + cutoff);
 
         for (double p : _pValues) {
             if (p > cutoff) return true;
