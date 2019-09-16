@@ -37,7 +37,7 @@ import java.util.*;
  *
  * @author Joseph Ramsey.
  */
-public class CpcFdrLists implements IFas {
+public class CpcFdrLists implements GraphSearch {
 
     /**
      * The search graph. It is assumed going in that all of the true adjacencies of x are in this graph for every node
@@ -87,11 +87,6 @@ public class CpcFdrLists implements IFas {
     private PrintStream out = System.out;
 
     /**
-     * True if the Meek rules should prevent cycles from being oriented.
-     */
-    private boolean isAggressivelyPreventCycles = true;
-
-    /**
      * The elapsed time in milliseconds.
      */
     private long elapsedtime = 0;
@@ -138,6 +133,17 @@ public class CpcFdrLists implements IFas {
     public int getDepth() {
         return depth;
     }
+    
+    /**
+     * The FDR q to use for the orientation search.
+     */
+    public void setFdrQ(double fdrQ) {
+        if (fdrQ < 0 || fdrQ > 1) {
+            throw new IllegalArgumentException("FDR q must be in [0, 1]: " + fdrQ);
+        }
+
+        this.fdrQ = fdrQ;
+    }
 
     /**
      * Specification of which edges are forbidden or required.
@@ -155,10 +161,6 @@ public class CpcFdrLists implements IFas {
 
     public int getNumIndependenceTests() {
         return 0;
-    }
-
-    public void setTrueGraph(Graph trueGraph) {
-        throw new UnsupportedOperationException("The true graph is not used in this class.");
     }
 
     public int getNumFalseDependenceJudgments() {
@@ -181,44 +183,13 @@ public class CpcFdrLists implements IFas {
         this.verbose = verbose;
     }
 
-    @Override
-    public boolean isAggressivelyPreventCycles() {
-        return isAggressivelyPreventCycles;
-    }
-
-    @Override
-    public void setAggressivelyPreventCycles(boolean aggressivelyPreventCycles) {
-        this.isAggressivelyPreventCycles = aggressivelyPreventCycles;
-    }
-
-    @Override
-    public IndependenceTest getIndependenceTest() {
-        return test;
-    }
-
-    @Override
-    public Graph search(List<Node> nodes) {
-        return null;
+    public void setOut(PrintStream out) {
+        this.out = out;
     }
 
     @Override
     public long getElapsedTime() {
         return elapsedtime;
-    }
-
-    @Override
-    public List<Node> getNodes() {
-        return test.getVariables();
-    }
-
-    @Override
-    public List<Triple> getAmbiguousTriples(Node node) {
-        return null;
-    }
-
-    @Override
-    public void setOut(PrintStream out) {
-        this.out = out;
     }
 
     //==============================PRIVATE METHODS======================//
@@ -237,7 +208,7 @@ public class CpcFdrLists implements IFas {
 
         MeekRules meekRules = new MeekRules();
         meekRules.setKnowledge(getKnowledge());
-        meekRules.setAggressivelyPreventCycles(isAggressivelyPreventCycles());
+        meekRules.setAggressivelyPreventCycles(true);
         meekRules.orientImplied(graph);
 
         // Remove unnecessary marks.
@@ -264,17 +235,6 @@ public class CpcFdrLists implements IFas {
         this.elapsedtime = stop - start;
 
         return graph;
-    }
-
-    /**
-     * The FDR q to use for the orientation search.
-     */
-    public void setFdrQ(double fdrQ) {
-        if (fdrQ < 0 || fdrQ > 1) {
-            throw new IllegalArgumentException("FDR q must be in [0, 1]: " + fdrQ);
-        }
-
-        this.fdrQ = fdrQ;
     }
 
     private static class PValue {
