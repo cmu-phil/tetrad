@@ -46,11 +46,6 @@ public class CpcFdrLists implements GraphSearch {
     private Graph graph;
 
     /**
-     * The search nodes.
-     */
-    private List<Node> nodes;
-
-    /**
      * The independence test. This should be appropriate to the types
      */
     private IndependenceTest test;
@@ -70,11 +65,6 @@ public class CpcFdrLists implements GraphSearch {
      * The logger, by default the empty logger.
      */
     private TetradLogger logger = TetradLogger.getInstance();
-
-    /**
-     * The sepsets found during the search.
-     */
-    private SepsetMap sepset = new SepsetMap();
 
     /**
      * True iff verbose output should be printed.
@@ -101,7 +91,6 @@ public class CpcFdrLists implements GraphSearch {
 
     public CpcFdrLists(IndependenceTest test) {
         this.test = test;
-        this.nodes = test.getVariables();
     }
 
     //==========================PUBLIC METHODS===========================//
@@ -118,7 +107,7 @@ public class CpcFdrLists implements GraphSearch {
      */
     public Graph search() {
         this.logger.log("info", "Starting Fast Adjacency Search.");
-        return mainLoop();
+        return main();
     }
 
     public void setDepth(int depth) {
@@ -130,10 +119,6 @@ public class CpcFdrLists implements GraphSearch {
         this.depth = depth;
     }
 
-    public int getDepth() {
-        return depth;
-    }
-    
     /**
      * The FDR q to use for the orientation search.
      */
@@ -158,23 +143,6 @@ public class CpcFdrLists implements GraphSearch {
         }
         this.knowledge = knowledge;
     }
-
-    public int getNumIndependenceTests() {
-        return 0;
-    }
-
-    public int getNumFalseDependenceJudgments() {
-        return 0;
-    }
-
-    public int getNumDependenceJudgments() {
-        return 0;
-    }
-
-    public SepsetMap getSepsets() {
-        return sepset;
-    }
-
     public boolean isVerbose() {
         return verbose;
     }
@@ -194,13 +162,8 @@ public class CpcFdrLists implements GraphSearch {
 
     //==============================PRIVATE METHODS======================//
 
-    private Graph mainLoop() {
+    private Graph main() {
         long start = System.currentTimeMillis();
-
-        sepset = new SepsetMap();
-
-        graph = new EdgeListGraph(nodes);
-        graph = GraphUtils.completeGraph(graph);
 
         findAdjacencies();
 
@@ -318,7 +281,7 @@ public class CpcFdrLists implements GraphSearch {
                 } else if (!existsb && existsnotb && knowledgeAllowsCollider(a, b, c)) {
                     colliders.add(new Triple(a, b, c));
 
-                    notbPvals.sort(Comparator.comparingDouble(PValue::getP));
+                    notbPvals.sort((p1, p2) -> Double.compare(p2.getP(), p1.getP()));
                     notBMap.put(new NodePair(a, c), notbPvals);
 
                     if (verbose) {
@@ -336,8 +299,7 @@ public class CpcFdrLists implements GraphSearch {
             }
         }
 
-        colliders.sort(Comparator.comparingDouble(a -> -notBMap.get(new NodePair(a.getX(), a.getZ())).get(
-                notBMap.get(new NodePair(a.getX(), a.getZ())).size() - 1).getP()));
+        colliders.sort(Comparator.comparingDouble(a -> -notBMap.get(new NodePair(a.getX(), a.getZ())).get(0).getP()));
 
         for (Triple triple : colliders) {
             Node a = triple.getX();
