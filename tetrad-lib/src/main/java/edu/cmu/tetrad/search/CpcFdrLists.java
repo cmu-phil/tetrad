@@ -272,15 +272,13 @@ public class CpcFdrLists implements GraphSearch {
                 List<PValue> existsb = pValuesAboveCutoff(bPvals, getFdrQ());
                 List<PValue> existsnotb = pValuesAboveCutoff(notbPvals, getFdrQ());
 
-                if (!existsb.isEmpty() && existsnotb.isEmpty()
-                        && getProd(existsb) < test.getAlpha()) {
+                if (!existsb.isEmpty() && existsnotb.isEmpty()) {
                     noncolliders.add(new Triple(a, b, c));
                     if (verbose) {
                         out.println(a + " --- " + b + " --- " + c + " depth = " + depth + ": noncollider"
                                 + " bVals = " + bPvals.size() + " notbVals " + notbPvals.size());
                     }
-                } else if (existsb.isEmpty() && !existsnotb.isEmpty() && knowledgeAllowsCollider(a, b, c)
-                        && getProd(existsnotb) < test.getAlpha()) {
+                } else if (existsb.isEmpty() && !existsnotb.isEmpty() && knowledgeAllowsCollider(a, b, c)) {
                     colliders.add(new Triple(a, b, c));
 
                     notbPvals.sort((p1, p2) -> Double.compare(p2.getP(), p1.getP()));
@@ -341,15 +339,6 @@ public class CpcFdrLists implements GraphSearch {
 
             graph.addAmbiguousTriple(a, b, c);
         }
-    }
-
-    private double getProd(List<PValue> existsnotb) {
-        double prod = 1.0;
-
-        for (PValue p : existsnotb) {
-            prod *= p.getP();
-        }
-        return prod;
     }
 
     private boolean knowledgeAllowsCollider(Node a, Node b, Node c) {
