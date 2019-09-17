@@ -269,16 +269,18 @@ public class CpcFdrLists implements GraphSearch {
                     }
                 }
 
-                boolean existsb = existsSepsetFromList(bPvals, getFdrQ());
-                boolean existsnotb = existsSepsetFromList(notbPvals, getFdrQ());
+                List<PValue> existsb = pValuesAboveCutoff(bPvals, getFdrQ());
+                List<PValue> existsnotb = pValuesAboveCutoff(notbPvals, getFdrQ());
 
-                if (existsb && !existsnotb) {
+                if (!existsb.isEmpty() && existsnotb.isEmpty()
+                        && getProd(existsb) < test.getAlpha()) {
                     noncolliders.add(new Triple(a, b, c));
                     if (verbose) {
                         out.println(a + " --- " + b + " --- " + c + " depth = " + depth + ": noncollider"
                                 + " bVals = " + bPvals.size() + " notbVals " + notbPvals.size());
                     }
-                } else if (!existsb && existsnotb && knowledgeAllowsCollider(a, b, c)) {
+                } else if (existsb.isEmpty() && !existsnotb.isEmpty() && knowledgeAllowsCollider(a, b, c)
+                        && getProd(existsnotb) < test.getAlpha()) {
                     colliders.add(new Triple(a, b, c));
 
                     notbPvals.sort((p1, p2) -> Double.compare(p2.getP(), p1.getP()));
@@ -289,6 +291,16 @@ public class CpcFdrLists implements GraphSearch {
                                 + " bVals = " + bPvals.size() + " notbVals " + notbPvals.size());
                     }
                 } else {
+                    pValues.sort((o1, o2) -> Double.compare(o2.getP(), o1.getP()));
+
+//                    if (pValues.get(0).getSepset().contains(b)) {
+//                        noncolliders.add(new Triple(a, b, c));
+//                    } else {
+//                        colliders.add(new Triple(a, b, c));
+//                        notbPvals.sort((p1, p2) -> Double.compare(p2.getP(), p1.getP()));
+//                        notBMap.put(new NodePair(a, c), notbPvals);
+//                    }
+
                     ambiguous.add(new Triple(a, b, c));
 
                     if (verbose) {
@@ -331,6 +343,15 @@ public class CpcFdrLists implements GraphSearch {
         }
     }
 
+    private double getProd(List<PValue> existsnotb) {
+        double prod = 1.0;
+
+        for (PValue p : existsnotb) {
+            prod *= p.getP();
+        }
+        return prod;
+    }
+
     private boolean knowledgeAllowsCollider(Node a, Node b, Node c) {
         return !knowledge.isForbidden(a.getName(), b.getName()) && !knowledge.isForbidden(c.getName(), b.getName());
     }
@@ -365,22 +386,27 @@ public class CpcFdrLists implements GraphSearch {
         return pValues;
     }
 
-    private boolean existsSepsetFromList(List<PValue> pValues, double alpha) {
-        if (pValues.isEmpty()) return false;
+    private List<PValue> pValuesAboveCutoff(List<PValue> pValues, double alpha) {
+        double cutoff = getCutoff(pValues, alpha);
+        List<PValue> aboveCutoff = new ArrayList<>();
 
+        for (PValue p : pValues) {
+            if (p.getP() > cutoff) {
+                aboveCutoff.add(p);
+            }
+        }
+
+        return aboveCutoff;
+    }
+
+    private double getCutoff(List<PValue> pValues, double alpha) {
         List<Double> _pValues = new ArrayList<>();
 
         for (PValue p : pValues) {
             _pValues.add(p.getP());
         }
 
-        double cutoff = StatUtils.fdrCutoff(alpha, _pValues, false, false);
-
-        for (double p : _pValues) {
-            if (p > cutoff) return true;
-        }
-
-        return false;
+        return StatUtils.fdrCutoff(alpha, _pValues, false, false);
     }
 
     /**
