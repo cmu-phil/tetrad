@@ -110,8 +110,8 @@ public class PcAll implements Algorithm, TakesInitialGraph, HasKnowledge, TakesI
             OrientColliders.IndependenceDetectionMethod independence_detection_method
                     = OrientColliders.IndependenceDetectionMethod.ALPHA;
 
-            if (parameters.getBoolean(Params.FAITHFULNESS_ASSUMED)) {
-                independence_detection_method = OrientColliders.IndependenceDetectionMethod.ALPHA.FDR;
+            if (parameters.getBoolean(Params.USE_FDR_FOR_INDEPENDENCE)) {
+                independence_detection_method = OrientColliders.IndependenceDetectionMethod.FDR;
             }
 
             search.setFdrQ(parameters.getDouble(Params.FDR_Q));
