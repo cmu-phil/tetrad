@@ -38,12 +38,10 @@ import java.util.*;
 public final class PcAll implements GraphSearch {
 
 
-    public void setIndependenceMethod(OrientColliders.IndependenceDetectionMethod independenceMethod) {
-        this.independenceMethod = independenceMethod;
-    }
-
     public enum FasType {REGULAR, STABLE}
+
     public enum Concurrent {YES, NO}
+
     private FasType fasType = FasType.REGULAR;
     private Concurrent concurrent = Concurrent.YES;
 
@@ -85,6 +83,10 @@ public final class PcAll implements GraphSearch {
     }
 
     //==============================PUBLIC METHODS========================//
+
+    public void setIndependenceMethod(OrientColliders.IndependenceDetectionMethod independenceMethod) {
+        this.independenceMethod = independenceMethod;
+    }
 
     public void setUseHeuristic(boolean useHeuristic) {
         this.useHeuristic = useHeuristic;
@@ -246,7 +248,6 @@ public final class PcAll implements GraphSearch {
             throw new IllegalArgumentException("All of the given nodes must " +
                     "be in the domain of the independence test provided.");
         }
-
 
 
         SearchGraphUtils.pcOrientbk(knowledge, graph, nodes);
