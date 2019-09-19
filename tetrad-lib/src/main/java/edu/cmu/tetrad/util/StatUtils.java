@@ -1560,7 +1560,7 @@ public final class StatUtils {
      * with p-values less than or equal to this cutoff should be rejected
      * according to the test.
      *
-     * @param alpha                The desired effective significance level.
+     * @param q                The desired effective significance level.
      * @param pValues              An list containing p-values to be tested in
      *                             positions 0, 1, ..., n. (The rest of the
      *                             array is ignored.) <i>Note:</i> This array
@@ -1570,22 +1570,22 @@ public final class StatUtils {
      * @param negativelyCorrelated Whether the p-values in the array
      *                             <code>pValues </code> are negatively correlated (true if
      *                             yes, false if no). If they are uncorrelated, or positively correlated,
-     *                             a level of alpha is used; if they are not
-     *                             correlated, a level of alpha / SUM_i=1_n(1 /
+     *                             a level of q is used; if they are not
+     *                             correlated, a level of q / SUM_i=1_n(1 /
      *                             i) is used.
-     * @return the FDR alpha, which is the first p-value sorted high to low to
+     * @return the FDR q, which is the first p-value sorted high to low to
      * fall below a line from (1.0, level) to (0.0, 0.0). Hypotheses
      * less than or equal to this p-value should be rejected.
      */
-    public static double fdrCutoff(double alpha, List<Double> pValues, boolean negativelyCorrelated, boolean pSorted) {
-        return fdrCutoff(alpha, pValues, new int[1], negativelyCorrelated, pSorted);
+    public static double fdrCutoff(double q, List<Double> pValues, boolean negativelyCorrelated, boolean pSorted) {
+        return fdrCutoff(q, pValues, new int[1], negativelyCorrelated, pSorted);
     }
 
-    public static double fdrCutoff(double alpha, List<Double> pValues, boolean negativelyCorrelated) {
-        return fdrCutoff(alpha, pValues, new int[1], negativelyCorrelated, false);
+    public static double fdrCutoff(double q, List<Double> pValues, boolean negativelyCorrelated) {
+        return fdrCutoff(q, pValues, new int[1], negativelyCorrelated, false);
     }
 
-    public static double fdrCutoff(double alpha, List<Double> pValues, int[] _k, boolean negativelyCorrelated, boolean pSorted) {
+    public static double fdrCutoff(double q, List<Double> pValues, int[] _k, boolean negativelyCorrelated, boolean pSorted) {
         if (_k.length != 1) {
             throw new IllegalArgumentException("k must be a length 1 int array, to return the index of q.");
         }
@@ -1595,7 +1595,7 @@ public final class StatUtils {
             Collections.sort(pValues);
         }
 
-        _k[0] = fdr(alpha, pValues, negativelyCorrelated, true);
+        _k[0] = fdr(q, pValues, negativelyCorrelated, true);
         return _k[0] == -1 ? 0 : pValues.get(_k[0]);
     }
 
@@ -1603,11 +1603,11 @@ public final class StatUtils {
      * @return the index, >=, in the sorted list of p values of which all p values are rejected. It
      * the index is -1, all p values are rejected.
      */
-    public static int fdr(double alpha, List<Double> pValues) {
-        return fdr(alpha, pValues, true, false);
+    public static int fdr(double q, List<Double> pValues) {
+        return fdr(q, pValues, true, false);
     }
 
-    public static int fdr(double alpha, List<Double> pValues, boolean negativelyCorrelated, boolean pSorted) {
+    public static int fdr(double q, List<Double> pValues, boolean negativelyCorrelated, boolean pSorted) {
         if (!pSorted) {
             pValues = new ArrayList<>(pValues);
             Collections.sort(pValues);
@@ -1628,24 +1628,24 @@ public final class StatUtils {
             int _k = -1;
 
             for (int k = 0; k < m; k++) {
-                if (pValues.get(k) <= ((k + 1) / (c[k] * (m + 1))) * alpha) {
+                if (pValues.get(k) <= ((k + 1) / (c[k] * (m + 1))) * q) {
                     _k = k;
                 }
             }
 
-            // Return the largest k such that P(k) <= (k / m) * alpha.
+            // Return the largest k such that P(k) <= (k / m) * q.
             return _k;
 
         } else {
             int _k = -1;
 
             for (int k = 0; k < m; k++) {
-                if (pValues.get(k) <= ((k + 1) / (double) (m + 1)) * alpha) {
+                if (pValues.get(k) <= ((k + 1) / (double) (m + 1)) * q) {
                     _k = k;
                 }
             }
 
-            // Return the largest k such that P(k) <= (k / m) * alpha.
+            // Return the largest k such that P(k) <= (k / m) * q.
             return _k;
 
         }

@@ -3386,7 +3386,7 @@ there is a single latent for each output cluster. For MimBuild, a pattern over t
 
         <h3 id="colliderDiscoveryRule" class="parameter_description">colliderDiscoveryRule</h3>
         <ul class="parameter_description_list">
-            <li>Short Description: <span id="colliderDiscoveryRule_short_desc">Collider discovery: 1 = Lookup from adjacency sepsets, 2 = Conservative (CPC), 3 = Max-P</span>
+            <li>Short Description: <span id="colliderDiscoveryRule_short_desc">Collider discovery: 1 = Sepsets, 2 = CPC, 3 = MPC, 4 = PC-Max</span>
             </li>
             <li>Long Description: <span id="colliderDiscoveryRule_long_desc">For variants of PC, one may choose from one of three different ways for orienting colliders. One may look them up from sepsets, as in the original PC, or estimate them conservatively, as from the Conservative PC algorithm, or by choosing the sepsets with the maximum p-value. In simulation, CPC (default = 2) works the best for sample sizes greater than 100; for very small sample sizes, PC-Max generally works better.</span>
             </li>
@@ -4823,6 +4823,19 @@ Usually covariance values are chosen from U(-b, -a) U U(a, b) for some a, b; thi
             <li>Lower Bound: <span id="useFasAdjacencies_lower_bound"></span></li>
             <li>Upper Bound: <span id="useFasAdjacencies_upper_bound"></span></li>
             <li>Value Type: <span id="useFasAdjacencies_value_type">Boolean</span></li>
+        </ul>
+
+        <h3 id="useFdrForIndependence" class="parameter_description">useFasAdjacencies</h3>
+        <ul class="parameter_description_list">
+            <li>Short Description: <span id="useFdrForIndependence_short_desc">Yes if FDR should be used for independence judgments</span>
+            </li>
+            <li>Long Description: <span id="useFdrForIndependence_long_desc">
+                Yes if the False Discovery Rate should be used to sort p-values into positives and negatives for independence judgments</span>
+            </li>
+            <li>Default Value: <span id="useFdrForIndependence_default_value">true</span></li>
+            <li>Lower Bound: <span id="useFdrForIndependence_lower_bound"></span></li>
+            <li>Upper Bound: <span id="useFdrForIndependence_upper_bound"></span></li>
+            <li>Value Type: <span id="useFdrForIndependence_value_type">Boolean</span></li>
         </ul>
 
         <h3 id="useGap" class="parameter_description">useGap</h3>

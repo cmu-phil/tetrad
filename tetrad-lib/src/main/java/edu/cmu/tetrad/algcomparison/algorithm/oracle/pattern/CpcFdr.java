@@ -6,6 +6,7 @@ import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.algcomparison.utils.TakesIndependenceWrapper;
 import edu.cmu.tetrad.annotation.AlgType;
 import edu.cmu.tetrad.annotation.Bootstrapping;
+import edu.cmu.tetrad.annotation.Experimental;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
@@ -24,28 +25,29 @@ import java.util.List;
  * @author jdramsey
  */
 @edu.cmu.tetrad.annotation.Algorithm(
-        name = "CPC-FdrLists",
-        command = "cpc-fdrlists",
+        name = "CPC-Fdr",
+        command = "cpc-fdr",
         algoType = AlgType.produce_undirected_graphs
 )
+@Experimental
 @Bootstrapping
-public class CpcFdrLists implements Algorithm, HasKnowledge, TakesIndependenceWrapper {
+public class CpcFdr implements Algorithm, HasKnowledge, TakesIndependenceWrapper {
 
     static final long serialVersionUID = 23L;
     private IndependenceWrapper test;
     private IKnowledge knowledge = new Knowledge2();
 
-    public CpcFdrLists() {
+    public CpcFdr() {
     }
 
-    public CpcFdrLists(IndependenceWrapper test) {
+    public CpcFdr(IndependenceWrapper test) {
         this.test = test;
     }
 
     @Override
     public Graph search(DataModel dataSet, Parameters parameters) {
         if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
-            edu.cmu.tetrad.search.CpcFdrLists search = new edu.cmu.tetrad.search.CpcFdrLists(test.getTest(dataSet, parameters));
+            edu.cmu.tetrad.search.CpcFdr search = new edu.cmu.tetrad.search.CpcFdr(test.getTest(dataSet, parameters));
             search.setDepth(parameters.getInt(Params.DEPTH));
             search.setFdrQ(parameters.getDouble(Params.FDR_Q));
             search.setKnowledge(knowledge);
@@ -58,7 +60,7 @@ public class CpcFdrLists implements Algorithm, HasKnowledge, TakesIndependenceWr
 
             return search.search();
         } else {
-            CpcFdrLists algorithm = new CpcFdrLists(test);
+            CpcFdr algorithm = new CpcFdr(test);
 
             DataSet data = (DataSet) dataSet;
             GeneralResamplingTest search = new GeneralResamplingTest(data, algorithm, parameters.getInt(Params.NUMBER_RESAMPLING));
@@ -94,7 +96,7 @@ public class CpcFdrLists implements Algorithm, HasKnowledge, TakesIndependenceWr
 
     @Override
     public String getDescription() {
-        return "CPC-FdrLists, " + test.getDescription();
+        return "CPC-Fdr, " + test.getDescription();
     }
 
     @Override

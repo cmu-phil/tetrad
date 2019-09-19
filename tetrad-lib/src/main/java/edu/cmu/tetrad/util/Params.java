@@ -166,6 +166,7 @@ public final class Params {
     public static final String UPPER_BOUND = "upperBound";
     public static final String USE_CORR_DIFF_ADJACENCIES = "useCorrDiffAdjacencies";
     public static final String USE_FAS_ADJACENCIES = "useFasAdjacencies";
+    public static final String USE_FDR_FOR_INDEPENDENCE = "useFdrForIndependence";
     public static final String USE_GAP = "useGap";
     public static final String USE_MAX_P_ORIENTATION_HEURISTIC = "useMaxPOrientationHeuristic";
     public static final String USE_SELLKE_ADJUSTMENT = "useSellkeAdjustment";

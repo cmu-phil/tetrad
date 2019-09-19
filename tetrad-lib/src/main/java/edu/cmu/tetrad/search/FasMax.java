@@ -164,7 +164,7 @@ public class FasMax implements IFas {
             } while (more);
 
             final OrientCollidersMaxP orientCollidersMaxP = new OrientCollidersMaxP(test);
-            orientCollidersMaxP.setConflictRule(PcAll.ConflictRule.PRIORITY);
+            orientCollidersMaxP.setConflictRule(OrientColliders.ConflictRule.PRIORITY);
             orientCollidersMaxP.setDepth(depth);
             orientCollidersMaxP.orient(graph);
 

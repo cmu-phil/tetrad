@@ -303,6 +303,7 @@ public class Fas implements IFas {
                 }
 
                 if (independent) {
+                    getSepsets().setPValue(x, y, test.getPValue());
                     numIndependenceJudgements++;
                 } else {
                     numDependenceJudgement++;

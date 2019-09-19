@@ -309,9 +309,8 @@ public class FasStable implements IFas {
 
 
                 if (independent && noEdgeRequired) {
-                    if (!getSepsets().isReturnEmptyIfNotSet()) {
-                        getSepsets().set(x, y, empty);
-                    }
+                    getSepsets().set(x, y, empty);
+                    getSepsets().setPValue(x, y, test.getPValue());
 
                     if (verbose) {
                         TetradLogger.getInstance().forceLogMessage(SearchLogUtils.independenceFact(x, y, empty) + " p = " +
@@ -412,6 +411,7 @@ public class FasStable implements IFas {
                         }
 
                         if (independent) {
+                            getSepsets().setPValue(x, y, test.getPValue());
                             numIndependenceJudgements++;
                         } else {
                             numDependenceJudgement++;
@@ -425,6 +425,7 @@ public class FasStable implements IFas {
                             adjacencies.get(y).remove(x);
 
                             getSepsets().set(x, y, condSet);
+                            getSepsets().setPValue(x, y, test.getPValue());
 
                             if (verbose) {
                                 TetradLogger.getInstance().forceLogMessage(SearchLogUtils.independenceFact(x, y, condSet) + " p = " +
