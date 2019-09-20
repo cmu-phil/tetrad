@@ -181,7 +181,7 @@ public class CpcFdr implements GraphSearch {
         orientColliders.setConflictRule(OrientColliders.ConflictRule.PRIORITY);
         orientColliders.setIndependenceDetectionMethod(OrientColliders.IndependenceDetectionMethod.FDR);
         orientColliders.setDepth(depth);
-        orientColliders.setFdrQ(fdrQ);
+        orientColliders.setOrientationQ(fdrQ);
         orientColliders.setVerbose(verbose);
         orientColliders.setOut(out);
         orientColliders.orientTriples(graph);

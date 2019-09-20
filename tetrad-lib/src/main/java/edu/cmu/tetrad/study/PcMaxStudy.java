@@ -48,7 +48,7 @@ public class PcMaxStudy {
         statistics.add(new ParameterColumn(Params.USE_FDR_FOR_INDEPENDENCE));
         statistics.add(new ParameterColumn(Params.PENALTY_DISCOUNT));
         statistics.add(new ParameterColumn(Params.ALPHA));
-        statistics.add(new ParameterColumn(Params.FDR_Q));
+        statistics.add(new ParameterColumn(Params.ORIENTATION_Q));
 
 //        statistics.add(new AdjacencyPrecision());
 //        statistics.add(new AdjacencyRecall());
@@ -137,7 +137,7 @@ public class PcMaxStudy {
         parameters.set(Params.NUM_RUNS, 5);
         parameters.set(Params.DEPTH, -1);
         parameters.set(Params.ALPHA, .0001, .001, .01, 0.05);
-        parameters.set(Params.FDR_Q,  1.);
+        parameters.set(Params.ORIENTATION_Q,  1.);
         parameters.set(Params.PENALTY_DISCOUNT, 6);
         parameters.set(Params.NUM_MEASURES, 50);
         parameters.set(Params.AVG_DEGREE, 4);

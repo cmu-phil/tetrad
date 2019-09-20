@@ -237,8 +237,6 @@ public final class PcAll implements GraphSearch {
 
         test.setVerbose(verbose);
 
-        long startTime = System.currentTimeMillis();
-
         if (getTest() == null) {
             throw new NullPointerException();
         }
@@ -256,44 +254,27 @@ public final class PcAll implements GraphSearch {
 
         findAdjacencies();
         orientTriples();
+        graph = GraphUtils.undirectedGraph(graph);
+        orientTriples();
         applyMeekRules();
         removeUnnecessaryMarks();
 
-        long stop = System.currentTimeMillis();
-        this.elapsedTime = stop - start;
-
-        graph = GraphUtils.replaceNodes(graph, nodes);
-
-        MeekRules meekRules = new MeekRules();
-//        meekRules.setAggressivelyPreventCycles(this.aggressivelyPreventCycles);
-        meekRules.setKnowledge(knowledge);
-        meekRules.orientImplied(graph);
-
-        // Remove ambiguities whose status have been determined.
-        Set<Triple> ambiguities = graph.getAmbiguousTriples();
-
-        for (Triple triple : new HashSet<>(ambiguities)) {
-            final Node x = triple.getX();
-            final Node y = triple.getY();
-            final Node z = triple.getZ();
-
-            if (!graph.isAdjacentTo(x, y) || !graph.isAdjacentTo(y, x)) {
-                graph.removeAmbiguousTriple(x, y, z);
-            }
-
-            if (graph.isDefCollider(x, y, z)) {
-                graph.removeAmbiguousTriple(x, y, z);
-            }
-
-            if (graph.getEdge(x, y).pointsTowards(x) || graph.getEdge(y, z).pointsTowards(z)) {
-                graph.removeAmbiguousTriple(x, y, z);
-            }
-        }
+//        for (int i = 0; i < 1; i++) {
+//            addErrantEdges(nodes);
+////            findAdjacencies();
+//
+//
+//            graph = GraphUtils.undirectedGraph(graph);
+//
+//            orientTriples();
+//            applyMeekRules();
+//            removeUnnecessaryMarks();
+//        }
 
         TetradLogger.getInstance().log("graph", "\nReturning this graph: " + graph);
 
-        long endTime = System.currentTimeMillis();
-        this.elapsedTime = endTime - startTime;
+        long end = System.currentTimeMillis();
+        this.elapsedTime = end - start;
 
         TetradLogger.getInstance().log("info", "Elapsed time = " + (elapsedTime) / 1000. + " s");
         TetradLogger.getInstance().log("info", "Finishing CPC algorithm.");
@@ -302,6 +283,40 @@ public final class PcAll implements GraphSearch {
 
         TetradLogger.getInstance().flush();
         return graph;
+    }
+
+    private void addErrantEdges(List<Node> nodes) {
+        graph = SearchGraphUtils.patternFromEPattern(graph);
+        graph = SearchGraphUtils.patternForDag(graph);
+
+        for (int i = 0; i < nodes.size(); i++) {
+            for (int j = i + 1; j < nodes.size(); j++) {
+                Node x = nodes.get(i);
+                Node y = nodes.get(j);
+
+                if (graph.isAdjacentTo(x, y)) continue;
+
+                List<Node> xx = new ArrayList<>();
+                xx.add(x);
+                xx.add(y);
+
+                boolean add = true;
+
+                for (Node w : xx) {
+                    for (Node s : nodes) {
+                        if (!graph.isDescendentOf(w, s)) {
+                            if (!test.isIndependent(w, s, graph.getParents(w))) {
+                                add = false;
+                            }
+                        }
+                    }
+                }
+
+                if (add && !graph.isAdjacentTo(x, y)) {
+                    graph.addUndirectedEdge(x, y);
+                }
+            }
+        }
     }
 
     public static boolean isArrowpointAllowed1(Node from, Node to,
@@ -380,6 +395,10 @@ public final class PcAll implements GraphSearch {
 
         IFas fas;
 
+        if (graph != null) {
+            initialGraph = graph;
+        }
+
         if (fasType == FasType.REGULAR) {
             if (concurrent == Concurrent.NO) {
                 fas = new Fas(initialGraph, getTest());
@@ -418,7 +437,7 @@ public final class PcAll implements GraphSearch {
         orientColliders.setConflictRule(conflictRule);
         orientColliders.setIndependenceDetectionMethod(independenceMethod);
         orientColliders.setDepth(depth);
-        orientColliders.setFdrQ(fdrQ);
+        orientColliders.setOrientationQ(fdrQ);
         orientColliders.setVerbose(verbose);
         orientColliders.setOut(out);
         orientColliders.orientTriples(graph);
