@@ -254,8 +254,6 @@ public final class PcAll implements GraphSearch {
 
         findAdjacencies();
         orientTriples();
-        graph = GraphUtils.undirectedGraph(graph);
-        orientTriples();
         applyMeekRules();
         removeUnnecessaryMarks();
 

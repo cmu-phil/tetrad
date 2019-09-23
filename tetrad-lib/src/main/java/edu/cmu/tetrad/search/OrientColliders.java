@@ -119,8 +119,8 @@ public class OrientColliders {
                             }
                         }
                     } else if (colliderMethod == ColliderMethod.CPC) {
-                        List<PValue> existsb = pValuesAboveCutoff(bPvals, orientationQ, independenceDetectionMethod);
-                        List<PValue> existsnotb = pValuesAboveCutoff(notbPvals, orientationQ, independenceDetectionMethod);
+                        List<PValue> existsb = getNegatives(bPvals, orientationQ);
+                        List<PValue> existsnotb = getNegatives(notbPvals, orientationQ);
 
                         if (!existsb.isEmpty() && existsnotb.isEmpty()) {
                             noncolliders.add(new Triple(a, b, c));
@@ -148,8 +148,8 @@ public class OrientColliders {
                             }
                         }
                     } else if (colliderMethod == ColliderMethod.MPC) {
-                        List<PValue> existsb = pValuesAboveCutoff(bPvals, orientationQ, independenceDetectionMethod);
-                        List<PValue> existsnotb = pValuesAboveCutoff(notbPvals, orientationQ, independenceDetectionMethod);
+                        List<PValue> existsb = getNegatives(bPvals, orientationQ);
+                        List<PValue> existsnotb = getNegatives(notbPvals, orientationQ);
 
                         if (existsb.size() > existsnotb.size()) {
                             noncolliders.add(new Triple(a, b, c));
@@ -176,9 +176,9 @@ public class OrientColliders {
                             }
                         }
                     } else if (colliderMethod == ColliderMethod.PC_MAX) {
-                        List<PValue> above = pValuesAboveCutoff(pValues, orientationQ, independenceDetectionMethod);
+                        List<PValue> above = getNegatives(pValues, orientationQ);
 
-                        above.sort(Comparator.comparingDouble(PValue::getP));
+                        above.sort(comparingDouble(PValue::getP));
 
                         Set<Node> sepset = null;
 
@@ -212,9 +212,9 @@ public class OrientColliders {
                         }
 
                     } else if (colliderMethod == ColliderMethod.FIRST_EMPTY) {
-                        List<PValue> above = pValuesAboveCutoff(pValues, orientationQ, independenceDetectionMethod);
+                        List<PValue> above = getNegatives(pValues, orientationQ);
 
-                        above.sort(Comparator.comparingDouble(PValue::getP));
+                        above.sort(comparingDouble(PValue::getP));
 
                         Set<Node> sepset = null;
 
@@ -332,26 +332,39 @@ public class OrientColliders {
         return pValues;
     }
 
-    private List<PValue> pValuesAboveCutoff(List<PValue> pValues, double alpha, IndependenceDetectionMethod independenceMethod) {
-        double cutoff;
+    private List<PValue> getNegatives(List<PValue> pValues, double alpha) {
+        return extractH1(pValues, alpha);
+    }
 
-        if (independenceMethod == IndependenceDetectionMethod.ALPHA) {
-            cutoff = alpha;
-        } else if (independenceMethod == IndependenceDetectionMethod.FDR) {
-            cutoff = getCutoff(pValues, alpha);
-        } else {
-            throw new IllegalArgumentException("Undefined exists method");
-        }
+    private List<PValue> extractH0(List<PValue> pValues, double alpha) {
+        List<PValue> h1 = extractH1(pValues, alpha);
+        List<PValue> h0 = new ArrayList<>(pValues);
+        h0.removeAll(h1);
+        return h0;
+    }
 
-        List<PValue> aboveCutoff = new ArrayList<>();
+    private List<PValue> extractH1(List<PValue> pValues, double alpha) {
+        pValues.sort(comparingDouble(PValue::getP));
 
-        for (PValue p : pValues) {
-            if (p.getP() > cutoff) {
-                aboveCutoff.add(p);
+        List<PValue> neg = new ArrayList<>();
+
+        int m = pValues.size();
+        double pmax = pValues.get(m - 1).getP();
+
+        int r = m;
+
+        for (int i = m - 1; i >= 1; i--) {
+            double pi = pValues.get(i - 1).getP();
+            double pr = pValues.get(r - 1).getP();
+
+            if (pi < pr - 1. / m && pi >= alpha) {
+                neg.add(pValues.get(i - 1));
+            } else {
+                r = i;
             }
         }
 
-        return aboveCutoff;
+        return neg;
     }
 
     private double getCutoff(List<PValue> pValues, double q) {

@@ -1567,7 +1567,7 @@ public final class StatUtils {
      *                             will not be changed by this class. Its values
      *                             are copied into a separate array before
      *                             sorting.
-     * @param negativelyCorrelated Whether the p-values in the array
+     * @param correlated Whether the p-values in the array
      *                             <code>pValues </code> are negatively correlated (true if
      *                             yes, false if no). If they are uncorrelated, or positively correlated,
      *                             a level of q is used; if they are not
@@ -1577,25 +1577,24 @@ public final class StatUtils {
      * fall below a line from (1.0, level) to (0.0, 0.0). Hypotheses
      * less than or equal to this p-value should be rejected.
      */
-    public static double fdrCutoff(double q, List<Double> pValues, boolean negativelyCorrelated, boolean pSorted) {
-        return fdrCutoff(q, pValues, new int[1], negativelyCorrelated, pSorted);
+    public static double fdrCutoff(double q, List<Double> pValues, boolean correlated, boolean pSorted) {
+        return fdrCutoff(q, pValues, new int[1], correlated, pSorted);
     }
 
-    public static double fdrCutoff(double q, List<Double> pValues, boolean negativelyCorrelated) {
-        return fdrCutoff(q, pValues, new int[1], negativelyCorrelated, false);
+    public static double fdrCutoff(double q, List<Double> pValues, boolean correlated) {
+        return fdrCutoff(q, pValues, new int[1], correlated, false);
     }
 
-    public static double fdrCutoff(double q, List<Double> pValues, int[] _k, boolean negativelyCorrelated, boolean pSorted) {
+    public static double fdrCutoff(double q, List<Double> pValues, int[] _k, boolean correlated, boolean pSorted) {
         if (_k.length != 1) {
             throw new IllegalArgumentException("k must be a length 1 int array, to return the index of q.");
         }
 
         if (!pSorted) {
-//            pValues = new ArrayList<>(pValues);
             Collections.sort(pValues);
         }
 
-        _k[0] = fdr(q, pValues, negativelyCorrelated, true);
+        _k[0] = fdr(q, pValues, correlated, true);
         return _k[0] == -1 ? 0 : pValues.get(_k[0]);
     }
 
@@ -1607,7 +1606,7 @@ public final class StatUtils {
         return fdr(q, pValues, true, false);
     }
 
-    public static int fdr(double q, List<Double> pValues, boolean negativelyCorrelated, boolean pSorted) {
+    public static int fdr(double q, List<Double> pValues, boolean correlated, boolean pSorted) {
         if (!pSorted) {
             pValues = new ArrayList<>(pValues);
             Collections.sort(pValues);
@@ -1615,7 +1614,7 @@ public final class StatUtils {
 
         int m = pValues.size();
 
-        if (negativelyCorrelated) {
+        if (correlated) {
             double[] c = new double[m];
 
             double _c = 0;
@@ -1628,7 +1627,7 @@ public final class StatUtils {
             int _k = -1;
 
             for (int k = 0; k < m; k++) {
-                if (pValues.get(k) <= ((k + 1) / (c[k] * (m + 1))) * q) {
+                if (pValues.get(k) <= ((k + 1) / (c[m - 1] * (m + 1))) * q) {
                     _k = k;
                 }
             }
