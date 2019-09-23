@@ -119,8 +119,8 @@ public class OrientColliders {
                             }
                         }
                     } else if (colliderMethod == ColliderMethod.CPC) {
-                        List<PValue> existsb = getNegatives(bPvals, orientationQ);
-                        List<PValue> existsnotb = getNegatives(notbPvals, orientationQ);
+                        List<PValue> existsb = getFalseNegatives(bPvals, orientationQ);
+                        List<PValue> existsnotb = getFalseNegatives(notbPvals, orientationQ);
 
                         if (!existsb.isEmpty() && existsnotb.isEmpty()) {
                             noncolliders.add(new Triple(a, b, c));
@@ -148,8 +148,8 @@ public class OrientColliders {
                             }
                         }
                     } else if (colliderMethod == ColliderMethod.MPC) {
-                        List<PValue> existsb = getNegatives(bPvals, orientationQ);
-                        List<PValue> existsnotb = getNegatives(notbPvals, orientationQ);
+                        List<PValue> existsb = getFalseNegatives(bPvals, orientationQ);
+                        List<PValue> existsnotb = getFalseNegatives(notbPvals, orientationQ);
 
                         if (existsb.size() > existsnotb.size()) {
                             noncolliders.add(new Triple(a, b, c));
@@ -176,7 +176,7 @@ public class OrientColliders {
                             }
                         }
                     } else if (colliderMethod == ColliderMethod.PC_MAX) {
-                        List<PValue> above = getNegatives(pValues, orientationQ);
+                        List<PValue> above = getFalseNegatives(pValues, orientationQ);
 
                         above.sort(comparingDouble(PValue::getP));
 
@@ -212,7 +212,7 @@ public class OrientColliders {
                         }
 
                     } else if (colliderMethod == ColliderMethod.FIRST_EMPTY) {
-                        List<PValue> above = getNegatives(pValues, orientationQ);
+                        List<PValue> above = getFalseNegatives(pValues, orientationQ);
 
                         above.sort(comparingDouble(PValue::getP));
 
@@ -332,50 +332,57 @@ public class OrientColliders {
         return pValues;
     }
 
-    private List<PValue> getNegatives(List<PValue> pValues, double alpha) {
-        return extractH1(pValues, alpha);
+    private List<PValue> getFalseNegatives(List<PValue> pValues, double alpha) {
+        List<PValue> h0 = extractH0(pValues);
+        return getAllPValuesAboveAlpha(h0, alpha);
     }
 
-    private List<PValue> extractH0(List<PValue> pValues, double alpha) {
-        List<PValue> h1 = extractH1(pValues, alpha);
-        List<PValue> h0 = new ArrayList<>(pValues);
-        h0.removeAll(h1);
-        return h0;
+    private List<PValue> getAllPValuesAboveAlpha(List<PValue> pValues, double alpha) {
+        List<PValue> above = new ArrayList<>();
+        for (PValue p : pValues) if (p.getP() >= alpha) above.add(p);
+        return above;
     }
 
-    private List<PValue> extractH1(List<PValue> pValues, double alpha) {
+//    private List<PValue> extractH1(List<PValue> pValues) {
+//        List<PValue> h0 = extractH0(pValues);
+//        List<PValue> h1 = new ArrayList<>(pValues);
+//        h1.removeAll(h0);
+//        return h1;
+//    }
+
+    private List<PValue> extractH0(List<PValue> pValues) {
         pValues.sort(comparingDouble(PValue::getP));
 
-        List<PValue> neg = new ArrayList<>();
+        List<PValue> h0 = new ArrayList<>();
 
         int m = pValues.size();
-        double pmax = pValues.get(m - 1).getP();
-
         int r = m;
 
-        for (int i = m - 1; i >= 1; i--) {
-            double pi = pValues.get(i - 1).getP();
-            double pr = pValues.get(r - 1).getP();
+        if (pValues.get(m - 1).getP() > (m - 1) / (double) m) h0.add(pValues.get(m - 1));
 
-            if (pi < pr - 1. / m && pi >= alpha) {
-                neg.add(pValues.get(i - 1));
+        for (int i = m - 1; i >= 1; i--) {
+            PValue pi = pValues.get(i - 1);
+            PValue pr = pValues.get(r - 1);
+
+            if (pi.getP() < pr.getP() - 1. / m) {
+                h0.add(pValues.get(i - 1));
             } else {
                 r = i;
             }
         }
 
-        return neg;
+        return h0;
     }
 
-    private double getCutoff(List<PValue> pValues, double q) {
-        List<Double> _pValues = new ArrayList<>();
-
-        for (PValue p : pValues) {
-            _pValues.add(p.getP());
-        }
-
-        return StatUtils.fdrCutoff(q, _pValues, true, false);
-    }
+//    private double getCutoff(List<PValue> pValues, double q) {
+//        List<Double> _pValues = new ArrayList<>();
+//
+//        for (PValue p : pValues) {
+//            _pValues.add(p.getP());
+//        }
+//
+//        return StatUtils.fdrCutoff(q, _pValues, true, false);
+//    }
 
     public void setOut(PrintStream out) {
         this.out = out;
