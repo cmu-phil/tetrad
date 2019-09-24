@@ -268,14 +268,6 @@ public class SemBicScore implements Score {
         return Double.isNaN(v);
     }
 
-    public double getStructurePrior() {
-        return structurePrior;
-    }
-
-    public void setStructurePrior(double structurePrior) {
-        this.structurePrior = structurePrior;
-    }
-
     private void setCovariances(ICovarianceMatrix covariances) {
         this.covariances = covariances;
     }
