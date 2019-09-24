@@ -26,6 +26,7 @@ import edu.cmu.tetrad.algcomparison.algorithm.Algorithms;
 import edu.cmu.tetrad.algcomparison.algorithm.mixed.Mgm;
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern.*;
 import edu.cmu.tetrad.algcomparison.graph.RandomForward;
+import edu.cmu.tetrad.algcomparison.independence.DegenerateGaussianLRT;
 import edu.cmu.tetrad.algcomparison.independence.FisherZ;
 import edu.cmu.tetrad.algcomparison.independence.MultinomialLogisticRegressionWald;
 import edu.cmu.tetrad.algcomparison.score.BdeuScore;
@@ -45,8 +46,8 @@ public class TestDegenerateGaussian {
     public static void main(String... args) {
         Parameters parameters = new Parameters();
         parameters.set("numRuns", 3);
-        parameters.set("numMeasures", 500);
-        parameters.set("avgDegree", 4);
+        parameters.set("numMeasures", 100);
+        parameters.set("avgDegree", 2, 4);
         parameters.set("maxDegree", 100);
         parameters.set("numCategories", 3);
         parameters.set("minCategories", 2);
@@ -64,13 +65,12 @@ public class TestDegenerateGaussian {
         parameters.set("samplePrior", 1);
         parameters.set("discretize", false);
 
-        parameters.set("alpha", 1e-4);
+        parameters.set("alpha", 1e-2, 1e-3, 1e-4);
         parameters.set("mgmParam1", 0.2);
         parameters.set("mgmParam2", 0.2);
         parameters.set("mgmParam3", 0.2);
 
         parameters.set("verbose", false);
-
 
         Statistics statistics = new Statistics();
 
@@ -84,7 +84,8 @@ public class TestDegenerateGaussian {
         Algorithms algorithms = new Algorithms();
         algorithms.add(new Fges(new ConditionalGaussianBicScore()));
         algorithms.add(new Fges(new DegenerateGaussianBicScore()));
-        algorithms.add(new CpcStable(new MultinomialLogisticRegressionWald(), new Mgm()));
+        algorithms.add(new PcStable(new DegenerateGaussianLRT()));
+//        algorithms.add(new CpcStable(new MultinomialLogisticRegressionWald(), new Mgm()));
 //        algorithms.add(new Fges(new BdeuScore()));
 
         Simulations simulations = new Simulations();
