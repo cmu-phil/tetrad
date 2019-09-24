@@ -24,6 +24,7 @@ package edu.cmu.tetrad.search;
 import edu.cmu.tetrad.data.IKnowledge;
 import edu.cmu.tetrad.data.Knowledge2;
 import edu.cmu.tetrad.graph.*;
+import edu.cmu.tetrad.util.DepthChoiceGenerator;
 import edu.cmu.tetrad.util.TetradLogger;
 
 import java.io.PrintStream;
@@ -295,7 +296,9 @@ public final class PcAll implements GraphSearch {
                 Node x = nodes.get(i);
                 Node y = nodes.get(j);
 
-                if (!graph.isAdjacentTo(x, y) && satisfiesMarkov(graph, x) && satisfiesMarkov(graph, y)) {
+                if (graph.isAdjacentTo(x, y)) continue;
+
+                if (satisfiesMarkov(graph, x) && satisfiesMarkov(graph, y)) {
                     definitelyNotAdjacent.add(Edges.undirectedEdge(x, y));
                 } else if (!graph.isAdjacentTo(x, y)) {
                     apparentlyNotAdjacent.add(Edges.undirectedEdge(x, y));
@@ -320,20 +323,36 @@ public final class PcAll implements GraphSearch {
             }
 
             if (g.isParentOf(y, x)) {
-                b.add(y);
+                b.add(x);
             }
         }
+
+        System.out.println("Node = " + x + " boundary = " + b);
 
         return new ArrayList<>(b);
     }
 
     private boolean satisfiesMarkov(Graph g, Node x) {
 
+        Map<Node, List<Node>> boundaries = new HashMap<>();
+
+        for (Node y : g.getNodes()) {
+            boundaries.put(y, boundary(g, y));
+        }
+
         for (Node y : g.getNodes()) {
             if (y == x) continue;
             if (descendants(g, x).contains(y)) continue;
-            if (boundary(g, x).contains(y)) continue;
-            if (!test.isIndependent(x, y, boundary(g, x))) return false;
+            final List<Node> boundary = boundaries.get(x);
+            if (boundary.contains(y)) continue;
+
+            DepthChoiceGenerator gen = new DepthChoiceGenerator(boundary.size(), boundary.size());
+            int[] choice;
+
+            while ((choice = gen.next()) != null) {
+                List<Node> adj = GraphUtils.asList(choice, boundary);
+                if (!test.isIndependent(x, y, adj)) return false;
+            }
         }
 
         return true;
