@@ -13,14 +13,8 @@ import java.util.*;
 import static java.util.Comparator.comparingDouble;
 
 public class OrientColliders {
-    public void setConflictRule(ConflictRule conflictRule) {
-        this.conflictRule = conflictRule;
-    }
-
     public enum ColliderMethod {SEPSETS, CPC, MPC, PC_MAX, FIRST_EMPTY}
-
     public enum IndependenceDetectionMethod {ALPHA, FDR}
-
     public enum ConflictRule {PRIORITY, BIDIRECTED, OVERWRITE}
 
     private final IndependenceTest test;
@@ -47,7 +41,7 @@ public class OrientColliders {
         this.colliderMethod = ColliderMethod.SEPSETS;
     }
 
-    void orientTriples(Graph graph) {
+    public void orientTriples(Graph graph) {
         List<Triple> colliders = new ArrayList<>();
         List<Triple> ambiguous = new ArrayList<>();
         List<Triple> noncolliders = new ArrayList<>();
@@ -120,7 +114,7 @@ public class OrientColliders {
                         }
                     } else if (colliderMethod == ColliderMethod.CPC) {
                         List<PValue> neg =  getFalseNegatives(pValues, orientationQ);
-//
+
                         List<PValue> existsb = new ArrayList<>();
                         List<PValue> existsnotb = new ArrayList<>();
 
@@ -223,7 +217,6 @@ public class OrientColliders {
                                         + " bVals = " + bPvals.size() + " notbVals " + notbPvals.size());
                             }
                         }
-
                     } else if (colliderMethod == ColliderMethod.FIRST_EMPTY) {
                         List<PValue> above = getFalseNegatives(pValues, orientationQ);
 
@@ -311,9 +304,42 @@ public class OrientColliders {
 
     }
 
+    //=============================== PUBLIC
+
+    public void setConflictRule(ConflictRule conflictRule) {
+        this.conflictRule = conflictRule;
+    }
+
+    public void setOut(PrintStream out) {
+        this.out = out;
+    }
+
+    public void setVerbose(boolean verbose) {
+        this.verbose = verbose;
+    }
+
+    public void setKnowledge(IKnowledge knowledge) {
+        this.knowledge = knowledge;
+    }
+
+    public void setDepth(int depth) {
+        this.depth = depth;
+    }
+
+    public void setOrientationQ(double orientationQ) {
+        this.orientationQ = orientationQ;
+    }
+
     private boolean knowledgeAllowsCollider(Node a, Node b, Node c, IKnowledge knowledge) {
         return !knowledge.isForbidden(a.getName(), b.getName()) && !knowledge.isForbidden(c.getName(), b.getName());
     }
+
+
+    public void setIndependenceDetectionMethod(IndependenceDetectionMethod independenceDetectionMethod) {
+        this.independenceDetectionMethod = independenceDetectionMethod;
+    }
+
+    //============================ PRIVATE
 
     private List<PValue> getAllPValues(Node a, Node c, int depth, Graph graph, IndependenceTest test) {
         List<Node> adja = graph.getAdjacentNodes(a);
@@ -345,10 +371,9 @@ public class OrientColliders {
         return pValues;
     }
 
-    private List<PValue> getFalseNegatives(List<PValue> pValues, double alpha) {
-        List<PValue> h0 = extractH0(new ArrayList<>(pValues));
-//        return h0;
-        return getAllPValuesAboveAlpha(h0, alpha);
+    private List<PValue> getFalseNegatives(List<PValue> pValues, double q) {
+        List<PValue> h0 = extractH0(new ArrayList<>(pValues), q);
+        return getAllPValuesAboveAlpha(h0, q);
     }
 
     private List<PValue> getAllPValuesAboveAlpha(List<PValue> pValues, double alpha) {
@@ -358,23 +383,15 @@ public class OrientColliders {
         return above;
     }
 
-//    private List<PValue> extractH1(List<PValue> pValues) {
-//        List<PValue> h0 = extractH0(pValues);
-//        List<PValue> h1 = new ArrayList<>(pValues);
-//        h1.removeAll(h0);
-//        return h1;
-//    }
-
-    private List<PValue> extractH0(List<PValue> pValues) {
+    private List<PValue> extractH0(List<PValue> pValues, double q) {
         pValues.sort(comparingDouble(PValue::getP));
 
         List<PValue> h0 = new ArrayList<>();
 
-
         int m = pValues.size();
         int r = m;
 
-        if (!pValues.isEmpty() && pValues.get(m - 1).getP() > (m - 1) / (double) m) {
+        if (!pValues.isEmpty() && pValues.get(m - 1).getP() > (m - 2) / (double) m) {
             h0.add(pValues.get(m - 1));
         }
 
@@ -382,11 +399,13 @@ public class OrientColliders {
             PValue pi = pValues.get(i - 1);
             PValue pr = pValues.get(r - 1);
 
-            if (pi.getP() < pr.getP() - 1. / (double) m) {
+            if (pi.getP() <= pr.getP() - (1.) / ((1. - q) * m)) {
                 h0.add(pi);
                 r = i;
             }
         }
+
+        h0.sort(comparingDouble(PValue::getP));
 
         List<Double> p2 = new ArrayList<>();
 
@@ -399,35 +418,6 @@ public class OrientColliders {
         return h0;
     }
 
-//    private double getCutoff(List<PValue> pValues, double q) {
-//        List<Double> _pValues = new ArrayList<>();
-//
-//        for (PValue p : pValues) {
-//            _pValues.add(p.getP());
-//        }
-//
-//        return StatUtils.fdrCutoff(q, _pValues, true, false);
-//    }
-
-    public void setOut(PrintStream out) {
-        this.out = out;
-    }
-
-    public void setVerbose(boolean verbose) {
-        this.verbose = verbose;
-    }
-
-    public void setKnowledge(IKnowledge knowledge) {
-        this.knowledge = knowledge;
-    }
-
-    public void setDepth(int depth) {
-        this.depth = depth;
-    }
-
-    public void setOrientationQ(double orientationQ) {
-        this.orientationQ = orientationQ;
-    }
 
     private static class PValue {
         private double p;
@@ -452,10 +442,4 @@ public class OrientColliders {
             return _o.getP() == getP() && _o.getSepset().equals(getSepset());
         }
     }
-
-    public void setIndependenceDetectionMethod(IndependenceDetectionMethod independenceDetectionMethod) {
-        this.independenceDetectionMethod = independenceDetectionMethod;
-    }
-
-
 }
