@@ -14,7 +14,9 @@ import static java.util.Comparator.comparingDouble;
 
 public class OrientColliders {
     public enum ColliderMethod {SEPSETS, CPC, MPC, PC_MAX, FIRST_EMPTY}
+
     public enum IndependenceDetectionMethod {ALPHA, FDR}
+
     public enum ConflictRule {PRIORITY, BIDIRECTED, OVERWRITE}
 
     private final IndependenceTest test;
@@ -113,7 +115,7 @@ public class OrientColliders {
                             }
                         }
                     } else if (colliderMethod == ColliderMethod.CPC) {
-                        List<PValue> neg =  getFalseNegatives(pValues, orientationQ);
+                        List<PValue> neg = getFalseNegatives(pValues, orientationQ);
 
                         List<PValue> existsb = new ArrayList<>();
                         List<PValue> existsnotb = new ArrayList<>();
