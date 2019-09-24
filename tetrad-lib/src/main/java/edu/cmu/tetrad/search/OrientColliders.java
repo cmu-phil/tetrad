@@ -374,8 +374,14 @@ public class OrientColliders {
     }
 
     private List<PValue> getFalseNegatives(List<PValue> pValues, double q) {
-        List<PValue> h0 = extractH0(new ArrayList<>(pValues), q);
-        return getAllPValuesAboveAlpha(h0, q);
+        if (independenceDetectionMethod == IndependenceDetectionMethod.ALPHA) {
+            return getAllPValuesAboveAlpha(pValues, q);
+        } else if (independenceDetectionMethod == IndependenceDetectionMethod.FDR) {
+            List<PValue> h0 = extractH0(new ArrayList<>(pValues), q);
+            return getAllPValuesAboveAlpha(h0, q);
+        } else {
+            throw new IllegalArgumentException();
+        }
     }
 
     private List<PValue> getAllPValuesAboveAlpha(List<PValue> pValues, double alpha) {
@@ -393,15 +399,20 @@ public class OrientColliders {
         int m = pValues.size();
         int r = m;
 
-        if (!pValues.isEmpty() && pValues.get(m - 1).getP() > (m - 2) / (double) m) {
-            h0.add(pValues.get(m - 1));
+        if (!pValues.isEmpty()) {
+            if (pValues.get(m - 1).getP() >= (m - 5) / (double) m) {
+                h0.add(pValues.get(m - 1));
+            }
+            else {
+                return new ArrayList<>();
+            }
         }
 
         for (int i = m - 1; i >= 1; i--) {
             PValue pi = pValues.get(i - 1);
             PValue pr = pValues.get(r - 1);
 
-            if (pi.getP() <= pr.getP() - (1.) / ((1. - q) * m)) {
+            if (pi.getP() <= pr.getP() - (1.) / (m)) {
                 h0.add(pi);
                 r = i;
             }
@@ -409,13 +420,15 @@ public class OrientColliders {
 
         h0.sort(comparingDouble(PValue::getP));
 
-        List<Double> p2 = new ArrayList<>();
+        if (verbose) {
+            List<Double> p2 = new ArrayList<>();
 
-        for (PValue p : h0) {
-            p2.add(p.getP());
+            for (PValue p : h0) {
+                p2.add(p.getP());
+            }
+
+            System.out.println("h0 = " + p2);
         }
-
-        System.out.println("h0 = " + p2);
 
         return h0;
     }
