@@ -285,8 +285,15 @@ public final class PcAll implements GraphSearch {
     }
 
     private void addErrantEdges(List<Node> nodes) {
-        graph = SearchGraphUtils.patternFromEPattern(graph);
+//        graph = SearchGraphUtils.patternFromEPattern(graph);
 //        graph = SearchGraphUtils.patternForDag(graph);
+
+
+        Map<Node, List<Node>> boundaries = new HashMap<>();
+
+        for (Node x : graph.getNodes()) {
+            boundaries.put(x, boundary(graph, x));
+        }
 
         List<Edge> definitelyNotAdjacent = new ArrayList<>();
         List<Edge> apparentlyNotAdjacent = new ArrayList<>();
@@ -298,7 +305,7 @@ public final class PcAll implements GraphSearch {
 
                 if (graph.isAdjacentTo(x, y)) continue;
 
-                if (satisfiesMarkov(graph, x) && satisfiesMarkov(graph, y)) {
+                if (satisfiesMarkov(graph, x, boundaries) && satisfiesMarkov(graph, y, boundaries)) {
                     definitelyNotAdjacent.add(Edges.undirectedEdge(x, y));
                 } else if (!graph.isAdjacentTo(x, y)) {
                     apparentlyNotAdjacent.add(Edges.undirectedEdge(x, y));
@@ -318,27 +325,25 @@ public final class PcAll implements GraphSearch {
         Set<Node> b = new HashSet<>();
 
         for (Node y : g.getAdjacentNodes(x)) {
+            if (x == y) continue;
+
             if (Edges.isUndirectedEdge(graph.getEdge(x, y))) {
+                System.out.println(graph.getEdge(x, y));
                 b.add(y);
             }
 
             if (g.isParentOf(y, x)) {
-                b.add(x);
+                System.out.println(graph.getEdge(x, y));
+
+                b.add(y);
             }
         }
-
-        System.out.println("Node = " + x + " boundary = " + b);
 
         return new ArrayList<>(b);
     }
 
-    private boolean satisfiesMarkov(Graph g, Node x) {
+    private boolean satisfiesMarkov(Graph g, Node x, Map<Node, List<Node>> boundaries) {
 
-        Map<Node, List<Node>> boundaries = new HashMap<>();
-
-        for (Node y : g.getNodes()) {
-            boundaries.put(y, boundary(g, y));
-        }
 
         for (Node y : g.getNodes()) {
             if (y == x) continue;
@@ -346,13 +351,15 @@ public final class PcAll implements GraphSearch {
             final List<Node> boundary = boundaries.get(x);
             if (boundary.contains(y)) continue;
 
-            DepthChoiceGenerator gen = new DepthChoiceGenerator(boundary.size(), boundary.size());
-            int[] choice;
+            if (!test.isIndependent(x, y, boundary)) return false;
 
-            while ((choice = gen.next()) != null) {
-                List<Node> adj = GraphUtils.asList(choice, boundary);
-                if (!test.isIndependent(x, y, adj)) return false;
-            }
+//            DepthChoiceGenerator gen = new DepthChoiceGenerator(boundary.size(), boundary.size());
+//            int[] choice;
+//
+//            while ((choice = gen.next()) != null) {
+//                List<Node> adj = GraphUtils.asList(choice, boundary);
+//                if (!test.isIndependent(x, y, adj)) return false;
+//            }
         }
 
         return true;

@@ -2562,7 +2562,7 @@ public final class GraphUtils {
     public static Graph loadGraphTxt(File file) {
         try {
             Reader in1 = new FileReader(file);
-            return readerToGraphTxt(in1);
+            return readerToGraphTxt(in1);` `
 
         } catch (Exception e) {
             e.printStackTrace();
