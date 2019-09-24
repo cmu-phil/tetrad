@@ -267,7 +267,6 @@ public class ConditionalGaussianLikelihood {
         double c1 = 0, c2 = 0;
 
         List<List<Integer>> cells = adTree.getCellLeaves(A);
-        //List<List<Integer>> cells = partition(A);
 
         for (List<Integer> cell : cells) {
             int a = cell.size();
