@@ -257,17 +257,17 @@ public final class PcAll implements GraphSearch {
         applyMeekRules();
         removeUnnecessaryMarks();
 
-//        for (int i = 0; i < 1; i++) {
-//            addErrantEdges(nodes);
-////            findAdjacencies();
-//
-//
-//            graph = GraphUtils.undirectedGraph(graph);
-//
-//            orientTriples();
-//            applyMeekRules();
-//            removeUnnecessaryMarks();
-//        }
+        for (int i = 0; i < 1; i++) {
+            addErrantEdges(nodes);
+//            findAdjacencies();
+
+
+            graph = GraphUtils.undirectedGraph(graph);
+
+            orientTriples();
+            applyMeekRules();
+            removeUnnecessaryMarks();
+        }
 
         TetradLogger.getInstance().log("graph", "\nReturning this graph: " + graph);
 
@@ -285,36 +285,58 @@ public final class PcAll implements GraphSearch {
 
     private void addErrantEdges(List<Node> nodes) {
         graph = SearchGraphUtils.patternFromEPattern(graph);
-        graph = SearchGraphUtils.patternForDag(graph);
+//        graph = SearchGraphUtils.patternForDag(graph);
+
+        List<Edge> definitelyNotAdjacent = new ArrayList<>();
+        List<Edge> apparentlyNotAdjacent = new ArrayList<>();
 
         for (int i = 0; i < nodes.size(); i++) {
             for (int j = i + 1; j < nodes.size(); j++) {
                 Node x = nodes.get(i);
                 Node y = nodes.get(j);
 
-                if (graph.isAdjacentTo(x, y)) continue;
-
-                List<Node> xx = new ArrayList<>();
-                xx.add(x);
-                xx.add(y);
-
-                boolean add = true;
-
-                for (Node w : xx) {
-                    for (Node s : nodes) {
-                        if (!graph.isDescendentOf(w, s)) {
-                            if (!test.isIndependent(w, s, graph.getParents(w))) {
-                                add = false;
-                            }
-                        }
-                    }
-                }
-
-                if (add && !graph.isAdjacentTo(x, y)) {
-                    graph.addUndirectedEdge(x, y);
+                if (!graph.isAdjacentTo(x, y) && satisfiesMarkov(graph, x) && satisfiesMarkov(graph, y)) {
+                    definitelyNotAdjacent.add(Edges.undirectedEdge(x, y));
+                } else if (!graph.isAdjacentTo(x, y)) {
+                    apparentlyNotAdjacent.add(Edges.undirectedEdge(x, y));
                 }
             }
         }
+
+        System.out.println("Definitely not adjacent: " + definitelyNotAdjacent);
+        System.out.println("Apparently not adjacent: " + apparentlyNotAdjacent);
+    }
+
+    private List<Node> descendants(Graph g, Node n) {
+        return g.getDescendants(Collections.singletonList(n));
+    }
+
+    private List<Node> boundary(Graph g, Node x) {
+        Set<Node> b = new HashSet<>();
+
+        for (Node y : g.getAdjacentNodes(x)) {
+            if (Edges.isUndirectedEdge(graph.getEdge(x, y))) {
+                b.add(y);
+            }
+
+            if (g.isParentOf(y, x)) {
+                b.add(y);
+            }
+        }
+
+        return new ArrayList<>(b);
+    }
+
+    private boolean satisfiesMarkov(Graph g, Node x) {
+
+        for (Node y : g.getNodes()) {
+            if (y == x) continue;
+            if (descendants(g, x).contains(y)) continue;
+            if (boundary(g, x).contains(y)) continue;
+            if (!test.isIndependent(x, y, boundary(g, x))) return false;
+        }
+
+        return true;
     }
 
     public static boolean isArrowpointAllowed1(Node from, Node to,

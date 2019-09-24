@@ -119,8 +119,21 @@ public class OrientColliders {
                             }
                         }
                     } else if (colliderMethod == ColliderMethod.CPC) {
-                        List<PValue> existsb = getFalseNegatives(bPvals, orientationQ);
-                        List<PValue> existsnotb = getFalseNegatives(notbPvals, orientationQ);
+                        List<PValue> neg =  getFalseNegatives(pValues, orientationQ);
+//
+                        List<PValue> existsb = new ArrayList<>();
+                        List<PValue> existsnotb = new ArrayList<>();
+
+                        for (PValue p : neg) {
+                            if (p.getSepset().contains(b)) {
+                                existsb.add(p);
+                            } else {
+                                existsnotb.add(p);
+                            }
+                        }
+
+//                        List<PValue> existsb = extractH0(bPvals, orientationQ);
+//                        List<PValue> existsnotb = extractH0(notbPvals, orientationQ);
 
                         if (!existsb.isEmpty() && existsnotb.isEmpty()) {
                             noncolliders.add(new Triple(a, b, c));
@@ -132,7 +145,7 @@ public class OrientColliders {
                             colliders.add(new Triple(a, b, c));
 
                             notbPvals.sort((p1, p2) -> Double.compare(p2.getP(), p1.getP()));
-                            notBMap.put(new NodePair(a, c), notbPvals);
+                            notBMap.put(new NodePair(a, c), existsnotb);
 
                             if (verbose) {
                                 out.println(a + " --- " + b + " --- " + c + " depth = " + depth + ": COLLIDER"
@@ -333,11 +346,13 @@ public class OrientColliders {
     }
 
     private List<PValue> getFalseNegatives(List<PValue> pValues, double alpha) {
-        List<PValue> h0 = extractH0(pValues);
+        List<PValue> h0 = extractH0(new ArrayList<>(pValues));
+//        return h0;
         return getAllPValuesAboveAlpha(h0, alpha);
     }
 
     private List<PValue> getAllPValuesAboveAlpha(List<PValue> pValues, double alpha) {
+        pValues.sort(comparingDouble(PValue::getP));
         List<PValue> above = new ArrayList<>();
         for (PValue p : pValues) if (p.getP() >= alpha) above.add(p);
         return above;
@@ -355,21 +370,31 @@ public class OrientColliders {
 
         List<PValue> h0 = new ArrayList<>();
 
+
         int m = pValues.size();
         int r = m;
 
-        if (pValues.get(m - 1).getP() > (m - 1) / (double) m) h0.add(pValues.get(m - 1));
+        if (!pValues.isEmpty() && pValues.get(m - 1).getP() > (m - 1) / (double) m) {
+            h0.add(pValues.get(m - 1));
+        }
 
         for (int i = m - 1; i >= 1; i--) {
             PValue pi = pValues.get(i - 1);
             PValue pr = pValues.get(r - 1);
 
-            if (pi.getP() < pr.getP() - 1. / m) {
-                h0.add(pValues.get(i - 1));
-            } else {
+            if (pi.getP() < pr.getP() - 1. / (double) m) {
+                h0.add(pi);
                 r = i;
             }
         }
+
+        List<Double> p2 = new ArrayList<>();
+
+        for (PValue p : h0) {
+            p2.add(p.getP());
+        }
+
+        System.out.println("h0 = " + p2);
 
         return h0;
     }
