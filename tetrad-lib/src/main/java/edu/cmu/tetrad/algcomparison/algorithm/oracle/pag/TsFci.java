@@ -6,6 +6,8 @@ import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.algcomparison.utils.TakesIndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.utils.TakesInitialGraph;
 import edu.cmu.tetrad.annotation.AlgType;
+import edu.cmu.tetrad.annotation.Bootstrapping;
+import edu.cmu.tetrad.annotation.TimeSeries;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
@@ -14,8 +16,10 @@ import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.TsDagToPag;
 import edu.cmu.tetrad.util.Parameters;
+import edu.cmu.tetrad.util.Params;
 import edu.pitt.dbmi.algo.resampling.GeneralResamplingTest;
 import edu.pitt.dbmi.algo.resampling.ResamplingEdgeEnsemble;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -29,6 +33,8 @@ import java.util.List;
         command = "ts-fci",
         algoType = AlgType.allow_latent_common_causes
 )
+@TimeSeries
+@Bootstrapping
 public class TsFci implements Algorithm, TakesInitialGraph, HasKnowledge, TakesIndependenceWrapper {
 
     static final long serialVersionUID = 23L;
@@ -55,28 +61,28 @@ public class TsFci implements Algorithm, TakesInitialGraph, HasKnowledge, TakesI
 //            throw new IllegalArgumentException("You need a (labeled) time series data set to run TsFCI.");
 //        }
         
-        if (parameters.getInt("numberResampling") < 1) {
+        if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
         	if(knowledge != null) {
         		dataSet.setKnowledge(knowledge);
         	}
             edu.cmu.tetrad.search.TsFci search = new edu.cmu.tetrad.search.TsFci(test.getTest(dataSet, parameters));
-            search.setDepth(parameters.getInt("depth"));
+            search.setDepth(parameters.getInt(Params.DEPTH));
             search.setKnowledge(dataSet.getKnowledge());
-            search.setVerbose(parameters.getBoolean("verbose"));
+            search.setVerbose(parameters.getBoolean(Params.VERBOSE));
             
             return search.search();
         } else {
             TsFci tsFci = new TsFci(test, algorithm);
 
             DataSet data = (DataSet) dataSet;
-            GeneralResamplingTest search = new GeneralResamplingTest(data, tsFci, parameters.getInt("numberResampling"));
+            GeneralResamplingTest search = new GeneralResamplingTest(data, tsFci, parameters.getInt(Params.NUMBER_RESAMPLING));
             search.setKnowledge(knowledge);
 
-            search.setPercentResampleSize(parameters.getDouble("percentResampleSize"));
-            search.setResamplingWithReplacement(parameters.getBoolean("resamplingWithReplacement"));
+            search.setPercentResampleSize(parameters.getDouble(Params.PERCENT_RESAMPLE_SIZE));
+            search.setResamplingWithReplacement(parameters.getBoolean(Params.RESAMPLING_WITH_REPLACEMENT));
             
             ResamplingEdgeEnsemble edgeEnsemble = ResamplingEdgeEnsemble.Highest;
-            switch (parameters.getInt("resamplingEnsemble", 1)) {
+            switch (parameters.getInt(Params.RESAMPLING_ENSEMBLE, 1)) {
                 case 0:
                     edgeEnsemble = ResamplingEdgeEnsemble.Preserved;
                     break;
@@ -87,10 +93,10 @@ public class TsFci implements Algorithm, TakesInitialGraph, HasKnowledge, TakesI
                     edgeEnsemble = ResamplingEdgeEnsemble.Majority;
             }
             search.setEdgeEnsemble(edgeEnsemble);
-            search.setAddOriginalDataset(parameters.getBoolean("addOriginalDataset"));
+            search.setAddOriginalDataset(parameters.getBoolean(Params.ADD_ORIGINAL_DATASET));
             
             search.setParameters(parameters);
-            search.setVerbose(parameters.getBoolean("verbose"));
+            search.setVerbose(parameters.getBoolean(Params.VERBOSE));
             return search.search();
         }
     }
@@ -113,14 +119,9 @@ public class TsFci implements Algorithm, TakesInitialGraph, HasKnowledge, TakesI
 
     @Override
     public List<String> getParameters() {
-        List<String> parameters = test.getParameters();
-        // Resampling
-        parameters.add("numberResampling");
-        parameters.add("percentResampleSize");
-        parameters.add("resamplingWithReplacement");
-        parameters.add("resamplingEnsemble");
-        parameters.add("addOriginalDataset");
-        parameters.add("verbose");
+        List<String> parameters = new ArrayList<>();
+
+        parameters.add(Params.VERBOSE);
         return parameters;
     }
 

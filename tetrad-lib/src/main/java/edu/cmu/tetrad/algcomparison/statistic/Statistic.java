@@ -1,5 +1,6 @@
 package edu.cmu.tetrad.algcomparison.statistic;
 
+import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.graph.Graph;
 
 import java.io.Serializable;
@@ -33,9 +34,10 @@ public interface Statistic extends Serializable {
      *
      * @param trueGraph The true graph (DAG, Pattern, PAG_of_the_true_DAG).
      * @param estGraph  The estimated graph (same type).
+     * @param dataModel
      * @return The value of the statistic.
      */
-    double getValue(Graph trueGraph, Graph estGraph);
+    double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel);
 
     /**
      * Returns a mapping of the statistic to the interval [0, 1], with higher being better.

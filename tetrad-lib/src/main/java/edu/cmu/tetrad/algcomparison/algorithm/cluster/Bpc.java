@@ -3,7 +3,7 @@ package edu.cmu.tetrad.algcomparison.algorithm.cluster;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.algcomparison.utils.TakesInitialGraph;
-import edu.cmu.tetrad.annotation.AlgType;
+import edu.cmu.tetrad.annotation.Bootstrapping;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
@@ -11,22 +11,23 @@ import edu.cmu.tetrad.search.BuildPureClusters;
 import edu.cmu.tetrad.search.SearchGraphUtils;
 import edu.cmu.tetrad.search.TestType;
 import edu.cmu.tetrad.util.Parameters;
+import edu.cmu.tetrad.util.Params;
 import edu.pitt.dbmi.algo.resampling.GeneralResamplingTest;
 import edu.pitt.dbmi.algo.resampling.ResamplingEdgeEnsemble;
-
 import java.util.ArrayList;
 import java.util.List;
 
 /**
- * BPC.
+ * BPC. Disabled on 4/2/2019
  *
  * @author jdramsey
  */
-@edu.cmu.tetrad.annotation.Algorithm(
-        name = "BPC",
-        command = "bpc",
-        algoType = AlgType.search_for_structure_over_latents
-)
+//@edu.cmu.tetrad.annotation.Algorithm(
+//        name = "BPC",
+//        command = "bpc",
+//        algoType = AlgType.search_for_structure_over_latents
+//)
+@Bootstrapping
 public class Bpc implements Algorithm, TakesInitialGraph, HasKnowledge, ClusterAlgorithm {
 
     static final long serialVersionUID = 23L;
@@ -39,11 +40,11 @@ public class Bpc implements Algorithm, TakesInitialGraph, HasKnowledge, ClusterA
 
     @Override
     public Graph search(DataModel dataSet, Parameters parameters) {
-        if (parameters.getInt("numberResampling") < 1) {
+        if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
             ICovarianceMatrix cov = DataUtils.getCovMatrix(dataSet);
-            double alpha = parameters.getDouble("alpha");
+            double alpha = parameters.getDouble(Params.ALPHA);
 
-            boolean wishart = parameters.getBoolean("useWishart", true);
+            boolean wishart = parameters.getBoolean(Params.USE_WISHART, true);
             TestType testType;
 
             if (wishart) {
@@ -55,7 +56,7 @@ public class Bpc implements Algorithm, TakesInitialGraph, HasKnowledge, ClusterA
             TestType purifyType = TestType.TETRAD_BASED;
 
             BuildPureClusters bpc = new BuildPureClusters(cov, alpha, testType, purifyType);
-            bpc.setVerbose(parameters.getBoolean("verbose"));
+            bpc.setVerbose(parameters.getBoolean(Params.VERBOSE));
 
             return bpc.search();
         } else {
@@ -67,14 +68,14 @@ public class Bpc implements Algorithm, TakesInitialGraph, HasKnowledge, ClusterA
 //  		}
 
             DataSet data = (DataSet) dataSet;
-            GeneralResamplingTest search = new GeneralResamplingTest(data, algorithm, parameters.getInt("numberResampling"));
+            GeneralResamplingTest search = new GeneralResamplingTest(data, algorithm, parameters.getInt(Params.NUMBER_RESAMPLING));
             search.setKnowledge(knowledge);
 
-            search.setPercentResampleSize(parameters.getDouble("percentResampleSize"));
-            search.setResamplingWithReplacement(parameters.getBoolean("resamplingWithReplacement"));
+            search.setPercentResampleSize(parameters.getDouble(Params.PERCENT_RESAMPLE_SIZE));
+            search.setResamplingWithReplacement(parameters.getBoolean(Params.RESAMPLING_WITH_REPLACEMENT));
             
             ResamplingEdgeEnsemble edgeEnsemble = ResamplingEdgeEnsemble.Highest;
-            switch (parameters.getInt("resamplingEnsemble", 1)) {
+            switch (parameters.getInt(Params.RESAMPLING_ENSEMBLE, 1)) {
                 case 0:
                     edgeEnsemble = ResamplingEdgeEnsemble.Preserved;
                     break;
@@ -85,10 +86,10 @@ public class Bpc implements Algorithm, TakesInitialGraph, HasKnowledge, ClusterA
                     edgeEnsemble = ResamplingEdgeEnsemble.Majority;
             }
             search.setEdgeEnsemble(edgeEnsemble);
-            search.setAddOriginalDataset(parameters.getBoolean("addOriginalDataset"));
+            search.setAddOriginalDataset(parameters.getBoolean(Params.ADD_ORIGINAL_DATASET));
             
             search.setParameters(parameters);
-            search.setVerbose(parameters.getBoolean("verbose"));
+            search.setVerbose(parameters.getBoolean(Params.VERBOSE));
             return search.search();
         }
     }
@@ -111,15 +112,10 @@ public class Bpc implements Algorithm, TakesInitialGraph, HasKnowledge, ClusterA
     @Override
     public List<String> getParameters() {
         List<String> parameters = new ArrayList<>();
-        parameters.add("alpha");
-        parameters.add("useWishart");
-        parameters.add("verbose");
-        // Resampling
-        parameters.add("numberResampling");
-        parameters.add("percentResampleSize");
-        parameters.add("resamplingWithReplacement");
-        parameters.add("resamplingEnsemble");
-        parameters.add("addOriginalDataset");
+        parameters.add(Params.ALPHA);
+        parameters.add(Params.USE_WISHART);
+        parameters.add(Params.VERBOSE);
+
         return parameters;
     }
 

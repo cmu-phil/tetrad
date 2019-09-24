@@ -63,7 +63,8 @@ public class TestStandardizedSem {
         DataSet dataSet = im.simulateData(1000, false);
         TetradMatrix _dataSet = dataSet.getDoubleData();
         _dataSet = DataUtils.standardizeData(_dataSet);
-        DataSet dataSetStandardized = ColtDataSet.makeData(dataSet.getVariables(), _dataSet);
+        DataSet dataSetStandardized = new BoxDataSet(new VerticalDoubleDataBox(_dataSet.transpose().toArray()),
+                dataSet.getVariables());
 
         DataUtils.cov(_dataSet);
         DataUtils.mean(_dataSet);
@@ -226,8 +227,7 @@ public class TestStandardizedSem {
         DataSet dataSet = im.simulateDataRecursive(1000, false);
         TetradMatrix _dataSet = dataSet.getDoubleData();
         _dataSet = DataUtils.standardizeData(_dataSet);
-        DataSet dataSetStandardized = ColtDataSet.makeData(dataSet.getVariables(), _dataSet);
-
+        DataSet dataSetStandardized = new BoxDataSet(new VerticalDoubleDataBox(_dataSet.transpose().toArray()), dataSet.getVariables());
 
         SemEstimator estimator = new SemEstimator(dataSetStandardized, im.getSemPm());
         SemIm imStandardized = estimator.estimate();
@@ -262,6 +262,8 @@ public class TestStandardizedSem {
         graph.addDirectedEdge(x1, x2);
         graph.addBidirectedEdge(ex1, ex2);
 
+        System.out.println(graph);
+
 //        List<List<Node>> treks = DataGraphUtils.treksIncludingBidirected(graph, x1, x3);
 //
 //        for (List<Node> trek : treks) {
@@ -275,7 +277,7 @@ public class TestStandardizedSem {
 
         TetradMatrix _dataSet = dataSet.getDoubleData();
         _dataSet = DataUtils.standardizeData(_dataSet);
-        DataSet dataSetStandardized = ColtDataSet.makeData(dataSet.getVariables(), _dataSet);
+        DataSet dataSetStandardized = new BoxDataSet(new DoubleDataBox(_dataSet.toArray()), dataSet.getVariables());
 
         SemEstimator estimator = new SemEstimator(dataSetStandardized, im.getSemPm());
         SemIm imStandardized = estimator.estimate();
@@ -404,7 +406,7 @@ public class TestStandardizedSem {
         StandardizedSemIm sem = new StandardizedSemIm(semIm, StandardizedSemIm.Initialization.CALCULATE_FROM_SEM);
 
         DataSet data = semIm.simulateDataCholesky(1000, false);
-        data = ColtDataSet.makeContinuousData(data.getVariables(), DataUtils.standardizeData(data.getDoubleData()));
+        data = new BoxDataSet(new DoubleDataBox(DataUtils.standardizeData(data.getDoubleData()).toArray()), data.getVariables());
         SemEstimator estimator = new SemEstimator(data, semPm);
         semIm = estimator.estimate();
 

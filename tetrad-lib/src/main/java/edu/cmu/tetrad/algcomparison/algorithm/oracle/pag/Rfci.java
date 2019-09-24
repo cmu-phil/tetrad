@@ -5,17 +5,16 @@ import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.algcomparison.utils.TakesIndependenceWrapper;
 import edu.cmu.tetrad.annotation.AlgType;
-import edu.cmu.tetrad.data.DataModel;
-import edu.cmu.tetrad.data.DataSet;
-import edu.cmu.tetrad.data.DataType;
-import edu.cmu.tetrad.data.IKnowledge;
-import edu.cmu.tetrad.data.Knowledge2;
+import edu.cmu.tetrad.annotation.Bootstrapping;
+import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.search.DagToPag;
+import edu.cmu.tetrad.search.DagToPag2;
 import edu.cmu.tetrad.util.Parameters;
+import edu.cmu.tetrad.util.Params;
 import edu.pitt.dbmi.algo.resampling.GeneralResamplingTest;
 import edu.pitt.dbmi.algo.resampling.ResamplingEdgeEnsemble;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -28,6 +27,7 @@ import java.util.List;
         command = "rfci",
         algoType = AlgType.allow_latent_common_causes
 )
+@Bootstrapping
 public class Rfci implements Algorithm, HasKnowledge, TakesIndependenceWrapper {
 
     static final long serialVersionUID = 23L;
@@ -43,12 +43,13 @@ public class Rfci implements Algorithm, HasKnowledge, TakesIndependenceWrapper {
 
     @Override
     public Graph search(DataModel dataSet, Parameters parameters) {
-    	if (parameters.getInt("numberResampling") < 1) {
+    	if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
             edu.cmu.tetrad.search.Rfci search = new edu.cmu.tetrad.search.Rfci(test.getTest(dataSet, parameters));
             search.setKnowledge(knowledge);
-            search.setDepth(parameters.getInt("depth"));
-            search.setMaxPathLength(parameters.getInt("maxPathLength"));
-            search.setCompleteRuleSetUsed(parameters.getBoolean("completeRuleSetUsed"));
+            search.setDepth(parameters.getInt(Params.DEPTH));
+            search.setMaxPathLength(parameters.getInt(Params.MAX_PATH_LENGTH));
+            search.setCompleteRuleSetUsed(parameters.getBoolean(Params.COMPLETE_RULE_SET_USED));
+            search.setVerbose(parameters.getBoolean(Params.VERBOSE));
             return search.search();
         } else {
             Rfci algorithm = new Rfci(test);
@@ -57,14 +58,14 @@ public class Rfci implements Algorithm, HasKnowledge, TakesIndependenceWrapper {
 //      		algorithm.setInitialGraph(initialGraph);
 //  		}
             DataSet data = (DataSet) dataSet;
-            GeneralResamplingTest search = new GeneralResamplingTest(data, algorithm, parameters.getInt("numberResampling"));
+            GeneralResamplingTest search = new GeneralResamplingTest(data, algorithm, parameters.getInt(Params.NUMBER_RESAMPLING));
             search.setKnowledge(knowledge);
 
-            search.setPercentResampleSize(parameters.getDouble("percentResampleSize"));
-            search.setResamplingWithReplacement(parameters.getBoolean("resamplingWithReplacement"));
+            search.setPercentResampleSize(parameters.getDouble(Params.PERCENT_RESAMPLE_SIZE));
+            search.setResamplingWithReplacement(parameters.getBoolean(Params.RESAMPLING_WITH_REPLACEMENT));
             
             ResamplingEdgeEnsemble edgeEnsemble = ResamplingEdgeEnsemble.Highest;
-            switch (parameters.getInt("resamplingEnsemble", 1)) {
+            switch (parameters.getInt(Params.RESAMPLING_ENSEMBLE, 1)) {
                 case 0:
                     edgeEnsemble = ResamplingEdgeEnsemble.Preserved;
                     break;
@@ -75,17 +76,17 @@ public class Rfci implements Algorithm, HasKnowledge, TakesIndependenceWrapper {
                     edgeEnsemble = ResamplingEdgeEnsemble.Majority;
             }
             search.setEdgeEnsemble(edgeEnsemble);
-            search.setAddOriginalDataset(parameters.getBoolean("addOriginalDataset"));
+            search.setAddOriginalDataset(parameters.getBoolean(Params.ADD_ORIGINAL_DATASET));
             
             search.setParameters(parameters);
-            search.setVerbose(parameters.getBoolean("verbose"));
+            search.setVerbose(parameters.getBoolean(Params.VERBOSE));
             return search.search();
         }
     }
 
     @Override
     public Graph getComparisonGraph(Graph graph) {
-        return new DagToPag(new EdgeListGraph(graph)).convert();
+        return new DagToPag2(new EdgeListGraph(graph)).convert();
     }
 
     public String getDescription() {
@@ -99,17 +100,13 @@ public class Rfci implements Algorithm, HasKnowledge, TakesIndependenceWrapper {
 
     @Override
     public List<String> getParameters() {
-        List<String> parameters = test.getParameters();
-        parameters.add("depth");
-        parameters.add("maxPathLength");
-        parameters.add("completeRuleSetUsed");
-        // Resampling
-        parameters.add("numberResampling");
-        parameters.add("percentResampleSize");
-        parameters.add("resamplingWithReplacement");
-        parameters.add("resamplingEnsemble");
-        parameters.add("addOriginalDataset");
-        parameters.add("verbose");
+        List<String> parameters = new ArrayList<>();
+        
+        parameters.add(Params.DEPTH);
+        parameters.add(Params.MAX_PATH_LENGTH);
+        parameters.add(Params.COMPLETE_RULE_SET_USED);
+
+        parameters.add(Params.VERBOSE);
         return parameters;
     }
 

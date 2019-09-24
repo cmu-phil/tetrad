@@ -7,13 +7,21 @@ on the Issues tab, above).
 
 An introduction to Tetrad can be found here:
 
-www.phil.cmu.edu/tetrad
+http://www.phil.cmu.edu/tetrad
+
+A tutorial can be found here:
+
+https://rawgit.com/cmu-phil/tetrad/development/tetrad-gui/src/main/resources/resources/javahelp/manual/tetrad_tutorial.html
+
+The manual is here:
+
+http://cmu-phil.github.io/tetrad/manual/
 
 Javadocs can be found by running the javadocs command on the project once checked out.
 
 Downloads directory is here:
 
-https://cloud.ccd.pitt.edu/nexus/content/repositories/releases/edu/cmu/tetrad-gui/6.2.0/tetrad-gui-6.2.0-launch.jar
+https://cloud.ccd.pitt.edu/nexus/content/repositories/releases/edu/cmu/tetrad-gui/
 
 The wiki is here:
 
@@ -35,7 +43,7 @@ packages:
 
 tetrad
 pitt
-tetradapp
+tetradapp (now succeeded by Causal Command - https://github.com/bd2kccd/causal-cmd)
 
 The  tetrad-lib package contains the "model" code; the 
 tetrad-gui package contains the "view" (GUI) code.

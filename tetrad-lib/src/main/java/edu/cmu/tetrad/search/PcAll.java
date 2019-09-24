@@ -369,6 +369,8 @@ public final class PcAll implements GraphSearch {
             }
         }
 
+        graph = SearchGraphUtils.patternFromEPattern(graph);
+
         TetradLogger.getInstance().log("graph", "\nReturning this graph: " + graph);
 
         long endTime = System.currentTimeMillis();

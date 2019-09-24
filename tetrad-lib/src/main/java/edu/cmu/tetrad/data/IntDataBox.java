@@ -18,20 +18,36 @@
 // along with this program; if not, write to the Free Software               //
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA //
 ///////////////////////////////////////////////////////////////////////////////
-
 package edu.cmu.tetrad.data;
 
+import edu.cmu.tetrad.graph.Node;
+
+import java.util.ArrayList;
+import java.util.List;
+
 /**
- * Stores a 2D array of integer data. Note that the missing value marker for this
- * box is -99.
+ * Stores a 2D array of integer data. Note that the missing value marker for
+ * this box is -99.
  */
 public class IntDataBox implements DataBox {
+
     static final long serialVersionUID = 23L;
 
     /**
      * The stored short data.
      */
     private final int[][] data;
+
+
+    /**
+     * The number of rows (tracked because it may be zero).
+     */
+    private int numRows = 0;
+
+    /**
+     * The number of columns (tracked because it may be zero).
+     */
+    private int numCols = 0;
 
     /**
      * Constructs an 2D short array consisting entirely of missing values (-99).
@@ -44,6 +60,9 @@ public class IntDataBox implements DataBox {
                 data[i][j] = -99;
             }
         }
+
+        this.numRows = rows;
+        this.numCols = cols;
     }
 
     /**
@@ -58,6 +77,9 @@ public class IntDataBox implements DataBox {
             }
         }
 
+        this.numCols = data[0].length;
+        this.numRows = data.length;
+
         this.data = data;
     }
 
@@ -65,26 +87,28 @@ public class IntDataBox implements DataBox {
      * Generates a simple exemplar of this class to test serialization.
      */
     public static BoxDataSet serializableInstance() {
-        return new BoxDataSet(new ShortDataBox(4, 4), null);
+        List<Node> vars = new ArrayList<>();
+        for (int i = 0; i < 4; i++) vars.add(new ContinuousVariable("X" + i));
+        return new BoxDataSet(new ShortDataBox(4, 4), vars);
     }
 
     /**
      * @return the number of rows in this data box.
      */
     public int numRows() {
-        return data.length;
+        return numRows;
     }
 
     /**
      * @return the number of columns in this data box.n
      */
     public int numCols() {
-        return data[0].length;
+        return numCols;
     }
 
     /**
-     * Sets the value at the given row/column to the given Number value.
-     * The value used is number.shortValue().
+     * Sets the value at the given row/column to the given Number value. The
+     * value used is number.shortValue().
      */
     public void set(int row, int col, Number value) {
         if (value == null) {
@@ -99,8 +123,8 @@ public class IntDataBox implements DataBox {
     }
 
     /**
-     * @return the Number value at the given row and column. If the value
-     * is missing (-99), null, is returned.
+     * @return the Number value at the given row and column. If the value is
+     * missing (-99), null, is returned.
      */
     public Number get(int row, int col) {
         int datum = data[row][col];
@@ -134,8 +158,12 @@ public class IntDataBox implements DataBox {
         int[] rows = new int[numRows()];
         int[] cols = new int[numCols()];
 
-        for (int i = 0; i < numRows(); i++) rows[i] = i;
-        for (int j = 0; j < numCols(); j++) cols[j] = j;
+        for (int i = 0; i < numRows(); i++) {
+            rows[i] = i;
+        }
+        for (int j = 0; j < numCols(); j++) {
+            cols[j] = j;
+        }
 
         return viewSelection(rows, cols);
     }
@@ -152,7 +180,9 @@ public class IntDataBox implements DataBox {
 
         return _dataBox;
     }
+
+    public int[][] getData() {
+        return data;
+    }
+
 }
-
-
-

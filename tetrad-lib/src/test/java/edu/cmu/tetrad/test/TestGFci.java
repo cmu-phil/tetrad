@@ -93,7 +93,7 @@ public class TestGFci {
         gFci.setFaithfulnessAssumed(true);
         Graph outGraph = gFci.search();
 
-        final DagToPag dagToPag = new DagToPag(dag);
+        final DagToPag2 dagToPag = new DagToPag2(dag);
         dagToPag.setCompleteRuleSetUsed(false);
         dagToPag.setMaxPathLength(maxPathLength);
         Graph truePag = dagToPag.convert();
@@ -177,7 +177,7 @@ public class TestGFci {
             gfci.setFaithfulnessAssumed(true);
             Graph pag1 = gfci.search();
 
-            DagToPag dagToPag = new DagToPag(dag);
+            DagToPag2 dagToPag = new DagToPag2(dag);
             dagToPag.setCompleteRuleSetUsed(false);
             Graph pag2 = dagToPag.convert();
 
@@ -206,8 +206,8 @@ public class TestGFci {
 
         data = DataUtils.restrictToMeasured(data);
 
-        IndependenceTest test = new IndTestFisherZ(new CovarianceMatrixOnTheFly(data), 0.001);
-        SemBicScore score = new SemBicScore(new CovarianceMatrixOnTheFly(data));
+        IndependenceTest test = new IndTestFisherZ(new CovarianceMatrix(data), 0.001);
+        SemBicScore score = new SemBicScore(new CovarianceMatrix(data));
         score.setPenaltyDiscount(4);
         GFci gFci = new GFci(test, score);
         gFci.setFaithfulnessAssumed(true);
@@ -220,7 +220,7 @@ public class TestGFci {
 
         System.out.println("Elapsed " + (stop - start) + " ms");
 
-        DagToPag dagToPag = new DagToPag(g);
+        DagToPag2 dagToPag = new DagToPag2(g);
         dagToPag.setVerbose(false);
     }
 
@@ -251,7 +251,7 @@ public class TestGFci {
 
         System.out.println("Elapsed " + (stop - start) + " ms");
 
-        DagToPag dagToPag = new DagToPag(g);
+        DagToPag2 dagToPag = new DagToPag2(g);
         dagToPag.setVerbose(false);
     }
 

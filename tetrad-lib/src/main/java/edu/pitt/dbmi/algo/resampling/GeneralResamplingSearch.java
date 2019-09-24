@@ -5,6 +5,7 @@ package edu.pitt.dbmi.algo.resampling;
 
 import java.io.PrintStream;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -44,7 +45,7 @@ public class GeneralResamplingSearch {
 
 	private boolean verbose = false;
 
-	private List<Graph> PAGs = new ArrayList<>();
+	private List<Graph> PAGs = Collections.synchronizedList(new ArrayList<>());
 
 	// private ForkJoinPool pool = null;
 

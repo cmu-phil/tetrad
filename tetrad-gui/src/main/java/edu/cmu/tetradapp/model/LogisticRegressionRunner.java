@@ -20,12 +20,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 package edu.cmu.tetradapp.model;
 
-import edu.cmu.tetrad.data.ColtDataSet;
-import edu.cmu.tetrad.data.ContinuousVariable;
-import edu.cmu.tetrad.data.DataModel;
-import edu.cmu.tetrad.data.DataModelList;
-import edu.cmu.tetrad.data.DataSet;
-import edu.cmu.tetrad.data.DiscreteVariable;
+import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
@@ -134,7 +129,7 @@ public class LogisticRegressionRunner implements AlgorithmRunner, RegressionMode
         variables.add(var1);
         variables.add(var2);
 
-        DataSet dataSet = new ColtDataSet(3, variables);
+        DataSet dataSet = new BoxDataSet( new VerticalDoubleDataBox(3, variables.size()), variables);
         double[] col1data = new double[]{0.0, 1.0, 2.0};
         double[] col2data = new double[]{2.3, 4.3, 2.5};
 

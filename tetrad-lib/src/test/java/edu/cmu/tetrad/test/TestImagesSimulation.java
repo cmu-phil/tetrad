@@ -101,7 +101,6 @@ public class TestImagesSimulation {
         comparison.setShowSimulationIndices(false);
         comparison.setSortByUtility(false);
         comparison.setShowUtilities(false);
-        comparison.setParallelized(true);
 //        comparison.setSaveGraphs(true);
 
         comparison.setTabDelimitedTables(false);

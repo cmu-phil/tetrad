@@ -51,7 +51,6 @@ public class LatestClient {
     }
 
     public boolean checkLatest(String softwareName, String version) {
-
         LOGGER.debug("running version: " + version);
 
         final Properties applicationProperties = new Properties();

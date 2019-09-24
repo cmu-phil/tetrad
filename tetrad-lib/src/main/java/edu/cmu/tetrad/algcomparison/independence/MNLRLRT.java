@@ -18,8 +18,8 @@ import java.util.List;
  */
 @Experimental
 @TestOfIndependence(
-        name = "Mixed Variable Polynomial Likelihood Ratio Test",
-        command = "mixed-var-polynominal-likelihood-ratio",
+        name = "Multinomial Logistic Regression Likelihood Ratio Test",
+        command = "mnlrlr-test",
         dataType = DataType.Mixed
 )
 public class MNLRLRT implements IndependenceWrapper {

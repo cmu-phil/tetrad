@@ -1,5 +1,6 @@
 package edu.cmu.tetrad.algcomparison.statistic;
 
+import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
@@ -27,7 +28,7 @@ public class NodesInCyclesRecall implements Statistic {
     }
 
     @Override
-    public double getValue(Graph trueGraph, Graph estGraph) {
+    public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
         trueGraph = GraphUtils.replaceNodes(trueGraph, estGraph.getNodes());
 
         Set<Node> inTrue = getNodesInCycles(trueGraph);

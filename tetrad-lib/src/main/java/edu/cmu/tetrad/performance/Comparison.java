@@ -144,7 +144,7 @@ public class Comparison {
                 throw new IllegalArgumentException("Penalty discount not set.");
             }
 
-            SemBicScore semBicScore = new SemBicScore(new CovarianceMatrixOnTheFly(dataSet));
+            SemBicScore semBicScore = new SemBicScore(new CovarianceMatrix(dataSet));
             semBicScore.setPenaltyDiscount(params.getPenaltyDiscount());
             score = semBicScore;
 
@@ -214,12 +214,12 @@ public class Comparison {
             if (test == null) throw new IllegalArgumentException("Test not set.");
             Fci search = new Fci(test);
             result.setResultGraph(search.search());
-            result.setCorrectResult(new DagToPag(trueDag).convert());
+            result.setCorrectResult(new DagToPag2(trueDag).convert());
         } else if (params.getAlgorithm() == ComparisonParameters.Algorithm.GFCI) {
             if (test == null) throw new IllegalArgumentException("Test not set.");
             GFci search = new GFci(test, score);
             result.setResultGraph(search.search());
-            result.setCorrectResult(new DagToPag(trueDag).convert());
+            result.setCorrectResult(new DagToPag2(trueDag).convert());
         } else {
             throw new IllegalArgumentException("Unrecognized algorithm.");
         }
@@ -250,7 +250,7 @@ public class Comparison {
             variables.add(new ContinuousVariable(column.toString()));
         }
 
-        DataSet dataSet = new ColtDataSet(0, variables);
+        DataSet dataSet = new BoxDataSet(new DoubleDataBox(0, variables.size()), variables);
         dataSet.setNumberFormat(new DecimalFormat("0"));
 
         for (int i = 0; i < results.size(); i++) {

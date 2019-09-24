@@ -6,10 +6,13 @@ import java.io.Serializable;
  * Describes a parameter.
  *
  * @author jdramsey
+ * @author Zhou Yuan <zhy19@pitt.edu>
  */
 public class ParamDescription {
 
-    private String description;
+    // New
+    private String paramName;
+    private String shortDescription;
     private String longDescription;
     private Serializable defaultValue;
     private double lowerBoundDouble = Double.NEGATIVE_INFINITY;
@@ -17,71 +20,81 @@ public class ParamDescription {
     private int lowerBoundInt = Integer.MIN_VALUE;
     private int upperBoundInt = Integer.MAX_VALUE;
 
-    public ParamDescription(String description, Serializable defaultValue) {
-        if (description == null) {
-            throw new NullPointerException("Description is null.");
+    public ParamDescription(String paramName, String shortDescription, String longDescription, Serializable defaultValue) {
+        if (paramName == null) {
+            throw new NullPointerException("Target parameter name is null.");
+        }
+
+        if (shortDescription == null) {
+            throw new NullPointerException("Target parameter short description is null.");
         }
 
         if (defaultValue == null) {
-            throw new NullPointerException("No default value for " + description);
+            throw new NullPointerException("No default value for " + paramName);
         }
 
-        this.description = description;
+        this.paramName = paramName;
+        this.shortDescription = shortDescription;
+        this.longDescription = longDescription;
         this.defaultValue = defaultValue;
     }
 
-    public ParamDescription(String description, Serializable defaultValue, double lowerBound, double upperBound) {
-        if (description == null) {
-            throw new NullPointerException("Description is null.");
+    public ParamDescription(String paramName, String shortDescription, String longDescription, Serializable defaultValue, int lowerBound, int upperBound) {
+        if (paramName == null) {
+            throw new NullPointerException("Target parameter name is null.");
+        }
+
+        if (shortDescription == null) {
+            throw new NullPointerException("Target parameter short description is null.");
         }
 
         if (defaultValue == null) {
-            throw new NullPointerException("No default value for " + description);
+            throw new NullPointerException("No default value for " + paramName);
         }
 
-        this.description = description;
-        this.defaultValue = defaultValue;
-        this.lowerBoundDouble = lowerBound;
-        this.upperBoundDouble = upperBound;
-    }
-
-    public ParamDescription(String description, Serializable defaultValue, int lowerBound, int upperBound) {
-        if (description == null) {
-            throw new NullPointerException("Description is null.");
-        }
-
-        if (defaultValue == null) {
-            throw new NullPointerException("No default value for " + description);
-        }
-
-        this.description = description;
+        this.paramName = paramName;
+        this.shortDescription = shortDescription;
+        this.longDescription = longDescription;
         this.defaultValue = defaultValue;
         this.lowerBoundInt = lowerBound;
         this.upperBoundInt = upperBound;
     }
 
-    public String getDescription() {
-        return description;
+    public ParamDescription(String paramName, String shortDescription, String longDescription, Serializable defaultValue, double lowerBound, double upperBound) {
+        if (paramName == null) {
+            throw new NullPointerException("Target parameter name is null.");
+        }
+
+        if (shortDescription == null) {
+            throw new NullPointerException("Target parameter short description is null.");
+        }
+
+        if (defaultValue == null) {
+            throw new NullPointerException("No default value for " + paramName);
+        }
+
+        this.paramName = paramName;
+        this.shortDescription = shortDescription;
+        this.longDescription = longDescription;
+        this.defaultValue = defaultValue;
+        this.lowerBoundDouble = lowerBound;
+        this.upperBoundDouble = upperBound;
     }
 
-    public Serializable getDefaultValue() {
-        return defaultValue;
+    public String getParamName() {
+        return paramName;
     }
 
-    public double getLowerBoundDouble() {
-        return lowerBoundDouble;
+    public void setParamName(String paramName) {
+        this.paramName = paramName;
     }
 
-    public double getUpperBoundDouble() {
-        return upperBoundDouble;
+    public String getShortDescription() {
+        return shortDescription;
     }
 
-    public int getLowerBoundInt() {
-        return lowerBoundInt;
-    }
-
-    public int getUpperBoundInt() {
-        return upperBoundInt;
+    public void setShortDescription(String shortDescription) {
+        this.shortDescription = shortDescription;
     }
 
     public String getLongDescription() {
@@ -91,4 +104,45 @@ public class ParamDescription {
     public void setLongDescription(String longDescription) {
         this.longDescription = longDescription;
     }
+
+    public Serializable getDefaultValue() {
+        return defaultValue;
+    }
+
+    public void setDefaultValue(Serializable defaultValue) {
+        this.defaultValue = defaultValue;
+    }
+
+    public double getLowerBoundDouble() {
+        return lowerBoundDouble;
+    }
+
+    public void setLowerBoundDouble(double lowerBoundDouble) {
+        this.lowerBoundDouble = lowerBoundDouble;
+    }
+
+    public double getUpperBoundDouble() {
+        return upperBoundDouble;
+    }
+
+    public void setUpperBoundDouble(double upperBoundDouble) {
+        this.upperBoundDouble = upperBoundDouble;
+    }
+
+    public int getLowerBoundInt() {
+        return lowerBoundInt;
+    }
+
+    public void setLowerBoundInt(int lowerBoundInt) {
+        this.lowerBoundInt = lowerBoundInt;
+    }
+
+    public int getUpperBoundInt() {
+        return upperBoundInt;
+    }
+
+    public void setUpperBoundInt(int upperBoundInt) {
+        this.upperBoundInt = upperBoundInt;
+    }
+
 }

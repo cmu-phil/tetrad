@@ -1,14 +1,18 @@
 package edu.cmu.tetrad.algcomparison.score;
 
-import edu.cmu.tetrad.data.*;
+import edu.cmu.tetrad.data.DataModel;
+import edu.cmu.tetrad.data.DataSet;
+import edu.cmu.tetrad.data.DataType;
+import edu.cmu.tetrad.data.ICovarianceMatrix;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.Score;
 import edu.cmu.tetrad.util.Parameters;
+
 import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Wrapper for Fisher Z test.
+ * Wrapper for linear, Gaussian SEM BIC score.
  *
  * @author jdramsey
  */
@@ -25,12 +29,19 @@ public class SemBicScore implements ScoreWrapper {
     @Override
     public Score getScore(DataModel dataSet, Parameters parameters) {
         this.dataSet = dataSet;
-//        edu.cmu.tetrad.search.SemBicScore semBicScore = new edu.cmu.tetrad.search.SemBicScore(DataUtils.getCovMatrix(dataSet));
-        edu.cmu.tetrad.search.SemBicScore semBicScore = new edu.cmu.tetrad.search.SemBicScore(new CovarianceMatrixOnTheFly((DataSet) dataSet));
-        double penaltyDiscount = parameters.getDouble("penaltyDiscount");
-        double structurePrior = parameters.getDouble("structurePrior");
-        semBicScore.setPenaltyDiscount(penaltyDiscount);
-        semBicScore.setStructurePrior(structurePrior);
+
+        edu.cmu.tetrad.search.SemBicScore semBicScore;
+
+        if (dataSet instanceof DataSet) {
+            semBicScore = new edu.cmu.tetrad.search.SemBicScore((DataSet) this.dataSet);
+        } else if (dataSet instanceof ICovarianceMatrix) {
+            semBicScore = new edu.cmu.tetrad.search.SemBicScore((ICovarianceMatrix) this.dataSet);
+        } else {
+            throw new IllegalArgumentException("Expecting either a dataset or a covariance matrix.");
+        }
+
+        semBicScore.setPenaltyDiscount(parameters.getDouble("penaltyDiscount"));
+        semBicScore.setStructurePrior(parameters.getDouble("structurePrior"));
         return semBicScore;
     }
 

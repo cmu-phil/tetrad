@@ -5,14 +5,21 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.util.TextTable;
 import edu.cmu.tetradapp.model.GraphWrapper;
 import edu.cmu.tetradapp.model.TabularComparison;
-
-import javax.swing.*;
-import java.awt.*;
+import java.awt.Dimension;
+import java.awt.Font;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.Map;
+import javax.swing.Box;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTabbedPane;
+import javax.swing.JTextArea;
 
 public class TabularComparisonEditor extends JPanel {
+
+    private static final long serialVersionUID = 8455624852328328919L;
 
     private final TabularComparison comparison;
 
@@ -31,8 +38,15 @@ public class TabularComparisonEditor extends JPanel {
 
         for (int i = 0; i < referenceGraphs.size(); i++) {
             JTabbedPane pane3 = new JTabbedPane(JTabbedPane.TOP);
-            pane3.add("Target Graph", new GraphEditor(new GraphWrapper(comparison.getTargetGraphs().get(i))).getWorkbench());
-            pane3.add("True Graph", new GraphEditor(new GraphWrapper(comparison.getReferenceGraphs().get(i))).getWorkbench());
+
+            GraphEditor graphEditor = new GraphEditor(new GraphWrapper(comparison.getTargetGraphs().get(i)));
+            graphEditor.enableEditing(false);
+            pane3.add("Target Graph", graphEditor.getWorkbench());
+
+            graphEditor = new GraphEditor(new GraphWrapper(comparison.getReferenceGraphs().get(i)));
+            graphEditor.enableEditing(false);
+            pane3.add("True Graph", graphEditor.getWorkbench());
+
             pane2.add("" + (i + 1), pane3);
         }
 
@@ -40,7 +54,6 @@ public class TabularComparisonEditor extends JPanel {
 
         add(pane);
     }
-
 
     private Box getTableDisplay() {
 
@@ -84,7 +97,6 @@ public class TabularComparisonEditor extends JPanel {
         b.add(b3);
 
 //        setPreferredSize(new Dimension(700,400));
-
         return b;
     }
 
@@ -141,6 +153,5 @@ public class TabularComparisonEditor extends JPanel {
 
         return table;
     }
-
 
 }

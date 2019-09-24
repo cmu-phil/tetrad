@@ -23,13 +23,18 @@ package edu.cmu.tetrad.study;
 
 import edu.cmu.tetrad.algcomparison.Comparison;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithms;
-import edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern.*;
+import edu.cmu.tetrad.algcomparison.algorithm.oracle.pag.Gfci;
+import edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern.Fges;
+import edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern.PcAll;
 import edu.cmu.tetrad.algcomparison.graph.RandomForward;
-import edu.cmu.tetrad.algcomparison.score.FisherZScore;
+import edu.cmu.tetrad.algcomparison.independence.FisherZ;
+import edu.cmu.tetrad.algcomparison.score.SemBicScore;
 import edu.cmu.tetrad.algcomparison.simulation.LinearFisherModel;
+import edu.cmu.tetrad.algcomparison.simulation.SemSimulation;
 import edu.cmu.tetrad.algcomparison.simulation.Simulations;
 import edu.cmu.tetrad.algcomparison.statistic.*;
 import edu.cmu.tetrad.util.Parameters;
+import edu.cmu.tetrad.util.Params;
 
 /**
  * An example script to simulate data and run a comparison analysis on it.
@@ -38,107 +43,102 @@ import edu.cmu.tetrad.util.Parameters;
  */
 public class ExampleCompareSimulation {
     public static void main(String... args) {
-        if (args.length > 0) {
-            int numMeasures = Integer.parseInt(args[0]);
-            int avgDegree = Integer.parseInt(args[1]);
+        Parameters parameters = new Parameters();
 
-            Parameters parameters = new Parameters();
+        parameters.set("numRuns", 20);
+        parameters.set("differentGraphs", true);
+        parameters.set("sampleSize", 1000, 100000);
 
-//        parameters.set("minCategories", 3);
-//        parameters.set("maxCategories", 3);
+        parameters.set("numMeasures", 20);
+        parameters.set("numLatents", 0);
+        parameters.set("avgDegree", 4);
+        parameters.set("maxDegree", 1000);
+        parameters.set("maxIndegree", 1000);
+        parameters.set("maxOutdegree", 1000);
+        parameters.set("connected", false);
 
-            parameters.set("numRuns", 2);
-            parameters.set("differentGraphs", true);
-            parameters.set("sampleSize", 1000);
+        parameters.set("coefLow", 0.1);
+        parameters.set("coefHigh", .6);
+        parameters.set("varLow", 1);
+        parameters.set("varHigh", 3);
+        parameters.set("verbose", false);
+        parameters.set("coefSymmetric", false);
+        parameters.set("percentDiscrete", 0);
+        parameters.set("numCategories", 3);
+        parameters.set("differentGraphs", true);
+        parameters.set("intervalBetweenShocks", 100);
+        parameters.set("intervalBetweenRecordings", 100);
+        parameters.set("fisherEpsilon", 0.00001);
+        parameters.set("randomizeColumns", true);
 
-            parameters.set("numMeasures", numMeasures);
-            parameters.set("numLatents", 0);
-            parameters.set("avgDegree", avgDegree);
-            parameters.set("maxDegree", 100);
-            parameters.set("maxIndegree", 100);
-            parameters.set("maxOutdegree", 100);
-            parameters.set("connected", false);
+//        parameters.set(Params.STANDARDIZE, false);
 
-            parameters.set("coefLow", 0.2);
-            parameters.set("coefHigh", 0.9);
-            parameters.set("varLow", 1);
-            parameters.set("varHigh", 3);
-            parameters.set("verbose", false);
-            parameters.set("coefSymmetric", true);
-            parameters.set("numRuns", 1);
-            parameters.set("percentDiscrete", 0);
-            parameters.set("numCategories", 3);
-            parameters.set("differentGraphs", true);
-            parameters.set("sampleSize", 1000);
-            parameters.set("intervalBetweenShocks", 10);
-            parameters.set("intervalBetweenRecordings", 10);
-            parameters.set("fisherEpsilon", 0.001);
-            parameters.set("randomizeColumns", true);
+        parameters.set("alpha", 0.01);
+        parameters.set("depth", -1);
 
-            parameters.set("alpha", 1e-8);
-            parameters.set("depth", -1);
-            parameters.set("penaltyDiscount", 4);
+        parameters.set(Params.USE_MAX_P_ORIENTATION_HEURISTIC, false);
+        parameters.set(Params.SYMMETRIC_FIRST_STEP, true);
+        parameters.set(Params.FAITHFULNESS_ASSUMED, false);
+        parameters.set("maxPOrientationMaxPathLength", 3);
+        parameters.set("verbose", false);
 
-            parameters.set("useMaxPOrientationHeuristic", false);
-            parameters.set("maxPOrientationMaxPathLength", 3);
-            parameters.set("verbose", false);
+        parameters.set("maxDegree", 100);
 
-            parameters.set("scaleFreeAlpha", 0.00001);
-            parameters.set("scaleFreeBeta", 0.4);
-            parameters.set("scaleFreeDeltaIn", .1);
-            parameters.set("scaleFreeDeltaOut", 3);
+        parameters.set("penaltyDiscount", 1);
+        parameters.set("structurePrior", 0);
 
-            parameters.set("symmetricFirstStep", false);
-            parameters.set("faithfulnessAssumed", true);
-            parameters.set("maxDegree", 100);
+        parameters.set("alpha", 0.01);
 
-            Statistics statistics = new Statistics();
+        parameters.set(Params.STABLE_FAS, true);
+        parameters.set(Params.CONCURRENT_FAS, true);
+        parameters.set(Params.COLLIDER_DISCOVERY_RULE, 2, 3);
 
-            statistics.add(new ParameterColumn("numMeasures"));
-            statistics.add(new ParameterColumn("avgDegree"));
+        Statistics statistics = new Statistics();
 
-            statistics.add(new AdjacencyPrecision());
-            statistics.add(new AdjacencyRecall());
-            statistics.add(new ArrowheadPrecision());
-            statistics.add(new ArrowheadRecall());
-//        statistics.add(new NumBidirectedEdges());
-//        statistics.add(new MathewsCorrAdj());
-//        statistics.add(new MathewsCorrArrow());
-//        statistics.add(new F1Adj());
-//        statistics.add(new F1Arrow());
-//        statistics.add(new SHD());
-            statistics.add(new ElapsedTime());
+        statistics.add(new ParameterColumn(Params.SAMPLE_SIZE));
+        statistics.add(new ParameterColumn("thresholdAlpha"));
+        statistics.add(new ParameterColumn("penaltyDiscount"));
 
-            statistics.setWeight("AP", 0.25);
-            statistics.setWeight("AR", 0.25);
-            statistics.setWeight("AHP", 0.25);
-            statistics.setWeight("AHR", 0.25);
+        statistics.add(new NumberOfEdgesEst());
+        statistics.add(new AdjacencyPrecision());
+        statistics.add(new AdjacencyRecall());
+        statistics.add(new ArrowheadPrecision());
+        statistics.add(new ArrowheadRecall());
+        statistics.add(new ArrowheadPrecisionCommonEdges());
+        statistics.add(new ArrowheadRecallCommonEdges());
+        statistics.add(new F1All());
+//        statistics.add(new BicTrue());
+//        statistics.add(new BicEst());
+//        statistics.add(new BicDiffPerRecord());
+        statistics.add(new ElapsedTime());
+        statistics.add(new TailPrecision());
+        statistics.add(new TailRecall());
+        statistics.add(new GraphExactlyRight());
 
-            Algorithms algorithms = new Algorithms();
+        statistics.setWeight("AP", 1);
+        statistics.setWeight("AR", 1);
+        statistics.setWeight("AHP", 1);
+        statistics.setWeight("AHR", 1);
 
-//        algorithms.add(new Pc(new FisherZ()));
-//        algorithms.add(new Pc(new SemBicTest()));
-//        algorithms.add(new Cpc(new FisherZ()));
-//        algorithms.add(new PcStable(new FisherZ()));
-//        algorithms.add(new CpcStable(new FisherZ()));
-//        algorithms.add(new PcStableMax(new FisherZ(), false));
-//        algorithms.add(new PcStableMax(new SemBicTest(), false));
-            algorithms.add(new Fges(new FisherZScore(), false));
-//        algorithms.add(new Fges(new SemBicScore(), false));
+        Algorithms algorithms = new Algorithms();
 
-            Simulations simulations = new Simulations();
+//        algorithms.add(new PcAll(new FisherZ()));
+        algorithms.add(new Fges(new SemBicScore()));
+//        algorithms.add(new Gfci(new FisherZ(), new SemBicScore()));
 
-            simulations.add(new LinearFisherModel(new RandomForward()));
+        Simulations simulations = new Simulations();
 
-            Comparison comparison = new Comparison();
+        simulations.add(new SemSimulation(new RandomForward()));
 
-            comparison.setShowAlgorithmIndices(true);
-            comparison.setShowSimulationIndices(true);
-            comparison.setSortByUtility(false);
-            comparison.setShowUtilities(true);
+        Comparison comparison = new Comparison();
 
-            comparison.compareFromSimulations("comparisonJoe", simulations, algorithms, statistics, parameters);
-        }
+        comparison.setShowAlgorithmIndices(false);
+        comparison.setShowSimulationIndices(false);
+        comparison.setSortByUtility(false);
+        comparison.setShowUtilities(false);
+        comparison.setComparisonGraph(Comparison.ComparisonGraph.Pattern_of_the_true_DAG);
+
+        comparison.compareFromSimulations("comparisonJoe", simulations, algorithms, statistics, parameters);
     }
 }
 

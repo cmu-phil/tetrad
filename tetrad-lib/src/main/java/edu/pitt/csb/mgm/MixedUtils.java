@@ -92,7 +92,7 @@ public class MixedUtils {
             }
         }
 
-        return ColtDataSet.makeData(contVars, dsMix.getDoubleData());
+        return new BoxDataSet(new VerticalDoubleDataBox(dsMix.getDoubleData().transpose().toArray()), contVars);
     }
 
     //takes DataSet of all ContinuousVariables
@@ -108,7 +108,7 @@ public class MixedUtils {
             }
         }
 
-        return ColtDataSet.makeData(mixVars, dsCont.getDoubleData());
+        return new BoxDataSet(new DoubleDataBox(dsCont.getDoubleData().toArray()), mixVars);
     }
 
     //takes DataSet of all ContinuousVariables
@@ -139,7 +139,7 @@ public class MixedUtils {
 
 //        return new BoxDataSet(box, mixVars);
 
-        return ColtDataSet.makeData(mixVars, dsCont.getDoubleData());
+        return new BoxDataSet(new DoubleDataBox(dsCont.getDoubleData().toArray()), mixVars);
     }
 
     /**
@@ -147,7 +147,7 @@ public class MixedUtils {
      * @param ds dataset to be copied
      * @return
      */
-    public static ColtDataSet deepCopy(ColtDataSet ds){
+    public static DataSet deepCopy(DataSet ds){
         List<Node> vars = new ArrayList<>(ds.getNumColumns());
         for(Node n : ds.getVariables()){
             if(n instanceof ContinuousVariable)
@@ -157,7 +157,7 @@ public class MixedUtils {
             else
                 throw new IllegalArgumentException("Variable type of node " + n + "could not be determined");
         }
-        ColtDataSet out = ColtDataSet.makeData(vars,ds.getDoubleData());
+        DataSet out = new BoxDataSet(new DoubleDataBox(ds.getDoubleData().toArray()), vars);
 
         return out;
     }

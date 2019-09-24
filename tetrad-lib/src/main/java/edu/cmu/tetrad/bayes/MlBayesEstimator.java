@@ -40,7 +40,7 @@ public final class MlBayesEstimator {
      * given Bayes PM and the data columns in the given data set. Each variable
      * in the given Bayes PM must be equal to a variable in the given data set.
      */
-    public BayesIm  estimate(BayesPm bayesPm, DataSet dataSet) {
+    public BayesIm estimate(BayesPm bayesPm, DataSet dataSet) {
         if (bayesPm == null) {
             throw new NullPointerException();
         }
@@ -86,7 +86,7 @@ public final class MlBayesEstimator {
                 for (int col = 0; col < numCols; col++) {
 
                     // Remove values from the proposition in various ways; if
-                    // a combination exists in the end, calculate a contitional
+                    // a combination exists in the end, calculate a conditional
                     // probability.
                     assertion.setToTautology();
                     condition.setToTautology();

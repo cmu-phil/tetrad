@@ -1,6 +1,7 @@
 package edu.cmu.tetrad.algcomparison.statistic;
 
 import edu.cmu.tetrad.algcomparison.statistic.utils.ArrowConfusion;
+import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.graph.Graph;
 
 /**
@@ -25,7 +26,7 @@ public class TwoCycleRecall implements Statistic {
     }
 
     @Override
-    public double getValue(Graph trueGraph, Graph estGraph) {
+    public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
         ArrowConfusion adjConfusion = new ArrowConfusion(trueGraph, estGraph);
         double TwoCycleTp = adjConfusion.getTwoCycleTp();
         double TwoCycleFn = adjConfusion.getTwoCycleFn();

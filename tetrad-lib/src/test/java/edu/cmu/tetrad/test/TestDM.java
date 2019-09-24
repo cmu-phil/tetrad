@@ -249,29 +249,29 @@ public class TestDM {
         trueGraph.addDirectedEdge(new ContinuousVariable("X0"), new ContinuousVariable("L1"));
         trueGraph.addDirectedEdge(new ContinuousVariable("X1"), new ContinuousVariable("L1"));
 
-        trueGraph.addDirectedEdge(new ContinuousVariable("L1"), new ContinuousVariable("X2"));
-        trueGraph.addDirectedEdge(new ContinuousVariable("L1"), new ContinuousVariable("X3"));
+        trueGraph.addDirectedEdge(new ContinuousVariable("L0"), new ContinuousVariable("X2"));
+        trueGraph.addDirectedEdge(new ContinuousVariable("L0"), new ContinuousVariable("X3"));
 
         trueGraph.addDirectedEdge(new ContinuousVariable("X0"), new ContinuousVariable("L2"));
         trueGraph.addDirectedEdge(new ContinuousVariable("X1"), new ContinuousVariable("L2"));
-        trueGraph.addDirectedEdge(new ContinuousVariable("X4"), new ContinuousVariable("L2"));
-        trueGraph.addDirectedEdge(new ContinuousVariable("X5"), new ContinuousVariable("L2"));
+        trueGraph.addDirectedEdge(new ContinuousVariable("X4"), new ContinuousVariable("L1"));
+        trueGraph.addDirectedEdge(new ContinuousVariable("X5"), new ContinuousVariable("L1"));
 
-        trueGraph.addDirectedEdge(new ContinuousVariable("L2"), new ContinuousVariable("X6"));
-        trueGraph.addDirectedEdge(new ContinuousVariable("L2"), new ContinuousVariable("X7"));
+        trueGraph.addDirectedEdge(new ContinuousVariable("L1"), new ContinuousVariable("X6"));
+        trueGraph.addDirectedEdge(new ContinuousVariable("L1"), new ContinuousVariable("X7"));
 
         trueGraph.addDirectedEdge(new ContinuousVariable("X0"), new ContinuousVariable("L0"));
         trueGraph.addDirectedEdge(new ContinuousVariable("X1"), new ContinuousVariable("L0"));
-        trueGraph.addDirectedEdge(new ContinuousVariable("X4"), new ContinuousVariable("L0"));
-        trueGraph.addDirectedEdge(new ContinuousVariable("X5"), new ContinuousVariable("L0"));
+        trueGraph.addDirectedEdge(new ContinuousVariable("X4"), new ContinuousVariable("L2"));
+        trueGraph.addDirectedEdge(new ContinuousVariable("X5"), new ContinuousVariable("L2"));
 
-        trueGraph.addDirectedEdge(new ContinuousVariable("X8"), new ContinuousVariable("L0"));
-        trueGraph.addDirectedEdge(new ContinuousVariable("X9"), new ContinuousVariable("L0"));
+        trueGraph.addDirectedEdge(new ContinuousVariable("X8"), new ContinuousVariable("L2"));
+        trueGraph.addDirectedEdge(new ContinuousVariable("X9"), new ContinuousVariable("L2"));
 
-        trueGraph.addDirectedEdge(new ContinuousVariable("L0"), new ContinuousVariable("X10"));
-        trueGraph.addDirectedEdge(new ContinuousVariable("L0"), new ContinuousVariable("X11"));
+        trueGraph.addDirectedEdge(new ContinuousVariable("L2"), new ContinuousVariable("X10"));
+        trueGraph.addDirectedEdge(new ContinuousVariable("L2"), new ContinuousVariable("X11"));
 
-        assertTrue(foundGraph.equals(trueGraph));
+        assertEquals(foundGraph, trueGraph);
     }
 
     //Three latent fork case

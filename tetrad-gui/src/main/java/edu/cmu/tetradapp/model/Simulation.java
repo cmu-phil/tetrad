@@ -18,14 +18,21 @@
 // along with this program; if not, write to the Free Software               //
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA //
 ///////////////////////////////////////////////////////////////////////////////
-
 package edu.cmu.tetradapp.model;
 
 import edu.cmu.tetrad.algcomparison.graph.RandomForward;
 import edu.cmu.tetrad.algcomparison.graph.SingleGraph;
-import edu.cmu.tetrad.algcomparison.simulation.*;
+import edu.cmu.tetrad.algcomparison.simulation.BayesNetSimulation;
+import edu.cmu.tetrad.algcomparison.simulation.GeneralSemSimulation;
+import edu.cmu.tetrad.algcomparison.simulation.LinearFisherModel;
+import edu.cmu.tetrad.algcomparison.simulation.SemSimulation;
+import edu.cmu.tetrad.algcomparison.simulation.SimulationUtils;
+import edu.cmu.tetrad.algcomparison.simulation.StandardizedSemSimulation;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
-import edu.cmu.tetrad.data.*;
+import edu.cmu.tetrad.data.DataModel;
+import edu.cmu.tetrad.data.DataModelList;
+import edu.cmu.tetrad.data.IKnowledge;
+import edu.cmu.tetrad.data.Knowledge2;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.session.SessionModel;
 import edu.cmu.tetrad.session.SimulationParamsSource;
@@ -38,15 +45,16 @@ import java.util.Map;
 
 /**
  * Wraps a Simulation object for the Tetrad interface. A Simulation object
- * requires a RandomGraph and a choice of Simulation style and can take
- * a variety of parents, either standalone or with graphs, IM's or PM's
- * as parents. It essentially stores an ordered pair of <Graph, List<DataSet>>.
- * It is edited by SimulationEditor.
+ * requires a RandomGraph and a choice of Simulation style and can take a
+ * variety of parents, either standalone or with graphs, IM's or PM's as
+ * parents. It essentially stores an ordered pair of <Graph, List<DataSet>>. It
+ * is edited by SimulationEditor.
  *
  * @author jdramsey
  */
 public class Simulation extends DataWrapper implements SessionModel,
         SimulationParamsSource, MultipleGraphSource, MultipleDataSource {
+
     static final long serialVersionUID = 23L;
 
     private edu.cmu.tetrad.algcomparison.simulation.Simulation simulation;
@@ -57,7 +65,6 @@ public class Simulation extends DataWrapper implements SessionModel,
     private List<DataModel> inputDataModelList;
 
     //============================CONSTRUCTORS=========================//
-
     private Simulation() {
     }
 
@@ -71,15 +78,6 @@ public class Simulation extends DataWrapper implements SessionModel,
         }
     }
 
-//    public Simulation(Simulation simulation) {
-//        this.simulation = simulation.simulation;
-//        this.parameters = new Parameters(simulation.parameters);
-//        this.name = simulation.name + ".copy";
-//        this.fixedGraph = simulation.fixedGraph;
-//        this.fixedSimulation = simulation.fixedSimulation;
-//        createSimulation();
-//    }
-
     public Simulation(GraphSource graphSource, Parameters parameters) {
         if (graphSource instanceof Simulation) {
             Simulation simulation = (Simulation) graphSource;
@@ -90,11 +88,20 @@ public class Simulation extends DataWrapper implements SessionModel,
             this.fixedSimulation = simulation.fixedSimulation;
 //            createSimulation(); // The suggestion is that you should't actually simulate before the user clicks 'simulate'
         } else {
-            simulation = new BayesNetSimulation(new SingleGraph(graphSource.getGraph()));
             this.fixedGraph = true;
             this.parameters = parameters;
             this.fixedSimulation = false;
             setSourceGraph(graphSource.getGraph());
+
+            if (parameters.getParametersNames().contains("simulationsDropdownPreference")) {
+                String simulationType = String.valueOf(parameters.getValues("simulationsDropdownPreference")[0]);
+                this.simulation = SimulationUtils.create(simulationType, new SingleGraph(graphSource.getGraph()));
+
+                // Re-simuation whenever graph source changed and "Execute" button is clicked.
+                createSimulation();
+            } else {
+                this.simulation = new BayesNetSimulation(new SingleGraph(graphSource.getGraph()));
+            }
         }
     }
 
@@ -275,7 +282,7 @@ public class Simulation extends DataWrapper implements SessionModel,
         // Every time the users click the Simulate button, new data needs to be created
         // regardless of already created data - Zhou
         //if (simulation.getNumDataModels() == 0) {
-            simulation.createData(parameters);
+        simulation.createData(parameters);
         //}
     }
 
@@ -325,8 +332,3 @@ public class Simulation extends DataWrapper implements SessionModel,
         return inputDataModelList;
     }
 }
-
-
-
-
-

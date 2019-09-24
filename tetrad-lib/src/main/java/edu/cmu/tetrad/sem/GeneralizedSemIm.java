@@ -332,7 +332,7 @@ public class GeneralizedSemIm implements IM, Simulator, TetradSerializable {
             }
         }
 
-        DataSet fullData = new ColtDataSet(sampleSize, variables);
+        DataSet fullData = new BoxDataSet(new VerticalDoubleDataBox(sampleSize, variables.size()), variables);
 
         Map<Node, Integer> nodeIndices = new HashMap<>();
 
@@ -453,7 +453,7 @@ public class GeneralizedSemIm implements IM, Simulator, TetradSerializable {
             }
         }
 
-        DataSet fullDataSet = new ColtDataSet(sampleSize, continuousVariables);
+        DataSet fullDataSet = new BoxDataSet(new VerticalDoubleDataBox(sampleSize, continuousVariables.size()), continuousVariables);
 
         // Create some index arrays to hopefully speed up the simulation.
         SemGraph graph = pm.getGraph();
@@ -546,7 +546,7 @@ public class GeneralizedSemIm implements IM, Simulator, TetradSerializable {
             }
         }
 
-        DataSet fullDataSet = new ColtDataSet(sampleSize, continuousVariables);
+        DataSet fullDataSet = new BoxDataSet(new VerticalDoubleDataBox(sampleSize, continuousVariables.size()), continuousVariables);
 
         final Context context = new Context() {
             public Double getValue(String term) {
@@ -692,7 +692,7 @@ public class GeneralizedSemIm implements IM, Simulator, TetradSerializable {
             }
         }
 
-        DataSet fullDataSet = new ColtDataSet(sampleSize, continuousVariables);
+        DataSet fullDataSet = new BoxDataSet(new VerticalDoubleDataBox(sampleSize, continuousVariables.size()), continuousVariables);
 
         final Context context = new Context() {
             public Double getValue(String term) {
@@ -1087,7 +1087,7 @@ public class GeneralizedSemIm implements IM, Simulator, TetradSerializable {
             }
         }
 
-        DataSet fullDataSet = new ColtDataSet(sampleSize, continuousVariables);
+        DataSet fullDataSet = new BoxDataSet(new VerticalDoubleDataBox(sampleSize, continuousVariables.size()), continuousVariables);
 
         final Context context = new Context() {
             public Double getValue(String term) {

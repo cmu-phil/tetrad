@@ -11,6 +11,7 @@ import edu.cmu.tetrad.graph.SemGraph;
 import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemPm;
 import edu.cmu.tetrad.util.Parameters;
+import edu.cmu.tetrad.util.Params;
 import edu.cmu.tetrad.util.RandomUtil;
 import java.util.ArrayList;
 import java.util.List;
@@ -45,6 +46,8 @@ public class SemSimulation implements Simulation {
         this.randomGraph = new SingleGraph(graph);
         this.im = im;
         this.pm = im.getSemPm();
+        this.ims = new ArrayList<>();
+        ims.add(im);
     }
 
     @Override
@@ -55,10 +58,10 @@ public class SemSimulation implements Simulation {
         graphs = new ArrayList<>();
         ims = new ArrayList<>();
 
-        for (int i = 0; i < parameters.getInt("numRuns"); i++) {
+        for (int i = 0; i < parameters.getInt(Params.NUM_RUNS); i++) {
             System.out.println("Simulating dataset #" + (i + 1));
 
-            if (parameters.getBoolean("differentGraphs") && i > 0) {
+            if (parameters.getBoolean(Params.DIFFERENT_GRAPHS) && i > 0) {
                 graph = randomGraph.createGraph(parameters);
             }
 
@@ -66,11 +69,11 @@ public class SemSimulation implements Simulation {
 
             DataSet dataSet = simulate(graph, parameters);
 
-            if (parameters.getBoolean("standardize")) {
+            if (parameters.getBoolean(Params.STANDARDIZE)) {
                 dataSet = DataUtils.standardizeData(dataSet);
             }
 
-            double variance = parameters.getDouble("measurementVariance");
+            double variance = parameters.getDouble(Params.MEASUREMENT_VARIANCE);
 
             if (variance > 0) {
                 for (int k = 0; k < dataSet.getNumRows(); k++) {
@@ -82,7 +85,7 @@ public class SemSimulation implements Simulation {
                 }
             }
 
-            if (parameters.getBoolean("randomizeColumns")) {
+            if (parameters.getBoolean(Params.RANDOMIZE_COLUMNS)) {
                 dataSet = DataUtils.reorderColumns(dataSet);
             }
 
@@ -121,13 +124,14 @@ public class SemSimulation implements Simulation {
             parameters.addAll(SemIm.getParameterNames());
         }
 
-        parameters.add("standardize");
-        parameters.add("measurementVariance");
-        parameters.add("numRuns");
-        parameters.add("differentGraphs");
-        parameters.add("randomizeColumns");
-        parameters.add("sampleSize");
-        parameters.add("saveLatentVars");
+        parameters.add(Params.MEASUREMENT_VARIANCE);
+        parameters.add(Params.NUM_RUNS);
+        parameters.add(Params.DIFFERENT_GRAPHS);
+        parameters.add(Params.RANDOMIZE_COLUMNS);
+        parameters.add(Params.SAMPLE_SIZE);
+        parameters.add(Params.SAVE_LATENT_VARS);
+        parameters.add(Params.STANDARDIZE);
+
         return parameters;
     }
 
@@ -142,7 +146,7 @@ public class SemSimulation implements Simulation {
     }
 
     private DataSet simulate(Graph graph, Parameters parameters) {
-        boolean saveLatentVars = parameters.getBoolean("saveLatentVars");
+        boolean saveLatentVars = parameters.getBoolean(Params.SAVE_LATENT_VARS);
 
         SemIm im = this.im;
 
@@ -153,15 +157,15 @@ public class SemSimulation implements Simulation {
                 pm = new SemPm(graph);
                 im = new SemIm(pm, parameters);
                 ims.add(im);
-                return im.simulateData(parameters.getInt("sampleSize"), saveLatentVars);
+                return im.simulateData(parameters.getInt(Params.SAMPLE_SIZE), saveLatentVars);
             } else {
                 im = new SemIm(pm, parameters);
                 ims.add(im);
-                return im.simulateData(parameters.getInt("sampleSize"), saveLatentVars);
+                return im.simulateData(parameters.getInt(Params.SAMPLE_SIZE), saveLatentVars);
             }
         } else {
             ims.add(im);
-            return im.simulateData(parameters.getInt("sampleSize"), saveLatentVars);
+            return im.simulateData(parameters.getInt(Params.SAMPLE_SIZE), saveLatentVars);
         }
     }
 

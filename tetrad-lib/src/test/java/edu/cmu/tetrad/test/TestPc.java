@@ -353,7 +353,7 @@ public class TestPc {
 
             IndTestFisherZ test = new IndTestFisherZ(data, alpha);
 
-            SemBicScore score = new SemBicScore(new CovarianceMatrixOnTheFly(data));
+            SemBicScore score = new SemBicScore(new CovarianceMatrix(data));
             score.setPenaltyDiscount(penaltyDiscount);
             GraphSearch search;
 
@@ -719,13 +719,13 @@ public class TestPc {
             DataSet data = im.simulateData(sampleSize, false);
 
 //            Graph comparison = dag;
-            Graph comparison = new DagToPag(dag).convert();
+            Graph comparison = new DagToPag2(dag).convert();
 //            Graph comparison = new Pc(new IndTestDSep(dag)).search();
 
             IndTestFisherZ test = new IndTestFisherZ(data, alpha);
 
 
-            SemBicScore score = new SemBicScore(new CovarianceMatrixOnTheFly(data));
+            SemBicScore score = new SemBicScore(new CovarianceMatrix(data));
             score.setPenaltyDiscount(penaltyDiscount);
             GraphSearch search;
             Graph out;

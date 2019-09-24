@@ -18,24 +18,28 @@
 // along with this program; if not, write to the Free Software               //
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA //
 ///////////////////////////////////////////////////////////////////////////////
-
 package edu.cmu.tetradapp.editor;
 
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetradapp.model.GraphWrapper;
-import java.awt.*;
+import java.awt.BorderLayout;
+import java.awt.Component;
+import java.awt.Dimension;
 import java.beans.PropertyChangeEvent;
 import java.util.List;
-import javax.swing.*;
+import javax.swing.JComponent;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTabbedPane;
 
 /**
- * Displays a list of graphs with tabs to select among them, similar to the Data Editor.
- * For use in displaying simulations.
+ * Displays a list of graphs with tabs to select among them, similar to the Data
+ * Editor. For use in displaying simulations.
  *
  * @author jdramsey
  */
-final class SimulationGraphEditor extends JPanel {
+public final class SimulationGraphEditor extends JPanel {
 
     private static final long serialVersionUID = -8394516826928341168L;
 
@@ -51,10 +55,8 @@ final class SimulationGraphEditor extends JPanel {
     private JTabbedPane tabbedPane = new JTabbedPane();
 
     //==========================CONSTUCTORS===============================//
-
     /**
-     * Constructs the editor.
-     * Edited by Zhou on 8/20/18
+     * Constructs the editor. Edited by Zhou on 8/20/18
      */
     public SimulationGraphEditor(List<Graph> graphs) {
         this.tabbedPane = new JTabbedPane(JTabbedPane.LEFT);
@@ -65,11 +67,11 @@ final class SimulationGraphEditor extends JPanel {
     }
 
     //==========================PUBLIC METHODS=============================//
-
     /**
      * 2
-     * Replaces the getModel Datamodels with the given one. Note, that by calling this
-     * you are removing ALL the getModel data-models, they will be lost forever!
+     * Replaces the getModel Datamodels with the given one. Note, that by
+     * calling this you are removing ALL the getModel data-models, they will be
+     * lost forever!
      *
      * @param graphs - The graphs to display now.
      */
@@ -96,8 +98,8 @@ final class SimulationGraphEditor extends JPanel {
         }
 
         this.tabbedPane.validate();
+        this.tabbedPane.repaint();
     }
-
 
     /**
      * Sets this editor to display contents of the given data model wrapper.
@@ -122,7 +124,6 @@ final class SimulationGraphEditor extends JPanel {
         validate();
     }
 
-
     public DataModel getSelectedDataModel() {
         Component selectedComponent = tabbedPane().getSelectedComponent();
         DataModelContainer scrollPane = (DataModelContainer) selectedComponent;
@@ -143,7 +144,6 @@ final class SimulationGraphEditor extends JPanel {
     }
 
     //=============================PRIVATE METHODS======================//
-
     private static String tabName(int i) {
         return "" + i;
     }
@@ -152,14 +152,13 @@ final class SimulationGraphEditor extends JPanel {
      * @return the data display for the given model.
      */
     private JComponent graphDisplay(Graph graph) {
-        return new GraphEditor(new GraphWrapper(graph)).getWorkbench();
+        GraphEditor graphEditor = new GraphEditor(new GraphWrapper(graph));
+        graphEditor.enableEditing(false);
+
+        return graphEditor.getWorkbench();
     }
 
     private JTabbedPane tabbedPane() {
         return tabbedPane;
     }
 }
-
-
-
-

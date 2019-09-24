@@ -6,8 +6,6 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintStream;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.*;
@@ -16,15 +14,10 @@ import java.util.regex.Pattern;
 import static java.lang.Math.*;
 
 import edu.cmu.tetrad.bayes.BayesIm;
-import edu.cmu.tetrad.bayes.MlBayesIm;
 import edu.cmu.tetrad.bayes.BayesPm;
 import edu.cmu.tetrad.bayes.DirichletBayesIm;
 import edu.cmu.tetrad.bayes.DirichletEstimator;
-import edu.cmu.tetrad.data.ColtDataSet;
-import edu.cmu.tetrad.data.ContinuousVariable;
-import edu.cmu.tetrad.data.DataSet;
-import edu.cmu.tetrad.data.DataUtils;
-import edu.cmu.tetrad.data.DiscreteVariable;
+import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.performance.Comparison;
 import edu.cmu.tetrad.performance.Comparison.*;
@@ -246,7 +239,7 @@ public class RBExperiments {
 		DataSet data = DataUtils.restrictToMeasured(fullData);
 
 		// get the true underlying PAG
-		final DagToPag dagToPag = new DagToPag(dag);
+		final DagToPag2 dagToPag = new DagToPag2(dag);
 		dagToPag.setCompleteRuleSetUsed(false);
 		Graph PAG_True = dagToPag.convert();
 		PAG_True = GraphUtils.replaceNodes(PAG_True, data.getVariables());
@@ -535,7 +528,7 @@ public class RBExperiments {
 			variables.add(new ContinuousVariable(column.toString()));
 		}
 
-		DataSet dataSet = new ColtDataSet(0, variables);
+		DataSet dataSet = new BoxDataSet(new DoubleDataBox(0, variables.size()), variables);
 		dataSet.setNumberFormat(new DecimalFormat("0"));
 
 		int newRow = dataSet.getNumRows();
@@ -791,7 +784,7 @@ public class RBExperiments {
 			}
 		}
 
-		DataSet depData = new ColtDataSet(numBootstrapSamples, vars);
+		DataSet depData = new BoxDataSet(new DoubleDataBox(numBootstrapSamples, vars.size()), vars);
 		System.out.println("\nDep data rows: " + depData.getNumRows() + ", columns: " + depData.getNumColumns());
 		System.out.println("HCopy size: " + HCopy.size());
 
@@ -814,7 +807,6 @@ public class RBExperiments {
 		sd.setStructurePrior(1.0);
 		Fges fgs = new Fges(sd);
 		fgs.setVerbose(false);
-		fgs.setNumPatternsToStore(0);
 		fgs.setFaithfulnessAssumed(true);
 		Graph fgsPattern = fgs.search();
 		fgsPattern = GraphUtils.replaceNodes(fgsPattern, data.getVariables());

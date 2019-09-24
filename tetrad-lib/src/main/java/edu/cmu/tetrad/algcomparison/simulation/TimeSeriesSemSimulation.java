@@ -11,6 +11,7 @@ import edu.cmu.tetrad.search.TimeSeriesUtils;
 import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemPm;
 import edu.cmu.tetrad.util.Parameters;
+import edu.cmu.tetrad.util.Params;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -41,12 +42,12 @@ public class TimeSeriesSemSimulation implements Simulation, HasKnowledge {
         graphs = new ArrayList<>();
 
         Graph graph = randomGraph.createGraph(parameters);
-        graph = TimeSeriesUtils.graphToLagGraph(graph, parameters.getInt("numLags"));
+        graph = TimeSeriesUtils.graphToLagGraph(graph, parameters.getInt(Params.NUM_LAGS));
         topToBottomLayout((TimeLagGraph) graph);
         this.knowledge = TimeSeriesUtils.getKnowledge(graph);
 
-        for (int i = 0; i < parameters.getInt("numRuns"); i++) {
-            if (parameters.getBoolean("differentGraphs") && i > 0) {
+        for (int i = 0; i < parameters.getInt(Params.NUM_RUNS); i++) {
+            if (parameters.getBoolean(Params.DIFFERENT_GRAPHS) && i > 0) {
                 graph = randomGraph.createGraph(parameters);
                 graph = TimeSeriesUtils.graphToLagGraph(graph, 2);
                 topToBottomLayout((TimeLagGraph) graph);
@@ -57,9 +58,9 @@ public class TimeSeriesSemSimulation implements Simulation, HasKnowledge {
             SemPm pm = new SemPm(graph);
             SemIm im = new SemIm(pm, parameters);
 
-            final int sampleSize = parameters.getInt("sampleSize");
+            final int sampleSize = parameters.getInt(Params.SAMPLE_SIZE);
 
-            boolean saveLatentVars = parameters.getBoolean("saveLatentVars");
+            boolean saveLatentVars = parameters.getBoolean(Params.SAVE_LATENT_VARS);
             DataSet dataSet = im.simulateData(sampleSize, saveLatentVars);
 
             int numLags = ((TimeLagGraph) graph).getMaxLag();
@@ -130,7 +131,7 @@ public class TimeSeriesSemSimulation implements Simulation, HasKnowledge {
     public List<String> getParameters() {
         List<String> parameters = new ArrayList<>();
 
-        parameters.add("numLags");
+        parameters.add(Params.NUM_LAGS);
 
         if (!(randomGraph instanceof SingleGraph)) {
             parameters.addAll(randomGraph.getParameters());
@@ -138,12 +139,12 @@ public class TimeSeriesSemSimulation implements Simulation, HasKnowledge {
 
         parameters.addAll(SemIm.getParameterNames());
 
-        parameters.add("standardize");
-        parameters.add("measurementVariance");
-        parameters.add("numRuns");
-        parameters.add("differentGraphs");
-        parameters.add("sampleSize");
-        parameters.add("saveLatentVars");
+        parameters.add(Params.STANDARDIZE);
+        parameters.add(Params.MEASUREMENT_VARIANCE);
+        parameters.add(Params.NUM_RUNS);
+        parameters.add(Params.DIFFERENT_GRAPHS);
+        parameters.add(Params.SAMPLE_SIZE);
+        parameters.add(Params.SAVE_LATENT_VARS);
 
         return parameters;
 

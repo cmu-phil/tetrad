@@ -20,13 +20,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 package edu.cmu.tetradapp.model;
 
-import edu.cmu.tetrad.data.ColtDataSet;
-import edu.cmu.tetrad.data.ContinuousVariable;
-import edu.cmu.tetrad.data.CovarianceMatrix;
-import edu.cmu.tetrad.data.DataModel;
-import edu.cmu.tetrad.data.DataModelList;
-import edu.cmu.tetrad.data.DataSet;
-import edu.cmu.tetrad.data.ICovarianceMatrix;
+import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Dag;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
@@ -199,30 +193,11 @@ public class SemEstimatorWrapper implements SessionModel, Unmarshallable {
         return false;
     }
 
-//    public SemEstimatorWrapper(DataWrapper dataWrapper,
-//                               SemImWrapper semImWrapper, Parameters params) {
-//        if (dataWrapper == null) {
-//            throw new NullPointerException();
-//        }
-//
-//        if (semImWrapper == null) {
-//            throw new NullPointerException();
-//        }
-//
-//        this.params = params;
-//
-//        DataSet dataSet =
-//                (DataSet) dataWrapper.getSelectedDataModel();
-//        SemPm semPm = semImWrapper.getSemIm().getSemPm();
-//
-//        this.semEstimator = new SemEstimator(dataSet, semPm, getOptimizer());
-//        if (!degreesOfFreedomCheck(semPm)) return;
-//        this.semEstimator.estimate();
-//
-//        this.params = params;
-//
-//        log();
-//    }
+    public SemEstimatorWrapper(DataWrapper dataWrapper,
+                               SemImWrapper semImWrapper, Parameters params) {
+    	this(dataWrapper, new SemPmWrapper(semImWrapper), params);
+    }
+    
     private boolean degreesOfFreedomCheck(SemPm semPm) {
         if (semPm.getDof() < 1) {
             int ret = JOptionPane.showConfirmDialog(JOptionUtils.centeringComp(),
@@ -239,37 +214,6 @@ public class SemEstimatorWrapper implements SessionModel, Unmarshallable {
         return true;
     }
 
-//    public SemEstimatorWrapper(DataWrapper dataWrapper,
-//                               SemPmWrapper semPmWrapper,
-//                               SemImWrapper semImWrapper,
-//                               Parameters params) {
-//        if (dataWrapper == null) {
-//            throw new NullPointerException();
-//        }
-//
-//        if (semPmWrapper == null) {
-//            throw new NullPointerException();
-//        }
-//
-//        if (semImWrapper == null) {
-//            throw new NullPointerException();
-//        }
-//
-//        DataSet dataSet =
-//                (DataSet) dataWrapper.getSelectedDataModel();
-//        SemPm semPm = semPmWrapper.getSemPm();
-//        SemIm semIm = semImWrapper.getSemIm();
-//
-//        this.semEstimator = new SemEstimator(dataSet, semPm, getOptimizer());
-//        if (!degreesOfFreedomCheck(semPm)) return;
-//        this.semEstimator.setTrueSemIm(semIm);
-//        this.semEstimator.setNumRestarts(getParams().getInt("numRestarts", 1));
-//        this.semEstimator.estimate();
-//
-//        this.params = params;
-//
-//        log();
-//    }
     /**
      * Generates a simple exemplar of this class to test serialization.
      *
@@ -279,7 +223,7 @@ public class SemEstimatorWrapper implements SessionModel, Unmarshallable {
         List<Node> variables = new LinkedList<>();
         ContinuousVariable x = new ContinuousVariable("X");
         variables.add(x);
-        DataSet dataSet = new ColtDataSet(10, variables);
+        DataSet dataSet = new BoxDataSet(new VerticalDoubleDataBox(10, variables.size()), variables);
 
         for (int i = 0; i < dataSet.getNumRows(); i++) {
             for (int j = 0; j < dataSet.getNumColumns(); j++) {

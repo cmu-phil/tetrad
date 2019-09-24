@@ -38,18 +38,18 @@ public class ConditionalGaussianSimulation implements Simulation {
 
     @Override
     public void createData(Parameters parameters) {
-        setVarLow(parameters.getDouble("varLow"));
-        setVarHigh(parameters.getDouble("varHigh"));
-        setCoefLow(parameters.getDouble("coefLow"));
-        setCoefHigh(parameters.getDouble("coefHigh"));
-        setCoefSymmetric(parameters.getBoolean("coefSymmetric"));
-        setMeanLow(parameters.getDouble("meanLow"));
-        setMeanHigh(parameters.getDouble("meanHigh"));
+        setVarLow(parameters.getDouble(Params.VAR_LOW));
+        setVarHigh(parameters.getDouble(Params.VAR_HIGH));
+        setCoefLow(parameters.getDouble(Params.COEF_LOW));
+        setCoefHigh(parameters.getDouble(Params.COEF_HIGH));
+        setCoefSymmetric(parameters.getBoolean(Params.COV_SYMMETRIC));
+        setMeanLow(parameters.getDouble(Params.MEAN_LOW));
+        setMeanHigh(parameters.getDouble(Params.MEAN_HIGH));
 
-        double percentDiscrete = parameters.getDouble("percentDiscrete");
+        double percentDiscrete = parameters.getDouble(Params.PERCENT_DISCRETE);
 
-        boolean discrete = parameters.getString("dataType").equals("discrete");
-        boolean continuous = parameters.getString("dataType").equals("continuous");
+        boolean discrete = parameters.getString(Params.DATA_TYPE).equals("discrete");
+        boolean continuous = parameters.getString(Params.DATA_TYPE).equals("continuous");
 
         if (discrete && percentDiscrete != 100.0) {
             throw new IllegalArgumentException("To simulate discrete data, 'percentDiscrete' must be set to 0.0.");
@@ -71,10 +71,10 @@ public class ConditionalGaussianSimulation implements Simulation {
         dataSets = new ArrayList<>();
         graphs = new ArrayList<>();
 
-        for (int i = 0; i < parameters.getInt("numRuns"); i++) {
+        for (int i = 0; i < parameters.getInt(Params.NUM_RUNS); i++) {
             System.out.println("Simulating dataset #" + (i + 1));
 
-            if (parameters.getBoolean("differentGraphs") && i > 0) {
+            if (parameters.getBoolean(Params.DIFFERENT_GRAPHS) && i > 0) {
                 graph = randomGraph.createGraph(parameters);
             }
 
@@ -82,6 +82,11 @@ public class ConditionalGaussianSimulation implements Simulation {
 
             DataSet dataSet = simulate(graph, parameters);
             dataSet.setName("" + (i + 1));
+
+            if (parameters.getBoolean(Params.RANDOMIZE_COLUMNS)) {
+                dataSet = DataUtils.reorderColumns(dataSet);
+            }
+
             dataSets.add(dataSet);
         }
     }
@@ -104,20 +109,21 @@ public class ConditionalGaussianSimulation implements Simulation {
     @Override
     public List<String> getParameters() {
         List<String> parameters = randomGraph.getParameters();
-        parameters.add("minCategories");
-        parameters.add("maxCategories");
-        parameters.add("percentDiscrete");
-        parameters.add("numRuns");
-        parameters.add("differentGraphs");
-        parameters.add("sampleSize");
-        parameters.add("varLow");
-        parameters.add("varHigh");
-        parameters.add("coefLow");
-        parameters.add("coefHigh");
-        parameters.add("coefSymmetric");
-        parameters.add("meanLow");
-        parameters.add("meanHigh");
-        parameters.add("saveLatentVars");
+        parameters.add(Params.MIN_CATEGORIES);
+        parameters.add(Params.MAX_CATEGORIES);
+        parameters.add(Params.PERCENT_DISCRETE);
+        parameters.add(Params.NUM_RUNS);
+        parameters.add(Params.DIFFERENT_GRAPHS);
+        parameters.add(Params.SAMPLE_SIZE);
+        parameters.add(Params.VAR_LOW);
+        parameters.add(Params.VAR_HIGH);
+        parameters.add(Params.COEF_LOW);
+        parameters.add(Params.COEF_HIGH);
+        parameters.add(Params.COV_SYMMETRIC);
+        parameters.add(Params.MEAN_LOW);
+        parameters.add(Params.MEAN_HIGH);
+        parameters.add(Params.SAVE_LATENT_VARS);
+        parameters.add(Params.RANDOMIZE_COLUMNS);
 
         return parameters;
     }
@@ -146,9 +152,9 @@ public class ConditionalGaussianSimulation implements Simulation {
         }
 
         for (int i = 0; i < nodes.size(); i++) {
-            if (i < nodes.size() * parameters.getDouble("percentDiscrete") * 0.01) {
-                final int minNumCategories = parameters.getInt("minCategories");
-                final int maxNumCategories = parameters.getInt("maxCategories");
+            if (i < nodes.size() * parameters.getDouble(Params.PERCENT_DISCRETE) * 0.01) {
+                final int minNumCategories = parameters.getInt(Params.MIN_CATEGORIES);
+                final int maxNumCategories = parameters.getInt(Params.MAX_CATEGORIES);
                 final int value = pickNumCategories(minNumCategories, maxNumCategories);
                 nd.put(shuffledOrder.get(i).getName(), value);
             } else {
@@ -159,7 +165,7 @@ public class ConditionalGaussianSimulation implements Simulation {
         G = makeMixedGraph(G, nd);
         nodes = G.getNodes();
 
-        DataSet mixedData = new BoxDataSet(new MixedDataBox(nodes, parameters.getInt("sampleSize")), nodes);
+        DataSet mixedData = new BoxDataSet(new MixedDataBox(nodes, parameters.getInt(Params.SAMPLE_SIZE)), nodes);
 
         List<Node> X = new ArrayList<>();
         List<Node> A = new ArrayList<>();
@@ -213,7 +219,7 @@ public class ConditionalGaussianSimulation implements Simulation {
         Map<Integer, double[]> breakpointsMap = new HashMap<>();
 
         for (int mixedIndex : tiers) {
-            for (int i = 0; i < parameters.getInt("sampleSize"); i++) {
+            for (int i = 0; i < parameters.getInt(Params.SAMPLE_SIZE); i++) {
                 if (nodes.get(mixedIndex) instanceof DiscreteVariable) {
                     int bayesIndex = bayesIm.getNodeIndex(nodes.get(mixedIndex));
 
@@ -317,7 +323,7 @@ public class ConditionalGaussianSimulation implements Simulation {
             }
         }
 
-        boolean saveLatentVars = parameters.getBoolean("saveLatentVars");
+        boolean saveLatentVars = parameters.getBoolean(Params.SAVE_LATENT_VARS);
         return saveLatentVars ? mixedData : DataUtils.restrictToMeasured(mixedData);
     }
 

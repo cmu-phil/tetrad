@@ -175,7 +175,7 @@ public final class FgesOld implements GraphSearch, GraphScorer {
         if (dataSet.isDiscrete()) {
             setScore(new BDeuScore(dataSet));
         } else {
-            SemBicScore fgesScore = new SemBicScore(new CovarianceMatrixOnTheFly(dataSet));
+            SemBicScore fgesScore = new SemBicScore(new CovarianceMatrix(dataSet));
             setScore(fgesScore);
         }
 
@@ -491,25 +491,6 @@ public final class FgesOld implements GraphSearch, GraphScorer {
      */
     public void setParallelism(int numProcessors) {
         this.pool = new ForkJoinPool(numProcessors);
-    }
-
-    /**
-     * True iff edges that cause linear dependence are ignored.
-     */
-    public boolean isIgnoreLinearDependent() {
-        if (fgesScore instanceof SemBicScore) {
-            return ((SemBicScore) fgesScore).isIgnoreLinearDependent();
-        }
-
-        throw new UnsupportedOperationException("Operation supported only for SemBicScore.");
-    }
-
-    public void setIgnoreLinearDependent(boolean ignoreLinearDependent) {
-        if (fgesScore instanceof SemBicScore) {
-            ((SemBicScore) fgesScore).setIgnoreLinearDependent(ignoreLinearDependent);
-        } else {
-            throw new UnsupportedOperationException("Operation supported only for SemBicScore.");
-        }
     }
 
     /**

@@ -18,28 +18,33 @@
 // along with this program; if not, write to the Free Software               //
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA //
 ///////////////////////////////////////////////////////////////////////////////
-
 package edu.cmu.tetradapp.editor;
 
 import edu.cmu.tetrad.bayes.DirichletBayesIm;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetradapp.util.SortingComboBox;
 import edu.cmu.tetradapp.workbench.GraphWorkbench;
-
-import javax.swing.*;
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.Font;
+import java.util.Collections;
+import java.util.List;
+import java.util.stream.Collectors;
+import javax.swing.Box;
+import javax.swing.BoxLayout;
+import javax.swing.JButton;
+import javax.swing.JComboBox;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 import javax.swing.border.MatteBorder;
 import javax.swing.table.TableCellEditor;
-import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-import java.util.List;
 
 /**
  * Allows the user to choose a variable in a Bayes net and edit the parameters
- * associated with that variable.  Parameters are of the form
+ * associated with that variable. Parameters are of the form
  * P(Node=value1|Parent1=value2, Parent2=value2,...); values for these
  * parameters are probabilities ranging from 0.0 to 1.0. For a given combination
  * of parent values for node N, the probabilities for the values of N
@@ -48,15 +53,19 @@ import java.util.List;
  * @author Joseph Ramsey jdramsey@andrew.cmu.edu
  */
 final class DirichletBayesImProbsWizard extends JPanel {
+
+    private static final long serialVersionUID = -1170540204903006651L;
+
     private DirichletBayesIm bayesIm;
-    private JComboBox varNamesComboBox;
+    private JComboBox<Node> varNamesComboBox;
     private GraphWorkbench workbench;
     private DirichletBayesImNodeProbsTable editingTable;
     private JPanel tablePanel;
     private boolean showProbs = true;
 
-    public DirichletBayesImProbsWizard(DirichletBayesIm bayesIm,
-            GraphWorkbench workbench) {
+    private boolean enableEditing = true;
+
+    public DirichletBayesImProbsWizard(DirichletBayesIm bayesIm, GraphWorkbench workbench) {
         if (bayesIm == null) {
             throw new NullPointerException();
         }
@@ -72,19 +81,16 @@ final class DirichletBayesImProbsWizard extends JPanel {
 
         // Set up components.
         this.varNamesComboBox = createVarNamesComboBox(bayesIm);
-        workbench.scrollWorkbenchToNode(
-                (Node) (varNamesComboBox.getSelectedItem()));
+        workbench.scrollWorkbenchToNode((Node) varNamesComboBox.getSelectedItem());
 
         JButton nextButton = new JButton("Next");
         nextButton.setMnemonic('N');
 
         Node node = (Node) (varNamesComboBox.getSelectedItem());
         editingTable = new DirichletBayesImNodeProbsTable(node, bayesIm);
-        editingTable.addPropertyChangeListener(new PropertyChangeListener() {
-            public void propertyChange(PropertyChangeEvent evt) {
-                if ("editorValueChanged".equals(evt.getPropertyName())) {
-                    firePropertyChange("editorValueChanged", null, null);
-                }
+        editingTable.addPropertyChangeListener((evt) -> {
+            if ("editorValueChanged".equals(evt.getPropertyName())) {
+                firePropertyChange("editorValueChanged", null, null);
             }
         });
 
@@ -123,42 +129,35 @@ final class DirichletBayesImProbsWizard extends JPanel {
         add(b4);
 
         // Add listeners.
-        varNamesComboBox.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                Node node = (Node) (varNamesComboBox.getSelectedItem());
-                getWorkbench().scrollWorkbenchToNode(node);
-                setCurrentNode(node);
-            }
+        varNamesComboBox.addActionListener((e) -> {
+            Node n = (Node) varNamesComboBox.getSelectedItem();
+            getWorkbench().scrollWorkbenchToNode(n);
+            setCurrentNode(n);
         });
 
-        nextButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                int current = varNamesComboBox.getSelectedIndex();
-                int max = varNamesComboBox.getItemCount();
+        nextButton.addActionListener((e) -> {
+            int current = varNamesComboBox.getSelectedIndex();
+            int max = varNamesComboBox.getItemCount();
 
-                ++current;
+            ++current;
 
-                if (current == max) {
-                    JOptionPane.showMessageDialog(
-                            DirichletBayesImProbsWizard.this,
-                            "There are no more variables.");
-                }
-
-                int set = (current < max) ? current : 0;
-
-                varNamesComboBox.setSelectedIndex(set);
+            if (current == max) {
+                JOptionPane.showMessageDialog(
+                        DirichletBayesImProbsWizard.this,
+                        "There are no more variables.");
             }
+
+            int set = (current < max) ? current : 0;
+
+            varNamesComboBox.setSelectedIndex(set);
         });
 
-        workbench.addPropertyChangeListener(new PropertyChangeListener() {
-            public void propertyChange(PropertyChangeEvent e) {
-                if (e.getPropertyName().equals("selectedNodes")) {
-                    List selection = (List) (e.getNewValue());
+        workbench.addPropertyChangeListener((evt) -> {
+            if (evt.getPropertyName().equals("selectedNodes")) {
+                List selection = (List) (evt.getNewValue());
 
-                    if (selection.size() == 1) {
-                        Node node = (Node) (selection.get(0));
-                        varNamesComboBox.setSelectedItem(node);
-                    }
+                if (selection.size() == 1) {
+                    varNamesComboBox.setSelectedItem((Node) selection.get(0));
                 }
             }
         });
@@ -167,22 +166,21 @@ final class DirichletBayesImProbsWizard extends JPanel {
         this.workbench = workbench;
     }
 
-    private JComboBox createVarNamesComboBox(DirichletBayesIm bayesIm) {
-        JComboBox varNamesComboBox = new SortingComboBox() {
-            public Dimension getMaximumSize() {
-                return getPreferredSize();
-            }
-        };
+    private JComboBox<Node> createVarNamesComboBox(DirichletBayesIm bayesIm) {
+        JComboBox<Node> varNameComboBox = new JComboBox<>();
+        varNameComboBox.setBackground(Color.white);
 
-        varNamesComboBox.setBackground(Color.WHITE);
         Graph graph = bayesIm.getBayesPm().getDag();
 
-        for (Node node : graph.getNodes()) {
-            varNamesComboBox.addItem(node);
+        List<Node> nodes = graph.getNodes().stream().collect(Collectors.toList());
+        Collections.sort(nodes);
+        nodes.forEach(varNameComboBox::addItem);
+
+        if (varNameComboBox.getItemCount() > 0) {
+            varNameComboBox.setSelectedIndex(0);
         }
 
-        varNamesComboBox.setSelectedIndex(0);
-        return varNamesComboBox;
+        return varNameComboBox;
     }
 
     /**
@@ -197,11 +195,9 @@ final class DirichletBayesImProbsWizard extends JPanel {
         }
 
         editingTable = new DirichletBayesImNodeProbsTable(node, getBayesIm());
-        editingTable.addPropertyChangeListener(new PropertyChangeListener() {
-            public void propertyChange(PropertyChangeEvent evt) {
-                if ("editorValueChanged".equals(evt.getPropertyName())) {
-                    firePropertyChange("editorValueChanged", null, null);
-                }
+        editingTable.addPropertyChangeListener((evt) -> {
+            if ("editorValueChanged".equals(evt.getPropertyName())) {
+                firePropertyChange("editorValueChanged", null, null);
             }
         });
 
@@ -231,10 +227,16 @@ final class DirichletBayesImProbsWizard extends JPanel {
     public void setShowProbs(boolean showProbs) {
         this.showProbs = showProbs;
     }
+
+    public boolean isEnableEditing() {
+        return enableEditing;
+    }
+
+    public void enableEditing(boolean enableEditing) {
+        this.enableEditing = enableEditing;
+        if (this.workbench != null) {
+            this.workbench.enableEditing(enableEditing);
+        }
+    }
+
 }
-
-
-
-
-
-

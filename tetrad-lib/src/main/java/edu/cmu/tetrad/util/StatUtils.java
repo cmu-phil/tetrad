@@ -23,12 +23,9 @@ package edu.cmu.tetrad.util;
 
 import cern.colt.list.DoubleArrayList;
 import cern.jet.stat.Descriptive;
-import edu.cmu.tetrad.data.BoxDataSet;
-import edu.cmu.tetrad.data.CovarianceMatrix;
-import edu.cmu.tetrad.data.DoubleDataBox;
+import edu.cmu.tetrad.data.DataUtils;
 import org.apache.commons.math3.distribution.ChiSquaredDistribution;
 import org.apache.commons.math3.distribution.NormalDistribution;
-import org.apache.commons.math3.linear.SingularMatrixException;
 
 import java.util.*;
 
@@ -922,6 +919,9 @@ public final class StatUtils {
      * array2.
      */
     public static double correlation(double array1[], double array2[], int N) {
+//        array1 = DataUtils.center(array1);
+//        array2 = DataUtils.center(array2);
+
         double covXY = sxy(array1, array2, N);
         double covXX = sxy(array1, array1, N);
         double covYY = sxy(array2, array2, N);
@@ -1235,15 +1235,14 @@ public final class StatUtils {
             thirdMoment += s * s * s;
         }
 
-        double ess = secondMoment / N;
-        double esss = thirdMoment / (N - 1);
+        double ess = secondMoment / (N - 1);
+        double esss = thirdMoment / (N);
 
         if (secondMoment == 0) {
             throw new ArithmeticException("StatUtils.skew:  There is no skew " +
                     "when the variance is zero.");
         }
 
-        //        thirdMoment /= (N * Math.pow(secondMoment, 1.5));
         return esss / Math.pow(ess, 1.5);
     }
 
@@ -1592,7 +1591,7 @@ public final class StatUtils {
         }
 
         if (!pSorted) {
-            pValues = new ArrayList<>(pValues);
+//            pValues = new ArrayList<>(pValues);
             Collections.sort(pValues);
         }
 
@@ -1747,29 +1746,35 @@ public final class StatUtils {
      * @return the given partial correlation.
      */
     public static synchronized double partialCorrelation(TetradMatrix submatrix) {
-//        double cov = partialCovariance(submatrix);
-//
-//        int[] selection1 = new int[submatrix.rows()];
-//        int[] selection2 = new int[submatrix.rows()];
-//
-//        selection1[0] = 0;
-//        selection1[1] = 0;
-//        for (int i = 2; i < selection1.length; i++) selection1[i] = i;
-//
-//        TetradMatrix var1Matrix = submatrix.getSelection(selection1, selection1);
-//        double var1 = partialCovariance(var1Matrix);
-//
-//        selection2[0] = 1;
-//        selection2[1] = 1;
-//        for (int i = 2; i < selection2.length; i++) selection2[i] = i;
-//
-//        TetradMatrix var2Matrix = submatrix.getSelection(selection2, selection2);
-//        double var2 = partialCovariance(var2Matrix);
-//
-//        return cov / Math.sqrt(var1 * var2);
+        return StatUtils.partialCorrelationPrecisionMatrix(submatrix);
+    }
 
+    public static synchronized double partialCorrelationPrecisionMatrix(TetradMatrix submatrix) {
         TetradMatrix inverse = submatrix.inverse();
-        return -(1.0 * inverse.get(0, 1)) / Math.sqrt(inverse.get(0, 0) * inverse.get(1, 1));
+        return (-inverse.get(0, 1)) / sqrt(inverse.get(0, 0) * inverse.get(1, 1));
+    }
+
+    public static synchronized double partialCorrelationWhittaker(TetradMatrix submatrix) {
+        double cov = partialCovariance(submatrix);
+
+        int[] selection1 = new int[submatrix.rows()];
+        int[] selection2 = new int[submatrix.rows()];
+
+        selection1[0] = 0;
+        selection1[1] = 0;
+        for (int i = 2; i < selection1.length; i++) selection1[i] = i;
+
+        TetradMatrix var1Matrix = submatrix.getSelection(selection1, selection1);
+        double var1 = partialCovariance(var1Matrix);
+
+        selection2[0] = 1;
+        selection2[1] = 1;
+        for (int i = 2; i < selection2.length; i++) selection2[i] = i;
+
+        TetradMatrix var2Matrix = submatrix.getSelection(selection2, selection2);
+        double var2 = partialCovariance(var2Matrix);
+
+        return cov / Math.sqrt(var1 * var2);
     }
 
     /**
@@ -1947,7 +1952,7 @@ public final class StatUtils {
 
         return data2;
     }
-    
+
     public static double factorial(int c) {
         if (c < 0) throw new IllegalArgumentException("Can't take the factorial of a negative number: " + c);
         if (c == 0) return 1;
@@ -2053,7 +2058,7 @@ public final class StatUtils {
     }
 
     public static double[][] covMatrix(double[] x, double[] y, double[][] z, double[] condition, double threshold, double direction) {
-        List<Integer> rows = getRows(x, condition, threshold, direction);
+        List<Integer> rows = getRows(condition, threshold, direction);
 
         double[][] allData = new double[z.length + 2][];
 
@@ -2077,29 +2082,36 @@ public final class StatUtils {
         double[][] cov = new double[z.length + 2][z.length + 2];
 
         for (int i = 0; i < z.length + 2; i++) {
-            for (int j = 0; j < z.length + 2; j++) {
+            for (int j = i; j < z.length + 2; j++) {
+//                double c = StatUtils.sxy(subdata[i], subdata[j]);
                 double c = StatUtils.covariance(subdata[i], subdata[j]);
                 cov[i][j] = c;
+                cov[j][i] = c;
             }
         }
 
         return cov;
     }
 
-    public static List<Integer> getRows(double[] x, double[] condition, double threshold, double direction) {
+    public static List<Integer> getRows(double[] x, double threshold, double direction) {
         List<Integer> rows = new ArrayList<>();
 
         for (int k = 0; k < x.length; k++) {
             if (direction > threshold) {
-                if (condition[k] > threshold) {
+                if (x[k] > threshold) {
                     rows.add(k);
                 }
             } else if (direction < threshold) {
-                if (condition[k] > threshold) {
+                if (x[k] > threshold) {
+                    rows.add(k);
+                }
+            } else {
+                if (x[k] > threshold) {
                     rows.add(k);
                 }
             }
         }
+
         return rows;
     }
 

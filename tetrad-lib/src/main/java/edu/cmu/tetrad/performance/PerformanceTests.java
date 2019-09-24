@@ -88,9 +88,9 @@ public class PerformanceTests {
         System.out.println("Making covariance matrix");
 
 //        ICovarianceMatrix cov = new CovarianceMatrix2(data);
-        ICovarianceMatrix cov = new CovarianceMatrixOnTheFly(data);
+        ICovarianceMatrix cov = new CovarianceMatrix(data);
 //        ICovarianceMatrix cov = new CorreqlationMatrix(new CovarianceMatrix2(data));
-//        ICovarianceMatrix cov = new CovarianceMatrixOnTheFly(data, false);
+//        ICovarianceMatrix cov = new CovarianceMatrix(data, false);
 //        ICovarianceMatrix cov = DataUtils.covarianceParanormalDrton(data);
 //        ICovarianceMatrix cov = new CovarianceMatrix(DataUtils.covarianceParanormalWasserman(data));
 
@@ -210,7 +210,7 @@ public class PerformanceTests {
         System.out.println("Making covariance matrix");
 
 //        ICovarianceMatrix cov = new CovarianceMatrix(data);
-        ICovarianceMatrix cov = new CovarianceMatrixOnTheFly(data);
+        ICovarianceMatrix cov = new CovarianceMatrix(data);
 //        ICovarianceMatrix cov = new CorrelationMatrix(new CovarianceMatrix(data));
 //        ICovarianceMatrix cov = DataUtils.covarianceParanormalDrton(data);
 //        ICovarianceMatrix cov = new CovarianceMatrix(DataUtils.covarianceParanormalWasserman(data));
@@ -290,7 +290,7 @@ public class PerformanceTests {
         System.out.println("Making covariance matrix");
 
 //        ICovarianceMatrix cov = new CovarianceMatrix(data);
-        ICovarianceMatrix cov = new CovarianceMatrixOnTheFly(data);
+        ICovarianceMatrix cov = new CovarianceMatrix(data);
 //        ICovarianceMatrix cov = new CorrelationMatrix(new CovarianceMatrix(data));
 //        ICovarianceMatrix cov = DataUtils.covarianceParanormalDrton(data);
 //        ICovarianceMatrix cov = new CovarianceMatrix(DataUtils.covarianceParanormalWasserman(data));
@@ -367,7 +367,7 @@ public class PerformanceTests {
 
         System.out.println("Making covariance matrix");
 
-        ICovarianceMatrix cov = new CovarianceMatrixOnTheFly(data);
+        ICovarianceMatrix cov = new CovarianceMatrix(data);
 
         System.out.println("Covariance matrix done");
 
@@ -452,9 +452,9 @@ public class PerformanceTests {
         System.out.println("Making covariance matrix");
 
 //        ICovarianceMatrix cov = new CovarianceMatrix2(data);
-        ICovarianceMatrix cov = new CovarianceMatrixOnTheFly(data);
+        ICovarianceMatrix cov = new CovarianceMatrix(data);
 //        ICovarianceMatrix cov = new CorreqlationMatrix(new CovarianceMatrix2(data));
-//        ICovarianceMatrix cov = new CovarianceMatrixOnTheFly(data, false);
+//        ICovarianceMatrix cov = new CovarianceMatrix(data, false);
 //        ICovarianceMatrix cov = DataUtils.covarianceParanormalDrton(data);
 //        ICovarianceMatrix cov = new CovarianceMatrix(DataUtils.covarianceParanormalWasserman(data));
 
@@ -536,9 +536,9 @@ public class PerformanceTests {
         System.out.println("Making covariance matrix");
 
 //        ICovarianceMatrix cov = new CovarianceMatrix2(data);
-        ICovarianceMatrix cov = new CovarianceMatrixOnTheFly(data);
+        ICovarianceMatrix cov = new CovarianceMatrix(data);
 //        ICovarianceMatrix cov = new CorrelationMatrix(new CovarianceMatrix2(data));
-//        ICovarianceMatrix cov = new CovarianceMatrixOnTheFly(data, false);
+//        ICovarianceMatrix cov = new CovarianceMatrix(data, false);
 //        ICovarianceMatrix cov = DataUtils.covarianceParanormalDrton(data);
 //        ICovarianceMatrix cov = new CovarianceMatrix(DataUtils.covarianceParanormalWasserman(data));
 
@@ -626,9 +626,9 @@ public class PerformanceTests {
         System.out.println("Making covariance matrix");
 
 //        ICovarianceMatrix cov = new CovarianceMatrix2(data);
-        ICovarianceMatrix cov = new CovarianceMatrixOnTheFly(data);
+        ICovarianceMatrix cov = new CovarianceMatrix(data);
 //        ICovarianceMatrix cov = new CorreqlationMatrix(new CovarianceMatrix2(data));
-//        ICovarianceMatrix cov = new CovarianceMatrixOnTheFly(data, false);
+//        ICovarianceMatrix cov = new CovarianceMatrix(data, false);
 //        ICovarianceMatrix cov = DataUtils.covarianceParanormalDrton(data);
 //        ICovarianceMatrix cov = new CovarianceMatrix(DataUtils.covarianceParanormalWasserman(data));
 
@@ -725,7 +725,7 @@ public class PerformanceTests {
 
         System.out.println("Making covariance matrix");
 
-        ICovarianceMatrix cov = new CovarianceMatrixOnTheFly(data);
+        ICovarianceMatrix cov = new CovarianceMatrix(data);
 
         System.out.println("Covariance matrix done");
 
@@ -749,7 +749,7 @@ public class PerformanceTests {
 
         out.println(outGraph);
 
-        System.out.println(MisclassificationUtils.edgeMisclassifications(outGraph, new DagToPag(dag).convert()));
+        System.out.println(MisclassificationUtils.edgeMisclassifications(outGraph, new DagToPag2(dag).convert()));
 
         long time4 = System.currentTimeMillis();
 
@@ -865,7 +865,7 @@ public class PerformanceTests {
 
                 long time3 = System.currentTimeMillis();
 
-                ICovarianceMatrix cov = new CovarianceMatrixOnTheFly(data, true);
+                ICovarianceMatrix cov = new CovarianceMatrix(data);
 
                 System.out.println("Covariance matrix done");
 
@@ -881,7 +881,6 @@ public class PerformanceTests {
 
                 Fges fges = new Fges(score);
 //                fges.setVerbose(false);
-                fges.setNumPatternsToStore(0);
                 fges.setOut(System.out);
                 fges.setFaithfulnessAssumed(faithfulness);
                 fges.setCycleBound(-1);
@@ -924,7 +923,6 @@ public class PerformanceTests {
 
                 Fges fges = new Fges(score);
 //                fges.setVerbose(false);
-                fges.setNumPatternsToStore(0);
                 fges.setOut(System.out);
                 fges.setFaithfulnessAssumed(faithfulness);
                 fges.setCycleBound(-1);
@@ -1108,7 +1106,7 @@ public class PerformanceTests {
 
             long time3 = System.currentTimeMillis();
 
-            ICovarianceMatrix cov = new CovarianceMatrixOnTheFly(data, true);
+            ICovarianceMatrix cov = new CovarianceMatrix(data);
 
             System.out.println("Covariance matrix done");
 
@@ -1347,7 +1345,7 @@ public class PerformanceTests {
 
             System.out.println("Graph done");
 
-            final DagToPag dagToPag = new DagToPag(dag);
+            final DagToPag2 dagToPag = new DagToPag2(dag);
             dagToPag.setCompleteRuleSetUsed(false);
             dagToPag.setMaxPathLength(maxPathLength);
             Graph truePag = dagToPag.convert();
@@ -1369,7 +1367,7 @@ public class PerformanceTests {
 
             System.out.println("Making covariance matrix");
 
-            ICovarianceMatrix cov = new CovarianceMatrixOnTheFly(data);
+            ICovarianceMatrix cov = new CovarianceMatrix(data);
 
             System.out.println("Covariance matrix done");
 

@@ -122,7 +122,7 @@ public final class GSquareTest extends ChiSquareTest {
             Arrays.fill(attestedRows, true);
             Arrays.fill(attestedCols, true);
 
-            long total = 0;// this.getCellTable().calcMargin(coords, bothVars);
+            long total = this.getCellTable().calcMargin(coords, bothVars);
 
             double _gSquare = 0.0;
 
@@ -153,8 +153,6 @@ public final class GSquareTest extends ChiSquareTest {
                     if (skip) {
                         continue;
                     }
-
-                    total += observed;
 
                     e.add((double) sumCol * sumRow);
                     o.add(observed);
@@ -188,8 +186,8 @@ public final class GSquareTest extends ChiSquareTest {
             int _df = (numAttestedRows - 1) * (numAttestedCols - 1);
 
             if (_df > 0) {
-                g2 += _gSquare;
                 df += _df;
+                g2 += _gSquare;
             }
         }
 

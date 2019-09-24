@@ -8,6 +8,7 @@ import edu.cmu.tetrad.search.IndTestFisherZ;
 import edu.cmu.tetrad.search.Score;
 import edu.cmu.tetrad.search.ScoredIndTest;
 import edu.cmu.tetrad.util.Parameters;
+import edu.cmu.tetrad.util.Params;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -16,11 +17,11 @@ import java.util.List;
  *
  * @author jdramsey
  */
-@edu.cmu.tetrad.annotation.Score(
-        name = "Fisher Z Score",
-        command = "fisher-z",
-        dataType = DataType.Continuous
-)
+//@edu.cmu.tetrad.annotation.Score(
+//        name = "Fisher Z Score",
+//        command = "fisher-z",
+//        dataType = DataType.Continuous
+//)
 public class FisherZScore implements ScoreWrapper {
 
     static final long serialVersionUID = 23L;
@@ -30,7 +31,7 @@ public class FisherZScore implements ScoreWrapper {
     @Override
     public Score getScore(DataModel dataSet, Parameters parameters) {
         this.dataSet = dataSet;
-        double alpha = parameters.getDouble("alpha");
+        double alpha = parameters.getDouble(Params.ALPHA);
         this.alpha = alpha;
         IndTestFisherZ test = new IndTestFisherZ((DataSet) dataSet, alpha);
         return new ScoredIndTest(test);
@@ -49,7 +50,7 @@ public class FisherZScore implements ScoreWrapper {
     @Override
     public List<String> getParameters() {
         List<String> parameters = new ArrayList<>();
-        parameters.add("alpha");
+        parameters.add(Params.ALPHA);
         return parameters;
     }
 

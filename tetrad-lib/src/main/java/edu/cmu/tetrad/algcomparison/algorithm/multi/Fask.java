@@ -1,16 +1,20 @@
 package edu.cmu.tetrad.algcomparison.algorithm.multi;
 
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
-import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
+import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
-import edu.cmu.tetrad.algcomparison.utils.UsesScoreWrapper;
+import edu.cmu.tetrad.algcomparison.utils.TakesIndependenceWrapper;
+import edu.cmu.tetrad.algcomparison.utils.TakesInitialGraph;
 import edu.cmu.tetrad.annotation.AlgType;
+import edu.cmu.tetrad.annotation.Bootstrapping;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.util.Parameters;
+import edu.cmu.tetrad.util.Params;
 import edu.pitt.dbmi.algo.resampling.GeneralResamplingTest;
 import edu.pitt.dbmi.algo.resampling.ResamplingEdgeEnsemble;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -21,22 +25,26 @@ import java.util.List;
  *
  * @author jdramsey
  */
+@Bootstrapping
 @edu.cmu.tetrad.annotation.Algorithm(
         name = "FASK",
         command = "fask",
-        algoType = AlgType.forbid_latent_common_causes
+        algoType = AlgType.forbid_latent_common_causes,
+        dataType = DataType.Continuous
 )
-public class Fask implements Algorithm, HasKnowledge, UsesScoreWrapper {
+public class Fask implements Algorithm, HasKnowledge, TakesIndependenceWrapper, TakesInitialGraph {
     static final long serialVersionUID = 23L;
-    private ScoreWrapper score;
+    private IndependenceWrapper test = null;
+    private Graph initialGraph = null;
     private IKnowledge knowledge = new Knowledge2();
+    private Algorithm algorithm = null;
 
     public Fask() {
 
     }
 
-    public Fask(ScoreWrapper score) {
-        this.score = score;
+    public Fask(IndependenceWrapper test) {
+        this.test = test;
     }
 
     private Graph getGraph(edu.cmu.tetrad.search.Fask search) {
@@ -45,34 +53,38 @@ public class Fask implements Algorithm, HasKnowledge, UsesScoreWrapper {
 
     @Override
     public Graph search(DataModel dataSet, Parameters parameters) {
-        if (parameters.getInt("numberResampling") < 1) {
-            edu.cmu.tetrad.search.Fask search = new edu.cmu.tetrad.search.Fask((DataSet) dataSet, score.getScore(dataSet, parameters));
-            search.setDepth(parameters.getInt("depth"));
-            search.setPenaltyDiscount(parameters.getDouble("penaltyDiscount"));
-            search.setExtraEdgeThreshold(parameters.getDouble("extraEdgeThreshold"));
-            search.setUseFasAdjacencies(parameters.getBoolean("useFasAdjacencies"));
-            search.setUseSkewAdjacencies(parameters.getBoolean("useCorrDiffAdjacencies"));
-            search.setAlpha(parameters.getDouble("twoCycleAlpha"));
-            search.setDelta(parameters.getDouble("faskDelta"));
+        if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
+            edu.cmu.tetrad.search.Fask search;
 
-//            search.setPercentBootstrapForLinearityTest(parameters.getDouble("percentBootstrapForLinearityTest"));
-//            search.setNumBootstrapForLinearityTest(parameters.getInt("numBootstrapForLinearityTest"));
-//            search.setCutoffForLinearityTest(parameters.getDouble("cutoffForLinearityTest"));
+            if (algorithm != null) {
+                initialGraph = algorithm.search(dataSet, parameters);
+                search = new edu.cmu.tetrad.search.Fask((DataSet) dataSet, initialGraph);
+                search.setInitialGraph(initialGraph);
+            } else {
+                search = new edu.cmu.tetrad.search.Fask((DataSet) dataSet, test.getTest(dataSet, parameters));
+            }
 
+//            edu.cmu.tetrad.search.Fask search = new edu.cmu.tetrad.search.Fask((DataSet) dataSet, test.getTest(dataSet, parameters));
+            search.setDepth(parameters.getInt(Params.DEPTH));
+            search.setPenaltyDiscount(parameters.getDouble(Params.PENALTY_DISCOUNT));
+            search.setExtraEdgeThreshold(parameters.getDouble(Params.EXTRA_EDGE_THRESHOLD));
+            search.setUseFasAdjacencies(parameters.getBoolean(Params.USE_FAS_ADJACENCIES));
+            search.setUseSkewAdjacencies(parameters.getBoolean(Params.USE_CORR_DIFF_ADJACENCIES));
+            search.setAlpha(parameters.getDouble(Params.TWO_CYCLE_ALPHA));
             search.setKnowledge(knowledge);
             return getGraph(search);
         } else {
-            Fask fask = new Fask(score);
+            Fask fask = new Fask(test);
 
             DataSet data = (DataSet) dataSet;
-            GeneralResamplingTest search = new GeneralResamplingTest(data, fask, parameters.getInt("numberResampling"));
+            GeneralResamplingTest search = new GeneralResamplingTest(data, fask, parameters.getInt(Params.NUMBER_RESAMPLING));
             search.setKnowledge(knowledge);
-            
-            search.setPercentResampleSize(parameters.getDouble("percentResampleSize"));
-            search.setResamplingWithReplacement(parameters.getBoolean("resamplingWithReplacement"));
-            
+
+            search.setPercentResampleSize(parameters.getDouble(Params.PERCENT_RESAMPLE_SIZE));
+            search.setResamplingWithReplacement(parameters.getBoolean(Params.RESAMPLING_WITH_REPLACEMENT));
+
             ResamplingEdgeEnsemble edgeEnsemble = ResamplingEdgeEnsemble.Highest;
-            switch (parameters.getInt("resamplingEnsemble", 1)) {
+            switch (parameters.getInt(Params.RESAMPLING_ENSEMBLE, 1)) {
                 case 0:
                     edgeEnsemble = ResamplingEdgeEnsemble.Preserved;
                     break;
@@ -83,10 +95,10 @@ public class Fask implements Algorithm, HasKnowledge, UsesScoreWrapper {
                     edgeEnsemble = ResamplingEdgeEnsemble.Majority;
             }
             search.setEdgeEnsemble(edgeEnsemble);
-            search.setAddOriginalDataset(parameters.getBoolean("addOriginalDataset"));
-            
+            search.setAddOriginalDataset(parameters.getBoolean(Params.ADD_ORIGINAL_DATASET));
+
             search.setParameters(parameters);
-            search.setVerbose(parameters.getBoolean("verbose"));
+            search.setVerbose(parameters.getBoolean(Params.VERBOSE));
             return search.search();
         }
     }
@@ -98,32 +110,40 @@ public class Fask implements Algorithm, HasKnowledge, UsesScoreWrapper {
 
     @Override
     public String getDescription() {
-        return "FASK using " + score.getDescription();
+        if (test != null) {
+            return "FASK using " + test.getDescription();
+        } else if (algorithm != null) {
+            return "FASK using " + algorithm.getDescription();
+        } else {
+            throw new IllegalStateException("Need to initialize with either a test or an algorithm.");
+        }
     }
 
     @Override
     public DataType getDataType() {
-        return DataType.Mixed;
+        return DataType.Continuous;
     }
 
     @Override
     public List<String> getParameters() {
-        List<String> parameters = score.getParameters();
-        parameters.add("depth");
-        parameters.add("twoCycleAlpha");
-        parameters.add("extraEdgeThreshold");
-        parameters.add("faskDelta");
+        List<String> parameters = new ArrayList<>();
 
-        parameters.add("useFasAdjacencies");
-        parameters.add("useCorrDiffAdjacencies");
+        if (algorithm != null) {
+            parameters.addAll(algorithm.getParameters());
+        }
+
+//        if (test != null) {
+//            parameters.addAll(test.getParameters());
+//        }
         
-        // Resampling
-        parameters.add("numberResampling");
-        parameters.add("percentResampleSize");
-        parameters.add("resamplingWithReplacement");
-        parameters.add("resamplingEnsemble");
-        parameters.add("addOriginalDataset");
-        parameters.add("verbose");
+        parameters.add(Params.DEPTH);
+        parameters.add(Params.TWO_CYCLE_ALPHA);
+        parameters.add(Params.EXTRA_EDGE_THRESHOLD);
+
+        parameters.add(Params.USE_FAS_ADJACENCIES);
+        parameters.add(Params.USE_CORR_DIFF_ADJACENCIES);
+
+        parameters.add(Params.VERBOSE);
 
         return parameters;
     }
@@ -138,13 +158,29 @@ public class Fask implements Algorithm, HasKnowledge, UsesScoreWrapper {
         this.knowledge = knowledge;
     }
 
+
     @Override
-    public void setScoreWrapper(ScoreWrapper score) {
-        this.score = score;
+    public void setIndependenceWrapper(IndependenceWrapper independenceWrapper) {
+        this.test = independenceWrapper;
     }
-    
+
     @Override
-    public ScoreWrapper getScoreWarpper() {
-        return score;
+    public IndependenceWrapper getIndependenceWrapper() {
+        return test;
+    }
+
+    @Override
+    public Graph getInitialGraph() {
+        return null;
+    }
+
+    @Override
+    public void setInitialGraph(Graph initialGraph) {
+        this.initialGraph = initialGraph;
+    }
+
+    @Override
+    public void setInitialGraph(Algorithm algorithm) {
+        this.algorithm = algorithm;
     }
 }

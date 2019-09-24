@@ -7,6 +7,7 @@ import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.search.IndTestFisherZ;
 import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.util.Parameters;
+import edu.cmu.tetrad.util.Params;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -17,7 +18,7 @@ import java.util.List;
  */
 @TestOfIndependence(
         name = "Fisher Z Test",
-        command = "fisher-z",
+        command = "fisher-z-test",
         dataType = {DataType.Continuous, DataType.Covariance}
 )
 @Gaussian
@@ -25,12 +26,10 @@ import java.util.List;
 public class FisherZ implements IndependenceWrapper {
 
     static final long serialVersionUID = 23L;
-    private double alpha = 0.001;
 
     @Override
     public IndependenceTest getTest(DataModel dataSet, Parameters parameters) {
-        double alpha = parameters.getDouble("alpha");
-        this.alpha = alpha;
+        double alpha = parameters.getDouble(Params.ALPHA);
 
         if (dataSet instanceof ICovarianceMatrix) {
             return new IndTestFisherZ((ICovarianceMatrix) dataSet, alpha);
@@ -43,7 +42,7 @@ public class FisherZ implements IndependenceWrapper {
 
     @Override
     public String getDescription() {
-        return "Fisher Z test, alpha = " + alpha;
+        return "Fisher Z test";
     }
 
     @Override
@@ -54,7 +53,7 @@ public class FisherZ implements IndependenceWrapper {
     @Override
     public List<String> getParameters() {
         List<String> params = new ArrayList<>();
-        params.add("alpha");
+        params.add(Params.ALPHA);
         return params;
     }
 }

@@ -18,7 +18,6 @@
 // along with this program; if not, write to the Free Software               //
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA //
 ///////////////////////////////////////////////////////////////////////////////
-
 package edu.cmu.tetradapp.model;
 
 import edu.cmu.tetrad.data.*;
@@ -26,8 +25,6 @@ import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradMatrix;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
-
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -36,52 +33,42 @@ import java.util.List;
  * @author Joseph Ramsey
  */
 public class DataCenterer extends DataWrapper {
+
     static final long serialVersionUID = 23L;
 
     //=============================CONSTRUCTORS==============================//
-
     private DataCenterer(DataWrapper wrapper, Parameters params) {
-        DataModelList inList1 = wrapper.getDataModelList();
+        DataModelList inList = wrapper.getDataModelList();
         DataModelList outList = new DataModelList();
 
-        for (DataModel model : inList1) {
+        for (DataModel model : inList) {
             if (!(model instanceof DataSet)) {
                 throw new IllegalArgumentException("Not a data set: " + model.getName());
             }
 
             DataSet dataSet = (DataSet) model;
 
-            if (!(dataSet.isContinuous())) {
-                throw new IllegalArgumentException("Not a continuous data set: " + dataSet.getName());
-            }
-
             TetradMatrix data2 = DataUtils.centerData(dataSet.getDoubleData());
             List<Node> list = dataSet.getVariables();
-            List<Node> list2 = new ArrayList<>();
-
-            for (Node node: list) {
-                list2.add(node);
-            }
-
-            DataSet dataSet2 = ColtDataSet.makeContinuousData(list2, data2);
+            DataSet dataSet2 = new BoxDataSet(new VerticalDoubleDataBox(data2.transpose().toArray()), list);
+            dataSet2.setName(model.getName());
             outList.add(dataSet2);
         }
 
         setDataModel(outList);
         setSourceGraph(wrapper.getSourceGraph());
 
-        LogDataUtils.logDataModelList("Conversion of data to standardized form.", getDataModelList());
-
+        LogDataUtils.logDataModelList("Conversion of data to centered form.", getDataModelList());
     }
 
     /**
      * Generates a simple exemplar of this class to test serialization.
      *
      * @see TetradSerializableUtils
+     * @return
      */
     public static PcRunner serializableInstance() {
         return PcRunner.serializableInstance();
     }
 
 }
-

@@ -70,7 +70,7 @@ public final class TestDiscretizer {
     public void testManualDiscretize(){
         Node x = new ContinuousVariable("X");
         List<Node> nodes = Collections.singletonList(x);
-        DataSet data = new ColtDataSet(9, nodes);
+        DataSet data = new BoxDataSet(new DoubleDataBox(9, nodes.size()), nodes);
 
         data.setDouble(0, 0, 13.0);
         data.setDouble(1, 0, 1.2);

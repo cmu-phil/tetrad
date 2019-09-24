@@ -21,11 +21,9 @@
 
 package edu.cmu.tetrad.search;
 
-import edu.cmu.tetrad.data.ColtDataSet;
-import edu.cmu.tetrad.data.CovarianceMatrixOnTheFly;
+import edu.cmu.tetrad.data.CovarianceMatrix;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.ICovarianceMatrix;
-import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.NumberFormatUtil;
 import edu.cmu.tetrad.util.StatUtils;
@@ -115,7 +113,7 @@ public final class IndTestPositiveCorr implements IndependenceTest {
             throw new IllegalArgumentException("Alpha mut be in [0, 1]");
         }
 
-        this.covMatrix = new CovarianceMatrixOnTheFly(dataSet);
+        this.covMatrix = new CovarianceMatrix(dataSet);
         List<Node> nodes = covMatrix.getVariables();
 
         this.variables = Collections.unmodifiableList(nodes);
@@ -167,9 +165,9 @@ public final class IndTestPositiveCorr implements IndependenceTest {
         double pc1 = partialCorrelation(x, y, _Z, x, 0, +1);
         double pc2 = partialCorrelation(x, y, _Z, y, 0, +1);
 
-        int nc = StatUtils.getRows(x, x, Double.NEGATIVE_INFINITY, +1).size();
-        int nc1 = StatUtils.getRows(x, x, 0, +1).size();
-        int nc2 = StatUtils.getRows(y, y, 0, +1).size();
+        int nc = StatUtils.getRows(x, Double.NEGATIVE_INFINITY, +1).size();
+        int nc1 = StatUtils.getRows(x, 0, +1).size();
+        int nc2 = StatUtils.getRows(y, 0, +1).size();
 
         double z = 0.5 * (log(1.0 + pc) - log(1.0 - pc));
         double z1 = 0.5 *  (log(1.0 + pc1) - log(1.0 - pc1));

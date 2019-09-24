@@ -37,6 +37,7 @@ import edu.cmu.tetrad.algcomparison.statistic.MathewsCorrArrow;
 import edu.cmu.tetrad.algcomparison.statistic.SHD;
 import edu.cmu.tetrad.algcomparison.statistic.Statistics;
 import edu.cmu.tetrad.util.Parameters;
+import edu.cmu.tetrad.util.Params;
 import java.io.IOException;
 import static java.lang.System.out;
 import java.nio.file.Files;
@@ -136,11 +137,11 @@ public class TimeoutComparisonTest {
 
     private static Parameters getParameters() {
         Parameters parameters = new Parameters();
-        parameters.set("numRuns", 1);
-        parameters.set("numMeasures", 100);
-        parameters.set("avgDegree", 4, 6);
-        parameters.set("sampleSize", 250000);
-        parameters.set("alpha", 1e-4, 1e-3, 1e-2);
+        parameters.set(Params.NUM_RUNS, 1);
+        parameters.set(Params.NUM_MEASURES, 100);
+        parameters.set(Params.AVG_DEGREE, 4, 6);
+        parameters.set(Params.SAMPLE_SIZE, 250000);
+        parameters.set(Params.ALPHA, 1e-4, 1e-3, 1e-2);
 
         return parameters;
     }

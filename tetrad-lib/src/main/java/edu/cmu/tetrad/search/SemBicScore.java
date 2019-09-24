@@ -21,6 +21,7 @@
 
 package edu.cmu.tetrad.search;
 
+import edu.cmu.tetrad.data.CovarianceMatrix;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.ICovarianceMatrix;
 import edu.cmu.tetrad.graph.Node;
@@ -33,7 +34,7 @@ import org.apache.commons.math3.linear.SingularMatrixException;
 import java.io.PrintStream;
 import java.util.*;
 
-import static java.lang.Math.log;
+import static java.lang.Math.*;
 
 /**
  * Implements the continuous BIC score for FGES.
@@ -42,7 +43,10 @@ import static java.lang.Math.log;
  */
 public class SemBicScore implements Score {
 
-    // The covariance matrix.
+    // The dataset.
+    private DataSet dataSet;
+
+    // The covariances.
     private ICovarianceMatrix covariances;
 
     // The variables of the covariance matrix.
@@ -50,16 +54,6 @@ public class SemBicScore implements Score {
 
     // The sample size of the covariance matrix.
     private int sampleSize;
-
-    // The penalty discount.
-    private double penaltyDiscount = 1.0;
-
-    // The structure prior.
-    private double structurePrior = 0.0;
-
-    // True if linear dependencies should return NaN for the score, and hence be
-    // ignored by FGES
-    private boolean ignoreLinearDependent = false;
 
     // The printstream output should be sent to.
     private PrintStream out = System.out;
@@ -70,8 +64,14 @@ public class SemBicScore implements Score {
     // Variables that caused computational problems and so are to be avoided.
     private Set<Integer> forbidden = new HashSet<>();
 
+    // A  map from variable names to their indices.
     private Map<String, Integer> indexMap;
 
+    // The penalty penaltyDiscount, 1 for standard BIC.
+    private double penaltyDiscount = 1.0;
+
+    // The structure prior, 0 for standard BIC.
+    private double structurePrior = 0.0;
 
     /**
      * Constructs the score using a covariance matrix.
@@ -81,72 +81,91 @@ public class SemBicScore implements Score {
             throw new NullPointerException();
         }
 
-        this.setCovariances(covariances);
+        setCovariances(new CovarianceMatrix(covariances));
         this.variables = covariances.getVariables();
         this.sampleSize = covariances.getSampleSize();
         this.indexMap = indexMap(this.variables);
     }
 
     /**
-     * Calculates the sample likelihood and BIC score for i given its parents in a simple SEM model
+     * Constructs the score using a covariance matrix.
      */
+    public SemBicScore(DataSet dataSet) {
+        if (dataSet == null) {
+            throw new NullPointerException();
+        }
+
+        this.dataSet = dataSet;
+
+        ICovarianceMatrix cov = new CovarianceMatrix(dataSet, true);
+        setCovariances(cov);
+
+        this.variables = covariances.getVariables();
+        this.sampleSize = covariances.getSampleSize();
+        this.indexMap = indexMap(this.variables);
+
+    }
+
+    @Override
+    public double localScoreDiff(int x, int y, int[] z) {
+        double sp1 = getStructurePrior(z.length + 1);
+        double sp2 = getStructurePrior(z.length);
+
+        if (false) {
+            int n = covariances.getSampleSize();
+            Node _x = variables.get(x);
+            Node _y = variables.get(y);
+            List<Node> _z = getVariableList(z);
+            double r = partialCorrelation(_x, _y, _z);
+
+            return -n * Math.log(1.0 - r * r) - log(n)// - getErrorThreshold()
+                    +  signum(getStructurePrior()) * (sp1 - sp2);
+        } else {
+            return (localScore(y, append(z, x)) - localScore(y, z));// - getErrorThreshold();
+        }
+    }
+
+    @Override
+    public double localScoreDiff(int x, int y) {
+        return localScoreDiff(x, y, new int[0]);
+    }
+
     public double localScore(int i, int... parents) {
-        for (int p : parents) if (forbidden.contains(p)) return Double.NaN;
 
         try {
+            final int p = parents.length;
+            int k = p + 1;
+            double n = getSampleSize();
+
+            int[] ii = {i};
+            TetradMatrix X = getCovariances().getSelection(parents, parents);
+            TetradMatrix Y = getCovariances().getSelection(parents, ii);
             double s2 = getCovariances().getValue(i, i);
-            TetradMatrix covxx = getSelection(getCovariances(), parents, parents);
-            TetradVector covxy = getSelection(getCovariances(), parents, new int[]{i}).getColumn(0);
-            s2 -= covxx.inverse().times(covxy).dotProduct(covxy);
+
+            TetradVector coefs = getCoefs(X, Y).getColumn(0);
+
+            for (int q = 0; q < X.rows(); q++) {
+                for (int r = 0; r < X.columns(); r++) {
+                    s2 -= coefs.get(q) * coefs.get(r) * X.get(r, q);
+                }
+            }
+
             if (s2 <= 0) {
                 if (isVerbose()) {
                     out.println("Nonpositive residual varianceY: resVar / varianceY = " + (s2 / getCovariances().getValue(i, i)));
                 }
                 return Double.NaN;
             }
-            int n = getSampleSize();
-            int p = parents.length;
-            return - 0.5 * (n*log(s2) + getPenaltyDiscount()*p*log(n)) + calculateStructurePrior(p);
+
+            return -n * log(s2) - getPenaltyDiscount() * k * log(n)
+                    + signum(getStructurePrior()) * getStructurePrior(parents.length);
         } catch (Exception e) {
             return Double.NaN;
         }
     }
 
-    private double calculateStructurePrior(int k) {
-        if (structurePrior <= 0) {
-            return 0;
-        } else {
-            double n = variables.size() - 1;
-            double p = structurePrior / n;
-            return k * Math.log(p) + (n - k) * Math.log(1.0 - p);
-        }
-    }
-
-    @Override
-    public double localScoreDiff(int x, int y, int[] z) {
-        return localScore(y, append(z, x)) - localScore(y, z);
-    }
-
-    private Map<String, Integer> indexMap(List<Node> variables) {
-        Map<String, Integer> indexMap = new HashMap<>();
-
-        for (int i = 0; i < variables.size(); i++) {
-            indexMap.put(variables.get(i).getName(), i);
-        }
-
-        return indexMap;
-    }
-
-    @Override
-    public double localScoreDiff(int x, int y) {
-        return localScore(y, x) - localScore(y);
-    }
-
-    private int[] append(int[] parents, int extra) {
-        int[] all = new int[parents.length + 1];
-        System.arraycopy(parents, 0, all, 1, parents.length);
-        all[0] = extra;
-        return all;
+    private TetradMatrix getCoefs(TetradMatrix x, TetradMatrix y) {
+        return (x.inverse()).times(y);
     }
 
     /**
@@ -161,17 +180,6 @@ public class SemBicScore implements Score {
      */
     public double localScore(int i) {
         return localScore(i, new int[0]);
-    }
-
-    /**
-     * True iff edges that cause linear dependence are ignored.
-     */
-    public boolean isIgnoreLinearDependent() {
-        return ignoreLinearDependent;
-    }
-
-    public void setIgnoreLinearDependent(boolean ignoreLinearDependent) {
-        this.ignoreLinearDependent = ignoreLinearDependent;
     }
 
     public void setOut(PrintStream out) {
@@ -196,11 +204,11 @@ public class SemBicScore implements Score {
 
     @Override
     public boolean isEffectEdge(double bump) {
-        return bump > 0;//-0.25 * getPenaltyDiscount() * Math.log(sampleSize);
+        return bump > 0;
     }
 
     public DataSet getDataSet() {
-        throw new UnsupportedOperationException();
+        return dataSet;
     }
 
     public void setPenaltyDiscount(double penaltyDiscount) {
@@ -222,14 +230,6 @@ public class SemBicScore implements Score {
     @Override
     public List<Node> getVariables() {
         return variables;
-    }
-
-    private TetradMatrix getSelection(ICovarianceMatrix cov, int[] rows, int[] cols) {
-        return cov.getSelection(rows, cols);
-    }
-
-    private void setCovariances(ICovarianceMatrix covariances) {
-        this.covariances = covariances;
     }
 
     public void setVariables(List<Node> variables) {
@@ -267,6 +267,109 @@ public class SemBicScore implements Score {
 
         return Double.isNaN(v);
     }
+
+    public double getStructurePrior() {
+        return structurePrior;
+    }
+
+    public void setStructurePrior(double structurePrior) {
+        this.structurePrior = structurePrior;
+    }
+
+    private void setCovariances(ICovarianceMatrix covariances) {
+        this.covariances = covariances;
+    }
+
+    private double getStructurePrior(int parents) {
+        if (abs(getStructurePrior()) <= 0) {
+            return 0;
+        } else {
+            int c = covariances.getDimension();
+            double p = abs(getStructurePrior()) / (double) c;
+            return (parents * Math.log(p) + (c - parents) * Math.log(1.0 - p));
+        }
+    }
+
+    private List<Node> getVariableList(int[] indices) {
+        List<Node> variables = new ArrayList<>();
+        for (int i : indices) {
+            variables.add(this.variables.get(i));
+        }
+        return variables;
+    }
+
+    private double partialCorrelation(Node x, Node y, List<Node> z) throws SingularMatrixException {
+        int[] indices = new int[z.size() + 2];
+        indices[0] = indexMap.get(x.getName());
+        indices[1] = indexMap.get(y.getName());
+        for (int i = 0; i < z.size(); i++) indices[i + 2] = indexMap.get(z.get(i).getName());
+        TetradMatrix submatrix = covariances.getSubmatrix(indices).getMatrix();
+        return StatUtils.partialCorrelationPrecisionMatrix(submatrix);
+    }
+
+    private Map<String, Integer> indexMap(List<Node> variables) {
+        Map<String, Integer> indexMap = new HashMap<>();
+
+        for (int i = 0; variables.size() > i; i++) {
+            indexMap.put(variables.get(i).getName(), i);
+        }
+
+        return indexMap;
+    }
+
+    // Prints a smallest subset of parents that causes a singular matrix exception.
+    private boolean printMinimalLinearlyDependentSet(int[] parents, ICovarianceMatrix cov) {
+        List<Node> _parents = new ArrayList<>();
+        for (int p : parents) _parents.add(variables.get(p));
+
+        DepthChoiceGenerator gen = new DepthChoiceGenerator(_parents.size(), _parents.size());
+        int[] choice;
+
+        while ((choice = gen.next()) != null) {
+            int[] sel = new int[choice.length];
+            List<Node> _sel = new ArrayList<>();
+            for (int m = 0; m < choice.length; m++) {
+                sel[m] = parents[m];
+                _sel.add(variables.get(sel[m]));
+            }
+
+            TetradMatrix m = cov.getSelection(sel, sel);
+
+            try {
+                m.inverse();
+            } catch (Exception e2) {
+                forbidden.add(sel[0]);
+                out.println("### Linear dependence among variables: " + _sel);
+                out.println("### Removing " + _sel.get(0));
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private int[] append(int[] parents, int extra) {
+        int[] all = new int[parents.length + 1];
+        System.arraycopy(parents, 0, all, 0, parents.length);
+        all[parents.length] = extra;
+        return all;
+    }
+
+//    // Might not be useful.
+//    private synchronized double getErrorThreshold() {
+//        if (Double.isNaN(errorThreshold)) {
+//            if (thresholdAlpha == .5) {
+//                this.errorThreshold = 0.0;
+//            } else {
+//                FDistribution f = new FDistribution(getSampleSize() - 1,
+//                        getSampleSize() - 1);
+//                this.errorThreshold = -getSampleSize() * log(f.inverseCumulativeProbability(thresholdAlpha));
+//                System.out.println("Error threshold = " + errorThreshold);
+//            }
+//        }
+//
+//        return errorThreshold;
+//    }
 }
 
 

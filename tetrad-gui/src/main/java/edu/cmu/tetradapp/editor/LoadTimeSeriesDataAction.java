@@ -21,10 +21,7 @@
 
 package edu.cmu.tetradapp.editor;
 
-import edu.cmu.tetrad.data.ColtDataSet;
-import edu.cmu.tetrad.data.ContinuousVariable;
-import edu.cmu.tetrad.data.DataSet;
-import edu.cmu.tetrad.data.TimeSeriesData;
+import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Node;
 
 import javax.swing.*;
@@ -93,7 +90,7 @@ class LoadTimeSeriesDataAction extends AbstractAction {
                 variables.add(var);
             }
 
-            DataSet dataSet = new ColtDataSet(0, variables);
+            DataSet dataSet = new BoxDataSet(new VerticalDoubleDataBox(0, variables.size()), variables);
 
             int row = -1;
 

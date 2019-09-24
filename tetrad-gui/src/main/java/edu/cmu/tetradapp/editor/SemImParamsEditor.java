@@ -71,8 +71,8 @@ public class SemImParamsEditor extends JPanel implements ParameterEditor {
     public void setup() {
         setLayout(new BorderLayout());
 
-        final JCheckBox randomEveryTime = new JCheckBox();
-        randomEveryTime.setSelected(!params.getBoolean("retainPreviousValues", false));
+//        final JCheckBox randomEveryTime = new JCheckBox();
+//        randomEveryTime.setSelected(!params.getBoolean("retainPreviousValues", false));
         DecimalFormat decimalFormat = new DecimalFormat("0.0######");
 
         final DoubleTextField coefLowField = new DoubleTextField(params.getDouble("coefLow", 0.5),
@@ -108,7 +108,7 @@ public class SemImParamsEditor extends JPanel implements ParameterEditor {
             }
         });
 
-        final DoubleTextField covLowField = new DoubleTextField(params.getDouble("covLow", 0.1),
+        final DoubleTextField covLowField = new DoubleTextField(params.getDouble("covLow", 0.0),
                 6, decimalFormat);
 
         covLowField.setFilter(new DoubleTextField.Filter() {
@@ -124,7 +124,7 @@ public class SemImParamsEditor extends JPanel implements ParameterEditor {
             }
         });
 
-        final DoubleTextField covHighField = new DoubleTextField(params.getDouble("covHigh", 0.2),
+        final DoubleTextField covHighField = new DoubleTextField(params.getDouble("covHigh", 0.0),
                 6, decimalFormat);
 
         covHighField.setFilter(new DoubleTextField.Filter() {
@@ -193,16 +193,16 @@ public class SemImParamsEditor extends JPanel implements ParameterEditor {
             }
         });
 
-        randomEveryTime.setText("Pick new random values each time this SEM IM is reinitialized.");
-        randomEveryTime.setVerticalTextPosition(SwingConstants.TOP);
-
-        randomEveryTime.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                JCheckBox checkBox = (JCheckBox) e.getSource();
-                boolean retainPreviousValues = !checkBox.isSelected();
-                getParams().set("retainPreviousValues", retainPreviousValues);
-            }
-        });
+//        randomEveryTime.setText("Pick new random values each time this SEM IM is reinitialized.");
+//        randomEveryTime.setVerticalTextPosition(SwingConstants.TOP);
+//
+//        randomEveryTime.addActionListener(new ActionListener() {
+//            public void actionPerformed(ActionEvent e) {
+//                JCheckBox checkBox = (JCheckBox) e.getSource();
+//                boolean retainPreviousValues = !checkBox.isSelected();
+//                getParams().set("retainPreviousValues", retainPreviousValues);
+//            }
+//        });
 
         // continue workbench construction.
         Box b1 = Box.createVerticalBox();
@@ -250,11 +250,11 @@ public class SemImParamsEditor extends JPanel implements ParameterEditor {
         b4c.add(Box.createHorizontalGlue());
         b1.add(b4c);
 
-        Box b5 = Box.createHorizontalBox();
+//        Box b5 = Box.createHorizontalBox();
 //        b5.add(Box.createHorizontalStrut(10));
-        b5.add(randomEveryTime);
-        b5.add(Box.createHorizontalGlue());
-        b1.add(b5);
+//        b5.add(randomEveryTime);
+//        b5.add(Box.createHorizontalGlue());
+//        b1.add(b5);
 
         b1.add(Box.createHorizontalGlue());
         add(b1, BorderLayout.CENTER);

@@ -33,6 +33,7 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.rmi.MarshalledObject;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -134,7 +135,7 @@ public class SemPmWrapper implements SessionModel {
     private void setSemPm(SemPm oldSemPm) {
         try {
             SemPm pm = (SemPm) new MarshalledObject(oldSemPm).get();
-            setSemPm(pm);
+            this.semPms = Collections.singletonList(pm);
         } catch (IOException e) {
             e.printStackTrace();
         } catch (ClassNotFoundException e) {

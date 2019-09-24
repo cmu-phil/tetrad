@@ -155,7 +155,6 @@ public final class GPc implements GraphSearch {
         Fges fges = new Fges(score);
         fges.setKnowledge(getKnowledge());
         fges.setVerbose(verbose);
-        fges.setNumPatternsToStore(0);
 //        fges.setHeuristicSpeedup(heuristicSpeedup);
 //        fges.setMaxDegree(fgesDepth);
         graph = fges.search();
@@ -297,7 +296,7 @@ public final class GPc implements GraphSearch {
             score0.setPenaltyDiscount(penaltyDiscount);
             score = score0;
         } else if (dataSet.isContinuous()) {
-            covarianceMatrix = new CovarianceMatrixOnTheFly(dataSet);
+            covarianceMatrix = new CovarianceMatrix(dataSet);
             SemBicScore score0 = new SemBicScore(covarianceMatrix);
             score0.setPenaltyDiscount(penaltyDiscount);
             score = score0;

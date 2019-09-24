@@ -21,6 +21,11 @@
 
 package edu.cmu.tetrad.data;
 
+import edu.cmu.tetrad.graph.Node;
+
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * Stores a 2D array of double data. Note that the missing value marker for this
  * box is -99.
@@ -32,6 +37,17 @@ public class DoubleDataBox implements DataBox {
      * The stored double data.
      */
     private final double[][] data;
+
+
+    /**
+     * The number of rows (tracked because it may be zero).
+     */
+    private int numRows = 0;
+
+    /**
+     * The number of columns (tracked because it may be zero).
+     */
+    private int numCols = 0;
 
     /**
      * Constructs an 2D double array consisting entirely of missing values
@@ -45,6 +61,9 @@ public class DoubleDataBox implements DataBox {
                 data[i][j] = Double.NaN;
             }
         }
+
+        this.numRows = rows;
+        this.numCols = cols;
     }
 
     /**
@@ -59,6 +78,9 @@ public class DoubleDataBox implements DataBox {
             }
         }
 
+        this.numCols = data[0].length;
+        this.numRows = data.length;
+
         this.data = data;
     }
 
@@ -66,21 +88,23 @@ public class DoubleDataBox implements DataBox {
      * Generates a simple exemplar of this class to test serialization.
      */
     public static BoxDataSet serializableInstance() {
-        return new BoxDataSet(new ShortDataBox(4, 4), null);
+        List<Node> vars = new ArrayList<>();
+        for (int i = 0; i < 4; i++) vars.add(new ContinuousVariable("X" + i));
+        return new BoxDataSet(new ShortDataBox(4, 4), vars);
     }
 
     /**
      * @return the number of rows in this data box.
      */
     public int numRows() {
-        return data.length;
+        return numRows;
     }
 
     /**
      * @return the number of columns in this data box.
      */
     public int numCols() {
-        return data[0].length;
+        return numCols;
     }
 
     /**

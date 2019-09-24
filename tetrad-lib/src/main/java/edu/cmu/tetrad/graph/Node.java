@@ -18,12 +18,12 @@
 // along with this program; if not, write to the Free Software               //
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA //
 ///////////////////////////////////////////////////////////////////////////////
-
 package edu.cmu.tetrad.graph;
 
 import edu.cmu.tetrad.util.TetradSerializable;
 import java.beans.PropertyChangeListener;
 import java.util.Map;
+import java.util.regex.Pattern;
 
 /**
  * Represents an object with a name, node type, and position that can serve as a
@@ -32,7 +32,12 @@ import java.util.Map;
  * @author Joseph Ramsey
  * @see NodeType
  */
-public interface Node extends TetradSerializable, Comparable {
+public interface Node extends TetradSerializable, Comparable<Node> {
+
+    public static final Pattern ALPHA = Pattern.compile("^[a-zA-Z]+$");
+    public static final Pattern ALPHA_NUM = Pattern.compile("^[a-zA-Z]+[0-9]+$");
+    public static final Pattern LAG = Pattern.compile("^.+:[0-9]+$");
+
     long serialVersionUID = 23L;
 
     /**
@@ -54,19 +59,21 @@ public interface Node extends TetradSerializable, Comparable {
      * Sets the node type for this node.
      */
     void setNodeType(NodeType nodeType);
-    
+
     /**
-     * 
+     *
      * @return the intervention type
      */
     NodeVariableType getNodeVariableType();
 
     /**
-     * Sets the type (domain, interventional status, interventional value..) for this node variable
-     * @param nodeVariableType 
+     * Sets the type (domain, interventional status, interventional value..) for
+     * this node variable
+     *
+     * @param nodeVariableType
      */
     void setNodeVariableType(NodeVariableType nodeVariableType);
-    
+
     /**
      * @return a string representation of the node.
      */
@@ -120,19 +127,14 @@ public interface Node extends TetradSerializable, Comparable {
     /**
      * Alphabetical order.
      */
-    int compareTo(Object o);
-    
+    public int compareTo(Node node);
+
     Map<String, Object> getAllAttributes();
-    
+
     Object getAttribute(String key);
-    
+
     void removeAttribute(String key);
-    
+
     void addAttribute(String key, Object value);
 
 }
-
-
-
-
-

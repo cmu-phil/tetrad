@@ -473,7 +473,16 @@ public class TetradMatrix implements TetradSerializable {
     }
 
     public TetradMatrix scalarMult(double scalar) {
-        return new TetradMatrix(apacheData.copy().scalarMultiply(scalar), rows(), columns());
+        TetradMatrix newMatrix = copy();
+        for (int i = 0; i < rows(); i++) {
+            for (int j = 0; j < columns(); j++) {
+                newMatrix.set(i, j, get(i, j) * scalar);
+            }
+        }
+
+        return newMatrix;
+
+//        return new TetradMatrix(apacheData.copy().scalarMultiply(scalar), rows(), columns());
     }
 
     public int rank() {

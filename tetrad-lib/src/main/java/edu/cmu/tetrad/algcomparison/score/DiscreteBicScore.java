@@ -16,7 +16,7 @@ import java.util.List;
  */
 @edu.cmu.tetrad.annotation.Score(
         name = "Discrete BIC Score",
-        command = "disc-bic",
+        command = "disc-bic-score",
         dataType = DataType.Discrete
 )
 public class DiscreteBicScore implements ScoreWrapper {
@@ -29,7 +29,7 @@ public class DiscreteBicScore implements ScoreWrapper {
         this.dataSet = dataSet;
         edu.cmu.tetrad.search.BicScore score
                 = new edu.cmu.tetrad.search.BicScore(DataUtils.getDiscreteDataSet(dataSet));
-        score.setPenaltyDiscount(parameters.getDouble("penaltyDiscount"));
+        score.setPenaltyDiscount(1);//parameters.getDouble("penaltyDiscount"));
         return score;
     }
 
@@ -46,7 +46,7 @@ public class DiscreteBicScore implements ScoreWrapper {
     @Override
     public List<String> getParameters() {
         List<String> paramDescriptions = new ArrayList<>();
-        paramDescriptions.add("penaltyDiscount");
+//        paramDescriptions.add("penaltyDiscount");
         return paramDescriptions;
     }
 

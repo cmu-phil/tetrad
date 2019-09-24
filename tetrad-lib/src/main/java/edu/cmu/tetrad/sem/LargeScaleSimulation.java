@@ -26,10 +26,15 @@ import edu.cmu.tetrad.util.*;
 import edu.cmu.tetrad.util.dist.Distribution;
 import edu.cmu.tetrad.util.dist.Split;
 import edu.cmu.tetrad.util.dist.Uniform;
+
 import java.io.PrintStream;
+
+import static java.lang.Math.abs;
 import static java.lang.Math.sqrt;
+
 import java.util.*;
 import java.util.concurrent.RecursiveTask;
+
 import org.apache.commons.collections4.map.HashedMap;
 import org.apache.commons.math3.distribution.*;
 import org.apache.commons.math3.random.Well1024a;
@@ -66,8 +71,6 @@ public final class LargeScaleSimulation {
     private boolean includeNegativeCoefs = true;
 
     private boolean errorsNormal = true;
-    private double betaLeftValue;
-    private double betaRightValue;
     private double selfLoopCoef = 0.0;
 
     //=============================CONSTRUCTORS============================//
@@ -253,7 +256,7 @@ public final class LargeScaleSimulation {
      * threshold of 1e-5. Uncorrelated Gaussian shocks are used.
      *
      * @param sampleSize The number of samples to be drawn. Must be a positive
-     * integer.
+     *                   integer.
      */
     public DataSet simulateDataFisher(int sampleSize) {
         return simulateDataFisher(getSoCalledPoissonShocks(sampleSize), 50, 1e-5);
@@ -268,11 +271,11 @@ public final class LargeScaleSimulation {
      * for the coefficient matrix must be less than 1, though this is not
      * checked.
      *
-     * @param shocks A matrix of shocks. The value at shocks[i][j] is the shock
-     * for the i'th time step, for the j'th variables.
+     * @param shocks                A matrix of shocks. The value at shocks[i][j] is the shock
+     *                              for the i'th time step, for the j'th variables.
      * @param intervalBetweenShocks External shock is applied every this many
-     * steps. Must be positive integer.
-     * @param epsilon The convergence criterion; |xi.t - xi.t-1| < epsilon.
+     *                              steps. Must be positive integer.
+     * @param epsilon               The convergence criterion; |xi.t - xi.t-1| < epsilon.
      */
     public DataSet simulateDataFisher(double[][] shocks, int intervalBetweenShocks, double epsilon) {
         if (intervalBetweenShocks < 1) {
@@ -312,7 +315,7 @@ public final class LargeScaleSimulation {
                 boolean converged = true;
 
                 for (int j = 0; j < t1.length; j++) {
-                    if (Math.abs(t2[j] - t1[j]) > epsilon) {
+                    if (abs(t2[j] - t1[j]) > epsilon) {
                         converged = false;
                         break;
                     }
@@ -459,9 +462,9 @@ public final class LargeScaleSimulation {
             double coef = edgeCoefDist.nextRandom();
 
             if (includePositiveCoefs && !includeNegativeCoefs) {
-                coef = Math.abs(coef);
+                coef = abs(coef);
             } else if (!includePositiveCoefs && includeNegativeCoefs) {
-                coef = -Math.abs(coef);
+                coef = -abs(coef);
             } else if (!includePositiveCoefs && !includeNegativeCoefs) {
                 coef = 0;
             }
@@ -787,12 +790,8 @@ public final class LargeScaleSimulation {
         AbstractRealDistribution distribution;
         AbstractRealDistribution varDist = null;
 
-        if (errorsNormal) {
-            distribution = new NormalDistribution(new Well1024a(++seed), 0, 1);
-            varDist = new UniformRealDistribution(varLow, varHigh);
-        } else {
-            distribution = new BetaDistribution(new Well1024a(++seed), getBetaLeftValue(), getBetaRightValue());
-        }
+        distribution = new NormalDistribution(new Well1024a(++seed), 0, 1);
+        varDist = new UniformRealDistribution(varLow, varHigh);
 
         int numVars = variableNodes.size();
         setupModel(numVars);
@@ -800,11 +799,14 @@ public final class LargeScaleSimulation {
         double[][] shocks = new double[sampleSize][numVars];
 
         for (int j = 0; j < numVars; j++) {
+            double sd = sqrt(varDist.sample());
+
             for (int i = 0; i < sampleSize; i++) {
                 double sample = distribution.sample();
+                sample *= sd;
 
-                if (errorsNormal) {
-                    sample *= sqrt(varDist.sample());
+                if (!errorsNormal) {
+                    sample = sample * sample;
                 }
 
                 shocks[i][j] = sample;
@@ -858,21 +860,6 @@ public final class LargeScaleSimulation {
 //    public void setErrorsPositivelySkewedIfNonNormal(boolean errorsPositivelySkewedIfNonNormal) {
 //        this.errorsPositivelySkewedIfNonNormal = errorsPositivelySkewedIfNonNormal;
 //    }
-    public double getBetaRightValue() {
-        return betaRightValue;
-    }
-
-    public void setBetaRightValue(double betaRightValue) {
-        this.betaRightValue = betaRightValue;
-    }
-
-    public double getBetaLeftValue() {
-        return betaLeftValue;
-    }
-
-    public void setBetaLeftValue(double betaLeftValue) {
-        this.betaLeftValue = betaLeftValue;
-    }
 
     public double getSelfLoopCoef() {
         return selfLoopCoef;

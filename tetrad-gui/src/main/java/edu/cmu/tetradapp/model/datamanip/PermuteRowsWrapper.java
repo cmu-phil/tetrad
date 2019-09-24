@@ -21,7 +21,6 @@
 
 package edu.cmu.tetradapp.model.datamanip;
 
-import edu.cmu.tetrad.data.ColtDataSet;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.LogDataUtils;
 import edu.cmu.tetrad.util.Parameters;

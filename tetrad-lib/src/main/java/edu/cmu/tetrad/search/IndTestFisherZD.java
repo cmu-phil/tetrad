@@ -21,16 +21,14 @@
 
 package edu.cmu.tetrad.search;
 
-import edu.cmu.tetrad.data.ColtDataSet;
-import edu.cmu.tetrad.data.CovarianceMatrix;
-import edu.cmu.tetrad.data.DataSet;
-import edu.cmu.tetrad.data.ICovarianceMatrix;
+import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.NumberFormatUtil;
 import edu.cmu.tetrad.util.StatUtils;
 import edu.cmu.tetrad.util.TetradMatrix;
 import org.apache.commons.math3.linear.SingularMatrixException;
 
+import javax.swing.*;
 import java.io.PrintStream;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
@@ -125,7 +123,7 @@ public final class IndTestFisherZD implements IndependenceTest {
      * @param alpha     The significance cutoff level. p values less than alpha will be reported as dependent.
      */
     public IndTestFisherZD(TetradMatrix data, List<Node> variables, double alpha) {
-        this.dataSet = ColtDataSet.makeContinuousData(variables, data);
+        this.dataSet = new BoxDataSet(new VerticalDoubleDataBox(data.toArray()), variables);
         this.covMatrix = new CovarianceMatrix(dataSet);
         this.variables = Collections.unmodifiableList(variables);
         this.indexMap = indexMap(variables);

@@ -1,0 +1,8 @@
+{
+  "domains": [
+    {
+      "name": "dteday",
+      "discrete": true
+    }
+  ]
+}

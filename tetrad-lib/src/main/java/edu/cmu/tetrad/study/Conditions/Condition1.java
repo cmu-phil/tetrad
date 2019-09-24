@@ -83,23 +83,6 @@ public class Condition1 {
         comparison.setShowUtilities(true);
         comparison.setSaveGraphs(true);
 
-//        comparison.compareFromFiles("/Users/user/comparison-data/condition_1",
-//                "/Users/user/causal-comparisons/condition_1",
-//                algorithms, statistics, parameters);
-//
-//        algorithms = new Algorithms();
-//
-//        parameters.set("alpha", 0.001, 0.0001, 1e-8);
-//        parameters.set("faithfulnessAssumed", true);
-////
-//        algorithms.add(new Fges(new FisherZScore()));
-//
-//        comparison.compareFromFiles("/Users/user/comparison-data/condition_1",
-//                "/Users/user/causal-comparisons/condition_1",
-//                algorithms, statistics, parameters);
-//
-//        algorithms = new Algorithms();
-
         parameters.set("penaltyDiscount", 4);
 //
         algorithms.add(new Fges(new SemBicScore()));

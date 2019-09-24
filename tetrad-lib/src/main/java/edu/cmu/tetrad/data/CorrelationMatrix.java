@@ -47,16 +47,7 @@ public final class CorrelationMatrix extends CovarianceMatrix
      * covariance matrix.
      */
     public CorrelationMatrix(ICovarianceMatrix matrix) {
-        this(matrix.getVariables(), matrix.getMatrix().copy(), matrix.getSampleSize());
-    }
-
-    /**
-     * Constructs a new correlation matrix using the covariances in the given
-     * covariance matrix.
-     */
-    public CorrelationMatrix(ICovarianceMatrix matrix, boolean inPlace) {
-        this(matrix.getVariables(), (inPlace ? matrix.getMatrix() : new CovarianceMatrix(matrix).getMatrix()),
-                matrix.getSampleSize(), inPlace);
+        this(matrix.getVariables(), MatrixUtils.convertCovToCorr(matrix.getMatrix()), matrix.getSampleSize());
     }
 
     /**
@@ -81,16 +72,6 @@ public final class CorrelationMatrix extends CovarianceMatrix
     private CorrelationMatrix(List<Node> variables, TetradMatrix matrix,
                               int sampleSize) {
         super(variables, MatrixUtils.convertCovToCorr(matrix).copy(), sampleSize);
-    }
-
-    /**
-     * Constructs a correlation matrix data set using the given information. The
-     * matrix matrix is internally converted to a correlation matrix.
-     */
-    private CorrelationMatrix(List<Node> variables, TetradMatrix matrix,
-                              int sampleSize, boolean inPlace) {
-        super(variables, inPlace ? MatrixUtils.convertCovToCorr(matrix) :
-                MatrixUtils.convertCovToCorr(matrix.copy()), sampleSize);
     }
 
     /**

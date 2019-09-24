@@ -5,6 +5,7 @@ import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.algcomparison.utils.TakesIndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.utils.TakesInitialGraph;
+import edu.cmu.tetrad.annotation.Bootstrapping;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
@@ -15,8 +16,10 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.PcAll;
 import edu.cmu.tetrad.search.SearchGraphUtils;
 import edu.cmu.tetrad.util.Parameters;
+import edu.cmu.tetrad.util.Params;
 import edu.pitt.dbmi.algo.resampling.GeneralResamplingTest;
 import edu.pitt.dbmi.algo.resampling.ResamplingEdgeEnsemble;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -24,6 +27,7 @@ import java.util.List;
  *
  * @author jdramsey
  */
+@Bootstrapping
 public class PcStable implements Algorithm, TakesInitialGraph, HasKnowledge, TakesIndependenceWrapper {
 
     static final long serialVersionUID = 23L;
@@ -46,18 +50,18 @@ public class PcStable implements Algorithm, TakesInitialGraph, HasKnowledge, Tak
 
     @Override
     public Graph search(DataModel dataSet, Parameters parameters) {
-        if (parameters.getInt("numberResampling") < 1) {
+        if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
             if (algorithm != null) {
 //            	initialGraph = algorithm.search(dataSet, parameters);
             }
             edu.cmu.tetrad.search.PcAll search = new edu.cmu.tetrad.search.PcAll(test.getTest(dataSet, parameters), initialGraph);
-            search.setDepth(parameters.getInt("depth"));
+            search.setDepth(parameters.getInt(Params.DEPTH));
             search.setKnowledge(knowledge);
             search.setFasType(edu.cmu.tetrad.search.PcAll.FasType.STABLE);
             search.setConcurrent(edu.cmu.tetrad.search.PcAll.Concurrent.NO);
             search.setColliderDiscovery(edu.cmu.tetrad.search.PcAll.ColliderDiscovery.FAS_SEPSETS);
             search.setConflictRule(PcAll.ConflictRule.PRIORITY);
-            search.setVerbose(parameters.getBoolean("verbose"));
+            search.setVerbose(parameters.getBoolean(Params.VERBOSE));
             return search.search();
         } else {
             PcStable pcStable = new PcStable(test, algorithm);
@@ -66,14 +70,14 @@ public class PcStable implements Algorithm, TakesInitialGraph, HasKnowledge, Tak
                 pcStable.setInitialGraph(initialGraph);
             }
             DataSet data = (DataSet) dataSet;
-            GeneralResamplingTest search = new GeneralResamplingTest(data, pcStable, parameters.getInt("numberResampling"));
+            GeneralResamplingTest search = new GeneralResamplingTest(data, pcStable, parameters.getInt(Params.NUMBER_RESAMPLING));
             search.setKnowledge(knowledge);
 
-            search.setPercentResampleSize(parameters.getDouble("percentResampleSize"));
-            search.setResamplingWithReplacement(parameters.getBoolean("resamplingWithReplacement"));
+            search.setPercentResampleSize(parameters.getDouble(Params.PERCENT_RESAMPLE_SIZE));
+            search.setResamplingWithReplacement(parameters.getBoolean(Params.RESAMPLING_WITH_REPLACEMENT));
             
             ResamplingEdgeEnsemble edgeEnsemble = ResamplingEdgeEnsemble.Highest;
-            switch (parameters.getInt("resamplingEnsemble", 1)) {
+            switch (parameters.getInt(Params.RESAMPLING_ENSEMBLE, 1)) {
                 case 0:
                     edgeEnsemble = ResamplingEdgeEnsemble.Preserved;
                     break;
@@ -84,10 +88,10 @@ public class PcStable implements Algorithm, TakesInitialGraph, HasKnowledge, Tak
                     edgeEnsemble = ResamplingEdgeEnsemble.Majority;
             }
             search.setEdgeEnsemble(edgeEnsemble);
-            search.setAddOriginalDataset(parameters.getBoolean("addOriginalDataset"));
+            search.setAddOriginalDataset(parameters.getBoolean(Params.ADD_ORIGINAL_DATASET));
             
             search.setParameters(parameters);
-            search.setVerbose(parameters.getBoolean("verbose"));
+            search.setVerbose(parameters.getBoolean(Params.VERBOSE));
             return search.search();
         }
     }
@@ -110,15 +114,11 @@ public class PcStable implements Algorithm, TakesInitialGraph, HasKnowledge, Tak
 
     @Override
     public List<String> getParameters() {
-        List<String> parameters = test.getParameters();
-        parameters.add("depth");
-        parameters.add("verbose");
-        // Resampling
-        parameters.add("numberResampling");
-        parameters.add("percentResampleSize");
-        parameters.add("resamplingWithReplacement");
-        parameters.add("resamplingEnsemble");
-        parameters.add("addOriginalDataset");
+        List<String> parameters = new ArrayList<>();
+        parameters.add(Params.DEPTH);
+
+        parameters.add(Params.VERBOSE);
+
         return parameters;
     }
 

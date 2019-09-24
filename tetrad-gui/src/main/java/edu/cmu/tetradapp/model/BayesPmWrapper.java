@@ -235,7 +235,14 @@ public class BayesPmWrapper implements SessionModel {
     }
 
     public BayesPmWrapper(BayesImWrapper wrapper) {
-        setBayesPm(new BayesPm(wrapper.getBayesIm().getBayesPm()));
+        bayesPms = new ArrayList<>();
+
+        for (int i = 0; i < wrapper.getNumModels(); i++) {
+            wrapper.setModelIndex(i);
+            bayesPms.add(wrapper.getBayesIm().getBayesPm());
+        }
+
+        numModels = wrapper.getNumModels();
     }
 
     public BayesPmWrapper(GraphSource graphWrapper, DataWrapper dataWrapper) {
@@ -262,7 +269,7 @@ public class BayesPmWrapper implements SessionModel {
         for (Node node : nodes) {
             Node var = nodesToVars.get(node.getName());
 
-            if (var instanceof DiscreteVariable) {
+            if (var != null) {
                 DiscreteVariable var2 = nodesToVars.get(node.getName());
                 int numCategories = var2.getNumCategories();
                 List<String> categories = new ArrayList<>();

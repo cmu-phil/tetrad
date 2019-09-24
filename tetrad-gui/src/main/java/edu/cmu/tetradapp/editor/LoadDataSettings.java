@@ -48,7 +48,8 @@ import edu.pitt.dbmi.data.reader.validation.tabular.TabularColumnFileValidation;
 import edu.pitt.dbmi.data.reader.validation.tabular.TabularColumnValidation;
 import edu.pitt.dbmi.data.reader.validation.tabular.TabularDataFileValidation;
 import edu.pitt.dbmi.data.reader.validation.tabular.TabularDataValidation;
-import java.awt.*;
+import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
@@ -60,7 +61,19 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.prefs.Preferences;
-import javax.swing.*;
+import javax.swing.BorderFactory;
+import javax.swing.Box;
+import javax.swing.ButtonGroup;
+import javax.swing.ImageIcon;
+import javax.swing.JButton;
+import javax.swing.JComboBox;
+import javax.swing.JFileChooser;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JRadioButton;
+import javax.swing.JSeparator;
+import javax.swing.SwingConstants;
+import javax.swing.SwingUtilities;
 import javax.swing.border.CompoundBorder;
 import javax.swing.border.EmptyBorder;
 import javax.swing.filechooser.FileNameExtensionFilter;
@@ -379,7 +392,7 @@ public final class LoadDataSettings extends JPanel {
             }
         });
 
-        // File choose button box 
+        // File choose button box
         Box metadataFileButtonBox = Box.createHorizontalBox();
         metadataFileButtonBox.setPreferredSize(new Dimension(680, 30));
         metadataFileButtonBox.add(metadataFileButton);
@@ -1092,6 +1105,20 @@ public final class LoadDataSettings extends JPanel {
             if (validationErrors.size() > 0) {
                 return tabularColumnValidationResults;
             } else {
+                if (mixedRadioButton.isSelected()) {
+                    TabularDataReader dataReader = new TabularDataFileReader(file.toPath(), delimiter);
+                    dataReader.setCommentMarker(commentMarker);
+                    dataReader.setMissingDataMarker(missingDataMarker);
+                    setQuoteChar(dataReader);
+                    dataReader.determineDiscreteDataColumns(dataColumns, getMaxNumOfDiscCategories(), hasHeader);
+                }
+
+                if (metadataFile != null) {
+                    MetadataReader metadataReader = new MetadataFileReader(metadataFile.toPath());
+                    metadata = metadataReader.read();
+                    dataColumns = DataColumns.update(dataColumns, metadata);
+                }
+
                 // Step 3: Data validation
                 // when we at this step, it means the column validation is all good without any errors
                 TabularDataValidation tabularDataValidation = new TabularDataFileValidation(file.toPath(), delimiter);

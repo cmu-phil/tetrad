@@ -22,6 +22,7 @@ package edu.cmu.tetradapp.workbench;
 
 import edu.cmu.tetrad.data.IKnowledge;
 import edu.cmu.tetrad.graph.Edge;
+import edu.cmu.tetrad.graph.Edge.Property;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.EdgeTypeProbability;
 import edu.cmu.tetrad.graph.Edges;
@@ -31,7 +32,6 @@ import edu.cmu.tetrad.graph.GraphNode;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.NodeType;
-import edu.cmu.tetrad.graph.Edge.Property;
 import edu.cmu.tetrad.util.JOptionUtils;
 import edu.cmu.tetradapp.model.SessionWrapper;
 import edu.cmu.tetradapp.util.LayoutEditable;
@@ -70,8 +70,6 @@ import javax.swing.JOptionPane;
 import javax.swing.JPopupMenu;
 import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
-
-import org.apache.commons.lang3.StringUtils;
 
 /**
  * The functionality of the workbench which is shared between the workbench
@@ -272,6 +270,8 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
      */
     private JComponent currentMouseoverLbl = null;
 
+    private boolean enableEditing = true;
+
     // ==============================CONSTRUCTOR============================//
     /**
      * Constructs a new workbench workbench.
@@ -291,6 +291,7 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
                 grabFocus();
             }
         });
+        setEnabled(enableEditing);
     }
 
     // ============================PUBLIC METHODS==========================//
@@ -1070,20 +1071,20 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
         }
 
         // Create a graph's legend
-        if(graph.getAllAttributes().size() > 0) {
-        	int maxX = getMaxX();
-        	int maxY = getMaxY();
-        	
-        	int margin = 5;
-        	
-        	DisplayLegend legend = new DisplayLegend(graph.getAllAttributes());        	
+        if (graph.getAllAttributes().size() > 0) {
+            int maxX = getMaxX();
+            int maxY = getMaxY();
+
+            int margin = 5;
+
+            DisplayLegend legend = new DisplayLegend(graph.getAllAttributes());
             legend.setLocation(margin, margin);
 
             // add the display node
             add(legend, 0);
 
         }
-        
+
         revalidate();
         repaint();
     }
@@ -2163,18 +2164,18 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
                             endpoint2 = "Null";
                             break;
                     }
-                    
+
                     String properties = "";
-        			if(edge.getProperties() != null && edge.getProperties().size() > 0) {
-        	        	for(Property property : edge.getProperties()) {
-        	        		properties += " " + property.toString();
-        	        	}
-        	        }
-        			
+                    if (edge.getProperties() != null && edge.getProperties().size() > 0) {
+                        for (Property property : edge.getProperties()) {
+                            properties += " " + property.toString();
+                        }
+                    }
+
                     String text = "<html>" + edge.getNode1().getName()
                             + " " + endpoint1 + "-" + endpoint2 + " "
-                            + edge.getNode2().getName() 
-                            + properties 
+                            + edge.getNode2().getName()
+                            + properties
                             + "<br>";
                     String n1 = edge.getNode1().getName();
                     String n2 = edge.getNode2().getName();
@@ -2220,12 +2221,12 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
                                 break;
                         }
                         if (edgeTypeProb.getProbability() > 0) {
-                        	properties = "";
-                			if(edgeTypeProb.getProperties() != null && edgeTypeProb.getProperties().size() > 0) {
-                	        	for(Property property : edgeTypeProb.getProperties()) {
-                	        		properties += " " + property.toString();
-                	        	}
-                	        }
+                            properties = "";
+                            if (edgeTypeProb.getProperties() != null && edgeTypeProb.getProperties().size() > 0) {
+                                for (Property property : edgeTypeProb.getProperties()) {
+                                    properties += " " + property.toString();
+                                }
+                            }
                             text += "[" + _type + properties + "]:" + String.format("%.4f", edgeTypeProb.getProbability());
                             text += "<br>";
                         }
@@ -2241,24 +2242,24 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
                 }
             }
         }
-        
+
         if (source instanceof DisplayNode) {
-        	DisplayNode displayNode = (DisplayNode) source;
+            DisplayNode displayNode = (DisplayNode) source;
             Node node = displayNode.getModelNode();
-            if (graph.containsNode(node)) {	
-            	Map<String, Object> attributes = node.getAllAttributes();
-            	if(!attributes.isEmpty()) {
-            		String attribute = "";
-            		for(String key: attributes.keySet()) {
-            			Object value = attributes.get(key);
-            			
-            			attribute += key + ": " + value + "<br>";
-            		}
-            		
-            		String text = "<html>Node: " + node.getName() + "<br>" + attribute;
-            		
-            		setNodeToolTip(node, text);
-            	}
+            if (graph.containsNode(node)) {
+                Map<String, Object> attributes = node.getAllAttributes();
+                if (!attributes.isEmpty()) {
+                    String attribute = "";
+                    for (String key : attributes.keySet()) {
+                        Object value = attributes.get(key);
+
+                        attribute += key + ": " + value + "<br>";
+                    }
+
+                    String text = "<html>Node: " + node.getName() + "<br>" + attribute;
+
+                    setNodeToolTip(node, text);
+                }
             }
         }
     }
@@ -2542,6 +2543,15 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
         this.deleteVariablesAllowed = deleteVariablesAllowed;
     }
 
+    public boolean isEnableEditing() {
+        return enableEditing;
+    }
+
+    public void enableEditing(boolean enableEditing) {
+        this.enableEditing = enableEditing;
+        setEnabled(enableEditing);
+    }
+
     /**
      * This inner class is a simple wrapper for JComponents which are to serve
      * as edge labels in the workbench. Its sole function is to make sure the
@@ -2740,6 +2750,7 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
          * Adjusts scrollbars to automatically reflect the position of a
          * component which is being dragged.
          */
+        @Override
         public final void componentMoved(ComponentEvent e) {
             Component source = (Component) e.getSource();
             Rectangle bounds = source.getBounds();
@@ -2771,7 +2782,7 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
     /**
      * Handles mouse events and mouse motion events.
      */
-    private static final class MouseHandler extends MouseAdapter {
+    private final class MouseHandler extends MouseAdapter {
 
         private final AbstractWorkbench workbench;
 
@@ -2779,22 +2790,33 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
             this.workbench = workbench;
         }
 
+        @Override
         public final void mouseClicked(MouseEvent e) {
-            workbench.handleMouseClicked(e);
+            if (AbstractWorkbench.this.isEnableEditing()) {
+                workbench.handleMouseClicked(e);
+            }
         }
 
+        @Override
         public final void mousePressed(MouseEvent e) {
             workbench.handleMousePressed(e);
         }
 
+        @Override
         public final void mouseReleased(MouseEvent e) {
-            workbench.handleMouseReleased(e);
+            if (AbstractWorkbench.this.isEnableEditing()) {
+                workbench.handleMouseReleased(e);
+            }
         }
 
+        @Override
         public final void mouseEntered(MouseEvent e) {
-            workbench.handleMouseEntered(e);
+            if (AbstractWorkbench.this.isEnableEditing()) {
+                workbench.handleMouseEntered(e);
+            }
         }
 
+        @Override
         public final void mouseExited(MouseEvent e) {
             // Commented out by Zhou
             //workbench.handleMouseExited(e);
@@ -2809,10 +2831,12 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
             this.workbench = workbench;
         }
 
+        @Override
         public final void mouseMoved(MouseEvent e) {
             workbench.currentMouseLocation = e.getPoint();
         }
 
+        @Override
         public final void mouseDragged(MouseEvent e) {
             workbench.handleMouseDragged(e);
         }

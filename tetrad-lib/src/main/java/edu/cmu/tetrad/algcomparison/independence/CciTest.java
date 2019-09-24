@@ -9,6 +9,7 @@ import edu.cmu.tetrad.search.ConditionalCorrelationIndependence;
 import edu.cmu.tetrad.search.IndTestConditionalCorrelation;
 import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.util.Parameters;
+import edu.cmu.tetrad.util.Params;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -20,7 +21,7 @@ import java.util.List;
  * @author jdramsey
  */
 @TestOfIndependence(
-        name = "CCI Test",
+        name = "Conditional Correlation Independence (CCI) Test",
         command = "cci-test",
         dataType = DataType.Continuous
 )
@@ -32,28 +33,28 @@ public class CciTest implements IndependenceWrapper {
     @Override
     public IndependenceTest getTest(DataModel dataSet, Parameters parameters) {
         final IndTestConditionalCorrelation cci = new IndTestConditionalCorrelation(DataUtils.getContinuousDataSet(dataSet),
-                parameters.getDouble("alpha"));
-        if (parameters.getInt("kernelType") == 1) {
+                parameters.getDouble(Params.ALPHA));
+        if (parameters.getInt(Params.KERNEL_TYPE) == 1) {
             cci.setKernel(ConditionalCorrelationIndependence.Kernel.Gaussian);
 
-        } else if (parameters.getInt("kernelType") == 2) {
+        } else if (parameters.getInt(Params.KERNEL_TYPE) == 2) {
             cci.setKernel(ConditionalCorrelationIndependence.Kernel.Epinechnikov);
         } else {
             throw new IllegalStateException("Kernel not configured.");
         }
 
-        if (parameters.getInt("basisType") == 1) {
+        if (parameters.getInt(Params.BASIS_TYPE) == 1) {
             cci.setBasis(ConditionalCorrelationIndependence.Basis.Polynomial);
-        } else if (parameters.getInt("basisType") == 2) {
+        } else if (parameters.getInt(Params.BASIS_TYPE) == 2) {
             cci.setBasis(ConditionalCorrelationIndependence.Basis.Cosine);
         } else {
             throw new IllegalStateException("Basis not configured.");
         }
 
-        cci.setNumFunctions(parameters.getInt("numBasisFunctions"));
-        cci.setKernelMultiplier(parameters.getDouble("kernelMultiplier"));
+        cci.setNumFunctions(parameters.getInt(Params.NUM_BASIS_FUNCTIONS));
+        cci.setKernelMultiplier(parameters.getDouble(Params.KERNEL_MULTIPLIER));
         cci.setFastFDR(parameters.getBoolean("fastFDR"));
-        cci.setKernelRegressionSampleSize(parameters.getInt("kernelRegressionSampleSize"));
+        cci.setKernelRegressionSampleSize(parameters.getInt(Params.KERNEL_REGRESSION_SAMPLE_SIZE));
         cci.setNumDependenceSpotChecks(parameters.getInt("numDependenceSpotChecks"));
         cci.setEarlyReturn(true);
 
@@ -73,13 +74,13 @@ public class CciTest implements IndependenceWrapper {
     @Override
     public List<String> getParameters() {
         List<String> params = new ArrayList<>();
-        params.add("alpha");
-        params.add("numBasisFunctions");
-        params.add("kernelType");
-        params.add("kernelMultiplier");
-        params.add("basisType");
+        params.add(Params.ALPHA);
+        params.add(Params.NUM_BASIS_FUNCTIONS);
+        params.add(Params.KERNEL_TYPE);
+        params.add(Params.KERNEL_MULTIPLIER);
+        params.add(Params.BASIS_TYPE);
         params.add("fastFDR");
-        params.add("kernelRegressionSampleSize");
+        params.add(Params.KERNEL_REGRESSION_SAMPLE_SIZE);
         params.add("numDependenceSpotChecks");
         return params;
     }

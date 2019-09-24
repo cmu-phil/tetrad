@@ -6,7 +6,7 @@ import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.data.DataUtils;
 import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.util.Parameters;
-
+import edu.cmu.tetrad.util.Params;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -16,8 +16,8 @@ import java.util.List;
  * @author jdramsey
  */
 @TestOfIndependence(
-        name = "Kernel Independence Test",
-        command = "kci",
+        name = "Kernel Conditional Independence (KCI) Test",
+        command = "kci-test",
         dataType = DataType.Continuous
 )
 public class Kci implements IndependenceWrapper {
@@ -28,12 +28,12 @@ public class Kci implements IndependenceWrapper {
     @Override
     public IndependenceTest getTest(DataModel dataSet, Parameters parameters) {
         final edu.cmu.tetrad.search.Kci kci = new edu.cmu.tetrad.search.Kci(DataUtils.getContinuousDataSet(dataSet),
-                parameters.getDouble("alpha"));
-        kci.setApproximate(parameters.getBoolean("kciUseAppromation"));
-        kci.setWidthMultiplier(parameters.getDouble("kernelMultiplier"));
-        kci.setNumBootstraps(parameters.getInt("kciNumBootstraps"));
-        kci.setThreshold(parameters.getDouble("thresholdForNumEigenvalues"));
-        kci.setEpsilon(parameters.getDouble("kciEpsilon"));
+                parameters.getDouble(Params.ALPHA));
+        kci.setApproximate(parameters.getBoolean(Params.KCI_USE_APPROMATION));
+        kci.setWidthMultiplier(parameters.getDouble(Params.KERNEL_MULTIPLIER));
+        kci.setNumBootstraps(parameters.getInt(Params.KCI_NUM_BOOTSTRAPS));
+        kci.setThreshold(parameters.getDouble(Params.THRESHOLD_FOR_NUM_EIGENVALUES));
+        kci.setEpsilon(parameters.getDouble(Params.KCI_EPSILON));
         return kci;
     }
 
@@ -50,12 +50,12 @@ public class Kci implements IndependenceWrapper {
     @Override
     public List<String> getParameters() {
         List<String> params = new ArrayList<>();
-        params.add("kciUseAppromation");
-        params.add("alpha");
-        params.add("kernelMultiplier");
-        params.add("kciNumBootstraps");
-        params.add("thresholdForNumEigenvalues");
-        params.add("kciEpsilon");
+        params.add(Params.KCI_USE_APPROMATION);
+        params.add(Params.ALPHA);
+        params.add(Params.KERNEL_MULTIPLIER);
+        params.add(Params.KCI_NUM_BOOTSTRAPS);
+        params.add(Params.THRESHOLD_FOR_NUM_EIGENVALUES);
+        params.add(Params.KCI_EPSILON);
         return params;
     }
 }

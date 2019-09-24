@@ -30,15 +30,7 @@ import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.algcomparison.utils.TakesIndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.utils.UsesScoreWrapper;
-import edu.cmu.tetrad.data.ColtDataSet;
-import edu.cmu.tetrad.data.DataModel;
-import edu.cmu.tetrad.data.DataModelList;
-import edu.cmu.tetrad.data.DataSet;
-import edu.cmu.tetrad.data.DataType;
-import edu.cmu.tetrad.data.ICovarianceMatrix;
-import edu.cmu.tetrad.data.IKnowledge;
-import edu.cmu.tetrad.data.Knowledge2;
-import edu.cmu.tetrad.data.KnowledgeBoxInput;
+import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
@@ -246,12 +238,12 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
 
                 if (algo instanceof UsesScoreWrapper) {
                     // We inject the graph to the score to satisfy the tests like DSeparationScore - Zhou
-                    ScoreWrapper scoreWrapper = ((UsesScoreWrapper) algo).getScoreWarpper();
+                    ScoreWrapper scoreWrapper = ((UsesScoreWrapper) algo).getScoreWrapper();
                     if (scoreWrapper instanceof DSeparationScore) {
                         ((DSeparationScore) scoreWrapper).setGraph(getSourceGraph());
                     }
                 }
-                
+
                 if (algo instanceof HasKnowledge) {
                     ((HasKnowledge) algo).setKnowledge(getKnowledge());
                 }
@@ -302,29 +294,31 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
                     });
                 }
             } else {
-                getDataModelList().forEach(data -> {
-                    IKnowledge knowledgeFromData = data.getKnowledge();
-                    if (!(knowledgeFromData == null || knowledgeFromData.getVariables().isEmpty())) {
-                        this.knowledge = knowledgeFromData;
-                    }
+                Algorithm algo = getAlgorithm();
+                if (algo != null) {
+                    getDataModelList().forEach(data -> {
+                        IKnowledge knowledgeFromData = data.getKnowledge();
+                        if (!(knowledgeFromData == null || knowledgeFromData.getVariables().isEmpty())) {
+                            this.knowledge = knowledgeFromData;
+                        }
 
-                    Algorithm algo = getAlgorithm();
-                    if (algo instanceof HasKnowledge) {
-                        ((HasKnowledge) algo).setKnowledge(getKnowledge());
-                    }
+                        if (algo instanceof HasKnowledge) {
+                            ((HasKnowledge) algo).setKnowledge(getKnowledge());
+                        }
 
-                    DataType algDataType = algo.getDataType();
+                        DataType algDataType = algo.getDataType();
 
-                    if (data.isContinuous() && (algDataType == DataType.Continuous || algDataType == DataType.Mixed)) {
-                        graphList.add(algo.search(data, parameters));
-                    } else if (data.isDiscrete() && (algDataType == DataType.Discrete || algDataType == DataType.Mixed)) {
-                        graphList.add(algo.search(data, parameters));
-                    } else if (data.isMixed() && algDataType == DataType.Mixed) {
-                        graphList.add(algo.search(data, parameters));
-                    } else {
-                        throw new IllegalArgumentException("The type of data has changed; open up the search editor and run the algorithm again.");
-                    }
-                });
+                        if (data.isContinuous() && (algDataType == DataType.Continuous || algDataType == DataType.Mixed)) {
+                            graphList.add(algo.search(data, parameters));
+                        } else if (data.isDiscrete() && (algDataType == DataType.Discrete || algDataType == DataType.Mixed)) {
+                            graphList.add(algo.search(data, parameters));
+                        } else if (data.isMixed() && algDataType == DataType.Mixed) {
+                            graphList.add(algo.search(data, parameters));
+                        } else {
+                            throw new IllegalArgumentException("The algorithm was not expecting that type of data.");
+                        }
+                    });
+                }
             }
         }
 
@@ -394,7 +388,7 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
         } else {
 
             // Do not throw an exception here!
-            return new ColtDataSet(0, new ArrayList<Node>());
+            return new BoxDataSet(new VerticalDoubleDataBox(0, 0), new ArrayList<>());
         }
     }
 

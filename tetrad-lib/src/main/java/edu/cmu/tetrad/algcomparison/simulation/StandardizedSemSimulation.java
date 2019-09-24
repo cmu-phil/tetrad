@@ -11,7 +11,7 @@ import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemPm;
 import edu.cmu.tetrad.sem.StandardizedSemIm;
 import edu.cmu.tetrad.util.Parameters;
-
+import edu.cmu.tetrad.util.Params;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -88,9 +88,9 @@ public class StandardizedSemSimulation implements Simulation {
             parameters.addAll(randomGraph.getParameters());
         }
 
-        parameters.add("numRuns");
-        parameters.add("differentGraphs");
-        parameters.add("sampleSize");
+        parameters.add(Params.NUM_RUNS);
+        parameters.add(Params.DIFFERENT_GRAPHS);
+        parameters.add(Params.SAMPLE_SIZE);
         return parameters;
     }
 
@@ -115,6 +115,6 @@ public class StandardizedSemSimulation implements Simulation {
             standardizedIm = new StandardizedSemIm(new SemIm(pm));
         }
 
-        return standardizedIm.simulateData(parameters.getInt("sampleSize"), false);
+        return standardizedIm.simulateData(parameters.getInt(Params.SAMPLE_SIZE), false);
     }
 }

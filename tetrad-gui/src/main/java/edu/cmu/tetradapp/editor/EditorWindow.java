@@ -115,7 +115,7 @@ public class EditorWindow extends JInternalFrame
             okButton.addActionListener(new OkListener());
         }
 
-        cancelButton.setPreferredSize(new Dimension(80, 50));
+        cancelButton.setPreferredSize(new Dimension(100, 50));
         cancelButton.addActionListener(new CancelListener());
 
         Box b0 = Box.createVerticalBox();

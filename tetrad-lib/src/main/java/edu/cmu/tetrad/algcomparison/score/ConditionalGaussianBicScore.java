@@ -16,8 +16,8 @@ import java.util.List;
  * @author jdramsey
  */
 @edu.cmu.tetrad.annotation.Score(
-        name = "Conditional Gaussian BIC Score",
-        command = "cond-gauss-bic",
+        name = "Conditional Gaussian (CG) BIC Score",
+        command = "cg-bic-score",
         dataType = DataType.Mixed
 )
 public class ConditionalGaussianBicScore implements ScoreWrapper {

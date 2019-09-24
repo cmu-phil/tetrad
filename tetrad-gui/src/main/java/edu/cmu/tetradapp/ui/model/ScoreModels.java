@@ -18,9 +18,12 @@
  */
 package edu.cmu.tetradapp.ui.model;
 
+import edu.cmu.tetrad.annotation.AnnotatedClass;
+import edu.cmu.tetrad.annotation.Score;
 import edu.cmu.tetrad.annotation.ScoreAnnotations;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.util.TetradProperties;
+import edu.cmu.tetradapp.Tetrad;
 import java.util.Collections;
 import java.util.EnumMap;
 import java.util.LinkedList;
@@ -36,7 +39,7 @@ import java.util.stream.Stream;
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
  */
-public class ScoreModels {
+public final class ScoreModels {
 
     private static final ScoreModels INSTANCE = new ScoreModels();
 
@@ -46,11 +49,15 @@ public class ScoreModels {
 
     private ScoreModels() {
         ScoreAnnotations scoreAnno = ScoreAnnotations.getInstance();
-        List<ScoreModel> list = scoreAnno.filterOutExperimental(scoreAnno.getAnnotatedClasses()).stream()
-                .map(e -> new ScoreModel(e))
-                .sorted()
-                .collect(Collectors.toList());
-        models = Collections.unmodifiableList(list);
+        List<AnnotatedClass<Score>> list = Tetrad.enableExperimental
+                ? scoreAnno.getAnnotatedClasses()
+                : scoreAnno.filterOutExperimental(scoreAnno.getAnnotatedClasses());
+
+        models = Collections.unmodifiableList(
+                list.stream()
+                        .map(e -> new ScoreModel(e))
+                        .sorted()
+                        .collect(Collectors.toList()));
 
         initModelMap();
         initDefaultModelMap();

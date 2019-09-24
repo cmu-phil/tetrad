@@ -37,15 +37,14 @@ import edu.cmu.tetrad.data.DiscreteVariable;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.search.DagToPag;
+import edu.cmu.tetrad.search.DagToPag2;
 import edu.cmu.tetrad.sem.LargeScaleSimulation;
 import edu.cmu.tetrad.util.Parameters;
+import edu.cmu.tetrad.util.Params;
 import edu.pitt.dbmi.algo.resampling.GeneralResamplingTest;
 import edu.pitt.dbmi.algo.resampling.ResamplingEdgeEnsemble;
-
 import java.util.ArrayList;
 import java.util.List;
-
 import org.junit.Ignore;
 import org.junit.Test;
 
@@ -99,11 +98,11 @@ public class TestGeneralResamplingTest {
 		DataSet data = simulator.simulateDataFisher(numCases);
 
 		Parameters parameters = new Parameters();
-		parameters.set("penaltyDiscount", penaltyDiscount);
-		parameters.set("faithfulnessAssumed", faithfulnessAssumed);
-		parameters.set("maxDegree", maxDegree);
+		parameters.set(Params.PENALTY_DISCOUNT, penaltyDiscount);
+		parameters.set(Params.FAITHFULNESS_ASSUMED, faithfulnessAssumed);
+		parameters.set(Params.MAX_DEGREE, maxDegree);
 		parameters.set("numPatternsToStore", 0);
-		parameters.set("verbose", verbose);
+		parameters.set(Params.VERBOSE, verbose);
 
 		ScoreWrapper score = new SemBicScore();
 		Algorithm algorithm = new Fges(score);
@@ -155,12 +154,12 @@ public class TestGeneralResamplingTest {
 		DataSet data = im.simulateData(numCases, seed, false);
 
 		Parameters parameters = new Parameters();
-		parameters.set("structurePrior", structurePrior);
-		parameters.set("samplePrior", samplePrior);
-		parameters.set("faithfulnessAssumed", faithfulnessAssumed);
-		parameters.set("maxDegree", maxDegree);
+		parameters.set(Params.STRUCTURE_PRIOR, structurePrior);
+		parameters.set(Params.SAMPLE_PRIOR, samplePrior);
+		parameters.set(Params.FAITHFULNESS_ASSUMED, faithfulnessAssumed);
+		parameters.set(Params.MAX_DEGREE, maxDegree);
 		parameters.set("numPatternsToStore", 0);
-		parameters.set("verbose", verbose);
+		parameters.set(Params.VERBOSE, verbose);
 		
 		ScoreWrapper score = new BdeuScore();
 		Algorithm algorithm = new Fges(score);
@@ -201,7 +200,7 @@ public class TestGeneralResamplingTest {
 
 		Graph dag = makeContinuousDAG(numVars, numLatentConfounders, edgesPerNode);
 
-		DagToPag dagToPag = new DagToPag(dag);
+		DagToPag2 dagToPag = new DagToPag2(dag);
 		Graph truePag = dagToPag.convert();
 
 		//System.out.println("Truth PAG_of_the_true_DAG Graph:");
@@ -218,11 +217,11 @@ public class TestGeneralResamplingTest {
 		DataSet data = simulator.simulateDataFisher(numCases);
 
 		Parameters parameters = new Parameters();
-		parameters.set("penaltyDiscount", penaltyDiscount);
-		parameters.set("faithfulnessAssumed", faithfulnessAssumed);
-		parameters.set("maxDegree", maxDegree);
+		parameters.set(Params.PENALTY_DISCOUNT, penaltyDiscount);
+		parameters.set(Params.FAITHFULNESS_ASSUMED, faithfulnessAssumed);
+		parameters.set(Params.MAX_DEGREE, maxDegree);
 		parameters.set("numPatternsToStore", 0);
-		parameters.set("verbose", verbose);
+		parameters.set(Params.VERBOSE, verbose);
 		
 		ScoreWrapper score = new SemBicScore();
 		IndependenceWrapper test =  new FisherZ();
@@ -266,7 +265,7 @@ public class TestGeneralResamplingTest {
 
 		Graph dag = makeDiscreteDAG(numVars, numLatentConfounders, edgesPerNode);
 
-		DagToPag dagToPag = new DagToPag(dag);
+		DagToPag2 dagToPag = new DagToPag2(dag);
 		Graph truePag = dagToPag.convert();
 
 		//System.out.println("Truth PAG_of_the_true_DAG Graph:");
@@ -278,12 +277,12 @@ public class TestGeneralResamplingTest {
 		DataSet data = im.simulateData(numCases, seed, false);
 
 		Parameters parameters = new Parameters();
-		parameters.set("structurePrior", structurePrior);
-		parameters.set("samplePrior", samplePrior);
-		parameters.set("faithfulnessAssumed", faithfulnessAssumed);
-		parameters.set("maxDegree", maxDegree);
+		parameters.set(Params.STRUCTURE_PRIOR, structurePrior);
+		parameters.set(Params.SAMPLE_PRIOR, samplePrior);
+		parameters.set(Params.FAITHFULNESS_ASSUMED, faithfulnessAssumed);
+		parameters.set(Params.MAX_DEGREE, maxDegree);
 		parameters.set("numPatternsToStore", 0);
-		parameters.set("verbose", verbose);
+		parameters.set(Params.VERBOSE, verbose);
 
 		ScoreWrapper score = new BdeuScore();
 		IndependenceWrapper test =  new ChiSquare();
@@ -326,7 +325,7 @@ public class TestGeneralResamplingTest {
 
 		Graph dag = makeContinuousDAG(numVars, numLatentConfounders, edgesPerNode);
 
-		DagToPag dagToPag = new DagToPag(dag);
+		DagToPag2 dagToPag = new DagToPag2(dag);
 		Graph truePag = dagToPag.convert();
 
 		//System.out.println("Truth PAG_of_the_true_DAG Graph:");
@@ -343,11 +342,11 @@ public class TestGeneralResamplingTest {
 		DataSet data = simulator.simulateDataFisher(numCases);
 
 		Parameters parameters = new Parameters();
-		parameters.set("penaltyDiscount", penaltyDiscount);
-		parameters.set("depth", depth);
-		parameters.set("maxPathLength", maxPathLength);
+		parameters.set(Params.PENALTY_DISCOUNT, penaltyDiscount);
+		parameters.set(Params.DEPTH, depth);
+		parameters.set(Params.MAX_PATH_LENGTH, maxPathLength);
 		parameters.set("numPatternsToStore", 0);
-		parameters.set("verbose", verbose);
+		parameters.set(Params.VERBOSE, verbose);
 		
 		IndependenceWrapper test =  new FisherZ();
 		Fci algorithm = new Fci(test);
@@ -391,7 +390,7 @@ public class TestGeneralResamplingTest {
 
 		Graph dag = makeDiscreteDAG(numVars, numLatentConfounders, edgesPerNode);
 
-		DagToPag dagToPag = new DagToPag(dag);
+		DagToPag2 dagToPag = new DagToPag2(dag);
 		Graph truePag = dagToPag.convert();
 
 		//System.out.println("Truth PAG_of_the_true_DAG Graph:");
@@ -403,12 +402,12 @@ public class TestGeneralResamplingTest {
 		DataSet data = im.simulateData(numCases, seed, false);
 
 		Parameters parameters = new Parameters();
-		parameters.set("structurePrior", structurePrior);
-		parameters.set("samplePrior", samplePrior);
-		parameters.set("depth", depth);
-		parameters.set("maxPathLength", maxPathLength);
+		parameters.set(Params.STRUCTURE_PRIOR, structurePrior);
+		parameters.set(Params.SAMPLE_PRIOR, samplePrior);
+		parameters.set(Params.DEPTH, depth);
+		parameters.set(Params.MAX_PATH_LENGTH, maxPathLength);
 		parameters.set("numPatternsToStore", 0);
-		parameters.set("verbose", verbose);
+		parameters.set(Params.VERBOSE, verbose);
 
 		IndependenceWrapper test =  new ChiSquare();
 		Algorithm algorithm = new Fci(test);

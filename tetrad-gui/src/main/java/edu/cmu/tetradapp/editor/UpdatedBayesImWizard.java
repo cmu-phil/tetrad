@@ -219,13 +219,16 @@ public final class UpdatedBayesImWizard extends JPanel {
         Box b1 = Box.createHorizontalBox();
         b1.add(new JLabel("Probabilities for values of "));
         b1.add(varNamesComboBox);
-        b1.add(new JLabel(" conditional on values"));
+        //b1.add(new JLabel(" conditional on values"));
         b1.add(Box.createHorizontalGlue());
         conditionalBox.add(b1);
 
         Box b0 = Box.createHorizontalBox();
+        
+        
+        
         b0.add(new JLabel(
-                "of its parents, updated to reflect the following evidence:"));
+                "conditional on the following additional evidence:"));
         b0.add(Box.createHorizontalGlue());
 
         conditionalBox.add(b0);

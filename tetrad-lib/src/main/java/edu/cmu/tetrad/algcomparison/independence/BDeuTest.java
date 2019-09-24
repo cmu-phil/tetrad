@@ -6,6 +6,7 @@ import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.data.DataUtils;
 import edu.cmu.tetrad.search.*;
 import edu.cmu.tetrad.util.Parameters;
+import edu.cmu.tetrad.util.Params;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -16,7 +17,7 @@ import java.util.List;
  */
 @TestOfIndependence(
         name = "BDeu Test",
-        command = "bdeu",
+        command = "bdeu-test",
         dataType = DataType.Discrete
 )
 public class BDeuTest implements IndependenceWrapper {
@@ -26,8 +27,8 @@ public class BDeuTest implements IndependenceWrapper {
     @Override
     public IndependenceTest getTest(DataModel dataSet, Parameters parameters) {
         BDeuScore score = new BDeuScore(DataUtils.getDiscreteDataSet(dataSet));
-        score.setSamplePrior(parameters.getDouble("samplePrior"));
-        score.setStructurePrior(parameters.getDouble("structurePrior"));
+        score.setSamplePrior(parameters.getDouble(Params.SAMPLE_PRIOR));
+        score.setStructurePrior(parameters.getDouble(Params.STRUCTURE_PRIOR));
         return new IndTestScore(score);
     }
 
@@ -44,8 +45,8 @@ public class BDeuTest implements IndependenceWrapper {
     @Override
     public List<String> getParameters() {
         List<String> parameters = new ArrayList<>();
-        parameters.add("samplePrior");
-        parameters.add("structurePrior");
+        parameters.add(Params.SAMPLE_PRIOR);
+        parameters.add(Params.STRUCTURE_PRIOR);
         return parameters;
     }
 }

@@ -57,6 +57,8 @@ import javax.swing.WindowConstants;
  */
 public final class Tetrad implements PropertyChangeListener {
 
+    private static final String EXP_OPT = "--experimental";
+
     /**
      * The launch frame.
      */
@@ -79,6 +81,8 @@ public final class Tetrad implements PropertyChangeListener {
      */
     private static boolean skipLatest;
 
+    public static boolean enableExperimental;
+
     //==============================CONSTRUCTORS===========================//
     public Tetrad() {
     }
@@ -90,6 +94,7 @@ public final class Tetrad implements PropertyChangeListener {
      *
      * @param e the property change event
      */
+    @Override
     public void propertyChange(final PropertyChangeEvent e) {
         if ("exitProgram".equals(e.getPropertyName())) {
             exitApplication();
@@ -110,6 +115,9 @@ public final class Tetrad implements PropertyChangeListener {
      * @param argv --skip-latest argument will skip checking for latest version.
      */
     public static void main(final String[] argv) {
+        if (argv != null && argv.length > 0) {
+            enableExperimental = EXP_OPT.equals(argv[0]);
+        }
 
         // Avoid updates to swing code that causes comparison-method-violates-its-general-contract warnings
         System.setProperty("java.util.Arrays.useLegacyMergeSort", "true");

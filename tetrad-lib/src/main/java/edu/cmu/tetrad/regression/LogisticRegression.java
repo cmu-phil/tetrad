@@ -21,12 +21,11 @@
 
 package edu.cmu.tetrad.regression;
 
-import edu.cmu.tetrad.data.ColtDataSet;
+import edu.cmu.tetrad.data.BoxDataSet;
 import edu.cmu.tetrad.data.ContinuousVariable;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DiscreteVariable;
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.util.ProbUtils;
 import edu.cmu.tetrad.util.TetradSerializable;
 import org.apache.commons.math3.distribution.ChiSquaredDistribution;
 
@@ -84,7 +83,7 @@ public class LogisticRegression implements TetradSerializable {
      * Generates a simple exemplar of this class to test serialization.
      */
     public static LogisticRegression serializableInstance() {
-        return new LogisticRegression(ColtDataSet.serializableInstance());
+        return new LogisticRegression(BoxDataSet.serializableInstance());
     }
 
     /**

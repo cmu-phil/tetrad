@@ -138,6 +138,7 @@ public class SemUpdaterEditor extends JPanel {
                     }
 
                     evidence.getProposition().setValue(nodeIndex, value);
+                    semIm.setMean(node, value);
                     SemIm updatedSem = semUpdater.getUpdatedSemIm();
                     semImEditor.displaySemIm(updatedSem,
                             semImEditor.getTabSelectionIndex(),
@@ -176,7 +177,7 @@ public class SemUpdaterEditor extends JPanel {
                 // If no value has been set for this variable, set it to
                 // the mean.
                 double value = evidence.getProposition().getValue(o);
-
+//
                 if (Double.isNaN(value)) {
                     DoubleTextField dblTxtField = variablesToTextFields.get(o);
                     SemIm semIM = semUpdater.getSemIm();

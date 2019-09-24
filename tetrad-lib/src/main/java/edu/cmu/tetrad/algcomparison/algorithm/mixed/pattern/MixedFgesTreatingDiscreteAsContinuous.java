@@ -1,6 +1,7 @@
 package edu.cmu.tetrad.algcomparison.algorithm.mixed.pattern;
 
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
+import edu.cmu.tetrad.annotation.Bootstrapping;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Edge;
 import edu.cmu.tetrad.graph.EdgeListGraph;
@@ -10,37 +11,39 @@ import edu.cmu.tetrad.search.Fges;
 import edu.cmu.tetrad.search.SearchGraphUtils;
 import edu.cmu.tetrad.search.SemBicScore;
 import edu.cmu.tetrad.util.Parameters;
+import edu.cmu.tetrad.util.Params;
 import edu.pitt.dbmi.algo.resampling.GeneralResamplingTest;
 import edu.pitt.dbmi.algo.resampling.ResamplingEdgeEnsemble;
-
 import java.util.ArrayList;
 import java.util.List;
 
 /**
  * @author jdramsey
  */
+@Bootstrapping
 public class MixedFgesTreatingDiscreteAsContinuous implements Algorithm {
     static final long serialVersionUID = 23L;
     public Graph search(DataModel Dk, Parameters parameters) {
-    	if (parameters.getInt("numberResampling") < 1) {
+    	if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
             DataSet mixedDataSet = DataUtils.getMixedDataSet(Dk);
             mixedDataSet = DataUtils.convertNumericalDiscreteToContinuous(mixedDataSet);
-            SemBicScore score = new SemBicScore(new CovarianceMatrixOnTheFly(mixedDataSet));
-            score.setPenaltyDiscount(parameters.getDouble("penaltyDiscount"));
+            SemBicScore score = new SemBicScore(new CovarianceMatrix(mixedDataSet));
+            score.setPenaltyDiscount(parameters.getDouble(Params.PENALTY_DISCOUNT));
             Fges fges = new Fges(score);
+            fges.setVerbose(parameters.getBoolean(Params.VERBOSE));
             Graph p = fges.search();
             return convertBack(mixedDataSet, p);
     	}else{
     		MixedFgesTreatingDiscreteAsContinuous algorithm = new MixedFgesTreatingDiscreteAsContinuous();
     		
     		DataSet data = (DataSet) Dk;
-    		GeneralResamplingTest search = new GeneralResamplingTest(data, algorithm, parameters.getInt("numberResampling"));
+    		GeneralResamplingTest search = new GeneralResamplingTest(data, algorithm, parameters.getInt(Params.NUMBER_RESAMPLING));
     		
-    		search.setPercentResampleSize(parameters.getDouble("percentResampleSize"));
-            search.setResamplingWithReplacement(parameters.getBoolean("resamplingWithReplacement"));
+    		search.setPercentResampleSize(parameters.getDouble(Params.PERCENT_RESAMPLE_SIZE));
+            search.setResamplingWithReplacement(parameters.getBoolean(Params.RESAMPLING_WITH_REPLACEMENT));
             
             ResamplingEdgeEnsemble edgeEnsemble = ResamplingEdgeEnsemble.Highest;
-            switch (parameters.getInt("resamplingEnsemble", 1)) {
+            switch (parameters.getInt(Params.RESAMPLING_ENSEMBLE, 1)) {
                 case 0:
                     edgeEnsemble = ResamplingEdgeEnsemble.Preserved;
                     break;
@@ -51,10 +54,10 @@ public class MixedFgesTreatingDiscreteAsContinuous implements Algorithm {
                     edgeEnsemble = ResamplingEdgeEnsemble.Majority;
             }
     		search.setEdgeEnsemble(edgeEnsemble);
-    		search.setAddOriginalDataset(parameters.getBoolean("addOriginalDataset"));
+    		search.setAddOriginalDataset(parameters.getBoolean(Params.ADD_ORIGINAL_DATASET));
     		
     		search.setParameters(parameters);    		
-    		search.setVerbose(parameters.getBoolean("verbose"));
+    		search.setVerbose(parameters.getBoolean(Params.VERBOSE));
     		return search.search();
     	}
     }
@@ -99,14 +102,8 @@ public class MixedFgesTreatingDiscreteAsContinuous implements Algorithm {
     @Override
     public List<String> getParameters() {
         List<String> parameters = new ArrayList<>();
-        parameters.add("penaltyDiscount");
-        // Resampling
-        parameters.add("numberResampling");
-        parameters.add("percentResampleSize");
-        parameters.add("resamplingWithReplacement");
-        parameters.add("resamplingEnsemble");
-        parameters.add("addOriginalDataset");
-        parameters.add("verbose");
+        parameters.add(Params.PENALTY_DISCOUNT);
+        parameters.add(Params.VERBOSE);
         return parameters;
     }
 }

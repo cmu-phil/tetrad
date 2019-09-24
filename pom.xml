@@ -3,13 +3,14 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>edu.cmu</groupId>
     <artifactId>tetrad</artifactId>
-    <version>6.7.0-SNAPSHOT</version>
+    <version>6.8.0-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <name>Tetrad Project</name>
     <modules>
         <module>tetrad-gui</module>
         <module>tetrad-lib</module>
+        <module>data-reader</module>
     </modules>
 
     <licenses>
@@ -51,48 +52,10 @@
         </extensions>
     </build>
 
-    <!--<reporting>-->
-    <!--<plugins>-->
-    <!--<plugin>-->
-    <!--<groupId>org.apache.maven.plugins</groupId>-->
-    <!--<artifactId>maven-project-info-reports-plugin</artifactId>-->
-    <!--<version>2.8.1</version>-->
-    <!--</plugin>-->
-    <!--<plugin>-->
-    <!--<groupId>org.apache.maven.plugins</groupId>-->
-    <!--<artifactId>maven-project-info-reports-plugin</artifactId>-->
-    <!--<version>2.8.1</version>-->
-    <!--<reportSets>-->
-    <!--<reportSet>-->
-    <!--<reports>-->
-    <!--<report>dependencies</report>-->
-    <!--<report>project-team</report>-->
-    <!--<report>license</report>-->
-    <!--<report>issue-tracking</report>-->
-    <!--</reports>-->
-    <!--</reportSet>-->
-    <!--</reportSets>-->
-    <!--</plugin>-->
-    <!--<plugin>-->
-    <!--<groupId>org.apache.maven.plugins</groupId>-->
-    <!--<artifactId>maven-javadoc-plugin</artifactId>-->
-    <!--<version>2.10.3</version>-->
-    <!--<configuration>-->
-    <!--<aggregate>true</aggregate>-->
-    <!--</configuration>-->
-    <!--</plugin>-->
-    <!--</plugins>-->
-    <!--</reporting>-->
+
 
     <distributionManagement>
-        <!--<repository>-->
-        <!--<id>www.phil.cmu.edu_tetrad</id>-->
-        <!--<url>scp://tetrad@www.phil.cmu.edu/home/tetrad/public_html/tetrad_download/maven</url>-->
-        <!--</repository>-->
-        <!--<site>-->
-        <!--<id>www.phil.cmu.edu_tetrad</id>-->
-        <!--<url>scp://tetrad@www.phil.cmu.edu/home/tetrad/public_html/tetrad/maven</url>-->
-        <!--</site>-->
+
         <repository>
             <id>ccd-releases</id>
             <url>https://cloud.ccd.pitt.edu/nexus/content/repositories/releases/</url>
@@ -122,19 +85,14 @@
 
     <dependencies>
         <dependency>
-            <groupId>edu.pitt.dbmi</groupId>
-            <artifactId>data-reader</artifactId>
-            <version>1.1.0</version>
-        </dependency>
-        <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-log4j12</artifactId>
-            <version>1.7.19</version>
+            <version>1.7.26</version>
         </dependency>
         <dependency> <!--For java annotations used by annotated algorithms-->
             <groupId>org.reflections</groupId>
             <artifactId>reflections</artifactId>
-            <version>0.9.10</version>
+            <version>0.9.11</version>
         </dependency>
         <dependency>
             <groupId>de.bwaldvogel</groupId>

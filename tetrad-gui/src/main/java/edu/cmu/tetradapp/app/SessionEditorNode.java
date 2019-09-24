@@ -57,6 +57,7 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
@@ -678,6 +679,17 @@ public final class SessionEditorNode extends DisplayNode {
                 }
             }
 
+            // clear all children parameters
+            children.forEach(sessionNode -> {
+                Arrays.stream(sessionNode.getModelClasses())
+                        .forEach(m -> sessionNode.putParam(m, new Parameters()));
+            });
+
+            // clear all parameters
+            SessionNode sessionNode = getSessionNode();
+            Arrays.stream(sessionNode.getModelClasses())
+                    .forEach(m -> sessionNode.putParam(m, new Parameters()));
+
             destroyModel();
         });
 
@@ -778,7 +790,7 @@ public final class SessionEditorNode extends DisplayNode {
                             editParameters(modelClass, param, arguments);
                             int ret = JOptionPane.showConfirmDialog(JOptionUtils.centeringComp(),
                                     "Should I overwrite the contents of this box and all delete the contents\n"
-                                            + "of all boxes downstream?",
+                                    + "of all boxes downstream?",
                                     "Double check...", JOptionPane.YES_NO_OPTION);
                             if (ret == JOptionPane.YES_OPTION) {
                                 getSessionNode().destroyModel();

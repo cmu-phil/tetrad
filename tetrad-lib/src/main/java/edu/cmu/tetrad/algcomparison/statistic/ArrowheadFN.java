@@ -1,6 +1,7 @@
 package edu.cmu.tetrad.algcomparison.statistic;
 
 import edu.cmu.tetrad.algcomparison.statistic.utils.ArrowConfusion;
+import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.graph.Graph;
 
 /**
@@ -26,7 +27,7 @@ public class ArrowheadFN implements Statistic {
     }
 
     @Override
-    public double getValue(Graph trueGraph, Graph estGraph) {
+    public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
         ArrowConfusion confusion = new ArrowConfusion(trueGraph, estGraph);
         return (double) confusion.getArrowsFn();
     }

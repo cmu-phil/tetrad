@@ -6,6 +6,7 @@ import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.algcomparison.utils.TakesIndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.utils.TakesInitialGraph;
 import edu.cmu.tetrad.annotation.AlgType;
+import edu.cmu.tetrad.annotation.Bootstrapping;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
@@ -15,8 +16,10 @@ import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.SearchGraphUtils;
 import edu.cmu.tetrad.util.Parameters;
+import edu.cmu.tetrad.util.Params;
 import edu.pitt.dbmi.algo.resampling.GeneralResamplingTest;
 import edu.pitt.dbmi.algo.resampling.ResamplingEdgeEnsemble;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -25,10 +28,11 @@ import java.util.List;
  * @author jdramsey
  */
 @edu.cmu.tetrad.annotation.Algorithm(
-        name = "Variants of PC",
+        name = "PC Variants",
         command = "pc-all",
         algoType = AlgType.forbid_latent_common_causes
 )
+@Bootstrapping
 public class PcAll implements Algorithm, TakesInitialGraph, HasKnowledge, TakesIndependenceWrapper {
 
     static final long serialVersionUID = 23L;
@@ -51,10 +55,10 @@ public class PcAll implements Algorithm, TakesInitialGraph, HasKnowledge, TakesI
 
     @Override
     public Graph search(DataModel dataSet, Parameters parameters) {
-        if (parameters.getInt("numberResampling") < 1) {
+        if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
             edu.cmu.tetrad.search.PcAll.ColliderDiscovery colliderDiscovery;
 
-            switch (parameters.getInt("colliderDiscoveryRule")) {
+            switch (parameters.getInt(Params.COLLIDER_DISCOVERY_RULE)) {
                 case 1:
                     colliderDiscovery = edu.cmu.tetrad.search.PcAll.ColliderDiscovery.FAS_SEPSETS;
                     break;
@@ -70,7 +74,7 @@ public class PcAll implements Algorithm, TakesInitialGraph, HasKnowledge, TakesI
 
             edu.cmu.tetrad.search.PcAll.ConflictRule conflictRule;
 
-            switch (parameters.getInt("conflictRule")) {
+            switch (parameters.getInt(Params.CONFLICT_RULE)) {
                 case 1:
                     conflictRule = edu.cmu.tetrad.search.PcAll.ConflictRule.OVERWRITE;
                     break;
@@ -85,16 +89,16 @@ public class PcAll implements Algorithm, TakesInitialGraph, HasKnowledge, TakesI
             }
 
             edu.cmu.tetrad.search.PcAll search = new edu.cmu.tetrad.search.PcAll(test.getTest(dataSet, parameters), initialGraph);
-            search.setDepth(parameters.getInt("depth"));
+            search.setDepth(parameters.getInt(Params.DEPTH));
             search.setKnowledge(knowledge);
 
-            if (parameters.getBoolean("stableFAS")) {
+            if (parameters.getBoolean(Params.STABLE_FAS)) {
                 search.setFasType(edu.cmu.tetrad.search.PcAll.FasType.STABLE);
             } else {
                 search.setFasType(edu.cmu.tetrad.search.PcAll.FasType.REGULAR);
             }
 
-            if (parameters.getBoolean("concurrentFAS")) {
+            if (parameters.getBoolean(Params.CONCURRENT_FAS)) {
                 search.setConcurrent(edu.cmu.tetrad.search.PcAll.Concurrent.YES);
             } else {
                 search.setConcurrent(edu.cmu.tetrad.search.PcAll.Concurrent.NO);
@@ -102,9 +106,9 @@ public class PcAll implements Algorithm, TakesInitialGraph, HasKnowledge, TakesI
 
             search.setColliderDiscovery(colliderDiscovery);
             search.setConflictRule(conflictRule);
-            search.setUseHeuristic(parameters.getBoolean("useMaxPOrientationHeuristic"));
-            search.setMaxPathLength(parameters.getInt("maxPOrientationMaxPathLength"));
-            search.setVerbose(parameters.getBoolean("verbose"));
+            search.setUseHeuristic(parameters.getBoolean(Params.USE_MAX_P_ORIENTATION_HEURISTIC));
+            search.setMaxPathLength(parameters.getInt(Params.MAX_P_ORIENTATION_MAX_PATH_LENGTH));
+            search.setVerbose(parameters.getBoolean(Params.VERBOSE));
 
             return search.search();
         } else {
@@ -115,14 +119,14 @@ public class PcAll implements Algorithm, TakesInitialGraph, HasKnowledge, TakesI
             }
 
             DataSet data = (DataSet) dataSet;
-            GeneralResamplingTest search = new GeneralResamplingTest(data, pcAll, parameters.getInt("numberResampling"));
+            GeneralResamplingTest search = new GeneralResamplingTest(data, pcAll, parameters.getInt(Params.NUMBER_RESAMPLING));
             search.setKnowledge(knowledge);
 
-            search.setPercentResampleSize(parameters.getDouble("percentResampleSize"));
-            search.setResamplingWithReplacement(parameters.getBoolean("resamplingWithReplacement"));
+            search.setPercentResampleSize(parameters.getDouble(Params.PERCENT_RESAMPLE_SIZE));
+            search.setResamplingWithReplacement(parameters.getBoolean(Params.RESAMPLING_WITH_REPLACEMENT));
             
             ResamplingEdgeEnsemble edgeEnsemble = ResamplingEdgeEnsemble.Highest;
-            switch (parameters.getInt("resamplingEnsemble", 1)) {
+            switch (parameters.getInt(Params.RESAMPLING_ENSEMBLE, 1)) {
                 case 0:
                     edgeEnsemble = ResamplingEdgeEnsemble.Preserved;
                     break;
@@ -133,10 +137,10 @@ public class PcAll implements Algorithm, TakesInitialGraph, HasKnowledge, TakesI
                     edgeEnsemble = ResamplingEdgeEnsemble.Majority;
             }
             search.setEdgeEnsemble(edgeEnsemble);
-            search.setAddOriginalDataset(parameters.getBoolean("addOriginalDataset"));
+            search.setAddOriginalDataset(parameters.getBoolean(Params.ADD_ORIGINAL_DATASET));
             
             search.setParameters(parameters);
-            search.setVerbose(parameters.getBoolean("verbose"));
+            search.setVerbose(parameters.getBoolean(Params.VERBOSE));
             return search.search();
         }
     }
@@ -159,21 +163,16 @@ public class PcAll implements Algorithm, TakesInitialGraph, HasKnowledge, TakesI
 
     @Override
     public List<String> getParameters() {
-        List<String> parameters = test.getParameters();
-        parameters.add("stableFAS");
-        parameters.add("concurrentFAS");
-        parameters.add("colliderDiscoveryRule");
-        parameters.add("conflictRule");
-        parameters.add("depth");
-        parameters.add("useMaxPOrientationHeuristic");
-        parameters.add("maxPOrientationMaxPathLength");
-        // Resampling
-        parameters.add("numberResampling");
-        parameters.add("percentResampleSize");
-        parameters.add("resamplingWithReplacement");
-        parameters.add("resamplingEnsemble");
-        parameters.add("addOriginalDataset");
-        parameters.add("verbose");
+        List<String> parameters = new ArrayList<>();
+        parameters.add(Params.STABLE_FAS);
+        parameters.add(Params.CONCURRENT_FAS);
+        parameters.add(Params.COLLIDER_DISCOVERY_RULE);
+        parameters.add(Params.CONFLICT_RULE);
+        parameters.add(Params.DEPTH);
+        parameters.add(Params.USE_MAX_P_ORIENTATION_HEURISTIC);
+        parameters.add(Params.MAX_P_ORIENTATION_MAX_PATH_LENGTH);
+
+        parameters.add(Params.VERBOSE);
         return parameters;
     }
 

@@ -25,7 +25,6 @@ import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.PermutationGenerator;
-import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetrad.util.TetradMatrix;
 
 import java.util.*;
@@ -42,6 +41,9 @@ import static java.lang.StrictMath.abs;
  */
 public class Lingam {
     private double penaltyDiscount = 2;
+    private double fastIcaA = 1.1;
+    private int fastIcaMaxIter = 2000;
+    private double fastIcaTolerance = 1e-6;
 
     //================================CONSTRUCTORS==========================//
 
@@ -52,12 +54,82 @@ public class Lingam {
     }
 
     public Graph search(DataSet data) {
-        data = DataUtils.center(data);
+        TetradMatrix X = data.getDoubleData();
+        X = DataUtils.centerData(X).transpose();
+        FastIca fastIca = new FastIca(X, X.rows());
+        fastIca.setVerbose(false);
+        fastIca.setMaxIterations(fastIcaMaxIter);
+        fastIca.setAlgorithmType(FastIca.PARALLEL);
+        fastIca.setTolerance(fastIcaTolerance);
+        fastIca.setFunction(FastIca.EXP);
+        fastIca.setRowNorm(false);
+        fastIca.setAlpha(fastIcaA);
+        FastIca.IcaResult result11 = fastIca.findComponents();
+        TetradMatrix W = result11.getW();
 
-        CausalOrder result = estimateCausalOrder(data);
-        int[] perm = result.getPerm();
+        PermutationGenerator gen1 = new PermutationGenerator(W.columns());
+        int[] perm1 = new int[0];
+        double sum1 = Double.NEGATIVE_INFINITY;
+        int[] choice1;
 
-        final SemBicScore score = new SemBicScore(new CovarianceMatrixOnTheFly(data));
+        while ((choice1 = gen1.next()) != null) {
+            double sum = 0.0;
+
+            for (int i = 0; i < W.columns(); i++) {
+                final double wii = W.get(choice1[i], i);
+                sum += abs(wii);
+            }
+
+            if (sum > sum1) {
+                sum1 = sum;
+                perm1 = Arrays.copyOf(choice1, choice1.length);
+            }
+        }
+
+        int[] cols = new int[W.columns()];
+        for (int i = 0; i < cols.length; i++) cols[i] = i;
+
+        TetradMatrix WTilde = W.getSelection(perm1, cols);
+
+        TetradMatrix WPrime = WTilde.copy();
+
+        for (int i = 0; i < WPrime.rows(); i++) {
+            for (int j = 0; j < WPrime.columns(); j++) {
+                WPrime.assignRow(i, WTilde.getRow(i).scalarMult(1.0 / WTilde.get(i, i)));
+            }
+        }
+
+//        System.out.println("WPrime = " + WPrime);
+
+        final int m = data.getNumColumns();
+        TetradMatrix BHat = TetradMatrix.identity(m).minus(WPrime);
+
+        PermutationGenerator gen2 = new PermutationGenerator(BHat.rows());
+        int[] perm2 = new int[0];
+        double sum2 = Double.NEGATIVE_INFINITY;
+        int[] choice2;
+
+        while ((choice2 = gen2.next()) != null) {
+            double sum = 0.0;
+
+            for (int i = 0; i < W.rows(); i++) {
+                for (int j = 0; j < i; j++) {
+                    final double c = BHat.get(choice2[i], choice2[j]);
+                    sum += abs(c);
+                }
+            }
+
+            if (sum > sum2) {
+                sum2 = sum;
+                perm2 = Arrays.copyOf(choice2, choice2.length);
+            }
+        }
+
+//        TetradMatrix BTilde = BHat.getSelection(perm2, perm2);
+//
+//        System.out.println("BTilde = " + BTilde);
+
+        final SemBicScore score = new SemBicScore(new CovarianceMatrix(data));
         score.setPenaltyDiscount(penaltyDiscount);
         Fges fges = new Fges(score);
 
@@ -65,7 +137,7 @@ public class Lingam {
         final List<Node> variables = data.getVariables();
 
         for (int i = 0; i < variables.size(); i++) {
-            knowledge.addToTier(i + 1, variables.get(perm[i]).getName());
+            knowledge.addToTier(i, variables.get(perm2[i]).getName());
         }
 
         fges.setKnowledge(knowledge);
@@ -77,94 +149,20 @@ public class Lingam {
 
     //================================PUBLIC METHODS========================//
 
-    private CausalOrder estimateCausalOrder(DataSet dataSet) {
-        TetradMatrix X = dataSet.getDoubleData();
-        FastIca fastIca = new FastIca(X, 30);
-        fastIca.setVerbose(false);
-        FastIca.IcaResult result = fastIca.findComponents();
-        TetradMatrix W = result.getW().transpose();
-
-        System.out.println("W = " + W);
-
-        PermutationGenerator gen1 = new PermutationGenerator(W.rows());
-        int[] perm1 = new int[0];
-        double sum1 = Double.POSITIVE_INFINITY;
-        int[] choice1;
-
-        while ((choice1 = gen1.next()) != null) {
-            double sum = 0.0;
-
-            for (int i = 0; i < W.rows(); i++) {
-                final double c = W.get(i, choice1[i]);
-                sum += 1.0 / abs(c);
-            }
-
-            if (sum < sum1) {
-                sum1 = sum;
-                perm1 = Arrays.copyOf(choice1, choice1.length);
-            }
-        }
-
-        TetradMatrix WTilde = W.getSelection(perm1, perm1);
-
-        System.out.println("WTilde before normalization = " + WTilde);
-
-        for (int j = 0; j < WTilde.columns(); j++) {
-            for (int i = j ; i < WTilde.rows(); i++) {
-                WTilde.set(i, j, WTilde.get(i, j) / WTilde.get(j, j));
-            }
-        }
-
-        System.out.println("WTilde after normalization = " + WTilde);
-
-        final int m = dataSet.getNumColumns();
-        TetradMatrix B = TetradMatrix.identity(m).minus(WTilde.transpose());
-
-        System.out.println("B = " + B);
-
-        PermutationGenerator gen2 = new PermutationGenerator(B.rows());
-        int[] perm2 = new int[0];
-        double sum2 = Double.POSITIVE_INFINITY;
-        int[] choice2;
-
-        while ((choice2 = gen2.next()) != null) {
-            double sum = 0.0;
-
-            for (int i = 0; i < W.rows(); i++) {
-                for (int j = i; j < W.rows(); j++) {
-                    final double c = B.get(choice2[i], choice2[j]);
-                    sum += c * c;
-                }
-            }
-
-            if (sum < sum2) {
-                sum2 = sum;
-                perm2 = Arrays.copyOf(choice2, choice2.length);
-            }
-        }
-
-        TetradMatrix BTilde = B.getSelection(perm2, perm2);
-
-        System.out.println("BTilde = " + BTilde);
-
-        return new CausalOrder(perm2);
-    }
-
     public void setPenaltyDiscount(double penaltyDiscount) {
         this.penaltyDiscount = penaltyDiscount;
     }
 
-    public static class CausalOrder {
-        private int[] perm;
-
-        CausalOrder(int[] perm) {
-            this.perm = perm;
-        }
-
-        int[] getPerm() {
-            return perm;
-        }
+    public void setFastIcaA(double fastIcaA) {
+        this.fastIcaA = fastIcaA;
     }
 
+    public void setFastMaxIter(int maxIter) {
+        this.fastIcaMaxIter = maxIter;
+    }
+
+    public void setFastIcaTolerance(double tolerance) {
+        this.fastIcaTolerance = tolerance;
+    }
 }
 

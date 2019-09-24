@@ -18,7 +18,6 @@
 // along with this program; if not, write to the Free Software               //
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA //
 ///////////////////////////////////////////////////////////////////////////////
-
 package edu.cmu.tetradapp.editor;
 
 import edu.cmu.tetrad.bayes.BayesPm;
@@ -27,16 +26,15 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetradapp.model.DirichletBayesImWrapper;
 import edu.cmu.tetradapp.model.DirichletEstimatorWrapper;
 import edu.cmu.tetradapp.workbench.GraphWorkbench;
-
-import javax.swing.*;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
 import java.awt.*;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import javax.swing.*;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 
 /**
- * An editor for Bayes net instantiated models.  Assumes that the workbench and
+ * An editor for Bayes net instantiated models. Assumes that the workbench and
  * parameterized model have been established (that is, that the nodes have been
  * identified and named and that the number and names of the values for the
  * nodes have been specified) and allows the user to set conditional
@@ -46,6 +44,7 @@ import java.beans.PropertyChangeListener;
  * @author Joseph Ramsey jdramsey@andrew.cmu.edu
  */
 public class DirichletBayesImEditor extends JPanel {
+
     private DirichletBayesImProbsWizard probsWizard;
     private DirichletBayesImCountsWizard countsWizard;
 
@@ -73,11 +72,10 @@ public class DirichletBayesImEditor extends JPanel {
         add(menuBar, BorderLayout.NORTH);
 
         // Rest of setup.
+        probsWizard = new DirichletBayesImProbsWizard(dirichletBayesIm, workbench);
+        probsWizard.enableEditing(false);
 
-        probsWizard =
-                new DirichletBayesImProbsWizard(dirichletBayesIm, workbench);
-        countsWizard =
-                new DirichletBayesImCountsWizard(dirichletBayesIm, workbench);
+        countsWizard = new DirichletBayesImCountsWizard(dirichletBayesIm, workbench);
 
         probsWizard.addPropertyChangeListener(new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent evt) {
@@ -122,18 +120,18 @@ public class DirichletBayesImEditor extends JPanel {
         setName("Dirichlet Bayes IM Editor");
         getProbsWizard().addPropertyChangeListener(
                 new PropertyChangeListener() {
-                    public void propertyChange(PropertyChangeEvent evt) {
-                        if ("editorClosing".equals(evt.getPropertyName())) {
-                            firePropertyChange("editorClosing", null,
-                                    getName());
-                        }
+            public void propertyChange(PropertyChangeEvent evt) {
+                if ("editorClosing".equals(evt.getPropertyName())) {
+                    firePropertyChange("editorClosing", null,
+                            getName());
+                }
 
-                        if ("closeFrame".equals(evt.getPropertyName())) {
-                            firePropertyChange("closeFrame", null, null);
-                            firePropertyChange("editorClosing", true, true);
-                        }
-                    }
-                });
+                if ("closeFrame".equals(evt.getPropertyName())) {
+                    firePropertyChange("closeFrame", null, null);
+                    firePropertyChange("editorClosing", true, true);
+                }
+            }
+        });
     }
 
     /**
@@ -175,8 +173,3 @@ public class DirichletBayesImEditor extends JPanel {
         return countsWizard;
     }
 }
-
-
-
-
-

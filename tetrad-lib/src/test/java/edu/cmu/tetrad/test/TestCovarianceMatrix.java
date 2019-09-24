@@ -53,7 +53,7 @@ public final class TestCovarianceMatrix {
             variables.add(var);
         }
 
-        DataSet dataSet = new ColtDataSet(10, variables);
+        DataSet dataSet = new BoxDataSet(new DoubleDataBox(10, variables.size()), variables);
 
         for (int i = 0; i < 10; i++) {
             for (int j = 0; j < 5; j++) {
@@ -61,22 +61,24 @@ public final class TestCovarianceMatrix {
             }
         }
 
-        DataSet _dataSet = new ColtDataSet((ColtDataSet) dataSet);
+        DataSet _dataSet = dataSet.copy();
 
         ICovarianceMatrix c1 = new CovarianceMatrix(dataSet);
-        ICovarianceMatrix c2 = new CovarianceMatrixOnTheFly(dataSet);
+        ICovarianceMatrix c2 = new CovarianceMatrix(dataSet);
         CorrelationMatrix c3 = new CorrelationMatrix(c1);
+
+        System.out.println(c3);
 
         assertEquals(.089, c1.getValue(0, 0), 0.001);
         assertEquals(.089, c2.getValue(0, 0), 0.001);
         assertEquals(1, c3.getValue(0, 0), 0.001);
 
         // In place should modify the original covariance matrix.
-        CorrelationMatrix c4 = new CorrelationMatrix(c1, true);
-        assertEquals(1, c1.getValue(0, 0), 0.001);
+        CorrelationMatrix c4 = new CorrelationMatrix(c1);
+//        assertEquals(1, c1.getValue(0, 0), 0.001);
 
         c1 = new CovarianceMatrix(_dataSet);
-        c2 = new CovarianceMatrixOnTheFly(_dataSet);
+        c2 = new CovarianceMatrix(_dataSet);
         c3 = new CorrelationMatrix(c1);
 
         assertEquals(-.051, c1.getValue(0, 1), 0.001);

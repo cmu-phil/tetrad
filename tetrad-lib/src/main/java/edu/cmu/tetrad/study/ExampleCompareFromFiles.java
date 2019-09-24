@@ -103,7 +103,6 @@ public class ExampleCompareFromFiles {
         comparison.setShowSimulationIndices(false);
         comparison.setSortByUtility(true);
         comparison.setShowUtilities(true);
-        comparison.setParallelized(false);
         comparison.setSaveGraphs(true);
         //DagToPag p = new DagToPag(graph);
 

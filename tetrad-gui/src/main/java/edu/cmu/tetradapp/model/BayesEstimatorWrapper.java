@@ -23,6 +23,8 @@ package edu.cmu.tetradapp.model;
 import edu.cmu.tetrad.bayes.BayesIm;
 import edu.cmu.tetrad.bayes.BayesPm;
 import edu.cmu.tetrad.bayes.MlBayesEstimator;
+import edu.cmu.tetrad.data.DataModel;
+import edu.cmu.tetrad.data.DataModelList;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataUtils;
 import edu.cmu.tetrad.graph.Graph;
@@ -33,6 +35,8 @@ import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Wraps a Bayes Pm for use in the Tetrad application.
@@ -57,59 +61,60 @@ public class BayesEstimatorWrapper implements SessionModel {
      * @serial Cannot be null.
      */
     private DataSet dataSet;
+    private DataWrapper dataWrapper;
 
+    private int numModels = 1;
+    private int modelIndex = 0;
+    private List<BayesIm> bayesIms = new ArrayList<>();
+    
     //=================================CONSTRUCTORS========================//
     public BayesEstimatorWrapper(DataWrapper dataWrapper,
             BayesPmWrapper bayesPmWrapper) {
-
-        if (dataWrapper instanceof Simulation) {
-
-        }
 
         if (dataWrapper == null) {
             throw new NullPointerException(
                     "BayesDataWrapper must not be null.");
         }
 
+        this.dataWrapper = dataWrapper;
+        
         if (bayesPmWrapper == null) {
             throw new NullPointerException("BayesPmWrapper must not be null");
         }
+        
+        DataModelList dataModel = dataWrapper.getDataModelList();
+        
+        if (dataModel != null) {
+            for (int i = 0; i < dataWrapper.getDataModelList().size(); i++) {
+                DataModel model = dataWrapper.getDataModelList().get(i);
+            	DataSet dataSet = (DataSet) model;
+            	bayesPmWrapper.setModelIndex(i);
+            	BayesPm bayesPm = bayesPmWrapper.getBayesPm();
+            	
+            	estimate(dataSet, bayesPm);
+            	bayesIms.add(this.bayesIm);
+            }
+            
+            this.bayesIm = bayesIms.get(0);
+            log(bayesIm);
 
-        DataSet dataSet = (DataSet) dataWrapper.getSelectedDataModel();
-        BayesPm bayesPm = bayesPmWrapper.getBayesPm();
+        } else {
+            throw new IllegalArgumentException("Data must consist of discrete data sets.");       	
+        }
 
-        this.dataSet = dataSet;
-
-//        if (DataUtils.containsMissingValue(dataSet)) {
-//            throw new IllegalArgumentException("Please remove or impute missing values.");
-//        }
-        System.out.println(dataSet);
-
-        estimate(dataSet, bayesPm);
-        log(bayesIm);
+        this.name = bayesPmWrapper.getName();
+        this.numModels = bayesIms.size();
+        this.modelIndex = 0;
+        this.bayesIm = bayesIms.get(modelIndex);
+        DataModel model = dataModel.get(modelIndex);
+        this.dataSet = (DataSet)model;
     }
 
-//    public BayesEstimatorWrapper(DataWrapper dataWrapper,
-//                                 BayesImWrapper bayesImWrapper) {
-//        if (dataWrapper == null) {
-//            throw new NullPointerException(
-//                    "BayesDataWrapper must not be null.");
-//        }
-//
-//        if (bayesImWrapper == null) {
-//            throw new NullPointerException("BayesPmWrapper must not be null");
-//        }
-//
-//        DataSet dataSet = (DataSet) dataWrapper.getSelectedDataModel();
-//        BayesPm bayesPm = bayesImWrapper.getBayesIm().getBayesPm();
-//
-////        if (DataUtils.containsMissingValue(dataSet)) {
-////            throw new IllegalArgumentException("Please remove or impute missing values.");
-////        }
-//
-//        estimate(dataSet, bayesPm);
-//        log(bayesIm);
-//    }
+    public BayesEstimatorWrapper(DataWrapper dataWrapper,
+                                 BayesImWrapper bayesImWrapper) {
+    	this(dataWrapper, new BayesPmWrapper(bayesImWrapper));
+    }
+    
     /**
      * Generates a simple exemplar of this class to test serialization.
      *
@@ -121,7 +126,78 @@ public class BayesEstimatorWrapper implements SessionModel {
 
     //==============================PUBLIC METHODS========================//
     public BayesIm getEstimatedBayesIm() {
-        return this.bayesIm;
+    	return bayesIm;
+    }
+
+    public void setBayesIm(BayesIm bayesIm) {
+    	bayesIms.clear();
+        bayesIms.add(bayesIm);
+    }
+
+    public DataSet getDataSet() {
+        return dataSet;
+    }
+    
+	public Graph getGraph() {
+        return bayesIm.getBayesPm().getDag();
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+	public int getNumModels() {
+		return numModels;
+	}
+
+	public void setNumModels(int numModels) {
+		this.numModels = numModels;
+	}
+
+	public int getModelIndex() {
+		return modelIndex;
+	}
+
+	public void setModelIndex(int modelIndex) {
+		this.modelIndex = modelIndex;
+		this.bayesIm = bayesIms.get(modelIndex);
+		
+		DataModel dataModel = dataWrapper.getDataModelList();
+
+		this.dataSet = (DataSet) ((DataModelList)dataModel).get(modelIndex);
+		
+	}
+
+    //======================== Private Methods ======================//
+    /**
+     * Adds semantic checks to the default deserialization method. This method
+     * must have the standard signature for a readObject method, and the body of
+     * the method must begin with "s.defaultReadObject();". Other than that, any
+     * semantic checks can be specified and do not need to stay the same from
+     * version to version. A readObject method of this form may be added to any
+     * class, even if Tetrad sessions were previously saved out using a version
+     * of the class that didn't include it. (That's what the
+     * "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for help.
+     *
+     * @throws java.io.IOException
+     * @throws ClassNotFoundException
+     */
+    private void readObject(ObjectInputStream s)
+            throws IOException, ClassNotFoundException {
+        s.defaultReadObject();
+
+        if (bayesIm == null) {
+            throw new NullPointerException();
+        }
+    }
+
+    private void log(BayesIm im) {
+        TetradLogger.getInstance().log("info", "ML estimated Bayes IM.");
+        TetradLogger.getInstance().log("im", im.toString());
     }
 
     private void estimate(DataSet dataSet, BayesPm bayesPm) {
@@ -149,51 +225,4 @@ public class BayesEstimatorWrapper implements SessionModel {
         }
     }
 
-    public DataSet getDataSet() {
-        return this.dataSet;
-    }
-
-    /**
-     * Adds semantic checks to the default deserialization method. This method
-     * must have the standard signature for a readObject method, and the body of
-     * the method must begin with "s.defaultReadObject();". Other than that, any
-     * semantic checks can be specified and do not need to stay the same from
-     * version to version. A readObject method of this form may be added to any
-     * class, even if Tetrad sessions were previously saved out using a version
-     * of the class that didn't include it. (That's what the
-     * "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for help.
-     *
-     * @throws java.io.IOException
-     * @throws ClassNotFoundException
-     */
-    private void readObject(ObjectInputStream s)
-            throws IOException, ClassNotFoundException {
-        s.defaultReadObject();
-
-        if (bayesIm == null) {
-            throw new NullPointerException();
-        }
-
-//        if (dataSet == null) {
-//            throw new NullPointerException();
-//        }
-    }
-
-    public Graph getGraph() {
-        return bayesIm.getBayesPm().getDag();
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    //======================== Private Methods ======================//
-    private void log(BayesIm im) {
-        TetradLogger.getInstance().log("info", "ML estimated Bayes IM.");
-        TetradLogger.getInstance().log("im", im.toString());
-    }
 }

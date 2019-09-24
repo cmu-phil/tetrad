@@ -18,12 +18,21 @@
 // along with this program; if not, write to the Free Software               //
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA //
 ///////////////////////////////////////////////////////////////////////////////
-
 package edu.cmu.tetradapp.workbench;
 
-import edu.cmu.tetrad.graph.*;
+import edu.cmu.tetrad.graph.Edge;
+import edu.cmu.tetrad.graph.EdgeListGraph;
+import edu.cmu.tetrad.graph.Edges;
+import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.graph.GraphNode;
+import edu.cmu.tetrad.graph.GraphUtils;
+import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.graph.NodeType;
+import edu.cmu.tetrad.graph.Triple;
+import edu.cmu.tetrad.graph.TripleClassifier;
 import edu.cmu.tetradapp.model.EditorUtils;
-import java.awt.*;
+import java.awt.Color;
+import java.awt.Point;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
@@ -38,6 +47,8 @@ import java.util.List;
  */
 public class GraphWorkbench extends AbstractWorkbench implements TripleClassifier {
 
+    private static final long serialVersionUID = 938742592547332849L;
+
     //=================PUBLIC STATIC FINAL FIELDS=========================//
     public static final int MEASURED_NODE = 0;
     public static final int LATENT_NODE = 1;
@@ -45,13 +56,13 @@ public class GraphWorkbench extends AbstractWorkbench implements TripleClassifie
     public static final int NONDIRECTED_EDGE = 2;
     public static final int PARTIALLY_ORIENTED_EDGE = 3;
     public static final int BIDIRECTED_EDGE = 4;
+    public static final int UNDIRECTED_EDGE = 5;
 
     //====================PRIVATE FIELDS=================================//
     private int nodeType = MEASURED_NODE;
     private int edgeMode = DIRECTED_EDGE;
 
     //========================CONSTRUCTORS===============================//
-
     /**
      * Constructs a new workbench with an empty graph; useful if another graph
      * will be set later.
@@ -66,12 +77,9 @@ public class GraphWorkbench extends AbstractWorkbench implements TripleClassifie
     public GraphWorkbench(Graph graph) {
         super(graph);
         setRightClickPopupAllowed(true);
-
-
     }
 
     //========================PUBLIC METHODS==============================//
-
     /**
      * The type of edge to be drawn next.
      *
@@ -107,7 +115,7 @@ public class GraphWorkbench extends AbstractWorkbench implements TripleClassifie
                 modelNode.setNodeType(NodeType.LATENT);
                 break;
 
-            default :
+            default:
                 throw new IllegalStateException();
         }
 
@@ -129,14 +137,11 @@ public class GraphWorkbench extends AbstractWorkbench implements TripleClassifie
             GraphNodeMeasured nodeMeasured = new GraphNodeMeasured(modelNode);
             nodeMeasured.setEditExitingMeasuredVarsAllowed(isEditExistingMeasuredVarsAllowed());
             displayNode = nodeMeasured;
-        }
-        else if (modelNode.getNodeType() == NodeType.LATENT) {
+        } else if (modelNode.getNodeType() == NodeType.LATENT) {
             displayNode = new GraphNodeLatent(modelNode);
-        }
-        else if (modelNode.getNodeType() == NodeType.ERROR) {
+        } else if (modelNode.getNodeType() == NodeType.ERROR) {
             displayNode = new GraphNodeError(modelNode);
-        }
-        else {
+        } else {
             throw new IllegalStateException();
         }
 
@@ -144,8 +149,7 @@ public class GraphWorkbench extends AbstractWorkbench implements TripleClassifie
             public void propertyChange(PropertyChangeEvent evt) {
                 if ("resetGraph".equals(evt.getPropertyName())) {
                     setGraph(getGraph());
-                }
-                else if ("editingValueChanged".equals(evt.getPropertyName())) {
+                } else if ("editingValueChanged".equals(evt.getPropertyName())) {
                     firePropertyChange("modelChanged", null, null);
                 }
             }
@@ -194,6 +198,9 @@ public class GraphWorkbench extends AbstractWorkbench implements TripleClassifie
 
             case NONDIRECTED_EDGE:
                 return Edges.nondirectedEdge(node1, node2);
+                
+            case UNDIRECTED_EDGE:
+                return Edges.undirectedEdge(node1, node2);
 
             case PARTIALLY_ORIENTED_EDGE:
                 return Edges.partiallyOrientedEdge(node1, node2);
@@ -201,17 +208,17 @@ public class GraphWorkbench extends AbstractWorkbench implements TripleClassifie
             case BIDIRECTED_EDGE:
                 return Edges.bidirectedEdge(node1, node2);
 
-            default :
+            default:
                 throw new IllegalStateException();
         }
     }
 
     /**
      * Gets a new "tracking edge"--that is, an edge which is anchored at one end
-     * to a node but tracks the mouse at the other end.  Used for drawing new
+     * to a node but tracks the mouse at the other end. Used for drawing new
      * edges.
      *
-     * @param node     the node to anchor to.
+     * @param node the node to anchor to.
      * @param mouseLoc the location of the mouse.
      * @return the new tracking edge (a display edge).
      */
@@ -224,6 +231,9 @@ public class GraphWorkbench extends AbstractWorkbench implements TripleClassifie
 
             case NONDIRECTED_EDGE:
                 return new DisplayEdge(node, mouseLoc, DisplayEdge.NONDIRECTED, color);
+            
+            case UNDIRECTED_EDGE:
+                return new DisplayEdge(node, mouseLoc, DisplayEdge.UNDIRECTED, color);
 
             case PARTIALLY_ORIENTED_EDGE:
                 return new DisplayEdge(node, mouseLoc,
@@ -232,7 +242,7 @@ public class GraphWorkbench extends AbstractWorkbench implements TripleClassifie
             case BIDIRECTED_EDGE:
                 return new DisplayEdge(node, mouseLoc, DisplayEdge.BIDIRECTED, color);
 
-            default :
+            default:
                 throw new IllegalStateException();
         }
     }
@@ -285,15 +295,17 @@ public class GraphWorkbench extends AbstractWorkbench implements TripleClassifie
     public void setEdgeMode(int edgeMode) {
         switch (edgeMode) {
             case DIRECTED_EDGE:
-                // Falls through!
+            // Falls through!
             case NONDIRECTED_EDGE:
-                // Falls through!
+            // Falls through!
+            case UNDIRECTED_EDGE:
+            // Falls through!
             case PARTIALLY_ORIENTED_EDGE:
-                // Falls through!
+            // Falls through!
             case BIDIRECTED_EDGE:
                 this.edgeMode = edgeMode;
                 break;
-            default :
+            default:
                 throw new IllegalArgumentException();
         }
     }
@@ -304,10 +316,9 @@ public class GraphWorkbench extends AbstractWorkbench implements TripleClassifie
     public void setNodeType(int nodeType) {
         if (nodeType == MEASURED_NODE || nodeType == LATENT_NODE) {
             this.nodeType = nodeType;
-        }
-        else {
-            throw new IllegalArgumentException("The type of the node must be " +
-                    "MEASURED_NODE or LATENT_NODE.");
+        } else {
+            throw new IllegalArgumentException("The type of the node must be "
+                    + "MEASURED_NODE or LATENT_NODE.");
         }
     }
 
@@ -333,23 +344,21 @@ public class GraphWorkbench extends AbstractWorkbench implements TripleClassifie
             } else if (graphElement instanceof Edge) {
                 getWorkbench().getGraph().addEdge((Edge) graphElement);
             } else {
-                throw new IllegalArgumentException("The list of session " +
-                        "elements should contain only SessionNodeWrappers " +
-                        "and SessionEdges: " + graphElement);
+                throw new IllegalArgumentException("The list of session "
+                        + "elements should contain only SessionNodeWrappers "
+                        + "and SessionEdges: " + graphElement);
             }
         }
     }
 
     //===========================PRIVATE METHODS==========================//
-
     /**
      * Adjusts the name to avoid name conflicts in the new session and, if the
-     * name is adjusted, adjusts the position so the user can see the two
-     * nodes.
+     * name is adjusted, adjusts the position so the user can see the two nodes.
      *
      * @param node The node which is being adjusted
-     * @param deltaX  the shift in x
-     * @param deltaY  the shift in y.
+     * @param deltaX the shift in x
+     * @param deltaY the shift in y.
      */
     private void adjustNameAndPosition(Node node, int deltaX,
             int deltaY) {
@@ -373,22 +382,22 @@ public class GraphWorkbench extends AbstractWorkbench implements TripleClassifie
             throw new NullPointerException("Base name must be non-null.");
         }
         List<Node> currentNodes = this.getWorkbench().getGraph().getNodes();
-        if(!containsName(currentNodes, base)){
+        if (!containsName(currentNodes, base)) {
             return base;
         }
         // otherwise fine new unique name.
         base += "_";
         int i = 1;
-        while(containsName(currentNodes, base + i)){
+        while (containsName(currentNodes, base + i)) {
             i++;
         }
 
         return base + i;
     }
 
-    private static boolean containsName(List<Node> nodes, String name){
-        for(Node node : nodes){
-            if(name.equals(node.getName())){
+    private static boolean containsName(List<Node> nodes, String name) {
+        for (Node node : nodes) {
+            if (name.equals(node.getName())) {
                 return true;
             }
         }
@@ -396,7 +405,8 @@ public class GraphWorkbench extends AbstractWorkbench implements TripleClassifie
     }
 
     /**
-     * @return the names of the triple classifications. Coordinates with <code>getTriplesList</code>
+     * @return the names of the triple classifications. Coordinates with
+     * <code>getTriplesList</code>
      */
     public List<String> getTriplesClassificationTypes() {
         List<String> names = new ArrayList<>();
@@ -406,8 +416,8 @@ public class GraphWorkbench extends AbstractWorkbench implements TripleClassifie
     }
 
     /**
-     * @return the list of triples corresponding to <code>getTripleClassificationNames</code> for the given
-     * node.
+     * @return the list of triples corresponding to
+     * <code>getTripleClassificationNames</code> for the given node.
      */
     public List<List<Triple>> getTriplesLists(Node node) {
         List<List<Triple>> triplesList = new ArrayList<>();
@@ -421,8 +431,3 @@ public class GraphWorkbench extends AbstractWorkbench implements TripleClassifie
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }
-
-
-
-
-

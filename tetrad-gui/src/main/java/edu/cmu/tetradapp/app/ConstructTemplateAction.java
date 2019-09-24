@@ -52,7 +52,7 @@ final class ConstructTemplateAction extends AbstractAction {
         "Load data and search",
         "Search then estimate",
         "Search, estimate, then update",
-        "MIMBuild"
+//        "MIMBuild" // Removed 4/9/2019 Folded into FOFC
     };
 
     /**
@@ -115,9 +115,12 @@ final class ConstructTemplateAction extends AbstractAction {
             estimateFromSimulatedData(leftX);
         } else if (this.templateName.equals(getTemplateNames()[4])) {
             estimateThenUpdateUsingSearchResult(leftX);
-        } else if (this.templateName.equals(getTemplateNames()[5])) {
-            mimbuild(leftX);
-        } else {
+        }
+        // Removed 4/9/2019 Folded into FOFC
+//        else if (this.templateName.equals(getTemplateNames()[5])) {
+//            mimbuild(leftX);
+//        }
+        else {
             throw new IllegalStateException("Unrecognized template name: " + this.templateName);
         }
     }
@@ -292,34 +295,35 @@ final class ConstructTemplateAction extends AbstractAction {
         selectSubgraph(nodes);
     }
 
-    private void mimbuild(int leftX) {
-        getSessionWorkbench().deselectAll();
-
-        List<Node> nodes = new LinkedList<>();
-
-        String graph = nextName("Graph");
-        String pm = nextName("PM");
-        String im = nextName("IM");
-        String data = nextName("Simulation");
-        String search = nextName("Search");
-        String mimbuild = nextName("MIMBuild");
-
-        nodes.add(addNode("Graph", graph, leftX, 100));
-        nodes.add(addNode("PM", pm, leftX, 200));
-        nodes.add(addNode("IM", im, leftX, 300));
-        nodes.add(addNode("Simulation", data, leftX, 400));
-        nodes.add(addNode("Search", search, 125 + leftX, 400));
-        nodes.add(addNode("Search", mimbuild, 65 + leftX, 500));
-
-        addEdge(graph, pm);
-        addEdge(pm, im);
-        addEdge(im, data);
-        addEdge(data, search);
-        addEdge(data, mimbuild);
-        addEdge(search, mimbuild);
-
-        selectSubgraph(nodes);
-    }
+    // Removed 4/9/2019 Folded into FOFC
+//    private void mimbuild(int leftX) {
+//        getSessionWorkbench().deselectAll();
+//
+//        List<Node> nodes = new LinkedList<>();
+//
+//        String graph = nextName("Graph");
+//        String pm = nextName("PM");
+//        String im = nextName("IM");
+//        String data = nextName("Simulation");
+//        String search = nextName("Search");
+//        String mimbuild = nextName("MIMBuild");
+//
+//        nodes.add(addNode("Graph", graph, leftX, 100));
+//        nodes.add(addNode("PM", pm, leftX, 200));
+//        nodes.add(addNode("IM", im, leftX, 300));
+//        nodes.add(addNode("Simulation", data, leftX, 400));
+//        nodes.add(addNode("Search", search, 125 + leftX, 400));
+//        nodes.add(addNode("Search", mimbuild, 65 + leftX, 500));
+//
+//        addEdge(graph, pm);
+//        addEdge(pm, im);
+//        addEdge(im, data);
+//        addEdge(data, search);
+//        addEdge(data, mimbuild);
+//        addEdge(search, mimbuild);
+//
+//        selectSubgraph(nodes);
+//    }
 
     private void estimateThenUpdateUsingSearchResult(int leftX) {
         SessionEditorIndirectRef sessionEditorRef

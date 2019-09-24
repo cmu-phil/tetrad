@@ -18,20 +18,27 @@
 // along with this program; if not, write to the Free Software               //
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA //
 ///////////////////////////////////////////////////////////////////////////////
-
 package edu.cmu.tetradapp.editor;
 
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.session.DelegatesEditing;
 import edu.cmu.tetradapp.model.BayesPmWrapper;
 import edu.cmu.tetradapp.workbench.GraphWorkbench;
-
-import javax.swing.*;
-import java.awt.*;
+import java.awt.BorderLayout;
+import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import javax.swing.Box;
+import javax.swing.JComboBox;
+import javax.swing.JComponent;
+import javax.swing.JLabel;
+import javax.swing.JMenu;
+import javax.swing.JMenuBar;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JSplitPane;
 
 /**
  * Displays a workbench editing workbench area together with a toolbench for
@@ -87,7 +94,7 @@ public class BayesPmEditor extends JPanel
             comp.addActionListener(new ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent e) {
-                    wrapper.setModelIndex(((Integer)comp.getSelectedItem()).intValue() - 1);
+                    wrapper.setModelIndex(((Integer) comp.getSelectedItem()).intValue() - 1);
                     setEditorPanel();
                     validate();
                 }
@@ -118,9 +125,8 @@ public class BayesPmEditor extends JPanel
 
         Graph graph = wrapper.getBayesPm().getDag();
         GraphWorkbench workbench = new GraphWorkbench(graph);
-        BayesPmEditorWizard wizard =
-                new BayesPmEditorWizard(wrapper.getBayesPm(), workbench);
-
+        workbench.enableEditing(false);
+        BayesPmEditorWizard wizard = new BayesPmEditorWizard(wrapper.getBayesPm(), workbench);
 
         JScrollPane workbenchScroll = new JScrollPane(workbench);
         JScrollPane wizardScroll = new JScrollPane(wizard);
@@ -151,7 +157,8 @@ public class BayesPmEditor extends JPanel
         targetPanel.add(panel, BorderLayout.CENTER);
     }
 
-    /**                                      G
+    /**
+     * G
      * Reacts to property change events.
      */
     public void propertyChange(PropertyChangeEvent e) {
@@ -214,8 +221,3 @@ public class BayesPmEditor extends JPanel
     }
 
 }
-
-
-
-
-

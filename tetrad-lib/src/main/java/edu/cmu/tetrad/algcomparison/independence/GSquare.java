@@ -7,6 +7,7 @@ import edu.cmu.tetrad.data.DataUtils;
 import edu.cmu.tetrad.search.IndTestGSquare;
 import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.util.Parameters;
+import edu.cmu.tetrad.util.Params;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -17,7 +18,7 @@ import java.util.List;
  */
 @TestOfIndependence(
         name = "G Square Test",
-        command = "g-square",
+        command = "g-square-test",
         dataType = DataType.Discrete
 )
 public class GSquare implements IndependenceWrapper {
@@ -42,7 +43,7 @@ public class GSquare implements IndependenceWrapper {
     @Override
     public List<String> getParameters() {
         List<String> params = new ArrayList<>();
-        params.add("alpha");
+        params.add(Params.ALPHA);
         return params;
     }
 }

@@ -271,21 +271,21 @@
                     edu.cmu.tetradapp.editor.BayesImParamsEditor
                 </params-editor-class>
             </model>
-            <model name="Bayes Instantiated Model: Observed Variables Only"
-                   acronym="Bayes IM Obs"
-                   help="bayes_im_obs">
-                <logger>
-                    <event id="info" description="Information" default="on"/>
-                    <event id="im" description="Instantiated Model" default="on"/>
-                </logger>
-                <model-class>edu.cmu.tetradapp.model.BayesImWrapperObs
-                </model-class>
-                <editor-class>edu.cmu.tetradapp.editor.BayesImEditorObs
-                </editor-class>
-                <params-editor-class>
-                    edu.cmu.tetradapp.editor.BayesImParamsEditor
-                </params-editor-class>
-            </model>
+<!--            <model name="Bayes Instantiated Model: Observed Variables Only"-->
+<!--                   acronym="Bayes IM Obs"-->
+<!--                   help="bayes_im_obs">-->
+<!--                <logger>-->
+<!--                    <event id="info" description="Information" default="on"/>-->
+<!--                    <event id="im" description="Instantiated Model" default="on"/>-->
+<!--                </logger>-->
+<!--                <model-class>edu.cmu.tetradapp.model.BayesImWrapperObs-->
+<!--                </model-class>-->
+<!--                <editor-class>edu.cmu.tetradapp.editor.BayesImEditorObs-->
+<!--                </editor-class>-->
+<!--                <params-editor-class>-->
+<!--                    edu.cmu.tetradapp.editor.BayesImParamsEditor-->
+<!--                </params-editor-class>-->
+<!--            </model>-->
             <model name="Dirichlet Bayes Instantiated Model"
                    acronym="Dir Bayes IM" help="dirichlet_bayes_im">
                 <logger>
@@ -562,16 +562,6 @@
                     edu.cmu.tetradapp.editor.datamanip.ArResidualsParamsEditor
                 </params-editor-class>
             </model>
-            <model name="Whiten" acronym="Whiten"
-                   help="corr" category="Conversion of Data">
-                <logger>
-                    <event id="info" description="Information" default="on"/>
-                    <event id="data" description="Data"/>
-                </logger>
-                <model-class>edu.cmu.tetradapp.model.Whitener
-                </model-class>
-                <editor-class>edu.cmu.tetradapp.editor.DataEditor</editor-class>
-            </model>
             <model name="Logarithmic Transform" acronym="Log"
                    help="data" category="Conversion of Data">
                 <logger>
@@ -635,18 +625,6 @@
                 </logger>
                 <model-class>
                     edu.cmu.tetradapp.model.datamanip.MeanInterpolatorWrapper
-                </model-class>
-                <editor-class>edu.cmu.tetradapp.editor.DataEditor</editor-class>
-            </model>
-            <model name="Replace Missing Values with Regression Predictions"
-                   acronym="Replace Regression" help="data"
-                   category="Missing Values">
-                <logger>
-                    <event id="info" description="Information" default="on"/>
-                    <event id="data" description="Data"/>
-                </logger>
-                <model-class>
-                    edu.cmu.tetradapp.model.datamanip.RegressionInterpolatorWrapper
                 </model-class>
                 <editor-class>edu.cmu.tetradapp.editor.DataEditor</editor-class>
             </model>
@@ -1533,19 +1511,20 @@
             <!--</editor-class>-->
             <!--</model>-->
 
-            <!--Restored Mimbuild on 6/20/2017 -->          
-            <model name="MIMBuild" acronym="MIMBuild" help="mimbuild"
-                   category="Multiple Indicator Model searches">
-                <logger>
-                    <event id="info" description="Information" default="on"/>
-                    <event id="details" description="Misc Fine Details" default="on"/>
-                    <event id="maxmodel" description="Max P Value Model" default="on"/>
-                </logger>
-                <model-class>edu.cmu.tetradapp.model.MimBuildRunner
-                </model-class>
-                <editor-class>edu.cmu.tetradapp.editor.MimbuildEditor
-                </editor-class>
-            </model>
+            <!--Restored Mimbuild on 6/20/2017 -->
+            <!--Removed again Mimbuild on 4/9/2019 Folded into FOFC -->
+            <!--<model name="MIMBuild" acronym="MIMBuild" help="mimbuild"-->
+            <!--category="Multiple Indicator Model searches">-->
+            <!--<logger>-->
+            <!--<event id="info" description="Information" default="on"/>-->
+            <!--<event id="details" description="Misc Fine Details" default="on"/>-->
+            <!--<event id="maxmodel" description="Max P Value Model" default="on"/>-->
+            <!--</logger>-->
+            <!--<model-class>edu.cmu.tetradapp.model.MimBuildRunner-->
+            <!--</model-class>-->
+            <!--<editor-class>edu.cmu.tetradapp.editor.MimbuildEditor-->
+            <!--</editor-class>-->
+            <!--</model>-->
 
             <!--<model name="MIMTrekBuild" acronym="MIMTrekBuild" help="mimbuild"-->
             <!--category="Multiple Indicator Model searches">-->
@@ -1759,6 +1738,8 @@
             ]]>
         </node-specific-message>
     </session-node>
+    
+    <!-- Disabled on 4/2/2019
     <session-node id="Classify">
         <models>
             <model name="Bayes Updater Classifier" acronym="BayesUpClass"
@@ -1781,6 +1762,8 @@
             ]]>
         </node-specific-message>
     </session-node>
+    -->
+    
     <session-node id="Compare">
         <models>
             <model name="Edgewise Comparison" acronym="Edge Comp"
@@ -1796,7 +1779,7 @@
                     edu.cmu.tetradapp.editor.EdgewiseComparisonParamsEditor
                 </params-editor-class>
             </model>
-            <model name="Tabular Comparison" acronym="TabularComp"
+            <model name="Stats List Comparison" acronym="Stats List"
                    help="tabular_comparison" category="Graph-Graph Comparisons">
                 <logger>
                     <event id="info" description="Information" default="on"/>
@@ -1804,7 +1787,8 @@
                 </logger>
                 <model-class>edu.cmu.tetradapp.model.TabularComparison
                 </model-class>
-                <editor-class>edu.cmu.tetradapp.editor.TabularComparisonEditor</editor-class>
+                <editor-class>edu.cmu.tetradapp.editor.StatsListEditor</editor-class>
+<!--                <editor-class>edu.cmu.tetradapp.editor.TabularComparisonEditor</editor-class>-->
                 <params-editor-class>
                     edu.cmu.tetradapp.editor.EdgewiseComparisonParamsEditor
                 </params-editor-class>

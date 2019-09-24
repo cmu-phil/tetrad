@@ -107,10 +107,7 @@ public class CalculatorWrapper extends DataWrapper {
 
 
     private static DataSet copy(DataSet data) {
-        if (data instanceof ColtDataSet) {
-            return new ColtDataSet((ColtDataSet) data);
-        }
-        DataSet copy = new ColtDataSet(data.getNumRows(), data.getVariables());
+        DataSet copy = new BoxDataSet(new DoubleDataBox(data.getNumRows(), data.getVariables().size()), data.getVariables());
         int cols = data.getNumColumns();
         int rows = data.getNumRows();
         for (int col = 0; col < cols; col++) {
