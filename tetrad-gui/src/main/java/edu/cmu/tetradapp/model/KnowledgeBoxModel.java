@@ -112,7 +112,8 @@ public class KnowledgeBoxModel implements SessionModel, ParamsResettable, Knowle
         // If not, I should wait for resetParams to be called. For now I'm
         // printing the knowledge if it's not empty.
         if (!knowledge.isEmpty()) {
-            TetradLogger.getInstance().log("knowledge", params.get("knowledge", new Knowledge2()).toString());
+            // printing out is bad for large knowledge input
+//            TetradLogger.getInstance().log("knowledge", params.get("knowledge", new Knowledge2()).toString());
         }
     }
 
@@ -173,7 +174,9 @@ public class KnowledgeBoxModel implements SessionModel, ParamsResettable, Knowle
         }
         this.knowledge = knowledge;
         this.numTiers = knowledge.getNumTiers();
-        TetradLogger.getInstance().log("knowledge", knowledge.toString());
+
+        // printing out is bad for large knowledge input
+//        TetradLogger.getInstance().log("knowledge", knowledge.toString());
     }
 
     @Override
@@ -190,7 +193,9 @@ public class KnowledgeBoxModel implements SessionModel, ParamsResettable, Knowle
     public void resetParams(Object params) {
         this.params = (Parameters) params;
         freshenKnowledgeIfEmpty();
-        TetradLogger.getInstance().log("knowledge", knowledge.toString());
+
+        // printing out is bad for large knowledge input
+//        TetradLogger.getInstance().log("knowledge", knowledge.toString());
     }
 
     @Override
