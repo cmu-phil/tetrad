@@ -266,6 +266,7 @@ public final class PcAll implements GraphSearch {
             SearchGraphUtils.pcOrientbk(knowledge, graph, nodes);
             orientTriples();
             applyMeekRules();
+            removeUnnecessaryMarks();
         }
 
         SearchGraphUtils.pcOrientbk(knowledge, graph, nodes);
@@ -298,13 +299,13 @@ public final class PcAll implements GraphSearch {
             for (Node y : nodes) {
                 if (graph.isAdjacentTo(x, y)) continue;
 
-                int n = markovMistakes(x).size();
-                if (n == 0 && markovMistakes(y).size() == 0) continue;
+                List<Node> m1 = nonMarkov(y);
 
-                if (markovMistakes(y).contains(x)) {
+                if (m1.contains(x)) {
                     graph.addDirectedEdge(x, y);
+                    List<Node> m2 = nonMarkov(y);
 
-                    if (!(markovMistakes(y).size() < n)) {
+                    if (!(m1.containsAll(m2))) {
                         graph.removeEdge(x, y);
                     } else {
                         count++;
@@ -317,15 +318,9 @@ public final class PcAll implements GraphSearch {
             Node x = edge.getNode1();
             Node y = edge.getNode2();
 
-            int n1 = markovMistakes(x).size();
-            int m1 = markovMistakes(y).size();
-
             graph.removeEdge(edge);
 
-            int n2 = markovMistakes(x).size();
-            int m2 = markovMistakes(y).size();
-
-            if (n2 > n1 || m2 > m1) {
+            if (!nonMarkov(x).isEmpty() || !nonMarkov(y).isEmpty()) {
                 graph.addEdge(edge);
             } else {
                 count++;
@@ -355,7 +350,7 @@ public final class PcAll implements GraphSearch {
         List<List<Node>> extra = new ArrayList<>();
 
         for (Node node : nodes) {
-            extra.add(markovMistakes(node, boundary(node)));
+            extra.add(nonMarkov(node, boundary(node)));
         }
 
         for (int i = 0; i < nodes.size(); i++) {
@@ -423,15 +418,15 @@ public final class PcAll implements GraphSearch {
         return new ArrayList<>(b);
     }
 
-    private List<Node> markovMistakes(Node x) {
-        return markovMistakes(x, boundary(x), this.graph);
+    private List<Node> nonMarkov(Node x) {
+        return nonMarkov(x, boundary(x), this.graph);
     }
 
-    private List<Node> markovMistakes(Node x, List<Node> boundary) {
-        return markovMistakes(x, boundary, this.graph);
+    private List<Node> nonMarkov(Node x, List<Node> boundary) {
+        return nonMarkov(x, boundary, this.graph);
     }
 
-    private List<Node> markovMistakes(Node x, List<Node> boundary, Graph graph) {
+    private List<Node> nonMarkov(Node x, List<Node> boundary, Graph graph) {
         List<Node> nodes = new ArrayList<>();
 
         for (Node y : graph.getNodes()) {
