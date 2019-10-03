@@ -2041,6 +2041,19 @@ public class EndpointMatrixGraph implements Graph {
 		attributes.put(key, value);
 	}
 
+    @Override
+    public List<Node> getNeighbors(Node node) {
+        List<Node> neighbors = new ArrayList<>();
+
+        for (Edge o : getEdges(node)) {
+            if (Edges.isUndirectedEdge(o)) {
+                neighbors.add(o.getDistalNode(node));
+            }
+        }
+
+        return neighbors;
+    }
+
 }
 
 

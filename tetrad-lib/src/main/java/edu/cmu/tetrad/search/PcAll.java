@@ -24,11 +24,11 @@ package edu.cmu.tetrad.search;
 import edu.cmu.tetrad.data.IKnowledge;
 import edu.cmu.tetrad.data.Knowledge2;
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.util.DepthChoiceGenerator;
 import edu.cmu.tetrad.util.TetradLogger;
 
 import java.io.PrintStream;
 import java.util.*;
+import java.util.List;
 
 /**
  * Implements a convervative version of PC, in which the Markov condition is assumed but faithfulness is tested
@@ -53,16 +53,12 @@ public final class PcAll implements GraphSearch {
     private IKnowledge knowledge = new Knowledge2();
     private int depth = 1000;
     private double fdrQ = 0.2;
-    private Set<Triple> colliderTriples;
-    private Set<Triple> noncolliderTriples;
-    private Set<Triple> ambiguousTriples;
     private Graph initialGraph;
     private boolean aggressivelyPreventCycles = false;
     private TetradLogger logger = TetradLogger.getInstance();
     private SepsetMap sepsets;
     private long elapsedTime;
     private boolean verbose = false;
-    private boolean useHeuristic = false;
     private int maxPathLength;
     private PrintStream out = System.out;
 
@@ -90,7 +86,7 @@ public final class PcAll implements GraphSearch {
     }
 
     public void setUseHeuristic(boolean useHeuristic) {
-        this.useHeuristic = useHeuristic;
+        throw new UnsupportedOperationException();
     }
 
     public int getMaxPathLength() {
@@ -194,7 +190,7 @@ public final class PcAll implements GraphSearch {
      * <code>search()</code>.
      */
     public Set<Triple> getAmbiguousTriples() {
-        return new HashSet<>(ambiguousTriples);
+        throw new UnsupportedOperationException();
     }
 
     /**
@@ -202,7 +198,7 @@ public final class PcAll implements GraphSearch {
      * <code>search()</code>.
      */
     public Set<Triple> getColliderTriples() {
-        return new HashSet<>(colliderTriples);
+        throw new UnsupportedOperationException();
     }
 
     /**
@@ -210,7 +206,7 @@ public final class PcAll implements GraphSearch {
      * to <code>search()</code>.
      */
     public Set<Triple> getNoncolliderTriples() {
-        return new HashSet<>(noncolliderTriples);
+        throw new UnsupportedOperationException();
     }
 
     public Set<Edge> getAdjacencies() {
@@ -232,9 +228,6 @@ public final class PcAll implements GraphSearch {
     public Graph search(List<Node> nodes) {
         this.logger.log("info", "Starting CPC algorithm");
         this.logger.log("info", "Independence test = " + getTest() + ".");
-        this.ambiguousTriples = new HashSet<>();
-        this.colliderTriples = new HashSet<>();
-        this.noncolliderTriples = new HashSet<>();
 
         test.setVerbose(verbose);
 
@@ -248,93 +241,181 @@ public final class PcAll implements GraphSearch {
                     "be in the domain of the independence test provided.");
         }
 
-
-        SearchGraphUtils.pcOrientbk(knowledge, graph, nodes);
-
         long start = System.currentTimeMillis();
 
         findAdjacencies();
+        SearchGraphUtils.pcOrientbk(knowledge, graph, nodes);
         orientTriples();
         applyMeekRules();
         removeUnnecessaryMarks();
 
-        for (int i = 0; i < 1; i++) {
-            addErrantEdges(nodes);
-//            findAdjacencies();
+        int minCount = Integer.MAX_VALUE;
 
+        while (true) {
+            int count = adjustAdjacencies(nodes);
 
-            graph = GraphUtils.undirectedGraph(graph);
+            if (minCount == count) {
+                break;
+            }
 
+            if (count < minCount) {
+                minCount = count;
+            }
+
+            undirect();
+            SearchGraphUtils.pcOrientbk(knowledge, graph, nodes);
             orientTriples();
             applyMeekRules();
-            removeUnnecessaryMarks();
         }
 
-        TetradLogger.getInstance().log("graph", "\nReturning this graph: " + graph);
+        SearchGraphUtils.pcOrientbk(knowledge, graph, nodes);
+
+        printNonFutureCounts(nodes);
+        System.out.println(graph);
+
+        TetradLogger.getInstance().
+
+                log("graph", "\nReturning this graph: " + graph);
 
         long end = System.currentTimeMillis();
         this.elapsedTime = end - start;
 
-        TetradLogger.getInstance().log("info", "Elapsed time = " + (elapsedTime) / 1000. + " s");
-        TetradLogger.getInstance().log("info", "Finishing CPC algorithm.");
+        TetradLogger.getInstance().
 
-        logTriples();
+                log("info", "Elapsed time = " + (elapsedTime) / 1000. + " s");
+        TetradLogger.getInstance().
+
+                log("info", "Finishing CPC algorithm.");
 
         TetradLogger.getInstance().flush();
         return graph;
     }
 
-    private void addErrantEdges(List<Node> nodes) {
-//        graph = SearchGraphUtils.patternFromEPattern(graph);
-//        graph = SearchGraphUtils.patternForDag(graph);
+    private int adjustAdjacencies(List<Node> nodes) {
+        int count = 0;
 
-
-        Map<Node, List<Node>> boundaries = new HashMap<>();
-
-        for (Node x : graph.getNodes()) {
-            boundaries.put(x, boundary(graph, x));
-        }
-
-        List<Edge> definitelyNotAdjacent = new ArrayList<>();
-        List<Edge> apparentlyNotAdjacent = new ArrayList<>();
-
-        for (int i = 0; i < nodes.size(); i++) {
-            for (int j = i + 1; j < nodes.size(); j++) {
-                Node x = nodes.get(i);
-                Node y = nodes.get(j);
-
+        for (Node x : nodes) {
+            for (Node y : nodes) {
                 if (graph.isAdjacentTo(x, y)) continue;
 
-                if (satisfiesMarkov(graph, x, boundaries) && satisfiesMarkov(graph, y, boundaries)) {
-                    definitelyNotAdjacent.add(Edges.undirectedEdge(x, y));
-                } else if (!graph.isAdjacentTo(x, y)) {
-                    apparentlyNotAdjacent.add(Edges.undirectedEdge(x, y));
+                int n = markovMistakes(x).size();
+                if (n == 0 && markovMistakes(y).size() == 0) continue;
+
+                if (markovMistakes(y).contains(x)) {
+                    graph.addDirectedEdge(x, y);
+
+                    if (!(markovMistakes(y).size() < n)) {
+                        graph.removeEdge(x, y);
+                    } else {
+                        count++;
+                    }
                 }
             }
         }
 
-        System.out.println("Definitely not adjacent: " + definitelyNotAdjacent);
-        System.out.println("Apparently not adjacent: " + apparentlyNotAdjacent);
+        for (Edge edge : graph.getEdges()) {
+            Node x = edge.getNode1();
+            Node y = edge.getNode2();
+
+            int n1 = markovMistakes(x).size();
+            int m1 = markovMistakes(y).size();
+
+            graph.removeEdge(edge);
+
+            int n2 = markovMistakes(x).size();
+            int m2 = markovMistakes(y).size();
+
+            if (n2 > n1 || m2 > m1) {
+                graph.addEdge(edge);
+            } else {
+                count++;
+            }
+        }
+
+        return count;
+    }
+
+    private void undirect() {
+        graph = GraphUtils.undirectedGraph(graph);
+    }
+
+    public static List<Edge> asList(int[] indices, List<Edge> nodes) {
+        List<Edge> list = new LinkedList<>();
+
+        for (int i : indices) {
+            list.add(nodes.get(i));
+        }
+
+        return list;
+    }
+
+    private void printNonFutureCounts(List<Node> nodes) {
+        nodes = new ArrayList<>(nodes);
+        Collections.sort(nodes);
+        List<List<Node>> extra = new ArrayList<>();
+
+        for (Node node : nodes) {
+            extra.add(markovMistakes(node, boundary(node)));
+        }
+
+        for (int i = 0; i < nodes.size(); i++) {
+            System.out.println("Count for " + nodes.get(i) + " = " + extra.get(i).size()
+                    + " boundary = " + boundary(nodes.get(i))
+                    + " non-future dependencies = " + extra.get(i));
+        }
     }
 
     private List<Node> descendants(Graph g, Node n) {
-        return g.getDescendants(Collections.singletonList(n));
+        Set<Node> descendants = new HashSet<>();
+
+        collectDescendantsVisit(g, n, descendants);
+
+        return new LinkedList<>(descendants);
     }
 
-    private List<Node> boundary(Graph g, Node x) {
+    private void collectDescendantsVisit(Graph g, Node node, Set<Node> descendants) {
+        descendants.add(node);
+        List<Node> children = g.getChildren(node);
+
+        if (!children.isEmpty()) {
+            for (Object aChildren : children) {
+                Node child = (Node) aChildren;
+                doChildClosureVisit(g, node, child, descendants);
+            }
+        }
+    }
+
+    private void doChildClosureVisit(Graph g, Node previous, Node node, Set<Node> closure) {
+        if (!closure.contains(node)) {
+            closure.add(node);
+
+            for (Edge edge1 : g.getEdges(node)) {
+                Node sub = Edges.traverseDirected(node, edge1);
+
+                if (sub == null) {
+                    continue;
+                }
+
+                if (previous != null) {
+                    if (g.isAmbiguousTriple(previous, node, sub)) continue;
+                }
+
+                doChildClosureVisit(g, node, sub, closure);
+            }
+        }
+    }
+
+    private List<Node> boundary(Node x) {
         Set<Node> b = new HashSet<>();
 
-        for (Node y : g.getAdjacentNodes(x)) {
+        for (Node y : graph.getAdjacentNodes(x)) {
             if (x == y) continue;
 
             if (Edges.isUndirectedEdge(graph.getEdge(x, y))) {
-                System.out.println(graph.getEdge(x, y));
                 b.add(y);
             }
 
-            if (g.isParentOf(y, x)) {
-                System.out.println(graph.getEdge(x, y));
-
+            if (graph.isParentOf(y, x)) {
                 b.add(y);
             }
         }
@@ -342,27 +423,27 @@ public final class PcAll implements GraphSearch {
         return new ArrayList<>(b);
     }
 
-    private boolean satisfiesMarkov(Graph g, Node x, Map<Node, List<Node>> boundaries) {
+    private List<Node> markovMistakes(Node x) {
+        return markovMistakes(x, boundary(x), this.graph);
+    }
 
+    private List<Node> markovMistakes(Node x, List<Node> boundary) {
+        return markovMistakes(x, boundary, this.graph);
+    }
 
-        for (Node y : g.getNodes()) {
+    private List<Node> markovMistakes(Node x, List<Node> boundary, Graph graph) {
+        List<Node> nodes = new ArrayList<>();
+
+        for (Node y : graph.getNodes()) {
             if (y == x) continue;
-            if (descendants(g, x).contains(y)) continue;
-            final List<Node> boundary = boundaries.get(x);
+            if (descendants(graph, x).contains(y)) continue;
             if (boundary.contains(y)) continue;
-
-            if (!test.isIndependent(x, y, boundary)) return false;
-
-//            DepthChoiceGenerator gen = new DepthChoiceGenerator(boundary.size(), boundary.size());
-//            int[] choice;
-//
-//            while ((choice = gen.next()) != null) {
-//                List<Node> adj = GraphUtils.asList(choice, boundary);
-//                if (!test.isIndependent(x, y, adj)) return false;
-//            }
+            if (!test.isIndependent(x, y, boundary)) {
+                nodes.add(y);
+            }
         }
 
-        return true;
+        return nodes;
     }
 
     public static boolean isArrowpointAllowed1(Node from, Node to,
@@ -413,32 +494,10 @@ public final class PcAll implements GraphSearch {
     //==========================PRIVATE METHODS===========================//
 
     private void logTriples() {
-        TetradLogger.getInstance().log("info", "\nCollider triples:");
-
-        for (Triple triple : colliderTriples) {
-            TetradLogger.getInstance().log("info", "Collider: " + triple);
-        }
-
-        TetradLogger.getInstance().log("info", "\nNoncollider triples:");
-
-        for (Triple triple : noncolliderTriples) {
-            TetradLogger.getInstance().log("info", "Noncollider: " + triple);
-        }
-
-        TetradLogger.getInstance().log("info", "\nAmbiguous triples (i.e. list of triples for which " +
-                "\nthere is ambiguous data about whether they are colliderDiscovery or not):");
-
-        for (Triple triple : getAmbiguousTriples()) {
-            TetradLogger.getInstance().log("info", "Ambiguous: " + triple);
-        }
+        throw new UnsupportedOperationException();
     }
 
     private void findAdjacencies() {
-//        FasStable fas = new FasStable(test);
-//        fas.setKnowledge(knowledge);
-//        fas.setVerbose(verbose);
-//        this.graph = fas.search();
-
         IFas fas;
 
         if (graph != null) {
@@ -467,7 +526,7 @@ public final class PcAll implements GraphSearch {
 
         // Note that we are ignoring the sepset map returned by this method
         // on purpose; it is not used in this search.
-        graph = fas.search();
+        this.graph = fas.search();
         sepsets = fas.getSepsets();
     }
 
@@ -493,6 +552,7 @@ public final class PcAll implements GraphSearch {
         MeekRules meekRules = new MeekRules();
         meekRules.setKnowledge(getKnowledge());
         meekRules.setAggressivelyPreventCycles(true);
+        meekRules.setUndirectUnforcedEdges(true);
         meekRules.orientImplied(graph);
     }
 

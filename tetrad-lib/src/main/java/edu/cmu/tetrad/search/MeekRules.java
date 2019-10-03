@@ -22,6 +22,7 @@
 package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.IKnowledge;
+import edu.cmu.tetrad.data.Knowledge2;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.ChoiceGenerator;
 import edu.cmu.tetrad.util.TetradLogger;
@@ -40,7 +41,7 @@ import java.util.*;
  */
 public class MeekRules implements ImpliedOrientation {
 
-    private IKnowledge knowledge;
+    private IKnowledge knowledge = new Knowledge2();
 
     //True if cycles are to be aggressively prevented. May be expensive for large graphs (but also useful for large
     //graphs).

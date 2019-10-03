@@ -847,6 +847,11 @@ public class TimeLagGraph implements Graph {
 		attributes.put(key, value);
 	}
 
+    @Override
+    public List<Node> getNeighbors(Node f) {
+        return graph.getNeighbors(f);
+    }
+
 }
 
 

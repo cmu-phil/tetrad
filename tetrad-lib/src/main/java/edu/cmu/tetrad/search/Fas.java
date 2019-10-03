@@ -297,13 +297,13 @@ public class Fas implements IFas {
                 try {
                     numIndependenceTests++;
                     independent = test.isIndependent(x, y, empty);
+                    getSepsets().setPValue(x, y, test.getPValue());
                 } catch (Exception e) {
                     e.printStackTrace();
                     independent = false;
                 }
 
                 if (independent) {
-                    getSepsets().setPValue(x, y, test.getPValue());
                     numIndependenceJudgements++;
                 } else {
                     numDependenceJudgement++;
@@ -417,6 +417,7 @@ public class Fas implements IFas {
                         try {
                             numIndependenceTests++;
                             independent = test.isIndependent(x, y, condSet);
+                            getSepsets().setPValue(x, y, test.getPValue());
                         } catch (Exception e) {
                             independent = false;
                         }

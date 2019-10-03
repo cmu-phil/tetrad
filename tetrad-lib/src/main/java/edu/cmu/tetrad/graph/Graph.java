@@ -661,6 +661,8 @@ public interface Graph extends TetradSerializable, TripleClassifier {
     void removeAttribute(String key);
     
     void addAttribute(String key, Object value);
+
+    List<Node> getNeighbors(Node f);
 }
 
 
