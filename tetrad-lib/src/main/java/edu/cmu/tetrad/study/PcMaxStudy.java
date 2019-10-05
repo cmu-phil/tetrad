@@ -137,7 +137,7 @@ public class PcMaxStudy {
 //        parameters.set(Params.USE_SELLKE_ADJUSTMENT, true);
 
         parameters.set(Params.NUM_RUNS, 5);
-        parameters.set(Params.DEPTH, 4);
+        parameters.set(Params.DEPTH, -1);
         parameters.set(Params.ALPHA, .01);
         parameters.set(Params.ORIENTATION_Q,  parameters.get(Params.ALPHA));
 //        parameters.set(Params.PENALTY_DISCOUNT, 6);

@@ -248,6 +248,10 @@ public final class PcAll implements GraphSearch {
 
         System.out.println("doMarkovLoop = " + doMarkovLoop);
 
+        if (doMarkovLoop && colliderDiscovery == OrientColliders.ColliderMethod.SEPSETS) {
+            throw new IllegalArgumentException("Cannot do the Markov loop with the Sepset method of collider discovery.");
+        }
+
         if (doMarkovLoop) {
             doMarkovLoop(nodes);
         }
@@ -272,6 +276,7 @@ public final class PcAll implements GraphSearch {
     }
 
     private void doMarkovLoop(List<Node> nodes) {
+
         WHILE:
         while (true) {
             for (Node y : nodes) {
