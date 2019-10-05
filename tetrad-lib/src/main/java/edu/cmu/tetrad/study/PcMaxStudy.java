@@ -71,7 +71,7 @@ public class PcMaxStudy {
 //        statistics.add(new ElapsedTime());
 
         statistics.setWeight("AR", 1);
-//        statistics.setWeight("AR", 1);
+        statistics.setWeight("AHP", .5);
 //        statistics.setWeight("%AMB", 1);
 //        statistics.setWeight("AHR", 1);
 
@@ -84,7 +84,7 @@ public class PcMaxStudy {
 
         comparison.setShowAlgorithmIndices(true);
         comparison.setShowSimulationIndices(true);
-        comparison.setSortByUtility(true);
+        comparison.setSortByUtility(false);
 //        comparison.setShowUtilities(true);
         comparison.setComparisonGraph(Comparison.ComparisonGraph.true_DAG);
 
@@ -136,15 +136,15 @@ public class PcMaxStudy {
 //
 //        parameters.set(Params.USE_SELLKE_ADJUSTMENT, true);
 
-        parameters.set(Params.NUM_RUNS, 1);
+        parameters.set(Params.NUM_RUNS, 5);
         parameters.set(Params.DEPTH, 4);
         parameters.set(Params.ALPHA, .01);
         parameters.set(Params.ORIENTATION_Q,  parameters.get(Params.ALPHA));
 //        parameters.set(Params.PENALTY_DISCOUNT, 6);
         parameters.set(Params.NUM_MEASURES, 10);
         parameters.set(Params.AVG_DEGREE, 4);
-        parameters.set(Params.COLLIDER_DISCOVERY_RULE, 2, 3);
-        parameters.set(Params.SAMPLE_SIZE, 500, 1000, 5000);
+        parameters.set(Params.COLLIDER_DISCOVERY_RULE, 2, 3, 4);
+        parameters.set(Params.SAMPLE_SIZE, 1000, 5000);
 //        parameters.set(Params.USE_FDR_FOR_INDEPENDENCE, false);
         parameters.set(Params.DO_MARKOV_LOOP, true, false);
 

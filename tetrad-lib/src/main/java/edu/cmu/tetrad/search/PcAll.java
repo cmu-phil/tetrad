@@ -28,7 +28,6 @@ import edu.cmu.tetrad.util.TetradLogger;
 
 import java.io.PrintStream;
 import java.util.*;
-import java.util.List;
 
 /**
  * Implements a convervative version of PC, in which the Markov condition is assumed but faithfulness is tested
@@ -38,14 +37,6 @@ import java.util.List;
  */
 public final class PcAll implements GraphSearch {
 
-
-    public boolean isDoMarkovLoop() {
-        return doMarkovLoop;
-    }
-
-    public void setDoMarkovLoop(boolean doMarkovLoop) {
-        this.doMarkovLoop = doMarkovLoop;
-    }
 
     public enum FasType {REGULAR, STABLE}
 
@@ -89,10 +80,6 @@ public final class PcAll implements GraphSearch {
     }
 
     //==============================PUBLIC METHODS========================//
-
-    public void setIndependenceMethod(OrientColliders.IndependenceDetectionMethod independenceMethod) {
-        this.independenceMethod = independenceMethod;
-    }
 
     public void setUseHeuristic(boolean useHeuristic) {
         throw new UnsupportedOperationException();
@@ -210,6 +197,10 @@ public final class PcAll implements GraphSearch {
         throw new UnsupportedOperationException();
     }
 
+    public void setDoMarkovLoop(boolean doMarkovLoop) {
+        this.doMarkovLoop = doMarkovLoop;
+    }
+
     /**
      * @return the set of noncollider triples found during the most recent run of the algorithm. Non-null after a call
      * to <code>search()</code>.
@@ -253,30 +244,49 @@ public final class PcAll implements GraphSearch {
         long start = System.currentTimeMillis();
 
         findAdjacencies();
-        SearchGraphUtils.pcOrientbk(knowledge, graph, nodes);
-        orientTriples();
-        applyMeekRules();
-        removeUnnecessaryMarks();
+        reorient();
 
         System.out.println("doMarkovLoop = " + doMarkovLoop);
 
-        Set<Edge> edges = new HashSet<>();
-
-
         if (doMarkovLoop) {
+            Graph removed = new EdgeListGraph(nodes);
+
+            WHILE:
             while (true) {
-                if (tryAddingEdge(nodes, edges) == null) {
-                    break;
+                for (Node y : nodes) {
+                    for (Node x : nodes) {
+                        if (x == y) continue;
+                        if (graph.isAdjacentTo(x, y)) continue;
+                        Graph g = tryAddingEdge(x, y, graph, removed);
+                        if (g != null) {
+                            graph = g;
+                            continue WHILE;
+                        }
+                    }
                 }
+
+                for (Node y : nodes) {
+                    for (Node x : nodes) {
+                        if (x == y) continue;
+                        if (!graph.isAdjacentTo(x, y)) continue;
+                        Graph g = tryRemovingEdge(x, y, this.graph, removed);
+                        if (g != null) {
+                            graph = g;
+                            continue WHILE;
+                        }
+                    }
+                }
+
+                break;
             }
         }
 
         printNonFutureCounts(nodes);
 
-
         TetradLogger.getInstance().log("graph", "\nReturning this graph: " + graph);
 
         long end = System.currentTimeMillis();
+
         this.elapsedTime = end - start;
 
         TetradLogger.getInstance().
@@ -290,78 +300,73 @@ public final class PcAll implements GraphSearch {
         return graph;
     }
 
-    private Edge tryAddingEdge(List<Node> nodes, Set<Edge> edges) {
-
-        for (Node y : nodes) {
-            for (Node x : nodes) {
-                if (edges.contains(Edges.undirectedEdge(x, y))) continue;
-                Edge edge = addEdge(x, y);
-                if (edge != null) {
-                    edges.add(Edges.undirectedEdge(x, y));
-                    return edge;
-                }
-            }
-        }
-
-        for (Node y : nodes) {
-            for (Node x : nodes) {
-                if (edges.contains(Edges.undirectedEdge(x, y))) continue;
-                Edge edge = removeEdge(x, y);
-                if (edge != null) {
-                    edges.add(Edges.undirectedEdge(x, y));
-                    return edge;
-                }
-            }
-        }
-
-        return null;
+    private void reorient() {
+        removeOrientations();
+        applyBackgroundKnowledge();
+        orientTriples();
+        removeUnnecessaryMarks();
+        applyMeekRules();
+        removeUnnecessaryMarks();
     }
 
-    private Edge addEdge(Node x, Node y) {
-        if (graph.isAdjacentTo(x, y)) return null;
-        Graph g = new EdgeListGraph(graph);
+    private void applyBackgroundKnowledge() {
+        SearchGraphUtils.pcOrientbk(knowledge, graph, graph.getNodes());
+    }
+
+    private void removeOrientations() {
+        graph = GraphUtils.undirectedGraph(graph);
+    }
+
+    private Graph tryAddingEdge(Node x, Node y, Graph graph, Graph remvoved) {
+        if (x == y) throw new IllegalArgumentException("Those two nodes were the same.");
+        if (graph.isAdjacentTo(x, y)) throw new IllegalArgumentException("That pair of nodes was adjacent.");
+        graph = new EdgeListGraph(graph);
 
         List<Node> m1 = nonMarkov(y);
 
-        if (m1.contains(x)) {
-            graph.addUndirectedEdge(x, y);
+        if (!m1.contains(x)) {
+            return null;
+        }
+        graph.addUndirectedEdge(x, y);
+        reorient();
 
-            graph = GraphUtils.undirectedGraph(graph);
-            orientTriples();
-            applyMeekRules();
-            removeUnnecessaryMarks();
+        List<Node> m2 = nonMarkov(y);
 
-            List<Node> m2 = nonMarkov(y);
+//        for (Node z : remvoved.getAdjacentNodes(y)) {
+//            if (nonMarkov(y).contains(z)) {
+//                return null;
+//            }
+//        }
+//
+//        for (Node z : remvoved.getAdjacentNodes(x)) {
+//            if (nonMarkov(x).contains(z)) {
+//                return null;
+//            }
+//        }
 
-            if (m1.containsAll(m2) && !m2.contains(x)) {
-                return graph.getEdge(x, y);
-            } else {
-                graph = g;
-            }
+        if (!m1.containsAll(m2)) {
+            return null;
         }
 
-        return null;
+        return graph;
     }
 
-    private Edge removeEdge(Node x, Node y) {
-        if (x == y) return null;
-        if (!graph.isAdjacentTo(x, y)) return  null;
-        Graph g = new EdgeListGraph(graph);
+    private Graph tryRemovingEdge(Node x, Node y, Graph graph, Graph removed) {
+        if (x == y) throw new IllegalArgumentException("Those two nodes were the same.");
+        if (!graph.isAdjacentTo(x, y)) throw new IllegalArgumentException("That pair of nodes was nonadjacent.");
+        graph = new EdgeListGraph(graph);
 
         Edge edge = graph.getEdge(x, y);
         graph.removeEdge(edge);
 
-        graph = GraphUtils.undirectedGraph(graph);
-        orientTriples();
-        applyMeekRules();
-//        removeUnnecessaryMarks();
+        reorient();
 
         if (nonMarkov(x).contains(y) || nonMarkov(y).contains(x)) {
-            graph = g;
-            return null;
+            return graph;
         }
 
-        return edge;
+        removed.addUndirectedEdge(x, y);
+        return null;
     }
 
     public static List<Edge> asList(int[] indices, List<Edge> nodes) {
