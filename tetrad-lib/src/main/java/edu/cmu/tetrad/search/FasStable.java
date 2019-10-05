@@ -293,7 +293,6 @@ public class FasStable implements IFas {
                 try {
                     numIndependenceTests++;
                     independent = test.isIndependent(x, y, empty);
-                    getSepsets().setPValue(x, y, test.getPValue());
                 } catch (Exception e) {
                     e.printStackTrace();
                     independent = false;
@@ -301,6 +300,7 @@ public class FasStable implements IFas {
 
                 if (independent) {
                     numIndependenceJudgements++;
+                    getSepsets().setPValue(x, y, test.getPValue());
                 } else {
                     numDependenceJudgement++;
                 }
@@ -407,13 +407,13 @@ public class FasStable implements IFas {
                         try {
                             numIndependenceTests++;
                             independent = test.isIndependent(x, y, condSet);
-                            getSepsets().setPValue(x, y, test.getPValue());
                         } catch (Exception e) {
                             independent = false;
                         }
 
                         if (independent) {
                             numIndependenceJudgements++;
+                            getSepsets().setPValue(x, y, test.getPValue());
                         } else {
                             numDependenceJudgement++;
                         }

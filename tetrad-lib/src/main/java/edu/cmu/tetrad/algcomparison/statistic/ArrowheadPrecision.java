@@ -31,6 +31,9 @@ public class ArrowheadPrecision implements Statistic {
         ArrowConfusion confusion = new ArrowConfusion(trueGraph, estGraph);
         double arrowsTp = confusion.getArrowsTp();
         double arrowsFp = confusion.getArrowsFp();
+
+        if (arrowsTp == 0 && arrowsFp != 0) return Double.NaN;
+
         return arrowsTp / (arrowsTp + arrowsFp);
     }
 

@@ -109,16 +109,17 @@ public class PcAll implements Algorithm, TakesInitialGraph, HasKnowledge, TakesI
 
             OrientColliders.IndependenceDetectionMethod independence_detection_method;
 
-            if (parameters.getBoolean(Params.USE_FDR_FOR_INDEPENDENCE)) {
-                independence_detection_method = OrientColliders.IndependenceDetectionMethod.FDR;
-            } else {
-                independence_detection_method = OrientColliders.IndependenceDetectionMethod.ALPHA;
-            }
+//            if (parameters.getBoolean(Params.USE_FDR_FOR_INDEPENDENCE)) {
+//                independence_detection_method = OrientColliders.IndependenceDetectionMethod.FDR;
+//            } else {
+//                independence_detection_method = OrientColliders.IndependenceDetectionMethod.ALPHA;
+//            }
 
             search.setFdrQ(parameters.getDouble(Params.ORIENTATION_Q));
             search.setColliderDiscovery(colliderDiscovery);
             search.setConflictRule(conflictRule);
-            search.setIndependenceMethod(independence_detection_method);
+            search.setDoMarkovLoop(parameters.getBoolean(Params.DO_MARKOV_LOOP));
+//            search.setIndependenceMethod(independence_detection_method);
 //            search.setUseHeuristic(parameters.getBoolean(Params.USE_MAX_P_ORIENTATION_HEURISTIC));
 //            search.setMaxPathLength(parameters.getInt(Params.MAX_P_ORIENTATION_MAX_PATH_LENGTH));
             search.setVerbose(parameters.getBoolean(Params.VERBOSE));
@@ -182,7 +183,8 @@ public class PcAll implements Algorithm, TakesInitialGraph, HasKnowledge, TakesI
         parameters.add(Params.CONCURRENT_FAS);
         parameters.add(Params.COLLIDER_DISCOVERY_RULE);
         parameters.add(Params.CONFLICT_RULE);
-        parameters.add(Params.USE_FDR_FOR_INDEPENDENCE);
+//        parameters.add(Params.USE_FDR_FOR_INDEPENDENCE);
+        parameters.add(Params.DO_MARKOV_LOOP);
         parameters.add(Params.DEPTH);
         parameters.add(Params.ORIENTATION_Q);
 //        parameters.add(Params.USE_MAX_P_ORIENTATION_HEURISTIC);

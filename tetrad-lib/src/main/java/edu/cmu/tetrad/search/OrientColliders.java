@@ -72,9 +72,6 @@ public class OrientColliders {
                 if (sepsets != null) {
                     List<Node> sepset = sepsets.get(a, c);
                     if (sepset != null) {
-                        PValue pValue = new PValue(sepsets.getPValue(a, c), sepset);
-                        notBMap.put(new NodePair(a, c), Collections.singletonList(pValue));
-
                         if (sepset.contains(b)) {
                             noncolliders.add(new Triple(a, b, c));
                         } else {
@@ -240,7 +237,6 @@ public class OrientColliders {
                             colliders.add(new Triple(a, b, c));
 
                             notbPvals.sort((p1, p2) -> Double.compare(p2.getP(), p1.getP()));
-                            notBMap.put(new NodePair(a, c), notbPvals);
 
                             if (verbose) {
                                 out.println(a + " --- " + b + " --- " + c + " depth = " + depth + ": COLLIDER"
@@ -261,7 +257,9 @@ public class OrientColliders {
             }
         }
 
-        colliders.sort(comparingDouble(a -> -notBMap.get(new NodePair(a.getX(), a.getZ())).get(0).getP()));
+        if (colliderMethod != ColliderMethod.SEPSETS) {
+            colliders.sort(comparingDouble(a -> -notBMap.get(new NodePair(a.getX(), a.getZ())).get(0).getP()));
+        }
 
         for (Triple triple : colliders) {
             Node a = triple.getX();

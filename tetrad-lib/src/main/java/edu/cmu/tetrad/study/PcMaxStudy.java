@@ -27,6 +27,7 @@ import edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern.*;
 import edu.cmu.tetrad.algcomparison.graph.RandomForward;
 import edu.cmu.tetrad.algcomparison.independence.FisherZ;
 import edu.cmu.tetrad.algcomparison.score.SemBicScore;
+import edu.cmu.tetrad.algcomparison.simulation.LinearFisherModel;
 import edu.cmu.tetrad.algcomparison.simulation.SemSimulation;
 import edu.cmu.tetrad.algcomparison.simulation.Simulation;
 import edu.cmu.tetrad.algcomparison.simulation.Simulations;
@@ -44,9 +45,11 @@ public class PcMaxStudy {
     public static void main(String... args) {
         Statistics statistics = new Statistics();
 
-//        statistics.add(new ParameterColumn(Params.COLLIDER_DISCOVERY_RULE));
+        statistics.add(new ParameterColumn(Params.COLLIDER_DISCOVERY_RULE));
+        statistics.add(new ParameterColumn(Params.DO_MARKOV_LOOP));
 //        statistics.add(new ParameterColumn(Params.USE_FDR_FOR_INDEPENDENCE));
 //        statistics.add(new ParameterColumn(Params.PENALTY_DISCOUNT));
+        statistics.add(new ParameterColumn(Params.SAMPLE_SIZE));
         statistics.add(new ParameterColumn(Params.ALPHA));
 //        statistics.add(new ParameterColumn(Params.ORIENTATION_Q));
 
@@ -56,27 +59,26 @@ public class PcMaxStudy {
         statistics.add(new ArrowheadRecall());
 //        statistics.add(new ArrowheadPrecisionCommonEdges());
 //        statistics.add(new ArrowheadRecallCommonEdges());
-//        statistics.add(new F1Arrow());
-//        statistics.add(new ColliderFp());
-//        statistics.add(new ColliderFn());
+        statistics.add(new F1All());
+        statistics.add(new ColliderFp());
+        statistics.add(new ColliderFn());
 //        statistics.add(new ColliderNumCoveringErrors());
 //        statistics.add(new ColliderNumUncoveringErrors());
-//        statistics.add(new PercentAmbiguous());
+        statistics.add(new PercentAmbiguous());
 //        statistics.add(new BicDiff());
 //        statistics.add(new NumberOfEdgesEst());
 //        statistics.add(new GraphExactlyRight());
 //        statistics.add(new ElapsedTime());
 
-//        statistics.setWeight("F1Arrow", 1);
+        statistics.setWeight("AR", 1);
 //        statistics.setWeight("AR", 1);
 //        statistics.setWeight("%AMB", 1);
 //        statistics.setWeight("AHR", 1);
 
         Algorithms algorithms = new Algorithms();
 
-//        algorithms.add(new Pcp(new FisherZ()));
         algorithms.add(new PcAll(new FisherZ()));
-//        algorithms.add(new Fges(new SemBicScore()));
+        algorithms.add(new Fges(new SemBicScore()));
 
         Comparison comparison = new Comparison();
 
@@ -116,8 +118,8 @@ public class PcMaxStudy {
 //
 //
 //
-//        parameters.set(Params.STABLE_FAS, false);
-//        parameters.set(Params.CONCURRENT_FAS, false);
+        parameters.set(Params.STABLE_FAS, true);
+        parameters.set(Params.CONCURRENT_FAS, false);
 //        parameters.set(Params.CONFLICT_RULE, 3);
 //
 //        parameters.set(Params.SYMMETRIC_FIRST_STEP, false);
@@ -132,20 +134,21 @@ public class PcMaxStudy {
 //        parameters.set(Params.DIFFERENT_GRAPHS, true);
 //
 //
-//        parameters.set(Params.USE_SELLKE_ADJUSTMENT, false);
+//        parameters.set(Params.USE_SELLKE_ADJUSTMENT, true);
 
-        parameters.set(Params.NUM_RUNS, 5);
-        parameters.set(Params.DEPTH, -1);
+        parameters.set(Params.NUM_RUNS, 1);
+        parameters.set(Params.DEPTH, 4);
         parameters.set(Params.ALPHA, .01);
-        parameters.set(Params.ORIENTATION_Q,  0.01);
+        parameters.set(Params.ORIENTATION_Q,  parameters.get(Params.ALPHA));
 //        parameters.set(Params.PENALTY_DISCOUNT, 6);
         parameters.set(Params.NUM_MEASURES, 10);
         parameters.set(Params.AVG_DEGREE, 4);
-        parameters.set(Params.COLLIDER_DISCOVERY_RULE, 2);
-        parameters.set(Params.SAMPLE_SIZE, 5000);
-        parameters.set(Params.USE_FDR_FOR_INDEPENDENCE, false);
+        parameters.set(Params.COLLIDER_DISCOVERY_RULE, 2, 3);
+        parameters.set(Params.SAMPLE_SIZE, 500, 1000, 5000);
+//        parameters.set(Params.USE_FDR_FOR_INDEPENDENCE, false);
+        parameters.set(Params.DO_MARKOV_LOOP, true, false);
 
-        parameters.set(Params.ERRORS_NORMAL, false);
+//        parameters.set(Params.ERRORS_NORMAL, false);
 
         parameters.set(Params.VERBOSE, false);
 

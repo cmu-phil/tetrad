@@ -63,6 +63,7 @@ public final class Params {
     public static final String DIFFERENT_GRAPHS = "differentGraphs";
     public static final String DISCRETIZE = "discretize";
     public static final String DO_COLLIDER_ORIENTATION = "doColliderOrientation";
+    public static final String DO_MARKOV_LOOP = "doMarkovLoop";
     public static final String ERRORS_NORMAL = "errorsNormal";
     public static final String EXTRA_EDGE_THRESHOLD = "extraEdgeThreshold";
     public static final String FAITHFULNESS_ASSUMED = "faithfulnessAssumed";
