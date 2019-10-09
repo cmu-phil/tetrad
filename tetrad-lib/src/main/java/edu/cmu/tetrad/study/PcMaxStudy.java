@@ -113,9 +113,10 @@ public class PcMaxStudy {
         parameters.set(Params.PENALTY_DISCOUNT, 2);
         parameters.set(Params.NUM_MEASURES, 10);
         parameters.set(Params.AVG_DEGREE, 4);
-        parameters.set(Params.COLLIDER_DISCOVERY_RULE, 2);
+        parameters.set(Params.COLLIDER_DISCOVERY_RULE, 4);
         parameters.set(Params.SAMPLE_SIZE, 500, 1000, 2000, 5000);
         parameters.set(Params.DO_MARKOV_LOOP, true, false);
+        parameters.set(Params.USE_FDR_FOR_INDEPENDENCE, true);
 
 //        parameters.set(Params.ERRORS_NORMAL, false);
 

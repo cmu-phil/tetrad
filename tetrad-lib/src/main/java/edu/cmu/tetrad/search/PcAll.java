@@ -355,9 +355,7 @@ public final class PcAll implements GraphSearch {
             changed = false;
 
             for (Node y : nodes) {
-                List<Node> nm = nonMarkov(y, G);
-
-                for (Node x : nm) {
+                for (Node x : nonMarkov(y, G)) {
                     if (expandsBoundary(x, y, G, counts)) {
                         G.addUndirectedEdge(x, y);
                         G = E(G);
@@ -415,7 +413,7 @@ public final class PcAll implements GraphSearch {
         Integer count = counts.get(Edges.undirectedEdge(x, y));
         if (count != null && count >= 30) return false;
 
-        return possibleNewBoundaryNode(x, y, G) || possibleNewBoundaryNode(y, x, G);
+        return possibleNewBoundaryNode(x, y, G);// || possibleNewBoundaryNode(y, x, G);
     }
 
     private boolean retractsBoundary(Node x, Node y, Graph G, Map<Edge, Integer> counts) {

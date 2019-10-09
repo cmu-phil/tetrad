@@ -489,7 +489,7 @@ public class OrientColliders {
     private List<PValue> getAllPValuesAboveQ(List<PValue> pValues, double q) {
         pValues.sort(comparingDouble(PValue::getP));
         List<PValue> above = new ArrayList<>();
-        for (PValue p : pValues) if (p.getP() >= q) above.add(p);
+        for (PValue p : pValues) if (p.getP() > q) above.add(p);
         return above;
     }
 
