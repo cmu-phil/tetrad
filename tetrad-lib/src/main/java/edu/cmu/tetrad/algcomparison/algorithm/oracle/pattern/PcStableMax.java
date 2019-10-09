@@ -65,8 +65,6 @@ public class PcStableMax implements Algorithm, TakesInitialGraph, HasKnowledge, 
             search.setColliderDiscovery(OrientColliders.ColliderMethod.PC_MAX);
             search.setConflictRule(edu.cmu.tetrad.search.OrientColliders.ConflictRule.PRIORITY);
             search.setVerbose(parameters.getBoolean(Params.VERBOSE));
-            search.setUseHeuristic(parameters.getBoolean(Params.USE_MAX_P_ORIENTATION_HEURISTIC));
-            search.setMaxPathLength(parameters.getInt(Params.MAX_P_ORIENTATION_MAX_PATH_LENGTH));
             return search.search();
         } else {
             PcStableMax pcStableMax = new PcStableMax(test, compareToTrue);

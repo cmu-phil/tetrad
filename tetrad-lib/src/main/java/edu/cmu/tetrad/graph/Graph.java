@@ -333,7 +333,7 @@ public interface Graph extends TetradSerializable, TripleClassifier {
     boolean isProperDescendentOf(Node node1, Node node2);
 
     /**
-     * @return true iff node1 is a (non-proper) descendant of node2.
+     * @return true iff node2 is a (non-proper) descendant of node1.
      */
     boolean isDescendentOf(Node node1, Node node2);
 

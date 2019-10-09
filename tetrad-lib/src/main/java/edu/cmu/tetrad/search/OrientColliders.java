@@ -5,7 +5,6 @@ import edu.cmu.tetrad.data.Knowledge2;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.ChoiceGenerator;
 import edu.cmu.tetrad.util.DepthChoiceGenerator;
-import edu.cmu.tetrad.util.StatUtils;
 
 import java.io.PrintStream;
 import java.util.*;
@@ -21,7 +20,7 @@ public class OrientColliders {
 
     private final IndependenceTest test;
     private int depth = 1000;
-    private double orientationQ = 0.2;
+    private double orientationQ = -1;
     private PrintStream out = System.out;
     private boolean verbose = false;
     private IKnowledge knowledge = new Knowledge2();
@@ -79,180 +78,7 @@ public class OrientColliders {
                         }
                     }
                 } else {
-
-                    List<PValue> pValues = getAllPValues(a, c, depth, graph, test);
-
-                    List<PValue> bPvals = new ArrayList<>();
-                    List<PValue> notbPvals = new ArrayList<>();
-
-                    for (PValue p : pValues) {
-                        if (p.getSepset().contains(b)) {
-                            bPvals.add(p);
-                        } else {
-                            notbPvals.add(p);
-                        }
-                    }
-
-                    if (colliderMethod == ColliderMethod.SEPSETS) {
-                        List<Node> sepset = sepsets.get(a, c);
-
-                        if (sepset.contains(b)) {
-                            noncolliders.add(new Triple(a, b, c));
-
-                            if (verbose) {
-                                out.println(a + " --- " + b + " --- " + c + " depth = " + depth + ": noncollider"
-                                        + " bVals = " + bPvals.size() + " notbVals " + notbPvals.size());
-                            }
-                        } else {
-                            colliders.add(new Triple(a, b, c));
-
-                            if (verbose) {
-                                out.println(a + " --- " + b + " --- " + c + " depth = " + depth + ": COLLIDER"
-                                        + " bVals = " + bPvals.size() + " notbVals " + notbPvals.size());
-                            }
-                        }
-                    } else if (colliderMethod == ColliderMethod.CPC) {
-                        List<PValue> neg = getFalseNegatives(pValues, orientationQ);
-
-                        List<PValue> existsb = new ArrayList<>();
-                        List<PValue> existsnotb = new ArrayList<>();
-
-                        for (PValue p : neg) {
-                            if (p.getSepset().contains(b)) {
-                                existsb.add(p);
-                            } else {
-                                existsnotb.add(p);
-                            }
-                        }
-
-//                        List<PValue> existsb = extractH0(bPvals, orientationQ);
-//                        List<PValue> existsnotb = extractH0(notbPvals, orientationQ);
-
-                        if (!existsb.isEmpty() && existsnotb.isEmpty()) {
-                            noncolliders.add(new Triple(a, b, c));
-                            if (verbose) {
-                                out.println(a + " --- " + b + " --- " + c + " depth = " + depth + ": noncollider"
-                                        + " existsb = " + existsb.size() + " existsnotb " + existsnotb.size());
-                            }
-                        } else if (existsb.isEmpty() && !existsnotb.isEmpty() && knowledgeAllowsCollider(a, b, c, knowledge)) {
-                            colliders.add(new Triple(a, b, c));
-
-                            notbPvals.sort((p1, p2) -> Double.compare(p2.getP(), p1.getP()));
-                            notBMap.put(new NodePair(a, c), existsnotb);
-
-                            if (verbose) {
-                                out.println(a + " --- " + b + " --- " + c + " depth = " + depth + ": COLLIDER"
-                                        + " existb = " + existsb.size() + " existsnotb " + existsnotb.size());
-                            }
-                        } else {
-                            pValues.sort((o1, o2) -> Double.compare(o2.getP(), o1.getP()));
-                            ambiguous.add(new Triple(a, b, c));
-
-                            if (verbose) {
-                                out.println(a + " --- " + b + " --- " + c + " depth = " + depth + ": ...ambiguous"
-                                        + " existb = " + existsb.size() + " existsnotb " + existsnotb.size());
-                            }
-                        }
-                    } else if (colliderMethod == ColliderMethod.MPC) {
-                        List<PValue> existsb = getFalseNegatives(bPvals, orientationQ);
-                        List<PValue> existsnotb = getFalseNegatives(notbPvals, orientationQ);
-
-                        if (existsb.size() > existsnotb.size()) {
-                            noncolliders.add(new Triple(a, b, c));
-                            if (verbose) {
-                                out.println(a + " --- " + b + " --- " + c + " depth = " + depth + ": noncollider"
-                                        + " existsb = " + existsb.size() + " existsnotb " + existsnotb.size());
-                            }
-                        } else if (existsb.size() < existsnotb.size() && knowledgeAllowsCollider(a, b, c, knowledge)) {
-                            colliders.add(new Triple(a, b, c));
-
-                            notbPvals.sort((p1, p2) -> Double.compare(p2.getP(), p1.getP()));
-                            notBMap.put(new NodePair(a, c), notbPvals);
-
-                            if (verbose) {
-                                out.println(a + " --- " + b + " --- " + c + " depth = " + depth + ": COLLIDER"
-                                        + " existb = " + existsb.size() + " existsnotb " + existsnotb.size());
-                            }
-                        } else {
-                            ambiguous.add(new Triple(a, b, c));
-
-                            if (verbose) {
-                                out.println(a + " --- " + b + " --- " + c + " depth = " + depth + ": ...ambiguous"
-                                        + " existb = " + existsb.size() + " existsnotb " + existsnotb.size());
-                            }
-                        }
-                    } else if (colliderMethod == ColliderMethod.PC_MAX) {
-                        List<PValue> above = getFalseNegatives(pValues, orientationQ);
-
-                        above.sort(comparingDouble(PValue::getP));
-
-                        Set<Node> sepset = null;
-
-                        if (!above.isEmpty()) {
-                            sepset = above.get(above.size() - 1).getSepset();
-                        }
-
-                        if (sepset != null && sepset.contains(b)) {
-                            noncolliders.add(new Triple(a, b, c));
-                            if (verbose) {
-                                out.println(a + " --- " + b + " --- " + c + " depth = " + orientationQ + ": noncollider"
-                                        + " bVals = " + bPvals.size() + " notbVals " + notbPvals.size());
-                            }
-                        } else if (sepset != null && !sepset.contains(b)) {
-                            colliders.add(new Triple(a, b, c));
-
-                            notbPvals.sort((p1, p2) -> Double.compare(p2.getP(), p1.getP()));
-                            notBMap.put(new NodePair(a, c), notbPvals);
-
-                            if (verbose) {
-                                out.println(a + " --- " + b + " --- " + c + " depth = " + depth + ": COLLIDER"
-                                        + " bVals = " + bPvals.size() + " notbVals " + notbPvals.size());
-                            }
-                        } else {
-                            ambiguous.add(new Triple(a, b, c));
-
-                            if (verbose) {
-                                out.println(a + " --- " + b + " --- " + c + " depth = " + depth + ": ...ambiguous"
-                                        + " bVals = " + bPvals.size() + " notbVals " + notbPvals.size());
-                            }
-                        }
-                    } else if (colliderMethod == ColliderMethod.FIRST_EMPTY) {
-                        List<PValue> above = getFalseNegatives(pValues, orientationQ);
-
-                        above.sort(comparingDouble(PValue::getP));
-
-                        Set<Node> sepset = null;
-
-                        if (!above.isEmpty()) {
-                            sepset = above.get(above.size() - 1).getSepset();
-                        }
-
-                        if (sepset != null && sepset.contains(b)) {
-                            noncolliders.add(new Triple(a, b, c));
-                            if (verbose) {
-                                out.println(a + " --- " + b + " --- " + c + " depth = " + orientationQ + ": noncollider"
-                                        + " bVals = " + bPvals.size() + " notbVals " + notbPvals.size());
-                            }
-                        } else if (sepset != null && !sepset.contains(b)) {
-                            colliders.add(new Triple(a, b, c));
-
-                            notbPvals.sort((p1, p2) -> Double.compare(p2.getP(), p1.getP()));
-
-                            if (verbose) {
-                                out.println(a + " --- " + b + " --- " + c + " depth = " + depth + ": COLLIDER"
-                                        + " bVals = " + bPvals.size() + " notbVals " + notbPvals.size());
-                            }
-                        } else {
-                            ambiguous.add(new Triple(a, b, c));
-
-                            if (verbose) {
-                                out.println(a + " --- " + b + " --- " + c + " depth = " + depth + ": ...ambiguous"
-                                        + " bVals = " + bPvals.size() + " notbVals " + notbPvals.size());
-                            }
-                        }
-                    } else {
-                        throw new IllegalArgumentException("Undefined collider method");
-                    }
+                    orientTriple(graph, a, b, c, colliders, ambiguous, noncolliders, notBMap);
                 }
             }
         }
@@ -304,6 +130,280 @@ public class OrientColliders {
 
     }
 
+    public SearchGraphUtils.CpcTripleType orientTriple(Graph graph, Node a, Node b, Node c) {
+        List<PValue> pValues = getAllPValues(a, c, depth, graph, test);
+
+        List<PValue> bPvals = new ArrayList<>();
+        List<PValue> notbPvals = new ArrayList<>();
+
+        for (PValue p : pValues) {
+            if (p.getSepset().contains(b)) {
+                bPvals.add(p);
+            } else {
+                notbPvals.add(p);
+            }
+        }
+
+        if (colliderMethod == ColliderMethod.SEPSETS) {
+            List<Node> sepset = sepsets.get(a, c);
+
+            if (sepset.contains(b)) {
+                return SearchGraphUtils.CpcTripleType.NONCOLLIDER;
+            } else {
+                return SearchGraphUtils.CpcTripleType.COLLIDER;
+            }
+        } else if (colliderMethod == ColliderMethod.CPC) {
+            List<PValue> neg = getFalseNegatives(pValues, orientationQ);
+
+            List<PValue> existsb = new ArrayList<>();
+            List<PValue> existsnotb = new ArrayList<>();
+
+            for (PValue p : neg) {
+                if (p.getSepset().contains(b)) {
+                    existsb.add(p);
+                } else {
+                    existsnotb.add(p);
+                }
+            }
+//                        List<PValue> existsnotb = extractH0(notbPvals, orientationQ);
+
+            if (!existsb.isEmpty() && existsnotb.isEmpty()) {
+                return SearchGraphUtils.CpcTripleType.NONCOLLIDER;
+            } else if (existsb.isEmpty() && !existsnotb.isEmpty() && knowledgeAllowsCollider(a, b, c, knowledge)) {
+                return SearchGraphUtils.CpcTripleType.COLLIDER;
+            } else {
+                pValues.sort((o1, o2) -> Double.compare(o2.getP(), o1.getP()));
+                return SearchGraphUtils.CpcTripleType.AMBIGUOUS;
+            }
+        } else if (colliderMethod == ColliderMethod.MPC) {
+            List<PValue> existsb = getFalseNegatives(bPvals, orientationQ);
+            List<PValue> existsnotb = getFalseNegatives(notbPvals, orientationQ);
+
+            if (existsb.size() > existsnotb.size()) {
+                return SearchGraphUtils.CpcTripleType.NONCOLLIDER;
+            } else if (existsb.size() < existsnotb.size() && knowledgeAllowsCollider(a, b, c, knowledge)) {
+                return SearchGraphUtils.CpcTripleType.COLLIDER;
+            } else {
+                return SearchGraphUtils.CpcTripleType.AMBIGUOUS;
+            }
+        } else if (colliderMethod == ColliderMethod.PC_MAX) {
+            List<PValue> above = getFalseNegatives(pValues, orientationQ);
+
+            above.sort(comparingDouble(PValue::getP));
+
+            Set<Node> sepset = null;
+
+            if (!above.isEmpty()) {
+                sepset = above.get(above.size() - 1).getSepset();
+            }
+
+            if (sepset != null && sepset.contains(b)) {
+                return SearchGraphUtils.CpcTripleType.NONCOLLIDER;
+            } else if (sepset != null && !sepset.contains(b)) {
+                return SearchGraphUtils.CpcTripleType.COLLIDER;
+            } else {
+                return SearchGraphUtils.CpcTripleType.AMBIGUOUS;
+            }
+        } else if (colliderMethod == ColliderMethod.FIRST_EMPTY) {
+            List<PValue> above = getFalseNegatives(pValues, orientationQ);
+
+            above.sort(comparingDouble(PValue::getP));
+
+            Set<Node> sepset = null;
+
+            if (!above.isEmpty()) {
+                sepset = above.get(above.size() - 1).getSepset();
+            }
+
+            if (sepset != null && sepset.contains(b)) {
+                return SearchGraphUtils.CpcTripleType.NONCOLLIDER;
+            } else if (sepset != null && !sepset.contains(b)) {
+                return SearchGraphUtils.CpcTripleType.COLLIDER;
+            } else {
+                return SearchGraphUtils.CpcTripleType.AMBIGUOUS;
+            }
+        } else {
+            throw new IllegalArgumentException("Undefined collider method");
+        }
+
+    }
+
+    private void orientTriple(Graph graph, Node a, Node b, Node c, List<Triple> colliders, List<Triple> ambiguous, List<Triple> noncolliders, Map<NodePair, List<PValue>> notBMap) {
+        List<PValue> pValues = getAllPValues(a, c, depth, graph, test);
+
+        List<PValue> bPvals = new ArrayList<>();
+        List<PValue> notbPvals = new ArrayList<>();
+
+        for (PValue p : pValues) {
+            if (p.getSepset().contains(b)) {
+                bPvals.add(p);
+            } else {
+                notbPvals.add(p);
+            }
+        }
+
+        if (colliderMethod == ColliderMethod.SEPSETS) {
+            List<Node> sepset = sepsets.get(a, c);
+
+            if (sepset.contains(b)) {
+                if (noncolliders != null) noncolliders.add(new Triple(a, b, c));
+
+                if (verbose) {
+                    out.println(a + " --- " + b + " --- " + c + " depth = " + depth + ": noncollider"
+                            + " bVals = " + bPvals.size() + " notbVals " + notbPvals.size());
+                }
+            } else {
+                if (colliders != null) colliders.add(new Triple(a, b, c));
+
+                if (verbose) {
+                    out.println(a + " --- " + b + " --- " + c + " depth = " + depth + ": COLLIDER"
+                            + " bVals = " + bPvals.size() + " notbVals " + notbPvals.size());
+                }
+            }
+        } else if (colliderMethod == ColliderMethod.CPC) {
+            List<PValue> neg = getFalseNegatives(pValues, orientationQ);
+
+            List<PValue> existsb = new ArrayList<>();
+            List<PValue> existsnotb = new ArrayList<>();
+
+            for (PValue p : neg) {
+                if (p.getSepset().contains(b)) {
+                    existsb.add(p);
+                } else {
+                    existsnotb.add(p);
+                }
+            }
+
+//                        List<PValue> existsb = extractH0(bPvals, orientationQ);
+//                        List<PValue> existsnotb = extractH0(notbPvals, orientationQ);
+
+            if (!existsb.isEmpty() && existsnotb.isEmpty()) {
+                if (noncolliders != null) noncolliders.add(new Triple(a, b, c));
+                if (verbose) {
+                    out.println(a + " --- " + b + " --- " + c + " depth = " + depth + ": noncollider"
+                            + " existsb = " + existsb.size() + " existsnotb " + existsnotb.size());
+                }
+            } else if (existsb.isEmpty() && !existsnotb.isEmpty() && knowledgeAllowsCollider(a, b, c, knowledge)) {
+                if (colliders != null) colliders.add(new Triple(a, b, c));
+
+                notbPvals.sort((p1, p2) -> Double.compare(p2.getP(), p1.getP()));
+                notBMap.put(new NodePair(a, c), existsnotb);
+
+                if (verbose) {
+                    out.println(a + " --- " + b + " --- " + c + " depth = " + depth + ": COLLIDER"
+                            + " existb = " + existsb.size() + " existsnotb " + existsnotb.size());
+                }
+            } else {
+                pValues.sort((o1, o2) -> Double.compare(o2.getP(), o1.getP()));
+                if (ambiguous != null) ambiguous.add(new Triple(a, b, c));
+
+                if (verbose) {
+                    out.println(a + " --- " + b + " --- " + c + " depth = " + depth + ": ...ambiguous"
+                            + " existb = " + existsb.size() + " existsnotb " + existsnotb.size());
+                }
+            }
+        } else if (colliderMethod == ColliderMethod.MPC) {
+            List<PValue> existsb = getFalseNegatives(bPvals, orientationQ);
+            List<PValue> existsnotb = getFalseNegatives(notbPvals, orientationQ);
+
+            if (existsb.size() > existsnotb.size()) {
+                if (noncolliders != null) noncolliders.add(new Triple(a, b, c));
+                if (verbose) {
+                    out.println(a + " --- " + b + " --- " + c + " depth = " + depth + ": noncollider"
+                            + " existsb = " + existsb.size() + " existsnotb " + existsnotb.size());
+                }
+            } else if (existsb.size() < existsnotb.size() && knowledgeAllowsCollider(a, b, c, knowledge)) {
+                if (colliders != null) colliders.add(new Triple(a, b, c));
+
+                notbPvals.sort((p1, p2) -> Double.compare(p2.getP(), p1.getP()));
+                notBMap.put(new NodePair(a, c), notbPvals);
+
+                if (verbose) {
+                    out.println(a + " --- " + b + " --- " + c + " depth = " + depth + ": COLLIDER"
+                            + " existb = " + existsb.size() + " existsnotb " + existsnotb.size());
+                }
+            } else {
+                if (ambiguous != null) ambiguous.add(new Triple(a, b, c));
+
+                if (verbose) {
+                    out.println(a + " --- " + b + " --- " + c + " depth = " + depth + ": ...ambiguous"
+                            + " existb = " + existsb.size() + " existsnotb " + existsnotb.size());
+                }
+            }
+        } else if (colliderMethod == ColliderMethod.PC_MAX) {
+            List<PValue> above = getFalseNegatives(pValues, orientationQ);
+
+            above.sort(comparingDouble(PValue::getP));
+
+            Set<Node> sepset = null;
+
+            if (!above.isEmpty()) {
+                sepset = above.get(above.size() - 1).getSepset();
+            }
+
+            if (sepset != null && sepset.contains(b)) {
+                noncolliders.add(new Triple(a, b, c));
+                if (verbose) {
+                    out.println(a + " --- " + b + " --- " + c + " depth = " + orientationQ + ": noncollider"
+                            + " bVals = " + bPvals.size() + " notbVals " + notbPvals.size());
+                }
+            } else if (sepset != null && !sepset.contains(b)) {
+                colliders.add(new Triple(a, b, c));
+
+                notbPvals.sort((p1, p2) -> Double.compare(p2.getP(), p1.getP()));
+                notBMap.put(new NodePair(a, c), notbPvals);
+
+                if (verbose) {
+                    out.println(a + " --- " + b + " --- " + c + " depth = " + depth + ": COLLIDER"
+                            + " bVals = " + bPvals.size() + " notbVals " + notbPvals.size());
+                }
+            } else {
+                ambiguous.add(new Triple(a, b, c));
+
+                if (verbose) {
+                    out.println(a + " --- " + b + " --- " + c + " depth = " + depth + ": ...ambiguous"
+                            + " bVals = " + bPvals.size() + " notbVals " + notbPvals.size());
+                }
+            }
+        } else if (colliderMethod == ColliderMethod.FIRST_EMPTY) {
+            List<PValue> above = getFalseNegatives(pValues, orientationQ);
+
+            above.sort(comparingDouble(PValue::getP));
+
+            Set<Node> sepset = null;
+
+            if (!above.isEmpty()) {
+                sepset = above.get(above.size() - 1).getSepset();
+            }
+
+            if (sepset != null && sepset.contains(b)) {
+                noncolliders.add(new Triple(a, b, c));
+                if (verbose) {
+                    out.println(a + " --- " + b + " --- " + c + " depth = " + orientationQ + ": noncollider"
+                            + " bVals = " + bPvals.size() + " notbVals " + notbPvals.size());
+                }
+            } else if (sepset != null && !sepset.contains(b)) {
+                colliders.add(new Triple(a, b, c));
+
+                notbPvals.sort((p1, p2) -> Double.compare(p2.getP(), p1.getP()));
+
+                if (verbose) {
+                    out.println(a + " --- " + b + " --- " + c + " depth = " + depth + ": COLLIDER"
+                            + " bVals = " + bPvals.size() + " notbVals " + notbPvals.size());
+                }
+            } else {
+                ambiguous.add(new Triple(a, b, c));
+
+                if (verbose) {
+                    out.println(a + " --- " + b + " --- " + c + " depth = " + depth + ": ...ambiguous"
+                            + " bVals = " + bPvals.size() + " notbVals " + notbPvals.size());
+                }
+            }
+        } else {
+            throw new IllegalArgumentException("Undefined collider method");
+        }
+    }
+
     //=============================== PUBLIC
 
     public void setConflictRule(ConflictRule conflictRule) {
@@ -327,7 +427,11 @@ public class OrientColliders {
     }
 
     public void setOrientationQ(double orientationQ) {
-        this.orientationQ = orientationQ;
+        if (orientationQ == -1) {
+            this.orientationQ = test.getAlpha();
+        } else {
+            this.orientationQ = orientationQ;
+        }
     }
 
     private boolean knowledgeAllowsCollider(Node a, Node b, Node c, IKnowledge knowledge) {
@@ -373,23 +477,23 @@ public class OrientColliders {
 
     private List<PValue> getFalseNegatives(List<PValue> pValues, double q) {
         if (independenceDetectionMethod == IndependenceDetectionMethod.ALPHA) {
-            return getAllPValuesAboveAlpha(pValues, q);
+            return getAllPValuesAboveQ(pValues, q);
         } else if (independenceDetectionMethod == IndependenceDetectionMethod.FDR) {
-            List<PValue> h0 = extractH0(new ArrayList<>(pValues), q);
-            return getAllPValuesAboveAlpha(h0, q);
+            List<PValue> h0 = extractH0(new ArrayList<>(pValues));
+            return getAllPValuesAboveQ(h0, q);
         } else {
             throw new IllegalArgumentException();
         }
     }
 
-    private List<PValue> getAllPValuesAboveAlpha(List<PValue> pValues, double alpha) {
+    private List<PValue> getAllPValuesAboveQ(List<PValue> pValues, double q) {
         pValues.sort(comparingDouble(PValue::getP));
         List<PValue> above = new ArrayList<>();
-        for (PValue p : pValues) if (p.getP() >= alpha) above.add(p);
+        for (PValue p : pValues) if (p.getP() >= q) above.add(p);
         return above;
     }
 
-    private List<PValue> extractH0(List<PValue> pValues, double q) {
+    private List<PValue> extractH0(List<PValue> pValues) {
         pValues.sort(comparingDouble(PValue::getP));
 
         List<PValue> h0 = new ArrayList<>();
@@ -400,8 +504,7 @@ public class OrientColliders {
         if (!pValues.isEmpty()) {
             if (pValues.get(m - 1).getP() >= (m - 5) / (double) m) {
                 h0.add(pValues.get(m - 1));
-            }
-            else {
+            } else {
                 return new ArrayList<>();
             }
         }
@@ -430,7 +533,6 @@ public class OrientColliders {
 
         return h0;
     }
-
 
     private static class PValue {
         private double p;

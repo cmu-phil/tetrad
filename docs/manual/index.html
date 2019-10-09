@@ -3681,18 +3681,20 @@ Usually covariance values are chosen from U(-b, -a) U U(a, b) for some a, b; thi
             <li>Value Type: <span id="fastIcaTolerance_value_type">Double</span></li>
         </ul>
 
-        <h3 id="orientationQ" class="parameter_description">orienationQ</h3>
+        <h3 id="orientationAlpha" class="parameter_description">orienationQ</h3>
         <ul class="parameter_description_list">
-            <li>Short Description: <span id="orientationQ_short_desc">The q for orientation (alpha or fdr Q).</span>
+            <li>Short Description: <span id="orientationAlpha_short_desc">The alpha for orientation. Default -1.</span>
             </li>
-            <li>Long Description: <span id="orientationQ_long_desc">A parameter to control idenfication of positives,
-                used either as a p-value cutoff or a a bound for FDR) of the percentage of false
-                positive (dependence) judgments.</span>
+            <li>Long Description: <span id="orientationAlpha_long_desc">The alpha level for orientation, which may
+                be different than the one used for adjacencies. If False Discover Rate is used, this is the q* level,
+                used to control false positive. It is guaranteed that at most q*% of the positives will be false.
+                If a value of -1 is specified, the alpha level used for adjacency search will also be used for
+                orientation.</span>
             </li>
-            <li>Default Value: <span id="orientationQ_default_value">1.0</span></li>
-            <li>Lower Bound: <span id="orientationQ_lower_bound">0.0</span></li>
-            <li>Upper Bound: <span id="orientationQ_upper_bound">1.0</span></li>
-            <li>Value Type: <span id="orientationQ_value_type">Double</span></li>
+            <li>Default Value: <span id="orientationAlpha_default_value">-1.0</span></li>
+            <li>Lower Bound: <span id="orientationAlpha_lower_bound">0.0</span></li>
+            <li>Upper Bound: <span id="orientationAlpha_upper_bound">1.0</span></li>
+            <li>Value Type: <span id="orientationAlpha_value_type">Double</span></li>
         </ul>
 
         <h3 id="fisherEpsilon" class="parameter_description">fisherEpsilon</h3>

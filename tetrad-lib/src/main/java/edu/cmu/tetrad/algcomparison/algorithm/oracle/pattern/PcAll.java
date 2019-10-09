@@ -115,7 +115,7 @@ public class PcAll implements Algorithm, TakesInitialGraph, HasKnowledge, TakesI
 //                independence_detection_method = OrientColliders.IndependenceDetectionMethod.ALPHA;
 //            }
 
-            search.setFdrQ(parameters.getDouble(Params.ORIENTATION_Q));
+            search.setOrientationAlpha(parameters.getDouble(Params.ORIENTATION_ALPHA));
             search.setColliderDiscovery(colliderDiscovery);
             search.setConflictRule(conflictRule);
             search.setDoMarkovLoop(parameters.getBoolean(Params.DO_MARKOV_LOOP));
@@ -186,7 +186,7 @@ public class PcAll implements Algorithm, TakesInitialGraph, HasKnowledge, TakesI
 //        parameters.add(Params.USE_FDR_FOR_INDEPENDENCE);
         parameters.add(Params.DO_MARKOV_LOOP);
         parameters.add(Params.DEPTH);
-        parameters.add(Params.ORIENTATION_Q);
+        parameters.add(Params.ORIENTATION_ALPHA);
 //        parameters.add(Params.USE_MAX_P_ORIENTATION_HEURISTIC);
 //        parameters.add(Params.MAX_P_ORIENTATION_MAX_PATH_LENGTH);
 

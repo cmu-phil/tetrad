@@ -49,7 +49,7 @@ public class CpcFdr implements Algorithm, HasKnowledge, TakesIndependenceWrapper
         if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
             edu.cmu.tetrad.search.CpcFdr search = new edu.cmu.tetrad.search.CpcFdr(test.getTest(dataSet, parameters));
             search.setDepth(parameters.getInt(Params.DEPTH));
-            search.setFdrQ(parameters.getDouble(Params.ORIENTATION_Q));
+            search.setFdrQ(parameters.getDouble(Params.ORIENTATION_ALPHA));
             search.setKnowledge(knowledge);
             search.setVerbose(parameters.getBoolean(Params.VERBOSE));
 
@@ -108,7 +108,7 @@ public class CpcFdr implements Algorithm, HasKnowledge, TakesIndependenceWrapper
     public List<String> getParameters() {
         List<String> parameters = new ArrayList<>();
         parameters.add(Params.DEPTH);
-        parameters.add(Params.ORIENTATION_Q);
+        parameters.add(Params.ORIENTATION_ALPHA);
         parameters.add(Params.VERBOSE);
         return parameters;
     }

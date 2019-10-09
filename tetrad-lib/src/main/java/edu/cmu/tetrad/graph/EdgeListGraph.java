@@ -701,7 +701,7 @@ public class EdgeListGraph implements Graph, TripleClassifier {
     /**
      * Determines whether one node is a descendent of another.
      */
-    public boolean isDescendentOf(Node node1, Node node2) {
+    public boolean  isDescendentOf(Node node1, Node node2) {
         return isAncestorOf(node2, node1);
     }
 

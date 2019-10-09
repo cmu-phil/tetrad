@@ -27,7 +27,6 @@ import edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern.*;
 import edu.cmu.tetrad.algcomparison.graph.RandomForward;
 import edu.cmu.tetrad.algcomparison.independence.FisherZ;
 import edu.cmu.tetrad.algcomparison.score.SemBicScore;
-import edu.cmu.tetrad.algcomparison.simulation.LinearFisherModel;
 import edu.cmu.tetrad.algcomparison.simulation.SemSimulation;
 import edu.cmu.tetrad.algcomparison.simulation.Simulation;
 import edu.cmu.tetrad.algcomparison.simulation.Simulations;
@@ -48,27 +47,27 @@ public class PcMaxStudy {
         statistics.add(new ParameterColumn(Params.COLLIDER_DISCOVERY_RULE));
         statistics.add(new ParameterColumn(Params.DO_MARKOV_LOOP));
 //        statistics.add(new ParameterColumn(Params.USE_FDR_FOR_INDEPENDENCE));
-//        statistics.add(new ParameterColumn(Params.PENALTY_DISCOUNT));
         statistics.add(new ParameterColumn(Params.SAMPLE_SIZE));
+        statistics.add(new ParameterColumn(Params.PENALTY_DISCOUNT));
         statistics.add(new ParameterColumn(Params.ALPHA));
-//        statistics.add(new ParameterColumn(Params.ORIENTATION_Q));
+        statistics.add(new ParameterColumn(Params.ORIENTATION_ALPHA));
 
         statistics.add(new AdjacencyPrecision());
         statistics.add(new AdjacencyRecall());
         statistics.add(new ArrowheadPrecision());
         statistics.add(new ArrowheadRecall());
-//        statistics.add(new ArrowheadPrecisionCommonEdges());
-//        statistics.add(new ArrowheadRecallCommonEdges());
+        statistics.add(new ArrowheadPrecisionCommonEdges());
+        statistics.add(new ArrowheadRecallCommonEdges());
         statistics.add(new F1All());
         statistics.add(new ColliderFp());
         statistics.add(new ColliderFn());
 //        statistics.add(new ColliderNumCoveringErrors());
 //        statistics.add(new ColliderNumUncoveringErrors());
         statistics.add(new PercentAmbiguous());
-//        statistics.add(new BicDiff());
+        statistics.add(new BicDiff());
 //        statistics.add(new NumberOfEdgesEst());
 //        statistics.add(new GraphExactlyRight());
-//        statistics.add(new ElapsedTime());
+        statistics.add(new ElapsedTime());
 
         statistics.setWeight("AR", 1);
         statistics.setWeight("AHP", .5);
@@ -86,7 +85,7 @@ public class PcMaxStudy {
         comparison.setShowSimulationIndices(true);
         comparison.setSortByUtility(false);
 //        comparison.setShowUtilities(true);
-        comparison.setComparisonGraph(Comparison.ComparisonGraph.true_DAG);
+        comparison.setComparisonGraph(Comparison.ComparisonGraph.Pattern_of_the_true_DAG);
 
         Simulations simulations = new Simulations();
         simulations.add(new SemSimulation(new RandomForward()));
@@ -98,54 +97,24 @@ public class PcMaxStudy {
     private static Parameters getParameters() {
         Parameters parameters = new Parameters();
 
-//        parameters.set(Params.VERBOSE, false);
-//
-////
         parameters.set(Params.COEF_LOW, 0.0);
         parameters.set(Params.COEF_HIGH, 0.7);
         parameters.set(Params.VAR_LOW, .5);
         parameters.set(Params.VAR_HIGH, .9);
-//        parameters.set(Params.COEF_SYMMETRIC, true);
-//        parameters.set(Params.SELF_LOOP_COEF, 0.0);
-//        parameters.set(Params.RANDOMIZE_COLUMNS, true);
-//
-//        parameters.set(Params.INCLUDE_POSITIVE_COEFS, true);
-//        parameters.set(Params.INCLUDE_NEGATIVE_COEFS, true);
-//        parameters.set(Params.ERRORS_NORMAL, true);
-//        parameters.set(Params.INTERVAL_BETWEEN_SHOCKS, 10);
-//        parameters.set(Params.INTERVAL_BETWEEN_RECORDINGS, 10);
-//        parameters.set(Params.FISHER_EPSILON, 0.001);
-//
-//
-//
+
         parameters.set(Params.STABLE_FAS, true);
         parameters.set(Params.CONCURRENT_FAS, false);
-//        parameters.set(Params.CONFLICT_RULE, 3);
-//
-//        parameters.set(Params.SYMMETRIC_FIRST_STEP, false);
-//        parameters.set(Params.FAITHFULNESS_ASSUMED, true);
-//        parameters.set(Params.MAX_DEGREE, 100);
-//        parameters.set(Params.MAX_INDEGREE, 100);
-//        parameters.set(Params.MAX_OUTDEGREE, 100);
-//
-//
-//        parameters.set(Params.ERRORS_NORMAL, true);
-//        parameters.set(Params.RANDOMIZE_COLUMNS, true);
-//        parameters.set(Params.DIFFERENT_GRAPHS, true);
-//
-//
-//        parameters.set(Params.USE_SELLKE_ADJUSTMENT, true);
+        parameters.set(Params.CONFLICT_RULE, 3);
 
         parameters.set(Params.NUM_RUNS, 5);
         parameters.set(Params.DEPTH, -1);
-        parameters.set(Params.ALPHA, .01);
-        parameters.set(Params.ORIENTATION_Q,  parameters.get(Params.ALPHA));
-//        parameters.set(Params.PENALTY_DISCOUNT, 6);
+        parameters.set(Params.ALPHA, .001);
+        parameters.set(Params.ORIENTATION_ALPHA, 0.001);
+        parameters.set(Params.PENALTY_DISCOUNT, 2);
         parameters.set(Params.NUM_MEASURES, 10);
         parameters.set(Params.AVG_DEGREE, 4);
-        parameters.set(Params.COLLIDER_DISCOVERY_RULE, 2, 3, 4);
-        parameters.set(Params.SAMPLE_SIZE, 1000, 5000);
-//        parameters.set(Params.USE_FDR_FOR_INDEPENDENCE, false);
+        parameters.set(Params.COLLIDER_DISCOVERY_RULE, 2);
+        parameters.set(Params.SAMPLE_SIZE, 500, 1000, 2000, 5000);
         parameters.set(Params.DO_MARKOV_LOOP, true, false);
 
 //        parameters.set(Params.ERRORS_NORMAL, false);
