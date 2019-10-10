@@ -80,20 +80,20 @@ public class Pc implements GraphSearch {
      */
     private TetradLogger logger = TetradLogger.getInstance();
 
-    /**
-     * In an enumeration of triple types, these are the collider triples.
-     */
-    private Set<Triple> unshieldedColliders;
-
-    /**
-     * In an enumeration of triple types, these are the noncollider triples.
-     */
-    private Set<Triple> unshieldedNoncolliders;
-
-    /**
-     * The number of indepdendence tests in the last search.
-     */
-    private int numIndependenceTests;
+//    /**
+//     * In an enumeration of triple types, these are the collider triples.
+//     */
+//    private Set<Triple> unshieldedColliders;
+//
+//    /**
+//     * In an enumeration of triple types, these are the noncollider triples.
+//     */
+//    private Set<Triple> unshieldedNoncolliders;
+//
+//    /**
+//     * The number of indepdendence tests in the last search.
+//     */
+//    private int numIndependenceTests;
 
     /**
      * The true graph, for purposes of comparison. Temporary.
@@ -269,9 +269,9 @@ public class Pc implements GraphSearch {
         graph = fas.search();
         sepsets = fas.getSepsets();
 
-        this.numIndependenceTests = fas.getNumIndependenceTests();
-        this.numFalseDependenceJudgements = fas.getNumFalseDependenceJudgments();
-        this.numDependenceJudgements = fas.getNumDependenceJudgments();
+//        this.numIndependenceTests = fas.getNumIndependenceTests();
+//        this.numFalseDependenceJudgements = fas.getNumFalseDependenceJudgments();
+//        this.numDependenceJudgements = fas.getNumDependenceJudgments();
 
 //        enumerateTriples();
 
@@ -309,21 +309,21 @@ public class Pc implements GraphSearch {
         return elapsedTime;
     }
 
-    /**
-     * @return the set of unshielded colliders in the graph returned by <code>search()</code>. Non-null after
-     * <code>search</code> is called.
-     */
-    public Set<Triple> getUnshieldedColliders() {
-        return unshieldedColliders;
-    }
-
-    /**
-     * @return the set of unshielded noncolliders in the graph returned by <code>search()</code>. Non-null after
-     * <code>search</code> is called.
-     */
-    public Set<Triple> getUnshieldedNoncolliders() {
-        return unshieldedNoncolliders;
-    }
+//    /**
+//     * @return the set of unshielded colliders in the graph returned by <code>search()</code>. Non-null after
+//     * <code>search</code> is called.
+//     */
+//    public Set<Triple> getUnshieldedColliders() {
+//        return unshieldedColliders;
+//    }
+//
+//    /**
+//     * @return the set of unshielded noncolliders in the graph returned by <code>search()</code>. Non-null after
+//     * <code>search</code> is called.
+//     */
+//    public Set<Triple> getUnshieldedNoncolliders() {
+//        return unshieldedNoncolliders;
+//    }
 
     public Set<Edge> getAdjacencies() {
         Set<Edge> adjacencies = new HashSet<>();
@@ -378,9 +378,9 @@ public class Pc implements GraphSearch {
 //        }
 //    }
 
-    public int getNumIndependenceTests() {
-        return numIndependenceTests;
-    }
+//    public int getNumIndependenceTests() {
+//        return numIndependenceTests;
+//    }
 
     public void setTrueGraph(Graph trueGraph) {
         this.trueGraph = trueGraph;
