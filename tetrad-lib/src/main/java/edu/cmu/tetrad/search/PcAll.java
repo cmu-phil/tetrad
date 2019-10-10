@@ -237,12 +237,12 @@ public final class PcAll implements GraphSearch {
 
         long start = System.currentTimeMillis();
 
-//        if (colliderDiscovery == OrientColliders.ColliderMethod.MPC) {
-//            return kpartial(test);
-//        }
-
-        findAdjacencies();
-        G = E(G);
+        if (colliderDiscovery == OrientColliders.ColliderMethod.MPC) {
+            G = kpartial(test);
+        } else {
+            findAdjacencies();
+            G = E(G);
+        }
 
         System.out.println("doMarkovLoop = " + doMarkovLoop);
 
@@ -304,12 +304,42 @@ public final class PcAll implements GraphSearch {
                 Graph H = new EdgeListGraph(G);
                 H.removeEdge(x, y);
 
+                List<Node> adj = H.getAdjacentNodes(x);
+                adj.retainAll(H.getAdjacentNodes(y));
+
+                for (Node z : adj) {
+                    if (!H.isDefCollider(x, z, y) && isCollider(x, z, y, H)) {
+                        H.removeEdge(x, z);
+                        H.removeEdge(y, z);
+                        H.addDirectedEdge(x, z);
+                        H.addDirectedEdge(y, z);
+                    }
+                }
+
                 if (nonMarkovEmpty(y, H) && nonMarkovEmpty(x, H)) {
                     G = E(H);
                     changed = true;
                 }
             }
         }
+    }
+
+    private boolean isCollider(Node x, Node z, Node y, Graph h) {
+        OrientColliders orientColliders;
+
+        if (colliderDiscovery == OrientColliders.ColliderMethod.SEPSETS) {
+            orientColliders = new OrientColliders(test, sepsets);
+        } else {
+            orientColliders = new OrientColliders(test, colliderDiscovery);
+        }
+
+        orientColliders.setConflictRule(conflictRule);
+        orientColliders.setIndependenceDetectionMethod(independenceMethod);
+        orientColliders.setDepth(depth);
+        orientColliders.setOrientationQ(orientationAlpha);
+        orientColliders.setVerbose(verbose);
+        orientColliders.setOut(out);
+        return orientColliders.orientTriple(h, x, z, y) == SearchGraphUtils.CpcTripleType.COLLIDER;
     }
 
     private Graph E(Graph H) {
@@ -458,7 +488,7 @@ public final class PcAll implements GraphSearch {
         return !knowledge.isRequired(to.toString(), from.toString()) &&
                 !knowledge.isForbidden(from.toString(), to.toString());
     }
-    //==========================PRIVATE METHODS===========================//
+//==========================PRIVATE METHODS===========================//
 
     private void findAdjacencies() {
         IFas fas;

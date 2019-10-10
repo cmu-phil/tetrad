@@ -50,6 +50,7 @@ public class PcMaxStudy {
         statistics.add(new ParameterColumn(Params.SAMPLE_SIZE));
         statistics.add(new ParameterColumn(Params.PENALTY_DISCOUNT));
         statistics.add(new ParameterColumn(Params.ALPHA));
+        statistics.add(new ParameterColumn(Params.DEPTH));
         statistics.add(new ParameterColumn(Params.ORIENTATION_ALPHA));
 
         statistics.add(new AdjacencyPrecision());
@@ -108,7 +109,7 @@ public class PcMaxStudy {
 
         parameters.set(Params.NUM_RUNS, 5);
         parameters.set(Params.DEPTH, -1);
-        parameters.set(Params.ALPHA, .0001);
+        parameters.set(Params.ALPHA, .01);
         parameters.set(Params.ORIENTATION_ALPHA, -1);
         parameters.set(Params.PENALTY_DISCOUNT, 2);
         parameters.set(Params.NUM_MEASURES, 10);
