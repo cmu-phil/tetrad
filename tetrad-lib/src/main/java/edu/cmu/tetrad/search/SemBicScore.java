@@ -154,24 +154,12 @@ public class SemBicScore implements Score {
                 if (isVerbose()) {
                     out.println("Nonpositive residual varianceY: resVar / varianceY = " + (s2 / getCovariances().getValue(i, i)));
                 }
-
                 return Double.NaN;
             }
 
             return -n * log(s2) - getPenaltyDiscount() * k * log(n)
                     + signum(getStructurePrior()) * getStructurePrior(parents.length);
         } catch (Exception e) {
-            boolean removedOne = true;
-
-            while (removedOne) {
-                List<Integer> _parents = new ArrayList<>();
-                for (int parent : parents) _parents.add(parent);
-                _parents.removeAll(forbidden);
-                parents = new int[_parents.size()];
-                for (int y = 0; y < _parents.size(); y++) parents[y] = _parents.get(y);
-                removedOne = printMinimalLinearlyDependentSet(parents, getCovariances());
-            }
-
             return Double.NaN;
         }
     }
@@ -202,6 +190,10 @@ public class SemBicScore implements Score {
         return penaltyDiscount;
     }
 
+    public double getStructurePrior() {
+        return structurePrior;
+    }
+
     public ICovarianceMatrix getCovariances() {
         return covariances;
     }
@@ -221,6 +213,10 @@ public class SemBicScore implements Score {
 
     public void setPenaltyDiscount(double penaltyDiscount) {
         this.penaltyDiscount = penaltyDiscount;
+    }
+
+    public void setStructurePrior(double structurePrior) {
+        this.structurePrior = structurePrior;
     }
 
     public boolean isVerbose() {
@@ -270,14 +266,6 @@ public class SemBicScore implements Score {
         double v = localScore(i, k);
 
         return Double.isNaN(v);
-    }
-
-    public double getStructurePrior() {
-        return structurePrior;
-    }
-
-    public void setStructurePrior(double structurePrior) {
-        this.structurePrior = structurePrior;
     }
 
     private void setCovariances(ICovarianceMatrix covariances) {
