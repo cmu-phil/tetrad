@@ -44,31 +44,31 @@ public class PcMaxStudy {
     public static void main(String... args) {
         Statistics statistics = new Statistics();
 
-        statistics.add(new ParameterColumn(Params.COLLIDER_DISCOVERY_RULE));
-        statistics.add(new ParameterColumn(Params.DO_MARKOV_LOOP));
+//        statistics.add(new ParameterColumn(Params.COLLIDER_DISCOVERY_RULE));
+//        statistics.add(new ParameterColumn(Params.DO_MARKOV_LOOP));
 //        statistics.add(new ParameterColumn(Params.USE_FDR_FOR_INDEPENDENCE));
         statistics.add(new ParameterColumn(Params.SAMPLE_SIZE));
         statistics.add(new ParameterColumn(Params.PENALTY_DISCOUNT));
         statistics.add(new ParameterColumn(Params.ALPHA));
         statistics.add(new ParameterColumn(Params.DEPTH));
-        statistics.add(new ParameterColumn(Params.ORIENTATION_ALPHA));
+//        statistics.add(new ParameterColumn(Params.ORIENTATION_ALPHA));
 
         statistics.add(new AdjacencyPrecision());
         statistics.add(new AdjacencyRecall());
         statistics.add(new ArrowheadPrecision());
         statistics.add(new ArrowheadRecall());
-        statistics.add(new ArrowheadPrecisionCommonEdges());
-        statistics.add(new ArrowheadRecallCommonEdges());
-        statistics.add(new F1All());
-        statistics.add(new ColliderFp());
-        statistics.add(new ColliderFn());
-//        statistics.add(new ColliderNumCoveringErrors());
-//        statistics.add(new ColliderNumUncoveringErrors());
-        statistics.add(new PercentAmbiguous());
-        statistics.add(new BicDiff());
-//        statistics.add(new NumberOfEdgesEst());
-//        statistics.add(new GraphExactlyRight());
-        statistics.add(new ElapsedTime());
+//        statistics.add(new ArrowheadPrecisionCommonEdges());
+//        statistics.add(new ArrowheadRecallCommonEdges());
+//        statistics.add(new F1All());
+//        statistics.add(new ColliderFp());
+//        statistics.add(new ColliderFn());
+////        statistics.add(new ColliderNumCoveringErrors());
+////        statistics.add(new ColliderNumUncoveringErrors());
+//        statistics.add(new PercentAmbiguous());
+//        statistics.add(new BicDiff());
+////        statistics.add(new NumberOfEdgesEst());
+////        statistics.add(new GraphExactlyRight());
+//        statistics.add(new ElapsedTime());
 
         statistics.setWeight("AR", 1);
         statistics.setWeight("AHP", .5);
@@ -77,8 +77,9 @@ public class PcMaxStudy {
 
         Algorithms algorithms = new Algorithms();
 
-        algorithms.add(new PcAll(new FisherZ()));
+        algorithms.add(new FgesCpc(new FisherZ()));
         algorithms.add(new Fges(new SemBicScore()));
+        algorithms.add(new PcAll(new FisherZ()));
 
         Comparison comparison = new Comparison();
 
@@ -86,7 +87,7 @@ public class PcMaxStudy {
         comparison.setShowSimulationIndices(true);
         comparison.setSortByUtility(false);
 //        comparison.setShowUtilities(true);
-        comparison.setComparisonGraph(Comparison.ComparisonGraph.Pattern_of_the_true_DAG);
+        comparison.setComparisonGraph(Comparison.ComparisonGraph.true_DAG);
 
         Simulations simulations = new Simulations();
         simulations.add(new SemSimulation(new RandomForward()));
@@ -98,20 +99,21 @@ public class PcMaxStudy {
     private static Parameters getParameters() {
         Parameters parameters = new Parameters();
 
-        parameters.set(Params.COEF_LOW, 0.0);
-        parameters.set(Params.COEF_HIGH, 0.7);
+        parameters.set(Params.COEF_LOW, 0.1);
+        parameters.set(Params.COEF_HIGH, .7);
         parameters.set(Params.VAR_LOW, .5);
         parameters.set(Params.VAR_HIGH, .9);
 
         parameters.set(Params.STABLE_FAS, true);
         parameters.set(Params.CONCURRENT_FAS, false);
         parameters.set(Params.CONFLICT_RULE, 3);
+        parameters.set(Params.SYMMETRIC_FIRST_STEP, true);
 
         parameters.set(Params.NUM_RUNS, 5);
         parameters.set(Params.DEPTH, -1);
-        parameters.set(Params.ALPHA, .01);
+        parameters.set(Params.ALPHA, 0.05, .01, 0.001);
         parameters.set(Params.ORIENTATION_ALPHA, -1);
-        parameters.set(Params.PENALTY_DISCOUNT, 2);
+        parameters.set(Params.PENALTY_DISCOUNT, 1, 2);
         parameters.set(Params.NUM_MEASURES, 10);
         parameters.set(Params.AVG_DEGREE, 4);
         parameters.set(Params.COLLIDER_DISCOVERY_RULE, 2);
@@ -125,40 +127,6 @@ public class PcMaxStudy {
 
 
         return parameters;
-    }
-
-    @Test
-    public void test2() {
-        Parameters parameters = new Parameters();
-        parameters.set(Params.COLLIDER_DISCOVERY_RULE, 1, 2, 3);
-        parameters.set(Params.SAMPLE_SIZE, 128);
-        parameters.set(Params.NUM_MEASURES, 10);
-        parameters.set(Params.NUM_RUNS, 50);
-        parameters.set(Params.VERBOSE, false);
-
-        Statistics statistics = new Statistics();
-
-        statistics.add(new ElapsedTime());
-
-        Algorithms algorithms = new Algorithms();
-
-        algorithms.add(new PcAll(new FisherZ()));
-//        algorithms.add(new Fges(new SemBicScore()));
-
-        Comparison comparison = new Comparison();
-
-        comparison.setShowAlgorithmIndices(true);
-        comparison.setShowSimulationIndices(true);
-        comparison.setSortByUtility(true);
-//        comparison.setShowUtilities(false);
-        comparison.setComparisonGraph(Comparison.ComparisonGraph.true_DAG);
-        comparison.setSaveGraphs(true);
-
-        Simulation simulation = new SemSimulation(new RandomForward());
-
-        comparison.saveToFiles("/Users/user/tetrad/peterSch", simulation, parameters);
-        comparison.compareFromFiles("/Users/user/tetrad/peterSch", algorithms, statistics, parameters);
-
     }
 }
 

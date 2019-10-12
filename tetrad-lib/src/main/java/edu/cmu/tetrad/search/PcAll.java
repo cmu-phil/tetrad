@@ -57,7 +57,6 @@ public final class PcAll implements GraphSearch {
     private SepsetMap sepsets;
     private long elapsedTime;
     private boolean verbose = false;
-    private int maxPathLength;
     private PrintStream out = System.out;
 
     private Graph G;
@@ -78,10 +77,6 @@ public final class PcAll implements GraphSearch {
     }
 
     //==============================PUBLIC METHODS========================//
-
-    public void setMaxPathLength(int maxPathLength) {
-        this.maxPathLength = maxPathLength;
-    }
 
     public void setFasType(FasType fasType) {
         this.fasType = fasType;
@@ -254,7 +249,7 @@ public final class PcAll implements GraphSearch {
             doMarkovLoop(nodes);
         }
 
-        printNonMarkovCounts(nodes);
+        GraphUtils.printNonMarkovCounts(G, test);
 
         TetradLogger.getInstance().log("graph", "\nReturning this graph: " + G);
 
@@ -275,11 +270,59 @@ public final class PcAll implements GraphSearch {
 
     private void doMarkovLoop(List<Node> nodes) {
 
+        G = E(G);
+
+        forward(nodes);
+        backward(nodes);
+
+//        for (Node x : nodes) {
+//            for (Node y : G.getAdjacentNodes(x)) {
+//                for (Node z : G.getAdjacentNodes(y)) {
+//                    if (!G.isAdjacentTo(x, z) && G.isDefCollider(x, y, z)) {
+//                        G.addUndirectedEdge(x, z);
+//                    }
+//                }
+//            }
+//        }
+
+        G = E(G);
+
+//        forward(nodes);
+//        backward(nodes);
+
+
+//        for (Node x : nodes) {
+//            for (Node y : G.getAdjacentNodes(x)) {
+//                for (Node z : G.getAdjacentNodes(y)) {
+//                    if (!G.isAdjacentTo(x, z) && G.isDefCollider(x, y, z)) {
+//                        G.addUndirectedEdge(x, z);
+//                    }
+//                }
+//            }
+//        }
+//
+//        G = E(G);
+//
+//        forward(nodes);
+//        backward(nodes);
+
+        System.out.println("\nBefore edge removal");
+        GraphUtils.printNonMarkovCounts(G, test);
+
+        System.out.println("\nAfter the backward search, Markov = " + markov(nodes));
+
+        System.out.println("\nAfter edge removal");
+        GraphUtils.printNonMarkovCounts(G, test);
+        System.out.println();
+    }
+
+    private void forward(List<Node> nodes) {
         int round = 0;
         boolean changed = true;
 
-        while (changed && round < 10) {
-            System.out.println("Round = " + ++round);
+        D:
+        do {
+            System.out.println("Forward = " + ++round);
 
             changed = false;
 
@@ -288,14 +331,33 @@ public final class PcAll implements GraphSearch {
                     if (x == y) continue;
                     if (G.isAdjacentTo(x, y)) continue;
 
-                    if (nonMarkovContains(y, G, x)) {
-                        Graph H = new EdgeListGraph(G);
-                        H.addUndirectedEdge(x, y);
+                    Graph H = new EdgeListGraph(G);
+                    H.addUndirectedEdge(x, y);
+
+                    applyMeekRules(H);
+
+                    if (nonMarkov(y, G).contains(x)) {
                         G = E(H);
                         changed = true;
+                        continue  D;
                     }
                 }
             }
+
+        } while (changed && round < 10);
+    }
+
+    private void backward(List<Node> nodes) {
+        boolean changed = true;
+        int round = 0;
+
+        System.out.println("\nAfter the forward search, Markov = " + markov(nodes));
+
+        DO:
+        do {
+            System.out.println("Backward = " + ++round);
+
+            changed = false;
 
             for (Edge edge : G.getEdges()) {
                 Node x = edge.getNode1();
@@ -304,24 +366,32 @@ public final class PcAll implements GraphSearch {
                 Graph H = new EdgeListGraph(G);
                 H.removeEdge(x, y);
 
-                List<Node> adj = H.getAdjacentNodes(x);
-                adj.retainAll(H.getAdjacentNodes(y));
-
-                for (Node z : adj) {
-                    if (!H.isDefCollider(x, z, y) && isCollider(x, z, y, H)) {
-                        H.removeEdge(x, z);
-                        H.removeEdge(y, z);
-                        H.addDirectedEdge(x, z);
-                        H.addDirectedEdge(y, z);
-                    }
-                }
-
-                if (nonMarkovEmpty(y, H) && nonMarkovEmpty(x, H)) {
+                if (!nonMarkov(x, H).contains(y) && !nonMarkov(y, H).contains(x)) {
+                    System.out.println("Removed " + Edges.undirectedEdge(x, y));
                     G = E(H);
                     changed = true;
+                    continue DO;
                 }
             }
+        }  while (changed && round < 20);
+    }
+
+
+
+    private boolean markov(List<Node> nodes) {
+        boolean markov = true;
+
+        for (Node y : nodes) {
+            if (!markov(y, G)) {
+                markov = false;
+                break;
+            }
         }
+        return markov;
+    }
+
+    private List<Node> nonMarkov(Node y, Graph G) {
+        return GraphUtils.nonMarkov(y, G, test);
     }
 
     private boolean isCollider(Node x, Node z, Node y, Graph h) {
@@ -369,62 +439,25 @@ public final class PcAll implements GraphSearch {
         return list;
     }
 
-    private void printNonMarkovCounts(List<Node> nodes) {
-        nodes = new ArrayList<>(nodes);
-        Collections.sort(nodes);
-        List<List<Node>> extra = new ArrayList<>();
-
-        for (Node node : nodes) {
-            extra.add(nonMarkov(node, G));
-        }
-
-        for (int i = 0; i < nodes.size(); i++) {
-            System.out.println("Count for " + nodes.get(i) + " = " + extra.get(i).size()
-                    + " boundary = " + boundary(nodes.get(i), G)
-                    + " non-Markov = " + extra.get(i));
-        }
-    }
-
-    private List<Node> boundary(Node x, Graph G) {
-        Set<Node> b = new HashSet<>();
-
-        for (Node y : G.getAdjacentNodes(x)) {
-            if (x == y) continue;
-
-            if (Edges.isUndirectedEdge(G.getEdge(x, y))) {
-                b.add(y);
-            }
-
-            if (G.isParentOf(y, x)) {
-                b.add(y);
-            }
-        }
-
-        return new ArrayList<>(b);
-    }
-
-    private List<Node> nonMarkov(Node y, Graph G) {
-        List<Node> boundary = boundary(y, G);
-        List<Node> nodes = new ArrayList<>();
+    private boolean markov(Node y, Graph G) {
+        List<Node> boundary = GraphUtils.boundary(y, G);
 
         for (Node x : G.getNodes()) {
             if (y == x) continue;
             if (G.isDescendentOf(x, y)) continue;
-            if (boundary.contains(x)) continue;
-            if (!test.isIndependent(y, x, boundary)) {
-                nodes.add(x);
+
+            List<Node> adj = G.getAdjacentNodes(x);
+            adj.retainAll(G.getAdjacentNodes(y));
+            List<Node> Z = new ArrayList<>();
+
+            if (!G.isAdjacentTo(x, y)) {
+                for (Node z : adj) {
+                    if (G.isAmbiguousTriple(x, z, y)) {
+                        Z.add(z);
+                    }
+                }
             }
-        }
 
-        return nodes;
-    }
-
-    private boolean nonMarkovEmpty(Node y, Graph G) {
-        List<Node> boundary = boundary(y, G);
-
-        for (Node x : G.getNodes()) {
-            if (y == x) continue;
-            if (G.isDescendentOf(x, y)) continue;
             if (boundary.contains(x)) continue;
             if (!test.isIndependent(y, x, boundary)) {
                 return false;
@@ -436,7 +469,7 @@ public final class PcAll implements GraphSearch {
 
     // Returns true if the set of non-Markov variables to y contains x.
     private boolean nonMarkovContains(Node y, Graph G, Node x) {
-        List<Node> boundary = boundary(y, G);
+        List<Node> boundary = GraphUtils.boundary(y, G);
         if (y == x) return false;
         if (G.isDescendentOf(x, y)) return false;
         if (boundary.contains(x)) return false;
