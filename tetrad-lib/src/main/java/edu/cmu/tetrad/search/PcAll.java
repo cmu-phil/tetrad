@@ -24,11 +24,15 @@ package edu.cmu.tetrad.search;
 import edu.cmu.tetrad.data.IKnowledge;
 import edu.cmu.tetrad.data.Knowledge2;
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.util.DepthChoiceGenerator;
 import edu.cmu.tetrad.util.TetradLogger;
 
 import java.io.PrintStream;
-import java.util.*;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Set;
+
+import static edu.cmu.tetrad.search.SearchGraphUtils.basicPattern;
 
 /**
  * Implements a convervative version of PC, in which the Markov condition is assumed but faithfulness is tested
@@ -86,9 +90,9 @@ public final class PcAll implements GraphSearch {
         this.concurrent = concurrent;
     }
 
-    public void setOrientationAlpha(double orientationAlpha) {
-        this.orientationAlpha = orientationAlpha;
-    }
+//    public void setOrientationAlpha(double orientationAlpha) {
+//        this.orientationAlpha = orientationAlpha;
+//    }
 
     /**
      * @return true just in case edges will not be added if they would create cycles.
@@ -112,9 +116,9 @@ public final class PcAll implements GraphSearch {
         this.conflictRule = conflictRule;
     }
 
-    public void setIndependenceMethod(OrientColliders.IndependenceDetectionMethod independenceMethod) {
-        this.independenceMethod = independenceMethod;
-    }
+//    public void setIndependenceMethod(OrientColliders.IndependenceDetectionMethod independenceMethod) {
+//        this.independenceMethod = independenceMethod;
+//    }
 
     /**
      * Sets the maximum number of variables conditioned on in any conditional independence test. If set to -1, the value
@@ -232,12 +236,12 @@ public final class PcAll implements GraphSearch {
 
         long start = System.currentTimeMillis();
 
-        if (colliderDiscovery == OrientColliders.ColliderMethod.MPC) {
-            G = kpartial(test);
-        } else {
-            findAdjacencies();
-            G = E(G);
-        }
+//        if (colliderDiscovery == OrientColliders.ColliderMethod.MPC) {
+//            G = kpartial(test);
+//        } else {
+        findAdjacencies();
+        G = reorient(G);
+//        }
 
         System.out.println("doMarkovLoop = " + doMarkovLoop);
 
@@ -247,6 +251,24 @@ public final class PcAll implements GraphSearch {
             }
 
             doMarkovLoop(nodes);
+//
+//            PcAll pcAll = new PcAll(test, G);
+//            pcAll.setColliderDiscovery(OrientColliders.ColliderMethod.SEPSETS);
+//            pcAll.setFasType(FasType.REGULAR);
+//            G = pcAll.search();
+////
+//            doMarkovLoop(nodes);
+
+//            pcAll = new PcAll(test, G);
+//            pcAll.setColliderDiscovery(OrientColliders.ColliderMethod.SEPSETS);
+//            pcAll.setFasType(FasType.STABLE);
+//            G = pcAll.search();
+//
+//            doMarkovLoop(nodes);
+
+//            Fas fas = new Fas(G, test);
+//            G = E(G);
+//            return fas.search();
         }
 
         GraphUtils.printNonMarkovCounts(G, test);
@@ -270,46 +292,15 @@ public final class PcAll implements GraphSearch {
 
     private void doMarkovLoop(List<Node> nodes) {
 
-        G = E(G);
-
         forward(nodes);
         backward(nodes);
 
-//        for (Node x : nodes) {
-//            for (Node y : G.getAdjacentNodes(x)) {
-//                for (Node z : G.getAdjacentNodes(y)) {
-//                    if (!G.isAdjacentTo(x, z) && G.isDefCollider(x, y, z)) {
-//                        G.addUndirectedEdge(x, z);
-//                    }
-//                }
-//            }
-//        }
-
-        G = E(G);
-
-//        forward(nodes);
-//        backward(nodes);
-
-
-//        for (Node x : nodes) {
-//            for (Node y : G.getAdjacentNodes(x)) {
-//                for (Node z : G.getAdjacentNodes(y)) {
-//                    if (!G.isAdjacentTo(x, z) && G.isDefCollider(x, y, z)) {
-//                        G.addUndirectedEdge(x, z);
-//                    }
-//                }
-//            }
-//        }
-//
-//        G = E(G);
-//
-//        forward(nodes);
-//        backward(nodes);
+//        G = reorient(G);
 
         System.out.println("\nBefore edge removal");
         GraphUtils.printNonMarkovCounts(G, test);
 
-        System.out.println("\nAfter the backward search, Markov = " + markov(nodes));
+        System.out.println("\nAfter the backward search, Markov = " + GraphUtils.markov(G, test));
 
         System.out.println("\nAfter edge removal");
         GraphUtils.printNonMarkovCounts(G, test);
@@ -320,7 +311,6 @@ public final class PcAll implements GraphSearch {
         int round = 0;
         boolean changed = true;
 
-        D:
         do {
             System.out.println("Forward = " + ++round);
 
@@ -329,17 +319,11 @@ public final class PcAll implements GraphSearch {
             for (Node y : nodes) {
                 for (Node x : nodes) {
                     if (x == y) continue;
-                    if (G.isAdjacentTo(x, y)) continue;
 
-                    Graph H = new EdgeListGraph(G);
-                    H.addUndirectedEdge(x, y);
-
-                    applyMeekRules(H);
-
-                    if (nonMarkov(y, G).contains(x)) {
-                        G = E(H);
+                    if (nonMarkovContains(y, G, x)) {
+                        G.addUndirectedEdge(x, y);
+                        updateOrientation(G, x, y);
                         changed = true;
-                        continue  D;
                     }
                 }
             }
@@ -351,9 +335,8 @@ public final class PcAll implements GraphSearch {
         boolean changed = true;
         int round = 0;
 
-        System.out.println("\nAfter the forward search, Markov = " + markov(nodes));
+        System.out.println("\nAfter the forward search, Markov = " + GraphUtils.markov(G, test));
 
-        DO:
         do {
             System.out.println("Backward = " + ++round);
 
@@ -362,63 +345,251 @@ public final class PcAll implements GraphSearch {
             for (Edge edge : G.getEdges()) {
                 Node x = edge.getNode1();
                 Node y = edge.getNode2();
+                if (nodes.indexOf(x) < nodes.indexOf(y)) continue;
 
                 Graph H = new EdgeListGraph(G);
                 H.removeEdge(x, y);
 
-                if (!nonMarkov(x, H).contains(y) && !nonMarkov(y, H).contains(x)) {
-                    System.out.println("Removed " + Edges.undirectedEdge(x, y));
-                    G = E(H);
+                if (GraphUtils.markov(x, H, test) && GraphUtils.markov(y, H, test)) {
+                    updateOrientation(H, x, y);
+                    G = H;
                     changed = true;
-                    continue DO;
+                    System.out.println("Removed " + Edges.undirectedEdge(x, y));
                 }
             }
-        }  while (changed && round < 20);
+        } while (changed && round < 10);
     }
 
+//    private boolean validDelete(Node x, Node y, Graph G) {
+//        Set<Node> n = new HashSet<>();
+//
+//        for (Node w : G.getAdjacentNodes(y)) {
+//            if (G.isUndirectedFromTo(w, y) && G.isAdjacentTo(w, x)) {
+//                n.add(w);
+//            }
+//        }
+//
+//        return isClique(n, G);
+//    }
+
+//    private boolean validInsert(Node x, Node y, Graph G) {
+//        Set<Node> n = new HashSet<>();
+//
+//        for (Node w : G.getAdjacentNodes(y)) {
+//            if (G.isUndirectedFromTo(y, w)) n.add(w);
+//        }
+//
+//        boolean clique = isClique(n, G);
+//        boolean noCycle = !existsUnblockedSemiDirectedPath(y, x, n, -1, G);
+//
+//        return clique && noCycle;
+//    }
+
+//    private boolean isClique(Set<Node> nodes, Graph graph) {
+//        List<Node> _nodes = new ArrayList<>(nodes);
+//        for (int i = 0; i < _nodes.size(); i++) {
+//            for (int j = i + 1; j < _nodes.size(); j++) {
+//                if (!graph.isAdjacentTo(_nodes.get(i), _nodes.get(j))) {
+//                    return false;
+//                }
+//            }
+//        }
+//
+//        return true;
+//    }
+
+//    private boolean existsUnblockedSemiDirectedPath(Node from, Node to, Set<Node> cond, int bound, Graph graph) {
+//        Queue<Node> Q = new LinkedList<>();
+//        Set<Node> V = new HashSet<>();
+//        Q.offer(from);
+//        V.add(from);
+//        Node e = null;
+//        int distance = 0;
+//
+//        while (!Q.isEmpty()) {
+//            Node t = Q.remove();
+//            if (t == to) {
+//                return true;
+//            }
+//
+//            if (e == t) {
+//                e = null;
+//                distance++;
+//                if (distance > (bound == -1 ? 1000 : bound)) {
+//                    return false;
+//                }
+//            }
+//
+//            for (Node u : graph.getAdjacentNodes(t)) {
+//                Edge edge = graph.getEdge(t, u);
+//                Node c = traverseSemiDirected(t, edge);
+//                if (c == null) {
+//                    continue;
+//                }
+//                if (cond.contains(c)) {
+//                    continue;
+//                }
+//
+//                if (c == to) {
+//                    return true;
+//                }
+//
+//                if (!V.contains(c)) {
+//                    V.add(c);
+//                    Q.offer(c);
+//
+//                    if (e == null) {
+//                        e = u;
+//                    }
+//                }
+//            }
+//        }
+//
+//        return false;
+//    }
+
+//    private static Node traverseSemiDirected(Node node, Edge edge) {
+//        if (node == edge.getNode1()) {
+//            if (edge.getEndpoint1() == Endpoint.TAIL) {
+//                return edge.getNode2();
+//            }
+//        } else if (node == edge.getNode2()) {
+//            if (edge.getEndpoint2() == Endpoint.TAIL) {
+//                return edge.getNode1();
+//            }
+//        }
+//        return null;
+//    }
 
 
-    private boolean markov(List<Node> nodes) {
-        boolean markov = true;
 
-        for (Node y : nodes) {
-            if (!markov(y, G)) {
-                markov = false;
-                break;
-            }
-        }
-        return markov;
-    }
 
-    private List<Node> nonMarkov(Node y, Graph G) {
-        return GraphUtils.nonMarkov(y, G, test);
-    }
+//    private boolean markov(List<Node> nodes, Graph G, IndependenceTest test) {
+//        boolean markov = true;
+//
+//        for (Node y : nodes) {
+//            if (!GraphUtils.markov(y, G, test)) {
+//                markov = false;
+//                break;
+//            }
+//        }
+//        return markov;
+//    }
 
-    private boolean isCollider(Node x, Node z, Node y, Graph h) {
-        OrientColliders orientColliders;
+//    private List<Node> nonMarkov(Node y, Graph G) {
+//        return GraphUtils.nonMarkov(y, G, test);
+//    }
 
-        if (colliderDiscovery == OrientColliders.ColliderMethod.SEPSETS) {
-            orientColliders = new OrientColliders(test, sepsets);
-        } else {
-            orientColliders = new OrientColliders(test, colliderDiscovery);
-        }
+//    private boolean isAdjacentToCollider(Node x, Node z, Node y, Graph h) {
+//        OrientColliders orientColliders;
+//
+//        if (colliderDiscovery == OrientColliders.ColliderMethod.SEPSETS) {
+//            orientColliders = new OrientColliders(test, sepsets);
+//        } else {
+//            orientColliders = new OrientColliders(test, colliderDiscovery);
+//        }
+//
+//        orientColliders.setConflictRule(conflictRule);
+//        orientColliders.setIndependenceDetectionMethod(independenceMethod);
+//        orientColliders.setDepth(depth);
+//        orientColliders.setOrientationQ(orientationAlpha);
+//        orientColliders.setVerbose(verbose);
+//        orientColliders.setOut(out);
+//        return orientColliders.orientTriple(h, x, z, y) == SearchGraphUtils.CpcTripleType.COLLIDER;
+//    }
 
-        orientColliders.setConflictRule(conflictRule);
-        orientColliders.setIndependenceDetectionMethod(independenceMethod);
-        orientColliders.setDepth(depth);
-        orientColliders.setOrientationQ(orientationAlpha);
-        orientColliders.setVerbose(verbose);
-        orientColliders.setOut(out);
-        return orientColliders.orientTriple(h, x, z, y) == SearchGraphUtils.CpcTripleType.COLLIDER;
-    }
-
-    private Graph E(Graph H) {
+    private Graph reorient(Graph H) {
         H = removeOrientations(H);
         applyBackgroundKnowledge(H);
         orientTriples(H);
         applyMeekRules(H);
         removeUnnecessaryMarks(H);
         return H;
+    }
+
+    private void updateOrientation(Graph H, Node x, Node y) {
+        Set<Triple> ambiguous = H.getAmbiguousTriples();
+        basicPattern(H, false);
+
+        OrientColliders orientColliders = new OrientColliders(test, OrientColliders.ColliderMethod.CPC);
+        orientColliders.setConflictRule(OrientColliders.ConflictRule.PRIORITY);
+        orientColliders.setIndependenceDetectionMethod(OrientColliders.IndependenceDetectionMethod.ALPHA);
+        orientColliders.setDepth(-1);
+        orientColliders.setOrientationQ(test.getAlpha());
+        orientColliders.setVerbose(verbose);
+        orientColliders.setOut(out);
+
+        for (Node b : H.getAdjacentNodes(x)) {
+            for (Node c : H.getAdjacentNodes(b)) {
+                if (x == c) continue;
+
+                if (H.isAdjacentTo(x, c)) {
+                    H.removeAmbiguousTriple(x, b, c);
+                    continue;
+                }
+
+                SearchGraphUtils.CpcTripleType type = orientColliders.orientTriple(H, x, b, c);
+
+                if (type == SearchGraphUtils.CpcTripleType.AMBIGUOUS) {
+                    H.addAmbiguousTriple(x, b, c);
+                } else if (type == SearchGraphUtils.CpcTripleType.COLLIDER) {
+                    H.removeAmbiguousTriple(x, b, c);
+
+                    if (!H.getEdge(x, b).pointsTowards(b)) {
+                        H.removeEdge(x, b);
+                        H.addDirectedEdge(x, b);
+                    }
+
+                    if (!H.getEdge(c, b).pointsTowards(b)) {
+                        H.removeEdge(c, b);
+                        H.addDirectedEdge(c, b);
+                    }
+                } else if (type == SearchGraphUtils.CpcTripleType.NONCOLLIDER) {
+                    H.addAmbiguousTriple(x, b, c);
+                }
+            }
+        }
+
+        for (Node b : H.getAdjacentNodes(y)) {
+            for (Node c : H.getAdjacentNodes(b)) {
+                if (y == c) continue;
+
+                if (H.isAdjacentTo(y, c)) {
+                    H.removeAmbiguousTriple(y, b, c);
+                    continue;
+                }
+
+                SearchGraphUtils.CpcTripleType type = orientColliders.orientTriple(H, y, b, c);
+
+                if (type == SearchGraphUtils.CpcTripleType.AMBIGUOUS) {
+                    H.addAmbiguousTriple(y, b, c);
+                } else if (type == SearchGraphUtils.CpcTripleType.COLLIDER) {
+                    H.removeAmbiguousTriple(y, b, c);
+
+                    if (!H.getEdge(y, b).pointsTowards(b)) {
+                        H.removeEdge(y, b);
+                        H.addDirectedEdge(y, b);
+                    }
+
+                    if (!H.getEdge(c, b).pointsTowards(b)) {
+                        H.removeEdge(c, b);
+                        H.addDirectedEdge(c, b);
+                    }
+                } else if (type == SearchGraphUtils.CpcTripleType.NONCOLLIDER) {
+                    H.addAmbiguousTriple(y, b, c);
+                }
+            }
+        }
+
+        for (Triple triple : ambiguous) {
+            if (H.isAdjacentTo(triple.getX(), triple.getZ())) continue;
+            if (H.isAdjacentTo(triple.getX(), triple.getY()) && H.isAdjacentTo(triple.getY(), triple.getZ())) {
+                H.addAmbiguousTriple(triple.getX(), triple.getY(), triple.getZ());
+            }
+        }
+
+        applyMeekRules(H);
+        removeUnnecessaryMarks(H);
     }
 
     private void applyBackgroundKnowledge(Graph G) {
@@ -439,33 +610,6 @@ public final class PcAll implements GraphSearch {
         return list;
     }
 
-    private boolean markov(Node y, Graph G) {
-        List<Node> boundary = GraphUtils.boundary(y, G);
-
-        for (Node x : G.getNodes()) {
-            if (y == x) continue;
-            if (G.isDescendentOf(x, y)) continue;
-
-            List<Node> adj = G.getAdjacentNodes(x);
-            adj.retainAll(G.getAdjacentNodes(y));
-            List<Node> Z = new ArrayList<>();
-
-            if (!G.isAdjacentTo(x, y)) {
-                for (Node z : adj) {
-                    if (G.isAmbiguousTriple(x, z, y)) {
-                        Z.add(z);
-                    }
-                }
-            }
-
-            if (boundary.contains(x)) continue;
-            if (!test.isIndependent(y, x, boundary)) {
-                return false;
-            }
-        }
-
-        return true;
-    }
 
     // Returns true if the set of non-Markov variables to y contains x.
     private boolean nonMarkovContains(Node y, Graph G, Node x) {
@@ -521,7 +665,8 @@ public final class PcAll implements GraphSearch {
         return !knowledge.isRequired(to.toString(), from.toString()) &&
                 !knowledge.isForbidden(from.toString(), to.toString());
     }
-//==========================PRIVATE METHODS===========================//
+
+    //==========================PRIVATE METHODS===========================//
 
     private void findAdjacencies() {
         IFas fas;
@@ -559,11 +704,12 @@ public final class PcAll implements GraphSearch {
     private void orientTriples(Graph G) {
         OrientColliders orientColliders;
 
-        if (colliderDiscovery == OrientColliders.ColliderMethod.SEPSETS) {
+        if (colliderDiscovery == OrientColliders.ColliderMethod.CPC) {
             orientColliders = new OrientColliders(test, sepsets);
         } else {
             orientColliders = new OrientColliders(test, colliderDiscovery);
         }
+
 
         orientColliders.setConflictRule(conflictRule);
         orientColliders.setIndependenceDetectionMethod(independenceMethod);
@@ -590,84 +736,136 @@ public final class PcAll implements GraphSearch {
         }
 
         for (Triple triple : G.getAmbiguousTriples()) {
-            if (G.getEdge(triple.getX(), triple.getY()).pointsTowards(triple.getX())) {
+            Edge edge1 = G.getEdge(triple.getZ(), triple.getY());
+            Edge edge2 = G.getEdge(triple.getX(), triple.getY());
+
+            if (edge1 == null) {
                 G.removeAmbiguousTriple(triple.getX(), triple.getY(), triple.getZ());
             }
 
-            if (G.getEdge(triple.getZ(), triple.getY()).pointsTowards(triple.getZ())) {
+            if (edge2 == null) {
+                G.removeAmbiguousTriple(triple.getZ(), triple.getY(), triple.getZ());
+            }
+
+            if (edge1 == null || edge2 == null) return;
+
+            if (edge2.pointsTowards(triple.getX())) {
                 G.removeAmbiguousTriple(triple.getX(), triple.getY(), triple.getZ());
             }
 
-            if (G.getEdge(triple.getX(), triple.getY()).pointsTowards(triple.getY())
-                    && G.getEdge(triple.getZ(), triple.getY()).pointsTowards(triple.getY())) {
+            if (edge1.pointsTowards(triple.getZ())) {
+                G.removeAmbiguousTriple(triple.getX(), triple.getY(), triple.getZ());
+            }
+
+            if (edge2.pointsTowards(triple.getY()) && edge1.pointsTowards(triple.getY())) {
                 G.removeAmbiguousTriple(triple.getX(), triple.getY(), triple.getZ());
             }
         }
     }
 
-    private Graph kpartial(IndependenceTest test) {
-        colliderDiscovery = OrientColliders.ColliderMethod.CPC;
+//    private Graph kpartial(IndependenceTest test) {
+//        colliderDiscovery = OrientColliders.ColliderMethod.CPC;
+//
+//        int k = depth;
+//
+//        findAdjacencies();
+//
+//        G = E(G);
+//
+//        List<Node> nodes = test.getVariables();
+//
+//        for (int i = 0; i < nodes.size(); i++) {
+//            for (int j = i + 1; j < nodes.size(); j++) {
+//                Node a = nodes.get(i);
+//                Node b = nodes.get(j);
+//                List<Node> _nodes = new ArrayList<>(nodes);
+//                _nodes.remove(a);
+//                _nodes.remove(b);
+//
+//                DepthChoiceGenerator gen = new DepthChoiceGenerator(_nodes.size(), k);
+//                int[] choice;
+//
+//                while ((choice = gen.next()) != null) {
+//                    List<Node> Z = GraphUtils.asList(choice, _nodes);
+//
+//                    if (test.isIndependent(a, b, Z)) {
+//                        List<Node> C = G.getAdjacentNodes(a);
+//                        C.retainAll(G.getAdjacentNodes(b));
+//
+//                        for (Node c : C) {
+//                            if (Z.contains(c)) continue;
+//                            if (!G.getEdges(a, c).contains(Edges.directedEdge(c, a))
+//                                    || !G.getEdges(b, c).contains(Edges.directedEdge(c, b))) continue;
+//
+//                            if (test.isDependent(a, c, Z) && test.isDependent(c, b, Z)) {
+//                                System.out.println("Removing " + a + "<-" + c + "->" + b);
+//
+//                                kpartialRemoveEdge(G, c, a);
+//                                kpartialRemoveEdge(G, c, b);
+//
+//                                System.out.println("a--c edges = " + G.getEdges(a, c));
+//                                System.out.println("b--c edges = " + G.getEdges(b, c));
+//                            }
+//                        }
+//                    }
+//                }
+//            }
+//        }
+//
+//        applyMeekRules(G);
+//
+//        return G;
+//    }
 
-        int k = depth;
+//    private void kpartialRemoveEdge(Graph g, Node c, Node a) {
+//        if (g.getEdge(a, c) == null) throw new IllegalArgumentException("No edge to remove");
+//        if (g.getEdge(c, a).pointsTowards(a)) g.removeEdge(c, a);
+//        else if (g.isUndirectedFromTo(c, a)) {
+//            g.removeEdge(c, a);
+//            g.addDirectedEdge(a, c);
+//        }
+//    }
 
-        findAdjacencies();
 
-        G = E(G);
+    public boolean existsSemiDirectedPathFromTo(Node node1, Set<Node> nodes, Graph G) {
+        return existsSemiDirectedPathVisit(null, node1, nodes,
+                new LinkedList<>(), G);
+    }
 
-        List<Node> nodes = test.getVariables();
+    /**
+     * @return true iff there is a semi-directed path from node1 to node2
+     */
+    private boolean existsSemiDirectedPathVisit(Node node0, Node node1, Set<Node> nodes2,
+                                                LinkedList<Node> path, Graph G) {
+        path.addLast(node1);
 
-        for (int i = 0; i < nodes.size(); i++) {
-            for (int j = i + 1; j < nodes.size(); j++) {
-                Node a = nodes.get(i);
-                Node b = nodes.get(j);
-                List<Node> _nodes = new ArrayList<>(nodes);
-                _nodes.remove(a);
-                _nodes.remove(b);
+        for (Edge edge : G.getEdges(node1)) {
+            Node child = Edges.traverseSemiDirected(node1, edge);
 
-                DepthChoiceGenerator gen = new DepthChoiceGenerator(_nodes.size(), k);
-                int[] choice;
+            if (child == null) {
+                continue;
+            }
 
-                while ((choice = gen.next()) != null) {
-                    List<Node> Z = GraphUtils.asList(choice, _nodes);
+            if (nodes2.contains(child)) {
+                return true;
+            }
 
-                    if (test.isIndependent(a, b, Z)) {
-                        List<Node> C = G.getAdjacentNodes(a);
-                        C.retainAll(G.getAdjacentNodes(b));
+            if (path.contains(child)) {
+                continue;
+            }
 
-                        for (Node c : C) {
-                            if (Z.contains(c)) continue;
-                            if (!G.getEdges(a, c).contains(Edges.directedEdge(c, a))
-                                    || !G.getEdges(b, c).contains(Edges.directedEdge(c, b))) continue;
+            if (node0 != null) {
+                if (G.isAmbiguousTriple(node0, node1, child)) continue;
+            }
 
-                            if (test.isDependent(a, c, Z) && test.isDependent(c, b, Z)) {
-                                System.out.println("Removing " + a + "<-" + c + "->" + b);
-
-                                kpartialRemoveEdge(G, c, a);
-                                kpartialRemoveEdge(G, c, b);
-
-                                System.out.println("a--c edges = " + G.getEdges(a, c));
-                                System.out.println("b--c edges = " + G.getEdges(b, c));
-                            }
-                        }
-                    }
-                }
+            if (existsSemiDirectedPathVisit(node1, child, nodes2, path, G)) {
+                return true;
             }
         }
 
-        applyMeekRules(G);
-
-        return G;
+        path.removeLast();
+        return false;
     }
-
-    private void kpartialRemoveEdge(Graph g, Node c, Node a) {
-        if (g.getEdge(a, c) == null) throw new IllegalArgumentException("No edge to remove");
-        if (g.getEdge(c, a).pointsTowards(a)) g.removeEdge(c, a);
-        else if (g.isUndirectedFromTo(c, a)) {
-            g.removeEdge(c, a);
-            g.addDirectedEdge(a, c);
-        }
-    }
-
 
 }
 

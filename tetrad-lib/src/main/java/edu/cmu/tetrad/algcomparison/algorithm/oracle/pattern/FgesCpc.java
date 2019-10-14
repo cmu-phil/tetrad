@@ -2,6 +2,7 @@ package edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern;
 
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
+import edu.cmu.tetrad.algcomparison.score.FisherZScore;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.algcomparison.utils.TakesIndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.utils.TakesInitialGraph;
@@ -63,7 +64,9 @@ public class FgesCpc implements Algorithm, TakesInitialGraph, HasKnowledge, Take
 //                initialGraph = algorithm.search(dataSet, parameters);
 //            }
 
-            Score score = new IndependenceScore(test.getTest(dataSet, parameters));
+            Score score = new FisherZScore().getScore(dataSet, parameters);
+
+//            Score score = new IndependenceScore(test.getTest(dataSet, parameters));
 
             edu.cmu.tetrad.search.FgesCpc search
                     = new edu.cmu.tetrad.search.FgesCpc(score, Runtime.getRuntime().availableProcessors());

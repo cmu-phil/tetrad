@@ -1587,14 +1587,26 @@ public class Comparison {
 
                         statTables[u][i][j] = stat;
                     } else if (mode == Mode.Average) {
-                        final double mean = StatUtils.mean(allStats[u][i][j]);
+                        double[] stats = allStats[u][i][j];
+                        stats = StatUtils.removeNaN(stats);
+                        final double mean = StatUtils.mean(stats);
+//                        final double mean = StatUtils.mean(allStats[u][i][j]);
                         statTables[u][i][j] = mean;
                     } else if (mode == Mode.WorstCase) {
-                        statTables[u][i][j] = StatUtils.min(allStats[u][i][j]);
+                        double[] stats = allStats[u][i][j];
+                        stats = StatUtils.removeNaN(stats);
+                        statTables[u][i][j] = StatUtils.min(stats);
+//                        statTables[u][i][j] = StatUtils.min(allStats[u][i][j]);
                     } else if (mode == Mode.StandardDeviation) {
-                        statTables[u][i][j] = StatUtils.sd(allStats[u][i][j]);
+                        double[] stats = allStats[u][i][j];
+                        stats = StatUtils.removeNaN(stats);
+                        statTables[u][i][j] = StatUtils.sd(stats);
+//                        statTables[u][i][j] = StatUtils.sd(allStats[u][i][j]);
                     } else if (mode == Mode.MedianCase) {
-                        statTables[u][i][j] = StatUtils.median(allStats[u][i][j]);
+                        double[] stats = allStats[u][i][j];
+                        stats = StatUtils.removeNaN(stats);
+                        statTables[u][i][j] = StatUtils.median(stats);
+//                        statTables[u][i][j] = StatUtils.median(allStats[u][i][j]);
                     } else {
                         throw new IllegalStateException();
                     }

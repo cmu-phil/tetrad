@@ -198,6 +198,7 @@ public final class StatUtils {
      * @return the median of the first N values in this array.
      */
     public static double median(double array[], int N) {
+        if (N == 0) return Double.NaN;
 
         double a[] = new double[N + 1];
 
@@ -417,6 +418,7 @@ public final class StatUtils {
      * @return the minimum of the values in this array.
      */
     public static double min(double[] array) {
+        if (array.length == 0) return Double.NaN;
         return min(array, array.length);
     }
 

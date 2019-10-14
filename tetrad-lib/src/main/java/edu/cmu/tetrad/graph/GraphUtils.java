@@ -5501,4 +5501,33 @@ public final class GraphUtils {
         return new ArrayList<>(b);
     }
 
+
+    public static boolean markov(Node y, Graph G, IndependenceTest test) {
+        List<Node> boundary = GraphUtils.boundary(y, G);
+
+        for (Node x : G.getNodes()) {
+            if (y == x) continue;
+            if (G.isDescendentOf(x, y)) continue;
+
+            List<Node> adj = G.getAdjacentNodes(x);
+            adj.retainAll(G.getAdjacentNodes(y));
+            if (boundary.contains(x)) continue;
+            if (!test.isIndependent(y, x, boundary)) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    public static boolean markov(Graph G, IndependenceTest test) {
+        for (Node node : G.getNodes()) {
+            if (!markov(node, G, test)) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
 }

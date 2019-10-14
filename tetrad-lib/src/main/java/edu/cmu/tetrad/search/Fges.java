@@ -626,7 +626,7 @@ public final class Fges implements GraphSearch, GraphScorer {
 
                         }
 
-                        bump = bump > bump2 ? bump : bump2;
+                        bump = Math.max(bump, bump2);
                     }
 
 //                    if (symmetricFirstStep) {

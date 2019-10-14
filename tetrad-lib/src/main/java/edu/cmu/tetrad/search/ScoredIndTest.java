@@ -159,6 +159,9 @@ public class ScoredIndTest implements Score {
         return false;
     }
 
+    public IndependenceTest getTest() {
+        return test;
+    }
 }
 
 

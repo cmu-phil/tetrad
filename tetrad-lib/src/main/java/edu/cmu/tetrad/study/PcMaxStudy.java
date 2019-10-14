@@ -26,6 +26,7 @@ import edu.cmu.tetrad.algcomparison.algorithm.Algorithms;
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern.*;
 import edu.cmu.tetrad.algcomparison.graph.RandomForward;
 import edu.cmu.tetrad.algcomparison.independence.FisherZ;
+import edu.cmu.tetrad.algcomparison.score.FisherZScore;
 import edu.cmu.tetrad.algcomparison.score.SemBicScore;
 import edu.cmu.tetrad.algcomparison.simulation.SemSimulation;
 import edu.cmu.tetrad.algcomparison.simulation.Simulation;
@@ -100,24 +101,24 @@ public class PcMaxStudy {
         Parameters parameters = new Parameters();
 
         parameters.set(Params.COEF_LOW, 0.1);
-        parameters.set(Params.COEF_HIGH, .7);
-        parameters.set(Params.VAR_LOW, .5);
-        parameters.set(Params.VAR_HIGH, .9);
+        parameters.set(Params.COEF_HIGH, 1.0);
+        parameters.set(Params.VAR_LOW, 1);
+        parameters.set(Params.VAR_HIGH, 3);
 
         parameters.set(Params.STABLE_FAS, true);
         parameters.set(Params.CONCURRENT_FAS, false);
         parameters.set(Params.CONFLICT_RULE, 3);
         parameters.set(Params.SYMMETRIC_FIRST_STEP, true);
+        parameters.set(Params.COLLIDER_DISCOVERY_RULE, 2);
 
         parameters.set(Params.NUM_RUNS, 5);
         parameters.set(Params.DEPTH, -1);
-        parameters.set(Params.ALPHA, 0.05, .01, 0.001);
+        parameters.set(Params.ALPHA, .2, .1, .05, 0.01, 0.001, 0.0001);
         parameters.set(Params.ORIENTATION_ALPHA, -1);
-        parameters.set(Params.PENALTY_DISCOUNT, 1, 2);
+        parameters.set(Params.PENALTY_DISCOUNT, 1, 2, 3);
         parameters.set(Params.NUM_MEASURES, 10);
         parameters.set(Params.AVG_DEGREE, 4);
-        parameters.set(Params.COLLIDER_DISCOVERY_RULE, 2);
-        parameters.set(Params.SAMPLE_SIZE, 500, 1000, 2000, 5000);
+        parameters.set(Params.SAMPLE_SIZE, 500, 1000, 2000, 5000, 10000);
         parameters.set(Params.DO_MARKOV_LOOP, true);
         parameters.set(Params.USE_FDR_FOR_INDEPENDENCE, true);
 

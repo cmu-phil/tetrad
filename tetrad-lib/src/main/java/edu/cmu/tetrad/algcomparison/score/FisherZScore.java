@@ -5,6 +5,7 @@ import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.IndTestFisherZ;
+import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.search.Score;
 import edu.cmu.tetrad.search.ScoredIndTest;
 import edu.cmu.tetrad.util.Parameters;
@@ -17,24 +18,25 @@ import java.util.List;
  *
  * @author jdramsey
  */
-//@edu.cmu.tetrad.annotation.Score(
-//        name = "Fisher Z Score",
-//        command = "fisher-z",
-//        dataType = DataType.Continuous
-//)
+@edu.cmu.tetrad.annotation.Score(
+        name = "Fisher Z Score",
+        command = "fisher-z",
+        dataType = DataType.Continuous
+)
 public class FisherZScore implements ScoreWrapper {
 
     static final long serialVersionUID = 23L;
     private DataModel dataSet;
-    double alpha = 0.001;
+    private double alpha = 0.001;
+    private IndependenceTest test;
 
     @Override
     public Score getScore(DataModel dataSet, Parameters parameters) {
         this.dataSet = dataSet;
         double alpha = parameters.getDouble(Params.ALPHA);
         this.alpha = alpha;
-        IndTestFisherZ test = new IndTestFisherZ((DataSet) dataSet, alpha);
-        return new ScoredIndTest(test);
+        this.setTest(new IndTestFisherZ((DataSet) dataSet, alpha));
+        return new ScoredIndTest(getTest());
     }
 
     @Override
@@ -57,5 +59,13 @@ public class FisherZScore implements ScoreWrapper {
     @Override
     public Node getVariable(String name) {
         return dataSet.getVariable(name);
+    }
+
+    public IndependenceTest getTest() {
+        return test;
+    }
+
+    public void setTest(IndependenceTest test) {
+        this.test = test;
     }
 }
