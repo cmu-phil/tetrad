@@ -57,6 +57,12 @@ import static edu.cmu.tetrad.search.SearchGraphUtils.basicPattern;
  */
 public final class FgesCpc implements GraphSearch, GraphScorer {
 
+    private int depth = -1;
+
+    public void setDepth(int depth) {
+        this.depth = depth;
+    }
+
     /**
      * Internal.
      */
@@ -174,6 +180,8 @@ public final class FgesCpc implements GraphSearch, GraphScorer {
     // The maximum number of threads to use.
     private final int maxThreads;
 
+    private OrientColliders orientColliders = null;
+
     //===========================CONSTRUCTORS=============================//
 
     /**
@@ -226,6 +234,16 @@ public final class FgesCpc implements GraphSearch, GraphScorer {
      * @return the resulting Pattern.
      */
     public Graph search() {
+        IndependenceTest test = ((ScoredIndTest) score).getTest();
+
+        orientColliders = new OrientColliders(test, OrientColliders.ColliderMethod.CPC);
+        orientColliders.setConflictRule(OrientColliders.ConflictRule.PRIORITY);
+        orientColliders.setIndependenceDetectionMethod(OrientColliders.IndependenceDetectionMethod.ALPHA);
+        orientColliders.setDepth(depth);
+        orientColliders.setOrientationQ(test.getAlpha());
+        orientColliders.setVerbose(verbose);
+        orientColliders.setOut(out);
+
         long start = System.currentTimeMillis();
         topGraphs.clear();
 
@@ -281,8 +299,8 @@ public final class FgesCpc implements GraphSearch, GraphScorer {
 
         if (verbose) {
 
-            System.out.println("Final Markov counts:");
-            GraphUtils.printNonMarkovCounts(graph, ((ScoredIndTest) score).getTest());
+//            System.out.println("Final Markov counts:");
+//            GraphUtils.printNonMarkovCounts(graph, ((ScoredIndTest) score).getTest());
 
             this.logger.forceLogMessage("Returning this graph: " + graph);
 
@@ -1069,7 +1087,14 @@ public final class FgesCpc implements GraphSearch, GraphScorer {
 
             initializeArrowsBackward();
 
-//            Set<Node> visited = reapplyOrientation(x, y, arrow.getHOrT());
+//            applyMeekRules(graph);
+
+
+            Set<Node> visited = reapplyOrientation(x, y, arrow.getHOrT());
+            removeUnnecessaryMarks(graph);
+//
+////            initializeArrowsBackward();
+//
 //
 //            Set<Node> toProcess = new HashSet<>();
 //
@@ -1629,18 +1654,10 @@ public final class FgesCpc implements GraphSearch, GraphScorer {
     }
 
     private void updateOrientation(Graph H, Node x, Node y) {
-        IndependenceTest test = ((ScoredIndTest) score).getTest();
 
         Set<Triple> ambiguous = H.getAmbiguousTriples();
         basicPattern(H, false);
 
-        OrientColliders orientColliders = new OrientColliders(test, OrientColliders.ColliderMethod.CPC);
-        orientColliders.setConflictRule(OrientColliders.ConflictRule.PRIORITY);
-        orientColliders.setIndependenceDetectionMethod(OrientColliders.IndependenceDetectionMethod.ALPHA);
-        orientColliders.setDepth(-1);
-        orientColliders.setOrientationQ(test.getAlpha());
-        orientColliders.setVerbose(verbose);
-        orientColliders.setOut(out);
 
         for (Node b : H.getAdjacentNodes(x)) {
             for (Node c : H.getAdjacentNodes(b)) {
@@ -1656,17 +1673,19 @@ public final class FgesCpc implements GraphSearch, GraphScorer {
                 if (type == SearchGraphUtils.CpcTripleType.AMBIGUOUS) {
                     H.addAmbiguousTriple(x, b, c);
                 } else if (type == SearchGraphUtils.CpcTripleType.COLLIDER) {
-                     if (!H.getEdge(x, b).pointsTowards(b)) {
-                        H.removeEdge(x, b);
-                        H.addDirectedEdge(x, b);
-                    }
+                    if (!H.getEdge(x, b).pointsTowards(x) && !H.getEdge(b, c).pointsTowards(c)) {
+                        if (!H.getEdge(x, b).pointsTowards(b)) {
+                            H.removeEdge(x, b);
+                            H.addDirectedEdge(x, b);
+                        }
 
-                    if (!H.getEdge(c, b).pointsTowards(b)) {
-                        H.removeEdge(c, b);
-                        H.addDirectedEdge(c, b);
-                    }
+                        if (!H.getEdge(c, b).pointsTowards(b)) {
+                            H.removeEdge(c, b);
+                            H.addDirectedEdge(c, b);
+                        }
 
-                    H.removeAmbiguousTriple(x, b, c);
+                        H.removeAmbiguousTriple(x, b, c);
+                    }
                 } else if (type == SearchGraphUtils.CpcTripleType.NONCOLLIDER) {
                     H.addAmbiguousTriple(x, b, c);
                 }
@@ -1687,17 +1706,19 @@ public final class FgesCpc implements GraphSearch, GraphScorer {
                 if (type == SearchGraphUtils.CpcTripleType.AMBIGUOUS) {
                     H.addAmbiguousTriple(y, b, c);
                 } else if (type == SearchGraphUtils.CpcTripleType.COLLIDER) {
-                    if (!H.getEdge(y, b).pointsTowards(b)) {
-                        H.removeEdge(y, b);
-                        H.addDirectedEdge(y, b);
-                    }
+                    if (!H.getEdge(y, b).pointsTowards(y) && !H.getEdge(b, c).pointsTowards(c)) {
+                        if (!H.getEdge(y, b).pointsTowards(b)) {
+                            H.removeEdge(y, b);
+                            H.addDirectedEdge(y, b);
+                        }
 
-                    if (!H.getEdge(c, b).pointsTowards(b)) {
-                        H.removeEdge(c, b);
-                        H.addDirectedEdge(c, b);
-                    }
+                        if (!H.getEdge(c, b).pointsTowards(b)) {
+                            H.removeEdge(c, b);
+                            H.addDirectedEdge(c, b);
+                        }
 
-                    H.removeAmbiguousTriple(y, b, c);
+                        H.removeAmbiguousTriple(y, b, c);
+                    }
                 } else if (type == SearchGraphUtils.CpcTripleType.NONCOLLIDER) {
                     H.addAmbiguousTriple(y, b, c);
                 }
@@ -1710,9 +1731,6 @@ public final class FgesCpc implements GraphSearch, GraphScorer {
                 H.addAmbiguousTriple(triple.getX(), triple.getY(), triple.getZ());
             }
         }
-
-        applyMeekRules(H);
-        removeUnnecessaryMarks(H);
     }
 
     private void applyBackgroundKnowledge(Graph G) {
@@ -1720,15 +1738,6 @@ public final class FgesCpc implements GraphSearch, GraphScorer {
     }
 
     private void orientTriples(Graph G) {
-        IndependenceTest test = ((ScoredIndTest) score).getTest();
-        OrientColliders orientColliders = new OrientColliders(test, OrientColliders.ColliderMethod.CPC);
-
-        orientColliders.setConflictRule(OrientColliders.ConflictRule.PRIORITY);
-        orientColliders.setIndependenceDetectionMethod(OrientColliders.IndependenceDetectionMethod.ALPHA);
-        orientColliders.setDepth(-1);
-        orientColliders.setOrientationQ(test.getAlpha());
-        orientColliders.setVerbose(verbose);
-        orientColliders.setOut(out);
         orientColliders.orientTriples(G);
     }
 

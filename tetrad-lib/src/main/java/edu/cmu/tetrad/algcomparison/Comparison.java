@@ -99,6 +99,9 @@ public class Comparison {
 
     private boolean[] graphTypeUsed;
     private PrintStream out;
+    private PrintStream visualizationOutConfig;
+    private PrintStream visualizationOutStats;
+    private PrintStream visualizationOutStd;
     private boolean tabDelimitedTables = false;
     private boolean saveGraphs = false;
     private boolean copyData = true;
@@ -247,6 +250,9 @@ public class Comparison {
             dir.mkdirs();
             File file = new File(dir, outputFileName);
             this.out = new PrintStream(new FileOutputStream(file));
+            this.visualizationOutConfig = new PrintStream(new FileOutputStream(new File(dir, outputFileName + "_visualization_config")));
+            this.visualizationOutStats = new PrintStream(new FileOutputStream(new File(dir, outputFileName + "_visualization_stats")));
+            this.visualizationOutStd = new PrintStream(new FileOutputStream(new File(dir, outputFileName + "_visualization_std")));
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -339,9 +345,40 @@ public class Comparison {
             }
         }
 
+
         // Run all of the algorithms and compile statistics.
         double[][][][] allStats = calcStats(algorithmSimulationWrappers, algorithmWrappers, simulationWrappers,
                 statistics, numRuns, stdout);
+
+
+        visualizationOutConfig.print("Package");
+
+        visualizationOutStats.print("Algorithm");
+
+        for (String parameter : parameters.getUsedParameters()) {
+            visualizationOutConfig.print(parameters.get(parameter) + ",");
+        }
+
+        for (Statistic statistic : statistics.getStatistics()) {
+            visualizationOutConfig.print("Statistic");
+        }
+
+        visualizationOutStats.print("Tetrad");
+
+        for (Algorithm algorithm : algorithms.getAlgorithms()) {
+            visualizationOutStats.print(algorithm.getDescription());
+        }
+
+        for (String parameter : parameters.getUsedParameters()) {
+            visualizationOutConfig.print("Parameter");
+            visualizationOutStats.print(parameter + ",");
+        }
+
+        for (Statistic statistic : statistics.getStatistics()) {
+//            visualizationOutStats.print(statistic.);
+        }
+
+        visualizationOutConfig.print("Time");
 
         // Print out the preliminary information for statistics types, etc.
         if (allStats != null) {
@@ -2103,4 +2140,8 @@ public class Comparison {
             return wrapper;
         }
     }
+
+//    private void saveVisualizationFiles(String path, ) {
+//
+//    }
 }

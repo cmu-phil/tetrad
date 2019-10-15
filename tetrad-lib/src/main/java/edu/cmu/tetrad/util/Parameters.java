@@ -1,10 +1,6 @@
 package edu.cmu.tetrad.util;
 
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -30,7 +26,7 @@ public class Parameters implements TetradSerializable {
             throw new NullPointerException();
         }
         this.parameters = new LinkedHashMap<>(parameters.parameters);
-        this.usedParameters = new LinkedHashSet<>(parameters.usedParameters);
+        this.usedParameters = new LinkedHashSet<>(parameters.getUsedParameters());
         this.overriddenParameters = new HashMap<>(parameters.overriddenParameters);
     }
 
@@ -44,7 +40,7 @@ public class Parameters implements TetradSerializable {
             throw new NullPointerException();
         }
         this.parameters.putAll(parameters.parameters);
-        this.usedParameters.addAll(parameters.usedParameters);
+        this.getUsedParameters().addAll(parameters.getUsedParameters());
         this.overriddenParameters.putAll(parameters.overriddenParameters);
     }
 
@@ -56,7 +52,7 @@ public class Parameters implements TetradSerializable {
      */
     @Override
     public String toString() {
-        return usedParameters.stream()
+        return getUsedParameters().stream()
                 .map(e -> String.format("%s = %s", e, parameters.get(e)[0]))
                 .collect(Collectors.joining(System.lineSeparator()));
     }
@@ -179,7 +175,7 @@ public class Parameters implements TetradSerializable {
             return overriddenParameters.get(name);
         }
 
-        usedParameters.add(name);
+        getUsedParameters().add(name);
         Object[] objects = parameters.get(name);
 
         if (objects == null) {
@@ -285,5 +281,9 @@ public class Parameters implements TetradSerializable {
 
     public Set<String> getParametersNames() {
         return parameters.keySet();
+    }
+
+    public List<String> getUsedParameters() {
+        return new ArrayList<>(usedParameters);
     }
 }

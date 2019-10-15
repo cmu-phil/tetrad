@@ -27,10 +27,7 @@ import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.TetradLogger;
 
 import java.io.PrintStream;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 import static edu.cmu.tetrad.search.SearchGraphUtils.basicPattern;
 
@@ -271,7 +268,7 @@ public final class PcAll implements GraphSearch {
 //            return fas.search();
         }
 
-        GraphUtils.printNonMarkovCounts(G, test);
+//        GraphUtils.printNonMarkovCounts(G, test);
 
         TetradLogger.getInstance().log("graph", "\nReturning this graph: " + G);
 
@@ -313,22 +310,79 @@ public final class PcAll implements GraphSearch {
 
         do {
             System.out.println("Forward = " + ++round);
-
             changed = false;
 
+            Map<Pair, Double> scores = new HashMap<>();
+
+
             for (Node y : nodes) {
+//                double maxp = Double.NEGATIVE_INFINITY;
+//                Node maxy = null;
+//                Node maxx = null;
+
                 for (Node x : nodes) {
                     if (x == y) continue;
+                    if (G.isAdjacentTo(x, y)) continue;
+                    double p = nonMarkovContainsP(y, G, x);
 
-                    if (nonMarkovContains(y, G, x)) {
-                        G.addUndirectedEdge(x, y);
-                        updateOrientation(G, x, y);
-                        changed = true;
+                    if (!Double.isNaN(p)) {
+                        scores.put(new Pair(x, y), p);
+
+//                        if (!Double.isNaN(p) && p > maxp) {
+//                            maxp = p;
+//                            maxx = x;
+//                            maxy = y;
+//
+//
+//                            changed = true;
+//                        }
                     }
                 }
+
+//                if (maxx != null) {
+//                    G.addUndirectedEdge(maxx, maxy);
+//                    updateOrientation(G, maxx, maxy);
+//                    changed = true;
+//                }
             }
 
-        } while (changed && round < 10);
+            List<Pair> pairs = new ArrayList<>(scores.keySet());
+            pairs.sort((o1, o2) -> Double.compare(scores.get(o2), scores.get(o1)));
+
+            for (Pair pair : pairs) {
+                if (!G.isAdjacentTo(pair.getX(), pair.getY())) {
+                    G.addUndirectedEdge(pair.getX(), pair.getY());
+                    updateOrientation(G, pair.getX(), pair.getY());
+                    changed = true;
+                }
+            }
+        } while (changed && round < 25);
+    }
+
+    private static class Pair {
+        private Node x;
+        private Node y;
+
+        public Pair(Node x, Node y) {
+            this.setX(x);
+            this.setY(y);
+        }
+
+        public Node getX() {
+            return x;
+        }
+
+        public void setX(Node x) {
+            this.x = x;
+        }
+
+        public Node getY() {
+            return y;
+        }
+
+        public void setY(Node y) {
+            this.y = y;
+        }
     }
 
     private void backward(List<Node> nodes) {
@@ -337,27 +391,93 @@ public final class PcAll implements GraphSearch {
 
         System.out.println("\nAfter the forward search, Markov = " + GraphUtils.markov(G, test));
 
-        do {
-            System.out.println("Backward = " + ++round);
+//        do {
+//            System.out.println("Backward = " + ++round);
+//
+//            changed = false;
+//
+//            for (Edge edge : G.getEdges()) {
+//                Node x = edge.getNode1();
+//                Node y = edge.getNode2();
+//                if (nodes.indexOf(x) < nodes.indexOf(y)) continue;
+//
+//                Graph H = new EdgeListGraph(G);
+//                H.removeEdge(x, y);
+//
+//                if (GraphUtils.markov(x, H, test) && GraphUtils.markov(y, H, test)) {
+//                    updateOrientation(H, x, y);
+//                    G = H;
+//                    changed = true;
+//                    System.out.println("Removed " + Edges.undirectedEdge(x, y));
+//                }
+//            }
+//        } while (changed && round < 10);
 
+        do {
+            System.out.println("Forward = " + ++round);
             changed = false;
 
-            for (Edge edge : G.getEdges()) {
-                Node x = edge.getNode1();
-                Node y = edge.getNode2();
-                if (nodes.indexOf(x) < nodes.indexOf(y)) continue;
+            for (Node y : nodes) {
+//                double maxp = Double.NEGATIVE_INFINITY;
+//                Node maxx = null;
 
-                Graph H = new EdgeListGraph(G);
-                H.removeEdge(x, y);
+                for (Node x : nodes) {
+                    if (x == y) continue;
+                    if (!G.isAdjacentTo(x, y)) continue;
 
-                if (GraphUtils.markov(x, H, test) && GraphUtils.markov(y, H, test)) {
-                    updateOrientation(H, x, y);
-                    G = H;
-                    changed = true;
-                    System.out.println("Removed " + Edges.undirectedEdge(x, y));
+                    Graph H = new EdgeListGraph(G);
+                    H.removeEdge(x, y);
+
+                    if (GraphUtils.markov(x, H, test) && GraphUtils.markov(y, H, test)) {
+                        updateOrientation(H, x, y);
+                        G = H;
+                        changed = true;
+                        System.out.println("Removed " + Edges.undirectedEdge(x, y));
+                    }
+//
+//
+//                    if (!Double.isNaN(maxp)) {
+//                        double p = nonMarkovContainsP(y, G, x);
+//
+//                        if (!Double.isNaN(p) && p > maxp) {
+//                            maxp = p;
+//                            maxx = x;
+//                        }
+//                    }
                 }
+
+
+//                if (maxx != null) {
+//                    G.addUndirectedEdge(maxx, y);
+//                    updateOrientation(G, maxx, y);
+//                    changed = true;
+//                }
+
             }
         } while (changed && round < 10);
+
+    }
+
+    public static double nonMarkovMaxP(Node y, Graph G, IndependenceTest test) {
+        List<Node> boundary = GraphUtils.boundary(y, G);
+
+        double maxp = Double.NEGATIVE_INFINITY;
+
+        for (Node x : G.getNodes()) {
+            if (y == x) continue;
+            if (G.isDescendentOf(x, y)) continue;
+            if (boundary.contains(x)) continue;
+
+
+            boolean independent = test.isIndependent(y, x, boundary);
+            double p = test.getPValue();
+
+            if (p > maxp) {
+                maxp = p;
+            }
+        }
+
+        return maxp;
     }
 
 //    private boolean validDelete(Node x, Node y, Graph G) {
@@ -460,8 +580,6 @@ public final class PcAll implements GraphSearch {
 //        }
 //        return null;
 //    }
-
-
 
 
 //    private boolean markov(List<Node> nodes, Graph G, IndependenceTest test) {
@@ -620,6 +738,18 @@ public final class PcAll implements GraphSearch {
         return !test.isIndependent(y, x, boundary);
     }
 
+    private double nonMarkovContainsP(Node y, Graph G, Node x) {
+        List<Node> boundary = GraphUtils.boundary(y, G);
+        if (y == x) return Double.NaN;
+        if (G.isDescendentOf(x, y)) return Double.NaN;
+        if (boundary.contains(x)) return Double.NaN;
+        if (!test.isIndependent(y, x, boundary)) {
+            return test.getPValue();
+        }
+
+        return Double.NaN;
+    }
+
     public static boolean isArrowpointAllowed1(Node from, Node to,
                                                IKnowledge knowledge) {
         return knowledge == null || !knowledge.isRequired(to.toString(), from.toString()) &&
@@ -704,12 +834,11 @@ public final class PcAll implements GraphSearch {
     private void orientTriples(Graph G) {
         OrientColliders orientColliders;
 
-        if (colliderDiscovery == OrientColliders.ColliderMethod.CPC) {
+        if (colliderDiscovery == OrientColliders.ColliderMethod.SEPSETS) {
             orientColliders = new OrientColliders(test, sepsets);
         } else {
             orientColliders = new OrientColliders(test, colliderDiscovery);
         }
-
 
         orientColliders.setConflictRule(conflictRule);
         orientColliders.setIndependenceDetectionMethod(independenceMethod);

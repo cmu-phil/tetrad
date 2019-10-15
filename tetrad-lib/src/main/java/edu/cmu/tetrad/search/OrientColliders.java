@@ -131,18 +131,7 @@ public class OrientColliders {
     }
 
     public SearchGraphUtils.CpcTripleType orientTriple(Graph graph, Node a, Node b, Node c) {
-        List<PValue> pValues = getAllPValues(a, c, depth, graph, test);
-
-        List<PValue> bPvals = new ArrayList<>();
-        List<PValue> notbPvals = new ArrayList<>();
-
-        for (PValue p : pValues) {
-            if (p.getSepset().contains(b)) {
-                bPvals.add(p);
-            } else {
-                notbPvals.add(p);
-            }
-        }
+        List<PValue> pValues = getAllPValues(a, b, c, depth, graph, test, colliderMethod == ColliderMethod.CPC);
 
         if (colliderMethod == ColliderMethod.SEPSETS) {
             List<Node> sepset = sepsets.get(a, c);
@@ -176,6 +165,18 @@ public class OrientColliders {
                 return SearchGraphUtils.CpcTripleType.AMBIGUOUS;
             }
         } else if (colliderMethod == ColliderMethod.MPC) {
+
+            List<PValue> bPvals = new ArrayList<>();
+            List<PValue> notbPvals = new ArrayList<>();
+
+            for (PValue p : pValues) {
+                if (p.getSepset().contains(b)) {
+                    bPvals.add(p);
+                } else {
+                    notbPvals.add(p);
+                }
+            }
+
             List<PValue> existsb = getFalseNegatives(bPvals, orientationQ);
             List<PValue> existsnotb = getFalseNegatives(notbPvals, orientationQ);
 
@@ -229,7 +230,7 @@ public class OrientColliders {
     }
 
     private void orientTriple(Graph graph, Node a, Node b, Node c, List<Triple> colliders, List<Triple> ambiguous, List<Triple> noncolliders, Map<NodePair, List<PValue>> notBMap) {
-        List<PValue> pValues = getAllPValues(a, c, depth, graph, test);
+        List<PValue> pValues = getAllPValues(a, b, c, depth, graph, test, colliderMethod == ColliderMethod.CPC);
 
         List<PValue> bPvals = new ArrayList<>();
         List<PValue> notbPvals = new ArrayList<>();
@@ -279,28 +280,28 @@ public class OrientColliders {
 
             if (!existsb.isEmpty() && existsnotb.isEmpty()) {
                 if (noncolliders != null) noncolliders.add(new Triple(a, b, c));
-                if (verbose) {
-                    out.println(a + " --- " + b + " --- " + c + " depth = " + depth + ": noncollider"
-                            + " existsb = " + existsb.size() + " existsnotb " + existsnotb.size());
-                }
+//                if (verbose) {
+//                    out.println(a + " --- " + b + " --- " + c + " depth = " + depth + ": noncollider"
+//                            + " existsb = " + existsb.size() + " existsnotb " + existsnotb.size());
+//                }
             } else if (existsb.isEmpty() && !existsnotb.isEmpty() && knowledgeAllowsCollider(a, b, c, knowledge)) {
                 if (colliders != null) colliders.add(new Triple(a, b, c));
 
                 notbPvals.sort((p1, p2) -> Double.compare(p2.getP(), p1.getP()));
                 notBMap.put(new NodePair(a, c), existsnotb);
 
-                if (verbose) {
-                    out.println(a + " --- " + b + " --- " + c + " depth = " + depth + ": COLLIDER"
-                            + " existb = " + existsb.size() + " existsnotb " + existsnotb.size());
-                }
+//                if (verbose) {
+//                    out.println(a + " --- " + b + " --- " + c + " depth = " + depth + ": COLLIDER"
+//                            + " existb = " + existsb.size() + " existsnotb " + existsnotb.size());
+//                }
             } else {
                 pValues.sort((o1, o2) -> Double.compare(o2.getP(), o1.getP()));
                 if (ambiguous != null) ambiguous.add(new Triple(a, b, c));
 
-                if (verbose) {
-                    out.println(a + " --- " + b + " --- " + c + " depth = " + depth + ": ...ambiguous"
-                            + " existb = " + existsb.size() + " existsnotb " + existsnotb.size());
-                }
+//                if (verbose) {
+//                    out.println(a + " --- " + b + " --- " + c + " depth = " + depth + ": ...ambiguous"
+//                            + " existb = " + existsb.size() + " existsnotb " + existsnotb.size());
+//                }
             }
         } else if (colliderMethod == ColliderMethod.MPC) {
             List<PValue> existsb = getFalseNegatives(bPvals, orientationQ);
@@ -308,27 +309,27 @@ public class OrientColliders {
 
             if (existsb.size() > existsnotb.size()) {
                 if (noncolliders != null) noncolliders.add(new Triple(a, b, c));
-                if (verbose) {
-                    out.println(a + " --- " + b + " --- " + c + " depth = " + depth + ": noncollider"
-                            + " existsb = " + existsb.size() + " existsnotb " + existsnotb.size());
-                }
+//                if (verbose) {
+//                    out.println(a + " --- " + b + " --- " + c + " depth = " + depth + ": noncollider"
+//                            + " existsb = " + existsb.size() + " existsnotb " + existsnotb.size());
+//                }
             } else if (existsb.size() < existsnotb.size() && knowledgeAllowsCollider(a, b, c, knowledge)) {
                 if (colliders != null) colliders.add(new Triple(a, b, c));
 
                 notbPvals.sort((p1, p2) -> Double.compare(p2.getP(), p1.getP()));
                 notBMap.put(new NodePair(a, c), notbPvals);
 
-                if (verbose) {
-                    out.println(a + " --- " + b + " --- " + c + " depth = " + depth + ": COLLIDER"
-                            + " existb = " + existsb.size() + " existsnotb " + existsnotb.size());
-                }
+//                if (verbose) {
+//                    out.println(a + " --- " + b + " --- " + c + " depth = " + depth + ": COLLIDER"
+//                            + " existb = " + existsb.size() + " existsnotb " + existsnotb.size());
+//                }
             } else {
                 if (ambiguous != null) ambiguous.add(new Triple(a, b, c));
 
-                if (verbose) {
-                    out.println(a + " --- " + b + " --- " + c + " depth = " + depth + ": ...ambiguous"
-                            + " existb = " + existsb.size() + " existsnotb " + existsnotb.size());
-                }
+//                if (verbose) {
+//                    out.println(a + " --- " + b + " --- " + c + " depth = " + depth + ": ...ambiguous"
+//                            + " existb = " + existsb.size() + " existsnotb " + existsnotb.size());
+//                }
             }
         } else if (colliderMethod == ColliderMethod.PC_MAX) {
             List<PValue> above = getFalseNegatives(pValues, orientationQ);
@@ -343,27 +344,27 @@ public class OrientColliders {
 
             if (sepset != null && sepset.contains(b)) {
                 noncolliders.add(new Triple(a, b, c));
-                if (verbose) {
-                    out.println(a + " --- " + b + " --- " + c + " depth = " + orientationQ + ": noncollider"
-                            + " bVals = " + bPvals.size() + " notbVals " + notbPvals.size());
-                }
+//                if (verbose) {
+//                    out.println(a + " --- " + b + " --- " + c + " depth = " + orientationQ + ": noncollider"
+//                            + " bVals = " + bPvals.size() + " notbVals " + notbPvals.size());
+//                }
             } else if (sepset != null && !sepset.contains(b)) {
                 colliders.add(new Triple(a, b, c));
 
                 notbPvals.sort((p1, p2) -> Double.compare(p2.getP(), p1.getP()));
                 notBMap.put(new NodePair(a, c), notbPvals);
 
-                if (verbose) {
-                    out.println(a + " --- " + b + " --- " + c + " depth = " + depth + ": COLLIDER"
-                            + " bVals = " + bPvals.size() + " notbVals " + notbPvals.size());
-                }
+//                if (verbose) {
+//                    out.println(a + " --- " + b + " --- " + c + " depth = " + depth + ": COLLIDER"
+//                            + " bVals = " + bPvals.size() + " notbVals " + notbPvals.size());
+//                }
             } else {
                 ambiguous.add(new Triple(a, b, c));
 
-                if (verbose) {
-                    out.println(a + " --- " + b + " --- " + c + " depth = " + depth + ": ...ambiguous"
-                            + " bVals = " + bPvals.size() + " notbVals " + notbPvals.size());
-                }
+//                if (verbose) {
+//                    out.println(a + " --- " + b + " --- " + c + " depth = " + depth + ": ...ambiguous"
+//                            + " bVals = " + bPvals.size() + " notbVals " + notbPvals.size());
+//                }
             }
         } else if (colliderMethod == ColliderMethod.FIRST_EMPTY) {
             List<PValue> above = getFalseNegatives(pValues, orientationQ);
@@ -378,26 +379,26 @@ public class OrientColliders {
 
             if (sepset != null && sepset.contains(b)) {
                 noncolliders.add(new Triple(a, b, c));
-                if (verbose) {
-                    out.println(a + " --- " + b + " --- " + c + " depth = " + orientationQ + ": noncollider"
-                            + " bVals = " + bPvals.size() + " notbVals " + notbPvals.size());
-                }
+//                if (verbose) {
+//                    out.println(a + " --- " + b + " --- " + c + " depth = " + orientationQ + ": noncollider"
+//                            + " bVals = " + bPvals.size() + " notbVals " + notbPvals.size());
+//                }
             } else if (sepset != null && !sepset.contains(b)) {
                 colliders.add(new Triple(a, b, c));
 
                 notbPvals.sort((p1, p2) -> Double.compare(p2.getP(), p1.getP()));
 
-                if (verbose) {
-                    out.println(a + " --- " + b + " --- " + c + " depth = " + depth + ": COLLIDER"
-                            + " bVals = " + bPvals.size() + " notbVals " + notbPvals.size());
-                }
+//                if (verbose) {
+//                    out.println(a + " --- " + b + " --- " + c + " depth = " + depth + ": COLLIDER"
+//                            + " bVals = " + bPvals.size() + " notbVals " + notbPvals.size());
+//                }
             } else {
                 ambiguous.add(new Triple(a, b, c));
 
-                if (verbose) {
-                    out.println(a + " --- " + b + " --- " + c + " depth = " + depth + ": ...ambiguous"
-                            + " bVals = " + bPvals.size() + " notbVals " + notbPvals.size());
-                }
+//                if (verbose) {
+//                    out.println(a + " --- " + b + " --- " + c + " depth = " + depth + ": ...ambiguous"
+//                            + " bVals = " + bPvals.size() + " notbVals " + notbPvals.size());
+//                }
             }
         } else {
             throw new IllegalArgumentException("Undefined collider method");
@@ -445,7 +446,9 @@ public class OrientColliders {
 
     //============================ PRIVATE
 
-    private List<PValue> getAllPValues(Node a, Node c, int depth, Graph graph, IndependenceTest test) {
+    private Map<IndependenceFact, Double> store = new HashMap<>();
+
+    private List<PValue> getAllPValues(Node a, Node b, Node c, int depth, Graph graph, IndependenceTest test, boolean cpc) {
         List<Node> adja = graph.getAdjacentNodes(a);
         List<Node> adjc = graph.getAdjacentNodes(c);
 
@@ -458,6 +461,9 @@ public class OrientColliders {
 
         List<PValue> pValues = new ArrayList<>();
 
+        boolean containsb = false;
+        boolean doesntcontainb = false;
+
         for (List<Node> _adj : adj) {
             DepthChoiceGenerator cg1 = new DepthChoiceGenerator(_adj.size(), depth);
             int[] comb2;
@@ -465,10 +471,29 @@ public class OrientColliders {
             while ((comb2 = cg1.next()) != null) {
                 List<Node> s = GraphUtils.asList(comb2, _adj);
 
-                test.isIndependent(a, c, s);
-                PValue _p = new PValue(test.getPValue(), s);
+                Double __p = store.get(new IndependenceFact(a, c, s));
+
+                if (__p == null) {
+                    test.isIndependent(a, c, s);
+                    __p = test.getPValue();
+                }
+
+                if (__p >= orientationQ) {
+                    if (s.contains(b)) {
+                        containsb = true;
+                    } else {
+                        doesntcontainb = true;
+                    }
+                }
+
+                PValue _p = new PValue(__p, s);
+
                 if (pValues.contains(_p)) continue;
                 pValues.add(_p);
+
+                if (cpc) {
+                    if (containsb && doesntcontainb) return pValues;
+                }
             }
         }
 
