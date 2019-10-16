@@ -132,7 +132,7 @@ public class Fges implements Algorithm, TakesInitialGraph, HasKnowledge, UsesSco
 
     @Override
     public String getDescription() {
-        return "FGES (Fast Greedy Equivalence Search) using " + score.getDescription();
+        return "FGES using " + score.getDescription();
     }
 
     @Override

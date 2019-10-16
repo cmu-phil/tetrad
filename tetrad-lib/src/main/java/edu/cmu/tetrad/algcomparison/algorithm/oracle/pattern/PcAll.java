@@ -167,7 +167,7 @@ public class PcAll implements Algorithm, TakesInitialGraph, HasKnowledge, TakesI
 
     @Override
     public String getDescription() {
-        return "PC using " + test.getDescription() + (algorithm != null ? " with initial graph from "
+        return "PC Variants using " + test.getDescription() + (algorithm != null ? " with initial graph from "
                 + algorithm.getDescription() : "");
     }
 

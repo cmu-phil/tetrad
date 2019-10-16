@@ -1,6 +1,10 @@
 package edu.cmu.tetrad.util;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
+import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -26,7 +30,7 @@ public class Parameters implements TetradSerializable {
             throw new NullPointerException();
         }
         this.parameters = new LinkedHashMap<>(parameters.parameters);
-        this.usedParameters = new LinkedHashSet<>(parameters.getUsedParameters());
+        this.usedParameters = new LinkedHashSet<>(parameters.usedParameters);
         this.overriddenParameters = new HashMap<>(parameters.overriddenParameters);
     }
 
@@ -40,7 +44,7 @@ public class Parameters implements TetradSerializable {
             throw new NullPointerException();
         }
         this.parameters.putAll(parameters.parameters);
-        this.getUsedParameters().addAll(parameters.getUsedParameters());
+        this.usedParameters.addAll(parameters.usedParameters);
         this.overriddenParameters.putAll(parameters.overriddenParameters);
     }
 
@@ -52,7 +56,7 @@ public class Parameters implements TetradSerializable {
      */
     @Override
     public String toString() {
-        return getUsedParameters().stream()
+        return usedParameters.stream()
                 .map(e -> String.format("%s = %s", e, parameters.get(e)[0]))
                 .collect(Collectors.joining(System.lineSeparator()));
     }
@@ -175,7 +179,7 @@ public class Parameters implements TetradSerializable {
             return overriddenParameters.get(name);
         }
 
-        getUsedParameters().add(name);
+        usedParameters.add(name);
         Object[] objects = parameters.get(name);
 
         if (objects == null) {
@@ -189,6 +193,8 @@ public class Parameters implements TetradSerializable {
             if (getNumValues(name) != 1) {
                 System.out.println("ERROR. Parameter '" + name + "' was not listed among the algorithm parameters "
                         + "for this algorithm. Skipping this run.\n");
+//                throw new IllegalArgumentException();
+
             }
 
             return objects[0];
@@ -281,9 +287,5 @@ public class Parameters implements TetradSerializable {
 
     public Set<String> getParametersNames() {
         return parameters.keySet();
-    }
-
-    public List<String> getUsedParameters() {
-        return new ArrayList<>(usedParameters);
     }
 }

@@ -1429,7 +1429,7 @@ public class TimeoutComparison {
                     + (isShowUtilities() ? 1 : 0);
 
             TextTable table = new TextTable(rows, cols);
-            table.setTabDelimited(isTabDelimitedTables());
+            table.setDelimited(isTabDelimitedTables());
 
             int initialColumn = 0;
 

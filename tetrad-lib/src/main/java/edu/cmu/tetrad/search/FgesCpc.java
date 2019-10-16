@@ -239,7 +239,7 @@ public final class FgesCpc implements GraphSearch, GraphScorer {
         orientColliders = new OrientColliders(test, OrientColliders.ColliderMethod.CPC);
         orientColliders.setConflictRule(OrientColliders.ConflictRule.PRIORITY);
         orientColliders.setIndependenceDetectionMethod(OrientColliders.IndependenceDetectionMethod.ALPHA);
-        orientColliders.setDepth(depth);
+        orientColliders.setDepth(5);
         orientColliders.setOrientationQ(test.getAlpha());
         orientColliders.setVerbose(verbose);
         orientColliders.setOut(out);
