@@ -25,17 +25,12 @@ import edu.cmu.tetrad.algcomparison.Comparison;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithms;
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern.*;
 import edu.cmu.tetrad.algcomparison.graph.RandomForward;
-import edu.cmu.tetrad.algcomparison.independence.FisherZ;
-import edu.cmu.tetrad.algcomparison.independence.SemBicTest;
-import edu.cmu.tetrad.algcomparison.score.FisherZScore;
 import edu.cmu.tetrad.algcomparison.score.SemBicScore;
 import edu.cmu.tetrad.algcomparison.simulation.SemSimulation;
-import edu.cmu.tetrad.algcomparison.simulation.Simulation;
 import edu.cmu.tetrad.algcomparison.simulation.Simulations;
 import edu.cmu.tetrad.algcomparison.statistic.*;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
-import org.junit.Test;
 
 /**
  * An example script to simulate data and run a comparison analysis on it.
@@ -48,17 +43,12 @@ public class PcMaxStudy {
 
         statistics.add(new ParameterColumn(Params.COLLIDER_DISCOVERY_RULE));
         statistics.add(new ParameterColumn(Params.STABLE_FAS));
-//        statistics.add(new ParameterColumn(Params.DO_MARKOV_LOOP));
-//        statistics.add(new ParameterColumn(Params.USE_FDR_FOR_INDEPENDENCE));
         statistics.add(new ParameterColumn(Params.SAMPLE_SIZE));
         statistics.add(new ParameterColumn(Params.PENALTY_DISCOUNT));
         statistics.add(new ParameterColumn(Params.ALPHA));
-        statistics.add(new ParameterColumn(Params.MAX_DEGREE));
-        statistics.add(new ParameterColumn(Params.NUM_MEASURES));
+        statistics.add(new ParameterColumn(Params.MAX_DEGREE_FGES));
         statistics.add(new ParameterColumn(Params.NUM_MEASURES));
         statistics.add(new ParameterColumn(Params.AVG_DEGREE));
-//        statistics.add(new ParameterColumn(Params.DEPTH));x
-//        statistics.add(new ParameterColumn(Params.ORIENTATION_ALPHA));
 
         statistics.add(new AdjacencyPrecision());
         statistics.add(new AdjacencyRecall());
@@ -66,27 +56,17 @@ public class PcMaxStudy {
         statistics.add(new ArrowheadRecall());
         statistics.add(new ArrowheadPrecisionCommonEdges());
         statistics.add(new ArrowheadRecallCommonEdges());
-//        statistics.add(new F1All());
-        statistics.add(new ColliderFp());
-        statistics.add(new ColliderFn());
-////        statistics.add(new ColliderNumCoveringErrors());
-////        statistics.add(new ColliderNumUncoveringErrors());
-//        statistics.add(new PercentAmbiguous());
-//        statistics.add(new BicDiff());
-////        statistics.add(new NumberOfEdgesEst());
-////        statistics.add(new GraphExactlyRight());
+        statistics.add(new SparsityTrueGraph());
         statistics.add(new ElapsedTime());
 
         statistics.setWeight("AR", 1);
         statistics.setWeight("AHP", .5);
-//        statistics.setWeight("%AMB", 1);
-//        statistics.setWeight("AHR", 1);
 
         Algorithms algorithms = new Algorithms();
 
-        algorithms.add(new FgesCpc(new SemBicTest()));
+//        algorithms.add(new FgesCpc(new SemBicTest()));
         algorithms.add(new Fges(new SemBicScore()));
-        algorithms.add(new PcAll(new FisherZ()));
+//        algorithms.add(new PcAll(new FisherZ()));
 
         Comparison comparison = new Comparison();
 
@@ -118,18 +98,20 @@ public class PcMaxStudy {
         parameters.set(Params.FAITHFULNESS_ASSUMED, false);
         parameters.set(Params.COLLIDER_DISCOVERY_RULE, 1, 2, 3, 4);
 
-        parameters.set(Params.NUM_MEASURES, 50, 100, 200);
-        parameters.set(Params.AVG_DEGREE, 4, 8, 12);
-        parameters.set(Params.MAX_DEGREE, 10);
+        parameters.set(Params.NUM_MEASURES, 50, 100, 200, 500);
+        parameters.set(Params.AVG_DEGREE, 4, 8, 12, 16);
+        parameters.set(Params.MAX_DEGREE_FGES, 10);
 
         parameters.set(Params.NUM_RUNS, 2);
-        parameters.set(Params.DEPTH, -1);
-        parameters.set(Params.ALPHA, .01, 0.001);
+        parameters.set(Params.DEPTH, 5);
+        parameters.set(Params.ALPHA, 0.001);
         parameters.set(Params.ORIENTATION_ALPHA, -1);
-        parameters.set(Params.PENALTY_DISCOUNT, 1, 3);
-        parameters.set(Params.SAMPLE_SIZE, 1000, 5000);
+        parameters.set(Params.PENALTY_DISCOUNT, 1);
+        parameters.set(Params.SAMPLE_SIZE, 1000);
         parameters.set(Params.DO_MARKOV_LOOP, false);
         parameters.set(Params.USE_FDR_FOR_INDEPENDENCE, true);
+        parameters.set(Params.MAX_DEGREE, 20);
+
 
 //        parameters.set(Params.ERRORS_NORMAL, false);
 

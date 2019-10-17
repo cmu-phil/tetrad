@@ -76,7 +76,7 @@ public class Fges implements Algorithm, TakesInitialGraph, HasKnowledge, UsesSco
             search.setFaithfulnessAssumed(parameters.getBoolean(Params.FAITHFULNESS_ASSUMED));
             search.setKnowledge(knowledge);
             search.setVerbose(parameters.getBoolean(Params.VERBOSE));
-            search.setMaxDegree(parameters.getInt(Params.MAX_DEGREE));
+            search.setMaxDegree(parameters.getInt(Params.MAX_DEGREE_FGES));
             search.setSymmetricFirstStep(parameters.getBoolean(Params.SYMMETRIC_FIRST_STEP));
 
             Object obj = parameters.get(Params.PRINT_STREAM);
@@ -145,7 +145,7 @@ public class Fges implements Algorithm, TakesInitialGraph, HasKnowledge, UsesSco
         List<String> parameters = new ArrayList<>();
         parameters.add(Params.FAITHFULNESS_ASSUMED);
         parameters.add(Params.SYMMETRIC_FIRST_STEP);
-        parameters.add(Params.MAX_DEGREE);
+        parameters.add(Params.MAX_DEGREE_FGES);
 
         parameters.add(Params.VERBOSE);
 

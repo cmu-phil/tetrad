@@ -101,6 +101,7 @@ public final class Params {
     public static final String LOWER_BOUND = "lowerBound";
     public static final String MAX_CATEGORIES = "maxCategories";
     public static final String MAX_DEGREE = "maxDegree";
+    public static final String MAX_DEGREE_FGES = "maxDegreeFges";
     public static final String MAX_DISTINCT_VALUES_DISCRETE = "maxDistinctValuesDiscrete";
     public static final String MAX_INDEGREE = "maxIndegree";
     public static final String MAX_ITERATIONS = "maxIterations";

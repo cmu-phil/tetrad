@@ -144,7 +144,7 @@ public class FgesCpc implements Algorithm, TakesInitialGraph, HasKnowledge, Take
         List<String> parameters = new ArrayList<>();
         parameters.add(Params.FAITHFULNESS_ASSUMED);
         parameters.add(Params.SYMMETRIC_FIRST_STEP);
-//        parameters.add(Params.MAX_DEGREE);
+        parameters.add(Params.MAX_DEGREE_FGES);
 //        parameters.add(Params.DEPTH);
 
         parameters.add(Params.VERBOSE);
