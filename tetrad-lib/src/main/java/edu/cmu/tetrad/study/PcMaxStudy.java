@@ -25,6 +25,7 @@ import edu.cmu.tetrad.algcomparison.Comparison;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithms;
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern.*;
 import edu.cmu.tetrad.algcomparison.graph.RandomForward;
+import edu.cmu.tetrad.algcomparison.independence.FisherZ;
 import edu.cmu.tetrad.algcomparison.score.SemBicScore;
 import edu.cmu.tetrad.algcomparison.simulation.SemSimulation;
 import edu.cmu.tetrad.algcomparison.simulation.Simulations;
@@ -65,8 +66,8 @@ public class PcMaxStudy {
         Algorithms algorithms = new Algorithms();
 
 //        algorithms.add(new FgesCpc(new SemBicTest()));
-        algorithms.add(new Fges(new SemBicScore()));
-//        algorithms.add(new PcAll(new FisherZ()));
+//        algorithms.add(new Fges(new SemBicScore()));
+        algorithms.add(new PcAll(new FisherZ()));
 
         Comparison comparison = new Comparison();
 
@@ -87,22 +88,22 @@ public class PcMaxStudy {
         Parameters parameters = new Parameters();
 
         parameters.set(Params.COEF_LOW, 0);
-        parameters.set(Params.COEF_HIGH, 1.0);
+        parameters.set(Params.COEF_HIGH, .5);
         parameters.set(Params.VAR_LOW, .2);
         parameters.set(Params.VAR_HIGH, .9);
 
-        parameters.set(Params.STABLE_FAS, true, false);
+        parameters.set(Params.STABLE_FAS, true);
         parameters.set(Params.CONCURRENT_FAS, false);
         parameters.set(Params.CONFLICT_RULE, 3);
         parameters.set(Params.SYMMETRIC_FIRST_STEP, true);
         parameters.set(Params.FAITHFULNESS_ASSUMED, false);
-        parameters.set(Params.COLLIDER_DISCOVERY_RULE, 1, 2, 3, 4);
+        parameters.set(Params.COLLIDER_DISCOVERY_RULE, 2);
 
-        parameters.set(Params.NUM_MEASURES, 50, 100, 200, 500);
+        parameters.set(Params.NUM_MEASURES, 10, 20, 30, 40, 50, 100, 200, 500);
         parameters.set(Params.AVG_DEGREE, 4, 8, 12, 16);
         parameters.set(Params.MAX_DEGREE_FGES, 10);
 
-        parameters.set(Params.NUM_RUNS, 2);
+        parameters.set(Params.NUM_RUNS, 5);
         parameters.set(Params.DEPTH, 5);
         parameters.set(Params.ALPHA, 0.001);
         parameters.set(Params.ORIENTATION_ALPHA, -1);
