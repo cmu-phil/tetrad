@@ -1228,7 +1228,7 @@ public final class Fges implements GraphSearch, GraphScorer {
         Set<Set<Node>> newCliques = new HashSet<>();
 
         Set<Node> _T = null;
-        double _bump = Double.NEGATIVE_INFINITY;
+        double _bump = 0;//Double.NEGATIVE_INFINITY;
 
         FOR:
         for (int i = 0; i <= TNeighbors.size(); i++) {
@@ -1268,7 +1268,7 @@ public final class Fges implements GraphSearch, GraphScorer {
                 }
             }
 
-            if (_bump > Double.NEGATIVE_INFINITY) {
+            if (_bump > 0) {///Double.NEGATIVE_INFINITY) {
                 addArrow(a, b, _T, new HashSet<>(TNeighbors), naYX, _bump);
             }
 
@@ -1364,7 +1364,7 @@ public final class Fges implements GraphSearch, GraphScorer {
         final int _depth = _naYX.size();
 
         Set<Node> _h = null;
-        double _bump = Double.NEGATIVE_INFINITY;
+        double _bump = 0;//Double.NEGATIVE_INFINITY;
 
         final DepthChoiceGenerator gen = new DepthChoiceGenerator(_naYX.size(), _depth);
         int[] choice;
@@ -1380,13 +1380,13 @@ public final class Fges implements GraphSearch, GraphScorer {
 
             double bump = deleteEval(a, b, h, naYX, hashIndices);
 
-            if (bump >= 0.0) {
+            if (bump > 0.0) {
                 _h = h;
                 _bump = bump;
             }
         }
 
-        if (_bump > Double.NEGATIVE_INFINITY) {
+        if (_bump > 0) {//Double.NEGATIVE_INFINITY) {
             addArrow(a, b, _h, null, naYX, _bump);
         }
     }

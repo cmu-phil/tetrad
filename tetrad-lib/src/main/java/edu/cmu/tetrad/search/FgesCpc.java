@@ -1272,7 +1272,7 @@ public final class FgesCpc implements GraphSearch, GraphScorer {
         Set<Set<Node>> newCliques = new HashSet<>();
 
         Set<Node> _T = null;
-        double _bump = Double.NEGATIVE_INFINITY;
+        double _bump = 0;//Double.NEGATIVE_INFINITY;
 
         FOR:
         for (int i = 0; i <= TNeighbors.size(); i++) {
@@ -1305,7 +1305,7 @@ public final class FgesCpc implements GraphSearch, GraphScorer {
 
                 double bump = insertEval(a, b, T, naYX, hashIndices);
 
-                if (bump > 0) {
+                if (bump > _bump) {
                     _T = T;
                     _bump = bump;
 //                    addArrow(a, b, TNeighbors, naYX, bump);
@@ -1408,7 +1408,7 @@ public final class FgesCpc implements GraphSearch, GraphScorer {
         final int _depth = _naYX.size();
 
         Set<Node> _h = null;
-        double _bump = Double.NEGATIVE_INFINITY;
+        double _bump = 0;//Double.NEGATIVE_INFINITY;
 
         final DepthChoiceGenerator gen = new DepthChoiceGenerator(_naYX.size(), _depth);
         int[] choice;
@@ -1424,7 +1424,7 @@ public final class FgesCpc implements GraphSearch, GraphScorer {
 
             double bump = deleteEval(a, b, h, naYX, hashIndices);
 
-            if (bump >= 0.0) {
+            if (bump >= _bump) {
                 _h = h;
                 _bump = bump;
             }
