@@ -1240,7 +1240,7 @@ public final class FgesCpc implements GraphSearch, GraphScorer {
 
     // Calculates the new arrows for an a->b edge.
     private void calculateArrowsForward(Node a, Node b) {
-        if (mode == Mode.heuristicSpeedup && !effectEdgesGraph.isAdjacentTo(a, b)) {
+        if (mode == FgesCpc.Mode.heuristicSpeedup && !effectEdgesGraph.isAdjacentTo(a, b)) {
             return;
         }
         if (adjacencies != null && !adjacencies.isAdjacentTo(a, b)) {
@@ -1272,7 +1272,7 @@ public final class FgesCpc implements GraphSearch, GraphScorer {
         Set<Set<Node>> newCliques = new HashSet<>();
 
         Set<Node> _T = null;
-        double _bump = 0;//Double.NEGATIVE_INFINITY;
+//        double _bump = Double.NEGATIVE_INFINITY;
 
         FOR:
         for (int i = 0; i <= TNeighbors.size(); i++) {
@@ -1305,16 +1305,16 @@ public final class FgesCpc implements GraphSearch, GraphScorer {
 
                 double bump = insertEval(a, b, T, naYX, hashIndices);
 
-                if (bump > _bump) {
+                if (bump > 0) {
                     _T = T;
-                    _bump = bump;
-//                    addArrow(a, b, TNeighbors, naYX, bump);
+//                    _bump = bump;
+                    addArrow(a, b, _T, new HashSet<>(TNeighbors), naYX, bump);
                 }
             }
 
-            if (_bump > 0) {
-                addArrow(a, b, _T, new HashSet<>(TNeighbors), naYX, _bump);
-            }
+//            if (_bump > Double.NEGATIVE_INFINITY) {
+//                addArrow(a, b, _T, new HashSet<>(TNeighbors), naYX, _bump);
+//            }
 
             previousCliques = newCliques;
             newCliques = new HashSet<>();
@@ -1408,7 +1408,7 @@ public final class FgesCpc implements GraphSearch, GraphScorer {
         final int _depth = _naYX.size();
 
         Set<Node> _h = null;
-        double _bump = 0;//Double.NEGATIVE_INFINITY;
+//        double _bump = Double.NEGATIVE_INFINITY;
 
         final DepthChoiceGenerator gen = new DepthChoiceGenerator(_naYX.size(), _depth);
         int[] choice;
@@ -1424,15 +1424,16 @@ public final class FgesCpc implements GraphSearch, GraphScorer {
 
             double bump = deleteEval(a, b, h, naYX, hashIndices);
 
-            if (bump >= _bump) {
+            if (bump >= 0) {
                 _h = h;
-                _bump = bump;
+//                _bump = bump;
+                addArrow(a, b, _h, null, naYX, bump);
             }
         }
 
-        if (_bump >= 0) {
-            addArrow(a, b, _h, null, naYX, _bump);
-        }
+//        if (_bump > Double.NEGATIVE_INFINITY) {
+//            addArrow(a, b, _h, null, naYX, _bump);
+//        }
     }
 
     // Basic data structure for an arrow a->b considered for addition or removal from the graph, together with

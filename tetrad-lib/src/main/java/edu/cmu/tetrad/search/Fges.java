@@ -1228,7 +1228,7 @@ public final class Fges implements GraphSearch, GraphScorer {
         Set<Set<Node>> newCliques = new HashSet<>();
 
         Set<Node> _T = null;
-        double _bump = 0;//Double.NEGATIVE_INFINITY;
+//        double _bump = Double.NEGATIVE_INFINITY;
 
         FOR:
         for (int i = 0; i <= TNeighbors.size(); i++) {
@@ -1263,14 +1263,14 @@ public final class Fges implements GraphSearch, GraphScorer {
 
                 if (bump > 0) {
                     _T = T;
-                    _bump = bump;
-//                    addArrow(a, b, TNeighbors, naYX, bump);
+//                    _bump = bump;
+                    addArrow(a, b, _T, new HashSet<>(TNeighbors), naYX, bump);
                 }
             }
 
-            if (_bump > 0) {///Double.NEGATIVE_INFINITY) {
-                addArrow(a, b, _T, new HashSet<>(TNeighbors), naYX, _bump);
-            }
+//            if (_bump > Double.NEGATIVE_INFINITY) {
+//                addArrow(a, b, _T, new HashSet<>(TNeighbors), naYX, _bump);
+//            }
 
             previousCliques = newCliques;
             newCliques = new HashSet<>();
@@ -1364,7 +1364,7 @@ public final class Fges implements GraphSearch, GraphScorer {
         final int _depth = _naYX.size();
 
         Set<Node> _h = null;
-        double _bump = 0;//Double.NEGATIVE_INFINITY;
+//        double _bump = Double.NEGATIVE_INFINITY;
 
         final DepthChoiceGenerator gen = new DepthChoiceGenerator(_naYX.size(), _depth);
         int[] choice;
@@ -1380,15 +1380,16 @@ public final class Fges implements GraphSearch, GraphScorer {
 
             double bump = deleteEval(a, b, h, naYX, hashIndices);
 
-            if (bump > 0.0) {
+            if (bump >= 0) {
                 _h = h;
-                _bump = bump;
+//                _bump = bump;
+                addArrow(a, b, _h, null, naYX, bump);
             }
         }
 
-        if (_bump > 0) {//Double.NEGATIVE_INFINITY) {
-            addArrow(a, b, _h, null, naYX, _bump);
-        }
+//        if (_bump > Double.NEGATIVE_INFINITY) {
+//            addArrow(a, b, _h, null, naYX, _bump);
+//        }
     }
 
     // Basic data structure for an arrow a->b considered for addition or removal from the graph, together with
