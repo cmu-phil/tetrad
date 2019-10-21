@@ -180,48 +180,10 @@ public class FasStable implements IFas {
             Node x = edge.getNode1();
             Node y = edge.getNode2();
 
-            List<Node> adjx =  graph.getAdjacentNodes(x);
+            loop(test, depth, toRemove, edge, x, y);
 
-            List<Node> _adjx = new ArrayList<>(adjx);
-            _adjx.remove(y);
-            List<Node> ppx = possibleParents(x, _adjx, knowledge);
-
-            if (ppx.size() >= depth) {
-                ChoiceGenerator cg = new ChoiceGenerator(ppx.size(), depth);
-                int[] choice;
-
-                while ((choice = cg.next()) != null) {
-                    if (Thread.currentThread().isInterrupted()) {
-                        break;
-                    }
-
-                    List<Node> condSet = GraphUtils.asList(choice, ppx);
-
-                    boolean independent;
-
-                    try {
-                        numIndependenceTests++;
-                        independent = test.isIndependent(x, y, condSet);
-                    } catch (Exception e) {
-                        independent = false;
-                    }
-
-                    boolean noEdgeRequired =
-                            knowledge.noEdgeRequired(x.getName(), y.getName());
-
-                    if (independent && noEdgeRequired) {
-                        getSepsets().set(x, y, condSet);
-                        getSepsets().setPValue(x, y, test.getPValue());
-
-                        toRemove.add(edge);
-
-                        if (verbose) {
-                            TetradLogger.getInstance().forceLogMessage(SearchLogUtils.independenceFact(x, y, condSet) + " p = " +
-                                    nf.format(test.getPValue()));
-                            out.println(SearchLogUtils.independenceFactMsg(x, y, condSet, test.getPValue()));
-                        }
-                    }
-                }
+            if (graph.isAdjacentTo(x, y)) {
+                loop(test, depth, toRemove, edge, y, x);
             }
         }
 
@@ -230,6 +192,52 @@ public class FasStable implements IFas {
         }
 
         return freeDegree(nodes, graph) > depth;
+    }
+
+    private void loop(IndependenceTest test, int depth, Set<Edge> toRemove, Edge edge, Node x, Node y) {
+        List<Node> adjx =  graph.getAdjacentNodes(x);
+
+        List<Node> _adjx = new ArrayList<>(adjx);
+        _adjx.remove(y);
+        List<Node> ppx = possibleParents(x, _adjx, knowledge);
+
+        if (ppx.size() >= depth) {
+            ChoiceGenerator cg = new ChoiceGenerator(ppx.size(), depth);
+            int[] choice;
+
+            while ((choice = cg.next()) != null) {
+                if (Thread.currentThread().isInterrupted()) {
+                    break;
+                }
+
+                List<Node> condSet = GraphUtils.asList(choice, ppx);
+
+                boolean independent;
+
+                try {
+                    numIndependenceTests++;
+                    independent = test.isIndependent(x, y, condSet);
+                } catch (Exception e) {
+                    independent = false;
+                }
+
+                boolean noEdgeRequired =
+                        knowledge.noEdgeRequired(x.getName(), y.getName());
+
+                if (independent && noEdgeRequired) {
+                    getSepsets().set(x, y, condSet);
+                    getSepsets().setPValue(x, y, test.getPValue());
+
+                    toRemove.add(edge);
+
+                    if (verbose) {
+                        TetradLogger.getInstance().forceLogMessage(SearchLogUtils.independenceFact(x, y, condSet) + " p = " +
+                                nf.format(test.getPValue()));
+                        out.println(SearchLogUtils.independenceFactMsg(x, y, condSet, test.getPValue()));
+                    }
+                }
+            }
+        }
     }
 
     private int freeDegree(List<Node> nodes, Graph graph) {

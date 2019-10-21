@@ -30,8 +30,24 @@ import edu.cmu.tetrad.algcomparison.score.SemBicScore;
 import edu.cmu.tetrad.algcomparison.simulation.SemSimulation;
 import edu.cmu.tetrad.algcomparison.simulation.Simulations;
 import edu.cmu.tetrad.algcomparison.statistic.*;
+import edu.cmu.tetrad.data.ContinuousVariable;
+import edu.cmu.tetrad.data.DataSet;
+import edu.cmu.tetrad.graph.EdgeListGraph;
+import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.graph.GraphNode;
+import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.search.IndTestFisherZ;
+import edu.cmu.tetrad.search.IndependenceTest;
+import edu.cmu.tetrad.search.OrientColliders;
+import edu.cmu.tetrad.sem.SemIm;
+import edu.cmu.tetrad.sem.SemPm;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
+import org.junit.Test;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 /**
  * An example script to simulate data and run a comparison analysis on it.
@@ -66,8 +82,8 @@ public class PcMaxStudy {
         Algorithms algorithms = new Algorithms();
 
 //        algorithms.add(new FgesCpc(new SemBicTest()));
-        algorithms.add(new Fges(new SemBicScore()));
-//        algorithms.add(new PcAll(new FisherZ()));
+//        algorithms.add(new Fges(new SemBicScore()));
+        algorithms.add(new PcAll(new FisherZ()));
 
         Comparison comparison = new Comparison();
 
@@ -98,6 +114,7 @@ public class PcMaxStudy {
         parameters.set(Params.SYMMETRIC_FIRST_STEP, true);
         parameters.set(Params.FAITHFULNESS_ASSUMED, false);
         parameters.set(Params.COLLIDER_DISCOVERY_RULE, 2);
+        parameters.set(Params.DIFFERENT_GRAPHS, true);
 
         parameters.set(Params.NUM_MEASURES, 10, 20, 30, 40, 50, 100, 200, 500);
         parameters.set(Params.AVG_DEGREE, 4, 8, 12, 16);
@@ -120,6 +137,59 @@ public class PcMaxStudy {
 
 
         return parameters;
+    }
+
+    @Test
+    public void testColliders() {
+        Node y = new ContinuousVariable("y");
+
+        List<Node> xx = new ArrayList<>();
+
+        int numParents = 10;
+
+        for (int i = 1; i <= numParents; i++) {
+            xx.add(new ContinuousVariable("x" + i));
+        }
+
+        List<Node> nodes = new ArrayList<>(xx);
+        nodes.add(y);
+
+        Graph graph = new EdgeListGraph(nodes);
+
+        for (int i = 0; i < numParents; i++) {
+            graph.addDirectedEdge(xx.get(i), y);
+        }
+
+        SemPm pm = new SemPm(graph);
+        SemIm im = new SemIm(pm);
+        DataSet dataSet = im.simulateData(10000 , false);
+
+        double alpha = 0.05;
+
+        IndependenceTest test = new IndTestFisherZ(dataSet, alpha);
+
+        int noncollider = 0;
+        int collider = 0;
+
+        for (int i = 0; i < numParents; i++) {
+            for (int j = i + 1; j < numParents; j++) {
+                boolean indep1 = test.isIndependent(xx.get(i), xx.get(j));// {//, Collections.singletonList(y));
+                boolean indep2 = test.isIndependent(xx.get(i), xx.get(j), Collections.singletonList(y));
+                if (indep1 && !indep2) collider++;
+                else noncollider++;
+            }
+        }
+
+        System.out.println("noncollider = " + noncollider);
+        System.out.println("collider = " + collider);
+
+        edu.cmu.tetrad.search.PcAll pc = new edu.cmu.tetrad.search.PcAll(test,  null);
+        pc.setColliderDiscovery(OrientColliders.ColliderMethod.SEPSETS);
+        pc.setFasType(edu.cmu.tetrad.search.PcAll.FasType.REGULAR);
+        pc.setVerbose(true);
+        Graph g = pc.search();
+
+        System.out.println(g);
     }
 }
 

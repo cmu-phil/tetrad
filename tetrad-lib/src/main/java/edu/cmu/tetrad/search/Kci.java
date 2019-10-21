@@ -389,25 +389,25 @@ public class Kci implements IndependenceTest, ScoreForFact {
                 p = p_appr;
                 pValues.put(fact, p);
 
-//                if (fastFDR) {
-//                    final int d1 = 0; // reference
-//                    final int d2 = fact.getZ().size();
-//                    final int v = variables.size() - 2;
+                if (fastFDR) {
+                    final int d1 = 0; // reference
+                    final int d2 = fact.getZ().size();
+                    final int v = variables.size() - 2;
+
+                    double alpha2 = (exp(log(alpha) + logChoose(v, d1) - logChoose(v, d2)));
+                    final boolean independent = p > alpha2;
+
+//                    if (independent) {
+//                        System.out.println(fact + " INDEPENDENT p = " + p);
+//                        TetradLogger.getInstance().log("info", fact + " Independent");
 //
-//                    double alpha2 = (exp(log(alpha) + logChoose(v, d1) - logChoose(v, d2)));
-//                    final boolean independent = p > alpha2;
-//
-////                    if (independent) {
-////                        System.out.println(fact + " INDEPENDENT p = " + p);
-////                        TetradLogger.getInstance().log("info", fact + " Independent");
-////
-////                    } else {
-////                        System.out.println(fact + " dependent p = " + p);
-////                        TetradLogger.getInstance().log("info", fact.toString());
-////                    }
-//
-//                    return independent;
-//                } else {
+//                    } else {
+//                        System.out.println(fact + " dependent p = " + p);
+//                        TetradLogger.getInstance().log("info", fact.toString());
+//                    }
+
+                    return independent;
+                } else {
                     final boolean independent = p > alpha;
 
 //                    if (independent) {
@@ -420,7 +420,7 @@ public class Kci implements IndependenceTest, ScoreForFact {
 //                    }
 
                     return independent;
-//                }
+                }
             } else {
                 return theorem4(kx, ky, fact);
             }
@@ -644,20 +644,12 @@ public class Kci implements IndependenceTest, ScoreForFact {
     // Optimal bandwidth qsuggested by Bowman and Azzalini (1997) q.31,
     // using MAD.
     private double h(String x) {
-//        double[] xCol = _data[hash.get(data.getVariable(x))];
-//        double[] g = new double[xCol.length];
-//        double median = median(xCol);
-//        for (int j = 0; j < xCol.length; j++) g[j] = abs(xCol[j] - median);
-//        double mad = median(g);
-//        return (1.4826 * mad) * pow((4.0 / 3.0) / xCol.length, 0.2);
-
-        if (N <= 200) {
-            return 1.2;
-        } else if (N < 1200) {
-            return 1.4;
-        } else {
-            return 0.4;
-        }
+        double[] xCol = _data[hash.get(data.getVariable(x))];
+        double[] g = new double[xCol.length];
+        double median = median(xCol);
+        for (int j = 0; j < xCol.length; j++) g[j] = abs(xCol[j] - median);
+        double mad = median(g);
+        return (1.4826 * mad) * pow((4.0 / 3.0) / xCol.length, 0.2);
     }
 
     private List<Integer> getTopIndices(List<Double> prod, List<Integer> allIndices, double threshold) {

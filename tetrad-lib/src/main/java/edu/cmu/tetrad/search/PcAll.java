@@ -43,7 +43,7 @@ public final class PcAll implements GraphSearch {
     public enum Concurrent {YES, NO}
 
     private FasType fasType = FasType.REGULAR;
-    private Concurrent concurrent = Concurrent.YES;
+    private Concurrent concurrent = Concurrent.NO;
     private IndependenceTest test;
     private OrientColliders.ColliderMethod colliderDiscovery = OrientColliders.ColliderMethod.SEPSETS;
     private OrientColliders.ConflictRule conflictRule = OrientColliders.ConflictRule.OVERWRITE;
