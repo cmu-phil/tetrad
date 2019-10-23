@@ -55,8 +55,8 @@ public final class Knowledge2 implements TetradSerializable, IKnowledge {
 
     private Set<MyNode> myNodes = new HashSet<>();
 
-    private List<OrderedPair<Set<MyNode>>> forbiddenRulesSpecs;
-    private List<OrderedPair<Set<MyNode>>> requiredRulesSpecs;
+    private Set<OrderedPair<Set<MyNode>>> forbiddenRulesSpecs;
+    private Set<OrderedPair<Set<MyNode>>> requiredRulesSpecs;
     private List<Set<MyNode>> tierSpecs;
 
     // Legacy.
@@ -107,8 +107,8 @@ public final class Knowledge2 implements TetradSerializable, IKnowledge {
      * Constructs a blank knowledge object.
      */
     public Knowledge2() {
-        this.forbiddenRulesSpecs = new ArrayList<>();
-        this.requiredRulesSpecs = new ArrayList<>();
+        this.forbiddenRulesSpecs = new HashSet<>();
+        this.requiredRulesSpecs = new HashSet<>();
         this.knowledgeGroupRules = new HashMap<>();
         this.tierSpecs = new ArrayList<>();
 
@@ -129,8 +129,8 @@ public final class Knowledge2 implements TetradSerializable, IKnowledge {
             addVariable(name);
         }
 
-        this.forbiddenRulesSpecs = new ArrayList<>();
-        this.requiredRulesSpecs = new ArrayList<>();
+        this.forbiddenRulesSpecs = new HashSet<>();
+        this.requiredRulesSpecs = new HashSet<>();
         this.knowledgeGroupRules = new HashMap<>();
         this.tierSpecs = new ArrayList<>();
     }
@@ -142,8 +142,8 @@ public final class Knowledge2 implements TetradSerializable, IKnowledge {
         this.namesToVars = new HashMap<>(knowledge.namesToVars);
         this.myNodes = new HashSet<>(knowledge.myNodes);
 
-        this.forbiddenRulesSpecs = new ArrayList<>(knowledge.forbiddenRulesSpecs);
-        this.requiredRulesSpecs = new ArrayList<>(knowledge.requiredRulesSpecs);
+        this.forbiddenRulesSpecs = new HashSet<>(knowledge.forbiddenRulesSpecs);
+        this.requiredRulesSpecs = new HashSet<>(knowledge.requiredRulesSpecs);
         this.knowledgeGroupRules = new HashMap<>();
         this.tierSpecs = new ArrayList<>(knowledge.tierSpecs);
 
@@ -799,8 +799,8 @@ public final class Knowledge2 implements TetradSerializable, IKnowledge {
      * Removes explicit knowledge and tier information.
      */
     public final void clear() {
-        this.forbiddenRulesSpecs = new ArrayList<>();
-        this.requiredRulesSpecs = new ArrayList<>();
+        this.forbiddenRulesSpecs = new HashSet<>();
+        this.requiredRulesSpecs = new HashSet<>();
         this.tierSpecs = new ArrayList<>();
     }
 
@@ -973,23 +973,26 @@ public final class Knowledge2 implements TetradSerializable, IKnowledge {
     }
 
     private Set<MyNode> getExtent(String spec) {
-        Set<String> split = split(spec);
-        Set<MyNode> matches = new HashSet<>();
+        if (!spec.contains("*")) return Collections.singleton(new MyNode(spec));
+        else {
+            Set<String> split = split(spec);
+            Set<MyNode> matches = new HashSet<>();
 
-        for (String _spec : split) {
-            _spec = _spec.replace("*", ".*");
+            for (String _spec : split) {
+                _spec = _spec.replace("*", ".*");
 
-            java.util.regex.Pattern pattern = java.util.regex.Pattern.compile(_spec);
+                java.util.regex.Pattern pattern = java.util.regex.Pattern.compile(_spec);
 
-            for (MyNode var : myNodes) {
-                Matcher matcher = pattern.matcher(var.getName());
-                if (matcher.matches()) {
-                    matches.add(var);
+                for (MyNode var : myNodes) {
+                    Matcher matcher = pattern.matcher(var.getName());
+                    if (matcher.matches()) {
+                        matches.add(var);
+                    }
                 }
             }
-        }
 
-        return matches;
+            return matches;
+        }
     }
 
     private Set<String> split(String spec) {
