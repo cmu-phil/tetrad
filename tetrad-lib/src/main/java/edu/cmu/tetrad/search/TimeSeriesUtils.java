@@ -657,45 +657,63 @@ public class TimeSeriesUtils {
             Node from = graph.getNode(node.getName(), 1);
             Node to = graph.getNode(node.getName(), 0);
             Edge edge = new Edge(from, to, Endpoint.TAIL, Endpoint.ARROW);
-            graph.addEdge(edge);
+
+            if (!graph.isAncestorOf(to, from)) {
+                graph.addEdge(edge);
+            }
             //graph.addDirectedEdge(from, to);
         }
 
-        for (Edge edge : _graph.getEdges()) {
-            if (!Edges.isDirectedEdge(edge)) {
-                throw new IllegalArgumentException();
-            }
-
-            Node from = edge.getNode1();
-            Node to = edge.getNode2();
-//            System.out.println("From node = " + from.getName());
-//            System.out.println("To node = " + to.getName());
-            Node _from = graph.getNode(from.getName(), 0);
-            Node _to = graph.getNode(to.getName(), 0);
-            Edge edge1 = new Edge(_from, _to, Endpoint.TAIL, Endpoint.ARROW);
-            graph.addEdge(edge1);
-            //graph.addDirectedEdge(_from, _to);
-        }
+//        for (Edge edge : _graph.getEdges()) {
+//            if (!Edges.isDirectedEdge(edge)) {
+//                throw new IllegalArgumentException();
+//            }
+//
+//            Node from = Edges.getDirectedEdgeTail(edge);// edge.getNode1();
+//            Node to = Edges.getDirectedEdgeHead(edge);// edge.getNode2();
+////            System.out.println("From node = " + from.getName());
+////            System.out.println("To node = " + to.getName());
+//            Node _from = graph.getNode(from.getName(), 0);
+//            Node _to = graph.getNode(to.getName(), 0);
+//            Edge edge1 = new Edge(_from, _to, Endpoint.TAIL, Endpoint.ARROW);
+//            graph.addEdge(edge1);
+//            //graph.addDirectedEdge(_from, _to);
+//        }
 
         //for lag
         // for node
         //  with probability 0.3 add edge from node to *random* node at lag0
-        for (int lag = 1; lag <= numLags; lag++) {
-            for (Node node1 : graph.getLag0Nodes()) {
-                Node from = graph.getNode(node1.getName(), lag);
-                for (Node node2 : graph.getLag0Nodes()) {
-                    Node to = graph.getNode(node2.getName(), 0);
-                    if (node1.getName().equals(node2.getName())) {
-                        continue;
-                    }
-                    if (RandomUtil.getInstance().nextUniform(0, 1) <= 0.15) {
-                        Edge edge = new Edge(from, to, Endpoint.TAIL, Endpoint.ARROW);
-                        graph.addEdge(edge);
-                        //graph.addDirectedEdge(from, to);
-                    }
-                } // for node at lag0 (to)
-            } // for node at lag (from)
-        } // for lag
+        for (Edge edge : _graph.getEdges()) {
+            int lag = RandomUtil.getInstance().nextInt(numLags) + 1;
+            Node _from = Edges.getDirectedEdgeTail(edge);// edge.getNode1();
+            Node _to = Edges.getDirectedEdgeHead(edge);// edge.getNode2();
+
+            Node from = graph.getNode(_from.getName(), lag);
+            Node to = graph.getNode(_to.getName(), 0);
+
+            Edge _edge = new Edge(from, to, Endpoint.TAIL, Endpoint.ARROW);
+
+            if (!graph.isAncestorOf(to, from)) {
+                graph.addEdge(_edge);
+            }
+        }
+
+//        for (int lag = 1; lag <= numLags; lag++) {
+//            for (Node node1 : graph.getLag0Nodes()) {
+//                Node from = graph.getNode(node1.getName(), lag);
+//                for (Node node2 : graph.getLag0Nodes()) {
+//                    Node to = graph.getNode(node2.getName(), 0);
+//                    if (node1.getName().equals(node2.getName())) {
+//                        continue;
+//                    }
+//                    if (RandomUtil.getInstance().nextUniform(0, 1) <= 0.15) {
+//                        Edge edge = new Edge(from, to, Endpoint.TAIL, Endpoint.ARROW);
+//                        graph.addEdge(edge);
+//                        //graph.addDirectedEdge(from, to);
+//                    }
+//                } // for node at lag0 (to)
+//            } // for node at lag (from)
+//        } // for lag
 
         return graph;
     }

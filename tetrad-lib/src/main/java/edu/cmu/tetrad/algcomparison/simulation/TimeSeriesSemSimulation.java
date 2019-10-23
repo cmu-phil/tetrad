@@ -10,8 +10,19 @@ import edu.cmu.tetrad.graph.TimeLagGraph;
 import edu.cmu.tetrad.search.TimeSeriesUtils;
 import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemPm;
+import edu.cmu.tetrad.util.DataConvertUtils;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
+import edu.pitt.dbmi.data.reader.Data;
+import edu.pitt.dbmi.data.reader.DataReader;
+import edu.pitt.dbmi.data.reader.Delimiter;
+import edu.pitt.dbmi.data.reader.tabular.ContinuousTabularDatasetFileReader;
+import edu.pitt.dbmi.data.reader.tabular.DiscreteTabularDataColumn;
+import edu.pitt.dbmi.data.reader.tabular.VerticalDiscreteTabularDatasetFileReader;
+import org.junit.Test;
+
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -47,11 +58,11 @@ public class TimeSeriesSemSimulation implements Simulation, HasKnowledge {
         this.knowledge = TimeSeriesUtils.getKnowledge(graph);
 
         for (int i = 0; i < parameters.getInt(Params.NUM_RUNS); i++) {
-            if (parameters.getBoolean(Params.DIFFERENT_GRAPHS) && i > 0) {
-                graph = randomGraph.createGraph(parameters);
-                graph = TimeSeriesUtils.graphToLagGraph(graph, 2);
-                topToBottomLayout((TimeLagGraph) graph);
-            }
+//            if (parameters.getBoolean(Params.DIFFERENT_GRAPHS) && i > 0) {
+//                graph = randomGraph.createGraph(parameters);
+//                graph = TimeSeriesUtils.graphToLagGraph(graph, parameters.getInt(Params.NUM_LAGS));
+//                topToBottomLayout((TimeLagGraph) graph);
+//            }
 
             graphs.add(graph);
 
@@ -65,7 +76,7 @@ public class TimeSeriesSemSimulation implements Simulation, HasKnowledge {
 
             int numLags = ((TimeLagGraph) graph).getMaxLag();
 
-            dataSet = TimeSeriesUtils.createLagData(dataSet, numLags);
+//            dataSet = TimeSeriesUtils.createLagData(dataSet, numLags);
 
             dataSet.setName("" + (i + 1));
             dataSet.setKnowledge(knowledge.copy());
@@ -142,7 +153,7 @@ public class TimeSeriesSemSimulation implements Simulation, HasKnowledge {
         parameters.add(Params.STANDARDIZE);
         parameters.add(Params.MEASUREMENT_VARIANCE);
         parameters.add(Params.NUM_RUNS);
-        parameters.add(Params.DIFFERENT_GRAPHS);
+//        parameters.add(Params.DIFFERENT_GRAPHS);
         parameters.add(Params.SAMPLE_SIZE);
         parameters.add(Params.SAVE_LATENT_VARS);
 
@@ -205,5 +216,6 @@ public class TimeSeriesSemSimulation implements Simulation, HasKnowledge {
             }
         }
     }
+
 
 }
