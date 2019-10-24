@@ -50,6 +50,8 @@ import java.util.regex.Pattern;
  * @author Joseph Ramsey
  * @deprecated replaced by readers in edu.pitt.dbmi.data.reader.tabular package
  */
+
+//  todo: Seems like we can't deprecate this fully unless knowledge is handled in data-reader package -jue
 @Deprecated
 public final class DataReader implements IDataReader {
 
@@ -844,6 +846,8 @@ public final class DataReader implements IDataReader {
 
         String line = lineizer.nextLine();
         String firstLine = line;
+        ArrayList<Integer> onlyCausesNextTier = new ArrayList<Integer>();
+
 
         if (line == null) {
             return new Knowledge2();
@@ -894,9 +898,21 @@ public final class DataReader implements IDataReader {
                     RegexTokenizer st = new RegexTokenizer(line, delimiter, quoteChar);
                     if (st.hasMoreTokens()) {
                         String token = st.nextToken();
+
                         boolean forbiddenWithin = false;
+                        boolean onlyCausesNext = false;
+
+                        if (token.endsWith("*-") || token.endsWith("-*")) {
+                            forbiddenWithin = true;
+                            onlyCausesNext = true;
+                            token = token.substring(0, token.length() - 2);
+                        }
                         if (token.endsWith("*")) {
                             forbiddenWithin = true;
+                            token = token.substring(0, token.length() - 1);
+                        }
+                        if (token.endsWith("-")) {
+                            onlyCausesNext = true;
                             token = token.substring(0, token.length() - 1);
                         }
 
@@ -907,6 +923,9 @@ public final class DataReader implements IDataReader {
                         }
                         if (forbiddenWithin) {
                             knowledge.setTierForbiddenWithin(tier - 1, true);
+                        }
+                        if (onlyCausesNext) {
+                            onlyCausesNextTier.add(tier - 1);
                         }
                     }
 
@@ -923,7 +942,16 @@ public final class DataReader implements IDataReader {
 
                         this.logger.log("info", "Adding to tier " + (tier - 1) + " " + name);
                     }
+
+                    // process onlyCausesNextTier now that addtemporal section is parsed
+                    for (int onlyTier : onlyCausesNextTier) {
+                        knowledge.setOnlyCanCauseNextTier(onlyTier, true);
+                    }
+
                 }
+
+
+
             } else if ("forbiddengroup".equalsIgnoreCase(line.trim())) {
                 while (lineizer.hasMoreLines()) {
                     line = lineizer.nextLine();
