@@ -982,84 +982,84 @@ public final class Knowledge2 implements TetradSerializable, IKnowledge {
             }
 
             return Collections.emptySet();
-        } else{
-                Set<String> split = split(spec);
-                Set<MyNode> matches = new HashSet<>();
+        } else {
+            Set<String> split = split(spec);
+            Set<MyNode> matches = new HashSet<>();
 
-                for (String _spec : split) {
-                    _spec = _spec.replace("*", ".*");
+            for (String _spec : split) {
+                _spec = _spec.replace("*", ".*");
 
-                    java.util.regex.Pattern pattern = java.util.regex.Pattern.compile(_spec);
+                java.util.regex.Pattern pattern = java.util.regex.Pattern.compile(_spec);
 
-                    for (MyNode var : myNodes) {
-                        Matcher matcher = pattern.matcher(var.getName());
-                        if (matcher.matches()) {
-                            matches.add(var);
-                        }
-                    }
-                }
-
-                return matches;
-            }
-        }
-
-        private Set<String> split (String spec){
-            String[] tokens = spec.split(",");
-
-            Set<String> _tokens = new HashSet<>();
-
-            for (String _token : tokens) {
-                if (!_token.trim().equals("")) {
-                    _tokens.add(_token);
-                }
-            }
-
-            return _tokens;
-        }
-
-        private Set<OrderedPair<Set<MyNode>>> forbiddenTierRules () {
-            Set<OrderedPair<Set<MyNode>>> rules = new HashSet<>();
-
-            for (int i = 0; i < tierSpecs.size(); i++) {
-                if (isTierForbiddenWithin(i)) {
-                    rules.add(new OrderedPair<>(tierSpecs.get(i), tierSpecs.get(i)));
-                }
-            }
-
-            for (int i = 0; i < tierSpecs.size(); i++) {
-                if (isOnlyCanCauseNextTier(i)) {
-                    for (int j = i + 2; j < tierSpecs.size(); j++) {
-                        rules.add(new OrderedPair<>(tierSpecs.get(i), tierSpecs.get(j)));
+                for (MyNode var : myNodes) {
+                    Matcher matcher = pattern.matcher(var.getName());
+                    if (matcher.matches()) {
+                        matches.add(var);
                     }
                 }
             }
 
-            for (int i = 0; i < tierSpecs.size(); i++) {
-                for (int j = i + 1; j < tierSpecs.size(); j++) {
-                    rules.add(new OrderedPair<>(tierSpecs.get(j), tierSpecs.get(i)));
-                }
-            }
-
-            return rules;
+            return matches;
         }
-
-        /**
-         * Returns the index of the tier of node if it's in a tier, otherwise -1.
-         */
-        //@Override
-        public int isInWhichTier (Node node){
-            for (int i = 0; i < tierSpecs.size(); i++) {
-                Set<MyNode> tier = tierSpecs.get(i);
-
-                for (MyNode myNode : tier) {
-                    if (myNode.getName().equals(node.getName())) {
-                        return i;
-                    }
-                }
-            }
-
-            return -1;
-        } // added by DMalinsky for tsFCI on 4/20/16
-
-
     }
+
+    private Set<String> split(String spec) {
+        String[] tokens = spec.split(",");
+
+        Set<String> _tokens = new HashSet<>();
+
+        for (String _token : tokens) {
+            if (!_token.trim().equals("")) {
+                _tokens.add(_token);
+            }
+        }
+
+        return _tokens;
+    }
+
+    private Set<OrderedPair<Set<MyNode>>> forbiddenTierRules() {
+        Set<OrderedPair<Set<MyNode>>> rules = new HashSet<>();
+
+        for (int i = 0; i < tierSpecs.size(); i++) {
+            if (isTierForbiddenWithin(i)) {
+                rules.add(new OrderedPair<>(tierSpecs.get(i), tierSpecs.get(i)));
+            }
+        }
+
+        for (int i = 0; i < tierSpecs.size(); i++) {
+            if (isOnlyCanCauseNextTier(i)) {
+                for (int j = i + 2; j < tierSpecs.size(); j++) {
+                    rules.add(new OrderedPair<>(tierSpecs.get(i), tierSpecs.get(j)));
+                }
+            }
+        }
+
+        for (int i = 0; i < tierSpecs.size(); i++) {
+            for (int j = i + 1; j < tierSpecs.size(); j++) {
+                rules.add(new OrderedPair<>(tierSpecs.get(j), tierSpecs.get(i)));
+            }
+        }
+
+        return rules;
+    }
+
+    /**
+     * Returns the index of the tier of node if it's in a tier, otherwise -1.
+     */
+    //@Override
+    public int isInWhichTier(Node node) {
+        for (int i = 0; i < tierSpecs.size(); i++) {
+            Set<MyNode> tier = tierSpecs.get(i);
+
+            for (MyNode myNode : tier) {
+                if (myNode.getName().equals(node.getName())) {
+                    return i;
+                }
+            }
+        }
+
+        return -1;
+    } // added by DMalinsky for tsFCI on 4/20/16
+
+
+}
