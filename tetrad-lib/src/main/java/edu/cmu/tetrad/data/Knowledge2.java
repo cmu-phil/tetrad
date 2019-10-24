@@ -28,8 +28,6 @@ import java.io.IOException;
 import java.util.*;
 import java.util.regex.Matcher;
 
-import static com.sun.corba.se.spi.servicecontext.MaxStreamFormatVersionServiceContext.singleton;
-
 /**
  * Stores information about required and forbidden edges and common causes for
  * use in algorithm. This information can be set edge by edge or else globally
@@ -105,6 +103,7 @@ public final class Knowledge2 implements TetradSerializable, IKnowledge {
     }
 
     //================================CONSTRUCTORS========================//
+
     /**
      * Constructs a blank knowledge object.
      */
@@ -377,7 +376,7 @@ public final class Knowledge2 implements TetradSerializable, IKnowledge {
             Set<MyNode> _tierN = tierSpecs.get(tierN);
             OrderedPair<Set<MyNode>> o = new OrderedPair<>(_tier, _tierN);
 
-            if (! forbiddenRulesSpecs.contains(o)) return false;
+            if (!forbiddenRulesSpecs.contains(o)) return false;
         }
 
         return true;
@@ -975,85 +974,92 @@ public final class Knowledge2 implements TetradSerializable, IKnowledge {
     }
 
     private Set<MyNode> getExtent(String spec) {
-        if (!spec.contains("*")) return Collections.singleton(new MyNode(spec));
-        else {
-            Set<String> split = split(spec);
-            Set<MyNode> matches = new HashSet<>();
+        if (!spec.contains("*")) {
+            for (MyNode var : myNodes) {
+                if (spec.equals(var.getName())) {
+                    return Collections.singleton(var);
+                }
+            }
 
-            for (String _spec : split) {
-                _spec = _spec.replace("*", ".*");
+            return Collections.emptySet();
+        } else{
+                Set<String> split = split(spec);
+                Set<MyNode> matches = new HashSet<>();
 
-                java.util.regex.Pattern pattern = java.util.regex.Pattern.compile(_spec);
+                for (String _spec : split) {
+                    _spec = _spec.replace("*", ".*");
 
-                for (MyNode var : myNodes) {
-                    Matcher matcher = pattern.matcher(var.getName());
-                    if (matcher.matches()) {
-                        matches.add(var);
+                    java.util.regex.Pattern pattern = java.util.regex.Pattern.compile(_spec);
+
+                    for (MyNode var : myNodes) {
+                        Matcher matcher = pattern.matcher(var.getName());
+                        if (matcher.matches()) {
+                            matches.add(var);
+                        }
+                    }
+                }
+
+                return matches;
+            }
+        }
+
+        private Set<String> split (String spec){
+            String[] tokens = spec.split(",");
+
+            Set<String> _tokens = new HashSet<>();
+
+            for (String _token : tokens) {
+                if (!_token.trim().equals("")) {
+                    _tokens.add(_token);
+                }
+            }
+
+            return _tokens;
+        }
+
+        private Set<OrderedPair<Set<MyNode>>> forbiddenTierRules () {
+            Set<OrderedPair<Set<MyNode>>> rules = new HashSet<>();
+
+            for (int i = 0; i < tierSpecs.size(); i++) {
+                if (isTierForbiddenWithin(i)) {
+                    rules.add(new OrderedPair<>(tierSpecs.get(i), tierSpecs.get(i)));
+                }
+            }
+
+            for (int i = 0; i < tierSpecs.size(); i++) {
+                if (isOnlyCanCauseNextTier(i)) {
+                    for (int j = i + 2; j < tierSpecs.size(); j++) {
+                        rules.add(new OrderedPair<>(tierSpecs.get(i), tierSpecs.get(j)));
                     }
                 }
             }
 
-            return matches;
-        }
-    }
-
-    private Set<String> split(String spec) {
-        String[] tokens = spec.split(",");
-
-        Set<String> _tokens = new HashSet<>();
-
-        for (String _token : tokens) {
-            if (!_token.trim().equals("")) {
-                _tokens.add(_token);
-            }
-        }
-
-        return _tokens;
-    }
-
-    private Set<OrderedPair<Set<MyNode>>> forbiddenTierRules() {
-        Set<OrderedPair<Set<MyNode>>> rules = new HashSet<>();
-
-        for (int i = 0; i < tierSpecs.size(); i++) {
-            if (isTierForbiddenWithin(i)) {
-                rules.add(new OrderedPair<>(tierSpecs.get(i), tierSpecs.get(i)));
-            }
-        }
-
-        for (int i = 0; i < tierSpecs.size(); i++) {
-            if (isOnlyCanCauseNextTier(i)) {
-                for (int j = i + 2; j < tierSpecs.size(); j++) {
-                    rules.add(new OrderedPair<>(tierSpecs.get(i), tierSpecs.get(j)));
+            for (int i = 0; i < tierSpecs.size(); i++) {
+                for (int j = i + 1; j < tierSpecs.size(); j++) {
+                    rules.add(new OrderedPair<>(tierSpecs.get(j), tierSpecs.get(i)));
                 }
             }
+
+            return rules;
         }
 
-        for (int i = 0; i < tierSpecs.size(); i++) {
-            for (int j = i + 1; j < tierSpecs.size(); j++) {
-                rules.add(new OrderedPair<>(tierSpecs.get(j), tierSpecs.get(i)));
-            }
-        }
+        /**
+         * Returns the index of the tier of node if it's in a tier, otherwise -1.
+         */
+        //@Override
+        public int isInWhichTier (Node node){
+            for (int i = 0; i < tierSpecs.size(); i++) {
+                Set<MyNode> tier = tierSpecs.get(i);
 
-        return rules;
-    }
-
-    /**
-     * Returns the index of the tier of node if it's in a tier, otherwise -1.
-     */
-    //@Override
-    public int isInWhichTier(Node node) {
-        for (int i = 0; i < tierSpecs.size(); i++) {
-            Set<MyNode> tier = tierSpecs.get(i);
-
-            for (MyNode myNode : tier) {
-                if (myNode.getName().equals(node.getName())) {
-                    return i;
+                for (MyNode myNode : tier) {
+                    if (myNode.getName().equals(node.getName())) {
+                        return i;
+                    }
                 }
             }
-        }
 
-        return -1;
-    } // added by DMalinsky for tsFCI on 4/20/16
+            return -1;
+        } // added by DMalinsky for tsFCI on 4/20/16
 
 
-}
+    }
