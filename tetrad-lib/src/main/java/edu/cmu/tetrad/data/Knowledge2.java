@@ -103,6 +103,7 @@ public final class Knowledge2 implements TetradSerializable, IKnowledge {
     }
 
     //================================CONSTRUCTORS========================//
+
     /**
      * Constructs a blank knowledge object.
      */
@@ -375,7 +376,7 @@ public final class Knowledge2 implements TetradSerializable, IKnowledge {
             Set<MyNode> _tierN = tierSpecs.get(tierN);
             OrderedPair<Set<MyNode>> o = new OrderedPair<>(_tier, _tierN);
 
-            if (! forbiddenRulesSpecs.contains(o)) return false;
+            if (!forbiddenRulesSpecs.contains(o)) return false;
         }
 
         return true;
@@ -973,8 +974,15 @@ public final class Knowledge2 implements TetradSerializable, IKnowledge {
     }
 
     private Set<MyNode> getExtent(String spec) {
-        if (!spec.contains("*")) return Collections.singleton(new MyNode(spec));
-        else {
+        if (!spec.contains("*")) {
+            for (MyNode var : myNodes) {
+                if (spec.equals(var.getName())) {
+                    return Collections.singleton(var);
+                }
+            }
+
+            return Collections.emptySet();
+        } else {
             Set<String> split = split(spec);
             Set<MyNode> matches = new HashSet<>();
 
