@@ -41,10 +41,14 @@ public final class AlgorithmModels {
 
     private static final AlgorithmModels INSTANCE = new AlgorithmModels();
 
-    private final List<AlgorithmModel> models;
-    private final Map<AlgType, List<AlgorithmModel>> modelMap;
+    private  List<AlgorithmModel> models;
+    private  Map<AlgType, List<AlgorithmModel>> modelMap;
 
     private AlgorithmModels() {
+        refreshModels();
+    }
+
+    private  void refreshModels() {
         AlgorithmAnnotations algoAnno = AlgorithmAnnotations.getInstance();
         List<AnnotatedClass<Algorithm>> list = Tetrad.enableExperimental
                 ? algoAnno.getAnnotatedClasses()
@@ -73,6 +77,7 @@ public final class AlgorithmModels {
     }
 
     public static AlgorithmModels getInstance() {
+        INSTANCE.refreshModels();   // if we had a subscriber pattern for app settings would not have to waste time doing this every time!
         return INSTANCE;
     }
 
