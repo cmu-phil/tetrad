@@ -9,17 +9,17 @@ import edu.cmu.tetrad.graph.Graph;
  *
  * @author jdramsey
  */
-public class SparsityEstGraph implements Statistic {
+public class DensityEstGraph implements Statistic {
     static final long serialVersionUID = 23L;
 
     @Override
     public String getAbbreviation() {
-        return "SpE";
+        return "DnE";
     }
 
     @Override
     public String getDescription() {
-        return "Sparsity for Estimated Graph";
+        return "Density for Estimated Graph";
     }
 
     @Override

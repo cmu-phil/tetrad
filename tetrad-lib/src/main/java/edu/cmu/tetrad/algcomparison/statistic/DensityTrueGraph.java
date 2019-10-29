@@ -10,17 +10,17 @@ import edu.cmu.tetrad.graph.Graph;
  *
  * @author jdramsey
  */
-public class SparsityTrueGraph implements Statistic {
+public class DensityTrueGraph implements Statistic {
     static final long serialVersionUID = 23L;
 
     @Override
     public String getAbbreviation() {
-        return "SpT";
+        return "DnT";
     }
 
     @Override
     public String getDescription() {
-        return "Sparsity for True Graph";
+        return "Density for True Graph";
     }
 
     @Override

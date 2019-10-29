@@ -39,7 +39,6 @@ import edu.cmu.tetrad.data.simulation.LoadDataAndGraphs;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.IndTestFisherZ;
 import edu.cmu.tetrad.search.IndependenceTest;
-import edu.cmu.tetrad.search.OrientColliders;
 import edu.cmu.tetrad.search.SearchGraphUtils;
 import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemPm;
@@ -82,16 +81,16 @@ public class PcMaxStudy {
         statistics.add(new ArrowheadRecall());
         statistics.add(new ArrowheadPrecisionCommonEdges());
         statistics.add(new ArrowheadRecallCommonEdges());
-        statistics.add(new SparsityTrueGraph());
+        statistics.add(new DensityTrueGraph());
         statistics.add(new ElapsedTime());
 
-        statistics.setWeight("AR", 1);
-        statistics.setWeight("AHP", .5);
+//        statistics.setWeight("AR", 1);
+        statistics.setWeight("AHP", 1);
 
         Algorithms algorithms = new Algorithms();
 
-        algorithms.add(new FgesCpc(new SemBicTest()));
-//        algorithms.add(new Fges(new SemBicScore()));
+//        algorithms.add(new FgesCpc(new SemBicTest()));
+        algorithms.add(new Fges(new SemBicScore()));
 //        algorithms.add(new PcAll(new FisherZ()));
 
         Comparison comparison = new Comparison();
@@ -125,16 +124,17 @@ public class PcMaxStudy {
         parameters.set(Params.COLLIDER_DISCOVERY_RULE, 2, 1);
         parameters.set(Params.DIFFERENT_GRAPHS, true);
 
-        parameters.set(Params.NUM_MEASURES, 10, 20, 30, 40, 50, 100, 200, 500);
-        parameters.set(Params.AVG_DEGREE, 4, 8, 12, 16);
-        parameters.set(Params.MAX_DEGREE_FGES, 10);
+        parameters.set(Params.NUM_MEASURES, 100, 500, 1000);
+        // 10, 20, 30, 40, 50, 100, 200, 500);
+        parameters.set(Params.AVG_DEGREE, 4, 8, 12);
+        parameters.set(Params.MAX_DEGREE_FGES, -1);
 
-        parameters.set(Params.NUM_RUNS, 5);
+        parameters.set(Params.NUM_RUNS, 2);
         parameters.set(Params.DEPTH, 5);
-        parameters.set(Params.ALPHA, 0.001, 0.01, 0.05, 0.1);
+//        parameters.set(Params.ALPHA, 0.001, 0.01, 0.05, 0.1);
         parameters.set(Params.ORIENTATION_ALPHA, -1);
-        parameters.set(Params.PENALTY_DISCOUNT, 1, 2, 3);
-        parameters.set(Params.SAMPLE_SIZE, 10000);
+        parameters.set(Params.PENALTY_DISCOUNT, 1);//, 2, 3);
+        parameters.set(Params.SAMPLE_SIZE, 50, 100, 500, 1000);
         parameters.set(Params.DO_MARKOV_LOOP, false);
         parameters.set(Params.USE_FDR_FOR_INDEPENDENCE, true);
         parameters.set(Params.MAX_DEGREE, 20);
@@ -338,7 +338,7 @@ public class PcMaxStudy {
         statistics.add(new ArrowheadRecall());
         statistics.add(new ArrowheadPrecisionCommonEdges());
         statistics.add(new ArrowheadRecallCommonEdges());
-        statistics.add(new SparsityTrueGraph());
+        statistics.add(new DensityTrueGraph());
         statistics.add(new ElapsedTime());
 
         statistics.setWeight("AR", 1);
