@@ -25,9 +25,9 @@ public class DensityTrueGraph implements Statistic {
 
     @Override
     public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
-        int N = trueGraph.getNumNodes();
+        int V = trueGraph.getNumNodes();
         int E = trueGraph.getNumEdges();
-        return (2.0 * E) / (double) (N * (N - 1));
+        return (2.0 * E) / (double) (V * (V - 1));
     }
 
     @Override
