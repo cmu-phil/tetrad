@@ -820,17 +820,17 @@ public final class BffGes implements Bff {
 //        }
 
 //        public double getMaxEdgeP() {
-//            double maxP = Double.NEGATIVE_INFINITY;
+//            double existsSepset = Double.NEGATIVE_INFINITY;
 //
 //            for (Parameter param : estimatedSem.getSemPm().getParameters()) {
 //                if (param.getType() != ParamType.COEF) {
 //                    continue;
 //                }
 //                double p = this.estimatedSem.getScore(param, 10000);
-//                if (p > maxP) maxP = p;
+//                if (p > existsSepset) existsSepset = p;
 //            }
 //
-//            return maxP;
+//            return existsSepset;
 //        }
 
         public static Score negativeInfinity() {

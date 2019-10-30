@@ -50,21 +50,34 @@
     <!-- Assign id with the section name, this will be linked in the table of contents -->
     <h1 id="introduction"><span class="section_heading">Introduction</span></h1>
 
-    <p>Tetrad is a suite of software for the discovery, estimation, and simulation of causal models. Some of the functions that you can perform with Tetrad include, but are not limited to:</p>
+    <p>Tetrad is a suite of software for the discovery, estimation, and simulation of causal models. Some of the
+        functions that you can perform with Tetrad include, but are not limited to:</p>
 
     <ul class="ul">
-        <li>Loading an existing data set, restricting  potential models using your a priori causal knowledge, and searching for a model that explains it using one of Tetrad’s causal search algorithms</li>
+        <li>Loading an existing data set, restricting potential models using your a priori causal knowledge, and
+            searching for a model that explains it using one of Tetrad’s causal search algorithms
+        </li>
         <li>Loading an existing causal graph and existing data set, and estimating a parameterized model from them</li>
         <li>Creating a new causal graph, parameterizing a model from it, and simulating data from that model</li>
     </ul>
 
-    <p>Tetrad allows for numerous types of data, graph, and model to be input and output, and some functions may be restricted based on what types of data or graph the user inputs. Other functions may simply not perform as well on certain types of data.</p>
+    <p>Tetrad allows for numerous types of data, graph, and model to be input and output, and some functions may be
+        restricted based on what types of data or graph the user inputs. Other functions may simply not perform as well
+        on certain types of data.</p>
 
-    <p>All analysis in Tetrad is performed graphically using a box paradigm, found in a sidebar to the left of the workspace. A box either houses an object such as a graph or a dataset, or performs an operation such as a search or an estimation. Some boxes require input from other boxes in order to work. Complex operations are performed by stringing chains of boxes together in the workspace. For instance, to simulate data, you would input a graph box into a parametric model box, the PM box into an instantiated model box, and finally the IM box into a simulation box.</p>
+    <p>All analysis in Tetrad is performed graphically using a box paradigm, found in a sidebar to the left of the
+        workspace. A box either houses an object such as a graph or a dataset, or performs an operation such as a search
+        or an estimation. Some boxes require input from other boxes in order to work. Complex operations are performed
+        by stringing chains of boxes together in the workspace. For instance, to simulate data, you would input a graph
+        box into a parametric model box, the PM box into an instantiated model box, and finally the IM box into a
+        simulation box.</p>
 
-    <p>In order to use a box, click on it in the sidebar, then click inside the workspace. This creates an empty box, which you can instantiated by double-clicking. Most boxes have multiple options available on instantiation, which will be explained in further detail in this manual.</p>
+    <p>In order to use a box, click on it in the sidebar, then click inside the workspace. This creates an empty box,
+        which you can instantiated by double-clicking. Most boxes have multiple options available on instantiation,
+        which will be explained in further detail in this manual.</p>
 
-    <p>In order to use one box as input to another, draw an arrow between them by clicking on the arrow tool in the sidebar, and clicking and dragging from the first box to the second in the workspace.</p>
+    <p>In order to use one box as input to another, draw an arrow between them by clicking on the arrow tool in the
+        sidebar, and clicking and dragging from the first box to the second in the workspace.</p>
 
     <h1 id="graph_box"><span class="section_heading">Graph Box</span></h1>
 
@@ -103,7 +116,8 @@
     <h2>Creating a New Graph</h2>
 
     <p>When you first open a graph box with no parent, you will be presented with several options for which kind of
-        graph you would like to create: a general graph, a directed acyclic graph (DAG), a structural equation model (SEM)graph, or a time lag graph. Once you have selected the type of graph you want to create, an empty graph
+        graph you would like to create: a general graph, a directed acyclic graph (DAG), a structural equation model
+        (SEM)graph, or a time lag graph. Once you have selected the type of graph you want to create, an empty graph
         box will open.</p>
 
     <p>You can add variables to your graph by clicking on the variable button on the left, then clicking inside the
@@ -112,7 +126,8 @@
         may be directed, undirected, bidirected, or uncertain (represented by circles at the ends of an edge). Depending
         on the type of graph you choose to create, your choice of edges may be limited.</p>
 
-    <p><i>DAGs</i> allow only directed edges. If an edge would create a cycle, it will not be accepted. A graph box containing a DAG can be used as
+    <p><i>DAGs</i> allow only directed edges. If an edge would create a cycle, it will not be accepted. A graph box
+        containing a DAG can be used as
         input for any parametric model box, and is the only kind of graph box that can be used as input for a Bayes
         parametric model.</p>
 
@@ -291,7 +306,14 @@
 
     <h3>Edges and Edge Type Probabilities</h3>
 
-    <p>At the bottom of the graph box, the Edges and Edge Type Probabilities section provides an accounting of every edge in the graph, and how certain Tetrad is of its type. The first three columns contain a list, in text form, of all of the edges in the graph. The columns to the right are all blank in manually constructed graphs, user-loaded graphs, and graphs output by searches with default settings. They are only filled in for graphs that are output by searches performed with bootstrapping. In those cases, the fourth column will contain the percentage of bootstrap outputs in which the edge type between these two variables matches the edge type in the final graph. All of the columns to the right contain the percentages of the bootstrap outputs that output each possible edge type.</p>
+    <p>At the bottom of the graph box, the Edges and Edge Type Probabilities section provides an accounting of every
+        edge in the graph, and how certain Tetrad is of its type. The first three columns contain a list, in text form,
+        of all of the edges in the graph. The columns to the right are all blank in manually constructed graphs,
+        user-loaded graphs, and graphs output by searches with default settings. They are only filled in for graphs that
+        are output by searches performed with bootstrapping. In those cases, the fourth column will contain the
+        percentage of bootstrap outputs in which the edge type between these two variables matches the edge type in the
+        final graph. All of the columns to the right contain the percentages of the bootstrap outputs that output each
+        possible edge type.</p>
 
     <p>For more information on bootstrap searches, see the Search Box section of the manual.</p>
 
@@ -394,7 +416,11 @@
     <img src="images/compare_box_11.png" alt="" width="650">
 
 
-    <p>The first column lists the “adjacency precision”—the percentage of edges in target graph that are in the true graph. The second column is the “adjacency recall”—the percentage of edges in the true graph that are in the target graph. The third and fourth columns are arrowhead precision and recall. The fifth and sixth columns are two-cycle (a.k.a. direct feedback cycle) precision and recall, for graphs where that is applicable. The final column is the total number of two-cycle false positives in the target graph.</p>
+    <p>The first column lists the “adjacency precision”—the percentage of edges in target graph that are in the true
+        graph. The second column is the “adjacency recall”—the percentage of edges in the true graph that are in the
+        target graph. The third and fourth columns are arrowhead precision and recall. The fifth and sixth columns are
+        two-cycle (a.k.a. direct feedback cycle) precision and recall, for graphs where that is applicable. The final
+        column is the total number of two-cycle false positives in the target graph.</p>
 
     <p>If one of the parent boxes contains multiple graphs, each graph will be compared separately to the reference
         graph (or the estimated graph will be compared separately to each reference graph, depending on which parent box
@@ -472,7 +498,8 @@
     <h2>Model Fit</h2>
 
     <p>A model fit comparison takes a simulation box and a search box (ideally, a search that has been run on the
-        simulated data in the simulation box), and provides goodness-of-fit statistics, including a Student’s t statistic and p value for each edge, for the output graph and the
+        simulated data in the simulation box), and provides goodness-of-fit statistics, including a Student’s t
+        statistic and p value for each edge, for the output graph and the
         data, as well as estimating the values of any parameters. It looks and functions identically to the estimator
         box, but unlike the estimator box, it takes the search box directly as a parent, without needing to isolate and
         parameterize the graph output by the search.</p>
@@ -740,7 +767,8 @@
 
     <h2>SEM Instantiated Models</h2>
 
-    <p>A SEM instantiated model is a SEM parametric model in which the parameters and error terms have defined values. It assumes that relationships between variables are linear, and that error terms have Gaussian distributions.
+    <p>A SEM instantiated model is a SEM parametric model in which the parameters and error terms have defined values.
+        It assumes that relationships between variables are linear, and that error terms have Gaussian distributions.
         If you choose to create a SEM IM, the following window will open:</p>
 
     <img src="images/instantiated_model_box_6.png" alt="" width="450">
@@ -2197,7 +2225,9 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
             which edges are added between nodes in order to increase the Bayesian score. This process
             continues until no single edge addition increases the score. Finally, it performs a backward
             stepping search that removes edges until no single edge removal can increase the score. More information is
-            available <a href="https://www.ccd.pitt.edu//wp-content/uploads/2018/10/FGES1c-user-documentation-5_21_2016-sample-size.pdf">here</a> and
+            available <a
+                href="https://www.ccd.pitt.edu//wp-content/uploads/2018/10/FGES1c-user-documentation-5_21_2016-sample-size.pdf">here</a>
+            and
             <a href="https://www.ccd.pitt.edu//wp-content/uploads/2018/10/FGES1d-user-documentation-7_20_2016-sample-size.pdf">here</a>.
             The reference is Ramsey et al., 2017.
         </p>
@@ -2411,8 +2441,10 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
             After the adjacency phase of FCI, some of the orientations of FGES are then used to provide an initial
             orientation of
             the undirected graph that is then augmented by the orientation phase of FCI to provide additional
-            orientations.  A verbose description of GFCI can be found <a href="https://www.ccd.pitt.edu//pdfs/GFCId.pdf">
-                here (discrete variables)</a> and <a href="https://www.ccd.pitt.edu//wp-content/uploads/2018/10/GFCIc-overview-11_22_2016.pdf">here (continuous variables)</a>.</p>
+            orientations. A verbose description of GFCI can be found <a href="https://www.ccd.pitt.edu//pdfs/GFCId.pdf">
+                here (discrete variables)</a> and <a
+                    href="https://www.ccd.pitt.edu//wp-content/uploads/2018/10/GFCIc-overview-11_22_2016.pdf">here
+                (continuous variables)</a>.</p>
 
     </div>
 
@@ -2794,13 +2826,15 @@ there is a single latent for each output cluster. For MimBuild, a pattern over t
     <h4>Description</h4>
 
     <div id="lingam">
-        <p>LiNGAM (Shimizu et al., 2006) was one of the first of the algorithms that assumed linearity among the variables
+        <p>LiNGAM (Shimizu et al., 2006) was one of the first of the algorithms that assumed linearity among the
+            variables
             and non-Gaussianity of error term, and still one of the best for smaller models, for the basic algorithm,
             implemented here. The idea is to use the Independent Components Analysis (ICA) algorithm to check all
             permutations of the variables to find one that is a causal order—that is, one in which earlier variables
             can cause later variables but not vice-versa. The method is clever. First, since we assume the model is a
             directed acyclic graph (DAG), there must be some permutation of the variables for which the main diagonal
-            of the inverse of the weight matrix contains no zeros. This gives us a permuted estimate of the weight matrix.
+            of the inverse of the weight matrix contains no zeros. This gives us a permuted estimate of the weight
+            matrix.
             Then we look for a permutation of this weight matrix that is lower triangular. There must be one, since the
             model is assumed to be a DAG. But a lower triangular weight matrix just gives a causal order, so we’re done.
         </p>
@@ -2812,14 +2846,16 @@ there is a single latent for each output cluster. For MimBuild, a pattern over t
         </p>
 
         <p>
-            Our implementation of LiNGAM has one parameter, penalty discount, used for the FGES adjacency search. The method
+            Our implementation of LiNGAM has one parameter, penalty discount, used for the FGES adjacency search. The
+            method
             as
             implemented does not scale much beyond 10 variables, because it is checking every permutation of all of the
             variables (twice). The implementation of ICA we use is FastIca (Hyvärinen et al., 2004).
         </p>
 
         <p>
-            Shimizu, S., Hoyer, P. O., Hyvärinen, A., & Kerminen, A. (2006). A linear non-Gaussian acyclic model for causal
+            Shimizu, S., Hoyer, P. O., Hyvärinen, A., & Kerminen, A. (2006). A linear non-Gaussian acyclic model for
+            causal
             discovery. Journal of Machine Learning Research, 7(Oct), 2003-2030.
         </p>
 
@@ -2835,22 +2871,22 @@ there is a single latent for each output cluster. For MimBuild, a pattern over t
     <div id="fask">
         <p>FASK learns a linear model in which all of the variables are skewed. </p>
 
-        <p>The idea is as follows. First, FAS-stable  is run on the data, producing an
+        <p>The idea is as follows. First, FAS-stable is run on the data, producing an
             undirected graph. We use the BIC score as a conditional independence test with a specified penalty
-            discount c. This yields undirected graph G0 . The reason FAS-stable  works for sparse cyclic  models
-            where the linear  coefficients  are all less than  1 is that correlations induced by long cyclic
-            paths are statistically judged as zero, since they are products of multiple coefficients less  than
-            1.  Then, each  of the X − Y  adjacencies  in G0   is  oriented  as a 2-cycle  X +=  Y , or X → Y ,
-            or X ← Y .   Taking up each  adjacency  in turn, one tests  to see  whether  the adjacency  is a
-            2-cycle by testing if the difference between  corr(X, Y ) and corr(X, Y |X  > 0), and corr(X, Y )
-            and corr(X, Y |Y  > 0), are both significantly not zero. If so, the edges X → Y and X ← Y  are added
-            to the output  graph G1 .  If not, the Left-Right  orientation is rule is applied: Orient X → Y in
-            G1, if (E(X Y |X > 0)/    E(X 2|X > 0)E(Y 2 |X > 0) − E(X Y |Y  > 0)/  E(X 2 |Y  > 0)E(Y 2|Y  > 0)) >  0;
-            otherwise orient X ← Y .  G1  will be a fully oriented graph. For some models, where the true
-            coefficients of a 2-cycle between X and Y  are more or less equal in magnitude but opposite in sign,
-            FAS-stable  may fail to detect an edge between X and Y  when in fact a 2-cycle exists. In this case,
-            we check explicitly whether corr(X, Y |X > 0) and corr(X, Y |Y  > 0) differ  by more than a set amount
-            of 0.3. If so, the adjacency  is added to the graph and oriented using the aforementioned rules.
+            discount c. This yields undirected graph G0 . The reason FAS-stable works for sparse cyclic models
+            where the linear coefficients are all less than 1 is that correlations induced by long cyclic
+            paths are statistically judged as zero, since they are products of multiple coefficients less than
+            1. Then, each of the X − Y adjacencies in G0 is oriented as a 2-cycle X += Y , or X → Y ,
+            or X ← Y . Taking up each adjacency in turn, one tests to see whether the adjacency is a
+            2-cycle by testing if the difference between corr(X, Y ) and corr(X, Y |X > 0), and corr(X, Y )
+            and corr(X, Y |Y > 0), are both significantly not zero. If so, the edges X → Y and X ← Y are added
+            to the output graph G1 . If not, the Left-Right orientation is rule is applied: Orient X → Y in
+            G1, if (E(X Y |X > 0)/ E(X 2|X > 0)E(Y 2 |X > 0) − E(X Y |Y > 0)/ E(X 2 |Y > 0)E(Y 2|Y > 0)) > 0;
+            otherwise orient X ← Y . G1 will be a fully oriented graph. For some models, where the true
+            coefficients of a 2-cycle between X and Y are more or less equal in magnitude but opposite in sign,
+            FAS-stable may fail to detect an edge between X and Y when in fact a 2-cycle exists. In this case,
+            we check explicitly whether corr(X, Y |X > 0) and corr(X, Y |Y > 0) differ by more than a set amount
+            of 0.3. If so, the adjacency is added to the graph and oriented using the aforementioned rules.
         </p>
 
         <p>See Sanchez-Romero R, Ramsey JD, Zhang K, Glymour MR, Huang B, Glymour C. Causal discovery of feedback
@@ -2951,15 +2987,19 @@ there is a single latent for each output cluster. For MimBuild, a pattern over t
     <p><a href="#maxit">alpha</a>, <a href="#depth">depth</a></p>
 
 
-
     <h2>Statistical Tests</h2>
 
     <h3>BDeu Test</h3>
 
     <div id="bdeu-test">
-    <p>
-        This is the BDeu score given in Heckerman, D., Geiger, D., & Chickering, D. M. (1995). Learning Bayesian networks: The combination of knowledge and statistical data. <i>Machine learning, 20</i>(3), 197-243, used as a test. This gives a score for any two variables conditioned on any list of others which is more positive for distributions which are more strongly dependent. The test for X _||_ Y | Z compares two different models, X conditional on Y, and X conditional on Y and Z; the scores for the two models are subtracted, in that order. If the difference is negative, independence is inferred.
-    </p>
+        <p>
+            This is the BDeu score given in Heckerman, D., Geiger, D., & Chickering, D. M. (1995). Learning Bayesian
+            networks: The combination of knowledge and statistical data. <i>Machine learning, 20</i>(3), 197-243, used
+            as a test. This gives a score for any two variables conditioned on any list of others which is more positive
+            for distributions which are more strongly dependent. The test for X _||_ Y | Z compares two different
+            models, X conditional on Y, and X conditional on Y and Z; the scores for the two models are subtracted, in
+            that order. If the difference is negative, independence is inferred.
+        </p>
     </div>
 
     <h4>Parameters</h4>
@@ -2969,9 +3009,10 @@ there is a single latent for each output cluster. For MimBuild, a pattern over t
     <h3>Fisher Z Test</h3>
 
     <div id="fisher-z-test">
-    <p>
-    Fisher Z judges independence if the conditional correlation is zero. Primarily for the linear, Gaussian case.
-    </p>
+        <p>
+            Fisher Z judges independence if the conditional correlation is zero. Primarily for the linear, Gaussian
+            case.
+        </p>
     </div>
 
     <h4>Parameters</h4>
@@ -2981,29 +3022,41 @@ there is a single latent for each output cluster. For MimBuild, a pattern over t
     <h3>Conditional Correlation Independence (CCI) Test</h3>
 
     <div id="cci-test">
-    <p>CCI ("Conditional Correlation Independence") is a fairly general independence test—not completely general, but
-        general for additive noise models—that is,
-        model in which each variable is equal to a (possibly nonlinear) function of its parents, plus additive noise,
-        where the noise may be arbitrarily distributed.
-        That is, X = f(parent(X)) + E, where f is any function and E is noise however distributed; the only requirement
-        is that there be the “+” in the formula separating the function from the noise.
-        The noise can’t for instance, be multiplicative, e.g., X = f(parent(X)) x E.
-        The goal of the method is to estimate whether X is independent of Y given variables Z, for some X, Y, and Z.
-        It works by calculating the residual of X given Z and the residual of Y given Z and looking to see whether those
-        two residuals are independent.
-        This test may be used with any constraint-based algorithm (PC, FCI, etc.)</p>
+        <p>CCI ("Conditional Correlation Independence") is a fairly general independence test—not completely general,
+            but
+            general for additive noise models—that is,
+            model in which each variable is equal to a (possibly nonlinear) function of its parents, plus additive
+            noise,
+            where the noise may be arbitrarily distributed.
+            That is, X = f(parent(X)) + E, where f is any function and E is noise however distributed; the only
+            requirement
+            is that there be the “+” in the formula separating the function from the noise.
+            The noise can’t for instance, be multiplicative, e.g., X = f(parent(X)) x E.
+            The goal of the method is to estimate whether X is independent of Y given variables Z, for some X, Y, and Z.
+            It works by calculating the residual of X given Z and the residual of Y given Z and looking to see whether
+            those
+            two residuals are independent.
+            This test may be used with any constraint-based algorithm (PC, FCI, etc.)</p>
     </div>
 
     <h4>Parameters</h4>
 
-    <p><a href="#alpha">alpha</a>, <a href="#numBasisFunctions">numBasisFunctions</a>, <a href="#kernelType">kernelType</a>, <a href="#kernelMultiplier">kernelMultiplier</a>, <a href="#basisType">basisType</a>, <a href="#fastFDR">fastFDR</a>, <a href="#kernelRegressionSampleSize">kernelRegressionSampleSize</a>, <a href="#numDependenceSpotChecks">numDependenceSpotChecks</a></p>
+    <p><a href="#alpha">alpha</a>, <a href="#numBasisFunctions">numBasisFunctions</a>, <a
+            href="#kernelType">kernelType</a>, <a href="#kernelMultiplier">kernelMultiplier</a>, <a href="#basisType">basisType</a>,
+        <a href="#fastFDR">fastFDR</a>, <a href="#kernelRegressionSampleSize">kernelRegressionSampleSize</a>, <a
+                href="#numDependenceSpotChecks">numDependenceSpotChecks</a></p>
 
     <h3>Chi Square Test</h3>
 
     <div id="chi-square-test">
-    <p>
-    This is the usual Chi-Square test for discrete variables; consult an introductory statistics book for details for the unconditional case, where you're just trying, e.g., to determine if X and Y are independent. For the conditional case, the test proceeds as in Fienberg, S. E. (2007). <i>The analysis of cross-classified categorical data</i>. Springer Science & Business Media, by identifying and removing from consideration zero rows or columns in the conditional tables and judging dependence based on the remaining rows and columns.
-    </p>
+        <p>
+            This is the usual Chi-Square test for discrete variables; consult an introductory statistics book for
+            details for the unconditional case, where you're just trying, e.g., to determine if X and Y are independent.
+            For the conditional case, the test proceeds as in Fienberg, S. E. (2007). <i>The analysis of
+            cross-classified categorical data</i>. Springer Science & Business Media, by identifying and removing from
+            consideration zero rows or columns in the conditional tables and judging dependence based on the remaining
+            rows and columns.
+        </p>
     </div>
 
     <h4>Parameters</h4>
@@ -3013,25 +3066,40 @@ there is a single latent for each output cluster. For MimBuild, a pattern over t
     <h3>D-Separation Test</h3>
 
     <div id="d-sep-test">
-    <p>
-    This is the usual test of d-separation, a property of graphs, not distributions. It's not really a test, but it can be used in place of a test of the true graph is known. This is a way to find out, for constraint-based algorithms, or even for some score-based algorithms like FGES, what answer the algorithm would give if all of the statistical decisions made are correct. Just draw an edge from the true graph to the algorithm--the d-separation option will appear, and you can then just run the search as usual.
-    </p>
+        <p>
+            This is the usual test of d-separation, a property of graphs, not distributions. It's not really a test, but
+            it can be used in place of a test of the true graph is known. This is a way to find out, for
+            constraint-based algorithms, or even for some score-based algorithms like FGES, what answer the algorithm
+            would give if all of the statistical decisions made are correct. Just draw an edge from the true graph to
+            the algorithm--the d-separation option will appear, and you can then just run the search as usual.
+        </p>
     </div>
 
     <h3>Discrete BIC Test</h3>
 
     <div id="disc-bic-test">
-    <p>
-    This is just the BIC score for the discrete case, used as a test. The likelihood is judged by the multinomial tables directly, and this is penalized as is usual for a BIC score. The only surprising thing perhaps is that we use the formula BIC = 2L - k ln N, where L is the likelihood, k the number of parameters, and N the sample size, instead of the usual L + k / 2 ln N. So higher BIC scores will correspond to greater dependence. In the case of independence, the BIC score will be negative, since the likelihood will be zero, and this will be penalized.  The test yields a p-value; we simply use alpha - p as the score, where alpha is the cutoff for rejecting the null hypothesis of independence. This is a number that is positive for dependent cases and negative for independent cases.
-    </p>
+        <p>
+            This is just the BIC score for the discrete case, used as a test. The likelihood is judged by the
+            multinomial tables directly, and this is penalized as is usual for a BIC score. The only surprising thing
+            perhaps is that we use the formula BIC = 2L - k ln N, where L is the likelihood, k the number of parameters,
+            and N the sample size, instead of the usual L + k / 2 ln N. So higher BIC scores will correspond to greater
+            dependence. In the case of independence, the BIC score will be negative, since the likelihood will be zero,
+            and this will be penalized. The test yields a p-value; we simply use alpha - p as the score, where alpha is
+            the cutoff for rejecting the null hypothesis of independence. This is a number that is positive for
+            dependent cases and negative for independent cases.
+        </p>
     </div>
 
     <h3>G Square Test</h3>
 
     <div id="g-square-test">
-    <p>
-        This is completely parallel to the Chi-Square statistic, using a slightly different method for estimating the statistic. The alternative statistic is still distributed as chi-square in the limit. In practice, this statistic is more or less indistinguishable in most cases from Chi-Square. For an explanation, see Spirtes, P., Glymour, C. N., Scheines, R., Heckerman, D., Meek, C., Cooper, G., & Richardson, T. (2000). <i>Causation, prediction, and search</i>. MIT press.
-    </p>
+        <p>
+            This is completely parallel to the Chi-Square statistic, using a slightly different method for estimating
+            the statistic. The alternative statistic is still distributed as chi-square in the limit. In practice, this
+            statistic is more or less indistinguishable in most cases from Chi-Square. For an explanation, see Spirtes,
+            P., Glymour, C. N., Scheines, R., Heckerman, D., Meek, C., Cooper, G., & Richardson, T. (2000). <i>Causation,
+            prediction, and search</i>. MIT press.
+        </p>
     </div>
 
     <h4>Parameters</h4>
@@ -3041,31 +3109,38 @@ there is a single latent for each output cluster. For MimBuild, a pattern over t
     <h3>Kernel Conditional Independence (KCI) Test</h3>
 
     <div id="kci-test">
-    <p>KCI ("Kernel Conditional Independence") is a general independence test for model in which X = f(parents(X), eY);
-        here, eY does not need to be additive; it can stand in any functional relationships to the other variables. The
-        variables may even be discrete.
-        The goal of the method is to estimate whether X is independent of Y given Z, completely generally.
-        It uses the kernel trick to estimate this.
-        As a result of using the kernel trick, the method is complex in the direction of sample size, meaning that it
-        may be very slow for large samples.
-        Since it’s slow, individual independence results are always printed to the console so the user knows how far a
-        procedure has gotten.
-        This test may be used with any constraint-based algorithm (PC, FCI, etc.)</p>
+        <p>KCI ("Kernel Conditional Independence") is a general independence test for model in which X = f(parents(X),
+            eY);
+            here, eY does not need to be additive; it can stand in any functional relationships to the other variables.
+            The
+            variables may even be discrete.
+            The goal of the method is to estimate whether X is independent of Y given Z, completely generally.
+            It uses the kernel trick to estimate this.
+            As a result of using the kernel trick, the method is complex in the direction of sample size, meaning that
+            it
+            may be very slow for large samples.
+            Since it’s slow, individual independence results are always printed to the console so the user knows how far
+            a
+            procedure has gotten.
+            This test may be used with any constraint-based algorithm (PC, FCI, etc.)</p>
     </div>
 
     <h4>Parameters</h4>
 
-    <p><a href="#alpha">alpha</a>, <a href="#kciUseAppromation">kciUseAppromation</a>, <a href="#kernelMultiplier">kernelMultiplier</a>, <a href="#kciNumBootstraps">kciNumBootstraps</a>, <a href="#thresholdForNumEigenvalues">thresholdForNumEigenvalues</a>, <a href="#kciEpsilon">kciEpsilon</a></p>
+    <p><a href="#alpha">alpha</a>, <a href="#kciUseAppromation">kciUseAppromation</a>, <a href="#kernelMultiplier">kernelMultiplier</a>,
+        <a href="#kciNumBootstraps">kciNumBootstraps</a>, <a href="#thresholdForNumEigenvalues">thresholdForNumEigenvalues</a>,
+        <a href="#kciEpsilon">kciEpsilon</a></p>
 
     <h3>Conditional Gaussian Likelihood Ratio Test</h3>
 
     <div id="cg-lr-test">
-    <p>Conditional Gaussian Test is a likelihood ratio test based on the conditional Gaussian likelihood function.
-        This is intended for use with datasets where there is a mixture of continuous and discrete variables.
-        It is assumed that the continuous variables are Gaussian conditional on each combination of values for the
-        discrete variables,
-        though it will work fairly well even if that assumption does not hold strictly. This test may be used with any
-        constraint-based algorithm (PC, FCI, etc.)</p>
+        <p>Conditional Gaussian Test is a likelihood ratio test based on the conditional Gaussian likelihood function.
+            This is intended for use with datasets where there is a mixture of continuous and discrete variables.
+            It is assumed that the continuous variables are Gaussian conditional on each combination of values for the
+            discrete variables,
+            though it will work fairly well even if that assumption does not hold strictly. This test may be used with
+            any
+            constraint-based algorithm (PC, FCI, etc.)</p>
     </div>
 
     <h4>Parameters</h4>
@@ -3074,11 +3149,28 @@ there is a single latent for each output cluster. For MimBuild, a pattern over t
 
     <h3>Resampling</h3>
 
-    <p>Most TETRAD searches can be performed with resampling. This option is available on the Set Parameters screen. When it is selected, the search will be performed multiple times on randomly selected subsets of the data, and the final output graph will be the result of a voting procedure among all of the graphs. These subsets may be selected with replacement (bootstrapping) or without. There are also options for the user to set the size of the subset, and the number of resampling runs. The default number of resampling runs is zero, in which case no resampling will be performed.</p>
+    <p>Most TETRAD searches can be performed with resampling. This option is available on the Set Parameters screen.
+        When it is selected, the search will be performed multiple times on randomly selected subsets of the data, and
+        the final output graph will be the result of a voting procedure among all of the graphs. These subsets may be
+        selected with replacement (bootstrapping) or without. There are also options for the user to set the size of the
+        subset, and the number of resampling runs. The default number of resampling runs is zero, in which case no
+        resampling will be performed.</p>
 
-    <p>For each potential edge in the final output graph, the individual sampled graphs may contain a directed edge in one direction, the other direction, a bidirected edge, an uncertain edge, or no edge at all. The voting procedure reconciles all of these possible answers into a single final graph, and the "ensemble method," which can be set by the user in the parameter settings screen, determines how it will do that.</p>
+    <p>For each potential edge in the final output graph, the individual sampled graphs may contain a directed edge in
+        one direction, the other direction, a bidirected edge, an uncertain edge, or no edge at all. The voting
+        procedure reconciles all of these possible answers into a single final graph, and the "ensemble method," which
+        can be set by the user in the parameter settings screen, determines how it will do that.</p>
 
-    <p>The three available ensemble methods are Preserved, Highest, and Majority. Preserved tends to return the densest graphs, then Highest, and finally Majority returns the sparsest. The Preserved ensemble method ensures that an edge that has been found by some portion of the individual sample graphs is preserved in the final graph, even if the majority of sample graphs returned [no edge] as their answer for that edge. So the voting procedure for Preserved is to return the edge orientation that the highest percentage of sample graphs returned, other than [no edge]. The Highest ensemble method, on the other hand, simply returns the edge orientation which the highest proportion of sample graphs returned, even if that means returning [no edge]. And the Majority method requires that at least 50 percent of the sample graphs agree on an edge orientation in order to return any edge at all. If the highest proportion of sample graphs agree on, for instance, a bidirected edge, but only 40 percent of them do so, then the Majority ensemble method will return [no edge] for that edge.</p>
+    <p>The three available ensemble methods are Preserved, Highest, and Majority. Preserved tends to return the densest
+        graphs, then Highest, and finally Majority returns the sparsest. The Preserved ensemble method ensures that an
+        edge that has been found by some portion of the individual sample graphs is preserved in the final graph, even
+        if the majority of sample graphs returned [no edge] as their answer for that edge. So the voting procedure for
+        Preserved is to return the edge orientation that the highest percentage of sample graphs returned, other than
+        [no edge]. The Highest ensemble method, on the other hand, simply returns the edge orientation which the highest
+        proportion of sample graphs returned, even if that means returning [no edge]. And the Majority method requires
+        that at least 50 percent of the sample graphs agree on an edge orientation in order to return any edge at all.
+        If the highest proportion of sample graphs agree on, for instance, a bidirected edge, but only 40 percent of
+        them do so, then the Majority ensemble method will return [no edge] for that edge.</p>
 
 
     <h2>Scoring Functions</h2>
@@ -3086,9 +3178,12 @@ there is a single latent for each output cluster. For MimBuild, a pattern over t
     <h3>BDeu Score</h3>
 
     <div id="bdeu-score">
-    <p>
-    This is the BDeu score given in Heckerman, D., Geiger, D., & Chickering, D. M. (1995). Learning Bayesian networks: The combination of knowledge and statistical data. <i>Machine learning, 20</i>(3), 197-243. This gives a score for any two variables conditioned on any list of others which is more positive for distributions which are more strongly dependent.
-    </p>
+        <p>
+            This is the BDeu score given in Heckerman, D., Geiger, D., & Chickering, D. M. (1995). Learning Bayesian
+            networks: The combination of knowledge and statistical data. <i>Machine learning, 20</i>(3), 197-243. This
+            gives a score for any two variables conditioned on any list of others which is more positive for
+            distributions which are more strongly dependent.
+        </p>
     </div>
 
     <h4>Parameters</h4>
@@ -3098,7 +3193,9 @@ there is a single latent for each output cluster. For MimBuild, a pattern over t
     <h3>Conditional Gaussian BIC Score</h3>
 
     <div id="cg-bic-score">
-    <p>Conditional Gaussian BIC Score may be used for the case where there is a mixture of discrete and Gaussian variables. Calculates a BIC score based on likelihood that is calculated using a conditional Gaussian assumption.</p>
+        <p>Conditional Gaussian BIC Score may be used for the case where there is a mixture of discrete and Gaussian
+            variables. Calculates a BIC score based on likelihood that is calculated using a conditional Gaussian
+            assumption.</p>
     </div>
 
     <h4>Parameters</h4>
@@ -3108,35 +3205,54 @@ there is a single latent for each output cluster. For MimBuild, a pattern over t
     <h3>Conditional Correlation Independence (CCI) Score</h3>
 
     <div id="cci-score">
-    <p>Conditional Correlation Score returns 1 - p-value for the Conditional correlation test. May be used as a score for the nonlinear case, assuming additivity.</p>
+        <p>Conditional Correlation Score returns 1 - p-value for the Conditional correlation test. May be used as a
+            score for the nonlinear case, assuming additivity.</p>
     </div>
 
     <h4>Parameters</h4>
 
-    <p><a href="#cciScoreAlpha">cciScoreAlpha</a>, <a href="#numBasisFunctions">numBasisFunctions</a>, <a href="#kernelType">kernelType</a>, <a href="#kernelMultiplier">kernelMultiplier</a>, <a href="#basisType">basisType</a>, <a href="#fastFDR">fastFDR</a>, <a href="#kernelRegressionSampleSize">kernelRegressionSampleSize</a>, <a href="#numDependenceSpotChecks">numDependenceSpotChecks</a></p>
+    <p><a href="#cciScoreAlpha">cciScoreAlpha</a>, <a href="#numBasisFunctions">numBasisFunctions</a>, <a
+            href="#kernelType">kernelType</a>, <a href="#kernelMultiplier">kernelMultiplier</a>, <a href="#basisType">basisType</a>,
+        <a href="#fastFDR">fastFDR</a>, <a href="#kernelRegressionSampleSize">kernelRegressionSampleSize</a>, <a
+                href="#numDependenceSpotChecks">numDependenceSpotChecks</a></p>
 
     <h3>D-separation Score</h3>
 
     <div id="d-sep-score">
-    <p>
-    This uses d-separation to make something that acts as a score if you know the true graph. A score in Tetrad, for FGES, say, is a function that for X and Y conditional on Z, returns a negative number if X _||_ Y | Z and a positive number otherwise. So to get this behavior in no u certain terms, we simply return -1 for independent cases and +1 for dependent cases. Works like a charm. This can be used for FGES to check what the ideal behavior of the algorithm should be. Simply draw an edge from the true graph to the search box, select FGES, and search as usual.
-    </p>
+        <p>
+            This uses d-separation to make something that acts as a score if you know the true graph. A score in Tetrad,
+            for FGES, say, is a function that for X and Y conditional on Z, returns a negative number if X _||_ Y | Z
+            and a positive number otherwise. So to get this behavior in no u certain terms, we simply return -1 for
+            independent cases and +1 for dependent cases. Works like a charm. This can be used for FGES to check what
+            the ideal behavior of the algorithm should be. Simply draw an edge from the true graph to the search box,
+            select FGES, and search as usual.
+        </p>
     </div>
 
     <h3>Discrete BIC Score</h3>
 
     <div id="disc-bic-score">
-    <p>
-    This is just the BIC score for the discrete case. The likelihood is judged by the multinomial tables directly, and this is penalized as is usual for a BIC score. The only surprising thing perhaps is that we use the formula BIC = 2L - k ln N, where L is the likelihood, k the number of parameters, and N the sample size, instead of the usual L + k / 2 ln N. So higher BIC scores will correspond to greater dependence. In the case of independence, the BIC score will be negative, since the likelihood will be zero, and this will be penalized.
-    </p>
+        <p>
+            This is just the BIC score for the discrete case. The likelihood is judged by the multinomial tables
+            directly, and this is penalized as is usual for a BIC score. The only surprising thing perhaps is that we
+            use the formula BIC = 2L - k ln N, where L is the likelihood, k the number of parameters, and N the sample
+            size, instead of the usual L + k / 2 ln N. So higher BIC scores will correspond to greater dependence. In
+            the case of independence, the BIC score will be negative, since the likelihood will be zero, and this will
+            be penalized.
+        </p>
     </div>
 
     <h3>SEM BIC Score</h3>
 
     <div id="sem-bic-score">
-    <p>
-    This is specifically a BIC score for the linear, Gaussian case, where we include an additional penalty term, which is commonly used. We call this the <i>penalty discount</i>. So our formulas has BIC = 2L - ck log N, where L is the likelihood, c the penalty discount (usually greater than or equal to 1), and N the sample size. Since the assumption is that the data are distributed as Gaussian, this reduces to BIC = -n log sigma - ck ln N, where sigma is the standard deviation of the linear residual obtained by regressing a child variable onto all of its parents in the model.
-    </p>
+        <p>
+            This is specifically a BIC score for the linear, Gaussian case, where we include an additional penalty term,
+            which is commonly used. We call this the <i>penalty discount</i>. So our formulas has BIC = 2L - ck log N,
+            where L is the likelihood, c the penalty discount (usually greater than or equal to 1), and N the sample
+            size. Since the assumption is that the data are distributed as Gaussian, this reduces to BIC = -n log sigma
+            - ck ln N, where sigma is the standard deviation of the linear residual obtained by regressing a child
+            variable onto all of its parents in the model.
+        </p>
     </div>
 
     <h4>Parameters</h4>
@@ -3147,7 +3263,8 @@ there is a single latent for each output cluster. For MimBuild, a pattern over t
     <div id="parameters">
         <h2>Search Parameters</h2>
 
-        <p>Note: You must specify the "Value Type" of each parameter, and the value type must be one of the following: Integer, Double, String, Boolean.</p>
+        <p>Note: You must specify the "Value Type" of each parameter, and the value type must be one of the following:
+            Integer, Double, String, Boolean.</p>
         <!-- Insert the parameter descriptions here, must follow the same structure and naming conventions -->
 
 
@@ -3188,13 +3305,13 @@ there is a single latent for each output cluster. For MimBuild, a pattern over t
 
         <h3 id="avgDegree" class="parameter_description">avgDegree</h3>
         <ul class="parameter_description_list">
-            <li>Short Description: <span id="avgDegree_short_desc">Average degree of graph (min = 1)</span></li>
+            <li>Short Description: <span id="avgDegree_short_desc">Average degree of graph (min = 0)</span></li>
             <li>Long Description: <span id="avgDegree_long_desc">The average degree of a graph is equal to 2E / V, where E is the number of edges in the graph and V the number of variables (vertices) in the graph, since each edge has two endpoints. This allows one to have control over the density of randomly generated graphs. The default average degree is 2, which corresponds to a graph in which there are the same number of edges as nodes. For denser graphs, larger average degrees can be specified.</span>
             </li>
             <li>Default Value: <span id="avgDegree_default_value">2</span></li>
-            <li>Lower Bound: <span id="avgDegree_lower_bound">1</span></li>
+            <li>Lower Bound: <span id="avgDegree_lower_bound">0</span></li>
             <li>Upper Bound: <span id="avgDegree_upper_bound">2147483647</span></li>
-            <li>Value Type: <span id="avgDegree_value_type">Integer</span></li>
+            <li>Value Type: <span id="avgDegree_value_type">Double</span></li>
             </td>
         </ul>
 
@@ -3269,13 +3386,13 @@ there is a single latent for each output cluster. For MimBuild, a pattern over t
 
         <h3 id="colliderDiscoveryRule" class="parameter_description">colliderDiscoveryRule</h3>
         <ul class="parameter_description_list">
-            <li>Short Description: <span id="colliderDiscoveryRule_short_desc">Collider discovery: 1 = Lookup from adjacency sepsets, 2 = Conservative (CPC), 3 = Max-P</span>
+            <li>Short Description: <span id="colliderDiscoveryRule_short_desc">Collider discovery: 1 = Sepsets, 2 = CPC, 3 = MPC, 4 = PC-Max</span>
             </li>
             <li>Long Description: <span id="colliderDiscoveryRule_long_desc">For variants of PC, one may choose from one of three different ways for orienting colliders. One may look them up from sepsets, as in the original PC, or estimate them conservatively, as from the Conservative PC algorithm, or by choosing the sepsets with the maximum p-value. In simulation, CPC (default = 2) works the best for sample sizes greater than 100; for very small sample sizes, PC-Max generally works better.</span>
             </li>
             <li>Default Value: <span id="colliderDiscoveryRule_default_value">2</span></li>
             <li>Lower Bound: <span id="colliderDiscoveryRule_lower_bound">1</span></li>
-            <li>Upper Bound: <span id="colliderDiscoveryRule_upper_bound">3</span></li>
+            <li>Upper Bound: <span id="colliderDiscoveryRule_upper_bound">4</span></li>
             <li>Value Type: <span id="colliderDiscoveryRule_value_type">Integer</span></li>
             </td>
         </ul>
@@ -3466,6 +3583,18 @@ Usually covariance values are chosen from U(-b, -a) U U(a, b) for some a, b; thi
             <li>Value Type: <span id="doColliderOrientation_value_type">Boolean</span></li>
         </ul>
 
+        <h3 id="doMarkovLoop" class="parameter_description">differentGraphs</h3>
+        <ul class="parameter_description_list">
+            <li>Short Description: <span id="doMarkovLoop_short_desc">Yes if the Markov loop should be done for PC-All.</span>
+            </li>
+            <li>Long Description: <span id="doMarkovLoop_long_desc">If yes, an attempt is made to make the pattern consistent with respect to local Markov checks--i.e. to reduce the set of non-Markov nodes with respect to a node x to the empty set, to the extent possible, so that nonadjacencies will be definite.</span>
+            </li>
+            <li>Default Value: <span id="doMarkovLoop_default_value">false</span></li>
+            <li>Lower Bound: <span id="doMarkovLoop_lower_bound"></span></li>
+            <li>Upper Bound: <span id="doMarkovLoop_upper_bound"></span></li>
+            <li>Value Type: <span id="doMarkovLoop_value_type">Boolean</span></li>
+        </ul>
+
         <h3 id="errorsNormal" class="parameter_description">errorsNormal</h3>
         <ul class="parameter_description_list">
             <li>Short Description: <span id="errorsNormal_short_desc">Yes if errors should be Normal; No if they should be abs(Normal) (i.e., non-Gaussian)</span>
@@ -3529,7 +3658,8 @@ Usually covariance values are chosen from U(-b, -a) U U(a, b) for some a, b; thi
 
         <h3 id="fastIcaMaxIter" class="parameter_description">fastIcaMaxIter</h3>
         <ul class="parameter_description_list">
-            <li>Short Description: <span id="fastIcaMaxIter_short_desc">The maximum number of optimization iterations. </span>
+            <li>Short Description: <span
+                    id="fastIcaMaxIter_short_desc">The maximum number of optimization iterations. </span>
             </li>
             <li>Long Description: <span id="fastIcaMaxIter_long_desc">This is the maximum number if iterations of the optimization procedure of ICA. (See Hyvarinen, A. (2001). Independent Component Analysis/Hyvarinen A., Karhunen J., Oja E. NY: John Wiley & Sons Inc.) It's an integer greater than 0; we use a default of 2000.</span>
             </li>
@@ -3549,6 +3679,22 @@ Usually covariance values are chosen from U(-b, -a) U U(a, b) for some a, b; thi
             <li>Lower Bound: <span id="fastIcaTolerance_lower_bound">0.0</span></li>
             <li>Upper Bound: <span id="fastIcaTolerance_upper_bound">1000.0</span></li>
             <li>Value Type: <span id="fastIcaTolerance_value_type">Double</span></li>
+        </ul>
+
+        <h3 id="orientationAlpha" class="parameter_description">orienationQ</h3>
+        <ul class="parameter_description_list">
+            <li>Short Description: <span id="orientationAlpha_short_desc">The alpha for orientation. Default -1.</span>
+            </li>
+            <li>Long Description: <span id="orientationAlpha_long_desc">The alpha level for orientation, which may
+                be different than the one used for adjacencies. If False Discover Rate is used, this is the q* level,
+                used to control false positive. It is guaranteed that at most q*% of the positives will be false.
+                If a value of -1 is specified, the alpha level used for adjacency search will also be used for
+                orientation.</span>
+            </li>
+            <li>Default Value: <span id="orientationAlpha_default_value">-1.0</span></li>
+            <li>Lower Bound: <span id="orientationAlpha_lower_bound">0.0</span></li>
+            <li>Upper Bound: <span id="orientationAlpha_upper_bound">1.0</span></li>
+            <li>Value Type: <span id="orientationAlpha_value_type">Double</span></li>
         </ul>
 
         <h3 id="fisherEpsilon" class="parameter_description">fisherEpsilon</h3>
@@ -3879,10 +4025,23 @@ Usually covariance values are chosen from U(-b, -a) U U(a, b) for some a, b; thi
             </li>
             <li>Long Description: <span id="maxDegree_long_desc">It is possible for a random graph to have a single node with very high degree—i.e. number of adjacent edges. This parameter places an upper bound on the maximum such degree. If no limit is to be placed on the maximum degree, use the value -1.</span>
             </li>
-            <li>Default Value: <span id="maxDegree_default_value">100</span></li>
+            <li>Default Value: <span id="maxDegree_default_value">-1</span></li>
             <li>Lower Bound: <span id="maxDegree_lower_bound">-1</span></li>
             <li>Upper Bound: <span id="maxDegree_upper_bound">2147483647</span></li>
             <li>Value Type: <span id="maxDegree_value_type">Integer</span></li>
+            </td>
+        </ul>
+
+        <h3 id="maxDegreeFges" class="parameter_description">maxDegreeFges</h3>
+        <ul class="parameter_description_list">
+            <li>Short Description: <span id="maxDegreeFges_short_desc">The maximum degree of the graph for FGES (min = -1 = UNLIMITED)</span>
+            </li>
+            <li>Long Description: <span id="maxDegreeFges_long_desc">The maximum degree of the graph for FGES</span>
+            </li>
+            <li>Default Value: <span id="maxDegreeFges_default_value">-1</span></li>
+            <li>Lower Bound: <span id="maxDegreeFges_lower_bound">-1</span></li>
+            <li>Upper Bound: <span id="maxDegreeFges_upper_bound">2147483647</span></li>
+            <li>Value Type: <span id="maxDegreeFges_value_type">Integer</span></li>
             </td>
         </ul>
 
@@ -4576,7 +4735,7 @@ Usually covariance values are chosen from U(-b, -a) U U(a, b) for some a, b; thi
             <li>Long Description: <span id="structurePrior_long_desc">For Tetrad, we use as a structure prior the default number of parents for any conditional probability table. Higher weight is accorded to tables with about that number of parents. The prior structure weights are distributed according to a binomial distribution.</span>
             </li>
             <li>Default Value: <span id="structurePrior_default_value">1.0</span></li>
-            <li>Lower Bound: <span id="structurePrior_lower_bound">0.00000000000000001</span></li>
+            <li>Lower Bound: <span id="structurePrior_lower_bound">0</span></li>
             <li>Upper Bound: <span id="structurePrior_upper_bound">1.7976931348623157E308</span></li>
             <li>Value Type: <span id="structurePrior_value_type">Double</span></li>
         </ul>
@@ -4694,6 +4853,19 @@ Usually covariance values are chosen from U(-b, -a) U U(a, b) for some a, b; thi
             <li>Value Type: <span id="useFasAdjacencies_value_type">Boolean</span></li>
         </ul>
 
+        <h3 id="useFdrForIndependence" class="parameter_description">useFasAdjacencies</h3>
+        <ul class="parameter_description_list">
+            <li>Short Description: <span id="useFdrForIndependence_short_desc">Yes if FDR should be used for independence judgments</span>
+            </li>
+            <li>Long Description: <span id="useFdrForIndependence_long_desc">
+                Yes if the False Discovery Rate should be used to sort p-values into positives and negatives for independence judgments</span>
+            </li>
+            <li>Default Value: <span id="useFdrForIndependence_default_value">true</span></li>
+            <li>Lower Bound: <span id="useFdrForIndependence_lower_bound"></span></li>
+            <li>Upper Bound: <span id="useFdrForIndependence_upper_bound"></span></li>
+            <li>Value Type: <span id="useFdrForIndependence_value_type">Boolean</span></li>
+        </ul>
+
         <h3 id="useGap" class="parameter_description">useGap</h3>
         <ul class="parameter_description_list">
             <li>Short Description: <span id="useGap_short_desc">Yes if the GAP algorithms should be used. No if the SAG algorithm should be used</span>
@@ -4717,6 +4889,29 @@ The “Max P” method for orienting an unshielded triple X—Y—Z records p-va
             <li>Lower Bound: <span id="useMaxPOrientationHeuristic_lower_bound"></span></li>
             <li>Upper Bound: <span id="useMaxPOrientationHeuristic_upper_bound"></span></li>
             <li>Value Type: <span id="useMaxPOrientationHeuristic_value_type">Boolean</span></li>
+        </ul>
+
+        <h3 id="useMaxTopN" class="parameter_description">sampleSize</h3>
+        <ul class="parameter_description_list">
+            <li>Short Description: <span id="useMaxTopN_short_desc">The maximum number of top p-values to average</span></li>
+            <li>Long Description: <span id="useMaxTopN_long_desc">The CPC-MaxAvg algorithm averages the top N p-values; this specifies the maximum number of top p-values to average.</span>
+            </li>
+            <li>Default Value: <span id="useMaxTopN_default_value">1</span></li>
+            <li>Lower Bound: <span id="useMaxTopN_lower_bound">1</span></li>
+            <li>Upper Bound: <span id="useMaxTopN_upper_bound">2147483647</span></li>
+            <li>Value Type: <span id="useMaxTopN_value_type">Integer</span></li>
+            </td>
+        </ul>
+
+        <h3 id="useSellkeAdjustment" class="parameter_description">useSkewAdjacencies</h3>
+        <ul class="parameter_description_list">
+            <li>Short Description: <span id="useSellkeAdjustment_short_desc">Yes if the Sellke et al. adjustment should be used for alpha values.</span>
+            </li>
+            <li>Long Description: <span id="useSellkeAdjustment_long_desc">"Use the adjustment alpha = 1.0 / (1.0 + (1.0 / (-e * p * log(p))))."</span></li>
+            <li>Default Value: <span id="useSellkeAdjustment_default_value">false</span></li>
+            <li>Lower Bound: <span id="useSellkeAdjustment_lower_bound"></span></li>
+            <li>Upper Bound: <span id="useSellkeAdjustment_upper_bound"></span></li>
+            <li>Value Type: <span id="useSellkeAdjustment_value_type">Boolean</span></li>
         </ul>
 
         <h3 id="useSkewAdjacencies" class="parameter_description">useSkewAdjacencies</h3>
@@ -4748,7 +4943,7 @@ The “Max P” method for orienting an unshielded triple X—Y—Z records p-va
             <li>Short Description: <span id="varHigh_short_desc">High end of variance range (min = 0.0)</span></li>
             <li>Long Description: <span id="varHigh_long_desc">When simulating data from linear models, one needs to specify the distribution of the variance parameters. Here, we draw coefficients from U(v1, v2); v2 is what is being called the “high end of the variance range” and must be greater than v1. The default value is 3.0.</span>
             </li>
-            <li>Default Value: <span id="varHigh_default_value">3.0</span></li>
+            <li>Default Value: <span id="varHigh_default_value">.9</span></li>
             <li>Lower Bound: <span id="varHigh_lower_bound">0.0</span></li>
             <li>Upper Bound: <span id="varHigh_upper_bound">1.7976931348623157E308</span></li>
             <li>Value Type: <span id="varHigh_value_type">Double</span></li>
@@ -4759,7 +4954,7 @@ The “Max P” method for orienting an unshielded triple X—Y—Z records p-va
             <li>Short Description: <span id="varLow_short_desc">Low end of variance range (min = 0.0)</span></li>
             <li>Long Description: <span id="varLow_long_desc">When simulating data from linear models, one needs to specify the distribution of the variance parameters. Here, we draw coefficients from U(v1, v2); v1 is what is being called the “low end of the variance range” and has a minimum 0. The default value is 1.0.</span>
             </li>
-            <li>Default Value: <span id="varLow_default_value">1.0</span></li>
+            <li>Default Value: <span id="varLow_default_value">.5</span></li>
             <li>Lower Bound: <span id="varLow_lower_bound">0.0</span></li>
             <li>Upper Bound: <span id="varLow_upper_bound">1.7976931348623157E308</span></li>
             <li>Value Type: <span id="varLow_value_type">Double</span></li>
@@ -4984,12 +5179,14 @@ The “Max P” method for orienting an unshielded triple X—Y—Z records p-va
         run out of memory (heap memory space) running your analyses you should increase the memory allocated to the JVM
         with the following switch '-XmxXXG' where XX is the number of gigabytes of ram you allow the JVM to utilize. Do
         run Tetrad with more memory you need to start it from the command line or terminal. For example to allocate 8
-        gigabytes of ram you would add -Xmx8G immediately after the java command e.g., java -Xmx8G -jar tetrad-gui.jar.</p>
+        gigabytes of ram you would add -Xmx8G immediately after the java command e.g., java -Xmx8G -jar
+        tetrad-gui.jar.</p>
 
     <h2>Glossary of Terms</h2>
 
     <h5>Adjacent</h5>
-    <p>Two vertices in a graph are adjacent if there is a directed, or undirected, or double headed edge between them.</p>
+    <p>Two vertices in a graph are adjacent if there is a directed, or undirected, or double headed edge between
+        them.</p>
 
     <h5>Degree</h5>
     <p>The total number of edges directed both into and out of a vertex.</p>
@@ -4998,19 +5195,30 @@ The “Max P” method for orienting an unshielded triple X—Y—Z records p-va
     <p>The number of edges directed into a vertex.</p>
 
     <h5>Markov Blanket</h5>
-    <p>In a variable set V, with joint probability Pr, the Markov Blanket of a variable X in V is the smallest subset M of V \ {X} such that X II V \ M | M. In a DAG model, the Markov Blanket of X is the union of the set of direct causes (parents) of X, the set of direct effects (children) of X, and the set of direct causes of direct effects of X.</p>
+    <p>In a variable set V, with joint probability Pr, the Markov Blanket of a variable X in V is the smallest subset M
+        of V \ {X} such that X II V \ M | M. In a DAG model, the Markov Blanket of X is the union of the set of direct
+        causes (parents) of X, the set of direct effects (children) of X, and the set of direct causes of direct effects
+        of X.</p>
 
     <h5>Markov Equivalent Graphs</h5>
-    <p>Two directed acyclic graphs (DAGS) are Markov Equivalent if they have the same adjacencies and for every triple X – Y – Z of adjacent vertices, if X and Z are not adjacent, X -> Y &lt;- Z in both graphs or in neither graph.</p>
+    <p>Two directed acyclic graphs (DAGS) are Markov Equivalent if they have the same adjacencies and for every triple X
+        – Y – Z of adjacent vertices, if X and Z are not adjacent, X -> Y &lt;- Z in both graphs or in neither
+        graph.</p>
 
     <h5>Meek Orientation Rules</h5>
-    <p>Rules for finding all directions of edges implied by a pattern, consistent with any specified “knowledge” constraints on directions. See <a href="https://arxiv.org/pdf/1302.4972.pdf">https://arxiv.org/pdf/1302.4972.pdf</a></p>
+    <p>Rules for finding all directions of edges implied by a pattern, consistent with any specified “knowledge”
+        constraints on directions. See <a
+                href="https://arxiv.org/pdf/1302.4972.pdf">https://arxiv.org/pdf/1302.4972.pdf</a></p>
 
     <h5>Mixed Ancestral Graph (MAG)</h5>
-    <p>An acyclic graph with directed and undirected edges. Directed edges have the same interpretation as in DAGs. Undirected edges represent common causes. See Richardson, T. (2003). Markov properties for acyclic directed mixed graphs. <em>Scandinavian Journal of Statistics</em>, 30(1), 145-157.</p>
+    <p>An acyclic graph with directed and undirected edges. Directed edges have the same interpretation as in DAGs.
+        Undirected edges represent common causes. See Richardson, T. (2003). Markov properties for acyclic directed
+        mixed graphs. <em>Scandinavian Journal of Statistics</em>, 30(1), 145-157.</p>
 
     <h5>Multiple Indicator Model</h5>
-    <p>A graphical model in which unmeasured variables each have multiple measured effects. There may be directed edges between unmeasured variables, but no directed edges from measured variables to unmeasured variables are allowed.</p>
+    <p>A graphical model in which unmeasured variables each have multiple measured effects. There may be directed edges
+        between unmeasured variables, but no directed edges from measured variables to unmeasured variables are
+        allowed.</p>
 
     <h5>Outdegree</h5>
     <p>The number of edges directed out of a vertex.</p>
@@ -5019,14 +5227,19 @@ The “Max P” method for orienting an unshielded triple X—Y—Z records p-va
     <p>See PAG description in this manual.</p>
 
     <h5>Pattern</h5>
-    <p>A graphical representation of a Markov Equivalence Class or Classes, having both directed and undirected edges, with an undirected edge indicating that for each possible direction of the edge, there is a graph in the class or classes having that edge direction.</p>
+    <p>A graphical representation of a Markov Equivalence Class or Classes, having both directed and undirected edges,
+        with an undirected edge indicating that for each possible direction of the edge, there is a graph in the class
+        or classes having that edge direction.</p>
 
     <h5>Scale Free Graph</h5>
-    <p>A network in which the frequency of nodes with degree k obeys a power law--the relation between log of degree and log of frequency is roughly linear. See <a href="https://cs.brynmawr.edu/Courses/cs380/spring2013/section02/slides/10_ScaleFreeNetworks.pdf">https://cs.brynmawr.edu/Courses/cs380/spring2013/section02/slides/10_ScaleFreeNetworks.pdf</a>.</p>
+    <p>A network in which the frequency of nodes with degree k obeys a power law--the relation between log of degree and
+        log of frequency is roughly linear. See <a
+                href="https://cs.brynmawr.edu/Courses/cs380/spring2013/section02/slides/10_ScaleFreeNetworks.pdf">https://cs.brynmawr.edu/Courses/cs380/spring2013/section02/slides/10_ScaleFreeNetworks.pdf</a>.
+    </p>
 
     <h5>Trek</h5>
-    <p>A trek between X and Y is a directed path from X to Y or from Y to X, or two directed paths from a third variable Z into X and Y that do not intersect except at Z.</p>
-
+    <p>A trek between X and Y is a directed path from X to Y or from Y to X, or two directed paths from a third variable
+        Z into X and Y that do not intersect except at Z.</p>
 
 
 </div>
@@ -5035,6 +5248,7 @@ The “Max P” method for orienting an unshielded triple X—Y—Z records p-va
 <script>
 window.ga=function(){ga.q.push(arguments)};ga.q=[];ga.l=+new Date;
 ga('create','UA-XXXXX-Y','auto');ga('send','pageview')
+
 
 
 

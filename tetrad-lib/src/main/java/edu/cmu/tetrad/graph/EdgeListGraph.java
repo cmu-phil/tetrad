@@ -701,8 +701,8 @@ public class EdgeListGraph implements Graph, TripleClassifier {
     /**
      * Determines whether one node is a descendent of another.
      */
-    public boolean isDescendentOf(Node node1, Node node2) {
-        return (node1 == node2) || isProperDescendentOf(node1, node2);
+    public boolean  isDescendentOf(Node node1, Node node2) {
+        return isAncestorOf(node2, node1);
     }
 
     /**
@@ -2114,6 +2114,19 @@ public class EdgeListGraph implements Graph, TripleClassifier {
 	public void addAttribute(String key, Object value) {
 		attributes.put(key, value);
 	}
+
+    @Override
+    public List<Node> getNeighbors(Node node) {
+        List<Node> neighbors = new ArrayList<>();
+
+        for (Edge o : getEdges(node)) {
+            if (Edges.isUndirectedEdge(o)) {
+                neighbors.add(o.getDistalNode(node));
+            }
+        }
+
+        return neighbors;
+    }
 
 }
 

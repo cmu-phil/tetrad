@@ -1,5 +1,6 @@
 package edu.cmu.tetrad.algcomparison.independence;
 
+import edu.cmu.tetrad.annotation.TestOfIndependence;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.search.*;
 import edu.cmu.tetrad.util.Parameters;
@@ -10,11 +11,11 @@ import java.util.*;
  *
  * @author jdramsey
  */
-//@TestOfIndependence(
-//        name = "SEM BIC Test",
-//        command = "sem-bic",
-//        dataType = {DataType.Continuous, DataType.Covariance}
-//)
+@TestOfIndependence(
+        name = "SEM BIC Test",
+        command = "sem-bic",
+        dataType = {DataType.Continuous, DataType.Covariance}
+)
 public class SemBicTest implements IndependenceWrapper {
 
     static final long serialVersionUID = 23L;
@@ -29,7 +30,7 @@ public class SemBicTest implements IndependenceWrapper {
             score = new SemBicScore(new CovarianceMatrix((DataSet) dataSet));
         }
         score.setPenaltyDiscount(parameters.getDouble("penaltyDiscount"));
-        score.setStructurePrior(0);
+        score.setStructurePrior(parameters.getDouble("structurePrior"));
 
         return new IndTestScore(score, dataSet);
     }
@@ -48,6 +49,7 @@ public class SemBicTest implements IndependenceWrapper {
     public List<String> getParameters() {
         List<String> params = new ArrayList<>();
         params.add("penaltyDiscount");
+        params.add("structurePrior");
         return params;
     }
 }

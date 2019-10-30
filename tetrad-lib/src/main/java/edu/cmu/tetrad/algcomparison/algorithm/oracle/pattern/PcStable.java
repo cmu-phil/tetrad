@@ -13,12 +13,15 @@ import edu.cmu.tetrad.data.IKnowledge;
 import edu.cmu.tetrad.data.Knowledge2;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.search.OrientColliders;
 import edu.cmu.tetrad.search.PcAll;
 import edu.cmu.tetrad.search.SearchGraphUtils;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 import edu.pitt.dbmi.algo.resampling.GeneralResamplingTest;
 import edu.pitt.dbmi.algo.resampling.ResamplingEdgeEnsemble;
+import org.apache.xpath.operations.Or;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -59,8 +62,8 @@ public class PcStable implements Algorithm, TakesInitialGraph, HasKnowledge, Tak
             search.setKnowledge(knowledge);
             search.setFasType(edu.cmu.tetrad.search.PcAll.FasType.STABLE);
             search.setConcurrent(edu.cmu.tetrad.search.PcAll.Concurrent.NO);
-            search.setColliderDiscovery(edu.cmu.tetrad.search.PcAll.ColliderDiscovery.FAS_SEPSETS);
-            search.setConflictRule(PcAll.ConflictRule.PRIORITY);
+            search.setColliderDiscovery(OrientColliders.ColliderMethod.SEPSETS);
+            search.setConflictRule(OrientColliders.ConflictRule.PRIORITY);
             search.setVerbose(parameters.getBoolean(Params.VERBOSE));
             return search.search();
         } else {

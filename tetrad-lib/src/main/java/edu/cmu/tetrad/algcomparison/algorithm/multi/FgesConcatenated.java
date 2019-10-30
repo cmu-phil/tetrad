@@ -68,7 +68,7 @@ public class FgesConcatenated implements MultiDataSetAlgorithm, HasKnowledge {
 			search.setFaithfulnessAssumed(parameters.getBoolean(Params.FAITHFULNESS_ASSUMED));
 			search.setKnowledge(knowledge);
 			search.setVerbose(parameters.getBoolean(Params.VERBOSE));
-			search.setMaxDegree(parameters.getInt(Params.MAX_DEGREE));
+			search.setMaxDegree(parameters.getInt(Params.MAX_DEGREE_FGES));
 
 			Object obj = parameters.get("printStedu.cmream");
 			if (obj instanceof PrintStream) {

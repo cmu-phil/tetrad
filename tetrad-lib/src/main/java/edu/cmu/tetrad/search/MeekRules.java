@@ -22,6 +22,7 @@
 package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.IKnowledge;
+import edu.cmu.tetrad.data.Knowledge2;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.ChoiceGenerator;
 import edu.cmu.tetrad.util.TetradLogger;
@@ -40,11 +41,11 @@ import java.util.*;
  */
 public class MeekRules implements ImpliedOrientation {
 
-    private IKnowledge knowledge;
+    private IKnowledge knowledge = new Knowledge2();
 
     //True if cycles are to be aggressively prevented. May be expensive for large graphs (but also useful for large
     //graphs).
-    private boolean aggressivelyPreventCycles = false;
+    private boolean aggressivelyPreventCycles = true;
 
     // If knowledge is available.
     boolean useRule4;
@@ -367,6 +368,27 @@ public class MeekRules implements ImpliedOrientation {
 
     private void direct(Node a, Node c, Graph graph) {
         Edge before = graph.getEdge(a, c);
+
+        // Don't add unshielded colliders--these were supposed to all be oriented already.
+        // Also, don't orient any underline as a collider.
+        for (Node x : graph.getAdjacentNodes(c)) {
+            if (x == a) continue;
+
+            if (graph.getEdge(x, c).pointsTowards(c)) {
+                if (graph.getUnderLines().contains(new Triple(c, x, a))) {
+                    return;
+                }
+            }
+
+            if (graph.getAmbiguousTriples().contains(new Triple(c, x, a))) {
+                return;
+            }
+        }
+
+        // No cycles.
+        if (aggressivelyPreventCycles) {
+            if (graph.isAncestorOf(c, a)) return;
+        }
 
         if (knowledge != null && knowledge.isForbidden(a.getName(), c.getName())) {
             return;

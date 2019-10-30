@@ -32,9 +32,13 @@ public class FisherZ implements IndependenceWrapper {
         double alpha = parameters.getDouble(Params.ALPHA);
 
         if (dataSet instanceof ICovarianceMatrix) {
-            return new IndTestFisherZ((ICovarianceMatrix) dataSet, alpha);
+            IndTestFisherZ indTestFisherZ = new IndTestFisherZ((ICovarianceMatrix) dataSet, alpha);
+            indTestFisherZ.setSellke(parameters.getBoolean("useSellkeAdjustment"));
+            return indTestFisherZ;
         } else if (dataSet instanceof DataSet) {
-            return new IndTestFisherZ((DataSet) dataSet, alpha);
+            IndTestFisherZ indTestFisherZ = new IndTestFisherZ((DataSet) dataSet, alpha);
+            indTestFisherZ.setSellke(parameters.getBoolean("useSellkeAdjustment"));
+            return indTestFisherZ;
         }
 
         throw new IllegalArgumentException("Expecting eithet a data set or a covariance matrix.");
@@ -54,6 +58,7 @@ public class FisherZ implements IndependenceWrapper {
     public List<String> getParameters() {
         List<String> params = new ArrayList<>();
         params.add(Params.ALPHA);
+        params.add(Params.USE_SELLKE_ADJUSTMENT);
         return params;
     }
 }

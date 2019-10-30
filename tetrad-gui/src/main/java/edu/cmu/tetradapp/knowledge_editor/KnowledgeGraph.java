@@ -619,6 +619,11 @@ public class KnowledgeGraph implements Graph, TetradSerializableExcluded {
 		attributes.put(key, value);
 	}
 
+    @Override
+    public List<Node> getNeighbors(Node f) {
+        return graph.getNeighbors(f);
+    }
+
 }
 
 

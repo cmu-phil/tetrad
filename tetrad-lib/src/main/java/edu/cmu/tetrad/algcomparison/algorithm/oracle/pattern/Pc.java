@@ -13,6 +13,7 @@ import edu.cmu.tetrad.data.IKnowledge;
 import edu.cmu.tetrad.data.Knowledge2;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.search.OrientColliders;
 import edu.cmu.tetrad.search.PcAll;
 import edu.cmu.tetrad.search.SearchGraphUtils;
 import edu.cmu.tetrad.util.Parameters;
@@ -64,8 +65,8 @@ public class Pc implements Algorithm, TakesInitialGraph, HasKnowledge, TakesInde
             search.setKnowledge(knowledge);
             search.setFasType(edu.cmu.tetrad.search.PcAll.FasType.REGULAR);
             search.setConcurrent(edu.cmu.tetrad.search.PcAll.Concurrent.NO);
-            search.setColliderDiscovery(PcAll.ColliderDiscovery.FAS_SEPSETS);
-            search.setConflictRule(PcAll.ConflictRule.PRIORITY);
+            search.setColliderDiscovery(OrientColliders.ColliderMethod.SEPSETS);
+            search.setConflictRule(OrientColliders.ConflictRule.PRIORITY);
             search.setVerbose(parameters.getBoolean(Params.VERBOSE));
             return search.search();
         } else {

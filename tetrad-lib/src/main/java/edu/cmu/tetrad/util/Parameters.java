@@ -193,6 +193,8 @@ public class Parameters implements TetradSerializable {
             if (getNumValues(name) != 1) {
                 System.out.println("ERROR. Parameter '" + name + "' was not listed among the algorithm parameters "
                         + "for this algorithm. Skipping this run.\n");
+//                throw new IllegalArgumentException();
+
             }
 
             return objects[0];

@@ -23,6 +23,7 @@ package edu.cmu.tetrad.graph;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Edge.Property;
 import edu.cmu.tetrad.graph.EdgeTypeProbability.EdgeType;
+import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.util.ChoiceGenerator;
 import edu.cmu.tetrad.util.ForkJoinPoolInstance;
 import edu.cmu.tetrad.util.JsonUtils;
@@ -5448,6 +5449,85 @@ public final class GraphUtils {
             }
         }
         return null;
+    }
+
+    public static void printNonMarkovCounts(Graph G, IndependenceTest test) {
+        List<Node> nodes = new ArrayList<>(G.getNodes());
+        Collections.sort(nodes);
+        List<List<Node>> extra = new ArrayList<>();
+
+        for (Node node : nodes) {
+            extra.add(nonMarkov(node, G, test));
+        }
+
+        for (int i = 0; i < nodes.size(); i++) {
+            System.out.println("Count for " + nodes.get(i) + " = " + extra.get(i).size()
+                    + " boundary = " + boundary(nodes.get(i), G)
+                    + " non-Markov = " + extra.get(i));
+        }
+    }
+
+    public static List<Node> nonMarkov(Node y, Graph G, IndependenceTest test) {
+        List<Node> boundary = boundary(y, G);
+        List<Node> nodes = new ArrayList<>();
+
+        for (Node x : G.getNodes()) {
+            if (y == x) continue;
+            if (G.isDescendentOf(x, y)) continue;
+            if (boundary.contains(x)) continue;
+            if (!test.isIndependent(y, x, boundary)) {
+                nodes.add(x);
+            }
+        }
+
+        return nodes;
+    }
+
+    public static List<Node> boundary(Node x, Graph G) {
+        Set<Node> b = new HashSet<>();
+
+        for (Node y : G.getAdjacentNodes(x)) {
+            if (x == y) continue;
+
+            if (Edges.isUndirectedEdge(G.getEdge(x, y))) {
+                b.add(y);
+            }
+
+            if (G.isParentOf(y, x)) {
+                b.add(y);
+            }
+        }
+
+        return new ArrayList<>(b);
+    }
+
+
+    public static boolean markov(Node y, Graph G, IndependenceTest test) {
+        List<Node> boundary = GraphUtils.boundary(y, G);
+
+        for (Node x : G.getNodes()) {
+            if (y == x) continue;
+            if (G.isDescendentOf(x, y)) continue;
+
+            List<Node> adj = G.getAdjacentNodes(x);
+            adj.retainAll(G.getAdjacentNodes(y));
+            if (boundary.contains(x)) continue;
+            if (!test.isIndependent(y, x, boundary)) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    public static boolean markov(Graph G, IndependenceTest test) {
+        for (Node node : G.getNodes()) {
+            if (!markov(node, G, test)) {
+                return false;
+            }
+        }
+
+        return true;
     }
 
 }

@@ -183,7 +183,7 @@ public class MimbuildEditor extends JPanel {
                     JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
                             "Max P mode turned off and reset.");
                     double maxP = -1;
-                    params.set("maxP", maxP);
+                    params.set("existsSepset", maxP);
                     params.set("maxStructureGraph", (Graph) null);
                 }
             }

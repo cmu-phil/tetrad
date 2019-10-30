@@ -750,6 +750,11 @@ public final class Dag implements Graph {
 	public void addAttribute(String key, Object value) {
 		attributes.put(key, value);
 	}
+
+    @Override
+    public List<Node> getNeighbors(Node f) {
+        return getGraph().getNeighbors(f);
+    }
 }
 
 

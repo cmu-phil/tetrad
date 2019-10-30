@@ -178,8 +178,8 @@ public class MimBuildTrekRunner extends AbstractMimRunner implements GraphSource
         TetradLogger.getInstance().log("details", "P = " + p);
 
         if (getParams().getBoolean("showMaxP", false)) {
-            if (p > getParams().getDouble("maxP", 1.0)) {
-                getParams().set("maxP", p);
+            if (p > getParams().getDouble("existsSepset", 1.0)) {
+                getParams().set("existsSepset", p);
                 getParams().set("maxStructureGraph", structureGraph);
                 getParams().set("maxClusters", getClusters());
                 getParams().set("maxFullGraph", fullGraph);
@@ -195,7 +195,7 @@ public class MimBuildTrekRunner extends AbstractMimRunner implements GraphSource
 
             TetradLogger.getInstance().log("maxmodel", "\nMAX Graph = " + getParams().get("maxStructureGraph", null));
             TetradLogger.getInstance().log("maxmodel", getLatentClustersString((Graph) getParams().get("maxFullGraph", null)).toString());
-            TetradLogger.getInstance().log("maxmodel", "MAX P = " + getParams().getDouble("maxP", 1.0));
+            TetradLogger.getInstance().log("maxmodel", "MAX P = " + getParams().getDouble("existsSepset", 1.0));
         }
     }
 

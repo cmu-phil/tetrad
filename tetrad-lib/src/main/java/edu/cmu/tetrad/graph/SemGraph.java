@@ -1024,6 +1024,11 @@ public final class SemGraph implements Graph, TetradSerializable {
 		attributes.put(key, value);
 	}
 
+    @Override
+    public List<Node> getNeighbors(Node f) {
+        return graph.getNeighbors(f);
+    }
+
 }
 
 

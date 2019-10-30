@@ -2,6 +2,8 @@ package edu.cmu.tetradapp.editor;
 
 import edu.cmu.tetrad.algcomparison.statistic.*;
 import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.graph.GraphUtils;
+import edu.cmu.tetrad.search.SearchGraphUtils;
 import edu.cmu.tetrad.util.TextTable;
 import edu.cmu.tetradapp.model.GraphWrapper;
 import edu.cmu.tetradapp.model.TabularComparison;
@@ -38,8 +40,10 @@ public class StatsListEditor extends JPanel {
         if (referenceGraphs.size() != 1) throw new IllegalArgumentException("Expecting one comparison graph.");
         if (targetGraphs.size() != 1) throw new IllegalArgumentException("Expecting one target graph.");
 
-        referenceGraph = referenceGraphs.get(0);
+        referenceGraph = SearchGraphUtils.patternForDag(referenceGraphs.get(0));
         targetGraph = targetGraphs.get(0);
+
+        targetGraph = GraphUtils.replaceNodes(targetGraph, referenceGraph.getNodes());
 
         add(getTableDisplay());
 
@@ -87,6 +91,10 @@ public class StatsListEditor extends JPanel {
         statistics.add(new MathewsCorrAdj());
         statistics.add(new MathewsCorrArrow());
         statistics.add(new SHD());
+        statistics.add(new ColliderPrecision());
+        statistics.add(new ColliderRecall());
+        statistics.add(new ColliderNumCoveringErrors());
+        statistics.add(new ColliderNumUncoveringErrors());
         statistics.add(new NodesInCyclesPrecision());
         statistics.add(new NodesInCyclesRecall());
         statistics.add(new NumAmbiguousTriples());
@@ -103,7 +111,7 @@ public class StatsListEditor extends JPanel {
         statistics.add(new TwoCycleTruePositive());
 
         TextTable table = new TextTable(statistics.size(), 3);
-        NumberFormat nf = new DecimalFormat("0.0000");
+        NumberFormat nf = new DecimalFormat("0.####");
 
         for (int i = 0; i < statistics.size(); i++) {
             table.setToken(i, 0, statistics.get(i).getAbbreviation());

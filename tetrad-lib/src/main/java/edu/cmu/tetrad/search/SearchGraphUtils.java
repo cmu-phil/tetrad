@@ -37,10 +37,7 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.Triple;
-import edu.cmu.tetrad.util.ChoiceGenerator;
-import edu.cmu.tetrad.util.CombinationGenerator;
-import edu.cmu.tetrad.util.StatUtils;
-import edu.cmu.tetrad.util.TetradLogger;
+import edu.cmu.tetrad.util.*;
 
 import java.io.PrintStream;
 import java.text.DecimalFormat;
@@ -3242,6 +3239,7 @@ public final class SearchGraphUtils {
         return error;
     }
 
+
     private static class AhdCounts {
 
         private int ahdFp = 0;
@@ -3547,4 +3545,5 @@ public final class SearchGraphUtils {
 
         throw new IllegalStateException("Can do that that reorientation.");
     }
+
 }

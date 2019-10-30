@@ -12,6 +12,7 @@ import edu.cmu.tetrad.data.IKnowledge;
 import edu.cmu.tetrad.data.Knowledge2;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.search.OrientColliders;
 import edu.cmu.tetrad.search.PcAll;
 import edu.cmu.tetrad.search.SearchGraphUtils;
 import edu.cmu.tetrad.util.Parameters;
@@ -58,8 +59,8 @@ public class CpcStable implements Algorithm, HasKnowledge, TakesIndependenceWrap
             search.setKnowledge(knowledge);
             search.setFasType(edu.cmu.tetrad.search.PcAll.FasType.STABLE);
             search.setConcurrent(edu.cmu.tetrad.search.PcAll.Concurrent.NO);
-            search.setColliderDiscovery(edu.cmu.tetrad.search.PcAll.ColliderDiscovery.CONSERVATIVE);
-            search.setConflictRule(edu.cmu.tetrad.search.PcAll.ConflictRule.PRIORITY);
+            search.setColliderDiscovery(OrientColliders.ColliderMethod.CPC);
+            search.setConflictRule(edu.cmu.tetrad.search.OrientColliders.ConflictRule.PRIORITY);
             search.setVerbose(parameters.getBoolean(Params.VERBOSE));
             return search.search();
         } else {

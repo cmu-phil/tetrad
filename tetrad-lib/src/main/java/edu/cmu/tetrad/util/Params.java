@@ -63,6 +63,7 @@ public final class Params {
     public static final String DIFFERENT_GRAPHS = "differentGraphs";
     public static final String DISCRETIZE = "discretize";
     public static final String DO_COLLIDER_ORIENTATION = "doColliderOrientation";
+    public static final String DO_MARKOV_LOOP = "doMarkovLoop";
     public static final String ERRORS_NORMAL = "errorsNormal";
     public static final String EXTRA_EDGE_THRESHOLD = "extraEdgeThreshold";
     public static final String FAITHFULNESS_ASSUMED = "faithfulnessAssumed";
@@ -70,6 +71,7 @@ public final class Params {
     public static final String FAST_ICA_A = "fastIcaA";
     public static final String FAST_ICA_MAX_ITER = "fastIcaMaxIter";
     public static final String FAST_ICA_TOLERANCE = "fastIcaTolerance";
+    public static final String ORIENTATION_ALPHA = "orientationAlpha";
     public static final String FISHER_EPSILON = "fisherEpsilon";
     public static final String GENERAL_SEM_ERROR_TEMPLATE = "generalSemErrorTemplate";
     public static final String GENERAL_SEM_FUNCTION_TEMPLATE_LATENT = "generalSemFunctionTemplateLatent";
@@ -99,6 +101,7 @@ public final class Params {
     public static final String LOWER_BOUND = "lowerBound";
     public static final String MAX_CATEGORIES = "maxCategories";
     public static final String MAX_DEGREE = "maxDegree";
+    public static final String MAX_DEGREE_FGES = "maxDegreeFges";
     public static final String MAX_DISTINCT_VALUES_DISCRETE = "maxDistinctValuesDiscrete";
     public static final String MAX_INDEGREE = "maxIndegree";
     public static final String MAX_ITERATIONS = "maxIterations";
@@ -165,13 +168,16 @@ public final class Params {
     public static final String UPPER_BOUND = "upperBound";
     public static final String USE_CORR_DIFF_ADJACENCIES = "useCorrDiffAdjacencies";
     public static final String USE_FAS_ADJACENCIES = "useFasAdjacencies";
+    public static final String USE_FDR_FOR_INDEPENDENCE = "useFdrForIndependence";
     public static final String USE_GAP = "useGap";
     public static final String USE_MAX_P_ORIENTATION_HEURISTIC = "useMaxPOrientationHeuristic";
+    public static final String USE_SELLKE_ADJUSTMENT = "useSellkeAdjustment";
     public static final String USE_SKEW_ADJACENCIES = "useSkewAdjacencies";
     public static final String USE_WISHART = "useWishart";
     public static final String VAR_HIGH = "varHigh";
     public static final String VAR_LOW = "varLow";
     public static final String VERBOSE = "verbose";
+
 
     // System prameters that are not supposed to put in the HTML manual documentation
     public static final String PRINT_STREAM = "printStream";

@@ -14,7 +14,6 @@ import edu.cmu.tetrad.data.Knowledge2;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.*;
-import edu.cmu.tetrad.search.PcAll;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 import edu.pitt.dbmi.algo.resampling.GeneralResamplingTest;
@@ -63,11 +62,9 @@ public class PcStableMax implements Algorithm, TakesInitialGraph, HasKnowledge, 
             search.setKnowledge(knowledge);
             search.setFasType(edu.cmu.tetrad.search.PcAll.FasType.STABLE);
             search.setConcurrent(edu.cmu.tetrad.search.PcAll.Concurrent.NO);
-            search.setColliderDiscovery(PcAll.ColliderDiscovery.MAX_P);
-            search.setConflictRule(edu.cmu.tetrad.search.PcAll.ConflictRule.PRIORITY);
+            search.setColliderDiscovery(OrientColliders.ColliderMethod.PC_MAX);
+            search.setConflictRule(edu.cmu.tetrad.search.OrientColliders.ConflictRule.PRIORITY);
             search.setVerbose(parameters.getBoolean(Params.VERBOSE));
-            search.setUseHeuristic(parameters.getBoolean(Params.USE_MAX_P_ORIENTATION_HEURISTIC));
-            search.setMaxPathLength(parameters.getInt(Params.MAX_P_ORIENTATION_MAX_PATH_LENGTH));
             return search.search();
         } else {
             PcStableMax pcStableMax = new PcStableMax(test, compareToTrue);

@@ -30,7 +30,7 @@ public class LoadDataAndGraphs implements Simulation {
     private List<String> usedParameters = new ArrayList<>();
     private String description = "";
 
-    private transient PrintStream stdout;
+    private transient PrintStream stdout = System.out;
 
     public LoadDataAndGraphs(String path) {
         this.path = path;
@@ -51,6 +51,7 @@ public class LoadDataAndGraphs implements Simulation {
                         stdout.println("Loading graph from " + file2.getAbsolutePath());
                         this.graphs.add(GraphUtils.loadGraphTxt(file2));
                     } catch (Exception e) {
+                        e.printStackTrace();
                         this.graphs.add(null);
                     }
 

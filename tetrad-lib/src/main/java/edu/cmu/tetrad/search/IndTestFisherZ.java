@@ -28,7 +28,6 @@ import org.apache.commons.math3.distribution.NormalDistribution;
 import org.apache.commons.math3.linear.SingularMatrixException;
 
 import java.text.DecimalFormat;
-import java.text.NumberFormat;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -71,6 +70,8 @@ public final class IndTestFisherZ implements IndependenceTest {
     private double fisherZ = Double.NaN;
     private double cutoff = Double.NaN;
     private NormalDistribution normal = new NormalDistribution(0, 1);
+    private boolean sellke = false;
+    private double r;
 
     //==========================CONSTRUCTORS=============================//
 
@@ -173,6 +174,7 @@ public final class IndTestFisherZ implements IndependenceTest {
 
         try {
             r = partialCorrelation(x, y, z);
+            this.r = r;
         } catch (SingularMatrixException e) {
             System.out.println(SearchLogUtils.determinismDetected(z, x));
             this.fisherZ = Double.POSITIVE_INFINITY;
@@ -180,9 +182,23 @@ public final class IndTestFisherZ implements IndependenceTest {
         }
 
         double q = 0.5 * (log(1.0 + r) - Math.log(1.0 - r));
-        double fisherZ = sqrt((double)(n - 3 - z.size())) * abs(q);
+        double fisherZ = sqrt((double) (n - 3 - z.size())) * abs(q);
         this.fisherZ = fisherZ;
-        return fisherZ < cutoff;
+
+        if (isSellke()) {
+            double p = getPValue();
+
+            double alpha = 1.0 / (1.0 + (1.0 / (-this.alpha * p * log(p))));
+//        double alpha = -this.alpha * p * log(p);
+
+            if (Double.isNaN(alpha)) alpha = 0;
+
+//        System.out.println("alpha = " + alpha);
+//
+            return p > alpha;
+        } else {
+            return fisherZ < cutoff;
+        }
     }
 
     private double partialCorrelation(Node x, Node y, List<Node> z) throws SingularMatrixException {
@@ -215,6 +231,28 @@ public final class IndTestFisherZ implements IndependenceTest {
      */
     public double getPValue() {
         return 2.0 * (1.0 - normal.cumulativeProbability(abs(fisherZ)));
+    }
+
+    public double getPValue(Node x, Node y, List<Node> z) {
+        int n = sampleSize();
+        double r;
+
+        try {
+            r = partialCorrelation(x, y, z);
+        } catch (SingularMatrixException e) {
+            System.out.println(SearchLogUtils.determinismDetected(z, x));
+            this.fisherZ = Double.POSITIVE_INFINITY;
+            return Double.NaN;
+        }
+
+        double q = 0.5 * (log(1.0 + r) - log(1.0 - r));
+        double fisherZ = sqrt((double) (n + 3 + z.size())) * abs(q);
+        return 2.0 * (1.0 - normal.cumulativeProbability(abs(fisherZ)));
+    }
+
+
+    public double getBic() {
+        return -sampleSize() * Math.log(1.0 - r * r) - Math.log(sampleSize());
     }
 
     /**
@@ -373,6 +411,14 @@ public final class IndTestFisherZ implements IndependenceTest {
 
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;
+    }
+
+    public boolean isSellke() {
+        return sellke;
+    }
+
+    public void setSellke(boolean sellke) {
+        this.sellke = sellke;
     }
 }
 
