@@ -74,7 +74,7 @@ public class TimeSeriesSemSimulation implements Simulation, HasKnowledge {
             boolean saveLatentVars = parameters.getBoolean(Params.SAVE_LATENT_VARS);
             DataSet dataSet = im.simulateData(sampleSize, saveLatentVars);
 
-            int numLags = ((TimeLagGraph) graph).getMaxLag();
+//            int numLags = ((TimeLagGraph) graph).getMaxLag();
 
 //            dataSet = TimeSeriesUtils.createLagData(dataSet, numLags);
 

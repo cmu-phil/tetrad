@@ -75,6 +75,7 @@ public class MeekRules implements ImpliedOrientation {
 
     // True if unforced parents should be undirected before orienting.
     private boolean undirectUnforcedEdges = false;
+    private boolean noNewUnshieldedColliders = false;
 
     /**
      * Constructs the <code>MeekRules</code> with no logging.
@@ -390,6 +391,17 @@ public class MeekRules implements ImpliedOrientation {
             if (graph.isAncestorOf(c, a)) return;
         }
 
+        // No new unshielded colliders
+        if (noNewUnshieldedColliders) {
+            List<Node> parents = graph.getParents(c);
+
+            for (Node b : parents) {
+                if (!graph.isAdjacentTo(a, b) && graph.isDirectedFromTo(b, c)) {
+                    return;
+                }
+            }
+        }
+
         if (knowledge != null && knowledge.isForbidden(a.getName(), c.getName())) {
             return;
         }
@@ -486,6 +498,10 @@ public class MeekRules implements ImpliedOrientation {
             System.out.println(message);
             TetradLogger.getInstance().log("impliedOrientations", message);
         }
+    }
+
+    public void setNoNewUnshieldedColliders(boolean b) {
+        this.noNewUnshieldedColliders = b;
     }
 }
 

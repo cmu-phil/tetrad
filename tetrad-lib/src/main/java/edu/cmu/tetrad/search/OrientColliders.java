@@ -70,13 +70,13 @@ public class OrientColliders {
 
                 if (sepsets != null) {
                     List<Node> sepset = sepsets.get(a, c);
-                    if (sepset != null) {
+//                    if (sepset != null) {
                         if (sepset.contains(b)) {
                             noncolliders.add(new Triple(a, b, c));
                         } else {
                             colliders.add(new Triple(a, b, c));
                         }
-                    }
+//                    }
                 } else {
                     orientTriple(graph, a, b, c, colliders, ambiguous, noncolliders, notBMap);
                 }

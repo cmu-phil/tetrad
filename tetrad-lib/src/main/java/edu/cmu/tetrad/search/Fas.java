@@ -32,6 +32,7 @@ import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.*;
 
+import static java.util.Collections.shuffle;
 import static jdk.nashorn.internal.objects.Global.println;
 
 /**
@@ -141,6 +142,16 @@ public class Fas implements IFas {
 
         List<Node> nodes = graph.getNodes();
 
+        for (int i = 0; i < graph.getNodes().size(); i++) {
+            for (int j = 0; j < graph.getNodes().size(); j++) {
+                Node x = graph.getNodes().get(i);
+                Node y = graph.getNodes().get(j);
+                if (knowledge.isRequired(x.getName(), y.getName()) && knowledge.isRequired(y.getName(), x.getName())) {
+                    graph.addUndirectedEdge(x, y);
+                }
+            }
+        }
+
         for (int d = 0; d <= _depth; d++) {
             boolean more;
 
@@ -202,15 +213,14 @@ public class Fas implements IFas {
     }
 
     private boolean searchAtDepth(List<Node> nodes, final IndependenceTest test, int depth) {
-        for (Edge edge : graph.getEdges()) {
+        List<Edge> edges = new ArrayList<>(graph.getEdges());
+        shuffle(edges);
+
+        for (Edge edge : edges) {
             Node x = edge.getNode1();
             Node y = edge.getNode2();
 
             loop(test, depth, edge, x, y);
-
-            if (graph.isAdjacentTo(x, y)) {
-                loop(test, depth, edge, y, x);
-            }
         }
 
         return freeDegree(nodes, graph) > depth;
@@ -236,30 +246,38 @@ public class Fas implements IFas {
 
                 List<Node> condSet = GraphUtils.asList(choice, ppx);
 
-                boolean independent;
+                tryRemoving(test, edge, x, y, condSet);
 
-                try {
-                    numIndependenceTests++;
-                    independent = test.isIndependent(x, y, condSet);
-                } catch (Exception e) {
-                    independent = false;
+                if (graph.isAdjacentTo(x, y)) {
+                    tryRemoving(test, edge, y, x, condSet);
                 }
+            }
+        }
+    }
 
-                boolean noEdgeRequired =
-                        knowledge.noEdgeRequired(x.getName(), y.getName());
+    private void tryRemoving(IndependenceTest test, Edge edge, Node x, Node y, List<Node> condSet) {
+        boolean independent;
 
-                if (independent && noEdgeRequired) {
-                    getSepsets().set(x, y, condSet);
-                    getSepsets().setPValue(x, y, test.getPValue());
+        try {
+            numIndependenceTests++;
+            independent = test.isIndependent(x, y, condSet);
+        } catch (Exception e) {
+            independent = false;
+        }
 
-                    graph.removeEdge(edge);
+        boolean noEdgeRequired =
+                knowledge.noEdgeRequired(x.getName(), y.getName());
 
-                    if (verbose) {
-                        TetradLogger.getInstance().forceLogMessage(SearchLogUtils.independenceFact(x, y, condSet) + " p = " +
-                                nf.format(test.getPValue()));
-                        out.println(SearchLogUtils.independenceFactMsg(x, y, condSet, test.getPValue()));
-                    }
-                }
+        if (independent && noEdgeRequired) {
+            getSepsets().set(x, y, condSet);
+            getSepsets().setPValue(x, y, test.getPValue());
+
+            graph.removeEdge(edge);
+
+            if (verbose) {
+                TetradLogger.getInstance().forceLogMessage(SearchLogUtils.independenceFact(x, y, condSet) + " p = " +
+                        nf.format(test.getPValue()));
+                out.println(SearchLogUtils.independenceFactMsg(x, y, condSet, test.getPValue()));
             }
         }
     }

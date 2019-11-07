@@ -83,7 +83,6 @@ public class PcMaxStudy {
         statistics.add(new ArrowheadRecallCommonEdges());
         statistics.add(new DensityTrueGraph());
         statistics.add(new ElapsedTime());
-
 //        statistics.setWeight("AR", 1);
         statistics.setWeight("AHP", 1);
 
@@ -112,8 +111,8 @@ public class PcMaxStudy {
         Parameters parameters = new Parameters();
 
         parameters.set(Params.COEF_LOW, 0);
-        parameters.set(Params.COEF_HIGH, .5);
-        parameters.set(Params.VAR_LOW, .2);
+        parameters.set(Params.COEF_HIGH, .7);
+        parameters.set(Params.VAR_LOW, .5);
         parameters.set(Params.VAR_HIGH, .9);
 
         parameters.set(Params.STABLE_FAS, true);
@@ -121,12 +120,12 @@ public class PcMaxStudy {
         parameters.set(Params.CONFLICT_RULE, 3);
         parameters.set(Params.SYMMETRIC_FIRST_STEP, true);
         parameters.set(Params.FAITHFULNESS_ASSUMED, false);
-        parameters.set(Params.COLLIDER_DISCOVERY_RULE, 2, 1);
+        parameters.set(Params.COLLIDER_DISCOVERY_RULE, 1);
         parameters.set(Params.DIFFERENT_GRAPHS, true);
 
-        parameters.set(Params.NUM_MEASURES, 100, 500, 1000);
-        // 10, 20, 30, 40, 50, 100, 200, 500);
-        parameters.set(Params.AVG_DEGREE, 4, 8, 12);
+        parameters.set(Params.NUM_MEASURES, //100, 500, 1000);
+                20, 30, 40, 50, 100, 200);
+        parameters.set(Params.AVG_DEGREE, 4);
         parameters.set(Params.MAX_DEGREE_FGES, -1);
 
         parameters.set(Params.NUM_RUNS, 2);
@@ -134,10 +133,10 @@ public class PcMaxStudy {
 //        parameters.set(Params.ALPHA, 0.001, 0.01, 0.05, 0.1);
         parameters.set(Params.ORIENTATION_ALPHA, -1);
         parameters.set(Params.PENALTY_DISCOUNT, 1);//, 2, 3);
-        parameters.set(Params.SAMPLE_SIZE, 50, 100, 500, 1000);
+        parameters.set(Params.SAMPLE_SIZE, 1000);
         parameters.set(Params.DO_MARKOV_LOOP, false);
         parameters.set(Params.USE_FDR_FOR_INDEPENDENCE, true);
-        parameters.set(Params.MAX_DEGREE, 20);
+        parameters.set(Params.MAX_DEGREE, 5);
 
 
 //        parameters.set(Params.ERRORS_NORMAL, false);

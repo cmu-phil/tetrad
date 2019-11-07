@@ -124,6 +124,16 @@ public class FasStable implements IFas {
             graph = GraphUtils.undirectedGraph(graph);
         }
 
+        for (int i = 0; i < graph.getNodes().size(); i++) {
+            for (int j = 0; j < graph.getNodes().size(); j++) {
+                Node x = graph.getNodes().get(i);
+                Node y = graph.getNodes().get(j);
+                if (knowledge.isRequired(x.getName(), y.getName()) && knowledge.isRequired(y.getName(), x.getName())) {
+                    graph.addUndirectedEdge(x, y);
+                }
+            }
+        }
+
         sepset = new SepsetMap();
         sepset.setReturnEmptyIfNotSet(true);
 
