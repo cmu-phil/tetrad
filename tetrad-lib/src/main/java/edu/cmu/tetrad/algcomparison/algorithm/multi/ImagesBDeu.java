@@ -22,6 +22,7 @@ import edu.pitt.dbmi.algo.resampling.GeneralResamplingTest;
 import edu.pitt.dbmi.algo.resampling.ResamplingEdgeEnsemble;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.LinkedList;
 import java.util.List;
 
 /**
@@ -145,7 +146,9 @@ public class ImagesBDeu implements MultiDataSetAlgorithm, HasKnowledge {
 
     @Override
     public List<String> getParameters() {
-        List<String> parameters = new Fges(new BdeuScore(), false).getParameters();
+        List<String> parameters = new LinkedList<>();
+        parameters.addAll((new Fges()).getParameters());
+        parameters.addAll((new BdeuScore()).getParameters());
         parameters.add(Params.NUM_RUNS);
         parameters.add(Params.RANDOM_SELECTION_SIZE);
         parameters.add(Params.VERBOSE);

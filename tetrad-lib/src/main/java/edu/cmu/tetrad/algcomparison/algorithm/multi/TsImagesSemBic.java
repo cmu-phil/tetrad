@@ -18,13 +18,15 @@ import edu.pitt.dbmi.algo.resampling.GeneralResamplingTest;
 import edu.pitt.dbmi.algo.resampling.ResamplingEdgeEnsemble;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.LinkedList;
 import java.util.List;
 
 /**
  * Wraps the tsIMaGES algorithm for continuous variables.
  * </p>
  * Requires that the parameter 'randomSelectionSize' be set to indicate how many
- * datasets should be taken at a time (randomly). This cannot given multiple values.
+ * datasets should be taken at a time (randomly). This cannot given multiple
+ * values.
  *
  * @author jdramsey
  * @author dmalinsky
@@ -32,6 +34,7 @@ import java.util.List;
 @TimeSeries
 @Bootstrapping
 public class TsImagesSemBic implements MultiDataSetAlgorithm, HasKnowledge {
+
     static final long serialVersionUID = 23L;
     private IKnowledge knowledge = new Knowledge2();
 
@@ -40,7 +43,7 @@ public class TsImagesSemBic implements MultiDataSetAlgorithm, HasKnowledge {
 
     @Override
     public Graph search(List<DataModel> dataModels, Parameters parameters) {
-    	if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
+        if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
             List<DataSet> dataSets = new ArrayList<>();
 
             for (DataModel dataModel : dataModels) {
@@ -54,20 +57,20 @@ public class TsImagesSemBic implements MultiDataSetAlgorithm, HasKnowledge {
             search.setVerbose(parameters.getBoolean(Params.VERBOSE));
 
             return search.search();
-    	}else{
-    		TsImagesSemBic tsImagesSemBic = new TsImagesSemBic();
-    		
-    		List<DataSet> datasets = new ArrayList<>();
+        } else {
+            TsImagesSemBic tsImagesSemBic = new TsImagesSemBic();
 
-			for (DataModel dataModel : dataModels) {
-				datasets.add((DataSet) dataModel);
-			}
-			GeneralResamplingTest search = new GeneralResamplingTest(datasets, tsImagesSemBic, parameters.getInt(Params.NUMBER_RESAMPLING));
-			search.setKnowledge(knowledge);
+            List<DataSet> datasets = new ArrayList<>();
 
-			search.setPercentResampleSize(parameters.getDouble(Params.PERCENT_RESAMPLE_SIZE));
+            for (DataModel dataModel : dataModels) {
+                datasets.add((DataSet) dataModel);
+            }
+            GeneralResamplingTest search = new GeneralResamplingTest(datasets, tsImagesSemBic, parameters.getInt(Params.NUMBER_RESAMPLING));
+            search.setKnowledge(knowledge);
+
+            search.setPercentResampleSize(parameters.getDouble(Params.PERCENT_RESAMPLE_SIZE));
             search.setResamplingWithReplacement(parameters.getBoolean(Params.RESAMPLING_WITH_REPLACEMENT));
-            
+
             ResamplingEdgeEnsemble edgeEnsemble = ResamplingEdgeEnsemble.Highest;
             switch (parameters.getInt(Params.RESAMPLING_ENSEMBLE, 1)) {
                 case 0:
@@ -79,29 +82,29 @@ public class TsImagesSemBic implements MultiDataSetAlgorithm, HasKnowledge {
                 case 2:
                     edgeEnsemble = ResamplingEdgeEnsemble.Majority;
             }
-			search.setEdgeEnsemble(edgeEnsemble);
-			search.setAddOriginalDataset(parameters.getBoolean(Params.ADD_ORIGINAL_DATASET));
-			
-			search.setParameters(parameters);
-			search.setVerbose(parameters.getBoolean(Params.VERBOSE));
-			return search.search();
-    	}
+            search.setEdgeEnsemble(edgeEnsemble);
+            search.setAddOriginalDataset(parameters.getBoolean(Params.ADD_ORIGINAL_DATASET));
+
+            search.setParameters(parameters);
+            search.setVerbose(parameters.getBoolean(Params.VERBOSE));
+            return search.search();
+        }
     }
 
     @Override
     public Graph search(DataModel dataSet, Parameters parameters) {
-    	if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
+        if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
             return search(Collections.singletonList((DataModel) DataUtils.getContinuousDataSet(dataSet)), parameters);
-    	}else{
-    		TsImagesSemBic tsImagesSemBic = new TsImagesSemBic();
-    		
-    		List<DataSet> dataSets = Collections.singletonList(DataUtils.getContinuousDataSet(dataSet));
-    		GeneralResamplingTest search = new GeneralResamplingTest(dataSets, tsImagesSemBic, parameters.getInt(Params.NUMBER_RESAMPLING));
-    		search.setKnowledge(knowledge);
-			
-    		search.setPercentResampleSize(parameters.getDouble(Params.PERCENT_RESAMPLE_SIZE));
+        } else {
+            TsImagesSemBic tsImagesSemBic = new TsImagesSemBic();
+
+            List<DataSet> dataSets = Collections.singletonList(DataUtils.getContinuousDataSet(dataSet));
+            GeneralResamplingTest search = new GeneralResamplingTest(dataSets, tsImagesSemBic, parameters.getInt(Params.NUMBER_RESAMPLING));
+            search.setKnowledge(knowledge);
+
+            search.setPercentResampleSize(parameters.getDouble(Params.PERCENT_RESAMPLE_SIZE));
             search.setResamplingWithReplacement(parameters.getBoolean(Params.RESAMPLING_WITH_REPLACEMENT));
-            
+
             ResamplingEdgeEnsemble edgeEnsemble = ResamplingEdgeEnsemble.Highest;
             switch (parameters.getInt(Params.RESAMPLING_ENSEMBLE, 1)) {
                 case 0:
@@ -113,13 +116,13 @@ public class TsImagesSemBic implements MultiDataSetAlgorithm, HasKnowledge {
                 case 2:
                     edgeEnsemble = ResamplingEdgeEnsemble.Majority;
             }
-			search.setEdgeEnsemble(edgeEnsemble);
-			search.setAddOriginalDataset(parameters.getBoolean(Params.ADD_ORIGINAL_DATASET));
-			
-			search.setParameters(parameters);
-			search.setVerbose(parameters.getBoolean(Params.VERBOSE));
-			return search.search();
-    	}
+            search.setEdgeEnsemble(edgeEnsemble);
+            search.setAddOriginalDataset(parameters.getBoolean(Params.ADD_ORIGINAL_DATASET));
+
+            search.setParameters(parameters);
+            search.setVerbose(parameters.getBoolean(Params.VERBOSE));
+            return search.search();
+        }
     }
 
     @Override
@@ -139,11 +142,13 @@ public class TsImagesSemBic implements MultiDataSetAlgorithm, HasKnowledge {
 
     @Override
     public List<String> getParameters() {
-        List<String> parameters = new Fges(new SemBicScore(), false).getParameters();
+        List<String> parameters = new LinkedList<>();
+        parameters.addAll((new Fges()).getParameters());
+        parameters.addAll((new SemBicScore()).getParameters());
         parameters.add(Params.RANDOM_SELECTION_SIZE);
 
-  	parameters.add(Params.VERBOSE);
-  		
+        parameters.add(Params.VERBOSE);
+
         return parameters;
     }
 

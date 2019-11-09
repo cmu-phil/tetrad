@@ -16,6 +16,7 @@ import edu.pitt.dbmi.algo.resampling.GeneralResamplingTest;
 import edu.pitt.dbmi.algo.resampling.ResamplingEdgeEnsemble;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.LinkedList;
 import java.util.List;
 
 /**
@@ -44,9 +45,11 @@ public class MultiFask implements MultiDataSetAlgorithm, HasKnowledge {
 
     @Override
     public Graph search(List<DataModel> dataSets, Parameters parameters) {
-    	if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
-    	    List<DataSet> _dataSets = new ArrayList<>();
-    	    for (DataModel d : dataSets) _dataSets.add((DataSet) d);
+        if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
+            List<DataSet> _dataSets = new ArrayList<>();
+            for (DataModel d : dataSets) {
+                _dataSets.add((DataSet) d);
+            }
             final SemBicScoreMultiFas score = new SemBicScoreMultiFas(dataSets);
             score.setPenaltyDiscount(parameters.getDouble(Params.PENALTY_DISCOUNT));
             edu.cmu.tetrad.search.MultiFask search = new edu.cmu.tetrad.search.MultiFask(_dataSets, score);
@@ -65,7 +68,7 @@ public class MultiFask implements MultiDataSetAlgorithm, HasKnowledge {
 
             search.setPercentResampleSize(parameters.getDouble(Params.PERCENT_RESAMPLE_SIZE));
             search.setResamplingWithReplacement(parameters.getBoolean(Params.RESAMPLING_WITH_REPLACEMENT));
-            
+
             ResamplingEdgeEnsemble edgeEnsemble = ResamplingEdgeEnsemble.Highest;
             switch (parameters.getInt(Params.RESAMPLING_ENSEMBLE, 1)) {
                 case 0:
@@ -79,7 +82,7 @@ public class MultiFask implements MultiDataSetAlgorithm, HasKnowledge {
             }
             search.setEdgeEnsemble(edgeEnsemble);
             search.setAddOriginalDataset(parameters.getBoolean(Params.ADD_ORIGINAL_DATASET));
-            
+
             search.setParameters(parameters);
             search.setVerbose(parameters.getBoolean(Params.VERBOSE));
             return search.search();
@@ -96,10 +99,10 @@ public class MultiFask implements MultiDataSetAlgorithm, HasKnowledge {
             List<DataSet> dataSets = Collections.singletonList(DataUtils.getContinuousDataSet(dataSet));
             GeneralResamplingTest search = new GeneralResamplingTest(dataSets, imagesSemBic, parameters.getInt(Params.NUMBER_RESAMPLING));
             search.setKnowledge(knowledge);
-            
+
             search.setPercentResampleSize(parameters.getDouble(Params.PERCENT_RESAMPLE_SIZE));
             search.setResamplingWithReplacement(parameters.getBoolean(Params.RESAMPLING_WITH_REPLACEMENT));
-            
+
             ResamplingEdgeEnsemble edgeEnsemble = ResamplingEdgeEnsemble.Highest;
             switch (parameters.getInt(Params.RESAMPLING_ENSEMBLE, 1)) {
                 case 0:
@@ -113,7 +116,7 @@ public class MultiFask implements MultiDataSetAlgorithm, HasKnowledge {
             }
             search.setEdgeEnsemble(edgeEnsemble);
             search.setAddOriginalDataset(parameters.getBoolean(Params.ADD_ORIGINAL_DATASET));
-            
+
             search.setParameters(parameters);
             search.setVerbose(parameters.getBoolean(Params.VERBOSE));
             return search.search();
@@ -140,11 +143,12 @@ public class MultiFask implements MultiDataSetAlgorithm, HasKnowledge {
     @Override
     public List<String> getParameters() {
         // MultiFask uses SemBicScore internally, so we'll need to add the score parameters too - Zhou
-        List<String> parameters = new Fges(new SemBicScore(), false).getParameters();
-        
+        List<String> parameters = new LinkedList<>();
+        parameters.addAll((new Fges()).getParameters());
+        parameters.addAll((new SemBicScore()).getParameters());
         parameters.add(Params.NUM_RUNS);
         parameters.add(Params.RANDOM_SELECTION_SIZE);
-        
+
         parameters.add(Params.VERBOSE);
 
         return parameters;
