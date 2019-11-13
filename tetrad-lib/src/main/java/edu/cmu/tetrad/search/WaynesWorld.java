@@ -229,7 +229,7 @@ public final class WaynesWorld implements GraphSearch {
         applyMeekRules(G);
 
         addCucViolationEdges();
-        addCucViolationEdges();
+//        addCucViolationEdges();
 //        addCucViolationEdges();
 
         TetradLogger.getInstance().log("graph", "\nReturning this graph: " + G);
@@ -255,9 +255,9 @@ public final class WaynesWorld implements GraphSearch {
         System.out.println("g1 = " + G);
 
         for (Node y : G.getNodes()) {
-            System.out.println("Examining node " + y + " parents = " + G.getParents(y));
+            System.out.println("Examining node " + y + " parents = " + G.getNodesInTo(y, Endpoint.ARROW));
 
-            List<Node> parents = G.getParents(y);
+            List<Node> parents = G.getNodesInTo(y, Endpoint.ARROW);
 
             if (parents.size() < 2) continue;
 
@@ -265,6 +265,9 @@ public final class WaynesWorld implements GraphSearch {
 
             ChoiceGenerator gen = new ChoiceGenerator(parents.size(), 2);
             int[] choice;
+
+            int c = 0;
+            int d = 0;
 
             while ((choice = gen.next()) != null) {
                 List<Node> adj = GraphUtils.asList(choice, parents);
@@ -275,20 +278,32 @@ public final class WaynesWorld implements GraphSearch {
                 Triple triple = new Triple(x, y, z);
                 System.out.println("Checking : " + triple);
 
+                c++;
+
                 if (!colliders.contains(triple)) {
                     System.out.println("CUC violation: " + triple);
                     cucViolations.add(triple);
 
-                    knowledge.setRequired(triple.getX().getName(), triple.getZ().getName());
-                    knowledge.setRequired(triple.getZ().getName(), triple.getX().getName());
+                    d++;
+
+
+
+//                    knowledge.setRequired(triple.getX().getName(), triple.getZ().getName());
+//                    knowledge.setRequired(triple.getZ().getName(), triple.getX().getName());
+                }
+            }
+
+            if (d > 1) {
+                for (Node a : parents) {
+                    G.setEndpoint(a, y, Endpoint.TAIL);
                 }
             }
         }
 
-        findAdjacencies();
-        colliders = orientTriples(G);
-        applyMeekRules(G);
-//
+//        findAdjacencies();
+//        colliders = orientTriples(G);
+//        applyMeekRules(G);
+////
 //        G = reorient(G);
     }
 
@@ -407,79 +422,10 @@ public final class WaynesWorld implements GraphSearch {
         List<Triple> ambiguous = new ArrayList<>();
         List<Triple> noncolliders = new ArrayList<>();
 
-        for (Node b : graph.getNodes()) {
-            List<Node> adjacentNodes = graph.getAdjacentNodes(b);
-
-            if (adjacentNodes.size() < 2) {
-                continue;
-            }
-
-            ChoiceGenerator cg = new ChoiceGenerator(adjacentNodes.size(), 2);
-            int[] combination;
-
-
-            while ((combination = cg.next()) != null) {
-                Node a = adjacentNodes.get(combination[0]);
-                Node c = adjacentNodes.get(combination[1]);
-
-                if (graph.isAdjacentTo(a, c)) {
-                    continue;
-                }
-
-                if (sepsets != null) {
-                    List<Node> sepset = sepsets.get(a, c);
-//                    if (sepset != null) {
-                    if (sepset.contains(b)) {
-                        noncolliders.add(new Triple(a, b, c));
-                    } else {
-                        colliders.add(new Triple(a, b, c));
-                    }
-//                    }
-                }
-            }
-        }
-
-        for (Triple triple : colliders) {
-            Node a = triple.getX();
-            Node b = triple.getY();
-            Node c = triple.getZ();
-
-            if (conflictRule == OrientColliders.ConflictRule.PRIORITY) {
-                if (!(graph.getEndpoint(b, a) == Endpoint.ARROW || graph.getEndpoint(b, c) == Endpoint.ARROW)) {
-                    if (!graph.getEdge(a, b).pointsTowards(a) && !graph.getEdge(b, c).pointsTowards(c)) {
-                        graph.removeEdge(a, b);
-                        graph.removeEdge(c, b);
-                        graph.addDirectedEdge(a, b);
-                        graph.addDirectedEdge(c, b);
-                    }
-                }
-            } else if (conflictRule == OrientColliders.ConflictRule.BIDIRECTED) {
-                graph.setEndpoint(a, b, Endpoint.ARROW);
-                graph.setEndpoint(c, b, Endpoint.ARROW);
-            } else if (conflictRule == OrientColliders.ConflictRule.OVERWRITE) {
-                graph.removeEdge(a, b);
-                graph.removeEdge(c, b);
-                graph.addDirectedEdge(a, b);
-                graph.addDirectedEdge(c, b);
-            }
-        }
-
-        for (Triple triple : noncolliders) {
-            Node a = triple.getX();
-            Node b = triple.getY();
-            Node c = triple.getZ();
-
-            graph.addUnderlineTriple(a, b, c);
-        }
-
-        for (Triple triple : ambiguous) {
-            Node a = triple.getX();
-            Node b = triple.getY();
-            Node c = triple.getZ();
-
-            graph.addAmbiguousTriple(a, b, c);
-        }
-
+//        OrientColliders orient = new OrientColliders(test, OrientColliders.ColliderMethod.SEPSETS);
+        OrientColliders orient = new OrientColliders(test, sepsets);
+        orient.orientTriples(graph);
+        colliders = orient.getColliders();
         return colliders;
     }
 

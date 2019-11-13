@@ -12,6 +12,12 @@ import java.util.*;
 import static java.util.Comparator.comparingDouble;
 
 public class OrientColliders {
+    public List<Triple> getColliders() {
+        return colliders;
+    }
+
+    private List<Triple> colliders = new ArrayList<>();
+
     public enum ColliderMethod {SEPSETS, CPC, MPC, PC_MAX, FIRST_EMPTY}
 
     public enum IndependenceDetectionMethod {ALPHA, FDR}
@@ -42,7 +48,7 @@ public class OrientColliders {
         this.colliderMethod = ColliderMethod.SEPSETS;
     }
 
-    public void orientTriples(Graph graph) {
+    void orientTriples(Graph graph) {
         List<Triple> colliders = new ArrayList<>();
         List<Triple> ambiguous = new ArrayList<>();
         List<Triple> noncolliders = new ArrayList<>();
@@ -128,9 +134,10 @@ public class OrientColliders {
             graph.addAmbiguousTriple(a, b, c);
         }
 
+        this.colliders = colliders;
     }
 
-    public SearchGraphUtils.CpcTripleType orientTriple(Graph graph, Node a, Node b, Node c) {
+    SearchGraphUtils.CpcTripleType orientTriple(Graph graph, Node a, Node b, Node c) {
         List<PValue> pValues = getAllPValues(a, b, c, depth, graph, test, colliderMethod == ColliderMethod.CPC);
 
         if (colliderMethod == ColliderMethod.SEPSETS) {
@@ -154,14 +161,12 @@ public class OrientColliders {
                     existsnotb.add(p);
                 }
             }
-//                        List<PValue> existsnotb = extractH0(notbPvals, orientationQ);
 
             if (!existsb.isEmpty() && existsnotb.isEmpty()) {
                 return SearchGraphUtils.CpcTripleType.NONCOLLIDER;
             } else if (existsb.isEmpty() && !existsnotb.isEmpty() && knowledgeAllowsCollider(a, b, c, knowledge)) {
                 return SearchGraphUtils.CpcTripleType.COLLIDER;
             } else {
-                pValues.sort((o1, o2) -> Double.compare(o2.getP(), o1.getP()));
                 return SearchGraphUtils.CpcTripleType.AMBIGUOUS;
             }
         } else if (colliderMethod == ColliderMethod.MPC) {
@@ -427,7 +432,7 @@ public class OrientColliders {
         this.depth = depth;
     }
 
-    public void setOrientationQ(double orientationQ) {
+    void setOrientationQ(double orientationQ) {
         if (orientationQ == -1) {
             this.orientationQ = test.getAlpha();
         } else {
@@ -440,7 +445,7 @@ public class OrientColliders {
     }
 
 
-    public void setIndependenceDetectionMethod(IndependenceDetectionMethod independenceDetectionMethod) {
+    void setIndependenceDetectionMethod(IndependenceDetectionMethod independenceDetectionMethod) {
         this.independenceDetectionMethod = independenceDetectionMethod;
     }
 
@@ -471,11 +476,13 @@ public class OrientColliders {
             while ((comb2 = cg1.next()) != null) {
                 List<Node> s = GraphUtils.asList(comb2, _adj);
 
-                Double __p = store.get(new IndependenceFact(a, c, s));
+//                IndependenceFact key = new IndependenceFact(a, c, s);
+                Double __p;// = store.get(key);
 
-                if (__p == null) {
+                if (true) {
                     test.isIndependent(a, c, s);
                     __p = test.getPValue();
+//                    store.put(key, __p);
                 }
 
                 if (__p >= orientationQ) {

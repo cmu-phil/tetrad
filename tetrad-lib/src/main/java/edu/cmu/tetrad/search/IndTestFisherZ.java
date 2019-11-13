@@ -91,7 +91,7 @@ public final class IndTestFisherZ implements IndependenceTest {
             throw new IllegalArgumentException("Alpha mut be in [0, 1]");
         }
 
-        this.cov = new CorrelationMatrix(dataSet);
+        this.cov = new CovarianceMatrix(dataSet);
         List<Node> nodes = this.cov.getVariables();
 
         this.variables = Collections.unmodifiableList(nodes);
@@ -111,7 +111,7 @@ public final class IndTestFisherZ implements IndependenceTest {
      */
     public IndTestFisherZ(TetradMatrix data, List<Node> variables, double alpha) {
         this.dataSet = new BoxDataSet(new VerticalDoubleDataBox(data.transpose().toArray()), variables);
-        this.cov = new CorrelationMatrix(dataSet);
+        this.cov = new CovarianceMatrix(dataSet);
         this.variables = Collections.unmodifiableList(variables);
         this.indexMap = indexMap(variables);
         this.nameMap = nameMap(variables);
@@ -123,7 +123,7 @@ public final class IndTestFisherZ implements IndependenceTest {
      * matrix and the given significance level.
      */
     public IndTestFisherZ(ICovarianceMatrix covMatrix, double alpha) {
-        this.cov = new CorrelationMatrix(covMatrix);
+        this.cov = new CovarianceMatrix(covMatrix);
         this.variables = covMatrix.getVariables();
         this.indexMap = indexMap(variables);
         this.nameMap = nameMap(variables);
@@ -169,6 +169,17 @@ public final class IndTestFisherZ implements IndependenceTest {
      * @throws RuntimeException if a matrix singularity is encountered.
      */
     public boolean isIndependent(Node x, Node y, List<Node> z) {
+        Collections.sort(z);
+
+        List<Node> aa = new ArrayList<>();
+        aa.add(x);
+        aa.add(y);
+
+        Collections.sort(aa);
+
+        x = aa.get(0);
+        y = aa.get(1);
+
         int n = sampleSize();
         double r;
 

@@ -26,6 +26,7 @@ import cern.jet.stat.Descriptive;
 import edu.cmu.tetrad.data.DataUtils;
 import org.apache.commons.math3.distribution.ChiSquaredDistribution;
 import org.apache.commons.math3.distribution.NormalDistribution;
+import org.apache.commons.math3.linear.CholeskyDecomposition;
 
 import java.util.*;
 
@@ -1751,7 +1752,8 @@ public final class StatUtils {
     }
 
     public static synchronized double partialCorrelationPrecisionMatrix(TetradMatrix submatrix) {
-        TetradMatrix inverse = submatrix.inverse();
+//        TetradMatrix inverse = submatrix.inverse();
+        TetradMatrix inverse = new TetradMatrix(new CholeskyDecomposition(submatrix.getRealMatrix()).getSolver().getInverse());
         return (-inverse.get(0, 1)) / sqrt(inverse.get(0, 0) * inverse.get(1, 1));
     }
 

@@ -40,7 +40,7 @@ public class StatsListEditor extends JPanel {
         if (referenceGraphs.size() != 1) throw new IllegalArgumentException("Expecting one comparison graph.");
         if (targetGraphs.size() != 1) throw new IllegalArgumentException("Expecting one target graph.");
 
-        referenceGraph = SearchGraphUtils.patternForDag(referenceGraphs.get(0));
+        referenceGraph = referenceGraphs.get(0);
         targetGraph = targetGraphs.get(0);
 
         targetGraph = GraphUtils.replaceNodes(targetGraph, referenceGraph.getNodes());

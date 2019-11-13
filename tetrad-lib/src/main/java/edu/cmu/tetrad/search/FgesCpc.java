@@ -272,24 +272,31 @@ public final class FgesCpc implements GraphSearch, GraphScorer {
 //            System.out.println("After first FES Markov counts:");
 //            GraphUtils.printNonMarkovCounts(graph, ((IndependenceScore) score).getTest());
 
-            bes();
+            bes2();
 
             this.mode = Mode.coverNoncolliders;
+
+            graph = SearchGraphUtils.patternFromEPattern(graph);
+
             initializeTwoStepEdges(getVariables());
+
             fes();
-            bes();
+            bes2();
         } else {
             initializeForwardEdgesFromEmptyGraph(getVariables());
 
             // Do forward search.
             this.mode = Mode.heuristicSpeedup;
             fes();
-            bes();
+            bes2();
 
             this.mode = Mode.allowUnfaithfulness;
+            graph = SearchGraphUtils.patternFromEPattern(graph);
+
             initializeForwardEdgesFromExistingGraph(getVariables());
+
             fes();
-            bes();
+            bes2();
         }
 
         this.modelScore = scoreDag(SearchGraphUtils.dagFromPattern(graph), true);
@@ -967,9 +974,6 @@ public final class FgesCpc implements GraphSearch, GraphScorer {
             out.println("** FORWARD EQUIVALENCE SEARCH");
         }
 
-//        IndependenceTest test = ((IndependenceScore) score).getTest();
-//        test.setAlpha(0.1);
-
         int maxDegree = this.maxDegree == -1 ? 1000 : this.maxDegree;
 
         while (!sortedArrows.isEmpty()) {
@@ -1028,22 +1032,83 @@ public final class FgesCpc implements GraphSearch, GraphScorer {
         }
     }
 
+    private void bes() {
+        if (verbose) {
+            TetradLogger.getInstance().forceLogMessage("** BACKWARD EQUIVALENCE SEARCH");
+            out.println("** BACKWARD EQUIVALENCE SEARCH");
+        }
+
+        sortedArrows = new ConcurrentSkipListSet<>();
+        lookupArrows = new ConcurrentHashMap<>();
+        neighbors = new ConcurrentHashMap<>();
+
+        initializeArrowsBackward();
+
+        while (!sortedArrows.isEmpty()) {
+            FgesCpc.Arrow arrow = sortedArrows.first();
+            sortedArrows.remove(arrow);
+
+            Node x = arrow.getA();
+            Node y = arrow.getB();
+
+            if (!graph.isAdjacentTo(x, y)) {
+                continue;
+            }
+
+            Edge edge = graph.getEdge(x, y);
+
+            if (edge.pointsTowards(x)) {
+                continue;
+            }
+
+            if (!getNaYX(x, y).equals(arrow.getNaYX())) {
+                continue;
+            }
+
+            if (!validDelete(x, y, arrow.getHOrT(), arrow.getNaYX())) {
+                continue;
+            }
+
+            boolean deleted = delete(x, y, arrow.getHOrT(), arrow.getBump(), arrow.getNaYX());
+
+            if (!deleted) {
+                continue;
+            }
+
+            Set<Node> visited = reapplyOrientation(x, y, arrow.getHOrT());
+
+            Set<Node> toProcess = new HashSet<>();
+
+            for (Node node : visited) {
+                final Set<Node> neighbors1 = getNeighbors(node);
+                final Set<Node> storedNeighbors = this.neighbors.get(node);
+
+                if (!(neighbors1.equals(storedNeighbors))) {
+                    toProcess.add(node);
+                }
+            }
+
+            toProcess.add(x);
+            toProcess.add(y);
+            toProcess.addAll(getCommonAdjacents(x, y));
+
+            reevaluateBackward(toProcess);
+        }
+    }
+
     private Set<Node> getCommonAdjacents(Node x, Node y) {
         Set<Node> adj = new HashSet<>(graph.getAdjacentNodes(x));
         adj.retainAll(graph.getAdjacentNodes(y));
         return adj;
     }
 
-    private void bes() {
+    private void bes2() {
         graph = reorient(graph);
 
         if (verbose) {
             TetradLogger.getInstance().forceLogMessage("** BACKWARD EQUIVALENCE SEARCH");
             out.println("** BACKWARD EQUIVALENCE SEARCH");
         }
-
-//        IndependenceTest test = ((IndependenceScore) score).getTest();
-//        test.setAlpha(0.0001);
 
         sortedArrows = new ConcurrentSkipListSet<>();
         lookupArrows = new ConcurrentHashMap<>();
@@ -1083,35 +1148,17 @@ public final class FgesCpc implements GraphSearch, GraphScorer {
             }
 
             updateOrientation(graph, x, y);
-//            graph = reorient(graph);
-
-            initializeArrowsBackward();
-
+            removeUnnecessaryMarks(graph);
 //            applyMeekRules(graph);
 
+            Set<Node> nodes = new HashSet<>();
+            nodes.add(x);
+            nodes.add(y);
+            nodes.addAll(getCommonAdjacents(x, y));
 
-            Set<Node> visited = reapplyOrientation(x, y, arrow.getHOrT());
-            removeUnnecessaryMarks(graph);
-//
-////            initializeArrowsBackward();
-//
-//
-//            Set<Node> toProcess = new HashSet<>();
-//
-//            for (Node node : visited) {
-//                final Set<Node> neighbors1 = getNeighbors(node);
-//                final Set<Node> storedNeighbors = this.neighbors.get(node);
-//
-//                if (!(neighbors1.equals(storedNeighbors))) {
-//                    toProcess.add(node);
-//                }
-//            }
-//
-//            toProcess.add(x);
-//            toProcess.add(y);
-//            toProcess.addAll(getCommonAdjacents(x, y));
-//
-//            reevaluateBackward(toProcess);
+            meekOrientRestricted(new ArrayList<>(nodes), knowledge);
+
+            initializeArrowsBackward();
         }
     }
 
@@ -1688,7 +1735,18 @@ public final class FgesCpc implements GraphSearch, GraphScorer {
                         H.removeAmbiguousTriple(x, b, c);
                     }
                 } else if (type == SearchGraphUtils.CpcTripleType.NONCOLLIDER) {
-                    H.addAmbiguousTriple(x, b, c);
+//                    H.addAmbiguousTriple(x, b, c);
+
+                    if (!H.getEdge(c, b).pointsTowards(c)) {
+                        H.removeEdge(c, b);
+                        H.addUndirectedEdge(c, b);
+                    }
+
+                    if (!H.getEdge(x, b).pointsTowards(x)) {
+                        H.removeEdge(x, b);
+                        H.addUndirectedEdge(x, b);
+                    }
+
                 }
             }
         }
@@ -1727,6 +1785,7 @@ public final class FgesCpc implements GraphSearch, GraphScorer {
         }
 
         for (Triple triple : ambiguous) {
+            if (x == triple.getY() || y == triple.getY()) continue;
             if (H.isAdjacentTo(triple.getX(), triple.getZ())) continue;
             if (H.isAdjacentTo(triple.getX(), triple.getY()) && H.isAdjacentTo(triple.getY(), triple.getZ())) {
                 H.addAmbiguousTriple(triple.getX(), triple.getY(), triple.getZ());
